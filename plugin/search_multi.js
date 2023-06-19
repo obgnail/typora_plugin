@@ -1,6 +1,6 @@
 window.onload = function () {
     const config = {
-        caseSensitive: true,
+        caseSensitive: false,
     }
 
     console.log("search_multi.js had required");
@@ -158,10 +158,38 @@ window.onload = function () {
     const path = reqnode('path');
     const fs = reqnode('fs');
 
+    const separator = File.isWin ? "\\" : "/";
     let getRootPath = () => {
         return (global.workspace_ ? global.workspace_ :
                 document.querySelector("#file-library-tree .file-node-root").getAttribute("data-path")
         )
+    }
+
+    let openFileOrFolder = (path, isFolder) => {
+        // 获取挂载文件夹的路径
+        const mountFolder = File.getMountFolder();
+
+        // 判断一个路径是否在挂载文件夹下
+        function isUnderMountFolder(path) {
+            const separator = File.isWin ? "\\" : "/";
+            // 去掉挂载文件夹路径末尾的分隔符，然后拼接分隔符和子路径
+            const subPath = mountFolder.replace(/[\/\\]$/, "") + separator + path;
+            // 判断子路径是否以挂载文件夹路径开头
+            return path && mountFolder && subPath.startsWith(mountFolder);
+        }
+
+        if (File.isMac) {
+            let call_ = isFolder ? "controller.openFolder" : "path.openFile";
+            bridge.callHandler(call_, path);
+        } else if (File.isNode) {
+            if (isFolder) {
+                JSBridge.invoke("app.openFolder", path, true);
+            } else {
+                JSBridge.invoke("app.openFileOrFolder", path, {
+                    mountFolder: isUnderMountFolder(path) ? mountFolder : undefined
+                });
+            }
+        }
     }
 
     let traverseDir = (dir, filter, callback) => {
@@ -225,7 +253,7 @@ window.onload = function () {
                 <div class="typora-search-multi-item" data-is-dir="false"
                     data-path="${filePath}" data-index="${index}">
                     <div class="typora-search-multi-item-title">${parseUrl.base}</div>
-                    <div class="typora-search-multi-item-path">${parseUrl.dir}</div>
+                    <div class="typora-search-multi-item-path">${parseUrl.dir}${separator}</div>
                 </div>`;
             searchBlock.insertAdjacentHTML('beforeend', item);
 
@@ -270,7 +298,8 @@ window.onload = function () {
     searchBlock.addEventListener("click", function (event) {
         for (let ele of event.path) {
             if (ele.className === "typora-search-multi-item") {
-                console.log(ele.getAttribute("data-path"));
+                let filepath = ele.getAttribute("data-path");
+                openFileOrFolder(filepath, false);
                 return
             }
         }
