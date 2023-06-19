@@ -153,15 +153,21 @@ window.onload = () => {
         quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
     })();
 
-    const searchModal = document.getElementById('typora-search-multi');
-    const searchInfo = searchModal.querySelector(".typora-search-multi-info-item");
-    const searchList = searchModal.querySelector("#typora-search-multi-list");
-    const searchBlock = searchModal.querySelector(".typora-search-multi-list-inner .quick-open-group-block");
+    const modal = {
+        searchModal: document.getElementById('typora-search-multi'),
+        searchInfo: document.querySelector(".typora-search-multi-info-item"),
+        searchList: document.querySelector("#typora-search-multi-list"),
+        searchBlock: document.querySelector(".typora-search-multi-list-inner .quick-open-group-block"),
+        searchInput: document.querySelector("#typora-search-multi-input input"),
+    }
 
-    const path = reqnode('path');
-    const fs = reqnode('fs');
+    const pkg = {
+        path: reqnode('path'),
+        fs: reqnode('fs'),
+    }
 
     const separator = File.isWin ? "\\" : "/";
+
     const getRootPath = () => {
         return (global.workspace_ ? global.workspace_ :
                 document.querySelector("#file-library-tree .file-node-root").getAttribute("data-path")
@@ -173,7 +179,7 @@ window.onload = () => {
         const mountFolder = File.getMountFolder();
 
         // 判断一个路径是否在挂载文件夹下
-        function isUnderMountFolder(path) {
+        const isUnderMountFolder = (path) => {
             const separator = File.isWin ? "\\" : "/";
             // 去掉挂载文件夹路径末尾的分隔符，然后拼接分隔符和子路径
             const subPath = mountFolder.replace(/[\/\\]$/, "") + separator + path;
@@ -196,14 +202,14 @@ window.onload = () => {
     }
 
     const traverseDir = (dir, filter, callback) => {
-        fs.readdir(dir, (err, files) => {
+        pkg.fs.readdir(dir, (err, files) => {
             if (err) {
                 throw err;
             }
 
             for (const file of files) {
-                const filePath = path.join(dir, file);
-                fs.stat(filePath, (err, stats) => {
+                const filePath = pkg.path.join(dir, file);
+                pkg.fs.stat(filePath, (err, stats) => {
                     if (err) {
                         throw err;
                     }
@@ -211,7 +217,7 @@ window.onload = () => {
                         if (filter && !filter(filePath)) {
                             return
                         }
-                        fs.readFile(filePath, 'utf8', (err, data) => {
+                        pkg.fs.readFile(filePath, 'utf8', (err, data) => {
                             if (err) {
                                 throw err;
                             }
@@ -229,7 +235,7 @@ window.onload = () => {
         if (filename[0] === ".") {
             return false
         }
-        let ext = path.extname(filename).replace(/^\./, '');
+        let ext = pkg.path.extname(filename).replace(/^\./, '');
         if (~config.filetypes.indexOf(ext.toLowerCase())) {
             return true
         }
@@ -250,18 +256,18 @@ window.onload = () => {
             }
 
             index++;
-            const parseUrl = path.parse(filePath);
+            const parseUrl = pkg.path.parse(filePath);
             const item = `
                 <div class="typora-search-multi-item" data-is-dir="false"
                     data-path="${filePath}" data-index="${index}">
                     <div class="typora-search-multi-item-title">${parseUrl.base}</div>
                     <div class="typora-search-multi-item-path">${parseUrl.dir}${separator}</div>
                 </div>`;
-            searchBlock.insertAdjacentHTML('beforeend', item);
+            modal.searchBlock.insertAdjacentHTML('beforeend', item);
 
             if (once) {
-                searchList.style.display = "block";
-                searchInfo.style.display = "none";
+                modal.searchList.style.display = "block";
+                modal.searchInfo.style.display = "none";
                 once = false;
             }
         }
@@ -282,22 +288,21 @@ window.onload = () => {
         traverseDir(rootPath, canOpenByTypora, appendItem);
     }
 
-    const input_ = document.querySelector("#typora-search-multi-input input");
-    input_.addEventListener("keydown", (event) => {
+    modal.searchInput.addEventListener("keydown", (event) => {
         if (event.keyCode === 13) {
-            searchList.style.display = "none";
-            searchInfo.style.display = "block";
-            searchBlock.innerHTML = "";
+            modal.searchList.style.display = "none";
+            modal.searchInfo.style.display = "block";
+            modal.searchBlock.innerHTML = "";
 
             const workspace = getRootPath();
-            searchMulti(workspace, input_.value);
+            searchMulti(workspace, modal.searchInput.value);
         } else if (event.keyCode === 27) {
-            searchModal.style.display = "none";
-            searchInfo.style.display = "none";
+            modal.searchModal.style.display = "none";
+            modal.searchInfo.style.display = "none";
         }
     });
 
-    searchBlock.addEventListener("click", (event) => {
+    modal.searchBlock.addEventListener("click", (event) => {
         for (const ele of event.path) {
             if (ele.className === "typora-search-multi-item") {
                 const filepath = ele.getAttribute("data-path");
@@ -309,8 +314,8 @@ window.onload = () => {
 
     window.onkeydown = (event) => {
         if (config.hotkey(event)) {
-            searchModal.style.display = "block";
-            document.querySelector("#typora-search-multi input").select();
+            modal.searchModal.style.display = "block";
+            modal.searchInput.select();
         }
     }
 
