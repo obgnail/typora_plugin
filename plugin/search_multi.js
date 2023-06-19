@@ -1,18 +1,111 @@
 window.onload = function () {
     console.log("search_multi.js had required");
 
-    const path = reqnode('path');
-    const fs = reqnode('fs');
-
-    function loadStyles(url) {
-        let link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.type = "text/css";
-        link.href = url;
-        let head = document.getElementsByTagName("head")[0];
-        head.appendChild(link);
-    }
-    loadStyles("./plugin/search_multi.css");
+    let modal_css = `
+        #typora-search-multi {
+            position: fixed;
+            left: 50%;
+            width: 420px;
+            margin-left: -200px;
+            z-index: 9999;
+            padding: 4px;
+            background-color: #f8f8f8;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
+            border: 1px solid #ddd;
+            border-top: none;
+            color: var(--text-color);
+            margin-top: 0;
+            transform: translate3d(0, 0, 0)
+        }
+        
+        #typora-search-multi .ty-quick-open-category-title {
+            border-top: none;
+        }
+        
+        .mac-seamless-mode #typora-search-multi {
+            top: 30px
+        }
+        
+        .mac-seamless-mode .modal-dialog {
+            margin-top: 40px
+        }
+        
+        #typora-search-multi-input input {
+            width: 100%;
+            font-size: 14px;
+            line-height: 25px;
+            max-height: 27px;
+            overflow: auto;
+            border: 1px solid #ddd;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+            border-radius: 2px;
+            padding-left: 5px
+        }
+        
+        #typora-search-multi-input input:focus {
+            outline: 0
+        }
+        
+        .typora-search-multi-item {
+            display: block;
+            font-size: 14px;
+            height: 40px;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-top: 2px;
+            overflow: hidden
+        }
+        
+        .typora-search-multi-item:hover {
+            background-color: #ebebeb;
+            border-color: #ebebeb;
+            background-color: var(--active-file-bg-color);
+            border-color: var(--active-file-text-color);
+            color: var(--active-file-text-color)
+        }
+        
+        .typora-search-multi-item-title {
+            line-height: 24px;
+            max-height: 24px;
+            overflow: hidden
+        }
+        
+        .typora-search-multi-list {
+            margin-top: 0;
+            cursor: default;
+            max-height: 320px;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        .typora-search-multi-list-inner {
+            position: relative
+        }
+        
+        
+        .typora-search-multi-item-path {
+            opacity: .5;
+            font-size: 11px;
+            margin-top: -4px;
+            text-overflow: ellipsis;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            line-height: 14px
+        }
+        
+        .typora-search-multi-info-item {
+            opacity: .7;
+            font-size: 12px;
+            line-height: 40px;
+            position: relative;
+            padding-left: 20px
+        }
+    `;
+    let style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = modal_css;
+    document.getElementsByTagName("head")[0].appendChild(style);
 
     let search_div = `
         <div id="typora-search-multi-input">
@@ -45,66 +138,103 @@ window.onload = function () {
             </div>
         </div>
     `;
-
-    let searchMultiDiv = document.createElement("div");
-    searchMultiDiv.id = 'typora-search-multi';
-    searchMultiDiv.className = 'modal-dialog';
-    searchMultiDiv.style.display = "none";
-    searchMultiDiv.innerHTML = search_div;
-
+    let searchModal = document.createElement("div");
+    searchModal.id = 'typora-search-multi';
+    searchModal.className = 'modal-dialog';
+    searchModal.style.display = "none";
+    searchModal.innerHTML = search_div;
     let quickOpenNode = document.getElementById("typora-quick-open");
-    quickOpenNode.parentNode.insertBefore(searchMultiDiv, quickOpenNode.nextSibling);
-
-    let getRootPath = () => {
-        return (global.workspace_ ? global.workspace_ :
-            document.querySelector("#file-library-tree .file-node-root").getAttribute("data-path")
-        )
-    }
+    quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
 
     let searchInfo = document.querySelector("#typora-search-multi .typora-search-multi-info-item");
     let searchList = document.querySelector("#typora-search-multi #typora-search-multi-list");
     let searchBlock = document.querySelector(".typora-search-multi-list-inner .quick-open-group-block");
 
-    let fillItem = (fileList) => {
-        let arr = [];
-        fileList.forEach((f, index) => {
-            let parseUrl = path.parse(f);
+    const path = reqnode('path');
+    const fs = reqnode('fs');
+
+    let getRootPath = () => {
+        return (global.workspace_ ? global.workspace_ :
+                document.querySelector("#file-library-tree .file-node-root").getAttribute("data-path")
+        )
+    }
+
+    let traverseDir = (dir, filter, callback) => {
+        fs.readdir(dir, (err, files) => {
+            if (err) {
+                throw err;
+            }
+            files.forEach(file => {
+                let filePath = path.join(dir, file);
+                fs.stat(filePath, (err, stats) => {
+                    if (err) {
+                        throw err;
+                    }
+                    if (stats.isFile()) {
+                        if (filter && !filter(filePath)) {
+                            return
+                        }
+                        fs.readFile(filePath, 'utf8', (err, data) => {
+                            if (err) {
+                                throw err;
+                            }
+                            callback(filePath, data);
+                        });
+                    } else if (stats.isDirectory()) {
+                        traverseDir(filePath, filter, callback);
+                    }
+                });
+            });
+        });
+    }
+
+    let filetypes = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"];
+    let canOpenByTypora = (filename) => {
+        if (filename[0] === ".") {
+            return false;
+        }
+        let ext = path.extname(filename).replace(/^\./, '');
+        if (~filetypes.indexOf(ext.toLowerCase())) {
+            return true;
+        }
+    }
+
+    let appendItemFunc = (keyArr) => {
+        let index = 0;
+
+        return (filePath, data) => {
+            data = data.toLowerCase()
+            for (let keyword of keyArr) {
+                if (data.indexOf(keyword) === -1) {
+                    return false
+                }
+            }
+
+            index++
+            let parseUrl = path.parse(filePath);
             let item = `
                 <div class="typora-search-multi-item" data-is-dir="false"
-                    data-path="${f}" data-index="${index}">
+                    data-path="${filePath}" data-index="${index}">
                     <div class="typora-search-multi-item-title">${parseUrl.base}</div>
                     <div class="typora-search-multi-item-path">${parseUrl.dir}</div>
                 </div>`;
-            arr.push(item);
-        });
-
-        searchList.style.display = "block";
-        searchInfo.style.display = "none";
-        searchBlock.innerHTML = arr.join("");
+            searchBlock.insertAdjacentHTML('beforeend', item);
+        }
     }
 
-    let searchMulti = function (rootPath, keys) {
+    let searchMulti = (rootPath, keys) => {
         if (!rootPath) {
             return;
         }
-        keyArr = keys.split(" ").filter(Boolean);
+        let keyArr = keys.split(" ").filter(Boolean).map(ele => ele.toLowerCase());
         if (!keyArr) {
             return;
         }
 
-        const child_process = reqnode('child_process');
-        const cmd = `sn -e=null -n=false -p=${rootPath} ${keys}`;
-        child_process.exec(`cmd /C ${cmd}`, (err, stdout, stderr) => {
-            let e = err || stderr;
-            if (e) {
-                console.error(e)
-                return
-            }
-
-            let list = stdout.split("\n").filter(Boolean);
-            list.sort();
-            fillItem(list);
-        })
+        let appendItem = appendItemFunc(keyArr);
+        traverseDir(rootPath, canOpenByTypora, appendItem);
+        searchList.style.display = "block";
+        searchInfo.style.display = "none";
     }
 
     let input_ = document.querySelector("#typora-search-multi-input input");
@@ -114,18 +244,18 @@ window.onload = function () {
             searchInfo.style.display = "block";
             searchBlock.innerHTML = "";
 
-            workspace = getRootPath();
-            keywords = input_.value;
-            console.log(`search multi: -p=${workspace} [${keywords}]`)
+            let workspace = getRootPath();
+            let keywords = input_.value;
+            console.log(`search multi: ${workspace} [${keywords}]`)
             searchMulti(workspace, keywords)
         } else if (event.keyCode === 27) {
-            searchMultiDiv.style.display = "none";
+            searchModal.style.display = "none";
         }
     });
 
     searchBlock.addEventListener("click", function (event) {
         for (let ele of event.path) {
-            if (ele.className == "typora-search-multi-item") {
+            if (ele.className === "typora-search-multi-item") {
                 console.log(ele.getAttribute("data-path"));
                 return
             }
@@ -134,7 +264,7 @@ window.onload = function () {
 
     window.onkeydown = function (event) {
         if (event.ctrlKey && event.shiftKey && event.keyCode === 80) {
-            searchMultiDiv.style.display = "block";
+            searchModal.style.display = "block";
             document.querySelector("#typora-search-multi input").select();
         }
     }
