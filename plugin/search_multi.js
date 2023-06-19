@@ -1,4 +1,8 @@
 window.onload = function () {
+    const config = {
+        caseSensitive: true,
+    }
+
     console.log("search_multi.js had required");
 
     let modal_css = `
@@ -61,7 +65,8 @@ window.onload = function () {
             border-color: #ebebeb;
             background-color: var(--active-file-bg-color);
             border-color: var(--active-file-text-color);
-            color: var(--active-file-text-color)
+            color: var(--active-file-text-color);
+            cursor:pointer;
         }
         
         .typora-search-multi-item-title {
@@ -164,7 +169,8 @@ window.onload = function () {
             if (err) {
                 throw err;
             }
-            files.forEach(file => {
+
+            for (let file of files) {
                 let filePath = path.join(dir, file);
                 fs.stat(filePath, (err, stats) => {
                     if (err) {
@@ -184,7 +190,7 @@ window.onload = function () {
                         traverseDir(filePath, filter, callback);
                     }
                 });
-            });
+            }
         });
     }
 
@@ -201,9 +207,12 @@ window.onload = function () {
 
     let appendItemFunc = (keyArr) => {
         let index = 0;
+        let once = true;
 
         return (filePath, data) => {
-            data = data.toLowerCase()
+            if (!config.caseSensitive) {
+                data = data.toLowerCase();
+            }
             for (let keyword of keyArr) {
                 if (data.indexOf(keyword) === -1) {
                     return false
@@ -219,6 +228,12 @@ window.onload = function () {
                     <div class="typora-search-multi-item-path">${parseUrl.dir}</div>
                 </div>`;
             searchBlock.insertAdjacentHTML('beforeend', item);
+
+            if (once) {
+                searchList.style.display = "block";
+                searchInfo.style.display = "none";
+                once = false;
+            }
         }
     }
 
@@ -226,15 +241,15 @@ window.onload = function () {
         if (!rootPath) {
             return;
         }
-        let keyArr = keys.split(" ").filter(Boolean).map(ele => ele.toLowerCase());
+        let keyArr = keys.split(" ").filter(Boolean);
         if (!keyArr) {
             return;
         }
-
+        if (!config.caseSensitive) {
+            keyArr = keyArr.map(ele => ele.toLowerCase());
+        }
         let appendItem = appendItemFunc(keyArr);
         traverseDir(rootPath, canOpenByTypora, appendItem);
-        searchList.style.display = "block";
-        searchInfo.style.display = "none";
     }
 
     let input_ = document.querySelector("#typora-search-multi-input input");
@@ -245,11 +260,10 @@ window.onload = function () {
             searchBlock.innerHTML = "";
 
             let workspace = getRootPath();
-            let keywords = input_.value;
-            console.log(`search multi: ${workspace} [${keywords}]`)
-            searchMulti(workspace, keywords)
+            searchMulti(workspace, input_.value);
         } else if (event.keyCode === 27) {
             searchModal.style.display = "none";
+            searchInfo.style.display = "none";
         }
     });
 
