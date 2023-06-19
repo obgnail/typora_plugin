@@ -1,11 +1,13 @@
-window.onload = function () {
+window.onload = () => {
     const config = {
         caseSensitive: false,
-    }
+        filetypes: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
+        hotkey: (event) => event.ctrlKey && event.shiftKey && event.keyCode === 80, // 懒得写keycode映射函数,能用就行
+    };
 
-    console.log("search_multi.js had required");
-
-    let modal_css = `
+    (() => {
+        // insert css
+        const modal_css = `
         #typora-search-multi {
             position: fixed;
             left: 50%;
@@ -105,67 +107,68 @@ window.onload = function () {
             line-height: 40px;
             position: relative;
             padding-left: 20px
-        }
-    `;
-    let style = document.createElement('style');
-    style.type = 'text/css';
-    style.innerHTML = modal_css;
-    document.getElementsByTagName("head")[0].appendChild(style);
+        }`
+        const style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = modal_css;
+        document.getElementsByTagName("head")[0].appendChild(style);
 
-    let search_div = `
-        <div id="typora-search-multi-input">
-            <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
-                autocapitalize="off" value="" placeholder="多关键字查找"
-                data-localize="Search by file name" data-lg="Front">
-        </div>
+        // insert html
+        const search_div = `
+    <div id="typora-search-multi-input">
+        <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
+            autocapitalize="off" value="" placeholder="多关键字查找"
+            data-localize="Search by file name" data-lg="Front">
+    </div>
 
-        <div class="typora-search-multi-list" id="typora-search-multi-list" style="display:none">
-            <div class="ty-quick-open-category ty-has-prev" id="ty-quick-open-infolder-category">
-                <div class="ty-quick-open-category-title" data-localize="File Results" data-lg="Menu" style="height: auto;">
-                    匹配的文件
-                </div>
-                <div class="typora-search-multi-list-inner" style="height: 520px;">
-                    <div class="quick-open-group-block" data-block-index="0"
-                        style="position: absolute; top: 0; width: 100%;">
-                    </div>
+    <div class="typora-search-multi-list" id="typora-search-multi-list" style="display:none">
+        <div class="ty-quick-open-category ty-has-prev" id="ty-quick-open-infolder-category">
+            <div class="ty-quick-open-category-title" data-localize="File Results" data-lg="Menu" style="height: auto;">
+                匹配的文件
+            </div>
+            <div class="typora-search-multi-list-inner" style="height: 520px;">
+                <div class="quick-open-group-block" data-block-index="0"
+                    style="position: absolute; top: 0; width: 100%;">
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="typora-search-multi-info-item" style="display:none">
-            <div class="typora-search-multi-info" data-localize="Searching" data-lg="Front">Searching</div>
-            <div class="typora-search-spinner">
-                <div class="rect1"></div>
-                <div class="rect2"></div>
-                <div class="rect3"></div>
-                <div class="rect4"></div>
-                <div class="rect5"></div>
-            </div>
+    <div class="typora-search-multi-info-item" style="display:none">
+        <div class="typora-search-multi-info" data-localize="Searching" data-lg="Front">Searching</div>
+        <div class="typora-search-spinner">
+            <div class="rect1"></div>
+            <div class="rect2"></div>
+            <div class="rect3"></div>
+            <div class="rect4"></div>
+            <div class="rect5"></div>
         </div>
-    `;
-    let searchModal = document.createElement("div");
-    searchModal.id = 'typora-search-multi';
-    searchModal.className = 'modal-dialog';
-    searchModal.style.display = "none";
-    searchModal.innerHTML = search_div;
-    let quickOpenNode = document.getElementById("typora-quick-open");
-    quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
+    </div>`;
+        const searchModal = document.createElement("div");
+        searchModal.id = 'typora-search-multi';
+        searchModal.className = 'modal-dialog';
+        searchModal.style.display = "none";
+        searchModal.innerHTML = search_div;
+        const quickOpenNode = document.getElementById("typora-quick-open");
+        quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
+    })();
 
-    let searchInfo = document.querySelector("#typora-search-multi .typora-search-multi-info-item");
-    let searchList = document.querySelector("#typora-search-multi #typora-search-multi-list");
-    let searchBlock = document.querySelector(".typora-search-multi-list-inner .quick-open-group-block");
+    const searchModal = document.getElementById('typora-search-multi');
+    const searchInfo = searchModal.querySelector(".typora-search-multi-info-item");
+    const searchList = searchModal.querySelector("#typora-search-multi-list");
+    const searchBlock = searchModal.querySelector(".typora-search-multi-list-inner .quick-open-group-block");
 
     const path = reqnode('path');
     const fs = reqnode('fs');
 
     const separator = File.isWin ? "\\" : "/";
-    let getRootPath = () => {
+    const getRootPath = () => {
         return (global.workspace_ ? global.workspace_ :
                 document.querySelector("#file-library-tree .file-node-root").getAttribute("data-path")
         )
     }
 
-    let openFileOrFolder = (path, isFolder) => {
+    const openFileOrFolder = (path, isFolder) => {
         // 获取挂载文件夹的路径
         const mountFolder = File.getMountFolder();
 
@@ -179,7 +182,7 @@ window.onload = function () {
         }
 
         if (File.isMac) {
-            let call_ = isFolder ? "controller.openFolder" : "path.openFile";
+            const call_ = isFolder ? "controller.openFolder" : "path.openFile";
             bridge.callHandler(call_, path);
         } else if (File.isNode) {
             if (isFolder) {
@@ -192,14 +195,14 @@ window.onload = function () {
         }
     }
 
-    let traverseDir = (dir, filter, callback) => {
+    const traverseDir = (dir, filter, callback) => {
         fs.readdir(dir, (err, files) => {
             if (err) {
                 throw err;
             }
 
-            for (let file of files) {
-                let filePath = path.join(dir, file);
+            for (const file of files) {
+                const filePath = path.join(dir, file);
                 fs.stat(filePath, (err, stats) => {
                     if (err) {
                         throw err;
@@ -222,18 +225,17 @@ window.onload = function () {
         });
     }
 
-    let filetypes = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"];
-    let canOpenByTypora = (filename) => {
+    const canOpenByTypora = (filename) => {
         if (filename[0] === ".") {
-            return false;
+            return false
         }
         let ext = path.extname(filename).replace(/^\./, '');
-        if (~filetypes.indexOf(ext.toLowerCase())) {
-            return true;
+        if (~config.filetypes.indexOf(ext.toLowerCase())) {
+            return true
         }
     }
 
-    let appendItemFunc = (keyArr) => {
+    const appendItemFunc = (keyArr) => {
         let index = 0;
         let once = true;
 
@@ -241,15 +243,15 @@ window.onload = function () {
             if (!config.caseSensitive) {
                 data = data.toLowerCase();
             }
-            for (let keyword of keyArr) {
+            for (const keyword of keyArr) {
                 if (data.indexOf(keyword) === -1) {
                     return false
                 }
             }
 
-            index++
-            let parseUrl = path.parse(filePath);
-            let item = `
+            index++;
+            const parseUrl = path.parse(filePath);
+            const item = `
                 <div class="typora-search-multi-item" data-is-dir="false"
                     data-path="${filePath}" data-index="${index}">
                     <div class="typora-search-multi-item-title">${parseUrl.base}</div>
@@ -265,29 +267,29 @@ window.onload = function () {
         }
     }
 
-    let searchMulti = (rootPath, keys) => {
+    const searchMulti = (rootPath, keys) => {
         if (!rootPath) {
-            return;
+            return
         }
         let keyArr = keys.split(" ").filter(Boolean);
         if (!keyArr) {
-            return;
+            return
         }
         if (!config.caseSensitive) {
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }
-        let appendItem = appendItemFunc(keyArr);
+        const appendItem = appendItemFunc(keyArr);
         traverseDir(rootPath, canOpenByTypora, appendItem);
     }
 
-    let input_ = document.querySelector("#typora-search-multi-input input");
-    input_.addEventListener("keydown", function (event) {
+    const input_ = document.querySelector("#typora-search-multi-input input");
+    input_.addEventListener("keydown", (event) => {
         if (event.keyCode === 13) {
             searchList.style.display = "none";
             searchInfo.style.display = "block";
             searchBlock.innerHTML = "";
 
-            let workspace = getRootPath();
+            const workspace = getRootPath();
             searchMulti(workspace, input_.value);
         } else if (event.keyCode === 27) {
             searchModal.style.display = "none";
@@ -295,20 +297,22 @@ window.onload = function () {
         }
     });
 
-    searchBlock.addEventListener("click", function (event) {
-        for (let ele of event.path) {
+    searchBlock.addEventListener("click", (event) => {
+        for (const ele of event.path) {
             if (ele.className === "typora-search-multi-item") {
-                let filepath = ele.getAttribute("data-path");
+                const filepath = ele.getAttribute("data-path");
                 openFileOrFolder(filepath, false);
                 return
             }
         }
     });
 
-    window.onkeydown = function (event) {
-        if (event.ctrlKey && event.shiftKey && event.keyCode === 80) {
+    window.onkeydown = (event) => {
+        if (config.hotkey(event)) {
             searchModal.style.display = "block";
             document.querySelector("#typora-search-multi input").select();
         }
     }
+
+    console.log("search_multi.js had been injected");
 }
