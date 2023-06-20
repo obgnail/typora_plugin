@@ -223,33 +223,39 @@ window.onload = () => {
     }
 
     const traverseDir = (dir, filter, callback) => {
-        pkg.fs.readdir(dir, (err, files) => {
-            if (err) {
-                throw err;
-            }
+        return new Promise((resolve, reject) => {
+            pkg.fs.readdir(dir, (err, files) => {
+                if (err) {
+                    reject(err);
+                    return
+                }
 
-            for (const file of files) {
-                const filePath = pkg.path.join(dir, file);
-                pkg.fs.stat(filePath, (err, stats) => {
-                    if (err) {
-                        throw err;
-                    }
-                    if (stats.isFile()) {
-                        if (filter && !filter(filePath)) {
+                for (const file of files) {
+                    const filePath = pkg.path.join(dir, file);
+                    pkg.fs.stat(filePath, (err, stats) => {
+                        if (err) {
+                            reject(err);
                             return
                         }
-                        pkg.fs.readFile(filePath, 'utf8', (err, data) => {
-                            if (err) {
-                                throw err;
+                        if (stats.isFile()) {
+                            if (filter && !filter(filePath)) {
+                                resolve();
+                                return
                             }
-                            callback(filePath, data);
-                        });
-                    } else if (stats.isDirectory()) {
-                        traverseDir(filePath, filter, callback);
-                    }
-                });
-            }
-        });
+                            pkg.fs.readFile(filePath, 'utf8', (err, data) => {
+                                if (err) {
+                                    reject(err);
+                                    return
+                                }
+                                callback(filePath, data);
+                            });
+                        } else if (stats.isDirectory()) {
+                            traverseDir(filePath, filter, callback);
+                        }
+                    });
+                }
+            });
+        })
     }
 
     const canOpenByTypora = (filename) => {
@@ -288,13 +294,12 @@ window.onload = () => {
 
             if (once) {
                 modal.searchList.style.display = "block";
-                modal.searchInfo.style.display = "none";
                 once = false;
             }
         }
     }
 
-    const searchMulti = (rootPath, keys) => {
+    async function searchMulti(rootPath, keys) {
         if (!rootPath) {
             return
         }
@@ -306,7 +311,7 @@ window.onload = () => {
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }
         const appendItem = appendItemFunc(keyArr);
-        traverseDir(rootPath, canOpenByTypora, appendItem);
+        await traverseDir(rootPath, canOpenByTypora, appendItem);
     }
 
     modal.searchInput.addEventListener("keydown", (event) => {
@@ -315,7 +320,9 @@ window.onload = () => {
             modal.searchInfo.style.display = "block";
             modal.searchBlock.innerHTML = "";
             const workspace = getRootPath();
-            searchMulti(workspace, modal.searchInput.value);
+            searchMulti(workspace, modal.searchInput.value).then(
+                () => modal.searchInfo.style.display = "none"
+            );
         } else if (event.keyCode === 27) {
             modal.searchModal.style.display = "none";
             modal.searchInfo.style.display = "none";
