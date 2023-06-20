@@ -160,7 +160,7 @@ window.onload = () => {
         document.getElementsByTagName("head")[0].appendChild(style);
 
         // insert html
-        const search_div = `
+        const modal_div = `
         <div id="typora-search-multi-input">
             <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
                 autocapitalize="off" value="" placeholder="多关键字查找，空格为分隔符"
@@ -199,7 +199,7 @@ window.onload = () => {
         searchModal.id = 'typora-search-multi';
         searchModal.className = 'modal-dialog';
         searchModal.style.display = "none";
-        searchModal.innerHTML = search_div;
+        searchModal.innerHTML = modal_div;
         const quickOpenNode = document.getElementById("typora-quick-open");
         quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
 
@@ -238,12 +238,11 @@ window.onload = () => {
                 // 推迟到此时才插入,避免#file-library-tree还未生成的情况
                 (() => {
                     const hidden_div = `
-                        <div data-path="{{}}" data-is-directory="false" style="display: none;">
-                            <div class="file-node-content"></div>
-                        </div>`
+                        <div class="typora-search-multi-hidden" data-path="{{}}" data-is-directory="false" style="display: none;">
+                            <div class="file-node-content"></div></div>`
                     const tree = document.querySelector("#file-library-tree")
                     tree.insertAdjacentHTML('beforeend', hidden_div);
-                    hiddenNode = tree.lastElementChild;
+                    hiddenNode = tree.querySelector(".typora-search-multi-hidden");
                     once = false;
                 })();
             }
