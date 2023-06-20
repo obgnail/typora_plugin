@@ -183,6 +183,9 @@ window.onload = () => {
         searchModal.innerHTML = search_div;
         const quickOpenNode = document.getElementById("typora-quick-open");
         quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
+
+        // init case sensitive
+        config.caseSensitive = document.querySelector("#typora-search-multi-case-option-btn").classList.contains("select")
     })();
 
     const modal = {
