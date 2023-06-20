@@ -194,7 +194,8 @@ window.onload = () => {
         searchList: document.querySelector("#typora-search-multi-list"),
         searchBlock: document.querySelector(".typora-search-multi-list-inner .quick-open-group-block"),
         searchInput: document.querySelector("#typora-search-multi-input input"),
-        searchCaseOption: document.querySelector("#typora-search-multi-case-option-btn")
+        searchCaseOption: document.querySelector("#typora-search-multi-case-option-btn"),
+        searchResultTitle: document.querySelector(".typora-search-multi-list .ty-quick-open-category-title")
     }
 
     const pkg = {path: reqnode('path'), fs: reqnode('fs'),}
@@ -291,6 +292,7 @@ window.onload = () => {
                     <div class="typora-search-multi-item-path">${parseUrl.dir}${separator}</div>
                 </div>`;
             modal.searchBlock.insertAdjacentHTML('beforeend', item);
+            modal.searchResultTitle.textContent = `匹配的文件: ${index}`;
 
             if (once) {
                 modal.searchList.style.display = "block";
