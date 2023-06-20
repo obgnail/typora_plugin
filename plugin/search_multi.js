@@ -1,14 +1,16 @@
 window.onload = () => {
+    let metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey // ctrl or command
 
     const config = {
+        allowMove: false,
+        autoHide: false,
         caseSensitive: false,
         relativePath: true,
-        allowMove: false,
         separator: " ",
-        maxSize: 10 * 1024 * 1024, // 小于0则不过滤
+        maxSize: File.MAX_FILE_SIZE, // 小于0则不过滤(Typora默认最大2M)
         allowExt: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
-        hotkey: ev => ev.ctrlKey && ev.shiftKey && ev.keyCode === 80, // 懒得写keycodes映射函数,能用就行
+        hotkey: ev => metaKeyPressed(ev) && ev.shiftKey && ev.keyCode === 80, // 懒得写keycodes映射函数,能用就行
     };
 
     (() => {
@@ -206,6 +208,12 @@ window.onload = () => {
     const separator = File.isWin ? "\\" : "/";
     const getRootPath = File.getMountFolder
 
+    const autoHide = () => {
+        if (config.autoHide) {
+            modal.modal.style.display = "none";
+        }
+    }
+
     const clickHiddenNode = () => {
         let once = true;
         let hiddenNode;
@@ -395,11 +403,11 @@ window.onload = () => {
                     openFileOrFolder(filepath, false);
                     ev.preventDefault();
                     ev.stopPropagation();
-                    return
                 } else {
                     openFileInThisWindow(filepath)
-                    return
                 }
+                autoHide()
+                return
             }
         }
     });
