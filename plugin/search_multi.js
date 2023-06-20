@@ -1,146 +1,159 @@
 window.onload = () => {
-    let metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey // ctrl or command
+    const pkg = {
+        path: reqnode('path'), // Typora将require封装为reqnode
+        fs: reqnode('fs'),
+        file: File, // 和Typora文件相关的第一方库
+    }
 
     const config = {
-        allowMove: false,
+        // 允许拖动模态框
+        allowDrag: false,
+        // 模态框自动隐藏
         autoHide: false,
+        // 搜索内容时大小写敏感
         caseSensitive: false,
+        // 展示文件路径时使用相对路径
         relativePath: true,
+        // 关键词按空格分割
         separator: " ",
-        maxSize: File.MAX_FILE_SIZE, // 小于0则不过滤(Typora默认最大2M)
+        // Typora允许打开小于2000000(即pkg.file.MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
+        maxSize: pkg.file.MAX_FILE_SIZE,
+        // Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
         allowExt: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
-        hotkey: ev => metaKeyPressed(ev) && ev.shiftKey && ev.keyCode === 80, // 懒得写keycodes映射函数,能用就行
+        // 快捷键ctrl/command+shift+P打开搜索框，懒得写keycodes映射函数，能用就行
+        hotkey: ev => metaKeyPressed(ev) && ev.shiftKey && ev.keyCode === 80,
     };
 
+    // prepare
     (() => {
         // insert css
         const modal_css = `
-            #typora-search-multi {
-                position: fixed;
-                left: 80%;
-                width: 420px;
-                margin-left: -200px;
-                z-index: 9999;
-                padding: 4px;
-                background-color: #f8f8f8;
-                box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
-                border: 1px solid #ddd;
-                border-top: none;
-                color: var(--text-color);
-                margin-top: 0;
-                transform: translate3d(0, 0, 0)
-            }
-            
-            #typora-search-multi .ty-quick-open-category-title {
-                border-top: none;
-            }
-            
-            .mac-seamless-mode #typora-search-multi {
-                top: 30px
-            }
-            
-            .mac-seamless-mode .modal-dialog {
-                margin-top: 40px
-            }
-            
-            #typora-search-multi-input {
-                position: relative;
-            }
-            
-            #typora-search-multi-input input {
-                width: 100%;
-                font-size: 14px;
-                line-height: 25px;
-                max-height: 27px;
-                overflow: auto;
-                border: 1px solid #ddd;
-                box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-                border-radius: 2px;
-                padding-left: 5px
-            }
-            
-            #typora-search-multi-input input:focus {
-                outline: 0
-            }
-            
-            #typora-search-multi-input svg.icon {
-                width: 20px;
-                height: 14px;
-                stroke: none;
-                fill: currentColor
-            }
-            
-            #typora-search-multi-input .searchpanel-search-option-btn {
-                position: absolute;
-                right: 6px;
-                top: 6px;
-                opacity: .5;
-                border: none
-            }
-            
-            #typora-search-multi-input .searchpanel-search-option-btn.select,
-            #typora-search-multi-input .searchpanel-search-option-btn:hover {
-                background: var(--active-file-bg-color);
-                color: var(--active-file-text-color);
-                opacity: 1
-            }
-            
-            .typora-search-multi-item {
-                display: block;
-                font-size: 14px;
-                height: 40px;
-                padding-left: 20px;
-                padding-right: 20px;
-                padding-top: 2px;
-                overflow: hidden
-            }
-            
-            .typora-search-multi-item:hover,
-            .typora-search-multi-item.active {
-                background-color: var(--active-file-bg-color);
-                border-color: var(--active-file-text-color);
-                color: var(--active-file-text-color);
-                cursor: pointer;
-            }
-            
-            .typora-search-multi-item-title {
-                line-height: 24px;
-                max-height: 24px;
-                overflow: hidden
-            }
-            
-            .typora-search-multi-list {
-                margin-top: 0;
-                cursor: default;
-                max-height: 320px;
-                overflow-x: hidden;
-                overflow-y: auto;
-            }
-            
-            .typora-search-multi-list-inner {
-                position: relative
-            }
-            
-            
-            .typora-search-multi-item-path {
-                opacity: .5;
-                font-size: 11px;
-                margin-top: -4px;
-                text-overflow: ellipsis;
-                width: 100%;
-                overflow: hidden;
-                white-space: nowrap;
-                line-height: 14px
-            }
-            
-            .typora-search-multi-info-item {
-                opacity: .7;
-                font-size: 12px;
-                line-height: 40px;
-                position: relative;
-                padding-left: 20px
-            }`
+        #typora-search-multi {
+            position: fixed;
+            left: 80%;
+            width: 420px;
+            margin-left: -200px;
+            z-index: 9999;
+            padding: 4px;
+            background-color: #f8f8f8;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
+            border: 1px solid #ddd;
+            border-top: none;
+            color: var(--text-color);
+            margin-top: 0;
+            transform: translate3d(0, 0, 0)
+        }
+        
+        #typora-search-multi .ty-quick-open-category-title {
+            border-top: none;
+        }
+        
+        .mac-seamless-mode #typora-search-multi {
+            top: 30px
+        }
+        
+        .mac-seamless-mode .modal-dialog {
+            margin-top: 40px
+        }
+        
+        #typora-search-multi-input {
+            position: relative;
+        }
+        
+        #typora-search-multi-input input {
+            width: 100%;
+            font-size: 14px;
+            line-height: 25px;
+            max-height: 27px;
+            overflow: auto;
+            border: 1px solid #ddd;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+            border-radius: 2px;
+            padding-left: 5px
+        }
+        
+        #typora-search-multi-input input:focus {
+            outline: 0
+        }
+        
+        #typora-search-multi-input svg.icon {
+            width: 20px;
+            height: 14px;
+            stroke: none;
+            fill: currentColor
+        }
+        
+        #typora-search-multi-input .searchpanel-search-option-btn {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            opacity: .5;
+            border: none
+        }
+        
+        #typora-search-multi-input .searchpanel-search-option-btn.select,
+        #typora-search-multi-input .searchpanel-search-option-btn:hover {
+            background: var(--active-file-bg-color);
+            color: var(--active-file-text-color);
+            opacity: 1
+        }
+        
+        .typora-search-multi-item {
+            display: block;
+            font-size: 14px;
+            height: 40px;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-top: 2px;
+            overflow: hidden
+        }
+        
+        .typora-search-multi-item:hover,
+        .typora-search-multi-item.active {
+            background-color: var(--active-file-bg-color);
+            border-color: var(--active-file-text-color);
+            color: var(--active-file-text-color);
+            cursor: pointer;
+        }
+        
+        .typora-search-multi-item-title {
+            line-height: 24px;
+            max-height: 24px;
+            overflow: hidden
+        }
+        
+        .typora-search-multi-list {
+            margin-top: 0;
+            cursor: default;
+            max-height: 320px;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        .typora-search-multi-list-inner {
+            position: relative
+        }
+        
+        
+        .typora-search-multi-item-path {
+            opacity: .5;
+            font-size: 11px;
+            margin-top: -4px;
+            text-overflow: ellipsis;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            line-height: 14px
+        }
+        
+        .typora-search-multi-info-item {
+            opacity: .7;
+            font-size: 12px;
+            line-height: 40px;
+            position: relative;
+            padding-left: 20px
+        }`
         const style = document.createElement('style');
         style.type = 'text/css';
         style.innerHTML = modal_css;
@@ -148,40 +161,40 @@ window.onload = () => {
 
         // insert html
         const search_div = `
-            <div id="typora-search-multi-input">
-                <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
-                    autocapitalize="off" value="" placeholder="多关键字查找，空格为分隔符"
-                    data-localize="Search by file name" data-lg="Front">
-                <span ty-hint="区分大小写" id="typora-search-multi-case-option-btn" class="searchpanel-search-option-btn" aria-label="区分大小写">
-                    <svg class="icon">
-                        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use>
-                    </svg>
-                </span>
-            </div>
-        
-            <div class="typora-search-multi-list" id="typora-search-multi-list" style="display:none">
-                <div class="ty-quick-open-category ty-has-prev" id="ty-quick-open-infolder-category">
-                    <div class="ty-quick-open-category-title" data-localize="File Results" data-lg="Menu" style="height: auto;">
-                        匹配的文件
-                    </div>
-                    <div class="typora-search-multi-list-inner" style="height: 520px;">
-                        <div class="quick-open-group-block" data-block-index="0"
-                            style="position: absolute; top: 0; width: 100%;">
-                        </div>
+        <div id="typora-search-multi-input">
+            <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
+                autocapitalize="off" value="" placeholder="多关键字查找，空格为分隔符"
+                data-localize="Search by file name" data-lg="Front">
+            <span ty-hint="区分大小写" id="typora-search-multi-case-option-btn" class="searchpanel-search-option-btn" aria-label="区分大小写">
+                <svg class="icon">
+                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use>
+                </svg>
+            </span>
+        </div>
+    
+        <div class="typora-search-multi-list" id="typora-search-multi-list" style="display:none">
+            <div class="ty-quick-open-category ty-has-prev" id="ty-quick-open-infolder-category">
+                <div class="ty-quick-open-category-title" data-localize="File Results" data-lg="Menu" style="height: auto;">
+                    匹配的文件
+                </div>
+                <div class="typora-search-multi-list-inner" style="height: 520px;">
+                    <div class="quick-open-group-block" data-block-index="0"
+                        style="position: absolute; top: 0; width: 100%;">
                     </div>
                 </div>
             </div>
-        
-            <div class="typora-search-multi-info-item" style="display:none">
-                <div class="typora-search-multi-info" data-localize="Searching" data-lg="Front">Searching</div>
-                <div class="typora-search-spinner">
-                    <div class="rect1"></div>
-                    <div class="rect2"></div>
-                    <div class="rect3"></div>
-                    <div class="rect4"></div>
-                    <div class="rect5"></div>
-                </div>
-            </div>`;
+        </div>
+    
+        <div class="typora-search-multi-info-item" style="display:none">
+            <div class="typora-search-multi-info" data-localize="Searching" data-lg="Front">Searching</div>
+            <div class="typora-search-spinner">
+                <div class="rect1"></div>
+                <div class="rect2"></div>
+                <div class="rect3"></div>
+                <div class="rect4"></div>
+                <div class="rect5"></div>
+            </div>
+        </div>`;
         const searchModal = document.createElement("div");
         searchModal.id = 'typora-search-multi';
         searchModal.className = 'modal-dialog';
@@ -204,9 +217,11 @@ window.onload = () => {
         resultTitle: document.querySelector(".typora-search-multi-list .ty-quick-open-category-title")
     }
 
-    const pkg = {path: reqnode('path'), fs: reqnode('fs'),}
-    const separator = File.isWin ? "\\" : "/";
-    const getRootPath = File.getMountFolder
+    const separator = pkg.file.isWin ? "\\" : "/";
+    const getRootPath = pkg.file.getMountFolder
+
+    // ctrl or command, 兼容 mac/win
+    let metaKeyPressed = ev => pkg.file.isMac ? ev.metaKey : ev.ctrlKey
 
     const autoHide = () => {
         if (config.autoHide) {
@@ -218,22 +233,26 @@ window.onload = () => {
         let once = true;
         let hiddenNode;
 
-        return (filePath) => {
-            if (once || !hiddenNode) {
+        return filePath => {
+            if (once) {
+                // 推迟到此时才插入,避免#file-library-tree还未生成的情况
                 (() => {
                     const hidden_div = `
-                        <div class="typora-search-multi-hidden-node" data-path="{{}}" 
-                            data-is-directory="false" style="display: none;">
-                            <div class="file-node-content"><span class="file-node-title"></span></div>
+                        <div data-path="{{}}" data-is-directory="false" style="display: none;">
+                            <div class="file-node-content"></div>
                         </div>`
-                    const firstDir = document.querySelector("#file-library-tree .file-node-children")
-                    firstDir.insertAdjacentHTML('beforeend', hidden_div);
-                    hiddenNode = firstDir.querySelector(".typora-search-multi-hidden-node")
+                    const tree = document.querySelector("#file-library-tree")
+                    tree.insertAdjacentHTML('beforeend', hidden_div);
+                    hiddenNode = tree.lastElementChild;
                     once = false;
                 })();
             }
-            hiddenNode.setAttribute("data-path", filePath)
-            hiddenNode.querySelector(".file-node-title").click()
+            // frame.js中绑定click事件的标签是.file-node-content，代码节选如下:
+            // d("#file-library-tree").on("click", ".file-node-content", function (t) {
+            //     var n=d(this).parent(),i=n.attr("data-path"),r=n.attr("data-is-directory")
+            // })
+            hiddenNode.setAttribute("data-path", filePath);
+            hiddenNode.firstElementChild.click();
         }
     }
 
@@ -246,14 +265,14 @@ window.onload = () => {
             return path && mountFolder && subPath.startsWith(mountFolder);
         }
 
-        if (File.isMac) {
+        if (pkg.file.isMac) {
             const handler = isFolder ? "controller.openFolder" : "path.openFile";
             bridge.callHandler(handler, path);
-        } else if (File.isNode) {
+        } else if (pkg.file.isNode) {
             if (isFolder) {
                 JSBridge.invoke("app.openFolder", path, true);
             } else {
-                const folder = File.getMountFolder();
+                const folder = pkg.file.getMountFolder();
                 const mountFolder = isUnderMountFolder(path, folder) ? folder : undefined;
                 JSBridge.invoke("app.openFileOrFolder", path, {mountFolder: mountFolder});
             }
@@ -357,7 +376,7 @@ window.onload = () => {
         await traverseDir(rootPath, allowRead, appendItem);
     }
 
-    if (config.allowMove) {
+    if (config.allowDrag) {
         modal.modal.addEventListener("mousedown", ev => {
             modal.modal.style.position = 'absolute';
             let shiftX = ev.clientX - modal.modal.getBoundingClientRect().left;
