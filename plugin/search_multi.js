@@ -36,6 +36,10 @@ window.onload = () => {
             margin-top: 40px
         }
         
+        #typora-search-multi-input {
+            position: relative;
+        }
+        
         #typora-search-multi-input input {
             width: 100%;
             font-size: 14px;
@@ -52,6 +56,28 @@ window.onload = () => {
             outline: 0
         }
         
+        #typora-search-multi-input svg.icon {
+            width: 20px;
+            height: 14px;
+            stroke: none;
+            fill: currentColor
+        }
+        
+        #typora-search-multi-input .searchpanel-search-option-btn {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            opacity: .5;
+            border: none
+        }
+        
+        #typora-search-multi-input .searchpanel-search-option-btn.select,
+        #typora-search-multi-input .searchpanel-search-option-btn:hover {
+            background: var(--active-file-bg-color);
+            color: var(--active-file-text-color);
+            opacity: 1
+        }
+        
         .typora-search-multi-item {
             display: block;
             font-size: 14px;
@@ -62,13 +88,12 @@ window.onload = () => {
             overflow: hidden
         }
         
-        .typora-search-multi-item:hover {
-            background-color: #ebebeb;
-            border-color: #ebebeb;
+        .typora-search-multi-item:hover,
+        .typora-search-multi-item.active {
             background-color: var(--active-file-bg-color);
             border-color: var(--active-file-text-color);
             color: var(--active-file-text-color);
-            cursor:pointer;
+            cursor: pointer;
         }
         
         .typora-search-multi-item-title {
@@ -119,6 +144,11 @@ window.onload = () => {
         <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
             autocapitalize="off" value="" placeholder="多关键字查找"
             data-localize="Search by file name" data-lg="Front">
+        <span ty-hint="区分大小写" id="typora-search-multi-case-option-btn" class="searchpanel-search-option-btn" aria-label="区分大小写">
+            <svg class="icon">
+                <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use>
+            </svg>
+        </span>
     </div>
 
     <div class="typora-search-multi-list" id="typora-search-multi-list" style="display:none">
@@ -159,6 +189,7 @@ window.onload = () => {
         searchList: document.querySelector("#typora-search-multi-list"),
         searchBlock: document.querySelector(".typora-search-multi-list-inner .quick-open-group-block"),
         searchInput: document.querySelector("#typora-search-multi-input input"),
+        searchCaseOption: document.querySelector("#typora-search-multi-case-option-btn")
     }
 
     const pkg = {
@@ -318,6 +349,13 @@ window.onload = () => {
             modal.searchInput.select();
         }
     }
+
+    modal.searchCaseOption.addEventListener("mousedown", event => {
+        modal.searchCaseOption.classList.toggle("select");
+        config.caseSensitive = !config.caseSensitive;
+        event.preventDefault();
+        event.stopPropagation();
+    })
 
     console.log("search_multi.js had been injected");
 }
