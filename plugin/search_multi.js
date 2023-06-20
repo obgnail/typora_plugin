@@ -189,13 +189,13 @@ window.onload = () => {
     })();
 
     const modal = {
-        searchModal: document.getElementById('typora-search-multi'),
-        searchInfo: document.querySelector(".typora-search-multi-info-item"),
-        searchList: document.querySelector("#typora-search-multi-list"),
-        searchBlock: document.querySelector(".typora-search-multi-list-inner .quick-open-group-block"),
-        searchInput: document.querySelector("#typora-search-multi-input input"),
-        searchCaseOption: document.querySelector("#typora-search-multi-case-option-btn"),
-        searchResultTitle: document.querySelector(".typora-search-multi-list .ty-quick-open-category-title")
+        modal: document.getElementById('typora-search-multi'),
+        info: document.querySelector(".typora-search-multi-info-item"),
+        list: document.querySelector("#typora-search-multi-list"),
+        block: document.querySelector(".typora-search-multi-list-inner .quick-open-group-block"),
+        input: document.querySelector("#typora-search-multi-input input"),
+        caseOption: document.querySelector("#typora-search-multi-case-option-btn"),
+        resultTitle: document.querySelector(".typora-search-multi-list .ty-quick-open-category-title")
     }
 
     const hiddenDivWrapped = () => {
@@ -206,36 +206,18 @@ window.onload = () => {
             if (once || !hiddenNode) {
                 (() => {
                     const hidden_div = `
-                <div class="typora-multi-search-hidden-node file-library-node file-tree-node file-library-file-node active" 
-                        data-path="{{}}" data-has-sub="false" tabindex="-1" data-is-directory="false" style="display: none;">
-                    <div class="file-node-background"></div>
-                    <div class="file-node-content" draggable="true">
-                        <span class="file-node-open-state">
-                            <i class="fa fa-caret-right"></i>
-                            <i class="fa fa-caret-down"></i>
-                        </span>
-                    <i class="file-node-icon fa fa-file-text-o"></i>
-                    <span class="file-node-title" title="{{}}">
-                        <span class="file-node-title-name-part"></span>
-                        <span class="file-node-title-ext-part"></span>
-                    </span>
-                    <div class="file-tree-rename-div">
-                        <input class="file-tree-rename-input">
-                    </div>
-                    </div>
-                        <div class="file-node-children">
-                    </div>
-                </div>`
+                        <div class="typora-search-multi-hidden-node" data-path="{{}}" 
+                            data-is-directory="false" style="display: none;">
+                            <div class="file-node-content"><span class="file-node-title"></span></div>
+                        </div>`
                     let firstDir = document.querySelector("#file-library-tree .file-node-children")
                     firstDir.insertAdjacentHTML('beforeend', hidden_div);
-                    hiddenNode = firstDir.querySelector(".typora-multi-search-hidden-node")
+                    hiddenNode = firstDir.querySelector(".typora-search-multi-hidden-node")
                     once = false;
                 })();
             }
-
             hiddenNode.setAttribute("data-path", filePath)
             hiddenNode.querySelector(".file-node-title").click()
-            console.log("click")
         }
     }
 
@@ -334,11 +316,11 @@ window.onload = () => {
                     <div class="typora-search-multi-item-title">${parseUrl.base}</div>
                     <div class="typora-search-multi-item-path">${parseUrl.dir}${separator}</div>
                 </div>`;
-            modal.searchBlock.insertAdjacentHTML('beforeend', item);
-            modal.searchResultTitle.textContent = `匹配的文件: ${index}`;
+            modal.block.insertAdjacentHTML('beforeend', item);
+            modal.resultTitle.textContent = `匹配的文件: ${index}`;
 
             if (once) {
-                modal.searchList.style.display = "block";
+                modal.list.style.display = "block";
                 once = false;
             }
         }
@@ -359,22 +341,22 @@ window.onload = () => {
         await traverseDir(rootPath, canOpenByTypora, appendItem);
     }
 
-    modal.searchInput.addEventListener("keydown", (event) => {
+    modal.input.addEventListener("keydown", (event) => {
         if (event.keyCode === 13) {
-            modal.searchList.style.display = "none";
-            modal.searchInfo.style.display = "block";
-            modal.searchBlock.innerHTML = "";
+            modal.list.style.display = "none";
+            modal.info.style.display = "block";
+            modal.block.innerHTML = "";
             const workspace = getRootPath();
-            searchMulti(workspace, modal.searchInput.value).then(
-                () => modal.searchInfo.style.display = "none"
+            searchMulti(workspace, modal.input.value).then(
+                () => modal.info.style.display = "none"
             );
         } else if (event.keyCode === 27) {
-            modal.searchModal.style.display = "none";
-            modal.searchInfo.style.display = "none";
+            modal.modal.style.display = "none";
+            modal.info.style.display = "none";
         }
     });
 
-    modal.searchBlock.addEventListener("click", event => {
+    modal.block.addEventListener("click", event => {
         for (const ele of event.path) {
             if (ele.className === "typora-search-multi-item") {
                 const filepath = ele.getAttribute("data-path");
@@ -393,15 +375,15 @@ window.onload = () => {
 
     window.onkeydown = event => {
         if (config.hotkey(event)) {
-            modal.searchModal.style.display = "block";
-            modal.searchInput.select();
+            modal.modal.style.display = "block";
+            modal.input.select();
             event.preventDefault();
             event.stopPropagation();
         }
     }
 
-    modal.searchCaseOption.addEventListener("click", event => {
-        modal.searchCaseOption.classList.toggle("select");
+    modal.caseOption.addEventListener("click", event => {
+        modal.caseOption.classList.toggle("select");
         config.caseSensitive = !config.caseSensitive;
         event.preventDefault();
         event.stopPropagation();
