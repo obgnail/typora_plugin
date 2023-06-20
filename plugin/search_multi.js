@@ -3,6 +3,7 @@ window.onload = () => {
     const config = {
         caseSensitive: false,
         relativePath: true,
+        allowMove: false,
         separator: " ",
         maxSize: 10 * 1024 * 1024, // 小于0则不过滤
         allowExt: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
@@ -15,7 +16,7 @@ window.onload = () => {
         const modal_css = `
             #typora-search-multi {
                 position: fixed;
-                left: 50%;
+                left: 80%;
                 width: 420px;
                 margin-left: -200px;
                 z-index: 9999;
@@ -347,6 +348,30 @@ window.onload = () => {
         const appendItem = appendItemFunc(keyArr);
         await traverseDir(rootPath, allowRead, appendItem);
     }
+
+    if (config.allowMove) {
+        modal.modal.addEventListener("mousedown", ev => {
+            modal.modal.style.position = 'absolute';
+            let shiftX = ev.clientX - modal.modal.getBoundingClientRect().left;
+            let shiftY = ev.clientY - modal.modal.getBoundingClientRect().top;
+
+            function onMouseMove(event) {
+                modal.modal.style.left = event.pageX - shiftX + 'px';
+                modal.modal.style.top = event.pageY - shiftY + 'px';
+            }
+
+            document.addEventListener("mouseup", function () {
+                document.removeEventListener('mousemove', onMouseMove);
+                modal.modal.onmouseup = null;
+            })
+
+            document.addEventListener('mousemove', onMouseMove);
+        })
+        modal.modal.ondragstart = () => {
+            return false
+        };
+    }
+
 
     modal.input.addEventListener("keydown", ev => {
         if (ev.keyCode === 13) {
