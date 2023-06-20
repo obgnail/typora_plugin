@@ -209,8 +209,8 @@ window.onload = () => {
         }
 
         if (File.isMac) {
-            const call_ = isFolder ? "controller.openFolder" : "path.openFile";
-            bridge.callHandler(call_, path);
+            const handler = isFolder ? "controller.openFolder" : "path.openFile";
+            bridge.callHandler(handler, path);
         } else if (File.isNode) {
             if (isFolder) {
                 JSBridge.invoke("app.openFolder", path, true);
