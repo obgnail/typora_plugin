@@ -4,7 +4,7 @@ window.onload = () => {
         separator: " ",
         filetypes: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
-        hotkey: event => event.ctrlKey && event.shiftKey && event.keyCode === 80, // 懒得写keycode映射函数,能用就行
+        hotkey: event => event.ctrlKey && event.shiftKey && event.keyCode === 80, // 懒得写keycodes映射函数,能用就行
     };
 
     (() => {
@@ -194,29 +194,14 @@ window.onload = () => {
         searchCaseOption: document.querySelector("#typora-search-multi-case-option-btn")
     }
 
-    const pkg = {
-        path: reqnode('path'),
-        fs: reqnode('fs'),
-    }
-
+    const pkg = {path: reqnode('path'), fs: reqnode('fs'),}
     const separator = File.isWin ? "\\" : "/";
-
-    const getRootPath = () => {
-        return (global.workspace_ ? global.workspace_ :
-                document.querySelector("#file-library-tree .file-node-root").getAttribute("data-path")
-        )
-    }
+    const getRootPath = File.getMountFolder
 
     const openFileOrFolder = (path, isFolder) => {
-        // 获取挂载文件夹的路径
-        const mountFolder = File.getMountFolder();
-
-        // 判断一个路径是否在挂载文件夹下
-        const isUnderMountFolder = (path) => {
-            const separator = File.isWin ? "\\" : "/";
-            // 去掉挂载文件夹路径末尾的分隔符，然后拼接分隔符和子路径
+        // 路径是否在挂载文件夹下
+        const isUnderMountFolder = (path, mountFolder) => {
             const subPath = mountFolder.replace(/[\/\\]$/, "") + separator + path;
-            // 判断子路径是否以挂载文件夹路径开头
             return path && mountFolder && subPath.startsWith(mountFolder);
         }
 
@@ -227,9 +212,9 @@ window.onload = () => {
             if (isFolder) {
                 JSBridge.invoke("app.openFolder", path, true);
             } else {
-                JSBridge.invoke("app.openFileOrFolder", path, {
-                    mountFolder: isUnderMountFolder(path) ? mountFolder : undefined
-                });
+                const folder = File.getMountFolder();
+                const mountFolder = isUnderMountFolder(path, folder) ? folder : undefined;
+                JSBridge.invoke("app.openFileOrFolder", path, {mountFolder: mountFolder});
             }
         }
     }
@@ -326,7 +311,6 @@ window.onload = () => {
             modal.searchList.style.display = "none";
             modal.searchInfo.style.display = "block";
             modal.searchBlock.innerHTML = "";
-
             const workspace = getRootPath();
             searchMulti(workspace, modal.searchInput.value);
         } else if (event.keyCode === 27) {
