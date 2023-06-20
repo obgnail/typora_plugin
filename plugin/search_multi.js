@@ -1,10 +1,13 @@
 window.onload = () => {
+
     const config = {
         caseSensitive: false,
+        relativePath: true,
         separator: " ",
-        allowedExtensions: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
+        maxSize: 10 * 1024 * 1024, // 小于0则不过滤
+        allowExt: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
-        hotkey: event => event.ctrlKey && event.shiftKey && event.keyCode === 80, // 懒得写keycodes映射函数,能用就行
+        hotkey: ev => ev.ctrlKey && ev.shiftKey && ev.keyCode === 80, // 懒得写keycodes映射函数,能用就行
     };
 
     (() => {
@@ -198,7 +201,11 @@ window.onload = () => {
         resultTitle: document.querySelector(".typora-search-multi-list .ty-quick-open-category-title")
     }
 
-    const hiddenDivWrapped = () => {
+    const pkg = {path: reqnode('path'), fs: reqnode('fs'),}
+    const separator = File.isWin ? "\\" : "/";
+    const getRootPath = File.getMountFolder
+
+    const clickHiddenNode = () => {
         let once = true;
         let hiddenNode;
 
@@ -210,7 +217,7 @@ window.onload = () => {
                             data-is-directory="false" style="display: none;">
                             <div class="file-node-content"><span class="file-node-title"></span></div>
                         </div>`
-                    let firstDir = document.querySelector("#file-library-tree .file-node-children")
+                    const firstDir = document.querySelector("#file-library-tree .file-node-children")
                     firstDir.insertAdjacentHTML('beforeend', hidden_div);
                     hiddenNode = firstDir.querySelector(".typora-search-multi-hidden-node")
                     once = false;
@@ -221,11 +228,7 @@ window.onload = () => {
         }
     }
 
-    const openFileInThisWindow = hiddenDivWrapped()
-
-    const pkg = {path: reqnode('path'), fs: reqnode('fs'),}
-    const separator = File.isWin ? "\\" : "/";
-    const getRootPath = File.getMountFolder
+    const openFileInThisWindow = clickHiddenNode()
 
     const openFileOrFolder = (path, isFolder) => {
         // 路径是否在挂载文件夹下
@@ -264,7 +267,7 @@ window.onload = () => {
                             return
                         }
                         if (stats.isFile()) {
-                            if (filter && !filter(filePath)) {
+                            if (filter && !filter(filePath, stats)) {
                                 resolve();
                                 return
                             }
@@ -284,19 +287,10 @@ window.onload = () => {
         })
     }
 
-    const canOpenByTypora = (filename) => {
-        if (filename[0] === ".") {
-            return false
-        }
-        let ext = pkg.path.extname(filename).replace(/^\./, '');
-        if (~config.allowedExtensions.indexOf(ext.toLowerCase())) {
-            return true
-        }
-    }
-
     const appendItemFunc = (keyArr) => {
         let index = 0;
         let once = true;
+        let rootPath = getRootPath()
 
         return (filePath, data) => {
             if (!config.caseSensitive) {
@@ -310,11 +304,12 @@ window.onload = () => {
 
             index++;
             const parseUrl = pkg.path.parse(filePath);
+            const dirPath = !config.relativePath ? parseUrl.dir : parseUrl.dir.replace(rootPath, ".");
             const item = `
                 <div class="typora-search-multi-item" data-is-dir="false"
                     data-path="${filePath}" data-index="${index}">
                     <div class="typora-search-multi-item-title">${parseUrl.base}</div>
-                    <div class="typora-search-multi-item-path">${parseUrl.dir}${separator}</div>
+                    <div class="typora-search-multi-item-path">${dirPath}${separator}</div>
                 </div>`;
             modal.block.insertAdjacentHTML('beforeend', item);
             modal.resultTitle.textContent = `匹配的文件: ${index}`;
@@ -325,6 +320,18 @@ window.onload = () => {
             }
         }
     }
+
+    const verifyExt = (filename) => {
+        if (filename[0] === ".") {
+            return false
+        }
+        const ext = pkg.path.extname(filename).replace(/^\./, '');
+        if (~config.allowExt.indexOf(ext.toLowerCase())) {
+            return true
+        }
+    }
+    const verifySize = (stat) => 0 > config.maxSize || stat.size < config.maxSize
+    const allowRead = (filepath, stat) => verifySize(stat) && verifyExt(filepath)
 
     async function searchMulti(rootPath, keys) {
         if (!rootPath) {
@@ -338,32 +345,31 @@ window.onload = () => {
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }
         const appendItem = appendItemFunc(keyArr);
-        await traverseDir(rootPath, canOpenByTypora, appendItem);
+        await traverseDir(rootPath, allowRead, appendItem);
     }
 
-    modal.input.addEventListener("keydown", (event) => {
-        if (event.keyCode === 13) {
+    modal.input.addEventListener("keydown", ev => {
+        if (ev.keyCode === 13) {
             modal.list.style.display = "none";
             modal.info.style.display = "block";
             modal.block.innerHTML = "";
             const workspace = getRootPath();
-            searchMulti(workspace, modal.input.value).then(
-                () => modal.info.style.display = "none"
-            );
-        } else if (event.keyCode === 27) {
+            searchMulti(workspace, modal.input.value);
+            modal.info.style.display = "none";
+        } else if (ev.keyCode === 27) {
             modal.modal.style.display = "none";
             modal.info.style.display = "none";
         }
     });
 
-    modal.block.addEventListener("click", event => {
-        for (const ele of event.path) {
+    modal.block.addEventListener("click", ev => {
+        for (const ele of ev.path) {
             if (ele.className === "typora-search-multi-item") {
                 const filepath = ele.getAttribute("data-path");
-                if (event.ctrlKey) {
+                if (ev.ctrlKey) {
                     openFileOrFolder(filepath, false);
-                    event.preventDefault();
-                    event.stopPropagation();
+                    ev.preventDefault();
+                    ev.stopPropagation();
                     return
                 } else {
                     openFileInThisWindow(filepath)
@@ -373,20 +379,20 @@ window.onload = () => {
         }
     });
 
-    window.onkeydown = event => {
-        if (config.hotkey(event)) {
+    window.onkeydown = ev => {
+        if (config.hotkey(ev)) {
             modal.modal.style.display = "block";
             modal.input.select();
-            event.preventDefault();
-            event.stopPropagation();
+            ev.preventDefault();
+            ev.stopPropagation();
         }
     }
 
-    modal.caseOption.addEventListener("click", event => {
+    modal.caseOption.addEventListener("click", ev => {
         modal.caseOption.classList.toggle("select");
         config.caseSensitive = !config.caseSensitive;
-        event.preventDefault();
-        event.stopPropagation();
+        ev.preventDefault();
+        ev.stopPropagation();
     })
 
     console.log("search_multi.js had been injected");
