@@ -342,7 +342,7 @@ window.onload = () => {
                 </div>`;
             modal.block.insertAdjacentHTML('beforeend', item);
             modal.resultTitle.textContent = `匹配的文件: ${index}`;
-            if (index <= 13) {
+            if (index <= 8) {
                 modal.listInner.style.height = 40 * index + "px";
             }
 
