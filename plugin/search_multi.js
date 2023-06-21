@@ -126,7 +126,7 @@ window.onload = () => {
         .typora-search-multi-list {
             margin-top: 0;
             cursor: default;
-            max-height: 320px;
+            max-height: 340px;
             overflow-x: hidden;
             overflow-y: auto;
         }
@@ -364,17 +364,71 @@ window.onload = () => {
         modal.modal.ondragstart = () => false
     }
 
+    let floor;
+
     modal.input.addEventListener("keydown", ev => {
-        if (ev.keyCode === 13) {
-            modal.list.style.display = "none";
-            modal.info.style.display = "block";
-            modal.block.innerHTML = "";
-            const workspace = getMountFolder();
-            searchMulti(workspace, modal.input.value);
-            modal.info.style.display = "none";
-        } else if (ev.keyCode === 27) {
-            modal.modal.style.display = "none";
-            modal.info.style.display = "none";
+        switch (ev.keyCode) {
+            case 13: // enter
+                modal.list.style.display = "none";
+                modal.info.style.display = "block";
+                modal.block.innerHTML = "";
+                const workspace = getMountFolder();
+                searchMulti(workspace, modal.input.value);
+                modal.info.style.display = "none";
+                break
+            case 27: // esc
+                ev.stopPropagation();
+                ev.preventDefault();
+                modal.modal.style.display = "none";
+                modal.info.style.display = "none";
+                break
+            case 38: // up
+            case 40: // down
+                ev.stopPropagation();
+                ev.preventDefault();
+
+                if (!modal.block.childElementCount) {
+                    return
+                }
+
+                let activeItem = modal.block.querySelector(".typora-search-multi-item.active")
+                let nextItem;
+                if (ev.keyCode === 40) {
+                    if (floor !== 7) {
+                        floor++
+                    }
+                    if (activeItem && activeItem.nextElementSibling) {
+                        nextItem = activeItem.nextElementSibling
+                    } else {
+                        nextItem = modal.block.firstElementChild
+                        floor = 1
+                    }
+                } else {
+                    if (floor !== 1) {
+                        floor--
+                    }
+                    if (activeItem && activeItem.previousElementSibling) {
+                        nextItem = activeItem.previousElementSibling;
+                    } else {
+                        nextItem = modal.block.lastElementChild;
+                        floor = 7
+                    }
+                }
+
+                if (activeItem) {
+                    activeItem.classList.toggle("active");
+                }
+                nextItem.classList.toggle("active");
+
+                let top;
+                if (floor === 1) {
+                    top = nextItem.offsetTop - 1 * nextItem.offsetHeight
+                } else if (floor === 7) {
+                    top = nextItem.offsetTop - 6 * nextItem.offsetHeight
+                }
+                if (top) {
+                    modal.list.scrollTo({top: top, behavior: "smooth"});
+                }
         }
     });
 
