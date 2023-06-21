@@ -31,7 +31,7 @@ window.onload = () => {
         const modal_css = `
         #typora-search-multi {
             position: fixed;
-            left: 80%;
+            left: 60%;
             width: 420px;
             z-index: 9999;
             padding: 4px;
@@ -340,15 +340,18 @@ window.onload = () => {
             let shiftX = ev.clientX - rect.left;
             let shiftY = ev.clientY - rect.top;
 
-            function onMouseMove(event) {
-                modal.modal.style.left = event.clientX - shiftX + 'px';
-                modal.modal.style.top = event.clientY - shiftY + 'px';
+            let onMouseMove = ev => {
+                requestAnimationFrame(() => {
+                    modal.modal.style.left = ev.clientX - shiftX + 'px';
+                    modal.modal.style.top = ev.clientY - shiftY + 'px';
+                });
             }
 
-            document.addEventListener("mouseup", function () {
-                document.removeEventListener('mousemove', onMouseMove);
-                modal.modal.onmouseup = null;
-            })
+            document.addEventListener("mouseup", () => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    modal.modal.onmouseup = null;
+                }
+            )
 
             document.addEventListener('mousemove', onMouseMove);
         })
