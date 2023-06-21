@@ -1,8 +1,8 @@
 window.onload = () => {
-    const pkg = {
-        path: reqnode('path'), // Typora将require封装为reqnode
-        fs: reqnode('fs'),
-        file: File, // 和Typora文件相关的第一方库
+    const Package = {
+        Path: reqnode('path'), // Typora将require封装为reqnode
+        Fs: reqnode('fs'),
+        File: File,            // Typora第一方库
     }
 
     const config = {
@@ -16,8 +16,8 @@ window.onload = () => {
         relativePath: true,
         // 关键词按空格分割
         separator: " ",
-        // Typora允许打开小于2000000(即pkg.file.MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
-        maxSize: pkg.file.MAX_FILE_SIZE,
+        // Typora允许打开小于2000000(即MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
+        maxSize: Package.File.MAX_FILE_SIZE,
         // Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
         allowExt: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
@@ -218,11 +218,11 @@ window.onload = () => {
         resultTitle: document.querySelector(".typora-search-multi-list .ty-quick-open-category-title")
     }
 
-    const separator = pkg.file.isWin ? "\\" : "/";
-    const getRootPath = pkg.file.getMountFolder
-
-    // ctrl or command, 兼容 mac/win
-    let metaKeyPressed = ev => pkg.file.isMac ? ev.metaKey : ev.ctrlKey
+    // Typora里几乎所有常用操作库,具体代码可以在frame.js找到
+    const getLibrary = () => Package.File.editor.library
+    const getMountFolder = Package.File.getMountFolder
+    const separator = Package.File.isWin ? "\\" : "/";
+    let metaKeyPressed = ev => Package.File.isMac ? ev.metaKey : ev.ctrlKey
 
     const autoHide = () => {
         if (config.autoHide) {
@@ -230,67 +230,24 @@ window.onload = () => {
         }
     }
 
-    const clickHiddenNode = () => {
-        let once = true;
-        let hiddenNode;
-
-        return filePath => {
-            if (once) {
-                // 推迟插入,避免#file-library-tree还未生成和插入的节点被覆盖的情况
-                (() => {
-                    const hidden_div = `
-                        <div class="typora-search-multi-hidden" data-path="{{}}" data-is-directory="false" style="display: none;">
-                            <div class="file-node-content"></div>
-                        </div>`
-                    const tree = document.querySelector("#file-library-tree")
-                    tree.insertAdjacentHTML('beforeend', hidden_div);
-                    hiddenNode = tree.querySelector(".typora-search-multi-hidden");
-                    once = false;
-                })();
-            }
-            // frame.js中绑定click事件的标签是.file-node-content，代码节选如下:
-            // d("#file-library-tree").on("click", ".file-node-content", function (t) {
-            //     var n=d(this).parent(),i=n.attr("data-path"),r=n.attr("data-is-directory")
-            // })
-            hiddenNode.setAttribute("data-path", filePath);
-            hiddenNode.firstElementChild.click();
-        }
+    const openFileInThisWindow = filePath => {
+        document.activeElement.blur();
+        getLibrary().openFile(filePath);
     }
 
-    const openFileInThisWindow = clickHiddenNode()
-
-    const openFileOrFolder = (path, isFolder) => {
-        // 路径是否在挂载文件夹下
-        const isUnderMountFolder = (path, mountFolder) => {
-            const subPath = mountFolder.replace(/[\/\\]$/, "") + separator + path;
-            return path && mountFolder && subPath.startsWith(mountFolder);
-        }
-
-        if (pkg.file.isMac) {
-            const handler = isFolder ? "controller.openFolder" : "path.openFile";
-            bridge.callHandler(handler, path);
-        } else if (pkg.file.isNode) {
-            if (isFolder) {
-                JSBridge.invoke("app.openFolder", path, true);
-            } else {
-                const folder = pkg.file.getMountFolder();
-                const mountFolder = isUnderMountFolder(path, folder) ? folder : undefined;
-                JSBridge.invoke("app.openFileOrFolder", path, {mountFolder: mountFolder});
-            }
-        }
-    }
+    const openFileOrFolder = (path, isFolder) => getLibrary().openFileInNewWindow(path, isFolder)
 
     const traverseDir = (dir, filter, callback) => {
         return new Promise((resolve, reject) => {
-            pkg.fs.readdir(dir, (err, files) => {
+            Package.Fs.readdir(dir, (err, files) => {
                 if (err) {
                     reject(err);
                     return
                 }
 
                 for (const file of files) {
-                    const filePath = pkg.path.join(dir, file);
-                    pkg.fs.stat(filePath, (err, stats) => {
+                    const filePath = Package.Path.join(dir, file);
+                    Package.Fs.stat(filePath, (err, stats) => {
                         if (err) {
                             reject(err);
                             return
@@ -300,7 +257,7 @@ window.onload = () => {
                                 resolve();
                                 return
                             }
-                            pkg.fs.readFile(filePath, 'utf8', (err, data) => {
+                            Package.Fs.readFile(filePath, 'utf8', (err, data) => {
                                 if (err) {
                                     reject(err);
                                     return
@@ -319,7 +276,7 @@ window.onload = () => {
     const appendItemFunc = (keyArr) => {
         let index = 0;
         let once = true;
-        let rootPath = getRootPath()
+        let rootPath = getMountFolder()
 
         return (filePath, data) => {
             if (!config.caseSensitive) {
@@ -332,7 +289,7 @@ window.onload = () => {
             }
 
             index++;
-            const parseUrl = pkg.path.parse(filePath);
+            const parseUrl = Package.Path.parse(filePath);
             const dirPath = !config.relativePath ? parseUrl.dir : parseUrl.dir.replace(rootPath, ".");
             const item = `
                 <div class="typora-search-multi-item" data-is-dir="false"
@@ -357,7 +314,7 @@ window.onload = () => {
         if (filename[0] === ".") {
             return false
         }
-        const ext = pkg.path.extname(filename).replace(/^\./, '');
+        const ext = Package.Path.extname(filename).replace(/^\./, '');
         if (~config.allowExt.indexOf(ext.toLowerCase())) {
             return true
         }
@@ -409,7 +366,7 @@ window.onload = () => {
             modal.list.style.display = "none";
             modal.info.style.display = "block";
             modal.block.innerHTML = "";
-            const workspace = getRootPath();
+            const workspace = getMountFolder();
             searchMulti(workspace, modal.input.value);
             modal.info.style.display = "none";
         } else if (ev.keyCode === 27) {
