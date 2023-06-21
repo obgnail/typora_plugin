@@ -379,20 +379,19 @@ window.onload = () => {
     });
 
     modal.block.addEventListener("click", ev => {
-        for (const ele of ev.path) {
-            if (ele.className === "typora-search-multi-item") {
-                const filepath = ele.getAttribute("data-path");
-                if (ev.ctrlKey) {
-                    openFileOrFolder(filepath, false);
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                } else {
-                    openFileInThisWindow(filepath)
-                }
-                autoHide()
-                return
-            }
+        let target = ev.target.closest(".typora-search-multi-item");
+        if (!target) {
+            return
         }
+        const filepath = target.getAttribute("data-path");
+        if (ev.ctrlKey) {
+            openFileOrFolder(filepath, false);
+            ev.preventDefault();
+            ev.stopPropagation();
+        } else {
+            openFileInThisWindow(filepath)
+        }
+        autoHide()
     });
 
     window.onkeydown = ev => {
