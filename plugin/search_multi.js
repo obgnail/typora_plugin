@@ -82,17 +82,18 @@ window.onload = () => {
             fill: currentColor
         }
         
-        #typora-search-multi-input .searchpanel-search-option-btn {
+        #typora-search-multi-input .search-multi-search-option-btn {
             position: absolute;
+            padding: 1px;
             right: 6px;
-            top: 7px;
+            top: 8px;
             opacity: .5;
-            border: none;
-            -webkit-user-drag: none
+            line-height: 10px;
+            border-radius: 3px
         }
         
-        #typora-search-multi-input .searchpanel-search-option-btn.select,
-        #typora-search-multi-input .searchpanel-search-option-btn:hover {
+        #typora-search-multi-input .search-multi-search-option-btn.select,
+        #typora-search-multi-input .search-multi-search-option-btn:hover {
             background: var(--active-file-bg-color);
             color: var(--active-file-text-color);
             opacity: 1
@@ -134,7 +135,6 @@ window.onload = () => {
             position: relative
         }
         
-        
         .typora-search-multi-item-path {
             opacity: .5;
             font-size: 11px;
@@ -164,7 +164,7 @@ window.onload = () => {
             <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
                 autocapitalize="off" value="" placeholder="多关键字查找，空格为分隔符"
                 data-localize="Search by file name" data-lg="Front">
-            <span ty-hint="区分大小写" id="typora-search-multi-case-option-btn" class="searchpanel-search-option-btn" aria-label="区分大小写">
+            <span ty-hint="区分大小写" id="typora-search-multi-case-option-btn" class="search-multi-search-option-btn" aria-label="区分大小写">
                 <svg class="icon">
                     <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use>
                 </svg>
