@@ -75,7 +75,7 @@ window.onload = () => {
             outline: 0
         }
         
-        #typora-search-multi-input svg.icon {
+        #typora-search-multi-input svg {
             width: 20px;
             height: 14px;
             stroke: none;
