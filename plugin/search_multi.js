@@ -7,7 +7,7 @@ window.onload = () => {
 
     const config = {
         // 允许拖动模态框
-        allowDrag: false,
+        allowDrag: true,
         // 模态框自动隐藏
         autoHide: false,
         // 搜索内容时大小写敏感
@@ -33,7 +33,6 @@ window.onload = () => {
             position: fixed;
             left: 80%;
             width: 420px;
-            margin-left: -200px;
             z-index: 9999;
             padding: 4px;
             background-color: #f8f8f8;
@@ -41,7 +40,6 @@ window.onload = () => {
             border: 1px solid #ddd;
             border-top: none;
             color: var(--text-color);
-            margin-top: 0;
             transform: translate3d(0, 0, 0)
         }
         
@@ -197,7 +195,6 @@ window.onload = () => {
         </div>`;
         const searchModal = document.createElement("div");
         searchModal.id = 'typora-search-multi';
-        searchModal.className = 'modal-dialog';
         searchModal.style.display = "none";
         searchModal.innerHTML = modal_div;
         const quickOpenNode = document.getElementById("typora-quick-open");
@@ -339,13 +336,13 @@ window.onload = () => {
 
     if (config.allowDrag) {
         modal.modal.addEventListener("mousedown", ev => {
-            modal.modal.style.position = 'absolute';
-            let shiftX = ev.clientX - modal.modal.getBoundingClientRect().left;
-            let shiftY = ev.clientY - modal.modal.getBoundingClientRect().top;
+            let rect = modal.modal.getBoundingClientRect();
+            let shiftX = ev.clientX - rect.left;
+            let shiftY = ev.clientY - rect.top;
 
             function onMouseMove(event) {
-                modal.modal.style.left = event.pageX - shiftX + 'px';
-                modal.modal.style.top = event.pageY - shiftY + 'px';
+                modal.modal.style.left = event.clientX - shiftX + 'px';
+                modal.modal.style.top = event.clientY - shiftY + 'px';
             }
 
             document.addEventListener("mouseup", function () {
@@ -355,11 +352,8 @@ window.onload = () => {
 
             document.addEventListener('mousemove', onMouseMove);
         })
-        modal.modal.ondragstart = () => {
-            return false
-        };
+        modal.modal.ondragstart = () => false
     }
-
 
     modal.input.addEventListener("keydown", ev => {
         if (ev.keyCode === 13) {
