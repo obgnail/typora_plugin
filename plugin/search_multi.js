@@ -7,22 +7,22 @@ window.onload = () => {
 
     const config = {
         // 允许拖动模态框
-        allowDrag: true,
+        ALLOW_DRAG: true,
         // 模态框自动隐藏
-        autoHide: false,
+        AUTO_HIDE: false,
         // 搜索内容时大小写敏感
-        caseSensitive: false,
+        CASE_SENSITIVE: false,
         // 展示文件路径时使用相对路径
-        relativePath: true,
+        RELATIVE_PATH: true,
         // 关键词按空格分割
-        separator: " ",
+        SEPARATOR: " ",
         // Typora允许打开小于2000000(即MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
-        maxSize: Package.File.MAX_FILE_SIZE,
+        MAX_SIZE: Package.File.MAX_FILE_SIZE,
         // Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
-        allowExt: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
+        ALLOW_EXT: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
         // 快捷键ctrl/command+shift+P打开搜索框，懒得写keycodes映射函数，能用就行
-        hotkey: ev => metaKeyPressed(ev) && ev.shiftKey && ev.keyCode === 80,
+        HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.keyCode === 80,
     };
 
     // prepare
@@ -201,7 +201,7 @@ window.onload = () => {
         quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
 
         // init case sensitive
-        config.caseSensitive = document.querySelector("#typora-search-multi-case-option-btn").classList.contains("select")
+        config.CASE_SENSITIVE = document.querySelector("#typora-search-multi-case-option-btn").classList.contains("select")
     })();
 
     const modal = {
@@ -222,7 +222,7 @@ window.onload = () => {
     let metaKeyPressed = ev => Package.File.isMac ? ev.metaKey : ev.ctrlKey
 
     const autoHide = () => {
-        if (config.autoHide) {
+        if (config.AUTO_HIDE) {
             modal.modal.style.display = "none";
         }
     }
@@ -276,7 +276,7 @@ window.onload = () => {
         let rootPath = getMountFolder()
 
         return (filePath, data) => {
-            if (!config.caseSensitive) {
+            if (!config.CASE_SENSITIVE) {
                 data = data.toLowerCase();
             }
             for (const keyword of keyArr) {
@@ -287,7 +287,7 @@ window.onload = () => {
 
             index++;
             const parseUrl = Package.Path.parse(filePath);
-            const dirPath = !config.relativePath ? parseUrl.dir : parseUrl.dir.replace(rootPath, ".");
+            const dirPath = !config.RELATIVE_PATH ? parseUrl.dir : parseUrl.dir.replace(rootPath, ".");
             const item = `
                 <div class="typora-search-multi-item" data-is-dir="false"
                     data-path="${filePath}" data-index="${index}">
@@ -312,29 +312,29 @@ window.onload = () => {
             return false
         }
         const ext = Package.Path.extname(filename).replace(/^\./, '');
-        if (~config.allowExt.indexOf(ext.toLowerCase())) {
+        if (~config.ALLOW_EXT.indexOf(ext.toLowerCase())) {
             return true
         }
     }
-    const verifySize = (stat) => 0 > config.maxSize || stat.size < config.maxSize
+    const verifySize = (stat) => 0 > config.MAX_SIZE || stat.size < config.MAX_SIZE
     const allowRead = (filepath, stat) => verifySize(stat) && verifyExt(filepath)
 
     async function searchMulti(rootPath, keys) {
         if (!rootPath) {
             return
         }
-        let keyArr = keys.split(config.separator).filter(Boolean);
+        let keyArr = keys.split(config.SEPARATOR).filter(Boolean);
         if (!keyArr) {
             return
         }
-        if (!config.caseSensitive) {
+        if (!config.CASE_SENSITIVE) {
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }
         const appendItem = appendItemFunc(keyArr);
         await traverseDir(rootPath, allowRead, appendItem);
     }
 
-    if (config.allowDrag) {
+    if (config.ALLOW_DRAG) {
         modal.modal.addEventListener("mousedown", ev => {
             let rect = modal.modal.getBoundingClientRect();
             let shiftX = ev.clientX - rect.left;
@@ -390,7 +390,7 @@ window.onload = () => {
     });
 
     window.onkeydown = ev => {
-        if (config.hotkey(ev)) {
+        if (config.HOTKEY(ev)) {
             modal.modal.style.display = "block";
             modal.input.select();
             ev.preventDefault();
@@ -400,7 +400,7 @@ window.onload = () => {
 
     modal.caseOption.addEventListener("click", ev => {
         modal.caseOption.classList.toggle("select");
-        config.caseSensitive = !config.caseSensitive;
+        config.CASE_SENSITIVE = !config.CASE_SENSITIVE;
         ev.preventDefault();
         ev.stopPropagation();
     })
