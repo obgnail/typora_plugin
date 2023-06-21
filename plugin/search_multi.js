@@ -85,9 +85,10 @@ window.onload = () => {
         #typora-search-multi-input .searchpanel-search-option-btn {
             position: absolute;
             right: 6px;
-            top: 6px;
+            top: 7px;
             opacity: .5;
-            border: none
+            border: none;
+            -webkit-user-drag: none
         }
         
         #typora-search-multi-input .searchpanel-search-option-btn.select,
@@ -336,18 +337,23 @@ window.onload = () => {
 
     if (config.ALLOW_DRAG) {
         modal.modal.addEventListener("mousedown", ev => {
+            ev.stopPropagation();
             let rect = modal.modal.getBoundingClientRect();
             let shiftX = ev.clientX - rect.left;
             let shiftY = ev.clientY - rect.top;
 
             let onMouseMove = ev => {
+                ev.stopPropagation();
+                ev.preventDefault();
                 requestAnimationFrame(() => {
                     modal.modal.style.left = ev.clientX - shiftX + 'px';
                     modal.modal.style.top = ev.clientY - shiftY + 'px';
                 });
             }
 
-            document.addEventListener("mouseup", () => {
+            document.addEventListener("mouseup", ev => {
+                    ev.stopPropagation();
+                    ev.preventDefault();
                     document.removeEventListener('mousemove', onMouseMove);
                     modal.modal.onmouseup = null;
                 }
