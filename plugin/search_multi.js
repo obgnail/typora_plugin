@@ -211,6 +211,7 @@ window.onload = () => {
         modal: document.getElementById('typora-search-multi'),
         info: document.querySelector(".typora-search-multi-info-item"),
         list: document.querySelector("#typora-search-multi-list"),
+        listInner: document.querySelector(".typora-search-multi-list-inner"),
         block: document.querySelector(".typora-search-multi-list-inner .quick-open-group-block"),
         input: document.querySelector("#typora-search-multi-input input"),
         caseOption: document.querySelector("#typora-search-multi-case-option-btn"),
@@ -235,11 +236,12 @@ window.onload = () => {
 
         return filePath => {
             if (once) {
-                // 推迟到此时才插入,避免#file-library-tree还未生成的情况
+                // 推迟插入,避免#file-library-tree还未生成和插入的节点被覆盖的情况
                 (() => {
                     const hidden_div = `
                         <div class="typora-search-multi-hidden" data-path="{{}}" data-is-directory="false" style="display: none;">
-                            <div class="file-node-content"></div></div>`
+                            <div class="file-node-content"></div>
+                        </div>`
                     const tree = document.querySelector("#file-library-tree")
                     tree.insertAdjacentHTML('beforeend', hidden_div);
                     hiddenNode = tree.querySelector(".typora-search-multi-hidden");
@@ -340,6 +342,9 @@ window.onload = () => {
                 </div>`;
             modal.block.insertAdjacentHTML('beforeend', item);
             modal.resultTitle.textContent = `匹配的文件: ${index}`;
+            if (index <= 13) {
+                modal.listInner.style.height = 40 * index + "px";
+            }
 
             if (once) {
                 modal.list.style.display = "block";
