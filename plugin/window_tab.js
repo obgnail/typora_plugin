@@ -1,47 +1,43 @@
 (() => {
+    const config = {
+        requireVarName: "__MY_REQUIRE__",
+        electronVarName: "__MY_ELECTRON__"
+    }
+
     const Package = {
-        Path: reqnode('path'),
-        Fs: reqnode('fs'),
+        // Typora常用的第一方内置库
         File: File,
         Client: ClientCommand,
+
+        // node标准库
+        Path: reqnode('path'),
+        Fs: reqnode('fs'),
+
+        // 劫持过来的electron核心库
+        getElectron: () => global[config.electronVarName],
+        getRequire: () => global[config.requireVarName],
     }
 
-    let once;
-    // NOTE: 因为是直接替换字符串,所以func中的变量名不能shadow掉electron和require，变量名最好不要包含electron，require。
-    //       同时为了避免BUG,不要使用箭头函数,分号一律不要省略
-    // example:
-    //     executeJavaScript(function (require, electron) {console.log(electron.BrowserWindow.getAllWindows())})
-    let executeJavaScript = (func) => {
-        let requireVarName = "__MY_REQUIRE__";
-        let electronVarName = "__MY_ELECTRON__";
-
-        if (!once) {
-            Package.Client.execForAll(`
-                ${requireVarName} = window.reqnode('electron').remote.require;
-                ${electronVarName} = ${requireVarName}('electron');`
-            )
-            once = false;
-        }
-        let funcStr = func.toString();
-        let result = /^\s*function\s*\(\s*require\s*,\s*electron\s*\)\s*{(.+)}\s*$/.exec(funcStr);
-        if (result && result.length === 2) {
-            funcStr = result[1];
-            funcStr = funcStr.replace(/\brequire\b/g, requireVarName);
-            funcStr = funcStr.replace(/\belectron\b/g, electronVarName);
-            Package.Client.execForAll(funcStr)
-            return true
-        }
-        return false
+    const execForWindow = (winId, js) => JSBridge.invoke("executeJavaScript", winId, js)
+    const execForAllWindows = js => Package.Client.execForAll(js)
+    const getFocusedWindow = () => {
     }
 
-    executeJavaScript(function (require, electron) {
-        let windows = electron.BrowserWindow.getAllWindows();
-        windows.forEach(win => {
-            console.log(win.id).getTitle();
-        })
+    setTimeout(() => {
+        let js = `
+            if (!global["${config.electronVarName}"]) {
+                ${config.requireVarName} = global.reqnode('electron').remote.require;
+                ${config.electronVarName} = ${config.requireVarName}('electron');
+                console.log("had hijacked electron instance:", ${config.electronVarName})
+            }
+            `
+        execForAllWindows(js)
     })
 
-    global.executeJavaScript = executeJavaScript
+
+    global.test = () => Package.getElectron().BrowserWindow.getAllWindows().forEach(win => {
+        console.log({"id": win.id, "name": win.getTitle()})
+    })
 
     console.log("window_tab.js had been injected");
 })();

@@ -291,7 +291,7 @@
                     <div class="typora-search-multi-item-path">${dirPath}${separator}</div>
                 </div>`;
             modal.block.insertAdjacentHTML('beforeend', item);
-            modal.resultTitle.textContent = `匹配的文件: ${index}`;
+            modal.resultTitle.textContent = `匹配的文件：${index}`;
             if (index <= 8) {
                 modal.listInner.style.height = 40 * index + "px";
             }
