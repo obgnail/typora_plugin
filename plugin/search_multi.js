@@ -22,8 +22,8 @@ window.onload = () => {
         // Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
         ALLOW_EXT: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
-        // 快捷键ctrl/command+shift+P打开搜索框，懒得写keycodes映射函数，能用就行
-        HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.keyCode === 80,
+        // 快捷键ctrl/command+shift+P打开搜索框
+        HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "P",
     };
 
     // prepare
@@ -163,8 +163,8 @@ window.onload = () => {
         const modal_div = `
         <div id="typora-search-multi-input">
             <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
-                autocapitalize="off" value="" placeholder="多关键字查找，空格为分隔符"
-                data-localize="Search by file name" data-lg="Front">
+                autocapitalize="off" value="" placeholder="多关键字查找 空格分隔" ty-hint="⌃↵当前页打开。⇧⌃↵新页面打开"
+                aria-label="⌃↵当前页打开。⇧⌃↵新页面打开" data-localize="Search by file name" data-lg="Front">
             <span ty-hint="区分大小写" id="typora-search-multi-case-option-btn" class="search-multi-search-option-btn" aria-label="区分大小写">
                 <svg class="icon">
                     <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use>
@@ -234,7 +234,7 @@ window.onload = () => {
         getLibrary().openFile(filePath);
     }
 
-    const openFileOrFolder = (path, isFolder) => getLibrary().openFileInNewWindow(path, isFolder)
+    const openFileInNewWindow = (path, isFolder) => getLibrary().openFileInNewWindow(path, isFolder)
 
     const traverseDir = (dir, filter, callback) => {
         return new Promise((resolve, reject) => {
@@ -368,8 +368,23 @@ window.onload = () => {
     let floor;
 
     modal.input.addEventListener("keydown", ev => {
-        switch (ev.keyCode) {
-            case 13: // enter
+        switch (ev.key) {
+            case "Enter":
+                if (metaKeyPressed(ev)) {
+                    let select = modal.block.querySelector(".typora-search-multi-item.active");
+                    if (select) {
+                        ev.preventDefault();
+                        ev.stopPropagation();
+                        const filepath = select.getAttribute("data-path");
+                        if (ev.shiftKey) {
+                            openFileInNewWindow(filepath, false);
+                        } else {
+                            openFileInThisWindow(filepath);
+                        }
+                        modal.input.focus();
+                        return
+                    }
+                }
                 modal.list.style.display = "none";
                 modal.info.style.display = "block";
                 modal.block.innerHTML = "";
@@ -377,14 +392,14 @@ window.onload = () => {
                 searchMulti(workspace, modal.input.value);
                 modal.info.style.display = "none";
                 break
-            case 27: // esc
+            case "Escape":
                 ev.stopPropagation();
                 ev.preventDefault();
                 modal.modal.style.display = "none";
                 modal.info.style.display = "none";
                 break
-            case 38: // up
-            case 40: // down
+            case "ArrowUp":
+            case "ArrowDown":
                 ev.stopPropagation();
                 ev.preventDefault();
 
@@ -394,7 +409,7 @@ window.onload = () => {
 
                 let activeItem = modal.block.querySelector(".typora-search-multi-item.active")
                 let nextItem;
-                if (ev.keyCode === 40) {
+                if (ev.key === "ArrowDown") {
                     if (floor !== 7) {
                         floor++
                     }
@@ -426,7 +441,7 @@ window.onload = () => {
                     top = nextItem.offsetTop - nextItem.offsetHeight;
                 } else if (floor === 7) {
                     top = nextItem.offsetTop - 6 * nextItem.offsetHeight;
-                } else if (Math.abs(modal.list.scrollTop - activeItem.offsetTop) > 3 * nextItem.offsetHeight) {
+                } else if (Math.abs(modal.list.scrollTop - activeItem.offsetTop) > 7 * nextItem.offsetHeight) {
                     top = nextItem.offsetTop - 3 * nextItem.offsetHeight;
                 }
                 if (top) {
@@ -441,8 +456,8 @@ window.onload = () => {
             return
         }
         const filepath = target.getAttribute("data-path");
-        if (ev.ctrlKey) {
-            openFileOrFolder(filepath, false);
+        if (metaKeyPressed(ev)) {
+            openFileInNewWindow(filepath, false);
             ev.preventDefault();
             ev.stopPropagation();
         } else {
