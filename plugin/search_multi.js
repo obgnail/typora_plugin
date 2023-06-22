@@ -2,7 +2,8 @@ window.onload = () => {
     const Package = {
         Path: reqnode('path'), // Typora将require封装为reqnode
         Fs: reqnode('fs'),
-        File: File,            // Typora第一方库
+        File: File,            // Typora第一方库:编辑器相关
+        Client: ClientCommand, // Typora第一方库:窗口、服务相关
     }
 
     const config = {
@@ -422,11 +423,10 @@ window.onload = () => {
 
                 let top;
                 if (floor === 1) {
-                    top = nextItem.offsetTop - 1 * nextItem.offsetHeight;
+                    top = nextItem.offsetTop - nextItem.offsetHeight;
                 } else if (floor === 7) {
                     top = nextItem.offsetTop - 6 * nextItem.offsetHeight;
-                    // 超出可视范围
-                } else if (Math.abs(modal.list.scrollTop - nextItem.offsetTop) > 7 * nextItem.offsetHeight) {
+                } else if (Math.abs(modal.list.scrollTop - activeItem.offsetTop) > 3 * nextItem.offsetHeight) {
                     top = nextItem.offsetTop - 3 * nextItem.offsetHeight;
                 }
                 if (top) {
