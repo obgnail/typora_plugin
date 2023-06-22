@@ -1,8 +1,8 @@
-window.onload = () => {
+(() => {
     const Package = {
-        Path: reqnode('path'), // Typora将require封装为reqnode
+        Path: reqnode('path'), // Typora将require封装为reqnode，避免外部引入electron核心功能模块(虽然没有卵用)
         Fs: reqnode('fs'),
-        File: File,            // Typora第一方库:编辑器相关
+        File: File,            // Typora第一方库:文件、编辑器相关
         Client: ClientCommand, // Typora第一方库:窗口、服务相关
     }
 
@@ -22,7 +22,7 @@ window.onload = () => {
         // Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
         ALLOW_EXT: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
-        // 快捷键ctrl/command+shift+P打开搜索框
+        // 快捷键ctrl/command+shift+P打开模态框
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "P",
     };
 
@@ -203,7 +203,7 @@ window.onload = () => {
         quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
 
         // init case sensitive
-        config.CASE_SENSITIVE = document.querySelector("#typora-search-multi-case-option-btn").classList.contains("select")
+        config.CASE_SENSITIVE = document.querySelector("#typora-search-multi-case-option-btn").classList.contains("select");
     })();
 
     const modal = {
@@ -221,13 +221,7 @@ window.onload = () => {
     const getLibrary = () => Package.File.editor.library
     const getMountFolder = Package.File.getMountFolder
     const separator = Package.File.isWin ? "\\" : "/";
-    let metaKeyPressed = ev => Package.File.isMac ? ev.metaKey : ev.ctrlKey
-
-    const autoHide = () => {
-        if (config.AUTO_HIDE) {
-            modal.modal.style.display = "none";
-        }
-    }
+    const metaKeyPressed = ev => Package.File.isMac ? ev.metaKey : ev.ctrlKey
 
     const openFileInThisWindow = filePath => {
         document.activeElement.blur();
@@ -275,7 +269,7 @@ window.onload = () => {
     const appendItemFunc = (keyArr) => {
         let index = 0;
         let once = true;
-        let rootPath = getMountFolder()
+        const rootPath = getMountFolder()
 
         return (filePath, data) => {
             if (!config.CASE_SENSITIVE) {
@@ -309,6 +303,12 @@ window.onload = () => {
         }
     }
 
+    const hideIfNeed = () => {
+        if (config.AUTO_HIDE) {
+            modal.modal.style.display = "none";
+        }
+    }
+
     const verifyExt = (filename) => {
         if (filename[0] === ".") {
             return false
@@ -318,8 +318,8 @@ window.onload = () => {
             return true
         }
     }
-    const verifySize = (stat) => 0 > config.MAX_SIZE || stat.size < config.MAX_SIZE
-    const allowRead = (filepath, stat) => verifySize(stat) && verifyExt(filepath)
+    const verifySize = (stat) => 0 > config.MAX_SIZE || stat.size < config.MAX_SIZE;
+    const allowRead = (filepath, stat) => verifySize(stat) && verifyExt(filepath);
 
     async function searchMulti(rootPath, keys) {
         if (!rootPath) {
@@ -339,11 +339,11 @@ window.onload = () => {
     if (config.ALLOW_DRAG) {
         modal.modal.addEventListener("mousedown", ev => {
             ev.stopPropagation();
-            let rect = modal.modal.getBoundingClientRect();
-            let shiftX = ev.clientX - rect.left;
-            let shiftY = ev.clientY - rect.top;
+            const rect = modal.modal.getBoundingClientRect();
+            const shiftX = ev.clientX - rect.left;
+            const shiftY = ev.clientY - rect.top;
 
-            let onMouseMove = ev => {
+            const onMouseMove = ev => {
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
@@ -371,7 +371,7 @@ window.onload = () => {
         switch (ev.key) {
             case "Enter":
                 if (metaKeyPressed(ev)) {
-                    let select = modal.block.querySelector(".typora-search-multi-item.active");
+                    const select = modal.block.querySelector(".typora-search-multi-item.active");
                     if (select) {
                         ev.preventDefault();
                         ev.stopPropagation();
@@ -407,7 +407,7 @@ window.onload = () => {
                     return
                 }
 
-                let activeItem = modal.block.querySelector(".typora-search-multi-item.active")
+                const activeItem = modal.block.querySelector(".typora-search-multi-item.active")
                 let nextItem;
                 if (ev.key === "ArrowDown") {
                     if (floor !== 7) {
@@ -451,7 +451,7 @@ window.onload = () => {
     });
 
     modal.block.addEventListener("click", ev => {
-        let target = ev.target.closest(".typora-search-multi-item");
+        const target = ev.target.closest(".typora-search-multi-item");
         if (!target) {
             return
         }
@@ -461,9 +461,9 @@ window.onload = () => {
             ev.preventDefault();
             ev.stopPropagation();
         } else {
-            openFileInThisWindow(filepath)
+            openFileInThisWindow(filepath);
         }
-        autoHide()
+        hideIfNeed();
     });
 
     window.onkeydown = ev => {
@@ -483,4 +483,4 @@ window.onload = () => {
     })
 
     console.log("search_multi.js had been injected");
-}
+})();
