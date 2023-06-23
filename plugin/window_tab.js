@@ -1,5 +1,6 @@
 (() => {
     const config = {
+        checkInterval: 30,
         requireVarName: "__PLUGIN_REQUIRE__",
         electronVarName: "__PLUGIN_ELECTRON__"
     }
@@ -27,7 +28,7 @@
 
     const getAllWindows = () => getBrowserWindow().getAllWindows();
     const getFocusedWindowId = () => getAPP().getCurrentFocusWindowId();
-    const setFocusWindow = (winId) => {
+    const setFocusWindow = winId => {
         const windows = getAllWindows();
         for (const win of windows) {
             if (win.id === winId) {
@@ -137,13 +138,12 @@
     }
 
     const loopDetect = (check, after) => {
-        const checkInterval = 30;
         const timer = setInterval(() => {
             if (check()) {
                 clearInterval(timer);
                 after()
             }
-        }, checkInterval)
+        }, config.checkInterval)
     }
 
     const onElectronLoad = func => {
