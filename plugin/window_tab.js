@@ -113,7 +113,7 @@
         titleBarLeft.parentNode.insertBefore(windowTabs, titleBarLeft.nextSibling);
     })()
 
-    const windowTab = {
+    const windowTabs = {
         list: document.querySelector(".title-bar-window-tabs-list"),
     }
 
@@ -123,7 +123,7 @@
         const copy = [...windows];
         const sortedWindows = copy.sort((a, b) => a.id - b.id);
 
-        windowTab.list.innerHTML = "";
+        windowTabs.list.innerHTML = "";
         let divArr = sortedWindows.map(win => {
             if (excludeId && win.id === excludeId) {
                 return ""
@@ -133,7 +133,7 @@
             // const item = `<div class="title-bar-window-tab ${selected}" winId="${win.id}"><div>${name}</div></div>`
             return `<div class="title-bar-window-tab" winId="${win.id}"><div class="window-tab-name">${name}</div></div>`
         })
-        windowTab.list.innerHTML = divArr.join("");
+        windowTabs.list.innerHTML = divArr.join("");
     }
 
     let loopDetect = (check, after) => {
@@ -198,25 +198,25 @@
                     const windows = getAllWindows();
                     windows.forEach(win => {
                         if (win.id !== focusWinId) {
-                            execForWindow(win.id, `global.flushWindowTabs(${focusWinId})`)
+                            execForWindow(win.id, `global.flushWindowTabs(${focusWinId})`);
                         }
                     })
                     noticeDone = true;
                 }
-                window.onbeforeunload(ev)
+                window.onbeforeunload(ev);
             }
         )
     }
 
     onElectronLoad((require, electron) => {
         (() => {
-            execForAllWindows(`global.flushWindowTabs()`)
+            execForAllWindows(`global.flushWindowTabs()`);
             // DecoSetFileTitle();
             registerOnClose();
         })()
     })
 
-    windowTab.list.addEventListener("click", ev => {
+    windowTabs.list.addEventListener("click", ev => {
         const target = ev.target.closest(".title-bar-window-tab");
         if (!target) {
             return
@@ -226,6 +226,7 @@
     })
 
     // document.addEventListener('visibilitychange', () => {
+    //     console.log("123");
     //     // 用户离开了当前页面
     //     if (document.visibilityState === 'hidden') {
     //         document.title = '页面不可见';
@@ -233,8 +234,16 @@
     //
     //     // 用户打开或回到页面
     //     if (document.visibilityState === 'visible') {
-    //         let winId = getFocusedWindowId()
-    //         // document.title = '页面可见';
+    //         const focusWinId = getFocusedWindowId()
+    //         const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
+    //         for (const tab of tabs) {
+    //             const winId = tab.getAttribute("winId");
+    //             if (winId !== focusWinId) {
+    //                 tab.classList.remove("select");
+    //             } else {
+    //                 tab.classList.add("select");
+    //             }
+    //         }
     //     }
     // });
 
