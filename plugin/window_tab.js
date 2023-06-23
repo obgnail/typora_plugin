@@ -42,10 +42,81 @@
                 console.log("had hijacked electron instance:", ${config.electronVarName})
             }`
         )
-    })
+    });
+
+    (() => {
+        const title_bar_css = `
+        #title-bar-window-tabs {
+            position: absolute;
+            left: 100px;
+            -webkit-app-region: no-drag;
+            width: 75%;
+            height: 24px;
+            margin-left: 10px;
+            margin-right: 10px;
+            z-index: 9999;
+        }
+        
+        #title-bar-window-tabs .title-bar-window-tabs-list {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
+            align-items:stretch;
+            height: 24px;
+        }
+        
+        #title-bar-window-tabs .title-bar-window-tab {
+            flex-grow: 1;
+            max-width: 200px;
+            text-align: center;
+            border-style: dashed;
+            border-width: 1px;
+            border-color: var(--mid-7);
+            margin-right: -1px;
+            cursor: pointer;
+        }
+        
+        #title-bar-window-tabs .title-bar-window-tab:hover {
+            background-color: #ffafa3;
+        }
+        
+        #title-bar-window-tabs .title-bar-window-tab span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        `
+        const style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = title_bar_css;
+        document.getElementsByTagName("head")[0].appendChild(style);
+
+        const title_bar_div = `<div class="title-bar-window-tabs-list"></div>`
+        const windowTabs = document.createElement("div");
+        windowTabs.id = 'title-bar-window-tabs';
+        windowTabs.innerHTML = title_bar_div;
+        const titleBarLeft = document.getElementById("w-titlebar-left");
+        titleBarLeft.parentNode.insertBefore(windowTabs, titleBarLeft.nextSibling);
+    })()
+
+    global.whenOtherWindowClose = (closeId) => {
+        const tabsList = document.querySelector(".title-bar-window-tabs-list");
+        tabsList.innerHTML = "";
+
+        const windows = Package.getElectron().BrowserWindow.getAllWindows();
+        windows.forEach(win => {
+            if (win.id === closeId) {
+                return
+            }
+            const name = win.getTitle().replace("- Typora", "").trim();
+            const item = `<div class="title-bar-window-tab"><span>${name}</span></div>`
+            tabsList.insertAdjacentHTML('beforeend', item);
+        })
+    }
 
     let loopDetect = (check, after) => {
-        let checkInterval = 20;
+        const checkInterval = 30;
         let timer = setInterval(() => {
             if (check()) {
                 clearInterval(timer);
@@ -61,23 +132,22 @@
         )
     }
 
-    global.whenOtherWindowClose = (lastCloseId) => {
-        let windows = Package.getElectron().BrowserWindow.getAllWindows();
-        windows.forEach(win => {
-            if (win.id !== lastCloseId) {
-                console.log({"id": win.id, "name": win.getTitle()})
-            }
-        })
-    }
-
     onElectronLoad((require, electron) => {
+        const windows = electron.BrowserWindow.getAllWindows();
+        windows.forEach(win => {
+            const name = win.getTitle().replace("- Typora", "").trim();
+            const item = `<div class="title-bar-window-tab"><span>${name}</span></div>`
+            const tabsList = document.querySelector(".title-bar-window-tabs-list");
+            tabsList.insertAdjacentHTML('beforeend', item);
+        })
+
         let noticeDone = false;
         loopDetect(
             () => window.onbeforeunload,
             () => window.onbeforeunload = ev => {
                 if (!noticeDone) {
-                    let windows = electron.BrowserWindow.getAllWindows();
-                    let focusWinId = electron.app.getCurrentFocusWindowId();
+                    const windows = electron.BrowserWindow.getAllWindows();
+                    const focusWinId = electron.app.getCurrentFocusWindowId();
                     windows.forEach(win => {
                         if (win.id !== focusWinId) {
                             global.execForWindow(win.id, `global.whenOtherWindowClose(${focusWinId})`)
