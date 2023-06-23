@@ -22,7 +22,7 @@
     const execForAllWindows = js => Package.Client.execForAll(js);
 
     const getAPP = () => Package.getElectron().app;
-    const getBrowserWindow = () => Package.getElectron().BrowserWindow
+    const getBrowserWindow = () => Package.getElectron().BrowserWindow;
     const getIPC = () => Package.getElectron().ipcMain;
 
     const getAllWindows = () => getBrowserWindow().getAllWindows();
@@ -35,23 +35,23 @@
                 return
             }
         }
-    }
+    };
 
     const getDocumentController = () => getAPP().getDocumentController();
     const getDocument = id => getDocumentController().getDocumentFromWindowId(id);
 
+    // hijack electron instance and require function in Typora backend
     setTimeout(() => {
         execForAllWindows(`
             if (!global["${config.electronVarName}"]) {
                 global.${config.requireVarName} = global.reqnode('electron').remote.require;
                 global.${config.electronVarName} = ${config.requireVarName}('electron');
-                console.log("had hijacked require function:", ${config.requireVarName})
-                console.log("had hijacked electron instance:", ${config.electronVarName})
             }`
         )
     });
 
     (() => {
+        // insert css
         const title_bar_css = `
         #title-bar-window-tabs {
             position: absolute;
@@ -104,6 +104,7 @@
         style.innerHTML = title_bar_css;
         document.getElementsByTagName("head")[0].appendChild(style);
 
+        // insert html
         const title_bar_div = `<div class="title-bar-window-tabs-list"></div>`
         const windowTabs = document.createElement("div");
         windowTabs.id = 'title-bar-window-tabs';
@@ -116,17 +117,23 @@
         list: document.querySelector(".title-bar-window-tabs-list"),
     }
 
-    global.whenOtherWindowClose = (closeId) => {
-        windowTab.list.innerHTML = "";
+    global.flushWindowTabs = excludeId => {
+        const windows = getAllWindows();
+        const focusWinId = getFocusedWindowId();
+        const copy = [...windows];
+        const sortedWindows = copy.sort((a, b) => a.id - b.id);
 
-        const windows = Package.getElectron().BrowserWindow.getAllWindows();
-        windows.forEach(win => {
-            if (win.id !== closeId) {
-                const name = getWindowName(win);
-                const item = `<div class="title-bar-window-tab" winId="${win.id}"><div class="window-tab-name">${name}</div></div>`
-                windowTab.list.insertAdjacentHTML('beforeend', item);
+        windowTab.list.innerHTML = "";
+        let divArr = sortedWindows.map(win => {
+            if (excludeId && win.id === excludeId) {
+                return ""
             }
+            const name = getWindowName(win);
+            // let selected = win.id === focusWinId ? "select" : "";
+            // const item = `<div class="title-bar-window-tab ${selected}" winId="${win.id}"><div>${name}</div></div>`
+            return `<div class="title-bar-window-tab" winId="${win.id}"><div class="window-tab-name">${name}</div></div>`
         })
+        windowTab.list.innerHTML = divArr.join("");
     }
 
     let loopDetect = (check, after) => {
@@ -148,28 +155,11 @@
 
     const getWindowName = win => {
         let name = win.getTitle().replace("- Typora", "").trim();
-        let idx = name.lastIndexOf(".");
+        const idx = name.lastIndexOf(".");
         if (idx !== -1) {
             name = name.substring(0, idx);
         }
         return name
-    }
-
-    global.flushWindowTabs = () => {
-        const windows = getAllWindows();
-        const focusWinId = getFocusedWindowId();
-        const copy = [...windows];
-        const sortedWindows = copy.sort((a, b) => a.id - b.id);
-
-        windowTab.list.innerHTML = "";
-
-        let divArr = sortedWindows.map(win => {
-            const name = getWindowName(win);
-            // let selected = win.id === focusWinId ? "select" : "";
-            // const item = `<div class="title-bar-window-tab ${selected}" winId="${win.id}"><div>${name}</div></div>`
-            return `<div class="title-bar-window-tab" winId="${win.id}"><div class="window-tab-name">${name}</div></div>`
-        })
-        windowTab.list.innerHTML = divArr.join("");
     }
 
     const DecoSetFileTitle = () => {
@@ -198,17 +188,17 @@
         )
     }
 
-    const registerOnClose = (electron) => {
+    const registerOnClose = () => {
         let noticeDone = false;
         loopDetect(
             () => window.onbeforeunload,
             () => window.onbeforeunload = ev => {
                 if (!noticeDone) {
-                    const windows = electron.BrowserWindow.getAllWindows();
-                    const focusWinId = electron.app.getCurrentFocusWindowId();
+                    const focusWinId = getFocusedWindowId();
+                    const windows = getAllWindows();
                     windows.forEach(win => {
                         if (win.id !== focusWinId) {
-                            global.execForWindow(win.id, `global.whenOtherWindowClose(${focusWinId})`)
+                            execForWindow(win.id, `global.flushWindowTabs(${focusWinId})`)
                         }
                     })
                     noticeDone = true;
@@ -222,7 +212,7 @@
         (() => {
             execForAllWindows(`global.flushWindowTabs()`)
             // DecoSetFileTitle();
-            registerOnClose(electron);
+            registerOnClose();
         })()
     })
 
