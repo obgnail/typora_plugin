@@ -132,9 +132,10 @@
 
     const windowTabs = {
         list: document.querySelector(".title-bar-window-tabs-list"),
+        titleText: document.getElementById('title-text'),
     }
 
-    global.flushWindowTabs = excludeId => {
+    global.flushWindowTabs = (excludeId) => {
         const windows = getAllWindows();
         const focusWinId = getFocusedWindowId();
         const copy = [...windows];
@@ -145,10 +146,9 @@
             if (excludeId && win.id === excludeId) {
                 return ""
             }
-            const name = getWindowName(win);
-            // let selected = win.id === focusWinId ? "select" : "";
-            // const item = `<div class="title-bar-window-tab ${selected}" winId="${win.id}"><div>${name}</div></div>`
-            return `<div class="title-bar-window-tab" winId="${win.id}"><div class="window-tab-name">${name}</div></div>`
+            const name = cleanName(win.getTitle());
+            let selected = win.id === focusWinId ? "select" : "";
+            return `<div class="title-bar-window-tab ${selected}" winId="${win.id}"><div class="window-tab-name">${name}</div></div>`
         })
         windowTabs.list.innerHTML = divArr.join("");
     }
@@ -169,8 +169,8 @@
         )
     }
 
-    const getWindowName = win => {
-        let name = win.getTitle().replace("- Typora", "").trim();
+    const cleanName = name => {
+        name = name.replace("- Typora", "").trim();
         const idx = name.lastIndexOf(".");
         if (idx !== -1) {
             name = name.substring(0, idx);
@@ -178,45 +178,8 @@
         return name
     }
 
-    const DecoSetFileTitle = () => {
-        // let win = getFocusedWindow();
-        //
-        // const deco = title => {
-        //     console.log(123123);
-        //     win.setTitle(title);
-        // }
-        //
-        // win.setTitle = deco
-        // loopDetect(
-        //     () => File.FileInfoPanel && File.FileInfoPanel.setFileTitle,
-        //     () => {
-        //         const onSetFileTitle = (path, encoding, mountFolder) => {
-        //             console.log("123");
-        //             return File.FileInfoPanel.setFileTitle(path, encoding, mountFolder)
-        //             // const result = File.FileInfoPanel.setFileTitle(path, encoding, mountFolder);
-        //             //
-        //             // const focusWinId = electron.app.getCurrentFocusWindowId();
-        //             // const tabs = windowTab.list.querySelectorAll(`.title-bar-window-tab`);
-        //             // for (const tab of tabs) {
-        //             //     const winId = tab.getAttribute("winId");
-        //             //     if (winId !== focusWinId) {
-        //             //         tab.classList.remove("select");
-        //             //     } else {
-        //             //         tab.classList.add("select");
-        //             //     }
-        //             // }
-        //             // return result
-        //         }
-        //         File.FileInfoPanel.setFileTitle = onSetFileTitle
-        //     }
-        // )
-    }
-
     onElectronLoad((require, electron) => {
-        (() => {
-            execForAllWindows(`global.flushWindowTabs()`);
-            DecoSetFileTitle();
-        })()
+        execForAllWindows(`global.flushWindowTabs()`);
     })
 
     window.addEventListener("beforeunload", ev => {
@@ -232,6 +195,10 @@
         const winId = target.getAttribute("winId");
         setFocusWindow(parseInt(winId));
     })
+
+    new MutationObserver((mutations) => {
+        execForAllWindows(`global.flushWindowTabs()`);
+    }).observe(windowTabs.titleText, {childList: true});
 
     // document.addEventListener('visibilitychange', () => {
     //     console.log("123");
