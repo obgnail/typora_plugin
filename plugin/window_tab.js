@@ -28,14 +28,30 @@
 
     const getAllWindows = () => getBrowserWindow().getAllWindows();
     const getFocusedWindowId = () => getAPP().getCurrentFocusWindowId();
-    const setFocusWindow = winId => {
+    const rangeWindow = func => {
         const windows = getAllWindows();
         for (const win of windows) {
-            if (win.id === winId) {
-                win.focus();
+            if (func(win)) {
                 return
             }
         }
+    }
+    const getFocusedWindow = () => {
+        let focused = getFocusedWindowId();
+        const windows = getAllWindows();
+        for (const win of windows) {
+            if (win.id === focused) {
+                return win
+            }
+        }
+    }
+    const setFocusWindow = winId => {
+        rangeWindow(win => {
+            if (win.id === winId) {
+                win.focus();
+                return true
+            }
+        })
     };
 
     const getDocumentController = () => getAPP().getDocumentController();
@@ -163,58 +179,50 @@
     }
 
     const DecoSetFileTitle = () => {
-        const onSetFileTitle = (path, encoding, mountFolder) => {
-            return File.FileInfoPanel.setFileTitle(path, encoding, mountFolder)
-            // const result = File.FileInfoPanel.setFileTitle(path, encoding, mountFolder);
-            //
-            // const focusWinId = electron.app.getCurrentFocusWindowId();
-            // const tabs = windowTab.list.querySelectorAll(`.title-bar-window-tab`);
-            // for (const tab of tabs) {
-            //     const winId = tab.getAttribute("winId");
-            //     if (winId !== focusWinId) {
-            //         tab.classList.remove("select");
-            //     } else {
-            //         tab.classList.add("select");
-            //     }
-            // }
-            // return result
-        }
-
-        loopDetect(
-            () => File.FileInfoPanel && File.FileInfoPanel.setFileTitle,
-            () => File.FileInfoPanel.setFileTitle = (path, encoding, mountFolder) => {
-                return File.FileInfoPanel.setFileTitle(path, encoding, mountFolder)
-            },
-        )
-    }
-
-    const registerOnClose = () => {
-        let noticeDone = false;
-        loopDetect(
-            () => window.onbeforeunload,
-            () => window.onbeforeunload = ev => {
-                if (!noticeDone) {
-                    const focusWinId = getFocusedWindowId();
-                    const windows = getAllWindows();
-                    windows.forEach(win => {
-                        if (win.id !== focusWinId) {
-                            execForWindow(win.id, `global.flushWindowTabs(${focusWinId})`);
-                        }
-                    })
-                    noticeDone = true;
-                }
-                window.onbeforeunload(ev);
-            }
-        )
+        // let win = getFocusedWindow();
+        //
+        // const deco = title => {
+        //     console.log(123123);
+        //     win.setTitle(title);
+        // }
+        //
+        // win.setTitle = deco
+        // loopDetect(
+        //     () => File.FileInfoPanel && File.FileInfoPanel.setFileTitle,
+        //     () => {
+        //         const onSetFileTitle = (path, encoding, mountFolder) => {
+        //             console.log("123");
+        //             return File.FileInfoPanel.setFileTitle(path, encoding, mountFolder)
+        //             // const result = File.FileInfoPanel.setFileTitle(path, encoding, mountFolder);
+        //             //
+        //             // const focusWinId = electron.app.getCurrentFocusWindowId();
+        //             // const tabs = windowTab.list.querySelectorAll(`.title-bar-window-tab`);
+        //             // for (const tab of tabs) {
+        //             //     const winId = tab.getAttribute("winId");
+        //             //     if (winId !== focusWinId) {
+        //             //         tab.classList.remove("select");
+        //             //     } else {
+        //             //         tab.classList.add("select");
+        //             //     }
+        //             // }
+        //             // return result
+        //         }
+        //         File.FileInfoPanel.setFileTitle = onSetFileTitle
+        //     }
+        // )
     }
 
     onElectronLoad((require, electron) => {
         (() => {
             execForAllWindows(`global.flushWindowTabs()`);
-            // DecoSetFileTitle();
-            registerOnClose();
+            DecoSetFileTitle();
         })()
     })
+
+    window.addEventListener("beforeunload", ev => {
+        const focusWinId = getFocusedWindowId();
+        execForAllWindows(`global.flushWindowTabs(${focusWinId})`)
+    }, true)
 
     windowTabs.list.addEventListener("click", ev => {
         const target = ev.target.closest(".title-bar-window-tab");
