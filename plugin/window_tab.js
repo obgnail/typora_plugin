@@ -28,7 +28,7 @@
     const getAllWindows = () => getBrowserWindow().getAllWindows();
     const getFocusedWindowId = () => getAPP().getCurrentFocusWindowId();
     const setFocusWindow = (winId) => {
-        let windows = getAllWindows();
+        const windows = getAllWindows();
         for (const win of windows) {
             if (win.id === winId) {
                 win.focus();
@@ -124,7 +124,7 @@
         const sortedWindows = copy.sort((a, b) => a.id - b.id);
 
         windowTabs.list.innerHTML = "";
-        let divArr = sortedWindows.map(win => {
+        const divArr = sortedWindows.map(win => {
             if (excludeId && win.id === excludeId) {
                 return ""
             }
@@ -136,9 +136,9 @@
         windowTabs.list.innerHTML = divArr.join("");
     }
 
-    let loopDetect = (check, after) => {
+    const loopDetect = (check, after) => {
         const checkInterval = 30;
-        let timer = setInterval(() => {
+        const timer = setInterval(() => {
             if (check()) {
                 clearInterval(timer);
                 after()
@@ -146,7 +146,7 @@
         }, checkInterval)
     }
 
-    let onElectronLoad = func => {
+    const onElectronLoad = func => {
         loopDetect(
             () => Package.getElectron() && Package.getRequire(),
             () => func(Package.getRequire(), Package.getElectron())
