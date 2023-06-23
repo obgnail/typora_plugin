@@ -78,8 +78,12 @@
             cursor: pointer;
         }
         
-        #title-bar-window-tabs .title-bar-window-tab:hover {
+        #title-bar-window-tabs .title-bar-window-tab.select {
             background-color: #ffafa3;
+        }
+        
+        #title-bar-window-tabs .title-bar-window-tab:hover {
+            background-color: #ffd4cc;
         }
         
         #title-bar-window-tabs .title-bar-window-tab span {
@@ -100,9 +104,12 @@
         titleBarLeft.parentNode.insertBefore(windowTabs, titleBarLeft.nextSibling);
     })()
 
+    const windowTab = {
+        list: document.querySelector(".title-bar-window-tabs-list"),
+    }
+
     global.whenOtherWindowClose = (closeId) => {
-        const tabsList = document.querySelector(".title-bar-window-tabs-list");
-        tabsList.innerHTML = "";
+        windowTab.list.innerHTML = "";
 
         const windows = Package.getElectron().BrowserWindow.getAllWindows();
         windows.forEach(win => {
@@ -110,8 +117,8 @@
                 return
             }
             const name = win.getTitle().replace("- Typora", "").trim();
-            const item = `<div class="title-bar-window-tab"><span>${name}</span></div>`
-            tabsList.insertAdjacentHTML('beforeend', item);
+            const item = `<div class="title-bar-window-tab" winId="${win.id}"><span>${name}</span></div>`
+            windowTab.list.insertAdjacentHTML('beforeend', item);
         })
     }
 
@@ -133,14 +140,36 @@
     }
 
     onElectronLoad((require, electron) => {
+        //
         const windows = electron.BrowserWindow.getAllWindows();
         windows.forEach(win => {
             const name = win.getTitle().replace("- Typora", "").trim();
-            const item = `<div class="title-bar-window-tab"><span>${name}</span></div>`
-            const tabsList = document.querySelector(".title-bar-window-tabs-list");
-            tabsList.insertAdjacentHTML('beforeend', item);
+            const item = `<div class="title-bar-window-tab" winId="${win.id}"><span>${name}</span></div>`
+            windowTab.list.insertAdjacentHTML('beforeend', item);
         })
 
+        // deco File.FileInfoPanel.setFileTitle
+        loopDetect(
+            () => File.FileInfoPanel && File.FileInfoPanel.setFileTitle,
+            () => global.File.FileInfoPanel.setFileTitle = (path, encoding, mountFolder) => {
+                return File.FileInfoPanel.setFileTitle
+                // const result = File.FileInfoPanel.setFileTitle(path, encoding, mountFolder);
+                //
+                // const focusWinId = electron.app.getCurrentFocusWindowId();
+                // const tabs = windowTab.list.querySelectorAll(`.title-bar-window-tab`);
+                // for (const tab of tabs) {
+                //     const winId = tab.getAttribute("winId");
+                //     if (winId !== focusWinId) {
+                //         tab.classList.remove("select");
+                //     } else {
+                //         tab.classList.add("select");
+                //     }
+                // }
+                // return result
+            }
+        )
+
+        // register
         let noticeDone = false;
         loopDetect(
             () => window.onbeforeunload,
