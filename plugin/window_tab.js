@@ -1,8 +1,23 @@
 (() => {
     const config = {
-        checkInterval: 50,
-        requireVarName: "__PLUGIN_REQUIRE__",
-        electronVarName: "__PLUGIN_ELECTRON__"
+        SHOW_TAB_WHEN_ONE_WINDOW: false,
+
+        TABS_JUSTIFY_CONTENT: "center",
+        TABS_ALIGN_ITEMS: "stretch",
+        TAB_MAX_WIDTH: "150px",
+        TAB_WRAP: "wrap",
+        TAB_TEXT_OVERFLOW: "ellipsis",
+        TAB_TEXT_ALIGN: "center",
+        TAB_PADDING_LEFT: "10px",
+        TAB_PADDING_RIGHT: "10px",
+        TAB_BORDER_STYLE: "dashed",
+        TAB_BORDER_WIDTH: "1px",
+        TAB_BORDER_COLOR: "#8c8c8c",
+
+        CHECK_INTERVAL: 50,
+
+        REQUIRE_VAR_NAME: "__PLUGIN_REQUIRE__",
+        ELECTRON_VAR_NAME: "__PLUGIN_ELECTRON__"
     }
 
     const Package = {
@@ -15,8 +30,8 @@
         Fs: reqnode('fs'),
 
         // 劫持过来的electron核心库
-        getElectron: () => global[config.electronVarName],
-        getRequire: () => global[config.requireVarName],
+        getElectron: () => global[config.ELECTRON_VAR_NAME],
+        getRequire: () => global[config.REQUIRE_VAR_NAME],
     }
 
     const execForWindow = (winId, js) => JSBridge.invoke("executeJavaScript", winId, js);
@@ -60,9 +75,9 @@
     // hijack electron instance and require function in Typora backend
     setTimeout(() => {
         execForAllWindows(`
-            if (!global["${config.electronVarName}"]) {
-                global.${config.requireVarName} = global.reqnode('electron').remote.require;
-                global.${config.electronVarName} = ${config.requireVarName}('electron');
+            if (!global["${config.ELECTRON_VAR_NAME}"]) {
+                global.${config.REQUIRE_VAR_NAME} = global.reqnode('electron').remote.require;
+                global.${config.ELECTRON_VAR_NAME} = ${config.REQUIRE_VAR_NAME}('electron');
             }`
         )
     });
@@ -84,24 +99,25 @@
         #title-bar-window-tabs .title-bar-window-tabs-list {
             display: flex;
             flex-direction: row;
-            flex-wrap: nowrap;
-            justify-content: center;
-            align-items: center;
-            align-items:stretch;
+            flex-wrap: ${config.TAB_WRAP};
+            justify-content: ${config.TABS_JUSTIFY_CONTENT};
+            align-items: ${config.TABS_ALIGN_ITEMS};
             height: 24px;
         }
         
         #title-bar-window-tabs .title-bar-window-tab {
             flex-grow: 1;
-            max-width: 200px;
-            text-align: center;
-            border-style: dashed;
-            border-width: 1px;
-            border-color: #8c8c8c;
+            max-width: ${config.TAB_MAX_WIDTH};
+            padding-left: ${config.TAB_PADDING_LEFT};
+            padding-right: ${config.TAB_PADDING_RIGHT};
+            text-align: ${config.TAB_TEXT_ALIGN};
+            border-style: ${config.TAB_BORDER_STYLE};
+            border-width: ${config.TAB_BORDER_WIDTH};
+            border-color: ${config.TAB_BORDER_COLOR};
             margin-right: -1px;
+            margin-left: -1px;
+            height: 24px;
             cursor: pointer;
-            padding-left: 10px;
-            padding-right: 10px;
         }
         
         #title-bar-window-tabs .title-bar-window-tab.select {
@@ -114,7 +130,7 @@
         
         #title-bar-window-tabs .title-bar-window-tab .window-tab-name {
             overflow: hidden;
-            text-overflow: ellipsis;
+            text-overflow: ${config.TAB_TEXT_OVERFLOW};
             white-space: nowrap;
         }
         `
@@ -133,17 +149,26 @@
     })()
 
     const windowTabs = {
+        tabs: document.getElementById('title-bar-window-tabs'),
         list: document.querySelector(".title-bar-window-tabs-list"),
         titleText: document.getElementById('title-text'),
     }
 
     global.flushWindowTabs = excludeId => {
         const windows = getAllWindows();
-        const focusWinId = getFocusedWindowId();
-        const copy = [...windows];
-        const sortedWindows = copy.sort((a, b) => a.id - b.id);
+        let copy = [...windows];
+        if (excludeId) {
+            copy = copy.filter(win => win.id !== excludeId)
+        }
+        let sortedWindows = copy.sort((a, b) => a.id - b.id);
 
-        windowTabs.list.innerHTML = "";
+        if (sortedWindows.length === 1 && !config.SHOW_TAB_WHEN_ONE_WINDOW) {
+            windowTabs.tabs.style.display = "none";
+            return
+        }
+
+        windowTabs.tabs.style.display = "block";
+        // const focusWinId = getFocusedWindowId();
         const divArr = sortedWindows.map(win => {
             if (excludeId && win.id === excludeId) {
                 return ""
@@ -166,7 +191,7 @@
                 clearInterval(timer);
                 after()
             }
-        }, config.checkInterval)
+        }, config.CHECK_INTERVAL)
     }
 
     const onElectronLoad = func => {
