@@ -2,11 +2,20 @@
     const config = {
         SHOW_TAB_WHEN_ONE_WINDOW: false,
 
+        TABS_WIDTH: "75%",
+        TABS_LEFT: "100px",
+        TABS_MARGIN_LEFT: "10px",
+        TABS_MARGIN_RIGHT: "10px",
+        TABS_HEIGHT: "24px",
         TABS_JUSTIFY_CONTENT: "center",
         TABS_ALIGN_ITEMS: "stretch",
+        TAB_SELECT_BG_COLOR: "#ffafa3",
+        TAB_HOVER_BG_COLOR: "#ffd4cc",
         TAB_MAX_WIDTH: "150px",
         TAB_WRAP: "wrap",
+        TAB_OVERFLOW: "hidden",
         TAB_TEXT_OVERFLOW: "ellipsis",
+        TAB_WHITE_SPACE: "nowrap",
         TAB_TEXT_ALIGN: "center",
         TAB_PADDING_LEFT: "10px",
         TAB_PADDING_RIGHT: "10px",
@@ -87,12 +96,12 @@
         const title_bar_css = `
         #title-bar-window-tabs {
             position: absolute;
-            left: 100px;
             -webkit-app-region: no-drag;
-            width: 75%;
-            height: 24px;
-            margin-left: 10px;
-            margin-right: 10px;
+            left: ${config.TABS_LEFT};
+            width: ${config.TABS_WIDTH};
+            height: ${config.TABS_HEIGHT};
+            margin-left: ${config.TABS_MARGIN_LEFT};
+            margin-right: ${config.TABS_MARGIN_RIGHT};
             z-index: 9999;
         }
         
@@ -102,11 +111,12 @@
             flex-wrap: ${config.TAB_WRAP};
             justify-content: ${config.TABS_JUSTIFY_CONTENT};
             align-items: ${config.TABS_ALIGN_ITEMS};
-            height: 24px;
+            height: ${config.TABS_HEIGHT};
         }
         
         #title-bar-window-tabs .title-bar-window-tab {
             flex-grow: 1;
+            height: ${config.TABS_HEIGHT};
             max-width: ${config.TAB_MAX_WIDTH};
             padding-left: ${config.TAB_PADDING_LEFT};
             padding-right: ${config.TAB_PADDING_RIGHT};
@@ -116,22 +126,21 @@
             border-color: ${config.TAB_BORDER_COLOR};
             margin-right: -1px;
             margin-left: -1px;
-            height: 24px;
             cursor: pointer;
         }
         
         #title-bar-window-tabs .title-bar-window-tab.select {
-            background-color: #ffafa3;
+            background-color: ${config.TAB_SELECT_BG_COLOR};
         }
         
         #title-bar-window-tabs .title-bar-window-tab:hover {
-            background-color: #ffd4cc;
+            background-color: ${config.TAB_HOVER_BG_COLOR};
         }
         
         #title-bar-window-tabs .title-bar-window-tab .window-tab-name {
-            overflow: hidden;
+            overflow: ${config.TAB_OVERFLOW};
             text-overflow: ${config.TAB_TEXT_OVERFLOW};
-            white-space: nowrap;
+            white-space: ${config.TAB_WHITE_SPACE};
         }
         `
         const style = document.createElement('style');
