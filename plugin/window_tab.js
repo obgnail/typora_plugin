@@ -3,8 +3,9 @@
         DEBUG: true,
 
         SHOW_TAB_WHEN_ONE_WINDOW: false,
-        HIDE_ORIGIN_WINDOW_TITLE: true,
         AUTO_HIDE_WHEN_MENU_OPEN: true,
+        HIDE_ORIGIN_WINDOW_TITLE: false,
+        HIDE_TRAFFIC_LIGHTS: false,
 
         TABS_WIDTH: "75%",
         TABS_LEFT: "100px",
@@ -16,7 +17,7 @@
         TAB_SELECT_BG_COLOR: "#ffafa3",
         TAB_HOVER_BG_COLOR: "#ffd4cc",
         TAB_MAX_WIDTH: "150px",
-        TAB_WRAP: "wrap",
+        TAB_WRAP: "nowrap",
         TAB_OVERFLOW: "hidden",
         TAB_TEXT_OVERFLOW: "ellipsis",
         TAB_WHITE_SPACE: "nowrap",
@@ -156,6 +157,9 @@
         if (config.HIDE_ORIGIN_WINDOW_TITLE) {
             document.getElementById('title-text').style.display = "none";
         }
+        if (config.HIDE_TRAFFIC_LIGHTS) {
+            document.getElementById("w-traffic-lights").style.display = "none";
+        }
     })()
 
     const windowTabs = {
@@ -234,7 +238,9 @@
 
     global.updateTabTitle = (winId, title) => {
         const tab = windowTabs.list.querySelector(`.title-bar-window-tab[winid="${winId}"] .window-tab-name`);
-        tab.textContent = title
+        if (tab) {
+            tab.textContent = title;
+        }
     }
 
     // 其实下面函数都可以使用flushWindowTabs代替,但是flushWindowTabs太重了
@@ -248,32 +254,43 @@
         }
     }
 
-    const loopDetect = (check, after) => {
+    const onElectronLoad = func => {
         const timer = setInterval(() => {
-            if (check()) {
+            if (Package.getElectron() && Package.getRequire()) {
                 clearInterval(timer);
-                after();
+                func()
             }
         }, config.CHECK_INTERVAL)
     }
 
-    const onElectronLoad = func => {
-        loopDetect(
-            () => Package.getElectron() && Package.getRequire(),
-            () => func(Package.getRequire(), Package.getElectron())
-        )
+    // 当窗口加载完毕
+    onElectronLoad(() => {
+        flushWindowTabs();
+        recordWindowId();
+        registerOnFocus();
+    })
+
+    const recordWindowId = () => {
+        let winId = getFocusedWindow().id;
+        windowTabs.tabs.setAttribute("winid", winId);
     }
 
-    // 当窗口加载完毕
-    onElectronLoad((require, electron) => {
-        flushWindowTabs();
-        let controller = getDocumentController();
-        console.log(controller);
-    })
+    const registerOnFocus = () => {
+        // 应用外点击任务栏切换窗口
+        let lastFocusTime = 0;
+        document.addEventListener('focus', (ev) => {
+            if (ev.timeStamp - lastFocusTime > 100) {
+                changeHighlightTab();
+                lastFocusTime = ev.timeStamp
+            }
+        }, true);
+    }
 
     // 当前窗口切换文件
     new MutationObserver(() => {
-        windowTabs.titleText.style.display = "none";
+        if (config.HIDE_ORIGIN_WINDOW_TITLE) {
+            windowTabs.titleText.style.display = "none";
+        }
         const win = getFocusedWindow();
         const name = getWindowName(win);
         updateTabTitle(win.id, name);
@@ -281,7 +298,7 @@
 
     // 关闭窗口
     window.addEventListener("beforeunload", ev => {
-        const focusWinId = getFocusedWindow().id;
+        const focusWinId = windowTabs.tabs.getAttribute("winid");
         removeWindowTab(focusWinId);
     }, true)
 
@@ -296,21 +313,13 @@
         changeHighlightTab();
     })
 
-    // 应用外点击任务栏切换窗口
-    let lastFocusTime = 0;
-    document.addEventListener('focus', (ev) => {
-        if (ev.timeStamp - lastFocusTime > 100) {
-            changeHighlightTab();
-            lastFocusTime = ev.timeStamp
-        }
-    }, true);
-
     if (config.AUTO_HIDE_WHEN_MENU_OPEN) {
         new MutationObserver((mutationList) => {
             for (const mutation of mutationList) {
                 if (mutation.type === 'attributes' && mutation.attributeName === "class") {
                     const value = document.body.getAttribute(mutation.attributeName);
-                    windowTabs.tabs.style.display = value.indexOf("megamenu-opened") !== -1 ? "none" : "block";
+                    let b = value.indexOf("megamenu-opened") !== -1 || value.indexOf("show-preference-panel") !== -1;
+                    windowTabs.tabs.style.display = b ? "none" : "block";
                 }
             }
         }).observe(document.body, {attributes: true});

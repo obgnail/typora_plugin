@@ -40,7 +40,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
             border: 1px solid #ddd;
             border-top: none;
-            color: #333333;
+            color: var(--text-color);
             transform: translate3d(0, 0, 0)
         }
         
@@ -95,8 +95,8 @@
         
         #typora-search-multi-input .search-multi-search-option-btn.select,
         #typora-search-multi-input .search-multi-search-option-btn:hover {
-            background: #fff3f0;
-            color: #262626;
+            background: var(--active-file-bg-color);
+            color: var(--active-file-text-color);
             opacity: 1
         }
         
@@ -112,9 +112,9 @@
         
         .typora-search-multi-item:hover,
         .typora-search-multi-item.active {
-            background-color: #fff3f0;
-            border-color: #262626;
-            color: #262626;
+            background-color: var(--active-file-bg-color);
+            border-color: var(--active-file-text-color);
+            color: var(--active-file-text-color);
             cursor: pointer;
         }
         
