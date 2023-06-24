@@ -1,6 +1,6 @@
 (() => {
     const config = {
-        checkInterval: 30,
+        checkInterval: 50,
         requireVarName: "__PLUGIN_REQUIRE__",
         electronVarName: "__PLUGIN_ELECTRON__"
     }
@@ -97,9 +97,11 @@
             text-align: center;
             border-style: dashed;
             border-width: 1px;
-            border-color: var(--mid-7);
+            border-color: #8c8c8c;
             margin-right: -1px;
             cursor: pointer;
+            padding-left: 10px;
+            padding-right: 10px;
         }
         
         #title-bar-window-tabs .title-bar-window-tab.select {
@@ -135,7 +137,7 @@
         titleText: document.getElementById('title-text'),
     }
 
-    global.flushWindowTabs = (excludeId) => {
+    global.flushWindowTabs = excludeId => {
         const windows = getAllWindows();
         const focusWinId = getFocusedWindowId();
         const copy = [...windows];
@@ -146,11 +148,16 @@
             if (excludeId && win.id === excludeId) {
                 return ""
             }
-            const name = cleanName(win.getTitle());
-            let selected = win.id === focusWinId ? "select" : "";
+            const name = getWindowName(win);
+            // let selected = win.id === focusWinId ? "select" : "";
+            let selected = "";
             return `<div class="title-bar-window-tab ${selected}" winId="${win.id}"><div class="window-tab-name">${name}</div></div>`
         })
         windowTabs.list.innerHTML = divArr.join("");
+    }
+
+    const flushWindowTabs = excludeId => {
+        execForAllWindows(`global.flushWindowTabs(${excludeId})`)
     }
 
     const loopDetect = (check, after) => {
@@ -169,8 +176,8 @@
         )
     }
 
-    const cleanName = name => {
-        name = name.replace("- Typora", "").trim();
+    const getWindowName = win => {
+        let name = win.getTitle().replace("- Typora", "").trim();
         const idx = name.lastIndexOf(".");
         if (idx !== -1) {
             name = name.substring(0, idx);
@@ -179,7 +186,7 @@
     }
 
     onElectronLoad((require, electron) => {
-        execForAllWindows(`global.flushWindowTabs()`);
+        flushWindowTabs();
     })
 
     window.addEventListener("beforeunload", ev => {
@@ -197,38 +204,43 @@
     })
 
     new MutationObserver((mutations) => {
-        execForAllWindows(`global.flushWindowTabs()`);
+        flushWindowTabs();
     }).observe(windowTabs.titleText, {childList: true});
 
-    // document.addEventListener('visibilitychange', () => {
-    //     console.log("123");
-    //     // 用户离开了当前页面
-    //     if (document.visibilityState === 'hidden') {
-    //         document.title = '页面不可见';
-    //     }
-    //
-    //     // 用户打开或回到页面
-    //     if (document.visibilityState === 'visible') {
-    //         const focusWinId = getFocusedWindowId()
-    //         const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
-    //         for (const tab of tabs) {
-    //             const winId = tab.getAttribute("winId");
-    //             if (winId !== focusWinId) {
-    //                 tab.classList.remove("select");
-    //             } else {
-    //                 tab.classList.add("select");
-    //             }
-    //         }
-    //     }
-    // });
 
-    // global.test = () => getAllWindows().forEach(win => {
-    //     console.log({"id": win.id, "name": win.getTitle()})
-    // })
-    //
-    // global.getFocusedWindow = getFocusedWindowId
-    // global.execForWindow = execForWindow
-    // global.execForAllWindows = execForAllWindows
+    document.addEventListener('visibilitychange', () => {
+        execForAllWindows(`console.log(123,123,123)`);
+
+        // console.log("123");
+
+        // // 用户离开了当前页面
+        // if (document.visibilityState === 'hidden') {
+        //     console.log('页面不可见');
+        // }
+        //
+        // // 用户打开或回到页面
+        // if (document.visibilityState === 'visible') {
+        //     console.log('visible');
+        //     // const focusWinId = getFocusedWindowId()
+        //     // const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
+        //     // for (const tab of tabs) {
+        //     //     const winId = tab.getAttribute("winId");
+        //     //     if (winId !== focusWinId) {
+        //     //         tab.classList.remove("select");
+        //     //     } else {
+        //     //         tab.classList.add("select");
+        //     //     }
+        //     // }
+        // }
+    });
+
+    global.test = () => getAllWindows().forEach(win => {
+        console.log({"id": win.id, "name": win.getTitle()})
+    })
+
+    global.getFocusedWindow = getFocusedWindowId
+    global.execForWindow = execForWindow
+    global.execForAllWindows = execForAllWindows
 
     console.log("window_tab.js had been injected");
 })();
