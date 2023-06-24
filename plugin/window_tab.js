@@ -165,13 +165,17 @@
         titleText: document.getElementById('title-text'),
     }
 
-    global.flushWindowTabs = excludeId => {
+    global.flushWindowTabs = (excludeId, sortFunc) => {
+        if (!sortFunc) {
+            sortFunc = winList => winList.sort((a, b) => a.id - b.id)
+        }
+
         const windows = getAllWindows();
         let copy = [...windows];
         if (excludeId) {
             copy = copy.filter(win => win.id !== excludeId)
         }
-        let sortedWindows = copy.sort((a, b) => a.id - b.id);
+        let sortedWindows = sortFunc(copy);
 
         if (sortedWindows.length === 1 && !config.SHOW_TAB_WHEN_ONE_WINDOW) {
             windowTabs.tabs.style.display = "none";
