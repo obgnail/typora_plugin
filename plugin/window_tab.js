@@ -181,13 +181,10 @@
         windowTabs.tabs.style.display = "block";
         // const focusWinId = getFocusedWindowId();
         const divArr = sortedWindows.map(win => {
-            if (excludeId && win.id === excludeId) {
-                return ""
-            }
             const name = getWindowName(win);
-            // let selected = win.id === focusWinId ? "select" : "";
+            // let selected = win.id === focusWinId ? " select" : "";
             let selected = "";
-            return `<div class="title-bar-window-tab ${selected}" winId="${win.id}"><div class="window-tab-name">${name}</div></div>`
+            return `<div class="title-bar-window-tab${selected}" winId="${win.id}"><div class="window-tab-name">${name}</div></div>`
         })
         windowTabs.list.innerHTML = divArr.join("");
     }
