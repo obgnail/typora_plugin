@@ -177,11 +177,9 @@
     }
 
     const showOriginTitleIfNeed = () => {
-        if (config.HIDE_ORIGIN_WINDOW_TITLE && !config.SHOW_TAB_WHEN_ONE_WINDOW
-            && windowTabs.list.childElementCount <= 1) {
-            windowTabs.titleText.style.display = "block";
-        } else if (config.HIDE_ORIGIN_WINDOW_TITLE) {
-            windowTabs.titleText.style.display = "none";
+        if (config.HIDE_ORIGIN_WINDOW_TITLE) {
+            const b = !config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
+            windowTabs.titleText.style.display = b ? "block" : "none";
         }
     }
 
@@ -189,6 +187,12 @@
         if (config.HIDE_TRAFFIC_LIGHTS) {
             document.getElementById("w-traffic-lights").style.display = "none";
         }
+    }
+
+    const newTab = (winId, title, select) => {
+        let selected = select ? " select" : "";
+        return `<div class="title-bar-window-tab${selected}" ty-hint="${title}" winid="${winId}">
+                        <div class="window-tab-name">${title}</div></div>`
     }
 
     global.flushWindowTabs = (excludeId, sortFunc) => {
@@ -205,19 +209,19 @@
         let sortedWindows = sortFunc(copy);
         const focusWinId = getFocusedWindow().id;
         const divArr = sortedWindows.map(win => {
-            const name = getWindowName(win);
-            let selected = win.id === focusWinId ? " select" : "";
-            return `<div class="title-bar-window-tab${selected}" ty-hint="${name}" winid="${win.id}"><div class="window-tab-name">${name}</div></div>`
+            const title = getWindowName(win);
+            const select = win.id === focusWinId;
+            return newTab(win.id, title, select);
         })
         windowTabs.list.innerHTML = divArr.join("");
+
         showTabsIfNeed();
         showOriginTitleIfNeed();
         showTrafficLightsIfNeed();
     }
 
     global.addWindowTab = (winId, title, select) => {
-        let selected = select ? " select" : "";
-        const div = `<div class="title-bar-window-tab${selected}" ty-hint="${title}" winid="${winid}"><div class="window-tab-name">${title}</div></div>`
+        const div = newTab(winId, title, select);
         windowTabs.list.insertAdjacentHTML('beforeend', div);
     }
 
