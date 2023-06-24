@@ -78,6 +78,32 @@
     const getDocumentController = () => getAPP().getDocumentController();
     const getDocument = id => getDocumentController().getDocumentFromWindowId(id);
 
+    const getWindowName = win => {
+        let name = win.getTitle().replace("- Typora", "").trim();
+        const idx = name.lastIndexOf(".");
+        if (idx !== -1) {
+            name = name.substring(0, idx);
+        }
+        return name
+    }
+
+    const showTabsIfNeed = () => {
+        const b = !config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
+        windowTabs.tabs.style.display = b ? "none" : "block";
+    }
+
+    const showOriginTitleIfNeed = () => {
+        if (config.HIDE_ORIGIN_WINDOW_TITLE) {
+            document.getElementById('title-text').style.display = "none";
+        }
+    }
+
+    const showTrafficLightsIfNeed = () => {
+        if (config.HIDE_TRAFFIC_LIGHTS) {
+            document.getElementById("w-traffic-lights").style.display = "none";
+        }
+    }
+
     // hijack electron instance and require function in Typora backend
     setTimeout(() => {
         execForAllWindows(`
@@ -154,27 +180,14 @@
         const titleBarLeft = document.getElementById("w-titlebar-left");
         titleBarLeft.parentNode.insertBefore(windowTabs, titleBarLeft.nextSibling);
 
-        if (config.HIDE_ORIGIN_WINDOW_TITLE) {
-            document.getElementById('title-text').style.display = "none";
-        }
-        if (config.HIDE_TRAFFIC_LIGHTS) {
-            document.getElementById("w-traffic-lights").style.display = "none";
-        }
+        showOriginTitleIfNeed();
+        showTrafficLightsIfNeed();
     })()
 
     const windowTabs = {
         tabs: document.getElementById('title-bar-window-tabs'),
         list: document.querySelector(".title-bar-window-tabs-list"),
         titleText: document.getElementById('title-text'),
-    }
-
-    const getWindowName = win => {
-        let name = win.getTitle().replace("- Typora", "").trim();
-        const idx = name.lastIndexOf(".");
-        if (idx !== -1) {
-            name = name.substring(0, idx);
-        }
-        return name
     }
 
     global.flushWindowTabs = (excludeId, sortFunc) => {
@@ -187,14 +200,8 @@
         if (excludeId) {
             copy = copy.filter(win => win.id !== excludeId)
         }
+
         let sortedWindows = sortFunc(copy);
-
-        if (sortedWindows.length === 1 && !config.SHOW_TAB_WHEN_ONE_WINDOW) {
-            windowTabs.tabs.style.display = "none";
-            return
-        }
-
-        windowTabs.tabs.style.display = "block";
         const focusWinId = getFocusedWindow().id;
         const divArr = sortedWindows.map(win => {
             const name = getWindowName(win);
@@ -202,6 +209,7 @@
             return `<div class="title-bar-window-tab${selected}" ty-hint="${name}" winid="${win.id}"><div class="window-tab-name">${name}</div></div>`
         })
         windowTabs.list.innerHTML = divArr.join("");
+        showTabsIfNeed();
     }
 
     global.addWindowTab = (winId, title, select) => {
@@ -215,9 +223,7 @@
         if (tab) {
             tab.parentNode.removeChild(tab);
         }
-        if (!config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount === 1) {
-            windowTabs.tabs.style.display = "none";
-        }
+        showTabsIfNeed();
     }
 
     global.changeHighlightTab = () => {
@@ -241,6 +247,7 @@
         if (tab) {
             tab.textContent = title;
         }
+        showTabsIfNeed();
     }
 
     // 其实下面函数都可以使用flushWindowTabs代替,但是flushWindowTabs太重了
@@ -288,9 +295,7 @@
 
     // 当前窗口切换文件
     new MutationObserver(() => {
-        if (config.HIDE_ORIGIN_WINDOW_TITLE) {
-            windowTabs.titleText.style.display = "none";
-        }
+        showOriginTitleIfNeed();
         const win = getFocusedWindow();
         const name = getWindowName(win);
         updateTabTitle(win.id, name);
@@ -319,7 +324,7 @@
                 if (mutation.type === 'attributes' && mutation.attributeName === "class") {
                     const value = document.body.getAttribute(mutation.attributeName);
                     let b = value.indexOf("megamenu-opened") !== -1 || value.indexOf("show-preference-panel") !== -1;
-                    windowTabs.tabs.style.display = b ? "none" : "block";
+                    showTabsIfNeed();
                 }
             }
         }).observe(document.body, {attributes: true});
