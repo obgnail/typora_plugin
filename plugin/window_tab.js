@@ -195,7 +195,7 @@
                         <div class="window-tab-name">${title}</div></div>`
     }
 
-    global.flushWindowTabs = (excludeId, sortFunc) => {
+    global._flushWindowTabs = (excludeId, sortFunc) => {
         if (!sortFunc) {
             sortFunc = winList => winList.sort((a, b) => a.id - b.id)
         }
@@ -220,12 +220,12 @@
         showTrafficLightsIfNeed();
     }
 
-    global.addWindowTab = (winId, title, select) => {
+    global._addWindowTab = (winId, title, select) => {
         const div = newTab(winId, title, select);
         windowTabs.list.insertAdjacentHTML('beforeend', div);
     }
 
-    global.removeWindowTab = winId => {
+    global._removeWindowTab = winId => {
         const tab = windowTabs.list.querySelector(`.title-bar-window-tab[winid="${winId}"]`);
         if (tab) {
             tab.parentNode.removeChild(tab);
@@ -234,7 +234,7 @@
         showOriginTitleIfNeed();
     }
 
-    global.changeHighlightTab = () => {
+    global._changeHighlightTab = () => {
         const focus = getFocusedWindow()
         const focusWinId = focus.id + "";
         const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
@@ -250,7 +250,7 @@
         }
     }
 
-    global.updateTabTitle = (winId, title) => {
+    global._updateTabTitle = (winId, title) => {
         const tab = windowTabs.list.querySelector(`.title-bar-window-tab[winid="${winId}"] .window-tab-name`);
         if (tab) {
             tab.textContent = title;
@@ -259,13 +259,13 @@
     }
 
     // 其实下面函数都可以使用flushWindowTabs代替,但是flushWindowTabs太重了
-    const flushWindowTabs = excludeId => execForAllWindows(`global.flushWindowTabs(${excludeId})`)
-    const updateTabTitle = (winId, title) => execForAllWindows(`global.updateTabTitle(${winId}, "${title}")`)
-    const changeHighlightTab = () => execForAllWindows(`global.changeHighlightTab()`)
-    const removeWindowTab = winId => execForAllWindows(`global.removeWindowTab(${winId})`)
+    const flushWindowTabs = excludeId => execForAllWindows(`global._flushWindowTabs(${excludeId})`)
+    const updateTabTitle = (winId, title) => execForAllWindows(`global._updateTabTitle(${winId}, "${title}")`)
+    const changeHighlightTab = () => execForAllWindows(`global._changeHighlightTab()`)
+    const removeWindowTab = winId => execForAllWindows(`global._removeWindowTab(${winId})`)
     const addWindowTab = (noticeWins, winId, title, select) => {
         for (const win of noticeWins) {
-            execForWindow(win.id, `global.addWindowTab(${winId}, "${title}", ${select})`)
+            execForWindow(win.id, `global._addWindowTab(${winId}, "${title}", ${select})`)
         }
     }
 
