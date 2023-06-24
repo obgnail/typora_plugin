@@ -1,5 +1,7 @@
 (() => {
     const config = {
+        DEBUG: false,
+
         SHOW_TAB_WHEN_ONE_WINDOW: false,
 
         TABS_WIDTH: "75%",
@@ -198,7 +200,7 @@
         const timer = setInterval(() => {
             if (check()) {
                 clearInterval(timer);
-                after()
+                after();
             }
         }, config.CHECK_INTERVAL)
     }
@@ -237,44 +239,42 @@
         setFocusWindow(parseInt(winId));
     })
 
-    new MutationObserver((mutations) => {
+    new MutationObserver(() => {
         flushWindowTabs();
     }).observe(windowTabs.titleText, {childList: true});
 
 
     document.addEventListener('visibilitychange', () => {
-        execForAllWindows(`console.log(123,123,123)`);
+        // 用户离开了当前页面
+        if (document.visibilityState === 'hidden') {
+            console.log('页面不可见');
+        }
 
-        // console.log("123");
-
-        // // 用户离开了当前页面
-        // if (document.visibilityState === 'hidden') {
-        //     console.log('页面不可见');
-        // }
-        //
-        // // 用户打开或回到页面
-        // if (document.visibilityState === 'visible') {
-        //     console.log('visible');
-        //     // const focusWinId = getFocusedWindowId()
-        //     // const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
-        //     // for (const tab of tabs) {
-        //     //     const winId = tab.getAttribute("winId");
-        //     //     if (winId !== focusWinId) {
-        //     //         tab.classList.remove("select");
-        //     //     } else {
-        //     //         tab.classList.add("select");
-        //     //     }
-        //     // }
-        // }
+        // 用户打开或回到页面
+        if (document.visibilityState === 'visible') {
+            console.log('visible');
+            const focusWinId = getFocusedWindowId()
+            const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
+            for (const tab of tabs) {
+                const winId = tab.getAttribute("winId");
+                if (winId !== focusWinId) {
+                    tab.classList.remove("select");
+                } else {
+                    tab.classList.add("select");
+                }
+            }
+        }
     });
 
-    global.test = () => getAllWindows().forEach(win => {
-        console.log({"id": win.id, "name": win.getTitle()})
-    })
-
-    global.getFocusedWindow = getFocusedWindowId
-    global.execForWindow = execForWindow
-    global.execForAllWindows = execForAllWindows
-
+    if (config.DEBUG) {
+        global.test = () => getAllWindows().forEach(win => {
+            console.log({"id": win.id, "name": win.getTitle()})
+        })
+        global.getFocusedWindow = getFocusedWindowId
+        global.getFocusedWindow = getFocusedWindow
+        global.execForWindow = execForWindow
+        global.execForAllWindows = execForAllWindows
+        global.getDocument = getDocument
+    }
     console.log("window_tab.js had been injected");
 })();
