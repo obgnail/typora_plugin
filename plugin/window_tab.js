@@ -244,6 +244,10 @@
         )
     }
 
+    onElectronLoad((require, electron) => {
+        flushWindowTabs();
+    })
+
     const getWindowName = win => {
         let name = win.getTitle().replace("- Typora", "").trim();
         const idx = name.lastIndexOf(".");
@@ -253,15 +257,20 @@
         return name
     }
 
-    onElectronLoad((require, electron) => {
-        flushWindowTabs();
-    })
+    // 当前窗口切换文件
+    new MutationObserver(() => {
+        const win = getFocusedWindow();
+        const name = getWindowName(win);
+        updateTabTitle(win.id, name);
+    }).observe(windowTabs.titleText, {childList: true});
 
+    // 关闭窗口
     window.addEventListener("beforeunload", ev => {
         const focusWinId = getFocusedWindow().id;
         removeWindowTab(focusWinId);
     }, true)
 
+    // 点击windowTab切换窗口
     windowTabs.list.addEventListener("click", ev => {
         const target = ev.target.closest(".title-bar-window-tab");
         if (!target) {
@@ -272,13 +281,7 @@
         changeHighlightTab();
     })
 
-    new MutationObserver(() => {
-        const win = getFocusedWindow();
-        const name = getWindowName(win);
-        updateTabTitle(win.id, name);
-    }).observe(windowTabs.titleText, {childList: true});
-
-
+    // 应用外点击任务栏切换窗口
     document.addEventListener('visibilitychange', () => {
         // // 用户离开了当前页面
         // if (document.visibilityState === 'hidden') {
