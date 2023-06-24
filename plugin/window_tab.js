@@ -174,14 +174,30 @@
         }
 
         windowTabs.tabs.style.display = "block";
-        // const focusWinId = getFocusedWindow().id;
+        const focusWinId = getFocusedWindow().id;
         const divArr = sortedWindows.map(win => {
             const name = getWindowName(win);
-            // let selected = win.id === focusWinId ? " select" : "";
-            let selected = "";
+            let selected = win.id === focusWinId ? " select" : "";
             return `<div class="title-bar-window-tab${selected}" winId="${win.id}"><div class="window-tab-name">${name}</div></div>`
         })
         windowTabs.list.innerHTML = divArr.join("");
+    }
+
+    global.changeHighlightTab = () => {
+        const focusWinId = getFocusedWindow().id + "";
+        const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
+        for (const tab of tabs) {
+            const winId = tab.getAttribute("winId");
+            if (winId !== focusWinId) {
+                tab.classList.remove("select");
+            } else {
+                tab.classList.add("select");
+            }
+        }
+    }
+
+    const changeHighlightTab = () => {
+        execForAllWindows(`global.changeHighlightTab()`)
     }
 
     const flushWindowTabs = excludeId => {
@@ -229,6 +245,7 @@
         }
         const winId = target.getAttribute("winId");
         setFocusWindow(parseInt(winId));
+        changeHighlightTab();
     })
 
     new MutationObserver(() => {
@@ -237,25 +254,16 @@
 
 
     document.addEventListener('visibilitychange', () => {
-        // 用户离开了当前页面
-        if (document.visibilityState === 'hidden') {
-            console.log('页面不可见');
-        }
-
-        // 用户打开或回到页面
-        if (document.visibilityState === 'visible') {
-            console.log('visible');
-            const focusWinId = getFocusedWindow().id;
-            const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
-            for (const tab of tabs) {
-                const winId = tab.getAttribute("winId");
-                if (winId !== focusWinId) {
-                    tab.classList.remove("select");
-                } else {
-                    tab.classList.add("select");
-                }
-            }
-        }
+        // // 用户离开了当前页面
+        // if (document.visibilityState === 'hidden') {
+        //     console.log('页面不可见');
+        // }
+        //
+        // // 用户打开或回到页面
+        // if (document.visibilityState === 'visible') {
+        //     console.log('visible');
+        //     changeHighlightTab();
+        // }
     });
 
     if (config.DEBUG) {
