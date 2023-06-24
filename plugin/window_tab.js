@@ -2,10 +2,13 @@
     const config = {
         DEBUG: true,
 
+        // 当只有一个窗口时是否展示
         SHOW_TAB_WHEN_ONE_WINDOW: false,
+        // 当打开开始菜单的时候是否隐藏
         AUTO_HIDE_WHEN_MENU_OPEN: true,
-        // 当 SHOW_TAB_WHEN_ONE_WINDOW 为 false，且只有一个窗口时，强制为true
+        // 隐藏掉原始的标题，当 SHOW_TAB_WHEN_ONE_WINDOW 为 false，且只有一个窗口时，强制为 false
         HIDE_ORIGIN_WINDOW_TITLE: true,
+        // 隐藏掉最小大化关闭按钮
         HIDE_TRAFFIC_LIGHTS: false,
 
         TABS_WIDTH: "75%",
@@ -30,7 +33,8 @@
         TAB_BORDER_COLOR: "#8c8c8c",
         TAB_BORDER_RADIUS: "3px",
 
-        CHECK_INTERVAL: 50,
+        LOOP_CHECK_INTERVAL: 50,
+        FOCUS_CHECK_INTERVAL: 100,
 
         REQUIRE_VAR_NAME: "__PLUGIN_REQUIRE__",
         ELECTRON_VAR_NAME: "__PLUGIN_ELECTRON__"
@@ -171,7 +175,12 @@
         return name
     }
 
-    const showTabsIfNeed = () => {
+    const showTabsIfNeed = forceHide => {
+        if (forceHide) {
+            windowTabs.tabs.style.display = "none";
+            return
+        }
+
         const b = !config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
         windowTabs.tabs.style.display = b ? "none" : "block";
     }
@@ -190,7 +199,7 @@
     }
 
     const newTab = (winId, title, select) => {
-        let selected = select ? " select" : "";
+        const selected = select ? " select" : "";
         return `<div class="title-bar-window-tab${selected}" ty-hint="${title}" winid="${winId}">
                         <div class="window-tab-name">${title}</div></div>`
     }
@@ -206,7 +215,7 @@
             copy = copy.filter(win => win.id !== excludeId)
         }
 
-        let sortedWindows = sortFunc(copy);
+        const sortedWindows = sortFunc(copy);
         const focusWinId = getFocusedWindow().id;
         const divArr = sortedWindows.map(win => {
             const title = getWindowName(win);
@@ -221,8 +230,8 @@
     }
 
     global._addWindowTab = (winId, title, select) => {
-        const div = newTab(winId, title, select);
-        windowTabs.list.insertAdjacentHTML('beforeend', div);
+        const tab = newTab(winId, title, select);
+        windowTabs.list.insertAdjacentHTML('beforeend', tab);
     }
 
     global._removeWindowTab = winId => {
@@ -244,7 +253,7 @@
                 tab.classList.remove("select");
             } else {
                 tab.classList.add("select");
-                let name = getWindowName(focus);
+                const name = getWindowName(focus);
                 tab.setAttribute("ty-hint", name);
             }
         }
@@ -275,26 +284,26 @@
                 clearInterval(timer);
                 func()
             }
-        }, config.CHECK_INTERVAL)
+        }, config.LOOP_CHECK_INTERVAL)
     }
 
     // 当窗口加载完毕
     onElectronLoad(() => {
         flushWindowTabs();
-        recordWindowId();
+        recordCurWindowId();
         registerOnFocus();
     })
 
-    const recordWindowId = () => {
-        let winId = getFocusedWindow().id;
+    const recordCurWindowId = () => {
+        const winId = getFocusedWindow().id;
         windowTabs.tabs.setAttribute("winid", winId);
     }
 
+    // 应用外点击任务栏切换窗口
     const registerOnFocus = () => {
-        // 应用外点击任务栏切换窗口
         let lastFocusTime = 0;
-        document.addEventListener('focus', (ev) => {
-            if (ev.timeStamp - lastFocusTime > 100) {
+        document.addEventListener("focus", ev => {
+            if (ev.timeStamp - lastFocusTime > config.FOCUS_CHECK_INTERVAL) {
                 changeHighlightTab();
                 lastFocusTime = ev.timeStamp
             }
@@ -315,7 +324,7 @@
         removeWindowTab(focusWinId);
     }, true)
 
-    // 点击windowTab切换窗口
+    // 点击Tab切换窗口
     windowTabs.list.addEventListener("click", ev => {
         const target = ev.target.closest(".title-bar-window-tab");
         if (!target) {
@@ -331,8 +340,8 @@
             for (const mutation of mutationList) {
                 if (mutation.type === 'attributes' && mutation.attributeName === "class") {
                     const value = document.body.getAttribute(mutation.attributeName);
-                    let b = value.indexOf("megamenu-opened") !== -1 || value.indexOf("show-preference-panel") !== -1;
-                    showTabsIfNeed();
+                    const force = value.indexOf("megamenu-opened") !== -1 || value.indexOf("show-preference-panel") !== -1;
+                    showTabsIfNeed(force);
                 }
             }
         }).observe(document.body, {attributes: true});
