@@ -1,6 +1,6 @@
 (() => {
     const config = {
-        DEBUG: false,
+        DEBUG: true,
 
         SHOW_TAB_WHEN_ONE_WINDOW: false,
 
@@ -53,21 +53,12 @@
     const getIPC = () => Package.getElectron().ipcMain;
 
     const getAllWindows = () => getBrowserWindow().getAllWindows();
-    const getFocusedWindowId = () => getAPP().getCurrentFocusWindowId();
+    const getFocusedWindow = () => getBrowserWindow().getFocusedWindow();
     const rangeWindow = func => {
         const windows = getAllWindows();
         for (const win of windows) {
             if (func(win)) {
                 return
-            }
-        }
-    }
-    const getFocusedWindow = () => {
-        let focused = getFocusedWindowId();
-        const windows = getAllWindows();
-        for (const win of windows) {
-            if (win.id === focused) {
-                return win
             }
         }
     }
@@ -183,7 +174,7 @@
         }
 
         windowTabs.tabs.style.display = "block";
-        // const focusWinId = getFocusedWindowId();
+        // const focusWinId = getFocusedWindow().id;
         const divArr = sortedWindows.map(win => {
             const name = getWindowName(win);
             // let selected = win.id === focusWinId ? " select" : "";
@@ -227,7 +218,7 @@
     })
 
     window.addEventListener("beforeunload", ev => {
-        const focusWinId = getFocusedWindowId();
+        const focusWinId = getFocusedWindow().id;
         execForAllWindows(`global.flushWindowTabs(${focusWinId})`)
     }, true)
 
@@ -254,7 +245,7 @@
         // 用户打开或回到页面
         if (document.visibilityState === 'visible') {
             console.log('visible');
-            const focusWinId = getFocusedWindowId()
+            const focusWinId = getFocusedWindow().id;
             const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
             for (const tab of tabs) {
                 const winId = tab.getAttribute("winId");
@@ -271,7 +262,6 @@
         global.test = () => getAllWindows().forEach(win => {
             console.log({"id": win.id, "name": win.getTitle()})
         })
-        global.getFocusedWindow = getFocusedWindowId
         global.getFocusedWindow = getFocusedWindow
         global.execForWindow = execForWindow
         global.execForAllWindows = execForAllWindows
