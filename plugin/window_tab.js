@@ -196,6 +196,15 @@
         }
     }
 
+    global.updateTabTitle = (winId, title) => {
+        const tab = windowTabs.list.querySelector(`.title-bar-window-tab[winId="${winId}"] .window-tab-name`);
+        tab.textContent = title
+    }
+
+    const updateTabTitle = (winId, title) => {
+        execForAllWindows(`global.updateTabTitle(${winId}, "${title}")`)
+    }
+
     const changeHighlightTab = () => {
         execForAllWindows(`global.changeHighlightTab()`)
     }
@@ -249,7 +258,9 @@
     })
 
     new MutationObserver(() => {
-        flushWindowTabs();
+        const win = getFocusedWindow();
+        const name = getWindowName(win);
+        updateTabTitle(win.id, name);
     }).observe(windowTabs.titleText, {childList: true});
 
 
