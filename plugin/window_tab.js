@@ -178,21 +178,24 @@
         const divArr = sortedWindows.map(win => {
             const name = getWindowName(win);
             let selected = win.id === focusWinId ? " select" : "";
-            return `<div class="title-bar-window-tab${selected}" winId="${win.id}"><div class="window-tab-name">${name}</div></div>`
+            return `<div class="title-bar-window-tab${selected}" winid="${win.id}"><div class="window-tab-name">${name}</div></div>`
         })
         windowTabs.list.innerHTML = divArr.join("");
     }
 
     global.addWindowTab = (winId, title, select) => {
         let selected = select ? " select" : "";
-        const div = `<div class="title-bar-window-tab${selected}" winId="${winId}"><div class="window-tab-name">${title}</div></div>`
+        const div = `<div class="title-bar-window-tab${selected}" winid="${winid}"><div class="window-tab-name">${title}</div></div>`
         windowTabs.list.insertAdjacentHTML('beforeend', div);
     }
 
     global.removeWindowTab = winId => {
-        const tab = windowTabs.list.querySelector(`.title-bar-window-tab[winId="${winId}"]`);
+        const tab = windowTabs.list.querySelector(`.title-bar-window-tab[winid="${winId}"]`);
         if (tab) {
             tab.parentNode.removeChild(tab);
+        }
+        if (!config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount === 1) {
+            windowTabs.tabs.style.display = "none";
         }
     }
 
@@ -200,7 +203,7 @@
         const focusWinId = getFocusedWindow().id + "";
         const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
         for (const tab of tabs) {
-            const winId = tab.getAttribute("winId");
+            const winId = tab.getAttribute("winid");
             if (winId !== focusWinId) {
                 tab.classList.remove("select");
             } else {
@@ -210,7 +213,7 @@
     }
 
     global.updateTabTitle = (winId, title) => {
-        const tab = windowTabs.list.querySelector(`.title-bar-window-tab[winId="${winId}"] .window-tab-name`);
+        const tab = windowTabs.list.querySelector(`.title-bar-window-tab[winid="${winId}"] .window-tab-name`);
         tab.textContent = title
     }
 
@@ -264,7 +267,7 @@
         if (!target) {
             return
         }
-        const winId = target.getAttribute("winId");
+        const winId = target.getAttribute("winid");
         setFocusWindow(parseInt(winId));
         changeHighlightTab();
     })
