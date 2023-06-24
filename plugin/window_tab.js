@@ -3,6 +3,8 @@
         DEBUG: true,
 
         SHOW_TAB_WHEN_ONE_WINDOW: false,
+        HIDE_ORIGIN_WINDOW_TITLE: true,
+        AUTO_HIDE_WHEN_MENU_OPEN: true,
 
         TABS_WIDTH: "75%",
         TABS_LEFT: "100px",
@@ -150,6 +152,10 @@
         windowTabs.innerHTML = title_bar_div;
         const titleBarLeft = document.getElementById("w-titlebar-left");
         titleBarLeft.parentNode.insertBefore(windowTabs, titleBarLeft.nextSibling);
+
+        if (config.HIDE_ORIGIN_WINDOW_TITLE) {
+            document.getElementById('title-text').style.display = "none";
+        }
     })()
 
     const windowTabs = {
@@ -189,14 +195,14 @@
         const divArr = sortedWindows.map(win => {
             const name = getWindowName(win);
             let selected = win.id === focusWinId ? " select" : "";
-            return `<div class="title-bar-window-tab${selected}" winid="${win.id}"><div class="window-tab-name">${name}</div></div>`
+            return `<div class="title-bar-window-tab${selected}" ty-hint="${name}" winid="${win.id}"><div class="window-tab-name">${name}</div></div>`
         })
         windowTabs.list.innerHTML = divArr.join("");
     }
 
     global.addWindowTab = (winId, title, select) => {
         let selected = select ? " select" : "";
-        const div = `<div class="title-bar-window-tab${selected}" winid="${winid}"><div class="window-tab-name">${title}</div></div>`
+        const div = `<div class="title-bar-window-tab${selected}" ty-hint="${title}" winid="${winid}"><div class="window-tab-name">${title}</div></div>`
         windowTabs.list.insertAdjacentHTML('beforeend', div);
     }
 
@@ -211,7 +217,8 @@
     }
 
     global.changeHighlightTab = () => {
-        const focusWinId = getFocusedWindow().id + "";
+        const focus = getFocusedWindow()
+        const focusWinId = focus.id + "";
         const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
         for (const tab of tabs) {
             const winId = tab.getAttribute("winid");
@@ -219,6 +226,8 @@
                 tab.classList.remove("select");
             } else {
                 tab.classList.add("select");
+                let name = getWindowName(focus);
+                tab.setAttribute("ty-hint", name);
             }
         }
     }
@@ -264,6 +273,7 @@
 
     // 当前窗口切换文件
     new MutationObserver(() => {
+        windowTabs.titleText.style.display = "none";
         const win = getFocusedWindow();
         const name = getWindowName(win);
         updateTabTitle(win.id, name);
@@ -294,6 +304,17 @@
             lastFocusTime = ev.timeStamp
         }
     }, true);
+
+    if (config.AUTO_HIDE_WHEN_MENU_OPEN) {
+        new MutationObserver((mutationList) => {
+            for (const mutation of mutationList) {
+                if (mutation.type === 'attributes' && mutation.attributeName === "class") {
+                    const value = document.body.getAttribute(mutation.attributeName);
+                    windowTabs.tabs.style.display = value.indexOf("megamenu-opened") !== -1 ? "none" : "block";
+                }
+            }
+        }).observe(document.body, {attributes: true});
+    }
 
     if (config.DEBUG) {
         global.test = () => getAllWindows().forEach(win => {
