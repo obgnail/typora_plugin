@@ -4,7 +4,8 @@
 
         SHOW_TAB_WHEN_ONE_WINDOW: false,
         AUTO_HIDE_WHEN_MENU_OPEN: true,
-        HIDE_ORIGIN_WINDOW_TITLE: false,
+        // 当 SHOW_TAB_WHEN_ONE_WINDOW 为 false，且只有一个窗口时，强制为true
+        HIDE_ORIGIN_WINDOW_TITLE: true,
         HIDE_TRAFFIC_LIGHTS: false,
 
         TABS_WIDTH: "75%",
@@ -77,32 +78,6 @@
 
     const getDocumentController = () => getAPP().getDocumentController();
     const getDocument = id => getDocumentController().getDocumentFromWindowId(id);
-
-    const getWindowName = win => {
-        let name = win.getTitle().replace("- Typora", "").trim();
-        const idx = name.lastIndexOf(".");
-        if (idx !== -1) {
-            name = name.substring(0, idx);
-        }
-        return name
-    }
-
-    const showTabsIfNeed = () => {
-        const b = !config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
-        windowTabs.tabs.style.display = b ? "none" : "block";
-    }
-
-    const showOriginTitleIfNeed = () => {
-        if (config.HIDE_ORIGIN_WINDOW_TITLE) {
-            document.getElementById('title-text').style.display = "none";
-        }
-    }
-
-    const showTrafficLightsIfNeed = () => {
-        if (config.HIDE_TRAFFIC_LIGHTS) {
-            document.getElementById("w-traffic-lights").style.display = "none";
-        }
-    }
 
     // hijack electron instance and require function in Typora backend
     setTimeout(() => {
@@ -179,15 +154,41 @@
         windowTabs.innerHTML = title_bar_div;
         const titleBarLeft = document.getElementById("w-titlebar-left");
         titleBarLeft.parentNode.insertBefore(windowTabs, titleBarLeft.nextSibling);
-
-        showOriginTitleIfNeed();
-        showTrafficLightsIfNeed();
     })()
 
     const windowTabs = {
         tabs: document.getElementById('title-bar-window-tabs'),
         list: document.querySelector(".title-bar-window-tabs-list"),
         titleText: document.getElementById('title-text'),
+    }
+
+    const getWindowName = win => {
+        let name = win.getTitle().replace("- Typora", "").trim();
+        const idx = name.lastIndexOf(".");
+        if (idx !== -1) {
+            name = name.substring(0, idx);
+        }
+        return name
+    }
+
+    const showTabsIfNeed = () => {
+        const b = !config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
+        windowTabs.tabs.style.display = b ? "none" : "block";
+    }
+
+    const showOriginTitleIfNeed = () => {
+        if (config.HIDE_ORIGIN_WINDOW_TITLE && !config.SHOW_TAB_WHEN_ONE_WINDOW
+            && windowTabs.list.childElementCount <= 1) {
+            windowTabs.titleText.style.display = "block";
+        } else if (config.HIDE_ORIGIN_WINDOW_TITLE) {
+            windowTabs.titleText.style.display = "none";
+        }
+    }
+
+    const showTrafficLightsIfNeed = () => {
+        if (config.HIDE_TRAFFIC_LIGHTS) {
+            document.getElementById("w-traffic-lights").style.display = "none";
+        }
     }
 
     global.flushWindowTabs = (excludeId, sortFunc) => {
@@ -210,6 +211,8 @@
         })
         windowTabs.list.innerHTML = divArr.join("");
         showTabsIfNeed();
+        showOriginTitleIfNeed();
+        showTrafficLightsIfNeed();
     }
 
     global.addWindowTab = (winId, title, select) => {
@@ -224,6 +227,7 @@
             tab.parentNode.removeChild(tab);
         }
         showTabsIfNeed();
+        showOriginTitleIfNeed();
     }
 
     global.changeHighlightTab = () => {
