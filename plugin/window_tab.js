@@ -183,6 +183,17 @@
         windowTabs.list.innerHTML = divArr.join("");
     }
 
+    // global.addWindowTab = (winId, title) => {
+    //     // windowTabs.list
+    // }
+
+    global.removeWindowTab = winId => {
+        const tab = windowTabs.list.querySelector(`.title-bar-window-tab[winId="${winId}"]`);
+        if (tab) {
+            tab.parentNode.removeChild(tab);
+        }
+    }
+
     global.changeHighlightTab = () => {
         const focusWinId = getFocusedWindow().id + "";
         const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
@@ -201,17 +212,10 @@
         tab.textContent = title
     }
 
-    const updateTabTitle = (winId, title) => {
-        execForAllWindows(`global.updateTabTitle(${winId}, "${title}")`)
-    }
-
-    const changeHighlightTab = () => {
-        execForAllWindows(`global.changeHighlightTab()`)
-    }
-
-    const flushWindowTabs = excludeId => {
-        execForAllWindows(`global.flushWindowTabs(${excludeId})`)
-    }
+    const removeWindowTab = winId => execForAllWindows(`global.removeWindowTab(${winId})`)
+    const updateTabTitle = (winId, title) => execForAllWindows(`global.updateTabTitle(${winId}, "${title}")`)
+    const changeHighlightTab = () => execForAllWindows(`global.changeHighlightTab()`)
+    const flushWindowTabs = excludeId => execForAllWindows(`global.flushWindowTabs(${excludeId})`)
 
     const loopDetect = (check, after) => {
         const timer = setInterval(() => {
@@ -244,7 +248,7 @@
 
     window.addEventListener("beforeunload", ev => {
         const focusWinId = getFocusedWindow().id;
-        execForAllWindows(`global.flushWindowTabs(${focusWinId})`)
+        removeWindowTab(focusWinId);
     }, true)
 
     windowTabs.list.addEventListener("click", ev => {
