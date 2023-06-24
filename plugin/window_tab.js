@@ -183,9 +183,11 @@
         windowTabs.list.innerHTML = divArr.join("");
     }
 
-    // global.addWindowTab = (winId, title) => {
-    //     // windowTabs.list
-    // }
+    global.addWindowTab = (winId, title, select) => {
+        let selected = select ? " select" : "";
+        const div = `<div class="title-bar-window-tab${selected}" winId="${winId}"><div class="window-tab-name">${title}</div></div>`
+        windowTabs.list.insertAdjacentHTML('beforeend', div);
+    }
 
     global.removeWindowTab = winId => {
         const tab = windowTabs.list.querySelector(`.title-bar-window-tab[winId="${winId}"]`);
@@ -212,10 +214,16 @@
         tab.textContent = title
     }
 
-    const removeWindowTab = winId => execForAllWindows(`global.removeWindowTab(${winId})`)
+    // 其实下面函数都可以使用flushWindowTabs代替,但是flushWindowTabs太重了
+    const flushWindowTabs = excludeId => execForAllWindows(`global.flushWindowTabs(${excludeId})`)
     const updateTabTitle = (winId, title) => execForAllWindows(`global.updateTabTitle(${winId}, "${title}")`)
     const changeHighlightTab = () => execForAllWindows(`global.changeHighlightTab()`)
-    const flushWindowTabs = excludeId => execForAllWindows(`global.flushWindowTabs(${excludeId})`)
+    const removeWindowTab = winId => execForAllWindows(`global.removeWindowTab(${winId})`)
+    const addWindowTab = (noticeWins, winId, title, select) => {
+        for (const win of noticeWins) {
+            execForWindow(win.id, `global.addWindowTab(${winId}, "${title}", ${select})`)
+        }
+    }
 
     const loopDetect = (check, after) => {
         const timer = setInterval(() => {
@@ -290,5 +298,6 @@
         global.execForAllWindows = execForAllWindows
         global.getDocument = getDocument
     }
+
     console.log("window_tab.js had been injected");
 })();
