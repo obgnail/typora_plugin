@@ -24,6 +24,7 @@
         TAB_BORDER_STYLE: "dashed",
         TAB_BORDER_WIDTH: "1px",
         TAB_BORDER_COLOR: "#8c8c8c",
+        TAB_BORDER_RADIUS: "3px",
 
         CHECK_INTERVAL: 50,
 
@@ -117,6 +118,7 @@
             border-style: ${config.TAB_BORDER_STYLE};
             border-width: ${config.TAB_BORDER_WIDTH};
             border-color: ${config.TAB_BORDER_COLOR};
+            border-radius: ${config.TAB_BORDER_RADIUS};
             margin-right: -1px;
             margin-left: -1px;
             cursor: pointer;
@@ -154,6 +156,15 @@
         tabs: document.getElementById('title-bar-window-tabs'),
         list: document.querySelector(".title-bar-window-tabs-list"),
         titleText: document.getElementById('title-text'),
+    }
+
+    const getWindowName = win => {
+        let name = win.getTitle().replace("- Typora", "").trim();
+        const idx = name.lastIndexOf(".");
+        if (idx !== -1) {
+            name = name.substring(0, idx);
+        }
+        return name
     }
 
     global.flushWindowTabs = (excludeId, sortFunc) => {
@@ -244,18 +255,12 @@
         )
     }
 
+    // 当窗口加载完毕
     onElectronLoad((require, electron) => {
         flushWindowTabs();
+        let controller = getDocumentController();
+        console.log(controller);
     })
-
-    const getWindowName = win => {
-        let name = win.getTitle().replace("- Typora", "").trim();
-        const idx = name.lastIndexOf(".");
-        if (idx !== -1) {
-            name = name.substring(0, idx);
-        }
-        return name
-    }
 
     // 当前窗口切换文件
     new MutationObserver(() => {
@@ -282,18 +287,13 @@
     })
 
     // 应用外点击任务栏切换窗口
-    document.addEventListener('visibilitychange', () => {
-        // // 用户离开了当前页面
-        // if (document.visibilityState === 'hidden') {
-        //     console.log('页面不可见');
-        // }
-        //
-        // // 用户打开或回到页面
-        // if (document.visibilityState === 'visible') {
-        //     console.log('visible');
-        //     changeHighlightTab();
-        // }
-    });
+    let lastFocusTime = 0;
+    document.addEventListener('focus', (ev) => {
+        if (ev.timeStamp - lastFocusTime > 100) {
+            changeHighlightTab();
+            lastFocusTime = ev.timeStamp
+        }
+    }, true);
 
     if (config.DEBUG) {
         global.test = () => getAllWindows().forEach(win => {
