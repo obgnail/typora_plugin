@@ -62,8 +62,8 @@
         }
 
         const rect = target.getBoundingClientRect();
-        const shiftX = rect.width - ev.clientX;
-        const shiftY = rect.height - ev.clientY;
+        const shiftX = ev.clientX - rect.width;
+        const shiftY = ev.clientY - rect.height;
 
         const setTds = (tds, attr, value) => {
             if (value) {
@@ -77,23 +77,18 @@
         }
 
         const direction = getDirection(rect, ev);
-        switch (direction) {
-            case "right":
-            case "left":
-                target.style.cursor = "w-resize";
-                const num = whichChildOfParent(target);
-                const tds = target.closest("tbody").querySelectorAll(`tr td:nth-child(${num})`);
-                const width = getMaxPx(tds, "width");
-                setTds(tds, "width", width);
-                break
-            case "bottom":
-            case "top":
-                target.style.cursor = "s-resize";
-                const height = getMaxPx(target.parentElement.children, "height");
-                setTds(target.parentElement.children, "height", height);
-                break
-            case "":
-                return
+        if (direction === "right" || direction === "left") {
+            target.style.cursor = "w-resize";
+            const num = whichChildOfParent(target);
+            const tds = target.closest("tbody").querySelectorAll(`tr td:nth-child(${num})`);
+            const width = getMaxPx(tds, "width");
+            setTds(tds, "width", width);
+        } else if (direction === "bottom" || direction === "top") {
+            target.style.cursor = "s-resize";
+            const height = getMaxPx(target.parentElement.children, "height");
+            setTds(target.parentElement.children, "height", height);
+        } else {
+            return
         }
 
         const onMouseMove = ev => {
@@ -105,10 +100,14 @@
             }
 
             requestAnimationFrame(() => {
-                if (direction === "bottom" || direction === "top") {
-                    target.style.height = ev.clientY + shiftY + "px";
-                } else {
-                    target.style.width = ev.clientX + shiftX + "px";
+                if (direction === "bottom") {
+                    target.style.height = ev.clientY - shiftY + "px";
+                } else if (direction === "top") {
+                    target.style.height = ev.clientY - shiftY + "px";
+                } else if (direction === "left") {
+                    target.style.width = ev.clientX - shiftX + "px";
+                } else if (direction === "right") {
+                    target.style.width = ev.clientX - shiftX + "px";
                 }
             });
         }
