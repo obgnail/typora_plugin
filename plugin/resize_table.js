@@ -16,8 +16,22 @@
         }
     }
 
+    const getMaxPx = (tds, attr) => {
+        let max = 0;
+        for (const td of tds) {
+            const px = td.style[attr];
+            if (px) {
+                const num = pxToInt(px);
+                max = num > max ? num : max;
+            }
+        }
+        return max
+    }
+
+
     if (config.ALLOW_DRAG) {
         const write = document.querySelector("#write");
+
         write.addEventListener("mousedown", ev => {
             const target = ev.target.closest("td");
             if (!target) {
@@ -35,16 +49,10 @@
                 direction = "horizontal";
                 target.style.cursor = "w-resize"
 
-                let width = 0;
                 const num = whichChildOfParent(target);
                 const tbody = target.closest("tbody");
                 const tds = tbody.querySelectorAll(`tr td:nth-child(${num})`);
-                for (const td of tds) {
-                    if (td.style.width) {
-                        const w = pxToInt(td.style.width);
-                        width = w > width ? w : width;
-                    }
-                }
+                const width = getMaxPx(tds, "width");
                 if (width) {
                     target.style.width = width + "px";
                     for (const td in tds) {
@@ -58,13 +66,8 @@
                 direction = "vertical";
                 target.style.cursor = "s-resize"
 
-                let height = 0;
-                for (const td of target.parentElement.children) {
-                    if (td.style.height) {
-                        const h = pxToInt(td.style.height);
-                        height = h > height ? h : height;
-                    }
-                }
+                const height = getMaxPx(target.parentElement.children, "height");
+
                 if (height) {
                     target.style.height = height + "px";
                     for (const td in target.parentElement.children) {
