@@ -1,6 +1,7 @@
 (() => {
     const config = {
         ALLOW_DRAG: true,
+        threshold: 10,
     }
 
     const pxToInt = px => parseInt(px.trim().replace("px", ""))
@@ -16,7 +17,7 @@
     }
 
     if (config.ALLOW_DRAG) {
-        let write = document.querySelector("#write");
+        const write = document.querySelector("#write");
         write.addEventListener("mousedown", ev => {
             const target = ev.target.closest("td");
             if (!target) {
@@ -30,17 +31,17 @@
             const startX = ev.clientX;
             const startY = ev.clientY;
 
-            if ((ev.clientX > rect.right - 10) || (ev.clientX < rect.left + 10)) {
+            if ((ev.clientX > rect.right - config.threshold) || (ev.clientX < rect.left + config.threshold)) {
                 direction = "horizontal";
                 target.style.cursor = "w-resize"
 
                 let width = 0;
-                let num = whichChildOfParent(target);
-                let tbody = target.closest("tbody");
-                let tds = tbody.querySelectorAll(`tr td:nth-child(${num})`);
+                const num = whichChildOfParent(target);
+                const tbody = target.closest("tbody");
+                const tds = tbody.querySelectorAll(`tr td:nth-child(${num})`);
                 for (const td of tds) {
                     if (td.style.width) {
-                        let w = pxToInt(td.style.width);
+                        const w = pxToInt(td.style.width);
                         width = w > width ? w : width;
                     }
                 }
@@ -53,14 +54,14 @@
                     }
                 }
 
-            } else if ((ev.clientY > rect.bottom - 10) || ev.clientY < rect.top + 10) {
+            } else if ((ev.clientY > rect.bottom - config.threshold) || ev.clientY < rect.top + config.threshold) {
                 direction = "vertical";
                 target.style.cursor = "s-resize"
 
                 let height = 0;
                 for (const td of target.parentElement.children) {
                     if (td.style.height) {
-                        let h = pxToInt(td.style.height);
+                        const h = pxToInt(td.style.height);
                         height = h > height ? h : height;
                     }
                 }
