@@ -45,37 +45,29 @@
             const startX = ev.clientX;
             const startY = ev.clientY;
 
+            const setTds = (tds, attr, value) => {
+                if (value) {
+                    target.style[attr] = value + "px";
+                    for (const td in tds) {
+                        if (td && td.style && td !== target) {
+                            td.style[attr] = "";
+                        }
+                    }
+                }
+            }
+
             if ((ev.clientX > rect.right - config.threshold) || (ev.clientX < rect.left + config.threshold)) {
                 direction = "horizontal";
                 target.style.cursor = "w-resize"
-
                 const num = whichChildOfParent(target);
-                const tbody = target.closest("tbody");
-                const tds = tbody.querySelectorAll(`tr td:nth-child(${num})`);
+                const tds = target.closest("tbody").querySelectorAll(`tr td:nth-child(${num})`);
                 const width = getMaxPx(tds, "width");
-                if (width) {
-                    target.style.width = width + "px";
-                    for (const td in tds) {
-                        if (td && td.style && td !== target) {
-                            td.style.width = "";
-                        }
-                    }
-                }
-
+                setTds(tds, "width", width);
             } else if ((ev.clientY > rect.bottom - config.threshold) || ev.clientY < rect.top + config.threshold) {
                 direction = "vertical";
                 target.style.cursor = "s-resize"
-
                 const height = getMaxPx(target.parentElement.children, "height");
-
-                if (height) {
-                    target.style.height = height + "px";
-                    for (const td in target.parentElement.children) {
-                        if (td && td.style && td !== target) {
-                            td.style.height = "";
-                        }
-                    }
-                }
+                setTds(target.parentElement.children, "height", height);
             } else {
                 return
             }
@@ -83,11 +75,13 @@
             const onMouseMove = ev => {
                 ev.stopPropagation();
                 ev.preventDefault();
-                if (direction === "vertical") {
-                    requestAnimationFrame(() => target.style.height = startHeight + ev.clientY - startY + "px");
-                } else if (direction === "horizontal") {
-                    requestAnimationFrame(() => target.style.width = startWidth + ev.clientX - startX + "px");
-                }
+                requestAnimationFrame(() => {
+                    if (direction === "vertical") {
+                        target.style.height = startHeight + ev.clientY - startY + "px";
+                    } else {
+                        target.style.width = startWidth + ev.clientX - startX + "px";
+                    }
+                });
             }
 
             document.addEventListener("mouseup", ev => {
