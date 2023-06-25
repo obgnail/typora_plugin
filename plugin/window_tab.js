@@ -24,7 +24,7 @@
         TAB_SELECT_BG_COLOR: "#ffafa3",
         TAB_HOVER_BG_COLOR: "#ffd4cc",
         TAB_MAX_WIDTH: "150px",
-        TAB_WRAP: "wrap",
+        TAB_WRAP: "nowrap",
         TAB_OVERFLOW: "hidden",
         TAB_TEXT_OVERFLOW: "ellipsis",
         TAB_WHITE_SPACE: "nowrap",
@@ -135,7 +135,7 @@
 
     const showTitleBarIfNeed = () => {
         if (!config.HIDE_TITLE_BAR) {
-            document.getElementById("top-titlebar").style.display = "block"
+            document.getElementById("top-titlebar").style.display = "block";
         }
     }
 
@@ -204,14 +204,14 @@
         document.getElementsByTagName("head")[0].appendChild(style);
 
         // insert html
-        const title_bar_div = `<div class="title-bar-window-tabs-list"></div>`
+        const title_bar_div = `<div class="title-bar-window-tabs-list"></div>`;
         const windowTabs = document.createElement("div");
         windowTabs.id = 'title-bar-window-tabs';
         windowTabs.innerHTML = title_bar_div;
         const titleBarLeft = document.getElementById("w-titlebar-left");
         titleBarLeft.parentNode.insertBefore(windowTabs, titleBarLeft.nextSibling);
 
-        showOriginTitleIfNeed(true)
+        showOriginTitleIfNeed(true);
         showTrafficLightsIfNeed();
         showTitleBarLeftIfNeed();
         showTitleBarIfNeed();
@@ -240,13 +240,13 @@
 
     global._flushWindowTabs = (excludeId, sortFunc) => {
         if (!sortFunc) {
-            sortFunc = winList => winList.sort((a, b) => a.id - b.id)
+            sortFunc = winList => winList.sort((a, b) => a.id - b.id);
         }
 
         const windows = getAllWindows();
         let copy = [...windows];
         if (excludeId) {
-            copy = copy.filter(win => win.id !== excludeId)
+            copy = copy.filter(win => win.id !== excludeId);
         }
 
         const sortedWindows = sortFunc(copy);
@@ -277,7 +277,11 @@
     }
 
     global._changeTab = () => {
-        const focus = getFocusedWindow()
+        const focus = getFocusedWindow();
+        // 使用系统的ctrl+Tab切换任务时，可能会没有聚焦的窗口。那怎么办？凉拌。不切了。
+        if (!focus) {
+            return
+        }
         const focusWinId = focus.id + "";
         const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
         for (const tab of tabs) {
@@ -301,13 +305,13 @@
     }
 
     // 其实下面函数都可以使用flushWindowTabs代替,但是flushWindowTabs太重了
-    const flushWindowTabs = excludeId => execForAllWindows(`global._flushWindowTabs(${excludeId})`)
-    const updateTabTitle = (winId, title) => execForAllWindows(`global._updateTabTitle(${winId}, "${title}")`)
-    const changeTab = () => execForAllWindows(`global._changeTab()`)
-    const removeWindowTab = winId => execForAllWindows(`global._removeWindowTab(${winId})`)
+    const flushWindowTabs = excludeId => execForAllWindows(`global._flushWindowTabs(${excludeId})`);
+    const updateTabTitle = (winId, title) => execForAllWindows(`global._updateTabTitle(${winId}, "${title}")`);
+    const changeTab = () => execForAllWindows(`global._changeTab()`);
+    const removeWindowTab = winId => execForAllWindows(`global._removeWindowTab(${winId})`);
     const addWindowTab = (noticeWins, winId, title, select) => {
         for (const win of noticeWins) {
-            execForWindow(win.id, `global._addWindowTab(${winId}, "${title}", ${select})`)
+            execForWindow(win.id, `global._addWindowTab(${winId}, "${title}", ${select})`);
         }
     }
 
@@ -315,7 +319,7 @@
         const timer = setInterval(() => {
             if (Package.getElectron() && Package.getRequire()) {
                 clearInterval(timer);
-                func()
+                func();
             }
         }, config.LOOP_CHECK_INTERVAL)
     }
@@ -338,7 +342,7 @@
         document.addEventListener("focus", ev => {
             if (ev.timeStamp - lastFocusTime > config.FOCUS_CHECK_INTERVAL) {
                 changeTab();
-                lastFocusTime = ev.timeStamp
+                lastFocusTime = ev.timeStamp;
             }
         }, true);
     }
@@ -382,12 +386,12 @@
 
     if (config.DEBUG) {
         global.test = () => getAllWindows().forEach(win => {
-            console.log({"id": win.id, "name": win.getTitle()})
+            console.log({"id": win.id, "name": win.getTitle()});
         })
-        global.getFocusedWindow = getFocusedWindow
-        global.execForWindow = execForWindow
-        global.execForAllWindows = execForAllWindows
-        global.getDocument = getDocument
+        global.getFocusedWindow = getFocusedWindow;
+        global.execForWindow = execForWindow;
+        global.execForAllWindows = execForAllWindows;
+        global.getDocument = getDocument;
     }
 
     console.log("window_tab.js had been injected");
