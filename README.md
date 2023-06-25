@@ -6,9 +6,11 @@
 
 ## 如何使用
 
-2. 打开目录 `Typora/resources/app`，将源码的 plugin 目录粘贴进该目录下。
-3. 打开文件 `Typora/resources/app/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
-4. 重启 Typora。
+1. 打开目录 `Typora/resources/app`，将源码的 plugin 目录粘贴进该目录下。
+2. 打开文件 `Typora/resources/app/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
+3. 重启 Typora。
+
+> 每个功能对应一个文件，如若只要其一，只需删除对应文件即可。
 
 
 
