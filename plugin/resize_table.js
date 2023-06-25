@@ -1,7 +1,7 @@
 (() => {
     const config = {
         ALLOW_DRAG: true,
-        threshold: 10,
+        threshold: 20,
         removeMixWidth: true,
     }
 
@@ -48,18 +48,47 @@
         return max
     }
 
-    const getDirection = (rect, ev) => {
-        if (ev.clientX > rect.right - config.threshold) {
+    const getDirection = (target, ev) => {
+        const rect = target.getBoundingClientRect();
+        if (rect.right - config.threshold < ev.clientX && ev.clientX < rect.right + config.threshold) {
             return "right"
-        } else if (ev.clientX < rect.left + config.threshold) {
-            return "left"
-        } else if (ev.clientY > rect.bottom - config.threshold) {
+        } else if (rect.bottom - config.threshold < ev.clientY && ev.clientY < rect.bottom + config.threshold) {
             return "bottom"
-        } else if (ev.clientY < rect.top + config.threshold) {
-            return "top"
         } else {
             return ""
         }
+    }
+
+    const getTester = ele => {
+        const _ele = ele;
+        let count = 0;
+        return () => {
+            count++
+            switch (count) {
+                case 1:
+                    return _ele
+                case 2:
+                    return _ele.previousElementSibling
+                case 3:
+                    const num = whichChildOfParent(_ele);
+                    const uncle = _ele.parentElement.previousElementSibling
+                    return uncle.querySelector(`td:nth-child(${num})`)
+                default:
+                    return null
+            }
+        }
+    }
+
+    const findReallyElement = (ele, ev) => {
+        let tester = getTester(ele);
+        for (let i = 0; i <= 2; i++) {
+            const testElement = tester();
+            const direction = getDirection(testElement, ev);
+            if (direction) {
+                return [testElement, direction]
+            }
+        }
+        return [null, ""]
     }
 
     const write = document.querySelector("#write");
@@ -71,7 +100,7 @@
         ev.stopPropagation();
         ev.preventDefault();
 
-        const target = ev.target.closest("td");
+        let target = ev.target.closest("td");
         if (!target) {
             return
         }
@@ -93,14 +122,16 @@
             }
         }
 
-        const direction = getDirection(rect, ev);
-        if (direction === "right" || direction === "left") {
+        let direction = "";
+        [target, direction] = findReallyElement(target, ev);
+
+        if (direction === "right") {
             target.style.cursor = "w-resize";
             const num = whichChildOfParent(target);
             const tds = target.closest("tbody").querySelectorAll(`tr td:nth-child(${num})`);
             const width = getMaxPx(tds, "width");
             setTds(tds, "width", width);
-        } else if (direction === "bottom" || direction === "top") {
+        } else if (direction === "bottom") {
             target.style.cursor = "s-resize";
             const height = getMaxPx(target.parentElement.children, "height");
             setTds(target.parentElement.children, "height", height);
@@ -119,11 +150,7 @@
             requestAnimationFrame(() => {
                 if (direction === "right") {
                     target.style.width = startWidth + ev.clientX - startX + "px"
-                } else if (direction === "left") {
-                    target.style.width = startWidth + ev.clientX - startX + "px"
                 } else if (direction === "bottom") {
-                    target.style.height = startHeight + ev.clientY - startY + "px"
-                } else if (direction === "top") {
                     target.style.height = startHeight + ev.clientY - startY + "px"
                 }
             });
