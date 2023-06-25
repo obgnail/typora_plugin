@@ -34,10 +34,25 @@
         return max
     }
 
+    const getDirection = (rect, ev) => {
+        if (ev.clientX > rect.right - config.threshold) {
+            return "right"
+        } else if (ev.clientX < rect.left + config.threshold) {
+            return "left"
+        } else if (ev.clientY > rect.bottom - config.threshold) {
+            return "bottom"
+        } else if (ev.clientY < rect.top + config.threshold) {
+            return "top"
+        } else {
+            return ""
+        }
+    }
+
     document.querySelector("#write").addEventListener("mousedown", ev => {
         if (!metaKeyPressed(ev)) {
             return
         }
+
         ev.stopPropagation();
         ev.preventDefault();
 
@@ -46,7 +61,6 @@
             return
         }
 
-        let direction = "";
         const rect = target.getBoundingClientRect();
         const shiftX = rect.width - ev.clientX;
         const shiftY = rect.height - ev.clientY;
@@ -62,20 +76,24 @@
             }
         }
 
-        if ((ev.clientX > rect.right - config.threshold) || (ev.clientX < rect.left + config.threshold)) {
-            direction = "h";
-            target.style.cursor = "w-resize";
-            const num = whichChildOfParent(target);
-            const tds = target.closest("tbody").querySelectorAll(`tr td:nth-child(${num})`);
-            const width = getMaxPx(tds, "width");
-            setTds(tds, "width", width);
-        } else if ((ev.clientY > rect.bottom - config.threshold) || ev.clientY < rect.top + config.threshold) {
-            direction = "v";
-            target.style.cursor = "s-resize";
-            const height = getMaxPx(target.parentElement.children, "height");
-            setTds(target.parentElement.children, "height", height);
-        } else {
-            return
+        const direction = getDirection(rect, ev);
+        switch (direction) {
+            case "right":
+            case "left":
+                target.style.cursor = "w-resize";
+                const num = whichChildOfParent(target);
+                const tds = target.closest("tbody").querySelectorAll(`tr td:nth-child(${num})`);
+                const width = getMaxPx(tds, "width");
+                setTds(tds, "width", width);
+                break
+            case "bottom":
+            case "top":
+                target.style.cursor = "s-resize";
+                const height = getMaxPx(target.parentElement.children, "height");
+                setTds(target.parentElement.children, "height", height);
+                break
+            case "":
+                return
         }
 
         const onMouseMove = ev => {
@@ -87,7 +105,7 @@
             }
 
             requestAnimationFrame(() => {
-                if (direction === "v") {
+                if (direction === "bottom" || direction === "top") {
                     target.style.height = ev.clientY + shiftY + "px";
                 } else {
                     target.style.width = ev.clientX + shiftX + "px";
