@@ -2,11 +2,11 @@
     const config = {
         DEBUG: true,
 
-        // 当只有一个窗口时是否展示
-        SHOW_TAB_WHEN_ONE_WINDOW: false,
-        // 当打开开始菜单的时候是否隐藏
-        AUTO_HIDE_WHEN_MENU_OPEN: true,
-        // 隐藏掉原始的标题，当 SHOW_TAB_WHEN_ONE_WINDOW 为 false，且只有一个窗口时，强制为 false
+        // 当只有一个窗口时是否展示标签
+        HIDE_TAB_WHEN_ONE_WINDOW: true,
+        // 当打开配置菜单的时候是否隐藏
+        HIDE_WHEN_MENU_OPEN: true,
+        // 隐藏掉原始的标题，当 HIDE_TAB_WHEN_ONE_WINDOW 为 true，且只有一个窗口时，强制为 false
         HIDE_ORIGIN_WINDOW_TITLE: true,
         // 隐藏掉最小大化关闭按钮
         HIDE_TRAFFIC_LIGHTS: false,
@@ -41,6 +41,13 @@
 
         REQUIRE_VAR_NAME: "__PLUGIN_REQUIRE__",
         ELECTRON_VAR_NAME: "__PLUGIN_ELECTRON__"
+    }
+
+    // 兼容经典布局
+    if (!window._options.framelessWindow) {
+        config.HIDE_TITLE_BAR = false;
+        config.HIDE_TRAFFIC_LIGHTS = true;
+        config.HIDE_TITLE_BAR_LEFT = true;
     }
 
     const Package = {
@@ -96,21 +103,27 @@
         )
     });
 
-
     const showTabsIfNeed = forceHide => {
         if (forceHide) {
             windowTabs.tabs.style.display = "none";
             return
         }
 
-        const b = !config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
+        const b = config.HIDE_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
         windowTabs.tabs.style.display = b ? "none" : "block";
     }
 
-    const showOriginTitleIfNeed = () => {
+    const showOriginTitleIfNeed = forceHide => {
+        if (forceHide) {
+            document.getElementById('title-text').style.display = "none";
+            return
+        }
+
         if (config.HIDE_ORIGIN_WINDOW_TITLE) {
-            const b = !config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
+            const b = config.HIDE_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
             windowTabs.titleText.style.display = b ? "block" : "none";
+        } else {
+            windowTabs.titleText.style.display = "block";
         }
     }
 
@@ -133,13 +146,6 @@
     }
 
     (() => {
-        // 兼容经典布局
-        if (!window._options.framelessWindow) {
-            config.HIDE_TITLE_BAR = false;
-            config.HIDE_TRAFFIC_LIGHTS = true;
-            config.HIDE_TITLE_BAR_LEFT = true;
-        }
-
         // insert css
         const title_bar_css = `
         #title-bar-window-tabs {
@@ -205,6 +211,7 @@
         const titleBarLeft = document.getElementById("w-titlebar-left");
         titleBarLeft.parentNode.insertBefore(windowTabs, titleBarLeft.nextSibling);
 
+        showOriginTitleIfNeed(true)
         showTrafficLightsIfNeed();
         showTitleBarLeftIfNeed();
         showTitleBarIfNeed();
@@ -361,7 +368,7 @@
         changeTab();
     })
 
-    if (config.AUTO_HIDE_WHEN_MENU_OPEN) {
+    if (config.HIDE_WHEN_MENU_OPEN) {
         new MutationObserver((mutationList) => {
             for (const mutation of mutationList) {
                 if (mutation.type === 'attributes' && mutation.attributeName === "class") {
