@@ -2,11 +2,25 @@
     const config = {
         ALLOW_DRAG: true,
         threshold: 10,
+        removeMixWidth: true,
     }
 
     if (!config.ALLOW_DRAG) {
         return
     }
+
+    (() => {
+        if (config.removeMixWidth) {
+            const css = `
+            table.md-table td {
+                min-width: 1px !important;
+            }`
+            const style = document.createElement('style');
+            style.type = 'text/css';
+            style.innerHTML = css;
+            document.getElementsByTagName("head")[0].appendChild(style);
+        }
+    })()
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
@@ -48,7 +62,8 @@
         }
     }
 
-    document.querySelector("#write").addEventListener("mousedown", ev => {
+    const write = document.querySelector("#write");
+    write.addEventListener("mousedown", ev => {
         if (!metaKeyPressed(ev)) {
             return
         }
@@ -62,8 +77,10 @@
         }
 
         const rect = target.getBoundingClientRect();
-        const shiftX = ev.clientX - rect.width;
-        const shiftY = ev.clientY - rect.height;
+        const startWidth = rect.width;
+        const startHeight = rect.height;
+        const startX = ev.clientX;
+        const startY = ev.clientY;
 
         const setTds = (tds, attr, value) => {
             if (value) {
@@ -100,14 +117,14 @@
             }
 
             requestAnimationFrame(() => {
-                if (direction === "bottom") {
-                    target.style.height = ev.clientY - shiftY + "px";
-                } else if (direction === "top") {
-                    target.style.height = ev.clientY - shiftY + "px";
+                if (direction === "right") {
+                    target.style.width = startWidth + ev.clientX - startX + "px"
                 } else if (direction === "left") {
-                    target.style.width = ev.clientX - shiftX + "px";
-                } else if (direction === "right") {
-                    target.style.width = ev.clientX - shiftX + "px";
+                    target.style.width = startWidth + ev.clientX - startX + "px"
+                } else if (direction === "bottom") {
+                    target.style.height = startHeight + ev.clientY - startY + "px"
+                } else if (direction === "top") {
+                    target.style.height = startHeight + ev.clientY - startY + "px"
                 }
             });
         }
