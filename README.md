@@ -4,9 +4,8 @@
 
 
 
-## 使用
+## 如何使用
 
-1. 另保存整个 Typora 目录（指不定会炸）。
 2. 打开目录 `Typora/resources/app`，将源码的 plugin 目录粘贴进该目录下。
 3. 打开文件 `Typora/resources/app/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
 4. 重启 Typora。
