@@ -32,6 +32,7 @@
         const modal_css = `
         #typora-search-multi {
             position: fixed;
+            top: 40px;
             left: 60%;
             width: 420px;
             z-index: 9999;

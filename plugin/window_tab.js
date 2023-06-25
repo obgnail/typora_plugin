@@ -10,6 +10,9 @@
         HIDE_ORIGIN_WINDOW_TITLE: true,
         // 隐藏掉最小大化关闭按钮
         HIDE_TRAFFIC_LIGHTS: false,
+        // 经典窗口视图时使用
+        HIDE_TITLE_BAR: false,
+        HIDE_TITLE_BAR_LEFT: false,
 
         TABS_WIDTH: "75%",
         TABS_LEFT: "100px",
@@ -93,7 +96,50 @@
         )
     });
 
+
+    const showTabsIfNeed = forceHide => {
+        if (forceHide) {
+            windowTabs.tabs.style.display = "none";
+            return
+        }
+
+        const b = !config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
+        windowTabs.tabs.style.display = b ? "none" : "block";
+    }
+
+    const showOriginTitleIfNeed = () => {
+        if (config.HIDE_ORIGIN_WINDOW_TITLE) {
+            const b = !config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
+            windowTabs.titleText.style.display = b ? "block" : "none";
+        }
+    }
+
+    const showTrafficLightsIfNeed = () => {
+        if (config.HIDE_TRAFFIC_LIGHTS) {
+            document.getElementById("w-traffic-lights").style.display = "none";
+        }
+    }
+
+    const showTitleBarIfNeed = () => {
+        if (!config.HIDE_TITLE_BAR) {
+            document.getElementById("top-titlebar").style.display = "block"
+        }
+    }
+
+    const showTitleBarLeftIfNeed = () => {
+        if (config.HIDE_TITLE_BAR_LEFT) {
+            document.getElementById("w-titlebar-left").style.display = "none";
+        }
+    }
+
     (() => {
+        // 兼容经典布局
+        if (!window._options.framelessWindow) {
+            config.HIDE_TITLE_BAR = false;
+            config.HIDE_TRAFFIC_LIGHTS = true;
+            config.HIDE_TITLE_BAR_LEFT = true;
+        }
+
         // insert css
         const title_bar_css = `
         #title-bar-window-tabs {
@@ -158,6 +204,10 @@
         windowTabs.innerHTML = title_bar_div;
         const titleBarLeft = document.getElementById("w-titlebar-left");
         titleBarLeft.parentNode.insertBefore(windowTabs, titleBarLeft.nextSibling);
+
+        showTrafficLightsIfNeed();
+        showTitleBarLeftIfNeed();
+        showTitleBarIfNeed();
     })()
 
     const windowTabs = {
@@ -173,29 +223,6 @@
             name = name.substring(0, idx);
         }
         return name
-    }
-
-    const showTabsIfNeed = forceHide => {
-        if (forceHide) {
-            windowTabs.tabs.style.display = "none";
-            return
-        }
-
-        const b = !config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
-        windowTabs.tabs.style.display = b ? "none" : "block";
-    }
-
-    const showOriginTitleIfNeed = () => {
-        if (config.HIDE_ORIGIN_WINDOW_TITLE) {
-            const b = !config.SHOW_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
-            windowTabs.titleText.style.display = b ? "block" : "none";
-        }
-    }
-
-    const showTrafficLightsIfNeed = () => {
-        if (config.HIDE_TRAFFIC_LIGHTS) {
-            document.getElementById("w-traffic-lights").style.display = "none";
-        }
     }
 
     const newTab = (winId, title, select) => {
@@ -226,7 +253,6 @@
 
         showTabsIfNeed();
         showOriginTitleIfNeed();
-        showTrafficLightsIfNeed();
     }
 
     global._addWindowTab = (winId, title, select) => {
@@ -243,7 +269,7 @@
         showOriginTitleIfNeed();
     }
 
-    global._changeHighlightTab = () => {
+    global._changeTab = () => {
         const focus = getFocusedWindow()
         const focusWinId = focus.id + "";
         const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
@@ -270,7 +296,7 @@
     // 其实下面函数都可以使用flushWindowTabs代替,但是flushWindowTabs太重了
     const flushWindowTabs = excludeId => execForAllWindows(`global._flushWindowTabs(${excludeId})`)
     const updateTabTitle = (winId, title) => execForAllWindows(`global._updateTabTitle(${winId}, "${title}")`)
-    const changeHighlightTab = () => execForAllWindows(`global._changeHighlightTab()`)
+    const changeTab = () => execForAllWindows(`global._changeTab()`)
     const removeWindowTab = winId => execForAllWindows(`global._removeWindowTab(${winId})`)
     const addWindowTab = (noticeWins, winId, title, select) => {
         for (const win of noticeWins) {
@@ -304,7 +330,7 @@
         let lastFocusTime = 0;
         document.addEventListener("focus", ev => {
             if (ev.timeStamp - lastFocusTime > config.FOCUS_CHECK_INTERVAL) {
-                changeHighlightTab();
+                changeTab();
                 lastFocusTime = ev.timeStamp
             }
         }, true);
@@ -332,7 +358,7 @@
         }
         const winId = target.getAttribute("winid");
         setFocusWindow(parseInt(winId));
-        changeHighlightTab();
+        changeTab();
     })
 
     if (config.AUTO_HIDE_WHEN_MENU_OPEN) {
