@@ -21,7 +21,7 @@
         TAB_SELECT_BG_COLOR: "#ffafa3",
         TAB_HOVER_BG_COLOR: "#ffd4cc",
         TAB_MAX_WIDTH: "150px",
-        TAB_WRAP: "nowrap",
+        TAB_WRAP: "wrap",
         TAB_OVERFLOW: "hidden",
         TAB_TEXT_OVERFLOW: "ellipsis",
         TAB_WHITE_SPACE: "nowrap",
