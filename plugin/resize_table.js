@@ -8,6 +8,8 @@
         return
     }
 
+    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
+
     const pxToInt = px => parseInt(px.trim().replace("px", ""))
 
     const whichChildOfParent = child => {
@@ -33,6 +35,12 @@
     }
 
     document.querySelector("#write").addEventListener("mousedown", ev => {
+        if (!metaKeyPressed(ev)) {
+            return
+        }
+        ev.stopPropagation();
+        ev.preventDefault();
+
         const target = ev.target.closest("td");
         if (!target) {
             return
@@ -55,15 +63,15 @@
         }
 
         if ((ev.clientX > rect.right - config.threshold) || (ev.clientX < rect.left + config.threshold)) {
-            direction = "horizontal";
-            target.style.cursor = "w-resize"
+            direction = "h";
+            target.style.cursor = "w-resize";
             const num = whichChildOfParent(target);
             const tds = target.closest("tbody").querySelectorAll(`tr td:nth-child(${num})`);
             const width = getMaxPx(tds, "width");
             setTds(tds, "width", width);
         } else if ((ev.clientY > rect.bottom - config.threshold) || ev.clientY < rect.top + config.threshold) {
-            direction = "vertical";
-            target.style.cursor = "s-resize"
+            direction = "v";
+            target.style.cursor = "s-resize";
             const height = getMaxPx(target.parentElement.children, "height");
             setTds(target.parentElement.children, "height", height);
         } else {
@@ -73,8 +81,13 @@
         const onMouseMove = ev => {
             ev.stopPropagation();
             ev.preventDefault();
+
+            if (!metaKeyPressed(ev)) {
+                return
+            }
+
             requestAnimationFrame(() => {
-                if (direction === "vertical") {
+                if (direction === "v") {
                     target.style.height = ev.clientY + shiftY + "px";
                 } else {
                     target.style.width = ev.clientX + shiftX + "px";
