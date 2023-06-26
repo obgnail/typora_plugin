@@ -2,18 +2,24 @@
 
 通过注入 JavaScript 代码，为 Typora 添加功能。
 
+目前支持的功能：
+
+- search_multi.js：多关键字搜索
+- window_tab.js：标签管理
+- resize_table.js：调整表格大小
+
 
 
 ## 如何使用
 
-1. 找到包含 `window.html` 的文件夹 A（不同版本的 Typora 的文件夹结构可能不同，在我这是`Typora/resources/app`，推荐使用 everything 找一下）
+1. 找到包含 `window.html` 的文件夹 A。（不同版本的 Typora 的文件夹结构可能不同，在我这是`Typora/resources/app`，推荐使用 everything 找一下）
 2. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
 3. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
 4. 重启 Typora。
 
-> 每个功能对应 plugin 文件夹下的一个文件（index.js 除外），如若只要其一，按需删除文件即可。
+> 每个功能都对应 plugin 文件夹下的一个文件（index.js 除外），如若只要其一，按需删除文件即可。
 
-> 每个功能都有对应的配置，且每个配置选项都有注释说明。如果需要，修改对应 JS 文件里的 config 对象。
+> 每个功能都有对应的配置，且每个配置选项都有注释说明。可以按需修改对应 JS 文件里的 config。
 
 
 
@@ -27,11 +33,11 @@
 
 ### 后端
 
-1. 因为 Typora 暴露了 `reqnode` 函数（require 的封装），所以可以使用 `reqnode('path')` 导入 Node.js 的 path 库。
-2. 因为 Typora 使用了不太安全的 `executeJavaScript` 事件，所以可以用此注入 JS 代码，从而劫持后端关键对象，进而实现 electron 的后端功能注入。理论上有了 electron 对象，你甚至可以在 Typora 里斗地主。
+1. 因为 Typora 暴露了 `reqnode` 函数（require 的封装），所以可以使用 `reqnode('path')` 导入 Node.js 的 path 库，其他内置库同理。
+2. 因为 Typora 使用了不太安全的 `executeJavaScript`功能，所以可以用此注入 JS 代码，从而劫持后端关键对象，进而实现 electron 的后端功能注入。理论上劫持了 electron 对象，你甚至可以在 Typora 里斗地主。
 
 ```javascript
-// 控制台输入下面四条命令:
+// 控制台输入下面命令:
 
 // 恭喜你成功让第二个窗口打印消息
 JSBridge.invoke("executeJavaScript", 2, `console.log("i am logging")`);
@@ -74,7 +80,7 @@ ClientCommand.execForAll(`console.log(global.reqnode('electron').remote.require(
 
 
 
-### resize_table.js：表格可拖动
+### resize_table.js：拖动调整表格大小
 
 ctrl+鼠标拖动，修改表格的行高列宽。
 
