@@ -1,6 +1,6 @@
 (() => {
     const config = {
-        ALLOW_DRAG: true,
+        ALLOW_DRAG: false,
         REMOVE_MIX_WIDTH: true,
         THRESHOLD: 20,
     }

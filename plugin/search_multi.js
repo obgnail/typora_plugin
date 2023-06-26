@@ -17,6 +17,8 @@
         RELATIVE_PATH: true,
         // 关键词按空格分割
         SEPARATOR: " ",
+        // hint展示文件修改时间
+        SHOW_MTIME: false,
         // Typora允许打开小于2000000(即MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
         MAX_SIZE: Package.File.MAX_FILE_SIZE,
         // Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
@@ -256,7 +258,7 @@
                                     reject(err);
                                     return
                                 }
-                                callback(filePath, data);
+                                callback(filePath, stats, data);
                             });
                         } else if (stats.isDirectory()) {
                             traverseDir(filePath, filter, callback);
@@ -272,7 +274,7 @@
         let once = true;
         const rootPath = getMountFolder()
 
-        return (filePath, data) => {
+        return (filePath, stats, data) => {
             if (!config.CASE_SENSITIVE) {
                 data = data.toLowerCase();
             }
@@ -285,9 +287,10 @@
             index++;
             const parseUrl = Package.Path.parse(filePath);
             const dirPath = !config.RELATIVE_PATH ? parseUrl.dir : parseUrl.dir.replace(rootPath, ".");
+            const hint = config.SHOW_MTIME ? `ty-hint="修改时间: ${stats.mtime.toLocaleString('chinese',{ hour12: false })}"` : ``;
             const item = `
                 <div class="typora-search-multi-item" data-is-dir="false"
-                    data-path="${filePath}" data-index="${index}">
+                    data-path="${filePath}" data-index="${index}" ${hint}>
                     <div class="typora-search-multi-item-title">${parseUrl.base}</div>
                     <div class="typora-search-multi-item-path">${dirPath}${separator}</div>
                 </div>`;
