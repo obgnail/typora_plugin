@@ -6,11 +6,14 @@
 
 ## 如何使用
 
-1. 打开目录 `Typora/resources/app`，将源码的 plugin 目录粘贴进该目录下。
-2. 打开文件 `Typora/resources/app/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
-3. 重启 Typora。
+1. 找到包含 `window.html` 的文件夹 A（不同版本的 Typora 的文件夹结构可能不同，在我这是`Typora/resources/app`，推荐使用 everything 找一下）
+2. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
+3. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
+4. 重启 Typora。
 
-> 每个功能对应一个文件，如若只要其一，只需删除对应文件即可。
+> 每个功能对应 plugin 文件夹下的一个文件（index.js 除外），如若只要其一，只需删除对应文件即可。
+
+> 每个功能都有对应的配置，且每个配置选项都有注释说明。如果需要，修改对应 JS 文件里的 config 对象。
 
 
 
@@ -18,7 +21,7 @@
 
 ### 前端
 
-`Typora/resources/app/window.html` 是 Typora 的初始文件，可以写入一个`<script>`标签实现功能。就和 Tampermonkey 脚本一样。
+`window.html` 是 Typora 的初始文件，可以写入一个`<script>`标签实现功能。就和 Tampermonkey 脚本一样。
 
 
 
@@ -51,13 +54,15 @@ ClientCommand.execForAll(`console.log(global.reqnode('electron').remote.require(
 
 比如搜索同时包含 `golang` 和 `install` 和 `生命周期` 三个关键字的文件。
 
-- ctrl/command + shift + P：打开搜索框
+- ctrl+shift+P：打开搜索框
 - esc：关闭搜索框
 - enter：搜索
-- ArrowUp，ArrowDown：选中
+- ArrowUp，ArrowDown：方向键上下选中
 - click、ctrl+enter：当前窗口打开
 - ctrl+click、ctrl+shift+enter：新窗口打开
-- drag：拖动输入框可移动
+- drag：拖动输入框可移动搜索框
+
+> ctrl 在 Mac 中对应 command
 
 ![search_mutli](assets/search_mutli.gif)
 
@@ -66,6 +71,12 @@ ClientCommand.execForAll(`console.log(global.reqnode('electron').remote.require(
 ### window_tab.js：标签管理
 
 ![window_tab](assets/window_tab.gif)
+
+
+
+### resize_table.js：表格可拖动（WIP）
+
+ctrl+鼠标拖动，修改表格的行高列宽。
 
 
 

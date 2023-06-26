@@ -2,7 +2,7 @@
     const config = {
         DEBUG: true,
 
-        // 当只有一个窗口时是否展示标签
+        // 当只有一个窗口时是否隐藏标签
         HIDE_TAB_WHEN_ONE_WINDOW: true,
         // 当打开配置菜单的时候是否隐藏
         HIDE_WHEN_MENU_OPEN: true,

@@ -1,8 +1,8 @@
 (() => {
     const config = {
         ALLOW_DRAG: true,
-        threshold: 20,
-        removeMixWidth: true,
+        REMOVE_MIX_WIDTH: true,
+        THRESHOLD: 20,
     }
 
     if (!config.ALLOW_DRAG) {
@@ -10,7 +10,7 @@
     }
 
     (() => {
-        if (config.removeMixWidth) {
+        if (config.REMOVE_MIX_WIDTH) {
             const css = `
             table.md-table td {
                 min-width: 1px !important;
@@ -50,9 +50,9 @@
 
     const getDirection = (target, ev) => {
         const rect = target.getBoundingClientRect();
-        if (rect.right - config.threshold < ev.clientX && ev.clientX < rect.right + config.threshold) {
+        if (rect.right - config.THRESHOLD < ev.clientX && ev.clientX < rect.right + config.THRESHOLD) {
             return "right"
-        } else if (rect.bottom - config.threshold < ev.clientY && ev.clientY < rect.bottom + config.threshold) {
+        } else if (rect.bottom - config.THRESHOLD < ev.clientY && ev.clientY < rect.bottom + config.THRESHOLD) {
             return "bottom"
         } else {
             return ""
