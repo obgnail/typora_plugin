@@ -86,7 +86,7 @@
         return {"target": null, "direction": ""}
     }
 
-    const CleanStyle = (eleList, exclude, cleanStyle) => {
+    const cleanStyle = (eleList, exclude, cleanStyle) => {
         for (const td of eleList) {
             if (td && td.style && td !== exclude) {
                 td.style[cleanStyle] = "";
@@ -102,11 +102,19 @@
         ev.stopPropagation();
         ev.preventDefault();
 
-        let td = ev.target.closest("td");
-        if (!td) {
+        let closet = "thead";
+        let self = "th";
+        let ele = ev.target.closest(self);
+        if (!ele) {
+            closet = "tbody";
+            self = "td";
+            ele = ev.target.closest(self);
+        }
+
+        if (!ele) {
             return
         }
-        const {target, direction} = findTarget(td, ev);
+        const {target, direction} = findTarget(ele, ev);
         if ((!target) || (direction !== "right" && direction !== "bottom")) {
             return
         }
@@ -123,12 +131,12 @@
         if (direction === "right") {
             target.style.cursor = "w-resize";
             const num = whichChildOfParent(target);
-            const tds = target.closest("tbody").querySelectorAll(`tr td:nth-child(${num})`);
-            CleanStyle(tds, target, "width");
+            const eleList = target.closest(closet).querySelectorAll(`tr ${self}:nth-child(${num})`);
+            cleanStyle(eleList, target, "width");
         } else if (direction === "bottom") {
             target.style.cursor = "s-resize";
             const tds = target.parentElement.children;
-            CleanStyle(tds, target, "height");
+            cleanStyle(tds, target, "height");
         }
 
         const onMouseMove = ev => {
