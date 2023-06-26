@@ -26,8 +26,6 @@
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
-    const pxToInt = px => parseInt(px.trim().replace("px", ""))
-
     const whichChildOfParent = child => {
         let i = 1;
         for (const sibling of child.parentElement.children) {
@@ -74,7 +72,7 @@
         }
     }
 
-    const findTargetElement = (ele, ev) => {
+    const findTarget = (ele, ev) => {
         let tester = getTester(ele);
         for (let i = 0; i <= 2; i++) {
             const testElement = tester();
@@ -83,10 +81,18 @@
             }
             const direction = getDirection(testElement, ev);
             if (direction) {
-                return [testElement, direction]
+                return {"target": testElement, "direction": direction}
             }
         }
-        return [null, ""]
+        return {"target": null, "direction": ""}
+    }
+
+    const CleanStyle = (eleList, exclude, cleanStyle) => {
+        for (const td of eleList) {
+            if (td && td.style && td !== exclude) {
+                td.style[cleanStyle] = "";
+            }
+        }
     }
 
     const write = document.querySelector("#write");
@@ -94,28 +100,16 @@
         if (!metaKeyPressed(ev)) {
             return
         }
-
         ev.stopPropagation();
         ev.preventDefault();
 
-        let target = ev.target.closest("td");
-        if (!target) {
+        let td = ev.target.closest("td");
+        if (!td) {
             return
         }
-
-        let direction = "";
-        [target, direction] = findTargetElement(target, ev);
-
-        if (!target) {
+        const {target, direction} = findTarget(td, ev);
+        if ((!target) || (direction !== "right" && direction !== "bottom")) {
             return
-        }
-
-        const CleanTdStyle = (tds, attr) => {
-            for (const td of tds) {
-                if (td && td.style && td !== target) {
-                    td.style[attr] = "";
-                }
-            }
         }
 
         const rect = target.getBoundingClientRect();
@@ -131,12 +125,11 @@
             // target.style.cursor = "w-resize"; // TODO
             const num = whichChildOfParent(target);
             const tds = target.closest("tbody").querySelectorAll(`tr td:nth-child(${num})`);
-            CleanTdStyle(tds, "width");
+            CleanStyle(tds, target, "width");
         } else if (direction === "bottom") {
             // target.style.cursor = "s-resize";
-            CleanTdStyle(target.parentElement.children, "height");
-        } else {
-            return
+            const tds = target.parentElement.children;
+            CleanStyle(tds, target, "height");
         }
 
         const onMouseMove = ev => {
