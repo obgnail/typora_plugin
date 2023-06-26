@@ -1,7 +1,6 @@
 (() => {
     const config = {
         DEBUG: true,
-
         ALLOW_DRAG: true,
         REMOVE_MIX_WIDTH: true,
         THRESHOLD: 20,
@@ -122,12 +121,12 @@
         target.style.height = startHeight + "px";
 
         if (direction === "right") {
-            // target.style.cursor = "w-resize"; // TODO
+            target.style.cursor = "w-resize";
             const num = whichChildOfParent(target);
             const tds = target.closest("tbody").querySelectorAll(`tr td:nth-child(${num})`);
             CleanStyle(tds, target, "width");
         } else if (direction === "bottom") {
-            // target.style.cursor = "s-resize";
+            target.style.cursor = "s-resize";
             const tds = target.parentElement.children;
             CleanStyle(tds, target, "height");
         }

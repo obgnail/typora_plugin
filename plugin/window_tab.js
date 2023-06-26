@@ -31,7 +31,7 @@
         TAB_TEXT_ALIGN: "center",
         TAB_PADDING_LEFT: "10px",
         TAB_PADDING_RIGHT: "10px",
-        TAB_BORDER_STYLE: "dashed",
+        TAB_BORDER_STYLE: "dotted",
         TAB_BORDER_WIDTH: "1px",
         TAB_BORDER_COLOR: "#8c8c8c",
         TAB_BORDER_RADIUS: "3px",
@@ -184,12 +184,12 @@
             cursor: pointer;
         }
         
-        #title-bar-window-tabs .title-bar-window-tab.select {
-            background-color: ${config.TAB_SELECT_BG_COLOR};
-        }
-        
         #title-bar-window-tabs .title-bar-window-tab:hover {
             background-color: ${config.TAB_HOVER_BG_COLOR};
+        }
+        
+        #title-bar-window-tabs .title-bar-window-tab.select {
+            background-color: ${config.TAB_SELECT_BG_COLOR};
         }
         
         #title-bar-window-tabs .title-bar-window-tab .window-tab-name {
