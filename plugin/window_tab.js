@@ -331,8 +331,10 @@
     })
 
     const recordCurWindowId = () => {
-        const winId = getFocusedWindow().id;
-        windowTabs.tabs.setAttribute("winid", winId);
+        const win = getFocusedWindow();
+        if (win) {
+            windowTabs.tabs.setAttribute("winid", win.id);
+        }
     }
 
     // 应用外点击任务栏切换窗口
@@ -356,7 +358,10 @@
 
     // 关闭窗口
     window.addEventListener("beforeunload", ev => {
-        const focusWinId = windowTabs.tabs.getAttribute("winid");
+        let focusWinId = windowTabs.tabs.getAttribute("winid");
+        if (!focusWinId) {
+            focusWinId = getFocusedWindow().id
+        }
         removeWindowTab(focusWinId);
     }, true)
 
