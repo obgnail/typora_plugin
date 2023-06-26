@@ -1,6 +1,8 @@
 (() => {
     const config = {
-        ALLOW_DRAG: false,
+        DEBUG: true,
+
+        ALLOW_DRAG: true,
         REMOVE_MIX_WIDTH: true,
         THRESHOLD: 20,
     }
@@ -36,18 +38,6 @@
         }
     }
 
-    const getMaxPx = (tds, attr) => {
-        let max = 0;
-        for (const td of tds) {
-            const px = td.style[attr];
-            if (px) {
-                const num = pxToInt(px);
-                max = num > max ? num : max;
-            }
-        }
-        return max
-    }
-
     const getDirection = (target, ev) => {
         const rect = target.getBoundingClientRect();
         if (rect.right - config.THRESHOLD < ev.clientX && ev.clientX < rect.right + config.THRESHOLD) {
@@ -71,18 +61,26 @@
                     return _ele.previousElementSibling
                 case 3:
                     const num = whichChildOfParent(_ele);
-                    const uncle = _ele.parentElement.previousElementSibling
-                    return uncle.querySelector(`td:nth-child(${num})`)
+                    let uncle = _ele.parentElement.previousElementSibling
+                    if (uncle) {
+                        return uncle.querySelector(`td:nth-child(${num})`)
+                    }
+                    // 第一行数据
+                    const tr = _ele.closest("table").querySelector("thead tr")
+                    return tr.querySelector(`th:nth-child(${num})`)
                 default:
                     return null
             }
         }
     }
 
-    const findReallyElement = (ele, ev) => {
+    const findTargetElement = (ele, ev) => {
         let tester = getTester(ele);
         for (let i = 0; i <= 2; i++) {
             const testElement = tester();
+            if (!testElement) {
+                continue
+            }
             const direction = getDirection(testElement, ev);
             if (direction) {
                 return [testElement, direction]
@@ -105,36 +103,38 @@
             return
         }
 
+        let direction = "";
+        [target, direction] = findTargetElement(target, ev);
+
+        if (!target) {
+            return
+        }
+
+        const CleanTdStyle = (tds, attr) => {
+            for (const td of tds) {
+                if (td && td.style && td !== target) {
+                    td.style[attr] = "";
+                }
+            }
+        }
+
         const rect = target.getBoundingClientRect();
         const startWidth = rect.width;
         const startHeight = rect.height;
         const startX = ev.clientX;
         const startY = ev.clientY;
 
-        const setTds = (tds, attr, value) => {
-            if (value) {
-                target.style[attr] = value + "px";
-                for (const td in tds) {
-                    if (td && td.style && td !== target) {
-                        td.style[attr] = "";
-                    }
-                }
-            }
-        }
-
-        let direction = "";
-        [target, direction] = findReallyElement(target, ev);
+        target.style.width = startWidth + "px";
+        target.style.height = startHeight + "px";
 
         if (direction === "right") {
-            target.style.cursor = "w-resize";
+            // target.style.cursor = "w-resize"; // TODO
             const num = whichChildOfParent(target);
             const tds = target.closest("tbody").querySelectorAll(`tr td:nth-child(${num})`);
-            const width = getMaxPx(tds, "width");
-            setTds(tds, "width", width);
+            CleanTdStyle(tds, "width");
         } else if (direction === "bottom") {
-            target.style.cursor = "s-resize";
-            const height = getMaxPx(target.parentElement.children, "height");
-            setTds(target.parentElement.children, "height", height);
+            // target.style.cursor = "s-resize";
+            CleanTdStyle(target.parentElement.children, "height");
         } else {
             return
         }
@@ -167,6 +167,10 @@
 
         document.addEventListener('mousemove', onMouseMove);
     })
+
+    if (config.DEBUG) {
+        JSBridge.invoke("window.toggleDevTools")
+    }
 
     console.log("resize_table.js had been injected");
 })()
