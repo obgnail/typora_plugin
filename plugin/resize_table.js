@@ -1,7 +1,7 @@
 (() => {
     const config = {
-        DEBUG: true,
-        ALLOW_DRAG: true,
+        DEBUG: false,
+        ALLOW_DRAG: false,
         REMOVE_MIX_WIDTH: true,
         THRESHOLD: 20,
     }
