@@ -11,7 +11,7 @@
 3. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
 4. 重启 Typora。
 
-> 每个功能对应 plugin 文件夹下的一个文件（index.js 除外），如若只要其一，只需删除对应文件即可。
+> 每个功能对应 plugin 文件夹下的一个文件（index.js 除外），如若只要其一，按需删除文件即可。
 
 > 每个功能都有对应的配置，且每个配置选项都有注释说明。如果需要，修改对应 JS 文件里的 config 对象。
 
@@ -74,9 +74,11 @@ ClientCommand.execForAll(`console.log(global.reqnode('electron').remote.require(
 
 
 
-### resize_table.js：表格可拖动（WIP）
+### resize_table.js：表格可拖动
 
 ctrl+鼠标拖动，修改表格的行高列宽。
+
+![resize_table](assets/resize_table.gif)
 
 
 
