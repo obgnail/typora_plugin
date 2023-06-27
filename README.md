@@ -7,6 +7,7 @@
 - search_multi.js：多关键字搜索
 - window_tab.js：标签管理
 - resize_table.js：调整表格大小
+- read_only.js：只读模式（WIP）
 
 
 
@@ -85,6 +86,14 @@ ClientCommand.execForAll(`console.log(global.reqnode('electron').remote.require(
 ctrl+鼠标拖动，修改表格的行高列宽。
 
 ![resize_table](assets/resize_table.gif)
+
+
+
+### read_only.js：只读模式（WIP）
+
+文本不可编辑。
+
+快捷键：ctrl+shift+R
 
 
 

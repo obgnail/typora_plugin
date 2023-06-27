@@ -1,11 +1,11 @@
 (() => {
     const config = {
         // 使用启用只读模式脚本,若为false,以下配置全部失效
-        ENABLE: true,
+        ENABLE: false,
         // 进入和脱离只读模式的快捷键
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "R",
         // 是否默认使用只读模式
-        READ_ONLY_DEFAULT: true,
+        READ_ONLY_DEFAULT: false,
         // 只读模式下仍可以使用的快捷键
         EXCLUDE_KEY: [
             // 文件
@@ -49,16 +49,41 @@
         ],
 
         // 脚本内部使用
-        DEBUG: false,
+        DEBUG: true,
         READ_ONLY: false,
+        FIRST_ENTER_READ_ONLY: true,
     };
 
     if (!config.ENABLE) {
         return
     }
 
+    const showNotification = () => {
+        if (!config.FIRST_ENTER_READ_ONLY) {
+            return
+        }
+
+        console.log("---")
+
+        const notification = document.getElementById("md-notification");
+        let div = `
+            <p class="ty-enter-mode-warning-header"><strong>Read Only Mode</strong> 已开启。</p>
+            <p data-lg="Front" style="opacity: 0.7;font-size: 0.8rem;margin-top: -4px;">键入快捷键 Ctrl+Shift+R 关闭</p>
+            <p style="float: right;position: absolute;right: 32px;bottom: -2px;padding:0;background: inherit;">
+                <button id="ty-surpress-mode-warning-close-btn" class="btn btn-default btn-sm ty-read-only-close-btn" style="float:right;margin-right: -18px;margin-top:1px;" data-localize="Dismiss" data-lg="Front">关闭</button>
+            </p>
+        `
+        notification.insertAdjacentHTML('beforeend', div);
+        document.querySelector(".ty-read-only-close-btn").addEventListener("click", ev => notification.style.display = "none")
+        if (notification.style.display !== "block") {
+            notification.style.display = "block";
+        }
+        config.FIRST_ENTER_READ_ONLY = false;
+    }
+
     if (config.READ_ONLY_DEFAULT) {
         config.READ_ONLY = true;
+        showNotification();
     }
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
@@ -72,6 +97,7 @@
         return false
     }
 
+
     window.addEventListener("keydown", ev => {
         if (!config.HOTKEY(ev)) {
             if (isExclude(ev)) {
@@ -84,6 +110,7 @@
             }
         } else {
             config.READ_ONLY = !config.READ_ONLY;
+            showNotification();
         }
     }, true)
 
