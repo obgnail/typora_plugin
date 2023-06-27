@@ -287,7 +287,7 @@
             index++;
             const parseUrl = Package.Path.parse(filePath);
             const dirPath = !config.RELATIVE_PATH ? parseUrl.dir : parseUrl.dir.replace(rootPath, ".");
-            const hint = config.SHOW_MTIME ? `ty-hint="修改时间: ${stats.mtime.toLocaleString('chinese',{ hour12: false })}"` : ``;
+            const hint = config.SHOW_MTIME ? `ty-hint="修改时间: ${stats.mtime.toLocaleString('chinese', {hour12: false})}"` : ``;
             const item = `
                 <div class="typora-search-multi-item" data-is-dir="false"
                     data-path="${filePath}" data-index="${index}" ${hint}>
@@ -470,14 +470,14 @@
         hideIfNeed();
     });
 
-    window.onkeydown = ev => {
+    window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
             modal.modal.style.display = "block";
             modal.input.select();
             ev.preventDefault();
             ev.stopPropagation();
         }
-    }
+    })
 
     modal.caseOption.addEventListener("click", ev => {
         modal.caseOption.classList.toggle("select");
