@@ -1,6 +1,7 @@
 (() => {
     const config = {
-        DEBUG: false,
+        // 使用启用脚本,若为false,以下配置全部失效
+        ENABLE: true,
         // 当只有一个窗口时是否隐藏标签
         HIDE_TAB_WHEN_ONE_WINDOW: true,
         // 当打开配置菜单的时候是否隐藏
@@ -39,7 +40,13 @@
         FOCUS_CHECK_INTERVAL: 100,
 
         REQUIRE_VAR_NAME: "__PLUGIN_REQUIRE__",
-        ELECTRON_VAR_NAME: "__PLUGIN_ELECTRON__"
+        ELECTRON_VAR_NAME: "__PLUGIN_ELECTRON__",
+
+        DEBUG: false,
+    }
+
+    if (!config.ENABLE) {
+        return
     }
 
     // 兼容经典布局

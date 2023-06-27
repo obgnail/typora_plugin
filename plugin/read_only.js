@@ -1,5 +1,7 @@
 (() => {
     const config = {
+        // 使用启用只读模式脚本,若为false,以下配置全部失效
+        ENABLE: true,
         // 进入和脱离只读模式的快捷键
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "R",
         // 是否默认使用只读模式
@@ -50,6 +52,10 @@
         DEBUG: false,
         READ_ONLY: false,
     };
+
+    if (!config.ENABLE) {
+        return
+    }
 
     if (config.READ_ONLY_DEFAULT) {
         config.READ_ONLY = true;

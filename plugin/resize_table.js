@@ -1,12 +1,16 @@
 (() => {
     const config = {
-        DEBUG: false,
-        ALLOW_DRAG: true,
+        // 使用启用脚本,若为false,以下配置全部失效
+        ENABLE: true,
+        // 是否去除表格单元格最小宽度限制
         REMOVE_MIX_WIDTH: true,
+        // 单元格边线的拖拽范围
         THRESHOLD: 20,
+
+        DEBUG: false,
     }
 
-    if (!config.ALLOW_DRAG) {
+    if (!config.ENABLE) {
         return
     }
 
