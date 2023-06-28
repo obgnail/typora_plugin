@@ -3,4 +3,5 @@ window.onload = () => {
     reqnode('./plugin/window_tab.js')
     reqnode('./plugin/resize_table.js')
     reqnode('./plugin/read_only.js')
+    reqnode('./plugin/truncate_text.js')
 }
