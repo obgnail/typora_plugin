@@ -13,6 +13,7 @@
             ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "N", // 新建窗口
             ev => metaKeyPressed(ev) && ev.key === "o", // 打开
             ev => metaKeyPressed(ev) && ev.key === "p", // 快速打开
+            ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "P", // 多关键字查找
             ev => metaKeyPressed(ev) && ev.key === "s", // 保存
             ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "S", // 另存
             ev => metaKeyPressed(ev) && ev.key === ",", // 偏好设置
@@ -49,7 +50,7 @@
         ],
 
         // 脚本内部使用
-        DEBUG: false,
+        DEBUG: true,
         READ_ONLY: false,
         FIRST_ENTER_READ_ONLY: true,
     };
@@ -63,8 +64,6 @@
             return
         }
 
-        console.log("---")
-
         const notification = document.getElementById("md-notification");
         let div = `
             <p class="ty-enter-mode-warning-header"><strong>Read Only Mode</strong> 已开启。</p>
@@ -74,7 +73,7 @@
             </p>
         `
         notification.insertAdjacentHTML('beforeend', div);
-        document.querySelector(".ty-read-only-close-btn").addEventListener("click", ev => notification.style.display = "none")
+        document.querySelector(".ty-read-only-close-btn").addEventListener("click", ev => notification.style.display = "none");
         if (notification.style.display !== "block") {
             notification.style.display = "block";
         }
@@ -86,7 +85,6 @@
         showNotification();
     }
 
-    const write = document.getElementById("write");
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
     const isExclude = ev => {
@@ -100,12 +98,13 @@
 
     const prevent = ev => {
         if (config.READ_ONLY) {
-            // document.activeElement.blur();
+            document.activeElement.blur();
             ev.preventDefault();
             ev.stopPropagation();
         }
     }
 
+    const write = document.getElementById("write");
     const setEdit = contenteditable => {
         let eleList = write.querySelectorAll(`[contenteditable="${!contenteditable}"]`);
         for (const ele of eleList) {
@@ -113,9 +112,7 @@
         }
     }
 
-    const observer = new MutationObserver(function () {
-        setEdit(false);
-    })
+    const observer = new MutationObserver(() => setEdit(false));
 
     const contentEditable = () => {
         if (config.READ_ONLY) {
@@ -131,11 +128,11 @@
             if (isExclude(ev)) {
                 return
             }
-            prevent(ev)
+            prevent(ev);
         } else {
             config.READ_ONLY = !config.READ_ONLY;
-            showNotification();
             contentEditable();
+            showNotification();
         }
     }, true)
 
