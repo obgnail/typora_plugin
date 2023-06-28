@@ -1,7 +1,7 @@
 (() => {
     const config = {
         // 使用启用只读模式脚本,若为false,以下配置全部失效
-        ENABLE: false,
+        ENABLE: true,
         // 进入和脱离只读模式的快捷键
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "R",
         // 是否默认使用只读模式
@@ -49,7 +49,7 @@
         ],
 
         // 脚本内部使用
-        DEBUG: true,
+        DEBUG: false,
         READ_ONLY: false,
         FIRST_ENTER_READ_ONLY: true,
     };
@@ -86,6 +86,7 @@
         showNotification();
     }
 
+    const write = document.getElementById("write");
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
     const isExclude = ev => {
@@ -97,23 +98,46 @@
         return false
     }
 
+    const prevent = ev => {
+        if (config.READ_ONLY) {
+            // document.activeElement.blur();
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
+    }
+
+    const setEdit = contenteditable => {
+        let eleList = write.querySelectorAll(`[contenteditable="${!contenteditable}"]`);
+        for (const ele of eleList) {
+            ele.setAttribute("contenteditable", `${contenteditable}`);
+        }
+    }
+
+    const observer = new MutationObserver(function () {
+        setEdit(false);
+    })
+
+    const contentEditable = () => {
+        if (config.READ_ONLY) {
+            observer.observe(write, {childList: true, characterData: true, subtree: true});
+        } else {
+            observer.disconnect();
+            setEdit(true);
+        }
+    }
 
     window.addEventListener("keydown", ev => {
         if (!config.HOTKEY(ev)) {
             if (isExclude(ev)) {
                 return
             }
-            if (config.READ_ONLY) {
-                // document.activeElement.blur();
-                ev.preventDefault();
-                ev.stopPropagation();
-            }
+            prevent(ev)
         } else {
             config.READ_ONLY = !config.READ_ONLY;
             showNotification();
+            contentEditable();
         }
     }, true)
-
 
     if (config.DEBUG) {
         JSBridge.invoke("window.toggleDevTools");
