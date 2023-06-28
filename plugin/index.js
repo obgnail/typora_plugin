@@ -1,7 +1,15 @@
 window.onload = () => {
-    reqnode('./plugin/search_multi.js')
-    reqnode('./plugin/window_tab.js')
-    reqnode('./plugin/resize_table.js')
-    reqnode('./plugin/read_only.js')
-    reqnode('./plugin/truncate_text.js')
+
+    const load = path => {
+        try {
+            reqnode(path)
+        } catch (e) {
+        }
+    }
+
+    load('./plugin/search_multi.js')
+    load('./plugin/window_tab.js')
+    load('./plugin/resize_table.js')
+    load('./plugin/read_only.js')
+    load('./plugin/truncate_text.js')
 }
