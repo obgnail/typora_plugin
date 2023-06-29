@@ -1,7 +1,8 @@
 window.onload = () => {
     const _require = file => {
         try {
-            const filepath = reqnode("path").join(global.dirname, file);
+            const dirname = global.dirname || global.__dirname;
+            const filepath = reqnode("path").join(dirname, file);
             reqnode(filepath);
         } catch (e) {
             console.log("require error:", e);
