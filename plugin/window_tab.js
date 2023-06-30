@@ -362,6 +362,11 @@
         }
     }
 
+    const updateWinIdListFromOtherWindows = (myWinId, otherWinId) => {
+        JSBridge.invoke('executeJavaScript', otherWinId,
+            `_winIdList=global._getWinIdInTabs(${myWinId}); JSBridge.invoke('executeJavaScript', ${myWinId}, ` + "`global._updateWinList('${_winIdList}')`)");
+    }
+
     const onElectronLoad = func => {
         const timer = setInterval(() => {
             if (Package.getElectron() && Package.getRequire()) {
@@ -377,10 +382,6 @@
         registerOnFocus();
     })
 
-    const updateWinIdListFromOtherWindows = (myWinId, otherWinId) => {
-        JSBridge.invoke('executeJavaScript', otherWinId, `_winIdList=global._getWinIdInTabs(${myWinId}); JSBridge.invoke('executeJavaScript', ${myWinId}, ` + "`global._updateWinList('${_winIdList}')`)");
-    }
-
     const handleWindowTab = () => {
         const curWin = getFocusedWindow();
         if (curWin) {
@@ -393,6 +394,7 @@
             global._flushWindowTabs();
             return
         }
+
         for (const win of windows) {
             if (win.id !== curWin.id) {
                 updateWinIdListFromOtherWindows(curWin.id, win.id)
