@@ -341,8 +341,11 @@
         const win = getFocusedWindow();
         if (win) {
             windowTabs.tabs.setAttribute("winid", win.id);
+            global._winid = win.id;
         }
     }
+
+    const getWinId = () => global._winid || windowTabs.tabs.getAttribute("winid") || getFocusedWindow().id;
 
     // 应用外点击任务栏切换窗口
     const registerOnFocus = () => {
@@ -365,10 +368,7 @@
 
     // 关闭窗口
     window.addEventListener("beforeunload", ev => {
-        let focusWinId = windowTabs.tabs.getAttribute("winid");
-        if (!focusWinId) {
-            focusWinId = getFocusedWindow().id
-        }
+        const focusWinId = getWinId();
         removeWindowTab(focusWinId);
     }, true)
 
@@ -403,6 +403,8 @@
         global.execForWindow = execForWindow;
         global.execForAllWindows = execForAllWindows;
         global.getDocument = getDocument;
+
+        JSBridge.invoke("window.toggleDevTools");
     }
 
     console.log("window_tab.js had been injected");

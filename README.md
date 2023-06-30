@@ -52,6 +52,9 @@ global.reqnode('electron').remote.require('electron').BrowserWindow;
 
 // 恭喜你成功获取到所有窗口的BrowserWindow对象
 ClientCommand.execForAll(`console.log(global.reqnode('electron').remote.require('electron').BrowserWindow)`);
+
+// 恭喜你成功让窗口1告诉窗口2它自己的windowID(#title-bar-window-tabs的winid属性是打开页面时已经设置好的)
+JSBridge.invoke('executeJavaScript', 1, "_winid=document.getElementById('title-bar-window-tabs').getAttribute('winid'); JSBridge.invoke('executeJavaScript', 2, `console.log(${_winid})`)");
 ```
 
 
