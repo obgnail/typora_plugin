@@ -51,7 +51,7 @@
 
         // 脚本内部使用
         DEBUG: false,
-        FIRST_ENTER_READ_ONLY: true,
+        FIRST_ENTER_MODE: true,
     };
 
     if (!config.ENABLE) {
@@ -59,7 +59,7 @@
     }
 
     const showNotification = () => {
-        if (!config.FIRST_ENTER_READ_ONLY) {
+        if (!config.FIRST_ENTER_MODE) {
             return
         }
 
@@ -76,11 +76,10 @@
         if (notification.style.display !== "block") {
             notification.style.display = "block";
         }
-        config.FIRST_ENTER_READ_ONLY = false;
+        config.FIRST_ENTER_MODE = false;
     }
 
     if (config.READ_ONLY_DEFAULT) {
-        config.READ_ONLY = true;
         showNotification();
     }
 
@@ -103,6 +102,7 @@
 
         if (File.isLocked) {
             // File.isLocked 也挡不住回车键 :(
+            // 为什么要使用isExclude排除按键？因为输入法激活状态下键入能突破 File.isLocked
             if ((ev.key === "Enter") || !isExclude(ev)) {
                 ev.preventDefault();
                 ev.stopPropagation();
