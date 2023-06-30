@@ -3,6 +3,7 @@
 <div align="center">
   <img src="assets/typora_plugin.png" alt="typora_plugin" width="400" />
 </div>
+
 通过注入 JavaScript 代码，为 Typora 添加功能。
 
 目前支持的功能：
@@ -19,10 +20,10 @@
 
 1. 找到包含 `window.html` 的文件夹 A。（不同版本的 Typora 的文件夹结构可能不同，在我这是`Typora/resources/app`，推荐使用 everything 找一下）
 2. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
-3. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
+3. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。（不同版本的 Typora 查找的内容可能不同，其实就是查找导入 frame.js 的 script 标签）
 4. 重启 Typora。
 
-> 每个功能都对应 plugin 文件夹下的一个文件（index.js 除外），如若只要其一，按需删除文件即可。
+> 每个功能都对应 plugin 文件夹下的一个同名文件（index.js 除外），如若不需要某些功能，按需删除文件即可。
 
 > 每个功能都有对应的配置，且每个配置选项都有注释说明。可以按需修改对应 JS 文件里的 config。
 
