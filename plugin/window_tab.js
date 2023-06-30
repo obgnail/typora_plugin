@@ -42,7 +42,7 @@
         REQUIRE_VAR_NAME: "__PLUGIN_REQUIRE__",
         ELECTRON_VAR_NAME: "__PLUGIN_ELECTRON__",
 
-        DEBUG: false,
+        DEBUG: true,
     }
 
     if (!config.ENABLE) {
@@ -244,18 +244,27 @@
                         <div class="window-tab-name">${title}</div></div>`
     }
 
-    global._flushWindowTabs = (excludeId, sortFunc) => {
-        if (!sortFunc) {
-            sortFunc = winList => winList.sort((a, b) => a.id - b.id);
-        }
-
+    global._flushWindowTabs = (excludeId, order) => {
         const windows = getAllWindows();
         let copy = [...windows];
         if (excludeId) {
             copy = copy.filter(win => win.id !== excludeId);
         }
 
-        const sortedWindows = sortFunc(copy);
+        let sortedWindows = [];
+        if (!order) {
+            sortedWindows = copy.sort((a, b) => a.id - b.id);
+        } else {
+            const winIdList = order.split(",");
+            for (const id of winIdList) {
+                for (const win of copy) {
+                    if (id === win.id + "") {
+                        sortedWindows.push(win);
+                    }
+                }
+            }
+        }
+
         const focusWinId = getFocusedWindow().id;
         const divArr = sortedWindows.map(win => {
             const title = getWindowName(win);
@@ -310,9 +319,41 @@
         showTabsIfNeed();
     }
 
+    // 注意idx从1开始
+    global._swapTab = (idx1, idx2) => {
+        const max = idx1 > idx2 ? idx1 : idx2;
+        const tabs = windowTabs.list.querySelectorAll(".title-bar-window-tab");
+        if (tabs.length >= max) {
+            const tab1 = tabs[idx1 - 1];
+            const tab2 = tabs[idx2 - 1];
+            const tab1Next = tab1.nextElementSibling;
+            windowTabs.list.insertBefore(tab1, tab2.nextElementSibling);
+            windowTabs.list.insertBefore(tab2, tab1Next);
+        }
+    }
+
+    global._getWinId = () => global._winid || windowTabs.tabs.getAttribute("winid") || getFocusedWindow().id;
+
+    global._updateWinList = winIdListStr => flushWindowTabs(undefined, winIdListStr);
+
+    global._getWinIdInTabs = newWindId => {
+        const result = [];
+        const winList = windowTabs.list.querySelectorAll(".title-bar-window-tab");
+        for (const win of winList) {
+            const winId = win.getAttribute("winid");
+            result.push(winId)
+        }
+        if (newWindId) {
+            result.push(newWindId)
+        }
+        return result
+    }
+
+
     // 其实下面函数都可以使用flushWindowTabs代替,但是flushWindowTabs太重了
-    const flushWindowTabs = excludeId => execForAllWindows(`global._flushWindowTabs(${excludeId})`);
+    const flushWindowTabs = (excludeId, order) => execForAllWindows(`global._flushWindowTabs(${excludeId}, "${order}")`);
     const updateTabTitle = (winId, title) => execForAllWindows(`global._updateTabTitle(${winId}, "${title}")`);
+    const swapTab = (idx1, idx2) => execForAllWindows(`global._swapTab(${idx1}, ${idx2})`);
     const changeTab = () => execForAllWindows(`global._changeTab()`);
     const removeWindowTab = winId => execForAllWindows(`global._removeWindowTab(${winId})`);
     const addWindowTab = (noticeWins, winId, title, select) => {
@@ -332,20 +373,33 @@
 
     // 当窗口加载完毕
     onElectronLoad(() => {
-        flushWindowTabs();
-        recordCurWindowId();
+        handleWindowTab();
         registerOnFocus();
     })
 
-    const recordCurWindowId = () => {
-        const win = getFocusedWindow();
-        if (win) {
-            windowTabs.tabs.setAttribute("winid", win.id);
-            global._winid = win.id;
-        }
+    const updateWinIdListFromOtherWindows = (myWinId, otherWinId) => {
+        JSBridge.invoke('executeJavaScript', otherWinId, `_winIdList=global._getWinIdInTabs(${myWinId}); JSBridge.invoke('executeJavaScript', ${myWinId}, ` + "`global._updateWinList('${_winIdList}')`)");
     }
 
-    const getWinId = () => global._winid || windowTabs.tabs.getAttribute("winid") || getFocusedWindow().id;
+    const handleWindowTab = () => {
+        const curWin = getFocusedWindow();
+        if (curWin) {
+            windowTabs.tabs.setAttribute("winid", curWin.id);
+            global._winid = curWin.id;
+        }
+
+        const windows = getAllWindows();
+        if (windows.length === 1) {
+            global._flushWindowTabs();
+            return
+        }
+        for (const win of windows) {
+            if (win.id !== curWin.id) {
+                updateWinIdListFromOtherWindows(curWin.id, win.id)
+                return
+            }
+        }
+    }
 
     // 应用外点击任务栏切换窗口
     const registerOnFocus = () => {
@@ -368,7 +422,7 @@
 
     // 关闭窗口
     window.addEventListener("beforeunload", ev => {
-        const focusWinId = getWinId();
+        const focusWinId = global._getWinId();
         removeWindowTab(focusWinId);
     }, true)
 
@@ -401,6 +455,7 @@
         })
         global.getFocusedWindow = getFocusedWindow;
         global.execForWindow = execForWindow;
+        global.execFromOtherWindow = updateWinIdListFromOtherWindows;
         global.execForAllWindows = execForAllWindows;
         global.getDocument = getDocument;
 
