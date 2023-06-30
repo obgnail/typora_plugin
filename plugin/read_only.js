@@ -4,7 +4,7 @@
         ENABLE: true,
         // 进入和脱离只读模式的快捷键
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "R",
-        // 是否默认使用只读模式
+        // 默认使用只读模式
         READ_ONLY_DEFAULT: false,
         // 只读模式下仍可以使用的快捷键
         EXCLUDE_KEY: [
@@ -51,8 +51,7 @@
 
         // 脚本内部使用
         DEBUG: false,
-        READ_ONLY: false,
-        FIRST_ENTER_READ_ONLY: true,
+        FIRST_ENTER_MODE: true,
     };
 
     if (!config.ENABLE) {
@@ -60,7 +59,7 @@
     }
 
     const showNotification = () => {
-        if (!config.FIRST_ENTER_READ_ONLY) {
+        if (!config.FIRST_ENTER_MODE) {
             return
         }
 
@@ -77,11 +76,10 @@
         if (notification.style.display !== "block") {
             notification.style.display = "block";
         }
-        config.FIRST_ENTER_READ_ONLY = false;
+        config.FIRST_ENTER_MODE = false;
     }
 
     if (config.READ_ONLY_DEFAULT) {
-        config.READ_ONLY = true;
         showNotification();
     }
 
@@ -96,39 +94,16 @@
         return false
     }
 
-    const write = document.getElementById("write");
-    const setEdit = contenteditable => {
-        let eleList = write.querySelectorAll(`[contenteditable="${!contenteditable}"]`);
-        for (const ele of eleList) {
-            ele.setAttribute("contenteditable", `${contenteditable}`);
-        }
-    }
-
-    const observer = new MutationObserver(() => setEdit(false));
-    const setContentEditable = () => {
-        if (config.READ_ONLY) {
-            observer.observe(write, {childList: true, characterData: true, subtree: true});
-        } else {
-            observer.disconnect();
-            setEdit(true);
-        }
-    }
-
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
-            ev.preventDefault();
-            ev.stopPropagation();
-
-            config.READ_ONLY = !config.READ_ONLY;
-            setContentEditable();
             showNotification();
-            document.activeElement.blur();
-            return
+            File.isLocked ? File.unlock() : File.lock();
         }
 
-        if (config.READ_ONLY) {
-            if ((ev.key === "Enter") || (ev.target.closest(".md-fences") && !isExclude(ev))) {
-                document.activeElement.blur();
+        if (File.isLocked) {
+            // File.isLocked 也挡不住回车键 :(
+            // 为什么要使用isExclude排除按键？因为输入法激活状态下键入能突破 File.isLocked
+            if ((ev.key === "Enter") || !isExclude(ev)) {
                 ev.preventDefault();
                 ev.stopPropagation();
             }
