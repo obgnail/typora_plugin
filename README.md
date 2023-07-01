@@ -9,7 +9,8 @@
 目前支持的功能：
 
 - search_multi.js：多关键字搜索
-- window_tab.js：标签管理
+- window_tab.js：标签页管理
+- window_tab_drag.js：标签页管理，可拖拽排序
 - resize_table.js：调整表格大小
 - read_only.js：只读模式
 - truncate_text.js：隐藏前面内容，提高大文件渲染性能
@@ -83,9 +84,13 @@ JSBridge.invoke('executeJavaScript', 1, "_winid=document.getElementById('title-b
 
 
 
-### window_tab.js：标签管理
+### window_tab.js / window_tab_drag.js：标签页管理
 
 ![window_tab](assets/window_tab.gif)
+
+window_tab_drag.js 和 window_tab.js 的区别是：是否支持拖拽排序。
+
+> 默认使用 window_tab_drag.js，关闭 window_tab.js。
 
 
 
@@ -117,11 +122,24 @@ ctrl+鼠标拖动，修改表格的行高列宽。
 
 ## 瞎聊
 
-Typora 每开一个窗口，就会创建多个 electron BrowserWindow 实例，而且每个实例都有自己的 web 页面和渲染进程。
+### 为什么要区分 window_tab.js 和 window_tab_drag.js ?
 
-标签管理本来是应该在 electron 后端实现的，现在强行要在前端实现，只能使用劫持后端关键对象，然后在每个窗口绘制这种非常绿皮的方式实现。
+Typora 每开一个窗口，就会创建一个 electron BrowserWindow 实例，而且每个实例都有自己的 web 页面和渲染进程。标签管理本来是应该在 electron 后端实现的，现在强行要在前端实现，只能使用劫持后端关键对象，然后在每个窗口绘制这种非常绿皮的方式实现。
 
-> 本人并非前端开发，JS/CSS 写的很烂。感谢 new bing 对于本项目的大力支持 : ) 
+做出区分的理由是：**支持排序会复杂很多**。排序意味着状态的引入 —— 当创建第五个窗口的时候，新建的窗口必须要知道前面四个窗口的顺序：
+
+- 如果此功能在后端实现的话就很好办，搞一个全局对象保存现有的窗口列表，创建窗口的时候传给他。
+- 如果在前端实现的话就很痛苦，如上所述，每个窗口都有自己的 web 页面和渲染进程，你无法跨进程获取变量。
+
+最可行的方案是使用 localStroge 存储当前的窗口列表。但是我希望脚本是无状态的，每次打开都是一次全新开始 —— 如果 Typora 崩溃，处在 localStroge 里的脏数据就会影响下次启动。
+
+我采取的方法是应答。第五个窗口创建的时候就会通过 IPC 去询问第四个窗口当前的窗口列表，等第四个窗口回复之后，第五个窗口进行数据处理，再将新的窗口列表通知给所有的窗口，让它们重新渲染。**这种方式就是带着脚铐跳舞，是奇技淫巧，绿皮中的绿皮**。
+
+
+
+### 结语
+
+本人并非前端开发，JS/CSS 写的很烂。感谢 new bing 对于本项目的大力支持 : ) 
 
 如果对各位有用的话，欢迎 star。
 

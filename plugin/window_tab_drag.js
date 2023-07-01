@@ -1,7 +1,7 @@
 (() => {
     const config = {
         // 使用启用脚本,若为false,以下配置全部失效
-        ENABLE: false,
+        ENABLE: true,
         // 当只有一个窗口时是否隐藏标签
         HIDE_TAB_WHEN_ONE_WINDOW: true,
         // 当打开配置菜单的时候是否隐藏
@@ -42,7 +42,7 @@
         REQUIRE_VAR_NAME: "__PLUGIN_REQUIRE__",
         ELECTRON_VAR_NAME: "__PLUGIN_ELECTRON__",
 
-        DEBUG: false,
+        DEBUG: true,
     }
 
     if (!config.ENABLE) {
@@ -198,6 +198,12 @@
             background-color: ${config.TAB_SELECT_BG_COLOR};
         }
         
+        #title-bar-window-tabs .title-bar-window-tab.over {
+            border-color: purple;
+            border-width: 2px;
+            border-style: dashed;
+        }
+        
         #title-bar-window-tabs .title-bar-window-tab .window-tab-name {
             overflow: ${config.TAB_OVERFLOW};
             text-overflow: ${config.TAB_TEXT_OVERFLOW};
@@ -238,24 +244,43 @@
         return name
     }
 
+    const whichChildOfParent = child => {
+        let i = 1;
+        for (const sibling of child.parentElement.children) {
+            if (sibling && sibling === child) {
+                return i
+            }
+            i++
+        }
+    }
+
     const newTab = (winId, title, select) => {
         const selected = select ? " select" : "";
-        return `<div class="title-bar-window-tab${selected}" ty-hint="${title}" winid="${winId}">
+        return `<div class="title-bar-window-tab${selected}" ty-hint="${title}" winid="${winId}" draggable="true">
                         <div class="window-tab-name">${title}</div></div>`
     }
 
-    global._flushWindowTabs = (excludeId, sortFunc) => {
-        if (!sortFunc) {
-            sortFunc = winList => winList.sort((a, b) => a.id - b.id);
-        }
-
+    global._flushWindowTabs = (excludeId, order) => {
         const windows = getAllWindows();
         let copy = [...windows];
         if (excludeId) {
             copy = copy.filter(win => win.id !== excludeId);
         }
 
-        const sortedWindows = sortFunc(copy);
+        let sortedWindows = [];
+        if (!order) {
+            sortedWindows = copy.sort((a, b) => a.id - b.id);
+        } else {
+            const winIdList = order.split(",");
+            for (const id of winIdList) {
+                for (const win of copy) {
+                    if (id === win.id + "") {
+                        sortedWindows.push(win);
+                    }
+                }
+            }
+        }
+
         const focusWinId = getFocusedWindow().id;
         const divArr = sortedWindows.map(win => {
             const title = getWindowName(win);
@@ -310,15 +335,50 @@
         showTabsIfNeed();
     }
 
+    // 注意idx从1开始
+    global._moveTab = (fromIdx, toIdx) => {
+        const max = fromIdx > toIdx ? fromIdx : toIdx;
+        const tabs = windowTabs.list.querySelectorAll(".title-bar-window-tab");
+        if (tabs.length >= max) {
+            const fromTab = tabs[fromIdx - 1];
+            const toTab = tabs[toIdx - 1];
+            windowTabs.list.insertBefore(fromTab, toTab);
+        }
+    }
+
+    global._getWinId = () => global._winid || windowTabs.tabs.getAttribute("winid") || getFocusedWindow().id;
+
+    global._updateWinList = winIdListStr => flushWindowTabs(undefined, winIdListStr);
+
+    global._getWinIdInTabs = newWindId => {
+        const result = [];
+        const winList = windowTabs.list.querySelectorAll(".title-bar-window-tab");
+        for (const win of winList) {
+            const winId = win.getAttribute("winid");
+            result.push(winId)
+        }
+        if (newWindId) {
+            result.push(newWindId)
+        }
+        return result
+    }
+
+
     // 其实下面函数都可以使用flushWindowTabs代替,但是flushWindowTabs太重了
-    const flushWindowTabs = excludeId => execForAllWindows(`global._flushWindowTabs(${excludeId})`);
+    const flushWindowTabs = (excludeId, order) => execForAllWindows(`global._flushWindowTabs(${excludeId}, "${order}")`);
     const updateTabTitle = (winId, title) => execForAllWindows(`global._updateTabTitle(${winId}, "${title}")`);
+    const moveTab = (idx1, idx2) => execForAllWindows(`global._moveTab(${idx1}, ${idx2})`);
     const changeTab = () => execForAllWindows(`global._changeTab()`);
     const removeWindowTab = winId => execForAllWindows(`global._removeWindowTab(${winId})`);
     const addWindowTab = (noticeWins, winId, title, select) => {
         for (const win of noticeWins) {
             execForWindow(win.id, `global._addWindowTab(${winId}, "${title}", ${select})`);
         }
+    }
+
+    const updateWinIdListFromOtherWindows = (myWinId, otherWinId) => {
+        JSBridge.invoke('executeJavaScript', otherWinId,
+            `_winIdList=global._getWinIdInTabs(${myWinId}); JSBridge.invoke('executeJavaScript', ${myWinId}, ` + "`global._updateWinList('${_winIdList}')`)");
     }
 
     const onElectronLoad = func => {
@@ -332,20 +392,31 @@
 
     // 当窗口加载完毕
     onElectronLoad(() => {
-        flushWindowTabs();
-        recordCurWindowId();
+        handleWindowTab();
         registerOnFocus();
+        registerOrderTab();
     })
 
-    const recordCurWindowId = () => {
-        const win = getFocusedWindow();
-        if (win) {
-            windowTabs.tabs.setAttribute("winid", win.id);
-            global._winid = win.id;
+    const handleWindowTab = () => {
+        const curWin = getFocusedWindow();
+        if (curWin) {
+            windowTabs.tabs.setAttribute("winid", curWin.id);
+            global._winid = curWin.id;
+        }
+
+        const windows = getAllWindows();
+        if (windows.length === 1) {
+            global._flushWindowTabs();
+            return
+        }
+
+        for (const win of windows) {
+            if (win.id !== curWin.id) {
+                updateWinIdListFromOtherWindows(curWin.id, win.id)
+                return
+            }
         }
     }
-
-    const getWinId = () => global._winid || windowTabs.tabs.getAttribute("winid") || getFocusedWindow().id;
 
     // 应用外点击任务栏切换窗口
     const registerOnFocus = () => {
@@ -368,7 +439,7 @@
 
     // 关闭窗口
     window.addEventListener("beforeunload", ev => {
-        const focusWinId = getWinId();
+        const focusWinId = global._getWinId();
         removeWindowTab(focusWinId);
     }, true)
 
@@ -382,6 +453,45 @@
         setFocusWindow(parseInt(winId));
         changeTab();
     })
+
+    // 当拖拽排序tab
+    const registerOrderTab = () => {
+        let lastOver = null;
+        const toggleOver = (ev, f) => {
+            const target = ev.target.closest(".title-bar-window-tab");
+            if (target) {
+                if (f === "add") {
+                    target.classList.add("over");
+                    lastOver = target;
+                } else {
+                    target.classList.remove("over");
+                }
+            }
+            ev.preventDefault()
+        }
+
+        windowTabs.list.addEventListener("dragstart", ev => {
+            const draggedTab = ev.target.closest(".title-bar-window-tab")
+            if (draggedTab) {
+                draggedTab.style.opacity = 0.5;
+                lastOver = null;
+            }
+        })
+        windowTabs.list.addEventListener("dragend", ev => {
+            const from = ev.target.closest(".title-bar-window-tab")
+            const to = lastOver;
+            if (from && to) {
+                from.style.opacity = "";
+                ev.preventDefault();
+                const fromIdx = whichChildOfParent(from);
+                const toIdx = whichChildOfParent(to);
+                moveTab(fromIdx, toIdx);
+            }
+        });
+        windowTabs.list.addEventListener("dragover", ev => toggleOver(ev, "add"))
+        windowTabs.list.addEventListener("dragenter", ev => toggleOver(ev, "add"))
+        windowTabs.list.addEventListener("dragleave", ev => toggleOver(ev, "remove"))
+    }
 
     if (config.HIDE_WHEN_MENU_OPEN) {
         new MutationObserver((mutationList) => {
@@ -401,11 +511,12 @@
         })
         global.getFocusedWindow = getFocusedWindow;
         global.execForWindow = execForWindow;
+        global.execFromOtherWindow = updateWinIdListFromOtherWindows;
         global.execForAllWindows = execForAllWindows;
         global.getDocument = getDocument;
 
         JSBridge.invoke("window.toggleDevTools");
     }
 
-    console.log("window_tab.js had been injected");
+    console.log("window_tab_drag.js had been injected");
 })();

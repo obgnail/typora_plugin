@@ -11,6 +11,7 @@ window.onload = () => {
 
     _require('./plugin/search_multi.js');
     _require('./plugin/window_tab.js');
+    _require('./plugin/window_tab_drag.js');
     _require('./plugin/resize_table.js');
     _require('./plugin/read_only.js');
     _require('./plugin/truncate_text.js');
