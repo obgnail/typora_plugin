@@ -198,6 +198,12 @@
             background-color: ${config.TAB_SELECT_BG_COLOR};
         }
         
+        #title-bar-window-tabs .title-bar-window-tab.over {
+            border-color: purple;
+            border-width: 2px;
+            border-style: dashed;
+        }
+        
         #title-bar-window-tabs .title-bar-window-tab .window-tab-name {
             overflow: ${config.TAB_OVERFLOW};
             text-overflow: ${config.TAB_TEXT_OVERFLOW};
@@ -238,9 +244,19 @@
         return name
     }
 
+    const whichChildOfParent = child => {
+        let i = 1;
+        for (const sibling of child.parentElement.children) {
+            if (sibling && sibling === child) {
+                return i
+            }
+            i++
+        }
+    }
+
     const newTab = (winId, title, select) => {
         const selected = select ? " select" : "";
-        return `<div class="title-bar-window-tab${selected}" ty-hint="${title}" winid="${winId}">
+        return `<div class="title-bar-window-tab${selected}" ty-hint="${title}" winid="${winId}" draggable="true">
                         <div class="window-tab-name">${title}</div></div>`
     }
 
@@ -293,7 +309,7 @@
 
     global._changeTab = () => {
         const focus = getFocusedWindow();
-        // 使用系统的ctrl+Tab切换任务时，可能会没有聚焦的窗口。那怎么办？凉拌。不切了。
+        // 使用系统的alt+Tab切换任务时，可能会没有聚焦的窗口。那怎么办？凉拌。不切了。
         if (!focus) {
             return
         }
@@ -380,6 +396,7 @@
     onElectronLoad(() => {
         handleWindowTab();
         registerOnFocus();
+        registerOrderTab();
     })
 
     const handleWindowTab = () => {
@@ -438,6 +455,45 @@
         setFocusWindow(parseInt(winId));
         changeTab();
     })
+
+    // 当拖拽排序tab
+    const registerOrderTab = () => {
+        let lastOver = null;
+        const toggleOver = (ev, f) => {
+            const target = ev.target.closest(".title-bar-window-tab");
+            if (target) {
+                if (f === "add") {
+                    target.classList.add("over");
+                    lastOver = target;
+                } else {
+                    target.classList.remove("over");
+                }
+            }
+            ev.preventDefault()
+        }
+
+        windowTabs.list.addEventListener("dragstart", ev => {
+            const draggedTab = ev.target.closest(".title-bar-window-tab")
+            if (draggedTab) {
+                draggedTab.style.opacity = 0.5;
+                lastOver = null;
+            }
+        })
+        windowTabs.list.addEventListener("dragend", ev => {
+            const tab1 = ev.target.closest(".title-bar-window-tab")
+            const tab2 = lastOver;
+            if (tab1 && tab2) {
+                tab1.style.opacity = "";
+                ev.preventDefault();
+                const idx1 = whichChildOfParent(tab1);
+                const idx2 = whichChildOfParent(tab2);
+                swapTab(idx1, idx2);
+            }
+        });
+        windowTabs.list.addEventListener("dragover", ev => toggleOver(ev, "add"))
+        windowTabs.list.addEventListener("dragenter", ev => toggleOver(ev, "add"))
+        windowTabs.list.addEventListener("dragleave", ev => toggleOver(ev, "remove"))
+    }
 
     if (config.HIDE_WHEN_MENU_OPEN) {
         new MutationObserver((mutationList) => {
