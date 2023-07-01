@@ -89,6 +89,10 @@ JSBridge.invoke('executeJavaScript', 1, "_winid=document.getElementById('title-b
 
 
 
+> 有个已知问题：**不可以快速连续新建窗口**。每次新建窗口后，至少等待文档成功显示后（1 秒左右）才能新建下一个窗口。原因：快速连续新建窗口时 Typora 自己会出现 BUG，这个 BUG 会影响到该脚本的初始化。
+
+
+
 ### resize_table.js：拖动调整表格大小
 
 ctrl+鼠标拖动，修改表格的行高列宽。

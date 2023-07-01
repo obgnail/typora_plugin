@@ -336,15 +336,13 @@
     }
 
     // 注意idx从1开始
-    global._swapTab = (idx1, idx2) => {
-        const max = idx1 > idx2 ? idx1 : idx2;
+    global._moveTab = (fromIdx, toIdx) => {
+        const max = fromIdx > toIdx ? fromIdx : toIdx;
         const tabs = windowTabs.list.querySelectorAll(".title-bar-window-tab");
         if (tabs.length >= max) {
-            const tab1 = tabs[idx1 - 1];
-            const tab2 = tabs[idx2 - 1];
-            const tab1Next = tab1.nextElementSibling;
-            windowTabs.list.insertBefore(tab1, tab2.nextElementSibling);
-            windowTabs.list.insertBefore(tab2, tab1Next);
+            const fromTab = tabs[fromIdx - 1];
+            const toTab = tabs[toIdx - 1];
+            windowTabs.list.insertBefore(fromTab, toTab);
         }
     }
 
@@ -369,7 +367,7 @@
     // 其实下面函数都可以使用flushWindowTabs代替,但是flushWindowTabs太重了
     const flushWindowTabs = (excludeId, order) => execForAllWindows(`global._flushWindowTabs(${excludeId}, "${order}")`);
     const updateTabTitle = (winId, title) => execForAllWindows(`global._updateTabTitle(${winId}, "${title}")`);
-    const swapTab = (idx1, idx2) => execForAllWindows(`global._swapTab(${idx1}, ${idx2})`);
+    const moveTab = (idx1, idx2) => execForAllWindows(`global._moveTab(${idx1}, ${idx2})`);
     const changeTab = () => execForAllWindows(`global._changeTab()`);
     const removeWindowTab = winId => execForAllWindows(`global._removeWindowTab(${winId})`);
     const addWindowTab = (noticeWins, winId, title, select) => {
@@ -480,14 +478,14 @@
             }
         })
         windowTabs.list.addEventListener("dragend", ev => {
-            const tab1 = ev.target.closest(".title-bar-window-tab")
-            const tab2 = lastOver;
-            if (tab1 && tab2) {
-                tab1.style.opacity = "";
+            const from = ev.target.closest(".title-bar-window-tab")
+            const to = lastOver;
+            if (from && to) {
+                from.style.opacity = "";
                 ev.preventDefault();
-                const idx1 = whichChildOfParent(tab1);
-                const idx2 = whichChildOfParent(tab2);
-                swapTab(idx1, idx2);
+                const fromIdx = whichChildOfParent(from);
+                const toIdx = whichChildOfParent(to);
+                moveTab(fromIdx, toIdx);
             }
         });
         windowTabs.list.addEventListener("dragover", ev => toggleOver(ev, "add"))
