@@ -42,7 +42,7 @@
         REQUIRE_VAR_NAME: "__PLUGIN_REQUIRE__",
         ELECTRON_VAR_NAME: "__PLUGIN_ELECTRON__",
 
-        DEBUG: true,
+        DEBUG: false,
     }
 
     if (!config.ENABLE) {
