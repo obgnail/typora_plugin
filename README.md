@@ -58,8 +58,8 @@ global.reqnode('electron').remote.require('electron').BrowserWindow;
 // 恭喜你成功获取到所有窗口的BrowserWindow对象
 ClientCommand.execForAll(`console.log(global.reqnode('electron').remote.require('electron').BrowserWindow)`);
 
-// 恭喜你成功让窗口1告诉窗口2它自己的windowID(#title-bar-window-tabs的winid属性是打开页面时已经设置好的)
-JSBridge.invoke('executeJavaScript', 1, "_winid=document.getElementById('title-bar-window-tabs').getAttribute('winid'); JSBridge.invoke('executeJavaScript', 2, `console.log(${_winid})`)");
+// 恭喜你成功让窗口1执行语句_myValue=123，然后将变量_myValue传给窗口2
+JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJavaScript', 2, `console.log(${_myValue})`)");
 ```
 
 
@@ -112,9 +112,9 @@ ctrl+鼠标拖动，修改表格的行高列宽。
 
 大文件在 Typora 的渲染性能很糟糕，用此脚本隐藏掉前面的内容（只是隐藏显示，不修改文件），提高渲染性能。
 
-快捷键：ctrl+shift+B。
-
-默认剩余最后的 80 个文本段，前面的都会被隐藏。如果需要查看被隐藏的文本段，重新进入文档即可。
+- ctrl+shift+B：隐藏最前面的文本段
+- ctrl+shift+U：重新显示所有文本段
+- ctrl+shift+Y：根据当前可视范围显示上下段
 
 > 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
 
