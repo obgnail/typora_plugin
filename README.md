@@ -145,9 +145,24 @@ Typora 每开一个窗口，就会创建一个 electron BrowserWindow 实例，�
 
 
 
+### 脚本会失效吗
+
+Typora 是闭源软件，要是有一天作者改了代码，是不是就不能用了？从原理来说，是的。实际上我是解包 Typora，看了部分源码才实现了这些功能。
+
+同时值得注意的是， Typora 的历史包袱还蛮重的。比如说 github 已经有无数个 Typora theme，这决定了它的页面它不可能大改，就算改变也大概率是向下兼容的。
+
+具体来看：
+
+- search_multi.js、resize_table.js、read_only.js、truncate_text.js 这些功能几乎不依赖 Typora 实现。**如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效**，所以应该会保持长时间的有效性。
+- 比较特殊的是 window_tab.js 和 window_tab_drag.js，这个功能本质是入侵式脚本；通过原型链攻击，将后端 electron 对象劫持到前端来，该脚本通过该手段成功调用了 Typora 的核心实现，并且这个核心实现同时被大量运用，历史包袱一样很大。**如果 Typora 或 electron 有了重构级别的更新，那么大概率会失效**。
+
+> 总结：标签页管理功能比较危险，其他脚本保持长时间的有效性。
+
+
+
 ## 结语
 
 本人并非前端开发，JS/CSS 写的很烂。感谢 new bing 对于本项目的大力支持 : ) 
 
-如果对各位有用的话，欢迎 star ⭐
+如果对各位有用的话，欢迎 star ⭐（吸星大法，发动！
 
