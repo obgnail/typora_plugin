@@ -1,1 +1,0 @@
-{"version":3,"file":"pad-recursively.js","sourceRoot":"","sources":["../../src/transformers/pad-recursively.ts"],"names":[],"mappings":";;;AACA,2DAAqD;AAErD,SAAgB,cAAc,CAAE,IAAU;IACxC,KAAK,MAAM,KAAK,IAAI,IAAI,CAAC,QAAQ,EAAE;QACjC,cAAc,CAAC,KAAK,CAAC,CAAA;KACtB;IACD,IAAI,CAAC,QAAQ,GAAG,IAAA,mCAAe,EAAC,IAAI,CAAC,QAAQ,CAAC,CAAA;AAChD,CAAC;AALD,wCAKC"}
