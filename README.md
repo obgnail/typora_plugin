@@ -95,7 +95,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 window_tab_drag.js 和 window_tab.js 的区别是：是否支持拖拽排序。默认使用 window_tab_drag.js，禁用 window_tab.js。
 
-> NOTE：经反馈，由于高版本的 Typora 更新了 electron 版本，标签页管理功能已经在高版本中失效。容我再想想办法 :(
+> NOTE：经反馈，由于高版本的 Typora 更新了 electron 版本，标签页管理功能已经在高版本中失效。详细说明请看下面【脚本会失效吗】章节。容我再想想办法 :(
 
 
 
@@ -170,10 +170,10 @@ Typora 是闭源软件，要是有一天作者改了代码，是不是就不能�
 
 具体来看：
 
-- search_multi.js、resize_table.js、read_only.js、truncate_text.js 这些功能几乎不依赖 Typora 实现。**如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效**，所以应该会保持长时间的有效性。
-- 比较特殊的是 window_tab.js 和 window_tab_drag.js，这个功能本质是入侵式脚本；通过原型链攻击，将后端 electron 对象劫持到前端来，该脚本通过该手段成功调用了 Typora 的核心实现，并且这个核心实现同时被大量运用，历史包袱一样很大。**如果 Typora 或 electron 有了重构级别的更新，那么大概率会失效**。
+- search_multi.js、resize_table.js、read_only.js、truncate_text.js 等功能几乎不依赖 Typora 实现。如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效，所以应该会**保持长时间的有效性**。而且就算失效了也容易找到兼容方案。
+- 比较特殊的是 window_tab.js 和 window_tab_drag.js，这个功能本质是入侵式脚本；通过原型链攻击，将后端 electron 对象劫持到前端来，该脚本通过该手段成功调用了 Typora 的核心实现，并且这个核心实现同时被大量运用，历史包袱一样很大。当然了，劫持漏洞也有可能被修复。**如果 Typora 或 electron 有了重构级别的更新，那么大概率会失效**。
 
-> 总结：标签页管理功能比较危险，其他脚本保持长时间的有效性。
+> 总结：标签页管理功能比较危险，其他脚本保持长时间的有效性。如果脚本失效了，麻烦提个 issue。
 
 
 
