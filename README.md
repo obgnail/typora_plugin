@@ -93,23 +93,25 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ![window_tab](assets/window_tab.gif)
 
-window_tab_drag.js 和 window_tab.js 的区别是：是否支持拖拽排序。
+window_tab_drag.js 和 window_tab.js 的区别是：是否支持拖拽排序。默认使用 window_tab_drag.js，禁用 window_tab.js。
 
-> 默认使用 window_tab_drag.js，关闭 window_tab.js。
+> NOTE：经反馈，由于高版本的 Typora 更新了 electron 版本，标签页管理功能已经在高版本中失效。容我再想想办法 :(
 
 
 
 ### md_padding.js：盘古之白
 
+中英文混排时，中文与英文之间、中文与数字之间添加空格。
+
 > 有研究显示，打字的时候不喜欢在中文和英文之间加空格的人，感情路都走得很辛苦，有七成的比例会在 34 岁的时候跟自己不爱的人结婚，而其余三成的人最后只能把遗产留给自己的猫。毕竟爱情跟书写都需要适时地留白。 —— pangu.js
 
-[pangu.js](https://github.com/vinta/pangu.js) 是网页特供的，对于 markdown 语法会有误判，md_padding.js 对此进行优化。
+[pangu.js](https://github.com/vinta/pangu.js) 是网页特供的，对于 markdown 语法会有误判，md_padding.js 通过解析语法树进行优化。
 
-快捷键：Ctrl+shift+K。
+快捷键：Ctrl+shift+K
 
 ![md_padding](assets/md_padding.gif)
 
-> NOTE：**此脚本会直接修改文件**
+> NOTE：**此脚本会直接修改文件**。虽然支持 Ctrl+Z 还原，还是建议提前备份。
 
 
 
