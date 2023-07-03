@@ -15,5 +15,6 @@ window.onload = () => {
     _require('./plugin/resize_table.js');
     _require('./plugin/read_only.js');
     _require('./plugin/truncate_text.js');
+    _require('./plugin/resize_image');
     _require('./plugin/md_padding/padding.js');
 }
