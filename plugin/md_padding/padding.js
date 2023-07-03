@@ -22,7 +22,7 @@
     const getFilePath = () => Package.File.filePath;
     const read = filepath => Package.Fs.readFileSync(filepath, 'utf-8');
     const write = (filepath, content) => Package.Fs.writeFileSync(filepath, content);
-    const save = () => Package.ClientCommand.save();
+    const save = () => File.saveUseNode();
     const getFormatter = () => {
         const dirname = global.dirname || global.__dirname;
         const filepath = Package.Path.join(dirname, "plugin", "md_padding", "md-padding");
@@ -37,13 +37,14 @@
 
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
-            console.log("format markdown file")
-            const filepath = getFilePath();
-            const content = read(filepath);
-            const formatterContent = format(content);
-            write(filepath, formatterContent);
             ev.preventDefault();
             ev.stopPropagation();
+            save().then(()=> {
+                const filepath = getFilePath();
+                const content = read(filepath);
+                const formatterContent = format(content);
+                write(filepath, formatterContent);
+            })
         }
     }, true)
 

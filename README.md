@@ -8,13 +8,13 @@
 
 目前支持的功能：
 
-- search_multi.js：多关键字搜索
-- md_padding.js: 盘古之白。中英文混排时，中文与英文之间，中文与数字之间添加空格。
-- window_tab.js：标签页管理
-- window_tab_drag.js：标签页管理，可拖拽排序
-- resize_table.js：调整表格大小
-- read_only.js：只读模式
-- truncate_text.js：隐藏前面内容，提高大文件渲染性能
+- `search_multi.js`：多关键字搜索
+- `md_padding.js`：盘古之白。中英文混排时，中文与英文之间、中文与数字之间添加空格。
+- `window_tab.js`：标签页管理
+- `window_tab_drag.js`：标签页管理，可拖拽排序
+- `resize_table.js`：调整表格大小
+- `read_only.js`：只读模式
+- `truncate_text.js`：暂时隐藏内容，提高大文件渲染性能
 
 
 
@@ -103,13 +103,13 @@ window_tab_drag.js 和 window_tab.js 的区别是：是否支持拖拽排序。
 
 > 有研究显示，打字的时候不喜欢在中文和英文之间加空格的人，感情路都走得很辛苦，有七成的比例会在 34 岁的时候跟自己不爱的人结婚，而其余三成的人最后只能把遗产留给自己的猫。毕竟爱情跟书写都需要适时地留白。 —— pangu.js
 
-[pangu.js](https://github.com/vinta/pangu.js) 是网页特供的，对于 markdown 语法会有误判。md_padding.js 对此进行优化。
+[pangu.js](https://github.com/vinta/pangu.js) 是网页特供的，对于 markdown 语法会有误判，md_padding.js 对此进行优化。
 
 快捷键：Ctrl+shift+K。
 
 ![md_padding](assets/md_padding.gif)
 
-> NOTE：**此脚本会修改文件**。建议提前备份。
+> NOTE：**此脚本会直接修改文件**
 
 
 
@@ -127,13 +127,13 @@ ctrl+鼠标拖动，修改表格的行高列宽。
 
 
 
-### truncate_text.js：隐藏前面内容，提高大文件渲染性能
+### truncate_text.js：暂时隐藏内容，提高大文件渲染性能
 
-大文件在 Typora 的渲染性能很糟糕，用此脚本隐藏掉前面的内容（只是隐藏显示，不修改文件），提高渲染性能。
+大文件在 Typora 的渲染性能很糟糕，用此脚本暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。
 
 - ctrl+shift+B：隐藏最前面的文本段
 - ctrl+shift+U：重新显示所有文本段
-- ctrl+shift+Y：根据当前可视范围显示上下段
+- ctrl+shift+Y：根据当前可视范围显示文本段
 
 > 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
 
