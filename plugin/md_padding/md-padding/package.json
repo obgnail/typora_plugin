@@ -1,0 +1,123 @@
+{
+  "_from": "md-padding",
+  "_id": "md-padding@1.2.0",
+  "_inBundle": false,
+  "_integrity": "sha512-RvnrRZi5vQLl0q9ijGeK4ZvZgdryxoqu8IUaDt/hG/4LIKY0eGfqmOSxABZCw6TX+K4ASb7CWE7P7gga5XEDBw==",
+  "_location": "/md-padding",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "md-padding",
+    "name": "md-padding",
+    "escapedName": "md-padding",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER"
+  ],
+  "_resolved": "https://registry.npmjs.org/md-padding/-/md-padding-1.2.0.tgz",
+  "_shasum": "754e29756734dd13f222c4d46a80dd2dce93edb9",
+  "_spec": "md-padding",
+  "_where": "D:\\tmp\\temp",
+  "author": {
+    "name": "harttle",
+    "email": "yangjvn@126.com"
+  },
+  "bin": {
+    "mdp": "dist/bin/md-padding.js",
+    "md-padding": "dist/bin/md-padding.js"
+  },
+  "bugs": {
+    "url": "https://github.com/harttle/md-padding/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "yargs": "^15.1.0"
+  },
+  "deprecated": false,
+  "description": "修复 Markdown 中的混排空格：中英文、数字、链接等。",
+  "devDependencies": {
+    "@babel/preset-env": "^7.8.4",
+    "@babel/preset-typescript": "^7.16.7",
+    "@jest/transform": "^25.1.0",
+    "@semantic-release/changelog": "^5.0.0",
+    "@semantic-release/commit-analyzer": "^8.0.1",
+    "@semantic-release/git": "^9.0.0",
+    "@semantic-release/npm": "^7.0.2",
+    "@semantic-release/release-notes-generator": "^9.0.0",
+    "@types/jest": "^25.1.1",
+    "@types/yargs": "^15.0.3",
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
+    "@typescript-eslint/parser": "^5.10.1",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "coveralls": "^3.0.9",
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-jest": "^23.6.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "jest": "^25.1.0",
+    "semantic-release": "^17.0.2",
+    "source-map-support": "^0.5.16",
+    "typedoc": "^0.16.9",
+    "typescript": "^4.5.5"
+  },
+  "directories": {
+    "test": "test",
+    "example": "example"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "index.d.ts",
+    "*.json",
+    "*.md"
+  ],
+  "homepage": "https://github.com/harttle/md-padding#readme",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "name": "md-padding",
+  "release": {
+    "branch": "master",
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "docs",
+            "package.json",
+            "package-lock.json",
+            "CHANGELOG.md"
+          ],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ],
+      "@semantic-release/github"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/harttle/md-padding.git"
+  },
+  "scripts": {
+    "build": "tsc && chmod a+x dist/bin/*",
+    "build-watch": "tsc --watch",
+    "coverage": "jest --coverage",
+    "docs": "typedoc --out docs src && touch docs/.nojekyll",
+    "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
+    "semantic-release": "semantic-release",
+    "test": "jest",
+    "version": "npm run build && npm run docs"
+  },
+  "types": "dist/index.d.ts",
+  "version": "1.2.0"
+}

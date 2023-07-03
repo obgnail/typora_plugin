@@ -1,0 +1,22 @@
+export declare enum State {
+    LinkText = 0,
+    ReferingUrl = 1,
+    ReferingID = 2,
+    ReferenceLinkUrl = 3,
+    ImageText = 4,
+    ImageReferingUrl = 5,
+    ImageReferingID = 6,
+    ImageAttributes = 7,
+    HTMLTag = 8,
+    Emphasis = 9,
+    Strong = 10,
+    Strikethrough = 11,
+    InlineCode = 12,
+    BlockCodeLang = 13,
+    Math = 14,
+    BlockCodeBody = 15,
+    OrderedListItem = 16,
+    UnorderedListItem = 17,
+    Quoted = 18,
+    Init = 19
+}

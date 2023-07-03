@@ -9,6 +9,7 @@
 目前支持的功能：
 
 - search_multi.js：多关键字搜索
+- md_padding.js: 盘古之白。中英文混排时，中文与英文之间，中文与数字之间添加空格。
 - window_tab.js：标签页管理
 - window_tab_drag.js：标签页管理，可拖拽排序
 - resize_table.js：调整表格大小
@@ -98,6 +99,20 @@ window_tab_drag.js 和 window_tab.js 的区别是：是否支持拖拽排序。
 
 
 
+### md_padding.js：盘古之白
+
+> 有研究显示，打字的时候不喜欢在中文和英文之间加空格的人，感情路都走得很辛苦，有七成的比例会在 34 岁的时候跟自己不爱的人结婚，而其余三成的人最后只能把遗产留给自己的猫。毕竟爱情跟书写都需要适时地留白。 —— pangu.js
+
+[pangu.js](https://github.com/vinta/pangu.js) 是网页特供的，对于 markdown 语法会有误判。md_padding.js 对此进行优化。
+
+快捷键：Ctrl+shift+K。
+
+![md_padding](assets/md_padding.gif)
+
+> NOTE：**此脚本会修改文件**。建议提前备份。
+
+
+
 ### resize_table.js：拖动调整表格大小
 
 ctrl+鼠标拖动，修改表格的行高列宽。
@@ -173,6 +188,8 @@ Typora 是闭源软件，要是有一天作者改了代码，是不是就不能�
 ## 结语
 
 本人并非前端开发，JS/CSS 写的很烂。感谢 new bing 对于本项目的大力支持 : ) 
+
+感谢：[md-padding](https://github.com/harttle/md-padding)。
 
 如果对各位有用的话，欢迎 star ⭐
 

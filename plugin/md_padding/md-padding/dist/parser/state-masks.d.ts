@@ -1,0 +1,20 @@
+import { NodeKind } from '../nodes/node-kind';
+export declare const stateMasks: {
+    12: number;
+    14: number;
+    15: number;
+    9: number;
+    10: number;
+    11: number;
+    0: number;
+    1: number;
+    4: number;
+    5: number;
+    3: number;
+    8: number;
+    2: number;
+    13: number;
+    16: NodeKind;
+    17: NodeKind;
+    19: NodeKind;
+};
