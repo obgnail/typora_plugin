@@ -16,7 +16,7 @@
 - `read_only.js`：只读模式
 - `truncate_text.js`：暂时隐藏内容，提高大文件渲染性能
 - `resize_image.js`：调整图片大小
-- `mermaid_replace.js`：替换 mermaid
+- `mermaid_replace.js`：替换 mermaid（默认关闭，需手动开启）
 
 
 
