@@ -7,7 +7,7 @@
     }
 
     const config = {
-        // 使用启用脚本,若为false,以下配置全部失效
+        // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
         // 允许拖动模态框
         ALLOW_DRAG: true,

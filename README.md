@@ -21,7 +21,7 @@
 
 ## 如何使用
 
-1. 去到 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（不同版本的 Typora 的文件夹结构可能不同，在我这是`Typora/resources/app`，推荐使用 everything 找一下）
+1. 去到 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（不同版本的 Typora 的文件夹结构可能不同，在我这是 `Typora/resources/app`，推荐使用 everything 找一下）
 2. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
 3. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。（不同版本的 Typora 查找的内容可能不同，其实就是查找导入 frame.js 的 script 标签）
 4. 重启 Typora。
@@ -40,14 +40,14 @@
 
 ### 前端
 
-`window.html` 是 Typora 的初始文件，可以写入一个`<script>`标签实现功能。就和 Tampermonkey 脚本一样。
+`window.html` 是 Typora 的初始文件，可以写入一个 `<script>` 标签实现功能。就和 Tampermonkey 脚本一样。
 
 
 
 ### 后端
 
 1. 因为 Typora 暴露了 `reqnode` 函数（require 的封装），所以可以使用 `reqnode('path')` 导入 Node.js 的 path 库，其他内置库同理。
-2. 因为 Typora 使用了不太安全的 `executeJavaScript`功能，所以可以用此注入 JS 代码，从而劫持后端关键对象，进而实现 electron 的后端功能注入。理论上劫持了 electron 对象，你甚至可以在 Typora 里斗地主。
+2. 因为 Typora 使用了不太安全的 `executeJavaScript` 功能，所以可以用此注入 JS 代码，从而劫持后端关键对象，进而实现 electron 的后端功能注入。理论上劫持了 electron 对象，你甚至可以在 Typora 里斗地主。
 
 ```javascript
 // 控制台输入下面命令:
@@ -179,7 +179,7 @@ Typora 是闭源软件，要是有一天作者改了代码，是不是就不能�
 
 具体来看：
 
-- search_multi.js、resize_table.js、read_only.js、truncate_text.js 等功能几乎不依赖 Typora 实现。如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效，所以应该会**保持长时间的有效性**。而且就算失效了也容易找到兼容方案。
+- search_multi.js、resize_table.js、read_only.js、truncate_text.js 等功能几乎不依赖 Typora 实现。如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效，所以应该会 **保持长时间的有效性**。而且就算失效了也容易找到兼容方案。
 - 比较特殊的是 window_tab.js 和 window_tab_drag.js，这个功能本质是入侵式脚本；通过原型链攻击，将后端 electron 对象劫持到前端来，该脚本通过该手段成功调用了 Typora 的核心实现，并且这个核心实现同时被大量运用，历史包袱一样很大。当然了，劫持漏洞也有可能被修复。**如果 Typora 或 electron 有了重构级别的更新，那么大概率会失效**。
 
 > 总结：标签页管理功能比较危险，其他脚本保持长时间的有效性。如果脚本失效了，麻烦提个 issue。
@@ -198,9 +198,7 @@ Typora 是闭源软件，要是有一天作者改了代码，是不是就不能�
 
 ## 结语
 
-本人并非前端开发，JS/CSS 写的很烂。感谢 new bing 对于本项目的大力支持 : ) 
-
-感谢：[md-padding](https://github.com/harttle/md-padding)。
+本人并非前端开发，JS/CSS 写的很烂。感谢 new bing 对于本项目的大力支持。感谢 [md-padding](https://github.com/harttle/md-padding) 提供的 space padding 功能 :) 
 
 如果对各位有用的话，欢迎 star ⭐
 

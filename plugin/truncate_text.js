@@ -1,14 +1,14 @@
 (() => {
     const config = {
-        // 使用启用只读模式脚本,若为false,以下配置全部失效
+        // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
         // 快捷键
-        HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "B",
-        HOTKEY_SHOWALL: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "U",
-        HOTKEY_ATVIEW: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "Y",
+        HOTKEY_HIDE_FRONT: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "B",
+        HOTKEY_SHOW_ALL: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "U",
+        HOTKEY_HIDE_BASE_VIEW: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "Y",
 
         // 剩余文本段
-        TRUNCATE_LENGTH: 80,
+        REMAIN_LENGTH: 80,
         // make users feel happy while waiting
         SHOW_MASK: true,
 
@@ -116,15 +116,15 @@
 
     // 隐藏最前面的文本段
     window.addEventListener("keydown", ev => {
-        if (config.HOTKEY(ev)) {
+        if (config.HOTKEY_HIDE_FRONT(ev)) {
             ev.preventDefault();
             ev.stopPropagation();
 
             withMask(() => {
                 const write = document.getElementById("write");
                 const length = write.children.length;
-                if (length > config.TRUNCATE_LENGTH) {
-                    for (let i = 0; i <= length - config.TRUNCATE_LENGTH; i++) {
+                if (length > config.REMAIN_LENGTH) {
+                    for (let i = 0; i <= length - config.REMAIN_LENGTH; i++) {
                         write.children[i].style.display = "none";
                     }
                 }
@@ -134,7 +134,7 @@
 
     // 重新显示所有文本段
     window.addEventListener("keydown", ev => {
-        if (config.HOTKEY_SHOWALL(ev)) {
+        if (config.HOTKEY_SHOW_ALL(ev)) {
             ev.preventDefault();
             ev.stopPropagation();
             withMask(() => document.getElementById("write").children.forEach(el => el.style = ""));
@@ -143,7 +143,7 @@
 
     // 显示当前可视范围上下文本段
     window.addEventListener("keydown", ev => {
-        if (config.HOTKEY_ATVIEW(ev)) {
+        if (config.HOTKEY_HIDE_BASE_VIEW(ev)) {
             ev.preventDefault();
             ev.stopPropagation();
 
@@ -157,7 +157,7 @@
                     }
                 });
 
-                const halfLength = config.TRUNCATE_LENGTH / 2;
+                const halfLength = config.REMAIN_LENGTH / 2;
                 start = Math.max(start - halfLength, 0);
                 end = Math.min(end + halfLength, write.children.length);
 

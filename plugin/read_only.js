@@ -1,6 +1,6 @@
 (() => {
     const config = {
-        // 使用启用只读模式脚本,若为false,以下配置全部失效
+        // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
         // 进入和脱离只读模式的快捷键
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "R",

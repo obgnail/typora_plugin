@@ -1,6 +1,6 @@
 (() => {
     const config = {
-        // 使用启用脚本,若为false,以下配置全部失效
+        // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
         // 当只有一个窗口时是否隐藏标签
         HIDE_TAB_WHEN_ONE_WINDOW: true,
@@ -35,6 +35,9 @@
         TAB_BORDER_WIDTH: "1px",
         TAB_BORDER_COLOR: "#8c8c8c",
         TAB_BORDER_RADIUS: "3px",
+        TAB_OVER_BORDER_COLOR: "purple",
+        TAB_OVER_BORDER_WIDTH: "2px",
+        TAB_OVER_BORDER_STYLE: "dashed",
 
         LOOP_CHECK_INTERVAL: 50,
         FOCUS_CHECK_INTERVAL: 100,
@@ -79,21 +82,14 @@
 
     const getAllWindows = () => getBrowserWindow().getAllWindows();
     const getFocusedWindow = () => getBrowserWindow().getFocusedWindow();
-    const rangeWindow = func => {
+    const setFocusWindow = winId => {
         const windows = getAllWindows();
         for (const win of windows) {
-            if (func(win)) {
+            if (win.id === winId) {
+                win.focus();
                 return
             }
         }
-    }
-    const setFocusWindow = winId => {
-        rangeWindow(win => {
-            if (win.id === winId) {
-                win.focus();
-                return true
-            }
-        })
     };
 
     const getDocumentController = () => getAPP().getDocumentController();
@@ -199,9 +195,9 @@
         }
         
         #title-bar-window-tabs .title-bar-window-tab.over {
-            border-color: purple;
-            border-width: 2px;
-            border-style: dashed;
+            border-color: ${config.TAB_OVER_BORDER_COLOR};
+            border-width: ${config.TAB_OVER_BORDER_WIDTH};
+            border-style: ${config.TAB_OVER_BORDER_STYLE};
         }
         
         #title-bar-window-tabs .title-bar-window-tab .window-tab-name {

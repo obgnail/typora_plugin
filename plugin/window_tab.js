@@ -1,6 +1,6 @@
 (() => {
     const config = {
-        // 使用启用脚本,若为false,以下配置全部失效
+        // 启用脚本,若为false,以下配置全部失效
         ENABLE: false,
         // 当只有一个窗口时是否隐藏标签
         HIDE_TAB_WHEN_ONE_WINDOW: true,
@@ -79,21 +79,14 @@
 
     const getAllWindows = () => getBrowserWindow().getAllWindows();
     const getFocusedWindow = () => getBrowserWindow().getFocusedWindow();
-    const rangeWindow = func => {
+    const setFocusWindow = winId => {
         const windows = getAllWindows();
         for (const win of windows) {
-            if (func(win)) {
+            if (win.id === winId) {
+                win.focus();
                 return
             }
         }
-    }
-    const setFocusWindow = winId => {
-        rangeWindow(win => {
-            if (win.id === winId) {
-                win.focus();
-                return true
-            }
-        })
     };
 
     const getDocumentController = () => getAPP().getDocumentController();
@@ -384,7 +377,7 @@
     })
 
     if (config.HIDE_WHEN_MENU_OPEN) {
-        new MutationObserver((mutationList) => {
+        new MutationObserver(mutationList => {
             for (const mutation of mutationList) {
                 if (mutation.type === 'attributes' && mutation.attributeName === "class") {
                     const value = document.body.getAttribute(mutation.attributeName);

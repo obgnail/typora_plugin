@@ -1,6 +1,6 @@
 (() => {
     const config = {
-        // 使用启用脚本,若为false,以下配置全部失效
+        // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
         // 是否去除表格单元格最小宽度限制
         REMOVE_MIX_WIDTH: true,

@@ -55,5 +55,5 @@
         JSBridge.invoke("window.toggleDevTools");
     }
 
-    console.log("padding.js had been injected");
+    console.log("md_padding.js had been injected");
 })()
