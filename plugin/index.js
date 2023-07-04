@@ -17,4 +17,5 @@ window.onload = () => {
     _require('./plugin/truncate_text.js');
     _require('./plugin/resize_image');
     _require('./plugin/md_padding/index.js');
+    _require('./plugin/mermaid_replace/index.js');
 }

@@ -16,6 +16,7 @@
 - `read_only.js`：只读模式
 - `truncate_text.js`：暂时隐藏内容，提高大文件渲染性能
 - `resize_image.js`：调整图片大小
+- `mermaid_replace.js`：替换 mermaid
 
 
 
@@ -147,6 +148,14 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 - ctrl+shift+Y：根据当前可视范围显示文本段
 
 > 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
+
+
+
+### mermaid_replace.js：替换 mermaid
+
+如果你像我一样，不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此脚本。
+
+> NOTE：此脚本默认关闭，需手动开启。
 
 
 
