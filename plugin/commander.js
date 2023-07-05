@@ -41,10 +41,6 @@
             top: 30px
         }
         
-        .mac-seamless-mode .modal-dialog {
-            margin-top: 40px
-        }
-        
         #typora-commander-form {
             display: flex;
             align-items: center;
@@ -84,22 +80,18 @@
             margin-top: 0;
             cursor: default;
             max-height: 340px;
-            overflow-x: hidden;
             overflow-y: auto;
+            overflow-x: auto;
         }
         
-        .typora-commander-output-inner {
-            position: relative;
-            margin: 5px 5px 0 5px;
-        }
-        
-        .typora-commander-output-inner pre {
+        .typora-commander-output pre {
+            display: inline-block;
             font-size: 13px;
             line-height: 1.1;
-            padding-bottom: 10px;
+            margin: 10px 10px 5px 5px;
         }
         
-        .typora-commander-output-inner pre.error {
+        .typora-commander-output pre.error {
             color: red;
         }
         `
@@ -120,11 +112,7 @@
             </select>
         </div>
     
-        <div class="typora-commander-output" id="typora-commander-output" style="display:none">
-            <div class="typora-commander-output-inner" style="height: 520px;">
-                <pre></pre>
-            </div>
-        </div>
+        <div class="typora-commander-output" id="typora-commander-output" style="display:none"><pre></pre></div>
        `
         const modal = document.createElement("div");
         modal.id = 'typora-commander';
@@ -139,8 +127,7 @@
         input: document.querySelector("#typora-commander-form input"),
         select: document.querySelector("#typora-commander-form select"),
         output: document.querySelector("#typora-commander-output"),
-        outputInner: document.querySelector("#typora-commander-output .typora-commander-output-inner"),
-        pre: document.querySelector(".typora-commander-output-inner pre")
+        pre: document.querySelector("#typora-commander-output pre")
     }
 
     const Package = {
@@ -217,7 +204,6 @@
         modal.output.style.display = "block";
         modal.pre.classList.remove("error");
         modal.pre.textContent = stdout;
-        modal.outputInner.style.height = modal.pre.clientHeight + 10 + "px";
     }
 
     const showErrorOutput = stderr => {
@@ -276,7 +262,7 @@
 
             document.addEventListener('mousemove', onMouseMove);
         })
-        modal.modal.ondragstart = () => false
+        modal.input.ondragstart = () => false
     }
 
     if (config.DEBUG) {
