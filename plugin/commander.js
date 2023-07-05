@@ -1,8 +1,14 @@
 (() => {
     const config = {
+        // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
+        // 允许拖动模态框
         ALLOW_DRAG: true,
+        // 启用内建的命令列表
+        USE_BUILTIN: true,
+        // wsl distribution
         WSL_DISTRIBUTION: "Ubuntu-16.04",
+        // 快捷键
         HOTKEY: ev => metaKeyPressed(ev) && ev.key.toLowerCase() === "g",
 
         DEBUG: false
@@ -13,18 +19,19 @@
     }
 
     const SHELL = {
-        BASH: "bash",
-        CMD: "cmd",
+        CMD_BASH: "cmd/bash",
         POWER_SHELL: "powershell",
         GIT_BASH: "gitbash",
         WSL: "wsl",
     }
 
-    const BUILTIN = {
-        "open_in_explorer": [SHELL.CMD, "explorer $d", "资源管理器打开"],
-        "open_in_vscode": [SHELL.CMD, "code $f", "在vscode打开"],
-        "git_commit": [SHELL.CMD, `cd $m && git add . && git commit -m "CommitMessage"`, "git提交"],
-    };
+    // showName, shell, cmd
+    const BUILTIN = [
+        ["", SHELL.CMD_BASH, ""], // dummy
+        ["explorer打开", SHELL.CMD_BASH, "explorer $d"],
+        ["vscode打开", SHELL.CMD_BASH, "code $f"],
+        ["git提交", SHELL.CMD_BASH, `cd $m && git add . && git commit -m 'message'`],
+    ];
 
     (() => {
         const modal_css = `
@@ -32,7 +39,7 @@
             position: fixed;
             top: 30%;
             left: 55%;
-            width: 500px;
+            width: 600px;
             z-index: 9999;
             padding: 4px;
             background-color: #f8f8f8;
@@ -71,7 +78,7 @@
         }
         
         #typora-commander-form input {
-            width: 80%;
+            width: 60%;
             margin-left: 0;
             margin-right: 2.5px;
             padding-left: 5px
@@ -106,18 +113,21 @@
         style.innerHTML = modal_css;
         document.getElementsByTagName("head")[0].appendChild(style);
 
+        const windowOption = (File.isMac) ? `` : `
+            <option value="${SHELL.POWER_SHELL}">powershell</option>
+            <option value="${SHELL.GIT_BASH}">git bash</option>
+            <option value="${SHELL.WSL}">wsl</option>
+        `;
+        const builtin = BUILTIN.map(ele => `<option shell="${ele[1]}" value="${ele[2]}">${ele[0]}</option>`).join("");
+        const builtinSelect = !config.USE_BUILTIN ? "" : `<select class="typora-commander-builtin">${builtin}</select>`;
+
         const div = `
-       <div id="typora-commander-form">
+        <div id="typora-commander-form">
             <input type="text" class="input" placeholder="Typora commander" autocorrect="off" spellcheck="false"
                 autocapitalize="off" data-lg="Front" title="提供如下变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
-            <select>
-                <option value="${SHELL.CMD}">cmd/bash</option>
-                <option value="${SHELL.POWER_SHELL}">powershell</option>
-                <option value="${SHELL.GIT_BASH}">git bash</option>
-                <option value="${SHELL.WSL}">wsl</option>
-            </select>
+            <select class="typora-commander-shell"><option value="${SHELL.CMD_BASH}">cmd/bash</option>${windowOption}</select>
+            ${builtinSelect}
         </div>
-    
         <div class="typora-commander-output" id="typora-commander-output" style="display:none"><pre></pre></div>
        `
         const modal = document.createElement("div");
@@ -126,12 +136,18 @@
         modal.innerHTML = div;
         const searchPanel = document.getElementById("md-searchpanel");
         searchPanel.parentNode.insertBefore(modal, searchPanel.nextSibling);
+
+        if (!config.USE_BUILTIN) {
+            document.getElementById('typora-commander').style.width = "500px";
+            document.querySelector("#typora-commander-form input").style.width = "80%";
+        }
     })()
 
     const modal = {
         modal: document.getElementById('typora-commander'),
         input: document.querySelector("#typora-commander-form input"),
-        select: document.querySelector("#typora-commander-form select"),
+        shellSelect: document.querySelector("#typora-commander-form .typora-commander-shell"),
+        builtinSelect: document.querySelector("#typora-commander-form .typora-commander-builtin"),
         output: document.querySelector("#typora-commander-output"),
         pre: document.querySelector("#typora-commander-output pre")
     }
@@ -147,7 +163,6 @@
         if (File.isMac) {
             return path
         }
-
         switch (shell) {
             case SHELL.WSL:
             case SHELL.GIT_BASH:
@@ -159,8 +174,7 @@
                 const disk = tempList[0].toLowerCase();
                 const remain = tempList[1];
                 return (shell === SHELL.GIT_BASH) ? `/${disk}${remain}` : `/mnt/${disk}${remain}`
-            case SHELL.BASH:
-            case SHELL.CMD:
+            case SHELL.CMD_BASH:
             case SHELL.POWER_SHELL:
             default:
                 return path
@@ -201,7 +215,7 @@
             (err, stdout, stderr) => {
                 if (err || stderr.length) {
                     reject = reject ? reject : console.error;
-                    reject(err || stderr.toString());
+                    reject(err.toString() || stderr.toString());
                 } else {
                     resolve = resolve ? resolve : console.log;
                     resolve(stdout);
@@ -224,8 +238,8 @@
         switch (ev.key) {
             case "Enter":
                 const cmd = modal.input.value;
-                const index = modal.select.selectedIndex;
-                const shell = modal.select.options[index].value;
+                const option = modal.shellSelect.options[modal.shellSelect.selectedIndex];
+                const shell = option.value;
                 exec(cmd, shell, showStdout, showStdErr);
                 break
             case "Escape":
@@ -244,6 +258,16 @@
             ev.stopPropagation();
         }
     })
+
+    if (config.USE_BUILTIN) {
+        modal.builtinSelect.addEventListener("change", ev => {
+            const option = modal.builtinSelect.options[modal.builtinSelect.selectedIndex];
+            const cmd = option.value;
+            const shell = option.getAttribute("shell");
+            modal.input.value = cmd;
+            modal.shellSelect.value = shell;
+        })
+    }
 
     if (config.ALLOW_DRAG) {
         modal.input.addEventListener("mousedown", ev => {
