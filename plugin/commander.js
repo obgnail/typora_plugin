@@ -25,12 +25,11 @@
         WSL: "wsl",
     }
 
-    // showName, shell, cmd
     const BUILTIN = [
-        ["", SHELL.CMD_BASH, ""], // dummy
-        ["explorer打开", SHELL.CMD_BASH, "explorer $d"],
-        ["vscode打开", SHELL.CMD_BASH, "code $f"],
-        ["git提交", SHELL.CMD_BASH, `cd $m && git add . && git commit -m "message"`],
+        {name: "", shell: SHELL.CMD_BASH, cmd: ""}, // dummy
+        {name: "OpenInExplorer", shell: SHELL.CMD_BASH, cmd: "explorer $d"},
+        {name: "OpenInVscode", shell: SHELL.CMD_BASH, cmd: "code $f"},
+        {name: "GitCommit", shell: SHELL.CMD_BASH, cmd: `cd $m && git add . && git commit -m "message"`},
     ];
 
     (() => {
@@ -127,7 +126,7 @@
             <option value="${SHELL.GIT_BASH}">git bash</option>
             <option value="${SHELL.WSL}">wsl</option>
         `;
-        const builtin = BUILTIN.map(ele => `<option shell="${ele[1]}" value='${ele[2]}'>${ele[0]}</option>`).join("");
+        const builtin = BUILTIN.map(ele => `<option shell="${ele.shell}" value='${ele.cmd}'>${ele.name}</option>`).join("");
         const builtinSelect = !config.USE_BUILTIN ? "" : `<select class="typora-commander-builtin">${builtin}</select>`;
 
         const div = `

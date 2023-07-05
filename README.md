@@ -135,11 +135,23 @@ window_tab_drag.js 和 window_tab.js 的区别是：是否支持拖拽排序。�
 - `git bash`：使用此终端前请保证安装了 git bash 并且加入环境变量
 - `wsl`：使用此终端前请保证安装了 wsl2，并且加入环境变量。默认 distribution 为 Ubuntu-16.04，如果想更换，请自行修改脚本
 
-提供内置环境变量：
+内置环境变量：
 
 - `$f`：当前文件路径
 - `$d`：当前文件的所属目录
 - `$m`：当前挂载的根目录
+
+支持内建命令，方便快速调用。个人可按需自定义脚本里的 `BUILTIN` 变量。
+
+```js
+// 默认的内建命令
+const BUILTIN = [
+    {name: "", shell: "cmd/bash", cmd: ""}, // dummy
+    {name: "OpenInExplorer", shell: "cmd/bash", cmd: "explorer $d"},
+    {name: "OpenInVscode", shell: "cmd/bash", cmd: "code $f"},
+    {name: "GitCommit", shell: "cmd/bash", cmd: `cd $m && git add . && git commit -m "message"`},
+];
+```
 
 ![commander](assets/commander.gif)
 
