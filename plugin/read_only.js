@@ -3,7 +3,7 @@
         // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
         // 进入和脱离只读模式的快捷键
-        HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "R",
+        HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key.toLowerCase() === "r",
         // 默认使用只读模式
         READ_ONLY_DEFAULT: false,
         // 只读模式下仍可以使用的快捷键

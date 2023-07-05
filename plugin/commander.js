@@ -3,7 +3,7 @@
         ENABLE: true,
         ALLOW_DRAG: true,
         WSL_DISTRIBUTION: "Ubuntu-16.04",
-        HOTKEY: ev => metaKeyPressed(ev) && ev.key === "g",
+        HOTKEY: ev => metaKeyPressed(ev) && ev.key.toLowerCase() === "g",
 
         DEBUG: false
     }
