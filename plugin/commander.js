@@ -248,22 +248,39 @@
         ev.stopPropagation();
         ev.preventDefault();
         const cmd = modal.input.value;
+        if (!cmd) {
+            showStdErr("command is empty");
+            return
+        }
         const option = modal.shellSelect.options[modal.shellSelect.selectedIndex];
         const shell = option.value;
         exec(cmd, shell, showStdout, showStdErr);
     }
 
+    // 提供不同入口，让鼠标操作的用户不必切换回键盘操作
     modal.commit.addEventListener("click", ev => commit(ev), true);
 
-    modal.input.addEventListener("keydown", ev => {
+    modal.modal.addEventListener("keydown", ev => {
         switch (ev.key) {
             case "Enter":
-                commit(ev);
+                const input = ev.target.closest("input")
+                if (input) {
+                    commit(ev);
+                }
                 break
             case "Escape":
                 ev.stopPropagation();
                 ev.preventDefault();
                 modal.modal.style.display = "none";
+                break
+            case "Tab":
+                const targetClass = config.USE_BUILTIN ? ".typora-commander-builtin" : ".typora-commander-shell";
+                const target = ev.target.closest(targetClass);
+                if (target) {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    modal.input.focus();
+                }
                 break
         }
     })
