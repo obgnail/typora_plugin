@@ -61,10 +61,6 @@
             top: 30px
         }
         
-        .mac-seamless-mode .modal-dialog {
-            margin-top: 40px
-        }
-        
         #typora-search-multi-input {
             position: relative;
         }
