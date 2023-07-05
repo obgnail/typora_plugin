@@ -30,7 +30,7 @@
         ["", SHELL.CMD_BASH, ""], // dummy
         ["explorer打开", SHELL.CMD_BASH, "explorer $d"],
         ["vscode打开", SHELL.CMD_BASH, "code $f"],
-        ["git提交", SHELL.CMD_BASH, `cd $m && git add . && git commit -m 'message'`],
+        ["git提交", SHELL.CMD_BASH, `cd $m && git add . && git commit -m "message"`],
     ];
 
     (() => {
@@ -81,12 +81,21 @@
             width: 60%;
             margin-left: 0;
             margin-right: 2.5px;
-            padding-left: 5px
-            overflow: auto;
+            padding-left: 20px;
+            padding-right: 5px;
         }
         
         #typora-commander-form input:focus {
             outline: 0
+        }
+        
+        #typora-commander-form .typora-commander-commit,
+        #typora-commander-form .typora-commander-commit:hover {
+            position: absolute;
+            padding: 1px;
+            left: 10px;
+            opacity: 0.7;
+            cursor: pointer;
         }
         
         .typora-commander-output {
@@ -118,13 +127,14 @@
             <option value="${SHELL.GIT_BASH}">git bash</option>
             <option value="${SHELL.WSL}">wsl</option>
         `;
-        const builtin = BUILTIN.map(ele => `<option shell="${ele[1]}" value="${ele[2]}">${ele[0]}</option>`).join("");
+        const builtin = BUILTIN.map(ele => `<option shell="${ele[1]}" value='${ele[2]}'>${ele[0]}</option>`).join("");
         const builtinSelect = !config.USE_BUILTIN ? "" : `<select class="typora-commander-builtin">${builtin}</select>`;
 
         const div = `
         <div id="typora-commander-form">
             <input type="text" class="input" placeholder="Typora commander" autocorrect="off" spellcheck="false"
-                autocapitalize="off" data-lg="Front" title="提供如下变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
+                autocapitalize="off" data-lg="Front" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
+            <i class="ion-ios7-play typora-commander-commit"></i>
             <select class="typora-commander-shell"><option value="${SHELL.CMD_BASH}">cmd/bash</option>${windowOption}</select>
             ${builtinSelect}
         </div>
@@ -148,6 +158,7 @@
         input: document.querySelector("#typora-commander-form input"),
         shellSelect: document.querySelector("#typora-commander-form .typora-commander-shell"),
         builtinSelect: document.querySelector("#typora-commander-form .typora-commander-builtin"),
+        commit: document.querySelector("#typora-commander-form .typora-commander-commit"),
         output: document.querySelector("#typora-commander-output"),
         pre: document.querySelector("#typora-commander-output pre")
     }
@@ -234,13 +245,21 @@
         modal.pre.classList.add("error");
     }
 
+    const commit = ev => {
+        ev.stopPropagation();
+        ev.preventDefault();
+        const cmd = modal.input.value;
+        const option = modal.shellSelect.options[modal.shellSelect.selectedIndex];
+        const shell = option.value;
+        exec(cmd, shell, showStdout, showStdErr);
+    }
+
+    modal.commit.addEventListener("click", ev => commit(ev), true);
+
     modal.input.addEventListener("keydown", ev => {
         switch (ev.key) {
             case "Enter":
-                const cmd = modal.input.value;
-                const option = modal.shellSelect.options[modal.shellSelect.selectedIndex];
-                const shell = option.value;
-                exec(cmd, shell, showStdout, showStdErr);
+                commit(ev);
                 break
             case "Escape":
                 ev.stopPropagation();
