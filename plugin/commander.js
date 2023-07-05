@@ -5,7 +5,7 @@
         WSL_DISTRIBUTION: "Ubuntu-16.04",
         HOTKEY: ev => metaKeyPressed(ev) && ev.key === "g",
 
-        DEBUG: true
+        DEBUG: false
     }
 
     if (!config.ENABLE) {
@@ -262,7 +262,7 @@
 
             document.addEventListener('mousemove', onMouseMove);
         })
-        modal.modal.ondragstart = () => false
+        modal.input.ondragstart = () => false
     }
 
     if (config.DEBUG) {
