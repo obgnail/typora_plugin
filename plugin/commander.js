@@ -9,7 +9,7 @@
         // wsl distribution
         WSL_DISTRIBUTION: "Ubuntu-16.04",
         // 快捷键
-        HOTKEY: ev => metaKeyPressed(ev) && ev.key === "g",
+        HOTKEY: ev => metaKeyPressed(ev) && ev.key.toLowerCase() === "g",
 
         DEBUG: false
     }

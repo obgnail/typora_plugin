@@ -3,9 +3,9 @@
         // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
         // 快捷键
-        HOTKEY_HIDE_FRONT: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "B",
-        HOTKEY_SHOW_ALL: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "U",
-        HOTKEY_HIDE_BASE_VIEW: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "Y",
+        HOTKEY_HIDE_FRONT: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key.toLowerCase() === "b",
+        HOTKEY_SHOW_ALL: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key.toLowerCase() === "u",
+        HOTKEY_HIDE_BASE_VIEW: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key.toLowerCase() === "y",
 
         // 剩余文本段
         REMAIN_LENGTH: 80,
@@ -110,7 +110,7 @@
         }
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
         const totalWidth = window.innerWidth || document.documentElement.clientWidth;
-        const {top, right, bottom, left} = el.getBoundingClientRect();
+        const { top, right, bottom, left } = el.getBoundingClientRect();
         return (top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight);
     }
 
@@ -152,6 +152,7 @@
                 const write = document.getElementById("write");
                 write.children.forEach((el, idx) => {
                     if (isInViewBox(el)) {
+                        if (!start) { start = idx }
                         start = Math.min(start, idx);
                         end = Math.max(end, idx);
                     }
