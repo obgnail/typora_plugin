@@ -18,6 +18,12 @@
         POWER_SHELL: "powershell",
         GIT_BASH: "gitbash",
         WSL: "wsl",
+    }
+
+    const BUILTIN = {
+        "open_in_explorer": [SHELL.CMD, "explorer $d", "资源管理器打开"],
+        "open_in_vscode": [SHELL.CMD, "code $f", "在vscode打开"],
+        "git_commit": [SHELL.CMD, `cd $m && git add . && git commit -m "CommitMessage"`, "git提交"],
     };
 
     (() => {
@@ -105,7 +111,7 @@
             <input type="text" class="input" placeholder="Typora commander" autocorrect="off" spellcheck="false"
                 autocapitalize="off" data-lg="Front" title="提供如下变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
             <select>
-                <option value="">cmd/bash</option>
+                <option value="${SHELL.CMD}">cmd/bash</option>
                 <option value="${SHELL.POWER_SHELL}">powershell</option>
                 <option value="${SHELL.GIT_BASH}">git bash</option>
                 <option value="${SHELL.WSL}">wsl</option>
@@ -141,26 +147,29 @@
         if (File.isMac) {
             return path
         }
-        const tempList = path.split(":");
-        if (tempList.length !== 2) {
-            return path
-        }
 
-        const disk = tempList[0].toLowerCase();
-        const remain = tempList[1];
         switch (shell) {
-            case SHELL.GIT_BASH:
-                return `/${disk}${remain}`;
             case SHELL.WSL:
-                return `/mnt/${disk}${remain}`;
+            case SHELL.GIT_BASH:
+                path = path.replace(/\\/g, "/");
+                const tempList = path.split(":");
+                if (tempList.length !== 2) {
+                    return path
+                }
+                const disk = tempList[0].toLowerCase();
+                const remain = tempList[1];
+                return (shell === SHELL.GIT_BASH) ? `/${disk}${remain}` : `/mnt/${disk}${remain}`
+            case SHELL.BASH:
+            case SHELL.CMD:
+            case SHELL.POWER_SHELL:
             default:
-                return path;
+                return path
         }
     }
 
-    const getFile = shell => convertPath(File.filePath.replace(/\\/g, "/"), shell);
-    const getFolder = shell => convertPath(Package.path.dirname(File.filePath).replace(/\\/g, "/"), shell);
-    const getMountFolder = shell => convertPath(File.getMountFolder().replace(/\\/g, "/"), shell);
+    const getFile = shell => convertPath(File.filePath, shell);
+    const getFolder = shell => convertPath(Package.path.dirname(File.filePath), shell);
+    const getMountFolder = shell => convertPath(File.getMountFolder(), shell);
 
     const replaceArgs = (cmd, shell) => {
         const file = getFile(shell);
@@ -200,14 +209,14 @@
             })
     }
 
-    const showOutput = stdout => {
+    const showStdout = stdout => {
         modal.output.style.display = "block";
         modal.pre.classList.remove("error");
         modal.pre.textContent = stdout;
     }
 
-    const showErrorOutput = stderr => {
-        showOutput(stderr);
+    const showStdErr = stderr => {
+        showStdout(stderr);
         modal.pre.classList.add("error");
     }
 
@@ -217,7 +226,7 @@
                 const cmd = modal.input.value;
                 const index = modal.select.selectedIndex;
                 const shell = modal.select.options[index].value;
-                exec(cmd, shell, showOutput, showErrorOutput);
+                exec(cmd, shell, showStdout, showStdErr);
                 break
             case "Escape":
                 ev.stopPropagation();
