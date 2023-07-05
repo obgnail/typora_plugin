@@ -12,9 +12,10 @@
 - `md_padding.js`：盘古之白。中英文混排时，中文与英文之间、中文与数字之间添加空格
 - `window_tab.js`：标签页管理
 - `window_tab_drag.js`：标签页管理，可拖拽排序
-- `resize_table.js`：调整表格单元格的行高列宽
+- `commander.js`：类似于 total commander 的命令行，提供命令行环境
 - `read_only.js`：只读模式
 - `truncate_text.js`：暂时隐藏内容，提高大文件渲染性能
+- `resize_table.js`：调整表格单元格的行高列宽
 - `resize_image.js`：调整图片大小
 - `mermaid_replace.js`：替换 mermaid（默认关闭，需手动开启）
 
@@ -114,6 +115,35 @@ window_tab_drag.js 和 window_tab.js 的区别是：是否支持拖拽排序。�
 ![md_padding](assets/md_padding.gif)
 
 > NOTE：**此脚本会直接修改文件**。虽然支持 Ctrl+Z 还原，还是建议提前备份。
+
+
+
+### commander.js：命令行环境
+
+> 如果你看不懂下面描述，那么你就不需要此脚本。
+
+功能和 total commander 的命令行一样（快捷键也一样），一个快速执行命令的工具，并提供少量交互。
+
+- ctrl+G：弹出执行框
+- esc：隐藏执行框
+- drag：拖动输入框可移动
+
+支持 shell：
+
+- `cmd/bash`：windows 或 Mac 的默认终端
+- `powershell`：微软弃子 :D
+- `git bash`：使用此终端前请保证安装了 git bash 并且加入环境变量
+- `wsl`：使用此终端前请保证安装了 wsl2，并且加入环境变量。默认 distribution 为 Ubuntu-16.04，如果想更换，请自行修改脚本
+
+提供内置环境变量：
+
+- `$f`：当前文件路径
+- `$d`：当前文件的所属目录
+- `$m`：当前挂载的根目录
+
+![commander](assets/commander.gif)
+
+> 该脚本的定位是提供一个简易的命令行环境，请不要用此进行开发。
 
 
 
