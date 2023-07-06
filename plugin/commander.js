@@ -84,7 +84,7 @@
             padding-right: 5px;
         }
         
-        #typora-commander-form input:focus {
+        #typora-commander-form input:focus, pre:focus {
             outline: 0
         }
         
@@ -137,7 +137,7 @@
             <select class="typora-commander-shell"><option value="${SHELL.CMD_BASH}">cmd/bash</option>${windowOption}</select>
             ${builtinSelect}
         </div>
-        <div class="typora-commander-output" id="typora-commander-output" style="display:none"><pre></pre></div>
+        <div class="typora-commander-output" id="typora-commander-output" style="display:none"><pre tabindex="0"></pre></div>
        `
         const modal = document.createElement("div");
         modal.id = 'typora-commander';
