@@ -221,7 +221,12 @@
     const exec = (cmd, shell, resolve, reject) => {
         const _shell = getShellCommand(shell);
         const _cmd = replaceArgs(cmd, shell);
-        Package.child_process.exec(`chcp 65001 | ${_shell} "${_cmd}"`, {encoding: 'utf8'},
+        Package.child_process.exec(
+            `chcp 65001 | ${_shell} "${_cmd}"`,
+            {
+                encoding: 'utf8',
+                cwd: getFolder(),
+            },
             (err, stdout, stderr) => {
                 if (err || stderr.length) {
                     reject = reject ? reject : console.error;
