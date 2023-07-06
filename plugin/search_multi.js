@@ -262,9 +262,6 @@
                                     reject(err);
                                     return
                                 }
-                                if (config.INCLUDE_FILE_PATH) {
-                                    data = data + filePath;
-                                }
                                 callback(filePath, stats, data);
                             });
                         } else if (stats.isDirectory()) {
@@ -276,12 +273,15 @@
         })
     }
 
-    const appendItemFunc = (keyArr) => {
+    const appendItemFunc = keyArr => {
         let index = 0;
         let once = true;
         const rootPath = getMountFolder()
 
         return (filePath, stats, data) => {
+            if (config.INCLUDE_FILE_PATH) {
+                data = data + filePath;
+            }
             if (!config.CASE_SENSITIVE) {
                 data = data.toLowerCase();
             }
@@ -296,8 +296,7 @@
             const dirPath = !config.RELATIVE_PATH ? parseUrl.dir : parseUrl.dir.replace(rootPath, ".");
             const hint = config.SHOW_MTIME ? `ty-hint="修改时间: ${stats.mtime.toLocaleString('chinese', {hour12: false})}"` : ``;
             const item = `
-                <div class="typora-search-multi-item" data-is-dir="false"
-                    data-path="${filePath}" data-index="${index}" ${hint}>
+                <div class="typora-search-multi-item" data-is-dir="false" data-path="${filePath}" data-index="${index}" ${hint}>
                     <div class="typora-search-multi-item-title">${parseUrl.base}</div>
                     <div class="typora-search-multi-item-path">${dirPath}${separator}</div>
                 </div>`;
