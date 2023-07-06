@@ -133,7 +133,7 @@ window_tab_drag.js 和 window_tab.js 的区别是：是否支持拖拽排序。�
 - `cmd/bash`：windows 或 Mac 的默认终端
 - `powershell`：微软弃子 :D
 - `git bash`：使用此终端前请保证安装了 git bash 并且加入环境变量
-- `wsl`：使用此终端前请保证安装了 wsl2，并且加入环境变量。默认 distribution 为 Ubuntu-16.04，如果想更换，请自行修改脚本
+- `wsl`：使用此终端前请保证安装了 wsl2，并且加入环境变量。
 
 内置环境变量：
 

@@ -6,8 +6,6 @@
         ALLOW_DRAG: true,
         // 启用内建的命令列表
         USE_BUILTIN: true,
-        // wsl distribution
-        WSL_DISTRIBUTION: "Ubuntu-16.04",
         // 快捷键
         HOTKEY: ev => metaKeyPressed(ev) && ev.key.toLowerCase() === "g",
 
@@ -212,7 +210,7 @@
             case SHELL.POWER_SHELL:
                 return `powershell /C`
             case SHELL.WSL:
-                return `wsl.exe -d ${config.WSL_DISTRIBUTION} -e bash -c`
+                return `wsl.exe -e bash -c`
             default:
                 return File.isMac ? `bash -c` : `cmd /C`;
         }
