@@ -60,7 +60,7 @@
             line-height: 25px;
         }
         
-        #typora-commander-form select,input {
+        #typora-commander-form select, input {
             border: 1px solid #ddd;
             box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
             border-radius: 2px;
@@ -68,14 +68,7 @@
             margin-top: 1px;
             margin-bottom: 1px;
         }
-        
-        #typora-commander-form select {
-            width: 20%;
-            margin-left: 2.5px;
-            margin-right: 0;
-            padding: 1px 2px;
-        }
-        
+                
         #typora-commander-form input {
             width: 60%;
             margin-left: 0;
@@ -83,20 +76,22 @@
             padding-left: 20px;
             padding-right: 5px;
         }
-        
-        #typora-commander-form input:focus, pre:focus {
-            outline: 0
+
+        #typora-commander-form select {
+            width: 20%;
+            margin-left: 2.5px;
+            margin-right: 0;
+            padding: 1px 2px;
         }
         
-        #typora-commander-form .typora-commander-commit,
-        #typora-commander-form .typora-commander-commit:hover {
+        #typora-commander-form .typora-commander-commit {
             position: absolute;
             padding: 1px;
             left: 10px;
             opacity: 0.7;
             cursor: pointer;
         }
-        
+
         .typora-commander-output {
             margin-top: 0;
             cursor: default;
@@ -114,6 +109,10 @@
         
         .typora-commander-output pre.error {
             color: red;
+        }
+
+        #typora-commander-form input:focus, pre:focus {
+            outline: 0
         }
         `
         const style = document.createElement('style');
