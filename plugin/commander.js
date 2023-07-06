@@ -27,8 +27,9 @@
 
     const BUILTIN = [
         {name: "", shell: SHELL.CMD_BASH, cmd: ""}, // dummy
-        {name: "OpenInExplorer", shell: SHELL.CMD_BASH, cmd: "explorer $d"},
-        {name: "OpenInVscode", shell: SHELL.CMD_BASH, cmd: "code $f"},
+        {name: "Explorer", shell: SHELL.POWER_SHELL, cmd: "explorer $d"},
+        {name: "Vscode", shell: SHELL.CMD_BASH, cmd: "code $f"},
+        {name: "WT", shell: SHELL.CMD_BASH, cmd: "cd $d && wt"},
         {name: "GitCommit", shell: SHELL.CMD_BASH, cmd: `cd $m && git add . && git commit -m "message"`},
     ];
 

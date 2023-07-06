@@ -146,10 +146,11 @@ window_tab_drag.js 和 window_tab.js 的区别是：是否支持拖拽排序。�
 ```js
 // 默认的内建命令
 const BUILTIN = [
-    {name: "", shell: "cmd/bash", cmd: ""}, // dummy
-    {name: "OpenInExplorer", shell: "cmd/bash", cmd: "explorer $d"},
-    {name: "OpenInVscode", shell: "cmd/bash", cmd: "code $f"},
-    {name: "GitCommit", shell: "cmd/bash", cmd: `cd $m && git add . && git commit -m "message"`},
+    {name: "", shell: SHELL.CMD_BASH, cmd: ""}, // dummy
+    {name: "Explorer", shell: SHELL.POWER_SHELL, cmd: "explorer $d"},
+    {name: "Vscode", shell: SHELL.CMD_BASH, cmd: "code $f"},
+    {name: "WT", shell: SHELL.CMD_BASH, cmd: "cd $d && wt"},
+    {name: "GitCommit", shell: SHELL.CMD_BASH, cmd: `cd $m && git add . && git commit -m "message"`},
 ];
 ```
 
