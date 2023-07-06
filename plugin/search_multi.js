@@ -15,6 +15,8 @@
         AUTO_HIDE: false,
         // 搜索内容时大小写敏感
         CASE_SENSITIVE: false,
+        // 将文件路径加入搜索内容
+        INCLUDE_FILE_PATH: true,
         // 展示文件路径时使用相对路径
         RELATIVE_PATH: true,
         // 关键词按空格分割
@@ -259,6 +261,9 @@
                                 if (err) {
                                     reject(err);
                                     return
+                                }
+                                if (config.INCLUDE_FILE_PATH) {
+                                    data = data + filePath;
                                 }
                                 callback(filePath, stats, data);
                             });
