@@ -228,7 +228,7 @@
             (err, stdout, stderr) => {
                 if (err || stderr.length) {
                     reject = reject ? reject : console.error;
-                    reject(err.toString() || stderr.toString());
+                    reject(err || stderr.toString());
                 } else {
                     resolve = resolve ? resolve : console.log;
                     resolve(stdout);
