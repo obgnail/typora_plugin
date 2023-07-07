@@ -15,6 +15,7 @@
 - `commander.js`：类似于 total commander 的命令行，提供命令行环境
 - `read_only.js`：只读模式
 - `collapse_paragraph.js`：折叠文本
+- `copy_code.js`：提供一个复制代码按钮
 - `truncate_text.js`：暂时隐藏内容，提高大文件渲染性能
 - `resize_table.js`：调整表格单元格的行高列宽
 - `resize_image.js`：调整图片大小
@@ -184,6 +185,14 @@ ctrl+鼠标拖动，修改表格的行高列宽。
 ctrl+鼠标滚轮滚动，修改图片大小。
 
 ![resize-image](assets/resize-image.gif)
+
+
+
+
+
+### copy_code.js：提供一个复制代码的按钮
+
+![copy_code](assets/copy_code.png)
 
 
 
