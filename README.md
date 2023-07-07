@@ -14,6 +14,7 @@
 - `window_tab_drag.js`：标签页管理，可拖拽排序
 - `commander.js`：类似于 total commander 的命令行，提供命令行环境
 - `read_only.js`：只读模式
+- `collapse_paragraph.js`：折叠文本
 - `truncate_text.js`：暂时隐藏内容，提高大文件渲染性能
 - `resize_table.js`：调整表格单元格的行高列宽
 - `resize_image.js`：调整图片大小
@@ -157,6 +158,16 @@ const BUILTIN = [
 ![commander](assets/commander.gif)
 
 > 该脚本的定位是提供一个简易的命令行环境，请不要用此进行开发。
+
+
+
+### collapse_paragraph.js：折叠文本
+
+ctrl+鼠标点击，折叠标题下所有文本。
+
+支持折叠的标签：h1~h6。
+
+![collapse_paragraph](assets/collapse_paragraph.gif)
 
 
 
