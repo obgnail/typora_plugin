@@ -265,8 +265,15 @@
 
     modal.input.addEventListener("input", ev => {
         const cmd = modal.input.value.trim();
-        modal.commit.style.display = (cmd) ? "block" : "none";
+        if (cmd) {
+            modal.commit.style.display = "block";
+        } else {
+            modal.commit.style.display = "none";
+            modal.builtinSelect.value = "";
+        }
     })
+
+    modal.shellSelect.addEventListener("change", ev => modal.input.focus());
 
     modal.modal.addEventListener("keydown", ev => {
         switch (ev.key) {
