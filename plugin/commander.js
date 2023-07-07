@@ -147,6 +147,7 @@
         if (!config.USE_BUILTIN) {
             document.getElementById('typora-commander').style.width = "500px";
             document.querySelector("#typora-commander-form input").style.width = "80%";
+            document.querySelector("#typora-commander-form .typora-commander-commit").style.left = "375px";
         }
     })()
 
