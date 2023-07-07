@@ -72,7 +72,7 @@
             width: 60%;
             margin-left: 0;
             margin-right: 2.5px;
-            padding-left: 20px;
+            padding-left: 5px;
             padding-right: 5px;
         }
 
@@ -86,7 +86,7 @@
         #typora-commander-form .typora-commander-commit {
             position: absolute;
             padding: 1px;
-            left: 10px;
+            left: 335px;
             opacity: 0.7;
             cursor: pointer;
         }
@@ -131,7 +131,7 @@
         <div id="typora-commander-form">
             <input type="text" class="input" placeholder="Typora commander" autocorrect="off" spellcheck="false"
                 autocapitalize="off" data-lg="Front" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
-            <i class="ion-ios7-play typora-commander-commit"></i>
+            <i class="ion-ios7-play typora-commander-commit" ty-hint="执行命令" style="display: none"></i>
             <select class="typora-commander-shell"><option value="${SHELL.CMD_BASH}">cmd/bash</option>${windowOption}</select>
             ${builtinSelect}
         </div>
@@ -263,6 +263,11 @@
     // 提供不同入口，让鼠标操作的用户不必切换回键盘操作
     modal.commit.addEventListener("click", ev => commit(ev), true);
 
+    modal.input.addEventListener("input", ev => {
+        const cmd = modal.input.value.trim();
+        modal.commit.style.display = (cmd) ? "block" : "none";
+    })
+
     modal.modal.addEventListener("keydown", ev => {
         switch (ev.key) {
             case "Enter":
@@ -300,10 +305,10 @@
     if (config.USE_BUILTIN) {
         modal.builtinSelect.addEventListener("change", ev => {
             const option = modal.builtinSelect.options[modal.builtinSelect.selectedIndex];
-            const cmd = option.value;
-            const shell = option.getAttribute("shell");
-            modal.input.value = cmd;
-            modal.shellSelect.value = shell;
+            modal.shellSelect.value = option.getAttribute("shell");
+            modal.input.value = option.value;
+            modal.input.dispatchEvent(new CustomEvent('input'));
+            modal.input.focus();
         })
     }
 
