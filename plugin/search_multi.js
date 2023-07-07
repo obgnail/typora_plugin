@@ -16,7 +16,7 @@
         // 搜索内容时大小写敏感
         CASE_SENSITIVE: false,
         // 将文件路径加入搜索内容
-        INCLUDE_FILE_PATH: true,
+        INCLUDE_FILE_PATH: false,
         // 展示文件路径时使用相对路径
         RELATIVE_PATH: true,
         // 关键词按空格分割
