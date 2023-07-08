@@ -3,6 +3,7 @@
 <div align="center">
   <img src="assets/typora_plugin.png" alt="typora_plugin" width="400" />
 </div>
+
 通过注入 JavaScript 代码，为 Typora 添加功能。
 
 目前支持的功能：
