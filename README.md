@@ -3,23 +3,21 @@
 <div align="center">
   <img src="assets/typora_plugin.png" alt="typora_plugin" width="400" />
 </div>
-> 让工具回归工具。
-
 通过注入 JavaScript 代码，为 Typora 添加功能。
 
 目前支持的功能：
 
-- `search_multi.js`：多关键字搜索
-- `md_padding.js`：中英文混排时，中文与英文、数字之间添加空格
-- `commander.js`：命令行环境
-- `read_only.js`：只读模式
-- `collapse_paragraph.js`：章节折叠
-- `copy_code.js`：一键复制代码
-- `resize_table.js`：调整表格行高列宽
-- `resize_image.js`：调整图片显示大小
-- `truncate_text.js`：暂时隐藏内容，提高大文件渲染性能
-- `window_tab.js/window_tab_drag.js`：标签页管理（默认高版本中关闭）
-- `mermaid_replace.js`：替换 mermaid（默认关闭，需手动开启）
+1. `search_multi.js`：多关键字搜索
+2. `md_padding.js`：中英文混排时，中文与英文、数字之间添加空格
+3. `commander.js`：命令行环境
+4. `read_only.js`：只读模式
+5. `collapse_paragraph.js`：章节折叠
+6. `copy_code.js`：一键复制代码
+7. `resize_table.js`：调整表格行高列宽
+8. `resize_image.js`：调整图片显示大小
+9. `truncate_text.js`：暂时隐藏内容，提高大文件渲染性能
+10. `window_tab.js/window_tab_drag.js`：标签页管理（默认高版本中关闭）
+11. `mermaid_replace.js`：替换 mermaid（默认关闭，需手动开启）
 
 
 
