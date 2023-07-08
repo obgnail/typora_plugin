@@ -100,12 +100,15 @@
         if (ev.timeStamp - lastClickTime < config.CLICK_CHECK_INTERVAL) {
             return
         }
-
         lastClickTime = ev.timeStamp;
+
         const lines = button.closest(".md-fences").querySelectorAll(".CodeMirror-code .CodeMirror-line")
         if (!lines) {
             return
         }
+
+        document.activeElement.blur();
+
         const contentList = [];
         lines.forEach(line => {
             let encodeText = encodeURI(line.textContent);
@@ -114,8 +117,8 @@
                     encodeText = encodeText.replace(new RegExp(badChars[i], "g"), replaceChars[i]);
                 }
             }
-            encodeText = decodeURI(encodeText);
-            contentList.push(encodeText)
+            const decodeText = decodeURI(encodeText);
+            contentList.push(decodeText)
         })
 
         const result = contentList.join("\n");
