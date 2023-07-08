@@ -45,6 +45,11 @@
         DEBUG: false,
     }
 
+    // 高版本不再开启此脚本
+    if (parseInt(window._options.appVersion.split(".")[0]) > 0) {
+        config.ENABLE = false
+    }
+
     if (!config.ENABLE) {
         return
     }
