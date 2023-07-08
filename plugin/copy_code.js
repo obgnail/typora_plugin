@@ -33,11 +33,12 @@
                 z-index: 99999;
                 color: #4183C4;
                 opacity: 0.6;
-                border: none;
+                border-bottom: 1px solid #4183C4;
                 cursor: pointer;
             }
             #write .md-fences .typora-copy-code.copied {
                 color: purple;
+                border-color: purple;
             }
             `
         const style = document.createElement('style');

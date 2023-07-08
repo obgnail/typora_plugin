@@ -8,8 +8,10 @@
         return
     }
 
+    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
+
     document.getElementById("write").addEventListener("wheel", ev => {
-        if (!ev.ctrlKey) {
+        if (!metaKeyPressed(ev)) {
             return
         }
 
