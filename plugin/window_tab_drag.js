@@ -364,6 +364,13 @@
         return result
     }
 
+    global._openFileInNewWindow = () => {
+        if (Package.File.filePath) {
+            Package.File.editor.library.openFileInNewWindow(Package.File.filePath, false);
+        } else {
+            Package.Client.newFile();
+        }
+    };
 
     // 其实下面函数都可以使用flushWindowTabs代替,但是flushWindowTabs太重了
     const flushWindowTabs = (excludeId, order) => execForAllWindows(`global._flushWindowTabs(${excludeId}, "${order}")`);
@@ -371,6 +378,7 @@
     const moveTab = (idx1, idx2) => execForAllWindows(`global._moveTab(${idx1}, ${idx2})`);
     const changeTab = () => execForAllWindows(`global._changeTab()`);
     const removeWindowTab = winId => execForAllWindows(`global._removeWindowTab(${winId})`);
+    const openFileInNewWindow = winId => execForWindow(winId, "global._openFileInNewWindow()");
     const addWindowTab = (noticeWins, winId, title, select) => {
         for (const win of noticeWins) {
             execForWindow(win.id, `global._addWindowTab(${winId}, "${title}", ${select})`);
@@ -419,6 +427,8 @@
         }
     }
 
+    const metaKeyPressed = ev => Package.File.isMac ? ev.metaKey : ev.ctrlKey;
+
     // 应用外点击任务栏切换窗口
     const registerOnFocus = () => {
         let lastFocusTime = 0;
@@ -450,9 +460,16 @@
         if (!target) {
             return
         }
-        const winId = target.getAttribute("winid");
-        setFocusWindow(parseInt(winId));
-        changeTab();
+
+        const _winId = target.getAttribute("winid");
+        const winId = parseInt(_winId);
+
+        if (metaKeyPressed(ev)) {
+            openFileInNewWindow(winId);
+        } else {
+            setFocusWindow(winId);
+            changeTab();
+        }
     })
 
     // 当拖拽排序tab
