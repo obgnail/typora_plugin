@@ -17,9 +17,10 @@
 | 7    | resize_table                 | 调整表格行高列宽                 | 是         |
 | 8    | resize_image                 | 调整图片显示大小                 | 是         |
 | 9    | go_top                       | 一键到文章顶部                   | 是         |
-| 10   | truncate_text                | 暂时隐藏内容，提高大文件渲染性能 | 是         |
-| 11   | window_tab / window_tab_drag | 标签页管理                       | 高版本关闭 |
-| 12   | mermaid_replace              | 替换 mermaid 组件                | 否         |
+| 10   | file_counter                 | 显示目录下的文件数               | 是         |
+| 11   | truncate_text                | 暂时隐藏内容，提高大文件渲染性能 | 是         |
+| 12   | window_tab / window_tab_drag | 标签页管理                       | 高版本关闭 |
+| 13   | mermaid_replace              | 替换 mermaid 组件                | 否         |
 
 > 每个功能都对应 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
 
@@ -191,6 +192,12 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 ### copy_code：一键复制代码
 
 ![copy_code](assets/copy_code.png)
+
+
+
+### file_counter：显示文件数
+
+![file_count](assets/file_count.png)
 
 
 
