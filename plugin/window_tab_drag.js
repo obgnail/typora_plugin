@@ -82,11 +82,11 @@
     const execForAllWindows = js => Package.Client.execForAll(js);
 
     const getAPP = () => Package.getElectron().app;
-    const getBrowserWindow = () => Package.getElectron().BrowserWindow;
+    const getBrowserWindow = () => Package.getElectron()?.BrowserWindow;
     const getIPC = () => Package.getElectron().ipcMain;
 
     const getAllWindows = () => getBrowserWindow().getAllWindows();
-    const getFocusedWindow = () => getBrowserWindow().getFocusedWindow();
+    const getFocusedWindow = () => getBrowserWindow()?.getFocusedWindow();
     const setFocusWindow = winId => {
         const windows = getAllWindows();
         for (const win of windows) {
@@ -444,8 +444,10 @@
     new MutationObserver(() => {
         showOriginTitleIfNeed();
         const win = getFocusedWindow();
-        const name = getWindowName(win);
-        updateTabTitle(win.id, name);
+        if (win) {
+            const name = getWindowName(win);
+            updateTabTitle(win.id, name);
+        }
     }).observe(windowTabs.titleText, {childList: true});
 
     // 关闭窗口

@@ -36,9 +36,7 @@
         return
     }
 
-    // prepare
     (() => {
-        // insert css
         const modal_css = `
         #typora-search-multi {
             position: fixed;
@@ -166,7 +164,6 @@
         style.innerHTML = modal_css;
         document.getElementsByTagName("head")[0].appendChild(style);
 
-        // insert html
         const modal_div = `
         <div id="typora-search-multi-input">
             <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
@@ -208,9 +205,6 @@
         searchModal.innerHTML = modal_div;
         const quickOpenNode = document.getElementById("typora-quick-open");
         quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
-
-        // init case sensitive
-        config.CASE_SENSITIVE = document.querySelector("#typora-search-multi-case-option-btn").classList.contains("select");
     })();
 
     const modal = {
@@ -237,40 +231,25 @@
 
     const openFileInNewWindow = (path, isFolder) => getLibrary().openFileInNewWindow(path, isFolder)
 
-    const traverseDir = (dir, filter, callback) => {
-        return new Promise((resolve, reject) => {
-            Package.Fs.readdir(dir, (err, files) => {
-                if (err) {
-                    reject(err);
-                    return
+    const traverseDir = (dir, filter, callback, then) => {
+        async function traverse(dir) {
+            let files = await Package.Fs.promises.readdir(dir);
+            for (const file of files) {
+                const filePath = Package.Path.join(dir, file);
+                const stats = await Package.Fs.promises.stat(filePath);
+                if (stats.isFile()) {
+                    if (filter && !filter(filePath, stats)) {
+                        continue
+                    }
+                    Package.Fs.promises.readFile(filePath)
+                        .then(buffer => callback(filePath, stats, buffer))
+                        .catch(error => console.log(error))
+                } else if (stats.isDirectory()) {
+                    await traverse(filePath);
                 }
-
-                for (const file of files) {
-                    const filePath = Package.Path.join(dir, file);
-                    Package.Fs.stat(filePath, (err, stats) => {
-                        if (err) {
-                            reject(err);
-                            return
-                        }
-                        if (stats.isFile()) {
-                            if (filter && !filter(filePath, stats)) {
-                                resolve();
-                                return
-                            }
-                            Package.Fs.readFile(filePath, 'utf8', (err, data) => {
-                                if (err) {
-                                    reject(err);
-                                    return
-                                }
-                                callback(filePath, stats, data);
-                            });
-                        } else if (stats.isDirectory()) {
-                            traverseDir(filePath, filter, callback);
-                        }
-                    });
-                }
-            });
-        })
+            }
+        }
+        traverse(dir).then(then).catch(err => console.log(err));
     }
 
     const appendItemFunc = keyArr => {
@@ -278,7 +257,8 @@
         let once = true;
         const rootPath = getMountFolder()
 
-        return (filePath, stats, data) => {
+        return (filePath, stats, buffer) => {
+            let data = buffer.toString();
             if (config.INCLUDE_FILE_PATH) {
                 data = data + filePath;
             }
@@ -331,7 +311,7 @@
     const verifySize = (stat) => 0 > config.MAX_SIZE || stat.size < config.MAX_SIZE;
     const allowRead = (filepath, stat) => verifySize(stat) && verifyExt(filepath);
 
-    async function searchMulti(rootPath, keys) {
+    const searchMulti = (rootPath, keys, then) => {
         if (!rootPath) {
             return
         }
@@ -343,7 +323,7 @@
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }
         const appendItem = appendItemFunc(keyArr);
-        await traverseDir(rootPath, allowRead, appendItem);
+        traverseDir(rootPath, allowRead, appendItem, then);
     }
 
     if (config.ALLOW_DRAG) {
@@ -399,8 +379,7 @@
                 modal.info.style.display = "block";
                 modal.block.innerHTML = "";
                 const workspace = getMountFolder();
-                searchMulti(workspace, modal.input.value);
-                modal.info.style.display = "none";
+                searchMulti(workspace, modal.input.value, () => modal.info.style.display = "none");
                 break
             case "Escape":
                 ev.stopPropagation();
