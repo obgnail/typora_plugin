@@ -4,8 +4,6 @@
   <img src="assets/typora_plugin.png" alt="typora_plugin" width="400" />
 </div>
 
-通过注入 JavaScript 代码，为 Typora 添加功能。
-
 目前支持的功能：
 
 1. `search_multi.js`：多关键字搜索
@@ -16,9 +14,10 @@
 6. `copy_code.js`：一键复制代码
 7. `resize_table.js`：调整表格行高列宽
 8. `resize_image.js`：调整图片显示大小
-9. `truncate_text.js`：暂时隐藏内容，提高大文件渲染性能
-10. `window_tab.js/window_tab_drag.js`：标签页管理（默认高版本中关闭）
-11. `mermaid_replace.js`：替换 mermaid（默认关闭，需手动开启）
+9. `go_top.js`：一键到顶
+10. `truncate_text.js`：暂时隐藏内容，提高大文件渲染性能
+11. `window_tab.js/window_tab_drag.js`：标签页管理（默认高版本中关闭）
+12. `mermaid_replace.js`：替换 mermaid（默认关闭，需手动开启）
 
 
 
@@ -210,6 +209,12 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 - ctrl+shift+Y：根据当前可视范围显示文本段
 
 > 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
+
+
+
+### go_top.js： 一键到顶
+
+在右下角添加一个一键到顶的按钮。
 
 
 
