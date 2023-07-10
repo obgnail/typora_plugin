@@ -33,6 +33,7 @@
                 z-index: 99999;
                 color: #4183C4;
                 opacity: 0.6;
+                font-weight: bold;
                 border-bottom: 1px solid #4183C4;
                 cursor: pointer;
             }
@@ -124,10 +125,12 @@
         const result = contentList.join("\n");
         navigator.clipboard.writeText(result);
 
-        // 妈耶，我累了，不想做弹窗，直接让文字在蓝紫之间切换得了。
-        // 看源码的仁兄发善心要修改交互的话，改完请务必给我提PR。球球了。
-        // 最好在typora目录下的ionicons.css文件中找一个icon换上去。
-        button.classList.toggle("copied");
+        button.classList.add("copied");
+        button.innerText = "Copied";
+        setTimeout(() => {
+            button.classList.remove("copied");
+            button.innerText = "Copy";
+        }, 1000)
     })
 
     if (config.DEBUG) {
