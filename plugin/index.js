@@ -1,12 +1,16 @@
 window.onload = () => {
+    const _path = reqnode("path");
+    const _fs = reqnode("fs");
     const _require = file => {
-        try {
-            const dirname = global.dirname || global.__dirname;
-            const filepath = reqnode("path").join(dirname, file);
-            reqnode(filepath);
-        } catch (e) {
-            console.log("require error:", e);
-        }
+        const dirname = global.dirname || global.__dirname;
+        const filepath = _path.join(dirname, file);
+        _fs.access(filepath, err => {
+            if (!err) {
+                reqnode(filepath)
+            } else {
+                console.log("has no path:", filepath);
+            }
+        })
     }
 
     _require('./plugin/search_multi.js');
