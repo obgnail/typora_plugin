@@ -6,18 +6,24 @@
 
 目前支持的功能：
 
-1. `search_multi.js`：多关键字搜索
-2. `md_padding.js`：中英文混排时，中文与英文、数字之间添加空格
-3. `commander.js`：命令行环境
-4. `read_only.js`：只读模式
-5. `collapse_paragraph.js`：章节折叠
-6. `copy_code.js`：一键复制代码
-7. `resize_table.js`：调整表格行高列宽
-8. `resize_image.js`：调整图片显示大小
-9. `go_top.js`：一键到顶
-10. `truncate_text.js`：暂时隐藏内容，提高大文件渲染性能
-11. `window_tab.js/window_tab_drag.js`：标签页管理（默认高版本中关闭）
-12. `mermaid_replace.js`：替换 mermaid（默认关闭，需手动开启）
+| 序号 | 文件名                       | 功能                             | 默认开启   |
+| ---- | ---------------------------- | -------------------------------- | ---------- |
+| 1    | search_multi                 | 全局多关键字搜索                 | 是         |
+| 2    | md_padding                   | 中文与英文、数字之间添加空格     | 是         |
+| 3    | commander                    | 命令行环境                       | 是         |
+| 4    | read_only                    | 只读模式                         | 是         |
+| 5    | collapse_paragraph           | 章节折叠                         | 是         |
+| 6    | copy_code                    | 一键复制代码                     | 是         |
+| 7    | resize_table                 | 调整表格行高列宽                 | 是         |
+| 8    | resize_image                 | 调整图片显示大小                 | 是         |
+| 9    | go_top                       | 一键到文章顶部                   | 是         |
+| 10   | truncate_text                | 暂时隐藏内容，提高大文件渲染性能 | 是         |
+| 11   | window_tab / window_tab_drag | 标签页管理                       | 高版本关闭 |
+| 12   | mermaid_replace              | 替换 mermaid 组件                | 否         |
+
+> 每个功能都对应 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
+
+> 每个功能都有对应的配置，且每个配置选项都有注释说明。可以按需修改对应 JS 文件里的 config。
 
 
 
@@ -27,12 +33,6 @@
 2. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
 3. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。（不同版本的 Typora 查找的内容可能不同，其实就是查找导入 frame.js 的 script 标签）
 4. 重启 Typora。
-
-> 每个功能都对应 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
-
-> 每个功能都有对应的配置，且每个配置选项都有注释说明。可以按需修改对应 JS 文件里的 config。
-
-
 
 ![where_is_windowhtml](assets/where_is_windowhtml.png)
 
@@ -76,7 +76,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ## 插件/脚本
 
-### search_multi.js：多关键字搜索
+### search_multi：全局多关键字搜索
 
 比如搜索同时包含 `golang` 和 `install` 和 `生命周期` 三个关键字的文件。
 
@@ -94,23 +94,23 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
-### window_tab.js / window_tab_drag.js：标签页管理
+### window_tab / window_tab_drag：标签页管理
 
 ![window_tab](assets/window_tab.gif)
 
-window_tab_drag.js 和 window_tab.js 的区别是：是否支持拖拽排序。默认使用 window_tab_drag.js，禁用 window_tab.js。
+window_tab_drag 和 window_tab 的区别是：是否支持拖拽排序。默认使用 window_tab_drag，禁用 window_tab。
 
 > NOTE：**此脚本默认在高版本中关闭**。经反馈，由于高版本的 Typora 更新了 electron 版本，标签页管理功能已经在高版本中失效。详细说明请看下面【脚本会失效吗】章节。容我再想想办法 :(
 
 
 
-### md_padding.js：盘古之白
+### md_padding：盘古之白
 
 中英文混排时，中文与英文之间、中文与数字之间添加空格。
 
 > 有研究显示，打字的时候不喜欢在中文和英文之间加空格的人，感情路都走得很辛苦，有七成的比例会在 34 岁的时候跟自己不爱的人结婚，而其余三成的人最后只能把遗产留给自己的猫。毕竟爱情跟书写都需要适时地留白。 —— pangu.js
 
-[pangu.js](https://github.com/vinta/pangu.js) 是网页特供的，对于 markdown 语法会有误判，md_padding.js 通过解析语法树进行优化。
+[pangu.js](https://github.com/vinta/pangu.js) 是网页特供的，对于 markdown 语法会有误判，md_padding 通过解析语法树进行优化。
 
 快捷键：Ctrl+shift+K
 
@@ -120,7 +120,7 @@ window_tab_drag.js 和 window_tab.js 的区别是：是否支持拖拽排序。�
 
 
 
-### commander.js：命令行环境
+### commander：命令行环境
 
 > 如果你看不懂下面描述，那么你就不需要此脚本。
 
@@ -160,7 +160,7 @@ const BUILTIN = [
 
 
 
-### collapse_paragraph.js：章节折叠
+### collapse_paragraph：章节折叠
 
 ctrl+鼠标点击，折叠 / 展开 章节下所有文本。
 
@@ -170,7 +170,7 @@ ctrl+鼠标点击，折叠 / 展开 章节下所有文本。
 
 
 
-### resize_table.js：拖动调整表格大小
+### resize_table：拖动调整表格大小
 
 ctrl+鼠标拖动，修改表格的行高列宽。
 
@@ -178,7 +178,7 @@ ctrl+鼠标拖动，修改表格的行高列宽。
 
 
 
-### resize_image.js：调整图片大小
+### resize_image：调整图片大小
 
 ctrl+鼠标滚轮滚动，修改图片大小。
 
@@ -188,19 +188,19 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 
 
 
-### copy_code.js：一键复制代码
+### copy_code：一键复制代码
 
 ![copy_code](assets/copy_code.png)
 
 
 
-### read_only.js：只读模式
+### read_only：只读模式
 
 只读模式下文档不可编辑。快捷键：ctrl+shift+R。
 
 
 
-### truncate_text.js：暂时隐藏内容，提高大文件渲染性能
+### truncate_text：暂时隐藏内容，提高大文件渲染性能
 
 大文件在 Typora 的渲染性能很糟糕，用此脚本暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。
 
@@ -212,13 +212,13 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 
 
 
-### go_top.js： 一键到顶
+### go_top： 一键到顶
 
 在右下角添加一个一键到顶的按钮。
 
 
 
-### mermaid_replace.js：替换 mermaid
+### mermaid_replace：替换 mermaid
 
 如果你像我一样，不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此脚本。
 
@@ -228,7 +228,7 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 
 ## 瞎聊
 
-### 为什么要区分 window_tab.js 和 window_tab_drag.js ?
+### 为什么要区分 window_tab 和 window_tab_drag ?
 
 理由是：**支持排序会复杂很多**。
 
@@ -255,8 +255,8 @@ Typora 是闭源软件，要是有一天作者改了代码，是不是就不能�
 
 具体来看：
 
-- search_multi.js、resize_table.js、read_only.js、truncate_text.js 等功能几乎不依赖 Typora 实现。如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效，所以应该会 **保持长时间的有效性**。而且就算失效了也容易找到兼容方案。
-- 比较特殊的是 window_tab.js 和 window_tab_drag.js，这个功能本质是入侵式脚本；通过原型链攻击，将后端 electron 对象劫持到前端来，该脚本通过该手段成功调用了 Typora 的核心实现，并且这个核心实现同时被大量运用，历史包袱一样很大。当然了，劫持漏洞也有可能被修复。**如果 Typora 或 electron 有了重构级别的更新，那么大概率会失效**。
+- search_multi、resize_table、read_only、truncate_text 等功能几乎不依赖 Typora 实现。如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效，所以应该会 **保持长时间的有效性**。而且就算失效了也容易找到兼容方案。
+- 比较特殊的是 window_tab 和 window_tab_drag，这个功能本质是入侵式脚本；通过原型链攻击，将后端 electron 对象劫持到前端来，该脚本通过该手段成功调用了 Typora 的核心实现，并且这个核心实现同时被大量运用，历史包袱一样很大。当然了，劫持漏洞也有可能被修复。**如果 Typora 或 electron 有了重构级别的更新，那么大概率会失效**。
 
 > 总结：标签页管理功能比较危险，其他脚本保持长时间的有效性。如果脚本失效了，麻烦提个 issue。
 
