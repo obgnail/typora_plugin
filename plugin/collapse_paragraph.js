@@ -2,6 +2,8 @@
     const config = {
         // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
+        // 折叠状态下的颜色
+        BACKGROUND_COLOR: "#ffafa3",
 
         DEBUG: false
     }
@@ -13,7 +15,7 @@
     (() => {
         const css = `
             #write .collapsed-paragraph {
-                background-color: #ffafa3;
+                background-color: ${config.BACKGROUND_COLOR};
                 cursor: pointer;
             }`;
         const style = document.createElement('style');
