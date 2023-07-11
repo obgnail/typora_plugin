@@ -1,21 +1,4 @@
 (() => {
-    const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
-        // 允许拖动模态框
-        ALLOW_DRAG: true,
-        // 启用内建的命令列表
-        USE_BUILTIN: true,
-        // 快捷键
-        HOTKEY: ev => metaKeyPressed(ev) && ev.key.toLowerCase() === "g",
-
-        DEBUG: false
-    }
-
-    if (!config.ENABLE) {
-        return
-    }
-
     const SHELL = {
         CMD_BASH: "cmd/bash",
         POWER_SHELL: "powershell",
@@ -23,13 +6,30 @@
         WSL: "wsl",
     }
 
-    const BUILTIN = [
-        {name: "", shell: SHELL.CMD_BASH, cmd: ""}, // dummy
-        {name: "Explorer", shell: SHELL.POWER_SHELL, cmd: "explorer $d"},
-        {name: "Vscode", shell: SHELL.CMD_BASH, cmd: "code $f"},
-        {name: "WT", shell: SHELL.CMD_BASH, cmd: "cd $d && wt"},
-        {name: "GitCommit", shell: SHELL.CMD_BASH, cmd: `cd $m && git add . && git commit -m "message"`},
-    ];
+    const config = {
+        // 启用脚本,若为false,以下配置全部失效
+        ENABLE: true,
+        // 快捷键
+        HOTKEY: ev => metaKeyPressed(ev) && ev.key.toLowerCase() === "g",
+        // 允许拖动模态框
+        ALLOW_DRAG: true,
+        // 启用内建的命令列表
+        USE_BUILTIN: true,
+        // 内建命令列表
+        BUILTIN: [
+            {name: "", shell: SHELL.CMD_BASH, cmd: ""}, // dummy
+            {name: "Explorer", shell: SHELL.POWER_SHELL, cmd: "explorer $d"},
+            {name: "Vscode", shell: SHELL.CMD_BASH, cmd: "code $f"},
+            {name: "WT", shell: SHELL.CMD_BASH, cmd: "cd $d && wt"},
+            {name: "GitCommit", shell: SHELL.CMD_BASH, cmd: `cd $m && git add . && git commit -m "message"`},
+        ],
+
+        DEBUG: false
+    }
+
+    if (!config.ENABLE) {
+        return
+    }
 
     (() => {
         const modal_css = `
@@ -124,7 +124,7 @@
             <option value="${SHELL.GIT_BASH}">git bash</option>
             <option value="${SHELL.WSL}">wsl</option>
         `;
-        const builtin = BUILTIN.map(ele => `<option shell="${ele.shell}" value='${ele.cmd}'>${ele.name}</option>`).join("");
+        const builtin = config.BUILTIN.map(ele => `<option shell="${ele.shell}" value='${ele.cmd}'>${ele.name}</option>`).join("");
         const builtinSelect = !config.USE_BUILTIN ? "" : `<select class="typora-commander-builtin">${builtin}</select>`;
 
         const div = `
