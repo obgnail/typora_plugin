@@ -10,6 +10,8 @@
         HIDE_ORIGIN_WINDOW_TITLE: true,
         // 隐藏掉最小大化关闭按钮
         HIDE_TRAFFIC_LIGHTS: false,
+        // 隐藏掉tab里的关闭按钮
+        HIDE_CLOSE_BUTTON: true,
         // 经典窗口视图时使用
         HIDE_TITLE_BAR: false,
         HIDE_TITLE_BAR_LEFT: false,
@@ -21,6 +23,7 @@
         TABS_HEIGHT: "24px",
         TABS_JUSTIFY_CONTENT: "center",
         TABS_ALIGN_ITEMS: "stretch",
+        TAB_DISPLAY: "inline-flex",
         TAB_SELECT_BG_COLOR: "#ffafa3",
         TAB_HOVER_BG_COLOR: "#ffd4cc",
         TAB_MAX_WIDTH: "150px",
@@ -64,6 +67,10 @@
         config.HIDE_TITLE_BAR_LEFT = true;
     }
 
+    if (config.HIDE_CLOSE_BUTTON) {
+        config.TAB_DISPLAY = "";
+    }
+
     const Package = {
         // Typora常用的第一方内置库
         File: File,
@@ -78,6 +85,7 @@
         getRequire: () => global[config.REQUIRE_VAR_NAME],
     }
 
+    const closeWindow = () => JSBridge.invoke("window.close");
     const execForWindow = (winId, js) => JSBridge.invoke("executeJavaScript", winId, js);
     const execForAllWindows = js => Package.Client.execForAll(js);
 
@@ -186,6 +194,7 @@
             border-width: ${config.TAB_BORDER_WIDTH};
             border-color: ${config.TAB_BORDER_COLOR};
             border-radius: ${config.TAB_BORDER_RADIUS};
+            display: ${config.TAB_DISPLAY};
             margin-right: -1px;
             margin-left: -1px;
             cursor: pointer;
@@ -194,21 +203,33 @@
         #title-bar-window-tabs .title-bar-window-tab:hover {
             background-color: ${config.TAB_HOVER_BG_COLOR};
         }
-        
+        #title-bar-window-tabs .title-bar-window-tab:hover > .tab-close-button {
+            display: block;
+        }
+
         #title-bar-window-tabs .title-bar-window-tab.select {
             background-color: ${config.TAB_SELECT_BG_COLOR};
         }
-        
         #title-bar-window-tabs .title-bar-window-tab.over {
             border-color: ${config.TAB_OVER_BORDER_COLOR};
             border-width: ${config.TAB_OVER_BORDER_WIDTH};
             border-style: ${config.TAB_OVER_BORDER_STYLE};
         }
-        
-        #title-bar-window-tabs .title-bar-window-tab .window-tab-name {
+                
+        #title-bar-window-tabs .window-tab-name {
             overflow: ${config.TAB_OVERFLOW};
             text-overflow: ${config.TAB_TEXT_OVERFLOW};
             white-space: ${config.TAB_WHITE_SPACE};
+            margin-right: auto;
+        }
+        
+        #title-bar-window-tabs .tab-close-button {
+            opacity: 0.8;
+            display: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+        #title-bar-window-tabs .tab-close-button:hover i {
+            color: crimson;
         }
         `
         const style = document.createElement('style');
@@ -256,9 +277,12 @@
     }
 
     const newTab = (winId, title, select) => {
-        const selected = select ? " select" : "";
-        return `<div class="title-bar-window-tab${selected}" ty-hint="${title}" winid="${winId}" draggable="true">
-                        <div class="window-tab-name">${title}</div></div>`
+        const selected = select ? "select" : "";
+        const closeButton = config.HIDE_CLOSE_BUTTON ? "" : `<div class="tab-close-button"><i class="ion-android-close"></i></div>`;
+        return `<div class="title-bar-window-tab ${selected}" ty-hint="${title}" winid="${winId}" draggable="true">
+                        <div class="window-tab-name">${title}</div>
+                        ${closeButton}
+                </div>`
     }
 
     global._flushWindowTabs = (excludeId, order) => {
@@ -356,10 +380,10 @@
         const winList = windowTabs.list.querySelectorAll(".title-bar-window-tab");
         for (const win of winList) {
             const winId = win.getAttribute("winid");
-            result.push(winId)
+            result.push(winId);
         }
         if (newWindId) {
-            result.push(newWindId)
+            result.push(newWindId);
         }
         return result
     }
@@ -421,7 +445,7 @@
 
         for (const win of windows) {
             if (win.id !== curWin.id) {
-                updateWinIdListFromOtherWindows(curWin.id, win.id)
+                updateWinIdListFromOtherWindows(curWin.id, win.id);
                 return
             }
         }
@@ -456,8 +480,14 @@
         removeWindowTab(focusWinId);
     }, true)
 
-    // 点击Tab切换窗口
+    // 点击Tab切换窗口/关闭窗口
     windowTabs.list.addEventListener("click", ev => {
+        const closeButton = ev.target.closest(".tab-close-button");
+        if (closeButton) {
+            closeWindow();
+            return
+        }
+
         const target = ev.target.closest(".title-bar-window-tab");
         if (!target) {
             return
