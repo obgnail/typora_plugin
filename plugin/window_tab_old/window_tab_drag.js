@@ -1,7 +1,7 @@
 (() => {
     const config = {
         // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
+        ENABLE: false,
         // 当只有一个窗口时是否隐藏标签
         HIDE_TAB_WHEN_ONE_WINDOW: true,
         // 当打开配置菜单的时候是否隐藏
