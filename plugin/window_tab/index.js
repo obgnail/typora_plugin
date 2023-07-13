@@ -1,8 +1,14 @@
 (() => {
     const config = {
+        ENABLE: true,
         LOOP_DETECT_INTERVAL: 500,
-        CLOSE_HOTKEY: ev => ev.altKey && ev.key === "w"
+        CLOSE_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "w",
+        CHANGE_TAB_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "Tab"
     };
+
+    if (!config.ENABLE) {
+        return
+    }
 
     const Package = {
         Path: reqnode("path"),
@@ -64,10 +70,6 @@
             user-select: none;
             flex-shrink: 0;
             cursor: pointer
-        }
-        
-        #plugin-window-tab .tab-container:hover {
-            background-color: var(--item-hover-bg-color);
         }
         
         #plugin-window-tab .name {
@@ -156,18 +158,23 @@
     })()
 
     const entities = {
-        content: document.querySelector("content"),
         tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
     }
 
-    const closeWindow = () => JSBridge.invoke("window.close");
+    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
-    const openFile = filePath => File.editor.library.openFile(filePath);
-    const OpenFileLocal = filPath => {
+    // 新窗口打开
+    const openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
+    // 新标签页打开
+    const openFileNewTab = filePath => File.editor.library.openFile(filePath);
+    // 当前标签页打开
+    const OpenFileLocal = filePath => {
         localOpen = true;
-        openFile(filPath)
+        File.editor.library.openFile(filePath);
         localOpen = false;  // 自动还原
     }
+    // 关闭窗口
+    const closeWindow = () => JSBridge.invoke("window.close");
 
     const getName = filePath => {
         let fileName = Package.Path.basename(filePath);
@@ -282,9 +289,9 @@
             if (_path === activePath) {
                 activePath = tab.nextElementSibling?.getAttribute("data-path") || tabs[tabs.length - 1].path;
             }
-            openFile(activePath);
+            openFileNewTab(activePath);
         } else {
-            openFile(_path);
+            openFileNewTab(_path);
         }
     })
 
@@ -295,7 +302,32 @@
         }
     })
 
-    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
+    window.addEventListener("keydown", ev => {
+        if (config.CLOSE_HOTKEY(ev)) {
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            const tab = entities.tabBar.querySelector(".tab-container.active");
+            if (tab) {
+                tab.querySelector(".close-button").click();
+            }
+        } else if (config.CHANGE_TAB_HOTKEY(ev)) {
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            const idx = tabs.findIndex(tab => tab.path === activePath);
+            if (idx !== -1) {
+                let changeIdx;
+                if (ev.shiftKey) {
+                    changeIdx = (idx === 0) ? tabs.length - 1 : idx - 1;
+                } else {
+                    changeIdx = (idx === tabs.length - 1) ? 0 : idx + 1;
+                }
+                activePath = tabs[changeIdx].path;
+                openFileNewTab(activePath);
+            }
+        }
+    }, true)
 
     document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
         const target = ev.target.closest(".typora-quick-open-item");
@@ -309,7 +341,7 @@
         ev.preventDefault();
         ev.stopPropagation();
         const filePath = target.getAttribute("data-path");
-        openFile(filePath);
+        openFileNewTab(filePath);
     }, true)
 
     // let lastOver = null;
