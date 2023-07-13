@@ -24,6 +24,7 @@
             display: flex;
             align-items: center;
             justify-content: flex-start;
+            width: calc(100vw - var(--sidebar-width, 0));
             overflow-x: scroll
         }
         
@@ -36,7 +37,7 @@
         }
 
         #plugin-window-tab .tab-bar:hover::-webkit-scrollbar-thumb {
-            visibility: visible
+            visibility: visible;
         }
         
         #plugin-window-tab .tab-bar::-webkit-scrollbar {
@@ -63,6 +64,10 @@
             user-select: none;
             flex-shrink: 0;
             cursor: pointer
+        }
+        
+        #plugin-window-tab .tab-container:hover {
+            background-color: var(--item-hover-bg-color);
         }
         
         #plugin-window-tab .name {
@@ -155,11 +160,14 @@
         tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
     }
 
-    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
-
     const closeWindow = () => JSBridge.invoke("window.close");
 
     const openFile = filePath => File.editor.library.openFile(filePath);
+    const OpenFileLocal = filPath => {
+        localOpen = true;
+        openFile(filPath)
+        localOpen = false;  // 自动还原
+    }
 
     const getName = filePath => {
         let fileName = Package.Path.basename(filePath);
@@ -173,18 +181,18 @@
     const newTabDiv = (filePath, active) => {
         const fileName = getName(filePath);
         const _active = active ? "active" : "";
-        return `
-            <div class="tab-container ${_active}" data-path="${filePath}">
-                <div class="active-indicator"></div>
-                <span class="name">${fileName}</span>
-                <span class="close-button"><div class="close-icon"></div></span>
-            </div>`
+        return `<div class="tab-container ${_active}" data-path="${filePath}" draggable="true">
+                    <div class="active-indicator"></div>
+                    <span class="name">${fileName}</span>
+                    <span class="close-button"><div class="close-icon"></div></span>
+                </div>`
     }
 
-
+    let localOpen = false;
     let tabs = [];
     let activePath;
-    const renderData = () => {
+    // tabs->DOM的简单单向数据绑定
+    const renderDOM = wantOpenPath => {
         let tabContainer = entities.tabBar.firstElementChild;
         tabs.forEach(tab => {
             if (!tabContainer) {
@@ -192,17 +200,13 @@
                 entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
                 tabContainer = entities.tabBar.lastElementChild;
             }
-
-            const active = tab.path === activePath;
-            if (active) {
+            if (tab.path === wantOpenPath) {
                 tabContainer.classList.add("active");
             } else {
                 tabContainer.classList.remove("active");
             }
             tabContainer.setAttribute("data-path", tab.path);
-
-            const span = tabContainer.querySelector(".name");
-            span.innerText = getName(tab.path);
+            tabContainer.querySelector(".name").innerText = getName(tab.path);
 
             tabContainer = tabContainer.nextElementSibling;
         })
@@ -211,15 +215,22 @@
             tabContainer.parentElement.removeChild(tabContainer);
             tabContainer = tabContainer.nextElementSibling;
         }
+
+        activePath = wantOpenPath;
     }
 
-    const openTab = path => {
-        const pathIdx = tabs.findIndex(tab => tab.path === path);
-        if (pathIdx === -1) {
-            tabs.push({path});
+    const openTab = wantOpenPath => {
+        const pathIdx = tabs.findIndex(tab => tab.path === wantOpenPath);
+        if (localOpen && pathIdx === -1) {
+            tabs.forEach(tab => {
+                if (tab.path === activePath) {
+                    tab.path = wantOpenPath;
+                }
+            })
+        } else if (pathIdx === -1) {
+            tabs.push({path: wantOpenPath});
         }
-        activePath = path;
-        renderData();
+        renderDOM(wantOpenPath);
     }
 
     const decorator = (original, after) => {
@@ -261,21 +272,79 @@
         ev.preventDefault();
 
         const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
-        const closePath = tab.getAttribute("data-path");
+        const _path = tab.getAttribute("data-path");
         if (closeButton) {
-            tabs = tabs.filter(tab => tab.path !== closePath);
+            tabs = tabs.filter(tab => tab.path !== _path);
             if (tabs.length === 0) {
                 closeWindow();
                 return
             }
-            if (closePath === activePath) {
+            if (_path === activePath) {
                 activePath = tab.nextElementSibling?.getAttribute("data-path") || tabs[tabs.length - 1].path;
             }
             openFile(activePath);
         } else {
-            openFile(closePath);
+            openFile(_path);
         }
     })
+
+    entities.tabBar.addEventListener("wheel", ev => {
+        const target = ev.target.closest("#plugin-window-tab .tab-bar");
+        if (target) {
+            target.scrollLeft += ev.deltaY;
+        }
+    })
+
+    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
+
+    document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
+        const target = ev.target.closest(".typora-quick-open-item");
+        if (!target) {
+            return
+        }
+        // 将原先的click行为改成ctrl+click
+        if (metaKeyPressed(ev)) {
+            return
+        }
+        ev.preventDefault();
+        ev.stopPropagation();
+        const filePath = target.getAttribute("data-path");
+        openFile(filePath);
+    }, true)
+
+    // let lastOver = null;
+    // const toggleOver = (ev, f) => {
+    //     const target = ev.target.closest(".tab-container");
+    //     if (target) {
+    //         if (f === "add") {
+    //             target.classList.add("over");
+    //             lastOver = target;
+    //         } else {
+    //             target.classList.remove("over");
+    //         }
+    //     }
+    //     ev.preventDefault();
+    // }
+    //
+    // entities.tabBar.addEventListener("dragstart", ev => {
+    //     const draggedTab = ev.target.closest(".tab-container")
+    //     if (draggedTab) {
+    //         draggedTab.style.opacity = 0.5;
+    //         lastOver = null;
+    //     }
+    // })
+    // entities.tabBar.addEventListener("dragend", ev => {
+    //     const from = ev.target.closest(".tab-container")
+    //     const to = lastOver;
+    //     if (from && to) {
+    //         from.style.opacity = "";
+    //         ev.preventDefault();
+    //
+    //     }
+    // });
+    // entities.tabBar.addEventListener("dragover", ev => toggleOver(ev, "add"))
+    // entities.tabBar.addEventListener("dragenter", ev => toggleOver(ev, "add"))
+    // entities.tabBar.addEventListener("dragleave", ev => toggleOver(ev, "remove"))
 
     console.log("window_tab.js had been injected");
 })()

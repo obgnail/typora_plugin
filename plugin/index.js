@@ -13,6 +13,9 @@ window.onload = () => {
         })
     }
 
+    _require('./plugin/window_tab/index.js');
+    // _require('./plugin/window_tab_old/window_tab.js');
+    // _require('./plugin/window_tab_old/window_tab_drag.js');
     _require('./plugin/search_multi.js');
     _require('./plugin/resize_table.js');
     _require('./plugin/read_only.js');
@@ -23,9 +26,6 @@ window.onload = () => {
     _require('./plugin/go_top.js');
     _require('./plugin/file_counter.js');
     _require('./plugin/collapse_paragraph.js');
-    _require('./plugin/window_tab/index.js');
-    // _require('./plugin/window_tab_old/window_tab.js');
-    // _require('./plugin/window_tab_old/window_tab_drag.js');
     _require('./plugin/md_padding/index.js');
     _require('./plugin/mermaid_replace/index.js');
 
