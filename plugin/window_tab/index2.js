@@ -1,8 +1,4 @@
 (()=>{
-    const config = {
-        ENABLE: true,
-    }
-
     const getPath = file => {
         const dirname = global.dirname || global.__dirname;
         return reqnode("path").join(dirname, "plugin", "window_tab", file);

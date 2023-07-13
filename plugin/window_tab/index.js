@@ -1,6 +1,14 @@
 (() => {
+    const config = {
+        LOOP_DETECT_INTERVAL: 500,
+    };
+
+    const Package = {
+        Path: reqnode("path"),
+    };
+
     (() => {
-        const css =`
+        const css = `
         #plugin-window-tab .container {
             position: relative;
             width: 100%;
@@ -170,17 +178,7 @@
             <div class="container">
                 <div class="tab-bar-container">
                     <div class="clone-container"></div>
-                    <div class="tab-bar">
-                        <div class="grab-container">
-                            <div class="tab-container active">
-                                <div class="active-indicator" style="display: block;"></div>
-                                    <span class="name">messing1.md</span>
-                                    <span class="close-button" style="visibility: visible;">
-                                    <div class="close-icon"></div>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="tab-bar" style="width: calc(100vw - var(--sidebar-width, 0));"></div>
                 </div>
             </div>
         `
@@ -190,6 +188,125 @@
         document.getElementById("write-style").parentElement
             .insertBefore(windowTab, document.getElementById("write-style"));
     })()
+
+    const entities = {
+        content: document.querySelector("content"),
+        tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
+    }
+
+    const getName = filePath => {
+        let fileName = Package.Path.basename(filePath);
+        const idx = fileName.lastIndexOf(".");
+        if (idx !== -1) {
+            fileName = fileName.substring(0, idx);
+        }
+        return fileName
+    }
+
+
+    // const newTab = (filePath, active, preview) => {
+    //     const fileName = getName(filePath);
+    //     const _active = active ? "active" : "";
+    //     const _preview = preview ? "preview" : "";
+    //     return `
+    //         <div class="grab-container">
+    //             <div class="tab-container ${_active} ${_preview}">
+    //                 <div class="active-indicator"></div>
+    //                     <span class="name">${fileName}</span>
+    //                     <span class="close-button" style="visibility: visible;">
+    //                     <div class="close-icon"></div>
+    //                 </span>
+    //             </div>
+    //         </div>`
+    // }
+    //
+    // const updateTab = (tab, ele) => {
+    //     const container = ele.querySelector(".tab-container")
+    //     const active = tab.path === activePath;
+    //     if (active) {
+    //         container.classList.add("active")
+    //     } else {
+    //         container.classList.remove("active")
+    //     }
+    //     if (tab.preview) {
+    //         container.classList.add("preview")
+    //     } else {
+    //         container.classList.remove("preview")
+    //     }
+    //
+    //     const span = container.querySelector(".name")
+    //     span.innerText = getName(tab.path);
+    //
+    //     if (active) {
+    //         entities.content.scrollTop = tab.scrollTop;
+    //     }
+    // }
+    //
+    // let activePath;
+    // let tabs = [];
+    // const openTab = (path, preview = true) => {
+    //     const tab = {
+    //         path,
+    //         preview,
+    //         scrollTop: 0,
+    //     };
+    //
+    //     const pathIdx = tabs.findIndex(tab => tab.path === path);
+    //     // 已经存在此Tab
+    //     if (pathIdx > -1) {
+    //         entities.content.scrollTop = tabs[pathIdx].scrollTop;
+    //
+    //         // if (!tabs[pathIdx].preview) {
+    //         //     tab.preview = false;
+    //         // }
+    //         // tabs[pathIdx].preview = tab.preview;
+    //     } else {
+    //         const previewIdx = tabs.findIndex(tab => tab.preview === true);
+    //         if (previewIdx > -1) {
+    //             tabs[previewIdx].path = path;
+    //         } else {
+    //             tabs.push(tab);
+    //             const tabDiv = newTab(path);
+    //             entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
+    //         }
+    //     }
+    //     activePath = path;
+    // }
+    //
+    // const renderData = () => {
+    //     let ele = entities.tabBar.firstElementChild;
+    //     tabs.forEach(tab => {
+    //         if (!ele) {
+    //             const tabDiv = newTab(tab.path);
+    //             entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
+    //             ele = entities.tabBar.lastElementChild;
+    //         }
+    //         updateTab(tab, ele)
+    //     })
+    // }
+
+    const decorator = (original, after) => {
+        return function () {
+            const result = original.apply(this, arguments);
+            after.call(this, result, ...arguments);
+            return result;
+        };
+    }
+
+    const after = (result, ...args) => {
+        const filePath = args[0];
+        if (filePath) {
+            openTab(filePath, false);
+        }
+    }
+
+    const _timer = setInterval(() => {
+        if (File) {
+            clearInterval(_timer);
+            File.editor.library.openFile = decorator(File.editor.library.openFile, after);
+        }
+    }, config.LOOP_DETECT_INTERVAL);
+
 
     console.log("window_tab.js had been injected");
 })()
