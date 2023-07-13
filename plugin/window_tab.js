@@ -401,8 +401,6 @@
         global.execForWindow = execForWindow;
         global.execForAllWindows = execForAllWindows;
         global.getDocument = getDocument;
-
-        JSBridge.invoke("window.toggleDevTools");
     }
 
     console.log("window_tab.js had been injected");

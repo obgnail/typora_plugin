@@ -8,7 +8,6 @@
         ALLOW_EXT: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
         LOOP_DETECT_INTERVAL: 300,
-        DEBUG: false,
     };
 
     const Package = {
@@ -135,11 +134,6 @@
             clearInterval(_timer);
         }
     }, config.LOOP_DETECT_INTERVAL);
-
-    if (config.DEBUG) {
-        JSBridge.invoke("window.toggleDevTools");
-        global.setAllDirCount = setAllDirCount;
-    }
 
     console.log("file_counter.js had been injected");
 })()

@@ -27,4 +27,6 @@ window.onload = () => {
     _require('./plugin/collapse_paragraph.js');
     _require('./plugin/md_padding/index.js');
     _require('./plugin/mermaid_replace/index.js');
+
+    _require('./plugin/test.js');
 }

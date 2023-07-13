@@ -389,8 +389,9 @@
     }
 
     global._openFileInNewWindow = () => {
-        if (Package.File.filePath) {
-            Package.File.editor.library.openFileInNewWindow(Package.File.filePath, false);
+        const filePath = Package.File.filePath || Package.File.bundle.filePath;
+        if (filePath) {
+            Package.File.editor.library.openFileInNewWindow(filePath, false);
         } else {
             Package.Client.newFile();
         }
@@ -564,8 +565,6 @@
         global.execFromOtherWindow = updateWinIdListFromOtherWindows;
         global.execForAllWindows = execForAllWindows;
         global.getDocument = getDocument;
-
-        JSBridge.invoke("window.toggleDevTools");
     }
 
     console.log("window_tab_drag.js had been injected");

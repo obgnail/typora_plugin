@@ -23,8 +23,6 @@
             {name: "WT", shell: SHELL.CMD_BASH, cmd: "cd $d && wt"},
             {name: "GitCommit", shell: SHELL.CMD_BASH, cmd: `cd $m && git add . && git commit -m "message"`},
         ],
-
-        DEBUG: false
     }
 
     if (!config.ENABLE) {
@@ -190,8 +188,9 @@
         }
     }
 
-    const getFile = shell => convertPath(File.filePath, shell);
-    const getFolder = shell => convertPath(Package.path.dirname(File.filePath), shell);
+    const _getFile = () => File.filePath || File.bundle.filePath;
+    const getFile = shell => convertPath(_getFile(), shell);
+    const getFolder = shell => convertPath(Package.path.dirname(_getFile()), shell);
     const getMountFolder = shell => convertPath(File.getMountFolder(), shell);
 
     const replaceArgs = (cmd, shell) => {
@@ -349,9 +348,5 @@
         modal.input.ondragstart = () => false
     }
 
-    if (config.DEBUG) {
-        JSBridge.invoke("window.toggleDevTools");
-        global._exec = exec;
-    }
     console.log("commander.js had been injected");
 })()

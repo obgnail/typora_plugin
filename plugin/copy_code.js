@@ -14,10 +14,8 @@
     const config = {
         // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
-
         LOOP_DETECT_INTERVAL: 20,
         CLICK_CHECK_INTERVAL: 300,
-        DEBUG: false
     }
 
     if (!config.ENABLE) {
@@ -133,8 +131,5 @@
         }, 1000)
     })
 
-    if (config.DEBUG) {
-        JSBridge.invoke("window.toggleDevTools");
-    }
     console.log("copy_code.js had been injected");
 })()
