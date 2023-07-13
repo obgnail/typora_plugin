@@ -195,12 +195,13 @@
 
             const active = tab.path === activePath;
             if (active) {
-                tabContainer.classList.add("active")
+                tabContainer.classList.add("active");
             } else {
-                tabContainer.classList.remove("active")
+                tabContainer.classList.remove("active");
             }
+            tabContainer.setAttribute("data-path", tab.path);
 
-            const span = tabContainer.querySelector(".name")
+            const span = tabContainer.querySelector(".name");
             span.innerText = getName(tab.path);
 
             tabContainer = tabContainer.nextElementSibling;
@@ -242,8 +243,9 @@
 
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
 
-            if (File.filePath) {
-                openTab(File.filePath);
+            const filePath = File?.filePath || File.bundle?.filePath;
+            if (filePath) {
+                openTab(filePath);
             }
         }
     }, config.LOOP_DETECT_INTERVAL);
@@ -259,18 +261,19 @@
         ev.preventDefault();
 
         const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
-        const tabPath = tab.getAttribute("data-path");
+        const closePath = tab.getAttribute("data-path");
         if (closeButton) {
-            tabs = tabs.filter(tab => tab.path !== tabPath);
+            tabs = tabs.filter(tab => tab.path !== closePath);
             if (tabs.length === 0) {
                 closeWindow();
                 return
             }
-            const lastTabPath = tabs[tabs.length - 1].path;
-            activePath = (tabPath === activePath) ? lastTabPath : activePath;
-            openFile(lastTabPath);
+            if (closePath === activePath) {
+                activePath = tab.nextElementSibling?.getAttribute("data-path") || tabs[tabs.length - 1].path;
+            }
+            openFile(activePath);
         } else {
-            openFile(tabPath);
+            openFile(closePath);
         }
     })
 
