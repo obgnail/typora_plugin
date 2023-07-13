@@ -1,7 +1,7 @@
 (() => {
     const config = {
         ENABLE: true,
-        LOOP_DETECT_INTERVAL: 500,
+        LOOP_DETECT_INTERVAL: 30,
         HIDE_ORIGIN_WINDOW_TITLE: true,
         CLOSE_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "w",
         CHANGE_TAB_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "Tab"
@@ -163,6 +163,7 @@
     })()
 
     const entities = {
+        content: document.querySelector("content"),
         tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
     }
 
@@ -214,6 +215,7 @@
             }
             if (tab.path === wantOpenPath) {
                 tabContainer.classList.add("active");
+                scrollTop(tab);
             } else {
                 tabContainer.classList.remove("active");
             }
@@ -231,6 +233,32 @@
         activePath = wantOpenPath;
     }
 
+    // openFile是一个延迟操作，需要等待content加载好，才能定位scrollTop
+    // 问题是我压根不知道content什么时候加载好
+    // 解决方法: 轮询设置scrollTop，当连续3次scrollTop不再改变，就判断content加载好了
+    // 这种方法很不环保，很ugly。但是我确实也想不到在不修改frame.js的前提下该怎么做了
+    const scrollTop = activeTab => {
+        if (!activeTab) {
+            return
+        }
+
+        let count = 0;
+        const stopCount = 3;
+        const scrollTop = activeTab.scrollTop;
+        const _timer = setInterval(() => {
+            const filePath = File?.filePath || File.bundle?.filePath;
+            if (filePath === activeTab.path && entities.content.scrollTop !== scrollTop) {
+                entities.content.scrollTop = scrollTop;
+                count = 0;
+            } else {
+                count++;
+            }
+            if (count === stopCount) {
+                clearInterval(_timer);
+            }
+        }, config.LOOP_DETECT_INTERVAL);
+    }
+
     const openTab = wantOpenPath => {
         const pathIdx = tabs.findIndex(tab => tab.path === wantOpenPath);
         if (localOpen && pathIdx === -1) {
@@ -240,7 +268,7 @@
                 }
             })
         } else if (pathIdx === -1) {
-            tabs.push({path: wantOpenPath});
+            tabs.push({path: wantOpenPath, scrollTop: 0});
         }
         renderDOM(wantOpenPath);
     }
@@ -334,6 +362,15 @@
         }
     }, true)
 
+    entities.content.addEventListener("scroll", ev => {
+        for (const tab of tabs) {
+            if (tab.path === activePath) {
+                tab.scrollTop = entities.content.scrollTop;
+                return
+            }
+        }
+    })
+
     document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
         const target = ev.target.closest(".typora-quick-open-item");
         if (!target) {
@@ -349,6 +386,7 @@
         openFileNewTab(filePath);
     }, true)
 
+    global.tabs = tabs;
     // let lastOver = null;
     // const toggleOver = (ev, f) => {
     //     const target = ev.target.closest(".tab-container");
