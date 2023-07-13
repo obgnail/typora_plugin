@@ -190,8 +190,9 @@
         }
     }
 
-    const getFile = shell => convertPath(File.filePath, shell);
-    const getFolder = shell => convertPath(Package.path.dirname(File.filePath), shell);
+    const _getFile = () => File.filePath || File.bundle.filePath;
+    const getFile = shell => convertPath(_getFile(), shell);
+    const getFolder = shell => convertPath(Package.path.dirname(_getFile()), shell);
     const getMountFolder = shell => convertPath(File.getMountFolder(), shell);
 
     const replaceArgs = (cmd, shell) => {

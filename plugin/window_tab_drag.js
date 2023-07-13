@@ -389,8 +389,9 @@
     }
 
     global._openFileInNewWindow = () => {
-        if (Package.File.filePath) {
-            Package.File.editor.library.openFileInNewWindow(Package.File.filePath, false);
+        const filePath = Package.File.filePath || Package.File.bundle.filePath;
+        if (filePath) {
+            Package.File.editor.library.openFileInNewWindow(filePath, false);
         } else {
             Package.Client.newFile();
         }
