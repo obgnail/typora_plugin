@@ -172,12 +172,12 @@
     // 新窗口打开
     const openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
     // 新标签页打开
-    const openFileNewTab = filePath => File.editor.library.openFile(filePath);
+    const openFile = filePath => File.editor.library.openFile(filePath);
     // 当前标签页打开
     const OpenFileLocal = filePath => {
-        localOpen = true;
+        tabUtil.localOpen = true;
         File.editor.library.openFile(filePath);
-        localOpen = false;  // 自动还原
+        tabUtil.localOpen = false;  // 自动还原
     }
     // 关闭窗口
     const closeWindow = () => JSBridge.invoke("window.close");
@@ -191,35 +191,39 @@
         return fileName
     }
 
-    const newTabDiv = (filePath, active) => {
+    const newTabDiv = (filePath, idx, active) => {
         const fileName = getName(filePath);
         const _active = active ? "active" : "";
-        return `<div class="tab-container ${_active}" data-path="${filePath}" draggable="true">
-                        <div class="active-indicator"></div>
-                        <span class="name">${fileName}</span>
-                        <span class="close-button"><div class="close-icon"></div></span>
-                    </div>`
+        return `<div class="tab-container ${_active}" idx="${idx}" draggable="true">
+                    <div class="active-indicator"></div>
+                    <span class="name">${fileName}</span>
+                    <span class="close-button"><div class="close-icon"></div></span>
+                </div>`
     }
 
-    let localOpen = false;
-    let tabs = [];
-    let activePath;
-    // tabs->DOM的简单单向数据绑定
+    const tabUtil = {
+        tabs: [],
+        activeIdx: 0,
+        localOpen: false,
+    }
+
+    // tabs->DOM的简单数据绑定
     const renderDOM = wantOpenPath => {
         let tabContainer = entities.tabBar.firstElementChild;
-        tabs.forEach(tab => {
+        tabUtil.tabs.forEach((tab, idx) => {
             if (!tabContainer) {
-                const tabDiv = newTabDiv(tab.path, true);
+                const tabDiv = newTabDiv(tab.path, idx, true);
                 entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
                 tabContainer = entities.tabBar.lastElementChild;
             }
             if (tab.path === wantOpenPath) {
                 tabContainer.classList.add("active");
+                tabUtil.activeIdx = idx;
                 scrollTop(tab);
             } else {
                 tabContainer.classList.remove("active");
             }
-            tabContainer.setAttribute("data-path", tab.path);
+            tabContainer.setAttribute("idx", idx + "");
             tabContainer.querySelector(".name").innerText = getName(tab.path);
 
             tabContainer = tabContainer.nextElementSibling;
@@ -229,8 +233,6 @@
             tabContainer.parentElement.removeChild(tabContainer);
             tabContainer = tabContainer.nextElementSibling;
         }
-
-        activePath = wantOpenPath;
     }
 
     // openFile是一个延迟操作，需要等待content加载好，才能定位scrollTop
@@ -260,15 +262,11 @@
     }
 
     const openTab = wantOpenPath => {
-        const pathIdx = tabs.findIndex(tab => tab.path === wantOpenPath);
-        if (localOpen && pathIdx === -1) {
-            tabs.forEach(tab => {
-                if (tab.path === activePath) {
-                    tab.path = wantOpenPath;
-                }
-            })
+        const pathIdx = tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
+        if (tabUtil.localOpen && pathIdx === -1) {
+            tabUtil.tabs[tabUtil.activeIdx].path = wantOpenPath;
         } else if (pathIdx === -1) {
-            tabs.push({path: wantOpenPath, scrollTop: 0});
+            tabUtil.tabs.push({path: wantOpenPath, scrollTop: 0});
         }
         renderDOM(wantOpenPath);
     }
@@ -312,20 +310,20 @@
         ev.preventDefault();
 
         const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
-        const _path = tab.getAttribute("data-path");
+        const idx = parseInt(tab.getAttribute("idx"));
         if (closeButton) {
-            tabs = tabs.filter(tab => tab.path !== _path);
-            if (tabs.length === 0) {
+            tabUtil.tabs.splice(idx, 1);
+            if (tabUtil.tabs.length === 0) {
                 closeWindow();
                 return
             }
-            if (_path === activePath) {
-                activePath = tab.nextElementSibling?.getAttribute("data-path") || tabs[tabs.length - 1].path;
+            if (tabUtil.activeIdx !== 0) {
+                tabUtil.activeIdx--;
             }
-            openFileNewTab(activePath);
         } else {
-            openFileNewTab(_path);
+            tabUtil.activeIdx = idx;
         }
+        openFile(tabUtil.tabs[tabUtil.activeIdx].path);
     })
 
     entities.tabBar.addEventListener("wheel", ev => {
@@ -348,27 +346,17 @@
             ev.preventDefault();
             ev.stopPropagation();
 
-            const idx = tabs.findIndex(tab => tab.path === activePath);
-            if (idx !== -1) {
-                let changeIdx;
-                if (ev.shiftKey) {
-                    changeIdx = (idx === 0) ? tabs.length - 1 : idx - 1;
-                } else {
-                    changeIdx = (idx === tabs.length - 1) ? 0 : idx + 1;
-                }
-                activePath = tabs[changeIdx].path;
-                openFileNewTab(activePath);
+            if (ev.shiftKey) {
+                tabUtil.activeIdx = (tabUtil.activeIdx === 0) ? tabUtil.tabs.length - 1 : tabUtil.activeIdx - 1;
+            } else {
+                tabUtil.activeIdx = (tabUtil.activeIdx === tabUtil.tabs.length - 1) ? 0 : tabUtil.activeIdx + 1;
             }
+            openFile(tabUtil.tabs[tabUtil.activeIdx].path);
         }
     }, true)
 
     entities.content.addEventListener("scroll", ev => {
-        for (const tab of tabs) {
-            if (tab.path === activePath) {
-                tab.scrollTop = entities.content.scrollTop;
-                return
-            }
-        }
+        tabUtil.tabs[tabUtil.activeIdx].scrollTop = entities.content.scrollTop;
     })
 
     document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
@@ -383,10 +371,10 @@
         ev.preventDefault();
         ev.stopPropagation();
         const filePath = target.getAttribute("data-path");
-        openFileNewTab(filePath);
+        openFile(filePath);
     }, true)
 
-    global.tabs = tabs;
+    global.tabUtil = tabUtil;
     // let lastOver = null;
     // const toggleOver = (ev, f) => {
     //     const target = ev.target.closest(".tab-container");
