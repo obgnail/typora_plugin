@@ -1,6 +1,7 @@
 (() => {
     const config = {
         LOOP_DETECT_INTERVAL: 500,
+        CLOSE_HOTKEY: ev => ev.altKey && ev.key === "w"
     };
 
     const Package = {
@@ -9,45 +10,20 @@
 
     (() => {
         const css = `
-        #plugin-window-tab .container {
-            position: relative;
-            width: 100%;
-            height: 40px
-        }
-        
-        #plugin-window-tab .tab-bar-container {
+        #plugin-window-tab {
             position: fixed;
             top: 0;
             width: 100%;
             height: 40px;
             z-index: 1
         }
-        
-        #plugin-window-tab .grab-container {
-            height: 100%;
-            width: fit-content
-        }
-        
-        #plugin-window-tab .tab-clone {
-            pointer-events: none;
-            width: fit-content;
-            height: 40px;
-            position: absolute;
-            top: 0;
-            z-index: 1000
-        }
-        
-        #plugin-window-tab .clone-container {
-            position: relative
-        }
-        
+
         #plugin-window-tab .tab-bar {
             background-color: var(--bg-color, white);
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            box-sizing: border-box;
             overflow-x: scroll
         }
         
@@ -58,11 +34,7 @@
             background-color: var(--side-bar-bg-color, gray);
             border-bottom: solid 1px rgba(0, 0, 0, 0.07)
         }
-        
-        #plugin-window-tab .invisible {
-            opacity: 0
-        }
-        
+
         #plugin-window-tab .tab-bar:hover::-webkit-scrollbar-thumb {
             visibility: visible
         }
@@ -111,7 +83,7 @@
             border-radius: 5px
         }
         
-        #plugin-window-tab .tab-container:hover>.close-button {
+        #plugin-window-tab .tab-container:hover > .close-button {
             visibility: visible !important
         }
         
@@ -121,7 +93,7 @@
             height: 11px;
             display: flex;
             flex-direction: column;
-            justify-content: center
+            justify-content: center;
         }
         
         #plugin-window-tab .close-icon::before,
@@ -142,7 +114,7 @@
         }
         
         #plugin-window-tab .close-button:hover {
-            background-color: var(--active-file-bg-color, lightgray)
+            background-color: var(--active-file-bg-color, lightgray);
         }
         
         #plugin-window-tab .active {
@@ -151,22 +123,18 @@
             background-color: var(--bg-color, white)
         }
         
+        #plugin-window-tab .active .active-indicator {
+            display: block;
+        }
+        
         #plugin-window-tab .active-indicator {
             position: absolute;
             top: -1px;
             left: -1px;
             width: calc(100% + 2px);
             height: 3px;
-            background-color: var(--active-file-border-color, black)
-        }
-        
-        #plugin-window-tab .preview {
-            font-style: italic !important
-        }
-        
-        #plugin-window-tab .single {
-            visibility: hidden;
-            opacity: 0
+            background-color: var(--active-file-border-color, black);
+            display: none;
         }
         `
         const style = document.createElement('style');
@@ -174,14 +142,7 @@
         style.innerHTML = css;
         document.getElementsByTagName("head")[0].appendChild(style);
 
-        const div = `
-            <div class="container">
-                <div class="tab-bar-container">
-                    <div class="clone-container"></div>
-                    <div class="tab-bar" style="width: calc(100vw - var(--sidebar-width, 0));"></div>
-                </div>
-            </div>
-        `
+        const div = `<div class="tab-bar"></div>`
         const windowTab = document.createElement("div");
         windowTab.id = "plugin-window-tab";
         windowTab.innerHTML = div;
@@ -194,6 +155,12 @@
         tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
     }
 
+    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
+
+    const closeWindow = () => JSBridge.invoke("window.close");
+
+    const openFile = filePath => File.editor.library.openFile(filePath);
+
     const getName = filePath => {
         let fileName = Package.Path.basename(filePath);
         const idx = fileName.lastIndexOf(".");
@@ -203,87 +170,56 @@
         return fileName
     }
 
+    const newTabDiv = (filePath, active) => {
+        const fileName = getName(filePath);
+        const _active = active ? "active" : "";
+        return `
+            <div class="tab-container ${_active}" data-path="${filePath}">
+                <div class="active-indicator"></div>
+                <span class="name">${fileName}</span>
+                <span class="close-button"><div class="close-icon"></div></span>
+            </div>`
+    }
 
-    // const newTab = (filePath, active, preview) => {
-    //     const fileName = getName(filePath);
-    //     const _active = active ? "active" : "";
-    //     const _preview = preview ? "preview" : "";
-    //     return `
-    //         <div class="grab-container">
-    //             <div class="tab-container ${_active} ${_preview}">
-    //                 <div class="active-indicator"></div>
-    //                     <span class="name">${fileName}</span>
-    //                     <span class="close-button" style="visibility: visible;">
-    //                     <div class="close-icon"></div>
-    //                 </span>
-    //             </div>
-    //         </div>`
-    // }
-    //
-    // const updateTab = (tab, ele) => {
-    //     const container = ele.querySelector(".tab-container")
-    //     const active = tab.path === activePath;
-    //     if (active) {
-    //         container.classList.add("active")
-    //     } else {
-    //         container.classList.remove("active")
-    //     }
-    //     if (tab.preview) {
-    //         container.classList.add("preview")
-    //     } else {
-    //         container.classList.remove("preview")
-    //     }
-    //
-    //     const span = container.querySelector(".name")
-    //     span.innerText = getName(tab.path);
-    //
-    //     if (active) {
-    //         entities.content.scrollTop = tab.scrollTop;
-    //     }
-    // }
-    //
-    // let activePath;
-    // let tabs = [];
-    // const openTab = (path, preview = true) => {
-    //     const tab = {
-    //         path,
-    //         preview,
-    //         scrollTop: 0,
-    //     };
-    //
-    //     const pathIdx = tabs.findIndex(tab => tab.path === path);
-    //     // 已经存在此Tab
-    //     if (pathIdx > -1) {
-    //         entities.content.scrollTop = tabs[pathIdx].scrollTop;
-    //
-    //         // if (!tabs[pathIdx].preview) {
-    //         //     tab.preview = false;
-    //         // }
-    //         // tabs[pathIdx].preview = tab.preview;
-    //     } else {
-    //         const previewIdx = tabs.findIndex(tab => tab.preview === true);
-    //         if (previewIdx > -1) {
-    //             tabs[previewIdx].path = path;
-    //         } else {
-    //             tabs.push(tab);
-    //             const tabDiv = newTab(path);
-    //             entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
-    //         }
-    //     }
-    //     activePath = path;
-    // }
-    //
-    // const renderData = () => {
-    //     let ele = entities.tabBar.firstElementChild;
-    //     tabs.forEach(tab => {
-    //         if (!ele) {
-    //             const tabDiv = newTab(tab.path);
-    //             entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
-    //             ele = entities.tabBar.lastElementChild;
-    //         }
-    //         updateTab(tab, ele)
-    //     })
-    // }
+
+    let tabs = [];
+    let activePath;
+    const renderData = () => {
+        let tabContainer = entities.tabBar.firstElementChild;
+        tabs.forEach(tab => {
+            if (!tabContainer) {
+                const tabDiv = newTabDiv(tab.path, true);
+                entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
+                tabContainer = entities.tabBar.lastElementChild;
+            }
+
+            const active = tab.path === activePath;
+            if (active) {
+                tabContainer.classList.add("active")
+            } else {
+                tabContainer.classList.remove("active")
+            }
+
+            const span = tabContainer.querySelector(".name")
+            span.innerText = getName(tab.path);
+
+            tabContainer = tabContainer.nextElementSibling;
+        })
+
+        while (tabContainer) {
+            tabContainer.parentElement.removeChild(tabContainer);
+            tabContainer = tabContainer.nextElementSibling;
+        }
+    }
+
+    const openTab = path => {
+        const pathIdx = tabs.findIndex(tab => tab.path === path);
+        if (pathIdx === -1) {
+            tabs.push({path});
+        }
+        activePath = path;
+        renderData();
+    }
 
     const decorator = (original, after) => {
         return function () {
@@ -296,17 +232,47 @@
     const after = (result, ...args) => {
         const filePath = args[0];
         if (filePath) {
-            openTab(filePath, false);
+            openTab(filePath);
         }
     }
 
     const _timer = setInterval(() => {
         if (File) {
             clearInterval(_timer);
+
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
+
+            if (File.filePath) {
+                openTab(File.filePath);
+            }
         }
     }, config.LOOP_DETECT_INTERVAL);
 
+    entities.tabBar.addEventListener("click", ev => {
+        const closeButton = ev.target.closest(".close-button");
+        const tabContainer = ev.target.closest(".tab-container");
+        if (!closeButton && !tabContainer) {
+            return
+        }
+
+        ev.stopPropagation();
+        ev.preventDefault();
+
+        const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
+        const tabPath = tab.getAttribute("data-path");
+        if (closeButton) {
+            tabs = tabs.filter(tab => tab.path !== tabPath);
+            if (tabs.length === 0) {
+                closeWindow();
+                return
+            }
+            const lastTabPath = tabs[tabs.length - 1].path;
+            activePath = (tabPath === activePath) ? lastTabPath : activePath;
+            openFile(lastTabPath);
+        } else {
+            openFile(tabPath);
+        }
+    })
 
     console.log("window_tab.js had been injected");
 })()
