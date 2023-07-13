@@ -565,8 +565,6 @@
         global.execFromOtherWindow = updateWinIdListFromOtherWindows;
         global.execForAllWindows = execForAllWindows;
         global.getDocument = getDocument;
-
-        JSBridge.invoke("window.toggleDevTools");
     }
 
     console.log("window_tab_drag.js had been injected");

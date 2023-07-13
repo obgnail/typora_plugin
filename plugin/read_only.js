@@ -50,7 +50,6 @@
         ],
 
         // 脚本内部使用
-        DEBUG: false,
         FIRST_ENTER_MODE: true,
     };
 
@@ -109,10 +108,6 @@
             }
         }
     }, true)
-
-    if (config.DEBUG) {
-        JSBridge.invoke("window.toggleDevTools");
-    }
 
     console.log("read_only.js had been injected");
 })()

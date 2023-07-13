@@ -6,8 +6,6 @@
         REMOVE_MIX_WIDTH: true,
         // 单元格边线的拖拽范围
         THRESHOLD: 20,
-
-        DEBUG: false,
     }
 
     if (!config.ENABLE) {
@@ -171,10 +169,6 @@
 
         document.addEventListener('mousemove', onMouseMove);
     })
-
-    if (config.DEBUG) {
-        JSBridge.invoke("window.toggleDevTools")
-    }
 
     console.log("resize_table.js had been injected");
 })()

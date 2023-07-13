@@ -4,8 +4,6 @@
         ENABLE: true,
         // 折叠状态下的颜色
         BACKGROUND_COLOR: "#ffafa3",
-
-        DEBUG: false
     }
 
     if (!config.ENABLE) {
@@ -68,8 +66,5 @@
         }
     })
 
-    if (config.DEBUG) {
-        JSBridge.invoke("window.toggleDevTools");
-    }
     console.log("collapse_paragraph.js had been injected");
 })()

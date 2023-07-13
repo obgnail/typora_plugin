@@ -23,8 +23,6 @@
             {name: "WT", shell: SHELL.CMD_BASH, cmd: "cd $d && wt"},
             {name: "GitCommit", shell: SHELL.CMD_BASH, cmd: `cd $m && git add . && git commit -m "message"`},
         ],
-
-        DEBUG: false
     }
 
     if (!config.ENABLE) {
@@ -350,9 +348,5 @@
         modal.input.ondragstart = () => false
     }
 
-    if (config.DEBUG) {
-        JSBridge.invoke("window.toggleDevTools");
-        global._exec = exec;
-    }
     console.log("commander.js had been injected");
 })()

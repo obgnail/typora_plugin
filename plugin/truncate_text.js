@@ -11,8 +11,6 @@
         REMAIN_LENGTH: 80,
         // make users feel happy while waiting
         SHOW_MASK: true,
-
-        DEBUG: false,
     }
 
     if (!config.ENABLE) {
@@ -172,10 +170,6 @@
             });
         }
     }, true)
-
-    if (config.DEBUG) {
-        JSBridge.invoke("window.toggleDevTools");
-    }
 
     console.log("truncate_text.js had been injected");
 })()
