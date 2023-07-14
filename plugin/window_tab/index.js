@@ -15,10 +15,6 @@
         document.getElementById("top-titlebar").style.display = "none";
     }
 
-    const Package = {
-        Path: reqnode("path"),
-    };
-
     (() => {
         const css = `
             #plugin-window-tab {
@@ -162,6 +158,10 @@
             .insertBefore(windowTab, document.getElementById("write-style"));
     })()
 
+    const Package = {
+        Path: reqnode("path"),
+    };
+
     const entities = {
         content: document.querySelector("content"),
         tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
@@ -191,7 +191,7 @@
         return fileName
     }
 
-    const newTabDiv = (filePath, idx, active) => {
+    const newTabDiv = (filePath, idx, active = true) => {
         const fileName = getName(filePath);
         const _active = active ? "active" : "";
         return `<div class="tab-container ${_active}" idx="${idx}" draggable="true">
@@ -207,31 +207,30 @@
         localOpen: false,
     }
 
-    // tabs->DOM的简单数据绑定
+    // tabs->DOM的简单数据单向绑定
     const renderDOM = wantOpenPath => {
-        let tabContainer = entities.tabBar.firstElementChild;
+        let tabDiv = entities.tabBar.firstElementChild;
         tabUtil.tabs.forEach((tab, idx) => {
-            if (!tabContainer) {
-                const tabDiv = newTabDiv(tab.path, idx, true);
-                entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
-                tabContainer = entities.tabBar.lastElementChild;
+            if (!tabDiv) {
+                const _tabDiv = newTabDiv(tab.path, idx);
+                entities.tabBar.insertAdjacentHTML('beforeend', _tabDiv);
+                tabDiv = entities.tabBar.lastElementChild;
             }
             if (tab.path === wantOpenPath) {
-                tabContainer.classList.add("active");
-                tabUtil.activeIdx = idx;
-                scrollTop(tab);
+                tabDiv.classList.add("active");
+                scrollContent(tab);
             } else {
-                tabContainer.classList.remove("active");
+                tabDiv.classList.remove("active");
             }
-            tabContainer.setAttribute("idx", idx + "");
-            tabContainer.querySelector(".name").innerText = getName(tab.path);
+            tabDiv.setAttribute("idx", idx + "");
+            tabDiv.querySelector(".name").innerText = getName(tab.path);
 
-            tabContainer = tabContainer.nextElementSibling;
+            tabDiv = tabDiv.nextElementSibling;
         })
 
-        while (tabContainer) {
-            tabContainer.parentElement.removeChild(tabContainer);
-            tabContainer = tabContainer.nextElementSibling;
+        while (tabDiv) {
+            tabDiv.parentElement.removeChild(tabDiv);
+            tabDiv = tabDiv.nextElementSibling;
         }
     }
 
@@ -239,7 +238,7 @@
     // 问题是我压根不知道content什么时候加载好
     // 解决方法: 轮询设置scrollTop，当连续3次scrollTop不再改变，就判断content加载好了
     // 这种方法很不环保，很ugly。但是我确实也想不到在不修改frame.js的前提下该怎么做了
-    const scrollTop = activeTab => {
+    const scrollContent = activeTab => {
         if (!activeTab) {
             return
         }
@@ -267,8 +266,18 @@
             tabUtil.tabs[tabUtil.activeIdx].path = wantOpenPath;
         } else if (pathIdx === -1) {
             tabUtil.tabs.push({path: wantOpenPath, scrollTop: 0});
+            tabUtil.activeIdx = tabUtil.tabs.length - 1;
+        } else if (pathIdx !== -1) {
+            tabUtil.activeIdx = pathIdx;
         }
         renderDOM(wantOpenPath);
+    }
+
+    const after = (result, ...args) => {
+        const filePath = args[0];
+        if (filePath) {
+            openTab(filePath);
+        }
     }
 
     const decorator = (original, after) => {
@@ -279,20 +288,13 @@
         };
     }
 
-    const after = (result, ...args) => {
-        const filePath = args[0];
-        if (filePath) {
-            openTab(filePath);
-        }
-    }
-
     const _timer = setInterval(() => {
         if (File) {
             clearInterval(_timer);
 
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
 
-            const filePath = File?.filePath || File.bundle?.filePath;
+            const filePath = File.filePath || File.bundle?.filePath;
             if (filePath) {
                 openTab(filePath);
             }
