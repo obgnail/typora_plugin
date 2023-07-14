@@ -73,6 +73,10 @@
                 cursor: pointer
             }
             
+            #plugin-window-tab .tab-container.over {
+                background-color: var(--active-file-bg-color, lightgray);
+            }
+            
             #plugin-window-tab .name {
                 max-width: 350px;
                 padding-right: 15px;
@@ -262,8 +266,10 @@
 
     const openTab = wantOpenPath => {
         const pathIdx = tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
+        // 原地打开并且不存在tab时，修改当前tab的文件路径
         if (tabUtil.localOpen && pathIdx === -1) {
             tabUtil.tabs[tabUtil.activeIdx].path = wantOpenPath;
+            // 不存在tab时，在当前tab后面新建
         } else if (pathIdx === -1) {
             tabUtil.tabs.push({path: wantOpenPath, scrollTop: 0});
             tabUtil.activeIdx = tabUtil.tabs.length - 1;
@@ -382,40 +388,49 @@
         openFile(filePath);
     }, true)
 
-    global.tabUtil = tabUtil;
-    // let lastOver = null;
-    // const toggleOver = (ev, f) => {
-    //     const target = ev.target.closest(".tab-container");
-    //     if (target) {
-    //         if (f === "add") {
-    //             target.classList.add("over");
-    //             lastOver = target;
-    //         } else {
-    //             target.classList.remove("over");
-    //         }
-    //     }
-    //     ev.preventDefault();
-    // }
-    //
-    // entities.tabBar.addEventListener("dragstart", ev => {
-    //     const draggedTab = ev.target.closest(".tab-container")
-    //     if (draggedTab) {
-    //         draggedTab.style.opacity = 0.5;
-    //         lastOver = null;
-    //     }
-    // })
-    // entities.tabBar.addEventListener("dragend", ev => {
-    //     const from = ev.target.closest(".tab-container")
-    //     const to = lastOver;
-    //     if (from && to) {
-    //         from.style.opacity = "";
-    //         ev.preventDefault();
-    //
-    //     }
-    // });
-    // entities.tabBar.addEventListener("dragover", ev => toggleOver(ev, "add"))
-    // entities.tabBar.addEventListener("dragenter", ev => toggleOver(ev, "add"))
-    // entities.tabBar.addEventListener("dragleave", ev => toggleOver(ev, "remove"))
+    let lastOver = null;
+    const toggleOver = (ev, f) => {
+        const target = ev.target.closest(".tab-container");
+        if (target) {
+            if (f === "add") {
+                target.classList.add("over");
+                lastOver = target;
+            } else {
+                target.classList.remove("over");
+            }
+        }
+        ev.preventDefault();
+    }
 
+    entities.tabBar.addEventListener("dragstart", ev => {
+        const draggedTab = ev.target.closest(".tab-container")
+        if (draggedTab) {
+            draggedTab.style.opacity = 0.5;
+            lastOver = null;
+        }
+    })
+    entities.tabBar.addEventListener("dragend", ev => {
+        const from = ev.target.closest(".tab-container")
+        const to = lastOver;
+        if (from && to) {
+            from.style.opacity = "";
+            ev.preventDefault();
+
+            const f = parseInt(from.getAttribute("idx"));
+            const t = parseInt(to.getAttribute("idx"));
+
+            const targetIdx = parseInt(entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
+            const targetPath = tabUtil.tabs[targetIdx].path;
+
+            const ele = tabUtil.tabs.splice(f, 1);
+            tabUtil.tabs.splice(t, 0, ele[0]);
+            openTab(targetPath);
+        }
+    });
+    entities.tabBar.addEventListener("dragover", ev => toggleOver(ev, "add"))
+    entities.tabBar.addEventListener("dragenter", ev => toggleOver(ev, "add"))
+    entities.tabBar.addEventListener("dragleave", ev => toggleOver(ev, "remove"))
+
+    global.tabUtil = tabUtil;
     console.log("window_tab.js had been injected");
 })()
