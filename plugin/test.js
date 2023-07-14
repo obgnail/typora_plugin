@@ -1,6 +1,6 @@
 (() => {
     const config = {
-        ENABLE: true,
+        ENABLE: false,
     }
     if (!config.ENABLE) {
         return

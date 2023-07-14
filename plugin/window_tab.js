@@ -29,7 +29,7 @@
                 top: 0;
                 width: 100%;
                 height: 40px;
-                z-index: 9999
+                z-index: 901
             }
     
             #plugin-window-tab .tab-bar {
@@ -325,6 +325,13 @@
 
         const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
         const idx = parseInt(tab.getAttribute("idx"));
+
+        if (metaKeyPressed(ev)) {
+            const _path = tabUtil.tabs[idx].path;
+            openFileNewWindow(_path, false);
+            return
+        }
+
         if (closeButton) {
             tabUtil.tabs.splice(idx, 1);
             if (tabUtil.tabs.length === 0) {

@@ -20,7 +20,7 @@ window.onload = () => {
         })
     }
 
-    _require('window_tab', './plugin/window_tab/index.js');
+    _require('window_tab', './plugin/window_tab.js');
     _require('search_multi', './plugin/search_multi.js');
     _require('resize_table', './plugin/resize_table.js');
     _require('read_only', './plugin/read_only.js');
