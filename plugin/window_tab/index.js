@@ -329,24 +329,31 @@
 
     entities.tabBar.addEventListener("wheel", ev => {
         const target = ev.target.closest("#plugin-window-tab .tab-bar");
-        if (target) {
+        if (!target) {
+            return
+        }
+        if (metaKeyPressed(ev)) {
+            target.dispatchEvent(new KeyboardEvent("keydown", {
+                key: "Tab", code: "Tab", ctrlKey: true, metaKey: true, shiftKey: (ev.deltaY < 0),
+            }))
+        } else {
             target.scrollLeft += ev.deltaY;
         }
     })
 
     window.addEventListener("keydown", ev => {
-        if (config.CLOSE_HOTKEY(ev)) {
-            ev.preventDefault();
-            ev.stopPropagation();
+        const close = config.CLOSE_HOTKEY(ev);
+        const change = config.CHANGE_TAB_HOTKEY(ev);
+        if (!close && !change) {
+            return
+        }
 
-            const tab = entities.tabBar.querySelector(".tab-container.active");
-            if (tab) {
-                tab.querySelector(".close-button").click();
-            }
-        } else if (config.CHANGE_TAB_HOTKEY(ev)) {
-            ev.preventDefault();
-            ev.stopPropagation();
+        ev.preventDefault();
+        ev.stopPropagation();
 
+        if (close) {
+            entities.tabBar.querySelector(".tab-container.active")?.querySelector(".close-button").click();
+        } else {
             if (ev.shiftKey) {
                 tabUtil.activeIdx = (tabUtil.activeIdx === 0) ? tabUtil.tabs.length - 1 : tabUtil.activeIdx - 1;
             } else {
