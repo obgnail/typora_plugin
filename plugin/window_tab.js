@@ -456,6 +456,5 @@
         entities.tabBar.addEventListener("dragleave", ev => toggleOver(ev, "remove"))
     }
 
-    global.tabUtil = tabUtil;
     console.log("window_tab.js had been injected");
 })()

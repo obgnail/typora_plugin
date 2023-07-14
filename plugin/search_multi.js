@@ -29,7 +29,7 @@
         ALLOW_EXT: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
         // 快捷键ctrl/command+shift+P打开模态框
-        HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key.toLowerCase() === "p",
+        HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "P",
     };
 
     if (!config.ENABLE) {

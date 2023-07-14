@@ -10,7 +10,7 @@
         // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
         // 快捷键
-        HOTKEY: ev => metaKeyPressed(ev) && ev.key.toLowerCase() === "g",
+        HOTKEY: ev => metaKeyPressed(ev) && ev.key === "g",
         // 允许拖动模态框
         ALLOW_DRAG: true,
         // 启用内建的命令列表

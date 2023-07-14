@@ -3,9 +3,9 @@
         // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
         // 快捷键
-        HOTKEY_HIDE_FRONT: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key.toLowerCase() === "b",
-        HOTKEY_SHOW_ALL: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key.toLowerCase() === "u",
-        HOTKEY_HIDE_BASE_VIEW: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key.toLowerCase() === "y",
+        HOTKEY_HIDE_FRONT: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "B",
+        HOTKEY_SHOW_ALL: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "U",
+        HOTKEY_HIDE_BASE_VIEW: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "Y",
 
         // 剩余文本段
         REMAIN_LENGTH: 80,

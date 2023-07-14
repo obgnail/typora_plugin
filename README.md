@@ -31,10 +31,11 @@
 
 ## 如何使用
 
-1. 去到 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（不同版本的 Typora 的文件夹结构可能不同，在我这是 `Typora/resources/app`，推荐使用 everything 找一下）
-2. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
-3. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。（不同版本的 Typora 查找的内容可能不同，其实就是查找导入 frame.js 的 script 标签）
-4. 重启 Typora。
+1. 下载插件源码。
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（不同版本的 Typora 的文件夹结构可能不同，在我这是 `Typora/resources/app`，推荐使用 everything 找一下）
+3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
+4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。（不同版本的 Typora 查找的内容可能不同，其实就是查找导入 frame.js 的 script 标签）
+5. 重启 Typora。
 
 ![where_is_windowhtml](assets/where_is_windowhtml.png)
 
@@ -293,7 +294,7 @@ Typora 是闭源软件，要是有一天作者改了代码，是不是就不能�
 
 本人并非前端开发，前端技术全靠 Google，JS/CSS 写的很烂。
 
-感谢 new bing 对于本项目的大力支持。感谢 [md-padding](https://github.com/harttle/md-padding) 提供的 space padding 功能，感谢 [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) 提供思路 :) 
+感谢 new bing 对于本项目的大力支持。感谢 [md-padding](https://github.com/harttle/md-padding) 提供的 space padding 功能。感谢 [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) 提供思路 :) 
 
 如果对各位有用的话，欢迎 star ⭐
 
