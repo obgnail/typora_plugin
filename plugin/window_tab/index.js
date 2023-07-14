@@ -167,6 +167,12 @@
         tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
     }
 
+    const tabUtil = {
+        tabs: [],
+        activeIdx: 0,
+        localOpen: false,
+    }
+
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
     // 新窗口打开
@@ -199,12 +205,6 @@
                     <span class="name">${fileName}</span>
                     <span class="close-button"><div class="close-icon"></div></span>
                 </div>`
-    }
-
-    const tabUtil = {
-        tabs: [],
-        activeIdx: 0,
-        localOpen: false,
     }
 
     // tabs->DOM的简单数据单向绑定
@@ -273,24 +273,23 @@
         renderDOM(wantOpenPath);
     }
 
-    const after = (result, ...args) => {
-        const filePath = args[0];
-        if (filePath) {
-            openTab(filePath);
-        }
-    }
-
-    const decorator = (original, after) => {
-        return function () {
-            const result = original.apply(this, arguments);
-            after.call(this, result, ...arguments);
-            return result;
-        };
-    }
-
     const _timer = setInterval(() => {
         if (File) {
             clearInterval(_timer);
+
+            const decorator = (original, after) => {
+                return function () {
+                    const result = original.apply(this, arguments);
+                    after.call(this, result, ...arguments);
+                    return result;
+                };
+            }
+            const after = (result, ...args) => {
+                const filePath = args[0];
+                if (filePath) {
+                    openTab(filePath);
+                }
+            }
 
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
 
