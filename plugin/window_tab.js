@@ -1,407 +1,461 @@
 (() => {
     const config = {
         // 启用脚本,若为false,以下配置全部失效
-        ENABLE: false,
-        // 当只有一个窗口时是否隐藏标签
-        HIDE_TAB_WHEN_ONE_WINDOW: true,
-        // 当打开配置菜单的时候是否隐藏
-        HIDE_WHEN_MENU_OPEN: true,
-        // 隐藏掉原始的标题，当 HIDE_TAB_WHEN_ONE_WINDOW 为 true，且只有一个窗口时，强制为 false
-        HIDE_ORIGIN_WINDOW_TITLE: true,
-        // 隐藏掉最小大化关闭按钮
-        HIDE_TRAFFIC_LIGHTS: false,
-        // 经典窗口视图时使用
-        HIDE_TITLE_BAR: false,
-        HIDE_TITLE_BAR_LEFT: false,
+        ENABLE: true,
+        // 隐藏掉titleBar
+        HIDE_WINDOW_TITLE_BAR: true,
+        // 允许拖拽排序标签页
+        ALLOW_DRAG: true,
+        // 当标签页脱离父标签3倍高度时，视为新建窗口
+        HEIGHT_SCALE: 3,
 
-        TABS_WIDTH: "75%",
-        TABS_LEFT: "100px",
-        TABS_MARGIN_LEFT: "10px",
-        TABS_MARGIN_RIGHT: "10px",
-        TABS_HEIGHT: "24px",
-        TABS_JUSTIFY_CONTENT: "center",
-        TABS_ALIGN_ITEMS: "stretch",
-        TAB_SELECT_BG_COLOR: "#ffafa3",
-        TAB_HOVER_BG_COLOR: "#ffd4cc",
-        TAB_MAX_WIDTH: "150px",
-        TAB_WRAP: "nowrap",
-        TAB_OVERFLOW: "hidden",
-        TAB_TEXT_OVERFLOW: "ellipsis",
-        TAB_WHITE_SPACE: "nowrap",
-        TAB_TEXT_ALIGN: "center",
-        TAB_PADDING_LEFT: "10px",
-        TAB_PADDING_RIGHT: "10px",
-        TAB_BORDER_STYLE: "dotted",
-        TAB_BORDER_WIDTH: "1px",
-        TAB_BORDER_COLOR: "#8c8c8c",
-        TAB_BORDER_RADIUS: "3px",
-
-        LOOP_CHECK_INTERVAL: 50,
-        FOCUS_CHECK_INTERVAL: 100,
-
-        REQUIRE_VAR_NAME: "__PLUGIN_REQUIRE__",
-        ELECTRON_VAR_NAME: "__PLUGIN_ELECTRON__",
-
-        DEBUG: false,
-    }
-
-    // 高版本不再开启此脚本
-    if (parseInt(window._options.appVersion.split(".")[0]) > 0) {
-        config.ENABLE = false
-    }
+        LOOP_DETECT_INTERVAL: 30,
+        CLOSE_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "w",
+        CHANGE_TAB_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "Tab",
+    };
 
     if (!config.ENABLE) {
         return
     }
 
-    // 兼容经典布局
-    if (!window._options.framelessWindow) {
-        config.HIDE_TITLE_BAR = false;
-        config.HIDE_TRAFFIC_LIGHTS = true;
-        config.HIDE_TITLE_BAR_LEFT = true;
-    }
-
-    const Package = {
-        // Typora常用的第一方内置库
-        File: File,
-        Client: ClientCommand,
-
-        // node标准库
-        Path: reqnode('path'),
-        Fs: reqnode('fs'),
-
-        // 劫持过来的electron核心库
-        getElectron: () => global[config.ELECTRON_VAR_NAME],
-        getRequire: () => global[config.REQUIRE_VAR_NAME],
-    }
-
-    const execForWindow = (winId, js) => JSBridge.invoke("executeJavaScript", winId, js);
-    const execForAllWindows = js => Package.Client.execForAll(js);
-
-    const getAPP = () => Package.getElectron().app;
-    const getBrowserWindow = () => Package.getElectron().BrowserWindow;
-    const getIPC = () => Package.getElectron().ipcMain;
-
-    const getAllWindows = () => getBrowserWindow().getAllWindows();
-    const getFocusedWindow = () => getBrowserWindow().getFocusedWindow();
-    const setFocusWindow = winId => {
-        const windows = getAllWindows();
-        for (const win of windows) {
-            if (win.id === winId) {
-                win.focus();
-                return
-            }
-        }
-    };
-
-    const getDocumentController = () => getAPP().getDocumentController();
-    const getDocument = id => getDocumentController().getDocumentFromWindowId(id);
-
-    // hijack electron instance and require function in Typora backend
-    setTimeout(() => {
-        execForAllWindows(`
-            if (!global["${config.ELECTRON_VAR_NAME}"]) {
-                global.${config.REQUIRE_VAR_NAME} = global.reqnode('electron').remote.require;
-                global.${config.ELECTRON_VAR_NAME} = ${config.REQUIRE_VAR_NAME}('electron');
-            }`
-        )
-    });
-
-    const showTabsIfNeed = forceHide => {
-        if (forceHide) {
-            windowTabs.tabs.style.display = "none";
-            return
-        }
-
-        const b = config.HIDE_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
-        windowTabs.tabs.style.display = b ? "none" : "block";
-    }
-
-    const showOriginTitleIfNeed = forceHide => {
-        if (forceHide) {
-            document.getElementById('title-text').style.display = "none";
-            return
-        }
-
-        if (config.HIDE_ORIGIN_WINDOW_TITLE) {
-            const b = config.HIDE_TAB_WHEN_ONE_WINDOW && windowTabs.list.childElementCount <= 1;
-            windowTabs.titleText.style.display = b ? "block" : "none";
-        } else {
-            windowTabs.titleText.style.display = "block";
-        }
-    }
-
-    const showTrafficLightsIfNeed = () => {
-        if (config.HIDE_TRAFFIC_LIGHTS) {
-            document.getElementById("w-traffic-lights").style.display = "none";
-        }
-    }
-
-    const showTitleBarIfNeed = () => {
-        if (!config.HIDE_TITLE_BAR) {
-            document.getElementById("top-titlebar").style.display = "block";
-        }
-    }
-
-    const showTitleBarLeftIfNeed = () => {
-        if (config.HIDE_TITLE_BAR_LEFT) {
-            document.getElementById("w-titlebar-left").style.display = "none";
-        }
+    if (window._options.framelessWindow && config.HIDE_WINDOW_TITLE_BAR) {
+        document.getElementById("top-titlebar").style.display = "none";
     }
 
     (() => {
-        // insert css
-        const title_bar_css = `
-        #title-bar-window-tabs {
-            position: absolute;
-            -webkit-app-region: no-drag;
-            left: ${config.TABS_LEFT};
-            width: ${config.TABS_WIDTH};
-            height: ${config.TABS_HEIGHT};
-            margin-left: ${config.TABS_MARGIN_LEFT};
-            margin-right: ${config.TABS_MARGIN_RIGHT};
-            z-index: 9999;
-        }
-        
-        #title-bar-window-tabs .title-bar-window-tabs-list {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: ${config.TAB_WRAP};
-            justify-content: ${config.TABS_JUSTIFY_CONTENT};
-            align-items: ${config.TABS_ALIGN_ITEMS};
-            height: ${config.TABS_HEIGHT};
-        }
-        
-        #title-bar-window-tabs .title-bar-window-tab {
-            flex-grow: 1;
-            height: ${config.TABS_HEIGHT};
-            max-width: ${config.TAB_MAX_WIDTH};
-            padding-left: ${config.TAB_PADDING_LEFT};
-            padding-right: ${config.TAB_PADDING_RIGHT};
-            text-align: ${config.TAB_TEXT_ALIGN};
-            border-style: ${config.TAB_BORDER_STYLE};
-            border-width: ${config.TAB_BORDER_WIDTH};
-            border-color: ${config.TAB_BORDER_COLOR};
-            border-radius: ${config.TAB_BORDER_RADIUS};
-            margin-right: -1px;
-            margin-left: -1px;
-            cursor: pointer;
-        }
-        
-        #title-bar-window-tabs .title-bar-window-tab:hover {
-            background-color: ${config.TAB_HOVER_BG_COLOR};
-        }
-        
-        #title-bar-window-tabs .title-bar-window-tab.select {
-            background-color: ${config.TAB_SELECT_BG_COLOR};
-        }
-        
-        #title-bar-window-tabs .title-bar-window-tab .window-tab-name {
-            overflow: ${config.TAB_OVERFLOW};
-            text-overflow: ${config.TAB_TEXT_OVERFLOW};
-            white-space: ${config.TAB_WHITE_SPACE};
-        }
-        `
+        const css = `
+            #plugin-window-tab {
+                position: fixed;
+                top: 0;
+                width: 100%;
+                height: 40px;
+                z-index: 901
+            }
+    
+            #plugin-window-tab .tab-bar {
+                background-color: var(--bg-color, white);
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                width: calc(100vw - var(--sidebar-width, 0));
+                overflow-x: scroll
+            }
+            
+            #plugin-window-tab .tab-bar::after {
+                content: "";
+                height: 100%;
+                width: 100vw;
+                background-color: var(--side-bar-bg-color, gray);
+                border-bottom: solid 1px rgba(0, 0, 0, 0.07)
+            }
+    
+            #plugin-window-tab .tab-bar:hover::-webkit-scrollbar-thumb {
+                visibility: visible;
+            }
+            
+            #plugin-window-tab .tab-bar::-webkit-scrollbar {
+                height: 5px
+            }
+            
+            #plugin-window-tab .tab-bar::-webkit-scrollbar-thumb {
+                height: 5px;
+                background-color: var(----active-file-bg-color, gray);
+                visibility: hidden
+            }
+            
+            #plugin-window-tab .tab-container {
+                background-color: var(--side-bar-bg-color, gray);
+                height: 100%;
+                min-width: 100px;
+                position: relative;
+                padding: 0 15px;
+                padding-right: 10px;
+                border-bottom: solid 1px rgba(0, 0, 0, 0.07);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                user-select: none;
+                flex-shrink: 0;
+                cursor: pointer
+            }
+            
+            #plugin-window-tab .tab-container.over {
+                background-color: var(--active-file-bg-color, lightgray);
+            }
+            
+            #plugin-window-tab .name {
+                max-width: 350px;
+                padding-right: 15px;
+                font-size: 14px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                pointer-events: none
+            }
+            
+            #plugin-window-tab .close-button {
+                padding: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 5px
+            }
+            
+            #plugin-window-tab .tab-container:hover > .close-button {
+                visibility: visible !important
+            }
+            
+            #plugin-window-tab .close-icon {
+                position: relative;
+                width: 11px;
+                height: 11px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            
+            #plugin-window-tab .close-icon::before,
+            #plugin-window-tab .close-icon::after {
+                content: "";
+                position: absolute;
+                width: 100%;
+                height: 2px;
+                background-color: var(--active-file-border-color, black)
+            }
+            
+            #plugin-window-tab .close-icon::before {
+                transform: rotate(45deg)
+            }
+            
+            #plugin-window-tab .close-icon::after {
+                transform: rotate(-45deg)
+            }
+            
+            #plugin-window-tab .close-button:hover {
+                background-color: var(--active-file-bg-color, lightgray);
+            }
+            
+            #plugin-window-tab .active {
+                border: solid 1px rgba(0, 0, 0, 0.07);
+                border-bottom: none;
+                background-color: var(--bg-color, white)
+            }
+            
+            #plugin-window-tab .active .active-indicator {
+                display: block;
+            }
+            
+            #plugin-window-tab .active-indicator {
+                position: absolute;
+                top: -1px;
+                left: -1px;
+                width: calc(100% + 2px);
+                height: 3px;
+                background-color: var(--active-file-border-color, black);
+                display: none;
+            }
+            `
         const style = document.createElement('style');
         style.type = 'text/css';
-        style.innerHTML = title_bar_css;
+        style.innerHTML = css;
         document.getElementsByTagName("head")[0].appendChild(style);
 
-        // insert html
-        const title_bar_div = `<div class="title-bar-window-tabs-list"></div>`;
-        const windowTabs = document.createElement("div");
-        windowTabs.id = 'title-bar-window-tabs';
-        windowTabs.innerHTML = title_bar_div;
-        const titleBarLeft = document.getElementById("w-titlebar-left");
-        titleBarLeft.parentNode.insertBefore(windowTabs, titleBarLeft.nextSibling);
-
-        showOriginTitleIfNeed(true);
-        showTrafficLightsIfNeed();
-        showTitleBarLeftIfNeed();
-        showTitleBarIfNeed();
+        const div = `<div class="tab-bar"></div>`
+        const windowTab = document.createElement("div");
+        windowTab.id = "plugin-window-tab";
+        windowTab.innerHTML = div;
+        document.getElementById("write-style").parentElement
+            .insertBefore(windowTab, document.getElementById("write-style"));
     })()
 
-    const windowTabs = {
-        tabs: document.getElementById('title-bar-window-tabs'),
-        list: document.querySelector(".title-bar-window-tabs-list"),
-        titleText: document.getElementById('title-text'),
+    const Package = {
+        Path: reqnode("path"),
+    };
+
+    const entities = {
+        content: document.querySelector("content"),
+        tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
     }
 
-    const getWindowName = win => {
-        let name = win.getTitle().replace("- Typora", "").trim();
-        const idx = name.lastIndexOf(".");
+    const tabUtil = {
+        tabs: [],
+        activeIdx: 0,
+        localOpen: false,
+    }
+
+    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
+
+    // 新窗口打开
+    const openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
+    // 新标签页打开
+    const openFile = filePath => File.editor.library.openFile(filePath);
+    // 当前标签页打开
+    const OpenFileLocal = filePath => {
+        tabUtil.localOpen = true;
+        File.editor.library.openFile(filePath);
+        tabUtil.localOpen = false;  // 自动还原
+    }
+    // 关闭窗口
+    const closeWindow = () => JSBridge.invoke("window.close");
+
+    const getName = filePath => {
+        let fileName = Package.Path.basename(filePath);
+        const idx = fileName.lastIndexOf(".");
         if (idx !== -1) {
-            name = name.substring(0, idx);
+            fileName = fileName.substring(0, idx);
         }
-        return name
+        return fileName
     }
 
-    const newTab = (winId, title, select) => {
-        const selected = select ? " select" : "";
-        return `<div class="title-bar-window-tab${selected}" ty-hint="${title}" winid="${winId}">
-                        <div class="window-tab-name">${title}</div></div>`
+    const newTabDiv = (filePath, idx, active = true) => {
+        const fileName = getName(filePath);
+        const _active = active ? "active" : "";
+        return `<div class="tab-container ${_active}" idx="${idx}" draggable="true">
+                    <div class="active-indicator"></div>
+                    <span class="name">${fileName}</span>
+                    <span class="close-button"><div class="close-icon"></div></span>
+                </div>`
     }
 
-    global._flushWindowTabs = (excludeId, sortFunc) => {
-        if (!sortFunc) {
-            sortFunc = winList => winList.sort((a, b) => a.id - b.id);
-        }
+    // tabs->DOM的简单数据单向绑定
+    const renderDOM = wantOpenPath => {
+        let tabDiv = entities.tabBar.firstElementChild;
+        tabUtil.tabs.forEach((tab, idx) => {
+            if (!tabDiv) {
+                const _tabDiv = newTabDiv(tab.path, idx);
+                entities.tabBar.insertAdjacentHTML('beforeend', _tabDiv);
+                tabDiv = entities.tabBar.lastElementChild;
+            }
+            if (tab.path === wantOpenPath) {
+                tabDiv.classList.add("active");
+                scrollContent(tab);
+            } else {
+                tabDiv.classList.remove("active");
+            }
+            tabDiv.setAttribute("idx", idx + "");
+            tabDiv.querySelector(".name").innerText = getName(tab.path);
 
-        const windows = getAllWindows();
-        let copy = [...windows];
-        if (excludeId) {
-            copy = copy.filter(win => win.id !== excludeId);
-        }
-
-        const sortedWindows = sortFunc(copy);
-        const focusWinId = getFocusedWindow().id;
-        const divArr = sortedWindows.map(win => {
-            const title = getWindowName(win);
-            const select = win.id === focusWinId;
-            return newTab(win.id, title, select);
+            tabDiv = tabDiv.nextElementSibling;
         })
-        windowTabs.list.innerHTML = divArr.join("");
 
-        showTabsIfNeed();
-        showOriginTitleIfNeed();
-    }
-
-    global._addWindowTab = (winId, title, select) => {
-        const tab = newTab(winId, title, select);
-        windowTabs.list.insertAdjacentHTML('beforeend', tab);
-    }
-
-    global._removeWindowTab = winId => {
-        const tab = windowTabs.list.querySelector(`.title-bar-window-tab[winid="${winId}"]`);
-        if (tab) {
-            tab.parentNode.removeChild(tab);
+        while (tabDiv) {
+            tabDiv.parentElement.removeChild(tabDiv);
+            tabDiv = tabDiv.nextElementSibling;
         }
-        showTabsIfNeed();
-        showOriginTitleIfNeed();
     }
 
-    global._changeTab = () => {
-        const focus = getFocusedWindow();
-        // 使用系统的alt+Tab切换任务时，可能会没有聚焦的窗口。那怎么办？凉拌。不切了。
-        if (!focus) {
+    // openFile是一个延迟操作，需要等待content加载好，才能定位scrollTop
+    // 问题是我压根不知道content什么时候加载好
+    // 解决方法: 轮询设置scrollTop，当连续3次scrollTop不再改变，就判断content加载好了
+    // 这种方法很不环保，很ugly。但是我确实也想不到在不修改frame.js的前提下该怎么做了
+    const scrollContent = activeTab => {
+        if (!activeTab) {
             return
         }
-        const focusWinId = focus.id + "";
-        const tabs = windowTabs.list.querySelectorAll(`.title-bar-window-tab`);
-        for (const tab of tabs) {
-            const winId = tab.getAttribute("winid");
-            if (winId !== focusWinId) {
-                tab.classList.remove("select");
+
+        let count = 0;
+        const stopCount = 3;
+        const scrollTop = activeTab.scrollTop;
+        const _timer = setInterval(() => {
+            const filePath = File?.filePath || File.bundle?.filePath;
+            if (filePath === activeTab.path && entities.content.scrollTop !== scrollTop) {
+                entities.content.scrollTop = scrollTop;
+                count = 0;
             } else {
-                tab.classList.add("select");
-                const name = getWindowName(focus);
-                tab.setAttribute("ty-hint", name);
+                count++;
+            }
+            if (count === stopCount) {
+                clearInterval(_timer);
+            }
+        }, config.LOOP_DETECT_INTERVAL);
+    }
+
+    const openTab = wantOpenPath => {
+        const pathIdx = tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
+        // 原地打开并且不存在tab时，修改当前tab的文件路径
+        if (tabUtil.localOpen && pathIdx === -1) {
+            tabUtil.tabs[tabUtil.activeIdx].path = wantOpenPath;
+            // 不存在tab时，在当前tab后面新建
+        } else if (pathIdx === -1) {
+            tabUtil.tabs.push({path: wantOpenPath, scrollTop: 0});
+            tabUtil.activeIdx = tabUtil.tabs.length - 1;
+        } else if (pathIdx !== -1) {
+            tabUtil.activeIdx = pathIdx;
+        }
+        renderDOM(wantOpenPath);
+    }
+
+    const _timer = setInterval(() => {
+        if (File) {
+            clearInterval(_timer);
+
+            const decorator = (original, after) => {
+                return function () {
+                    const result = original.apply(this, arguments);
+                    after.call(this, result, ...arguments);
+                    return result;
+                };
+            }
+            const after = (result, ...args) => {
+                const filePath = args[0];
+                if (filePath) {
+                    openTab(filePath);
+                }
+            }
+
+            File.editor.library.openFile = decorator(File.editor.library.openFile, after);
+
+            const filePath = File.filePath || File.bundle?.filePath;
+            if (filePath) {
+                openTab(filePath);
             }
         }
-    }
+    }, config.LOOP_DETECT_INTERVAL);
 
-    global._updateTabTitle = (winId, title) => {
-        const tab = windowTabs.list.querySelector(`.title-bar-window-tab[winid="${winId}"] .window-tab-name`);
-        if (tab) {
-            tab.textContent = title;
+    entities.tabBar.addEventListener("click", ev => {
+        const closeButton = ev.target.closest(".close-button");
+        const tabContainer = ev.target.closest(".tab-container");
+        if (!closeButton && !tabContainer) {
+            return
         }
-        showTabsIfNeed();
-    }
 
-    // 其实下面函数都可以使用flushWindowTabs代替,但是flushWindowTabs太重了
-    const flushWindowTabs = excludeId => execForAllWindows(`global._flushWindowTabs(${excludeId})`);
-    const updateTabTitle = (winId, title) => execForAllWindows(`global._updateTabTitle(${winId}, "${title}")`);
-    const changeTab = () => execForAllWindows(`global._changeTab()`);
-    const removeWindowTab = winId => execForAllWindows(`global._removeWindowTab(${winId})`);
-    const addWindowTab = (noticeWins, winId, title, select) => {
-        for (const win of noticeWins) {
-            execForWindow(win.id, `global._addWindowTab(${winId}, "${title}", ${select})`);
+        ev.stopPropagation();
+        ev.preventDefault();
+
+        const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
+        const idx = parseInt(tab.getAttribute("idx"));
+
+        if (metaKeyPressed(ev)) {
+            const _path = tabUtil.tabs[idx].path;
+            openFileNewWindow(_path, false);
+            return
         }
-    }
 
-    const onElectronLoad = func => {
-        const timer = setInterval(() => {
-            if (Package.getElectron() && Package.getRequire()) {
-                clearInterval(timer);
-                func();
+        if (closeButton) {
+            tabUtil.tabs.splice(idx, 1);
+            if (tabUtil.tabs.length === 0) {
+                closeWindow();
+                return
             }
-        }, config.LOOP_CHECK_INTERVAL)
-    }
-
-    // 当窗口加载完毕
-    onElectronLoad(() => {
-        flushWindowTabs();
-        recordCurWindowId();
-        registerOnFocus();
+            if (tabUtil.activeIdx !== 0) {
+                tabUtil.activeIdx--;
+            }
+        } else {
+            tabUtil.activeIdx = idx;
+        }
+        openFile(tabUtil.tabs[tabUtil.activeIdx].path);
     })
 
-    const recordCurWindowId = () => {
-        const win = getFocusedWindow();
-        if (win) {
-            windowTabs.tabs.setAttribute("winid", win.id);
-            global._winid = win.id;
-        }
-    }
-
-    const getWinId = () => global._winid || windowTabs.tabs.getAttribute("winid") || getFocusedWindow().id;
-
-    // 应用外点击任务栏切换窗口
-    const registerOnFocus = () => {
-        let lastFocusTime = 0;
-        document.addEventListener("focus", ev => {
-            if (ev.timeStamp - lastFocusTime > config.FOCUS_CHECK_INTERVAL) {
-                changeTab();
-                lastFocusTime = ev.timeStamp;
-            }
-        }, true);
-    }
-
-    // 当前窗口切换文件
-    new MutationObserver(() => {
-        showOriginTitleIfNeed();
-        const win = getFocusedWindow();
-        const name = getWindowName(win);
-        updateTabTitle(win.id, name);
-    }).observe(windowTabs.titleText, {childList: true});
-
-    // 关闭窗口
-    window.addEventListener("beforeunload", ev => {
-        const focusWinId = getWinId();
-        removeWindowTab(focusWinId);
-    }, true)
-
-    // 点击Tab切换窗口
-    windowTabs.list.addEventListener("click", ev => {
-        const target = ev.target.closest(".title-bar-window-tab");
+    entities.tabBar.addEventListener("wheel", ev => {
+        const target = ev.target.closest("#plugin-window-tab .tab-bar");
         if (!target) {
             return
         }
-        const winId = target.getAttribute("winid");
-        setFocusWindow(parseInt(winId));
-        changeTab();
+        if (metaKeyPressed(ev)) {
+            target.dispatchEvent(new KeyboardEvent("keydown", {
+                key: "Tab", code: "Tab", ctrlKey: true, metaKey: true, shiftKey: (ev.deltaY < 0),
+            }))
+        } else {
+            target.scrollLeft += ev.deltaY;
+        }
     })
 
-    if (config.HIDE_WHEN_MENU_OPEN) {
-        new MutationObserver(mutationList => {
-            for (const mutation of mutationList) {
-                if (mutation.type === 'attributes' && mutation.attributeName === "class") {
-                    const value = document.body.getAttribute(mutation.attributeName);
-                    const force = value.indexOf("megamenu-opened") !== -1 || value.indexOf("show-preference-panel") !== -1;
-                    showTabsIfNeed(force);
+    window.addEventListener("keydown", ev => {
+        const close = config.CLOSE_HOTKEY(ev);
+        const change = config.CHANGE_TAB_HOTKEY(ev);
+        if (!close && !change) {
+            return
+        }
+
+        ev.preventDefault();
+        ev.stopPropagation();
+
+        if (close) {
+            entities.tabBar.querySelector(".tab-container.active")?.querySelector(".close-button").click();
+        } else {
+            if (ev.shiftKey) {
+                tabUtil.activeIdx = (tabUtil.activeIdx === 0) ? tabUtil.tabs.length - 1 : tabUtil.activeIdx - 1;
+            } else {
+                tabUtil.activeIdx = (tabUtil.activeIdx === tabUtil.tabs.length - 1) ? 0 : tabUtil.activeIdx + 1;
+            }
+            openFile(tabUtil.tabs[tabUtil.activeIdx].path);
+        }
+    }, true)
+
+    entities.content.addEventListener("scroll", ev => {
+        tabUtil.tabs[tabUtil.activeIdx].scrollTop = entities.content.scrollTop;
+    })
+
+    document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
+        const target = ev.target.closest(".typora-quick-open-item");
+        if (!target) {
+            return
+        }
+        // 将原先的click行为改成ctrl+click
+        if (metaKeyPressed(ev)) {
+            return
+        }
+        ev.preventDefault();
+        ev.stopPropagation();
+        const filePath = target.getAttribute("data-path");
+        openFile(filePath);
+    }, true)
+
+    if (config.ALLOW_DRAG) {
+        let lastOver = null;
+        const toggleOver = (ev, f) => {
+            ev.preventDefault();
+            const target = ev.target.closest(".tab-container");
+            if (target) {
+                if (f === "add") {
+                    target.classList.add("over");
+                    lastOver = target;
+                } else {
+                    target.classList.remove("over");
                 }
             }
-        }).observe(document.body, {attributes: true});
-    }
+        }
 
-    if (config.DEBUG) {
-        global.test = () => getAllWindows().forEach(win => {
-            console.log({"id": win.id, "name": win.getTitle()});
+        entities.tabBar.addEventListener("dragstart", ev => {
+            const draggedTab = ev.target.closest(".tab-container");
+            if (draggedTab) {
+                draggedTab.style.opacity = 0.5;
+                lastOver = null;
+            }
         })
-        global.getFocusedWindow = getFocusedWindow;
-        global.execForWindow = execForWindow;
-        global.execForAllWindows = execForAllWindows;
-        global.getDocument = getDocument;
+        entities.tabBar.addEventListener("dragend", ev => {
+            const from = ev.target.closest(".tab-container");
+            if (!from) {
+                return
+            }
+
+            ev.preventDefault();
+            from.style.opacity = "";
+            const fromIdx = parseInt(from.getAttribute("idx"));
+
+            const offsetY = Math.abs(ev.offsetY);
+            const height = entities.tabBar.getBoundingClientRect().height;
+            if (offsetY > height * config.HEIGHT_SCALE) {
+                const _path = tabUtil.tabs[fromIdx].path;
+                openFileNewWindow(_path, false);
+                return
+            }
+
+            if (lastOver) {
+                const activeIdx = parseInt(entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
+                const activePath = tabUtil.tabs[activeIdx].path;
+                const toIdx = parseInt(lastOver.getAttribute("idx"));
+                const ele = tabUtil.tabs.splice(fromIdx, 1)[0];
+                tabUtil.tabs.splice(toIdx, 0, ele);
+                openTab(activePath);
+            }
+        });
+        entities.tabBar.addEventListener("dragover", ev => toggleOver(ev, "add"))
+        entities.tabBar.addEventListener("dragenter", ev => toggleOver(ev, "add"))
+        entities.tabBar.addEventListener("dragleave", ev => toggleOver(ev, "remove"))
     }
 
+    global.tabUtil = tabUtil;
     console.log("window_tab.js had been injected");
-})();
+})()

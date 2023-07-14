@@ -6,21 +6,22 @@
 
 目前支持的功能：
 
-| 序号 | 文件名                       | 功能                             | 默认开启   |
-| ---- | ---------------------------- | -------------------------------- | ---------- |
-| 1    | search_multi                 | 全局多关键字搜索                 | 是         |
-| 2    | md_padding                   | 中文与英文、数字之间添加空格     | 是         |
-| 3    | commander                    | 命令行环境                       | 是         |
-| 4    | read_only                    | 只读模式                         | 是         |
-| 5    | collapse_paragraph           | 章节折叠                         | 是         |
-| 6    | copy_code                    | 一键复制代码                     | 是         |
-| 7    | resize_table                 | 调整表格行高列宽                 | 是         |
-| 8    | resize_image                 | 调整图片显示大小                 | 是         |
-| 9    | go_top                       | 一键到文章顶部                   | 是         |
-| 10   | file_counter                 | 显示目录下的文件数               | 是         |
-| 11   | truncate_text                | 暂时隐藏内容，提高大文件渲染性能 | 是         |
-| 12   | window_tab / window_tab_drag | 标签页管理                       | 高版本关闭 |
-| 13   | mermaid_replace              | 替换 mermaid 组件                | 否         |
+| 序号 | 文件名             | 功能                             | 默认开启 |
+| ---- | ------------------ | -------------------------------- | -------- |
+| 1    | search_multi       | 全局多关键字搜索                 | 是       |
+| 2    | window_tab         | 标签页管理                       | 是       |
+| 3    | md_padding         | 中文与英文、数字之间添加空格     | 是       |
+| 4    | commander          | 命令行环境                       | 是       |
+| 5    | read_only          | 只读模式                         | 是       |
+| 6    | collapse_paragraph | 章节折叠                         | 是       |
+| 7    | copy_code          | 一键复制代码                     | 是       |
+| 8    | resize_table       | 调整表格行高列宽                 | 是       |
+| 9    | resize_image       | 调整图片显示大小                 | 是       |
+| 10   | go_top             | 一键到文章顶部                   | 是       |
+| 11   | file_counter       | 显示目录下的文件数               | 是       |
+| 12   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能 | 是       |
+| 13   | mermaid_replace    | 替换 mermaid 组件                | 否       |
+| 14   | old_window_tab     | 标签页管理（已废弃）             | 否       |
 
 > 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
 
@@ -95,13 +96,15 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
-### window_tab / window_tab_drag：标签页管理
+### window_tab：标签页管理
 
-![window_tab](assets/window_tab.gif)
+![new_window_tab](assets/new_window_tab.gif)
 
-window_tab_drag 和 window_tab 的区别是：是否支持拖拽排序。默认使用 window_tab_drag，禁用 window_tab。
+> 该脚本是 [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) 的重新实现，修复了原脚本的诸多 BUG 和不适配问题；去掉了类似于 vscode 的预览功能，改成了 idea 的标签页逻辑；修改了一些交互
 
-> NOTE：**此脚本默认在高版本中关闭**。经反馈，由于高版本的 Typora 更新了 electron 版本，标签页管理功能已经在高版本中失效。详细说明请看下面【脚本会失效吗】章节。容我再想想办法 :(
+- ctrl+wheel、ctrl+shift+tab、ctrl+tab：切换标签
+- ctrl+w：关闭标签
+- ctrl+click、向下拖拽标签：新窗口打开
 
 
 
@@ -235,7 +238,7 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 
 ## 瞎聊
 
-### 为什么要区分 window_tab 和 window_tab_drag ?
+### 为什么要区分 old_window_tab 和 old_window_tab_drag ?
 
 理由是：**支持排序会复杂很多**。
 
@@ -254,6 +257,15 @@ Typora 每开一个窗口，就会创建一个 electron BrowserWindow 实例，�
 
 
 
+### window_tab 和 old_window_tab 区别 ?
+
+- old_window_tab 是通过劫持 electron，获取到后端的 BrowserWindow 实例实现的，是真正意义的标签管理。但是此方法已在高版本的 Typora 失效。所以 old_window_tab 已被废弃。
+- window_tab 是**强行将多窗口合并到单一窗口实现的**。实现原理是：记录每一个标签对应的文档路径和文档浏的 scrollTop。每当你点击一个标签，其实是重新打开文件，然后在定位到离开文档时的 scrollTop。其后果就是：
+  1. 不能存储每个打开的文档（虽然有缓存）。
+  2. 与 Typora 诸多冲突，为了解决这些冲突，需要给 frame.js 的很多函数注入修改逻辑。降低了系统稳定性。
+
+
+
 ### 脚本会失效吗
 
 Typora 是闭源软件，要是有一天作者改了代码，是不是就不能用了？从原理来说，是的。实际上我是解包 Typora，看了部分源码才实现了这些功能。
@@ -263,9 +275,7 @@ Typora 是闭源软件，要是有一天作者改了代码，是不是就不能�
 具体来看：
 
 - search_multi、resize_table、read_only、truncate_text 等功能几乎不依赖 Typora 实现。如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效，所以应该会 **保持长时间的有效性**。而且就算失效了也容易找到兼容方案。
-- 比较特殊的是 window_tab 和 window_tab_drag，这个功能本质是入侵式脚本；通过原型链攻击，将后端 electron 对象劫持到前端来，该脚本通过该手段成功调用了 Typora 的核心实现，并且这个核心实现同时被大量运用，历史包袱一样很大。当然了，劫持漏洞也有可能被修复。**如果 Typora 或 electron 有了重构级别的更新，那么大概率会失效**。
-
-> 总结：标签页管理功能比较危险，其他脚本保持长时间的有效性。如果脚本失效了，麻烦提个 issue。
+- ~~比较特殊的是 window_tab 和 window_tab_drag，这个功能本质是入侵式脚本；通过原型链攻击，将后端 electron 对象劫持到前端来，该脚本通过该手段成功调用了 Typora 的核心实现，并且这个核心实现同时被大量运用，历史包袱一样很大。当然了，劫持漏洞也有可能被修复。**如果 Typora 或 electron 有了重构级别的更新，那么大概率会失效。**~~（旧版本已被废弃，新版本无此问题）
 
 
 
@@ -281,7 +291,9 @@ Typora 是闭源软件，要是有一天作者改了代码，是不是就不能�
 
 ## 结语
 
-本人并非前端开发，JS/CSS 写的很烂。感谢 new bing 对于本项目的大力支持。感谢 [md-padding](https://github.com/harttle/md-padding) 提供的 space padding 功能 :) 
+本人并非前端开发，前端技术全靠 Google，JS/CSS 写的很烂。
+
+感谢 new bing 对于本项目的大力支持。感谢 [md-padding](https://github.com/harttle/md-padding) 提供的 space padding 功能，感谢 [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) 提供思路 :) 
 
 如果对各位有用的话，欢迎 star ⭐
 
