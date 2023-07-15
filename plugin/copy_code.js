@@ -73,7 +73,7 @@
     }
 
     const _timer = setInterval(() => {
-        if (File?.editor?.fences?.addCodeBlock) {
+        if (File && File.editor && File.editor.fences && File.editor.fences.addCodeBlock) {
             clearInterval(_timer);
             File.editor.fences.addCodeBlock = decorator(File.editor.fences.addCodeBlock, after);
         }
