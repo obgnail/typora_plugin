@@ -93,11 +93,13 @@
         })
 
         const children = getChild(treeNode, "file-node-children");
-        children?.children.forEach(child => {
-            if (child.getAttribute("data-has-sub") === "true") {
-                setDirCount(child);
-            }
-        })
+        if (children && children.children) {
+            children.children.forEach(child => {
+                if (child.getAttribute("data-has-sub") === "true") {
+                    setDirCount(child);
+                }
+            })
+        }
     }
 
     const setAllDirCount = () => {
@@ -113,15 +115,15 @@
     new MutationObserver(mutationList => {
         if (mutationList.length === 1) {
             const add = mutationList[0].addedNodes[0];
-            if (add?.classList?.contains("file-library-node")) {
+            if (add && add.classList && add.classList.contains("file-library-node")) {
                 setDirCount(add);
                 return
             }
         }
 
         for (const mutation of mutationList) {
-            if (mutation.target?.classList?.contains("typora-file-count")
-                || mutation.addedNodes[0]?.classList?.contains("typora-file-count")) {
+            if (mutation.target && mutation.target.classList && mutation.target.classList.contains("typora-file-count")
+                || mutation.addedNodes[0] && mutation.addedNodes[0].classList && mutation.addedNodes[0].classList.contains("typora-file-count")) {
                 continue
             }
             setAllDirCount();

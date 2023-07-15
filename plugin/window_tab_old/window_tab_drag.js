@@ -90,11 +90,21 @@
     const execForAllWindows = js => Package.Client.execForAll(js);
 
     const getAPP = () => Package.getElectron().app;
-    const getBrowserWindow = () => Package.getElectron()?.BrowserWindow;
+    const getBrowserWindow = () => {
+        const electron = Package.getElectron();
+        if (electron) {
+            return electron.BrowserWindow;
+        }
+    }
     const getIPC = () => Package.getElectron().ipcMain;
 
     const getAllWindows = () => getBrowserWindow().getAllWindows();
-    const getFocusedWindow = () => getBrowserWindow()?.getFocusedWindow();
+    const getFocusedWindow = () => {
+        const browserWindow = getBrowserWindow();
+        if (browserWindow) {
+            return browserWindow.getFocusedWindow();
+        }
+    }
     const setFocusWindow = winId => {
         const windows = getAllWindows();
         for (const win of windows) {
@@ -389,7 +399,7 @@
     }
 
     global._openFileInNewWindow = () => {
-        const filePath = Package.File.filePath || Package.File.bundle?.filePath;
+        const filePath = Package.File.filePath || (Package.File.bundle && Package.File.bundle.filePath);
         if (filePath) {
             Package.File.editor.library.openFileInNewWindow(filePath, false);
         } else {

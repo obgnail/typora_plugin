@@ -17,7 +17,7 @@
     }
 
     const metaKeyPressed = ev => Package.File.isMac ? ev.metaKey : ev.ctrlKey;
-    const getFilePath = () => Package.File.filePath || Package.File.bundle?.filePath;
+    const getFilePath = () => Package.File.filePath || Package.File.bundle && Package.File.bundle.filePath;
     const read = filepath => Package.Fs.readFileSync(filepath, 'utf-8');
     const write = (filepath, content) => Package.Fs.writeFileSync(filepath, content);
     const save = () => File.saveUseNode();

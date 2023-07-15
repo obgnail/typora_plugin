@@ -258,7 +258,7 @@
         const stopCount = 3;
         const scrollTop = activeTab.scrollTop;
         const _timer = setInterval(() => {
-            const filePath = File?.filePath || File.bundle?.filePath;
+            const filePath = File && File.filePath || File && File.bundle && File.bundle.filePath;
             if (filePath === activeTab.path && entities.content.scrollTop !== scrollTop) {
                 entities.content.scrollTop = scrollTop;
                 count = 0;
@@ -306,7 +306,7 @@
 
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
 
-            const filePath = File.filePath || File.bundle?.filePath;
+            const filePath = File.filePath || File.bundle && File.bundle.filePath;
             if (filePath) {
                 openTab(filePath);
             }
@@ -372,7 +372,10 @@
         ev.stopPropagation();
 
         if (close) {
-            entities.tabBar.querySelector(".tab-container.active")?.querySelector(".close-button").click();
+            const activeTab = entities.tabBar.querySelector(".tab-container.active");
+            if (activeTab) {
+                activeTab.querySelector(".close-button").click();
+            }
         } else {
             if (ev.shiftKey) {
                 tabUtil.activeIdx = (tabUtil.activeIdx === 0) ? tabUtil.tabs.length - 1 : tabUtil.activeIdx - 1;
