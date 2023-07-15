@@ -10,7 +10,7 @@
         // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
         // 快捷键
-        HOTKEY: ev => metaKeyPressed(ev) && ev.key.toLowerCase() === "g",
+        HOTKEY: ev => metaKeyPressed(ev) && ev.key === "g",
         // 允许拖动模态框
         ALLOW_DRAG: true,
         // 启用内建的命令列表
@@ -188,7 +188,7 @@
         }
     }
 
-    const _getFile = () => File.filePath || File.bundle.filePath;
+    const _getFile = () => File.filePath || File.bundle?.filePath;
     const getFile = shell => convertPath(_getFile(), shell);
     const getFolder = shell => convertPath(Package.path.dirname(_getFile()), shell);
     const getMountFolder = shell => convertPath(File.getMountFolder(), shell);
