@@ -8,6 +8,8 @@
         ALLOW_DRAG: true,
         // 当标签页脱离父标签3倍高度时，视为新建窗口
         HEIGHT_SCALE: 3,
+        // 总是当前标签页打开
+        localOpen: false,
 
         LOOP_DETECT_INTERVAL: 30,
         CLOSE_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "w",
@@ -46,8 +48,6 @@
                 content: "";
                 height: 100%;
                 width: 100vw;
-                background-color: var(--side-bar-bg-color, gray);
-                border-bottom: solid 1px rgba(0, 0, 0, 0.07)
             }
     
             #plugin-window-tab .tab-bar:hover::-webkit-scrollbar-thumb {
@@ -181,7 +181,6 @@
     const tabUtil = {
         tabs: [],
         activeIdx: 0,
-        localOpen: false,
     }
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
@@ -192,9 +191,9 @@
     const openFile = filePath => File.editor.library.openFile(filePath);
     // 当前标签页打开
     const OpenFileLocal = filePath => {
-        tabUtil.localOpen = true;
+        config.localOpen = true;
         File.editor.library.openFile(filePath);
-        tabUtil.localOpen = false;  // 自动还原
+        config.localOpen = false;  // 自动还原
     }
     // 关闭窗口
     const closeWindow = () => JSBridge.invoke("window.close");
@@ -274,9 +273,8 @@
     const openTab = wantOpenPath => {
         const pathIdx = tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
         // 原地打开并且不存在tab时，修改当前tab的文件路径
-        if (tabUtil.localOpen && pathIdx === -1) {
+        if (config.localOpen && pathIdx === -1) {
             tabUtil.tabs[tabUtil.activeIdx].path = wantOpenPath;
-            // 不存在tab时，在当前tab后面新建
         } else if (pathIdx === -1) {
             tabUtil.tabs.push({path: wantOpenPath, scrollTop: 0});
             tabUtil.activeIdx = tabUtil.tabs.length - 1;
