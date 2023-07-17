@@ -13,7 +13,7 @@
 
         LOOP_DETECT_INTERVAL: 30,
         CLOSE_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "w",
-        CHANGE_TAB_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "Tab",
+        SWITCH_TAB_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "Tab",
     };
 
     if (!config.ENABLE) {
@@ -21,6 +21,7 @@
     }
 
     if (window._options.framelessWindow && config.HIDE_WINDOW_TITLE_BAR) {
+        document.querySelector("header").style.zIndex = "897";
         document.getElementById("top-titlebar").style.display = "none";
     }
 
@@ -31,7 +32,7 @@
                 top: 0;
                 width: 100%;
                 height: 40px;
-                z-index: 901
+                z-index: 898;
             }
     
             #plugin-window-tab .tab-bar {
@@ -361,8 +362,8 @@
 
     window.addEventListener("keydown", ev => {
         const close = config.CLOSE_HOTKEY(ev);
-        const change = config.CHANGE_TAB_HOTKEY(ev);
-        if (!close && !change) {
+        const switchTab = config.SWITCH_TAB_HOTKEY(ev);
+        if (!close && !switchTab) {
             return
         }
 
