@@ -8,10 +8,12 @@
         ALLOW_DRAG: true,
         // 当标签页脱离父标签3倍高度时，视为新建窗口
         HEIGHT_SCALE: 3,
+        // 总是在当前标签页打开
+        LOCAL_OPEN: false,
 
         LOOP_DETECT_INTERVAL: 30,
         CLOSE_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "w",
-        CHANGE_TAB_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "Tab",
+        SWITCH_TAB_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "Tab",
     };
 
     if (!config.ENABLE) {
@@ -19,6 +21,7 @@
     }
 
     if (window._options.framelessWindow && config.HIDE_WINDOW_TITLE_BAR) {
+        document.querySelector("header").style.zIndex = "897";
         document.getElementById("top-titlebar").style.display = "none";
     }
 
@@ -29,7 +32,7 @@
                 top: 0;
                 width: 100%;
                 height: 40px;
-                z-index: 901
+                z-index: 898;
             }
     
             #plugin-window-tab .tab-bar {
@@ -46,8 +49,6 @@
                 content: "";
                 height: 100%;
                 width: 100vw;
-                background-color: var(--side-bar-bg-color, gray);
-                border-bottom: solid 1px rgba(0, 0, 0, 0.07)
             }
     
             #plugin-window-tab .tab-bar:hover::-webkit-scrollbar-thumb {
@@ -181,7 +182,6 @@
     const tabUtil = {
         tabs: [],
         activeIdx: 0,
-        localOpen: false,
     }
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
@@ -192,9 +192,9 @@
     const openFile = filePath => File.editor.library.openFile(filePath);
     // 当前标签页打开
     const OpenFileLocal = filePath => {
-        tabUtil.localOpen = true;
+        config.LOCAL_OPEN = true;
         File.editor.library.openFile(filePath);
-        tabUtil.localOpen = false;  // 自动还原
+        config.LOCAL_OPEN = false;  // 自动还原
     }
     // 关闭窗口
     const closeWindow = () => JSBridge.invoke("window.close");
@@ -274,9 +274,8 @@
     const openTab = wantOpenPath => {
         const pathIdx = tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
         // 原地打开并且不存在tab时，修改当前tab的文件路径
-        if (tabUtil.localOpen && pathIdx === -1) {
+        if (config.LOCAL_OPEN && pathIdx === -1) {
             tabUtil.tabs[tabUtil.activeIdx].path = wantOpenPath;
-            // 不存在tab时，在当前tab后面新建
         } else if (pathIdx === -1) {
             tabUtil.tabs.push({path: wantOpenPath, scrollTop: 0});
             tabUtil.activeIdx = tabUtil.tabs.length - 1;
@@ -363,8 +362,8 @@
 
     window.addEventListener("keydown", ev => {
         const close = config.CLOSE_HOTKEY(ev);
-        const change = config.CHANGE_TAB_HOTKEY(ev);
-        if (!close && !change) {
+        const switchTab = config.SWITCH_TAB_HOTKEY(ev);
+        if (!close && !switchTab) {
             return
         }
 
