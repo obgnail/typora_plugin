@@ -121,6 +121,18 @@
         }
     }, true)
 
+    document.getElementById("write").addEventListener("mousedown", ev => {
+        if (!File.isLocked) {
+            return
+        }
+        // const target = ev.target.closest('.footnotes, [mdtype="table"], .md-task-list-item, .md-image, .ty-cm-lang-input');
+        const target = ev.target.closest('.md-image');
+        if (target) {
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
+    }, true)
+
     if (config.READ_ONLY_DEFAULT) {
         const _timer = setInterval(() => {
             if (File) {
