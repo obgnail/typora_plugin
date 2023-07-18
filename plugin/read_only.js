@@ -2,7 +2,7 @@
     const config = {
         // 启用脚本,若为false,以下配置全部失效
         ENABLE: true,
-        // 进入和脱离只读模式的快捷键
+        // 进入和脱离只读模式的快捷键。如果修改快捷键，请修改config.READ_ONLY_DEFAULT处的代码
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "R",
         // 默认使用只读模式
         READ_ONLY_DEFAULT: false,
@@ -47,9 +47,14 @@
             ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "_",  // 缩小
             ev => metaKeyPressed(ev) && ev.key === "Tab", // 应用内窗口切换
             ev => ev.shiftKey && ev.key === "F12", // 开发者工具
+
+            // 整个应用
+            ev => ev.altKey && ev.key === "F4", // 退出
         ],
 
         // 脚本内部使用
+        LOOP_DETECT_INTERVAL: 30,
+        CLICK_CHECK_INTERVAL: 500,
         FIRST_ENTER_MODE: true,
     };
 
@@ -70,6 +75,7 @@
                 <button id="ty-surpress-mode-warning-close-btn" class="btn btn-default btn-sm ty-read-only-close-btn" style="float:right;margin-right: -18px;margin-top:1px;" data-localize="Dismiss" data-lg="Front">关闭</button>
             </p>
         `
+        notification.style.zIndex = "902";
         notification.insertAdjacentHTML('beforeend', div);
         document.querySelector(".ty-read-only-close-btn").addEventListener("click", ev => notification.style.display = "none");
         if (notification.style.display !== "block") {
@@ -78,8 +84,10 @@
         config.FIRST_ENTER_MODE = false;
     }
 
-    if (config.READ_ONLY_DEFAULT) {
-        showNotification();
+    const hideNotification = () => {
+        if (document.getElementById("md-notification").style.display !== "none") {
+            document.querySelector(".ty-read-only-close-btn").click();
+        }
     }
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
@@ -93,13 +101,24 @@
         return false
     }
 
+    let lastClickTime = 0;
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
             showNotification();
-            File.isLocked ? File.unlock() : File.lock();
+            if (File.isLocked) {
+                File.unlock();
+                hideNotification();
+            } else {
+                File.lock();
+            }
         }
 
         if (File.isLocked) {
+            // 无奈之举
+            if (ev.timeStamp - lastClickTime > config.CLICK_CHECK_INTERVAL) {
+                File.lock();
+            }
+
             // File.isLocked 也挡不住回车键 :(
             // 为什么要使用isExclude排除按键？因为输入法激活状态下键入能突破 File.isLocked
             if ((ev.key === "Enter") || !isExclude(ev)) {
@@ -108,6 +127,29 @@
             }
         }
     }, true)
+
+    document.getElementById("write").addEventListener("mousedown", ev => {
+        if (!File.isLocked) {
+            return
+        }
+        // const target = ev.target.closest('.footnotes, [mdtype="table"], .md-task-list-item, .md-image, .ty-cm-lang-input');
+        const target = ev.target.closest('.md-image');
+        if (target) {
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
+    }, true)
+
+    if (config.READ_ONLY_DEFAULT) {
+        const _timer = setInterval(() => {
+            if (File) {
+                clearInterval(_timer);
+                window.dispatchEvent(new KeyboardEvent("keydown", {
+                    key: "R", code: "R", ctrlKey: true, metaKey: true, shiftKey: true,
+                }))
+            }
+        }, config.LOOP_DETECT_INTERVAL);
+    }
 
     console.log("read_only.js had been injected");
 })()
