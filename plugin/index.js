@@ -27,7 +27,7 @@ window.onload = () => {
     _require('truncate_text', './plugin/truncate_text.js');
     _require('resize_image', './plugin/resize_image.js');
     _require('commander', './plugin/commander.js');
-    _require('copy_code', './plugin/copy_code.js');
+    _require('fence_enhance', './plugin/fence_enhance.js');
     _require('go_top', './plugin/go_top.js');
     _require('file_counter', './plugin/file_counter.js');
     _require('collapse_paragraph', './plugin/collapse_paragraph.js');

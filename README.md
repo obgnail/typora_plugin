@@ -14,7 +14,7 @@
 | 4    | commander          | 命令行环境                       | 是       |
 | 5    | read_only          | 只读模式                         | 是       |
 | 6    | collapse_paragraph | 章节折叠                         | 是       |
-| 7    | copy_code          | 一键复制代码                     | 是       |
+| 7    | fence_enhance      | 一键复制代码，折叠代码           | 是       |
 | 8    | resize_table       | 调整表格行高列宽                 | 是       |
 | 9    | resize_image       | 调整图片显示大小                 | 是       |
 | 10   | go_top             | 一键到文章顶部                   | 是       |
@@ -193,9 +193,13 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 
 
 
-### copy_code：一键复制代码
+### fence_enhance：一键复制代码，折叠代码
 
-![copy_code](assets/copy_code.png)
+![fence_enhance](assets/fence_enhance.png)
+
+> Fold、Copy 可选，如不需要，可以关闭任意一个。
+
+> fence_enhance.js 易于扩展，你可以根据自己的需要添加功能，比如显示代码块编程语言。
 
 
 
