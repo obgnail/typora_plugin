@@ -54,6 +54,7 @@
 
         // 脚本内部使用
         LOOP_DETECT_INTERVAL: 30,
+        CLICK_CHECK_INTERVAL: 500,
         FIRST_ENTER_MODE: true,
     };
 
@@ -100,6 +101,7 @@
         return false
     }
 
+    let lastClickTime = 0;
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
             showNotification();
@@ -112,6 +114,11 @@
         }
 
         if (File.isLocked) {
+            // 无奈之举
+            if (ev.timeStamp - lastClickTime > config.CLICK_CHECK_INTERVAL) {
+                File.lock();
+            }
+
             // File.isLocked 也挡不住回车键 :(
             // 为什么要使用isExclude排除按键？因为输入法激活状态下键入能突破 File.isLocked
             if ((ev.key === "Enter") || !isExclude(ev)) {
