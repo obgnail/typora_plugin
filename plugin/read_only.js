@@ -122,6 +122,7 @@
             // File.isLocked 也挡不住回车键 :(
             // 为什么要使用isExclude排除按键？因为输入法激活状态下键入能突破 File.isLocked
             if ((ev.key === "Enter") || !isExclude(ev)) {
+                document.activeElement.blur();
                 ev.preventDefault();
                 ev.stopPropagation();
             }
