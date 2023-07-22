@@ -1,12 +1,6 @@
 (() => {
     const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "K",
-    }
-
-    if (!config.ENABLE) {
-        return
     }
 
     const Package = {

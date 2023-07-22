@@ -1,14 +1,8 @@
 (() => {
     const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
         // 折叠状态下的颜色
         BACKGROUND_COLOR: "#ffafa3",
-    }
-
-    if (!config.ENABLE) {
-        return
-    }
+    };
 
     (() => {
         const css = `

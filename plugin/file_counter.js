@@ -1,7 +1,5 @@
 (() => {
     const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
         // Typora允许打开小于2000000(即MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
         MAX_SIZE: File.MAX_FILE_SIZE,
         // Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略

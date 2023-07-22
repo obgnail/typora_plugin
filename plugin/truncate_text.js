@@ -1,7 +1,5 @@
 (() => {
     const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
         // 快捷键
         HOTKEY_HIDE_FRONT: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "B",
         HOTKEY_SHOW_ALL: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "U",
@@ -11,10 +9,6 @@
         REMAIN_LENGTH: 80,
         // make users feel happy while waiting
         SHOW_MASK: true,
-    }
-
-    if (!config.ENABLE) {
-        return
     }
 
     if (config.SHOW_MASK) {

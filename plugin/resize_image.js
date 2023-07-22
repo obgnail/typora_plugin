@@ -1,13 +1,7 @@
 (() => {
     const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
         // 滚动的放缩倍率
         SCALE: 0.1,
-    }
-
-    if (!config.ENABLE) {
-        return
     }
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;

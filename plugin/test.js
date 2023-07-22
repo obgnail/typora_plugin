@@ -1,11 +1,4 @@
 (() => {
-    const config = {
-        ENABLE: false,
-    }
-    if (!config.ENABLE) {
-        return
-    }
-
     // const HOTKEY = ev => metaKeyPressed(ev) && ev.key === "n";
     // const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
     //

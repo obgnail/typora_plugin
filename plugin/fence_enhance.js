@@ -12,8 +12,6 @@
             坏处是:绿皮
     */
     const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
         // 启用复制代码功能
         ENABLE_COPY: true,
         // 启用折叠代码功能
@@ -23,11 +21,7 @@
 
         LOOP_DETECT_INTERVAL: 20,
         CLICK_CHECK_INTERVAL: 300,
-    }
-
-    if (!config.ENABLE) {
-        return
-    }
+    };
 
     (() => {
         const css = `

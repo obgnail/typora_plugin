@@ -1,12 +1,7 @@
 (() => {
     const config = {
-        ENABLE: true,
         // 距顶部50像素开始显示
         THRESHOLD: 50,
-    }
-
-    if (!config.ENABLE) {
-        return
     }
 
     const goTopDiv = document.createElement("div");

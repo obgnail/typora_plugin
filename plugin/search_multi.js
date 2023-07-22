@@ -7,8 +7,6 @@
     }
 
     const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
         // 允许拖动模态框
         ALLOW_DRAG: true,
         // 模态框自动隐藏
@@ -31,10 +29,6 @@
         // 快捷键ctrl/command+shift+P打开模态框
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "P",
     };
-
-    if (!config.ENABLE) {
-        return
-    }
 
     (() => {
         const modal_css = `
