@@ -294,10 +294,16 @@
         }
     })
 
+    const Call = () => {
+        modal.modal.style.display = "block";
+        modal.input.select();
+    }
+
+    module.exports = {Call};
+
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
-            modal.modal.style.display = "block";
-            modal.input.select();
+            Call()
             ev.preventDefault();
             ev.stopPropagation();
         }

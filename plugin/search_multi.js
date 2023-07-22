@@ -243,6 +243,7 @@
                 }
             }
         }
+
         traverse(dir).then(then).catch(err => console.log(err));
     }
 
@@ -449,10 +450,14 @@
         hideIfNeed();
     });
 
+    const Call = () => {
+        modal.modal.style.display = "block";
+        modal.input.select()
+    }
+
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
-            modal.modal.style.display = "block";
-            modal.input.select();
+            Call();
             ev.preventDefault();
             ev.stopPropagation();
         }
@@ -464,6 +469,8 @@
         ev.preventDefault();
         ev.stopPropagation();
     })
+
+    module.exports = {Call};
 
     console.log("search_multi.js had been injected");
 })();

@@ -28,17 +28,21 @@
         return formatter(content);
     }
 
+    const Call = () => {
+        save().then(() => {
+            const filepath = getFilePath();
+            const content = read(filepath);
+            const formattedContent = format(content);
+            write(filepath, formattedContent);
+        })
+    }
+    module.exports = {Call};
+
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
+            Call();
             ev.preventDefault();
             ev.stopPropagation();
-
-            save().then(() => {
-                const filepath = getFilePath();
-                const content = read(filepath);
-                const formattedContent = format(content);
-                write(filepath, formattedContent);
-            })
         }
     }, true)
 

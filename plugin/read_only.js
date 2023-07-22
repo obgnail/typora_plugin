@@ -146,5 +146,13 @@
         }, config.LOOP_DETECT_INTERVAL);
     }
 
+    const Call = () => {
+        window.dispatchEvent(new KeyboardEvent("keydown", {
+            key: "R", code: "R", ctrlKey: true, metaKey: true, shiftKey: true,
+        }))
+    }
+
+    module.exports = {Call};
+
     console.log("read_only.js had been injected");
 })()

@@ -95,7 +95,8 @@ window.onload = () => {
             const filepath = _path.join(dirname, plugin.src);
             _fs.access(filepath, err => {
                 if (!err) {
-                    reqnode(filepath);
+                    const {Call} = reqnode(filepath);
+                    plugin.call = Call;
                 } else {
                     console.log("has no path:", filepath);
                 }
@@ -151,7 +152,7 @@ window.onload = () => {
             return false;
         };
 
-        $("#context-menu, #user-context-menu").on("mouseenter", "[data-key]", function () {
+        $("#context-menu").on("mouseenter", "[data-key]", function () {
             const e = $(this);
             if ("typora-plugin" === e.attr("data-key")) {
                 addStyle("#plugin-menu", e);
@@ -160,6 +161,13 @@ window.onload = () => {
                 document.querySelector("#plugin-menu").classList.remove("show");
                 document.querySelector("[data-key='typora-plugin']").classList.remove("active");
             }
+        })
+
+        $("#plugin-menu").on("click", "[data-key]", function () {
+            const name = this.getAttribute("data-key");
+            const plugins = global._plugins.filter(plugin => plugin.name === name);
+            plugins && plugins[0] && plugins[0].call && plugins[0].call();
+            File.editor.contextMenu.hide();
         })
     }
 
