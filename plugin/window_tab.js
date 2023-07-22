@@ -229,6 +229,7 @@
             }
             if (tab.path === wantOpenPath) {
                 tabDiv.classList.add("active");
+                tabDiv.scrollIntoViewIfNeeded();
                 scrollContent(tab);
             } else {
                 tabDiv.classList.remove("active");
