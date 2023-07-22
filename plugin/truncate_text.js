@@ -102,68 +102,70 @@
         }
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
         const totalWidth = window.innerWidth || document.documentElement.clientWidth;
-        const { top, right, bottom, left } = el.getBoundingClientRect();
+        const {top, right, bottom, left} = el.getBoundingClientRect();
         return (top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight);
     }
 
-    // 隐藏最前面的文本段
+    const Call = type => {
+        const write = document.getElementById("write");
+        withMask(() => {
+            switch (type) {
+                case "hide_front":
+                    const length = write.children.length;
+                    if (length > config.REMAIN_LENGTH) {
+                        for (let i = 0; i <= length - config.REMAIN_LENGTH; i++) {
+                            write.children[i].style.display = "none";
+                        }
+                    }
+                    return
+                case "show_all":
+                    write.children.forEach(el => el.style = "")
+                    return
+                case "hide_base_view":
+                    let start = 0, end = 0;
+                    write.children.forEach((el, idx) => {
+                        if (isInViewBox(el)) {
+                            if (!start) {
+                                start = idx
+                            }
+                            start = Math.min(start, idx);
+                            end = Math.max(end, idx);
+                        }
+                    });
+
+                    const halfLength = config.REMAIN_LENGTH / 2;
+                    start = Math.max(start - halfLength, 0);
+                    end = Math.min(end + halfLength, write.children.length);
+
+                    write.children.forEach((el, idx) => {
+                        if (idx < start || idx > end) {
+                            el.style.display = "none";
+                        } else {
+                            el.style = "";
+                        }
+                    });
+                    return;
+            }
+        })
+    }
+
     window.addEventListener("keydown", ev => {
+        let type;
         if (config.HOTKEY_HIDE_FRONT(ev)) {
+            type = "hide_front"; // 隐藏最前面的文本段
+        } else if (config.HOTKEY_SHOW_ALL(ev)) {
+            type = "show_all"; // 重新显示所有文本段
+        } else if (config.HOTKEY_HIDE_BASE_VIEW(ev)) {
+            type = "hide_base_view"; // 显示当前可视范围上下文本段
+        }
+
+        if (type) {
+            Call(type);
             ev.preventDefault();
             ev.stopPropagation();
-
-            withMask(() => {
-                const write = document.getElementById("write");
-                const length = write.children.length;
-                if (length > config.REMAIN_LENGTH) {
-                    for (let i = 0; i <= length - config.REMAIN_LENGTH; i++) {
-                        write.children[i].style.display = "none";
-                    }
-                }
-            })
         }
     }, true)
 
-    // 重新显示所有文本段
-    window.addEventListener("keydown", ev => {
-        if (config.HOTKEY_SHOW_ALL(ev)) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            withMask(() => document.getElementById("write").children.forEach(el => el.style = ""));
-        }
-    }, true)
-
-    // 显示当前可视范围上下文本段
-    window.addEventListener("keydown", ev => {
-        if (config.HOTKEY_HIDE_BASE_VIEW(ev)) {
-            ev.preventDefault();
-            ev.stopPropagation();
-
-            withMask(() => {
-                let start = 0, end = 0;
-                const write = document.getElementById("write");
-                write.children.forEach((el, idx) => {
-                    if (isInViewBox(el)) {
-                        if (!start) { start = idx }
-                        start = Math.min(start, idx);
-                        end = Math.max(end, idx);
-                    }
-                });
-
-                const halfLength = config.REMAIN_LENGTH / 2;
-                start = Math.max(start - halfLength, 0);
-                end = Math.min(end + halfLength, write.children.length);
-
-                write.children.forEach((el, idx) => {
-                    if (idx < start || idx > end) {
-                        el.style.display = "none";
-                    } else {
-                        el.style = "";
-                    }
-                });
-            });
-        }
-    }, true)
-
+    module.exports = {Call};
     console.log("truncate_text.js had been injected");
 })()
