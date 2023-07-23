@@ -22,4 +22,3 @@ class BlockCode {
     }
 }
 exports.BlockCode = BlockCode;
-//# sourceMappingURL=block-code.js.map

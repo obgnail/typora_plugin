@@ -12,4 +12,3 @@ class HTMLTag {
     }
 }
 exports.HTMLTag = HTMLTag;
-//# sourceMappingURL=html-tag.js.map

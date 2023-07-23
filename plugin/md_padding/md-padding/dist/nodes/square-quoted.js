@@ -10,4 +10,3 @@ class SquareQuoted extends delimited_1.Delimited {
     }
 }
 exports.SquareQuoted = SquareQuoted;
-//# sourceMappingURL=square-quoted.js.map

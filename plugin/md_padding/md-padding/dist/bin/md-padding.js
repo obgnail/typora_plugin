@@ -30,4 +30,3 @@ if (yargs.argv.i) {
 else {
     process.stdout.write(output);
 }
-//# sourceMappingURL=md-padding.js.map

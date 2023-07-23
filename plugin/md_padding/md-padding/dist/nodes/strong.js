@@ -12,4 +12,3 @@ class Strong extends delimited_1.Delimited {
     }
 }
 exports.Strong = Strong;
-//# sourceMappingURL=strong.js.map

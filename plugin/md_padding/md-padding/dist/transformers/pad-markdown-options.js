@@ -7,4 +7,3 @@ function normalize(options = {}) {
     };
 }
 exports.normalize = normalize;
-//# sourceMappingURL=pad-markdown-options.js.map

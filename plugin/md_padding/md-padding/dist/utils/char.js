@@ -52,4 +52,3 @@ function isStartCharacter(char) {
     return '"'.includes(char);
 }
 exports.isStartCharacter = isStartCharacter;
-//# sourceMappingURL=char.js.map

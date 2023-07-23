@@ -105,4 +105,3 @@ function* bash(code, parseMarkdown, options) {
         yield new raw_1.Raw(code.slice(prevI, N));
     }
 }
-//# sourceMappingURL=parse-code.js.map

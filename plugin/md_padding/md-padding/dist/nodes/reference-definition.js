@@ -16,4 +16,3 @@ class ReferenceDefinition {
     }
 }
 exports.ReferenceDefinition = ReferenceDefinition;
-//# sourceMappingURL=reference-definition.js.map

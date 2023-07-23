@@ -13,4 +13,3 @@ class Math {
     }
 }
 exports.Math = Math;
-//# sourceMappingURL=math.js.map

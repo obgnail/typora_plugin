@@ -1,6 +1,6 @@
 (() => {
     const config = {
-        // 进入和脱离只读模式的快捷键。如果修改快捷键，请修改config.READ_ONLY_DEFAULT处的代码
+        // 进入和脱离只读模式的快捷键。如果修改快捷键，请修改Call函数代码
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "R",
         // 默认使用只读模式
         READ_ONLY_DEFAULT: false,
@@ -135,21 +135,19 @@
         }
     }, true)
 
-    if (config.READ_ONLY_DEFAULT) {
-        const _timer = setInterval(() => {
-            if (File) {
-                clearInterval(_timer);
-                window.dispatchEvent(new KeyboardEvent("keydown", {
-                    key: "R", code: "R", ctrlKey: true, metaKey: true, shiftKey: true,
-                }))
-            }
-        }, config.LOOP_DETECT_INTERVAL);
-    }
-
     const Call = () => {
         window.dispatchEvent(new KeyboardEvent("keydown", {
             key: "R", code: "R", ctrlKey: true, metaKey: true, shiftKey: true,
         }))
+    }
+
+    if (config.READ_ONLY_DEFAULT) {
+        const _timer = setInterval(() => {
+            if (File) {
+                clearInterval(_timer);
+                Call();
+            }
+        }, config.LOOP_DETECT_INTERVAL);
     }
 
     module.exports = {Call};

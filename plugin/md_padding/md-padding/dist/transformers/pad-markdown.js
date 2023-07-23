@@ -11,4 +11,3 @@ function padMarkdown(input, options) {
     return doc.toMarkdown();
 }
 exports.padMarkdown = padMarkdown;
-//# sourceMappingURL=pad-markdown.js.map

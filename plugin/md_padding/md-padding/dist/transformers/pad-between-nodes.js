@@ -33,4 +33,3 @@ function needPadding(lhs, rhs) {
         return !(0, type_guards_1.isUnicodeString)(rhs);
     return true;
 }
-//# sourceMappingURL=pad-between-nodes.js.map

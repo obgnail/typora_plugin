@@ -18,4 +18,3 @@ class Blank {
     }
 }
 exports.Blank = Blank;
-//# sourceMappingURL=blank.js.map

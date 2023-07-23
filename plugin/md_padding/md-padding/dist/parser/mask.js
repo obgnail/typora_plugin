@@ -35,4 +35,3 @@ class Mask {
     }
 }
 exports.Mask = Mask;
-//# sourceMappingURL=mask.js.map

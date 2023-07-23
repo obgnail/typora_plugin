@@ -6,15 +6,18 @@
     const Package = {
         Path: reqnode("path"),
         Fs: reqnode("fs"),
-        File: global.File,
-        ClientCommand: global.ClientCommand,
     }
 
-    const metaKeyPressed = ev => Package.File.isMac ? ev.metaKey : ev.ctrlKey;
-    const getFilePath = () => Package.File.filePath || Package.File.bundle && Package.File.bundle.filePath;
+    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
+    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
     const read = filepath => Package.Fs.readFileSync(filepath, 'utf-8');
     const write = (filepath, content) => Package.Fs.writeFileSync(filepath, content);
     const save = () => File.saveUseNode();
+    const reload = content => {
+        const scrollTop = document.querySelector("content").scrollTop;
+        File.reloadContent(content, {"fromDiskChange": true, "onInit": true})
+        document.querySelector("content").scrollTop = scrollTop;
+    };
 
     const getFormatter = () => {
         const dirname = global.dirname || global.__dirname;
@@ -34,6 +37,7 @@
             const content = read(filepath);
             const formattedContent = format(content);
             write(filepath, formattedContent);
+            reload(formattedContent);
         })
     }
     module.exports = {Call};
