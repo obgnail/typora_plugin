@@ -20,7 +20,8 @@
 
         const clickablePlugins = [];
         const notClickablePlugins = [];
-        global._plugins.forEach(plugin => {
+        const enablePlugins = global._plugins.filter(plugin => plugin.enable === true);
+        enablePlugins.forEach(plugin => {
             const style = (plugin.clickable) ? "" : `style="pointer-events: none;color: #c4c6cc;"`;
             const content = (!plugin.call_args) ? plugin.name : `<span data-lg="Menu">${plugin.name}</span> <i class="fa fa-caret-right"></i>`;
             const Class = (!plugin.call_args) ? "" : `class="plugin-has-args"`;
@@ -63,7 +64,7 @@
             const pluginMenu = $("#plugin-menu");
             pluginMenu.on("click", "[data-key]", function () {
                 const name = this.getAttribute("data-key");
-                const plugins = global._plugins.filter(plugin => plugin.name === name);
+                const plugins = enablePlugins.filter(plugin => plugin.name === name);
                 plugins && plugins[0] && plugins[0].call && plugins[0].call();
                 File.editor.contextMenu.hide();
             })
@@ -81,7 +82,7 @@
         }, 500)
 
         setTimeout(() => {
-            global._plugins.forEach(plugin => {
+            enablePlugins.forEach(plugin => {
                 if (plugin.call_args) {
                     const li = plugin.call_args.map(arg => `<li data-key="${arg.arg_name}" arg_value="${arg.arg_value}">
                             <a role="menuitem" data-lg="Menu">${arg.arg_name}</a></li>`)
@@ -96,7 +97,7 @@
             $(".plugin-menu-third").on("click", "[data-key]", function () {
                 const pluginName = this.parentElement.getAttribute("plugin_name");
                 const argValue = this.getAttribute("arg_value");
-                const plugins = global._plugins.filter(plugin => plugin.name === pluginName);
+                const plugins = enablePlugins.filter(plugin => plugin.name === pluginName);
                 plugins && plugins[0] && plugins[0].call && plugins[0].call(argValue);
                 File.editor.contextMenu.hide();
             })

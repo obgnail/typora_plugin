@@ -140,6 +140,7 @@ window.onload = () => {
                         plugin.call_args = CallArgs;
                         resolve(plugin);
                     } else {
+                        plugin.enable = false;
                         console.log("has no path:", filepath);
                         reject(err);
                     }
