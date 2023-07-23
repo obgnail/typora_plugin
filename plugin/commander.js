@@ -7,8 +7,6 @@
     }
 
     const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
         // 快捷键
         HOTKEY: ev => metaKeyPressed(ev) && ev.key === "g",
         // 允许拖动模态框
@@ -23,11 +21,7 @@
             {name: "WT", shell: SHELL.CMD_BASH, cmd: "cd $d && wt"},
             {name: "GitCommit", shell: SHELL.CMD_BASH, cmd: `cd $m && git add . && git commit -m "message"`},
         ],
-    }
-
-    if (!config.ENABLE) {
-        return
-    }
+    };
 
     (() => {
         const modal_css = `
@@ -300,10 +294,16 @@
         }
     })
 
+    const Call = () => {
+        modal.modal.style.display = "block";
+        modal.input.select();
+    }
+
+    module.exports = {Call};
+
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
-            modal.modal.style.display = "block";
-            modal.input.select();
+            Call()
             ev.preventDefault();
             ev.stopPropagation();
         }

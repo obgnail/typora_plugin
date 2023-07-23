@@ -1,7 +1,5 @@
 (() => {
     const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
         // 进入和脱离只读模式的快捷键。如果修改快捷键，请修改config.READ_ONLY_DEFAULT处的代码
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "R",
         // 默认使用只读模式
@@ -57,10 +55,6 @@
         CLICK_CHECK_INTERVAL: 500,
         FIRST_ENTER_MODE: true,
     };
-
-    if (!config.ENABLE) {
-        return
-    }
 
     const showNotification = () => {
         if (!config.FIRST_ENTER_MODE) {
@@ -122,6 +116,7 @@
             // File.isLocked 也挡不住回车键 :(
             // 为什么要使用isExclude排除按键？因为输入法激活状态下键入能突破 File.isLocked
             if ((ev.key === "Enter") || !isExclude(ev)) {
+                document.activeElement.blur();
                 ev.preventDefault();
                 ev.stopPropagation();
             }
@@ -150,6 +145,14 @@
             }
         }, config.LOOP_DETECT_INTERVAL);
     }
+
+    const Call = () => {
+        window.dispatchEvent(new KeyboardEvent("keydown", {
+            key: "R", code: "R", ctrlKey: true, metaKey: true, shiftKey: true,
+        }))
+    }
+
+    module.exports = {Call};
 
     console.log("read_only.js had been injected");
 })()

@@ -1,12 +1,6 @@
 (() => {
     const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "K",
-    }
-
-    if (!config.ENABLE) {
-        return
     }
 
     const Package = {
@@ -34,17 +28,21 @@
         return formatter(content);
     }
 
+    const Call = () => {
+        save().then(() => {
+            const filepath = getFilePath();
+            const content = read(filepath);
+            const formattedContent = format(content);
+            write(filepath, formattedContent);
+        })
+    }
+    module.exports = {Call};
+
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
+            Call();
             ev.preventDefault();
             ev.stopPropagation();
-
-            save().then(() => {
-                const filepath = getFilePath();
-                const content = read(filepath);
-                const formattedContent = format(content);
-                write(filepath, formattedContent);
-            })
         }
     }, true)
 

@@ -1,12 +1,7 @@
 (() => {
     const config = {
-        ENABLE: true,
         // 距顶部50像素开始显示
         THRESHOLD: 50,
-    }
-
-    if (!config.ENABLE) {
-        return
     }
 
     const goTopDiv = document.createElement("div");
@@ -23,14 +18,18 @@
     const body = document.querySelector("body");
     body.appendChild(goTopDiv);
 
+    const Call = () => $("content").animate({scrollTop: '0'}, 600);
     document.getElementById("typora-go-top").addEventListener("click", ev => {
-        $("content").animate({scrollTop: '0'}, 600);
-    })
+        Call();
+        ev.preventDefault();
+        ev.stopPropagation();
+    });
 
     const content = document.querySelector("content");
     content.addEventListener("scroll", ev => {
         goTopDiv.style.display = (content.scrollTop > config.THRESHOLD) ? "block" : "none";
     })
 
+    module.exports = {Call};
     console.log("go_top.js had been injected");
 })()

@@ -1,16 +1,10 @@
 (() => {
     const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
         // 是否去除表格单元格最小宽度限制
         REMOVE_MIX_WIDTH: true,
         // 单元格边线的拖拽范围
         THRESHOLD: 20,
-    }
-
-    if (!config.ENABLE) {
-        return
-    }
+    };
 
     (() => {
         if (config.REMOVE_MIX_WIDTH) {

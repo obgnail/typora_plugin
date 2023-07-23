@@ -1,7 +1,5 @@
 (() => {
     const config = {
-        // 启用脚本,若为false,以下配置全部失效
-        ENABLE: true,
         // 隐藏掉titleBar
         HIDE_WINDOW_TITLE_BAR: true,
         // 允许拖拽排序标签页
@@ -15,10 +13,6 @@
         CLOSE_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "w",
         SWITCH_TAB_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "Tab",
     };
-
-    if (!config.ENABLE) {
-        return
-    }
 
     if (window._options.framelessWindow && config.HIDE_WINDOW_TITLE_BAR) {
         document.querySelector("header").style.zIndex = "897";
@@ -229,6 +223,7 @@
             }
             if (tab.path === wantOpenPath) {
                 tabDiv.classList.add("active");
+                tabDiv.scrollIntoViewIfNeeded();
                 scrollContent(tab);
             } else {
                 tabDiv.classList.remove("active");
