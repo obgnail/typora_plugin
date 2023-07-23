@@ -12,4 +12,3 @@ class Emphasis extends delimited_1.Delimited {
     }
 }
 exports.Emphasis = Emphasis;
-//# sourceMappingURL=empasis.js.map

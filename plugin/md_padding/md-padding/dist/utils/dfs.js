@@ -8,4 +8,3 @@ function preOrder(root, visitor) {
     }
 }
 exports.preOrder = preOrder;
-//# sourceMappingURL=dfs.js.map

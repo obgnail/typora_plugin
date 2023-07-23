@@ -58,4 +58,3 @@ class Punctuation {
 }
 exports.Punctuation = Punctuation;
 Punctuation.cache = new Map();
-//# sourceMappingURL=punctuation.js.map

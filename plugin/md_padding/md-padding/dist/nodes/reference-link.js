@@ -16,4 +16,3 @@ class ReferenceLink {
     }
 }
 exports.ReferenceLink = ReferenceLink;
-//# sourceMappingURL=reference-link.js.map

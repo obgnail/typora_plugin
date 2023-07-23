@@ -21,4 +21,3 @@ class UnicodeString {
     }
 }
 exports.UnicodeString = UnicodeString;
-//# sourceMappingURL=unicode-string.js.map

@@ -17,4 +17,3 @@ class ReferenceImage {
     }
 }
 exports.ReferenceImage = ReferenceImage;
-//# sourceMappingURL=reference-image.js.map

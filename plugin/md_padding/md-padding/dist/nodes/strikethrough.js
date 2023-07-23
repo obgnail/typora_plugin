@@ -11,4 +11,3 @@ class Strikethrough extends delimited_1.Delimited {
     }
 }
 exports.Strikethrough = Strikethrough;
-//# sourceMappingURL=strikethrough.js.map

@@ -16,4 +16,3 @@ class InlineLink {
     }
 }
 exports.InlineLink = InlineLink;
-//# sourceMappingURL=inline-link.js.map

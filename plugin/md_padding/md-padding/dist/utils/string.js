@@ -5,4 +5,3 @@ function matchSubstring(code, begin, pattern) {
     return code.substr(begin, pattern.length) === pattern;
 }
 exports.matchSubstring = matchSubstring;
-//# sourceMappingURL=string.js.map

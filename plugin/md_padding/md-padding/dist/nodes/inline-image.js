@@ -17,4 +17,3 @@ class InlineImage {
     }
 }
 exports.InlineImage = InlineImage;
-//# sourceMappingURL=inline-image.js.map

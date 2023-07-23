@@ -15,4 +15,3 @@ class Delimited {
     }
 }
 exports.Delimited = Delimited;
-//# sourceMappingURL=delimited.js.map

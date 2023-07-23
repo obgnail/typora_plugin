@@ -31,4 +31,3 @@ function compactArray(tokens) {
         tokens.pop();
 }
 exports.compactArray = compactArray;
-//# sourceMappingURL=compact.js.map

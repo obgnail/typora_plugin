@@ -13,4 +13,3 @@ class InlineCode {
     }
 }
 exports.InlineCode = InlineCode;
-//# sourceMappingURL=inline-code.js.map

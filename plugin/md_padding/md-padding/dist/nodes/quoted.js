@@ -10,4 +10,3 @@ class Quoted extends delimited_1.Delimited {
     }
 }
 exports.Quoted = Quoted;
-//# sourceMappingURL=quoted.js.map

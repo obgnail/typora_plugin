@@ -26,4 +26,3 @@ var State;
     State[State["Quoted"] = 18] = "Quoted";
     State[State["Init"] = 19] = "Init";
 })(State = exports.State || (exports.State = {}));
-//# sourceMappingURL=state.js.map

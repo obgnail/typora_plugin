@@ -21,4 +21,3 @@ exports.stateMasks = {
     [state_1.State.UnorderedListItem]: -916176 /* Block */,
     [state_1.State.Init]: 0 /* None */
 };
-//# sourceMappingURL=state-masks.js.map
