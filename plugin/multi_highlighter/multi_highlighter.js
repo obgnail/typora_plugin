@@ -126,7 +126,7 @@ class InstantSearch {
         const caseSensitive = token.caseSensitive || this.defaultCaseSensitive
         const tokenStr = caseSensitive ? token.text : token.text.toLowerCase()
 
-        for (let i = 0; i < text.length; i++) {
+        for (let i = 0; i < text.length;) {
             const char = text[i]
             const next = (
                 `${state.current || ""}${caseSensitive ? char : char.toLowerCase()}`
@@ -134,12 +134,17 @@ class InstantSearch {
             )
             if (next === tokenStr) {
                 this.transitionState(StateTransition.match, state, node, i, next)
+                i++
             } else {
                 const pos = tokenStr.indexOf(next)
                 if (pos === 0) {
                     this.transitionState(StateTransition.valid, state, node, i, next)
+                    i++
                 } else {
                     this.transitionState(StateTransition.empty, state, node, i, next)
+                    if (next.length === 1) {
+                        i++
+                    }
                 }
             }
         }
