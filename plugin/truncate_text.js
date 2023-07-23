@@ -106,6 +106,20 @@
         return (top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight);
     }
 
+    const CallArgs = [
+        {
+            "arg_name": "隐藏最前面",
+            "arg_value": "hide_front"
+        },
+        {
+            "arg_name": "重新显示",
+            "arg_value": "show_all"
+        },
+        {
+            "arg_name": "根据当前可视范围显示",
+            "arg_value": "hide_base_view"
+        }
+    ];
     const Call = type => {
         const write = document.getElementById("write");
         withMask(() => {
@@ -166,6 +180,6 @@
         }
     }, true)
 
-    module.exports = {Call};
+    module.exports = {Call, CallArgs};
     console.log("truncate_text.js had been injected");
 })()
