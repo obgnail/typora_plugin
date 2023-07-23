@@ -1,6 +1,6 @@
 (() => {
     const Package = {
-        Path: reqnode('path'), // Typora将require封装为reqnode，避免外部引入electron核心功能模块(虽然没有卵用)
+        Path: reqnode('path'), // Typora将require封装为reqnode，避免外部引入electron核心功能模块
         Fs: reqnode('fs'),
         File: File,            // Typora第一方库:文件、编辑器相关
         Client: ClientCommand, // Typora第一方库:窗口、服务相关
