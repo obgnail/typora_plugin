@@ -20,8 +20,9 @@
 | 10   | go_top             | 一键到文章顶部                   | 是       |
 | 11   | file_counter       | 显示目录下的文件数               | 是       |
 | 12   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能 | 是       |
-| 13   | mermaid_replace    | 替换 mermaid 组件                | 否       |
-| 14   | old_window_tab     | 标签页管理（已废弃）             | 否       |
+| 13   | right_click_menu   | 右键菜单统一管理、调用插件       | 是       |
+| 14   | mermaid_replace    | 替换 mermaid 组件                | 否       |
+| 15   | old_window_tab     | 标签页管理（已废弃）             | 否       |
 
 > 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
 
@@ -206,6 +207,14 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 ### file_counter：显示文件数
 
 ![file_count](assets/file_count.png)
+
+
+
+### right_click_menu：右键菜单统一管理插件
+
+![right_click_menu](assets/right_click_menu.png)
+
+> 当快捷键冲突时，可以使用此插件通过鼠标点击调用插件。
 
 
 
