@@ -90,7 +90,7 @@ window.onload = () => {
             call_args: null,
         },
         {
-            name: "盘古之白",
+            name: "中英文混排优化",
             src: "./plugin/md_padding/index.js",
             enable: true,
             clickable: true,
