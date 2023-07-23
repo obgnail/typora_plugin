@@ -98,6 +98,14 @@ window.onload = () => {
             call_args: null,
         },
         {
+            name: "多关键字高亮",
+            src: "./plugin/multi_highlighter/index.js",
+            enable: true,
+            clickable: true,
+            call: null,
+            call_args: null,
+        },
+        {
             name: "mermaid替换",
             src: "./plugin/mermaid_replace/index.js",
             enable: true,
@@ -116,7 +124,7 @@ window.onload = () => {
         {
             name: "测试专用",
             src: "./plugin/test.js",
-            enable: false,
+            enable: true,
             clickable: false,
             call: null,
             call_args: null,
