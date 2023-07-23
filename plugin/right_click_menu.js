@@ -1,6 +1,6 @@
 (() => {
     const config = {
-        LOOP_DETECT_INTERVAL: 200.
+        LOOP_DETECT_INTERVAL: 200
     }
 
     const appendMenu = () => {
@@ -110,6 +110,7 @@
             } else {
                 document.querySelector("#plugin-menu").classList.remove("show");
                 document.querySelector("[data-key='typora-plugin']").classList.remove("active");
+                document.querySelectorAll(".plugin-menu-third").forEach(ele => ele.classList.remove("show"));
             }
         })
     }
@@ -121,5 +122,5 @@
         }
     }, config.LOOP_DETECT_INTERVAL);
 
-    console.log("plugin_menu.js had been injected");
+    console.log("right_click_menu.js had been injected");
 })()

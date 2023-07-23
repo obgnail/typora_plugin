@@ -107,7 +107,7 @@ window.onload = () => {
         },
         {
             name: "右键菜单",
-            src: "./plugin/plugin_menu.js",
+            src: "./plugin/right_click_menu.js",
             enable: true,
             clickable: false,
             call: null,
@@ -123,16 +123,14 @@ window.onload = () => {
         },
     ]
 
-    const loadPlugin = plugins => {
+    const loadPlugin = () => {
         const _path = reqnode("path");
         const _fs = reqnode("fs");
         const dirname = global.dirname || global.__dirname;
         const promises = [];
 
-        plugins.forEach(plugin => {
-            if (!plugin.enable) {
-                return
-            }
+        global._plugins.forEach(plugin => {
+            if (!plugin.enable) return;
             const filepath = _path.join(dirname, plugin.src);
             const promise = new Promise((resolve, reject) => {
                 _fs.access(filepath, err => {
@@ -153,5 +151,5 @@ window.onload = () => {
         Promise.all(promises).then(() => global._plugin_had_injected = true)
     }
 
-    loadPlugin(global._plugins);
+    loadPlugin();
 }
