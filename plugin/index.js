@@ -108,15 +108,15 @@ window.onload = () => {
         {
             name: "右键菜单",
             src: "./plugin/plugin_menu.js",
-            enable: false,
+            enable: true,
             clickable: false,
             call: null,
             call_args: null,
         },
         {
-            name: "测试",
+            name: "测试专用",
             src: "./plugin/test.js",
-            enable: true,
+            enable: false,
             clickable: false,
             call: null,
             call_args: null,
@@ -130,6 +130,9 @@ window.onload = () => {
         const promises = [];
 
         plugins.forEach(plugin => {
+            if (!plugin.enable) {
+                return
+            }
             const filepath = _path.join(dirname, plugin.src);
             const promise = new Promise((resolve, reject) => {
                 _fs.access(filepath, err => {
