@@ -8,21 +8,22 @@
 
 | 序号 | 文件名             | 功能                             | 默认开启 |
 | ---- | ------------------ | -------------------------------- | -------- |
-| 1    | search_multi       | 全局多关键字搜索                 | 是       |
-| 2    | window_tab         | 标签页管理                       | 是       |
-| 3    | md_padding         | 中文与英文、数字之间添加空格     | 是       |
-| 4    | commander          | 命令行环境                       | 是       |
-| 5    | read_only          | 只读模式                         | 是       |
-| 6    | collapse_paragraph | 章节折叠                         | 是       |
-| 7    | fence_enhance      | 一键复制代码，折叠代码           | 是       |
-| 8    | resize_table       | 调整表格行高列宽                 | 是       |
-| 9    | resize_image       | 调整图片显示大小                 | 是       |
-| 10   | go_top             | 一键到文章顶部                   | 是       |
-| 11   | file_counter       | 显示目录下的文件数               | 是       |
-| 12   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能 | 是       |
-| 13   | right_click_menu   | 右键菜单统一管理、调用插件       | 是       |
-| 14   | mermaid_replace    | 替换 mermaid 组件                | 否       |
-| 15   | old_window_tab     | 标签页管理（已废弃）             | 否       |
+| 1    | window_tab         | 标签页管理                       | 是       |
+| 2    | search_multi       | 全局多关键字搜索                 | 是       |
+| 3    | multi_highlighter  | 多关键字高亮                     | 是       |
+| 4    | md_padding         | 中文与英文、数字之间添加空格     | 是       |
+| 5    | commander          | 命令行环境                       | 是       |
+| 6    | read_only          | 只读模式                         | 是       |
+| 7    | collapse_paragraph | 章节折叠                         | 是       |
+| 8    | fence_enhance      | 一键复制代码，折叠代码           | 是       |
+| 9    | file_counter       | 显示目录下的文件数               | 是       |
+| 10   | resize_table       | 调整表格行高列宽                 | 是       |
+| 11   | resize_image       | 调整图片显示大小                 | 是       |
+| 12   | go_top             | 一键到文章顶部                   | 是       |
+| 13   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能 | 是       |
+| 14   | right_click_menu   | 右键菜单统一管理、调用插件       | 是       |
+| 15   | mermaid_replace    | 替换 mermaid 组件                | 否       |
+| 16   | old_window_tab     | 标签页管理（已废弃）             | 否       |
 
 > 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
 
@@ -90,7 +91,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 - ArrowUp，ArrowDown：方向键上下选中
 - click、ctrl+enter：当前窗口打开
 - ctrl+click、ctrl+shift+enter：新窗口打开
-- drag：拖动输入框可移动搜索框
+- ctrl+drag：ctrl+拖动输入框可移动
 
 > ctrl 在 Mac 中对应 command
 
@@ -107,6 +108,19 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 - ctrl+wheel、ctrl+shift+tab、ctrl+tab：切换标签
 - ctrl+w：关闭标签
 - ctrl+click、向下拖拽标签：新窗口打开
+
+
+
+## multi_highlighter：多关键字高亮
+
+![multi_highlighter](assets/multi_highlighter.png)
+
+- ctrl+shift+H：打开搜索框
+- esc：关闭搜索框
+- enter：搜索
+- ctrl+drag：ctrl+拖动输入框可移动
+- left click：定位到下一个关键字
+- right click：定位到上一个关键字
 
 
 
@@ -134,7 +148,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 - ctrl+G：弹出执行框
 - esc：隐藏执行框
-- drag：拖动输入框可移动
+- ctrl+drag：ctrl+拖动输入框可移动
 
 支持 shell：
 

@@ -65,7 +65,7 @@
             margin-left: 0;
             margin-right: 2.5px;
             padding-left: 5px;
-            padding-right: 5px;
+            padding-right: 24px;
         }
 
         #typora-commander-form select {
@@ -321,12 +321,14 @@
 
     if (config.ALLOW_DRAG) {
         modal.input.addEventListener("mousedown", ev => {
+            if (!metaKeyPressed(ev)) return;
             ev.stopPropagation();
             const rect = modal.modal.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
 
             const onMouseMove = ev => {
+                if (!metaKeyPressed(ev)) return;
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
@@ -336,6 +338,7 @@
             }
 
             document.addEventListener("mouseup", ev => {
+                    if (!metaKeyPressed(ev)) return;
                     ev.stopPropagation();
                     ev.preventDefault();
                     document.removeEventListener('mousemove', onMouseMove);

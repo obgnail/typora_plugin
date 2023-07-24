@@ -10,8 +10,16 @@ window.onload = () => {
             call_args: null,
         },
         {
-            name: "多关键字搜索",
+            name: "全局多关键字搜索",
             src: "./plugin/search_multi.js",
+            enable: true,
+            clickable: true,
+            call: null,
+            call_args: null,
+        },
+        {
+            name: "多关键字高亮",
+            src: "./plugin/multi_highlighter/index.js",
             enable: true,
             clickable: true,
             call: null,
