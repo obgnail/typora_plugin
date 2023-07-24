@@ -68,7 +68,8 @@
             border: 1px solid #ddd;
             box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
             border-radius: 2px;
-            padding-left: 5px
+            padding-left: 5px;
+            padding-right: 30px;
         }
         
         #typora-search-multi-input input:focus {

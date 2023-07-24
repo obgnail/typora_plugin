@@ -65,7 +65,7 @@
             margin-left: 0;
             margin-right: 2.5px;
             padding-left: 5px;
-            padding-right: 5px;
+            padding-right: 24px;
         }
 
         #typora-commander-form select {
