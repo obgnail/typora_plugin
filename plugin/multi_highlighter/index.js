@@ -49,8 +49,8 @@
         #plugin-multi-highlighter {
             position: fixed;
             top: 40px;
-            left: 60%;
-            width: 600px;
+            left: 40%;
+            width: 550px;
             z-index: 9999;
             padding: 4px;
             background-color: #f8f8f8;
@@ -344,12 +344,14 @@
 
     if (config.ALLOW_DRAG) {
         modal.input.addEventListener("mousedown", ev => {
+            if (!metaKeyPressed(ev)) return;
             ev.stopPropagation();
             const rect = modal.modal.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
 
             const onMouseMove = ev => {
+                if (!metaKeyPressed(ev)) return;
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
@@ -359,6 +361,7 @@
             }
 
             document.addEventListener("mouseup", ev => {
+                    if (!metaKeyPressed(ev)) return;
                     ev.stopPropagation();
                     ev.preventDefault();
                     document.removeEventListener('mousemove', onMouseMove);
