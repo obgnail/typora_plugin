@@ -8,6 +8,11 @@
         SEPARATOR: " ",
         // 快捷键
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "H",
+        // 展示执行按钮
+        SHOW_RUN_BUTTON: true,
+        // Typora本身的限制: ctrl+F搜索后，点击任意地方原先高亮的地方就会消失
+        // 这是由于高亮都是通过添加标签实现的,但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
+        UNDO_WHEN_EDIT: true,
         // 定位时高亮关键字边框
         SHOW_KEYWORD_OUTLINE: true,
         // 定位时高亮关键字所在行
@@ -43,14 +48,20 @@
     };
 
     (() => {
+        const undo_style = {
+            input_width: (config.SHOW_RUN_BUTTON) ? "95%" : "100%",
+            case_button_right: (config.SHOW_RUN_BUTTON) ? "32px" : "6px",
+            run_button_display: (config.SHOW_RUN_BUTTON) ? "" : "none",
+        }
+
         const colors = config.STYLE_COLOR.map((color, idx) => `.plugin-search-hit${idx} { background-color: ${color}; }`)
         const colorsStyle = colors.join("\n");
         const modal_css = `
         #plugin-multi-highlighter {
             position: fixed;
-            top: 40px;
-            left: 40%;
-            width: 550px;
+            top: 15%;
+            left: 55%;
+            width: 500px;
             z-index: 9999;
             padding: 4px;
             background-color: #f8f8f8;
@@ -70,7 +81,7 @@
         }
         
         #plugin-multi-highlighter-input input {
-            width: 100%;
+            width: ${undo_style.input_width};
             font-size: 14px;
             line-height: 25px;
             max-height: 27px;
@@ -96,7 +107,7 @@
         #plugin-multi-highlighter-input .plugin-multi-highlighter-option-btn {
             position: absolute;
             padding: 1px;
-            right: 6px;
+            right: ${undo_style.case_button_right};
             top: 8px;
             opacity: .5;
             line-height: 10px;
@@ -108,6 +119,17 @@
             background: var(--active-file-bg-color);
             color: var(--active-file-text-color);
             opacity: 1
+        }
+        
+        #plugin-multi-highlighter-input .run-highlight {
+            margin-left: 4px; 
+            opacity: .5; 
+            cursor: pointer;
+            display: ${undo_style.run_button_display};
+        }
+
+        #plugin-multi-highlighter-input .run-highlight:hover {
+            opacity: 1 !important;
         }
         
         #plugin-multi-highlighter-result {
@@ -135,7 +157,7 @@
             position: absolute;
             z-index: 99999;
             animation-name: fadeit; 
-            animation-duration: 3s;
+            animation-duration: 1.5s;
         }
         
         @keyframes fadeit {
@@ -159,6 +181,7 @@
                     <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use>
                 </svg>
             </span>
+            <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
         </div>
         <div id="plugin-multi-highlighter-result" style="display: none"></div>
         `;
@@ -173,12 +196,9 @@
     const modal = {
         modal: document.getElementById('plugin-multi-highlighter'),
         input: document.querySelector("#plugin-multi-highlighter-input input"),
+        runButton: document.querySelector("#plugin-multi-highlighter-input .run-highlight"),
         caseOption: document.querySelector(".plugin-multi-highlighter-option-btn"),
         result: document.getElementById("plugin-multi-highlighter-result"),
-    }
-
-    const Package = {
-        Path: reqnode('path'),
     }
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
@@ -187,7 +207,7 @@
     const getMultiHighlighter = () => {
         if (!_multiHighlighter) {
             const dirname = global.dirname || global.__dirname;
-            const filepath = Package.Path.join(dirname, "plugin", "multi_highlighter", "multi_highlighter.js");
+            const filepath = reqnode('path').join(dirname, "plugin", "multi_highlighter", "multi_highlighter.js");
             const {InstantSearch} = reqnode(filepath);
             _multiHighlighter = InstantSearch;
         }
@@ -251,18 +271,22 @@
         return value.split(config.SEPARATOR).filter(Boolean)
     }
 
-    modal.modal.addEventListener("keydown", ev => {
+    const highlight = () => {
+        const input = modal.input.closest("input")
+        if (!input) return;
+
+        const keyArr = getKeyArr();
+        if (!keyArr) return;
+
+        doSearch(keyArr);
+    }
+
+    modal.input.addEventListener("keydown", ev => {
         switch (ev.key) {
             case "Enter":
                 ev.stopPropagation();
                 ev.preventDefault();
-                const input = ev.target.closest("input")
-                if (!input) return;
-
-                const keyArr = getKeyArr();
-                if (!keyArr) return;
-
-                doSearch(keyArr);
+                highlight();
                 break
             case "Escape":
                 ev.stopPropagation();
@@ -281,12 +305,28 @@
         ev.stopPropagation();
     })
 
+    if (config.SHOW_RUN_BUTTON) {
+        modal.runButton.addEventListener("click", ev => {
+            highlight();
+            ev.preventDefault();
+            ev.stopPropagation();
+        })
+    }
+
+    if (config.UNDO_WHEN_EDIT) {
+        document.querySelector("#write").addEventListener("click", ev => {
+            if (searcherList.length !== 0) {
+                undoSearch();
+            }
+        })
+    }
+
     const scroll = marker => {
         if (!marker) {
             return
         }
 
-        marker.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+        requestAnimationFrame(() => marker.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"}));
 
         if (config.SHOW_KEYWORD_OUTLINE) {
             document.querySelectorAll(".plugin-multi-highlighter-move").forEach(ele => ele.classList.remove("plugin-multi-highlighter-move"));
@@ -305,7 +345,7 @@
             bar.style.top = "0";
             marker.appendChild(bar);
 
-            setTimeout(() => marker.removeChild(bar), 3000);
+            setTimeout(() => bar.parentElement.removeChild(bar), 1500);
         }
     }
 
@@ -344,14 +384,14 @@
 
     if (config.ALLOW_DRAG) {
         modal.input.addEventListener("mousedown", ev => {
-            if (!metaKeyPressed(ev)) return;
+            if (!metaKeyPressed(ev) || ev.button !== 0) return;
             ev.stopPropagation();
             const rect = modal.modal.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
 
             const onMouseMove = ev => {
-                if (!metaKeyPressed(ev)) return;
+                if (!metaKeyPressed(ev) || ev.button !== 0) return;
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
@@ -361,7 +401,7 @@
             }
 
             document.addEventListener("mouseup", ev => {
-                    if (!metaKeyPressed(ev)) return;
+                    if (!metaKeyPressed(ev) || ev.button !== 0) return;
                     ev.stopPropagation();
                     ev.preventDefault();
                     document.removeEventListener('mousemove', onMouseMove);

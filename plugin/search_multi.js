@@ -324,14 +324,14 @@
 
     if (config.ALLOW_DRAG) {
         modal.modal.addEventListener("mousedown", ev => {
-            if (!metaKeyPressed(ev)) return;
+            if (!metaKeyPressed(ev) || ev.button !== 0) return;
             ev.stopPropagation();
             const rect = modal.modal.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
 
             const onMouseMove = ev => {
-                if (!metaKeyPressed(ev)) return;
+                if (!metaKeyPressed(ev) || ev.button !== 0) return;
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
@@ -341,7 +341,7 @@
             }
 
             document.addEventListener("mouseup", ev => {
-                    if (!metaKeyPressed(ev)) return;
+                    if (!metaKeyPressed(ev) || ev.button !== 0) return;
                     ev.stopPropagation();
                     ev.preventDefault();
                     document.removeEventListener('mousemove', onMouseMove);
