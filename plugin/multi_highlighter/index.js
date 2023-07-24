@@ -177,17 +177,13 @@
         result: document.getElementById("plugin-multi-highlighter-result"),
     }
 
-    const Package = {
-        Path: reqnode('path'),
-    }
-
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
     let _multiHighlighter = null;
     const getMultiHighlighter = () => {
         if (!_multiHighlighter) {
             const dirname = global.dirname || global.__dirname;
-            const filepath = Package.Path.join(dirname, "plugin", "multi_highlighter", "multi_highlighter.js");
+            const filepath = reqnode('path').join(dirname, "plugin", "multi_highlighter", "multi_highlighter.js");
             const {InstantSearch} = reqnode(filepath);
             _multiHighlighter = InstantSearch;
         }
@@ -286,7 +282,7 @@
             return
         }
 
-        marker.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+        requestAnimationFrame(() => marker.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"}));
 
         if (config.SHOW_KEYWORD_OUTLINE) {
             document.querySelectorAll(".plugin-multi-highlighter-move").forEach(ele => ele.classList.remove("plugin-multi-highlighter-move"));
