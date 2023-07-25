@@ -11,7 +11,7 @@
         // 展示执行按钮
         SHOW_RUN_BUTTON: true,
         // Typora本身的限制: ctrl+F搜索后，点击任意地方原先高亮的地方就会消失
-        // 这是由于高亮都是通过添加标签实现的,但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
+        // 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
         UNDO_WHEN_EDIT: true,
         // 定位时高亮关键字边框
         SHOW_KEYWORD_OUTLINE: true,
@@ -216,23 +216,21 @@
 
     let searcherList = [];
     const doSearch = (keyArr, refreshResult = true) => {
-        undoSearch();
+        undoHighlight();
 
         const searcher = getMultiHighlighter();
         const write = document.querySelector("#write");
 
-        for (let idx = 0; idx <= keyArr.length - 1; idx++) {
+        searcherList = keyArr.map((key, idx) => {
             const className = `plugin-search-hit${idx}`;
-            const key = keyArr[idx];
-            const _searcher = new searcher(
+            return new searcher(
                 write, // root
                 {text: key, caseSensitive: config.CASE_SENSITIVE, className: className}, //token
                 true, // scrollToResult
                 className, // defaultClassName
                 config.CASE_SENSITIVE, // defaultCaseSensitive
             )
-            searcherList.push(_searcher);
-        }
+        })
         searcherList.forEach(s => s.highlight());
 
         if (refreshResult) {
@@ -246,7 +244,7 @@
         modal.result.style.display = "";
     }
 
-    const undoSearch = () => {
+    const undoHighlight = () => {
         searcherList.forEach(s => s.removeHighlight());
         searcherList = [];
     }
@@ -291,9 +289,8 @@
             case "Escape":
                 ev.stopPropagation();
                 ev.preventDefault();
-                undoSearch();
+                undoHighlight();
                 modal.modal.style.display = "none";
-                modal.result.style.display = "none";
                 break
         }
     })
@@ -316,7 +313,7 @@
     if (config.UNDO_WHEN_EDIT) {
         document.querySelector("#write").addEventListener("click", ev => {
             if (searcherList.length !== 0) {
-                undoSearch();
+                undoHighlight();
             }
         })
     }
@@ -357,15 +354,15 @@
         ev.stopPropagation();
         ev.preventDefault();
 
-        const idx = target.getAttribute("idx");
-        let resultList = document.getElementsByClassName(`plugin-search-hit${idx}`);
+        const className = `plugin-search-hit${target.getAttribute("idx")}`
+        let resultList = document.getElementsByClassName(className);
 
         // 如果被刷新掉了，重新请求一次
         if (resultList.length === 0) {
             const keyArr = getKeyArr();
             if (!keyArr) return;
             doSearch(keyArr, false);
-            resultList = document.getElementsByClassName(`plugin-search-hit${idx}`);
+            resultList = document.getElementsByClassName(className);
         }
 
         let targetIdx = parseInt(target.getAttribute("cur"));
