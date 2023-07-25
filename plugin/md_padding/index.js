@@ -14,9 +14,9 @@
     const write = (filepath, content) => Package.Fs.writeFileSync(filepath, content);
     const save = () => File.saveUseNode();
     const reload = content => {
-        const scrollTop = document.querySelector("content").scrollTop;
-        File.reloadContent(content, {"fromDiskChange": true, "onInit": true})
-        document.querySelector("content").scrollTop = scrollTop;
+        // const scrollTop = document.querySelector("content").scrollTop;
+        File.reloadContent(content, {"fromDiskChange": false})
+        // document.querySelector("content").scrollTop = scrollTop;
     };
 
     const getFormatter = () => {
