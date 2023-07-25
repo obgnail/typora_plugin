@@ -10,6 +10,8 @@
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "H",
         // 展示执行按钮
         SHOW_RUN_BUTTON: true,
+        // 点击时显示当前的索引数
+        SHOW_CURRENT_INDEX: true,
         // Typora本身的限制: ctrl+F搜索后，点击任意地方原先高亮的地方就会消失
         // 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
         UNDO_WHEN_EDIT: true,
@@ -139,11 +141,12 @@
         }
         
         .plugin-multi-highlighter-result-item {
+            font-family: Arial;
             cursor: pointer;
             font-size: 13px;
             line-height: 20px;
             margin: 3px 3px;
-            padding: 0 4px;
+            padding: 0 5px;
             border-radius: 5px;
         }
         
@@ -216,7 +219,7 @@
 
     let searcherList = [];
     const doSearch = (keyArr, refreshResult = true) => {
-        undoHighlight();
+        clearHighlight();
 
         const searcher = getMultiHighlighter();
         const write = document.querySelector("#write");
@@ -236,18 +239,27 @@
         if (refreshResult) {
             const inner = searcherList.map((searcher, idx) => {
                 const color = (idx < config.STYLE_COLOR.length) ? config.STYLE_COLOR[idx] : config.DEFAULT_COLOR;
-                return `<div class="plugin-multi-highlighter-result-item" style="background-color: ${color}"
-                ty-hint="左键下一个；右键上一个" idx="${idx}" cur="-1">${searcher.token.text} (${searcher.matches.length})</div>`;
+                return `<div class="plugin-multi-highlighter-result-item" style="background-color: ${color}" ty-hint="左键下一个；右键上一个"
+                         idx="${idx}" cur="-1">${searcher.token.text} (${searcher.matches.length})</div>`;
             })
             modal.result.innerHTML = inner.join("");
         }
         modal.result.style.display = "";
     }
 
-    const undoHighlight = () => {
+    const clearHighlight = () => {
         searcherList.forEach(s => s.removeHighlight());
         searcherList = [];
+        document.querySelectorAll("#write .plugin-multi-highlighter-bar").forEach(
+            ele => ele && ele.parentElement && ele.parentElement.removeChild(ele));
     }
+
+    const reload = () => {
+        const scrollTop = document.querySelector("content").scrollTop;
+        const content = File.editor.getMarkdown();
+        File.reloadContent(content);
+        document.querySelector("content").scrollTop = scrollTop;
+    };
 
     const Call = () => {
         modal.modal.style.display = "block";
@@ -289,7 +301,7 @@
             case "Escape":
                 ev.stopPropagation();
                 ev.preventDefault();
-                undoHighlight();
+                clearHighlight();
                 modal.modal.style.display = "none";
                 break
         }
@@ -311,11 +323,12 @@
     }
 
     if (config.UNDO_WHEN_EDIT) {
-        document.querySelector("#write").addEventListener("click", ev => {
-            if (searcherList.length !== 0) {
-                undoHighlight();
+        document.querySelector("content").addEventListener("mousedown", ev => {
+            if (searcherList.length !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
+                clearHighlight();
+                reload();
             }
-        })
+        }, true)
     }
 
     const scroll = marker => {
@@ -342,7 +355,7 @@
             bar.style.top = "0";
             marker.appendChild(bar);
 
-            setTimeout(() => bar.parentElement.removeChild(bar), 1500);
+            setTimeout(() => bar && bar.parentElement && bar.parentElement.removeChild(bar), 1500);
         }
     }
 
@@ -354,7 +367,8 @@
         ev.stopPropagation();
         ev.preventDefault();
 
-        const className = `plugin-search-hit${target.getAttribute("idx")}`
+        const idx = target.getAttribute("idx");
+        const className = `plugin-search-hit${idx}`
         let resultList = document.getElementsByClassName(className);
 
         // 如果被刷新掉了，重新请求一次
@@ -366,16 +380,24 @@
         }
 
         let targetIdx = parseInt(target.getAttribute("cur"));
+
+        let nextIdx;
         if (ev.button === 0) { // 鼠标左键
-            targetIdx = (targetIdx === resultList.length - 1) ? 0 : targetIdx + 1;
+            nextIdx = (targetIdx === resultList.length - 1) ? 0 : targetIdx + 1;
         } else if (ev.button === 2) { //鼠标右键
-            targetIdx = (targetIdx === 0 || targetIdx === -1) ? resultList.length - 1 : targetIdx - 1;
+            nextIdx = (targetIdx === 0 || targetIdx === -1) ? resultList.length - 1 : targetIdx - 1;
         }
 
-        const next = resultList[targetIdx];
-        if (next) {
-            scroll(next);
-            target.setAttribute("cur", targetIdx + "");
+        const next = resultList[nextIdx];
+        if (!next) return;
+
+        scroll(next);
+        target.setAttribute("cur", nextIdx + "");
+        if (config.SHOW_CURRENT_INDEX) {
+            const searcher = searcherList[idx];
+            if (searcher) {
+                target.innerText = `${searcher.token.text} (${nextIdx + 1}/${searcher.matches.length})`
+            }
         }
     })
 
