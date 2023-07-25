@@ -157,7 +157,9 @@ window.onload = () => {
             promises.push(promise);
         })
 
-        Promise.all(promises).then(() => global._plugin_had_injected = true)
+        Promise.all(promises)
+            .then(() => global._plugin_had_injected = true)
+            .catch(() => global._plugin_had_injected = true)
     }
 
     loadPlugin();

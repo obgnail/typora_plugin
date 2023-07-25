@@ -11,7 +11,7 @@
         ALLOW_DRAG: true,
         // 模态框自动隐藏
         AUTO_HIDE: false,
-        // 搜索内容时大小写敏感
+        // 搜索内容时大小写敏感(此选项不必手动调整，可以在UI设置)
         CASE_SENSITIVE: false,
         // 将文件路径加入搜索内容
         INCLUDE_FILE_PATH: false,

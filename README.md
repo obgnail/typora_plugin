@@ -8,22 +8,22 @@
 
 | 序号 | 文件名             | 功能                             | 默认开启 |
 | ---- | ------------------ | -------------------------------- | -------- |
-| 1    | window_tab         | 标签页管理                       | 是       |
-| 2    | search_multi       | 全局多关键字搜索                 | 是       |
-| 3    | multi_highlighter  | 多关键字高亮                     | 是       |
-| 4    | md_padding         | 中文与英文、数字之间添加空格     | 是       |
-| 5    | commander          | 命令行环境                       | 是       |
-| 6    | read_only          | 只读模式                         | 是       |
-| 7    | collapse_paragraph | 章节折叠                         | 是       |
-| 8    | fence_enhance      | 一键复制代码，折叠代码           | 是       |
-| 9    | file_counter       | 显示目录下的文件数               | 是       |
-| 10   | resize_table       | 调整表格行高列宽                 | 是       |
-| 11   | resize_image       | 调整图片显示大小                 | 是       |
-| 12   | go_top             | 一键到文章顶部                   | 是       |
-| 13   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能 | 是       |
-| 14   | right_click_menu   | 右键菜单统一管理、调用插件       | 是       |
-| 15   | mermaid_replace    | 替换 mermaid 组件                | 否       |
-| 16   | old_window_tab     | 标签页管理（已废弃）             | 否       |
+| 1    | window_tab         | 标签页管理                       | √        |
+| 2    | search_multi       | 全局多关键字搜索                 | √        |
+| 3    | multi_highlighter  | 多关键字高亮                     | √        |
+| 4    | md_padding         | 中文与英文、数字之间添加空格     | √        |
+| 5    | commander          | 命令行环境                       | √        |
+| 6    | read_only          | 只读模式                         | √        |
+| 7    | collapse_paragraph | 章节折叠                         | √        |
+| 8    | fence_enhance      | 一键复制代码，折叠代码           | √        |
+| 9    | file_counter       | 显示目录下的文件数               | √        |
+| 10   | resize_table       | 调整表格行高列宽                 | √        |
+| 11   | resize_image       | 调整图片显示大小                 | √        |
+| 12   | go_top             | 一键到文章顶部                   | √        |
+| 13   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能 | √        |
+| 14   | right_click_menu   | 右键菜单统一管理、调用插件       | √        |
+| 15   | mermaid_replace    | 替换 mermaid 组件                | ×        |
+| 16   | old_window_tab     | 标签页管理（已废弃）             | ×        |
 
 > 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
 
@@ -34,14 +34,30 @@
 ## 如何使用
 
 1. 下载插件源码。
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（不同版本的 Typora 的文件夹结构可能不同，在我这是 `Typora/resources/app`，推荐使用 everything 找一下）
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/app/window.html` 或者 `typora/resources/window.html`，推荐使用 everything 找一下）
 3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
-4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。（不同版本的 Typora 查找的内容可能不同，其实就是查找导入 frame.js 的 script 标签）
+4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
 5. 重启 Typora。
+
+
+
+### 新版本操作
+
+> 根据文件夹 A 下是否有 `appsrc` 目录判断是否为新版本，则新版本，无则旧版本。
+
+![new_typora_dir](assets/new_typora_dir.png)
+
+![new_typora_framejs](assets/new_typora_framejs.png)
+
+
+
+### 旧版本操作
 
 ![where_is_windowhtml](assets/where_is_windowhtml.png)
 
 ![where_is_framejs](assets/where_is_framejs.png)
+
+> 虽然修改 window.html 很简单，还请务必对照上图谨慎操作。如果修改完 Typora 白屏了，很可能是你修改的时候疏忽了。
 
 
 
@@ -113,6 +129,8 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ## multi_highlighter：多关键字高亮
 
+搜索并高亮关键字，并提供一键定位功能（左键下一个，右键上一个）
+
 ![multi_highlighter](assets/multi_highlighter.png)
 
 - ctrl+shift+H：打开搜索框
@@ -126,7 +144,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
-### md_padding：盘古之白
+### md_padding：中英文混排优化
 
 中英文混排时，中文与英文之间、中文与数字之间添加空格。
 
@@ -268,6 +286,19 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 
 ## 瞎聊
 
+### 脚本会失效吗
+
+Typora 是闭源软件，要是有一天作者改了代码，是不是就不能用了？从原理来说，是的。实际上我是解包 Typora，看了部分源码才实现了这些功能。
+
+同时值得注意的是， Typora 的历史包袱还蛮重的。比如说 github 已经有无数个 Typora theme，这决定了它的页面它不可能大改，就算改变也大概率是向下兼容的。
+
+具体来看：
+
+- search_multi、resize_table、read_only、truncate_text 等功能几乎不依赖 Typora 实现。如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效，所以应该会 **保持长时间的有效性**。而且就算失效了也容易找到兼容方案。
+- ~~比较特殊的是 window_tab 和 window_tab_drag，这个功能本质是入侵式脚本；通过原型链攻击，将后端 electron 对象劫持到前端来，该脚本通过该手段成功调用了 Typora 的核心实现，并且这个核心实现同时被大量运用，历史包袱一样很大。当然了，劫持漏洞也有可能被修复。**如果 Typora 或 electron 有了重构级别的更新，那么大概率会失效。**~~（旧版本已被废弃，新版本无此问题）
+
+
+
 ### 为什么要区分 old_window_tab 和 old_window_tab_drag ?
 
 理由是：**支持排序会复杂很多**。
@@ -293,19 +324,6 @@ Typora 每开一个窗口，就会创建一个 electron BrowserWindow 实例，�
 - window_tab 是 **强行将多窗口合并到单一窗口实现的**。实现原理是：记录每一个标签对应的文档路径和文档浏的 scrollTop。每当你点击一个标签，其实是重新打开文件，然后在定位到离开文档时的 scrollTop。其后果就是：
   1. 不能存储每个打开的文档（虽然有缓存）。
   2. 与 Typora 诸多冲突，为了解决这些冲突，需要给 frame.js 的很多函数注入修改逻辑。降低了系统稳定性。
-
-
-
-### 脚本会失效吗
-
-Typora 是闭源软件，要是有一天作者改了代码，是不是就不能用了？从原理来说，是的。实际上我是解包 Typora，看了部分源码才实现了这些功能。
-
-同时值得注意的是， Typora 的历史包袱还蛮重的。比如说 github 已经有无数个 Typora theme，这决定了它的页面它不可能大改，就算改变也大概率是向下兼容的。
-
-具体来看：
-
-- search_multi、resize_table、read_only、truncate_text 等功能几乎不依赖 Typora 实现。如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效，所以应该会 **保持长时间的有效性**。而且就算失效了也容易找到兼容方案。
-- ~~比较特殊的是 window_tab 和 window_tab_drag，这个功能本质是入侵式脚本；通过原型链攻击，将后端 electron 对象劫持到前端来，该脚本通过该手段成功调用了 Typora 的核心实现，并且这个核心实现同时被大量运用，历史包袱一样很大。当然了，劫持漏洞也有可能被修复。**如果 Typora 或 electron 有了重构级别的更新，那么大概率会失效。**~~（旧版本已被废弃，新版本无此问题）
 
 
 
