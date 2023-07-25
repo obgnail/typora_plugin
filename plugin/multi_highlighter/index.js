@@ -254,12 +254,11 @@
             ele => ele && ele.parentElement && ele.parentElement.removeChild(ele));
     }
 
-    const reload = () => {
-        const scrollTop = document.querySelector("content").scrollTop;
-        const content = File.editor.getMarkdown();
-        File.reloadContent(content);
-        document.querySelector("content").scrollTop = scrollTop;
-    };
+    const refreshFences = () => {
+        for (let id in File.editor.fences.queue) {
+            File.editor.fences.queue[id].refresh();
+        }
+    }
 
     const Call = () => {
         modal.modal.style.display = "block";
@@ -326,7 +325,7 @@
         document.querySelector("content").addEventListener("mousedown", ev => {
             if (searcherList.length !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
                 clearHighlight();
-                reload();
+                refreshFences();
             }
         }, true)
     }
