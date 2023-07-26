@@ -11,11 +11,11 @@
 | 1    | window_tab         | 标签页管理                       | √        |
 | 2    | search_multi       | 全局多关键字搜索                 | √        |
 | 3    | multi_highlighter  | 多关键字高亮                     | √        |
-| 4    | md_padding         | 中文与英文、数字之间添加空格     | √        |
-| 5    | commander          | 命令行环境                       | √        |
-| 6    | read_only          | 只读模式                         | √        |
-| 7    | collapse_paragraph | 章节折叠                         | √        |
-| 8    | fence_enhance      | 一键复制代码，折叠代码           | √        |
+| 4    | collapse_paragraph | 章节折叠                         | √        |
+| 5    | md_padding         | 中英文混排优化                   | √        |
+| 6    | fence_enhance      | 一键复制代码，折叠代码           | √        |
+| 7    | commander          | 命令行环境                       | √        |
+| 8    | read_only          | 只读模式                         | √        |
 | 9    | file_counter       | 显示目录下的文件数               | √        |
 | 10   | resize_table       | 调整表格行高列宽                 | √        |
 | 11   | resize_image       | 调整图片显示大小                 | √        |
@@ -25,25 +25,27 @@
 | 15   | mermaid_replace    | 替换 mermaid 组件                | ×        |
 | 16   | old_window_tab     | 标签页管理（已废弃）             | ×        |
 
-> 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
+1. 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
+2. 每个功能都有对应的配置，且每个配置选项都有注释说明。可以按需修改对应 JS 文件里的 config。
 
-> 每个功能都有对应的配置，且每个配置选项都有注释说明。可以按需修改对应 JS 文件里的 config。
+> 如果各位有其他的需求，欢迎提 issue。
 
 
 
 ## 如何使用
 
 1. 下载插件源码。
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/app/window.html` 或者 `typora/resources/window.html`，推荐使用 everything 找一下）
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/app/window.html` 或者 `Typora/resources/window.html`，推荐使用 everything 找一下）
 3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
-4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在后面加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
+4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
 5. 重启 Typora。
+6. 验证：点击鼠标右键，弹出右键菜单栏，如果能看到【启动插件】栏目，说明一切顺利。
 
 
 
 ### 新版本操作
 
-> 根据文件夹 A 下是否有 `appsrc` 目录判断是否为新版本，则新版本，无则旧版本。
+> 根据文件夹 A 下是否有 `appsrc` 目录判断是否为新版本，有则新版本，无则旧版本。
 
 ![new_typora_dir](assets/new_typora_dir.png)
 
@@ -57,7 +59,7 @@
 
 ![where_is_framejs](assets/where_is_framejs.png)
 
-> 虽然修改 window.html 很简单，还请务必对照上图谨慎操作。如果修改完 Typora 白屏了，很可能是你修改的时候疏忽了。
+> 虽然操作简单，还请务必对照上图谨慎操作。如果修改完 Typora 白屏了，很可能是你修改的时候疏忽了。
 
 
 
@@ -97,17 +99,30 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ## 插件/脚本
 
+### window_tab：标签页管理
+
+- `鼠标置于标签页处，ctrl+鼠标滚轮`、`ctrl+shift+tab`、`ctrl+tab`：切换标签
+- `ctrl+w`：关闭标签
+- `ctrl+click 标签页`、`向下拖拽标签`：新窗口打开
+- 拖拽：排序标签
+
+![new_window_tab](assets/new_window_tab.gif)
+
+> 该脚本是 [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) 的重新实现，修复了原脚本的诸多 BUG 和不适配问题；去掉了类似于 vscode 的预览功能，改成了 idea 的标签页逻辑；修改了一些交互。
+
+
+
 ### search_multi：全局多关键字搜索
 
 比如搜索同时包含 `golang` 和 `install` 和 `生命周期` 三个关键字的文件。
 
-- ctrl+shift+P：打开搜索框
-- esc：关闭搜索框
-- enter：搜索
-- ArrowUp，ArrowDown：方向键上下选中
-- click、ctrl+enter：当前窗口打开
-- ctrl+click、ctrl+shift+enter：新窗口打开
-- ctrl+drag：ctrl+拖动输入框可移动
+- `ctrl+shift+P`：打开搜索框
+- `esc`：关闭搜索框
+- `enter`：搜索
+- `ArrowUp`，`ArrowDown`：方向键上下选中
+- `click`、`ctrl+enter`：当前窗口打开
+- `ctrl+click`、`ctrl+shift+enter`：新窗口打开
+- `ctrl+拖动输入框`：移动位置
 
 > ctrl 在 Mac 中对应 command
 
@@ -115,42 +130,36 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
-### window_tab：标签页管理
-
-![new_window_tab](assets/new_window_tab.gif)
-
-> 该脚本是 [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) 的重新实现，修复了原脚本的诸多 BUG 和不适配问题；去掉了类似于 vscode 的预览功能，改成了 idea 的标签页逻辑；修改了一些交互
-
-- ctrl+wheel、ctrl+shift+tab、ctrl+tab：切换标签
-- ctrl+w：关闭标签
-- ctrl+click、向下拖拽标签：新窗口打开
-
-
-
-## multi_highlighter：多关键字高亮
+### multi_highlighter：多关键字高亮
 
 搜索并高亮关键字，并提供一键定位功能（左键下一个，右键上一个）
 
+- `ctrl+shift+H`：打开搜索框
+- `esc`：关闭搜索框
+- `enter`：搜索
+- `ctrl+拖动输入框`：移动位置
+- `左键色块`：定位到下一个关键字
+- `右键色块`：定位到上一个关键字
+
 ![multi_highlighter](assets/multi_highlighter.png)
 
-- ctrl+shift+H：打开搜索框
-- esc：关闭搜索框
-- enter：搜索
-- ctrl+drag：ctrl+拖动输入框可移动
-- left click：定位到下一个关键字
-- right click：定位到上一个关键字
-
 > 注意：当你鼠标点击文档内容时，会自动退出高亮状态。**这是 Typora 本身的限制导致的**：高亮功能是通过添加标签实现的，但是为了保证数据安全，`#write` 标签不允许手动添加任何标签，所以需要在编辑的时候 remove 掉之前添加的标签。（你可以试试 Typora 自身的 ctrl+F 搜索，在搜索关键字后，点击任意地方原先高亮的地方也会消失）
+
+
+
+### collapse_paragraph：章节折叠
+
+`ctrl+鼠标点击`：折叠 / 展开 章节下所有文本。
+
+支持折叠的标签：h1~h6。
+
+![collapse_paragraph](assets/collapse_paragraph.gif)
 
 
 
 ### md_padding：中英文混排优化
 
 中英文混排时，中文与英文之间、中文与数字之间添加空格。
-
-> 有研究显示，打字的时候不喜欢在中文和英文之间加空格的人，感情路都走得很辛苦，有七成的比例会在 34 岁的时候跟自己不爱的人结婚，而其余三成的人最后只能把遗产留给自己的猫。毕竟爱情跟书写都需要适时地留白。 —— pangu.js
-
-[pangu.js](https://github.com/vinta/pangu.js) 是网页特供的，对于 markdown 语法会有误判，md_padding 通过解析语法树进行优化。
 
 快捷键：Ctrl+shift+K
 
@@ -160,20 +169,30 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
+### fence_enhance：一键复制代码，折叠代码
+
+![fence_enhance](assets/fence_enhance.png)
+
+> Fold、Copy 可选，如不需要，可以关闭任意一个。
+
+> fence_enhance.js 易于扩展，你可以根据自己的需要添加功能，比如显示代码块编程语言。
+
+
+
 ### commander：命令行环境
 
 > 如果你看不懂下面描述，那么你就不需要此脚本。
 
 功能和 total commander 的命令行一样（快捷键也一样），一个快速执行命令的工具，并提供少量交互。
 
-- ctrl+G：弹出执行框
-- esc：隐藏执行框
-- ctrl+drag：ctrl+拖动输入框可移动
+- `ctrl+G`：弹出执行框
+- `esc`：隐藏执行框
+- `ctrl+拖动输入框`：移动位置
 
 支持 shell：
 
 - `cmd/bash`：windows 或 Mac 的默认终端
-- `powershell`：微软弃子 :D
+- `powershell`：微软的傻儿子 :D
 - `git bash`：使用此终端前请保证安装了 git bash 并且加入环境变量
 - `wsl`：使用此终端前请保证安装了 wsl2，并且加入环境变量
 
@@ -200,19 +219,9 @@ const BUILTIN = [
 
 
 
-### collapse_paragraph：章节折叠
-
-ctrl+鼠标点击，折叠 / 展开 章节下所有文本。
-
-支持折叠的标签：h1~h6。
-
-![collapse_paragraph](assets/collapse_paragraph.gif)
-
-
-
 ### resize_table：拖动调整表格大小
 
-ctrl+鼠标拖动，修改表格的行高列宽。
+`ctrl+鼠标拖动`：修改表格的行高列宽。
 
 ![resize_table](assets/resize_table.gif)
 
@@ -220,21 +229,9 @@ ctrl+鼠标拖动，修改表格的行高列宽。
 
 ### resize_image：调整图片大小
 
-ctrl+鼠标滚轮滚动，修改图片大小。
+`ctrl+鼠标滚轮滚动`：调整图片大小。
 
 ![resize-image](assets/resize-image.gif)
-
-
-
-
-
-### fence_enhance：一键复制代码，折叠代码
-
-![fence_enhance](assets/fence_enhance.png)
-
-> Fold、Copy 可选，如不需要，可以关闭任意一个。
-
-> fence_enhance.js 易于扩展，你可以根据自己的需要添加功能，比如显示代码块编程语言。
 
 
 
@@ -254,7 +251,9 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 
 ### read_only：只读模式
 
-只读模式下文档不可编辑。快捷键：ctrl+shift+R。
+只读模式下文档不可编辑。
+
+快捷键：ctrl+shift+R。
 
 
 
@@ -262,9 +261,9 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 
 大文件在 Typora 的渲染性能很糟糕，用此脚本暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。
 
-- ctrl+shift+B：隐藏最前面的文本段
-- ctrl+shift+U：重新显示所有文本段
-- ctrl+shift+Y：根据当前可视范围显示文本段
+- `ctrl+shift+B`：隐藏最前面的文本段，只留下最后 80 段
+- `ctrl+shift+U`：重新显示所有文本段
+- `ctrl+shift+Y`：根据当前可视范围显示文本段
 
 > 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
 
@@ -286,7 +285,7 @@ ctrl+鼠标滚轮滚动，修改图片大小。
 
 ## 瞎聊
 
-### 脚本会失效吗
+### 脚本会失效吗?
 
 Typora 是闭源软件，要是有一天作者改了代码，是不是就不能用了？从原理来说，是的。实际上我是解包 Typora，看了部分源码才实现了这些功能。
 

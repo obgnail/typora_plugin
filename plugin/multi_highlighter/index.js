@@ -205,6 +205,7 @@
     }
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
+    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
 
     let _multiHighlighter = null;
     const getMultiHighlighter = () => {
@@ -280,14 +281,13 @@
         return value.split(config.SEPARATOR).filter(Boolean)
     }
 
-    const highlight = () => {
-        const input = modal.input.closest("input")
-        if (!input) return;
-
+    let highlightFilePath;
+    const highlight = (refreshResult = true) => {
+        highlightFilePath = getFilePath();
         const keyArr = getKeyArr();
-        if (!keyArr) return;
-
-        doSearch(keyArr);
+        if (!keyArr) return false;
+        doSearch(keyArr, refreshResult);
+        return true;
     }
 
     modal.input.addEventListener("keydown", ev => {
@@ -331,9 +331,7 @@
     }
 
     const scroll = marker => {
-        if (!marker) {
-            return
-        }
+        if (!marker) return;
 
         requestAnimationFrame(() => marker.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"}));
 
@@ -358,13 +356,20 @@
         }
     }
 
+    const checkFilePath = () => getFilePath() === highlightFilePath;
+
     modal.result.addEventListener("mousedown", ev => {
         const target = ev.target.closest(".plugin-multi-highlighter-result-item");
-        if (!target) {
-            return
-        }
+        if (!target) return;
+
         ev.stopPropagation();
         ev.preventDefault();
+
+        // 当用户切换文档时
+        if (!checkFilePath()) {
+            highlight();
+            return;
+        }
 
         const idx = target.getAttribute("idx");
         const className = `plugin-search-hit${idx}`
@@ -372,9 +377,8 @@
 
         // 如果被刷新掉了，重新请求一次
         if (resultList.length === 0) {
-            const keyArr = getKeyArr();
-            if (!keyArr) return;
-            doSearch(keyArr, false);
+            const success = highlight(false);
+            if (!success) return;
             resultList = document.getElementsByClassName(className);
         }
 
@@ -388,7 +392,10 @@
         }
 
         const next = resultList[nextIdx];
-        if (!next) return;
+        if (!next) {
+            highlight();
+            return;
+        }
 
         scroll(next);
         target.setAttribute("cur", nextIdx + "");
