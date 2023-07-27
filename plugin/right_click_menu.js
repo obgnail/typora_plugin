@@ -117,11 +117,13 @@
     }
 
     const _timer = setInterval(() => {
-        if (global._plugin_had_injected) {
+        if (global._plugins_had_injected) {
             clearInterval(_timer);
             appendMenu();
         }
     }, config.LOOP_DETECT_INTERVAL);
+
+    module.exports = {config};
 
     console.log("right_click_menu.js had been injected");
 })()

@@ -454,5 +454,7 @@
         })
     }
 
+    module.exports = {config};
+
     console.log("window_tab.js had been injected");
 })()

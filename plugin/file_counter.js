@@ -135,5 +135,7 @@
         }
     }, config.LOOP_DETECT_INTERVAL);
 
+    module.exports = {config};
+
     console.log("file_counter.js had been injected");
 })()

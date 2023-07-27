@@ -180,6 +180,6 @@
         }
     }, true)
 
-    module.exports = {Call, CallArgs};
+    module.exports = {Call, CallArgs, config};
     console.log("truncate_text.js had been injected");
 })()

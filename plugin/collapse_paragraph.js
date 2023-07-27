@@ -60,5 +60,7 @@
         }
     })
 
+    module.exports = {config};
+
     console.log("collapse_paragraph.js had been injected");
 })()

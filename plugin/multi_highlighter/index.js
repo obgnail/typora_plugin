@@ -273,7 +273,7 @@
             ev.stopPropagation();
         }
     });
-    module.exports = {Call};
+    module.exports = {config, Call};
 
     const getKeyArr = () => {
         const value = modal.input.value;

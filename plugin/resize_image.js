@@ -26,5 +26,7 @@
         requestAnimationFrame(() => target.style.width = width + "px");
     }, true);
 
+    module.exports = {config};
+
     console.log("resize_image.js had been injected");
 })()

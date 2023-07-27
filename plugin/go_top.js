@@ -30,6 +30,6 @@
         goTopDiv.style.display = (content.scrollTop > config.THRESHOLD) ? "block" : "none";
     })
 
-    module.exports = {Call};
+    module.exports = {Call, config};
     console.log("go_top.js had been injected");
 })()

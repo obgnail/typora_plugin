@@ -474,7 +474,7 @@
         ev.stopPropagation();
     })
 
-    module.exports = {Call};
+    module.exports = {Call, config};
 
     console.log("search_multi.js had been injected");
 })();

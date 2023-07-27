@@ -299,7 +299,7 @@
         modal.input.select();
     }
 
-    module.exports = {Call};
+    module.exports = {Call, config};
 
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
