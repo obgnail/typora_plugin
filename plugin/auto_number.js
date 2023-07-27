@@ -171,5 +171,7 @@
     style.innerHTML = css;
     document.getElementsByTagName("head")[0].appendChild(style);
 
+    module.exports = {config};
+
     console.log("auto_number.js had been injected");
 })()

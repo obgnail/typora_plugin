@@ -164,5 +164,7 @@
         document.addEventListener('mousemove', onMouseMove);
     })
 
+    module.exports = {config};
+
     console.log("resize_table.js had been injected");
 })()

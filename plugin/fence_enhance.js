@@ -180,5 +180,7 @@
         }
     }
 
+    module.exports = {config};
+
     console.log("fence_enhance.js had been injected");
 })()

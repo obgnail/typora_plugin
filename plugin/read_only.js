@@ -150,7 +150,7 @@
         }, config.LOOP_DETECT_INTERVAL);
     }
 
-    module.exports = {Call};
+    module.exports = {Call, config};
 
     console.log("read_only.js had been injected");
 })()

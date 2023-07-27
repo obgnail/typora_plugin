@@ -40,7 +40,7 @@
             reload(formattedContent);
         })
     }
-    module.exports = {Call};
+    module.exports = {config, Call};
 
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
