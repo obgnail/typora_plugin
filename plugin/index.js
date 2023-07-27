@@ -122,9 +122,17 @@ window.onload = () => {
             call_args: null,
         },
         {
+            name: "自动编号",
+            src: "./plugin/auto_number.js",
+            enable: true,
+            clickable: false,
+            call: null,
+            call_args: null,
+        },
+        {
             name: "测试专用",
             src: "./plugin/test.js",
-            enable: false,
+            enable: true,
             clickable: false,
             call: null,
             call_args: null,
