@@ -401,35 +401,17 @@
 
     if (config.ALLOW_DRAG) {
         let lastOver = null;
-        const toggleOver = (ev, f) => {
-            ev.preventDefault();
-            const target = ev.target.closest(".tab-container");
-            if (target) {
-                if (f === "add") {
-                    target.classList.add("over");
-                    lastOver = target;
-                } else {
-                    target.classList.remove("over");
-                }
-            }
-        }
+        const tabBar = $("#plugin-window-tab .tab-bar");
 
-        entities.tabBar.addEventListener("dragstart", ev => {
-            const draggedTab = ev.target.closest(".tab-container");
-            if (draggedTab) {
-                draggedTab.style.opacity = 0.5;
-                lastOver = null;
-            }
+        tabBar.on("dragstart", ".tab-container", function (ev) {
+            ev.originalEvent.dataTransfer.effectAllowed = "move";
+            ev.originalEvent.dataTransfer.dropEffect = 'move';
+            this.style.opacity = 0.5;
+            lastOver = null;
         })
-        entities.tabBar.addEventListener("dragend", ev => {
-            const from = ev.target.closest(".tab-container");
-            if (!from) {
-                return
-            }
-
-            ev.preventDefault();
-            from.style.opacity = "";
-            const fromIdx = parseInt(from.getAttribute("idx"));
+        tabBar.on("dragend", ".tab-container", function (ev) {
+            this.style.opacity = "";
+            const fromIdx = parseInt(this.getAttribute("idx"));
 
             const offsetY = Math.abs(ev.offsetY);
             const height = entities.tabBar.getBoundingClientRect().height;
@@ -440,6 +422,7 @@
             }
 
             if (lastOver) {
+                lastOver.classList.remove("over");
                 const activeIdx = parseInt(entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
                 const activePath = tabUtil.tabs[activeIdx].path;
                 const toIdx = parseInt(lastOver.getAttribute("idx"));
@@ -447,10 +430,28 @@
                 tabUtil.tabs.splice(toIdx, 0, ele);
                 openTab(activePath);
             }
-        });
-        entities.tabBar.addEventListener("dragover", ev => toggleOver(ev, "add"))
-        entities.tabBar.addEventListener("dragenter", ev => toggleOver(ev, "add"))
-        entities.tabBar.addEventListener("dragleave", ev => toggleOver(ev, "remove"))
+        })
+
+        const toggleOver = (target, f) => {
+            if (f === "add") {
+                target.classList.add("over");
+                lastOver = target;
+            } else {
+                target.classList.remove("over");
+            }
+        }
+
+        tabBar.on("dragover", ".tab-container", function () {
+            toggleOver(this, "add");
+            return false
+        })
+        tabBar.on("dragenter", ".tab-container", function () {
+            toggleOver(this, "add");
+            return false
+        })
+        tabBar.on("dragleave", ".tab-container", function () {
+            toggleOver(this, "remove");
+        })
     }
 
     console.log("window_tab.js had been injected");
