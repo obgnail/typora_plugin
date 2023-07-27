@@ -114,14 +114,6 @@ window.onload = () => {
             call_args: null,
         },
         {
-            name: "右键菜单",
-            src: "./plugin/right_click_menu.js",
-            enable: true,
-            clickable: false,
-            call: null,
-            call_args: null,
-        },
-        {
             name: "自动编号",
             src: "./plugin/auto_number.js",
             enable: true,
@@ -130,9 +122,17 @@ window.onload = () => {
             call_args: null,
         },
         {
+            name: "右键菜单",
+            src: "./plugin/right_click_menu.js",
+            enable: true,
+            clickable: false,
+            call: null,
+            call_args: null,
+        },
+        {
             name: "测试专用",
             src: "./plugin/test.js",
-            enable: true,
+            enable: false,
             clickable: false,
             call: null,
             call_args: null,

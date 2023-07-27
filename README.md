@@ -19,11 +19,12 @@
 | 9    | file_counter       | 显示目录下的文件数               | √        |
 | 10   | resize_table       | 调整表格行高列宽                 | √        |
 | 11   | resize_image       | 调整图片显示大小                 | √        |
-| 12   | go_top             | 一键到文章顶部                   | √        |
-| 13   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能 | √        |
-| 14   | right_click_menu   | 右键菜单统一管理、调用插件       | √        |
-| 15   | mermaid_replace    | 替换 mermaid 组件                | ×        |
-| 16   | old_window_tab     | 标签页管理（已废弃）             | ×        |
+| 12   | auto_number        | 章节、大纲、表格、图片自动编号   | √        |
+| 13   | go_top             | 一键到文章顶部                   | √        |
+| 14   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能 | √        |
+| 15   | right_click_menu   | 右键菜单统一管理、调用插件       | √        |
+| 16   | mermaid_replace    | 替换 mermaid 组件                | ×        |
+| 17   | old_window_tab     | 标签页管理（已废弃）             | ×        |
 
 1. 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
 2. 每个功能都有对应的配置，且每个配置选项都有注释说明。可以按需修改对应 JS 文件里的 config。
@@ -238,6 +239,22 @@ const BUILTIN = [
 ### file_counter：显示文件数
 
 ![file_count](assets/file_count.png)
+
+
+
+### auto_number：自动编号
+
+![auto_number](assets/auto_number.png)
+
+支持编号（皆可单独打开/关闭）：
+
+- 章节
+- 大纲
+- TOC
+- 表格
+- 图片
+
+> 注意：通过注入 CSS 实现功能，有可能会与你使用的 theme 冲突。
 
 
 
