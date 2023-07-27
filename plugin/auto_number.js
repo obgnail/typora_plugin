@@ -15,7 +15,7 @@
     const content_css = `
         #write { counter-reset: write-h2 Figures Tables; }
         h1 { counter-reset: write-h2 Figures Tables; }
-        h2 { counter-reset: write-h3; }
+        h2 { counter-reset: write-h3 Figures Tables; }
         h3 { counter-reset: write-h4; }
         h4 { counter-reset: write-h5; }
         h5 { counter-reset: write-h6; }
