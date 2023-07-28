@@ -330,9 +330,21 @@
         }, true)
     }
 
+    const handleHideElement = marker => {
+        const image = marker.closest(`span[md-inline="image"]`);
+        if (image) {
+            image.classList.add("md-expand");
+        }
+        const link = marker.closest(`span[md-inline="link"]`);
+        if (link) {
+            link.classList.add("md-expand");
+        }
+    }
+
     const scroll = marker => {
         if (!marker) return;
 
+        handleHideElement(marker);
         requestAnimationFrame(() => marker.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"}));
 
         if (config.SHOW_KEYWORD_OUTLINE) {
