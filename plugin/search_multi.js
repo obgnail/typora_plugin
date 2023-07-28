@@ -13,7 +13,7 @@
         AUTO_HIDE: false,
         // 搜索内容时大小写敏感(此选项不必手动调整，可以在UI设置)
         CASE_SENSITIVE: false,
-        // 将文件路径加入搜索内容
+        // 将文件路径加入搜索内容(此选项不必手动调整，可以在UI设置)
         INCLUDE_FILE_PATH: false,
         // 展示文件路径时使用相对路径
         RELATIVE_PATH: true,
@@ -69,7 +69,7 @@
             box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
             border-radius: 2px;
             padding-left: 5px;
-            padding-right: 30px;
+            padding-right: 50px;
         }
         
         #typora-search-multi-input input:focus {
@@ -86,11 +86,20 @@
         #typora-search-multi-input .search-multi-search-option-btn {
             position: absolute;
             padding: 1px;
-            right: 6px;
-            top: 8px;
+            top: 7px;
             opacity: .5;
             line-height: 10px;
             border-radius: 3px
+        }
+        
+        #typora-search-multi-input #typora-search-multi-case-option-btn { 
+            right: 6px;
+            padding: 2px 1px;
+        }
+        
+        #typora-search-multi-input #typora-search-multi-path-option-btn { 
+            right: 30px;
+            padding: 1px 3px;
         }
         
         #typora-search-multi-input .search-multi-search-option-btn.select,
@@ -169,6 +178,9 @@
                     <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use>
                 </svg>
             </span>
+            <span ty-hint="将文件名加入搜索内容" id="typora-search-multi-path-option-btn" class="search-multi-search-option-btn" aria-label="将文件名加入搜索内容">
+                <div class="ion-ionic"></div>
+            </span>
         </div>
     
         <div class="typora-search-multi-list" id="typora-search-multi-list" style="display:none">
@@ -210,6 +222,7 @@
         block: document.querySelector(".typora-search-multi-list-inner .quick-open-group-block"),
         input: document.querySelector("#typora-search-multi-input input"),
         caseOption: document.querySelector("#typora-search-multi-case-option-btn"),
+        pathOption: document.querySelector("#typora-search-multi-path-option-btn"),
         resultTitle: document.querySelector(".typora-search-multi-list .ty-quick-open-category-title")
     }
 
@@ -470,6 +483,13 @@
     modal.caseOption.addEventListener("click", ev => {
         modal.caseOption.classList.toggle("select");
         config.CASE_SENSITIVE = !config.CASE_SENSITIVE;
+        ev.preventDefault();
+        ev.stopPropagation();
+    })
+
+    modal.pathOption.addEventListener("click", ev => {
+        modal.pathOption.classList.toggle("select");
+        config.INCLUDE_FILE_PATH = !config.INCLUDE_FILE_PATH;
         ev.preventDefault();
         ev.stopPropagation();
     })
