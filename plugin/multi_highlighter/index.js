@@ -160,7 +160,7 @@
             position: absolute;
             z-index: 99999;
             animation-name: fadeit; 
-            animation-duration: 1.5s;
+            animation-duration: 3s;
         }
         
         @keyframes fadeit {
@@ -330,9 +330,21 @@
         }, true)
     }
 
+    const handleHideElement = marker => {
+        const image = marker.closest(`span[md-inline="image"]`);
+        if (image) {
+            image.classList.add("md-expand");
+        }
+        const link = marker.closest(`span[md-inline="link"]`);
+        if (link) {
+            link.classList.add("md-expand");
+        }
+    }
+
     const scroll = marker => {
         if (!marker) return;
 
+        handleHideElement(marker);
         requestAnimationFrame(() => marker.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"}));
 
         if (config.SHOW_KEYWORD_OUTLINE) {
@@ -352,7 +364,7 @@
             bar.style.top = "0";
             marker.appendChild(bar);
 
-            setTimeout(() => bar && bar.parentElement && bar.parentElement.removeChild(bar), 1500);
+            setTimeout(() => bar && bar.parentElement && bar.parentElement.removeChild(bar), 3000);
         }
     }
 
