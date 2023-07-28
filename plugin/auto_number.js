@@ -12,8 +12,9 @@
         ENABLE_IMAGE: true,
     }
 
+    const bast_css = `#write { counter-reset: write-h2 Figures Tables; }`
+
     const content_css = `
-        #write { counter-reset: write-h2 Figures Tables; }
         h1 { counter-reset: write-h2 Figures Tables; }
         h2 { counter-reset: write-h3 Figures Tables; }
         h3 { counter-reset: write-h4; }
@@ -159,6 +160,7 @@
         }`
 
     const css = [
+        bast_css,
         (config.ENABLE_CONTENT) ? content_css : "",
         (config.ENABLE_SIDE_BAR) ? side_bar_css : "",
         (config.ENABLE_TOC) ? toc_css : "",
