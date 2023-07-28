@@ -85,19 +85,19 @@
         
         #typora-search-multi-input .search-multi-search-option-btn {
             position: absolute;
-            padding: 1px;
             top: 7px;
             opacity: .5;
             line-height: 10px;
-            border-radius: 3px
+            border-radius: 3px;
+            cursor: pointer;
         }
         
-        #typora-search-multi-input #typora-search-multi-case-option-btn { 
+        #typora-search-multi-input #typora-search-multi-case-option-btn {
             right: 6px;
             padding: 2px 1px;
         }
         
-        #typora-search-multi-input #typora-search-multi-path-option-btn { 
+        #typora-search-multi-input #typora-search-multi-path-option-btn {
             right: 30px;
             padding: 1px 3px;
         }

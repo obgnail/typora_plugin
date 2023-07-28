@@ -113,7 +113,8 @@
             top: 8px;
             opacity: .5;
             line-height: 10px;
-            border-radius: 3px
+            border-radius: 3px;
+            cursor: pointer;
         }
         
         #plugin-multi-highlighter-input .plugin-multi-highlighter-option-btn.select,
