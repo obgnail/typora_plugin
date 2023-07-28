@@ -160,7 +160,7 @@
             position: absolute;
             z-index: 99999;
             animation-name: fadeit; 
-            animation-duration: 1.5s;
+            animation-duration: 3s;
         }
         
         @keyframes fadeit {
@@ -364,7 +364,7 @@
             bar.style.top = "0";
             marker.appendChild(bar);
 
-            setTimeout(() => bar && bar.parentElement && bar.parentElement.removeChild(bar), 1500);
+            setTimeout(() => bar && bar.parentElement && bar.parentElement.removeChild(bar), 3000);
         }
     }
 
