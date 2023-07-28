@@ -88,7 +88,8 @@
             top: 7px;
             opacity: .5;
             line-height: 10px;
-            border-radius: 3px
+            border-radius: 3px;
+            cursor: pointer;
         }
         
         #typora-search-multi-input #typora-search-multi-case-option-btn {
