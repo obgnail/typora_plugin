@@ -2,10 +2,8 @@
     const config = {
         // 隐藏掉titleBar
         HIDE_WINDOW_TITLE_BAR: true,
-        // 允许拖拽排序标签页
-        ALLOW_DRAG: true,
-        // 当标签页脱离父标签3倍高度时，视为新建窗口
-        HEIGHT_SCALE: 3,
+        // 拖拽排序标签页的方式（1 or 2）
+        DRAG_STYLE: 1,
         // 是否调整content的top，以免被tab遮挡
         CHANGE_CONTENT_TOP: true,
         // 总是在当前标签页打开
@@ -78,10 +76,6 @@
                 cursor: pointer
             }
             
-            #plugin-window-tab .tab-container.over {
-                background-color: var(--active-file-bg-color, lightgray);
-            }
-            
             #plugin-window-tab .name {
                 max-width: 350px;
                 padding-right: 15px;
@@ -152,6 +146,20 @@
                 height: 3px;
                 background-color: var(--active-file-border-color, black);
                 display: none;
+            }
+            
+            #plugin-window-tab [dragging] {
+                position: static !important;
+                box-sizing: border-box !important;
+                margin: 0 !important;
+            }
+        
+            #plugin-window-tab .drag-obj {
+                position: fixed;
+                left: 0;
+                top: 0;
+                z-index: 99999;
+                pointer-events: none;
             }
             `
         const style = document.createElement('style');
@@ -407,7 +415,129 @@
         openFile(filePath);
     }, true)
 
-    if (config.ALLOW_DRAG) {
+    const resetTab = () => {
+        const tabs = document.querySelectorAll("#plugin-window-tab .tab-container");
+        const activeIdx = parseInt(entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
+        const activePath = tabUtil.tabs[activeIdx].path;
+        const newTabList = []
+        tabs.forEach(tab => {
+            const idx = parseInt(tab.getAttribute("idx"));
+            newTabList.push(tabUtil.tabs[idx]);
+        })
+        tabUtil.tabs = newTabList;
+        openTab(activePath);
+    }
+
+    if (config.DRAG_STYLE === 1) {
+        const tabBar = $("#plugin-window-tab .tab-bar");
+        let currentDragItem = null;
+        let _offsetX = 0;
+
+        tabBar.on("dragstart", ".tab-container", function (ev) {
+            _offsetX = ev.offsetX;
+            currentDragItem = this;
+        })
+        tabBar.on("dragend", ".tab-container", function (ev) {
+            currentDragItem = null;
+        })
+        tabBar.on("dragover", ".tab-container", function (ev) {
+            ev.preventDefault();
+            if (!currentDragItem) return;
+            this[ev.offsetX > _offsetX ? 'after' : 'before'](currentDragItem);
+        })
+
+        let cloneObj = null;
+        let offsetX = 0;
+        let offsetY = 0;
+        let startX = 0;
+        let startY = 0;
+        let dragBox = null;
+        let axis, _axis;
+
+        tabBar.on("dragstart", ".tab-container", function (ev) {
+            ev = ev.originalEvent;
+            dragBox = this;
+            dragBox.dragData = {};
+            axis = dragBox.getAttribute('axis');
+            _axis = axis;
+            ev.dataTransfer.effectAllowed = "move";
+            ev.dataTransfer.dropEffect = 'move';
+            let rect = dragBox.getBoundingClientRect();
+            let left = rect.left;
+            let top = rect.top;
+            startX = ev.clientX;
+            startY = ev.clientY;
+            offsetX = startX - left;
+            offsetY = startY - top;
+            dragBox.style.transition = 'none';
+
+            const fakeObj = dragBox.cloneNode(true);
+            fakeObj.style.width = dragBox.offsetWidth + 'px';
+            fakeObj.style.height = dragBox.offsetHeight + 'px';
+            fakeObj.style.transform = 'translate3d(0,0,0)';
+            fakeObj.setAttribute('dragging', '');
+            cloneObj = document.createElement('DIV');
+            cloneObj.appendChild(fakeObj);
+            cloneObj.className = 'drag-obj';
+            cloneObj.style = `transform:translate3d(${left}px, ${top}px, 0)`;
+            document.querySelector("content").appendChild(cloneObj);
+        })
+
+        tabBar.on("dragend", ".tab-container", function (ev) {
+            if (!cloneObj) return;
+            const rect = this.getBoundingClientRect();
+            const reset = cloneObj.animate(
+                [{
+                    transform: cloneObj.style.transform
+                }, {
+                    transform: `translate3d(${rect.left}px, ${rect.top}px, 0)`
+                }], {
+                    duration: 150,
+                    easing: "ease-in-out",
+                }
+            )
+
+            reset.onfinish = function () {
+                document.querySelector("content").removeChild(cloneObj);
+                cloneObj = null;
+                dragBox.dragData = null;
+                dragBox.style.visibility = 'visible';
+                resetTab();
+            }
+        })
+
+        document.addEventListener('dragover', function (ev) {
+            if (!cloneObj) return;
+
+            ev.preventDefault();
+            ev.stopPropagation();
+            ev.dataTransfer.dropEffect = 'move';
+            dragBox.style.visibility = 'hidden';
+            let left = ~~(ev.clientX - offsetX);
+            let top = ~~(ev.clientY - offsetY);
+            if (ev.shiftKey || axis) {
+                if (_axis === 'X') {
+                    top = ~~(startY - offsetY);
+                } else if (_axis === 'Y') {
+                    left = ~~(startX - offsetX);
+                } else {
+                    _axis = (~~Math.abs(ev.clientX - startX) > ~~Math.abs(ev.clientY - startY) && 'X' ||
+                        ~~Math.abs(ev.clientX - startX) < ~~Math.abs(ev.clientY - startY) && 'Y' || ''
+                    )
+                }
+            } else {
+                _axis = '';
+            }
+            startX = left + offsetX;
+            startY = top + offsetY;
+
+            cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+            dragBox.dragData.left = left;
+            dragBox.dragData.top = top;
+        })
+    }
+
+    if (config.DRAG_STYLE === 2) {
         let lastOver = null;
         const tabBar = $("#plugin-window-tab .tab-bar");
 
@@ -419,17 +549,8 @@
         })
         tabBar.on("dragend", ".tab-container", function (ev) {
             this.style.opacity = "";
-            const fromIdx = parseInt(this.getAttribute("idx"));
-
-            const offsetY = Math.abs(ev.offsetY);
-            const height = entities.tabBar.getBoundingClientRect().height;
-            if (offsetY > height * config.HEIGHT_SCALE) {
-                const _path = tabUtil.tabs[fromIdx].path;
-                openFileNewWindow(_path, false);
-                return
-            }
-
             if (lastOver) {
+                const fromIdx = parseInt(this.getAttribute("idx"));
                 lastOver.classList.remove("over");
                 const activeIdx = parseInt(entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
                 const activePath = tabUtil.tabs[activeIdx].path;
