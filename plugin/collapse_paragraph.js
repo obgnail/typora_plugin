@@ -39,25 +39,45 @@
         return ele;
     }
 
-    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
-
-    document.getElementById("write").addEventListener("click", ev => {
-        if (!metaKeyPressed(ev)) {
-            return
-        }
-        const paragraph = ev.target.closest("h1, h2, h3, h4, h5, h6");
-        if (!paragraph) {
-            return
-        }
-
-        document.activeElement.blur();
-        if (paragraph.classList.contains("collapsed-paragraph")) {
+    const trigger = (paragraph, collapsed) => {
+        if (collapsed) {
             paragraph.classList.remove("collapsed-paragraph");
             toggle(paragraph, "");
         } else {
             paragraph.classList.add("collapsed-paragraph");
             toggle(paragraph, "none");
         }
+    }
+
+    const findSiblings = paragraph => {
+        const idx = paragraphList.indexOf(paragraph.tagName);
+        const stop = paragraphList.slice(0, idx);
+
+        const result = [paragraph];
+        ["previousElementSibling", "nextElementSibling"].forEach(direction => {
+            for (let ele = paragraph[direction]; !!ele; ele = ele[direction]) {
+                if (stop.indexOf(ele.tagName) !== -1) {
+                    return
+                }
+                if (ele.tagName === paragraph.tagName) {
+                    result.push(ele);
+                }
+            }
+        })
+        return result;
+    }
+
+    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
+
+    document.getElementById("write").addEventListener("click", ev => {
+        if (!metaKeyPressed(ev)) return;
+        const paragraph = ev.target.closest("h1, h2, h3, h4, h5, h6");
+        if (!paragraph) return;
+
+        document.activeElement.blur();
+        const collapsed = paragraph.classList.contains("collapsed-paragraph");
+        const list = ev.altKey ? (ev.shiftKey ? document.querySelectorAll(`#write ${paragraph.tagName}`) : findSiblings(paragraph)) : [paragraph];
+        list.forEach(ele => trigger(ele, collapsed));
     })
 
     module.exports = {config};
