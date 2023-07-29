@@ -6,6 +6,8 @@
         DRAG_STYLE: 1,
         // 是否调整content的top，以免被tab遮挡
         CHANGE_CONTENT_TOP: true,
+        // 当标签页脱离父标签3倍高度时，视为新建窗口
+        HEIGHT_SCALE: 3,
         // 总是在当前标签页打开
         LOCAL_OPEN: false,
 
@@ -74,6 +76,10 @@
                 user-select: none;
                 flex-shrink: 0;
                 cursor: pointer
+            }
+            
+            #plugin-window-tab .tab-container.over {
+                background-color: var(--active-file-bg-color, lightgray);
             }
             
             #plugin-window-tab .name {
@@ -415,20 +421,30 @@
         openFile(filePath);
     }, true)
 
-    const resetTab = () => {
-        const tabs = document.querySelectorAll("#plugin-window-tab .tab-container");
-        const activeIdx = parseInt(entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
-        const activePath = tabUtil.tabs[activeIdx].path;
-        const newTabList = []
-        tabs.forEach(tab => {
+    const newWindowIfNeed = (offsetY, tab) => {
+        offsetY = Math.abs(offsetY);
+        const height = entities.tabBar.getBoundingClientRect().height;
+        if (offsetY > height * config.HEIGHT_SCALE) {
             const idx = parseInt(tab.getAttribute("idx"));
-            newTabList.push(tabUtil.tabs[idx]);
-        })
-        tabUtil.tabs = newTabList;
-        openTab(activePath);
+            const _path = tabUtil.tabs[idx].path;
+            openFileNewWindow(_path, false);
+        }
     }
 
     if (config.DRAG_STYLE === 1) {
+        const resetTabBar = () => {
+            const tabs = document.querySelectorAll("#plugin-window-tab .tab-container");
+            const activeIdx = parseInt(entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
+            const activePath = tabUtil.tabs[activeIdx].path;
+            const newTabList = []
+            tabs.forEach(tab => {
+                const idx = parseInt(tab.getAttribute("idx"));
+                newTabList.push(tabUtil.tabs[idx]);
+            })
+            tabUtil.tabs = newTabList;
+            openTab(activePath);
+        }
+
         const tabBar = $("#plugin-window-tab .tab-bar");
         let currentDragItem = null;
         let _offsetX = 0;
@@ -445,6 +461,9 @@
             if (!currentDragItem) return;
             this[ev.offsetX > _offsetX ? 'after' : 'before'](currentDragItem);
         })
+        tabBar.on("dragenter", function (ev) {
+            return false
+        })
 
         let cloneObj = null;
         let offsetX = 0;
@@ -455,13 +474,12 @@
         let axis, _axis;
 
         tabBar.on("dragstart", ".tab-container", function (ev) {
-            ev = ev.originalEvent;
             dragBox = this;
             dragBox.dragData = {};
             axis = dragBox.getAttribute('axis');
             _axis = axis;
-            ev.dataTransfer.effectAllowed = "move";
-            ev.dataTransfer.dropEffect = 'move';
+            ev.originalEvent.dataTransfer.effectAllowed = "move";
+            ev.originalEvent.dataTransfer.dropEffect = 'move';
             let rect = dragBox.getBoundingClientRect();
             let left = rect.left;
             let top = rect.top;
@@ -484,6 +502,8 @@
         })
 
         tabBar.on("dragend", ".tab-container", function (ev) {
+            newWindowIfNeed(ev.offsetY, this);
+
             if (!cloneObj) return;
             const rect = this.getBoundingClientRect();
             const reset = cloneObj.animate(
@@ -502,7 +522,7 @@
                 cloneObj = null;
                 dragBox.dragData = null;
                 dragBox.style.visibility = 'visible';
-                resetTab();
+                resetTabBar();
             }
         })
 
@@ -549,12 +569,14 @@
         })
         tabBar.on("dragend", ".tab-container", function (ev) {
             this.style.opacity = "";
+            newWindowIfNeed(ev.offsetY, this);
+
             if (lastOver) {
-                const fromIdx = parseInt(this.getAttribute("idx"));
                 lastOver.classList.remove("over");
                 const activeIdx = parseInt(entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
                 const activePath = tabUtil.tabs[activeIdx].path;
                 const toIdx = parseInt(lastOver.getAttribute("idx"));
+                const fromIdx = parseInt(this.getAttribute("idx"));
                 const ele = tabUtil.tabs.splice(fromIdx, 1)[0];
                 tabUtil.tabs.splice(toIdx, 0, ele);
                 openTab(activePath);
