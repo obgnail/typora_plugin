@@ -152,9 +152,13 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### collapse_paragraph：章节折叠
 
-`ctrl+鼠标点击`：折叠 / 展开 章节下所有文本。
+折叠 / 展开 章节下所有文本。
 
 支持折叠的标签：h1~h6。
+
+- `ctrl+click`：折叠 / 展开【单个章节】
+- `click+alt+click`：折叠 / 展开【父章节下所有同级的章节】
+- `click+shift+alt+click`：折叠 / 展开【全局所有同级的章节】
 
 ![collapse_paragraph](assets/collapse_paragraph.gif)
 
