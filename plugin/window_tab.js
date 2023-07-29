@@ -6,6 +6,8 @@
         ALLOW_DRAG: true,
         // 当标签页脱离父标签3倍高度时，视为新建窗口
         HEIGHT_SCALE: 3,
+        // 是否调整content的top，以免被tab遮挡
+        CHANGE_CONTENT_TOP: true,
         // 总是在当前标签页打开
         LOCAL_OPEN: false,
 
@@ -43,6 +45,7 @@
                 content: "";
                 height: 100%;
                 width: 100vw;
+                border-bottom: solid 1px rgba(0, 0, 0, 0.07);
             }
     
             #plugin-window-tab .tab-bar:hover::-webkit-scrollbar-thumb {
@@ -162,6 +165,11 @@
         windowTab.innerHTML = div;
         document.getElementById("write-style").parentElement
             .insertBefore(windowTab, document.getElementById("write-style"));
+
+        if (config.CHANGE_CONTENT_TOP) {
+            const {height} = document.querySelector("#plugin-window-tab").getBoundingClientRect();
+            document.querySelector("content").style.top = height + "px";
+        }
     })()
 
     const Package = {

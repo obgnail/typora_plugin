@@ -2,6 +2,7 @@
     const config = {
         // 距顶部50像素开始显示
         THRESHOLD: 50,
+        COLOR: "var(--active-file-border-color, black)",
     }
 
     const goTopDiv = document.createElement("div");
@@ -13,7 +14,7 @@
     goTopDiv.style.zIndex = "99999";
     goTopDiv.style.cursor = "pointer"
     goTopDiv.style.fontSize = "50px";
-    goTopDiv.style.color = "#ffafa3";
+    goTopDiv.style.color = config.COLOR;
     goTopDiv.style.display = "none";
     const body = document.querySelector("body");
     body.appendChild(goTopDiv);
