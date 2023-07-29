@@ -10,7 +10,7 @@
 | ---- | ------------------ | -------------------------------- | -------- |
 | 1    | window_tab         | 标签页管理                       | √        |
 | 2    | search_multi       | 全局多关键字搜索                 | √        |
-| 3    | multi_highlighter  | 多关键字高亮                     | √        |
+| 3    | multi_highlighter  | 多关键字高亮                     | ×        |
 | 4    | collapse_paragraph | 章节折叠                         | √        |
 | 5    | md_padding         | 中英文混排优化                   | √        |
 | 6    | fence_enhance      | 一键复制代码，折叠代码           | √        |
@@ -145,6 +145,8 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 ![multi_highlighter](assets/multi_highlighter.png)
 
 > 注意：当你鼠标点击文档内容时，会自动退出高亮状态。**这是 Typora 本身的限制导致的**：高亮功能是通过添加标签实现的，但是为了保证数据安全，`#write` 标签不允许手动添加任何标签，所以需要在编辑的时候 remove 掉之前添加的标签。（你可以试试 Typora 自身的 ctrl+F 搜索，在搜索关键字后，点击任意地方原先高亮的地方也会消失）
+
+> 已知BUG：**Typora 对于大文件会惰性加载代码块，导致代码块里面添加的标签会被刷新掉。暂时默认关闭此脚本，待解决后重新开启。**
 
 
 
