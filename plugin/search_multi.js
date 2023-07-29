@@ -178,7 +178,7 @@
                     <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use>
                 </svg>
             </span>
-            <span ty-hint="将文件名加入搜索内容" id="typora-search-multi-path-option-btn" class="search-multi-search-option-btn" aria-label="将文件名加入搜索内容">
+            <span ty-hint="将文件路径加入搜索内容" id="typora-search-multi-path-option-btn" class="search-multi-search-option-btn" aria-label="将文件路径加入搜索内容">
                 <div class="ion-ionic"></div>
             </span>
         </div>
