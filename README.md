@@ -131,7 +131,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
-### multi_highlighter：多关键字高亮
+### multi_highlighter：多关键字高亮（暂时禁用）
 
 搜索并高亮关键字，并提供一键定位功能（左键下一个，右键上一个）
 
@@ -157,8 +157,8 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 支持折叠的标签：h1~h6。
 
 - `ctrl+click`：折叠 / 展开【单个章节】
-- `click+alt+click`：折叠 / 展开【父章节下所有同级的章节】
-- `click+shift+alt+click`：折叠 / 展开【全局所有同级的章节】
+- `ctrl+alt+click`：折叠 / 展开【父章节下所有同级的章节】
+- `ctrl+shift+alt+click`：折叠 / 展开【全局所有同级的章节】
 
 ![collapse_paragraph](assets/collapse_paragraph.gif)
 
