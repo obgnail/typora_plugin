@@ -81,12 +81,14 @@
 
     const listen = enablePlugins => {
         const pluginMenu = $("#plugin-menu");
+        // 在二级菜单中调用插件
         pluginMenu.on("click", "[data-key]", function () {
             const name = this.getAttribute("data-key");
             const plugins = enablePlugins.filter(plugin => plugin.name === name);
             plugins && plugins[0] && plugins[0].call && plugins[0].call();
             File.editor.contextMenu.hide();
         })
+        // 展示二级菜单
         pluginMenu.on("mouseenter", "[data-key]", function () {
             const t = $(this);
             const target = t.find(`span[data-lg="Menu"]`);
@@ -98,6 +100,7 @@
                 document.querySelector("#plugin-menu .plugin-has-args").classList.remove("active");
             }
         })
+        // 展示三级菜单
         $("#context-menu").on("mouseenter", "[data-key]", function () {
             const target = $(this);
             if ("typora-plugin" === target.attr("data-key")) {
@@ -109,6 +112,7 @@
                 document.querySelectorAll(".plugin-menu-third").forEach(ele => ele.classList.remove("show"));
             }
         })
+        // 在三级菜单中调用插件
         $(".plugin-menu-third").on("click", "[data-key]", function () {
             const pluginName = this.parentElement.getAttribute("plugin_name");
             const argValue = this.getAttribute("arg_value");

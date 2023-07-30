@@ -10,17 +10,27 @@
         ENABLE_TABLE: true,
         // 图片自动编号
         ENABLE_IMAGE: true,
+        // 代码块自动编号
+        ENABLE_FENCE: true,
+
+        // 下标名称
+        NAME: {
+            table: "Table",
+            image: "Figure",
+            fence: "Fence",
+        }
     }
 
-    const bast_css = `#write { counter-reset: write-h2 Figures Tables; }`
-
-    const content_css = `
-        h1 { counter-reset: write-h2 Figures Tables; }
-        h2 { counter-reset: write-h3 Figures Tables; }
+    const bast_css = `
+        #write { counter-reset: write-h2 Figures Tables Fences; }
+        h1 { counter-reset: write-h2 Figures Tables Fences; }
+        h2 { counter-reset: write-h3 Figures Tables Fences; }
         h3 { counter-reset: write-h4; }
         h4 { counter-reset: write-h5; }
         h5 { counter-reset: write-h6; }
+    `
 
+    const content_css = `
         #write h2:before {
             counter-increment: write-h2;
             content: counter(write-h2) ". ";
@@ -142,7 +152,7 @@
     const image_css = `
         #write p span.md-image.md-img-loaded::after {
             counter-increment: Figures;
-            content: "Figure " counter(write-h2) "-" counter(Figures);
+            content: "${config.NAME.image} " counter(write-h2) "-" counter(Figures);
             font-family: monospace;
             display: block;
             text-align: center;
@@ -152,11 +162,27 @@
     const table_css = `
         #write figure.table-figure::after {
             counter-increment: Tables;
-            content: "Table " counter(write-h2) "-" counter(Tables);
+            content: "${config.NAME.table} " counter(write-h2) "-" counter(Tables);
             font-family: monospace;
             display: block;
             text-align: center;
             margin: 4px 0;
+        }`
+
+    const fence_css = `
+        #write .md-fences {
+            margin-bottom: 2.4em;
+        }
+        #write .md-fences::after {
+            counter-increment: Fences;
+            content: "${config.NAME.fence} " counter(write-h2) "-" counter(Fences);
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-family: monospace;
+            margin: 0.6em 0;
+            font-size: 1.1em;
+            z-index: 9;
         }`
 
     const css = [
@@ -166,6 +192,7 @@
         (config.ENABLE_TOC) ? toc_css : "",
         (config.ENABLE_IMAGE) ? image_css : "",
         (config.ENABLE_TABLE) ? table_css : "",
+        (config.ENABLE_FENCE) ? fence_css : "",
     ].join("\n")
 
     const style = document.createElement('style');
