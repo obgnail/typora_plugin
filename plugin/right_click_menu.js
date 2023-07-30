@@ -121,8 +121,11 @@
     const appendMenu = () => {
         setTimeout(() => {
             const {clickable, nonClickable, enable} = getPlugins();
+            // 一级菜单汇总所有插件
             appendFirst();
+            // 二级菜单展示所有插件
             appendSecond(clickable, nonClickable);
+            // 三级菜单展示插件的参数
             appendThird(enable);
             listen(enable);
         }, 500)
