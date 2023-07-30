@@ -92,6 +92,12 @@ window.onload = () => {
             clickable: false,
         },
         {
+            name: "文档大纲",
+            src: "./plugin/outline.js",
+            enable: true,
+            clickable: true,
+        },
+        {
             name: "右键菜单",
             src: "./plugin/right_click_menu.js",
             enable: true,
