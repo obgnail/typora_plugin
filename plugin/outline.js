@@ -73,7 +73,7 @@
         modal.id = 'plugin-outline';
         modal.innerHTML = `
             <div class="plugin-outline-header" style="padding-bottom: 5px; border-bottom: solid 1px rgba(0, 0, 0, 0.5);">
-                <div class="plugin-outline-icon ion-refresh" type="refresh"></div>
+                <div class="plugin-outline-icon" type="refresh"><div class="ion-refresh"></div></div>
                 <div class="plugin-outline-icon ion-arrow-move" type="move"></div>
                 <div class="plugin-outline-icon ion-close" type="close"></div>
             </div>
@@ -95,20 +95,6 @@
         move: document.querySelector(`#plugin-outline .plugin-outline-icon[Type="move"]`),
     }
 
-    const newItem = (cid, name, active) => {
-        const _active = (active) ? "active" : "";
-        return `<div class="plugin-outline-item ${_active}"><span data-ref="${cid}">${name}</span></div>`
-    }
-
-    const setFooterActive = Type => {
-        for (let ele = entities.footer.firstElementChild; !!ele; ele = ele.nextElementSibling) {
-            if (ele.getAttribute("type") === Type) {
-                ele.classList.add("select");
-            } else {
-                ele.classList.remove("select");
-            }
-        }
-    }
 
     class _collectUtil {
         constructor() {
@@ -154,7 +140,44 @@
                     this.collection.image.push({cid: cid, paragraphIdx: this.paragraphIdx, idx: this.imageIdx});
                 }
             }
-            return this.collection
+        }
+
+        // 简易数据单向绑定
+        bindDOM(Type) {
+            const first = entities.list.firstElementChild;
+            if (first && !first.classList.contains("plugin-outline-item")) {
+                entities.list.removeChild(first);
+            }
+
+            const typeCollection = this.collection[Type];
+            while (typeCollection.length !== entities.list.childElementCount) {
+                if (typeCollection.length > entities.list.childElementCount) {
+                    const div = document.createElement("div");
+                    div.classList.add("plugin-outline-item");
+                    div.appendChild(document.createElement("span"));
+                    entities.list.appendChild(div);
+                } else {
+                    entities.list.removeChild(entities.list.firstElementChild);
+                }
+            }
+
+            if (entities.list.childElementCount === 0) {
+                const div = document.createElement("div");
+                div.innerText = "Empty";
+                div.style.display = "block";
+                div.style.textAlign = "center";
+                div.style.padding = "10px";
+                entities.list.appendChild(div);
+                return
+            }
+
+            let ele = entities.list.firstElementChild;
+            typeCollection.forEach(item => {
+                const span = ele.firstElementChild;
+                span.setAttribute("data-ref", item.cid);
+                span.innerText = `${item.paragraphIdx}-${item.idx}`;
+                ele = ele.nextElementSibling;
+            })
         }
     }
 
@@ -162,11 +185,8 @@
 
     const collectAndShow = Type => {
         setFooterActive(Type);
-        const collection = collectUtil.collect();
-        const typeCollection = collection[Type];
-        entities.list.innerHTML = (typeCollection.length === 0)
-            ? `<div style="display: block; text-align: center; padding: 10px;">Empty</div>`
-            : typeCollection.map(item => newItem(item.cid, `${item.paragraphIdx}-${item.idx}`)).join("\n");
+        collectUtil.collect();
+        collectUtil.bindDOM(Type);
         entities.modal.style.display = "block";
     }
 
@@ -181,9 +201,29 @@
         File.isFocusMode && File.editor.updateFocusMode(false);
     }
 
+    const setFooterActive = Type => {
+        for (let ele = entities.footer.firstElementChild; !!ele; ele = ele.nextElementSibling) {
+            if (ele.getAttribute("type") === Type) {
+                ele.classList.add("select");
+            } else {
+                ele.classList.remove("select");
+            }
+        }
+    }
+
     const refresh = () => {
         const search = entities.footer.querySelector(".plugin-outline-icon.select");
         collectAndShow(search.getAttribute("Type"));
+    }
+
+    // 因为比较简单,就不用CSS做了
+    function rotate(ele) {
+        let angle = 0;
+        const timer = setInterval(() => {
+            angle += 10;
+            requestAnimationFrame(() => ele.style.transform = "rotate(" + angle + "deg)");
+            (angle === 360) && clearInterval(timer);
+        }, 10)
     }
 
     entities.modal.addEventListener("click", ev => {
@@ -208,6 +248,7 @@
                 entities.modal.style.display = "none";
             } else if (Type === "refresh") {
                 refresh();
+                rotate(headerIcon.firstElementChild);
             }
         }
     })
@@ -228,12 +269,11 @@
         }
 
         document.addEventListener("mouseup", ev => {
-                ev.stopPropagation();
-                ev.preventDefault();
-                document.removeEventListener('mousemove', onMouseMove);
-                entities.move.onmouseup = null;
-            }
-        )
+            ev.stopPropagation();
+            ev.preventDefault();
+            document.removeEventListener('mousemove', onMouseMove);
+            entities.move.onmouseup = null;
+        })
 
         document.addEventListener('mousemove', onMouseMove);
     })
@@ -249,11 +289,7 @@
                     return result;
                 };
             }
-            const after = () => {
-                if (entities.modal.style.display === "block") {
-                    setTimeout(refresh, 200);
-                }
-            }
+            const after = () => (entities.modal.style.display === "block") && setTimeout(refresh, 300)
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
         }
     }, config.LOOP_DETECT_INTERVAL);

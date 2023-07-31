@@ -129,11 +129,7 @@
         }
     }).observe(document.getElementById("file-library-tree"), {subtree: true, childList: true});
 
-    const _timer = setInterval(() => {
-        if (setAllDirCount()) {
-            clearInterval(_timer);
-        }
-    }, config.LOOP_DETECT_INTERVAL);
+    const _timer = setInterval(() => setAllDirCount() && clearInterval(_timer), config.LOOP_DETECT_INTERVAL);
 
     module.exports = {config};
 
