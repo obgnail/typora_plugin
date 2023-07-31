@@ -1,12 +1,9 @@
 (() => {
     const config = {
-        ALLOW_DRAG: true,
-        NAME: {
-            table: "", // Table
-            image: "", // Figure
-            fence: "", // Fence
-        },
+        // 默认大纲类型
         DEFAULT_TYPE: "fence",
+
+        LOOP_DETECT_INTERVAL: 30,
     };
 
     (() => {
@@ -14,7 +11,7 @@
             #plugin-outline {
                 position: fixed;
                 display: none;
-                left: 90%;
+                left: 80%;
                 top: 25%;
                 padding: 4px 5px;
                 width: 150px;
@@ -31,14 +28,15 @@
                 width: 100%;
             }
             
-            #plugin-outline .plugin-outline-header {
-                padding-bottom: 5px;
-                border-bottom: solid 1px rgba(0, 0, 0, 0.5);
+            #plugin-outline .plugin-outline-item {
+                padding-top: 3px;
+                padding-bottom: 3px;
+                cursor: pointer;
             }
             
-            #plugin-outline .plugin-outline-footer {
-                padding-top: 5px;
-                border-top: solid 1px rgba(0, 0, 0, 0.5);
+            #plugin-outline .plugin-outline-item.active, .plugin-outline-item:hover {
+                border-color: #f5f5f5;
+                background-color: var(--item-hover-bg-color);
             }
             
             #plugin-outline .plugin-outline-icon {
@@ -48,15 +46,14 @@
                 cursor: pointer;
             }
             
-            #plugin-outline .plugin-outline-icon.select,
-            #plugin-outline .plugin-outline-icon:hover {
+            #plugin-outline .plugin-outline-icon.select, .plugin-outline-icon:hover {
                 background: var(--active-file-bg-color);
                 color: var(--active-file-text-color);
                 opacity: 1
             }
             
             #plugin-outline .plugin-outline-list {
-                max-height: 400px;
+                height: 400px;
                 padding: 1px 0px;
                 overflow-x: hidden;
                 overflow-y: auto;
@@ -74,18 +71,17 @@
 
         const modal = document.createElement("div");
         modal.id = 'plugin-outline';
-        modal.classList.add("outline-content");
         modal.innerHTML = `
-            <div class="plugin-outline-header">
+            <div class="plugin-outline-header" style="padding-bottom: 5px; border-bottom: solid 1px rgba(0, 0, 0, 0.5);">
+                <div class="plugin-outline-icon ion-refresh" type="refresh"></div>
+                <div class="plugin-outline-icon ion-arrow-move" type="move"></div>
+                <div class="plugin-outline-icon ion-close" type="close"></div>
+            </div>
+            <div class="plugin-outline-list"></div>
+            <div class="plugin-outline-footer" style="padding-top: 5px; border-top: solid 1px rgba(0, 0, 0, 0.5);">
                 <div class="plugin-outline-icon ion-code" type="fence" ty-hint="代码块"></div>
                 <div class="plugin-outline-icon ion-image" type="image" ty-hint="图片"></div>
                 <div class="plugin-outline-icon ion-grid" type="table" ty-hint="表格"></div>
-            </div>
-            <div class="plugin-outline-list"></div>
-            <div class="plugin-outline-footer">
-                <div class="plugin-outline-icon ion-refresh" type="refresh" ty-hint="刷新"></div>
-                <div class="plugin-outline-icon ion-arrow-move" type="move" ty-hint="移动"></div>
-                <div class="plugin-outline-icon ion-close" type="close" ty-hint="关闭"></div>
             </div>
             `
         document.querySelector("header").appendChild(modal);
@@ -96,15 +92,16 @@
         header: document.querySelector("#plugin-outline .plugin-outline-header"),
         list: document.querySelector("#plugin-outline .plugin-outline-list"),
         footer: document.querySelector("#plugin-outline .plugin-outline-footer"),
+        move: document.querySelector(`#plugin-outline .plugin-outline-icon[Type="move"]`),
     }
 
     const newItem = (cid, name, active) => {
-        const _active = (active) ? "outline-item-active" : "";
-        return `<li class="outline-item-wrapper outline-h1"><div class="outline-item ${_active}"><span data-ref="${cid}">${name}</span></div></li>`
+        const _active = (active) ? "active" : "";
+        return `<div class="plugin-outline-item ${_active}"><span data-ref="${cid}">${name}</span></div>`
     }
 
-    const setHeaderActive = Type => {
-        for (let ele = entities.header.firstElementChild; !!ele; ele = ele.nextElementSibling) {
+    const setFooterActive = Type => {
+        for (let ele = entities.footer.firstElementChild; !!ele; ele = ele.nextElementSibling) {
             if (ele.getAttribute("type") === Type) {
                 ele.classList.add("select");
             } else {
@@ -164,11 +161,13 @@
     const collectUtil = new _collectUtil();
 
     const collectAndShow = Type => {
+        setFooterActive(Type);
         const collection = collectUtil.collect();
-        const li = collection[Type].map(item => newItem(item.cid, `${config.NAME[Type]} ${item.paragraphIdx}-${item.idx}`))
-        setHeaderActive(Type);
+        const typeCollection = collection[Type];
+        entities.list.innerHTML = (typeCollection.length === 0)
+            ? `<div style="display: block; text-align: center; padding: 10px;">Empty</div>`
+            : typeCollection.map(item => newItem(item.cid, `${item.paragraphIdx}-${item.idx}`)).join("\n");
         entities.modal.style.display = "block";
-        entities.list.innerHTML = li.join("\n");
     }
 
     const Call = () => collectAndShow(config.DEFAULT_TYPE);
@@ -182,73 +181,82 @@
         File.isFocusMode && File.editor.updateFocusMode(false);
     }
 
+    const refresh = () => {
+        const search = entities.footer.querySelector(".plugin-outline-icon.select");
+        collectAndShow(search.getAttribute("Type"));
+    }
+
     entities.modal.addEventListener("click", ev => {
-        const target = ev.target.closest(".outline-item-wrapper");
-        if (!target) return;
+        const item = ev.target.closest(".plugin-outline-item");
+        const headerIcon = ev.target.closest(".plugin-outline-header .plugin-outline-icon");
+        const footerIcon = ev.target.closest(".plugin-outline-footer .plugin-outline-icon");
+
+        if (!item && !headerIcon && !footerIcon) return;
 
         ev.stopPropagation();
         ev.preventDefault();
 
-        const cid = target.querySelector("span").getAttribute("data-ref");
-        scroll(cid);
-    })
-
-    entities.header.addEventListener("click", ev => {
-        const target = ev.target.closest(".plugin-outline-icon");
-        if (!target) return;
-
-        ev.stopPropagation();
-        ev.preventDefault();
-
-        const Type = target.getAttribute("type");
-        collectAndShow(Type);
-    })
-
-    entities.footer.addEventListener("click", ev => {
-        const target = ev.target.closest(".plugin-outline-icon");
-        if (!target) return;
-
-        ev.stopPropagation();
-        ev.preventDefault();
-
-        const Type = target.getAttribute("type");
-        if (Type === "close") {
-            entities.modal.style.display = "none";
-        } else if (Type === "refresh") {
-            const search = entities.header.querySelector(".plugin-outline-icon.select");
-            collectAndShow(search.getAttribute("Type"));
+        if (item) {
+            const cid = item.querySelector("span").getAttribute("data-ref");
+            scroll(cid);
+        } else if (footerIcon) {
+            const Type = footerIcon.getAttribute("type");
+            collectAndShow(Type);
+        } else {
+            const Type = headerIcon.getAttribute("type");
+            if (Type === "close") {
+                entities.modal.style.display = "none";
+            } else if (Type === "refresh") {
+                refresh();
+            }
         }
     })
 
-    if (config.ALLOW_DRAG) {
-        const move = entities.footer.querySelector(`.plugin-outline-icon[Type="move"]`);
-        move.addEventListener("mousedown", ev => {
-            ev.stopPropagation();
-            const rect = entities.modal.getBoundingClientRect();
-            const shiftX = ev.clientX - rect.left;
-            const shiftY = ev.clientY - rect.top;
+    entities.move.addEventListener("mousedown", ev => {
+        ev.stopPropagation();
+        const rect = entities.modal.getBoundingClientRect();
+        const shiftX = ev.clientX - rect.left;
+        const shiftY = ev.clientY - rect.top;
 
-            const onMouseMove = ev => {
+        const onMouseMove = ev => {
+            ev.stopPropagation();
+            ev.preventDefault();
+            requestAnimationFrame(() => {
+                entities.modal.style.left = ev.clientX - shiftX + 'px';
+                entities.modal.style.top = ev.clientY - shiftY + 'px';
+            });
+        }
+
+        document.addEventListener("mouseup", ev => {
                 ev.stopPropagation();
                 ev.preventDefault();
-                requestAnimationFrame(() => {
-                    entities.modal.style.left = ev.clientX - shiftX + 'px';
-                    entities.modal.style.top = ev.clientY - shiftY + 'px';
-                });
+                document.removeEventListener('mousemove', onMouseMove);
+                entities.move.onmouseup = null;
             }
+        )
 
-            document.addEventListener("mouseup", ev => {
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    document.removeEventListener('mousemove', onMouseMove);
-                    move.onmouseup = null;
+        document.addEventListener('mousemove', onMouseMove);
+    })
+    entities.move.ondragstart = () => false
+
+    const _timer = setInterval(() => {
+        if (File) {
+            clearInterval(_timer);
+            const decorator = (original, after) => {
+                return function () {
+                    const result = original.apply(this, arguments);
+                    after.call(this, result, ...arguments);
+                    return result;
+                };
+            }
+            const after = () => {
+                if (entities.modal.style.display === "block") {
+                    setTimeout(refresh, 200);
                 }
-            )
-
-            document.addEventListener('mousemove', onMouseMove);
-        })
-        move.ondragstart = () => false
-    }
+            }
+            File.editor.library.openFile = decorator(File.editor.library.openFile, after);
+        }
+    }, config.LOOP_DETECT_INTERVAL);
 
     console.log("outline.js had been injected");
 })()

@@ -20,6 +20,7 @@
 | 10   | resize_table       | 调整表格行高列宽                   | √        |
 | 11   | resize_image       | 调整图片显示大小                   | √        |
 | 12   | auto_number        | 章节、表格、图片、代码块等自动编号 | √        |
+| 13   | outline            | 以表格、图片、代码块形式的大纲     | √        |
 | 13   | go_top             | 一键到文章顶部                     | √        |
 | 14   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能   | √        |
 | 15   | right_click_menu   | 右键菜单统一管理、调用插件         | √        |
@@ -262,6 +263,12 @@ const BUILTIN = [
 6. 代码块
 
 > 注意：通过注入 CSS 实现功能，有可能会与你使用的 theme 冲突。
+
+
+
+### outline：以表格、图片、代码块形式的大纲
+
+![outline](assets/outline.gif)
 
 
 
