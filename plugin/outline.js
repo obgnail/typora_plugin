@@ -14,33 +14,42 @@
             #plugin-outline {
                 position: fixed;
                 display: none;
-                left: 93%;
+                left: 90%;
+                top: 25%;
                 padding: 4px 5px;
                 width: 150px;
                 z-index: 9999;
-                background-color: var(--bg-color);
+                background-color: #ffffff;
                 box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
                 border: 1px solid #ddd;
             }
             
-            #plugin-outline .plugin-outline-header {
+            #plugin-outline .plugin-outline-header, .plugin-outline-footer {
                 display: inline-flex;
                 justify-content: space-evenly;
                 align-items: center;
                 width: 100%;
-                border-bottom: solid 1px rgba(0, 0, 0, 0.5);
-                padding-bottom: 5px;
             }
             
-            #plugin-outline .plugin-outline-header .plugin-outline-icon {
+            #plugin-outline .plugin-outline-header {
+                padding-bottom: 5px;
+                border-bottom: solid 1px rgba(0, 0, 0, 0.5);
+            }
+            
+            #plugin-outline .plugin-outline-footer {
+                padding-top: 5px;
+                border-top: solid 1px rgba(0, 0, 0, 0.5);
+            }
+            
+            #plugin-outline .plugin-outline-icon {
                 opacity: .7;
                 padding: 1px 5px;
                 border-radius: 3px;
                 cursor: pointer;
             }
             
-            #plugin-outline .plugin-outline-header .plugin-outline-icon.select,
-            #plugin-outline .plugin-outline-header .plugin-outline-icon:hover {
+            #plugin-outline .plugin-outline-icon.select,
+            #plugin-outline .plugin-outline-icon:hover {
                 background: var(--active-file-bg-color);
                 color: var(--active-file-text-color);
                 opacity: 1
@@ -72,7 +81,13 @@
                 <div class="plugin-outline-icon ion-image" type="image" ty-hint="图片"></div>
                 <div class="plugin-outline-icon ion-grid" type="table" ty-hint="表格"></div>
             </div>
-            <div class="plugin-outline-list"></div>`
+            <div class="plugin-outline-list"></div>
+            <div class="plugin-outline-footer">
+                <div class="plugin-outline-icon ion-refresh" type="refresh" ty-hint="刷新"></div>
+                <div class="plugin-outline-icon ion-arrow-move" type="move" ty-hint="移动"></div>
+                <div class="plugin-outline-icon ion-close" type="close" ty-hint="关闭"></div>
+            </div>
+            `
         document.querySelector("header").appendChild(modal);
     })()
 
@@ -80,6 +95,7 @@
         modal: document.getElementById("plugin-outline"),
         header: document.querySelector("#plugin-outline .plugin-outline-header"),
         list: document.querySelector("#plugin-outline .plugin-outline-list"),
+        footer: document.querySelector("#plugin-outline .plugin-outline-footer"),
     }
 
     const newItem = (cid, name, active) => {
@@ -188,18 +204,31 @@
         collectAndShow(Type);
     })
 
-    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
+    entities.footer.addEventListener("click", ev => {
+        const target = ev.target.closest(".plugin-outline-icon");
+        if (!target) return;
+
+        ev.stopPropagation();
+        ev.preventDefault();
+
+        const Type = target.getAttribute("type");
+        if (Type === "close") {
+            entities.modal.style.display = "none";
+        } else if (Type === "refresh") {
+            const search = entities.header.querySelector(".plugin-outline-icon.select");
+            collectAndShow(search.getAttribute("Type"));
+        }
+    })
 
     if (config.ALLOW_DRAG) {
-        entities.modal.addEventListener("mousedown", ev => {
-            if (!metaKeyPressed(ev) || ev.button !== 0) return;
+        const move = entities.footer.querySelector(`.plugin-outline-icon[Type="move"]`);
+        move.addEventListener("mousedown", ev => {
             ev.stopPropagation();
             const rect = entities.modal.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
 
             const onMouseMove = ev => {
-                if (!metaKeyPressed(ev) || ev.button !== 0) return;
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
@@ -209,17 +238,16 @@
             }
 
             document.addEventListener("mouseup", ev => {
-                    if (!metaKeyPressed(ev) || ev.button !== 0) return;
                     ev.stopPropagation();
                     ev.preventDefault();
                     document.removeEventListener('mousemove', onMouseMove);
-                    entities.modal.onmouseup = null;
+                    move.onmouseup = null;
                 }
             )
 
             document.addEventListener('mousemove', onMouseMove);
         })
-        entities.modal.ondragstart = () => false
+        move.ondragstart = () => false
     }
 
     console.log("outline.js had been injected");
