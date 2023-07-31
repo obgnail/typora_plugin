@@ -32,6 +32,12 @@ window.onload = () => {
             clickable: true,
         },
         {
+            name: "文档大纲",
+            src: "./plugin/outline.js",
+            enable: true,
+            clickable: true,
+        },
+        {
             name: "文段截断",
             src: "./plugin/truncate_text.js",
             enable: true,
