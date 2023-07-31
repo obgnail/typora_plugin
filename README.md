@@ -21,11 +21,11 @@
 | 11   | resize_image       | 调整图片显示大小                   | √        |
 | 12   | auto_number        | 章节、表格、图片、代码块等自动编号 | √        |
 | 13   | outline            | 以表格、图片、代码块形式的大纲     | √        |
-| 13   | go_top             | 一键到文章顶部                     | √        |
-| 14   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能   | √        |
-| 15   | right_click_menu   | 右键菜单统一管理、调用插件         | √        |
-| 16   | mermaid_replace    | 替换 mermaid 组件                  | ×        |
-| 17   | old_window_tab     | 标签页管理（已废弃）               | ×        |
+| 14   | go_top             | 一键到文章顶部                     | √        |
+| 15   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能   | √        |
+| 16   | right_click_menu   | 右键菜单统一管理、调用插件         | √        |
+| 17   | mermaid_replace    | 替换 mermaid 组件                  | ×        |
+| 18   | old_window_tab     | 标签页管理（已废弃）               | ×        |
 
 1. 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
 2. 每个功能都有对应的配置，且每个配置选项都有注释说明。可以按需修改对应 JS 文件里的 config。
@@ -267,6 +267,8 @@ const BUILTIN = [
 
 
 ### outline：以表格、图片、代码块形式的大纲
+
+使用方式：右键菜单 -> 启用插件 -> 文档大纲
 
 ![outline](assets/outline.gif)
 
