@@ -5,7 +5,9 @@
         // Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
         ALLOW_EXT: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
+        CLASS_NAME: "plugin-file-counter",
         LOOP_DETECT_INTERVAL: 300,
+
     };
 
     const Package = {
@@ -15,7 +17,7 @@
 
     (() => {
         const css = `
-        .typora-file-count {
+        .${config.CLASS_NAME} {
             display: inline-block;
             float: right;
             white-space: nowrap;
@@ -80,10 +82,10 @@
     const setDirCount = treeNode => {
         const dir = treeNode.getAttribute("data-path");
         countFiles(dir, allowRead, fileCount => {
-            let countDiv = getChild(treeNode, "typora-file-count");
+            let countDiv = getChild(treeNode, config.CLASS_NAME);
             if (!countDiv) {
                 countDiv = document.createElement("div");
-                countDiv.classList.add("typora-file-count");
+                countDiv.classList.add(config.CLASS_NAME);
                 const background = treeNode.querySelector(".file-node-background");
                 treeNode.insertBefore(countDiv, background.nextElementSibling);
             }
@@ -102,9 +104,7 @@
 
     const setAllDirCount = () => {
         const root = document.querySelector("#file-library-tree > .file-library-node");
-        if (!root) {
-            return false
-        }
+        if (!root) return false;
         console.log("setAllDirCount");
         setDirCount(root);
         return true
@@ -120,8 +120,8 @@
         }
 
         for (const mutation of mutationList) {
-            if (mutation.target && mutation.target.classList && mutation.target.classList.contains("typora-file-count")
-                || mutation.addedNodes[0] && mutation.addedNodes[0].classList && mutation.addedNodes[0].classList.contains("typora-file-count")) {
+            if (mutation.target && mutation.target.classList && mutation.target.classList.contains(config.CLASS_NAME)
+                || mutation.addedNodes[0] && mutation.addedNodes[0].classList && mutation.addedNodes[0].classList.contains(config.CLASS_NAME)) {
                 continue
             }
             setAllDirCount();

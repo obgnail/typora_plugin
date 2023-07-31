@@ -8,10 +8,7 @@
 
     (() => {
         if (config.REMOVE_MIX_WIDTH) {
-            const css = `
-            table.md-table td {
-                min-width: 1px !important;
-            }`
+            const css = `table.md-table td { min-width: 1px !important; }`;
             const style = document.createElement('style');
             style.type = 'text/css';
             style.innerHTML = css;
@@ -46,7 +43,7 @@
         const _ele = ele;
         let count = 0;
         return () => {
-            count++
+            count++;
             switch (count) {
                 case 1:
                     return _ele
@@ -54,12 +51,12 @@
                     return _ele.previousElementSibling
                 case 3:
                     const num = whichChildOfParent(_ele);
-                    let uncle = _ele.parentElement.previousElementSibling
+                    let uncle = _ele.parentElement.previousElementSibling;
                     if (uncle) {
                         return uncle.querySelector(`td:nth-child(${num})`)
                     }
                     // 第一行数据
-                    const tr = _ele.closest("table").querySelector("thead tr")
+                    const tr = _ele.closest("table").querySelector("thead tr");
                     return tr.querySelector(`th:nth-child(${num})`)
                 default:
                     return null
@@ -92,9 +89,7 @@
 
     const write = document.querySelector("#write");
     write.addEventListener("mousedown", ev => {
-        if (!metaKeyPressed(ev)) {
-            return
-        }
+        if (!metaKeyPressed(ev)) return;
         ev.stopPropagation();
         ev.preventDefault();
 
@@ -107,13 +102,10 @@
             ele = ev.target.closest(self);
         }
 
-        if (!ele) {
-            return
-        }
+        if (!ele) return;
+
         const {target, direction} = findTarget(ele, ev);
-        if ((!target) || (direction !== "right" && direction !== "bottom")) {
-            return
-        }
+        if ((!target) || (direction !== "right" && direction !== "bottom")) return;
 
         const rect = target.getBoundingClientRect();
         const startWidth = rect.width;

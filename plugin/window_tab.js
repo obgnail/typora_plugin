@@ -452,16 +452,13 @@
         tabBar.on("dragstart", ".tab-container", function (ev) {
             _offsetX = ev.offsetX;
             currentDragItem = this;
-        })
-        tabBar.on("dragend", ".tab-container", function (ev) {
+        }).on("dragend", ".tab-container", function (ev) {
             currentDragItem = null;
-        })
-        tabBar.on("dragover", ".tab-container", function (ev) {
+        }).on("dragover", ".tab-container", function (ev) {
             ev.preventDefault();
             if (!currentDragItem) return;
             this[ev.offsetX > _offsetX ? 'after' : 'before'](currentDragItem);
-        })
-        tabBar.on("dragenter", function (ev) {
+        }).on("dragenter", function (ev) {
             return false
         })
 
@@ -499,9 +496,7 @@
             cloneObj.className = 'drag-obj';
             cloneObj.style = `transform:translate3d(${left}px, ${top}px, 0)`;
             document.querySelector("content").appendChild(cloneObj);
-        })
-
-        tabBar.on("dragend", ".tab-container", function (ev) {
+        }).on("dragend", ".tab-container", function (ev) {
             newWindowIfNeed(ev.offsetY, this);
 
             if (!cloneObj) return;
@@ -558,19 +553,24 @@
     }
 
     if (config.DRAG_STYLE === 2) {
-        let lastOver = null;
-        const tabBar = $("#plugin-window-tab .tab-bar");
+        const toggleOver = (target, f) => {
+            if (f === "add") {
+                target.classList.add("over");
+                lastOver = target;
+            } else {
+                target.classList.remove("over");
+            }
+        }
 
-        tabBar.on("dragstart", ".tab-container", function (ev) {
+        let lastOver = null;
+        $("#plugin-window-tab .tab-bar").on("dragstart", ".tab-container", function (ev) {
             ev.originalEvent.dataTransfer.effectAllowed = "move";
             ev.originalEvent.dataTransfer.dropEffect = 'move';
             this.style.opacity = 0.5;
             lastOver = null;
-        })
-        tabBar.on("dragend", ".tab-container", function (ev) {
+        }).on("dragend", ".tab-container", function (ev) {
             this.style.opacity = "";
             newWindowIfNeed(ev.offsetY, this);
-
             if (lastOver) {
                 lastOver.classList.remove("over");
                 const activeIdx = parseInt(entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
@@ -581,26 +581,13 @@
                 tabUtil.tabs.splice(toIdx, 0, ele);
                 openTab(activePath);
             }
-        })
-
-        const toggleOver = (target, f) => {
-            if (f === "add") {
-                target.classList.add("over");
-                lastOver = target;
-            } else {
-                target.classList.remove("over");
-            }
-        }
-
-        tabBar.on("dragover", ".tab-container", function () {
+        }).on("dragover", ".tab-container", function () {
             toggleOver(this, "add");
             return false
-        })
-        tabBar.on("dragenter", ".tab-container", function () {
+        }).on("dragenter", ".tab-container", function () {
             toggleOver(this, "add");
             return false
-        })
-        tabBar.on("dragleave", ".tab-container", function () {
+        }).on("dragleave", ".tab-container", function () {
             toggleOver(this, "remove");
         })
     }

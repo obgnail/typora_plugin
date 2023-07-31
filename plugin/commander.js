@@ -81,6 +81,7 @@
             left: 335px;
             opacity: 0.7;
             cursor: pointer;
+            display: none;
         }
 
         .typora-commander-output {
@@ -89,6 +90,7 @@
             max-height: 340px;
             overflow-y: auto;
             overflow-x: auto;
+            display:none;
         }
         
         .typora-commander-output pre {
@@ -123,11 +125,11 @@
         <div id="typora-commander-form">
             <input type="text" class="input" placeholder="Typora commander" autocorrect="off" spellcheck="false"
                 autocapitalize="off" data-lg="Front" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
-            <i class="ion-ios7-play typora-commander-commit" ty-hint="执行命令" style="display: none"></i>
+            <i class="ion-ios7-play typora-commander-commit" ty-hint="执行命令"></i>
             <select class="typora-commander-shell"><option value="${SHELL.CMD_BASH}">cmd/bash</option>${windowOption}</select>
             ${builtinSelect}
         </div>
-        <div class="typora-commander-output" id="typora-commander-output" style="display:none"><pre tabindex="0"></pre></div>
+        <div class="typora-commander-output"><pre tabindex="0"></pre></div>
        `
         const modal = document.createElement("div");
         modal.id = 'typora-commander';
@@ -149,8 +151,8 @@
         shellSelect: document.querySelector("#typora-commander-form .typora-commander-shell"),
         builtinSelect: document.querySelector("#typora-commander-form .typora-commander-builtin"),
         commit: document.querySelector("#typora-commander-form .typora-commander-commit"),
-        output: document.querySelector("#typora-commander-output"),
-        pre: document.querySelector("#typora-commander-output pre")
+        output: document.querySelector(".typora-commander-output"),
+        pre: document.querySelector(".typora-commander-output pre"),
     }
 
     const Package = {
@@ -230,6 +232,8 @@
             })
     }
 
+    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
+
     const showStdout = stdout => {
         modal.output.style.display = "block";
         modal.pre.classList.remove("error");
@@ -241,9 +245,7 @@
         modal.pre.classList.add("error");
     }
 
-    const commit = ev => {
-        ev.stopPropagation();
-        ev.preventDefault();
+    const commit = () => {
         const cmd = modal.input.value;
         if (!cmd) {
             showStdErr("command is empty");
@@ -255,7 +257,11 @@
     }
 
     // 提供不同入口，让鼠标操作的用户不必切换回键盘操作
-    modal.commit.addEventListener("click", ev => commit(ev), true);
+    modal.commit.addEventListener("click", ev => {
+        commit();
+        ev.stopPropagation();
+        ev.preventDefault();
+    }, true);
 
     modal.input.addEventListener("input", ev => {
         const cmd = modal.input.value.trim();
@@ -274,7 +280,9 @@
             case "Enter":
                 const input = ev.target.closest("input")
                 if (input) {
-                    commit(ev);
+                    commit();
+                    ev.stopPropagation();
+                    ev.preventDefault();
                 }
                 break
             case "Escape":

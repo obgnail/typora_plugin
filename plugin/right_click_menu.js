@@ -18,12 +18,12 @@
         ul.appendChild(line);
 
         const li = `
-        <li data-key="typora-plugin" data-group="enable-plugin" class="has-extra-menu">
-            <a role="menuitem">
-                <span data-localize="启用插件" data-lg="Menu">启用插件</span>
-                <i class="fa fa-caret-right"></i>
-            </a>
-        </li>`
+            <li data-key="typora-plugin" data-group="enable-plugin" class="has-extra-menu">
+                <a role="menuitem">
+                    <span data-localize="启用插件" data-lg="Menu">启用插件</span>
+                    <i class="fa fa-caret-right"></i>
+                </a>
+            </li>`
         ul.insertAdjacentHTML('beforeend', li);
     }
 
@@ -32,7 +32,7 @@
         const nonClickable = nonClickablePlugins.map(plugin => createSecondLi(plugin)).join("");
         const divider = `<li class="divider"></li>`
         const secondUl = createUl();
-        secondUl.id = "plugin-menu"
+        secondUl.id = "plugin-menu";
         secondUl.innerHTML = clickable + divider + nonClickable;
         document.querySelector("content").appendChild(secondUl);
     }
@@ -80,16 +80,14 @@
     };
 
     const listen = enablePlugins => {
-        const pluginMenu = $("#plugin-menu");
         // 在二级菜单中调用插件
-        pluginMenu.on("click", "[data-key]", function () {
+        $("#plugin-menu").on("click", "[data-key]", function () {
             const name = this.getAttribute("data-key");
             const plugins = enablePlugins.filter(plugin => plugin.name === name);
             plugins && plugins[0] && plugins[0].call && plugins[0].call();
             File.editor.contextMenu.hide();
-        })
-        // 展示二级菜单
-        pluginMenu.on("mouseenter", "[data-key]", function () {
+            // 展示二级菜单
+        }).on("mouseenter", "[data-key]", function () {
             const t = $(this);
             const target = t.find(`span[data-lg="Menu"]`);
             if (target.length) {

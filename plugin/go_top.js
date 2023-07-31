@@ -2,25 +2,30 @@
     const config = {
         // 距顶部50像素开始显示
         THRESHOLD: 50,
+        // 滚动所用时间
+        SCROLL_TIME: 600,
+        // 标签的颜色
         COLOR: "var(--active-file-border-color, black)",
+        // 标签id
+        DIV_ID: "plugin-go-top",
     }
 
-    const goTopDiv = document.createElement("div");
-    goTopDiv.id = 'typora-go-top';
-    goTopDiv.innerHTML = `<i class="ion-arrow-up-c"></i>`;
-    goTopDiv.style.position = "fixed";
-    goTopDiv.style.right = "50px";
-    goTopDiv.style.bottom = "50px";
-    goTopDiv.style.zIndex = "99999";
-    goTopDiv.style.cursor = "pointer"
-    goTopDiv.style.fontSize = "50px";
-    goTopDiv.style.color = config.COLOR;
-    goTopDiv.style.display = "none";
-    const body = document.querySelector("body");
-    body.appendChild(goTopDiv);
+    const goTop = document.createElement("div");
+    goTop.id = config.DIV_ID;
+    goTop.style.position = "fixed";
+    goTop.style.right = "50px";
+    goTop.style.bottom = "50px";
+    goTop.style.zIndex = "99999";
+    goTop.style.cursor = "pointer";
+    goTop.style.fontSize = "50px";
+    goTop.style.color = config.COLOR;
+    goTop.style.display = "none";
+    const i = document.createElement("i");
+    i.classList.add("ion-arrow-up-c");
+    goTop.appendChild(i);
+    document.querySelector("body").appendChild(goTop);
 
-    const Call = () => $("content").animate({scrollTop: '0'}, 600);
-    document.getElementById("typora-go-top").addEventListener("click", ev => {
+    document.getElementById(config.DIV_ID).addEventListener("click", ev => {
         Call();
         ev.preventDefault();
         ev.stopPropagation();
@@ -28,9 +33,10 @@
 
     const content = document.querySelector("content");
     content.addEventListener("scroll", ev => {
-        goTopDiv.style.display = (content.scrollTop > config.THRESHOLD) ? "block" : "none";
+        goTop.style.display = (content.scrollTop > config.THRESHOLD) ? "" : "none";
     })
 
+    const Call = () => $("content").animate({scrollTop: '0'}, config.SCROLL_TIME);
     module.exports = {Call, config};
     console.log("go_top.js had been injected");
 })()

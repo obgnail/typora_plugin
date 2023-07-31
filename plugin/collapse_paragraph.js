@@ -2,11 +2,13 @@
     const config = {
         // 折叠状态下的颜色
         BACKGROUND_COLOR: "#ffafa3",
+        // 添加的class
+        CLASS_NAME: "plugin-collapsed-paragraph",
     };
 
     (() => {
         const css = `
-            #write .collapsed-paragraph {
+            #write .${config.CLASS_NAME} {
                 background-color: ${config.BACKGROUND_COLOR};
                 cursor: pointer;
             }`;
@@ -25,7 +27,7 @@
         let ele = paragraph.nextElementSibling;
         while (ele && stop.indexOf(ele.tagName) === -1) {
             if (paragraphList.indexOf(ele.tagName) !== -1
-                && ele.classList.contains("collapsed-paragraph")
+                && ele.classList.contains(config.CLASS_NAME)
                 && display === "") {
                 ele.style.display = "";
                 ele = toggle(ele, "none");
@@ -41,10 +43,10 @@
 
     const trigger = (paragraph, collapsed) => {
         if (collapsed) {
-            paragraph.classList.remove("collapsed-paragraph");
+            paragraph.classList.remove(config.CLASS_NAME);
             toggle(paragraph, "");
         } else {
-            paragraph.classList.add("collapsed-paragraph");
+            paragraph.classList.add(config.CLASS_NAME);
             toggle(paragraph, "none");
         }
     }
@@ -75,7 +77,7 @@
         if (!paragraph) return;
 
         document.activeElement.blur();
-        const collapsed = paragraph.classList.contains("collapsed-paragraph");
+        const collapsed = paragraph.classList.contains(config.CLASS_NAME);
         const list = ev.altKey ? (ev.shiftKey ? document.querySelectorAll(`#write ${paragraph.tagName}`) : findSiblings(paragraph)) : [paragraph];
         list.forEach(ele => trigger(ele, collapsed));
     })

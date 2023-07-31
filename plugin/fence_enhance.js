@@ -12,6 +12,8 @@
             坏处是:绿皮
     */
     const config = {
+        // 自动隐藏,鼠标移动到fence才显示
+        AUTO_HIDE: false,
         // 启用复制代码功能
         ENABLE_COPY: true,
         // 启用折叠代码功能
@@ -58,6 +60,10 @@
         if (!enhance) {
             enhance = document.createElement("div");
             enhance.setAttribute("class", "fence-enhance");
+
+            if (config.AUTO_HIDE) {
+                enhance.style.visibility = "hidden";
+            }
 
             if (config.ENABLE_FOLD) {
                 const foldButton = document.createElement("div");
@@ -126,15 +132,11 @@
     const replaceChars = ["", "%20", ""];
 
     const copyCode = (ev, copyButton) => {
-        if (ev.timeStamp - lastClickTime < config.CLICK_CHECK_INTERVAL) {
-            return
-        }
+        if (ev.timeStamp - lastClickTime < config.CLICK_CHECK_INTERVAL) return;
         lastClickTime = ev.timeStamp;
 
         const lines = copyButton.closest(".md-fences").querySelectorAll(".CodeMirror-code .CodeMirror-line")
-        if (lines.length === 0) {
-            return
-        }
+        if (lines.length === 0) return;
 
         document.activeElement.blur();
 
@@ -147,7 +149,7 @@
                 }
             }
             const decodeText = decodeURI(encodeText);
-            contentList.push(decodeText)
+            contentList.push(decodeText);
         })
 
         const result = contentList.join("\n");
@@ -163,9 +165,8 @@
 
     const foldCode = (ev, foldButton) => {
         const scroll = foldButton.closest(".md-fences").querySelector(".CodeMirror-scroll");
-        if (!scroll) {
-            return
-        }
+        if (!scroll) return;
+
         document.activeElement.blur();
         if (scroll.style.height && scroll.style.overflowY) {
             scroll.style.height = "";
@@ -178,6 +179,14 @@
             foldButton.classList.add("folded");
             foldButton.innerText = "Folded";
         }
+    }
+
+    if (config.AUTO_HIDE) {
+        $("#write").on("mouseenter", ".md-fences", function () {
+            this.querySelector(".fence-enhance").style.visibility = "";
+        }).on("mouseleave", ".md-fences", function () {
+            this.querySelector(".fence-enhance").style.visibility = "hidden";
+        })
     }
 
     module.exports = {config};
