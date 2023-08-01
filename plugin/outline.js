@@ -2,7 +2,12 @@
     const config = {
         // 默认大纲类型
         DEFAULT_TYPE: "fence",
-
+        // 展示的名字
+        SHOW_NAME: {
+            fence: "Fence",
+            image: "Figure",
+            table: "Table",
+        },
         LOOP_DETECT_INTERVAL: 30,
     };
 
@@ -175,7 +180,7 @@
             typeCollection.forEach(item => {
                 const span = ele.firstElementChild;
                 span.setAttribute("data-ref", item.cid);
-                span.innerText = `${item.paragraphIdx}-${item.idx}`;
+                span.innerText = `${config.SHOW_NAME[Type]} ${item.paragraphIdx}-${item.idx}`;
                 ele = ele.nextElementSibling;
             })
         }
