@@ -1,20 +1,23 @@
 (() => {
-    // const HOTKEY = ev => metaKeyPressed(ev) && ev.key === "n";
-    // const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
-    //
-    // window.addEventListener("keydown", ev => {
-    //     if (HOTKEY(ev)) {
-    //         console.log("asdasdasdasdasd")
-    //         ev.preventDefault();
-    //         ev.stopPropagation();
-    //     }
-    // }, true)
-    //
-    // document.getElementById("typora-quick-open").addEventListener("mousedown", ev => {
-    //     console.log("mousedown")
-    //     ev.preventDefault();
-    //     ev.stopPropagation();
-    // }, true)
+    // 打开新窗口后自动关闭
+    const _timer = setInterval(() => {
+        if (File) {
+            clearInterval(_timer);
+            const decorator = (original, after) => {
+                return function () {
+                    const result = original.apply(this, arguments);
+                    after.call(this, result, ...arguments);
+                    return result;
+                };
+            }
+            const after = (...args) => {
+                if (!global._DO_NOT_CLOSE) {
+                    setTimeout(() => ClientCommand.close(), 3000)
+                }
+            }
+            File.editor.library.openFileInNewWindow = decorator(File.editor.library.openFileInNewWindow, after);
+        }
+    }, 200);
 
     JSBridge.invoke("window.toggleDevTools");
     console.log("test.js had been injected");
