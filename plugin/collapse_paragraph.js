@@ -82,7 +82,12 @@
         list.forEach(ele => trigger(ele, collapsed));
     })
 
-    module.exports = {config};
+    module.exports = {
+        config,
+        Meta: {
+            "trigger": trigger,
+        }
+    };
 
     console.log("collapse_paragraph.js had been injected");
 })()
