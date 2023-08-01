@@ -10,7 +10,7 @@
 | ---- | ------------------ | ---------------------------------- | -------- |
 | 1    | window_tab         | 标签页管理                         | √        |
 | 2    | search_multi       | 全局多关键字搜索                   | √        |
-| 3    | multi_highlighter  | 多关键字高亮                       | ×        |
+| 3    | multi_highlighter  | 多关键字高亮                       | √        |
 | 4    | collapse_paragraph | 章节折叠                           | √        |
 | 5    | md_padding         | 中英文混排优化                     | √        |
 | 6    | fence_enhance      | 一键复制代码，折叠代码             | √        |
