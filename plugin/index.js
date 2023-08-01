@@ -19,7 +19,7 @@ window.onload = () => {
             name: "多关键字高亮",
             fixed_name: "multi_highlighter",
             src: "./plugin/multi_highlighter/index.js",
-            enable: false,
+            enable: true,
             clickable: true,
         },
         {

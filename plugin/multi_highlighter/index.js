@@ -47,10 +47,12 @@
         // 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
         // 20个关键字肯定够用了,此选项没太大意义
         DEFAULT_COLOR: "aquamarine",
+
+        LOOP_DETECT_INTERVAL: 20,
     };
 
     (() => {
-        const undo_style = {
+        const run_style = {
             input_width: (config.SHOW_RUN_BUTTON) ? "95%" : "100%",
             case_button_right: (config.SHOW_RUN_BUTTON) ? "32px" : "6px",
             run_button_display: (config.SHOW_RUN_BUTTON) ? "" : "none",
@@ -58,146 +60,139 @@
 
         const colors = config.STYLE_COLOR.map((color, idx) => `.plugin-search-hit${idx} { background-color: ${color}; }`)
         const colorsStyle = colors.join("\n");
-        const modal_css = `
-        #plugin-multi-highlighter {
-            position: fixed;
-            top: 15%;
-            left: 55%;
-            width: 500px;
-            z-index: 9999;
-            padding: 4px;
-            background-color: #f8f8f8;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
-            border: 1px solid #ddd;
-            border-top: none;
-            color: var(--text-color);
-            transform: translate3d(0, 0, 0)
-        }
-        
-        .mac-seamless-mode #plugin-multi-highlighter {
-            top: 30px
-        }
-        
-        #plugin-multi-highlighter-input {
-            position: relative;
-        }
-        
-        #plugin-multi-highlighter-input input {
-            width: ${undo_style.input_width};
-            font-size: 14px;
-            line-height: 25px;
-            max-height: 27px;
-            overflow: auto;
-            border: 1px solid #ddd;
-            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-            border-radius: 2px;
-            padding-left: 5px;
-            padding-right: 30px;
-        }
-        
-        #plugin-multi-highlighter-input input:focus {
-            outline: 0
-        }
-        
-        #plugin-multi-highlighter-input svg {
-            width: 20px;
-            height: 14px;
-            stroke: none;
-            fill: currentColor
-        }
-        
-        #plugin-multi-highlighter-input .plugin-multi-highlighter-option-btn {
-            position: absolute;
-            padding: 1px;
-            right: ${undo_style.case_button_right};
-            top: 8px;
-            opacity: .5;
-            line-height: 10px;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        
-        #plugin-multi-highlighter-input .plugin-multi-highlighter-option-btn.select,
-        #plugin-multi-highlighter-input .plugin-multi-highlighter-option-btn:hover {
-            background: var(--active-file-bg-color);
-            color: var(--active-file-text-color);
-            opacity: 1
-        }
-        
-        #plugin-multi-highlighter-input .run-highlight {
-            margin-left: 4px; 
-            opacity: .5; 
-            cursor: pointer;
-            display: ${undo_style.run_button_display};
-        }
-
-        #plugin-multi-highlighter-input .run-highlight:hover {
-            opacity: 1 !important;
-        }
-        
-        #plugin-multi-highlighter-result {
-            display: inline-flex;
-            flex-wrap: wrap;
-            align-content: flex-start;
-        }
-        
-        .plugin-multi-highlighter-result-item {
-            font-family: Arial;
-            cursor: pointer;
-            font-size: 13px;
-            line-height: 20px;
-            margin: 3px 3px;
-            padding: 0 5px;
-            border-radius: 5px;
-        }
-        
-        .plugin-multi-highlighter-move {
-            outline: 4px solid #FF7B00;
-            text-decoration: blink;
-        }
-        
-        .plugin-multi-highlighter-bar {
-            background: rgba(29,163,63,.3);
-            position: absolute;
-            z-index: 99999;
-            animation-name: fadeit; 
-            animation-duration: 3s;
-        }
-        
-        @keyframes fadeit {
-            from {opacity:1;} 
-            to {opacity:0;}
-        }
-        
-        ${colorsStyle}
-        `
+        const css = `
+            #plugin-multi-highlighter {
+                position: fixed;
+                top: 15%;
+                left: 55%;
+                width: 500px;
+                z-index: 9999;
+                padding: 4px;
+                background-color: #f8f8f8;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
+                border: 1px solid #ddd;
+                border-top: none;
+                color: var(--text-color);
+                transform: translate3d(0, 0, 0)
+            }
+            
+            .mac-seamless-mode #plugin-multi-highlighter {
+                top: 30px
+            }
+            
+            #plugin-multi-highlighter-input {
+                position: relative;
+            }
+            
+            #plugin-multi-highlighter-input input {
+                width: ${run_style.input_width};
+                font-size: 14px;
+                line-height: 25px;
+                max-height: 27px;
+                overflow: auto;
+                border: 1px solid #ddd;
+                box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+                border-radius: 2px;
+                padding-left: 5px;
+                padding-right: 30px;
+            }
+            
+            #plugin-multi-highlighter-input svg {
+                width: 20px;
+                height: 14px;
+                stroke: none;
+                fill: currentColor
+            }
+            
+            #plugin-multi-highlighter-input .plugin-multi-highlighter-option-btn {
+                position: absolute;
+                padding: 1px;
+                right: ${run_style.case_button_right};
+                top: 8px;
+                opacity: .5;
+                line-height: 10px;
+                border-radius: 3px;
+                cursor: pointer;
+            }
+            
+            #plugin-multi-highlighter-input .plugin-multi-highlighter-option-btn.select, .plugin-multi-highlighter-option-btn:hover {
+                background: var(--active-file-bg-color);
+                color: var(--active-file-text-color);
+                opacity: 1
+            }
+            
+            #plugin-multi-highlighter-input .run-highlight {
+                margin-left: 4px; 
+                opacity: .5; 
+                cursor: pointer;
+                display: ${run_style.run_button_display};
+            }
+    
+            #plugin-multi-highlighter-input .run-highlight:hover {
+                opacity: 1 !important;
+            }
+            
+            #plugin-multi-highlighter-result {
+                display: inline-flex;
+                flex-wrap: wrap;
+                align-content: flex-start;
+            }
+            
+            .plugin-multi-highlighter-result-item {
+                font-family: Arial;
+                cursor: pointer;
+                font-size: 13px;
+                line-height: 20px;
+                margin: 3px 3px;
+                padding: 0 5px;
+                border-radius: 5px;
+            }
+            
+            .plugin-multi-highlighter-move {
+                outline: 4px solid #FF7B00;
+                text-decoration: blink;
+            }
+            
+            .plugin-multi-highlighter-bar {
+                background: rgba(29,163,63,.3);
+                position: absolute;
+                z-index: 99999;
+                animation-name: fadeit; 
+                animation-duration: 3s;
+            }
+            
+            @keyframes fadeit {
+                from {opacity:1;} 
+                to {opacity:0;}
+            }
+            
+            ${colorsStyle}
+            `
         const style = document.createElement('style');
         style.type = 'text/css';
-        style.innerHTML = modal_css;
+        style.innerHTML = css;
         document.getElementsByTagName("head")[0].appendChild(style);
 
-        const modal_div = `
-        <div id="plugin-multi-highlighter-input">
-            <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
-                autocapitalize="off" value="" placeholder="多关键字高亮 空格分隔" data-lg="Front">
-            <span ty-hint="区分大小写" class="plugin-multi-highlighter-option-btn" aria-label="区分大小写">
-                <svg class="icon">
-                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use>
-                </svg>
-            </span>
-            <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
-        </div>
-        <div id="plugin-multi-highlighter-result" style="display: none"></div>
-        `;
+        const div = `
+            <div id="plugin-multi-highlighter-input">
+                <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
+                    autocapitalize="off" value="" placeholder="多关键字高亮 空格分隔" data-lg="Front">
+                <span ty-hint="区分大小写" class="plugin-multi-highlighter-option-btn" aria-label="区分大小写">
+                    <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
+                </span>
+                <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
+            </div>
+            <div id="plugin-multi-highlighter-result" style="display: none"></div>`
         const searchModal = document.createElement("div");
         searchModal.id = 'plugin-multi-highlighter';
         searchModal.style.display = "none";
-        searchModal.innerHTML = modal_div;
+        searchModal.innerHTML = div;
         const quickOpenNode = document.getElementById("typora-quick-open");
         quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
     })()
 
-    const modal = {
+    const entities = {
+        write: document.getElementById("write"),
         modal: document.getElementById('plugin-multi-highlighter'),
         input: document.querySelector("#plugin-multi-highlighter-input input"),
         runButton: document.querySelector("#plugin-multi-highlighter-input .run-highlight"),
@@ -208,52 +203,34 @@
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
     const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
 
-    let _multiHighlighter = null;
-    const getMultiHighlighter = () => {
-        if (!_multiHighlighter) {
-            const dirname = global.dirname || global.__dirname;
-            const filepath = reqnode('path').join(dirname, "plugin", "multi_highlighter", "multi_highlighter.js");
-            const {InstantSearch} = reqnode(filepath);
-            _multiHighlighter = InstantSearch;
-        }
-        return _multiHighlighter
+    const multiHighlighterClass = reqnode(reqnode('path').join(global.dirname || global.__dirname,
+        "plugin", "multi_highlighter", "multi_highlighter.js")).multiHighlighter;
+    const multiHighlighter = new multiHighlighterClass();
+    let fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
+
+    const clearHighlight = () => {
+        multiHighlighter.clear();
+        fenceMultiHighlighterList.forEach(highlighter => highlighter.clear());
+        fenceMultiHighlighterList = [];
+        entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(
+            ele => ele && ele.parentElement && ele.parentElement.removeChild(ele));
     }
 
-    let searcherList = [];
     const doSearch = (keyArr, refreshResult = true) => {
         clearHighlight();
 
-        const searcher = getMultiHighlighter();
-        const write = document.querySelector("#write");
-
-        searcherList = keyArr.map((key, idx) => {
-            const className = `plugin-search-hit${idx}`;
-            return new searcher(
-                write, // root
-                {text: key, caseSensitive: config.CASE_SENSITIVE, className: className}, //token
-                true, // scrollToResult
-                className, // defaultClassName
-                config.CASE_SENSITIVE, // defaultCaseSensitive
-            )
-        })
-        searcherList.forEach(s => s.highlight());
+        multiHighlighter.new(keyArr, entities.write, config.CASE_SENSITIVE, "plugin-search-hit");
+        multiHighlighter.highlight();
 
         if (refreshResult) {
-            const inner = searcherList.map((searcher, idx) => {
+            const itemList = multiHighlighter.getList().map((searcher, idx) => {
                 const color = (idx < config.STYLE_COLOR.length) ? config.STYLE_COLOR[idx] : config.DEFAULT_COLOR;
                 return `<div class="plugin-multi-highlighter-result-item" style="background-color: ${color}" ty-hint="左键下一个；右键上一个"
                          idx="${idx}" cur="-1">${searcher.token.text} (${searcher.matches.length})</div>`;
             })
-            modal.result.innerHTML = inner.join("");
+            entities.result.innerHTML = itemList.join("");
         }
-        modal.result.style.display = "";
-    }
-
-    const clearHighlight = () => {
-        searcherList.forEach(s => s.removeHighlight());
-        searcherList = [];
-        document.querySelectorAll("#write .plugin-multi-highlighter-bar").forEach(
-            ele => ele && ele.parentElement && ele.parentElement.removeChild(ele));
+        entities.result.style.display = "";
     }
 
     const refreshFences = () => {
@@ -262,76 +239,22 @@
         }
     }
 
-    const Call = () => {
-        modal.modal.style.display = "block";
-        modal.input.select();
-    }
-
-    window.addEventListener("keydown", ev => {
-        if (config.HOTKEY(ev)) {
-            Call();
-            ev.preventDefault();
-            ev.stopPropagation();
-        }
-    });
-    module.exports = {config, Call};
-
     const getKeyArr = () => {
-        const value = modal.input.value;
+        const value = entities.input.value;
         if (!value) return;
         return value.split(config.SEPARATOR).filter(Boolean)
     }
 
-    let highlightFilePath;
+    let lastHighlightFilePath;
     const highlight = (refreshResult = true) => {
-        highlightFilePath = getFilePath();
+        lastHighlightFilePath = getFilePath();
         const keyArr = getKeyArr();
         if (!keyArr) return false;
         doSearch(keyArr, refreshResult);
         return true;
     }
 
-    modal.input.addEventListener("keydown", ev => {
-        switch (ev.key) {
-            case "Enter":
-                ev.stopPropagation();
-                ev.preventDefault();
-                highlight();
-                break
-            case "Escape":
-                ev.stopPropagation();
-                ev.preventDefault();
-                clearHighlight();
-                modal.modal.style.display = "none";
-                break
-        }
-    })
-
-    modal.caseOption.addEventListener("click", ev => {
-        modal.caseOption.classList.toggle("select");
-        config.CASE_SENSITIVE = !config.CASE_SENSITIVE;
-        ev.preventDefault();
-        ev.stopPropagation();
-    })
-
-    if (config.SHOW_RUN_BUTTON) {
-        modal.runButton.addEventListener("click", ev => {
-            highlight();
-            ev.preventDefault();
-            ev.stopPropagation();
-        })
-    }
-
-    if (config.UNDO_WHEN_EDIT) {
-        document.querySelector("content").addEventListener("mousedown", ev => {
-            if (searcherList.length !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
-                clearHighlight();
-                refreshFences();
-            }
-        }, true)
-    }
-
-    const handleHideElement = marker => {
+    const handleHiddenElement = marker => {
         const image = marker.closest(`span[md-inline="image"]`);
         if (image) {
             image.classList.add("md-expand");
@@ -343,19 +266,25 @@
     }
 
     const scroll = marker => {
-        if (!marker) return;
+        const totalHeight = window.innerHeight || document.documentElement.clientHeight;
+        File.editor.focusAndRestorePos();
+        File.editor.selection.scrollAdjust(marker, totalHeight / 2);
+        File.isFocusMode && File.editor.updateFocusMode(false);
+    }
 
-        handleHideElement(marker);
+    // 已废弃
+    const scroll2 = marker => {
         requestAnimationFrame(() => marker.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"}));
+    }
 
+    const showIfNeed = marker => {
         if (config.SHOW_KEYWORD_OUTLINE) {
             document.querySelectorAll(".plugin-multi-highlighter-move").forEach(ele => ele.classList.remove("plugin-multi-highlighter-move"));
             marker.classList.add("plugin-multi-highlighter-move");
         }
 
         if (config.SHOW_KEYWORD_BAR) {
-            const write = document.getElementById("write");
-            const writeRect = write.getBoundingClientRect();
+            const writeRect = entities.write.getBoundingClientRect();
             const markerRect = marker.getBoundingClientRect();
 
             const bar = document.createElement("div");
@@ -369,9 +298,62 @@
         }
     }
 
-    const checkFilePath = () => getFilePath() === highlightFilePath;
+    const whichMarker = (fence, marker) => {
+        const markers = fence.getElementsByTagName("marker");
+        for (let idx = 0; idx < markers.length; idx++) {
+            if (markers[idx] === marker) {
+                return idx
+            }
+        }
+        return -1
+    }
 
-    modal.result.addEventListener("mousedown", ev => {
+    const getMarker = (fence, idx) => {
+        const markers = fence.querySelectorAll("marker");
+        if (markers) {
+            return markers[idx];
+        }
+    }
+
+    entities.input.addEventListener("keydown", ev => {
+        if (ev.key === "Enter") {
+            ev.stopPropagation();
+            ev.preventDefault();
+            highlight();
+        } else if (ev.key === "Escape") {
+            ev.stopPropagation();
+            ev.preventDefault();
+            clearHighlight();
+            entities.modal.style.display = "none";
+        }
+    })
+
+    entities.caseOption.addEventListener("click", ev => {
+        entities.caseOption.classList.toggle("select");
+        config.CASE_SENSITIVE = !config.CASE_SENSITIVE;
+        ev.preventDefault();
+        ev.stopPropagation();
+    })
+
+    if (config.SHOW_RUN_BUTTON) {
+        entities.runButton.addEventListener("click", ev => {
+            highlight();
+            ev.preventDefault();
+            ev.stopPropagation();
+        })
+    }
+
+    if (config.UNDO_WHEN_EDIT) {
+        document.querySelector("content").addEventListener("mousedown", ev => {
+            if (multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
+                clearHighlight();
+                refreshFences();
+            }
+        }, true)
+    }
+
+    let markerIdx = -1;
+    entities.result.addEventListener("mousedown", ev => {
         const target = ev.target.closest(".plugin-multi-highlighter-result-item");
         if (!target) return;
 
@@ -379,7 +361,7 @@
         ev.preventDefault();
 
         // 当用户切换文档时
-        if (!checkFilePath()) {
+        if (getFilePath() !== lastHighlightFilePath) {
             highlight();
             return;
         }
@@ -410,10 +392,19 @@
             return;
         }
 
-        scroll(next);
+        const fence = next.closest("#write .md-fences");
+        if (fence && !fence.classList.contains("modeLoaded")) {
+            // 接下来的工作交给File.editor.fences.addCodeBlock
+            markerIdx = whichMarker(fence, next);
+            scroll(next);
+        } else {
+            handleHiddenElement(next);
+            scroll(next);
+            showIfNeed(next);
+        }
         target.setAttribute("cur", nextIdx + "");
         if (config.SHOW_CURRENT_INDEX) {
-            const searcher = searcherList[idx];
+            const searcher = multiHighlighter.getHighlighter(idx);
             if (searcher) {
                 target.innerText = `${searcher.token.text} (${nextIdx + 1}/${searcher.matches.length})`
             }
@@ -421,10 +412,10 @@
     })
 
     if (config.ALLOW_DRAG) {
-        modal.input.addEventListener("mousedown", ev => {
+        entities.input.addEventListener("mousedown", ev => {
             if (!metaKeyPressed(ev) || ev.button !== 0) return;
             ev.stopPropagation();
-            const rect = modal.modal.getBoundingClientRect();
+            const rect = entities.modal.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
 
@@ -433,8 +424,8 @@
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
-                    modal.modal.style.left = ev.clientX - shiftX + 'px';
-                    modal.modal.style.top = ev.clientY - shiftY + 'px';
+                    entities.modal.style.left = ev.clientX - shiftX + 'px';
+                    entities.modal.style.top = ev.clientY - shiftY + 'px';
                 });
             }
 
@@ -443,14 +434,77 @@
                     ev.stopPropagation();
                     ev.preventDefault();
                     document.removeEventListener('mousemove', onMouseMove);
-                    modal.modal.onmouseup = null;
+                    entities.modal.onmouseup = null;
                 }
             )
 
             document.addEventListener('mousemove', onMouseMove);
         })
-        modal.input.ondragstart = () => false
+        entities.input.ondragstart = () => false
     }
 
+
+    const _timer = setInterval(() => {
+        if (!File || !File.editor || !File.editor.fences || !File.editor.fences.addCodeBlock) return;
+        clearInterval(_timer);
+
+        let hasMarker;
+        const before = (...args) => {
+            const cid = args[0];
+            if (!cid || multiHighlighter.length() === 0) return;
+
+            const marker = entities.write.querySelector(`.md-fences[cid=${cid}] marker`);
+            hasMarker = !!marker;
+        }
+
+        const decorator = (original, before, after) => {
+            return function () {
+                before.call(this, ...arguments);
+                const result = original.apply(this, arguments);
+                after.call(this, result, ...arguments);
+                return result;
+            };
+        }
+
+        const after = (result, ...args) => {
+            const cid = args[0];
+            if (!cid || !hasMarker || multiHighlighter.length() === 0) return;
+
+            hasMarker = false;
+            const fence = entities.write.querySelector(`.md-fences[cid=${cid}]`);
+            if (!fence) return;
+
+            const tokens = multiHighlighter.getTokens();
+            const fenceMultiHighlighter = new multiHighlighterClass();
+            fenceMultiHighlighter.new(tokens, fence, config.CASE_SENSITIVE, "plugin-search-hit");
+            fenceMultiHighlighter.highlight();
+            fenceMultiHighlighterList.push(fenceMultiHighlighter);
+
+            if (markerIdx !== -1) {
+                const nthMarker = getMarker(fence, markerIdx);
+                if (nthMarker) {
+                    scroll(nthMarker);
+                    showIfNeed(nthMarker);
+                }
+                markerIdx = -1;
+            }
+        }
+        File.editor.fences.addCodeBlock = decorator(File.editor.fences.addCodeBlock, before, after);
+    }, config.LOOP_DETECT_INTERVAL);
+
+    const Call = () => {
+        entities.modal.style.display = "block";
+        entities.input.select();
+    }
+
+    window.addEventListener("keydown", ev => {
+        if (config.HOTKEY(ev)) {
+            Call();
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
+    });
+
+    module.exports = {config, Call};
     console.log("multi_highlighter.js had been injected");
 })()
