@@ -174,15 +174,15 @@
         document.getElementsByTagName("head")[0].appendChild(style);
 
         const div = `
-        <div id="plugin-multi-highlighter-input">
-            <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
-                autocapitalize="off" value="" placeholder="多关键字高亮 空格分隔" data-lg="Front">
-            <span ty-hint="区分大小写" class="plugin-multi-highlighter-option-btn" aria-label="区分大小写">
-                <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
-            </span>
-            <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
-        </div>
-        <div id="plugin-multi-highlighter-result" style="display: none"></div>`
+            <div id="plugin-multi-highlighter-input">
+                <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
+                    autocapitalize="off" value="" placeholder="多关键字高亮 空格分隔" data-lg="Front">
+                <span ty-hint="区分大小写" class="plugin-multi-highlighter-option-btn" aria-label="区分大小写">
+                    <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
+                </span>
+                <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
+            </div>
+            <div id="plugin-multi-highlighter-result" style="display: none"></div>`
         const searchModal = document.createElement("div");
         searchModal.id = 'plugin-multi-highlighter';
         searchModal.style.display = "none";
@@ -207,8 +207,6 @@
         "plugin", "multi_highlighter", "multi_highlighter.js")).multiHighlighter;
     const multiHighlighter = new multiHighlighterClass();
     let fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
-
-    global.multiHighlighter = multiHighlighter; // todo to delete
 
     const clearHighlight = () => {
         multiHighlighter.clear();
@@ -256,7 +254,7 @@
         return true;
     }
 
-    const handleImageAndLinkElement = marker => {
+    const handleHiddenElement = marker => {
         const image = marker.closest(`span[md-inline="image"]`);
         if (image) {
             image.classList.add("md-expand");
@@ -400,7 +398,7 @@
             markerIdx = whichMarker(fence, next);
             scroll(next);
         } else {
-            handleImageAndLinkElement(next);
+            handleHiddenElement(next);
             scroll(next);
             showIfNeed(next);
         }
@@ -453,7 +451,9 @@
         let hasMarker;
         const before = (...args) => {
             const cid = args[0];
-            const marker = entities.write.querySelector(`.md-fences[cid=${cid}] marker`)
+            if (!cid || multiHighlighter.length() === 0) return;
+
+            const marker = entities.write.querySelector(`.md-fences[cid=${cid}] marker`);
             hasMarker = !!marker;
         }
 
