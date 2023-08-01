@@ -41,7 +41,7 @@
 3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
 4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
 5. 重启 Typora。
-6. 验证：点击鼠标右键，弹出右键菜单栏，如果能看到【启动插件】栏目，说明一切顺利。
+6. 验证：在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【启动插件】栏目，说明一切顺利。
 
 
 
