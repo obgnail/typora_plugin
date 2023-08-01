@@ -256,7 +256,7 @@
         return true;
     }
 
-    const handleHideElement = marker => {
+    const handleImageAndLinkElement = marker => {
         const image = marker.closest(`span[md-inline="image"]`);
         if (image) {
             image.classList.add("md-expand");
@@ -268,11 +268,18 @@
     }
 
     const scroll = marker => {
-        if (!marker) return;
+        const totalHeight = window.innerHeight || document.documentElement.clientHeight;
+        File.editor.focusAndRestorePos();
+        File.editor.selection.scrollAdjust(marker, totalHeight / 2);
+        File.isFocusMode && File.editor.updateFocusMode(false);
+    }
 
-        handleHideElement(marker);
+    // 已废弃
+    const scroll2 = marker => {
         requestAnimationFrame(() => marker.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"}));
+    }
 
+    const showIfNeed = marker => {
         if (config.SHOW_KEYWORD_OUTLINE) {
             document.querySelectorAll(".plugin-multi-highlighter-move").forEach(ele => ele.classList.remove("plugin-multi-highlighter-move"));
             marker.classList.add("plugin-multi-highlighter-move");
@@ -290,6 +297,23 @@
             marker.appendChild(bar);
 
             setTimeout(() => bar && bar.parentElement && bar.parentElement.removeChild(bar), 3000);
+        }
+    }
+
+    const whichMarker = (fence, marker) => {
+        const markers = fence.getElementsByTagName("marker");
+        for (let idx = 0; idx < markers.length; idx++) {
+            if (markers[idx] === marker) {
+                return idx
+            }
+        }
+        return -1
+    }
+
+    const getMarker = (fence, idx) => {
+        const markers = fence.querySelectorAll("marker");
+        if (markers) {
+            return markers[idx];
         }
     }
 
@@ -330,6 +354,7 @@
         }, true)
     }
 
+    let markerIdx = -1;
     entities.result.addEventListener("mousedown", ev => {
         const target = ev.target.closest(".plugin-multi-highlighter-result-item");
         if (!target) return;
@@ -369,7 +394,16 @@
             return;
         }
 
-        scroll(next);
+        const fence = next.closest("#write .md-fences");
+        if (fence && !fence.classList.contains("modeLoaded")) {
+            // 接下来的工作交给File.editor.fences.addCodeBlock
+            markerIdx = whichMarker(fence, next);
+            scroll(next);
+        } else {
+            handleImageAndLinkElement(next);
+            scroll(next);
+            showIfNeed(next);
+        }
         target.setAttribute("cur", nextIdx + "");
         if (config.SHOW_CURRENT_INDEX) {
             const searcher = multiHighlighter.getHighlighter(idx);
@@ -434,16 +468,25 @@
 
         const after = (result, ...args) => {
             const cid = args[0];
-            if (cid && hasMarker && multiHighlighter.length()) {
-                hasMarker = false;
-                const fence = entities.write.querySelector(`.md-fences[cid=${cid}]`);
-                if (fence) {
-                    const tokens = multiHighlighter.getTokens();
-                    const fenceMultiHighlighter = new multiHighlighterClass();
-                    fenceMultiHighlighter.new(tokens, fence, config.CASE_SENSITIVE, "plugin-search-hit");
-                    fenceMultiHighlighter.highlight();
-                    fenceMultiHighlighterList.push(fenceMultiHighlighter);
+            if (!cid || !hasMarker || multiHighlighter.length() === 0) return;
+
+            hasMarker = false;
+            const fence = entities.write.querySelector(`.md-fences[cid=${cid}]`);
+            if (!fence) return;
+
+            const tokens = multiHighlighter.getTokens();
+            const fenceMultiHighlighter = new multiHighlighterClass();
+            fenceMultiHighlighter.new(tokens, fence, config.CASE_SENSITIVE, "plugin-search-hit");
+            fenceMultiHighlighter.highlight();
+            fenceMultiHighlighterList.push(fenceMultiHighlighter);
+
+            if (markerIdx !== -1) {
+                const nthMarker = getMarker(fence, markerIdx);
+                if (nthMarker) {
+                    scroll(nthMarker);
+                    showIfNeed(nthMarker);
                 }
+                markerIdx = -1;
             }
         }
         File.editor.fences.addCodeBlock = decorator(File.editor.fences.addCodeBlock, before, after);
