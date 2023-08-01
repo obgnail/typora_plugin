@@ -171,14 +171,12 @@
         style.innerHTML = css;
         document.getElementsByTagName("head")[0].appendChild(style);
 
-        const modal_div = `
+        const div = `
         <div id="plugin-multi-highlighter-input">
             <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
                 autocapitalize="off" value="" placeholder="多关键字高亮 空格分隔" data-lg="Front">
             <span ty-hint="区分大小写" class="plugin-multi-highlighter-option-btn" aria-label="区分大小写">
-                <svg class="icon">
-                    <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use>
-                </svg>
+                <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
             </span>
             <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
         </div>
@@ -187,12 +185,13 @@
         const searchModal = document.createElement("div");
         searchModal.id = 'plugin-multi-highlighter';
         searchModal.style.display = "none";
-        searchModal.innerHTML = modal_div;
+        searchModal.innerHTML = div;
         const quickOpenNode = document.getElementById("typora-quick-open");
         quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
     })()
 
-    const modal = {
+    const entities = {
+        write: document.getElementById("write"),
         modal: document.getElementById('plugin-multi-highlighter'),
         input: document.querySelector("#plugin-multi-highlighter-input input"),
         runButton: document.querySelector("#plugin-multi-highlighter-input .run-highlight"),
@@ -210,8 +209,7 @@
     const doSearch = (keyArr, refreshResult = true) => {
         clearHighlight();
 
-        const write = document.querySelector("#write");
-        multiHighlighter.new(keyArr, write, config.CASE_SENSITIVE, "plugin-search-hit")
+        multiHighlighter.new(keyArr, entities.write, config.CASE_SENSITIVE, "plugin-search-hit")
         multiHighlighter.highlight();
 
         if (refreshResult) {
@@ -220,14 +218,14 @@
                 return `<div class="plugin-multi-highlighter-result-item" style="background-color: ${color}" ty-hint="左键下一个；右键上一个"
                          idx="${idx}" cur="-1">${searcher.token.text} (${searcher.matches.length})</div>`;
             })
-            modal.result.innerHTML = itemList.join("");
+            entities.result.innerHTML = itemList.join("");
         }
-        modal.result.style.display = "";
+        entities.result.style.display = "";
     }
 
     const clearHighlight = () => {
         multiHighlighter.clear();
-        document.querySelectorAll("#write .plugin-multi-highlighter-bar").forEach(
+        entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(
             ele => ele && ele.parentElement && ele.parentElement.removeChild(ele));
     }
 
@@ -238,14 +236,14 @@
     }
 
     const getKeyArr = () => {
-        const value = modal.input.value;
+        const value = entities.input.value;
         if (!value) return;
         return value.split(config.SEPARATOR).filter(Boolean)
     }
 
-    let highlightFilePath;
+    let lastHighlightFilePath;
     const highlight = (refreshResult = true) => {
-        highlightFilePath = getFilePath();
+        lastHighlightFilePath = getFilePath();
         const keyArr = getKeyArr();
         if (!keyArr) return false;
         doSearch(keyArr, refreshResult);
@@ -275,8 +273,7 @@
         }
 
         if (config.SHOW_KEYWORD_BAR) {
-            const write = document.getElementById("write");
-            const writeRect = write.getBoundingClientRect();
+            const writeRect = entities.write.getBoundingClientRect();
             const markerRect = marker.getBoundingClientRect();
 
             const bar = document.createElement("div");
@@ -290,7 +287,7 @@
         }
     }
 
-    modal.input.addEventListener("keydown", ev => {
+    entities.input.addEventListener("keydown", ev => {
         switch (ev.key) {
             case "Enter":
                 ev.stopPropagation();
@@ -301,20 +298,20 @@
                 ev.stopPropagation();
                 ev.preventDefault();
                 clearHighlight();
-                modal.modal.style.display = "none";
+                entities.modal.style.display = "none";
                 break
         }
     })
 
-    modal.caseOption.addEventListener("click", ev => {
-        modal.caseOption.classList.toggle("select");
+    entities.caseOption.addEventListener("click", ev => {
+        entities.caseOption.classList.toggle("select");
         config.CASE_SENSITIVE = !config.CASE_SENSITIVE;
         ev.preventDefault();
         ev.stopPropagation();
     })
 
     if (config.SHOW_RUN_BUTTON) {
-        modal.runButton.addEventListener("click", ev => {
+        entities.runButton.addEventListener("click", ev => {
             highlight();
             ev.preventDefault();
             ev.stopPropagation();
@@ -330,7 +327,7 @@
         }, true)
     }
 
-    modal.result.addEventListener("mousedown", ev => {
+    entities.result.addEventListener("mousedown", ev => {
         const target = ev.target.closest(".plugin-multi-highlighter-result-item");
         if (!target) return;
 
@@ -338,7 +335,7 @@
         ev.preventDefault();
 
         // 当用户切换文档时
-        if (getFilePath() !== highlightFilePath) {
+        if (getFilePath() !== lastHighlightFilePath) {
             highlight();
             return;
         }
@@ -380,10 +377,10 @@
     })
 
     if (config.ALLOW_DRAG) {
-        modal.input.addEventListener("mousedown", ev => {
+        entities.input.addEventListener("mousedown", ev => {
             if (!metaKeyPressed(ev) || ev.button !== 0) return;
             ev.stopPropagation();
-            const rect = modal.modal.getBoundingClientRect();
+            const rect = entities.modal.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
 
@@ -392,8 +389,8 @@
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
-                    modal.modal.style.left = ev.clientX - shiftX + 'px';
-                    modal.modal.style.top = ev.clientY - shiftY + 'px';
+                    entities.modal.style.left = ev.clientX - shiftX + 'px';
+                    entities.modal.style.top = ev.clientY - shiftY + 'px';
                 });
             }
 
@@ -402,18 +399,18 @@
                     ev.stopPropagation();
                     ev.preventDefault();
                     document.removeEventListener('mousemove', onMouseMove);
-                    modal.modal.onmouseup = null;
+                    entities.modal.onmouseup = null;
                 }
             )
 
             document.addEventListener('mousemove', onMouseMove);
         })
-        modal.input.ondragstart = () => false
+        entities.input.ondragstart = () => false
     }
 
     const Call = () => {
-        modal.modal.style.display = "block";
-        modal.input.select();
+        entities.modal.style.display = "block";
+        entities.input.select();
     }
 
     window.addEventListener("keydown", ev => {
