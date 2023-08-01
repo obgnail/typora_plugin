@@ -20,6 +20,8 @@
         ENABLE_FOLD: true,
         // 折叠形式
         FOLD_OVERFLOW: "hidden",
+        // 默认折叠
+        FOLD_DEFAULT: false,
 
         LOOP_DETECT_INTERVAL: 20,
         CLICK_CHECK_INTERVAL: 300,
@@ -65,8 +67,9 @@
                 enhance.style.visibility = "hidden";
             }
 
+            let foldButton;
             if (config.ENABLE_FOLD) {
-                const foldButton = document.createElement("div");
+                foldButton = document.createElement("div");
                 foldButton.classList.add("typora-fold-code");
                 foldButton.innerText = "Fold";
                 enhance.appendChild(foldButton);
@@ -80,6 +83,10 @@
             }
 
             fence.appendChild(enhance);
+
+            if (config.FOLD_DEFAULT && foldButton) {
+                foldButton.click();
+            }
         }
     }
 

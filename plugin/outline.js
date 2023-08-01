@@ -1,13 +1,16 @@
 (() => {
     const config = {
-        // 默认大纲类型
+        // 默认使用的大纲类型 fence/image/table/all
         DEFAULT_TYPE: "fence",
+        // 是否使用混合标签
+        USE_ALL: true,
         // 展示的名字
         SHOW_NAME: {
             fence: "Fence",
             image: "Figure",
             table: "Table",
         },
+
         LOOP_DETECT_INTERVAL: 30,
     };
 
@@ -74,6 +77,8 @@
         style.innerHTML = modal_css;
         document.getElementsByTagName("head")[0].appendChild(style);
 
+        const all_button = (config.USE_ALL) ? `<div class="plugin-outline-icon ion-android-data" type="all" ty-hint="混合"></div>` : "";
+
         const modal = document.createElement("div");
         modal.id = 'plugin-outline';
         modal.innerHTML = `
@@ -87,6 +92,7 @@
                 <div class="plugin-outline-icon ion-code" type="fence" ty-hint="代码块"></div>
                 <div class="plugin-outline-icon ion-image" type="image" ty-hint="图片"></div>
                 <div class="plugin-outline-icon ion-grid" type="table" ty-hint="表格"></div>
+                ${all_button}
             </div>
             `
         document.querySelector("header").appendChild(modal);
@@ -134,27 +140,63 @@
                 // table
                 if (tagName === "FIGURE") {
                     this.tableIdx++;
-                    this.collection.table.push({cid: cid, paragraphIdx: this.paragraphIdx, idx: this.tableIdx});
+                    this.collection.table.push({
+                        cid: cid,
+                        type: "table",
+                        paragraphIdx: this.paragraphIdx,
+                        idx: this.tableIdx
+                    });
                     // fence
                 } else if (ele.classList.contains("md-fences")) {
                     this.fenceIdx++;
-                    this.collection.fence.push({cid: cid, paragraphIdx: this.paragraphIdx, idx: this.fenceIdx});
+                    this.collection.fence.push({
+                        cid: cid,
+                        type: "fence",
+                        paragraphIdx: this.paragraphIdx,
+                        idx: this.fenceIdx
+                    });
                     // image
                 } else if (ele.querySelector("img")) {
                     this.imageIdx++;
-                    this.collection.image.push({cid: cid, paragraphIdx: this.paragraphIdx, idx: this.imageIdx});
+                    this.collection.image.push({
+                        cid: cid,
+                        type: "image",
+                        paragraphIdx: this.paragraphIdx,
+                        idx: this.imageIdx
+                    });
                 }
             }
         }
 
+        compare(p) {
+            return function (m, n) {
+                const cid1 = parseInt(m[p].replace("n", ""));
+                const cid2 = parseInt(n[p].replace("n", ""));
+                return cid1 - cid2;
+            }
+        }
+
+        getCollection(Type) {
+            if (Type !== "all") {
+                return this.collection[Type]
+            }
+            let list = [];
+            for (const type in this.collection) {
+                list.push(...this.collection[type])
+            }
+            list.sort(this.compare("cid"));
+            return list
+        }
+
         // 简易数据单向绑定
         bindDOM(Type) {
+            const typeCollection = this.getCollection(Type);
+
             const first = entities.list.firstElementChild;
             if (first && !first.classList.contains("plugin-outline-item")) {
                 entities.list.removeChild(first);
             }
 
-            const typeCollection = this.collection[Type];
             while (typeCollection.length !== entities.list.childElementCount) {
                 if (typeCollection.length > entities.list.childElementCount) {
                     const div = document.createElement("div");
@@ -180,7 +222,7 @@
             typeCollection.forEach(item => {
                 const span = ele.firstElementChild;
                 span.setAttribute("data-ref", item.cid);
-                span.innerText = `${config.SHOW_NAME[Type]} ${item.paragraphIdx}-${item.idx}`;
+                span.innerText = `${config.SHOW_NAME[item.type]} ${item.paragraphIdx}-${item.idx}`;
                 ele = ele.nextElementSibling;
             })
         }
