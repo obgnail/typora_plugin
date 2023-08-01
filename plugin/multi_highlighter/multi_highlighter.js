@@ -1,14 +1,14 @@
+const dirname = global.dirname || global.__dirname;
+const filepath = reqnode('path').join(dirname, "plugin", "multi_highlighter", "highlighter.js");
+const {InstantSearch} = reqnode(filepath);
+
 class multiHighlighter {
     constructor() {
-        const dirname = global.dirname || global.__dirname;
-        const filepath = reqnode('path').join(dirname, "plugin", "multi_highlighter", "highlighter.js");
-        const {InstantSearch} = reqnode(filepath);
-        this.instantSearch = InstantSearch;
         this.highlighterList = []
     }
 
     _newHighlighter(root, key, caseSensitive, className) {
-        return new this.instantSearch(
+        return new InstantSearch(
             root, // root
             {text: key, caseSensitive: caseSensitive, className: className}, //token
             true, // scrollToResult
@@ -40,6 +40,10 @@ class multiHighlighter {
 
     getHighlighter(idx) {
         return this.highlighterList[idx]
+    }
+
+    getTokens() {
+        return this.highlighterList.map(highlighter => highlighter.token.text)
     }
 }
 

@@ -47,6 +47,8 @@
         // 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
         // 20个关键字肯定够用了,此选项没太大意义
         DEFAULT_COLOR: "aquamarine",
+
+        LOOP_DETECT_INTERVAL: 20,
     };
 
     (() => {
@@ -180,8 +182,7 @@
             </span>
             <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
         </div>
-        <div id="plugin-multi-highlighter-result" style="display: none"></div>
-        `;
+        <div id="plugin-multi-highlighter-result" style="display: none"></div>`
         const searchModal = document.createElement("div");
         searchModal.id = 'plugin-multi-highlighter';
         searchModal.style.display = "none";
@@ -205,11 +206,22 @@
     const multiHighlighterClass = reqnode(reqnode('path').join(global.dirname || global.__dirname,
         "plugin", "multi_highlighter", "multi_highlighter.js")).multiHighlighter;
     const multiHighlighter = new multiHighlighterClass();
+    let fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
+
+    global.multiHighlighter = multiHighlighter; // todo to delete
+
+    const clearHighlight = () => {
+        multiHighlighter.clear();
+        fenceMultiHighlighterList.forEach(highlighter => highlighter.clear());
+        fenceMultiHighlighterList = [];
+        entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(
+            ele => ele && ele.parentElement && ele.parentElement.removeChild(ele));
+    }
 
     const doSearch = (keyArr, refreshResult = true) => {
         clearHighlight();
 
-        multiHighlighter.new(keyArr, entities.write, config.CASE_SENSITIVE, "plugin-search-hit")
+        multiHighlighter.new(keyArr, entities.write, config.CASE_SENSITIVE, "plugin-search-hit");
         multiHighlighter.highlight();
 
         if (refreshResult) {
@@ -221,12 +233,6 @@
             entities.result.innerHTML = itemList.join("");
         }
         entities.result.style.display = "";
-    }
-
-    const clearHighlight = () => {
-        multiHighlighter.clear();
-        entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(
-            ele => ele && ele.parentElement && ele.parentElement.removeChild(ele));
     }
 
     const refreshFences = () => {
@@ -288,18 +294,15 @@
     }
 
     entities.input.addEventListener("keydown", ev => {
-        switch (ev.key) {
-            case "Enter":
-                ev.stopPropagation();
-                ev.preventDefault();
-                highlight();
-                break
-            case "Escape":
-                ev.stopPropagation();
-                ev.preventDefault();
-                clearHighlight();
-                entities.modal.style.display = "none";
-                break
+        if (ev.key === "Enter") {
+            ev.stopPropagation();
+            ev.preventDefault();
+            highlight();
+        } else if (ev.key === "Escape") {
+            ev.stopPropagation();
+            ev.preventDefault();
+            clearHighlight();
+            entities.modal.style.display = "none";
         }
     })
 
@@ -407,6 +410,44 @@
         })
         entities.input.ondragstart = () => false
     }
+
+
+    const _timer = setInterval(() => {
+        if (!File || !File.editor || !File.editor.fences || !File.editor.fences.addCodeBlock) return;
+        clearInterval(_timer);
+
+        let hasMarker;
+        const before = (...args) => {
+            const cid = args[0];
+            const marker = entities.write.querySelector(`.md-fences[cid=${cid}] marker`)
+            hasMarker = !!marker;
+        }
+
+        const decorator = (original, before, after) => {
+            return function () {
+                before.call(this, ...arguments);
+                const result = original.apply(this, arguments);
+                after.call(this, result, ...arguments);
+                return result;
+            };
+        }
+
+        const after = (result, ...args) => {
+            const cid = args[0];
+            if (cid && hasMarker && multiHighlighter.length()) {
+                hasMarker = false;
+                const fence = entities.write.querySelector(`.md-fences[cid=${cid}]`);
+                if (fence) {
+                    const tokens = multiHighlighter.getTokens();
+                    const fenceMultiHighlighter = new multiHighlighterClass();
+                    fenceMultiHighlighter.new(tokens, fence, config.CASE_SENSITIVE, "plugin-search-hit");
+                    fenceMultiHighlighter.highlight();
+                    fenceMultiHighlighterList.push(fenceMultiHighlighter);
+                }
+            }
+        }
+        File.editor.fences.addCodeBlock = decorator(File.editor.fences.addCodeBlock, before, after);
+    }, config.LOOP_DETECT_INTERVAL);
 
     const Call = () => {
         entities.modal.style.display = "block";
