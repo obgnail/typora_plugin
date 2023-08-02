@@ -237,9 +237,9 @@
         entities.modal.style.display = "block";
     }
 
-    const Call = () => collectAndShow(config.DEFAULT_TYPE);
+    const call = () => collectAndShow(config.DEFAULT_TYPE);
 
-    module.exports = {Call, config};
+    const hide = () => entities.modal.style.display = "none";
 
     const scroll = cid => {
         const target = File.editor.findElemById(cid);
@@ -292,7 +292,7 @@
         } else {
             const Type = headerIcon.getAttribute("type");
             if (Type === "close") {
-                entities.modal.style.display = "none";
+                hide();
             } else if (Type === "refresh") {
                 refresh();
                 rotate(headerIcon.firstElementChild);
@@ -340,6 +340,15 @@
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
         }
     }, config.LOOP_DETECT_INTERVAL);
+
+    module.exports = {
+        call,
+        config,
+        meta: {
+            hide,
+            refresh,
+        }
+    };
 
     console.log("outline.js had been injected");
 })()

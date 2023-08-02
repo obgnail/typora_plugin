@@ -31,7 +31,7 @@
         return formatter(content);
     }
 
-    const Call = () => {
+    const call = () => {
         save().then(() => {
             const filepath = getFilePath();
             const content = read(filepath);
@@ -40,15 +40,19 @@
             reload(formattedContent);
         })
     }
-    module.exports = {config, Call};
 
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
-            Call();
+            call();
             ev.preventDefault();
             ev.stopPropagation();
         }
     }, true)
+
+    module.exports = {
+        config,
+        call,
+    };
 
     console.log("md_padding.js had been injected");
 })()

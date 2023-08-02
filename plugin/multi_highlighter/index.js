@@ -9,7 +9,9 @@
         // 快捷键
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "H",
         // 展示执行按钮
-        SHOW_RUN_BUTTON: true,
+        SHOW_RUN_BUTTON: false,
+        // 打开其他文件时自动重新搜索
+        RESEARCH_WHILE_OPEN_FILE: true,
         // 点击时显示当前的索引数
         SHOW_CURRENT_INDEX: true,
         // Typora本身的限制: ctrl+F搜索后，点击任意地方原先高亮的地方就会消失
@@ -65,7 +67,7 @@
                 position: fixed;
                 top: 15%;
                 left: 55%;
-                width: 500px;
+                width: 420px;
                 z-index: 9999;
                 padding: 4px;
                 background-color: #f8f8f8;
@@ -315,6 +317,11 @@
         }
     }
 
+    const hide = () => {
+        clearHighlight();
+        entities.modal.style.display = "none";
+    }
+
     entities.input.addEventListener("keydown", ev => {
         if (ev.key === "Enter") {
             ev.stopPropagation();
@@ -323,8 +330,7 @@
         } else if (ev.key === "Escape") {
             ev.stopPropagation();
             ev.preventDefault();
-            clearHighlight();
-            entities.modal.style.display = "none";
+            hide();
         }
     })
 
@@ -492,19 +498,49 @@
         File.editor.fences.addCodeBlock = decorator(File.editor.fences.addCodeBlock, before, after);
     }, config.LOOP_DETECT_INTERVAL);
 
-    const Call = () => {
+    if (config.RESEARCH_WHILE_OPEN_FILE) {
+        const _timer2 = setInterval(() => {
+            if (File) {
+                clearInterval(_timer2);
+                const decorator = (original, after) => {
+                    return function () {
+                        const result = original.apply(this, arguments);
+                        after.call(this, result, ...arguments);
+                        return result;
+                    };
+                }
+                const after = (...args) => {
+                    if (entities.modal.style.display === "block") {
+                        setTimeout(highlight, 300)
+                    }
+                }
+                File.editor.library.openFile = decorator(File.editor.library.openFile, after);
+            }
+        }, config.LOOP_DETECT_INTERVAL);
+    }
+
+    const call = (select = true) => {
         entities.modal.style.display = "block";
-        entities.input.select();
+        if (select) {
+            entities.input.select();
+        }
     }
 
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
-            Call();
+            call();
             ev.preventDefault();
             ev.stopPropagation();
         }
     });
 
-    module.exports = {config, Call};
+    module.exports = {
+        config,
+        call,
+        meta: {
+            hide,
+            run: highlight,
+        }
+    };
     console.log("multi_highlighter.js had been injected");
 })()

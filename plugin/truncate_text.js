@@ -42,7 +42,7 @@
         write.children.forEach((ele, idx) => ele.style.display = (idx < start || idx > end) ? "none" : "");
     }
 
-    const Call = type => {
+    const call = type => {
         if (type === "hide_front") {
             hideFront();
         } else if (type === "show_all") {
@@ -52,9 +52,9 @@
         }
     }
 
-    const CallArgs = [
+    const callArgs = [
         {
-            "arg_name": "隐藏最前面",
+            "arg_name": "保留最后80段",
             "arg_value": "hide_front"
         },
         {
@@ -67,6 +67,6 @@
         }
     ];
 
-    module.exports = {Call, CallArgs, config};
+    module.exports = {call, callArgs, config};
     console.log("truncate_text.js had been injected");
 })()

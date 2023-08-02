@@ -214,8 +214,6 @@
     const modal = {
         modal: document.getElementById('typora-search-multi'),
         input: document.querySelector("#typora-search-multi-input input"),
-        caseOption: document.querySelector("#typora-search-multi-input .case-option-btn"),
-        pathOption: document.querySelector("#typora-search-multi-input .path-option-btn"),
         result: document.querySelector(".typora-search-multi-result"),
         resultTitle: document.querySelector(".typora-search-multi-result .search-result-title"),
         resultList: document.querySelector(".typora-search-multi-result .search-result-list"),
@@ -462,34 +460,38 @@
         hideIfNeed();
     });
 
-    const Call = () => {
+    const call = () => {
         modal.modal.style.display = "block";
         modal.input.select()
     }
 
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
-            Call();
+            call();
             ev.preventDefault();
             ev.stopPropagation();
         }
     })
 
-    modal.caseOption.addEventListener("click", ev => {
-        modal.caseOption.classList.toggle("select");
-        config.CASE_SENSITIVE = !config.CASE_SENSITIVE;
-        ev.preventDefault();
-        ev.stopPropagation();
+    modal.modal.addEventListener("click", ev => {
+        const caseButton = ev.target.closest("#typora-search-multi-input .case-option-btn");
+        const pathButton = ev.target.closest("#typora-search-multi-input .path-option-btn");
+
+        if (caseButton || pathButton) {
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
+
+        if (caseButton) {
+            caseButton.classList.toggle("select");
+            config.CASE_SENSITIVE = !config.CASE_SENSITIVE;
+        } else if (pathButton) {
+            pathButton.classList.toggle("select");
+            config.INCLUDE_FILE_PATH = !config.INCLUDE_FILE_PATH;
+        }
     })
 
-    modal.pathOption.addEventListener("click", ev => {
-        modal.pathOption.classList.toggle("select");
-        config.INCLUDE_FILE_PATH = !config.INCLUDE_FILE_PATH;
-        ev.preventDefault();
-        ev.stopPropagation();
-    })
-
-    module.exports = {Call, config};
+    module.exports = {call, config};
 
     console.log("search_multi.js had been injected");
 })();

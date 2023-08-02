@@ -84,8 +84,8 @@
 
     module.exports = {
         config,
-        Meta: {
-            "trigger": trigger,
+        meta: {
+            trigger,
         }
     };
 
