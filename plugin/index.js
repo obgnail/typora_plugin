@@ -129,6 +129,13 @@ window.onload = () => {
         },
     ]
 
+    global._getPlugin = fixed_name => {
+        const idx = global._plugins.findIndex(plugin => plugin.enable && plugin.fixed_name === fixed_name)
+        if (idx !== -1) {
+            return global._plugins[idx];
+        }
+    }
+
     const loadPlugin = () => {
         const _path = reqnode("path");
         const _fs = reqnode("fs");
@@ -141,11 +148,11 @@ window.onload = () => {
             const promise = new Promise((resolve, reject) => {
                 _fs.access(filepath, err => {
                     if (!err) {
-                        const {config, Call, CallArgs, Meta} = reqnode(filepath);
+                        const {config, call, callArgs, meta} = reqnode(filepath);
                         plugin.config = config || null;
-                        plugin.call = Call || null;
-                        plugin.call_args = CallArgs || null;
-                        plugin.meta = Meta || null;
+                        plugin.call = call || null;
+                        plugin.call_args = callArgs || null;
+                        plugin.meta = meta || null;
                         resolve(plugin);
                     } else {
                         plugin.enable = false;

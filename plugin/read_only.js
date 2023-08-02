@@ -135,7 +135,7 @@
         }
     }, true)
 
-    const Call = () => {
+    const call = () => {
         window.dispatchEvent(new KeyboardEvent("keydown", {
             key: "R", code: "R", ctrlKey: true, metaKey: true, shiftKey: true,
         }))
@@ -145,12 +145,12 @@
         const _timer = setInterval(() => {
             if (File) {
                 clearInterval(_timer);
-                Call();
+                call();
             }
         }, config.LOOP_DETECT_INTERVAL);
     }
 
-    module.exports = {Call, config};
+    module.exports = {call, config};
 
     console.log("read_only.js had been injected");
 })()

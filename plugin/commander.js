@@ -302,16 +302,14 @@
         }
     })
 
-    const Call = () => {
+    const call = () => {
         modal.modal.style.display = "block";
         modal.input.select();
     }
 
-    module.exports = {Call, config};
-
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
-            Call()
+            call()
             ev.preventDefault();
             ev.stopPropagation();
         }
@@ -358,6 +356,8 @@
         })
         modal.input.ondragstart = () => false
     }
+
+    module.exports = {call, config};
 
     console.log("commander.js had been injected");
 })()

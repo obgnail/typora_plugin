@@ -26,7 +26,7 @@
     document.querySelector("body").appendChild(goTop);
 
     document.getElementById(config.DIV_ID).addEventListener("click", ev => {
-        Call();
+        call();
         ev.preventDefault();
         ev.stopPropagation();
     });
@@ -36,7 +36,7 @@
         goTop.style.display = (content.scrollTop > config.THRESHOLD) ? "" : "none";
     })
 
-    const Call = () => $("content").animate({scrollTop: '0'}, config.SCROLL_TIME);
-    module.exports = {Call, config};
+    const call = () => $("content").animate({scrollTop: '0'}, config.SCROLL_TIME);
+    module.exports = {call, config};
     console.log("go_top.js had been injected");
 })()
