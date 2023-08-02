@@ -1,17 +1,20 @@
 (() => {
     const config = {
-        // 折叠状态下的颜色
-        BACKGROUND_COLOR: "#ffafa3",
         // 添加的class
         CLASS_NAME: "plugin-collapsed-paragraph",
     };
 
     (() => {
         const css = `
-            #write .${config.CLASS_NAME} {
-                background-color: ${config.BACKGROUND_COLOR};
-                cursor: pointer;
-            }`;
+            #write .${config.CLASS_NAME}::after {
+                content: "{\\2026}";
+                margin: 0 0.6rem;
+                padding: 0 1px;
+                color: white;
+                opacity: 0.5;
+                background-color: gray;
+            }
+            `;
         const style = document.createElement('style');
         style.type = 'text/css';
         style.innerHTML = css;

@@ -25,6 +25,7 @@
 
         LOOP_DETECT_INTERVAL: 20,
         CLICK_CHECK_INTERVAL: 300,
+        WAIT_RECOVER_INTERVAL: 1000,
     };
 
     (() => {
@@ -32,23 +33,17 @@
             #write .md-fences .fence-enhance {
                 display: inline-flex;
                 position: absolute;
-                top: .1em;
+                top: .3em;
                 right: .5em;
                 z-index: 8;
+                font-size: 1.2em;
             }
             #write .fence-enhance .typora-copy-code, .typora-fold-code {
                 opacity: 0.5;
-                color: #4183C4;
-                font-weight: bold;
                 cursor: pointer;
-                border-bottom: 1px solid #4183C4;
             }
             #write .fence-enhance .typora-copy-code {
-                margin-left: 10px;
-            }
-            #write .fence-enhance .typora-copy-code.copied, .typora-fold-code.folded {
-                color: purple;
-                border-color: purple;
+                margin-left: .5em;
             }
             `
         const style = document.createElement('style');
@@ -71,14 +66,18 @@
             if (config.ENABLE_FOLD) {
                 foldButton = document.createElement("div");
                 foldButton.classList.add("typora-fold-code");
-                foldButton.innerText = "Fold";
+                const span = document.createElement("span");
+                span.className = "fa fa-plus";
+                foldButton.appendChild(span);
                 enhance.appendChild(foldButton);
             }
 
             if (config.ENABLE_COPY) {
                 const copyButton = document.createElement("div");
                 copyButton.classList.add("typora-copy-code");
-                copyButton.innerText = "Copy";
+                const span = document.createElement("span");
+                span.className = "fa fa-clipboard";
+                copyButton.appendChild(span);
                 enhance.appendChild(copyButton);
             }
 
@@ -116,12 +115,11 @@
     document.getElementById("write").addEventListener("click", ev => {
         const copy = config.ENABLE_COPY && ev.target.closest(".typora-copy-code");
         const fold = config.ENABLE_FOLD && ev.target.closest(".typora-fold-code");
-        if (!copy && !fold) {
-            return
-        }
+        if (!copy && !fold) return;
 
         ev.preventDefault();
         ev.stopPropagation();
+        document.activeElement.blur();
 
         if (copy) {
             copyCode(ev, copy);
@@ -145,8 +143,6 @@
         const lines = copyButton.closest(".md-fences").querySelectorAll(".CodeMirror-code .CodeMirror-line")
         if (lines.length === 0) return;
 
-        document.activeElement.blur();
-
         const contentList = [];
         lines.forEach(line => {
             let encodeText = encodeURI(line.textContent);
@@ -160,31 +156,27 @@
         })
 
         const result = contentList.join("\n");
-        navigator.clipboard.writeText(result);
+        // navigator.clipboard.writeText(result);
+        File.editor.UserOp.setClipboard(null, null, result);
 
-        copyButton.classList.add("copied");
-        copyButton.innerText = "Copied";
-        setTimeout(() => {
-            copyButton.classList.remove("copied");
-            copyButton.innerText = "Copy";
-        }, 1000)
+        copyButton.firstElementChild.className = "fa fa-check";
+        setTimeout(() => copyButton.firstElementChild.className = "fa fa-clipboard", config.WAIT_RECOVER_INTERVAL);
     }
 
     const foldCode = (ev, foldButton) => {
         const scroll = foldButton.closest(".md-fences").querySelector(".CodeMirror-scroll");
         if (!scroll) return;
 
-        document.activeElement.blur();
         if (scroll.style.height && scroll.style.overflowY) {
             scroll.style.height = "";
             scroll.style.overflowY = "";
             foldButton.classList.remove("folded");
-            foldButton.innerText = "Fold";
+            foldButton.firstElementChild.className = "fa fa-plus";
         } else {
-            scroll.style.height = window.getComputedStyle(foldButton).lineHeight;
+            scroll.style.height = window.getComputedStyle(scroll).lineHeight;
             scroll.style.overflowY = config.FOLD_OVERFLOW;
             foldButton.classList.add("folded");
-            foldButton.innerText = "Folded";
+            foldButton.firstElementChild.className = "fa fa-minus";
         }
     }
 
@@ -192,7 +184,9 @@
         $("#write").on("mouseenter", ".md-fences", function () {
             this.querySelector(".fence-enhance").style.visibility = "";
         }).on("mouseleave", ".md-fences", function () {
-            this.querySelector(".fence-enhance").style.visibility = "hidden";
+            if (!this.querySelector(".typora-fold-code.folded")) {
+                this.querySelector(".fence-enhance").style.visibility = "hidden";
+            }
         })
     }
 
