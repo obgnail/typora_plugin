@@ -192,10 +192,12 @@
 
     const FoldAll = () => {
         document.querySelectorAll(".typora-fold-code:not(.folded)").forEach(ele => ele.click());
+        config.FOLD_DEFAULT = true;
     }
 
     const expandAll = () => {
         document.querySelectorAll(".typora-fold-code.folded").forEach(ele => ele.click());
+        config.FOLD_DEFAULT = false;
     }
 
     const call = type => {
@@ -208,11 +210,11 @@
 
     const callArgs = [
         {
-            "arg_name": "折叠全部",
+            "arg_name": "总是折叠",
             "arg_value": "fold_all"
         },
         {
-            "arg_name": "展开全部",
+            "arg_name": "总是展开",
             "arg_value": "expand_all"
         }
     ];
