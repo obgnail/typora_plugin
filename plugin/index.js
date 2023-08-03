@@ -43,7 +43,7 @@ window.onload = () => {
             clickable: false,
         },
         {
-            name: "文档大纲",
+            name: "类别大纲",
             fixed_name: "outline",
             src: "./plugin/outline.js",
             enable: true,

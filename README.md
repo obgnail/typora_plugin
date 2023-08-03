@@ -99,7 +99,21 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
-## 插件/脚本
+## 插件/脚本使用说明
+
+自 1.0.18 版本以后，所有的插件都支持 `正文区域鼠标右键-启用插件` 中直接调用，再也不必记快捷键啦。
+
+> 同时需要注意，**不同光标位置调出来的菜单会有所不同**。
+
+比如 `章节折叠` 功能需要光标定位到标题上，才会出现更多的选项。
+
+同理 `代码块增强` 功能需要光标定位到代码块中。其他功能需要您自己去探索发现。
+
+![right_click_menu1](assets/right_click_menu1.png)
+
+![right_click_menu2](assets/right_click_menu2.png)
+
+
 
 ### window_tab：标签页管理
 
@@ -160,8 +174,6 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 - `ctrl+click`：折叠 / 展开【单个章节】
 - `ctrl+alt+click`：折叠 / 展开【父章节下所有同级的章节】
 - `ctrl+shift+alt+click`：折叠 / 展开【全局所有同级的章节】
-
-> 要你觉得按键太多，也可以：先将光标定位在 h1~h6，然后右键菜单 -> 启用插件 -> 章节折叠。
 
 ![collapse_paragraph](assets/collapse_paragraph.gif)
 

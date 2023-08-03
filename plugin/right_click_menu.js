@@ -1,5 +1,7 @@
 (() => {
     const config = {
+        // 点击后是否隐藏菜单
+        DO_NOT_HIDE: false,
         LOOP_DETECT_INTERVAL: 200
     }
 
@@ -125,7 +127,9 @@
             const fixed_name = this.getAttribute("data-key");
             const plugins = enablePlugins.filter(plugin => plugin.fixed_name === fixed_name);
             plugins && plugins[0] && plugins[0].call && plugins[0].call();
-            File.editor.contextMenu.hide();
+            if (!config.DO_NOT_HIDE) {
+                File.editor.contextMenu.hide();
+            }
             // 展示三级菜单
         }).on("mouseenter", "[data-key]", function () {
             const t = $(this);
@@ -164,8 +168,10 @@
             const fixedName = this.parentElement.getAttribute("fixed_name");
             const argValue = this.getAttribute("arg_value");
             const plugins = enablePlugins.filter(plugin => plugin.fixed_name === fixedName);
-            plugins && plugins[0] && plugins[0].call && plugins[0].call(argValue);
-            File.editor.contextMenu.hide();
+            (argValue !== "not_available") && plugins && plugins[0] && plugins[0].call && plugins[0].call(argValue);
+            if (!config.DO_NOT_HIDE) {
+                File.editor.contextMenu.hide();
+            }
         })
     }
 
@@ -189,19 +195,26 @@
         }
     }, config.LOOP_DETECT_INTERVAL);
 
+    //////////////////////// 以下是声明式插件系统代码 ////////////////////////
     const call = type => {
         if (type === "about") {
             const url = "https://github.com/obgnail/typora_plugin"
             const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl
             openUrl(url, 1);
+        } else if (type === "do_not_hide") {
+            config.DO_NOT_HIDE = !config.DO_NOT_HIDE;
         }
     }
 
     const callArgs = [
         {
-            "arg_name": "关于/帮助",
-            "arg_value": "about"
+            arg_name: "右键菜单点击后保持显示/隐藏",
+            arg_value: "do_not_hide"
         },
+        {
+            arg_name: "关于/帮助",
+            arg_value: "about"
+        }
     ];
 
     module.exports = {

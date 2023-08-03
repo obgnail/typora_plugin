@@ -302,11 +302,6 @@
         }
     })
 
-    const call = () => {
-        modal.modal.style.display = "block";
-        modal.input.select();
-    }
-
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
             call()
@@ -355,6 +350,15 @@
             document.addEventListener('mousemove', onMouseMove);
         })
         modal.input.ondragstart = () => false
+    }
+
+    const call = () => {
+        if (modal.modal.style.display === "block") {
+            modal.modal.style.display = "none";
+        } else {
+            modal.modal.style.display = "block";
+            modal.input.select();
+        }
     }
 
     module.exports = {call, config};

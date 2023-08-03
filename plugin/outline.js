@@ -4,6 +4,8 @@
         DEFAULT_TYPE: "fence",
         // 是否使用混合标签
         USE_ALL: true,
+        // 给混合标签设置颜色
+        SET_COLOR_IN_ALL: true,
         // 展示的名字
         SHOW_NAME: {
             fence: "Fence",
@@ -44,7 +46,7 @@
             
             #plugin-outline .plugin-outline-item.active, .plugin-outline-item:hover {
                 border-color: #f5f5f5;
-                background-color: var(--item-hover-bg-color);
+                background-color: var(--item-hover-bg-color) !important;
             }
             
             #plugin-outline .plugin-outline-icon {
@@ -188,6 +190,20 @@
             return list
         }
 
+        setColor = (ele, item, type) => {
+            if (type === "all") {
+                if (item.type === "table") {
+                    ele.style.backgroundColor = "aliceblue";
+                } else if (item.type === "fence") {
+                    ele.style.backgroundColor = "antiquewhite";
+                } else if (item.type === "image") {
+                    ele.style.backgroundColor = "beige";
+                }
+            } else {
+                ele.style.backgroundColor = "";
+            }
+        }
+
         // 简易数据单向绑定
         bindDOM(Type) {
             const typeCollection = this.getCollection(Type);
@@ -220,6 +236,9 @@
 
             let ele = entities.list.firstElementChild;
             typeCollection.forEach(item => {
+                if (config.SET_COLOR_IN_ALL) {
+                    this.setColor(ele, item, Type);
+                }
                 const span = ele.firstElementChild;
                 span.setAttribute("data-ref", item.cid);
                 span.innerText = `${config.SHOW_NAME[item.type]} ${item.paragraphIdx}-${item.idx}`;
@@ -236,10 +255,6 @@
         collectUtil.bindDOM(Type);
         entities.modal.style.display = "block";
     }
-
-    const call = () => collectAndShow(config.DEFAULT_TYPE);
-
-    const hide = () => entities.modal.style.display = "none";
 
     const scroll = cid => {
         const target = File.editor.findElemById(cid);
@@ -340,6 +355,16 @@
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
         }
     }, config.LOOP_DETECT_INTERVAL);
+
+    const call = () => {
+        if (entities.modal.style.display === "block") {
+            hide();
+        } else {
+            collectAndShow(config.DEFAULT_TYPE);
+        }
+    };
+
+    const hide = () => entities.modal.style.display = "none";
 
     module.exports = {
         call,
