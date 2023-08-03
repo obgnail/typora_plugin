@@ -86,8 +86,39 @@
         list.forEach(ele => trigger(ele, collapsed));
     })
 
+    const collapseAll = () => {
+        for (let i = paragraphList.length - 1; i >= 0; i--) {
+            document.getElementsByTagName(paragraphList[i]).forEach(ele => trigger(ele, false));
+        }
+    }
+
+    const expandAll = () => {
+        paragraphList.forEach(tag => document.getElementsByTagName(tag).forEach(ele => trigger(ele, true)))
+    }
+
+    const call = type => {
+        if (type === "collapse_all") {
+            collapseAll();
+        } else if (type === "expand_all") {
+            expandAll();
+        }
+    }
+
+    const callArgs = [
+        {
+            "arg_name": "折叠全部",
+            "arg_value": "collapse_all"
+        },
+        {
+            "arg_name": "展开全部",
+            "arg_value": "expand_all"
+        },
+    ];
+
     module.exports = {
         config,
+        call,
+        callArgs,
         meta: {
             trigger,
         }

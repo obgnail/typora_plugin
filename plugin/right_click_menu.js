@@ -66,18 +66,27 @@
         return secondUl;
     }
 
-    const show = (element, target) => {
-        const selected = $(element).addClass("show")
-            , height = selected.height() + 48
-            , offset = target.offset()
-            , left = offset.left
-            , leftPlus = left + 200
-            , top = offset.top - 30
-            , finalLeft = leftPlus + 160 > window.innerWidth ? left - 184 : leftPlus
-            , finalTop = top + height > window.innerHeight ? window.innerHeight - height : top;
-        selected.css({top: finalTop + "px", left: finalLeft + "px"})
+    const show = (second, first) => {
+        const next = $(second).addClass("show");
+
+        const rect = next[0].getBoundingClientRect();
+        const nextHeight = rect.height;
+        const nextWidth = rect.width;
+
+        const {left, top, width, height} = first[0].getBoundingClientRect();
+        let nextTop = top - height;
+        let nextLeft = left + width + 6;
+
+        if (nextTop + nextHeight > window.innerHeight) {
+            nextTop = window.innerHeight - nextHeight
+        }
+        if (nextLeft + nextWidth > window.innerWidth) {
+            nextLeft = window.innerWidth - nextWidth
+        }
+
+        next.css({top: nextTop + "px", left: nextLeft + "px"})
         return false;
-    };
+    }
 
     const listen = enablePlugins => {
         // 在二级菜单中调用插件
@@ -86,19 +95,19 @@
             const plugins = enablePlugins.filter(plugin => plugin.name === name);
             plugins && plugins[0] && plugins[0].call && plugins[0].call();
             File.editor.contextMenu.hide();
-            // 展示二级菜单
+            // 展示三级菜单
         }).on("mouseenter", "[data-key]", function () {
             const t = $(this);
+            document.querySelectorAll(".plugin-menu-third").forEach(ele => ele.classList.remove("show"));
             const target = t.find(`span[data-lg="Menu"]`);
             if (target.length) {
                 const name = t.attr("data-key");
                 show(`.plugin-menu-third[plugin_name="${name}"]`, t);
             } else {
-                document.querySelectorAll(".plugin-menu-third").forEach(ele => ele.classList.remove("show"));
                 document.querySelector("#plugin-menu .plugin-has-args").classList.remove("active");
             }
         })
-        // 展示三级菜单
+        // 展示二级菜单
         $("#context-menu").on("mouseenter", "[data-key]", function () {
             const target = $(this);
             if ("typora-plugin" === target.attr("data-key")) {
@@ -140,7 +149,26 @@
         }
     }, config.LOOP_DETECT_INTERVAL);
 
-    module.exports = {config};
+    const call = type => {
+        if (type === "about") {
+            const url = "https://github.com/obgnail/typora_plugin"
+            const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl
+            openUrl(url, 1);
+        }
+    }
+
+    const callArgs = [
+        {
+            "arg_name": "关于/帮助",
+            "arg_value": "about"
+        },
+    ];
+
+    module.exports = {
+        config,
+        call,
+        callArgs,
+    };
 
     console.log("right_click_menu.js had been injected");
 })()
