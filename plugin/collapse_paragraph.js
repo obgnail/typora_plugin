@@ -73,6 +73,8 @@
         return result;
     }
 
+    const findAllSiblings = paragraph => document.querySelectorAll(`#write ${paragraph.tagName}`);
+
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
     document.getElementById("write").addEventListener("click", ev => {
@@ -82,9 +84,33 @@
 
         document.activeElement.blur();
         const collapsed = paragraph.classList.contains(config.CLASS_NAME);
-        const list = ev.altKey ? (ev.shiftKey ? document.querySelectorAll(`#write ${paragraph.tagName}`) : findSiblings(paragraph)) : [paragraph];
+        const list = ev.altKey ? (ev.shiftKey ? findAllSiblings(paragraph) : findSiblings(paragraph)) : [paragraph];
         list.forEach(ele => trigger(ele, collapsed));
     })
+
+    //////////////////////// 以下是声明式插件系统代码 ////////////////////////
+    const dynamicUtil = {target: null}
+    const dynamicCallArgsGenerator = anchorNode => {
+        const target = anchorNode.closest("#write h1,h2,h3,h4,h5,h6");
+        if (!target) return;
+
+        dynamicUtil.target = target;
+
+        return [
+            {
+                arg_name: "折叠/展开当前章节",
+                arg_value: "call_current",
+            },
+            {
+                arg_name: "折叠/展开全部兄弟章节",
+                arg_value: "call_siblings",
+            },
+            {
+                arg_name: "折叠/展开全局同级章节",
+                arg_value: "call_all_siblings",
+            }
+        ]
+    }
 
     const collapseAll = () => {
         for (let i = paragraphList.length - 1; i >= 0; i--) {
@@ -96,22 +122,42 @@
         paragraphList.forEach(tag => document.getElementsByTagName(tag).forEach(ele => trigger(ele, true)))
     }
 
+    const dynamicCall = type => {
+        if (!dynamicUtil.target) return;
+
+        const collapsed = dynamicUtil.target.classList.contains(config.CLASS_NAME);
+
+        let list;
+        if (type === "call_current") {
+            list = [dynamicUtil.target];
+        } else if (type === "call_siblings") {
+            list = findSiblings(dynamicUtil.target);
+        } else if (type === "call_all_siblings") {
+            list = findAllSiblings(dynamicUtil.target);
+        }
+
+        if (list) {
+            list.forEach(ele => trigger(ele, collapsed));
+        }
+    }
+
     const call = type => {
         if (type === "collapse_all") {
             collapseAll();
         } else if (type === "expand_all") {
             expandAll();
         }
+        dynamicCall(type);
     }
 
     const callArgs = [
         {
-            "arg_name": "折叠全部",
-            "arg_value": "collapse_all"
+            arg_name: "折叠全部章节",
+            arg_value: "collapse_all"
         },
         {
-            "arg_name": "展开全部",
-            "arg_value": "expand_all"
+            arg_name: "展开全部章节",
+            arg_value: "expand_all"
         },
     ];
 
@@ -119,6 +165,7 @@
         config,
         call,
         callArgs,
+        dynamicCallArgsGenerator,
         meta: {
             trigger,
         }

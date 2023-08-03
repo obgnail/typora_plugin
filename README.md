@@ -161,6 +161,8 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 - `ctrl+alt+click`：折叠 / 展开【父章节下所有同级的章节】
 - `ctrl+shift+alt+click`：折叠 / 展开【全局所有同级的章节】
 
+> 要你觉得按键太多，也可以：先将光标定位在 h1~h6，然后右键菜单 -> 启用插件 -> 章节折叠。
+
 ![collapse_paragraph](assets/collapse_paragraph.gif)
 
 

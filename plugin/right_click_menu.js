@@ -51,11 +51,16 @@
     const createSecondLi = plugin => {
         const style = (plugin.clickable) ? "" : `style="pointer-events: none;color: #c4c6cc;"`;
         const content = (!plugin.call_args) ? plugin.name : `<span data-lg="Menu">${plugin.name}</span> <i class="fa fa-caret-right"></i>`;
-        const className = (!plugin.call_args) ? "" : `class="plugin-has-args"`;
-        return `<li data-key="${plugin.name}" ${className} ${style}><a role="menuitem" data-lg="Menu">${content}</a></li>`
+        const className = (!plugin.call_args) ? "" : "plugin-has-args";
+        return `<li data-key="${plugin.name}" fixed_name="${plugin.fixed_name}" class="plugin-menu-item ${className}" ${style}>
+                    <a role="menuitem" data-lg="Menu">${content}</a>
+                </li>`
     }
 
-    const createThirdLi = arg => `<li data-key="${arg.arg_name}" arg_value="${arg.arg_value}"><a role="menuitem" data-lg="Menu">${arg.arg_name}</a></li>`
+    const createThirdLi = (arg, dynamic) => {
+        const className = (dynamic) ? `class="plugin-dynamic-arg"` : "";
+        return `<li data-key="${arg.arg_name}" arg_value="${arg.arg_value}" ${className}><a role="menuitem" data-lg="Menu">${arg.arg_name}</a></li>`
+    }
 
     const createUl = () => {
         const secondUl = document.createElement("ul");
@@ -67,7 +72,7 @@
     }
 
     const show = (second, first) => {
-        const next = $(second).addClass("show");
+        const next = second.addClass("show");
 
         const rect = next[0].getBoundingClientRect();
         const nextHeight = rect.height;
@@ -88,6 +93,22 @@
         return false;
     }
 
+    const generateDynamicCallArgs = fixedName => {
+        if (!fixedName) return;
+        const plugin = global._getPlugin(fixedName);
+        if (plugin && plugin.enable && plugin.dynamic_call_args_generator) {
+            const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
+            if (anchorNode[0]) {
+                return plugin.dynamic_call_args_generator(anchorNode[0]);
+            }
+        }
+    }
+
+    const appendThirdLi = (menu, dynamicCallArgs) => {
+        const args = dynamicCallArgs.map(arg => createThirdLi(arg, true)).join("");
+        menu.append(args);
+    }
+
     const listen = enablePlugins => {
         // 在二级菜单中调用插件
         $("#plugin-menu").on("click", "[data-key]", function () {
@@ -99,10 +120,17 @@
         }).on("mouseenter", "[data-key]", function () {
             const t = $(this);
             document.querySelectorAll(".plugin-menu-third").forEach(ele => ele.classList.remove("show"));
+            document.querySelectorAll(".plugin-dynamic-arg").forEach(ele => ele.parentElement.removeChild(ele));
             const target = t.find(`span[data-lg="Menu"]`);
             if (target.length) {
                 const name = t.attr("data-key");
-                show(`.plugin-menu-third[plugin_name="${name}"]`, t);
+                const fixedName = t.attr("fixed_name");
+                const menu = $(`.plugin-menu-third[plugin_name="${name}"]`);
+                const dynamicCallArgs = generateDynamicCallArgs(fixedName);
+                if (dynamicCallArgs) {
+                    appendThirdLi(menu, dynamicCallArgs);
+                }
+                show(menu, t);
             } else {
                 document.querySelector("#plugin-menu .plugin-has-args").classList.remove("active");
             }
@@ -111,7 +139,7 @@
         $("#context-menu").on("mouseenter", "[data-key]", function () {
             const target = $(this);
             if ("typora-plugin" === target.attr("data-key")) {
-                show("#plugin-menu", target);
+                show($("#plugin-menu"), target);
                 target.addClass("active");
             } else {
                 document.querySelector("#plugin-menu").classList.remove("show");
