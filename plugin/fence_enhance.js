@@ -67,7 +67,7 @@
                 foldButton = document.createElement("div");
                 foldButton.classList.add("typora-fold-code");
                 const span = document.createElement("span");
-                span.className = "fa fa-plus";
+                span.className = "fa fa-minus";
                 foldButton.appendChild(span);
                 enhance.appendChild(foldButton);
             }
@@ -171,12 +171,12 @@
             scroll.style.height = "";
             scroll.style.overflowY = "";
             foldButton.classList.remove("folded");
-            foldButton.firstElementChild.className = "fa fa-plus";
+            foldButton.firstElementChild.className = "fa fa-minus";
         } else {
             scroll.style.height = window.getComputedStyle(scroll).lineHeight;
             scroll.style.overflowY = config.FOLD_OVERFLOW;
             foldButton.classList.add("folded");
-            foldButton.firstElementChild.className = "fa fa-minus";
+            foldButton.firstElementChild.className = "fa fa-plus";
         }
     }
 
