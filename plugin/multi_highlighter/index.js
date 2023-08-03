@@ -572,9 +572,11 @@
         }, config.LOOP_DETECT_INTERVAL);
     }
 
-    const call = (select = true) => {
-        entities.modal.style.display = "block";
-        if (select) {
+    const call = () => {
+        if (entities.modal.style.display === "block") {
+            hide();
+        } else {
+            entities.modal.style.display = "block";
             entities.input.select();
         }
     }

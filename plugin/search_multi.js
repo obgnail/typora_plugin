@@ -397,8 +397,7 @@
             case "Escape":
                 ev.stopPropagation();
                 ev.preventDefault();
-                modal.modal.style.display = "none";
-                modal.info.style.display = "none";
+                hide();
                 break
             case "ArrowUp":
             case "ArrowDown":
@@ -460,9 +459,18 @@
         hideIfNeed();
     });
 
+    const hide = () => {
+        modal.modal.style.display = "none";
+        modal.info.style.display = "none";
+    }
+
     const call = () => {
-        modal.modal.style.display = "block";
-        modal.input.select()
+        if (modal.modal.style.display === "block") {
+            hide();
+        } else {
+            modal.modal.style.display = "block";
+            modal.input.select();
+        }
     }
 
     window.addEventListener("keydown", ev => {
