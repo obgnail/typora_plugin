@@ -66,18 +66,27 @@
         return secondUl;
     }
 
-    const show = (element, target) => {
-        const selected = $(element).addClass("show")
-            , height = selected.height() + 48
-            , offset = target.offset()
-            , left = offset.left
-            , leftPlus = left + 200
-            , top = offset.top - 30
-            , finalLeft = leftPlus + 160 > window.innerWidth ? left - 184 : leftPlus
-            , finalTop = top + height > window.innerHeight ? window.innerHeight - height : top;
-        selected.css({top: finalTop + "px", left: finalLeft + "px"})
+    const show = (second, first) => {
+        const next = $(second).addClass("show");
+
+        const rect = next[0].getBoundingClientRect();
+        const nextHeight = rect.height;
+        const nextWidth = rect.width;
+
+        const {left, top, width, height} = first[0].getBoundingClientRect();
+        let nextTop = top - height;
+        let nextLeft = left + width + 6;
+
+        if (nextTop + nextHeight > window.innerHeight) {
+            nextTop = window.innerHeight - nextHeight
+        }
+        if (nextLeft + nextWidth > window.innerWidth) {
+            nextLeft = window.innerWidth - nextWidth
+        }
+
+        next.css({top: nextTop + "px", left: nextLeft + "px"})
         return false;
-    };
+    }
 
     const listen = enablePlugins => {
         // 在二级菜单中调用插件
@@ -143,7 +152,8 @@
     const call = type => {
         if (type === "about") {
             const url = "https://github.com/obgnail/typora_plugin"
-            File.editor.tryOpenUrl(url, 1);
+            const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl
+            openUrl(url, 1);
         }
     }
 

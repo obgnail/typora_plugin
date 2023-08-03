@@ -44,13 +44,6 @@ window.onload = () => {
             clickable: true,
         },
         {
-            name: "章节折叠",
-            fixed_name: "collapse_paragraph",
-            src: "./plugin/collapse_paragraph.js",
-            enable: true,
-            clickable: true,
-        },
-        {
             name: "中英文混排优化",
             fixed_name: "md_padding",
             src: "./plugin/md_padding/index.js",
@@ -72,6 +65,13 @@ window.onload = () => {
             clickable: false,
         },
         {
+            name: "一键到顶",
+            fixed_name: "go_top",
+            src: "./plugin/go_top.js",
+            enable: true,
+            clickable: true,
+        },
+        {
             name: "代码块增强",
             fixed_name: "fence_enhance",
             src: "./plugin/fence_enhance.js",
@@ -79,9 +79,9 @@ window.onload = () => {
             clickable: true,
         },
         {
-            name: "一键到顶",
-            fixed_name: "go_top",
-            src: "./plugin/go_top.js",
+            name: "章节折叠",
+            fixed_name: "collapse_paragraph",
+            src: "./plugin/collapse_paragraph.js",
             enable: true,
             clickable: true,
         },
