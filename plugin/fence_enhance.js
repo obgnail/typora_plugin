@@ -190,7 +190,38 @@
         })
     }
 
-    module.exports = {config};
+    const FoldAll = () => {
+        document.querySelectorAll(".typora-fold-code:not(.folded)").forEach(ele => ele.click());
+    }
+
+    const expandAll = () => {
+        document.querySelectorAll(".typora-fold-code.folded").forEach(ele => ele.click());
+    }
+
+    const call = type => {
+        if (type === "fold_all") {
+            FoldAll();
+        } else if (type === "expand_all") {
+            expandAll();
+        }
+    }
+
+    const callArgs = [
+        {
+            "arg_name": "折叠全部",
+            "arg_value": "fold_all"
+        },
+        {
+            "arg_name": "展开全部",
+            "arg_value": "expand_all"
+        }
+    ];
+
+    module.exports = {
+        config,
+        call,
+        callArgs,
+    };
 
     console.log("fence_enhance.js had been injected");
 })()
