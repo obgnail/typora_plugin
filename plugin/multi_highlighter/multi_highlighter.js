@@ -25,8 +25,12 @@ class multiHighlighter {
         this.highlighterList.forEach(highlighter => highlighter.highlight());
     }
 
-    clear() {
+    removeHighlight() {
         this.highlighterList.forEach(highlighter => highlighter.removeHighlight());
+    }
+
+    clear() {
+        this.removeHighlight();
         this.highlighterList = [];
     }
 

@@ -35,10 +35,10 @@
         SHOW_CURRENT_INDEX: true,
         // Typora本身的限制: ctrl+F搜索后，点击任意地方原先高亮的地方就会消失
         // 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
-        UNDO_WHEN_EDIT: true,
-        // 定位时高亮关键字边框
+        REMOVE_WHEN_EDIT: true,
+        // 定位时高亮关键字出现提示边框
         SHOW_KEYWORD_OUTLINE: true,
-        // 定位时高亮关键字所在行
+        // 定位时高亮关键字提示所在行
         SHOW_KEYWORD_BAR: true,
         // 高亮的样式
         STYLE_COLOR: [
@@ -68,6 +68,14 @@
         // 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
         // 20个关键字肯定够用了,此选项没太大意义
         DEFAULT_COLOR: "aquamarine",
+
+        // Do not edit this field unless you know what you are doing
+        // 性能选项：关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0,则总是使用
+        // 此选项用在当搜索了很多关键字时，保证有较快的响应速度
+        USE_LIST_THRESHOLD: -1,
+        // 性能选项：当fenceMultiHighlighterList数量超过X时，clear之（以时间换空间）。若<0,则总不启用
+        // 此选项用在当上一个策略使用太多次后，花费时间去回收空间，保证不会占用太大内存
+        CLEAR_LIST_THRESHOLD: 12,
 
         LOOP_DETECT_INTERVAL: 20,
     };
@@ -229,10 +237,15 @@
     const multiHighlighter = new multiHighlighterClass();
     let fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
 
-    const clearHighlight = () => {
-        multiHighlighter.clear();
+    const clearFenceMultiHighlighterList = () => {
+        console.log("clearFenceMultiHighlighterList")
         fenceMultiHighlighterList.forEach(highlighter => highlighter.clear());
         fenceMultiHighlighterList = [];
+    }
+
+    const clearHighlight = () => {
+        multiHighlighter.clear();
+        clearFenceMultiHighlighterList();
         entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(
             ele => ele && ele.parentElement && ele.parentElement.removeChild(ele));
     }
@@ -319,8 +332,8 @@
         }
     }
 
-    const whichMarker = (fence, marker) => {
-        const markers = fence.getElementsByTagName("marker");
+    const whichMarker = (parent, marker) => {
+        const markers = parent.getElementsByTagName("marker");
         for (let idx = 0; idx < markers.length; idx++) {
             if (markers[idx] === marker) {
                 return idx
@@ -329,8 +342,8 @@
         return -1
     }
 
-    const getMarker = (fence, idx) => {
-        const markers = fence.querySelectorAll("marker");
+    const getMarker = (parent, idx) => {
+        const markers = parent.querySelectorAll("marker");
         if (markers) {
             return markers[idx];
         }
@@ -368,7 +381,7 @@
         })
     }
 
-    if (config.UNDO_WHEN_EDIT) {
+    if (config.REMOVE_WHEN_EDIT) {
         document.querySelector("content").addEventListener("mousedown", ev => {
             if (multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
                 clearHighlight();
@@ -377,7 +390,10 @@
         }, true)
     }
 
-    let markerIdx = -1;
+    const showMarkerInfo = {
+        idxOfFence: -1,
+        idxOfWrite: -1,
+    }
     entities.result.addEventListener("mousedown", ev => {
         const target = ev.target.closest(".plugin-multi-highlighter-result-item");
         if (!target) return;
@@ -417,10 +433,12 @@
             return;
         }
 
+        showMarkerInfo.idxOfWrite = whichMarker(entities.write, next);
+
         const fence = next.closest("#write .md-fences");
         if (fence && !fence.classList.contains("modeLoaded")) {
-            // 接下来的工作交给File.editor.fences.addCodeBlock
-            markerIdx = whichMarker(fence, next);
+            showMarkerInfo.idxOfFence = whichMarker(fence, next);
+            // scroll到Fence，触发File.editor.fences.addCodeBlock函数，接下来的工作就交给他了
             scroll(next);
         } else {
             handleHiddenElement(next);
@@ -468,6 +486,15 @@
         entities.input.ondragstart = () => false
     }
 
+    const getAndShowMarker = (parent, idx) => {
+        setTimeout(() => {
+            const nthMarker = getMarker(parent, idx);
+            if (nthMarker) {
+                scroll(nthMarker);
+                showIfNeed(nthMarker);
+            }
+        }, 120);
+    }
 
     const _timer = setInterval(() => {
         if (!File || !File.editor || !File.editor.fences || !File.editor.fences.addCodeBlock) return;
@@ -496,22 +523,29 @@
             if (!cid || !hasMarker || multiHighlighter.length() === 0) return;
 
             hasMarker = false;
+
             const fence = entities.write.querySelector(`.md-fences[cid=${cid}]`);
             if (!fence) return;
 
             const tokens = multiHighlighter.getTokens();
-            const fenceMultiHighlighter = new multiHighlighterClass();
-            fenceMultiHighlighter.new(tokens, fence, config.CASE_SENSITIVE, "plugin-search-hit");
-            fenceMultiHighlighter.highlight();
-            fenceMultiHighlighterList.push(fenceMultiHighlighter);
-
-            if (markerIdx !== -1) {
-                const nthMarker = getMarker(fence, markerIdx);
-                if (nthMarker) {
-                    scroll(nthMarker);
-                    showIfNeed(nthMarker);
+            if (config.USE_LIST_THRESHOLD > tokens.length
+                || config.CLEAR_LIST_THRESHOLD > 0 && fenceMultiHighlighterList.length === config.CLEAR_LIST_THRESHOLD) {
+                clearFenceMultiHighlighterList();
+                multiHighlighter.removeHighlight();
+                multiHighlighter.highlight();
+                if (showMarkerInfo.idxOfWrite !== -1) {
+                    getAndShowMarker(entities.write, showMarkerInfo.idxOfWrite);
+                    showMarkerInfo.idxOfWrite = -1;
                 }
-                markerIdx = -1;
+            } else {
+                const fenceMultiHighlighter = new multiHighlighterClass();
+                fenceMultiHighlighter.new(tokens, fence, config.CASE_SENSITIVE, "plugin-search-hit");
+                fenceMultiHighlighter.highlight();
+                fenceMultiHighlighterList.push(fenceMultiHighlighter);
+                if (showMarkerInfo.idxOfFence !== -1) {
+                    getAndShowMarker(fence, showMarkerInfo.idxOfFence);
+                    showMarkerInfo.idxOfFence = -1;
+                }
             }
         }
         File.editor.fences.addCodeBlock = decorator(File.editor.fences.addCodeBlock, before, after);
