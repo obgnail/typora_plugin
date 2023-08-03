@@ -190,22 +190,24 @@
         })
     }
 
-    const FoldAll = () => {
-        document.querySelectorAll(".typora-fold-code:not(.folded)").forEach(ele => ele.click());
-        config.FOLD_DEFAULT = true;
-    }
+    //////////////////////// 以下是声明式插件系统代码 ////////////////////////
+    const dynamicUtil = {target: null}
+    const dynamicCallArgsGenerator = anchorNode => {
+        const target = anchorNode.closest("#write .md-fences");
+        if (!target) return;
 
-    const expandAll = () => {
-        document.querySelectorAll(".typora-fold-code.folded").forEach(ele => ele.click());
-        config.FOLD_DEFAULT = false;
-    }
+        dynamicUtil.target = target;
 
-    const call = type => {
-        if (type === "fold_all") {
-            FoldAll();
-        } else if (type === "expand_all") {
-            expandAll();
-        }
+        return [
+            {
+                arg_name: "折叠/展开代码块",
+                arg_value: "fold_current",
+            },
+            {
+                arg_name: "复制代码",
+                arg_value: "copy_current",
+            },
+        ]
     }
 
     const callArgs = [
@@ -219,10 +221,26 @@
         }
     ];
 
+    const call = type => {
+        if (type === "fold_all") {
+            document.querySelectorAll(".typora-fold-code:not(.folded)").forEach(ele => ele.click());
+            config.FOLD_DEFAULT = true;
+        } else if (type === "expand_all") {
+            document.querySelectorAll(".typora-fold-code.folded").forEach(ele => ele.click());
+            config.FOLD_DEFAULT = false;
+        } else if (type === "fold_current") {
+            dynamicUtil.target.querySelector(".typora-fold-code").click();
+        } else if (type === "copy_current") {
+            dynamicUtil.target.querySelector(".typora-copy-code").click();
+        }
+        dynamicUtil.target = null;
+    }
+
     module.exports = {
         config,
         call,
         callArgs,
+        dynamicCallArgsGenerator,
     };
 
     console.log("fence_enhance.js had been injected");

@@ -6,7 +6,7 @@ window.onload = () => {
         4. clickable: 是否在右键菜单中可点击
         5. config: 插件的配置
         6. call: 插件的入口函数
-        7. call_args: 如果存在，那么将在右键菜单中会显示第三级菜单，当用户点击后就会传递参数给call函数
+        7. call_args: 固定的插件参数，如果存在，那么将在右键菜单中会显示第三级菜单，当用户点击后就会传递参数给call函数
         8. dynamic_call_args_generator: 插件动态参数，用户在不同区域、不同时间点击右键菜单时，显示不同的第三级菜单
         9. meta: 用于传递自定义变量
     2. 核心逻辑位于right_click_menu.js中，

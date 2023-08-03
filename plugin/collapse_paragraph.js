@@ -112,15 +112,16 @@
         ]
     }
 
-    const collapseAll = () => {
-        for (let i = paragraphList.length - 1; i >= 0; i--) {
-            document.getElementsByTagName(paragraphList[i]).forEach(ele => trigger(ele, false));
-        }
-    }
-
-    const expandAll = () => {
-        paragraphList.forEach(tag => document.getElementsByTagName(tag).forEach(ele => trigger(ele, true)))
-    }
+    const callArgs = [
+        {
+            arg_name: "折叠全部章节",
+            arg_value: "collapse_all"
+        },
+        {
+            arg_name: "展开全部章节",
+            arg_value: "expand_all"
+        },
+    ];
 
     const dynamicCall = type => {
         if (!dynamicUtil.target) return;
@@ -139,27 +140,21 @@
         if (list) {
             list.forEach(ele => trigger(ele, collapsed));
         }
+
+        dynamicUtil.target = null;
     }
 
     const call = type => {
         if (type === "collapse_all") {
-            collapseAll();
+            for (let i = paragraphList.length - 1; i >= 0; i--) {
+                document.getElementsByTagName(paragraphList[i]).forEach(ele => trigger(ele, false));
+            }
         } else if (type === "expand_all") {
-            expandAll();
+            paragraphList.forEach(tag => document.getElementsByTagName(tag).forEach(ele => trigger(ele, true)));
+        } else {
+            dynamicCall(type);
         }
-        dynamicCall(type);
     }
-
-    const callArgs = [
-        {
-            arg_name: "折叠全部章节",
-            arg_value: "collapse_all"
-        },
-        {
-            arg_name: "展开全部章节",
-            arg_value: "expand_all"
-        },
-    ];
 
     module.exports = {
         config,
