@@ -185,22 +185,55 @@
             z-index: 9;
         }`
 
-    const css = [
-        bast_css,
-        (config.ENABLE_CONTENT) ? content_css : "",
-        (config.ENABLE_SIDE_BAR) ? side_bar_css : "",
-        (config.ENABLE_TOC) ? toc_css : "",
-        (config.ENABLE_IMAGE) ? image_css : "",
-        (config.ENABLE_TABLE) ? table_css : "",
-        (config.ENABLE_FENCE) ? fence_css : "",
-    ].join("\n")
+    const insertStyle = () => {
+        const css = [
+            bast_css,
+            (config.ENABLE_CONTENT) ? content_css : "",
+            (config.ENABLE_SIDE_BAR) ? side_bar_css : "",
+            (config.ENABLE_TOC) ? toc_css : "",
+            (config.ENABLE_IMAGE) ? image_css : "",
+            (config.ENABLE_TABLE) ? table_css : "",
+            (config.ENABLE_FENCE) ? fence_css : "",
+        ].join("\n")
 
-    const style = document.createElement('style');
-    style.type = 'text/css';
-    style.innerHTML = css;
-    document.getElementsByTagName("head")[0].appendChild(style);
+        const style = document.createElement('style');
+        style.id = "plugin-auto-number-style";
+        style.type = 'text/css';
+        style.innerHTML = css;
+        document.getElementsByTagName("head")[0].appendChild(style);
+    }
 
-    module.exports = {config};
+    insertStyle();
+
+    //////////////////////// 以下是声明式插件系统代码 ////////////////////////
+    const dynamicCallArgsGenerator = () => {
+        const ele = document.getElementById("plugin-auto-number-style");
+        let arg_name, arg_value;
+        if (ele) {
+            arg_name = "临时禁用";
+            arg_value = "disable";
+        } else {
+            arg_name = "重新启用";
+            arg_value = "enable";
+        }
+        return [{arg_name, arg_value}]
+    }
+
+    const call = type => {
+        if (type === "disable") {
+            const ele = document.getElementById("plugin-auto-number-style");
+            if (ele && ele.parentElement) {
+                ele.parentElement.removeChild(ele);
+            }
+        } else if (type === "enable") {
+            insertStyle();
+        }
+    }
+    module.exports = {
+        config,
+        call,
+        dynamicCallArgsGenerator,
+    };
 
     console.log("auto_number.js had been injected");
 })()

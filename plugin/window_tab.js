@@ -602,7 +602,32 @@
         })
     }
 
-    module.exports = {config};
+    //////////////////////// 以下是声明式插件系统代码 ////////////////////////
+    const dynamicCallArgsGenerator = () => {
+        let arg_name, arg_value;
+        if (config.LOCAL_OPEN) {
+            arg_name = "新标签打开文件";
+            arg_value = "new_tab_open";
+        } else {
+            arg_name = "当前标签打开文件";
+            arg_value = "local_open";
+        }
+        return [{arg_name, arg_value}]
+    }
+
+    const call = type => {
+        if (type === "new_tab_open") {
+            config.LOCAL_OPEN = false;
+        } else if (type === "local_open") {
+            config.LOCAL_OPEN = true;
+        }
+    }
+
+    module.exports = {
+        config,
+        call,
+        dynamicCallArgsGenerator,
+    };
 
     console.log("window_tab.js had been injected");
 })()

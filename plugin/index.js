@@ -19,7 +19,7 @@ window.onload = () => {
             fixed_name: "window_tab",
             src: "./plugin/window_tab.js",
             enable: true,
-            clickable: false,
+            clickable: true,
         },
         {
             name: "全局多关键字搜索",
@@ -75,12 +75,19 @@ window.onload = () => {
             fixed_name: "resize_image",
             src: "./plugin/resize_image.js",
             enable: true,
-            clickable: false,
+            clickable: true,
         },
         {
             name: "一键到顶",
             fixed_name: "go_top",
             src: "./plugin/go_top.js",
+            enable: true,
+            clickable: true,
+        },
+        {
+            name: "自动编号",
+            fixed_name: "auto_number",
+            src: "./plugin/auto_number.js",
             enable: true,
             clickable: true,
         },
@@ -117,13 +124,6 @@ window.onload = () => {
             fixed_name: "mermaid_replace",
             src: "./plugin/mermaid_replace/index.js",
             enable: false,
-            clickable: false,
-        },
-        {
-            name: "自动编号",
-            fixed_name: "auto_number",
-            src: "./plugin/auto_number.js",
-            enable: true,
             clickable: false,
         },
         {
