@@ -7,11 +7,12 @@
     (() => {
         const css = `
             #write .${config.CLASS_NAME}::after {
-                content: "{\\2026}";
+                display: initial;
+                content: "{\\2026}" !important;
                 margin: 0 0.6rem;
                 padding: 0 1px;
                 color: white;
-                opacity: 0.5;
+                opacity: 0.6;
                 background-color: gray;
             }
             `;
