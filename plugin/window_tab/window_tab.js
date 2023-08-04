@@ -289,9 +289,7 @@
     // 解决方法: 轮询设置scrollTop，当连续3次scrollTop不再改变，就判断content加载好了
     // 这种方法很不环保，很ugly。但是我确实也想不到在不修改frame.js的前提下该怎么做了
     const scrollContent = activeTab => {
-        if (!activeTab) {
-            return
-        }
+        if (!activeTab) return;
 
         let count = 0;
         const stopCount = 3;
@@ -618,7 +616,7 @@
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////
     const getTabFile = () => {
         const dirname = global.dirname || global.__dirname;
-        return Package.Path.join(dirname, "./plugin/window_tab/save_tab.json")
+        return Package.Path.join(dirname, "./plugin/window_tab/save_tabs.json")
     }
 
     const exitTabFile = () => {
@@ -682,16 +680,16 @@
         return args
     }
 
+    const callMap = {
+        new_tab_open: () => config.LOCAL_OPEN = false,
+        local_open: () => config.LOCAL_OPEN = true,
+        save_tabs: saveTabs,
+        open_save_tabs: openSaveTabs,
+    }
+
     const call = type => {
-        if (type === "new_tab_open") {
-            config.LOCAL_OPEN = false;
-        } else if (type === "local_open") {
-            config.LOCAL_OPEN = true;
-        } else if (type === "save_tabs") {
-            saveTabs();
-        } else if (type === "open_save_tabs") {
-            openSaveTabs();
-        }
+        const func = callMap[type];
+        func && func();
     }
 
     module.exports = {

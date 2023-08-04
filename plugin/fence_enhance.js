@@ -222,18 +222,26 @@
         }
     ];
 
-    const call = type => {
-        if (type === "fold_all") {
+    const callMap = {
+        fold_all: () => {
             document.querySelectorAll(".typora-fold-code:not(.folded)").forEach(ele => ele.click());
             config.FOLD_DEFAULT = true;
-        } else if (type === "expand_all") {
+        },
+        expand_all: () => {
             document.querySelectorAll(".typora-fold-code.folded").forEach(ele => ele.click());
             config.FOLD_DEFAULT = false;
-        } else if (type === "fold_current") {
+        },
+        fold_current: () => {
             dynamicUtil.target.querySelector(".typora-fold-code").click();
-        } else if (type === "copy_current") {
+        },
+        copy_current: () => {
             dynamicUtil.target.querySelector(".typora-copy-code").click();
         }
+    }
+
+    const call = type => {
+        const func = callMap[type];
+        func && func();
         dynamicUtil.target = null;
     }
 
