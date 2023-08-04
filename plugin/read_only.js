@@ -53,36 +53,7 @@
         // 脚本内部使用
         LOOP_DETECT_INTERVAL: 30,
         CLICK_CHECK_INTERVAL: 500,
-        FIRST_ENTER_MODE: true,
     };
-
-    const showNotification = () => {
-        if (!config.FIRST_ENTER_MODE) {
-            return
-        }
-
-        const notification = document.getElementById("md-notification");
-        let div = `
-            <p class="ty-enter-mode-warning-header"><strong>Read Only Mode</strong> 已开启。</p>
-            <p data-lg="Front" style="opacity: 0.7;font-size: 0.8rem;margin-top: -4px;">键入快捷键 Ctrl+Shift+R 关闭</p>
-            <p style="float: right;position: absolute;right: 32px;bottom: -2px;padding:0;background: inherit;">
-                <button id="ty-surpress-mode-warning-close-btn" class="btn btn-default btn-sm ty-read-only-close-btn" style="float:right;margin-right: -18px;margin-top:1px;" data-localize="Dismiss" data-lg="Front">关闭</button>
-            </p>
-        `
-        notification.style.zIndex = "902";
-        notification.insertAdjacentHTML('beforeend', div);
-        document.querySelector(".ty-read-only-close-btn").addEventListener("click", ev => notification.style.display = "none");
-        if (notification.style.display !== "block") {
-            notification.style.display = "block";
-        }
-        config.FIRST_ENTER_MODE = false;
-    }
-
-    const hideNotification = () => {
-        if (document.getElementById("md-notification").style.display !== "none") {
-            document.querySelector(".ty-read-only-close-btn").click();
-        }
-    }
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
@@ -98,10 +69,8 @@
     let lastClickTime = 0;
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
-            showNotification();
             if (File.isLocked) {
                 File.unlock();
-                hideNotification();
             } else {
                 File.lock();
             }

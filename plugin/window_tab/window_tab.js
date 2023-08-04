@@ -15,8 +15,18 @@
         CHANGE_NOTIFICATION_Z_INDEX: true,
 
         LOOP_DETECT_INTERVAL: 30,
-        CLOSE_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "w",
-        SWITCH_TAB_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "Tab",
+
+        CLOSE_HOTKEY: [
+            ev => metaKeyPressed(ev) && ev.key === "w",
+        ],
+        SWITCH_NEXT_TAB_HOTKEY: [
+            ev => metaKeyPressed(ev) && ev.key === "PageDown",
+            ev => metaKeyPressed(ev) && !ev.shiftKey && ev.key === "Tab",
+        ],
+        SWITCH_PREVIOUS_TAB_HOTKEY: [
+            ev => metaKeyPressed(ev) && ev.key === "PageUp",
+            ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "Tab",
+        ],
     };
 
     if (window._options.framelessWindow && config.HIDE_WINDOW_TITLE_BAR) {
@@ -199,6 +209,7 @@
 
     const Package = {
         Path: reqnode("path"),
+        Fs: reqnode("fs"),
     };
 
     const entities = {
@@ -278,9 +289,7 @@
     // 解决方法: 轮询设置scrollTop，当连续3次scrollTop不再改变，就判断content加载好了
     // 这种方法很不环保，很ugly。但是我确实也想不到在不修改frame.js的前提下该怎么做了
     const scrollContent = activeTab => {
-        if (!activeTab) {
-            return
-        }
+        if (!activeTab) return;
 
         let count = 0;
         const stopCount = 3;
@@ -313,6 +322,35 @@
         renderDOM(wantOpenPath);
     }
 
+    const switchTab = idx => {
+        tabUtil.activeIdx = idx;
+        openFile(tabUtil.tabs[tabUtil.activeIdx].path);
+    }
+
+    const previousTab = () => {
+        const idx = (tabUtil.activeIdx === 0) ? tabUtil.tabs.length - 1 : tabUtil.activeIdx - 1;
+        switchTab(idx);
+    }
+
+    const nextTab = () => {
+        const idx = (tabUtil.activeIdx === tabUtil.tabs.length - 1) ? 0 : tabUtil.activeIdx + 1;
+        switchTab(idx);
+    }
+
+    const closeTab = idx => {
+        tabUtil.tabs.splice(idx, 1);
+        if (tabUtil.tabs.length === 0) {
+            closeWindow();
+            return
+        }
+        if (tabUtil.activeIdx !== 0 && idx <= tabUtil.activeIdx) {
+            tabUtil.activeIdx--;
+        }
+        switchTab(tabUtil.activeIdx);
+    }
+
+    const closeActiveTab = () => closeTab(tabUtil.activeIdx);
+
     const _timer = setInterval(() => {
         if (File) {
             clearInterval(_timer);
@@ -343,9 +381,7 @@
     entities.tabBar.addEventListener("click", ev => {
         const closeButton = ev.target.closest(".close-button");
         const tabContainer = ev.target.closest(".tab-container");
-        if (!closeButton && !tabContainer) {
-            return
-        }
+        if (!closeButton && !tabContainer) return;
 
         ev.stopPropagation();
         ev.preventDefault();
@@ -354,78 +390,52 @@
         const idx = parseInt(tab.getAttribute("idx"));
 
         if (metaKeyPressed(ev)) {
-            const _path = tabUtil.tabs[idx].path;
-            openFileNewWindow(_path, false);
-            return
-        }
-
-        if (closeButton) {
-            tabUtil.tabs.splice(idx, 1);
-            if (tabUtil.tabs.length === 0) {
-                closeWindow();
-                return
-            }
-            if (tabUtil.activeIdx !== 0) {
-                tabUtil.activeIdx--;
-            }
+            openFileNewWindow(tabUtil.tabs[idx].path, false);
+        } else if (closeButton) {
+            closeTab(idx);
         } else {
-            tabUtil.activeIdx = idx;
+            switchTab(idx);
         }
-        openFile(tabUtil.tabs[tabUtil.activeIdx].path);
     })
 
     entities.tabBar.addEventListener("wheel", ev => {
         const target = ev.target.closest("#plugin-window-tab .tab-bar");
-        if (!target) {
-            return
-        }
+        if (!target) return;
+
         if (metaKeyPressed(ev)) {
-            target.dispatchEvent(new KeyboardEvent("keydown", {
-                key: "Tab", code: "Tab", ctrlKey: true, metaKey: true, shiftKey: (ev.deltaY < 0),
-            }))
+            (ev.deltaY < 0) ? previousTab() : nextTab();
         } else {
             target.scrollLeft += ev.deltaY;
         }
     })
 
+    const hotkeyList = [config.SWITCH_NEXT_TAB_HOTKEY, config.SWITCH_PREVIOUS_TAB_HOTKEY, config.CLOSE_HOTKEY];
+    const opList = [nextTab, previousTab, closeActiveTab]
+
     window.addEventListener("keydown", ev => {
-        const close = config.CLOSE_HOTKEY(ev);
-        const switchTab = config.SWITCH_TAB_HOTKEY(ev);
-        if (!close && !switchTab) {
-            return
-        }
-
-        ev.preventDefault();
-        ev.stopPropagation();
-
-        if (close) {
-            const activeTab = entities.tabBar.querySelector(".tab-container.active");
-            if (activeTab) {
-                activeTab.querySelector(".close-button").click();
+        for (let idx = 0; idx < hotkeyList.length; idx++) {
+            for (let hotkey of hotkeyList[idx]) {
+                if (hotkey(ev)) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    opList[idx]();
+                    return
+                }
             }
-        } else {
-            if (ev.shiftKey) {
-                tabUtil.activeIdx = (tabUtil.activeIdx === 0) ? tabUtil.tabs.length - 1 : tabUtil.activeIdx - 1;
-            } else {
-                tabUtil.activeIdx = (tabUtil.activeIdx === tabUtil.tabs.length - 1) ? 0 : tabUtil.activeIdx + 1;
-            }
-            openFile(tabUtil.tabs[tabUtil.activeIdx].path);
         }
     }, true)
 
-    entities.content.addEventListener("scroll", ev => {
+    entities.content.addEventListener("scroll", () => {
         tabUtil.tabs[tabUtil.activeIdx].scrollTop = entities.content.scrollTop;
     })
 
     document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
         const target = ev.target.closest(".typora-quick-open-item");
-        if (!target) {
-            return
-        }
+        if (!target) return;
+
         // 将原先的click行为改成ctrl+click
-        if (metaKeyPressed(ev)) {
-            return
-        }
+        if (metaKeyPressed(ev)) return;
+
         ev.preventDefault();
         ev.stopPropagation();
         const filePath = target.getAttribute("data-path");
@@ -604,24 +614,82 @@
     }
 
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////
-    const dynamicCallArgsGenerator = () => {
-        let arg_name, arg_value;
-        if (config.LOCAL_OPEN) {
-            arg_name = "新标签打开文件";
-            arg_value = "new_tab_open";
-        } else {
-            arg_name = "当前标签打开文件";
-            arg_value = "local_open";
+    const getTabFile = () => {
+        const dirname = global.dirname || global.__dirname;
+        return Package.Path.join(dirname, "./plugin/window_tab/save_tabs.json")
+    }
+
+    const exitTabFile = () => {
+        const filepath = getTabFile();
+        try {
+            Package.Fs.accessSync(filepath, Package.Fs.constants.F_OK);
+            return true
+        } catch (err) {
         }
-        return [{arg_name, arg_value}]
+    }
+
+    const saveTabs = () => {
+        const dataset = tabUtil.tabs.map((tab, idx) => {
+            return {
+                idx: idx,
+                path: tab.path,
+                active: idx === tabUtil.activeIdx,
+                scrollTop: tab.scrollTop,
+            }
+        })
+        const filepath = getTabFile();
+        const str = JSON.stringify({"save_tabs": dataset}, null, "\t");
+        Package.Fs.writeFileSync(filepath, str);
+    }
+
+    const openSaveTabs = () => {
+        const filepath = getTabFile();
+        Package.Fs.readFile(filepath, 'utf8', (error, data) => {
+            if (error) {
+                window.alert(error);
+                return;
+            }
+            const dataset = JSON.parse(data);
+            const tabs = dataset["save_tabs"];
+
+            tabs.forEach(tab => {
+                const existTab = tabUtil.tabs.filter(t => t.path === tab.path)[0];
+                if (!existTab) {
+                    tabUtil.tabs.push({path: tab.path, scrollTop: tab.scrollTop});
+                } else {
+                    existTab.scrollTop = tab.scrollTop;
+                }
+            })
+            switchTab(tabUtil.activeIdx);
+        })
+    }
+
+    const dynamicCallArgsGenerator = () => {
+        let args = [];
+        if (!exitTabFile()) {
+            args.push({arg_name: "保存所有的标签页", arg_value: "save_tabs"});
+        } else {
+            args.push({arg_name: "覆盖保存的标签页", arg_value: "save_tabs"});
+            args.push({arg_name: "打开保存的标签页", arg_value: "open_save_tabs"});
+        }
+        if (config.LOCAL_OPEN) {
+            args.push({arg_name: "新标签打开文件", arg_value: "new_tab_open"});
+        } else {
+            args.push({arg_name: "当前标签打开文件", arg_value: "local_open"});
+        }
+        return args
+    }
+
+    const callMap = {
+        new_tab_open: () => config.LOCAL_OPEN = false,
+        local_open: () => config.LOCAL_OPEN = true,
+        save_tabs: saveTabs,
+        open_save_tabs: openSaveTabs,
     }
 
     const call = type => {
-        if (type === "new_tab_open") {
-            config.LOCAL_OPEN = false;
-        } else if (type === "local_open") {
-            config.LOCAL_OPEN = true;
-        }
+        const func = callMap[type];
+        func && func();
     }
 
     module.exports = {
