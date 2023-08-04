@@ -173,6 +173,7 @@
             display: none;
         }`
         const style = document.createElement('style');
+        style.id = "plugin-search-multi-style";
         style.type = 'text/css';
         style.innerHTML = modal_css;
         document.getElementsByTagName("head")[0].appendChild(style);

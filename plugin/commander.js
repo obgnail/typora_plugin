@@ -109,6 +109,7 @@
         }
         `
         const style = document.createElement('style');
+        style.id = "plugin-commander-style";
         style.type = 'text/css';
         style.innerHTML = modal_css;
         document.getElementsByTagName("head")[0].appendChild(style);
