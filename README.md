@@ -30,7 +30,7 @@
 1. 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
 2. 每个功能都有对应的配置，且每个配置选项都有注释说明。可以按需修改对应 JS 文件里的 config。
 
-> 如果各位有其他的需求，欢迎提 issue。
+> 如果各位有其他的需求，或发现 BUG，欢迎提 issue。 : )
 
 
 
@@ -99,13 +99,13 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
-## 插件/脚本使用说明
+## 插件使用说明
 
-自 1.1.0 版本以后，所有的插件都支持 `正文区域鼠标右键-启用插件` 中直接调用，再也不必记快捷键啦。
+从 Typora Plugin 1.1.0 版本开始，所有的插件都支持 `正文区域鼠标右键-启用插件` 中直接调用，再也不必记快捷键啦。
 
 > 同时需要注意，**不同光标位置调出来的菜单会有所不同**。
 
-比如 `章节折叠` 功能需要光标定位到标题上，才会出现更多的选项。
+比如 `章节折叠` 功能需要光标定位到标题上，才会出现更多的功能选项。
 
 同理 `代码块增强` 功能需要光标定位到代码块中。其他功能需要您自己去探索发现。
 
@@ -121,8 +121,8 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 - `鼠标置于标签页处，ctrl+鼠标滚轮`、`ctrl+shift+tab`、`ctrl+tab`：切换标签
 - `ctrl+w`：关闭标签
-- `ctrl+click 标签页`、`向下拖拽标签`：新窗口打开
-- 拖拽：排序标签
+- `ctrl+click 标签`、`向下拖拽标签`：新窗口打开
+- `拖拽`：排序标签
 
 ![new_window_tab](assets/new_window_tab.gif)
 
@@ -163,7 +163,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 > 注意：当你鼠标点击文档内容时，会自动退出高亮状态。**这是 Typora 本身的限制导致的**：高亮功能是通过添加标签实现的，但是为了保证数据安全，`#write` 标签不允许手动添加任何标签，所以需要在编辑的时候 remove 掉之前添加的标签。（你可以试试 Typora 自身的 ctrl+F 搜索，在搜索关键字后，点击任意地方原先高亮的地方也会消失）
 
-> 注意：此脚本在使用期间会消耗大量内存，**不建议在大文件中使用**。
+> 注意：此脚本在使用期间会消耗较多内存，**不建议在大文件中使用**。
 
 
 
@@ -189,7 +189,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ![md_padding](assets/md_padding.gif)
 
-> NOTE：**此脚本会直接修改文件**。虽然支持 Ctrl+Z 还原，还是建议提前备份。
+> NOTE：**此脚本会直接修改文件**。支持 Ctrl+Z 还原。
 
 
 
@@ -197,7 +197,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ![fence_enhance](assets/fence_enhance.png)
 
-> Fold、Copy 可选，如不需要，可以关闭任意一个。
+> Fold、Copy 功能可选，如不需要，可以关闭任意一个。
 
 > fence_enhance.js 易于扩展，你可以根据自己的需要添加功能，比如显示代码块编程语言。
 
@@ -243,6 +243,31 @@ const BUILTIN = [
 
 
 
+### auto_number：自动编号
+
+![auto_number](assets/auto_number.png)
+
+支持编号（皆可单独打开/关闭）：
+
+1. 章节
+2. 大纲
+3. TOC
+4. 表格
+5. 图片
+6. 代码块
+
+> 注意：通过注入 CSS 实现此功能，有可能会与你使用的 theme 冲突。
+
+
+
+### outline：以表格、图片、代码块形式的大纲
+
+使用方式：右键菜单 -> 启用插件 ->  类别大纲
+
+![outline](assets/outline.gif)
+
+
+
 ### resize_table：拖动调整表格大小
 
 `ctrl+鼠标拖动`：修改表格的行高列宽。
@@ -262,31 +287,6 @@ const BUILTIN = [
 ### file_counter：显示文件数
 
 ![file_count](assets/file_count.png)
-
-
-
-### auto_number：自动编号
-
-![auto_number](assets/auto_number.png)
-
-支持编号（皆可单独打开/关闭）：
-
-1. 章节
-2. 大纲
-3. TOC
-4. 表格
-5. 图片
-6. 代码块
-
-> 注意：通过注入 CSS 实现功能，有可能会与你使用的 theme 冲突。
-
-
-
-### outline：以表格、图片、代码块形式的大纲
-
-使用方式：右键菜单 -> 启用插件 -> 文档大纲
-
-![outline](assets/outline.gif)
 
 
 
@@ -342,42 +342,16 @@ const BUILTIN = [
 
 ### 脚本会失效吗?
 
-Typora 是闭源软件，要是有一天作者改了代码，是不是就不能用了？从原理来说，是的。实际上我是解包 Typora，看了部分源码才实现了这些功能。
+~~Typora 是闭源软件，要是有一天作者改了代码，是不是就不能用了？从原理来说，是的。实际上我是解包 Typora，看了部分源码才实现了这些功能。~~
 
-同时值得注意的是， Typora 的历史包袱还蛮重的。比如说 github 已经有无数个 Typora theme，这决定了它的页面它不可能大改，就算改变也大概率是向下兼容的。
+~~同时值得注意的是， Typora 的历史包袱还蛮重的。比如说 github 已经有无数个 Typora theme，这决定了它的页面它不可能大改，就算改变也大概率是向下兼容的。~~
 
-具体来看：
+~~具体来看：~~
 
-- search_multi、resize_table、read_only、truncate_text 等功能几乎不依赖 Typora 实现。如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效，所以应该会 **保持长时间的有效性**。而且就算失效了也容易找到兼容方案。
+- ~~search_multi、resize_table、read_only、truncate_text 等功能几乎不依赖 Typora 实现。如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效，所以应该会 **保持长时间的有效性**。而且就算失效了也容易找到兼容方案。~~
 - ~~比较特殊的是 window_tab 和 window_tab_drag，这个功能本质是入侵式脚本；通过原型链攻击，将后端 electron 对象劫持到前端来，该脚本通过该手段成功调用了 Typora 的核心实现，并且这个核心实现同时被大量运用，历史包袱一样很大。当然了，劫持漏洞也有可能被修复。**如果 Typora 或 electron 有了重构级别的更新，那么大概率会失效。**~~（旧版本已被废弃，新版本无此问题）
 
-
-
-### 为什么要区分 old_window_tab 和 old_window_tab_drag ?
-
-理由是：**支持排序会复杂很多**。
-
-Typora 每开一个窗口，就会创建一个 electron BrowserWindow 实例，而且每个实例都有自己的 web 页面和渲染进程。标签管理本来是应该在 electron 后端实现的，现在强行要在前端实现，只能使用劫持后端关键对象，然后在每个窗口绘制这种非常绿皮的方式实现。
-
-排序意味着状态的引入 —— 当创建第五个窗口的时候，新建的窗口必须要知道前面四个窗口的顺序：
-
-- 如果此功能在后端实现的话就很好办，搞一个全局对象保存现有的窗口列表，创建窗口的时候传给他。
-- 如果在前端实现的话就很痛苦，如上所述，每个窗口都有自己的 web 页面和渲染进程，你无法跨进程获取变量。
-
-最可行的方案是使用 localStorage 存储当前的窗口列表。但是我希望脚本是无状态的，每次打开都是一次全新开始 —— 如果 Typora 崩溃，处在 localStroge 里的脏数据就会影响下次启动。
-
-我采取的方法是应答。第五个窗口创建的时候就会通过 IPC 去询问第四个窗口当前的窗口列表，等第四个窗口回复之后，第五个窗口进行数据处理，再将新的窗口列表通知给所有的窗口，让它们重新渲染。
-
-**这种方式就是带着脚铐跳舞，是奇技淫巧，绿皮中的绿皮**。
-
-
-
-### window_tab 和 old_window_tab 区别 ?
-
-- old_window_tab 是通过劫持 electron，获取到后端的 BrowserWindow 实例实现的，是真正意义的标签管理。但是此方法已在高版本的 Typora 失效。所以 old_window_tab 已被废弃。
-- window_tab 是 **强行将多窗口合并到单一窗口实现的**。实现原理是：记录每一个标签对应的文档路径和文档浏的 scrollTop。每当你点击一个标签，其实是重新打开文件，然后在定位到离开文档时的 scrollTop。其后果就是：
-  1. 不能存储每个打开的文档（虽然有缓存）。
-  2. 与 Typora 诸多冲突，为了解决这些冲突，需要给 frame.js 的很多函数注入修改逻辑。降低了系统稳定性。
+> 总结：理论上能保持长时间有效。且我在维护中。
 
 
 
