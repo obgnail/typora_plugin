@@ -15,8 +15,18 @@
         CHANGE_NOTIFICATION_Z_INDEX: true,
 
         LOOP_DETECT_INTERVAL: 30,
-        CLOSE_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "w",
-        SWITCH_TAB_HOTKEY: ev => metaKeyPressed(ev) && ev.key === "Tab",
+
+        CLOSE_HOTKEY: [
+            ev => metaKeyPressed(ev) && ev.key === "w",
+        ],
+        SWITCH_NEXT_TAB_HOTKEY: [
+            ev => metaKeyPressed(ev) && ev.key === "PageDown",
+            ev => metaKeyPressed(ev) && !ev.shiftKey && ev.key === "Tab",
+        ],
+        SWITCH_PREVIOUS_TAB_HOTKEY: [
+            ev => metaKeyPressed(ev) && ev.key === "PageUp",
+            ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "Tab",
+        ],
     };
 
     if (window._options.framelessWindow && config.HIDE_WINDOW_TITLE_BAR) {
@@ -313,6 +323,23 @@
         renderDOM(wantOpenPath);
     }
 
+    const closeActiveTab = () => {
+        const activeTab = entities.tabBar.querySelector(".tab-container.active");
+        if (activeTab) {
+            activeTab.querySelector(".close-button").click();
+        }
+    }
+
+    const previousTab = () => {
+        tabUtil.activeIdx = (tabUtil.activeIdx === 0) ? tabUtil.tabs.length - 1 : tabUtil.activeIdx - 1;
+        openFile(tabUtil.tabs[tabUtil.activeIdx].path);
+    }
+
+    const nextTab = () => {
+        tabUtil.activeIdx = (tabUtil.activeIdx === tabUtil.tabs.length - 1) ? 0 : tabUtil.activeIdx + 1;
+        openFile(tabUtil.tabs[tabUtil.activeIdx].path);
+    }
+
     const _timer = setInterval(() => {
         if (File) {
             clearInterval(_timer);
@@ -343,9 +370,7 @@
     entities.tabBar.addEventListener("click", ev => {
         const closeButton = ev.target.closest(".close-button");
         const tabContainer = ev.target.closest(".tab-container");
-        if (!closeButton && !tabContainer) {
-            return
-        }
+        if (!closeButton && !tabContainer) return;
 
         ev.stopPropagation();
         ev.preventDefault();
@@ -388,28 +413,19 @@
         }
     })
 
+    const hotkeyList = [config.SWITCH_NEXT_TAB_HOTKEY, config.SWITCH_PREVIOUS_TAB_HOTKEY, config.CLOSE_HOTKEY];
+    const opList = [nextTab, previousTab, closeActiveTab]
+
     window.addEventListener("keydown", ev => {
-        const close = config.CLOSE_HOTKEY(ev);
-        const switchTab = config.SWITCH_TAB_HOTKEY(ev);
-        if (!close && !switchTab) {
-            return
-        }
-
-        ev.preventDefault();
-        ev.stopPropagation();
-
-        if (close) {
-            const activeTab = entities.tabBar.querySelector(".tab-container.active");
-            if (activeTab) {
-                activeTab.querySelector(".close-button").click();
+        for (let idx = 0; idx < hotkeyList.length; idx++) {
+            for (let hotkey of hotkeyList[idx]) {
+                if (hotkey(ev)) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    opList[idx]();
+                    return
+                }
             }
-        } else {
-            if (ev.shiftKey) {
-                tabUtil.activeIdx = (tabUtil.activeIdx === 0) ? tabUtil.tabs.length - 1 : tabUtil.activeIdx - 1;
-            } else {
-                tabUtil.activeIdx = (tabUtil.activeIdx === tabUtil.tabs.length - 1) ? 0 : tabUtil.activeIdx + 1;
-            }
-            openFile(tabUtil.tabs[tabUtil.activeIdx].path);
         }
     }, true)
 
@@ -419,13 +435,11 @@
 
     document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
         const target = ev.target.closest(".typora-quick-open-item");
-        if (!target) {
-            return
-        }
+        if (!target) return;
+
         // 将原先的click行为改成ctrl+click
-        if (metaKeyPressed(ev)) {
-            return
-        }
+        if (metaKeyPressed(ev)) return;
+
         ev.preventDefault();
         ev.stopPropagation();
         const filePath = target.getAttribute("data-path");
