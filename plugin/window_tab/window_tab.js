@@ -209,6 +209,7 @@
 
     const Package = {
         Path: reqnode("path"),
+        Fs: reqnode("fs"),
     };
 
     const entities = {
@@ -615,16 +616,70 @@
     }
 
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////
-    const dynamicCallArgsGenerator = () => {
-        let arg_name, arg_value;
-        if (config.LOCAL_OPEN) {
-            arg_name = "新标签打开文件";
-            arg_value = "new_tab_open";
-        } else {
-            arg_name = "当前标签打开文件";
-            arg_value = "local_open";
+    const getTabFile = () => {
+        const dirname = global.dirname || global.__dirname;
+        return Package.Path.join(dirname, "./plugin/window_tab/save_tab.json")
+    }
+
+    const exitTabFile = () => {
+        const filepath = getTabFile();
+        try {
+            Package.Fs.accessSync(filepath, Package.Fs.constants.F_OK);
+            return true
+        } catch (err) {
         }
-        return [{arg_name, arg_value}]
+    }
+
+    const saveTabs = () => {
+        const dataset = tabUtil.tabs.map((tab, idx) => {
+            return {
+                idx: idx,
+                path: tab.path,
+                active: idx === tabUtil.activeIdx,
+                scrollTop: tab.scrollTop,
+            }
+        })
+        const filepath = getTabFile();
+        const str = JSON.stringify({"save_tabs": dataset}, null, "\t");
+        Package.Fs.writeFileSync(filepath, str);
+    }
+
+    const openSaveTabs = () => {
+        const filepath = getTabFile();
+        Package.Fs.readFile(filepath, 'utf8', (error, data) => {
+            if (error) {
+                window.alert(error);
+                return;
+            }
+            const dataset = JSON.parse(data);
+            const tabs = dataset["save_tabs"];
+
+            tabs.forEach(tab => {
+                const existTab = tabUtil.tabs.filter(t => t.path === tab.path)[0];
+                if (!existTab) {
+                    tabUtil.tabs.push({path: tab.path, scrollTop: tab.scrollTop});
+                } else {
+                    existTab.scrollTop = tab.scrollTop;
+                }
+            })
+            switchTab(tabUtil.activeIdx);
+        })
+    }
+
+    const dynamicCallArgsGenerator = () => {
+        let args = [];
+        if (!exitTabFile()) {
+            args.push({arg_name: "保存所有的标签页", arg_value: "save_tabs"});
+        } else {
+            args.push({arg_name: "覆盖保存的标签页", arg_value: "save_tabs"});
+            args.push({arg_name: "打开保存的标签页", arg_value: "open_save_tabs"});
+        }
+        if (config.LOCAL_OPEN) {
+            args.push({arg_name: "新标签打开文件", arg_value: "new_tab_open"});
+        } else {
+            args.push({arg_name: "当前标签打开文件", arg_value: "local_open"});
+        }
+        return args
     }
 
     const call = type => {
@@ -632,6 +687,10 @@
             config.LOCAL_OPEN = false;
         } else if (type === "local_open") {
             config.LOCAL_OPEN = true;
+        } else if (type === "save_tabs") {
+            saveTabs();
+        } else if (type === "open_save_tabs") {
+            openSaveTabs();
         }
     }
 

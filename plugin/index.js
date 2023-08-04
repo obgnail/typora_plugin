@@ -17,7 +17,7 @@ window.onload = () => {
         {
             name: "标签页管理",
             fixed_name: "window_tab",
-            src: "./plugin/window_tab.js",
+            src: "./plugin/window_tab/window_tab.js",
             enable: true,
             clickable: true,
         },
