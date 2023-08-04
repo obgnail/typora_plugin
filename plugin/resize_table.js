@@ -10,6 +10,7 @@
         if (config.REMOVE_MIX_WIDTH) {
             const css = `table.md-table td { min-width: 1px !important; }`;
             const style = document.createElement('style');
+            style.id = "plugin-resize-table-style";
             style.type = 'text/css';
             style.innerHTML = css;
             document.getElementsByTagName("head")[0].appendChild(style);

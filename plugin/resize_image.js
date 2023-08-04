@@ -2,6 +2,8 @@
     const config = {
         // 滚动的放缩倍率
         SCALE: 0.1,
+        // 图片水平位置：center/left/right
+        IMAGE_ALIGN: "center",
     }
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
@@ -13,8 +15,15 @@
 
     const zoom = (target, width, zoomOut, scale) => {
         width = zoomOut ? width * (1 - scale) : width * (1 + config.SCALE);
-        width = Math.min(width, target.parentElement.offsetWidth);
+        const maxWidth = target.parentElement.offsetWidth
+        width = Math.min(width, maxWidth);
         target.style.width = width + "px";
+
+        if (config.IMAGE_ALIGN !== "center") {
+            target.setAttribute("align", config.IMAGE_ALIGN);
+            const margin = (config.IMAGE_ALIGN === "left") ? "marginRight" : "marginLeft";
+            target.style[margin] = maxWidth - width + "px";
+        }
     }
 
     document.getElementById("write").addEventListener("wheel", ev => {
