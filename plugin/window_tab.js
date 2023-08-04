@@ -323,22 +323,34 @@
         renderDOM(wantOpenPath);
     }
 
-    const closeActiveTab = () => {
-        const activeTab = entities.tabBar.querySelector(".tab-container.active");
-        if (activeTab) {
-            activeTab.querySelector(".close-button").click();
-        }
+    const switchTab = idx => {
+        tabUtil.activeIdx = idx;
+        openFile(tabUtil.tabs[tabUtil.activeIdx].path);
     }
 
     const previousTab = () => {
-        tabUtil.activeIdx = (tabUtil.activeIdx === 0) ? tabUtil.tabs.length - 1 : tabUtil.activeIdx - 1;
-        openFile(tabUtil.tabs[tabUtil.activeIdx].path);
+        const idx = (tabUtil.activeIdx === 0) ? tabUtil.tabs.length - 1 : tabUtil.activeIdx - 1;
+        switchTab(idx);
     }
 
     const nextTab = () => {
-        tabUtil.activeIdx = (tabUtil.activeIdx === tabUtil.tabs.length - 1) ? 0 : tabUtil.activeIdx + 1;
-        openFile(tabUtil.tabs[tabUtil.activeIdx].path);
+        const idx = (tabUtil.activeIdx === tabUtil.tabs.length - 1) ? 0 : tabUtil.activeIdx + 1;
+        switchTab(idx);
     }
+
+    const closeTab = idx => {
+        tabUtil.tabs.splice(idx, 1);
+        if (tabUtil.tabs.length === 0) {
+            closeWindow();
+            return
+        }
+        if (tabUtil.activeIdx !== 0 && idx <= tabUtil.activeIdx) {
+            tabUtil.activeIdx--;
+        }
+        switchTab(tabUtil.activeIdx);
+    }
+
+    const closeActiveTab = () => closeTab(tabUtil.activeIdx);
 
     const _timer = setInterval(() => {
         if (File) {
@@ -379,35 +391,20 @@
         const idx = parseInt(tab.getAttribute("idx"));
 
         if (metaKeyPressed(ev)) {
-            const _path = tabUtil.tabs[idx].path;
-            openFileNewWindow(_path, false);
-            return
-        }
-
-        if (closeButton) {
-            tabUtil.tabs.splice(idx, 1);
-            if (tabUtil.tabs.length === 0) {
-                closeWindow();
-                return
-            }
-            if (tabUtil.activeIdx !== 0) {
-                tabUtil.activeIdx--;
-            }
+            openFileNewWindow(tabUtil.tabs[idx].path, false);
+        } else if (closeButton) {
+            closeTab(idx);
         } else {
-            tabUtil.activeIdx = idx;
+            switchTab(idx);
         }
-        openFile(tabUtil.tabs[tabUtil.activeIdx].path);
     })
 
     entities.tabBar.addEventListener("wheel", ev => {
         const target = ev.target.closest("#plugin-window-tab .tab-bar");
-        if (!target) {
-            return
-        }
+        if (!target) return;
+
         if (metaKeyPressed(ev)) {
-            target.dispatchEvent(new KeyboardEvent("keydown", {
-                key: "Tab", code: "Tab", ctrlKey: true, metaKey: true, shiftKey: (ev.deltaY < 0),
-            }))
+            (ev.deltaY < 0) ? previousTab() : nextTab();
         } else {
             target.scrollLeft += ev.deltaY;
         }
@@ -429,7 +426,7 @@
         }
     }, true)
 
-    entities.content.addEventListener("scroll", ev => {
+    entities.content.addEventListener("scroll", () => {
         tabUtil.tabs[tabUtil.activeIdx].scrollTop = entities.content.scrollTop;
     })
 
