@@ -141,8 +141,6 @@
         if (list) {
             list.forEach(ele => trigger(ele, collapsed));
         }
-
-        dynamicUtil.target = null;
     }
 
     const call = type => {

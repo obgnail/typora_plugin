@@ -36,7 +36,7 @@ window.onload = () => {
             clickable: true,
         },
         {
-            name: "表格大小调整",
+            name: "表格调整",
             fixed_name: "resize_table",
             src: "./plugin/resize_table.js",
             enable: true,
@@ -71,7 +71,7 @@ window.onload = () => {
             clickable: true,
         },
         {
-            name: "图片大小调整",
+            name: "图片调整",
             fixed_name: "resize_image",
             src: "./plugin/resize_image.js",
             enable: true,

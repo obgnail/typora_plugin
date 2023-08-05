@@ -242,7 +242,6 @@
     const call = type => {
         const func = callMap[type];
         func && func();
-        dynamicUtil.target = null;
     }
 
     module.exports = {
