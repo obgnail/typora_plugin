@@ -27,7 +27,7 @@
 | 17   | mermaid_replace    | 替换 mermaid 组件                  | ×        |
 | 18   | old_window_tab     | 标签页管理（已废弃）               | ×        |
 
-1. 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除文件即可**。
+1. 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除/改名文件即可**。
 2. 每个功能都有对应的配置，且配置选项都有注释说明。可以按需修改对应 JS 文件里的 config。
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
@@ -117,7 +117,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### window_tab：标签页管理
 
-- `鼠标置于标签页处，ctrl+鼠标滚轮`、`ctrl+shift+tab`、`ctrl+tab`：切换标签
+- `鼠标置于标签页处，ctrl+滚轮`、`ctrl+shift+tab`、`ctrl+tab`、`ctrl+PgUp`、`ctrl+PgDn`：切换标签
 - `ctrl+w`：关闭标签
 - `ctrl+click 标签`、`向下拖拽标签`：新窗口打开
 - `拖拽`：排序标签
@@ -243,9 +243,9 @@ const BUILTIN = [
 
 ![auto_number](assets/auto_number.png)
 
-支持编号（皆可单独打开/关闭）：
+支持编号的组件（皆可单独打开/关闭）：
 
-1. 章节
+1. 标题
 2. 大纲
 3. TOC
 4. 表格

@@ -249,10 +249,10 @@
         const ele = document.getElementById("plugin-auto-number-style");
         let arg_name, arg_value;
         if (ele) {
-            arg_name = "临时禁用";
+            arg_name = "禁用";
             arg_value = "disable";
         } else {
-            arg_name = "重新启用";
+            arg_name = "启用";
             arg_value = "enable";
         }
         return [{arg_name, arg_value}]
