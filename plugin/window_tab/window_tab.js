@@ -297,7 +297,7 @@
         const stopCount = 3;
         const scrollTop = activeTab.scrollTop;
         const _timer = setInterval(() => {
-            const filePath = File && File.filePath || File && File.bundle && File.bundle.filePath;
+            const filePath = getFilePath();
             if (filePath === activeTab.path && entities.content.scrollTop !== scrollTop) {
                 entities.content.scrollTop = scrollTop;
                 count = 0;
@@ -373,7 +373,7 @@
 
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
 
-            const filePath = File.filePath || File.bundle && File.bundle.filePath;
+            const filePath = getFilePath();
             if (filePath) {
                 openTab(filePath);
             }
