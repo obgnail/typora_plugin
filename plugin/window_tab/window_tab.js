@@ -224,6 +224,8 @@
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
+    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
+
     // 新窗口打开
     const openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
     // 新标签页打开
@@ -673,9 +675,10 @@
             args.push({arg_name: "打开保存的标签页", arg_value: "open_save_tabs"});
         }
         if (config.LOCAL_OPEN) {
-            args.push({arg_name: "新标签打开文件", arg_value: "new_tab_open"});
-        } else {
-            args.push({arg_name: "当前标签打开文件", arg_value: "local_open"});
+            args.push({arg_name: "在新标签打开文件", arg_value: "new_tab_open"});
+            // 空白标签不允许当前标签打开
+        } else if (getFilePath()) {
+            args.push({arg_name: "在当前标签打开文件", arg_value: "local_open"});
         }
         return args
     }
