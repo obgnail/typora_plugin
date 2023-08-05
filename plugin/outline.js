@@ -12,6 +12,8 @@
             image: "Figure",
             table: "Table",
         },
+        // 打开文件后自动检测生成大纲
+        AUTO_REFRESH_WHEN_OPEN_FILE: true,
 
         LOOP_DETECT_INTERVAL: 30,
     };
@@ -352,7 +354,7 @@
                     return result;
                 };
             }
-            const after = () => (entities.modal.style.display === "block") && setTimeout(refresh, 300)
+            const after = () => (config.AUTO_REFRESH_WHEN_OPEN_FILE && entities.modal.style.display === "block") && setTimeout(refresh, 300)
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
         }
     }, config.LOOP_DETECT_INTERVAL);

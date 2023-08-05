@@ -144,8 +144,7 @@
             if (menu.children().length === 0) {
                 appendDummyThirdLi(menu);
             }
-            const target = t.find(`span[data-lg="Menu"]`);
-            if (target.length) {
+            if (t.find(`span[data-lg="Menu"]`).length) {
                 show(menu, t);
             } else {
                 document.querySelector("#plugin-menu .plugin-has-args").classList.remove("active");

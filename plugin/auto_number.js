@@ -18,7 +18,9 @@
             table: "Table",
             image: "Figure",
             fence: "Fence",
-        }
+        },
+
+        id: "plugin-auto-number-style"
     }
 
     const bast_css = `
@@ -185,7 +187,17 @@
             z-index: 9;
         }`
 
-    const insertStyle = () => {
+    const disableStyle = () => {
+        const ele = document.getElementById(config.id);
+        ele && ele.parentElement && ele.parentElement.removeChild(ele);
+    }
+
+    const insertStyle = toggle => {
+        if (toggle) {
+            config[toggle] = !config[toggle];
+            disableStyle();
+        }
+
         const css = [
             bast_css,
             (config.ENABLE_CONTENT) ? content_css : "",
@@ -197,7 +209,7 @@
         ].join("\n")
 
         const style = document.createElement('style');
-        style.id = "plugin-auto-number-style";
+        style.id = config.id;
         style.type = 'text/css';
         style.innerHTML = css;
         document.getElementsByTagName("head")[0].appendChild(style);
@@ -206,6 +218,33 @@
     insertStyle();
 
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////
+    const callArgs = [
+        {
+            arg_name: "禁用/启用大纲自动编号",
+            arg_value: "set_outline"
+        },
+        {
+            arg_name: "禁用/启用正文自动编号",
+            arg_value: "set_content"
+        },
+        {
+            arg_name: "禁用/启用TOC自动编号",
+            arg_value: "set_toc"
+        },
+        {
+            arg_name: "禁用/启用表格自动编号",
+            arg_value: "set_table"
+        },
+        {
+            arg_name: "禁用/启用图片自动编号",
+            arg_value: "set_image"
+        },
+        {
+            arg_name: "禁用/启用代码块自动编号",
+            arg_value: "set_fence"
+        },
+    ];
+
     const dynamicCallArgsGenerator = () => {
         const ele = document.getElementById("plugin-auto-number-style");
         let arg_name, arg_value;
@@ -219,19 +258,25 @@
         return [{arg_name, arg_value}]
     }
 
+    const callMap = {
+        disable: disableStyle,
+        enable: insertStyle,
+        set_outline: () => insertStyle("ENABLE_SIDE_BAR"),
+        set_content: () => insertStyle("ENABLE_CONTENT"),
+        set_toc: () => insertStyle("ENABLE_TOC"),
+        set_table: () => insertStyle("ENABLE_TABLE"),
+        set_image: () => insertStyle("ENABLE_IMAGE"),
+        set_fence: () => insertStyle("ENABLE_FENCE"),
+    }
+
     const call = type => {
-        if (type === "disable") {
-            const ele = document.getElementById("plugin-auto-number-style");
-            if (ele && ele.parentElement) {
-                ele.parentElement.removeChild(ele);
-            }
-        } else if (type === "enable") {
-            insertStyle();
-        }
+        const func = callMap[type];
+        func && func();
     }
     module.exports = {
         config,
         call,
+        callArgs,
         dynamicCallArgsGenerator,
     };
 
