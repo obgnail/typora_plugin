@@ -114,8 +114,8 @@
     }, config.LOOP_DETECT_INTERVAL);
 
     document.getElementById("write").addEventListener("click", ev => {
-        const copy = config.ENABLE_COPY && ev.target.closest(".typora-copy-code");
-        const fold = config.ENABLE_FOLD && ev.target.closest(".typora-fold-code");
+        const copy = ev.target.closest(".typora-copy-code");
+        const fold = ev.target.closest(".typora-fold-code");
         if (!copy && !fold) return;
 
         ev.preventDefault();
@@ -181,15 +181,15 @@
         }
     }
 
-    if (config.AUTO_HIDE) {
-        $("#write").on("mouseenter", ".md-fences", function () {
+    $("#write").on("mouseenter", ".md-fences", function () {
+        if (config.AUTO_HIDE) {
             this.querySelector(".fence-enhance").style.visibility = "";
-        }).on("mouseleave", ".md-fences", function () {
-            if (!this.querySelector(".typora-fold-code.folded")) {
-                this.querySelector(".fence-enhance").style.visibility = "hidden";
-            }
-        })
-    }
+        }
+    }).on("mouseleave", ".md-fences", function () {
+        if (config.AUTO_HIDE && !this.querySelector(".typora-fold-code.folded")) {
+            this.querySelector(".fence-enhance").style.visibility = "hidden";
+        }
+    })
 
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////
     const dynamicUtil = {target: null}
@@ -213,16 +213,41 @@
 
     const callArgs = [
         {
-            "arg_name": "总是折叠",
-            "arg_value": "fold_all"
+            arg_name: "自动隐藏/显示按钮",
+            arg_value: "set_auto_hide",
         },
         {
-            "arg_name": "总是展开",
-            "arg_value": "expand_all"
-        }
+            arg_name: "禁用/启用折叠按钮",
+            arg_value: "disable_or_enable_fold",
+        },
+        {
+            arg_name: "禁用/启用复制按钮",
+            arg_value: "disable_or_enable_copy",
+        },
+        {
+            arg_name: "总是折叠代码块",
+            arg_value: "fold_all",
+        },
+        {
+            arg_name: "总是展开代码块",
+            arg_value: "expand_all",
+        },
     ];
 
     const callMap = {
+        disable_or_enable_fold: () => {
+            config.ENABLE_FOLD = !config.ENABLE_FOLD;
+            if (!config.ENABLE_FOLD) {
+                document.querySelectorAll(".typora-fold-code.folded").forEach(ele => ele.click());
+            }
+            const display = (config.ENABLE_FOLD) ? "block" : "none";
+            document.querySelectorAll(".fence-enhance .typora-fold-code").forEach(ele => ele.style.display = display);
+        },
+        disable_or_enable_copy: () => {
+            config.ENABLE_COPY = !config.ENABLE_COPY;
+            const display = (config.ENABLE_COPY) ? "block" : "none";
+            document.querySelectorAll(".fence-enhance .typora-copy-code").forEach(ele => ele.style.display = display);
+        },
         fold_all: () => {
             document.querySelectorAll(".typora-fold-code:not(.folded)").forEach(ele => ele.click());
             config.FOLD_DEFAULT = true;
@@ -236,6 +261,11 @@
         },
         copy_current: () => {
             dynamicUtil.target.querySelector(".typora-copy-code").click();
+        },
+        set_auto_hide: () => {
+            config.AUTO_HIDE = !config.AUTO_HIDE;
+            const visibility = (config.AUTO_HIDE) ? "hidden" : "";
+            document.querySelectorAll(".fence-enhance").forEach(ele => ele.style.visibility = visibility);
         }
     }
 
