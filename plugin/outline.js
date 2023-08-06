@@ -86,12 +86,13 @@
 
         const all_button = (config.USE_ALL) ? `<div class="plugin-outline-icon ion-android-data" type="all" ty-hint="混合"></div>` : "";
         const class_name = (config.SHOW_HIDDEN) ? "ion-eye" : "ion-eye-disabled";
+        const hint = (config.SHOW_HIDDEN) ? "显示被其他插件隐藏的元素" : "不显示被其他插件隐藏的元素";
 
         const modal = document.createElement("div");
         modal.id = 'plugin-outline';
         modal.innerHTML = `
             <div class="plugin-outline-header" style="padding-bottom: 5px; border-bottom: solid 1px rgba(0, 0, 0, 0.5);">
-                <div class="plugin-outline-icon ${class_name} select" type="eye" ty-hint="显示被其他插件隐藏的元素"></div>
+                <div class="plugin-outline-icon ${class_name} select" type="eye" ty-hint="${hint}"></div>
                 <div class="plugin-outline-icon" type="refresh"><div class="ion-refresh"></div></div>
                 <div class="plugin-outline-icon ion-arrow-move" type="move"></div>
                 <div class="plugin-outline-icon ion-close" type="close"></div>

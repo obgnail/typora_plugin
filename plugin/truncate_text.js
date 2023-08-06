@@ -7,6 +7,11 @@
         CLASS_NAME: "plugin-truncate-text",
     }
 
+    const callbackOtherPlugin = () => {
+        const outlinePlugin = global._getPlugin("outline");
+        outlinePlugin && outlinePlugin.meta.refresh();
+    }
+
     const isInViewBox = el => {
         if (el.style.display) return false;
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
@@ -62,9 +67,9 @@
         });
     }
 
-    const rollback = start => {
+    // 已废弃
+    const rollback2 = start => {
         if (!config.IN_USE) return;
-
         let ele = start.closest("#write [cid]");
         while (ele) {
             if (ele.classList.contains(config.CLASS_NAME)) {
@@ -75,6 +80,8 @@
         }
     }
 
+    const rollback = () => showAll();
+
     const call = type => {
         if (type === "hide_front") {
             hideFront();
@@ -83,6 +90,7 @@
         } else if (type === "hide_base_view") {
             hideBaseView();
         }
+        callbackOtherPlugin();
     }
 
     const callArgs = [
