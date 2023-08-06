@@ -2,6 +2,8 @@
     const config = {
         // 点击后是否隐藏菜单
         DO_NOT_HIDE: false,
+
+        NOT_AVAILABLE_VALUE: "__not_available__",
         LOOP_DETECT_INTERVAL: 200
     }
 
@@ -118,7 +120,7 @@
     const appendDummyThirdLi = menu => {
         appendThirdLi(menu, [{
             arg_name: "光标于此位置不可用",
-            arg_value: "not_available",
+            arg_value: config.NOT_AVAILABLE_VALUE,
             arg_disabled: true,
         }])
     }
@@ -127,8 +129,10 @@
         // 在二级菜单中调用插件
         $("#plugin-menu").on("click", "[data-key]", function () {
             const fixed_name = this.getAttribute("data-key");
-            const plugins = enablePlugins.filter(plugin => plugin.fixed_name === fixed_name);
-            plugins && plugins[0] && plugins[0].call && plugins[0].call();
+            const plugin = enablePlugins.filter(plugin => plugin.fixed_name === fixed_name)[0];
+            if (plugin && plugin.call) {
+                plugin.call();
+            }
             if (!config.DO_NOT_HIDE) {
                 File.editor.contextMenu.hide();
             }
@@ -168,8 +172,10 @@
         $(".plugin-menu-third").on("click", "[data-key]", function () {
             const fixedName = this.parentElement.getAttribute("fixed_name");
             const argValue = this.getAttribute("arg_value");
-            const plugins = enablePlugins.filter(plugin => plugin.fixed_name === fixedName);
-            (argValue !== "not_available") && plugins && plugins[0] && plugins[0].call && plugins[0].call(argValue);
+            const plugin = enablePlugins.filter(plugin => plugin.fixed_name === fixedName)[0];
+            if (argValue !== config.NOT_AVAILABLE_VALUE && plugin && plugin.call) {
+                plugin.call(argValue);
+            }
             if (!config.DO_NOT_HIDE) {
                 File.editor.contextMenu.hide();
             }
