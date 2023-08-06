@@ -183,10 +183,12 @@
             <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
                 autocapitalize="off" value="" placeholder="多关键字查找 空格分隔" ty-hint="⌃↵当前页打开。⇧⌃↵新页面打开"
                 data-localize="Search by file name" data-lg="Front">
-            <span class="option-btn case-option-btn" ty-hint="区分大小写">
+            <span class="option-btn case-option-btn ${(config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
                 <svg class="icon"> <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
             </span>
-            <span class="option-btn path-option-btn" ty-hint="将文件路径加入搜索内容"><div class="ion-ionic"></div></span>
+            <span class="option-btn path-option-btn ${(config.INCLUDE_FILE_PATH) ? "select" : ""}" ty-hint="将文件路径加入搜索内容">
+                <div class="ion-ionic"></div>
+            </span>
         </div>
     
         <div class="typora-search-multi-result">

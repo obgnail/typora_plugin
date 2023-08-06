@@ -14,6 +14,8 @@
         },
         // 打开文件后自动检测生成大纲
         AUTO_REFRESH_WHEN_OPEN_FILE: true,
+        // 显示被其他插件隐藏的元素
+        SHOW_HIDDEN: false,
 
         LOOP_DETECT_INTERVAL: 30,
     };
@@ -83,11 +85,14 @@
         document.getElementsByTagName("head")[0].appendChild(style);
 
         const all_button = (config.USE_ALL) ? `<div class="plugin-outline-icon ion-android-data" type="all" ty-hint="混合"></div>` : "";
+        const class_name = (config.SHOW_HIDDEN) ? "ion-eye" : "ion-eye-disabled";
+        const hint = (config.SHOW_HIDDEN) ? "显示被其他插件隐藏的元素" : "不显示被其他插件隐藏的元素";
 
         const modal = document.createElement("div");
         modal.id = 'plugin-outline';
         modal.innerHTML = `
             <div class="plugin-outline-header" style="padding-bottom: 5px; border-bottom: solid 1px rgba(0, 0, 0, 0.5);">
+                <div class="plugin-outline-icon ${class_name} select" type="eye" ty-hint="${hint}"></div>
                 <div class="plugin-outline-icon" type="refresh"><div class="ion-refresh"></div></div>
                 <div class="plugin-outline-icon ion-arrow-move" type="move"></div>
                 <div class="plugin-outline-icon ion-close" type="close"></div>
@@ -130,6 +135,10 @@
             this.clear();
             const write = document.querySelector("#write");
             for (let ele = write.firstElementChild; ele; ele = ele.nextElementSibling) {
+                if (!config.SHOW_HIDDEN && ele.style.display === "none") {
+                    continue
+                }
+
                 const tagName = ele.tagName;
                 if (tagName === "H1") {
                     this.paragraphIdx = 0;
@@ -259,10 +268,13 @@
         entities.modal.style.display = "block";
     }
 
+    const collapsePlugin = global._getPlugin("collapse_paragraph");
+    const truncatePlugin = global._getPlugin("truncate_text");
     const compatibleOtherPlugin = target => {
         if (!target) return;
-        const cp = global._getPlugin("collapse_paragraph");
-        cp && cp.meta && cp.meta.rollback && cp.meta.rollback(target);
+
+        collapsePlugin && collapsePlugin.meta && collapsePlugin.meta.rollback && collapsePlugin.meta.rollback(target);
+        truncatePlugin && truncatePlugin.meta && truncatePlugin.meta.rollback && truncatePlugin.meta.rollback(target);
     }
 
     const scroll = cid => {
@@ -284,18 +296,33 @@
     }
 
     const refresh = () => {
-        const search = entities.footer.querySelector(".plugin-outline-icon.select");
-        collectAndShow(search.getAttribute("Type"));
+        if (entities.modal.style.display === "block") {
+            const search = entities.footer.querySelector(".plugin-outline-icon.select");
+            collectAndShow(search.getAttribute("Type"));
+        }
     }
 
     // 因为比较简单,就不用CSS做了
-    function rotate(ele) {
+    const rotate = ele => {
         let angle = 0;
         const timer = setInterval(() => {
             angle += 10;
             requestAnimationFrame(() => ele.style.transform = "rotate(" + angle + "deg)");
             (angle === 360) && clearInterval(timer);
         }, 10)
+    }
+
+    const toggleEye = icon => {
+        config.SHOW_HIDDEN = !config.SHOW_HIDDEN;
+        if (icon.classList.contains("ion-eye")) {
+            icon.classList.remove("ion-eye");
+            icon.classList.add("ion-eye-disabled");
+            icon.setAttribute("ty-hint", "不显示被其他插件隐藏的元素");
+        } else {
+            icon.classList.remove("ion-eye-disabled");
+            icon.classList.add("ion-eye");
+            icon.setAttribute("ty-hint", "显示被其他插件隐藏的元素");
+        }
     }
 
     entities.modal.addEventListener("click", ev => {
@@ -321,6 +348,9 @@
             } else if (Type === "refresh") {
                 refresh();
                 rotate(headerIcon.firstElementChild);
+            } else if (Type === "eye") {
+                toggleEye(headerIcon);
+                refresh();
             }
         }
     })
