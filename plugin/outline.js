@@ -261,8 +261,12 @@
 
     const compatibleOtherPlugin = target => {
         if (!target) return;
+
         const cp = global._getPlugin("collapse_paragraph");
         cp && cp.meta && cp.meta.rollback && cp.meta.rollback(target);
+
+        const tt = global._getPlugin("truncate_text");
+        tt && tt.meta && tt.meta.rollback && tt.meta.rollback(target);
     }
 
     const scroll = cid => {
