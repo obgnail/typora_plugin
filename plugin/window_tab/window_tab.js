@@ -224,6 +224,8 @@
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
+    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
+
     // 新窗口打开
     const openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
     // 新标签页打开
@@ -295,7 +297,7 @@
         const stopCount = 3;
         const scrollTop = activeTab.scrollTop;
         const _timer = setInterval(() => {
-            const filePath = File && File.filePath || File && File.bundle && File.bundle.filePath;
+            const filePath = getFilePath();
             if (filePath === activeTab.path && entities.content.scrollTop !== scrollTop) {
                 entities.content.scrollTop = scrollTop;
                 count = 0;
@@ -325,6 +327,15 @@
     const switchTab = idx => {
         tabUtil.activeIdx = idx;
         openFile(tabUtil.tabs[tabUtil.activeIdx].path);
+    }
+
+    const switchTabByPath = path => {
+        for (let idx = 0; idx < tabUtil.tabs.length; idx++) {
+            if (tabUtil.tabs[idx].path === path) {
+                switchTab(idx);
+                return
+            }
+        }
     }
 
     const previousTab = () => {
@@ -371,7 +382,7 @@
 
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
 
-            const filePath = File.filePath || File.bundle && File.bundle.filePath;
+            const filePath = getFilePath();
             if (filePath) {
                 openTab(filePath);
             }
@@ -652,6 +663,7 @@
             const dataset = JSON.parse(data);
             const tabs = dataset["save_tabs"];
 
+            let activePath;
             tabs.forEach(tab => {
                 const existTab = tabUtil.tabs.filter(t => t.path === tab.path)[0];
                 if (!existTab) {
@@ -659,8 +671,16 @@
                 } else {
                     existTab.scrollTop = tab.scrollTop;
                 }
+
+                if (tab.active) {
+                    activePath = tab.path;
+                }
             })
-            switchTab(tabUtil.activeIdx);
+            if (activePath) {
+                switchTabByPath(activePath);
+            } else {
+                switchTab(tabUtil.activeIdx);
+            }
         })
     }
 
@@ -673,9 +693,10 @@
             args.push({arg_name: "打开保存的标签页", arg_value: "open_save_tabs"});
         }
         if (config.LOCAL_OPEN) {
-            args.push({arg_name: "新标签打开文件", arg_value: "new_tab_open"});
-        } else {
-            args.push({arg_name: "当前标签打开文件", arg_value: "local_open"});
+            args.push({arg_name: "在新标签打开文件", arg_value: "new_tab_open"});
+            // 空白标签不允许当前标签打开
+        } else if (getFilePath()) {
+            args.push({arg_name: "在当前标签打开文件", arg_value: "local_open"});
         }
         return args
     }
