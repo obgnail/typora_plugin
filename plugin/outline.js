@@ -259,8 +259,15 @@
         entities.modal.style.display = "block";
     }
 
+    const compatibleOtherPlugin = target => {
+        if (!target) return;
+        const cp = global._getPlugin("collapse_paragraph");
+        cp && cp.meta && cp.meta.rollback && cp.meta.rollback(target);
+    }
+
     const scroll = cid => {
         const target = File.editor.findElemById(cid);
+        compatibleOtherPlugin(target[0]);
         File.editor.focusAndRestorePos();
         File.editor.selection.scrollAdjust(target, 10);
         File.isFocusMode && File.editor.updateFocusMode(false);

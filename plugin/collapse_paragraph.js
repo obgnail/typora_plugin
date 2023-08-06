@@ -56,6 +56,28 @@
         }
     }
 
+    const rollback = start => {
+        let ele = start.closest("#write [cid]");
+
+        const pList = [];
+        while (ele) {
+            const idx = paragraphList.indexOf(ele.tagName);
+            if (idx !== -1) {
+                if (pList.length === 0 || (pList[pList.length - 1].idx > idx && ele.classList.contains(config.CLASS_NAME))) {
+                    pList.push({ele, idx})
+                    if (pList[pList.length - 1].idx === 0) break;
+                }
+            }
+            ele = ele.previousElementSibling;
+        }
+
+        if (pList.length > 0) {
+            for (let i = pList.length - 1; i >= 0; i--) {
+                trigger(pList[i].ele, true);
+            }
+        }
+    }
+
     const findSiblings = paragraph => {
         const idx = paragraphList.indexOf(paragraph.tagName);
         const stop = paragraphList.slice(0, idx);
@@ -162,6 +184,7 @@
         dynamicCallArgsGenerator,
         meta: {
             trigger,
+            rollback,
         }
     };
 
