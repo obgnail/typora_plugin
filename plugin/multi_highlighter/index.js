@@ -233,6 +233,15 @@
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
     const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
 
+    const collapsePlugin = global._getPlugin("collapse_paragraph");
+    const truncatePlugin = global._getPlugin("truncate_text");
+    const compatibleOtherPlugin = target => {
+        if (!target) return;
+
+        collapsePlugin && collapsePlugin.meta && collapsePlugin.meta.rollback && collapsePlugin.meta.rollback(target);
+        truncatePlugin && truncatePlugin.meta && truncatePlugin.meta.rollback && truncatePlugin.meta.rollback(target);
+    }
+
     const multiHighlighterClass = reqnode(reqnode('path').join(global.dirname || global.__dirname,
         "plugin", "multi_highlighter", "multi_highlighter.js")).multiHighlighter;
     const multiHighlighter = new multiHighlighterClass();
@@ -433,6 +442,8 @@
             highlight();
             return;
         }
+
+        compatibleOtherPlugin(next);
 
         showMarkerInfo.idxOfWrite = whichMarker(entities.write, next);
 

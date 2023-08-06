@@ -62,7 +62,9 @@
     }
 
     const rollback = start => {
-        let ele = start.closest("#write [cid]");
+        if (!document.querySelector(`#write > .${config.CLASS_NAME}`)) return;
+
+        let ele = start.closest("#write > [cid]");
 
         const pList = [];
         while (ele) {

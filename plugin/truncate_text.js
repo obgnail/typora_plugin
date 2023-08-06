@@ -3,7 +3,6 @@
         // 剩余文本段
         REMAIN_LENGTH: 80,
 
-        IN_USE: false,
         CLASS_NAME: "plugin-truncate-text",
     }
 
@@ -21,7 +20,6 @@
     }
 
     const hideFront = () => {
-        config.IN_USE = true;
         const write = document.getElementById("write");
         const length = write.children.length;
         if (length > config.REMAIN_LENGTH) {
@@ -34,14 +32,12 @@
     }
 
     const showAll = () => {
-        config.IN_USE = false;
         const write = document.getElementById("write");
         write.getElementsByClassName(config.CLASS_NAME).forEach(el => el.classList.remove(config.CLASS_NAME));
         write.children.forEach(el => el.style.display = "");
     };
 
     const hideBaseView = () => {
-        config.IN_USE = true;
         const write = document.getElementById("write");
         let start = 0, end = 0;
         write.children.forEach((ele, idx) => {
@@ -69,18 +65,23 @@
 
     // 已废弃
     const rollback2 = start => {
-        if (!config.IN_USE) return;
-        let ele = start.closest("#write [cid]");
-        while (ele) {
-            if (ele.classList.contains(config.CLASS_NAME)) {
-                ele.classList.remove(config.CLASS_NAME);
-                ele.style.display = "";
+        if (document.querySelector(`#write > .${config.CLASS_NAME}`)) {
+            let ele = start.closest("#write > [cid]");
+            while (ele) {
+                if (ele.classList.contains(config.CLASS_NAME)) {
+                    ele.classList.remove(config.CLASS_NAME);
+                    ele.style.display = "";
+                }
+                ele = ele.nextElementSibling;
             }
-            ele = ele.nextElementSibling;
         }
     }
 
-    const rollback = () => showAll();
+    const rollback = () => {
+        if (document.querySelector(`#write > .${config.CLASS_NAME}`)) {
+            showAll();
+        }
+    };
 
     const call = type => {
         if (type === "hide_front") {
