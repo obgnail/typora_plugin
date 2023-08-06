@@ -62,7 +62,8 @@
     }
 
     const createThirdLi = (arg, dynamic) => {
-        const className = (dynamic) ? `class="plugin-dynamic-arg"` : "";
+        const disabled = (arg.arg_disabled) ? " disabled" : "";
+        const className = (dynamic) ? `class="plugin-dynamic-arg${disabled}"` : "";
         return `<li data-key="${arg.arg_name}" arg_value="${arg.arg_value}" ${className}><a role="menuitem" data-lg="Menu">${arg.arg_name}</a></li>`
     }
 
@@ -118,6 +119,7 @@
         appendThirdLi(menu, [{
             arg_name: "光标于此位置不可用",
             arg_value: "not_available",
+            arg_disabled: true,
         }])
     }
 
