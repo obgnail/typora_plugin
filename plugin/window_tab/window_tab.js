@@ -329,6 +329,15 @@
         openFile(tabUtil.tabs[tabUtil.activeIdx].path);
     }
 
+    const switchTabByPath = path => {
+        for (let idx = 0; idx < tabUtil.tabs.length; idx++) {
+            if (tabUtil.tabs[idx].path === path) {
+                switchTab(idx);
+                return
+            }
+        }
+    }
+
     const previousTab = () => {
         const idx = (tabUtil.activeIdx === 0) ? tabUtil.tabs.length - 1 : tabUtil.activeIdx - 1;
         switchTab(idx);
@@ -654,6 +663,7 @@
             const dataset = JSON.parse(data);
             const tabs = dataset["save_tabs"];
 
+            let activePath;
             tabs.forEach(tab => {
                 const existTab = tabUtil.tabs.filter(t => t.path === tab.path)[0];
                 if (!existTab) {
@@ -661,8 +671,16 @@
                 } else {
                     existTab.scrollTop = tab.scrollTop;
                 }
+
+                if (tab.active) {
+                    activePath = tab.path;
+                }
             })
-            switchTab(tabUtil.activeIdx);
+            if (activePath) {
+                switchTabByPath(activePath);
+            } else {
+                switchTab(tabUtil.activeIdx);
+            }
         })
     }
 
