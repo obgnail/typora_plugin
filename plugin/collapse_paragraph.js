@@ -23,6 +23,11 @@
         document.getElementsByTagName("head")[0].appendChild(style);
     })()
 
+    const callbackOtherPlugin = () => {
+        const outlinePlugin = global._getPlugin("outline");
+        outlinePlugin && outlinePlugin.meta.refresh();
+    }
+
     const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
 
     const toggle = (paragraph, display) => {
@@ -109,6 +114,7 @@
         const collapsed = paragraph.classList.contains(config.CLASS_NAME);
         const list = ev.altKey ? (ev.shiftKey ? findAllSiblings(paragraph) : findSiblings(paragraph)) : [paragraph];
         list.forEach(ele => trigger(ele, collapsed));
+        callbackOtherPlugin();
     })
 
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////
@@ -175,6 +181,7 @@
         } else {
             dynamicCall(type);
         }
+        callbackOtherPlugin();
     }
 
     module.exports = {
