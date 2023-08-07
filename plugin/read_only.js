@@ -66,6 +66,17 @@
         return false
     }
 
+    const stop = ev => {
+        if (!File.isLocked) return;
+
+        const target = ev.target.closest('.footnotes, figure[mdtype="table"], .md-task-list-item, .md-image, .ty-cm-lang-input, input[type="checkbox"]');
+        // const target = ev.target.closest('.md-image');
+        if (target) {
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
+    }
+
     let lastClickTime = 0;
     window.addEventListener("keydown", ev => {
         if (config.HOTKEY(ev)) {
@@ -92,17 +103,10 @@
         }
     }, true)
 
-    document.getElementById("write").addEventListener("mousedown", ev => {
-        if (!File.isLocked) {
-            return
-        }
-        // const target = ev.target.closest('.footnotes, [mdtype="table"], .md-task-list-item, .md-image, .ty-cm-lang-input');
-        const target = ev.target.closest('.md-image');
-        if (target) {
-            ev.preventDefault();
-            ev.stopPropagation();
-        }
-    }, true)
+
+    const write = document.getElementById("write");
+    write.addEventListener("mousedown", stop, true);
+    write.addEventListener("click", stop, true);
 
     const call = () => {
         window.dispatchEvent(new KeyboardEvent("keydown", {
