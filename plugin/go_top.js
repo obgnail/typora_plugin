@@ -36,7 +36,17 @@
         goTop.style.display = (content.scrollTop > config.THRESHOLD) ? "" : "none";
     })
 
-    const call = () => $("content").animate({scrollTop: '0'}, config.SCROLL_TIME);
-    module.exports = {call, config};
+    const call = direction => {
+        let scrollTop = '0';
+        if (direction === "go-bottom") {
+            scrollTop = document.querySelector("#write").getBoundingClientRect().height;
+        }
+        $("content").animate({scrollTop: scrollTop}, config.SCROLL_TIME);
+    }
+
+    module.exports = {
+        config,
+        call,
+    };
     console.log("go_top.js had been injected");
 })()
