@@ -1,6 +1,6 @@
 (() => {
     const config = {
-        // 进入和脱离只读模式的快捷键。如果修改快捷键，请修改Call函数代码
+        // 进入和脱离只读模式的快捷键
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "R",
         // 默认使用只读模式
         READ_ONLY_DEFAULT: false,
@@ -55,6 +55,15 @@
         CLICK_CHECK_INTERVAL: 500,
     };
 
+    (() => {
+        const css = `#footer-word-count-label::before {content: attr(data-value) !important}`;
+        const style = document.createElement('style');
+        style.id = "plugin-read-only-style";
+        style.type = 'text/css';
+        style.innerHTML = css;
+        document.getElementsByTagName("head")[0].appendChild(style);
+    })()
+
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
     const isExclude = ev => {
@@ -66,49 +75,39 @@
         return false
     }
 
-    let lastClickTime = 0;
-    window.addEventListener("keydown", ev => {
-        if (config.HOTKEY(ev)) {
-            if (File.isLocked) {
-                File.unlock();
-            } else {
-                File.lock();
-            }
-        }
+    const stopMouse = ev => {
+        if (!File.isLocked) return;
 
-        if (File.isLocked) {
-            // 无奈之举
-            if (ev.timeStamp - lastClickTime > config.CLICK_CHECK_INTERVAL) {
-                File.lock();
-            }
-
-            // File.isLocked 也挡不住回车键 :(
-            // 为什么要使用isExclude排除按键？因为输入法激活状态下键入能突破 File.isLocked
-            if ((ev.key === "Enter") || !isExclude(ev)) {
-                document.activeElement.blur();
-                ev.preventDefault();
-                ev.stopPropagation();
-            }
-        }
-    }, true)
-
-    document.getElementById("write").addEventListener("mousedown", ev => {
-        if (!File.isLocked) {
-            return
-        }
-        // const target = ev.target.closest('.footnotes, [mdtype="table"], .md-task-list-item, .md-image, .ty-cm-lang-input');
-        const target = ev.target.closest('.md-image');
+        const target = ev.target.closest('.footnotes, figure[mdtype="table"], .md-task-list-item, .md-image, .ty-cm-lang-input, input[type="checkbox"]');
+        // const target = ev.target.closest('.md-image');
         if (target) {
             ev.preventDefault();
             ev.stopPropagation();
         }
-    }, true)
-
-    const call = () => {
-        window.dispatchEvent(new KeyboardEvent("keydown", {
-            key: "R", code: "R", ctrlKey: true, metaKey: true, shiftKey: true,
-        }))
     }
+
+    let lastClickTime = 0;
+    const stopKeyboard = ev => {
+        if (!File.isLocked) return;
+
+        if (ev.timeStamp - lastClickTime > config.CLICK_CHECK_INTERVAL) {
+            File.lock();
+        }
+
+        // File.isLocked 也挡不住回车键 :(
+        // 为什么要使用isExclude排除按键？因为输入法激活状态下键入能突破 File.isLocked
+        if ((ev.key === "Enter") || !isExclude(ev)) {
+            document.activeElement.blur();
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
+    }
+
+    const write = document.getElementById("write");
+    window.addEventListener("keydown", ev => config.HOTKEY(ev) && call(), true);
+    write.addEventListener("keydown", stopKeyboard, true);
+    write.addEventListener("mousedown", stopMouse, true);
+    write.addEventListener("click", stopMouse, true);
 
     if (config.READ_ONLY_DEFAULT) {
         const _timer = setInterval(() => {
@@ -119,7 +118,42 @@
         }, config.LOOP_DETECT_INTERVAL);
     }
 
-    module.exports = {call, config};
+    const _timer2 = setInterval(() => {
+        if (File) {
+            clearInterval(_timer2);
+            const decorator = (original, after) => {
+                return function () {
+                    const result = original.apply(this, arguments);
+                    after.call(this, result, ...arguments);
+                    return result;
+                };
+            }
+            File.freshLock = decorator(File.freshLock, () => {
+                if (!File.isLocked) return;
+                ["typora-search-multi-input", "typora-commander-form", "plugin-multi-highlighter-input"].forEach(id => {
+                    const input = document.querySelector(`#${id} input`);
+                    input && input.removeAttribute("readonly");
+                })
+            });
+        }
+    }, config.LOOP_DETECT_INTERVAL);
+
+    const call = () => {
+        const span = document.getElementById("footer-word-count-label");
+        if (File.isLocked) {
+            File.unlock();
+            span.setAttribute("data-value", "");
+        } else {
+            File.lock();
+            document.activeElement.blur();
+            span.setAttribute("data-value", "ReadOnly" + String.fromCharCode(160).repeat(3));
+        }
+    }
+
+    module.exports = {
+        config,
+        call,
+    };
 
     console.log("read_only.js had been injected");
 })()
