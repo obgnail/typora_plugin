@@ -1,6 +1,6 @@
 (() => {
     const config = {
-        // 进入和脱离只读模式的快捷键。如果修改快捷键，请修改Call函数代码
+        // 进入和脱离只读模式的快捷键
         HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "R",
         // 默认使用只读模式
         READ_ONLY_DEFAULT: false,
@@ -66,7 +66,7 @@
         return false
     }
 
-    const stop = ev => {
+    const stopMouse = ev => {
         if (!File.isLocked) return;
 
         const target = ev.target.closest('.footnotes, figure[mdtype="table"], .md-task-list-item, .md-image, .ty-cm-lang-input, input[type="checkbox"]');
@@ -78,41 +78,27 @@
     }
 
     let lastClickTime = 0;
-    window.addEventListener("keydown", ev => {
-        if (config.HOTKEY(ev)) {
-            if (File.isLocked) {
-                File.unlock();
-            } else {
-                File.lock();
-            }
+    const stopKeyboard = ev => {
+        if (!File.isLocked) return;
+
+        if (ev.timeStamp - lastClickTime > config.CLICK_CHECK_INTERVAL) {
+            File.lock();
         }
 
-        if (File.isLocked) {
-            // 无奈之举
-            if (ev.timeStamp - lastClickTime > config.CLICK_CHECK_INTERVAL) {
-                File.lock();
-            }
-
-            // File.isLocked 也挡不住回车键 :(
-            // 为什么要使用isExclude排除按键？因为输入法激活状态下键入能突破 File.isLocked
-            if ((ev.key === "Enter") || !isExclude(ev)) {
-                document.activeElement.blur();
-                ev.preventDefault();
-                ev.stopPropagation();
-            }
+        // File.isLocked 也挡不住回车键 :(
+        // 为什么要使用isExclude排除按键？因为输入法激活状态下键入能突破 File.isLocked
+        if ((ev.key === "Enter") || !isExclude(ev)) {
+            document.activeElement.blur();
+            ev.preventDefault();
+            ev.stopPropagation();
         }
-    }, true)
-
+    }
 
     const write = document.getElementById("write");
-    write.addEventListener("mousedown", stop, true);
-    write.addEventListener("click", stop, true);
-
-    const call = () => {
-        window.dispatchEvent(new KeyboardEvent("keydown", {
-            key: "R", code: "R", ctrlKey: true, metaKey: true, shiftKey: true,
-        }))
-    }
+    window.addEventListener("keydown", ev => config.HOTKEY(ev) && call(), true);
+    write.addEventListener("keydown", stopKeyboard, true);
+    write.addEventListener("mousedown", stopMouse, true);
+    write.addEventListener("click", stopMouse, true);
 
     if (config.READ_ONLY_DEFAULT) {
         const _timer = setInterval(() => {
@@ -123,7 +109,19 @@
         }, config.LOOP_DETECT_INTERVAL);
     }
 
-    module.exports = {call, config};
+    const call = () => {
+        if (File.isLocked) {
+            File.unlock();
+        } else {
+            File.lock();
+            document.activeElement.blur();
+        }
+    }
+
+    module.exports = {
+        config,
+        call,
+    };
 
     console.log("read_only.js had been injected");
 })()
