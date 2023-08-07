@@ -55,6 +55,15 @@
         CLICK_CHECK_INTERVAL: 500,
     };
 
+    (() => {
+        const css = `#footer-word-count-label::before {content: attr(data-value) !important}`;
+        const style = document.createElement('style');
+        style.id = "plugin-read-only-style";
+        style.type = 'text/css';
+        style.innerHTML = css;
+        document.getElementsByTagName("head")[0].appendChild(style);
+    })()
+
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
     const isExclude = ev => {
@@ -110,11 +119,14 @@
     }
 
     const call = () => {
+        const span = document.getElementById("footer-word-count-label");
         if (File.isLocked) {
             File.unlock();
+            span.setAttribute("data-value", "");
         } else {
             File.lock();
             document.activeElement.blur();
+            span.setAttribute("data-value", "ReadOnly" + String.fromCharCode(160).repeat(3));
         }
     }
 
