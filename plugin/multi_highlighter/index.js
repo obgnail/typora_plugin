@@ -248,7 +248,7 @@
     let fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
 
     const clearFenceMultiHighlighterList = () => {
-        console.log("clearFenceMultiHighlighterList")
+        console.log("clearFenceMultiHighlighterList");
         fenceMultiHighlighterList.forEach(highlighter => highlighter.clear());
         fenceMultiHighlighterList = [];
     }
@@ -278,6 +278,7 @@
     }
 
     const refreshFences = () => {
+        console.log("refreshFences");
         for (let id in File.editor.fences.queue) {
             File.editor.fences.queue[id].refresh();
         }
@@ -372,6 +373,8 @@
         } else if (ev.key === "Escape") {
             ev.stopPropagation();
             ev.preventDefault();
+            clearHighlight();
+            refreshFences();
             hide();
         }
     })
