@@ -69,6 +69,38 @@
         decorate(() => !!File, File.editor.fences, "addCodeBlock", before, after)
     }
 
+    const dragFixedModal = (handleElement, moveElement, withMetaKey = true) => {
+        handleElement.addEventListener("mousedown", ev => {
+            if (withMetaKey && !metaKeyPressed(ev) || ev.button !== 0) return;
+            ev.stopPropagation();
+            const rect = moveElement.getBoundingClientRect();
+            const shiftX = ev.clientX - rect.left;
+            const shiftY = ev.clientY - rect.top;
+
+            const onMouseMove = ev => {
+                if (withMetaKey && !metaKeyPressed(ev) || ev.button !== 0) return;
+                ev.stopPropagation();
+                ev.preventDefault();
+                requestAnimationFrame(() => {
+                    moveElement.style.left = ev.clientX - shiftX + 'px';
+                    moveElement.style.top = ev.clientY - shiftY + 'px';
+                });
+            }
+
+            document.addEventListener("mouseup", ev => {
+                    if (withMetaKey && !metaKeyPressed(ev) || ev.button !== 0) return;
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    document.removeEventListener('mousemove', onMouseMove);
+                    moveElement.onmouseup = null;
+                }
+            )
+
+            document.addEventListener('mousemove', onMouseMove);
+        })
+        handleElement.ondragstart = () => false
+    }
+
     module.exports = {
         insertStyle,
         getPlugin,
@@ -81,5 +113,6 @@
         decorate,
         decorateOpenFile,
         decorateAddCodeBlock,
+        dragFixedModal,
     };
 })()

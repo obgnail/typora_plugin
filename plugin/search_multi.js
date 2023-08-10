@@ -326,35 +326,7 @@
     }
 
     if (config.ALLOW_DRAG) {
-        modal.modal.addEventListener("mousedown", ev => {
-            if (!global._pluginUtils.metaKeyPressed(ev) || ev.button !== 0) return;
-            ev.stopPropagation();
-            const rect = modal.modal.getBoundingClientRect();
-            const shiftX = ev.clientX - rect.left;
-            const shiftY = ev.clientY - rect.top;
-
-            const onMouseMove = ev => {
-                if (!global._pluginUtils.metaKeyPressed(ev) || ev.button !== 0) return;
-                ev.stopPropagation();
-                ev.preventDefault();
-                requestAnimationFrame(() => {
-                    modal.modal.style.left = ev.clientX - shiftX + 'px';
-                    modal.modal.style.top = ev.clientY - shiftY + 'px';
-                });
-            }
-
-            document.addEventListener("mouseup", ev => {
-                    if (!global._pluginUtils.metaKeyPressed(ev) || ev.button !== 0) return;
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    document.removeEventListener('mousemove', onMouseMove);
-                    modal.modal.onmouseup = null;
-                }
-            )
-
-            document.addEventListener('mousemove', onMouseMove);
-        })
-        modal.modal.ondragstart = () => false
+        global._pluginUtils.dragFixedModal(modal.input, modal.modal);
     }
 
     let floor;

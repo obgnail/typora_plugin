@@ -349,31 +349,7 @@
         }
     })
 
-    entities.move.addEventListener("mousedown", ev => {
-        ev.stopPropagation();
-        const rect = entities.modal.getBoundingClientRect();
-        const shiftX = ev.clientX - rect.left;
-        const shiftY = ev.clientY - rect.top;
-
-        const onMouseMove = ev => {
-            ev.stopPropagation();
-            ev.preventDefault();
-            requestAnimationFrame(() => {
-                entities.modal.style.left = ev.clientX - shiftX + 'px';
-                entities.modal.style.top = ev.clientY - shiftY + 'px';
-            });
-        }
-
-        document.addEventListener("mouseup", ev => {
-            ev.stopPropagation();
-            ev.preventDefault();
-            document.removeEventListener('mousemove', onMouseMove);
-            entities.move.onmouseup = null;
-        })
-
-        document.addEventListener('mousemove', onMouseMove);
-    })
-    entities.move.ondragstart = () => false
+    global._pluginUtils.dragFixedModal(entities.move, entities.modal, false);
 
     global._pluginUtils.decorateOpenFile(null, () => {
         (config.AUTO_REFRESH_WHEN_OPEN_FILE && entities.modal.style.display === "block") && setTimeout(refresh, 300);
