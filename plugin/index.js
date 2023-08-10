@@ -137,7 +137,7 @@ window.onload = () => {
             name: "测试专用",
             fixed_name: "test",
             src: "./plugin/test.js",
-            enable: true,
+            enable: false,
             clickable: false,
         },
     ]

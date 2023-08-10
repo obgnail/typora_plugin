@@ -13,7 +13,7 @@
     };
 
     const getFormatter = () => {
-        const {padMarkdown} = global._pluginUtils.requireFile("./plugin/md_padding/padding");
+        const {padMarkdown} = global._pluginUtils.requireFile("./plugin/md_padding/md-padding");
         return padMarkdown;
     }
 
