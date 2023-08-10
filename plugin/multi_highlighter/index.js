@@ -226,8 +226,6 @@
         result: document.getElementById("plugin-multi-highlighter-result"),
     }
 
-    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
-
     const collapsePlugin = global._pluginUtils.getPlugin("collapse_paragraph");
     const truncatePlugin = global._pluginUtils.getPlugin("truncate_text");
     const compatibleOtherPlugin = target => {
@@ -286,7 +284,7 @@
 
     let lastHighlightFilePath;
     const highlight = (refreshResult = true) => {
-        lastHighlightFilePath = getFilePath();
+        lastHighlightFilePath = global._pluginUtils.getFilePath();
         const keyArr = getKeyArr();
         if (!keyArr) return false;
         doSearch(keyArr, refreshResult);
@@ -409,7 +407,7 @@
         ev.preventDefault();
 
         // 当用户切换文档时
-        if (getFilePath() !== lastHighlightFilePath) {
+        if (global._pluginUtils.getFilePath() !== lastHighlightFilePath) {
             highlight();
             return;
         }

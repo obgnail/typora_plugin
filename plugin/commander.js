@@ -174,9 +174,9 @@
         }
     }
 
-    const _getFile = () => File.filePath || (File.bundle && File.bundle.filePath);
-    const getFile = shell => convertPath(_getFile(), shell);
-    const getFolder = shell => convertPath(global._pluginUtils.Package.Path.dirname(_getFile()), shell);
+    const getFilePath = global._pluginUtils.getFilePath;
+    const getFile = shell => convertPath(getFilePath(), shell);
+    const getFolder = shell => convertPath(global._pluginUtils.Package.Path.dirname(getFilePath()), shell);
     const getMountFolder = shell => convertPath(File.getMountFolder(), shell);
 
     const replaceArgs = (cmd, shell) => {
@@ -221,8 +221,6 @@
                 }
             })
     }
-
-    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
 
     const showStdout = stdout => {
         modal.output.style.display = "block";

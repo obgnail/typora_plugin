@@ -213,18 +213,14 @@
     }
 
     const Package = global._pluginUtils.Package;
-
-    // Typora里几乎所有常用操作库,具体代码可以在frame.js找到
-    const getLibrary = () => File.editor.library
-    const getMountFolder = File.getMountFolder
     const separator = File.isWin ? "\\" : "/";
 
     const openFileInThisWindow = filePath => {
         document.activeElement.blur();
-        getLibrary().openFile(filePath);
+        File.editor.library.openFile(filePath);
     }
 
-    const openFileInNewWindow = (path, isFolder) => getLibrary().openFileInNewWindow(path, isFolder)
+    const openFileInNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
 
     const traverseDir = (dir, filter, callback, then) => {
         async function traverse(dir) {
@@ -251,7 +247,7 @@
     const appendItemFunc = keyArr => {
         let index = 0;
         let once = true;
-        const rootPath = getMountFolder()
+        const rootPath = File.getMountFolder()
 
         return (filePath, stats, buffer) => {
             let data = buffer.toString();
@@ -384,7 +380,7 @@
                 modal.result.style.display = "none";
                 modal.info.style.display = "block";
                 modal.resultList.innerHTML = "";
-                const workspace = getMountFolder();
+                const workspace = File.getMountFolder();
                 searchMulti(workspace, modal.input.value, () => modal.info.style.display = "none");
                 break
             case "Escape":

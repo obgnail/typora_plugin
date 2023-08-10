@@ -3,11 +3,8 @@
         HOTKEY: ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "K",
     }
 
-    const Package = global._pluginUtils.Package;
-
-    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
-    const read = filepath => Package.Fs.readFileSync(filepath, 'utf-8');
-    const write = (filepath, content) => Package.Fs.writeFileSync(filepath, content);
+    const read = filepath => global._pluginUtils.Package.Fs.readFileSync(filepath, 'utf-8');
+    const write = (filepath, content) => global._pluginUtils.Package.Fs.writeFileSync(filepath, content);
     const save = () => File.saveUseNode();
     const reload = content => {
         // const scrollTop = document.querySelector("content").scrollTop;
@@ -27,7 +24,7 @@
 
     const call = () => {
         save().then(() => {
-            const filepath = getFilePath();
+            const filepath = global._pluginUtils.getFilePath();
             const content = read(filepath);
             const formattedContent = format(content);
             write(filepath, formattedContent);

@@ -15,12 +15,9 @@
     }
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
-
-    const dirname = global.dirname || global.__dirname;
-
-    const joinPath = (...paths) => {
-        return Package.Path.join(dirname, ...paths);
-    }
+    const getDirname = () => global.dirname || global.__dirname;
+    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
+    const joinPath = (...paths) => Package.Path.join(getDirname(), ...paths);
 
     const requireFile = (...paths) => {
         const filepath = joinPath(...paths);
@@ -34,9 +31,12 @@
     };
 
     module.exports = {
-        getPlugin,
         insertStyle,
+        getPlugin,
         metaKeyPressed,
+        dirname,
+        getFilePath,
+        joinPath,
         requireFile,
         Package,
     };

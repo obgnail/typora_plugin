@@ -215,8 +215,6 @@
         activeIdx: 0,
     }
 
-    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
-
     // 新窗口打开
     const openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
     // 新标签页打开
@@ -288,7 +286,7 @@
         const stopCount = 3;
         const scrollTop = activeTab.scrollTop;
         const _timer = setInterval(() => {
-            const filePath = getFilePath();
+            const filePath = global._pluginUtils.getFilePath();
             if (filePath === activeTab.path && entities.content.scrollTop !== scrollTop) {
                 entities.content.scrollTop = scrollTop;
                 count = 0;
@@ -373,7 +371,7 @@
 
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
 
-            const filePath = getFilePath();
+            const filePath = global._pluginUtils.getFilePath();
             if (filePath) {
                 openTab(filePath);
             }
@@ -683,7 +681,7 @@
         if (config.LOCAL_OPEN) {
             args.push({arg_name: "在新标签打开文件", arg_value: "new_tab_open"});
             // 空白标签不允许当前标签打开
-        } else if (getFilePath()) {
+        } else if (global._pluginUtils.getFilePath()) {
             args.push({arg_name: "在当前标签打开文件", arg_value: "local_open"});
         }
         return args

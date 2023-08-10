@@ -1,7 +1,7 @@
 (() => {
     // 在 cdnjs.com 或者 unpkg.com 上找到最新版本的 `mermaid.min.js`，eg: https://unpkg.com/mermaid/dist/mermaid.min.js
     // 之后替换 mermaid.min.js 文件。（当前文件版本: 9.3.0）
-    const filepath = global._pluginUtils.joinPath("./plugin/mermaid_replace/mermaid.min.js")
+    const filepath = global._pluginUtils.joinPath("./plugin/mermaid_replace/mermaid.min.js");
 
     const interval = setInterval(() => {
         if (window.editor && window.editor.diagrams && window.mermaidAPI) {
