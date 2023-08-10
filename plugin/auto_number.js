@@ -208,11 +208,7 @@
             (config.ENABLE_FENCE) ? fence_css : "",
         ].join("\n")
 
-        const style = document.createElement('style');
-        style.id = config.id;
-        style.type = 'text/css';
-        style.innerHTML = css;
-        document.getElementsByTagName("head")[0].appendChild(style);
+        global._pluginUtils.insertStyle(config.id, css);
     }
 
     insertStyle();

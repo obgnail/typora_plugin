@@ -10,10 +10,7 @@
 
     };
 
-    const Package = {
-        Path: reqnode('path'),
-        Fs: reqnode('fs'),
-    };
+    const Package = global._pluginUtils.Package;
 
     (() => {
         const css = `
@@ -32,11 +29,7 @@
             opacity: 1;
         }
         `
-        const style = document.createElement('style');
-        style.id = "plugin-file-counter-style";
-        style.type = 'text/css';
-        style.innerHTML = css;
-        document.getElementsByTagName("head")[0].appendChild(style);
+        global._pluginUtils.insertStyle("plugin-file-counter-style", css);
     })()
 
     const verifyExt = filename => {

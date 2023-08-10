@@ -9,15 +9,9 @@
     (() => {
         if (config.REMOVE_MIX_WIDTH) {
             const css = `table.md-table td { min-width: 1px !important; }`;
-            const style = document.createElement('style');
-            style.id = "plugin-resize-table-style";
-            style.type = 'text/css';
-            style.innerHTML = css;
-            document.getElementsByTagName("head")[0].appendChild(style);
+            global._pluginUtils.insertStyle("plugin-resize-table-style", css);
         }
     })()
-
-    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
 
     const whichChildOfParent = child => {
         let i = 1;
@@ -90,7 +84,7 @@
 
     const write = document.querySelector("#write");
     write.addEventListener("mousedown", ev => {
-        if (!metaKeyPressed(ev)) return;
+        if (!global._pluginUtils.metaKeyPressed(ev)) return;
         ev.stopPropagation();
         ev.preventDefault();
 
@@ -132,7 +126,7 @@
             ev.stopPropagation();
             ev.preventDefault();
 
-            if (!metaKeyPressed(ev)) {
+            if (!global._pluginUtils.metaKeyPressed(ev)) {
                 return
             }
 

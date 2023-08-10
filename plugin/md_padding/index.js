@@ -1,14 +1,10 @@
 (() => {
     const config = {
-        HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "K",
+        HOTKEY: ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "K",
     }
 
-    const Package = {
-        Path: reqnode("path"),
-        Fs: reqnode("fs"),
-    }
+    const Package = global._pluginUtils.Package;
 
-    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
     const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
     const read = filepath => Package.Fs.readFileSync(filepath, 'utf-8');
     const write = (filepath, content) => Package.Fs.writeFileSync(filepath, content);
@@ -20,9 +16,7 @@
     };
 
     const getFormatter = () => {
-        const dirname = global.dirname || global.__dirname;
-        const filepath = Package.Path.join(dirname, "plugin", "md_padding", "md-padding");
-        const {padMarkdown} = reqnode(filepath);
+        const {padMarkdown} = global._pluginUtils.requireFile("./plugin/md_padding/padding");
         return padMarkdown;
     }
 

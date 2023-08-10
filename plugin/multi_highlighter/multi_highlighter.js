@@ -1,6 +1,4 @@
-const dirname = global.dirname || global.__dirname;
-const filepath = reqnode('path').join(dirname, "plugin", "multi_highlighter", "highlighter.js");
-const {InstantSearch} = reqnode(filepath);
+const {InstantSearch} = global._pluginUtils.requireFile("./plugin/multi_highlighter/highlighter.js");
 
 class multiHighlighter {
     constructor() {

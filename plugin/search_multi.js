@@ -1,11 +1,4 @@
 (() => {
-    const Package = {
-        Path: reqnode('path'), // Typora将require封装为reqnode，避免外部引入electron核心功能模块
-        Fs: reqnode('fs'),
-        File: File,            // Typora第一方库:文件、编辑器相关
-        Client: ClientCommand, // Typora第一方库:窗口、服务相关
-    }
-
     const config = {
         // 允许拖动模态框
         ALLOW_DRAG: true,
@@ -22,12 +15,12 @@
         // hint展示文件修改时间
         SHOW_MTIME: false,
         // Typora允许打开小于2000000(即MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
-        MAX_SIZE: Package.File.MAX_FILE_SIZE,
+        MAX_SIZE: File.MAX_FILE_SIZE,
         // Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
         ALLOW_EXT: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
         // 快捷键ctrl/command+shift+P打开模态框
-        HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "P",
+        HOTKEY: ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "P",
     };
 
     (() => {
@@ -172,11 +165,7 @@
             padding-left: 20px;
             display: none;
         }`
-        const style = document.createElement('style');
-        style.id = "plugin-search-multi-style";
-        style.type = 'text/css';
-        style.innerHTML = modal_css;
-        document.getElementsByTagName("head")[0].appendChild(style);
+        global._pluginUtils.insertStyle("plugin-search-multi-style", modal_css);
 
         const modal_div = `
         <div id="typora-search-multi-input">
@@ -223,11 +212,12 @@
         info: document.querySelector(".typora-search-multi-info-item"),
     }
 
+    const Package = global._pluginUtils.Package;
+
     // Typora里几乎所有常用操作库,具体代码可以在frame.js找到
-    const getLibrary = () => Package.File.editor.library
-    const getMountFolder = Package.File.getMountFolder
-    const separator = Package.File.isWin ? "\\" : "/";
-    const metaKeyPressed = ev => Package.File.isMac ? ev.metaKey : ev.ctrlKey
+    const getLibrary = () => File.editor.library
+    const getMountFolder = File.getMountFolder
+    const separator = File.isWin ? "\\" : "/";
 
     const openFileInThisWindow = filePath => {
         document.activeElement.blur();
@@ -341,14 +331,14 @@
 
     if (config.ALLOW_DRAG) {
         modal.modal.addEventListener("mousedown", ev => {
-            if (!metaKeyPressed(ev) || ev.button !== 0) return;
+            if (!global._pluginUtils.metaKeyPressed(ev) || ev.button !== 0) return;
             ev.stopPropagation();
             const rect = modal.modal.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
 
             const onMouseMove = ev => {
-                if (!metaKeyPressed(ev) || ev.button !== 0) return;
+                if (!global._pluginUtils.metaKeyPressed(ev) || ev.button !== 0) return;
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
@@ -358,7 +348,7 @@
             }
 
             document.addEventListener("mouseup", ev => {
-                    if (!metaKeyPressed(ev) || ev.button !== 0) return;
+                    if (!global._pluginUtils.metaKeyPressed(ev) || ev.button !== 0) return;
                     ev.stopPropagation();
                     ev.preventDefault();
                     document.removeEventListener('mousemove', onMouseMove);
@@ -376,7 +366,7 @@
     modal.input.addEventListener("keydown", ev => {
         switch (ev.key) {
             case "Enter":
-                if (metaKeyPressed(ev)) {
+                if (global._pluginUtils.metaKeyPressed(ev)) {
                     const select = modal.resultList.querySelector(".typora-search-multi-item.active");
                     if (select) {
                         ev.preventDefault();
@@ -454,7 +444,7 @@
         ev.stopPropagation();
 
         const filepath = target.getAttribute("data-path");
-        if (metaKeyPressed(ev)) {
+        if (global._pluginUtils.metaKeyPressed(ev)) {
             openFileInNewWindow(filepath, false);
         } else {
             openFileInThisWindow(filepath);

@@ -1,17 +1,17 @@
 window.onload = () => {
-/*  1. global._plugins使用声明式（声明替代代码开发）
-        1. name: 展示的插件名
-        2. fixed_name: 固定的插件名（可以看作是插件的UUID）
-        3. enable: 是否启用
-        4. clickable: 是否在右键菜单中可点击
-        5. config: 插件的配置
-        6. call: 插件的入口函数
-        7. call_args: 固定的插件参数，如果存在，那么将在右键菜单中会显示第三级菜单，当用户点击后就会传递参数给call函数
-        8. dynamic_call_args_generator: 插件动态参数，用户在不同区域、不同时间点击右键菜单时，显示不同的第三级菜单
-        9. meta: 用于传递自定义变量
-    2. 核心逻辑位于right_click_menu.js中，
-    3. 使用例子可以看collapse_paragraph.js。此插件实现了用户在不同区域（标题处点击、非标题处点击）右键菜单会有不同的第三级菜单。
-*/
+    /*  1. global._plugins使用声明式（声明替代代码开发）
+            1. name: 展示的插件名
+            2. fixed_name: 固定的插件名（可以看作是插件的UUID）
+            3. enable: 是否启用
+            4. clickable: 是否在右键菜单中可点击
+            5. config: 插件的配置
+            6. call: 插件的入口函数
+            7. call_args: 固定的插件参数，如果存在，那么将在右键菜单中会显示第三级菜单，当用户点击后就会传递参数给call函数
+            8. dynamic_call_args_generator: 插件动态参数，用户在不同区域、不同时间点击右键菜单时，显示不同的第三级菜单
+            9. meta: 用于传递自定义变量
+        2. 核心逻辑位于right_click_menu.js中，
+        3. 使用例子可以看collapse_paragraph.js。此插件实现了用户在不同区域（标题处点击、非标题处点击）右键菜单会有不同的第三级菜单。
+    */
     global._plugins_had_injected = false;
     global._plugins = [
         {
@@ -137,29 +137,18 @@ window.onload = () => {
             name: "测试专用",
             fixed_name: "test",
             src: "./plugin/test.js",
-            enable: false,
+            enable: true,
             clickable: false,
         },
     ]
 
-    global._getPlugin = fixed_name => {
-        const idx = global._plugins.findIndex(plugin => plugin.enable && plugin.fixed_name === fixed_name)
-        if (idx !== -1) {
-            return global._plugins[idx];
-        }
-    }
-
-    const loadPlugin = () => {
-        const _path = reqnode("path");
-        const _fs = reqnode("fs");
-        const dirname = global.dirname || global.__dirname;
+    const loadPlugins = (join, access, dirname) => {
         const promises = [];
-
         global._plugins.forEach(plugin => {
             if (!plugin.enable) return;
-            const filepath = _path.join(dirname, plugin.src);
+            const filepath = join(dirname, plugin.src);
             const promise = new Promise((resolve, reject) => {
-                _fs.access(filepath, err => {
+                access(filepath, err => {
                     if (!err) {
                         const {config, call, callArgs, dynamicCallArgsGenerator, meta} = reqnode(filepath);
                         plugin.config = config || null;
@@ -183,5 +172,19 @@ window.onload = () => {
             .catch(() => global._plugins_had_injected = true)
     }
 
-    loadPlugin();
+    const loadUtils = (join, dirname) => {
+        const filepath = join(dirname, "./plugin/global/utils.js");
+        global._pluginUtils = reqnode(filepath);
+    }
+
+    const load = () => {
+        const join = reqnode("path").join;
+        const access = reqnode("fs").access;
+        const dirname = global.dirname || global.__dirname;
+
+        loadUtils(join, dirname);
+        loadPlugins(join, access, dirname);
+    }
+
+    load();
 }

@@ -7,7 +7,7 @@
     }
 
     const callbackOtherPlugin = () => {
-        const outlinePlugin = global._getPlugin("outline");
+        const outlinePlugin = global._pluginUtils.getPlugin("outline");
         outlinePlugin && outlinePlugin.meta.refresh();
     }
 
