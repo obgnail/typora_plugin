@@ -78,11 +78,7 @@
                 text-align: center;
             }
         `
-        const style = document.createElement('style');
-        style.id = "plugin-outline-style";
-        style.type = 'text/css';
-        style.innerHTML = modal_css;
-        document.getElementsByTagName("head")[0].appendChild(style);
+        global._pluginUtils.insertStyle("plugin-outline-style", modal_css);
 
         const all_button = (config.USE_ALL) ? `<div class="plugin-outline-icon ion-android-data" type="all" ty-hint="混合"></div>` : "";
         const class_name = (config.SHOW_HIDDEN) ? "ion-eye" : "ion-eye-disabled";
@@ -268,8 +264,8 @@
         entities.modal.style.display = "block";
     }
 
-    const collapsePlugin = global._getPlugin("collapse_paragraph");
-    const truncatePlugin = global._getPlugin("truncate_text");
+    const collapsePlugin = global._pluginUtils.getPlugin("collapse_paragraph");
+    const truncatePlugin = global._pluginUtils.getPlugin("truncate_text");
     const compatibleOtherPlugin = target => {
         if (!target) return;
 

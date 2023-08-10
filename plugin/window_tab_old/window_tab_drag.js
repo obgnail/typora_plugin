@@ -462,8 +462,6 @@
         }
     }
 
-    const metaKeyPressed = ev => Package.File.isMac ? ev.metaKey : ev.ctrlKey;
-
     // 应用外点击任务栏切换窗口
     const registerOnFocus = () => {
         let lastFocusTime = 0;
@@ -507,7 +505,7 @@
         const _winId = target.getAttribute("winid");
         const winId = parseInt(_winId);
 
-        if (metaKeyPressed(ev)) {
+        if (global._pluginUtils.metaKeyPressed(ev)) {
             openFileInNewWindow(winId);
         } else {
             setFocusWindow(winId);

@@ -8,7 +8,7 @@
 
     const config = {
         // 快捷键
-        HOTKEY: ev => metaKeyPressed(ev) && ev.key === "g",
+        HOTKEY: ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "g",
         // 允许拖动模态框
         ALLOW_DRAG: true,
         // 启用内建的命令列表
@@ -108,11 +108,7 @@
             outline: 0
         }
         `
-        const style = document.createElement('style');
-        style.id = "plugin-commander-style";
-        style.type = 'text/css';
-        style.innerHTML = modal_css;
-        document.getElementsByTagName("head")[0].appendChild(style);
+        global._pluginUtils.insertStyle("plugin-commander-style", modal_css);
 
         const windowOption = (File.isMac) ? `` : `
             <option value="${SHELL.POWER_SHELL}">powershell</option>
@@ -156,13 +152,6 @@
         pre: document.querySelector(".typora-commander-output pre"),
     }
 
-    const Package = {
-        child_process: reqnode('child_process'),
-        path: reqnode('path'),
-    };
-
-    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
-
     const convertPath = (path, shell) => {
         if (File.isMac) {
             return path
@@ -185,9 +174,9 @@
         }
     }
 
-    const _getFile = () => File.filePath || (File.bundle && File.bundle.filePath);
-    const getFile = shell => convertPath(_getFile(), shell);
-    const getFolder = shell => convertPath(Package.path.dirname(_getFile()), shell);
+    const getFilePath = global._pluginUtils.getFilePath;
+    const getFile = shell => convertPath(getFilePath(), shell);
+    const getFolder = shell => convertPath(global._pluginUtils.Package.Path.dirname(getFilePath()), shell);
     const getMountFolder = shell => convertPath(File.getMountFolder(), shell);
 
     const replaceArgs = (cmd, shell) => {
@@ -216,7 +205,7 @@
     const exec = (cmd, shell, resolve, reject) => {
         const _shell = getShellCommand(shell);
         const _cmd = replaceArgs(cmd, shell);
-        Package.child_process.exec(
+        global._pluginUtils.Package.ChildProcess.exec(
             `chcp 65001 | ${_shell} "${_cmd}"`,
             {
                 encoding: 'utf8',
@@ -232,8 +221,6 @@
                 }
             })
     }
-
-    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
 
     const showStdout = stdout => {
         modal.output.style.display = "block";
@@ -323,14 +310,14 @@
 
     if (config.ALLOW_DRAG) {
         modal.input.addEventListener("mousedown", ev => {
-            if (!metaKeyPressed(ev) || ev.button !== 0) return;
+            if (!global._pluginUtils.metaKeyPressed(ev) || ev.button !== 0) return;
             ev.stopPropagation();
             const rect = modal.modal.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
 
             const onMouseMove = ev => {
-                if (!metaKeyPressed(ev) || ev.button !== 0) return;
+                if (!global._pluginUtils.metaKeyPressed(ev) || ev.button !== 0) return;
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
@@ -340,7 +327,7 @@
             }
 
             document.addEventListener("mouseup", ev => {
-                    if (!metaKeyPressed(ev) || ev.button !== 0) return;
+                    if (!global._pluginUtils.metaKeyPressed(ev) || ev.button !== 0) return;
                     ev.stopPropagation();
                     ev.preventDefault();
                     document.removeEventListener('mousemove', onMouseMove);

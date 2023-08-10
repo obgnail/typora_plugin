@@ -102,7 +102,7 @@
 
     const generateDynamicCallArgs = fixedName => {
         if (!fixedName) return;
-        const plugin = global._getPlugin(fixedName);
+        const plugin = global._pluginUtils.getPlugin(fixedName);
         if (plugin && plugin.enable && plugin.dynamic_call_args_generator) {
             const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
             if (anchorNode[0]) {

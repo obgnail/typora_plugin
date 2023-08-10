@@ -46,11 +46,7 @@
                 margin-left: .5em;
             }
             `
-        const style = document.createElement('style');
-        style.id = "plugin-fence-enhance-style";
-        style.type = 'text/css';
-        style.innerHTML = css;
-        document.getElementsByTagName("head")[0].appendChild(style);
+        global._pluginUtils.insertStyle("plugin-fence-enhance-style", css);
     })()
 
     const addEnhanceElement = fence => {

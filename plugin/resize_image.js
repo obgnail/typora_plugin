@@ -6,8 +6,6 @@
         IMAGE_ALIGN: "center",
     }
 
-    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
-
     const getWidth = image => {
         const {width} = image.getBoundingClientRect();
         return (!image.style.width) ? width : parseInt(image.style.width.replace("px", ""));
@@ -37,7 +35,7 @@
     }
 
     document.getElementById("write").addEventListener("wheel", ev => {
-        if (!metaKeyPressed(ev)) return;
+        if (!global._pluginUtils.metaKeyPressed(ev)) return;
 
         const target = ev.target.closest("img");
         if (!target) return;

@@ -26,7 +26,7 @@
         // 关键词按空格分割
         SEPARATOR: " ",
         // 快捷键
-        HOTKEY: ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "H",
+        HOTKEY: ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "H",
         // 展示执行按钮
         SHOW_RUN_BUTTON: false,
         // 打开其他文件时自动重新搜索
@@ -197,11 +197,7 @@
             
             ${colorsStyle}
             `
-        const style = document.createElement('style');
-        style.id = "plugin-multi-highlighter-style";
-        style.type = 'text/css';
-        style.innerHTML = css;
-        document.getElementsByTagName("head")[0].appendChild(style);
+        global._pluginUtils.insertStyle("plugin-multi-highlighter-style", css);
 
         const div = `
             <div id="plugin-multi-highlighter-input">
@@ -230,11 +226,8 @@
         result: document.getElementById("plugin-multi-highlighter-result"),
     }
 
-    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
-    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
-
-    const collapsePlugin = global._getPlugin("collapse_paragraph");
-    const truncatePlugin = global._getPlugin("truncate_text");
+    const collapsePlugin = global._pluginUtils.getPlugin("collapse_paragraph");
+    const truncatePlugin = global._pluginUtils.getPlugin("truncate_text");
     const compatibleOtherPlugin = target => {
         if (!target) return;
 
@@ -242,8 +235,7 @@
         truncatePlugin && truncatePlugin.meta && truncatePlugin.meta.rollback && truncatePlugin.meta.rollback(target);
     }
 
-    const multiHighlighterClass = reqnode(reqnode('path').join(global.dirname || global.__dirname,
-        "plugin", "multi_highlighter", "multi_highlighter.js")).multiHighlighter;
+    const multiHighlighterClass = global._pluginUtils.requireFile("./plugin/multi_highlighter/multi_highlighter.js").multiHighlighter;
     const multiHighlighter = new multiHighlighterClass();
     let fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
 
@@ -292,7 +284,7 @@
 
     let lastHighlightFilePath;
     const highlight = (refreshResult = true) => {
-        lastHighlightFilePath = getFilePath();
+        lastHighlightFilePath = global._pluginUtils.getFilePath();
         const keyArr = getKeyArr();
         if (!keyArr) return false;
         doSearch(keyArr, refreshResult);
@@ -415,7 +407,7 @@
         ev.preventDefault();
 
         // 当用户切换文档时
-        if (getFilePath() !== lastHighlightFilePath) {
+        if (global._pluginUtils.getFilePath() !== lastHighlightFilePath) {
             highlight();
             return;
         }
@@ -471,14 +463,14 @@
 
     if (config.ALLOW_DRAG) {
         entities.input.addEventListener("mousedown", ev => {
-            if (!metaKeyPressed(ev) || ev.button !== 0) return;
+            if (!global._pluginUtils.metaKeyPressed(ev) || ev.button !== 0) return;
             ev.stopPropagation();
             const rect = entities.modal.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
 
             const onMouseMove = ev => {
-                if (!metaKeyPressed(ev) || ev.button !== 0) return;
+                if (!global._pluginUtils.metaKeyPressed(ev) || ev.button !== 0) return;
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
@@ -488,7 +480,7 @@
             }
 
             document.addEventListener("mouseup", ev => {
-                    if (!metaKeyPressed(ev) || ev.button !== 0) return;
+                    if (!global._pluginUtils.metaKeyPressed(ev) || ev.button !== 0) return;
                     ev.stopPropagation();
                     ev.preventDefault();
                     document.removeEventListener('mousemove', onMouseMove);

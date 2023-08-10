@@ -17,15 +17,15 @@
         LOOP_DETECT_INTERVAL: 30,
 
         CLOSE_HOTKEY: [
-            ev => metaKeyPressed(ev) && ev.key === "w",
+            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "w",
         ],
         SWITCH_NEXT_TAB_HOTKEY: [
-            ev => metaKeyPressed(ev) && ev.key === "PageDown",
-            ev => metaKeyPressed(ev) && !ev.shiftKey && ev.key === "Tab",
+            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "PageDown",
+            ev => global._pluginUtils.metaKeyPressed(ev) && !ev.shiftKey && ev.key === "Tab",
         ],
         SWITCH_PREVIOUS_TAB_HOTKEY: [
-            ev => metaKeyPressed(ev) && ev.key === "PageUp",
-            ev => metaKeyPressed(ev) && ev.shiftKey && ev.key === "Tab",
+            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "PageUp",
+            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "Tab",
         ],
     };
 
@@ -181,11 +181,7 @@
                 pointer-events: none;
             }
             `
-        const style = document.createElement('style');
-        style.id = "plugin-window-tab-style";
-        style.type = 'text/css';
-        style.innerHTML = css;
-        document.getElementsByTagName("head")[0].appendChild(style);
+        global._pluginUtils.insertStyle("plugin-window-tab-style", css);
 
         const div = `<div class="tab-bar"></div>`
         const windowTab = document.createElement("div");
@@ -207,10 +203,7 @@
         }
     })()
 
-    const Package = {
-        Path: reqnode("path"),
-        Fs: reqnode("fs"),
-    };
+    const Package = global._pluginUtils.Package;
 
     const entities = {
         content: document.querySelector("content"),
@@ -221,10 +214,6 @@
         tabs: [],
         activeIdx: 0,
     }
-
-    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
-
-    const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
 
     // 新窗口打开
     const openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
@@ -297,7 +286,7 @@
         const stopCount = 3;
         const scrollTop = activeTab.scrollTop;
         const _timer = setInterval(() => {
-            const filePath = getFilePath();
+            const filePath = global._pluginUtils.getFilePath();
             if (filePath === activeTab.path && entities.content.scrollTop !== scrollTop) {
                 entities.content.scrollTop = scrollTop;
                 count = 0;
@@ -382,7 +371,7 @@
 
             File.editor.library.openFile = decorator(File.editor.library.openFile, after);
 
-            const filePath = getFilePath();
+            const filePath = global._pluginUtils.getFilePath();
             if (filePath) {
                 openTab(filePath);
             }
@@ -400,7 +389,7 @@
         const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
         const idx = parseInt(tab.getAttribute("idx"));
 
-        if (metaKeyPressed(ev)) {
+        if (global._pluginUtils.metaKeyPressed(ev)) {
             openFileNewWindow(tabUtil.tabs[idx].path, false);
         } else if (closeButton) {
             closeTab(idx);
@@ -413,7 +402,7 @@
         const target = ev.target.closest("#plugin-window-tab .tab-bar");
         if (!target) return;
 
-        if (metaKeyPressed(ev)) {
+        if (global._pluginUtils.metaKeyPressed(ev)) {
             (ev.deltaY < 0) ? previousTab() : nextTab();
         } else {
             target.scrollLeft += ev.deltaY;
@@ -445,7 +434,7 @@
         if (!target) return;
 
         // 将原先的click行为改成ctrl+click
-        if (metaKeyPressed(ev)) return;
+        if (global._pluginUtils.metaKeyPressed(ev)) return;
 
         ev.preventDefault();
         ev.stopPropagation();
@@ -625,10 +614,7 @@
     }
 
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////
-    const getTabFile = () => {
-        const dirname = global.dirname || global.__dirname;
-        return Package.Path.join(dirname, "./plugin/window_tab/save_tabs.json")
-    }
+    const getTabFile = () => global._pluginUtils.joinPath("./plugin/window_tab/save_tabs.json");
 
     const exitTabFile = () => {
         const filepath = getTabFile();
@@ -695,7 +681,7 @@
         if (config.LOCAL_OPEN) {
             args.push({arg_name: "在新标签打开文件", arg_value: "new_tab_open"});
             // 空白标签不允许当前标签打开
-        } else if (getFilePath()) {
+        } else if (global._pluginUtils.getFilePath()) {
             args.push({arg_name: "在当前标签打开文件", arg_value: "local_open"});
         }
         return args

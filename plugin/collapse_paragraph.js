@@ -16,15 +16,11 @@
                 background-color: gray;
             }
             `;
-        const style = document.createElement('style');
-        style.id = "plugin-collapse-paragraph-style";
-        style.type = 'text/css';
-        style.innerHTML = css;
-        document.getElementsByTagName("head")[0].appendChild(style);
+        global._pluginUtils.insertStyle("plugin-collapse-paragraph-style", css);
     })()
 
     const callbackOtherPlugin = () => {
-        const outlinePlugin = global._getPlugin("outline");
+        const outlinePlugin = global._pluginUtils.getPlugin("outline");
         outlinePlugin && outlinePlugin.meta.refresh();
     }
 
@@ -105,10 +101,8 @@
 
     const findAllSiblings = paragraph => document.querySelectorAll(`#write ${paragraph.tagName}`);
 
-    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
-
     document.getElementById("write").addEventListener("click", ev => {
-        if (!metaKeyPressed(ev)) return;
+        if (!global._pluginUtils.metaKeyPressed(ev)) return;
         const paragraph = ev.target.closest("h1, h2, h3, h4, h5, h6");
         if (!paragraph) return;
 
