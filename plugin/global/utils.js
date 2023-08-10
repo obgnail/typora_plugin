@@ -15,6 +15,9 @@
     }
 
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
+    const shiftKeyPressed = ev => !!ev.shiftKey;
+    const altKeyPressed = ev => !!ev.altKey;
+
     const getDirname = () => global.dirname || global.__dirname;
     const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
     const joinPath = (...paths) => Package.Path.join(getDirname(), ...paths);
@@ -103,6 +106,8 @@
         insertStyle,
         getPlugin,
         metaKeyPressed,
+        shiftKeyPressed,
+        altKeyPressed,
         dirname,
         getFilePath,
         joinPath,

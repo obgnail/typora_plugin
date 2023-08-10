@@ -137,7 +137,7 @@ window.onload = () => {
             name: "测试专用",
             fixed_name: "test",
             src: "./plugin/test.js",
-            enable: false,
+            enable: true,
             clickable: false,
         },
     ]
@@ -177,12 +177,18 @@ window.onload = () => {
         global._pluginUtils = reqnode(filepath);
     }
 
+    const loadSettings = (join, dirname) => {
+        const configPath = join(dirname, "./plugin/global/settings.js")
+        reqnode(configPath);
+    }
+
     const load = () => {
         const join = reqnode("path").join;
         const access = reqnode("fs").access;
         const dirname = global.dirname || global.__dirname;
 
         loadUtils(join, dirname);
+        loadSettings(join, dirname);
         loadPlugins(join, access, dirname);
     }
 

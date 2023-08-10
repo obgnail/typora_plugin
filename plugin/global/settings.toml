@@ -1,0 +1,43 @@
+[window_tab]
+# 隐藏掉titleBar
+HIDE_WINDOW_TITLE_BAR = true
+# 拖拽排序标签页的方式（1 or 2）
+DRAG_STYLE = 1
+# 当标签页脱离父标签3倍高度时，视为新建窗口
+HEIGHT_SCALE = 3
+# 总是在当前标签页打开
+LOCAL_OPEN = false
+# 是否调整content的top，以免被tab遮挡
+CHANGE_CONTENT_TOP = true
+# 是否调整.md-notification-container的z-index，以免被tab遮挡
+CHANGE_NOTIFICATION_Z_INDEX = true
+# 关闭标签页的快捷键
+CLOSE_HOTKEY = ["ctrl+w"]
+# 切换下一个标签页的快捷键
+SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
+# 切换上一个标签页的快捷键
+SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
+# 系统内部使用，请勿设置
+LOOP_DETECT_INTERVAL = 30
+
+[search_multi]
+# 允许拖动模态框
+ALLOW_DRAG = true
+# 模态框自动隐藏
+AUTO_HIDE = false
+# 搜索内容时大小写敏感(此选项不必手动调整，可以在UI设置)
+CASE_SENSITIVE = false
+# 将文件路径加入搜索内容(此选项不必手动调整，可以在UI设置)
+INCLUDE_FILE_PATH = false
+# 展示文件路径时使用相对路径
+RELATIVE_PATH = true
+# 关键词按空格分割
+SEPARATOR = " "
+# hint展示文件修改时间
+SHOW_MTIME = false
+# Typora允许打开小于2000000(即File.MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
+MAX_SIZE = 2000000
+# Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
+ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
+# 打开模态框快捷键
+HOTKEY = "ctrl+shift+p"
