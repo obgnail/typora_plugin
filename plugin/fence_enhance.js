@@ -23,7 +23,6 @@
         // 默认折叠
         FOLD_DEFAULT: false,
 
-        LOOP_DETECT_INTERVAL: 20,
         CLICK_CHECK_INTERVAL: 300,
         WAIT_RECOVER_INTERVAL: 1000,
     };
@@ -86,28 +85,13 @@
         }
     }
 
-    const _timer = setInterval(() => {
-        if (File && File.editor && File.editor.fences && File.editor.fences.addCodeBlock) {
-            clearInterval(_timer);
-
-            const decorator = (original, after) => {
-                return function () {
-                    const result = original.apply(this, arguments);
-                    after.call(this, result, ...arguments);
-                    return result;
-                };
-            }
-
-            const after = (result, ...args) => {
-                const cid = args[0];
-                if (cid) {
-                    const ele = document.querySelector(`#write .md-fences[cid=${cid}]`);
-                    addEnhanceElement(ele);
-                }
-            }
-            File.editor.fences.addCodeBlock = decorator(File.editor.fences.addCodeBlock, after);
+    global._pluginUtils.decorateAddCodeBlock(null, (result, ...args) => {
+        const cid = args[0];
+        if (cid) {
+            const ele = document.querySelector(`#write .md-fences[cid=${cid}]`);
+            addEnhanceElement(ele);
         }
-    }, config.LOOP_DETECT_INTERVAL);
+    })
 
     document.getElementById("write").addEventListener("click", ev => {
         const copy = ev.target.closest(".typora-copy-code");

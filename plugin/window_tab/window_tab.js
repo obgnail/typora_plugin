@@ -351,31 +351,16 @@
 
     const closeActiveTab = () => closeTab(tabUtil.activeIdx);
 
+    global._pluginUtils.decorateOpenFile(null, (result, ...args) => {
+        const filePath = args[0];
+        filePath && openTab(filePath);
+    })
+
     const _timer = setInterval(() => {
-        if (File) {
-            clearInterval(_timer);
-
-            const decorator = (original, after) => {
-                return function () {
-                    const result = original.apply(this, arguments);
-                    after.call(this, result, ...arguments);
-                    return result;
-                };
-            }
-            const after = (result, ...args) => {
-                const filePath = args[0];
-                if (filePath) {
-                    openTab(filePath);
-                }
-            }
-
-            File.editor.library.openFile = decorator(File.editor.library.openFile, after);
-
-            const filePath = global._pluginUtils.getFilePath();
-            if (filePath) {
-                openTab(filePath);
-            }
-        }
+        if (!File) return
+        clearInterval(_timer);
+        const filePath = global._pluginUtils.getFilePath();
+        filePath && openTab(filePath);
     }, config.LOOP_DETECT_INTERVAL);
 
     entities.tabBar.addEventListener("click", ev => {

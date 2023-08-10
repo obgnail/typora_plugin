@@ -16,8 +16,6 @@
         AUTO_REFRESH_WHEN_OPEN_FILE: true,
         // 显示被其他插件隐藏的元素
         SHOW_HIDDEN: false,
-
-        LOOP_DETECT_INTERVAL: 30,
     };
 
     (() => {
@@ -377,20 +375,9 @@
     })
     entities.move.ondragstart = () => false
 
-    const _timer = setInterval(() => {
-        if (File) {
-            clearInterval(_timer);
-            const decorator = (original, after) => {
-                return function () {
-                    const result = original.apply(this, arguments);
-                    after.call(this, result, ...arguments);
-                    return result;
-                };
-            }
-            const after = () => (config.AUTO_REFRESH_WHEN_OPEN_FILE && entities.modal.style.display === "block") && setTimeout(refresh, 300)
-            File.editor.library.openFile = decorator(File.editor.library.openFile, after);
-        }
-    }, config.LOOP_DETECT_INTERVAL);
+    global._pluginUtils.decorateOpenFile(null, () => {
+        (config.AUTO_REFRESH_WHEN_OPEN_FILE && entities.modal.style.display === "block") && setTimeout(refresh, 300);
+    })
 
     const call = () => {
         if (entities.modal.style.display === "block") {

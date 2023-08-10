@@ -7,7 +7,6 @@
             "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
         CLASS_NAME: "plugin-file-counter",
         LOOP_DETECT_INTERVAL: 300,
-
     };
 
     const Package = global._pluginUtils.Package;

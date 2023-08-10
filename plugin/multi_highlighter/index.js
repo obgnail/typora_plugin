@@ -76,8 +76,6 @@
         // 性能选项：当fenceMultiHighlighterList数量超过X时，clear之（以时间换空间）。若<0,则总不启用
         // 此选项用在当上一个策略使用太多次后，花费时间去回收空间，保证不会占用太大内存
         CLEAR_LIST_THRESHOLD: 12,
-
-        LOOP_DETECT_INTERVAL: 20,
     };
 
     (() => {
@@ -503,33 +501,20 @@
         }, 120);
     }
 
-    const _timer = setInterval(() => {
-        if (!File || !File.editor || !File.editor.fences || !File.editor.fences.addCodeBlock) return;
-        clearInterval(_timer);
-
-        let hasMarker;
-        const before = (...args) => {
+    const decoMixin = {
+        hasMarker: false,
+        before: (...args) => {
             const cid = args[0];
             if (!cid || multiHighlighter.length() === 0) return;
 
             const marker = entities.write.querySelector(`.md-fences[cid=${cid}] marker`);
-            hasMarker = !!marker;
-        }
-
-        const decorator = (original, before, after) => {
-            return function () {
-                before.call(this, ...arguments);
-                const result = original.apply(this, arguments);
-                after.call(this, result, ...arguments);
-                return result;
-            };
-        }
-
-        const after = (result, ...args) => {
+            this.hasMarker = !!marker;
+        },
+        after: (result, ...args) => {
             const cid = args[0];
-            if (!cid || !hasMarker || multiHighlighter.length() === 0) return;
+            if (!cid || !this.hasMarker || multiHighlighter.length() === 0) return;
 
-            hasMarker = false;
+            this.hasMarker = false;
 
             const fence = entities.write.querySelector(`.md-fences[cid=${cid}]`);
             if (!fence) return;
@@ -555,28 +540,14 @@
                 }
             }
         }
-        File.editor.fences.addCodeBlock = decorator(File.editor.fences.addCodeBlock, before, after);
-    }, config.LOOP_DETECT_INTERVAL);
+    }
+
+    global._pluginUtils.decorateAddCodeBlock(decoMixin.before, decoMixin.after);
 
     if (config.RESEARCH_WHILE_OPEN_FILE) {
-        const _timer2 = setInterval(() => {
-            if (File) {
-                clearInterval(_timer2);
-                const decorator = (original, after) => {
-                    return function () {
-                        const result = original.apply(this, arguments);
-                        after.call(this, result, ...arguments);
-                        return result;
-                    };
-                }
-                const after = (...args) => {
-                    if (entities.modal.style.display === "block") {
-                        setTimeout(highlight, 300)
-                    }
-                }
-                File.editor.library.openFile = decorator(File.editor.library.openFile, after);
-            }
-        }, config.LOOP_DETECT_INTERVAL);
+        global._pluginUtils.decorateOpenFile(null, () => {
+            (entities.modal.style.display === "block") && setTimeout(highlight, 300)
+        })
     }
 
     const call = () => {

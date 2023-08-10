@@ -111,25 +111,24 @@
         }, config.LOOP_DETECT_INTERVAL);
     }
 
-    const _timer2 = setInterval(() => {
-        if (File) {
-            clearInterval(_timer2);
-            const decorator = (original, after) => {
-                return function () {
-                    const result = original.apply(this, arguments);
-                    after.call(this, result, ...arguments);
-                    return result;
-                };
-            }
-            File.freshLock = decorator(File.freshLock, () => {
-                if (!File.isLocked) return;
-                ["typora-search-multi-input", "typora-commander-form", "plugin-multi-highlighter-input"].forEach(id => {
-                    const input = document.querySelector(`#${id} input`);
-                    input && input.removeAttribute("readonly");
-                })
-            });
+    global._pluginUtils.decorate(
+        () => !!File,
+        File,
+        "freshLock",
+        null,
+        () => {
+            if (!File.isLocked) return;
+            [
+                "#typora-search-multi-input input",
+                "#typora-commander-form input",
+                "#plugin-multi-highlighter-input input",
+                "#typora-quick-open-input input",
+            ].forEach(selector => {
+                const input = document.querySelector(selector);
+                input && input.removeAttribute("readonly");
+            })
         }
-    }, config.LOOP_DETECT_INTERVAL);
+    )
 
     const call = () => {
         const span = document.getElementById("footer-word-count-label");
