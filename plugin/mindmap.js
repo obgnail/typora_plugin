@@ -59,15 +59,23 @@
         return wrapMermaid(lines.join(""))
     }
 
+    const dynamicCallArgsGenerator = anchorNode => {
+        const target = anchorNode.closest(`#write > p[mdtype="paragraph"]:not(:has(>span))`);
+        if (!target) return;
+
+        return [
+            {
+                arg_name: "在此处插入：mindmap",
+                arg_value: "insert_mindmap"
+            },
+            {
+                arg_name: "在此处插入：graph",
+                arg_value: "insert_graph"
+            },
+        ]
+    }
+
     const callArgs = [
-        {
-            arg_name: "在此处插入：mindmap",
-            arg_value: "insert_mindmap"
-        },
-        {
-            arg_name: "在此处插入：graph",
-            arg_value: "insert_graph"
-        },
         {
             arg_name: "复制到剪切板：mindmap",
             arg_value: "set_clipboard_mindmap"
@@ -113,6 +121,7 @@
     module.exports = {
         call,
         callArgs,
+        dynamicCallArgsGenerator,
     };
 
     console.log("mindmap.js had been injected");
