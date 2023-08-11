@@ -64,7 +64,7 @@
         const mermaid = mindmap(list, rootLevel, rootTag);
 
         if (type === "set_clipboard") {
-            File.editor.UserOp.setClipboard(null, null, mermaid);
+            navigator.clipboard.writeText(mermaid);
         }
     }
 

@@ -137,8 +137,8 @@
         })
 
         const result = contentList.join("\n");
-        // navigator.clipboard.writeText(result);
-        File.editor.UserOp.setClipboard(null, null, result);
+        navigator.clipboard.writeText(result);
+        // File.editor.UserOp.setClipboard(null, null, result);
 
         copyButton.firstElementChild.className = "fa fa-check";
         setTimeout(() => copyButton.firstElementChild.className = "fa fa-clipboard", config.WAIT_RECOVER_INTERVAL);
