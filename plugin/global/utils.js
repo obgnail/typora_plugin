@@ -45,19 +45,17 @@
         detectorContainer[uuid] = setInterval(() => {
             if (!until()) return;
 
-            clearInterval(detectorContainer[uuid]);
-            delete detectorContainer[uuid];
-
             const decorator = (original, before, after) => {
-                return function (...arguments) {
+                return function () {
                     before && before.call(this, ...arguments);
                     const result = original.apply(this, arguments);
                     after && after.call(this, result, ...arguments);
                     return result;
                 };
             }
-
             obj[func] = decorator(obj[func], before, after);
+            clearInterval(detectorContainer[uuid]);
+            delete detectorContainer[uuid];
         }, 20);
     }
 
