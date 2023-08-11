@@ -10,62 +10,90 @@
         return filename
     }
 
-    const cleanTitle = title => title.replace(/[()]/g, "");
+    const cleanMindMapTitle = title => title.replace(/[(-)]/g, "");
+    const cleanGraphTitle = title => title.replace(/[(、：，（）。「」？！)]/g, "");
 
-    const mindmap = (list, rootLevel, rootTag) => {
-        const result = [];
-        result.push("mindmap", "\n");
-        result.push("\t", `root((${cleanTitle(rootTag)}))`, "\n")
+    const wrapMermaid = content => `\`\`\`mermaid\n${content}\`\`\``;
 
-        const rootIdx = paragraphList.indexOf(rootLevel);
-        list.forEach(ele => {
-            result.push(
-                "\t".repeat(paragraphList.indexOf(ele.tagName) - rootIdx + 1),
-                cleanTitle(ele.title),
-                "\n"
-            );
+    const mindmap = (pList, root) => {
+        const lines = [
+            "mindmap", "\n",
+            "\t", `root(${cleanMindMapTitle(root)})`, "\n",
+        ];
+        pList.forEach(ele => lines.push("\t".repeat(ele.levelIdx + 1), cleanMindMapTitle(ele.title), "\n"))
+        return wrapMermaid(lines.join(""))
+    }
+
+    const graph = (pList, root) => {
+        const getItemTitle = item => {
+            if (item.used) {
+                return item.id
+            }
+            item.used = true;
+            const title = cleanGraphTitle(item.title);
+            return `${item.id}(${title})`
+        }
+
+        const getParentItemTitle = item => {
+            for (let i = item.levelIdx - 1; i >= 0; i--) {
+                const item = levelItems[i];
+                if (item) {
+                    return getItemTitle(item)
+                }
+            }
+        }
+
+        pList.forEach((ele, idx) => {
+            ele.id = "item" + idx;
+            ele.used = false;
         })
 
-        return `\`\`\`mermaid\n${result.join("")}\`\`\``
+        const levelItems = [{id: "root", title: root, used: false}, null, null, null, null, null, null];
+
+        const lines = ["graph LR", "\n"];
+        pList.forEach(item => {
+            levelItems[item.levelIdx] = item;
+            lines.push(getParentItemTitle(item), "-->", getItemTitle(item), "\n");
+        })
+
+        return wrapMermaid(lines.join(""))
     }
 
     const callArgs = [
         {
-            arg_name: "复制到剪切板",
-            arg_value: "set_clipboard"
+            arg_name: "复制到剪切板：mindmap",
+            arg_value: "set_clipboard_mindmap"
+        },
+        {
+            arg_name: "复制到剪切板：graph",
+            arg_value: "set_clipboard_graph"
         },
     ];
 
     const call = type => {
-        const list = [];
+        const pList = [];
         document.querySelectorAll("#write > .md-heading").forEach(ele => {
             const tagName = ele.tagName;
+            const levelIdx = paragraphList.indexOf(tagName);
             const title = ele.firstElementChild.textContent;
-            list.push({tagName, title});
+            pList.push({tagName, title, levelIdx});
         })
 
-        if (list.length === 0) return
+        if (pList.length === 0) return
 
-        let rootTag;
-        let rootLevel;
-        const tags = list.filter(ele => ele.tagName === list[0].tagName);
-        if (tags.length === 1) {
-            rootTag = tags[0].title;
-            rootLevel = tags[0].tagName;
-        } else {
-            rootTag = getFileName();
-            rootLevel = "H0";
+        let root = getFileName();
+        if (pList.filter(ele => ele.tagName === pList[0].tagName).length === 1) {
+            root = pList[0].title;
+            pList.shift();
         }
 
-        if (rootLevel !== "H0") {
-            list.shift();
+        let result;
+        if (type === "set_clipboard_mindmap") {
+            result = mindmap(pList, root);
+        } else if (type === "set_clipboard_graph") {
+            result = graph(pList, root);
         }
-
-        const mermaid = mindmap(list, rootLevel, rootTag);
-
-        if (type === "set_clipboard") {
-            navigator.clipboard.writeText(mermaid);
-        }
+        navigator.clipboard.writeText(result);
     }
 
     module.exports = {
