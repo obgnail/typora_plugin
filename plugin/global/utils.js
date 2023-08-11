@@ -103,7 +103,7 @@
         insertStyle,
         getPlugin,
         metaKeyPressed,
-        dirname,
+        getDirname,
         getFilePath,
         joinPath,
         requireFile,
