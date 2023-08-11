@@ -11,7 +11,7 @@
     }
 
     const cleanMindMapTitle = title => title.replace(/[(-)]/g, "");
-    const cleanGraphTitle = title => title.replace(/[(、：，（）。「」？！)]/g, "");
+    const cleanGraphTitle = title => title.replace(/[(、：，（）。「」？！_)]/g, "");
 
     const wrapMermaid = content => `\`\`\`mermaid\n${content}\`\`\``;
 
@@ -61,6 +61,14 @@
 
     const callArgs = [
         {
+            arg_name: "在此处插入：mindmap",
+            arg_value: "insert_mindmap"
+        },
+        {
+            arg_name: "在此处插入：graph",
+            arg_value: "insert_graph"
+        },
+        {
             arg_name: "复制到剪切板：mindmap",
             arg_value: "set_clipboard_mindmap"
         },
@@ -88,12 +96,18 @@
         }
 
         let result;
-        if (type === "set_clipboard_mindmap") {
+        if (type === "set_clipboard_mindmap" || type === "insert_mindmap") {
             result = mindmap(pList, root);
-        } else if (type === "set_clipboard_graph") {
+        } else if (type === "set_clipboard_graph" || type === "insert_graph") {
             result = graph(pList, root);
         }
-        navigator.clipboard.writeText(result);
+
+        navigator.clipboard.writeText(result).then(() => {
+            if (type === "insert_mindmap" || type === "insert_graph") {
+                const ele = document.querySelector("#context-menu [data-key='paste']");
+                ele && ele.click();
+            }
+        });
     }
 
     module.exports = {
