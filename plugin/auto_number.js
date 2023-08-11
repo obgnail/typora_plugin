@@ -13,6 +13,9 @@
         // 代码块自动编号
         ENABLE_FENCE: true,
 
+        // 导出时运用样式
+        ENABLE_WHEN_EXPORT: true,
+
         // 下标名称
         NAME: {
             table: "Table",
@@ -30,8 +33,22 @@
         h3 { counter-reset: write-h4; }
         h4 { counter-reset: write-h5; }
         h5 { counter-reset: write-h6; }
+        
+        @media print {
+            pb {
+                display: block;
+                page-break-after: always;
+            }
+        
+            h1 {
+                page-break-before: always;
+            }
+        
+            h1:first-of-type {
+                page-break-before: avoid;
+            }
+        }
     `
-
     const content_css = `
         #write h2:before {
             counter-increment: write-h2;
@@ -187,18 +204,13 @@
             z-index: 9;
         }`
 
-    const disableStyle = () => {
+    const removeStyle = () => {
         const ele = document.getElementById(config.id);
         ele && ele.parentElement && ele.parentElement.removeChild(ele);
     }
 
-    const insertStyle = toggle => {
-        if (toggle) {
-            config[toggle] = !config[toggle];
-            disableStyle();
-        }
-
-        const css = [
+    const getStyleString = () => {
+        return [
             bast_css,
             (config.ENABLE_CONTENT) ? content_css : "",
             (config.ENABLE_SIDE_BAR) ? side_bar_css : "",
@@ -207,11 +219,29 @@
             (config.ENABLE_TABLE) ? table_css : "",
             (config.ENABLE_FENCE) ? fence_css : "",
         ].join("\n")
+    }
 
+    const insertStyle = toggle => {
+        if (toggle) {
+            config[toggle] = !config[toggle];
+            removeStyle();
+        }
+
+        const css = getStyleString();
         global._pluginUtils.insertStyle(config.id, css);
     }
 
     insertStyle();
+
+    if (config.ENABLE_WHEN_EXPORT) {
+        global._pluginUtils.decorate(
+            () => !!File,
+            File.editor.export,
+            "exportToHTML",
+            (...args) => args[0].extraCss = `body {font-variant-ligatures: no-common-ligatures;} ` + getStyleString(),
+            null
+        )
+    }
 
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////
     const callArgs = [
@@ -255,7 +285,7 @@
     }
 
     const callMap = {
-        disable: disableStyle,
+        disable: removeStyle,
         enable: insertStyle,
         set_outline: () => insertStyle("ENABLE_SIDE_BAR"),
         set_content: () => insertStyle("ENABLE_CONTENT"),
