@@ -234,13 +234,63 @@
     insertStyle();
 
     if (config.ENABLE_WHEN_EXPORT) {
-        global._pluginUtils.decorate(
-            () => !!File,
-            File.editor.export,
-            "exportToHTML",
-            (...args) => args[0].extraCss = `body {font-variant-ligatures: no-common-ligatures;} ` + getStyleString(),
-            null
-        )
+        const decoMixin = {
+            inExport: false,
+
+            beforeExport: (...args) => {
+                this.inExport = true;
+                args[0].extraCss = `body {font-variant-ligatures: no-common-ligatures;} ` + getStyleString();
+            },
+
+            afterGetHeaderMatrix: headers => {
+                if (!this.inExport) return;
+
+                const pList = ["H1", "H2", "H3", "H4", "H5", "H6"];
+                const pValue = {H2: 0, H3: 0, H4: 0, H5: 0, H6: 0};
+
+                headers.forEach(header => {
+                    const idx = pList.indexOf("H" + header[0]);
+                    if (idx === -1) return;
+
+                    let numbering = "";
+                    switch (pList[idx]) {
+                        case "H1":
+                            pValue.H2 = 0;
+                            break
+                        case "H2":
+                            pValue.H3 = 0;
+                            pValue.H2++;
+                            numbering = `${pValue.H2}. `;
+                            break
+                        case "H3":
+                            pValue.H4 = 0;
+                            pValue.H3++;
+                            numbering = `${pValue.H2}.${pValue.H3} `;
+                            break
+                        case "H4":
+                            pValue.H5 = 0;
+                            pValue.H4++;
+                            numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4} `;
+                            break
+                        case "H5":
+                            pValue.H6 = 0;
+                            pValue.H5++;
+                            numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4}.${pValue.H5} `;
+                            break
+                        case "H6":
+                            pValue.H6++;
+                            numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4}.${pValue.H5}.${pValue.H6} `;
+                            break
+                    }
+                    header[1] = numbering + header[1];
+                })
+
+                this.inExport = false;
+            }
+        }
+
+        global._pluginUtils.decorate(() => !!File, File.editor.export, "exportToHTML", decoMixin.beforeExport, null);
+        global._pluginUtils.decorate(() => !!File, File.editor.library.outline, "getHeaderMatrix", null, decoMixin.afterGetHeaderMatrix);
     }
 
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////

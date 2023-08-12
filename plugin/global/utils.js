@@ -32,24 +32,25 @@
 
     const detectorContainer = {}
 
-    function getUUID() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            let r = (Math.random() * 16) | 0,
-                v = c === 'x' ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-        });
-    }
-
-    const decorate = (until, obj, func, before, after) => {
-        const uuid = getUUID();
+    const decorate = (until, obj, func, before, after, changeResult = false) => {
+        const uuid = Math.random();
         detectorContainer[uuid] = setInterval(() => {
             if (!until()) return;
 
             const decorator = (original, before, after) => {
                 return function () {
-                    before && before.call(this, ...arguments);
-                    const result = original.apply(this, arguments);
-                    after && after.call(this, result, ...arguments);
+                    if (before) {
+                        before.call(this, ...arguments);
+                    }
+
+                    let result = original.apply(this, arguments);
+
+                    if (after) {
+                        const afterResult = after.call(this, result, ...arguments);
+                        if (changeResult) {
+                            result = afterResult;
+                        }
+                    }
                     return result;
                 };
             }
