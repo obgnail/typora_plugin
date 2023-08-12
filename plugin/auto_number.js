@@ -245,15 +245,13 @@
             afterGetHeaderMatrix: headers => {
                 if (!this.inExport) return;
 
-                const pList = ["H1", "H2", "H3", "H4", "H5", "H6"];
                 const pValue = {H2: 0, H3: 0, H4: 0, H5: 0, H6: 0};
-
                 headers.forEach(header => {
-                    const idx = pList.indexOf("H" + header[0]);
-                    if (idx === -1) return;
+                    const tagName = "H" + header[0];
+                    if (!pValue.hasOwnProperty(tagName)) return;
 
                     let numbering = "";
-                    switch (pList[idx]) {
+                    switch (tagName) {
                         case "H1":
                             pValue.H2 = 0;
                             break
