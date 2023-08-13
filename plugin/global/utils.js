@@ -107,6 +107,8 @@
         insertStyle,
         getPlugin,
         metaKeyPressed,
+        shiftKeyPressed,
+        altKeyPressed,
         getDirname,
         getFilePath,
         joinPath,

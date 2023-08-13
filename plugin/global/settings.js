@@ -6,16 +6,17 @@
         return parse(conf);
     }
 
-    const toHotkeyFuncList = hotkeyString => {
-        const funcList = [];
+    const toHotkeyFunc = hotkeyString => {
         const keyList = hotkeyString.toLowerCase().split("+").map(k => k.trim());
-        const ctrl = ("ctrl" in keyList) ? metaKeyPressed : () => !metaKeyPressed();
-        const shift = ("shift" in keyList) ? shiftKeyPressed : () => !shiftKeyPressed();
-        const alt = ("alt" in keyList) ? altKeyPressed : () => !altKeyPressed()
+        const ctrl = ("ctrl" in keyList);
+        const shift = ("shift" in keyList);
+        const alt = ("alt" in keyList);
+        const key = keyList.filter(key => !(key in ["ctrl", "shift", "alt"]))[0];
 
-
-
-        return funcList
+        return ev => metaKeyPressed() === ctrl
+            && shiftKeyPressed() === shift
+            && altKeyPressed === alt
+            && ev.key.toLowerCase() === key
     }
 
     const registerHotKey = settings => {
