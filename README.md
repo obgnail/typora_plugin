@@ -21,11 +21,12 @@
 | 11   | resize_image       | 调整图片显示大小                   | √        |
 | 12   | auto_number        | 章节、表格、图片、代码块等自动编号 | √        |
 | 13   | outline            | 以表格、图片、代码块形式的大纲     | √        |
-| 14   | go_top             | 一键到文章顶部                     | √        |
-| 15   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能   | √        |
-| 16   | right_click_menu   | 右键菜单统一管理、调用插件         | √        |
-| 17   | mermaid_replace    | 替换 mermaid 组件                  | ×        |
-| 18   | old_window_tab     | 标签页管理（已废弃）               | ×        |
+| 14   | mindmap            | 根据文档大纲一键生成思维导图       | √        |
+| 15   | go_top             | 一键到文章顶部                     | √        |
+| 16   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能   | √        |
+| 17   | right_click_menu   | 右键菜单统一管理、调用插件         | √        |
+| 18   | mermaid_replace    | 替换 mermaid 组件                  | ×        |
+| 19   | old_window_tab     | 标签页管理（已废弃）               | ×        |
 
 1. 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除/改名文件即可**。
 2. 每个功能都有对应的配置，且配置选项都有注释说明。可以按需修改对应 JS 文件里的 config。
@@ -254,6 +255,8 @@ const BUILTIN = [
 
 > 注意：通过注入 CSS 实现此功能，有可能会与你使用的 theme 冲突。
 
+> 和其他使用 Theme CSS 的实现方式不同，此插件通过修改内置函数，完美解决导出 PDF 后侧边栏没有编号的问题。:)
+
 
 
 ### outline：以表格、图片、代码块形式的大纲
@@ -261,6 +264,16 @@ const BUILTIN = [
 使用方式：右键菜单 -> 启用插件 ->  类别大纲
 
 ![outline](assets/outline.gif)
+
+
+
+### mindmap：  根据文档大纲一键生成思维导图
+
+使用方式：右键菜单 -> 启用插件 ->  思维导图
+
+![mindmap](assets/mindmap.png)
+
+> 不建议使用此插件，mermaid 的思维导图实在是太丑了。
 
 
 
@@ -310,7 +323,7 @@ const BUILTIN = [
 
 大文件在 Typora 的渲染性能很糟糕，用此脚本暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。也可以用于防偷窥。
 
-使用方式：右键菜单 -> 启用插件 -> 文本截断collapse_paragraph。
+使用方式：右键菜单 -> 启用插件 -> 文本截断。
 
 包含的功能如下：
 

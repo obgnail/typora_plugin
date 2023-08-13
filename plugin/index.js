@@ -85,6 +85,13 @@ window.onload = () => {
             clickable: true,
         },
         {
+            name: "思维导图",
+            fixed_name: "mindmap",
+            src: "./plugin/mindmap.js",
+            enable: true,
+            clickable: true,
+        },
+        {
             name: "自动编号",
             fixed_name: "auto_number",
             src: "./plugin/auto_number.js",

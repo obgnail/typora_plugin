@@ -13,6 +13,9 @@
         // 代码块自动编号
         ENABLE_FENCE: true,
 
+        // 导出时运用样式
+        ENABLE_WHEN_EXPORT: true,
+
         // 下标名称
         NAME: {
             table: "Table",
@@ -30,8 +33,22 @@
         h3 { counter-reset: write-h4; }
         h4 { counter-reset: write-h5; }
         h5 { counter-reset: write-h6; }
+        
+        @media print {
+            pb {
+                display: block;
+                page-break-after: always;
+            }
+        
+            h1 {
+                page-break-before: always;
+            }
+        
+            h1:first-of-type {
+                page-break-before: avoid;
+            }
+        }
     `
-
     const content_css = `
         #write h2:before {
             counter-increment: write-h2;
@@ -187,18 +204,13 @@
             z-index: 9;
         }`
 
-    const disableStyle = () => {
+    const removeStyle = () => {
         const ele = document.getElementById(config.id);
         ele && ele.parentElement && ele.parentElement.removeChild(ele);
     }
 
-    const insertStyle = toggle => {
-        if (toggle) {
-            config[toggle] = !config[toggle];
-            disableStyle();
-        }
-
-        const css = [
+    const getStyleString = () => {
+        return [
             bast_css,
             (config.ENABLE_CONTENT) ? content_css : "",
             (config.ENABLE_SIDE_BAR) ? side_bar_css : "",
@@ -207,11 +219,77 @@
             (config.ENABLE_TABLE) ? table_css : "",
             (config.ENABLE_FENCE) ? fence_css : "",
         ].join("\n")
+    }
 
+    const insertStyle = toggle => {
+        if (toggle) {
+            config[toggle] = !config[toggle];
+            removeStyle();
+        }
+
+        const css = getStyleString();
         global._pluginUtils.insertStyle(config.id, css);
     }
 
     insertStyle();
+
+    if (config.ENABLE_WHEN_EXPORT) {
+        const decoMixin = {
+            inExport: false,
+
+            beforeExport: (...args) => {
+                this.inExport = true;
+                args[0].extraCss = `body {font-variant-ligatures: no-common-ligatures;} ` + getStyleString();
+            },
+
+            afterGetHeaderMatrix: headers => {
+                if (!this.inExport) return;
+
+                const pValue = {H2: 0, H3: 0, H4: 0, H5: 0, H6: 0};
+                headers.forEach(header => {
+                    const tagName = "H" + header[0];
+                    if (!pValue.hasOwnProperty(tagName)) return;
+
+                    let numbering = "";
+                    switch (tagName) {
+                        case "H1":
+                            pValue.H2 = 0;
+                            break
+                        case "H2":
+                            pValue.H3 = 0;
+                            pValue.H2++;
+                            numbering = `${pValue.H2}. `;
+                            break
+                        case "H3":
+                            pValue.H4 = 0;
+                            pValue.H3++;
+                            numbering = `${pValue.H2}.${pValue.H3} `;
+                            break
+                        case "H4":
+                            pValue.H5 = 0;
+                            pValue.H4++;
+                            numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4} `;
+                            break
+                        case "H5":
+                            pValue.H6 = 0;
+                            pValue.H5++;
+                            numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4}.${pValue.H5} `;
+                            break
+                        case "H6":
+                            pValue.H6++;
+                            numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4}.${pValue.H5}.${pValue.H6} `;
+                            break
+                    }
+                    header[1] = numbering + header[1];
+                })
+
+                this.inExport = false;
+            }
+        }
+
+        global._pluginUtils.decorate(() => !!File, File.editor.export, "exportToHTML", decoMixin.beforeExport, null);
+        global._pluginUtils.decorate(() => !!File, File.editor.library.outline, "getHeaderMatrix", null, decoMixin.afterGetHeaderMatrix);
+    }
 
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////
     const callArgs = [
@@ -255,7 +333,7 @@
     }
 
     const callMap = {
-        disable: disableStyle,
+        disable: removeStyle,
         enable: insertStyle,
         set_outline: () => insertStyle("ENABLE_SIDE_BAR"),
         set_content: () => insertStyle("ENABLE_CONTENT"),
