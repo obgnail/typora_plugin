@@ -1,33 +1,5 @@
 (() => {
-    const config = {
-        // 隐藏掉titleBar
-        HIDE_WINDOW_TITLE_BAR: true,
-        // 拖拽排序标签页的方式（1 or 2）
-        DRAG_STYLE: 1,
-        // 当标签页脱离父标签3倍高度时，视为新建窗口
-        HEIGHT_SCALE: 3,
-        // 总是在当前标签页打开
-        LOCAL_OPEN: false,
-
-        // 是否调整content的top，以免被tab遮挡
-        CHANGE_CONTENT_TOP: true,
-        // 是否调整.md-notification-container的z-index，以免被tab遮挡
-        CHANGE_NOTIFICATION_Z_INDEX: true,
-
-        LOOP_DETECT_INTERVAL: 30,
-
-        CLOSE_HOTKEY: [
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "w",
-        ],
-        SWITCH_NEXT_TAB_HOTKEY: [
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "PageDown",
-            ev => global._pluginUtils.metaKeyPressed(ev) && !ev.shiftKey && ev.key === "Tab",
-        ],
-        SWITCH_PREVIOUS_TAB_HOTKEY: [
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "PageUp",
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "Tab",
-        ],
-    };
+    const config = global._pluginUtils.getPluginSetting("window_tab");
 
     if (window._options.framelessWindow && config.HIDE_WINDOW_TITLE_BAR) {
         document.querySelector("header").style.zIndex = "897";
@@ -685,7 +657,6 @@
     }
 
     module.exports = {
-        config,
         call,
         dynamicCallArgsGenerator,
     };

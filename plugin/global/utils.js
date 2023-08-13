@@ -14,6 +14,10 @@
         }
     }
 
+    const getPluginSetting = fixed_name => {
+        return global._plugin_settings[fixed_name];
+    }
+
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
     const shiftKeyPressed = ev => !!ev.shiftKey;
     const altKeyPressed = ev => !!ev.altKey;
@@ -106,6 +110,7 @@
     module.exports = {
         insertStyle,
         getPlugin,
+        getPluginSetting,
         metaKeyPressed,
         shiftKeyPressed,
         altKeyPressed,

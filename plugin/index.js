@@ -185,8 +185,9 @@ window.onload = () => {
     }
 
     const loadSettings = (join, dirname) => {
-        const configPath = join(dirname, "./plugin/global/settings.js")
-        reqnode(configPath);
+        const configPath = join(dirname, "./plugin/global/settings.js");
+        const {pluginSettings} = reqnode(configPath);
+        global._plugin_settings = pluginSettings;
     }
 
     const load = () => {
