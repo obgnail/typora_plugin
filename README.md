@@ -29,7 +29,7 @@
 | 19   | old_window_tab     | 标签页管理（已废弃）               | ×        |
 
 1. 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除/改名文件即可**。
-2. 每个功能都有对应的配置，且配置选项都有注释说明。可以按需修改对应 JS 文件里的 config。
+2. 每个功能都有对应的配置，且配置选项都有注释说明。可以按需修改 `settings.toml` 文件（具体方式见下文）
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -106,7 +106,9 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 > 注意：**不同光标位置调出来的菜单有所不同**。
 
-比如 `章节折叠` 功能需要光标定位到标题上，才会出现更多的功能选项。同理 `代码块增强` 功能需要光标定位到代码块中。其他功能需要您自己去探索发现。
+比如 `章节折叠` 功能需要光标定位到标题上，才会出现更多的功能选项。
+
+同理 `代码块增强` 功能需要光标定位到代码块中。其他功能需要您自己去探索发现。
 
 ![right_click_menu1](assets/right_click_menu1.png)
 
@@ -115,6 +117,11 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ---
 
+从 Typora Plugin 1.1.10 版本开始，所有插件的配置都集成在 `settings.toml` 文件中。
+
+打开方式：鼠标在正文区域右键 -> 【右键菜单】 -> 【打开配置文件夹】
+
+---
 
 ### window_tab：标签页管理
 
@@ -223,7 +230,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 - `$d`：当前文件的所属目录
 - `$m`：当前挂载的根目录
 
-支持内建命令，方便快速调用。个人可按需自定义脚本里的 `BUILTIN` 变量。
+支持内建命令，方便快速调用。个人可按需自定义配置文件里的 `BUILTIN` 变量。
 
 ```js
 // 默认的内建命令
@@ -348,8 +355,6 @@ const BUILTIN = [
 如果你像我一样，不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此脚本。
 
 > NOTE：**此脚本默认关闭，需手动开启。**
-
-> 开启方式：修改 index.js，将对应插件的 enable 属性设置为 true。
 
 
 
