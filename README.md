@@ -28,9 +28,6 @@
 | 18   | mermaid_replace    | 替换 mermaid 组件                  | ×        |
 | 19   | old_window_tab     | 标签页管理（已废弃）               | ×        |
 
-1. 每个功能都对应源码的 plugin 文件夹下的一个同名文件（index.js 除外），**如若不需要某些功能，按需删除/改名文件即可**。
-2. 每个功能都有对应的配置，且配置选项都有注释说明。可以按需修改 `settings.toml` 文件（具体方式见下文）
-
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
 
@@ -114,13 +111,6 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ![right_click_menu2](assets/right_click_menu2.png)
 
-
----
-
-从 Typora Plugin 1.1.10 版本开始，所有插件的配置都集成在 `settings.toml` 文件中。
-
-打开方式：鼠标在正文区域右键 -> 【右键菜单】 -> 【打开配置文件夹】
-
 ---
 
 ### window_tab：标签页管理
@@ -201,10 +191,6 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ![fence_enhance](assets/fence_enhance.png)
 
-> Fold、Copy 功能可选，如不需要，可以关闭任意一个。
-
-> fence_enhance.js 易于扩展，你可以根据自己的需要添加功能，比如显示代码块编程语言。
-
 
 
 ### commander：命令行环境
@@ -280,8 +266,6 @@ const BUILTIN = [
 
 ![mindmap](assets/mindmap.png)
 
-> 不建议使用此插件，mermaid 的思维导图实在是太丑了。
-
 
 
 ### resize_table：拖动调整表格大小
@@ -324,6 +308,8 @@ const BUILTIN = [
 
 快捷键：ctrl+shift+R。
 
+> 开启后，右下角数字统计区域会出现 `ReadOnly` 字样
+
 
 
 ### truncate_text：暂时隐藏内容，提高大文件渲染性能
@@ -358,20 +344,35 @@ const BUILTIN = [
 
 
 
-## 瞎聊
+## Q&A
+
+### 如何修改插件的配置？
+
+每个插件都有对应的配置，且配置选项都有注释说明。可按需修改 `settings.toml` 文件。
+
+- 方式一：鼠标在正文区域右键 -> 【右键菜单】 -> 【打开配置文件夹】
+- 方式二：直接打开文件 `./plugin/global/settings/settings.toml`
+
+> 修改前请注意备份。
+
+
+
+### 如何禁用某些插件？
+
+- 方式一：直接 删除/改名 plugin 目录下的同名文件
+- 方式二：修改 `settings.toml` 文件，将对应插件的 ENABLE 字段置为 false
+
+
 
 ### 脚本会失效吗?
 
-~~Typora 是闭源软件，要是有一天作者改了代码，是不是就不能用了？从原理来说，是的。实际上我是解包 Typora，看了部分源码才实现了这些功能。~~
+理论上能保持长时间有效。且我在维护中。
 
-~~同时值得注意的是， Typora 的历史包袱还蛮重的。比如说 github 已经有无数个 Typora theme，这决定了它的页面它不可能大改，就算改变也大概率是向下兼容的。~~
 
-~~具体来看：~~
 
-- ~~search_multi、resize_table、read_only、truncate_text 等功能几乎不依赖 Typora 实现。如果这些功能失效了，那么 github 上的 Typora theme 会大面积失效，所以应该会 **保持长时间的有效性**。而且就算失效了也容易找到兼容方案。~~
-- ~~比较特殊的是 window_tab 和 window_tab_drag，这个功能本质是入侵式脚本；通过原型链攻击，将后端 electron 对象劫持到前端来，该脚本通过该手段成功调用了 Typora 的核心实现，并且这个核心实现同时被大量运用，历史包袱一样很大。当然了，劫持漏洞也有可能被修复。**如果 Typora 或 electron 有了重构级别的更新，那么大概率会失效。**~~（旧版本已被废弃，新版本无此问题）
+### 支持 Typora for Mac 吗？
 
-> 总结：理论上能保持长时间有效。且我在维护中。
+我没有 Mac，故没做测试。
 
 
 
