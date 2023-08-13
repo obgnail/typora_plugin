@@ -1,22 +1,5 @@
 (() => {
-    const config = {
-        // 默认使用的大纲类型 fence/image/table/all
-        DEFAULT_TYPE: "fence",
-        // 是否使用混合标签
-        USE_ALL: true,
-        // 给混合标签设置颜色
-        SET_COLOR_IN_ALL: true,
-        // 展示的名字
-        SHOW_NAME: {
-            fence: "Fence",
-            image: "Figure",
-            table: "Table",
-        },
-        // 打开文件后自动检测生成大纲
-        AUTO_REFRESH_WHEN_OPEN_FILE: true,
-        // 显示被其他插件隐藏的元素
-        SHOW_HIDDEN: false,
-    };
+    const config = global._pluginUtils.getPluginSetting("outline");
 
     (() => {
         const modal_css = `
@@ -367,7 +350,6 @@
 
     module.exports = {
         call,
-        config,
         meta: {
             hide,
             refresh,

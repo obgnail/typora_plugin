@@ -1,4 +1,6 @@
 (() => {
+    const config = global._pluginUtils.getPluginSetting("mindmap");
+
     const paragraphList = ["H0", "H1", "H2", "H3", "H4", "H5", "H6"];
 
     const getFileName = () => {

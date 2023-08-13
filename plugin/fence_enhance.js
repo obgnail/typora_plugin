@@ -11,21 +11,7 @@
             这样的好处是:不管是文件本身就存在的，还是用户编辑文件时新增的都可以自动执行脚本，不必整一个MutationObserver。
             坏处是:绿皮
     */
-    const config = {
-        // 自动隐藏,鼠标移动到fence才显示
-        AUTO_HIDE: false,
-        // 启用复制代码功能
-        ENABLE_COPY: true,
-        // 启用折叠代码功能
-        ENABLE_FOLD: true,
-        // 折叠形式
-        FOLD_OVERFLOW: "hidden",
-        // 默认折叠
-        FOLD_DEFAULT: false,
-
-        CLICK_CHECK_INTERVAL: 300,
-        WAIT_RECOVER_INTERVAL: 1000,
-    };
+    const config = global._pluginUtils.getPluginSetting("fence_enhance");
 
     (() => {
         const css = `
@@ -255,7 +241,6 @@
     }
 
     module.exports = {
-        config,
         call,
         callArgs,
         dynamicCallArgsGenerator,

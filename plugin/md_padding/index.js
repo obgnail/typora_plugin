@@ -1,7 +1,5 @@
 (() => {
-    const config = {
-        HOTKEY: ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "K",
-    }
+    const config = global._pluginUtils.getPluginSetting("md_padding");
 
     const read = filepath => global._pluginUtils.Package.Fs.readFileSync(filepath, 'utf-8');
     const write = (filepath, content) => global._pluginUtils.Package.Fs.writeFileSync(filepath, content);
@@ -41,7 +39,6 @@
     }, true)
 
     module.exports = {
-        config,
         call,
     };
 

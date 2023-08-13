@@ -1,10 +1,5 @@
 (() => {
-    const config = {
-        // 剩余文本段
-        REMAIN_LENGTH: 80,
-
-        CLASS_NAME: "plugin-truncate-text",
-    }
+    const config = global._pluginUtils.getPluginSetting("truncate_text");
 
     const callbackOtherPlugin = () => {
         const outlinePlugin = global._pluginUtils.getPlugin("outline");
@@ -110,7 +105,6 @@
     ];
 
     module.exports = {
-        config,
         call,
         callArgs,
         meta: {

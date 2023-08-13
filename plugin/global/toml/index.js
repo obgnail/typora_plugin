@@ -1,5 +1,5 @@
-var parser = require('./lib/parser');
-var compiler = require('./lib/compiler');
+var parser = require('./parser');
+var compiler = require('./compiler');
 
 module.exports = {
   parse: function(input) {

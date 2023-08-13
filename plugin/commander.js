@@ -1,26 +1,10 @@
 (() => {
+    const config = global._pluginUtils.getPluginSetting("commander");
     const SHELL = {
         CMD_BASH: "cmd/bash",
         POWER_SHELL: "powershell",
         GIT_BASH: "gitbash",
         WSL: "wsl",
-    }
-
-    const config = {
-        // 快捷键
-        HOTKEY: ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "g",
-        // 允许拖动模态框
-        ALLOW_DRAG: true,
-        // 启用内建的命令列表
-        USE_BUILTIN: true,
-        // 内建命令列表
-        BUILTIN: [
-            {name: "", shell: SHELL.CMD_BASH, cmd: ""}, // dummy
-            {name: "Explorer", shell: SHELL.POWER_SHELL, cmd: "explorer $d"},
-            {name: "Vscode", shell: SHELL.CMD_BASH, cmd: "code $f"},
-            {name: "WT", shell: SHELL.CMD_BASH, cmd: "cd $d && wt"},
-            {name: "GitCommit", shell: SHELL.CMD_BASH, cmd: `cd $m && git add . && git commit -m "message"`},
-        ],
     };
 
     (() => {
@@ -321,7 +305,7 @@
         }
     }
 
-    module.exports = {call, config};
+    module.exports = {call};
 
     console.log("commander.js had been injected");
 })()

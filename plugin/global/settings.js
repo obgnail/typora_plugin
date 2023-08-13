@@ -1,6 +1,6 @@
 (() => {
     const readSettingFile = () => {
-        const filepath = global._pluginUtils.joinPath("./plugin/global/settings.toml");
+        const filepath = global._pluginUtils.joinPath("./plugin/global/settings/settings.toml");
         const {parse} = global._pluginUtils.requireFile("./plugin/global/toml/index.js");
         const settingFile = global._pluginUtils.Package.Fs.readFileSync(filepath, 'utf8');
         const settings = parse(settingFile);
@@ -30,7 +30,6 @@
         const alt = keyList.indexOf("alt") !== -1;
         const key = keyList.filter(key => key !== "ctrl" && key !== "shift" && key !== "alt")[0];
 
-        console.log("==-------", keyList, ctrl, shift, alt, key)
         return ev => {
             return global._pluginUtils.metaKeyPressed(ev) === ctrl
                 && global._pluginUtils.shiftKeyPressed(ev) === shift
@@ -42,5 +41,4 @@
     module.exports = {
         pluginSettings: readSettingFile()
     };
-
 })()
