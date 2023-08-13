@@ -1,30 +1,5 @@
 (() => {
-    const config = {
-        // 侧边栏自动编号
-        ENABLE_SIDE_BAR: true,
-        // 正文自动编号
-        ENABLE_CONTENT: true,
-        // TOC自动编号
-        ENABLE_TOC: true,
-        // 表格自动编号
-        ENABLE_TABLE: true,
-        // 图片自动编号
-        ENABLE_IMAGE: true,
-        // 代码块自动编号
-        ENABLE_FENCE: true,
-
-        // 导出时运用样式
-        ENABLE_WHEN_EXPORT: true,
-
-        // 下标名称
-        NAME: {
-            table: "Table",
-            image: "Figure",
-            fence: "Fence",
-        },
-
-        id: "plugin-auto-number-style"
-    }
+    const config = global._pluginUtils.getPluginSetting("auto_number");
 
     const bast_css = `
         #write { counter-reset: write-h2 Figures Tables Fences; }
@@ -205,7 +180,7 @@
         }`
 
     const removeStyle = () => {
-        const ele = document.getElementById(config.id);
+        const ele = document.getElementById(config.ID);
         ele && ele.parentElement && ele.parentElement.removeChild(ele);
     }
 
@@ -228,7 +203,7 @@
         }
 
         const css = getStyleString();
-        global._pluginUtils.insertStyle(config.id, css);
+        global._pluginUtils.insertStyle(config.ID, css);
     }
 
     insertStyle();
@@ -348,7 +323,6 @@
         func && func();
     }
     module.exports = {
-        config,
         call,
         callArgs,
         dynamicCallArgsGenerator,

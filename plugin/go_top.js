@@ -1,14 +1,5 @@
 (() => {
-    const config = {
-        // 距顶部50像素开始显示
-        THRESHOLD: 50,
-        // 滚动所用时间
-        SCROLL_TIME: 600,
-        // 标签的颜色
-        COLOR: "var(--active-file-border-color, black)",
-        // 标签id
-        DIV_ID: "plugin-go-top",
-    }
+    const config = global._pluginUtils.getPluginSetting("go_top");
 
     const goTop = document.createElement("div");
     goTop.id = config.DIV_ID;
@@ -45,7 +36,6 @@
     }
 
     module.exports = {
-        config,
         call,
     };
     console.log("go_top.js had been injected");

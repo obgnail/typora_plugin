@@ -1,4 +1,6 @@
 (() => {
+    const config = global._pluginUtils.getPluginSetting("mindmap");
+
     const paragraphList = ["H0", "H1", "H2", "H3", "H4", "H5", "H6"];
 
     const getFileName = () => {
@@ -60,8 +62,14 @@
     }
 
     const dynamicCallArgsGenerator = anchorNode => {
-        const target = anchorNode.closest(`#write > p[mdtype="paragraph"]:not(:has(>span))`);
-        if (!target) return;
+        if (global._pluginUtils.isBetaVersion) {
+            const target = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
+            if (!target) return;
+            if (target.querySelector("p > span")) return;
+        } else {
+            const target = anchorNode.closest(`#write > p[mdtype="paragraph"]:not(:has(>span))`);
+            if (!target) return;
+        }
 
         return [
             {

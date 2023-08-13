@@ -18,65 +18,7 @@
     5. 解决方式：我本来想使用类似于Golang的channel。channel非常适合这种逻辑代码各种跳跃的情况，且十分优雅。想来想去，去他妈，直接硬撸算了，全局变量直接上，没有遵循任何设计原则，代码非常难懂。
     6. 下面代码就是本着【又不是不能用】的心态码的，只追求实现速度。若你有心重构，我帮你抽象出了multi_highlighter.js文件，可以方便的搜索并添加高亮标签，接下来你需要的就是和Typora混淆后的frame.js做斗争，和Typora各自特性作斗争。
     */
-    const config = {
-        // 允许拖拽
-        ALLOW_DRAG: true,
-        // 大小写敏感(此选项不必手动调整，可以在UI设置)
-        CASE_SENSITIVE: false,
-        // 关键词按空格分割
-        SEPARATOR: " ",
-        // 快捷键
-        HOTKEY: ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "H",
-        // 展示执行按钮
-        SHOW_RUN_BUTTON: false,
-        // 打开其他文件时自动重新搜索
-        RESEARCH_WHILE_OPEN_FILE: true,
-        // 点击时显示当前的索引数
-        SHOW_CURRENT_INDEX: true,
-        // Typora本身的限制: ctrl+F搜索后，点击任意地方原先高亮的地方就会消失
-        // 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
-        REMOVE_WHEN_EDIT: true,
-        // 定位时高亮关键字出现提示边框
-        SHOW_KEYWORD_OUTLINE: true,
-        // 定位时高亮关键字提示所在行
-        SHOW_KEYWORD_BAR: true,
-        // 高亮的样式
-        STYLE_COLOR: [
-            // 浅一些的颜色
-            '#bbeeff',
-            '#ffbbcc',
-            '#88ee88',
-            '#ccbbff',
-            '#ffee88',
-            '#FFFFa0',
-            '#88cccc',
-            '#ffbb88',
-            '#cccccc',
-            '#ffaabb',
-            // 深一些的颜色
-            '#99ccff',
-            '#ff99cc',
-            '#66cc66',
-            '#cc99ff',
-            '#ffcc66',
-            '#FFFF80',
-            '#dd9966',
-            '#aaaaaa',
-            '#66aaaa',
-            '#dd6699',
-        ],
-        // 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
-        // 20个关键字肯定够用了,此选项没太大意义
-        DEFAULT_COLOR: "aquamarine",
-
-        // Do not edit this field unless you know what you are doing
-        // 性能选项：关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0,则总是使用
-        // 此选项用在当搜索了很多关键字时，保证有较快的响应速度
-        USE_LIST_THRESHOLD: -1,
-        // 性能选项：当fenceMultiHighlighterList数量超过X时，clear之（以时间换空间）。若<0,则总不启用
-        // 此选项用在当上一个策略使用太多次后，花费时间去回收空间，保证不会占用太大内存
-        CLEAR_LIST_THRESHOLD: 12,
-    };
+    const config = global._pluginUtils.getPluginSetting("multi_highlighter");
 
     (() => {
         const run_style = {
@@ -540,7 +482,6 @@
     });
 
     module.exports = {
-        config,
         call,
         meta: {
             hide,

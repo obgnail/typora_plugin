@@ -1,4 +1,6 @@
 (() => {
+    const isBetaVersion = parseInt(window._options.appVersion.split(".")[0]) === 0;
+
     const insertStyle = (id, css) => {
         const style = document.createElement('style');
         style.id = id;
@@ -14,7 +16,14 @@
         }
     }
 
+    const getPluginSetting = fixed_name => {
+        return global._plugin_settings[fixed_name];
+    }
+
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
+    const shiftKeyPressed = ev => !!ev.shiftKey;
+    const altKeyPressed = ev => !!ev.altKey;
+
     const getDirname = () => global.dirname || global.__dirname;
     const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
     const joinPath = (...paths) => Package.Path.join(getDirname(), ...paths);
@@ -101,9 +110,13 @@
     }
 
     module.exports = {
+        isBetaVersion,
         insertStyle,
         getPlugin,
+        getPluginSetting,
         metaKeyPressed,
+        shiftKeyPressed,
+        altKeyPressed,
         getDirname,
         getFilePath,
         joinPath,

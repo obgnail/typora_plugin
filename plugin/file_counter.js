@@ -1,14 +1,5 @@
 (() => {
-    const config = {
-        // Typora允许打开小于2000000(即MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
-        MAX_SIZE: File.MAX_FILE_SIZE,
-        // Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
-        ALLOW_EXT: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
-            "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
-        CLASS_NAME: "plugin-file-counter",
-        LOOP_DETECT_INTERVAL: 300,
-    };
-
+    const config = global._pluginUtils.getPluginSetting("file_counter");
     const Package = global._pluginUtils.Package;
 
     (() => {
@@ -124,7 +115,7 @@
 
     const _timer = setInterval(() => setAllDirCount() && clearInterval(_timer), config.LOOP_DETECT_INTERVAL);
 
-    module.exports = {config};
+    module.exports = {};
 
     console.log("file_counter.js had been injected");
 })()

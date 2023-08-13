@@ -1,58 +1,5 @@
 (() => {
-    const config = {
-        // 进入和脱离只读模式的快捷键
-        HOTKEY: ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "R",
-        // 默认使用只读模式
-        READ_ONLY_DEFAULT: false,
-        // 只读模式下仍可以使用的快捷键
-        EXCLUDE_KEY: [
-            // 文件
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "n", // 新建
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "N", // 新建窗口
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "o", // 打开
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "p", // 快速打开
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "s", // 保存
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "S", // 另存
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === ",", // 偏好设置
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "w", // 关闭
-
-            // 编辑
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "c", // 复制
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "C", // 复制为markdown
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "a", // 全选
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "l", // 选中当前行
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "e", // 选中当前格式文本
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "d", // 选中当前词
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "j", // 跳转到所选内容
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "Home", // 跳转到文首
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "End", // 跳转到文末
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "f", // 查找
-            ev => ev.key === "F3", // 查找下一个
-            ev => ev.shiftKey && ev.key === "F3", // 查找上一个
-
-            // 视图
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "L", // 显示/隐藏侧边栏
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "!", // 大纲
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "@", // 文档列表
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "#", // 文档树
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "F", // 搜索
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.key === "/", // 源码模式
-            ev => ev.key === "F8", // 专注模式
-            ev => ev.key === "F9", // 打字机模式
-            ev => ev.key === "F11", // 全屏
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "(",  // 实际大小
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "+",  // 放大
-            ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "_",  // 缩(ev) && ev.key === "Tab", // 应用内窗口切换
-            ev => ev.shiftKey && ev.key === "F12", // 开发者工具
-
-            // 整个应用
-            ev => ev.altKey && ev.key === "F4", // 退出
-        ],
-
-        // 脚本内部使用
-        LOOP_DETECT_INTERVAL: 30,
-        CLICK_CHECK_INTERVAL: 500,
-    };
+    const config = global._pluginUtils.getPluginSetting("read_only");
 
     (() => {
         const css = `#footer-word-count-label::before {content: attr(data-value) !important}`;
@@ -60,7 +7,7 @@
     })()
 
     const isExclude = ev => {
-        for (const func of config.EXCLUDE_KEY) {
+        for (const func of config.EXCLUDE_HOTKEY) {
             if (func(ev)) {
                 return true
             }
@@ -143,7 +90,6 @@
     }
 
     module.exports = {
-        config,
         call,
     };
 

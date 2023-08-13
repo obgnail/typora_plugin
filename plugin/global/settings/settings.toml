@@ -1,0 +1,373 @@
+############### window_tab ###############
+[window_tab]
+# 启用插件
+ENABLE = true
+# 隐藏titleBar
+HIDE_WINDOW_TITLE_BAR = true
+# 拖拽排序标签页的方式(1 or 2)
+DRAG_STYLE = 1
+# 当标签页脱离父标签3倍高度时，视为新建窗口
+HEIGHT_SCALE = 3
+# 总是在当前标签页打开(可以在右键菜单中设置)
+LOCAL_OPEN = false
+# 调整content的top，以免被tab遮挡
+CHANGE_CONTENT_TOP = true
+# 调整.md-notification-container的z-index，以免被tab遮挡
+CHANGE_NOTIFICATION_Z_INDEX = true
+# 关闭标签页的快捷键
+CLOSE_HOTKEY = ["ctrl+w"]
+# 切换下一个标签页的快捷键
+SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
+# 切换上一个标签页的快捷键
+SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
+# 系统内部使用，请勿设置
+LOOP_DETECT_INTERVAL = 30
+
+
+############### search_multi ###############
+[search_multi]
+# 启用插件
+ENABLE = true
+# 允许拖动模态框
+ALLOW_DRAG = true
+# 模态框自动隐藏
+AUTO_HIDE = false
+# 打开文件后，自动聚焦
+REFOUCE_WHEN_OPEN_FILE = true
+# 搜索内容时大小写敏感(此选项不必手动调整，可以在UI设置)
+CASE_SENSITIVE = false
+# 将文件路径加入搜索内容(此选项不必手动调整，可以在UI设置)
+INCLUDE_FILE_PATH = false
+# 展示文件路径时使用相对路径
+RELATIVE_PATH = true
+# 关键词按空格分割
+SEPARATOR = " "
+# hint展示文件修改时间
+SHOW_MTIME = false
+# Typora允许打开小于2000000(即File.MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
+MAX_SIZE = 2000000
+# Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
+ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
+# 打开模态框快捷键
+HOTKEY = "ctrl+shift+p"
+
+
+############### multi_highlighter ###############
+[multi_highlighter]
+# 启用插件
+ENABLE = true
+# 快捷键
+HOTKEY = "ctrl+shift+h"
+# 允许拖拽
+ALLOW_DRAG = true
+# 大小写敏感(此选项不必手动调整，可以在UI设置)
+CASE_SENSITIVE = false
+# 关键词按空格分割
+SEPARATOR = " "
+# 展示执行按钮
+SHOW_RUN_BUTTON = false
+# 打开其他文件时自动重新搜索
+RESEARCH_WHILE_OPEN_FILE = true
+# 点击时显示当前的索引数
+SHOW_CURRENT_INDEX = true
+# Typora本身的限制= ctrl+F搜索后，点击任意地方原先高亮的地方就会消失
+# 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
+REMOVE_WHEN_EDIT = true
+# 定位时高亮关键字出现提示边框
+SHOW_KEYWORD_OUTLINE = true
+# 定位时高亮关键字提示所在行
+SHOW_KEYWORD_BAR = true
+# 高亮的样式
+STYLE_COLOR = [
+    # 浅一些的颜色
+    '#bbeeff',
+    '#ffbbcc',
+    '#88ee88',
+    '#ccbbff',
+    '#ffee88',
+    '#FFFFa0',
+    '#88cccc',
+    '#ffbb88',
+    '#cccccc',
+    '#ffaabb',
+    # 深一些的颜色
+    '#99ccff',
+    '#ff99cc',
+    '#66cc66',
+    '#cc99ff',
+    '#ffcc66',
+    '#FFFF80',
+    '#dd9966',
+    '#aaaaaa',
+    '#66aaaa',
+    '#dd6699',
+]
+# 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
+# 20个关键字肯定够用了,此选项没太大意义
+DEFAULT_COLOR = "aquamarine"
+# Do not edit this field unless you know what you are doing
+# 性能选项：关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0,则总是使用
+# 此选项用在当搜索了很多关键字时，保证有较快的响应速度
+USE_LIST_THRESHOLD = -1
+# Do not edit this field unless you know what you are doing
+# 性能选项：当fenceMultiHighlighterList数量超过X时，clear之（以时间换空间）。若<0,则总不启用
+# 此选项用在当上一个策略使用太多次后，花费时间去回收空间，保证不会占用太大内存
+CLEAR_LIST_THRESHOLD = 12
+
+
+############### outline ###############
+[outline]
+# 启用插件
+ENABLE = true
+# 默认使用的大纲类型 fence/image/table/all
+DEFAULT_TYPE = "fence"
+# 是否使用混合标签
+USE_ALL = true
+# 给混合标签设置颜色
+SET_COLOR_IN_ALL = true
+# 打开文件后自动检测生成大纲
+AUTO_REFRESH_WHEN_OPEN_FILE = true
+# 显示被其他插件隐藏的元素
+SHOW_HIDDEN = false
+# 展示的名字
+[outline.SHOW_NAME]
+fence = "Fence"
+image = "Figure"
+table = "Table"
+
+
+############### commander ###############
+[commander]
+# 启用插件
+ENABLE = true
+# 快捷键
+HOTKEY = "ctrl+g"
+# 允许拖动模态框
+ALLOW_DRAG = true
+# 启用内建的命令列表
+USE_BUILTIN = true
+# 内建命令列表(shell: cmd/bash、powershell、gitbash、wsl)
+[[commander.BUILTIN]]# dummy
+name = ""
+shell = "cmd/bash"
+cmd = ""
+[[commander.BUILTIN]]
+name = "Explorer"
+shell = "powershell"
+cmd = "explorer $d"
+[[commander.BUILTIN]]
+name = "Vscode"
+shell = "cmd/bash"
+cmd = "code $f"
+[[commander.BUILTIN]]
+name = "WT"
+shell = "cmd/bash"
+cmd = "cd $d && wt"
+[[commander.BUILTIN]]
+name = "GitCommit"
+shell = "cmd/bash"
+cmd = "cd $m && git add . && git commit -m \"message\""
+
+
+############### md_padding ###############
+[md_padding]
+# 启用插件
+ENABLE = true
+# 快捷键
+HOTKEY = "ctrl+shift+k"
+
+[read_only]
+# 启用插件
+ENABLE = true
+# 进入和脱离只读模式的快捷键
+HOTKEY = "ctrl+shift+r"
+# 默认使用只读模式
+READ_ONLY_DEFAULT = false
+# 只读模式下仍可以使用的快捷键
+EXCLUDE_HOTKEY = [
+    # 文件
+    "ctrl+n", # 新建
+    "ctrl+shift+n", # 新建窗口
+    "ctrl+o", # 打开
+    "ctrl+p", # 快速打开
+    "ctrl+s", # 保存
+    "ctrl+shift+s", # 另存
+    "ctrl+,", # 偏好设置
+    "ctrl+w", # 关闭
+
+    # 编辑
+    "ctrl+c", # 复制
+    "ctrl+shift+c", # 复制为markdown
+    "ctrl+a", # 全选
+    "ctrl+l", # 选中当前行
+    "ctrl+e", # 选中当前格式文本
+    "ctrl+d", # 选中当前词
+    "ctrl+j", # 跳转到所选内容
+    "ctrl+Home", # 跳转到文首
+    "ctrl+End", # 跳转到文末
+    "ctrl+f", # 查找
+    "F3", # 查找下一个
+    "shift+F3", # 查找上一个
+
+    # 视图
+    "ctrl+sihft+L", # 显示/隐藏侧边栏
+    "ctrl+sihft+!", # 大纲
+    "ctrl+sihft+@", # 文档列表
+    "ctrl+sihft+#", # 文档树
+    "ctrl+sihft+F", # 搜索
+    "ctrl+/", # 源码模式
+    "F8", # 专注模式
+    "F9", # 打字机模式
+    "F11", # 全屏
+    "ctrl+shif+(", # 实际大小
+    "ctrl+shif++", # 放大
+    "ctrl+shif+_", # 缩(ev) && ev.key === "Tab" # 应用内窗口切换
+    "shift+F12", # 开发者工具
+
+    # 整个应用
+    "alt+F4", # 退出
+]
+# 脚本内部使用
+LOOP_DETECT_INTERVAL = 30
+CLICK_CHECK_INTERVAL = 500
+
+
+############### resize_image ###############
+[resize_image]
+# 启用插件
+ENABLE = true
+# 滚动的放缩倍率
+SCALE = 0.1
+# 图片水平位置：center/left/right
+IMAGE_ALIGN = "center"
+
+
+############### go_top ###############
+[go_top]
+# 启用插件
+ENABLE = true
+# 距顶部50像素开始显示
+THRESHOLD = 50
+# 滚动所用时间
+SCROLL_TIME = 600
+# 标签的颜色
+COLOR = "var(--active-file-border-color, black)"
+# 标签id
+DIV_ID = "plugin-go-top"
+
+
+############### mindmap ###############
+[mindmap]
+# 启用插件
+ENABLE = true
+
+
+############### auto_number ###############
+[auto_number]
+# 启用插件
+ENABLE = true
+# 侧边栏自动编号
+ENABLE_SIDE_BAR = true
+# 正文自动编号
+ENABLE_CONTENT = true
+# TOC自动编号
+ENABLE_TOC = true
+# 表格自动编号
+ENABLE_TABLE = true
+# 图片自动编号
+ENABLE_IMAGE = true
+# 代码块自动编号
+ENABLE_FENCE = true
+# 导出时运用样式
+ENABLE_WHEN_EXPORT = true
+# 添加的ID
+ID = "plugin-auto-number-style"
+# 下标名称
+[auto_number.NAME]
+table = "Table"
+image = "Figure"
+fence = "Fence"
+
+
+############### fence_enhance ###############
+[fence_enhance]
+# 启用插件
+ENABLE = true
+# 自动隐藏,鼠标移动到fence才显示
+AUTO_HIDE = false
+# 启用复制代码功能
+ENABLE_COPY = true
+# 启用折叠代码功能
+ENABLE_FOLD = true
+# 折叠形式
+FOLD_OVERFLOW = "hidden"
+# 默认折叠
+FOLD_DEFAULT = false
+# 内部使用
+CLICK_CHECK_INTERVAL = 300
+WAIT_RECOVER_INTERVAL = 1000
+
+
+############### collapse_paragraph ###############
+[collapse_paragraph]
+# 启用插件
+ENABLE = true
+# 添加的class
+CLASS_NAME = "plugin-collapsed-paragraph"
+
+
+############### truncate_text ###############
+[truncate_text]
+# 启用插件
+ENABLE = true
+# 剩余文本段
+REMAIN_LENGTH = 80
+# 添加的class
+CLASS_NAME = "plugin-truncate-text"
+
+
+############### right_click_menu ###############
+[right_click_menu]
+# 启用插件
+ENABLE = true
+# 点击后是否隐藏菜单
+DO_NOT_HIDE = false
+# 内部使用
+NOT_AVAILABLE_VALUE = "__not_available__"
+LOOP_DETECT_INTERVAL = 200
+
+
+############### resize_table ###############
+[resize_table]
+# 启用插件
+ENABLE = true
+# 是否去除表格单元格最小宽度限制
+REMOVE_MIX_WIDTH = true
+# 单元格边线的拖拽范围
+THRESHOLD = 20
+
+
+############### file_counter ###############
+[file_counter]
+# 启用插件
+ENABLE = true
+# Typora允许打开小于2000000(即MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
+MAX_SIZE = 2000000
+# Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
+ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
+# 添加的class name
+CLASS_NAME = "plugin-file-counter"
+# 内部使用
+LOOP_DETECT_INTERVAL = 300
+
+
+############### mermaid_replace ###############
+[mermaid_replace]
+# 启用插件
+ENABLE = false
+
+
+############### test ###############
+[test]
+# 启用插件
+ENABLE = false

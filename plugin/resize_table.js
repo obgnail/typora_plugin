@@ -1,10 +1,5 @@
 (() => {
-    const config = {
-        // 是否去除表格单元格最小宽度限制
-        REMOVE_MIX_WIDTH: true,
-        // 单元格边线的拖拽范围
-        THRESHOLD: 20,
-    };
+    const config = global._pluginUtils.getPluginSetting("resize_table");
 
     (() => {
         if (config.REMOVE_MIX_WIDTH) {
@@ -151,7 +146,7 @@
         document.addEventListener('mousemove', onMouseMove);
     })
 
-    module.exports = {config};
+    module.exports = {};
 
     console.log("resize_table.js had been injected");
 })()

@@ -1,8 +1,5 @@
 (() => {
-    const config = {
-        // 添加的class
-        CLASS_NAME: "plugin-collapsed-paragraph",
-    };
+    const config = global._pluginUtils.getPluginSetting("collapse_paragraph");
 
     (() => {
         const css = `
@@ -181,7 +178,6 @@
     }
 
     module.exports = {
-        config,
         call,
         callArgs,
         dynamicCallArgsGenerator,

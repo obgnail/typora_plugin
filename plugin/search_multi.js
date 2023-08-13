@@ -1,27 +1,5 @@
 (() => {
-    const config = {
-        // 允许拖动模态框
-        ALLOW_DRAG: true,
-        // 模态框自动隐藏
-        AUTO_HIDE: false,
-        // 搜索内容时大小写敏感(此选项不必手动调整，可以在UI设置)
-        CASE_SENSITIVE: false,
-        // 将文件路径加入搜索内容(此选项不必手动调整，可以在UI设置)
-        INCLUDE_FILE_PATH: false,
-        // 展示文件路径时使用相对路径
-        RELATIVE_PATH: true,
-        // 关键词按空格分割
-        SEPARATOR: " ",
-        // hint展示文件修改时间
-        SHOW_MTIME: false,
-        // Typora允许打开小于2000000(即MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
-        MAX_SIZE: File.MAX_FILE_SIZE,
-        // Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
-        ALLOW_EXT: ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown",
-            "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"],
-        // 快捷键ctrl/command+shift+P打开模态框
-        HOTKEY: ev => global._pluginUtils.metaKeyPressed(ev) && ev.shiftKey && ev.key === "P",
-    };
+    const config = global._pluginUtils.getPluginSetting("search_multi");
 
     (() => {
         const modal_css = `
@@ -460,7 +438,15 @@
         }
     })
 
-    module.exports = {call, config};
+    if (config.REFOUCE_WHEN_OPEN_FILE) {
+        global._pluginUtils.decorateOpenFile(null, () => {
+            if (modal.modal.style.display === "block") {
+                setTimeout(() => modal.input.select(), 300);
+            }
+        })
+    }
+
+    module.exports = {call};
 
     console.log("search_multi.js had been injected");
 })();

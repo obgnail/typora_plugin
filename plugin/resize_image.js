@@ -1,10 +1,5 @@
 (() => {
-    const config = {
-        // 滚动的放缩倍率
-        SCALE: 0.1,
-        // 图片水平位置：center/left/right
-        IMAGE_ALIGN: "center",
-    }
+    const config = global._pluginUtils.getPluginSetting("resize_image");
 
     const getWidth = image => {
         const {width} = image.getBoundingClientRect();
@@ -85,7 +80,6 @@
     }
 
     module.exports = {
-        config,
         call,
         dynamicCallArgsGenerator,
     };

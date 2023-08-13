@@ -1,11 +1,5 @@
 (() => {
-    const config = {
-        // 点击后是否隐藏菜单
-        DO_NOT_HIDE: false,
-
-        NOT_AVAILABLE_VALUE: "__not_available__",
-        LOOP_DETECT_INTERVAL: 200
-    }
+    const config = global._pluginUtils.getPluginSetting("right_click_menu");
 
     const getPlugins = () => {
         const enable = global._plugins.filter(plugin => plugin.enable === true);
@@ -210,6 +204,9 @@
             openUrl(url, 1);
         } else if (type === "do_not_hide") {
             config.DO_NOT_HIDE = !config.DO_NOT_HIDE;
+        } else if (type === "open_setting_folder") {
+            const filepath = global._pluginUtils.joinPath("./plugin/global/settings");
+            JSBridge.invoke("shell.openItem", filepath);
         }
     }
 
@@ -219,13 +216,16 @@
             arg_value: "do_not_hide"
         },
         {
+            arg_name: "打开配置文件夹",
+            arg_value: "open_setting_folder"
+        },
+        {
             arg_name: "关于/帮助",
             arg_value: "about"
-        }
+        },
     ];
 
     module.exports = {
-        config,
         call,
         callArgs,
     };
