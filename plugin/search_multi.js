@@ -438,6 +438,14 @@
         }
     })
 
+    if (config.REFOUCE_WHEN_OPEN_FILE) {
+        global._pluginUtils.decorateOpenFile(null, () => {
+            if (modal.modal.style.display === "block") {
+                setTimeout(() => modal.input.select(), 300);
+            }
+        })
+    }
+
     module.exports = {call};
 
     console.log("search_multi.js had been injected");
