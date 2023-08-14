@@ -274,14 +274,6 @@
         }
     })
 
-    window.addEventListener("keydown", ev => {
-        if (config.HOTKEY(ev)) {
-            call()
-            ev.preventDefault();
-            ev.stopPropagation();
-        }
-    })
-
     if (config.USE_BUILTIN) {
         modal.builtinSelect.addEventListener("change", ev => {
             const option = modal.builtinSelect.options[modal.builtinSelect.selectedIndex];
@@ -304,6 +296,8 @@
             modal.input.select();
         }
     }
+
+    global._pluginUtils.registerWindowHotkey(config.HOTKEY, call);
 
     module.exports = {call};
 

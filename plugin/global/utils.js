@@ -85,6 +85,19 @@
         }, detectInterval);
     }
 
+    const hotkeyList = []
+    const registerWindowHotkey = (hotkey, call) => hotkey instanceof Function && hotkeyList.push({hotkey, call});
+    window.addEventListener("keydown", ev => {
+        for (let hotkey of hotkeyList) {
+            if (hotkey.hotkey(ev)) {
+                hotkey.call();
+                ev.preventDefault();
+                ev.stopPropagation();
+                return
+            }
+        }
+    }, true)
+
     const dragFixedModal = (handleElement, moveElement, withMetaKey = true) => {
         handleElement.addEventListener("mousedown", ev => {
             if (withMetaKey && !metaKeyPressed(ev) || ev.button !== 0) return;
@@ -134,6 +147,7 @@
         decorateOpenFile,
         decorateAddCodeBlock,
         loopDetector,
+        registerWindowHotkey,
         dragFixedModal,
     };
 })()

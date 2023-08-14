@@ -412,13 +412,7 @@
         }
     }
 
-    window.addEventListener("keydown", ev => {
-        if (config.HOTKEY(ev)) {
-            call();
-            ev.preventDefault();
-            ev.stopPropagation();
-        }
-    })
+    global._pluginUtils.registerWindowHotkey(config.HOTKEY, call);
 
     modal.modal.addEventListener("click", ev => {
         const caseButton = ev.target.closest("#typora-search-multi-input .case-option-btn");

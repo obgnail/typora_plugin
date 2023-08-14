@@ -44,11 +44,9 @@
     }
 
     const write = document.getElementById("write");
-    window.addEventListener("keydown", ev => config.HOTKEY(ev) && call(), true);
     write.addEventListener("keydown", stopKeyboard, true);
     write.addEventListener("mousedown", stopMouse, true);
     write.addEventListener("click", stopMouse, true);
-
 
     const call = () => {
         const span = document.getElementById("footer-word-count-label");
@@ -61,6 +59,8 @@
             span.setAttribute("data-value", "ReadOnly" + String.fromCharCode(160).repeat(3));
         }
     }
+
+    global._pluginUtils.registerWindowHotkey(config.HOTKEY, call);
 
     global._pluginUtils.decorate(
         () => !!File,
