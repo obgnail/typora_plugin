@@ -42,6 +42,7 @@
         const uuid = Math.random();
         detectorContainer[uuid] = setInterval(() => {
             if (!until()) return;
+            clearInterval(detectorContainer[uuid]);
 
             const decorator = (original, before, after) => {
                 return function () {
@@ -61,7 +62,6 @@
                 };
             }
             obj[func] = decorator(obj[func], before, after);
-            clearInterval(detectorContainer[uuid]);
             delete detectorContainer[uuid];
         }, 20);
     }
@@ -78,8 +78,8 @@
         const uuid = Math.random();
         detectorContainer[uuid] = setInterval(() => {
             if (until()) {
-                after();
                 clearInterval(detectorContainer[uuid]);
+                after && after();
                 delete detectorContainer[uuid];
             }
         }, detectInterval);

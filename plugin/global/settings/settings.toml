@@ -1,3 +1,4 @@
+# 修改此文件前请注意备份
 ############### window_tab ###############
 [window_tab]
 # 启用插件
@@ -75,7 +76,7 @@ REMOVE_WHEN_EDIT = true
 SHOW_KEYWORD_OUTLINE = true
 # 定位时高亮关键字提示所在行
 SHOW_KEYWORD_BAR = true
-# 高亮的样式
+# 高亮的颜色
 STYLE_COLOR = [
     # 浅一些的颜色
     '#bbeeff',
@@ -102,6 +103,7 @@ STYLE_COLOR = [
 ]
 # 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
 # 20个关键字肯定够用了,此选项没太大意义
+# 就算20个真的不够用,那我也是建议你修改STYLE_COLOR选项，而不是修改此选项
 DEFAULT_COLOR = "aquamarine"
 # Do not edit this field unless you know what you are doing
 # 性能选项：关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0,则总是使用
@@ -174,6 +176,8 @@ ENABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+k"
 
+
+############### read_only ###############
 [read_only]
 # 启用插件
 ENABLE = true

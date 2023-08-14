@@ -19,6 +19,7 @@
     }
 
     const getDirection = (target, ev) => {
+        if (!target) return ""
         const rect = target.getBoundingClientRect();
         if (rect.right - config.THRESHOLD < ev.clientX && ev.clientX < rect.right + config.THRESHOLD) {
             return "right"
@@ -29,44 +30,36 @@
         }
     }
 
-    const getTester = ele => {
-        const _ele = ele;
-        let count = 0;
-        return () => {
-            count++;
-            switch (count) {
-                case 1:
-                    return _ele
-                case 2:
-                    return _ele.previousElementSibling
-                case 3:
-                    const num = whichChildOfParent(_ele);
-                    let uncle = _ele.parentElement.previousElementSibling;
-                    if (uncle) {
-                        return uncle.querySelector(`td:nth-child(${num})`)
-                    }
-                    // 第一行数据
-                    const tr = _ele.closest("table").querySelector("thead tr");
-                    return tr.querySelector(`th:nth-child(${num})`)
-                default:
-                    return null
-            }
-        }
-    }
-
     const findTarget = (ele, ev) => {
-        let tester = getTester(ele);
-        for (let i = 0; i <= 2; i++) {
-            const testElement = tester();
-            if (!testElement) {
-                continue
+        let target = null;
+        let direction = "";
+
+        for (let i = 1; i <= 3; i++) {
+            switch (i) {
+                case 1:
+                    target = ele;
+                    break
+                case 2:
+                    target = ele.previousElementSibling;
+                    break
+                case 3:
+                    const num = whichChildOfParent(ele);
+                    const uncle = ele.parentElement.previousElementSibling;
+                    if (uncle) {
+                        target = uncle.querySelector(`td:nth-child(${num})`);
+                    } else {
+                        // 第一行数据
+                        const tr = ele.closest("table").querySelector("thead tr");
+                        target = tr.querySelector(`th:nth-child(${num})`);
+                    }
+                    break
             }
-            const direction = getDirection(testElement, ev);
-            if (direction) {
-                return {"target": testElement, "direction": direction}
-            }
+
+            direction = getDirection(target, ev);
+            if (target && direction) break
         }
-        return {"target": null, "direction": ""}
+
+        return {target, direction}
     }
 
     const cleanStyle = (eleList, exclude, cleanStyle) => {
@@ -77,8 +70,7 @@
         }
     }
 
-    const write = document.querySelector("#write");
-    write.addEventListener("mousedown", ev => {
+    document.querySelector("#write").addEventListener("mousedown", ev => {
         if (!global._pluginUtils.metaKeyPressed(ev)) return;
         ev.stopPropagation();
         ev.preventDefault();
@@ -121,15 +113,13 @@
             ev.stopPropagation();
             ev.preventDefault();
 
-            if (!global._pluginUtils.metaKeyPressed(ev)) {
-                return
-            }
+            if (!global._pluginUtils.metaKeyPressed(ev)) return;
 
             requestAnimationFrame(() => {
                 if (direction === "right") {
-                    target.style.width = startWidth + ev.clientX - startX + "px"
+                    target.style.width = startWidth + ev.clientX - startX + "px";
                 } else if (direction === "bottom") {
-                    target.style.height = startHeight + ev.clientY - startY + "px"
+                    target.style.height = startHeight + ev.clientY - startY + "px";
                 }
             });
         }
