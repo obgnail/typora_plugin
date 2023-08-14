@@ -12,7 +12,7 @@
             坏处是:绿皮
     */
     const config = global._pluginUtils.getPluginSetting("fence_enhance");
-    const enableIndent = config.ENABLE_INDENT && !global._pluginUtils.isBetaVersion;
+    let enableIndent = config.ENABLE_INDENT && !global._pluginUtils.isBetaVersion;
 
     (() => {
         const css = `
@@ -227,6 +227,13 @@
         },
     ];
 
+    if (enableIndent) {
+        callArgs.splice(2, 0, {
+            arg_name: "禁用/启用缩进调整按钮",
+            arg_value: "disable_or_enable_indent",
+        });
+    }
+
     const callMap = {
         disable_or_enable_fold: () => {
             config.ENABLE_FOLD = !config.ENABLE_FOLD;
@@ -240,6 +247,11 @@
             config.ENABLE_COPY = !config.ENABLE_COPY;
             const display = (config.ENABLE_COPY) ? "block" : "none";
             document.querySelectorAll(".fence-enhance .typora-copy-code").forEach(ele => ele.style.display = display);
+        },
+        disable_or_enable_indent: () => {
+            enableIndent = !enableIndent;
+            const display = (enableIndent) ? "block" : "none";
+            document.querySelectorAll(".fence-enhance .typora-indent-code").forEach(ele => ele.style.display = display);
         },
         fold_all: () => {
             document.querySelectorAll(".typora-fold-code:not(.folded)").forEach(ele => ele.click());
