@@ -192,13 +192,8 @@
 
     const Package = global._pluginUtils.Package;
     const separator = File.isWin ? "\\" : "/";
-
-    const openFileInThisWindow = filePath => {
-        document.activeElement.blur();
-        File.editor.library.openFile(filePath);
-    }
-
-    const openFileInNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
+    const openFileInThisWindow = filePath => File.editor.library.openFile(filePath);
+    const openFileInNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder);
 
     const traverseDir = (dir, filter, callback, then) => {
         async function traverse(dir) {
@@ -225,7 +220,7 @@
     const appendItemFunc = keyArr => {
         let index = 0;
         let once = true;
-        const rootPath = File.getMountFolder()
+        const rootPath = File.getMountFolder();
 
         return (filePath, stats, buffer) => {
             let data = buffer.toString();

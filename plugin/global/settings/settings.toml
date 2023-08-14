@@ -298,6 +298,8 @@ ENABLE = true
 AUTO_HIDE = false
 # 启用复制代码功能
 ENABLE_COPY = true
+# 启用代码调整缩进功能(正式版才可使用)
+ENABLE_INDENT = true
 # 启用折叠代码功能
 ENABLE_FOLD = true
 # 折叠形式
