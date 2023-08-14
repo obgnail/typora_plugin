@@ -20,8 +20,6 @@ CLOSE_HOTKEY = ["ctrl+w"]
 SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
 # 切换上一个标签页的快捷键
 SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
-# 系统内部使用，请勿设置
-LOOP_DETECT_INTERVAL = 30
 
 
 ############### search_multi ###############
@@ -228,7 +226,6 @@ EXCLUDE_HOTKEY = [
     "alt+F4", # 退出
 ]
 # 脚本内部使用
-LOOP_DETECT_INTERVAL = 30
 CLICK_CHECK_INTERVAL = 500
 
 

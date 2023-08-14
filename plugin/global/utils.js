@@ -16,14 +16,11 @@
         }
     }
 
-    const getPluginSetting = fixed_name => {
-        return global._plugin_settings[fixed_name];
-    }
-
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
     const shiftKeyPressed = ev => !!ev.shiftKey;
     const altKeyPressed = ev => !!ev.altKey;
 
+    const getPluginSetting = fixed_name => global._plugin_settings[fixed_name];
     const getDirname = () => global.dirname || global.__dirname;
     const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
     const joinPath = (...paths) => Package.Path.join(getDirname(), ...paths);
@@ -77,6 +74,17 @@
         decorate(() => !!File, File.editor.fences, "addCodeBlock", before, after)
     }
 
+    const loopDetector = (until, after, detectInterval = 20) => {
+        const uuid = Math.random();
+        detectorContainer[uuid] = setInterval(() => {
+            if (until()) {
+                after();
+                clearInterval(detectorContainer[uuid]);
+                delete detectorContainer[uuid];
+            }
+        }, detectInterval);
+    }
+
     const dragFixedModal = (handleElement, moveElement, withMetaKey = true) => {
         handleElement.addEventListener("mousedown", ev => {
             if (withMetaKey && !metaKeyPressed(ev) || ev.button !== 0) return;
@@ -125,6 +133,7 @@
         decorate,
         decorateOpenFile,
         decorateAddCodeBlock,
+        loopDetector,
         dragFixedModal,
     };
 })()

@@ -113,7 +113,7 @@
         }
     }).observe(document.getElementById("file-library-tree"), {subtree: true, childList: true});
 
-    const _timer = setInterval(() => setAllDirCount() && clearInterval(_timer), config.LOOP_DETECT_INTERVAL);
+    global._pluginUtils.loopDetector(setAllDirCount, null, config.LOOP_DETECT_INTERVAL);
 
     module.exports = {};
 

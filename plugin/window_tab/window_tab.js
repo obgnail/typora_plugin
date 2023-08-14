@@ -328,12 +328,10 @@
         filePath && openTab(filePath);
     })
 
-    const _timer = setInterval(() => {
-        if (!File) return
-        clearInterval(_timer);
+    global._pluginUtils.loopDetector(() => !!File, () => {
         const filePath = global._pluginUtils.getFilePath();
         filePath && openTab(filePath);
-    }, config.LOOP_DETECT_INTERVAL);
+    });
 
     entities.tabBar.addEventListener("click", ev => {
         const closeButton = ev.target.closest(".close-button");

@@ -49,13 +49,17 @@
     write.addEventListener("mousedown", stopMouse, true);
     write.addEventListener("click", stopMouse, true);
 
-    if (config.READ_ONLY_DEFAULT) {
-        const _timer = setInterval(() => {
-            if (File) {
-                clearInterval(_timer);
-                call();
-            }
-        }, config.LOOP_DETECT_INTERVAL);
+
+    const call = () => {
+        const span = document.getElementById("footer-word-count-label");
+        if (File.isLocked) {
+            File.unlock();
+            span.setAttribute("data-value", "");
+        } else {
+            File.lock();
+            document.activeElement.blur();
+            span.setAttribute("data-value", "ReadOnly" + String.fromCharCode(160).repeat(3));
+        }
     }
 
     global._pluginUtils.decorate(
@@ -77,16 +81,8 @@
         }
     )
 
-    const call = () => {
-        const span = document.getElementById("footer-word-count-label");
-        if (File.isLocked) {
-            File.unlock();
-            span.setAttribute("data-value", "");
-        } else {
-            File.lock();
-            document.activeElement.blur();
-            span.setAttribute("data-value", "ReadOnly" + String.fromCharCode(160).repeat(3));
-        }
+    if (config.READ_ONLY_DEFAULT) {
+        global._pluginUtils.loopDetector(() => !!File, call);
     }
 
     module.exports = {
