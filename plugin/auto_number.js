@@ -295,9 +295,8 @@
     ];
 
     const dynamicCallArgsGenerator = () => {
-        const ele = document.getElementById("plugin-auto-number-style");
         let arg_name, arg_value;
-        if (ele) {
+        if (!!document.getElementById(config.ID)) {
             arg_name = "禁用";
             arg_value = "disable";
         } else {
