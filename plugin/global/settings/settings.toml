@@ -1,3 +1,4 @@
+# 修改此文件前请注意备份,修改后请重启Typora
 ############### window_tab ###############
 [window_tab]
 # 启用插件
@@ -20,8 +21,6 @@ CLOSE_HOTKEY = ["ctrl+w"]
 SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
 # 切换上一个标签页的快捷键
 SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
-# 系统内部使用，请勿设置
-LOOP_DETECT_INTERVAL = 30
 
 
 ############### search_multi ###############
@@ -77,7 +76,7 @@ REMOVE_WHEN_EDIT = true
 SHOW_KEYWORD_OUTLINE = true
 # 定位时高亮关键字提示所在行
 SHOW_KEYWORD_BAR = true
-# 高亮的样式
+# 高亮的颜色
 STYLE_COLOR = [
     # 浅一些的颜色
     '#bbeeff',
@@ -104,6 +103,7 @@ STYLE_COLOR = [
 ]
 # 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
 # 20个关键字肯定够用了,此选项没太大意义
+# 就算20个真的不够用,那我也是建议你修改STYLE_COLOR选项，而不是修改此选项
 DEFAULT_COLOR = "aquamarine"
 # Do not edit this field unless you know what you are doing
 # 性能选项：关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0,则总是使用
@@ -176,6 +176,8 @@ ENABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+k"
 
+
+############### read_only ###############
 [read_only]
 # 启用插件
 ENABLE = true
@@ -228,7 +230,6 @@ EXCLUDE_HOTKEY = [
     "alt+F4", # 退出
 ]
 # 脚本内部使用
-LOOP_DETECT_INTERVAL = 30
 CLICK_CHECK_INTERVAL = 500
 
 
@@ -297,6 +298,8 @@ ENABLE = true
 AUTO_HIDE = false
 # 启用复制代码功能
 ENABLE_COPY = true
+# 启用代码调整缩进功能(正式版才可使用)
+ENABLE_INDENT = true
 # 启用折叠代码功能
 ENABLE_FOLD = true
 # 折叠形式

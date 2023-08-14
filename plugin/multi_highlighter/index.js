@@ -473,13 +473,7 @@
         }
     }
 
-    window.addEventListener("keydown", ev => {
-        if (config.HOTKEY(ev)) {
-            call();
-            ev.preventDefault();
-            ev.stopPropagation();
-        }
-    });
+    global._pluginUtils.registerWindowHotkey(config.HOTKEY, call);
 
     module.exports = {
         call,

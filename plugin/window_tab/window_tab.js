@@ -328,12 +328,18 @@
         filePath && openTab(filePath);
     })
 
-    const _timer = setInterval(() => {
-        if (!File) return
-        clearInterval(_timer);
+    global._pluginUtils.loopDetector(() => !!File, () => {
         const filePath = global._pluginUtils.getFilePath();
         filePath && openTab(filePath);
-    }, config.LOOP_DETECT_INTERVAL);
+    });
+
+    const hotkeyList = [config.SWITCH_NEXT_TAB_HOTKEY, config.SWITCH_PREVIOUS_TAB_HOTKEY, config.CLOSE_HOTKEY];
+    const opList = [nextTab, previousTab, closeActiveTab]
+    for (let idx = 0; idx < hotkeyList.length; idx++) {
+        for (let hotkey of hotkeyList[idx]) {
+            global._pluginUtils.registerWindowHotkey(hotkey, opList[idx]);
+        }
+    }
 
     entities.tabBar.addEventListener("click", ev => {
         const closeButton = ev.target.closest(".close-button");
@@ -365,22 +371,6 @@
             target.scrollLeft += ev.deltaY;
         }
     })
-
-    const hotkeyList = [config.SWITCH_NEXT_TAB_HOTKEY, config.SWITCH_PREVIOUS_TAB_HOTKEY, config.CLOSE_HOTKEY];
-    const opList = [nextTab, previousTab, closeActiveTab]
-
-    window.addEventListener("keydown", ev => {
-        for (let idx = 0; idx < hotkeyList.length; idx++) {
-            for (let hotkey of hotkeyList[idx]) {
-                if (hotkey(ev)) {
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    opList[idx]();
-                    return
-                }
-            }
-        }
-    }, true)
 
     entities.content.addEventListener("scroll", () => {
         tabUtil.tabs[tabUtil.activeIdx].scrollTop = entities.content.scrollTop;

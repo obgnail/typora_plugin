@@ -12,8 +12,8 @@
         return filename
     }
 
-    const cleanMindMapTitle = title => title.replace(/[(-)]/g, "");
-    const cleanGraphTitle = title => title.replace(/[(、：，（）。「」？！_)]/g, "");
+    const cleanMindMapTitle = title => title.replace(/[(、：，（）。「」？！_)]/g, "");
+    const cleanGraphTitle = title => `"${title.replace(/"/g, "")}"`;
 
     const wrapMermaid = content => `\`\`\`mermaid\n${content}\`\`\``;
 

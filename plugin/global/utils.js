@@ -16,14 +16,11 @@
         }
     }
 
-    const getPluginSetting = fixed_name => {
-        return global._plugin_settings[fixed_name];
-    }
-
     const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey;
     const shiftKeyPressed = ev => !!ev.shiftKey;
     const altKeyPressed = ev => !!ev.altKey;
 
+    const getPluginSetting = fixed_name => global._plugin_settings[fixed_name];
     const getDirname = () => global.dirname || global.__dirname;
     const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
     const joinPath = (...paths) => Package.Path.join(getDirname(), ...paths);
@@ -45,6 +42,7 @@
         const uuid = Math.random();
         detectorContainer[uuid] = setInterval(() => {
             if (!until()) return;
+            clearInterval(detectorContainer[uuid]);
 
             const decorator = (original, before, after) => {
                 return function () {
@@ -64,7 +62,6 @@
                 };
             }
             obj[func] = decorator(obj[func], before, after);
-            clearInterval(detectorContainer[uuid]);
             delete detectorContainer[uuid];
         }, 20);
     }
@@ -76,6 +73,30 @@
     const decorateAddCodeBlock = (before, after) => {
         decorate(() => !!File, File.editor.fences, "addCodeBlock", before, after)
     }
+
+    const loopDetector = (until, after, detectInterval = 20) => {
+        const uuid = Math.random();
+        detectorContainer[uuid] = setInterval(() => {
+            if (until()) {
+                clearInterval(detectorContainer[uuid]);
+                after && after();
+                delete detectorContainer[uuid];
+            }
+        }, detectInterval);
+    }
+
+    const hotkeyList = []
+    const registerWindowHotkey = (hotkey, call) => hotkey instanceof Function && hotkeyList.push({hotkey, call});
+    window.addEventListener("keydown", ev => {
+        for (let hotkey of hotkeyList) {
+            if (hotkey.hotkey(ev)) {
+                hotkey.call();
+                ev.preventDefault();
+                ev.stopPropagation();
+                return
+            }
+        }
+    }, true)
 
     const dragFixedModal = (handleElement, moveElement, withMetaKey = true) => {
         handleElement.addEventListener("mousedown", ev => {
@@ -125,6 +146,8 @@
         decorate,
         decorateOpenFile,
         decorateAddCodeBlock,
+        loopDetector,
+        registerWindowHotkey,
         dragFixedModal,
     };
 })()

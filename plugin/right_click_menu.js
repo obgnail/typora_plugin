@@ -189,12 +189,7 @@
         }, 500)
     }
 
-    const _timer = setInterval(() => {
-        if (global._plugins_had_injected) {
-            clearInterval(_timer);
-            appendMenu();
-        }
-    }, config.LOOP_DETECT_INTERVAL);
+    global._pluginUtils.loopDetector(() => global._plugins_had_injected, appendMenu, config.LOOP_DETECT_INTERVAL);
 
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////
     const call = type => {

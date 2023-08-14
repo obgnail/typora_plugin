@@ -1,7 +1,7 @@
 (() => {
     const config = global._pluginUtils.getPluginSetting("auto_number");
 
-    const bast_css = `
+    const base_css = `
         #write { counter-reset: write-h2 Figures Tables Fences; }
         h1 { counter-reset: write-h2 Figures Tables Fences; }
         h2 { counter-reset: write-h3 Figures Tables Fences; }
@@ -186,7 +186,7 @@
 
     const getStyleString = () => {
         return [
-            bast_css,
+            base_css,
             (config.ENABLE_CONTENT) ? content_css : "",
             (config.ENABLE_SIDE_BAR) ? side_bar_css : "",
             (config.ENABLE_TOC) ? toc_css : "",
@@ -219,6 +219,7 @@
 
             afterGetHeaderMatrix: headers => {
                 if (!this.inExport) return;
+                this.inExport = false;
 
                 const pValue = {H2: 0, H3: 0, H4: 0, H5: 0, H6: 0};
                 headers.forEach(header => {
@@ -257,8 +258,6 @@
                     }
                     header[1] = numbering + header[1];
                 })
-
-                this.inExport = false;
             }
         }
 
@@ -295,9 +294,8 @@
     ];
 
     const dynamicCallArgsGenerator = () => {
-        const ele = document.getElementById("plugin-auto-number-style");
         let arg_name, arg_value;
-        if (ele) {
+        if (!!document.getElementById(config.ID)) {
             arg_name = "禁用";
             arg_value = "disable";
         } else {

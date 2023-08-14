@@ -12,6 +12,7 @@
             坏处是:绿皮
     */
     const config = global._pluginUtils.getPluginSetting("fence_enhance");
+    const enableIndent = config.ENABLE_INDENT && !global._pluginUtils.isBetaVersion;
 
     (() => {
         const css = `
@@ -23,16 +24,26 @@
                 z-index: 8;
                 font-size: 1.2em;
             }
-            #write .fence-enhance .typora-copy-code, .typora-fold-code {
+            #write .fence-enhance .typora-copy-code, .typora-fold-code, .typora-indent-code {
                 opacity: 0.5;
                 cursor: pointer;
             }
-            #write .fence-enhance .typora-copy-code {
+            #write .fence-enhance .typora-copy-code, .typora-indent-code {
                 margin-left: .5em;
             }
             `
         global._pluginUtils.insertStyle("plugin-fence-enhance-style", css);
     })()
+
+    const createButton = (className, hint, iconClassName) => {
+        const button = document.createElement("div");
+        button.classList.add(className);
+        hint && button.setAttribute("ty-hint", hint);
+        const span = document.createElement("span");
+        span.className = iconClassName;
+        button.appendChild(span);
+        return button
+    }
 
     const addEnhanceElement = fence => {
         let enhance = fence.querySelector(".fence-enhance");
@@ -46,20 +57,15 @@
 
             let foldButton;
             if (config.ENABLE_FOLD) {
-                foldButton = document.createElement("div");
-                foldButton.classList.add("typora-fold-code");
-                const span = document.createElement("span");
-                span.className = "fa fa-minus";
-                foldButton.appendChild(span);
+                foldButton = createButton("typora-fold-code", "折叠", "fa fa-minus");
                 enhance.appendChild(foldButton);
             }
-
+            if (enableIndent) {
+                const indentButton = createButton("typora-indent-code", "调整缩进", "fa fa-indent");
+                enhance.appendChild(indentButton);
+            }
             if (config.ENABLE_COPY) {
-                const copyButton = document.createElement("div");
-                copyButton.classList.add("typora-copy-code");
-                const span = document.createElement("span");
-                span.className = "fa fa-clipboard";
-                copyButton.appendChild(span);
+                const copyButton = createButton("typora-copy-code", "复制", "fa fa-clipboard");
                 enhance.appendChild(copyButton);
             }
 
@@ -82,7 +88,8 @@
     document.getElementById("write").addEventListener("click", ev => {
         const copy = ev.target.closest(".typora-copy-code");
         const fold = ev.target.closest(".typora-fold-code");
-        if (!copy && !fold) return;
+        const indent = ev.target.closest(".typora-indent-code");
+        if (!copy && !fold && !indent) return;
 
         ev.preventDefault();
         ev.stopPropagation();
@@ -90,8 +97,10 @@
 
         if (copy) {
             copyCode(ev, copy);
-        } else {
+        } else if (fold) {
             foldCode(ev, fold);
+        } else {
+            indentCode(ev, indent);
         }
     })
 
@@ -147,6 +156,18 @@
         }
     }
 
+    const indentCode = (ev, indentButton) => {
+        const fence = indentButton.closest(".md-fences");
+        if (!fence || !File.editor.fences.formatContent) return;
+
+        const cid = fence.getAttribute("cid");
+        File.editor.refocus(cid);
+        File.editor.fences.formatContent();
+
+        indentButton.firstElementChild.className = "fa fa-check";
+        setTimeout(() => indentButton.firstElementChild.className = "fa fa-indent", config.WAIT_RECOVER_INTERVAL);
+    }
+
     $("#write").on("mouseenter", ".md-fences", function () {
         if (config.AUTO_HIDE) {
             this.querySelector(".fence-enhance").style.visibility = "";
@@ -165,7 +186,7 @@
 
         dynamicUtil.target = target;
 
-        return [
+        const arr = [
             {
                 arg_name: "折叠/展开代码块",
                 arg_value: "fold_current",
@@ -175,6 +196,12 @@
                 arg_value: "copy_current",
             },
         ]
+        enableIndent && arr.push({
+            arg_name: "调整缩进",
+            arg_value: "indent_current"
+        })
+
+        return arr
     }
 
     const callArgs = [
@@ -227,6 +254,9 @@
         },
         copy_current: () => {
             dynamicUtil.target.querySelector(".typora-copy-code").click();
+        },
+        indent_current: () => {
+            dynamicUtil.target.querySelector(".typora-indent-code").click();
         },
         set_auto_hide: () => {
             config.AUTO_HIDE = !config.AUTO_HIDE;
