@@ -1,7 +1,7 @@
 (() => {
     // 打开新窗口后自动关闭
     global._pluginUtils.decorate(
-        () => !!File,
+        () => (File && File.editor && File.editor.library && File.editor.library.openFileInNewWindow),
         File.editor.library,
         "openFileInNewWindow",
         null,
