@@ -39,11 +39,18 @@
     const detectorContainer = {}
 
     const decorate = (until, obj, func, before, after, changeResult = false) => {
+        const start = new Date().getTime();
         const uuid = Math.random();
         detectorContainer[uuid] = setInterval(() => {
+            if (new Date().getTime() - start > 10000) {
+                console.log("decorate timeout!", until, obj, func, before, after, changeResult);
+                clearInterval(detectorContainer[uuid]);
+                delete detectorContainer[uuid];
+                return;
+            }
+
             if (!until()) return;
             clearInterval(detectorContainer[uuid]);
-
             const decorator = (original, before, after) => {
                 return function () {
                     if (before) {
