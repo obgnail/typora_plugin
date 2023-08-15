@@ -67,11 +67,11 @@
     }
 
     const decorateOpenFile = (before, after) => {
-        decorate(() => !!File, File.editor.library, "openFile", before, after)
+        decorate(() => (File && File.editor && File.editor.library && File.editor.library.openFile), File.editor.library, "openFile", before, after)
     }
 
     const decorateAddCodeBlock = (before, after) => {
-        decorate(() => !!File, File.editor.fences, "addCodeBlock", before, after)
+        decorate(() => (File && File.editor && File.editor.fences && File.editor.fences.addCodeBlock), File.editor.fences, "addCodeBlock", before, after)
     }
 
     const loopDetector = (until, after, detectInterval = 20) => {

@@ -63,7 +63,7 @@
     global._pluginUtils.registerWindowHotkey(config.HOTKEY, call);
 
     global._pluginUtils.decorate(
-        () => !!File,
+        () => (File && File.freshLock),
         File,
         "freshLock",
         null,

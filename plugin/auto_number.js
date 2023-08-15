@@ -261,8 +261,21 @@
             }
         }
 
-        global._pluginUtils.decorate(() => !!File, File.editor.export, "exportToHTML", decoMixin.beforeExport, null);
-        global._pluginUtils.decorate(() => !!File, File.editor.library.outline, "getHeaderMatrix", null, decoMixin.afterGetHeaderMatrix);
+        global._pluginUtils.decorate(
+            () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
+            File.editor.export,
+            "exportToHTML",
+            decoMixin.beforeExport,
+            null
+        );
+        global._pluginUtils.decorate(
+            () => (File && File.editor && File.editor.library && File.editor.library.outline
+                && File.editor.library.outline.getHeaderMatrix),
+            File.editor.library.outline,
+            "getHeaderMatrix",
+            null,
+            decoMixin.afterGetHeaderMatrix
+        );
     }
 
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////
