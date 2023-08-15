@@ -73,6 +73,12 @@ window.onload = () => {
             clickable: true,
         },
         {
+            name: "多功能表格",
+            fixed_name: "dataTables",
+            src: "./plugin/dataTables/index.js",
+            clickable: true,
+        },
+        {
             name: "一键到顶",
             fixed_name: "go_top",
             src: "./plugin/go_top.js",

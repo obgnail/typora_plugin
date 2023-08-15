@@ -25,8 +25,9 @@
 | 15   | go_top             | 一键到文章顶部                     | √        |
 | 16   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能   | √        |
 | 17   | right_click_menu   | 右键菜单统一管理、调用插件         | √        |
-| 18   | mermaid_replace    | 替换 mermaid 组件                  | ×        |
-| 19   | old_window_tab     | 标签页管理（已废弃）               | ×        |
+| 18   | dataTables（WIP）  | 表格增强                           | ×        |
+| 19   | mermaid_replace    | 替换 mermaid 组件                  | ×        |
+| 20   | old_window_tab     | 标签页管理（已废弃）               | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -333,6 +334,14 @@ const BUILTIN = [
 ### go_top： 一键到顶
 
 在右下角添加一个一键到顶的按钮。
+
+
+
+### dataTables：表格增强（WIP）
+
+引入 `databTables.js`，增强表格。
+
+> NOTE：**此脚本开发中，默认关闭，需手动开启。**
 
 
 

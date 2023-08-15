@@ -243,6 +243,30 @@ SCALE = 0.1
 IMAGE_ALIGN = "center"
 
 
+############### dataTables ###############
+[dataTables]
+# 启用插件
+ENABLE = false
+# 是否分页
+PAGING = true
+# 使用分页时，单页显示的数据条数
+PAGE_LENGTH = 25
+# 开启垂直滚动条(表格的高度)，<0则全部显示
+SCROLLY = -1
+# 当显示更少的记录时，是否允许表格减少高度
+SROLL_COLLAPSE = true
+# 是否使用排序功能
+ORDERING = true
+# 是否在初始化的时候排序
+DEFAULT_ORDER = false
+# 是否使用搜索
+SEARCHING = true
+# 在搜索或者过滤时，是否不区分大小写
+CASE_INSENSITIVE = true
+# 对在搜索中是否正则表达式
+REGEX = false
+
+
 ############### go_top ###############
 [go_top]
 # 启用插件

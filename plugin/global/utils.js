@@ -9,6 +9,14 @@
         document.getElementsByTagName("head")[0].appendChild(style);
     }
 
+    const insertStyleFile = (id, filepath) => {
+        const link = document.createElement('link');
+        link.type = 'text/css'
+        link.rel = 'stylesheet'
+        link.href = filepath;
+        document.getElementsByTagName('head')[0].appendChild(link);
+    }
+
     const getPlugin = fixed_name => {
         const idx = global._plugins.findIndex(plugin => plugin.enable && plugin.fixed_name === fixed_name)
         if (idx !== -1) {
@@ -140,6 +148,7 @@
     module.exports = {
         isBetaVersion,
         insertStyle,
+        insertStyleFile,
         getPlugin,
         getPluginSetting,
         metaKeyPressed,
