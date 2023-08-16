@@ -1,6 +1,6 @@
 (() => {
     (() => {
-        const cssFilepath = global._pluginUtils.joinPath("./plugin/datatables/datatables.min.css");
+        const cssFilepath = global._pluginUtils.joinPath("./plugin/datatables/resource/datatables.min.css");
         global._pluginUtils.insertStyleFile("plugin-datatables-common-style", cssFilepath);
 
         const css = `
@@ -21,7 +21,7 @@
         `
         global._pluginUtils.insertStyle("plugin-datatables-custom-style", css);
 
-        const jsFilepath = global._pluginUtils.joinPath("./plugin/datatables/datatables.min.js");
+        const jsFilepath = global._pluginUtils.joinPath("./plugin/datatables/resource/datatables.min.js");
         $.getScript(`file:///${jsFilepath}`).then(() => console.log("datatables.min.js has inserted"));
     })()
 
