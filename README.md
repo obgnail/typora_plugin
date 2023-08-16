@@ -25,7 +25,7 @@
 | 15   | go_top             | 一键到文章顶部                     | √        |
 | 16   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能   | √        |
 | 17   | right_click_menu   | 右键菜单统一管理、调用插件         | √        |
-| 18   | dataTables（WIP）  | 表格增强                           | ×        |
+| 18   | datatables（WIP）  | 表格增强                           | ×        |
 | 19   | mermaid_replace    | 替换 mermaid 组件                  | ×        |
 | 20   | old_window_tab     | 标签页管理（已废弃）               | ×        |
 
@@ -337,7 +337,7 @@ const BUILTIN = [
 
 
 
-### dataTables：表格增强（WIP）
+### datatables：表格增强（WIP）
 
 引入 `databTables.js`，增强表格。
 

@@ -1,32 +1,31 @@
 (() => {
     (() => {
-        const cssFilepath = global._pluginUtils.joinPath("./plugin/dataTables/dataTables.min.css");
-        global._pluginUtils.insertStyleFile("plugin-dataTables-common-style", cssFilepath);
+        const cssFilepath = global._pluginUtils.joinPath("./plugin/datatables/datatables.min.css");
+        global._pluginUtils.insertStyleFile("plugin-datatables-common-style", cssFilepath);
 
         const css = `
-            #write figure select, 
+            #write figure select,
             #write figure input {
                 border: 1px solid #ddd;
                 box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
                 border-radius: 2px;
                 height: 27px;
-                margin-top: 1px;
+                margin-top: 5px;
                 margin-bottom: 1px;
                 max-width: 200px;
-                margin-top: 5px;
             }
-            
+
             figure .dataTables_length, .dataTables_filter {
                 margin-bottom: 10px;
             }
         `
-        global._pluginUtils.insertStyle("plugin-dataTables-custom-style", css);
+        global._pluginUtils.insertStyle("plugin-datatables-custom-style", css);
 
-        const jsFilepath = global._pluginUtils.joinPath("./plugin/dataTables/dataTables.min.js");
-        $.getScript(`file:///${jsFilepath}`).then(() => console.log("dataTables.min.js has inserted"));
+        const jsFilepath = global._pluginUtils.joinPath("./plugin/datatables/datatables.min.js");
+        $.getScript(`file:///${jsFilepath}`).then(() => console.log("datatables.min.js has inserted"));
     })()
 
-    const config = global._pluginUtils.getPluginSetting("dataTables");
+    const config = global._pluginUtils.getPluginSetting("datatables");
 
     const dataTablesConfig = (() => {
         const cfg = {
@@ -178,5 +177,5 @@
         dynamicCallArgsGenerator,
     };
 
-    console.log("dataTables.js had been injected");
+    console.log("datatables.js had been injected");
 })()

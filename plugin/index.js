@@ -74,8 +74,8 @@ window.onload = () => {
         },
         {
             name: "表格增强",
-            fixed_name: "dataTables",
-            src: "./plugin/dataTables/index.js",
+            fixed_name: "datatables",
+            src: "./plugin/datatables/index.js",
             clickable: true,
         },
         {

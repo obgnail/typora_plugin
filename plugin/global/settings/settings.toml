@@ -243,8 +243,8 @@ SCALE = 0.1
 IMAGE_ALIGN = "center"
 
 
-############### dataTables ###############
-[dataTables]
+############### datatables ###############
+[datatables]
 # 启用插件
 ENABLE = true
 # 是否分页
