@@ -12,11 +12,19 @@
                 height: 27px;
                 margin-top: 5px;
                 margin-bottom: 1px;
-                max-width: 200px;
+                max-width: 10em;
             }
 
-            figure .dataTables_length, .dataTables_filter {
-                margin-bottom: 10px;
+            .dataTables_wrapper .dataTables_paginate .paginate_button {
+                padding: 0.05em 0.1em;
+            }
+            
+            .dataTables_wrapper .dataTables_length, .dataTables_filter {
+                margin-bottom: 0.25em;
+            }
+             
+            .dataTables_wrapper .dataTables_info {
+                padding-top: 0.25em;
             }
         `
         global._pluginUtils.insertStyle("plugin-datatables-custom-style", css);
@@ -121,7 +129,7 @@
     }
 
     global._pluginUtils.decorateOpenFile(null, () => {
-        tableList.forEach(table => table.api().destroy());
+        tableList.forEach(table => table.table.api().destroy());
         tableList = [];
     })
 

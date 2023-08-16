@@ -6,28 +6,28 @@
 
 目前支持的功能：
 
-| 序号 | 文件名             | 功能                               | 默认开启 |
-| ---- | ------------------ | ---------------------------------- | -------- |
-| 1    | window_tab         | 标签页管理                         | √        |
-| 2    | search_multi       | 全局多关键字搜索                   | √        |
-| 3    | multi_highlighter  | 多关键字高亮                       | √        |
-| 4    | collapse_paragraph | 章节折叠                           | √        |
-| 5    | md_padding         | 中英文混排优化                     | √        |
-| 6    | fence_enhance      | 一键复制代码，折叠代码             | √        |
-| 7    | commander          | 命令行环境                         | √        |
-| 8    | read_only          | 只读模式                           | √        |
-| 9    | file_counter       | 显示目录下的文件数                 | √        |
-| 10   | resize_table       | 调整表格行高列宽                   | √        |
-| 11   | resize_image       | 调整图片显示大小                   | √        |
-| 12   | auto_number        | 章节、表格、图片、代码块等自动编号 | √        |
-| 13   | outline            | 以表格、图片、代码块形式的大纲     | √        |
-| 14   | mindmap            | 根据文档大纲一键生成思维导图       | √        |
-| 15   | go_top             | 一键到文章顶部                     | √        |
-| 16   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能   | √        |
-| 17   | right_click_menu   | 右键菜单统一管理、调用插件         | √        |
-| 18   | datatables（WIP）  | 表格增强                           | ×        |
-| 19   | mermaid_replace    | 替换 mermaid 组件                  | ×        |
-| 20   | old_window_tab     | 标签页管理（已废弃）               | ×        |
+| 序号 | 文件名             | 功能                                 | 默认开启 |
+| ---- | ------------------ | ------------------------------------ | -------- |
+| 1    | window_tab         | 标签页管理                           | √        |
+| 2    | search_multi       | 全局多关键字搜索                     | √        |
+| 3    | multi_highlighter  | 多关键字高亮                         | √        |
+| 4    | collapse_paragraph | 章节折叠                             | √        |
+| 5    | md_padding         | 中英文混排优化                       | √        |
+| 6    | fence_enhance      | 一键复制代码，折叠代码               | √        |
+| 7    | commander          | 命令行环境                           | √        |
+| 8    | read_only          | 只读模式                             | √        |
+| 9    | file_counter       | 显示目录下的文件数                   | √        |
+| 10   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
+| 11   | resize_table       | 调整表格行高列宽                     | √        |
+| 12   | resize_image       | 调整图片显示大小                     | √        |
+| 13   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
+| 14   | outline            | 以表格、图片、代码块形式的大纲       | √        |
+| 15   | mindmap            | 根据文档大纲一键生成思维导图         | √        |
+| 16   | go_top             | 一键到文章顶部                       | √        |
+| 17   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
+| 18   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
+| 19   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
+| 20   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -269,6 +269,24 @@ const BUILTIN = [
 
 
 
+### datatables：表格增强
+
+增强表格。提供搜索、过滤、分页、排序等功能。
+
+> 使用方式：将光标定位在表格 -> 右键菜单 -> 启用插件 ->  表格增强。
+
+![datatables](assets/datatables.png)
+
+> NOTE：**此脚本是有安全隐患的。不要在不信任文件中使用此插件，否则极端情况下会让你的电脑中毒。**使用此脚本需要做到：将普通表格转为增强表格前需要审视表格内容，确认没有问题才可以转化。
+
+其实此插件可以是提供开放能力的，实现类似于 obsidian 的 `dataview` 插件的功能。不过暂时不做，原因：
+
+1. 私以为 Typora 的用户并不需要大量用到此功能。
+2. 需要用户熟悉 javascript 以及 dataTables.js 的 API。成本太高。
+3. 需要编写大量的配套代码。
+
+
+
 ### resize_table：拖动调整表格大小
 
 `ctrl+鼠标拖动`：修改表格的行高列宽。
@@ -334,14 +352,6 @@ const BUILTIN = [
 ### go_top： 一键到顶
 
 在右下角添加一个一键到顶的按钮。
-
-
-
-### datatables：表格增强（WIP）
-
-引入 `databTables.js`，增强表格。
-
-> NOTE：**此脚本开发中，默认关闭，需手动开启。**
 
 
 

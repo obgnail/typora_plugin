@@ -397,4 +397,4 @@ ENABLE = false
 ############### test ###############
 [test]
 # 启用插件
-ENABLE = true
+ENABLE = false
