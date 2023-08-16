@@ -44,6 +44,8 @@
         ChildProcess: reqnode('child_process'),
     };
 
+    const stopCallError = new Error("stopCall");
+
     const detectorContainer = {}
 
     const decorate = (until, obj, func, before, after, changeResult = false) => {
@@ -62,7 +64,8 @@
             const decorator = (original, before, after) => {
                 return function () {
                     if (before) {
-                        before.call(this, ...arguments);
+                        const error = before.call(this, ...arguments);
+                        if (error === stopCallError) return;
                     }
 
                     let result = original.apply(this, arguments);
@@ -159,6 +162,7 @@
         joinPath,
         requireFile,
         Package,
+        stopCallError,
         decorate,
         decorateOpenFile,
         decorateAddCodeBlock,
