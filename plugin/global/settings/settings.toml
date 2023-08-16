@@ -246,7 +246,7 @@ IMAGE_ALIGN = "center"
 ############### dataTables ###############
 [dataTables]
 # 启用插件
-ENABLE = false
+ENABLE = true
 # 是否分页
 PAGING = true
 # 使用分页时，单页显示的数据条数
@@ -397,4 +397,4 @@ ENABLE = false
 ############### test ###############
 [test]
 # 启用插件
-ENABLE = false
+ENABLE = true

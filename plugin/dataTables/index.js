@@ -1,7 +1,27 @@
 (() => {
     (() => {
         const cssFilepath = global._pluginUtils.joinPath("./plugin/dataTables/dataTables.min.css");
-        global._pluginUtils.insertStyleFile("plugin-dataTables-style", cssFilepath);
+        global._pluginUtils.insertStyleFile("plugin-dataTables-common-style", cssFilepath);
+
+        const css = `
+            #write figure select, 
+            #write figure input {
+                border: 1px solid #ddd;
+                box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+                border-radius: 2px;
+                height: 27px;
+                margin-top: 1px;
+                margin-bottom: 1px;
+                max-width: 200px;
+                margin-top: 5px;
+            }
+            
+            figure .dataTables_length, .dataTables_filter {
+                margin-bottom: 10px;
+            }
+        `
+        global._pluginUtils.insertStyle("plugin-dataTables-custom-style", css);
+
         const jsFilepath = global._pluginUtils.joinPath("./plugin/dataTables/dataTables.min.js");
         $.getScript(`file:///${jsFilepath}`).then(() => console.log("dataTables.min.js has inserted"));
     })()
@@ -22,7 +42,7 @@
             },
             language: {
                 "processing": "处理中...",
-                "lengthMenu": "显示 _MENU_ 项结果",
+                "lengthMenu": "每页 _MENU_ 项",
                 "zeroRecords": "没有匹配结果",
                 "info": "_START_ ~ _END_ 项 (共 _TOTAL_ 项)",
                 "infoEmpty": "共 0 项",
@@ -35,10 +55,10 @@
                 "loadingRecords": "载入中...",
                 "infoThousands": ",",
                 "paginate": {
-                    "first": "首页",
-                    "previous": "上页",
-                    "next": "下页",
-                    "last": "末页"
+                    "first": "<<",
+                    "previous": "<",
+                    "next": ">",
+                    "last": ">>"
                 },
                 "thousands": "."
             }
@@ -55,21 +75,49 @@
 
     let tableList = [];
 
+    const addTfoot = $table => {
+        const th = $table.find("thead th");
+        const list = [...th].map(ele => `<td>${ele.textContent}: </td>`);
+        const tfoot = `<tfoot><tr>${list.join("")}</tr></tfoot>`;
+        $table.append(tfoot);
+    }
+
+    const appendFilter = dataTable => {
+        dataTable.columns().flatten().each(function (colIdx) {
+            const select = $("<select />").appendTo(dataTable.column(colIdx).header()).on("change", function () {
+                dataTable.column(colIdx).search($(this).val()).draw();
+            }).on("click", function () {
+                return false
+            })
+            select.append($(`<option value=""></option>>`));
+            dataTable.column(colIdx).cache("search").sort().unique().each(d => select.append($(`<option value="${d}">${d}</option>>`)))
+        })
+    }
+
     const newDataTable = target => {
+        const edit = target.parentElement.querySelector(".md-table-edit");
         const uuid = Math.random() + "";
         const $table = $(target);
         $table.attr("table-uuid", uuid);
+        // addTfoot($table);
         const table = $table.dataTable(dataTablesConfig);
+        appendFilter(table.api());
         tableList.push({uuid, table});
+        edit && edit.parentNode.removeChild(edit);
     }
 
-    const removeTable = uuid => {
+    const removeTable = (target, uuid) => {
         const idx = tableList.findIndex(table => table.uuid === uuid);
         if (idx !== -1) {
-            const table =tableList[idx].table;
+            const table = tableList[idx].table;
             table.api().destroy();
             table[0].removeAttribute("table-uuid");
             tableList.splice(idx, 1);
+            target.querySelectorAll("th select").forEach(ele => ele.parentNode.removeChild(ele));
+            if (target) {
+                const $fig = $(target.parentElement);
+                File.editor.tableEdit.showTableEdit($fig);
+            }
         }
     }
 
@@ -77,6 +125,23 @@
         tableList.forEach(table => table.api().destroy());
         tableList = [];
     })
+
+    global._pluginUtils.decorate(
+        () => (File && File.editor && File.editor.tableEdit && File.editor.tableEdit.showTableEdit),
+        File.editor.tableEdit,
+        "showTableEdit",
+        (...args) => {
+            const table = args[0].find("table");
+            if (table.length === 0) return
+
+            const uuid = table.attr("table-uuid");
+            const idx = tableList.findIndex(table => table.uuid === uuid);
+            if (idx !== -1) {
+                return global._pluginUtils.stopCallError
+            }
+        },
+        null
+    )
 
     const dynamicUtil = {target: null, uuid: ""}
     const dynamicCallArgsGenerator = anchorNode => {
@@ -87,7 +152,7 @@
         dynamicUtil.uuid = uuid;
         dynamicUtil.target = table;
 
-        let arg_name = "转为多功能表格";
+        let arg_name = "增强表格";
         let arg_value = "convert_current";
         if (uuid) {
             arg_name = "转回普通表格";
@@ -103,7 +168,7 @@
             }
         } else if (type === "rollback_current") {
             if (dynamicUtil.target && dynamicUtil.uuid) {
-                removeTable(dynamicUtil.uuid);
+                removeTable(dynamicUtil.target, dynamicUtil.uuid);
             }
         }
     }
