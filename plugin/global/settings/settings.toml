@@ -243,10 +243,10 @@ SCALE = 0.1
 IMAGE_ALIGN = "center"
 
 
-############### dataTables ###############
-[dataTables]
+############### datatables ###############
+[datatables]
 # 启用插件
-ENABLE = false
+ENABLE = true
 # 是否分页
 PAGING = true
 # 使用分页时，单页显示的数据条数
