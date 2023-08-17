@@ -189,7 +189,7 @@
         }, 500)
     }
 
-    global._pluginUtils.loopDetector(() => global._plugins_had_injected, appendMenu, config.LOOP_DETECT_INTERVAL);
+    global._pluginUtils.loopDetector(() => global._pluginsHadInjected, appendMenu, config.LOOP_DETECT_INTERVAL);
 
     //////////////////////// 以下是声明式插件系统代码 ////////////////////////
     const call = type => {

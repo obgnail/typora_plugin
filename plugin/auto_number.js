@@ -307,13 +307,11 @@
     ];
 
     const dynamicCallArgsGenerator = () => {
-        let arg_name, arg_value;
+        let arg_name = "启用";
+        let arg_value = "enable";
         if (!!document.getElementById(config.ID)) {
             arg_name = "禁用";
             arg_value = "disable";
-        } else {
-            arg_name = "启用";
-            arg_value = "enable";
         }
         return [{arg_name, arg_value}]
     }

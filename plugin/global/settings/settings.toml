@@ -174,7 +174,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 # 启用插件
 ENABLE = true
 # 快捷键
-HOTKEY = "ctrl+shift+k"
+HOTKEY = ["ctrl+shift+k", "ctrl+shift+b"]
 
 
 ############### read_only ###############
@@ -386,6 +386,14 @@ ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "
 CLASS_NAME = "plugin-file-counter"
 # 内部使用
 LOOP_DETECT_INTERVAL = 300
+
+
+############### export_enhance ###############
+[export_enhance]
+# 启用插件
+ENABLE = true
+# 是否下载网络图片(若为true,有可能因为网络问题导致超时)
+DOWNLOAD_NETWORK_IMAGE = false
 
 
 ############### mermaid_replace ###############
