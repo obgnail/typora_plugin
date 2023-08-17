@@ -1,6 +1,8 @@
 (() => {
     const isBetaVersion = parseInt(window._options.appVersion.split(".")[0]) === 0;
 
+    const tempFolder = File.option.tempPath;
+
     const insertStyle = (id, css) => {
         const style = document.createElement('style');
         style.id = id;
@@ -172,6 +174,7 @@
 
     module.exports = {
         isBetaVersion,
+        tempFolder,
         insertStyle,
         insertStyleFile,
         getPlugin,

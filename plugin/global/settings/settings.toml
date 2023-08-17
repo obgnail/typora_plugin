@@ -388,6 +388,13 @@ CLASS_NAME = "plugin-file-counter"
 LOOP_DETECT_INTERVAL = 300
 
 
+############### export_enhance ###############
+[export_enhance]
+# 启用插件
+ENABLE = true
+ENABLE_NETWORK_IMAGE = true
+
+
 ############### mermaid_replace ###############
 [mermaid_replace]
 # 启用插件
@@ -397,4 +404,4 @@ ENABLE = false
 ############### test ###############
 [test]
 # 启用插件
-ENABLE = false
+ENABLE = true

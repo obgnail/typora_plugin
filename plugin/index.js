@@ -121,6 +121,12 @@ window.onload = () => {
             clickable: true,
         },
         {
+            name: "导出增强",
+            fixed_name: "export_enhance",
+            src: "./plugin/export_enhance.js",
+            clickable: false,
+        },
+        {
             name: "mermaid替换",
             fixed_name: "mermaid_replace",
             src: "./plugin/mermaid_replace/index.js",
