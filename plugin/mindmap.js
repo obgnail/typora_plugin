@@ -12,15 +12,15 @@
         return filename
     }
 
-    const cleanMindMapTitle = title => title.replace(/[()-]/g, "");
-    const cleanGraphTitle = title => `"${title.replace(/"/g, "")}"`;
+    const cleanMindMapTitle = title => `("${title.replace(/"/g, "")}")`;
+    const cleanGraphTitle = title => `("${title.replace(/"/g, "")}")`;
 
     const wrapMermaid = content => `\`\`\`mermaid\n${content}\`\`\``;
 
     const mindmap = (pList, root) => {
         const lines = [
             "mindmap", "\n",
-            "\t", `root(${cleanMindMapTitle(root)})`, "\n",
+            "\t", `root${cleanMindMapTitle(root)}`, "\n",
         ];
         pList.forEach(ele => lines.push("\t".repeat(ele.levelIdx + 1), cleanMindMapTitle(ele.title), "\n"))
         return wrapMermaid(lines.join(""))
@@ -33,7 +33,7 @@
             }
             item.used = true;
             const title = cleanGraphTitle(item.title);
-            return `${item.id}(${title})`
+            return item.id + title
         }
 
         const getParentItemTitle = item => {
