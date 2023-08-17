@@ -152,7 +152,7 @@ window.onload = () => {
             plugin.enable = global._pluginSettings[plugin.fixed_name].ENABLE;
             if (!plugin.enable) return;
             const filepath = join(dirname, plugin.src);
-            const promise = new Promise((resolve, reject) => {
+            const promise = new Promise(resolve => {
                 access(filepath, err => {
                     if (!err) {
                         try {
@@ -165,20 +165,17 @@ window.onload = () => {
                             plugin.enable = false;
                             console.log("plugin err:", e);
                         }
-                        resolve(plugin);
                     } else {
                         plugin.enable = false;
                         console.log("has no path:", filepath);
-                        reject(err);
                     }
+                    resolve(plugin);
                 })
             })
             promises.push(promise);
         })
 
-        Promise.all(promises)
-            .then(() => global._pluginsHadInjected = true)
-            .catch(() => global._pluginsHadInjected = true)
+        Promise.all(promises).then(() => global._pluginsHadInjected = true)
     }
 
     const loadUtils = (join, dirname) => {
