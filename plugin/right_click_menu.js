@@ -124,6 +124,10 @@
         $("#plugin-menu").on("click", "[data-key]", function () {
             const fixed_name = this.getAttribute("data-key");
             const plugin = enablePlugins.filter(plugin => plugin.fixed_name === fixed_name)[0];
+            // 拥有三级菜单的，不允许点击二级菜单
+            if (plugin.call_args || plugin.dynamic_call_args_generator) {
+                return false
+            }
             if (plugin && plugin.call) {
                 plugin.call();
             }
