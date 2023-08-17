@@ -89,5 +89,29 @@
         decoMixin.afterExportToHtml,
         true,
     );
+
+    const dynamicCallArgsGenerator = () => {
+        let arg_name = "导出HTML时下载网络图片";
+        let arg_value = "download_network_image";
+        if (config.DOWNLOAD_NETWORK_IMAGE) {
+            arg_name = "导出HTML时不下载网络图片";
+            arg_value = "dont_download_network_image";
+        }
+        return [{arg_name, arg_value}]
+    }
+
+    const call = type => {
+        if (type === "download_network_image") {
+            config.DOWNLOAD_NETWORK_IMAGE = true
+        } else if (type === "dont_download_network_image") {
+            config.DOWNLOAD_NETWORK_IMAGE = false
+        }
+    }
+
+    module.exports = {
+        call,
+        dynamicCallArgsGenerator,
+    };
+
     console.log("export_enhance.js had been injected");
 })()
