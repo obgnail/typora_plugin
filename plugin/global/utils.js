@@ -104,7 +104,15 @@
     }
 
     const hotkeyList = []
-    const registerWindowHotkey = (hotkey, call) => hotkey instanceof Function && hotkeyList.push({hotkey, call});
+    const registerWindowHotkey = (hotkey, call) => {
+        if (hotkey instanceof Function) {
+            hotkeyList.push({hotkey, call});
+        } else if (hotkey instanceof Array) {
+            for (const h of hotkey) {
+                registerWindowHotkey(h, call);
+            }
+        }
+    };
     window.addEventListener("keydown", ev => {
         for (let hotkey of hotkeyList) {
             if (hotkey.hotkey(ev)) {

@@ -333,13 +333,9 @@
         filePath && openTab(filePath);
     });
 
-    const hotkeyList = [config.SWITCH_NEXT_TAB_HOTKEY, config.SWITCH_PREVIOUS_TAB_HOTKEY, config.CLOSE_HOTKEY];
-    const opList = [nextTab, previousTab, closeActiveTab]
-    for (let idx = 0; idx < hotkeyList.length; idx++) {
-        for (let hotkey of hotkeyList[idx]) {
-            global._pluginUtils.registerWindowHotkey(hotkey, opList[idx]);
-        }
-    }
+    global._pluginUtils.registerWindowHotkey(config.SWITCH_NEXT_TAB_HOTKEY, nextTab);
+    global._pluginUtils.registerWindowHotkey(config.SWITCH_PREVIOUS_TAB_HOTKEY, previousTab);
+    global._pluginUtils.registerWindowHotkey(config.CLOSE_HOTKEY, closeActiveTab);
 
     entities.tabBar.addEventListener("click", ev => {
         const closeButton = ev.target.closest(".close-button");

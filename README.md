@@ -180,7 +180,9 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 中英文混排时，中文与英文之间、中文与数字之间添加空格。
 
-快捷键：Ctrl+shift+K（如果快捷键冲突了，请在右键菜单中使用）
+快捷键：ctrl+shift+K、ctrl+shift+B
+
+> 新版本 Typora 的 ctrl+shift+K 快捷键被占用了。故提供两个快捷键，也可以在右键菜单中使用。
 
 ![md_padding](assets/md_padding.gif)
 
@@ -277,7 +279,7 @@ const BUILTIN = [
 
 ![datatables](assets/datatables.png)
 
-> NOTE：**此脚本是有安全隐患的。不要在不信任文件中使用此插件，否则极端情况下会让你的电脑中毒。**使用此脚本需要做到：将普通表格转为增强表格前需要审视表格内容，确认没有问题才可以转化。
+> NOTE：**此脚本是有安全隐患的。不要在不信任文件中使用此插件，否则极端情况下会让你的电脑中毒**。使用此脚本需要做到：将普通表格转为增强表格前需要审视表格内容，确认没有问题才可以转化。
 
 其实此插件可以是提供开放能力的，实现类似于 obsidian 的 `dataview` 插件的功能。不过暂时不做，原因：
 

@@ -174,7 +174,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 # 启用插件
 ENABLE = true
 # 快捷键
-HOTKEY = "ctrl+shift+k"
+HOTKEY = ["ctrl+shift+k", "ctrl+shift+b"]
 
 
 ############### read_only ###############
