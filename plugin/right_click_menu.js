@@ -215,7 +215,7 @@
             arg_value: "do_not_hide"
         },
         {
-            arg_name: "打开配置文件夹",
+            arg_name: "打开插件配置文件夹",
             arg_value: "open_setting_folder"
         },
         {

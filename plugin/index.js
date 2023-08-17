@@ -124,7 +124,7 @@ window.onload = () => {
             name: "导出增强",
             fixed_name: "export_enhance",
             src: "./plugin/export_enhance.js",
-            clickable: false,
+            clickable: true,
         },
         {
             name: "mermaid替换",
