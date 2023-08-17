@@ -392,7 +392,8 @@ LOOP_DETECT_INTERVAL = 300
 [export_enhance]
 # 启用插件
 ENABLE = true
-ENABLE_NETWORK_IMAGE = true
+# 是否下载网络图片(若为true,有可能因为网络问题导致超时)
+DOWNLOAD_NETWORK_IMAGE = false
 
 
 ############### mermaid_replace ###############
@@ -404,4 +405,4 @@ ENABLE = false
 ############### test ###############
 [test]
 # 启用插件
-ENABLE = true
+ENABLE = false
