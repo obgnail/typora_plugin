@@ -23,11 +23,12 @@
 | 13   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
 | 14   | outline            | 以表格、图片、代码块形式的大纲       | √        |
 | 15   | mindmap            | 根据文档大纲一键生成思维导图         | √        |
-| 16   | go_top             | 一键到文章顶部                       | √        |
-| 17   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
-| 18   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
-| 19   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
-| 20   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
+| 16   | export_enhance     | 导出 html 时避免图片丢失             | √        |
+| 17   | go_top             | 一键到文章顶部                       | √        |
+| 18   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
+| 19   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
+| 20   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
+| 21   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -180,7 +181,9 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 中英文混排时，中文与英文之间、中文与数字之间添加空格。
 
-快捷键：Ctrl+shift+K（如果快捷键冲突了，请在右键菜单中使用）
+快捷键：ctrl+shift+K、ctrl+shift+B
+
+> 新版本 Typora 的 ctrl+shift+K 快捷键被占用了。故提供两个快捷键，也可以在右键菜单中使用。
 
 ![md_padding](assets/md_padding.gif)
 
@@ -277,7 +280,7 @@ const BUILTIN = [
 
 ![datatables](assets/datatables.png)
 
-> NOTE：**此脚本是有安全隐患的。不要在不信任文件中使用此插件，否则极端情况下会让你的电脑中毒。**使用此脚本需要做到：将普通表格转为增强表格前需要审视表格内容，确认没有问题才可以转化。
+> NOTE：**此脚本是有安全隐患的。不要在不信任文件中使用此插件，否则极端情况下会让你的电脑中毒**。使用此脚本需要做到：将普通表格转为增强表格前需要审视表格内容，确认没有问题才可以转化。
 
 其实此插件可以是提供开放能力的，实现类似于 obsidian 的 `dataview` 插件的功能。不过暂时不做，原因：
 
@@ -328,6 +331,14 @@ const BUILTIN = [
 快捷键：ctrl+shift+R。
 
 > 开启后，右下角数字统计区域会出现 `ReadOnly` 字样
+
+
+
+### export_enhance：导出增强
+
+导出 html 时，将图片转为 base64，避免图片丢失。
+
+> 此插件有一个配置为 `DOWNLOAD_NETWORK_IMAGE`，功能是下载网络图片，将也网络图片转为 base64，默认为 false。若置为 true，有可能因为网络问题导致导出超时。
 
 
 
