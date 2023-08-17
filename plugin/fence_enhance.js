@@ -234,6 +234,11 @@
         });
     }
 
+    const expandFence = fence => {
+        const button = fence.querySelector(".fence-enhance .typora-fold-code.folded");
+        button && button.click();
+    }
+
     const callMap = {
         disable_or_enable_fold: () => {
             config.ENABLE_FOLD = !config.ENABLE_FOLD;
@@ -286,6 +291,9 @@
         call,
         callArgs,
         dynamicCallArgsGenerator,
+        meta: {
+            expandFence
+        }
     };
 
     console.log("fence_enhance.js had been injected");
