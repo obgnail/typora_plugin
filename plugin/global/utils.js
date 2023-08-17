@@ -28,7 +28,7 @@
     const shiftKeyPressed = ev => !!ev.shiftKey;
     const altKeyPressed = ev => !!ev.altKey;
 
-    const getPluginSetting = fixed_name => global._plugin_settings[fixed_name];
+    const getPluginSetting = fixed_name => global._pluginSettings[fixed_name];
     const getDirname = () => global.dirname || global.__dirname;
     const getFilePath = () => File.filePath || File.bundle && File.bundle.filePath;
     const joinPath = (...paths) => Package.Path.join(getDirname(), ...paths);
@@ -103,9 +103,23 @@
         }, detectInterval);
     }
 
+    const toHotkeyFunc = hotkeyString => {
+        const keyList = hotkeyString.toLowerCase().split("+").map(k => k.trim());
+        const ctrl = keyList.indexOf("ctrl") !== -1;
+        const shift = keyList.indexOf("shift") !== -1;
+        const alt = keyList.indexOf("alt") !== -1;
+        const key = keyList.filter(key => key !== "ctrl" && key !== "shift" && key !== "alt")[0];
+
+        return ev => global._pluginUtils.metaKeyPressed(ev) === ctrl
+            && global._pluginUtils.shiftKeyPressed(ev) === shift
+            && global._pluginUtils.altKeyPressed(ev) === alt
+            && ev.key.toLowerCase() === key
+    }
+
     const hotkeyList = []
     const registerWindowHotkey = (hotkey, call) => {
-        if (hotkey instanceof Function) {
+        if (typeof hotkey === "string") {
+            hotkey = toHotkeyFunc(hotkey);
             hotkeyList.push({hotkey, call});
         } else if (hotkey instanceof Array) {
             for (const h of hotkey) {
@@ -175,6 +189,7 @@
         decorateOpenFile,
         decorateAddCodeBlock,
         loopDetector,
+        toHotkeyFunc,
         registerWindowHotkey,
         dragFixedModal,
     };

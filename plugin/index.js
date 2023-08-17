@@ -1,8 +1,8 @@
 /*  1. 整个插件系统向外暴露的变量：
-        1. global._plugins_had_injected: 是否所有的插件都已加载完毕
+        1. global._pluginsHadInjected: 是否所有的插件都已加载完毕
         2. global._plugins: 全部的插件
         3. global._pluginUtils: 通用的工具
-        4. global._plugin_settings: 全部的插件配置
+        4. global._pluginSettings: 全部的插件配置
     2. global._plugins使用声明式（声明替代代码开发）
         1. name: 展示的插件名
         2. fixed_name: 固定的插件名（可以看作是插件的UUID）
@@ -16,7 +16,7 @@
     4. 使用例子可以看collapse_paragraph.js。此插件实现了用户在不同区域（标题处点击、非标题处点击）右键菜单会有不同的第三级菜单。
 */
 window.onload = () => {
-    global._plugins_had_injected = false;
+    global._pluginsHadInjected = false;
     global._plugins = [
         {
             name: "标签页管理",
@@ -143,6 +143,7 @@ window.onload = () => {
     const loadPlugins = (join, access, dirname) => {
         const promises = [];
         global._plugins.forEach(plugin => {
+            plugin.enable = global._pluginSettings[plugin.fixed_name].ENABLE;
             if (!plugin.enable) return;
             const filepath = join(dirname, plugin.src);
             const promise = new Promise((resolve, reject) => {
@@ -170,8 +171,8 @@ window.onload = () => {
         })
 
         Promise.all(promises)
-            .then(() => global._plugins_had_injected = true)
-            .catch(() => global._plugins_had_injected = true)
+            .then(() => global._pluginsHadInjected = true)
+            .catch(() => global._pluginsHadInjected = true)
     }
 
     const loadUtils = (join, dirname) => {
@@ -182,8 +183,7 @@ window.onload = () => {
     const loadSettings = (join, dirname) => {
         const configPath = join(dirname, "./plugin/global/settings.js");
         const {pluginSettings} = reqnode(configPath);
-        global._plugins.forEach(plugin => plugin.enable = pluginSettings[plugin.fixed_name].ENABLE)
-        global._plugin_settings = pluginSettings;
+        global._pluginSettings = pluginSettings;
     }
 
     const load = () => {

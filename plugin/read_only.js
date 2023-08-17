@@ -6,8 +6,10 @@
         global._pluginUtils.insertStyle("plugin-read-only-style", css);
     })()
 
+    const excludeList = config.EXCLUDE_HOTKEY.map(h => global._pluginUtils.toHotkeyFunc(h));
+
     const isExclude = ev => {
-        for (const func of config.EXCLUDE_HOTKEY) {
+        for (const func of excludeList) {
             if (func(ev)) {
                 return true
             }
