@@ -168,11 +168,16 @@
 
     const collapsePlugin = global._pluginUtils.getPlugin("collapse_paragraph");
     const truncatePlugin = global._pluginUtils.getPlugin("truncate_text");
+    const fenceEnhancePlugin = global._pluginUtils.getPlugin("fence_enhance");
     const compatibleOtherPlugin = target => {
         if (!target) return;
 
         collapsePlugin && collapsePlugin.meta && collapsePlugin.meta.rollback && collapsePlugin.meta.rollback(target);
         truncatePlugin && truncatePlugin.meta && truncatePlugin.meta.rollback && truncatePlugin.meta.rollback(target);
+    }
+    const compatibleFenceEnhancePlugin = fence => {
+        fence && fenceEnhancePlugin && fenceEnhancePlugin.meta
+        && fenceEnhancePlugin.meta.expandFence && fenceEnhancePlugin.meta.expandFence(fence);
     }
 
     const multiHighlighterClass = global._pluginUtils.requireFile("./plugin/multi_highlighter/multi_highlighter.js").multiHighlighter;
@@ -232,13 +237,17 @@
     }
 
     const handleHiddenElement = marker => {
-        const image = marker.closest(`span[md-inline="image"]`);
+        const image = marker.closest(`#write span[md-inline="image"]`);
         if (image) {
             image.classList.add("md-expand");
         }
-        const link = marker.closest(`span[md-inline="link"]`);
+        const link = marker.closest(`#write span[md-inline="link"]`);
         if (link) {
             link.classList.add("md-expand");
+        }
+        const fence = marker.closest("#write .md-fences");
+        if (fence) {
+            compatibleFenceEnhancePlugin(fence);
         }
     }
 
