@@ -305,7 +305,7 @@
         }
     }
 
-    const callArgs = []
+    const callArgs = [{arg_name: "显示/隐藏", arg_value: "show"}];
     config.BUILTIN.forEach(builtin => {
         if (builtin.name) {
             callArgs.push({
