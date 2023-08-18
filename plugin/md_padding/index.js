@@ -15,25 +15,29 @@
         return padMarkdown;
     }
 
-    const format = content => {
-        const formatter = getFormatter();
-        return formatter(content);
-    }
-
     const call = () => {
         save().then(() => {
             const filepath = global._pluginUtils.getFilePath();
             const content = read(filepath);
-            const formattedContent = format(content);
+            const formattedContent = formatFile(content);
             write(filepath, formattedContent);
             reload(formattedContent);
         })
+    }
+
+    const formatFile = content => {
+        const formatter = getFormatter();
+        return formatter(content)
     }
 
     global._pluginUtils.registerWindowHotkey(config.HOTKEY, call);
 
     module.exports = {
         call,
+        meta: {
+            formatFile,
+            call,
+        }
     };
 
     console.log("md_padding.js had been injected");

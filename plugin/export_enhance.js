@@ -123,6 +123,9 @@
     module.exports = {
         call,
         dynamicCallArgsGenerator,
+        meta: {
+            call
+        }
     };
 
     console.log("export_enhance.js had been injected");

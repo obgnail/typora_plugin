@@ -334,7 +334,13 @@
 
     module.exports = {
         call,
-        callArgs
+        callArgs,
+        meta: {
+            call,
+            silentExec,
+            errorExec,
+            alwaysExec,
+        }
     };
 
     console.log("commander.js had been injected");
