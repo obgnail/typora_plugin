@@ -144,6 +144,11 @@ ENABLE = true
 HOTKEY = "ctrl+g"
 # 允许拖动模态框
 ALLOW_DRAG = true
+# 在右键菜单中快速调用内建命令时，是否弹出模态框
+# always: 总是弹出
+# error: 只在异常时弹出
+# silent: 总是静默（可以在console中看到）
+QUICK_EXEC_SHOW = "error"
 # 启用内建的命令列表
 USE_BUILTIN = true
 # 内建命令列表(shell: cmd/bash、powershell、gitbash、wsl)
