@@ -204,8 +204,8 @@
         } else if (type === "do_not_hide") {
             config.DO_NOT_HIDE = !config.DO_NOT_HIDE;
         } else if (type === "open_setting_folder") {
-            const filepath = global._pluginUtils.joinPath("./plugin/global/settings");
-            JSBridge.invoke("shell.openItem", filepath);
+            const filepath = global._pluginUtils.joinPath("./plugin/global/settings/settings.toml");
+            JSBridge.showInFinder(filepath);
         }
     }
 
@@ -215,7 +215,7 @@
             arg_value: "do_not_hide"
         },
         {
-            arg_name: "打开插件配置文件夹",
+            arg_name: "打开插件配置文件",
             arg_value: "open_setting_folder"
         },
         {

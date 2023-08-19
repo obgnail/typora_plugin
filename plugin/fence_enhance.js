@@ -234,6 +234,10 @@
         });
     }
 
+    const copyFence = target => target.querySelector(".typora-copy-code").click();
+    const indentFence = target => target.querySelector(".typora-indent-code").click();
+    const foldFence = target => target.querySelector(".typora-fold-code").click();
+
     const expandFence = fence => {
         const button = fence.querySelector(".fence-enhance .typora-fold-code.folded");
         button && button.click();
@@ -266,15 +270,9 @@
             document.querySelectorAll(".typora-fold-code.folded").forEach(ele => ele.click());
             config.FOLD_DEFAULT = false;
         },
-        fold_current: () => {
-            dynamicUtil.target.querySelector(".typora-fold-code").click();
-        },
-        copy_current: () => {
-            dynamicUtil.target.querySelector(".typora-copy-code").click();
-        },
-        indent_current: () => {
-            dynamicUtil.target.querySelector(".typora-indent-code").click();
-        },
+        fold_current: () => foldFence(dynamicUtil.target),
+        copy_current: () => copyFence(dynamicUtil.target),
+        indent_current: () => indentFence(dynamicUtil.target),
         set_auto_hide: () => {
             config.AUTO_HIDE = !config.AUTO_HIDE;
             const visibility = (config.AUTO_HIDE) ? "hidden" : "";
@@ -292,6 +290,10 @@
         callArgs,
         dynamicCallArgsGenerator,
         meta: {
+            call,
+            copyFence,
+            indentFence,
+            foldFence,
             expandFence
         }
     };

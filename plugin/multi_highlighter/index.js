@@ -487,8 +487,11 @@
     module.exports = {
         call,
         meta: {
+            call,
             hide,
-            run: highlight,
+            highlight,
+            doSearch,
+            clearHighlight,
         }
     };
     console.log("multi_highlighter.js had been injected");

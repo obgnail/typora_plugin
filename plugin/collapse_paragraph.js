@@ -182,6 +182,7 @@
         callArgs,
         dynamicCallArgsGenerator,
         meta: {
+            call,
             trigger,
             rollback,
         }

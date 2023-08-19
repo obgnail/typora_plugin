@@ -645,6 +645,20 @@
     module.exports = {
         call,
         dynamicCallArgsGenerator,
+        meta: {
+            call,
+            openTab,
+            switchTab,
+            switchTabByPath,
+            previousTab,
+            nextTab,
+            closeTab,
+            closeActiveTab,
+            openFileNewWindow,
+            openFile,
+            OpenFileLocal,
+            closeWindow,
+        }
     };
 
     console.log("window_tab.js had been injected");

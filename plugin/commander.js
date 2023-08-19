@@ -217,6 +217,10 @@
         modal.pre.classList.add("error");
     }
 
+    const silentExec = (cmd, shell) => exec(cmd, shell, null, null);
+    const errorExec = (cmd, shell) => exec(cmd, shell, null, showStdErr);
+    const alwaysExec = (cmd, shell) => exec(cmd, shell, showStdout, showStdErr);
+
     const commit = () => {
         const cmd = modal.input.value;
         if (!cmd) {
@@ -225,7 +229,7 @@
         }
         const option = modal.shellSelect.options[modal.shellSelect.selectedIndex];
         const shell = option.value;
-        exec(cmd, shell, showStdout, showStdErr);
+        alwaysExec(cmd, shell);
     }
 
     // 提供不同入口，让鼠标操作的用户不必切换回键盘操作
@@ -288,18 +292,56 @@
         global._pluginUtils.dragFixedModal(modal.input, modal.modal);
     }
 
-    const call = () => {
-        if (modal.modal.style.display === "block") {
-            modal.modal.style.display = "none";
-        } else {
-            modal.modal.style.display = "block";
-            modal.input.select();
+    const arg_value_prefix = "call_builtin-";
+
+    const quickExec = (cmd, shell) => {
+        switch (config.QUICK_EXEC_SHOW) {
+            case "always":
+                return alwaysExec(cmd, shell)
+            case "error":
+                return errorExec(cmd, shell)
+            case "silent":
+                return silentExec(cmd, shell)
+        }
+    }
+
+    const callArgs = [{arg_name: "显示/隐藏", arg_value: "show"}];
+    config.BUILTIN.forEach(builtin => {
+        if (builtin.name) {
+            callArgs.push({
+                arg_name: `${builtin.name}`,
+                arg_value: arg_value_prefix + builtin.name
+            })
+        }
+    });
+
+    const call = (type = "show") => {
+        if (type === "show") {
+            if (modal.modal.style.display === "block") {
+                modal.modal.style.display = "none";
+            } else {
+                modal.modal.style.display = "block";
+                modal.input.select();
+            }
+        } else if (type.startsWith(arg_value_prefix)) {
+            const name = type.slice(arg_value_prefix.length);
+            const builtin = config.BUILTIN.find(builtin => builtin.name === name);
+            builtin && quickExec(builtin.cmd, builtin.shell);
         }
     }
 
     global._pluginUtils.registerWindowHotkey(config.HOTKEY, call);
 
-    module.exports = {call};
+    module.exports = {
+        call,
+        callArgs,
+        meta: {
+            call,
+            silentExec,
+            errorExec,
+            alwaysExec,
+        }
+    };
 
     console.log("commander.js had been injected");
 })()

@@ -29,12 +29,12 @@
         },
 
         downloadAllImage: async (html) => {
-            for (let result of html.matchAll(decoMixin.regexp)) {
+            for await (let result of html.matchAll(decoMixin.regexp)) {
                 if (result.length !== 2 || result.index < decoMixin.writeIdx || !isNetworkImage(result[1])) continue
                 const src = result[1];
                 if (!decoMixin.imageMap.hasOwnProperty(src)) { // single flight
                     const filename = Math.random() + "_" + Path.basename(src);
-                    const {state} = await JSBridge.invoke("app.download", src, tempFolder, filename);
+                    const {state} = JSBridge.invoke("app.download", src, tempFolder, filename);
                     if (state === "completed") {
                         decoMixin.imageMap[src] = filename;
                     }
@@ -43,6 +43,8 @@
         },
 
         afterExportToHtml: async (exportResult, ...args) => {
+            if (!config.ENABLE) return exportResult;
+
             decoMixin.init();
 
             const exportConfig = args[0];
@@ -91,13 +93,19 @@
     );
 
     const dynamicCallArgsGenerator = () => {
-        let arg_name = "导出HTML时下载网络图片";
-        let arg_value = "download_network_image";
+        const call_args = [];
         if (config.DOWNLOAD_NETWORK_IMAGE) {
-            arg_name = "导出HTML时不下载网络图片";
-            arg_value = "dont_download_network_image";
+            call_args.push({arg_name: "导出HTML时不下载网络图片", arg_value: "dont_download_network_image"});
+        } else {
+            call_args.push({arg_name: "导出HTML时下载网络图片", arg_value: "download_network_image"});
         }
-        return [{arg_name, arg_value}]
+        if (config.ENABLE) {
+            call_args.push({arg_name: "禁用", arg_value: "disable"});
+        } else {
+            call_args.push({arg_name: "启用", arg_value: "enable"})
+        }
+
+        return call_args
     }
 
     const call = type => {
@@ -105,12 +113,19 @@
             config.DOWNLOAD_NETWORK_IMAGE = true
         } else if (type === "dont_download_network_image") {
             config.DOWNLOAD_NETWORK_IMAGE = false
+        } else if (type === "disable") {
+            config.ENABLE = false
+        } else if (type === "enable") {
+            config.ENABLE = true
         }
     }
 
     module.exports = {
         call,
         dynamicCallArgsGenerator,
+        meta: {
+            call
+        }
     };
 
     console.log("export_enhance.js had been injected");

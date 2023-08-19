@@ -335,6 +335,9 @@
         call,
         callArgs,
         dynamicCallArgsGenerator,
+        meta: {
+            call
+        }
     };
 
     console.log("auto_number.js had been injected");

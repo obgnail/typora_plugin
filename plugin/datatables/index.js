@@ -103,22 +103,24 @@
 
     const newDataTable = target => {
         const edit = target.parentElement.querySelector(".md-table-edit");
-        const uuid = Math.random() + "";
         const $table = $(target);
+        const uuid = Math.random() + "";
         $table.attr("table-uuid", uuid);
         // addTfoot($table);
         const table = $table.dataTable(dataTablesConfig);
         appendFilter(table.api());
         tableList.push({uuid, table});
         edit && edit.parentNode.removeChild(edit);
+        return uuid
     }
 
-    const removeTable = (target, uuid) => {
+    const removeDataTable = uuid => {
         const idx = tableList.findIndex(table => table.uuid === uuid);
         if (idx !== -1) {
             const table = tableList[idx].table;
+            const target = table[0];
             table.api().destroy();
-            table[0].removeAttribute("table-uuid");
+            target.removeAttribute("table-uuid");
             tableList.splice(idx, 1);
             target.querySelectorAll("th select").forEach(ele => ele.parentNode.removeChild(ele));
             if (target) {
@@ -174,8 +176,8 @@
                 newDataTable(dynamicUtil.target);
             }
         } else if (type === "rollback_current") {
-            if (dynamicUtil.target && dynamicUtil.uuid) {
-                removeTable(dynamicUtil.target, dynamicUtil.uuid);
+            if (dynamicUtil.uuid) {
+                removeDataTable(dynamicUtil.uuid);
             }
         }
     }
@@ -183,6 +185,10 @@
     module.exports = {
         call,
         dynamicCallArgsGenerator,
+        meta: {
+            newDataTable,
+            removeDataTable
+        }
     };
 
     console.log("datatables.js had been injected");
