@@ -180,10 +180,6 @@ class multiHighlighterPlugin extends global._basePlugin {
         this.multiHighlighter = new multiHighlighter(this.utils);
         this.fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
 
-        this.collapsePlugin = this.utils.getPlugin("collapse_paragraph");
-        this.truncatePlugin = this.utils.getPlugin("truncate_text");
-        this.fenceEnhancePlugin = this.utils.getPlugin("fence_enhance");
-
         this.lastHighlightFilePath = ""
         this.showMarkerInfo = {
             idxOfFence: -1,
@@ -218,7 +214,7 @@ class multiHighlighterPlugin extends global._basePlugin {
                         this.showMarkerInfo.idxOfWrite = -1;
                     }
                 } else {
-                    const fenceMultiHighlighter = new this.multiHighlighterClass();
+                    const fenceMultiHighlighter = new multiHighlighter(this.utils);
                     fenceMultiHighlighter.new(tokens, fence, this.config.CASE_SENSITIVE, "plugin-search-hit");
                     fenceMultiHighlighter.highlight();
                     this.fenceMultiHighlighterList.push(fenceMultiHighlighter);
@@ -323,7 +319,7 @@ class multiHighlighterPlugin extends global._basePlugin {
                 return;
             }
 
-            this.compatibleOtherPlugin(next);
+            this.utils.showHiddenElementByPlugin(next);
 
             this.showMarkerInfo.idxOfWrite = this.whichMarker(this.entities.write, next);
 
@@ -347,14 +343,10 @@ class multiHighlighterPlugin extends global._basePlugin {
         })
     }
 
-    compatibleOtherPlugin = target => {
-        if (!target) return;
-        this.collapsePlugin && this.collapsePlugin.exports["rollback"] && this.collapsePlugin.exports.rollback(target);
-        this.truncatePlugin && this.truncatePlugin.exports["rollback"] && this.truncatePlugin.exports.rollback(target);
-    }
     compatibleFenceEnhancePlugin = fence => {
-        fence && this.fenceEnhancePlugin && this.fenceEnhancePlugin.exports["expandFence"] &&
-        this.fenceEnhancePlugin.exports.expandFence(fence);
+        if (!fence) return;
+        const fenceEnhancePlugin = this.utils.getPlugin("fence_enhance");
+        fenceEnhancePlugin && fenceEnhancePlugin.expandFence(fence);
     }
 
     clearFenceMultiHighlighterList = () => {
@@ -431,10 +423,10 @@ class multiHighlighterPlugin extends global._basePlugin {
         File.isFocusMode && File.editor.updateFocusMode(false);
     }
 
-    // 已废弃
-    scroll2 = marker => {
-        requestAnimationFrame(() => marker.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"}));
-    }
+    // // 已废弃
+    // scroll2 = marker => {
+    //     requestAnimationFrame(() => marker.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"}));
+    // }
 
     showIfNeed = marker => {
         if (this.config.SHOW_KEYWORD_OUTLINE) {

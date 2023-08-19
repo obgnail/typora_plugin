@@ -175,23 +175,27 @@ class fenceEnhancePlugin extends global._basePlugin {
                 enhance.style.visibility = "hidden";
             }
 
-            let foldButton;
-            if (this.config.ENABLE_FOLD) {
-                foldButton = this.createButton("typora-fold-code", "折叠", "fa fa-minus");
-                enhance.appendChild(foldButton);
-            }
-            if (this.enableIndent) {
-                const indentButton = this.createButton("typora-indent-code", "调整缩进", "fa fa-indent");
-                enhance.appendChild(indentButton);
-            }
-            if (this.config.ENABLE_COPY) {
-                const copyButton = this.createButton("typora-copy-code", "复制", "fa fa-clipboard");
-                enhance.appendChild(copyButton);
+            const foldButton = this.createButton("typora-fold-code", "折叠", "fa fa-minus");
+            if (!this.config.ENABLE_FOLD) {
+                foldButton.style.display = "none";
             }
 
+            const indentButton = this.createButton("typora-indent-code", "调整缩进", "fa fa-indent");
+            if (!this.enableIndent) {
+                indentButton.style.display = "none";
+            }
+
+            const copyButton = this.createButton("typora-copy-code", "复制", "fa fa-clipboard");
+            if (!this.config.ENABLE_COPY) {
+                copyButton.style.display = "none";
+            }
+
+            enhance.appendChild(foldButton);
+            enhance.appendChild(indentButton);
+            enhance.appendChild(copyButton);
             fence.appendChild(enhance);
 
-            if (this.config.FOLD_DEFAULT && foldButton) {
+            if (this.config.FOLD_DEFAULT) {
                 foldButton.click();
             }
         }
@@ -269,7 +273,7 @@ class fenceEnhancePlugin extends global._basePlugin {
                 arg_value: "copy_current",
             },
         ]
-        enableIndent && arr.push({
+        this.enableIndent && arr.push({
             arg_name: "调整缩进",
             arg_value: "indent_current"
         })

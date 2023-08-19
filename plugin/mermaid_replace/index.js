@@ -7,7 +7,7 @@ class mermaidReplacePlugin extends global._basePlugin {
             () => {
                 const filepath = this.utils.joinPath("./plugin/mermaid_replace/mermaid.min.js");
                 $.getScript(`file:///${filepath}`).then(() => {
-                    global.mermaidAPI = mermaid.mermaidAPI;
+                    window.mermaidAPI = mermaid.mermaidAPI;
                     window.editor.diagrams.refreshDiagram(editor);
                 });
             }

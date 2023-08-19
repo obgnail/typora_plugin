@@ -95,6 +95,7 @@ class datatablesPlugin extends global._basePlugin {
             File.editor.tableEdit,
             "showTableEdit",
             (...args) => {
+                if (!args[0]) return;
                 const table = args[0].find("table");
                 if (table.length === 0) return
 
@@ -108,12 +109,12 @@ class datatablesPlugin extends global._basePlugin {
         )
     }
 
-    addTfoot = $table => {
-        const th = $table.find("thead th");
-        const list = [...th].map(ele => `<td>${ele.textContent}: </td>`);
-        const tfoot = `<tfoot><tr>${list.join("")}</tr></tfoot>`;
-        $table.append(tfoot);
-    }
+    // addTfoot = $table => {
+    //     const th = $table.find("thead th");
+    //     const list = [...th].map(ele => `<td>${ele.textContent}: </td>`);
+    //     const tfoot = `<tfoot><tr>${list.join("")}</tr></tfoot>`;
+    //     $table.append(tfoot);
+    // }
 
     appendFilter = dataTable => {
         dataTable.columns().flatten().each(function (colIdx) {

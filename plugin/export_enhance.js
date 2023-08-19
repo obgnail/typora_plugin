@@ -14,12 +14,12 @@ class exportEnhancePlugin extends global._basePlugin {
             },
 
             downloadAllImage: async (html) => {
-                for await (let result of html.matchAll(this.decoMixin.regexp)) {
+                for (let result of html.matchAll(this.decoMixin.regexp)) {
                     if (result.length !== 2 || result.index < this.decoMixin.writeIdx || !this.isNetworkImage(result[1])) continue
                     const src = result[1];
                     if (!this.decoMixin.imageMap.hasOwnProperty(src)) { // single flight
                         const filename = Math.random() + "_" + this.Path.basename(src);
-                        const {state} = JSBridge.invoke("app.download", src, this.tempFolder, filename);
+                        const {state} = await JSBridge.invoke("app.download", src, this.tempFolder, filename);
                         if (state === "completed") {
                             this.decoMixin.imageMap[src] = filename;
                         }
@@ -40,7 +40,7 @@ class exportEnhancePlugin extends global._basePlugin {
                 if (this.decoMixin.writeIdx === -1) return this.simplePromise(html);
 
                 if (this.config.DOWNLOAD_NETWORK_IMAGE) {
-                    await this.decoMixin.downloadAllImage(html)
+                    await this.decoMixin.downloadAllImage(html);
                 }
 
                 const dirname = this.getCurDir();

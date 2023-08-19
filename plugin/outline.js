@@ -94,8 +94,6 @@ class outlinePlugin extends global._basePlugin {
             footer: document.querySelector("#plugin-outline .plugin-outline-footer"),
             move: document.querySelector(`#plugin-outline .plugin-outline-icon[Type="move"]`),
         }
-        this.collapsePlugin = this.utils.getPlugin("collapse_paragraph");
-        this.truncatePlugin = this.utils.getPlugin("truncate_text");
         this.collectUtil = new _collectUtil(this.config, this.entities);
     }
 
@@ -146,15 +144,9 @@ class outlinePlugin extends global._basePlugin {
         this.entities.modal.style.display = "block";
     }
 
-    compatibleOtherPlugin = target => {
-        if (!target) return;
-        this.collapsePlugin && this.collapsePlugin.rollback(target);
-        this.truncatePlugin && this.truncatePlugin.rollback(target);
-    }
-
     scroll = cid => {
         const target = File.editor.findElemById(cid);
-        this.compatibleOtherPlugin(target[0]);
+        this.utils.showHiddenElementByPlugin(target[0]);
         File.editor.focusAndRestorePos();
         File.editor.selection.scrollAdjust(target, 10);
         File.isFocusMode && File.editor.updateFocusMode(false);
@@ -202,7 +194,7 @@ class outlinePlugin extends global._basePlugin {
 
     call = () => {
         if (this.entities.modal.style.display === "block") {
-            hide();
+            this.hide();
         } else {
             this.collectAndShow(this.config.DEFAULT_TYPE);
         }

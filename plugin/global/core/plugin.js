@@ -122,6 +122,13 @@ class utils {
         }, detectInterval);
     }
 
+    static showHiddenElementByPlugin = target => {
+        if (!target) return;
+        const collapsePlugin = this.getPlugin("collapse_paragraph");
+        const truncatePlugin = this.getPlugin("truncate_text");
+        collapsePlugin && collapsePlugin.rollback(target);
+        truncatePlugin && truncatePlugin.rollback(target);
+    }
 
     static dragFixedModal = (handleElement, moveElement, withMetaKey = true) => {
         handleElement.addEventListener("mousedown", ev => {
@@ -272,11 +279,11 @@ class process {
         const text = style["text"] || null;
         const fileID = style["fileID"] || null;
         const file = style["file"] || null;
-        if (textID && text) {
-            this.utils.insertStyle(textID, text);
-        }
         if (fileID && file) {
             this.utils.insertStyleFile(fileID, file);
+        }
+        if (textID && text) {
+            this.utils.insertStyle(textID, text);
         }
     }
 
@@ -291,9 +298,8 @@ class process {
             plugin.process();
             plugin.afterProcess();
             console.log(`plugin had been injected: [ ${plugin.fixed_name} ] `);
-
-            global._plugins[plugin.fixed_name] = plugin;
         }
+        return plugin
     }
 
     run() {
@@ -313,7 +319,7 @@ class process {
             const promise = new Promise(resolve => {
                 try {
                     const {plugin} = reqnode(filepath);
-                    this.loadPlugin(plugin, pluginSetting);
+                    global._plugins[fixed_name] = this.loadPlugin(plugin, pluginSetting);
                 } catch (e) {
                     console.error("plugin err:", e);
                 }

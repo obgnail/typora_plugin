@@ -28,7 +28,15 @@ class mindmapPlugin extends global._basePlugin {
 
     cleanMindMapTitle = title => `("${title.replace(/"/g, "")}")`;
     cleanGraphTitle = title => `("${title.replace(/"/g, "")}")`;
-    wrapMermaid = content => `\`\`\`mermaid\n${content}\`\`\``;
+
+    wrapMermaid = content => "```mermaid\n" + this.wrapErrorMsg() + content + "```";
+    wrapErrorMsg = () => {
+        if (!window.mermaidAPI.defaultConfig.mindmap) {
+            const url = "https://mermaid.live/";
+            return `%%你的mermaid组件版本过低，不支持mindmap语法。内容已复制到剪贴板，请粘贴到${url}查看\n`
+        }
+        return ""
+    }
 
     mindmap = (pList, root) => {
         const lines = [

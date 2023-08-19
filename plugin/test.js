@@ -1,5 +1,5 @@
 class testPlugin extends global._basePlugin {
-    beforeProcess() {
+    process() {
         this.utils.decorate(
             () => (File && File.editor && File.editor.library && File.editor.library.openFileInNewWindow),
             File.editor.library,
@@ -9,12 +9,6 @@ class testPlugin extends global._basePlugin {
         )
 
         JSBridge.invoke("window.toggleDevTools");
-    }
-
-    process() {
-    }
-
-    onEvent(eventType, payload) {
     }
 }
 

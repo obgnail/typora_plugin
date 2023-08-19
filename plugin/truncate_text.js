@@ -62,19 +62,19 @@ class truncateTextPlugin extends global._basePlugin {
         }
     };
 
-    // 已废弃
-    rollback2 = start => {
-        if (document.querySelector(`#write > .${this.config.CLASS_NAME}`)) {
-            let ele = start.closest("#write > [cid]");
-            while (ele) {
-                if (ele.classList.contains(this.config.CLASS_NAME)) {
-                    ele.classList.remove(this.config.CLASS_NAME);
-                    ele.style.display = "";
-                }
-                ele = ele.nextElementSibling;
-            }
-        }
-    }
+    // // 已废弃
+    // rollback2 = start => {
+    //     if (document.querySelector(`#write > .${this.config.CLASS_NAME}`)) {
+    //         let ele = start.closest("#write > [cid]");
+    //         while (ele) {
+    //             if (ele.classList.contains(this.config.CLASS_NAME)) {
+    //                 ele.classList.remove(this.config.CLASS_NAME);
+    //                 ele.style.display = "";
+    //             }
+    //             ele = ele.nextElementSibling;
+    //         }
+    //     }
+    // }
 
     call = type => {
         if (type === "hide_front") {

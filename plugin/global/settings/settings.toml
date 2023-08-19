@@ -44,7 +44,7 @@ REFOUCE_WHEN_OPEN_FILE = true
 # 搜索内容时大小写敏感(此选项不必手动调整，可以在UI设置)
 CASE_SENSITIVE = false
 # 将文件路径加入搜索内容(此选项不必手动调整，可以在UI设置)
-INCLUDE_FILE_PATH = false
+INCLUDE_FILE_PATH = true
 # 展示文件路径时使用相对路径
 RELATIVE_PATH = true
 # 关键词按空格分割
@@ -490,7 +490,7 @@ CLICKABLE = false
 ############### test ###############
 [test]
 # 启用插件
-ENABLE = true
+ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "测试专用"
 # 是否在右键菜单中可点击

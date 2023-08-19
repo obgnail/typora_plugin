@@ -451,13 +451,13 @@ class windowTabBarPlugin extends global._basePlugin {
         tabBar.on("dragstart", ".tab-container", function (ev) {
             _offsetX = ev.offsetX;
             currentDragItem = this;
-        }).on("dragend", ".tab-container", function (ev) {
+        }).on("dragend", ".tab-container", function () {
             currentDragItem = null;
         }).on("dragover", ".tab-container", function (ev) {
             ev.preventDefault();
             if (!currentDragItem) return;
             this[ev.offsetX > _offsetX ? 'after' : 'before'](currentDragItem);
-        }).on("dragenter", function (ev) {
+        }).on("dragenter", function () {
             return false
         })
 

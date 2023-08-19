@@ -1,4 +1,4 @@
-class searchMultiKeyword extends global._basePlugin {
+class searchMultiKeywordPlugin extends global._basePlugin {
     style = () => {
         const textID = "plugin-search-multi-style";
         const text = `
@@ -450,5 +450,5 @@ class searchMultiKeyword extends global._basePlugin {
 }
 
 module.exports = {
-    plugin: searchMultiKeyword
+    plugin: searchMultiKeywordPlugin
 };
