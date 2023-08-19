@@ -1,14 +1,20 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("right_click_menu");
+class rightClickMenuPlugin extends global._basePlugin {
+    beforeProcess = () => {
+        this.utils.loopDetector(() => global._pluginsHadInjected, this.appendMenu, this.config.LOOP_DETECT_INTERVAL);
+    }
 
-    const getPlugins = () => {
-        const enable = global._plugins.filter(plugin => plugin.enable === true);
-        const clickable = enable.filter(plugin => plugin.clickable === true);
-        const nonClickable = enable.filter(plugin => plugin.clickable === false);
+    getPlugins = () => {
+        const enable = []
+        for (const fixed_name in global._plugins) {
+            const plugin = global._plugins[fixed_name];
+            enable.push(plugin);
+        }
+        const clickable = enable.filter(plugin => plugin.config.CLICKABLE === true);
+        const nonClickable = enable.filter(plugin => plugin.config.CLICKABLE === false);
         return {clickable, nonClickable, enable}
     }
 
-    const appendFirst = () => {
+    appendFirst = () => {
         const ul = document.querySelector(`#context-menu`);
         const line = document.createElement("li");
         line.classList.add("divider");
@@ -25,45 +31,45 @@
         ul.insertAdjacentHTML('beforeend', li);
     }
 
-    const appendSecond = (clickablePlugins, nonClickablePlugins) => {
-        const clickable = clickablePlugins.map(plugin => createSecondLi(plugin)).join("");
-        const nonClickable = nonClickablePlugins.map(plugin => createSecondLi(plugin)).join("");
+    appendSecond = (clickablePlugins, nonClickablePlugins) => {
+        const clickable = clickablePlugins.map(plugin => this.createSecondLi(plugin)).join("");
+        const nonClickable = nonClickablePlugins.map(plugin => this.createSecondLi(plugin)).join("");
         const divider = `<li class="divider"></li>`
-        const secondUl = createUl();
+        const secondUl = this.createUl();
         secondUl.id = "plugin-menu";
         secondUl.innerHTML = clickable + divider + nonClickable;
         document.querySelector("content").appendChild(secondUl);
     }
 
-    const appendThird = enablePlugins => {
+    appendThird = enablePlugins => {
         enablePlugins.forEach(plugin => {
-            if (!plugin.call_args && !plugin.dynamic_call_args_generator) return;
+            if (!plugin.callArgs && !plugin.dynamicCallArgsGenerator) return;
 
-            const thirdUl = createUl();
+            const thirdUl = this.createUl();
             thirdUl.classList.add("plugin-menu-third");
             thirdUl.setAttribute("fixed_name", plugin.fixed_name);
-            thirdUl.innerHTML = plugin.call_args ? plugin.call_args.map(arg => createThirdLi(arg)).join("") : "";
+            thirdUl.innerHTML = plugin.callArgs ? plugin.callArgs.map(arg => this.createThirdLi(arg)).join("") : "";
             document.querySelector("content").appendChild(thirdUl);
         })
     }
 
-    const createSecondLi = plugin => {
-        const hasNotArgs = !plugin.call_args && !plugin.dynamic_call_args_generator;
-        const style = (plugin.clickable) ? "" : `style="pointer-events: none;color: #c4c6cc;"`;
-        const content = (hasNotArgs) ? plugin.name : `<span data-lg="Menu">${plugin.name}</span> <i class="fa fa-caret-right"></i>`;
+    createSecondLi = plugin => {
+        const hasNotArgs = !plugin.callArgs && !plugin.dynamicCallArgsGenerator;
+        const style = (plugin.config.CLICKABLE) ? "" : `style="pointer-events: none;color: #c4c6cc;"`;
+        const content = (hasNotArgs) ? plugin.config.NAME : `<span data-lg="Menu">${plugin.config.NAME}</span> <i class="fa fa-caret-right"></i>`;
         const className = (hasNotArgs) ? "" : "plugin-has-args";
         return `<li data-key="${plugin.fixed_name}" class="plugin-menu-item ${className}" ${style}>
                     <a role="menuitem" data-lg="Menu">${content}</a>
                 </li>`
     }
 
-    const createThirdLi = (arg, dynamic) => {
+    createThirdLi = (arg, dynamic) => {
         const disabled = (arg.arg_disabled) ? " disabled" : "";
         const className = (dynamic) ? `class="plugin-dynamic-arg${disabled}"` : "";
         return `<li data-key="${arg.arg_name}" arg_value="${arg.arg_value}" ${className}><a role="menuitem" data-lg="Menu">${arg.arg_name}</a></li>`
     }
 
-    const createUl = () => {
+    createUl = () => {
         const secondUl = document.createElement("ul");
         secondUl.classList.add("dropdown-menu");
         secondUl.classList.add("context-menu");
@@ -72,7 +78,7 @@
         return secondUl;
     }
 
-    const show = (second, first) => {
+    show = (second, first) => {
         const next = second.addClass("show");
 
         const rect = next[0].getBoundingClientRect();
@@ -94,38 +100,57 @@
         return false;
     }
 
-    const generateDynamicCallArgs = fixedName => {
+    generateDynamicCallArgs = fixedName => {
         if (!fixedName) return;
-        const plugin = global._pluginUtils.getPlugin(fixedName);
-        if (plugin && plugin.enable && plugin.dynamic_call_args_generator) {
+        const plugin = this.utils.getPlugin(fixedName);
+        if (plugin && plugin.dynamicCallArgsGenerator) {
             const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
             if (anchorNode[0]) {
-                return plugin.dynamic_call_args_generator(anchorNode[0]);
+                return plugin.dynamicCallArgsGenerator(anchorNode[0]);
             }
         }
     }
 
-    const appendThirdLi = (menu, dynamicCallArgs) => {
-        const args = dynamicCallArgs.map(arg => createThirdLi(arg, true)).join("");
+    appendThirdLi = (menu, dynamicCallArgs) => {
+        const args = dynamicCallArgs.map(arg => this.createThirdLi(arg, true)).join("");
         menu.append(args);
     }
 
-
-    const appendDummyThirdLi = menu => {
-        appendThirdLi(menu, [{
+    appendDummyThirdLi = menu => {
+        this.appendThirdLi(menu, [{
             arg_name: "光标于此位置不可用",
-            arg_value: config.NOT_AVAILABLE_VALUE,
+            arg_value: this.config.NOT_AVAILABLE_VALUE,
             arg_disabled: true,
         }])
     }
 
-    const listen = enablePlugins => {
+    appendMenu = () => {
+        setTimeout(() => {
+            const {clickable, nonClickable, enable} = this.getPlugins();
+            // 一级菜单汇总所有插件
+            this.appendFirst();
+            // 二级菜单展示所有插件
+            this.appendSecond(clickable, nonClickable);
+            // 三级菜单展示插件的参数
+            this.appendThird(enable);
+            this.listen();
+        }, 500)
+    }
+
+    listen = () => {
+        const appendThirdLi = this.appendThirdLi;
+        const appendDummyThirdLi = this.appendDummyThirdLi;
+        const show = this.show;
+        const generateDynamicCallArgs = this.generateDynamicCallArgs;
+        const config = this.config;
+        const utils = this.utils
+
         // 在二级菜单中调用插件
         $("#plugin-menu").on("click", "[data-key]", function () {
-            const fixed_name = this.getAttribute("data-key");
-            const plugin = enablePlugins.filter(plugin => plugin.fixed_name === fixed_name)[0];
+            const fixedName = this.getAttribute("data-key");
+            const plugin = utils.getPlugin(fixedName);
             // 拥有三级菜单的，不允许点击二级菜单
-            if (plugin.call_args || plugin.dynamic_call_args_generator) {
+            if (plugin.callArgs || plugin.dynamicCallArgsGenerator) {
                 return false
             }
             if (plugin && plugin.call) {
@@ -170,7 +195,7 @@
         $(".plugin-menu-third").on("click", "[data-key]", function () {
             const fixedName = this.parentElement.getAttribute("fixed_name");
             const argValue = this.getAttribute("arg_value");
-            const plugin = enablePlugins.filter(plugin => plugin.fixed_name === fixedName)[0];
+            const plugin = utils.getPlugin(fixedName);
             if (argValue !== config.NOT_AVAILABLE_VALUE && plugin && plugin.call) {
                 plugin.call(argValue);
             }
@@ -180,36 +205,20 @@
         })
     }
 
-    const appendMenu = () => {
-        setTimeout(() => {
-            const {clickable, nonClickable, enable} = getPlugins();
-            // 一级菜单汇总所有插件
-            appendFirst();
-            // 二级菜单展示所有插件
-            appendSecond(clickable, nonClickable);
-            // 三级菜单展示插件的参数
-            appendThird(enable);
-            listen(enable);
-        }, 500)
-    }
-
-    global._pluginUtils.loopDetector(() => global._pluginsHadInjected, appendMenu, config.LOOP_DETECT_INTERVAL);
-
-    //////////////////////// 以下是声明式插件系统代码 ////////////////////////
-    const call = type => {
+    call = type => {
         if (type === "about") {
             const url = "https://github.com/obgnail/typora_plugin"
             const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl
             openUrl(url, 1);
         } else if (type === "do_not_hide") {
-            config.DO_NOT_HIDE = !config.DO_NOT_HIDE;
+            this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE;
         } else if (type === "open_setting_folder") {
-            const filepath = global._pluginUtils.joinPath("./plugin/global/settings/settings.toml");
+            const filepath = this.utils.joinPath("./plugin/global/settings/settings.toml");
             JSBridge.showInFinder(filepath);
         }
     }
 
-    const callArgs = [
+    callArgs = [
         {
             arg_name: "右键菜单点击后保持显示/隐藏",
             arg_value: "do_not_hide"
@@ -222,12 +231,9 @@
             arg_name: "关于/帮助",
             arg_value: "about"
         },
-    ];
+    ]
+}
 
-    module.exports = {
-        call,
-        callArgs,
-    };
-
-    console.log("right_click_menu.js had been injected");
-})()
+module.exports = {
+    plugin: rightClickMenuPlugin
+};

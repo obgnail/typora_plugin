@@ -1,105 +1,110 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("export_enhance");
-    const Path = global._pluginUtils.Package.Path;
-    const tempFolder = global._pluginUtils.tempFolder; // i‘d like to shit here
+class exportEnhancePlugin extends global._basePlugin {
+    init = () => {
+        this.Path = this.utils.Package.Path;
+        this.tempFolder = this.utils.tempFolder; // i‘d like to shit here
 
-    const isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
+        this.decoMixin = {
+            regexp: new RegExp(`<img.*?src="(.*?)".*?>`, "gs"),
+            writeIdx: -1,
+            imageMap: {}, // map src to localFileName, use for network image only
 
-    const getCurDir = () => {
-        const filepath = global._pluginUtils.getFilePath();
-        return Path.dirname(filepath)
+            init: () => {
+                this.decoMixin.writeIdx = -1
+                this.decoMixin.imageMap = {}
+            },
+
+            downloadAllImage: async (html) => {
+                for (let result of html.matchAll(this.decoMixin.regexp)) {
+                    if (result.length !== 2 || result.index < this.decoMixin.writeIdx || !this.isNetworkImage(result[1])) continue
+                    const src = result[1];
+                    if (!this.decoMixin.imageMap.hasOwnProperty(src)) { // single flight
+                        const filename = Math.random() + "_" + this.Path.basename(src);
+                        const {state} = await JSBridge.invoke("app.download", src, this.tempFolder, filename);
+                        if (state === "completed") {
+                            this.decoMixin.imageMap[src] = filename;
+                        }
+                    }
+                }
+            },
+
+            afterExportToHtml: async (exportResult, ...args) => {
+                if (!this.config.ENABLE) return exportResult;
+
+                this.decoMixin.init();
+
+                const exportConfig = args[0];
+                if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
+
+                const html = await exportResult;
+                this.decoMixin.writeIdx = html.indexOf(`id='write'`);
+                if (this.decoMixin.writeIdx === -1) return this.simplePromise(html);
+
+                if (this.config.DOWNLOAD_NETWORK_IMAGE) {
+                    await this.decoMixin.downloadAllImage(html);
+                }
+
+                const dirname = this.getCurDir();
+                const newHtml = html.replace(this.decoMixin.regexp, (origin, src, srcIdx) => {
+                    if (srcIdx < this.decoMixin.writeIdx) return origin;
+
+                    let result = origin;
+                    let imagePath;
+                    try {
+                        if (this.isNetworkImage(src)) {
+                            if (!this.config.DOWNLOAD_NETWORK_IMAGE || !this.decoMixin.imageMap.hasOwnProperty(src)) return origin
+                            const path = this.decoMixin.imageMap[src];
+                            imagePath = this.Path.join(this.tempFolder, path);
+                        } else {
+                            imagePath = this.Path.join(dirname, src);
+                        }
+                        const base64Data = this.toBase64(imagePath);
+                        result = origin.replace(src, base64Data);
+                    } catch (e) {
+                        console.log("export error:", e);
+                    }
+                    return result;
+                })
+                return this.simplePromise(newHtml);
+            }
+        }
     }
 
-    const toBase64 = imagePath => {
-        const bitmap = global._pluginUtils.Package.Fs.readFileSync(imagePath);
+    process = () => {
+        this.init();
+
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
+            File.editor.export,
+            "exportToHTML",
+            null,
+            this.decoMixin.afterExportToHtml,
+            true,
+        );
+    }
+
+    isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
+
+    getCurDir = () => {
+        const filepath = this.utils.getFilePath();
+        return this.Path.dirname(filepath)
+    }
+
+    toBase64 = imagePath => {
+        const bitmap = this.utils.Package.Fs.readFileSync(imagePath);
         const data = Buffer.from(bitmap).toString('base64');
         return `data:image;base64,${data}`;
     }
 
-    const simplePromise = result => new Promise(resolve => resolve(result));
+    simplePromise = result => new Promise(resolve => resolve(result));
 
-    const decoMixin = {
-        regexp: new RegExp(`<img.*?src="(.*?)".*?>`, "gs"),
-        writeIdx: -1,
-        imageMap: {}, // map src to localFileName, use for network image only
-
-        init: () => {
-            decoMixin.writeIdx = -1
-            decoMixin.imageMap = {}
-        },
-
-        downloadAllImage: async (html) => {
-            for await (let result of html.matchAll(decoMixin.regexp)) {
-                if (result.length !== 2 || result.index < decoMixin.writeIdx || !isNetworkImage(result[1])) continue
-                const src = result[1];
-                if (!decoMixin.imageMap.hasOwnProperty(src)) { // single flight
-                    const filename = Math.random() + "_" + Path.basename(src);
-                    const {state} = JSBridge.invoke("app.download", src, tempFolder, filename);
-                    if (state === "completed") {
-                        decoMixin.imageMap[src] = filename;
-                    }
-                }
-            }
-        },
-
-        afterExportToHtml: async (exportResult, ...args) => {
-            if (!config.ENABLE) return exportResult;
-
-            decoMixin.init();
-
-            const exportConfig = args[0];
-            if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
-
-            const html = await exportResult;
-            decoMixin.writeIdx = html.indexOf(`id='write'`);
-            if (decoMixin.writeIdx === -1) return simplePromise(html);
-
-            if (config.DOWNLOAD_NETWORK_IMAGE) {
-                await decoMixin.downloadAllImage(html)
-            }
-
-            const dirname = getCurDir();
-            const newHtml = html.replace(decoMixin.regexp, (origin, src, srcIdx) => {
-                if (srcIdx < decoMixin.writeIdx) return origin;
-
-                let result = origin;
-                let imagePath;
-                try {
-                    if (isNetworkImage(src)) {
-                        if (!config.DOWNLOAD_NETWORK_IMAGE || !decoMixin.imageMap.hasOwnProperty(src)) return origin
-                        const path = decoMixin.imageMap[src];
-                        imagePath = Path.join(tempFolder, path);
-                    } else {
-                        imagePath = Path.join(dirname, src);
-                    }
-                    const base64Data = toBase64(imagePath);
-                    result = origin.replace(src, base64Data);
-                } catch (e) {
-                    console.log("export error:", e);
-                }
-                return result;
-            })
-            return simplePromise(newHtml);
-        }
-    }
-
-    global._pluginUtils.decorate(
-        () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-        File.editor.export,
-        "exportToHTML",
-        null,
-        decoMixin.afterExportToHtml,
-        true,
-    );
-
-    const dynamicCallArgsGenerator = () => {
+    dynamicCallArgsGenerator = () => {
         const call_args = [];
-        if (config.DOWNLOAD_NETWORK_IMAGE) {
+        if (this.config.DOWNLOAD_NETWORK_IMAGE) {
             call_args.push({arg_name: "导出HTML时不下载网络图片", arg_value: "dont_download_network_image"});
         } else {
             call_args.push({arg_name: "导出HTML时下载网络图片", arg_value: "download_network_image"});
         }
-        if (config.ENABLE) {
+        if (this.config.ENABLE) {
             call_args.push({arg_name: "禁用", arg_value: "disable"});
         } else {
             call_args.push({arg_name: "启用", arg_value: "enable"})
@@ -108,25 +113,19 @@
         return call_args
     }
 
-    const call = type => {
+    call = type => {
         if (type === "download_network_image") {
-            config.DOWNLOAD_NETWORK_IMAGE = true
+            this.config.DOWNLOAD_NETWORK_IMAGE = true
         } else if (type === "dont_download_network_image") {
-            config.DOWNLOAD_NETWORK_IMAGE = false
+            this.config.DOWNLOAD_NETWORK_IMAGE = false
         } else if (type === "disable") {
-            config.ENABLE = false
+            this.config.ENABLE = false
         } else if (type === "enable") {
-            config.ENABLE = true
+            this.config.ENABLE = true
         }
     }
+}
 
-    module.exports = {
-        call,
-        dynamicCallArgsGenerator,
-        meta: {
-            call
-        }
-    };
-
-    console.log("export_enhance.js had been injected");
-})()
+module.exports = {
+    plugin: exportEnhancePlugin
+};

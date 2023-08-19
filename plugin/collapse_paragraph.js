@@ -1,9 +1,8 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("collapse_paragraph");
-
-    (() => {
-        const css = `
-            #write .${config.CLASS_NAME}::after {
+class collapseParagraphPlugin extends global._basePlugin {
+    style = () => {
+        const textID = "plugin-collapse-paragraph-style"
+        const text = `
+            #write .${this.config.CLASS_NAME}::after {
                 display: initial;
                 content: "{\\2026}" !important;
                 margin: 0 0.6rem;
@@ -11,29 +10,47 @@
                 color: white;
                 opacity: 0.6;
                 background-color: gray;
-            }
-            `;
-        global._pluginUtils.insertStyle("plugin-collapse-paragraph-style", css);
-    })()
-
-    const callbackOtherPlugin = () => {
-        const outlinePlugin = global._pluginUtils.getPlugin("outline");
-        outlinePlugin && outlinePlugin.meta.refresh();
+            }`;
+        return {textID, text}
     }
 
-    const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
+    init = () => {
+        this.paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
+        this.dynamicUtil = {target: null}
+    }
 
-    const toggle = (paragraph, display) => {
-        const idx = paragraphList.indexOf(paragraph.tagName);
-        const stop = paragraphList.slice(0, idx + 1);
+    process = () => {
+        this.init();
+
+        document.getElementById("write").addEventListener("click", ev => {
+            if (!this.utils.metaKeyPressed(ev)) return;
+            const paragraph = ev.target.closest("h1, h2, h3, h4, h5, h6");
+            if (!paragraph) return;
+
+            document.activeElement.blur();
+            const collapsed = paragraph.classList.contains(this.config.CLASS_NAME);
+            const list = ev.altKey ? (ev.shiftKey ? this.findAllSiblings(paragraph) : this.findSiblings(paragraph)) : [paragraph];
+            list.forEach(ele => this.trigger(ele, collapsed));
+            this.callbackOtherPlugin();
+        })
+    }
+
+    callbackOtherPlugin = () => {
+        const outlinePlugin = this.utils.getPlugin("outline");
+        outlinePlugin && outlinePlugin.refresh();
+    }
+
+    toggle = (paragraph, display) => {
+        const idx = this.paragraphList.indexOf(paragraph.tagName);
+        const stop = this.paragraphList.slice(0, idx + 1);
 
         let ele = paragraph.nextElementSibling;
         while (ele && stop.indexOf(ele.tagName) === -1) {
-            if (paragraphList.indexOf(ele.tagName) !== -1
-                && ele.classList.contains(config.CLASS_NAME)
+            if (this.paragraphList.indexOf(ele.tagName) !== -1
+                && ele.classList.contains(this.config.CLASS_NAME)
                 && display === "") {
                 ele.style.display = "";
-                ele = toggle(ele, "none");
+                ele = this.toggle(ele, "none");
                 continue
             }
 
@@ -43,27 +60,26 @@
 
         return ele;
     }
-
-    const trigger = (paragraph, collapsed) => {
+    trigger = (paragraph, collapsed) => {
         if (collapsed) {
-            paragraph.classList.remove(config.CLASS_NAME);
-            toggle(paragraph, "");
+            paragraph.classList.remove(this.config.CLASS_NAME);
+            this.toggle(paragraph, "");
         } else {
-            paragraph.classList.add(config.CLASS_NAME);
-            toggle(paragraph, "none");
+            paragraph.classList.add(this.config.CLASS_NAME);
+            this.toggle(paragraph, "none");
         }
     }
 
-    const rollback = start => {
-        if (!document.querySelector(`#write > .${config.CLASS_NAME}`)) return;
+    rollback = start => {
+        if (!document.querySelector(`#write > .${this.config.CLASS_NAME}`)) return;
 
         let ele = start.closest("#write > [cid]");
 
         const pList = [];
         while (ele) {
-            const idx = paragraphList.indexOf(ele.tagName);
+            const idx = this.paragraphList.indexOf(ele.tagName);
             if (idx !== -1) {
-                if (pList.length === 0 || (pList[pList.length - 1].idx > idx && ele.classList.contains(config.CLASS_NAME))) {
+                if (pList.length === 0 || (pList[pList.length - 1].idx > idx && ele.classList.contains(this.config.CLASS_NAME))) {
                     pList.push({ele, idx})
                     if (pList[pList.length - 1].idx === 0) break;
                 }
@@ -73,14 +89,14 @@
 
         if (pList.length > 0) {
             for (let i = pList.length - 1; i >= 0; i--) {
-                trigger(pList[i].ele, true);
+                this.trigger(pList[i].ele, true);
             }
         }
     }
 
-    const findSiblings = paragraph => {
-        const idx = paragraphList.indexOf(paragraph.tagName);
-        const stop = paragraphList.slice(0, idx);
+    findSiblings = paragraph => {
+        const idx = this.paragraphList.indexOf(paragraph.tagName);
+        const stop = this.paragraphList.slice(0, idx);
 
         const result = [paragraph];
         ["previousElementSibling", "nextElementSibling"].forEach(direction => {
@@ -96,27 +112,13 @@
         return result;
     }
 
-    const findAllSiblings = paragraph => document.querySelectorAll(`#write ${paragraph.tagName}`);
+    findAllSiblings = paragraph => document.querySelectorAll(`#write ${paragraph.tagName}`);
 
-    document.getElementById("write").addEventListener("click", ev => {
-        if (!global._pluginUtils.metaKeyPressed(ev)) return;
-        const paragraph = ev.target.closest("h1, h2, h3, h4, h5, h6");
-        if (!paragraph) return;
-
-        document.activeElement.blur();
-        const collapsed = paragraph.classList.contains(config.CLASS_NAME);
-        const list = ev.altKey ? (ev.shiftKey ? findAllSiblings(paragraph) : findSiblings(paragraph)) : [paragraph];
-        list.forEach(ele => trigger(ele, collapsed));
-        callbackOtherPlugin();
-    })
-
-    //////////////////////// 以下是声明式插件系统代码 ////////////////////////
-    const dynamicUtil = {target: null}
-    const dynamicCallArgsGenerator = anchorNode => {
+    dynamicCallArgsGenerator = anchorNode => {
         const target = anchorNode.closest("#write h1,h2,h3,h4,h5,h6");
         if (!target) return;
 
-        dynamicUtil.target = target;
+        this.dynamicUtil.target = target;
 
         return [
             {
@@ -134,7 +136,7 @@
         ]
     }
 
-    const callArgs = [
+    callArgs = [
         {
             arg_name: "折叠全部章节",
             arg_value: "collapse_all"
@@ -145,48 +147,40 @@
         },
     ];
 
-    const dynamicCall = type => {
-        if (!dynamicUtil.target) return;
+    dynamicCall = type => {
+        if (!this.dynamicUtil.target) return;
 
-        const collapsed = dynamicUtil.target.classList.contains(config.CLASS_NAME);
+        const collapsed = this.dynamicUtil.target.classList.contains(this.config.CLASS_NAME);
 
         let list;
         if (type === "call_current") {
-            list = [dynamicUtil.target];
+            list = [this.dynamicUtil.target];
         } else if (type === "call_siblings") {
-            list = findSiblings(dynamicUtil.target);
+            list = this.findSiblings(this.dynamicUtil.target);
         } else if (type === "call_all_siblings") {
-            list = findAllSiblings(dynamicUtil.target);
+            list = this.findAllSiblings(this.dynamicUtil.target);
         }
 
         if (list) {
-            list.forEach(ele => trigger(ele, collapsed));
+            list.forEach(ele => this.trigger(ele, collapsed));
         }
     }
 
-    const call = type => {
+    call = type => {
         if (type === "collapse_all") {
-            for (let i = paragraphList.length - 1; i >= 0; i--) {
-                document.getElementsByTagName(paragraphList[i]).forEach(ele => trigger(ele, false));
+            for (let i = this.paragraphList.length - 1; i >= 0; i--) {
+                document.getElementsByTagName(this.paragraphList[i]).forEach(ele => this.trigger(ele, false));
             }
         } else if (type === "expand_all") {
-            paragraphList.forEach(tag => document.getElementsByTagName(tag).forEach(ele => trigger(ele, true)));
+            this.paragraphList.forEach(tag => document.getElementsByTagName(tag).forEach(ele => this.trigger(ele, true)));
         } else {
-            dynamicCall(type);
+            this.dynamicCall(type);
         }
-        callbackOtherPlugin();
+        this.callbackOtherPlugin();
     }
+}
 
-    module.exports = {
-        call,
-        callArgs,
-        dynamicCallArgsGenerator,
-        meta: {
-            call,
-            trigger,
-            rollback,
-        }
-    };
+module.exports = {
+    plugin: collapseParagraphPlugin
+};
 
-    console.log("collapse_paragraph.js had been injected");
-})()

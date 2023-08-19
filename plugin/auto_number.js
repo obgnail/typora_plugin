@@ -1,7 +1,6 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("auto_number");
-
-    const base_css = `
+class autoNumberPlugin extends global._basePlugin {
+    beforeProcess = () => {
+        this.base_css = `
         #write { counter-reset: write-h2 Figures Tables Fences; }
         h1 { counter-reset: write-h2 Figures Tables Fences; }
         h2 { counter-reset: write-h3 Figures Tables Fences; }
@@ -24,7 +23,7 @@
             }
         }
     `
-    const content_css = `
+        this.content_css = `
         #write h2:before {
             counter-increment: write-h2;
             content: counter(write-h2) ". ";
@@ -77,7 +76,7 @@
             line-height: inherit;
         }`
 
-    const side_bar_css = `
+        this.side_bar_css = `
         .outline-content { counter-reset: outline-h2; }
         .outline-h1 { counter-reset: outline-h2; }
         .outline-h2 { counter-reset: outline-h3; }
@@ -110,7 +109,7 @@
             content: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "." counter(outline-h5) "." counter(outline-h6) " ";
         }`
 
-    const toc_css = `
+        this.toc_css = `
         .md-toc-content { counter-reset: toc-h2; }
         .md-toc-h1 { counter-reset: toc-h2; }
         .md-toc-h2 { counter-reset: toc-h3; }
@@ -143,33 +142,33 @@
             content: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) "." counter(toc-h6) " ";
         }`
 
-    const image_css = `
+        this.image_css = `
         #write p span.md-image.md-img-loaded::after {
             counter-increment: Figures;
-            content: "${config.NAME.image} " counter(write-h2) "-" counter(Figures);
+            content: "${this.config.NAMES.image} " counter(write-h2) "-" counter(Figures);
             font-family: monospace;
             display: block;
             text-align: center;
             margin: 4px 0;
         }`
 
-    const table_css = `
+        this.table_css = `
         #write figure.table-figure::after {
             counter-increment: Tables;
-            content: "${config.NAME.table} " counter(write-h2) "-" counter(Tables);
+            content: "${this.config.NAMES.table} " counter(write-h2) "-" counter(Tables);
             font-family: monospace;
             display: block;
             text-align: center;
             margin: 4px 0;
         }`
 
-    const fence_css = `
+        this.fence_css = `
         #write .md-fences {
             margin-bottom: 2.4em;
         }
         #write .md-fences::after {
             counter-increment: Fences;
-            content: "${config.NAME.fence} " counter(write-h2) "-" counter(Fences);
+            content: "${this.config.NAMES.fence} " counter(write-h2) "-" counter(Fences);
             position: absolute;
             width: 100%;
             text-align: center;
@@ -178,43 +177,21 @@
             font-size: 1.1em;
             z-index: 9;
         }`
-
-    const removeStyle = () => {
-        const ele = document.getElementById(config.ID);
-        ele && ele.parentElement && ele.parentElement.removeChild(ele);
     }
 
-    const getStyleString = () => {
-        return [
-            base_css,
-            (config.ENABLE_CONTENT) ? content_css : "",
-            (config.ENABLE_SIDE_BAR) ? side_bar_css : "",
-            (config.ENABLE_TOC) ? toc_css : "",
-            (config.ENABLE_IMAGE) ? image_css : "",
-            (config.ENABLE_TABLE) ? table_css : "",
-            (config.ENABLE_FENCE) ? fence_css : "",
-        ].join("\n")
+    style = () => {
+        const textID = this.config.ID;
+        const text = this.getResultStyle();
+        return {textID, text}
     }
 
-    const insertStyle = toggle => {
-        if (toggle) {
-            config[toggle] = !config[toggle];
-            removeStyle();
-        }
-
-        const css = getStyleString();
-        global._pluginUtils.insertStyle(config.ID, css);
-    }
-
-    insertStyle();
-
-    if (config.ENABLE_WHEN_EXPORT) {
-        const decoMixin = {
+    init = () => {
+        this.decoMixin = {
             inExport: false,
 
             beforeExport: (...args) => {
                 this.inExport = true;
-                args[0].extraCss = `body {font-variant-ligatures: no-common-ligatures;} ` + getStyleString();
+                args[0].extraCss = `body {font-variant-ligatures: no-common-ligatures;} ` + this.getStyleString();
             },
 
             afterGetHeaderMatrix: headers => {
@@ -261,84 +238,114 @@
             }
         }
 
-        global._pluginUtils.decorate(
-            () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-            File.editor.export,
-            "exportToHTML",
-            decoMixin.beforeExport,
-            null
-        );
-        global._pluginUtils.decorate(
-            () => (File && File.editor && File.editor.library && File.editor.library.outline
-                && File.editor.library.outline.getHeaderMatrix),
-            File.editor.library.outline,
-            "getHeaderMatrix",
-            null,
-            decoMixin.afterGetHeaderMatrix
-        );
+        this.callArgs = [
+            {
+                arg_name: "禁用/启用大纲自动编号",
+                arg_value: "set_outline"
+            },
+            {
+                arg_name: "禁用/启用正文自动编号",
+                arg_value: "set_content"
+            },
+            {
+                arg_name: "禁用/启用TOC自动编号",
+                arg_value: "set_toc"
+            },
+            {
+                arg_name: "禁用/启用表格自动编号",
+                arg_value: "set_table"
+            },
+            {
+                arg_name: "禁用/启用图片自动编号",
+                arg_value: "set_image"
+            },
+            {
+                arg_name: "禁用/启用代码块自动编号",
+                arg_value: "set_fence"
+            },
+        ];
+
+        this.callMap = {
+            disable: this.removeStyle,
+            enable: this.insertStyle,
+            set_outline: () => this.insertStyle("ENABLE_SIDE_BAR"),
+            set_content: () => this.insertStyle("ENABLE_CONTENT"),
+            set_toc: () => this.insertStyle("ENABLE_TOC"),
+            set_table: () => this.insertStyle("ENABLE_TABLE"),
+            set_image: () => this.insertStyle("ENABLE_IMAGE"),
+            set_fence: () => this.insertStyle("ENABLE_FENCE"),
+        }
     }
 
-    //////////////////////// 以下是声明式插件系统代码 ////////////////////////
-    const callArgs = [
-        {
-            arg_name: "禁用/启用大纲自动编号",
-            arg_value: "set_outline"
-        },
-        {
-            arg_name: "禁用/启用正文自动编号",
-            arg_value: "set_content"
-        },
-        {
-            arg_name: "禁用/启用TOC自动编号",
-            arg_value: "set_toc"
-        },
-        {
-            arg_name: "禁用/启用表格自动编号",
-            arg_value: "set_table"
-        },
-        {
-            arg_name: "禁用/启用图片自动编号",
-            arg_value: "set_image"
-        },
-        {
-            arg_name: "禁用/启用代码块自动编号",
-            arg_value: "set_fence"
-        },
-    ];
+    process = () => {
+        this.init();
 
-    const dynamicCallArgsGenerator = () => {
+        if (this.config.ENABLE_WHEN_EXPORT) {
+            this.utils.decorate(
+                () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
+                File.editor.export,
+                "exportToHTML",
+                this.decoMixin.beforeExport,
+                null
+            );
+            this.utils.decorate(
+                () => (File && File.editor && File.editor.library && File.editor.library.outline
+                    && File.editor.library.outline.getHeaderMatrix),
+                File.editor.library.outline,
+                "getHeaderMatrix",
+                null,
+                this.decoMixin.afterGetHeaderMatrix
+            );
+        }
+    }
+
+    removeStyle = () => {
+        const ele = document.getElementById(this.config.ID);
+        ele && ele.parentElement && ele.parentElement.removeChild(ele);
+    }
+
+    getStyleString = () => {
+        return [
+            this.base_css,
+            (this.config.ENABLE_CONTENT) ? this.content_css : "",
+            (this.config.ENABLE_SIDE_BAR) ? this.side_bar_css : "",
+            (this.config.ENABLE_TOC) ? this.toc_css : "",
+            (this.config.ENABLE_IMAGE) ? this.image_css : "",
+            (this.config.ENABLE_TABLE) ? this.table_css : "",
+            (this.config.ENABLE_FENCE) ? this.fence_css : "",
+        ].join("\n")
+    }
+
+    getResultStyle = toggle => {
+        if (toggle) {
+            this.config[toggle] = !this.config[toggle];
+            this.removeStyle();
+        }
+
+        return this.getStyleString()
+    }
+
+    insertStyle = toggle => {
+        const css = this.getResultStyle(toggle);
+        this.utils.insertStyle(this.config.ID, css);
+    }
+
+    dynamicCallArgsGenerator = () => {
         let arg_name = "启用";
         let arg_value = "enable";
-        if (!!document.getElementById(config.ID)) {
+        if (!!document.getElementById(this.config.ID)) {
             arg_name = "禁用";
             arg_value = "disable";
         }
         return [{arg_name, arg_value}]
     }
 
-    const callMap = {
-        disable: removeStyle,
-        enable: insertStyle,
-        set_outline: () => insertStyle("ENABLE_SIDE_BAR"),
-        set_content: () => insertStyle("ENABLE_CONTENT"),
-        set_toc: () => insertStyle("ENABLE_TOC"),
-        set_table: () => insertStyle("ENABLE_TABLE"),
-        set_image: () => insertStyle("ENABLE_IMAGE"),
-        set_fence: () => insertStyle("ENABLE_FENCE"),
-    }
-
-    const call = type => {
-        const func = callMap[type];
+    call = type => {
+        const func = this.callMap[type];
         func && func();
     }
-    module.exports = {
-        call,
-        callArgs,
-        dynamicCallArgsGenerator,
-        meta: {
-            call
-        }
-    };
+}
 
-    console.log("auto_number.js had been injected");
-})()
+module.exports = {
+    plugin: autoNumberPlugin
+};

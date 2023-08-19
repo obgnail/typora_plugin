@@ -1,12 +1,10 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("truncate_text");
-
-    const callbackOtherPlugin = () => {
-        const outlinePlugin = global._pluginUtils.getPlugin("outline");
-        outlinePlugin && outlinePlugin.meta.refresh();
+class truncateTextPlugin extends global._basePlugin {
+    callbackOtherPlugin = () => {
+        const outlinePlugin = this.utils.getPlugin("outline");
+        outlinePlugin && outlinePlugin.refresh();
     }
 
-    const isInViewBox = el => {
+    isInViewBox = el => {
         if (el.style.display) return false;
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
         const totalWidth = window.innerWidth || document.documentElement.clientWidth;
@@ -14,84 +12,84 @@
         return (top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight);
     }
 
-    const hideFront = () => {
+    hideFront = () => {
         const write = document.getElementById("write");
         const length = write.children.length;
-        if (length > config.REMAIN_LENGTH) {
-            for (let i = 0; i <= length - config.REMAIN_LENGTH; i++) {
+        if (length > this.config.REMAIN_LENGTH) {
+            for (let i = 0; i <= length - this.config.REMAIN_LENGTH; i++) {
                 const ele = write.children[i];
-                ele.classList.add(config.CLASS_NAME);
+                ele.classList.add(this.config.CLASS_NAME);
                 ele.style.display = "none";
             }
         }
     }
 
-    const showAll = () => {
+    showAll = () => {
         const write = document.getElementById("write");
-        write.getElementsByClassName(config.CLASS_NAME).forEach(el => el.classList.remove(config.CLASS_NAME));
+        write.getElementsByClassName(this.config.CLASS_NAME).forEach(el => el.classList.remove(this.config.CLASS_NAME));
         write.children.forEach(el => el.style.display = "");
     };
 
-    const hideBaseView = () => {
+    hideBaseView = () => {
         const write = document.getElementById("write");
         let start = 0, end = 0;
         write.children.forEach((ele, idx) => {
-            if (isInViewBox(ele)) {
+            if (this.isInViewBox(ele)) {
                 if (!start) start = idx;
                 start = Math.min(start, idx);
                 end = Math.max(end, idx);
             }
         });
 
-        const halfLength = config.REMAIN_LENGTH / 2;
+        const halfLength = this.config.REMAIN_LENGTH / 2;
         start = Math.max(start - halfLength, 0);
         end = Math.min(end + halfLength, write.children.length);
 
         write.children.forEach((ele, idx) => {
             if (idx < start || idx > end) {
-                ele.classList.add(config.CLASS_NAME);
+                ele.classList.add(this.config.CLASS_NAME);
                 ele.style.display = "none";
             } else {
-                ele.classList.remove(config.CLASS_NAME);
+                ele.classList.remove(this.config.CLASS_NAME);
                 ele.style.display = "";
             }
         });
     }
 
-    // 已废弃
-    const rollback2 = start => {
-        if (document.querySelector(`#write > .${config.CLASS_NAME}`)) {
-            let ele = start.closest("#write > [cid]");
-            while (ele) {
-                if (ele.classList.contains(config.CLASS_NAME)) {
-                    ele.classList.remove(config.CLASS_NAME);
-                    ele.style.display = "";
-                }
-                ele = ele.nextElementSibling;
-            }
-        }
-    }
-
-    const rollback = () => {
-        if (document.querySelector(`#write > .${config.CLASS_NAME}`)) {
-            showAll();
+    rollback = () => {
+        if (document.querySelector(`#write > .${this.config.CLASS_NAME}`)) {
+            this.showAll();
         }
     };
 
-    const call = type => {
+    // // 已废弃
+    // rollback2 = start => {
+    //     if (document.querySelector(`#write > .${this.config.CLASS_NAME}`)) {
+    //         let ele = start.closest("#write > [cid]");
+    //         while (ele) {
+    //             if (ele.classList.contains(this.config.CLASS_NAME)) {
+    //                 ele.classList.remove(this.config.CLASS_NAME);
+    //                 ele.style.display = "";
+    //             }
+    //             ele = ele.nextElementSibling;
+    //         }
+    //     }
+    // }
+
+    call = type => {
         if (type === "hide_front") {
-            hideFront();
+            this.hideFront();
         } else if (type === "show_all") {
-            showAll();
+            this.showAll();
         } else if (type === "hide_base_view") {
-            hideBaseView();
+            this.hideBaseView();
         }
-        callbackOtherPlugin();
+        this.callbackOtherPlugin();
     }
 
-    const callArgs = [
+    callArgs = [
         {
-            arg_name: `只保留最后${config.REMAIN_LENGTH}段`,
+            arg_name: `只保留最后${this.config.REMAIN_LENGTH}段`,
             arg_value: "hide_front"
         },
         {
@@ -103,13 +101,8 @@
             arg_value: "hide_base_view"
         }
     ];
+}
 
-    module.exports = {
-        call,
-        callArgs,
-        meta: {
-            rollback,
-        }
-    };
-    console.log("truncate_text.js had been injected");
-})()
+module.exports = {
+    plugin: truncateTextPlugin
+};
