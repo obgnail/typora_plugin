@@ -26,9 +26,10 @@
 | 16   | export_enhance     | 导出 html 时避免图片丢失             | √        |
 | 17   | go_top             | 一键到文章顶部                       | √        |
 | 18   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
-| 19   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
-| 20   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
-| 21   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
+| 19   | custom             | 用户自定义命令                       | √        |
+| 20   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
+| 21   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
+| 22   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -318,9 +319,83 @@ const BUILTIN = [
 
 鼠标党可以将右键菜单作为所有插件的主要调用方式。
 
-![right_click_menu](assets/right_click_menu.png)
+![right_click_menu1](assets/right_click_menu1.png)
 
 
+
+### custom：用户自定义命令
+
+从 Typora Plugin 1.2.1 版本开始，本**插件系统提供开放能力**，支持用户在右键菜单中调用的自定义命令。
+
+使用步骤：
+
+1. 修改 `./plugin/global/settings/settings.toml`，找到 custom 选项，添加如下参数。
+2. 修改 `./plugin/custom/index.js` 的 callback 类，添加和上面 callback 参数同名的函数。
+
+```toml
+# ./plugin/global/settings/settings.toml
+[[custom.OPTIONS]]
+name = "复制标题路径"
+selector = "#write h1, h2, h3, h4, h5, h6"
+callback = "fullPathCopy"
+
+# name: 右键菜单中展示的名称
+# selector: 当用户在哪个位置右键弹出菜单时，出现此命令（空串：任何位置都展示），如上就是只在【正文标题】弹出此命令
+# callback: 点击后的回调函数
+```
+
+```js
+// ./plugin/custom/index.js
+class callback {
+    ...
+
+    // fullPathCopy: 和[[custom.OPTIONS]]的callback选项同名的函数。当用户点击命令时，就会自动调用此函数。
+    // 参数: 
+    //   1. anchorNode: 用户单击右键的所在element
+    //   2. utils: 插件系统自带的静态工具类，其定义在 ./plugin/global/core/plugin.js/utils
+    //             其中有个最重要的函数：utils.getPlugin(fixed_name) 用于获取已经实现的全部插件，调用其API。
+    //             具体的API可看openPlatformAPI.md文件
+    fullPathCopy = (anchorNode, utils) => {
+        const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
+        const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"];
+        const pList = [];
+        let ele = anchorNode;
+
+        while (ele) {
+            const idx = paragraphList.indexOf(ele.tagName);
+            if (idx !== -1) {
+                if (pList.length === 0 || (pList[pList.length - 1].idx > idx)) {
+                    pList.push({ele, idx})
+                    if (pList[pList.length - 1].idx === 0) break;
+                }
+            }
+            ele = ele.previousElementSibling;
+        }
+
+        pList.reverse();
+
+        const filePath = File.getFileName();
+        const result = [filePath];
+        let headerIdx = 0;
+        for (const p of pList) {
+            while (headerIdx < 6 && p.ele.tagName !== paragraphList[headerIdx]) {
+                result.push("无 " + nameList[headerIdx]);
+                headerIdx++;
+            }
+
+            if (p.ele.tagName === paragraphList[headerIdx]) {
+                result.push(p.ele.querySelector("span").textContent + " " + nameList[headerIdx]);
+                headerIdx++;
+            }
+        }
+
+        const text = utils.Package.Path.join(...result);
+        navigator.clipboard.writeText(text);
+    }
+}
+```
+
+![custom](assets/custom.png)
 
 
 
