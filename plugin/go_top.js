@@ -1,42 +1,49 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("go_top");
+class goTopPlugin extends global._basePlugin {
+    html = () => {
+        const goTop = document.createElement("div");
+        goTop.id = this.config.DIV_ID;
+        goTop.style.position = "fixed";
+        goTop.style.right = "50px";
+        goTop.style.bottom = "50px";
+        goTop.style.zIndex = "99999";
+        goTop.style.cursor = "pointer";
+        goTop.style.fontSize = "50px";
+        goTop.style.color = this.config.COLOR;
+        goTop.style.display = "none";
+        const i = document.createElement("i");
+        i.classList.add("ion-arrow-up-c");
+        goTop.appendChild(i);
+        document.querySelector("body").appendChild(goTop);
+    }
 
-    const goTop = document.createElement("div");
-    goTop.id = config.DIV_ID;
-    goTop.style.position = "fixed";
-    goTop.style.right = "50px";
-    goTop.style.bottom = "50px";
-    goTop.style.zIndex = "99999";
-    goTop.style.cursor = "pointer";
-    goTop.style.fontSize = "50px";
-    goTop.style.color = config.COLOR;
-    goTop.style.display = "none";
-    const i = document.createElement("i");
-    i.classList.add("ion-arrow-up-c");
-    goTop.appendChild(i);
-    document.querySelector("body").appendChild(goTop);
+    init = () => {
+        this.goTop = document.getElementById(this.config.DIV_ID);
+    }
 
-    document.getElementById(config.DIV_ID).addEventListener("click", ev => {
-        call();
-        ev.preventDefault();
-        ev.stopPropagation();
-    });
+    process = () => {
+        this.init();
 
-    const content = document.querySelector("content");
-    content.addEventListener("scroll", ev => {
-        goTop.style.display = (content.scrollTop > config.THRESHOLD) ? "" : "none";
-    })
+        document.getElementById(this.config.DIV_ID).addEventListener("click", ev => {
+            this.call();
+            ev.preventDefault();
+            ev.stopPropagation();
+        });
 
-    const call = direction => {
+        const content = document.querySelector("content");
+        content.addEventListener("scroll", () => {
+            this.goTop.style.display = (content.scrollTop > this.config.THRESHOLD) ? "" : "none";
+        })
+    }
+
+    call = direction => {
         let scrollTop = '0';
         if (direction === "go-bottom") {
             scrollTop = document.querySelector("#write").getBoundingClientRect().height;
         }
-        $("content").animate({scrollTop: scrollTop}, config.SCROLL_TIME);
+        $("content").animate({scrollTop: scrollTop}, this.config.SCROLL_TIME);
     }
+}
 
-    module.exports = {
-        call,
-    };
-    console.log("go_top.js had been injected");
-})()
+module.exports = {
+    plugin: goTopPlugin,
+};

@@ -1,15 +1,56 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("read_only");
+class readOnlyPlugin extends global._basePlugin {
+    style = () => {
+        const textID = "plugin-read-only-style";
+        const text = `#footer-word-count-label::before {content: attr(data-value) !important}`;
+        return {textID, text}
+    }
 
-    (() => {
-        const css = `#footer-word-count-label::before {content: attr(data-value) !important}`;
-        global._pluginUtils.insertStyle("plugin-read-only-style", css);
-    })()
+    hotkey = () => {
+        return [{
+            hotkey: this.config.HOTKEY,
+            callback: this.call,
+        }]
+    }
 
-    const excludeList = config.EXCLUDE_HOTKEY.map(h => global._pluginUtils.toHotkeyFunc(h));
+    init = () => {
+        this.excludeList = this.config.EXCLUDE_HOTKEY.map(h => this.utils.toHotkeyFunc(h));
+        this.lastClickTime = 0;
+    }
 
-    const isExclude = ev => {
-        for (const func of excludeList) {
+    process = () => {
+        this.init();
+
+        const write = document.getElementById("write");
+        write.addEventListener("keydown", this.stopKeyboard, true);
+        write.addEventListener("mousedown", this.stopMouse, true);
+        write.addEventListener("click", this.stopMouse, true);
+
+        if (this.config.READ_ONLY_DEFAULT) {
+            this.utils.loopDetector(() => !!File, this.call);
+        }
+
+        this.utils.decorate(
+            () => (File && File.freshLock),
+            File,
+            "freshLock",
+            null,
+            () => {
+                if (!File.isLocked) return;
+                [
+                    "#typora-search-multi-input input",
+                    "#typora-commander-form input",
+                    "#plugin-multi-highlighter-input input",
+                    "#typora-quick-open-input input",
+                ].forEach(selector => {
+                    const input = document.querySelector(selector);
+                    input && input.removeAttribute("readonly");
+                })
+            }
+        )
+    }
+
+    isExclude = ev => {
+        for (const func of this.excludeList) {
             if (func(ev)) {
                 return true
             }
@@ -17,7 +58,7 @@
         return false
     }
 
-    const stopMouse = ev => {
+    stopMouse = ev => {
         if (!File.isLocked) return;
 
         const target = ev.target.closest('.footnotes, figure[mdtype="table"], .md-task-list-item, .md-image, .ty-cm-lang-input, input[type="checkbox"]');
@@ -28,29 +69,23 @@
         }
     }
 
-    let lastClickTime = 0;
-    const stopKeyboard = ev => {
+    stopKeyboard = ev => {
         if (!File.isLocked) return;
 
-        if (ev.timeStamp - lastClickTime > config.CLICK_CHECK_INTERVAL) {
+        if (ev.timeStamp - this.lastClickTime > this.config.CLICK_CHECK_INTERVAL) {
             File.lock();
         }
 
         // File.isLocked 也挡不住回车键 :(
         // 为什么要使用isExclude排除按键？因为输入法激活状态下键入能突破 File.isLocked
-        if ((ev.key === "Enter") || !isExclude(ev)) {
+        if ((ev.key === "Enter") || !this.isExclude(ev)) {
             document.activeElement.blur();
             ev.preventDefault();
             ev.stopPropagation();
         }
     }
 
-    const write = document.getElementById("write");
-    write.addEventListener("keydown", stopKeyboard, true);
-    write.addEventListener("mousedown", stopMouse, true);
-    write.addEventListener("click", stopMouse, true);
-
-    const call = () => {
+    call = () => {
         const span = document.getElementById("footer-word-count-label");
         if (File.isLocked) {
             File.unlock();
@@ -61,35 +96,8 @@
             span.setAttribute("data-value", "ReadOnly" + String.fromCharCode(160).repeat(3));
         }
     }
+}
 
-    global._pluginUtils.registerWindowHotkey(config.HOTKEY, call);
-
-    global._pluginUtils.decorate(
-        () => (File && File.freshLock),
-        File,
-        "freshLock",
-        null,
-        () => {
-            if (!File.isLocked) return;
-            [
-                "#typora-search-multi-input input",
-                "#typora-commander-form input",
-                "#plugin-multi-highlighter-input input",
-                "#typora-quick-open-input input",
-            ].forEach(selector => {
-                const input = document.querySelector(selector);
-                input && input.removeAttribute("readonly");
-            })
-        }
-    )
-
-    if (config.READ_ONLY_DEFAULT) {
-        global._pluginUtils.loopDetector(() => !!File, call);
-    }
-
-    module.exports = {
-        call,
-    };
-
-    console.log("read_only.js had been injected");
-})()
+module.exports = {
+    plugin: readOnlyPlugin,
+};

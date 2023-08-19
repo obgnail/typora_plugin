@@ -1,9 +1,23 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("mindmap");
+class mindmapPlugin extends global._basePlugin {
+    init = () => {
+        this.paragraphList = ["H0", "H1", "H2", "H3", "H4", "H5", "H6"];
+        this.callArgs = [
+            {
+                arg_name: "复制到剪切板：mindmap",
+                arg_value: "set_clipboard_mindmap"
+            },
+            {
+                arg_name: "复制到剪切板：graph",
+                arg_value: "set_clipboard_graph"
+            },
+        ];
+    }
 
-    const paragraphList = ["H0", "H1", "H2", "H3", "H4", "H5", "H6"];
+    process = () => {
+        this.init();
+    }
 
-    const getFileName = () => {
+    getFileName = () => {
         let filename = File.getFileName();
         const idx = filename.lastIndexOf(".");
         if (idx !== -1) {
@@ -12,27 +26,26 @@
         return filename
     }
 
-    const cleanMindMapTitle = title => `("${title.replace(/"/g, "")}")`;
-    const cleanGraphTitle = title => `("${title.replace(/"/g, "")}")`;
+    cleanMindMapTitle = title => `("${title.replace(/"/g, "")}")`;
+    cleanGraphTitle = title => `("${title.replace(/"/g, "")}")`;
+    wrapMermaid = content => `\`\`\`mermaid\n${content}\`\`\``;
 
-    const wrapMermaid = content => `\`\`\`mermaid\n${content}\`\`\``;
-
-    const mindmap = (pList, root) => {
+    mindmap = (pList, root) => {
         const lines = [
             "mindmap", "\n",
-            "\t", `root${cleanMindMapTitle(root)}`, "\n",
+            "\t", `root${this.cleanMindMapTitle(root)}`, "\n",
         ];
-        pList.forEach(ele => lines.push("\t".repeat(ele.levelIdx + 1), cleanMindMapTitle(ele.title), "\n"))
-        return wrapMermaid(lines.join(""))
+        pList.forEach(ele => lines.push("\t".repeat(ele.levelIdx + 1), this.cleanMindMapTitle(ele.title), "\n"))
+        return this.wrapMermaid(lines.join(""))
     }
 
-    const graph = (pList, root) => {
+    graph = (pList, root) => {
         const getItemTitle = item => {
             if (item.used) {
                 return item.id
             }
             item.used = true;
-            const title = cleanGraphTitle(item.title);
+            const title = this.cleanGraphTitle(item.title);
             return item.id + title
         }
 
@@ -58,11 +71,11 @@
             lines.push(getParentItemTitle(item), "-->", getItemTitle(item), "\n");
         })
 
-        return wrapMermaid(lines.join(""))
+        return this.wrapMermaid(lines.join(""))
     }
 
-    const dynamicCallArgsGenerator = anchorNode => {
-        if (global._pluginUtils.isBetaVersion) {
+    dynamicCallArgsGenerator = anchorNode => {
+        if (this.utils.isBetaVersion) {
             const target = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
             if (!target) return;
             if (target.querySelector("p > span")) return;
@@ -83,29 +96,18 @@
         ]
     }
 
-    const callArgs = [
-        {
-            arg_name: "复制到剪切板：mindmap",
-            arg_value: "set_clipboard_mindmap"
-        },
-        {
-            arg_name: "复制到剪切板：graph",
-            arg_value: "set_clipboard_graph"
-        },
-    ];
-
-    const call = type => {
+    call = type => {
         const pList = [];
         document.querySelectorAll("#write > .md-heading").forEach(ele => {
             const tagName = ele.tagName;
-            const levelIdx = paragraphList.indexOf(tagName);
+            const levelIdx = this.paragraphList.indexOf(tagName);
             const title = ele.firstElementChild.textContent;
             pList.push({tagName, title, levelIdx});
         })
 
         if (pList.length === 0) return
 
-        let root = getFileName();
+        let root = this.getFileName();
         if (pList.filter(ele => ele.tagName === pList[0].tagName).length === 1) {
             root = pList[0].title;
             pList.shift();
@@ -113,9 +115,9 @@
 
         let result;
         if (type === "set_clipboard_mindmap" || type === "insert_mindmap") {
-            result = mindmap(pList, root);
+            result = this.mindmap(pList, root);
         } else if (type === "set_clipboard_graph" || type === "insert_graph") {
-            result = graph(pList, root);
+            result = this.graph(pList, root);
         }
 
         navigator.clipboard.writeText(result).then(() => {
@@ -125,12 +127,8 @@
             }
         });
     }
+}
 
-    module.exports = {
-        call,
-        callArgs,
-        dynamicCallArgsGenerator,
-    };
-
-    console.log("mindmap.js had been injected");
-})()
+module.exports = {
+    plugin: mindmapPlugin
+};

@@ -1,12 +1,37 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("resize_image");
+class resizeImagePlugin extends global._basePlugin {
+    init = () => {
+        this.dynamicUtil = {target: null}
+        this.dynamicCallMap = {
+            zoom_out_20_percent: () => this.zoom(this.dynamicUtil.target, true, 0.2),
+            zoom_in_20_percent: () => this.zoom(this.dynamicUtil.target, false, 0.2),
+            set_align_left: () => this.setAlign("left", this.dynamicUtil.target),
+            set_align_center: () => this.setAlign("center", this.dynamicUtil.target),
+            set_align_right: () => this.setAlign("right", this.dynamicUtil.target),
+        }
+    }
 
-    const getWidth = image => {
+    process = () => {
+        this.init();
+
+        document.getElementById("write").addEventListener("wheel", ev => {
+            if (!this.utils.metaKeyPressed(ev)) return;
+
+            const target = ev.target.closest("img");
+            if (!target) return;
+
+            ev.stopPropagation();
+
+            const zoomOut = ev.deltaY > 0;
+            this.zoom(target, zoomOut, this.config.SCALE);
+        }, true);
+    }
+
+    getWidth = image => {
         const {width} = image.getBoundingClientRect();
         return (!image.style.width) ? width : parseInt(image.style.width.replace("px", ""));
     }
 
-    const setAlign = (align, image, maxWidth) => {
+    setAlign = (align, image, maxWidth) => {
         image.setAttribute("align", align);
         if (!maxWidth) {
             maxWidth = image.parentElement.offsetWidth;
@@ -14,46 +39,32 @@
         image.style.marginRight = "";
         image.style.marginLeft = "";
         if (align !== "center") {
-            const width = getWidth(image);
+            const width = this.getWidth(image);
             const margin = (align === "left") ? "marginRight" : "marginLeft";
             image.style[margin] = maxWidth - width + "px";
         }
     }
 
-    const zoom = (image, zoomOut, scale) => {
-        let width = getWidth(image);
-        width = zoomOut ? width * (1 - scale) : width * (1 + config.SCALE);
+    zoom = (image, zoomOut, scale) => {
+        let width = this.getWidth(image);
+        width = zoomOut ? width * (1 - scale) : width * (1 + this.config.SCALE);
         const maxWidth = image.parentElement.offsetWidth;
         width = Math.min(width, maxWidth);
         image.style.width = width + "px";
-        setAlign(config.IMAGE_ALIGN, image, maxWidth);
+        this.setAlign(this.config.IMAGE_ALIGN, image, maxWidth);
     }
 
-    document.getElementById("write").addEventListener("wheel", ev => {
-        if (!global._pluginUtils.metaKeyPressed(ev)) return;
-
-        const target = ev.target.closest("img");
-        if (!target) return;
-
-        ev.stopPropagation();
-
-        const zoomOut = ev.deltaY > 0;
-        zoom(target, zoomOut, config.SCALE);
-    }, true);
-
-    //////////////////////// 以下是声明式插件系统代码 ////////////////////////
-    const dynamicUtil = {target: null}
-    const dynamicCallArgsGenerator = anchorNode => {
+    dynamicCallArgsGenerator = anchorNode => {
         const images = anchorNode.closest("#write .md-image");
         if (!images) return;
 
         const image = images.querySelector("img");
         if (!image) return;
 
-        dynamicUtil.target = image;
+        this.dynamicUtil.target = image;
 
         const args = [{arg_name: "缩小20%", arg_value: "zoom_out_20_percent"}];
-        if (getWidth(image) < image.parentElement.offsetWidth) {
+        if (this.getWidth(image) < image.parentElement.offsetWidth) {
             args.push({arg_name: "放大20%", arg_value: "zoom_in_20_percent"})
         }
         args.push(
@@ -64,25 +75,14 @@
         return args
     }
 
-    const dynamicCallMap = {
-        zoom_out_20_percent: () => zoom(dynamicUtil.target, true, 0.2),
-        zoom_in_20_percent: () => zoom(dynamicUtil.target, false, 0.2),
-        set_align_left: () => setAlign("left", dynamicUtil.target),
-        set_align_center: () => setAlign("center", dynamicUtil.target),
-        set_align_right: () => setAlign("right", dynamicUtil.target),
-    }
+    call = type => {
+        if (!this.dynamicUtil.target) return;
 
-    const call = type => {
-        if (!dynamicUtil.target) return;
-
-        const func = dynamicCallMap[type];
+        const func = this.dynamicCallMap[type];
         func && func();
     }
+}
 
-    module.exports = {
-        call,
-        dynamicCallArgsGenerator,
-    };
-
-    console.log("resize_image.js had been injected");
-})()
+module.exports = {
+    plugin: resizeImagePlugin
+};

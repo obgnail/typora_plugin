@@ -1,13 +1,14 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("window_tab");
-
-    if (window._options.framelessWindow && config.HIDE_WINDOW_TITLE_BAR) {
-        document.querySelector("header").style.zIndex = "897";
-        document.getElementById("top-titlebar").style.display = "none";
+class windowTabBarPlugin extends global._basePlugin {
+    beforeProcess = () => {
+        if (window._options.framelessWindow && this.config.HIDE_WINDOW_TITLE_BAR) {
+            document.querySelector("header").style.zIndex = "897";
+            document.getElementById("top-titlebar").style.display = "none";
+        }
     }
 
-    (() => {
-        const css = `
+    style = () => {
+        const textID = "plugin-window-tab-style"
+        const text = `
             #plugin-window-tab {
                 position: fixed;
                 top: 0;
@@ -15,7 +16,7 @@
                 height: 40px;
                 z-index: 898;
             }
-    
+
             #plugin-window-tab .tab-bar {
                 background-color: var(--bg-color, white);
                 height: 100%;
@@ -25,28 +26,28 @@
                 width: calc(100vw - var(--sidebar-width, 0));
                 overflow-x: scroll
             }
-            
+
             #plugin-window-tab .tab-bar::after {
                 content: "";
                 height: 100%;
                 width: 100vw;
                 border-bottom: solid 1px rgba(0, 0, 0, 0.07);
             }
-    
+
             #plugin-window-tab .tab-bar:hover::-webkit-scrollbar-thumb {
                 visibility: visible;
             }
-            
+
             #plugin-window-tab .tab-bar::-webkit-scrollbar {
                 height: 5px
             }
-            
+
             #plugin-window-tab .tab-bar::-webkit-scrollbar-thumb {
                 height: 5px;
                 background-color: var(----active-file-bg-color, gray);
                 visibility: hidden
             }
-            
+
             #plugin-window-tab .tab-container {
                 background-color: var(--side-bar-bg-color, gray);
                 height: 100%;
@@ -62,11 +63,11 @@
                 flex-shrink: 0;
                 cursor: pointer
             }
-            
+
             #plugin-window-tab .tab-container.over {
                 background-color: var(--active-file-bg-color, lightgray);
             }
-            
+
             #plugin-window-tab .name {
                 max-width: 350px;
                 padding-right: 15px;
@@ -76,7 +77,7 @@
                 text-overflow: ellipsis;
                 pointer-events: none
             }
-            
+
             #plugin-window-tab .close-button {
                 padding: 4px;
                 display: flex;
@@ -84,11 +85,11 @@
                 justify-content: center;
                 border-radius: 5px
             }
-            
+
             #plugin-window-tab .tab-container:hover > .close-button {
                 visibility: visible !important
             }
-            
+
             #plugin-window-tab .close-icon {
                 position: relative;
                 width: 11px;
@@ -97,7 +98,7 @@
                 flex-direction: column;
                 justify-content: center;
             }
-            
+
             #plugin-window-tab .close-icon::before,
             #plugin-window-tab .close-icon::after {
                 content: "";
@@ -106,29 +107,29 @@
                 height: 2px;
                 background-color: var(--active-file-border-color, black)
             }
-            
+
             #plugin-window-tab .close-icon::before {
                 transform: rotate(45deg)
             }
-            
+
             #plugin-window-tab .close-icon::after {
                 transform: rotate(-45deg)
             }
-            
+
             #plugin-window-tab .close-button:hover {
                 background-color: var(--active-file-bg-color, lightgray);
             }
-            
+
             #plugin-window-tab .active {
                 border: solid 1px rgba(0, 0, 0, 0.07);
                 border-bottom: none;
                 background-color: var(--bg-color, white)
             }
-            
+
             #plugin-window-tab .active .active-indicator {
                 display: block;
             }
-            
+
             #plugin-window-tab .active-indicator {
                 position: absolute;
                 top: -1px;
@@ -138,13 +139,13 @@
                 background-color: var(--active-file-border-color, black);
                 display: none;
             }
-            
+
             #plugin-window-tab [dragging] {
                 position: static !important;
                 box-sizing: border-box !important;
                 margin: 0 !important;
             }
-        
+
             #plugin-window-tab .drag-obj {
                 position: fixed;
                 left: 0;
@@ -153,8 +154,10 @@
                 pointer-events: none;
             }
             `
-        global._pluginUtils.insertStyle("plugin-window-tab-style", css);
+        return {textID, text}
+    }
 
+    html = () => {
         const div = `<div class="tab-bar"></div>`
         const windowTab = document.createElement("div");
         windowTab.id = "plugin-window-tab";
@@ -162,46 +165,135 @@
         document.getElementById("write-style").parentElement
             .insertBefore(windowTab, document.getElementById("write-style"));
 
-        if (config.CHANGE_CONTENT_TOP) {
+        if (this.config.CHANGE_CONTENT_TOP) {
             const {height} = document.querySelector("#plugin-window-tab").getBoundingClientRect();
             document.querySelector("content").style.top = height + "px";
         }
 
-        if (config.CHANGE_NOTIFICATION_Z_INDEX) {
+        if (this.config.CHANGE_NOTIFICATION_Z_INDEX) {
             const container = document.querySelector(".md-notification-container");
             if (container) {
                 container.style.zIndex = "99999";
             }
         }
-    })()
-
-    const Package = global._pluginUtils.Package;
-
-    const entities = {
-        content: document.querySelector("content"),
-        tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
     }
 
-    const tabUtil = {
-        tabs: [],
-        activeIdx: 0,
+    hotkey = () => {
+        return [
+            {
+                hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY,
+                callback: this.nextTab
+            },
+            {
+                hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY,
+                callback: this.previousTab
+            },
+            {
+                hotkey: this.config.CLOSE_HOTKEY,
+                callback: this.closeActiveTab
+            },
+        ]
     }
+
+    init = () => {
+        this.entities = {
+            content: document.querySelector("content"),
+            tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
+        }
+        this.tabUtil = {tabs: [], activeIdx: 0,}
+        this.callMap = {
+            new_tab_open: () => this.config.LOCAL_OPEN = false,
+            local_open: () => this.config.LOCAL_OPEN = true,
+            save_tabs: this.saveTabs,
+            open_save_tabs: this.openSaveTabs,
+        }
+    }
+
+    process = () => {
+        this.init();
+
+        this.utils.decorateOpenFile(null, (result, ...args) => {
+            const filePath = args[0];
+            filePath && this.openTab(filePath);
+        })
+
+        this.utils.loopDetector(() => !!File, () => {
+            const filePath = this.utils.getFilePath();
+            filePath && this.openTab(filePath);
+        });
+
+        if (this.config.DRAG_STYLE === 1) {
+            this.sort1();
+        } else {
+            this.sort2();
+        }
+
+        this.entities.tabBar.addEventListener("click", ev => {
+            const closeButton = ev.target.closest(".close-button");
+            const tabContainer = ev.target.closest(".tab-container");
+            if (!closeButton && !tabContainer) return;
+
+            ev.stopPropagation();
+            ev.preventDefault();
+
+            const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
+            const idx = parseInt(tab.getAttribute("idx"));
+
+            if (this.utils.metaKeyPressed(ev)) {
+                this.openFileNewWindow(this.tabUtil.tabs[idx].path, false);
+            } else if (closeButton) {
+                this.closeTab(idx);
+            } else {
+                this.switchTab(idx);
+            }
+        })
+
+
+        this.entities.tabBar.addEventListener("wheel", ev => {
+            const target = ev.target.closest("#plugin-window-tab .tab-bar");
+            if (!target) return;
+
+            if (this.utils.metaKeyPressed(ev)) {
+                (ev.deltaY < 0) ? this.previousTab() : this.nextTab();
+            } else {
+                target.scrollLeft += ev.deltaY;
+            }
+        })
+
+        this.entities.content.addEventListener("scroll", () => {
+            this.tabUtil.tabs[this.tabUtil.activeIdx].scrollTop = this.entities.content.scrollTop;
+        })
+
+        document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
+            const target = ev.target.closest(".typora-quick-open-item");
+            if (!target) return;
+
+            // 将原先的click行为改成ctrl+click
+            if (this.utils.metaKeyPressed(ev)) return;
+
+            ev.preventDefault();
+            ev.stopPropagation();
+            const filePath = target.getAttribute("data-path");
+            this.openFile(filePath);
+        }, true)
+    }
+
 
     // 新窗口打开
-    const openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
+    openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
     // 新标签页打开
-    const openFile = filePath => File.editor.library.openFile(filePath);
+    openFile = filePath => File.editor.library.openFile(filePath);
     // 当前标签页打开
-    const OpenFileLocal = filePath => {
-        config.LOCAL_OPEN = true;
+    OpenFileLocal = filePath => {
+        this.config.LOCAL_OPEN = true;
         File.editor.library.openFile(filePath);
-        config.LOCAL_OPEN = false;  // 自动还原
+        this.config.LOCAL_OPEN = false;  // 自动还原
     }
     // 关闭窗口
-    const closeWindow = () => JSBridge.invoke("window.close");
+    closeWindow = () => JSBridge.invoke("window.close");
 
-    const getName = filePath => {
-        let fileName = Package.Path.basename(filePath);
+    getName = filePath => {
+        let fileName = this.utils.Package.Path.basename(filePath);
         const idx = fileName.lastIndexOf(".");
         if (idx !== -1) {
             fileName = fileName.substring(0, idx);
@@ -209,8 +301,8 @@
         return fileName
     }
 
-    const newTabDiv = (filePath, idx, active = true) => {
-        const fileName = getName(filePath);
+    newTabDiv = (filePath, idx, active = true) => {
+        const fileName = this.getName(filePath);
         const _active = active ? "active" : "";
         return `<div class="tab-container ${_active}" idx="${idx}" draggable="true">
                     <div class="active-indicator"></div>
@@ -220,23 +312,23 @@
     }
 
     // tabs->DOM的简单数据单向绑定
-    const renderDOM = wantOpenPath => {
-        let tabDiv = entities.tabBar.firstElementChild;
-        tabUtil.tabs.forEach((tab, idx) => {
+    renderDOM = wantOpenPath => {
+        let tabDiv = this.entities.tabBar.firstElementChild;
+        this.tabUtil.tabs.forEach((tab, idx) => {
             if (!tabDiv) {
-                const _tabDiv = newTabDiv(tab.path, idx);
-                entities.tabBar.insertAdjacentHTML('beforeend', _tabDiv);
-                tabDiv = entities.tabBar.lastElementChild;
+                const _tabDiv = this.newTabDiv(tab.path, idx);
+                this.entities.tabBar.insertAdjacentHTML('beforeend', _tabDiv);
+                tabDiv = this.entities.tabBar.lastElementChild;
             }
             if (tab.path === wantOpenPath) {
                 tabDiv.classList.add("active");
                 tabDiv.scrollIntoViewIfNeeded();
-                scrollContent(tab);
+                this.scrollContent(tab);
             } else {
                 tabDiv.classList.remove("active");
             }
             tabDiv.setAttribute("idx", idx + "");
-            tabDiv.querySelector(".name").innerText = getName(tab.path);
+            tabDiv.querySelector(".name").innerText = this.getName(tab.path);
 
             tabDiv = tabDiv.nextElementSibling;
         })
@@ -251,16 +343,16 @@
     // 问题是我压根不知道content什么时候加载好
     // 解决方法: 轮询设置scrollTop，当连续3次scrollTop不再改变，就判断content加载好了
     // 这种方法很不环保，很ugly。但是我确实也想不到在不修改frame.js的前提下该怎么做了
-    const scrollContent = activeTab => {
+    scrollContent = activeTab => {
         if (!activeTab) return;
 
         let count = 0;
         const stopCount = 3;
         const scrollTop = activeTab.scrollTop;
         const _timer = setInterval(() => {
-            const filePath = global._pluginUtils.getFilePath();
-            if (filePath === activeTab.path && entities.content.scrollTop !== scrollTop) {
-                entities.content.scrollTop = scrollTop;
+            const filePath = this.utils.getFilePath();
+            if (filePath === activeTab.path && this.entities.content.scrollTop !== scrollTop) {
+                this.entities.content.scrollTop = scrollTop;
                 count = 0;
             } else {
                 count++;
@@ -268,134 +360,77 @@
             if (count === stopCount) {
                 clearInterval(_timer);
             }
-        }, config.LOOP_DETECT_INTERVAL);
+        }, this.config.LOOP_DETECT_INTERVAL);
     }
 
-    const openTab = wantOpenPath => {
-        const pathIdx = tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
+    openTab = wantOpenPath => {
+        const pathIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
         // 原地打开并且不存在tab时，修改当前tab的文件路径
-        if (config.LOCAL_OPEN && pathIdx === -1) {
-            tabUtil.tabs[tabUtil.activeIdx].path = wantOpenPath;
+        if (this.config.LOCAL_OPEN && pathIdx === -1) {
+            this.tabUtil.tabs[this.tabUtil.activeIdx].path = wantOpenPath;
         } else if (pathIdx === -1) {
-            tabUtil.tabs.push({path: wantOpenPath, scrollTop: 0});
-            tabUtil.activeIdx = tabUtil.tabs.length - 1;
+            this.tabUtil.tabs.push({path: wantOpenPath, scrollTop: 0});
+            this.tabUtil.activeIdx = this.tabUtil.tabs.length - 1;
         } else if (pathIdx !== -1) {
-            tabUtil.activeIdx = pathIdx;
+            this.tabUtil.activeIdx = pathIdx;
         }
-        renderDOM(wantOpenPath);
+        this.renderDOM(wantOpenPath);
     }
 
-    const switchTab = idx => {
-        tabUtil.activeIdx = idx;
-        openFile(tabUtil.tabs[tabUtil.activeIdx].path);
+    switchTab = idx => {
+        this.tabUtil.activeIdx = idx;
+        this.openFile(this.tabUtil.tabs[this.tabUtil.activeIdx].path);
     }
 
-    const switchTabByPath = path => {
-        for (let idx = 0; idx < tabUtil.tabs.length; idx++) {
-            if (tabUtil.tabs[idx].path === path) {
-                switchTab(idx);
+    switchTabByPath = path => {
+        for (let idx = 0; idx < this.tabUtil.tabs.length; idx++) {
+            if (this.tabUtil.tabs[idx].path === path) {
+                this.switchTab(idx);
                 return
             }
         }
     }
 
-    const previousTab = () => {
-        const idx = (tabUtil.activeIdx === 0) ? tabUtil.tabs.length - 1 : tabUtil.activeIdx - 1;
-        switchTab(idx);
+    previousTab = () => {
+        const idx = (this.tabUtil.activeIdx === 0) ? this.tabUtil.tabs.length - 1 : this.tabUtil.activeIdx - 1;
+        this.switchTab(idx);
     }
 
-    const nextTab = () => {
-        const idx = (tabUtil.activeIdx === tabUtil.tabs.length - 1) ? 0 : tabUtil.activeIdx + 1;
-        switchTab(idx);
+    nextTab = () => {
+        const idx = (this.tabUtil.activeIdx === this.tabUtil.tabs.length - 1) ? 0 : this.tabUtil.activeIdx + 1;
+        this.switchTab(idx);
     }
 
-    const closeTab = idx => {
-        tabUtil.tabs.splice(idx, 1);
-        if (tabUtil.tabs.length === 0) {
-            closeWindow();
+    closeTab = idx => {
+        this.tabUtil.tabs.splice(idx, 1);
+        if (this.tabUtil.tabs.length === 0) {
+            this.closeWindow();
             return
         }
-        if (tabUtil.activeIdx !== 0 && idx <= tabUtil.activeIdx) {
-            tabUtil.activeIdx--;
+        if (this.tabUtil.activeIdx !== 0 && idx <= this.tabUtil.activeIdx) {
+            this.tabUtil.activeIdx--;
         }
-        switchTab(tabUtil.activeIdx);
+        this.switchTab(this.tabUtil.activeIdx);
     }
 
-    const closeActiveTab = () => closeTab(tabUtil.activeIdx);
+    closeActiveTab = () => this.closeTab(this.tabUtil.activeIdx);
 
-    global._pluginUtils.decorateOpenFile(null, (result, ...args) => {
-        const filePath = args[0];
-        filePath && openTab(filePath);
-    })
-
-    global._pluginUtils.loopDetector(() => !!File, () => {
-        const filePath = global._pluginUtils.getFilePath();
-        filePath && openTab(filePath);
-    });
-
-    global._pluginUtils.registerWindowHotkey(config.SWITCH_NEXT_TAB_HOTKEY, nextTab);
-    global._pluginUtils.registerWindowHotkey(config.SWITCH_PREVIOUS_TAB_HOTKEY, previousTab);
-    global._pluginUtils.registerWindowHotkey(config.CLOSE_HOTKEY, closeActiveTab);
-
-    entities.tabBar.addEventListener("click", ev => {
-        const closeButton = ev.target.closest(".close-button");
-        const tabContainer = ev.target.closest(".tab-container");
-        if (!closeButton && !tabContainer) return;
-
-        ev.stopPropagation();
-        ev.preventDefault();
-
-        const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
-        const idx = parseInt(tab.getAttribute("idx"));
-
-        if (global._pluginUtils.metaKeyPressed(ev)) {
-            openFileNewWindow(tabUtil.tabs[idx].path, false);
-        } else if (closeButton) {
-            closeTab(idx);
-        } else {
-            switchTab(idx);
-        }
-    })
-
-    entities.tabBar.addEventListener("wheel", ev => {
-        const target = ev.target.closest("#plugin-window-tab .tab-bar");
-        if (!target) return;
-
-        if (global._pluginUtils.metaKeyPressed(ev)) {
-            (ev.deltaY < 0) ? previousTab() : nextTab();
-        } else {
-            target.scrollLeft += ev.deltaY;
-        }
-    })
-
-    entities.content.addEventListener("scroll", () => {
-        tabUtil.tabs[tabUtil.activeIdx].scrollTop = entities.content.scrollTop;
-    })
-
-    document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
-        const target = ev.target.closest(".typora-quick-open-item");
-        if (!target) return;
-
-        // 将原先的click行为改成ctrl+click
-        if (global._pluginUtils.metaKeyPressed(ev)) return;
-
-        ev.preventDefault();
-        ev.stopPropagation();
-        const filePath = target.getAttribute("data-path");
-        openFile(filePath);
-    }, true)
-
-    const newWindowIfNeed = (offsetY, tab) => {
+    newWindowIfNeed = (offsetY, tab) => {
         offsetY = Math.abs(offsetY);
-        const height = entities.tabBar.getBoundingClientRect().height;
-        if (offsetY > height * config.HEIGHT_SCALE) {
+        const height = this.entities.tabBar.getBoundingClientRect().height;
+        if (offsetY > height * this.config.HEIGHT_SCALE) {
             const idx = parseInt(tab.getAttribute("idx"));
-            const _path = tabUtil.tabs[idx].path;
-            openFileNewWindow(_path, false);
+            const _path = this.tabUtil.tabs[idx].path;
+            this.openFileNewWindow(_path, false);
         }
     }
 
-    if (config.DRAG_STYLE === 1) {
+    sort1 = () => {
+        const newWindowIfNeed = this.newWindowIfNeed;
+        const tabUtil = this.tabUtil;
+        const openTab = this.openTab;
+        const entities = this.entities;
+
         const resetTabBar = () => {
             const tabs = document.querySelectorAll("#plugin-window-tab .tab-container");
             const activeIdx = parseInt(entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
@@ -516,7 +551,12 @@
         })
     }
 
-    if (config.DRAG_STYLE === 2) {
+    sort2 = () => {
+        const newWindowIfNeed = this.newWindowIfNeed;
+        const tabUtil = this.tabUtil;
+        const openTab = this.openTab;
+        const entities = this.entities;
+
         const toggleOver = (target, f) => {
             if (f === "add") {
                 target.classList.add("over");
@@ -556,35 +596,34 @@
         })
     }
 
-    //////////////////////// 以下是声明式插件系统代码 ////////////////////////
-    const getTabFile = () => global._pluginUtils.joinPath("./plugin/window_tab/save_tabs.json");
+    getTabFile = () => this.utils.joinPath("./plugin/window_tab/save_tabs.json");
 
-    const exitTabFile = () => {
-        const filepath = getTabFile();
+    exitTabFile = () => {
+        const filepath = this.getTabFile();
         try {
-            Package.Fs.accessSync(filepath, Package.Fs.constants.F_OK);
+            this.utils.Package.Fs.accessSync(filepath, this.utils.Package.Fs.constants.F_OK);
             return true
         } catch (err) {
         }
     }
 
-    const saveTabs = () => {
-        const dataset = tabUtil.tabs.map((tab, idx) => {
+    saveTabs = () => {
+        const dataset = this.tabUtil.tabs.map((tab, idx) => {
             return {
                 idx: idx,
                 path: tab.path,
-                active: idx === tabUtil.activeIdx,
+                active: idx === this.tabUtil.activeIdx,
                 scrollTop: tab.scrollTop,
             }
         })
-        const filepath = getTabFile();
+        const filepath = this.getTabFile();
         const str = JSON.stringify({"save_tabs": dataset}, null, "\t");
-        Package.Fs.writeFileSync(filepath, str);
+        this.utils.Package.Fs.writeFileSync(filepath, str);
     }
 
-    const openSaveTabs = () => {
-        const filepath = getTabFile();
-        Package.Fs.readFile(filepath, 'utf8', (error, data) => {
+    openSaveTabs = () => {
+        const filepath = this.getTabFile();
+        this.utils.Package.Fs.readFile(filepath, 'utf8', (error, data) => {
             if (error) {
                 window.alert(error);
                 return;
@@ -594,9 +633,9 @@
 
             let activePath;
             tabs.forEach(tab => {
-                const existTab = tabUtil.tabs.filter(t => t.path === tab.path)[0];
+                const existTab = this.tabUtil.tabs.filter(t => t.path === tab.path)[0];
                 if (!existTab) {
-                    tabUtil.tabs.push({path: tab.path, scrollTop: tab.scrollTop});
+                    this.tabUtil.tabs.push({path: tab.path, scrollTop: tab.scrollTop});
                 } else {
                     existTab.scrollTop = tab.scrollTop;
                 }
@@ -606,60 +645,38 @@
                 }
             })
             if (activePath) {
-                switchTabByPath(activePath);
+                this.switchTabByPath(activePath);
             } else {
-                switchTab(tabUtil.activeIdx);
+                this.switchTab(this.tabUtil.activeIdx);
             }
         })
     }
 
-    const dynamicCallArgsGenerator = () => {
+    dynamicCallArgsGenerator = () => {
         let args = [];
-        if (!exitTabFile()) {
+        if (!this.exitTabFile()) {
             args.push({arg_name: "保存所有的标签页", arg_value: "save_tabs"});
         } else {
             args.push({arg_name: "覆盖保存的标签页", arg_value: "save_tabs"});
             args.push({arg_name: "打开保存的标签页", arg_value: "open_save_tabs"});
         }
-        if (config.LOCAL_OPEN) {
+        if (this.config.LOCAL_OPEN) {
             args.push({arg_name: "在新标签打开文件", arg_value: "new_tab_open"});
             // 空白标签不允许当前标签打开
-        } else if (global._pluginUtils.getFilePath()) {
+        } else if (this.utils.getFilePath()) {
             args.push({arg_name: "在当前标签打开文件", arg_value: "local_open"});
         }
         return args
     }
 
-    const callMap = {
-        new_tab_open: () => config.LOCAL_OPEN = false,
-        local_open: () => config.LOCAL_OPEN = true,
-        save_tabs: saveTabs,
-        open_save_tabs: openSaveTabs,
-    }
 
-    const call = type => {
-        const func = callMap[type];
+    call = type => {
+        const func = this.callMap[type];
         func && func();
     }
+}
 
-    module.exports = {
-        call,
-        dynamicCallArgsGenerator,
-        meta: {
-            call,
-            openTab,
-            switchTab,
-            switchTabByPath,
-            previousTab,
-            nextTab,
-            closeTab,
-            closeActiveTab,
-            openFileNewWindow,
-            openFile,
-            OpenFileLocal,
-            closeWindow,
-        }
-    };
+module.exports = {
+    plugin: windowTabBarPlugin
+};
 
-    console.log("window_tab.js had been injected");
-})()

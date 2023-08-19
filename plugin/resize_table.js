@@ -1,14 +1,81 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("resize_table");
-
-    (() => {
-        if (config.REMOVE_MIX_WIDTH) {
-            const css = `table.md-table td { min-width: 1px !important; }`;
-            global._pluginUtils.insertStyle("plugin-resize-table-style", css);
+class resizeTablePlugin extends global._basePlugin {
+    style = () => {
+        if (this.config.REMOVE_MIX_WIDTH) {
+            const textID = "plugin-resize-table-style";
+            const text = `table.md-table td { min-width: 1px !important; }`;
+            return {textID, text}
         }
-    })()
+    }
 
-    const whichChildOfParent = child => {
+    process = () => {
+        document.querySelector("#write").addEventListener("mousedown", ev => {
+            if (!this.utils.metaKeyPressed(ev)) return;
+            ev.stopPropagation();
+            ev.preventDefault();
+
+            let closet = "thead";
+            let self = "th";
+            let ele = ev.target.closest(self);
+            if (!ele) {
+                closet = "tbody";
+                self = "td";
+                ele = ev.target.closest(self);
+            }
+
+            if (!ele) return;
+
+            const {target, direction} = this.findTarget(ele, ev);
+            if ((!target) || (direction !== "right" && direction !== "bottom")) return;
+
+            const rect = target.getBoundingClientRect();
+            const startWidth = rect.width;
+            const startHeight = rect.height;
+            const startX = ev.clientX;
+            const startY = ev.clientY;
+
+            target.style.width = startWidth + "px";
+            target.style.height = startHeight + "px";
+
+            if (direction === "right") {
+                target.style.cursor = "w-resize";
+                const num = this.whichChildOfParent(target);
+                const eleList = target.closest(closet).querySelectorAll(`tr ${self}:nth-child(${num})`);
+                this.cleanStyle(eleList, target, "width");
+            } else if (direction === "bottom") {
+                target.style.cursor = "s-resize";
+                const tds = target.parentElement.children;
+                this.cleanStyle(tds, target, "height");
+            }
+
+            const onMouseMove = ev => {
+                ev.stopPropagation();
+                ev.preventDefault();
+
+                if (!this.utils.metaKeyPressed(ev)) return;
+
+                requestAnimationFrame(() => {
+                    if (direction === "right") {
+                        target.style.width = startWidth + ev.clientX - startX + "px";
+                    } else if (direction === "bottom") {
+                        target.style.height = startHeight + ev.clientY - startY + "px";
+                    }
+                });
+            }
+
+            document.addEventListener("mouseup", ev => {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    target.style.cursor = "default";
+                    document.removeEventListener('mousemove', onMouseMove);
+                    target.onmouseup = null;
+                }
+            )
+
+            document.addEventListener('mousemove', onMouseMove);
+        })
+    }
+
+    whichChildOfParent = child => {
         let i = 1;
         for (const sibling of child.parentElement.children) {
             if (sibling && sibling === child) {
@@ -18,19 +85,19 @@
         }
     }
 
-    const getDirection = (target, ev) => {
+    getDirection = (target, ev) => {
         if (!target) return ""
         const rect = target.getBoundingClientRect();
-        if (rect.right - config.THRESHOLD < ev.clientX && ev.clientX < rect.right + config.THRESHOLD) {
+        if (rect.right - this.config.THRESHOLD < ev.clientX && ev.clientX < rect.right + this.config.THRESHOLD) {
             return "right"
-        } else if (rect.bottom - config.THRESHOLD < ev.clientY && ev.clientY < rect.bottom + config.THRESHOLD) {
+        } else if (rect.bottom - this.config.THRESHOLD < ev.clientY && ev.clientY < rect.bottom + this.config.THRESHOLD) {
             return "bottom"
         } else {
             return ""
         }
     }
 
-    const findTarget = (ele, ev) => {
+    findTarget = (ele, ev) => {
         let target = null;
         let direction = "";
 
@@ -43,7 +110,7 @@
                     target = ele.previousElementSibling;
                     break
                 case 3:
-                    const num = whichChildOfParent(ele);
+                    const num = this.whichChildOfParent(ele);
                     const uncle = ele.parentElement.previousElementSibling;
                     if (uncle) {
                         target = uncle.querySelector(`td:nth-child(${num})`);
@@ -55,88 +122,22 @@
                     break
             }
 
-            direction = getDirection(target, ev);
+            direction = this.getDirection(target, ev);
             if (target && direction) break
         }
 
         return {target, direction}
     }
 
-    const cleanStyle = (eleList, exclude, cleanStyle) => {
+    cleanStyle = (eleList, exclude, cleanStyle) => {
         for (const td of eleList) {
             if (td && td.style && td !== exclude) {
                 td.style[cleanStyle] = "";
             }
         }
     }
+}
 
-    document.querySelector("#write").addEventListener("mousedown", ev => {
-        if (!global._pluginUtils.metaKeyPressed(ev)) return;
-        ev.stopPropagation();
-        ev.preventDefault();
-
-        let closet = "thead";
-        let self = "th";
-        let ele = ev.target.closest(self);
-        if (!ele) {
-            closet = "tbody";
-            self = "td";
-            ele = ev.target.closest(self);
-        }
-
-        if (!ele) return;
-
-        const {target, direction} = findTarget(ele, ev);
-        if ((!target) || (direction !== "right" && direction !== "bottom")) return;
-
-        const rect = target.getBoundingClientRect();
-        const startWidth = rect.width;
-        const startHeight = rect.height;
-        const startX = ev.clientX;
-        const startY = ev.clientY;
-
-        target.style.width = startWidth + "px";
-        target.style.height = startHeight + "px";
-
-        if (direction === "right") {
-            target.style.cursor = "w-resize";
-            const num = whichChildOfParent(target);
-            const eleList = target.closest(closet).querySelectorAll(`tr ${self}:nth-child(${num})`);
-            cleanStyle(eleList, target, "width");
-        } else if (direction === "bottom") {
-            target.style.cursor = "s-resize";
-            const tds = target.parentElement.children;
-            cleanStyle(tds, target, "height");
-        }
-
-        const onMouseMove = ev => {
-            ev.stopPropagation();
-            ev.preventDefault();
-
-            if (!global._pluginUtils.metaKeyPressed(ev)) return;
-
-            requestAnimationFrame(() => {
-                if (direction === "right") {
-                    target.style.width = startWidth + ev.clientX - startX + "px";
-                } else if (direction === "bottom") {
-                    target.style.height = startHeight + ev.clientY - startY + "px";
-                }
-            });
-        }
-
-        document.addEventListener("mouseup", ev => {
-                ev.stopPropagation();
-                ev.preventDefault();
-                target.style.cursor = "default";
-                document.removeEventListener('mousemove', onMouseMove);
-                target.onmouseup = null;
-            }
-        )
-
-        document.addEventListener('mousemove', onMouseMove);
-    })
-
-    module.exports = {};
-
-    console.log("resize_table.js had been injected");
-})()
+module.exports = {
+    plugin: resizeTablePlugin
+};

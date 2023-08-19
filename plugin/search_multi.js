@@ -1,8 +1,7 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("search_multi");
-
-    (() => {
-        const modal_css = `
+class searchMultiKeyword extends global._basePlugin {
+    style = () => {
+        const textID = "plugin-search-multi-style";
+        const text = `
         #typora-search-multi {
             position: fixed;
             top: 40px;
@@ -143,17 +142,19 @@
             padding-left: 20px;
             display: none;
         }`
-        global._pluginUtils.insertStyle("plugin-search-multi-style", modal_css);
+        return {textID, text}
+    }
 
+    html = () => {
         const modal_div = `
         <div id="typora-search-multi-input">
             <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
                 autocapitalize="off" value="" placeholder="多关键字查找 空格分隔" ty-hint="⌃↵当前页打开。⇧⌃↵新页面打开"
                 data-localize="Search by file name" data-lg="Front">
-            <span class="option-btn case-option-btn ${(config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
+            <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
                 <svg class="icon"> <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
             </span>
-            <span class="option-btn path-option-btn ${(config.INCLUDE_FILE_PATH) ? "select" : ""}" ty-hint="将文件路径加入搜索内容">
+            <span class="option-btn path-option-btn ${(this.config.INCLUDE_FILE_PATH) ? "select" : ""}" ty-hint="将文件路径加入搜索内容">
                 <div class="ion-ionic"></div>
             </span>
         </div>
@@ -179,55 +180,186 @@
         searchModal.innerHTML = modal_div;
         const quickOpenNode = document.getElementById("typora-quick-open");
         quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
-    })();
-
-    const modal = {
-        modal: document.getElementById('typora-search-multi'),
-        input: document.querySelector("#typora-search-multi-input input"),
-        result: document.querySelector(".typora-search-multi-result"),
-        resultTitle: document.querySelector(".typora-search-multi-result .search-result-title"),
-        resultList: document.querySelector(".typora-search-multi-result .search-result-list"),
-        info: document.querySelector(".typora-search-multi-info-item"),
     }
 
-    const Package = global._pluginUtils.Package;
-    const separator = File.isWin ? "\\" : "/";
-    const openFileInThisWindow = filePath => File.editor.library.openFile(filePath);
-    const openFileInNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder);
+    hotkey = () => {
+        return [{
+            hotkey: this.config.HOTKEY,
+            callback: this.call
+        }]
+    }
 
-    const traverseDir = (dir, filter, callback, then) => {
+    process = () => {
+        this.modal = {
+            modal: document.getElementById('typora-search-multi'),
+            input: document.querySelector("#typora-search-multi-input input"),
+            result: document.querySelector(".typora-search-multi-result"),
+            resultTitle: document.querySelector(".typora-search-multi-result .search-result-title"),
+            resultList: document.querySelector(".typora-search-multi-result .search-result-list"),
+            info: document.querySelector(".typora-search-multi-info-item"),
+        }
+
+        if (this.config.REFOUCE_WHEN_OPEN_FILE) {
+            this.utils.decorateOpenFile(null, () => {
+                if (this.modal.modal.style.display === "block") {
+                    setTimeout(() => this.modal.input.select(), 300);
+                }
+            })
+        }
+
+        if (this.config.ALLOW_DRAG) {
+            this.utils.dragFixedModal(this.modal.input, this.modal.modal);
+        }
+
+        let floor;
+
+        this.modal.input.addEventListener("keydown", ev => {
+            switch (ev.key) {
+                case "Enter":
+                    if (this.utils.metaKeyPressed(ev)) {
+                        const select = this.modal.resultList.querySelector(".typora-search-multi-item.active");
+                        if (select) {
+                            ev.preventDefault();
+                            ev.stopPropagation();
+                            const filepath = select.getAttribute("data-path");
+                            if (ev.shiftKey) {
+                                this.openFileInNewWindow(filepath, false);
+                            } else {
+                                this.openFileInThisWindow(filepath);
+                            }
+                            this.modal.input.focus();
+                            return
+                        }
+                    }
+                    this.modal.result.style.display = "none";
+                    this.modal.info.style.display = "block";
+                    this.modal.resultList.innerHTML = "";
+                    const workspace = File.getMountFolder();
+                    this.searchMulti(workspace, this.modal.input.value, () => this.modal.info.style.display = "none");
+                    break
+                case "Escape":
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    this.hide();
+                    break
+                case "ArrowUp":
+                case "ArrowDown":
+                    ev.stopPropagation();
+                    ev.preventDefault();
+
+                    if (!this.modal.resultList.childElementCount) return;
+
+                    const activeItem = this.modal.resultList.querySelector(".typora-search-multi-item.active")
+                    let nextItem;
+                    if (ev.key === "ArrowDown") {
+                        if (floor !== 7) floor++;
+
+                        if (activeItem && activeItem.nextElementSibling) {
+                            nextItem = activeItem.nextElementSibling;
+                        } else {
+                            nextItem = this.modal.resultList.firstElementChild;
+                            floor = 1
+                        }
+                    } else {
+                        if (floor !== 1) floor--;
+
+                        if (activeItem && activeItem.previousElementSibling) {
+                            nextItem = activeItem.previousElementSibling;
+                        } else {
+                            nextItem = this.modal.resultList.lastElementChild;
+                            floor = 7
+                        }
+                    }
+
+                    activeItem && activeItem.classList.toggle("active");
+                    nextItem.classList.toggle("active");
+
+                    let top;
+                    if (floor === 1) {
+                        top = nextItem.offsetTop - nextItem.offsetHeight;
+                    } else if (floor === 7) {
+                        top = nextItem.offsetTop - 6 * nextItem.offsetHeight;
+                    } else if (Math.abs(this.modal.resultList.scrollTop - activeItem.offsetTop) > 7 * nextItem.offsetHeight) {
+                        top = nextItem.offsetTop - 3 * nextItem.offsetHeight;
+                    }
+                    top && this.modal.resultList.scrollTo({top: top, behavior: "smooth"});
+            }
+        });
+
+        this.modal.resultList.addEventListener("click", ev => {
+            const target = ev.target.closest(".typora-search-multi-item");
+            if (!target) return;
+
+            ev.preventDefault();
+            ev.stopPropagation();
+
+            const filepath = target.getAttribute("data-path");
+            if (this.utils.metaKeyPressed(ev)) {
+                this.openFileInNewWindow(filepath, false);
+            } else {
+                this.openFileInThisWindow(filepath);
+            }
+            this.hideIfNeed();
+        });
+
+        this.modal.modal.addEventListener("click", ev => {
+            const caseButton = ev.target.closest("#typora-search-multi-input .case-option-btn");
+            const pathButton = ev.target.closest("#typora-search-multi-input .path-option-btn");
+
+            if (caseButton || pathButton) {
+                ev.preventDefault();
+                ev.stopPropagation();
+            }
+
+            if (caseButton) {
+                caseButton.classList.toggle("select");
+                this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE;
+            } else if (pathButton) {
+                pathButton.classList.toggle("select");
+                this.config.INCLUDE_FILE_PATH = !this.config.INCLUDE_FILE_PATH;
+            }
+        })
+    }
+
+    separator = File.isWin ? "\\" : "/";
+    openFileInThisWindow = filePath => File.editor.library.openFile(filePath);
+    openFileInNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder);
+
+    traverseDir = (dir, filter, callback, then) => {
+        const utils = this.utils;
+
         async function traverse(dir) {
-            const files = await Package.Fs.promises.readdir(dir);
+            const files = await utils.Package.Fs.promises.readdir(dir);
             for (const file of files) {
-                const filePath = Package.Path.join(dir, file);
-                const stats = await Package.Fs.promises.stat(filePath);
+                const filePath = utils.Package.Path.join(dir, file);
+                const stats = await utils.Package.Fs.promises.stat(filePath);
                 if (stats.isFile()) {
                     if (filter && !filter(filePath, stats)) {
                         continue
                     }
-                    Package.Fs.promises.readFile(filePath)
+                    utils.Package.Fs.promises.readFile(filePath)
                         .then(buffer => callback(filePath, stats, buffer))
-                        .catch(error => console.log(error))
+                        .catch(error => console.error(error))
                 } else if (stats.isDirectory()) {
                     await traverse(filePath);
                 }
             }
         }
 
-        traverse(dir).then(then).catch(err => console.log(err));
+        traverse(dir).then(then).catch(err => console.error(err));
     }
 
-    const appendItemFunc = keyArr => {
+    appendItemFunc = keyArr => {
         let index = 0;
         let once = true;
         const rootPath = File.getMountFolder();
 
         return (filePath, stats, buffer) => {
             let data = buffer.toString();
-            if (config.INCLUDE_FILE_PATH) {
+            if (this.config.INCLUDE_FILE_PATH) {
                 data = data + filePath;
             }
-            if (!config.CASE_SENSITIVE) {
+            if (!this.config.CASE_SENSITIVE) {
                 data = data.toLowerCase();
             }
             for (const keyword of keyArr) {
@@ -235,15 +367,15 @@
             }
 
             index++;
-            const parseUrl = Package.Path.parse(filePath);
-            const dirPath = !config.RELATIVE_PATH ? parseUrl.dir : parseUrl.dir.replace(rootPath, ".");
+            const parseUrl = this.utils.Package.Path.parse(filePath);
+            const dirPath = !this.config.RELATIVE_PATH ? parseUrl.dir : parseUrl.dir.replace(rootPath, ".");
 
             const item = document.createElement("div");
             item.classList.add("typora-search-multi-item");
             item.setAttribute("data-is-dir", "false");
             item.setAttribute("data-path", filePath);
             item.setAttribute("data-index", index + "");
-            if (config.SHOW_MTIME) {
+            if (this.config.SHOW_MTIME) {
                 item.setAttribute("ty-hint", stats.mtime.toLocaleString('chinese', {hour12: false}));
             }
             const title = document.createElement("div");
@@ -251,191 +383,72 @@
             title.innerText = parseUrl.base;
             const path = document.createElement("div");
             path.classList.add("typora-search-multi-item-path");
-            path.innerText = dirPath + separator;
+            path.innerText = dirPath + this.separator;
             item.appendChild(title);
             item.appendChild(path);
-            modal.resultList.appendChild(item);
+            this.modal.resultList.appendChild(item);
 
-            modal.resultTitle.textContent = `匹配的文件：${index}`;
+            this.modal.resultTitle.textContent = `匹配的文件：${index}`;
             if (index <= 8) {
-                modal.resultList.style.height = 40 * index + "px";
+                this.modal.resultList.style.height = 40 * index + "px";
             }
             if (once) {
-                modal.result.style.display = "block";
+                this.modal.result.style.display = "block";
                 once = false;
             }
         }
     }
 
-    const hideIfNeed = () => {
-        if (config.AUTO_HIDE) {
-            modal.modal.style.display = "none";
+    hideIfNeed = () => {
+        if (this.config.AUTO_HIDE) {
+            this.modal.modal.style.display = "none";
         }
     }
 
-    const verifyExt = (filename) => {
+    verifyExt = filename => {
         if (filename[0] === ".") {
             return false
         }
-        const ext = Package.Path.extname(filename).replace(/^\./, '');
-        if (~config.ALLOW_EXT.indexOf(ext.toLowerCase())) {
+        const ext = this.utils.Package.Path.extname(filename).replace(/^\./, '');
+        if (~this.config.ALLOW_EXT.indexOf(ext.toLowerCase())) {
             return true
         }
     }
-    const verifySize = (stat) => 0 > config.MAX_SIZE || stat.size < config.MAX_SIZE;
-    const allowRead = (filepath, stat) => verifySize(stat) && verifyExt(filepath);
 
-    const searchMulti = (rootPath, keys, then) => {
+    verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
+
+    allowRead = (filepath, stat) => {
+        return this.verifySize(stat) && this.verifyExt(filepath);
+    }
+
+    searchMulti = (rootPath, keys, then) => {
         if (!rootPath) return;
 
-        let keyArr = keys.split(config.SEPARATOR).filter(Boolean);
+        let keyArr = keys.split(this.config.SEPARATOR).filter(Boolean);
         if (!keyArr) return;
 
-        if (!config.CASE_SENSITIVE) {
+        if (!this.config.CASE_SENSITIVE) {
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }
-        const appendItem = appendItemFunc(keyArr);
-        traverseDir(rootPath, allowRead, appendItem, then);
+        const appendItem = this.appendItemFunc(keyArr);
+        this.traverseDir(rootPath, this.allowRead, appendItem, then);
     }
 
-    if (config.ALLOW_DRAG) {
-        global._pluginUtils.dragFixedModal(modal.input, modal.modal);
+    hide = () => {
+        this.modal.modal.style.display = "none";
+        this.modal.info.style.display = "none";
     }
 
-    let floor;
-
-    modal.input.addEventListener("keydown", ev => {
-        switch (ev.key) {
-            case "Enter":
-                if (global._pluginUtils.metaKeyPressed(ev)) {
-                    const select = modal.resultList.querySelector(".typora-search-multi-item.active");
-                    if (select) {
-                        ev.preventDefault();
-                        ev.stopPropagation();
-                        const filepath = select.getAttribute("data-path");
-                        if (ev.shiftKey) {
-                            openFileInNewWindow(filepath, false);
-                        } else {
-                            openFileInThisWindow(filepath);
-                        }
-                        modal.input.focus();
-                        return
-                    }
-                }
-                modal.result.style.display = "none";
-                modal.info.style.display = "block";
-                modal.resultList.innerHTML = "";
-                const workspace = File.getMountFolder();
-                searchMulti(workspace, modal.input.value, () => modal.info.style.display = "none");
-                break
-            case "Escape":
-                ev.stopPropagation();
-                ev.preventDefault();
-                hide();
-                break
-            case "ArrowUp":
-            case "ArrowDown":
-                ev.stopPropagation();
-                ev.preventDefault();
-
-                if (!modal.resultList.childElementCount) return;
-
-                const activeItem = modal.resultList.querySelector(".typora-search-multi-item.active")
-                let nextItem;
-                if (ev.key === "ArrowDown") {
-                    if (floor !== 7) floor++;
-
-                    if (activeItem && activeItem.nextElementSibling) {
-                        nextItem = activeItem.nextElementSibling;
-                    } else {
-                        nextItem = modal.resultList.firstElementChild;
-                        floor = 1
-                    }
-                } else {
-                    if (floor !== 1) floor--;
-
-                    if (activeItem && activeItem.previousElementSibling) {
-                        nextItem = activeItem.previousElementSibling;
-                    } else {
-                        nextItem = modal.resultList.lastElementChild;
-                        floor = 7
-                    }
-                }
-
-                activeItem && activeItem.classList.toggle("active");
-                nextItem.classList.toggle("active");
-
-                let top;
-                if (floor === 1) {
-                    top = nextItem.offsetTop - nextItem.offsetHeight;
-                } else if (floor === 7) {
-                    top = nextItem.offsetTop - 6 * nextItem.offsetHeight;
-                } else if (Math.abs(modal.resultList.scrollTop - activeItem.offsetTop) > 7 * nextItem.offsetHeight) {
-                    top = nextItem.offsetTop - 3 * nextItem.offsetHeight;
-                }
-                top && modal.resultList.scrollTo({top: top, behavior: "smooth"});
-        }
-    });
-
-    modal.resultList.addEventListener("click", ev => {
-        const target = ev.target.closest(".typora-search-multi-item");
-        if (!target) return;
-
-        ev.preventDefault();
-        ev.stopPropagation();
-
-        const filepath = target.getAttribute("data-path");
-        if (global._pluginUtils.metaKeyPressed(ev)) {
-            openFileInNewWindow(filepath, false);
+    call = () => {
+        if (this.modal.modal.style.display === "block") {
+            this.hide();
         } else {
-            openFileInThisWindow(filepath);
-        }
-        hideIfNeed();
-    });
-
-    const hide = () => {
-        modal.modal.style.display = "none";
-        modal.info.style.display = "none";
-    }
-
-    const call = () => {
-        if (modal.modal.style.display === "block") {
-            hide();
-        } else {
-            modal.modal.style.display = "block";
-            modal.input.select();
+            this.modal.modal.style.display = "block";
+            this.modal.input.select();
         }
     }
+}
 
-    global._pluginUtils.registerWindowHotkey(config.HOTKEY, call);
-
-    modal.modal.addEventListener("click", ev => {
-        const caseButton = ev.target.closest("#typora-search-multi-input .case-option-btn");
-        const pathButton = ev.target.closest("#typora-search-multi-input .path-option-btn");
-
-        if (caseButton || pathButton) {
-            ev.preventDefault();
-            ev.stopPropagation();
-        }
-
-        if (caseButton) {
-            caseButton.classList.toggle("select");
-            config.CASE_SENSITIVE = !config.CASE_SENSITIVE;
-        } else if (pathButton) {
-            pathButton.classList.toggle("select");
-            config.INCLUDE_FILE_PATH = !config.INCLUDE_FILE_PATH;
-        }
-    })
-
-    if (config.REFOUCE_WHEN_OPEN_FILE) {
-        global._pluginUtils.decorateOpenFile(null, () => {
-            if (modal.modal.style.display === "block") {
-                setTimeout(() => modal.input.select(), 300);
-            }
-        })
-    }
-
-    module.exports = {call};
-
-    console.log("search_multi.js had been injected");
-})();
+module.exports = {
+    plugin: searchMultiKeyword
+};

@@ -1,14 +1,16 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("commander");
-    const SHELL = {
-        CMD_BASH: "cmd/bash",
-        POWER_SHELL: "powershell",
-        GIT_BASH: "gitbash",
-        WSL: "wsl",
-    };
+class commanderPlugin extends global._basePlugin {
+    beforeProcess() {
+        this.SHELL = {
+            CMD_BASH: "cmd/bash",
+            POWER_SHELL: "powershell",
+            GIT_BASH: "gitbash",
+            WSL: "wsl",
+        };
+    }
 
-    (() => {
-        const modal_css = `
+    style = () => {
+        const textID = "plugin-commander-style"
+        const text = `
         #typora-commander {
             position: fixed;
             top: 30%;
@@ -91,23 +93,24 @@
         #typora-commander-form input:focus, pre:focus {
             outline: 0
         }
-        `
-        global._pluginUtils.insertStyle("plugin-commander-style", modal_css);
-
-        const windowOption = (File.isMac) ? `` : `
-            <option value="${SHELL.POWER_SHELL}">powershell</option>
-            <option value="${SHELL.GIT_BASH}">git bash</option>
-            <option value="${SHELL.WSL}">wsl</option>
         `;
-        const builtin = config.BUILTIN.map(ele => `<option shell="${ele.shell}" value='${ele.cmd}'>${ele.name}</option>`).join("");
-        const builtinSelect = !config.USE_BUILTIN ? "" : `<select class="typora-commander-builtin">${builtin}</select>`;
+        return {textID, text}
+    }
+
+    html = () => {
+        const windowOption = (File.isMac) ? `` : `
+            <option value="${this.SHELL.POWER_SHELL}">powershell</option>
+            <option value="${this.SHELL.GIT_BASH}">git bash</option>
+            <option value="${this.SHELL.WSL}">wsl</option>`;
+        const builtin = this.config.BUILTIN.map(ele => `<option shell="${ele.shell}" value='${ele.cmd}'>${ele.name}</option>`).join("");
+        const builtinSelect = !this.config.USE_BUILTIN ? "" : `<select class="typora-commander-builtin">${builtin}</select>`;
 
         const div = `
         <div id="typora-commander-form">
             <input type="text" class="input" placeholder="Typora commander" autocorrect="off" spellcheck="false"
                 autocapitalize="off" data-lg="Front" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
             <i class="ion-ios7-play typora-commander-commit" ty-hint="执行命令"></i>
-            <select class="typora-commander-shell"><option value="${SHELL.CMD_BASH}">cmd/bash</option>${windowOption}</select>
+            <select class="typora-commander-shell"><option value="${this.SHELL.CMD_BASH}">cmd/bash</option>${windowOption}</select>
             ${builtinSelect}
         </div>
         <div class="typora-commander-output"><pre tabindex="0"></pre></div>
@@ -119,30 +122,116 @@
         const searchPanel = document.getElementById("md-searchpanel");
         searchPanel.parentNode.insertBefore(modal, searchPanel.nextSibling);
 
-        if (!config.USE_BUILTIN) {
+        if (!this.config.USE_BUILTIN) {
             document.getElementById('typora-commander').style.width = "500px";
             document.querySelector("#typora-commander-form input").style.width = "80%";
             document.querySelector("#typora-commander-form .typora-commander-commit").style.left = "375px";
         }
-    })()
-
-    const modal = {
-        modal: document.getElementById('typora-commander'),
-        input: document.querySelector("#typora-commander-form input"),
-        shellSelect: document.querySelector("#typora-commander-form .typora-commander-shell"),
-        builtinSelect: document.querySelector("#typora-commander-form .typora-commander-builtin"),
-        commit: document.querySelector("#typora-commander-form .typora-commander-commit"),
-        output: document.querySelector(".typora-commander-output"),
-        pre: document.querySelector(".typora-commander-output pre"),
     }
 
-    const convertPath = (path, shell) => {
+    hotkey = () => {
+        return [{
+            hotkey: this.config.HOTKEY,
+            callback: this.call,
+        }]
+    }
+
+    init = () => {
+        this.modal = {
+            modal: document.getElementById('typora-commander'),
+            input: document.querySelector("#typora-commander-form input"),
+            shellSelect: document.querySelector("#typora-commander-form .typora-commander-shell"),
+            builtinSelect: document.querySelector("#typora-commander-form .typora-commander-builtin"),
+            commit: document.querySelector("#typora-commander-form .typora-commander-commit"),
+            output: document.querySelector(".typora-commander-output"),
+            pre: document.querySelector(".typora-commander-output pre"),
+        }
+
+        this.arg_value_prefix = "call_builtin-";
+        this.callArgs = [{arg_name: "显示/隐藏", arg_value: "show"}];
+        this.config.BUILTIN.forEach(builtin => {
+            if (builtin.name) {
+                this.callArgs.push({
+                    arg_name: `${builtin.name}`,
+                    arg_value: this.arg_value_prefix + builtin.name
+                })
+            }
+        });
+    }
+
+    process = () => {
+        this.init();
+
+        // 提供不同入口，让鼠标操作的用户不必切换回键盘操作
+        this.modal.commit.addEventListener("click", ev => {
+            this.commit();
+            ev.stopPropagation();
+            ev.preventDefault();
+        }, true);
+
+        this.modal.input.addEventListener("input", () => {
+            const cmd = this.modal.input.value.trim();
+            if (cmd) {
+                this.modal.commit.style.display = "block";
+            } else {
+                this.modal.commit.style.display = "none";
+                this.modal.builtinSelect.value = "";
+            }
+        })
+
+        this.modal.shellSelect.addEventListener("change", () => this.modal.input.focus());
+
+        this.modal.modal.addEventListener("keydown", ev => {
+            switch (ev.key) {
+                case "Enter":
+                    const input = ev.target.closest("input")
+                    if (input) {
+                        this.commit();
+                        ev.stopPropagation();
+                        ev.preventDefault();
+                    }
+                    break
+                case "Escape":
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    this.modal.modal.style.display = "none";
+                    break
+                case "Tab":
+                    const targetClass = this.config.USE_BUILTIN ? ".typora-commander-builtin" : ".typora-commander-shell";
+                    const target = ev.target.closest(targetClass);
+                    if (target) {
+                        ev.stopPropagation();
+                        ev.preventDefault();
+                        this.modal.input.focus();
+                    }
+                    break
+            }
+        })
+
+        if (this.config.USE_BUILTIN) {
+            this.modal.builtinSelect.addEventListener("change", () => {
+                const option = this.modal.builtinSelect.options[this.modal.builtinSelect.selectedIndex];
+                this.modal.shellSelect.value = option.getAttribute("shell");
+                this.modal.input.value = option.value;
+                this.modal.input.dispatchEvent(new CustomEvent('input'));
+                this.modal.input.focus();
+            })
+        }
+
+        if (this.config.ALLOW_DRAG) {
+            this.utils.dragFixedModal(this.modal.input, this.modal.modal);
+        }
+
+    }
+
+
+    convertPath = (path, shell) => {
         if (File.isMac) {
             return path
         }
         switch (shell) {
-            case SHELL.WSL:
-            case SHELL.GIT_BASH:
+            case this.SHELL.WSL:
+            case this.SHELL.GIT_BASH:
                 path = path.replace(/\\/g, "/");
                 const tempList = path.split(":");
                 if (tempList.length !== 2) {
@@ -150,50 +239,50 @@
                 }
                 const disk = tempList[0].toLowerCase();
                 const remain = tempList[1];
-                return (shell === SHELL.GIT_BASH) ? `/${disk}${remain}` : `/mnt/${disk}${remain}`
-            case SHELL.CMD_BASH:
-            case SHELL.POWER_SHELL:
+                return (shell === this.SHELL.GIT_BASH) ? `/${disk}${remain}` : `/mnt/${disk}${remain}`
+            case this.SHELL.CMD_BASH:
+            case this.SHELL.POWER_SHELL:
             default:
                 return path
         }
     }
 
-    const getFilePath = global._pluginUtils.getFilePath;
-    const getFile = shell => convertPath(getFilePath(), shell);
-    const getFolder = shell => convertPath(global._pluginUtils.Package.Path.dirname(getFilePath()), shell);
-    const getMountFolder = shell => convertPath(File.getMountFolder(), shell);
+    getFilePath = this.utils.getFilePath;
+    getFile = shell => this.convertPath(this.getFilePath(), shell);
+    getFolder = shell => this.convertPath(this.utils.Package.Path.dirname(this.getFilePath()), shell);
+    getMountFolder = shell => this.convertPath(File.getMountFolder(), shell);
 
-    const replaceArgs = (cmd, shell) => {
-        const file = getFile(shell);
-        const folder = getFolder(shell);
-        const mount = getMountFolder(shell);
+    replaceArgs = (cmd, shell) => {
+        const file = this.getFile(shell);
+        const folder = this.getFolder(shell);
+        const mount = this.getMountFolder(shell);
         cmd = cmd.replace(/\$f/g, `"${file}"`);
         cmd = cmd.replace(/\$d/g, `"${folder}"`);
         cmd = cmd.replace(/\$m/g, `"${mount}"`);
         return cmd
     }
 
-    const getShellCommand = env => {
+    getShellCommand = env => {
         switch (env) {
-            case SHELL.GIT_BASH:
+            case this.SHELL.GIT_BASH:
                 return `bash.exe -c`
-            case SHELL.POWER_SHELL:
+            case this.SHELL.POWER_SHELL:
                 return `powershell /C`
-            case SHELL.WSL:
+            case this.SHELL.WSL:
                 return `wsl.exe -e bash -c`
             default:
                 return File.isMac ? `bash -c` : `cmd /C`;
         }
     }
 
-    const exec = (cmd, shell, resolve, reject) => {
-        const _shell = getShellCommand(shell);
-        const _cmd = replaceArgs(cmd, shell);
-        global._pluginUtils.Package.ChildProcess.exec(
+    exec = (cmd, shell, resolve, reject) => {
+        const _shell = this.getShellCommand(shell);
+        const _cmd = this.replaceArgs(cmd, shell);
+        this.utils.Package.ChildProcess.exec(
             `chcp 65001 | ${_shell} "${_cmd}"`,
             {
                 encoding: 'utf8',
-                cwd: getFolder(),
+                cwd: this.getFolder(),
             },
             (err, stdout, stderr) => {
                 if (err || stderr.length) {
@@ -206,142 +295,59 @@
             })
     }
 
-    const showStdout = stdout => {
-        modal.output.style.display = "block";
-        modal.pre.classList.remove("error");
-        modal.pre.textContent = stdout;
+    showStdout = stdout => {
+        this.modal.output.style.display = "block";
+        this.modal.pre.classList.remove("error");
+        this.modal.pre.textContent = stdout;
     }
 
-    const showStdErr = stderr => {
-        showStdout(stderr);
-        modal.pre.classList.add("error");
+    showStdErr = stderr => {
+        this.showStdout(stderr);
+        this.modal.pre.classList.add("error");
     }
 
-    const silentExec = (cmd, shell) => exec(cmd, shell, null, null);
-    const errorExec = (cmd, shell) => exec(cmd, shell, null, showStdErr);
-    const alwaysExec = (cmd, shell) => exec(cmd, shell, showStdout, showStdErr);
+    silentExec = (cmd, shell) => this.exec(cmd, shell, null, null);
+    errorExec = (cmd, shell) => this.exec(cmd, shell, null, this.showStdErr);
+    alwaysExec = (cmd, shell) => this.exec(cmd, shell, this.showStdout, this.showStdErr);
 
-    const commit = () => {
-        const cmd = modal.input.value;
+    commit = () => {
+        const cmd = this.modal.input.value;
         if (!cmd) {
-            showStdErr("command is empty");
+            this.showStdErr("command is empty");
             return
         }
-        const option = modal.shellSelect.options[modal.shellSelect.selectedIndex];
+        const option = this.modal.shellSelect.options[this.modal.shellSelect.selectedIndex];
         const shell = option.value;
-        alwaysExec(cmd, shell);
+        this.alwaysExec(cmd, shell);
     }
 
-    // 提供不同入口，让鼠标操作的用户不必切换回键盘操作
-    modal.commit.addEventListener("click", ev => {
-        commit();
-        ev.stopPropagation();
-        ev.preventDefault();
-    }, true);
-
-    modal.input.addEventListener("input", ev => {
-        const cmd = modal.input.value.trim();
-        if (cmd) {
-            modal.commit.style.display = "block";
-        } else {
-            modal.commit.style.display = "none";
-            modal.builtinSelect.value = "";
-        }
-    })
-
-    modal.shellSelect.addEventListener("change", ev => modal.input.focus());
-
-    modal.modal.addEventListener("keydown", ev => {
-        switch (ev.key) {
-            case "Enter":
-                const input = ev.target.closest("input")
-                if (input) {
-                    commit();
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                }
-                break
-            case "Escape":
-                ev.stopPropagation();
-                ev.preventDefault();
-                modal.modal.style.display = "none";
-                break
-            case "Tab":
-                const targetClass = config.USE_BUILTIN ? ".typora-commander-builtin" : ".typora-commander-shell";
-                const target = ev.target.closest(targetClass);
-                if (target) {
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    modal.input.focus();
-                }
-                break
-        }
-    })
-
-    if (config.USE_BUILTIN) {
-        modal.builtinSelect.addEventListener("change", ev => {
-            const option = modal.builtinSelect.options[modal.builtinSelect.selectedIndex];
-            modal.shellSelect.value = option.getAttribute("shell");
-            modal.input.value = option.value;
-            modal.input.dispatchEvent(new CustomEvent('input'));
-            modal.input.focus();
-        })
-    }
-
-    if (config.ALLOW_DRAG) {
-        global._pluginUtils.dragFixedModal(modal.input, modal.modal);
-    }
-
-    const arg_value_prefix = "call_builtin-";
-
-    const quickExec = (cmd, shell) => {
-        switch (config.QUICK_EXEC_SHOW) {
+    quickExec = (cmd, shell) => {
+        switch (this.config.QUICK_EXEC_SHOW) {
             case "always":
-                return alwaysExec(cmd, shell)
+                return this.alwaysExec(cmd, shell)
             case "error":
-                return errorExec(cmd, shell)
+                return this.errorExec(cmd, shell)
             case "silent":
-                return silentExec(cmd, shell)
+                return this.silentExec(cmd, shell)
         }
     }
 
-    const callArgs = [{arg_name: "显示/隐藏", arg_value: "show"}];
-    config.BUILTIN.forEach(builtin => {
-        if (builtin.name) {
-            callArgs.push({
-                arg_name: `${builtin.name}`,
-                arg_value: arg_value_prefix + builtin.name
-            })
-        }
-    });
-
-    const call = (type = "show") => {
+    call = (type = "show") => {
         if (type === "show") {
-            if (modal.modal.style.display === "block") {
-                modal.modal.style.display = "none";
+            if (this.modal.modal.style.display === "block") {
+                this.modal.modal.style.display = "none";
             } else {
-                modal.modal.style.display = "block";
-                modal.input.select();
+                this.modal.modal.style.display = "block";
+                this.modal.input.select();
             }
-        } else if (type.startsWith(arg_value_prefix)) {
-            const name = type.slice(arg_value_prefix.length);
-            const builtin = config.BUILTIN.find(builtin => builtin.name === name);
-            builtin && quickExec(builtin.cmd, builtin.shell);
+        } else if (type.startsWith(this.arg_value_prefix)) {
+            const name = type.slice(this.arg_value_prefix.length);
+            const builtin = this.config.BUILTIN.find(builtin => builtin.name === name);
+            builtin && this.quickExec(builtin.cmd, builtin.shell);
         }
     }
+}
 
-    global._pluginUtils.registerWindowHotkey(config.HOTKEY, call);
-
-    module.exports = {
-        call,
-        callArgs,
-        meta: {
-            call,
-            silentExec,
-            errorExec,
-            alwaysExec,
-        }
-    };
-
-    console.log("commander.js had been injected");
-})()
+module.exports = {
+    plugin: commanderPlugin
+};

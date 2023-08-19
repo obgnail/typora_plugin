@@ -3,6 +3,10 @@
 [window_tab]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "标签页管理"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 隐藏titleBar
 HIDE_WINDOW_TITLE_BAR = true
 # 拖拽排序标签页的方式(1 or 2)
@@ -27,6 +31,10 @@ SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
 [search_multi]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "全局多关键字搜索"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 允许拖动模态框
 ALLOW_DRAG = true
 # 模态框自动隐藏
@@ -55,6 +63,10 @@ HOTKEY = "ctrl+shift+p"
 [multi_highlighter]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "多关键字高亮"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+h"
 # 允许拖拽
@@ -119,6 +131,10 @@ CLEAR_LIST_THRESHOLD = 12
 [outline]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "类别大纲"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 默认使用的大纲类型 fence/image/table/all
 DEFAULT_TYPE = "fence"
 # 是否使用混合标签
@@ -140,6 +156,10 @@ table = "Table"
 [commander]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "命令行环境"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+g"
 # 允许拖动模态框
@@ -178,6 +198,10 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 [md_padding]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "中英文混排优化"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 快捷键
 HOTKEY = ["ctrl+shift+k", "ctrl+shift+b"]
 
@@ -186,6 +210,10 @@ HOTKEY = ["ctrl+shift+k", "ctrl+shift+b"]
 [read_only]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "只读模式"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 进入和脱离只读模式的快捷键
 HOTKEY = "ctrl+shift+r"
 # 默认使用只读模式
@@ -242,6 +270,10 @@ CLICK_CHECK_INTERVAL = 500
 [resize_image]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "图片调整"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 滚动的放缩倍率
 SCALE = 0.1
 # 图片水平位置：center/left/right
@@ -252,6 +284,10 @@ IMAGE_ALIGN = "center"
 [datatables]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "表格增强"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 是否分页
 PAGING = true
 # 使用分页时，单页显示的数据条数
@@ -276,6 +312,10 @@ REGEX = false
 [go_top]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "一键到顶"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 距顶部50像素开始显示
 THRESHOLD = 50
 # 滚动所用时间
@@ -290,12 +330,20 @@ DIV_ID = "plugin-go-top"
 [mindmap]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "思维导图"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 
 
 ############### auto_number ###############
 [auto_number]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "自动编号"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 侧边栏自动编号
 ENABLE_SIDE_BAR = true
 # 正文自动编号
@@ -313,7 +361,7 @@ ENABLE_WHEN_EXPORT = true
 # 添加的ID
 ID = "plugin-auto-number-style"
 # 下标名称
-[auto_number.NAME]
+[auto_number.NAMES]
 table = "Table"
 image = "Figure"
 fence = "Fence"
@@ -323,6 +371,10 @@ fence = "Fence"
 [fence_enhance]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "代码块增强"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 自动隐藏,鼠标移动到fence才显示
 AUTO_HIDE = false
 # 启用复制代码功能
@@ -344,6 +396,10 @@ WAIT_RECOVER_INTERVAL = 1000
 [collapse_paragraph]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "章节折叠"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 添加的class
 CLASS_NAME = "plugin-collapsed-paragraph"
 
@@ -352,16 +408,36 @@ CLASS_NAME = "plugin-collapsed-paragraph"
 [truncate_text]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "文段截断"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 剩余文本段
 REMAIN_LENGTH = 80
 # 添加的class
 CLASS_NAME = "plugin-truncate-text"
 
 
+############### export_enhance ###############
+[export_enhance]
+# 启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "导出增强"
+# 是否在右键菜单中可点击
+CLICKABLE = true
+# 是否下载网络图片(若为true,有可能因为网络问题导致超时)
+DOWNLOAD_NETWORK_IMAGE = false
+
+
 ############### right_click_menu ###############
 [right_click_menu]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "右键菜单"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 点击后是否隐藏菜单
 DO_NOT_HIDE = false
 # 内部使用
@@ -369,20 +445,14 @@ NOT_AVAILABLE_VALUE = "__not_available__"
 LOOP_DETECT_INTERVAL = 200
 
 
-############### resize_table ###############
-[resize_table]
-# 启用插件
-ENABLE = true
-# 是否去除表格单元格最小宽度限制
-REMOVE_MIX_WIDTH = true
-# 单元格边线的拖拽范围
-THRESHOLD = 20
-
-
 ############### file_counter ###############
 [file_counter]
 # 启用插件
 ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "文件计数"
+# 是否在右键菜单中可点击
+CLICKABLE = false
 # Typora允许打开小于2000000(即MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
 MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
@@ -393,21 +463,35 @@ CLASS_NAME = "plugin-file-counter"
 LOOP_DETECT_INTERVAL = 300
 
 
-############### export_enhance ###############
-[export_enhance]
+############### resize_table ###############
+[resize_table]
 # 启用插件
 ENABLE = true
-# 是否下载网络图片(若为true,有可能因为网络问题导致超时)
-DOWNLOAD_NETWORK_IMAGE = false
+# 在右键菜单中展示的名称
+NAME = "表格调整"
+# 是否在右键菜单中可点击
+CLICKABLE = false
+# 是否去除表格单元格最小宽度限制
+REMOVE_MIX_WIDTH = true
+# 单元格边线的拖拽范围
+THRESHOLD = 20
 
 
 ############### mermaid_replace ###############
 [mermaid_replace]
 # 启用插件
 ENABLE = false
+# 在右键菜单中展示的名称
+NAME = "mermaid组件替换"
+# 是否在右键菜单中可点击
+CLICKABLE = false
 
 
 ############### test ###############
 [test]
 # 启用插件
-ENABLE = false
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "测试专用"
+# 是否在右键菜单中可点击
+CLICKABLE = false

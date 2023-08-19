@@ -1,8 +1,7 @@
-(() => {
-    const config = global._pluginUtils.getPluginSetting("outline");
-
-    (() => {
-        const modal_css = `
+class outlinePlugin extends global._basePlugin {
+    style = () => {
+        const textID = "plugin-outline-style"
+        const text = `
             #plugin-outline {
                 position: fixed;
                 display: none;
@@ -59,11 +58,13 @@
                 text-align: center;
             }
         `
-        global._pluginUtils.insertStyle("plugin-outline-style", modal_css);
+        return {textID, text}
+    }
 
-        const all_button = (config.USE_ALL) ? `<div class="plugin-outline-icon ion-android-data" type="all" ty-hint="混合"></div>` : "";
-        const class_name = (config.SHOW_HIDDEN) ? "ion-eye" : "ion-eye-disabled";
-        const hint = (config.SHOW_HIDDEN) ? "显示被其他插件隐藏的元素" : "不显示被其他插件隐藏的元素";
+    html = () => {
+        const all_button = (this.config.USE_ALL) ? `<div class="plugin-outline-icon ion-android-data" type="all" ty-hint="混合"></div>` : "";
+        const class_name = (this.config.SHOW_HIDDEN) ? "ion-eye" : "ion-eye-disabled";
+        const hint = (this.config.SHOW_HIDDEN) ? "显示被其他插件隐藏的元素" : "不显示被其他插件隐藏的元素";
 
         const modal = document.createElement("div");
         modal.id = 'plugin-outline';
@@ -83,187 +84,84 @@
             </div>
             `
         document.querySelector("header").appendChild(modal);
-    })()
-
-    const entities = {
-        modal: document.getElementById("plugin-outline"),
-        header: document.querySelector("#plugin-outline .plugin-outline-header"),
-        list: document.querySelector("#plugin-outline .plugin-outline-list"),
-        footer: document.querySelector("#plugin-outline .plugin-outline-footer"),
-        move: document.querySelector(`#plugin-outline .plugin-outline-icon[Type="move"]`),
     }
 
-
-    class _collectUtil {
-        constructor() {
-            this.paragraphIdx = 0;
-            this.tableIdx = 0;
-            this.imageIdx = 0;
-            this.fenceIdx = 0;
-            this.collection = {table: [], image: [], fence: []};
+    init = () => {
+        this.entities = {
+            modal: document.getElementById("plugin-outline"),
+            header: document.querySelector("#plugin-outline .plugin-outline-header"),
+            list: document.querySelector("#plugin-outline .plugin-outline-list"),
+            footer: document.querySelector("#plugin-outline .plugin-outline-footer"),
+            move: document.querySelector(`#plugin-outline .plugin-outline-icon[Type="move"]`),
         }
+        this.collapsePlugin = this.utils.getPlugin("collapse_paragraph");
+        this.truncatePlugin = this.utils.getPlugin("truncate_text");
+        this.collectUtil = new _collectUtil(this.config, this.entities);
+    }
 
-        clear() {
-            this.paragraphIdx = this.tableIdx = this.imageIdx = this.fenceIdx = 0;
-            this.collection = {table: [], image: [], fence: []};
-        }
+    process = () => {
+        this.init();
 
-        collect() {
-            this.clear();
-            const write = document.querySelector("#write");
-            for (let ele = write.firstElementChild; ele; ele = ele.nextElementSibling) {
-                if (!config.SHOW_HIDDEN && ele.style.display === "none") {
-                    continue
-                }
+        this.utils.dragFixedModal(this.entities.move, this.entities.modal, false);
 
-                const tagName = ele.tagName;
-                if (tagName === "H1") {
-                    this.paragraphIdx = 0;
-                    this.tableIdx = this.imageIdx = this.fenceIdx = 0;
-                    continue
-                } else if (tagName === "H2") {
-                    this.paragraphIdx++;
-                    this.tableIdx = this.imageIdx = this.fenceIdx = 0;
-                    continue
-                }
+        this.utils.decorateOpenFile(null, () => {
+            (this.config.AUTO_REFRESH_WHEN_OPEN_FILE && this.entities.modal.style.display === "block") && setTimeout(this.refresh, 300);
+        })
 
-                const cid = ele.getAttribute("cid");
-                // table
-                if (tagName === "FIGURE") {
-                    this.tableIdx++;
-                    this.collection.table.push({
-                        cid: cid,
-                        type: "table",
-                        paragraphIdx: this.paragraphIdx,
-                        idx: this.tableIdx
-                    });
-                    // fence
-                } else if (ele.classList.contains("md-fences")) {
-                    this.fenceIdx++;
-                    this.collection.fence.push({
-                        cid: cid,
-                        type: "fence",
-                        paragraphIdx: this.paragraphIdx,
-                        idx: this.fenceIdx
-                    });
-                    // image
-                } else if (ele.querySelector("img")) {
-                    this.imageIdx++;
-                    this.collection.image.push({
-                        cid: cid,
-                        type: "image",
-                        paragraphIdx: this.paragraphIdx,
-                        idx: this.imageIdx
-                    });
-                }
-            }
-        }
+        this.entities.modal.addEventListener("click", ev => {
+            const item = ev.target.closest(".plugin-outline-item");
+            const headerIcon = ev.target.closest(".plugin-outline-header .plugin-outline-icon");
+            const footerIcon = ev.target.closest(".plugin-outline-footer .plugin-outline-icon");
 
-        compare(p) {
-            return function (m, n) {
-                const cid1 = parseInt(m[p].replace("n", ""));
-                const cid2 = parseInt(n[p].replace("n", ""));
-                return cid1 - cid2;
-            }
-        }
+            if (!item && !headerIcon && !footerIcon) return;
 
-        getCollection(Type) {
-            if (Type !== "all") {
-                return this.collection[Type]
-            }
-            let list = [];
-            for (const type in this.collection) {
-                list.push(...this.collection[type])
-            }
-            list.sort(this.compare("cid"));
-            return list
-        }
+            ev.stopPropagation();
+            ev.preventDefault();
 
-        setColor = (ele, item, type) => {
-            if (type === "all") {
-                if (item.type === "table") {
-                    ele.style.backgroundColor = "aliceblue";
-                } else if (item.type === "fence") {
-                    ele.style.backgroundColor = "antiquewhite";
-                } else if (item.type === "image") {
-                    ele.style.backgroundColor = "beige";
-                }
+            if (item) {
+                const cid = item.querySelector("span").getAttribute("data-ref");
+                this.scroll(cid);
+            } else if (footerIcon) {
+                const Type = footerIcon.getAttribute("type");
+                this.collectAndShow(Type);
             } else {
-                ele.style.backgroundColor = "";
-            }
-        }
-
-        // 简易数据单向绑定
-        bindDOM(Type) {
-            const typeCollection = this.getCollection(Type);
-
-            const first = entities.list.firstElementChild;
-            if (first && !first.classList.contains("plugin-outline-item")) {
-                entities.list.removeChild(first);
-            }
-
-            while (typeCollection.length !== entities.list.childElementCount) {
-                if (typeCollection.length > entities.list.childElementCount) {
-                    const div = document.createElement("div");
-                    div.classList.add("plugin-outline-item");
-                    div.appendChild(document.createElement("span"));
-                    entities.list.appendChild(div);
-                } else {
-                    entities.list.removeChild(entities.list.firstElementChild);
+                const Type = headerIcon.getAttribute("type");
+                if (Type === "close") {
+                    this.hide();
+                } else if (Type === "refresh") {
+                    this.refresh();
+                    this.rotate(headerIcon.firstElementChild);
+                } else if (Type === "eye") {
+                    this.toggleEye(headerIcon);
+                    this.refresh();
                 }
             }
-
-            if (entities.list.childElementCount === 0) {
-                const div = document.createElement("div");
-                div.innerText = "Empty";
-                div.style.display = "block";
-                div.style.textAlign = "center";
-                div.style.padding = "10px";
-                entities.list.appendChild(div);
-                return
-            }
-
-            let ele = entities.list.firstElementChild;
-            typeCollection.forEach(item => {
-                if (config.SET_COLOR_IN_ALL) {
-                    this.setColor(ele, item, Type);
-                }
-                const span = ele.firstElementChild;
-                span.setAttribute("data-ref", item.cid);
-                span.innerText = `${config.SHOW_NAME[item.type]} ${item.paragraphIdx}-${item.idx}`;
-                ele = ele.nextElementSibling;
-            })
-        }
+        })
     }
 
-    const collectUtil = new _collectUtil();
-
-    const collectAndShow = Type => {
-        setFooterActive(Type);
-        collectUtil.collect();
-        collectUtil.bindDOM(Type);
-        entities.modal.style.display = "block";
+    collectAndShow = Type => {
+        this.setFooterActive(Type);
+        this.collectUtil.collect();
+        this.collectUtil.bindDOM(Type);
+        this.entities.modal.style.display = "block";
     }
 
-    const collapsePlugin = global._pluginUtils.getPlugin("collapse_paragraph");
-    const truncatePlugin = global._pluginUtils.getPlugin("truncate_text");
-    const compatibleOtherPlugin = target => {
+    compatibleOtherPlugin = target => {
         if (!target) return;
-
-        collapsePlugin && collapsePlugin.meta && collapsePlugin.meta.rollback && collapsePlugin.meta.rollback(target);
-        truncatePlugin && truncatePlugin.meta && truncatePlugin.meta.rollback && truncatePlugin.meta.rollback(target);
+        this.collapsePlugin && this.collapsePlugin.rollback(target);
+        this.truncatePlugin && this.truncatePlugin.rollback(target);
     }
 
-    const scroll = cid => {
+    scroll = cid => {
         const target = File.editor.findElemById(cid);
-        compatibleOtherPlugin(target[0]);
+        this.compatibleOtherPlugin(target[0]);
         File.editor.focusAndRestorePos();
         File.editor.selection.scrollAdjust(target, 10);
         File.isFocusMode && File.editor.updateFocusMode(false);
     }
 
-    const setFooterActive = Type => {
-        for (let ele = entities.footer.firstElementChild; !!ele; ele = ele.nextElementSibling) {
+    setFooterActive = Type => {
+        for (let ele = this.entities.footer.firstElementChild; !!ele; ele = ele.nextElementSibling) {
             if (ele.getAttribute("type") === Type) {
                 ele.classList.add("select");
             } else {
@@ -272,15 +170,15 @@
         }
     }
 
-    const refresh = () => {
-        if (entities.modal.style.display === "block") {
-            const search = entities.footer.querySelector(".plugin-outline-icon.select");
-            collectAndShow(search.getAttribute("Type"));
+    refresh = () => {
+        if (this.entities.modal.style.display === "block") {
+            const search = this.entities.footer.querySelector(".plugin-outline-icon.select");
+            this.collectAndShow(search.getAttribute("Type"));
         }
     }
 
     // 因为比较简单,就不用CSS做了
-    const rotate = ele => {
+    rotate = ele => {
         let angle = 0;
         const timer = setInterval(() => {
             angle += 10;
@@ -289,8 +187,8 @@
         }, 10)
     }
 
-    const toggleEye = icon => {
-        config.SHOW_HIDDEN = !config.SHOW_HIDDEN;
+    toggleEye = icon => {
+        this.config.SHOW_HIDDEN = !this.config.SHOW_HIDDEN;
         if (icon.classList.contains("ion-eye")) {
             icon.classList.remove("ion-eye");
             icon.classList.add("ion-eye-disabled");
@@ -302,59 +200,163 @@
         }
     }
 
-    entities.modal.addEventListener("click", ev => {
-        const item = ev.target.closest(".plugin-outline-item");
-        const headerIcon = ev.target.closest(".plugin-outline-header .plugin-outline-icon");
-        const footerIcon = ev.target.closest(".plugin-outline-footer .plugin-outline-icon");
-
-        if (!item && !headerIcon && !footerIcon) return;
-
-        ev.stopPropagation();
-        ev.preventDefault();
-
-        if (item) {
-            const cid = item.querySelector("span").getAttribute("data-ref");
-            scroll(cid);
-        } else if (footerIcon) {
-            const Type = footerIcon.getAttribute("type");
-            collectAndShow(Type);
-        } else {
-            const Type = headerIcon.getAttribute("type");
-            if (Type === "close") {
-                hide();
-            } else if (Type === "refresh") {
-                refresh();
-                rotate(headerIcon.firstElementChild);
-            } else if (Type === "eye") {
-                toggleEye(headerIcon);
-                refresh();
-            }
-        }
-    })
-
-    global._pluginUtils.dragFixedModal(entities.move, entities.modal, false);
-
-    global._pluginUtils.decorateOpenFile(null, () => {
-        (config.AUTO_REFRESH_WHEN_OPEN_FILE && entities.modal.style.display === "block") && setTimeout(refresh, 300);
-    })
-
-    const call = () => {
-        if (entities.modal.style.display === "block") {
+    call = () => {
+        if (this.entities.modal.style.display === "block") {
             hide();
         } else {
-            collectAndShow(config.DEFAULT_TYPE);
+            this.collectAndShow(this.config.DEFAULT_TYPE);
         }
     };
 
-    const hide = () => entities.modal.style.display = "none";
+    hide = () => this.entities.modal.style.display = "none";
+}
 
-    module.exports = {
-        call,
-        meta: {
-            hide,
-            refresh,
+class _collectUtil {
+    constructor(config, entities) {
+        this.config = config;
+        this.entities = entities;
+
+        this.paragraphIdx = 0;
+        this.tableIdx = 0;
+        this.imageIdx = 0;
+        this.fenceIdx = 0;
+        this.collection = {table: [], image: [], fence: []};
+    }
+
+    clear() {
+        this.paragraphIdx = this.tableIdx = this.imageIdx = this.fenceIdx = 0;
+        this.collection = {table: [], image: [], fence: []};
+    }
+
+    collect() {
+        this.clear();
+        const write = document.querySelector("#write");
+        for (let ele = write.firstElementChild; ele; ele = ele.nextElementSibling) {
+            if (!this.config.SHOW_HIDDEN && ele.style.display === "none") {
+                continue
+            }
+
+            const tagName = ele.tagName;
+            if (tagName === "H1") {
+                this.paragraphIdx = 0;
+                this.tableIdx = this.imageIdx = this.fenceIdx = 0;
+                continue
+            } else if (tagName === "H2") {
+                this.paragraphIdx++;
+                this.tableIdx = this.imageIdx = this.fenceIdx = 0;
+                continue
+            }
+
+            const cid = ele.getAttribute("cid");
+            // table
+            if (tagName === "FIGURE") {
+                this.tableIdx++;
+                this.collection.table.push({
+                    cid: cid,
+                    type: "table",
+                    paragraphIdx: this.paragraphIdx,
+                    idx: this.tableIdx
+                });
+                // fence
+            } else if (ele.classList.contains("md-fences")) {
+                this.fenceIdx++;
+                this.collection.fence.push({
+                    cid: cid,
+                    type: "fence",
+                    paragraphIdx: this.paragraphIdx,
+                    idx: this.fenceIdx
+                });
+                // image
+            } else if (ele.querySelector("img")) {
+                this.imageIdx++;
+                this.collection.image.push({
+                    cid: cid,
+                    type: "image",
+                    paragraphIdx: this.paragraphIdx,
+                    idx: this.imageIdx
+                });
+            }
         }
-    };
+    }
 
-    console.log("outline.js had been injected");
-})()
+    compare(p) {
+        return function (m, n) {
+            const cid1 = parseInt(m[p].replace("n", ""));
+            const cid2 = parseInt(n[p].replace("n", ""));
+            return cid1 - cid2;
+        }
+    }
+
+    getCollection(Type) {
+        if (Type !== "all") {
+            return this.collection[Type]
+        }
+        let list = [];
+        for (const type in this.collection) {
+            list.push(...this.collection[type])
+        }
+        list.sort(this.compare("cid"));
+        return list
+    }
+
+    setColor = (ele, item, type) => {
+        if (type === "all") {
+            if (item.type === "table") {
+                ele.style.backgroundColor = "aliceblue";
+            } else if (item.type === "fence") {
+                ele.style.backgroundColor = "antiquewhite";
+            } else if (item.type === "image") {
+                ele.style.backgroundColor = "beige";
+            }
+        } else {
+            ele.style.backgroundColor = "";
+        }
+    }
+
+    // 简易数据单向绑定
+    bindDOM(Type) {
+        const typeCollection = this.getCollection(Type);
+
+        const first = this.entities.list.firstElementChild;
+        if (first && !first.classList.contains("plugin-outline-item")) {
+            this.entities.list.removeChild(first);
+        }
+
+        while (typeCollection.length !== this.entities.list.childElementCount) {
+            if (typeCollection.length > this.entities.list.childElementCount) {
+                const div = document.createElement("div");
+                div.classList.add("plugin-outline-item");
+                div.appendChild(document.createElement("span"));
+                this.entities.list.appendChild(div);
+            } else {
+                this.entities.list.removeChild(this.entities.list.firstElementChild);
+            }
+        }
+
+        if (this.entities.list.childElementCount === 0) {
+            const div = document.createElement("div");
+            div.innerText = "Empty";
+            div.style.display = "block";
+            div.style.textAlign = "center";
+            div.style.padding = "10px";
+            this.entities.list.appendChild(div);
+            return
+        }
+
+        let ele = this.entities.list.firstElementChild;
+        typeCollection.forEach(item => {
+            if (this.config.SET_COLOR_IN_ALL) {
+                this.setColor(ele, item, Type);
+            }
+            const span = ele.firstElementChild;
+            span.setAttribute("data-ref", item.cid);
+            span.innerText = `${this.config.SHOW_NAME[item.type]} ${item.paragraphIdx}-${item.idx}`;
+            ele = ele.nextElementSibling;
+        })
+    }
+}
+
+module.exports = {
+    plugin: outlinePlugin
+};
+
