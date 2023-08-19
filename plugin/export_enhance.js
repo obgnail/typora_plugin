@@ -29,12 +29,12 @@
         },
 
         downloadAllImage: async (html) => {
-            for (let result of html.matchAll(decoMixin.regexp)) {
+            for await (let result of html.matchAll(decoMixin.regexp)) {
                 if (result.length !== 2 || result.index < decoMixin.writeIdx || !isNetworkImage(result[1])) continue
                 const src = result[1];
                 if (!decoMixin.imageMap.hasOwnProperty(src)) { // single flight
                     const filename = Math.random() + "_" + Path.basename(src);
-                    const {state} = await JSBridge.invoke("app.download", src, tempFolder, filename);
+                    const {state} = JSBridge.invoke("app.download", src, tempFolder, filename);
                     if (state === "completed") {
                         decoMixin.imageMap[src] = filename;
                     }
