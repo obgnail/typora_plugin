@@ -29,9 +29,12 @@ class mindmapPlugin extends global._basePlugin {
     cleanMindMapTitle = title => `("${title.replace(/"/g, "")}")`;
     cleanGraphTitle = title => `("${title.replace(/"/g, "")}")`;
 
-    wrapMermaid = content => "```mermaid\n" + this.wrapErrorMsg() + content + "```";
-    wrapErrorMsg = () => {
-        if (!window.mermaidAPI.defaultConfig.mindmap) {
+    wrapMermaid = (content, type) => {
+        return "```mermaid\n" + this.wrapErrorMsg(type) + content + "```"
+    };
+
+    wrapErrorMsg = type => {
+        if (type === "mindmap" && !window.mermaidAPI.defaultConfig.mindmap) {
             const url = "https://mermaid.live/";
             return `%%你的mermaid组件版本过低，不支持mindmap语法。内容已复制到剪贴板，请粘贴到${url}查看\n`
         }
@@ -44,7 +47,7 @@ class mindmapPlugin extends global._basePlugin {
             "\t", `root${this.cleanMindMapTitle(root)}`, "\n",
         ];
         pList.forEach(ele => lines.push("\t".repeat(ele.levelIdx + 1), this.cleanMindMapTitle(ele.title), "\n"))
-        return this.wrapMermaid(lines.join(""))
+        return this.wrapMermaid(lines.join(""), "mindmap")
     }
 
     graph = (pList, root) => {
@@ -79,7 +82,7 @@ class mindmapPlugin extends global._basePlugin {
             lines.push(getParentItemTitle(item), "-->", getItemTitle(item), "\n");
         })
 
-        return this.wrapMermaid(lines.join(""))
+        return this.wrapMermaid(lines.join(""), "graph")
     }
 
     dynamicCallArgsGenerator = anchorNode => {
