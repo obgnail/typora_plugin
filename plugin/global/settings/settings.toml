@@ -398,10 +398,12 @@ NAME = "自定义插件"
 CLICKABLE = true
 # 自定义的命令
 # name: 右键菜单中展示的名称
+# enable: 是否启用此命令
 # selector: 在哪个位置出现此命令（空串：任何位置都展示）
 # callback: 点击后的回调函数
 [[custom.OPTIONS]]
 name = "复制标题路径"
+enable = true
 selector = "#write h1, h2, h3, h4, h5, h6"
 callback = "fullPathCopy"
 
