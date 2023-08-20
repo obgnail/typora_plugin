@@ -36,6 +36,21 @@ class fenceEnhancePlugin extends global._basePlugin {
         return {textID, text}
     }
 
+    hotkey = () => {
+        if (this.enableIndent) {
+            return [{
+                hotkey: this.config.INDENT_HOTKEY,
+                callback: () => {
+                    const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
+                    const target = anchorNode.closest("#write .md-fences");
+                    if (target && target[0]) {
+                        this.indentFence(target[0]);
+                    }
+                },
+            }]
+        }
+    }
+
     init = () => {
         this.lastClickTime = 0;
         this.badChars = [
@@ -259,25 +274,14 @@ class fenceEnhancePlugin extends global._basePlugin {
 
     dynamicCallArgsGenerator = anchorNode => {
         const target = anchorNode.closest("#write .md-fences");
-        if (!target) return;
-
         this.dynamicUtil.target = target;
 
-        const arr = [
-            {
-                arg_name: "折叠/展开代码块",
-                arg_value: "fold_current",
-            },
-            {
-                arg_name: "复制代码",
-                arg_value: "copy_current",
-            },
-        ]
-        this.enableIndent && arr.push({
-            arg_name: "调整缩进",
-            arg_value: "indent_current"
-        })
-
+        const arr = [];
+        if (this.enableIndent) {
+            arr.push({arg_name: "调整缩进", arg_value: "indent_current"});
+        }
+        arr.push({arg_name: "折叠/展开代码块", arg_value: "fold_current", arg_disabled: !target});
+        arr.push({arg_name: "复制代码", arg_value: "copy_current", arg_disabled: !target});
         return arr
     }
 

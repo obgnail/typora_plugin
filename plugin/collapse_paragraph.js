@@ -116,22 +116,23 @@ class collapseParagraphPlugin extends global._basePlugin {
 
     dynamicCallArgsGenerator = anchorNode => {
         const target = anchorNode.closest("#write h1,h2,h3,h4,h5,h6");
-        if (!target) return;
-
         this.dynamicUtil.target = target;
 
         return [
             {
                 arg_name: "折叠/展开当前章节",
                 arg_value: "call_current",
+                arg_disabled: !target,
             },
             {
                 arg_name: "折叠/展开全部兄弟章节",
                 arg_value: "call_siblings",
+                arg_disabled: !target,
             },
             {
                 arg_name: "折叠/展开全局同级章节",
                 arg_value: "call_all_siblings",
+                arg_disabled: !target,
             }
         ]
     }

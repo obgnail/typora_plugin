@@ -86,23 +86,24 @@ class mindmapPlugin extends global._basePlugin {
     }
 
     dynamicCallArgsGenerator = anchorNode => {
+        let disabled;
         if (this.utils.isBetaVersion) {
             const target = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
-            if (!target) return;
-            if (target.querySelector("p > span")) return;
+            disabled = !target || target.querySelector("p > span");
         } else {
-            const target = anchorNode.closest(`#write > p[mdtype="paragraph"]:not(:has(>span))`);
-            if (!target) return;
+            disabled = !anchorNode.closest(`#write > p[mdtype="paragraph"]:not(:has(>span))`);
         }
 
         return [
             {
                 arg_name: "在此处插入：mindmap",
-                arg_value: "insert_mindmap"
+                arg_value: "insert_mindmap",
+                arg_disabled: disabled,
             },
             {
                 arg_name: "在此处插入：graph",
-                arg_value: "insert_graph"
+                arg_value: "insert_graph",
+                arg_disabled: disabled,
             },
         ]
     }
