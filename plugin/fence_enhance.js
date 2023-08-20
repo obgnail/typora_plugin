@@ -36,6 +36,19 @@ class fenceEnhancePlugin extends global._basePlugin {
         return {textID, text}
     }
 
+    hotkey = () => {
+        return [{
+            hotkey: this.config.INDENT_HOTKEY,
+            callback: () => {
+                const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
+                const target = anchorNode.closest("#write .md-fences");
+                if (target && target[0]) {
+                    this.indentFence(target[0]);
+                }
+            },
+        }]
+    }
+
     init = () => {
         this.lastClickTime = 0;
         this.badChars = [

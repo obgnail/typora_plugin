@@ -28,6 +28,7 @@ SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
 # 内部使用
 LOOP_DETECT_INTERVAL = 35
 
+
 ############### search_multi ###############
 [search_multi]
 # 启用插件
@@ -336,6 +337,8 @@ AUTO_HIDE = false
 ENABLE_COPY = true
 # 启用代码调整缩进功能(正式版才可使用)
 ENABLE_INDENT = true
+# 当光标置于代码块中，按下此快捷键可自动缩进
+INDENT_HOTKEY = "ctrl+alt+l"
 # 启用折叠代码功能
 ENABLE_FOLD = true
 # 折叠形式
