@@ -218,8 +218,6 @@ CLICKABLE = true
 HOTKEY = "ctrl+shift+r"
 # 默认使用只读模式
 READ_ONLY_DEFAULT = false
-# 脚本内部使用
-CLICK_CHECK_INTERVAL = 500
 
 
 ############### resize_image ###############

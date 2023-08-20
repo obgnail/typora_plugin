@@ -12,30 +12,16 @@ class readOnlyPlugin extends global._basePlugin {
         }]
     }
 
-    init = () => {
-        this.lastClickTime = 0;
-        this.inComposition = false;
-    }
-
     process = () => {
-        this.init();
+        const that = this;
 
         const write = document.getElementById("write");
-        write.addEventListener("keydown", this.stopKeyboard, true);
-        write.addEventListener("mousedown", this.stopMouse, true);
-        write.addEventListener("click", this.stopMouse, true);
+        write.addEventListener("compositionstart", ev => (File.isLocked) && that.stop(ev), true);
+        write.addEventListener("keydown", ev => (File.isLocked && ev.key === "Enter") && that.stop(ev), true);
 
         if (this.config.READ_ONLY_DEFAULT) {
             this.utils.loopDetector(() => !!File, this.call);
         }
-
-        const that = this;
-        write.addEventListener("compositionstart", ev => {
-            that.inComposition = true;
-            (File.isLocked) && that.stop(ev);
-        });
-        write.addEventListener("compositionend", () => that.inComposition = false);
-
         this.utils.decorate(
             () => (File && File.freshLock),
             "File.freshLock",
@@ -55,31 +41,8 @@ class readOnlyPlugin extends global._basePlugin {
         )
     }
 
-    stopMouse = ev => {
-        if (!File.isLocked) return;
-
-        const target = ev.target.closest('.footnotes, figure[mdtype="table"], .md-task-list-item, .md-image, .ty-cm-lang-input, input[type="checkbox"]');
-        // const target = ev.target.closest('.md-image');
-        if (target) {
-            ev.preventDefault();
-            ev.stopPropagation();
-        }
-    }
-
-    stopKeyboard = ev => {
-        if (!File.isLocked) return;
-
-        if (ev.timeStamp - this.lastClickTime > this.config.CLICK_CHECK_INTERVAL) {
-            File.lock();
-        }
-
-        // File.isLocked 也挡不住回车键 :(
-        if ((ev.key === "Enter") && this.inComposition) {
-            stop(ev);
-        }
-    }
-
     stop = ev => {
+        File.lock();
         document.activeElement.blur();
         ev.preventDefault();
         ev.stopPropagation();
