@@ -138,17 +138,25 @@ class rightClickMenuPlugin extends global._basePlugin {
     }
 
     listen = () => {
-        const appendThirdLi = this.appendThirdLi;
-        const appendDummyThirdLi = this.appendDummyThirdLi;
-        const show = this.show;
-        const generateDynamicCallArgs = this.generateDynamicCallArgs;
-        const config = this.config;
-        const utils = this.utils
+        const that = this;
+
+        // 展示二级菜单
+        $("#context-menu").on("mouseenter", "[data-key]", function () {
+            const target = $(this);
+            if ("typora-plugin" === target.attr("data-key")) {
+                that.show($("#plugin-menu"), target);
+                target.addClass("active");
+            } else {
+                document.querySelector("#plugin-menu").classList.remove("show");
+                document.querySelector("[data-key='typora-plugin']").classList.remove("active");
+                document.querySelectorAll(".plugin-menu-third").forEach(ele => ele.classList.remove("show"));
+            }
+        })
 
         // 在二级菜单中调用插件
         $("#plugin-menu").on("click", "[data-key]", function () {
             const fixedName = this.getAttribute("data-key");
-            const plugin = utils.getPlugin(fixedName);
+            const plugin = that.utils.getPlugin(fixedName);
             // 拥有三级菜单的，不允许点击二级菜单
             if (plugin.callArgs || plugin.dynamicCallArgsGenerator) {
                 return false
@@ -156,7 +164,7 @@ class rightClickMenuPlugin extends global._basePlugin {
             if (plugin && plugin.call) {
                 plugin.call();
             }
-            if (!config.DO_NOT_HIDE) {
+            if (!that.config.DO_NOT_HIDE) {
                 File.editor.contextMenu.hide();
             }
             // 展示三级菜单
@@ -166,42 +174,39 @@ class rightClickMenuPlugin extends global._basePlugin {
             document.querySelectorAll(".plugin-dynamic-arg").forEach(ele => ele.parentElement.removeChild(ele));
             const fixedName = t.attr("data-key");
             const menu = $(`.plugin-menu-third[fixed_name="${fixedName}"]`);
-            const dynamicCallArgs = generateDynamicCallArgs(fixedName);
+            const dynamicCallArgs = that.generateDynamicCallArgs(fixedName);
             if (dynamicCallArgs) {
-                appendThirdLi(menu, dynamicCallArgs);
+                that.appendThirdLi(menu, dynamicCallArgs);
             }
             if (menu.children().length === 0) {
-                appendDummyThirdLi(menu);
+                that.appendDummyThirdLi(menu);
             }
             if (t.find(`span[data-lg="Menu"]`).length) {
-                show(menu, t);
+                that.show(menu, t);
             } else {
                 document.querySelector("#plugin-menu .plugin-has-args").classList.remove("active");
             }
         })
-        // 展示二级菜单
-        $("#context-menu").on("mouseenter", "[data-key]", function () {
-            const target = $(this);
-            if ("typora-plugin" === target.attr("data-key")) {
-                show($("#plugin-menu"), target);
-                target.addClass("active");
-            } else {
-                document.querySelector("#plugin-menu").classList.remove("show");
-                document.querySelector("[data-key='typora-plugin']").classList.remove("active");
-                document.querySelectorAll(".plugin-menu-third").forEach(ele => ele.classList.remove("show"));
-            }
-        })
+
         // 在三级菜单中调用插件
         $(".plugin-menu-third").on("click", "[data-key]", function () {
+            // 点击禁用的选项
+            if (this.classList.contains("disabled")) return false;
+
             const fixedName = this.parentElement.getAttribute("fixed_name");
             const argValue = this.getAttribute("arg_value");
-            const plugin = utils.getPlugin(fixedName);
-            if (argValue !== config.NOT_AVAILABLE_VALUE && plugin && plugin.call) {
+            const plugin = that.utils.getPlugin(fixedName);
+            if (argValue !== that.config.NOT_AVAILABLE_VALUE && plugin && plugin.call) {
                 plugin.call(argValue);
             }
-            if (!config.DO_NOT_HIDE) {
+            if (!that.config.DO_NOT_HIDE) {
                 File.editor.contextMenu.hide();
             }
+            // 高亮二级菜单
+        }).on("mouseenter", function () {
+            const fixedName = this.getAttribute("fixed_name");
+            const parent = document.querySelector(`#plugin-menu [data-key="${fixedName}"]`);
+            parent.classList.add("active");
         })
     }
 

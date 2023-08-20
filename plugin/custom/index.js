@@ -18,13 +18,11 @@ class CustomPlugin extends global._basePlugin {
         const dynamicCallArgs = [];
         for (const name in this.optionMap) {
             const option = this.optionMap[name];
-
-            if (!option.selector || anchorNode.closest(option.selector)) {
-                dynamicCallArgs.push({
-                    arg_name: option.name,
-                    arg_value: option.name,
-                })
-            }
+            dynamicCallArgs.push({
+                arg_name: option.name,
+                arg_value: option.name,
+                arg_disabled: option.selector && !anchorNode.closest(option.selector),
+            })
         }
         return dynamicCallArgs;
     }

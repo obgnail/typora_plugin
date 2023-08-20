@@ -158,19 +158,15 @@ class datatablesPlugin extends global._basePlugin {
 
     dynamicCallArgsGenerator = anchorNode => {
         const table = anchorNode.closest("#write table.md-table");
-        if (!table) return;
-
-        const uuid = table.getAttribute("table-uuid");
+        const uuid = table && table.getAttribute("table-uuid");
         this.dynamicUtil.uuid = uuid;
         this.dynamicUtil.target = table;
 
-        let arg_name = "增强表格";
-        let arg_value = "convert_current";
-        if (uuid) {
-            arg_name = "转回普通表格";
-            arg_value = "rollback_current";
-        }
-        return [{arg_name, arg_value}]
+        return [{
+            arg_name: (uuid) ? "转回普通表格" : "增强表格",
+            arg_value: (uuid) ? "rollback_current" : "convert_current",
+            arg_disabled: !table,
+        }]
     }
 
     call = type => {
