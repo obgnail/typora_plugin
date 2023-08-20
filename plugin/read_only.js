@@ -31,8 +31,7 @@ class readOnlyPlugin extends global._basePlugin {
 
         this.utils.decorate(
             () => (File && File.freshLock),
-            File,
-            "freshLock",
+            "File.freshLock",
             null,
             () => {
                 if (!File.isLocked) return;

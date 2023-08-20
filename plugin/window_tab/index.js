@@ -217,7 +217,7 @@ class windowTabBarPlugin extends global._basePlugin {
             filePath && this.openTab(filePath);
         })
 
-        this.utils.loopDetector(() => !!File, () => {
+        this.utils.loopDetector(() => (File && this.utils.getFilePath()), () => {
             const filePath = this.utils.getFilePath();
             filePath && this.openTab(filePath);
         });

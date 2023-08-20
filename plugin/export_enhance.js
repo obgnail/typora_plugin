@@ -74,8 +74,7 @@ class exportEnhancePlugin extends global._basePlugin {
 
         this.utils.decorate(
             () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-            File.editor.export,
-            "exportToHTML",
+            "File.editor.export.exportToHTML",
             null,
             this.decoMixin.afterExportToHtml,
             true,
