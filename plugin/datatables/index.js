@@ -92,8 +92,7 @@ class datatablesPlugin extends global._basePlugin {
 
         this.utils.decorate(
             () => (File && File.editor && File.editor.tableEdit && File.editor.tableEdit.showTableEdit),
-            File.editor.tableEdit,
-            "showTableEdit",
+            "File.editor.tableEdit.showTableEdit",
             (...args) => {
                 if (!args[0]) return;
                 const table = args[0].find("table");

@@ -65,12 +65,12 @@ class utils {
             && ev.key.toLowerCase() === key
     }
 
-    static decorate = (until, obj, func, before, after, changeResult = false) => {
+    static decorate = (until, funcStr, before, after, changeResult = false) => {
         const start = new Date().getTime();
         const uuid = Math.random();
         this.detectorContainer[uuid] = setInterval(() => {
             if (new Date().getTime() - start > 10000) {
-                console.log("decorate timeout!", until, obj, func, before, after, changeResult);
+                console.error("decorate timeout!", until, funcStr, before, after, changeResult);
                 clearInterval(this.detectorContainer[uuid]);
                 delete this.detectorContainer[uuid];
                 return;
@@ -96,6 +96,9 @@ class utils {
                     return result;
                 };
             }
+            const idx = funcStr.lastIndexOf(".");
+            const obj = eval(funcStr.slice(0, idx));
+            const func = funcStr.slice(idx + 1);
             obj[func] = decorator(obj[func], before, after);
             delete this.detectorContainer[uuid];
         }, 20);
@@ -103,12 +106,12 @@ class utils {
 
     static decorateOpenFile = (before, after) => {
         this.decorate(() => (File && File.editor && File.editor.library && File.editor.library.openFile),
-            File.editor.library, "openFile", before, after)
+            "File.editor.library.openFile", before, after)
     }
 
     static decorateAddCodeBlock = (before, after) => {
         this.decorate(() => (File && File.editor && File.editor.fences && File.editor.fences.addCodeBlock),
-            File.editor.fences, "addCodeBlock", before, after)
+            "File.editor.fences.addCodeBlock", before, after)
     }
 
     static loopDetector = (until, after, detectInterval = 20) => {
