@@ -218,50 +218,6 @@ CLICKABLE = true
 HOTKEY = "ctrl+shift+r"
 # 默认使用只读模式
 READ_ONLY_DEFAULT = false
-# 只读模式下仍可以使用的快捷键
-EXCLUDE_HOTKEY = [
-    # 文件
-    "ctrl+n", # 新建
-    "ctrl+shift+n", # 新建窗口
-    "ctrl+o", # 打开
-    "ctrl+p", # 快速打开
-    "ctrl+s", # 保存
-    "ctrl+shift+s", # 另存
-    "ctrl+,", # 偏好设置
-    "ctrl+w", # 关闭
-
-    # 编辑
-    "ctrl+c", # 复制
-    "ctrl+shift+c", # 复制为markdown
-    "ctrl+a", # 全选
-    "ctrl+l", # 选中当前行
-    "ctrl+e", # 选中当前格式文本
-    "ctrl+d", # 选中当前词
-    "ctrl+j", # 跳转到所选内容
-    "ctrl+Home", # 跳转到文首
-    "ctrl+End", # 跳转到文末
-    "ctrl+f", # 查找
-    "F3", # 查找下一个
-    "shift+F3", # 查找上一个
-
-    # 视图
-    "ctrl+sihft+L", # 显示/隐藏侧边栏
-    "ctrl+sihft+!", # 大纲
-    "ctrl+sihft+@", # 文档列表
-    "ctrl+sihft+#", # 文档树
-    "ctrl+sihft+F", # 搜索
-    "ctrl+/", # 源码模式
-    "F8", # 专注模式
-    "F9", # 打字机模式
-    "F11", # 全屏
-    "ctrl+shif+(", # 实际大小
-    "ctrl+shif++", # 放大
-    "ctrl+shif+_", # 缩(ev) && ev.key === "Tab" # 应用内窗口切换
-    "shift+F12", # 开发者工具
-
-    # 整个应用
-    "alt+F4", # 退出
-]
 # 脚本内部使用
 CLICK_CHECK_INTERVAL = 500
 

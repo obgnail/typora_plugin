@@ -13,8 +13,8 @@ class readOnlyPlugin extends global._basePlugin {
     }
 
     init = () => {
-        this.excludeList = this.config.EXCLUDE_HOTKEY.map(h => this.utils.toHotkeyFunc(h));
         this.lastClickTime = 0;
+        this.inComposition = false;
     }
 
     process = () => {
@@ -28,6 +28,13 @@ class readOnlyPlugin extends global._basePlugin {
         if (this.config.READ_ONLY_DEFAULT) {
             this.utils.loopDetector(() => !!File, this.call);
         }
+
+        const that = this;
+        write.addEventListener("compositionstart", ev => {
+            that.inComposition = true;
+            (File.isLocked) && that.stop(ev);
+        });
+        write.addEventListener("compositionend", () => that.inComposition = false);
 
         this.utils.decorate(
             () => (File && File.freshLock),
@@ -46,15 +53,6 @@ class readOnlyPlugin extends global._basePlugin {
                 })
             }
         )
-    }
-
-    isExclude = ev => {
-        for (const func of this.excludeList) {
-            if (func(ev)) {
-                return true
-            }
-        }
-        return false
     }
 
     stopMouse = ev => {
@@ -76,12 +74,15 @@ class readOnlyPlugin extends global._basePlugin {
         }
 
         // File.isLocked 也挡不住回车键 :(
-        // 为什么要使用isExclude排除按键？因为输入法激活状态下键入能突破 File.isLocked
-        if ((ev.key === "Enter") || !this.isExclude(ev)) {
-            document.activeElement.blur();
-            ev.preventDefault();
-            ev.stopPropagation();
+        if ((ev.key === "Enter") && this.inComposition) {
+            stop(ev);
         }
+    }
+
+    stop = ev => {
+        document.activeElement.blur();
+        ev.preventDefault();
+        ev.stopPropagation();
     }
 
     call = () => {
