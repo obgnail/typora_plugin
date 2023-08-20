@@ -25,7 +25,8 @@ CLOSE_HOTKEY = ["ctrl+w"]
 SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
 # 切换上一个标签页的快捷键
 SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
-
+# 内部使用
+LOOP_DETECT_INTERVAL = 35
 
 ############### search_multi ###############
 [search_multi]
