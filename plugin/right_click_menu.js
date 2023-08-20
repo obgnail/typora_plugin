@@ -57,7 +57,7 @@ class rightClickMenuPlugin extends global._basePlugin {
         const hasNotArgs = !plugin.callArgs && !plugin.dynamicCallArgsGenerator;
         const style = (plugin.config.CLICKABLE) ? "" : `style="pointer-events: none;color: #c4c6cc;"`;
         const content = (hasNotArgs) ? plugin.config.NAME : `<span data-lg="Menu">${plugin.config.NAME}</span> <i class="fa fa-caret-right"></i>`;
-        const className = (hasNotArgs) ? "" : "plugin-has-args";
+        const className = (hasNotArgs) ? "" : "has-extra-menu";
         return `<li data-key="${plugin.fixed_name}" class="plugin-menu-item ${className}" ${style}>
                     <a role="menuitem" data-lg="Menu">${content}</a>
                 </li>`
@@ -184,7 +184,7 @@ class rightClickMenuPlugin extends global._basePlugin {
             if (t.find(`span[data-lg="Menu"]`).length) {
                 that.show(menu, t);
             } else {
-                document.querySelector("#plugin-menu .plugin-has-args").classList.remove("active");
+                document.querySelector("#plugin-menu .has-extra-menu").classList.remove("active");
             }
         })
 
@@ -202,11 +202,6 @@ class rightClickMenuPlugin extends global._basePlugin {
             if (!that.config.DO_NOT_HIDE) {
                 File.editor.contextMenu.hide();
             }
-            // 高亮二级菜单
-        }).on("mouseenter", function () {
-            const fixedName = this.getAttribute("fixed_name");
-            const parent = document.querySelector(`#plugin-menu [data-key="${fixedName}"]`);
-            parent.classList.add("active");
         })
     }
 
