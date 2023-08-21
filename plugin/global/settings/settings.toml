@@ -398,16 +398,12 @@ NAME = "自定义插件"
 CLICKABLE = true
 # 自定义的命令
 # name: 右键菜单中展示的名称
-# enable: 是否启用此命令
-# selector: 在哪个位置出现此命令（空串：任何位置都展示）
-# hint(可选): 功能提示
-# callback: 点击后的回调函数
-[[custom.OPTIONS]]
+# enable: 是否启用此自定义插件
+# className: 自定义插件
+[[custom.PLUGINS]]
 name = "复制标题路径"
 enable = true
-selector = "#write h1, h2, h3, h4, h5, h6"
-hint = "将当前标题的路径复制到剪切板"
-callback = "fullPathCopy"
+plugin = "fullPathCopy"
 
 ############### right_click_menu ###############
 [right_click_menu]

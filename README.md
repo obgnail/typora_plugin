@@ -26,7 +26,7 @@
 | 16   | export_enhance     | 导出 html 时避免图片丢失             | √        |
 | 17   | go_top             | 一键到文章顶部                       | √        |
 | 18   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
-| 19   | custom             | 用户自定义命令                       | √        |
+| 19   | custom             | 用户自定义命令（高级）               | √        |
 | 20   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
 | 21   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
 | 22   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
@@ -325,42 +325,48 @@ const BUILTIN = [
 
 ### custom：用户自定义命令
 
-从 Typora Plugin 1.2.1 版本开始，本**插件系统提供开放能力**，支持用户在右键菜单中调用的自定义命令。
+从 Typora Plugin 1.2.1 版本开始，本插件系统提供开放能力，**支持用户在右键菜单中调用的自定义命令**。
 
 使用步骤：
 
 1. 修改 `./plugin/global/settings/settings.toml`，找到 custom 选项，添加如下参数。
-2. 修改 `./plugin/custom/index.js` 的 callback 类，添加和上面 callback 参数同名的函数。
+2. 在 `./plugin/custom/plugins` 目录下，创建和 plugin 参数同名的文件，在此文件中创建一个同名的 class。
 
 ```toml
 # ./plugin/global/settings/settings.toml
-[[custom.OPTIONS]]
+[[custom.PLUGINS]]
 name = "复制标题路径"
-selector = "#write h1, h2, h3, h4, h5, h6"
-callback = "fullPathCopy"
+enable = true
+plugin = "fullPathCopy"
 
 # name: 右键菜单中展示的名称
-# selector: 当用户在哪个位置右键弹出菜单时，出现此命令（空串：任何位置都展示），如上就是只在【正文标题】弹出此命令
-# callback: 点击后的回调函数
+# enable: 是否启用此插件
+# plugin: 处理插件逻辑的类
 ```
 
 ```js
-// ./plugin/custom/index.js
-class callback {
-    ...
+// ./plugin/custom/plugins/fullPathCopy.js
 
-    // fullPathCopy: 和[[custom.OPTIONS]]的callback选项同名的函数。当用户点击命令时，就会自动调用此函数。
-    // 参数: 
-    //   1. anchorNode: 用户单击右键的所在element
-    //   2. utils: 插件系统自带的静态工具类，其定义在 ./plugin/global/core/plugin.js/utils
-    //             其中有个最重要的函数：utils.getPlugin(fixed_name) 用于获取已经实现的全部插件，调用其API。
-    //             具体的API可看openPlatformAPI.md文件
-    fullPathCopy = (anchorNode, utils) => {
+// 1
+class fullPathCopy extends BaseCustomPlugin {
+    // 2
+    selector = () => "#write h1, h2, h3, h4, h5, h6"
+	// 3
+    hint = () => "将当前标题的路径复制到剪切板"
+	// 4
+    init = () => {}
+    // 5
+    style = () => {}
+    // 6
+    html = () => {}
+    // 7
+    hotkey = () => ["ctrl+shift+y"]
+	// 8
+    callback = anchorNode => {
         const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
         const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"];
         const pList = [];
         let ele = anchorNode;
-
         while (ele) {
             const idx = paragraphList.indexOf(ele.tagName);
             if (idx !== -1) {
@@ -389,10 +395,26 @@ class callback {
             }
         }
 
-        const text = utils.Package.Path.join(...result);
+        const text = this.utils.Package.Path.join(...result);
         navigator.clipboard.writeText(text);
     }
 }
+
+// 9
+module.exports = { plugin: fullPathCopy };
+
+// 1. 创建同名的class，继承BaseCustomPlugin类。此时，fullPathCopy将自动拥有utils属性
+//    utils: 插件系统自带的静态工具类，其定义在 ./plugin/global/core/plugin.js/utils
+//	      其中有个最重要的函数：utils.getPlugin(fixed_name) 用于获取已经实现的全部插件，调用其API。
+//        具体的API可看openPlatformAPI.md文件
+// 2. selector: 当用户在哪个位置右键弹出菜单时，出现此命令（空串：任何位置都展示），在这里的含义就是：只在【正文标题】弹出此命令
+// 3. hint: 当鼠标移动到右键菜单时的提示
+// 4. init: 在这里初始化你要的变量，添加listener
+// 5. style: 给Typora插入style标签。返回 {id: "", text: ""}。其中id为此style标签的id, text为style内容
+// 6. html: 在这里为Typora插入HTML文本
+// 7. hotkey: 为callabck注册快捷键
+// 8. 右键菜单中点击/键入快捷键后的回调函数。anchorNode: 鼠标光标所在的element
+// 9. 导出名为plugin
 ```
 
 ![custom](assets/custom.png)
