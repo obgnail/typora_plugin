@@ -33,7 +33,7 @@ class CustomPlugin extends global._basePlugin {
     call = arg_name => {
         const option = this.optionMap[arg_name];
         if (option) {
-            const target = this.dynamicUtil.target.closest(option.selector);
+            const target = (option.selector) ? this.dynamicUtil.target.closest(option.selector) : this.dynamicUtil.target;
             this.callback[option.callback](target, this.utils);
         }
     }
