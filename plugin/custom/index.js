@@ -15,6 +15,7 @@ class CustomPlugin extends global._basePlugin {
                     const style = instance.style();
                     style && this.utils.insertStyle(style.id, style.text);
                     instance.html();
+                    instance.process();
                     this.custom[instance.name] = instance;
                 } else {
                     console.error("instance is not BaseCustomPlugin", plugin.name);
@@ -89,6 +90,7 @@ class CustomPlugin extends global._basePlugin {
             & instance.style instanceof Function
             & instance.html instanceof Function
             & instance.hotkey instanceof Function
+            & instance.process instanceof Function
             & instance.callback instanceof Function
     }
 }
@@ -111,6 +113,8 @@ class BaseCustomPlugin {
     html = () => {
     }
     hotkey = () => {
+    }
+    process = () => {
     }
     callback = anchorNode => {
     }
