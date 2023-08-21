@@ -24,7 +24,7 @@ class CustomPlugin extends global._basePlugin {
                 arg_name: option.name,
                 arg_value: option.name,
                 arg_disabled: arg_disabled,
-                arg_hint: (arg_disabled) ? "光标于此位置不可用" : "",
+                arg_hint: (arg_disabled) ? "光标于此位置不可用" : option.hint,
             })
         }
         return dynamicCallArgs;
