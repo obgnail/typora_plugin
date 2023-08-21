@@ -64,9 +64,10 @@ class rightClickMenuPlugin extends global._basePlugin {
     }
 
     createThirdLi = (arg, dynamic) => {
+        const hint = (arg.arg_hint) ? `ty-hint="${arg.arg_hint}"` : "";
         const disabled = (arg.arg_disabled) ? " disabled" : "";
         const className = (dynamic) ? `class="plugin-dynamic-arg${disabled}"` : "";
-        return `<li data-key="${arg.arg_name}" arg_value="${arg.arg_value}" ${className}><a role="menuitem" data-lg="Menu">${arg.arg_name}</a></li>`
+        return `<li data-key="${arg.arg_name}" arg_value="${arg.arg_value}" ${className} ${hint}><a role="menuitem" data-lg="Menu">${arg.arg_name}</a></li>`
     }
 
     createUl = () => {

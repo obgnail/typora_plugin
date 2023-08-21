@@ -18,10 +18,13 @@ class CustomPlugin extends global._basePlugin {
         const dynamicCallArgs = [];
         for (const name in this.optionMap) {
             const option = this.optionMap[name];
+
+            const arg_disabled = option.selector && !anchorNode.closest(option.selector);
             dynamicCallArgs.push({
                 arg_name: option.name,
                 arg_value: option.name,
-                arg_disabled: option.selector && !anchorNode.closest(option.selector),
+                arg_disabled: arg_disabled,
+                arg_hint: (arg_disabled) ? "光标于此位置不可用" : option.hint,
             })
         }
         return dynamicCallArgs;

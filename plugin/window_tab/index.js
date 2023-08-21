@@ -165,9 +165,14 @@ class windowTabBarPlugin extends global._basePlugin {
         document.getElementById("write-style").parentElement
             .insertBefore(windowTab, document.getElementById("write-style"));
 
+        if (!this.config.HIDE_WINDOW_TITLE_BAR) {
+            const {height, top} = document.querySelector("header").getBoundingClientRect();
+            windowTab.style.top = height + top + 5 + "px";
+        }
+
         if (this.config.CHANGE_CONTENT_TOP) {
-            const {height} = document.querySelector("#plugin-window-tab").getBoundingClientRect();
-            document.querySelector("content").style.top = height + "px";
+            const {height, top} = windowTab.getBoundingClientRect();
+            document.querySelector("content").style.top = top + height + "px";
         }
 
         if (this.config.CHANGE_NOTIFICATION_Z_INDEX) {
@@ -228,6 +233,17 @@ class windowTabBarPlugin extends global._basePlugin {
             this.sort2();
         }
 
+        // 打开配置页面的时候自动隐藏
+        new MutationObserver(mutationList => {
+            for (const mutation of mutationList) {
+                if (mutation.type === 'attributes' && mutation.attributeName === "class") {
+                    const value = document.body.getAttribute(mutation.attributeName);
+                    const hide = value.indexOf("megamenu-opened") !== -1 || value.indexOf("show-preference-panel") !== -1;
+                    this.showTabsIfNeed(!hide);
+                }
+            }
+        }).observe(document.body, {attributes: true});
+
         this.entities.tabBar.addEventListener("click", ev => {
             const closeButton = ev.target.closest(".close-button");
             const tabContainer = ev.target.closest(".tab-container");
@@ -278,6 +294,7 @@ class windowTabBarPlugin extends global._basePlugin {
         }, true)
     }
 
+    showTabsIfNeed = show => document.querySelector("#plugin-window-tab").style.display = (show) ? "" : "none";
 
     // 新窗口打开
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)

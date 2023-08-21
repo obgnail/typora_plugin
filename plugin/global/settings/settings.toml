@@ -8,7 +8,7 @@ NAME = "标签页管理"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 # 隐藏titleBar
-HIDE_WINDOW_TITLE_BAR = true
+HIDE_WINDOW_TITLE_BAR = false
 # 拖拽排序标签页的方式(1 or 2)
 DRAG_STYLE = 1
 # 当标签页脱离父标签3倍高度时，视为新建窗口
@@ -400,11 +400,13 @@ CLICKABLE = true
 # name: 右键菜单中展示的名称
 # enable: 是否启用此命令
 # selector: 在哪个位置出现此命令（空串：任何位置都展示）
+# hint(可选): 功能提示
 # callback: 点击后的回调函数
 [[custom.OPTIONS]]
 name = "复制标题路径"
 enable = true
 selector = "#write h1, h2, h3, h4, h5, h6"
+hint = "将当前标题的路径复制到剪切板"
 callback = "fullPathCopy"
 
 ############### right_click_menu ###############
