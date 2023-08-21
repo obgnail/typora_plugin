@@ -17,7 +17,11 @@ class readOnlyPlugin extends global._basePlugin {
 
         const write = document.getElementById("write");
         write.addEventListener("compositionstart", ev => (File.isLocked) && that.stop(ev), true);
-        write.addEventListener("keydown", ev => (File.isLocked && ev.key === "Enter") && that.stop(ev), true);
+        write.addEventListener("keydown", ev => {
+            if (File.isLocked && (ev.key === "Enter" || ev.key === "Backspace" || ev.key === "Delete" || ev.key === ' ')) {
+                that.stop(ev);
+            }
+        }, true);
 
         if (this.config.READ_ONLY_DEFAULT) {
             this.utils.loopDetector(() => !!File, this.call);
