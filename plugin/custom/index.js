@@ -3,13 +3,14 @@ class CustomPlugin extends global._basePlugin {
         this.custom = {};
         this.dynamicUtil = {target: null};
 
-        this.config.PLUGINS.forEach(_plugin => {
-            if (!_plugin.enable) return
+        const allPlugins = this.utils.readToml("./plugin/custom/custom_plugin.toml");
+        allPlugins.plugins.forEach(info => {
+            if (!info.enable) return
             try {
-                const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins/${_plugin.plugin}`);
+                const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins/${info.plugin}`);
                 if (!plugin) return;
 
-                const instance = new plugin(_plugin.name, _plugin.plugin, this.utils);
+                const instance = new plugin(info, this.utils);
                 if (this.check(instance)) {
                     instance.init();
                     const style = instance.style();
@@ -96,9 +97,11 @@ class CustomPlugin extends global._basePlugin {
 }
 
 class BaseCustomPlugin {
-    constructor(showName, name, utils) {
-        this.showName = showName;
-        this.name = name;
+    constructor(info, utils) {
+        this.info = info;
+        this.showName = info.name;
+        this.name = info.plugin;
+        this.config = info.config;
         this.utils = utils;
     }
 

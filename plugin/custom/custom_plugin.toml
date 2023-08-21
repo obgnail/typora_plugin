@@ -1,0 +1,13 @@
+# 自定义的命令
+# name: 右键菜单中展示的名称
+# enable: 是否启用此自定义插件
+# plugin: 自定义插件
+# config: 插件配置
+[[plugins]]
+name = "复制标题路径"
+enable = true
+plugin = "fullPathCopy"
+[plugins.config]
+ignore_empty_header = false
+add_space = true
+full_file_path = false

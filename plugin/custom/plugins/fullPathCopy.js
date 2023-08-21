@@ -25,23 +25,32 @@ class fullPathCopy extends BaseCustomPlugin {
 
         pList.reverse();
 
-        const filePath = File.getFileName();
+        const filePath = (this.config.full_file_path) ? this.utils.getFilePath() : File.getFileName();
         const result = [filePath];
         let headerIdx = 0;
         for (const p of pList) {
             while (headerIdx < 6 && p.ele.tagName !== paragraphList[headerIdx]) {
-                result.push("无 " + nameList[headerIdx]);
+                if (!this.config.ignore_empty_header) {
+                    const name = this.getHeaderName("无", nameList[headerIdx]);
+                    result.push(name);
+                }
                 headerIdx++;
             }
 
             if (p.ele.tagName === paragraphList[headerIdx]) {
-                result.push(p.ele.querySelector("span").textContent + " " + nameList[headerIdx]);
+                const name = this.getHeaderName(p.ele.querySelector("span").textContent, nameList[headerIdx]);
+                result.push(name);
                 headerIdx++;
             }
         }
 
         const text = this.utils.Package.Path.join(...result);
         navigator.clipboard.writeText(text);
+    }
+
+    getHeaderName = (title, name) => {
+        const space = (this.config.add_space) ? " " : "";
+        return title + space + name
     }
 }
 

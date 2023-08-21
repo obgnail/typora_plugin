@@ -329,7 +329,7 @@ const BUILTIN = [
 
 使用步骤：
 
-1. 修改 `./plugin/global/settings/settings.toml`，找到 custom 选项，添加参数。
+1. 修改 `./plugin/custom/custom_plugin.toml`，添加配置。
 2. 在 `./plugin/custom/plugins` 目录下，创建和 plugin 参数同名的文件，在此文件中创建一个 class 继承自 BaseCustomPlugin，并导出为 `plugin`。
 
 
@@ -342,25 +342,30 @@ const BUILTIN = [
 
 实现：
 
-步骤一：修改 `./plugin/global/settings/settings.toml`，找到 custom 选项，添加如下参数：
+步骤一：修改 `./plugin/custom/custom_plugin.toml`，添加配置：
 
 - name：右键菜单中展示的名称
 - enable：是否启用此插件
 - plugin：处理插件逻辑的文件
+- config：插件自己的配置
 
 ```toml
-# ./plugin/global/settings/settings.toml
-[[custom.PLUGINS]]
+# ./plugin/custom/custom_plugin.toml
+[[PLUGINS]]
 name = "复制标题路径"
 enable = true
 plugin = "fullPathCopy"
+[PLUGINS.config]
+ignore_empty_header = false
+add_space = true
 ```
 
 步骤二：在 `./plugin/custom/plugins` 目录下，创建和 plugin 参数同名的文件（`fullPathCopy.js`），在此文件中创建一个 class 继承自 BaseCustomPlugin，并导出为 `plugin`。
 
-1. 创建同名的 class，继承 BaseCustomPlugin 类。此时，fullPathCopy 将自动拥有 utils 属性。
+1. 创建同名的 class，继承 BaseCustomPlugin 类。此时，fullPathCopy 将自动拥有 utils 属性 和 info 属性。
 
-   > utils: 插件系统自带的静态工具类，其定义在 `./plugin/global/core/plugin.js/utils`。其中有个最重要的函数：`utils.getPlugin(fixed_name)` 用于获取已经实现的全部插件，调用其 API。具体的 API 可看 openPlatformAPI.md 文件。
+   > - utils：插件系统自带的静态工具类，其定义在 `./plugin/global/core/plugin.js/utils`。其中有个最重要的函数：`utils.getPlugin(fixed_name)` 用于获取已经实现的全部插件，调用其 API。具体的 API 可看 openPlatformAPI.md 文件。
+   > - info：该插件在 `custom_plugin.toml` 里的所有配置。
 
 2. selector：当用户在哪个位置右键弹出菜单时，出现此命令（空串：任何位置都展示），在这里的含义就是：只在【正文标题】弹出此命令
 
@@ -405,6 +410,7 @@ class fullPathCopy extends BaseCustomPlugin {
         const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"];
         const pList = [];
         let ele = anchorNode;
+
         while (ele) {
             const idx = paragraphList.indexOf(ele.tagName);
             if (idx !== -1) {
@@ -423,18 +429,27 @@ class fullPathCopy extends BaseCustomPlugin {
         let headerIdx = 0;
         for (const p of pList) {
             while (headerIdx < 6 && p.ele.tagName !== paragraphList[headerIdx]) {
-                result.push("无 " + nameList[headerIdx]);
+                if (!this.config.ignore_empty_header) {
+                    const name = this.getHeaderName("无", nameList[headerIdx]);
+                    result.push(name);
+                }
                 headerIdx++;
             }
 
             if (p.ele.tagName === paragraphList[headerIdx]) {
-                result.push(p.ele.querySelector("span").textContent + " " + nameList[headerIdx]);
+                const name = this.getHeaderName(p.ele.querySelector("span").textContent, nameList[headerIdx])
+                result.push(name);
                 headerIdx++;
             }
         }
 
         const text = this.utils.Package.Path.join(...result);
         navigator.clipboard.writeText(text);
+    }
+
+    getHeaderName = (title, name) => {
+        const space = (this.config.add_space) ? " " : "";
+        return title + space + name
     }
 }
 

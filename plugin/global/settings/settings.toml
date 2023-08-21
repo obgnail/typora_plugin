@@ -396,14 +396,7 @@ ENABLE = true
 NAME = "自定义插件"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 自定义的命令
-# name: 右键菜单中展示的名称
-# enable: 是否启用此自定义插件
-# className: 自定义插件
-[[custom.PLUGINS]]
-name = "复制标题路径"
-enable = true
-plugin = "fullPathCopy"
+
 
 ############### right_click_menu ###############
 [right_click_menu]
