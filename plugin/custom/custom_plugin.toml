@@ -11,3 +11,8 @@ plugin = "fullPathCopy"
 ignore_empty_header = false
 add_space = true
 full_file_path = false
+
+[[plugins]]
+name = "提取选区到新文件"
+enable = true
+plugin = "extractRangeToNewFile"
