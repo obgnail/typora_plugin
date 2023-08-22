@@ -98,13 +98,25 @@ class CustomPlugin extends global._basePlugin {
             content: document.querySelector("#plugin-custom-modal .modal-content"),
             body: document.querySelector("#plugin-custom-modal .modal-body"),
             title: document.querySelector("#plugin-custom-modal .modal-title"),
+            submit: document.querySelector("#plugin-custom-modal button.plugin-modal-submit"),
+            cancel: document.querySelector("#plugin-custom-modal button.plugin-modal-cancel"),
         }
 
-        this.entities.modal.querySelector(`button.plugin-modal-cancel`).addEventListener("click", () => {
-            this.entities.modal.style.display = "none";
-        })
+        this.entities.modal.addEventListener("keydown", ev => {
+            if (ev.key === "Enter") {
+                this.entities.submit.click();
+                ev.stopPropagation();
+                ev.preventDefault();
+            } else if (ev.key === "Escape") {
+                this.entities.cancel.click();
+                ev.stopPropagation();
+                ev.preventDefault();
+            }
+        }, true)
 
-        this.entities.modal.querySelector(`button.plugin-modal-submit`).addEventListener("click", () => {
+        this.entities.cancel.addEventListener("click", () => this.entities.modal.style.display = "none")
+
+        this.entities.submit.addEventListener("click", () => {
             const name = this.entities.content.getAttribute("custom-plugin-name");
             const plugin = this.custom[name];
             if (!plugin) return;
@@ -144,7 +156,8 @@ class CustomPlugin extends global._basePlugin {
         switch (type) {
             case "input":
             case "password":
-                inner = `<input type="${type === "input" ? "text" : "password"}" class="form-control" placeholder="${component.placeholder}" value="${component.value}">`;
+                inner = `<input type="${type === "input" ? "text" : "password"}" class="form-control" 
+                            placeholder="${component.placeholder}" value="${component.value}">`;
                 break
             case "textarea":
                 const rows = component.rows || 3;

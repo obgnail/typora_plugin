@@ -52,6 +52,15 @@ class utils {
         return tomlParser.parse(pluginsFile);
     }
 
+    static getFileName = filePath => {
+        let fileName = this.Package.Path.basename(filePath);
+        const idx = fileName.lastIndexOf(".");
+        if (idx !== -1) {
+            fileName = fileName.substring(0, idx);
+        }
+        return fileName
+    }
+
     static toHotkeyFunc = hotkeyString => {
         const keyList = hotkeyString.toLowerCase().split("+").map(k => k.trim());
         const ctrl = keyList.indexOf("ctrl") !== -1;

@@ -309,17 +309,8 @@ class windowTabBarPlugin extends global._basePlugin {
     // 关闭窗口
     closeWindow = () => JSBridge.invoke("window.close");
 
-    getName = filePath => {
-        let fileName = this.utils.Package.Path.basename(filePath);
-        const idx = fileName.lastIndexOf(".");
-        if (idx !== -1) {
-            fileName = fileName.substring(0, idx);
-        }
-        return fileName
-    }
-
     newTabDiv = (filePath, idx, active = true) => {
-        const fileName = this.getName(filePath);
+        const fileName = this.utils.getFileName(filePath);
         const _active = active ? "active" : "";
         return `<div class="tab-container ${_active}" idx="${idx}" draggable="true">
                     <div class="active-indicator"></div>
@@ -345,7 +336,7 @@ class windowTabBarPlugin extends global._basePlugin {
                 tabDiv.classList.remove("active");
             }
             tabDiv.setAttribute("idx", idx + "");
-            tabDiv.querySelector(".name").innerText = this.getName(tab.path);
+            tabDiv.querySelector(".name").innerText = this.utils.getFileName(tab.path);
 
             tabDiv = tabDiv.nextElementSibling;
         })
