@@ -41,31 +41,8 @@ class extractRangeToNewFile extends BaseCustomPlugin {
     }
 
     extract = filepath => {
-        const path = this.utils.Package.Path;
-        if (filepath) {
-            filepath = path.join(path.dirname(this.utils.getFilePath()), filepath);
-        } else {
-            filepath = this.utils.getFilePath();
-        }
-
-        if (this.existPath(filepath)) {
-            const ext = path.extname(filepath);
-            if (ext) {
-                const regex = new RegExp(`${ext}$`);
-                filepath = filepath.replace(regex, `--copy${ext}`);
-            } else {
-                filepath = filepath + "--copy.md";
-            }
-        }
+        filepath = this.utils.newFilePath(filepath);
         this.promise.then(text => this.utils.Package.Fs.writeFileSync(filepath, text, "utf8"));
-    }
-
-    existPath = filepath => {
-        try {
-            this.utils.Package.Fs.accessSync(filepath, this.utils.Package.Fs.constants.F_OK);
-            return true
-        } catch (err) {
-        }
     }
 }
 

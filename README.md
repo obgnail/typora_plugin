@@ -15,21 +15,22 @@
 | 5    | md_padding         | 中英文混排优化                       | √        |
 | 6    | fence_enhance      | 一键复制代码，折叠代码               | √        |
 | 7    | commander          | 命令行环境                           | √        |
-| 8    | read_only          | 只读模式                             | √        |
-| 9    | file_counter       | 显示目录下的文件数                   | √        |
-| 10   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
-| 11   | resize_table       | 调整表格行高列宽                     | √        |
-| 12   | resize_image       | 调整图片显示大小                     | √        |
-| 13   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
-| 14   | outline            | 以表格、图片、代码块形式的大纲       | √        |
-| 15   | mindmap            | 根据文档大纲一键生成思维导图         | √        |
-| 16   | export_enhance     | 导出 html 时避免图片丢失             | √        |
-| 17   | go_top             | 一键到文章顶部                       | √        |
-| 18   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
-| 19   | custom             | 用户自定义命令（高级）               | √        |
-| 20   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
-| 21   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
-| 22   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
+| 8    | templater          | 文件模板                             | √        |
+| 9    | read_only          | 只读模式                             | √        |
+| 10   | file_counter       | 显示目录下的文件数                   | √        |
+| 11   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
+| 12   | resize_table       | 调整表格行高列宽                     | √        |
+| 13   | resize_image       | 调整图片显示大小                     | √        |
+| 14   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
+| 15   | outline            | 以表格、图片、代码块形式的大纲       | √        |
+| 16   | mindmap            | 根据文档大纲一键生成思维导图         | √        |
+| 17   | export_enhance     | 导出 html 时避免图片丢失             | √        |
+| 18   | go_top             | 一键到文章顶部                       | √        |
+| 19   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
+| 20   | custom             | 用户自定义命令（高级）               | √        |
+| 21   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
+| 22   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
+| 23   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -497,7 +498,7 @@ module.exports = { plugin: fullPathCopy };
 
 ![custom](assets/custom.png)
 
-
+---
 
 ### read_only：只读模式
 
@@ -506,6 +507,31 @@ module.exports = { plugin: fullPathCopy };
 快捷键：ctrl+shift+R。
 
 > 开启后，右下角数字统计区域会出现 `ReadOnly` 字样
+
+
+
+### templater：文件模板功能
+
+类似于 obsidian 的文件模板功能，根据模板快速创建文件。
+
+使用方式：右键菜单 -> 启用插件 -> 自定义插件 -> 文件模板。
+
+支持的模板变量：
+
+- `{{date}}`： 当前日期
+- `{{time}}`：当前时间
+- `{{weekday}}`：当前周几
+- `{{datetime}}`：当前日期时间
+- `{{yesterday}}`：昨天日期
+- `{{tomorrow}}`：明天日期
+- `{{random}}`：随机数
+- `{{title}}`：新建文件的标题
+- `{{folder}}`：当前文件的目录
+- `{{filepath}}`：新建文件的路径
+- `{{range}}`：当前选取的文字
+- `{{uuid}}`：uuid
+
+> 模板列表可以在 `custom_plugin.toml` 中配置。
 
 
 

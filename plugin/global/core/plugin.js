@@ -37,6 +37,14 @@ class utils {
         $.getScript(`file:///${jsFilepath}`).then(then);
     }
 
+    static getUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            let r = (Math.random() * 16) | 0
+            let v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
+    }
+
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
     static shiftKeyPressed = ev => !!ev.shiftKey
     static altKeyPressed = ev => !!ev.altKey
@@ -49,6 +57,33 @@ class utils {
     static requireFilePath = (...paths) => {
         const filepath = this.joinPath(...paths);
         return reqnode(filepath)
+    }
+
+    static existPath = filepath => {
+        try {
+            this.Package.Fs.accessSync(filepath, this.Package.Fs.constants.F_OK);
+            return true
+        } catch (err) {
+        }
+    }
+
+    static newFilePath = filepath => {
+        if (filepath) {
+            filepath = this.Package.Path.join(this.Package.Path.dirname(this.getFilePath()), filepath);
+        } else {
+            filepath = this.getFilePath();
+        }
+
+        if (this.existPath(filepath)) {
+            const ext = this.Package.Path.extname(filepath);
+            if (ext) {
+                const regex = new RegExp(`${ext}$`);
+                filepath = filepath.replace(regex, `-copy${ext}`);
+            } else {
+                filepath = filepath + "-copy.md";
+            }
+        }
+        return filepath
     }
 
     static readFileSync = filepath => {
