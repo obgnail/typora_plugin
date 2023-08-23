@@ -176,6 +176,8 @@ class modalHelper {
         this.utils.insertDiv(modal);
     }
 
+    hide = () => this.entities.modal.style.display = "none";
+
     process = () => {
         this.pluginModal = null;
         this.entities = {
@@ -187,7 +189,7 @@ class modalHelper {
             cancel: document.querySelector("#plugin-custom-modal button.plugin-modal-cancel"),
         }
 
-        this.entities.cancel.addEventListener("click", () => this.entities.modal.style.display = "none")
+        this.entities.cancel.addEventListener("click", this.hide)
 
         this.entities.submit.addEventListener("click", () => {
             const name = this.entities.content.getAttribute("custom-plugin-name");
@@ -202,7 +204,7 @@ class modalHelper {
                 }
             })
             plugin.onEvent("submit", this.pluginModal);
-            this.entities.modal.style.display = "none";
+            this.hide();
         })
 
         this.entities.modal.addEventListener("keydown", ev => {
