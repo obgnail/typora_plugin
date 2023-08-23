@@ -22,7 +22,7 @@ class loadPluginHelper {
     }
 
     load() {
-        const allPlugins = this.controller.utils.readToml("./plugin/custom/custom_plugin.toml");
+        const allPlugins = this.controller.utils.readToml("./plugin/global/settings/custom_plugin.toml");
         allPlugins.plugins.forEach(info => {
             if (!info.enable) return
             try {
