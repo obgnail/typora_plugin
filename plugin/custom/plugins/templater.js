@@ -21,7 +21,6 @@ class templater extends BaseCustomPlugin {
                 {
                     label: "模板",
                     type: "select",
-                    selected: "option2",
                     list: options,
                 }
             ]
