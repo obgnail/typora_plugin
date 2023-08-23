@@ -5,11 +5,11 @@ class mermaidReplacePlugin extends global._basePlugin {
         this.utils.loopDetector(
             () => window.editor && window.editor.diagrams && window.mermaidAPI,
             () => {
-                const filepath = this.utils.joinPath("./plugin/mermaid_replace/mermaid.min.js");
-                $.getScript(`file:///${filepath}`).then(() => {
-                    window.mermaidAPI = mermaid.mermaidAPI;
-                    window.editor.diagrams.refreshDiagram(editor);
-                });
+                this.utils.insertScript("./plugin/mermaid_replace/mermaid.min.js", (() => {
+                        window.mermaidAPI = mermaid.mermaidAPI;
+                        window.editor.diagrams.refreshDiagram(editor);
+                    })
+                )
             }
         );
     }

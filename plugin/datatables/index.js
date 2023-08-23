@@ -31,8 +31,9 @@ class datatablesPlugin extends global._basePlugin {
     }
 
     html = () => {
-        const jsFilepath = this.utils.joinPath("./plugin/datatables/resource/datatables.min.js");
-        $.getScript(`file:///${jsFilepath}`).then(() => console.log("datatables.min.js has inserted"));
+        this.utils.insertScript("./plugin/datatables/resource/datatables.min.js", () => {
+            console.log("datatables.min.js has inserted")
+        })
     }
 
     init = () => {

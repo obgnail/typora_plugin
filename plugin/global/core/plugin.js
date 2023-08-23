@@ -32,6 +32,11 @@ class utils {
         quickOpenNode.parentNode.insertBefore(div, quickOpenNode.nextSibling);
     }
 
+    static insertScript = (filepath, then) => {
+        const jsFilepath = this.joinPath(filepath);
+        $.getScript(`file:///${jsFilepath}`).then(then);
+    }
+
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
     static shiftKeyPressed = ev => !!ev.shiftKey
     static altKeyPressed = ev => !!ev.altKey
