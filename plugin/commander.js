@@ -119,8 +119,7 @@ class commanderPlugin extends global._basePlugin {
         modal.id = 'typora-commander';
         modal.style.display = "none";
         modal.innerHTML = div;
-        const searchPanel = document.getElementById("md-searchpanel");
-        searchPanel.parentNode.insertBefore(modal, searchPanel.nextSibling);
+        this.utils.insertDiv(modal);
 
         if (!this.config.USE_BUILTIN) {
             document.getElementById('typora-commander').style.width = "500px";

@@ -162,8 +162,7 @@ class windowTabBarPlugin extends global._basePlugin {
         const windowTab = document.createElement("div");
         windowTab.id = "plugin-window-tab";
         windowTab.innerHTML = div;
-        document.getElementById("write-style").parentElement
-            .insertBefore(windowTab, document.getElementById("write-style"));
+        this.utils.insertDiv(windowTab);
 
         if (!this.config.HIDE_WINDOW_TITLE_BAR) {
             const {height, top} = document.querySelector("header").getBoundingClientRect();

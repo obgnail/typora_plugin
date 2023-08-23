@@ -178,8 +178,8 @@ class searchMultiKeywordPlugin extends global._basePlugin {
         searchModal.id = 'typora-search-multi';
         searchModal.style.display = "none";
         searchModal.innerHTML = modal_div;
-        const quickOpenNode = document.getElementById("typora-quick-open");
-        quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
+
+        this.utils.insertDiv(searchModal);
     }
 
     hotkey = () => {

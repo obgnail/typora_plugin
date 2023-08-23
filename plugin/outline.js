@@ -83,7 +83,7 @@ class outlinePlugin extends global._basePlugin {
                 ${all_button}
             </div>
             `
-        document.querySelector("header").appendChild(modal);
+        this.utils.insertDiv(modal);
     }
 
     init = () => {

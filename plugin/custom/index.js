@@ -1,7 +1,7 @@
 class CustomPlugin extends global._basePlugin {
     beforeProcess = () => {
         this.custom = {};
-        this.modalHelper = new modalHelper(this.custom);
+        this.modalHelper = new modalHelper(this.custom, this.utils);
         this.hotkeyHelper = new hotkeyHelper(this.custom);
         this.dynamicCallHelper = new dynamicCallHelper(this.custom);
         this.loadPluginHelper = new loadPluginHelper(this);
@@ -132,8 +132,9 @@ class hotkeyHelper {
 }
 
 class modalHelper {
-    constructor(custom) {
+    constructor(custom, utils) {
         this.custom = custom;
+        this.utils = utils;
     }
 
     style = () => {
@@ -172,8 +173,7 @@ class modalHelper {
         modal.id = "plugin-custom-modal";
         modal.classList.add("modal-dialog");
         modal.innerHTML = modal_content;
-        const quickOpenNode = document.getElementById("typora-quick-open");
-        quickOpenNode.parentNode.insertBefore(modal, quickOpenNode.nextSibling);
+        this.utils.insertDiv(modal);
     }
 
     process = () => {

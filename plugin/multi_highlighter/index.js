@@ -152,12 +152,11 @@ class multiHighlighterPlugin extends global._basePlugin {
                 <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
             </div>
             <div id="plugin-multi-highlighter-result" style="display: none"></div>`
-        const searchModal = document.createElement("div");
-        searchModal.id = 'plugin-multi-highlighter';
-        searchModal.style.display = "none";
-        searchModal.innerHTML = div;
-        const quickOpenNode = document.getElementById("typora-quick-open");
-        quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
+        const modal = document.createElement("div");
+        modal.id = 'plugin-multi-highlighter';
+        modal.style.display = "none";
+        modal.innerHTML = div;
+        this.utils.insertDiv(modal);
     }
 
     hotkey = () => {

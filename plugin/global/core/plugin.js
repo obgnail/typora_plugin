@@ -27,6 +27,11 @@ class utils {
         document.getElementsByTagName('head')[0].appendChild(link);
     }
 
+    static insertDiv = div => {
+        const quickOpenNode = document.getElementById("typora-quick-open");
+        quickOpenNode.parentNode.insertBefore(div, quickOpenNode.nextSibling);
+    }
+
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
     static shiftKeyPressed = ev => !!ev.shiftKey
     static altKeyPressed = ev => !!ev.altKey
