@@ -279,7 +279,7 @@ class modalHelper {
 
     // modal: {title: "", components: [{name: "", type: "", value: ""}]}
     modal = (customPlugin, modal, callback) => {
-        if (callback instanceof Function) {
+        if (modal && callback instanceof Function) {
             this.pluginModal = modal;
             this.callback = callback;
 

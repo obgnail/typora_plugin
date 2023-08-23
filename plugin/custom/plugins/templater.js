@@ -49,6 +49,7 @@ class templateHelper {
         this._title = title;
         this.rangeText = rangeText || "";
         this.utils = utils;
+        this.today = new Date();
         this.templateVarMap = {
             date: "{{date}}",
             time: "{{time}}",
@@ -74,30 +75,23 @@ class templateHelper {
         return text
     }
 
+    dateOffset = offset => {
+        const day = new Date(this.today.getTime() + offset);
+        return `${day.getFullYear()}/${day.getMonth()}/${day.getDate()}`
+    }
+
     uuid = () => this.utils.getUUID();
-    range = () => this.rangeText;
     random = () => Math.random();
-    weekday = () => "周" + '日一二三四五六'.charAt(new Date().getDay())
-    datetime = () => new Date().toLocaleString('chinese', {hour12: false})
-    date = () => {
-        const today = new Date();
-        return `${today.getFullYear()}/${today.getMonth()}/${today.getDate()}`
-    }
-    time = () => {
-        const today = new Date();
-        return `${today.getHours()}:${today.getMinutes()}:${today.getSeconds()}`
-    }
-    yesterday = () => {
-        const yesterday = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
-        return `${yesterday.getFullYear()}/${yesterday.getMonth()}/${yesterday.getDate()}`
-    }
-    tomorrow = () => {
-        const tomorrow = new Date(new Date().getTime() + (24 * 60 * 60 * 1000));
-        return `${tomorrow.getFullYear()}/${tomorrow.getMonth()}/${tomorrow.getDate()}`
-    }
-    title = () => this._title
-    folder = () => this.utils.Package.Path.dirname(this.utils.getFilePath())
-    filepath = () => this.utils.Package.Path.join(this.folder(), this.title())
+    range = () => this.rangeText;
+    title = () => this._title;
+    folder = () => this.utils.Package.Path.dirname(this.utils.getFilePath());
+    filepath = () => this.utils.Package.Path.join(this.folder(), this.title());
+    weekday = () => "周" + '日一二三四五六'.charAt(this.today.getDay());
+    datetime = () => this.today.toLocaleString('chinese', {hour12: false});
+    date = () => `${this.today.getFullYear()}/${this.today.getMonth()}/${this.today.getDate()}`;
+    time = () => `${this.today.getHours()}:${this.today.getMinutes()}:${this.today.getSeconds()}`;
+    yesterday = () => this.dateOffset(-24 * 60 * 60 * 1000);
+    tomorrow = () => this.dateOffset(24 * 60 * 60 * 1000);
 }
 
 
