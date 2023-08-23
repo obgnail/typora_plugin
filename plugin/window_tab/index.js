@@ -277,7 +277,9 @@ class windowTabBarPlugin extends global._basePlugin {
         })
 
         this.entities.content.addEventListener("scroll", () => {
-            this.tabUtil.tabs[this.tabUtil.activeIdx].scrollTop = this.entities.content.scrollTop;
+            if (this.tabUtil.tabs[this.tabUtil.activeIdx]) {
+                this.tabUtil.tabs[this.tabUtil.activeIdx].scrollTop = this.entities.content.scrollTop;
+            }
         })
 
         document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {

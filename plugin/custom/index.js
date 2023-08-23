@@ -1,23 +1,42 @@
 class CustomPlugin extends global._basePlugin {
     beforeProcess = () => {
         this.custom = {};
-        this.dynamicUtil = {target: null};
+        this.modalHelper = new modalHelper(this.custom);
+        this.hotkeyHelper = new hotkeyHelper(this.custom);
+        this.dynamicCallHelper = new dynamicCallHelper(this.custom);
+        this.loadPluginHelper = new loadPluginHelper(this);
+        this.loadPluginHelper.load();
+    }
+    style = () => this.modalHelper.style()
+    html = () => this.modalHelper.html()
+    hotkey = () => this.hotkeyHelper.hotkey()
+    modal = (customPlugin, modal) => this.modalHelper.modal(customPlugin, modal)
+    process = () => this.modalHelper.process()
+    dynamicCallArgsGenerator = anchorNode => this.dynamicCallHelper.dynamicCallArgsGenerator(anchorNode)
+    call = name => this.dynamicCallHelper.call(name)
+}
 
-        const allPlugins = this.utils.readToml("./plugin/custom/custom_plugin.toml");
+class loadPluginHelper {
+    constructor(controller) {
+        this.controller = controller;
+    }
+
+    load() {
+        const allPlugins = this.controller.utils.readToml("./plugin/custom/custom_plugin.toml");
         allPlugins.plugins.forEach(info => {
             if (!info.enable) return
             try {
-                const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins/${info.plugin}`);
+                const {plugin} = this.controller.utils.requireFilePath(`./plugin/custom/plugins/${info.plugin}`);
                 if (!plugin) return;
 
-                const instance = new plugin(info, this.utils, this);
+                const instance = new plugin(info, this.controller);
                 if (this.check(instance)) {
                     instance.init();
                     const style = instance.style();
-                    style && this.utils.insertStyle(style.id, style.text);
+                    style && this.controller.utils.insertStyle(style.id, style.text);
                     instance.html();
                     instance.process();
-                    this.custom[instance.name] = instance;
+                    this.controller.custom[instance.name] = instance;
                 } else {
                     console.error("instance is not BaseCustomPlugin", plugin.name);
                 }
@@ -25,10 +44,100 @@ class CustomPlugin extends global._basePlugin {
                 console.error("load custom plugin error:", plugin.name, e);
             }
         })
+        return this.controller.custom
+    }
+
+    // 简易的判断是否为customBasePlugin的子类实例
+    check = instance => {
+        return !!instance
+            & instance.init instanceof Function
+            & instance.selector instanceof Function
+            & instance.hint instanceof Function
+            & instance.style instanceof Function
+            & instance.html instanceof Function
+            & instance.hotkey instanceof Function
+            & instance.process instanceof Function
+            & instance.onEvent instanceof Function
+            & instance.callback instanceof Function
+    }
+}
+
+class dynamicCallHelper {
+    constructor(custom) {
+        this.custom = custom;
+        this.dynamicUtil = {target: null};
+    }
+
+    dynamicCallArgsGenerator = anchorNode => {
+        this.dynamicUtil.target = anchorNode;
+
+        const dynamicCallArgs = [];
+        for (const name in this.custom) {
+            const plugin = this.custom[name];
+            const selector = plugin.selector();
+            const arg_disabled = selector && !anchorNode.closest(selector);
+            dynamicCallArgs.push({
+                arg_name: plugin.showName,
+                arg_value: plugin.name,
+                arg_disabled: arg_disabled,
+                arg_hint: (arg_disabled) ? "光标于此位置不可用" : plugin.hint(),
+            })
+        }
+        return dynamicCallArgs;
+    }
+
+    call = name => {
+        const plugin = this.custom[name];
+        if (plugin) {
+            const selector = plugin.selector();
+            const target = (selector) ? this.dynamicUtil.target.closest(selector) : this.dynamicUtil.target;
+            try {
+                plugin.callback(target);
+            } catch (e) {
+                console.error("plugin callback error", plugin.name, e);
+            }
+        }
+    }
+}
+
+class hotkeyHelper {
+    constructor(custom) {
+        this.custom = custom;
+    }
+
+    hotkey = () => {
+        const hotkeys = [];
+        for (const name in this.custom) {
+            const plugin = this.custom[name];
+            try {
+                const hotkey = plugin.hotkey();
+                if (!hotkey) continue;
+
+                hotkeys.push({
+                    hotkey,
+                    callback: function () {
+                        const $anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
+                        const anchorNode = $anchorNode && $anchorNode[0];
+                        const selector = plugin.selector();
+                        const target = (selector && anchorNode) ? anchorNode.closest(selector) : anchorNode;
+                        plugin.callback(target);
+                    }
+                })
+            } catch (e) {
+                console.error("register hotkey error:", name, e);
+            }
+        }
+        return hotkeys
+    }
+}
+
+class modalHelper {
+    constructor(custom) {
+        this.custom = custom;
     }
 
     style = () => {
-        const css = `
+        const text = `
             #plugin-custom-modal {
                 position: fixed;
                 z-index: 99999;
@@ -43,7 +152,7 @@ class CustomPlugin extends global._basePlugin {
                 margin-top: -3px;
             }
         `
-        return {"textID": "plugin-custom-style", text: css}
+        return {textID: "plugin-custom-style", text: text}
     }
 
     html = () => {
@@ -67,32 +176,8 @@ class CustomPlugin extends global._basePlugin {
         quickOpenNode.parentNode.insertBefore(modal, quickOpenNode.nextSibling);
     }
 
-    hotkey = () => {
-        const hotkeys = [];
-        for (const name in this.custom) {
-            const plugin = this.custom[name];
-            try {
-                const hotkey = plugin.hotkey();
-                if (!hotkey) return;
-                hotkeys.push({
-                    hotkey,
-                    callback: function () {
-                        const $anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
-                        const anchorNode = $anchorNode && $anchorNode[0];
-                        const selector = plugin.selector();
-                        const target = (selector && anchorNode) ? anchorNode.closest(selector) : anchorNode;
-                        plugin.callback(target);
-                    }
-                })
-            } catch (e) {
-                console.log("register hotkey error:", name, e);
-            }
-        }
-        return hotkeys
-    }
-
     process = () => {
-        this.modalComponents = null;
+        this.pluginModal = null;
         this.entities = {
             modal: document.getElementById("plugin-custom-modal"),
             content: document.querySelector("#plugin-custom-modal .modal-content"),
@@ -101,6 +186,24 @@ class CustomPlugin extends global._basePlugin {
             submit: document.querySelector("#plugin-custom-modal button.plugin-modal-submit"),
             cancel: document.querySelector("#plugin-custom-modal button.plugin-modal-cancel"),
         }
+
+        this.entities.cancel.addEventListener("click", () => this.entities.modal.style.display = "none")
+
+        this.entities.submit.addEventListener("click", () => {
+            const name = this.entities.content.getAttribute("custom-plugin-name");
+            const plugin = this.custom[name];
+            if (!plugin) return;
+
+            this.pluginModal.components.forEach(component => {
+                if (!component.label || !component.type || !component.id) return;
+                const div = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
+                if (div) {
+                    component.submit = this.getWidgetValue(component.type, div);
+                }
+            })
+            plugin.onEvent("submit", this.pluginModal);
+            this.entities.modal.style.display = "none";
+        })
 
         this.entities.modal.addEventListener("keydown", ev => {
             if (ev.key === "Enter") {
@@ -113,24 +216,6 @@ class CustomPlugin extends global._basePlugin {
                 ev.preventDefault();
             }
         }, true)
-
-        this.entities.cancel.addEventListener("click", () => this.entities.modal.style.display = "none")
-
-        this.entities.submit.addEventListener("click", () => {
-            const name = this.entities.content.getAttribute("custom-plugin-name");
-            const plugin = this.custom[name];
-            if (!plugin) return;
-
-            this.modalComponents.components.forEach(component => {
-                if (!component.label || !component.type || !component.id) return;
-                const div = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
-                if (div) {
-                    component.submit = this.getWidgetValue(component.type, div);
-                }
-            })
-            plugin.onEvent("submit", this.modalComponents);
-            this.entities.modal.style.display = "none";
-        })
     }
 
     getWidgetValue = (type, widget) => {
@@ -191,7 +276,7 @@ class CustomPlugin extends global._basePlugin {
 
     // modal: {id: "", title: "", components: [{name: "", type: "", value: ""}]}
     modal = (customPlugin, modal) => {
-        this.modalComponents = modal;
+        this.pluginModal = modal;
         this.entities.content.setAttribute("custom-plugin-name", customPlugin.name);
         this.entities.content.setAttribute("custom-plugin-modal-id", modal.id);
         this.entities.title.innerText = modal.title;
@@ -201,65 +286,20 @@ class CustomPlugin extends global._basePlugin {
         this.entities.body.innerHTML = `<form role="form">` + widgetList.join("") + "</form>";
         this.entities.modal.style.display = "block";
     }
-
-    dynamicCallArgsGenerator = anchorNode => {
-        this.dynamicUtil.target = anchorNode;
-
-        const dynamicCallArgs = [];
-        for (const name in this.custom) {
-            const plugin = this.custom[name];
-            const selector = plugin.selector();
-            const arg_disabled = selector && !anchorNode.closest(selector);
-            dynamicCallArgs.push({
-                arg_name: plugin.showName,
-                arg_value: plugin.name,
-                arg_disabled: arg_disabled,
-                arg_hint: (arg_disabled) ? "光标于此位置不可用" : plugin.hint(),
-            })
-        }
-        return dynamicCallArgs;
-    }
-
-    call = name => {
-        const plugin = this.custom[name];
-        if (plugin) {
-            const selector = plugin.selector();
-            const target = (selector) ? this.dynamicUtil.target.closest(selector) : this.dynamicUtil.target;
-            try {
-                plugin.callback(target);
-            } catch (e) {
-                console.error("plugin callback error", plugin.name, e);
-            }
-        }
-    }
-
-    // 简易的判断是否为customBasePlugin的子类实例
-    check = instance => {
-        return !!instance
-            & instance.init instanceof Function
-            & instance.selector instanceof Function
-            & instance.hint instanceof Function
-            & instance.style instanceof Function
-            & instance.html instanceof Function
-            & instance.hotkey instanceof Function
-            & instance.process instanceof Function
-            & instance.onEvent instanceof Function
-            & instance.callback instanceof Function
-    }
 }
 
 class BaseCustomPlugin {
-    constructor(info, utils, controller) {
+    constructor(info, controller) {
         this.info = info;
         this.showName = info.name;
         this.name = info.plugin;
         this.config = info.config;
-        this.utils = utils;
+        this.utils = controller.utils;
         this.controller = controller;
     }
 
-    modal(modalComponents) {
-        this.controller.modal(this, modalComponents);
+    modal(pluginModal) {
+        this.controller.modal(this, pluginModal);
     }
 
     init = () => {

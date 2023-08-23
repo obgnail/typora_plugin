@@ -60,7 +60,7 @@ class exportEnhancePlugin extends global._basePlugin {
                         const base64Data = this.toBase64(imagePath);
                         result = origin.replace(src, base64Data);
                     } catch (e) {
-                        console.log("export error:", e);
+                        console.error("export error:", e);
                     }
                     return result;
                 })
