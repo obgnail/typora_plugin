@@ -609,11 +609,7 @@ class windowTabBarPlugin extends global._basePlugin {
 
     exitTabFile = () => {
         const filepath = this.getTabFile();
-        try {
-            this.utils.Package.Fs.accessSync(filepath, this.utils.Package.Fs.constants.F_OK);
-            return true
-        } catch (err) {
-        }
+        return this.utils.existPath(filepath)
     }
 
     saveTabs = () => {

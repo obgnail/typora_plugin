@@ -3,6 +3,7 @@
 # enable: 是否启用此自定义插件
 # plugin: 自定义插件
 # config: 插件配置
+
 [[plugins]]
 name = "复制标题路径"
 enable = true
@@ -18,3 +19,27 @@ enable = true
 plugin = "extractRangeToNewFile"
 [plugins.config]
 show_modal = true
+
+[[plugins]]
+name = "文件模板"
+enable = true
+plugin = "templater"
+[[plugins.template]]
+name = "标准模板"
+text = """
+---
+title: {{title}}
+tags:
+date: {{date}}
+---
+
+"""
+[[plugins.template]]
+name = "日记"
+text = """
+---
+title: {{title}}
+date: {{date}} {{weekday}}
+---
+
+"""
