@@ -106,6 +106,14 @@ class utils {
         return fileName
     }
 
+    static openFile = filepath => {
+        if (this.getPlugin("window_tab")) {
+            File.editor.library.openFile(filepath);
+        } else {
+            File.editor.library.openFileInNewWindow(filepath, false);
+        }
+    }
+
     static toHotkeyFunc = hotkeyString => {
         const keyList = hotkeyString.toLowerCase().split("+").map(k => k.trim());
         const ctrl = keyList.indexOf("ctrl") !== -1;
