@@ -7,9 +7,7 @@ class templater extends BaseCustomPlugin {
             window.parent.navigator.clipboard.readText().then(text => this.rangeText = text);
         }
 
-        const options = this.info.template.map(template => template.name);
-        this.modal({
-            id: "newTemplateFile",
+        const modal = {
             title: "新文件",
             components: [
                 {
@@ -21,35 +19,28 @@ class templater extends BaseCustomPlugin {
                 {
                     label: "模板",
                     type: "select",
-                    list: options,
+                    list: this.info.template.map(template => template.name),
                 }
             ]
-        })
-    }
-
-    onEvent = (eventType, payload) => {
-        if (eventType !== "submit"
-            || !payload
-            || !payload.id
-            || payload.id !== "newTemplateFile"
-            || !payload.components
-        ) return;
-
-        let filepath = payload.components[0].submit;
-        filepath = this.utils.newFilePath(filepath);
-        const filename = this.utils.Package.Path.basename(filepath);
-
-        const option = payload.components[1].submit;
-        const template = this.info.template.filter(template => template.name === option)[0];
-        if (!template) return;
-
-        const helper = new templateHelper(filename, this.rangeText, this.utils);
-        const content = helper.convert(template.text);
-        this.utils.Package.Fs.writeFileSync(filepath, content, "utf8");
-        this.rangeText = "";
-        if (this.config.auto_open) {
-            this.utils.openFile(filepath);
         }
+
+        this.modal(modal, components => {
+            let filepath = components[0].submit;
+            filepath = this.utils.newFilePath(filepath);
+            const filename = this.utils.Package.Path.basename(filepath);
+
+            const option = components[1].submit;
+            const template = this.info.template.filter(template => template.name === option)[0];
+            if (!template) return;
+
+            const helper = new templateHelper(filename, this.rangeText, this.utils);
+            const content = helper.convert(template.text);
+            this.utils.Package.Fs.writeFileSync(filepath, content, "utf8");
+            this.rangeText = "";
+            if (this.config.auto_open) {
+                this.utils.openFile(filepath);
+            }
+        })
     }
 }
 

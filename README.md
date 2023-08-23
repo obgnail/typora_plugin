@@ -336,7 +336,6 @@ const BUILTIN = [
 - 只需使用 `hint = () => "将当前标题的路径复制到剪切板"`，即可注册 hint。
 - 只需使用 `hotkey = () => ["ctrl+shift+y"]` ，即可注册快捷键。
 - 只需使用 `this.modal` 函数即可自动生成自定义的模态框。
-- 使用 `onEvent` 即可接收事件，执行自定义的回调函数。
 - init、selector、html、process、callback 等等生命周期函数
 
 ```js
@@ -361,10 +360,8 @@ class fullPathCopy extends BaseCustomPlugin {
                 // password、textarea、checkbox、radio、select
                 ...
             ]
-        })
+        }, response => {})
     }
-    
-    onEvent = (eventType, payload) => {}
 }
 ```
 

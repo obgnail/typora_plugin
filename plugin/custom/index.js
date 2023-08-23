@@ -10,7 +10,7 @@ class CustomPlugin extends global._basePlugin {
     style = () => this.modalHelper.style()
     html = () => this.modalHelper.html()
     hotkey = () => this.hotkeyHelper.hotkey()
-    modal = (customPlugin, modal) => this.modalHelper.modal(customPlugin, modal)
+    modal = (customPlugin, modal, callback) => this.modalHelper.modal(customPlugin, modal, callback)
     process = () => this.modalHelper.process()
     dynamicCallArgsGenerator = anchorNode => this.dynamicCallHelper.dynamicCallArgsGenerator(anchorNode)
     call = name => this.dynamicCallHelper.call(name)
@@ -57,7 +57,6 @@ class loadPluginHelper {
             & instance.html instanceof Function
             & instance.hotkey instanceof Function
             & instance.process instanceof Function
-            & instance.onEvent instanceof Function
             & instance.callback instanceof Function
     }
 }
@@ -135,6 +134,9 @@ class modalHelper {
     constructor(custom, utils) {
         this.custom = custom;
         this.utils = utils;
+        this.pluginModal = null;
+        this.callback = null;
+        this.entities = null;
     }
 
     style = () => {
@@ -179,7 +181,6 @@ class modalHelper {
     hide = () => this.entities.modal.style.display = "none";
 
     process = () => {
-        this.pluginModal = null;
         this.entities = {
             modal: document.getElementById("plugin-custom-modal"),
             content: document.querySelector("#plugin-custom-modal .modal-content"),
@@ -203,7 +204,7 @@ class modalHelper {
                     component.submit = this.getWidgetValue(component.type, div);
                 }
             })
-            plugin.onEvent("submit", this.pluginModal);
+            this.callback && this.callback(this.pluginModal.components);
             this.hide();
         })
 
@@ -276,17 +277,19 @@ class modalHelper {
         return `<div class="col-lg-12 form-group" component-id="${component.id}"><label>${component.label}</label>${inner}</div>`;
     }
 
-    // modal: {id: "", title: "", components: [{name: "", type: "", value: ""}]}
-    modal = (customPlugin, modal) => {
-        this.pluginModal = modal;
-        this.entities.content.setAttribute("custom-plugin-name", customPlugin.name);
-        this.entities.content.setAttribute("custom-plugin-modal-id", modal.id);
-        this.entities.title.innerText = modal.title;
+    // modal: {title: "", components: [{name: "", type: "", value: ""}]}
+    modal = (customPlugin, modal, callback) => {
+        if (callback instanceof Function) {
+            this.pluginModal = modal;
+            this.callback = callback;
 
-        modal.components.forEach(component => component.id = Math.random());
-        const widgetList = modal.components.map(component => this.newWidget(component));
-        this.entities.body.innerHTML = `<form role="form">` + widgetList.join("") + "</form>";
-        this.entities.modal.style.display = "block";
+            this.entities.content.setAttribute("custom-plugin-name", customPlugin.name);
+            this.entities.title.innerText = modal.title;
+            modal.components.forEach(component => component.id = Math.random());
+            const widgetList = modal.components.map(component => this.newWidget(component));
+            this.entities.body.innerHTML = `<form role="form">` + widgetList.join("") + "</form>";
+            this.entities.modal.style.display = "block";
+        }
     }
 }
 
@@ -300,8 +303,8 @@ class BaseCustomPlugin {
         this.controller = controller;
     }
 
-    modal(pluginModal) {
-        this.controller.modal(this, pluginModal);
+    modal(pluginModal, callback) {
+        this.controller.modal(this, pluginModal, callback);
     }
 
     init = () => {
@@ -317,9 +320,6 @@ class BaseCustomPlugin {
     hotkey = () => {
     }
     process = () => {
-    }
-
-    onEvent(eventType, payload) {
     }
 
     callback = anchorNode => {

@@ -15,8 +15,7 @@ class extractRangeToNewFile extends BaseCustomPlugin {
             return;
         }
 
-        this.modal({
-            id: "newFile",
+        const modal = {
             title: "提取选区文字到新文件",
             components: [
                 {
@@ -26,18 +25,9 @@ class extractRangeToNewFile extends BaseCustomPlugin {
                     placeholder: "请输入新文件名，为空则创建副本",
                 }
             ]
-        })
-    }
+        }
 
-    onEvent = (eventType, payload) => {
-        if (eventType !== "submit"
-            || !payload
-            || !payload.id
-            || payload.id !== "newFile"
-            || !payload.components
-        ) return;
-
-        this.extract(payload.components[0].submit);
+        this.modal(modal, components => this.extract(components[0].submit))
     }
 
     extract = filepath => {
