@@ -11,7 +11,7 @@ class commanderPlugin extends global._basePlugin {
     style = () => {
         const textID = "plugin-commander-style"
         const text = `
-        #typora-commander {
+        #plugin-commander {
             position: fixed;
             top: 30%;
             left: 55%;
@@ -26,18 +26,18 @@ class commanderPlugin extends global._basePlugin {
             transform: translate3d(0, 0, 0)
         }
         
-        .mac-seamless-mode #typora-commander {
+        .mac-seamless-mode #plugin-commander {
             top: 30px
         }
         
-        #typora-commander-form {
+        #plugin-commander-form {
             display: flex;
             align-items: center;
             font-size: 14px;
             line-height: 25px;
         }
         
-        #typora-commander-form select, input {
+        #plugin-commander-form select, input {
             border: 1px solid #ddd;
             box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
             border-radius: 2px;
@@ -46,7 +46,7 @@ class commanderPlugin extends global._basePlugin {
             margin-bottom: 1px;
         }
                 
-        #typora-commander-form input {
+        #plugin-commander-form input {
             width: 60%;
             margin-left: 0;
             margin-right: 2.5px;
@@ -54,14 +54,14 @@ class commanderPlugin extends global._basePlugin {
             padding-right: 24px;
         }
 
-        #typora-commander-form select {
+        #plugin-commander-form select {
             width: 20%;
             margin-left: 2.5px;
             margin-right: 0;
             padding: 1px 2px;
         }
         
-        #typora-commander-form .typora-commander-commit {
+        #plugin-commander-form .plugin-commander-commit {
             position: absolute;
             padding: 1px;
             left: 335px;
@@ -70,7 +70,7 @@ class commanderPlugin extends global._basePlugin {
             display: none;
         }
 
-        .typora-commander-output {
+        .plugin-commander-output {
             margin-top: 0;
             cursor: default;
             max-height: 340px;
@@ -79,18 +79,18 @@ class commanderPlugin extends global._basePlugin {
             display:none;
         }
         
-        .typora-commander-output pre {
+        .plugin-commander-output pre {
             display: inline-block;
             font-size: 13px;
             line-height: 1.1;
             margin: 10px 10px 5px 5px;
         }
         
-        .typora-commander-output pre.error {
+        .plugin-commander-output pre.error {
             color: red;
         }
 
-        #typora-commander-form input:focus, pre:focus {
+        #plugin-commander-form input:focus, pre:focus {
             outline: 0
         }
         `;
@@ -103,29 +103,28 @@ class commanderPlugin extends global._basePlugin {
             <option value="${this.SHELL.GIT_BASH}">git bash</option>
             <option value="${this.SHELL.WSL}">wsl</option>`;
         const builtin = this.config.BUILTIN.map(ele => `<option shell="${ele.shell}" value='${ele.cmd}'>${ele.name}</option>`).join("");
-        const builtinSelect = !this.config.USE_BUILTIN ? "" : `<select class="typora-commander-builtin">${builtin}</select>`;
+        const builtinSelect = !this.config.USE_BUILTIN ? "" : `<select class="plugin-commander-builtin">${builtin}</select>`;
 
         const div = `
-        <div id="typora-commander-form">
+        <div id="plugin-commander-form">
             <input type="text" class="input" placeholder="Typora commander" autocorrect="off" spellcheck="false"
                 autocapitalize="off" data-lg="Front" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
-            <i class="ion-ios7-play typora-commander-commit" ty-hint="执行命令"></i>
-            <select class="typora-commander-shell"><option value="${this.SHELL.CMD_BASH}">cmd/bash</option>${windowOption}</select>
+            <i class="ion-ios7-play plugin-commander-commit" ty-hint="执行命令"></i>
+            <select class="plugin-commander-shell"><option value="${this.SHELL.CMD_BASH}">cmd/bash</option>${windowOption}</select>
             ${builtinSelect}
         </div>
-        <div class="typora-commander-output"><pre tabindex="0"></pre></div>
+        <div class="plugin-commander-output"><pre tabindex="0"></pre></div>
        `
         const modal = document.createElement("div");
-        modal.id = 'typora-commander';
+        modal.id = 'plugin-commander';
         modal.style.display = "none";
         modal.innerHTML = div;
-        const searchPanel = document.getElementById("md-searchpanel");
-        searchPanel.parentNode.insertBefore(modal, searchPanel.nextSibling);
+        this.utils.insertDiv(modal);
 
         if (!this.config.USE_BUILTIN) {
-            document.getElementById('typora-commander').style.width = "500px";
-            document.querySelector("#typora-commander-form input").style.width = "80%";
-            document.querySelector("#typora-commander-form .typora-commander-commit").style.left = "375px";
+            document.getElementById('plugin-commander').style.width = "500px";
+            document.querySelector("#plugin-commander-form input").style.width = "80%";
+            document.querySelector("#plugin-commander-form .plugin-commander-commit").style.left = "375px";
         }
     }
 
@@ -138,13 +137,13 @@ class commanderPlugin extends global._basePlugin {
 
     init = () => {
         this.modal = {
-            modal: document.getElementById('typora-commander'),
-            input: document.querySelector("#typora-commander-form input"),
-            shellSelect: document.querySelector("#typora-commander-form .typora-commander-shell"),
-            builtinSelect: document.querySelector("#typora-commander-form .typora-commander-builtin"),
-            commit: document.querySelector("#typora-commander-form .typora-commander-commit"),
-            output: document.querySelector(".typora-commander-output"),
-            pre: document.querySelector(".typora-commander-output pre"),
+            modal: document.getElementById('plugin-commander'),
+            input: document.querySelector("#plugin-commander-form input"),
+            shellSelect: document.querySelector("#plugin-commander-form .plugin-commander-shell"),
+            builtinSelect: document.querySelector("#plugin-commander-form .plugin-commander-builtin"),
+            commit: document.querySelector("#plugin-commander-form .plugin-commander-commit"),
+            output: document.querySelector(".plugin-commander-output"),
+            pre: document.querySelector(".plugin-commander-output pre"),
         }
 
         this.arg_value_prefix = "call_builtin-";
@@ -197,7 +196,7 @@ class commanderPlugin extends global._basePlugin {
                     this.modal.modal.style.display = "none";
                     break
                 case "Tab":
-                    const targetClass = this.config.USE_BUILTIN ? ".typora-commander-builtin" : ".typora-commander-shell";
+                    const targetClass = this.config.USE_BUILTIN ? ".plugin-commander-builtin" : ".plugin-commander-shell";
                     const target = ev.target.closest(targetClass);
                     if (target) {
                         ev.stopPropagation();

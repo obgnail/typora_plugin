@@ -13,7 +13,7 @@ class goTopPlugin extends global._basePlugin {
         const i = document.createElement("i");
         i.classList.add("ion-arrow-up-c");
         goTop.appendChild(i);
-        document.querySelector("body").appendChild(goTop);
+        this.utils.insertDiv(goTop);
     }
 
     init = () => {

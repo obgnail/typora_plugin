@@ -2,7 +2,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
     style = () => {
         const textID = "plugin-search-multi-style";
         const text = `
-        #typora-search-multi {
+        #plugin-search-multi {
             position: fixed;
             top: 40px;
             left: 60%;
@@ -17,7 +17,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             transform: translate3d(0, 0, 0)
         }
         
-        #typora-search-multi .search-result-title {
+        #plugin-search-multi .search-result-title {
             padding-left: 20px;
             font-size: 10px;
             margin-top: 4px;
@@ -26,15 +26,15 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             height: 16px;
         }
         
-        .mac-seamless-mode #typora-search-multi {
+        .mac-seamless-mode #plugin-search-multi {
             top: 30px
         }
         
-        #typora-search-multi-input {
+        #plugin-search-multi-input {
             position: relative;
         }
         
-        #typora-search-multi-input input {
+        #plugin-search-multi-input input {
             width: 100%;
             font-size: 14px;
             line-height: 25px;
@@ -47,18 +47,18 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             padding-right: 50px;
         }
         
-        #typora-search-multi-input input:focus {
+        #plugin-search-multi-input input:focus {
             outline: 0
         }
         
-        #typora-search-multi-input svg {
+        #plugin-search-multi-input svg {
             width: 20px;
             height: 14px;
             stroke: none;
             fill: currentColor
         }
         
-        #typora-search-multi-input .option-btn {
+        #plugin-search-multi-input .option-btn {
             position: absolute;
             top: 7px;
             opacity: .5;
@@ -67,23 +67,23 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             cursor: pointer;
         }
         
-        #typora-search-multi-input .case-option-btn {
+        #plugin-search-multi-input .case-option-btn {
             right: 6px;
             padding: 2px 1px;
         }
         
-        #typora-search-multi-input .path-option-btn {
+        #plugin-search-multi-input .path-option-btn {
             right: 30px;
             padding: 1px 3px;
         }
         
-        #typora-search-multi-input .option-btn.select, .option-btn:hover {
+        #plugin-search-multi-input .option-btn.select, .option-btn:hover {
             background: var(--active-file-bg-color);
             color: var(--active-file-text-color);
             opacity: 1
         }
         
-        .typora-search-multi-item {
+        .plugin-search-multi-item {
             display: block;
             font-size: 14px;
             height: 40px;
@@ -93,21 +93,21 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             overflow: hidden;
         }
         
-        .typora-search-multi-item:hover,
-        .typora-search-multi-item.active {
+        .plugin-search-multi-item:hover,
+        .plugin-search-multi-item.active {
             background-color: var(--active-file-bg-color);
             border-color: var(--active-file-text-color);
             color: var(--active-file-text-color);
             cursor: pointer;
         }
         
-        .typora-search-multi-item-title {
+        .plugin-search-multi-item-title {
             line-height: 24px;
             max-height: 24px;
             overflow: hidden
         }
         
-        .typora-search-multi-result {
+        .plugin-search-multi-result {
             margin-top: 0;
             cursor: default;
             max-height: 340px;
@@ -116,14 +116,14 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             display: none;
         }
         
-        .typora-search-multi-result .search-result-list {
+        .plugin-search-multi-result .search-result-list {
             position: relative;
             height: 520px;
             overflow-y: auto;
             width: 100%;
         }
         
-        .typora-search-multi-item-path {
+        .plugin-search-multi-item-path {
             opacity: .5;
             font-size: 11px;
             margin-top: -4px;
@@ -134,7 +134,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             line-height: 14px
         }
         
-        .typora-search-multi-info-item {
+        .plugin-search-multi-info-item {
             opacity: .7;
             font-size: 12px;
             line-height: 40px;
@@ -147,7 +147,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
 
     html = () => {
         const modal_div = `
-        <div id="typora-search-multi-input">
+        <div id="plugin-search-multi-input">
             <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
                 autocapitalize="off" value="" placeholder="多关键字查找 空格分隔" ty-hint="⌃↵当前页打开。⇧⌃↵新页面打开"
                 data-localize="Search by file name" data-lg="Front">
@@ -159,13 +159,13 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             </span>
         </div>
     
-        <div class="typora-search-multi-result">
+        <div class="plugin-search-multi-result">
             <div class="search-result-title" data-localize="File Results" data-lg="Menu">匹配的文件</div>
             <div class="search-result-list"></div>
         </div>
     
-        <div class="typora-search-multi-info-item">
-            <div class="typora-search-multi-info" data-localize="Searching" data-lg="Front">Searching</div>
+        <div class="plugin-search-multi-info-item">
+            <div class="plugin-search-multi-info" data-localize="Searching" data-lg="Front">Searching</div>
             <div class="typora-search-spinner">
                 <div class="rect1"></div>
                 <div class="rect2"></div>
@@ -175,11 +175,11 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             </div>
         </div>`;
         const searchModal = document.createElement("div");
-        searchModal.id = 'typora-search-multi';
+        searchModal.id = 'plugin-search-multi';
         searchModal.style.display = "none";
         searchModal.innerHTML = modal_div;
-        const quickOpenNode = document.getElementById("typora-quick-open");
-        quickOpenNode.parentNode.insertBefore(searchModal, quickOpenNode.nextSibling);
+
+        this.utils.insertDiv(searchModal);
     }
 
     hotkey = () => {
@@ -191,12 +191,12 @@ class searchMultiKeywordPlugin extends global._basePlugin {
 
     process = () => {
         this.modal = {
-            modal: document.getElementById('typora-search-multi'),
-            input: document.querySelector("#typora-search-multi-input input"),
-            result: document.querySelector(".typora-search-multi-result"),
-            resultTitle: document.querySelector(".typora-search-multi-result .search-result-title"),
-            resultList: document.querySelector(".typora-search-multi-result .search-result-list"),
-            info: document.querySelector(".typora-search-multi-info-item"),
+            modal: document.getElementById('plugin-search-multi'),
+            input: document.querySelector("#plugin-search-multi-input input"),
+            result: document.querySelector(".plugin-search-multi-result"),
+            resultTitle: document.querySelector(".plugin-search-multi-result .search-result-title"),
+            resultList: document.querySelector(".plugin-search-multi-result .search-result-list"),
+            info: document.querySelector(".plugin-search-multi-info-item"),
         }
 
         if (this.config.REFOUCE_WHEN_OPEN_FILE) {
@@ -217,7 +217,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             switch (ev.key) {
                 case "Enter":
                     if (this.utils.metaKeyPressed(ev)) {
-                        const select = this.modal.resultList.querySelector(".typora-search-multi-item.active");
+                        const select = this.modal.resultList.querySelector(".plugin-search-multi-item.active");
                         if (select) {
                             ev.preventDefault();
                             ev.stopPropagation();
@@ -249,7 +249,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
 
                     if (!this.modal.resultList.childElementCount) return;
 
-                    const activeItem = this.modal.resultList.querySelector(".typora-search-multi-item.active")
+                    const activeItem = this.modal.resultList.querySelector(".plugin-search-multi-item.active")
                     let nextItem;
                     if (ev.key === "ArrowDown") {
                         if (floor !== 7) floor++;
@@ -287,7 +287,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
         });
 
         this.modal.resultList.addEventListener("click", ev => {
-            const target = ev.target.closest(".typora-search-multi-item");
+            const target = ev.target.closest(".plugin-search-multi-item");
             if (!target) return;
 
             ev.preventDefault();
@@ -303,8 +303,8 @@ class searchMultiKeywordPlugin extends global._basePlugin {
         });
 
         this.modal.modal.addEventListener("click", ev => {
-            const caseButton = ev.target.closest("#typora-search-multi-input .case-option-btn");
-            const pathButton = ev.target.closest("#typora-search-multi-input .path-option-btn");
+            const caseButton = ev.target.closest("#plugin-search-multi-input .case-option-btn");
+            const pathButton = ev.target.closest("#plugin-search-multi-input .path-option-btn");
 
             if (caseButton || pathButton) {
                 ev.preventDefault();
@@ -371,7 +371,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             const dirPath = !this.config.RELATIVE_PATH ? parseUrl.dir : parseUrl.dir.replace(rootPath, ".");
 
             const item = document.createElement("div");
-            item.classList.add("typora-search-multi-item");
+            item.classList.add("plugin-search-multi-item");
             item.setAttribute("data-is-dir", "false");
             item.setAttribute("data-path", filePath);
             item.setAttribute("data-index", index + "");
@@ -379,10 +379,10 @@ class searchMultiKeywordPlugin extends global._basePlugin {
                 item.setAttribute("ty-hint", stats.mtime.toLocaleString('chinese', {hour12: false}));
             }
             const title = document.createElement("div");
-            title.classList.add("typora-search-multi-item-title");
+            title.classList.add("plugin-search-multi-item-title");
             title.innerText = parseUrl.base;
             const path = document.createElement("div");
-            path.classList.add("typora-search-multi-item-path");
+            path.classList.add("plugin-search-multi-item-path");
             path.innerText = dirPath + this.separator;
             item.appendChild(title);
             item.appendChild(path);
