@@ -42,7 +42,12 @@ class extractRangeToNewFile extends BaseCustomPlugin {
 
     extract = filepath => {
         filepath = this.utils.newFilePath(filepath);
-        this.promise.then(text => this.utils.Package.Fs.writeFileSync(filepath, text, "utf8"));
+        this.promise.then(text => {
+            this.utils.Package.Fs.writeFileSync(filepath, text, "utf8");
+            if (this.config.auto_open) {
+                this.utils.openFile(filepath);
+            }
+        });
     }
 }
 

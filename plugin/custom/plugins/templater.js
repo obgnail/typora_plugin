@@ -47,6 +47,9 @@ class templater extends BaseCustomPlugin {
         const content = helper.convert(template.text);
         this.utils.Package.Fs.writeFileSync(filepath, content, "utf8");
         this.rangeText = "";
+        if (this.config.auto_open) {
+            this.utils.openFile(filepath);
+        }
     }
 }
 

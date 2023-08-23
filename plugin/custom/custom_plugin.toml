@@ -9,8 +9,11 @@ name = "复制标题路径"
 enable = true
 plugin = "fullPathCopy"
 [plugins.config]
+# 跳过空白的标题
 ignore_empty_header = false
+# 标题和提示之前添加空格
 add_space = true
+# 使用绝对路径
 full_file_path = false
 
 [[plugins]]
@@ -18,12 +21,18 @@ name = "提取选区文字到新文件"
 enable = true
 plugin = "extractRangeToNewFile"
 [plugins.config]
+# 展示模态框
 show_modal = true
+# 自动打开新文件
+auto_open = true
 
 [[plugins]]
 name = "文件模板"
 enable = true
 plugin = "templater"
+[plugins.config]
+# 自动打开新文件
+auto_open = true
 [[plugins.template]]
 name = "标准模板"
 text = """
