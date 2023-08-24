@@ -4,6 +4,7 @@
 # plugin: 自定义插件
 # config: 插件配置
 
+############### fullPathCopy ###############
 [[plugins]]
 name = "复制标题路径"
 enable = true
@@ -16,6 +17,8 @@ add_space = true
 # 使用绝对路径
 full_file_path = false
 
+
+############### extractRangeToNewFile ###############
 [[plugins]]
 name = "提取选区文字到新文件"
 enable = true
@@ -33,6 +36,7 @@ plugin = "templater"
 [plugins.config]
 # 自动打开新文件
 auto_open = true
+# 模板
 [[plugins.template]]
 name = "标准模板"
 text = """
@@ -52,3 +56,13 @@ date: {{date}} {{weekday}}
 ---
 
 """
+
+
+############### resourceOperation ###############
+[[plugins]]
+name = "资源管理"
+enable = true
+plugin = "resourceOperation"
+[plugins.config]
+# 自动打开新文件
+auto_open = true

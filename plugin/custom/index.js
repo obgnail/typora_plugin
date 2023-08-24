@@ -37,11 +37,12 @@ class loadPluginHelper {
                     instance.html();
                     instance.process();
                     this.controller.custom[instance.name] = instance;
+                    console.log(`custom plugin had been injected: [ ${plugin.name} ] `);
                 } else {
                     console.error("instance is not BaseCustomPlugin", plugin.name);
                 }
             } catch (e) {
-                console.error("load custom plugin error:", plugin.name, e);
+                console.error("load custom plugin error:", e);
             }
         })
         return this.controller.custom

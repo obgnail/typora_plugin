@@ -95,7 +95,8 @@ class datatablesPlugin extends global._basePlugin {
             () => (File && File.editor && File.editor.tableEdit && File.editor.tableEdit.showTableEdit),
             "File.editor.tableEdit.showTableEdit",
             (...args) => {
-                if (!args[0]) return;
+                if (!args[0] || !args[0].find) return;
+
                 const table = args[0].find("table");
                 if (table.length === 0) return
 
