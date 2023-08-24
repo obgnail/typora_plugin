@@ -70,3 +70,5 @@ ignore_image_div = false
 use_md_syntax_in_report = false
 # 自动打开新文件
 auto_open = true
+# 打开文件后自动将此文件转为datatable
+auto_use_datetable = true

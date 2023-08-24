@@ -7,11 +7,13 @@ class resourceOperation extends BaseCustomPlugin {
             this.regexp = new RegExp("!\\[.*?\\]\\((?<src1>.*?)\\)|<img.*?src=\"(?<src2>.*?)\"", "g");
         }
 
-        this.resourceSuffix = new Set([".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".bmp", ".image", ".jfif", ".gif!large"]);
+        this.resourceSuffix = new Set([".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".bmp", ".mp3", ".mp4", ".image", ".jfif", ".gif!large"]);
         this.fileSuffix = new Set([".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]);
 
         this.resources = new Set();
         this.resourcesInFile = new Set();
+
+        this.message = "## Note\n> 存在一个已知 BUG: 如果图片路径中包含右括号，会出现匹配异常的情况"
     }
 
     callback = anchorNode => this.traverseDir(File.getMountFolder(), this.traverseCallback, this.traverseThen);
@@ -19,11 +21,22 @@ class resourceOperation extends BaseCustomPlugin {
     report = (nonExistInFile, nonExistInFolder) => {
         const _nonExistInFile = [...nonExistInFile].map(this.template);
         const _nonExistInFolder = [...nonExistInFolder].map(this.template);
-        const fileContent = `## 存在于文件夹，但是不存在于 md 文件\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n## 存在于 md 文件，但是不存在于文件夹\n\n| 资源名 |\n| ------ |\n${_nonExistInFolder.join("\n")}`;
+        const fileContent = `${this.message}\n\n## 存在于文件夹，但是不存在于 md 文件\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n## 存在于 md 文件，但是不存在于文件夹\n\n| 资源名 |\n| ------ |\n${_nonExistInFolder.join("\n")}`;
 
         const filepath = this.utils.newFilePath("resource-report.md");
         this.utils.Package.Fs.writeFileSync(filepath, fileContent, "utf8");
-        this.config.auto_open && this.utils.openFile(filepath);
+        if (this.config.auto_open) {
+            this.utils.openFile(filepath);
+
+            const datatables = this.utils.getPlugin("datatables");
+            if (datatables && this.config.auto_use_datetable) {
+                setTimeout(() => {
+                    if (this.utils.getFilePath() === filepath) {
+                        document.querySelectorAll("#write table").forEach(table => datatables.newDataTable(table));
+                    }
+                }, 500)
+            }
+        }
     }
 
     traverseThen = () => {
@@ -33,7 +46,7 @@ class resourceOperation extends BaseCustomPlugin {
         this.report(nonExistInFile, nonExistInFolder);
     }
 
-    traverseCallback = async (filePath, dir, stats) => {
+    traverseCallback = async (filePath, dir) => {
         if (filePath[0] === ".") return;
 
         const extname = this.utils.Package.Path.extname(filePath).toLowerCase();
@@ -67,7 +80,7 @@ class resourceOperation extends BaseCustomPlugin {
                 const filePath = pkg.Path.join(dir, file);
                 const stats = await pkg.Fs.promises.stat(filePath);
                 if (stats.isFile()) {
-                    await callback(filePath, dir, stats)
+                    await callback(filePath, dir)
                 } else if (stats.isDirectory()) {
                     await traverse(filePath);
                 }
