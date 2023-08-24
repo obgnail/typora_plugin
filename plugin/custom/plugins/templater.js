@@ -77,7 +77,7 @@ class templateHelper {
 
     dateOffset = offset => {
         const day = new Date(this.today.getTime() + offset);
-        return `${day.getFullYear()}/${day.getMonth()}/${day.getDate()}`
+        return `${day.getFullYear()}/${day.getMonth() + 1}/${day.getDate()}`
     }
 
     uuid = () => this.utils.getUUID();
@@ -88,7 +88,7 @@ class templateHelper {
     filepath = () => this.utils.Package.Path.join(this.folder(), this.title());
     weekday = () => "周" + '日一二三四五六'.charAt(this.today.getDay());
     datetime = () => this.today.toLocaleString('chinese', {hour12: false});
-    date = () => `${this.today.getFullYear()}/${this.today.getMonth()}/${this.today.getDate()}`;
+    date = () => `${this.today.getFullYear()}/${this.today.getMonth() + 1}/${this.today.getDate()}`;
     time = () => `${this.today.getHours()}:${this.today.getMinutes()}:${this.today.getSeconds()}`;
     yesterday = () => this.dateOffset(-24 * 60 * 60 * 1000);
     tomorrow = () => this.dateOffset(24 * 60 * 60 * 1000);
