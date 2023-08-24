@@ -80,7 +80,11 @@ class modalExample extends BaseCustomPlugin {
                         "option3",
                         "option4",
                     ]
-                }
+                },
+                {
+                    label: "文件",
+                    type: "file",  // 文件框
+                },
             ]
         }
         this.modal(modal, components => {

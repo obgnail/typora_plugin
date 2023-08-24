@@ -230,9 +230,11 @@ class modalHelper {
             case "checkbox":
                 return [...widget.querySelectorAll("input:checked")].map(box => box.value)
             case "radio":
-                return widget.querySelector("input:checked").value;
+                return widget.querySelector("input:checked").value
             case "select":
-                return widget.querySelector("select").value;
+                return widget.querySelector("select").value
+            case "file":
+                return widget.querySelector("input").files
         }
     }
 
@@ -244,7 +246,8 @@ class modalHelper {
         switch (type) {
             case "input":
             case "password":
-                inner = `<input type="${type === "input" ? "text" : "password"}" class="form-control" 
+            case "file":
+                inner = `<input type="${type === "input" ? "text" : type}" class="form-control" 
                             placeholder="${component.placeholder}" value="${component.value}">`;
                 break
             case "textarea":
