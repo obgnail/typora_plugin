@@ -13,7 +13,7 @@ class resourceOperation extends BaseCustomPlugin {
         this.resources = new Set();
         this.resourcesInFile = new Set();
 
-        this.message = "## Note\n> 存在一个已知 BUG: 如果图片路径中包含右括号，会出现匹配异常的情况"
+        this.message = "> Note: 存在一个已知 BUG: **如果资源路径中包含右括号，会出现匹配异常的情况**"
     }
 
     callback = anchorNode => this.traverseDir(File.getMountFolder(), this.traverseCallback, this.traverseThen);
@@ -21,7 +21,7 @@ class resourceOperation extends BaseCustomPlugin {
     report = (nonExistInFile, nonExistInFolder) => {
         const _nonExistInFile = [...nonExistInFile].map(this.template);
         const _nonExistInFolder = [...nonExistInFolder].map(this.template);
-        const fileContent = `${this.message}\n\n## 存在于文件夹，但是不存在于 md 文件\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n## 存在于 md 文件，但是不存在于文件夹\n\n| 资源名 |\n| ------ |\n${_nonExistInFolder.join("\n")}`;
+        const fileContent = `${this.message}\n\n## 存在于文件夹，但是不存在于 md 文件的资源\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n## 存在于 md 文件，但是不存在于文件夹的资源\n\n| 资源名 |\n| ------ |\n${_nonExistInFolder.join("\n")}`;
 
         const filepath = this.utils.newFilePath("resource-report.md");
         this.utils.Package.Fs.writeFileSync(filepath, fileContent, "utf8");
