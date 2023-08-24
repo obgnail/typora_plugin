@@ -66,6 +66,8 @@ plugin = "resourceOperation"
 [plugins.config]
 # 是否忽略<img src="example.jpg">
 ignore_image_div = false
+# 对于无后缀名的是否加入资源列表（本插件是通过后缀名来判断是否是资源的）
+append_empty_suffix_file = true
 # 是否在报告中使用md语法展示图片
 use_md_syntax_in_report = false
 # 自动打开新文件
