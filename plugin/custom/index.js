@@ -37,11 +37,12 @@ class loadPluginHelper {
                     instance.html();
                     instance.process();
                     this.controller.custom[instance.name] = instance;
+                    console.log(`custom plugin had been injected: [ ${plugin.name} ] `);
                 } else {
                     console.error("instance is not BaseCustomPlugin", plugin.name);
                 }
             } catch (e) {
-                console.error("load custom plugin error:", plugin.name, e);
+                console.error("load custom plugin error:", e);
             }
         })
         return this.controller.custom
@@ -230,9 +231,11 @@ class modalHelper {
             case "checkbox":
                 return [...widget.querySelectorAll("input:checked")].map(box => box.value)
             case "radio":
-                return widget.querySelector("input:checked").value;
+                return widget.querySelector("input:checked").value
             case "select":
-                return widget.querySelector("select").value;
+                return widget.querySelector("select").value
+            case "file":
+                return widget.querySelector("input").files
         }
     }
 
@@ -244,7 +247,8 @@ class modalHelper {
         switch (type) {
             case "input":
             case "password":
-                inner = `<input type="${type === "input" ? "text" : "password"}" class="form-control" 
+            case "file":
+                inner = `<input type="${type === "input" ? "text" : type}" class="form-control" 
                             placeholder="${component.placeholder}" value="${component.value}">`;
                 break
             case "textarea":
@@ -279,7 +283,7 @@ class modalHelper {
 
     // modal: {title: "", components: [{name: "", type: "", value: ""}]}
     modal = (customPlugin, modal, callback) => {
-        if (callback instanceof Function) {
+        if (modal && callback instanceof Function) {
             this.pluginModal = modal;
             this.callback = callback;
 

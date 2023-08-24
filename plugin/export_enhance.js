@@ -15,7 +15,7 @@ class exportEnhancePlugin extends global._basePlugin {
 
             downloadAllImage: async (html) => {
                 for (let result of html.matchAll(this.decoMixin.regexp)) {
-                    if (result.length !== 2 || result.index < this.decoMixin.writeIdx || !this.isNetworkImage(result[1])) continue
+                    if (result.length !== 2 || result.index < this.decoMixin.writeIdx || !this.utils.isNetworkImage(result[1])) continue
                     const src = result[1];
                     if (!this.decoMixin.imageMap.hasOwnProperty(src)) { // single flight
                         const filename = Math.random() + "_" + this.Path.basename(src);
@@ -50,7 +50,7 @@ class exportEnhancePlugin extends global._basePlugin {
                     let result = origin;
                     let imagePath;
                     try {
-                        if (this.isNetworkImage(src)) {
+                        if (this.utils.isNetworkImage(src)) {
                             if (!this.config.DOWNLOAD_NETWORK_IMAGE || !this.decoMixin.imageMap.hasOwnProperty(src)) return origin
                             const path = this.decoMixin.imageMap[src];
                             imagePath = this.Path.join(this.tempFolder, path);
@@ -80,8 +80,6 @@ class exportEnhancePlugin extends global._basePlugin {
             true,
         );
     }
-
-    isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
 
     getCurDir = () => {
         const filepath = this.utils.getFilePath();

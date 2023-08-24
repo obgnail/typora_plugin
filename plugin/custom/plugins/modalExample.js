@@ -11,6 +11,8 @@
          5. checkbox
          6. radio
          7. select
+         8. file
+     3. callback: 回调函数
 */
 class modalExample extends BaseCustomPlugin {
     selector = () => ""
@@ -80,10 +82,16 @@ class modalExample extends BaseCustomPlugin {
                         "option3",
                         "option4",
                     ]
-                }
+                },
+                {
+                    label: "文件",
+                    type: "file",  // 文件框
+                },
             ]
         }
         this.modal(modal, components => {
+            console.log(components);
+
             this.modal({
                 title: "otherFile",
                 component: [

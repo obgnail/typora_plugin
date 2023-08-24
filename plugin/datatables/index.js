@@ -86,16 +86,21 @@ class datatablesPlugin extends global._basePlugin {
     process = () => {
         this.init();
 
-        this.utils.decorateOpenFile(null, () => {
-            this.tableList.forEach(table => table.table.api().destroy());
-            this.tableList = [];
-        })
+        this.utils.decorateOpenFile(null, this.destroyAllDataTable)
+
+        this.utils.decorate(
+            () => (File && File.toggleSourceMode),
+            "File.toggleSourceMode",
+            this.destroyAllDataTable,
+            null
+        )
 
         this.utils.decorate(
             () => (File && File.editor && File.editor.tableEdit && File.editor.tableEdit.showTableEdit),
             "File.editor.tableEdit.showTableEdit",
             (...args) => {
-                if (!args[0]) return;
+                if (!args[0] || !args[0].find) return;
+
                 const table = args[0].find("table");
                 if (table.length === 0) return
 
@@ -107,6 +112,14 @@ class datatablesPlugin extends global._basePlugin {
             },
             null
         )
+    }
+
+    destroyAllDataTable = () => {
+        console.log("destroyAllDataTable");
+        while (this.tableList.length) {
+            this.removeDataTable(this.tableList[0].uuid);
+        }
+        this.tableList = [];
     }
 
     // addTfoot = $table => {
@@ -129,6 +142,7 @@ class datatablesPlugin extends global._basePlugin {
     }
 
     newDataTable = target => {
+        if (!target) return;
         const edit = target.parentElement.querySelector(".md-table-edit");
         const $table = $(target);
         const uuid = Math.random() + "";
@@ -142,18 +156,19 @@ class datatablesPlugin extends global._basePlugin {
     }
 
     removeDataTable = uuid => {
+        if (!uuid) return;
         const idx = this.tableList.findIndex(table => table.uuid === uuid);
-        if (idx !== -1) {
-            const table = this.tableList[idx].table;
-            const target = table[0];
-            table.api().destroy();
-            target.removeAttribute("table-uuid");
-            this.tableList.splice(idx, 1);
-            target.querySelectorAll("th select").forEach(ele => ele.parentNode.removeChild(ele));
-            if (target) {
-                const $fig = $(target.parentElement);
-                File.editor.tableEdit.showTableEdit($fig);
-            }
+        if (idx === -1) return;
+
+        const table = this.tableList[idx].table;
+        const target = table[0];
+        table.api().destroy();
+        target.removeAttribute("table-uuid");
+        this.tableList.splice(idx, 1);
+        target.querySelectorAll("th select").forEach(ele => ele.parentNode.removeChild(ele));
+        if (target) {
+            const $fig = $(target.parentElement);
+            File.editor.tableEdit.showTableEdit($fig);
         }
     }
 
@@ -172,13 +187,9 @@ class datatablesPlugin extends global._basePlugin {
 
     call = type => {
         if (type === "convert_current") {
-            if (this.dynamicUtil.target) {
-                this.newDataTable(this.dynamicUtil.target);
-            }
+            this.newDataTable(this.dynamicUtil.target);
         } else if (type === "rollback_current") {
-            if (this.dynamicUtil.uuid) {
-                this.removeDataTable(this.dynamicUtil.uuid);
-            }
+            this.removeDataTable(this.dynamicUtil.uuid);
         }
     }
 }

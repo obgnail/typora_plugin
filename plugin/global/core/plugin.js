@@ -114,6 +114,8 @@ class utils {
         }
     }
 
+    static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
+
     static toHotkeyFunc = hotkeyString => {
         const keyList = hotkeyString.toLowerCase().split("+").map(k => k.trim());
         const ctrl = keyList.indexOf("ctrl") !== -1;

@@ -13,24 +13,25 @@
 | 3    | multi_highlighter  | 多关键字高亮                         | √        |
 | 4    | collapse_paragraph | 章节折叠                             | √        |
 | 5    | md_padding         | 中英文混排优化                       | √        |
-| 6    | fence_enhance      | 一键复制代码，折叠代码               | √        |
-| 7    | commander          | 命令行环境                           | √        |
-| 8    | templater          | 文件模板                             | √        |
-| 9    | read_only          | 只读模式                             | √        |
-| 10   | file_counter       | 显示目录下的文件数                   | √        |
-| 11   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
-| 12   | resize_table       | 调整表格行高列宽                     | √        |
-| 13   | resize_image       | 调整图片显示大小                     | √        |
+| 6    | templater          | 文件模板                             | √        |
+| 7    | resource_operation | 一键清除无用图片，生成报告           | √        |
+| 8    | fence_enhance      | 一键复制代码，折叠代码               | √        |
+| 9    | commander          | 命令行环境                           | √        |
+| 10   | mindmap            | 根据文档大纲一键生成思维导图         | √        |
+| 11   | read_only          | 只读模式                             | √        |
+| 12   | file_counter       | 显示目录下的文件数                   | √        |
+| 13   | outline            | 以表格、图片、代码块形式的大纲       | √        |
 | 14   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
-| 15   | outline            | 以表格、图片、代码块形式的大纲       | √        |
-| 16   | mindmap            | 根据文档大纲一键生成思维导图         | √        |
-| 17   | export_enhance     | 导出 html 时避免图片丢失             | √        |
-| 18   | go_top             | 一键到文章顶部                       | √        |
-| 19   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
-| 20   | custom             | 用户自定义命令（高级）               | √        |
-| 21   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
-| 22   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
-| 23   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
+| 15   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
+| 16   | resize_table       | 调整表格行高列宽                     | √        |
+| 17   | resize_image       | 调整图片显示大小                     | √        |
+| 18   | export_enhance     | 导出 html 时避免图片丢失             | √        |
+| 19   | go_top             | 一键到文章顶部                       | √        |
+| 20   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
+| 21   | custom             | 用户自定义命令（高级）               | √        |
+| 22   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
+| 23   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
+| 24   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -193,6 +194,48 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
+### templater：文件模板功能
+
+类似于 obsidian 的文件模板功能，根据模板快速创建文件。
+
+使用方式：右键菜单 -> 启用插件 -> 自定义插件 -> 文件模板。
+
+支持的模板变量：
+
+- `{{date}}`： 当前日期
+- `{{time}}`：当前时间
+- `{{weekday}}`：当前周几
+- `{{datetime}}`：当前日期时间
+- `{{yesterday}}`：昨天日期
+- `{{tomorrow}}`：明天日期
+- `{{random}}`：随机数
+- `{{title}}`：新建文件的标题
+- `{{folder}}`：当前文件的目录
+- `{{filepath}}`：新建文件的路径
+- `{{range}}`：当前选取的文字
+- `{{uuid}}`：uuid
+
+> 模板列表可以在 `custom_plugin.toml` 中配置。
+
+![templater](assets/templater.gif)
+
+
+
+### resource_operation：一键清除无用图片，生成报告
+
+使用方式：右键菜单 -> 启用插件 -> 自定义插件 -> 资源管理。
+
+> NOTE：由于删除文件是危险操作，默认只会生成报告，不会删除。如果需要删除文件，请手动修改 `custom_plugin.toml` 的 `operation`。
+
+```toml
+# report: 生成报告
+# delete: 直接删除
+# move  : 移动到当前文件夹
+operation = "report"
+```
+
+
+
 ### fence_enhance：一键复制代码，折叠代码
 
 ![fence_enhance](assets/fence_enhance.png)
@@ -239,6 +282,40 @@ const BUILTIN = [
 
 
 
+### mindmap：  根据文档大纲一键生成思维导图
+
+使用方式：右键菜单 -> 启用插件 ->  思维导图
+
+![mindmap](assets/mindmap.gif)
+
+
+
+### read_only：只读模式
+
+只读模式下文档不可编辑。
+
+快捷键：ctrl+shift+R。
+
+> 开启后，右下角数字统计区域会出现 `ReadOnly` 字样
+
+
+
+### file_counter：显示文件数
+
+![file_count](assets/file_count.png)
+
+
+
+### outline：以表格、图片、代码块形式的大纲
+
+使用方式：右键菜单 -> 启用插件 ->  类别大纲
+
+![outline](assets/outline.gif)
+
+
+
+
+
 ### auto_number：自动编号
 
 ![auto_number](assets/auto_number.png)
@@ -255,22 +332,6 @@ const BUILTIN = [
 > 注意：通过注入 CSS 实现此功能，有可能会与你使用的 theme 冲突。
 
 > 和其他使用 Theme CSS 的实现方式不同，此插件通过修改内置函数，完美解决导出 PDF 后侧边栏没有编号的问题。:)
-
-
-
-### outline：以表格、图片、代码块形式的大纲
-
-使用方式：右键菜单 -> 启用插件 ->  类别大纲
-
-![outline](assets/outline.gif)
-
-
-
-### mindmap：  根据文档大纲一键生成思维导图
-
-使用方式：右键菜单 -> 启用插件 ->  思维导图
-
-![mindmap](assets/mindmap.png)
 
 
 
@@ -308,9 +369,35 @@ const BUILTIN = [
 
 
 
-### file_counter：显示文件数
+### export_enhance：导出增强
 
-![file_count](assets/file_count.png)
+导出 html 时，将图片转为 base64，避免图片丢失。
+
+> 此插件有一个配置为 `DOWNLOAD_NETWORK_IMAGE`，功能是下载网络图片，将也网络图片转为 base64，默认为 false。若置为 true，有可能因为网络问题导致导出超时。
+
+
+
+### go_top： 一键到顶
+
+在右下角添加一个一键到顶的按钮。
+
+
+
+### truncate_text：暂时隐藏内容，提高大文件渲染性能
+
+大文件在 Typora 的渲染性能很糟糕，用此脚本暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。也可以用于防偷窥。
+
+使用方式：右键菜单 -> 启用插件 -> 文本截断。
+
+包含的功能如下：
+
+- 隐藏最前面：隐藏最前面的文本段，只留下最后 80 段。
+- 重新显示：重新显示之前隐藏的所有文本段。
+- 根据当前可视范围显示：根据当前可视范围显示文本段。
+
+> 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
+
+> collapse_paragraph.js 的章节折叠功能可以很好的替代此脚本，建议使用 collapse_paragraph。故不提供快捷键。
 
 
 
@@ -496,71 +583,6 @@ module.exports = { plugin: fullPathCopy };
 ![custom](assets/custom.png)
 
 ---
-
-### read_only：只读模式
-
-只读模式下文档不可编辑。
-
-快捷键：ctrl+shift+R。
-
-> 开启后，右下角数字统计区域会出现 `ReadOnly` 字样
-
-
-
-### templater：文件模板功能
-
-类似于 obsidian 的文件模板功能，根据模板快速创建文件。
-
-使用方式：右键菜单 -> 启用插件 -> 自定义插件 -> 文件模板。
-
-支持的模板变量：
-
-- `{{date}}`： 当前日期
-- `{{time}}`：当前时间
-- `{{weekday}}`：当前周几
-- `{{datetime}}`：当前日期时间
-- `{{yesterday}}`：昨天日期
-- `{{tomorrow}}`：明天日期
-- `{{random}}`：随机数
-- `{{title}}`：新建文件的标题
-- `{{folder}}`：当前文件的目录
-- `{{filepath}}`：新建文件的路径
-- `{{range}}`：当前选取的文字
-- `{{uuid}}`：uuid
-
-> 模板列表可以在 `custom_plugin.toml` 中配置。
-
-
-
-### export_enhance：导出增强
-
-导出 html 时，将图片转为 base64，避免图片丢失。
-
-> 此插件有一个配置为 `DOWNLOAD_NETWORK_IMAGE`，功能是下载网络图片，将也网络图片转为 base64，默认为 false。若置为 true，有可能因为网络问题导致导出超时。
-
-
-
-### truncate_text：暂时隐藏内容，提高大文件渲染性能
-
-大文件在 Typora 的渲染性能很糟糕，用此脚本暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。也可以用于防偷窥。
-
-使用方式：右键菜单 -> 启用插件 -> 文本截断。
-
-包含的功能如下：
-
-- 隐藏最前面：隐藏最前面的文本段，只留下最后 80 段。
-- 重新显示：重新显示之前隐藏的所有文本段。
-- 根据当前可视范围显示：根据当前可视范围显示文本段。
-
-> 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
-
-> collapse_paragraph.js 的章节折叠功能可以很好的替代此脚本，建议使用 collapse_paragraph。故不提供快捷键。
-
-
-
-### go_top： 一键到顶
-
-在右下角添加一个一键到顶的按钮。
 
 
 
