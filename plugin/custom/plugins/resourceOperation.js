@@ -1,7 +1,12 @@
 class resourceOperation extends BaseCustomPlugin {
     selector = () => ""
     init = () => {
-        this.regexp = new RegExp("!\\[.*?\\]\\((?<src1>.*?)\\)|<img.*?src=\"(?<src2>.*?)\"", "g");
+        if (this.config.ignore_image_div) {
+            this.regexp = new RegExp("!\\[.*?\\]\\((?<src1>.*?)\\)", "g");
+        } else {
+            this.regexp = new RegExp("!\\[.*?\\]\\((?<src1>.*?)\\)|<img.*?src=\"(?<src2>.*?)\"", "g");
+        }
+
         this.resourceSuffix = new Set([".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".bmp", ".image", ".jfif", ".gif!large"]);
         this.fileSuffix = new Set([".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]);
 
@@ -9,26 +14,23 @@ class resourceOperation extends BaseCustomPlugin {
         this.resourcesInFile = new Set();
     }
 
-    callback = anchorNode => {
-        this.traverseDir(File.getMountFolder(), this.traverseCallback, this.traverseThen);
-    }
+    callback = anchorNode => this.traverseDir(File.getMountFolder(), this.traverseCallback, this.traverseThen);
 
     report = (nonExistInFile, nonExistInFolder) => {
-        const lines1 = [...nonExistInFile].map((file, idx) => `| ![resource${idx}](${file}) |`);
-        const lines2 = [...nonExistInFolder].map((file, idx) => `| ![resource${idx}](${file}) |`);
-        const fileContent = `## 存在于文件夹，但是不存在于 md 文件\n\n| 资源名 |\n| ------ |\n${lines1.join("\n")}\n\n\n## 存在于 md 文件，但是不存在于文件夹\n\n| 资源名 |\n| ------ |\n${lines2.join("\n")}`;
+        const _nonExistInFile = [...nonExistInFile].map(this.template);
+        const _nonExistInFolder = [...nonExistInFolder].map(this.template);
+        const fileContent = `## 存在于文件夹，但是不存在于 md 文件\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n## 存在于 md 文件，但是不存在于文件夹\n\n| 资源名 |\n| ------ |\n${_nonExistInFolder.join("\n")}`;
+
         const filepath = this.utils.newFilePath("resource-report.md");
         this.utils.Package.Fs.writeFileSync(filepath, fileContent, "utf8");
-        if (this.config.auto_open) {
-            this.utils.openFile(filepath);
-        }
+        this.config.auto_open && this.utils.openFile(filepath);
     }
 
     traverseThen = () => {
         const nonExistInFile = new Set([...this.resources].filter(x => !this.resourcesInFile.has(x)));
         const nonExistInFolder = new Set([...this.resourcesInFile].filter(x => !this.resources.has(x)));
-        console.log(this, nonExistInFile, nonExistInFolder);
-        // this.report(nonExistInFile, nonExistInFolder);
+        // console.log(this, nonExistInFile, nonExistInFolder);
+        this.report(nonExistInFile, nonExistInFolder);
     }
 
     traverseCallback = async (filePath, dir, stats) => {
@@ -73,6 +75,14 @@ class resourceOperation extends BaseCustomPlugin {
         }
 
         traverse(dir).then(then).catch(err => console.error(err));
+    }
+
+    template = (file, idx) => {
+        if (this.config.use_md_syntax_in_report) {
+            return `| ![resource${idx}](${file}) |`
+        } else {
+            return `| ${file} |`
+        }
     }
 
     getAbsPath = (dir, imagePath) => {

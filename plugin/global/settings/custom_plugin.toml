@@ -64,5 +64,9 @@ name = "资源管理"
 enable = true
 plugin = "resourceOperation"
 [plugins.config]
+# 是否忽略<img src="example.jpg">
+ignore_image_div = false
+# 是否在报告中使用md语法展示图片
+use_md_syntax_in_report = false
 # 自动打开新文件
 auto_open = true
