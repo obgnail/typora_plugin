@@ -64,10 +64,20 @@ name = "资源管理"
 enable = true
 plugin = "resourceOperation"
 [plugins.config]
-# 是否忽略<img src="example.jpg">
+# 本插件是通过后缀名来判断是否是资源的
+# 什么后缀判定为资源
+resource_suffix = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".bmp", ".mp3", ".mp4", ".image", ".jfif", ".gif!large"]
+# 什么后缀判定为md文件
+markdown_suffix = [".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]
+# 是否忽略<img src="example.jpg">里的资源
 ignore_image_div = false
-# 对于无后缀名的是否加入资源列表（本插件是通过后缀名来判断是否是资源的）
-append_empty_suffix_file = true
+# 对于无后缀名的文件是否加入资源列表
+append_empty_suffix_file = false
+# 分析后的操作(delete和move都是危险操作，请务必查看report之后才选用)
+# 1.report: 生成报告
+# 2.delete: 直接删除
+# 3.move  : 移动到当前文件夹
+operation = "report"
 # 是否在报告中使用md语法展示图片
 use_md_syntax_in_report = false
 # 自动打开新文件

@@ -12,8 +12,8 @@ class resourceOperation extends BaseCustomPlugin {
             this.regexp = new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)|<img.*?src=\"(?<src2>.*?)\"", "g");
         }
 
-        this.resourceSuffix = new Set([".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".bmp", ".mp3", ".mp4", ".image", ".jfif", ".gif!large"]);
-        this.fileSuffix = new Set([".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]);
+        this.resourceSuffix = new Set(this.config.resource_suffix);
+        this.fileSuffix = new Set(this.config.markdown_suffix);
 
         if (this.config.append_empty_suffix_file) {
             this.resourceSuffix.add("");
@@ -48,10 +48,38 @@ class resourceOperation extends BaseCustomPlugin {
         }
     }
 
+    delete = (nonExistInFile, nonExistInFolder) => {
+        [...nonExistInFile].forEach(file => this.utils.Package.Fs.unlink(file, err => err && console.error(err)))
+    }
+
+    move = (nonExistInFile, nonExistInFolder) => {
+        const path = this.utils.Package.Path;
+        const fs = this.utils.Package.Fs;
+
+        let dir = path.dirname(this.utils.getFilePath());
+        dir = path.join(dir, "resources-dest");
+        fs.mkdir(dir, err => {
+            if (err) {
+                console.error(err);
+            } else {
+                [...nonExistInFile].forEach(file => {
+                    const dest = path.join(dir, path.basename(file));
+                    fs.rename(file, dest, err => err && console.error(err));
+                })
+            }
+        });
+    }
+
     traverseThen = () => {
         const nonExistInFile = new Set([...this.resources].filter(x => !this.resourcesInFile.has(x)));
         const nonExistInFolder = new Set([...this.resourcesInFile].filter(x => !this.resources.has(x)));
-        this.report(nonExistInFile, nonExistInFolder);
+
+        const operation = {
+            "report": this.report,
+            "delete": this.delete,
+            "move": this.move,
+        }[this.config.operation];
+        operation && operation(nonExistInFile, nonExistInFolder);
 
         // 避免占用内存
         this.resources = new Set();
