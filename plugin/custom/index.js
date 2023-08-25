@@ -21,15 +21,30 @@ class loadPluginHelper {
         this.controller = controller;
     }
 
+    updateUserSetting = (allPlugins) => {
+        const toml = "./plugin/global/settings/custom_plugin.user.toml";
+        const exist = this.controller.utils.existPath(this.controller.utils.joinPath(toml));
+        if (exist) {
+            const userSettings = this.controller.utils.readToml(toml);
+            allPlugins = this.controller.utils.merge(allPlugins, userSettings);
+            return allPlugins
+        }
+    }
+
     load() {
-        const allPlugins = this.controller.utils.readToml("./plugin/global/settings/custom_plugin.toml");
-        allPlugins.plugins.forEach(info => {
-            if (!info.enable) return
+        let allPlugins = this.controller.utils.readToml("./plugin/global/settings/custom_plugin.default.toml");
+        allPlugins = this.updateUserSetting(allPlugins);
+        for (const fix_name in allPlugins) {
+            const custom = allPlugins[fix_name];
+            custom.plugin = fix_name;
+
+            if (!custom.enable) return
+
             try {
-                const {plugin} = this.controller.utils.requireFilePath(`./plugin/custom/plugins/${info.plugin}`);
+                const {plugin} = this.controller.utils.requireFilePath(`./plugin/custom/plugins/${custom.plugin}`);
                 if (!plugin) return;
 
-                const instance = new plugin(info, this.controller);
+                const instance = new plugin(custom, this.controller);
                 if (this.check(instance)) {
                     instance.init();
                     const style = instance.style();
@@ -44,7 +59,7 @@ class loadPluginHelper {
             } catch (e) {
                 console.error("load custom plugin error:", e);
             }
-        })
+        }
         return this.controller.custom
     }
 

@@ -215,7 +215,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 - `{{range}}`：当前选取的文字
 - `{{uuid}}`：uuid
 
-> 模板列表可以在 `custom_plugin.toml` 中配置。
+> 模板列表可以在 `custom_plugin.user.toml` 中配置。
 
 ![templater](assets/templater.gif)
 
@@ -225,7 +225,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 使用方式：右键菜单 -> 启用插件 -> 自定义插件 -> 资源管理。
 
-> NOTE：由于删除文件是危险操作，默认只会生成报告，不会删除。如果需要删除文件，请手动修改 `custom_plugin.toml` 的 `operation`。
+> NOTE：由于删除文件是危险操作，默认只会生成报告，不会删除。如果需要删除文件，请手动修改 `custom_plugin.user.toml` 的 `operation`。
 
 ```toml
 # report: 生成报告
@@ -428,12 +428,9 @@ const BUILTIN = [
 ```js
 class fullPathCopy extends BaseCustomPlugin {
     style = () => {}
-    
     hint = () => "将当前标题的路径复制到剪切板"
-    
     hotkey = () => ["ctrl+shift+y"]
-    
-	callback = anchorNode => {
+    callback = anchorNode => {
         this.modal({
             id: "newFile",
             title: "这是模态框标题",
@@ -447,7 +444,7 @@ class fullPathCopy extends BaseCustomPlugin {
                 // password、textarea、checkbox、radio、select
                 ...
             ]
-        }, response => {})
+                }, response => {})
     }
 }
 ```
@@ -458,7 +455,7 @@ class fullPathCopy extends BaseCustomPlugin {
 
 仅需两步：
 
-1. 修改 `./plugin/custom/custom_plugin.toml`，添加配置。
+1. 修改 `./plugin/custom/custom_plugin.user.toml`，添加配置。
 2. 在 `./plugin/custom/plugins` 目录下，创建和 plugin 参数同名的文件，在此文件中创建一个 class 继承自 BaseCustomPlugin，并导出为 `plugin`。
 
 
@@ -473,20 +470,18 @@ class fullPathCopy extends BaseCustomPlugin {
 
 实现：
 
-步骤一：修改 `./plugin/custom/custom_plugin.toml`，添加配置：
+步骤一：修改 `./plugin/global/settings/custom_plugin.user.toml`，添加配置：
 
 - name：右键菜单中展示的名称
 - enable：是否启用此插件
-- plugin：处理插件逻辑的文件
 - config：插件自己的配置
 
 ```toml
-# ./plugin/custom/custom_plugin.toml
-[[plugins]]
+# ./plugin/global/settings/custom_plugin.user.toml
+[fullPathCopy]
 name = "复制标题路径"
 enable = true
-plugin = "fullPathCopy"
-[plugins.config]
+[fullPathCopy.config]
 ignore_empty_header = false
 add_space = true
 full_file_path = false
@@ -567,7 +562,7 @@ module.exports = { plugin: fullPathCopy };
 
 // 1. 创建同名的 class，继承 BaseCustomPlugin 类。此时，fullPathCopy 将自动拥有 utils 属性 和 info 属性 和 modal 方法。
 //    - utils：插件系统自带的静态工具类，其定义在 `./plugin/global/core/plugin.js/utils`。其中有个最重要的函数：`utils.getPlugin(fixed_name)` 用于获取已经实现的全部插件，调用其 API。具体的 API 可看 openPlatformAPI.md 文件。
-//    - info：该插件在 `custom_plugin.toml` 里的所有配置。
+//    - info：该插件在 `custom_plugin.user.toml` 里的所有配置。
 //    - modal：生成自定义的模态框，和用户交互。具体用法可以查看 modalExample.js
 // 2. selector：当用户在哪个位置右键弹出菜单时，出现此命令（空串：任何位置都展示），在这里的含义就是：只在【正文标题】弹出此命令
 // 3. hint：当鼠标移动到右键菜单时的提示
@@ -604,19 +599,24 @@ module.exports = { plugin: fullPathCopy };
 
 ### 如何修改插件的配置？
 
-每个插件都有对应的配置，且配置选项都有注释说明。可按需修改 `settings.toml` 文件。
+每个插件都有对应的配置，且配置选项都有注释说明。可按需修改 `settings.user.toml` 文件。
 
 - 方式一：鼠标在正文区域右键 -> 【右键菜单】 -> 【打开配置文件夹】
-- 方式二：直接打开文件 `./plugin/global/settings/settings.toml`
+- 方式二：直接打开文件 `./plugin/global/settings/settings.user.toml`
 
-> 修改前请注意备份。
+
+
+### 配置目录中的 default.toml 和 user.toml 的区别是什么？
+
+- `default.toml`：插件系统的默认配置，请不要修改。
+- `user.toml`：用户自定义的配置，这里的值会覆盖掉 `default.toml`。
 
 
 
 ### 如何禁用某些插件？
 
 - 方式一：直接 删除/改名 plugin 目录下的同名文件
-- 方式二：修改 `settings.toml` 文件，将对应插件的 ENABLE 字段置为 false
+- 方式二：修改 `settings.user.toml` 文件，将对应插件的 ENABLE 字段置为 false
 
 
 

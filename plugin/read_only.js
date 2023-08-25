@@ -26,21 +26,30 @@ class readOnlyPlugin extends global._basePlugin {
         if (this.config.READ_ONLY_DEFAULT) {
             this.utils.loopDetector(() => !!File, this.call);
         }
+
+        const setCheckbox = disabled => {
+            write.querySelectorAll(`input[type="checkbox"]`).forEach(input => {
+                if (disabled) {
+                    input.setAttribute("disabled", "true");
+                } else {
+                    input.removeAttribute("disabled");
+                }
+            });
+        }
+
         this.utils.decorate(
             () => (File && File.freshLock),
             "File.freshLock",
             null,
             () => {
-                if (!File.isLocked) return;
-                [
-                    "#typora-search-multi-input input",
-                    "#typora-commander-form input",
-                    "#plugin-multi-highlighter-input input",
-                    "#typora-quick-open-input input",
-                ].forEach(selector => {
-                    const input = document.querySelector(selector);
-                    input && input.removeAttribute("readonly");
-                })
+                setCheckbox(File.isLocked);
+                if (File.isLocked) {
+                    ["#typora-search-multi-input input", "#typora-commander-form input",
+                        "#plugin-multi-highlighter-input input", "#typora-quick-open-input input"].forEach(selector => {
+                        const input = document.querySelector(selector);
+                        input && input.removeAttribute("readonly");
+                    })
+                }
             }
         )
     }

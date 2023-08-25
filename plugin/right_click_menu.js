@@ -214,7 +214,7 @@ class rightClickMenuPlugin extends global._basePlugin {
         } else if (type === "do_not_hide") {
             this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE;
         } else if (type === "open_setting_folder") {
-            const filepath = this.utils.joinPath("./plugin/global/settings/settings.toml");
+            const filepath = this.utils.joinPath("./plugin/global/settings/settings.user.toml");
             JSBridge.showInFinder(filepath);
         }
     }
