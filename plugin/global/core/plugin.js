@@ -2,6 +2,7 @@ class utils {
     static isBetaVersion = parseInt(window._options.appVersion.split(".")[0]) === 0
     static tempFolder = File.option.tempPath
 
+    static nonExistSelector = "#write #__has_not_this_element_id__";
     static stopLoadPluginError = new Error("stopLoadPlugin")
     static stopCallError = new Error("stopCall")
     static detectorContainer = {}
@@ -412,7 +413,7 @@ class process {
         global._plugins = {};
         global._pluginsHadInjected = false;
 
-        let pluginSettings = this.utils.readToml("./plugin/global/settings/settings.toml");
+        let pluginSettings = this.utils.readToml("./plugin/global/settings/settings.default.toml");
         pluginSettings = this.userSettingHelper.updateSettings(pluginSettings);
 
         const promises = [];

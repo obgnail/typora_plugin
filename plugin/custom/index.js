@@ -32,7 +32,7 @@ class loadPluginHelper {
     }
 
     load() {
-        let allPlugins = this.controller.utils.readToml("./plugin/global/settings/custom_plugin.toml");
+        let allPlugins = this.controller.utils.readToml("./plugin/global/settings/custom_plugin.default.toml");
         allPlugins = this.updateUserSetting(allPlugins);
         for (const fix_name in allPlugins) {
             const custom = allPlugins[fix_name];

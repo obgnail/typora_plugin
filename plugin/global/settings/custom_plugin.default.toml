@@ -81,3 +81,12 @@ use_md_syntax_in_report = false
 auto_open = true
 # 打开文件后自动将此文件转为datatable
 auto_use_datetable = true
+
+
+############### openInTotalCommander ###############
+[openInTotalCommander]
+name = "TC打开"
+enable = true
+[openInTotalCommander.config]
+tc_path = "D:\\software\\TotalCMD_64bit_10.52\\TOTALCMD64.EXE"
+tc_args = '/O /T /P=L  /L="$f"'

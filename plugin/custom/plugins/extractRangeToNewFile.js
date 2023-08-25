@@ -2,7 +2,7 @@ class extractRangeToNewFile extends BaseCustomPlugin {
     selector = () => {
         // 当没有选区时,返回一个不存在的selector
         if (File.editor.selection.getRangy().collapsed) {
-            return "#write #__has_not_this_element_id__"
+            return this.utils.nonExistSelector
         }
     }
 
