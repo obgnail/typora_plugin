@@ -444,6 +444,16 @@ REMOVE_MIX_WIDTH = true
 THRESHOLD = 20
 
 
+############### kanban ###############
+[kanban]
+# 启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "看板"
+# 是否在右键菜单中可点击
+CLICKABLE = false
+
+
 ############### mermaid_replace ###############
 [mermaid_replace]
 # 启用插件
