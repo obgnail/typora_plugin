@@ -42,15 +42,13 @@ class readOnlyPlugin extends global._basePlugin {
             "File.freshLock",
             null,
             () => {
+                setCheckbox(File.isLocked);
                 if (File.isLocked) {
                     ["#typora-search-multi-input input", "#typora-commander-form input",
                         "#plugin-multi-highlighter-input input", "#typora-quick-open-input input"].forEach(selector => {
                         const input = document.querySelector(selector);
                         input && input.removeAttribute("readonly");
                     })
-                    setCheckbox(true);
-                } else {
-                    setCheckbox(false);
                 }
             }
         )
