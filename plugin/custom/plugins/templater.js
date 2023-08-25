@@ -19,7 +19,7 @@ class templater extends BaseCustomPlugin {
                 {
                     label: "模板",
                     type: "select",
-                    list: this.info.template.map(template => template.name),
+                    list: this.config.template.map(template => template.name),
                 }
             ]
         }
@@ -30,7 +30,7 @@ class templater extends BaseCustomPlugin {
             const filename = this.utils.Package.Path.basename(filepath);
 
             const option = components[1].submit;
-            const template = this.info.template.filter(template => template.name === option)[0];
+            const template = this.config.template.filter(template => template.name === option)[0];
             if (!template) return;
 
             const helper = new templateHelper(filename, this.rangeText, this.utils);

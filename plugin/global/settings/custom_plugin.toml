@@ -1,15 +1,13 @@
 # 自定义的命令
 # name: 右键菜单中展示的名称
 # enable: 是否启用此自定义插件
-# plugin: 自定义插件
 # config: 插件配置
 
 ############### fullPathCopy ###############
-[[plugins]]
+[fullPathCopy]
 name = "复制标题路径"
 enable = true
-plugin = "fullPathCopy"
-[plugins.config]
+[fullPathCopy.config]
 # 跳过空白的标题
 ignore_empty_header = false
 # 标题和提示之前添加空格
@@ -19,25 +17,25 @@ full_file_path = false
 
 
 ############### extractRangeToNewFile ###############
-[[plugins]]
+[extractRangeToNewFile]
 name = "提取选区文字到新文件"
 enable = true
-plugin = "extractRangeToNewFile"
-[plugins.config]
+[extractRangeToNewFile.config]
 # 展示模态框
 show_modal = true
 # 自动打开新文件
 auto_open = true
 
-[[plugins]]
+
+############### templater ###############
+[templater]
 name = "文件模板"
 enable = true
-plugin = "templater"
-[plugins.config]
+[templater.config]
 # 自动打开新文件
 auto_open = true
 # 模板
-[[plugins.template]]
+[[templater.config.template]]
 name = "标准模板"
 text = """
 ---
@@ -47,7 +45,7 @@ date: {{date}}
 ---
 
 """
-[[plugins.template]]
+[[templater.config.template]]
 name = "日记"
 text = """
 ---
@@ -59,11 +57,10 @@ date: {{date}} {{weekday}}
 
 
 ############### resourceOperation ###############
-[[plugins]]
+[resourceOperation]
 name = "资源管理"
 enable = true
-plugin = "resourceOperation"
-[plugins.config]
+[resourceOperation.config]
 # 本插件是通过后缀名来判断是否是资源的
 # 什么后缀判定为资源
 resource_suffix = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".bmp", ".mp3", ".mp4", ".image", ".jfif", ".gif!large"]

@@ -11,6 +11,28 @@ class utils {
         ChildProcess: reqnode('child_process'),
     }
 
+    // { a: [{ b: 2 }] } { a: [{ c: 2 }]} -> { a: [{b:2}, {c:2}]}
+    // merge({o: {a: 3}}, {o: {b:4}}) => {o: {a:3, b:4}}
+    static merge(source, other) {
+        const isObject = value => {
+            const type = typeof value
+            return value !== null && (type === 'object' || type === 'function')
+        }
+
+        if (!isObject(source) || !isObject(other)) {
+            return other === undefined ? source : other
+        }
+        // 合并两个对象的 key，另外要区分数组的初始值为 []
+        return Object.keys({
+            ...source,
+            ...other
+        }).reduce((acc, key) => {
+            // 递归合并 value
+            acc[key] = this.merge(source[key], other[key])
+            return acc
+        }, Array.isArray(source) ? [] : {})
+    }
+
     static insertStyle = (id, css) => {
         const style = document.createElement('style');
         style.id = id;
@@ -334,10 +356,27 @@ class hotkeyHelper {
     }
 }
 
+class userSettingHelper {
+    constructor() {
+        this.utils = utils;
+    }
+
+    updateSettings(pluginSetting) {
+        const toml = "./plugin/global/settings/settings.user.toml";
+        const exist = this.utils.existPath(this.utils.joinPath(toml));
+        if (exist) {
+            const userSettings = this.utils.readToml(toml);
+            pluginSetting = this.utils.merge(pluginSetting, userSettings);
+            return pluginSetting
+        }
+    }
+}
+
 class process {
     constructor() {
         this.utils = utils;
-        this.helper = new hotkeyHelper();
+        this.hotkeyHelper = new hotkeyHelper();
+        this.userSettingHelper = new userSettingHelper();
     }
 
     insertStyle(style) {
@@ -361,7 +400,7 @@ class process {
         if (error !== this.utils.stopLoadPluginError) {
             this.insertStyle(plugin.style());
             plugin.html();
-            this.helper.register(plugin.hotkey());
+            this.hotkeyHelper.register(plugin.hotkey());
             plugin.process();
             plugin.afterProcess();
             console.log(`plugin had been injected: [ ${plugin.fixed_name} ] `);
@@ -373,7 +412,9 @@ class process {
         global._plugins = {};
         global._pluginsHadInjected = false;
 
-        const pluginSettings = this.utils.readToml("./plugin/global/settings/settings.toml");
+        let pluginSettings = this.utils.readToml("./plugin/global/settings/settings.toml");
+        pluginSettings = this.userSettingHelper.updateSettings(pluginSettings);
+
         const promises = [];
 
         for (const fixed_name in pluginSettings) {
@@ -396,7 +437,7 @@ class process {
         }
 
         Promise.all(promises).then(() => {
-            this.helper.listen();
+            this.hotkeyHelper.listen();
             global._pluginsHadInjected = true;
         })
     }
