@@ -166,6 +166,11 @@ class modalHelper {
                 display: none;
             }
             
+            #plugin-custom-modal label {
+                display: block;
+                margin-bottom: 5px;
+            }
+            
             #plugin-custom-modal input[type="checkbox"], input[type="radio"] {
                 box-shadow: none;
                 margin-top: -3px;
