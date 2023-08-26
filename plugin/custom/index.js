@@ -34,7 +34,7 @@ class loadPluginHelper {
     load() {
         let allPlugins = this.controller.utils.readToml("./plugin/global/settings/custom_plugin.default.toml");
         allPlugins = this.updateUserSetting(allPlugins);
-        for (const fix_name in allPlugins) {
+        for (const fix_name of Object.keys(allPlugins)) {
             const custom = allPlugins[fix_name];
             custom.plugin = fix_name;
 
@@ -87,7 +87,7 @@ class dynamicCallHelper {
         this.dynamicUtil.target = anchorNode;
 
         const dynamicCallArgs = [];
-        for (const name in this.custom) {
+        for (const name of Object.keys(this.custom)) {
             const plugin = this.custom[name];
             const selector = plugin.selector();
             const arg_disabled = selector && !anchorNode.closest(selector);
@@ -122,7 +122,7 @@ class hotkeyHelper {
 
     hotkey = () => {
         const hotkeys = [];
-        for (const name in this.custom) {
+        for (const name of Object.keys(this.custom)) {
             const plugin = this.custom[name];
             try {
                 const hotkey = plugin.hotkey();
@@ -164,6 +164,11 @@ class modalHelper {
                 left: 0;
                 right: 0;
                 display: none;
+            }
+            
+            #plugin-custom-modal label {
+                display: block;
+                margin-bottom: 5px;
             }
             
             #plugin-custom-modal input[type="checkbox"], input[type="radio"] {
