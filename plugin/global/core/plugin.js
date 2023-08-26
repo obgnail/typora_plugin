@@ -116,8 +116,13 @@ class utils {
 
     static readToml = filepath => {
         const pluginsFile = this.readFileSync(filepath);
-        const tomlParser = this.requireFilePath("./plugin/global/utils/toml");
-        return tomlParser.parse(pluginsFile);
+        const toml = this.requireFilePath("./plugin/global/utils/toml");
+        return toml.parse(pluginsFile);
+    }
+
+    static stringifyToml = obj => {
+        const toml = this.requireFilePath("./plugin/global/utils/toml");
+        return toml.stringify(obj)
     }
 
     static getFileName = filePath => {
@@ -418,7 +423,8 @@ class process {
 
         const promises = [];
 
-        for (const fixed_name in pluginSettings) {
+
+        for (const fixed_name of Object.keys(pluginSettings)) {
             const pluginSetting = pluginSettings[fixed_name];
             pluginSetting.fixed_name = fixed_name;
 
