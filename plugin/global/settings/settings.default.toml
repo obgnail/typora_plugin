@@ -387,6 +387,43 @@ CLICKABLE = true
 DOWNLOAD_NETWORK_IMAGE = false
 
 
+############### kanban ###############
+[kanban]
+# 启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "看板"
+# 是否在右键菜单中可点击
+CLICKABLE = true
+KANBAN_COLOR = [
+    "#FFE0B2",
+    "#DAE9F4",
+    "#FEDCCC",
+    "#C6E5D9",
+    "#FFF1B9",
+]
+TASK_COLOR = [
+    "#FFFDE7",
+    "#F8FAFF",
+    "#FFFFF2",
+    "#FFFCF0",
+    "#FFFFF5",
+]
+TEMPLATE = """```kanban
+# Today's task
+
+## Todo
+- 这是任务(这是任务描述)
+- 这是任务2(看板和任务都可以无限添加)
+
+## In-Progress
+* task3(一级标题表示看板标题，二级标题表示看板，- 或 * 表示任务)
+
+## Completed
+- task4
+```
+"""
+
 ############### custom ###############
 [custom]
 # 启用插件
@@ -442,16 +479,6 @@ CLICKABLE = false
 REMOVE_MIX_WIDTH = true
 # 单元格边线的拖拽范围
 THRESHOLD = 20
-
-
-############### kanban ###############
-[kanban]
-# 启用插件
-ENABLE = false
-# 在右键菜单中展示的名称
-NAME = "看板"
-# 是否在右键菜单中可点击
-CLICKABLE = false
 
 
 ############### mermaid_replace ###############

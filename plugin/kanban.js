@@ -1,7 +1,12 @@
 class kanbanPlugin extends global._basePlugin {
     style = () => {
-        const text = `
-            #write .plugin-kanban {
+        let text = `
+            .plugin-kanban .plugin-kanban-title {
+                font-size: 1.5rem;
+                font-weight: bold;
+            }
+            
+            .plugin-kanban .plugin-kanban-content {
                 display: flex;
                 justify-content: flex-start;
                 
@@ -13,7 +18,7 @@ class kanbanPlugin extends global._basePlugin {
                 overflow-x: auto;
             }
             
-            .plugin-kanban .no-wrap {
+            .plugin-kanban-content .no-wrap {
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
@@ -21,18 +26,18 @@ class kanbanPlugin extends global._basePlugin {
                 padding-left: 3px;
             }
             
-            .plugin-kanban .kanban-box {
+            .plugin-kanban-content .kanban-box {
                 border-radius: 4px;
                 box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12);
             }
             
-            .plugin-kanban .kanban-item-box {
+            .plugin-kanban-content .kanban-item-box {
                 border-radius: 4px;
                 box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12);
             } 
             
-            .plugin-kanban .plugin-kanban-col {
-                width: 250px;
+            .plugin-kanban-content .plugin-kanban-col {
+                width: 250px !important;
                 margin: 8px;
                 padding: 8px;
             }
@@ -41,13 +46,15 @@ class kanbanPlugin extends global._basePlugin {
                 margin: 5px;
             }
                         
-            .plugin-kanban .plugin-kanban-col-item-list {
+            .plugin-kanban-content .plugin-kanban-col-item-list {
                 display: flex;
                 flex-direction: column;
                 font-family: 'Nunito', sans-serif;
+                max-height: 700px;
+                overflow-y: scroll;
             }
             
-            .plugin-kanban .plugin-kanban-col-name {
+            .plugin-kanban-content .plugin-kanban-col-name {
                 font-family: 'Nunito', sans-serif;
                 font-size: 1rem;
                 font-weight: bold;
@@ -57,117 +64,163 @@ class kanbanPlugin extends global._basePlugin {
                 padding-bottom: 4px;
             }
 
-            .plugin-kanban .plugin-kanban-col-item {
+            .plugin-kanban-content .plugin-kanban-col-item {
                 margin: 5px 8px;
                 padding: 8px;
             }
             
-            .plugin-kanban .plugin-kanban-col-item-title {
+            .plugin-kanban-content .plugin-kanban-col-item-title {
                 margin-bottom: 5px;
             }
             
-            .plugin-kanban .plugin-kanban-col-item-desc {
+            .plugin-kanban-content .plugin-kanban-col-item-desc {
                 overflow: hidden;
                 height: 5rem;
                 padding-left: 5px;
                 text-align: left;
+                white-space: break-spaces;
+                word-wrap: break-word;
             }
         `
+
+        if (this.utils.isBetaVersion) {
+            text += ` .md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
+        }
         return {textID: "plugin-kanban-style", text: text}
     }
 
     init = () => {
         this.badChars = ["%E2%80%8B", "%C2%A0", "%0A"];
         this.replaceChars = ["", "%20", ""];
-        this.kanbanColor = [
-            "rgb(255, 224, 178)",
-            "rgb(255, 205, 210)",
-            "rgb(200, 230, 201)",
-            // "rgb(144, 202, 249)",
-            // "rgb(255, 204, 128)",
-        ]
-        this.itemColor = [
-            "rgb(255, 245, 157)",
-            "rgb(206, 147, 216)",
-            "rgb(159, 168, 218)",
-            // "rgb(239, 154, 154)",
-            // "rgb(165, 214, 167)",
-        ]
+
+        this.callArgs = [
+            {
+                arg_name: "插入看板",
+                arg_value: "insert_kanban"
+            },
+        ];
     }
 
     process = () => {
         this.init();
 
-        this.utils.decorateAddCodeBlock(null, (result, ...args) => this.newKanban(args[0]))
+        this.utils.decorateAddCodeBlock(null, (result, ...args) => File.editor.diagrams.updateDiagram(args[0]))
         this.utils.decorate(
             () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
             "File.editor.fences.tryAddLangUndo",
             null,
-            (result, ...args) => this.newKanban(args[0].cid)
+            (result, ...args) => File.editor.diagrams.updateDiagram(args[0].cid)
         )
+        this.utils.decorate(
+            // black magic
+            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor && File.editor.diagrams.constructor.isDiagramType),
+            "File.editor.diagrams.constructor.isDiagramType",
+            null,
+            (result, ...args) => result || (args[0] || "").toLowerCase() === "kanban",
+            true
+        )
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
+            "File.editor.diagrams.updateDiagram",
+            null,
+            async (result, ...args) => {
+                const cid = args[0];
+                cid && this.newKanban(cid);
+            }
+        )
+    }
+
+    call = type => {
+        if (type === "insert_kanban") {
+            const content = this.config.TEMPLATE;
+            navigator.clipboard.writeText(content).then(() => {
+                const ele = document.querySelector("#context-menu [data-key='paste']");
+                ele && ele.click();
+            });
+        }
+    }
+
+    rollback = pre => {
+        pre.children(".plugin-kanban").remove();
+        pre.children(".fence-enhance").show();
     }
 
     newKanban = cid => {
         const pre = File.editor.findElemById(cid);
         const lang = pre.attr("lang").trim().toLowerCase();
         if (lang !== "kanban") {
-            pre.children(".plugin-kanban").remove();
-            pre.children(".fence-enhance").show();
+            this.rollback(pre);
             return;
         }
         pre.children(".fence-enhance").hide();
         pre.addClass("md-fences-advanced");
         let kanban = pre.find(".plugin-kanban");
         if (kanban.length === 0) {
-            kanban = $(`<div class="plugin-kanban"></div>`);
-            pre.append(kanban);
+            kanban = $(`<div class="plugin-kanban"><div class="plugin-kanban-title"></div><div class="plugin-kanban-content"></div></div>`);
+            const preview = pre.find(".md-diagram-panel-preview");
+            preview.length && preview.append(kanban);
         }
-        const kanbanList = this.newKanbanList(pre);
-        kanban.html(kanbanList);
+        const kanban_ = this.newKanbanElement(pre, cid);
+        if (kanban_) {
+            kanban.find(".plugin-kanban-title").text(kanban_.title);
+            kanban.find(".plugin-kanban-content").html(kanban_.list);
+        } else {
+            // accident occurred
+            this.rollback(pre);
+        }
     }
 
+    // TASK_COLOR or KANBAN_COLOR
     getColor = (type, idx) => {
-        if (idx <= this[type].length - 1) {
-            return this[type][idx]
+        if (idx > this.config[type].length - 1) {
+            idx = 0
         }
-        return "rgba(0,0,0,0)"
+        return this.config[type][idx]
     }
 
-    newKanbanList = pre => {
-        const content = this.getFenceContent(pre[0]);
-        const lines = content.split("\n").map(line => line.trim()).filter(Boolean);
+    newKanbanElement = (pre, cid) => {
+        let content = this.getFenceContentFromElement(pre[0]);
+        if (!content) {
+            content = this.getFenceContentFromQueue(cid);
+            if (!content) return;
+        }
 
-        const list = [];
+        const kanban = {title: "", list: []};
+        const lines = content.split("\n").map(line => line.trim()).filter(Boolean);
         lines.forEach(line => {
             if (line.startsWith("# ")) {
-                const name = line.replace("# ", "");
-                list.push({name: name, item: []});
+                kanban.title = line.replace("# ", "");
+            } else if (line.startsWith("## ")) {
+                const name = line.replace("## ", "");
+                kanban.list.push({name: name, item: []});
             } else {
                 const match = line.match(/^[\-\*]\s(?<title>.*?)(\((?<desc>.*?)\))?$/);
                 if (!match) return;
                 const title = match.groups.title;
                 if (title) {
-                    list[list.length - 1].item.push({title: title, desc: match.groups.desc || ""});
+                    const last = kanban.list[kanban.list.length - 1];
+                    last && last.item.push({title: title, desc: match.groups.desc || ""});
                 }
             }
         })
 
-        return list.map((col, listIdx) => {
+        kanban.list = kanban.list.map((col, listIdx) => {
             const items = col.item.map(item => `
-                <div class="plugin-kanban-col-item kanban-item-box" style="background-color: ${this.getColor("itemColor", listIdx)}">
+                <div class="plugin-kanban-col-item kanban-item-box" style="background-color: ${this.getColor("TASK_COLOR", listIdx)}">
                     <div class="plugin-kanban-col-item-title no-wrap"><b>${item.title}</b></div>
                     <div class="plugin-kanban-col-item-desc">${item.desc}</div>
                 </div>`);
 
             return $(
-                `<div class="plugin-kanban-col kanban-box" style="background-color: ${this.getColor("kanbanColor", listIdx)}">
+                `<div class="plugin-kanban-col kanban-box" style="background-color: ${this.getColor("KANBAN_COLOR", listIdx)}">
                     <div class="plugin-kanban-col-name no-wrap">${col.name}</div><p></p>
                     <div class="plugin-kanban-col-item-list">${items.join("")}</div>
                 </div>`)
         })
+        return kanban
     }
 
-    getFenceContent = pre => {
+    getFenceContentFromElement = pre => {
         const lines = pre.querySelectorAll(".CodeMirror-code .CodeMirror-line");
         if (lines.length === 0) return;
 
@@ -183,6 +236,13 @@ class kanbanPlugin extends global._basePlugin {
             contentList.push(decodeText);
         })
         return contentList.join("\n")
+    }
+
+    getFenceContentFromQueue = cid => {
+        const fence = File.editor.fences.queue[cid];
+        if (fence) {
+            return fence.options.value
+        }
     }
 }
 
