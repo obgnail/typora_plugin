@@ -373,8 +373,8 @@ class userSettingHelper {
         if (exist) {
             const userSettings = this.utils.readToml(toml);
             pluginSetting = this.utils.merge(pluginSetting, userSettings);
-            return pluginSetting
         }
+        return pluginSetting
     }
 }
 
@@ -422,7 +422,6 @@ class process {
         pluginSettings = this.userSettingHelper.updateSettings(pluginSettings);
 
         const promises = [];
-
 
         for (const fixed_name of Object.keys(pluginSettings)) {
             const pluginSetting = pluginSettings[fixed_name];
