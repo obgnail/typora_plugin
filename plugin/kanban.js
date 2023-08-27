@@ -171,9 +171,7 @@ class kanbanPlugin extends global._basePlugin {
 
     // TASK_COLOR or KANBAN_COLOR
     getColor = (type, idx) => {
-        if (idx > this.config[type].length - 1) {
-            idx = 0
-        }
+        idx %= this.config[type].length - 1;
         return this.config[type][idx]
     }
 
