@@ -69,12 +69,9 @@ class kanbanPlugin extends global._basePlugin {
                 padding: 8px;
             }
             
-            .plugin-kanban-content .plugin-kanban-col-item-title {
-                margin-bottom: 5px;
-            }
-            
             .plugin-kanban-content .plugin-kanban-col-item-desc {
                 overflow: hidden;
+                margin-top: 5px;
                 height: 5rem;
                 padding-left: 5px;
                 text-align: left;
@@ -208,7 +205,7 @@ class kanbanPlugin extends global._basePlugin {
             const items = col.item.map(item => `
                 <div class="plugin-kanban-col-item kanban-item-box" style="background-color: ${this.getColor("TASK_COLOR", listIdx)}">
                     <div class="plugin-kanban-col-item-title no-wrap"><b>${item.title}</b></div>
-                    <div class="plugin-kanban-col-item-desc">${item.desc}</div>
+                    <div class="plugin-kanban-col-item-desc" ${(!item.desc && this.config.HIDE_DESC_WHEN_EMPTY) ? 'style="display: none;"' : ""}>${item.desc}</div>
                 </div>`);
 
             return $(

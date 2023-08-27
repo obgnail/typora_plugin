@@ -395,6 +395,9 @@ ENABLE = true
 NAME = "看板"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# 当描述为空时隐藏
+HIDE_DESC_WHEN_EMPTY = true
+# 看板的颜色
 KANBAN_COLOR = [
     "#FFE0B2",
     "#DAE9F4",
@@ -402,6 +405,7 @@ KANBAN_COLOR = [
     "#C6E5D9",
     "#FFF1B9",
 ]
+# 任务的颜色
 TASK_COLOR = [
     "#FFFDE7",
     "#F8FAFF",
@@ -409,6 +413,7 @@ TASK_COLOR = [
     "#FFFCF0",
     "#FFFFF5",
 ]
+# 自动插入的模板
 TEMPLATE = """```kanban
 # Today's task
 
