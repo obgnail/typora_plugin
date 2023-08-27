@@ -79,19 +79,20 @@ class kanbanPlugin extends global._basePlugin {
     init = () => {
         this.badChars = ["%E2%80%8B", "%C2%A0", "%0A"];
         this.replaceChars = ["", "%20", ""];
+        // 随便配的颜色
         this.kanbanColor = [
-            "rgb(255, 224, 178)",
-            "rgb(255, 205, 210)",
-            "rgb(200, 230, 201)",
-            // "rgb(144, 202, 249)",
-            // "rgb(255, 204, 128)",
+            "#FFE0B2",
+            "#DAE9F4",
+            "#FEDCCC",
+            "#C6E5D9",
+            "#FFF1B9",
         ]
         this.itemColor = [
-            "rgb(255, 245, 157)",
-            "rgb(206, 147, 216)",
-            "rgb(159, 168, 218)",
-            // "rgb(239, 154, 154)",
-            // "rgb(165, 214, 167)",
+            "#FFFDE7",
+            "#F8FAFF",
+            "#FFFFF2",
+            "#FFFCF0",
+            "#FFFFF5",
         ]
     }
 
