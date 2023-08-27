@@ -137,7 +137,9 @@ class kanbanPlugin extends BaseCustomPlugin {
     rollback = pre => {
         pre.children(".plugin-kanban").remove();
         pre.children(".fence-enhance").show();
-        pre.removeClass("md-fences-advanced");
+        if (this.utils.isBetaVersion) {
+            pre.removeClass("md-fences-advanced");
+        }
     }
 
     newKanban = cid => {
