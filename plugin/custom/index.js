@@ -27,8 +27,8 @@ class loadPluginHelper {
         if (exist) {
             const userSettings = this.controller.utils.readToml(toml);
             allPlugins = this.controller.utils.merge(allPlugins, userSettings);
-            return allPlugins
         }
+        return allPlugins
     }
 
     load() {
