@@ -73,6 +73,12 @@ class utils {
     static altKeyPressed = ev => !!ev.altKey
 
     static getPlugin = fixed_name => global._plugins[fixed_name]
+    static getCustomPlugin = fixed_name => {
+        const plugin = global._plugins["custom"];
+        if (plugin) {
+            return plugin["custom"][fixed_name]
+        }
+    }
     static getDirname = () => global.dirname || global.__dirname
     static getFilePath = () => File.filePath || File.bundle && File.bundle.filePath
     static joinPath = (...paths) => this.Package.Path.join(this.getDirname(), ...paths)

@@ -1,4 +1,10 @@
-class kanbanPlugin extends global._basePlugin {
+class kanbanPlugin extends BaseCustomPlugin {
+    selector = () => {
+        if (!this.utils.isBetaVersion) {
+            return `#write > p[mdtype="paragraph"]:not(:has(>span))`
+        }
+    }
+
     style = () => {
         const maxHeight = (this.config.KANBAN_MAX_HEIGHT < 0) ? "" : `max-height: ${this.config.KANBAN_MAX_HEIGHT}px;`;
 
@@ -84,18 +90,9 @@ class kanbanPlugin extends global._basePlugin {
     init = () => {
         this.badChars = ["%E2%80%8B", "%C2%A0", "%0A"];
         this.replaceChars = ["", "%20", ""];
-
-        this.callArgs = [
-            {
-                arg_name: "插入看板",
-                arg_value: "insert_kanban"
-            },
-        ];
     }
 
     process = () => {
-        this.init();
-
         this.utils.decorateAddCodeBlock(null, (result, ...args) => File.editor.diagrams.updateDiagram(args[0]))
         this.utils.decorate(
             () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
@@ -129,14 +126,12 @@ class kanbanPlugin extends global._basePlugin {
         })
     }
 
-    call = type => {
-        if (type === "insert_kanban") {
-            const content = this.config.TEMPLATE;
-            navigator.clipboard.writeText(content).then(() => {
-                const ele = document.querySelector("#context-menu [data-key='paste']");
-                ele && ele.click();
-            });
-        }
+    callback = anchorNode => {
+        const content = this.config.TEMPLATE;
+        navigator.clipboard.writeText(content).then(() => {
+            const ele = document.querySelector("#context-menu [data-key='paste']");
+            ele && ele.click();
+        });
     }
 
     rollback = pre => {
