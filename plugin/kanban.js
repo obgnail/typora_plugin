@@ -151,7 +151,7 @@ class kanbanPlugin extends global._basePlugin {
         pre.children(".fence-enhance").hide();
         pre.addClass("md-fences-advanced");
         let kanban = pre.find(".plugin-kanban");
-        if (kanban.length) {
+        if (kanban.length === 0) {
             kanban = $(`<div class="plugin-kanban"><div class="plugin-kanban-title"></div><div class="plugin-kanban-content"></div></div>`);
             const preview = pre.find(".md-diagram-panel-preview");
             preview.length && preview.append(kanban);
