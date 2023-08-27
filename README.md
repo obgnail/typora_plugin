@@ -495,7 +495,7 @@ class fullPathCopy extends BaseCustomPlugin {
 - config：插件自己的配置
 
 ```toml
-./plugin/global/settings/custom_plugin.user.toml
+# ./plugin/global/settings/custom_plugin.user.toml
 [fullPathCopy]
 name = "复制标题路径"
 enable = true
