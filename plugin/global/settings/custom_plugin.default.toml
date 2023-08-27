@@ -3,6 +3,48 @@
 # enable: 是否启用此自定义插件
 # config: 插件配置
 
+############### kanban ###############
+[kanban]
+name = "插入看板"
+enable = true
+[kanban.config]
+# 当描述为空时隐藏
+HIDE_DESC_WHEN_EMPTY = true
+# 看板最大高度（若<0，则全部显示）
+KANBAN_MAX_HEIGHT = 700
+# 看板的颜色
+KANBAN_COLOR = [
+    "#FFE0B2",
+    "#DAE9F4",
+    "#FEDCCC",
+    "#C6E5D9",
+    "#FFF1B9",
+]
+# 任务的颜色
+TASK_COLOR = [
+    "#FFFDE7",
+    "#F8FAFF",
+    "#FFFFF2",
+    "#FFFCF0",
+    "#FFFFF5",
+]
+# 自动插入的模板
+TEMPLATE = """```kanban
+# Today's task
+
+## Todo
+- 这是任务(这是任务描述)
+- 这是任务2(看板和任务都可以无限添加)
+
+## In-Progress
+* task3(一级标题表示看板标题，二级标题表示看板，- 或 * 表示任务)
+
+## Completed
+- task4
+```
+"""
+
+
 ############### fullPathCopy ###############
 [fullPathCopy]
 name = "复制标题路径"
@@ -37,8 +79,7 @@ auto_open = true
 # 模板
 [[templater.config.template]]
 name = "标准模板"
-text = """
----
+text = """---
 title: {{title}}
 tags:
 date: {{date}}
@@ -47,8 +88,7 @@ date: {{date}}
 """
 [[templater.config.template]]
 name = "日记"
-text = """
----
+text = """---
 title: {{title}}
 date: {{date}} {{weekday}}
 ---

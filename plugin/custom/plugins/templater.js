@@ -1,12 +1,44 @@
 class templater extends BaseCustomPlugin {
     selector = () => ""
 
+    getTemplateList = () => {
+        const templates = [...this.config.template];
+        if (this.utils.getCustomPlugin("kanban")) {
+            templates.push({
+                name: "今日任务",
+                text: `---
+title: {{title}}
+date: {{date}} {{weekday}}
+---
+
+
+\`\`\`kanban
+# {{date}} Task List
+
+## Todo
+- task1(task describtion)
+- task2
+- task3
+
+## In-Progress
+
+## Completed
+
+\`\`\`
+
+`
+            })
+        }
+        return templates
+    }
+
     callback = anchorNode => {
         if (!File.editor.selection.getRangy().collapsed) {
             ClientCommand.copyAsMarkdown();
             window.parent.navigator.clipboard.readText().then(text => this.rangeText = text);
         }
 
+        const templateList = this.getTemplateList();
         const modal = {
             title: "新文件",
             components: [
@@ -19,7 +51,7 @@ class templater extends BaseCustomPlugin {
                 {
                     label: "模板",
                     type: "select",
-                    list: this.config.template.map(template => template.name),
+                    list: templateList.map(template => template.name),
                 }
             ]
         }
@@ -30,7 +62,7 @@ class templater extends BaseCustomPlugin {
             const filename = this.utils.Package.Path.basename(filepath);
 
             const option = components[1].submit;
-            const template = this.config.template.filter(template => template.name === option)[0];
+            const template = templateList.filter(template => template.name === option)[0];
             if (!template) return;
 
             const helper = new templateHelper(filename, this.rangeText, this.utils);
