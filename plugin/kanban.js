@@ -1,5 +1,7 @@
 class kanbanPlugin extends global._basePlugin {
     style = () => {
+        const maxHeight = (this.config.KANBAN_MAX_HEIGHT < 0) ? "" : `max-height: ${this.config.KANBAN_MAX_HEIGHT}px;`;
+
         let text = `
             .plugin-kanban .plugin-kanban-title {
                 font-size: 1.5rem;
@@ -8,22 +10,15 @@ class kanbanPlugin extends global._basePlugin {
             
             .plugin-kanban .plugin-kanban-content {
                 display: flex;
-                justify-content: flex-start;
-                
-                width: 100%;
-                margin-top: 10px;
-                text-align: center;
-                padding-top: 0;
-                padding-bottom: 8px;
                 overflow-x: auto;
             }
             
-            .plugin-kanban-content .no-wrap {
+            .plugin-kanban-content .no-wrap-title {
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
                 text-align: left;
-                padding-left: 3px;
+                padding-left: 4px;
             }
             
             .plugin-kanban-content .kanban-box {
@@ -39,33 +34,31 @@ class kanbanPlugin extends global._basePlugin {
             .plugin-kanban-content .plugin-kanban-col {
                 width: 250px !important;
                 margin: 8px;
-                padding: 8px;
             }
             
             .plugin-kanban-col p {
-                margin: 5px;
+                margin: 4px;
             }
                         
             .plugin-kanban-content .plugin-kanban-col-item-list {
                 display: flex;
                 flex-direction: column;
-                font-family: 'Nunito', sans-serif;
-                max-height: 700px;
-                overflow-y: scroll;
+                ${maxHeight}
+                overflow-y: overlay;
+                padding: 0 4px 4px 4px;
             }
             
             .plugin-kanban-content .plugin-kanban-col-name {
-                font-family: 'Nunito', sans-serif;
                 font-size: 1rem;
                 font-weight: bold;
                 border-color: rgba(0, 0, 0, 0.08);
                 border-bottom-style: solid;
                 border-width: 1px;
-                padding-bottom: 4px;
+                padding: 8px 8px 4px 10px;
             }
 
             .plugin-kanban-content .plugin-kanban-col-item {
-                margin: 5px 8px;
+                margin: 4px;
                 padding: 8px;
             }
             
@@ -73,7 +66,7 @@ class kanbanPlugin extends global._basePlugin {
                 overflow: hidden;
                 margin-top: 5px;
                 height: 5rem;
-                padding-left: 5px;
+                padding-left: 4px;
                 text-align: left;
                 white-space: break-spaces;
                 word-wrap: break-word;
@@ -81,7 +74,9 @@ class kanbanPlugin extends global._basePlugin {
         `
 
         if (this.utils.isBetaVersion) {
-            text += ` .md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
+            text = `.plugin-kanban { font-family: sans-serif; } 
+                    ${text} 
+                    .md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
         }
         return {textID: "plugin-kanban-style", text: text}
     }
@@ -125,6 +120,13 @@ class kanbanPlugin extends global._basePlugin {
                 cid && this.newKanban(cid);
             }
         )
+
+        const that = this;
+        $("#write").on("wheel", ".plugin-kanban-content", function (ev) {
+            if (that.utils.metaKeyPressed(ev.originalEvent)) {
+                this.scrollLeft += ev.originalEvent.deltaY;
+            }
+        })
     }
 
     call = type => {
@@ -204,13 +206,13 @@ class kanbanPlugin extends global._basePlugin {
         kanban.list = kanban.list.map((col, listIdx) => {
             const items = col.item.map(item => `
                 <div class="plugin-kanban-col-item kanban-item-box" style="background-color: ${this.getColor("TASK_COLOR", listIdx)}">
-                    <div class="plugin-kanban-col-item-title no-wrap"><b>${item.title}</b></div>
+                    <div class="plugin-kanban-col-item-title no-wrap-title"><b>${item.title}</b></div>
                     <div class="plugin-kanban-col-item-desc" ${(!item.desc && this.config.HIDE_DESC_WHEN_EMPTY) ? 'style="display: none;"' : ""}>${item.desc}</div>
                 </div>`);
 
             return $(
                 `<div class="plugin-kanban-col kanban-box" style="background-color: ${this.getColor("KANBAN_COLOR", listIdx)}">
-                    <div class="plugin-kanban-col-name no-wrap">${col.name}</div><p></p>
+                    <div class="plugin-kanban-col-name no-wrap-title">${col.name}</div><p></p>
                     <div class="plugin-kanban-col-item-list">${items.join("")}</div>
                 </div>`)
         })

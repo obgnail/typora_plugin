@@ -397,6 +397,8 @@ NAME = "看板"
 CLICKABLE = true
 # 当描述为空时隐藏
 HIDE_DESC_WHEN_EMPTY = true
+# 看板最大高度（若<0，则全部显示）
+KANBAN_MAX_HEIGHT = 700
 # 看板的颜色
 KANBAN_COLOR = [
     "#FFE0B2",
