@@ -303,7 +303,7 @@ const BUILTIN = [
 
 ### kanban：看板
 
-拓展代码语法，添加看板功能
+拓展代码语法，添加看板功能。
 
 语法：
 
@@ -311,22 +311,6 @@ const BUILTIN = [
 - 二级标题表示看板
 - `-` 或 `*` 表示任务
 - 任务后面的 `()` 表示任务描述
-
-````
-​```kanban
-# Today's task
-
-## Todo
-- 这是任务(这是任务描述)
-- 这是任务2(看板和任务都可以无限添加)
-
-## In-Progress
-* task3(一级标题表示看板标题，二级标题表示看板，- 或 * 表示任务)
-
-## Completed
-- task4
-​```
-````
 
 ![kanban](assets/kanban.png)
 
@@ -445,7 +429,7 @@ const BUILTIN = [
 
 
 
-### custom：用户自定义命令
+### custom：用户自定义命令（高级）
 
 #### 简介
 
@@ -510,8 +494,8 @@ class fullPathCopy extends BaseCustomPlugin {
 - enable：是否启用此插件
 - config：插件自己的配置
 
-​```toml
-# ./plugin/global/settings/custom_plugin.user.toml
+```toml
+./plugin/global/settings/custom_plugin.user.toml
 [fullPathCopy]
 name = "复制标题路径"
 enable = true
