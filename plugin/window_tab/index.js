@@ -443,22 +443,19 @@ class windowTabBarPlugin extends global._basePlugin {
     }
 
     sort1 = () => {
-        const newWindowIfNeed = this.newWindowIfNeed;
-        const tabUtil = this.tabUtil;
-        const openTab = this.openTab;
-        const entities = this.entities;
+        const that = this;
 
         const resetTabBar = () => {
             const tabs = document.querySelectorAll("#plugin-window-tab .tab-container");
-            const activeIdx = parseInt(entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
-            const activePath = tabUtil.tabs[activeIdx].path;
+            const activeIdx = parseInt(that.entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
+            const activePath = that.tabUtil.tabs[activeIdx].path;
             const newTabList = []
             tabs.forEach(tab => {
                 const idx = parseInt(tab.getAttribute("idx"));
-                newTabList.push(tabUtil.tabs[idx]);
+                newTabList.push(that.tabUtil.tabs[idx]);
             })
-            tabUtil.tabs = newTabList;
-            openTab(activePath);
+            that.tabUtil.tabs = newTabList;
+            that.openTab(activePath);
         }
 
         const tabBar = $("#plugin-window-tab .tab-bar");
@@ -513,7 +510,7 @@ class windowTabBarPlugin extends global._basePlugin {
             cloneObj.style = `transform:translate3d(${left}px, ${top}px, 0)`;
             document.querySelector("content").appendChild(cloneObj);
         }).on("dragend", ".tab-container", function (ev) {
-            newWindowIfNeed(ev.offsetY, this);
+            that.newWindowIfNeed(ev.offsetY, this);
 
             if (!cloneObj) return;
             const rect = this.getBoundingClientRect();
@@ -569,10 +566,7 @@ class windowTabBarPlugin extends global._basePlugin {
     }
 
     sort2 = () => {
-        const newWindowIfNeed = this.newWindowIfNeed;
-        const tabUtil = this.tabUtil;
-        const openTab = this.openTab;
-        const entities = this.entities;
+        const that = this;
 
         const toggleOver = (target, f) => {
             if (f === "add") {
@@ -591,16 +585,16 @@ class windowTabBarPlugin extends global._basePlugin {
             lastOver = null;
         }).on("dragend", ".tab-container", function (ev) {
             this.style.opacity = "";
-            newWindowIfNeed(ev.offsetY, this);
+            that.newWindowIfNeed(ev.offsetY, this);
             if (lastOver) {
                 lastOver.classList.remove("over");
-                const activeIdx = parseInt(entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
-                const activePath = tabUtil.tabs[activeIdx].path;
+                const activeIdx = parseInt(that.entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
+                const activePath = that.tabUtil.tabs[activeIdx].path;
                 const toIdx = parseInt(lastOver.getAttribute("idx"));
                 const fromIdx = parseInt(this.getAttribute("idx"));
-                const ele = tabUtil.tabs.splice(fromIdx, 1)[0];
-                tabUtil.tabs.splice(toIdx, 0, ele);
-                openTab(activePath);
+                const ele = that.tabUtil.tabs.splice(fromIdx, 1)[0];
+                that.tabUtil.tabs.splice(toIdx, 0, ele);
+                that.openTab(activePath);
             }
         }).on("dragover", ".tab-container", function () {
             toggleOver(this, "add");
