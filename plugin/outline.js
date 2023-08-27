@@ -222,7 +222,7 @@ class _collectUtil {
 
     collect() {
         this.clear();
-        const elements = document.querySelectorAll("h1, h2, .md-table, .md-fences, .md-image");
+        const elements = document.querySelectorAll("#write>h1, #write>h2, .md-table, .md-fences, .md-image");
         elements.forEach(ele => {
             if (!this.config.SHOW_HIDDEN && ele.style.display === "none") return;
 

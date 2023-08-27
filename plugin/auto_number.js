@@ -2,11 +2,11 @@ class autoNumberPlugin extends global._basePlugin {
     beforeProcess = () => {
         this.base_css = `
         #write { counter-reset: write-h2 Figures Tables Fences; }
-        h1 { counter-reset: write-h2 Figures Tables Fences; }
-        h2 { counter-reset: write-h3 Figures Tables Fences; }
-        h3 { counter-reset: write-h4; }
-        h4 { counter-reset: write-h5; }
-        h5 { counter-reset: write-h6; }
+        #write > h1 { counter-reset: write-h2 Figures Tables Fences; }
+        #write > h2 { counter-reset: write-h3 Figures Tables Fences; }
+        #write > h3 { counter-reset: write-h4; }
+        #write > h4 { counter-reset: write-h5; }
+        #write > h5 { counter-reset: write-h6; }
         
         @media print {
             pb {
@@ -21,34 +21,34 @@ class autoNumberPlugin extends global._basePlugin {
             h1:first-of-type {
                 page-break-before: avoid;
             }
-        }
-    `
+        }`
+
         this.content_css = `
-        #write h2:before {
+        #write > h2:before {
             counter-increment: write-h2;
             content: counter(write-h2) ". ";
         }
         
-        #write h3:before,
-        h3.md-focus.md-heading:before {
+        #write > h3:before,
+        #write > h3.md-focus.md-heading:before {
             counter-increment: write-h3;
             content: counter(write-h2) "." counter(write-h3) " ";
         }
         
-        #write h4:before,
-        h4.md-focus.md-heading:before {
+        #write > h4:before,
+        #write > h4.md-focus.md-heading:before {
             counter-increment: write-h4;
             content: counter(write-h2) "." counter(write-h3) "." counter(write-h4) " ";
         }
         
-        #write h5:before,
-        h5.md-focus.md-heading:before {
+        #write > h5:before,
+        #write > h5.md-focus.md-heading:before {
             counter-increment: write-h5;
             content: counter(write-h2) "." counter(write-h3) "." counter(write-h4) "." counter(write-h5) " "
         }
         
-        #write h6:before,
-        h6.md-focus.md-heading:before {
+        #write > h6:before,
+        #write > h6.md-focus.md-heading:before {
             counter-increment: write-h6;
             content: counter(write-h2) "." counter(write-h3) "." counter(write-h4) "." counter(write-h5) "." counter(write-h6) " "
         }
