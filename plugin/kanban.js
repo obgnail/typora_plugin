@@ -44,9 +44,8 @@ class kanbanPlugin extends global._basePlugin {
                 display: flex;
                 flex-direction: column;
                 ${maxHeight}
-                overflow-y: scroll;
-                padding-bottom: 4px;
-                padding-left: 4px;
+                overflow-y: overlay;
+                padding: 0 4px 4px 4px;
             }
             
             .plugin-kanban-content .plugin-kanban-col-name {
@@ -75,7 +74,9 @@ class kanbanPlugin extends global._basePlugin {
         `
 
         if (this.utils.isBetaVersion) {
-            text += ` .md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
+            text = `.plugin-kanban { font-family: sans-serif; } 
+                    ${text} 
+                    .md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
         }
         return {textID: "plugin-kanban-style", text: text}
     }
