@@ -1,6 +1,6 @@
 class kanbanPlugin extends global._basePlugin {
     style = () => {
-        const text = `
+        let text = `
             #write .plugin-kanban {
                 display: flex;
                 justify-content: flex-start;
@@ -32,7 +32,7 @@ class kanbanPlugin extends global._basePlugin {
             } 
             
             .plugin-kanban .plugin-kanban-col {
-                width: 250px;
+                width: 250px !important;
                 margin: 8px;
                 padding: 8px;
             }
@@ -45,6 +45,8 @@ class kanbanPlugin extends global._basePlugin {
                 display: flex;
                 flex-direction: column;
                 font-family: 'Nunito', sans-serif;
+                max-height: 700px;
+                overflow-y: scroll;
             }
             
             .plugin-kanban .plugin-kanban-col-name {
@@ -73,6 +75,10 @@ class kanbanPlugin extends global._basePlugin {
                 text-align: left;
             }
         `
+
+        if (this.utils.isBetaVersion) {
+            text += ` .md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
+        }
         return {textID: "plugin-kanban-style", text: text}
     }
 
@@ -99,12 +105,30 @@ class kanbanPlugin extends global._basePlugin {
     process = () => {
         this.init();
 
-        this.utils.decorateAddCodeBlock(null, (result, ...args) => this.newKanban(args[0]))
+        this.utils.decorateAddCodeBlock(null, (result, ...args) => File.editor.diagrams.updateDiagram(args[0]))
         this.utils.decorate(
             () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
             "File.editor.fences.tryAddLangUndo",
             null,
-            (result, ...args) => this.newKanban(args[0].cid)
+            (result, ...args) => File.editor.diagrams.updateDiagram(args[0].cid)
+        )
+        this.utils.decorate(
+            // black magic
+            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor && File.editor.diagrams.constructor.isDiagramType),
+            "File.editor.diagrams.constructor.isDiagramType",
+            null,
+            (result, ...args) => result || (args[0] || "").toLowerCase() === "kanban",
+            true
+        )
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
+            "File.editor.diagrams.updateDiagram",
+            null,
+            async (result, ...args) => {
+                const cid = args[0];
+                cid && this.newKanban(cid);
+                return result
+            }
         )
     }
 
@@ -121,10 +145,12 @@ class kanbanPlugin extends global._basePlugin {
         let kanban = pre.find(".plugin-kanban");
         if (kanban.length === 0) {
             kanban = $(`<div class="plugin-kanban"></div>`);
-            pre.append(kanban);
+            const preview = pre.find(".md-diagram-panel-preview");
+            preview.length && preview.append(kanban);
         }
-        const kanbanList = this.newKanbanList(pre);
+        const kanbanList = this.newKanbanList(pre, cid);
         kanban.html(kanbanList);
+        return true
     }
 
     getColor = (type, idx) => {
@@ -134,8 +160,12 @@ class kanbanPlugin extends global._basePlugin {
         return "rgba(0,0,0,0)"
     }
 
-    newKanbanList = pre => {
-        const content = this.getFenceContent(pre[0]);
+    newKanbanList = (pre, cid) => {
+        let content = this.getFenceContentFromElement(pre[0]);
+        if (!content) {
+            content = this.getFenceContentFromQueue(cid);
+            if (!content) return;
+        }
         const lines = content.split("\n").map(line => line.trim()).filter(Boolean);
 
         const list = [];
@@ -168,7 +198,7 @@ class kanbanPlugin extends global._basePlugin {
         })
     }
 
-    getFenceContent = pre => {
+    getFenceContentFromElement = pre => {
         const lines = pre.querySelectorAll(".CodeMirror-code .CodeMirror-line");
         if (lines.length === 0) return;
 
@@ -184,6 +214,13 @@ class kanbanPlugin extends global._basePlugin {
             contentList.push(decodeText);
         })
         return contentList.join("\n")
+    }
+
+    getFenceContentFromQueue = cid => {
+        const fence = File.editor.fences.queue[cid];
+        if (fence) {
+            return fence.options.value
+        }
     }
 }
 
