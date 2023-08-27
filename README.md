@@ -19,19 +19,20 @@
 | 9    | commander          | 命令行环境                           | √        |
 | 10   | mindmap            | 根据文档大纲一键生成思维导图         | √        |
 | 11   | read_only          | 只读模式                             | √        |
-| 12   | file_counter       | 显示目录下的文件数                   | √        |
-| 13   | outline            | 以表格、图片、代码块形式的大纲       | √        |
-| 14   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
-| 15   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
-| 16   | resize_table       | 调整表格行高列宽                     | √        |
-| 17   | resize_image       | 调整图片显示大小                     | √        |
-| 18   | export_enhance     | 导出 html 时避免图片丢失             | √        |
-| 19   | go_top             | 一键到文章顶部                       | √        |
-| 20   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
-| 21   | custom             | 用户自定义命令（高级）               | √        |
-| 22   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
-| 23   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
-| 24   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
+| 12   | kanban             | 看板                                 | √        |
+| 13   | file_counter       | 显示目录下的文件数                   | √        |
+| 14   | outline            | 以表格、图片、代码块形式的大纲       | √        |
+| 15   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
+| 16   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
+| 17   | resize_table       | 调整表格行高列宽                     | √        |
+| 18   | resize_image       | 调整图片显示大小                     | √        |
+| 19   | export_enhance     | 导出 html 时避免图片丢失             | √        |
+| 20   | go_top             | 一键到文章顶部                       | √        |
+| 21   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
+| 22   | custom             | 用户自定义命令（高级）               | √        |
+| 23   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
+| 24   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
+| 25   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -300,6 +301,39 @@ const BUILTIN = [
 
 
 
+### kanban：看板
+
+拓展代码语法，添加看板功能
+
+语法：
+
+- 一级标题表示看板标题
+- 二级标题表示看板
+- `-` 或 `*` 表示任务
+- 任务后面的 `()` 表示任务描述
+
+````
+​```kanban
+# Today's task
+
+## Todo
+- 这是任务(这是任务描述)
+- 这是任务2(看板和任务都可以无限添加)
+
+## In-Progress
+* task3(一级标题表示看板标题，二级标题表示看板，- 或 * 表示任务)
+
+## Completed
+- task4
+​```
+````
+
+![kanban](assets/kanban.png)
+
+> 注意：以上语法是我自己定义和解析的，**没有通用性**。我坚持任何插件都不能污染语法，故此插件只推荐用于每日任务等临时使用。
+
+
+
 ### file_counter：显示文件数
 
 ![file_count](assets/file_count.png)
@@ -476,7 +510,7 @@ class fullPathCopy extends BaseCustomPlugin {
 - enable：是否启用此插件
 - config：插件自己的配置
 
-```toml
+​```toml
 # ./plugin/global/settings/custom_plugin.user.toml
 [fullPathCopy]
 name = "复制标题路径"

@@ -140,12 +140,16 @@ class kanbanPlugin extends global._basePlugin {
         }
     }
 
+    rollback = pre => {
+        pre.children(".plugin-kanban").remove();
+        pre.children(".fence-enhance").show();
+    }
+
     newKanban = cid => {
         const pre = File.editor.findElemById(cid);
         const lang = pre.attr("lang").trim().toLowerCase();
         if (lang !== "kanban") {
-            pre.children(".plugin-kanban").remove();
-            pre.children(".fence-enhance").show();
+            this.rollback(pre);
             return;
         }
         pre.children(".fence-enhance").hide();
@@ -160,6 +164,9 @@ class kanbanPlugin extends global._basePlugin {
         if (kanban_) {
             kanban.find(".plugin-kanban-title").text(kanban_.title);
             kanban.find(".plugin-kanban-content").html(kanban_.list);
+        } else {
+            // accident occurred
+            this.rollback(pre);
         }
     }
 
@@ -172,14 +179,14 @@ class kanbanPlugin extends global._basePlugin {
     }
 
     newKanbanElement = (pre, cid) => {
-        let content = this.getFenceContentFromQueue(cid);
+        let content = this.getFenceContentFromElement(pre[0]);
         if (!content) {
-            content = this.getFenceContentFromElement(pre[0]);
+            content = this.getFenceContentFromQueue(cid);
             if (!content) return;
         }
-        const lines = content.split("\n").map(line => line.trim()).filter(Boolean);
 
         const kanban = {title: "", list: []};
+        const lines = content.split("\n").map(line => line.trim()).filter(Boolean);
         lines.forEach(line => {
             if (line.startsWith("# ")) {
                 kanban.title = line.replace("# ", "");
