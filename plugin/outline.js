@@ -222,26 +222,24 @@ class _collectUtil {
 
     collect() {
         this.clear();
-        const write = document.querySelector("#write");
-        for (let ele = write.firstElementChild; ele; ele = ele.nextElementSibling) {
-            if (!this.config.SHOW_HIDDEN && ele.style.display === "none") {
-                continue
-            }
+        const elements = document.querySelectorAll("h1, h2, .md-table, .md-fences, .md-image");
+        elements.forEach(ele => {
+            if (!this.config.SHOW_HIDDEN && ele.style.display === "none") return;
 
             const tagName = ele.tagName;
             if (tagName === "H1") {
                 this.paragraphIdx = 0;
                 this.tableIdx = this.imageIdx = this.fenceIdx = 0;
-                continue
+                return;
             } else if (tagName === "H2") {
                 this.paragraphIdx++;
                 this.tableIdx = this.imageIdx = this.fenceIdx = 0;
-                continue
+                return;
             }
 
-            const cid = ele.getAttribute("cid");
+            const cid = ele.closest("[cid]").getAttribute("cid");
             // table
-            if (tagName === "FIGURE") {
+            if (ele.classList.contains("md-table")) {
                 this.tableIdx++;
                 this.collection.table.push({
                     cid: cid,
@@ -259,7 +257,7 @@ class _collectUtil {
                     idx: this.fenceIdx
                 });
                 // image
-            } else if (ele.querySelector("img")) {
+            } else if (ele.classList.contains("md-image")) {
                 this.imageIdx++;
                 this.collection.image.push({
                     cid: cid,
@@ -268,7 +266,7 @@ class _collectUtil {
                     idx: this.imageIdx
                 });
             }
-        }
+        })
     }
 
     compare(p) {

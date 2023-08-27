@@ -143,7 +143,7 @@ class autoNumberPlugin extends global._basePlugin {
         }`
 
         this.image_css = `
-        #write p span.md-image.md-img-loaded::after {
+        #write span.md-image.md-img-loaded::after {
             counter-increment: Figures;
             content: "${this.config.NAMES.image} " counter(write-h2) "-" counter(Figures);
             font-family: monospace;
