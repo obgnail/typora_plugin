@@ -1,7 +1,12 @@
 class kanbanPlugin extends global._basePlugin {
     style = () => {
         let text = `
-            #write .plugin-kanban {
+            .plugin-kanban .plugin-kanban-title {
+                font-size: 1.5rem;
+                font-weight: bold;
+            }
+            
+            .plugin-kanban .plugin-kanban-content {
                 display: flex;
                 justify-content: flex-start;
                 
@@ -13,7 +18,7 @@ class kanbanPlugin extends global._basePlugin {
                 overflow-x: auto;
             }
             
-            .plugin-kanban .no-wrap {
+            .plugin-kanban-content .no-wrap {
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
@@ -21,17 +26,17 @@ class kanbanPlugin extends global._basePlugin {
                 padding-left: 3px;
             }
             
-            .plugin-kanban .kanban-box {
+            .plugin-kanban-content .kanban-box {
                 border-radius: 4px;
                 box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12);
             }
             
-            .plugin-kanban .kanban-item-box {
+            .plugin-kanban-content .kanban-item-box {
                 border-radius: 4px;
                 box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12);
             } 
             
-            .plugin-kanban .plugin-kanban-col {
+            .plugin-kanban-content .plugin-kanban-col {
                 width: 250px !important;
                 margin: 8px;
                 padding: 8px;
@@ -41,7 +46,7 @@ class kanbanPlugin extends global._basePlugin {
                 margin: 5px;
             }
                         
-            .plugin-kanban .plugin-kanban-col-item-list {
+            .plugin-kanban-content .plugin-kanban-col-item-list {
                 display: flex;
                 flex-direction: column;
                 font-family: 'Nunito', sans-serif;
@@ -49,7 +54,7 @@ class kanbanPlugin extends global._basePlugin {
                 overflow-y: scroll;
             }
             
-            .plugin-kanban .plugin-kanban-col-name {
+            .plugin-kanban-content .plugin-kanban-col-name {
                 font-family: 'Nunito', sans-serif;
                 font-size: 1rem;
                 font-weight: bold;
@@ -59,20 +64,22 @@ class kanbanPlugin extends global._basePlugin {
                 padding-bottom: 4px;
             }
 
-            .plugin-kanban .plugin-kanban-col-item {
+            .plugin-kanban-content .plugin-kanban-col-item {
                 margin: 5px 8px;
                 padding: 8px;
             }
             
-            .plugin-kanban .plugin-kanban-col-item-title {
+            .plugin-kanban-content .plugin-kanban-col-item-title {
                 margin-bottom: 5px;
             }
             
-            .plugin-kanban .plugin-kanban-col-item-desc {
+            .plugin-kanban-content .plugin-kanban-col-item-desc {
                 overflow: hidden;
                 height: 5rem;
                 padding-left: 5px;
                 text-align: left;
+                white-space: break-spaces;
+                word-wrap: break-word;
             }
         `
 
@@ -85,21 +92,6 @@ class kanbanPlugin extends global._basePlugin {
     init = () => {
         this.badChars = ["%E2%80%8B", "%C2%A0", "%0A"];
         this.replaceChars = ["", "%20", ""];
-        // 随便配的颜色
-        this.kanbanColor = [
-            "#FFE0B2",
-            "#DAE9F4",
-            "#FEDCCC",
-            "#C6E5D9",
-            "#FFF1B9",
-        ]
-        this.itemColor = [
-            "#FFFDE7",
-            "#F8FAFF",
-            "#FFFFF2",
-            "#FFFCF0",
-            "#FFFFF5",
-        ]
 
         this.callArgs = [
             {
@@ -134,7 +126,6 @@ class kanbanPlugin extends global._basePlugin {
             async (result, ...args) => {
                 const cid = args[0];
                 cid && this.newKanban(cid);
-                return result
             }
         )
     }
@@ -160,59 +151,66 @@ class kanbanPlugin extends global._basePlugin {
         pre.children(".fence-enhance").hide();
         pre.addClass("md-fences-advanced");
         let kanban = pre.find(".plugin-kanban");
-        if (kanban.length === 0) {
-            kanban = $(`<div class="plugin-kanban"></div>`);
+        if (kanban.length) {
+            kanban = $(`<div class="plugin-kanban"><div class="plugin-kanban-title"></div><div class="plugin-kanban-content"></div></div>`);
             const preview = pre.find(".md-diagram-panel-preview");
             preview.length && preview.append(kanban);
         }
-        const kanbanList = this.newKanbanList(pre, cid);
-        kanban.html(kanbanList);
-        return true
-    }
-
-    getColor = (type, idx) => {
-        if (idx <= this[type].length - 1) {
-            return this[type][idx]
+        const kanban_ = this.newKanbanElement(pre, cid);
+        if (kanban_) {
+            kanban.find(".plugin-kanban-title").text(kanban_.title);
+            kanban.find(".plugin-kanban-content").html(kanban_.list);
         }
-        return "rgba(0,0,0,0)"
     }
 
-    newKanbanList = (pre, cid) => {
-        let content = this.getFenceContentFromElement(pre[0]);
+    // TASK_COLOR or KANBAN_COLOR
+    getColor = (type, idx) => {
+        if (idx > this.config[type].length - 1) {
+            idx = 0
+        }
+        return this.config[type][idx]
+    }
+
+    newKanbanElement = (pre, cid) => {
+        let content = this.getFenceContentFromQueue(cid);
         if (!content) {
-            content = this.getFenceContentFromQueue(cid);
+            content = this.getFenceContentFromElement(pre[0]);
             if (!content) return;
         }
         const lines = content.split("\n").map(line => line.trim()).filter(Boolean);
 
-        const list = [];
+        const kanban = {title: "", list: []};
         lines.forEach(line => {
             if (line.startsWith("# ")) {
-                const name = line.replace("# ", "");
-                list.push({name: name, item: []});
+                kanban.title = line.replace("# ", "");
+            } else if (line.startsWith("## ")) {
+                const name = line.replace("## ", "");
+                kanban.list.push({name: name, item: []});
             } else {
                 const match = line.match(/^[\-\*]\s(?<title>.*?)(\((?<desc>.*?)\))?$/);
                 if (!match) return;
                 const title = match.groups.title;
                 if (title) {
-                    list[list.length - 1].item.push({title: title, desc: match.groups.desc || ""});
+                    const last = kanban.list[kanban.list.length - 1];
+                    last && last.item.push({title: title, desc: match.groups.desc || ""});
                 }
             }
         })
 
-        return list.map((col, listIdx) => {
+        kanban.list = kanban.list.map((col, listIdx) => {
             const items = col.item.map(item => `
-                <div class="plugin-kanban-col-item kanban-item-box" style="background-color: ${this.getColor("itemColor", listIdx)}">
+                <div class="plugin-kanban-col-item kanban-item-box" style="background-color: ${this.getColor("TASK_COLOR", listIdx)}">
                     <div class="plugin-kanban-col-item-title no-wrap"><b>${item.title}</b></div>
                     <div class="plugin-kanban-col-item-desc">${item.desc}</div>
                 </div>`);
 
             return $(
-                `<div class="plugin-kanban-col kanban-box" style="background-color: ${this.getColor("kanbanColor", listIdx)}">
+                `<div class="plugin-kanban-col kanban-box" style="background-color: ${this.getColor("KANBAN_COLOR", listIdx)}">
                     <div class="plugin-kanban-col-name no-wrap">${col.name}</div><p></p>
                     <div class="plugin-kanban-col-item-list">${items.join("")}</div>
                 </div>`)
         })
+        return kanban
     }
 
     getFenceContentFromElement = pre => {
