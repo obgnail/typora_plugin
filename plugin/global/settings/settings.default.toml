@@ -387,6 +387,27 @@ CLICKABLE = true
 DOWNLOAD_NETWORK_IMAGE = false
 
 
+############### kanban ###############
+[kanban]
+# 启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "看板"
+# 是否在右键菜单中可点击
+CLICKABLE = true
+TEMPLATE = """```kanban
+# Todo
+- task1(task describtion)
+- task2
+
+# In-Progress
+- task3
+
+# Completed
+- task4
+```
+"""
+
 ############### custom ###############
 [custom]
 # 启用插件
@@ -442,16 +463,6 @@ CLICKABLE = false
 REMOVE_MIX_WIDTH = true
 # 单元格边线的拖拽范围
 THRESHOLD = 20
-
-
-############### kanban ###############
-[kanban]
-# 启用插件
-ENABLE = false
-# 在右键菜单中展示的名称
-NAME = "看板"
-# 是否在右键菜单中可点击
-CLICKABLE = false
 
 
 ############### mermaid_replace ###############

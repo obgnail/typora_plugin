@@ -100,6 +100,13 @@ class kanbanPlugin extends global._basePlugin {
             "#FFFCF0",
             "#FFFFF5",
         ]
+
+        this.callArgs = [
+            {
+                arg_name: "插入看板",
+                arg_value: "insert_kanban"
+            },
+        ];
     }
 
     process = () => {
@@ -130,6 +137,16 @@ class kanbanPlugin extends global._basePlugin {
                 return result
             }
         )
+    }
+
+    call = type => {
+        if (type === "insert_kanban") {
+            const content = this.config.TEMPLATE;
+            navigator.clipboard.writeText(content).then(() => {
+                const ele = document.querySelector("#context-menu [data-key='paste']");
+                ele && ele.click();
+            });
+        }
     }
 
     newKanban = cid => {
