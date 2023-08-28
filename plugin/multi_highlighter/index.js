@@ -33,8 +33,8 @@ class multiHighlighterPlugin extends global._basePlugin {
         const text = `
             #plugin-multi-highlighter {
                 position: fixed;
-                top: 15%;
-                left: 55%;
+                top: 440px;
+                left: 60%;
                 width: 420px;
                 z-index: 9999;
                 padding: 4px;
