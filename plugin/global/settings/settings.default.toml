@@ -46,6 +46,10 @@ REFOUCE_WHEN_OPEN_FILE = true
 CASE_SENSITIVE = false
 # 将文件路径加入搜索内容(此选项不必手动调整，可以在UI设置)
 INCLUDE_FILE_PATH = true
+# 搜索时联动其他插件(此选项不必手动调整，可以在UI设置)
+LINK_OTHER_PLUGIN = false
+# 当处于联动状态时，search_multi模态框隐藏时，联动插件跟着隐藏
+LINK_PLUGIN_AUTO_HIDE = false
 # 展示文件路径时使用相对路径
 RELATIVE_PATH = true
 # 关键词按空格分割
@@ -58,6 +62,8 @@ MAX_SIZE = 2000000
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 # 打开模态框快捷键
 HOTKEY = "ctrl+shift+p"
+# 内部使用
+LOOP_DETECT_INTERVAL = 200
 
 
 ############### multi_highlighter ###############
