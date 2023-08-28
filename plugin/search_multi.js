@@ -44,7 +44,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
             border-radius: 2px;
             padding-left: 5px;
-            padding-right: 50px;
+            padding-right: 80px;
         }
         
         #plugin-search-multi-input input:focus {
@@ -74,6 +74,11 @@ class searchMultiKeywordPlugin extends global._basePlugin {
         
         #plugin-search-multi-input .path-option-btn {
             right: 30px;
+            padding: 1px 3px;
+        }
+        
+        #plugin-search-multi-input .link-option-btn {
+            right: 51px;
             padding: 1px 3px;
         }
         
@@ -190,6 +195,12 @@ class searchMultiKeywordPlugin extends global._basePlugin {
     }
 
     process = () => {
+        this.utils.loopDetector(
+            () => global._pluginsHadInjected,
+            () => this.utils.getPlugin("multi_highlighter") && new LinkHelper(this).process(),
+            this.config.LOOP_DETECT_INTERVAL
+        );
+
         this.modal = {
             modal: document.getElementById('plugin-search-multi'),
             input: document.querySelector("#plugin-search-multi-input input"),
@@ -447,6 +458,108 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             this.modal.input.select();
         }
     }
+}
+
+class LinkHelper {
+    constructor(searcher) {
+        this.searcher = searcher;
+        this.utils = this.searcher.utils;
+
+        this.highlighter = this.utils.getPlugin("multi_highlighter");
+        this.originValue = this.highlighter.config.RESEARCH_WHILE_OPEN_FILE;
+        this.styleList = ["position", "padding", "backgroundColor", "boxShadow", "border"];
+
+        this.highlighterDiv = document.querySelector("#plugin-multi-highlighter");
+        this.searcherInput = document.querySelector("#plugin-search-multi-input");
+        this.button = null;
+    }
+
+    process = () => {
+        this.appendButton();
+
+        // 当处于联动状态，在search_multi搜索前先设置highlighter的inputValue和caseSensitive
+        this.utils.decorate(
+            () => !!(this.highlighter.highlight),
+            `_plugins["multi_highlighter"].highlight`,
+            () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.modal.modal.style.display === "block" && this.syncValue()
+        )
+        // 当处于联动状态，search_multi触发搜索的时候，先触发highlighter搜索
+        this.utils.decorate(
+            () => !!(this.searcher.searchMulti),
+            `_plugins["search_multi"].searchMulti`,
+            () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.modal.modal.style.display === "block" && this.highlight()
+        )
+        // 当处于联动状态，search_multi隐藏前，先恢复highlighter modal
+        this.utils.decorate(
+            () => !!(this.searcher.hide),
+            `_plugins["search_multi"].hide`,
+            () => this.searcher.config.LINK_OTHER_PLUGIN && this.toggle(this.searcher.config.LINK_PLUGIN_AUTO_HIDE)
+        )
+
+        this.searcher.modal.modal.addEventListener("click", ev => {
+            if (ev.target.closest("#plugin-search-multi-input .link-option-btn")) {
+                this.toggle();
+                ev.preventDefault();
+                ev.stopPropagation();
+            }
+        }, true)
+    }
+
+    appendButton = () => {
+        const wantLink = this.searcher.config.LINK_OTHER_PLUGIN;
+
+        const span = document.createElement("span");
+        this.button = span;
+        span.className = `option-btn link-option-btn ${wantLink ? "select" : ""}`;
+        span.setAttribute("ty-hint", "插件联动");
+        const div = document.createElement("div");
+        div.className = "fa fa-link";
+        span.appendChild(div);
+        this.searcherInput.appendChild(span);
+
+        wantLink && this.moveElement();
+    }
+
+    toggle = (forceHide = false) => {
+        this.button.classList.toggle("select");
+        this.searcher.config.LINK_OTHER_PLUGIN = !this.searcher.config.LINK_OTHER_PLUGIN;
+        if (this.searcher.config.LINK_OTHER_PLUGIN) {
+            this.moveElement();
+            this.highlight();
+        } else {
+            this.restoreMove(forceHide);
+        }
+        this.syncValue();
+    }
+
+    syncValue = () => {
+        this.highlighter.setInputValue(this.searcher.modal.input.value);
+        if (this.searcher.config.CASE_SENSITIVE !== this.highlighter.config.CASE_SENSITIVE) {
+            document.querySelector(".plugin-multi-highlighter-option-btn").click();
+        }
+    }
+
+    moveElement = () => {
+        this.highlighterDiv.parentElement.removeChild(this.highlighterDiv);
+        this.searcherInput.parentNode.insertBefore(this.highlighterDiv, this.searcherInput.nextSibling);
+
+        this.highlighterDiv.style.display = "block";
+        this.highlighterDiv.querySelector("#plugin-multi-highlighter-input").style.display = "none";
+        this.styleList.forEach(style => this.highlighterDiv.style[style] = "initial");
+        this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = true;
+    }
+
+    restoreMove = forceHide => {
+        this.highlighterDiv.parentElement.removeChild(this.highlighterDiv);
+        this.utils.insertDiv(this.highlighterDiv);
+
+        this.highlighterDiv.style.display = (forceHide) ? "none" : "block";
+        this.highlighterDiv.querySelector("#plugin-multi-highlighter-input").style.display = "";
+        this.styleList.forEach(style => this.highlighterDiv.style[style] = "");
+        this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = this.originValue;
+    }
+
+    highlight = () => this.highlighter.highlight();
 }
 
 module.exports = {

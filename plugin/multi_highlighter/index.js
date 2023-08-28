@@ -33,8 +33,8 @@ class multiHighlighterPlugin extends global._basePlugin {
         const text = `
             #plugin-multi-highlighter {
                 position: fixed;
-                top: 15%;
-                left: 55%;
+                top: 440px;
+                left: 60%;
                 width: 420px;
                 z-index: 9999;
                 padding: 4px;
@@ -231,11 +231,9 @@ class multiHighlighterPlugin extends global._basePlugin {
 
         this.utils.decorateAddCodeBlock(this.decoMixin.before, this.decoMixin.after);
 
-        if (this.config.RESEARCH_WHILE_OPEN_FILE) {
-            this.utils.decorateOpenFile(null, () => {
-                (this.entities.modal.style.display === "block") && setTimeout(this.highlight, 300)
-            })
-        }
+        this.utils.decorateOpenFile(null, () => {
+            (this.config.RESEARCH_WHILE_OPEN_FILE && this.entities.modal.style.display === "block") && setTimeout(this.highlight, 300)
+        })
 
         this.entities.input.addEventListener("keydown", ev => {
             if (ev.key === "Enter") {
@@ -391,6 +389,7 @@ class multiHighlighterPlugin extends global._basePlugin {
         return value.split(this.config.SEPARATOR).filter(Boolean)
     }
 
+    setInputValue = value => this.entities.input.value = value;
 
     highlight = (refreshResult = true) => {
         this.lastHighlightFilePath = this.utils.getFilePath();
