@@ -87,8 +87,6 @@ class resourceOperation extends BaseCustomPlugin {
     }
 
     traverseCallback = async (filePath, dir) => {
-        if (filePath[0] === ".") return;
-
         const extname = this.utils.Package.Path.extname(filePath).toLowerCase();
         if (this.resourceSuffix.has(extname)) {
             this.resources.add(filePath);
