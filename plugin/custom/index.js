@@ -38,11 +38,11 @@ class loadPluginHelper {
             const custom = allPlugins[fix_name];
             custom.plugin = fix_name;
 
-            if (!custom.enable) return
+            if (!custom.enable) continue
 
             try {
                 const {plugin} = this.controller.utils.requireFilePath(`./plugin/custom/plugins/${custom.plugin}`);
-                if (!plugin) return;
+                if (!plugin) continue;
 
                 const instance = new plugin(custom, this.controller);
                 if (this.check(instance)) {
