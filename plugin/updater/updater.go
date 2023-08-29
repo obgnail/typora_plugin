@@ -12,7 +12,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -145,36 +144,6 @@ func (u *Updater) newHTTPClient() *http.Client {
 	return client
 }
 
-func (u *Updater) deleteResidualFile() (err error) {
-	fmt.Println("[step 2] delete residual file")
-	obj := regexp.MustCompile(`updater(\d+\.\d+\.\d+)?\.exe`)
-
-	pluginDir := filepath.Join(u.root, "./plugin")
-	var result [][]string
-	err = filepath.Walk(pluginDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() {
-			version := obj.FindString(info.Name())
-			result = append(result, []string{version, path})
-		}
-		return nil
-	})
-	if err != nil || len(result) != 2 {
-		return
-	}
-
-	var deleteFile string
-	compare := u.compareVersion(result[0][0], result[1][0])
-	if compare == 1 {
-		deleteFile = result[1][1]
-	} else {
-		deleteFile = result[0][1]
-	}
-	return os.Remove(deleteFile)
-}
-
 type VersionInfo struct {
 	TagName    string `json:"tag_name"`
 	Name       string `json:"name"`
@@ -183,7 +152,7 @@ type VersionInfo struct {
 }
 
 func (u *Updater) needUpdate() bool {
-	fmt.Println("[step 3] check need update")
+	fmt.Println("[step 2] check need update")
 	var err error
 	if u.newVersionInfo, err = u.getLatestVersion(); err != nil {
 		fmt.Println("get latest version error:", err)
@@ -268,7 +237,7 @@ func (u *Updater) compareVersion(v1, v2 string) (result int) {
 }
 
 func (u *Updater) downloadLatestVersion() (err error) {
-	fmt.Println("[step 4] download latest version")
+	fmt.Println("[step 3] download latest version")
 	client := u.newHTTPClient()
 	resp, err := client.Get(u.newVersionInfo.ZipBallUrl)
 	if err != nil {
@@ -292,7 +261,7 @@ func (u *Updater) downloadLatestVersion() (err error) {
 }
 
 func (u *Updater) unzip() (err error) {
-	fmt.Println("[step 5] unzip file")
+	fmt.Println("[step 4] unzip file")
 	extract := func(file *zip.File) error {
 		zippedFile, err := file.Open()
 		if err != nil {
@@ -334,7 +303,7 @@ func (u *Updater) unzip() (err error) {
 }
 
 func (u *Updater) adjustSettingFiles() (err error) {
-	fmt.Println("[step 6] adjust setting file")
+	fmt.Println("[step 5] adjust setting file")
 	for _, settingFile := range u.userSettingFiles {
 		filePath := filepath.Join(u.unzipDir, settingFile)
 		if err = os.Remove(filePath); err != nil {
@@ -363,14 +332,14 @@ func (u *Updater) adjustSettingFiles() (err error) {
 }
 
 func (u *Updater) syncDir() (err error) {
-	fmt.Println("[step 7] sync dir")
+	fmt.Println("[step 6] sync dir")
 	src := filepath.Join(u.unzipDir, "./plugin")
 	dst := filepath.Join(u.root, "./plugin")
 	return copyDir(src, dst)
 }
 
 func (u *Updater) deleteUseless() (err error) {
-	fmt.Println("[step 8] delete useless file")
+	fmt.Println("[step 7] delete useless file")
 	if err = os.Remove(u.downloadFile); err != nil {
 		return
 	}
@@ -475,9 +444,6 @@ func update(proxy string) (err error) {
 	updater, err := NewUpdater(proxy)
 	if err != nil {
 		return err
-	}
-	if err = updater.deleteResidualFile(); err != nil {
-		return
 	}
 	if need := updater.needUpdate(); !need {
 		return

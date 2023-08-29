@@ -130,3 +130,9 @@ enable = true
 [openInTotalCommander.config]
 tc_path = "D:\\software\\TotalCMD_64bit_10.52\\TOTALCMD64.EXE"
 tc_args = '/O /T /P=L  /L="$f"'
+
+
+############### pluginUpdater ###############
+[pluginUpdater]
+name = "更新插件"
+enable = true
