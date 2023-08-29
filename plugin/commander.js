@@ -295,6 +295,7 @@ class commanderPlugin extends global._basePlugin {
     }
 
     showStdout = stdout => {
+        this.modal.modal.style.display = "block";
         this.modal.output.style.display = "block";
         this.modal.pre.classList.remove("error");
         this.modal.pre.textContent = stdout;

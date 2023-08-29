@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -17,26 +18,28 @@ import (
 	"time"
 )
 
-type Inserter struct {
+type Installer struct {
 	root          string
 	match         string
 	insertFile    string
 	insertContent string
 }
 
-func NewInserter() (*Inserter, error) {
+func newInstaller() (*Installer, error) {
+	fmt.Println("[step 1] new installer")
 	curDir, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
-	return &Inserter{
+	return &Installer{
 		root:          filepath.Dir(filepath.Dir(curDir)),
 		insertFile:    "window.html",
 		insertContent: `<script src="./plugin/index.js" defer="defer"></script>`,
 	}, nil
 }
 
-func (i *Inserter) prepare() (err error) {
+func (i *Installer) prepare() (err error) {
+	fmt.Println("[step 2] prepare")
 	betaDir := "app"
 	normalDir := "appsrc"
 	betaMatch := `<script src="./app/window/frame.js" defer="defer"></script>`
@@ -59,14 +62,22 @@ func (i *Inserter) prepare() (err error) {
 	return err
 }
 
-func (i *Inserter) run() (err error) {
+func (i *Installer) backupFile() (err error) {
+	fmt.Println("[step 3] backup file")
+	filePath := filepath.Join(i.root, i.insertFile)
+	backupFilePath := filePath + ".bak"
+	return copyFile(filePath, backupFilePath)
+}
+
+func (i *Installer) run() (err error) {
+	fmt.Println("[step 4] update window.html")
 	filePath := filepath.Join(i.root, i.insertFile)
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
 	}
 	if bytes.Contains(file, []byte(i.insertContent)) {
-		fmt.Println("had in inserted")
+		fmt.Println("had installed")
 		return
 	}
 
@@ -75,13 +86,14 @@ func (i *Inserter) run() (err error) {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Done")
 	return nil
 }
 
 type Updater struct {
-	url          string
-	timeout      int
+	url     string
+	timeout int
+	proxy   *url.URL
+
 	root         string
 	versionFile  string
 	downloadFile string
@@ -93,14 +105,24 @@ type Updater struct {
 	newVersionInfo *VersionInfo
 }
 
-func NewUpdater() (*Updater, error) {
+func NewUpdater(proxy string) (*Updater, error) {
+	fmt.Println("[step 1] new updater")
 	curDir, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
+
+	var uri *url.URL
+	if proxy != "" {
+		if uri, err = url.Parse(proxy); err != nil {
+			return nil, err
+		}
+	}
+
 	updater := &Updater{
 		url:          "https://api.github.com/repos/obgnail/typora_plugin/releases/latest",
 		timeout:      30,
+		proxy:        uri,
 		root:         filepath.Dir(filepath.Dir(curDir)),
 		versionFile:  filepath.Join(curDir, "version.json"),
 		downloadFile: filepath.Join(curDir, "download.zip"),
@@ -116,19 +138,15 @@ func NewUpdater() (*Updater, error) {
 }
 
 func (u *Updater) newHTTPClient() *http.Client {
-	uri, err := url.Parse("http://127.0.0.1:7890")
-	if err != nil {
-		panic(err)
+	client := &http.Client{Timeout: time.Duration(u.timeout) * time.Second}
+	if u.proxy != nil {
+		client.Transport = &http.Transport{Proxy: http.ProxyURL(u.proxy)}
 	}
-	return &http.Client{
-		Timeout: time.Duration(u.timeout) * time.Second,
-		Transport: &http.Transport{
-			Proxy: http.ProxyURL(uri),
-		},
-	}
+	return client
 }
 
 func (u *Updater) deleteResidualFile() (err error) {
+	fmt.Println("[step 2] delete residual file")
 	obj := regexp.MustCompile(`updater(\d+\.\d+\.\d+)?\.exe`)
 
 	pluginDir := filepath.Join(u.root, "./plugin")
@@ -165,6 +183,7 @@ type VersionInfo struct {
 }
 
 func (u *Updater) needUpdate() bool {
+	fmt.Println("[step 3] check need update")
 	var err error
 	if u.newVersionInfo, err = u.getLatestVersion(); err != nil {
 		fmt.Println("get latest version error:", err)
@@ -249,6 +268,7 @@ func (u *Updater) compareVersion(v1, v2 string) (result int) {
 }
 
 func (u *Updater) downloadLatestVersion() (err error) {
+	fmt.Println("[step 4] download latest version")
 	client := u.newHTTPClient()
 	resp, err := client.Get(u.newVersionInfo.ZipBallUrl)
 	if err != nil {
@@ -272,6 +292,7 @@ func (u *Updater) downloadLatestVersion() (err error) {
 }
 
 func (u *Updater) unzip() (err error) {
+	fmt.Println("[step 5] unzip file")
 	extract := func(file *zip.File) error {
 		zippedFile, err := file.Open()
 		if err != nil {
@@ -281,10 +302,10 @@ func (u *Updater) unzip() (err error) {
 
 		extractedFilePath := filepath.Join(u.unzipDir, file.Name)
 		if file.FileInfo().IsDir() {
-			fmt.Println("Creating directory:", extractedFilePath)
+			//fmt.Println("Creating directory:", extractedFilePath)
 			return os.MkdirAll(extractedFilePath, file.Mode())
 		}
-		fmt.Println("Extracting file:", file.Name)
+		//fmt.Println("Extracting file:", file.Name)
 		outputFile, err := os.OpenFile(extractedFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
 		if err != nil {
 			return err
@@ -313,6 +334,7 @@ func (u *Updater) unzip() (err error) {
 }
 
 func (u *Updater) adjustSettingFiles() (err error) {
+	fmt.Println("[step 6] adjust setting file")
 	for _, settingFile := range u.userSettingFiles {
 		filePath := filepath.Join(u.unzipDir, settingFile)
 		if err = os.Remove(filePath); err != nil {
@@ -341,12 +363,14 @@ func (u *Updater) adjustSettingFiles() (err error) {
 }
 
 func (u *Updater) syncDir() (err error) {
+	fmt.Println("[step 7] sync dir")
 	src := filepath.Join(u.unzipDir, "./plugin")
 	dst := filepath.Join(u.root, "./plugin")
 	return copyDir(src, dst)
 }
 
 func (u *Updater) deleteUseless() (err error) {
+	fmt.Println("[step 8] delete useless file")
 	if err = os.Remove(u.downloadFile); err != nil {
 		return
 	}
@@ -429,22 +453,26 @@ func pathExists(path string) (bool, error) {
 	return false, err
 }
 
-func insert() (err error) {
-	inserter, err := NewInserter()
+func install() (err error) {
+	installer, err := newInstaller()
 	if err != nil {
 		return err
 	}
-	if err = inserter.prepare(); err != nil {
+	if err = installer.prepare(); err != nil {
 		return err
 	}
-	if err = inserter.run(); err != nil {
+	if err = installer.backupFile(); err != nil {
 		return err
 	}
+	if err = installer.run(); err != nil {
+		return err
+	}
+	fmt.Println("Done")
 	return nil
 }
 
-func update() (err error) {
-	updater, err := NewUpdater()
+func update(proxy string) (err error) {
+	updater, err := NewUpdater(proxy)
 	if err != nil {
 		return err
 	}
@@ -469,15 +497,24 @@ func update() (err error) {
 	if err = updater.deleteUseless(); err != nil {
 		return
 	}
+	fmt.Println("Done")
 	return
 }
 
 func main() {
-	//if err := insert(); err != nil {
-	//	panic(err)
-	//}
+	var action string
+	var proxy string
+	flag.StringVar(&action, "action", "install", "install or update")
+	flag.StringVar(&proxy, "proxy", "", "proxy url. eg: http://127.0.0.1:7890")
+	flag.Parse()
 
-	if err := update(); err != nil {
-		panic(err)
+	if action == "update" {
+		if err := update(proxy); err != nil {
+			panic(err)
+		}
+	} else if action == "install" {
+		if err := install(); err != nil {
+			panic(err)
+		}
 	}
 }
