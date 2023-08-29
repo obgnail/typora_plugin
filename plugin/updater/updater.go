@@ -19,7 +19,6 @@ import (
 
 type Installer struct {
 	root          string
-	match         string
 	insertFile    string
 	insertContent string
 }
@@ -39,26 +38,7 @@ func newInstaller() (*Installer, error) {
 
 func (i *Installer) prepare() (err error) {
 	fmt.Println("[step 2] prepare")
-	betaDir := "app"
-	normalDir := "appsrc"
-	betaMatch := `<script src="./app/window/frame.js" defer="defer"></script>`
-	normalMatch := `<script src="./appsrc/window/frame.js" defer="defer"></script>`
-
-	if err = checkExist(i.root, i.insertFile); err != nil {
-		return err
-	}
-
-	err = checkExist(i.root, betaDir)
-	if err == nil {
-		i.match = betaMatch
-		return nil
-	}
-	err = checkExist(i.root, normalDir)
-	if err == nil {
-		i.match = normalMatch
-		return nil
-	}
-	return err
+	return checkExist(i.root, i.insertFile)
 }
 
 func (i *Installer) backupFile() (err error) {
@@ -80,7 +60,19 @@ func (i *Installer) run() (err error) {
 		return
 	}
 
-	result := bytes.Replace(file, []byte(i.match), []byte(i.match+i.insertContent), 1)
+	match := ""
+	betaMatch := `<script src="./app/window/frame.js" defer="defer"></script>`
+	normalMatch := `<script src="./appsrc/window/frame.js" defer="defer"></script>`
+	if bytes.Contains(file, []byte(betaMatch)) {
+		match = betaMatch
+	} else if bytes.Contains(file, []byte(normalMatch)) {
+		match = normalMatch
+	}
+	if match == "" {
+		return fmt.Errorf("has not match")
+	}
+
+	result := bytes.Replace(file, []byte(match), []byte(match+i.insertContent), 1)
 	err = ioutil.WriteFile(filePath, result, 0644)
 	if err != nil {
 		return err
@@ -96,6 +88,7 @@ type Updater struct {
 	root         string
 	versionFile  string
 	downloadFile string
+	workDir      string
 	unzipDir     string
 
 	userSettingFiles []string
@@ -111,6 +104,11 @@ func NewUpdater(proxy string) (*Updater, error) {
 		return nil, err
 	}
 
+	tempDir, err := ioutil.TempDir("", "unzip-")
+	if err != nil {
+		return nil, err
+	}
+
 	var uri *url.URL
 	if proxy != "" {
 		if uri, err = url.Parse(proxy); err != nil {
@@ -120,16 +118,17 @@ func NewUpdater(proxy string) (*Updater, error) {
 
 	updater := &Updater{
 		url:          "https://api.github.com/repos/obgnail/typora_plugin/releases/latest",
-		timeout:      30,
+		timeout:      40,
 		proxy:        uri,
 		root:         filepath.Dir(filepath.Dir(curDir)),
 		versionFile:  filepath.Join(curDir, "version.json"),
-		downloadFile: filepath.Join(curDir, "download.zip"),
-		unzipDir:     curDir,
+		downloadFile: filepath.Join(tempDir, "download.zip"),
+		workDir:      tempDir, // 使用临时目录，避免爆炸
 		userSettingFiles: []string{
 			"./plugin/global/settings/custom_plugin.user.toml",
 			"./plugin/global/settings/settings.user.toml",
 		},
+		unzipDir:       "",
 		oldVersionInfo: nil,
 		newVersionInfo: nil,
 	}
@@ -269,7 +268,7 @@ func (u *Updater) unzip() (err error) {
 		}
 		defer zippedFile.Close()
 
-		extractedFilePath := filepath.Join(u.unzipDir, file.Name)
+		extractedFilePath := filepath.Join(u.workDir, file.Name)
 		if file.FileInfo().IsDir() {
 			//fmt.Println("Creating directory:", extractedFilePath)
 			return os.MkdirAll(extractedFilePath, file.Mode())
@@ -298,7 +297,7 @@ func (u *Updater) unzip() (err error) {
 			return
 		}
 	}
-	u.unzipDir = filepath.Join(u.unzipDir, zipReader.Reader.File[0].Name)
+	u.unzipDir = filepath.Join(u.workDir, zipReader.Reader.File[0].Name)
 	return
 }
 
@@ -338,12 +337,20 @@ func (u *Updater) syncDir() (err error) {
 	return copyDir(src, dst)
 }
 
-func (u *Updater) deleteUseless() (err error) {
-	fmt.Println("[step 7] delete useless file")
+func (u *Updater) deleteUselessAndSave() (err error) {
+	fmt.Println("[step 7] delete useless file and save version.json")
 	if err = os.Remove(u.downloadFile); err != nil {
 		return
 	}
-	return os.RemoveAll(u.unzipDir)
+	if err = os.RemoveAll(u.workDir); err != nil {
+		return
+	}
+	content, err := json.Marshal(u.newVersionInfo)
+	if err != nil {
+		return
+	}
+	err = ioutil.WriteFile(u.versionFile, content, 0777)
+	return
 }
 
 func copyFile(src, dst string) (err error) {
@@ -422,6 +429,12 @@ func pathExists(path string) (bool, error) {
 	return false, err
 }
 
+func wait() {
+	fmt.Printf("Press Enter to exit ...")
+	endKey := make([]byte, 1)
+	os.Stdin.Read(endKey)
+}
+
 func install() (err error) {
 	installer, err := newInstaller()
 	if err != nil {
@@ -437,6 +450,7 @@ func install() (err error) {
 		return err
 	}
 	fmt.Println("Done")
+	wait()
 	return nil
 }
 
@@ -446,6 +460,7 @@ func update(proxy string) (err error) {
 		return err
 	}
 	if need := updater.needUpdate(); !need {
+		fmt.Println("dont need update")
 		return
 	}
 	if err = updater.downloadLatestVersion(); err != nil {
@@ -460,7 +475,7 @@ func update(proxy string) (err error) {
 	if err = updater.syncDir(); err != nil {
 		return
 	}
-	if err = updater.deleteUseless(); err != nil {
+	if err = updater.deleteUselessAndSave(); err != nil {
 		return
 	}
 	fmt.Println("Done")

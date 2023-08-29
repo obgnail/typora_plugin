@@ -30,15 +30,32 @@
 | 20   | go_top             | 一键到文章顶部                       | √        |
 | 21   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
 | 22   | custom             | 用户自定义命令（高级）               | √        |
-| 23   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
-| 24   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
-| 25   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
+| 23   | plugin_updater     | 一键更新插件                         | √        |
+| 24   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
+| 25   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
+| 26   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
 
 
-## 如何使用
+## 如何使用（自动）
+
+> 目前此方法仅限 windows 平台，不想去管理交叉编译的文件了。
+
+1. 下载插件源码。
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/app/window.html` 或者 `Typora/resources/window.html`）
+3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
+4. 进入文件夹 `A/plugin/updater`，双击运行 `updater.exe`。如果看到下图，说明成功。
+5. 验证：在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【启动插件】栏目，说明一切顺利。
+
+![installer](assets/installer.png)
+
+> NOTE：`updater.exe` 同时集成了 install 和 update 两个功能，后续插件更新需要用到此文件，请勿移动位置、删除。如果您不信任此 exe 文件，请自行编译此目录下的 `updater.go` 文件。
+
+
+
+## 如何使用（手动）
 
 1. 下载插件源码。
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/app/window.html` 或者 `Typora/resources/window.html`，推荐使用 everything 找一下）
@@ -416,6 +433,14 @@ const BUILTIN = [
 > 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
 
 > collapse_paragraph.js 的章节折叠功能可以很好的替代此脚本，建议使用 collapse_paragraph。故不提供快捷键。
+
+
+
+### plugin_updater：一键更新插件
+
+使用方式：右键菜单 -> 启用插件 ->  静默更新插件。
+
+> 此插件依赖于 commander 插件，请勿禁用 commander 插件。
 
 
 

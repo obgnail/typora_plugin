@@ -275,6 +275,8 @@ class commanderPlugin extends global._basePlugin {
     }
 
     exec = (cmd, shell, resolve, reject) => {
+        this.modal.input.value = cmd;
+        this.modal.shellSelect.value = shell;
         const _shell = this.getShellCommand(shell);
         const _cmd = this.replaceArgs(cmd, shell);
         this.utils.Package.ChildProcess.exec(

@@ -134,5 +134,5 @@ tc_args = '/O /T /P=L  /L="$f"'
 
 ############### pluginUpdater ###############
 [pluginUpdater]
-name = "更新插件"
+name = "静默更新插件"
 enable = true
