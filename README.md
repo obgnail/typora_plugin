@@ -39,23 +39,31 @@
 
 
 
-## 如何使用（自动）
+## 如何使用：方法一（自动）
 
-> 目前此方法仅限 windows 平台，不想去管理交叉编译的文件了。
+> 目前此方法仅限 windows 平台。
 
 1. 下载插件源码。
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/app/window.html` 或者 `Typora/resources/window.html`）
-3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
-4. 进入文件夹 `A/plugin/updater`，双击运行 `updater.exe`。如果看到下图，说明成功。
-5. 验证：在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【启动插件】栏目，说明一切顺利。
 
-![installer](assets/installer.png)
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/app/window.html` 或者 `Typora/resources/window.html`）
+
+3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。（参考方法二的图片）
+
+4. 进入文件夹 `A/plugin/updater/`，双击运行 `updater.exe`。如果看到下图，说明成功。
+
+   ![installer](assets/installer.png)
+
+5. 验证：在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【启动插件】栏目，说明一切顺利。
 
 > NOTE：`updater.exe` 同时集成了 install 和 update 两个功能，后续插件更新需要用到此文件，请勿移动位置、删除。如果您不信任此 exe 文件，请自行编译此目录下的 `updater.go` 文件。
 
 
 
-## 如何使用（手动）
+---
+
+
+
+## 如何使用：方法二（手动）
 
 1. 下载插件源码。
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/app/window.html` 或者 `Typora/resources/window.html`，推荐使用 everything 找一下）
