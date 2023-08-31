@@ -209,7 +209,10 @@ class windowTabBarPlugin extends global._basePlugin {
             filePath && this.openTab(filePath);
         });
 
-        setTimeout(this.adjustTop, this.config.LOOP_DETECT_INTERVAL);
+        this.utils.loopDetector(() => (this.utils.isBetaVersion) ? document.querySelector("header").getBoundingClientRect().height : true, ()=>{
+            this.adjustTop();
+            this.adjustTop();
+        })
 
         if (this.config.DRAG_STYLE === 1) {
             this.sort1();
@@ -281,24 +284,26 @@ class windowTabBarPlugin extends global._basePlugin {
     }
 
     adjustTop = () => {
-        const windowTab = document.querySelector("#plugin-window-tab");
-        if (!this.config.HIDE_WINDOW_TITLE_BAR) {
-            const {height, top} = document.querySelector("header").getBoundingClientRect();
-            windowTab.style.top = height + top + "px";
-        }
-
-        if (this.config.CHANGE_CONTENT_TOP) {
-            const {height, top} = windowTab.getBoundingClientRect();
-            document.querySelector("content").style.top = top + height + "px";
-            document.querySelector("#typora-source").style.top = top + height + "px";
-        }
-
-        if (this.config.CHANGE_NOTIFICATION_Z_INDEX) {
-            const container = document.querySelector(".md-notification-container");
-            if (container) {
-                container.style.zIndex = "99999";
+        setTimeout(() => {
+            if (this.config.CHANGE_NOTIFICATION_Z_INDEX) {
+                const container = document.querySelector(".md-notification-container");
+                if (container) {
+                    container.style.zIndex = "99999";
+                }
             }
-        }
+
+            const windowTab = document.querySelector("#plugin-window-tab");
+            if (!this.config.HIDE_WINDOW_TITLE_BAR) {
+                const {height, top} = document.querySelector("header").getBoundingClientRect();
+                windowTab.style.top = height + top + "px";
+            }
+
+            if (this.config.CHANGE_CONTENT_TOP) {
+                const {height, top} = windowTab.getBoundingClientRect();
+                document.querySelector("content").style.top = top + height + "px";
+                document.querySelector("#typora-source").style.top = top + height + "px";
+            }
+        }, 200)
     }
 
     showTabsIfNeed = show => document.querySelector("#plugin-window-tab").style.display = (show) ? "" : "none";
