@@ -51,7 +51,7 @@ class pluginUpdater extends BaseCustomPlugin {
             this.modal(modal, components => {
                 const proxy = (components[1].submit || "").trim();
                 const cmd = `cd ${this.dir} && ${this.updater} --action=update --proxy=${proxy}`;
-                this.commander.alwaysExec(cmd, "cmd/bash")
+                this.commander.alwaysExec(cmd, "cmd/bash");
             })
         })
     }
@@ -123,7 +123,7 @@ class ProxyGetter {
         return new Promise(resolve => {
             this.utils.Package.ChildProcess.exec(`reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" | find /i "proxyserver"`,
                 (err, stdout, stderr) => {
-                    if (err) {
+                    if (err || stderr) {
                         resolve(null);
                     } else {
                         const match = stdout.match(/ProxyServer\s+REG_SZ\s+(.*)/i);
@@ -141,7 +141,7 @@ class ProxyGetter {
         return new Promise(resolve => {
             this.utils.Package.ChildProcess.exec('networksetup -getwebproxy "Wi-Fi"',
                 (err, stdout, stderr) => {
-                    if (err) {
+                    if (err || stderr) {
                         resolve(null);
                     } else {
                         const match = stdout.match(/Enabled: (.+)\nServer: (.+)\nPort: (.+)\n/i);
