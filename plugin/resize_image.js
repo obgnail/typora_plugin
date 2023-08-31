@@ -2,6 +2,7 @@ class resizeImagePlugin extends global._basePlugin {
     init = () => {
         this.dynamicUtil = {target: null}
         this.dynamicCallMap = {
+            allow_oversize: () => this.resetImageSize(),
             zoom_out_20_percent: () => this.zoom(this.dynamicUtil.target, true, 0.2),
             zoom_in_20_percent: () => this.zoom(this.dynamicUtil.target, false, 0.2),
             set_align_left: () => this.setAlign("left", this.dynamicUtil.target),
@@ -26,6 +27,22 @@ class resizeImagePlugin extends global._basePlugin {
         }, true);
     }
 
+    resetImageSize = () => {
+        this.config.ALLOWE_OVERSIZE = !this.config.ALLOWE_OVERSIZE;
+
+        if (!this.config.ALLOWE_OVERSIZE) {
+            document.querySelectorAll("#write img").forEach(img => {
+                if (img.style.maxWidth) {
+                    const maxSize = img.parentElement.offsetWidth;
+                    if (this.getWidth(img) > maxSize) {
+                        img.style.width = "";
+                    }
+                    img.style.maxWidth = "";
+                }
+            })
+        }
+    }
+
     getWidth = image => {
         const {width} = image.getBoundingClientRect();
         return (!image.style.width) ? width : parseInt(image.style.width.replace("px", ""));
@@ -48,22 +65,36 @@ class resizeImagePlugin extends global._basePlugin {
     zoom = (image, zoomOut, scale) => {
         let width = this.getWidth(image);
         width = zoomOut ? width * (1 - scale) : width * (1 + this.config.SCALE);
-        const maxWidth = image.parentElement.offsetWidth;
-        width = Math.min(width, maxWidth);
-        image.style.width = width + "px";
-        this.setAlign(this.config.IMAGE_ALIGN, image, maxWidth);
+        let maxWidth = image.parentElement.offsetWidth;
+        image.style.maxWidth = maxWidth + "px";
+
+        if (!this.config.ALLOWE_OVERSIZE) {
+            width = Math.min(width, maxWidth);
+            image.style.width = width + "px";
+            this.setAlign(this.config.IMAGE_ALIGN, image, maxWidth);
+        } else {
+            maxWidth = Math.max(maxWidth, image.style.maxWidth);
+            image.style.width = width + "px"; // 允许超出#write
+            if (width <= maxWidth) {
+                this.setAlign(this.config.IMAGE_ALIGN, image, maxWidth);
+            } else {
+                image.style.maxWidth = width + "px";
+            }
+        }
     }
 
     dynamicCallArgsGenerator = anchorNode => {
+        const args = [{arg_name: `${this.config.ALLOWE_OVERSIZE ? "禁止" : "允许"}图片超出范围`, arg_value: "allow_oversize"}];
+
         const images = anchorNode.closest("#write .md-image");
-        if (!images) return;
+        if (!images) return args;
 
         const image = images.querySelector("img");
-        if (!image) return;
+        if (!image) return args;
 
         this.dynamicUtil.target = image;
 
-        const args = [{arg_name: "缩小20%", arg_value: "zoom_out_20_percent"}];
+        args.push({arg_name: "缩小20%", arg_value: "zoom_out_20_percent"})
         if (this.getWidth(image) < image.parentElement.offsetWidth) {
             args.push({arg_name: "放大20%", arg_value: "zoom_in_20_percent"})
         }
@@ -76,8 +107,6 @@ class resizeImagePlugin extends global._basePlugin {
     }
 
     call = type => {
-        if (!this.dynamicUtil.target) return;
-
         const func = this.dynamicCallMap[type];
         func && func();
     }
