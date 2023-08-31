@@ -43,7 +43,7 @@
 
 > 目前此方法仅限 windows 平台。
 
-1. 下载插件源码。
+1. [下载](https://github.com/obgnail/typora_plugin/releases)插件源码。
 
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/app/window.html` 或者 `Typora/resources/window.html`）
 
@@ -65,7 +65,7 @@
 
 ## 如何使用：方法二（手动）
 
-1. 下载插件源码。
+1. [下载](https://github.com/obgnail/typora_plugin/releases)插件源码。
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/app/window.html` 或者 `Typora/resources/window.html`，推荐使用 everything 找一下）
 3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
 4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
