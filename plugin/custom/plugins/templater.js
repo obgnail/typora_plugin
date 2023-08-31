@@ -16,7 +16,7 @@ date: {{date}} {{weekday}}
 # {{date}} Task List
 
 ## Todo
-- task1(task describtion)
+- task1(task description)
 - task2
 - task3
 
