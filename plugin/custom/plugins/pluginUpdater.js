@@ -1,6 +1,8 @@
 class pluginUpdater extends BaseCustomPlugin {
     selector = () => (this.updaterExist && this.commander) ? "" : this.utils.nonExistSelector
 
+    hint = () => "当你发现BUG，可以尝试更新，指不定就解决了"
+
     init = () => {
         this.dir = this.utils.joinPath("./plugin/updater");
         this.commander = this.utils.getPlugin("commander");
@@ -24,22 +26,33 @@ class pluginUpdater extends BaseCustomPlugin {
     }
 
     callback = anchorNode => {
-        const modal = {
-            title: "设置代理",
-            components: [
-                {
-                    label: "代理(为空则不设置)",
-                    type: "input",
-                    value: "",
-                    placeholder: "http://127.0.0.1:7890",
-                }
-            ]
-        }
+        new ProxyGetter(this.utils).getProxy().then(proxy => {
+            proxy = proxy || "";
+            if (!proxy.startsWith("http://")) {
+                proxy = "http://" + proxy;
+            }
 
-        this.modal(modal, components => {
-            const proxy = components[0].submit;
-            const cmd = `cd ${this.dir} && ${this.updater} --action=update --proxy=${proxy}`;
-            this.commander.alwaysExec(cmd, "cmd/bash")
+            const modal = {
+                title: "设置代理",
+                components: [
+                    {
+                        label: "默认使用当前系统代理。你可以手动修改：",
+                        type: "p",
+                    },
+                    {
+                        label: "代理(为空则不设置)",
+                        type: "input",
+                        value: proxy,
+                        placeholder: "http://127.0.0.1:7890",
+                    }
+                ]
+            }
+
+            this.modal(modal, components => {
+                const proxy = (components[1].submit || "").trim();
+                const cmd = `cd ${this.dir} && ${this.updater} --action=update --proxy=${proxy}`;
+                this.commander.alwaysExec(cmd, "cmd/bash");
+            })
         })
     }
 
@@ -86,6 +99,79 @@ class pluginUpdater extends BaseCustomPlugin {
         }
         return 0
     }
+}
+
+
+class ProxyGetter {
+    constructor(utils) {
+        this.utils = utils
+    }
+
+    getProxy = () => {
+        if (File.isLinux) {
+            return this.getLinuxProxy()
+        } else if (File.isWin) {
+            return this.getWindowsProxy()
+        } else if (File.isMac) {
+            return this.getMacProxy()
+        } else {
+            return ""
+        }
+    }
+
+    getWindowsProxy = () => {
+        return new Promise(resolve => {
+            this.utils.Package.ChildProcess.exec(`reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" | find /i "proxyserver"`,
+                (err, stdout, stderr) => {
+                    if (err || stderr) {
+                        resolve(null);
+                    } else {
+                        const match = stdout.match(/ProxyServer\s+REG_SZ\s+(.*)/i);
+                        if (match && match[1]) {
+                            resolve(match[1]);
+                        } else {
+                            resolve(null);
+                        }
+                    }
+                });
+        });
+    };
+
+    getMacProxy = () => {
+        return new Promise(resolve => {
+            this.utils.Package.ChildProcess.exec('networksetup -getwebproxy "Wi-Fi"',
+                (err, stdout, stderr) => {
+                    if (err || stderr) {
+                        resolve(null);
+                    } else {
+                        const match = stdout.match(/Enabled: (.+)\nServer: (.+)\nPort: (.+)\n/i);
+                        if (match && match[1] === 'Yes' && match[2] && match[3]) {
+                            resolve(`${match[2]}:${match[3]}`);
+                        } else {
+                            resolve(null);
+                        }
+                    }
+                });
+        });
+    };
+
+    getLinuxProxy = () => {
+        return new Promise(resolve => {
+            this.utils.Package.Fs.readFile('/etc/environment', 'utf8',
+                (err, data) => {
+                    if (err) {
+                        resolve(null);
+                    } else {
+                        const match = data.match(/http_proxy=(.+)/i);
+                        if (match && match[1]) {
+                            resolve(match[1]);
+                        } else {
+                            resolve(null);
+                        }
+                    }
+                });
+        });
+    };
 }
 
 
