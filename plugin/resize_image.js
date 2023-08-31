@@ -28,16 +28,22 @@ class resizeImagePlugin extends global._basePlugin {
     }
 
     resetImageSize = () => {
-        this.config.ALLOWE_OVERSIZE = !this.config.ALLOWE_OVERSIZE;
+        this.config.ALLOW_OVERSIZE = !this.config.ALLOW_OVERSIZE;
 
-        if (!this.config.ALLOWE_OVERSIZE) {
-            document.querySelectorAll("#write img").forEach(img => {
-                if (img.style.maxWidth) {
-                    const maxSize = img.parentElement.offsetWidth;
-                    if (this.getWidth(img) > maxSize) {
-                        img.style.width = "";
+        if (!this.config.ALLOW_OVERSIZE) {
+            document.querySelectorAll("#write img").forEach(image => {
+                if (image.style.maxWidth) {
+                    const maxSize = image.parentElement.offsetWidth;
+                    if (this.getWidth(image) > maxSize) {
+                        image.style.width = "";
                     }
-                    img.style.maxWidth = "";
+                    image.style.maxWidth = "";
+                }
+                if (image.style.left) {
+                    image.style.left = "";
+                }
+                if (image.style.position) {
+                    image.style.position = "";
                 }
             })
         }
@@ -65,26 +71,23 @@ class resizeImagePlugin extends global._basePlugin {
     zoom = (image, zoomOut, scale) => {
         let width = this.getWidth(image);
         width = zoomOut ? width * (1 - scale) : width * (1 + this.config.SCALE);
-        let maxWidth = image.parentElement.offsetWidth;
-        image.style.maxWidth = maxWidth + "px";
+        const maxWidth = image.parentElement.offsetWidth;
+        image.style.maxWidth = "";
 
-        if (!this.config.ALLOWE_OVERSIZE) {
+        if (!this.config.ALLOW_OVERSIZE || width <= maxWidth) {
             width = Math.min(width, maxWidth);
             image.style.width = width + "px";
             this.setAlign(this.config.IMAGE_ALIGN, image, maxWidth);
         } else {
-            maxWidth = Math.max(maxWidth, image.style.maxWidth);
-            image.style.width = width + "px"; // 允许超出#write
-            if (width <= maxWidth) {
-                this.setAlign(this.config.IMAGE_ALIGN, image, maxWidth);
-            } else {
-                image.style.maxWidth = width + "px";
-            }
+            image.style.width = width + "px";
+            image.style.maxWidth = width + "px";
+            image.style.left = (maxWidth - width) / 2 + "px";
+            image.style.position = "relative";
         }
     }
 
     dynamicCallArgsGenerator = anchorNode => {
-        const args = [{arg_name: `${this.config.ALLOWE_OVERSIZE ? "禁止" : "允许"}图片超出范围`, arg_value: "allow_oversize"}];
+        const args = [{arg_name: `${this.config.ALLOW_OVERSIZE ? "禁止" : "允许"}图片超出范围`, arg_value: "allow_oversize"}];
 
         const images = anchorNode.closest("#write .md-image");
         if (!images) return args;
