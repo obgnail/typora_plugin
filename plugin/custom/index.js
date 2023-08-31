@@ -48,7 +48,7 @@ class loadPluginHelper {
                 if (this.check(instance)) {
                     instance.init();
                     const style = instance.style();
-                    style && this.controller.utils.insertStyle(style.id, style.text);
+                    style && this.controller.utils.insertStyle(style.textID, style.text);
                     instance.html();
                     instance.process();
                     this.controller.custom[instance.name] = instance;
