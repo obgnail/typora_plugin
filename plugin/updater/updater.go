@@ -97,7 +97,7 @@ type Updater struct {
 	newVersionInfo *VersionInfo
 }
 
-func NewUpdater(proxy string) (*Updater, error) {
+func NewUpdater(proxy string, timeout int) (*Updater, error) {
 	fmt.Println("[step 1] new updater")
 	curDir, err := os.Getwd()
 	if err != nil {
@@ -116,9 +116,13 @@ func NewUpdater(proxy string) (*Updater, error) {
 		}
 	}
 
+	if timeout < 30 {
+		timeout = 600
+	}
+
 	updater := &Updater{
 		url:          "https://api.github.com/repos/obgnail/typora_plugin/releases/latest",
-		timeout:      40,
+		timeout:      timeout,
 		proxy:        uri,
 		root:         filepath.Dir(filepath.Dir(curDir)),
 		versionFile:  filepath.Join(curDir, "version.json"),
@@ -454,8 +458,8 @@ func install() (err error) {
 	return nil
 }
 
-func update(proxy string) (err error) {
-	updater, err := NewUpdater(proxy)
+func update(proxy string, timeout int) (err error) {
+	updater, err := NewUpdater(proxy, timeout)
 	if err != nil {
 		return err
 	}
@@ -478,19 +482,21 @@ func update(proxy string) (err error) {
 	if err = updater.deleteUselessAndSave(); err != nil {
 		return
 	}
-	fmt.Println("Done")
+	fmt.Println("Done! Current Plugin Version:", updater.newVersionInfo.TagName)
 	return
 }
 
 func main() {
 	var action string
 	var proxy string
+	var timeout int
 	flag.StringVar(&action, "action", "install", "install or update")
 	flag.StringVar(&proxy, "proxy", "", "proxy url. eg: http://127.0.0.1:7890")
+	flag.IntVar(&timeout, "timeout", 600, "client timeout")
 	flag.Parse()
 
 	if action == "update" {
-		if err := update(proxy); err != nil {
+		if err := update(proxy, timeout); err != nil {
 			panic(err)
 		}
 	} else if action == "install" {
