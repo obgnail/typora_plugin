@@ -212,10 +212,17 @@ class utils {
             "File.editor.fences.addCodeBlock", before, after)
     }
 
-    static loopDetector = (until, after, detectInterval = 20) => {
+    static loopDetector = (until, after, detectInterval = 20, runWhenTimeout = true) => {
+        let run = false;
         const uuid = Math.random();
+        const start = new Date().getTime();
         this.detectorContainer[uuid] = setInterval(() => {
-            if (until()) {
+            if (new Date().getTime() - start > 10000) {
+                console.error("loopDetector timeout!", until, after);
+                run = runWhenTimeout;
+            }
+
+            if (until() || run) {
                 clearInterval(this.detectorContainer[uuid]);
                 after && after();
                 delete this.detectorContainer[uuid];
