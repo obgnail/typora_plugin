@@ -1,38 +1,57 @@
 class goTopPlugin extends global._basePlugin {
-    html = () => {
-        const goTop = document.createElement("div");
-        goTop.id = this.config.DIV_ID;
-        goTop.style.position = "fixed";
-        goTop.style.right = "50px";
-        goTop.style.bottom = "50px";
-        goTop.style.zIndex = "99999";
-        goTop.style.cursor = "pointer";
-        goTop.style.fontSize = "50px";
-        goTop.style.color = this.config.COLOR;
-        goTop.style.display = "none";
-        const i = document.createElement("i");
-        i.classList.add("ion-arrow-up-c");
-        goTop.appendChild(i);
-        this.utils.insertDiv(goTop);
+    style = () => {
+        const textID = "plugin-go-top-style";
+        const text = `
+            #${this.config.DIV_ID} {
+                position: fixed;
+                right: 50px;
+                bottom: 50px;
+                z-index: 99999;
+                cursor: pointer;
+                font-size: 28px;
+                text-align: center;
+                color: ${this.config.COLOR};
+            }
+            
+            #${this.config.DIV_ID} .roll-item {
+                width: 35px;
+                height: 35px;
+                margin-top: 10px;
+                box-shadow: rgba(0, 0, 0, 0.07) 0px 0px 10px;
+                border-radius: 4px;
+            }
+            
+            #${this.config.DIV_ID} .roll-item:hover {
+                background-color: ${this.config.HOVER_COLOR};
+            }
+            
+            #${this.config.DIV_ID} .roll-item .fa {
+                display: block;
+                line-height: 35px;
+            }
+        `
+        return {textID, text}
     }
 
-    init = () => {
-        this.goTop = document.getElementById(this.config.DIV_ID);
+    html = () => {
+        const wrap = document.createElement("div");
+        wrap.id = this.config.DIV_ID;
+        wrap.innerHTML = `
+            <div class="roll-item" action="go-top"><i class="fa fa-angle-up"></i></div>
+            <div class="roll-item" action="go-bottom"><i class="fa fa-angle-down"></i></div>`;
+        this.utils.insertDiv(wrap);
     }
 
     process = () => {
-        this.init();
-
         document.getElementById(this.config.DIV_ID).addEventListener("click", ev => {
-            this.call();
-            ev.preventDefault();
-            ev.stopPropagation();
+            const target = ev.target.closest(".roll-item");
+            if (target) {
+                const action = target.getAttribute("action");
+                this.call(action);
+                ev.preventDefault();
+                ev.stopPropagation();
+            }
         });
-
-        const content = document.querySelector("content");
-        content.addEventListener("scroll", () => {
-            this.goTop.style.display = (content.scrollTop > this.config.THRESHOLD) ? "" : "none";
-        })
     }
 
     call = direction => {

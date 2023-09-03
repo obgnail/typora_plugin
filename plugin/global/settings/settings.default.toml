@@ -285,6 +285,8 @@ THRESHOLD = 50
 SCROLL_TIME = 600
 # 标签的颜色
 COLOR = "var(--active-file-border-color, black)"
+# hover时标签的颜色
+HOVER_COLOR = "var(--item-hover-bg-color, black)"
 # 标签id
 DIV_ID = "plugin-go-top"
 
