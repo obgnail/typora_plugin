@@ -1,11 +1,10 @@
 class pluginUpdater extends BaseCustomPlugin {
-    selector = () => (this.updaterExist && this.commander) ? "" : this.utils.nonExistSelector
+    selector = () => (this.updaterExist && this.utils.getPlugin("commander")) ? "" : this.utils.nonExistSelector
 
     hint = () => "当你发现BUG，可以尝试更新，指不定就解决了"
 
     init = () => {
         this.dir = this.utils.joinPath("./plugin/updater");
-        this.commander = this.utils.getPlugin("commander");
         this.updater = this.utils.joinPath("./plugin/updater/updater.exe");
         this.updaterExist = this.utils.existPath(this.updater);
 
@@ -51,7 +50,7 @@ class pluginUpdater extends BaseCustomPlugin {
             this.modal(modal, components => {
                 const proxy = (components[1].submit || "").trim();
                 const cmd = `cd ${this.dir} && ${this.updater} --action=update --proxy=${proxy}`;
-                this.commander.alwaysExec(cmd, "cmd/bash");
+                this.utils.getPlugin("commander").alwaysExec(cmd, "cmd/bash");
             })
         })
     }
