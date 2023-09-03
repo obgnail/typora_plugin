@@ -25,12 +25,12 @@ class fenceEnhancePlugin extends global._basePlugin {
                 right: .5em;
                 z-index: 8;
                 font-size: 1.2em;
-            }
-            #write .fence-enhance .typora-copy-code, .typora-fold-code, .typora-indent-code {
                 opacity: 0.5;
+            }
+            #write .fence-enhance .enhance-button {
                 cursor: pointer;
             }
-            #write .fence-enhance .typora-copy-code, .typora-indent-code {
+            #write .fence-enhance .copy-code, .indent-code {
                 margin-left: .5em;
             }`;
         return {textID, text}
@@ -94,27 +94,27 @@ class fenceEnhancePlugin extends global._basePlugin {
             disable_or_enable_fold: () => {
                 this.config.ENABLE_FOLD = !this.config.ENABLE_FOLD;
                 if (!this.config.ENABLE_FOLD) {
-                    document.querySelectorAll(".typora-fold-code.folded").forEach(ele => ele.click());
+                    document.querySelectorAll(".fold-code.folded").forEach(ele => ele.click());
                 }
                 const display = (this.config.ENABLE_FOLD) ? "block" : "none";
-                document.querySelectorAll(".fence-enhance .typora-fold-code").forEach(ele => ele.style.display = display);
+                document.querySelectorAll(".fence-enhance .fold-code").forEach(ele => ele.style.display = display);
             },
             disable_or_enable_copy: () => {
                 this.config.ENABLE_COPY = !this.config.ENABLE_COPY;
                 const display = (this.config.ENABLE_COPY) ? "block" : "none";
-                document.querySelectorAll(".fence-enhance .typora-copy-code").forEach(ele => ele.style.display = display);
+                document.querySelectorAll(".fence-enhance .copy-code").forEach(ele => ele.style.display = display);
             },
             disable_or_enable_indent: () => {
                 this.enableIndent = !this.enableIndent;
                 const display = (this.enableIndent) ? "block" : "none";
-                document.querySelectorAll(".fence-enhance .typora-indent-code").forEach(ele => ele.style.display = display);
+                document.querySelectorAll(".fence-enhance .indent-code").forEach(ele => ele.style.display = display);
             },
             fold_all: () => {
-                document.querySelectorAll(".typora-fold-code:not(.folded)").forEach(ele => ele.click());
+                document.querySelectorAll(".fold-code:not(.folded)").forEach(ele => ele.click());
                 this.config.FOLD_DEFAULT = true;
             },
             expand_all: () => {
-                document.querySelectorAll(".typora-fold-code.folded").forEach(ele => ele.click());
+                document.querySelectorAll(".fold-code.folded").forEach(ele => ele.click());
                 this.config.FOLD_DEFAULT = false;
             },
             fold_current: () => this.foldFence(this.dynamicUtil.target),
@@ -140,21 +140,13 @@ class fenceEnhancePlugin extends global._basePlugin {
         })
 
         document.getElementById("write").addEventListener("click", ev => {
-            const copy = ev.target.closest(".typora-copy-code");
-            const fold = ev.target.closest(".typora-fold-code");
-            const indent = ev.target.closest(".typora-indent-code");
-            if (!copy && !fold && !indent) return;
-
-            ev.preventDefault();
-            ev.stopPropagation();
-            document.activeElement.blur();
-
-            if (copy) {
-                this.copyCode(ev, copy);
-            } else if (fold) {
-                this.foldCode(ev, fold);
-            } else {
-                this.indentCode(ev, indent);
+            const target = ev.target.closest(".fence-enhance .enhance-button");
+            if (target) {
+                ev.preventDefault();
+                ev.stopPropagation();
+                document.activeElement.blur();
+                const action = target.getAttribute("action");
+                this[action](ev, target);
             }
         })
 
@@ -164,15 +156,17 @@ class fenceEnhancePlugin extends global._basePlugin {
                 this.querySelector(".fence-enhance").style.visibility = "";
             }
         }).on("mouseleave", ".md-fences", function () {
-            if (config.AUTO_HIDE && !this.querySelector(".typora-fold-code.folded")) {
+            if (config.AUTO_HIDE && !this.querySelector(".fold-code.folded")) {
                 this.querySelector(".fence-enhance").style.visibility = "hidden";
             }
         })
     }
 
-    createButton = (className, hint, iconClassName) => {
+    createButton = (className, action, hint, iconClassName) => {
         const button = document.createElement("div");
+        button.classList.add("enhance-button");
         button.classList.add(className);
+        button.setAttribute("action", action);
         hint && button.setAttribute("ty-hint", hint);
         const span = document.createElement("span");
         span.className = iconClassName;
@@ -190,17 +184,17 @@ class fenceEnhancePlugin extends global._basePlugin {
                 enhance.style.visibility = "hidden";
             }
 
-            const foldButton = this.createButton("typora-fold-code", "折叠", "fa fa-minus");
+            const foldButton = this.createButton("fold-code", "foldCode", "折叠", "fa fa-minus");
             if (!this.config.ENABLE_FOLD) {
                 foldButton.style.display = "none";
             }
 
-            const indentButton = this.createButton("typora-indent-code", "调整缩进", "fa fa-indent");
+            const indentButton = this.createButton("indent-code", "indentCode", "调整缩进", "fa fa-indent");
             if (!this.enableIndent) {
                 indentButton.style.display = "none";
             }
 
-            const copyButton = this.createButton("typora-copy-code", "复制", "fa fa-clipboard");
+            const copyButton = this.createButton("copy-code", "copyCode", "复制", "fa fa-clipboard");
             if (!this.config.ENABLE_COPY) {
                 copyButton.style.display = "none";
             }
@@ -285,11 +279,11 @@ class fenceEnhancePlugin extends global._basePlugin {
         return arr
     }
 
-    copyFence = target => target.querySelector(".typora-copy-code").click();
-    indentFence = target => target.querySelector(".typora-indent-code").click();
-    foldFence = target => target.querySelector(".typora-fold-code").click();
+    copyFence = target => target.querySelector(".copy-code").click();
+    indentFence = target => target.querySelector(".indent-code").click();
+    foldFence = target => target.querySelector(".fold-code").click();
     expandFence = fence => {
-        const button = fence.querySelector(".fence-enhance .typora-fold-code.folded");
+        const button = fence.querySelector(".fence-enhance .fold-code.folded");
         button && button.click();
     }
 

@@ -7,7 +7,6 @@ class goTopPlugin extends global._basePlugin {
                 right: 50px;
                 bottom: 50px;
                 z-index: 99999;
-                cursor: pointer;
                 font-size: 28px;
                 text-align: center;
                 color: ${this.config.COLOR};
@@ -17,6 +16,7 @@ class goTopPlugin extends global._basePlugin {
                 width: 35px;
                 height: 35px;
                 margin-top: 10px;
+                cursor: pointer;
                 box-shadow: rgba(0, 0, 0, 0.07) 0px 0px 10px;
                 border-radius: 4px;
             }
