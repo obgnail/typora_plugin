@@ -27,7 +27,7 @@ class fenceEnhancePlugin extends global._basePlugin {
                 font-size: 1.2em;
                 opacity: 0.5;
             }
-            #write .fence-enhance .enhance-button {
+            #write .fence-enhance .enhance-btn {
                 cursor: pointer;
             }
             #write .fence-enhance .copy-code, .indent-code {
@@ -140,7 +140,7 @@ class fenceEnhancePlugin extends global._basePlugin {
         })
 
         document.getElementById("write").addEventListener("click", ev => {
-            const target = ev.target.closest(".fence-enhance .enhance-button");
+            const target = ev.target.closest(".fence-enhance .enhance-btn");
             if (target) {
                 ev.preventDefault();
                 ev.stopPropagation();
@@ -164,7 +164,7 @@ class fenceEnhancePlugin extends global._basePlugin {
 
     createButton = (className, action, hint, iconClassName) => {
         const button = document.createElement("div");
-        button.classList.add("enhance-button");
+        button.classList.add("enhance-btn");
         button.classList.add(className);
         button.setAttribute("action", action);
         hint && button.setAttribute("ty-hint", hint);
