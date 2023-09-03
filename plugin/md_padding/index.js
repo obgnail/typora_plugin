@@ -17,7 +17,7 @@ class mdPaddingPlugin extends global._basePlugin {
     };
 
     getFormatter = () => {
-        const {padMarkdown} = this.utils.requireFilePath("./plugin/global/utils/md-padding");
+        const {padMarkdown} = this.utils.requireFilePath("./plugin/md_padding/md-padding");
         return padMarkdown;
     }
 
