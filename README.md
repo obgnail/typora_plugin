@@ -46,7 +46,7 @@
 
 1. [下载](https://github.com/obgnail/typora_plugin/releases)插件源码。
 
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/app/window.html` 或者 `Typora/resources/window.html`）
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`）
 
 3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。（参考方法二的图片）
 
@@ -54,9 +54,9 @@
 
    ![installer](assets/installer.png)
 
-5. 验证：在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【启动插件】栏目，说明一切顺利。
+5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【启用插件】栏目，说明一切顺利。
 
-> NOTE：`updater.exe` 同时集成了 install 和 update 两个功能，后续插件更新需要用到此文件，请勿移动位置、删除。如果您不信任此 exe 文件，请自行编译此目录下的 `updater.go` 文件。
+> NOTE：`updater.exe` 同时集成了 install 和 update 两个功能，后续更新插件需要用到此文件，请勿移动位置、删除。如果您不信任此 exe 文件，请自行编译此目录下的 `updater.go` 文件。
 
 
 
@@ -67,11 +67,10 @@
 ## 如何使用：方法二（手动）
 
 1. [下载](https://github.com/obgnail/typora_plugin/releases)插件源码。
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/app/window.html` 或者 `Typora/resources/window.html`，推荐使用 everything 找一下）
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`，推荐使用 everything 找一下）
 3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
 4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
-5. 重启 Typora。
-6. 验证：在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【启动插件】栏目，说明一切顺利。
+6. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【启动插件】栏目，说明一切顺利。
 
 
 
@@ -131,7 +130,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ## 插件使用说明
 
-从 Typora Plugin 1.1.0 版本开始，所有的插件都支持在正文区域 `鼠标右键-启用插件` 中直接调用，再也不必记快捷键啦。
+所有的插件都支持在正文区域 `鼠标右键-启用插件` 中直接调用。
 
 > 注意：**不同光标位置调出来的菜单有所不同**。
 
@@ -142,6 +141,8 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 ![right_click_menu1](assets/right_click_menu1.png)
 
 ![right_click_menu2](assets/right_click_menu2.png)
+
+
 
 ---
 
@@ -154,7 +155,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ![new_window_tab](assets/new_window_tab.gif)
 
-> 该脚本是 [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) 的重新实现，修复了原脚本的诸多 BUG 和不适配问题；去掉了类似于 vscode 的预览功能，改成了 idea 的标签页逻辑；修改了一些交互。
+> 此插件是 [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) 的重新实现，修复了原项目的诸多 BUG 和不适配问题；去掉了类似于 vscode 的预览功能，改成了 idea 的标签页逻辑；修改了一些交互。
 
 
 
@@ -213,11 +214,9 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 快捷键：ctrl+shift+K、ctrl+shift+B
 
-> 新版本 Typora 的 ctrl+shift+K 快捷键被占用了。故提供两个快捷键，也可以在右键菜单中使用。
+> 新版本 Typora 的 ctrl+shift+K 快捷键被占用了。故提供两个快捷键，也可以在右键菜单中使用。**此插件会直接修改文件**，支持 Ctrl+Z 还原。
 
 ![md_padding](assets/md_padding.gif)
-
-> NOTE：**此脚本会直接修改文件**。支持 Ctrl+Z 还原。
 
 
 
@@ -271,7 +270,7 @@ operation = "report"
 
 ### commander：命令行环境
 
-> 如果你看不懂下面描述，那么你就不需要此脚本。
+> 有些插件依赖于此插件，不建议禁用。
 
 功能和 total commander 的命令行一样（快捷键也一样），一个快速执行命令的工具，并提供少量交互。
 
@@ -321,7 +320,7 @@ const BUILTIN = [
 
 只读模式下文档不可编辑。
 
-快捷键：ctrl+shift+R。
+快捷键：ctrl+shift+R
 
 > 开启后，右下角数字统计区域会出现 `ReadOnly` 字样
 
@@ -329,7 +328,7 @@ const BUILTIN = [
 
 ### blur：模糊模式
 
-开启后，只有当前聚焦的组件可见，其余模糊。
+开启后，只有当前聚焦的组件可见，其余模糊。可以用于防偷窥。
 
 使用方式：右键菜单 -> 启用插件 -> 模糊模式
 
@@ -387,6 +386,8 @@ const BUILTIN = [
 
 > 和其他使用 Theme CSS 的实现方式不同，此插件通过修改内置函数，完美解决导出 PDF 后侧边栏没有编号的问题。:)
 
+> 根据 [Markdown 最佳实践](https://learn.microsoft.com/en-us/powershell/scripting/community/contributing/general-markdown?view=powershell-7.3)，一篇文档应该 **有且仅有** 一个 h1，故此插件从 h2 开始编号。
+
 
 
 ### datatables：表格增强
@@ -397,7 +398,7 @@ const BUILTIN = [
 
 ![datatables](assets/datatables.png)
 
-> NOTE：**此脚本是有安全隐患的。不要在不信任文件中使用此插件，否则极端情况下会让你的电脑中毒**。使用此脚本需要做到：将普通表格转为增强表格前需要审视表格内容，确认没有问题才可以转化。
+> NOTE：**此插件是有安全隐患的。不要在不信任文件中使用此插件，否则极端情况下会让你的电脑中毒**。使用此插件需要做到：将普通表格转为增强表格前需要审视表格内容，确认没有问题才可以转化。
 
 其实此插件可以是提供开放能力的，实现类似于 obsidian 的 `dataview` 插件的功能。不过暂时不做，原因：
 
@@ -427,7 +428,7 @@ const BUILTIN = [
 
 导出 html 时，将图片转为 base64，避免图片丢失。
 
-> 此插件有一个配置为 `DOWNLOAD_NETWORK_IMAGE`，功能是下载网络图片，将也网络图片转为 base64，默认为 false。若置为 true，有可能因为网络问题导致导出超时。
+> 此插件有一个配置为 `DOWNLOAD_NETWORK_IMAGE`，功能是下载网络图片并转为 base64，默认为 false。若置为 true，有可能因为网络问题导致导出超时。
 
 
 
@@ -439,7 +440,7 @@ const BUILTIN = [
 
 ### truncate_text：暂时隐藏内容，提高大文件渲染性能
 
-大文件在 Typora 的渲染性能很糟糕，用此脚本暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。也可以用于防偷窥。
+大文件在 Typora 的渲染性能很糟糕，用此插件暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。也可以用于防偷窥。
 
 使用方式：右键菜单 -> 启用插件 -> 文本截断。
 
@@ -451,7 +452,7 @@ const BUILTIN = [
 
 > 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
 
-> collapse_paragraph.js 的章节折叠功能可以很好的替代此脚本，建议使用 collapse_paragraph。故不提供快捷键。
+> collapse_paragraph.js 的章节折叠功能可以很好的替代此插件，建议使用 collapse_paragraph。
 
 
 
@@ -459,7 +460,7 @@ const BUILTIN = [
 
 使用方式：右键菜单 -> 启用插件 ->  静默更新插件。
 
-> 此插件依赖于 commander 插件，请勿禁用 commander 插件。
+> 众所周知，有些用户并不能裸连 github 下载最新插件，故提供了设置代理功能（默认为系统代理）
 
 
 
@@ -505,8 +506,7 @@ class fullPathCopy extends BaseCustomPlugin {
                 },
                 // password、textarea、checkbox、radio、select
                 ...
-            ]
-                }, response => {})
+            ]}, response => {})
     }
 }
 ```
@@ -645,9 +645,9 @@ module.exports = { plugin: fullPathCopy };
 
 ### mermaid_replace：替换 mermaid
 
-如果你像我一样，不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此脚本。
+如果你像我一样，不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此插件。
 
-> NOTE：**此脚本默认关闭，需手动开启。**
+> NOTE：**此插件默认关闭，需手动开启。**
 
 
 
@@ -659,19 +659,25 @@ module.exports = { plugin: fullPathCopy };
 
 
 
+### 插件会失效吗?
+
+理论上能保持长时间有效。且我在维护中。
+
+
+
 ### 如何修改插件的配置？
 
 每个插件都有对应的配置，且配置选项都有注释说明。可按需修改 `settings.user.toml` 文件。
 
-- 方式一：鼠标在正文区域右键 -> 【右键菜单】 -> 【打开配置文件夹】
-- 方式二：直接打开文件 `./plugin/global/settings/settings.user.toml`
+- 方式一：鼠标在正文区域右键 -> 【右键菜单】 -> 【打开插件配置文件夹】
+- 方式二：直接打开文件夹 `./plugin/global/settings/`
 
 
 
 ### 配置目录中的 default.toml 和 user.toml 的区别是什么？
 
 - `default.toml`：插件系统的默认配置，请不要修改。
-- `user.toml`：用户自定义的配置，这里的值会覆盖掉 `default.toml`。
+- `user.toml`：用户自定义的配置，支持增量修改，这里的值会覆盖掉 `default.toml`。
 
 
 
@@ -679,12 +685,6 @@ module.exports = { plugin: fullPathCopy };
 
 - 方式一：直接 删除/改名 plugin 目录下的同名文件
 - 方式二：修改 `settings.user.toml` 文件，将对应插件的 ENABLE 字段置为 false
-
-
-
-### 脚本会失效吗?
-
-理论上能保持长时间有效。且我在维护中。
 
 
 
