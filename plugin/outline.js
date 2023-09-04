@@ -147,9 +147,7 @@ class outlinePlugin extends global._basePlugin {
     scroll = cid => {
         const target = File.editor.findElemById(cid);
         this.utils.showHiddenElementByPlugin(target[0]);
-        File.editor.focusAndRestorePos();
-        File.editor.selection.scrollAdjust(target, 10);
-        File.isFocusMode && File.editor.updateFocusMode(false);
+        this.utils.scroll(target);
     }
 
     setFooterActive = Type => {

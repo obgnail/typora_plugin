@@ -416,9 +416,7 @@ class multiHighlighterPlugin extends global._basePlugin {
 
     scroll = marker => {
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
-        File.editor.focusAndRestorePos();
-        File.editor.selection.scrollAdjust(marker, totalHeight / 2);
-        File.isFocusMode && File.editor.updateFocusMode(false);
+        this.utils.scroll(marker, totalHeight / 2);
     }
 
     // // 已废弃

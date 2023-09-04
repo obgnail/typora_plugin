@@ -153,6 +153,12 @@ class utils {
         }
     }
 
+    static scroll = (target, height = 10) => {
+        File.editor.focusAndRestorePos();
+        File.editor.selection.scrollAdjust(target, height);
+        File.isFocusMode && File.editor.updateFocusMode(false);
+    }
+
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
 
     static toHotkeyFunc = hotkeyString => {
