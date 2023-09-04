@@ -19,21 +19,22 @@
 | 9    | commander          | 命令行环境                           | √        |
 | 10   | mindmap            | 根据文档大纲一键生成思维导图         | √        |
 | 11   | read_only          | 只读模式                             | √        |
-| 12   | kanban             | 看板                                 | √        |
-| 13   | file_counter       | 显示目录下的文件数                   | √        |
-| 14   | outline            | 以表格、图片、代码块形式的大纲       | √        |
-| 15   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
-| 16   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
-| 17   | resize_table       | 调整表格行高列宽                     | √        |
-| 18   | resize_image       | 调整图片显示大小                     | √        |
-| 19   | export_enhance     | 导出 html 时避免图片丢失             | √        |
-| 20   | go_top             | 一键到文章顶部                       | √        |
-| 21   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
-| 22   | custom             | 用户自定义命令（高级）               | √        |
-| 23   | plugin_updater     | 一键更新插件                         | √        |
-| 24   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
-| 25   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
-| 26   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
+| 12   | blur               | 模糊模式                             | √        |
+| 13   | kanban             | 看板                                 | √        |
+| 14   | file_counter       | 显示目录下的文件数                   | √        |
+| 15   | outline            | 以表格、图片、代码块形式的大纲       | √        |
+| 16   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
+| 17   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
+| 18   | resize_table       | 调整表格行高列宽                     | √        |
+| 19   | resize_image       | 调整图片显示大小                     | √        |
+| 20   | export_enhance     | 导出 html 时避免图片丢失             | √        |
+| 21   | go_top             | 一键到文章顶部                       | √        |
+| 22   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
+| 23   | custom             | 用户自定义命令（高级）               | √        |
+| 24   | plugin_updater     | 一键更新插件                         | √        |
+| 25   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
+| 26   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
+| 27   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -323,6 +324,16 @@ const BUILTIN = [
 快捷键：ctrl+shift+R。
 
 > 开启后，右下角数字统计区域会出现 `ReadOnly` 字样
+
+
+
+### blur：模糊模式
+
+开启后，只有当前聚焦的组件可见，其余模糊。
+
+使用方式：右键菜单 -> 启用插件 -> 模糊模式
+
+> 此插件只能正式版 Typora 使用，暂时没有兼容 Beta 版本。
 
 
 

@@ -105,7 +105,21 @@ class kanbanPlugin extends BaseCustomPlugin {
             () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor && File.editor.diagrams.constructor.isDiagramType),
             "File.editor.diagrams.constructor.isDiagramType",
             null,
-            (result, ...args) => result || (args[0] || "").toLowerCase() === "kanban",
+            (result, ...args) => {
+                if (result === true) return true;
+                try {
+                    const lang = args[0];
+                    const type = typeof lang;
+                    if (type === "string") {
+                        return lang.toLowerCase() === "kanban"
+                    } else if (type === "object" && lang["name"]) {
+                        return lang["name"].toLowerCase() === "kanban"
+                    }
+                } catch (e) {
+                    console.error(e)
+                }
+                return result
+            },
             true
         )
         this.utils.decorate(

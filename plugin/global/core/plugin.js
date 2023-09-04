@@ -50,6 +50,11 @@ class utils {
         document.getElementsByTagName('head')[0].appendChild(link);
     }
 
+    static removeStyle = id => {
+        const ele = document.getElementById(id);
+        ele && ele.parentElement && ele.parentElement.removeChild(ele);
+    }
+
     static insertDiv = div => {
         const quickOpenNode = document.getElementById("typora-quick-open");
         quickOpenNode.parentNode.insertBefore(div, quickOpenNode.nextSibling);
@@ -416,14 +421,14 @@ class process {
         const plugin = new pluginClass(pluginSetting);
 
         const error = plugin.beforeProcess();
-        if (error !== this.utils.stopLoadPluginError) {
-            this.insertStyle(plugin.style());
-            plugin.html();
-            this.hotkeyHelper.register(plugin.hotkey());
-            plugin.process();
-            plugin.afterProcess();
-            console.log(`plugin had been injected: [ ${plugin.fixed_name} ] `);
-        }
+        if (error === this.utils.stopLoadPluginError) return
+
+        this.insertStyle(plugin.style());
+        plugin.html();
+        this.hotkeyHelper.register(plugin.hotkey());
+        plugin.process();
+        plugin.afterProcess();
+        console.log(`plugin had been injected: [ ${plugin.fixed_name} ] `);
         return plugin
     }
 
@@ -446,7 +451,10 @@ class process {
             const promise = new Promise(resolve => {
                 try {
                     const {plugin} = reqnode(filepath);
-                    global._plugins[fixed_name] = this.loadPlugin(plugin, pluginSetting);
+                    const instance = this.loadPlugin(plugin, pluginSetting);
+                    if (instance) {
+                        global._plugins[fixed_name] = instance;
+                    }
                 } catch (e) {
                     console.error("plugin err:", e);
                 }
