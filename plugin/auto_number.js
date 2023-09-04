@@ -297,10 +297,7 @@ class autoNumberPlugin extends global._basePlugin {
         }
     }
 
-    removeStyle = () => {
-        const ele = document.getElementById(this.config.ID);
-        ele && ele.parentElement && ele.parentElement.removeChild(ele);
-    }
+    removeStyle = () => this.utils.removeStyle(this.config.ID);
 
     getStyleString = () => {
         return [

@@ -227,6 +227,24 @@ HOTKEY = "ctrl+shift+r"
 READ_ONLY_DEFAULT = false
 
 
+############### blur ###############
+[blur]
+# 启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "模糊模式"
+# 是否在右键菜单中可点击
+CLICKABLE = true
+# 默认使用模糊模式
+BLUR_DEFAULT = false
+# 类型: blur/hide
+BLUR_TYPE = "blur"
+# 模糊等级: 越大越模糊(BLUR_TYPE为hide时失效)
+BLUR_LEVEL = 10
+# 添加style的id
+BLUR_STYLE_ID = "plugin-blur-style"
+
+
 ############### resize_image ###############
 [resize_image]
 # 启用插件
