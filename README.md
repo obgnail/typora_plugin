@@ -625,7 +625,7 @@ module.exports = { plugin: fullPathCopy };
 // 1. 创建同名的 class，继承 BaseCustomPlugin 类。此时，fullPathCopy 将自动拥有 utils 属性 和 info 属性 和 modal 方法。
 //    - utils：插件系统自带的静态工具类，其定义在 `./plugin/global/core/plugin.js/utils`。其中有个最重要的函数：`utils.getPlugin(fixed_name)` 用于获取已经实现的全部插件，调用其 API。具体的 API 可看 openPlatformAPI.md 文件。
 //    - info：该插件在 `custom_plugin.user.toml` 里的所有配置。
-//    - modal：生成自定义的模态框，和用户交互。具体用法可以查看 modalExample.js
+//    - modal：生成自定义的模态框，和用户交互。具体用法可以查看 __modal_example.js
 // 2. selector：当用户在哪个位置右键弹出菜单时，出现此命令（空串：任何位置都展示），在这里的含义就是：只在【正文标题】弹出此命令
 // 3. hint：当鼠标移动到右键菜单时的提示
 // 4. init：在这里初始化你要的变量
