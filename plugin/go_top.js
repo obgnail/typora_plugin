@@ -4,7 +4,7 @@ class goTopPlugin extends global._basePlugin {
         const text = `
             #${this.config.DIV_ID} {
                 position: fixed;
-                right: 50px;
+                right: 30px;
                 bottom: 50px;
                 z-index: 99999;
                 font-size: 28px;
