@@ -308,41 +308,57 @@ func (u *Updater) unzip() (err error) {
 func (u *Updater) adjustSettingFiles() (err error) {
 	fmt.Println("[step 5] adjust setting file")
 	for _, settingFile := range u.userSettingFiles {
-		filePath := filepath.Join(u.unzipDir, settingFile)
-		if err = os.Remove(filePath); err != nil {
+		oldPath := filepath.Join(u.root, settingFile)
+		newPath := filepath.Join(u.unzipDir, settingFile)
+		if err = copyFile(oldPath, newPath); err != nil {
 			return
 		}
 	}
 
 	// ./plugin/updater/updater.exe -> ./plugin/updater/updater-1.2.13.exe
 	// 为什么要遍历而不是直接修改：我怕以后可能会修改位置
-	var updaterFilePath string
 	pluginDir := filepath.Join(u.unzipDir, "./plugin")
 	err = filepath.Walk(pluginDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if !info.IsDir() && info.Name() == "updater.exe" {
-			updaterFilePath = path
+			newFilePath := filepath.Join(filepath.Dir(path), fmt.Sprintf("updater%s.exe", u.newVersionInfo.TagName))
+			return os.Rename(path, newFilePath)
 		}
 		return nil
 	})
-	if updaterFilePath != "" {
-		newFilePath := filepath.Join(filepath.Dir(updaterFilePath), fmt.Sprintf("updater%s.exe", u.newVersionInfo.TagName))
-		return os.Rename(updaterFilePath, newFilePath)
-	}
-	return nil
+	return err
 }
 
 func (u *Updater) syncDir() (err error) {
-	fmt.Println("[step 6] sync dir")
+	fmt.Println("[step 7] sync dir")
 	src := filepath.Join(u.unzipDir, "./plugin")
 	dst := filepath.Join(u.root, "./plugin")
 	return copyDir(src, dst)
 }
 
+func (u *Updater) removeOldDir() error {
+	fmt.Println("[step 6] remove old dir")
+	src := filepath.Join(u.root, "./plugin")
+	fds, err := ioutil.ReadDir(src)
+	if err != nil {
+		return err
+	}
+	for _, fd := range fds {
+		name := fd.Name()
+		if name != "updater" {
+			path := filepath.Join(src, name)
+			if err = os.RemoveAll(path); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func (u *Updater) deleteUselessAndSave() (err error) {
-	fmt.Println("[step 7] delete useless file and save version.json")
+	fmt.Println("[step 8] delete useless file and save version.json")
 	if err = os.Remove(u.downloadFile); err != nil {
 		return
 	}
@@ -476,6 +492,9 @@ func update(proxy string, timeout int) (err error) {
 	if err = updater.adjustSettingFiles(); err != nil {
 		return
 	}
+	if err = updater.removeOldDir(); err != nil {
+		return
+	}
 	if err = updater.syncDir(); err != nil {
 		return
 	}
@@ -483,6 +502,7 @@ func update(proxy string, timeout int) (err error) {
 		return
 	}
 	fmt.Println("Done! Current Plugin Version:", updater.newVersionInfo.TagName)
+	fmt.Println("Please restart Typora")
 	return
 }
 

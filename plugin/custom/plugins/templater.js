@@ -58,6 +58,9 @@ date: {{date}} {{weekday}}
 
         this.modal(modal, components => {
             let filepath = components[0].submit;
+            if (filepath && !filepath.endsWith(".md")) {
+                filepath += ".md"
+            }
             filepath = this.utils.newFilePath(filepath);
             const filename = this.utils.Package.Path.basename(filepath);
 
