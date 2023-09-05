@@ -108,13 +108,15 @@ class updaterHelper {
     }
 
     updateTo1_3_5 = () => {
-        [
-            this.utils.joinPath("./plugin/global/utils/md-padding"),
-            this.utils.joinPath("./plugin/global/utils/node_modules"),
-            this.utils.joinPath("./plugin/global/utils/package.json"),
-            this.utils.joinPath("./plugin/global/utils/package-lock.json"),
-            this.utils.joinPath("./plugin/md_padding.js"),
-        ].forEach(path => this.utils.Package.FsExtra.remove(path))
+        if (this.utils.existPath(this.utils.joinPath("./plugin/md_padding.js"))) {
+            [
+                this.utils.joinPath("./plugin/global/utils/md-padding"),
+                this.utils.joinPath("./plugin/global/utils/node_modules"),
+                this.utils.joinPath("./plugin/global/utils/package.json"),
+                this.utils.joinPath("./plugin/global/utils/package-lock.json"),
+                this.utils.joinPath("./plugin/md_padding.js"),
+            ].forEach(path => this.utils.Package.FsExtra.remove(path))
+        }
     }
 
     run = () => {
