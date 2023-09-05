@@ -4,6 +4,7 @@ class pluginUpdater extends BaseCustomPlugin {
     hint = () => "当你发现BUG，可以尝试更新，指不定就解决了"
 
     init = () => {
+        new updaterHelper(this.utils).run();
         this.dir = this.utils.joinPath("./plugin/updater");
         this.updater = this.utils.joinPath("./plugin/updater/updater.exe");
         this.updaterExist = this.utils.existPath(this.updater);
@@ -100,6 +101,26 @@ class pluginUpdater extends BaseCustomPlugin {
     }
 }
 
+// 处理每次升级的额外操作(理论上是不需要用到此工具的，但是由于之前的updater.exe写的有问题，遗留下一些问题，被迫用此工具处理存量的脏文件，过段时间会删除掉此helper)
+class updaterHelper {
+    constructor(utils) {
+        this.utils = utils
+    }
+
+    updateTo1_3_5 = () => {
+        [
+            this.utils.joinPath("./plugin/global/utils/md-padding"),
+            this.utils.joinPath("./plugin/global/utils/node_modules"),
+            this.utils.joinPath("./plugin/global/utils/package.json"),
+            this.utils.joinPath("./plugin/global/utils/package-lock.json"),
+            this.utils.joinPath("./plugin/md_padding.js"),
+        ].forEach(path => this.utils.Package.FsExtra.remove(path))
+    }
+
+    run = () => {
+        this.updateTo1_3_5()
+    }
+}
 
 class ProxyGetter {
     constructor(utils) {

@@ -9,6 +9,7 @@ class utils {
     static Package = {
         Path: reqnode("path"),
         Fs: reqnode("fs"),
+        FsExtra: reqnode("fs-extra"),
         ChildProcess: reqnode('child_process'),
     }
 
