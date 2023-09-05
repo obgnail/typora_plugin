@@ -31,7 +31,7 @@ class datatablesPlugin extends global._basePlugin {
     }
 
     html = () => {
-        this.utils.insertScript("./plugin/datatables/resource/datatables.min.js", () => {
+        this.utils.insertScript("./plugin/datatables/resource/datatables.min.js").then(() => {
             console.log("datatables.min.js has inserted")
         })
     }

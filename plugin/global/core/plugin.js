@@ -61,9 +61,9 @@ class utils {
         quickOpenNode.parentNode.insertBefore(div, quickOpenNode.nextSibling);
     }
 
-    static insertScript = (filepath, then) => {
+    static insertScript = filepath => {
         const jsFilepath = this.joinPath(filepath);
-        $.getScript(`file:///${jsFilepath}`).then(then);
+        return $.getScript(`file:///${jsFilepath}`);
     }
 
     static getUUID() {

@@ -132,6 +132,12 @@ tc_path = "D:\\software\\TotalCMD_64bit_10.52\\TOTALCMD64.EXE"
 tc_args = '/O /T /P=L  /L="$f"'
 
 
+############### markmap ###############
+[markmap]
+name = "markmap"
+enable = true
+
+
 ############### pluginUpdater ###############
 [pluginUpdater]
 name = "静默更新插件"
