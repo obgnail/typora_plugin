@@ -230,7 +230,7 @@ class utils {
         const start = new Date().getTime();
         this.detectorContainer[uuid] = setInterval(() => {
             if (new Date().getTime() - start > 10000) {
-                console.error("loopDetector timeout!", until, after);
+                console.warn("loopDetector timeout!", until, after);
                 run = runWhenTimeout;
             }
 
