@@ -80,6 +80,7 @@ class extraOperation {
     }
 
     run = () => {
+        new binFileUpdater(this.utils).run();
         this.updateTo1_3_5();
         this.updateTo1_3_10();
     }
