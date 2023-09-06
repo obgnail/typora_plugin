@@ -1,10 +1,9 @@
 class pluginUpdater extends BaseCustomPlugin {
     selector = () => (this.updaterExist && this.utils.getPlugin("commander")) ? "" : this.utils.nonExistSelector
 
-    hint = () => "当你发现BUG，可以尝试更新，指不定就解决了"
+    hint = () => "当你发现BUG，可以尝试更新，说不定就解决了"
 
     init = () => {
-        new updaterHelper(this.utils).run();
         this.dir = this.utils.joinPath("./plugin/updater");
         this.updater = this.utils.joinPath("./plugin/updater/updater.exe");
         this.updaterExist = this.utils.existPath(this.updater);
@@ -51,7 +50,16 @@ class pluginUpdater extends BaseCustomPlugin {
             this.modal(modal, components => {
                 const proxy = (components[1].submit || "").trim();
                 const cmd = `cd ${this.dir} && ${this.updater} --action=update --proxy=${proxy}`;
-                this.utils.getPlugin("commander").alwaysExec(cmd, "cmd/bash");
+                this.utils.getPlugin("commander").alwaysExec(cmd, "cmd/bash", (err, stdout, stderr) => {
+                    if (!err && stderr.length === 0) {
+                        new updaterHelper(this.utils).run();
+                    } else {
+                        this.modal(
+                            {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]},
+                            () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
+                        )
+                    }
+                });
             })
         })
     }
@@ -101,7 +109,8 @@ class pluginUpdater extends BaseCustomPlugin {
     }
 }
 
-// 处理每次升级的额外操作(理论上是不需要用到此工具的，但是由于之前的updater.exe写的有问题，遗留下一些问题，被迫用此工具处理存量的脏文件，过段时间会删除掉此helper)
+// 处理每次升级的额外操作
+// 理论上是不需要用到此工具的，但是由于之前的updater.exe有缺陷，遗留下一些问题，被迫用此工具处理存量的脏文件，过段时间会删除掉此helper
 class updaterHelper {
     constructor(utils) {
         this.utils = utils
@@ -119,8 +128,14 @@ class updaterHelper {
         }
     }
 
+    updateTo1_3_10 = () => {
+        const file = this.utils.joinPath("./plugin/custom/plugins/modalExample.js");
+        this.utils.existPath(file) && this.utils.Package.FsExtra.remove(file);
+    }
+
     run = () => {
-        this.updateTo1_3_5()
+        this.updateTo1_3_5();
+        this.updateTo1_3_10();
     }
 }
 

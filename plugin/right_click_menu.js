@@ -208,9 +208,7 @@ class rightClickMenuPlugin extends global._basePlugin {
 
     call = type => {
         if (type === "about") {
-            const url = "https://github.com/obgnail/typora_plugin"
-            const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl
-            openUrl(url, 1);
+            this.utils.openUrl("https://github.com/obgnail/typora_plugin");
         } else if (type === "do_not_hide") {
             this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE;
         } else if (type === "open_setting_folder") {

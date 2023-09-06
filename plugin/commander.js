@@ -274,7 +274,7 @@ class commanderPlugin extends global._basePlugin {
         }
     }
 
-    exec = (cmd, shell, resolve, reject) => {
+    exec = (cmd, shell, resolve, reject, callback) => {
         this.modal.input.value = cmd;
         this.modal.shellSelect.value = shell;
         const _shell = this.getShellCommand(shell);
@@ -293,6 +293,7 @@ class commanderPlugin extends global._basePlugin {
                     resolve = resolve ? resolve : console.log;
                     resolve(stdout);
                 }
+                callback && callback(err, stdout, stderr);
             })
     }
 
@@ -308,9 +309,9 @@ class commanderPlugin extends global._basePlugin {
         this.modal.pre.classList.add("error");
     }
 
-    silentExec = (cmd, shell) => this.exec(cmd, shell, null, null);
-    errorExec = (cmd, shell) => this.exec(cmd, shell, null, this.showStdErr);
-    alwaysExec = (cmd, shell) => this.exec(cmd, shell, this.showStdout, this.showStdErr);
+    silentExec = (cmd, shell, callback) => this.exec(cmd, shell, null, null, callback);
+    errorExec = (cmd, shell, callback) => this.exec(cmd, shell, null, this.showStdErr, callback);
+    alwaysExec = (cmd, shell, callback) => this.exec(cmd, shell, this.showStdout, this.showStdErr, callback);
 
     commit = () => {
         const cmd = this.modal.input.value;

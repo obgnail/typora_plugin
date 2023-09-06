@@ -10,7 +10,7 @@ class CustomPlugin extends global._basePlugin {
     style = () => this.modalHelper.style()
     html = () => this.modalHelper.html()
     hotkey = () => this.hotkeyHelper.hotkey()
-    modal = (customPlugin, modal, callback) => this.modalHelper.modal(customPlugin, modal, callback)
+    modal = (customPlugin, modal, callback, cancelCallback) => this.modalHelper.modal(customPlugin, modal, callback, cancelCallback)
     process = () => this.modalHelper.process()
     dynamicCallArgsGenerator = anchorNode => this.dynamicCallHelper.dynamicCallArgsGenerator(anchorNode)
     call = name => this.dynamicCallHelper.call(name)
@@ -210,8 +210,6 @@ class modalHelper {
         this.utils.insertDiv(modal);
     }
 
-    hide = () => this.entities.modal.style.display = "none";
-
     process = () => {
         this.entities = {
             modal: document.getElementById("plugin-custom-modal"),
@@ -222,24 +220,8 @@ class modalHelper {
             cancel: document.querySelector("#plugin-custom-modal button.plugin-modal-cancel"),
         }
 
-        this.entities.cancel.addEventListener("click", this.hide)
-
-        this.entities.submit.addEventListener("click", () => {
-            const name = this.entities.content.getAttribute("custom-plugin-name");
-            const plugin = this.custom[name];
-            if (!plugin) return;
-
-            this.pluginModal.components.forEach(component => {
-                if (!component.label || !component.type || !component.id) return;
-                const div = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
-                if (div) {
-                    component.submit = this.getWidgetValue(component.type, div);
-                }
-            })
-            this.callback && this.callback(this.pluginModal.components);
-            this.hide();
-        })
-
+        this.entities.cancel.addEventListener("click", () => this.onButtonClick(this.cancelCallback))
+        this.entities.submit.addEventListener("click", () => this.onButtonClick(this.callback))
         this.entities.modal.addEventListener("keydown", ev => {
             if (ev.key === "Enter") {
                 this.entities.submit.click();
@@ -251,6 +233,22 @@ class modalHelper {
                 ev.preventDefault();
             }
         }, true)
+    }
+
+    onButtonClick = callback => {
+        const name = this.entities.content.getAttribute("custom-plugin-name");
+        const plugin = this.custom[name];
+        if (!plugin) return;
+
+        this.pluginModal.components.forEach(component => {
+            if (!component.label || !component.type || !component.id) return;
+            const div = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
+            if (div) {
+                component.submit = this.getWidgetValue(component.type, div);
+            }
+        })
+        callback && callback(this.pluginModal.components);
+        this.entities.modal.style.display = "none";
     }
 
     getWidgetValue = (type, widget) => {
@@ -313,10 +311,11 @@ class modalHelper {
     }
 
     // modal: {title: "", components: [{name: "", type: "", value: ""}]}
-    modal = (customPlugin, modal, callback) => {
-        if (modal && callback instanceof Function) {
+    modal = (customPlugin, modal, callback, cancelCallback) => {
+        if (customPlugin && customPlugin["name"] && modal && callback instanceof Function) {
             this.pluginModal = modal;
             this.callback = callback;
+            this.cancelCallback = cancelCallback;
 
             this.entities.content.setAttribute("custom-plugin-name", customPlugin.name);
             this.entities.title.innerText = modal.title;
@@ -338,8 +337,8 @@ class BaseCustomPlugin {
         this.controller = controller;
     }
 
-    modal(pluginModal, callback) {
-        this.controller.modal(this, pluginModal, callback);
+    modal(pluginModal, callback, cancelCallback) {
+        this.controller.modal(this, pluginModal, callback, cancelCallback);
     }
 
     init = () => {

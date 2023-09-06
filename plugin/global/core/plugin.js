@@ -160,6 +160,11 @@ class utils {
         File.isFocusMode && File.editor.updateFocusMode(false);
     }
 
+    static openUrl = url => {
+        const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl;
+        openUrl(url, 1);
+    }
+
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
 
     static toHotkeyFunc = hotkeyString => {
