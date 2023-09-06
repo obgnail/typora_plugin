@@ -1,5 +1,9 @@
 class templater extends BaseCustomPlugin {
-    selector = () => ""
+    selector = () => {
+        if (!this.utils.getFilePath()) {
+            return this.utils.nonExistSelector
+        }
+    }
 
     getTemplateList = () => {
         const templates = [...this.config.template];
