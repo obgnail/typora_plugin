@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -91,7 +92,9 @@ type Updater struct {
 	workDir      string
 	unzipDir     string
 
-	userSettingFiles []string
+	pluginDir       string
+	customPluginDir string
+	dontNeedUpdate  []string
 
 	oldVersionInfo *VersionInfo
 	newVersionInfo *VersionInfo
@@ -121,16 +124,19 @@ func NewUpdater(proxy string, timeout int) (*Updater, error) {
 	}
 
 	updater := &Updater{
-		url:          "https://api.github.com/repos/obgnail/typora_plugin/releases/latest",
-		timeout:      timeout,
-		proxy:        uri,
-		root:         filepath.Dir(filepath.Dir(curDir)),
-		versionFile:  filepath.Join(curDir, "version.json"),
-		downloadFile: filepath.Join(tempDir, "download.zip"),
-		workDir:      tempDir, // 使用临时目录，避免爆炸
-		userSettingFiles: []string{
+		url:             "https://api.github.com/repos/obgnail/typora_plugin/releases/latest",
+		timeout:         timeout,
+		proxy:           uri,
+		root:            filepath.Dir(filepath.Dir(curDir)),
+		versionFile:     filepath.Join(curDir, "version.json"),
+		downloadFile:    filepath.Join(tempDir, "download.zip"),
+		workDir:         tempDir, // 使用临时目录，避免爆炸
+		pluginDir:       "./plugin",
+		customPluginDir: "./plugin/custom/plugins",
+		dontNeedUpdate: []string{
 			"./plugin/global/settings/custom_plugin.user.toml",
 			"./plugin/global/settings/settings.user.toml",
+			"./plugin/window_tab/save_tabs.json",
 		},
 		unzipDir:       "",
 		oldVersionInfo: nil,
@@ -155,7 +161,7 @@ type VersionInfo struct {
 }
 
 func (u *Updater) needUpdate() bool {
-	fmt.Println("[step 2] check need update")
+	fmt.Println("[step 2] check whether need update")
 	var err error
 	if u.newVersionInfo, err = u.getLatestVersion(); err != nil {
 		fmt.Println("get latest version error:", err)
@@ -305,19 +311,63 @@ func (u *Updater) unzip() (err error) {
 	return
 }
 
-func (u *Updater) adjustSettingFiles() (err error) {
-	fmt.Println("[step 5] adjust setting file")
-	for _, settingFile := range u.userSettingFiles {
-		oldPath := filepath.Join(u.root, settingFile)
-		newPath := filepath.Join(u.unzipDir, settingFile)
-		if err = copyFile(oldPath, newPath); err != nil {
+func (u *Updater) adjustFiles() (err error) {
+	fmt.Println("[step 5] adjust files")
+
+	var oldFds []fs.FileInfo
+	var newFds []fs.FileInfo
+	oldDir := filepath.Join(u.root, u.customPluginDir)
+	newDir := filepath.Join(u.unzipDir, u.customPluginDir)
+	if oldFds, err = ioutil.ReadDir(oldDir); err != nil {
+		return err
+	}
+	if newFds, err = ioutil.ReadDir(newDir); err != nil {
+		return err
+	}
+
+	excludeFds := make(map[string]struct{})
+	for _, ele := range newFds {
+		excludeFds[ele.Name()] = struct{}{}
+	}
+	for _, fd := range oldFds {
+		name := fd.Name()
+		if _, ok := excludeFds[name]; ok {
+			continue
+		}
+		if strings.HasSuffix(name, ".js") {
+			if _, ok := excludeFds[name[:len(name)-3]]; ok {
+				continue
+			}
+		}
+		path := filepath.Join(u.customPluginDir, name)
+		u.dontNeedUpdate = append(u.dontNeedUpdate, path)
+	}
+
+	var info os.FileInfo
+	var Function func(string, string) error
+	for _, file := range u.dontNeedUpdate {
+		oldPath := filepath.Join(u.root, file)
+		newPath := filepath.Join(u.unzipDir, file)
+		if info, err = os.Stat(oldPath); info == nil || err != nil && os.IsNotExist(err) {
+			continue
+		}
+		if info.IsDir() {
+			Function = copyDir
+		} else {
+			Function = copyFile
+		}
+		if err = Function(oldPath, newPath); err != nil {
 			return
 		}
 	}
+	return
+}
 
-	// ./plugin/updater/updater.exe -> ./plugin/updater/updater-1.2.13.exe
+func (u *Updater) adjustUpdaterExe() (err error) {
+	fmt.Println("[step 6] adjust updater.exe")
+	// ./plugin/updater/updater.exe -> ./plugin/updater/updater1.2.13.exe
 	// 为什么要遍历而不是直接修改：我怕以后可能会修改位置
-	pluginDir := filepath.Join(u.unzipDir, "./plugin")
+	pluginDir := filepath.Join(u.unzipDir, u.pluginDir)
 	err = filepath.Walk(pluginDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -331,16 +381,9 @@ func (u *Updater) adjustSettingFiles() (err error) {
 	return err
 }
 
-func (u *Updater) syncDir() (err error) {
-	fmt.Println("[step 7] sync dir")
-	src := filepath.Join(u.unzipDir, "./plugin")
-	dst := filepath.Join(u.root, "./plugin")
-	return copyDir(src, dst)
-}
-
 func (u *Updater) removeOldDir() error {
-	fmt.Println("[step 6] remove old dir")
-	src := filepath.Join(u.root, "./plugin")
+	fmt.Println("[step 7] remove old dir")
+	src := filepath.Join(u.root, u.pluginDir)
 	fds, err := ioutil.ReadDir(src)
 	if err != nil {
 		return err
@@ -357,8 +400,15 @@ func (u *Updater) removeOldDir() error {
 	return nil
 }
 
+func (u *Updater) syncDir() (err error) {
+	fmt.Println("[step 8] sync dir")
+	src := filepath.Join(u.unzipDir, u.pluginDir)
+	dst := filepath.Join(u.root, u.pluginDir)
+	return copyDir(src, dst)
+}
+
 func (u *Updater) deleteUselessAndSave() (err error) {
-	fmt.Println("[step 8] delete useless file and save version.json")
+	fmt.Println("[step 9] delete useless file")
 	if err = os.Remove(u.downloadFile); err != nil {
 		return
 	}
@@ -475,12 +525,12 @@ func install() (err error) {
 }
 
 func update(proxy string, timeout int) (err error) {
-	updater, err := NewUpdater(proxy, timeout)
-	if err != nil {
+	var updater *Updater
+	if updater, err = NewUpdater(proxy, timeout); err != nil {
 		return err
 	}
 	if need := updater.needUpdate(); !need {
-		fmt.Println("dont need update")
+		fmt.Println("dont need update. Current Plugin Version:", updater.newVersionInfo.TagName)
 		return
 	}
 	if err = updater.downloadLatestVersion(); err != nil {
@@ -489,7 +539,10 @@ func update(proxy string, timeout int) (err error) {
 	if err = updater.unzip(); err != nil {
 		return
 	}
-	if err = updater.adjustSettingFiles(); err != nil {
+	if err = updater.adjustFiles(); err != nil {
+		return
+	}
+	if err = updater.adjustUpdaterExe(); err != nil {
 		return
 	}
 	if err = updater.removeOldDir(); err != nil {

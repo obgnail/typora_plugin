@@ -1,32 +1,19 @@
 class pluginUpdater extends BaseCustomPlugin {
-    selector = () => (this.updaterExist && this.utils.getPlugin("commander")) ? "" : this.utils.nonExistSelector
+    selector = () => (this.updaterExeExist && this.utils.getPlugin("commander")) ? "" : this.utils.nonExistSelector
 
-    hint = () => "当你发现BUG，可以尝试更新，指不定就解决了"
+    hint = () => "当你发现BUG，可以尝试更新，说不定就解决了"
 
     init = () => {
-        new updaterHelper(this.utils).run();
-        this.dir = this.utils.joinPath("./plugin/updater");
-        this.updater = this.utils.joinPath("./plugin/updater/updater.exe");
-        this.updaterExist = this.utils.existPath(this.updater);
+        this.proxyGetter = new ProxyGetter(this.utils);
+        this.binFileUpdater = new binFileUpdater(this.utils);
 
-        const binFile = this.getBinFile();
-        if (!binFile) return
+        this.updaterExeExist = this.utils.existInPluginPath("./plugin/updater/updater.exe");
 
-        const deleteFile = this.utils.Package.Path.join(this.dir, binFile.delete);
-        this.utils.Package.Fs.unlink(deleteFile, err => {
-            if (err) throw err;
-            const remainFile = this.utils.Package.Path.join(this.dir, binFile.remain);
-            const filepath = this.utils.Package.Path.join(this.utils.Package.Path.dirname(remainFile), "updater.exe");
-            this.utils.Package.Fs.rename(remainFile, filepath, err => {
-                if (err) throw err;
-                this.updater = this.utils.joinPath("./plugin/updater/updater.exe");
-                this.updaterExist = this.utils.existPath(this.updater);
-            })
-        })
+        new extraOperation(this.utils).run();
     }
 
     callback = anchorNode => {
-        new ProxyGetter(this.utils).getProxy().then(proxy => {
+        this.proxyGetter.getProxy().then(proxy => {
             proxy = proxy || "";
             if (!proxy.startsWith("http://")) {
                 proxy = "http://" + proxy;
@@ -40,7 +27,7 @@ class pluginUpdater extends BaseCustomPlugin {
                         type: "p",
                     },
                     {
-                        label: "代理(为空则不设置)",
+                        label: "代理（为空则不设置）",
                         type: "input",
                         value: proxy,
                         placeholder: "http://127.0.0.1:7890",
@@ -49,9 +36,69 @@ class pluginUpdater extends BaseCustomPlugin {
             }
 
             this.modal(modal, components => {
+                const dir = this.utils.joinPath("./plugin/updater");
+                const updater = this.utils.joinPath("./plugin/updater/updater.exe");
                 const proxy = (components[1].submit || "").trim();
-                const cmd = `cd ${this.dir} && ${this.updater} --action=update --proxy=${proxy}`;
-                this.utils.getPlugin("commander").alwaysExec(cmd, "cmd/bash");
+                const cmd = `cd ${dir} && ${updater} --action=update --proxy=${proxy}`;
+                this.utils.getPlugin("commander").alwaysExec(cmd, "cmd/bash", (err, stdout, stderr) => {
+                    if (!err && stderr.length === 0) {
+                        this.binFileUpdater.run();
+                    } else {
+                        this.modal(
+                            {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]},
+                            () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
+                        )
+                    }
+                });
+            })
+        })
+    }
+}
+
+// 处理每次升级后的额外操作
+// 理论上是不需要用到此工具的，但是由于之前的updater.exe有缺陷，遗留下一些问题，被迫用此工具处理存量的脏文件，过段时间会删除掉此helper
+class extraOperation {
+    constructor(utils) {
+        this.utils = utils
+    }
+
+    updateTo1_3_5 = () => {
+        if (this.utils.existInPluginPath("./plugin/md_padding.js")) {
+            [
+                "./plugin/global/utils/md-padding",
+                "./plugin/global/utils/node_modules",
+                "./plugin/global/utils/package.json",
+                "./plugin/global/utils/package-lock.json",
+                "./plugin/md_padding.js",
+            ].forEach(path => this.utils.Package.FsExtra.remove(this.utils.joinPath(path)))
+        }
+    }
+
+    updateTo1_3_10 = () => {
+        const file = this.utils.joinPath("./plugin/custom/plugins/modalExample.js");
+        this.utils.existPath(file) && this.utils.Package.FsExtra.remove(file);
+    }
+
+    run = () => {
+        this.updateTo1_3_5();
+        this.updateTo1_3_10();
+    }
+}
+
+class binFileUpdater {
+    constructor(utils) {
+        this.utils = utils
+    }
+
+    run = () => {
+        const binFile = this.getBinFile();
+        if (!binFile) return
+
+        this.utils.Package.Fs.unlink(binFile.delete, err => {
+            if (err) throw err;
+            const filepath = this.utils.Package.Path.join(this.utils.Package.Path.dirname(binFile.remain), "updater.exe");
+            this.utils.Package.Fs.rename(binFile.remain, filepath, err => {
+                if (err) throw err;
             })
         })
     }
@@ -59,7 +106,8 @@ class pluginUpdater extends BaseCustomPlugin {
     getBinFile = () => {
         const fileList = []
         const regexp = new RegExp(/updater(?<version>\d+\.\d+\.\d+)?\.exe/);
-        this.utils.Package.Fs.readdirSync(this.dir).forEach(file => {
+        const dir = this.utils.joinPath("./plugin/updater");
+        this.utils.Package.Fs.readdirSync(dir).forEach(file => {
             const m = file.match(regexp);
             if (!m) return
             const version = m.groups.version || "";
@@ -77,6 +125,8 @@ class pluginUpdater extends BaseCustomPlugin {
             deleteFile = fileList[0].file;
             remainFile = fileList[1].file;
         }
+        deleteFile = this.utils.Package.Path.join(dir, deleteFile);
+        remainFile = this.utils.Package.Path.join(dir, remainFile);
         return {delete: deleteFile, remain: remainFile}
     }
 
@@ -98,29 +148,6 @@ class pluginUpdater extends BaseCustomPlugin {
             }
         }
         return 0
-    }
-}
-
-// 处理每次升级的额外操作(理论上是不需要用到此工具的，但是由于之前的updater.exe写的有问题，遗留下一些问题，被迫用此工具处理存量的脏文件，过段时间会删除掉此helper)
-class updaterHelper {
-    constructor(utils) {
-        this.utils = utils
-    }
-
-    updateTo1_3_5 = () => {
-        if (this.utils.existPath(this.utils.joinPath("./plugin/md_padding.js"))) {
-            [
-                this.utils.joinPath("./plugin/global/utils/md-padding"),
-                this.utils.joinPath("./plugin/global/utils/node_modules"),
-                this.utils.joinPath("./plugin/global/utils/package.json"),
-                this.utils.joinPath("./plugin/global/utils/package-lock.json"),
-                this.utils.joinPath("./plugin/md_padding.js"),
-            ].forEach(path => this.utils.Package.FsExtra.remove(path))
-        }
-    }
-
-    run = () => {
-        this.updateTo1_3_5()
     }
 }
 

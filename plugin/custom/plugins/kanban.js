@@ -7,7 +7,6 @@ class kanbanPlugin extends BaseCustomPlugin {
 
     style = () => {
         const maxHeight = (this.config.KANBAN_MAX_HEIGHT < 0) ? "" : `max-height: ${this.config.KANBAN_MAX_HEIGHT}px;`;
-
         let text = `
             .plugin-kanban .plugin-kanban-title {
                 font-size: 1.5rem;
@@ -78,13 +77,10 @@ class kanbanPlugin extends BaseCustomPlugin {
                 word-wrap: break-word;
             }
         `
-
         if (this.utils.isBetaVersion) {
-            text = `.plugin-kanban { font-family: sans-serif; } 
-                    ${text} 
-                    .md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
+            text = `.plugin-kanban { font-family: sans-serif; } ${text} .md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
         }
-        return {textID: "plugin-kanban-style", text: text}
+        return text
     }
 
     init = () => {

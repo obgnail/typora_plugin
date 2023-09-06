@@ -102,6 +102,8 @@ class utils {
         }
     }
 
+    static existInPluginPath = filepath => this.existPath(this.joinPath(filepath))
+
     static newFilePath = filepath => {
         if (filepath) {
             filepath = this.Package.Path.join(this.Package.Path.dirname(this.getFilePath()), filepath);
@@ -158,6 +160,11 @@ class utils {
         File.editor.focusAndRestorePos();
         File.editor.selection.scrollAdjust(target, height);
         File.isFocusMode && File.editor.updateFocusMode(false);
+    }
+
+    static openUrl = url => {
+        const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl;
+        openUrl(url, 1);
     }
 
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
@@ -224,12 +231,12 @@ class utils {
             "File.editor.fences.addCodeBlock", before, after)
     }
 
-    static loopDetector = (until, after, detectInterval = 20, runWhenTimeout = true) => {
+    static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
         let run = false;
         const uuid = Math.random();
         const start = new Date().getTime();
         this.detectorContainer[uuid] = setInterval(() => {
-            if (new Date().getTime() - start > 10000) {
+            if (new Date().getTime() - start > timeout) {
                 console.warn("loopDetector timeout!", until, after);
                 run = runWhenTimeout;
             }
@@ -394,8 +401,7 @@ class userSettingHelper {
 
     updateSettings(pluginSetting) {
         const toml = "./plugin/global/settings/settings.user.toml";
-        const exist = this.utils.existPath(this.utils.joinPath(toml));
-        if (exist) {
+        if (this.utils.existInPluginPath(toml)) {
             const userSettings = this.utils.readToml(toml);
             pluginSetting = this.utils.merge(pluginSetting, userSettings);
         }

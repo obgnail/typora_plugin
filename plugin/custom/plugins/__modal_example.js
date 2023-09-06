@@ -1,18 +1,20 @@
 /* modalExample 类展示了如何使用 this.modal 函数:
     直接使用this.modal即可弹出自定义的模态框，待用户点击【确定】后会调用回调函数
 
-    this.modal:
-     1. title（必须）: 模态框的标题
-     2. components: 模态框里的内容，支持类型：
-         1，input
-         2. password
-         3. p
-         4. textarea
-         5. checkbox
-         6. radio
-         7. select
-         8. file
-     3. callback: 回调函数
+    this.modal args:
+      1. modal:
+          - title（必须）: 模态框的标题
+          - components: 模态框里的组件，支持类型：
+              1，input
+              2. password
+              3. p
+              4. textarea
+              5. checkbox
+              6. radio
+              7. select
+              8. file
+      2. onSubmitCallback: 当用户点击【确认】后的回调函数
+      3. onCancelCallback: 当用户点击【取消】后的回调函数
 */
 class modalExample extends BaseCustomPlugin {
     selector = () => ""
