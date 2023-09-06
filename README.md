@@ -482,7 +482,7 @@ const BUILTIN = [
 
 **custom 插件大量采用声明式代码（声明代替代码开发）**，比如：
 
-- 只需使用 `style = () => {textID: "fullPathCopy-style", text: "..."}`，即可注册 css。
+- 只需使用 `style = () => "..."`，即可注册 css。
 - 只需使用 `hint = () => "将当前标题的路径复制到剪切板"`，即可注册 hint。
 - 只需使用 `hotkey = () => ["ctrl+shift+y"]` ，即可注册快捷键。
 - 只需使用 `this.modal` 函数即可自动生成自定义的模态框。
@@ -490,7 +490,7 @@ const BUILTIN = [
 
 ```js
 class fullPathCopy extends BaseCustomPlugin {
-    style = () => {textID: "fullPathCopy-style", text: "..."}
+    style = () => "..."
     hint = () => "将当前标题的路径复制到剪切板"
     hotkey = () => ["ctrl+shift+y"]
     callback = anchorNode => {
@@ -634,7 +634,7 @@ module.exports = { plugin: fullPathCopy };
 // 2. selector：当光标位于哪些位置时，此命令才可用（空串：任何位置都可用），在这里的含义就是：只当光标位于【正文标题】时可用
 // 3. hint：当鼠标移动到右键菜单时的提示
 // 4. init：在这里初始化你要的变量
-// 5. style：给 Typora 插入 style 标签。返回值为 {textID: "", text: ""}。其中 textID 为此 style 标签的 id，text 为 style 内容
+// 5. style：给 Typora 插入 style 标签。返回值为 string。若你想指定标签的 id，也可以返回 {textID: "", text: ""}。其中 textID 为此 style 标签的 id，text 为 style 内容。
 // 6. html：在这里为 Typora 插入 HTML 标签
 // 7. hotkey：为 callabck 注册快捷键
 // 8. process：在这里添加 listener 和修改 Typora 的第一方函数

@@ -21,7 +21,7 @@ class loadPluginHelper {
         this.controller = controller;
     }
 
-    updateUserSetting = (allPlugins) => {
+    updateUserSetting = allPlugins => {
         const toml = "./plugin/global/settings/custom_plugin.user.toml";
         const exist = this.controller.utils.existPath(this.controller.utils.joinPath(toml));
         if (exist) {
@@ -31,12 +31,24 @@ class loadPluginHelper {
         return allPlugins
     }
 
+    insertStyle = (fixed_name, style) => {
+        if (!style) return;
+
+        let textID = style["textID"];
+        let text = style["text"];
+        if (typeof style === "string") {
+            textID = `custom-plugin-${fixed_name}-style`;
+            text = style;
+        }
+        this.controller.utils.insertStyle(textID, text);
+    }
+
     load() {
         let allPlugins = this.controller.utils.readToml("./plugin/global/settings/custom_plugin.default.toml");
         allPlugins = this.updateUserSetting(allPlugins);
-        for (const fix_name of Object.keys(allPlugins)) {
-            const custom = allPlugins[fix_name];
-            custom.plugin = fix_name;
+        for (const fixed_name of Object.keys(allPlugins)) {
+            const custom = allPlugins[fixed_name];
+            custom.plugin = fixed_name;
 
             if (!custom.enable) continue
 
@@ -47,8 +59,7 @@ class loadPluginHelper {
                 const instance = new plugin(custom, this.controller);
                 if (this.check(instance)) {
                     instance.init();
-                    const style = instance.style();
-                    style && this.controller.utils.insertStyle(style.textID, style.text);
+                    this.insertStyle(fixed_name, instance.style());
                     instance.html();
                     instance.process();
                     this.controller.custom[instance.name] = instance;
