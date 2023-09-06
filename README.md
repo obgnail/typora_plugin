@@ -44,7 +44,7 @@
 
 > 目前此方法仅限 windows 平台。
 
-1. [下载](https://github.com/obgnail/typora_plugin/releases/latest)插件源码。
+1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码。
 
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`）
 
@@ -66,7 +66,7 @@
 
 ## 如何使用：方法二（手动）
 
-1. [下载](https://github.com/obgnail/typora_plugin/releases/latest)插件源码。
+1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码。
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`，推荐使用 everything 找一下）
 3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
 4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
@@ -478,19 +478,19 @@ const BUILTIN = [
 
 #### 简介
 
-从 Typora Plugin 1.2.1 版本开始，本插件系统提供开放能力，**支持用户在右键菜单中调用的自定义命令**。
+从 Typora Plugin 1.2.1 版本开始，本插件系统提供开放能力，支持用户 **在右键菜单中调用自定义的命令**。
 
 **custom 插件大量采用声明式代码（声明代替代码开发）**，比如：
 
-- 只需使用 `style = () => {}`，即可注册 css。
+- 只需使用 `style = () => {textID: "fullPathCopy-style", text: "..."}`，即可注册 css。
 - 只需使用 `hint = () => "将当前标题的路径复制到剪切板"`，即可注册 hint。
 - 只需使用 `hotkey = () => ["ctrl+shift+y"]` ，即可注册快捷键。
 - 只需使用 `this.modal` 函数即可自动生成自定义的模态框。
-- init、selector、html、process、callback 等等生命周期函数
+- init、selector、html、process、callback 等等生命周期函数。
 
 ```js
 class fullPathCopy extends BaseCustomPlugin {
-    style = () => {}
+    style = () => {textID: "fullPathCopy-style", text: "..."}
     hint = () => "将当前标题的路径复制到剪切板"
     hotkey = () => ["ctrl+shift+y"]
     callback = anchorNode => {
@@ -517,8 +517,8 @@ class fullPathCopy extends BaseCustomPlugin {
 
 仅需两步：
 
-1. 修改 `./plugin/custom/custom_plugin.user.toml`，添加配置。
-2. 在 `./plugin/custom/plugins` 目录下，创建和 plugin 参数同名的文件，在此文件中创建一个 class 继承自 BaseCustomPlugin，并导出为 `plugin`。
+1. 在 `./plugin/custom/custom_plugin.user.toml` 添加配置。
+2. 在 `./plugin/custom/plugins` 目录下，创建和插件同名的文件，在此文件中创建一个 class 继承自 BaseCustomPlugin，并导出为 `plugin`。
 
 
 
@@ -526,30 +526,34 @@ class fullPathCopy extends BaseCustomPlugin {
 
 需求如下：
 
-1. 在右键菜单中添加一个 `获取标题路径` 的功能（类似于 `messing9.md\无 一级标题\开放平台（WIP） 二级标题\window_tab 三级标题`）
-2. 此功能只要在光标位于【正文标题】中才可使用。
-3. 为此功能添加快捷键 `ctrl+shift+y`
+1. 在右键菜单中添加一个 `获取标题路径` （类似于 `messing9.md\无 一级标题\开放平台（WIP） 二级标题\window_tab 三级标题`）的功能。
+2. 当光标位于【正文标题】中才可使用。
+3. 快捷键 `ctrl+shift+y`。
 
 实现：
 
 步骤一：修改 `./plugin/global/settings/custom_plugin.user.toml`，添加配置：
 
-- name：右键菜单中展示的名称
-- enable：是否启用此插件
-- config：插件自己的配置
+- name：（必选）右键菜单中展示的名称
+- enable：（必选）是否启用此插件
+- config：（可选）插件自己的配置
 
 ```toml
 # ./plugin/global/settings/custom_plugin.user.toml
+
 [fullPathCopy]
 name = "复制标题路径"
 enable = true
-[fullPathCopy.config]
-ignore_empty_header = false
-add_space = true
-full_file_path = false
+
+    [fullPathCopy.config]
+    ignore_empty_header = false
+    add_space = true
+    full_file_path = false
 ```
 
-步骤二：在 `./plugin/custom/plugins` 目录下，创建和 plugin 参数同名的文件（`fullPathCopy.js`），在此文件中创建一个 class 继承自 BaseCustomPlugin，并导出为 `plugin`。
+> 如果您对 TOML 不太了解，可以花三分钟了解 [TOML教程](https://toml.io/cn/v1.0.0)
+
+步骤二：在 `./plugin/custom/plugins` 目录下，创建和插件同名的文件（`fullPathCopy.js`），在此文件中创建一个 class 继承自 BaseCustomPlugin，并导出为 `plugin`。
 
 ```js
 // ./plugin/custom/plugins/fullPathCopy.js
@@ -622,15 +626,16 @@ class fullPathCopy extends BaseCustomPlugin {
 // 10
 module.exports = { plugin: fullPathCopy };
 
-// 1. 创建同名的 class，继承 BaseCustomPlugin 类。此时，fullPathCopy 将自动拥有 utils 属性 和 info 属性 和 modal 方法。
-//    - utils：插件系统自带的静态工具类，其定义在 `./plugin/global/core/plugin.js/utils`。其中有个最重要的函数：`utils.getPlugin(fixed_name)` 用于获取已经实现的全部插件，调用其 API。具体的 API 可看 openPlatformAPI.md 文件。
-//    - info：该插件在 `custom_plugin.user.toml` 里的所有配置。
-//    - modal：生成自定义的模态框，和用户交互。具体用法可以查看 __modal_example.js
-// 2. selector：当用户在哪个位置右键弹出菜单时，出现此命令（空串：任何位置都展示），在这里的含义就是：只在【正文标题】弹出此命令
+// 1. 创建 class，继承 BaseCustomPlugin 类。此时，fullPathCopy 将自动拥有 utils、info、config 属性 和 modal 方法。
+//    - utils：插件系统自带的静态工具类，其定义在 `./plugin/global/core/plugin.js/utils`。其中有两个最重要的函数：utils.getPlugin(fixed_name) 和 utils.getCustomPlugin(fixed_name) 用于获取已经实现的全部插件，调用其 API。具体的 API 可看 openPlatformAPI.md 文件
+//    - info：该插件在 custom_plugin.user.toml 里的所有字段
+//    - config：等同于 info.config
+//    - modal：生成自定义的模态框，和用户交互。具体用法可以参考 __modal_example.js
+// 2. selector：当光标位于哪些位置时，此命令才可用（空串：任何位置都可用），在这里的含义就是：只当光标位于【正文标题】时可用
 // 3. hint：当鼠标移动到右键菜单时的提示
 // 4. init：在这里初始化你要的变量
-// 5. style：给 Typora 插入 style 标签。返回值为 `{id: "", text: ""}`。其中 id 为此 style 标签的 id，text 为 style 内容
-// 6. html：在这里为 Typora 插入 HTML 文本
+// 5. style：给 Typora 插入 style 标签。返回值为 {textID: "", text: ""}。其中 textID 为此 style 标签的 id，text 为 style 内容
+// 6. html：在这里为 Typora 插入 HTML 标签
 // 7. hotkey：为 callabck 注册快捷键
 // 8. process：在这里添加 listener 和修改 Typora 的第一方函数
 // 9. callback：右键菜单中点击/键入快捷键后的回调函数。anchorNode: 鼠标光标所在的 element
