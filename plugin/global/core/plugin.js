@@ -102,6 +102,8 @@ class utils {
         }
     }
 
+    static existInPluginPath = filepath => this.existPath(this.joinPath(filepath))
+
     static newFilePath = filepath => {
         if (filepath) {
             filepath = this.Package.Path.join(this.Package.Path.dirname(this.getFilePath()), filepath);
@@ -399,8 +401,7 @@ class userSettingHelper {
 
     updateSettings(pluginSetting) {
         const toml = "./plugin/global/settings/settings.user.toml";
-        const exist = this.utils.existPath(this.utils.joinPath(toml));
-        if (exist) {
+        if (this.utils.existInPluginPath(toml)) {
             const userSettings = this.utils.readToml(toml);
             pluginSetting = this.utils.merge(pluginSetting, userSettings);
         }

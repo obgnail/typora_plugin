@@ -23,8 +23,7 @@ class loadPluginHelper {
 
     updateUserSetting = allPlugins => {
         const toml = "./plugin/global/settings/custom_plugin.user.toml";
-        const exist = this.controller.utils.existPath(this.controller.utils.joinPath(toml));
-        if (exist) {
+        if (this.controller.utils.existInPluginPath(toml)) {
             const userSettings = this.controller.utils.readToml(toml);
             allPlugins = this.controller.utils.merge(allPlugins, userSettings);
         }

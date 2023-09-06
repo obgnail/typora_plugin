@@ -7,8 +7,7 @@ class pluginUpdater extends BaseCustomPlugin {
         this.proxyGetter = new ProxyGetter(this.utils);
         this.binFileUpdater = new binFileUpdater(this.utils);
 
-        this.updater = this.utils.joinPath("./plugin/updater/updater.exe");
-        this.updaterExeExist = this.utils.existPath(this.updater);
+        this.updaterExeExist = this.utils.existInPluginPath("./plugin/updater/updater.exe");
 
         new extraOperation(this.utils).run();
     }
@@ -37,9 +36,10 @@ class pluginUpdater extends BaseCustomPlugin {
             }
 
             this.modal(modal, components => {
-                const proxy = (components[1].submit || "").trim();
                 const dir = this.utils.joinPath("./plugin/updater");
-                const cmd = `cd ${dir} && ${this.updater} --action=update --proxy=${proxy}`;
+                const updater = this.utils.joinPath("./plugin/updater/updater.exe");
+                const proxy = (components[1].submit || "").trim();
+                const cmd = `cd ${dir} && ${updater} --action=update --proxy=${proxy}`;
                 this.utils.getPlugin("commander").alwaysExec(cmd, "cmd/bash", (err, stdout, stderr) => {
                     if (!err && stderr.length === 0) {
                         this.binFileUpdater.run();
@@ -63,7 +63,7 @@ class extraOperation {
     }
 
     updateTo1_3_5 = () => {
-        if (this.utils.existPath(this.utils.joinPath("./plugin/md_padding.js"))) {
+        if (this.utils.existInPluginPath("./plugin/md_padding.js")) {
             [
                 "./plugin/global/utils/md-padding",
                 "./plugin/global/utils/node_modules",
