@@ -257,7 +257,11 @@ class utils {
         truncatePlugin && truncatePlugin.rollback(target);
     }
 
-    static resizeFixedModal = (handleElement, resizeElement, onMouseUp = null) => {
+    static resizeFixedModal = (
+        handleElement, resizeElement,
+        width = true, height = true,
+        onMouseDown = null, onMouseMove = null, onMouseUp = null
+    ) => {
         // 鼠标按下时记录当前鼠标位置和 div 的宽高
         const radix = 10;
         let startX, startY, startWidth, startHeight;
@@ -266,6 +270,7 @@ class utils {
             startY = ev.clientY;
             startWidth = parseInt(document.defaultView.getComputedStyle(resizeElement).width, radix);
             startHeight = parseInt(document.defaultView.getComputedStyle(resizeElement).height, radix);
+            onMouseDown && onMouseDown();
             document.addEventListener("mousemove", mousemove);
             document.addEventListener("mouseup", mouseup);
             ev.stopPropagation();
@@ -275,8 +280,17 @@ class utils {
         // 鼠标移动时计算宽高差值并设置 div 的新宽高
         function mousemove(e) {
             requestAnimationFrame(() => {
-                resizeElement.style.width = startWidth + e.clientX - startX + "px";
-                resizeElement.style.height = startHeight + e.clientY - startY + "px";
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                if (onMouseMove) {
+                    onMouseMove(deltaX, deltaY);
+                }
+                if (width) {
+                    resizeElement.style.width = startWidth + deltaX + "px";
+                }
+                if (height) {
+                    resizeElement.style.height = startHeight + deltaY + "px";
+                }
             })
         }
 

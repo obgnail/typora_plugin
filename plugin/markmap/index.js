@@ -5,7 +5,8 @@ class markmapPlugin extends global._basePlugin {
             extra = `
             .plugin-markmap-button {
                 position: fixed;
-                left: var(--sidebar-width);
+                right: 78px;
+                z-index: 9998;
                 bottom: 50px;
                 margin-left: 30px;
                 font-size: 22px;
@@ -43,11 +44,25 @@ class markmapPlugin extends global._basePlugin {
                 height: 100%;
             }
             
+            .plugin-markmap-grip {
+                display: none;
+                background-color: var(--active-file-border-color, black);
+                cursor: row-resize;
+                padding: 4px 0;
+            }
+            
+            .plugin-markmap-grip::before {
+                content: "";
+                display: block;
+                width: 24px;
+                margin: auto;
+                border-top: 3px double var(--active-file-bg-color);
+            }
+            
             ${extra}
             
             .plugin-markmap-header {
                 margin: 0 0.5em;
-                height: 100%;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -78,13 +93,15 @@ class markmapPlugin extends global._basePlugin {
         modal.innerHTML = `
             <div class="plugin-markmap-wrap">
                 <div class="plugin-markmap-header">
-                    <div class="plugin-markmap-icon ion-close" action="hide" ty-hint="关闭"></div>
+                    <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动"></div>
+                    <div class="plugin-markmap-icon ion-pin" action="pin" ty-hint="固定"></div>
                     <div class="plugin-markmap-icon ion-android-arrow-down-right" action="resize" ty-hint="拖动调整大小"></div>
                 </div>
                 <svg id="plugin-markmap-svg"></svg>
             </div>
+            <div class="plugin-markmap-grip"></div>
         `;
         this.utils.insertDiv(modal);
 
@@ -101,11 +118,18 @@ class markmapPlugin extends global._basePlugin {
         this.Markmap = null;
         this.markmap = null;
         this.editor = null;
+
         this.originRect = null;
+        this.pinUtils = {
+            isPin: false,
+            contentOriginRect: null,
+        }
 
         this.entities = {
+            content: document.querySelector("content"),
             modal: document.querySelector("#plugin-markmap"),
             header: document.querySelector("#plugin-markmap .plugin-markmap-header"),
+            grip: document.querySelector("#plugin-markmap .plugin-markmap-grip"),
             svg: document.querySelector("#plugin-markmap-svg"),
             resize: document.querySelector('.plugin-markmap-icon[action="resize"]'),
             fullScreen: document.querySelector('.plugin-markmap-icon[action="expand"]'),
@@ -130,7 +154,19 @@ class markmapPlugin extends global._basePlugin {
         )
 
         this.utils.dragFixedModal(this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`), this.entities.modal, false);
-        this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, () => this.setFullScreenIcon(this.entities.fullScreen, false));
+
+        this.utils.resizeFixedModal(
+            this.entities.resize, this.entities.modal, true, true, null, null,
+            () => this.setFullScreenIcon(this.entities.fullScreen, false)
+        );
+
+        let contentStartTop = 0;
+        this.utils.resizeFixedModal(
+            this.entities.grip, this.entities.modal, false, true,
+            () => contentStartTop = this.entities.content.getBoundingClientRect().top,
+            (deltaX, deltaY) => this.entities.content.style.top = contentStartTop + deltaY + "px",
+            this.drawToc
+        );
 
         this.entities.header.addEventListener("click", ev => {
             const target = ev.target.closest(".plugin-markmap-icon");
@@ -146,7 +182,7 @@ class markmapPlugin extends global._basePlugin {
 
         if (this.config.USE_BUTTON) {
             document.querySelector(".plugin-markmap-item").addEventListener("click", () => {
-                (this.entities.modal.style.display === "") ? this.drawToc() : this.hide();
+                (this.entities.modal.style.display === "") ? this.drawToc() : this.close();
             })
         }
     }
@@ -157,11 +193,37 @@ class markmapPlugin extends global._basePlugin {
         }
     }
 
-    hide = () => this.entities.modal.style.display = ""
+    close = () => {
+        this.pinUtils.isPin && this.pin();
+        this.entities.modal.style.display = "";
+    }
+
+    pin = () => {
+        this.pinUtils.isPin = !this.pinUtils.isPin;
+        if (this.pinUtils.isPin) {
+            this.contentOriginRect = this.entities.content.getBoundingClientRect();
+            this.originRect = this.entities.modal.getBoundingClientRect();
+
+            const {top, width, left} = this.contentOriginRect;
+            this.entities.modal.style.left = left + "px";
+            this.entities.modal.style.width = width + "px";
+            this.entities.modal.style.top = top + "px";
+            this.entities.modal.style.boxShadow = "initial";
+            this.entities.content.style.top = top + this.originRect.height + "px";
+
+            this.entities.grip.style.display = "block";
+        } else {
+            this.setRect(this.originRect);
+            this.entities.modal.style.boxShadow = "";
+            this.entities.content.style.top = this.contentOriginRect.top + "px";
+            this.entities.grip.style.display = "";
+            this.drawToc();
+        }
+    }
 
     expand = button => {
         this.originRect = this.entities.modal.getBoundingClientRect();
-        this.setRect(document.querySelector("content").getBoundingClientRect());
+        this.setRect(this.entities.content.getBoundingClientRect());
         this.setFullScreenIcon(button, true);
     }
 
@@ -190,8 +252,8 @@ class markmapPlugin extends global._basePlugin {
         this.entities.modal.style.width = width + "px";
     }
 
-    setModalRect = () => {
-        const {left, width, height} = document.querySelector("content").getBoundingClientRect();
+    initModalRect = () => {
+        const {left, width, height} = this.entities.content.getBoundingClientRect();
         this.entities.modal.style.left = left + width / 6 + "px";
         this.entities.modal.style.width = width * 2 / 3 + "px";
         this.entities.modal.style.height = height / 3 + "px";
@@ -216,7 +278,7 @@ class markmapPlugin extends global._basePlugin {
         if (this["transformer"] && this["Markmap"]) {
             await this.update(md);
         } else {
-            this.setModalRect();
+            this.initModalRect();
             await this.lazyLoad();
             await this.create(md);
         }
