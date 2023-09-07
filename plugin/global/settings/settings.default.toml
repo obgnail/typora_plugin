@@ -319,6 +319,18 @@ NAME = "思维导图"
 CLICKABLE = true
 
 
+############### markmap ###############
+[markmap]
+# 启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "markmap"
+# 是否在右键菜单中可点击
+CLICKABLE = true
+# 在左下角添加一个快捷按钮
+USE_BUTTON = true
+
+
 ############### auto_number ###############
 [auto_number]
 # 启用插件

@@ -61,9 +61,9 @@ class utils {
         quickOpenNode.parentNode.insertBefore(div, quickOpenNode.nextSibling);
     }
 
-    static insertScript = (filepath, then) => {
+    static insertScript = filepath => {
         const jsFilepath = this.joinPath(filepath);
-        $.getScript(`file:///${jsFilepath}`).then(then);
+        return $.getScript(`file:///${jsFilepath}`);
     }
 
     static getUUID() {
@@ -257,13 +257,63 @@ class utils {
         truncatePlugin && truncatePlugin.rollback(target);
     }
 
-    static dragFixedModal = (handleElement, moveElement, withMetaKey = true) => {
+    static resizeFixedModal = (
+        handleElement, resizeElement,
+        resizeWidth = true, resizeHeight = true,
+        onMouseDown = null, onMouseMove = null, onMouseUp = null
+    ) => {
+        // 鼠标按下时记录当前鼠标位置和 div 的宽高
+        const radix = 10;
+        let startX, startY, startWidth, startHeight;
+        handleElement.addEventListener("mousedown", ev => {
+            startX = ev.clientX;
+            startY = ev.clientY;
+            startWidth = parseInt(document.defaultView.getComputedStyle(resizeElement).width, radix);
+            startHeight = parseInt(document.defaultView.getComputedStyle(resizeElement).height, radix);
+            onMouseDown && onMouseDown();
+            document.addEventListener("mousemove", mousemove);
+            document.addEventListener("mouseup", mouseup);
+            ev.stopPropagation();
+            ev.preventDefault();
+        }, true);
+
+        // 鼠标移动时计算宽高差值并设置 div 的新宽高
+        function mousemove(e) {
+            requestAnimationFrame(() => {
+                let deltaX = e.clientX - startX;
+                let deltaY = e.clientY - startY;
+                if (onMouseMove) {
+                    const result = onMouseMove(deltaX, deltaY);
+                    if (result) {
+                        deltaX = result.deltaX;
+                        deltaY = result.deltaY;
+                    }
+                }
+                if (resizeWidth) {
+                    resizeElement.style.width = startWidth + deltaX + "px";
+                }
+                if (resizeHeight) {
+                    resizeElement.style.height = startHeight + deltaY + "px";
+                }
+            })
+        }
+
+        // 鼠标松开时取消事件监听
+        function mouseup() {
+            document.removeEventListener("mousemove", mousemove);
+            document.removeEventListener("mouseup", mouseup);
+            onMouseUp && onMouseUp();
+        }
+    }
+
+    static dragFixedModal = (handleElement, moveElement, withMetaKey = true, onMouseDown = null) => {
         handleElement.addEventListener("mousedown", ev => {
             if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
             ev.stopPropagation();
             const rect = moveElement.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
+            onMouseDown && onMouseDown();
 
             const onMouseMove = ev => {
                 if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
