@@ -327,6 +327,8 @@ ENABLE = true
 NAME = "markmap"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# 在左下角添加一个快捷按钮
+USE_BUTTON = true
 
 
 ############### auto_number ###############

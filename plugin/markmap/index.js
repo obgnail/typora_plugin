@@ -1,29 +1,62 @@
 class markmapPlugin extends global._basePlugin {
     style = () => {
+        let extra = "";
+        if (this.config.USE_BUTTON) {
+            extra = `
+            .plugin-markmap-button {
+                position: fixed;
+                left: var(--sidebar-width);
+                bottom: 50px;
+                margin-left: 30px;
+                font-size: 22px;
+                text-align: center;
+                color: var(--active-file-border-color, black);
+            }
+            
+            .plugin-markmap-button .plugin-markmap-item {
+                width: 35px;
+                height: 35px;
+                cursor: pointer;
+                box-shadow: rgba(0, 0, 0, 0.07) 0px 0px 10px;
+                border-radius: 4px;
+            }
+            
+            .plugin-markmap-button .plugin-markmap-item:hover {
+                background-color: var(--item-hover-bg-color, black);
+            }
+            `
+        }
+
         const text = `
             #plugin-markmap {
                 position: fixed;
-                right: 0;
                 z-index: 9999;
                 box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
                 background-color: #f8f8f8;
                 display: none;
             }
             
+            ${extra}
+            
             .plugin-markmap-header {
-                display: inline-flex;
-                justify-content: space-evenly;
-                align-items: center;
                 position: absolute;
-                top: 0.3em;
                 right: 0.5em;
-                font-size: 1.5em;
-                opacity: 0.5;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
             }
             
             .plugin-markmap-icon {
-                margin-left: 0.5em;
                 cursor: pointer;
+                font-size: 1.3em;
+                opacity: 0.5;
+            }
+            
+            .plugin-markmap-icon:last-child {
+                margin-top: auto;
+                margin-bottom: 0.2em;
+                font-size: 1.3em;
             }
             
             #plugin-markmap-svg {
@@ -39,17 +72,21 @@ class markmapPlugin extends global._basePlugin {
         modal.id = 'plugin-markmap';
         modal.innerHTML = `
             <div class="plugin-markmap-header">
-                <div class="plugin-markmap-icon ion-arrow-expand" action="expand"></div>
-                <div class="plugin-markmap-icon ion-arrow-move" action="move"></div>
-                <div class="plugin-markmap-icon ion-close" action="hide"></div>
+                <div class="plugin-markmap-icon ion-close" action="hide" ty-hint="关闭"></div>
+                <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
+                <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动"></div>
+                <div class="plugin-markmap-icon ion-android-arrow-down-right" action="resize" ty-hint="拖动调整大小"></div>
             </div>
-            <svg id="plugin-markmap-svg"></svg>`;
-
-        const {width, height} = document.querySelector("content").getBoundingClientRect();
-        modal.style.width = width / 2 + "px";
-        modal.style.height = height / 2 + "px";
-
+            <svg id="plugin-markmap-svg"></svg>
+        `;
         this.utils.insertDiv(modal);
+
+        if (this.config.USE_BUTTON) {
+            const button = document.createElement("div");
+            button.className = "plugin-markmap-button";
+            button.innerHTML = `<div class="plugin-markmap-item" ty-hint="查看思维导图"><i class="fa fa-code-fork"></i></div>`;
+            this.utils.insertDiv(button);
+        }
     }
 
     init = () => {
@@ -63,11 +100,13 @@ class markmapPlugin extends global._basePlugin {
             modal: document.querySelector("#plugin-markmap"),
             header: document.querySelector("#plugin-markmap .plugin-markmap-header"),
             svg: document.querySelector("#plugin-markmap-svg"),
+            resize: document.querySelector('.plugin-markmap-icon[action="resize"]'),
+            fullScreen: document.querySelector('.plugin-markmap-icon[action="expand"]'),
         }
 
         this.callArgs = [
             {
-                arg_name: "生成当前目录的markmap",
+                arg_name: "根据当前大纲生成",
                 arg_value: "current_toc"
             },
         ];
@@ -84,6 +123,7 @@ class markmapPlugin extends global._basePlugin {
         )
 
         this.utils.dragFixedModal(this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`), this.entities.modal, false);
+        this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, () => this.setFullScreenIcon(this.entities.fullScreen, false));
 
         this.entities.header.addEventListener("click", ev => {
             const target = ev.target.closest(".plugin-markmap-icon");
@@ -96,6 +136,12 @@ class markmapPlugin extends global._basePlugin {
                 }
             }
         })
+
+        if (this.config.USE_BUTTON) {
+            document.querySelector(".plugin-markmap-item").addEventListener("click", () => {
+                (this.entities.modal.style.display === "") ? this.drawToc() : this.hide();
+            })
+        }
     }
 
     call = async type => {
@@ -109,15 +155,22 @@ class markmapPlugin extends global._basePlugin {
     expand = button => {
         this.originRect = this.entities.modal.getBoundingClientRect();
         this.setRect(document.querySelector("content").getBoundingClientRect());
-        button.className = "plugin-markmap-icon ion-arrow-shrink";
-        button.setAttribute("action", "shrink");
-        this.drawToc();
+        this.setFullScreenIcon(button, true);
     }
 
     shrink = button => {
         this.setRect(this.originRect);
-        button.className = "plugin-markmap-icon ion-arrow-expand";
-        button.setAttribute("action", "expand");
+        this.setFullScreenIcon(button, false)
+    }
+
+    setFullScreenIcon = (button, fullScreen) => {
+        if (fullScreen) {
+            button.className = "plugin-markmap-icon ion-arrow-shrink";
+            button.setAttribute("action", "shrink");
+        } else {
+            button.className = "plugin-markmap-icon ion-arrow-expand";
+            button.setAttribute("action", "expand");
+        }
         this.drawToc();
     }
 
@@ -128,6 +181,13 @@ class markmapPlugin extends global._basePlugin {
         this.entities.modal.style.top = top + "px";
         this.entities.modal.style.height = height + "px";
         this.entities.modal.style.width = width + "px";
+    }
+
+    setModalRect = () => {
+        const {left, width, height} = document.querySelector("content").getBoundingClientRect();
+        this.entities.modal.style.left = left + width / 6 + "px";
+        this.entities.modal.style.width = width * 2 / 3 + "px";
+        this.entities.modal.style.height = height / 3 + "px";
     }
 
     drawToc = async () => {
@@ -149,6 +209,7 @@ class markmapPlugin extends global._basePlugin {
         if (this["transformer"] && this["Markmap"]) {
             await this.update(md);
         } else {
+            this.setModalRect();
             await this.lazyLoad();
             await this.create(md);
         }

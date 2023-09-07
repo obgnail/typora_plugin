@@ -6,13 +6,13 @@ class goTopPlugin extends global._basePlugin {
                 position: fixed;
                 right: 30px;
                 bottom: 50px;
-                z-index: 99999;
+                z-index: 9998;
                 font-size: 28px;
                 text-align: center;
                 color: ${this.config.COLOR};
             }
             
-            #${this.config.DIV_ID} .roll-item {
+            #${this.config.DIV_ID} .action-item {
                 width: 35px;
                 height: 35px;
                 margin-top: 10px;
@@ -21,11 +21,11 @@ class goTopPlugin extends global._basePlugin {
                 border-radius: 4px;
             }
             
-            #${this.config.DIV_ID} .roll-item:hover {
+            #${this.config.DIV_ID} .action-item:hover {
                 background-color: ${this.config.HOVER_COLOR};
             }
             
-            #${this.config.DIV_ID} .roll-item .fa {
+            #${this.config.DIV_ID} .action-item i {
                 display: block;
                 line-height: 35px;
             }
@@ -37,19 +37,21 @@ class goTopPlugin extends global._basePlugin {
         const wrap = document.createElement("div");
         wrap.id = this.config.DIV_ID;
         wrap.innerHTML = `
-            <div class="roll-item" action="go-top"><i class="fa fa-angle-up"></i></div>
-            <div class="roll-item" action="go-bottom"><i class="fa fa-angle-down"></i></div>`;
+            <div class="action-item" action="go-top"><i class="fa fa-angle-up"></i></div>
+            <div class="action-item" action="go-bottom"><i class="fa fa-angle-down"></i></div>`;
         this.utils.insertDiv(wrap);
     }
 
     process = () => {
         document.getElementById(this.config.DIV_ID).addEventListener("click", ev => {
-            const target = ev.target.closest(".roll-item");
+            const target = ev.target.closest(".action-item");
             if (target) {
                 const action = target.getAttribute("action");
-                this.call(action);
-                ev.preventDefault();
-                ev.stopPropagation();
+                if (action) {
+                    this.call(action);
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                }
             }
         });
     }

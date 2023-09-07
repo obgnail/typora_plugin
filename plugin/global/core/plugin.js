@@ -257,6 +257,37 @@ class utils {
         truncatePlugin && truncatePlugin.rollback(target);
     }
 
+    static resizeFixedModal = (handleElement, resizeElement, onMouseUp = null) => {
+        // 鼠标按下时记录当前鼠标位置和 div 的宽高
+        const radix = 10;
+        let startX, startY, startWidth, startHeight;
+        handleElement.addEventListener("mousedown", ev => {
+            startX = ev.clientX;
+            startY = ev.clientY;
+            startWidth = parseInt(document.defaultView.getComputedStyle(resizeElement).width, radix);
+            startHeight = parseInt(document.defaultView.getComputedStyle(resizeElement).height, radix);
+            document.addEventListener("mousemove", mousemove);
+            document.addEventListener("mouseup", mouseup);
+            ev.stopPropagation();
+            ev.preventDefault();
+        }, true);
+
+        // 鼠标移动时计算宽高差值并设置 div 的新宽高
+        function mousemove(e) {
+            requestAnimationFrame(() => {
+                resizeElement.style.width = startWidth + e.clientX - startX + "px";
+                resizeElement.style.height = startHeight + e.clientY - startY + "px";
+            })
+        }
+
+        // 鼠标松开时取消事件监听
+        function mouseup() {
+            document.removeEventListener("mousemove", mousemove);
+            document.removeEventListener("mouseup", mouseup);
+            onMouseUp && onMouseUp();
+        }
+    }
+
     static dragFixedModal = (handleElement, moveElement, withMetaKey = true) => {
         handleElement.addEventListener("mousedown", ev => {
             if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
