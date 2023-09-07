@@ -36,11 +36,17 @@ class markmapPlugin extends global._basePlugin {
                 display: none;
             }
             
+            .plugin-markmap-wrap {
+                display: flex;
+                flex-direction: row-reverse;
+                width: 100%;
+                height: 100%;
+            }
+            
             ${extra}
             
             .plugin-markmap-header {
-                position: absolute;
-                right: 0.5em;
+                margin: 0 0.5em;
                 height: 100%;
                 display: flex;
                 flex-direction: column;
@@ -60,8 +66,7 @@ class markmapPlugin extends global._basePlugin {
             }
             
             #plugin-markmap-svg {
-                width: 100%;
-                height: 100%;
+                flex: 1;
             }
         `
         return {textID: "plugin-markmap-style", text: text}
@@ -71,13 +76,15 @@ class markmapPlugin extends global._basePlugin {
         const modal = document.createElement("div");
         modal.id = 'plugin-markmap';
         modal.innerHTML = `
-            <div class="plugin-markmap-header">
-                <div class="plugin-markmap-icon ion-close" action="hide" ty-hint="关闭"></div>
-                <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
-                <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动"></div>
-                <div class="plugin-markmap-icon ion-android-arrow-down-right" action="resize" ty-hint="拖动调整大小"></div>
+            <div class="plugin-markmap-wrap">
+                <div class="plugin-markmap-header">
+                    <div class="plugin-markmap-icon ion-close" action="hide" ty-hint="关闭"></div>
+                    <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
+                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动"></div>
+                    <div class="plugin-markmap-icon ion-android-arrow-down-right" action="resize" ty-hint="拖动调整大小"></div>
+                </div>
+                <svg id="plugin-markmap-svg"></svg>
             </div>
-            <svg id="plugin-markmap-svg"></svg>
         `;
         this.utils.insertDiv(modal);
 
