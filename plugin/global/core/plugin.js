@@ -259,7 +259,7 @@ class utils {
 
     static resizeFixedModal = (
         handleElement, resizeElement,
-        width = true, height = true,
+        resizeWidth = true, resizeHeight = true,
         onMouseDown = null, onMouseMove = null, onMouseUp = null
     ) => {
         // 鼠标按下时记录当前鼠标位置和 div 的宽高
@@ -280,15 +280,19 @@ class utils {
         // 鼠标移动时计算宽高差值并设置 div 的新宽高
         function mousemove(e) {
             requestAnimationFrame(() => {
-                const deltaX = e.clientX - startX;
-                const deltaY = e.clientY - startY;
+                let deltaX = e.clientX - startX;
+                let deltaY = e.clientY - startY;
                 if (onMouseMove) {
-                    onMouseMove(deltaX, deltaY);
+                    const result = onMouseMove(deltaX, deltaY);
+                    if (result) {
+                        deltaX = result.deltaX;
+                        deltaY = result.deltaY;
+                    }
                 }
-                if (width) {
+                if (resizeWidth) {
                     resizeElement.style.width = startWidth + deltaX + "px";
                 }
-                if (height) {
+                if (resizeHeight) {
                     resizeElement.style.height = startHeight + deltaY + "px";
                 }
             })
@@ -302,13 +306,14 @@ class utils {
         }
     }
 
-    static dragFixedModal = (handleElement, moveElement, withMetaKey = true) => {
+    static dragFixedModal = (handleElement, moveElement, withMetaKey = true, onMouseDown = null) => {
         handleElement.addEventListener("mousedown", ev => {
             if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
             ev.stopPropagation();
             const rect = moveElement.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
+            onMouseDown && onMouseDown();
 
             const onMouseMove = ev => {
                 if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;

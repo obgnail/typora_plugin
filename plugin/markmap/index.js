@@ -153,29 +153,45 @@ class markmapPlugin extends global._basePlugin {
             () => this.entities.modal.style.display === "block" && this.drawToc()
         )
 
-        this.utils.dragFixedModal(this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`), this.entities.modal, false);
+        this.utils.dragFixedModal(this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`), this.entities.modal, false, this.waitUnpin);
 
         this.utils.resizeFixedModal(
             this.entities.resize, this.entities.modal, true, true, null, null,
-            () => this.setFullScreenIcon(this.entities.fullScreen, false)
+            async () => {
+                await this.waitUnpin();
+                await this.setFullScreenIcon(this.entities.fullScreen, false);
+            }
         );
 
         let contentStartTop = 0;
+        let minHeight = 0;
         this.utils.resizeFixedModal(
             this.entities.grip, this.entities.modal, false, true,
-            () => contentStartTop = this.entities.content.getBoundingClientRect().top,
-            (deltaX, deltaY) => this.entities.content.style.top = contentStartTop + deltaY + "px",
+            () => {
+                contentStartTop = this.entities.content.getBoundingClientRect().top;
+                const headerTop = this.entities.header.getBoundingClientRect().top;
+                minHeight = this.entities.header.firstElementChild.getBoundingClientRect().height * this.entities.header.childElementCount + headerTop;
+            },
+            (deltaX, deltaY) => {
+                let newTop = contentStartTop + deltaY;
+                if (newTop < minHeight) {
+                    deltaY = minHeight - contentStartTop;
+                    newTop = minHeight;
+                }
+                this.entities.content.style.top = newTop + "px";
+                return {deltaX, deltaY}
+            },
             this.drawToc
         );
 
         this.entities.header.addEventListener("click", ev => {
-            const target = ev.target.closest(".plugin-markmap-icon");
-            if (target) {
-                const action = target.getAttribute("action");
-                if (action !== "move" && this[action]) {
+            const button = ev.target.closest(".plugin-markmap-icon");
+            if (button) {
+                const action = button.getAttribute("action");
+                if (action !== "move" && action !== "resize" && this[action]) {
                     ev.stopPropagation();
                     ev.preventDefault();
-                    this[action](target);
+                    this.onButtonClick(action, button);
                 }
             }
         })
@@ -189,16 +205,13 @@ class markmapPlugin extends global._basePlugin {
 
     call = async type => {
         if (type === "current_toc") {
-            await this.drawToc()
+            await this.drawToc();
         }
     }
 
-    close = () => {
-        this.pinUtils.isPin && this.pin();
-        this.entities.modal.style.display = "";
-    }
+    close = () => this.entities.modal.style.display = "";
 
-    pin = () => {
+    pin = async () => {
         this.pinUtils.isPin = !this.pinUtils.isPin;
         if (this.pinUtils.isPin) {
             this.contentOriginRect = this.entities.content.getBoundingClientRect();
@@ -217,22 +230,35 @@ class markmapPlugin extends global._basePlugin {
             this.entities.modal.style.boxShadow = "";
             this.entities.content.style.top = this.contentOriginRect.top + "px";
             this.entities.grip.style.display = "";
-            this.drawToc();
+            await this.drawToc();
         }
     }
 
-    expand = button => {
+    waitUnpin = async () => {
+        if (this.pinUtils.isPin) {
+            await this.pin();
+        }
+    }
+
+    onButtonClick = async (action, button) => {
+        if (action !== "pin") {
+            await this.waitUnpin();
+        }
+        this[action](button);
+    }
+
+    expand = async button => {
         this.originRect = this.entities.modal.getBoundingClientRect();
         this.setRect(this.entities.content.getBoundingClientRect());
-        this.setFullScreenIcon(button, true);
+        await this.setFullScreenIcon(button, true);
     }
 
-    shrink = button => {
+    shrink = async button => {
         this.setRect(this.originRect);
-        this.setFullScreenIcon(button, false)
+        await this.setFullScreenIcon(button, false)
     }
 
-    setFullScreenIcon = (button, fullScreen) => {
+    setFullScreenIcon = async (button, fullScreen) => {
         if (fullScreen) {
             button.className = "plugin-markmap-icon ion-arrow-shrink";
             button.setAttribute("action", "shrink");
@@ -240,7 +266,7 @@ class markmapPlugin extends global._basePlugin {
             button.className = "plugin-markmap-icon ion-arrow-expand";
             button.setAttribute("action", "expand");
         }
-        this.drawToc();
+        await this.drawToc();
     }
 
     setRect = rect => {
