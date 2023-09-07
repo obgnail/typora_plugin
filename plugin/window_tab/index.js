@@ -209,10 +209,12 @@ class windowTabBarPlugin extends global._basePlugin {
             filePath && this.openTab(filePath);
         });
 
-        this.utils.loopDetector(() => (this.utils.isBetaVersion) ? document.querySelector("header").getBoundingClientRect().height : true, ()=>{
-            this.adjustTop();
-            this.adjustTop();
-        })
+        this.utils.loopDetector(
+            () => (this.utils.isBetaVersion) ? document.querySelector("header").getBoundingClientRect().height : true,
+            this.adjustTop,
+            this.config.LOOP_DETECT_INTERVAL,
+            1000
+        )
 
         if (this.config.DRAG_STYLE === 1) {
             this.sort1();

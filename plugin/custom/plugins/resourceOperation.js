@@ -4,7 +4,11 @@
 * 此时需要使用贪婪匹配，然后逐个匹配
 */
 class resourceOperation extends BaseCustomPlugin {
-    selector = () => ""
+    selector = () => {
+        if (!this.utils.getFilePath()) {
+            return this.utils.nonExistSelector
+        }
+    }
     init = () => {
         if (this.config.ignore_image_div) {
             this.regexp = new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)", "g");
