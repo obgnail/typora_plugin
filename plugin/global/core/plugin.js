@@ -270,7 +270,7 @@ class utils {
             startY = ev.clientY;
             startWidth = parseInt(document.defaultView.getComputedStyle(resizeElement).width, radix);
             startHeight = parseInt(document.defaultView.getComputedStyle(resizeElement).height, radix);
-            onMouseDown && onMouseDown();
+            onMouseDown && onMouseDown(startX, startY, startWidth, startHeight);
             document.addEventListener("mousemove", mousemove);
             document.addEventListener("mouseup", mouseup);
             ev.stopPropagation();

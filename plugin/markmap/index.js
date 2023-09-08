@@ -47,16 +47,32 @@ class markmapPlugin extends global._basePlugin {
             .plugin-markmap-grip {
                 display: none;
                 background-color: var(--active-file-border-color, black);
-                cursor: row-resize;
-                padding: 4px 0;
             }
-            
             .plugin-markmap-grip::before {
                 content: "";
                 display: block;
-                width: 24px;
                 margin: auto;
-                border-top: 3px double var(--active-file-bg-color);
+            }
+            
+            .plugin-markmap-grip.grip-up { 
+                padding: 4px 0;
+                cursor: row-resize;
+            }
+            .plugin-markmap-grip.grip-up::before { 
+                width: 24px; 
+                border-top: 3px double var(--active-file-bg-color); 
+            }
+            
+            .plugin-markmap-grip.grip-right { 
+                padding: 0 4px; 
+                cursor: col-resize;
+            }
+            .plugin-markmap-grip.grip-right::before {
+                position: absolute;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                height: 24px; 
+                border-left: 3px double var(--active-file-bg-color); 
             }
             
             ${extra}
@@ -96,19 +112,21 @@ class markmapPlugin extends global._basePlugin {
                     <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动"></div>
-                    <div class="plugin-markmap-icon ion-pin" action="pin" ty-hint="固定"></div>
+                    <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
+                    <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
                     <div class="plugin-markmap-icon ion-android-arrow-down-right" action="resize" ty-hint="拖动调整大小"></div>
                 </div>
                 <svg id="plugin-markmap-svg"></svg>
+                <div class="plugin-markmap-grip grip-right"></div>
             </div>
-            <div class="plugin-markmap-grip"></div>
+            <div class="plugin-markmap-grip grip-up"></div>
         `;
         this.utils.insertDiv(modal);
 
         if (this.config.USE_BUTTON) {
             const button = document.createElement("div");
             button.className = "plugin-markmap-button";
-            button.innerHTML = `<div class="plugin-markmap-item" ty-hint="查看思维导图"><i class="fa fa-code-fork"></i></div>`;
+            button.innerHTML = `<div class="plugin-markmap-item" ty-hint="思维导图"><i class="fa fa-code-fork"></i></div>`;
             this.utils.insertDiv(button);
         }
     }
@@ -119,17 +137,23 @@ class markmapPlugin extends global._basePlugin {
         this.markmap = null;
         this.editor = null;
 
-        this.originRect = null;
+        this.modalOriginRect = null;
+        this.contentOriginRect = null;
         this.pinUtils = {
-            isPin: false,
-            contentOriginRect: null,
+            isPinUp: false,
+            isPinRight: false,
+            init: () => {
+                this.modalOriginRect = this.entities.modal.getBoundingClientRect();
+                this.contentOriginRect = this.entities.content.getBoundingClientRect();
+            }
         }
 
         this.entities = {
             content: document.querySelector("content"),
             modal: document.querySelector("#plugin-markmap"),
             header: document.querySelector("#plugin-markmap .plugin-markmap-header"),
-            grip: document.querySelector("#plugin-markmap .plugin-markmap-grip"),
+            gripUp: document.querySelector("#plugin-markmap .plugin-markmap-grip.grip-up"),
+            gripRight: document.querySelector("#plugin-markmap .plugin-markmap-grip.grip-right"),
             svg: document.querySelector("#plugin-markmap-svg"),
             resize: document.querySelector('.plugin-markmap-icon[action="resize"]'),
             fullScreen: document.querySelector('.plugin-markmap-icon[action="expand"]'),
@@ -154,35 +178,90 @@ class markmapPlugin extends global._basePlugin {
         )
 
         this.utils.dragFixedModal(this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`), this.entities.modal, false, this.waitUnpin);
+        this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true, this.waitUnpin);
 
-        this.utils.resizeFixedModal(
-            this.entities.resize, this.entities.modal, true, true, null, null,
-            async () => {
-                await this.waitUnpin();
-                await this.setFullScreenIcon(this.entities.fullScreen, false);
-            }
-        );
+        const getModalMinHeight = () => this.entities.header.firstElementChild.getBoundingClientRect().height * this.entities.header.childElementCount;
+        const getModalMinWidth = () => {
+            const {marginLeft, marginRight} = document.defaultView.getComputedStyle(this.entities.header);
+            return parseInt(marginLeft) + parseInt(marginRight) + this.entities.header.getBoundingClientRect().width
+        }
 
-        let contentStartTop = 0;
-        let minHeight = 0;
-        this.utils.resizeFixedModal(
-            this.entities.grip, this.entities.modal, false, true,
-            () => {
-                contentStartTop = this.entities.content.getBoundingClientRect().top;
-                const headerTop = this.entities.header.getBoundingClientRect().top;
-                minHeight = this.entities.header.firstElementChild.getBoundingClientRect().height * this.entities.header.childElementCount + headerTop;
-            },
-            (deltaX, deltaY) => {
-                let newTop = contentStartTop + deltaY;
-                if (newTop < minHeight) {
-                    deltaY = minHeight - contentStartTop;
-                    newTop = minHeight;
+        // 自由移动时调整大小
+        {
+            let deltaHeight = 0;
+            let deltaWidth = 0;
+            this.utils.resizeFixedModal(
+                this.entities.resize, this.entities.modal, true, true,
+                (startX, startY, startWidth, startHeight) => {
+                    deltaHeight = getModalMinHeight() - startHeight;
+                    deltaWidth = getModalMinWidth() - startWidth;
+                },
+                (deltaX, deltaY) => {
+                    deltaY = Math.max(deltaY, deltaHeight);
+                    deltaX = Math.max(deltaX, deltaWidth);
+                    return {deltaX, deltaY}
+                },
+                async () => {
+                    await this.waitUnpin();
+                    await this.setFullScreenIcon(this.entities.fullScreen, false);
                 }
-                this.entities.content.style.top = newTop + "px";
-                return {deltaX, deltaY}
-            },
-            this.drawToc
-        );
+            );
+        }
+
+        // 固定到顶部时调整大小
+        {
+            let contentStartTop = 0;
+            let contentMinTop = 0;
+            this.utils.resizeFixedModal(
+                this.entities.gripUp, this.entities.modal, false, true,
+                () => {
+                    contentStartTop = this.entities.content.getBoundingClientRect().top;
+                    contentMinTop = getModalMinHeight() + this.entities.header.getBoundingClientRect().top;
+                },
+                (deltaX, deltaY) => {
+                    let newContentTop = contentStartTop + deltaY;
+                    if (newContentTop < contentMinTop) {
+                        newContentTop = contentMinTop;
+                        deltaY = contentMinTop - contentStartTop;
+                    }
+                    this.entities.content.style.top = newContentTop + "px";
+                    return {deltaX, deltaY}
+                },
+                this.drawToc
+            );
+        }
+
+        // 固定到右侧时调整大小
+        {
+            let contentStartRight = 0;
+            let contentStartWidth = 0;
+            let modalStartLeft = 0;
+            let contentMaxRight = 0;
+            this.utils.resizeFixedModal(
+                this.entities.gripRight, this.entities.modal, true, false,
+                () => {
+                    const contentRect = this.entities.content.getBoundingClientRect();
+                    contentStartRight = contentRect.right;
+                    contentStartWidth = contentRect.width;
+                    modalStartLeft = this.entities.modal.getBoundingClientRect().left;
+                    contentMaxRight = this.entities.header.getBoundingClientRect().right - getModalMinWidth();
+                },
+                (deltaX, deltaY) => {
+                    deltaX = -deltaX;
+                    deltaY = -deltaY;
+                    let newContentRight = contentStartRight - deltaX;
+                    if (newContentRight > contentMaxRight) {
+                        newContentRight = contentMaxRight;
+                        deltaX = contentStartRight - contentMaxRight;
+                    }
+                    this.entities.content.style.right = newContentRight + "px";
+                    this.entities.content.style.width = contentStartWidth - deltaX + "px";
+                    this.entities.modal.style.left = modalStartLeft - deltaX + "px";
+                    return {deltaX, deltaY}
+                },
+                this.drawToc
+            )
+        }
 
         this.entities.header.addEventListener("click", ev => {
             const button = ev.target.closest(".plugin-markmap-icon");
@@ -211,50 +290,89 @@ class markmapPlugin extends global._basePlugin {
 
     close = () => this.entities.modal.style.display = "";
 
-    pin = async () => {
-        this.pinUtils.isPin = !this.pinUtils.isPin;
-        if (this.pinUtils.isPin) {
-            this.contentOriginRect = this.entities.content.getBoundingClientRect();
-            this.originRect = this.entities.modal.getBoundingClientRect();
+    pinUp = async () => {
+        this.pinUtils.isPinUp = !this.pinUtils.isPinUp;
+        if (this.pinUtils.isPinUp) {
+            if (this.pinUtils.isPinRight) {
+                await this.pinRight();
+            }
 
+            this.pinUtils.init();
             const {top, width, left} = this.contentOriginRect;
             this.entities.modal.style.left = left + "px";
             this.entities.modal.style.width = width + "px";
             this.entities.modal.style.top = top + "px";
             this.entities.modal.style.boxShadow = "initial";
-            this.entities.content.style.top = top + this.originRect.height + "px";
 
-            this.entities.grip.style.display = "block";
+            this.entities.content.style.top = top + this.modalOriginRect.height + "px";
+
+            this.entities.gripUp.style.display = "block";
         } else {
-            this.setRect(this.originRect);
+            this.setModalRect(this.modalOriginRect);
             this.entities.modal.style.boxShadow = "";
             this.entities.content.style.top = this.contentOriginRect.top + "px";
-            this.entities.grip.style.display = "";
-            await this.drawToc();
+            this.entities.gripUp.style.display = "";
         }
+        await this.drawToc();
+    }
+
+    pinRight = async () => {
+        this.pinUtils.isPinRight = !this.pinUtils.isPinRight;
+        if (this.pinUtils.isPinRight) {
+            if (this.pinUtils.isPinUp) {
+                await this.pinUp();
+            }
+
+            this.pinUtils.init();
+            const {width, height, right} = this.contentOriginRect;
+            const halfWidth = width / 2;
+            this.entities.modal.style.right = right + "px";
+            this.entities.modal.style.left = right - halfWidth + "px";
+            this.entities.modal.style.height = height + "px";
+            this.entities.modal.style.width = halfWidth + "px";
+            this.entities.modal.style.boxShadow = "initial";
+
+            this.entities.content.style.right = right - halfWidth + "px";
+            this.entities.content.style.width = halfWidth + "px";
+
+            document.querySelector("#write").style.width = "initial";
+
+            this.entities.gripRight.style.display = "block";
+        } else {
+            this.setModalRect(this.modalOriginRect);
+            this.entities.modal.style.boxShadow = "";
+            this.entities.content.style.width = "";
+            this.entities.content.style.right = "";
+            document.querySelector("#write").style.width = "";
+            this.entities.gripRight.style.display = "";
+        }
+        await this.drawToc();
     }
 
     waitUnpin = async () => {
-        if (this.pinUtils.isPin) {
-            await this.pin();
+        if (this.pinUtils.isPinUp) {
+            await this.pinUp();
+        }
+        if (this.pinUtils.isPinRight) {
+            await this.pinRight();
         }
     }
 
     onButtonClick = async (action, button) => {
-        if (action !== "pin") {
+        if (action !== "pinUp" && action !== "pinRight") {
             await this.waitUnpin();
         }
-        this[action](button);
+        await this[action](button);
     }
 
     expand = async button => {
-        this.originRect = this.entities.modal.getBoundingClientRect();
-        this.setRect(this.entities.content.getBoundingClientRect());
+        this.modalOriginRect = this.entities.modal.getBoundingClientRect();
+        this.setModalRect(this.entities.content.getBoundingClientRect());
         await this.setFullScreenIcon(button, true);
     }
 
     shrink = async button => {
-        this.setRect(this.originRect);
+        this.setModalRect(this.modalOriginRect);
         await this.setFullScreenIcon(button, false)
     }
 
@@ -269,7 +387,7 @@ class markmapPlugin extends global._basePlugin {
         await this.drawToc();
     }
 
-    setRect = rect => {
+    setModalRect = rect => {
         if (!rect) return;
         const {left, top, height, width} = rect;
         this.entities.modal.style.left = left + "px";
