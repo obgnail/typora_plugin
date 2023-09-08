@@ -682,32 +682,16 @@ module.exports = { plugin: fullPathCopy };
 
 
 
-### 如何修改插件的配置？
+### 支持 Typora for Mac 吗？
 
-每个插件都有对应的配置，且配置选项都有注释说明。可按需修改 `settings.user.toml` 文件。
-
-- 方式一：鼠标在正文区域右键 -> 【右键菜单】 -> 【打开插件配置文件夹】
-- 方式二：直接打开文件夹 `./plugin/global/settings/`
-
-
-
-### 配置目录中的 default.toml 和 user.toml 的区别是什么？
-
-- `default.toml`：插件系统的默认配置，请不要修改。
-- `user.toml`：用户自定义的配置，支持增量修改，这里的值会覆盖掉 `default.toml`。
+没有 Mac，故没做测试。
 
 
 
 ### 如何禁用某些插件？
 
 - 方式一：直接 删除/改名 plugin 目录下的同名文件
-- 方式二：修改 `settings.user.toml` 文件，将对应插件的 ENABLE 字段置为 false
-
-
-
-### 支持 Typora for Mac 吗？
-
-没有 Mac，故没做测试。
+- 方式二：修改 `settings.user.toml` 文件，将对应插件的 ENABLE 字段置为 false（具体修改方法请看 `./plugin/golbal/settings/请读我.md`）
 
 
 
