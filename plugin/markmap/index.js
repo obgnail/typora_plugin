@@ -154,35 +154,64 @@ class markmapPlugin extends global._basePlugin {
         )
 
         this.utils.dragFixedModal(this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`), this.entities.modal, false, this.waitUnpin);
+        this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true, this.waitUnpin);
 
-        this.utils.resizeFixedModal(
-            this.entities.resize, this.entities.modal, true, true, null, null,
-            async () => {
-                await this.waitUnpin();
-                await this.setFullScreenIcon(this.entities.fullScreen, false);
-            }
-        );
+        const getModalMinHeight = () => this.entities.header.firstElementChild.getBoundingClientRect().height * this.entities.header.childElementCount;
+        const getModalMinWidth = () => {
+            const {marginLeft, marginRight} = document.defaultView.getComputedStyle(this.entities.header);
+            return parseInt(marginLeft) + parseInt(marginRight) + this.entities.header.getBoundingClientRect().width
+        }
 
-        let contentStartTop = 0;
-        let minHeight = 0;
-        this.utils.resizeFixedModal(
-            this.entities.grip, this.entities.modal, false, true,
-            () => {
-                contentStartTop = this.entities.content.getBoundingClientRect().top;
-                const headerTop = this.entities.header.getBoundingClientRect().top;
-                minHeight = this.entities.header.firstElementChild.getBoundingClientRect().height * this.entities.header.childElementCount + headerTop;
-            },
-            (deltaX, deltaY) => {
-                let newTop = contentStartTop + deltaY;
-                if (newTop < minHeight) {
-                    deltaY = minHeight - contentStartTop;
-                    newTop = minHeight;
+        {
+            let _minHeight = 0;
+            let _minWidth = 0;
+            let _startHeight = 0;
+            let _startWidth = 0;
+            this.utils.resizeFixedModal(
+                this.entities.resize, this.entities.modal, true, true,
+                (startX, startY, startWidth, startHeight) => {
+                    _minHeight = getModalMinHeight();
+                    _minWidth = getModalMinWidth();
+                    _startHeight = startHeight;
+                    _startWidth = startWidth;
+                },
+                (deltaX, deltaY) => {
+                    if (_startHeight + deltaY < _minHeight) {
+                        deltaY = _minHeight - _startHeight;
+                    }
+                    if (_startWidth + deltaX < _minWidth) {
+                        deltaX = _minWidth - _startWidth;
+                    }
+                    return {deltaX, deltaY}
+                },
+                async () => {
+                    await this.waitUnpin();
+                    await this.setFullScreenIcon(this.entities.fullScreen, false);
                 }
-                this.entities.content.style.top = newTop + "px";
-                return {deltaX, deltaY}
-            },
-            this.drawToc
-        );
+            );
+        }
+
+        {
+            let contentStartTop = 0;
+            let minPosition = 0;
+            this.utils.resizeFixedModal(
+                this.entities.grip, this.entities.modal, false, true,
+                () => {
+                    contentStartTop = this.entities.content.getBoundingClientRect().top;
+                    minPosition = getModalMinHeight() + this.entities.header.getBoundingClientRect().top;
+                },
+                (deltaX, deltaY) => {
+                    let newTop = contentStartTop + deltaY;
+                    if (newTop < minPosition) {
+                        deltaY = minPosition - contentStartTop;
+                        newTop = minPosition;
+                    }
+                    this.entities.content.style.top = newTop + "px";
+                    return {deltaX, deltaY}
+                },
+                this.drawToc
+            );
+        }
 
         this.entities.header.addEventListener("click", ev => {
             const button = ev.target.closest(".plugin-markmap-icon");
