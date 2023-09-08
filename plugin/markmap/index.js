@@ -126,7 +126,7 @@ class markmapPlugin extends global._basePlugin {
         if (this.config.USE_BUTTON) {
             const button = document.createElement("div");
             button.className = "plugin-markmap-button";
-            button.innerHTML = `<div class="plugin-markmap-item" ty-hint="查看思维导图"><i class="fa fa-code-fork"></i></div>`;
+            button.innerHTML = `<div class="plugin-markmap-item" ty-hint="思维导图"><i class="fa fa-code-fork"></i></div>`;
             this.utils.insertDiv(button);
         }
     }
@@ -243,7 +243,6 @@ class markmapPlugin extends global._basePlugin {
                     const contentRect = this.entities.content.getBoundingClientRect();
                     contentStartRight = contentRect.right;
                     contentStartWidth = contentRect.width;
-
                     modalStartLeft = this.entities.modal.getBoundingClientRect().left;
                     contentMaxRight = this.entities.header.getBoundingClientRect().right - getModalMinWidth();
                 },
@@ -340,8 +339,8 @@ class markmapPlugin extends global._basePlugin {
         } else {
             this.setModalRect(this.originRect);
             this.entities.modal.style.boxShadow = "";
-            this.entities.content.style.right = this.contentOriginRect.right + "px";
-            this.entities.content.style.width = this.contentOriginRect.width + "px";
+            this.entities.content.style.width = "";
+            this.entities.content.style.right = "";
             this.entities.gripRight.style.display = "";
         }
         await this.drawToc();
@@ -360,7 +359,7 @@ class markmapPlugin extends global._basePlugin {
         if (action !== "pinUp" && action !== "pinRight") {
             await this.waitUnpin();
         }
-        this[action](button);
+        await this[action](button);
     }
 
     expand = async button => {
