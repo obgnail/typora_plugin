@@ -99,14 +99,26 @@ class dynamicCallHelper {
         const dynamicCallArgs = [];
         for (const name of Object.keys(this.custom)) {
             const plugin = this.custom[name];
-            const selector = plugin.selector();
-            const arg_disabled = selector && !anchorNode.closest(selector);
-            dynamicCallArgs.push({
-                arg_name: plugin.showName,
-                arg_value: plugin.name,
-                arg_disabled: arg_disabled,
-                arg_hint: (arg_disabled) ? "光标于此位置不可用" : plugin.hint(),
-            })
+            if (!plugin) continue;
+
+            try {
+                const selector = plugin.selector();
+                const arg_disabled = selector && !anchorNode.closest(selector);
+                dynamicCallArgs.push({
+                    arg_name: plugin.showName,
+                    arg_value: plugin.name,
+                    arg_disabled: arg_disabled,
+                    arg_hint: (arg_disabled) ? "光标于此位置不可用" : plugin.hint(),
+                })
+            } catch (e) {
+                dynamicCallArgs.push({
+                    arg_name: plugin.showName,
+                    arg_value: plugin.name,
+                    arg_disabled: true,
+                    arg_hint: "未知错误！请向开发者反馈"
+                })
+                console.error("plugin selector error:", name, e);
+            }
         }
         return dynamicCallArgs;
     }
