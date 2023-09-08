@@ -126,9 +126,9 @@ class dynamicCallHelper {
     call = name => {
         const plugin = this.custom[name];
         if (plugin) {
-            const selector = plugin.selector();
-            const target = (selector) ? this.dynamicUtil.target.closest(selector) : this.dynamicUtil.target;
             try {
+                const selector = plugin.selector();
+                const target = (selector) ? this.dynamicUtil.target.closest(selector) : this.dynamicUtil.target;
                 plugin.callback(target);
             } catch (e) {
                 console.error("plugin callback error", plugin.name, e);
@@ -146,6 +146,8 @@ class hotkeyHelper {
         const hotkeys = [];
         for (const name of Object.keys(this.custom)) {
             const plugin = this.custom[name];
+            if (!plugin) continue;
+
             try {
                 const hotkey = plugin.hotkey();
                 if (!hotkey) continue;
