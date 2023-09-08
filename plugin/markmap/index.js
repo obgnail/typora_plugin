@@ -137,14 +137,14 @@ class markmapPlugin extends global._basePlugin {
         this.markmap = null;
         this.editor = null;
 
-        this.originRect = null;
+        this.modalOriginRect = null;
         this.contentOriginRect = null;
         this.pinUtils = {
             isPinUp: false,
             isPinRight: false,
             init: () => {
+                this.modalOriginRect = this.entities.modal.getBoundingClientRect();
                 this.contentOriginRect = this.entities.content.getBoundingClientRect();
-                this.originRect = this.entities.modal.getBoundingClientRect();
             }
         }
 
@@ -304,11 +304,11 @@ class markmapPlugin extends global._basePlugin {
             this.entities.modal.style.top = top + "px";
             this.entities.modal.style.boxShadow = "initial";
 
-            this.entities.content.style.top = top + this.originRect.height + "px";
+            this.entities.content.style.top = top + this.modalOriginRect.height + "px";
 
             this.entities.gripUp.style.display = "block";
         } else {
-            this.setModalRect(this.originRect);
+            this.setModalRect(this.modalOriginRect);
             this.entities.modal.style.boxShadow = "";
             this.entities.content.style.top = this.contentOriginRect.top + "px";
             this.entities.gripUp.style.display = "";
@@ -337,7 +337,7 @@ class markmapPlugin extends global._basePlugin {
 
             this.entities.gripRight.style.display = "block";
         } else {
-            this.setModalRect(this.originRect);
+            this.setModalRect(this.modalOriginRect);
             this.entities.modal.style.boxShadow = "";
             this.entities.content.style.width = "";
             this.entities.content.style.right = "";
@@ -363,13 +363,13 @@ class markmapPlugin extends global._basePlugin {
     }
 
     expand = async button => {
-        this.originRect = this.entities.modal.getBoundingClientRect();
+        this.modalOriginRect = this.entities.modal.getBoundingClientRect();
         this.setModalRect(this.entities.content.getBoundingClientRect());
         await this.setFullScreenIcon(button, true);
     }
 
     shrink = async button => {
-        this.setModalRect(this.originRect);
+        this.setModalRect(this.modalOriginRect);
         await this.setFullScreenIcon(button, false)
     }
 
