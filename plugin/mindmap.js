@@ -86,13 +86,8 @@ class mindmapPlugin extends global._basePlugin {
     }
 
     dynamicCallArgsGenerator = anchorNode => {
-        let disabled;
-        if (this.utils.isBetaVersion) {
-            const target = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
-            disabled = !target || target.querySelector("p > span");
-        } else {
-            disabled = !anchorNode.closest(`#write > p[mdtype="paragraph"]:not(:has(>span))`);
-        }
+        const target = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
+        const disabled = !target || target.querySelector("p > span");
 
         return [
             {

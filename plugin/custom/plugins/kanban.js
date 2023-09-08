@@ -1,9 +1,5 @@
 class kanbanPlugin extends BaseCustomPlugin {
-    selector = () => {
-        if (!this.utils.isBetaVersion) {
-            return `#write > p[mdtype="paragraph"]:not(:has(>span))`
-        }
-    }
+    selector = () => ""
 
     style = () => {
         const maxHeight = (this.config.KANBAN_MAX_HEIGHT < 0) ? "" : `max-height: ${this.config.KANBAN_MAX_HEIGHT}px;`;
