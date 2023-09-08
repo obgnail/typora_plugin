@@ -163,25 +163,17 @@ class markmapPlugin extends global._basePlugin {
         }
 
         {
-            let _minHeight = 0;
-            let _minWidth = 0;
-            let _startHeight = 0;
-            let _startWidth = 0;
+            let deltaHeight = 0;
+            let deltaWidth = 0;
             this.utils.resizeFixedModal(
                 this.entities.resize, this.entities.modal, true, true,
                 (startX, startY, startWidth, startHeight) => {
-                    _minHeight = getModalMinHeight();
-                    _minWidth = getModalMinWidth();
-                    _startHeight = startHeight;
-                    _startWidth = startWidth;
+                    deltaHeight = getModalMinHeight() - startHeight;
+                    deltaWidth = getModalMinWidth() - startWidth;
                 },
                 (deltaX, deltaY) => {
-                    if (_startHeight + deltaY < _minHeight) {
-                        deltaY = _minHeight - _startHeight;
-                    }
-                    if (_startWidth + deltaX < _minWidth) {
-                        deltaX = _minWidth - _startWidth;
-                    }
+                    deltaY = Math.max(deltaY, deltaHeight);
+                    deltaX = Math.max(deltaX, deltaWidth);
                     return {deltaX, deltaY}
                 },
                 async () => {
