@@ -335,12 +335,15 @@ class markmapPlugin extends global._basePlugin {
             this.entities.content.style.right = right - halfWidth + "px";
             this.entities.content.style.width = halfWidth + "px";
 
+            document.querySelector("#write").style.width = "initial";
+
             this.entities.gripRight.style.display = "block";
         } else {
             this.setModalRect(this.modalOriginRect);
             this.entities.modal.style.boxShadow = "";
             this.entities.content.style.width = "";
             this.entities.content.style.right = "";
+            document.querySelector("#write").style.width = "";
             this.entities.gripRight.style.display = "";
         }
         await this.drawToc();
