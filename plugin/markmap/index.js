@@ -311,7 +311,7 @@ class markmapPlugin extends global._basePlugin {
 
             await this.pinUtils.init();
             const {top, height, width, left} = this.contentOriginRect;
-            const newHeight = height / 3;  // 占据三分之一高度
+            const newHeight = height / this.config.DEFAULT_HEIGHT_WHEN_PIN_UP;
             this.entities.modal.style.left = left + "px";
             this.entities.modal.style.width = width + "px";
             this.entities.modal.style.top = top + "px";
@@ -341,7 +341,7 @@ class markmapPlugin extends global._basePlugin {
 
             await this.pinUtils.init();
             const {top, width, height, right} = this.contentOriginRect;
-            const halfWidth = width / 2;  // 占据一半宽度
+            const halfWidth = width / this.config.DEFAULT_WIDTH_WHEN_PIN_RIGHT;
             this.entities.modal.style.top = top + "px";
             this.entities.modal.style.right = right + "px";
             this.entities.modal.style.left = right - halfWidth + "px";
