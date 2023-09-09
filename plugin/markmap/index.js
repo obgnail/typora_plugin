@@ -187,8 +187,21 @@ class markmapPlugin extends global._basePlugin {
         this.entities.content.addEventListener("transitionend", this.fit);
         this.entities.modal.addEventListener("transitionend", this.fit);
 
-        this.utils.dragFixedModal(this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`), this.entities.modal, false, this.waitUnpin);
-        this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true, this.waitUnpin);
+        const dragModal = (handleElement, withMetaKey) => {
+            this.utils.dragFixedModal(
+                handleElement, this.entities.modal, withMetaKey,
+                () => {
+                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_DRAG);
+                    this.waitUnpin();
+                },
+                null,
+                () => this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_DRAG)
+            );
+        }
+
+        // 提供两种拖拽的方式
+        dragModal(this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`), false);
+        dragModal(this.entities.modal, true);
 
         const getModalMinHeight = () => this.entities.header.firstElementChild.getBoundingClientRect().height * this.entities.header.childElementCount;
         const getModalMinWidth = () => {
@@ -203,6 +216,7 @@ class markmapPlugin extends global._basePlugin {
             this.utils.resizeFixedModal(
                 this.entities.resize, this.entities.modal, true, true,
                 (startX, startY, startWidth, startHeight) => {
+                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
                     deltaHeight = getModalMinHeight() - startHeight;
                     deltaWidth = getModalMinWidth() - startWidth;
                 },
@@ -212,6 +226,7 @@ class markmapPlugin extends global._basePlugin {
                     return {deltaX, deltaY}
                 },
                 async () => {
+                    this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
                     await this.waitUnpin();
                     await this.setFullScreenIcon(this.entities.fullScreen, false);
                 }
@@ -225,6 +240,7 @@ class markmapPlugin extends global._basePlugin {
             this.utils.resizeFixedModal(
                 this.entities.gripUp, this.entities.modal, false, true,
                 () => {
+                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
                     contentStartTop = this.entities.content.getBoundingClientRect().top;
                     contentMinTop = getModalMinHeight() + this.entities.header.getBoundingClientRect().top;
                 },
@@ -237,7 +253,10 @@ class markmapPlugin extends global._basePlugin {
                     this.entities.content.style.top = newContentTop + "px";
                     return {deltaX, deltaY}
                 },
-                this.drawToc
+                () => {
+                    this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+                    this.drawToc();
+                }
             );
         }
 
@@ -250,6 +269,7 @@ class markmapPlugin extends global._basePlugin {
             this.utils.resizeFixedModal(
                 this.entities.gripRight, this.entities.modal, true, false,
                 () => {
+                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
                     const contentRect = this.entities.content.getBoundingClientRect();
                     contentStartRight = contentRect.right;
                     contentStartWidth = contentRect.width;
@@ -269,7 +289,10 @@ class markmapPlugin extends global._basePlugin {
                     this.entities.modal.style.left = modalStartLeft - deltaX + "px";
                     return {deltaX, deltaY}
                 },
-                this.drawToc
+                () => {
+                    this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+                    this.drawToc();
+                }
             )
         }
 
@@ -377,6 +400,9 @@ class markmapPlugin extends global._basePlugin {
         }
     }
 
+    cleanTransition = (run = true) => (run) ? this.entities.modal.style.transition = "0s" : undefined
+    rollbackTransition = (run = true) => (run) ? this.entities.modal.style.transition = "" : undefined
+
     onButtonClick = async (action, button) => {
         if (action !== "pinUp" && action !== "pinRight") {
             await this.waitUnpin();
@@ -397,9 +423,11 @@ class markmapPlugin extends global._basePlugin {
 
     setFullScreenIcon = async (button, fullScreen) => {
         if (fullScreen) {
+            this.entities.modal.style.boxShadow = "initial";
             button.className = "plugin-markmap-icon ion-arrow-shrink";
             button.setAttribute("action", "shrink");
         } else {
+            this.entities.modal.style.boxShadow = "";
             button.className = "plugin-markmap-icon ion-arrow-expand";
             button.setAttribute("action", "expand");
         }

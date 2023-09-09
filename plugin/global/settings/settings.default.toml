@@ -350,6 +350,11 @@ USE_BUTTON = true
 DEFAULT_HEIGHT_WHEN_PIN_UP = 3
 # 当pin到页面右侧时，占据页面的1/2宽度
 DEFAULT_WIDTH_WHEN_PIN_RIGHT = 2
+# 在拖拽模态框的时候是否使用动画
+# 使用动画视觉效果比较好，但是不跟手
+USE_ANIMATION_WHEN_DRAG = false
+# 在调整模态框的时候是否使用动画
+USE_ANIMATION_WHEN_RESIZE = false
 
 
 ############### auto_number ###############

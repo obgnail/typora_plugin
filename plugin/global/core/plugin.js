@@ -306,20 +306,24 @@ class utils {
         }
     }
 
-    static dragFixedModal = (handleElement, moveElement, withMetaKey = true, onMouseDown = null) => {
+    static dragFixedModal = (
+        handleElement, moveElement, withMetaKey = true,
+        _onMouseDown = null, _onMouseMove = null, _onMouseUp = null
+    ) => {
         handleElement.addEventListener("mousedown", ev => {
             if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
             ev.stopPropagation();
             const rect = moveElement.getBoundingClientRect();
             const shiftX = ev.clientX - rect.left;
             const shiftY = ev.clientY - rect.top;
-            onMouseDown && onMouseDown();
+            _onMouseDown && _onMouseDown();
 
             const onMouseMove = ev => {
                 if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
+                    _onMouseMove && _onMouseMove();
                     moveElement.style.left = ev.clientX - shiftX + 'px';
                     moveElement.style.top = ev.clientY - shiftY + 'px';
                 });
@@ -327,6 +331,7 @@ class utils {
 
             document.addEventListener("mouseup", ev => {
                     if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
+                    _onMouseUp && _onMouseUp();
                     ev.stopPropagation();
                     ev.preventDefault();
                     document.removeEventListener('mousemove', onMouseMove);
