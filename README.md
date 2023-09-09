@@ -292,17 +292,30 @@ operation = "report"
 - `$d`：当前文件的所属目录
 - `$m`：当前挂载的根目录
 
-支持内建命令，方便快速调用。个人可按需自定义配置文件里的 `BUILTIN` 变量。
+支持内建命令，方便快速调用。个人可按需自定义配置文件里的 `BUILTIN` 选项。
 
-```js
-// 默认的内建命令
-const BUILTIN = [
-    {name: "", shell: SHELL.CMD_BASH, cmd: ""}, // dummy
-    {name: "Explorer", shell: SHELL.POWER_SHELL, cmd: "explorer $d"},
-    {name: "Vscode", shell: SHELL.CMD_BASH, cmd: "code $f"},
-    {name: "WT", shell: SHELL.CMD_BASH, cmd: "cd $d && wt"},
-    {name: "GitCommit", shell: SHELL.CMD_BASH, cmd: `cd $m && git add . && git commit -m "message"`},
-];
+```toml
+# 默认的内建命令
+[[commander.BUILTIN]] # dummy
+name = ""
+shell = "cmd/bash"
+cmd = ""
+[[commander.BUILTIN]]
+name = "Explorer"
+shell = "powershell"
+cmd = "explorer $d"
+[[commander.BUILTIN]]
+name = "Vscode"
+shell = "cmd/bash"
+cmd = "code $f"
+[[commander.BUILTIN]]
+name = "WT"
+shell = "cmd/bash"
+cmd = "cd $d && wt"
+[[commander.BUILTIN]]
+name = "GitCommit"
+shell = "cmd/bash"
+cmd = "cd $m && git add . && git commit -m \"message\""
 ```
 
 ![commander](assets/commander.gif)

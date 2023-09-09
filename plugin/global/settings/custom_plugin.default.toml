@@ -1,18 +1,22 @@
-# 自定义的命令
-# name: 右键菜单中展示的名称
-# enable: 是否启用此自定义插件
-# config: 插件配置
+# 1. 如果您对 toml 格式不太了解，可以花三分钟时间学习一下：https://toml.io/cn/v1.0.0
+# 2. 修改配置前，请读本目录下的【请读我.md】文件
+# 3. 所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
+
 
 ############### kanban ###############
 [kanban]
+# 右键菜单中展示的名称
 name = "插入看板"
+# 是否启用此自定义插件
 enable = true
+# 插件配置
 [kanban.config]
 # 当描述为空时隐藏
 HIDE_DESC_WHEN_EMPTY = true
 # 看板最大高度（若<0，则全部显示）
 KANBAN_MAX_HEIGHT = 700
 # 看板的颜色
+# 如果你新增了颜色，请保持 KANBAN_COLOR 和 TASK_COLOR 数量一致，否则颜色会乱套，就不好看了
 KANBAN_COLOR = [
     "#FFE0B2",
     "#DAE9F4",
@@ -33,22 +37,28 @@ TEMPLATE = """```kanban
 # Today's task
 
 ## Todo
-- 这是任务(这是任务描述)
-- 这是任务2(看板和任务都可以无限添加)
+* 使用说明1(一级标题表示看板标题\\n二级标题表示看板\\n- 或 * 表示任务)
+- 使用说明2(看板和任务都可以无限添加\\n\\n可以前往配置，修改你喜欢的颜色)
+- 这是任务标题(这是任务描述)
+- 当描述为空时隐藏描述框
 
 ## In-Progress
-* task3(一级标题表示看板标题，二级标题表示看板，- 或 * 表示任务)
+- 当任务数量太多，出现滚动条时(可以将鼠标置于看板下，使用【鼠标滚轮】切换任务)
+- 当看板数量太多，出现滚动条时(可以将鼠标置于看板下，使用【ctrl+鼠标滚轮】切换看板)
 
 ## Completed
-- task4
+- NOTE(语法是开发者定义的，没有通用性，只建议用于【每日任务】临时使用)
 ```
 """
 
 
 ############### fullPathCopy ###############
 [fullPathCopy]
+# 右键菜单中展示的名称
 name = "复制标题路径"
+# 是否启用此自定义插件
 enable = true
+# 插件配置
 [fullPathCopy.config]
 # 跳过空白的标题
 ignore_empty_header = false
@@ -60,8 +70,11 @@ full_file_path = false
 
 ############### extractRangeToNewFile ###############
 [extractRangeToNewFile]
+# 右键菜单中展示的名称
 name = "提取选区文字到新文件"
+# 是否启用此自定义插件
 enable = true
+# 插件配置
 [extractRangeToNewFile.config]
 # 展示模态框
 show_modal = true
@@ -71,18 +84,34 @@ auto_open = true
 
 ############### templater ###############
 [templater]
+# 右键菜单中展示的名称
 name = "文件模板"
+# 是否启用此自定义插件
 enable = true
+# 插件配置
 [templater.config]
 # 自动打开新文件
 auto_open = true
-# 模板
+# 模板(可以无限添加，在下面添加自定义的模板)
+# 当前支持的模板变量：
+#   {{date}}： 当前日期
+#   {{time}}：当前时间
+#   {{weekday}}：当前周几
+#   {{datetime}}：当前日期时间
+#   {{yesterday}}：昨天日期
+#   {{tomorrow}}：明天日期
+#   {{random}}：随机数
+#   {{title}}：新建文件的标题
+#   {{folder}}：当前文件的目录
+#   {{filepath}}：新建文件的路径
+#   {{range}}：当前选取的文字
+#   {{uuid}}：uuid
 [[templater.config.template]]
 name = "标准模板"
 text = """---
 title: {{title}}
-tags:
 date: {{date}}
+tags:
 ---
 
 """
@@ -98,8 +127,11 @@ date: {{date}} {{weekday}}
 
 ############### resourceOperation ###############
 [resourceOperation]
+# 右键菜单中展示的名称
 name = "资源管理"
+# 是否启用此自定义插件
 enable = true
+# 插件配置
 [resourceOperation.config]
 # 本插件是通过后缀名来判断是否是资源的
 # 什么后缀判定为资源
@@ -117,16 +149,19 @@ append_empty_suffix_file = false
 operation = "report"
 # 是否在报告中使用md语法展示图片
 use_md_syntax_in_report = false
-# 自动打开新文件
+# 自动打开报告文件
 auto_open = true
-# 打开文件后自动将此文件转为datatable
+# 打开报告文件后自动将此文件转为datatable
 auto_use_datetable = true
 
 
 ############### openInTotalCommander ###############
 [openInTotalCommander]
+# 右键菜单中展示的名称
 name = "TC打开"
-enable = true
+# 是否启用此自定义插件
+enable = false
+# 插件配置
 [openInTotalCommander.config]
 tc_path = "D:\\software\\TotalCMD_64bit_10.52\\TOTALCMD64.EXE"
 tc_args = '/O /T /P=L  /L="$f"'
@@ -134,5 +169,7 @@ tc_args = '/O /T /P=L  /L="$f"'
 
 ############### pluginUpdater ###############
 [pluginUpdater]
+# 右键菜单中展示的名称
 name = "静默更新插件"
+# 是否启用此自定义插件
 enable = true

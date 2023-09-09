@@ -1,3 +1,9 @@
+# 1. 如果您对 toml 格式不太了解，可以花三分钟时间学习一下：https://toml.io/cn/v1.0.0
+# 2. 修改配置前，请读本目录下的【请读我.md】文件
+# 3. 标记为【内部使用】的配置请不要修改，除非你真的理解你在做什么，否则会导致插件不稳定
+# 4. 所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
+
+
 ############### window_tab ###############
 [window_tab]
 # 启用插件
@@ -10,9 +16,11 @@ CLICKABLE = true
 HIDE_WINDOW_TITLE_BAR = false
 # 拖拽排序标签页的方式(1 or 2)
 DRAG_STYLE = 1
-# 当标签页脱离父标签3倍高度时，视为新建窗口
+# 当鼠标向下拖拽标签页，使其脱离父标签超过3倍高度时，视为新建窗口
 HEIGHT_SCALE = 3
 # 总是在当前标签页打开(可以在右键菜单中设置)
+# 不建议设置为true，因为【总是】在当前标签页打开，而当你重启Typora时只有一个标签页，所以你永远就只会有一个标签，如此就失去了此插件的意义了
+# 这个配置的使用方法是：当你打开多个标签后，通过右键菜单将其临时设置为true，实现在当前标签页打开文件，每次重启后就会自动恢复为false
 LOCAL_OPEN = false
 # 调整content的top，以免被tab遮挡
 CHANGE_CONTENT_TOP = true
@@ -38,7 +46,7 @@ NAME = "全局多关键字搜索"
 CLICKABLE = true
 # 允许拖动模态框
 ALLOW_DRAG = true
-# 模态框自动隐藏
+# 模态框失焦后自动隐藏
 AUTO_HIDE = false
 # 打开文件后，自动聚焦
 REFOUCE_WHEN_OPEN_FILE = true
@@ -88,9 +96,6 @@ SHOW_RUN_BUTTON = false
 RESEARCH_WHILE_OPEN_FILE = true
 # 点击时显示当前的索引数
 SHOW_CURRENT_INDEX = true
-# Typora本身的限制= ctrl+F搜索后，点击任意地方原先高亮的地方就会消失
-# 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
-REMOVE_WHEN_EDIT = true
 # 定位时高亮关键字出现提示边框
 SHOW_KEYWORD_OUTLINE = true
 # 定位时高亮关键字提示所在行
@@ -122,13 +127,18 @@ STYLE_COLOR = [
 ]
 # 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
 # 20个关键字肯定够用了,此选项没太大意义
-# 就算20个真的不够用,那我也是建议你修改STYLE_COLOR选项，而不是修改此选项
+# 就算20个真的不够用,那我也是建议你给STYLE_COLOR选项新增一些颜色，而不是修改此选项
 DEFAULT_COLOR = "aquamarine"
-# Do not edit this field unless you know what you are doing
+# DO NOT edit this field unless you know what you are doing
+# Typora本身有限制: ctrl+F 搜索后，点击任意地方原先高亮的地方就会消失
+# 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
+# 如果此配置设置为 false，有可能导致你无法编辑页面，直到你重新打开此文件
+REMOVE_WHEN_EDIT = true
+# DO NOT edit this field unless you know what you are doing
 # 性能选项：关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0,则总是使用
 # 此选项用在当搜索了很多关键字时，保证有较快的响应速度
 USE_LIST_THRESHOLD = -1
-# Do not edit this field unless you know what you are doing
+# DO NOT edit this field unless you know what you are doing
 # 性能选项：当fenceMultiHighlighterList数量超过X时，clear之（以时间换空间）。若<0,则总不启用
 # 此选项用在当上一个策略使用太多次后，花费时间去回收空间，保证不会占用太大内存
 CLEAR_LIST_THRESHOLD = 12
@@ -142,7 +152,7 @@ ENABLE = true
 NAME = "类别大纲"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 默认使用的大纲类型 fence/image/table/all
+# 打开模态框后默认使用的大纲类型 fence/image/table/all
 DEFAULT_TYPE = "fence"
 # 是否使用混合标签
 USE_ALL = true
@@ -152,7 +162,7 @@ SET_COLOR_IN_ALL = true
 AUTO_REFRESH_WHEN_OPEN_FILE = true
 # 显示被其他插件隐藏的元素
 SHOW_HIDDEN = false
-# 展示的名字
+# 在模态框里展示的名字
 [outline.SHOW_NAME]
 fence = "Fence"
 image = "Figure"
@@ -162,6 +172,7 @@ table = "Table"
 ############### commander ###############
 [commander]
 # 启用插件
+# 有一些插件（比如：静默更新功能）依赖于此插件，若关闭此插件，那些插件都将失效
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "命令行环境"
@@ -174,12 +185,13 @@ ALLOW_DRAG = true
 # 在右键菜单中快速调用内建命令时，是否弹出模态框
 # always: 总是弹出
 # error: 只在异常时弹出
-# silent: 总是静默（可以在console中看到）
+# silent: 总是静默（其实可以在控制台console中看到）
 QUICK_EXEC_SHOW = "error"
 # 启用内建的命令列表
 USE_BUILTIN = true
 # 内建命令列表(shell: cmd/bash、powershell、gitbash、wsl)
-[[commander.BUILTIN]]# dummy
+# 请注意如果使用 gitbash、wsl，请保证已经将其加入环境变量
+[[commander.BUILTIN]] # dummy
 name = ""
 shell = "cmd/bash"
 cmd = ""
@@ -210,6 +222,7 @@ NAME = "中英文混排优化"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 # 快捷键
+# 由于新版本 Typora 占用了 ctrl+shift+k 快捷键，所以 ctrl+shift+k 可能会失效
 HOTKEY = ["ctrl+shift+k", "ctrl+shift+b"]
 
 
@@ -237,10 +250,13 @@ NAME = "模糊模式"
 CLICKABLE = true
 # 默认使用模糊模式
 BLUR_DEFAULT = false
-# 类型: blur/hide
+# 模糊类型: blur/hide
+# blur：非聚焦组件变模糊
+# hide：非聚焦组件直接隐藏
 BLUR_TYPE = "blur"
 # 模糊等级: 越大越模糊(BLUR_TYPE为hide时失效)
 BLUR_LEVEL = 10
+# 内部使用
 # 添加style的id
 BLUR_STYLE_ID = "plugin-blur-style"
 
@@ -297,14 +313,13 @@ ENABLE = true
 NAME = "一键到顶"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 距顶部50像素开始显示
-THRESHOLD = 50
 # 滚动所用时间
 SCROLL_TIME = 600
 # 标签的颜色
 COLOR = "var(--active-file-border-color, black)"
 # hover时标签的颜色
 HOVER_COLOR = "var(--item-hover-bg-color, black)"
+# 内部使用
 # 标签id
 DIV_ID = "plugin-go-top"
 
@@ -327,7 +342,7 @@ ENABLE = true
 NAME = "markmap"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 在左下角添加一个快捷按钮
+# 在右下角添加一个快捷按钮
 USE_BUTTON = true
 
 
@@ -353,6 +368,7 @@ ENABLE_IMAGE = true
 ENABLE_FENCE = true
 # 导出时运用样式
 ENABLE_WHEN_EXPORT = true
+# 内部使用
 # 添加的ID
 ID = "plugin-auto-number-style"
 # 下标名称
@@ -380,7 +396,7 @@ ENABLE_INDENT = true
 INDENT_HOTKEY = "ctrl+alt+l"
 # 启用折叠代码功能
 ENABLE_FOLD = true
-# 折叠形式
+# 折叠形式：hidden/scroll
 FOLD_OVERFLOW = "hidden"
 # 默认折叠
 FOLD_DEFAULT = false
@@ -397,6 +413,7 @@ ENABLE = true
 NAME = "章节折叠"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# 内部使用
 # 添加的class
 CLASS_NAME = "plugin-collapsed-paragraph"
 
@@ -411,6 +428,7 @@ NAME = "文段截断"
 CLICKABLE = true
 # 剩余文本段
 REMAIN_LENGTH = 80
+# 内部使用
 # 添加的class
 CLASS_NAME = "plugin-truncate-text"
 
@@ -424,6 +442,7 @@ NAME = "导出增强"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 # 是否下载网络图片(若为true,有可能因为网络问题导致超时)
+# 此选项可在右键菜单中修改，不建议设置为true，除非你有频繁导出html的需求
 DOWNLOAD_NETWORK_IMAGE = false
 
 
@@ -464,9 +483,9 @@ CLICKABLE = false
 MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
+# 内部使用
 # 添加的class name
 CLASS_NAME = "plugin-file-counter"
-# 内部使用
 LOOP_DETECT_INTERVAL = 300
 
 
