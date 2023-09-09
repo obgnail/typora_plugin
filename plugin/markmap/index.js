@@ -310,7 +310,7 @@ class markmapPlugin extends global._basePlugin {
 
         if (this.config.USE_BUTTON) {
             document.querySelector(".plugin-markmap-item").addEventListener("click", () => {
-                (this.entities.modal.style.display === "") ? this.drawToc() : this.close();
+                (this.entities.modal.style.display === "") ? this.drawToc() : this.onButtonClick("close");
             })
         }
     }
