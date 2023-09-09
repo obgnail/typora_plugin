@@ -272,6 +272,30 @@ class windowTabBarPlugin extends global._basePlugin {
             }
         })
 
+        if (this.config.INTERCEPT_INTERNAL_AND_LOCAL_LINKS) {
+            this.utils.decorate(
+                () => (JSBridge && JSBridge.invoke),
+                "JSBridge.invoke",
+                (...args) => {
+                    if (args.length < 3 || args[0] !== "app.openFileOrFolder") return;
+
+                    const anchor = args[2]["anchor"];
+                    if (!anchor || typeof anchor !== "string" || !anchor.match(/^#/)) return;
+
+                    const filePath = args[1];
+                    this.openFile(filePath);
+                    setTimeout(() => {
+                        const ele = File.editor.EditHelper.findAnchorElem(anchor);
+                        if (ele) {
+                            File.editor.selection.jumpIntoElemBegin(ele);
+                            File.editor.selection.scrollAdjust(ele, 10);
+                        }
+                    }, 1000)
+                    return this.utils.stopCallError
+                }
+            )
+        }
+
         document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
             const target = ev.target.closest(".typora-quick-open-item");
             if (!target) return;
