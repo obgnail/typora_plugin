@@ -344,6 +344,10 @@ NAME = "markmap"
 CLICKABLE = true
 # 在右下角添加一个快捷按钮
 USE_BUTTON = true
+# 当pin到页面顶部时，占据页面的1/3高度
+DEFAULT_HEIGHT_WHEN_PIN_UP = 3
+# 当pin到页面右侧时，占据页面的1/2宽度
+DEFAULT_WIDTH_WHEN_PIN_RIGHT = 2
 
 
 ############### auto_number ###############
