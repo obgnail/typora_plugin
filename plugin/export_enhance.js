@@ -2,83 +2,70 @@ class exportEnhancePlugin extends global._basePlugin {
     init = () => {
         this.Path = this.utils.Package.Path;
         this.tempFolder = this.utils.tempFolder; // i‘d like to shit here
-
-        this.decoMixin = {
-            regexp: new RegExp(`<img.*?src="(.*?)".*?>`, "gs"),
-            writeIdx: -1,
-            imageMap: {}, // map src to localFileName, use for network image only
-
-            init: () => {
-                this.decoMixin.writeIdx = -1
-                this.decoMixin.imageMap = {}
-            },
-
-            downloadAllImage: async (html) => {
-                for (let result of html.matchAll(this.decoMixin.regexp)) {
-                    if (result.length !== 2 || result.index < this.decoMixin.writeIdx || !this.utils.isNetworkImage(result[1])) continue
-                    const src = result[1];
-                    if (!this.decoMixin.imageMap.hasOwnProperty(src)) { // single flight
-                        const filename = Math.random() + "_" + this.Path.basename(src);
-                        const {state} = await JSBridge.invoke("app.download", src, this.tempFolder, filename);
-                        if (state === "completed") {
-                            this.decoMixin.imageMap[src] = filename;
-                        }
-                    }
-                }
-            },
-
-            afterExportToHtml: async (exportResult, ...args) => {
-                if (!this.config.ENABLE) return exportResult;
-
-                this.decoMixin.init();
-
-                const exportConfig = args[0];
-                if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
-
-                const html = await exportResult;
-                this.decoMixin.writeIdx = html.indexOf(`id='write'`);
-                if (this.decoMixin.writeIdx === -1) return this.simplePromise(html);
-
-                if (this.config.DOWNLOAD_NETWORK_IMAGE) {
-                    await this.decoMixin.downloadAllImage(html);
-                }
-
-                const dirname = this.getCurDir();
-                const newHtml = html.replace(this.decoMixin.regexp, (origin, src, srcIdx) => {
-                    if (srcIdx < this.decoMixin.writeIdx) return origin;
-
-                    let result = origin;
-                    let imagePath;
-                    try {
-                        if (this.utils.isNetworkImage(src)) {
-                            if (!this.config.DOWNLOAD_NETWORK_IMAGE || !this.decoMixin.imageMap.hasOwnProperty(src)) return origin
-                            const path = this.decoMixin.imageMap[src];
-                            imagePath = this.Path.join(this.tempFolder, path);
-                        } else {
-                            imagePath = this.Path.join(dirname, src);
-                        }
-                        const base64Data = this.toBase64(imagePath);
-                        result = origin.replace(src, base64Data);
-                    } catch (e) {
-                        console.error("export error:", e);
-                    }
-                    return result;
-                })
-                return this.simplePromise(newHtml);
-            }
-        }
+        this.regexp = new RegExp(`<img.*?src="(.*?)".*?>`, "gs");
     }
 
     process = () => {
         this.init();
-
         this.utils.decorate(
             () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
             "File.editor.export.exportToHTML",
             null,
-            this.decoMixin.afterExportToHtml,
+            this.afterExportToHtml,
             true,
         );
+    }
+
+    afterExportToHtml = async (exportResult, ...args) => {
+        if (!this.config.ENABLE) return exportResult;
+        const exportConfig = args[0];
+        if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
+
+        const html = await exportResult;
+        const writeIdx = html.indexOf(`id='write'`);
+        if (writeIdx === -1) return this.simplePromise(html);
+
+        const imageMap = (this.config.DOWNLOAD_NETWORK_IMAGE) ? await this.downloadAllImage(html, writeIdx) : {};
+
+        const dirname = this.getCurDir();
+        const newHtml = html.replace(this.regexp, (origin, src, srcIdx) => {
+            if (srcIdx < writeIdx) return origin;
+
+            let result = origin;
+            let imagePath;
+            try {
+                if (this.utils.isNetworkImage(src)) {
+                    if (!this.config.DOWNLOAD_NETWORK_IMAGE || !imageMap.hasOwnProperty(src)) return origin
+
+                    const path = imageMap[src];
+                    imagePath = this.Path.join(this.tempFolder, path);
+                } else {
+                    imagePath = this.Path.join(dirname, src);
+                }
+                const base64Data = this.toBase64(imagePath);
+                result = origin.replace(src, base64Data);
+            } catch (e) {
+                console.error("export error:", e);
+            }
+            return result;
+        })
+        return this.simplePromise(newHtml);
+    }
+
+    downloadAllImage = async (html, writeIdx) => {
+        const imageMap = {} // map src to localFileName, use for network image only
+        for (let result of html.matchAll(this.regexp)) {
+            if (result.length !== 2 || result.index < writeIdx || !this.utils.isNetworkImage(result[1])) continue
+            const src = result[1];
+            if (!imageMap.hasOwnProperty(src)) { // single flight
+                const filename = Math.random() + "_" + this.Path.basename(src);
+                const {state} = await JSBridge.invoke("app.download", src, this.tempFolder, filename);
+                if (state === "completed") {
+                    imageMap[src] = filename;
+                }
+            }
+        }
+        return this.simplePromise(imageMap)
     }
 
     getCurDir = () => {
