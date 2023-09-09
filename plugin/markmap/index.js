@@ -324,8 +324,9 @@ class markmapPlugin extends global._basePlugin {
             }
 
             this.pinUtils.init();
-            const {width, height, right} = this.contentOriginRect;
+            const {top, width, height, right} = this.contentOriginRect;
             const halfWidth = width / 2;
+            this.entities.modal.style.top = top + "px";
             this.entities.modal.style.right = right + "px";
             this.entities.modal.style.left = right - halfWidth + "px";
             this.entities.modal.style.height = height + "px";
