@@ -35,6 +35,7 @@ class markmapPlugin extends global._basePlugin {
                 box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
                 background-color: #f8f8f8;
                 display: none;
+                transition: all 0.2s ease 0s;
             }
             
             .plugin-markmap-wrap {
@@ -112,6 +113,7 @@ class markmapPlugin extends global._basePlugin {
                     <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动"></div>
+                    <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="重置窗口"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
                     <div class="plugin-markmap-icon ion-android-arrow-down-right" action="resize" ty-hint="拖动调整大小"></div>
@@ -142,9 +144,14 @@ class markmapPlugin extends global._basePlugin {
         this.pinUtils = {
             isPinUp: false,
             isPinRight: false,
-            init: () => {
-                this.modalOriginRect = this.entities.modal.getBoundingClientRect();
-                this.contentOriginRect = this.entities.content.getBoundingClientRect();
+            init: async () => {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        this.modalOriginRect = this.entities.modal.getBoundingClientRect();
+                        this.contentOriginRect = this.entities.content.getBoundingClientRect();
+                        resolve();
+                    }, 200)
+                })
             }
         }
 
@@ -176,6 +183,9 @@ class markmapPlugin extends global._basePlugin {
             null,
             () => this.entities.modal.style.display === "block" && this.drawToc()
         )
+
+        this.entities.content.addEventListener("transitionend", this.fit);
+        this.entities.modal.addEventListener("transitionend", this.fit);
 
         this.utils.dragFixedModal(this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`), this.entities.modal, false, this.waitUnpin);
         this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true, this.waitUnpin);
@@ -290,21 +300,25 @@ class markmapPlugin extends global._basePlugin {
 
     close = () => this.entities.modal.style.display = "";
 
-    pinUp = async () => {
+    fit = () => this.markmap && this.markmap.fit();
+
+    pinUp = async (draw = true) => {
         this.pinUtils.isPinUp = !this.pinUtils.isPinUp;
         if (this.pinUtils.isPinUp) {
             if (this.pinUtils.isPinRight) {
-                await this.pinRight();
+                await this.pinRight(false);
             }
 
-            this.pinUtils.init();
-            const {top, width, left} = this.contentOriginRect;
+            await this.pinUtils.init();
+            const {top, height, width, left} = this.contentOriginRect;
+            const newHeight = height / 3;  // 占据三分之一高度
             this.entities.modal.style.left = left + "px";
             this.entities.modal.style.width = width + "px";
             this.entities.modal.style.top = top + "px";
+            this.entities.modal.style.height = newHeight + "px";
             this.entities.modal.style.boxShadow = "initial";
 
-            this.entities.content.style.top = top + this.modalOriginRect.height + "px";
+            this.entities.content.style.top = top + newHeight + "px";
 
             this.entities.gripUp.style.display = "block";
         } else {
@@ -313,19 +327,21 @@ class markmapPlugin extends global._basePlugin {
             this.entities.content.style.top = this.contentOriginRect.top + "px";
             this.entities.gripUp.style.display = "";
         }
-        await this.drawToc();
+        if (draw) {
+            await this.drawToc();
+        }
     }
 
-    pinRight = async () => {
+    pinRight = async (draw = true) => {
         this.pinUtils.isPinRight = !this.pinUtils.isPinRight;
         if (this.pinUtils.isPinRight) {
             if (this.pinUtils.isPinUp) {
-                await this.pinUp();
+                await this.pinUp(false);
             }
 
-            this.pinUtils.init();
+            await this.pinUtils.init();
             const {top, width, height, right} = this.contentOriginRect;
-            const halfWidth = width / 2;
+            const halfWidth = width / 2;  // 占据一半宽度
             this.entities.modal.style.top = top + "px";
             this.entities.modal.style.right = right + "px";
             this.entities.modal.style.left = right - halfWidth + "px";
@@ -347,7 +363,9 @@ class markmapPlugin extends global._basePlugin {
             document.querySelector("#write").style.width = "";
             this.entities.gripRight.style.display = "";
         }
-        await this.drawToc();
+        if (draw) {
+            await this.drawToc();
+        }
     }
 
     waitUnpin = async () => {
