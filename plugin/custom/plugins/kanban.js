@@ -124,12 +124,14 @@ class kanbanPlugin extends BaseCustomPlugin {
             }
         )
 
-        const that = this;
-        $("#write").on("wheel", ".plugin-kanban-content", function (ev) {
-            if (that.utils.metaKeyPressed(ev.originalEvent)) {
-                this.scrollLeft += ev.originalEvent.deltaY;
-            }
-        })
+        if (this.config.CTRL_WHEEL_TO_SCROLL) {
+            const that = this;
+            $("#write").on("wheel", ".plugin-kanban-content", function (ev) {
+                if (that.utils.metaKeyPressed(ev.originalEvent)) {
+                    this.scrollLeft += ev.originalEvent.deltaY;
+                }
+            })
+        }
     }
 
     callback = anchorNode => {

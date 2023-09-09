@@ -186,58 +186,6 @@ class autoNumberPlugin extends global._basePlugin {
     }
 
     init = () => {
-        this.decoMixin = {
-            inExport: false,
-
-            beforeExport: (...args) => {
-                this.inExport = true;
-                args[0].extraCss = `body {font-variant-ligatures: no-common-ligatures;} ` + this.getStyleString();
-            },
-
-            afterGetHeaderMatrix: headers => {
-                if (!this.inExport) return;
-                this.inExport = false;
-
-                const pValue = {H2: 0, H3: 0, H4: 0, H5: 0, H6: 0};
-                headers.forEach(header => {
-                    const tagName = "H" + header[0];
-                    if (!pValue.hasOwnProperty(tagName)) return;
-
-                    let numbering = "";
-                    switch (tagName) {
-                        case "H1":
-                            pValue.H2 = 0;
-                            break
-                        case "H2":
-                            pValue.H3 = 0;
-                            pValue.H2++;
-                            numbering = `${pValue.H2}. `;
-                            break
-                        case "H3":
-                            pValue.H4 = 0;
-                            pValue.H3++;
-                            numbering = `${pValue.H2}.${pValue.H3} `;
-                            break
-                        case "H4":
-                            pValue.H5 = 0;
-                            pValue.H4++;
-                            numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4} `;
-                            break
-                        case "H5":
-                            pValue.H6 = 0;
-                            pValue.H5++;
-                            numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4}.${pValue.H5} `;
-                            break
-                        case "H6":
-                            pValue.H6++;
-                            numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4}.${pValue.H5}.${pValue.H6} `;
-                            break
-                    }
-                    header[1] = numbering + header[1];
-                })
-            }
-        }
-
         this.callArgs = [
             {
                 arg_name: "禁用/启用大纲自动编号",
@@ -279,21 +227,8 @@ class autoNumberPlugin extends global._basePlugin {
 
     process = () => {
         this.init();
-
         if (this.config.ENABLE_WHEN_EXPORT) {
-            this.utils.decorate(
-                () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-                "File.editor.export.exportToHTML",
-                this.decoMixin.beforeExport,
-                null
-            );
-            this.utils.decorate(
-                () => (File && File.editor && File.editor.library && File.editor.library.outline
-                    && File.editor.library.outline.getHeaderMatrix),
-                "File.editor.library.outline.getHeaderMatrix",
-                null,
-                this.decoMixin.afterGetHeaderMatrix
-            );
+            new exportPDFHelper(this).process();
         }
     }
 
@@ -338,6 +273,78 @@ class autoNumberPlugin extends global._basePlugin {
     call = type => {
         const func = this.callMap[type];
         func && func();
+    }
+}
+
+// 解决导出pdf时目录没有编号的问题
+class exportPDFHelper {
+    constructor(controller) {
+        this.inExport = false;
+        this.controller = controller
+    }
+
+    beforeExport = (...args) => {
+        this.inExport = true;
+        args[0].extraCss = `body {font-variant-ligatures: no-common-ligatures;} ` + this.controller.getStyleString();
+    }
+
+    afterGetHeaderMatrix = headers => {
+        if (!this.inExport) return;
+        this.inExport = false;
+
+        const pValue = {H2: 0, H3: 0, H4: 0, H5: 0, H6: 0};
+        headers.forEach(header => {
+            const tagName = "H" + header[0];
+            if (!pValue.hasOwnProperty(tagName)) return;
+
+            let numbering = "";
+            switch (tagName) {
+                case "H1":
+                    pValue.H2 = 0;
+                    break
+                case "H2":
+                    pValue.H3 = 0;
+                    pValue.H2++;
+                    numbering = `${pValue.H2}. `;
+                    break
+                case "H3":
+                    pValue.H4 = 0;
+                    pValue.H3++;
+                    numbering = `${pValue.H2}.${pValue.H3} `;
+                    break
+                case "H4":
+                    pValue.H5 = 0;
+                    pValue.H4++;
+                    numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4} `;
+                    break
+                case "H5":
+                    pValue.H6 = 0;
+                    pValue.H5++;
+                    numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4}.${pValue.H5} `;
+                    break
+                case "H6":
+                    pValue.H6++;
+                    numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4}.${pValue.H5}.${pValue.H6} `;
+                    break
+            }
+            header[1] = numbering + header[1];
+        })
+    }
+
+    process = () => {
+        this.controller.utils.decorate(
+            () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
+            "File.editor.export.exportToHTML",
+            this.beforeExport,
+            null
+        );
+        this.controller.utils.decorate(
+            () => (File && File.editor && File.editor.library && File.editor.library.outline
+                && File.editor.library.outline.getHeaderMatrix),
+            "File.editor.library.outline.getHeaderMatrix",
+            null,
+            this.afterGetHeaderMatrix
+        );
     }
 }
 
