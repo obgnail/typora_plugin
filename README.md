@@ -295,7 +295,7 @@ operation = "report"
 支持内建命令，方便快速调用。个人可按需自定义配置文件里的 `BUILTIN` 选项。
 
 ```toml
-// 默认的内建命令
+# 默认的内建命令
 [[commander.BUILTIN]] # dummy
 name = ""
 shell = "cmd/bash"
