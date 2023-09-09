@@ -15,6 +15,8 @@ enable = true
 HIDE_DESC_WHEN_EMPTY = true
 # 看板最大高度（若<0，则全部显示）
 KANBAN_MAX_HEIGHT = 700
+# 当鼠标位于看板时，ctrl+wheel滚动看板
+CTRL_WHEEL_TO_SCROLL = true
 # 看板的颜色
 # 如果你新增了颜色，请保持 KANBAN_COLOR 和 TASK_COLOR 数量一致，否则颜色会乱套，就不好看了
 KANBAN_COLOR = [
@@ -43,8 +45,8 @@ TEMPLATE = """```kanban
 - 当描述为空时隐藏描述框
 
 ## In-Progress
-- 当任务数量太多，出现滚动条时(可以将鼠标置于看板下，使用【鼠标滚轮】切换任务)
-- 当看板数量太多，出现滚动条时(可以将鼠标置于看板下，使用【ctrl+鼠标滚轮】切换看板)
+- 当任务数量太多，出现滚动条时(可以将鼠标置于看板下，使用【鼠标滚轮】滚动任务)
+- 当看板数量太多，出现滚动条时(可以将鼠标置于看板下，使用【ctrl+鼠标滚轮】滚动看板)
 
 ## Completed
 - NOTE(语法是开发者定义的，没有通用性，只建议用于【每日任务】临时使用)

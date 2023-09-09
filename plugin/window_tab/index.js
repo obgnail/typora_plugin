@@ -253,17 +253,18 @@ class windowTabBarPlugin extends global._basePlugin {
             }
         })
 
+        if (this.config.CTRL_WHEEL_TO_SCROLL) {
+            this.entities.tabBar.addEventListener("wheel", ev => {
+                const target = ev.target.closest("#plugin-window-tab .tab-bar");
+                if (!target) return;
 
-        this.entities.tabBar.addEventListener("wheel", ev => {
-            const target = ev.target.closest("#plugin-window-tab .tab-bar");
-            if (!target) return;
-
-            if (this.utils.metaKeyPressed(ev)) {
-                (ev.deltaY < 0) ? this.previousTab() : this.nextTab();
-            } else {
-                target.scrollLeft += ev.deltaY;
-            }
-        })
+                if (this.utils.metaKeyPressed(ev)) {
+                    (ev.deltaY < 0) ? this.previousTab() : this.nextTab();
+                } else {
+                    target.scrollLeft += ev.deltaY;
+                }
+            })
+        }
 
         this.entities.content.addEventListener("scroll", () => {
             if (this.tabUtil.tabs[this.tabUtil.activeIdx]) {
