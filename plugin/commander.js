@@ -321,6 +321,7 @@ class commanderPlugin extends global._basePlugin {
             this.showStdErr("command is empty");
             return
         }
+        this.showStdout("running...");
         const option = this.modal.shellSelect.options[this.modal.shellSelect.selectedIndex];
         const shell = option.value;
         this.alwaysExec(cmd, shell);
