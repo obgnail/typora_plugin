@@ -99,9 +99,9 @@ class commanderPlugin extends global._basePlugin {
 
     html = () => {
         const windowOption = (File.isMac) ? `` : `
-            <option value="${this.SHELL.POWER_SHELL}">powershell</option>
-            <option value="${this.SHELL.GIT_BASH}">git bash</option>
-            <option value="${this.SHELL.WSL}">wsl</option>`;
+            <option value="${this.SHELL.POWER_SHELL}">PowerShell</option>
+            <option value="${this.SHELL.GIT_BASH}">Git Bash</option>
+            <option value="${this.SHELL.WSL}">WSL</option>`;
         const builtin = this.config.BUILTIN.map(ele => `<option shell="${ele.shell}" value='${ele.cmd}'>${ele.name}</option>`).join("");
         const builtinSelect = !this.config.USE_BUILTIN ? "" : `<select class="plugin-commander-builtin">${builtin}</select>`;
 
@@ -129,10 +129,15 @@ class commanderPlugin extends global._basePlugin {
     }
 
     hotkey = () => {
-        return [{
-            hotkey: this.config.HOTKEY,
-            callback: this.call,
-        }]
+        const hotkeys = [{hotkey: this.config.HOTKEY, callback: this.call}];
+        if (this.config.USE_BUILTIN) {
+            this.config.BUILTIN.forEach(ele => {
+                if (ele["hotkey"] && ele["cmd"] && ele["shell"]) {
+                    hotkeys.push({hotkey: ele["hotkey"], callback: () => this.quickExec(ele["cmd"], ele["shell"])});
+                }
+            })
+        }
+        return hotkeys
     }
 
     init = () => {
@@ -223,11 +228,9 @@ class commanderPlugin extends global._basePlugin {
 
     }
 
-
     convertPath = (path, shell) => {
-        if (File.isMac) {
-            return path
-        }
+        if (File.isMac) return path
+
         switch (shell) {
             case this.SHELL.WSL:
             case this.SHELL.GIT_BASH:

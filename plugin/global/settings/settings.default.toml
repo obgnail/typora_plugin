@@ -186,15 +186,18 @@ CLICKABLE = true
 HOTKEY = "ctrl+g"
 # 允许拖动模态框
 ALLOW_DRAG = true
-# 在右键菜单中快速调用内建命令时，是否弹出模态框
+# 快捷键、在右键菜单中 快速调用内建命令时，是否弹出模态框
 # always: 总是弹出
 # error: 只在异常时弹出
 # silent: 总是静默（其实可以在控制台console中看到）
 QUICK_EXEC_SHOW = "error"
-# 启用内建的命令列表
+# 启用内建的命令列表（若为false，则BUILTIN配置失效）
 USE_BUILTIN = true
-# 内建命令列表(shell: cmd/bash、powershell、gitbash、wsl)
-# 请注意如果使用 gitbash、wsl，请保证已经将其加入环境变量
+# 内建命令列表。目前支持4个参数:
+#   1. name:   命令展示的名称
+#   2. shell:  cmd/bash、powershell、gitbash、wsl（请注意如果使用 gitbash、wsl，请保证已经将其加入环境变量）
+#   3. hotkey: 快捷键调用命令行
+#   4. cmd:    执行的命令
 [[commander.BUILTIN]] # dummy
 name = ""
 shell = "cmd/bash"
@@ -202,6 +205,7 @@ cmd = ""
 [[commander.BUILTIN]]
 name = "Explorer"
 shell = "powershell"
+hotkey = "ctrl+alt+e"
 cmd = "explorer $d"
 [[commander.BUILTIN]]
 name = "Vscode"
