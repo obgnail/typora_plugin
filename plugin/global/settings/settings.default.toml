@@ -348,6 +348,8 @@ NAME = "markmap"
 CLICKABLE = true
 # 在右下角添加一个快捷按钮
 USE_BUTTON = true
+# 是否允许icon换行
+ALLOW_ICON_WRAP = true
 # 当pin到页面顶部时，占据页面的40%高度
 HEIGHT_PRECENT_WHEN_PIN_UP = 40
 # 当pin到页面右侧时，占据页面的50%宽度

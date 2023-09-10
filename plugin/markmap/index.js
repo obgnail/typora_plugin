@@ -1,6 +1,7 @@
 class markmapPlugin extends global._basePlugin {
     style = () => {
         let extra = "";
+        let extra2 = "";
         if (this.config.USE_BUTTON) {
             extra = `
             .plugin-markmap-button {
@@ -24,6 +25,19 @@ class markmapPlugin extends global._basePlugin {
             
             .plugin-markmap-button .plugin-markmap-item:hover {
                 background-color: var(--item-hover-bg-color, black);
+            }
+            `
+        }
+
+        if (this.config.ALLOW_ICON_WRAP) {
+            extra2 = `
+            .plugin-markmap-header {
+                flex-wrap: wrap-reverse;
+                justify-content: flex-start;
+            }
+            
+            .plugin-markmap-icon {
+                padding-left: 0.5em;
             }
             `
         }
@@ -77,6 +91,8 @@ class markmapPlugin extends global._basePlugin {
             }
             
             ${extra}
+            
+            ${extra2}
             
             .plugin-markmap-header {
                 margin: 0 0.5em;
@@ -220,8 +236,10 @@ class markmapPlugin extends global._basePlugin {
                     deltaWidth = getModalMinWidth() - startWidth;
                 },
                 (deltaX, deltaY) => {
-                    deltaY = Math.max(deltaY, deltaHeight);
-                    deltaX = Math.max(deltaX, deltaWidth);
+                    if (!this.config.ALLOW_ICON_WRAP) {
+                        deltaY = Math.max(deltaY, deltaHeight);
+                        deltaX = Math.max(deltaX, deltaWidth);
+                    }
                     return {deltaX, deltaY}
                 },
                 async () => {
@@ -247,7 +265,9 @@ class markmapPlugin extends global._basePlugin {
                     let newContentTop = contentStartTop + deltaY;
                     if (newContentTop < contentMinTop) {
                         newContentTop = contentMinTop;
-                        deltaY = contentMinTop - contentStartTop;
+                        if (!this.config.ALLOW_ICON_WRAP) {
+                            deltaY = contentMinTop - contentStartTop;
+                        }
                     }
                     this.entities.content.style.top = newContentTop + "px";
                     return {deltaX, deltaY}
@@ -281,7 +301,9 @@ class markmapPlugin extends global._basePlugin {
                     let newContentRight = contentStartRight - deltaX;
                     if (newContentRight > contentMaxRight) {
                         newContentRight = contentMaxRight;
-                        deltaX = contentStartRight - contentMaxRight;
+                        if (!this.config.ALLOW_ICON_WRAP) {
+                            deltaX = contentStartRight - contentMaxRight;
+                        }
                     }
                     this.entities.content.style.right = newContentRight + "px";
                     this.entities.content.style.width = contentStartWidth - deltaX + "px";
