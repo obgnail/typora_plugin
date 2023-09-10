@@ -348,10 +348,10 @@ NAME = "markmap"
 CLICKABLE = true
 # 在右下角添加一个快捷按钮
 USE_BUTTON = true
-# 当pin到页面顶部时，占据页面的1/3高度
-DEFAULT_HEIGHT_WHEN_PIN_UP = 3
-# 当pin到页面右侧时，占据页面的1/2宽度
-DEFAULT_WIDTH_WHEN_PIN_RIGHT = 2
+# 当pin到页面顶部时，占据页面的40%高度
+HEIGHT_PRECENT_WHEN_PIN_UP = 40
+# 当pin到页面右侧时，占据页面的50%宽度
+WIDTH_PRECENT_WHEN_PIN_RIGHT = 50
 # 在拖拽模态框的时候是否使用动画
 # 使用动画视觉效果比较好，但是不跟手
 USE_ANIMATION_WHEN_DRAG = false

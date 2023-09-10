@@ -87,14 +87,13 @@ class markmapPlugin extends global._basePlugin {
             
             .plugin-markmap-icon {
                 cursor: pointer;
-                font-size: 1.3em;
+                font-size: 1.2em;
                 opacity: 0.5;
             }
             
             .plugin-markmap-icon:last-child {
                 margin-top: auto;
                 margin-bottom: 0.2em;
-                font-size: 1.3em;
             }
             
             #plugin-markmap-svg {
@@ -321,7 +320,10 @@ class markmapPlugin extends global._basePlugin {
         }
     }
 
-    close = () => this.entities.modal.style.display = "";
+    close = () => {
+        this.entities.modal.style.display = "";
+        this.initModalRect(); // 还原大小
+    };
 
     fit = () => this.markmap && this.markmap.fit();
 
@@ -334,7 +336,7 @@ class markmapPlugin extends global._basePlugin {
 
             await this.pinUtils.init();
             const {top, height, width, left} = this.contentOriginRect;
-            const newHeight = height / this.config.DEFAULT_HEIGHT_WHEN_PIN_UP;
+            const newHeight = height * this.config.HEIGHT_PRECENT_WHEN_PIN_UP / 100;
             this.entities.modal.style.left = left + "px";
             this.entities.modal.style.width = width + "px";
             this.entities.modal.style.top = top + "px";
@@ -364,16 +366,16 @@ class markmapPlugin extends global._basePlugin {
 
             await this.pinUtils.init();
             const {top, width, height, right} = this.contentOriginRect;
-            const halfWidth = width / this.config.DEFAULT_WIDTH_WHEN_PIN_RIGHT;
+            const newWidth = width * this.config.WIDTH_PRECENT_WHEN_PIN_RIGHT / 100;
             this.entities.modal.style.top = top + "px";
             this.entities.modal.style.right = right + "px";
-            this.entities.modal.style.left = right - halfWidth + "px";
+            this.entities.modal.style.left = right - newWidth + "px";
             this.entities.modal.style.height = height + "px";
-            this.entities.modal.style.width = halfWidth + "px";
+            this.entities.modal.style.width = newWidth + "px";
             this.entities.modal.style.boxShadow = "initial";
 
-            this.entities.content.style.right = right - halfWidth + "px";
-            this.entities.content.style.width = halfWidth + "px";
+            this.entities.content.style.right = right - newWidth + "px";
+            this.entities.content.style.width = width - newWidth + "px";
 
             document.querySelector("#write").style.width = "initial";
 
