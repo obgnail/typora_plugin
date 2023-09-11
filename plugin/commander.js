@@ -303,7 +303,7 @@ class commanderPlugin extends global._basePlugin {
     exec = (cmd, shell, resolve, reject, callback, hint) => {
         resolve = resolve || console.log;
         reject = reject || console.error;
-        callback = (err, stdout, stderr) => callback && callback(err, stdout, stderr);
+        const cb = (err, stdout, stderr) => callback && callback(err, stdout, stderr);
 
         const {cmd_, shell_} = this.beforeExecute(cmd, shell, hint);
         this.utils.Package.ChildProcess.exec(
@@ -318,7 +318,7 @@ class commanderPlugin extends global._basePlugin {
                 } else {
                     resolve(stdout);
                 }
-                callback(err, stdout, stderr);
+                cb(err, stdout, stderr);
             }
         )
     }
