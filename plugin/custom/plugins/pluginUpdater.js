@@ -40,8 +40,8 @@ class pluginUpdater extends BaseCustomPlugin {
                 const updater = this.utils.joinPath("./plugin/updater/updater.exe");
                 const proxy = (components[1].submit || "").trim();
                 const cmd = `cd ${dir} && ${updater} --action=update --proxy=${proxy}`;
-                this.utils.getPlugin("commander").alwaysExec(cmd, "cmd/bash", (err, stdout, stderr) => {
-                    if (!err && stderr.length === 0) {
+                this.utils.getPlugin("commander").echoExec(cmd, "cmd/bash", code => {
+                    if (code === 0) {
                         this.binFileUpdater.run();
                     } else {
                         this.modal(

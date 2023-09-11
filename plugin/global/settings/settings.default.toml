@@ -187,9 +187,10 @@ HOTKEY = "ctrl+g"
 # 允许拖动模态框
 ALLOW_DRAG = true
 # 快捷键、在右键菜单中 快速调用内建命令时，是否弹出模态框
-# always: 总是弹出
-# error: 只在异常时弹出
-# silent: 总是静默（其实可以在控制台console中看到）
+#   1.always: 总是弹出
+#   2.error: 只在异常时弹出
+#   3.silent: 总是静默（其实可以在控制台console中看到）
+#   4.echo: 回显
 QUICK_EXEC_SHOW = "error"
 # 启用内建的命令列表（若为false，则BUILTIN配置失效）
 USE_BUILTIN = true

@@ -277,29 +277,14 @@ class commanderPlugin extends global._basePlugin {
         }
     }
 
-    exec = (cmd, shell, resolve, reject, callback) => {
+    beforeExecute = (cmd, shell) => {
         this.modal.input.value = cmd;
         this.modal.shellSelect.value = shell;
         this.modal.commit.style.display = "block";
 
-        const _shell = this.getShellCommand(shell);
-        const _cmd = this.replaceArgs(cmd, shell);
-        this.utils.Package.ChildProcess.exec(
-            `chcp 65001 | ${_shell} "${_cmd}"`,
-            {
-                encoding: 'utf8',
-                cwd: this.getFolder(),
-            },
-            (err, stdout, stderr) => {
-                if (err || stderr.length) {
-                    reject = reject ? reject : console.error;
-                    reject(err || stderr.toString());
-                } else {
-                    resolve = resolve ? resolve : console.log;
-                    resolve(stdout);
-                }
-                callback && callback(err, stdout, stderr);
-            })
+        const shell_ = this.getShellCommand(shell);
+        const cmd_ = this.replaceArgs(cmd, shell);
+        return {shell_, cmd_}
     }
 
     showStdout = stdout => {
@@ -314,9 +299,54 @@ class commanderPlugin extends global._basePlugin {
         this.modal.pre.classList.add("error");
     }
 
+    exec = (cmd, shell, resolve, reject, callback) => {
+        const {cmd_, shell_} = this.beforeExecute(cmd, shell);
+        this.utils.Package.ChildProcess.exec(
+            `chcp 65001 | ${shell_} "${cmd_}"`,
+            {
+                encoding: 'utf8',
+                cwd: this.getFolder(),
+            },
+            (err, stdout, stderr) => {
+                if (err || stderr.length) {
+                    reject = reject || console.error;
+                    reject(err || stderr.toString());
+                } else {
+                    resolve = resolve || console.log;
+                    resolve(stdout);
+                }
+                callback && callback(err, stdout, stderr);
+            }
+        )
+    }
+
     silentExec = (cmd, shell, callback) => this.exec(cmd, shell, null, null, callback);
     errorExec = (cmd, shell, callback) => this.exec(cmd, shell, null, this.showStdErr, callback);
     alwaysExec = (cmd, shell, callback) => this.exec(cmd, shell, this.showStdout, this.showStdErr, callback);
+    echoExec = (cmd, shell, callback) => {
+        let once = true;
+
+        const {cmd_, shell_} = this.beforeExecute(cmd, shell);
+        this.showStdout("");
+
+        const child = this.utils.Package.ChildProcess.spawn(
+            `chcp 65001 | ${shell_} "${cmd_}"`,
+            {
+                encoding: 'utf8',
+                cwd: this.getFolder(),
+                shell: true,
+            },
+        );
+        child.stdout.on('data', data => this.modal.pre.textContent += data.toString());
+        child.stderr.on("data", data => {
+            this.modal.pre.textContent += data.toString();
+            if (once) {
+                this.modal.pre.classList.add("error");
+                once = false;
+            }
+        });
+        child.on('close', code => callback(code));
+    }
 
     commit = () => {
         const cmd = this.modal.input.value;
@@ -338,6 +368,8 @@ class commanderPlugin extends global._basePlugin {
                 return this.errorExec(cmd, shell)
             case "silent":
                 return this.silentExec(cmd, shell)
+            case "echo":
+                return this.echoExec(cmd, shell)
         }
     }
 
