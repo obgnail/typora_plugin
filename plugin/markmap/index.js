@@ -118,6 +118,7 @@ class markmapPlugin extends global._basePlugin {
             
             #plugin-markmap-svg {
                 flex: 1;
+                line-height: initial;
             }
         `
         return {textID: "plugin-markmap-style", text: text}
