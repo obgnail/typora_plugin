@@ -346,14 +346,11 @@ class commanderPlugin extends global._basePlugin {
     errorExec = (cmd, shell, callback, hint) => this.exec(cmd, shell, null, this.showStdErr, callback, hint);
     alwaysExec = (cmd, shell, callback, hint) => this.exec(cmd, shell, this.showStdout, this.showStdErr, callback, hint);
     echoExec = (cmd, shell, callback, hint) => {
-        let once = true
         const resolve = data => this.modal.pre.textContent += data.toString();
+        const addErrorClass = this.utils.once(() => this.modal.pre.classList.add("error"));
         const reject = data => {
             this.modal.pre.textContent += data.toString();
-            if (once) {
-                this.modal.pre.classList.add("error");
-                once = false;
-            }
+            addErrorClass();
         }
         this.spawn(cmd, shell, resolve, reject, callback, hint);
     }

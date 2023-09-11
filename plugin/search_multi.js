@@ -362,8 +362,8 @@ class searchMultiKeywordPlugin extends global._basePlugin {
 
     appendItemFunc = keyArr => {
         let index = 0;
-        let once = true;
         const rootPath = File.getMountFolder();
+        const showResult = this.utils.once(() => this.modal.result.style.display = "block");
 
         return (filePath, stats, buffer) => {
             let data = buffer.toString();
@@ -403,10 +403,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             if (index <= 8) {
                 this.modal.resultList.style.height = 40 * index + "px";
             }
-            if (once) {
-                this.modal.result.style.display = "block";
-                once = false;
-            }
+            showResult();
         }
     }
 

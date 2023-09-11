@@ -66,12 +66,22 @@ class utils {
         return $.getScript(`file:///${jsFilepath}`);
     }
 
-    static getUUID() {
+    static getUUID = () => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             let r = (Math.random() * 16) | 0
             let v = c === 'x' ? r : (r & 0x3) | 0x8;
             return v.toString(16);
         });
+    }
+
+    static once = func => {
+        let flag = true;
+        return () => {
+            if (flag) {
+                func();
+                flag = false;
+            }
+        }
     }
 
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
