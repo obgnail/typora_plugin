@@ -301,6 +301,10 @@ class commanderPlugin extends global._basePlugin {
     }
 
     exec = (cmd, shell, resolve, reject, callback, hint) => {
+        resolve = resolve || console.log;
+        reject = reject || console.error;
+        callback = (err, stdout, stderr) => callback && callback(err, stdout, stderr);
+
         const {cmd_, shell_} = this.beforeExecute(cmd, shell, hint);
         this.utils.Package.ChildProcess.exec(
             `chcp 65001 | ${shell_} "${cmd_}"`,
@@ -310,24 +314,21 @@ class commanderPlugin extends global._basePlugin {
             },
             (err, stdout, stderr) => {
                 if (err || stderr.length) {
-                    reject = reject || console.error;
                     reject(err || stderr.toString());
                 } else {
-                    resolve = resolve || console.log;
                     resolve(stdout);
                 }
-                callback && callback(err, stdout, stderr);
+                callback(err, stdout, stderr);
             }
         )
     }
 
-    silentExec = (cmd, shell, callback, hint) => this.exec(cmd, shell, null, null, callback, hint);
-    errorExec = (cmd, shell, callback, hint) => this.exec(cmd, shell, null, this.showStdErr, callback, hint);
-    alwaysExec = (cmd, shell, callback, hint) => this.exec(cmd, shell, this.showStdout, this.showStdErr, callback, hint);
-    echoExec = (cmd, shell, callback, hint) => {
-        let once = true;
-        const {cmd_, shell_} = this.beforeExecute(cmd, shell, hint || ""); // 执行前清空输出
+    spawn = (cmd, shell, resolve, reject, callback, hint) => {
+        resolve = resolve || console.log;
+        reject = reject || console.error;
+        const cb = code => callback && callback(code);
 
+        const {cmd_, shell_} = this.beforeExecute(cmd, shell, hint || ""); // 执行前清空输出
         const child = this.utils.Package.ChildProcess.spawn(
             `chcp 65001 | ${shell_} "${cmd_}"`,
             {
@@ -336,15 +337,25 @@ class commanderPlugin extends global._basePlugin {
                 shell: true,
             },
         );
-        child.stdout.on('data', data => this.modal.pre.textContent += data.toString());
-        child.stderr.on("data", data => {
+        child.stdout.on('data', resolve);
+        child.stderr.on("data", reject);
+        child.on('close', cb);
+    }
+
+    silentExec = (cmd, shell, callback, hint) => this.exec(cmd, shell, null, null, callback, hint);
+    errorExec = (cmd, shell, callback, hint) => this.exec(cmd, shell, null, this.showStdErr, callback, hint);
+    alwaysExec = (cmd, shell, callback, hint) => this.exec(cmd, shell, this.showStdout, this.showStdErr, callback, hint);
+    echoExec = (cmd, shell, callback, hint) => {
+        let once = true
+        const resolve = data => this.modal.pre.textContent += data.toString();
+        const reject = data => {
             this.modal.pre.textContent += data.toString();
             if (once) {
                 this.modal.pre.classList.add("error");
                 once = false;
             }
-        });
-        child.on('close', code => callback && callback(code));
+        }
+        this.spawn(cmd, shell, resolve, reject, callback, hint);
     }
 
     execute = (type, cmd, shell, callback, hint) => {
