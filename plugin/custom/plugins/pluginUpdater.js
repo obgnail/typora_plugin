@@ -49,7 +49,7 @@ class pluginUpdater extends BaseCustomPlugin {
                             () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
                         )
                     }
-                });
+                }, "注意: 请勿通过手动执行updater.exe更新插件\n\n更新插件中，请稍等\n\n");
             })
         })
     }
