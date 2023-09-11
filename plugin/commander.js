@@ -327,7 +327,7 @@ class commanderPlugin extends global._basePlugin {
         let once = true;
 
         const {cmd_, shell_} = this.beforeExecute(cmd, shell);
-        this.showStdout("");
+        this.showStdout(""); // 执行前清空输出
 
         const child = this.utils.Package.ChildProcess.spawn(
             `chcp 65001 | ${shell_} "${cmd_}"`,
@@ -348,6 +348,22 @@ class commanderPlugin extends global._basePlugin {
         child.on('close', code => callback(code));
     }
 
+    exec_ = (cmd, shell, type) => {
+        switch (type) {
+            case "always":
+                return this.alwaysExec(cmd, shell)
+            case "error":
+                return this.errorExec(cmd, shell)
+            case "silent":
+                return this.silentExec(cmd, shell)
+            case "echo":
+            default:
+                return this.echoExec(cmd, shell)
+        }
+    }
+
+    quickExec = (cmd, shell) => this.exec_(cmd, shell, this.config.QUICK_EXEC_SHOW);
+
     commit = () => {
         const cmd = this.modal.input.value;
         if (!cmd) {
@@ -357,20 +373,7 @@ class commanderPlugin extends global._basePlugin {
         this.showStdout("running...");
         const option = this.modal.shellSelect.options[this.modal.shellSelect.selectedIndex];
         const shell = option.value;
-        this.alwaysExec(cmd, shell);
-    }
-
-    quickExec = (cmd, shell) => {
-        switch (this.config.QUICK_EXEC_SHOW) {
-            case "always":
-                return this.alwaysExec(cmd, shell)
-            case "error":
-                return this.errorExec(cmd, shell)
-            case "silent":
-                return this.silentExec(cmd, shell)
-            case "echo":
-                return this.echoExec(cmd, shell)
-        }
+        this.exec_(cmd, shell, this.config.COMMIT_EXEC_SHOW);
     }
 
     call = (type = "show") => {
