@@ -172,6 +172,6 @@ tc_args = '/O /T /P=L  /L="$f"'
 ############### pluginUpdater ###############
 [pluginUpdater]
 # 右键菜单中展示的名称
-name = "静默更新插件"
+name = "更新插件"
 # 是否启用此自定义插件
 enable = true
