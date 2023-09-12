@@ -300,6 +300,9 @@ class commanderPlugin extends global._basePlugin {
         this.modal.pre.classList.add("error");
     }
 
+    /* exec为什么不使用shell options? 答：不能支持wsl
+    *  exec为什么不使用env options?   答：为了兼容。cmd使用变量的方式为%VAR%，bash为$VAR。而且命令可能会跨越多层shell
+    */
     exec = (cmd, shell, resolve, reject, callback, hint) => {
         resolve = resolve || console.log;
         reject = reject || console.error;

@@ -1,24 +1,26 @@
 class testPlugin extends global._basePlugin {
     init = () => {
         console.log("-------- test.js")
-        const target = "decodeFromEscapedPath"
-        this.hadFound = false;
 
-        global._findObject = (target, obj = File, level = 0, maxLevel = 10) => {
-            if (this.hadFound || level === this.maxLevel || typeof obj !== "object") return;
+        global._findObject = (target, from = File, level = 0, maxLevel = 7) => {
+            let hadFound = false;
+            const core = (target, from, level = 0, maxLevel) => {
+                if (hadFound || level === maxLevel || typeof from !== "object") return;
 
-            for (let i of Object.keys(obj)) {
-                if (obj[i] != null) {
-                    if (typeof obj[i] == "object") {
-                        global._findObject(target, obj[i], level + 1)
-                    } else {
-                        if (i === target) {
-                            this.hadFound = true
-                            console.log(obj);
-                        }
+                const arr = Object.keys(from)
+                for (let i of arr) {
+                    if (i === target) {
+                        hadFound = true
+                        console.log(from);
+                        return;
+                    }
+                    if (from[i] == null) continue
+                    if (typeof from[i] == "object") {
+                        core(target, from[i], level + 1, maxLevel);
                     }
                 }
             }
+            core(target, from, level, maxLevel);
         }
     }
 
