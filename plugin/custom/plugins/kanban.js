@@ -134,13 +134,7 @@ class kanbanPlugin extends BaseCustomPlugin {
         }
     }
 
-    callback = anchorNode => {
-        const content = this.config.TEMPLATE;
-        navigator.clipboard.writeText(content).then(() => {
-            const ele = document.querySelector("#context-menu [data-key='paste']");
-            ele && ele.click();
-        });
-    }
+    callback = anchorNode => this.utils.insertFence(anchorNode, this.config.TEMPLATE)
 
     rollback = pre => {
         pre.children(".plugin-kanban").remove();
