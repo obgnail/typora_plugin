@@ -98,7 +98,7 @@ class commanderPlugin extends global._basePlugin {
     }
 
     html = () => {
-        const windowOption = (File.isMac) ? `` : `
+        const windowsOption = (!File.isWin) ? "" : `
             <option value="${this.SHELL.POWER_SHELL}">PowerShell</option>
             <option value="${this.SHELL.GIT_BASH}">Git Bash</option>
             <option value="${this.SHELL.WSL}">WSL</option>`;
@@ -110,7 +110,7 @@ class commanderPlugin extends global._basePlugin {
             <input type="text" class="input" placeholder="Typora commander" autocorrect="off" spellcheck="false"
                 autocapitalize="off" data-lg="Front" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
             <i class="ion-ios7-play plugin-commander-commit" ty-hint="执行命令"></i>
-            <select class="plugin-commander-shell"><option value="${this.SHELL.CMD_BASH}">cmd/bash</option>${windowOption}</select>
+            <select class="plugin-commander-shell"><option value="${this.SHELL.CMD_BASH}">cmd/bash</option>${windowsOption}</select>
             ${builtinSelect}
         </div>
         <div class="plugin-commander-output"><pre tabindex="0"></pre></div>
@@ -229,7 +229,7 @@ class commanderPlugin extends global._basePlugin {
     }
 
     convertPath = (path, shell) => {
-        if (File.isMac) return path
+        if (File.isMac || File.isLinux) return path
 
         switch (shell) {
             case this.SHELL.WSL:
@@ -273,7 +273,7 @@ class commanderPlugin extends global._basePlugin {
             case this.SHELL.WSL:
                 return `wsl.exe -e bash -c`
             default:
-                return File.isMac ? `bash -c` : `cmd /C`;
+                return (File.isMac || File.isLinux) ? `bash -c` : `cmd /C`;
         }
     }
 
