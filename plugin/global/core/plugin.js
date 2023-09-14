@@ -76,7 +76,8 @@ class utils {
 
     static insertFence = (anchorNode, content) => {
         File.editor.contextMenu.hide();
-        File.editor.writingArea.focus();
+        // File.editor.writingArea.focus();
+        File.editor.restoreLastCursor();
         File.editor.insertText(content);
     }
 

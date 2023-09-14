@@ -25,6 +25,12 @@ class markmapPlugin extends global._basePlugin {
             .plugin-markmap-button .plugin-markmap-item:hover {
                 background-color: var(--item-hover-bg-color, black);
             }
+            
+            .plugin-markmap-button .plugin-markmap-item i {
+                position: absolute;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            }
             `
         }
 
