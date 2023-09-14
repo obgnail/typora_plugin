@@ -13,21 +13,6 @@ class utils {
         ChildProcess: reqnode('child_process'),
     }
 
-    static compareVersion = (current, target) => {
-        current = current.split(".");
-        target = target.split(".");
-        const minLength = Math.min(current.length, target.length);
-        for (let idx = 0; idx < minLength; idx++) {
-            const sub = parseInt(current[idx]) - parseInt(target[idx]);
-            if (0 !== sub) {
-                return sub;
-            }
-        }
-        return current.length - target.length
-    }
-    static versionIsLower = target => this.compareVersion(window._options.appVersion, target) <= 0
-    static versionIsUpper = target => this.compareVersion(window._options.appVersion, target) >= 0
-
     // { a: [{ b: 2 }] } { a: [{ c: 2 }]} -> { a: [{b:2}, {c:2}]}
     // merge({o: {a: 3}}, {o: {b:4}}) => {o: {a:3, b:4}}
     static merge(source, other) {
