@@ -13,9 +13,29 @@ class utils {
         ChildProcess: reqnode('child_process'),
     }
 
+    static compareVersion = (v1, v2) => {
+        if (v1 === "" && v2 !== "") {
+            return -1
+        } else if (v2 === "" && v1 !== "") {
+            return 1
+        }
+        const v1Arr = v1.split(".");
+        const v2Arr = v2.split(".");
+        for (let i = 0; i < v1Arr.length || i < v2Arr.length; i++) {
+            const n1 = (i < v1Arr.length) ? parseInt(v1Arr[i]) : 0;
+            const n2 = (i < v2Arr.length) ? parseInt(v2Arr[i]) : 0;
+            if (n1 > n2) {
+                return 1
+            } else if (n1 < n2) {
+                return -1
+            }
+        }
+        return 0
+    }
+
     // { a: [{ b: 2 }] } { a: [{ c: 2 }]} -> { a: [{b:2}, {c:2}]}
     // merge({o: {a: 3}}, {o: {b:4}}) => {o: {a:3, b:4}}
-    static merge(source, other) {
+    static merge = (source, other) => {
         const isObject = value => {
             const type = typeof value
             return value !== null && (type === 'object' || type === 'function')
@@ -72,13 +92,6 @@ class utils {
             let v = c === 'x' ? r : (r & 0x3) | 0x8;
             return v.toString(16);
         });
-    }
-
-    static insertFence = (anchorNode, content) => {
-        File.editor.contextMenu.hide();
-        // File.editor.writingArea.focus();
-        File.editor.restoreLastCursor();
-        File.editor.insertText(content);
     }
 
     static once = func => {
@@ -199,6 +212,51 @@ class utils {
             && ev.key.toLowerCase() === key
     }
 
+    static insertFence = (anchorNode, content) => {
+        File.editor.contextMenu.hide();
+        // File.editor.writingArea.focus();
+        File.editor.restoreLastCursor();
+        File.editor.insertText(content);
+    }
+
+    static getFenceContent = (pre, cid) => {
+        // from element
+        if (pre) {
+            const lines = pre.querySelectorAll(".CodeMirror-code .CodeMirror-line");
+            if (lines.length) {
+                const badChars = [
+                    "%E2%80%8B", // ZERO WIDTH SPACE \u200b
+                    "%C2%A0", // NO-BREAK SPACE \u00A0
+                    "%0A" // NO-BREAK SPACE \u0A
+                ];
+                const replaceChars = ["", "%20", ""];
+                const contentList = [];
+                lines.forEach(line => {
+                    let encodeText = encodeURI(line.textContent);
+                    for (let i = 0; i < badChars.length; i++) {
+                        if (encodeText.indexOf(badChars[i]) !== -1) {
+                            encodeText = encodeText.replace(new RegExp(badChars[i], "g"), replaceChars[i]);
+                        }
+                    }
+                    const decodeText = decodeURI(encodeText);
+                    contentList.push(decodeText);
+                })
+                if (contentList) {
+                    return contentList.join("\n")
+                }
+            }
+        }
+
+        // from queue
+        cid = cid || pre && pre.getAttribute("cid");
+        if (cid) {
+            const fence = File.editor.fences.queue[cid];
+            if (fence) {
+                return fence.options.value
+            }
+        }
+    }
+
     static decorate = (until, funcStr, before, after, changeResult = false) => {
         const start = new Date().getTime();
         const uuid = Math.random();
@@ -272,44 +330,6 @@ class utils {
         const truncatePlugin = this.getPlugin("truncate_text");
         collapsePlugin && collapsePlugin.rollback(target);
         truncatePlugin && truncatePlugin.rollback(target);
-    }
-
-    static getFenceContent = (pre, cid) => {
-        // from element
-        if (pre) {
-            const lines = pre.querySelectorAll(".CodeMirror-code .CodeMirror-line");
-            if (lines.length) {
-                const badChars = [
-                    "%E2%80%8B", // ZERO WIDTH SPACE \u200b
-                    "%C2%A0", // NO-BREAK SPACE \u00A0
-                    "%0A" // NO-BREAK SPACE \u0A
-                ];
-                const replaceChars = ["", "%20", ""];
-                const contentList = [];
-                lines.forEach(line => {
-                    let encodeText = encodeURI(line.textContent);
-                    for (let i = 0; i < badChars.length; i++) {
-                        if (encodeText.indexOf(badChars[i]) !== -1) {
-                            encodeText = encodeText.replace(new RegExp(badChars[i], "g"), replaceChars[i]);
-                        }
-                    }
-                    const decodeText = decodeURI(encodeText);
-                    contentList.push(decodeText);
-                })
-                if (contentList) {
-                    return contentList.join("\n")
-                }
-            }
-        }
-
-        // from queue
-        cid = cid || pre && pre.getAttribute("cid");
-        if (cid) {
-            const fence = File.editor.fences.queue[cid];
-            if (fence) {
-                return fence.options.value
-            }
-        }
     }
 
     static resizeFixedModal = (
