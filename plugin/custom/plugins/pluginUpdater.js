@@ -117,9 +117,9 @@ class binFileUpdater {
 
         if (fileList.length !== 2) return
 
-        const compare = this.compareVersion(fileList[0].version, fileList[1].version);
+        const compare = this.utils.compareVersion(fileList[0].version, fileList[1].version);
         let deleteFile, remainFile
-        if (compare === 1) {
+        if (compare > 0) {
             deleteFile = fileList[1].file;
             remainFile = fileList[0].file;
         } else {
@@ -129,26 +129,6 @@ class binFileUpdater {
         deleteFile = this.utils.Package.Path.join(dir, deleteFile);
         remainFile = this.utils.Package.Path.join(dir, remainFile);
         return {delete: deleteFile, remain: remainFile}
-    }
-
-    compareVersion = (v1, v2) => {
-        if (v1 === "" && v2 !== "") {
-            return -1
-        } else if (v2 === "" && v1 !== "") {
-            return 1
-        }
-        const v1Arr = v1.split(".");
-        const v2Arr = v2.split(".");
-        for (let i = 0; i < v1Arr.length || i < v2Arr.length; i++) {
-            const n1 = (i < v1Arr.length) ? parseInt(v1Arr[i]) : 0;
-            const n2 = (i < v2Arr.length) ? parseInt(v2Arr[i]) : 0;
-            if (n1 > n2) {
-                return 1
-            } else if (n1 < n2) {
-                return -1
-            }
-        }
-        return 0
     }
 }
 

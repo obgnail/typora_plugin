@@ -79,50 +79,8 @@ class kanbanPlugin extends BaseCustomPlugin {
         return text
     }
 
-    init = () => {
-        this.badChars = ["%E2%80%8B", "%C2%A0", "%0A"];
-        this.replaceChars = ["", "%20", ""];
-    }
-
     process = () => {
-        this.utils.decorateAddCodeBlock(null, (result, ...args) => File.editor.diagrams.updateDiagram(args[0]))
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
-            "File.editor.fences.tryAddLangUndo",
-            null,
-            (result, ...args) => File.editor.diagrams.updateDiagram(args[0].cid)
-        )
-        this.utils.decorate(
-            // black magic
-            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor && File.editor.diagrams.constructor.isDiagramType),
-            "File.editor.diagrams.constructor.isDiagramType",
-            null,
-            (result, ...args) => {
-                if (result === true) return true;
-                try {
-                    const lang = args[0];
-                    const type = typeof lang;
-                    if (type === "string") {
-                        return lang.toLowerCase() === "kanban"
-                    } else if (type === "object" && lang["name"]) {
-                        return lang["name"].toLowerCase() === "kanban"
-                    }
-                } catch (e) {
-                    console.error(e)
-                }
-                return result
-            },
-            true
-        )
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
-            "File.editor.diagrams.updateDiagram",
-            null,
-            async (result, ...args) => {
-                const cid = args[0];
-                cid && this.newKanban(cid);
-            }
-        )
+        this.utils.registerDiagramParser("kanban", this.newKanban);
 
         if (this.config.CTRL_WHEEL_TO_SCROLL) {
             const that = this;
@@ -136,38 +94,19 @@ class kanbanPlugin extends BaseCustomPlugin {
 
     callback = anchorNode => this.utils.insertFence(anchorNode, this.config.TEMPLATE)
 
-    rollback = pre => {
-        pre.children(".plugin-kanban").remove();
-        pre.children(".fence-enhance").show();
-        if (this.utils.isBetaVersion) {
-            pre.removeClass("md-fences-advanced");
-        }
-    }
-
-    newKanban = cid => {
-        const pre = File.editor.findElemById(cid);
-        const lang = pre.attr("lang").trim().toLowerCase();
-        if (lang !== "kanban") {
-            this.rollback(pre);
-            return;
-        }
-
-        pre.children(".fence-enhance").hide();
-        pre.addClass("md-fences-advanced");
-
-        let kanban = pre.find(".plugin-kanban");
+    newKanban = (cid, lang, content, $pre) => {
+        let kanban = $pre.find(".plugin-kanban");
         if (kanban.length === 0) {
             kanban = $(`<div class="plugin-kanban"><div class="plugin-kanban-title"></div><div class="plugin-kanban-content"></div></div>`);
-            const preview = pre.find(".md-diagram-panel-preview");
-            preview.length && preview.append(kanban);
         }
-        const kanban_ = this.newKanbanElement(pre, cid);
+        const kanban_ = this.newKanbanElement($pre, cid, content);
         if (kanban_) {
             kanban.find(".plugin-kanban-title").text(kanban_.title);
             kanban.find(".plugin-kanban-content").html(kanban_.list);
+            $pre.find(".md-diagram-panel-preview").html(kanban);
         } else {
             // accident occurred
-            this.rollback(pre);
+            $pre.children(".plugin-kanban").remove();
         }
     }
 
@@ -177,13 +116,7 @@ class kanbanPlugin extends BaseCustomPlugin {
         return this.config[type][idx]
     }
 
-    newKanbanElement = (pre, cid) => {
-        let content = this.getFenceContentFromElement(pre[0]);
-        if (!content) {
-            content = this.getFenceContentFromQueue(cid);
-            if (!content) return;
-        }
-
+    newKanbanElement = (pre, cid, content) => {
         const kanban = {title: "", list: []};
         const lines = content.split("\n").map(line => line.trim()).filter(Boolean);
         lines.forEach(line => {
@@ -218,31 +151,6 @@ class kanbanPlugin extends BaseCustomPlugin {
                 </div>`)
         })
         return kanban
-    }
-
-    getFenceContentFromElement = pre => {
-        const lines = pre.querySelectorAll(".CodeMirror-code .CodeMirror-line");
-        if (lines.length === 0) return;
-
-        const contentList = [];
-        lines.forEach(line => {
-            let encodeText = encodeURI(line.textContent);
-            for (let i = 0; i < this.badChars.length; i++) {
-                if (encodeText.indexOf(this.badChars[i]) !== -1) {
-                    encodeText = encodeText.replace(new RegExp(this.badChars[i], "g"), this.replaceChars[i]);
-                }
-            }
-            const decodeText = decodeURI(encodeText);
-            contentList.push(decodeText);
-        })
-        return contentList.join("\n")
-    }
-
-    getFenceContentFromQueue = cid => {
-        const fence = File.editor.fences.queue[cid];
-        if (fence) {
-            return fence.options.value
-        }
     }
 }
 

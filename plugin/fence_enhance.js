@@ -53,12 +53,6 @@ class fenceEnhancePlugin extends global._basePlugin {
 
     init = () => {
         this.lastClickTime = 0;
-        this.badChars = [
-            "%E2%80%8B", // ZERO WIDTH SPACE \u200b
-            "%C2%A0", // NO-BREAK SPACE \u00A0
-            "%0A" // NO-BREAK SPACE \u0A
-        ];
-        this.replaceChars = ["", "%20", ""];
         this.dynamicUtil = {target: null};
         this.callArgs = [
             {
@@ -214,22 +208,7 @@ class fenceEnhancePlugin extends global._basePlugin {
         if (ev.timeStamp - this.lastClickTime < this.config.CLICK_CHECK_INTERVAL) return;
         this.lastClickTime = ev.timeStamp;
 
-        const lines = copyButton.closest(".md-fences").querySelectorAll(".CodeMirror-code .CodeMirror-line");
-        if (lines.length === 0) return;
-
-        const contentList = [];
-        lines.forEach(line => {
-            let encodeText = encodeURI(line.textContent);
-            for (let i = 0; i < this.badChars.length; i++) {
-                if (encodeText.indexOf(this.badChars[i]) !== -1) {
-                    encodeText = encodeText.replace(new RegExp(this.badChars[i], "g"), this.replaceChars[i]);
-                }
-            }
-            const decodeText = decodeURI(encodeText);
-            contentList.push(decodeText);
-        })
-
-        const result = contentList.join("\n");
+        const result = this.utils.getFenceContent(copyButton.closest(".md-fences"))
         navigator.clipboard.writeText(result);
         // File.editor.UserOp.setClipboard(null, null, result);
 

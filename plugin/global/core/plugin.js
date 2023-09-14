@@ -13,9 +13,29 @@ class utils {
         ChildProcess: reqnode('child_process'),
     }
 
+    static compareVersion = (v1, v2) => {
+        if (v1 === "" && v2 !== "") {
+            return -1
+        } else if (v2 === "" && v1 !== "") {
+            return 1
+        }
+        const v1Arr = v1.split(".");
+        const v2Arr = v2.split(".");
+        for (let i = 0; i < v1Arr.length || i < v2Arr.length; i++) {
+            const n1 = (i < v1Arr.length) ? parseInt(v1Arr[i]) : 0;
+            const n2 = (i < v2Arr.length) ? parseInt(v2Arr[i]) : 0;
+            if (n1 > n2) {
+                return 1
+            } else if (n1 < n2) {
+                return -1
+            }
+        }
+        return 0
+    }
+
     // { a: [{ b: 2 }] } { a: [{ c: 2 }]} -> { a: [{b:2}, {c:2}]}
     // merge({o: {a: 3}}, {o: {b:4}}) => {o: {a:3, b:4}}
-    static merge(source, other) {
+    static merge = (source, other) => {
         const isObject = value => {
             const type = typeof value
             return value !== null && (type === 'object' || type === 'function')
@@ -34,6 +54,8 @@ class utils {
             return acc
         }, Array.isArray(source) ? [] : {})
     }
+
+    static registerDiagramParser = (name, func, rollback) => global._diagramParser.register(name, func, rollback)
 
     static insertStyle = (id, css) => {
         const style = document.createElement('style');
@@ -72,13 +94,6 @@ class utils {
             let v = c === 'x' ? r : (r & 0x3) | 0x8;
             return v.toString(16);
         });
-    }
-
-    static insertFence = (anchorNode, content) => {
-        File.editor.contextMenu.hide();
-        // File.editor.writingArea.focus();
-        File.editor.restoreLastCursor();
-        File.editor.insertText(content);
     }
 
     static once = func => {
@@ -197,6 +212,51 @@ class utils {
             && this.shiftKeyPressed(ev) === shift
             && this.altKeyPressed(ev) === alt
             && ev.key.toLowerCase() === key
+    }
+
+    static insertFence = (anchorNode, content) => {
+        File.editor.contextMenu.hide();
+        // File.editor.writingArea.focus();
+        File.editor.restoreLastCursor();
+        File.editor.insertText(content);
+    }
+
+    static getFenceContent = (pre, cid) => {
+        // from element
+        if (pre) {
+            const lines = pre.querySelectorAll(".CodeMirror-code .CodeMirror-line");
+            if (lines.length) {
+                const badChars = [
+                    "%E2%80%8B", // ZERO WIDTH SPACE \u200b
+                    "%C2%A0", // NO-BREAK SPACE \u00A0
+                    "%0A" // NO-BREAK SPACE \u0A
+                ];
+                const replaceChars = ["", "%20", ""];
+                const contentList = [];
+                lines.forEach(line => {
+                    let encodeText = encodeURI(line.textContent);
+                    for (let i = 0; i < badChars.length; i++) {
+                        if (encodeText.indexOf(badChars[i]) !== -1) {
+                            encodeText = encodeText.replace(new RegExp(badChars[i], "g"), replaceChars[i]);
+                        }
+                    }
+                    const decodeText = decodeURI(encodeText);
+                    contentList.push(decodeText);
+                })
+                if (contentList) {
+                    return contentList.join("\n")
+                }
+            }
+        }
+
+        // from queue
+        cid = cid || pre && pre.getAttribute("cid");
+        if (cid) {
+            const fence = File.editor.fences.queue[cid];
+            if (fence) {
+                return fence.options.value
+            }
+        }
     }
 
     static decorate = (until, funcStr, before, after, changeResult = false) => {
@@ -444,7 +504,7 @@ class hotkeyHelper {
         }
     }
 
-    register(hotkeyList) {
+    register = hotkeyList => {
         if (hotkeyList) {
             for (const hotkey of hotkeyList) {
                 this._register(hotkey.hotkey, hotkey.callback);
@@ -480,6 +540,103 @@ class userSettingHelper {
         return pluginSetting
     }
 }
+
+class DiagramParser {
+    constructor() {
+        this.utils = utils;
+        this.diagramNameMap = {};
+        this.diagramRollbackMap = {};
+    }
+
+    register = (diagramName, newDiagramFunc, rollbackFunc) => {
+        const name = diagramName.toLowerCase();
+        this.diagramNameMap[name] = newDiagramFunc;
+        this.diagramRollbackMap[name] = rollbackFunc;
+        console.log(`register diagram parser: [ ${diagramName} ]`);
+    }
+
+    updateDiagram = cid => {
+        if (!cid) return;
+
+        const $pre = File.editor.findElemById(cid);
+        const lang = $pre.attr("lang").trim().toLowerCase();
+
+        if (!this.diagramNameMap.hasOwnProperty(lang) && !File.editor.diagrams.constructor.isDiagramType(lang)) {
+            $pre.children(".fence-enhance").show();
+            $pre.removeClass("md-fences-advanced");
+        } else {
+            $pre.children(".fence-enhance").hide();
+            const content = this.utils.getFenceContent($pre[0], cid);
+            if (!content) {
+                $pre.children(".md-diagram-panel").remove();
+                $pre.removeClass("md-fences-advanced");
+                return;
+            }
+
+            $pre.addClass("md-fences-advanced");
+            if ($pre.find(".md-diagram-panel").length === 0) {
+                $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div>
+                    <div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
+            }
+
+            const func = this.diagramNameMap[lang];
+            func && func(cid, lang, content, $pre)
+            for (let rollbackLang of Object.keys(this.diagramRollbackMap)) {
+                if (rollbackLang !== lang) {
+                    const rollback = this.diagramRollbackMap[rollbackLang];
+                    rollback && rollback(cid, lang, content, $pre);
+                }
+            }
+        }
+    }
+
+    listen = () => {
+        // 添加时
+        this.utils.decorateAddCodeBlock(null, (result, ...args) => this.updateDiagram(args[0]))
+        // 修改语言时
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
+            "File.editor.fences.tryAddLangUndo",
+            null,
+            (result, ...args) => this.updateDiagram(args[0].cid)
+        )
+        // 更新时
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
+            "File.editor.diagrams.updateDiagram",
+            null,
+            async (result, ...args) => {
+                this.updateDiagram(args[0])
+            }
+        )
+        // 判断是否为Diagram
+        this.utils.decorate(
+            // black magic
+            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor && File.editor.diagrams.constructor.isDiagramType),
+            "File.editor.diagrams.constructor.isDiagramType",
+            null,
+            (result, ...args) => {
+                if (result === true) return true;
+                try {
+                    let lang = args[0];
+                    const type = typeof lang;
+                    if (type === "object" && lang["name"]) {
+                        lang = lang["name"];
+                    }
+                    if (type === "string") {
+                        return this.diagramNameMap.hasOwnProperty(lang.toLowerCase());
+                    }
+                } catch (e) {
+                    console.error(e)
+                }
+                return result
+            },
+            true
+        )
+    }
+}
+
+global._diagramParser = new DiagramParser();
 
 class process {
     constructor() {
@@ -550,6 +707,7 @@ class process {
 
         Promise.all(promises).then(() => {
             this.hotkeyHelper.listen();
+            global._diagramParser.listen();
             global._pluginsHadInjected = true;
         })
     }
