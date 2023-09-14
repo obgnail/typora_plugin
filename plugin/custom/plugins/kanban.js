@@ -110,7 +110,7 @@ class kanbanPlugin extends BaseCustomPlugin {
         }
     }
 
-    // TASK_COLOR or KANBAN_COLOR
+    // type: TASK_COLOR/KANBAN_COLOR
     getColor = (type, idx) => {
         idx %= this.config[type].length;
         return this.config[type][idx]
@@ -131,7 +131,7 @@ class kanbanPlugin extends BaseCustomPlugin {
                 const title = match.groups.title;
                 if (title) {
                     const last = kanban.list[kanban.list.length - 1];
-                    const desc = (match.groups.desc || "").replace(/\\n/g, "\n");
+                    const desc = (match.groups.desc || "").replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t");
                     last && last.item.push({title, desc});
                 }
             }
