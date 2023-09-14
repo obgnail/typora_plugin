@@ -93,6 +93,13 @@
 
 > 虽然操作简单，还请务必对照上图谨慎操作。如果修改完 Typora 白屏了，很可能是你修改的时候疏忽了。
 
+## 如何使用：方法三（自动）
+
+> 目前此方法仅限 archlinux 平台，aur见 [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin)
+
+```
+yay -S typora-plugin
+```
 
 
 ## 实现原理
