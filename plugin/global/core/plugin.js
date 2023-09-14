@@ -55,7 +55,7 @@ class utils {
         }, Array.isArray(source) ? [] : {})
     }
 
-    static registerDiagramParser = (diagramName, newDiagramFunc) => global._diagramHelper.register(diagramName, newDiagramFunc)
+    static registerDiagramParser = (name, func, rollback) => global._diagramParser.register(name, func, rollback)
 
     static insertStyle = (id, css) => {
         const style = document.createElement('style');
@@ -541,25 +541,75 @@ class userSettingHelper {
     }
 }
 
-class DiagramHelper {
+class DiagramParser {
     constructor() {
         this.utils = utils;
         this.diagramNameMap = {};
+        this.diagramRollbackMap = {};
     }
 
-    register = (diagramName, newDiagramFunc) => {
-        this.diagramNameMap[diagramName.toLowerCase()] = newDiagramFunc;
+    register = (diagramName, newDiagramFunc, rollbackFunc) => {
+        const name = diagramName.toLowerCase();
+        this.diagramNameMap[name] = newDiagramFunc;
+        this.diagramRollbackMap[name] = rollbackFunc;
         console.log(`register diagram parser: [ ${diagramName} ]`);
     }
 
+    updateDiagram = cid => {
+        if (!cid) return;
+
+        const $pre = File.editor.findElemById(cid);
+        const lang = $pre.attr("lang").trim().toLowerCase();
+
+        if (!this.diagramNameMap.hasOwnProperty(lang) && !File.editor.diagrams.constructor.isDiagramType(lang)) {
+            $pre.children(".fence-enhance").show();
+            $pre.removeClass("md-fences-advanced");
+        } else {
+            $pre.children(".fence-enhance").hide();
+            const content = this.utils.getFenceContent($pre[0], cid);
+            if (!content) {
+                $pre.children(".md-diagram-panel").remove();
+                $pre.removeClass("md-fences-advanced");
+                return;
+            }
+
+            $pre.addClass("md-fences-advanced");
+            if ($pre.find(".md-diagram-panel").length === 0) {
+                $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div>
+                    <div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
+            }
+
+            const func = this.diagramNameMap[lang];
+            func && func(cid, lang, content, $pre)
+            for (let rollbackLang of Object.keys(this.diagramRollbackMap)) {
+                if (rollbackLang !== lang) {
+                    const rollback = this.diagramRollbackMap[rollbackLang];
+                    rollback && rollback(cid, lang, content, $pre);
+                }
+            }
+        }
+    }
+
     listen = () => {
-        this.utils.decorateAddCodeBlock(null, (result, ...args) => File.editor.diagrams.updateDiagram(args[0]))
+        // 添加时
+        this.utils.decorateAddCodeBlock(null, (result, ...args) => this.updateDiagram(args[0]))
+        // 修改语言时
         this.utils.decorate(
             () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
             "File.editor.fences.tryAddLangUndo",
             null,
-            (result, ...args) => File.editor.diagrams.updateDiagram(args[0].cid)
+            (result, ...args) => this.updateDiagram(args[0].cid)
         )
+        // 更新时
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
+            "File.editor.diagrams.updateDiagram",
+            null,
+            async (result, ...args) => {
+                this.updateDiagram(args[0])
+            }
+        )
+        // 判断是否为Diagram
         this.utils.decorate(
             // black magic
             () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor && File.editor.diagrams.constructor.isDiagramType),
@@ -583,26 +633,10 @@ class DiagramHelper {
             },
             true
         )
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
-            "File.editor.diagrams.updateDiagram",
-            null,
-            async (result, ...args) => {
-                const cid = args[0];
-                if (!cid) return;
-                const pre = File.editor.findElemById(cid);
-                const lang = pre.attr("lang").trim().toLowerCase();
-                // 每个都要遍历一遍，因为有的diagram需要在不是目标语言的时候做rollback
-                for (const name of Object.keys(this.diagramNameMap)) {
-                    const func = this.diagramNameMap[name];
-                    func(cid, lang, pre);
-                }
-            }
-        )
     }
 }
 
-global._diagramHelper = new DiagramHelper();
+global._diagramParser = new DiagramParser();
 
 class process {
     constructor() {
@@ -673,7 +707,7 @@ class process {
 
         Promise.all(promises).then(() => {
             this.hotkeyHelper.listen();
-            global._diagramHelper.listen();
+            global._diagramParser.listen();
             global._pluginsHadInjected = true;
         })
     }

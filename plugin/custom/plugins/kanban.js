@@ -94,36 +94,19 @@ class kanbanPlugin extends BaseCustomPlugin {
 
     callback = anchorNode => this.utils.insertFence(anchorNode, this.config.TEMPLATE)
 
-    rollback = pre => {
-        pre.children(".plugin-kanban").remove();
-        pre.children(".fence-enhance").show();
-        if (this.utils.isBetaVersion) {
-            pre.removeClass("md-fences-advanced");
-        }
-    }
-
-    newKanban = (cid, lang, pre) => {
-        if (lang !== "kanban") {
-            this.rollback(pre);
-            return;
-        }
-
-        pre.children(".fence-enhance").hide();
-        pre.addClass("md-fences-advanced");
-
-        let kanban = pre.find(".plugin-kanban");
+    newKanban = (cid, lang, content, $pre) => {
+        let kanban = $pre.find(".plugin-kanban");
         if (kanban.length === 0) {
             kanban = $(`<div class="plugin-kanban"><div class="plugin-kanban-title"></div><div class="plugin-kanban-content"></div></div>`);
-            const preview = pre.find(".md-diagram-panel-preview");
-            preview.length && preview.append(kanban);
         }
-        const kanban_ = this.newKanbanElement(pre, cid);
+        const kanban_ = this.newKanbanElement($pre, cid, content);
         if (kanban_) {
             kanban.find(".plugin-kanban-title").text(kanban_.title);
             kanban.find(".plugin-kanban-content").html(kanban_.list);
+            $pre.find(".md-diagram-panel-preview").html(kanban);
         } else {
             // accident occurred
-            this.rollback(pre);
+            $pre.children(".plugin-kanban").remove();
         }
     }
 
@@ -133,10 +116,7 @@ class kanbanPlugin extends BaseCustomPlugin {
         return this.config[type][idx]
     }
 
-    newKanbanElement = (pre, cid) => {
-        const content = this.utils.getFenceContent(pre[0], cid);
-        if (!content) return;
-
+    newKanbanElement = (pre, cid, content) => {
         const kanban = {title: "", list: []};
         const lines = content.split("\n").map(line => line.trim()).filter(Boolean);
         lines.forEach(line => {
