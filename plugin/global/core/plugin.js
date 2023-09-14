@@ -55,6 +55,8 @@ class utils {
         }, Array.isArray(source) ? [] : {})
     }
 
+    static registerDiagramParser = (diagramName, newDiagramFunc) => global._diagramHelper.register(diagramName, newDiagramFunc)
+
     static insertStyle = (id, css) => {
         const style = document.createElement('style');
         style.id = id;
@@ -502,7 +504,7 @@ class hotkeyHelper {
         }
     }
 
-    register(hotkeyList) {
+    register = hotkeyList => {
         if (hotkeyList) {
             for (const hotkey of hotkeyList) {
                 this._register(hotkey.hotkey, hotkey.callback);
@@ -538,6 +540,69 @@ class userSettingHelper {
         return pluginSetting
     }
 }
+
+class DiagramHelper {
+    constructor() {
+        this.utils = utils;
+        this.diagramNameMap = {};
+    }
+
+    register = (diagramName, newDiagramFunc) => {
+        this.diagramNameMap[diagramName.toLowerCase()] = newDiagramFunc;
+        console.log(`register diagram parser: [ ${diagramName} ]`);
+    }
+
+    listen = () => {
+        this.utils.decorateAddCodeBlock(null, (result, ...args) => File.editor.diagrams.updateDiagram(args[0]))
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
+            "File.editor.fences.tryAddLangUndo",
+            null,
+            (result, ...args) => File.editor.diagrams.updateDiagram(args[0].cid)
+        )
+        this.utils.decorate(
+            // black magic
+            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor && File.editor.diagrams.constructor.isDiagramType),
+            "File.editor.diagrams.constructor.isDiagramType",
+            null,
+            (result, ...args) => {
+                if (result === true) return true;
+                try {
+                    let lang = args[0];
+                    const type = typeof lang;
+                    if (type === "object" && lang["name"]) {
+                        lang = lang["name"];
+                    }
+                    if (type === "string") {
+                        return this.diagramNameMap.hasOwnProperty(lang.toLowerCase());
+                    }
+                } catch (e) {
+                    console.error(e)
+                }
+                return result
+            },
+            true
+        )
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
+            "File.editor.diagrams.updateDiagram",
+            null,
+            async (result, ...args) => {
+                const cid = args[0];
+                if (!cid) return;
+                const pre = File.editor.findElemById(cid);
+                const lang = pre.attr("lang").trim().toLowerCase();
+                // 每个都要遍历一遍，因为有的diagram需要在不是目标语言的时候做rollback
+                for (const name of Object.keys(this.diagramNameMap)) {
+                    const func = this.diagramNameMap[name];
+                    func(cid, lang, pre);
+                }
+            }
+        )
+    }
+}
+
+global._diagramHelper = new DiagramHelper();
 
 class process {
     constructor() {
@@ -608,6 +673,7 @@ class process {
 
         Promise.all(promises).then(() => {
             this.hotkeyHelper.listen();
+            global._diagramHelper.listen();
             global._pluginsHadInjected = true;
         })
     }

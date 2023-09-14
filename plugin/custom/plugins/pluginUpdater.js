@@ -119,7 +119,7 @@ class binFileUpdater {
 
         const compare = this.utils.compareVersion(fileList[0].version, fileList[1].version);
         let deleteFile, remainFile
-        if (compare === 1) {
+        if (compare > 0) {
             deleteFile = fileList[1].file;
             remainFile = fileList[0].file;
         } else {

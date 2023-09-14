@@ -80,44 +80,7 @@ class kanbanPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        this.utils.decorateAddCodeBlock(null, (result, ...args) => File.editor.diagrams.updateDiagram(args[0]))
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
-            "File.editor.fences.tryAddLangUndo",
-            null,
-            (result, ...args) => File.editor.diagrams.updateDiagram(args[0].cid)
-        )
-        this.utils.decorate(
-            // black magic
-            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor && File.editor.diagrams.constructor.isDiagramType),
-            "File.editor.diagrams.constructor.isDiagramType",
-            null,
-            (result, ...args) => {
-                if (result === true) return true;
-                try {
-                    const lang = args[0];
-                    const type = typeof lang;
-                    if (type === "string") {
-                        return lang.toLowerCase() === "kanban"
-                    } else if (type === "object" && lang["name"]) {
-                        return lang["name"].toLowerCase() === "kanban"
-                    }
-                } catch (e) {
-                    console.error(e)
-                }
-                return result
-            },
-            true
-        )
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
-            "File.editor.diagrams.updateDiagram",
-            null,
-            async (result, ...args) => {
-                const cid = args[0];
-                cid && this.newKanban(cid);
-            }
-        )
+        this.utils.registerDiagramParser("kanban", this.newKanban);
 
         if (this.config.CTRL_WHEEL_TO_SCROLL) {
             const that = this;
@@ -139,9 +102,7 @@ class kanbanPlugin extends BaseCustomPlugin {
         }
     }
 
-    newKanban = cid => {
-        const pre = File.editor.findElemById(cid);
-        const lang = pre.attr("lang").trim().toLowerCase();
+    newKanban = (cid, lang, pre) => {
         if (lang !== "kanban") {
             this.rollback(pre);
             return;
