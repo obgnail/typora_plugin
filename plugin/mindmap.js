@@ -1,5 +1,6 @@
 class mindmapPlugin extends global._basePlugin {
     init = () => {
+        this.dynamicUtil = {target: null};
         this.paragraphList = ["H0", "H1", "H2", "H3", "H4", "H5", "H6"];
         this.callArgs = [
             {
@@ -86,8 +87,8 @@ class mindmapPlugin extends global._basePlugin {
     }
 
     dynamicCallArgsGenerator = anchorNode => {
-        const target = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
-        const disabled = !target || target.querySelector("p > span");
+        this.dynamicUtil.target = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
+        const disabled = !this.dynamicUtil.target || this.dynamicUtil.target.querySelector("p > span");
 
         return [
             {
@@ -121,18 +122,24 @@ class mindmapPlugin extends global._basePlugin {
         }
 
         let result;
-        if (type === "set_clipboard_mindmap" || type === "insert_mindmap") {
-            result = this.mindmap(pList, root);
-        } else if (type === "set_clipboard_graph" || type === "insert_graph") {
-            result = this.graph(pList, root);
+        switch (type) {
+            case "set_clipboard_mindmap":
+                result = this.mindmap(pList, root);
+                navigator.clipboard.writeText(result);
+                return;
+            case "set_clipboard_graph":
+                result = this.graph(pList, root);
+                navigator.clipboard.writeText(result);
+                return;
+            case "insert_mindmap":
+                result = this.mindmap(pList, root);
+                this.dynamicUtil.target && this.utils.insertFence(this.dynamicUtil.target, result);
+                return;
+            case "insert_graph":
+                result = this.graph(pList, root);
+                this.dynamicUtil.target && this.utils.insertFence(this.dynamicUtil.target, result);
+                return;
         }
-
-        navigator.clipboard.writeText(result).then(() => {
-            if (type === "insert_mindmap" || type === "insert_graph") {
-                const ele = document.querySelector("#context-menu [data-key='paste']");
-                ele && ele.click();
-            }
-        });
     }
 }
 

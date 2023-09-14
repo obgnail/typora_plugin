@@ -74,6 +74,12 @@ class utils {
         });
     }
 
+    static insertFence = (anchorNode, content) => {
+        File.editor.contextMenu.hide();
+        File.editor.writingArea.focus();
+        File.editor.insertText(content);
+    }
+
     static once = func => {
         let flag = true;
         return () => {
