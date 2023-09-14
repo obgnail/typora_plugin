@@ -79,11 +79,6 @@ class kanbanPlugin extends BaseCustomPlugin {
         return text
     }
 
-    init = () => {
-        this.badChars = ["%E2%80%8B", "%C2%A0", "%0A"];
-        this.replaceChars = ["", "%20", ""];
-    }
-
     process = () => {
         this.utils.decorateAddCodeBlock(null, (result, ...args) => File.editor.diagrams.updateDiagram(args[0]))
         this.utils.decorate(
@@ -178,11 +173,8 @@ class kanbanPlugin extends BaseCustomPlugin {
     }
 
     newKanbanElement = (pre, cid) => {
-        let content = this.getFenceContentFromElement(pre[0]);
-        if (!content) {
-            content = this.getFenceContentFromQueue(cid);
-            if (!content) return;
-        }
+        const content = this.utils.getFenceContent(pre[0], cid);
+        if (!content) return;
 
         const kanban = {title: "", list: []};
         const lines = content.split("\n").map(line => line.trim()).filter(Boolean);
@@ -218,31 +210,6 @@ class kanbanPlugin extends BaseCustomPlugin {
                 </div>`)
         })
         return kanban
-    }
-
-    getFenceContentFromElement = pre => {
-        const lines = pre.querySelectorAll(".CodeMirror-code .CodeMirror-line");
-        if (lines.length === 0) return;
-
-        const contentList = [];
-        lines.forEach(line => {
-            let encodeText = encodeURI(line.textContent);
-            for (let i = 0; i < this.badChars.length; i++) {
-                if (encodeText.indexOf(this.badChars[i]) !== -1) {
-                    encodeText = encodeText.replace(new RegExp(this.badChars[i], "g"), this.replaceChars[i]);
-                }
-            }
-            const decodeText = decodeURI(encodeText);
-            contentList.push(decodeText);
-        })
-        return contentList.join("\n")
-    }
-
-    getFenceContentFromQueue = cid => {
-        const fence = File.editor.fences.queue[cid];
-        if (fence) {
-            return fence.options.value
-        }
     }
 }
 

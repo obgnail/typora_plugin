@@ -274,6 +274,44 @@ class utils {
         truncatePlugin && truncatePlugin.rollback(target);
     }
 
+    static getFenceContent = (pre, cid) => {
+        // from element
+        if (pre) {
+            const lines = pre.querySelectorAll(".CodeMirror-code .CodeMirror-line");
+            if (lines.length) {
+                const badChars = [
+                    "%E2%80%8B", // ZERO WIDTH SPACE \u200b
+                    "%C2%A0", // NO-BREAK SPACE \u00A0
+                    "%0A" // NO-BREAK SPACE \u0A
+                ];
+                const replaceChars = ["", "%20", ""];
+                const contentList = [];
+                lines.forEach(line => {
+                    let encodeText = encodeURI(line.textContent);
+                    for (let i = 0; i < badChars.length; i++) {
+                        if (encodeText.indexOf(badChars[i]) !== -1) {
+                            encodeText = encodeText.replace(new RegExp(badChars[i], "g"), replaceChars[i]);
+                        }
+                    }
+                    const decodeText = decodeURI(encodeText);
+                    contentList.push(decodeText);
+                })
+                if (contentList) {
+                    return contentList.join("\n")
+                }
+            }
+        }
+
+        // from queue
+        cid = cid || pre && pre.getAttribute("cid");
+        if (cid) {
+            const fence = File.editor.fences.queue[cid];
+            if (fence) {
+                return fence.options.value
+            }
+        }
+    }
+
     static resizeFixedModal = (
         handleElement, resizeElement,
         resizeWidth = true, resizeHeight = true,
