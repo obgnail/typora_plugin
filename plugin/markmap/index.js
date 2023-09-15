@@ -6,7 +6,16 @@ class markmapPlugin extends global._basePlugin {
         this.Markmap = null;
     }
 
-    style = () => this.tocMarkmap && this.tocMarkmap.style();
+    style = () => {
+        let text = "";
+        if (this.tocMarkmap) {
+            text += this.tocMarkmap.style();
+        }
+        if (this.fenceMarkmap) {
+            text += this.fenceMarkmap.style();
+        }
+        return text
+    }
 
     html = () => this.tocMarkmap && this.tocMarkmap.html();
 
@@ -55,16 +64,14 @@ class fenceMarkmap {
         this.map = {}; // {cid: instance}
     }
 
+    style = () => `.md-diagram-panel .plugin-fence-markmap-svg {line-height: initial !important;}`
+
     process = () => {
         this.utils.registerDiagramParser("markmap", this.render, this.cancel, false);
         this.utils.decorateOpenFile(null, this.destroyAll);
     }
 
-    call = async type => {
-        if (type === "draw_fence") {
-            this.utils.insertFence(null, this.config.FENCE_TEMPLATE);
-        }
-    }
+    call = async type => type === "draw_fence" && this.utils.insertFence(null, this.config.FENCE_TEMPLATE)
 
     render = async (cid, lang, content, $pre) => await this.draw(cid, $pre, content);
     cancel = cid => {
@@ -98,9 +105,8 @@ class fenceMarkmap {
         if (svg.length === 0) {
             svg = $(`<svg class="plugin-fence-markmap-svg"></svg>`);
         }
-        const $panel = $pre.find(".md-diagram-panel");
         svg.css({
-            "width": parseInt($panel.css("width").replace("px", "")) - 10 + "px",
+            "width": parseInt($pre.find(".md-diagram-panel").css("width").replace("px", "")) - 10 + "px",
             "height": this.config.DEFAULT_FENCE_HEIGHT,
             "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
         });
@@ -178,7 +184,7 @@ class tocMarkmap {
             `
         }
 
-        const text = `
+        return `
             #plugin-markmap {
                 position: fixed;
                 z-index: 9999;
@@ -258,7 +264,6 @@ class tocMarkmap {
                 line-height: initial;
             }
         `
-        return {textID: "plugin-markmap-style", text: text}
     }
 
     html = () => {
@@ -474,11 +479,7 @@ class tocMarkmap {
         }
     }
 
-    call = async type => {
-        if (type === "draw_toc") {
-            await this.drawToc();
-        }
-    }
+    call = async type => type === "draw_toc" && await this.drawToc()
 
     close = () => {
         this.entities.modal.style.display = "";

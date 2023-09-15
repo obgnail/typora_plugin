@@ -721,17 +721,22 @@ class process {
         this.userSettingHelper = new userSettingHelper();
     }
 
-    insertStyle(style) {
+    insertStyle(fixedName, style) {
         if (!style) return;
-        const textID = style["textID"] || null;
-        const text = style["text"] || null;
-        const fileID = style["fileID"] || null;
-        const file = style["file"] || null;
-        if (fileID && file) {
-            this.utils.insertStyleFile(fileID, file);
-        }
-        if (textID && text) {
-            this.utils.insertStyle(textID, text);
+
+        if (typeof style === "string") {
+            this.utils.insertStyle(`plugin-${fixedName}-style`, style);
+        } else if (typeof style === "object") {
+            const textID = style["textID"] || null;
+            const text = style["text"] || null;
+            const fileID = style["fileID"] || null;
+            const file = style["file"] || null;
+            if (fileID && file) {
+                this.utils.insertStyleFile(fileID, file);
+            }
+            if (textID && text) {
+                this.utils.insertStyle(textID, text);
+            }
         }
     }
 
@@ -741,7 +746,7 @@ class process {
         const error = plugin.beforeProcess();
         if (error === this.utils.stopLoadPluginError) return
 
-        this.insertStyle(plugin.style());
+        this.insertStyle(plugin.fixed_name, plugin.style());
         plugin.html();
         this.hotkeyHelper.register(plugin.hotkey());
         plugin.process();

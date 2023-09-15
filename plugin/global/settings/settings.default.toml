@@ -378,7 +378,7 @@ USE_ANIMATION_WHEN_RESIZE = false
 # markmap 共有两个功能: toc 和 fence，若为false，以下配置全部失效
 ENABLE_FENCE_MARKMAP = true
 # 代码块默认高度
-DEFAULT_FENCE_HEIGHT = "500px"
+DEFAULT_FENCE_HEIGHT = "300px"
 # 代码块背景颜色
 DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 # 插入的模板
