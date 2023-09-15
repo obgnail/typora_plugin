@@ -55,7 +55,39 @@ class utils {
         }, Array.isArray(source) ? [] : {})
     }
 
-    static registerDiagramParser = (name, func, rollback) => global._diagramParser.register(name, func, rollback)
+    static throttle = (fn, delay) => {
+        let timer;
+        return function () {
+            if (!timer) {
+                fn.apply(this, arguments);
+                timer = setTimeout(() => {
+                    clearTimeout(timer);
+                    timer = null;
+                }, delay)
+            }
+        }
+    }
+
+    static debounce = (fn, delay) => {
+        let timeout;
+        return function () {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => fn.apply(this, arguments), delay);
+        }
+    }
+
+    static once = func => {
+        let flag = true;
+        return function () {
+            if (flag) {
+                func.apply(this, arguments);
+                flag = false;
+            }
+        }
+    }
+
+    static registerDiagramParser = (name, render) => global._diagramParser.register(name, render)
+    static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
     static insertStyle = (id, css) => {
         const style = document.createElement('style');
@@ -94,16 +126,6 @@ class utils {
             let v = c === 'x' ? r : (r & 0x3) | 0x8;
             return v.toString(16);
         });
-    }
-
-    static once = func => {
-        let flag = true;
-        return () => {
-            if (flag) {
-                func();
-                flag = false;
-            }
-        }
     }
 
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
@@ -544,70 +566,106 @@ class userSettingHelper {
 class DiagramParser {
     constructor() {
         this.utils = utils;
-        this.diagramNameMap = {};
-        this.diagramRollbackMap = {};
+        this.diagramMap = {};
     }
 
-    register = (diagramName, newDiagramFunc, rollbackFunc) => {
-        const name = diagramName.toLowerCase();
-        this.diagramNameMap[name] = newDiagramFunc;
-        this.diagramRollbackMap[name] = rollbackFunc;
-        console.log(`register diagram parser: [ ${diagramName} ]`);
+    style = () => (!this.utils.isBetaVersion) ? "" : `.md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
+
+    isDiagramType = lang => File.editor.diagrams.constructor.isDiagramType(lang)
+    isCustomDiagramType = lang => this.diagramMap.hasOwnProperty(lang)
+
+    throwParseError = (errorLine, reason) => {
+        throw {errorLine, reason}
     }
 
-    updateDiagram = cid => {
-        if (!cid) return;
-
-        const $pre = File.editor.findElemById(cid);
-        const lang = $pre.attr("lang").trim().toLowerCase();
-
-        if (!this.diagramNameMap.hasOwnProperty(lang) && !File.editor.diagrams.constructor.isDiagramType(lang)) {
-            $pre.children(".fence-enhance").show();
+    cantDrawDiagram = (cid, lang, $pre, content, error) => {
+        if (!error) {
             $pre.removeClass("md-fences-advanced");
+            $pre.children(".md-diagram-panel").remove();
         } else {
-            $pre.children(".fence-enhance").hide();
-            const content = this.utils.getFenceContent($pre[0], cid);
-            if (!content) {
-                $pre.children(".md-diagram-panel").remove();
-                $pre.removeClass("md-fences-advanced");
-                return;
-            }
+            $pre.find(".md-diagram-panel-header").text(lang);
+            $pre.find(".md-diagram-panel-preview").text("语法解析异常，绘图失败");
+            $pre.find(".md-diagram-panel-error").text(`第 ${error["errorLine"]} 行发生错误。错误原因：${error["reason"]}`);
+        }
+    }
 
+    cleanErrorMsg = $pre => {
+        $pre.find(".md-diagram-panel-header").html("");
+        $pre.find(".md-diagram-panel-preview").html("");
+        $pre.find(".md-diagram-panel-error").html("");
+    }
+
+    renderCustomDiagram = (cid, lang, $pre) => {
+        this.cleanErrorMsg($pre);
+
+        const content = this.utils.getFenceContent($pre[0], cid);
+        if (!content) {
+            this.cantDrawDiagram(cid, lang, $pre); // empty content
+            return;
+        } else {
             $pre.addClass("md-fences-advanced");
             if ($pre.find(".md-diagram-panel").length === 0) {
                 $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div>
                     <div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
             }
+        }
 
-            const func = this.diagramNameMap[lang];
-            func && func(cid, lang, content, $pre)
-            for (let rollbackLang of Object.keys(this.diagramRollbackMap)) {
-                if (rollbackLang !== lang) {
-                    const rollback = this.diagramRollbackMap[rollbackLang];
-                    rollback && rollback(cid, lang, content, $pre);
-                }
+        const func = this.diagramMap[lang];
+        if (!func) return;
+        try {
+            func(cid, lang, content, $pre);
+        } catch (error) {
+            this.cantDrawDiagram(cid, lang, $pre, content, error);
+            // console.error("updateCustomDiagram error:", error);
+        }
+    }
+
+    renderDiagram = cid => {
+        if (!cid) return;
+
+        const $pre = File.editor.findElemById(cid);
+        const lang = $pre.attr("lang").trim().toLowerCase();
+
+        // 不是Diagram类型，需要展示增强按钮
+        if (!this.isDiagramType(lang)) {
+            $pre.children(".fence-enhance").show();
+            $pre.removeClass("md-fences-advanced");
+        } else {
+            // 是Diagram类型，但是不是自定义类型，不展示增强按钮，直接返回即可
+            $pre.children(".fence-enhance").hide();
+            // 是Diagram类型，也是自定义类型，调用其回调函数
+            if (this.isCustomDiagramType(lang)) {
+                this.renderCustomDiagram(cid, lang, $pre);
             }
         }
     }
 
+    register = (diagramName, diagramRender) => {
+        // 用户可能会快速输入，最好使用节流。但是低版本的Typora有bug，会导致绘图失败
+        // this.diagramNameMap[diagramName.toLowerCase()] = this.utils.throttle(newDiagramFunc, 30);
+        this.diagramMap[diagramName.toLowerCase()] = diagramRender;
+        console.log(`register diagram parser: [ ${diagramName} ]`);
+    }
+
     listen = () => {
+        const css = this.style();
+        css && this.utils.insertStyle("diagram-parser-style", css);
+
         // 添加时
-        this.utils.decorateAddCodeBlock(null, (result, ...args) => this.updateDiagram(args[0]))
+        this.utils.decorateAddCodeBlock(null, (result, ...args) => this.renderDiagram(args[0]))
         // 修改语言时
         this.utils.decorate(
             () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
             "File.editor.fences.tryAddLangUndo",
             null,
-            (result, ...args) => this.updateDiagram(args[0].cid)
+            (result, ...args) => this.renderDiagram(args[0].cid)
         )
         // 更新时
         this.utils.decorate(
             () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
             "File.editor.diagrams.updateDiagram",
             null,
-            async (result, ...args) => {
-                this.updateDiagram(args[0])
-            }
+            async (result, ...args) => this.renderDiagram(args[0])
         )
         // 判断是否为Diagram
         this.utils.decorate(
@@ -617,17 +675,14 @@ class DiagramParser {
             null,
             (result, ...args) => {
                 if (result === true) return true;
-                try {
-                    let lang = args[0];
-                    const type = typeof lang;
-                    if (type === "object" && lang["name"]) {
-                        lang = lang["name"];
-                    }
-                    if (type === "string") {
-                        return this.diagramNameMap.hasOwnProperty(lang.toLowerCase());
-                    }
-                } catch (e) {
-                    console.error(e)
+
+                let lang = args[0];
+                const type = typeof lang;
+                if (type === "object" && lang["name"]) {
+                    lang = lang["name"];
+                }
+                if (type === "string") {
+                    return this.isCustomDiagramType(lang.toLowerCase());
                 }
                 return result
             },
