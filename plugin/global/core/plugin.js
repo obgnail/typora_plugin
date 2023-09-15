@@ -55,7 +55,7 @@ class utils {
         }, Array.isArray(source) ? [] : {})
     }
 
-    static throttle = (fn, delay) => {
+    static throttle = (fn, delay = 100) => {
         let timer;
         return function () {
             if (!timer) {
@@ -86,7 +86,7 @@ class utils {
         }
     }
 
-    static registerDiagramParser = (name, render) => global._diagramParser.register(name, render)
+    static registerDiagramParser = (lang, renderFunc, cancelFunc, redrawWhenUpdate = true) => global._diagramParser.register(lang, renderFunc, cancelFunc, redrawWhenUpdate)
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
     static insertStyle = (id, css) => {
@@ -566,13 +566,15 @@ class userSettingHelper {
 class DiagramParser {
     constructor() {
         this.utils = utils;
-        this.diagramMap = {};
+        this.renderFuncMap = {};
+        this.cancelFuncMap = {};
+        this.redrawWhenUpdateMap = {};
     }
 
     style = () => (!this.utils.isBetaVersion) ? "" : `.md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
 
     isDiagramType = lang => File.editor.diagrams.constructor.isDiagramType(lang)
-    isCustomDiagramType = lang => this.diagramMap.hasOwnProperty(lang)
+    isCustomDiagramType = lang => this.renderFuncMap.hasOwnProperty(lang)
 
     throwParseError = (errorLine, reason) => {
         throw {errorLine, reason}
@@ -587,16 +589,30 @@ class DiagramParser {
             $pre.find(".md-diagram-panel-preview").text("语法解析异常，绘图失败");
             $pre.find(".md-diagram-panel-error").text(`第 ${error["errorLine"]} 行发生错误。错误原因：${error["reason"]}`);
         }
+        this.noticeRollback(cid);
     }
 
-    cleanErrorMsg = $pre => {
+    noticeRollback = cid => {
+        for (let name of Object.keys(this.cancelFuncMap)) {
+            const func = this.cancelFuncMap[name];
+            if (func) {
+                try {
+                    func(cid);
+                } catch (e) {
+                    console.error("call cancel func error:", e);
+                }
+            }
+        }
+    }
+
+    cleanErrorMsg = ($pre, lang) => {
         $pre.find(".md-diagram-panel-header").html("");
-        $pre.find(".md-diagram-panel-preview").html("");
         $pre.find(".md-diagram-panel-error").html("");
+        this.redrawWhenUpdateMap[lang] && $pre.find(".md-diagram-panel-preview").html("");
     }
 
     renderCustomDiagram = (cid, lang, $pre) => {
-        this.cleanErrorMsg($pre);
+        this.cleanErrorMsg($pre, lang);
 
         const content = this.utils.getFenceContent($pre[0], cid);
         if (!content) {
@@ -610,13 +626,12 @@ class DiagramParser {
             }
         }
 
-        const func = this.diagramMap[lang];
+        const func = this.renderFuncMap[lang];
         if (!func) return;
         try {
             func(cid, lang, content, $pre);
         } catch (error) {
             this.cantDrawDiagram(cid, lang, $pre, content, error);
-            // console.error("updateCustomDiagram error:", error);
         }
     }
 
@@ -630,21 +645,27 @@ class DiagramParser {
         if (!this.isDiagramType(lang)) {
             $pre.children(".fence-enhance").show();
             $pre.removeClass("md-fences-advanced");
+            this.noticeRollback(cid);
         } else {
             // 是Diagram类型，但是不是自定义类型，不展示增强按钮，直接返回即可
             $pre.children(".fence-enhance").hide();
             // 是Diagram类型，也是自定义类型，调用其回调函数
             if (this.isCustomDiagramType(lang)) {
                 this.renderCustomDiagram(cid, lang, $pre);
+            } else {
+                this.noticeRollback(cid);
             }
         }
     }
 
-    register = (diagramName, diagramRender) => {
+    register = (lang, renderFunc, cancelFunc, redrawWhenUpdate = true) => {
         // 用户可能会快速输入，最好使用节流。但是低版本的Typora有bug，会导致绘图失败
         // this.diagramNameMap[diagramName.toLowerCase()] = this.utils.throttle(newDiagramFunc, 30);
-        this.diagramMap[diagramName.toLowerCase()] = diagramRender;
-        console.log(`register diagram parser: [ ${diagramName} ]`);
+        const name = lang.toLowerCase();
+        this.renderFuncMap[name] = renderFunc;
+        this.cancelFuncMap[name] = cancelFunc;
+        this.redrawWhenUpdateMap[name] = redrawWhenUpdate;
+        console.log(`register diagram parser: [ ${lang} ]`);
     }
 
     listen = () => {

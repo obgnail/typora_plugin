@@ -1,4 +1,134 @@
 class markmapPlugin extends global._basePlugin {
+    beforeProcess = () => {
+        this.tocMarkmap = (this.config.ENABLE_TOC_MARKMAP) ? new tocMarkmap(this) : null;
+        this.fenceMarkmap = (this.config.ENABLE_FENCE_MARKMAP) ? new fenceMarkmap(this) : null;
+        this.transformer = null;
+        this.Markmap = null;
+    }
+
+    style = () => this.tocMarkmap && this.tocMarkmap.style();
+
+    html = () => this.tocMarkmap && this.tocMarkmap.html();
+
+    init = () => {
+        this.callArgs = [];
+        this.tocMarkmap && this.callArgs.push({arg_name: "展示思维导图", arg_value: "draw_toc"});
+        this.fenceMarkmap && this.callArgs.push({arg_name: "插入markmap代码块", arg_value: "draw_fence"});
+    }
+
+    process = async () => {
+        this.init();
+        this.tocMarkmap && await this.tocMarkmap.process();
+        this.fenceMarkmap && this.fenceMarkmap.process();
+    }
+
+    call = async type => {
+        if (type === "draw_toc") {
+            this.tocMarkmap && await this.tocMarkmap.call(type);
+        } else if (type === "draw_fence") {
+            this.fenceMarkmap && await this.fenceMarkmap.call(type);
+        }
+    }
+
+    lazyLoad = async () => {
+        if (this.transformer && this.Markmap) return;
+
+        // markmap-lib太大了，我把他打包了
+        const {markmapLib} = this.utils.requireFilePath("./plugin/markmap/resource/markmap-lib.js");
+        await this.utils.insertScript("./plugin/markmap/resource/d3_6.js");
+        await this.utils.insertScript("./plugin/markmap/resource/markmap-view.js");
+
+        this.transformer = new markmapLib.Transformer();
+        const {Markmap, loadCSS, loadJS} = markmap;
+        this.Markmap = Markmap;
+        const {styles, scripts} = this.transformer.getAssets();
+        if (styles) loadCSS(styles);
+        if (scripts) loadJS(scripts, {getMarkmap: () => markmap});
+    }
+}
+
+class fenceMarkmap {
+    constructor(controller) {
+        this.controller = controller
+        this.utils = this.controller.utils;
+        this.config = this.controller.config;
+        this.map = {}; // {cid: instance}
+    }
+
+    process = () => {
+        this.utils.registerDiagramParser("markmap", this.render, this.cancel, false);
+        this.utils.decorateOpenFile(null, this.destroyAll);
+    }
+
+    call = async type => {
+        if (type === "draw_fence") {
+            this.utils.insertFence(null, this.config.FENCE_TEMPLATE);
+        }
+    }
+
+    render = async (cid, lang, content, $pre) => await this.draw(cid, $pre, content);
+    cancel = cid => {
+        const instance = this.map[cid];
+        if (instance) {
+            instance.destroy();
+            delete this.map[cid];
+        }
+    };
+    destroyAll = () => {
+        for (let cid of Object.keys(this.map)) {
+            this.map[cid].destroy();
+        }
+        this.map = {};
+    };
+
+    draw = async (cid, $pre, md) => {
+        if (!this.controller.transformer || !this.controller.Markmap) {
+            await this.controller.lazyLoad();
+        }
+        if (this.map.hasOwnProperty(cid)) {
+            await this.update(cid, md);
+        } else {
+            const svg = this.createSvg($pre);
+            await this.create(cid, svg, md);
+        }
+    }
+
+    createSvg = $pre => {
+        let svg = $pre.find(".plugin-fence-markmap-svg");
+        if (svg.length === 0) {
+            svg = $(`<svg class="plugin-fence-markmap-svg"></svg>`);
+        }
+        const $panel = $pre.find(".md-diagram-panel");
+        svg.css({
+            "width": parseInt($panel.css("width").replace("px", "")) - 10 + "px",
+            "height": this.config.DEFAULT_FENCE_HEIGHT,
+            "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+        });
+        $pre.find(".md-diagram-panel-preview").html(svg);
+        return svg
+    }
+
+    create = async (cid, svg, md) => {
+        const {root} = this.controller.transformer.transform(md);
+        this.map[cid] = this.controller.Markmap.create(svg[0], null, root);
+        setTimeout(() => this.map[cid] && this.map[cid].fit(), 200);
+    }
+
+    update = async (cid, md) => {
+        const instance = this.map[cid];
+        const {root} = this.controller.transformer.transform(md);
+        instance.setData(root);
+        await instance.fit();
+    }
+}
+
+class tocMarkmap {
+    constructor(controller) {
+        this.controller = controller
+        this.utils = this.controller.utils;
+        this.config = this.controller.config;
+    }
+
     style = () => {
         let extra = "";
         if (this.config.USE_BUTTON) {
@@ -101,6 +231,7 @@ class markmapPlugin extends global._basePlugin {
             
             .plugin-markmap-header {
                 margin: 0 0.5em;
+                padding-top: 0.1em;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -160,8 +291,6 @@ class markmapPlugin extends global._basePlugin {
     }
 
     init = () => {
-        this.transformer = null;
-        this.Markmap = null;
         this.markmap = null;
         this.editor = null;
 
@@ -345,7 +474,11 @@ class markmapPlugin extends global._basePlugin {
         }
     }
 
-    call = async type => await this.drawToc();
+    call = async type => {
+        if (type === "draw_toc") {
+            await this.drawToc();
+        }
+    }
 
     close = () => {
         this.entities.modal.style.display = "";
@@ -513,40 +646,24 @@ class markmapPlugin extends global._basePlugin {
 
     draw = async md => {
         this.entities.modal.style.display = "block";
-        if (this["transformer"] && this["Markmap"]) {
+        if (this.markmap) {
             await this.update(md);
         } else {
             this.initModalRect();
-            await this.lazyLoad();
+            await this.controller.lazyLoad();
             await this.create(md);
         }
     }
 
     create = async md => {
-        const {root} = this.transformer.transform(md);
-        this.markmap = this.Markmap.create(this.entities.svg, null, root);
+        const {root} = this.controller.transformer.transform(md);
+        this.markmap = this.controller.Markmap.create(this.entities.svg, null, root);
     }
 
     update = async md => {
-        const {root} = this.transformer.transform(md);
+        const {root} = this.controller.transformer.transform(md);
         this.markmap.setData(root);
         await this.markmap.fit();
-    }
-
-    lazyLoad = async () => {
-        if (this.transformer && this.Markmap) return;
-
-        // markmap-lib太大了，我把他打包了
-        const {markmapLib} = this.utils.requireFilePath("./plugin/markmap/resource/markmap-lib.js");
-        await this.utils.insertScript("./plugin/markmap/resource/d3_6.js");
-        await this.utils.insertScript("./plugin/markmap/resource/markmap-view.js");
-
-        this.transformer = new markmapLib.Transformer();
-        const {Markmap, loadCSS, loadJS} = markmap;
-        this.Markmap = Markmap;
-        const {styles, scripts} = this.transformer.getAssets();
-        if (styles) loadCSS(styles);
-        if (scripts) loadJS(scripts, {getMarkmap: () => markmap});
     }
 }
 

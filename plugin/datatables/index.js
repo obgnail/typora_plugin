@@ -115,8 +115,8 @@ class datatablesPlugin extends global._basePlugin {
     }
 
     destroyAllDataTable = () => {
-        console.log("destroyAllDataTable");
         while (this.tableList.length) {
+            console.log("destroyAllDataTable");
             this.removeDataTable(this.tableList[0].uuid);
         }
         this.tableList = [];
