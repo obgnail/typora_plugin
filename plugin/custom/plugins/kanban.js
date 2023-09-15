@@ -137,13 +137,13 @@ class kanbanPlugin extends BaseCustomPlugin {
             setFirstLine(idx);
             if (line.startsWith("# ")) {
                 if (!kanban.title) {
-                    kanban.title = line.replace("# ", "");
                     if (kanban.list.length !== 0) {
                         this.throwParseError(idx, "【看板标题】必须先于【看板】");
                     }
                 } else {
                     this.throwParseError(idx, "存在两个【看板标题】");
                 }
+                kanban.title = line.replace("# ", "");
             } else if (line.startsWith("## ")) {
                 const name = line.replace("## ", "");
                 kanban.list.push({name: name, item: []});
