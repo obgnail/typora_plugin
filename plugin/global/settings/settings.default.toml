@@ -356,6 +356,9 @@ ENABLE = true
 NAME = "markmap"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+
+# markmap 共有两个功能: toc 和 fence，若为false，以下配置全部失效
+ENABLE_TOC_MARKMAP = true
 # 在右下角添加一个快捷按钮
 USE_BUTTON = true
 # 是否允许icon换行
@@ -371,6 +374,46 @@ WIDTH_PRECENT_WHEN_PIN_RIGHT = 50
 USE_ANIMATION_WHEN_DRAG = false
 # 在调整模态框的时候是否使用动画
 USE_ANIMATION_WHEN_RESIZE = false
+
+# markmap 共有两个功能: toc 和 fence，若为false，以下配置全部失效
+ENABLE_FENCE_MARKMAP = true
+# 代码块默认高度
+DEFAULT_FENCE_HEIGHT = "300px"
+# 代码块背景颜色
+DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
+# 插入的模板
+FENCE_TEMPLATE = """```markmap
+---
+markmap:
+  colorFreezeLevel: 2
+---
+
+# markmap
+
+## Links
+
+- <https://markmap.js.org/>
+- [GitHub](https://github.com/gera2ld/markmap)
+
+## Related Projects
+
+- [coc-markmap](https://github.com/gera2ld/coc-markmap)
+- [gatsby-remark-markmap](https://github.com/gera2ld/gatsby-remark-markmap)
+
+## Features
+
+- links
+- **strong** ~~del~~ *italic* ==highlight==
+- multiline
+  text
+- `inline code`
+
+- Katex
+  - $x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}$
+  - [More Katex Examples](#?d=gist:af76a4c245b302206b16aec503dbe07b:katex.md)
+- Now we can wrap very very very very long text based on `maxWidth` option
+```
+"""
 
 
 ############### auto_number ###############
