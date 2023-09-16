@@ -580,6 +580,20 @@ class DiagramParser {
         throw {errorLine, reason}
     }
 
+    genErrorMessage = error => {
+        let msg = "";
+        if (error["errorLine"]) {
+            msg += `第 ${error["errorLine"]} 行发生错误。`;
+        }
+        if (error["reason"]) {
+            msg += `错误原因：${error["reason"]}`;
+        }
+        if (!msg) {
+            msg = error.toString();
+        }
+        return msg
+    }
+
     cantDrawDiagram = (cid, lang, $pre, content, error) => {
         if (!error) {
             $pre.removeClass("md-fences-advanced");
@@ -587,7 +601,7 @@ class DiagramParser {
         } else {
             $pre.find(".md-diagram-panel-header").text(lang);
             $pre.find(".md-diagram-panel-preview").text("语法解析异常，绘图失败");
-            $pre.find(".md-diagram-panel-error").text(`第 ${error["errorLine"]} 行发生错误。错误原因：${error["reason"]}`);
+            $pre.find(".md-diagram-panel-error").text(this.genErrorMessage(error));
         }
         this.noticeRollback(cid);
     }
@@ -611,7 +625,7 @@ class DiagramParser {
         this.redrawWhenUpdateMap[lang] && $pre.find(".md-diagram-panel-preview").html("");
     }
 
-    renderCustomDiagram = (cid, lang, $pre) => {
+    renderCustomDiagram = async (cid, lang, $pre) => {
         this.cleanErrorMsg($pre, lang);
 
         const content = this.utils.getFenceContent($pre[0], cid);
@@ -629,7 +643,7 @@ class DiagramParser {
         const func = this.renderFuncMap[lang];
         if (!func) return;
         try {
-            func(cid, lang, content, $pre);
+            await func(cid, lang, content, $pre);
         } catch (error) {
             this.cantDrawDiagram(cid, lang, $pre, content, error);
         }
@@ -686,7 +700,7 @@ class DiagramParser {
             () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
             "File.editor.diagrams.updateDiagram",
             null,
-            async (result, ...args) => this.renderDiagram(args[0])
+            (result, ...args) => this.renderDiagram(args[0])
         )
         // 判断是否为Diagram
         this.utils.decorate(
