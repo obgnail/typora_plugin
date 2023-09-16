@@ -11,22 +11,7 @@ class echartsPlugin extends BaseCustomPlugin {
         this.utils.decorateOpenFile(null, this.destroyAll);
     }
 
-    render = async (cid, lang, content, $pre) => await this.draw(cid, $pre, content);
-    cancel = cid => {
-        const instance = this.map[cid];
-        if (instance) {
-            instance.dispose();
-            delete this.map[cid];
-        }
-    }
-    destroyAll = () => {
-        for (let cid of Object.keys(this.map)) {
-            this.map[cid].dispose();
-        }
-        this.map = {};
-    }
-
-    draw = async (cid, $pre, content) => {
+    render = async (cid, content, $pre) => {
         await this.lazyLoad();
         const $div = this.getDiv($pre);
         try {
@@ -40,6 +25,19 @@ class echartsPlugin extends BaseCustomPlugin {
             this.utils.throwParseError(null, e.toString());
             // console.error(e);
         }
+    }
+    cancel = async cid => {
+        const instance = this.map[cid];
+        if (instance) {
+            instance.dispose();
+            delete this.map[cid];
+        }
+    }
+    destroyAll = () => {
+        for (let cid of Object.keys(this.map)) {
+            this.map[cid].dispose();
+        }
+        this.map = {};
     }
 
     getUserSize = content => {
