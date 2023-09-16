@@ -746,7 +746,7 @@ class DiagramParser {
                     extraCssList.push(extraCss);
                 }
             }
-            if (extraCssList) {
+            if (extraCssList.length) {
                 args[0].extraCss = (args[0].extraCss || "") + extraCssList.join(" ");
             }
         })
