@@ -285,7 +285,7 @@ class exportPDFHelper {
 
     beforeExport = (...args) => {
         this.inExport = true;
-        args[0].extraCss += `body {font-variant-ligatures: no-common-ligatures;} ` + this.controller.getStyleString();
+        args[0].extraCss = (args[0].extraCss || "") + `body {font-variant-ligatures: no-common-ligatures;} ` + this.controller.getStyleString();
     }
 
     afterGetHeaderMatrix = headers => {
