@@ -88,16 +88,16 @@ class utils {
 
     // 注册新的代码块语法
     //   1. lang(string): language
-    //   2. renderFunc(async (cid, content, $pre) => null): 渲染函数，根据内容渲染所需的图像
+    //   2. destroyWhenUpdate: 更新前是否清空preview里的html
+    //   3. renderFunc(async (cid, content, $pre) => null): 渲染函数，根据内容渲染所需的图像
     //        cid: 当前代码块的cid
     //        content: 代码块的内容
     //        $pre: 代码块的jquery element
-    //   3. cancelFunc(async cid => null): 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
-    //   4. destroyWhenUpdate: 更新前是否清空preview里的html
+    //   4. cancelFunc(async cid => null): 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
     //   5. extraStyleGetter(() => string): 用于导出时，新增css
     static registerDiagramParser = (
-        lang, renderFunc, cancelFunc, destroyWhenUpdate = false, extraStyleGetter = null
-    ) => global._diagramParser.register(lang, renderFunc, cancelFunc, destroyWhenUpdate, extraStyleGetter)
+        lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null
+    ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter)
     // 当代码块内容出现语法错误时调用
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
@@ -704,9 +704,9 @@ class DiagramParser {
         }
     }
 
-    register = (lang, renderFunc, cancelFunc, destroyWhenUpdate = true, extraStyleGetter = null) => {
+    register = (lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null) => {
         lang = lang.toLowerCase();
-        this.diagramParsers[lang] = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter)
+        this.diagramParsers[lang] = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter);
         console.log(`register diagram parser: [ ${lang} ]`);
     }
 

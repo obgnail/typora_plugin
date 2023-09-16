@@ -7,7 +7,7 @@ class echartsPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertFence(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        this.utils.registerDiagramParser("echarts", this.render, this.cancel, false);
+        this.utils.registerDiagramParser("echarts", false, this.render, this.cancel);
         this.utils.decorateOpenFile(null, this.destroyAll);
     }
 
