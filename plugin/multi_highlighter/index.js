@@ -29,8 +29,7 @@ class multiHighlighterPlugin extends global._basePlugin {
         const colors = this.config.STYLE_COLOR.map((color, idx) => `.plugin-search-hit${idx} { background-color: ${color}; }`)
         const colorsStyle = colors.join("\n");
 
-        const textID = "plugin-window-tab-style";
-        const text = `
+        return `
             #plugin-multi-highlighter {
                 position: fixed;
                 top: 440px;
@@ -138,7 +137,6 @@ class multiHighlighterPlugin extends global._basePlugin {
             
             ${colorsStyle}
             `
-        return {textID, text}
     }
 
     html = () => {

@@ -1,7 +1,6 @@
 class goTopPlugin extends global._basePlugin {
     style = () => {
-        const textID = "plugin-go-top-style";
-        const text = `
+        return `
             #${this.config.DIV_ID} {
                 position: fixed;
                 right: 30px;
@@ -30,7 +29,6 @@ class goTopPlugin extends global._basePlugin {
                 line-height: 35px;
             }
         `
-        return {textID, text}
     }
 
     html = () => {

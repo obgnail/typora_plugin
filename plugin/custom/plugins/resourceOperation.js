@@ -41,11 +41,11 @@ class resourceOperation extends BaseCustomPlugin {
         if (this.config.auto_open) {
             this.utils.openFile(filepath);
 
-            const datatables = this.utils.getPlugin("datatables");
-            if (datatables && this.config.auto_use_datetable) {
+            const datatablePlugin = this.utils.getPlugin("datatables");
+            if (datatablePlugin && this.config.auto_use_datetable) {
                 setTimeout(() => {
                     if (this.utils.getFilePath() === filepath) {
-                        document.querySelectorAll("#write table").forEach(table => datatables.newDataTable(table));
+                        document.querySelectorAll("#write table").forEach(table => datatablePlugin.newDataTable(table));
                     }
                 }, 500)
             }

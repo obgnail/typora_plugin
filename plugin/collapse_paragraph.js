@@ -1,7 +1,6 @@
 class collapseParagraphPlugin extends global._basePlugin {
     style = () => {
-        const textID = "plugin-collapse-paragraph-style"
-        const text = `
+        return `
             #write .${this.config.CLASS_NAME}::after {
                 display: initial;
                 content: "{\\2026}" !important;
@@ -11,7 +10,6 @@ class collapseParagraphPlugin extends global._basePlugin {
                 opacity: 0.6;
                 background-color: gray;
             }`;
-        return {textID, text}
     }
 
     init = () => {

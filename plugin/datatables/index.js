@@ -30,12 +30,6 @@ class datatablesPlugin extends global._basePlugin {
         return {textID, text, fileID, file}
     }
 
-    html = () => {
-        this.utils.insertScript("./plugin/datatables/resource/datatables.min.js").then(() => {
-            console.log("datatables.min.js has inserted")
-        })
-    }
-
     init = () => {
         this.dataTablesConfig = {
             paging: this.config.PAGING,
@@ -77,6 +71,8 @@ class datatablesPlugin extends global._basePlugin {
         if (!this.config.DEFAULT_ORDER) {
             this.dataTablesConfig["order"] = [];
         }
+
+        this.loaded = false;
 
         this.tableList = [];
 
@@ -141,8 +137,16 @@ class datatablesPlugin extends global._basePlugin {
         })
     }
 
-    newDataTable = target => {
+    lazyLoad = async () => {
+        if (!this.loaded) {
+            await this.utils.insertScript("./plugin/datatables/resource/datatables.min.js");
+            this.loaded = true;
+        }
+    }
+
+    newDataTable = async target => {
         if (!target) return;
+        await this.lazyLoad();
         const edit = target.parentElement.querySelector(".md-table-edit");
         const $table = $(target);
         const uuid = Math.random() + "";
@@ -155,8 +159,9 @@ class datatablesPlugin extends global._basePlugin {
         return uuid
     }
 
-    removeDataTable = uuid => {
+    removeDataTable = async uuid => {
         if (!uuid) return;
+        await this.lazyLoad();
         const idx = this.tableList.findIndex(table => table.uuid === uuid);
         if (idx === -1) return;
 
@@ -185,11 +190,11 @@ class datatablesPlugin extends global._basePlugin {
         }]
     }
 
-    call = type => {
+    call = async type => {
         if (type === "convert_current") {
-            this.newDataTable(this.dynamicUtil.target);
+            await this.newDataTable(this.dynamicUtil.target);
         } else if (type === "rollback_current") {
-            this.removeDataTable(this.dynamicUtil.uuid);
+            await this.removeDataTable(this.dynamicUtil.uuid);
         }
     }
 }

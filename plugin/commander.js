@@ -9,8 +9,7 @@ class commanderPlugin extends global._basePlugin {
     }
 
     style = () => {
-        const textID = "plugin-commander-style"
-        const text = `
+        return `
         #plugin-commander {
             position: fixed;
             top: 30%;
@@ -94,7 +93,6 @@ class commanderPlugin extends global._basePlugin {
             outline: 0
         }
         `;
-        return {textID, text}
     }
 
     html = () => {

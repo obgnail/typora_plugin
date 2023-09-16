@@ -1,5 +1,7 @@
 class autoNumberPlugin extends global._basePlugin {
     beforeProcess = () => {
+        this.css_id = "plugin-auto-number-style";
+
         this.base_css = `
         #write { counter-reset: write-h2 Figures Tables Fences; }
         #write > h1 { counter-reset: write-h2 Figures Tables Fences; }
@@ -176,13 +178,15 @@ class autoNumberPlugin extends global._basePlugin {
             margin: 0.6em 0;
             font-size: 1.1em;
             z-index: 9;
-        }`
+        }
+        #write .md-fences.md-fences-advanced.md-focus::after {
+            content: ""
+        }
+        `
     }
 
     style = () => {
-        const textID = this.config.ID;
-        const text = this.getResultStyle();
-        return {textID, text}
+        return {textID: this.css_id, text: this.getResultStyle()}
     }
 
     init = () => {
@@ -232,7 +236,7 @@ class autoNumberPlugin extends global._basePlugin {
         }
     }
 
-    removeStyle = () => this.utils.removeStyle(this.config.ID);
+    removeStyle = () => this.utils.removeStyle(this.css_id);
 
     getStyleString = () => {
         return [
@@ -285,7 +289,7 @@ class exportPDFHelper {
 
     beforeExport = (...args) => {
         this.inExport = true;
-        args[0].extraCss = `body {font-variant-ligatures: no-common-ligatures;} ` + this.controller.getStyleString();
+        args[0].extraCss = (args[0].extraCss || "") + `body {font-variant-ligatures: no-common-ligatures;} ` + this.controller.getStyleString();
     }
 
     afterGetHeaderMatrix = headers => {
@@ -332,12 +336,7 @@ class exportPDFHelper {
     }
 
     process = () => {
-        this.controller.utils.decorate(
-            () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-            "File.editor.export.exportToHTML",
-            this.beforeExport,
-            null
-        );
+        this.controller.utils.decorateExportToHTML(this.beforeExport);
         this.controller.utils.decorate(
             () => (File && File.editor && File.editor.library && File.editor.library.outline
                 && File.editor.library.outline.getHeaderMatrix),

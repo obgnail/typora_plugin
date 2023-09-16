@@ -1,5 +1,6 @@
 class blurPlugin extends global._basePlugin {
     beforeProcess = () => {
+        this.css_id = "plugin-blur-style";
         // todo: 低版本 typora 不支持 css3
         if (this.utils.isBetaVersion) {
             return this.utils.stopLoadPluginError
@@ -7,9 +8,7 @@ class blurPlugin extends global._basePlugin {
     }
 
     style = () => {
-        const textID = this.config.BLUR_STYLE_ID;
-        const text = this.getStyleText();
-        return {textID, text}
+        return {textID: this.css_id, text: this.getStyleText()}
     }
 
     process = () => {
@@ -22,7 +21,6 @@ class blurPlugin extends global._basePlugin {
         this.run();
     }
 
-
     getStyleText = () => {
         const content = (this.config.BLUR_TYPE === "hide") ? "visibility: hidden;" : `filter: blur(${this.config.BLUR_LEVEL}px);`;
         return `#write > [cid]:not(.md-focus):not(:has(.md-focus)):not(:has(.md-focus-container)) { ${content} }`
@@ -30,10 +28,9 @@ class blurPlugin extends global._basePlugin {
 
     run = () => {
         if (this.inBlur) {
-            const css = this.getStyleText();
-            this.utils.insertStyle(this.config.BLUR_STYLE_ID, css);
+            this.utils.insertStyle(this.css_id, this.getStyleText());
         } else {
-            this.utils.removeStyle(this.config.BLUR_STYLE_ID)
+            this.utils.removeStyle(this.css_id)
         }
     }
 }

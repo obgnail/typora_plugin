@@ -1,9 +1,7 @@
 class resizeTablePlugin extends global._basePlugin {
     style = () => {
         if (this.config.REMOVE_MIX_WIDTH) {
-            const textID = "plugin-resize-table-style";
-            const text = `table.md-table td { min-width: 1px !important; }`;
-            return {textID, text}
+            return `table.md-table td { min-width: 1px !important; }`;
         }
     }
 

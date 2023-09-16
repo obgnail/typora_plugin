@@ -51,8 +51,17 @@ class markmapPlugin extends global._basePlugin {
         const {Markmap, loadCSS, loadJS} = markmap;
         this.Markmap = Markmap;
         const {styles, scripts} = this.transformer.getAssets();
-        if (styles) loadCSS(styles);
-        if (scripts) loadJS(scripts, {getMarkmap: () => markmap});
+        if (this.config.RESOURCE_FROM === "network") {
+            if (styles) loadCSS(styles);
+            if (scripts) loadJS(scripts, {getMarkmap: () => markmap});
+        } else {
+            this.utils.insertStyleFile("markmap-default-style", "./plugin/markmap/resource/default.min.css");
+            this.utils.insertStyleFile("markmap-katex-style", "./plugin/markmap/resource/katex.min.css");
+
+            const loadScript = scripts.filter(script => script["type"] !== "script");
+            if (scripts) loadJS(loadScript, {getMarkmap: () => markmap});
+            await this.utils.insertScript("./plugin/markmap/resource/webfontloader.js");
+        }
     }
 }
 
@@ -67,14 +76,25 @@ class fenceMarkmap {
     style = () => `.md-diagram-panel .plugin-fence-markmap-svg {line-height: initial !important;}`
 
     process = () => {
-        this.utils.registerDiagramParser("markmap", this.render, this.cancel, false);
+        this.utils.registerDiagramParser("markmap", false, this.render, this.cancel);
         this.utils.decorateOpenFile(null, this.destroyAll);
     }
 
     call = async type => type === "draw_fence" && this.utils.insertFence(null, this.config.FENCE_TEMPLATE)
 
-    render = async (cid, lang, content, $pre) => await this.draw(cid, $pre, content);
-    cancel = cid => {
+
+    render = async (cid, content, $pre) => {
+        if (!this.controller.transformer || !this.controller.Markmap) {
+            await this.controller.lazyLoad();
+        }
+        if (this.map.hasOwnProperty(cid)) {
+            await this.update(cid, content);
+        } else {
+            const svg = this.createSvg($pre);
+            await this.create(cid, svg, content);
+        }
+    }
+    cancel = async cid => {
         const instance = this.map[cid];
         if (instance) {
             instance.destroy();
@@ -87,18 +107,6 @@ class fenceMarkmap {
         }
         this.map = {};
     };
-
-    draw = async (cid, $pre, md) => {
-        if (!this.controller.transformer || !this.controller.Markmap) {
-            await this.controller.lazyLoad();
-        }
-        if (this.map.hasOwnProperty(cid)) {
-            await this.update(cid, md);
-        } else {
-            const svg = this.createSvg($pre);
-            await this.create(cid, svg, md);
-        }
-    }
 
     createSvg = $pre => {
         let svg = $pre.find(".plugin-fence-markmap-svg");

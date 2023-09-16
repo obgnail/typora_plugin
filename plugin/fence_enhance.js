@@ -16,8 +16,7 @@ class fenceEnhancePlugin extends global._basePlugin {
     }
 
     style = () => {
-        const textID = "plugin-fence-enhance-style";
-        const text = `
+        return `
             #write .md-fences .fence-enhance {
                 display: inline-flex;
                 position: absolute;
@@ -33,7 +32,6 @@ class fenceEnhancePlugin extends global._basePlugin {
             #write .fence-enhance .copy-code, .indent-code {
                 margin-left: .5em;
             }`;
-        return {textID, text}
     }
 
     hotkey = () => {

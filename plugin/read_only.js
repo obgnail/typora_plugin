@@ -1,9 +1,5 @@
 class readOnlyPlugin extends global._basePlugin {
-    style = () => {
-        const textID = "plugin-read-only-style";
-        const text = `#footer-word-count-label::before {content: attr(data-value) !important}`;
-        return {textID, text}
-    }
+    style = () => `#footer-word-count-label::before {content: attr(data-value) !important}`
 
     hotkey = () => {
         return [{

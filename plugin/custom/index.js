@@ -30,13 +30,21 @@ class loadPluginHelper {
         return allPlugins
     }
 
+    noticeEvent = customPlugins => {
+        console.log("--- all custom plugins had injected ---");
+        for (let fixedName of Object.keys(customPlugins)) {
+            const plugin = customPlugins[fixedName];
+            plugin.onEvent("allCustomPluginsHadInjected", null);
+        }
+    }
+
     insertStyle = (fixed_name, style) => {
         if (!style) return;
 
         let textID = style["textID"];
         let text = style["text"];
         if (typeof style === "string") {
-            textID = `custom-plugin-${fixed_name}-style`;
+            textID = `custom-plugin-${fixed_name.replace(/_/g, "-")}-style`;
             text = style;
         }
         this.controller.utils.insertStyle(textID, text);
@@ -70,7 +78,8 @@ class loadPluginHelper {
                 console.error("load custom plugin error:", e);
             }
         }
-        return this.controller.custom
+
+        this.noticeEvent(this.controller.custom);
     }
 
     // 简易的判断是否为customBasePlugin的子类实例
@@ -180,7 +189,7 @@ class modalHelper {
     }
 
     style = () => {
-        const text = `
+        return `
             #plugin-custom-modal {
                 position: fixed;
                 z-index: 99999;
@@ -200,7 +209,6 @@ class modalHelper {
                 margin-top: -3px;
             }
         `
-        return {textID: "plugin-custom-style", text: text}
     }
 
     html = () => {
@@ -368,7 +376,8 @@ class BaseCustomPlugin {
     }
     process = () => {
     }
-
+    onEvent = (eventType, payload) => {
+    }
     callback = anchorNode => {
     }
 }

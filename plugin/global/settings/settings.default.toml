@@ -74,8 +74,6 @@ MAX_SIZE = 2000000
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 # 打开模态框快捷键
 HOTKEY = "ctrl+shift+p"
-# 内部使用
-LOOP_DETECT_INTERVAL = 200
 
 
 ############### multi_highlighter ###############
@@ -270,9 +268,6 @@ BLUR_DEFAULT = false
 BLUR_TYPE = "blur"
 # 模糊等级: 越大越模糊(BLUR_TYPE为hide时失效)
 BLUR_LEVEL = 10
-# 内部使用
-# 添加style的id
-BLUR_STYLE_ID = "plugin-blur-style"
 
 
 ############### resize_image ###############
@@ -356,6 +351,8 @@ ENABLE = true
 NAME = "markmap"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# js/css从何处加载: local/network
+RESOURCE_FROM = "local"
 
 # markmap 共有两个功能: toc 和 fence，若为false，以下配置全部失效
 ENABLE_TOC_MARKMAP = true
@@ -438,9 +435,6 @@ ENABLE_IMAGE = true
 ENABLE_FENCE = true
 # 导出时运用样式
 ENABLE_WHEN_EXPORT = true
-# 内部使用
-# 添加的ID
-ID = "plugin-auto-number-style"
 # 下标名称
 [auto_number.NAMES]
 table = "Table"
@@ -538,7 +532,6 @@ CLICKABLE = true
 DO_NOT_HIDE = false
 # 内部使用
 NOT_AVAILABLE_VALUE = "__not_available__"
-LOOP_DETECT_INTERVAL = 200
 
 
 ############### file_counter ###############

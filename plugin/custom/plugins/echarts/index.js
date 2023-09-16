@@ -7,28 +7,12 @@ class echartsPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertFence(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        this.utils.registerDiagramParser("echarts", this.render, this.cancel, false);
+        this.utils.registerDiagramParser("echarts", false, this.render, this.cancel);
         this.utils.decorateOpenFile(null, this.destroyAll);
     }
 
-    render = async (cid, lang, content, $pre) => await this.draw(cid, $pre, content);
-    cancel = cid => {
-        const instance = this.map[cid];
-        if (instance) {
-            instance.dispose();
-            delete this.map[cid];
-        }
-    }
-    destroyAll = () => {
-        for (let cid of Object.keys(this.map)) {
-            this.map[cid].dispose();
-        }
-        this.map = {};
-    }
-
-    draw = async (cid, $pre, content) => {
+    render = async (cid, content, $pre) => {
         await this.lazyLoad();
-
         const $div = this.getDiv($pre);
         try {
             this.setStyle($pre, $div, content);
@@ -42,6 +26,19 @@ class echartsPlugin extends BaseCustomPlugin {
             // console.error(e);
         }
     }
+    cancel = async cid => {
+        const instance = this.map[cid];
+        if (instance) {
+            instance.dispose();
+            delete this.map[cid];
+        }
+    }
+    destroyAll = () => {
+        for (let cid of Object.keys(this.map)) {
+            this.map[cid].dispose();
+        }
+        this.map = {};
+    }
 
     getUserSize = content => {
         let height = "";
@@ -54,9 +51,7 @@ class echartsPlugin extends BaseCustomPlugin {
                 height = height || result.groups["height"];
                 width = width || result.groups["width"];
             }
-            if (height && width) {
-                break
-            }
+            if (height && width) break
         }
         return {height, width}
     }

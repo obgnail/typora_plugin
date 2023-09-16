@@ -86,7 +86,19 @@ class utils {
         }
     }
 
-    static registerDiagramParser = (lang, renderFunc, cancelFunc, redrawWhenUpdate = true) => global._diagramParser.register(lang, renderFunc, cancelFunc, redrawWhenUpdate)
+    // 注册新的代码块语法
+    //   1. lang(string): language
+    //   2. destroyWhenUpdate: 更新前是否清空preview里的html
+    //   3. renderFunc(async (cid, content, $pre) => null): 渲染函数，根据内容渲染所需的图像
+    //        cid: 当前代码块的cid
+    //        content: 代码块的内容
+    //        $pre: 代码块的jquery element
+    //   4. cancelFunc(async cid => null): 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
+    //   5. extraStyleGetter(() => string): 用于导出时，新增css
+    static registerDiagramParser = (
+        lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null
+    ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter)
+    // 当代码块内容出现语法错误时调用
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
     static insertStyle = (id, css) => {
@@ -98,10 +110,12 @@ class utils {
     }
 
     static insertStyleFile = (id, filepath) => {
+        const cssFilePath = this.joinPath(filepath);
         const link = document.createElement('link');
+        link.id = id;
         link.type = 'text/css'
         link.rel = 'stylesheet'
-        link.href = filepath;
+        link.href = cssFilePath;
         document.getElementsByTagName('head')[0].appendChild(link);
     }
 
@@ -330,6 +344,11 @@ class utils {
             "File.editor.fences.addCodeBlock", before, after)
     }
 
+    static decorateExportToHTML = (before, after) => {
+        this.decorate(() => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
+            "File.editor.export.exportToHTML", before, after)
+    }
+
     static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
         let run = false;
         const uuid = Math.random();
@@ -488,6 +507,9 @@ class basePlugin extends pluginInterface {
         this.onEvent("disable", null);
     }
 
+    onEvent(eventType, payload) {
+    }
+
     beforeProcess() {
     }
 
@@ -563,18 +585,33 @@ class userSettingHelper {
     }
 }
 
+// 辣鸡js，连接口都不支持
+class _diagramParser {
+    constructor(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter) {
+        this.lang = lang;
+        this.destroyWhenUpdate = destroyWhenUpdate || false;
+        this.renderFunc = renderFunc || null;
+        this.cancelFunc = cancelFunc || null;
+        this.extraStyleGetter = extraStyleGetter || null;
+
+        if (!this.check(this)) {
+            throw "diagram error"
+        }
+    }
+
+    check = instance => !!instance && !!instance["lang"] && typeof instance.lang === "string" && instance.renderFunc instanceof Function
+}
+
 class DiagramParser {
     constructor() {
         this.utils = utils;
-        this.renderFuncMap = {};
-        this.cancelFuncMap = {};
-        this.redrawWhenUpdateMap = {};
+        this.diagramParsers = {}; // {lang: _diagramParser}
     }
 
     style = () => (!this.utils.isBetaVersion) ? "" : `.md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
 
     isDiagramType = lang => File.editor.diagrams.constructor.isDiagramType(lang)
-    isCustomDiagramType = lang => this.renderFuncMap.hasOwnProperty(lang)
+    isCustomDiagramType = lang => this.diagramParsers.hasOwnProperty(lang)
 
     throwParseError = (errorLine, reason) => {
         throw {errorLine, reason}
@@ -594,7 +631,7 @@ class DiagramParser {
         return msg
     }
 
-    cantDrawDiagram = (cid, lang, $pre, content, error) => {
+    cantDrawDiagram = async (cid, lang, $pre, content, error) => {
         if (!error) {
             $pre.removeClass("md-fences-advanced");
             $pre.children(".md-diagram-panel").remove();
@@ -603,15 +640,15 @@ class DiagramParser {
             $pre.find(".md-diagram-panel-preview").text("语法解析异常，绘图失败");
             $pre.find(".md-diagram-panel-error").text(this.genErrorMessage(error));
         }
-        this.noticeRollback(cid);
+        await this.noticeRollback(cid);
     }
 
-    noticeRollback = cid => {
-        for (let name of Object.keys(this.cancelFuncMap)) {
-            const func = this.cancelFuncMap[name];
-            if (func) {
+    noticeRollback = async cid => {
+        for (let lang of Object.keys(this.diagramParsers)) {
+            const cancel = this.diagramParsers[lang].cancelFunc;
+            if (cancel) {
                 try {
-                    func(cid);
+                    await cancel(cid);
                 } catch (e) {
                     console.error("call cancel func error:", e);
                 }
@@ -622,7 +659,7 @@ class DiagramParser {
     cleanErrorMsg = ($pre, lang) => {
         $pre.find(".md-diagram-panel-header").html("");
         $pre.find(".md-diagram-panel-error").html("");
-        this.redrawWhenUpdateMap[lang] && $pre.find(".md-diagram-panel-preview").html("");
+        this.diagramParsers[lang].destroyWhenUpdate && $pre.find(".md-diagram-panel-preview").html("");
     }
 
     renderCustomDiagram = async (cid, lang, $pre) => {
@@ -630,7 +667,7 @@ class DiagramParser {
 
         const content = this.utils.getFenceContent($pre[0], cid);
         if (!content) {
-            this.cantDrawDiagram(cid, lang, $pre); // empty content
+            await this.cantDrawDiagram(cid, lang, $pre); // empty content
             return;
         } else {
             $pre.addClass("md-fences-advanced");
@@ -640,16 +677,16 @@ class DiagramParser {
             }
         }
 
-        const func = this.renderFuncMap[lang];
-        if (!func) return;
+        const render = this.diagramParsers[lang].renderFunc;
+        if (!render) return;
         try {
-            await func(cid, lang, content, $pre);
+            await render(cid, content, $pre);
         } catch (error) {
-            this.cantDrawDiagram(cid, lang, $pre, content, error);
+            await this.cantDrawDiagram(cid, lang, $pre, content, error);
         }
     }
 
-    renderDiagram = cid => {
+    renderDiagram = async cid => {
         if (!cid) return;
 
         const $pre = File.editor.findElemById(cid);
@@ -659,30 +696,26 @@ class DiagramParser {
         if (!this.isDiagramType(lang)) {
             $pre.children(".fence-enhance").show();
             $pre.removeClass("md-fences-advanced");
-            this.noticeRollback(cid);
+            await this.noticeRollback(cid);
         } else {
             // 是Diagram类型，但是不是自定义类型，不展示增强按钮，直接返回即可
             $pre.children(".fence-enhance").hide();
             // 是Diagram类型，也是自定义类型，调用其回调函数
             if (this.isCustomDiagramType(lang)) {
-                this.renderCustomDiagram(cid, lang, $pre);
+                await this.renderCustomDiagram(cid, lang, $pre);
             } else {
-                this.noticeRollback(cid);
+                await this.noticeRollback(cid);
             }
         }
     }
 
-    register = (lang, renderFunc, cancelFunc, redrawWhenUpdate = true) => {
-        // 用户可能会快速输入，最好使用节流。但是低版本的Typora有bug，会导致绘图失败
-        // this.diagramNameMap[diagramName.toLowerCase()] = this.utils.throttle(newDiagramFunc, 30);
-        const name = lang.toLowerCase();
-        this.renderFuncMap[name] = renderFunc;
-        this.cancelFuncMap[name] = cancelFunc;
-        this.redrawWhenUpdateMap[name] = redrawWhenUpdate;
+    register = (lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null) => {
+        lang = lang.toLowerCase();
+        this.diagramParsers[lang] = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter);
         console.log(`register diagram parser: [ ${lang} ]`);
     }
 
-    listen = () => {
+    process = () => {
         const css = this.style();
         css && this.utils.insertStyle("diagram-parser-style", css);
 
@@ -702,6 +735,21 @@ class DiagramParser {
             null,
             (result, ...args) => this.renderDiagram(args[0])
         )
+        // 导出时
+        this.utils.decorateExportToHTML((...args) => {
+            const extraCssList = [];
+            for (let lang of Object.keys(this.diagramParsers)) {
+                const getter = this.diagramParsers[lang].extraStyleGetter;
+                const exist = document.querySelector(`#write .md-fences[lang="${lang}"]`);
+                if (getter && exist) {
+                    const extraCss = getter();
+                    extraCssList.push(extraCss);
+                }
+            }
+            if (extraCssList) {
+                args[0].extraCss = (args[0].extraCss || "") + extraCssList.join(" ");
+            }
+        })
         // 判断是否为Diagram
         this.utils.decorate(
             // black magic
@@ -735,11 +783,19 @@ class process {
         this.userSettingHelper = new userSettingHelper();
     }
 
+    noticeEvent = () => {
+        console.log("--- all plugins had injected ---");
+        for (let fixedName of Object.keys(global._plugins)) {
+            const plugin = global._plugins[fixedName];
+            plugin.onEvent("allPluginsHadInjected", null);
+        }
+    }
+
     insertStyle(fixedName, style) {
         if (!style) return;
 
         if (typeof style === "string") {
-            this.utils.insertStyle(`plugin-${fixedName}-style`, style);
+            this.utils.insertStyle(`plugin-${fixedName.replace(/_/g, "-")}-style`, style);
         } else if (typeof style === "object") {
             const textID = style["textID"] || null;
             const text = style["text"] || null;
@@ -771,7 +827,6 @@ class process {
 
     run() {
         global._plugins = {};
-        global._pluginsHadInjected = false;
 
         let pluginSettings = this.utils.readToml("./plugin/global/settings/settings.default.toml");
         pluginSettings = this.userSettingHelper.updateSettings(pluginSettings);
@@ -802,8 +857,8 @@ class process {
 
         Promise.all(promises).then(() => {
             this.hotkeyHelper.listen();
-            global._diagramParser.listen();
-            global._pluginsHadInjected = true;
+            global._diagramParser.process();
+            this.noticeEvent();
         })
     }
 }

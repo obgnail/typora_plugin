@@ -1,7 +1,13 @@
 class pluginUpdater extends BaseCustomPlugin {
-    selector = () => (this.updaterExeExist && this.utils.getPlugin("commander")) ? "" : this.utils.nonExistSelector
+    selector = () => (this.updaterExeExist && this.commanderPlugin) ? "" : this.utils.nonExistSelector
 
     hint = () => "当你发现BUG，可以尝试更新，说不定就解决了"
+
+    onEvent = (eventType, payload) => {
+        if (eventType === "allCustomPluginsHadInjected") {
+            this.commanderPlugin = this.utils.getPlugin("commander");
+        }
+    }
 
     init = () => {
         this.proxyGetter = new ProxyGetter(this.utils);
@@ -40,7 +46,7 @@ class pluginUpdater extends BaseCustomPlugin {
                 const updater = this.utils.joinPath("./plugin/updater/updater.exe");
                 const proxy = (components[1].submit || "").trim();
                 const cmd = `cd ${dir} && ${updater} --action=update --proxy=${proxy}`;
-                this.utils.getPlugin("commander").echoExec(cmd, "cmd/bash", code => {
+                this.commanderPlugin.echoExec(cmd, "cmd/bash", code => {
                     if (code === 0) {
                         this.binFileUpdater.run();
                     } else {
