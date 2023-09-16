@@ -110,7 +110,7 @@ class kanbanPlugin extends BaseCustomPlugin {
             $pre.find(".md-diagram-panel-preview").html(kanban);
         } else {
             // accident occurred
-            this.utils.throwParseError("null", "未知错误！请联系开发者");
+            this.utils.throwParseError(null, "未知错误！请联系开发者");
         }
     }
 
