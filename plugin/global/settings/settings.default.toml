@@ -438,9 +438,6 @@ ENABLE_IMAGE = true
 ENABLE_FENCE = true
 # 导出时运用样式
 ENABLE_WHEN_EXPORT = true
-# 内部使用
-# 添加的ID
-ID = "plugin-auto-number-style"
 # 下标名称
 [auto_number.NAMES]
 table = "Table"

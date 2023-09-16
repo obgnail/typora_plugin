@@ -28,7 +28,6 @@ class echartsPlugin extends BaseCustomPlugin {
 
     draw = async (cid, $pre, content) => {
         await this.lazyLoad();
-
         const $div = this.getDiv($pre);
         try {
             this.setStyle($pre, $div, content);
@@ -54,9 +53,7 @@ class echartsPlugin extends BaseCustomPlugin {
                 height = height || result.groups["height"];
                 width = width || result.groups["width"];
             }
-            if (height && width) {
-                break
-            }
+            if (height && width) break
         }
         return {height, width}
     }

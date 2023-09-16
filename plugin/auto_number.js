@@ -183,11 +183,7 @@ class autoNumberPlugin extends global._basePlugin {
         `
     }
 
-    style = () => {
-        const textID = this.config.ID;
-        const text = this.getResultStyle();
-        return {textID, text}
-    }
+    style = () => this.getResultStyle()
 
     init = () => {
         this.callArgs = [
@@ -289,7 +285,7 @@ class exportPDFHelper {
 
     beforeExport = (...args) => {
         this.inExport = true;
-        args[0].extraCss = `body {font-variant-ligatures: no-common-ligatures;} ` + this.controller.getStyleString();
+        args[0].extraCss += `body {font-variant-ligatures: no-common-ligatures;} ` + this.controller.getStyleString();
     }
 
     afterGetHeaderMatrix = headers => {
@@ -336,12 +332,7 @@ class exportPDFHelper {
     }
 
     process = () => {
-        this.controller.utils.decorate(
-            () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-            "File.editor.export.exportToHTML",
-            this.beforeExport,
-            null
-        );
+        this.controller.utils.decorateExportToHTML(this.beforeExport);
         this.controller.utils.decorate(
             () => (File && File.editor && File.editor.library && File.editor.library.outline
                 && File.editor.library.outline.getHeaderMatrix),

@@ -330,6 +330,11 @@ class utils {
             "File.editor.fences.addCodeBlock", before, after)
     }
 
+    static decorateExportToHTML = (before, after) => {
+        this.decorate(() => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
+            "File.editor.export.exportToHTML", before, after)
+    }
+
     static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
         let run = false;
         const uuid = Math.random();

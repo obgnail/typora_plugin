@@ -86,6 +86,8 @@ class kanbanPlugin extends BaseCustomPlugin {
     process = () => {
         this.utils.registerDiagramParser("kanban", this.render);
 
+        this.utils.decorateExportToHTML((...args) => args[0].extraCss += this.style());
+
         if (this.config.CTRL_WHEEL_TO_SCROLL) {
             const that = this;
             $("#write").on("wheel", ".plugin-kanban-content", function (ev) {
