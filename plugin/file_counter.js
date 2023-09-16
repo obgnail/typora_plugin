@@ -1,7 +1,6 @@
 class fileCounterPlugin extends global._basePlugin {
     style = () => {
-        const textID = "plugin-file-counter-style";
-        const text = `
+        return `
             .${this.config.CLASS_NAME} {
                 display: inline-block;
                 float: right;
@@ -16,7 +15,6 @@ class fileCounterPlugin extends global._basePlugin {
                 color: var(--active-file-text-color);
                 opacity: 1;
             }`;
-        return {textID, text}
     }
 
     init = () => {

@@ -1,7 +1,6 @@
 class searchMultiKeywordPlugin extends global._basePlugin {
     style = () => {
-        const textID = "plugin-search-multi-style";
-        const text = `
+        return `
         #plugin-search-multi {
             position: fixed;
             top: 40px;
@@ -147,7 +146,6 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             padding-left: 20px;
             display: none;
         }`
-        return {textID, text}
     }
 
     html = () => {

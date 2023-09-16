@@ -1,7 +1,6 @@
 class outlinePlugin extends global._basePlugin {
     style = () => {
-        const textID = "plugin-outline-style"
-        const text = `
+        return `
             #plugin-outline {
                 position: fixed;
                 display: none;
@@ -58,7 +57,6 @@ class outlinePlugin extends global._basePlugin {
                 text-align: center;
             }
         `
-        return {textID, text}
     }
 
     html = () => {
