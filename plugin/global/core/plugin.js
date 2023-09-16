@@ -86,7 +86,13 @@ class utils {
         }
     }
 
-    static registerDiagramParser = (lang, renderFunc, cancelFunc, destroyWhenUpdate = true) => global._diagramParser.register(lang, renderFunc, cancelFunc, destroyWhenUpdate)
+    static registerDiagramParser = (
+        lang,
+        renderFunc,
+        cancelFunc,
+        destroyWhenUpdate = false,
+        extraStyleGetter = null
+    ) => global._diagramParser.register(lang, renderFunc, cancelFunc, destroyWhenUpdate, extraStyleGetter)
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
     static insertStyle = (id, css) => {
@@ -574,6 +580,7 @@ class DiagramParser {
         this.renderFuncMap = {};
         this.cancelFuncMap = {};
         this.destroyWhenUpdateMap = {};
+        this.extraStyleGetterMap = {};
     }
 
     style = () => (!this.utils.isBetaVersion) ? "" : `.md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
@@ -677,13 +684,14 @@ class DiagramParser {
         }
     }
 
-    register = (lang, renderFunc, cancelFunc, destroyWhenUpdate = true) => {
+    register = (lang, renderFunc, cancelFunc, destroyWhenUpdate = true, extraStyleGetter = null) => {
         // 用户可能会快速输入，最好使用节流。但是低版本的Typora有bug，会导致绘图失败
         // this.diagramNameMap[diagramName.toLowerCase()] = this.utils.throttle(newDiagramFunc, 30);
         const name = lang.toLowerCase();
         this.renderFuncMap[name] = renderFunc;
         this.cancelFuncMap[name] = cancelFunc;
         this.destroyWhenUpdateMap[name] = destroyWhenUpdate;
+        this.extraStyleGetterMap[name] = extraStyleGetter;
         console.log(`register diagram parser: [ ${lang} ]`);
     }
 
@@ -707,6 +715,21 @@ class DiagramParser {
             null,
             (result, ...args) => this.renderDiagram(args[0])
         )
+        // 导出时
+        this.utils.decorateExportToHTML((...args) => {
+            const extraCssList = [];
+            for (let lang of Object.keys(this.extraStyleGetterMap)) {
+                const getter = this.extraStyleGetterMap[lang];
+                const exist = document.querySelector(`#write .md-fences[lang="${lang}"]`);
+                if (getter && exist) {
+                    const extraCss = getter();
+                    extraCssList.push(extraCss);
+                }
+            }
+            if (extraCssList) {
+                args[0].extraCss = (args[0].extraCss || "") + extraCssList.join(" ");
+            }
+        })
         // 判断是否为Diagram
         this.utils.decorate(
             // black magic
