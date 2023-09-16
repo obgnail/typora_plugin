@@ -7,8 +7,7 @@ class windowTabBarPlugin extends global._basePlugin {
     }
 
     style = () => {
-        const textID = "plugin-window-tab-style"
-        const text = `
+        return `
             #plugin-window-tab {
                 position: fixed;
                 top: 0;
@@ -154,7 +153,6 @@ class windowTabBarPlugin extends global._basePlugin {
                 pointer-events: none;
             }
             `
-        return {textID, text}
     }
 
     html = () => {

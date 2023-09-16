@@ -1,5 +1,7 @@
 class autoNumberPlugin extends global._basePlugin {
     beforeProcess = () => {
+        this.css_id = "plugin-auto-number-style";
+
         this.base_css = `
         #write { counter-reset: write-h2 Figures Tables Fences; }
         #write > h1 { counter-reset: write-h2 Figures Tables Fences; }
@@ -183,7 +185,9 @@ class autoNumberPlugin extends global._basePlugin {
         `
     }
 
-    style = () => this.getResultStyle()
+    style = () => {
+        return {textID: this.css_id, text: this.getResultStyle()}
+    }
 
     init = () => {
         this.callArgs = [
@@ -232,7 +236,7 @@ class autoNumberPlugin extends global._basePlugin {
         }
     }
 
-    removeStyle = () => this.utils.removeStyle(this.config.ID);
+    removeStyle = () => this.utils.removeStyle(this.css_id);
 
     getStyleString = () => {
         return [

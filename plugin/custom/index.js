@@ -189,7 +189,7 @@ class modalHelper {
     }
 
     style = () => {
-        const text = `
+        return `
             #plugin-custom-modal {
                 position: fixed;
                 z-index: 99999;
@@ -209,7 +209,6 @@ class modalHelper {
                 margin-top: -3px;
             }
         `
-        return {textID: "plugin-custom-style", text: text}
     }
 
     html = () => {
