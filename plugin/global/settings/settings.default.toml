@@ -356,6 +356,8 @@ ENABLE = true
 NAME = "markmap"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# js/css从何处加载: local/network
+RESOURCE_FROM = "local"
 
 # markmap 共有两个功能: toc 和 fence，若为false，以下配置全部失效
 ENABLE_TOC_MARKMAP = true

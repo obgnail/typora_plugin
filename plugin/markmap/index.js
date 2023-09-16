@@ -51,7 +51,12 @@ class markmapPlugin extends global._basePlugin {
         const {Markmap, loadCSS, loadJS} = markmap;
         this.Markmap = Markmap;
         const {styles, scripts} = this.transformer.getAssets();
-        if (styles) loadCSS(styles);
+        if (styles && this.config.RESOURCE_FROM === "network") {
+            loadCSS(styles);
+        } else {
+            this.utils.insertStyleFile("markmap-default", "./plugin/markmap/resource/default.min.css");
+            this.utils.insertStyleFile("markmap-katex", "./plugin/markmap/resource/katex.min.css");
+        }
         if (scripts) loadJS(scripts, {getMarkmap: () => markmap});
     }
 }

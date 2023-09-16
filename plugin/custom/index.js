@@ -36,7 +36,7 @@ class loadPluginHelper {
         let textID = style["textID"];
         let text = style["text"];
         if (typeof style === "string") {
-            textID = `custom-plugin-${fixed_name}-style`;
+            textID = `custom-plugin-${fixed_name.replace(/_/g, "-")}-style`;
             text = style;
         }
         this.controller.utils.insertStyle(textID, text);

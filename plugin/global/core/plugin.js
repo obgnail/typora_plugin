@@ -744,7 +744,7 @@ class process {
         if (!style) return;
 
         if (typeof style === "string") {
-            this.utils.insertStyle(`plugin-${fixedName}-style`, style);
+            this.utils.insertStyle(`plugin-${fixedName.replace(/_/g, "-")}-style`, style);
         } else if (typeof style === "object") {
             const textID = style["textID"] || null;
             const text = style["text"] || null;
