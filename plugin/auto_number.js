@@ -176,7 +176,11 @@ class autoNumberPlugin extends global._basePlugin {
             margin: 0.6em 0;
             font-size: 1.1em;
             z-index: 9;
-        }`
+        }
+        #write .md-fences.md-fences-advanced.md-focus::after {
+            content: ""
+        }
+        `
     }
 
     style = () => {

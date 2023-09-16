@@ -86,7 +86,7 @@ class utils {
         }
     }
 
-    static registerDiagramParser = (lang, renderFunc, cancelFunc, redrawWhenUpdate = true) => global._diagramParser.register(lang, renderFunc, cancelFunc, redrawWhenUpdate)
+    static registerDiagramParser = (lang, renderFunc, cancelFunc, destroyWhenUpdate = true) => global._diagramParser.register(lang, renderFunc, cancelFunc, destroyWhenUpdate)
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
     static insertStyle = (id, css) => {
@@ -568,7 +568,7 @@ class DiagramParser {
         this.utils = utils;
         this.renderFuncMap = {};
         this.cancelFuncMap = {};
-        this.redrawWhenUpdateMap = {};
+        this.destroyWhenUpdateMap = {};
     }
 
     style = () => (!this.utils.isBetaVersion) ? "" : `.md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
@@ -622,7 +622,7 @@ class DiagramParser {
     cleanErrorMsg = ($pre, lang) => {
         $pre.find(".md-diagram-panel-header").html("");
         $pre.find(".md-diagram-panel-error").html("");
-        this.redrawWhenUpdateMap[lang] && $pre.find(".md-diagram-panel-preview").html("");
+        this.destroyWhenUpdateMap[lang] && $pre.find(".md-diagram-panel-preview").html("");
     }
 
     renderCustomDiagram = async (cid, lang, $pre) => {
@@ -672,13 +672,13 @@ class DiagramParser {
         }
     }
 
-    register = (lang, renderFunc, cancelFunc, redrawWhenUpdate = true) => {
+    register = (lang, renderFunc, cancelFunc, destroyWhenUpdate = true) => {
         // 用户可能会快速输入，最好使用节流。但是低版本的Typora有bug，会导致绘图失败
         // this.diagramNameMap[diagramName.toLowerCase()] = this.utils.throttle(newDiagramFunc, 30);
         const name = lang.toLowerCase();
         this.renderFuncMap[name] = renderFunc;
         this.cancelFuncMap[name] = cancelFunc;
-        this.redrawWhenUpdateMap[name] = redrawWhenUpdate;
+        this.destroyWhenUpdateMap[name] = destroyWhenUpdate;
         console.log(`register diagram parser: [ ${lang} ]`);
     }
 
