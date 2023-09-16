@@ -505,6 +505,9 @@ class basePlugin extends pluginInterface {
         this.onEvent("disable", null);
     }
 
+    onEvent(eventType, payload) {
+    }
+
     beforeProcess() {
     }
 
@@ -778,6 +781,14 @@ class process {
         this.userSettingHelper = new userSettingHelper();
     }
 
+    noticeEvent = () => {
+        console.log("--- all plugins had injected ---");
+        for (let fixedName of Object.keys(global._plugins)) {
+            const plugin = global._plugins[fixedName];
+            plugin.onEvent("allPluginsHadInjected", null);
+        }
+    }
+
     insertStyle(fixedName, style) {
         if (!style) return;
 
@@ -814,7 +825,6 @@ class process {
 
     run() {
         global._plugins = {};
-        global._pluginsHadInjected = false;
 
         let pluginSettings = this.utils.readToml("./plugin/global/settings/settings.default.toml");
         pluginSettings = this.userSettingHelper.updateSettings(pluginSettings);
@@ -846,7 +856,7 @@ class process {
         Promise.all(promises).then(() => {
             this.hotkeyHelper.listen();
             global._diagramParser.process();
-            global._pluginsHadInjected = true;
+            this.noticeEvent();
         })
     }
 }

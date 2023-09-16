@@ -74,8 +74,6 @@ MAX_SIZE = 2000000
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 # 打开模态框快捷键
 HOTKEY = "ctrl+shift+p"
-# 内部使用
-LOOP_DETECT_INTERVAL = 200
 
 
 ############### multi_highlighter ###############
@@ -537,7 +535,6 @@ CLICKABLE = true
 DO_NOT_HIDE = false
 # 内部使用
 NOT_AVAILABLE_VALUE = "__not_available__"
-LOOP_DETECT_INTERVAL = 200
 
 
 ############### file_counter ###############

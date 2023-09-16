@@ -194,13 +194,13 @@ class searchMultiKeywordPlugin extends global._basePlugin {
         }]
     }
 
-    process = () => {
-        this.utils.loopDetector(
-            () => global._pluginsHadInjected,
-            () => this.utils.getPlugin("multi_highlighter") && new LinkHelper(this).process(),
-            this.config.LOOP_DETECT_INTERVAL
-        );
+    onEvent(eventType, payload) {
+        if (eventType === "allPluginsHadInjected") {
+            this.utils.getPlugin("multi_highlighter") && new LinkHelper(this).process();
+        }
+    }
 
+    process = () => {
         this.modal = {
             modal: document.getElementById('plugin-search-multi'),
             input: document.querySelector("#plugin-search-multi-input input"),

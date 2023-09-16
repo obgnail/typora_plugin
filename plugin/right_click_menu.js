@@ -1,6 +1,8 @@
 class rightClickMenuPlugin extends global._basePlugin {
-    beforeProcess = () => {
-        this.utils.loopDetector(() => global._pluginsHadInjected, this.appendMenu, this.config.LOOP_DETECT_INTERVAL);
+    onEvent(eventType, payload) {
+        if (eventType === "allPluginsHadInjected") {
+            this.appendMenu();
+        }
     }
 
     getPlugins = () => {
