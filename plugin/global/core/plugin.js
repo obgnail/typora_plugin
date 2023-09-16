@@ -110,10 +110,12 @@ class utils {
     }
 
     static insertStyleFile = (id, filepath) => {
+        const cssFilePath = this.joinPath(filepath);
         const link = document.createElement('link');
+        link.id = id;
         link.type = 'text/css'
         link.rel = 'stylesheet'
-        link.href = filepath;
+        link.href = cssFilePath;
         document.getElementsByTagName('head')[0].appendChild(link);
     }
 
