@@ -30,6 +30,14 @@ class loadPluginHelper {
         return allPlugins
     }
 
+    noticeEvent = customPlugins => {
+        console.log("--- all custom plugins had injected ---");
+        for (let fixedName of Object.keys(customPlugins)) {
+            const plugin = customPlugins[fixedName];
+            plugin.onEvent("allCustomPluginsHadInjected", null);
+        }
+    }
+
     insertStyle = (fixed_name, style) => {
         if (!style) return;
 
@@ -70,7 +78,8 @@ class loadPluginHelper {
                 console.error("load custom plugin error:", e);
             }
         }
-        return this.controller.custom
+
+        this.noticeEvent(this.controller.custom);
     }
 
     // 简易的判断是否为customBasePlugin的子类实例
@@ -368,7 +377,8 @@ class BaseCustomPlugin {
     }
     process = () => {
     }
-
+    onEvent = (eventType, payload) => {
+    }
     callback = anchorNode => {
     }
 }
