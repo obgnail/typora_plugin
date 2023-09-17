@@ -192,10 +192,10 @@ class searchMultiKeywordPlugin extends global._basePlugin {
         }]
     }
 
-    event = () => ["allPluginsHadInjected"]
+    event = () => [this.utils.eventType.allPluginsHadInjected]
 
     onEvent(eventType, payload) {
-        if (eventType === "allPluginsHadInjected") {
+        if (eventType === this.utils.eventType.allPluginsHadInjected) {
             this.utils.getPlugin("multi_highlighter") && new LinkHelper(this).process();
         }
     }
