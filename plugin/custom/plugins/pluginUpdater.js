@@ -3,6 +3,8 @@ class pluginUpdater extends BaseCustomPlugin {
 
     hint = () => "当你发现BUG，可以尝试更新，说不定就解决了"
 
+    event = () => ["allCustomPluginsHadInjected"]
+
     onEvent = (eventType, payload) => {
         if (eventType === "allCustomPluginsHadInjected") {
             this.commanderPlugin = this.utils.getPlugin("commander");

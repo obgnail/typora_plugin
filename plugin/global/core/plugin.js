@@ -101,6 +101,9 @@ class utils {
     // 当代码块内容出现语法错误时调用
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
+    // 充分信任插件，允许所有插件发布事件
+    static publishEvent = (eventType, payload) => global._eventHub.publish(eventType, payload)
+
     static insertStyle = (id, css) => {
         const style = document.createElement('style');
         style.id = id;
@@ -513,6 +516,9 @@ class basePlugin extends pluginInterface {
     beforeProcess() {
     }
 
+    event() {
+    }
+
     style() {
     }
 
@@ -776,6 +782,44 @@ class DiagramParser {
 
 global._diagramParser = new DiagramParser();
 
+// 备注，当前插件系统拥有的event：
+//   1. enable
+//   2. disable
+//   3. allPluginsHadInjected
+//   4. allCustomPluginsHadInjected
+class EventHub {
+    constructor() {
+        this.utils = utils
+        this.eventMap = {}
+    }
+
+    register = (fixedName, eventTypes) => {
+        if (!eventTypes) return;
+
+        if (typeof eventTypes === "string") {
+            if (!this.eventMap[eventTypes]) {
+                this.eventMap[eventTypes] = [fixedName];
+            } else {
+                this.eventMap[eventTypes].push(fixedName);
+            }
+        } else if (eventTypes instanceof Array) {
+            for (let eventType of eventTypes) {
+                this.register(fixedName, eventType);
+            }
+        }
+    }
+
+    publish = (eventType, payload) => {
+        const fixedNames = this.eventMap[eventType];
+        for (let fixedName of fixedNames) {
+            const plugin = this.utils.getPlugin(fixedName);
+            plugin && plugin.onEvent(eventType, payload);
+        }
+    }
+}
+
+global._eventHub = new EventHub();
+
 class process {
     constructor() {
         this.utils = utils;
@@ -783,12 +827,11 @@ class process {
         this.userSettingHelper = new userSettingHelper();
     }
 
+    registerEvent = (fixedName, eventTypes) => global._eventHub.register(fixedName, eventTypes);
+
     noticeEvent = () => {
         console.log("--- all plugins had injected ---");
-        for (let fixedName of Object.keys(global._plugins)) {
-            const plugin = global._plugins[fixedName];
-            plugin.onEvent("allPluginsHadInjected", null);
-        }
+        this.utils.publishEvent("allPluginsHadInjected");
     }
 
     insertStyle(fixedName, style) {
@@ -816,6 +859,7 @@ class process {
         const error = plugin.beforeProcess();
         if (error === this.utils.stopLoadPluginError) return
 
+        this.registerEvent(plugin.fixed_name, plugin.event());
         this.insertStyle(plugin.fixed_name, plugin.style());
         plugin.html();
         this.hotkeyHelper.register(plugin.hotkey());

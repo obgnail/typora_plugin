@@ -4,8 +4,10 @@ class fullPathCopy extends BaseCustomPlugin {
     init = () => {}
     style = () => {}
     html = () => {}
+    event = () => {}
     hotkey = () => ["ctrl+shift+y"]
     process = () => {}
+    onEvent = (eventType, payload) => {}
     callback = anchorNode => {
         const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
         const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"];

@@ -10,6 +10,8 @@ class CustomPlugin extends global._basePlugin {
     style = () => this.modalHelper.style()
     html = () => this.modalHelper.html()
     hotkey = () => this.hotkeyHelper.hotkey()
+    event = () => this.loadPluginHelper.event()
+    onEvent = (eventType, payload) => this.loadPluginHelper.onEvent(eventType, payload)
     modal = (customPlugin, modal, callback, cancelCallback) => this.modalHelper.modal(customPlugin, modal, callback, cancelCallback)
     process = () => this.modalHelper.process()
     dynamicCallArgsGenerator = anchorNode => this.dynamicCallHelper.dynamicCallArgsGenerator(anchorNode)
@@ -19,6 +21,8 @@ class CustomPlugin extends global._basePlugin {
 class loadPluginHelper {
     constructor(controller) {
         this.controller = controller;
+        this.utils = this.controller.utils;
+        this.eventMap = {}; // {eventType, instance}
     }
 
     updateUserSetting = allPlugins => {
@@ -30,12 +34,34 @@ class loadPluginHelper {
         return allPlugins
     }
 
-    noticeEvent = customPlugins => {
-        console.log("--- all custom plugins had injected ---");
-        for (let fixedName of Object.keys(customPlugins)) {
-            const plugin = customPlugins[fixedName];
-            plugin.onEvent("allCustomPluginsHadInjected", null);
+    event = () => Object.keys(this.eventMap)
+
+    registerEvent = (instance, eventTypes) => {
+        if (!eventTypes) return;
+
+        if (typeof eventTypes === "string") {
+            if (!this.eventMap[eventTypes]) {
+                this.eventMap[eventTypes] = [instance];
+            } else {
+                this.eventMap[eventTypes].push(instance);
+            }
+        } else if (eventTypes instanceof Array) {
+            for (const eventType of eventTypes) {
+                this.registerEvent(instance, eventType);
+            }
         }
+    }
+
+    onEvent = (eventType, payload) => {
+        const instances = this.eventMap[eventType];
+        for (const instance of instances) {
+            instance.onEvent(eventType, payload);
+        }
+    }
+
+    noticeEvent = () => {
+        console.log("--- all custom plugins had injected ---");
+        this.onEvent("allCustomPluginsHadInjected", null);
     }
 
     insertStyle = (fixed_name, style) => {
@@ -66,6 +92,7 @@ class loadPluginHelper {
                 const instance = new plugin(custom, this.controller);
                 if (this.check(instance)) {
                     instance.init();
+                    this.registerEvent(instance, instance.event());
                     this.insertStyle(fixed_name, instance.style());
                     instance.html();
                     instance.process();
@@ -79,7 +106,7 @@ class loadPluginHelper {
             }
         }
 
-        this.noticeEvent(this.controller.custom);
+        this.noticeEvent();
     }
 
     // 简易的判断是否为customBasePlugin的子类实例
@@ -371,6 +398,8 @@ class BaseCustomPlugin {
     style = () => {
     }
     html = () => {
+    }
+    event = () => {
     }
     hotkey = () => {
     }

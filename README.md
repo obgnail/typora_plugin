@@ -521,13 +521,16 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 从 Typora Plugin 1.2.1 版本开始，本插件系统提供开放能力，支持用户 **在右键菜单中调用自定义的命令**。
 
-**custom 插件大量采用声明式代码（声明代替代码开发）**，比如：
+**custom 插件大量采用声明式编码（声明代替代码开发）**，比如：
 
 - 只需使用 `style = () => "..."`，即可注册 css。
+- 只需使用 `html = () => {}`，即可插入 html。
+- 只需使用 `select = () => "..."`，即可注册允许运行命令的光标位置。
 - 只需使用 `hint = () => "将当前标题的路径复制到剪切板"`，即可注册 hint。
 - 只需使用 `hotkey = () => ["ctrl+shift+y"]` ，即可注册快捷键。
+- 只需使用 `event = () => ["..."]`，即可注册需要监听的事件。
 - 只需使用 `this.modal` 函数即可自动生成自定义的模态框。
-- init、selector、html、process、callback 等等生命周期函数。
+- init、onEvent、process、callback 等生命周期函数。
 
 ```js
 class fullPathCopy extends BaseCustomPlugin {
@@ -614,8 +617,12 @@ class fullPathCopy extends BaseCustomPlugin {
     // 7
     hotkey = () => ["ctrl+shift+y"]
     // 8
-    process = () => {}
+    event = () => {}
     // 9
+    onEvent = (eventType, payload) => {}
+    // 10
+    process = () => {}
+    // 11
     callback = anchorNode => {
         const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
         const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"];
@@ -664,7 +671,7 @@ class fullPathCopy extends BaseCustomPlugin {
     }
 }
 
-// 10
+// 12
 module.exports = { plugin: fullPathCopy };
 
 // 1. 创建 class，继承 BaseCustomPlugin 类。此时，fullPathCopy 将自动拥有 utils、info、config 属性 和 modal 方法。
@@ -678,9 +685,11 @@ module.exports = { plugin: fullPathCopy };
 // 5. style：给 Typora 插入 style 标签。返回值为 string。若你想指定标签的 id，也可以返回 {textID: "", text: ""}。其中 textID 为此 style 标签的 id，text 为 style 内容。
 // 6. html：在这里为 Typora 插入 HTML 标签
 // 7. hotkey：为 callabck 注册快捷键
-// 8. process：在这里添加 listener 和修改 Typora 的第一方函数
-// 9. callback：右键菜单中点击/键入快捷键后的回调函数。anchorNode: 鼠标光标所在的 element
-// 10. export：导出名为 plugin
+// 8. event: 显式的注册需要监听的事件
+// 9. onEvent: 当事件触发时会回调此函数
+// 10. process：在这里添加 listener 和修改 Typora 的第一方函数
+// 11. callback：右键菜单中点击/键入快捷键后的回调函数。anchorNode: 鼠标光标所在的 element
+// 12. export：导出名为 plugin
 ```
 
 ![custom](assets/custom.png)
