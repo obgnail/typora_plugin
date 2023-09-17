@@ -281,14 +281,14 @@ class datatablesPlugin extends global._basePlugin {
     //   1.target(Element): 表格标签，如 document.querySelector("#write table.md-table")
     // return:
     //   2. uuid(string): 增强表格的uuid，后续可以使用此uuid将其转化回普通表格
-    newDataTable = target => {
+    newDataTable = async target => {
         return uuid
     }
 
     // 将增强表格转为普通表格
     // args:
     //   1. uuid(string): newDataTable 函数返回的uuid
-    removeDataTable = uuid => {
+    removeDataTable = async uuid => {
         return null
     }
 }
@@ -317,6 +317,19 @@ class mindmapPlugin extends global._basePlugin {
     // 生成页面的思维导图，并写入剪切板
     // Type(string): set_clipboard_mindmap、set_clipboard_graph
     call = Type => {
+        return null
+    }
+}
+```
+
+
+
+### markmap
+
+```js
+class markmapPlugin extends global._basePlugin {
+    // type: draw_toc/draw_fence
+    call = async type => {
         return null
     }
 }
@@ -521,6 +534,19 @@ class autoUpdatePlugin extends BaseCustomPlugin {
 ```js
 class kanbanPlugin extends BaseCustomPlugin {
     // 在当前位置插入默认看板
+    callback = () => {
+        return nil
+    }
+}
+```
+
+
+
+#### echarts
+
+```js
+class echartsPlugin extends BaseCustomPlugin {
+    // 在当前位置插入默认echarts
     callback = () => {
         return nil
     }
