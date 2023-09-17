@@ -184,16 +184,14 @@ class multiHighlighterPlugin extends global._basePlugin {
         }
         this.hasMarker = false
         this.decoMixin = {
-            before: (...args) => {
-                const cid = args[0];
-                if (!cid || this.multiHighlighter.length() === 0) return;
+            before: cid => {
+                if (this.multiHighlighter.length() === 0) return;
 
                 const marker = this.entities.write.querySelector(`.md-fences[cid=${cid}] marker`);
                 this.hasMarker = !!marker;
             },
-            after: (result, ...args) => {
-                const cid = args[0];
-                if (!cid || !this.hasMarker || this.multiHighlighter.length() === 0) return;
+            after: cid => {
+                if (!this.hasMarker || this.multiHighlighter.length() === 0) return;
 
                 this.hasMarker = false;
 
@@ -227,8 +225,8 @@ class multiHighlighterPlugin extends global._basePlugin {
     process = () => {
         this.init();
 
-        this.utils.decorateAddCodeBlock(this.decoMixin.before, this.decoMixin.after);
-
+        this.utils.addEventListener(this.utils.eventType.beforeAddCodeBlock, this.decoMixin.before);
+        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, this.decoMixin.after);
         this.utils.addEventListener(this.utils.eventType.fileOpened, () => {
             (this.config.RESEARCH_WHILE_OPEN_FILE && this.entities.modal.style.display === "block") && setTimeout(this.highlight, 300)
         });

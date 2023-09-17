@@ -83,13 +83,7 @@ class datatablesPlugin extends global._basePlugin {
         this.init();
 
         this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.destroyAllDataTable);
-
-        this.utils.decorate(
-            () => (File && File.toggleSourceMode),
-            "File.toggleSourceMode",
-            this.destroyAllDataTable,
-            null
-        )
+        this.utils.addEventListener(this.utils.eventType.beforeToggleSourceMode, this.destroyAllDataTable);
 
         this.utils.decorate(
             () => (File && File.editor && File.editor.tableEdit && File.editor.tableEdit.showTableEdit),
@@ -110,10 +104,10 @@ class datatablesPlugin extends global._basePlugin {
         )
     }
 
-    destroyAllDataTable = () => {
+    destroyAllDataTable = async () => {
         while (this.tableList.length) {
             console.log("destroyAllDataTable");
-            this.removeDataTable(this.tableList[0].uuid);
+            await this.removeDataTable(this.tableList[0].uuid);
         }
         this.tableList = [];
     }

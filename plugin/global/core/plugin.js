@@ -103,20 +103,24 @@ class utils {
 
     // 当前插件系统拥有的event：
     // 触发顺序：
-    //   1. allCustomPluginsHadInjected: 自定义插件加载完毕
-    //   2. allPluginsHadInjected: 所有插件加载完毕
-    //   3. beforeFileOpen: 打开文件之前
-    //   4. fileOpened: 打开文件之后
-    //   5. fileContentLoaded: 文件内容加载完毕之后
-    //   6. beforeCloseWindow: 窗口关闭之前
+    //   allCustomPluginsHadInjected: 自定义插件加载完毕
+    //   allPluginsHadInjected: 所有插件加载完毕
+    //   beforeFileOpen: 打开文件之前
+    //   fileOpened: 打开文件之后
+    //   fileContentLoaded: 文件内容加载完毕之后
+    //   beforeToggleSourceMode: 进入源码模式之前
+    //   beforeCloseWindow: 窗口关闭之前
     static eventType = {
-        enable: "enable",
-        disable: "disable",
+        // enable: "enable",
+        // disable: "disable",
 
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
         allPluginsHadInjected: "allPluginsHadInjected",
         beforeFileOpen: "beforeFileOpen",
         fileOpened: "fileOpened",
+        beforeToggleSourceMode: "beforeToggleSourceMode",
+        beforeAddCodeBlock: "beforeAddCodeBlock",
+        afterAddCodeBlock: "afterAddCodeBlock",
         // fileContentLoaded: "fileContentLoaded",
         // beforeCloseWindow: "beforeCloseWindow",
     }
@@ -360,11 +364,6 @@ class utils {
     static decorateOpenFile = (before, after) => {
         this.decorate(() => (File && File.editor && File.editor.library && File.editor.library.openFile),
             "File.editor.library.openFile", before, after)
-    }
-
-    static decorateAddCodeBlock = (before, after) => {
-        this.decorate(() => (File && File.editor && File.editor.fences && File.editor.fences.addCodeBlock),
-            "File.editor.fences.addCodeBlock", before, after)
     }
 
     static decorateExportToHTML = (before, after) => {
@@ -685,8 +684,6 @@ class DiagramParser {
     }
 
     renderDiagram = async cid => {
-        if (!cid) return;
-
         const $pre = File.editor.findElemById(cid);
         const lang = $pre.attr("lang").trim().toLowerCase();
 
@@ -718,7 +715,7 @@ class DiagramParser {
         css && this.utils.insertStyle("diagram-parser-style", css);
 
         // 添加时
-        this.utils.decorateAddCodeBlock(null, (result, ...args) => this.renderDiagram(args[0]))
+        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, this.renderDiagram)
         // 修改语言时
         this.utils.decorate(
             () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
@@ -807,6 +804,25 @@ class EventHub {
                 filePath && this.publishEvent(this.utils.eventType.fileOpened, filePath);
             }
         )
+
+        this.utils.decorate(
+            () => (File && File.toggleSourceMode),
+            "File.toggleSourceMode",
+            () => this.publishEvent(this.utils.eventType.beforeToggleSourceMode)
+        )
+
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.fences && File.editor.fences.addCodeBlock),
+            "File.editor.fences.addCodeBlock",
+            (...args) => {
+                const cid = args[0];
+                cid && this.publishEvent(this.utils.eventType.beforeAddCodeBlock, cid)
+            },
+            (result, ...args) => {
+                const cid = args[0];
+                cid && this.publishEvent(this.utils.eventType.afterAddCodeBlock, cid)
+            },
+        )
     }
 }
 
@@ -884,9 +900,9 @@ class process {
         }
 
         Promise.all(promises).then(() => {
+            global._eventHub.process();
             this.hotkeyHelper.listen();
             global._diagramParser.process();
-            global._eventHub.process();
             this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
         })
     }

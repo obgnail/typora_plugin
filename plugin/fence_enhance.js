@@ -123,12 +123,9 @@ class fenceEnhancePlugin extends global._basePlugin {
     process = () => {
         this.init();
 
-        this.utils.decorateAddCodeBlock(null, (result, ...args) => {
-            const cid = args[0];
-            if (cid) {
-                const ele = document.querySelector(`#write .md-fences[cid=${cid}]`);
-                this.addEnhanceElement(ele);
-            }
+        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, cid => {
+            const ele = document.querySelector(`#write .md-fences[cid=${cid}]`);
+            this.addEnhanceElement(ele);
         })
 
         document.getElementById("write").addEventListener("click", ev => {
