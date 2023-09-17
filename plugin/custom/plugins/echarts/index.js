@@ -8,7 +8,7 @@ class echartsPlugin extends BaseCustomPlugin {
 
     process = () => {
         this.utils.registerDiagramParser("echarts", false, this.render, this.cancel);
-        this.utils.decorateOpenFile(null, this.destroyAll);
+        this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.destroyAll);
     }
 
     render = async (cid, content, $pre) => {

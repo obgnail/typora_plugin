@@ -77,7 +77,7 @@ class fenceMarkmap {
 
     process = () => {
         this.utils.registerDiagramParser("markmap", false, this.render, this.cancel);
-        this.utils.decorateOpenFile(null, this.destroyAll);
+        this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.destroyAll);
     }
 
     call = async type => type === "draw_fence" && this.utils.insertFence(null, this.config.FENCE_TEMPLATE)

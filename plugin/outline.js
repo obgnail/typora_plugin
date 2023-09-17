@@ -100,9 +100,9 @@ class outlinePlugin extends global._basePlugin {
 
         this.utils.dragFixedModal(this.entities.move, this.entities.modal, false);
 
-        this.utils.decorateOpenFile(null, () => {
+        this.utils.addEventListener(this.utils.eventType.fileOpened, () => {
             (this.config.AUTO_REFRESH_WHEN_OPEN_FILE && this.entities.modal.style.display === "block") && setTimeout(this.refresh, 300);
-        })
+        });
 
         this.entities.modal.addEventListener("click", ev => {
             const item = ev.target.closest(".plugin-outline-item");

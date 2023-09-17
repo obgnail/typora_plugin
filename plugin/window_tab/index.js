@@ -197,10 +197,7 @@ class windowTabBarPlugin extends global._basePlugin {
     process = () => {
         this.init();
 
-        this.utils.decorateOpenFile(null, (result, ...args) => {
-            const filePath = args[0];
-            filePath && this.openTab(filePath);
-        })
+        this.utils.addEventListener(this.utils.eventType.fileOpened, this.openTab);
 
         this.utils.loopDetector(() => (File && this.utils.getFilePath()), () => {
             const filePath = this.utils.getFilePath();

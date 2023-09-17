@@ -82,7 +82,7 @@ class datatablesPlugin extends global._basePlugin {
     process = () => {
         this.init();
 
-        this.utils.decorateOpenFile(null, this.destroyAllDataTable)
+        this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.destroyAllDataTable);
 
         this.utils.decorate(
             () => (File && File.toggleSourceMode),

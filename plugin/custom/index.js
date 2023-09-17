@@ -19,23 +19,16 @@ class CustomPlugin extends global._basePlugin {
 class loadPluginHelper {
     constructor(controller) {
         this.controller = controller;
+        this.utils = this.controller.utils;
     }
 
     updateUserSetting = allPlugins => {
         const toml = "./plugin/global/settings/custom_plugin.user.toml";
-        if (this.controller.utils.existInPluginPath(toml)) {
-            const userSettings = this.controller.utils.readToml(toml);
-            allPlugins = this.controller.utils.merge(allPlugins, userSettings);
+        if (this.utils.existInPluginPath(toml)) {
+            const userSettings = this.utils.readToml(toml);
+            allPlugins = this.utils.merge(allPlugins, userSettings);
         }
         return allPlugins
-    }
-
-    noticeEvent = customPlugins => {
-        console.log("--- all custom plugins had injected ---");
-        for (let fixedName of Object.keys(customPlugins)) {
-            const plugin = customPlugins[fixedName];
-            plugin.onEvent("allCustomPluginsHadInjected", null);
-        }
     }
 
     insertStyle = (fixed_name, style) => {
@@ -47,11 +40,11 @@ class loadPluginHelper {
             textID = `custom-plugin-${fixed_name.replace(/_/g, "-")}-style`;
             text = style;
         }
-        this.controller.utils.insertStyle(textID, text);
+        this.utils.insertStyle(textID, text);
     }
 
     load() {
-        let allPlugins = this.controller.utils.readToml("./plugin/global/settings/custom_plugin.default.toml");
+        let allPlugins = this.utils.readToml("./plugin/global/settings/custom_plugin.default.toml");
         allPlugins = this.updateUserSetting(allPlugins);
         for (const fixed_name of Object.keys(allPlugins)) {
             const custom = allPlugins[fixed_name];
@@ -60,7 +53,7 @@ class loadPluginHelper {
             if (!custom.enable) continue
 
             try {
-                const {plugin} = this.controller.utils.requireFilePath(`./plugin/custom/plugins/${custom.plugin}`);
+                const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins/${custom.plugin}`);
                 if (!plugin) continue;
 
                 const instance = new plugin(custom, this.controller);
@@ -79,7 +72,7 @@ class loadPluginHelper {
             }
         }
 
-        this.noticeEvent(this.controller.custom);
+        this.utils.publishEvent(this.utils.eventType.allCustomPluginsHadInjected);
     }
 
     // 简易的判断是否为customBasePlugin的子类实例
@@ -375,8 +368,6 @@ class BaseCustomPlugin {
     hotkey = () => {
     }
     process = () => {
-    }
-    onEvent = (eventType, payload) => {
     }
     callback = anchorNode => {
     }

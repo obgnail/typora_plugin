@@ -1,8 +1,6 @@
 class rightClickMenuPlugin extends global._basePlugin {
-    onEvent(eventType, payload) {
-        if (eventType === "allPluginsHadInjected") {
-            this.appendMenu();
-        }
+    process = () => {
+        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, this.appendMenu);
     }
 
     getPlugins = () => {

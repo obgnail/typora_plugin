@@ -229,9 +229,9 @@ class multiHighlighterPlugin extends global._basePlugin {
 
         this.utils.decorateAddCodeBlock(this.decoMixin.before, this.decoMixin.after);
 
-        this.utils.decorateOpenFile(null, () => {
+        this.utils.addEventListener(this.utils.eventType.fileOpened, () => {
             (this.config.RESEARCH_WHILE_OPEN_FILE && this.entities.modal.style.display === "block") && setTimeout(this.highlight, 300)
-        })
+        });
 
         this.entities.input.addEventListener("keydown", ev => {
             if (ev.key === "Enter") {

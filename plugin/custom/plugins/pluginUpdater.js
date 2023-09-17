@@ -3,12 +3,6 @@ class pluginUpdater extends BaseCustomPlugin {
 
     hint = () => "当你发现BUG，可以尝试更新，说不定就解决了"
 
-    onEvent = (eventType, payload) => {
-        if (eventType === "allCustomPluginsHadInjected") {
-            this.commanderPlugin = this.utils.getPlugin("commander");
-        }
-    }
-
     init = () => {
         this.proxyGetter = new ProxyGetter(this.utils);
         this.binFileUpdater = new binFileUpdater(this.utils);
@@ -16,6 +10,12 @@ class pluginUpdater extends BaseCustomPlugin {
         this.updaterExeExist = this.utils.existInPluginPath("./plugin/updater/updater.exe");
 
         new extraOperation(this.utils).run();
+    }
+
+    process = () => {
+        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+            this.commanderPlugin = this.utils.getPlugin("commander");
+        })
     }
 
     callback = anchorNode => {

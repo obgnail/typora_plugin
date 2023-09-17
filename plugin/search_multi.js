@@ -192,12 +192,6 @@ class searchMultiKeywordPlugin extends global._basePlugin {
         }]
     }
 
-    onEvent(eventType, payload) {
-        if (eventType === "allPluginsHadInjected") {
-            this.utils.getPlugin("multi_highlighter") && new LinkHelper(this).process();
-        }
-    }
-
     process = () => {
         this.modal = {
             modal: document.getElementById('plugin-search-multi'),
@@ -208,8 +202,12 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             info: document.querySelector(".plugin-search-multi-info-item"),
         }
 
+        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+            this.utils.getPlugin("multi_highlighter") && new LinkHelper(this).process();
+        })
+
         if (this.config.REFOUCE_WHEN_OPEN_FILE) {
-            this.utils.decorateOpenFile(null, () => {
+            this.utils.addEventListener(this.utils.eventType.fileOpened, () => {
                 if (this.modal.modal.style.display === "block") {
                     setTimeout(() => this.modal.input.select(), 300);
                 }

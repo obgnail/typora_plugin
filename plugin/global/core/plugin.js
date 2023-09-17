@@ -101,6 +101,29 @@ class utils {
     // 当代码块内容出现语法错误时调用
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
+    // 当前插件系统拥有的event：
+    // 触发顺序：
+    //   1. allCustomPluginsHadInjected: 自定义插件加载完毕
+    //   2. allPluginsHadInjected: 所有插件加载完毕
+    //   3. beforeFileOpen: 打开文件之前
+    //   4. fileOpened: 打开文件之后
+    //   5. fileContentLoaded: 文件内容加载完毕之后
+    //   6. beforeCloseWindow: 窗口关闭之前
+    static eventType = {
+        enable: "enable",
+        disable: "disable",
+
+        allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
+        allPluginsHadInjected: "allPluginsHadInjected",
+        beforeFileOpen: "beforeFileOpen",
+        fileOpened: "fileOpened",
+        // fileContentLoaded: "fileContentLoaded",
+        // beforeCloseWindow: "beforeCloseWindow",
+    }
+    static addEventListener = (eventType, listener) => global._eventHub.addEventListener(eventType, listener);
+    static removeEventListener = (eventType, listener) => global._eventHub.removeEventListener(eventType, listener);
+    static publishEvent = (eventType, payload) => global._eventHub.publishEvent(eventType, payload); // 充分信任插件，允许所有插件发布事件
+
     static insertStyle = (id, css) => {
         const style = document.createElement('style');
         style.id = id;
@@ -464,18 +487,6 @@ class utils {
 }
 
 class pluginInterface {
-    enable() {
-        throw new Error('Method enable not implemented.')
-    }
-
-    disable() {
-        throw new Error('Method disable not implemented.')
-    }
-
-    onEvent(eventType, payload) {
-        throw new Error('Method onEvent not implemented.')
-    }
-
     beforeProcess() {
         throw new Error('Method beforeProcess not implemented.')
     }
@@ -495,19 +506,6 @@ class basePlugin extends pluginInterface {
         this.fixed_name = setting.fixed_name;
         this.config = setting;
         this.utils = utils
-    }
-
-    enable() {
-        this.config.ENABLE = true;
-        this.onEvent("enable", null);
-    }
-
-    disable() {
-        this.config.ENABLE = false;
-        this.onEvent("disable", null);
-    }
-
-    onEvent(eventType, payload) {
     }
 
     beforeProcess() {
@@ -776,19 +774,49 @@ class DiagramParser {
 
 global._diagramParser = new DiagramParser();
 
+class EventHub {
+    constructor() {
+        this.utils = utils
+        this.eventMap = {}  // { eventType: [listenerFunc] }
+    }
+
+    addEventListener = (eventType, listener) => {
+        if (!this.eventMap[eventType]) {
+            this.eventMap[eventType] = [];
+        }
+        this.eventMap[eventType].push(listener);
+    }
+    removeEventListener = (eventType, listener) => {
+        if (this.eventMap[eventType]) {
+            this.eventMap[eventType] = this.eventMap[eventType].filter(lis => lis !== listener);
+        }
+    }
+    publishEvent = (eventType, payload) => {
+        if (this.eventMap[eventType]) {
+            for (const listener of this.eventMap[eventType]) {
+                listener.call(this, payload);
+            }
+        }
+    }
+
+    process = () => {
+        this.utils.decorateOpenFile(
+            () => this.publishEvent(this.utils.eventType.beforeFileOpen),
+            (result, ...args) => {
+                const filePath = args[0];
+                filePath && this.publishEvent(this.utils.eventType.fileOpened, filePath);
+            }
+        )
+    }
+}
+
+global._eventHub = new EventHub();
+
 class process {
     constructor() {
         this.utils = utils;
         this.hotkeyHelper = new hotkeyHelper();
         this.userSettingHelper = new userSettingHelper();
-    }
-
-    noticeEvent = () => {
-        console.log("--- all plugins had injected ---");
-        for (let fixedName of Object.keys(global._plugins)) {
-            const plugin = global._plugins[fixedName];
-            plugin.onEvent("allPluginsHadInjected", null);
-        }
     }
 
     insertStyle(fixedName, style) {
@@ -858,7 +886,8 @@ class process {
         Promise.all(promises).then(() => {
             this.hotkeyHelper.listen();
             global._diagramParser.process();
-            this.noticeEvent();
+            global._eventHub.process();
+            this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
         })
     }
 }
