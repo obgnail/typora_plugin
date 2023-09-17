@@ -204,11 +204,11 @@ class fenceEnhancePlugin extends global._basePlugin {
         this.lastClickTime = ev.timeStamp;
 
         const result = this.utils.getFenceContent(copyButton.closest(".md-fences"))
-        navigator.clipboard.writeText(result);
         // File.editor.UserOp.setClipboard(null, null, result);
-
-        copyButton.firstElementChild.className = "fa fa-check";
-        setTimeout(() => copyButton.firstElementChild.className = "fa fa-clipboard", this.config.WAIT_RECOVER_INTERVAL);
+        navigator.clipboard.writeText(result).then(()=> {
+            copyButton.firstElementChild.className = "fa fa-check";
+            setTimeout(() => copyButton.firstElementChild.className = "fa fa-clipboard", this.config.WAIT_RECOVER_INTERVAL);
+        })
     }
 
     foldCode = (ev, foldButton) => {

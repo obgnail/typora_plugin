@@ -88,17 +88,17 @@ class utils {
 
     // 注册新的代码块语法
     //   1. lang(string): language
-    //   2. destroyWhenUpdate: 更新前是否清空preview里的html
-    //   3. renderFunc(async (cid, content, $pre) => null): 渲染函数，根据内容渲染所需的图像
+    //   2. destroyWhenUpdate(boolean): 更新前是否清空preview里的html
+    //   3. async renderFunc(cid, content, $pre) => null: 渲染函数，根据内容渲染所需的图像
     //        cid: 当前代码块的cid
     //        content: 代码块的内容
     //        $pre: 代码块的jquery element
-    //   4. cancelFunc(async cid => null): 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
-    //   5. extraStyleGetter(() => string): 用于导出时，新增css
+    //   4. async cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
+    //   5. extraStyleGetter() => string: 用于导出时，新增css
     static registerDiagramParser = (
         lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null
     ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter)
-    // 当代码块内容出现语法错误时调用
+    // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
     // 当前插件系统拥有的event：
@@ -109,11 +109,9 @@ class utils {
     //   fileOpened: 打开文件之后
     //   fileContentLoaded: 文件内容加载完毕之后(依赖于window_tab)
     //   beforeToggleSourceMode: 进入源码模式之前
-    //   beforeCloseWindow: 窗口关闭之前
+    //   beforeAddCodeBlock: 添加代码块之前
+    //   afterAddCodeBlock: 添加代码块之后
     static eventType = {
-        // enable: "enable",
-        // disable: "disable",
-
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
         allPluginsHadInjected: "allPluginsHadInjected",
         beforeFileOpen: "beforeFileOpen",
@@ -122,7 +120,6 @@ class utils {
         beforeToggleSourceMode: "beforeToggleSourceMode",
         beforeAddCodeBlock: "beforeAddCodeBlock",
         afterAddCodeBlock: "afterAddCodeBlock",
-        // beforeCloseWindow: "beforeCloseWindow",
     }
     static addEventListener = (eventType, listener) => global._eventHub.addEventListener(eventType, listener);
     static removeEventListener = (eventType, listener) => global._eventHub.removeEventListener(eventType, listener);

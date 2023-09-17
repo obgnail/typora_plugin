@@ -525,9 +525,10 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 - 只需使用 `style = () => "..."`，即可注册 css。
 - 只需使用 `hint = () => "将当前标题的路径复制到剪切板"`，即可注册 hint。
+- 只需使用 `select = () => "..."`，即可注册允许运行命令的光标位置。
 - 只需使用 `hotkey = () => ["ctrl+shift+y"]` ，即可注册快捷键。
 - 只需使用 `this.modal` 函数即可自动生成自定义的模态框。
-- init、selector、html、process、callback 等等生命周期函数。
+- init、html、process、callback 等等生命周期函数。
 
 ```js
 class fullPathCopy extends BaseCustomPlugin {
@@ -668,7 +669,7 @@ class fullPathCopy extends BaseCustomPlugin {
 module.exports = { plugin: fullPathCopy };
 
 // 1. 创建 class，继承 BaseCustomPlugin 类。此时，fullPathCopy 将自动拥有 utils、info、config 属性 和 modal 方法。
-//    - utils：插件系统自带的静态工具类，其定义在 `./plugin/global/core/plugin.js/utils`。其中有两个最重要的函数：utils.getPlugin(fixed_name) 和 utils.getCustomPlugin(fixed_name) 用于获取已经实现的全部插件，调用其 API。具体的 API 可看 openPlatformAPI.md 文件
+//    - utils：插件系统自带的静态工具类，其定义在 `./plugin/global/core/plugin.js/utils`。其中有三个重要的函数：utils.getPlugin(fixed_name) 和 utils.getCustomPlugin(fixed_name) 用于获取已经实现的全部插件，调用其 API，具体的 API 可看 openPlatformAPI.md 文件。utils.addEventListener(eventType, listener) 用于监听 Typora 的生命周期事件。
 //    - info：该插件在 custom_plugin.user.toml 里的所有字段
 //    - config：等同于 info.config
 //    - modal：生成自定义的模态框，和用户交互。具体用法可以参考 __modal_example.js
