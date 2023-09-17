@@ -204,16 +204,13 @@ class collapseRecorder {
     }
 
     collect = () => {
-        const collapseIdxList = [];
+        const filepath = this.utils.getFilePath();
+        this.records[filepath] = [];
         this.range((ele, idx) => {
             if (ele.classList.contains(this.config.CLASS_NAME)) {
-                collapseIdxList.push(idx);
+                this.records[filepath].push(idx);
             }
         })
-        if (collapseIdxList.length) {
-            const filepath = this.utils.getFilePath();
-            this.records[filepath] = collapseIdxList;
-        }
     }
 
     collapseHeading = filepath => {
