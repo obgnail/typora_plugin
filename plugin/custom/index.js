@@ -61,7 +61,7 @@ class loadPluginHelper {
 
     noticeEvent = () => {
         console.log("--- all custom plugins had injected ---");
-        this.onEvent("allCustomPluginsHadInjected", null);
+        this.onEvent(this.utils.eventType.allCustomPluginsHadInjected, null);
     }
 
     insertStyle = (fixed_name, style) => {

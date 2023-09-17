@@ -101,6 +101,13 @@ class utils {
     // 当代码块内容出现语法错误时调用
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
+    // 当前插件系统拥有的event：
+    static eventType = {
+        enable: "enable",
+        disable: "disable",
+        allPluginsHadInjected: "allPluginsHadInjected",
+        allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
+    }
     // 充分信任插件，允许所有插件发布事件
     static publishEvent = (eventType, payload) => global._eventHub.publish(eventType, payload)
 
@@ -502,12 +509,12 @@ class basePlugin extends pluginInterface {
 
     enable() {
         this.config.ENABLE = true;
-        this.onEvent("enable", null);
+        this.onEvent(this.utils.eventType.enable, null);
     }
 
     disable() {
         this.config.ENABLE = false;
-        this.onEvent("disable", null);
+        this.onEvent(this.utils.eventType.disable, null);
     }
 
     onEvent(eventType, payload) {
@@ -782,11 +789,6 @@ class DiagramParser {
 
 global._diagramParser = new DiagramParser();
 
-// 备注，当前插件系统拥有的event：
-//   1. enable
-//   2. disable
-//   3. allPluginsHadInjected
-//   4. allCustomPluginsHadInjected
 class EventHub {
     constructor() {
         this.utils = utils
@@ -831,7 +833,7 @@ class process {
 
     noticeEvent = () => {
         console.log("--- all plugins had injected ---");
-        this.utils.publishEvent("allPluginsHadInjected");
+        this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
     }
 
     insertStyle(fixedName, style) {
