@@ -401,6 +401,7 @@ class windowTabBarPlugin extends global._basePlugin {
             }
             if (count === stopCount) {
                 clearInterval(_timer);
+                this.utils.publishEvent(this.utils.eventType.fileContentLoaded, filePath);
             }
         }, this.config.LOOP_DETECT_INTERVAL);
     }

@@ -107,7 +107,7 @@ class utils {
     //   allPluginsHadInjected: 所有插件加载完毕
     //   beforeFileOpen: 打开文件之前
     //   fileOpened: 打开文件之后
-    //   fileContentLoaded: 文件内容加载完毕之后
+    //   fileContentLoaded: 文件内容加载完毕之后(依赖于window_tab)
     //   beforeToggleSourceMode: 进入源码模式之前
     //   beforeCloseWindow: 窗口关闭之前
     static eventType = {
@@ -118,10 +118,10 @@ class utils {
         allPluginsHadInjected: "allPluginsHadInjected",
         beforeFileOpen: "beforeFileOpen",
         fileOpened: "fileOpened",
+        fileContentLoaded: "fileContentLoaded",
         beforeToggleSourceMode: "beforeToggleSourceMode",
         beforeAddCodeBlock: "beforeAddCodeBlock",
         afterAddCodeBlock: "afterAddCodeBlock",
-        // fileContentLoaded: "fileContentLoaded",
         // beforeCloseWindow: "beforeCloseWindow",
     }
     static addEventListener = (eventType, listener) => global._eventHub.addEventListener(eventType, listener);
@@ -359,11 +359,6 @@ class utils {
             obj[func] = decorator(obj[func], before, after);
             delete this.detectorContainer[uuid];
         }, 20);
-    }
-
-    static decorateOpenFile = (before, after) => {
-        this.decorate(() => (File && File.editor && File.editor.library && File.editor.library.openFile),
-            "File.editor.library.openFile", before, after)
     }
 
     static decorateExportToHTML = (before, after) => {
@@ -797,18 +792,14 @@ class EventHub {
     }
 
     process = () => {
-        this.utils.decorateOpenFile(
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.library && File.editor.library.openFile),
+            "File.editor.library.openFile",
             () => this.publishEvent(this.utils.eventType.beforeFileOpen),
             (result, ...args) => {
                 const filePath = args[0];
                 filePath && this.publishEvent(this.utils.eventType.fileOpened, filePath);
             }
-        )
-
-        this.utils.decorate(
-            () => (File && File.toggleSourceMode),
-            "File.toggleSourceMode",
-            () => this.publishEvent(this.utils.eventType.beforeToggleSourceMode)
         )
 
         this.utils.decorate(
@@ -822,6 +813,12 @@ class EventHub {
                 const cid = args[0];
                 cid && this.publishEvent(this.utils.eventType.afterAddCodeBlock, cid)
             },
+        )
+
+        this.utils.decorate(
+            () => (File && File.toggleSourceMode),
+            "File.toggleSourceMode",
+            () => this.publishEvent(this.utils.eventType.beforeToggleSourceMode)
         )
     }
 }

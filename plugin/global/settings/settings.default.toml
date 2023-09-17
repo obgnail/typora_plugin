@@ -477,6 +477,8 @@ ENABLE = true
 NAME = "章节折叠"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# 是否临时记录文件放缩状态（直到关闭窗口）
+RECORD_COLLAPSE = true
 # 内部使用
 # 添加的class
 CLASS_NAME = "plugin-collapsed-paragraph"
