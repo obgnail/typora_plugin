@@ -95,12 +95,12 @@ class utils {
     //        $pre: 代码块的jquery element
     //   4. async cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
     //   5. extraStyleGetter() => string: 用于导出时，新增css
-    //   6. ctrlClickToFocus: 只有ctrl+click才能展开代码块
+    //   6. interactiveMode: 交互模式下，只有ctrl+click才能展开代码块
     static registerDiagramParser = (
         lang, destroyWhenUpdate,
         renderFunc, cancelFunc = null, extraStyleGetter = null,
-        ctrlClickToFocus = true
-    ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, ctrlClickToFocus)
+        interactiveMode = true
+    ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode)
     // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
@@ -589,13 +589,13 @@ class userSettingHelper {
 
 // 辣鸡js，连接口都不支持
 class _diagramParser {
-    constructor(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, hardFocus) {
+    constructor(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode) {
         this.lang = lang;
         this.destroyWhenUpdate = destroyWhenUpdate || false;
         this.renderFunc = renderFunc || null;
         this.cancelFunc = cancelFunc || null;
         this.extraStyleGetter = extraStyleGetter || null;
-        this.hardFocus = hardFocus;
+        this.interactiveMode = interactiveMode;
 
         if (!this.check(this)) {
             throw "diagram error"
@@ -697,17 +697,19 @@ class DiagramParser {
         if (!this.isDiagramType(lang)) {
             $pre.children(".fence-enhance").show();
             $pre.removeClass("md-fences-advanced");
-            $pre.removeClass("md-fences-custom-advanced");
+            $pre.removeClass("md-fences-interactive");
             await this.noticeRollback(cid);
         } else {
             // 是Diagram类型，但是不是自定义类型，不展示增强按钮，直接返回即可
             $pre.children(".fence-enhance").hide();
             // 是Diagram类型，也是自定义类型，调用其回调函数
             if (this.isCustomDiagramType(lang)) {
-                $pre.addClass("md-fences-custom-advanced");
+                if (this.diagramParsers[lang].interactiveMode) {
+                    $pre.addClass("md-fences-interactive");
+                }
                 await this.renderCustomDiagram(cid, lang, $pre);
             } else {
-                $pre.removeClass("md-fences-custom-advanced");
+                $pre.removeClass("md-fences-interactive");
                 await this.noticeRollback(cid);
             }
         }
@@ -716,10 +718,10 @@ class DiagramParser {
     register = (
         lang, destroyWhenUpdate,
         renderFunc, cancelFunc = null, extraStyleGetter = null,
-        hardFocus = true,
+        interactiveMode = true,
     ) => {
         lang = lang.toLowerCase();
-        this.diagramParsers[lang] = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, hardFocus);
+        this.diagramParsers[lang] = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode);
         console.log(`register diagram parser: [ ${lang} ]`);
     }
 
@@ -772,7 +774,7 @@ class DiagramParser {
             const cid = ("string" == typeof args[0]) ? args[0] : args[0]["id"];
             if (cid) {
                 const lang = (File.editor.findElemById(cid).attr("lang") || "").trim().toLowerCase();
-                if (cid && lang && this.diagramParsers[lang] && this.diagramParsers[lang].hardFocus) {
+                if (cid && lang && this.diagramParsers[lang] && this.diagramParsers[lang].interactiveMode) {
                     return this.utils.stopCallError
                 }
             }
@@ -782,17 +784,6 @@ class DiagramParser {
             dontFocus = false;
             setTimeout(() => dontFocus = true, 200);
         }
-
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.fences && File.editor.fences.focus),
-            "File.editor.fences.focus",
-            stopCall,
-        )
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.refocus),
-            "File.editor.refocus",
-            stopCall,
-        )
 
         const showAllTButton = fence => {
             const enhance = fence.querySelector(".fence-enhance");
@@ -818,13 +809,9 @@ class DiagramParser {
             enhance.style.display = "none";
         }
 
-        const write = document.querySelector("#write");
-        write.addEventListener("mouseup", ev => {
-            if (
-                ev.target.closest(".md-fences-custom-advanced .md-diagram-panel-preview") && this.utils.metaKeyPressed(ev)
-                || ev.target.closest(".fence-enhance .edit-custom-diagram")
-            ) {
-                showAllTButton(ev.target.closest(".md-fences-custom-advanced"))
+        document.querySelector("#write").addEventListener("mouseup", ev => {
+            if (ev.target.closest(".md-fences-interactive .md-diagram-panel-preview") && this.utils.metaKeyPressed(ev)) {
+                showAllTButton(ev.target.closest(".md-fences-interactive"));
                 enableFocus();
             }
         }, true)
@@ -837,15 +824,31 @@ class DiagramParser {
                 "edit-custom-diagram", "editDiagram", "编辑", "fa fa-edit", false,
                 (ev, button) => {
                     button.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
+                    enableFocus();
                 }
             )
 
-            $("#write").on("mouseenter", ".md-fences-custom-advanced:not(.md-focus)", function () {
+            $("#write").on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
                 showEditButtonOnly(this);
-            }).on("mouseleave", ".md-fences-custom-advanced:not(.md-focus)", function () {
+            }).on("mouseleave", ".md-fences-interactive:not(.md-focus)", function () {
                 hideAllButton(this);
+            }).on("mouseenter", ".md-fences-interactive.md-focus", function () {
+                showAllTButton(this);
+            }).on("mouseleave", ".md-fences-interactive.md-focus", function () {
+                showEditButtonOnly(this);
             })
         })
+
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.fences && File.editor.fences.focus),
+            "File.editor.fences.focus",
+            stopCall,
+        )
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.refocus),
+            "File.editor.refocus",
+            stopCall,
+        )
     }
 
     onCheckIsDiagramType = () => {
