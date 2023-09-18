@@ -4,6 +4,16 @@
 # 4. 所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
 
 
+############### global ###############
+# 通用配置
+[global]
+# 如果你使用了自定义图表（kanban、markmap、echarts），那么下面两个配置请至少一个置为true，否则你将不能退出交互模式，修改fence（当然，你可以通过进入源码模式修改）
+# 为【自定义fence图表】添加 edit icon（当点击 edit icon 时退出交互模式）
+CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE = true
+# ctrl+click【自定义fence图表】退出交互模式
+CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE = false
+
+
 ############### window_tab ###############
 [window_tab]
 # 启用插件

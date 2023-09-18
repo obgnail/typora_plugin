@@ -173,6 +173,7 @@ class utils {
     static shiftKeyPressed = ev => !!ev.shiftKey
     static altKeyPressed = ev => !!ev.altKey
 
+    static getGlobalSetting = name => global._global_settings[name]
     static getPlugin = fixed_name => global._plugins[fixed_name]
     static getCustomPlugin = fixed_name => {
         const plugin = global._plugins["custom"];
@@ -768,6 +769,11 @@ class DiagramParser {
     onFocus = () => {
         let dontFocus = true;
 
+        const enableFocus = () => {
+            dontFocus = false;
+            setTimeout(() => dontFocus = true, 200);
+        }
+
         const stopCall = (...args) => {
             if (!dontFocus || !args || !args[0]) return;
 
@@ -780,10 +786,16 @@ class DiagramParser {
             }
         }
 
-        const enableFocus = () => {
-            dontFocus = false;
-            setTimeout(() => dontFocus = true, 200);
-        }
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.fences && File.editor.fences.focus),
+            "File.editor.fences.focus",
+            stopCall,
+        )
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.refocus),
+            "File.editor.refocus",
+            stopCall,
+        )
 
         const showAllTButton = fence => {
             const enhance = fence.querySelector(".fence-enhance");
@@ -809,17 +821,29 @@ class DiagramParser {
             enhance.style.display = "none";
         }
 
-        document.querySelector("#write").addEventListener("mouseup", ev => {
-            if (ev.target.closest(".md-fences-interactive .md-diagram-panel-preview") && this.utils.metaKeyPressed(ev)) {
-                showAllTButton(ev.target.closest(".md-fences-interactive"));
-                enableFocus();
-            }
-        }, true)
+        if (this.utils.getGlobalSetting("CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE")) {
+            document.querySelector("#write").addEventListener("mouseup", ev => {
+                if (ev.target.closest(".md-fences-interactive .md-diagram-panel-preview") && this.utils.metaKeyPressed(ev)) {
+                    showAllTButton(ev.target.closest(".md-fences-interactive"));
+                    enableFocus();
+                }
+            }, true)
+        }
 
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+            if (!this.utils.getGlobalSetting("CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE")) return;
+
+            let hasInteractiveDiagram = false;
+            for (const lang of Object.keys(this.diagramParsers)) {
+                if (this.diagramParsers[lang].interactiveMode) {
+                    hasInteractiveDiagram = true;
+                    break
+                }
+            }
+            if (!hasInteractiveDiagram) return;
+
             const fenceEnhancePlugin = this.utils.getPlugin("fence_enhance");
             if (!fenceEnhancePlugin) return;
-
             fenceEnhancePlugin.registerBuilder(
                 "edit-custom-diagram", "editDiagram", "编辑", "fa fa-edit", false,
                 (ev, button) => {
@@ -838,17 +862,6 @@ class DiagramParser {
                 showEditButtonOnly(this);
             })
         })
-
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.fences && File.editor.fences.focus),
-            "File.editor.fences.focus",
-            stopCall,
-        )
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.refocus),
-            "File.editor.refocus",
-            stopCall,
-        )
     }
 
     onCheckIsDiagramType = () => {
@@ -996,6 +1009,7 @@ class process {
     }
 
     run() {
+        global._global_settings = {};
         global._plugins = {};
 
         let pluginSettings = this.utils.readToml("./plugin/global/settings/settings.default.toml");
@@ -1005,6 +1019,12 @@ class process {
 
         for (const fixed_name of Object.keys(pluginSettings)) {
             const pluginSetting = pluginSettings[fixed_name];
+
+            if (fixed_name === "global") {
+                global._global_settings = pluginSetting;
+                continue;
+            }
+
             pluginSetting.fixed_name = fixed_name;
 
             if (!pluginSetting.ENABLE) continue;
