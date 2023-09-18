@@ -95,19 +95,22 @@ class utils {
     //        $pre: 代码块的jquery element
     //   4. async cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
     //   5. extraStyleGetter() => string: 用于导出时，新增css
+    //   6. ctrlClickToFocus: 只有ctrl+click才能展开代码块
     static registerDiagramParser = (
-        lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null
-    ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter)
+        lang, destroyWhenUpdate,
+        renderFunc, cancelFunc = null, extraStyleGetter = null,
+        ctrlClickToFocus = true
+    ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, ctrlClickToFocus)
     // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
-    // 当前插件系统拥有的event：
     // 触发顺序：
     //   allCustomPluginsHadInjected: 自定义插件加载完毕
     //   allPluginsHadInjected: 所有插件加载完毕
     //   beforeFileOpen: 打开文件之前
     //   fileOpened: 打开文件之后
     //   fileContentLoaded: 文件内容加载完毕之后(依赖于window_tab)
+
     //   beforeToggleSourceMode: 进入源码模式之前
     //   beforeAddCodeBlock: 添加代码块之前
     //   afterAddCodeBlock: 添加代码块之后
@@ -595,6 +598,7 @@ class DiagramParser {
     constructor() {
         this.utils = utils;
         this.diagramParsers = {}; // {lang: _diagramParser}
+        this.ctrlClickToFocusSet = new Set(); // {lang}
     }
 
     style = () => (!this.utils.isBetaVersion) ? "" : `.md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
@@ -683,23 +687,39 @@ class DiagramParser {
         if (!this.isDiagramType(lang)) {
             $pre.children(".fence-enhance").show();
             $pre.removeClass("md-fences-advanced");
+            $pre.removeClass("md-fences-custom-advanced");
             await this.noticeRollback(cid);
         } else {
             // 是Diagram类型，但是不是自定义类型，不展示增强按钮，直接返回即可
             $pre.children(".fence-enhance").hide();
             // 是Diagram类型，也是自定义类型，调用其回调函数
             if (this.isCustomDiagramType(lang)) {
+                $pre.addClass("md-fences-custom-advanced");
                 await this.renderCustomDiagram(cid, lang, $pre);
             } else {
+                $pre.removeClass("md-fences-custom-advanced");
                 await this.noticeRollback(cid);
             }
         }
     }
 
-    register = (lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null) => {
+    register = (lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null, ctrlClickToFocus = true) => {
         lang = lang.toLowerCase();
         this.diagramParsers[lang] = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter);
+        ctrlClickToFocus && this.ctrlClickToFocusSet.add(lang);
         console.log(`register diagram parser: [ ${lang} ]`);
+    }
+
+    getLang = args => {
+        let lang = "";
+        let cid = ""
+        if (args && args[0]) {
+            cid = ("string" == typeof args[0]) ? args[0] : args[0]["id"];
+            if (cid) {
+                lang = (File.editor.findElemById(cid).attr("lang") || "").trim().toLowerCase();
+            }
+        }
+        return {cid, lang}
     }
 
     process = () => {
@@ -738,6 +758,38 @@ class DiagramParser {
                 args[0].extraCss = (args[0].extraCss || "") + base + extraCssList.join(" ");
             }
         })
+        // 聚集时
+        let dontFocus = true;
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.fences && File.editor.fences.focus),
+            "File.editor.fences.focus",
+            (...args) => {
+                const {cid, lang} = this.getLang(args);
+                if (dontFocus && cid && lang && this.ctrlClickToFocusSet.has(lang)) {
+                    return this.utils.stopCallError
+                }
+            },
+            null
+        )
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.refocus),
+            "File.editor.refocus",
+            (...args) => {
+                const {cid, lang} = this.getLang(args);
+                if (dontFocus && cid && lang && this.ctrlClickToFocusSet.has(lang)) {
+                    return this.utils.stopCallError
+                }
+            },
+            null
+        )
+        document.querySelector("#write").addEventListener("mouseup", ev => {
+            const target = ev.target.closest(".md-fences-custom-advanced .md-diagram-panel-preview");
+            if (target && this.utils.metaKeyPressed(ev)) {
+                dontFocus = false;
+                setTimeout(() => dontFocus = true, 200);
+            }
+        }, true)
+
         // 判断是否为Diagram
         this.utils.decorate(
             // black magic

@@ -77,7 +77,7 @@ class fenceMarkmap {
     style = () => `.md-diagram-panel .plugin-fence-markmap-svg {line-height: initial !important;}`
 
     process = () => {
-        this.utils.registerDiagramParser("markmap", false, this.render, this.cancel);
+        this.utils.registerDiagramParser("markmap", false, this.render, this.cancel, null, this.config.CTRL_CLICK_TO_FOUCS);
         this.utils.addEventListener(this.utils.eventType.beforeFileOpen, () => this.filepath = this.utils.getFilePath());
         this.utils.addEventListener(this.utils.eventType.fileOpened, this.destroyAll);
     }

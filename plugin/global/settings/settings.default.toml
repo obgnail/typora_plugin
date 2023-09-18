@@ -386,6 +386,8 @@ USE_ANIMATION_WHEN_RESIZE = false
 
 # markmap共有两个功能:toc和fence，此为fence。若为false，以下配置全部失效
 ENABLE_FENCE_MARKMAP = true
+# 鼠标click图表并不会展开代码块，ctrl+click才会
+CTRL_CLICK_TO_FOUCS = true
 # 代码块默认高度
 DEFAULT_FENCE_HEIGHT = "300px"
 # 代码块背景颜色
