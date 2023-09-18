@@ -261,13 +261,13 @@ class autoNumberPlugin extends global._basePlugin {
 
     insertStyle = toggle => {
         const css = this.getResultStyle(toggle);
-        this.utils.insertStyle(this.config.ID, css);
+        this.utils.insertStyle(this.css_id, css);
     }
 
     dynamicCallArgsGenerator = () => {
         let arg_name = "启用";
         let arg_value = "enable";
-        if (!!document.getElementById(this.config.ID)) {
+        if (!!document.getElementById(this.css_id)) {
             arg_name = "禁用";
             arg_value = "disable";
         }
