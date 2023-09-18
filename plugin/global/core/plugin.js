@@ -589,12 +589,13 @@ class userSettingHelper {
 
 // 辣鸡js，连接口都不支持
 class _diagramParser {
-    constructor(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter) {
+    constructor(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, hardFocus) {
         this.lang = lang;
         this.destroyWhenUpdate = destroyWhenUpdate || false;
         this.renderFunc = renderFunc || null;
         this.cancelFunc = cancelFunc || null;
         this.extraStyleGetter = extraStyleGetter || null;
+        this.hardFocus = hardFocus;
 
         if (!this.check(this)) {
             throw "diagram error"
@@ -608,7 +609,6 @@ class DiagramParser {
     constructor() {
         this.utils = utils;
         this.diagramParsers = {}; // {lang: _diagramParser}
-        this.ctrlClickToFocusSet = new Set(); // {lang}
     }
 
     style = () => (!this.utils.isBetaVersion) ? "" : `.md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
@@ -713,47 +713,40 @@ class DiagramParser {
         }
     }
 
-    register = (lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null, ctrlClickToFocus = true) => {
+    register = (
+        lang, destroyWhenUpdate,
+        renderFunc, cancelFunc = null, extraStyleGetter = null,
+        hardFocus = true,
+    ) => {
         lang = lang.toLowerCase();
-        this.diagramParsers[lang] = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter);
-        ctrlClickToFocus && this.ctrlClickToFocusSet.add(lang);
+        this.diagramParsers[lang] = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, hardFocus);
         console.log(`register diagram parser: [ ${lang} ]`);
     }
 
-    getLang = args => {
-        let lang = "";
-        let cid = ""
-        if (args && args[0]) {
-            cid = ("string" == typeof args[0]) ? args[0] : args[0]["id"];
-            if (cid) {
-                lang = (File.editor.findElemById(cid).attr("lang") || "").trim().toLowerCase();
-            }
-        }
-        return {cid, lang}
+    onAddCodeBlock = () => {
+        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, this.renderDiagram)
     }
 
-    process = () => {
-        const css = this.style();
-        css && this.utils.insertStyle("diagram-parser-style", css);
-
-        // 添加时
-        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, this.renderDiagram)
-        // 修改语言时
+    onTryAddLangUndo = () => {
         this.utils.decorate(
             () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
             "File.editor.fences.tryAddLangUndo",
             null,
             (result, ...args) => this.renderDiagram(args[0].cid)
         )
-        // 更新时
+    }
+
+    onUpdateDiagram = () => {
         this.utils.decorate(
             () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
             "File.editor.diagrams.updateDiagram",
             null,
             (result, ...args) => this.renderDiagram(args[0])
         )
-        // 导出时
-        this.utils.decorateExportToHTML((...args) => {
+    }
+
+    onExportToHTML = () => {
+        this.utils.decorateExportToHTML(async (...args) => {
             const extraCssList = [];
             for (let lang of Object.keys(this.diagramParsers)) {
                 const getter = this.diagramParsers[lang].extraStyleGetter;
@@ -768,39 +761,94 @@ class DiagramParser {
                 args[0].extraCss = (args[0].extraCss || "") + base + extraCssList.join(" ");
             }
         })
-        // 聚焦时
+    }
+
+    onFocus = () => {
         let dontFocus = true;
+
+        const stopCall = (...args) => {
+            if (!dontFocus || !args || !args[0]) return;
+
+            const cid = ("string" == typeof args[0]) ? args[0] : args[0]["id"];
+            if (cid) {
+                const lang = (File.editor.findElemById(cid).attr("lang") || "").trim().toLowerCase();
+                if (cid && lang && this.diagramParsers[lang] && this.diagramParsers[lang].hardFocus) {
+                    return this.utils.stopCallError
+                }
+            }
+        }
+
+        const enableFocus = () => {
+            dontFocus = false;
+            setTimeout(() => dontFocus = true, 200);
+        }
+
         this.utils.decorate(
             () => (File && File.editor && File.editor.fences && File.editor.fences.focus),
             "File.editor.fences.focus",
-            (...args) => {
-                const {cid, lang} = this.getLang(args);
-                if (dontFocus && cid && lang && this.ctrlClickToFocusSet.has(lang)) {
-                    return this.utils.stopCallError
-                }
-            },
-            null
+            stopCall,
         )
         this.utils.decorate(
             () => (File && File.editor && File.editor.refocus),
             "File.editor.refocus",
-            (...args) => {
-                const {cid, lang} = this.getLang(args);
-                if (dontFocus && cid && lang && this.ctrlClickToFocusSet.has(lang)) {
-                    return this.utils.stopCallError
-                }
-            },
-            null
+            stopCall,
         )
-        document.querySelector("#write").addEventListener("mouseup", ev => {
-            const target = ev.target.closest(".md-fences-custom-advanced .md-diagram-panel-preview");
-            if (target && this.utils.metaKeyPressed(ev)) {
-                dontFocus = false;
-                setTimeout(() => dontFocus = true, 200);
+
+        const showAllTButton = fence => {
+            const enhance = fence.querySelector(".fence-enhance");
+            if (!enhance) return;
+            enhance.querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
+            return enhance
+        }
+
+        const showEditButtonOnly = fence => {
+            const enhance = fence.querySelector(".fence-enhance");
+            if (!enhance) return;
+            enhance.style.display = "";
+            enhance.querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "none");
+            enhance.querySelector(".edit-custom-diagram").style.display = "";
+        }
+
+        const hideAllButton = fence => {
+            const enhance = showAllTButton(fence);
+            const editButton = enhance.querySelector(".edit-custom-diagram");
+            if (editButton) {
+                editButton.style.display = "none";
+            }
+            enhance.style.display = "none";
+        }
+
+        const write = document.querySelector("#write");
+        write.addEventListener("mouseup", ev => {
+            if (
+                ev.target.closest(".md-fences-custom-advanced .md-diagram-panel-preview") && this.utils.metaKeyPressed(ev)
+                || ev.target.closest(".fence-enhance .edit-custom-diagram")
+            ) {
+                showAllTButton(ev.target.closest(".md-fences-custom-advanced"))
+                enableFocus();
             }
         }, true)
 
-        // 判断是否为Diagram
+        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+            const fenceEnhancePlugin = this.utils.getPlugin("fence_enhance");
+            if (!fenceEnhancePlugin) return;
+
+            fenceEnhancePlugin.registerBuilder(
+                "edit-custom-diagram", "editDiagram", "编辑", "fa fa-edit", false,
+                (ev, button) => {
+                    button.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
+                }
+            )
+
+            $("#write").on("mouseenter", ".md-fences-custom-advanced:not(.md-focus)", function () {
+                showEditButtonOnly(this);
+            }).on("mouseleave", ".md-fences-custom-advanced:not(.md-focus)", function () {
+                hideAllButton(this);
+            })
+        })
+    }
+
+    onCheckIsDiagramType = () => {
         this.utils.decorate(
             // black magic
             () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor && File.editor.diagrams.constructor.isDiagramType),
@@ -821,6 +869,24 @@ class DiagramParser {
             },
             true
         )
+    }
+
+    process = () => {
+        const css = this.style();
+        css && this.utils.insertStyle("diagram-parser-style", css);
+
+        // 添加时
+        this.onAddCodeBlock();
+        // 修改语言时
+        this.onTryAddLangUndo();
+        // 更新时
+        this.onUpdateDiagram();
+        // 导出时
+        this.onExportToHTML();
+        // 聚焦时
+        this.onFocus();
+        // 判断是否为Diagram时
+        this.onCheckIsDiagramType();
     }
 }
 
