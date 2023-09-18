@@ -575,6 +575,8 @@ class hotkeyHelper {
     }
 }
 
+global._hotkeyHelper = hotkeyHelper;
+
 class userSettingHelper {
     constructor() {
         this.utils = utils;

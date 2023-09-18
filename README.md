@@ -32,11 +32,12 @@
 | 22   | export_enhance     | 导出 html 时避免图片丢失             | √        |
 | 23   | go_top             | 一键到文章顶部                       | √        |
 | 24   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
-| 25   | custom             | 用户自定义命令（高级）               | √        |
-| 26   | plugin_updater     | 一键更新插件                         | √        |
-| 27   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
-| 28   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
-| 29   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
+| 25   | hotkeyHub          | 快捷键注册中心（高级）               | √        |
+| 26   | custom             | 用户自定义命令（高级）               | √        |
+| 27   | plugin_updater     | 一键更新插件                         | √        |
+| 28   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
+| 29   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
+| 30   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -512,6 +513,16 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 鼠标党可以将右键菜单作为所有插件的主要调用方式。
 
 ![right_click_menu1](assets/right_click_menu1.png)
+
+
+
+### hotkeyHub：快捷键注册中心（高级）
+
+> 此配置是高级配置，仅对有 javascript 基础的用户开放。
+
+功能：以声明的形式，为【任意插件系统函数】或【任意自定义函数】设置快捷键。
+
+具体使用请参考 `hotkey.default.toml`。
 
 
 
