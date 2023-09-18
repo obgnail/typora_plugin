@@ -358,9 +358,9 @@ class utils {
         }, 20);
     }
 
-    static decorateExportToHTML = (before, after) => {
+    static decorateExportToHTML = (before, after, changeResult = false) => {
         this.decorate(() => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-            "File.editor.export.exportToHTML", before, after)
+            "File.editor.export.exportToHTML", before, after, changeResult)
     }
 
     static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
@@ -734,7 +734,8 @@ class DiagramParser {
                 }
             }
             if (extraCssList.length) {
-                args[0].extraCss = (args[0].extraCss || "") + extraCssList.join(" ");
+                const base = ` .md-diagram-panel, svg {page-break-inside: avoid;} `;
+                args[0].extraCss = (args[0].extraCss || "") + base + extraCssList.join(" ");
             }
         })
         // 判断是否为Diagram
