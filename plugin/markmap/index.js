@@ -342,13 +342,7 @@ class tocMarkmap {
     process = async () => {
         this.init();
 
-        this.utils.decorate(
-            () => File && File.editor && File.editor.library && File.editor.library.outline && File.editor.library.outline.updateOutlineHtml,
-            "File.editor.library.outline.updateOutlineHtml",
-            null,
-            () => this.entities.modal.style.display === "block" && this.drawToc()
-        )
-
+        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.entities.modal.style.display === "block" && this.drawToc());
         this.entities.content.addEventListener("transitionend", this.fit);
         this.entities.modal.addEventListener("transitionend", this.fit);
 

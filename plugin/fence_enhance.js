@@ -37,15 +37,6 @@ class fenceEnhancePlugin extends global._basePlugin {
             `
     }
 
-    hotkey = () => {
-        if (this.enableIndent) {
-            return [{
-                hotkey: this.config.INDENT_HOTKEY,
-                callback: this.utils.withAnchorNode("#write .md-fences", this.indentFence),
-            }]
-        }
-    }
-
     init = () => {
         this.builders = [];
         this.lastClickTime = 0;

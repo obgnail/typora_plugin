@@ -207,6 +207,14 @@ auto_open = true
 auto_use_datetable = true
 
 
+############### hotkeyHub ###############
+[hotkeyHub]
+# 右键菜单中展示的名称
+name = "快捷键中心"
+# 是否启用此自定义插件
+enable = true
+
+
 ############### openInTotalCommander ###############
 [openInTotalCommander]
 # 右键菜单中展示的名称

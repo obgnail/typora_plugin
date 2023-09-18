@@ -136,6 +136,7 @@ func NewUpdater(proxy string, timeout int) (*Updater, error) {
 		dontNeedUpdate: []string{
 			"./plugin/global/settings/custom_plugin.user.toml",
 			"./plugin/global/settings/settings.user.toml",
+			"./plugin/global/settings/hotkey.user.toml",
 			"./plugin/window_tab/save_tabs.json",
 		},
 		unzipDir:       "",
