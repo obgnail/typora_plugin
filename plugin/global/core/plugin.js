@@ -114,6 +114,7 @@ class utils {
     //   beforeToggleSourceMode: 进入源码模式之前
     //   beforeAddCodeBlock: 添加代码块之前
     //   afterAddCodeBlock: 添加代码块之后
+    //   outlineUpdated: 大纲更新之时
     static eventType = {
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
         allPluginsHadInjected: "allPluginsHadInjected",
@@ -123,6 +124,7 @@ class utils {
         beforeToggleSourceMode: "beforeToggleSourceMode",
         beforeAddCodeBlock: "beforeAddCodeBlock",
         afterAddCodeBlock: "afterAddCodeBlock",
+        outlineUpdated: "outlineUpdated",
     }
     static addEventListener = (eventType, listener) => global._eventHub.addEventListener(eventType, listener);
     static removeEventListener = (eventType, listener) => global._eventHub.removeEventListener(eventType, listener);
@@ -961,6 +963,12 @@ class EventHub {
             () => (File && File.toggleSourceMode),
             "File.toggleSourceMode",
             () => this.publishEvent(this.utils.eventType.beforeToggleSourceMode)
+        )
+
+        this.utils.decorate(
+            () => File && File.editor && File.editor.library && File.editor.library.outline && File.editor.library.outline.updateOutlineHtml,
+            "File.editor.library.outline.updateOutlineHtml",
+            () => this.publishEvent(this.utils.eventType.outlineUpdated)
         )
     }
 }
