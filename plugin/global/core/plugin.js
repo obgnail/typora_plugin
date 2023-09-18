@@ -95,19 +95,22 @@ class utils {
     //        $pre: 代码块的jquery element
     //   4. async cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
     //   5. extraStyleGetter() => string: 用于导出时，新增css
+    //   6. interactiveMode: 交互模式下，只有ctrl+click才能展开代码块
     static registerDiagramParser = (
-        lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null
-    ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter)
+        lang, destroyWhenUpdate,
+        renderFunc, cancelFunc = null, extraStyleGetter = null,
+        interactiveMode = true
+    ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode)
     // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
-    // 当前插件系统拥有的event：
     // 触发顺序：
     //   allCustomPluginsHadInjected: 自定义插件加载完毕
     //   allPluginsHadInjected: 所有插件加载完毕
     //   beforeFileOpen: 打开文件之前
     //   fileOpened: 打开文件之后
     //   fileContentLoaded: 文件内容加载完毕之后(依赖于window_tab)
+
     //   beforeToggleSourceMode: 进入源码模式之前
     //   beforeAddCodeBlock: 添加代码块之前
     //   afterAddCodeBlock: 添加代码块之后
@@ -170,6 +173,7 @@ class utils {
     static shiftKeyPressed = ev => !!ev.shiftKey
     static altKeyPressed = ev => !!ev.altKey
 
+    static getGlobalSetting = name => global._global_settings[name]
     static getPlugin = fixed_name => global._plugins[fixed_name]
     static getCustomPlugin = fixed_name => {
         const plugin = global._plugins["custom"];
@@ -358,9 +362,9 @@ class utils {
         }, 20);
     }
 
-    static decorateExportToHTML = (before, after) => {
+    static decorateExportToHTML = (before, after, changeResult = false) => {
         this.decorate(() => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-            "File.editor.export.exportToHTML", before, after)
+            "File.editor.export.exportToHTML", before, after, changeResult)
     }
 
     static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
@@ -387,6 +391,16 @@ class utils {
         const truncatePlugin = this.getPlugin("truncate_text");
         collapsePlugin && collapsePlugin.rollback(target);
         truncatePlugin && truncatePlugin.rollback(target);
+    }
+
+    static withAnchorNode = (selector, func) => {
+        return () => {
+            const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
+            const target = anchorNode.closest(selector);
+            if (target && target[0]) {
+                func(target[0]);
+            }
+        }
     }
 
     static resizeFixedModal = (
@@ -576,12 +590,13 @@ class userSettingHelper {
 
 // 辣鸡js，连接口都不支持
 class _diagramParser {
-    constructor(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter) {
+    constructor(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode) {
         this.lang = lang;
         this.destroyWhenUpdate = destroyWhenUpdate || false;
         this.renderFunc = renderFunc || null;
         this.cancelFunc = cancelFunc || null;
         this.extraStyleGetter = extraStyleGetter || null;
+        this.interactiveMode = interactiveMode;
 
         if (!this.check(this)) {
             throw "diagram error"
@@ -683,47 +698,58 @@ class DiagramParser {
         if (!this.isDiagramType(lang)) {
             $pre.children(".fence-enhance").show();
             $pre.removeClass("md-fences-advanced");
+            $pre.removeClass("md-fences-interactive");
             await this.noticeRollback(cid);
         } else {
             // 是Diagram类型，但是不是自定义类型，不展示增强按钮，直接返回即可
             $pre.children(".fence-enhance").hide();
             // 是Diagram类型，也是自定义类型，调用其回调函数
             if (this.isCustomDiagramType(lang)) {
+                if (this.diagramParsers[lang].interactiveMode) {
+                    $pre.addClass("md-fences-interactive");
+                }
                 await this.renderCustomDiagram(cid, lang, $pre);
             } else {
+                $pre.removeClass("md-fences-interactive");
                 await this.noticeRollback(cid);
             }
         }
     }
 
-    register = (lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null) => {
+    register = (
+        lang, destroyWhenUpdate,
+        renderFunc, cancelFunc = null, extraStyleGetter = null,
+        interactiveMode = true,
+    ) => {
         lang = lang.toLowerCase();
-        this.diagramParsers[lang] = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter);
+        this.diagramParsers[lang] = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode);
         console.log(`register diagram parser: [ ${lang} ]`);
     }
 
-    process = () => {
-        const css = this.style();
-        css && this.utils.insertStyle("diagram-parser-style", css);
-
-        // 添加时
+    onAddCodeBlock = () => {
         this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, this.renderDiagram)
-        // 修改语言时
+    }
+
+    onTryAddLangUndo = () => {
         this.utils.decorate(
             () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
             "File.editor.fences.tryAddLangUndo",
             null,
             (result, ...args) => this.renderDiagram(args[0].cid)
         )
-        // 更新时
+    }
+
+    onUpdateDiagram = () => {
         this.utils.decorate(
             () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
             "File.editor.diagrams.updateDiagram",
             null,
             (result, ...args) => this.renderDiagram(args[0])
         )
-        // 导出时
-        this.utils.decorateExportToHTML((...args) => {
+    }
+
+    onExportToHTML = () => {
+        this.utils.decorateExportToHTML(async (...args) => {
             const extraCssList = [];
             for (let lang of Object.keys(this.diagramParsers)) {
                 const getter = this.diagramParsers[lang].extraStyleGetter;
@@ -734,10 +760,111 @@ class DiagramParser {
                 }
             }
             if (extraCssList.length) {
-                args[0].extraCss = (args[0].extraCss || "") + extraCssList.join(" ");
+                const base = ` .md-diagram-panel, svg {page-break-inside: avoid;} `;
+                args[0].extraCss = (args[0].extraCss || "") + base + extraCssList.join(" ");
             }
         })
-        // 判断是否为Diagram
+    }
+
+    onFocus = () => {
+        let dontFocus = true;
+
+        const enableFocus = () => {
+            dontFocus = false;
+            setTimeout(() => dontFocus = true, 200);
+        }
+
+        const stopCall = (...args) => {
+            if (!dontFocus || !args || !args[0]) return;
+
+            const cid = ("string" == typeof args[0]) ? args[0] : args[0]["id"];
+            if (cid) {
+                const lang = (File.editor.findElemById(cid).attr("lang") || "").trim().toLowerCase();
+                if (cid && lang && this.diagramParsers[lang] && this.diagramParsers[lang].interactiveMode) {
+                    return this.utils.stopCallError
+                }
+            }
+        }
+
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.fences && File.editor.fences.focus),
+            "File.editor.fences.focus",
+            stopCall,
+        )
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.refocus),
+            "File.editor.refocus",
+            stopCall,
+        )
+
+        const showAllTButton = fence => {
+            const enhance = fence.querySelector(".fence-enhance");
+            if (!enhance) return;
+            enhance.querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
+            return enhance
+        }
+
+        const showEditButtonOnly = fence => {
+            const enhance = fence.querySelector(".fence-enhance");
+            if (!enhance) return;
+            enhance.style.display = "";
+            enhance.querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "none");
+            enhance.querySelector(".edit-custom-diagram").style.display = "";
+        }
+
+        const hideAllButton = fence => {
+            const enhance = showAllTButton(fence);
+            const editButton = enhance.querySelector(".edit-custom-diagram");
+            if (editButton) {
+                editButton.style.display = "none";
+            }
+            enhance.style.display = "none";
+        }
+
+        if (this.utils.getGlobalSetting("CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE")) {
+            document.querySelector("#write").addEventListener("mouseup", ev => {
+                if (ev.target.closest(".md-fences-interactive .md-diagram-panel-preview") && this.utils.metaKeyPressed(ev)) {
+                    showAllTButton(ev.target.closest(".md-fences-interactive"));
+                    enableFocus();
+                }
+            }, true)
+        }
+
+        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+            if (!this.utils.getGlobalSetting("CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE")) return;
+
+            let hasInteractiveDiagram = false;
+            for (const lang of Object.keys(this.diagramParsers)) {
+                if (this.diagramParsers[lang].interactiveMode) {
+                    hasInteractiveDiagram = true;
+                    break
+                }
+            }
+            if (!hasInteractiveDiagram) return;
+
+            const fenceEnhancePlugin = this.utils.getPlugin("fence_enhance");
+            if (!fenceEnhancePlugin) return;
+            fenceEnhancePlugin.registerBuilder(
+                "edit-custom-diagram", "editDiagram", "编辑", "fa fa-edit", false,
+                (ev, button) => {
+                    button.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
+                    enableFocus();
+                }
+            )
+
+            $("#write").on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
+                showEditButtonOnly(this);
+            }).on("mouseleave", ".md-fences-interactive:not(.md-focus)", function () {
+                hideAllButton(this);
+            }).on("mouseenter", ".md-fences-interactive.md-focus", function () {
+                showAllTButton(this);
+            }).on("mouseleave", ".md-fences-interactive.md-focus", function () {
+                showEditButtonOnly(this);
+            })
+        })
+    }
+
+    onCheckIsDiagramType = () => {
         this.utils.decorate(
             // black magic
             () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor && File.editor.diagrams.constructor.isDiagramType),
@@ -758,6 +885,24 @@ class DiagramParser {
             },
             true
         )
+    }
+
+    process = () => {
+        const css = this.style();
+        css && this.utils.insertStyle("diagram-parser-style", css);
+
+        // 添加时
+        this.onAddCodeBlock();
+        // 修改语言时
+        this.onTryAddLangUndo();
+        // 更新时
+        this.onUpdateDiagram();
+        // 导出时
+        this.onExportToHTML();
+        // 聚焦时
+        this.onFocus();
+        // 判断是否为Diagram时
+        this.onCheckIsDiagramType();
     }
 }
 
@@ -864,6 +1009,7 @@ class process {
     }
 
     run() {
+        global._global_settings = {};
         global._plugins = {};
 
         let pluginSettings = this.utils.readToml("./plugin/global/settings/settings.default.toml");
@@ -873,6 +1019,12 @@ class process {
 
         for (const fixed_name of Object.keys(pluginSettings)) {
             const pluginSetting = pluginSettings[fixed_name];
+
+            if (fixed_name === "global") {
+                global._global_settings = pluginSetting;
+                continue;
+            }
+
             pluginSetting.fixed_name = fixed_name;
 
             if (!pluginSetting.ENABLE) continue;

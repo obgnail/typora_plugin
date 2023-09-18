@@ -14,6 +14,8 @@ enable = true
 # 严格模式，不会忽略存在语法错误的代码行，直接在页面上报错（此选项用于控制所有看板，如果设置为true，那么会强制所有看板进入严格模式）
 # 也可以在首行添加use strict，进入严格模式（此操作用于控制单个看板）
 STRICT_MODE = false
+# 处于交互模式下，鼠标click图表并不会展开代码块
+INTERACTIVE_MODE = false
 # 当描述为空时隐藏
 HIDE_DESC_WHEN_EMPTY = true
 # 看板最大高度（若<0，则全部显示）
@@ -66,6 +68,8 @@ name = "插入echarts"
 enable = true
 # 插件配置
 [echarts.config]
+# 处于交互模式下，鼠标click图表并不会展开代码块
+INTERACTIVE_MODE = true
 # 代码块默认高度
 DEFAULT_FENCE_HEIGHT = "300px"
 # 代码块背景颜色

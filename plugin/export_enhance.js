@@ -7,13 +7,7 @@ class exportEnhancePlugin extends global._basePlugin {
 
     process = () => {
         this.init();
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-            "File.editor.export.exportToHTML",
-            null,
-            this.afterExportToHtml,
-            true,
-        );
+        this.utils.decorateExportToHTML(null, this.afterExportToHtml, true);
     }
 
     afterExportToHtml = async (exportResult, ...args) => {
