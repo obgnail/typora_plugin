@@ -968,6 +968,7 @@ class EventHub {
         this.utils.decorate(
             () => File && File.editor && File.editor.library && File.editor.library.outline && File.editor.library.outline.updateOutlineHtml,
             "File.editor.library.outline.updateOutlineHtml",
+            null,
             () => this.publishEvent(this.utils.eventType.outlineUpdated)
         )
     }
