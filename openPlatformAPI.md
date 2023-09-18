@@ -324,7 +324,7 @@ class mindmapPlugin extends global._basePlugin {
 
 
 
-### markmap
+#### markmap
 
 ```js
 class markmapPlugin extends global._basePlugin {
@@ -362,6 +362,24 @@ class autoNumberPlugin extends global._basePlugin {
 
 ```js
 class fenceEnhancePlugin extends global._basePlugin {
+    // 注册button
+    // args:
+    //   className: button的class name
+    //   action: 取个名字
+    //   hint: 提示
+    //   iconClassName: 通过className设置icon
+    //   enable: 是否使用
+    //   listener(ev, button)=>{}: 点击按钮的回调函数(ev: 时间，button: 按钮本身element)
+    //   extraFunc(button)=>{}: 插入html后的额外操作
+    registerBuilder = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
+        return null
+    }
+
+    //移除button（使用上面的action删除）
+    removeBuilder = action => {
+        return null
+    }
+
     // 复制代码，调整缩进代码，折叠/展开代码
     // args: 
     //   target(Element): 如 document.querySelector("#write .md-fences") 

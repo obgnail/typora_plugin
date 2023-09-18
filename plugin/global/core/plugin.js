@@ -392,6 +392,16 @@ class utils {
         truncatePlugin && truncatePlugin.rollback(target);
     }
 
+    static withAnchorNode = (selector, func) => {
+        return () => {
+            const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
+            const target = anchorNode.closest(selector);
+            if (target && target[0]) {
+                func(target[0]);
+            }
+        }
+    }
+
     static resizeFixedModal = (
         handleElement, resizeElement,
         resizeWidth = true, resizeHeight = true,
@@ -758,7 +768,7 @@ class DiagramParser {
                 args[0].extraCss = (args[0].extraCss || "") + base + extraCssList.join(" ");
             }
         })
-        // 聚集时
+        // 聚焦时
         let dontFocus = true;
         this.utils.decorate(
             () => (File && File.editor && File.editor.fences && File.editor.fences.focus),
