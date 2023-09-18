@@ -48,11 +48,12 @@ ENABLE = true
 NAME = "全局多关键字搜索"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 允许拖动模态框
+# 允许【ctrl+鼠标拖拽】拖动模态框
 ALLOW_DRAG = true
-# 模态框失焦后自动隐藏
+# 模态框自动隐藏
 AUTO_HIDE = false
 # 打开文件后，自动聚焦
+# 设置此选项时为了键盘党可以通过键盘上下键、ctrl+enter进行快速操作，如果你是鼠标党，可以置为false
 REFOUCE_WHEN_OPEN_FILE = true
 # 搜索内容时大小写敏感(此选项不必手动调整，可以在UI设置)
 CASE_SENSITIVE = false
@@ -67,10 +68,13 @@ RELATIVE_PATH = true
 # 关键词按空格分割
 SEPARATOR = " "
 # hint展示文件修改时间
+# 设置此选项时为了通过额外的信息帮助查找文件，我嫌弃它扎眼就没开启，如果你总是找不到目标文件，可以开启
 SHOW_MTIME = false
-# Typora允许打开小于2000000(即File.MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
+# 查找文件的最大尺寸。大于MAX_SIZE的文件在搜索时将被忽略。若<0则不过滤
+# Typora只支持打开小于2000000字节的文件，不建议修改成比2000000还大的值，毕竟找到了也不能在typora里打开
 MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
+# 不建议新增后缀名，毕竟找到了也不能在typora里打开
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 # 打开模态框快捷键
 HOTKEY = "ctrl+shift+p"
@@ -86,13 +90,14 @@ NAME = "多关键字高亮"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+h"
-# 允许拖拽
+# 允许【ctrl+鼠标拖拽】拖动
 ALLOW_DRAG = true
 # 大小写敏感(此选项不必手动调整，可以在UI设置)
 CASE_SENSITIVE = false
 # 关键词按空格分割
 SEPARATOR = " "
 # 展示执行按钮
+# 我嫌弃它丑就没开启，如果你是鼠标党，可以开启
 SHOW_RUN_BUTTON = false
 # 打开其他文件时自动重新搜索
 RESEARCH_WHILE_OPEN_FILE = true
@@ -103,6 +108,7 @@ SHOW_KEYWORD_OUTLINE = true
 # 定位时高亮关键字提示所在行
 SHOW_KEYWORD_BAR = true
 # 高亮的颜色
+# 每个关键字按序对应一个颜色，颜色数量不限，你可以修改、继续添加颜色
 STYLE_COLOR = [
     # 浅一些的颜色
     '#bbeeff',
@@ -158,11 +164,12 @@ CLICKABLE = true
 DEFAULT_TYPE = "fence"
 # 是否使用混合标签
 USE_ALL = true
-# 给混合标签设置颜色
+# 给混合标签上色
 SET_COLOR_IN_ALL = true
-# 打开文件后自动检测生成大纲
+# 当显示模态框时，打开新文件后自动检测并重新生成大纲
 AUTO_REFRESH_WHEN_OPEN_FILE = true
-# 显示被其他插件隐藏的元素
+# 统计并显示被其他插件隐藏的元素(此选项不必手动调整，可以在UI设置)
+# 比如使用了【章节折叠】插件隐藏文件内容，如果你希望outline能统计被隐藏内容，就置为true，不过这样就会导致统计的编号不对（因为你把隐藏的也算进去了）
 SHOW_HIDDEN = false
 # 在模态框里展示的名字
 [outline.SHOW_NAME]
@@ -174,7 +181,7 @@ table = "Table"
 ############### commander ###############
 [commander]
 # 启用插件
-# 有一些插件（比如：静默更新功能）依赖于此插件，若关闭此插件，那些插件都将失效
+# 有一些插件（比如：更新功能）依赖于此插件，若关闭此插件，那些插件都将失效
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "命令行环境"
@@ -184,24 +191,29 @@ CLICKABLE = true
 HOTKEY = "ctrl+g"
 # 允许拖动模态框
 ALLOW_DRAG = true
-# 快捷键、在右键菜单中 快速调用内建命令时，是否弹出模态框
-# 注意: 1-3使用的是child_process.exec。因此如果程序的输出超出200K，会引发Error：maxBuffer exceeded。此时必须使用echo
+# 【快捷键】和【在右键菜单中】调用内建命令，是否弹出模态框
+# 注意: 123使用的是child_process.exec。因此如果程序的输出超出200K，会引发Error：maxBuffer exceeded。此时必须使用echo
 #   1.always: 总是弹出
 #   2.error: 只在异常时弹出
 #   3.silent: 总是静默（其实可以在控制台console中看到）
 #   4.echo: 立即回显程序输出、适合需要不断打印日志的耗时任务
 QUICK_EXEC_SHOW = "error"
-# 在模态框里回车、点击【执行命令】按钮时，使用的回显类型
+# 【在命令输入框里回车】和【点击执行命令按钮】时，使用的回显类型
 #   1. always: 等待程序执行完毕后一次性输出
 #   2. echo: 立即回显程序输出
 COMMIT_EXEC_SHOW = "echo"
 # 启用内建的命令列表（若为false，则BUILTIN配置失效）
 USE_BUILTIN = true
-# 内建命令列表。目前支持4个参数:
+# 内建命令列表。支持无限添加。
+# 目前支持4个参数:
 #   1. name:   命令展示的名称
-#   2. shell:  cmd/bash、powershell、gitbash、wsl（请注意如果使用 gitbash、wsl，请保证已经将其加入环境变量）
+#   2. shell:  cmd/bash、powershell、gitbash、wsl（如果使用 gitbash、wsl，请确保已经将其加入环境变量）
 #   3. hotkey: 快捷键调用命令行
 #   4. cmd:    执行的命令
+# cmd提供内置环境变量:
+#   1. $f 当前文件路径
+#   2. $d 当前文件所属目录
+#   3. $m 当前挂载目录（你在侧边栏看到的根目录）
 [[commander.BUILTIN]] # dummy
 name = ""
 shell = "cmd/bash"
@@ -248,7 +260,7 @@ NAME = "只读模式"
 CLICKABLE = true
 # 进入和脱离只读模式的快捷键
 HOTKEY = "ctrl+shift+r"
-# 默认使用只读模式
+# 默认使用只读模式（打开Typora就进入只读模式）
 READ_ONLY_DEFAULT = false
 
 
@@ -278,7 +290,7 @@ ENABLE = true
 NAME = "图片调整"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 滚动的放缩倍率
+# 每次操作的缩放倍率
 SCALE = 0.1
 # 允许超出范围
 ALLOW_OVERSIZE = true
@@ -354,7 +366,7 @@ CLICKABLE = true
 # js/css从何处加载: local/network
 RESOURCE_FROM = "local"
 
-# markmap 共有两个功能: toc 和 fence，若为false，以下配置全部失效
+# markmap共有两个功能:toc和fence，此为toc。若为false，以下配置全部失效
 ENABLE_TOC_MARKMAP = true
 # 在右下角添加一个快捷按钮
 USE_BUTTON = true
@@ -372,7 +384,7 @@ USE_ANIMATION_WHEN_DRAG = false
 # 在调整模态框的时候是否使用动画
 USE_ANIMATION_WHEN_RESIZE = false
 
-# markmap 共有两个功能: toc 和 fence，若为false，以下配置全部失效
+# markmap共有两个功能:toc和fence，此为fence。若为false，以下配置全部失效
 ENABLE_FENCE_MARKMAP = true
 # 代码块默认高度
 DEFAULT_FENCE_HEIGHT = "300px"
@@ -450,7 +462,7 @@ ENABLE = true
 NAME = "代码块增强"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 自动隐藏,鼠标移动到fence才显示
+# 自动隐藏按钮，鼠标移动到代码块才显示
 AUTO_HIDE = false
 # 启用复制代码功能
 ENABLE_COPY = true
@@ -464,9 +476,12 @@ ENABLE_FOLD = true
 FOLD_OVERFLOW = "hidden"
 # 默认折叠
 FOLD_DEFAULT = false
-# 内部使用
-CLICK_CHECK_INTERVAL = 300
+# 操作成功时，icon提示的保持时间（单位：ms）
+# 比如当你点击【复制代码】按钮后，icon会变成【✔】，并在保持一段时间后自动恢复。此选项就是设置这个保持时间
 WAIT_RECOVER_INTERVAL = 1000
+# 节流时间（单位：ms）
+# 300毫秒内多次点击【复制代码】按钮，只会执行一次（此选项其实没啥意义）
+CLICK_CHECK_INTERVAL = 300
 
 
 ############### collapse_paragraph ###############
@@ -477,7 +492,7 @@ ENABLE = true
 NAME = "章节折叠"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 是否临时记录文件放缩状态（直到关闭窗口）
+# 是否记录文件放缩状态（直到关闭typora）
 RECORD_COLLAPSE = true
 # 内部使用
 # 添加的class

@@ -186,7 +186,7 @@ enable = true
 resource_suffix = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".bmp", ".mp3", ".mp4", ".image", ".jfif", ".gif!large"]
 # 什么后缀判定为md文件
 markdown_suffix = [".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]
-# 是否忽略<img src="example.jpg">里的资源
+# 是否忽略<img src="example.jpg">里的资源（markdown是支持插入html的，此选项问是否要忽略img标签）
 ignore_image_div = false
 # 对于无后缀名的文件是否加入资源列表
 append_empty_suffix_file = false
