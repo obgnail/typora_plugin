@@ -1,7 +1,6 @@
 class echartsPlugin extends BaseCustomPlugin {
     init = () => {
         this.map = {} // {cid: instance}
-        this.FenceContent = "";
         this.filepath = "";
     }
 
@@ -19,10 +18,10 @@ class echartsPlugin extends BaseCustomPlugin {
         try {
             this.setStyle($pre, $div, content);
             if (this.map.hasOwnProperty(cid)) {
-                this.update(cid, content);
-            } else {
-                this.create(cid, $div, content);
+                // 因为可能这个echarts有onClick等事件，不能update，只能destroy掉
+                await this.cancel(cid);
             }
+            this.create(cid, $div, content);
         } catch (e) {
             this.utils.throwParseError(null, e.toString());
             // console.error(e);
@@ -82,24 +81,21 @@ class echartsPlugin extends BaseCustomPlugin {
         return $div
     }
 
-    update = (cid, content) => {
-        const chart = this.map[cid];
-        this.drawChart(chart, content, true);
-    }
-
     create = (cid, $div, content) => {
         const chart = echarts.init($div[0]);
         this.drawChart(chart, content);
         this.map[cid] = chart;
     }
 
-    drawChart = (chart, content, resize = false) => {
+    drawChart = (myChart, content, resize = false) => {
         // chart.showLoading();
-        eval(`this.FenceContent = ${content}`);
-        chart.clear();
-        chart.setOption(this.FenceContent);
+        let echarts = global.echarts;
+        let option = "";
+        eval(content);
+        myChart.clear();
+        myChart.setOption(option);
         if (resize) {
-            chart.resize();
+            myChart.resize();
         }
         // chart.hideLoading();
     }
