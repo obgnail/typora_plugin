@@ -358,7 +358,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ![echats](assets/echarts.png)
 
-> 使用了 veal() 解析代码块内容，请注意安全问题。
+> 使用了 eval() 解析代码块内容，请注意安全问题。
 
 
 
