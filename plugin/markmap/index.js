@@ -489,11 +489,10 @@ class tocMarkmap {
 
     close = () => {
         this.entities.modal.style.display = "";
-        // 还原大小位置
-        if (this.config.RELOCATION_WHEN_REOPEN) {
-            this.entities.modal.style.top = "";
-            this.initModalRect();
-        }
+        this.entities.modal.style.top = "";
+        this.initModalRect();
+        this.markmap.destroy();
+        this.markmap = null;
     };
 
     fit = () => this.markmap && this.markmap.fit();
