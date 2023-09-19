@@ -356,7 +356,9 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 使用方式：【右键菜单 -> 启用插件 -> 自定义插件 -> 插入 echarts】
 
-![echats](assets/echats.png)
+![echats](assets/echarts.png)
+
+> 使用了 veal() 解析代码块内容，请注意安全问题。
 
 
 

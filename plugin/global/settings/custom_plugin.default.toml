@@ -76,30 +76,26 @@ DEFAULT_FENCE_HEIGHT = "300px"
 DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 # 自动插入的模板
 TEMPLATE = """```echarts
-// 目前只支持option，不敢支持function，怕被有心人利用做坏事
+// 提供内置变量:
+//   1. myChart: echarts实例
+//   2. echarts: echarts模块
+//   3. option:  echarts的option
 // 示例：https://echarts.apache.org/examples/zh/index.html#chart-type-line
 // 可以使用如下注释设置宽高（否则使用默认）：
 // {height: "300px", width: ""}
-{
-    title: {
-        text: 'ECharts 入门示例'
-    },
-    tooltip: {},
-    legend: {
-        data: ['销量']
-    },
+
+option = {
     xAxis: {
-        data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+        data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"]
     },
     yAxis: {},
-    series: [
-        {
-            name: '销量',
-            type: 'bar',
-            data: [5, 20, 36, 10, 10, 20]
-        }
-    ]
-}
+    series: [{
+        name: '销量',
+        type: 'bar',
+        data: [5, 20, 36, 10, 10, 20]
+    }]
+};
+myChart.on('click', params => alert(params.name));
 ```
 """
 
