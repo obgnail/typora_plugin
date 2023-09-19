@@ -61,6 +61,8 @@
 
 > NOTE：`updater.exe` 同时集成了 install 和 update 两个功能，后续更新插件需要用到此文件，请勿移动位置、删除。如果您不信任此 exe 文件，请自行编译此目录下的 `updater.go` 文件。
 
+> 本插件系统尊重用户的所有选择。任何插件、任何功能都是可以 **通过修改配置文件** 永久打开 / 关闭的。打开配置文件方式：`启用插件 -> 右键菜单 -> 打开插件配置文件` 。
+
 
 
 ---
@@ -224,7 +226,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 快捷键：ctrl+shift+K、ctrl+shift+B
 
-> 新版本 Typora 的 ctrl+shift+K 快捷键被占用了。故提供两个快捷键，也可以在右键菜单中使用。**此插件会直接修改文件**，支持 Ctrl+Z 还原。
+> 新版本 Typora 的 ctrl+shift+K 快捷键被占用了。故提供两个快捷键，也可以在右键菜单中使用。
 
 ![md_padding](assets/md_padding.gif)
 
@@ -374,7 +376,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 使用方式：右键菜单 -> 启用插件 -> 模糊模式
 
-> 此插件只能正式版 Typora 使用，暂时没有兼容 Beta 版本。
+> 此插件只能高版本 Typora 使用，暂时没有兼容低版本。
 
 
 
@@ -391,7 +393,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ![kanban](assets/kanban.png)
 
-> 注意：以上语法是我自己定义和解析的，**没有通用性**。我坚持任何插件都不能污染语法，故此插件只推荐用于每日任务等临时使用。
+> 注意：以上语法是我自己定义和解析的，**没有通用性**。我坚持任何插件都不能污染语法，故此插件只推荐【每日任务】等临时使用。
 
 
 
@@ -729,10 +731,10 @@ module.exports = { plugin: fullPathCopy };
 
 
 
-### 如何禁用某些插件？
+### 如何禁用/启用某些插件？
 
 - 方式一：直接 删除/改名 plugin 目录下的同名文件
-- 方式二：修改 `settings.user.toml` 文件，将对应插件的 ENABLE 字段置为 false（具体修改方法请看 `./plugin/golbal/settings/请读我.md`）
+- 方式二：修改 `settings.user.toml` 或 `costom_plugin.user.` 文件，将对应插件的 ENABLE 字段置为 false/true（具体修改方法请看 `./plugin/golbal/settings/请读我.md`）
 
 
 
