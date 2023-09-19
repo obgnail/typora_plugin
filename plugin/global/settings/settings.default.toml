@@ -382,8 +382,6 @@ ENABLE_TOC_MARKMAP = true
 USE_BUTTON = true
 # 是否允许icon换行
 ALLOW_ICON_WRAP = true
-# 每次打开都恢复模态框的位置和大小
-RELOCATION_WHEN_REOPEN = true
 # 当pin到页面顶部时，占据页面的30%高度
 HEIGHT_PRECENT_WHEN_PIN_UP = 30
 # 当pin到页面右侧时，占据页面的50%宽度
