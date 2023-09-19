@@ -7,7 +7,7 @@
 ############### global ###############
 # 通用配置
 [global]
-# 如果你使用了自定义图表（kanban、markmap、echarts），那么下面两个配置请至少一个置为true，否则你将不能退出交互模式，修改fence（当然，你可以通过进入源码模式修改）
+# 如果你使用了自定义图表插件（kanban、markmap、echarts）并且使用了交互模式，那么下面两个配置请至少一个置为true，否则你将不能退出交互模式，修改fence（当然，你可以通过进入源码模式修改）
 # 为【自定义fence图表】添加 edit icon（当点击 edit icon 时退出交互模式）
 CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE = true
 # ctrl+click【自定义fence图表】退出交互模式
@@ -445,21 +445,21 @@ ENABLE = true
 NAME = "自动编号"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 侧边栏自动编号
+# 启用侧边栏自动编号
 ENABLE_SIDE_BAR = true
-# 正文自动编号
+# 启用正文自动编号
 ENABLE_CONTENT = true
-# TOC自动编号
+# 启用TOC自动编号
 ENABLE_TOC = true
-# 表格自动编号
+# 启用表格自动编号
 ENABLE_TABLE = true
-# 图片自动编号
+# 启用图片自动编号
 ENABLE_IMAGE = true
-# 代码块自动编号
+# 启用代码块自动编号
 ENABLE_FENCE = true
 # 导出时运用样式
 ENABLE_WHEN_EXPORT = true
-# 下标名称
+# 编号的下标名称
 [auto_number.NAMES]
 table = "Table"
 image = "Figure"

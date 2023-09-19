@@ -1,5 +1,9 @@
 ## 开放平台
 
+> 约定：基础插件的 fixedName 统一使用蛇形，如 `window_tab`。自定义插件的 fixedName 统一使用小驼峰，如 `fullPathCopy`。
+
+
+
 ### 基础插件
 
 以下插件可以使用 `this.utils.getPlugin(XXX)` 获取到插件示例，之后就可以调用其 API。
@@ -637,6 +641,12 @@ class openInTotalCommander extends BaseCustomPlugin {
     }
 }
 ```
+
+
+
+#### hotkeyHub
+
+无
 
 
 

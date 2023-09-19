@@ -31,6 +31,7 @@ class echartsPlugin extends BaseCustomPlugin {
     cancel = async cid => {
         const instance = this.map[cid];
         if (instance) {
+            instance.clear();
             instance.dispose();
             delete this.map[cid];
         }
@@ -39,8 +40,10 @@ class echartsPlugin extends BaseCustomPlugin {
         // 小细节：打开同一个文件的情况
         if (this.filepath === filepath) return;
 
-        for (let cid of Object.keys(this.map)) {
+        for (const cid of Object.keys(this.map)) {
+            this.map[cid].clear();
             this.map[cid].dispose();
+            delete this.map[cid];
         }
         this.map = {};
     }
