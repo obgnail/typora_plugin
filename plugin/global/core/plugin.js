@@ -130,6 +130,8 @@ class utils {
     static removeEventListener = (eventType, listener) => global._eventHub.removeEventListener(eventType, listener);
     static publishEvent = (eventType, payload) => global._eventHub.publishEvent(eventType, payload); // 充分信任插件，允许所有插件发布事件
 
+    static registerStateRecorder = (selector, stateGetter, stateRestorer) => global._stateRecorder.register(selector, stateGetter, stateRestorer);
+
     static insertStyle = (id, css) => {
         const style = document.createElement('style');
         style.id = id;
@@ -493,106 +495,6 @@ class utils {
     }
 }
 
-class pluginInterface {
-    beforeProcess() {
-        throw new Error('Method beforeProcess not implemented.')
-    }
-
-    process() {
-        throw new Error('Method process not implemented.')
-    }
-
-    afterProcess() {
-        throw new Error('Method afterProcess not implemented.')
-    }
-}
-
-class basePlugin extends pluginInterface {
-    constructor(setting) {
-        super();
-        this.fixed_name = setting.fixed_name;
-        this.config = setting;
-        this.utils = utils
-    }
-
-    beforeProcess() {
-    }
-
-    style() {
-    }
-
-    html() {
-    }
-
-    hotkey() {
-    }
-
-    process() {
-    }
-
-    afterProcess() {
-    }
-}
-
-global._basePlugin = basePlugin;
-
-class hotkeyHelper {
-    constructor() {
-        this.utils = utils;
-        this.hotkeyList = [];
-    }
-
-    _register = (hotkey, call) => {
-        if (typeof hotkey === "string") {
-            hotkey = this.utils.toHotkeyFunc(hotkey);
-            this.hotkeyList.push({hotkey, call});
-        } else if (hotkey instanceof Array) {
-            for (const hk of hotkey) {
-                this._register(hk, call);
-            }
-        }
-    }
-
-    register = hotkeyList => {
-        if (hotkeyList) {
-            for (const hotkey of hotkeyList) {
-                this._register(hotkey.hotkey, hotkey.callback);
-            }
-        }
-    }
-
-    listen = () => {
-        window.addEventListener("keydown", ev => {
-            for (const hotkey of this.hotkeyList) {
-                if (hotkey.hotkey(ev)) {
-                    hotkey.call();
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    return
-                }
-            }
-        }, true)
-    }
-}
-
-global._hotkeyHelper = hotkeyHelper;
-
-class userSettingHelper {
-    constructor() {
-        this.utils = utils;
-    }
-
-    updateSettings(pluginSetting) {
-        const toml = "./plugin/global/settings/settings.user.toml";
-        if (this.utils.existInPluginPath(toml)) {
-            const userSettings = this.utils.readToml(toml);
-            pluginSetting = this.utils.merge(pluginSetting, userSettings);
-        }
-        return pluginSetting
-    }
-}
-
-// 辣鸡js，连接口都不支持
 class _diagramParser {
     constructor(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode) {
         this.lang = lang;
@@ -910,8 +812,6 @@ class DiagramParser {
     }
 }
 
-global._diagramParser = new DiagramParser();
-
 class EventHub {
     constructor() {
         this.utils = utils
@@ -976,7 +876,138 @@ class EventHub {
     }
 }
 
-global._eventHub = new EventHub();
+class stateRecorder {
+    constructor() {
+        this.utils = utils;
+        this.recorders = [];
+        this.recordMap = {}; // map[filePath][]collection
+    }
+
+    register = (selector, stateGetter, stateRestorer) => this.recorders.push({selector, stateGetter, stateRestorer})
+
+    collect = () => {
+        const filepath = this.utils.getFilePath();
+
+        const collections = this.recorders.map(recorder => {
+            const collection = new Map();
+            document.querySelectorAll(recorder.selector).forEach((ele, eleIdx) => {
+                const state = recorder.stateGetter(ele);
+                if (state) {
+                    collection.set(eleIdx, state);
+                }
+            })
+            if (collection.size) {
+                return collection
+            }
+        })
+
+        if (collections.filter(Boolean).length === 0) {
+            delete this.recordMap[filepath];
+        } else {
+            this.recordMap[filepath] = collections;
+        }
+    }
+
+    restore = filepath => {
+        const collections = this.recordMap[filepath];
+        if (!collections) return;
+
+        this.recorders.forEach((recorder, recorderIdx) => {
+            const collection = collections[recorderIdx];
+            if (collection) {
+                document.querySelectorAll(recorder.selector).forEach((ele, eleIdx) => {
+                    const state = collection.get(eleIdx);
+                    state && recorder.stateRestorer(ele, state);
+                })
+            }
+        })
+    }
+
+    process = () => {
+        this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.collect);
+        this.utils.addEventListener(this.utils.eventType.fileContentLoaded, this.restore);
+    }
+}
+
+class basePlugin {
+    constructor(setting) {
+        this.fixed_name = setting.fixed_name;
+        this.config = setting;
+        this.utils = utils
+    }
+
+    beforeProcess() {
+    }
+
+    style() {
+    }
+
+    html() {
+    }
+
+    hotkey() {
+    }
+
+    process() {
+    }
+
+    afterProcess() {
+    }
+}
+
+class hotkeyHelper {
+    constructor() {
+        this.utils = utils;
+        this.hotkeyList = [];
+    }
+
+    _register = (hotkey, call) => {
+        if (typeof hotkey === "string") {
+            hotkey = this.utils.toHotkeyFunc(hotkey);
+            this.hotkeyList.push({hotkey, call});
+        } else if (hotkey instanceof Array) {
+            for (const hk of hotkey) {
+                this._register(hk, call);
+            }
+        }
+    }
+
+    register = hotkeyList => {
+        if (hotkeyList) {
+            for (const hotkey of hotkeyList) {
+                this._register(hotkey.hotkey, hotkey.callback);
+            }
+        }
+    }
+
+    listen = () => {
+        window.addEventListener("keydown", ev => {
+            for (const hotkey of this.hotkeyList) {
+                if (hotkey.hotkey(ev)) {
+                    hotkey.call();
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    return
+                }
+            }
+        }, true)
+    }
+}
+
+class userSettingHelper {
+    constructor() {
+        this.utils = utils;
+    }
+
+    updateSettings(pluginSetting) {
+        const toml = "./plugin/global/settings/settings.user.toml";
+        if (this.utils.existInPluginPath(toml)) {
+            const userSettings = this.utils.readToml(toml);
+            pluginSetting = this.utils.merge(pluginSetting, userSettings);
+        }
+        return pluginSetting
+    }
+}
 
 class process {
     constructor() {
@@ -1058,12 +1089,20 @@ class process {
 
         Promise.all(promises).then(() => {
             global._eventHub.process();
-            this.hotkeyHelper.listen();
             global._diagramParser.process();
+            global._stateRecorder.process();
+            this.hotkeyHelper.listen();
             this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
         })
     }
 }
+
+global._pluginUtils = utils;
+global._basePlugin = basePlugin;
+global._hotkeyHelper = hotkeyHelper;
+global._diagramParser = new DiagramParser();
+global._eventHub = new EventHub();
+global._stateRecorder = new stateRecorder();
 
 module.exports = {
     process

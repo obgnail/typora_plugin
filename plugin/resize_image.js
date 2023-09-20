@@ -14,6 +14,14 @@ class resizeImagePlugin extends global._basePlugin {
     process = () => {
         this.init();
 
+        if (this.config.RECORD_RESIZE) {
+            this.utils.registerStateRecorder(
+                "#write img",
+                ele => ele.style.cssText,
+                (ele, state) => ele.style = state
+            );
+        }
+
         document.getElementById("write").addEventListener("wheel", ev => {
             if (!this.utils.metaKeyPressed(ev)) return;
 

@@ -306,6 +306,8 @@ SCALE = 0.1
 ALLOW_OVERSIZE = true
 # 图片水平位置：center/left/right
 IMAGE_ALIGN = "center"
+# 是否记录图片放缩状态（直到关闭typora）
+RECORD_RESIZE = true
 
 
 ############### datatables ###############
@@ -589,6 +591,8 @@ CLICKABLE = false
 REMOVE_MIX_WIDTH = true
 # 单元格边线的拖拽范围
 THRESHOLD = 20
+# 是否记录表格放缩状态（直到关闭typora）
+RECORD_RESIZE = true
 
 
 ############### mermaid_replace ###############

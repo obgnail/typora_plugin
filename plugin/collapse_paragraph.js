@@ -21,7 +21,11 @@ class collapseParagraphPlugin extends global._basePlugin {
         this.init();
 
         if (this.config.RECORD_COLLAPSE) {
-            new collapseRecorder(this).process();
+            this.utils.registerStateRecorder(
+                "#write h1,h2,h3,h4,h5,h6",
+                ele => ele.classList.contains(this.config.CLASS_NAME),
+                ele => this.trigger(ele, false),
+            );
         }
 
         document.getElementById("write").addEventListener("click", ev => {
@@ -180,55 +184,6 @@ class collapseParagraphPlugin extends global._basePlugin {
             this.dynamicCall(type);
         }
         this.callbackOtherPlugin();
-    }
-}
-
-
-class collapseRecorder {
-    constructor(controller) {
-        this.controller = controller;
-        this.utils = this.controller.utils;
-        this.config = this.controller.config;
-
-        this.records = {}
-    }
-
-    range = rangeFunc => {
-        let element = document.querySelector("#write").lastElementChild;
-        let idx = 0;
-        while (element) {
-            rangeFunc(element, idx);
-            element = element.previousElementSibling;
-            idx++;
-        }
-    }
-
-    collect = () => {
-        const filepath = this.utils.getFilePath();
-        this.records[filepath] = [];
-        this.range((ele, idx) => {
-            if (ele.classList.contains(this.config.CLASS_NAME)) {
-                this.records[filepath].push(idx);
-            }
-        })
-    }
-
-    collapseHeading = filepath => {
-        const collapseIdxList = this.records[filepath];
-        if (!collapseIdxList || !collapseIdxList.length) return
-
-        let targetIdx = 0
-        this.range((ele, idx) => {
-            if (idx === collapseIdxList[targetIdx] && targetIdx !== collapseIdxList.length) {
-                this.controller.trigger(ele, false);
-                targetIdx++;
-            }
-        })
-    }
-
-    process = () => {
-        this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.collect);
-        this.utils.addEventListener(this.utils.eventType.fileContentLoaded, this.collapseHeading);
     }
 }
 

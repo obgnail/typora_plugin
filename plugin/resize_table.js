@@ -6,6 +6,14 @@ class resizeTablePlugin extends global._basePlugin {
     }
 
     process = () => {
+        if (this.config.RECORD_RESIZE) {
+            this.utils.registerStateRecorder(
+                "#write th,td",
+                ele => ele.style.cssText,
+                (ele, state) => ele.style = state
+            );
+        }
+
         document.querySelector("#write").addEventListener("mousedown", ev => {
             if (!this.utils.metaKeyPressed(ev)) return;
             ev.stopPropagation();
