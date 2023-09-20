@@ -502,7 +502,7 @@ ENABLE = true
 NAME = "章节折叠"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 是否记录文件放缩状态（直到关闭typora）
+# 是否记录章节放缩状态（直到关闭typora）
 RECORD_COLLAPSE = true
 # 内部使用
 # 添加的class
@@ -535,6 +535,22 @@ CLICKABLE = true
 # 是否下载网络图片(若为true,有可能因为网络问题导致超时)
 # 此选项可在右键菜单中修改，不建议设置为true，除非你有频繁导出html的需求
 DOWNLOAD_NETWORK_IMAGE = false
+
+
+############### resize_table ###############
+[resize_table]
+# 启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "表格调整"
+# 是否在右键菜单中可点击
+CLICKABLE = true
+# 是否去除表格单元格最小宽度限制
+REMOVE_MIX_WIDTH = true
+# 单元格边线的拖拽范围
+THRESHOLD = 20
+# 是否记录表格放缩状态（直到关闭typora）
+RECORD_RESIZE = true
 
 
 ############### custom ###############
@@ -577,22 +593,6 @@ ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "
 # 添加的class name
 CLASS_NAME = "plugin-file-counter"
 LOOP_DETECT_INTERVAL = 300
-
-
-############### resize_table ###############
-[resize_table]
-# 启用插件
-ENABLE = true
-# 在右键菜单中展示的名称
-NAME = "表格调整"
-# 是否在右键菜单中可点击
-CLICKABLE = false
-# 是否去除表格单元格最小宽度限制
-REMOVE_MIX_WIDTH = true
-# 单元格边线的拖拽范围
-THRESHOLD = 20
-# 是否记录表格放缩状态（直到关闭typora）
-RECORD_RESIZE = true
 
 
 ############### mermaid_replace ###############

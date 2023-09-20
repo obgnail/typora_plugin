@@ -6,15 +6,7 @@ class resizeTablePlugin extends global._basePlugin {
     }
 
     process = () => {
-        if (this.config.RECORD_RESIZE) {
-            this.utils.registerStateRecorder(
-                "recordResizeTable",
-                "#write th,td",
-                ele => ele.style.cssText,
-                (ele, state) => ele.style = state
-            );
-        }
-
+        this.recordResizeState(false);
         document.querySelector("#write").addEventListener("mousedown", ev => {
             if (!this.utils.metaKeyPressed(ev)) return;
             ev.stopPropagation();
@@ -80,6 +72,29 @@ class resizeTablePlugin extends global._basePlugin {
 
             document.addEventListener('mousemove', onMouseMove);
         })
+    }
+
+    dynamicCallArgsGenerator = anchorNode => {
+        return [{arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记录表格状态`, arg_value: "record_resize_state"}];
+    }
+
+    call = type => {
+        if (type === "record_resize_state") {
+            this.recordResizeState();
+        }
+    }
+
+    recordResizeState = (needChange = true) => {
+        if (needChange) {
+            this.config.RECORD_RESIZE = !this.config.RECORD_RESIZE;
+        }
+        const name = "recordResizeTable";
+        if (this.config.RECORD_RESIZE) {
+            this.utils.registerStateRecorder(name, "#write th,td",
+                ele => ele.style.cssText, (ele, state) => ele.style = state);
+        } else {
+            this.utils.unregisterStateRecorder(name);
+        }
     }
 
     whichChildOfParent = child => {

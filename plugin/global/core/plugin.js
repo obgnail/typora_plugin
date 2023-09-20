@@ -887,50 +887,40 @@ class stateRecorder {
     constructor() {
         this.utils = utils;
         this.recorders = new Map(); // map[name]recorder
-        this.recordMap = {}; // map[filePath][]collection
     }
 
+    // collections: map[filepath]map[idx]state
     register = (recorderName, selector, stateGetter, stateRestorer) => {
-        this.recorders.set(recorderName, {selector, stateGetter, stateRestorer})
+        this.recorders.set(recorderName, {selector, stateGetter, stateRestorer, collections: new Map()})
     }
     unregister = recorderName => this.recorders.delete(recorderName);
 
     collect = () => {
         const filepath = this.utils.getFilePath();
-
-        const collections = Array.from(this.recorders.values()).map(recorder => {
+        for (const recorder of this.recorders.values()) {
             const collection = new Map();
-            document.querySelectorAll(recorder.selector).forEach((ele, eleIdx) => {
+            document.querySelectorAll(recorder.selector).forEach((ele, idx) => {
                 const state = recorder.stateGetter(ele);
-                if (state) {
-                    collection.set(eleIdx, state);
-                }
+                state && collection.set(idx, state);
             })
             if (collection.size) {
-                return collection
+                recorder.collections.set(filepath, collection)
+            } else {
+                recorder.collections.delete(filepath);
             }
-        })
-
-        if (collections.filter(Boolean).length === 0) {
-            delete this.recordMap[filepath];
-        } else {
-            this.recordMap[filepath] = collections;
         }
     }
 
     restore = filepath => {
-        const collections = this.recordMap[filepath];
-        if (!collections) return;
-
-        Array.from(this.recorders.values()).forEach((recorder, recorderIdx) => {
-            const collection = collections[recorderIdx];
-            if (collection) {
-                document.querySelectorAll(recorder.selector).forEach((ele, eleIdx) => {
-                    const state = collection.get(eleIdx);
+        for (const recorder of this.recorders.values()) {
+            const collection = recorder.collections.get(filepath)
+            if (collection && collection.size) {
+                document.querySelectorAll(recorder.selector).forEach((ele, idx) => {
+                    const state = collection.get(idx);
                     state && recorder.stateRestorer(ele, state);
                 })
             }
-        })
+        }
     }
 
     process = () => {
