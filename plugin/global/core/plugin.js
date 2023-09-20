@@ -881,6 +881,7 @@ class stateRecorder {
         this.utils = utils;
         this.collectFuncList = [];
         this.restoreFuncList = [];
+        this.recordMap = {}; // map[filePath][]collection
     }
 
     register = (collectFunc, restoreFunc) => {
@@ -889,15 +890,25 @@ class stateRecorder {
     }
 
     collect = () => {
-        for (const func of this.collectFuncList) {
-            func();
+        const filepath = this.utils.getFilePath();
+        const collections = this.collectFuncList.map(func => func());
+        if (collections.filter(Boolean).length === 0) {
+            delete this.recordMap[filepath];
+        } else {
+            this.recordMap[filepath] = collections;
         }
     }
 
     restore = filepath => {
-        for (const func of this.restoreFuncList) {
-            func(filepath);
-        }
+        const collections = this.recordMap[filepath];
+        if (!collections) return;
+
+        this.restoreFuncList.forEach((func, idx) => {
+            const collection = collections[idx];
+            if (collection) {
+                func(filepath, collection);
+            }
+        })
     }
 
     process = () => {

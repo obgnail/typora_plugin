@@ -189,41 +189,24 @@ class collapseRecorder {
         this.controller = controller;
         this.utils = this.controller.utils;
         this.config = this.controller.config;
-
-        this.records = {}
-    }
-
-    range = rangeFunc => {
-        let element = document.querySelector("#write").lastElementChild;
-        let idx = 0;
-        while (element) {
-            rangeFunc(element, idx);
-            element = element.previousElementSibling;
-            idx++;
-        }
     }
 
     collect = () => {
-        const filepath = this.utils.getFilePath();
-        this.records[filepath] = [];
-        this.range((ele, idx) => {
-            if (ele.classList.contains(this.config.CLASS_NAME)) {
-                this.records[filepath].push(idx);
+        const set = new Set();
+        document.querySelectorAll("#write h1,h2,h3,h4,h5,h6").forEach((heading, idx) => {
+            if (heading.classList.contains(this.config.CLASS_NAME)) {
+                set.add(idx);
             }
         })
+        if (set.size) {
+            return set
+        }
     }
 
-    collapseHeading = filepath => {
-        const collapseIdxList = this.records[filepath];
-        if (!collapseIdxList || !collapseIdxList.length) return
-
-        let targetIdx = 0
-        this.range((ele, idx) => {
-            if (idx === collapseIdxList[targetIdx] && targetIdx !== collapseIdxList.length) {
-                this.controller.trigger(ele, false);
-                targetIdx++;
-            }
-        })
+    collapseHeading = (filepath, set) => {
+        const list = Array.from(document.querySelectorAll("#write h1,h2,h3,h4,h5,h6")).filter((heading, idx) => set.has(idx));
+        list.reverse();
+        list.forEach(heading => this.controller.trigger(heading, false));
     }
 
     process = () => this.utils.registerStateRecorder(this.collect, this.collapseHeading);

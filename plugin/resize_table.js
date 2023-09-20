@@ -143,25 +143,20 @@ class resizeTablePlugin extends global._basePlugin {
 class resizeRecorder {
     constructor(controller) {
         this.utils = controller.utils;
-        this.records = {}
     }
 
     collect = () => {
-        const map = new Map();
+        const resizeIdxMap = new Map();
         document.querySelectorAll("#write th,td").forEach((cell, idx) => {
             const style = cell.style.cssText;
-            style && map.set(idx, style);
+            style && resizeIdxMap.set(idx, style);
         })
-        if (map.size) {
-            const filepath = this.utils.getFilePath();
-            this.records[filepath] = map;
+        if (resizeIdxMap.size) {
+            return resizeIdxMap
         }
     }
 
-    resizeTable = filepath => {
-        const resizeIdxMap = this.records[filepath];
-        if (!resizeIdxMap || resizeIdxMap.size === 0) return;
-
+    resizeTable = (filepath, resizeIdxMap) => {
         let targetIdx = 0
         document.querySelectorAll("#write th,td").forEach((img, idx) => {
             const style = resizeIdxMap.get(idx);
