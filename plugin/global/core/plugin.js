@@ -130,7 +130,7 @@ class utils {
     static removeEventListener = (eventType, listener) => global._eventHub.removeEventListener(eventType, listener);
     static publishEvent = (eventType, payload) => global._eventHub.publishEvent(eventType, payload); // 充分信任插件，允许所有插件发布事件
 
-    static registerStateRecorder = (collectFunc, restoreFunc) => global._stateRecorder.register(collectFunc, restoreFunc);
+    static registerStateRecorder = (selector, stateGetter, stateRestorer) => global._stateRecorder.register(selector, stateGetter, stateRestorer);
 
     static insertStyle = (id, css) => {
         const style = document.createElement('style');
@@ -879,19 +879,28 @@ class EventHub {
 class stateRecorder {
     constructor() {
         this.utils = utils;
-        this.collectFuncList = [];
-        this.restoreFuncList = [];
+        this.recorders = [];
         this.recordMap = {}; // map[filePath][]collection
     }
 
-    register = (collectFunc, restoreFunc) => {
-        this.collectFuncList.push(collectFunc);
-        this.restoreFuncList.push(restoreFunc);
-    }
+    register = (selector, stateGetter, stateRestorer) => this.recorders.push({selector, stateGetter, stateRestorer})
 
     collect = () => {
         const filepath = this.utils.getFilePath();
-        const collections = this.collectFuncList.map(func => func());
+
+        const collections = this.recorders.map(recorder => {
+            const collection = new Map();
+            document.querySelectorAll(recorder.selector).forEach((ele, eleIdx) => {
+                const state = recorder.stateGetter(ele);
+                if (state) {
+                    collection.set(eleIdx, state);
+                }
+            })
+            if (collection.size) {
+                return collection
+            }
+        })
+
         if (collections.filter(Boolean).length === 0) {
             delete this.recordMap[filepath];
         } else {
@@ -903,10 +912,13 @@ class stateRecorder {
         const collections = this.recordMap[filepath];
         if (!collections) return;
 
-        this.restoreFuncList.forEach((func, idx) => {
-            const collection = collections[idx];
+        this.recorders.forEach((recorder, recorderIdx) => {
+            const collection = collections[recorderIdx];
             if (collection) {
-                func(filepath, collection);
+                document.querySelectorAll(recorder.selector).forEach((ele, eleIdx) => {
+                    const state = collection.get(eleIdx);
+                    state && recorder.stateRestorer(ele, state);
+                })
             }
         })
     }

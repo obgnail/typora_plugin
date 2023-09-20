@@ -7,7 +7,11 @@ class resizeTablePlugin extends global._basePlugin {
 
     process = () => {
         if (this.config.RECORD_RESIZE) {
-            new resizeRecorder(this).process();
+            this.utils.registerStateRecorder(
+                "#write th,td",
+                ele => ele.style.cssText,
+                (ele, state) => ele.style = state
+            );
         }
 
         document.querySelector("#write").addEventListener("mousedown", ev => {
@@ -138,36 +142,6 @@ class resizeTablePlugin extends global._basePlugin {
             }
         }
     }
-}
-
-class resizeRecorder {
-    constructor(controller) {
-        this.utils = controller.utils;
-    }
-
-    collect = () => {
-        const resizeIdxMap = new Map();
-        document.querySelectorAll("#write th,td").forEach((cell, idx) => {
-            const style = cell.style.cssText;
-            style && resizeIdxMap.set(idx, style);
-        })
-        if (resizeIdxMap.size) {
-            return resizeIdxMap
-        }
-    }
-
-    resizeTable = (filepath, resizeIdxMap) => {
-        let targetIdx = 0
-        document.querySelectorAll("#write th,td").forEach((img, idx) => {
-            const style = resizeIdxMap.get(idx);
-            if (style) {
-                img.style = style;
-                targetIdx++;
-            }
-        })
-    }
-
-    process = () => this.utils.registerStateRecorder(this.collect, this.resizeTable);
 }
 
 module.exports = {
