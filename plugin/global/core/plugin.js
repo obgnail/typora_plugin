@@ -1,7 +1,6 @@
 class utils {
     static isBetaVersion = parseInt(window._options.appVersion.split(".")[0]) === 0
     static tempFolder = File.option.tempPath
-
     static nonExistSelector = "#write #__has_not_this_element_id__";
     static stopLoadPluginError = new Error("stopLoadPlugin")
     static stopCallError = new Error("stopCall")
@@ -13,6 +12,106 @@ class utils {
         ChildProcess: reqnode('child_process'),
     }
 
+
+    ////////////////////////////// 高级工具（全部支持动态注册、动态注销） //////////////////////////////
+    // 动态注册、动态注销hotkey
+    // hotkeyList: [{ hotkey: "", callback: ()=>{} }]
+    static registerHotkey = hotkeyList => global._hotkeyHub.register(hotkeyList);
+    static registerSingleHotkey = (hotkeyString, callback) => global._hotkeyHub.registerSingle(hotkeyString, callback);
+    static unregisterHotkey = hotkeyString => global._hotkeyHub.unregister(hotkeyString);
+
+    // 动态注册、动态注销、动态发布事件
+    // 触发顺序：
+    //   allCustomPluginsHadInjected: 自定义插件加载完毕
+    //   allPluginsHadInjected: 所有插件加载完毕
+    //   beforeFileOpen: 打开文件之前
+    //   fileOpened: 打开文件之后
+    //   fileContentLoaded: 文件内容加载完毕之后(依赖于window_tab)
+
+    //   beforeToggleSourceMode: 进入源码模式之前
+    //   beforeAddCodeBlock: 添加代码块之前
+    //   afterAddCodeBlock: 添加代码块之后
+    //   outlineUpdated: 大纲更新之时
+    static eventType = {
+        allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
+        allPluginsHadInjected: "allPluginsHadInjected",
+        beforeFileOpen: "beforeFileOpen",
+        fileOpened: "fileOpened",
+        fileContentLoaded: "fileContentLoaded",
+        beforeToggleSourceMode: "beforeToggleSourceMode",
+        beforeAddCodeBlock: "beforeAddCodeBlock",
+        afterAddCodeBlock: "afterAddCodeBlock",
+        outlineUpdated: "outlineUpdated",
+    }
+    static addEventListener = (eventType, listener) => global._eventHub.addEventListener(eventType, listener);
+    static removeEventListener = (eventType, listener) => global._eventHub.removeEventListener(eventType, listener);
+    static publishEvent = (eventType, payload) => global._eventHub.publishEvent(eventType, payload); // 充分信任插件，允许所有插件发布事件
+
+    // 动态注册、动态注销状态记录器
+    static registerStateRecorder = (recorderName, selector, stateGetter, stateRestorer) => global._stateRecorder.register(recorderName, selector, stateGetter, stateRestorer);
+    static unregisterStateRecorder = recorderName => global._stateRecorder.unregister(recorderName);
+
+    // 动态注册、动态注销新的代码块语法
+    //   1. lang(string): language
+    //   2. destroyWhenUpdate(boolean): 更新前是否清空preview里的html
+    //   3. async renderFunc(cid, content, $pre) => null: 渲染函数，根据内容渲染所需的图像
+    //        cid: 当前代码块的cid
+    //        content: 代码块的内容
+    //        $pre: 代码块的jquery element
+    //   4. async cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
+    //   5. extraStyleGetter() => string: 用于导出时，新增css
+    //   6. interactiveMode: 交互模式下，只有ctrl+click才能展开代码块
+    static registerDiagramParser = (lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null, interactiveMode = true
+    ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode)
+    static unregisterDiagramParser = lang => global._diagramParser.unregister(lang);
+    // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
+    static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
+
+    // 动态弹出自定义模态框（及刻弹出，因此无需注册）
+    static modal = (modal, callback, cancelCallback) => global._modalGenerator.modal(modal, callback, cancelCallback);
+
+
+    ////////////////////////////// 插件相关 //////////////////////////////
+    static getGlobalSetting = name => global._global_settings[name]
+    static getPlugin = fixedName => global._plugins[fixedName]
+    static getCustomPlugin = fixedName => {
+        const plugin = global._plugins["custom"];
+        if (plugin) {
+            return plugin["custom"][fixedName]
+        }
+    }
+    static openFile = filepath => {
+        if (this.getPlugin("window_tab")) {
+            File.editor.library.openFile(filepath);
+        } else {
+            File.editor.library.openFileInNewWindow(filepath, false);
+        }
+    }
+    static showHiddenElementByPlugin = target => {
+        if (!target) return;
+        const collapsePlugin = this.getPlugin("collapse_paragraph");
+        const truncatePlugin = this.getPlugin("truncate_text");
+        collapsePlugin && collapsePlugin.rollback(target);
+        truncatePlugin && truncatePlugin.rollback(target);
+    }
+    static withAnchorNode = (selector, func) => {
+        return () => {
+            const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
+            const target = anchorNode.closest(selector);
+            if (target && target[0]) {
+                func(target[0]);
+            }
+        }
+    }
+
+
+    ////////////////////////////// 事件 //////////////////////////////
+    static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
+    static shiftKeyPressed = ev => !!ev.shiftKey
+    static altKeyPressed = ev => !!ev.altKey
+
+
+    ////////////////////////////// 基础纯函数 //////////////////////////////
     static compareVersion = (v1, v2) => {
         if (v1 === "" && v2 !== "") {
             return -1
@@ -86,51 +185,27 @@ class utils {
         }
     }
 
-    // 注册新的代码块语法
-    //   1. lang(string): language
-    //   2. destroyWhenUpdate(boolean): 更新前是否清空preview里的html
-    //   3. async renderFunc(cid, content, $pre) => null: 渲染函数，根据内容渲染所需的图像
-    //        cid: 当前代码块的cid
-    //        content: 代码块的内容
-    //        $pre: 代码块的jquery element
-    //   4. async cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
-    //   5. extraStyleGetter() => string: 用于导出时，新增css
-    //   6. interactiveMode: 交互模式下，只有ctrl+click才能展开代码块
-    static registerDiagramParser = (
-        lang, destroyWhenUpdate,
-        renderFunc, cancelFunc = null, extraStyleGetter = null,
-        interactiveMode = true
-    ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode)
-    // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
-    static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
-
-    // 触发顺序：
-    //   allCustomPluginsHadInjected: 自定义插件加载完毕
-    //   allPluginsHadInjected: 所有插件加载完毕
-    //   beforeFileOpen: 打开文件之前
-    //   fileOpened: 打开文件之后
-    //   fileContentLoaded: 文件内容加载完毕之后(依赖于window_tab)
-
-    //   beforeToggleSourceMode: 进入源码模式之前
-    //   beforeAddCodeBlock: 添加代码块之前
-    //   afterAddCodeBlock: 添加代码块之后
-    //   outlineUpdated: 大纲更新之时
-    static eventType = {
-        allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
-        allPluginsHadInjected: "allPluginsHadInjected",
-        beforeFileOpen: "beforeFileOpen",
-        fileOpened: "fileOpened",
-        fileContentLoaded: "fileContentLoaded",
-        beforeToggleSourceMode: "beforeToggleSourceMode",
-        beforeAddCodeBlock: "beforeAddCodeBlock",
-        afterAddCodeBlock: "afterAddCodeBlock",
-        outlineUpdated: "outlineUpdated",
+    static getUUID = () => {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            let r = (Math.random() * 16) | 0
+            let v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
     }
-    static addEventListener = (eventType, listener) => global._eventHub.addEventListener(eventType, listener);
-    static removeEventListener = (eventType, listener) => global._eventHub.removeEventListener(eventType, listener);
-    static publishEvent = (eventType, payload) => global._eventHub.publishEvent(eventType, payload); // 充分信任插件，允许所有插件发布事件
 
-    static registerStateRecorder = (selector, stateGetter, stateRestorer) => global._stateRecorder.register(selector, stateGetter, stateRestorer);
+
+    ////////////////////////////// 业务文件操作 //////////////////////////////
+    static readSetting = (defaultSetting, userSetting) => {
+        let result = null;
+        if (defaultSetting && this.existInPluginPath(defaultSetting)) {
+            result = this.readToml(defaultSetting);
+        }
+        if (userSetting && this.existInPluginPath(userSetting)) {
+            const _user = this.readToml(userSetting);
+            result = this.merge(result, _user);
+        }
+        return result
+    }
 
     static insertStyle = (id, css) => {
         const style = document.createElement('style');
@@ -155,54 +230,10 @@ class utils {
         ele && ele.parentElement && ele.parentElement.removeChild(ele);
     }
 
-    static insertDiv = div => {
-        const quickOpenNode = document.getElementById("typora-quick-open");
-        quickOpenNode.parentNode.insertBefore(div, quickOpenNode.nextSibling);
-    }
-
     static insertScript = filepath => {
         const jsFilepath = this.joinPath(filepath);
         return $.getScript(`file:///${jsFilepath}`);
     }
-
-    static getUUID = () => {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            let r = (Math.random() * 16) | 0
-            let v = c === 'x' ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-        });
-    }
-
-    static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
-    static shiftKeyPressed = ev => !!ev.shiftKey
-    static altKeyPressed = ev => !!ev.altKey
-
-    static getGlobalSetting = name => global._global_settings[name]
-    static getPlugin = fixed_name => global._plugins[fixed_name]
-    static getCustomPlugin = fixed_name => {
-        const plugin = global._plugins["custom"];
-        if (plugin) {
-            return plugin["custom"][fixed_name]
-        }
-    }
-    static getDirname = () => global.dirname || global.__dirname
-    static getFilePath = () => File.filePath || File.bundle && File.bundle.filePath
-    static joinPath = (...paths) => this.Package.Path.join(this.getDirname(), ...paths)
-
-    static requireFilePath = (...paths) => {
-        const filepath = this.joinPath(...paths);
-        return reqnode(filepath)
-    }
-
-    static existPath = filepath => {
-        try {
-            this.Package.Fs.accessSync(filepath, this.Package.Fs.constants.F_OK);
-            return true
-        } catch (err) {
-        }
-    }
-
-    static existInPluginPath = filepath => this.existPath(this.joinPath(filepath))
 
     static newFilePath = filepath => {
         if (filepath) {
@@ -223,6 +254,35 @@ class utils {
         return filepath
     }
 
+    static getFileName = filePath => {
+        let fileName = this.Package.Path.basename(filePath);
+        const idx = fileName.lastIndexOf(".");
+        if (idx !== -1) {
+            fileName = fileName.substring(0, idx);
+        }
+        return fileName
+    }
+
+    ////////////////////////////// 基础文件操作 //////////////////////////////
+    static getDirname = () => global.dirname || global.__dirname
+    static getFilePath = () => File.filePath || File.bundle && File.bundle.filePath
+    static joinPath = (...paths) => this.Package.Path.join(this.getDirname(), ...paths)
+
+    static requireFilePath = (...paths) => {
+        const filepath = this.joinPath(...paths);
+        return reqnode(filepath)
+    }
+
+    static existPath = filepath => {
+        try {
+            this.Package.Fs.accessSync(filepath, this.Package.Fs.constants.F_OK);
+            return true
+        } catch (err) {
+        }
+    }
+
+    static existInPluginPath = filepath => this.existPath(this.joinPath(filepath))
+
     static readFileSync = filepath => {
         filepath = this.joinPath(filepath);
         return this.Package.Fs.readFileSync(filepath, 'utf8');
@@ -239,55 +299,14 @@ class utils {
         return toml.stringify(obj)
     }
 
-    static getFileName = filePath => {
-        let fileName = this.Package.Path.basename(filePath);
-        const idx = fileName.lastIndexOf(".");
-        if (idx !== -1) {
-            fileName = fileName.substring(0, idx);
-        }
-        return fileName
-    }
 
-    static openFile = filepath => {
-        if (this.getPlugin("window_tab")) {
-            File.editor.library.openFile(filepath);
-        } else {
-            File.editor.library.openFileInNewWindow(filepath, false);
-        }
-    }
-
-    static scroll = (target, height = 10) => {
-        File.editor.focusAndRestorePos();
-        File.editor.selection.scrollAdjust(target, height);
-        File.isFocusMode && File.editor.updateFocusMode(false);
-    }
-
+    ////////////////////////////// 业务操作 //////////////////////////////
     static openUrl = url => {
         const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl;
         openUrl(url, 1);
     }
 
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
-
-    static toHotkeyFunc = hotkeyString => {
-        const keyList = hotkeyString.toLowerCase().split("+").map(k => k.trim());
-        const ctrl = keyList.indexOf("ctrl") !== -1;
-        const shift = keyList.indexOf("shift") !== -1;
-        const alt = keyList.indexOf("alt") !== -1;
-        const key = keyList.filter(key => key !== "ctrl" && key !== "shift" && key !== "alt")[0];
-
-        return ev => this.metaKeyPressed(ev) === ctrl
-            && this.shiftKeyPressed(ev) === shift
-            && this.altKeyPressed(ev) === alt
-            && ev.key.toLowerCase() === key
-    }
-
-    static insertFence = (anchorNode, content) => {
-        File.editor.contextMenu.hide();
-        // File.editor.writingArea.focus();
-        File.editor.restoreLastCursor();
-        File.editor.insertText(content);
-    }
 
     static getFenceContent = (pre, cid) => {
         // from element
@@ -327,84 +346,23 @@ class utils {
         }
     }
 
-    static decorate = (until, funcStr, before, after, changeResult = false) => {
-        const start = new Date().getTime();
-        const uuid = Math.random();
-        this.detectorContainer[uuid] = setInterval(() => {
-            if (new Date().getTime() - start > 10000) {
-                console.error("decorate timeout!", until, funcStr, before, after, changeResult);
-                clearInterval(this.detectorContainer[uuid]);
-                delete this.detectorContainer[uuid];
-                return;
-            }
-
-            if (!until()) return;
-            clearInterval(this.detectorContainer[uuid]);
-            const decorator = (original, before, after) => {
-                return function () {
-                    if (before) {
-                        const error = before.call(this, ...arguments);
-                        if (error === utils.stopCallError) return;
-                    }
-
-                    let result = original.apply(this, arguments);
-
-                    if (after) {
-                        const afterResult = after.call(this, result, ...arguments);
-                        if (changeResult) {
-                            result = afterResult;
-                        }
-                    }
-                    return result;
-                };
-            }
-            const idx = funcStr.lastIndexOf(".");
-            const obj = eval(funcStr.slice(0, idx));
-            const func = funcStr.slice(idx + 1);
-            obj[func] = decorator(obj[func], before, after);
-            delete this.detectorContainer[uuid];
-        }, 20);
+    ////////////////////////////// 业务DOM操作 //////////////////////////////
+    static scroll = (target, height = 10) => {
+        File.editor.focusAndRestorePos();
+        File.editor.selection.scrollAdjust(target, height);
+        File.isFocusMode && File.editor.updateFocusMode(false);
     }
 
-    static decorateExportToHTML = (before, after, changeResult = false) => {
-        this.decorate(() => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-            "File.editor.export.exportToHTML", before, after, changeResult)
+    static insertFence = (anchorNode, content) => {
+        File.editor.contextMenu.hide();
+        // File.editor.writingArea.focus();
+        File.editor.restoreLastCursor();
+        File.editor.insertText(content);
     }
 
-    static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
-        let run = false;
-        const uuid = Math.random();
-        const start = new Date().getTime();
-        this.detectorContainer[uuid] = setInterval(() => {
-            if (new Date().getTime() - start > timeout) {
-                console.warn("loopDetector timeout!", until, after);
-                run = runWhenTimeout;
-            }
-
-            if (until() || run) {
-                clearInterval(this.detectorContainer[uuid]);
-                after && after();
-                delete this.detectorContainer[uuid];
-            }
-        }, detectInterval);
-    }
-
-    static showHiddenElementByPlugin = target => {
-        if (!target) return;
-        const collapsePlugin = this.getPlugin("collapse_paragraph");
-        const truncatePlugin = this.getPlugin("truncate_text");
-        collapsePlugin && collapsePlugin.rollback(target);
-        truncatePlugin && truncatePlugin.rollback(target);
-    }
-
-    static withAnchorNode = (selector, func) => {
-        return () => {
-            const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
-            const target = anchorNode.closest(selector);
-            if (target && target[0]) {
-                func(target[0]);
-            }
-        }
+    static insertDiv = div => {
+        const quickOpenNode = document.getElementById("typora-quick-open");
+        quickOpenNode.parentNode.insertBefore(div, quickOpenNode.nextSibling);
     }
 
     static resizeFixedModal = (
@@ -493,32 +451,111 @@ class utils {
         })
         handleElement.ondragstart = () => false
     }
-}
 
-class _diagramParser {
-    constructor(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode) {
-        this.lang = lang;
-        this.destroyWhenUpdate = destroyWhenUpdate || false;
-        this.renderFunc = renderFunc || null;
-        this.cancelFunc = cancelFunc || null;
-        this.extraStyleGetter = extraStyleGetter || null;
-        this.interactiveMode = interactiveMode;
+    ////////////////////////////// 黑魔法 //////////////////////////////
+    static decorate = (until, funcStr, before, after, changeResult = false) => {
+        const start = new Date().getTime();
+        const uuid = Math.random();
+        this.detectorContainer[uuid] = setInterval(() => {
+            if (new Date().getTime() - start > 10000) {
+                console.error("decorate timeout!", until, funcStr, before, after, changeResult);
+                clearInterval(this.detectorContainer[uuid]);
+                delete this.detectorContainer[uuid];
+                return;
+            }
 
-        if (!this.check(this)) {
-            throw "diagram error"
-        }
+            if (!until()) return;
+            clearInterval(this.detectorContainer[uuid]);
+            const decorator = (original, before, after) => {
+                return function () {
+                    if (before) {
+                        const error = before.call(this, ...arguments);
+                        if (error === utils.stopCallError) return;
+                    }
+
+                    let result = original.apply(this, arguments);
+
+                    if (after) {
+                        const afterResult = after.call(this, result, ...arguments);
+                        if (changeResult) {
+                            result = afterResult;
+                        }
+                    }
+                    return result;
+                };
+            }
+            const idx = funcStr.lastIndexOf(".");
+            const obj = eval(funcStr.slice(0, idx));
+            const func = funcStr.slice(idx + 1);
+            obj[func] = decorator(obj[func], before, after);
+            delete this.detectorContainer[uuid];
+        }, 20);
     }
 
-    check = instance => !!instance && !!instance["lang"] && typeof instance.lang === "string" && instance.renderFunc instanceof Function
+    static decorateExportToHTML = (before, after, changeResult = false) => {
+        this.decorate(() => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
+            "File.editor.export.exportToHTML", before, after, changeResult)
+    }
+
+    static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
+        let run = false;
+        const uuid = Math.random();
+        const start = new Date().getTime();
+        this.detectorContainer[uuid] = setInterval(() => {
+            if (new Date().getTime() - start > timeout) {
+                console.warn("loopDetector timeout!", until, after);
+                run = runWhenTimeout;
+            }
+
+            if (until() || run) {
+                clearInterval(this.detectorContainer[uuid]);
+                after && after();
+                delete this.detectorContainer[uuid];
+            }
+        }, detectInterval);
+    }
 }
 
-class DiagramParser {
+class diagramParser {
     constructor() {
         this.utils = utils;
-        this.diagramParsers = new Map(); // {lang: _diagramParser}
+        this.parsers = new Map(); // {lang: parser}
     }
 
     style = () => (!this.utils.isBetaVersion) ? "" : `.md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
+
+    register = (
+        lang, destroyWhenUpdate = false,
+        renderFunc, cancelFunc = null, extraStyleGetter = null,
+        interactiveMode = true,
+    ) => {
+        lang = lang.toLowerCase();
+        const parser = {lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode};
+        this.parsers.set(lang, parser);
+        console.log(`register diagram parser: [ ${lang} ]`);
+    }
+
+    unregister = lang => this.parsers.delete(lang)
+
+    process = () => {
+        if (this.parsers.size === 0) return;
+
+        const css = this.style();
+        css && this.utils.insertStyle("diagram-parser-style", css);
+
+        // 添加时
+        this.onAddCodeBlock();
+        // 修改语言时
+        this.onTryAddLangUndo();
+        // 更新时
+        this.onUpdateDiagram();
+        // 导出时
+        this.onExportToHTML();
+        // 聚焦时
+        this.onFocus();
+        // 判断是否为Diagram时
+        this.onCheckIsDiagramType();
+    }
 
     isDiagramType = lang => File.editor.diagrams.constructor.isDiagramType(lang)
 
@@ -526,7 +563,7 @@ class DiagramParser {
         throw {errorLine, reason}
     }
 
-    genErrorMessage = error => {
+    getErrorMessage = error => {
         let msg = "";
         if (error["errorLine"]) {
             msg += `第 ${error["errorLine"]} 行发生错误。`;
@@ -540,20 +577,20 @@ class DiagramParser {
         return msg
     }
 
-    cantDrawDiagram = async (cid, lang, $pre, content, error) => {
+    whenCantDraw = async (cid, lang, $pre, content, error) => {
         if (!error) {
             $pre.removeClass("md-fences-advanced");
             $pre.children(".md-diagram-panel").remove();
         } else {
             $pre.find(".md-diagram-panel-header").text(lang);
             $pre.find(".md-diagram-panel-preview").text("语法解析异常，绘图失败");
-            $pre.find(".md-diagram-panel-error").text(this.genErrorMessage(error));
+            $pre.find(".md-diagram-panel-error").text(this.getErrorMessage(error));
         }
         await this.noticeRollback(cid);
     }
 
     noticeRollback = async cid => {
-        for (const parser of this.diagramParsers.values()) {
+        for (const parser of this.parsers.values()) {
             if (parser.cancelFunc) {
                 try {
                     await parser.cancelFunc(cid);
@@ -567,7 +604,7 @@ class DiagramParser {
     cleanErrorMsg = ($pre, lang) => {
         $pre.find(".md-diagram-panel-header").html("");
         $pre.find(".md-diagram-panel-error").html("");
-        this.diagramParsers.get(lang).destroyWhenUpdate && $pre.find(".md-diagram-panel-preview").html("");
+        this.parsers.get(lang).destroyWhenUpdate && $pre.find(".md-diagram-panel-preview").html("");
     }
 
     renderCustomDiagram = async (cid, lang, $pre) => {
@@ -575,7 +612,7 @@ class DiagramParser {
 
         const content = this.utils.getFenceContent($pre[0], cid);
         if (!content) {
-            await this.cantDrawDiagram(cid, lang, $pre); // empty content
+            await this.whenCantDraw(cid, lang, $pre); // empty content
             return;
         } else {
             $pre.addClass("md-fences-advanced");
@@ -585,12 +622,12 @@ class DiagramParser {
             }
         }
 
-        const render = this.diagramParsers.get(lang).renderFunc;
+        const render = this.parsers.get(lang).renderFunc;
         if (!render) return;
         try {
             await render(cid, content, $pre);
         } catch (error) {
-            await this.cantDrawDiagram(cid, lang, $pre, content, error);
+            await this.whenCantDraw(cid, lang, $pre, content, error);
         }
     }
 
@@ -608,7 +645,7 @@ class DiagramParser {
             // 是Diagram类型，但是不是自定义类型，不展示增强按钮，直接返回即可
             $pre.children(".fence-enhance").hide();
             // 是Diagram类型，也是自定义类型，调用其回调函数
-            const parser = this.diagramParsers.get(lang);
+            const parser = this.parsers.get(lang);
             if (parser) {
                 parser.interactiveMode && $pre.addClass("md-fences-interactive");
                 await this.renderCustomDiagram(cid, lang, $pre);
@@ -617,17 +654,6 @@ class DiagramParser {
                 await this.noticeRollback(cid);
             }
         }
-    }
-
-    register = (
-        lang, destroyWhenUpdate,
-        renderFunc, cancelFunc = null, extraStyleGetter = null,
-        interactiveMode = true,
-    ) => {
-        lang = lang.toLowerCase();
-        const parser = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode)
-        this.diagramParsers.set(lang, parser);
-        console.log(`register diagram parser: [ ${lang} ]`);
     }
 
     onAddCodeBlock = () => {
@@ -656,7 +682,7 @@ class DiagramParser {
         this.utils.decorateExportToHTML(async (...args) => {
             const extraCssList = [];
 
-            this.diagramParsers.forEach((lang, parser) => {
+            this.parsers.forEach((lang, parser) => {
                 const getter = parser.extraStyleGetter;
                 const exist = document.querySelector(`#write .md-fences[lang="${lang}"]`);
                 if (getter && exist) {
@@ -686,7 +712,7 @@ class DiagramParser {
             if (cid) {
                 const lang = (File.editor.findElemById(cid).attr("lang") || "").trim().toLowerCase();
                 if (!cid || !lang) return;
-                const parser = this.diagramParsers.get(lang);
+                const parser = this.parsers.get(lang);
                 if (parser && parser.interactiveMode) return this.utils.stopCallError
             }
         }
@@ -739,7 +765,7 @@ class DiagramParser {
             if (!this.utils.getGlobalSetting("CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE")) return;
 
             let hasInteractiveDiagram = false;
-            for (const parser of this.diagramParsers.values()) {
+            for (const parser of this.parsers.values()) {
                 if (parser.interactiveMode) {
                     hasInteractiveDiagram = true;
                     break
@@ -784,36 +810,16 @@ class DiagramParser {
                     lang = lang["name"];
                 }
                 if (type === "string") {
-                    return this.diagramParsers.get(lang.toLowerCase());
+                    return this.parsers.get(lang.toLowerCase());
                 }
                 return result
             },
             true
         )
     }
-
-    process = () => {
-        if (this.diagramParsers.size === 0) return;
-
-        const css = this.style();
-        css && this.utils.insertStyle("diagram-parser-style", css);
-
-        // 添加时
-        this.onAddCodeBlock();
-        // 修改语言时
-        this.onTryAddLangUndo();
-        // 更新时
-        this.onUpdateDiagram();
-        // 导出时
-        this.onExportToHTML();
-        // 聚焦时
-        this.onFocus();
-        // 判断是否为Diagram时
-        this.onCheckIsDiagramType();
-    }
 }
 
-class EventHub {
+class eventHub {
     constructor() {
         this.utils = utils
         this.eventMap = {}  // { eventType: [listenerFunc] }
@@ -880,48 +886,41 @@ class EventHub {
 class stateRecorder {
     constructor() {
         this.utils = utils;
-        this.recorders = [];
-        this.recordMap = {}; // map[filePath][]collection
+        this.recorders = new Map(); // map[name]recorder
     }
 
-    register = (selector, stateGetter, stateRestorer) => this.recorders.push({selector, stateGetter, stateRestorer})
+    // collections: map[filepath]map[idx]state
+    register = (recorderName, selector, stateGetter, stateRestorer) => {
+        this.recorders.set(recorderName, {selector, stateGetter, stateRestorer, collections: new Map()})
+    }
+    unregister = recorderName => this.recorders.delete(recorderName);
 
     collect = () => {
         const filepath = this.utils.getFilePath();
-
-        const collections = this.recorders.map(recorder => {
+        for (const recorder of this.recorders.values()) {
             const collection = new Map();
-            document.querySelectorAll(recorder.selector).forEach((ele, eleIdx) => {
+            document.querySelectorAll(recorder.selector).forEach((ele, idx) => {
                 const state = recorder.stateGetter(ele);
-                if (state) {
-                    collection.set(eleIdx, state);
-                }
+                state && collection.set(idx, state);
             })
             if (collection.size) {
-                return collection
+                recorder.collections.set(filepath, collection)
+            } else {
+                recorder.collections.delete(filepath);
             }
-        })
-
-        if (collections.filter(Boolean).length === 0) {
-            delete this.recordMap[filepath];
-        } else {
-            this.recordMap[filepath] = collections;
         }
     }
 
     restore = filepath => {
-        const collections = this.recordMap[filepath];
-        if (!collections) return;
-
-        this.recorders.forEach((recorder, recorderIdx) => {
-            const collection = collections[recorderIdx];
-            if (collection) {
-                document.querySelectorAll(recorder.selector).forEach((ele, eleIdx) => {
-                    const state = collection.get(eleIdx);
+        for (const recorder of this.recorders.values()) {
+            const collection = recorder.collections.get(filepath)
+            if (collection && collection.size) {
+                document.querySelectorAll(recorder.selector).forEach((ele, idx) => {
+                    const state = collection.get(idx);
                     state && recorder.stateRestorer(ele, state);
                 })
             }
-        })
+        }
     }
 
     process = () => {
@@ -930,9 +929,175 @@ class stateRecorder {
     }
 }
 
+class modalGenerator {
+    constructor() {
+        this.utils = utils;
+        this.pluginModal = null;
+        this.callback = null;
+        this.entities = null;
+    }
+
+    style = () => {
+        return `
+            #plugin-custom-modal {
+                position: fixed;
+                z-index: 99999;
+                margin: 50px auto;
+                left: 0;
+                right: 0;
+                display: none;
+            }
+            
+            #plugin-custom-modal label {
+                display: block;
+                margin-bottom: 5px;
+            }
+            
+            #plugin-custom-modal input[type="checkbox"], input[type="radio"] {
+                box-shadow: none;
+                margin-top: -3px;
+            }
+        `
+    }
+
+    html = () => {
+        const modal_content = `
+            <div class="modal-content">
+              <div class="modal-header">
+                <div class="modal-title" data-lg="Front">自定义插件弹窗</div>
+              </div>
+              <div class="modal-body"></div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default plugin-modal-cancel" data-dismiss="modal" data-lg="Front">取消</button>
+                <button type="button" class="btn btn-primary plugin-modal-submit" data-lg="Front">确定</button>
+              </div>
+            </div>
+        `
+        const modal = document.createElement("div");
+        modal.id = "plugin-custom-modal";
+        modal.classList.add("modal-dialog");
+        modal.innerHTML = modal_content;
+        this.utils.insertDiv(modal);
+    }
+
+    process = () => {
+        this.utils.insertStyle("plugin-custom-modal-style", this.style());
+        this.html();
+
+        this.entities = {
+            modal: document.getElementById("plugin-custom-modal"),
+            content: document.querySelector("#plugin-custom-modal .modal-content"),
+            body: document.querySelector("#plugin-custom-modal .modal-body"),
+            title: document.querySelector("#plugin-custom-modal .modal-title"),
+            submit: document.querySelector("#plugin-custom-modal button.plugin-modal-submit"),
+            cancel: document.querySelector("#plugin-custom-modal button.plugin-modal-cancel"),
+        }
+
+        this.entities.cancel.addEventListener("click", () => this.onButtonClick(this.cancelCallback))
+        this.entities.submit.addEventListener("click", () => this.onButtonClick(this.callback))
+        this.entities.modal.addEventListener("keydown", ev => {
+            if (ev.key === "Enter") {
+                this.entities.submit.click();
+                ev.stopPropagation();
+                ev.preventDefault();
+            } else if (ev.key === "Escape") {
+                this.entities.cancel.click();
+                ev.stopPropagation();
+                ev.preventDefault();
+            }
+        }, true)
+    }
+
+    onButtonClick = callback => {
+        this.pluginModal.components.forEach(component => {
+            if (!component.label || !component.type || !component.id) return;
+            const div = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
+            if (div) {
+                component.submit = this.getWidgetValue(component.type, div);
+            }
+        })
+        callback && callback(this.pluginModal.components);
+        this.entities.modal.style.display = "none";
+    }
+
+    getWidgetValue = (type, widget) => {
+        switch (type.toLowerCase()) {
+            case "input":
+                return widget.querySelector("input").value
+            case "textarea":
+                return widget.querySelector("textarea").value
+            case "checkbox":
+                return [...widget.querySelectorAll("input:checked")].map(box => box.value)
+            case "radio":
+                return widget.querySelector("input:checked").value
+            case "select":
+                return widget.querySelector("select").value
+            case "file":
+                return widget.querySelector("input").files
+        }
+    }
+
+    newWidget = component => {
+        if (!component || !component.label || !component.type) return;
+
+        let inner = "";
+        const type = component.type.toLowerCase();
+        switch (type) {
+            case "input":
+            case "password":
+            case "file":
+                inner = `<input type="${type === "input" ? "text" : type}" class="form-control" 
+                            placeholder="${component.placeholder}" value="${component.value}">`;
+                break
+            case "textarea":
+                const rows = component.rows || 3;
+                inner = `<textarea class="form-control" rows="${rows}" placeholder="${component.placeholder}"></textarea>`;
+                break
+            case "checkbox":
+                const checkBoxList = component.list.map(box => `
+                    <div class="checkbox">
+                        <label><input type="checkbox" value="${box.value}" ${box.checked ? "checked" : ""}>${box.label}</label>
+                    </div>`
+                );
+                inner = checkBoxList.join("");
+                break
+            case "radio":
+                const radioList = component.list.map(radio => `
+                    <div class="radio">
+                        <label><input type="radio" name="radio-${component.id}" value="${radio.value}" ${radio.checked ? "checked" : ""}>${radio.label}</label>
+                    </div>`
+                );
+                inner = radioList.join("");
+                break
+            case "select":
+                const optionsList = component.list.map(option => `<option ${option === component.selected ? "selected" : ""}>${option}</option>`);
+                inner = `<select class="form-control">${optionsList}</select>`
+                break
+            case "p":
+                break
+        }
+        return `<div class="col-lg-12 form-group" component-id="${component.id}"><label>${component.label}</label>${inner}</div>`;
+    }
+
+    // modal: {title: "", components: [{label: "", type: "", value: ""}]}
+    modal = (modal, callback, cancelCallback) => {
+        if (modal && callback instanceof Function) {
+            this.pluginModal = modal;
+            this.callback = callback;
+            this.cancelCallback = cancelCallback;
+
+            this.entities.title.innerText = modal.title;
+            modal.components.forEach(component => component.id = Math.random());
+            const widgetList = modal.components.map(component => this.newWidget(component));
+            this.entities.body.innerHTML = `<form role="form">` + widgetList.join("") + "</form>";
+            this.entities.modal.style.display = "block";
+        }
+    }
+}
+
 class basePlugin {
-    constructor(setting) {
-        this.fixed_name = setting.fixed_name;
+    constructor(fixedName, setting) {
+        this.fixedName = fixedName;
         this.config = setting;
         this.utils = utils
     }
@@ -956,16 +1121,29 @@ class basePlugin {
     }
 }
 
-class hotkeyHelper {
+class hotkeyHub {
     constructor() {
         this.utils = utils;
-        this.hotkeyList = [];
+        this.hotkeyMap = new Map();
+    }
+
+    toHotkeyFunc = hotkeyString => {
+        const keyList = hotkeyString.toLowerCase().split("+").map(k => k.trim());
+        const ctrl = keyList.indexOf("ctrl") !== -1;
+        const shift = keyList.indexOf("shift") !== -1;
+        const alt = keyList.indexOf("alt") !== -1;
+        const key = keyList.filter(key => key !== "ctrl" && key !== "shift" && key !== "alt")[0];
+
+        return ev => this.utils.metaKeyPressed(ev) === ctrl
+            && this.utils.shiftKeyPressed(ev) === shift
+            && this.utils.altKeyPressed(ev) === alt
+            && ev.key.toLowerCase() === key
     }
 
     _register = (hotkey, call) => {
         if (typeof hotkey === "string") {
-            hotkey = this.utils.toHotkeyFunc(hotkey);
-            this.hotkeyList.push({hotkey, call});
+            hotkey = this.toHotkeyFunc(hotkey);
+            this.hotkeyMap.set(hotkey, {hotkey, call});
         } else if (hotkey instanceof Array) {
             for (const hk of hotkey) {
                 this._register(hk, call);
@@ -980,10 +1158,12 @@ class hotkeyHelper {
             }
         }
     }
+    unregister = hotkeyString => this.hotkeyMap.delete(hotkeyString)
+    registerSingle = (hotkeyString, callback) => this._register(hotkeyString, callback)
 
-    listen = () => {
+    process = () => {
         window.addEventListener("keydown", ev => {
-            for (const hotkey of this.hotkeyList) {
+            for (const hotkey of this.hotkeyMap.values()) {
                 if (hotkey.hotkey(ev)) {
                     hotkey.call();
                     ev.preventDefault();
@@ -995,29 +1175,12 @@ class hotkeyHelper {
     }
 }
 
-class userSettingHelper {
-    constructor() {
-        this.utils = utils;
-    }
-
-    updateSettings(pluginSetting) {
-        const toml = "./plugin/global/settings/settings.user.toml";
-        if (this.utils.existInPluginPath(toml)) {
-            const userSettings = this.utils.readToml(toml);
-            pluginSetting = this.utils.merge(pluginSetting, userSettings);
-        }
-        return pluginSetting
-    }
-}
-
 class process {
     constructor() {
         this.utils = utils;
-        this.hotkeyHelper = new hotkeyHelper();
-        this.userSettingHelper = new userSettingHelper();
     }
 
-    insertStyle(fixedName, style) {
+    insertStyle = (fixedName, style) => {
         if (!style) return;
 
         if (typeof style === "string") {
@@ -1036,74 +1199,81 @@ class process {
         }
     }
 
-    loadPlugin(pluginClass, pluginSetting) {
-        const plugin = new pluginClass(pluginSetting);
+    loadPlugin = (fixedName, pluginClass, pluginSetting) => {
+        const plugin = new pluginClass(fixedName, pluginSetting);
 
         const error = plugin.beforeProcess();
         if (error === this.utils.stopLoadPluginError) return
 
-        this.insertStyle(plugin.fixed_name, plugin.style());
+        this.insertStyle(fixedName, plugin.style());
         plugin.html();
-        this.hotkeyHelper.register(plugin.hotkey());
+        this.utils.registerHotkey(plugin.hotkey());
         plugin.process();
         plugin.afterProcess();
-        console.log(`plugin had been injected: [ ${plugin.fixed_name} ] `);
+        console.log(`plugin had been injected: [ ${fixedName} ] `);
         return plugin
     }
 
-    run() {
+    run = () => {
         global._global_settings = {};
         global._plugins = {};
 
-        let pluginSettings = this.utils.readToml("./plugin/global/settings/settings.default.toml");
-        pluginSettings = this.userSettingHelper.updateSettings(pluginSettings);
+        const pluginSettings = this.utils.readSetting(
+            "./plugin/global/settings/settings.default.toml",
+            "./plugin/global/settings/settings.user.toml",
+        );
 
         const promises = [];
+        for (const fixedName of Object.keys(pluginSettings)) {
+            const setting = pluginSettings[fixedName];
 
-        for (const fixed_name of Object.keys(pluginSettings)) {
-            const pluginSetting = pluginSettings[fixed_name];
-
-            if (fixed_name === "global") {
-                global._global_settings = pluginSetting;
+            if (fixedName === "global") {
+                global._global_settings = setting;
+                continue;
+            } else if (!setting.ENABLE) {
                 continue;
             }
 
-            pluginSetting.fixed_name = fixed_name;
-
-            if (!pluginSetting.ENABLE) continue;
-
-            const filepath = this.utils.joinPath("./plugin", fixed_name);
-            const promise = new Promise(resolve => {
+            promises.push(new Promise(resolve => {
                 try {
+                    const filepath = this.utils.joinPath("./plugin", fixedName);
                     const {plugin} = reqnode(filepath);
-                    const instance = this.loadPlugin(plugin, pluginSetting);
+                    const instance = this.loadPlugin(fixedName, plugin, setting);
                     if (instance) {
-                        global._plugins[fixed_name] = instance;
+                        global._plugins[fixedName] = instance;
                     }
                 } catch (e) {
                     console.error("plugin err:", e);
                 }
                 resolve();
-            })
-            promises.push(promise);
+            }));
         }
 
         Promise.all(promises).then(() => {
             global._eventHub.process();
             global._diagramParser.process();
             global._stateRecorder.process();
-            this.hotkeyHelper.listen();
+            global._modalGenerator.process();
+            global._hotkeyHub.process();
             this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
         })
     }
 }
 
+// 通用工具
 global._pluginUtils = utils;
-global._basePlugin = basePlugin;
-global._hotkeyHelper = hotkeyHelper;
-global._diagramParser = new DiagramParser();
-global._eventHub = new EventHub();
+// 插件的父类
+global._basePlugin = basePlugin
+// 注册、发布生命周期事件
+global._eventHub = new eventHub();
+// 自定义代码块语法
+global._diagramParser = new diagramParser();
+// 状态记录器
 global._stateRecorder = new stateRecorder();
+// 弹出模态框
+global._modalGenerator = new modalGenerator();
+// 注册、监听快捷键
+global._hotkeyHub = new hotkeyHub();
 
 module.exports = {
     process

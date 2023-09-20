@@ -5,8 +5,8 @@ class rightClickMenuPlugin extends global._basePlugin {
 
     getPlugins = () => {
         const enable = []
-        for (const fixed_name in global._plugins) {
-            const plugin = global._plugins[fixed_name];
+        for (const fixedName in global._plugins) {
+            const plugin = global._plugins[fixedName];
             enable.push(plugin);
         }
         const clickable = enable.filter(plugin => plugin.config.CLICKABLE === true);
@@ -47,7 +47,7 @@ class rightClickMenuPlugin extends global._basePlugin {
 
             const thirdUl = this.createUl();
             thirdUl.classList.add("plugin-menu-third");
-            thirdUl.setAttribute("fixed_name", plugin.fixed_name);
+            thirdUl.setAttribute("fixed_name", plugin.fixedName);
             thirdUl.innerHTML = plugin.callArgs ? plugin.callArgs.map(arg => this.createThirdLi(arg)).join("") : "";
             document.querySelector("content").appendChild(thirdUl);
         })
@@ -58,7 +58,7 @@ class rightClickMenuPlugin extends global._basePlugin {
         const style = (plugin.config.CLICKABLE) ? "" : `style="pointer-events: none;color: #c4c6cc;"`;
         const content = (hasNotArgs) ? plugin.config.NAME : `<span data-lg="Menu">${plugin.config.NAME}</span> <i class="fa fa-caret-right"></i>`;
         const className = (hasNotArgs) ? "" : "has-extra-menu";
-        return `<li data-key="${plugin.fixed_name}" class="plugin-menu-item ${className}" ${style}>
+        return `<li data-key="${plugin.fixedName}" class="plugin-menu-item ${className}" ${style}>
                     <a role="menuitem" data-lg="Menu">${content}</a>
                 </li>`
     }

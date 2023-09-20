@@ -19,14 +19,7 @@ class collapseParagraphPlugin extends global._basePlugin {
 
     process = () => {
         this.init();
-
-        if (this.config.RECORD_COLLAPSE) {
-            this.utils.registerStateRecorder(
-                "#write h1,h2,h3,h4,h5,h6",
-                ele => ele.classList.contains(this.config.CLASS_NAME),
-                ele => this.trigger(ele, false),
-            );
-        }
+        this.recordCollapseState(false);
 
         document.getElementById("write").addEventListener("click", ev => {
             if (!this.utils.metaKeyPressed(ev)) return;
@@ -120,38 +113,34 @@ class collapseParagraphPlugin extends global._basePlugin {
 
     findAllSiblings = paragraph => document.querySelectorAll(`#write ${paragraph.tagName}`);
 
+    recordCollapseState = (needChange = true) => {
+        if (needChange) {
+            this.config.RECORD_COLLAPSE = !this.config.RECORD_COLLAPSE;
+        }
+        const name = "recordCollapseParagraph";
+        if (this.config.RECORD_COLLAPSE) {
+            this.utils.registerStateRecorder(name, "#write h1,h2,h3,h4,h5,h6",
+                ele => ele.classList.contains(this.config.CLASS_NAME), ele => this.trigger(ele, false));
+        } else {
+            this.utils.unregisterStateRecorder(name);
+        }
+    }
+
     dynamicCallArgsGenerator = anchorNode => {
         const target = anchorNode.closest("#write h1,h2,h3,h4,h5,h6");
         this.dynamicUtil.target = target;
 
         return [
-            {
-                arg_name: "折叠/展开当前章节",
-                arg_value: "call_current",
-                arg_disabled: !target,
-            },
-            {
-                arg_name: "折叠/展开全部兄弟章节",
-                arg_value: "call_siblings",
-                arg_disabled: !target,
-            },
-            {
-                arg_name: "折叠/展开全局同级章节",
-                arg_value: "call_all_siblings",
-                arg_disabled: !target,
-            }
+            {arg_name: `${this.config.RECORD_COLLAPSE ? "不" : ""}记录章节放缩状态`, arg_value: "record_collapse_state"},
+            {arg_name: "折叠/展开当前章节", arg_value: "call_current", arg_disabled: !target},
+            {arg_name: "折叠/展开全部兄弟章节", arg_value: "call_siblings", arg_disabled: !target},
+            {arg_name: "折叠/展开全局同级章节", arg_value: "call_all_siblings", arg_disabled: !target}
         ]
     }
 
     callArgs = [
-        {
-            arg_name: "折叠全部章节",
-            arg_value: "collapse_all"
-        },
-        {
-            arg_name: "展开全部章节",
-            arg_value: "expand_all"
-        },
+        {arg_name: "折叠全部章节", arg_value: "collapse_all"},
+        {arg_name: "展开全部章节", arg_value: "expand_all"},
     ];
 
     dynamicCall = type => {
@@ -180,6 +169,8 @@ class collapseParagraphPlugin extends global._basePlugin {
             }
         } else if (type === "expand_all") {
             this.paragraphList.forEach(tag => document.getElementsByTagName(tag).forEach(ele => this.trigger(ele, true)));
+        } else if (type === "record_collapse_state") {
+            this.recordCollapseState();
         } else {
             this.dynamicCall(type);
         }
