@@ -32,7 +32,7 @@
 | 22   | export_enhance     | 导出 html 时避免图片丢失             | √        |
 | 23   | go_top             | 一键到文章顶部                       | √        |
 | 24   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
-| 25   | hotkeyHub          | 快捷键注册中心（高级）               | √        |
+| 25   | hotkey_hub         | 快捷键注册中心（高级）               | √        |
 | 26   | custom             | 用户自定义命令（高级）               | √        |
 | 27   | plugin_updater     | 一键更新插件                         | √        |
 | 28   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
@@ -59,9 +59,9 @@
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【启用插件】栏目，说明一切顺利。
 
-> NOTE：`updater.exe` 同时集成了 install 和 update 两个功能，后续更新插件需要用到此文件，请勿移动位置、删除。如果您不信任此 exe 文件，请自行编译此目录下的 `updater.go` 文件。
+> 一键更新插件（`启用插件 -> 自定义插件 -> 更新插件`）需要用到 `updater.exe`，请勿删除。如果您不信任此 exe 文件，请自行编译此目录下的 `updater.go` 文件。
 
-> 本插件系统尊重用户的所有选择。任何插件、任何功能都是可以 **通过修改配置文件** 永久打开 / 关闭的。打开配置文件方式：`启用插件 -> 右键菜单 -> 打开插件配置文件` 。
+> 本插件系统尊重用户的所有选择。任何插件、任何功能都是可以通过修改配置文件永久打开 / 关闭的。打开配置文件方式：`启用插件 -> 右键菜单 -> 打开插件配置文件` 。
 
 
 
@@ -261,7 +261,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### resource_operation：一键清除无用图片，生成报告
 
-使用方式：右键菜单 -> 启用插件 -> 自定义插件 -> 资源管理。
+使用方式：右键菜单 -> 启用插件 -> 自定义插件 -> 资源管理
 
 > NOTE：由于删除文件是危险操作，默认只会生成报告，不会删除。如果需要删除文件，请手动修改 `custom_plugin.user.toml` 的 `operation`。
 
@@ -314,6 +314,7 @@ cmd = ""
 [[commander.BUILTIN]]
 name = "Explorer"
 shell = "powershell"
+hotkey = "ctrl+alt+e"
 cmd = "explorer $d"
 [[commander.BUILTIN]]
 name = "Vscode"
@@ -419,7 +420,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ![auto_number](assets/auto_number.png)
 
-支持编号的组件（皆可单独打开/关闭）：
+支持编号的组件（皆可临时或永久打开/关闭）：
 
 1. 标题
 2. 大纲
@@ -504,7 +505,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ### plugin_updater：一键更新插件
 
-使用方式：右键菜单 -> 启用插件 ->  静默更新插件。
+使用方式：右键菜单 -> 启用插件 -> 自定义插件 ->  更新插件。
 
 > 众所周知，有些用户并不能裸连 github 下载最新插件，故提供了设置代理功能（默认为系统代理）
 
@@ -520,6 +521,14 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 
 
+### mermaid_replace：替换 mermaid
+
+如果你像我一样，不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此插件。
+
+> **此插件默认关闭，需手动开启。**
+
+
+
 ### hotkeyHub：快捷键注册中心（高级）
 
 > 此配置是高级配置，仅对有 javascript 基础的用户开放。
@@ -532,184 +541,11 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ### custom：用户自定义命令（高级）
 
-#### 简介
+> 此配置是高级配置，仅对有 javascript 基础的用户开放。
 
-从 Typora Plugin 1.2.1 版本开始，本插件系统提供开放能力，支持用户 **在右键菜单中调用自定义的命令**。
+功能：提供开放能力，支持用户在右键菜单中调用自定义的命令。
 
-**custom 插件大量采用声明式代码（声明代替代码开发）**，比如：
-
-- 只需使用 `style = () => "..."`，即可注册 css。
-- 只需使用 `hint = () => "将当前标题的路径复制到剪切板"`，即可注册 hint。
-- 只需使用 `select = () => "..."`，即可注册允许运行命令的光标位置。
-- 只需使用 `hotkey = () => ["ctrl+shift+y"]` ，即可注册快捷键。
-- 只需使用 `this.modal` 函数即可自动生成自定义的模态框。
-- init、html、process、callback 等等生命周期函数。
-
-```js
-class fullPathCopy extends BaseCustomPlugin {
-    style = () => "..."
-    hint = () => "将当前标题的路径复制到剪切板"
-    hotkey = () => ["ctrl+shift+y"]
-    callback = anchorNode => {
-        this.modal({
-            id: "newFile",
-            title: "这是模态框标题",
-            components: [
-                {
-                    label: "这是input的label",
-                    type: "input",  
-                    value: "这是input的默认value",
-                    placeholder: "这是input的placeholder",
-                },
-                // password、textarea、checkbox、radio、select
-                ...
-            ]}, response => {})
-    }
-}
-```
-
-
-
-#### 如何使用
-
-仅需两步：
-
-1. 在 `./plugin/custom/custom_plugin.user.toml` 添加配置。
-2. 在 `./plugin/custom/plugins` 目录下，创建和插件同名的文件，在此文件中创建一个 class 继承自 BaseCustomPlugin，并导出为 `plugin`。
-
-
-
-#### 示例
-
-需求如下：
-
-1. 在右键菜单中添加一个 `获取标题路径` （类似于 `messing9.md\无 一级标题\开放平台（WIP） 二级标题\window_tab 三级标题`）的功能。
-2. 当光标位于【正文标题】中才可使用。
-3. 快捷键 `ctrl+shift+y`。
-
-实现：
-
-步骤一：修改 `./plugin/global/settings/custom_plugin.user.toml`，添加配置：
-
-- name：（必选）右键菜单中展示的名称
-- enable：（必选）是否启用此插件
-- config：（可选）插件自己的配置
-
-```toml
-# ./plugin/global/settings/custom_plugin.user.toml
-
-[fullPathCopy]
-name = "复制标题路径"
-enable = true
-
-    [fullPathCopy.config]
-    ignore_empty_header = false
-    add_space = true
-    full_file_path = false
-```
-
-> 如果您对 TOML 不太了解，可以花三分钟了解 [TOML教程](https://toml.io/cn/v1.0.0)
-
-步骤二：在 `./plugin/custom/plugins` 目录下，创建和插件同名的文件（`fullPathCopy.js`），在此文件中创建一个 class 继承自 BaseCustomPlugin，并导出为 `plugin`。
-
-```js
-// ./plugin/custom/plugins/fullPathCopy.js
-
-// 1
-class fullPathCopy extends BaseCustomPlugin {
-    // 2
-    selector = () => "#write h1, h2, h3, h4, h5, h6"
-    // 3
-    hint = () => "将当前标题的路径复制到剪切板"
-    // 4
-    init = () => {}
-    // 5
-    style = () => {}
-    // 6
-    html = () => {}
-    // 7
-    hotkey = () => ["ctrl+shift+y"]
-    // 8
-    process = () => {}
-    // 9
-    callback = anchorNode => {
-        const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
-        const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"];
-        const pList = [];
-        let ele = anchorNode;
-
-        while (ele) {
-            const idx = paragraphList.indexOf(ele.tagName);
-            if (idx !== -1) {
-                if (pList.length === 0 || (pList[pList.length - 1].idx > idx)) {
-                    pList.push({ele, idx})
-                    if (pList[pList.length - 1].idx === 0) break;
-                }
-            }
-            ele = ele.previousElementSibling;
-        }
-
-        pList.reverse();
-
-        const filePath = File.getFileName();
-        const result = [filePath];
-        let headerIdx = 0;
-        for (const p of pList) {
-            while (headerIdx < 6 && p.ele.tagName !== paragraphList[headerIdx]) {
-                if (!this.config.ignore_empty_header) {
-                    const name = this.getHeaderName("无", nameList[headerIdx]);
-                    result.push(name);
-                }
-                headerIdx++;
-            }
-
-            if (p.ele.tagName === paragraphList[headerIdx]) {
-                const name = this.getHeaderName(p.ele.querySelector("span").textContent, nameList[headerIdx])
-                result.push(name);
-                headerIdx++;
-            }
-        }
-
-        const text = this.utils.Package.Path.join(...result);
-        navigator.clipboard.writeText(text);
-    }
-
-    getHeaderName = (title, name) => {
-        const space = (this.config.add_space) ? " " : "";
-        return title + space + name
-    }
-}
-
-// 10
-module.exports = { plugin: fullPathCopy };
-
-// 1. 创建 class，继承 BaseCustomPlugin 类。此时，fullPathCopy 将自动拥有 utils、info、config 属性 和 modal 方法。
-//    - utils：插件系统自带的静态工具类，其定义在 `./plugin/global/core/plugin.js/utils`。其中有三个重要的函数：utils.getPlugin(fixed_name) 和 utils.getCustomPlugin(fixed_name) 用于获取已经实现的全部插件，调用其 API，具体的 API 可看 openPlatformAPI.md 文件。utils.addEventListener(eventType, listener) 用于监听 Typora 的生命周期事件。
-//    - info：该插件在 custom_plugin.user.toml 里的所有字段
-//    - config：等同于 info.config
-//    - modal：生成自定义的模态框，和用户交互。具体用法可以参考 __modal_example.js
-// 2. selector：当光标位于哪些位置时，此命令才可用（空串：任何位置都可用），在这里的含义就是：只当光标位于【正文标题】时可用
-// 3. hint：当鼠标移动到右键菜单时的提示
-// 4. init：在这里初始化你要的变量
-// 5. style：给 Typora 插入 style 标签。返回值为 string。若你想指定标签的 id，也可以返回 {textID: "", text: ""}。其中 textID 为此 style 标签的 id，text 为 style 内容。
-// 6. html：在这里为 Typora 插入 HTML 标签
-// 7. hotkey：为 callabck 注册快捷键
-// 8. process：在这里添加 listener 和修改 Typora 的第一方函数
-// 9. callback：右键菜单中点击/键入快捷键后的回调函数。anchorNode: 鼠标光标所在的 element
-// 10. export：导出名为 plugin
-```
-
-![custom](assets/custom.png)
-
----
-
-
-
-### mermaid_replace：替换 mermaid
-
-如果你像我一样，不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此插件。
-
-> NOTE：**此插件默认关闭，需手动开启。**
+具体使用请参考 `./plugin/custom/请读我.md`。
 
 
 
