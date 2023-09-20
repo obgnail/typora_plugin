@@ -14,6 +14,10 @@ class resizeImagePlugin extends global._basePlugin {
     process = () => {
         this.init();
 
+        if (this.config.RECORD_RESIZE) {
+            new resizeRecorder(this).process();
+        }
+
         document.getElementById("write").addEventListener("wheel", ev => {
             if (!this.utils.metaKeyPressed(ev)) return;
 
@@ -114,6 +118,45 @@ class resizeImagePlugin extends global._basePlugin {
         func && func();
     }
 }
+
+class resizeRecorder {
+    constructor(controller) {
+        this.utils = controller.utils;
+        this.records = {}
+    }
+
+    collect = () => {
+        const map = new Map();
+        document.querySelectorAll("#write img").forEach((img, idx) => {
+            const style = img.style.cssText;
+            style && map.set(idx, style);
+        })
+        if (map.size) {
+            const filepath = this.utils.getFilePath();
+            this.records[filepath] = map;
+        }
+    }
+
+    resizeImage = filepath => {
+        const resizeIdxMap = this.records[filepath];
+        if (!resizeIdxMap || resizeIdxMap.size === 0) return;
+
+        let targetIdx = 0
+        document.querySelectorAll("#write img").forEach((img, idx) => {
+            const style = resizeIdxMap.get(idx);
+            if (style) {
+                img.style = style;
+                targetIdx++;
+            }
+        })
+    }
+
+    process = () => {
+        this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.collect);
+        this.utils.addEventListener(this.utils.eventType.fileContentLoaded, this.resizeImage);
+    }
+}
+
 
 module.exports = {
     plugin: resizeImagePlugin
