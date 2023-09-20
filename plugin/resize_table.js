@@ -8,6 +8,7 @@ class resizeTablePlugin extends global._basePlugin {
     process = () => {
         if (this.config.RECORD_RESIZE) {
             this.utils.registerStateRecorder(
+                "recordResizeTable",
                 "#write th,td",
                 ele => ele.style.cssText,
                 (ele, state) => ele.style = state

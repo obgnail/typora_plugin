@@ -22,6 +22,7 @@ class collapseParagraphPlugin extends global._basePlugin {
 
         if (this.config.RECORD_COLLAPSE) {
             this.utils.registerStateRecorder(
+                "recordCollapseParagraph",
                 "#write h1,h2,h3,h4,h5,h6",
                 ele => ele.classList.contains(this.config.CLASS_NAME),
                 ele => this.trigger(ele, false),

@@ -17,30 +17,24 @@ class loadPluginHelper {
         this.utils = this.controller.utils;
     }
 
-    updateUserSetting = allPlugins => {
-        const toml = "./plugin/global/settings/custom_plugin.user.toml";
-        if (this.utils.existInPluginPath(toml)) {
-            const userSettings = this.utils.readToml(toml);
-            allPlugins = this.utils.merge(allPlugins, userSettings);
-        }
-        return allPlugins
-    }
-
-    insertStyle = (fixed_name, style) => {
+    insertStyle = (fixedName, style) => {
         if (!style) return;
 
         let textID = style["textID"];
         let text = style["text"];
         if (typeof style === "string") {
-            textID = `custom-plugin-${fixed_name.replace(/_/g, "-")}-style`;
+            textID = `custom-plugin-${fixedName.replace(/_/g, "-")}-style`;
             text = style;
         }
         this.utils.insertStyle(textID, text);
     }
 
     load() {
-        let allPlugins = this.utils.readToml("./plugin/global/settings/custom_plugin.default.toml");
-        allPlugins = this.updateUserSetting(allPlugins);
+        const allPlugins = this.utils.readSetting(
+            "./plugin/global/settings/custom_plugin.default.toml",
+            "./plugin/global/settings/custom_plugin.user.toml",
+        )
+
         for (const fixedName of Object.keys(allPlugins)) {
             const customSetting = allPlugins[fixedName];
 
