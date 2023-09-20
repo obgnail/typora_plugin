@@ -515,13 +515,12 @@ class _diagramParser {
 class DiagramParser {
     constructor() {
         this.utils = utils;
-        this.diagramParsers = {}; // {lang: _diagramParser}
+        this.diagramParsers = new Map(); // {lang: _diagramParser}
     }
 
     style = () => (!this.utils.isBetaVersion) ? "" : `.md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
 
     isDiagramType = lang => File.editor.diagrams.constructor.isDiagramType(lang)
-    isCustomDiagramType = lang => this.diagramParsers.hasOwnProperty(lang)
 
     throwParseError = (errorLine, reason) => {
         throw {errorLine, reason}
@@ -554,11 +553,10 @@ class DiagramParser {
     }
 
     noticeRollback = async cid => {
-        for (let lang of Object.keys(this.diagramParsers)) {
-            const cancel = this.diagramParsers[lang].cancelFunc;
-            if (cancel) {
+        for (const parser of this.diagramParsers.values()) {
+            if (parser.cancelFunc) {
                 try {
-                    await cancel(cid);
+                    await parser.cancelFunc(cid);
                 } catch (e) {
                     console.error("call cancel func error:", e);
                 }
@@ -569,7 +567,7 @@ class DiagramParser {
     cleanErrorMsg = ($pre, lang) => {
         $pre.find(".md-diagram-panel-header").html("");
         $pre.find(".md-diagram-panel-error").html("");
-        this.diagramParsers[lang].destroyWhenUpdate && $pre.find(".md-diagram-panel-preview").html("");
+        this.diagramParsers.get(lang).destroyWhenUpdate && $pre.find(".md-diagram-panel-preview").html("");
     }
 
     renderCustomDiagram = async (cid, lang, $pre) => {
@@ -587,7 +585,7 @@ class DiagramParser {
             }
         }
 
-        const render = this.diagramParsers[lang].renderFunc;
+        const render = this.diagramParsers.get(lang).renderFunc;
         if (!render) return;
         try {
             await render(cid, content, $pre);
@@ -610,10 +608,9 @@ class DiagramParser {
             // 是Diagram类型，但是不是自定义类型，不展示增强按钮，直接返回即可
             $pre.children(".fence-enhance").hide();
             // 是Diagram类型，也是自定义类型，调用其回调函数
-            if (this.isCustomDiagramType(lang)) {
-                if (this.diagramParsers[lang].interactiveMode) {
-                    $pre.addClass("md-fences-interactive");
-                }
+            const parser = this.diagramParsers.get(lang);
+            if (parser) {
+                parser.interactiveMode && $pre.addClass("md-fences-interactive");
                 await this.renderCustomDiagram(cid, lang, $pre);
             } else {
                 $pre.removeClass("md-fences-interactive");
@@ -628,7 +625,8 @@ class DiagramParser {
         interactiveMode = true,
     ) => {
         lang = lang.toLowerCase();
-        this.diagramParsers[lang] = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode);
+        const parser = new _diagramParser(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode)
+        this.diagramParsers.set(lang, parser);
         console.log(`register diagram parser: [ ${lang} ]`);
     }
 
@@ -657,14 +655,15 @@ class DiagramParser {
     onExportToHTML = () => {
         this.utils.decorateExportToHTML(async (...args) => {
             const extraCssList = [];
-            for (let lang of Object.keys(this.diagramParsers)) {
-                const getter = this.diagramParsers[lang].extraStyleGetter;
+
+            this.diagramParsers.forEach((lang, parser) => {
+                const getter = parser.extraStyleGetter;
                 const exist = document.querySelector(`#write .md-fences[lang="${lang}"]`);
                 if (getter && exist) {
                     const extraCss = getter();
                     extraCssList.push(extraCss);
                 }
-            }
+            });
             if (extraCssList.length) {
                 const base = ` .md-diagram-panel, svg {page-break-inside: avoid;} `;
                 args[0].extraCss = (args[0].extraCss || "") + base + extraCssList.join(" ");
@@ -686,9 +685,9 @@ class DiagramParser {
             const cid = ("string" == typeof args[0]) ? args[0] : args[0]["id"];
             if (cid) {
                 const lang = (File.editor.findElemById(cid).attr("lang") || "").trim().toLowerCase();
-                if (cid && lang && this.diagramParsers[lang] && this.diagramParsers[lang].interactiveMode) {
-                    return this.utils.stopCallError
-                }
+                if (!cid || !lang) return;
+                const parser = this.diagramParsers.get(lang);
+                if (parser && parser.interactiveMode) return this.utils.stopCallError
             }
         }
 
@@ -740,8 +739,8 @@ class DiagramParser {
             if (!this.utils.getGlobalSetting("CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE")) return;
 
             let hasInteractiveDiagram = false;
-            for (const lang of Object.keys(this.diagramParsers)) {
-                if (this.diagramParsers[lang].interactiveMode) {
+            for (const parser of this.diagramParsers.values()) {
+                if (parser.interactiveMode) {
                     hasInteractiveDiagram = true;
                     break
                 }
@@ -785,7 +784,7 @@ class DiagramParser {
                     lang = lang["name"];
                 }
                 if (type === "string") {
-                    return this.isCustomDiagramType(lang.toLowerCase());
+                    return this.diagramParsers.get(lang.toLowerCase());
                 }
                 return result
             },
@@ -794,6 +793,8 @@ class DiagramParser {
     }
 
     process = () => {
+        if (this.diagramParsers.size === 0) return;
+
         const css = this.style();
         css && this.utils.insertStyle("diagram-parser-style", css);
 
