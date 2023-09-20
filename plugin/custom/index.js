@@ -8,7 +8,7 @@ class CustomPlugin extends global._basePlugin {
     }
     hotkey = () => this.hotkeyHelper.hotkey()
     dynamicCallArgsGenerator = anchorNode => this.dynamicCallHelper.dynamicCallArgsGenerator(anchorNode)
-    call = name => this.dynamicCallHelper.call(name)
+    call = fixedName => this.dynamicCallHelper.call(fixedName)
 }
 
 class loadPluginHelper {
@@ -41,26 +41,25 @@ class loadPluginHelper {
     load() {
         let allPlugins = this.utils.readToml("./plugin/global/settings/custom_plugin.default.toml");
         allPlugins = this.updateUserSetting(allPlugins);
-        for (const fixed_name of Object.keys(allPlugins)) {
-            const custom = allPlugins[fixed_name];
-            custom.plugin = fixed_name;
+        for (const fixedName of Object.keys(allPlugins)) {
+            const customSetting = allPlugins[fixedName];
 
-            if (!custom.enable) continue
+            if (!customSetting.enable) continue
 
             try {
-                const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins/${custom.plugin}`);
+                const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins/${fixedName}`);
                 if (!plugin) continue;
 
-                const instance = new plugin(custom, this.controller);
+                const instance = new plugin(fixedName, customSetting, this.controller);
                 if (this.check(instance)) {
                     instance.init();
-                    this.insertStyle(fixed_name, instance.style());
+                    this.insertStyle(instance.fixedName, instance.style());
                     instance.html();
                     instance.process();
-                    this.controller.custom[instance.name] = instance;
-                    console.log(`custom plugin had been injected: [ ${plugin.name} ] `);
+                    this.controller.custom[instance.fixedName] = instance;
+                    console.log(`custom plugin had been injected: [ ${instance.fixedName} ] `);
                 } else {
-                    console.error("instance is not BaseCustomPlugin", plugin.name);
+                    console.error("instance is not BaseCustomPlugin", instance.fixedName);
                 }
             } catch (e) {
                 console.error("load custom plugin error:", e);
@@ -94,8 +93,8 @@ class dynamicCallHelper {
         this.dynamicUtil.target = anchorNode;
 
         const dynamicCallArgs = [];
-        for (const name of Object.keys(this.custom)) {
-            const plugin = this.custom[name];
+        for (const fixedName of Object.keys(this.custom)) {
+            const plugin = this.custom[fixedName];
             if (!plugin) continue;
 
             try {
@@ -103,32 +102,32 @@ class dynamicCallHelper {
                 const arg_disabled = selector && !anchorNode.closest(selector);
                 dynamicCallArgs.push({
                     arg_name: plugin.showName,
-                    arg_value: plugin.name,
+                    arg_value: plugin.fixedName,
                     arg_disabled: arg_disabled,
                     arg_hint: (arg_disabled) ? "光标于此位置不可用" : plugin.hint(),
                 })
             } catch (e) {
                 dynamicCallArgs.push({
                     arg_name: plugin.showName,
-                    arg_value: plugin.name,
+                    arg_value: plugin.fixedName,
                     arg_disabled: true,
                     arg_hint: "未知错误！请向开发者反馈"
                 })
-                console.error("plugin selector error:", name, e);
+                console.error("plugin selector error:", fixedName, e);
             }
         }
         return dynamicCallArgs;
     }
 
-    call = name => {
-        const plugin = this.custom[name];
+    call = fixedName => {
+        const plugin = this.custom[fixedName];
         if (plugin) {
             try {
                 const selector = plugin.selector();
                 const target = (selector) ? this.dynamicUtil.target.closest(selector) : this.dynamicUtil.target;
                 plugin.callback(target);
             } catch (e) {
-                console.error("plugin callback error", plugin.name, e);
+                console.error("plugin callback error", plugin.fixedName, e);
             }
         }
     }
@@ -141,8 +140,8 @@ class hotkeyHelper {
 
     hotkey = () => {
         const hotkeys = [];
-        for (const name of Object.keys(this.custom)) {
-            const plugin = this.custom[name];
+        for (const fixedName of Object.keys(this.custom)) {
+            const plugin = this.custom[fixedName];
             if (!plugin) continue;
 
             try {
@@ -160,7 +159,7 @@ class hotkeyHelper {
                     }
                 })
             } catch (e) {
-                console.error("register hotkey error:", name, e);
+                console.error("register hotkey error:", fixedName, e);
             }
         }
         return hotkeys
@@ -168,12 +167,11 @@ class hotkeyHelper {
 }
 
 class BaseCustomPlugin {
-    constructor(info, controller) {
-        this.info = info;
-        this.showName = info.name;
-        this.name = info.plugin;
-        this.fixedName = info.plugin;
-        this.config = info.config;
+    constructor(fixedName, setting, controller) {
+        this.fixedName = fixedName;
+        this.info = setting;
+        this.showName = setting.name;
+        this.config = setting.config;
         this.utils = controller.utils;
         this.controller = controller;
     }
