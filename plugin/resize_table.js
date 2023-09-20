@@ -6,6 +6,10 @@ class resizeTablePlugin extends global._basePlugin {
     }
 
     process = () => {
+        if (this.config.RECORD_RESIZE) {
+            new resizeRecorder(this).process();
+        }
+
         document.querySelector("#write").addEventListener("mousedown", ev => {
             if (!this.utils.metaKeyPressed(ev)) return;
             ev.stopPropagation();
@@ -134,6 +138,41 @@ class resizeTablePlugin extends global._basePlugin {
             }
         }
     }
+}
+
+class resizeRecorder {
+    constructor(controller) {
+        this.utils = controller.utils;
+        this.records = {}
+    }
+
+    collect = () => {
+        const map = new Map();
+        document.querySelectorAll("#write th,td").forEach((cell, idx) => {
+            const style = cell.style.cssText;
+            style && map.set(idx, style);
+        })
+        if (map.size) {
+            const filepath = this.utils.getFilePath();
+            this.records[filepath] = map;
+        }
+    }
+
+    resizeTable = filepath => {
+        const resizeIdxMap = this.records[filepath];
+        if (!resizeIdxMap || resizeIdxMap.size === 0) return;
+
+        let targetIdx = 0
+        document.querySelectorAll("#write th,td").forEach((img, idx) => {
+            const style = resizeIdxMap.get(idx);
+            if (style) {
+                img.style = style;
+                targetIdx++;
+            }
+        })
+    }
+
+    process = () => this.utils.registerStateRecorder(this.collect, this.resizeTable);
 }
 
 module.exports = {

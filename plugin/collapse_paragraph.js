@@ -226,10 +226,7 @@ class collapseRecorder {
         })
     }
 
-    process = () => {
-        this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.collect);
-        this.utils.addEventListener(this.utils.eventType.fileContentLoaded, this.collapseHeading);
-    }
+    process = () => this.utils.registerStateRecorder(this.collect, this.collapseHeading);
 }
 
 module.exports = {

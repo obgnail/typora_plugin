@@ -151,10 +151,7 @@ class resizeRecorder {
         })
     }
 
-    process = () => {
-        this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.collect);
-        this.utils.addEventListener(this.utils.eventType.fileContentLoaded, this.resizeImage);
-    }
+    process = () => this.utils.registerStateRecorder(this.collect, this.resizeImage);
 }
 
 

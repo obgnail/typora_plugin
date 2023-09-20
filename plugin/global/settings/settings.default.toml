@@ -591,6 +591,8 @@ CLICKABLE = false
 REMOVE_MIX_WIDTH = true
 # 单元格边线的拖拽范围
 THRESHOLD = 20
+# 是否记录表格放缩状态（直到关闭typora）
+RECORD_RESIZE = true
 
 
 ############### mermaid_replace ###############
