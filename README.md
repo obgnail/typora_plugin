@@ -57,11 +57,11 @@
 
    ![installer](assets/installer.png)
 
-5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【启用插件】栏目，说明一切顺利。
+5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【常用插件】栏目，说明一切顺利。
 
-> 一键更新插件（`启用插件 -> 自定义插件 -> 更新插件`）需要用到 `updater.exe`，请勿删除。如果您不信任此 exe 文件，请自行编译此目录下的 `updater.go` 文件。
+> 一键更新插件（`常用插件 -> 自定义插件 -> 更新插件`）需要用到 `updater.exe`，请勿删除。如果您不信任此 exe 文件，请自行编译此目录下的 `updater.go` 文件。
 
-> 本插件系统尊重用户的所有选择。任何插件、任何功能都是可以通过修改配置文件永久打开 / 关闭的。打开配置文件方式：`启用插件 -> 右键菜单 -> 打开插件配置文件` 。
+> 本插件系统尊重用户的所有选择。任何插件、任何功能都是可以通过修改配置文件永久打开 / 关闭的。打开配置文件方式：`非常用插件 -> 右键菜单 -> 打开插件配置文件` 。
 
 
 
@@ -142,7 +142,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ## 插件使用说明
 
-所有的插件都支持在正文区域 `鼠标右键-启用插件` 中直接调用。
+所有的插件都支持在正文区域的 `右键菜单` 中直接调用。
 
 > 注意：**不同光标位置调出来的菜单有所不同**。
 
@@ -236,7 +236,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 类似于 obsidian 的文件模板功能，根据模板快速创建文件。
 
-使用方式：右键菜单 -> 启用插件 -> 自定义插件 -> 文件模板。
+使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 文件模板。
 
 支持的模板变量：
 
@@ -261,7 +261,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### resource_operation：一键清除无用图片，生成报告
 
-使用方式：右键菜单 -> 启用插件 -> 自定义插件 -> 资源管理
+使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 资源管理
 
 > NOTE：由于删除文件是危险操作，默认只会生成报告，不会删除。如果需要删除文件，请手动修改 `custom_plugin.user.toml` 的 `operation`。
 
@@ -336,7 +336,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ### mindmap：  根据文档大纲一键生成思维导图
 
-使用方式：右键菜单 -> 启用插件 ->  思维导图
+使用方式：右键菜单 -> 常用插件 ->  思维导图
 
 ![mindmap](assets/mindmap.gif)
 
@@ -346,7 +346,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 使用方式：
 
-- 方式一：右键菜单 -> 启用插件 -> markmap
+- 方式一：右键菜单 -> 非常用插件 -> markmap
 - 方式二：直接点击右下角的 markmap 按钮
 
 ![markmap](assets/markmap.gif)
@@ -355,7 +355,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ### echarts：提供 echarts 支持
 
-使用方式：【右键菜单 -> 启用插件 -> 自定义插件 -> 插入 echarts】
+使用方式：【右键菜单 -> 常用插件 -> 自定义插件 -> 插入 echarts】
 
 ![echats](assets/echarts.png)
 
@@ -377,7 +377,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 开启后，只有当前聚焦的组件可见，其余模糊。可以用于防偷窥。
 
-使用方式：右键菜单 -> 启用插件 -> 模糊模式
+使用方式：右键菜单 -> 非常用插件 -> 模糊模式
 
 > 此插件只能高版本 Typora 使用，暂时没有兼容低版本。
 
@@ -408,7 +408,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ### outline：以表格、图片、代码块形式的大纲
 
-使用方式：右键菜单 -> 启用插件 ->  类别大纲
+使用方式：右键菜单 -> 常用插件 ->  类别大纲
 
 ![outline](assets/outline.gif)
 
@@ -441,7 +441,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 增强表格。提供搜索、过滤、分页、排序等功能。
 
-> 使用方式：将光标定位在表格 -> 右键菜单 -> 启用插件 ->  表格增强。
+> 使用方式：将光标定位在表格 -> 右键菜单 -> 非常用插件 ->  表格增强。
 
 ![datatables](assets/datatables.png)
 
@@ -489,7 +489,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 大文件在 Typora 的渲染性能很糟糕，用此插件暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。也可以用于防偷窥。
 
-使用方式：右键菜单 -> 启用插件 -> 文本截断。
+使用方式：右键菜单 -> 非常用插件 -> 文本截断。
 
 包含的功能如下：
 
@@ -505,7 +505,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ### plugin_updater：一键更新插件
 
-使用方式：右键菜单 -> 启用插件 -> 自定义插件 ->  更新插件。
+使用方式：右键菜单 -> 常用插件 -> 自定义插件 ->  更新插件。
 
 > 众所周知，有些用户并不能裸连 github 下载最新插件，故提供了设置代理功能（默认为系统代理）
 
@@ -513,11 +513,49 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ### right_click_menu：右键菜单统一管理插件
 
-目前所有插件都支持在右键菜单中直接调用。
+所有插件都支持在右键菜单中直接调用。鼠标党可以将右键菜单作为所有插件的主要调用方式。
 
-鼠标党可以将右键菜单作为所有插件的主要调用方式。
+从 Typora Plugin 1.4.7 版本开始，可以通过修改配置文件自定义右键菜单
 
-![right_click_menu1](assets/right_click_menu1.png)
+```toml
+#  每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
+#  NAME: 一级菜单的名称
+#  LIST: 二级菜单的插件列表（使用"---"代表在页面上插入一个divider，以作分隔）
+[[right_click_menu.MENUS]]
+NAME = "非常用插件"
+LIST = [
+    "blur",
+    "markmap",
+    "resize_image",
+    "datatables",
+    "go_top",
+    "auto_number",
+    "fence_enhance",
+    "truncate_text",
+    "export_enhance",
+    "resize_table",
+    "right_click_menu",
+    "---",
+    "file_counter",
+    "mermaid_replace",
+    "test",
+]
+[[right_click_menu.MENUS]]
+NAME = "常用插件"
+LIST = [
+    "window_tab",
+    "search_multi",
+    "multi_highlighter",
+    "outline",
+    "md_padding",
+    "read_only",
+    "---",
+    "commander",
+    "mindmap",
+    "collapse_paragraph",
+    "custom",
+]
+```
 
 
 

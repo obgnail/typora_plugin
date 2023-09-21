@@ -1140,13 +1140,13 @@ class hotkeyHub {
             && ev.key.toLowerCase() === key
     }
 
-    _register = (hotkey, call) => {
-        if (typeof hotkey === "string") {
-            hotkey = this.toHotkeyFunc(hotkey);
-            this.hotkeyMap.set(hotkey, {hotkey, call});
-        } else if (hotkey instanceof Array) {
-            for (const hk of hotkey) {
-                this._register(hk, call);
+    _register = (hk, call) => {
+        if (typeof hk === "string") {
+            const hotkey = this.toHotkeyFunc(hk);
+            this.hotkeyMap.set(hk, {hotkey, call});
+        } else if (hk instanceof Array) {
+            for (const _hk of hk) {
+                this._register(_hk, call);
             }
         }
     }

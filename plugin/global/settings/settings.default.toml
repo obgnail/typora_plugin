@@ -573,8 +573,47 @@ NAME = "右键菜单"
 CLICKABLE = true
 # 点击后是否隐藏菜单
 DO_NOT_HIDE = false
-# 内部使用
-NOT_AVAILABLE_VALUE = "__not_available__"
+# 对于【启用但是没有出现在下面MENUS选项】的插件，自动加入到最后一个MENUS
+# 若此选项置为false，且在MENUS中删去那些处于启用状态的插件，那么：那些插件依旧处于启用状态，但是就不能通过右键菜单调用了（当然，你可以为了排版美观而这么做）
+FIND_LOST_PLUGIN = true
+# 自定义右键菜单
+#  每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
+#  NAME: 一级菜单的名称
+#  LIST: 二级菜单的插件列表（使用"---"代表在页面上插入一个divider，以作分隔）
+[[right_click_menu.MENUS]]
+NAME = "非常用插件"
+LIST = [
+    "blur",
+    "markmap",
+    "resize_image",
+    "datatables",
+    "go_top",
+    "auto_number",
+    "fence_enhance",
+    "truncate_text",
+    "export_enhance",
+    "resize_table",
+    "right_click_menu",
+    "---",
+    "file_counter",
+    "mermaid_replace",
+    "test",
+]
+[[right_click_menu.MENUS]]
+NAME = "常用插件"
+LIST = [
+    "window_tab",
+    "search_multi",
+    "multi_highlighter",
+    "outline",
+    "md_padding",
+    "read_only",
+    "---",
+    "commander",
+    "mindmap",
+    "collapse_paragraph",
+    "custom",
+]
 
 
 ############### file_counter ###############
