@@ -1,17 +1,28 @@
 class rightClickMenuPlugin extends global._basePlugin {
+    init = () => {
+        this.notavailableValue = "__not_available__";
+        this.callArgs = [
+            {arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"},
+            {arg_name: "打开插件配置文件", arg_value: "open_setting_folder"},
+            {arg_name: "关于/帮助", arg_value: "about"},
+        ]
+    }
+
     process = () => {
+        this.init();
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, this.appendMenu);
     }
 
-    getPlugins = () => {
-        const enable = []
-        for (const fixedName in global._plugins) {
-            const plugin = global._plugins[fixedName];
-            enable.push(plugin);
-        }
-        const clickable = enable.filter(plugin => plugin.config.CLICKABLE === true);
-        const nonClickable = enable.filter(plugin => plugin.config.CLICKABLE === false);
-        return {clickable, nonClickable, enable}
+    appendMenu = () => {
+        setTimeout(() => {
+            // 一级菜单汇总所有插件
+            this.appendFirst();
+            // 二级菜单展示所有插件
+            this.appendSecond();
+            // 三级菜单展示插件的参数
+            this.appendThird();
+            this.listen();
+        }, 500)
     }
 
     appendFirst = () => {
@@ -21,35 +32,52 @@ class rightClickMenuPlugin extends global._basePlugin {
         line.setAttribute("data-group", "plugin");
         ul.appendChild(line);
 
-        const li = `
-            <li data-key="typora-plugin" data-group="enable-plugin" class="has-extra-menu">
+        const first = this.config.MENUS.map((menu, idx) => {
+            return `<li data-key="typora-plugin" class="has-extra-menu" idx="${idx}">
                 <a role="menuitem">
-                    <span data-localize="启用插件" data-lg="Menu">启用插件</span>
+                    <span data-localize="${menu.NAME}" data-lg="Menu">${menu.NAME}</span>
                     <i class="fa fa-caret-right"></i>
                 </a>
             </li>`
-        ul.insertAdjacentHTML('beforeend', li);
+        })
+        ul.insertAdjacentHTML('beforeend', first.join(""));
     }
 
-    appendSecond = (clickablePlugins, nonClickablePlugins) => {
-        const clickable = clickablePlugins.map(plugin => this.createSecondLi(plugin)).join("");
-        const nonClickable = nonClickablePlugins.map(plugin => this.createSecondLi(plugin)).join("");
-        const divider = `<li class="divider"></li>`
-        const secondUl = this.createUl();
-        secondUl.id = "plugin-menu";
-        secondUl.innerHTML = clickable + divider + nonClickable;
-        document.querySelector("content").appendChild(secondUl);
+    appendSecond = () => {
+        this.findLostPluginIfNeed();
+        this.config.MENUS.forEach((menu, idx) => {
+            const plugins = menu.LIST.map(item => {
+                if (item === "---") {
+                    return `<li class="divider"></li>`
+                }
+                const plugin = this.utils.getPlugin(item);
+                if (plugin) {
+                    return this.createSecondLi(plugin);
+                }
+                return ""
+            })
+            const secondUl = this.createUl();
+            secondUl.classList.add("plugin-menu-second");
+            secondUl.setAttribute("idx", idx);
+            secondUl.innerHTML = plugins.join("");
+            document.querySelector("content").appendChild(secondUl);
+        })
     }
 
-    appendThird = enablePlugins => {
-        enablePlugins.forEach(plugin => {
-            if (!plugin.callArgs && !plugin.dynamicCallArgsGenerator) return;
+    appendThird = () => {
+        this.config.MENUS.forEach((menu, idx) => {
+            menu.LIST.forEach(item => {
+                if (item === "---") return;
+                const plugin = this.utils.getPlugin(item);
+                if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return;
 
-            const thirdUl = this.createUl();
-            thirdUl.classList.add("plugin-menu-third");
-            thirdUl.setAttribute("fixed_name", plugin.fixedName);
-            thirdUl.innerHTML = plugin.callArgs ? plugin.callArgs.map(arg => this.createThirdLi(arg)).join("") : "";
-            document.querySelector("content").appendChild(thirdUl);
+                const thirdUl = this.createUl();
+                thirdUl.classList.add("plugin-menu-third");
+                thirdUl.setAttribute("idx", idx);
+                thirdUl.setAttribute("fixed_name", plugin.fixedName);
+                thirdUl.innerHTML = plugin.callArgs ? plugin.callArgs.map(arg => this.createThirdLi(arg)).join("") : "";
+                document.querySelector("content").appendChild(thirdUl);
+            })
         })
     }
 
@@ -79,14 +107,27 @@ class rightClickMenuPlugin extends global._basePlugin {
         return secondUl;
     }
 
-    show = (second, first) => {
-        const next = second.addClass("show");
+    findLostPluginIfNeed = () => {
+        if (!this.config.FIND_LOST_PLUGIN) return;
+
+        const allPlugins = new Map();
+        for (const fixedName of Object.keys(global._plugins)) {
+            allPlugins.set(fixedName, global._plugins[fixedName]);
+        }
+        this.config.MENUS.forEach(menu => menu.LIST.forEach(plugin => allPlugins.delete(plugin)));
+        for (const plugin of allPlugins.values()) {
+            this.config.MENUS[this.config.MENUS.length - 1].LIST.push(plugin.fixedName);
+        }
+    }
+
+    show = (after, before) => {
+        const next = after.addClass("show");
 
         const rect = next[0].getBoundingClientRect();
         const nextHeight = rect.height;
         const nextWidth = rect.width;
 
-        const {left, top, width, height} = first[0].getBoundingClientRect();
+        const {left, top, width, height} = before[0].getBoundingClientRect();
         let nextTop = top - height;
         let nextLeft = left + width + 6;
 
@@ -120,22 +161,9 @@ class rightClickMenuPlugin extends global._basePlugin {
     appendDummyThirdLi = menu => {
         this.appendThirdLi(menu, [{
             arg_name: "光标于此位置不可用",
-            arg_value: this.config.NOT_AVAILABLE_VALUE,
+            arg_value: this.notavailableValue,
             arg_disabled: true,
         }])
-    }
-
-    appendMenu = () => {
-        setTimeout(() => {
-            const {clickable, nonClickable, enable} = this.getPlugins();
-            // 一级菜单汇总所有插件
-            this.appendFirst();
-            // 二级菜单展示所有插件
-            this.appendSecond(clickable, nonClickable);
-            // 三级菜单展示插件的参数
-            this.appendThird(enable);
-            this.listen();
-        }, 500)
     }
 
     listen = () => {
@@ -143,19 +171,44 @@ class rightClickMenuPlugin extends global._basePlugin {
 
         // 展示二级菜单
         $("#context-menu").on("mouseenter", "[data-key]", function () {
-            const target = $(this);
-            if ("typora-plugin" === target.attr("data-key")) {
-                that.show($("#plugin-menu"), target);
-                target.addClass("active");
+            const first = $(this);
+            if ("typora-plugin" === first.attr("data-key")) {
+                const idx = this.getAttribute("idx");
+                if (document.querySelector(`.plugin-menu-second.show`)) {
+                    document.querySelectorAll(`.plugin-menu-third:not([idx="${idx}"])`).forEach(ele => ele.classList.remove("show"));
+                }
+                const otherSecond = document.querySelectorAll(`.plugin-menu-second:not([idx="${idx}"])`);
+                otherSecond.forEach(ele => ele.querySelectorAll(`.plugin-menu-item.active`).forEach(ele => ele.classList.remove("active")));
+                otherSecond.forEach(ele => ele.classList.remove("show"));
+                that.show($(`.plugin-menu-second[idx="${idx}"]`), first);
+                first.addClass("active");
             } else {
-                document.querySelector("#plugin-menu").classList.remove("show");
-                document.querySelector("[data-key='typora-plugin']").classList.remove("active");
+                document.querySelectorAll(".plugin-menu-second").forEach(ele => ele.classList.remove("show"));
+                document.querySelectorAll("[data-key='typora-plugin']").forEach(ele => ele.classList.remove("active"));
                 document.querySelectorAll(".plugin-menu-third").forEach(ele => ele.classList.remove("show"));
             }
         })
-
-        // 在二级菜单中调用插件
-        $("#plugin-menu").on("click", "[data-key]", function () {
+        // 展示三级菜单
+        $(".plugin-menu-second").on("mouseenter", "[data-key]", function () {
+            const second = $(this);
+            document.querySelectorAll(`.plugin-menu-third`).forEach(ele => ele.classList.remove("show"));
+            document.querySelectorAll(".plugin-dynamic-arg").forEach(ele => ele.parentElement.removeChild(ele));
+            const fixedName = second.attr("data-key");
+            const third = $(`.plugin-menu-third[fixed_name="${fixedName}"]`);
+            const dynamicCallArgs = that.generateDynamicCallArgs(fixedName);
+            if (dynamicCallArgs) {
+                that.appendThirdLi(third, dynamicCallArgs);
+            }
+            if (third.children().length === 0) {
+                that.appendDummyThirdLi(third);
+            }
+            if (second.find(`span[data-lg="Menu"]`).length) {
+                that.show(third, second);
+            } else {
+                document.querySelector(".plugin-menu-second .has-extra-menu").classList.remove("active");
+            }
+            // 在二级菜单中调用插件
+        }).on("click", "[data-key]", function () {
             const fixedName = this.getAttribute("data-key");
             const plugin = that.utils.getPlugin(fixedName);
             // 拥有三级菜单的，不允许点击二级菜单
@@ -168,25 +221,6 @@ class rightClickMenuPlugin extends global._basePlugin {
             if (!that.config.DO_NOT_HIDE) {
                 File.editor.contextMenu.hide();
             }
-            // 展示三级菜单
-        }).on("mouseenter", "[data-key]", function () {
-            const t = $(this);
-            document.querySelectorAll(".plugin-menu-third").forEach(ele => ele.classList.remove("show"));
-            document.querySelectorAll(".plugin-dynamic-arg").forEach(ele => ele.parentElement.removeChild(ele));
-            const fixedName = t.attr("data-key");
-            const menu = $(`.plugin-menu-third[fixed_name="${fixedName}"]`);
-            const dynamicCallArgs = that.generateDynamicCallArgs(fixedName);
-            if (dynamicCallArgs) {
-                that.appendThirdLi(menu, dynamicCallArgs);
-            }
-            if (menu.children().length === 0) {
-                that.appendDummyThirdLi(menu);
-            }
-            if (t.find(`span[data-lg="Menu"]`).length) {
-                that.show(menu, t);
-            } else {
-                document.querySelector("#plugin-menu .has-extra-menu").classList.remove("active");
-            }
         })
 
         // 在三级菜单中调用插件
@@ -197,7 +231,7 @@ class rightClickMenuPlugin extends global._basePlugin {
             const fixedName = this.parentElement.getAttribute("fixed_name");
             const argValue = this.getAttribute("arg_value");
             const plugin = that.utils.getPlugin(fixedName);
-            if (argValue !== that.config.NOT_AVAILABLE_VALUE && plugin && plugin.call) {
+            if (argValue !== that.notavailableValue && plugin && plugin.call) {
                 plugin.call(argValue);
             }
             if (!that.config.DO_NOT_HIDE) {
@@ -216,21 +250,6 @@ class rightClickMenuPlugin extends global._basePlugin {
             JSBridge.showInFinder(filepath);
         }
     }
-
-    callArgs = [
-        {
-            arg_name: "右键菜单点击后保持显示/隐藏",
-            arg_value: "do_not_hide"
-        },
-        {
-            arg_name: "打开插件配置文件",
-            arg_value: "open_setting_folder"
-        },
-        {
-            arg_name: "关于/帮助",
-            arg_value: "about"
-        },
-    ]
 }
 
 module.exports = {
