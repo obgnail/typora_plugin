@@ -47,21 +47,21 @@
 
 > 目前此方法仅限 windows 平台。
 
-1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码。
+1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压
 
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`）
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`）
 
-3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。（参考方法二的图片）
+3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下（参考方法二的图片）
 
-4. 进入文件夹 `A/plugin/updater/`，双击运行 `updater.exe`。如果看到下图，说明成功。
+4. 进入文件夹 `A/plugin/updater/`，双击运行 `updater.exe`。如果看到下图，说明成功
 
    ![installer](assets/installer.png)
 
-5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【常用插件】栏目，说明一切顺利。
-
-> 一键更新插件（`常用插件 -> 自定义插件 -> 更新插件`）需要用到 `updater.exe`，请勿删除。如果您不信任此 exe 文件，请自行编译此目录下的 `updater.go` 文件。
+5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【常用插件】栏目，说明一切顺利
 
 > 本插件系统尊重用户的所有选择。任何插件、任何功能都是可以通过修改配置文件永久打开 / 关闭的。打开配置文件方式：`非常用插件 -> 右键菜单 -> 打开插件配置文件` 。
+
+> 后续如何更新插件？答：`常用插件 -> 自定义插件 -> 更新插件`
 
 
 
@@ -71,8 +71,8 @@
 
 ## 如何使用：方法二（手动）
 
-1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码。
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A。（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`，推荐使用 everything 找一下）
+1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压。
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`，推荐使用 everything 找一下）
 3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
 4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
 6. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【启动插件】栏目，说明一切顺利。
