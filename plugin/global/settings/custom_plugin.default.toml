@@ -221,6 +221,11 @@ enable = true
 name = "升级插件"
 # 是否启用此自定义插件
 enable = true
+[pluginUpdater.config]
+# 打开Typora时自动静默升级（若为false，则start_update_interval配置失效）
+auto_update = true
+# 打开Typora多长时间后，开始执行升级流程（单位：ms）
+start_update_interval = 300000 # (1000 * 60 * 5)
 
 
 ############### openInTotalCommander ###############
