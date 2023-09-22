@@ -215,19 +215,6 @@ name = "快捷键中心"
 enable = true
 
 
-############### pluginUpdater ###############
-[pluginUpdater]
-# 右键菜单中展示的名称
-name = "升级插件"
-# 是否启用此自定义插件
-enable = true
-[pluginUpdater.config]
-# 打开Typora时自动静默升级（若为false，则start_update_interval配置失效）
-auto_update = true
-# 打开Typora多长时间后，开始执行升级流程（单位：ms）
-start_update_interval = 300000 # (1000 * 60 * 5)
-
-
 ############### openInTotalCommander ###############
 [openInTotalCommander]
 # 右键菜单中展示的名称
@@ -238,3 +225,24 @@ enable = false
 [openInTotalCommander.config]
 tc_path = "D:\\software\\TotalCMD_64bit_10.52\\TOTALCMD64.EXE"
 tc_args = '/O /T /P=L  /L="$f"'
+
+
+############### pluginUpdater ###############
+[pluginUpdater]
+# 右键菜单中展示的名称
+name = "升级插件"
+# 是否启用此自定义插件
+enable = true
+[pluginUpdater.config]
+# 升级时是否弹窗
+#   1.always: 总是弹出
+#   2.error: 只在异常时弹出
+#   3.silent: 总是静默
+#   4.echo: 立即回显
+exec_show = "echo"
+# 打开Typora时自动静默升级（若为false，则start_update_interval、auto_exec_show配置失效）
+auto_update = true
+# 打开Typora多长时间后，开始执行升级流程（单位：ms）
+start_update_interval = 300000 # (1000 * 60 * 5)
+# 自动升级时使用的回显方式
+auto_exec_show = "silent"
