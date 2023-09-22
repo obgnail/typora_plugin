@@ -301,18 +301,17 @@ class commanderPlugin extends global._basePlugin {
     /* exec为什么不使用shell options? 答：不能支持wsl
     *  exec为什么不使用env options?   答：为了兼容。cmd使用变量的方式为%VAR%，bash为$VAR。而且命令可能会跨越多层shell
     */
-    exec = (cmd, shell, resolve, reject, callback, hint) => {
+    exec = (cmd, shell, resolve, reject, callback, hint, options) => {
         resolve = resolve || console.log;
         reject = reject || console.error;
         const cb = (err, stdout, stderr) => callback && callback(err, stdout, stderr);
 
+        const defaultOptions = {encoding: 'utf8', cwd: this.getFolder()};
+        options = options || {};
         const {cmd_, shell_} = this.beforeExecute(cmd, shell, hint);
         this.utils.Package.ChildProcess.exec(
             `chcp 65001 | ${shell_} "${cmd_}"`,
-            {
-                encoding: 'utf8',
-                cwd: this.getFolder(),
-            },
+            {...defaultOptions, ...options},
             (err, stdout, stderr) => {
                 if (err || stderr.length) {
                     reject(err || stderr.toString());
@@ -324,49 +323,47 @@ class commanderPlugin extends global._basePlugin {
         )
     }
 
-    spawn = (cmd, shell, resolve, reject, callback, hint) => {
+    spawn = (cmd, shell, resolve, reject, callback, hint, options) => {
         resolve = resolve || console.log;
         reject = reject || console.error;
         const cb = code => callback && callback(code);
 
+        const defaultOptions = {encoding: 'utf8', cwd: this.getFolder(), shell: true};
+        options = options || {};
         const {cmd_, shell_} = this.beforeExecute(cmd, shell, hint || ""); // 执行前清空输出
         const child = this.utils.Package.ChildProcess.spawn(
             `chcp 65001 | ${shell_} "${cmd_}"`,
-            {
-                encoding: 'utf8',
-                cwd: this.getFolder(),
-                shell: true,
-            },
+            {...defaultOptions, ...options},
         );
         child.stdout.on('data', resolve);
         child.stderr.on("data", reject);
         child.on('close', cb);
     }
 
-    silentExec = (cmd, shell, callback, hint) => this.exec(cmd, shell, null, null, callback, hint);
-    errorExec = (cmd, shell, callback, hint) => this.exec(cmd, shell, null, this.showStdErr, callback, hint);
-    alwaysExec = (cmd, shell, callback, hint) => this.exec(cmd, shell, this.showStdout, this.showStdErr, callback, hint);
-    echoExec = (cmd, shell, callback, hint) => {
+    silentExec = (cmd, shell, callback, hint, options) => this.exec(cmd, shell, null, null, callback, hint, options);
+    errorExec = (cmd, shell, callback, hint, options) => this.exec(cmd, shell, null, this.showStdErr, callback, hint, options);
+    alwaysExec = (cmd, shell, callback, hint, options) => this.exec(cmd, shell, this.showStdout, this.showStdErr, callback, hint, options);
+    echoExec = (cmd, shell, callback, hint, options) => {
         const resolve = data => this.modal.pre.textContent += data.toString();
         const addErrorClass = this.utils.once(() => this.modal.pre.classList.add("error"));
         const reject = data => {
             this.modal.pre.textContent += data.toString();
             addErrorClass();
         }
-        this.spawn(cmd, shell, resolve, reject, callback, hint);
+        this.spawn(cmd, shell, resolve, reject, callback, hint, options);
     }
 
-    execute = (type, cmd, shell, callback, hint) => {
+    execute = (type, cmd, shell, callback, hint, options) => {
         switch (type) {
             case "always":
-                return this.alwaysExec(cmd, shell, callback, hint)
+                return this.alwaysExec(cmd, shell, callback, hint, options)
             case "error":
-                return this.errorExec(cmd, shell, callback, hint)
+                return this.errorExec(cmd, shell, callback, hint, options)
             case "silent":
-                return this.silentExec(cmd, shell, callback, hint)
+                return this.silentExec(cmd, shell, callback, hint, options)
             case "echo":
             default:
-                return this.echoExec(cmd, shell, callback, hint)
+                return this.echoExec(cmd, shell, callback, hint, options)
         }
     }
 

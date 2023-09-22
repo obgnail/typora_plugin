@@ -43,19 +43,20 @@ class pluginUpdater extends BaseCustomPlugin {
 
             this.modal(modal, components => {
                 const dir = this.utils.joinPath("./plugin/updater");
-                const updater = this.utils.joinPath("./plugin/updater/updater.exe");
                 const proxy = (components[1].submit || "").trim();
-                const cmd = `cd ${dir} && ${updater} --action=update --proxy=${proxy}`;
+                const cmd = `updater.exe --action=update --proxy=${proxy}`;
                 this.commanderPlugin.echoExec(cmd, "cmd/bash", code => {
-                    if (code === 0) {
-                        this.binFileUpdater.run();
-                    } else {
-                        this.modal(
-                            {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]},
-                            () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
-                        )
-                    }
-                }, "注意: 请勿通过手动执行updater.exe更新插件\n\n更新插件中，请稍等\n\n");
+                        if (code === 0) {
+                            this.binFileUpdater.run();
+                        } else {
+                            this.modal(
+                                {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]},
+                                () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
+                            )
+                        }
+                    }, "注意: 请勿通过手动执行updater.exe更新插件\n\n更新插件中，请稍等\n\n",
+                    {cwd: dir}
+                );
             })
         })
     }
