@@ -367,7 +367,8 @@ func (u *Updater) adjustFiles() (err error) {
 	for _, file := range u.dontNeedUpdate {
 		oldPath := filepath.Join(u.root, file)
 		newPath := filepath.Join(u.unzipDir, file)
-		if info, err = os.Stat(oldPath); (info == nil) || (err != nil && os.IsNotExist(err)) {
+		if info, err = os.Stat(oldPath); info == nil || err != nil && os.IsNotExist(err) {
+			err = nil
 			continue
 		}
 		if info.IsDir() {
@@ -493,15 +494,13 @@ func copyDir(src string, dst string) (err error) {
 	for _, fd := range fds {
 		srcFilePath := filepath.Join(src, fd.Name())
 		dstFilePath := filepath.Join(dst, fd.Name())
-
 		if fd.IsDir() {
-			if err = copyDir(srcFilePath, dstFilePath); err != nil {
-				return errors.Trace(err)
-			}
+			err = copyDir(srcFilePath, dstFilePath)
 		} else {
-			if err = copyFile(srcFilePath, dstFilePath); err != nil {
-				return errors.Trace(err)
-			}
+			err = copyFile(srcFilePath, dstFilePath)
+		}
+		if err != nil {
+			return errors.Trace(err)
 		}
 	}
 	return nil
@@ -560,7 +559,8 @@ func update(proxy string, timeout int) (err error) {
 		return errors.Trace(err)
 	}
 	if need := updater.needUpdate(); !need {
-		fmt.Println("dont need update. Current Plugin Version:", updater.newVersionInfo.TagName)
+		fmt.Println("\nIt is already the latest version. Do not need update.")
+		fmt.Println("Current Plugin Version:", updater.newVersionInfo.TagName)
 		return
 	}
 	if err = updater.downloadLatestVersion(); err != nil {
@@ -584,7 +584,8 @@ func update(proxy string, timeout int) (err error) {
 	if err = updater.deleteUselessAndSave(); err != nil {
 		return errors.Trace(err)
 	}
-	fmt.Println("Done! Current Plugin Version:", updater.newVersionInfo.TagName)
+	fmt.Println("\nUpgrade SUCCESS!")
+	fmt.Println("Current Plugin Version:", updater.newVersionInfo.TagName)
 	fmt.Println("Please restart Typora")
 	return nil
 }
