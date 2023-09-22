@@ -2,9 +2,7 @@
 # 2. 修改配置前，请读本目录下的【请读我.md】文件
 # 3. 标记为【内部使用】的配置请不要修改，除非你真的理解你在做什么，否则会导致插件不稳定
 # 4. 所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
-
-# 问：如何修改配置？
-# 答：将此文件的内容粘贴到 settings.user.toml 文件中，接着关闭此文件，根据说明文字修改 settings.user.toml 文件，最后重启 Typora。
+# 5. 如何修改配置？答：将此文件的内容粘贴到 settings.user.toml 文件中，接着关闭此文件，根据说明文字修改 settings.user.toml 文件，最后重启 Typora
 
 
 ############### global ###############
@@ -224,9 +222,9 @@ USE_BUILTIN = true
 #   3. hotkey: 快捷键调用命令行
 #   4. cmd:    执行的命令
 # cmd提供内置环境变量:
-#   1. $f 当前文件路径
-#   2. $d 当前文件所属目录
-#   3. $m 当前挂载目录（你在侧边栏看到的根目录）
+#   1. $f: 当前文件路径
+#   2. $d: 当前文件所属目录
+#   3. $m: 当前挂载目录（你在侧边栏看到的根目录）
 [[commander.BUILTIN]] # dummy
 name = ""
 shell = "cmd/bash"
@@ -259,7 +257,7 @@ NAME = "中英文混排优化"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 # 快捷键
-# 由于新版本 Typora 占用了 ctrl+shift+k 快捷键，所以 ctrl+shift+k 可能会失效
+# 由于新版本Typora占用了ctrl+shift+k快捷键，所以ctrl+shift+k可能会失效
 HOTKEY = ["ctrl+shift+k", "ctrl+shift+b"]
 
 
@@ -280,6 +278,7 @@ READ_ONLY_DEFAULT = false
 ############### blur ###############
 [blur]
 # 启用插件
+# 此插件暂时无法在低版本Typora使用
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "模糊模式"
@@ -399,7 +398,7 @@ USE_ANIMATION_WHEN_RESIZE = false
 
 # markmap共有两个功能:toc和fence，此为fence。若为false，以下配置全部失效
 ENABLE_FENCE_MARKMAP = true
-# 处于交互模式下，鼠标click图表并不会展开代码块
+# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 代码块默认高度
 DEFAULT_FENCE_HEIGHT = "300px"
@@ -481,19 +480,21 @@ CLICKABLE = true
 AUTO_HIDE = false
 # 启用复制代码功能
 ENABLE_COPY = true
-# 启用代码调整缩进功能(正式版才可使用)
+# 启用代码调整缩进功能(正式版Typora才可使用)
 ENABLE_INDENT = true
 # 启用折叠代码功能
 ENABLE_FOLD = true
-# 折叠形式：hidden/scroll
+# 折叠形式：
+#   1.hidden: 隐藏除第一行外的所有行
+#   2.scroll: 添加滚动条（但是可视高度只有一行，所以非常反人类）
 FOLD_OVERFLOW = "hidden"
-# 默认折叠
+# 所有代码块默认使用折叠
 FOLD_DEFAULT = false
 # 操作成功时，icon提示的保持时间（单位：ms）
 # 比如当你点击【复制代码】按钮后，icon会变成【✔】，并在保持一段时间后自动恢复。此选项就是设置这个保持时间
 WAIT_RECOVER_INTERVAL = 1000
 # 节流时间（单位：ms）
-# 300毫秒内多次点击【复制代码】按钮，只会执行一次（此选项其实没啥意义）
+# 300毫秒内多次点击【复制代码】按钮，只会执行一次（此选项其实没啥意义，添加此配置只是出于强迫症）
 CLICK_CHECK_INTERVAL = 300
 
 
@@ -550,7 +551,7 @@ NAME = "表格调整"
 CLICKABLE = true
 # 是否去除表格单元格最小宽度限制
 REMOVE_MIX_WIDTH = true
-# 单元格边线的拖拽范围
+# 单元格边线的拖拽范围（单位：px）
 THRESHOLD = 20
 # 是否记录表格放缩状态（直到关闭typora）
 RECORD_RESIZE = true
@@ -559,6 +560,7 @@ RECORD_RESIZE = true
 ############### custom ###############
 [custom]
 # 启用插件
+# 注意：若不启用此插件，那么所有自定义插件都会失效
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "自定义插件"
@@ -574,15 +576,17 @@ ENABLE = true
 NAME = "右键菜单"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 点击后是否隐藏菜单
+# 点击后是否隐藏菜单（此选项不必在此调整，可以在UI中设置）
 DO_NOT_HIDE = false
 # 对于【启用但是没有出现在下面MENUS选项】的插件，自动加入到最后一个MENUS
-# 不建议将此选项置为false，若置为false，且在MENUS中删去那些处于启用状态的插件，那么：那些插件依旧处于启用状态，但是就不能通过右键菜单调用了
+# 不建议将此选项置为false，若置为false，且在MENUS中删去那些处于启用状态的插件，那么：
+#   1. 那些插件依旧处于启用状态，但是就不能通过右键菜单调用了
+#   2. 如果插件系统后续新增了插件，那么你就根本无法意识到新增的插件的存在
 FIND_LOST_PLUGIN = true
 # 自定义右键菜单
 #  每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
 #  NAME: 一级菜单的名称
-#  LIST: 二级菜单的插件列表（使用"---"代表在页面上插入一个divider，以作分隔）
+#  LIST: 二级菜单的插件列表（"---"：代表在页面上插入一个divider，以作分隔）
 [[right_click_menu.MENUS]]
 NAME = "非常用插件"
 LIST = [

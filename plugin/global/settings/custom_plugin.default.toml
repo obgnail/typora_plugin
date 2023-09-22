@@ -1,9 +1,7 @@
 # 1. 如果您对 toml 格式不太了解，可以花三分钟时间学习一下：https://toml.io/cn/v1.0.0
 # 2. 修改配置前，请读本目录下的【请读我.md】文件
 # 3. 所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
-
-# 问：如何修改配置？
-# 答：将此文件的内容粘贴到 custom_plugin.user.toml 文件中，接着关闭此文件，根据说明文字修改 custom_plugin.user.toml 文件，最后重启 Typora。
+# 4. 如何修改配置？答：将此文件的内容粘贴到 custom_plugin.user.toml 文件中，接着关闭此文件，根据说明文字修改 custom_plugin.user.toml 文件，最后重启 Typora
 
 
 ############### kanban ###############
@@ -15,13 +13,13 @@ enable = true
 # 插件配置
 [kanban.config]
 # 严格模式，不会忽略存在语法错误的代码行，直接在页面上报错（此选项用于控制所有看板，如果设置为true，那么会强制所有看板进入严格模式）
-# 也可以在首行添加use strict，进入严格模式（此操作用于控制单个看板）
+# 也可以在代码块首行添加use strict，进入严格模式（此操作用于控制单个看板）
 STRICT_MODE = false
-# 处于交互模式下，鼠标click图表并不会展开代码块
+# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = false
 # 当描述为空时隐藏
 HIDE_DESC_WHEN_EMPTY = true
-# 看板最大高度（若<0，则全部显示）
+# 看板最大高度（单位：px）（若<0，则全部显示）
 KANBAN_MAX_HEIGHT = 700
 # 当鼠标位于看板时，ctrl+wheel滚动看板
 CTRL_WHEEL_TO_SCROLL = true
@@ -71,7 +69,7 @@ name = "插入echarts"
 enable = true
 # 插件配置
 [echarts.config]
-# 处于交互模式下，鼠标click图表并不会展开代码块
+# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 代码块默认高度
 DEFAULT_FENCE_HEIGHT = "300px"
@@ -83,8 +81,10 @@ TEMPLATE = """```echarts
 //   1. myChart: echarts实例
 //   2. echarts: echarts模块
 //   3. option:  echarts的option
+//   4. this:    echarts插件实例
 // 示例：https://echarts.apache.org/examples/zh/index.html#chart-type-line
-// 可以使用如下注释设置宽高（否则使用默认）：
+// 代码块里的所有内容都会被eval，请注意安全问题
+// 可以使用如下注释设置图表宽高（否则使用默认）：
 // {height: "300px", width: ""}
 
 option = {
@@ -211,6 +211,15 @@ auto_use_datetable = true
 # 右键菜单中展示的名称
 name = "快捷键中心"
 # 是否启用此自定义插件
+# 注意：若置为false，那么hoteykey.toml的配置将失效
+enable = true
+
+
+############### pluginUpdater ###############
+[pluginUpdater]
+# 右键菜单中展示的名称
+name = "升级插件"
+# 是否启用此自定义插件
 enable = true
 
 
@@ -224,11 +233,3 @@ enable = false
 [openInTotalCommander.config]
 tc_path = "D:\\software\\TotalCMD_64bit_10.52\\TOTALCMD64.EXE"
 tc_args = '/O /T /P=L  /L="$f"'
-
-
-############### pluginUpdater ###############
-[pluginUpdater]
-# 右键菜单中展示的名称
-name = "更新插件"
-# 是否启用此自定义插件
-enable = true
