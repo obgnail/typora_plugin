@@ -15,12 +15,19 @@ class utils {
 
     ////////////////////////////// 高级工具（全部支持动态注册、动态注销） //////////////////////////////
     // 动态注册、动态注销hotkey
-    // hotkeyList: [{ hotkey: "", callback: ()=>{} }]
+    // 注意: 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
+    //   hotkeyList: [
+    //     { hotkey: "ctrl+shift+c", callback: () => console.log("ctrl+shift+c pressed") },
+    //     { hotkey: "ctrl+shift+e", callback: () => console.log("ctrl+shift+e pressed") },
+    //   ]
+    //   hotkeyString(string): eg: "ctrl+shift+c"
     static registerHotkey = hotkeyList => global._hotkeyHub.register(hotkeyList);
     static registerSingleHotkey = (hotkeyString, callback) => global._hotkeyHub.registerSingle(hotkeyString, callback);
     static unregisterHotkey = hotkeyString => global._hotkeyHub.unregister(hotkeyString);
 
-    // 动态注册、动态注销、动态发布事件
+
+    // 动态注册、动态注销、动态发布生命周期事件
+    // 理论上不应该暴露publishEvent()的，但是我还是希望给予最大自由度，充分信任插件，允许所有插件调用发布事件。所以调用者需要自觉维护，一旦错误发布事件，会影响整个插件系统
     // 触发顺序：
     //   allCustomPluginsHadInjected: 自定义插件加载完毕
     //   allPluginsHadInjected: 所有插件加载完毕
@@ -45,19 +52,27 @@ class utils {
     }
     static addEventListener = (eventType, listener) => global._eventHub.addEventListener(eventType, listener);
     static removeEventListener = (eventType, listener) => global._eventHub.removeEventListener(eventType, listener);
-    static publishEvent = (eventType, payload) => global._eventHub.publishEvent(eventType, payload); // 充分信任插件，允许所有插件发布事件
+    static publishEvent = (eventType, payload) => global._eventHub.publishEvent(eventType, payload);
 
-    // 动态注册、动态注销状态记录器
+
+    // 动态注册、动态注销元素状态记录器（仅当window_tab插件启用时有效）
+    // 功能是：在用户切换标签页前记录元素的状态，等用户切换回来时恢复元素的状态
+    // 比如说：【章节折叠】功能：需要在用户切换标签页前记录有哪些章节被折叠了，等用户切换回来后需要把章节自动折叠回去，保持前后一致。
+    //   1. recorderName(string): 取个名字
+    //   2. selector(string): 通过选择器找到要你想记录状态的元素们
+    //   3. stateGetter(Element) => {...}: 记录目标元素的状态。Element就是selector找到的元素，返回你想记录的标签的状态，返回值可以是任何类型
+    //   4. stateRestorer(Element, state) => {}: 为元素恢复状态。state就是stateGetter的返回值
     static registerStateRecorder = (recorderName, selector, stateGetter, stateRestorer) => global._stateRecorder.register(recorderName, selector, stateGetter, stateRestorer);
     static unregisterStateRecorder = recorderName => global._stateRecorder.unregister(recorderName);
 
-    // 动态注册、动态注销新的代码块语法
+
+    // 动态注册、动态注销新的代码块图表语法
     //   1. lang(string): language
     //   2. destroyWhenUpdate(boolean): 更新前是否清空preview里的html
     //   3. async renderFunc(cid, content, $pre) => null: 渲染函数，根据内容渲染所需的图像
-    //        cid: 当前代码块的cid
-    //        content: 代码块的内容
-    //        $pre: 代码块的jquery element
+    //        1. cid: 当前代码块的cid
+    //        2. content: 代码块的内容
+    //        3. $pre: 代码块的jquery element
     //   4. async cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
     //   5. extraStyleGetter() => string: 用于导出时，新增css
     //   6. interactiveMode: 交互模式下，只有ctrl+click才能展开代码块
@@ -67,7 +82,37 @@ class utils {
     // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
 
+
+    // 动态注册、动态注销代码块增强按钮(仅当fence_enhance插件启用时有效，通过返回bool值确定是否成功)
+    // 需要注意的是：注册、注销只会影响新增的代码块，已经渲染到html的代码块不会改变，所以一般此函数的执行时机是在初始化的时候
+    //   action: 取个名字
+    //   className: button的className
+    //   hint: 提示
+    //   iconClassName: 通过className设置icon
+    //   enable: 是否使用
+    //   listener(ev, button)=>{}: 点击按钮的回调函数(ev: 时间，button: 按钮本身element)
+    //   extraFunc(button)=>{}: 插入html后的额外操作
+    static registerFenceEnhanceButton = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
+        const enhancePlugin = this.getPlugin("fence_enhance");
+        if (enhancePlugin) {
+            enhancePlugin.registerBuilder(className, action, hint, iconClassName, enable, listener, extraFunc);
+        }
+        return (!!enhancePlugin)
+    }
+    static unregisterFenceEnhanceButton = action => {
+        const enhancePlugin = this.getPlugin("fence_enhance");
+        if (enhancePlugin) {
+            enhancePlugin.removeBuilder(action);
+        }
+        return (!!enhancePlugin)
+    }
+
+
     // 动态弹出自定义模态框（及刻弹出，因此无需注册）
+    //   1. modal: { title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
+    //   2. callback(components) => {}: 当用户点击【确认】后的回调函数
+    //   3. onCancelCallback(components) => {}: 当用户点击【取消】后的回调函数
+    // 具体使用请参考__modal_example.js，不再赘述
     static modal = (modal, callback, cancelCallback) => global._modalGenerator.modal(modal, callback, cancelCallback);
 
 
@@ -172,6 +217,22 @@ class utils {
         return function () {
             clearTimeout(timeout);
             timeout = setTimeout(() => fn.apply(this, arguments), delay);
+        }
+    }
+
+    static debouncePromise = (fn, delay) => {
+        let timeout;
+        return function debounce() {
+            return new Promise((resolve, reject) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    try {
+                        resolve(fn.apply(this, arguments))
+                    } catch (e) {
+                        reject(e)
+                    }
+                }, delay);
+            })
         }
     }
 
@@ -773,15 +834,14 @@ class diagramParser {
             }
             if (!hasInteractiveDiagram) return;
 
-            const fenceEnhancePlugin = this.utils.getPlugin("fence_enhance");
-            if (!fenceEnhancePlugin) return;
-            fenceEnhancePlugin.registerBuilder(
+            const ok = this.utils.registerFenceEnhanceButton(
                 "edit-custom-diagram", "editDiagram", "编辑", "fa fa-edit", false,
                 (ev, button) => {
                     button.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
                     enableFocus();
                 }
             )
+            if (!ok) return;
 
             $("#write").on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
                 showEditButtonOnly(this);
@@ -1095,32 +1155,6 @@ class modalGenerator {
     }
 }
 
-class basePlugin {
-    constructor(fixedName, setting) {
-        this.fixedName = fixedName;
-        this.config = setting;
-        this.utils = utils
-    }
-
-    beforeProcess() {
-    }
-
-    style() {
-    }
-
-    html() {
-    }
-
-    hotkey() {
-    }
-
-    process() {
-    }
-
-    afterProcess() {
-    }
-}
-
 class hotkeyHub {
     constructor() {
         this.utils = utils;
@@ -1172,6 +1206,32 @@ class hotkeyHub {
                 }
             }
         }, true)
+    }
+}
+
+class basePlugin {
+    constructor(fixedName, setting) {
+        this.fixedName = fixedName;
+        this.config = setting;
+        this.utils = utils
+    }
+
+    beforeProcess() {
+    }
+
+    style() {
+    }
+
+    html() {
+    }
+
+    hotkey() {
+    }
+
+    process() {
+    }
+
+    afterProcess() {
     }
 }
 

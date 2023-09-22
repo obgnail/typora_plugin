@@ -24,11 +24,7 @@ class commanderPlugin extends global._basePlugin {
             color: var(--text-color);
             transform: translate3d(0, 0, 0)
         }
-        
-        .mac-seamless-mode #plugin-commander {
-            top: 30px
-        }
-        
+
         #plugin-commander-form {
             display: flex;
             align-items: center;

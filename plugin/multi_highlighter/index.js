@@ -45,10 +45,6 @@ class multiHighlighterPlugin extends global._basePlugin {
                 transform: translate3d(0, 0, 0)
             }
             
-            .mac-seamless-mode #plugin-multi-highlighter {
-                top: 30px
-            }
-            
             #plugin-multi-highlighter-input {
                 position: relative;
             }

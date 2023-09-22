@@ -25,10 +25,6 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             height: 16px;
         }
         
-        .mac-seamless-mode #plugin-search-multi {
-            top: 30px
-        }
-        
         #plugin-search-multi-input {
             position: relative;
         }
@@ -113,7 +109,6 @@ class searchMultiKeywordPlugin extends global._basePlugin {
         
         .plugin-search-multi-result {
             margin-top: 0;
-            cursor: default;
             max-height: 340px;
             overflow-x: hidden;
             overflow-y: auto;
