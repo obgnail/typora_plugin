@@ -286,10 +286,12 @@ NAME = "模糊模式"
 CLICKABLE = true
 # 默认使用模糊模式
 BLUR_DEFAULT = false
-# 模糊类型: blur/hide
-# blur：非聚焦组件变模糊
-# hide：非聚焦组件直接隐藏
+# 模糊类型: blur/hide（若为hide，则RESRTORE_WHEN_HOVER无效）
+#   blur：非聚焦组件变模糊
+#   hide：非聚焦组件直接隐藏
 BLUR_TYPE = "blur"
+# 鼠标悬停时可见
+RESRTORE_WHEN_HOVER = true
 # 模糊等级: 数值越大越模糊(BLUR_TYPE为hide时失效)
 BLUR_LEVEL = 10
 
