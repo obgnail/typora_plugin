@@ -10,15 +10,19 @@ class pluginUpdater extends BaseCustomPlugin {
     process = () => {
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
             this.commanderPlugin = this.utils.getPlugin("commander");
+
+            if (this.config.auto_update && this.commanderPlugin) {
+                setTimeout(async () => {
+                    console.log("start update...");
+                    const proxy = await this.getProxy();
+                    await this.update(proxy, "errorExec");
+                }, this.config.start_update_interval)
+            }
         })
     }
 
     callback = async anchorNode => {
-        let proxy = (await new ProxyGetter(this.utils).getProxy()) || "";
-        if (!proxy.startsWith("http://")) {
-            proxy = "http://" + proxy;
-        }
-
+        const proxy = await this.getProxy();
         const modal = {
             title: "设置代理",
             components: [
@@ -28,32 +32,39 @@ class pluginUpdater extends BaseCustomPlugin {
         }
 
         this.modal(modal, async components => {
-            await this.adjustFile();
-            const dir = this.utils.joinPath("./plugin/updater");
             const proxy = (components[1].submit || "").trim();
-            const cmd = `updater.exe --action=update --proxy=${proxy}`;
-            this.commanderPlugin.echoExec(
-                cmd,
-                "cmd/bash",
-                code => {
-                    this.adjustFile();
-                    if (code !== 0) {
-                        this.modal(
-                            {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]},
-                            () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
-                        )
-                    }
-                },
-                "升级中，请稍等\n\n",
-                {cwd: dir}
-            );
+            await this.update(proxy, "echoExec", "升级中，请稍等\n\n", code => {
+                this.adjustFile();
+                if (code !== 0) {
+                    this.modal(
+                        {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]},
+                        () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
+                    )
+                }
+            })
         })
+    }
+
+    getProxy = async () => {
+        let proxy = (await new ProxyGetter(this.utils).getProxy()) || "";
+        if (!proxy.startsWith("http://")) {
+            proxy = "http://" + proxy;
+        }
+        return proxy
     }
 
     // 保不齐有些用户就是不守规矩，升级前和升级后都执行一次
     adjustFile = async () => {
         await new binFileUpdater(this.utils).run();
         await new extraOperation(this.utils).run();
+    }
+
+    update = async (proxy, exec, hint, execCallback) => {
+        execCallback = execCallback || this.adjustFile;
+        await this.adjustFile();
+        const dir = this.utils.joinPath("./plugin/updater");
+        const cmd = `updater.exe --action=update --proxy=${proxy}`;
+        this.commanderPlugin[exec](cmd, "cmd/bash", execCallback, hint, {cwd: dir});
     }
 }
 
