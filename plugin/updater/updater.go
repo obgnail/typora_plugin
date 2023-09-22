@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/juju/errors"
 	"io"
 	"io/fs"
 	"io/ioutil"
@@ -28,7 +29,7 @@ func newInstaller() (*Installer, error) {
 	fmt.Println("[step 1] new installer")
 	curDir, err := os.Getwd()
 	if err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 	return &Installer{
 		root:          filepath.Dir(filepath.Dir(curDir)),
@@ -39,14 +40,20 @@ func newInstaller() (*Installer, error) {
 
 func (i *Installer) prepare() (err error) {
 	fmt.Println("[step 2] prepare")
-	return checkExist(i.root, i.insertFile)
+	if err = checkExist(i.root, i.insertFile); err != nil {
+		return errors.Trace(err)
+	}
+	return nil
 }
 
 func (i *Installer) backupFile() (err error) {
 	fmt.Println("[step 3] backup file")
 	filePath := filepath.Join(i.root, i.insertFile)
 	backupFilePath := filePath + ".bak"
-	return copyFile(filePath, backupFilePath)
+	if err = copyFile(filePath, backupFilePath); err != nil {
+		return errors.Trace(err)
+	}
+	return nil
 }
 
 func (i *Installer) run() (err error) {
@@ -54,7 +61,7 @@ func (i *Installer) run() (err error) {
 	filePath := filepath.Join(i.root, i.insertFile)
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	if bytes.Contains(file, []byte(i.insertContent)) {
 		fmt.Println("had installed")
@@ -76,7 +83,7 @@ func (i *Installer) run() (err error) {
 	result := bytes.Replace(file, []byte(match), []byte(match+i.insertContent), 1)
 	err = ioutil.WriteFile(filePath, result, 0644)
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	return nil
 }
@@ -101,21 +108,21 @@ type Updater struct {
 }
 
 func NewUpdater(proxy string, timeout int) (*Updater, error) {
-	fmt.Println("[step 1] new updater")
+	fmt.Println("[1/9] new updater")
 	curDir, err := os.Getwd()
 	if err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 
 	tempDir, err := ioutil.TempDir("", "unzip-")
 	if err != nil {
-		return nil, err
+		return nil, errors.Trace(err)
 	}
 
 	var uri *url.URL
 	if proxy != "" {
 		if uri, err = url.Parse(proxy); err != nil {
-			return nil, err
+			return nil, errors.Trace(err)
 		}
 	}
 
@@ -162,7 +169,7 @@ type VersionInfo struct {
 }
 
 func (u *Updater) needUpdate() bool {
-	fmt.Println("[step 2] check whether need update")
+	fmt.Println("[2/9] check whether need update")
 	var err error
 	if u.newVersionInfo, err = u.getLatestVersion(); err != nil {
 		fmt.Println("get latest version error:", err)
@@ -176,14 +183,17 @@ func (u *Updater) needUpdate() bool {
 
 func (u *Updater) getCurrentVersion() (versionInfo *VersionInfo, err error) {
 	if err = checkExist(u.versionFile, ""); err != nil {
+		err = errors.Trace(err)
 		return
 	}
 	fileContent, err := ioutil.ReadFile(u.versionFile)
 	if err != nil {
+		err = errors.Trace(err)
 		return
 	}
 	body := &VersionInfo{}
 	if err = json.Unmarshal(fileContent, body); err != nil {
+		err = errors.Trace(err)
 		return
 	}
 	return body, nil
@@ -193,6 +203,7 @@ func (u *Updater) getLatestVersion() (versionInfo *VersionInfo, err error) {
 	client := u.newHTTPClient()
 	resp, err := client.Get(u.url)
 	if err != nil {
+		err = errors.Trace(err)
 		return
 	}
 	defer resp.Body.Close()
@@ -204,11 +215,13 @@ func (u *Updater) getLatestVersion() (versionInfo *VersionInfo, err error) {
 
 	bodyContent, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		err = errors.Trace(err)
 		return
 	}
 
 	versionInfo = &VersionInfo{}
 	if err = json.Unmarshal(bodyContent, versionInfo); err != nil {
+		err = errors.Trace(err)
 		return
 	}
 	return
@@ -247,10 +260,11 @@ func (u *Updater) compareVersion(v1, v2 string) (result int) {
 }
 
 func (u *Updater) downloadLatestVersion() (err error) {
-	fmt.Println("[step 3] download latest version")
+	fmt.Println("[3/9] download latest version")
 	client := u.newHTTPClient()
 	resp, err := client.Get(u.newVersionInfo.ZipBallUrl)
 	if err != nil {
+		err = errors.Trace(err)
 		return
 	}
 	defer resp.Body.Close()
@@ -262,50 +276,55 @@ func (u *Updater) downloadLatestVersion() (err error) {
 
 	out, err := os.Create(u.downloadFile)
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	defer out.Close()
 
-	_, err = io.Copy(out, resp.Body)
+	if _, err = io.Copy(out, resp.Body); err != nil {
+		return errors.Trace(err)
+	}
 	return
 }
 
 func (u *Updater) unzip() (err error) {
-	fmt.Println("[step 4] unzip file")
+	fmt.Println("[4/9] unzip file")
 	extract := func(file *zip.File) error {
 		zippedFile, err := file.Open()
 		if err != nil {
-			return err
+			return errors.Trace(err)
 		}
 		defer zippedFile.Close()
 
 		extractedFilePath := filepath.Join(u.workDir, file.Name)
 		if file.FileInfo().IsDir() {
 			//fmt.Println("Creating directory:", extractedFilePath)
-			return os.MkdirAll(extractedFilePath, file.Mode())
+			if err = os.MkdirAll(extractedFilePath, file.Mode()); err != nil {
+				return errors.Trace(err)
+			}
+			return nil
 		}
 		//fmt.Println("Extracting file:", file.Name)
 		outputFile, err := os.OpenFile(extractedFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
 		if err != nil {
-			return err
+			return errors.Trace(err)
 		}
 		defer outputFile.Close()
 
 		if _, err = io.Copy(outputFile, zippedFile); err != nil {
-			return err
+			return errors.Trace(err)
 		}
 		return nil
 	}
 
 	zipReader, err := zip.OpenReader(u.downloadFile)
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	defer zipReader.Close()
 
 	for _, file := range zipReader.Reader.File {
 		if err = extract(file); err != nil {
-			return
+			return errors.Trace(err)
 		}
 	}
 	u.unzipDir = filepath.Join(u.workDir, zipReader.Reader.File[0].Name)
@@ -313,17 +332,17 @@ func (u *Updater) unzip() (err error) {
 }
 
 func (u *Updater) adjustFiles() (err error) {
-	fmt.Println("[step 5] adjust files")
+	fmt.Println("[5/9] adjust files")
 
 	var oldFds []fs.FileInfo
 	var newFds []fs.FileInfo
 	oldDir := filepath.Join(u.root, u.customPluginDir)
 	newDir := filepath.Join(u.unzipDir, u.customPluginDir)
 	if oldFds, err = ioutil.ReadDir(oldDir); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	if newFds, err = ioutil.ReadDir(newDir); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 
 	excludeFds := make(map[string]struct{})
@@ -345,33 +364,33 @@ func (u *Updater) adjustFiles() (err error) {
 	}
 
 	var info os.FileInfo
-	var Function func(string, string) error
 	for _, file := range u.dontNeedUpdate {
 		oldPath := filepath.Join(u.root, file)
 		newPath := filepath.Join(u.unzipDir, file)
 		if info, err = os.Stat(oldPath); info == nil || err != nil && os.IsNotExist(err) {
+			err = nil
 			continue
 		}
 		if info.IsDir() {
-			Function = copyDir
+			err = copyDir(oldPath, newPath)
 		} else {
-			Function = copyFile
+			err = copyFile(oldPath, newPath)
 		}
-		if err = Function(oldPath, newPath); err != nil {
-			return
+		if err != nil {
+			return errors.Trace(err)
 		}
 	}
 	return
 }
 
 func (u *Updater) adjustUpdaterExe() (err error) {
-	fmt.Println("[step 6] adjust updater.exe")
+	fmt.Println("[6/9] adjust updater.exe")
 	// ./plugin/updater/updater.exe -> ./plugin/updater/updater1.2.13.exe
 	// 为什么要遍历而不是直接修改：我怕以后可能会修改位置
 	pluginDir := filepath.Join(u.unzipDir, u.pluginDir)
 	err = filepath.Walk(pluginDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			return err
+			return errors.Trace(err)
 		}
 		if !info.IsDir() && info.Name() == "updater.exe" {
 			newFilePath := filepath.Join(filepath.Dir(path), fmt.Sprintf("updater%s.exe", u.newVersionInfo.TagName))
@@ -379,22 +398,25 @@ func (u *Updater) adjustUpdaterExe() (err error) {
 		}
 		return nil
 	})
-	return err
+	if err != nil {
+		return errors.Trace(err)
+	}
+	return nil
 }
 
 func (u *Updater) removeOldDir() error {
-	fmt.Println("[step 7] remove old dir")
+	fmt.Println("[7/9] remove old dir")
 	src := filepath.Join(u.root, u.pluginDir)
 	fds, err := ioutil.ReadDir(src)
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	for _, fd := range fds {
 		name := fd.Name()
 		if name != "updater" {
 			path := filepath.Join(src, name)
 			if err = os.RemoveAll(path); err != nil {
-				return err
+				return errors.Trace(err)
 			}
 		}
 	}
@@ -402,25 +424,30 @@ func (u *Updater) removeOldDir() error {
 }
 
 func (u *Updater) syncDir() (err error) {
-	fmt.Println("[step 8] sync dir")
+	fmt.Println("[8/9] sync dir")
 	src := filepath.Join(u.unzipDir, u.pluginDir)
 	dst := filepath.Join(u.root, u.pluginDir)
-	return copyDir(src, dst)
+	if err = copyDir(src, dst); err != nil {
+		return errors.Trace(err)
+	}
+	return nil
 }
 
 func (u *Updater) deleteUselessAndSave() (err error) {
-	fmt.Println("[step 9] delete useless file")
+	fmt.Println("[9/9] delete useless file")
 	if err = os.Remove(u.downloadFile); err != nil {
-		return
+		return errors.Trace(err)
 	}
 	if err = os.RemoveAll(u.workDir); err != nil {
-		return
+		return errors.Trace(err)
 	}
 	content, err := json.Marshal(u.newVersionInfo)
 	if err != nil {
-		return
+		return errors.Trace(err)
 	}
-	err = ioutil.WriteFile(u.versionFile, content, 0777)
+	if err = ioutil.WriteFile(u.versionFile, content, 0777); err != nil {
+		return errors.Trace(err)
+	}
 	return
 }
 
@@ -430,22 +457,25 @@ func copyFile(src, dst string) (err error) {
 	var srcInfo os.FileInfo
 
 	if srcFd, err = os.Open(src); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	defer srcFd.Close()
 
 	if dstFd, err = os.Create(dst); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	defer dstFd.Close()
 
 	if _, err = io.Copy(dstFd, srcFd); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	if srcInfo, err = os.Stat(src); err != nil {
-		return err
+		return errors.Trace(err)
 	}
-	return os.Chmod(dst, srcInfo.Mode())
+	if err = os.Chmod(dst, srcInfo.Mode()); err != nil {
+		return errors.Trace(err)
+	}
+	return nil
 }
 
 func copyDir(src string, dst string) (err error) {
@@ -453,26 +483,24 @@ func copyDir(src string, dst string) (err error) {
 	var srcInfo os.FileInfo
 
 	if srcInfo, err = os.Stat(src); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	if err = os.MkdirAll(dst, srcInfo.Mode()); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	if fds, err = ioutil.ReadDir(src); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	for _, fd := range fds {
 		srcFilePath := filepath.Join(src, fd.Name())
 		dstFilePath := filepath.Join(dst, fd.Name())
-
 		if fd.IsDir() {
-			if err = copyDir(srcFilePath, dstFilePath); err != nil {
-				return err
-			}
+			err = copyDir(srcFilePath, dstFilePath)
 		} else {
-			if err = copyFile(srcFilePath, dstFilePath); err != nil {
-				return err
-			}
+			err = copyFile(srcFilePath, dstFilePath)
+		}
+		if err != nil {
+			return errors.Trace(err)
 		}
 	}
 	return nil
@@ -486,7 +514,7 @@ func checkExist(root, sub string) error {
 	if !exist {
 		err = fmt.Errorf("%s is not exist", root)
 	}
-	return err
+	return errors.Trace(err)
 }
 
 func pathExists(path string) (bool, error) {
@@ -509,16 +537,16 @@ func wait() {
 func install() (err error) {
 	installer, err := newInstaller()
 	if err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	if err = installer.prepare(); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	if err = installer.backupFile(); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	if err = installer.run(); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	fmt.Println("Done")
 	wait()
@@ -528,54 +556,57 @@ func install() (err error) {
 func update(proxy string, timeout int) (err error) {
 	var updater *Updater
 	if updater, err = NewUpdater(proxy, timeout); err != nil {
-		return err
+		return errors.Trace(err)
 	}
 	if need := updater.needUpdate(); !need {
-		fmt.Println("dont need update. Current Plugin Version:", updater.newVersionInfo.TagName)
+		fmt.Println("\nIt is already the latest version. Do not need update.")
+		fmt.Println("Current Plugin Version:", updater.newVersionInfo.TagName)
 		return
 	}
 	if err = updater.downloadLatestVersion(); err != nil {
-		return
+		return errors.Trace(err)
 	}
 	if err = updater.unzip(); err != nil {
-		return
+		return errors.Trace(err)
 	}
 	if err = updater.adjustFiles(); err != nil {
-		return
+		return errors.Trace(err)
 	}
 	if err = updater.adjustUpdaterExe(); err != nil {
-		return
+		return errors.Trace(err)
 	}
 	if err = updater.removeOldDir(); err != nil {
-		return
+		return errors.Trace(err)
 	}
 	if err = updater.syncDir(); err != nil {
-		return
+		return errors.Trace(err)
 	}
 	if err = updater.deleteUselessAndSave(); err != nil {
-		return
+		return errors.Trace(err)
 	}
-	fmt.Println("Done! Current Plugin Version:", updater.newVersionInfo.TagName)
+	fmt.Println("\nUpgrade SUCCESS!")
+	fmt.Println("Current Plugin Version:", updater.newVersionInfo.TagName)
 	fmt.Println("Please restart Typora")
-	return
+	return nil
 }
 
 func main() {
 	var action string
 	var proxy string
 	var timeout int
+	var err error
 	flag.StringVar(&action, "action", "install", "install or update")
 	flag.StringVar(&proxy, "proxy", "", "proxy url. eg: http://127.0.0.1:7890")
 	flag.IntVar(&timeout, "timeout", 600, "client timeout")
 	flag.Parse()
 
 	if action == "update" {
-		if err := update(proxy, timeout); err != nil {
-			panic(err)
-		}
+		err = update(proxy, timeout)
 	} else if action == "install" {
-		if err := install(); err != nil {
-			panic(err)
-		}
+		err = install()
+	}
+	if err != nil {
+		fmt.Println()
+		panic(errors.ErrorStack(errors.Trace(err)))
 	}
 }
