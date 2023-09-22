@@ -15,7 +15,7 @@ class pluginUpdater extends BaseCustomPlugin {
                 setTimeout(async () => {
                     console.log("start update...");
                     const proxy = await this.getProxy();
-                    await this.update(proxy, "errorExec");
+                    await this.update(proxy, this.config.auto_exec_show);
                 }, this.config.start_update_interval)
             }
         })
@@ -33,7 +33,7 @@ class pluginUpdater extends BaseCustomPlugin {
 
         this.modal(modal, async components => {
             const proxy = (components[1].submit || "").trim();
-            await this.update(proxy, "echoExec", "升级中，请稍等\n\n", code => {
+            await this.update(proxy, this.config.exec_show, "升级中，请稍等\n\n", code => {
                 this.adjustFile();
                 if (code !== 0) {
                     this.modal(
@@ -59,12 +59,12 @@ class pluginUpdater extends BaseCustomPlugin {
         await new extraOperation(this.utils).run();
     }
 
-    update = async (proxy, exec, hint, execCallback) => {
-        execCallback = execCallback || this.adjustFile;
+    update = async (proxy, exec, hint, callback) => {
+        callback = callback || this.adjustFile;
         await this.adjustFile();
         const dir = this.utils.joinPath("./plugin/updater");
         const cmd = `updater.exe --action=update --proxy=${proxy}`;
-        this.commanderPlugin[exec](cmd, "cmd/bash", execCallback, hint, {cwd: dir});
+        this.commanderPlugin.execute(exec, cmd, "cmd/bash", callback, hint, {cwd: dir});
     }
 }
 
