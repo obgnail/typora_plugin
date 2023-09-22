@@ -6,10 +6,11 @@
 
 ### 基础插件
 
-以下插件可以使用 `this.utils.getPlugin(XXX)` 获取到插件示例，之后就可以调用其 API。
+本小节下的所有插件可以使用 `this.utils.getPlugin(XXX)` 获取到插件实例，之后就可以调用其 API。
 
 ```js
 // 以 window_tab 为例
+
 // 插件功能：总是切换到第一个标签
 class switchFirstTab extends BaseCustomPlugin {
     hint => "切换到第一个标签"
@@ -28,7 +29,7 @@ class switchFirstTab extends BaseCustomPlugin {
 
 ```js
 class windowTabBarPlugin extends global._basePlugin {
-    // 打开文件路径
+    // 打开文件路径（wantOpenPath：文件的绝对路径）
     openTab = wantOpenPath => {
         return null
     }
@@ -38,7 +39,7 @@ class windowTabBarPlugin extends global._basePlugin {
         return null
     }
 
-    // 根据文件路径切换tab
+    // 根据文件路径切换tab（path：文件的绝对路径）
     switchTabByPath = path => {
         return null
     }
@@ -64,16 +65,18 @@ class windowTabBarPlugin extends global._basePlugin {
     }
 
     // 新窗口打开
+    //  1. path：文件（夹）的绝对路径
+    //  2. isFolder: 是否是文件夹
     openFileNewWindow = (path, isFolder) => {
         return null
     }
 
-    // 新标签页打开
+    // 新标签页打开（filePath：文件的绝对路径）
     openFile = filePath => {
         return null
     }
 
-    // 当前标签页打开
+    // 当前标签页打开（filePath：文件的绝对路径）
     OpenFileLocal = filePath => {
         return null
     }
@@ -182,17 +185,23 @@ class commanderPlugin extends global._basePlugin {
     // 	always: 总是弹出
     // 	error: 只在异常时弹出
     // 	silent: 总是静默（可以在console中看到）
+    //  echo: 立刻回显
     // args:
     //   1. shell(string): 执行命令的shell：cmd/bash、powershell、gitbash、wsl
     //   2. cmd(string): 命令
     //   3. callback: 执行完命令的回调函数
-    silentExec = (cmd, shell, callback) => {
+    //   4. hint(string): 执行命令前添加提示信息
+    //   5. options(Object): childProcess.exec的option参数
+    silentExec = (cmd, shell, callback, hint, options) => {
         return null
     }
-    errorExec = (cmd, shell, callback) => {
+    errorExec = (cmd, shell, callback, hint, options) => {
         return null
     }
-    alwaysExec = (cmd, shell, callback) => {
+    alwaysExec = (cmd, shell, callback, hint, options) => {
+        return null
+    }
+    echoExec = (cmd, shell, callback, hint, options) => {
         return null
     }
 
@@ -319,7 +328,7 @@ class goTopPlugin extends global._basePlugin {
 ```js
 class mindmapPlugin extends global._basePlugin {
     // 生成页面的思维导图，并写入剪切板
-    // Type(string): set_clipboard_mindmap、set_clipboard_graph
+    // Type(string): set_clipboard_mindmap/set_clipboard_graph
     call = Type => {
         return null
     }
@@ -531,10 +540,11 @@ class fileCounterPlugin extends global._basePlugin {
 
 ### 自定义插件
 
-以下插件可以使用 `this.utils.getCustomPlugin(XXX)` 获取到插件示例，之后就可以调用其 API。
+本小节下的所有插件可以使用 `this.utils.getPlugin(XXX)` 获取到插件实例，之后就可以调用其 API。
 
 ```js
 // 以 pluginUpdater 为例
+
 // 插件功能：每次打开Typora，就自动更新所有插件。
 class autoUpdatePlugin extends BaseCustomPlugin {
     hint => "自动更新所有插件"
@@ -654,7 +664,7 @@ class openInTotalCommander extends BaseCustomPlugin {
 
 ```js
 class pluginUpdater extends BaseCustomPlugin {
-    // 更新插件
+    // 升级插件
     callback = () => {
         return nil
     }
