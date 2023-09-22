@@ -4,12 +4,7 @@ class pluginUpdater extends BaseCustomPlugin {
     hint = () => "当你发现BUG，可以尝试更新，说不定就解决了"
 
     init = () => {
-        this.proxyGetter = new ProxyGetter(this.utils);
-        this.binFileUpdater = new binFileUpdater(this.utils);
-
         this.updaterExeExist = this.utils.existInPluginPath("./plugin/updater/updater.exe");
-
-        new extraOperation(this.utils).run();
     }
 
     process = () => {
@@ -18,52 +13,53 @@ class pluginUpdater extends BaseCustomPlugin {
         })
     }
 
-    callback = anchorNode => {
-        this.proxyGetter.getProxy().then(proxy => {
-            proxy = proxy || "";
-            if (!proxy.startsWith("http://")) {
-                proxy = "http://" + proxy;
-            }
+    callback = async anchorNode => {
+        let proxy = (await new ProxyGetter(this.utils).getProxy()) || "";
+        if (!proxy.startsWith("http://")) {
+            proxy = "http://" + proxy;
+        }
 
-            const modal = {
-                title: "设置代理",
-                components: [
-                    {
-                        label: "默认使用当前系统代理。你可以手动修改：",
-                        type: "p",
-                    },
-                    {
-                        label: "代理（为空则不设置）",
-                        type: "input",
-                        value: proxy,
-                        placeholder: "http://127.0.0.1:7890",
+        const modal = {
+            title: "设置代理",
+            components: [
+                {label: "默认使用当前系统代理。你可以手动修改：", type: "p"},
+                {label: "代理（为空则不设置）", type: "input", value: proxy, placeholder: "http://127.0.0.1:7890"}
+            ]
+        }
+
+        this.modal(modal, async components => {
+            await this.adjustFile();
+            const dir = this.utils.joinPath("./plugin/updater");
+            const proxy = (components[1].submit || "").trim();
+            const cmd = `updater.exe --action=update --proxy=${proxy}`;
+            this.commanderPlugin.echoExec(
+                cmd,
+                "cmd/bash",
+                code => {
+                    this.adjustFile();
+                    if (code !== 0) {
+                        this.modal(
+                            {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]},
+                            () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
+                        )
                     }
-                ]
-            }
-
-            this.modal(modal, components => {
-                const dir = this.utils.joinPath("./plugin/updater");
-                const proxy = (components[1].submit || "").trim();
-                const cmd = `updater.exe --action=update --proxy=${proxy}`;
-                this.commanderPlugin.echoExec(cmd, "cmd/bash", code => {
-                        if (code === 0) {
-                            this.binFileUpdater.run();
-                        } else {
-                            this.modal(
-                                {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]},
-                                () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
-                            )
-                        }
-                    }, "注意: 请勿通过手动执行updater.exe升级插件\n\n升级插件中，请稍等\n\n",
-                    {cwd: dir}
-                );
-            })
+                },
+                "升级中，请稍等\n\n",
+                {cwd: dir}
+            );
         })
+    }
+
+    // 保不齐有些用户就是不守规矩，升级前和升级后都执行一次
+    adjustFile = async () => {
+        await new binFileUpdater(this.utils).run();
+        await new extraOperation(this.utils).run();
     }
 }
 
 // 处理每次升级后的额外操作
-// 理论上是不需要用到此工具的，但是由于之前的updater.exe有缺陷，遗留下一些问题，被迫用此工具处理存量的脏文件，过段时间会删除掉此helper
+// 理论上是不需要用到此工具的，但是由于之前的updater.exe有缺陷，遗留下一些问题，被迫用此工具处理存量的脏文件
+// 过段时间会删除掉此helper，不过保留也没啥问题，毕竟只在升级的时候执行
 class extraOperation {
     constructor(utils) {
         this.utils = utils
@@ -86,8 +82,7 @@ class extraOperation {
         this.utils.existPath(file) && this.utils.Package.FsExtra.remove(file);
     }
 
-    run = () => {
-        new binFileUpdater(this.utils).run();
+    run = async () => {
         this.updateTo1_3_5();
         this.updateTo1_3_10();
     }
@@ -98,34 +93,33 @@ class binFileUpdater {
         this.utils = utils
     }
 
-    run = () => {
-        const binFile = this.getBinFile();
-        if (!binFile) return
-
-        this.utils.Package.Fs.unlink(binFile.delete, err => {
-            if (err) throw err;
+    run = async () => {
+        const binFile = await this.getBinFile();
+        if (binFile) {
+            await this.utils.Package.Fs.promises.unlink(binFile.delete);
             const filepath = this.utils.Package.Path.join(this.utils.Package.Path.dirname(binFile.remain), "updater.exe");
-            this.utils.Package.Fs.rename(binFile.remain, filepath, err => {
-                if (err) throw err;
-            })
-        })
+            await this.utils.Package.Fs.promises.rename(binFile.remain, filepath);
+        }
     }
 
-    getBinFile = () => {
+    getBinFile = async () => {
         const fileList = []
         const regexp = new RegExp(/updater(?<version>\d+\.\d+\.\d+)?\.exe/);
         const dir = this.utils.joinPath("./plugin/updater");
-        this.utils.Package.Fs.readdirSync(dir).forEach(file => {
-            const m = file.match(regexp);
-            if (!m) return
-            const version = m.groups.version || "";
-            fileList.push({file, version})
-        });
+
+        const filenames = await this.utils.Package.Fs.promises.readdir(dir);
+        filenames.forEach(file => {
+            const result = file.match(regexp);
+            if (result) {
+                const version = result.groups.version || "";
+                fileList.push({file, version});
+            }
+        })
 
         if (fileList.length !== 2) return
 
         const compare = this.utils.compareVersion(fileList[0].version, fileList[1].version);
-        let deleteFile, remainFile
+        let deleteFile, remainFile;
         if (compare > 0) {
             deleteFile = fileList[1].file;
             remainFile = fileList[0].file;
