@@ -18,26 +18,27 @@
 | 8    | fence_enhance      | 一键复制代码，折叠代码               | √        |
 | 9    | commander          | 命令行环境                           | √        |
 | 10   | mindmap            | 根据文档大纲一键生成思维导图         | √        |
-| 11   | markmap            | 提供 markmap 支持                    | √        |
-| 12   | echarts            | 提供 echarts 支持                    | √        |
-| 13   | read_only          | 只读模式                             | √        |
-| 14   | blur               | 模糊模式                             | √        |
-| 15   | kanban             | 看板                                 | √        |
-| 16   | file_counter       | 显示目录下的文件数                   | √        |
-| 17   | outline            | 以表格、图片、代码块形式的大纲       | √        |
-| 18   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
-| 19   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
-| 20   | resize_table       | 调整表格行高列宽                     | √        |
-| 21   | resize_image       | 调整图片显示大小                     | √        |
-| 22   | export_enhance     | 导出 html 时避免图片丢失             | √        |
-| 23   | go_top             | 一键到文章顶部                       | √        |
-| 24   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
-| 25   | hotkey_hub         | 快捷键注册中心（高级）               | √        |
-| 26   | custom             | 用户自定义命令（高级）               | √        |
-| 27   | plugin_updater     | 一键升级插件                         | √        |
-| 28   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
-| 29   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
-| 30   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
+| 11   | toolbar            | 多功能搜索栏                         | √        |
+| 12   | markmap            | 提供 markmap 支持                    | √        |
+| 13   | echarts            | 提供 echarts 支持                    | √        |
+| 14   | read_only          | 只读模式                             | √        |
+| 15   | blur               | 模糊模式                             | √        |
+| 16   | kanban             | 看板                                 | √        |
+| 17   | file_counter       | 显示目录下的文件数                   | √        |
+| 18   | outline            | 以表格、图片、代码块形式的大纲       | √        |
+| 19   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
+| 20   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
+| 21   | resize_table       | 调整表格行高列宽                     | √        |
+| 22   | resize_image       | 调整图片显示大小                     | √        |
+| 23   | export_enhance     | 导出 html 时避免图片丢失             | √        |
+| 24   | go_top             | 一键到文章顶部                       | √        |
+| 25   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
+| 26   | hotkey_hub         | 快捷键注册中心（高级）               | √        |
+| 27   | custom             | 用户自定义命令（高级）               | √        |
+| 28   | plugin_updater     | 一键升级插件                         | √        |
+| 29   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
+| 30   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
+| 31   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -350,6 +351,25 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 - 方式二：直接点击右下角的 markmap 按钮
 
 ![markmap](assets/markmap.gif)
+
+
+
+### toolbar：多功能搜索栏
+
+使用方式：
+
+- 方式一：右键菜单 -> 非常用插件 -> 多功能搜索栏
+- 方式二：快捷键 `ctrl+j`
+
+当前支持搜索：
+
+- `his`：最新打开过的文件
+- `plu`：插件
+- `tab`：打开的标签页
+
+> 键入内容 = 搜索工具名称 + 空格 + 搜索内容
+
+![toolbar](assets/toolbar.gif)
 
 
 

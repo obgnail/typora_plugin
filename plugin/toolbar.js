@@ -198,20 +198,20 @@ class toolbarPlugin extends global._basePlugin {
     }
 }
 
-class baseTool {
+class baseToolInterface {
     name = () => {
     }
     init = () => {
     }
     // 要么返回 []string
-    // 要么返回 { showName:"", fixedName:"", mata:"" }
+    // 要么返回 [{ showName:"", fixedName:"", mata:"" }]
     search = async input => {
     }
     callback = (fixedName, meta) => {
     }
 }
 
-class tabTool extends baseTool {
+class tabTool extends baseToolInterface {
     name = () => "tab"
 
     init = () => {
@@ -232,7 +232,7 @@ class tabTool extends baseTool {
     callback = fixedName => this.windowTabBarPlugin.switchTabByPath(fixedName)
 }
 
-class pluginTool extends baseTool {
+class pluginTool extends baseToolInterface {
     name = () => "plu"
 
     collectAll = () => {
@@ -298,7 +298,7 @@ class pluginTool extends baseTool {
     }
 }
 
-class RecentFileTool extends baseTool {
+class RecentFileTool extends baseToolInterface {
     name = () => "his"
 
     getRecentFile = async () => {
@@ -308,7 +308,6 @@ class RecentFileTool extends baseTool {
         const fileJson = JSON.parse(file || "{}");
         const files = fileJson["files"] || [];
         const folders = fileJson["folders"] || [];
-
         const result = [];
         for (const file of files) {
             if (file["path"]) {

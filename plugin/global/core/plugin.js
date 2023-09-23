@@ -117,7 +117,7 @@ class utils {
     }
 
     // 动态注册barTool里的tool(仅当toolbar插件启用时有效，通过返回bool值确定是否成功)
-    // tool: baseTool的子类
+    // tool: baseToolInterface的子类
     static registerBarTool = tool => {
         const toolbarPlugin = this.getPlugin("toolbar");
         if (toolbarPlugin) {
