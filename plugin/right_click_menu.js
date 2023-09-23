@@ -142,17 +142,6 @@ class rightClickMenuPlugin extends global._basePlugin {
         return false;
     }
 
-    generateDynamicCallArgs = fixedName => {
-        if (!fixedName) return;
-        const plugin = this.utils.getPlugin(fixedName);
-        if (plugin && plugin.dynamicCallArgsGenerator) {
-            const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
-            if (anchorNode[0]) {
-                return plugin.dynamicCallArgsGenerator(anchorNode[0]);
-            }
-        }
-    }
-
     appendThirdLi = (menu, dynamicCallArgs) => {
         const args = dynamicCallArgs.map(arg => this.createThirdLi(arg, true)).join("");
         menu.append(args);
@@ -195,7 +184,7 @@ class rightClickMenuPlugin extends global._basePlugin {
             document.querySelectorAll(".plugin-dynamic-arg").forEach(ele => ele.parentElement.removeChild(ele));
             const fixedName = second.attr("data-key");
             const third = $(`.plugin-menu-third[fixed_name="${fixedName}"]`);
-            const dynamicCallArgs = that.generateDynamicCallArgs(fixedName);
+            const dynamicCallArgs = that.utils.generateDynamicCallArgs(fixedName);
             if (dynamicCallArgs) {
                 that.appendThirdLi(third, dynamicCallArgs);
             }

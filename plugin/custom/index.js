@@ -145,7 +145,7 @@ class hotkeyHelper {
                 hotkeys.push({
                     hotkey,
                     callback: function () {
-                        const $anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
+                        const $anchorNode = this.utils.getAnchorNode();
                         const anchorNode = $anchorNode && $anchorNode[0];
                         const selector = plugin.selector();
                         const target = (selector && anchorNode) ? anchorNode.closest(selector) : anchorNode;
