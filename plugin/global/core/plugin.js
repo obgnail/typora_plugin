@@ -158,6 +158,7 @@ class utils {
             File.editor.library.openFileInNewWindow(filepath, false);
         }
     }
+    static openFolder = folder => File.editor.library.openFileInNewWindow(folder, true);
     static showHiddenElementByPlugin = target => {
         if (!target) return;
         const collapsePlugin = this.getPlugin("collapse_paragraph");

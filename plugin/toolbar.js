@@ -66,7 +66,8 @@ class toolbarPlugin extends global._basePlugin {
         const inner = `
         <div id="plugin-toolbar-input">
             <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
-                autocapitalize="off" value="" placeholder="toolbar" data-lg="Front">
+                autocapitalize="off" value="" placeholder="plu 多关键字高亮" data-lg="Front"
+                title="支持查询：\nplu：插件\ntab：标签页\nhis：最近文件">
         </div>
         <div class="plugin-toolbar-result"></div>
         `
@@ -138,6 +139,7 @@ class toolbarPlugin extends global._basePlugin {
         this.toolController = new toolController(this);
         this.registerBarTool(new tabTool());
         this.registerBarTool(new pluginTool());
+        this.registerBarTool(new RecentFileTool());
     }
 
     registerBarTool = tool => this.toolController.register(tool);
@@ -196,7 +198,7 @@ class baseTool {
     }
     // 要么返回 []string
     // 要么返回 { showName:"", fixedName:"", mata:"" }
-    search = input => {
+    search = async input => {
     }
     callback = (fixedName, meta) => {
     }
@@ -208,7 +210,7 @@ class tabTool extends baseTool {
     init = () => {
         this.windowTabBarPlugin = this.utils.getPlugin("window_tab");
     }
-    search = input => {
+    search = async input => {
         if (!this.windowTabBarPlugin) return;
         const result = [];
         for (const tab of this.windowTabBarPlugin.tabUtil.tabs) {
@@ -225,7 +227,7 @@ class tabTool extends baseTool {
 class pluginTool extends baseTool {
     name = () => "plu"
 
-    search = input => {
+    search = async input => {
         const pluginsList = [];
         for (const fixedName of Object.keys(global._plugins)) {
             const plugin = global._plugins[fixedName];
@@ -282,6 +284,54 @@ class pluginTool extends baseTool {
     }
 }
 
+class RecentFileTool extends baseTool {
+    name = () => "his"
+
+    getRecentFile = async () => {
+        if (!File.isNode) return;
+
+        const file = await JSBridge.invoke("setting.getRecentFiles");
+        const fileJson = JSON.parse(file || "{}");
+        const files = fileJson["files"] || [];
+        const folders = fileJson["folders"] || [];
+
+        const result = [];
+        for (const file of files) {
+            if (file["path"]) {
+                result.push({showName: file.path, fixedName: file.path, meta: "file"});
+            }
+        }
+        for (const folder of folders) {
+            if (folder["path"]) {
+                result.push({showName: folder.path, fixedName: folder.path, meta: "folder"});
+            }
+        }
+        return result
+    }
+
+    search = async input => {
+        const result = await this.getRecentFile();
+        if (!input || !result || result.length === 0) return result;
+
+        const newResult = [];
+        for (const file of result) {
+            if (file.fixedName.indexOf(input) !== -1) {
+                newResult.push(file);
+            }
+        }
+        return newResult
+    }
+
+    callback = (fixedName, meta) => {
+        if (meta === "file") {
+            this.utils.openFile(fixedName);
+        } else if (meta === "folder") {
+            this.utils.openFolder(fixedName);
+        }
+    }
+}
+
+
 class toolController {
     constructor(plugin) {
         this.plugin = plugin;
@@ -310,11 +360,11 @@ class toolController {
 
     setAnchorNode = () => this.anchorNode = this.utils.getAnchorNode();
 
-    handleInput = inputElement => {
+    handleInput = async inputElement => {
         const raw = inputElement.value;
         let {tool, input} = this.dispatch(raw);
         if (tool) {
-            const matches = tool.search(input);
+            const matches = await tool.search(input);
             if (matches && matches.length) {
                 return {tool, input, matches}
             }
