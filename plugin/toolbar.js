@@ -3,12 +3,7 @@ class toolbarPlugin extends global._basePlugin {
         this.registerDefaultTool();
     }
 
-    hotkey = () => {
-        return [{
-            hotkey: this.config.HOTKEY,
-            callback: this.call,
-        }]
-    }
+    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     style = () => {
         return `
@@ -137,16 +132,9 @@ class toolbarPlugin extends global._basePlugin {
 
     registerDefaultTool = () => {
         this.toolController = new toolController(this);
-        const support = [
-            new tabTool(),
-            new pluginTool(),
-            new RecentFileTool()
-        ];
-        for (const tool of support) {
-            if (this.config.SUPPORT_TOOL.indexOf(tool.name()) !== -1) {
-                this.registerBarTool(tool);
-            }
-        }
+        this.registerBarTool(new tabTool());
+        this.registerBarTool(new pluginTool());
+        this.registerBarTool(new RecentFileTool());
     }
 
     registerBarTool = tool => this.toolController.register(tool);

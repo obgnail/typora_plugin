@@ -99,8 +99,7 @@ class datatablesPlugin extends global._basePlugin {
                 if (idx !== -1) {
                     return this.utils.stopCallError
                 }
-            },
-            null
+            }
         )
     }
 

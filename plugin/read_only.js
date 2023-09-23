@@ -1,12 +1,7 @@
 class readOnlyPlugin extends global._basePlugin {
     style = () => `#footer-word-count-label::before {content: attr(data-value) !important}`
 
-    hotkey = () => {
-        return [{
-            hotkey: this.config.HOTKEY,
-            callback: this.call,
-        }]
-    }
+    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     process = () => {
         const that = this;

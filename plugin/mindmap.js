@@ -3,14 +3,8 @@ class mindmapPlugin extends global._basePlugin {
         this.dynamicUtil = {target: null};
         this.paragraphList = ["H0", "H1", "H2", "H3", "H4", "H5", "H6"];
         this.callArgs = [
-            {
-                arg_name: "复制到剪切板：mindmap",
-                arg_value: "set_clipboard_mindmap"
-            },
-            {
-                arg_name: "复制到剪切板：graph",
-                arg_value: "set_clipboard_graph"
-            },
+            {arg_name: "复制到剪切板：mindmap", arg_value: "set_clipboard_mindmap"},
+            {arg_name: "复制到剪切板：graph", arg_value: "set_clipboard_graph"},
         ];
     }
 
@@ -91,16 +85,8 @@ class mindmapPlugin extends global._basePlugin {
         const disabled = !this.dynamicUtil.target || this.dynamicUtil.target.querySelector("p > span");
 
         return [
-            {
-                arg_name: "在此处插入：mindmap",
-                arg_value: "insert_mindmap",
-                arg_disabled: disabled,
-            },
-            {
-                arg_name: "在此处插入：graph",
-                arg_value: "insert_graph",
-                arg_disabled: disabled,
-            },
+            {arg_name: "在此处插入：mindmap", arg_value: "insert_mindmap", arg_disabled: disabled},
+            {arg_name: "在此处插入：graph", arg_value: "insert_graph", arg_disabled: disabled},
         ]
     }
 

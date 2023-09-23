@@ -17,13 +17,7 @@ class fileCounterPlugin extends global._basePlugin {
             }`;
     }
 
-    init = () => {
-        this.Package = this.utils.Package;
-    }
-
     process = () => {
-        this.init();
-
         this.utils.loopDetector(this.setAllDirCount, null, this.config.LOOP_DETECT_INTERVAL);
 
         new MutationObserver(mutationList => {
@@ -50,7 +44,7 @@ class fileCounterPlugin extends global._basePlugin {
         if (filename[0] === ".") {
             return false
         }
-        const ext = this.Package.Path.extname(filename).replace(/^\./, '');
+        const ext = this.utils.Package.Path.extname(filename).replace(/^\./, '');
         if (~this.config.ALLOW_EXT.indexOf(ext.toLowerCase())) {
             return true
         }
@@ -60,7 +54,7 @@ class fileCounterPlugin extends global._basePlugin {
     allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
 
     countFiles = (dir, filter, then) => {
-        const Package = this.Package;
+        const Package = this.utils.Package;
         let fileCount = 0;
 
         async function traverse(dir) {
