@@ -280,11 +280,16 @@ READ_ONLY_DEFAULT = false
 # 启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
-NAME = "多功能工具栏"
+NAME = "多功能搜索栏"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+j"
+# 你希望toolbar支持搜索的内容
+#   1. his: 最近打开过的文件
+#   2. plu: 插件
+#   3. tab: 标签页
+SUPPORT_TOOL = ["his", "plu", "tab"]
 # 用户输入的防抖时间（单位：ms）（用户输入完200ms后才执行）
 DEBOUNCE_INTERVAL = 200
 # toolbar的在页面的20%位置出现

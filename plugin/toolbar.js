@@ -137,9 +137,16 @@ class toolbarPlugin extends global._basePlugin {
 
     registerDefaultTool = () => {
         this.toolController = new toolController(this);
-        this.registerBarTool(new tabTool());
-        this.registerBarTool(new pluginTool());
-        this.registerBarTool(new RecentFileTool());
+        const support = [
+            new tabTool(),
+            new pluginTool(),
+            new RecentFileTool()
+        ];
+        for (const tool of support) {
+            if (this.config.SUPPORT_TOOL.indexOf(tool.name()) !== -1) {
+                this.registerBarTool(tool);
+            }
+        }
     }
 
     registerBarTool = tool => this.toolController.register(tool);
@@ -211,6 +218,7 @@ class tabTool extends baseTool {
         this.windowTabBarPlugin = this.utils.getPlugin("window_tab");
     }
     search = async input => {
+        input = input.toLowerCase();
         if (!this.windowTabBarPlugin) return;
         const result = [];
         for (const tab of this.windowTabBarPlugin.tabUtil.tabs) {
@@ -227,32 +235,30 @@ class tabTool extends baseTool {
 class pluginTool extends baseTool {
     name = () => "plu"
 
-    search = async input => {
+    collectAll = () => {
         const pluginsList = [];
         for (const fixedName of Object.keys(global._plugins)) {
             const plugin = global._plugins[fixedName];
             const chineseName = plugin.config.NAME;
-            if (input === "" || fixedName.toLowerCase().indexOf(input) !== -1 || chineseName.toLowerCase().indexOf(input) !== -1) {
+            const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode);
 
-                const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode);
-                if ((!dynamicCallArgs || dynamicCallArgs.length === 0) && (!plugin.callArgs || plugin.callArgs === 0)) {
-                    pluginsList.push({showName: chineseName, fixedName: fixedName});
-                    continue
+            if ((!dynamicCallArgs || dynamicCallArgs.length === 0) && (!plugin.callArgs || plugin.callArgs === 0)) {
+                pluginsList.push({showName: chineseName, fixedName: fixedName});
+                continue
+            }
+
+            if (plugin.callArgs) {
+                for (const arg of plugin.callArgs) {
+                    const show = chineseName + " - " + arg.arg_name;
+                    pluginsList.push({showName: show, fixedName: fixedName, meta: arg.arg_value});
                 }
+            }
 
-                if (plugin.callArgs) {
-                    for (const arg of plugin.callArgs) {
+            if (dynamicCallArgs) {
+                for (const arg of dynamicCallArgs) {
+                    if (!arg["arg_disabled"]) {
                         const show = chineseName + " - " + arg.arg_name;
                         pluginsList.push({showName: show, fixedName: fixedName, meta: arg.arg_value});
-                    }
-                }
-
-                if (dynamicCallArgs) {
-                    for (const arg of dynamicCallArgs) {
-                        if (!arg["arg_disabled"]) {
-                            const show = chineseName + " - " + arg.arg_name;
-                            pluginsList.push({showName: show, fixedName: fixedName, meta: arg.arg_value});
-                        }
                     }
                 }
             }
@@ -262,13 +268,21 @@ class pluginTool extends baseTool {
         if (custom && custom["custom"]) {
             for (const fixedName of Object.keys(custom["custom"])) {
                 const chineseName = this.utils.getCustomPlugin(fixedName).showName;
-                if (input === "" || fixedName.toLowerCase().indexOf(input) !== -1 || chineseName.toLowerCase().indexOf(input) !== -1) {
-                    pluginsList.push({showName: chineseName, fixedName: fixedName});
-                }
+                pluginsList.push({showName: chineseName, fixedName: fixedName});
             }
         }
 
         return pluginsList
+    }
+
+    search = async input => {
+        input = input.toLowerCase();
+        const pluginsList = this.collectAll();
+        if (!input) {
+            return pluginsList;
+        } else {
+            return pluginsList.filter(item => item.fixedName.toLowerCase().indexOf(input) !== -1 || item.showName.toLowerCase().indexOf(input) !== -1)
+        }
     }
 
     callback = (fixedName, meta) => {
@@ -310,12 +324,14 @@ class RecentFileTool extends baseTool {
     }
 
     search = async input => {
+        input = input.toLowerCase();
+
         const result = await this.getRecentFile();
         if (!input || !result || result.length === 0) return result;
 
         const newResult = [];
         for (const file of result) {
-            if (file.fixedName.indexOf(input) !== -1) {
+            if (file.fixedName.toLowerCase().indexOf(input) !== -1) {
                 newResult.push(file);
             }
         }
@@ -374,7 +390,7 @@ class toolController {
     dispatch = raw => {
         for (const short of this.tools.keys()) {
             if (raw.startsWith(short + " ")) {
-                return {tool: this.tools.get(short), input: raw.slice(short.length + 1).trim().toLowerCase()}
+                return {tool: this.tools.get(short), input: raw.slice(short.length + 1).trim()}
             }
         }
         return {tool: null, input: ""}
