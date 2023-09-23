@@ -13,7 +13,16 @@ class utils {
     }
 
 
-    ////////////////////////////// 高级工具（全部支持动态注册、动态注销） //////////////////////////////
+    ////////////////////////////// 高级工具 //////////////////////////////
+    // 当前支持的高级工具（全部支持动态注册、动态注销）
+    //   1. hotkey
+    //   2. event
+    //   3. state recorder
+    //   4. diagram parser
+    //   5. fence enhance button
+    //   6. bar tool
+    //   7. modal
+
     // 动态注册、动态注销hotkey
     // 注意: 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
     //   hotkeyList: [
@@ -107,6 +116,23 @@ class utils {
         return (!!enhancePlugin)
     }
 
+    // 动态注册barTool里的tool(仅当toolbar插件启用时有效，通过返回bool值确定是否成功)
+    // tool: baseTool的子类
+    static registerBarTool = tool => {
+        const toolbarPlugin = this.getPlugin("toolbar");
+        if (toolbarPlugin) {
+            toolbarPlugin.registerBarTool(tool);
+        }
+        return (!!toolbarPlugin)
+    }
+    static unregisterBarTool = name => {
+        const toolbarPlugin = this.getPlugin("toolbar");
+        if (toolbarPlugin) {
+            toolbarPlugin.unregisterBarTool(name);
+        }
+        return (!!toolbarPlugin)
+    }
+
 
     // 动态弹出自定义模态框（及刻弹出，因此无需注册）
     //   1. modal: { title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
@@ -145,6 +171,16 @@ class utils {
             const target = anchorNode.closest(selector);
             if (target && target[0]) {
                 func(target[0]);
+            }
+        }
+    }
+    static generateDynamicCallArgs = (fixedName, anchorNode) => {
+        if (!fixedName) return;
+        const plugin = this.getPlugin(fixedName);
+        if (plugin && plugin.dynamicCallArgsGenerator) {
+            anchorNode = anchorNode || File.editor.getJQueryElem(window.getSelection().anchorNode);
+            if (anchorNode[0]) {
+                return plugin.dynamicCallArgsGenerator(anchorNode[0]);
             }
         }
     }
@@ -511,6 +547,48 @@ class utils {
             document.addEventListener('mousemove', onMouseMove);
         })
         handleElement.ondragstart = () => false
+    }
+
+    static selectItemFromList = (resultList, activeItemSelector) => {
+        let floor;
+        return (ev) => {
+            if (!resultList.childElementCount) return;
+
+            const activeItem = resultList.querySelector(activeItemSelector);
+            let nextItem;
+            if (ev.key === "ArrowDown") {
+                if (floor !== 7) floor++;
+
+                if (activeItem && activeItem.nextElementSibling) {
+                    nextItem = activeItem.nextElementSibling;
+                } else {
+                    nextItem = resultList.firstElementChild;
+                    floor = 1
+                }
+            } else {
+                if (floor !== 1) floor--;
+
+                if (activeItem && activeItem.previousElementSibling) {
+                    nextItem = activeItem.previousElementSibling;
+                } else {
+                    nextItem = resultList.lastElementChild;
+                    floor = 7
+                }
+            }
+
+            activeItem && activeItem.classList.toggle("active");
+            nextItem.classList.toggle("active");
+
+            let top;
+            if (floor === 1) {
+                top = nextItem.offsetTop - nextItem.offsetHeight;
+            } else if (floor === 7) {
+                top = nextItem.offsetTop - 6 * nextItem.offsetHeight;
+            } else if (Math.abs(resultList.scrollTop - activeItem.offsetTop) > 7 * nextItem.offsetHeight) {
+                top = nextItem.offsetTop - 3 * nextItem.offsetHeight;
+            }
+            top && resultList.scrollTo({top: top, behavior: "smooth"});
+        }
     }
 
     ////////////////////////////// 黑魔法 //////////////////////////////

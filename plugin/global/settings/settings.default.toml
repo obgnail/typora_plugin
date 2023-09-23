@@ -275,6 +275,24 @@ HOTKEY = "ctrl+shift+r"
 READ_ONLY_DEFAULT = false
 
 
+############### toolbar ###############
+[toolbar]
+# 启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "工具条"
+# 是否在右键菜单中可点击
+CLICKABLE = true
+# 快捷键
+HOTKEY = "ctrl+j"
+# 防抖时间（单位：ms）（用户输入完200ms后才执行）
+DEBOUNCE_INTERVAL = 200
+# toolbar的在页面的20%位置出现
+TOOLBAR_TOP_PERCENT = 20
+# toolbar的宽度为页面的80%
+TOOLBAR_WIDTH_PERCENT = 80
+
+
 ############### blur ###############
 [blur]
 # 启用插件
@@ -602,6 +620,7 @@ LIST = [
     "truncate_text",
     "export_enhance",
     "resize_table",
+    "toolbar",
     "right_click_menu",
     "---",
     "file_counter",

@@ -213,8 +213,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
             this.utils.dragFixedModal(this.modal.input, this.modal.modal);
         }
 
-        let floor;
-
+        const selectItem = this.utils.selectItemFromList(this.modal.resultList, ".plugin-search-multi-item.active");
         this.modal.input.addEventListener("keydown", ev => {
             switch (ev.key) {
                 case "Enter":
@@ -248,43 +247,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
                 case "ArrowDown":
                     ev.stopPropagation();
                     ev.preventDefault();
-
-                    if (!this.modal.resultList.childElementCount) return;
-
-                    const activeItem = this.modal.resultList.querySelector(".plugin-search-multi-item.active")
-                    let nextItem;
-                    if (ev.key === "ArrowDown") {
-                        if (floor !== 7) floor++;
-
-                        if (activeItem && activeItem.nextElementSibling) {
-                            nextItem = activeItem.nextElementSibling;
-                        } else {
-                            nextItem = this.modal.resultList.firstElementChild;
-                            floor = 1
-                        }
-                    } else {
-                        if (floor !== 1) floor--;
-
-                        if (activeItem && activeItem.previousElementSibling) {
-                            nextItem = activeItem.previousElementSibling;
-                        } else {
-                            nextItem = this.modal.resultList.lastElementChild;
-                            floor = 7
-                        }
-                    }
-
-                    activeItem && activeItem.classList.toggle("active");
-                    nextItem.classList.toggle("active");
-
-                    let top;
-                    if (floor === 1) {
-                        top = nextItem.offsetTop - nextItem.offsetHeight;
-                    } else if (floor === 7) {
-                        top = nextItem.offsetTop - 6 * nextItem.offsetHeight;
-                    } else if (Math.abs(this.modal.resultList.scrollTop - activeItem.offsetTop) > 7 * nextItem.offsetHeight) {
-                        top = nextItem.offsetTop - 3 * nextItem.offsetHeight;
-                    }
-                    top && this.modal.resultList.scrollTo({top: top, behavior: "smooth"});
+                    selectItem(ev);
             }
         });
 
