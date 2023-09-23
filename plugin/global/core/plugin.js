@@ -165,9 +165,10 @@ class utils {
         collapsePlugin && collapsePlugin.rollback(target);
         truncatePlugin && truncatePlugin.rollback(target);
     }
+    static getAnchorNode = () => File.editor.getJQueryElem(window.getSelection().anchorNode);
     static withAnchorNode = (selector, func) => {
         return () => {
-            const anchorNode = File.editor.getJQueryElem(window.getSelection().anchorNode);
+            const anchorNode = this.getAnchorNode();
             const target = anchorNode.closest(selector);
             if (target && target[0]) {
                 func(target[0]);
@@ -178,7 +179,7 @@ class utils {
         if (!fixedName) return;
         const plugin = this.getPlugin(fixedName);
         if (plugin && plugin.dynamicCallArgsGenerator) {
-            anchorNode = anchorNode || File.editor.getJQueryElem(window.getSelection().anchorNode);
+            anchorNode = anchorNode || this.getAnchorNode();
             if (anchorNode[0]) {
                 return plugin.dynamicCallArgsGenerator(anchorNode[0]);
             }

@@ -155,6 +155,7 @@ class toolbarPlugin extends global._basePlugin {
     }
 
     show = () => {
+        this.toolController.setAnchorNode();
         const widthRatio = this.config.TOOLBAR_WIDTH_PERCENT / 100;
         const {width, left} = this.entities.content.getBoundingClientRect();
         this.entities.toolbar.style.width = width * widthRatio + "px";
@@ -189,10 +190,6 @@ class toolbarPlugin extends global._basePlugin {
 }
 
 class baseTool {
-    constructor() {
-        this.utils = global._pluginUtils;
-    }
-
     name = () => {
     }
     init = () => {
@@ -200,9 +197,6 @@ class baseTool {
     // 要么返回 []string
     // 要么返回 { showName:"", fixedName:"", mata:"" }
     search = input => {
-    }
-    // 同search
-    blank = () => {
     }
     callback = (fixedName, meta) => {
     }
@@ -214,22 +208,15 @@ class tabTool extends baseTool {
     init = () => {
         this.windowTabBarPlugin = this.utils.getPlugin("window_tab");
     }
-
     search = input => {
         if (!this.windowTabBarPlugin) return;
         const result = [];
         for (const tab of this.windowTabBarPlugin.tabUtil.tabs) {
-            if (tab.path.toLowerCase().indexOf(input) !== -1) {
+            if (input === "" || tab.path.toLowerCase().indexOf(input) !== -1) {
                 result.push(tab.path);
             }
         }
         return result
-    }
-
-    blank = () => {
-        if (this.windowTabBarPlugin) {
-            return this.windowTabBarPlugin.tabUtil.tabs.map(tab => tab.path)
-        }
     }
 
     callback = fixedName => this.windowTabBarPlugin.switchTabByPath(fixedName)
@@ -238,35 +225,59 @@ class tabTool extends baseTool {
 class pluginTool extends baseTool {
     name = () => "plu"
 
-    filter = (input, fixedName, chineseName) => fixedName.toLowerCase().indexOf(input) !== -1 || chineseName.toLowerCase().indexOf(input) !== -1
-
-    _search = (input, filter) => {
+    search = input => {
         const pluginsList = [];
         for (const fixedName of Object.keys(global._plugins)) {
-            const chineseName = this.utils.getPlugin(fixedName).config.NAME;
+            const plugin = global._plugins[fixedName];
+            const chineseName = plugin.config.NAME;
+            if (input === "" || fixedName.toLowerCase().indexOf(input) !== -1 || chineseName.toLowerCase().indexOf(input) !== -1) {
 
-            if (filter && !filter(input, fixedName, chineseName)) continue
+                const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode);
+                if ((!dynamicCallArgs || dynamicCallArgs.length === 0) && (!plugin.callArgs || plugin.callArgs === 0)) {
+                    pluginsList.push({showName: chineseName, fixedName: fixedName});
+                    continue
+                }
 
-            pluginsList.push({showName: chineseName, fixedName: fixedName});
-            const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName);
-            if (!dynamicCallArgs || !dynamicCallArgs.length) continue;
-            for (const arg of dynamicCallArgs) {
-                if (!arg["arg_disabled"]) {
-                    const show = chineseName + " - " + arg.arg_name;
-                    pluginsList.push({showName: show, fixedName: fixedName, meta: arg.arg_value});
+                if (plugin.callArgs) {
+                    for (const arg of plugin.callArgs) {
+                        const show = chineseName + " - " + arg.arg_name;
+                        pluginsList.push({showName: show, fixedName: fixedName, meta: arg.arg_value});
+                    }
+                }
+
+                if (dynamicCallArgs) {
+                    for (const arg of dynamicCallArgs) {
+                        if (!arg["arg_disabled"]) {
+                            const show = chineseName + " - " + arg.arg_name;
+                            pluginsList.push({showName: show, fixedName: fixedName, meta: arg.arg_value});
+                        }
+                    }
                 }
             }
         }
+
+        const custom = global._plugins["custom"];
+        if (custom && custom["custom"]) {
+            for (const fixedName of Object.keys(custom["custom"])) {
+                const chineseName = this.utils.getCustomPlugin(fixedName).showName;
+                if (input === "" || fixedName.toLowerCase().indexOf(input) !== -1 || chineseName.toLowerCase().indexOf(input) !== -1) {
+                    pluginsList.push({showName: chineseName, fixedName: fixedName});
+                }
+            }
+        }
+
         return pluginsList
     }
-
-    search = input => this._search(input, this.filter)
-    blank = () => this._search()
 
     callback = (fixedName, meta) => {
         const plugin = this.utils.getPlugin(fixedName);
         if (plugin) {
             plugin.call(meta || undefined);
+            return
+        }
+        const customPlugin = this.utils.getCustomPlugin(fixedName);
+        if (customPlugin) {
+            global._plugins.custom.call(fixedName);
         }
     }
 }
@@ -275,12 +286,15 @@ class toolController {
     constructor(plugin) {
         this.plugin = plugin;
         this.utils = plugin.utils;
-
         this.tools = new Map();  // map[short]tool
+        this.anchorNode = null;
     }
 
     register = tool => {
+        tool.controller = this;
+        tool.utils = this.utils;
         tool.init();
+
         const short = tool.name();
         this.tools.set(short, tool);
     }
@@ -294,11 +308,13 @@ class toolController {
         tool.callback(fixedName, meta);
     }
 
+    setAnchorNode = () => this.anchorNode = this.utils.getAnchorNode();
+
     handleInput = inputElement => {
         const raw = inputElement.value;
         let {tool, input} = this.dispatch(raw);
         if (tool) {
-            const matches = (input) ? tool.search(input) : tool.blank();
+            const matches = tool.search(input);
             if (matches && matches.length) {
                 return {tool, input, matches}
             }
