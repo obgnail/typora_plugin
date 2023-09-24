@@ -163,22 +163,11 @@ class windowTabBarPlugin extends global._basePlugin {
         this.utils.insertDiv(windowTab);
     }
 
-    hotkey = () => {
-        return [
-            {
-                hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY,
-                callback: this.nextTab
-            },
-            {
-                hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY,
-                callback: this.previousTab
-            },
-            {
-                hotkey: this.config.CLOSE_HOTKEY,
-                callback: this.closeActiveTab
-            },
-        ]
-    }
+    hotkey = () => [
+        {hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: this.nextTab},
+        {hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY, callback: this.previousTab},
+        {hotkey: this.config.CLOSE_HOTKEY, callback: this.closeActiveTab},
+    ]
 
     init = () => {
         this.entities = {

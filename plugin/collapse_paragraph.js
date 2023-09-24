@@ -14,7 +14,11 @@ class collapseParagraphPlugin extends global._basePlugin {
 
     init = () => {
         this.paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
-        this.dynamicUtil = {target: null}
+        this.dynamicUtil = {target: null};
+        this.callArgs = [
+            {arg_name: "折叠全部章节", arg_value: "collapse_all"},
+            {arg_name: "展开全部章节", arg_value: "expand_all"},
+        ];
     }
 
     process = () => {
@@ -137,11 +141,6 @@ class collapseParagraphPlugin extends global._basePlugin {
             {arg_name: "折叠/展开全局同级章节", arg_value: "call_all_siblings", arg_disabled: !target}
         ]
     }
-
-    callArgs = [
-        {arg_name: "折叠全部章节", arg_value: "collapse_all"},
-        {arg_name: "展开全部章节", arg_value: "expand_all"},
-    ];
 
     dynamicCall = type => {
         if (!this.dynamicUtil.target) return;

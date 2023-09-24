@@ -42,33 +42,15 @@ class fenceEnhancePlugin extends global._basePlugin {
         this.lastClickTime = 0;
         this.dynamicUtil = {target: null};
         this.callArgs = [
-            {
-                arg_name: "自动隐藏/显示按钮",
-                arg_value: "set_auto_hide",
-            },
-            {
-                arg_name: "禁用/启用折叠按钮",
-                arg_value: "disable_or_enable_fold",
-            },
-            {
-                arg_name: "禁用/启用复制按钮",
-                arg_value: "disable_or_enable_copy",
-            },
-            {
-                arg_name: "总是折叠代码块",
-                arg_value: "fold_all",
-            },
-            {
-                arg_name: "总是展开代码块",
-                arg_value: "expand_all",
-            },
+            {arg_name: "自动隐藏/显示按钮", arg_value: "set_auto_hide"},
+            {arg_name: "禁用/启用折叠按钮", arg_value: "disable_or_enable_fold"},
+            {arg_name: "禁用/启用复制按钮", arg_value: "disable_or_enable_copy"},
+            {arg_name: "总是折叠代码块", arg_value: "fold_all"},
+            {arg_name: "总是展开代码块", arg_value: "expand_all"},
         ];
 
         if (this.enableIndent) {
-            this.callArgs.splice(2, 0, {
-                arg_name: "禁用/启用缩进调整按钮",
-                arg_value: "disable_or_enable_indent",
-            });
+            this.callArgs.splice(2, 0, {arg_name: "禁用/启用缩进调整按钮", arg_value: "disable_or_enable_indent"});
         }
 
         this.callMap = {
@@ -125,16 +107,15 @@ class fenceEnhancePlugin extends global._basePlugin {
 
         document.getElementById("write").addEventListener("click", ev => {
             const target = ev.target.closest(".fence-enhance .enhance-btn");
-            if (target) {
-                ev.preventDefault();
-                ev.stopPropagation();
-                document.activeElement.blur();
-                const action = target.getAttribute("action");
-                for (const builder of this.builders) {
-                    if (builder.action === action) {
-                        builder.listener(ev, target);
-                        return
-                    }
+            if (!target) return;
+            ev.preventDefault();
+            ev.stopPropagation();
+            document.activeElement.blur();
+            const action = target.getAttribute("action");
+            for (const builder of this.builders) {
+                if (builder.action === action) {
+                    builder.listener(ev, target);
+                    return
                 }
             }
         })
@@ -227,8 +208,10 @@ class fenceEnhancePlugin extends global._basePlugin {
         if (this.enableIndent) {
             arr.push({arg_name: "调整缩进", arg_value: "indent_current"});
         }
-        arr.push({arg_name: "折叠/展开代码块", arg_value: "fold_current", arg_disabled: !target});
-        arr.push({arg_name: "复制代码", arg_value: "copy_current", arg_disabled: !target});
+        arr.push(
+            {arg_name: "折叠/展开代码块", arg_value: "fold_current", arg_disabled: !target},
+            {arg_name: "复制代码", arg_value: "copy_current", arg_disabled: !target}
+        );
         return arr
     }
 

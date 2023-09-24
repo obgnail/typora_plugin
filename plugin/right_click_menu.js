@@ -86,9 +86,7 @@ class rightClickMenuPlugin extends global._basePlugin {
         const style = (plugin.config.CLICKABLE) ? "" : `style="pointer-events: none;color: #c4c6cc;"`;
         const content = (hasNotArgs) ? plugin.config.NAME : `<span data-lg="Menu">${plugin.config.NAME}</span> <i class="fa fa-caret-right"></i>`;
         const className = (hasNotArgs) ? "" : "has-extra-menu";
-        return `<li data-key="${plugin.fixedName}" class="plugin-menu-item ${className}" ${style}>
-                    <a role="menuitem" data-lg="Menu">${content}</a>
-                </li>`
+        return `<li data-key="${plugin.fixedName}" class="plugin-menu-item ${className}" ${style}><a role="menuitem" data-lg="Menu">${content}</a></li>`
     }
 
     createThirdLi = (arg, dynamic) => {

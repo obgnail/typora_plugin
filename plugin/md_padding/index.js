@@ -1,10 +1,5 @@
 class mdPaddingPlugin extends global._basePlugin {
-    hotkey = () => {
-        return [{
-            hotkey: this.config.HOTKEY,
-            callback: this.call,
-        }]
-    }
+    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     read = filepath => this.utils.Package.Fs.readFileSync(filepath, 'utf-8');
     write = (filepath, content) => this.utils.Package.Fs.writeFileSync(filepath, content);

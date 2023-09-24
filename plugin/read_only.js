@@ -1,12 +1,7 @@
 class readOnlyPlugin extends global._basePlugin {
     style = () => `#footer-word-count-label::before {content: attr(data-value) !important}`
 
-    hotkey = () => {
-        return [{
-            hotkey: this.config.HOTKEY,
-            callback: this.call,
-        }]
-    }
+    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     process = () => {
         const that = this;
@@ -40,7 +35,7 @@ class readOnlyPlugin extends global._basePlugin {
             () => {
                 setCheckbox(File.isLocked);
                 if (File.isLocked) {
-                    ["#plugin-search-multi-input input", "#plugin-commander-form input",
+                    ["#plugin-search-multi-input input", "#plugin-commander-form input", "#plugin-toolbar-input input",
                         "#plugin-multi-highlighter-input input", "#typora-quick-open-input input"].forEach(selector => {
                         const input = document.querySelector(selector);
                         input && input.removeAttribute("readonly");

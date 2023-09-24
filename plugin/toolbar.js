@@ -3,12 +3,7 @@ class toolbarPlugin extends global._basePlugin {
         this.registerDefaultTool();
     }
 
-    hotkey = () => {
-        return [{
-            hotkey: this.config.HOTKEY,
-            callback: this.call,
-        }]
-    }
+    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     style = () => {
         return `
@@ -66,8 +61,8 @@ class toolbarPlugin extends global._basePlugin {
         const inner = `
         <div id="plugin-toolbar-input">
             <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
-                autocapitalize="off" value="" placeholder="plu 多关键字高亮" data-lg="Front"
-                title="支持查询：\nplu：插件\ntab：标签页\nhis：最近文件">
+                autocapitalize="off" value="" placeholder="ops 资源管理器打开" data-lg="Front"
+                title="支持查询：\nplu：插件\ntab：标签页\nhis：最近文件\nops：常用操作\nmode：模式\ntheme：临时主题">
         </div>
         <div class="plugin-toolbar-result"></div>
         `
@@ -137,16 +132,12 @@ class toolbarPlugin extends global._basePlugin {
 
     registerDefaultTool = () => {
         this.toolController = new toolController(this);
-        const support = [
-            new tabTool(),
-            new pluginTool(),
-            new RecentFileTool()
-        ];
-        for (const tool of support) {
-            if (this.config.SUPPORT_TOOL.indexOf(tool.name()) !== -1) {
-                this.registerBarTool(tool);
-            }
-        }
+        this.registerBarTool(new tabTool());
+        this.registerBarTool(new pluginTool());
+        this.registerBarTool(new RecentFileTool());
+        this.registerBarTool(new operationTool());
+        this.registerBarTool(new modeTool());
+        this.registerBarTool(new tempThemeTool());
     }
 
     registerBarTool = tool => this.toolController.register(tool);
@@ -209,24 +200,40 @@ class baseToolInterface {
     }
     callback = (fixedName, meta) => {
     }
+
+    baseSearch = (input, list, itemFields) => {
+        if (input === "") return list;
+
+        input = input.toLowerCase();
+        return list.filter(item => {
+            if (!itemFields) {
+                return item.toLowerCase().indexOf(input) !== -1
+            }
+
+            for (const field of itemFields) {
+                if (item[field].toLowerCase().indexOf(input) !== -1) {
+                    return true
+                }
+            }
+        })
+    }
 }
 
 class tabTool extends baseToolInterface {
     name = () => "tab"
 
     init = () => {
-        this.windowTabBarPlugin = this.utils.getPlugin("window_tab");
+        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+            this.windowTabBarPlugin = this.utils.getPlugin("window_tab");
+        })
     }
+
     search = async input => {
-        input = input.toLowerCase();
         if (!this.windowTabBarPlugin) return;
-        const result = [];
-        for (const tab of this.windowTabBarPlugin.tabUtil.tabs) {
-            if (input === "" || tab.path.toLowerCase().indexOf(input) !== -1) {
-                result.push(tab.path);
-            }
-        }
-        return result
+
+        const current = this.utils.getFilePath();
+        const paths = this.windowTabBarPlugin.tabUtil.tabs.filter(tab => tab.path !== current).map(tab => tab.path);
+        return this.baseSearch(input, paths);
     }
 
     callback = fixedName => this.windowTabBarPlugin.switchTabByPath(fixedName)
@@ -239,9 +246,11 @@ class pluginTool extends baseToolInterface {
         const pluginsList = [];
         for (const fixedName of Object.keys(global._plugins)) {
             const plugin = global._plugins[fixedName];
+
+            if (!plugin["call"]) continue
+
             const chineseName = plugin.config.NAME;
             const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode);
-
             if ((!dynamicCallArgs || dynamicCallArgs.length === 0) && (!plugin.callArgs || plugin.callArgs === 0)) {
                 pluginsList.push({showName: chineseName, fixedName: fixedName});
                 continue
@@ -264,25 +273,13 @@ class pluginTool extends baseToolInterface {
             }
         }
 
-        const custom = global._plugins["custom"];
-        if (custom && custom["custom"]) {
-            for (const fixedName of Object.keys(custom["custom"])) {
-                const chineseName = this.utils.getCustomPlugin(fixedName).showName;
-                pluginsList.push({showName: chineseName, fixedName: fixedName});
-            }
-        }
-
+        pluginsList.forEach(plugin => plugin.showName += (plugin["meta"]) ? ` （ ${plugin.fixedName} - ${plugin.meta} ）` : ` （ ${plugin.fixedName} ）`)
         return pluginsList
     }
 
     search = async input => {
-        input = input.toLowerCase();
         const pluginsList = this.collectAll();
-        if (!input) {
-            return pluginsList;
-        } else {
-            return pluginsList.filter(item => item.fixedName.toLowerCase().indexOf(input) !== -1 || item.showName.toLowerCase().indexOf(input) !== -1)
-        }
+        return this.baseSearch(input, pluginsList, ["showName"])
     }
 
     callback = (fixedName, meta) => {
@@ -323,18 +320,13 @@ class RecentFileTool extends baseToolInterface {
     }
 
     search = async input => {
-        input = input.toLowerCase();
+        let files = await this.getRecentFile();
+        if (!files || files.length === 0) return;
 
-        const result = await this.getRecentFile();
-        if (!input || !result || result.length === 0) return result;
+        const current = this.utils.getFilePath();
+        files = files.filter(file => file.showName !== current); // 小细节：去掉当前的文件
 
-        const newResult = [];
-        for (const file of result) {
-            if (file.fixedName.toLowerCase().indexOf(input) !== -1) {
-                newResult.push(file);
-            }
-        }
-        return newResult
+        return this.baseSearch(input, files, ["fixedName"])
     }
 
     callback = (fixedName, meta) => {
@@ -346,6 +338,123 @@ class RecentFileTool extends baseToolInterface {
     }
 }
 
+class operationTool extends baseToolInterface {
+    name = () => "ops"
+
+    init = () => {
+        this.ops = [
+            {
+                showName: "资源管理器打开",
+                fixedName: "explorer",
+                callback: () => JSBridge.showInFinder(this.utils.getFilePath())
+            },
+            {
+                showName: "复制文件路径",
+                fixedName: "copyPath",
+                callback: () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath())
+            }
+        ]
+
+        this.ops.forEach(op => op.showName += ` - ${op.fixedName}`);
+    }
+
+    search = async input => this.baseSearch(input, this.ops, ["showName"])
+
+    callback = (fixedName, meta) => {
+        for (const op of this.ops) {
+            if (fixedName === op.fixedName) {
+                op.callback(meta);
+                return
+            }
+        }
+    }
+}
+
+class modeTool extends baseToolInterface {
+    name = () => "mode"
+
+    init = () => {
+        this.modes = [
+            {
+                showName: "大纲视图",
+                fixedName: "outlineView",
+                callback: () => {
+                    File.editor.library.toggleSidebar();
+                    File.isNode && ClientCommand.refreshViewMenu();
+                }
+            },
+            {
+                showName: "源代码模式",
+                fixedName: "sourceMode",
+                callback: () => File.toggleSourceMode()
+            },
+            {
+                showName: "专注模式",
+                fixedName: "focusMode",
+                callback: () => File.editor.toggleFocusMode()
+            },
+            {
+                showName: "打字机模式",
+                fixedName: "typewriterMode",
+                callback: () => File.editor.toggleTypeWriterMode()
+            },
+        ]
+        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+            const readonly = this.utils.getPlugin("read_only");
+            readonly && this.modes.push({
+                showName: "只读模式",
+                fixedName: "readOnlyMode",
+                callback: () => readonly.call()
+            });
+            const blur = this.utils.getPlugin("blur");
+            blur && this.modes.push({
+                showName: "模糊模式",
+                fixedName: "blurMode",
+                callback: () => blur.call()
+            })
+            this.modes.push({
+                showName: "调试模式",
+                fixedName: "debugMode",
+                callback: () => JSBridge.invoke("window.toggleDevTools")
+            })
+            this.modes.forEach(mode => mode.showName += ` - ${mode.fixedName}`);
+        })
+    }
+    search = async input => this.baseSearch(input, this.modes, ["showName"])
+    callback = (fixedName, meta) => {
+        for (const mode of this.modes) {
+            if (fixedName === mode.fixedName) {
+                mode.callback(meta);
+                return
+            }
+        }
+    }
+}
+
+class tempThemeTool extends baseToolInterface {
+    name = () => "theme"
+
+    setThemeForever = theme => ClientCommand.setTheme(theme);
+    setThemeTemp = theme => File.setTheme(theme);
+
+    search = async input => {
+        const {all, current} = await JSBridge.invoke("setting.getThemes");
+        const list = all.map(theme => {
+            return {showName: theme.replace(/\.css/gi, ""), fixedName: theme}
+        });
+        return this.baseSearch(input, list, ["showName"]);
+    }
+
+    callback = async fixedName => {
+        const {all, current} = await JSBridge.invoke("setting.getThemes");
+        for (const theme of all) {
+            if (fixedName === theme) {
+                this.setThemeTemp(theme);
+                return
+            }
+        }
+    }
+}
 
 class toolController {
     constructor(plugin) {
@@ -391,6 +500,9 @@ class toolController {
             if (raw.startsWith(short + " ")) {
                 return {tool: this.tools.get(short), input: raw.slice(short.length + 1).trim()}
             }
+        }
+        if (this.plugin.config.DEFAULT_TOOL) {
+            return {tool: this.tools.get(this.plugin.config.DEFAULT_TOOL), input: raw.trim()}
         }
         return {tool: null, input: ""}
     }

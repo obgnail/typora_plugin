@@ -165,11 +165,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
         <div class="plugin-search-multi-info-item">
             <div class="plugin-search-multi-info" data-localize="Searching" data-lg="Front">Searching</div>
             <div class="typora-search-spinner">
-                <div class="rect1"></div>
-                <div class="rect2"></div>
-                <div class="rect3"></div>
-                <div class="rect4"></div>
-                <div class="rect5"></div>
+                <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
             </div>
         </div>`;
         const searchModal = document.createElement("div");
@@ -180,12 +176,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
         this.utils.insertDiv(searchModal);
     }
 
-    hotkey = () => {
-        return [{
-            hotkey: this.config.HOTKEY,
-            callback: this.call
-        }]
-    }
+    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     process = () => {
         this.modal = {

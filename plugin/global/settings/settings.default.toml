@@ -285,11 +285,17 @@ NAME = "多功能搜索栏"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+j"
-# 你希望toolbar支持搜索的内容
-#   1. his: 最近打开过的文件
-#   2. plu: 插件
-#   3. tab: 标签页
-SUPPORT_TOOL = ["his", "plu", "tab"]
+# 用户键入内容 = 搜索工具名称 + 空格 + 搜索内容
+# eg：【ops 资源管理器打开】
+# 如果没有匹配到搜索工具，使用默认工具
+#   0. ""：不使用默认
+#   1. "plu"：插件
+#   2. "tab"：当前标签页
+#   3. "his"：最近文件
+#   4. "ops"：常用操作
+#   5. "mode"：切换文件模式
+#   6. "theme"：临时切换主题
+DEFAULT_TOOL = ""
 # 用户输入的防抖时间（单位：ms）（用户输入完200ms后才执行）
 DEBOUNCE_INTERVAL = 200
 # toolbar的在页面的20%位置出现
