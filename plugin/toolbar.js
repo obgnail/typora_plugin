@@ -61,8 +61,8 @@ class toolbarPlugin extends global._basePlugin {
         const inner = `
         <div id="plugin-toolbar-input">
             <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
-                autocapitalize="off" value="" placeholder="plu 多关键字高亮" data-lg="Front"
-                title="支持查询：\nplu：插件\ntab：标签页\nhis：最近文件">
+                autocapitalize="off" value="" placeholder="ops 资源管理器打开" data-lg="Front"
+                title="支持查询：\nplu：插件\ntab：标签页\nhis：最近文件\nops: 常用操作">
         </div>
         <div class="plugin-toolbar-result"></div>
         `
@@ -135,6 +135,7 @@ class toolbarPlugin extends global._basePlugin {
         this.registerBarTool(new tabTool());
         this.registerBarTool(new pluginTool());
         this.registerBarTool(new RecentFileTool());
+        this.registerBarTool(new operationTool());
     }
 
     registerBarTool = tool => this.toolController.register(tool);
@@ -197,6 +198,23 @@ class baseToolInterface {
     }
     callback = (fixedName, meta) => {
     }
+
+    baseSearch = (input, list, itemFields) => {
+        if (input === "") return list;
+
+        input = input.toLowerCase();
+        return list.filter(item => {
+            if (!itemFields) {
+                return item.toLowerCase().indexOf(input) !== -1
+            }
+
+            for (const field of itemFields) {
+                if (item[field].toLowerCase().indexOf(input) !== -1) {
+                    return true
+                }
+            }
+        })
+    }
 }
 
 class tabTool extends baseToolInterface {
@@ -205,16 +223,13 @@ class tabTool extends baseToolInterface {
     init = () => {
         this.windowTabBarPlugin = this.utils.getPlugin("window_tab");
     }
+
     search = async input => {
-        input = input.toLowerCase();
         if (!this.windowTabBarPlugin) return;
-        const result = [];
-        for (const tab of this.windowTabBarPlugin.tabUtil.tabs) {
-            if (input === "" || tab.path.toLowerCase().indexOf(input) !== -1) {
-                result.push(tab.path);
-            }
-        }
-        return result
+
+        const current = this.utils.getFilePath();
+        const paths = this.windowTabBarPlugin.tabUtil.tabs.filter(tab => tab.path !== current).map(tab => tab.path);
+        return this.baseSearch(input, paths);
     }
 
     callback = fixedName => this.windowTabBarPlugin.switchTabByPath(fixedName)
@@ -228,8 +243,10 @@ class pluginTool extends baseToolInterface {
         for (const fixedName of Object.keys(global._plugins)) {
             const plugin = global._plugins[fixedName];
             const chineseName = plugin.config.NAME;
-            const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode);
 
+            if (!plugin["call"]) continue
+
+            const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode);
             if ((!dynamicCallArgs || dynamicCallArgs.length === 0) && (!plugin.callArgs || plugin.callArgs === 0)) {
                 pluginsList.push({showName: chineseName, fixedName: fixedName});
                 continue
@@ -264,13 +281,8 @@ class pluginTool extends baseToolInterface {
     }
 
     search = async input => {
-        input = input.toLowerCase();
         const pluginsList = this.collectAll();
-        if (!input) {
-            return pluginsList;
-        } else {
-            return pluginsList.filter(item => item.fixedName.toLowerCase().indexOf(input) !== -1 || item.showName.toLowerCase().indexOf(input) !== -1)
-        }
+        return this.baseSearch(input, pluginsList, ["fixedName", "showName"])
     }
 
     callback = (fixedName, meta) => {
@@ -311,18 +323,13 @@ class RecentFileTool extends baseToolInterface {
     }
 
     search = async input => {
-        input = input.toLowerCase();
+        let files = await this.getRecentFile();
+        if (!files || files.length === 0) return;
 
-        const result = await this.getRecentFile();
-        if (!input || !result || result.length === 0) return result;
+        const current = this.utils.getFilePath();
+        files = files.filter(file => file.showName !== current); // 小细节：去掉当前的文件
 
-        const newResult = [];
-        for (const file of result) {
-            if (file.fixedName.toLowerCase().indexOf(input) !== -1) {
-                newResult.push(file);
-            }
-        }
-        return newResult
+        return this.baseSearch(input, files, ["fixedName"])
     }
 
     callback = (fixedName, meta) => {
@@ -330,6 +337,31 @@ class RecentFileTool extends baseToolInterface {
             this.utils.openFile(fixedName);
         } else if (meta === "folder") {
             this.utils.openFolder(fixedName);
+        }
+    }
+}
+
+class operationTool extends baseToolInterface {
+    name = () => "ops"
+
+    init = () => {
+        this.ops = [
+            {
+                showName: "资源管理器打开",
+                fixedName: "explorer",
+                callback: () => JSBridge.showInFinder(this.utils.getFilePath())
+            },
+        ]
+    }
+
+    search = async input => this.baseSearch(input, this.ops, ["showName", "fixedName"])
+
+    callback = (fixedName, meta) => {
+        for (const op of this.ops) {
+            if (fixedName === op.fixedName) {
+                op.callback(meta);
+                return
+            }
         }
     }
 }
