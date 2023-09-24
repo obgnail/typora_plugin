@@ -361,13 +361,16 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 - 方式一：右键菜单 -> 非常用插件 -> 多功能搜索栏
 - 方式二：快捷键 `ctrl+j`
 
-当前支持搜索：
+支持搜索：
 
 - `his`：最新打开过的文件
 - `plu`：插件
 - `tab`：打开的标签页
+- `ops`：常用操作
+- `mode`：切换文件模式
+- `theme`：临时切换主题
 
-> 键入内容 = 搜索工具名称 + 空格 + 搜索内容
+> 键入内容 = 搜索工具名称 + 空格 + 搜索内容（eg：`ops 资源管理器打开`）
 
 ![toolbar](assets/toolbar.gif)
 
@@ -379,7 +382,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ![echats](assets/echarts.png)
 
-> 使用了 eval() 解析代码块内容，请注意安全问题。
+> 使用 eval() 解析代码块内容，请注意安全问题。
 
 
 
