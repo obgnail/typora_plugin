@@ -151,8 +151,13 @@ class utils {
             return plugin["custom"][fixedName]
         }
     }
+    // 路径是否在挂载文件夹下
+    static isUnderMountFolder = path => {
+        const mountFolder = File.getMountFolder();
+        return path && mountFolder && path.startsWith(mountFolder);
+    }
     static openFile = filepath => {
-        if (this.getPlugin("window_tab")) {
+        if (this.getPlugin("window_tab") && this.isUnderMountFolder(filepath)) {
             File.editor.library.openFile(filepath);
         } else {
             File.editor.library.openFileInNewWindow(filepath, false);
