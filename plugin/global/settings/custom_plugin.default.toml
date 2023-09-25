@@ -114,7 +114,7 @@ enable = true
 # 为标题设置颜色（和left_line_color一样）
 set_title_color = true
 # 鼠标悬停时展示fold callout的内容
-hover_to_show_fold_callout = false
+hover_to_show_fold_callout = true
 # 使用的字体。一旦修改，就需要修改下面所有的icon
 # 具体的icon值请参考font-awesome.css
 font_family = "FontAwesome"
@@ -156,7 +156,7 @@ icon = "\\f132"
 [[callouts.config.list]]
 type = "warning"
 background_color = "#feeed3"
-left_line_color = "#f9a825"
+left_line_color = "#E0AC00"
 icon = "\\f071"
 [[callouts.config.list]]
 type = "success"
@@ -166,7 +166,7 @@ icon = "\\f00c"
 [[callouts.config.list]]
 type = "question"
 background_color = "#fff4ce"
-left_line_color = "#f9a825"
+left_line_color = "#E0AC00"
 icon = "\\f128"
 [[callouts.config.list]]
 type = "info"
@@ -176,7 +176,7 @@ icon = "\\f05a"
 [[callouts.config.list]]
 type = "bug"
 background_color = "#feeed3"
-left_line_color = "#f9a825"
+left_line_color = "#E0AC00"
 icon = "\\f188"
 [[callouts.config.list]]
 type = "quote"
