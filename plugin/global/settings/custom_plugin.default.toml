@@ -111,8 +111,15 @@ name = "插入callouts"
 enable = true
 # 插件配置
 [callouts.config]
+# 鼠标悬停时展示fold callout的内容
+hover_to_show_fold_callout = false
 # 使用的字体。一旦修改，就需要修改下面所有的icon
+# 具体的icon值请参考font-awesome.css
 font_family = "FontAwesome"
+# 默认的颜色和icon
+default_background_color = "#fafafa"
+default_left_line_color = "#777777"
+default_icon = "\\f075"
 # callout的类型
 [[callouts.config.list]]
 type = "note"
@@ -171,8 +178,8 @@ left_line_color = "#f9a825"
 icon = "\\f188"
 [[callouts.config.list]]
 type = "quote"
-background_color = ""
-left_line_color = ""
+background_color = "#fafafa"
+left_line_color = "#777777"
 icon = "\\f10d"
 [[callouts.config.list]]
 type = "abstract"

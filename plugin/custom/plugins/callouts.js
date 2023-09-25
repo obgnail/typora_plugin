@@ -8,6 +8,8 @@ class callouts extends BaseCustomPlugin {
             }`
         }).join("\n");
 
+        const hover = (this.config.hover_to_show_fold_callout) ? `.callout-folded:hover :not(:first-child):not(.md-softbreak) { display: inherit !important; }` : "";
+
         return `
             .plugin-callout {
                 background-color: var(--callout-bg-color);
@@ -15,6 +17,12 @@ class callouts extends BaseCustomPlugin {
                 padding: 10px 10px 10px 15px;
                 box-shadow: 0 0.2rem 0.5rem #0000000d, 0 0 0.05rem #0000001a;
                 overflow: hidden;
+            }
+            
+            .plugin-callout[callout-type] {
+                --callout-bg-color: ${this.config.default_background_color};
+                --callout-left-line-color: ${this.config.default_left_line_color};
+                --callout-icon: "${this.config.default_icon}";
             }
             
             .plugin-callout > p:first-child {
@@ -32,6 +40,9 @@ class callouts extends BaseCustomPlugin {
             .callout-folded > p:first-child :not(:first-child) { display: none; }
             .callout-folded > p:not(:first-child) { display: none; }
             
+            .callout-folded:has(.md-focus) :not(:first-child):not(.md-softbreak) { display: inherit !important; }
+            ${hover}
+            
             ${callouts}
         `
     }
@@ -47,11 +58,6 @@ class callouts extends BaseCustomPlugin {
                 debounceRange();
             }
         }).observe(write, {characterData: true, childList: true, subtree: true});
-
-        write.addEventListener("click", ev => {
-            const target = ev.target.closest(".callout-folded");
-            target && target.classList.remove("callout-folded");
-        })
     }
 
     range = () => {
@@ -62,7 +68,11 @@ class callouts extends BaseCustomPlugin {
             if (result && result.groups) {
                 blockquote.classList.add("plugin-callout");
                 blockquote.setAttribute("callout-type", result.groups.type.toLowerCase());
-                (result.groups.fold === "-") && blockquote.classList.add("callout-folded");
+                if (result.groups.fold === "-") {
+                    blockquote.classList.add("callout-folded");
+                } else {
+                    blockquote.classList.remove("callout-folded");
+                }
             } else {
                 blockquote.classList.remove("plugin-callout");
             }
