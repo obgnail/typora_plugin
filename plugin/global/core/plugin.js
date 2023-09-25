@@ -829,7 +829,7 @@ class diagramParser {
     }
 
     onExportToHTML = () => {
-        this.utils.addEventListener(this.utils.eventType.beforeExportToHTML, async (...args) => {
+        this.utils.addEventListener(this.utils.eventType.beforeExportToHTML, (...args) => {
             const extraCssList = [];
 
             this.parsers.forEach((parser, lang) => {

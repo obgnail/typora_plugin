@@ -103,6 +103,84 @@ myChart.on('click', params => alert(params.name));
 """
 
 
+############### callouts ###############
+[callouts]
+# 右键菜单中展示的名称
+name = "插入callouts"
+# 是否启用此自定义插件
+enable = true
+# 插件配置
+[callouts.config]
+# 使用的字体。一旦修改，就需要修改下面所有的icon
+font_family = "FontAwesome"
+# callout的类型
+[[callouts.config.list]]
+type = "note"
+background_color = "#e1d1eb"
+left_line_color = "#6a1b9a"
+icon = "\\f040"
+[[callouts.config.list]]
+type = "tip"
+background_color = "#d8f2e5"
+left_line_color = "#3abd7e"
+icon = "\\f02c"
+[[callouts.config.list]]
+type = "example"
+background_color = "#f1edfd"
+left_line_color = "#c1beca"
+icon = "\\f133"
+[[callouts.config.list]]
+type = "caution"
+background_color = "#fde7e9"
+left_line_color = "#c62828"
+icon = "\\f024"
+[[callouts.config.list]]
+type = "failure"
+background_color = "#f4d4d4"
+left_line_color = "#c62828"
+icon = "\\f00d"
+[[callouts.config.list]]
+type = "important"
+background_color = "#d8e6f3"
+left_line_color = "#3b83c1"
+icon = "\\f132"
+[[callouts.config.list]]
+type = "warning"
+background_color = "#feeed3"
+left_line_color = "#f9a825"
+icon = "\\f071"
+[[callouts.config.list]]
+type = "success"
+background_color = "#d8f2e5"
+left_line_color = "#3abd7e"
+icon = "\\f00c"
+[[callouts.config.list]]
+type = "question"
+background_color = "#fff4ce"
+left_line_color = "#f9a825"
+icon = "\\f128"
+[[callouts.config.list]]
+type = "info"
+background_color = "#dff6dd"
+left_line_color = "#3abd7e"
+icon = "\\f05a"
+[[callouts.config.list]]
+type = "bug"
+background_color = "#feeed3"
+left_line_color = "#f9a825"
+icon = "\\f188"
+[[callouts.config.list]]
+type = "quote"
+background_color = ""
+left_line_color = ""
+icon = "\\f10d"
+[[callouts.config.list]]
+type = "abstract"
+background_color = "#e5f8f8"
+left_line_color = "#b7c6c6"
+icon = "\\f00b"
+
+
 ############### fullPathCopy ###############
 [fullPathCopy]
 # 右键菜单中展示的名称
