@@ -40,6 +40,7 @@ class utils {
     // 触发顺序：
     //   allCustomPluginsHadInjected: 自定义插件加载完毕
     //   allPluginsHadInjected: 所有插件加载完毕
+    //   firstFileInit: 打开Typora后文件被加载
     //   beforeFileOpen: 打开文件之前
     //   fileOpened: 打开文件之后
     //   fileContentLoaded: 文件内容加载完毕之后(依赖于window_tab)
@@ -51,6 +52,7 @@ class utils {
     static eventType = {
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
         allPluginsHadInjected: "allPluginsHadInjected",
+        firstFileInit: "firstFileInit",
         beforeFileOpen: "beforeFileOpen",
         fileOpened: "fileOpened",
         fileContentLoaded: "fileContentLoaded",
@@ -999,6 +1001,11 @@ class eventHub {
                 filePath && this.publishEvent(this.utils.eventType.fileOpened, filePath);
             }
         )
+
+        this.utils.loopDetector(() => (File && this.utils.getFilePath()), () => {
+            const filePath = this.utils.getFilePath();
+            filePath && this.utils.publishEvent(this.utils.eventType.firstFileInit, filePath);
+        });
 
         this.utils.decorate(
             () => (File && File.editor && File.editor.fences && File.editor.fences.addCodeBlock),
