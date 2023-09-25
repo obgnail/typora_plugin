@@ -1379,6 +1379,8 @@ class process {
             "./plugin/global/settings/settings.user.toml",
         );
 
+        if (pluginSettings && pluginSettings["global"] && !pluginSettings["global"]["ENABLE"]) return;
+
         const promises = [];
         for (const fixedName of Object.keys(pluginSettings)) {
             const setting = pluginSettings[fixedName];
