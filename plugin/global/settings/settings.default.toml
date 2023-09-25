@@ -8,6 +8,8 @@
 ############### global ###############
 # 通用配置
 [global]
+# 所有插件的开关，若设为false，则关闭全部插件
+ENABLE = true
 # 如果你使用了自定义图表插件（kanban、markmap、echarts）并且使用了交互模式（INTERACTIVE_MODE 置为 true），那么下面两个配置请至少一个置为true，否则你将不能退出交互模式，修改fence
 # 为【自定义fence图表】添加 edit icon（当点击 edit icon 时退出交互模式）
 CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE = true
