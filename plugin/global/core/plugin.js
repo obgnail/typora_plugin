@@ -49,6 +49,7 @@ class utils {
     //   beforeAddCodeBlock: 添加代码块之前
     //   afterAddCodeBlock: 添加代码块之后
     //   outlineUpdated: 大纲更新之时
+    //   beforeExportToHTML: 导出HTML之前
     static eventType = {
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
         allPluginsHadInjected: "allPluginsHadInjected",
@@ -60,6 +61,7 @@ class utils {
         beforeAddCodeBlock: "beforeAddCodeBlock",
         afterAddCodeBlock: "afterAddCodeBlock",
         outlineUpdated: "outlineUpdated",
+        beforeExportToHTML: "beforeExportToHTML",
     }
     static addEventListener = (eventType, listener) => global._eventHub.addEventListener(eventType, listener);
     static removeEventListener = (eventType, listener) => global._eventHub.removeEventListener(eventType, listener);
@@ -827,10 +829,10 @@ class diagramParser {
     }
 
     onExportToHTML = () => {
-        this.utils.decorateExportToHTML(async (...args) => {
+        this.utils.addEventListener(this.utils.eventType.beforeExportToHTML, async (...args) => {
             const extraCssList = [];
 
-            this.parsers.forEach((lang, parser) => {
+            this.parsers.forEach((parser, lang) => {
                 const getter = parser.extraStyleGetter;
                 const exist = document.querySelector(`#write .md-fences[lang="${lang}"]`);
                 if (getter && exist) {
@@ -1032,6 +1034,8 @@ class eventHub {
             null,
             () => this.publishEvent(this.utils.eventType.outlineUpdated)
         )
+
+        this.utils.decorateExportToHTML(async args => this.utils.publishEvent(this.utils.eventType.beforeExportToHTML, args))
     }
 }
 

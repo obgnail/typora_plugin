@@ -318,7 +318,7 @@ class exportPDFHelper {
     }
 
     process = () => {
-        this.controller.utils.decorateExportToHTML(this.beforeExport);
+        this.controller.utils.addEventListener(this.controller.utils.eventType.beforeExportToHTML, this.beforeExport)
         this.controller.utils.decorate(
             () => (File && File.editor && File.editor.library && File.editor.library.outline
                 && File.editor.library.outline.getHeaderMatrix),
