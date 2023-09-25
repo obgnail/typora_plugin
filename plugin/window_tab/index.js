@@ -187,11 +187,7 @@ class windowTabBarPlugin extends global._basePlugin {
         this.init();
 
         this.utils.addEventListener(this.utils.eventType.fileOpened, this.openTab);
-
-        this.utils.loopDetector(() => (File && this.utils.getFilePath()), () => {
-            const filePath = this.utils.getFilePath();
-            filePath && this.openTab(filePath);
-        });
+        this.utils.addEventListener(this.utils.eventType.firstFileInit, this.openTab);
 
         this.utils.loopDetector(
             () => (this.utils.isBetaVersion) ? document.querySelector("header").getBoundingClientRect().height : true,

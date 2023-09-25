@@ -40,6 +40,7 @@ class utils {
     // 触发顺序：
     //   allCustomPluginsHadInjected: 自定义插件加载完毕
     //   allPluginsHadInjected: 所有插件加载完毕
+    //   firstFileInit: 打开Typora后文件被加载
     //   beforeFileOpen: 打开文件之前
     //   fileOpened: 打开文件之后
     //   fileContentLoaded: 文件内容加载完毕之后(依赖于window_tab)
@@ -48,9 +49,11 @@ class utils {
     //   beforeAddCodeBlock: 添加代码块之前
     //   afterAddCodeBlock: 添加代码块之后
     //   outlineUpdated: 大纲更新之时
+    //   beforeExportToHTML: 导出HTML之前
     static eventType = {
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
         allPluginsHadInjected: "allPluginsHadInjected",
+        firstFileInit: "firstFileInit",
         beforeFileOpen: "beforeFileOpen",
         fileOpened: "fileOpened",
         fileContentLoaded: "fileContentLoaded",
@@ -58,6 +61,7 @@ class utils {
         beforeAddCodeBlock: "beforeAddCodeBlock",
         afterAddCodeBlock: "afterAddCodeBlock",
         outlineUpdated: "outlineUpdated",
+        beforeExportToHTML: "beforeExportToHTML",
     }
     static addEventListener = (eventType, listener) => global._eventHub.addEventListener(eventType, listener);
     static removeEventListener = (eventType, listener) => global._eventHub.removeEventListener(eventType, listener);
@@ -825,10 +829,10 @@ class diagramParser {
     }
 
     onExportToHTML = () => {
-        this.utils.decorateExportToHTML(async (...args) => {
+        this.utils.addEventListener(this.utils.eventType.beforeExportToHTML, (...args) => {
             const extraCssList = [];
 
-            this.parsers.forEach((lang, parser) => {
+            this.parsers.forEach((parser, lang) => {
                 const getter = parser.extraStyleGetter;
                 const exist = document.querySelector(`#write .md-fences[lang="${lang}"]`);
                 if (getter && exist) {
@@ -1000,6 +1004,11 @@ class eventHub {
             }
         )
 
+        this.utils.loopDetector(() => (File && this.utils.getFilePath()), () => {
+            const filePath = this.utils.getFilePath();
+            filePath && this.utils.publishEvent(this.utils.eventType.firstFileInit, filePath);
+        });
+
         this.utils.decorate(
             () => (File && File.editor && File.editor.fences && File.editor.fences.addCodeBlock),
             "File.editor.fences.addCodeBlock",
@@ -1025,6 +1034,8 @@ class eventHub {
             null,
             () => this.publishEvent(this.utils.eventType.outlineUpdated)
         )
+
+        this.utils.decorateExportToHTML(async args => this.utils.publishEvent(this.utils.eventType.beforeExportToHTML, args))
     }
 }
 

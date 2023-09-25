@@ -19,26 +19,27 @@
 | 9    | commander          | 命令行环境                           | √        |
 | 10   | mindmap            | 根据文档大纲一键生成思维导图         | √        |
 | 11   | toolbar            | 多功能搜索栏                         | √        |
-| 12   | markmap            | 提供 markmap 支持                    | √        |
-| 13   | echarts            | 提供 echarts 支持                    | √        |
-| 14   | read_only          | 只读模式                             | √        |
-| 15   | blur               | 模糊模式                             | √        |
-| 16   | kanban             | 看板                                 | √        |
-| 17   | file_counter       | 显示目录下的文件数                   | √        |
-| 18   | outline            | 以表格、图片、代码块形式的大纲       | √        |
-| 19   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
-| 20   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
-| 21   | resize_table       | 调整表格行高列宽                     | √        |
-| 22   | resize_image       | 调整图片显示大小                     | √        |
-| 23   | export_enhance     | 导出 html 时避免图片丢失             | √        |
-| 24   | go_top             | 一键到文章顶部                       | √        |
-| 25   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
-| 26   | hotkey_hub         | 快捷键注册中心（高级）               | √        |
-| 27   | custom             | 用户自定义命令（高级）               | √        |
-| 28   | plugin_updater     | 一键升级插件                         | √        |
-| 29   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
-| 30   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
-| 31   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
+| 12   | markmap            | 提供 markmap 组件支持                | √        |
+| 13   | echarts            | 提供 echarts 组件支持                | √        |
+| 14   | callouts           | 提供 callouts 支持                   | √        |
+| 15   | read_only          | 只读模式                             | √        |
+| 16   | blur               | 模糊模式                             | √        |
+| 17   | kanban             | 看板                                 | √        |
+| 18   | file_counter       | 显示目录下的文件数                   | √        |
+| 19   | outline            | 以表格、图片、代码块形式的大纲       | √        |
+| 20   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
+| 21   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
+| 22   | resize_table       | 调整表格行高列宽                     | √        |
+| 23   | resize_image       | 调整图片显示大小                     | √        |
+| 24   | export_enhance     | 导出 html 时避免图片丢失             | √        |
+| 25   | go_top             | 一键到文章顶部                       | √        |
+| 26   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
+| 27   | hotkey_hub         | 快捷键注册中心（高级）               | √        |
+| 28   | custom             | 用户自定义命令（高级）               | √        |
+| 29   | plugin_updater     | 一键升级插件                         | √        |
+| 30   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
+| 31   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
+| 32   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -383,6 +384,22 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 ![echats](assets/echarts.png)
 
 > 使用 eval() 解析代码块内容，请注意安全问题。
+
+
+
+### callouts：  提供 callouts 支持
+
+![callouts](./assets/callouts.png)
+
+数量、类型、颜色、icon 皆可自己定义，请前往配置文件修改：
+
+```toml
+[[callouts.config.list]]
+type = "note"
+background_color = "#e1d1eb"
+left_line_color = "#6a1b9a"
+icon = "\\f040"
+```
 
 
 
