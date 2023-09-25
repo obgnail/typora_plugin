@@ -8,7 +8,12 @@ class callouts extends BaseCustomPlugin {
             }`
         }).join("\n");
 
-        const hover = (this.config.hover_to_show_fold_callout) ? `.callout-folded:hover :not(:first-child):not(.md-softbreak) { display: inherit !important; }` : "";
+        const hover = (!this.config.hover_to_show_fold_callout) ? "" :
+            `.callout-folded:hover :not(:first-child):not(.md-softbreak) { display: inherit !important; }`;
+
+        const color = (!this.config.set_title_color) ? "" : `
+            .plugin-callout > p:first-child span:first-child { color: var(--callout-left-line-color); }
+            .plugin-callout > p:first-child::before { color: var(--callout-left-line-color); }`;
 
         return `
             .plugin-callout {
@@ -42,7 +47,7 @@ class callouts extends BaseCustomPlugin {
             
             .callout-folded:has(.md-focus) :not(:first-child):not(.md-softbreak) { display: inherit !important; }
             ${hover}
-            
+            ${color}
             ${callouts}
         `
     }

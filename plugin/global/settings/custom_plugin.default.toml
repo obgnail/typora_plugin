@@ -111,6 +111,8 @@ name = "插入callouts"
 enable = true
 # 插件配置
 [callouts.config]
+# 为标题设置颜色（和left_line_color一样）
+set_title_color = true
 # 鼠标悬停时展示fold callout的内容
 hover_to_show_fold_callout = false
 # 使用的字体。一旦修改，就需要修改下面所有的icon
@@ -134,7 +136,7 @@ icon = "\\f02c"
 [[callouts.config.list]]
 type = "example"
 background_color = "#f1edfd"
-left_line_color = "#c1beca"
+left_line_color = "#777777"
 icon = "\\f133"
 [[callouts.config.list]]
 type = "caution"
@@ -184,7 +186,7 @@ icon = "\\f10d"
 [[callouts.config.list]]
 type = "abstract"
 background_color = "#e5f8f8"
-left_line_color = "#b7c6c6"
+left_line_color = "#777777"
 icon = "\\f00b"
 
 
