@@ -7,7 +7,7 @@
 ############### kanban ###############
 [kanban]
 # 右键菜单中展示的名称
-name = "插入看板"
+name = "插入kanban"
 # 是否启用此自定义插件
 enable = true
 # 插件配置
@@ -101,6 +101,18 @@ option = {
 myChart.on('click', params => alert(params.name));
 ```
 """
+
+
+############### timeline ###############
+[timeline]
+# 右键菜单中展示的名称
+name = "插入timeline"
+# 是否启用此自定义插件
+enable = true
+# 插件配置
+[timeline.config]
+# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
+INTERACTIVE_MODE = false
 
 
 ############### callouts ###############
