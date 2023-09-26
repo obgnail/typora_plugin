@@ -50,6 +50,7 @@ class utils {
     //   afterAddCodeBlock: 添加代码块之后
     //   outlineUpdated: 大纲更新之时
     //   beforeExportToHTML: 导出HTML之前
+    //   toggleSettingPage: 切换到/回配置页面
     static eventType = {
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
         allPluginsHadInjected: "allPluginsHadInjected",
@@ -62,6 +63,7 @@ class utils {
         afterAddCodeBlock: "afterAddCodeBlock",
         outlineUpdated: "outlineUpdated",
         beforeExportToHTML: "beforeExportToHTML",
+        toggleSettingPage: "toggleSettingPage",
     }
     static addEventListener = (eventType, listener) => global._eventHub.addEventListener(eventType, listener);
     static removeEventListener = (eventType, listener) => global._eventHub.removeEventListener(eventType, listener);
@@ -1036,6 +1038,16 @@ class eventHub {
         )
 
         this.utils.decorateExportToHTML(async args => this.utils.publishEvent(this.utils.eventType.beforeExportToHTML, args))
+
+        new MutationObserver(mutationList => {
+            for (const mutation of mutationList) {
+                if (mutation.type === 'attributes' && mutation.attributeName === "class") {
+                    const value = document.body.getAttribute(mutation.attributeName);
+                    const openPage = value.indexOf("megamenu-opened") !== -1 || value.indexOf("show-preference-panel") !== -1;
+                    this.utils.publishEvent(this.utils.eventType.toggleSettingPage, openPage);
+                }
+            }
+        }).observe(document.body, {attributes: true});
     }
 }
 

@@ -188,6 +188,8 @@ class windowTabBarPlugin extends global._basePlugin {
 
         this.utils.addEventListener(this.utils.eventType.fileOpened, this.openTab);
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.openTab);
+        // 打开配置页面的时候自动隐藏
+        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.showTabsIfNeed);
 
         this.utils.loopDetector(
             () => (this.utils.isBetaVersion) ? document.querySelector("header").getBoundingClientRect().height : true,
@@ -201,17 +203,6 @@ class windowTabBarPlugin extends global._basePlugin {
         } else {
             this.sort2();
         }
-
-        // 打开配置页面的时候自动隐藏
-        new MutationObserver(mutationList => {
-            for (const mutation of mutationList) {
-                if (mutation.type === 'attributes' && mutation.attributeName === "class") {
-                    const value = document.body.getAttribute(mutation.attributeName);
-                    const hide = value.indexOf("megamenu-opened") !== -1 || value.indexOf("show-preference-panel") !== -1;
-                    this.showTabsIfNeed(!hide);
-                }
-            }
-        }).observe(document.body, {attributes: true});
 
         this.entities.tabBar.addEventListener("click", ev => {
             const closeButton = ev.target.closest(".close-button");
@@ -313,7 +304,7 @@ class windowTabBarPlugin extends global._basePlugin {
         }, 200)
     }
 
-    showTabsIfNeed = show => document.querySelector("#plugin-window-tab").style.display = (show) ? "" : "none";
+    showTabsIfNeed = hide => document.querySelector("#plugin-window-tab").style.display = (hide) ? "none" : "";
 
     // 新窗口打开
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
