@@ -319,25 +319,33 @@ class windowTabBarPlugin extends global._basePlugin {
     // 关闭窗口
     closeWindow = () => JSBridge.invoke("window.close");
 
-    newTabDiv = (filePath, idx, active = true) => {
+    insertTabDiv = (filePath, idx) => {
         const fileName = this.utils.getFileName(filePath);
-        const _active = active ? "active" : "";
-        return `<div class="tab-container ${_active}" idx="${idx}" draggable="true">
-                    <div class="active-indicator"></div>
-                    <span class="name">${fileName}</span>
+        const tabDiv = `
+                <div class="tab-container" idx="${idx}" draggable="true" title="${filePath}">
+                    <div class="active-indicator"></div><span class="name">${fileName}</span>
                     <span class="close-button"><div class="close-icon"></div></span>
                 </div>`
+        this.entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
     }
 
-    // tabs->DOM的简单数据单向绑定
+    updateTabDiv = (tabDiv, filePath, idx) => {
+        tabDiv.setAttribute("idx", idx + "");
+        tabDiv.querySelector(".name").innerText = this.utils.getFileName(filePath);
+        tabDiv.setAttribute("title", filePath);
+    }
+
+    // tabs->DOM的简易数据单向绑定
     renderDOM = wantOpenPath => {
         let tabDiv = this.entities.tabBar.firstElementChild;
         this.tabUtil.tabs.forEach((tab, idx) => {
             if (!tabDiv) {
-                const _tabDiv = this.newTabDiv(tab.path, idx);
-                this.entities.tabBar.insertAdjacentHTML('beforeend', _tabDiv);
+                this.insertTabDiv(tab.path, idx);
                 tabDiv = this.entities.tabBar.lastElementChild;
+            } else {
+                this.updateTabDiv(tabDiv, tab.path, idx);
             }
+
             if (tab.path === wantOpenPath) {
                 tabDiv.classList.add("active");
                 tabDiv.scrollIntoViewIfNeeded();
@@ -345,8 +353,6 @@ class windowTabBarPlugin extends global._basePlugin {
             } else {
                 tabDiv.classList.remove("active");
             }
-            tabDiv.setAttribute("idx", idx + "");
-            tabDiv.querySelector(".name").innerText = this.utils.getFileName(tab.path);
 
             tabDiv = tabDiv.nextElementSibling;
         })
