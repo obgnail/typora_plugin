@@ -3,164 +3,195 @@ class timelinePlugin extends BaseCustomPlugin {
 
     style = () => {
         return `
+        .plugin-timeline {
+            padding: 15px 40px 30px 40px;
+            background-color: #fafafa;
+        }
         
-.timeline {
-  position: relative;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.timeline::after {
-  content: '';
-  position: absolute;
-  width: 6px;
-  background-color: white;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  margin-left: -3px;
-}
-
-.timeline-container {
-  padding: 10px 40px;
-  position: relative;
-  background-color: inherit;
-  width: 50%;
-}
-
-.timeline-container::after {
-  content: '';
-  position: absolute;
-  width: 25px;
-  height: 25px;
-  right: -17px;
-  background-color: white;
-  border: 4px solid #FF9F55;
-  top: 15px;
-  border-radius: 50%;
-  z-index: 1;
-}
-
-.left {
-  left: 0;
-}
-
-.right {
-  left: 50%;
-}
-
-.left::before {
-  content: " ";
-  height: 0;
-  position: absolute;
-  top: 22px;
-  width: 0;
-  z-index: 1;
-  right: 30px;
-  border: medium solid white;
-  border-width: 10px 0 10px 10px;
-  border-color: transparent transparent transparent white;
-}
-
-.right::before {
-  content: " ";
-  height: 0;
-  position: absolute;
-  top: 22px;
-  width: 0;
-  z-index: 1;
-  left: 30px;
-  border: medium solid white;
-  border-width: 10px 10px 10px 0;
-  border-color: transparent white transparent transparent;
-}
-
-.right::after {
-  left: -16px;
-}
-
-.timeline-content {
-  padding: 20px 30px;
-  background-color: white;
-  position: relative;
-  border-radius: 6px;
-}
-
-@media screen and (max-width: 600px) {
-  .timeline::after {
-  left: 31px;
-  }
-  
-  .timeline-container {
-  width: 100%;
-  padding-left: 70px;
-  padding-right: 25px;
-  }
-  
-  .timeline-container::before {
-  left: 60px;
-  border: medium solid white;
-  border-width: 10px 10px 10px 0;
-  border-color: transparent white transparent transparent;
-  }
-
-  .left::after, .right::after {
-  left: 15px;
-  }
-  
-  .right {
-  left: 0%;
-  }
-}
+        .plugin-timeline .timeline-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .plugin-timeline .timeline-content {
+            display: grid;
+            grid-template-columns: 2px calc(100% - 2px);
+        }
+        
+        .plugin-timeline .line {
+            position: relative;
+            background-color: #eee;
+        }
+            
+        .plugin-timeline .circle {
+            position: absolute;
+            top: 0.6em;
+            left: 50%;
+            width: 0.7em !important;
+            height: 0.7em !important;
+            border-radius: 50%;
+            background-color: #999;
+            transform: translateX(-50%);
+        }
+        
+        .plugin-timeline .wrapper {
+            margin-left: 1em;
+            text-align: left;
+        }
+        
+        .plugin-timeline .time {
+            font-size: large;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 1em;
+        }
+        
+        .plugin-timeline .content {
+            margin-bottom: 3em;
+            white-space: break-spaces;
+            word-break: break-word;
+        }
         `
+    }
+
+    init = () => {
+        this.dir = this.utils.Package.Path.dirname(this.utils.getFilePath());
     }
 
     process = () => {
         this.utils.registerDiagramParser("timeline", false, this.render, null, this.style, this.config.INTERACTIVE_MODE);
     }
 
+    callback = anchorNode => this.utils.insertFence(anchorNode, this.config.TEMPLATE)
+
     render = (cid, content, $pre) => {
-        const timeline = `
-<div class="timeline">
-  <div class="timeline-container left">
-    <div class="timeline-content">
-      <h2>2017</h2>
-      <p>Lorem ipsum dolor sit amet, quo ei simul congue exerci, ad nec admodum perfecto mnesarchum, vim ea mazim fierent detracto. Ea quis iuvaret expetendis his, te elit voluptua dignissim per, habeo iusto primis ea eam.</p>
-    </div>
-  </div>
-  <div class="timeline-container right">
-    <div class="timeline-content">
-      <h2>2016</h2>
-      <p>Lorem ipsum dolor sit amet, quo ei simul congue exerci, ad nec admodum perfecto mnesarchum, vim ea mazim fierent detracto. Ea quis iuvaret expetendis his, te elit voluptua dignissim per, habeo iusto primis ea eam.</p>
-    </div>
-  </div>
-  <div class="timeline-container left">
-    <div class="timeline-content">
-      <h2>2015</h2>
-      <p>Lorem ipsum dolor sit amet, quo ei simul congue exerci, ad nec admodum perfecto mnesarchum, vim ea mazim fierent detracto. Ea quis iuvaret expetendis his, te elit voluptua dignissim per, habeo iusto primis ea eam.</p>
-    </div>
-  </div>
-  <div class="timeline-container right">
-    <div class="timeline-content">
-      <h2>2012</h2>
-      <p>Lorem ipsum dolor sit amet, quo ei simul congue exerci, ad nec admodum perfecto mnesarchum, vim ea mazim fierent detracto. Ea quis iuvaret expetendis his, te elit voluptua dignissim per, habeo iusto primis ea eam.</p>
-    </div>
-  </div>
-  <div class="timeline-container left">
-    <div class="timeline-content">
-      <h2>2011</h2>
-      <p>Lorem ipsum dolor sit amet, quo ei simul congue exerci, ad nec admodum perfecto mnesarchum, vim ea mazim fierent detracto. Ea quis iuvaret expetendis his, te elit voluptua dignissim per, habeo iusto primis ea eam.</p>
-    </div>
-  </div>
-  <div class="timeline-container right">
-    <div class="timeline-content">
-      <h2>2007</h2>
-      <p>Lorem ipsum dolor sit amet, quo ei simul congue exerci, ad nec admodum perfecto mnesarchum, vim ea mazim fierent detracto. Ea quis iuvaret expetendis his, te elit voluptua dignissim per, habeo iusto primis ea eam.</p>
-    </div>
-  </div>
-</div>
-        `
-        $pre.find(".md-diagram-panel-preview").html(timeline);
+        let timeline = $pre.find(".plugin-timeline");
+        if (timeline.length === 0) {
+            timeline = $(`<div class="plugin-timeline"><div class="timeline-title"></div><div class="timeline-content"></div></div>`);
+        }
+        const timeline_ = this.newTimelineElement($pre, cid, content);
+        if (timeline_) {
+            timeline.find(".timeline-title").text(timeline_.title);
+            timeline.find(".timeline-content").html(timeline_.bucket);
+            $pre.find(".md-diagram-panel-preview").html(timeline);
+        } else {
+            // accident occurred
+            this.utils.throwParseError(null, "未知错误！请联系开发者");
+        }
+    }
+
+    newTimelineElement = (pre, cid, content) => {
+        // timeline: {title, bucket: [{time, itemList: [{ type, value }]}]}
+        const timeline = {title: "", bucket: []};
+        const lines = content.split("\n");
+        lines.forEach((line, idx) => {
+            if (!line) return;
+
+            if (line.startsWith("# ")) {
+                if (!timeline.title) {
+                    if (timeline.bucket.length !== 0) {
+                        this.throwParseError(idx, "【时间线标题】必须先于【看板】");
+                    }
+                } else {
+                    this.throwParseError(idx, "存在两个【时间线标题】");
+                }
+                timeline.title = line.replace("# ", "");
+                return;
+            } else if (line.startsWith("## ")) {
+                const time = line.replace("## ", "");
+                const newContent = {time: time, itemList: []};
+                timeline.bucket.push(newContent);
+                return;
+            }
+
+            const lastBucket = timeline.bucket[timeline.bucket.length - 1].itemList;
+
+            // is hr
+            if (line === "---" || line === "***") {
+                lastBucket.push({type: "hr"});
+                return
+            }
+            // is heading
+            const matchHead = line.match(/^(?<heading>#{3,6})\s(?<lineContent>.+?)$/);
+            if (matchHead && matchHead["groups"] && matchHead["groups"]["heading"]) {
+                lastBucket.push({type: "h" + matchHead.groups.heading.length, value: matchHead.groups.lineContent});
+                return
+            }
+            // is ul
+            const matchUl = line.match(/^[\-*]\s(?<lineContent>.*?)$/);
+            if (matchUl && matchUl["groups"]) {
+                lastBucket.push({type: "ul", value: matchUl.groups.lineContent});
+                return
+            }
+            // is ol
+            const matchOl = line.match(/^\d\.\s(?<lineContent>.*?)$/);
+            if (matchOl && matchOl["groups"]) {
+                lastBucket.push({type: "ol", value: matchOl.groups.lineContent});
+                return
+            }
+            // is blockquote
+            const matchQuote = line.match(/^>\s(?<lineContent>.+?)$/);
+            if (matchQuote && matchQuote["groups"]) {
+                lastBucket.push({type: "blockquote", value: matchQuote.groups.lineContent});
+                return
+            }
+
+            // is paragraph
+            lastBucket.push({type: "p", value: line});
+        });
+
+        timeline.bucket = timeline.bucket.map(bucket => {
+            const items = bucket.itemList.map((item, idx) => {
+                switch (item.type) {
+                    case "h3":
+                    case "h4":
+                    case "h5":
+                    case "h6":
+                    case "p":
+                    case "blockquote":
+                        return `<${item.type}>${this.handleParagraph(item.value)}</${item.type}>`
+                    case "hr":
+                        return `<hr>`
+                    case "ul":
+                    case "ol":
+                        const value = `<li>${this.handleParagraph(item.value)}</li>`;
+                        if (idx === 0 || bucket.itemList[idx - 1].type !== item.type) {
+                            return `<${item.type}>` + value
+                        } else if (idx === bucket.itemList.length - 1 || bucket.itemList[idx + 1].type !== item.type) {
+                            return value + `</${item.type}>`
+                        } else {
+                            return value
+                        }
+                }
+            });
+
+            return $(`
+                <div class="line"><div class="circle"></div></div>
+                <div class="wrapper">
+                    <div class="time">${bucket.time}</div>
+                    <div class="content">${items.join("")}</div>
+                </div>
+            `)
+        })
+        return timeline
+    }
+
+    resolvePath = src => this.utils.Package.Path.resolve(this.dir, src)
+
+    handleParagraph = value => {
+        // code
+        return value.replace(/(?<!\\)`(.+?)(?<!\\)`/gs, `<code>$1</code>`)
+            // strong
+            .replace(/(?<!\\)[*_]{2}(.+?)(?<!\\)[*_]{2}/gs, `<strong>$1</strong>`)
+            // em
+            .replace(/(?<![*\\])\*(?![\\*])(.+?)(?<![*\\])\*(?![\\*])/gs, `<em>$1</em>`)
+            // del
+            .replace(/(?<!\\)~~(.+?)(?<!\\)~~/gs, "<del>$1</del>")
+            //  link
+            .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
+            // img
+            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => `<img alt="${alt}" src="${this.resolvePath(src)}">`)
     }
 }
 
