@@ -25,21 +25,22 @@
 | 15   | read_only          | 只读模式                             | √        |
 | 16   | blur               | 模糊模式                             | √        |
 | 17   | kanban             | 看板                                 | √        |
-| 18   | file_counter       | 显示目录下的文件数                   | √        |
-| 19   | outline            | 以表格、图片、代码块形式的大纲       | √        |
-| 20   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
-| 21   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
-| 22   | resize_table       | 调整表格行高列宽                     | √        |
-| 23   | resize_image       | 调整图片显示大小                     | √        |
-| 24   | export_enhance     | 导出 html 时避免图片丢失             | √        |
-| 25   | go_top             | 一键到文章顶部                       | √        |
-| 26   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
-| 27   | hotkey_hub         | 快捷键注册中心（高级）               | √        |
-| 28   | custom             | 用户自定义命令（高级）               | √        |
-| 29   | plugin_updater     | 一键升级插件                         | √        |
-| 30   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
-| 31   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
-| 32   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
+| 18   | timeline           | 时间线                               | √        |
+| 19   | file_counter       | 显示目录下的文件数                   | √        |
+| 20   | outline            | 以表格、图片、代码块形式的大纲       | √        |
+| 21   | auto_number        | 章节、表格、图片、代码块等自动编号   | √        |
+| 22   | datatables         | 表格增强（搜索、过滤、分页、排序等） | √        |
+| 23   | resize_table       | 调整表格行高列宽                     | √        |
+| 24   | resize_image       | 调整图片显示大小                     | √        |
+| 25   | export_enhance     | 导出 html 时避免图片丢失             | √        |
+| 26   | go_top             | 一键到文章顶部                       | √        |
+| 27   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     | √        |
+| 28   | hotkey_hub         | 快捷键注册中心（高级）               | √        |
+| 29   | custom             | 用户自定义命令（高级）               | √        |
+| 30   | plugin_updater     | 一键升级插件                         | √        |
+| 31   | right_click_menu   | 右键菜单统一管理、调用插件           | √        |
+| 32   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
+| 33   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
 > 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -437,6 +438,14 @@ icon = "\\f040"
 ![kanban](assets/kanban.png)
 
 > 注意：以上语法是我自己定义和解析的，**没有通用性**。我坚持任何插件都不能污染语法，故此插件只推荐【每日任务】等临时使用。
+
+
+
+### timeline：时间线
+
+拓展代码语法，添加时间线功能。
+
+![timeline](./assets/timeline.png)
 
 
 

@@ -7,7 +7,7 @@
 ############### kanban ###############
 [kanban]
 # 右键菜单中展示的名称
-name = "插入看板"
+name = "插入kanban"
 # 是否启用此自定义插件
 enable = true
 # 插件配置
@@ -100,6 +100,41 @@ option = {
 };
 myChart.on('click', params => alert(params.name));
 ```
+"""
+
+
+############### timeline ###############
+[timeline]
+# 右键菜单中展示的名称
+name = "插入timeline"
+# 是否启用此自定义插件
+enable = true
+# 插件配置
+[timeline.config]
+# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
+INTERACTIVE_MODE = false
+# 自动插入的模板
+TEMPLATE = """```timeline
+# 使用一级标题表示timeline的标题
+
+## 2022-10-1
+### 使用二级标题表示时间，三到六级标题表示内容
+支持简单的markdown语法
+- 这是列表1
+- 这是列表2
+---
+1. 这是有序列表1
+2. 这是有效列表2
+
+支持**加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，![图片](./assets/test.jpg)
+不支持代码块，因为开发者不希望代码块发生嵌套
+
+## 2023-10-1
+> 支持样式的简单嵌套：这是测试文本**这是测试文本*这是`测试文本`这是测试文本*这是测试文本**这是测试文本
+
+## timeline的语法是开发者自定义的，谨慎使用
+本timeline代码块支持导出成HTML、PDF等格式
+
 """
 
 
