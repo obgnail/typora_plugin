@@ -42,7 +42,9 @@
 | 32   | mermaid_replace    | 替换 mermaid 组件                    | ×        |
 | 33   | old_window_tab     | 标签页管理（已废弃）                 | ×        |
 
-> 如果各位有其他的需求，或发现 BUG，欢迎提 issue。如果能给我颗 star ⭐ 就更好了  : )
+> 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
+
+> 如果各位有其他的需求，或发现 BUG，欢迎提 issue，欢迎 PR。如果能给我颗 star ⭐ 就更好了  : )
 
 
 
@@ -60,9 +62,9 @@
 
    ![installer](assets/installer.png)
 
-5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【常用插件】栏目，说明一切顺利
+5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
-> 本插件系统尊重用户的所有选择。任何插件、任何功能都是可以通过修改配置文件永久打开 / 关闭的。打开配置文件方式：`非常用插件 -> 右键菜单 -> 打开插件配置文件` 。
+> 可以通过修改配置文件 **永久** 启用 / 禁用任何插件。打开配置文件方式：`非常用插件 -> 右键菜单 -> 打开插件配置文件` 。
 
 > 本插件系统支持一键升级：`常用插件 -> 自定义插件 -> 升级插件`。
 
@@ -78,7 +80,7 @@
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`，推荐使用 everything 找一下）
 3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
 4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
-6. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到【启动插件】栏目，说明一切顺利。
+6. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `启动插件` 栏目，说明一切顺利。
 
 
 
@@ -113,7 +115,7 @@ yay -S typora-plugin
 
 ### 前端
 
-`window.html` 是 Typora 的初始文件，可以写入一个 `<script>` 标签实现功能。就和 Tampermonkey 脚本一样。
+`window.html` 是 Typora 的初始文件，可以写入一个 `<script>` 标签实现功能，就和 Tampermonkey 脚本一样。
 
 
 
@@ -145,13 +147,23 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ## 插件使用说明
 
-所有的插件都支持在正文区域的 `右键菜单` 中直接调用。
+所有的插件都提供了三种使用方法：
 
-> 注意：**不同光标位置调出来的菜单有所不同**。
+- 键盘党：
+  - 键入 ctrl+j，在输入框键入 `plu+空格+插件名称` 调出插件列表（详见 `toolbar` 插件）
+  - 快捷键（详见 `hotkey_hub` 插件）
+- 鼠标党：
+  - 在正文区域右键，在弹出的 `右键菜单` 中直接调用（详见 `right_click_menu` 插件）
 
-比如 `章节折叠` 功能需要光标定位到标题上，才会出现更多的功能选项。
+---
 
-同理 `代码块增强` 功能需要光标定位到代码块中。其他功能需要您自己去探索发现。
+这里简单介绍一下 `右键菜单`  的注意事项：
+
+> **不同光标位置调出来的菜单有所不同**。
+
+比如 `章节折叠` 功能需要光标定位到标题上，才会出现 `折叠/展开当前章节` 的功能选项。
+
+同理 `代码块增强` 功能需要光标定位到代码块中才会出现更多的功能选项。其他功能需要您自己去探索发现。
 
 ![right_click_menu1](assets/right_click_menu1.png)
 
@@ -185,8 +197,6 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 - `click`、`ctrl+enter`：当前窗口打开
 - `ctrl+click`、`ctrl+shift+enter`：新窗口打开
 - `ctrl+拖动输入框`：移动位置
-
-> ctrl 在 Mac 中对应 command
 
 ![search_mutli](assets/search_mutli.gif)
 
@@ -494,8 +504,6 @@ icon = "\\f040"
 
 ![datatables](assets/datatables.png)
 
-> NOTE：**此插件是有安全隐患的。不要在不信任文件中使用此插件，否则极端情况下会让你的电脑中毒**。使用此插件需要做到：将普通表格转为增强表格前需要审视表格内容，确认没有问题才可以转化。
-
 其实此插件可以是提供开放能力的，实现类似于 obsidian 的 `dataview` 插件的功能。不过暂时不做，原因：
 
 1. 私以为 Typora 的用户并不需要大量用到此功能。
@@ -656,10 +664,9 @@ LIST = [
 
 
 
-### 如何禁用/启用某些插件？
+### 如何永久禁用/启用某些插件？
 
-- 方式一：直接 删除/改名 plugin 目录下的同名文件
-- 方式二：修改 `settings.user.toml` 或 `costom_plugin.user.` 文件，将对应插件的 ENABLE 字段置为 false/true（具体修改方法请看 `./plugin/golbal/settings/请读我.md`）
+修改配置文件（具体修改方法请看 `./plugin/golbal/settings/请读我.md`）
 
 
 

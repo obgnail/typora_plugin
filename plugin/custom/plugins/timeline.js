@@ -5,13 +5,13 @@ class timelinePlugin extends BaseCustomPlugin {
         return `
         .plugin-timeline {
             padding: 15px 40px 30px 40px;
-            background-color: #fafafa;
+            background-color: ${this.config.BACKGROUND_COLOR};
         }
         
         .plugin-timeline .timeline-title {
             font-size: 1.5rem;
             font-weight: bold;
-            color: #555;
+            color: ${this.config.TITLE_COLOR};
         }
         
         .plugin-timeline .timeline-content {
@@ -21,7 +21,7 @@ class timelinePlugin extends BaseCustomPlugin {
         
         .plugin-timeline .line {
             position: relative;
-            background-color: #eee;
+            background-color: ${this.config.LINE_COLOR};
         }
             
         .plugin-timeline .circle {
@@ -31,7 +31,7 @@ class timelinePlugin extends BaseCustomPlugin {
             width: 0.7em !important;
             height: 0.7em !important;
             border-radius: 50%;
-            background-color: #999;
+            background-color: ${this.config.CIRCLE_COLOR};
             transform: translateX(-50%);
         }
         
@@ -43,14 +43,18 @@ class timelinePlugin extends BaseCustomPlugin {
         .plugin-timeline .time {
             font-size: large;
             font-weight: bold;
-            color: #555;
-            margin-bottom: 1em;
+            color: ${this.config.TIME_COLOR};
         }
         
         .plugin-timeline .content {
+            margin-top: 1em;
             margin-bottom: 3em;
             white-space: break-spaces;
             word-break: break-word;
+        }
+        
+        .plugin-timeline .wrapper:last-child .content {
+            margin-bottom: 0;
         }
         `
     }
@@ -86,15 +90,16 @@ class timelinePlugin extends BaseCustomPlugin {
         const timeline = {title: "", bucket: []};
         const lines = content.split("\n");
         lines.forEach((line, idx) => {
-            if (!line) return;
+            if (!line.trim()) return;
+            idx += 1;
 
             if (line.startsWith("# ")) {
                 if (!timeline.title) {
                     if (timeline.bucket.length !== 0) {
-                        this.throwParseError(idx, "【时间线标题】必须先于【看板】");
+                        this.utils.throwParseError(idx, "【时间线标题】必须先于【内容】");
                     }
                 } else {
-                    this.throwParseError(idx, "存在两个【时间线标题】");
+                    this.utils.throwParseError(idx, "存在两个【时间线标题】");
                 }
                 timeline.title = line.replace("# ", "");
                 return;
@@ -103,6 +108,10 @@ class timelinePlugin extends BaseCustomPlugin {
                 const newContent = {time: time, itemList: []};
                 timeline.bucket.push(newContent);
                 return;
+            }
+
+            if (timeline.bucket.length === 0) {
+                this.utils.throwParseError(idx, "【时间线标题】和【时间】必须先于【内容】");
             }
 
             const lastBucket = timeline.bucket[timeline.bucket.length - 1].itemList;
