@@ -11,7 +11,8 @@ class pluginUpdater extends BaseCustomPlugin {
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
             this.commanderPlugin = this.utils.getPlugin("commander");
 
-            if (this.config.auto_update && this.commanderPlugin) {
+            // 当前自动升级仅支持windows平台
+            if (this.config.auto_update && this.commanderPlugin && File.isWin) {
                 setTimeout(async () => {
                     console.log("start update...");
                     const proxy = await this.getProxy();
