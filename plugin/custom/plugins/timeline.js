@@ -59,10 +59,6 @@ class timelinePlugin extends BaseCustomPlugin {
         `
     }
 
-    init = () => {
-        this.dir = this.utils.Package.Path.dirname(this.utils.getFilePath());
-    }
-
     process = () => {
         this.utils.registerDiagramParser("timeline", false, this.render, null, this.style, this.config.INTERACTIVE_MODE);
     }
@@ -89,6 +85,7 @@ class timelinePlugin extends BaseCustomPlugin {
         // timeline: {title, bucket: [{time, itemList: [{ type, value }]}]}
         const timeline = {title: "", bucket: []};
         const lines = content.split("\n");
+        this.dir = this.utils.Package.Path.dirname(this.utils.getFilePath());
         lines.forEach((line, idx) => {
             if (!line.trim()) return;
             idx += 1;
