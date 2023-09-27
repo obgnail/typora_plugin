@@ -90,15 +90,16 @@ class timelinePlugin extends BaseCustomPlugin {
         const timeline = {title: "", bucket: []};
         const lines = content.split("\n");
         lines.forEach((line, idx) => {
-            if (!line) return;
+            if (!line.trim()) return;
+            idx += 1;
 
             if (line.startsWith("# ")) {
                 if (!timeline.title) {
                     if (timeline.bucket.length !== 0) {
-                        this.throwParseError(idx, "【时间线标题】必须先于【看板】");
+                        this.utils.throwParseError(idx, "【时间线标题】必须先于【内容】");
                     }
                 } else {
-                    this.throwParseError(idx, "存在两个【时间线标题】");
+                    this.utils.throwParseError(idx, "存在两个【时间线标题】");
                 }
                 timeline.title = line.replace("# ", "");
                 return;
@@ -107,6 +108,10 @@ class timelinePlugin extends BaseCustomPlugin {
                 const newContent = {time: time, itemList: []};
                 timeline.bucket.push(newContent);
                 return;
+            }
+
+            if (timeline.bucket.length === 0) {
+                this.utils.throwParseError(idx, "【时间线标题】和【时间】必须先于【内容】");
             }
 
             const lastBucket = timeline.bucket[timeline.bucket.length - 1].itemList;
