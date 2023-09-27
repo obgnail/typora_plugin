@@ -111,6 +111,16 @@ name = "插入timeline"
 enable = true
 # 插件配置
 [timeline.config]
+# 背景颜色
+BACKGROUND_COLOR = "#fafafa"
+# 标题的字体颜色
+TITLE_COLOR = "#555"
+# 左侧时间线的颜色
+LINE_COLOR = "#eee"
+# 时间圆点的颜色
+CIRCLE_COLOR = "#999"
+# 时间的字体颜色
+TIME_COLOR = "#555"
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = false
 # 自动插入的模板
