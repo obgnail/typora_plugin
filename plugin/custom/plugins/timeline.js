@@ -44,13 +44,17 @@ class timelinePlugin extends BaseCustomPlugin {
             font-size: large;
             font-weight: bold;
             color: ${this.config.TIME_COLOR};
-            margin-bottom: 1em;
         }
         
         .plugin-timeline .content {
+            margin-top: 1em;
             margin-bottom: 3em;
             white-space: break-spaces;
             word-break: break-word;
+        }
+        
+        .plugin-timeline .wrapper:last-child .content {
+            margin-bottom: 0;
         }
         `
     }
