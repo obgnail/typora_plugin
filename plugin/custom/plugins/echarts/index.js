@@ -1,5 +1,6 @@
 class echartsPlugin extends BaseCustomPlugin {
     init = () => {
+        this.lang = "echarts";
         this.map = {} // {cid: instance}
         this.filepath = "";
     }
@@ -7,9 +8,11 @@ class echartsPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertFence(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        this.utils.registerDiagramParser("echarts", false, this.render, this.cancel, null, this.config.INTERACTIVE_MODE);
+        this.utils.registerDiagramParser(this.lang, false, this.render, this.cancel, null, this.config.INTERACTIVE_MODE);
         this.utils.addEventListener(this.utils.eventType.beforeFileOpen, () => this.filepath = this.utils.getFilePath());
         this.utils.addEventListener(this.utils.eventType.fileOpened, this.destroyAll);
+        this.utils.addEventListener(this.utils.eventType.beforeExportToHTML, this.beforeExport);
+        this.utils.addEventListener(this.utils.eventType.afterExportToHTML, this.afterExport);
     }
 
     render = async (cid, content, $pre) => {
@@ -82,7 +85,7 @@ class echartsPlugin extends BaseCustomPlugin {
     }
 
     create = (cid, $div, content) => {
-        const chart = echarts.init($div[0]);
+        const chart = echarts.init($div[0], null, {renderer: this.config.RENDERER});
         this.drawChart(chart, content);
         this.map[cid] = chart;
     }
@@ -98,6 +101,34 @@ class echartsPlugin extends BaseCustomPlugin {
             myChart.resize();
         }
         // chart.hideLoading();
+    }
+
+    beforeExport = () => {
+        const type = this.config.EXPORT_TYPE.toLowerCase();
+        for (const cid of Object.keys(this.map)) {
+            const instance = this.map[cid];
+            instance.setOption({aniamtion: false});
+
+            const preview = document.querySelector(`#write .md-fences[cid=${cid}] .md-diagram-panel-preview`);
+            if (!preview) continue
+            if (type === "png" || type === "jpg") {
+                const img = new Image();
+                img.src = instance.getDataURL({type: this.config.EXPORT_TYPE});
+                $(preview).html(img);
+            } else if (type === "svg") {
+                const svg = instance.renderToSVGString();
+                $(preview).html(svg);
+            }
+        }
+    }
+
+    afterExport = () => {
+        setTimeout(() => {
+            document.querySelectorAll(`#write .md-fences[lang="${this.lang}"]`).forEach(ele => {
+                const cid = ele.getAttribute("cid");
+                cid && File.editor.diagrams.updateDiagram(cid);
+            })
+        }, 300)
     }
 
     lazyLoad = async () => (!global.echarts) && await this.utils.insertScript("./plugin/custom/plugins/echarts/echarts.min.js");
