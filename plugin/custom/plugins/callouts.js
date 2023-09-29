@@ -54,6 +54,13 @@ class callouts extends BaseCustomPlugin {
 
     process = () => {
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.range);
+        this.utils.decorateExportToHTML(null, this.afterExportToHtml, true);
+
+        this.utils.addEventListener(this.utils.eventType.beforeExportToHTML, (...args) => {
+            if (document.querySelector("#write .plugin-callout")) {
+                args[0].extraCss = (args[0].extraCss || "") + this.style();
+            }
+        })
 
         const write = document.querySelector("#write");
         const debounceRange = this.utils.debounce(this.range, 500);
@@ -85,6 +92,34 @@ class callouts extends BaseCustomPlugin {
     }
 
     callback = anchorNode => this.utils.insertFence(anchorNode, `> [!NOTE]\n> this is note`)
+
+    afterExportToHtml = async (exportResult, ...args) => {
+        const exportConfig = args[0];
+        if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
+        const html = await exportResult;
+        const writeIdx = html.indexOf(`id='write'`);
+        if (writeIdx === -1) return new Promise(resolve => resolve(html));
+
+        const regex = new RegExp("<blockquote>", "g");
+        const count = (html.match(regex) || []).length;
+        const quotes = Array.from(document.querySelectorAll("#write blockquote"));
+        if (count !== quotes.length) return new Promise(resolve => resolve(html));
+
+        let idx = -1;
+        const newHtml = html.replace(regex, (origin, src, srcIdx) => {
+            idx++;
+            if (srcIdx < writeIdx) return origin;
+            let result = origin;
+
+            const quote = quotes[idx];
+            if (quote && quote.classList.length) {
+                const type = quote.getAttribute("callout-type");
+                result = `<blockquote class="${quote.className}" callout-type="${type}">`;
+            }
+            return result;
+        })
+        return new Promise(resolve => resolve(newHtml));
+    }
 }
 
 module.exports = {
