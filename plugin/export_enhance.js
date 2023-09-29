@@ -11,7 +11,7 @@ class exportEnhancePlugin extends global._basePlugin {
     }
 
     afterExport = async (html, writeIdx) => {
-        if (!this.config.ENABLE) return exportResult;
+        if (!this.config.ENABLE) return html;
 
         const imageMap = (this.config.DOWNLOAD_NETWORK_IMAGE) ? await this.downloadAllImage(html, writeIdx) : {};
 

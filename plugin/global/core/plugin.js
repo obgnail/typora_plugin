@@ -1353,13 +1353,42 @@ class exportHelper {
         return new Promise(resolve => resolve(html));
     }
 
+    isPromise = obj => {
+        return !!obj
+            && (typeof obj === 'object' || typeof obj === 'function')
+            && typeof obj.then === 'function';
+    };
+
+    afterExportSync = (exportResult, ...args) => {
+        const exportConfig = args[0];
+        if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
+
+        let html = exportResult;
+        const writeIdx = html.indexOf(`id='write'`);
+        if (writeIdx === -1) return html;
+
+        for (const helper of this.helper.values()) {
+            if (helper.afterExport) {
+                const newHtml = helper.afterExport(html, writeIdx);
+                if (newHtml && !this.isPromise(newHtml)) {
+                    html = newHtml;
+                }
+            }
+        }
+        return html
+    }
+
     process = () => {
-        this.utils.decorate(
+        // 旧版本的Typora的export函数不是AsyncFunction
+        // 尽最大努力兼容旧版本
+        this.utils.loopDetector(
             () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-            "File.editor.export.exportToHTML",
-            this.beforeExport,
-            this.afterExport,
-            true
+            () => {
+                const after = (File.editor.export.exportToHTML.constructor.name === 'AsyncFunction')
+                    ? this.afterExport
+                    : this.afterExportSync
+                this.utils.decorate(() => true, "File.editor.export.exportToHTML", this.beforeExport, after, true)
+            }
         )
     }
 }
