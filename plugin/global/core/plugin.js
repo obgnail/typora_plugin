@@ -50,6 +50,7 @@ class utils {
     //   afterAddCodeBlock: 添加代码块之后
     //   outlineUpdated: 大纲更新之时
     //   beforeExportToHTML: 导出HTML之前
+    //   afterExportToHTML: 导出HTML之后
     //   toggleSettingPage: 切换到/回配置页面
     static eventType = {
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
@@ -63,6 +64,7 @@ class utils {
         afterAddCodeBlock: "afterAddCodeBlock",
         outlineUpdated: "outlineUpdated",
         beforeExportToHTML: "beforeExportToHTML",
+        afterExportToHTML: "afterExportToHTML",
         toggleSettingPage: "toggleSettingPage",
     }
     static addEventListener = (eventType, listener) => global._eventHub.addEventListener(eventType, listener);
@@ -417,6 +419,8 @@ class utils {
     }
 
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
+    // data:image;base64、data:image\svg+xml 等等
+    static isSpecialImage = src => src.startsWith("data:image");
 
     static getFenceContent = (pre, cid) => {
         // from element
@@ -1037,7 +1041,10 @@ class eventHub {
             () => this.publishEvent(this.utils.eventType.outlineUpdated)
         )
 
-        this.utils.decorateExportToHTML(async args => this.utils.publishEvent(this.utils.eventType.beforeExportToHTML, args))
+        this.utils.decorateExportToHTML(
+            async args => this.utils.publishEvent(this.utils.eventType.beforeExportToHTML, args),
+            () => this.utils.publishEvent(this.utils.eventType.afterExportToHTML),
+        )
 
         new MutationObserver(mutationList => {
             for (const mutation of mutationList) {

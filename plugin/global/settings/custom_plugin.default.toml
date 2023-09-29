@@ -71,6 +71,13 @@ enable = true
 [echarts.config]
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = true
+# 渲染器: canvas/svg
+# 怎么选择请参考：https://echarts.apache.org/handbook/zh/best-practices/canvas-vs-svg/
+RENDERER = "svg"
+# 导出时echarts转成什么格式
+# 可选 png, jpg, svg
+# 注意：png, jpg只有在canvas渲染器的时候可用，svg只有在使用svg渲染器的时候可用
+EXPORT_TYPE = "svg"
 # 代码块默认高度
 DEFAULT_FENCE_HEIGHT = "300px"
 # 代码块背景颜色

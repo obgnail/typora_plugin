@@ -28,6 +28,8 @@ class exportEnhancePlugin extends global._basePlugin {
             let result = origin;
             let imagePath;
             try {
+                if (this.utils.isSpecialImage(src)) return result;
+
                 if (this.utils.isNetworkImage(src)) {
                     if (!this.config.DOWNLOAD_NETWORK_IMAGE || !imageMap.hasOwnProperty(src)) return origin
 
