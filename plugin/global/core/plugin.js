@@ -21,7 +21,8 @@ class utils {
     //   4. diagram parser
     //   5. fence enhance button
     //   6. bar tool
-    //   7. modal
+    //   7. export helper
+    //   8. modal
 
     // 动态注册、动态注销hotkey
     // 注意: 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
@@ -1321,9 +1322,7 @@ class exportHelper {
         this.helper = new Map();
     }
 
-    register = (name, beforeExport, afterExport) => {
-        this.helper.set(name, {beforeExport, afterExport});
-    }
+    register = (name, beforeExport, afterExport) => this.helper.set(name, {beforeExport, afterExport});
     unregister = name => this.helper.delete(name);
 
     beforeExport = (...args) => {
