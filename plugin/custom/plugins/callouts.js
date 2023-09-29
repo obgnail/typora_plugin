@@ -54,15 +54,14 @@ class callouts extends BaseCustomPlugin {
 
     process = () => {
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.range);
-        this.utils.decorateExportToHTML(null, this.afterExportToHtml, true);
-
-        this.utils.addEventListener(this.utils.eventType.beforeExportToHTML, (...args) => {
-            if (document.querySelector("#write .plugin-callout")) {
-                args[0].extraCss = (args[0].extraCss || "") + this.style();
-            }
-        })
 
         const write = document.querySelector("#write");
+        this.utils.registerExportHelper(
+            "callouts",
+            () => (write.querySelector(".plugin-callout")) ? this.style() : "",
+            this.exportToHtml
+        )
+
         const debounceRange = this.utils.debounce(this.range, 500);
         new MutationObserver(mutationList => {
             if (mutationList.some(m => m.type === "characterData")
@@ -93,20 +92,14 @@ class callouts extends BaseCustomPlugin {
 
     callback = anchorNode => this.utils.insertFence(anchorNode, `> [!NOTE]\n> this is note`)
 
-    afterExportToHtml = async (exportResult, ...args) => {
-        const exportConfig = args[0];
-        if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
-        const html = await exportResult;
-        const writeIdx = html.indexOf(`id='write'`);
-        if (writeIdx === -1) return new Promise(resolve => resolve(html));
-
+    exportToHtml = (html, writeIdx) => {
         const regex = new RegExp("<blockquote>", "g");
         const count = (html.match(regex) || []).length;
         const quotes = Array.from(document.querySelectorAll("#write blockquote"));
-        if (count !== quotes.length) return new Promise(resolve => resolve(html));
+        if (count !== quotes.length) return html;
 
         let idx = -1;
-        const newHtml = html.replace(regex, (origin, src, srcIdx) => {
+        return html.replace(regex, (origin, src, srcIdx) => {
             idx++;
             if (srcIdx < writeIdx) return origin;
             let result = origin;
@@ -118,7 +111,6 @@ class callouts extends BaseCustomPlugin {
             }
             return result;
         })
-        return new Promise(resolve => resolve(newHtml));
     }
 }
 

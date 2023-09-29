@@ -11,8 +11,7 @@ class echartsPlugin extends BaseCustomPlugin {
         this.utils.registerDiagramParser(this.lang, false, this.render, this.cancel, null, this.config.INTERACTIVE_MODE);
         this.utils.addEventListener(this.utils.eventType.beforeFileOpen, () => this.filepath = this.utils.getFilePath());
         this.utils.addEventListener(this.utils.eventType.fileOpened, this.destroyAll);
-        this.utils.addEventListener(this.utils.eventType.beforeExportToHTML, this.beforeExport);
-        this.utils.addEventListener(this.utils.eventType.afterExportToHTML, this.afterExport);
+        this.utils.registerExportHelper(this.lang, this.beforeExport, this.afterExport);
     }
 
     render = async (cid, content, $pre) => {

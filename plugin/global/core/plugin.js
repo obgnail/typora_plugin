@@ -49,8 +49,6 @@ class utils {
     //   beforeAddCodeBlock: 添加代码块之前
     //   afterAddCodeBlock: 添加代码块之后
     //   outlineUpdated: 大纲更新之时
-    //   beforeExportToHTML: 导出HTML之前
-    //   afterExportToHTML: 导出HTML之后
     //   toggleSettingPage: 切换到/回配置页面
     static eventType = {
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
@@ -63,8 +61,6 @@ class utils {
         beforeAddCodeBlock: "beforeAddCodeBlock",
         afterAddCodeBlock: "afterAddCodeBlock",
         outlineUpdated: "outlineUpdated",
-        beforeExportToHTML: "beforeExportToHTML",
-        afterExportToHTML: "afterExportToHTML",
         toggleSettingPage: "toggleSettingPage",
     }
     static addEventListener = (eventType, listener) => global._eventHub.addEventListener(eventType, listener);
@@ -141,6 +137,12 @@ class utils {
         return (!!toolbarPlugin)
     }
 
+    // 动态注册导出时的额外操作
+    //   1. name: 取个名字
+    //   2. beforeExport() => cssString || null , 如果返回string，将加入到extraCSS
+    //   3. async afterExport() => html || null,  如果返回string，将替换HTML
+    static registerExportHelper = (name, beforeExport, afterExport) => global._exportHelper.register(name, beforeExport, afterExport)
+    static unregisterExportHelper = name => global._exportHelper.unregister(name)
 
     // 动态弹出自定义模态框（及刻弹出，因此无需注册）
     //   1. modal: { title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
@@ -648,11 +650,6 @@ class utils {
         }, 20);
     }
 
-    static decorateExportToHTML = (before, after, changeResult = false) => {
-        this.decorate(() => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-            "File.editor.export.exportToHTML", before, after, changeResult)
-    }
-
     static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
         let run = false;
         const uuid = Math.random();
@@ -835,9 +832,8 @@ class diagramParser {
     }
 
     onExportToHTML = () => {
-        this.utils.addEventListener(this.utils.eventType.beforeExportToHTML, (...args) => {
+        this.utils.registerExportHelper("diagramParser", () => {
             const extraCssList = [];
-
             this.parsers.forEach((parser, lang) => {
                 const getter = parser.extraStyleGetter;
                 const exist = document.querySelector(`#write .md-fences[lang="${lang}"]`);
@@ -848,7 +844,7 @@ class diagramParser {
             });
             if (extraCssList.length) {
                 const base = ` .md-diagram-panel, svg {page-break-inside: avoid;} `;
-                args[0].extraCss = (args[0].extraCss || "") + base + extraCssList.join(" ");
+                return base + extraCssList.join(" ");
             }
         })
     }
@@ -1039,11 +1035,6 @@ class eventHub {
             "File.editor.library.outline.updateOutlineHtml",
             null,
             () => this.publishEvent(this.utils.eventType.outlineUpdated)
-        )
-
-        this.utils.decorateExportToHTML(
-            async args => this.utils.publishEvent(this.utils.eventType.beforeExportToHTML, args),
-            () => this.utils.publishEvent(this.utils.eventType.afterExportToHTML),
         )
 
         new MutationObserver(mutationList => {
@@ -1324,6 +1315,57 @@ class hotkeyHub {
     }
 }
 
+class exportHelper {
+    constructor() {
+        this.utils = utils;
+        this.helper = new Map();
+    }
+
+    register = (name, beforeExport, afterExport) => {
+        this.helper.set(name, {beforeExport, afterExport});
+    }
+    unregister = name => this.helper.delete(name);
+
+    beforeExport = (...args) => {
+        for (const helper of this.helper.values()) {
+            if (helper.beforeExport) {
+                const css = helper.beforeExport() || "";
+                args[0].extraCss = (args[0].extraCss || "") + css;
+            }
+        }
+    }
+
+    afterExport = async (exportResult, ...args) => {
+        const exportConfig = args[0];
+        if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
+
+        let html = await exportResult;
+        const writeIdx = html.indexOf(`id='write'`);
+        if (writeIdx === -1) return new Promise(resolve => resolve(html));
+
+        for (const helper of this.helper.values()) {
+            if (helper.afterExport) {
+                const newHtml = await helper.afterExport(html, writeIdx);
+                if (newHtml) {
+                    html = newHtml;
+                }
+            }
+        }
+        return new Promise(resolve => resolve(html));
+    }
+
+    process = () => {
+        this.utils.decorate(
+            () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
+            "File.editor.export.exportToHTML",
+            this.beforeExport,
+            this.afterExport,
+            true
+        )
+    }
+}
+
+
 class basePlugin {
     constructor(fixedName, setting) {
         this.fixedName = fixedName;
@@ -1432,6 +1474,7 @@ class process {
             global._stateRecorder.process();
             global._modalGenerator.process();
             global._hotkeyHub.process();
+            global._exportHelper.process();
             this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
         })
     }
@@ -1451,6 +1494,8 @@ global._stateRecorder = new stateRecorder();
 global._modalGenerator = new modalGenerator();
 // 注册、监听快捷键
 global._hotkeyHub = new hotkeyHub();
+// 注册导出时的额外操作
+global._exportHelper = new exportHelper();
 
 module.exports = {
     process

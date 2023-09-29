@@ -269,9 +269,9 @@ class exportPDFHelper {
         this.controller = controller
     }
 
-    beforeExport = (...args) => {
+    beforeExport = () => {
         this.inExport = true;
-        args[0].extraCss = (args[0].extraCss || "") + `body {font-variant-ligatures: no-common-ligatures;} ` + this.controller.getStyleString();
+        return `body {font-variant-ligatures: no-common-ligatures;} ` + this.controller.getStyleString();
     }
 
     afterGetHeaderMatrix = headers => {
@@ -318,7 +318,7 @@ class exportPDFHelper {
     }
 
     process = () => {
-        this.controller.utils.addEventListener(this.controller.utils.eventType.beforeExportToHTML, this.beforeExport)
+        this.controller.utils.registerExportHelper("auto_number", this.beforeExport);
         this.controller.utils.decorate(
             () => (File && File.editor && File.editor.library && File.editor.library.outline
                 && File.editor.library.outline.getHeaderMatrix),

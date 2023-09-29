@@ -7,22 +7,16 @@ class exportEnhancePlugin extends global._basePlugin {
 
     process = () => {
         this.init();
-        this.utils.decorateExportToHTML(null, this.afterExportToHtml, true);
+        this.utils.registerExportHelper("export_enhance", null, this.afterExport);
     }
 
-    afterExportToHtml = async (exportResult, ...args) => {
+    afterExport = async (html, writeIdx) => {
         if (!this.config.ENABLE) return exportResult;
-        const exportConfig = args[0];
-        if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
-
-        const html = await exportResult;
-        const writeIdx = html.indexOf(`id='write'`);
-        if (writeIdx === -1) return this.simplePromise(html);
 
         const imageMap = (this.config.DOWNLOAD_NETWORK_IMAGE) ? await this.downloadAllImage(html, writeIdx) : {};
 
         const dirname = this.getCurDir();
-        const newHtml = html.replace(this.regexp, (origin, src, srcIdx) => {
+        return html.replace(this.regexp, (origin, src, srcIdx) => {
             if (srcIdx < writeIdx) return origin;
 
             let result = origin;
@@ -32,7 +26,6 @@ class exportEnhancePlugin extends global._basePlugin {
 
                 if (this.utils.isNetworkImage(src)) {
                     if (!this.config.DOWNLOAD_NETWORK_IMAGE || !imageMap.hasOwnProperty(src)) return origin
-
                     const path = imageMap[src];
                     imagePath = this.Path.join(this.tempFolder, path);
                 } else {
@@ -45,7 +38,6 @@ class exportEnhancePlugin extends global._basePlugin {
             }
             return result;
         })
-        return this.simplePromise(newHtml);
     }
 
     downloadAllImage = async (html, writeIdx) => {
@@ -61,7 +53,7 @@ class exportEnhancePlugin extends global._basePlugin {
                 }
             }
         }
-        return this.simplePromise(imageMap)
+        return new Promise(resolve => resolve(imageMap));
     }
 
     getCurDir = () => {
@@ -74,8 +66,6 @@ class exportEnhancePlugin extends global._basePlugin {
         const data = Buffer.from(bitmap).toString('base64');
         return `data:image;base64,${data}`;
     }
-
-    simplePromise = result => new Promise(resolve => resolve(result));
 
     dynamicCallArgsGenerator = () => {
         const call_args = [];
