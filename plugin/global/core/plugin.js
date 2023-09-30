@@ -90,10 +90,11 @@ class utils {
     //        2. content: 代码块的内容
     //        3. $pre: 代码块的jquery element
     //   4. async cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
-    //   5. async destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉
+    //   5. destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
     //   6. extraStyleGetter() => string: 用于导出时，新增css
     //   7. interactiveMode: 交互模式下，只有ctrl+click才能展开代码块
-    static registerDiagramParser = (lang, destroyWhenUpdate, renderFunc, cancelFunc = null, destroyAllFunc = null,
+    static registerDiagramParser = (lang, destroyWhenUpdate,
+                                    renderFunc, cancelFunc = null, destroyAllFunc = null,
                                     extraStyleGetter = null, interactiveMode = true
     ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode)
     static unregisterDiagramParser = lang => global._diagramParser.unregister(lang);
@@ -977,10 +978,10 @@ class diagramParser {
     }
 
     onChangeFile = () => {
-        this.utils.addEventListener(this.utils.eventType.otherFileOpened, async () => {
+        this.utils.addEventListener(this.utils.eventType.otherFileOpened, () => {
             for (const parser of this.parsers.values()) {
                 if (parser.destroyAllFunc) {
-                    await parser.destroyAllFunc();
+                    parser.destroyAllFunc();
                 }
             }
         });
