@@ -82,7 +82,7 @@ class datatablesPlugin extends global._basePlugin {
     process = () => {
         this.init();
 
-        this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.destroyAllDataTable);
+        this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.destroyAllDataTable);
         this.utils.addEventListener(this.utils.eventType.beforeToggleSourceMode, this.destroyAllDataTable);
 
         this.utils.decorate(
@@ -103,10 +103,9 @@ class datatablesPlugin extends global._basePlugin {
         )
     }
 
-    destroyAllDataTable = async () => {
+    destroyAllDataTable = () => {
         while (this.tableList.length) {
-            console.log("destroyAllDataTable");
-            await this.removeDataTable(this.tableList[0].uuid);
+            this.removeDataTable(this.tableList[0].uuid);
         }
         this.tableList = [];
     }
@@ -152,9 +151,8 @@ class datatablesPlugin extends global._basePlugin {
         return uuid
     }
 
-    removeDataTable = async uuid => {
-        if (!uuid) return;
-        await this.lazyLoad();
+    removeDataTable = uuid => {
+        if (!uuid || !this.tableList.length) return;
         const idx = this.tableList.findIndex(table => table.uuid === uuid);
         if (idx === -1) return;
 
@@ -187,7 +185,7 @@ class datatablesPlugin extends global._basePlugin {
         if (type === "convert_current") {
             await this.newDataTable(this.dynamicUtil.target);
         } else if (type === "rollback_current") {
-            await this.removeDataTable(this.dynamicUtil.uuid);
+            this.removeDataTable(this.dynamicUtil.uuid);
         }
     }
 }

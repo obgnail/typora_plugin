@@ -79,7 +79,7 @@ class fenceMarkmap {
         this.utils.registerDiagramParser("markmap", false, this.render, this.cancel, this.destroyAll, null, this.config.INTERACTIVE_MODE);
     }
 
-    call = async type => type === "draw_fence" && this.utils.insertFence(null, this.config.FENCE_TEMPLATE)
+    call = async type => type === "draw_fence" && this.utils.insertText(null, this.config.FENCE_TEMPLATE)
 
     render = async (cid, content, $pre) => {
         if (!this.controller.transformer || !this.controller.Markmap) {
