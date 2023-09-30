@@ -119,11 +119,11 @@ class mindmapPlugin extends global._basePlugin {
                 return;
             case "insert_mindmap":
                 result = this.mindmap(pList, root);
-                this.dynamicUtil.target && this.utils.insertFence(this.dynamicUtil.target, result);
+                this.dynamicUtil.target && this.utils.insertText(this.dynamicUtil.target, result);
                 return;
             case "insert_graph":
                 result = this.graph(pList, root);
-                this.dynamicUtil.target && this.utils.insertFence(this.dynamicUtil.target, result);
+                this.dynamicUtil.target && this.utils.insertText(this.dynamicUtil.target, result);
                 return;
         }
     }

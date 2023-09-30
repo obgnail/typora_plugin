@@ -5,7 +5,7 @@ class chartPlugin extends BaseCustomPlugin {
         this.map = {} // {cid: instance}
     }
 
-    callback = anchorNode => this.utils.insertFence(anchorNode, this.config.TEMPLATE)
+    callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     process = () => {
         this.utils.registerDiagramParser(this.lang, false, this.render, this.cancel, this.destroyAll, null, this.config.INTERACTIVE_MODE);

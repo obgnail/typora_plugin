@@ -498,7 +498,7 @@ class utils {
         File.isFocusMode && File.editor.updateFocusMode(false);
     }
 
-    static insertFence = (anchorNode, content) => {
+    static insertText = (anchorNode, content) => {
         File.editor.contextMenu.hide();
         // File.editor.writingArea.focus();
         File.editor.restoreLastCursor();

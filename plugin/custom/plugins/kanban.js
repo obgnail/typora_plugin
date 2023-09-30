@@ -96,7 +96,7 @@ class kanbanPlugin extends BaseCustomPlugin {
         }
     }
 
-    callback = anchorNode => this.utils.insertFence(anchorNode, this.config.TEMPLATE)
+    callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     render = (cid, content, $pre) => {
         let kanban = $pre.find(".plugin-kanban");

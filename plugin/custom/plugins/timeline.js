@@ -63,7 +63,7 @@ class timelinePlugin extends BaseCustomPlugin {
         this.utils.registerDiagramParser("timeline", false, this.render, null, null, this.style, this.config.INTERACTIVE_MODE);
     }
 
-    callback = anchorNode => this.utils.insertFence(anchorNode, this.config.TEMPLATE)
+    callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     render = (cid, content, $pre) => {
         let timeline = $pre.find(".plugin-timeline");
