@@ -1,6 +1,7 @@
-class echartsPlugin extends BaseCustomPlugin {
+class chartPlugin extends BaseCustomPlugin {
     init = () => {
-        this.lang = "echarts";
+        this.lang = "chart";
+        this.ChartPkg = null;
         this.map = {} // {cid: instance}
         this.filepath = "";
     }
@@ -15,12 +16,11 @@ class echartsPlugin extends BaseCustomPlugin {
     }
 
     render = async (cid, content, $pre) => {
-        await this.lazyLoad();
+        this.lazyLoad();
         const $div = this.getDiv($pre);
         try {
             this.setStyle($pre, $div, content);
             if (this.map.hasOwnProperty(cid)) {
-                // 因为可能这个echarts有onClick等事件，不能update，只能destroy掉
                 await this.cancel(cid);
             }
             this.create(cid, $div, content);
@@ -29,21 +29,22 @@ class echartsPlugin extends BaseCustomPlugin {
             // console.error(e);
         }
     }
+
     cancel = async cid => {
         const instance = this.map[cid];
         if (instance) {
             instance.clear();
-            instance.dispose();
+            instance.destroy();
             delete this.map[cid];
         }
     }
+
     destroyAll = filepath => {
-        // 小细节：打开同一个文件的情况
         if (this.filepath === filepath) return;
 
         for (const cid of Object.keys(this.map)) {
             this.map[cid].clear();
-            this.map[cid].dispose();
+            this.map[cid].destroy();
             delete this.map[cid];
         }
         this.map = {};
@@ -59,48 +60,39 @@ class echartsPlugin extends BaseCustomPlugin {
     }
 
     getDiv = $pre => {
-        let $div = $pre.find(".plugin-echarts-content");
+        let $div = $pre.find(".plugin-chart-content");
         if ($div.length === 0) {
-            $div = $(`<div class="plugin-echarts-content"></div>`);
+            $div = $(`<div class="plugin-chart-content"><canvas></canvas></div>`);
         }
         $pre.find(".md-diagram-panel-preview").html($div);
         return $div
     }
 
     create = (cid, $div, content) => {
-        const chart = echarts.init($div[0], null, {renderer: this.config.RENDERER});
-        this.drawChart(chart, content);
-        this.map[cid] = chart;
+        const $canvas = $div.find('canvas');
+        if ($canvas.length) {
+            const ctx = $canvas[0].getContext('2d');
+            this.map[cid] = this.drawChart(ctx, content);
+        }
     }
 
-    drawChart = (myChart, content, resize = false) => {
-        // chart.showLoading();
-        let echarts = global.echarts;
-        let option = "";
+    drawChart = (ctx, content) => {
+        let Chart = this.ChartPkg.Chart;
+        let myChart = null;
+        let config = "";
         eval(content);
-        myChart.clear();
-        myChart.setOption(option);
-        if (resize) {
-            myChart.resize();
-        }
-        // chart.hideLoading();
+        myChart = new this.ChartPkg.Chart(ctx, config);
+        return myChart;
     }
 
     beforeExport = () => {
-        const type = this.config.EXPORT_TYPE.toLowerCase();
         for (const cid of Object.keys(this.map)) {
             const instance = this.map[cid];
-            instance.setOption({aniamtion: false});
-
             const preview = document.querySelector(`#write .md-fences[cid=${cid}] .md-diagram-panel-preview`);
-            if (!preview) continue
-            if (type === "png" || type === "jpg") {
+            if (preview) {
                 const img = new Image();
-                img.src = instance.getDataURL({type: this.config.EXPORT_TYPE});
+                img.src = instance.toBase64Image();
                 $(preview).html(img);
-            } else if (type === "svg") {
-                const svg = instance.renderToSVGString();
-                $(preview).html(svg);
             }
         }
     }
@@ -114,9 +106,9 @@ class echartsPlugin extends BaseCustomPlugin {
         }, 300)
     }
 
-    lazyLoad = async () => (!global.echarts) && await this.utils.insertScript("./plugin/custom/plugins/echarts/echarts.min.js");
+    lazyLoad = () => this.ChartPkg = this.ChartPkg || this.utils.requireFilePath("./plugin/custom/plugins/chart/chart.min.js");
 }
 
 module.exports = {
-    plugin: echartsPlugin
+    plugin: chartPlugin
 };

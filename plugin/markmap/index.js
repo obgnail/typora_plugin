@@ -22,7 +22,7 @@ class markmapPlugin extends global._basePlugin {
     init = () => {
         this.callArgs = [];
         this.tocMarkmap && this.callArgs.push({arg_name: "展示思维导图", arg_value: "draw_toc"});
-        this.fenceMarkmap && this.callArgs.push({arg_name: "插入markmap代码块", arg_value: "draw_fence"});
+        this.fenceMarkmap && this.callArgs.push({arg_name: "插入markmap", arg_value: "draw_fence"});
     }
 
     process = async () => {

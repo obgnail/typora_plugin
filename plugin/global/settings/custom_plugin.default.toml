@@ -110,6 +110,61 @@ myChart.on('click', params => alert(params.name));
 """
 
 
+############### chart ###############
+[chart]
+# 右键菜单中展示的名称
+name = "插入chart"
+# 是否启用此自定义插件
+enable = true
+# 插件配置
+[chart.config]
+# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
+INTERACTIVE_MODE = true
+# 代码块默认高度
+DEFAULT_FENCE_HEIGHT = "300px"
+# 代码块背景颜色
+DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
+# 自动插入的模板
+TEMPLATE = """```chart
+// 提供内置变量:
+//   1. myChart: chart实例
+//   2. Chart:   chart类
+//   3. config:  chart的config
+//   4. this:    chart插件实例
+// API：https://chart.nodejs.cn/docs/latest/developers/api.html
+// 代码块里的所有内容都会被eval，请注意安全问题
+// 可以使用如下注释设置图表宽高（否则使用默认）：
+// {height: "300px", width: ""}
+
+config = {
+  type: "bar",
+  data: {
+    labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+    datasets: [{
+      label: "# of Votes",
+      data: [12, 19, 3, 5, 2, 3],
+      backgroundColor: [
+        "rgba(255, 99, 132, 0.2)", "rgba(54, 162, 235, 0.2)", "rgba(255, 206, 86, 0.2)",
+        "rgba(75, 192, 192, 0.2)", "rgba(153, 102, 255, 0.2)", "rgba(255, 159, 64, 0.2)"
+      ],
+      borderColor: [
+        "rgba(255, 99, 132, 1)", "rgba(54, 162, 235, 1)", "rgba(255, 206, 86, 1)",
+        "rgba(75, 192, 192, 1)", "rgba(153, 102, 255, 1)", "rgba(255, 159, 64, 1)"
+      ],
+      borderWidth: 1
+    }]
+  },
+  options: {
+    onClick: (e) => {
+      const canvasPosition = Chart.helpers.getRelativePosition(e, myChart);
+      window.alert(`click position: (${canvasPosition.x},${canvasPosition.y})`);
+    }
+  }
+}
+```
+"""
+
+
 ############### timeline ###############
 [timeline]
 # 右键菜单中展示的名称

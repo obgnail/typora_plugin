@@ -21,26 +21,27 @@
 | 11   | toolbar            | 多功能搜索栏                         |
 | 12   | markmap            | 提供 markmap 组件支持                |
 | 13   | echarts            | 提供 echarts 组件支持                |
-| 14   | callouts           | 提供 callouts 支持                   |
-| 15   | read_only          | 只读模式                             |
-| 16   | blur               | 模糊模式                             |
-| 17   | kanban             | 看板                                 |
-| 18   | timeline           | 时间线                               |
-| 19   | file_counter       | 显示目录下的文件数                   |
-| 20   | outline            | 以表格、图片、代码块形式的大纲       |
-| 21   | auto_number        | 章节、表格、图片、代码块等自动编号   |
-| 22   | datatables         | 表格增强（搜索、过滤、分页、排序等） |
-| 23   | resize_table       | 调整表格行高列宽                     |
-| 24   | resize_image       | 调整图片显示大小                     |
-| 25   | export_enhance     | 导出 html 时避免图片丢失             |
-| 26   | go_top             | 一键到文章顶部                       |
-| 27   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     |
-| 28   | hotkey_hub         | 快捷键注册中心（高级）               |
-| 29   | custom             | 用户自定义命令（高级）               |
-| 30   | plugin_updater     | 一键升级插件                         |
-| 31   | right_click_menu   | 右键菜单统一管理、调用插件           |
-| 32   | mermaid_replace    | 替换 mermaid 组件                    |
-| 33   | old_window_tab     | 标签页管理（已废弃）                 |
+| 14   | chart              | 提供 chartjs 组件支持                |
+| 15   | callouts           | 提供 callouts 支持                   |
+| 16   | read_only          | 只读模式                             |
+| 17   | blur               | 模糊模式                             |
+| 18   | kanban             | 看板                                 |
+| 19   | timeline           | 时间线                               |
+| 20   | file_counter       | 显示目录下的文件数                   |
+| 21   | outline            | 以表格、图片、代码块形式的大纲       |
+| 22   | auto_number        | 章节、表格、图片、代码块等自动编号   |
+| 23   | datatables         | 表格增强（搜索、过滤、分页、排序等） |
+| 24   | resize_table       | 调整表格行高列宽                     |
+| 25   | resize_image       | 调整图片显示大小                     |
+| 26   | export_enhance     | 导出 html 时避免图片丢失             |
+| 27   | go_top             | 一键到文章顶部                       |
+| 28   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     |
+| 29   | hotkey_hub         | 快捷键注册中心（高级）               |
+| 30   | custom             | 用户自定义命令（高级）               |
+| 31   | plugin_updater     | 一键升级插件                         |
+| 32   | right_click_menu   | 右键菜单统一管理、调用插件           |
+| 33   | mermaid_replace    | 替换 mermaid 组件                    |
+| 34   | old_window_tab     | 标签页管理（已废弃）                 |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -398,7 +399,17 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 
 
+### chart：提供 chartjs 支持
+
+使用方式：【右键菜单 -> 常用插件 -> 自定义插件 -> 插入 chart】
+
+![chart](./assets/chart.png)
+
+
+
 ### callouts：  提供 callouts 支持
+
+使用方式：【右键菜单 -> 常用插件 -> 自定义插件 -> 插入 callouts】
 
 ![callouts](./assets/callouts.png)
 

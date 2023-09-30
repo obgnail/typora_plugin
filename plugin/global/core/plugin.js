@@ -463,6 +463,22 @@ class utils {
         }
     }
 
+    static getFenceUserSize = content => {
+        let height = "";
+        let width = "";
+        const lines = content.split("\n").map(line => line.trim()).filter(line => line.startsWith("//"));
+        for (let line of lines) {
+            line = line.replace(/\s/g, "").replace(`'`, `"`).replace("`", '"');
+            const result = line.match(/^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/);
+            if (result && result.groups) {
+                height = height || result.groups["height"];
+                width = width || result.groups["width"];
+            }
+            if (height && width) break
+        }
+        return {height, width}
+    }
+
     ////////////////////////////// 业务DOM操作 //////////////////////////////
     static scroll = (target, height = 10) => {
         File.editor.focusAndRestorePos();
@@ -1511,7 +1527,7 @@ class process {
 // 通用工具
 global._pluginUtils = utils;
 // 插件的父类
-global._basePlugin = basePlugin
+global._basePlugin = basePlugin;
 // 注册、发布生命周期事件
 global._eventHub = new eventHub();
 // 自定义代码块语法
