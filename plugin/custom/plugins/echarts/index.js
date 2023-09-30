@@ -99,14 +99,7 @@ class echartsPlugin extends BaseCustomPlugin {
         }
     }
 
-    afterExport = () => {
-        setTimeout(() => {
-            document.querySelectorAll(`#write .md-fences[lang="${this.lang}"]`).forEach(ele => {
-                const cid = ele.getAttribute("cid");
-                cid && File.editor.diagrams.updateDiagram(cid);
-            })
-        }, 300)
-    }
+    afterExport = () => setTimeout(() => this.utils.refreshAllLangFence(this.lang), 300)
 
     lazyLoad = async () => (!global.echarts) && await this.utils.insertScript("./plugin/custom/plugins/echarts/echarts.min.js");
 }

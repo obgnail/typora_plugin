@@ -222,6 +222,8 @@ enable = true
 set_title_color = true
 # 鼠标悬停时展示fold callout的内容
 hover_to_show_fold_callout = true
+# 自动插入的模板
+template = "> [!NOTE]\n> this is note"
 # 使用的字体。一旦修改，就需要修改下面所有的icon
 # 具体的icon值请参考font-awesome.css
 font_family = "FontAwesome"
