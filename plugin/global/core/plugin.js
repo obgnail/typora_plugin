@@ -44,6 +44,7 @@ class utils {
     //   firstFileInit: 打开Typora后文件被加载
     //   beforeFileOpen: 打开文件之前
     //   fileOpened: 打开文件之后
+    //   otherFileOpened: 和fileOpened的区别：重新打开当前标签不会触发otherFileOpened，但是fileOpened会
     //   fileContentLoaded: 文件内容加载完毕之后(依赖于window_tab)
 
     //   beforeToggleSourceMode: 进入源码模式之前
@@ -57,6 +58,7 @@ class utils {
         firstFileInit: "firstFileInit",
         beforeFileOpen: "beforeFileOpen",
         fileOpened: "fileOpened",
+        otherFileOpened: "otherFileOpened",
         fileContentLoaded: "fileContentLoaded",
         beforeToggleSourceMode: "beforeToggleSourceMode",
         beforeAddCodeBlock: "beforeAddCodeBlock",
@@ -990,6 +992,7 @@ class diagramParser {
 class eventHub {
     constructor() {
         this.utils = utils
+        this.filepath = ""
         this.eventMap = {}  // { eventType: [listenerFunc] }
     }
 
@@ -1016,10 +1019,14 @@ class eventHub {
         this.utils.decorate(
             () => (File && File.editor && File.editor.library && File.editor.library.openFile),
             "File.editor.library.openFile",
-            () => this.publishEvent(this.utils.eventType.beforeFileOpen),
+            () => {
+                this.filepath = this.utils.getFilePath();
+                this.publishEvent(this.utils.eventType.beforeFileOpen);
+            },
             (result, ...args) => {
                 const filePath = args[0];
                 filePath && this.publishEvent(this.utils.eventType.fileOpened, filePath);
+                this.filepath !== filePath && this.publishEvent(this.utils.eventType.otherFileOpened, filePath);
             }
         )
 

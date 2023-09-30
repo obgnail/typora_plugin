@@ -2,15 +2,13 @@ class echartsPlugin extends BaseCustomPlugin {
     init = () => {
         this.lang = "echarts";
         this.map = {} // {cid: instance}
-        this.filepath = "";
     }
 
     callback = anchorNode => this.utils.insertFence(anchorNode, this.config.TEMPLATE)
 
     process = () => {
         this.utils.registerDiagramParser(this.lang, false, this.render, this.cancel, null, this.config.INTERACTIVE_MODE);
-        this.utils.addEventListener(this.utils.eventType.beforeFileOpen, () => this.filepath = this.utils.getFilePath());
-        this.utils.addEventListener(this.utils.eventType.fileOpened, this.destroyAll);
+        this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.destroyAll);
         this.utils.registerExportHelper(this.lang, this.beforeExport, this.afterExport);
     }
 
@@ -37,10 +35,7 @@ class echartsPlugin extends BaseCustomPlugin {
             delete this.map[cid];
         }
     }
-    destroyAll = filepath => {
-        // 小细节：打开同一个文件的情况
-        if (this.filepath === filepath) return;
-
+    destroyAll = () => {
         for (const cid of Object.keys(this.map)) {
             this.map[cid].clear();
             this.map[cid].dispose();

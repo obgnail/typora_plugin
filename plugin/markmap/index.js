@@ -71,15 +71,13 @@ class fenceMarkmap {
         this.utils = this.controller.utils;
         this.config = this.controller.config;
         this.map = {}; // {cid: instance}
-        this.filepath = "";
     }
 
     style = () => `.md-diagram-panel .plugin-fence-markmap-svg {line-height: initial !important;}`
 
     process = () => {
         this.utils.registerDiagramParser("markmap", false, this.render, this.cancel, null, this.config.INTERACTIVE_MODE);
-        this.utils.addEventListener(this.utils.eventType.beforeFileOpen, () => this.filepath = this.utils.getFilePath());
-        this.utils.addEventListener(this.utils.eventType.fileOpened, this.destroyAll);
+        this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.destroyAll);
     }
 
     call = async type => type === "draw_fence" && this.utils.insertFence(null, this.config.FENCE_TEMPLATE)
@@ -102,10 +100,7 @@ class fenceMarkmap {
             delete this.map[cid];
         }
     };
-    destroyAll = filepath => {
-        // 小细节：打开同一个文件的情况
-        if (this.filepath === filepath) return;
-
+    destroyAll = () => {
         for (let cid of Object.keys(this.map)) {
             this.map[cid].destroy();
         }
