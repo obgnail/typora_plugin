@@ -90,10 +90,12 @@ class utils {
     //        2. content: 代码块的内容
     //        3. $pre: 代码块的jquery element
     //   4. async cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
-    //   5. extraStyleGetter() => string: 用于导出时，新增css
-    //   6. interactiveMode: 交互模式下，只有ctrl+click才能展开代码块
-    static registerDiagramParser = (lang, destroyWhenUpdate, renderFunc, cancelFunc = null, extraStyleGetter = null, interactiveMode = true
-    ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode)
+    //   5. async destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉
+    //   6. extraStyleGetter() => string: 用于导出时，新增css
+    //   7. interactiveMode: 交互模式下，只有ctrl+click才能展开代码块
+    static registerDiagramParser = (lang, destroyWhenUpdate, renderFunc, cancelFunc = null, destroyAllFunc = null,
+                                    extraStyleGetter = null, interactiveMode = true
+    ) => global._diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode)
     static unregisterDiagramParser = lang => global._diagramParser.unregister(lang);
     // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
@@ -698,12 +700,19 @@ class diagramParser {
 
     register = (
         lang, destroyWhenUpdate = false,
-        renderFunc, cancelFunc = null, extraStyleGetter = null,
-        interactiveMode = true,
+        renderFunc, cancelFunc = null, destroyAllFunc = null,
+        extraStyleGetter = null, interactiveMode = true,
     ) => {
         lang = lang.toLowerCase();
-        const parser = {lang, destroyWhenUpdate, renderFunc, cancelFunc, extraStyleGetter, interactiveMode};
-        this.parsers.set(lang, parser);
+        this.parsers.set(lang, {
+            lang,
+            destroyWhenUpdate,
+            renderFunc,
+            cancelFunc,
+            destroyAllFunc,
+            extraStyleGetter,
+            interactiveMode
+        });
         console.log(`register diagram parser: [ ${lang} ]`);
     }
 
@@ -725,6 +734,8 @@ class diagramParser {
         this.onExportToHTML();
         // 聚焦时
         this.onFocus();
+        // 切换文件时
+        this.onChangeFile();
         // 判断是否为Diagram时
         this.onCheckIsDiagramType();
     }
@@ -963,6 +974,16 @@ class diagramParser {
                 showEditButtonOnly(this);
             })
         })
+    }
+
+    onChangeFile = () => {
+        this.utils.addEventListener(this.utils.eventType.otherFileOpened, async () => {
+            for (const parser of this.parsers.values()) {
+                if (parser.destroyAllFunc) {
+                    await parser.destroyAllFunc();
+                }
+            }
+        });
     }
 
     onCheckIsDiagramType = () => {

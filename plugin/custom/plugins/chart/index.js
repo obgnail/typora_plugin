@@ -8,8 +8,7 @@ class chartPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertFence(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        this.utils.registerDiagramParser(this.lang, false, this.render, this.cancel, null, this.config.INTERACTIVE_MODE);
-        this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.destroyAll);
+        this.utils.registerDiagramParser(this.lang, false, this.render, this.cancel, this.destroyAll, null, this.config.INTERACTIVE_MODE);
         this.utils.registerExportHelper(this.lang, this.beforeExport, this.afterExport);
     }
 
