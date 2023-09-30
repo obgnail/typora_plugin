@@ -484,6 +484,13 @@ class utils {
         return {height, width}
     }
 
+    static refreshAllLangFence = lang => {
+        document.querySelectorAll(`#write .md-fences[lang="${lang}"]`).forEach(ele => {
+            const cid = ele.getAttribute("cid");
+            cid && File.editor.diagrams.updateDiagram(cid);
+        })
+    }
+
     ////////////////////////////// 业务DOM操作 //////////////////////////////
     static scroll = (target, height = 10) => {
         File.editor.focusAndRestorePos();
@@ -928,6 +935,7 @@ class diagramParser {
 
         const hideAllButton = fence => {
             const enhance = showAllTButton(fence);
+            if (!enhance) return;
             const editButton = enhance.querySelector(".edit-custom-diagram");
             if (editButton) {
                 editButton.style.display = "none";

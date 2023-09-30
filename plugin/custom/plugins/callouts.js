@@ -90,7 +90,7 @@ class callouts extends BaseCustomPlugin {
         })
     }
 
-    callback = anchorNode => this.utils.insertFence(anchorNode, `> [!NOTE]\n> this is note`)
+    callback = anchorNode => this.utils.insertFence(anchorNode, this.config.template)
 
     exportToHtml = (html, writeIdx) => {
         const regex = new RegExp("<blockquote>", "g");
