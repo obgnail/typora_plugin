@@ -18,7 +18,7 @@ class mdPaddingPlugin extends global._basePlugin {
 
     formatFile = content => {
         const formatter = this.getFormatter();
-        return formatter(content)
+        return formatter(content, {ignoreWords: this.config.IGNORE_WORDS})
     }
 
     call = () => {
