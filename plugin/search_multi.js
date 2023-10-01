@@ -230,6 +230,8 @@ class searchMultiKeywordPlugin extends global._basePlugin {
                     this.searchMulti(workspace, this.modal.input.value, () => this.modal.info.style.display = "none");
                     break
                 case "Escape":
+                case "Backspace":
+                    if (ev.key === "Backspace" && !this.config.BACKSPACE_TO_HIDE || this.modal.input.value) return;
                     ev.stopPropagation();
                     ev.preventDefault();
                     this.hide();
