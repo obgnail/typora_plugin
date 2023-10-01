@@ -262,7 +262,8 @@ CLICKABLE = true
 # 快捷键
 # 由于新版本Typora占用了ctrl+shift+k快捷键，所以ctrl+shift+k可能会失效
 HOTKEY = ["ctrl+shift+k", "ctrl+shift+b"]
-# 不希望拆分的单词
+# 不希望拆分的单词：
+#   == 是github markdown的高亮拓展语法
 IGNORE_WORDS = ["=="]
 
 
