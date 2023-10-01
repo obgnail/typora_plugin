@@ -190,6 +190,8 @@ class commanderPlugin extends global._basePlugin {
                     }
                     break
                 case "Escape":
+                case "Backspace":
+                    if (ev.key === "Backspace" && !this.config.BACKSPACE_TO_HIDE || this.modal.input.value) return;
                     ev.stopPropagation();
                     ev.preventDefault();
                     this.modal.modal.style.display = "none";

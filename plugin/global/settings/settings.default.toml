@@ -68,6 +68,8 @@ HOTKEY = "ctrl+shift+p"
 ALLOW_DRAG = true
 # 模态框自动隐藏
 AUTO_HIDE = false
+# 当输入框为空，且键入backspace时，隐藏模态框
+BACKSPACE_TO_HIDE = true
 # 打开文件后，自动聚焦
 # 设置此选项时为了键盘党可以通过键盘上下键、ctrl+enter进行快速操作，如果你是鼠标党，可以置为false
 REFOUCE_WHEN_OPEN_FILE = true
@@ -106,6 +108,8 @@ CLICKABLE = true
 HOTKEY = "ctrl+shift+h"
 # 允许【ctrl+鼠标拖拽】拖动
 ALLOW_DRAG = true
+# 当输入框为空，且键入backspace时，隐藏模态框
+BACKSPACE_TO_HIDE = true
 # 大小写敏感(此选项不必手动调整，可以在UI设置)
 CASE_SENSITIVE = false
 # 关键词按空格分割
@@ -205,6 +209,8 @@ CLICKABLE = true
 HOTKEY = "ctrl+g"
 # 允许拖动模态框
 ALLOW_DRAG = true
+# 当输入框为空，且键入backspace时，隐藏模态框
+BACKSPACE_TO_HIDE = true
 # 【快捷键】和【在右键菜单中】调用内建命令，是否弹出模态框
 # 注意: 123使用的是child_process.exec。因此如果程序的输出超出200K，会引发Error：maxBuffer exceeded。此时必须使用echo
 #   1.always: 总是弹出
@@ -291,6 +297,8 @@ NAME = "多功能搜索栏"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+j"
+# 当输入框为空，且键入backspace时，隐藏模态框
+BACKSPACE_TO_HIDE = true
 # 用户键入内容 = 搜索工具名称 + 空格 + 搜索内容
 # eg：【ops 资源管理器打开】
 # 如果没有匹配到搜索工具，使用默认工具
