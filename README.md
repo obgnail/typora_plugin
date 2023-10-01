@@ -6,42 +6,43 @@
 
 目前支持的功能：
 
-| 序号 | 文件名             | 功能                                 |
-| ---- | ------------------ | ------------------------------------ |
-| 1    | window_tab         | 标签页管理                           |
-| 2    | search_multi       | 全局多关键字搜索                     |
-| 3    | multi_highlighter  | 多关键字高亮                         |
-| 4    | collapse_paragraph | 章节折叠                             |
-| 5    | md_padding         | 中英文混排优化                       |
-| 6    | templater          | 文件模板                             |
-| 7    | resource_operation | 一键清除无用图片，生成报告           |
-| 8    | fence_enhance      | 一键复制代码，折叠代码               |
-| 9    | commander          | 命令行环境                           |
-| 10   | mindmap            | 根据文档大纲一键生成思维导图         |
-| 11   | toolbar            | 多功能搜索栏                         |
-| 12   | markmap            | 提供 markmap 组件支持                |
-| 13   | echarts            | 提供 echarts 组件支持                |
-| 14   | chart              | 提供 chartjs 组件支持                |
-| 15   | callouts           | 提供 callouts 支持                   |
-| 16   | read_only          | 只读模式                             |
-| 17   | blur               | 模糊模式                             |
-| 18   | kanban             | 看板                                 |
-| 19   | timeline           | 时间线                               |
-| 20   | file_counter       | 显示目录下的文件数                   |
-| 21   | outline            | 以表格、图片、代码块形式的大纲       |
-| 22   | auto_number        | 章节、表格、图片、代码块等自动编号   |
-| 23   | datatables         | 表格增强（搜索、过滤、分页、排序等） |
-| 24   | resize_table       | 调整表格行高列宽                     |
-| 25   | resize_image       | 调整图片显示大小                     |
-| 26   | export_enhance     | 导出 html 时避免图片丢失             |
-| 27   | go_top             | 一键到文章顶部                       |
-| 28   | truncate_text      | 暂时隐藏内容，提高大文件渲染性能     |
-| 29   | hotkey_hub         | 快捷键注册中心（高级）               |
-| 30   | custom             | 用户自定义命令（高级）               |
-| 31   | plugin_updater     | 一键升级插件                         |
-| 32   | right_click_menu   | 右键菜单统一管理、调用插件           |
-| 33   | mermaid_replace    | 替换 mermaid 组件                    |
-| 34   | old_window_tab     | 标签页管理（已废弃）                 |
+| 序号 | 文件名                     | 功能                                 |
+| ---- | -------------------------- | ------------------------------------ |
+| 1    | window_tab                 | 标签页管理                           |
+| 2    | search_multi               | 全局多关键字搜索                     |
+| 3    | multi_highlighter          | 多关键字高亮                         |
+| 4    | collapse_paragraph         | 章节折叠                             |
+| 5    | md_padding                 | 中英文混排优化                       |
+| 6    | templater                  | 文件模板                             |
+| 7    | resource_operation         | 一键清除无用图片，生成报告           |
+| 8    | fence_enhance              | 一键复制代码，折叠代码               |
+| 9    | commander                  | 命令行环境                           |
+| 10   | mindmap                    | 根据文档大纲一键生成思维导图         |
+| 11   | toolbar                    | 多功能搜索栏                         |
+| 12   | markmap                    | 提供 markmap 组件支持                |
+| 13   | echarts                    | 提供 echarts 组件支持                |
+| 14   | chart                      | 提供 chartjs 组件支持                |
+| 15   | callouts                   | 提供 callouts 支持                   |
+| 16   | read_only                  | 只读模式                             |
+| 17   | blur                       | 模糊模式                             |
+| 18   | kanban                     | 看板                                 |
+| 19   | timeline                   | 时间线                               |
+| 20   | file_counter               | 显示目录下的文件数                   |
+| 21   | outline                    | 以表格、图片、代码块形式的大纲       |
+| 22   | auto_number                | 章节、表格、图片、代码块等自动编号   |
+| 23   | chinese_symbol_auto_pairer | 中文符号自动补全                     |
+| 24   | datatables                 | 表格增强（搜索、过滤、分页、排序等） |
+| 25   | resize_table               | 调整表格行高列宽                     |
+| 26   | resize_image               | 调整图片显示大小                     |
+| 27   | export_enhance             | 导出 html 时避免图片丢失             |
+| 28   | go_top                     | 一键到文章顶部                       |
+| 29   | truncate_text              | 暂时隐藏内容，提高大文件渲染性能     |
+| 30   | hotkey_hub                 | 快捷键注册中心（高级）               |
+| 31   | custom                     | 用户自定义命令（高级）               |
+| 32   | plugin_updater             | 一键升级插件                         |
+| 33   | right_click_menu           | 右键菜单统一管理、调用插件           |
+| 34   | mermaid_replace            | 替换 mermaid 组件                    |
+| 35   | old_window_tab             | 标签页管理（已废弃）                 |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -504,6 +505,26 @@ icon = "\\f040"
 > 和其他使用 Theme CSS 的实现方式不同，此插件通过修改内置函数，完美解决导出 PDF 后侧边栏没有编号的问题。:)
 
 > 根据 [Markdown 最佳实践](https://learn.microsoft.com/en-us/powershell/scripting/community/contributing/general-markdown?view=powershell-7.3)，一篇文档应该 **有且仅有** 一个 h1，故此插件从 h2 开始编号。
+
+
+
+### chinese_symbol_auto_pairer：中文符号自动补全
+
+输入 `《 【 （ ‘ “ 「` 符号时自动补全。
+
+自动补全的符号支持自定义：
+
+```toml
+# 需要自动补全的符号（第一项为输入符号，di'er'xiang为补全符号）
+auto_pair_symbols = [
+    ["（", "）"],
+    ["《", "》"],
+    ["‘", "’"],
+    ["“", "”"],
+    ["【", "】"],
+    ["「", "」"],
+]
+```
 
 
 

@@ -372,6 +372,25 @@ date: {{date}} {{weekday}}
 """
 
 
+############### chineseSymbolAutoPairer ###############
+[chineseSymbolAutoPairer]
+# 右键菜单中展示的名称
+name = "中文符号自动补全"
+# 是否启用此自定义插件
+enable = true
+# 插件配置
+[chineseSymbolAutoPairer.config]
+# 需要自动补全的符号（第一项为输入符号，第二项为补全符号）
+auto_pair_symbols = [
+    ["（", "）"],
+    ["《", "》"],
+    ["‘", "’"],
+    ["“", "”"],
+    ["【", "】"],
+    ["「", "」"],
+]
+
+
 ############### resourceOperation ###############
 [resourceOperation]
 # 右键菜单中展示的名称

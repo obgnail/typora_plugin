@@ -2,6 +2,7 @@ class utils {
     static isBetaVersion = parseInt(window._options.appVersion.split(".")[0]) === 0
     static tempFolder = File.option.tempPath
     static nonExistSelector = "#write #__has_not_this_element_id__";
+    static disableForeverSelector = "__disable_selector__";
     static stopLoadPluginError = new Error("stopLoadPlugin")
     static stopCallError = new Error("stopCall")
     static detectorContainer = {}
@@ -213,6 +214,7 @@ class utils {
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
     static shiftKeyPressed = ev => !!ev.shiftKey
     static altKeyPressed = ev => !!ev.altKey
+    static chineseInputMethodActivated = ev => ev.key === "Process"
 
 
     ////////////////////////////// 基础纯函数 //////////////////////////////
@@ -421,6 +423,12 @@ class utils {
 
 
     ////////////////////////////// 业务操作 //////////////////////////////
+    static findActiveNode = range => {
+        range = range || File.editor.selection.getRangy();
+        const markElem = File.editor.getMarkElem(range.anchorNode);
+        return File.editor.findNodeByElem(markElem)
+    }
+
     static openUrl = url => {
         const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl;
         openUrl(url, 1);
