@@ -1343,7 +1343,7 @@ class hotkeyHub {
     }
 
     _register = (hk, call) => {
-        if (typeof hk === "string") {
+        if (typeof hk === "string" && hk.length) {
             const hotkey = this.toHotkeyFunc(hk);
             this.hotkeyMap.set(hk, {hotkey, call});
         } else if (hk instanceof Array) {

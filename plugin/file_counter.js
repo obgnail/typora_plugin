@@ -1,7 +1,12 @@
 class fileCounterPlugin extends global._basePlugin {
+    beforeProcess = () => {
+        this.loopDetectInterval = 300;
+        this.className = "plugin-file-counter";
+    }
+
     style = () => {
         return `
-            .${this.config.CLASS_NAME} {
+            .${this.className} {
                 display: inline-block;
                 float: right;
                 white-space: nowrap;
@@ -18,7 +23,7 @@ class fileCounterPlugin extends global._basePlugin {
     }
 
     process = () => {
-        this.utils.loopDetector(this.setAllDirCount, null, this.config.LOOP_DETECT_INTERVAL);
+        this.utils.loopDetector(this.setAllDirCount, null, this.loopDetectInterval);
 
         new MutationObserver(mutationList => {
             if (mutationList.length === 1) {
@@ -30,8 +35,8 @@ class fileCounterPlugin extends global._basePlugin {
             }
 
             for (const mutation of mutationList) {
-                if (mutation.target && mutation.target.classList && mutation.target.classList.contains(this.config.CLASS_NAME)
-                    || mutation.addedNodes[0] && mutation.addedNodes[0].classList && mutation.addedNodes[0].classList.contains(this.config.CLASS_NAME)) {
+                if (mutation.target && mutation.target.classList && mutation.target.classList.contains(this.className)
+                    || mutation.addedNodes[0] && mutation.addedNodes[0].classList && mutation.addedNodes[0].classList.contains(this.className)) {
                     continue
                 }
                 this.setAllDirCount();
@@ -86,10 +91,10 @@ class fileCounterPlugin extends global._basePlugin {
     setDirCount = treeNode => {
         const dir = treeNode.getAttribute("data-path");
         this.countFiles(dir, this.allowRead, fileCount => {
-            let countDiv = this.getChild(treeNode, this.config.CLASS_NAME);
+            let countDiv = this.getChild(treeNode, this.className);
             if (!countDiv) {
                 countDiv = document.createElement("div");
-                countDiv.classList.add(this.config.CLASS_NAME);
+                countDiv.classList.add(this.className);
                 const background = treeNode.querySelector(".file-node-background");
                 treeNode.insertBefore(countDiv, background.nextElementSibling);
             }

@@ -1,7 +1,11 @@
 class collapseParagraphPlugin extends global._basePlugin {
+    beforeProcess = () => {
+        this.className = "plugin-collapsed-paragraph";
+    }
+
     style = () => {
         return `
-            #write .${this.config.CLASS_NAME}::after {
+            #write .${this.className}::after {
                 display: initial;
                 content: "{\\2026}" !important;
                 margin: 0 0.6rem;
@@ -31,7 +35,7 @@ class collapseParagraphPlugin extends global._basePlugin {
             if (!paragraph) return;
 
             document.activeElement.blur();
-            const collapsed = paragraph.classList.contains(this.config.CLASS_NAME);
+            const collapsed = paragraph.classList.contains(this.className);
             const list = ev.altKey ? (ev.shiftKey ? this.findAllSiblings(paragraph) : this.findSiblings(paragraph)) : [paragraph];
             list.forEach(ele => this.trigger(ele, collapsed));
             this.callbackOtherPlugin();
@@ -50,7 +54,7 @@ class collapseParagraphPlugin extends global._basePlugin {
         let ele = paragraph.nextElementSibling;
         while (ele && stop.indexOf(ele.tagName) === -1) {
             if (this.paragraphList.indexOf(ele.tagName) !== -1
-                && ele.classList.contains(this.config.CLASS_NAME)
+                && ele.classList.contains(this.className)
                 && display === "") {
                 ele.style.display = "";
                 ele = this.toggle(ele, "none");
@@ -65,16 +69,16 @@ class collapseParagraphPlugin extends global._basePlugin {
     }
     trigger = (paragraph, collapsed) => {
         if (collapsed) {
-            paragraph.classList.remove(this.config.CLASS_NAME);
+            paragraph.classList.remove(this.className);
             this.toggle(paragraph, "");
         } else {
-            paragraph.classList.add(this.config.CLASS_NAME);
+            paragraph.classList.add(this.className);
             this.toggle(paragraph, "none");
         }
     }
 
     rollback = start => {
-        if (!document.querySelector(`#write > .${this.config.CLASS_NAME}`)) return;
+        if (!document.querySelector(`#write > .${this.className}`)) return;
 
         let ele = start.closest("#write > [cid]");
 
@@ -82,7 +86,7 @@ class collapseParagraphPlugin extends global._basePlugin {
         while (ele) {
             const idx = this.paragraphList.indexOf(ele.tagName);
             if (idx !== -1) {
-                if (pList.length === 0 || (pList[pList.length - 1].idx > idx && ele.classList.contains(this.config.CLASS_NAME))) {
+                if (pList.length === 0 || (pList[pList.length - 1].idx > idx && ele.classList.contains(this.className))) {
                     pList.push({ele, idx})
                     if (pList[pList.length - 1].idx === 0) break;
                 }
@@ -124,7 +128,7 @@ class collapseParagraphPlugin extends global._basePlugin {
         const name = "recordCollapseParagraph";
         if (this.config.RECORD_COLLAPSE) {
             this.utils.registerStateRecorder(name, "#write h1,h2,h3,h4,h5,h6",
-                ele => ele.classList.contains(this.config.CLASS_NAME), ele => this.trigger(ele, false));
+                ele => ele.classList.contains(this.className), ele => this.trigger(ele, false));
         } else {
             this.utils.unregisterStateRecorder(name);
         }
@@ -145,7 +149,7 @@ class collapseParagraphPlugin extends global._basePlugin {
     dynamicCall = type => {
         if (!this.dynamicUtil.target) return;
 
-        const collapsed = this.dynamicUtil.target.classList.contains(this.config.CLASS_NAME);
+        const collapsed = this.dynamicUtil.target.classList.contains(this.className);
 
         let list;
         if (type === "call_current") {

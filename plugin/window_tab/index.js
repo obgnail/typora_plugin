@@ -175,6 +175,7 @@ class windowTabBarPlugin extends global._basePlugin {
             tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
         }
         this.tabUtil = {tabs: [], activeIdx: 0,}
+        this.loopDetectInterval = 35;
         this.callMap = {
             new_tab_open: () => this.config.LOCAL_OPEN = false,
             local_open: () => this.config.LOCAL_OPEN = true,
@@ -194,7 +195,7 @@ class windowTabBarPlugin extends global._basePlugin {
         this.utils.loopDetector(
             () => (this.utils.isBetaVersion) ? document.querySelector("header").getBoundingClientRect().height : true,
             this.adjustTop,
-            this.config.LOOP_DETECT_INTERVAL,
+            this.loopDetectInterval,
             1000
         )
 
@@ -385,7 +386,7 @@ class windowTabBarPlugin extends global._basePlugin {
                 clearInterval(_timer);
                 this.utils.publishEvent(this.utils.eventType.fileContentLoaded, filePath);
             }
-        }, this.config.LOOP_DETECT_INTERVAL);
+        }, this.loopDetectInterval);
     }
 
     openTab = wantOpenPath => {

@@ -1,8 +1,7 @@
 # 1. 如果您对 toml 格式不太了解，可以花三分钟时间学习一下：https://toml.io/cn/v1.0.0
 # 2. 修改配置前，请读本目录下的【请读我.md】文件
-# 3. 标记为【内部使用】的配置请不要修改，除非你真的理解你在做什么，否则会导致插件不稳定
+# 3. 如何修改配置？答：将此文件的内容粘贴到 settings.user.toml 文件中，接着关闭此文件，根据说明文字修改 settings.user.toml 文件，最后重启 Typora
 # 4. 所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
-# 5. 如何修改配置？答：将此文件的内容粘贴到 settings.user.toml 文件中，接着关闭此文件，根据说明文字修改 settings.user.toml 文件，最后重启 Typora
 
 
 ############### global ###############
@@ -10,10 +9,10 @@
 [global]
 # 所有插件的开关，若设为false，则关闭全部插件
 ENABLE = true
-# 如果你使用了自定义图表插件（kanban、markmap、echarts）并且使用了交互模式（INTERACTIVE_MODE 置为 true），那么下面两个配置请至少一个置为true，否则你将不能退出交互模式，修改fence
-# 为【自定义fence图表】添加 edit icon（当点击 edit icon 时退出交互模式）
+# 如果你使用了自定义图表插件（kanban、markmap、echarts等等）并且使用了交互模式（INTERACTIVE_MODE置为true），那么下面两个配置请至少一个置为true，否则你将不能退出交互模式，修改fence
+# 为【自定义图表】添加一个【编辑】按钮（当点击【编辑】按钮时退出交互模式）
 CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE = true
-# ctrl+click【自定义fence图表】退出交互模式
+# ctrl+click【自定义图表】退出交互模式
 CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE = false
 
 
@@ -50,8 +49,6 @@ SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
 CTRL_WHEEL_TO_SCROLL = true
 # typora1.1版本以后，支持使用锚点跳转到本地文件，是否拦截处理（从新建窗口改成新建标签页）
 INTERCEPT_INTERNAL_AND_LOCAL_LINKS = true
-# 内部使用
-LOOP_DETECT_INTERVAL = 35
 
 
 ############### search_multi ###############
@@ -399,9 +396,6 @@ SCROLL_TIME = 600
 COLOR = "var(--active-file-border-color, black)"
 # hover时标签的颜色
 HOVER_COLOR = "var(--item-hover-bg-color, black)"
-# 内部使用
-# 标签id
-DIV_ID = "plugin-go-top"
 
 
 ############### mindmap ###############
@@ -506,6 +500,10 @@ ENABLE_IMAGE = true
 ENABLE_FENCE = true
 # 导出时运用样式
 ENABLE_WHEN_EXPORT = true
+# 编号的下标使用的字体
+FONT_FAMILY = "monospace"
+# 编号的下标的位置：left/right/center
+ALIGN = "center"
 # 编号的下标名称
 [auto_number.NAMES]
 table = "Table"
@@ -531,7 +529,7 @@ ENABLE_INDENT = true
 ENABLE_FOLD = true
 # 折叠形式：
 #   1.hidden: 隐藏除第一行外的所有行
-#   2.scroll: 添加滚动条（但是可视高度只有一行，所以非常反人类）
+#   2.scroll: 添加滚动条（因为可视高度只有一行，所以非常反人类）
 FOLD_OVERFLOW = "hidden"
 # 所有代码块默认使用折叠
 FOLD_DEFAULT = false
@@ -553,9 +551,6 @@ NAME = "章节折叠"
 CLICKABLE = true
 # 是否记录章节放缩状态（直到关闭typora）
 RECORD_COLLAPSE = true
-# 内部使用
-# 添加的class
-CLASS_NAME = "plugin-collapsed-paragraph"
 
 
 ############### truncate_text ###############
@@ -568,9 +563,6 @@ NAME = "文段截断"
 CLICKABLE = true
 # 剩余文本段
 REMAIN_LENGTH = 80
-# 内部使用
-# 添加的class
-CLASS_NAME = "plugin-truncate-text"
 
 
 ############### export_enhance ###############
@@ -624,9 +616,9 @@ CLICKABLE = true
 # 点击后是否隐藏菜单（此选项不必在此调整，可以在UI中设置）
 DO_NOT_HIDE = false
 # 对于【启用但是没有出现在下面MENUS选项】的插件，自动加入到最后一个MENUS
-# 不建议将此选项置为false，若置为false，且在MENUS中删去那些处于启用状态的插件，那么：
+# 强烈不建议将此选项置为false，若置为false，且在MENUS中删去那些处于启用状态的插件，那么：
 #   1. 那些插件依旧处于启用状态，但是就不能通过右键菜单调用了
-#   2. 如果插件系统后续新增了插件，那么你就根本无法意识到新增的插件的存在
+#   2. 如果插件系统后续新增了插件，那么你就根本无法感知到新增的插件的存在
 FIND_LOST_PLUGIN = true
 # 自定义右键菜单
 #  每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
@@ -681,10 +673,6 @@ CLICKABLE = false
 MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
-# 内部使用
-# 添加的class name
-CLASS_NAME = "plugin-file-counter"
-LOOP_DETECT_INTERVAL = 300
 
 
 ############### mermaid_replace ###############
