@@ -148,9 +148,9 @@ class autoNumberPlugin extends global._basePlugin {
         #write span.md-image.md-img-loaded::after {
             counter-increment: Figures;
             content: "${this.config.NAMES.image} " counter(write-h2) "-" counter(Figures);
-            font-family: monospace;
+            font-family: ${this.config.FONT_FAMILY};
             display: block;
-            text-align: center;
+            text-align: ${this.config.ALIGN};
             margin: 4px 0;
         }`
 
@@ -158,9 +158,9 @@ class autoNumberPlugin extends global._basePlugin {
         #write figure.table-figure::after {
             counter-increment: Tables;
             content: "${this.config.NAMES.table} " counter(write-h2) "-" counter(Tables);
-            font-family: monospace;
+            font-family: ${this.config.FONT_FAMILY};
             display: block;
-            text-align: center;
+            text-align: ${this.config.ALIGN};
             margin: 4px 0;
         }`
 
@@ -173,8 +173,8 @@ class autoNumberPlugin extends global._basePlugin {
             content: "${this.config.NAMES.fence} " counter(write-h2) "-" counter(Fences);
             position: absolute;
             width: 100%;
-            text-align: center;
-            font-family: monospace;
+            text-align: ${this.config.ALIGN};
+            font-family: ${this.config.FONT_FAMILY};
             margin: 0.6em 0;
             font-size: 1.1em;
             z-index: 9;
@@ -214,7 +214,7 @@ class autoNumberPlugin extends global._basePlugin {
     process = () => {
         this.init();
         if (this.config.ENABLE_WHEN_EXPORT) {
-            new exportPDFHelper(this).process();
+            new exportHelper(this).process();
         }
     }
 
@@ -262,8 +262,8 @@ class autoNumberPlugin extends global._basePlugin {
     }
 }
 
-// 解决导出pdf时目录没有编号的问题
-class exportPDFHelper {
+// 导出时添加CSS，并解决导出pdf时目录没有编号的问题
+class exportHelper {
     constructor(controller) {
         this.inExport = false;
         this.controller = controller

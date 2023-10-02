@@ -1,7 +1,11 @@
 class goTopPlugin extends global._basePlugin {
+    beforeProcess = () => {
+        this.ID = "plugin-go-top";
+    }
+
     style = () => {
         return `
-            #${this.config.DIV_ID} {
+            #${this.ID} {
                 position: fixed;
                 right: 30px;
                 bottom: 50px;
@@ -11,7 +15,7 @@ class goTopPlugin extends global._basePlugin {
                 color: ${this.config.COLOR};
             }
             
-            #${this.config.DIV_ID} .action-item {
+            #${this.ID} .action-item {
                 width: 35px;
                 height: 35px;
                 margin-top: 10px;
@@ -20,11 +24,11 @@ class goTopPlugin extends global._basePlugin {
                 border-radius: 4px;
             }
             
-            #${this.config.DIV_ID} .action-item:hover {
+            #${this.ID} .action-item:hover {
                 background-color: ${this.config.HOVER_COLOR};
             }
             
-            #${this.config.DIV_ID} .action-item i {
+            #${this.ID} .action-item i {
                 display: block;
                 line-height: 35px;
             }
@@ -33,7 +37,7 @@ class goTopPlugin extends global._basePlugin {
 
     html = () => {
         const wrap = document.createElement("div");
-        wrap.id = this.config.DIV_ID;
+        wrap.id = this.ID;
         wrap.innerHTML = `
             <div class="action-item" action="go-top"><i class="fa fa-angle-up"></i></div>
             <div class="action-item" action="go-bottom"><i class="fa fa-angle-down"></i></div>`;
@@ -41,7 +45,7 @@ class goTopPlugin extends global._basePlugin {
     }
 
     process = () => {
-        document.getElementById(this.config.DIV_ID).addEventListener("click", ev => {
+        document.getElementById(this.ID).addEventListener("click", ev => {
             const target = ev.target.closest(".action-item");
             if (target) {
                 const action = target.getAttribute("action");
