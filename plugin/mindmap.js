@@ -1,6 +1,5 @@
 class mindmapPlugin extends global._basePlugin {
     init = () => {
-        this.dynamicUtil = {target: null};
         this.paragraphList = ["H0", "H1", "H2", "H3", "H4", "H5", "H6"];
         this.callArgs = [
             {arg_name: "复制到剪切板：mindmap", arg_value: "set_clipboard_mindmap"},
@@ -80,9 +79,9 @@ class mindmapPlugin extends global._basePlugin {
         return this.wrapMermaid(lines.join(""), "graph")
     }
 
-    dynamicCallArgsGenerator = anchorNode => {
-        this.dynamicUtil.target = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
-        const disabled = !this.dynamicUtil.target || this.dynamicUtil.target.querySelector("p > span");
+    dynamicCallArgsGenerator = (anchorNode, meta) => {
+        meta.target = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
+        const disabled = !meta.target || meta.target.querySelector("p > span");
 
         return [
             {arg_name: "在此处插入：mindmap", arg_value: "insert_mindmap", arg_disabled: disabled},
@@ -90,7 +89,7 @@ class mindmapPlugin extends global._basePlugin {
         ]
     }
 
-    call = type => {
+    call = (type, meta) => {
         const pList = [];
         document.querySelectorAll("#write > .md-heading").forEach(ele => {
             const tagName = ele.tagName;
@@ -119,11 +118,11 @@ class mindmapPlugin extends global._basePlugin {
                 return;
             case "insert_mindmap":
                 result = this.mindmap(pList, root);
-                this.dynamicUtil.target && this.utils.insertText(this.dynamicUtil.target, result);
+                meta.target && this.utils.insertText(meta.target, result);
                 return;
             case "insert_graph":
                 result = this.graph(pList, root);
-                this.dynamicUtil.target && this.utils.insertText(this.dynamicUtil.target, result);
+                meta.target && this.utils.insertText(meta.target, result);
                 return;
         }
     }

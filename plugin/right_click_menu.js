@@ -219,7 +219,7 @@ class rightClickMenuPlugin extends global._basePlugin {
             const argValue = this.getAttribute("arg_value");
             const plugin = that.utils.getPlugin(fixedName);
             if (argValue !== that.notavailableValue && plugin && plugin.call) {
-                plugin.call(argValue);
+                that.utils.withMeta(meta => plugin.call(argValue, meta));
             }
             if (!that.config.DO_NOT_HIDE) {
                 File.editor.contextMenu.hide();

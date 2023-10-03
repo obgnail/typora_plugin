@@ -75,8 +75,6 @@ class datatablesPlugin extends global._basePlugin {
         this.loaded = false;
 
         this.tableList = [];
-
-        this.dynamicUtil = {target: null, uuid: ""}
     }
 
     process = () => {
@@ -168,11 +166,11 @@ class datatablesPlugin extends global._basePlugin {
         }
     }
 
-    dynamicCallArgsGenerator = anchorNode => {
+    dynamicCallArgsGenerator = (anchorNode, meta) => {
         const table = anchorNode.closest("#write table.md-table");
         const uuid = table && table.getAttribute("table-uuid");
-        this.dynamicUtil.uuid = uuid;
-        this.dynamicUtil.target = table;
+        meta.uuid = uuid;
+        meta.target = table;
 
         return [{
             arg_name: (uuid) ? "转回普通表格" : "增强表格",
@@ -181,11 +179,11 @@ class datatablesPlugin extends global._basePlugin {
         }]
     }
 
-    call = async type => {
+    call = async (type, meta) => {
         if (type === "convert_current") {
-            await this.newDataTable(this.dynamicUtil.target);
+            await this.newDataTable(meta.target);
         } else if (type === "rollback_current") {
-            this.removeDataTable(this.dynamicUtil.uuid);
+            this.removeDataTable(meta.uuid);
         }
     }
 }

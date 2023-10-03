@@ -40,7 +40,6 @@ class fenceEnhancePlugin extends global._basePlugin {
     init = () => {
         this.builders = [];
         this.lastClickTime = 0;
-        this.dynamicUtil = {target: null};
         this.callArgs = [
             {arg_name: "自动隐藏/显示按钮", arg_value: "set_auto_hide"},
             {arg_name: "禁用/启用折叠按钮", arg_value: "disable_or_enable_fold"},
@@ -80,9 +79,9 @@ class fenceEnhancePlugin extends global._basePlugin {
                 document.querySelectorAll(".fold-code.folded").forEach(ele => ele.click());
                 this.config.FOLD_DEFAULT = false;
             },
-            fold_current: () => this.foldFence(this.dynamicUtil.target),
-            copy_current: () => this.copyFence(this.dynamicUtil.target),
-            indent_current: () => this.indentFence(this.dynamicUtil.target),
+            fold_current: meta => this.foldFence(meta.target),
+            copy_current: meta => this.copyFence(meta.target),
+            indent_current: meta => this.indentFence(meta.target),
             set_auto_hide: () => {
                 this.config.AUTO_HIDE = !this.config.AUTO_HIDE;
                 const visibility = (this.config.AUTO_HIDE) ? "hidden" : "";
@@ -200,9 +199,9 @@ class fenceEnhancePlugin extends global._basePlugin {
         setTimeout(() => indentButton.firstElementChild.className = "fa fa-indent", this.config.WAIT_RECOVER_INTERVAL);
     }
 
-    dynamicCallArgsGenerator = anchorNode => {
+    dynamicCallArgsGenerator = (anchorNode, meta) => {
         const target = anchorNode.closest("#write .md-fences");
-        this.dynamicUtil.target = target;
+        meta.target = target;
 
         const arr = [];
         if (this.enableIndent) {
@@ -223,9 +222,9 @@ class fenceEnhancePlugin extends global._basePlugin {
         button && button.click();
     }
 
-    call = type => {
+    call = (type, meta) => {
         const func = this.callMap[type];
-        func && func();
+        func && func(meta);
     }
 }
 

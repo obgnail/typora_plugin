@@ -1,14 +1,13 @@
 class resizeImagePlugin extends global._basePlugin {
     init = () => {
-        this.dynamicUtil = {target: null}
         this.dynamicCallMap = {
             record_resize_state: () => this.recordResizeState(),
             allow_oversize: () => this.resetImageSize(),
-            zoom_out_20_percent: () => this.zoom(this.dynamicUtil.target, true, 0.2),
-            zoom_in_20_percent: () => this.zoom(this.dynamicUtil.target, false, 0.2),
-            set_align_left: () => this.setAlign("left", this.dynamicUtil.target),
-            set_align_center: () => this.setAlign("center", this.dynamicUtil.target),
-            set_align_right: () => this.setAlign("right", this.dynamicUtil.target),
+            zoom_out_20_percent: meta => this.zoom(meta.target, true, 0.2),
+            zoom_in_20_percent: meta => this.zoom(meta.target, false, 0.2),
+            set_align_left: meta => this.setAlign("left", meta.target),
+            set_align_center: meta => this.setAlign("center", meta.target),
+            set_align_right: meta => this.setAlign("right", meta.target),
         }
     }
 
@@ -100,7 +99,7 @@ class resizeImagePlugin extends global._basePlugin {
         }
     }
 
-    dynamicCallArgsGenerator = anchorNode => {
+    dynamicCallArgsGenerator = (anchorNode, meta) => {
         const args = [
             {arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记录图片放缩状态`, arg_value: "record_resize_state"},
             {arg_name: `${this.config.ALLOW_OVERSIZE ? "禁止" : "允许"}图片超出范围`, arg_value: "allow_oversize"},
@@ -112,7 +111,7 @@ class resizeImagePlugin extends global._basePlugin {
         const image = images.querySelector("img");
         if (!image) return args;
 
-        this.dynamicUtil.target = image;
+        meta.target = image;
 
         args.push({arg_name: "缩小20%", arg_value: "zoom_out_20_percent"})
         if (this.getWidth(image) < image.parentElement.offsetWidth) {
@@ -126,9 +125,9 @@ class resizeImagePlugin extends global._basePlugin {
         return args
     }
 
-    call = type => {
+    call = (type, meta) => {
         const func = this.dynamicCallMap[type];
-        func && func();
+        func && func(meta);
     }
 }
 
