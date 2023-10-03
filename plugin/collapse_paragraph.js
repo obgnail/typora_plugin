@@ -18,7 +18,6 @@ class collapseParagraphPlugin extends global._basePlugin {
 
     init = () => {
         this.paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
-        this.dynamicUtil = {target: null};
         this.callArgs = [
             {arg_name: "折叠全部章节", arg_value: "collapse_all"},
             {arg_name: "展开全部章节", arg_value: "expand_all"},
@@ -134,9 +133,9 @@ class collapseParagraphPlugin extends global._basePlugin {
         }
     }
 
-    dynamicCallArgsGenerator = anchorNode => {
+    dynamicCallArgsGenerator = (anchorNode, meta) => {
         const target = anchorNode.closest("#write h1,h2,h3,h4,h5,h6");
-        this.dynamicUtil.target = target;
+        meta.target = target;
 
         return [
             {arg_name: `${this.config.RECORD_COLLAPSE ? "不" : ""}记录章节放缩状态`, arg_value: "record_collapse_state"},
@@ -146,18 +145,18 @@ class collapseParagraphPlugin extends global._basePlugin {
         ]
     }
 
-    dynamicCall = type => {
-        if (!this.dynamicUtil.target) return;
+    dynamicCall = (type, meta) => {
+        if (!meta.target) return;
 
-        const collapsed = this.dynamicUtil.target.classList.contains(this.className);
+        const collapsed = meta.target.classList.contains(this.className);
 
         let list;
         if (type === "call_current") {
-            list = [this.dynamicUtil.target];
+            list = [meta.target];
         } else if (type === "call_siblings") {
-            list = this.findSiblings(this.dynamicUtil.target);
+            list = this.findSiblings(meta.target);
         } else if (type === "call_all_siblings") {
-            list = this.findAllSiblings(this.dynamicUtil.target);
+            list = this.findAllSiblings(meta.target);
         }
 
         if (list) {
@@ -165,7 +164,7 @@ class collapseParagraphPlugin extends global._basePlugin {
         }
     }
 
-    call = type => {
+    call = (type, meta) => {
         if (type === "collapse_all") {
             for (let i = this.paragraphList.length - 1; i >= 0; i--) {
                 document.getElementsByTagName(this.paragraphList[i]).forEach(ele => this.trigger(ele, false));
@@ -175,7 +174,7 @@ class collapseParagraphPlugin extends global._basePlugin {
         } else if (type === "record_collapse_state") {
             this.recordCollapseState();
         } else {
-            this.dynamicCall(type);
+            this.dynamicCall(type, meta);
         }
         this.callbackOtherPlugin();
     }

@@ -7,8 +7,8 @@ class CustomPlugin extends global._basePlugin {
         this.loadPluginHelper.load();
     }
     hotkey = () => this.hotkeyHelper.hotkey()
-    dynamicCallArgsGenerator = anchorNode => this.dynamicCallHelper.dynamicCallArgsGenerator(anchorNode)
-    call = fixedName => this.dynamicCallHelper.call(fixedName)
+    dynamicCallArgsGenerator = (anchorNode, meta) => this.dynamicCallHelper.dynamicCallArgsGenerator(anchorNode, meta)
+    call = (fixedName, meta) => this.dynamicCallHelper.call(fixedName, meta)
 }
 
 class loadPluginHelper {
@@ -81,11 +81,10 @@ class dynamicCallHelper {
     constructor(controller) {
         this.custom = controller.custom;
         this.utils = controller.utils;
-        this.dynamicUtil = {target: null};
     }
 
-    dynamicCallArgsGenerator = anchorNode => {
-        this.dynamicUtil.target = anchorNode;
+    dynamicCallArgsGenerator = (anchorNode, meta) => {
+        meta.target = anchorNode;
         const dynamicCallArgs = [];
 
         for (const fixedName of Object.keys(this.custom)) {
@@ -114,12 +113,12 @@ class dynamicCallHelper {
         return dynamicCallArgs;
     }
 
-    call = fixedName => {
+    call = (fixedName, meta) => {
         const plugin = this.custom[fixedName];
         if (plugin) {
             try {
                 const selector = plugin.selector();
-                const target = (selector) ? this.dynamicUtil.target.closest(selector) : this.dynamicUtil.target;
+                const target = (selector) ? meta.target.closest(selector) : meta.target;
                 plugin.callback(target);
             } catch (e) {
                 console.error("plugin callback error", plugin.fixedName, e);

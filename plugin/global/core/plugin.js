@@ -6,6 +6,7 @@ class utils {
     static stopLoadPluginError = new Error("stopLoadPlugin")
     static stopCallError = new Error("stopCall")
     static detectorContainer = {}
+    static meta = {}
     static Package = {
         Path: reqnode("path"),
         Fs: reqnode("fs"),
@@ -204,10 +205,13 @@ class utils {
         if (plugin && plugin.dynamicCallArgsGenerator) {
             anchorNode = anchorNode || this.getAnchorNode();
             if (anchorNode[0]) {
-                return plugin.dynamicCallArgsGenerator(anchorNode[0]);
+                this.meta = {};
+                return plugin.dynamicCallArgsGenerator(anchorNode[0], this.meta);
             }
         }
     }
+
+    static withMeta = func => func(this.meta)
 
 
     ////////////////////////////// 事件 //////////////////////////////
