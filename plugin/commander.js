@@ -79,7 +79,6 @@ class commanderPlugin extends global._basePlugin {
             font-size: 13px;
             line-height: 1.1;
             margin: 10px 10px 5px 5px;
-            width: 100%;
             max-height: 700px;
         }
         
