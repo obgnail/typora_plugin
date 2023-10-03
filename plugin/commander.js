@@ -299,13 +299,12 @@ class commanderPlugin extends global._basePlugin {
     /* exec为什么不使用shell options? 答：不能支持wsl
     *  exec为什么不使用env options?   答：为了兼容。cmd使用变量的方式为%VAR%，bash为$VAR。而且命令可能会跨越多层shell
     */
-    exec = (cmd, shell, resolve, reject, callback, hint, options) => {
+    exec = (cmd, shell, resolve, reject, callback, hint, options = {}) => {
         resolve = resolve || console.log;
         reject = reject || console.error;
         const cb = (err, stdout, stderr) => callback && callback(err, stdout, stderr);
 
         const defaultOptions = {encoding: 'utf8', cwd: this.getFolder()};
-        options = options || {};
         const {cmd_, shell_} = this.beforeExecute(cmd, shell, hint);
         this.utils.Package.ChildProcess.exec(
             `chcp 65001 | ${shell_} "${cmd_}"`,
@@ -321,13 +320,12 @@ class commanderPlugin extends global._basePlugin {
         )
     }
 
-    spawn = (cmd, shell, resolve, reject, callback, hint, options) => {
+    spawn = (cmd, shell, resolve, reject, callback, hint, options = {}) => {
         resolve = resolve || console.log;
         reject = reject || console.error;
         const cb = code => callback && callback(code);
 
         const defaultOptions = {encoding: 'utf8', cwd: this.getFolder(), shell: true};
-        options = options || {};
         const {cmd_, shell_} = this.beforeExecute(cmd, shell, hint || ""); // 执行前清空输出
         const child = this.utils.Package.ChildProcess.spawn(
             `chcp 65001 | ${shell_} "${cmd_}"`,
