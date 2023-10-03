@@ -62,13 +62,7 @@ class callouts extends BaseCustomPlugin {
             this.exportToHtml
         )
 
-        const debounceRange = this.utils.debounce(this.range, 500);
-        new MutationObserver(mutationList => {
-            if (mutationList.some(m => m.type === "characterData")
-                || mutationList.length && mutationList[0].addedNodes.length && mutationList[0].removedNodes.length) {
-                debounceRange();
-            }
-        }).observe(write, {characterData: true, childList: true, subtree: true});
+        this.utils.addEventListener(this.utils.eventType.fileEdited, this.range);
     }
 
     range = () => {

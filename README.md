@@ -37,12 +37,13 @@
 | 27   | export_enhance             | 导出 html 时避免图片丢失             |
 | 28   | go_top                     | 一键到文章顶部                       |
 | 29   | truncate_text              | 暂时隐藏内容，提高大文件渲染性能     |
-| 30   | hotkey_hub                 | 快捷键注册中心（高级）               |
-| 31   | custom                     | 用户自定义命令（高级）               |
-| 32   | plugin_updater             | 一键升级插件                         |
-| 33   | right_click_menu           | 右键菜单统一管理、调用插件           |
-| 34   | mermaid_replace            | 替换 mermaid 组件                    |
-| 35   | old_window_tab             | 标签页管理（已废弃）                 |
+| 30   | markdown_lint              | markdown格式规范检测                 |
+| 31   | hotkey_hub                 | 快捷键注册中心（高级）               |
+| 32   | custom                     | 用户自定义命令（高级）               |
+| 33   | plugin_updater             | 一键升级插件                         |
+| 34   | right_click_menu           | 右键菜单统一管理、调用插件           |
+| 35   | mermaid_replace            | 替换 mermaid 组件                    |
+| 36   | old_window_tab             | 标签页管理（已废弃）                 |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -589,6 +590,15 @@ auto_pair_symbols = [
 > 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
 
 > collapse_paragraph.js 的章节折叠功能可以很好的替代此插件，建议使用 collapse_paragraph。
+
+
+
+### markdown_lint：markdown 格式规范检测
+
+使用方式：
+
+- 方式一：右键菜单 -> 常用插件 -> 自定义插件 -> md格式规范检测
+- 方式二：点击右上角的小方块
 
 
 

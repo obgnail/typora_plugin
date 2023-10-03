@@ -79,6 +79,7 @@ class commanderPlugin extends global._basePlugin {
             font-size: 13px;
             line-height: 1.1;
             margin: 10px 10px 5px 5px;
+            max-height: 700px;
         }
         
         .plugin-commander-output pre.error {
@@ -191,10 +192,11 @@ class commanderPlugin extends global._basePlugin {
                     break
                 case "Escape":
                 case "Backspace":
-                    if (ev.key === "Backspace" && !this.config.BACKSPACE_TO_HIDE || this.modal.input.value) return;
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    this.modal.modal.style.display = "none";
+                    if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.modal.input.value) {
+                        ev.stopPropagation();
+                        ev.preventDefault();
+                        this.modal.modal.style.display = "none";
+                    }
                     break
                 case "Tab":
                     const targetClass = this.config.USE_BUILTIN ? ".plugin-commander-builtin" : ".plugin-commander-shell";

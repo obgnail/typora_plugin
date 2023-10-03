@@ -98,10 +98,11 @@ class toolbarPlugin extends global._basePlugin {
                     break
                 case "Escape":
                 case "Backspace":
-                    if (ev.key === "Backspace" && !this.config.BACKSPACE_TO_HIDE || this.entities.input.value) return;
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    this.hide();
+                    if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
+                        ev.stopPropagation();
+                        ev.preventDefault();
+                        this.hide();
+                    }
                     break
                 case "ArrowUp":
                 case "ArrowDown":

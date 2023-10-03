@@ -224,12 +224,13 @@ class multiHighlighterPlugin extends global._basePlugin {
                 ev.preventDefault();
                 this.highlight();
             } else if (ev.key === "Escape" || ev.key === "Backspace") {
-                if (ev.key === "Backspace" && !this.config.BACKSPACE_TO_HIDE || this.entities.input.value) return;
-                ev.stopPropagation();
-                ev.preventDefault();
-                this.clearHighlight();
-                this.refreshFences();
-                this.hide();
+                if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    this.clearHighlight();
+                    this.refreshFences();
+                    this.hide();
+                }
             }
         })
 
