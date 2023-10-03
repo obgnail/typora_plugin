@@ -48,6 +48,7 @@ class utils {
     //   fileOpened: 打开文件之后
     //   otherFileOpened: 和fileOpened的区别：重新打开当前标签不会触发otherFileOpened，但是fileOpened会
     //   fileContentLoaded: 文件内容加载完毕之后(依赖于window_tab)
+    //   fileEdited: 文件编辑后
 
     //   beforeToggleSourceMode: 进入源码模式之前
     //   beforeAddCodeBlock: 添加代码块之前
@@ -62,6 +63,7 @@ class utils {
         fileOpened: "fileOpened",
         otherFileOpened: "otherFileOpened",
         fileContentLoaded: "fileContentLoaded",
+        fileEdited: "fileEdited",
         beforeToggleSourceMode: "beforeToggleSourceMode",
         beforeAddCodeBlock: "beforeAddCodeBlock",
         afterAddCodeBlock: "afterAddCodeBlock",
@@ -1112,6 +1114,14 @@ class eventHub {
                 }
             }
         }).observe(document.body, {attributes: true});
+
+        const debouncePublish = this.utils.debounce(() => this.utils.publishEvent(this.utils.eventType.fileEdited), 500);
+        new MutationObserver(mutationList => {
+            if (mutationList.some(m => m.type === "characterData")
+                || mutationList.length && mutationList[0].addedNodes.length && mutationList[0].removedNodes.length) {
+                debouncePublish();
+            }
+        }).observe(write, {characterData: true, childList: true, subtree: true});
     }
 }
 
@@ -1457,7 +1467,6 @@ class exportHelper {
         )
     }
 }
-
 
 class basePlugin {
     constructor(fixedName, setting) {

@@ -426,6 +426,32 @@ auto_open = true
 auto_use_datetable = true
 
 
+############### markdownLint ###############
+[markdownLint]
+# 右键菜单中展示的名称
+name = "md格式规范检测"
+# 是否启用此自定义插件
+enable = true
+# 插件配置
+[markdownLint.config]
+# 禁用的规则
+# 参考：https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md
+disable_rules = [
+    "MD012",
+    "MD013",
+    "MD041",
+]
+# 在右上角添加一个方块，用以提示lint状态（类似于idea）
+use_button = true
+# 方块的尺寸
+button_width = "12px"
+button_height = "12px"
+# lint通过时方块的颜色
+pass_color = "#499c54"
+# lint未通过时方块的颜色
+error_color = "#be9117"
+
+
 ############### hotkeyHub ###############
 [hotkeyHub]
 # 右键菜单中展示的名称
