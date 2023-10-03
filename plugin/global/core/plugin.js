@@ -205,6 +205,7 @@ class utils {
         if (plugin && plugin.dynamicCallArgsGenerator) {
             anchorNode = anchorNode || this.getAnchorNode();
             if (anchorNode[0]) {
+                this.meta = {};
                 return plugin.dynamicCallArgsGenerator(anchorNode[0], this.meta);
             }
         }
