@@ -238,12 +238,12 @@ class pluginTool extends baseToolInterface {
     callback = (fixedName, meta) => {
         const plugin = this.utils.getPlugin(fixedName);
         if (plugin) {
-            plugin.call(meta || undefined);
+            plugin.call(meta || undefined, this.controller.anchorNode);
             return
         }
         const customPlugin = this.utils.getCustomPlugin(fixedName);
         if (customPlugin) {
-            global._plugins.custom.call(fixedName);
+            global._plugins.custom.call(fixedName, this.controller.anchorNode);
         }
     }
 }

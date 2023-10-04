@@ -1,6 +1,7 @@
 class CustomPlugin extends global._basePlugin {
     beforeProcess = async () => {
-        this.custom = {};
+        this.custom = {};     // 启用的插件
+        this.allCustom = [];  // 全部的插件
         this.hotkeyHelper = new hotkeyHelper(this);
         this.dynamicCallHelper = new dynamicCallHelper(this);
         this.loadPluginHelper = new loadPluginHelper(this);
@@ -56,20 +57,21 @@ class loadPluginHelper {
     }
 
     load = async () => {
-        const allPlugins = this.utils.readSetting(
+        const settings = this.utils.readSetting(
             "./plugin/global/settings/custom_plugin.default.toml",
             "./plugin/global/settings/custom_plugin.user.toml",
         )
+        this.controller.allCustom = Array.from(Object.keys(settings));
 
         await Promise.all(
-            Array.from(Object.keys(allPlugins).map(fixedName => {
-                const customSetting = allPlugins[fixedName];
+            this.controller.allCustom.map(fixedName => {
+                const customSetting = settings[fixedName];
                 if (customSetting.enable) {
                     return this.loadCustomPlugin(fixedName, customSetting)
                 } else {
                     console.log(`disable custom plugin: [ ${fixedName} ]`)
                 }
-            }))
+            })
         )
 
         this.utils.publishEvent(this.utils.eventType.allCustomPluginsHadInjected);
@@ -91,6 +93,7 @@ class loadPluginHelper {
 
 class dynamicCallHelper {
     constructor(controller) {
+        this.controller = controller;
         this.custom = controller.custom;
         this.utils = controller.utils;
     }
@@ -99,7 +102,7 @@ class dynamicCallHelper {
         meta.target = anchorNode;
         const dynamicCallArgs = [];
 
-        for (const fixedName of Object.keys(this.custom)) {
+        for (const fixedName of this.controller.allCustom) {
             const plugin = this.custom[fixedName];
             if (!plugin) continue;
 

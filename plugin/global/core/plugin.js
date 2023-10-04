@@ -1552,7 +1552,8 @@ class process {
 
     run = async () => {
         global._global_settings = {};
-        global._plugins = {};
+        global._plugins = {};     // 启用的插件
+        global._all_plugins = {}; // 全部的插件
 
         const pluginSettings = this.utils.readSetting(
             "./plugin/global/settings/settings.default.toml",
@@ -1561,8 +1562,10 @@ class process {
 
         if (!pluginSettings || pluginSettings && pluginSettings["global"] && !pluginSettings["global"]["ENABLE"]) return;
 
+        global._all_plugins = Array.from(Object.keys(pluginSettings));
+
         await Promise.all(
-            Array.from(Object.keys(pluginSettings).map(fixedName => {
+            global._all_plugins.map(fixedName => {
                 const setting = pluginSettings[fixedName];
                 if (fixedName === "global") {
                     global._global_settings = setting;
@@ -1571,7 +1574,7 @@ class process {
                 } else {
                     console.log(`disable plugin: [ ${fixedName} ] `);
                 }
-            }))
+            })
         );
         // 等待插件都注册完成才能执行process
         await Promise.all([
