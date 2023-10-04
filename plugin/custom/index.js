@@ -1,10 +1,10 @@
 class CustomPlugin extends global._basePlugin {
-    beforeProcess = () => {
+    beforeProcess = async () => {
         this.custom = {};
         this.hotkeyHelper = new hotkeyHelper(this);
         this.dynamicCallHelper = new dynamicCallHelper(this);
         this.loadPluginHelper = new loadPluginHelper(this);
-        this.loadPluginHelper.load();
+        await this.loadPluginHelper.load();
     }
     hotkey = () => this.hotkeyHelper.hotkey()
     dynamicCallArgsGenerator = (anchorNode, meta) => this.dynamicCallHelper.dynamicCallArgsGenerator(anchorNode, meta)
@@ -29,40 +29,48 @@ class loadPluginHelper {
         this.utils.insertStyle(textID, text);
     }
 
-    load() {
+    loadCustomPlugin = async (fixedName, customSetting) => {
+        try {
+            const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins/${fixedName}`);
+            if (!plugin) return;
+
+            const instance = new plugin(fixedName, customSetting, this.controller);
+            if (!this.check(instance)) {
+                console.error("instance is not BaseCustomPlugin", instance.fixedName);
+                return
+            }
+
+            instance.init();
+            this.insertStyle(instance.fixedName, instance.style());
+            const renderArgs = instance.styleTemplate();
+            if (renderArgs) {
+                await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
+            }
+            instance.html();
+            instance.process();
+            this.controller.custom[instance.fixedName] = instance;
+            console.log(`custom plugin had been injected: [ ${instance.fixedName} ]`);
+        } catch (e) {
+            console.error("load custom plugin error:", e);
+        }
+    }
+
+    load = async () => {
         const allPlugins = this.utils.readSetting(
             "./plugin/global/settings/custom_plugin.default.toml",
             "./plugin/global/settings/custom_plugin.user.toml",
         )
 
-        for (const fixedName of Object.keys(allPlugins)) {
-            const customSetting = allPlugins[fixedName];
-
-            if (!customSetting.enable) continue
-
-            try {
-                const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins/${fixedName}`);
-                if (!plugin) continue;
-
-                const instance = new plugin(fixedName, customSetting, this.controller);
-                if (this.check(instance)) {
-                    instance.init();
-                    this.insertStyle(instance.fixedName, instance.style());
-                    const renderArgs = instance.styleTemplate();
-                    if (renderArgs) {
-                        this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
-                    }
-                    instance.html();
-                    instance.process();
-                    this.controller.custom[instance.fixedName] = instance;
-                    console.log(`custom plugin had been injected: [ ${instance.fixedName} ] `);
+        await Promise.all(
+            Array.from(Object.keys(allPlugins).map(fixedName => {
+                const customSetting = allPlugins[fixedName];
+                if (customSetting.enable) {
+                    return this.loadCustomPlugin(fixedName, customSetting)
                 } else {
-                    console.error("instance is not BaseCustomPlugin", instance.fixedName);
+                    console.log(`disable custom plugin: [ ${fixedName} ]`)
                 }
-            } catch (e) {
-                console.error("load custom plugin error:", e);
-            }
-        }
+            }))
+        )
 
         this.utils.publishEvent(this.utils.eventType.allCustomPluginsHadInjected);
     }

@@ -156,7 +156,7 @@ class utils {
     static unregisterExportHelper = name => global._exportHelper.unregister(name)
 
     // 动态注册css模板文件
-    static registerStyleTemplate = (name, renderArg) => global._styleTemplater.register(name, renderArg)
+    static registerStyleTemplate = async (name, renderArg) => await global._styleTemplater.register(name, renderArg)
     static unregisterStyleTemplate = name => global._styleTemplater.unregister(name)
 
 
@@ -744,11 +744,11 @@ class diagramParser {
 
     unregister = lang => this.parsers.delete(lang)
 
-    process = () => {
+    process = async () => {
         if (this.parsers.size === 0) return;
 
         if (!this.utils.isBetaVersion) {
-            this.utils.registerStyleTemplate("diagram-parser");
+            await this.utils.registerStyleTemplate("diagram-parser");
         }
 
         // 添加时
@@ -1204,8 +1204,8 @@ class modalGenerator {
         this.utils.insertDiv(modal);
     }
 
-    process = () => {
-        this.utils.registerStyleTemplate("modal-generator")
+    process = async () => {
+        await this.utils.registerStyleTemplate("modal-generator");
         this.html();
 
         this.entities = {
@@ -1378,14 +1378,17 @@ class styleTemplater {
         this.utils = utils
     }
 
-    register = (name, renderArg) => {
+    register = async (name, renderArg) => {
         const filename = this.utils.joinPath("./plugin/global/styles", `${name}.css`);
-        this.utils.Package.Fs.promises.readFile(filename, 'utf-8').catch(console.error).then(data => {
+        try {
+            const data = await this.utils.Package.Fs.promises.readFile(filename, 'utf-8');
             const css = data.replace(/\${(.+?)}/g, (_, src) => {
                 return src.split(".").reduce((total, current) => total[current], renderArg)
             })
             this.utils.insertStyle(`plugin-${name}-style`, css);
-        })
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     unregister = name => this.utils.removeStyle(`plugin-${name}-style`);
@@ -1522,26 +1525,32 @@ class process {
         }
     }
 
-    loadPlugin = (fixedName, pluginClass, pluginSetting) => {
-        const plugin = new pluginClass(fixedName, pluginSetting);
+    loadPlugin = async (fixedName, setting) => {
+        try {
+            const {plugin} = this.utils.requireFilePath(`./plugin/${fixedName}`);
+            if (!plugin) return;
+            const instance = new plugin(fixedName, setting);
 
-        const error = plugin.beforeProcess();
-        if (error === this.utils.stopLoadPluginError) return
+            const error = await instance.beforeProcess();
+            if (error === this.utils.stopLoadPluginError) return
+            this.insertStyle(instance.fixedName, instance.style());
+            const renderArgs = instance.styleTemplate();
+            if (renderArgs) {
+                await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
+            }
+            instance.html();
+            this.utils.registerHotkey(instance.hotkey());
+            instance.process();
+            instance.afterProcess();
 
-        this.insertStyle(fixedName, plugin.style());
-        const renderArgs = plugin.styleTemplate();
-        if (renderArgs) {
-            this.utils.registerStyleTemplate(plugin.fixedName, {...renderArgs, this: plugin});
+            global._plugins[instance.fixedName] = instance;
+            console.log(`plugin had been injected: [ ${instance.fixedName} ] `);
+        } catch (e) {
+            console.error("plugin err:", e);
         }
-        plugin.html();
-        this.utils.registerHotkey(plugin.hotkey());
-        plugin.process();
-        plugin.afterProcess();
-        console.log(`plugin had been injected: [ ${fixedName} ] `);
-        return plugin
     }
 
-    run = () => {
+    run = async () => {
         global._global_settings = {};
         global._plugins = {};
 
@@ -1550,43 +1559,31 @@ class process {
             "./plugin/global/settings/settings.user.toml",
         );
 
-        if (pluginSettings && pluginSettings["global"] && !pluginSettings["global"]["ENABLE"]) return;
+        if (!pluginSettings || pluginSettings && pluginSettings["global"] && !pluginSettings["global"]["ENABLE"]) return;
 
-        const promises = [];
-        for (const fixedName of Object.keys(pluginSettings)) {
-            const setting = pluginSettings[fixedName];
-
-            if (fixedName === "global") {
-                global._global_settings = setting;
-                continue;
-            } else if (!setting.ENABLE) {
-                continue;
-            }
-
-            promises.push(new Promise(resolve => {
-                try {
-                    const filepath = this.utils.joinPath("./plugin", fixedName);
-                    const {plugin} = reqnode(filepath);
-                    const instance = this.loadPlugin(fixedName, plugin, setting);
-                    if (instance) {
-                        global._plugins[fixedName] = instance;
-                    }
-                } catch (e) {
-                    console.error("plugin err:", e);
+        await Promise.all(
+            Array.from(Object.keys(pluginSettings).map(fixedName => {
+                const setting = pluginSettings[fixedName];
+                if (fixedName === "global") {
+                    global._global_settings = setting;
+                } else if (setting.ENABLE) {
+                    return this.loadPlugin(fixedName, setting)
+                } else {
+                    console.log(`disable plugin: [ ${fixedName} ] `);
                 }
-                resolve();
-            }));
-        }
-
-        Promise.all(promises).then(() => {
-            global._eventHub.process();
-            global._diagramParser.process();
-            global._stateRecorder.process();
-            global._modalGenerator.process();
-            global._hotkeyHub.process();
-            global._exportHelper.process();
-            this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
-        })
+            }))
+        );
+        // 等待插件都注册完成才能执行process
+        await Promise.all([
+            global._eventHub.process(),
+            global._diagramParser.process(),
+            global._modalGenerator.process(),
+            global._stateRecorder.process(),
+            global._hotkeyHub.process(),
+            global._exportHelper.process(),
+        ]);
+        // 全部完成后发布事件
+        this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
     }
 }
 
