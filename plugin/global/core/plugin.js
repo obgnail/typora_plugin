@@ -747,7 +747,7 @@ class diagramParser {
     process = async () => {
         if (this.parsers.size === 0) return;
 
-        if (!this.utils.isBetaVersion) {
+        if (this.utils.isBetaVersion) {
             await this.utils.registerStyleTemplate("diagram-parser");
         }
 
