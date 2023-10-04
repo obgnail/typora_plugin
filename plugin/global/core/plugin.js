@@ -156,9 +156,8 @@ class utils {
     static unregisterExportHelper = name => global._exportHelper.unregister(name)
 
     // 动态注册css模板文件
-    //   instance: 插件实例
-    static registerStyleTemplater = instance => global._styleTemplater.register(instance)
-    static unregisterStyleTemplater = instance => global._styleTemplater.unregister(instance)
+    static registerStyleTemplate = (name, renderArg) => global._styleTemplater.register(name, renderArg)
+    static unregisterStyleTemplate = name => global._styleTemplater.unregister(name)
 
 
     // 动态弹出自定义模态框（及刻弹出，因此无需注册）
@@ -1401,24 +1400,19 @@ class hotkeyHub {
 class styleTemplater {
     constructor() {
         this.utils = utils
-        this.instances = new Set();
     }
 
-    register = instance => this.instances.add(instance)
-    unregister = instance => this.instances.delete(instance)
-
-    process = () => {
-        const promises = Array.from(this.instances.keys()).map(instance => {
-            const filename = this.utils.joinPath("./plugin/global/styles", `${instance.fixedName}.css`);
-            return this.utils.Package.Fs.promises.readFile(filename, 'utf-8').catch(console.error).then(data => {
-                return data.replace(/\${(.+?)}/g, (_, src) => {
-                    const list = src.split(".").filter(ele => ele !== "this");
-                    return list.reduce((total, current) => total[current], instance)
-                })
+    register = (name, renderArg) => {
+        const filename = this.utils.joinPath("./plugin/global/styles", `${name}.css`);
+        this.utils.Package.Fs.promises.readFile(filename, 'utf-8').catch(console.error).then(data => {
+            const css = data.replace(/\${(.+?)}/g, (_, src) => {
+                return src.split(".").reduce((total, current) => total[current], renderArg)
             })
+            this.utils.insertStyle(`plugin-${name}-style`, css);
         })
-        Promise.all(promises).then(styles => this.utils.insertStyle(`plugin-total-style`, styles.join("\n")));
     }
+
+    unregister = name => this.utils.removeStyle(`plugin-${name}-style`);
 }
 
 class exportHelper {
@@ -1559,7 +1553,10 @@ class process {
         if (error === this.utils.stopLoadPluginError) return
 
         this.insertStyle(fixedName, plugin.style());
-        plugin.styleTemplate() && this.utils.registerStyleTemplater(plugin);
+        const renderArgs = plugin.styleTemplate();
+        if (renderArgs) {
+            this.utils.registerStyleTemplate(plugin.fixedName, {...renderArgs, this: plugin});
+        }
         plugin.html();
         this.utils.registerHotkey(plugin.hotkey());
         plugin.process();
@@ -1611,7 +1608,6 @@ class process {
             global._stateRecorder.process();
             global._modalGenerator.process();
             global._hotkeyHub.process();
-            global._styleTemplater.process();
             global._exportHelper.process();
             this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
         })

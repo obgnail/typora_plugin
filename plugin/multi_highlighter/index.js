@@ -19,16 +19,14 @@
 */
 
 class multiHighlighterPlugin extends global._basePlugin {
-    beforeProcess = () => {
-        this.run_style = {
+    styleTemplate = () => ({
+        run_style: {
             input_width: (this.config.SHOW_RUN_BUTTON) ? "95%" : "100%",
             case_button_right: (this.config.SHOW_RUN_BUTTON) ? "32px" : "6px",
             run_button_display: (this.config.SHOW_RUN_BUTTON) ? "" : "none",
-        }
-        this.colorsStyle = this.config.STYLE_COLOR.map((color, idx) => `.plugin-search-hit${idx} { background-color: ${color}; }`).join("\n");
-    }
-
-    styleTemplate = () => true
+        },
+        colors_style: this.config.STYLE_COLOR.map((color, idx) => `.plugin-search-hit${idx} { background-color: ${color}; }`).join("\n")
+    })
 
     html = () => {
         const div = `

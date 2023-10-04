@@ -48,7 +48,10 @@ class loadPluginHelper {
                 if (this.check(instance)) {
                     instance.init();
                     this.insertStyle(instance.fixedName, instance.style());
-                    instance.styleTemplate() && this.utils.registerStyleTemplater(instance);
+                    const renderArgs = instance.styleTemplate();
+                    if (renderArgs) {
+                        this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
+                    }
                     instance.html();
                     instance.process();
                     this.controller.custom[instance.fixedName] = instance;
@@ -182,7 +185,8 @@ class BaseCustomPlugin {
     }
     style = () => {
     }
-    styleTemplate = () => false
+    styleTemplate = () => {
+    }
     html = () => {
     }
     hotkey = () => {
