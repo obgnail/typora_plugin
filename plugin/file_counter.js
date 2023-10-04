@@ -4,23 +4,7 @@ class fileCounterPlugin extends global._basePlugin {
         this.className = "plugin-file-counter";
     }
 
-    style = () => {
-        return `
-            .${this.className} {
-                display: inline-block;
-                float: right;
-                white-space: nowrap;
-                overflow-x: visible;
-                overflow-y: hidden;
-                margin-right: 10px;
-                padding-left: 3px;
-                padding-right: 3px;
-                border-radius: 3px;
-                background: var(--active-file-bg-color);
-                color: var(--active-file-text-color);
-                opacity: 1;
-            }`;
-    }
+    styleTemplate = () => true
 
     process = () => {
         this.utils.loopDetector(this.setAllDirCount, null, this.loopDetectInterval);

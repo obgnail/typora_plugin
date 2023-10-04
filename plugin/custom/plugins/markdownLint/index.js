@@ -1,38 +1,5 @@
 class markdownLintPlugin extends BaseCustomPlugin {
-    style = () => {
-        return `
-        #plugin-markdownlint {
-            position: fixed;
-            top: 10%;
-            left: 60%;
-            width: 600px;
-            z-index: 9999;
-            padding: 4px;
-            background-color: #f8f8f8;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
-            border: 1px solid #ddd;
-            border-top: none;
-            color: var(--text-color);
-        }
-        
-        #plugin-markdownlint pre {
-            font-size: 13px;
-            line-height: 1.1;
-            margin: 5px;
-            max-height: 500px;
-            width: 100%;
-        }
-        
-        #plugin-markdownlint-button {
-            position: fixed;
-            right: 9px;
-            width: ${this.config.button_width};
-            height: ${this.config.button_height};
-            background-color: ${this.config.pass_color};
-            cursor: pointer;
-        }
-        `
-    }
+    styleTemplate = () => true
 
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
 

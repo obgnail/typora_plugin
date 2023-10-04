@@ -1,0 +1,53 @@
+.plugin-timeline {
+    padding: 15px 40px 30px 40px;
+    background-color: ${this.config.BACKGROUND_COLOR};
+}
+
+.plugin-timeline .timeline-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: ${this.config.TITLE_COLOR};
+}
+
+.plugin-timeline .timeline-content {
+    display: grid;
+    grid-template-columns: 2px calc(100% - 2px);
+}
+
+.plugin-timeline .line {
+    position: relative;
+    background-color: ${this.config.LINE_COLOR};
+}
+
+.plugin-timeline .circle {
+    position: absolute;
+    top: 0.6em;
+    left: 50%;
+    width: 0.7em !important;
+    height: 0.7em !important;
+    border-radius: 50%;
+    background-color: ${this.config.CIRCLE_COLOR};
+    transform: translateX(-50%);
+}
+
+.plugin-timeline .wrapper {
+    margin-left: 1em;
+    text-align: left;
+}
+
+.plugin-timeline .time {
+    font-size: large;
+    font-weight: bold;
+    color: ${this.config.TIME_COLOR};
+}
+
+.plugin-timeline .content {
+    margin-top: 1em;
+    margin-bottom: 3em;
+    white-space: break-spaces;
+    word-break: break-word;
+}
+
+.plugin-timeline .wrapper:last-child .content {
+    margin-bottom: 0;
+}

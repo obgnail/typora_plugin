@@ -24,7 +24,8 @@ class utils {
     //   5. fence enhance button
     //   6. bar tool
     //   7. export helper
-    //   8. modal
+    //   8. style templater
+    //   9. modal
 
     // 动态注册、动态注销hotkey
     // 注意: 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
@@ -153,6 +154,12 @@ class utils {
     //   3. async afterExport() => html || null,  如果返回string，将替换HTML
     static registerExportHelper = (name, beforeExport, afterExport) => global._exportHelper.register(name, beforeExport, afterExport)
     static unregisterExportHelper = name => global._exportHelper.unregister(name)
+
+    // 动态注册css模板文件
+    //   instance: 插件实例
+    static registerStyleTemplater = instance => global._styleTemplater.register(instance)
+    static unregisterStyleTemplater = instance => global._styleTemplater.unregister(instance)
+
 
     // 动态弹出自定义模态框（及刻弹出，因此无需注册）
     //   1. modal: { title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
@@ -1391,6 +1398,29 @@ class hotkeyHub {
     }
 }
 
+class styleTemplater {
+    constructor() {
+        this.utils = utils
+        this.instances = new Set();
+    }
+
+    register = instance => this.instances.add(instance)
+    unregister = instance => this.instances.delete(instance)
+
+    process = () => {
+        const promises = Array.from(this.instances.keys()).map(instance => {
+            const filename = this.utils.joinPath("./plugin/global/styles", `${instance.fixedName}.css`);
+            return this.utils.Package.Fs.promises.readFile(filename, 'utf-8').catch(console.error).then(data => {
+                return data.replace(/\${(.+?)}/g, (_, src) => {
+                    const list = src.split(".").filter(ele => ele !== "this");
+                    return list.reduce((total, current) => total[current], instance)
+                })
+            })
+        })
+        Promise.all(promises).then(styles => this.utils.insertStyle(`plugin-total-style`, styles.join("\n")));
+    }
+}
+
 class exportHelper {
     constructor() {
         this.utils = utils;
@@ -1481,6 +1511,10 @@ class basePlugin {
     style() {
     }
 
+    styleTemplate() {
+        return false
+    }
+
     html() {
     }
 
@@ -1525,6 +1559,7 @@ class process {
         if (error === this.utils.stopLoadPluginError) return
 
         this.insertStyle(fixedName, plugin.style());
+        plugin.styleTemplate() && this.utils.registerStyleTemplater(plugin);
         plugin.html();
         this.utils.registerHotkey(plugin.hotkey());
         plugin.process();
@@ -1576,6 +1611,7 @@ class process {
             global._stateRecorder.process();
             global._modalGenerator.process();
             global._hotkeyHub.process();
+            global._styleTemplater.process();
             global._exportHelper.process();
             this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
         })
@@ -1596,6 +1632,8 @@ global._stateRecorder = new stateRecorder();
 global._modalGenerator = new modalGenerator();
 // 注册、监听快捷键
 global._hotkeyHub = new hotkeyHub();
+// 注册样式模板文件
+global._styleTemplater = new styleTemplater();
 // 注册导出时的额外操作
 global._exportHelper = new exportHelper();
 
