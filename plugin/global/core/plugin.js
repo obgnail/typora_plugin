@@ -724,8 +724,6 @@ class diagramParser {
         this.parsers = new Map(); // {lang: parser}
     }
 
-    style = () => (!this.utils.isBetaVersion) ? "" : `.md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
-
     register = (
         lang, destroyWhenUpdate = false,
         renderFunc, cancelFunc = null, destroyAllFunc = null,
@@ -749,8 +747,9 @@ class diagramParser {
     process = () => {
         if (this.parsers.size === 0) return;
 
-        const css = this.style();
-        css && this.utils.insertStyle("diagram-parser-style", css);
+        if (!this.utils.isBetaVersion) {
+            this.utils.registerStyleTemplate("diagram-parser");
+        }
 
         // 添加时
         this.onAddCodeBlock();
@@ -1185,29 +1184,6 @@ class modalGenerator {
         this.entities = null;
     }
 
-    style = () => {
-        return `
-            #plugin-custom-modal {
-                position: fixed;
-                z-index: 99999;
-                margin: 50px auto;
-                left: 0;
-                right: 0;
-                display: none;
-            }
-            
-            #plugin-custom-modal label {
-                display: block;
-                margin-bottom: 5px;
-            }
-            
-            #plugin-custom-modal input[type="checkbox"], input[type="radio"] {
-                box-shadow: none;
-                margin-top: -3px;
-            }
-        `
-    }
-
     html = () => {
         const modal_content = `
             <div class="modal-content">
@@ -1229,7 +1205,7 @@ class modalGenerator {
     }
 
     process = () => {
-        this.utils.insertStyle("plugin-custom-modal-style", this.style());
+        this.utils.registerStyleTemplate("modal-generator")
         this.html();
 
         this.entities = {
