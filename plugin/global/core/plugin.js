@@ -24,7 +24,8 @@ class utils {
     //   5. fence enhance button
     //   6. bar tool
     //   7. export helper
-    //   8. modal
+    //   8. style templater
+    //   9. modal
 
     // 动态注册、动态注销hotkey
     // 注意: 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
@@ -153,6 +154,11 @@ class utils {
     //   3. async afterExport() => html || null,  如果返回string，将替换HTML
     static registerExportHelper = (name, beforeExport, afterExport) => global._exportHelper.register(name, beforeExport, afterExport)
     static unregisterExportHelper = name => global._exportHelper.unregister(name)
+
+    // 动态注册css模板文件
+    static registerStyleTemplate = async (name, renderArg) => await global._styleTemplater.register(name, renderArg)
+    static unregisterStyleTemplate = name => global._styleTemplater.unregister(name)
+
 
     // 动态弹出自定义模态框（及刻弹出，因此无需注册）
     //   1. modal: { title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
@@ -718,8 +724,6 @@ class diagramParser {
         this.parsers = new Map(); // {lang: parser}
     }
 
-    style = () => (!this.utils.isBetaVersion) ? "" : `.md-fences-advanced:not(.md-focus) .CodeMirror { display: none; }`
-
     register = (
         lang, destroyWhenUpdate = false,
         renderFunc, cancelFunc = null, destroyAllFunc = null,
@@ -740,11 +744,12 @@ class diagramParser {
 
     unregister = lang => this.parsers.delete(lang)
 
-    process = () => {
+    process = async () => {
         if (this.parsers.size === 0) return;
 
-        const css = this.style();
-        css && this.utils.insertStyle("diagram-parser-style", css);
+        if (!this.utils.isBetaVersion) {
+            await this.utils.registerStyleTemplate("diagram-parser");
+        }
 
         // 添加时
         this.onAddCodeBlock();
@@ -1179,29 +1184,6 @@ class modalGenerator {
         this.entities = null;
     }
 
-    style = () => {
-        return `
-            #plugin-custom-modal {
-                position: fixed;
-                z-index: 99999;
-                margin: 50px auto;
-                left: 0;
-                right: 0;
-                display: none;
-            }
-            
-            #plugin-custom-modal label {
-                display: block;
-                margin-bottom: 5px;
-            }
-            
-            #plugin-custom-modal input[type="checkbox"], input[type="radio"] {
-                box-shadow: none;
-                margin-top: -3px;
-            }
-        `
-    }
-
     html = () => {
         const modal_content = `
             <div class="modal-content">
@@ -1222,8 +1204,8 @@ class modalGenerator {
         this.utils.insertDiv(modal);
     }
 
-    process = () => {
-        this.utils.insertStyle("plugin-custom-modal-style", this.style());
+    process = async () => {
+        await this.utils.registerStyleTemplate("modal-generator");
         this.html();
 
         this.entities = {
@@ -1391,6 +1373,27 @@ class hotkeyHub {
     }
 }
 
+class styleTemplater {
+    constructor() {
+        this.utils = utils
+    }
+
+    register = async (name, renderArg) => {
+        const filename = this.utils.joinPath("./plugin/global/styles", `${name}.css`);
+        try {
+            const data = await this.utils.Package.Fs.promises.readFile(filename, 'utf-8');
+            const css = data.replace(/\${(.+?)}/g, (_, src) => {
+                return src.split(".").reduce((total, current) => total[current], renderArg)
+            })
+            this.utils.insertStyle(`plugin-${name}-style`, css);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    unregister = name => this.utils.removeStyle(`plugin-${name}-style`);
+}
+
 class exportHelper {
     constructor() {
         this.utils = utils;
@@ -1481,6 +1484,10 @@ class basePlugin {
     style() {
     }
 
+    styleTemplate() {
+        return false
+    }
+
     html() {
     }
 
@@ -1518,67 +1525,68 @@ class process {
         }
     }
 
-    loadPlugin = (fixedName, pluginClass, pluginSetting) => {
-        const plugin = new pluginClass(fixedName, pluginSetting);
+    loadPlugin = async (fixedName, setting) => {
+        try {
+            const {plugin} = this.utils.requireFilePath(`./plugin/${fixedName}`);
+            if (!plugin) return;
+            const instance = new plugin(fixedName, setting);
 
-        const error = plugin.beforeProcess();
-        if (error === this.utils.stopLoadPluginError) return
+            const error = await instance.beforeProcess();
+            if (error === this.utils.stopLoadPluginError) return
+            this.insertStyle(instance.fixedName, instance.style());
+            const renderArgs = instance.styleTemplate();
+            if (renderArgs) {
+                await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
+            }
+            instance.html();
+            this.utils.registerHotkey(instance.hotkey());
+            instance.process();
+            instance.afterProcess();
 
-        this.insertStyle(fixedName, plugin.style());
-        plugin.html();
-        this.utils.registerHotkey(plugin.hotkey());
-        plugin.process();
-        plugin.afterProcess();
-        console.log(`plugin had been injected: [ ${fixedName} ] `);
-        return plugin
+            global._plugins[instance.fixedName] = instance;
+            console.log(`plugin had been injected: [ ${instance.fixedName} ] `);
+        } catch (e) {
+            console.error("plugin err:", e);
+        }
     }
 
-    run = () => {
+    run = async () => {
         global._global_settings = {};
-        global._plugins = {};
+        global._plugins = {};     // 启用的插件
+        global._all_plugins = {}; // 全部的插件
 
         const pluginSettings = this.utils.readSetting(
             "./plugin/global/settings/settings.default.toml",
             "./plugin/global/settings/settings.user.toml",
         );
 
-        if (pluginSettings && pluginSettings["global"] && !pluginSettings["global"]["ENABLE"]) return;
+        if (!pluginSettings || pluginSettings && pluginSettings["global"] && !pluginSettings["global"]["ENABLE"]) return;
 
-        const promises = [];
-        for (const fixedName of Object.keys(pluginSettings)) {
-            const setting = pluginSettings[fixedName];
+        global._all_plugins = Array.from(Object.keys(pluginSettings));
 
-            if (fixedName === "global") {
-                global._global_settings = setting;
-                continue;
-            } else if (!setting.ENABLE) {
-                continue;
-            }
-
-            promises.push(new Promise(resolve => {
-                try {
-                    const filepath = this.utils.joinPath("./plugin", fixedName);
-                    const {plugin} = reqnode(filepath);
-                    const instance = this.loadPlugin(fixedName, plugin, setting);
-                    if (instance) {
-                        global._plugins[fixedName] = instance;
-                    }
-                } catch (e) {
-                    console.error("plugin err:", e);
+        await Promise.all(
+            global._all_plugins.map(fixedName => {
+                const setting = pluginSettings[fixedName];
+                if (fixedName === "global") {
+                    global._global_settings = setting;
+                } else if (setting.ENABLE) {
+                    return this.loadPlugin(fixedName, setting)
+                } else {
+                    console.log(`disable plugin: [ ${fixedName} ] `);
                 }
-                resolve();
-            }));
-        }
-
-        Promise.all(promises).then(() => {
-            global._eventHub.process();
-            global._diagramParser.process();
-            global._stateRecorder.process();
-            global._modalGenerator.process();
-            global._hotkeyHub.process();
-            global._exportHelper.process();
-            this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
-        })
+            })
+        );
+        // 等待插件都注册完成才能执行process
+        await Promise.all([
+            global._eventHub.process(),
+            global._diagramParser.process(),
+            global._modalGenerator.process(),
+            global._stateRecorder.process(),
+            global._hotkeyHub.process(),
+            global._exportHelper.process(),
+        ]);
+        // 全部完成后发布事件
+        this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
     }
 }
 
@@ -1596,6 +1604,8 @@ global._stateRecorder = new stateRecorder();
 global._modalGenerator = new modalGenerator();
 // 注册、监听快捷键
 global._hotkeyHub = new hotkeyHub();
+// 注册样式模板文件
+global._styleTemplater = new styleTemplater();
 // 注册导出时的额外操作
 global._exportHelper = new exportHelper();
 

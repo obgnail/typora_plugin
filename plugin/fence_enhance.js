@@ -15,27 +15,7 @@ class fenceEnhancePlugin extends global._basePlugin {
         this.enableIndent = this.config.ENABLE_INDENT && !this.utils.isBetaVersion;
     }
 
-    style = () => {
-        return `
-            #write .md-fences .fence-enhance {
-                display: inline-flex;
-                flex-direction: row-reverse;
-                position: absolute;
-                top: .3em;
-                right: .5em;
-                z-index: 8;
-                font-size: 1.2em;
-                opacity: .5;
-            }
-            #write .fence-enhance .enhance-btn {
-                cursor: pointer;
-                margin-left: .5em;
-            }
-            #write .fence-enhance .enhance-btn:last-child {
-                margin-left: 0;
-            }
-            `
-    }
+    styleTemplate = () => true
 
     init = () => {
         this.builders = [];

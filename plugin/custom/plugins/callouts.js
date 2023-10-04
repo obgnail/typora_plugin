@@ -1,56 +1,18 @@
 class callouts extends BaseCustomPlugin {
-    style = () => {
-        const callouts = this.config.list.map(callout => {
+    styleTemplate = () => ({
+        callouts: this.config.list.map(callout => {
             return `.plugin-callout[callout-type="${callout.type}"] {
                 --callout-bg-color: ${callout.background_color};
                 --callout-left-line-color: ${callout.left_line_color};
                 --callout-icon: "${callout.icon}";
             }`
-        }).join("\n");
-
-        const hover = (!this.config.hover_to_show_fold_callout) ? "" :
-            `.callout-folded:hover :not(:first-child):not(.md-softbreak) { display: inherit !important; }`;
-
-        const color = (!this.config.set_title_color) ? "" : `
+        }).join("\n"),
+        hover: (!this.config.hover_to_show_fold_callout) ? "" :
+            `.callout-folded:hover :not(:first-child):not(.md-softbreak) { display: inherit !important; }`,
+        color: (!this.config.set_title_color) ? "" : `
             .plugin-callout > p:first-child span:first-child { color: var(--callout-left-line-color); }
-            .plugin-callout > p:first-child::before { color: var(--callout-left-line-color); }`;
-
-        return `
-            .plugin-callout {
-                background-color: var(--callout-bg-color);
-                border-left: 4px solid var(--callout-left-line-color);
-                padding: 10px 10px 10px 15px;
-                box-shadow: 0 0.2rem 0.5rem #0000000d, 0 0 0.05rem #0000001a;
-                overflow: hidden;
-            }
-            
-            .plugin-callout[callout-type] {
-                --callout-bg-color: ${this.config.default_background_color};
-                --callout-left-line-color: ${this.config.default_left_line_color};
-                --callout-icon: "${this.config.default_icon}";
-            }
-            
-            .plugin-callout > p:first-child {
-                margin: -10px -10px -10px -15px;
-                padding: 10px 10px 10px 15px;
-                letter-spacing: 1px;
-            }
-            
-            .plugin-callout > p:first-child::before {
-                font-family: ${this.config.font_family};
-                content: var(--callout-icon);
-                margin-right: 0.5em;
-            }
-            
-            .callout-folded > p:first-child :not(:first-child) { display: none; }
-            .callout-folded > p:not(:first-child) { display: none; }
-            
-            .callout-folded:has(.md-focus) :not(:first-child):not(.md-softbreak) { display: inherit !important; }
-            ${hover}
-            ${color}
-            ${callouts}
-        `
-    }
+            .plugin-callout > p:first-child::before { color: var(--callout-left-line-color); }`
+    })
 
     process = () => {
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.range);

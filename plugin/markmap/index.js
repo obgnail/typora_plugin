@@ -6,16 +6,12 @@ class markmapPlugin extends global._basePlugin {
         this.Markmap = null;
     }
 
-    style = () => {
-        let text = "";
-        if (this.tocMarkmap) {
-            text += this.tocMarkmap.style();
-        }
-        if (this.fenceMarkmap) {
-            text += this.fenceMarkmap.style();
-        }
-        return text
-    }
+    styleTemplate = () => ({
+        icon_wrap: (!this.config.ALLOW_ICON_WRAP) ? "" : `
+            .plugin-markmap-header { flex-wrap: wrap; justify-content: flex-start; }
+            .plugin-markmap-header .plugin-markmap-icon { padding-right: 0.5em; }
+            `
+    })
 
     html = () => this.tocMarkmap && this.tocMarkmap.html();
 
@@ -72,8 +68,6 @@ class fenceMarkmap {
         this.config = this.controller.config;
         this.map = {}; // {cid: instance}
     }
-
-    style = () => `.md-diagram-panel .plugin-fence-markmap-svg {line-height: initial !important;}`
 
     process = () => {
         this.utils.registerDiagramParser("markmap", false, this.render, this.cancel, this.destroyAll, null, this.config.INTERACTIVE_MODE);
@@ -139,137 +133,6 @@ class tocMarkmap {
         this.controller = controller
         this.utils = this.controller.utils;
         this.config = this.controller.config;
-    }
-
-    style = () => {
-        let extra = "";
-        if (this.config.USE_BUTTON) {
-            extra = `
-            .plugin-markmap-button {
-                position: fixed;
-                right: 78px;
-                z-index: 9998;
-                bottom: 50px;
-                margin-left: 30px;
-                font-size: 22px;
-                text-align: center;
-                color: var(--active-file-border-color, black);
-            }
-            
-            .plugin-markmap-button .plugin-markmap-item {
-                width: 35px;
-                height: 35px;
-                cursor: pointer;
-                box-shadow: rgba(0, 0, 0, 0.07) 0px 0px 10px;
-                border-radius: 4px;
-            }
-            
-            .plugin-markmap-button .plugin-markmap-item:hover {
-                background-color: var(--item-hover-bg-color, black);
-            }
-            
-            .plugin-markmap-button .plugin-markmap-item i {
-                position: absolute;
-                top: 50%;
-                transform: translate(-50%, -50%);
-            }
-            `
-        }
-
-        let extra2 = "";
-        if (this.config.ALLOW_ICON_WRAP) {
-            extra2 = `
-            .plugin-markmap-header {
-                flex-wrap: wrap;
-                justify-content: flex-start;
-            }
-            
-            .plugin-markmap-header .plugin-markmap-icon {
-                padding-right: 0.5em;
-            }
-            `
-        }
-
-        return `
-            #plugin-markmap {
-                position: fixed;
-                z-index: 9999;
-                box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
-                background-color: #f8f8f8;
-                display: none;
-                transition: all 0.2s ease 0s;
-            }
-            
-            .plugin-markmap-wrap {
-                display: flex;
-                flex-direction: row;
-                width: 100%;
-                height: 100%;
-            }
-            
-            .plugin-markmap-grip {
-                display: none;
-                background-color: var(--active-file-border-color, black);
-            }
-            .plugin-markmap-grip::before {
-                content: "";
-                display: block;
-                margin: auto;
-            }
-            
-            .plugin-markmap-grip.grip-up { 
-                padding: 4px 0;
-                cursor: row-resize;
-            }
-            .plugin-markmap-grip.grip-up::before { 
-                width: 24px; 
-                border-top: 3px double var(--active-file-bg-color); 
-            }
-            
-            .plugin-markmap-grip.grip-right { 
-                padding: 0 4px; 
-                cursor: col-resize;
-            }
-            .plugin-markmap-grip.grip-right::before {
-                position: absolute;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                height: 24px; 
-                border-left: 3px double var(--active-file-bg-color); 
-            }
-            
-            ${extra}
-            ${extra2}
-            
-            .plugin-markmap-header {
-                margin: 0 0.5em;
-                padding-top: 0.1em;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .plugin-markmap-icon {
-                cursor: pointer;
-                font-size: 1.2em;
-                opacity: 0.5;
-            }
-            
-            .plugin-markmap-icon:hover {
-                opacity: 1;
-            }
-            
-            .plugin-markmap-icon[action="resize"] {
-                position: absolute;
-                bottom: 0.1em;
-                right: 0.4em;
-            }
-            
-            #plugin-markmap-svg {
-                flex: 1;
-                line-height: initial;
-            }
-        `
     }
 
     html = () => {

@@ -37,7 +37,7 @@
 | 27   | export_enhance             | 导出 html 时避免图片丢失             |
 | 28   | go_top                     | 一键到文章顶部                       |
 | 29   | truncate_text              | 暂时隐藏内容，提高大文件渲染性能     |
-| 30   | markdown_lint              | markdown格式规范检测                 |
+| 30   | markdown_lint              | markdown 格式规范检测                 |
 | 31   | hotkey_hub                 | 快捷键注册中心（高级）               |
 | 32   | custom                     | 用户自定义命令（高级）               |
 | 33   | plugin_updater             | 一键升级插件                         |
@@ -67,9 +67,11 @@
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
-> 可以通过修改配置文件 **永久** 启用 / 禁用任何插件。打开配置文件方式：`非常用插件 -> 右键菜单 -> 打开插件配置文件` 。
+6. 愉快玩耍。有兴趣的话，可以查看 [插件使用文档](./USAGE.md)。
 
-> 本插件系统支持一键升级：`常用插件 -> 自定义插件 -> 升级插件`。
+> 可以通过修改配置文件 **永久** 启用 / 禁用任何插件。打开配置文件方式：`非常用插件 -> 右键菜单 -> 打开插件配置文件`
+
+> 本插件系统支持一键升级：`常用插件 -> 自定义插件 -> 升级插件`
 
 
 
@@ -105,13 +107,20 @@
 
 > 虽然操作简单，还请务必对照上图谨慎操作。如果修改完 Typora 白屏了，很可能是你修改的时候疏忽了。
 
+
+
+---
+
+
+
 ## 如何使用：方法三（自动）
 
-> 目前此方法仅限 archlinux 平台，aur见 [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin)
+> 目前此方法仅限 archlinux 平台，aur 见 [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin)
 
 ```
 yay -S typora-plugin
 ```
+
 
 
 ## 实现原理
@@ -597,7 +606,7 @@ auto_pair_symbols = [
 
 使用方式：
 
-- 方式一：右键菜单 -> 常用插件 -> 自定义插件 -> md格式规范检测
+- 方式一：右键菜单 -> 常用插件 -> 自定义插件 -> md 格式规范检测
 - 方式二：点击右上角的小方块
 
 
@@ -725,8 +734,6 @@ LIST = [
 ## 结语
 
 本人并非前端开发，前端技术全靠 Google，JS/CSS 写的很烂。
-
-感谢 [md-padding](https://github.com/harttle/md-padding) 提供的 space padding 功能。感谢 [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) 提供思路 :) 
 
 如果对各位有用的话，欢迎 star ⭐
 

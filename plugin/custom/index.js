@@ -1,10 +1,11 @@
 class CustomPlugin extends global._basePlugin {
-    beforeProcess = () => {
-        this.custom = {};
+    beforeProcess = async () => {
+        this.custom = {};     // 启用的插件
+        this.allCustom = [];  // 全部的插件
         this.hotkeyHelper = new hotkeyHelper(this);
         this.dynamicCallHelper = new dynamicCallHelper(this);
         this.loadPluginHelper = new loadPluginHelper(this);
-        this.loadPluginHelper.load();
+        await this.loadPluginHelper.load();
     }
     hotkey = () => this.hotkeyHelper.hotkey()
     dynamicCallArgsGenerator = (anchorNode, meta) => this.dynamicCallHelper.dynamicCallArgsGenerator(anchorNode, meta)
@@ -29,36 +30,49 @@ class loadPluginHelper {
         this.utils.insertStyle(textID, text);
     }
 
-    load() {
-        const allPlugins = this.utils.readSetting(
+    loadCustomPlugin = async (fixedName, customSetting) => {
+        try {
+            const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins/${fixedName}`);
+            if (!plugin) return;
+
+            const instance = new plugin(fixedName, customSetting, this.controller);
+            if (!this.check(instance)) {
+                console.error("instance is not BaseCustomPlugin", instance.fixedName);
+                return
+            }
+
+            instance.init();
+            this.insertStyle(instance.fixedName, instance.style());
+            const renderArgs = instance.styleTemplate();
+            if (renderArgs) {
+                await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
+            }
+            instance.html();
+            instance.process();
+            this.controller.custom[instance.fixedName] = instance;
+            console.log(`custom plugin had been injected: [ ${instance.fixedName} ]`);
+        } catch (e) {
+            console.error("load custom plugin error:", e);
+        }
+    }
+
+    load = async () => {
+        const settings = this.utils.readSetting(
             "./plugin/global/settings/custom_plugin.default.toml",
             "./plugin/global/settings/custom_plugin.user.toml",
         )
+        this.controller.allCustom = Array.from(Object.keys(settings));
 
-        for (const fixedName of Object.keys(allPlugins)) {
-            const customSetting = allPlugins[fixedName];
-
-            if (!customSetting.enable) continue
-
-            try {
-                const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins/${fixedName}`);
-                if (!plugin) continue;
-
-                const instance = new plugin(fixedName, customSetting, this.controller);
-                if (this.check(instance)) {
-                    instance.init();
-                    this.insertStyle(instance.fixedName, instance.style());
-                    instance.html();
-                    instance.process();
-                    this.controller.custom[instance.fixedName] = instance;
-                    console.log(`custom plugin had been injected: [ ${instance.fixedName} ] `);
+        await Promise.all(
+            this.controller.allCustom.map(fixedName => {
+                const customSetting = settings[fixedName];
+                if (customSetting.enable) {
+                    return this.loadCustomPlugin(fixedName, customSetting)
                 } else {
-                    console.error("instance is not BaseCustomPlugin", instance.fixedName);
+                    console.log(`disable custom plugin: [ ${fixedName} ]`)
                 }
-            } catch (e) {
-                console.error("load custom plugin error:", e);
-            }
-        }
+            })
+        )
 
         this.utils.publishEvent(this.utils.eventType.allCustomPluginsHadInjected);
     }
@@ -79,6 +93,7 @@ class loadPluginHelper {
 
 class dynamicCallHelper {
     constructor(controller) {
+        this.controller = controller;
         this.custom = controller.custom;
         this.utils = controller.utils;
     }
@@ -87,7 +102,7 @@ class dynamicCallHelper {
         meta.target = anchorNode;
         const dynamicCallArgs = [];
 
-        for (const fixedName of Object.keys(this.custom)) {
+        for (const fixedName of this.controller.allCustom) {
             const plugin = this.custom[fixedName];
             if (!plugin) continue;
 
@@ -180,6 +195,8 @@ class BaseCustomPlugin {
     hint = () => {
     }
     style = () => {
+    }
+    styleTemplate = () => {
     }
     html = () => {
     }

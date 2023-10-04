@@ -1,0 +1,27 @@
+#plugin-go-top {
+    position: fixed;
+    right: 30px;
+    bottom: 50px;
+    z-index: 9998;
+    font-size: 28px;
+    text-align: center;
+    color: ${this.config.COLOR};
+}
+
+#plugin-go-top .action-item {
+     width: 35px;
+     height: 35px;
+     margin-top: 10px;
+     cursor: pointer;
+     box-shadow: rgba(0, 0, 0, 0.07) 0px 0px 10px;
+     border-radius: 4px;
+}
+
+#plugin-go-top .action-item:hover {
+     background-color: ${this.config.HOVER_COLOR};
+}
+
+#plugin-go-top .action-item i {
+     display: block;
+     line-height: 35px;
+}

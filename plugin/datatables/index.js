@@ -1,35 +1,4 @@
 class datatablesPlugin extends global._basePlugin {
-    style = () => {
-        const textID = "plugin-datatables-custom-style";
-        const text = `
-            #write figure select,
-            #write figure input {
-                border: 1px solid #ddd;
-                box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-                border-radius: 2px;
-                height: 27px;
-                margin-top: 5px;
-                margin-bottom: 1px;
-                max-width: 10em;
-            }
-
-            .dataTables_wrapper .dataTables_paginate .paginate_button {
-                padding: 0.05em 0.1em;
-            }
-            
-            .dataTables_wrapper .dataTables_length, .dataTables_filter {
-                margin-bottom: 0.25em;
-            }
-             
-            .dataTables_wrapper .dataTables_info {
-                padding-top: 0.25em;
-            }`;
-
-        const fileID = "plugin-datatables-common-style";
-        const file = "./plugin/datatables/resource/datatables.min.css";
-        return {textID, text, fileID, file}
-    }
-
     init = () => {
         this.dataTablesConfig = {
             paging: this.config.PAGING,
@@ -130,6 +99,8 @@ class datatablesPlugin extends global._basePlugin {
     lazyLoad = async () => {
         if (!this.loaded) {
             await this.utils.insertScript("./plugin/datatables/resource/datatables.min.js");
+            this.utils.insertStyleFile("plugin-datatables-common-style", "./plugin/datatables/resource/datatables.min.css");
+            this.utils.registerStyleTemplate(this.fixedName);
             this.loaded = true;
         }
     }

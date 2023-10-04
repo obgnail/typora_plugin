@@ -1,83 +1,9 @@
 class kanbanPlugin extends BaseCustomPlugin {
     selector = () => ""
 
-    style = () => {
-        const maxHeight = (this.config.KANBAN_MAX_HEIGHT < 0) ? "" : `max-height: ${this.config.KANBAN_MAX_HEIGHT}px;`;
-        return `
-            .plugin-kanban {
-                font-family: sans-serif;
-            }
-
-            .plugin-kanban .plugin-kanban-title {
-                font-size: 1.5rem;
-                font-weight: bold;
-            }
-            
-            .plugin-kanban .plugin-kanban-content {
-                display: flex;
-                overflow-x: auto;
-            }
-            
-            .plugin-kanban-content .no-wrap-title {
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                text-align: left;
-                padding-left: 4px;
-            }
-            
-            .plugin-kanban-content .kanban-box {
-                border-radius: 4px;
-                box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12);
-            }
-            
-            .plugin-kanban-content .kanban-item-box {
-                border-radius: 4px;
-                box-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2), 0px 1px 1px 0px rgba(0,0,0,0.14), 0px 1px 3px 0px rgba(0,0,0,0.12);
-            } 
-            
-            .plugin-kanban-content .plugin-kanban-col {
-                width: 250px !important;
-                margin: 8px;
-            }
-            
-            .plugin-kanban-col p {
-                margin: 4px;
-            }
-                        
-            .plugin-kanban-content .plugin-kanban-col-item-list {
-                display: flex;
-                flex-direction: column;
-                ${maxHeight}
-                overflow-y: overlay;
-                padding: 0 4px 4px 4px;
-            }
-            
-            .plugin-kanban-content .plugin-kanban-col-name {
-                font-size: 1rem;
-                font-weight: bold;
-                border-color: rgba(0, 0, 0, 0.08);
-                border-bottom-style: solid;
-                border-width: 1px;
-                padding: 8px 8px 4px 10px;
-            }
-
-            .plugin-kanban-content .plugin-kanban-col-item {
-                margin: 4px;
-                padding: 8px;
-            }
-            
-            .plugin-kanban-content .plugin-kanban-col-item-desc {
-                overflow: hidden;
-                margin-top: 5px;
-                height: 5rem;
-                padding-left: 4px;
-                text-align: left;
-                white-space: break-spaces;
-                word-wrap: break-word;
-            }
-        `
-    }
+    styleTemplate = () => ({
+        maxHeight: (this.config.KANBAN_MAX_HEIGHT < 0) ? "" : `max-height: ${this.config.KANBAN_MAX_HEIGHT}px;`
+    })
 
     init = () => {
         this.fenceStrictMode = false; // 单个fence是否使用严格模式

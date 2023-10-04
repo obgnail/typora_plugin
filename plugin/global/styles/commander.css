@@ -1,0 +1,79 @@
+#plugin-commander {
+    position: fixed;
+    top: 30%;
+    left: 55%;
+    width: 600px;
+    z-index: 9999;
+    padding: 4px;
+    background-color: #f8f8f8;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
+    border: 1px solid #ddd;
+    border-top: none;
+    color: var(--text-color);
+    transform: translate3d(0, 0, 0)
+}
+
+#plugin-commander-form {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    line-height: 25px;
+}
+
+#plugin-commander-form select, input {
+    border: 1px solid #ddd;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    border-radius: 2px;
+    height: 27px;
+    margin-top: 1px;
+    margin-bottom: 1px;
+}
+
+#plugin-commander-form input {
+    width: 60%;
+    margin-left: 0;
+    margin-right: 2.5px;
+    padding-left: 5px;
+    padding-right: 24px;
+}
+
+#plugin-commander-form select {
+    width: 20%;
+    margin-left: 2.5px;
+    margin-right: 0;
+    padding: 1px 2px;
+}
+
+#plugin-commander-form .plugin-commander-commit {
+    position: absolute;
+    padding: 1px;
+    left: 335px;
+    opacity: 0.7;
+    cursor: pointer;
+    display: none;
+}
+
+.plugin-commander-output {
+    margin-top: 0;
+    cursor: default;
+    max-height: 340px;
+    overflow-y: auto;
+    overflow-x: auto;
+    display: none;
+}
+
+.plugin-commander-output pre {
+    display: inline-block;
+    font-size: 13px;
+    line-height: 1.1;
+    margin: 10px 10px 5px 5px;
+    max-height: 700px;
+}
+
+.plugin-commander-output pre.error {
+    color: red;
+}
+
+#plugin-commander-form input:focus, pre:focus {
+    outline: 0
+}

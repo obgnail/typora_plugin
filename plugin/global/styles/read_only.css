@@ -1,0 +1,3 @@
+#footer-word-count-label::before {
+    content: attr(data-value) !important
+}

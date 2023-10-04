@@ -3,18 +3,7 @@ class collapseParagraphPlugin extends global._basePlugin {
         this.className = "plugin-collapsed-paragraph";
     }
 
-    style = () => {
-        return `
-            #write .${this.className}::after {
-                display: initial;
-                content: "{\\2026}" !important;
-                margin: 0 0.6rem;
-                padding: 0 1px;
-                color: white;
-                opacity: 0.6;
-                background-color: gray;
-            }`;
-    }
+    styleTemplate = () => true
 
     init = () => {
         this.paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];

@@ -1,0 +1,33 @@
+.plugin-callout {
+    background-color: var(--callout-bg-color);
+    border-left: 4px solid var(--callout-left-line-color);
+    padding: 10px 10px 10px 15px;
+    box-shadow: 0 0.2rem 0.5rem #0000000d, 0 0 0.05rem #0000001a;
+    overflow: hidden;
+}
+
+.plugin-callout[callout-type] {
+    --callout-bg-color: ${this.config.default_background_color};
+    --callout-left-line-color: ${this.config.default_left_line_color};
+    --callout-icon: "${this.config.default_icon}";
+}
+
+.plugin-callout > p:first-child {
+    margin: -10px -10px -10px -15px;
+    padding: 10px 10px 10px 15px;
+    letter-spacing: 1px;
+}
+
+.plugin-callout > p:first-child::before {
+    font-family: ${this.config.font_family};
+    content: var(--callout-icon);
+    margin-right: 0.5em;
+}
+
+.callout-folded > p:first-child :not(:first-child) { display: none; }
+.callout-folded > p:not(:first-child) { display: none; }
+
+.callout-folded:has(.md-focus) :not(:first-child):not(.md-softbreak) { display: inherit !important; }
+${hover}
+${color}
+${callouts}
