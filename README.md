@@ -19,31 +19,35 @@
 | 9    | commander                  | 命令行环境                           |
 | 10   | mindmap                    | 根据文档大纲一键生成思维导图         |
 | 11   | toolbar                    | 多功能搜索栏                         |
-| 12   | markmap                    | 提供 markmap 组件支持                |
-| 13   | echarts                    | 提供 echarts 组件支持                |
-| 14   | chart                      | 提供 chartjs 组件支持                |
-| 15   | callouts                   | 提供 callouts 支持                   |
-| 16   | read_only                  | 只读模式                             |
-| 17   | blur                       | 模糊模式                             |
-| 18   | kanban                     | 看板                                 |
-| 19   | timeline                   | 时间线                               |
-| 20   | file_counter               | 显示目录下的文件数                   |
-| 21   | outline                    | 以表格、图片、代码块形式的大纲       |
-| 22   | auto_number                | 章节、表格、图片、代码块等自动编号   |
-| 23   | chinese_symbol_auto_pairer | 中文符号自动补全                     |
-| 24   | datatables                 | 表格增强（搜索、过滤、分页、排序等） |
-| 25   | resize_table               | 调整表格行高列宽                     |
-| 26   | resize_image               | 调整图片显示大小                     |
-| 27   | export_enhance             | 导出 html 时避免图片丢失             |
-| 28   | go_top                     | 一键到文章顶部                       |
-| 29   | truncate_text              | 暂时隐藏内容，提高大文件渲染性能     |
-| 30   | markdown_lint              | markdown 格式规范检测                 |
-| 31   | hotkey_hub                 | 快捷键注册中心（高级）               |
-| 32   | custom                     | 用户自定义命令（高级）               |
-| 33   | plugin_updater             | 一键升级插件                         |
-| 34   | right_click_menu           | 右键菜单统一管理、调用插件           |
-| 35   | mermaid_replace            | 替换 mermaid 组件                    |
-| 36   | old_window_tab             | 标签页管理（已废弃）                 |
+| 12  | right_click_menu           | 右键菜单统一管理、调用插件           |
+| 13   | markmap                    | 提供 markmap 组件支持                |
+| 14   | echarts                    | 提供 echarts 组件支持                |
+| 15   | chart                      | 提供 chartjs 组件支持                |
+| 16   | callouts                   | 提供 callouts 支持                   |
+| 17   | read_only                  | 只读模式                             |
+| 18   | blur                       | 模糊模式                             |
+| 19   | kanban                     | 看板                                 |
+| 20 | timeline                   | 时间线                               |
+| 21  | file_counter               | 显示目录下的文件数                   |
+| 22  | outline                    | 以表格、图片、代码块形式的大纲       |
+| 23  | auto_number                | 章节、表格、图片、代码块等自动编号   |
+| 24  | chinese_symbol_auto_pairer | 中文符号自动补全                     |
+| 25  | datatables                 | 表格增强（搜索、过滤、分页、排序等） |
+| 26  | resize_table               | 调整表格行高列宽                     |
+| 27  | resize_image               | 调整图片显示大小                     |
+| 28  | export_enhance             | 导出 html 时避免图片丢失             |
+| 29  | go_top                     | 一键到文章顶部、底部               |
+| 30  | truncate_text              | 暂时隐藏内容，提高大文件渲染性能     |
+| 31  | markdown_lint              | markdown 格式规范检测                 |
+| 32  | plugin_updater             | 一键升级插件                         |
+| 33 | extract_range_to_new_file | 提取选区文字到新文件 |
+| 34 | full_path_copy | 复制标题路径 |
+| 35 | auto_trailing_white_space | 自动添加结尾空格 |
+| 36 | open_in_total_commander | 在 total commander 打开 |
+| 37   | mermaid_replace            | 替换 mermaid 组件              |
+| 38  | custom                     | 用户自定义命令（高级）               |
+| 39  | hotkey_hub                 | 快捷键注册中心（高级）               |
+| 40 | old_window_tab             | 标签页管理（已废弃）                 |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -397,6 +401,54 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 
 
+### right_click_menu：右键菜单统一管理插件
+
+所有插件都支持在右键菜单中直接调用。鼠标党可以将右键菜单作为所有插件的主要调用方式。
+
+从 Typora Plugin 1.4.7 版本开始，可以通过修改配置文件自定义右键菜单
+
+```toml
+#  每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
+#  NAME: 一级菜单的名称
+#  LIST: 二级菜单的插件列表（使用"---"代表在页面上插入一个divider，以作分隔）
+[[right_click_menu.MENUS]]
+NAME = "非常用插件"
+LIST = [
+    "blur",
+    "markmap",
+    "resize_image",
+    "datatables",
+    "go_top",
+    "auto_number",
+    "fence_enhance",
+    "truncate_text",
+    "export_enhance",
+    "resize_table",
+    "right_click_menu",
+    "---",
+    "file_counter",
+    "mermaid_replace",
+    "test",
+]
+[[right_click_menu.MENUS]]
+NAME = "常用插件"
+LIST = [
+    "window_tab",
+    "search_multi",
+    "multi_highlighter",
+    "outline",
+    "md_padding",
+    "read_only",
+    "---",
+    "commander",
+    "mindmap",
+    "collapse_paragraph",
+    "custom",
+]
+```
+
+
+
 ### echarts：提供 echarts 支持
 
 使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 插入 echarts
@@ -614,51 +666,41 @@ auto_pair_symbols = [
 
 
 
-### right_click_menu：右键菜单统一管理插件
+### extract_range_to_new_file：提取选区文字到新文件
 
-所有插件都支持在右键菜单中直接调用。鼠标党可以将右键菜单作为所有插件的主要调用方式。
+使用方式：选中一些文字 -> 右键菜单 -> 常用插件 -> 自定义插件 ->  提取选区文字到新文件。
 
-从 Typora Plugin 1.4.7 版本开始，可以通过修改配置文件自定义右键菜单
 
-```toml
-#  每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
-#  NAME: 一级菜单的名称
-#  LIST: 二级菜单的插件列表（使用"---"代表在页面上插入一个divider，以作分隔）
-[[right_click_menu.MENUS]]
-NAME = "非常用插件"
-LIST = [
-    "blur",
-    "markmap",
-    "resize_image",
-    "datatables",
-    "go_top",
-    "auto_number",
-    "fence_enhance",
-    "truncate_text",
-    "export_enhance",
-    "resize_table",
-    "right_click_menu",
-    "---",
-    "file_counter",
-    "mermaid_replace",
-    "test",
-]
-[[right_click_menu.MENUS]]
-NAME = "常用插件"
-LIST = [
-    "window_tab",
-    "search_multi",
-    "multi_highlighter",
-    "outline",
-    "md_padding",
-    "read_only",
-    "---",
-    "commander",
-    "mindmap",
-    "collapse_paragraph",
-    "custom",
-]
+
+### full_path_copy：复制标题路径
+
+使用方式：将光标定位到标题上 -> 右键菜单 -> 常用插件 -> 自定义插件 ->  复制标题路径。
+
+就会生成如下文字，并复制到剪切板：
+
 ```
+README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_copy：复制标题路径 三级标题
+```
+
+
+
+### auto_trailing_white_space：自动添加结尾空格
+
+使用方式：将光标定位到标题上 -> 右键菜单 -> 常用插件 -> 自定义插件 ->  自动添加结尾空格。
+
+> 根据严格的 Markdown 换行语法，需要在结尾添加两个空格以表示换行。此工具能一键添加空格。
+
+> 此插件默认关闭，需手动开启。
+
+
+
+### open_in_total_commander：在 total commander 打开当前文件
+
+使用方式：将光标定位到标题上 -> 右键菜单 -> 常用插件 -> 自定义插件 ->  TC 打开。
+
+> 使用此插件前，需要您在配置手动修改 TC 的安装路径。
+
+> 此插件默认关闭，需手动开启。
 
 
 
@@ -666,7 +708,7 @@ LIST = [
 
 如果你不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此插件。
 
-> **此插件默认关闭，需手动开启。**
+> 此插件默认关闭，需手动开启。
 
 
 
