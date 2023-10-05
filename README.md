@@ -67,7 +67,6 @@
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
-6. 愉快玩耍。有兴趣的话，可以查看 [插件使用文档](./USAGE.md)。
 
 > 可以通过修改配置文件 **永久** 启用 / 禁用任何插件。打开配置文件方式：`非常用插件 -> 右键菜单 -> 打开插件配置文件`
 
@@ -85,7 +84,7 @@
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`，推荐使用 everything 找一下）
 3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
 4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
-6. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `启动插件` 栏目，说明一切顺利。
+6. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利。
 
 
 
@@ -169,9 +168,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ---
 
-这里简单介绍一下 `右键菜单`  的注意事项：
-
-> **不同光标位置调出来的菜单有所不同**。
+这里简单介绍一下 `右键菜单`  的注意事项：**不同光标位置调出来的菜单有所不同**。
 
 比如 `章节折叠` 功能需要光标定位到标题上，才会出现 `折叠/展开当前章节` 的功能选项。
 
@@ -402,7 +399,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ### echarts：提供 echarts 支持
 
-使用方式：【右键菜单 -> 常用插件 -> 自定义插件 -> 插入 echarts】
+使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 插入 echarts
 
 ![echats](assets/echarts.png)
 
@@ -412,7 +409,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ### chart：提供 chartjs 支持
 
-使用方式：【右键菜单 -> 常用插件 -> 自定义插件 -> 插入 chart】
+使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 插入 chart
 
 ![chart](./assets/chart.png)
 
@@ -420,7 +417,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ### callouts：  提供 callouts 支持
 
-使用方式：【右键菜单 -> 常用插件 -> 自定义插件 -> 插入 callouts】
+使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 插入 callouts
 
 ![callouts](./assets/callouts.png)
 
@@ -468,8 +465,6 @@ icon = "\\f040"
 - 任务后面的 `()` 表示任务描述
 
 ![kanban](assets/kanban.png)
-
-> 注意：以上语法是我自己定义和解析的，**没有通用性**。我坚持任何插件都不能污染语法，故此插件只推荐【每日任务】等临时使用。
 
 
 
@@ -574,7 +569,7 @@ auto_pair_symbols = [
 
 导出 html 时，将图片转为 base64，避免图片丢失。
 
-> 此插件有一个配置为 `DOWNLOAD_NETWORK_IMAGE`，功能是下载网络图片并转为 base64，默认为 false。若置为 true，有可能因为网络问题导致导出超时。
+> 此插件有个配置为 `DOWNLOAD_NETWORK_IMAGE`，功能是下载网络图片并转为 base64，默认为 false。若置为 true，有可能因为网络问题导致导出超时。
 
 
 
@@ -669,7 +664,7 @@ LIST = [
 
 ### mermaid_replace：替换 mermaid
 
-如果你像我一样，不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此插件。
+如果你不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此插件。
 
 > **此插件默认关闭，需手动开启。**
 
