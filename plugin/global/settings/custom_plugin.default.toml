@@ -461,6 +461,20 @@ name = "快捷键中心"
 enable = true
 
 
+############### autoTrailingWhiteSpace ###############
+# 此插件是为了满足Markdown换行语法，除非有特殊需求，否则不建议开启此插件
+# 参考：https://markdown.com.cn/basic-syntax/line-breaks.html
+[autoTrailingWhiteSpace]
+# 右键菜单中展示的名称
+name = "自动添加结尾空格"
+# 是否启用此自定义插件
+enable = false
+# 插件配置
+[autoTrailingWhiteSpace.config]
+# 快捷键
+hotkey = "ctrl+shift+j"
+
+
 ############### openInTotalCommander ###############
 [openInTotalCommander]
 # 右键菜单中展示的名称

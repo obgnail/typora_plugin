@@ -1553,7 +1553,7 @@ class process {
     run = async () => {
         global._global_settings = {};
         global._plugins = {};     // 启用的插件
-        global._all_plugins = {}; // 全部的插件
+        global._all_plugins = []; // 全部的插件
 
         const pluginSettings = this.utils.readSetting(
             "./plugin/global/settings/settings.default.toml",
