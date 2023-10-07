@@ -5,6 +5,8 @@ class autoTailingWhiteSpacePlugin extends BaseCustomPlugin {
         const replaceFlag = 2;
         const tailSpace = "  ";
         document.querySelectorAll("#write p[cid]").forEach(ele => {
+            const textContent = ele.textContent;
+            if (!textContent.trim() || textContent.endsWith(tailSpace)) return
             const span = ele.querySelector("span");
             if (span) {
                 const textContent = span.textContent;
