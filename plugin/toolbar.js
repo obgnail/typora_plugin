@@ -80,11 +80,11 @@ class toolbarPlugin extends global._basePlugin {
         });
     }
 
-    call = () => {
+    call = async () => {
         if (this.entities.toolbar.style.display === "block") {
             this.hide();
         } else {
-            this.show();
+            await this.show();
         }
     }
 
@@ -112,7 +112,7 @@ class toolbarPlugin extends global._basePlugin {
         }
     }
 
-    show = () => {
+    show = async () => {
         this.toolController.setAnchorNode();
         const widthRatio = this.config.TOOLBAR_WIDTH_PERCENT / 100;
         const {width, left} = this.entities.content.getBoundingClientRect();
@@ -120,6 +120,7 @@ class toolbarPlugin extends global._basePlugin {
         this.entities.toolbar.style.left = left + width * (1 - widthRatio) / 2 + "px";
         this.entities.toolbar.style.display = "block";
         this.entities.input.select();
+        await this.search();
     }
 
     hide = () => {
