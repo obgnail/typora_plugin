@@ -2,7 +2,7 @@ class kanbanPlugin extends BaseCustomPlugin {
     selector = () => ""
 
     styleTemplate = () => ({
-        maxHeight: (this.config.KANBAN_MAX_HEIGHT < 0) ? "" : `max-height: ${this.config.KANBAN_MAX_HEIGHT}px;`
+        maxHeight: (this.config.KANBAN_MAX_HEIGHT < 0) ? "initial" : `${this.config.KANBAN_MAX_HEIGHT}px`
     })
 
     init = () => {

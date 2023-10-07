@@ -1,11 +1,19 @@
 class toolbarPlugin extends global._basePlugin {
     beforeProcess = () => {
-        this.registerDefaultTool();
+        this.toolController = new toolController(this);
+        [
+            tabTool,
+            pluginTool,
+            RecentFileTool,
+            operationTool,
+            modeTool,
+            tempThemeTool
+        ].forEach(tool => this.registerBarTool(new tool()));
     }
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
-    styleTemplate = () => true
+    styleTemplate = () => ({topPercent: `${this.config.TOOLBAR_TOP_PERCENT}%`})
 
     html = () => {
         const inner = `
@@ -30,13 +38,12 @@ class toolbarPlugin extends global._basePlugin {
             input: document.querySelector("#plugin-toolbar-input input"),
             result: document.querySelector("#plugin-toolbar .plugin-toolbar-result")
         }
+        this.handleInput = this.utils.debouncePromise(this.toolController.handleInput, this.config.DEBOUNCE_INTERVAL);
+        this.selectItem = this.utils.selectItemFromList(this.entities.result, ".plugin-toolbar-item.active");
     }
 
     process = () => {
         this.init();
-
-        const handleInput = this.utils.debouncePromise(this.toolController.handleInput, this.config.DEBOUNCE_INTERVAL);
-        const selectItem = this.utils.selectItemFromList(this.entities.result, ".plugin-toolbar-item.active");
         this.entities.input.addEventListener("keydown", async ev => {
             switch (ev.key) {
                 case "Enter":
@@ -46,26 +53,24 @@ class toolbarPlugin extends global._basePlugin {
                         this.hide();
                     }
                     break
+                case "ArrowUp":
+                case "ArrowDown":
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                    this.selectItem(ev);
+                    break
                 case "Escape":
                 case "Backspace":
                     if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
                         ev.stopPropagation();
                         ev.preventDefault();
                         this.hide();
+                    } else {
+                        await this.search(ev);
                     }
                     break
-                case "ArrowUp":
-                case "ArrowDown":
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    selectItem(ev);
-                    break
                 default:
-                    const result = await handleInput(this.entities.input);
-                    const ok = result && result["matches"] && result["tool"];
-                    this.entities.result.innerHTML = ok ? this.newItems(result).join("") : "";
-                    ev.preventDefault();
-                    ev.stopPropagation();
+                    await this.search(ev);
             }
         })
 
@@ -83,16 +88,6 @@ class toolbarPlugin extends global._basePlugin {
         }
     }
 
-    registerDefaultTool = () => {
-        this.toolController = new toolController(this);
-        this.registerBarTool(new tabTool());
-        this.registerBarTool(new pluginTool());
-        this.registerBarTool(new RecentFileTool());
-        this.registerBarTool(new operationTool());
-        this.registerBarTool(new modeTool());
-        this.registerBarTool(new tempThemeTool());
-    }
-
     registerBarTool = tool => this.toolController.register(tool);
     unregisterBarTool = name => this.toolController.unregister(name);
 
@@ -105,6 +100,16 @@ class toolbarPlugin extends global._basePlugin {
         const fixedName = target.getAttribute("data");
         const meta = target.getAttribute("meta");
         this.toolController.callback(tool, fixedName, meta);
+    }
+
+    search = async ev => {
+        const result = await this.handleInput(this.entities.input);
+        const ok = result && result["matches"] && result["tool"];
+        this.entities.result.innerHTML = ok ? this.newItems(result).join("") : "";
+        if (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+        }
     }
 
     show = () => {
