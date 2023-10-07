@@ -44,7 +44,7 @@
     flex-direction: column;
     overflow-y: overlay;
     padding: 0 4px 4px 4px;
-    ${maxHeight}
+    max-height: ${maxHeight};
 }
 
 .plugin-kanban-content .plugin-kanban-col-name {

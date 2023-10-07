@@ -1,6 +1,6 @@
 #plugin-toolbar {
     position: fixed;
-    top: ${this.config.TOOLBAR_TOP_PERCENT}%;
+    top: ${topPercent};
     z-index: 9999;
     padding: 4px;
     background-color: #f8f8f8;
