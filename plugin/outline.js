@@ -1,6 +1,8 @@
 class outlinePlugin extends global._basePlugin {
     styleTemplate = () => true
 
+    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+
     html = () => {
         const all_button = (this.config.USE_ALL) ? `<div class="plugin-outline-icon ion-android-data" type="all" ty-hint="混合"></div>` : "";
         const class_name = (this.config.SHOW_HIDDEN) ? "ion-eye" : "ion-eye-disabled";

@@ -4,7 +4,7 @@ class fullPathCopy extends BaseCustomPlugin {
     init = () => {}
     style = () => {}
     html = () => {}
-    hotkey = () => ["ctrl+shift+y"]
+    hotkey = () => [this.config.hotkey]
     process = () => {}
     callback = anchorNode => {
         const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];

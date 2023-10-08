@@ -5,6 +5,8 @@ class templater extends BaseCustomPlugin {
         }
     }
 
+    hotkey = () => [this.config.hotkey]
+
     getTemplateList = () => {
         const templates = [...this.config.template];
         if (this.utils.getCustomPlugin("kanban")) {
