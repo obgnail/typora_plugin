@@ -10,6 +10,11 @@ class goTopPlugin extends global._basePlugin {
         this.utils.insertDiv(wrap);
     }
 
+    hotkey = () => [
+        {hotkey: this.config.HOTKEY_GO_TOP, callback: this.call},
+        {hotkey: this.config.HOTKEY_GO_BOTTOM, callback: () => this.call("go-bottom")},
+    ]
+
     process = () => {
         document.getElementById("plugin-go-top").addEventListener("click", ev => {
             const target = ev.target.closest(".action-item");
@@ -25,10 +30,7 @@ class goTopPlugin extends global._basePlugin {
     }
 
     call = direction => {
-        let scrollTop = '0';
-        if (direction === "go-bottom") {
-            scrollTop = document.querySelector("#write").getBoundingClientRect().height;
-        }
+        const scrollTop = (direction === "go-bottom") ? document.querySelector("#write").getBoundingClientRect().height : "0";
         $("content").animate({scrollTop: scrollTop}, this.config.SCROLL_TIME);
     }
 }

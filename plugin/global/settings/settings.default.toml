@@ -396,6 +396,10 @@ NAME = "一键到顶"
 CLICKABLE = true
 # 滚动所用时间
 SCROLL_TIME = 600
+# 到顶快捷键
+HOTKEY_GO_TOP = ""
+# 到底快捷键
+HOTKEY_GO_BOTTOM = ""
 # 标签的颜色
 COLOR = "var(--active-file-border-color, black)"
 # hover时标签的颜色
