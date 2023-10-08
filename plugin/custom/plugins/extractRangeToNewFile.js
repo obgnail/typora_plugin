@@ -6,6 +6,8 @@ class extractRangeToNewFile extends BaseCustomPlugin {
         }
     }
 
+    hotkey = () => [this.config.hotkey]
+
     callback = anchorNode => {
         ClientCommand.copyAsMarkdown();
         this.promise = window.parent.navigator.clipboard.readText();

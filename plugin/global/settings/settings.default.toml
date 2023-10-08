@@ -175,6 +175,8 @@ ENABLE = true
 NAME = "类别大纲"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# 快捷键
+HOTKEY = ""
 # 打开模态框后默认使用的大纲类型 fence/image/table/all
 DEFAULT_TYPE = "fence"
 # 是否使用混合标签
@@ -324,6 +326,8 @@ ENABLE = true
 NAME = "模糊模式"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# 快捷键
+HOTKEY = ""
 # 默认使用模糊模式
 BLUR_DEFAULT = false
 # 模糊类型: blur/hide（若为hide，则RESRTORE_WHEN_HOVER无效）

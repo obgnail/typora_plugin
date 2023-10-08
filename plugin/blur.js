@@ -7,9 +7,9 @@ class blurPlugin extends global._basePlugin {
         }
     }
 
-    style = () => {
-        return {textID: this.css_id, text: this.getStyleText()}
-    }
+    style = () => ({textID: this.css_id, text: this.getStyleText()})
+
+    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     process = () => {
         this.inBlur = this.config.BLUR_DEFAULT;

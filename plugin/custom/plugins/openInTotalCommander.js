@@ -5,6 +5,8 @@ class openInTotalCommander extends BaseCustomPlugin {
         }
     }
 
+    hotkey = () => [this.config.hotkey]
+
     callback = anchorNode => {
         const commander = this.utils.getPlugin("commander");
         if (commander) {
