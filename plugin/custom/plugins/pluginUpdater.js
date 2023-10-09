@@ -1,28 +1,36 @@
 class pluginUpdater extends BaseCustomPlugin {
+    // 当前升级插件仅支持windows平台
+    beforeProcess = () => (!File.isWin) ? this.utils.stopLoadPluginError : undefined
+
     selector = () => (this.updaterExeExist && this.commanderPlugin) ? "" : this.utils.nonExistSelector
 
     hint = () => "当你发现BUG，可以尝试更新，说不定就解决了"
 
     init = () => {
+        this.commanderPlugin = null;
         this.updaterExeExist = this.utils.existInPluginPath("./plugin/updater/updater.exe");
     }
 
     process = () => {
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
             this.commanderPlugin = this.utils.getPlugin("commander");
-
-            // 当前自动升级仅支持windows平台
-            if (this.config.auto_update && this.commanderPlugin && File.isWin) {
-                setTimeout(async () => {
-                    console.log("start update...");
-                    const proxy = await this.getProxy();
-                    await this.update(proxy, this.config.auto_exec_show);
-                }, this.config.start_update_interval)
+            if (this.updaterExeExist && this.commanderPlugin && this.config.auto_update) {
+                if (this.config.start_update_interval > 0) {
+                    setTimeout(this.silentUpdate, this.config.start_update_interval);
+                }
+                if (this.config.update_loop_interval > 0) {
+                    setInterval(this.silentUpdate, this.config.update_loop_interval);
+                }
             }
         })
     }
 
     callback = async anchorNode => {
+        if (this.config.proxy) {
+            await this.modalUpdate(this.config.proxy);
+            return
+        }
+
         const proxy = await this.getProxy();
         const modal = {
             title: "设置代理",
@@ -31,28 +39,28 @@ class pluginUpdater extends BaseCustomPlugin {
                 {label: "代理（为空则不设置）", type: "input", value: proxy, placeholder: "http://127.0.0.1:7890"}
             ]
         }
+        this.modal(modal, async components => await this.modalUpdate(components[1].submit))
+    }
 
-        this.modal(modal, async components => {
-            const proxy = (components[1].submit || "").trim();
-            await this.update(proxy, this.config.exec_show, "升级中，请稍等\n\n", code => {
-                this.adjustFile();
-                if (code !== 0) {
-                    this.modal(
-                        {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]},
-                        () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
-                    )
-                }
-            })
+    modalUpdate = async proxy => {
+        await this.update(proxy, this.config.exec_show, "升级中，请稍等\n\n", code => {
+            this.adjustFile();
+            if (code !== 0) {
+                this.modal(
+                    {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]},
+                    () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
+                )
+            }
         })
     }
 
-    getProxy = async () => {
-        let proxy = (await new ProxyGetter(this.utils).getProxy()) || "";
-        if (!proxy.startsWith("http://")) {
-            proxy = "http://" + proxy;
-        }
-        return proxy
+    silentUpdate = async () => {
+        console.log("start update...");
+        const proxy = await this.getProxy();
+        await this.update(proxy, this.config.auto_exec_show);
     }
+
+    getProxy = async () => this.config.proxy || (await new ProxyGetter(this.utils).getProxy()) || ""
 
     // 保不齐有些用户就是不守规矩，升级前和升级后都执行一次
     adjustFile = async () => {
@@ -61,6 +69,10 @@ class pluginUpdater extends BaseCustomPlugin {
     }
 
     update = async (proxy, exec, hint, callback) => {
+        proxy = (proxy || "").trim();
+        if (proxy && !/^https?:\/\//.test(proxy)) {
+            proxy = "http://" + proxy;
+        }
         callback = callback || this.adjustFile;
         await this.adjustFile();
         const dir = this.utils.joinPath("./plugin/updater");

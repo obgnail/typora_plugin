@@ -502,17 +502,28 @@ tc_args = '/O /T /P=L  /L="$f"'
 # 右键菜单中展示的名称
 name = "升级插件"
 # 是否启用此自定义插件
+# 注意：此插件目前仅支持windows系统，若为其他系统，则此插件失效
+# 注意：此插件依赖于commander插件，若禁用了commander，则此插件失效
 enable = true
+# 插件配置
 [pluginUpdater.config]
+# 众所周知，有些地区无法裸连github，需要使用代理（如：http://127.0.0.1:7890）
+# 若值为空，则将弹出模态框，让用户填入代理；若有值，则将直接使用此代理，不再弹出模态框（除非你固定使用某代理，否则不建议使用此配置）
+proxy = ""
 # 升级时是否弹窗
-#   1.always: 总是弹出
+#   1.always: 总是弹出（等待程序执行完毕后一次性弹出）
 #   2.error: 只在异常时弹出
 #   3.silent: 总是静默
 #   4.echo: 立即回显
 exec_show = "echo"
-# 打开Typora时自动静默升级（若为false，则start_update_interval、auto_exec_show配置失效）
+# 是否启用自动静默升级（若为false，则以下配置全部失效）
+# 自动升级有两个策略：
+#   1.策略一：打开Typora一段时间后，开始执行升级流程
+#   2.策略二：每隔一段时间，执行一次升级流程
 auto_update = true
-# 打开Typora多长时间后，开始执行升级流程（单位：ms）
+# 策略一（单位：ms，若<0，则不使用此策略）
 start_update_interval = 300000 # (1000 * 60 * 5)
+# 策略二（单位：ms，若<0，则不使用此策略）
+update_loop_interval = -1
 # 自动升级时使用的回显方式
 auto_exec_show = "silent"
