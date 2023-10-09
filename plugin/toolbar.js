@@ -15,21 +15,21 @@ class toolbarPlugin extends global._basePlugin {
 
     styleTemplate = () => ({topPercent: `${this.config.TOOLBAR_TOP_PERCENT}%`})
 
-    html = () => {
-        const inner = `
-        <div id="plugin-toolbar-input">
-            <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
-                autocapitalize="off" value="" placeholder="ops 资源管理器打开" data-lg="Front"
-                title="支持查询：\nplu：插件\ntab：标签页\nhis：最近文件\nops：常用操作\nmode：模式\ntheme：临时主题">
-        </div>
-        <div class="plugin-toolbar-result"></div>
-        `
-        const toolbar = document.createElement("div");
-        toolbar.id = 'plugin-toolbar';
-        toolbar.style.display = "none";
-        toolbar.innerHTML = inner;
-        this.utils.insertDiv(toolbar);
-    }
+    htmlTemplate = () => [{
+        id: "plugin-toolbar",
+        style: {display: "none"},
+        children: [
+            {
+                id: "plugin-toolbar-input",
+                children: [{
+                    ele: "input", class_: "input", tabindex: "1", autocorrect: "off", spellcheck: "false",
+                    autocapitalize: "off", placeholder: "ops 资源管理器打开", "data-lg": "Front",
+                    title: "支持查询：\nplu：插件\ntab：标签页\nhis：最近文件\nops：常用操作\nmode：模式\ntheme：临时主题"
+                }]
+            },
+            {class_: "plugin-toolbar-result"}
+        ]
+    }]
 
     init = () => {
         this.entities = {

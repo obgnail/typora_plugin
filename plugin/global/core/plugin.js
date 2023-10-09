@@ -25,7 +25,8 @@ class utils {
     //   6. bar tool
     //   7. export helper
     //   8. style templater
-    //   9. modal
+    //   9. html templater
+    //   10. modal
 
     // 动态注册、动态注销hotkey
     // 注意: 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
@@ -158,6 +159,11 @@ class utils {
     // 动态注册css模板文件
     static registerStyleTemplate = async (name, renderArg) => await global._styleTemplater.register(name, renderArg)
     static unregisterStyleTemplate = name => global._styleTemplater.unregister(name)
+
+    // 插入html
+    static insertHtmlTemplate = elements => global._htmlTemplater.insert(elements)
+    static creatElement = element => global._htmlTemplater.create(element)
+    static getElementCreator = () => global._htmlTemplater.creator()
 
 
     // 动态弹出自定义模态框（及刻弹出，因此无需注册）
@@ -326,38 +332,6 @@ class utils {
             return v.toString(16);
         });
     }
-
-    // 2x faster then innerHTML, less memory usage, but less readable
-    // elementCreator:
-    //     const creator = this.utils.elementCreator();
-    //     const wrap = creator.div(
-    //         {id: "plugin-go-top"},
-    //         creator.div({"class": "action-item", "action": "go-top"}, creator.i({"class": "fa fa-angle-up"})),
-    //         creator.div({"class": "action-item", "action": "go-bottom"}, creator.i({"class": "fa fa-angle-down"})),
-    //     )
-    // innerHTML:
-    //     const wrap = document.createElement("div");
-    //     wrap.id = "plugin-go-top";
-    //     wrap.innerHTML = `
-    //             <div class="action-item" action="go-top"><i class="fa fa-angle-up"></i></div>
-    //             <div class="action-item" action="go-bottom"><i class="fa fa-angle-down"></i></div>`;
-    static elementCreator = () => new Proxy({}, {
-        get(target, propertyKey) {
-            return function (attrs = {}, ...children) {
-                const el = document.createElement(propertyKey);
-                for (let prop of Object.keys(attrs)) {
-                    el.setAttribute(prop, attrs[prop]);
-                }
-                for (let child of children) {
-                    if (typeof child === 'string') {
-                        child = document.createTextNode(child);
-                    }
-                    el.appendChild(child);
-                }
-                return el;
-            }
-        }
-    })
 
 
     ////////////////////////////// 业务文件操作 //////////////////////////////
@@ -1219,9 +1193,7 @@ class modalGenerator {
     html = () => {
         const modal_content = `
             <div class="modal-content">
-              <div class="modal-header">
-                <div class="modal-title" data-lg="Front">自定义插件弹窗</div>
-              </div>
+              <div class="modal-header"><div class="modal-title" data-lg="Front">自定义插件弹窗</div></div>
               <div class="modal-body"></div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-default plugin-modal-cancel" data-dismiss="modal" data-lg="Front">取消</button>
@@ -1426,6 +1398,98 @@ class styleTemplater {
     unregister = name => this.utils.removeStyle(`plugin-${name}-style`);
 }
 
+// faster then innerHTML, less memory usage, but poor readable
+// don't use unless element is simple enough
+class htmlTemplater {
+    constructor() {
+        this.utils = utils
+        this.defaultElement = "div"
+    }
+
+    // 2x faster then innerHTML
+    // creator:
+    //     const creator = this.creator();
+    //     const wrap = creator.div(
+    //         {id: "plugin-go-top"},
+    //         creator.div({"class": "action-item", "action": "go-top"}, creator.i({"class": "fa fa-angle-up"})),
+    //         creator.div({"class": "action-item", "action": "go-bottom"}, creator.i({"class": "fa fa-angle-down"})),
+    //     )
+    // innerHTML:
+    //     const wrap = document.createElement("div");
+    //     wrap.id = "plugin-go-top";
+    //     wrap.innerHTML = `
+    //          <div class="action-item" action="go-top"><i class="fa fa-angle-up"></i></div>
+    //          <div class="action-item" action="go-bottom"><i class="fa fa-angle-down"></i></div>`;
+    creator = () => new Proxy({}, {
+        get(target, propertyKey) {
+            return function (attrs = {}, ...children) {
+                const el = document.createElement(propertyKey);
+                for (const prop of Object.keys(attrs)) {
+                    el.setAttribute(prop, attrs[prop]);
+                }
+                for (let child of children) {
+                    if (typeof child === 'string') {
+                        child = document.createTextNode(child);
+                    }
+                    el.appendChild(child);
+                }
+                return el;
+            }
+        }
+    })
+
+    // 3x faster then innerHTML
+    // create:
+    //     const elements = [{
+    //         id: "plugin-go-top",
+    //         children: [
+    //             {class_: "action-item", action: "go-top", children: [{ele: "i", class_: "fa fa-angle-up"}]},
+    //             {class_: "action-item", action: "go-bottom", children: [{ele: "i", class_: "fa fa-angle-down"}]},
+    //         ]
+    //     }]
+    //     const ele = this.create(elements);
+    create = element => {
+        const el = document.createElement(element.ele || this.defaultElement);
+
+        for (const prop of Object.keys(element)) {
+            const value = element[prop];
+            switch (prop) {
+                case "ele":
+                    continue
+                case "class":
+                case "className":
+                case "class_":
+                    el.setAttribute("class", value);
+                    break
+                case "text":
+                    el.innerText = value;
+                    break
+                case "style":
+                    for (const key of Object.keys(value)) {
+                        el.style[key] = value[key];
+                    }
+                    break
+                case "children":
+                    for (const child of value) {
+                        const c = this.create(child);
+                        el.appendChild(c);
+                    }
+                    break
+                default:
+                    el.setAttribute(prop, value);
+            }
+        }
+        return el
+    }
+
+    insert = elements => {
+        for (const element of elements) {
+            const el = this.create(element);
+            this.utils.insertDiv(el);
+        }
+    }
+}
+
 class exportHelper {
     constructor() {
         this.utils = utils;
@@ -1523,6 +1587,9 @@ class basePlugin {
     html() {
     }
 
+    htmlTemplate() {
+    }
+
     hotkey() {
     }
 
@@ -1571,6 +1638,10 @@ class process {
                 await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
             }
             instance.html();
+            const elements = instance.htmlTemplate();
+            if (elements) {
+                this.utils.insertHtmlTemplate(elements);
+            }
             this.utils.registerHotkey(instance.hotkey());
             instance.process();
             instance.afterProcess();
@@ -1638,6 +1709,8 @@ global._modalGenerator = new modalGenerator();
 global._hotkeyHub = new hotkeyHub();
 // 注册样式模板文件
 global._styleTemplater = new styleTemplater();
+// html模板
+global._htmlTemplater = new htmlTemplater();
 // 注册导出时的额外操作
 global._exportHelper = new exportHelper();
 

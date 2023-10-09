@@ -3,19 +3,12 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
 
-    html = () => {
-        const modal = document.createElement("div");
-        modal.id = 'plugin-markdownlint';
-        modal.style.display = "none";
-        modal.innerHTML = `<pre tabindex="0"></pre>`;
-        this.utils.insertDiv(modal);
-
+    htmlTemplate = () => {
+        const el = [{id: "plugin-markdownlint", style: {display: "none"}, children: [{ele: "pre", tabindex: "0"}]}]
         if (this.config.use_button) {
-            const button = document.createElement("div");
-            button.id = "plugin-markdownlint-button";
-            button.setAttribute("ty-hint", "markdown格式规范检测");
-            this.utils.insertDiv(button);
+            el.push({id: "plugin-markdownlint-button", "ty-hint": "markdown格式规范检测"})
         }
+        return el
     }
 
     process = () => {

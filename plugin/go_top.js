@@ -1,14 +1,13 @@
 class goTopPlugin extends global._basePlugin {
     styleTemplate = () => true
 
-    html = () => {
-        const wrap = document.createElement("div");
-        wrap.id = "plugin-go-top";
-        wrap.innerHTML = `
-            <div class="action-item" action="go-top"><i class="fa fa-angle-up"></i></div>
-            <div class="action-item" action="go-bottom"><i class="fa fa-angle-down"></i></div>`;
-        this.utils.insertDiv(wrap);
-    }
+    htmlTemplate = () => [{
+        id: "plugin-go-top",
+        children: [
+            {class_: "action-item", action: "go-top", children: [{ele: "i", class_: "fa fa-angle-up"}]},
+            {class_: "action-item", action: "go-bottom", children: [{ele: "i", class_: "fa fa-angle-down"}]},
+        ]
+    }]
 
     process = () => {
         document.getElementById("plugin-go-top").addEventListener("click", ev => {

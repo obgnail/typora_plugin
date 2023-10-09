@@ -49,6 +49,10 @@ class loadPluginHelper {
                 await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
             }
             instance.html();
+            const elements = instance.htmlTemplate();
+            if (elements) {
+                this.utils.insertHtmlTemplate(elements);
+            }
             instance.process();
             this.controller.custom[instance.fixedName] = instance;
             console.log(`custom plugin had been injected: [ ${instance.fixedName} ]`);
@@ -202,6 +206,8 @@ class BaseCustomPlugin {
     styleTemplate = () => {
     }
     html = () => {
+    }
+    htmlTemplate = () => {
     }
     hotkey = () => {
     }
