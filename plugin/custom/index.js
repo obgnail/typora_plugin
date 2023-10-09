@@ -40,7 +40,8 @@ class loadPluginHelper {
                 console.error("instance is not BaseCustomPlugin", instance.fixedName);
                 return
             }
-
+            const error = instance.beforeProcess();
+            if (error === this.utils.stopLoadPluginError) return
             instance.init();
             this.insertStyle(instance.fixedName, instance.style());
             const renderArgs = instance.styleTemplate();
@@ -188,6 +189,8 @@ class BaseCustomPlugin {
 
     modal = (pluginModal, callback, cancelCallback) => this.utils.modal(pluginModal, callback, cancelCallback);
 
+    beforeProcess = () => {
+    }
     init = () => {
     }
     selector = () => {

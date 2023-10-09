@@ -251,7 +251,7 @@ class utils {
     }
 
     // { a: [{ b: 2 }] } { a: [{ c: 2 }]} -> { a: [{b:2}, {c:2}]}
-    // merge({o: {a: 3}}, {o: {b:4}}) => {o: {a:3, b:4}}
+    // merge({o: {a: 3}}, {o: {b:4}}) -> {o: {a:3, b:4}}
     static merge = (source, other) => {
         const isObject = value => {
             const type = typeof value
@@ -326,6 +326,38 @@ class utils {
             return v.toString(16);
         });
     }
+
+    // 2x faster then innerHTML, less memory usage, but less readable
+    // elementCreator:
+    //     const creator = this.utils.elementCreator();
+    //     const wrap = creator.div(
+    //         {id: "plugin-go-top"},
+    //         creator.div({"class": "action-item", "action": "go-top"}, creator.i({"class": "fa fa-angle-up"})),
+    //         creator.div({"class": "action-item", "action": "go-bottom"}, creator.i({"class": "fa fa-angle-down"})),
+    //     )
+    // innerHTML:
+    //     const wrap = document.createElement("div");
+    //     wrap.id = "plugin-go-top";
+    //     wrap.innerHTML = `
+    //             <div class="action-item" action="go-top"><i class="fa fa-angle-up"></i></div>
+    //             <div class="action-item" action="go-bottom"><i class="fa fa-angle-down"></i></div>`;
+    static elementCreator = () => new Proxy({}, {
+        get(target, propertyKey) {
+            return function (attrs = {}, ...children) {
+                const el = document.createElement(propertyKey);
+                for (let prop of Object.keys(attrs)) {
+                    el.setAttribute(prop, attrs[prop]);
+                }
+                for (let child of children) {
+                    if (typeof child === 'string') {
+                        child = document.createTextNode(child);
+                    }
+                    el.appendChild(child);
+                }
+                return el;
+            }
+        }
+    })
 
 
     ////////////////////////////// 业务文件操作 //////////////////////////////
