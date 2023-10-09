@@ -8,13 +8,7 @@ class windowTabBarPlugin extends global._basePlugin {
 
     styleTemplate = () => true
 
-    html = () => {
-        const div = `<div class="tab-bar"></div>`
-        const windowTab = document.createElement("div");
-        windowTab.id = "plugin-window-tab";
-        windowTab.innerHTML = div;
-        this.utils.insertDiv(windowTab);
-    }
+    htmlTemplate = () => [{id: "plugin-window-tab", children: [{class_: "tab-bar"}]}]
 
     hotkey = () => [
         {hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: this.nextTab},
