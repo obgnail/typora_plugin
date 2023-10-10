@@ -1449,14 +1449,14 @@ class htmlTemplater {
 
     // 3x faster then innerHTML
     // create:
-    //     const elements = [{
+    //     const element = {
     //         id: "plugin-go-top",
     //         children: [
     //             {class_: "action-item", action: "go-top", children: [{ele: "i", class_: "fa fa-angle-up"}]},
     //             {class_: "action-item", action: "go-bottom", children: [{ele: "i", class_: "fa fa-angle-down"}]},
     //         ]
-    //     }]
-    //     const ele = this.create(elements);
+    //     }
+    //     const ele = this.create(element);
     create = element => {
         const el = document.createElement(element.ele || this.defaultElement);
 
