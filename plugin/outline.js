@@ -25,7 +25,7 @@ class outlinePlugin extends global._basePlugin {
                 ${all_button}
             </div>
             `
-        this.utils.insertDiv(modal);
+        return modal
     }
 
     init = () => {

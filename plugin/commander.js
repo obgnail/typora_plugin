@@ -32,13 +32,7 @@ class commanderPlugin extends global._basePlugin {
         modal.id = 'plugin-commander';
         modal.style.display = "none";
         modal.innerHTML = div;
-        this.utils.insertDiv(modal);
-
-        if (!this.config.USE_BUILTIN) {
-            document.getElementById('plugin-commander').style.width = "500px";
-            document.querySelector("#plugin-commander-form input").style.width = "80%";
-            document.querySelector("#plugin-commander-form .plugin-commander-commit").style.left = "375px";
-        }
+        return modal
     }
 
     hotkey = () => {
@@ -78,6 +72,12 @@ class commanderPlugin extends global._basePlugin {
 
     process = () => {
         this.init();
+
+        if (!this.config.USE_BUILTIN) {
+            this.modal.modal.style.width = "500px";
+            this.modal.input.style.width = "80%";
+            this.modal.commit.style.left = "375px";
+        }
 
         // 提供不同入口，让鼠标操作的用户不必切换回键盘操作
         this.modal.commit.addEventListener("click", ev => {

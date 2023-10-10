@@ -532,8 +532,19 @@ class utils {
     }
 
     static insertDiv = div => {
+        if (!div) return
         const quickOpenNode = document.getElementById("typora-quick-open");
         quickOpenNode.parentNode.insertBefore(div, quickOpenNode.nextSibling);
+    }
+    static insertElement = (elements, sibling) => {
+        if (!elements) return
+        if (!(elements instanceof Array)) {
+            elements = [elements]
+        }
+        sibling = sibling || document.getElementById("typora-quick-open");
+        for (const ele of elements) {
+            sibling.parentNode.insertBefore(ele, sibling.nextSibling);
+        }
     }
 
     static resizeFixedModal = (
@@ -1637,7 +1648,7 @@ class process {
             if (renderArgs) {
                 await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
             }
-            instance.html();
+            this.utils.insertElement(instance.html());
             const elements = instance.htmlTemplate();
             if (elements) {
                 this.utils.insertHtmlTemplate(elements);
