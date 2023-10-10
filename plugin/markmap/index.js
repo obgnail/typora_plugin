@@ -203,125 +203,8 @@ class tocMarkmap {
         this.entities.content.addEventListener("transitionend", this.fit);
         this.entities.modal.addEventListener("transitionend", this.fit);
 
-        const dragModal = (handleElement, withMetaKey) => {
-            this.utils.dragFixedModal(
-                handleElement, this.entities.modal, withMetaKey,
-                () => {
-                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_DRAG);
-                    this.waitUnpin();
-                },
-                null,
-                () => this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_DRAG)
-            );
-        }
-
-        // 提供两种拖拽的方式
-        dragModal(this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`), false);
-        dragModal(this.entities.modal, true);
-
-        const getModalMinHeight = () => {
-            const one = this.entities.header.firstElementChild.getBoundingClientRect().height;
-            const count = (this.config.ALLOW_ICON_WRAP) ? 1 : this.entities.header.childElementCount;
-            return one * count
-        }
-
-        const getModalMinWidth = () => {
-            const {marginLeft, paddingRight} = document.defaultView.getComputedStyle(this.entities.header);
-            const headerWidth = this.entities.header.getBoundingClientRect().width;
-
-            const _marginRight = (this.config.ALLOW_ICON_WRAP) ? 0 : parseInt(paddingRight);
-            return parseInt(marginLeft) + headerWidth + _marginRight
-        }
-
-        // 自由移动时调整大小
-        {
-            let deltaHeight = 0;
-            let deltaWidth = 0;
-            this.utils.resizeFixedModal(
-                this.entities.resize, this.entities.modal, true, true,
-                (startX, startY, startWidth, startHeight) => {
-                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
-                    deltaHeight = getModalMinHeight() - startHeight;
-                    deltaWidth = getModalMinWidth() - startWidth;
-                },
-                (deltaX, deltaY) => {
-                    deltaY = Math.max(deltaY, deltaHeight);
-                    deltaX = Math.max(deltaX, deltaWidth);
-                    return {deltaX, deltaY}
-                },
-                async () => {
-                    this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
-                    await this.waitUnpin();
-                    await this.setFullScreenIcon(this.entities.fullScreen, false);
-                }
-            );
-        }
-
-        // 固定到顶部时调整大小
-        {
-            let contentStartTop = 0;
-            let contentMinTop = 0;
-            this.utils.resizeFixedModal(
-                this.entities.gripUp, this.entities.modal, false, true,
-                () => {
-                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
-                    contentStartTop = this.entities.content.getBoundingClientRect().top;
-                    contentMinTop = getModalMinHeight() + this.entities.header.getBoundingClientRect().top;
-                },
-                (deltaX, deltaY) => {
-                    let newContentTop = contentStartTop + deltaY;
-                    if (newContentTop < contentMinTop) {
-                        newContentTop = contentMinTop;
-                        deltaY = contentMinTop - contentStartTop;
-                    }
-                    this.entities.content.style.top = newContentTop + "px";
-                    return {deltaX, deltaY}
-                },
-                () => {
-                    this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
-                    this.drawToc();
-                }
-            );
-        }
-
-        // 固定到右侧时调整大小
-        {
-            let contentStartRight = 0;
-            let contentStartWidth = 0;
-            let modalStartLeft = 0;
-            let contentMaxRight = 0;
-            this.utils.resizeFixedModal(
-                this.entities.gripRight, this.entities.modal, true, false,
-                () => {
-                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
-
-                    const contentRect = this.entities.content.getBoundingClientRect();
-                    contentStartRight = contentRect.right;
-                    contentStartWidth = contentRect.width;
-
-                    const modalRect = this.entities.modal.getBoundingClientRect();
-                    modalStartLeft = modalRect.left;
-                    contentMaxRight = modalRect.right - getModalMinWidth();
-                },
-                (deltaX, deltaY) => {
-                    deltaX = -deltaX;
-                    deltaY = -deltaY;
-                    let newContentRight = contentStartRight - deltaX;
-                    if (newContentRight > contentMaxRight) {
-                        newContentRight = contentMaxRight;
-                        deltaX = contentStartRight - contentMaxRight;
-                    }
-                    this.entities.content.style.right = newContentRight + "px";
-                    this.entities.content.style.width = contentStartWidth - deltaX + "px";
-                    this.entities.modal.style.left = modalStartLeft - deltaX + "px";
-                    return {deltaX, deltaY}
-                },
-                () => {
-                    this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
-                    this.drawToc();
-                }
-            )
-        }
+        this.onDrag();
+        this.onResize();
 
         this.entities.header.addEventListener("click", ev => {
             const button = ev.target.closest(".plugin-markmap-icon");
@@ -451,6 +334,130 @@ class tocMarkmap {
             await this.waitUnpin();
         }
         await this[action](button);
+    }
+
+    onDrag = () => {
+        const dragModal = (handleElement, withMetaKey) => {
+            this.utils.dragFixedModal(
+                handleElement, this.entities.modal, withMetaKey,
+                () => {
+                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_DRAG);
+                    this.waitUnpin();
+                },
+                null,
+                () => this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_DRAG)
+            );
+        }
+
+        // 提供两种拖拽的方式
+        dragModal(this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`), false);
+        dragModal(this.entities.modal, true);
+    }
+
+    onResize = () => {
+        const getModalMinHeight = () => {
+            const one = this.entities.header.firstElementChild.getBoundingClientRect().height;
+            const count = (this.config.ALLOW_ICON_WRAP) ? 1 : this.entities.header.childElementCount;
+            return one * count
+        }
+
+        const getModalMinWidth = () => {
+            const {marginLeft, paddingRight} = document.defaultView.getComputedStyle(this.entities.header);
+            const headerWidth = this.entities.header.getBoundingClientRect().width;
+
+            const _marginRight = (this.config.ALLOW_ICON_WRAP) ? 0 : parseInt(paddingRight);
+            return parseInt(marginLeft) + headerWidth + _marginRight
+        }
+
+        // 自由移动时调整大小
+        {
+            let deltaHeight = 0;
+            let deltaWidth = 0;
+            this.utils.resizeFixedModal(
+                this.entities.resize, this.entities.modal, true, true,
+                (startX, startY, startWidth, startHeight) => {
+                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+                    deltaHeight = getModalMinHeight() - startHeight;
+                    deltaWidth = getModalMinWidth() - startWidth;
+                },
+                (deltaX, deltaY) => {
+                    deltaY = Math.max(deltaY, deltaHeight);
+                    deltaX = Math.max(deltaX, deltaWidth);
+                    return {deltaX, deltaY}
+                },
+                async () => {
+                    this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+                    await this.waitUnpin();
+                    await this.setFullScreenIcon(this.entities.fullScreen, false);
+                }
+            );
+        }
+
+        // 固定到顶部时调整大小
+        {
+            let contentStartTop = 0;
+            let contentMinTop = 0;
+            this.utils.resizeFixedModal(
+                this.entities.gripUp, this.entities.modal, false, true,
+                () => {
+                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+                    contentStartTop = this.entities.content.getBoundingClientRect().top;
+                    contentMinTop = getModalMinHeight() + this.entities.header.getBoundingClientRect().top;
+                },
+                (deltaX, deltaY) => {
+                    let newContentTop = contentStartTop + deltaY;
+                    if (newContentTop < contentMinTop) {
+                        newContentTop = contentMinTop;
+                        deltaY = contentMinTop - contentStartTop;
+                    }
+                    this.entities.content.style.top = newContentTop + "px";
+                    return {deltaX, deltaY}
+                },
+                () => {
+                    this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+                    this.drawToc();
+                }
+            );
+        }
+
+        // 固定到右侧时调整大小
+        {
+            let contentStartRight = 0;
+            let contentStartWidth = 0;
+            let modalStartLeft = 0;
+            let contentMaxRight = 0;
+            this.utils.resizeFixedModal(
+                this.entities.gripRight, this.entities.modal, true, false,
+                () => {
+                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+
+                    const contentRect = this.entities.content.getBoundingClientRect();
+                    contentStartRight = contentRect.right;
+                    contentStartWidth = contentRect.width;
+
+                    const modalRect = this.entities.modal.getBoundingClientRect();
+                    modalStartLeft = modalRect.left;
+                    contentMaxRight = modalRect.right - getModalMinWidth();
+                },
+                (deltaX, deltaY) => {
+                    deltaX = -deltaX;
+                    deltaY = -deltaY;
+                    let newContentRight = contentStartRight - deltaX;
+                    if (newContentRight > contentMaxRight) {
+                        newContentRight = contentMaxRight;
+                        deltaX = contentStartRight - contentMaxRight;
+                    }
+                    this.entities.content.style.right = newContentRight + "px";
+                    this.entities.content.style.width = contentStartWidth - deltaX + "px";
+                    this.entities.modal.style.left = modalStartLeft - deltaX + "px";
+                    return {deltaX, deltaY}
+                },
+                () => {
+                    this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+                    this.drawToc();
+                }
+            )
+        }
     }
 
     expand = async button => {
