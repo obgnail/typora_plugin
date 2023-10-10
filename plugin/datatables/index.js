@@ -1,48 +1,6 @@
 class datatablesPlugin extends global._basePlugin {
     init = () => {
-        this.dataTablesConfig = {
-            paging: this.config.PAGING,
-            ordering: this.config.ORDERING,
-            searching: this.config.SEARCHING,
-            pageLength: this.config.PAGE_LENGTH,
-            scrollCollapse: this.config.SROLL_COLLAPSE,
-            processing: true,
-            search: {
-                caseInsensitive: this.config.CASE_INSENSITIVE,
-                regex: this.config.REGEX,
-            },
-            language: {
-                "processing": "处理中...",
-                "lengthMenu": "每页 _MENU_ 项",
-                "zeroRecords": "没有匹配结果",
-                "info": "_START_ ~ _END_ 项 (共 _TOTAL_ 项)",
-                "infoEmpty": "共 0 项",
-                "infoFiltered": "(由 _MAX_ 项结果过滤)",
-                "infoPostFix": "",
-                "search": "搜索:",
-                "searchPlaceholder": "",
-                "url": "",
-                "emptyTable": "表中数据为空",
-                "loadingRecords": "载入中...",
-                "infoThousands": ",",
-                "paginate": {
-                    "first": "<<",
-                    "previous": "<",
-                    "next": ">",
-                    "last": ">>"
-                },
-                "thousands": "."
-            }
-        };
-        if (this.config.SCROLLY > 0) {
-            this.dataTablesConfig = this.config.SCROLLY;
-        }
-        if (!this.config.DEFAULT_ORDER) {
-            this.dataTablesConfig["order"] = [];
-        }
-
-        this.loaded = false;
-
+        this.dataTablesConfig = null;
         this.tableList = [];
     }
 
@@ -97,11 +55,46 @@ class datatablesPlugin extends global._basePlugin {
     }
 
     lazyLoad = async () => {
-        if (!this.loaded) {
+        if (!($ && $.fn && $.fn.dataTable)) {
+            this.initDataTablesConfig();
             await this.utils.insertScript("./plugin/datatables/resource/datatables.min.js");
             this.utils.insertStyleFile("plugin-datatables-common-style", "./plugin/datatables/resource/datatables.min.css");
-            this.utils.registerStyleTemplate(this.fixedName);
-            this.loaded = true;
+            await this.utils.registerStyleTemplate(this.fixedName);
+        }
+    }
+
+    initDataTablesConfig = () => {
+        this.dataTablesConfig = {
+            paging: this.config.PAGING,
+            ordering: this.config.ORDERING,
+            searching: this.config.SEARCHING,
+            pageLength: this.config.PAGE_LENGTH,
+            scrollCollapse: this.config.SROLL_COLLAPSE,
+            processing: true,
+            search: {caseInsensitive: this.config.CASE_INSENSITIVE, regex: this.config.REGEX},
+            language: {
+                processing: "处理中...",
+                lengthMenu: "每页 _MENU_ 项",
+                zeroRecords: "没有匹配结果",
+                info: "_START_ ~ _END_ 项 (共 _TOTAL_ 项)",
+                infoEmpty: "共 0 项",
+                infoFiltered: "(由 _MAX_ 项结果过滤)",
+                infoPostFix: "",
+                search: "搜索:",
+                searchPlaceholder: "",
+                url: "",
+                emptyTable: "表中数据为空",
+                loadingRecords: "载入中...",
+                infoThousands: ",",
+                thousands: ".",
+                paginate: {first: "<<", previous: "<", next: ">", last: ">>"},
+            }
+        };
+        if (this.config.SCROLLY > 0) {
+            this.dataTablesConfig = this.config.SCROLLY;
+        }
+        if (!this.config.DEFAULT_ORDER) {
+            this.dataTablesConfig["order"] = [];
         }
     }
 
