@@ -29,20 +29,18 @@ class multiHighlighterPlugin extends global._basePlugin {
     })
 
     html = () => {
-        const div = `
+        const modal = document.createElement("div");
+        modal.id = 'plugin-multi-highlighter';
+        modal.style.display = "none";
+        modal.innerHTML = `
             <div id="plugin-multi-highlighter-input">
-                <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
-                    autocapitalize="off" value="" placeholder="多关键字高亮 空格分隔" data-lg="Front">
+                <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false" autocapitalize="off" value="" placeholder="多关键字高亮 空格分隔" data-lg="Front">
                 <span ty-hint="区分大小写" class="plugin-multi-highlighter-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" aria-label="区分大小写">
                     <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                 </span>
                 <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
             </div>
-            <div id="plugin-multi-highlighter-result" style="display: none"></div>`
-        const modal = document.createElement("div");
-        modal.id = 'plugin-multi-highlighter';
-        modal.style.display = "none";
-        modal.innerHTML = div;
+            <div id="plugin-multi-highlighter-result" style="display: none"></div>`;
         return modal
     }
 

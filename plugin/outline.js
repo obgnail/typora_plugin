@@ -3,29 +3,33 @@ class outlinePlugin extends global._basePlugin {
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
-    html = () => {
-        const all_button = (this.config.USE_ALL) ? `<div class="plugin-outline-icon ion-android-data" type="all" ty-hint="混合"></div>` : "";
-        const class_name = (this.config.SHOW_HIDDEN) ? "ion-eye" : "ion-eye-disabled";
+    htmlTemplate = () => {
         const hint = (this.config.SHOW_HIDDEN) ? "显示被其他插件隐藏的元素" : "不显示被其他插件隐藏的元素";
-
-        const modal = document.createElement("div");
-        modal.id = 'plugin-outline';
-        modal.innerHTML = `
-            <div class="plugin-outline-header" style="padding-bottom: 5px; border-bottom: solid 1px rgba(0, 0, 0, 0.5);">
-                <div class="plugin-outline-icon ${class_name} select" type="eye" ty-hint="${hint}"></div>
-                <div class="plugin-outline-icon" type="refresh"><div class="ion-refresh"></div></div>
-                <div class="plugin-outline-icon ion-arrow-move" type="move"></div>
-                <div class="plugin-outline-icon ion-close" type="close"></div>
-            </div>
-            <div class="plugin-outline-list"></div>
-            <div class="plugin-outline-footer" style="padding-top: 5px; border-top: solid 1px rgba(0, 0, 0, 0.5);">
-                <div class="plugin-outline-icon ion-code" type="fence" ty-hint="代码块"></div>
-                <div class="plugin-outline-icon ion-image" type="image" ty-hint="图片"></div>
-                <div class="plugin-outline-icon ion-grid" type="table" ty-hint="表格"></div>
-                ${all_button}
-            </div>
-            `
-        return modal
+        const class_name = (this.config.SHOW_HIDDEN) ? "ion-eye" : "ion-eye-disabled";
+        const footerChildren = [
+            {class_: "plugin-outline-icon ion-code", type: "fence", "ty-hint": "代码块"},
+            {class_: "plugin-outline-icon ion-image", type: "image", "ty-hint": "图片"},
+            {class_: "plugin-outline-icon ion-grid", type: "table", "ty-hint": "表格"},
+        ]
+        if (this.config.USE_ALL) {
+            footerChildren.push({class_: "plugin-outline-icon ion-android-data", type: "all", "ty-hint": "混合"})
+        }
+        return [{
+            id: "plugin-outline",
+            children: [
+                {
+                    class_: "plugin-outline-header",
+                    children: [
+                        {class_: `plugin-outline-icon ${class_name} select`, type: "eye", "ty-hint": hint},
+                        {class_: "plugin-outline-icon", type: "refresh", children: [{class_: "ion-refresh"}]},
+                        {class_: "plugin-outline-icon ion-arrow-move", type: "move"},
+                        {class_: "plugin-outline-icon ion-close", type: "close"},
+                    ]
+                },
+                {class_: "plugin-outline-list"},
+                {class_: "plugin-outline-footer", children: footerChildren}
+            ]
+        }]
     }
 
     init = () => {

@@ -152,8 +152,7 @@ class tocMarkmap {
                 <svg id="plugin-markmap-svg"></svg>
                 <div class="plugin-markmap-icon ion-android-arrow-down-right" action="resize" ty-hint="拖动调整大小"></div>
             </div>
-            <div class="plugin-markmap-grip grip-up"></div>
-        `;
+            <div class="plugin-markmap-grip grip-up"></div>`;
 
         const result = [modal];
         if (this.config.USE_BUTTON) {
