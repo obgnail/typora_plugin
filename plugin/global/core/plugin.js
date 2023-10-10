@@ -1202,7 +1202,10 @@ class modalGenerator {
     }
 
     html = () => {
-        const modal_content = `
+        const modal = document.createElement("div");
+        modal.id = "plugin-custom-modal";
+        modal.classList.add("modal-dialog");
+        modal.innerHTML = `
             <div class="modal-content">
               <div class="modal-header"><div class="modal-title" data-lg="Front">自定义插件弹窗</div></div>
               <div class="modal-body"></div>
@@ -1210,12 +1213,7 @@ class modalGenerator {
                 <button type="button" class="btn btn-default plugin-modal-cancel" data-dismiss="modal" data-lg="Front">取消</button>
                 <button type="button" class="btn btn-primary plugin-modal-submit" data-lg="Front">确定</button>
               </div>
-            </div>
-        `
-        const modal = document.createElement("div");
-        modal.id = "plugin-custom-modal";
-        modal.classList.add("modal-dialog");
-        modal.innerHTML = modal_content;
+            </div>`;
         this.utils.insertDiv(modal);
     }
 
@@ -1409,7 +1407,7 @@ class styleTemplater {
     unregister = name => this.utils.removeStyle(`plugin-${name}-style`);
 }
 
-// faster then innerHTML, less memory usage, but poor readable
+// faster then innerHTML, less memory usage, more secure, but poor readable
 // don't use unless element is simple enough
 class htmlTemplater {
     constructor() {

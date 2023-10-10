@@ -2,36 +2,33 @@ class searchMultiKeywordPlugin extends global._basePlugin {
     styleTemplate = () => true
 
     html = () => {
-        const modal_div = `
-        <div id="plugin-search-multi-input">
-            <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false"
-                autocapitalize="off" value="" placeholder="多关键字查找 空格分隔" ty-hint="⌃↵当前页打开。⇧⌃↵新页面打开"
-                data-localize="Search by file name" data-lg="Front">
-            <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
-                <svg class="icon"> <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
-            </span>
-            <span class="option-btn path-option-btn ${(this.config.INCLUDE_FILE_PATH) ? "select" : ""}" ty-hint="将文件路径加入搜索内容">
-                <div class="ion-ionic"></div>
-            </span>
-        </div>
-    
-        <div class="plugin-search-multi-result">
-            <div class="search-result-title" data-localize="File Results" data-lg="Menu">匹配的文件</div>
-            <div class="search-result-list"></div>
-        </div>
-    
-        <div class="plugin-search-multi-info-item">
-            <div class="plugin-search-multi-info" data-localize="Searching" data-lg="Front">Searching</div>
-            <div class="typora-search-spinner">
-                <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+        const modal = document.createElement("div");
+        modal.id = 'plugin-search-multi';
+        modal.style.display = "none";
+        modal.innerHTML = `
+            <div id="plugin-search-multi-input">
+                <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false" autocapitalize="off" 
+                    placeholder="多关键字查找 空格分隔" ty-hint="⌃↵当前页打开。⇧⌃↵新页面打开" data-lg="Front">
+                <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
+                    <svg class="icon"> <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
+                </span>
+                <span class="option-btn path-option-btn ${(this.config.INCLUDE_FILE_PATH) ? "select" : ""}" ty-hint="将文件路径加入搜索内容">
+                    <div class="ion-ionic"></div>
+                </span>
             </div>
-        </div>`;
-        const searchModal = document.createElement("div");
-        searchModal.id = 'plugin-search-multi';
-        searchModal.style.display = "none";
-        searchModal.innerHTML = modal_div;
-
-        return searchModal
+        
+            <div class="plugin-search-multi-result">
+                <div class="search-result-title" data-localize="File Results" data-lg="Menu">匹配的文件</div>
+                <div class="search-result-list"></div>
+            </div>
+        
+            <div class="plugin-search-multi-info-item">
+                <div class="plugin-search-multi-info" data-localize="Searching" data-lg="Front">Searching</div>
+                <div class="typora-search-spinner">
+                    <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
+                </div>
+            </div>`;
+        return modal
     }
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
