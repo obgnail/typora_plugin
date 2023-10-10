@@ -154,14 +154,15 @@ class tocMarkmap {
             </div>
             <div class="plugin-markmap-grip grip-up"></div>
         `;
-        this.utils.insertDiv(modal);
 
+        const result = [modal];
         if (this.config.USE_BUTTON) {
             const button = document.createElement("div");
             button.className = "plugin-markmap-button";
             button.innerHTML = `<div class="plugin-markmap-item" ty-hint="思维导图"><i class="fa fa-code-fork"></i></div>`;
-            this.utils.insertDiv(button);
+            result.push(button);
         }
+        return result
     }
 
     init = () => {

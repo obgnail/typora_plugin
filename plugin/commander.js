@@ -10,35 +10,42 @@ class commanderPlugin extends global._basePlugin {
 
     styleTemplate = () => true
 
-    html = () => {
-        const windowsOption = (!File.isWin) ? "" : `
-            <option value="${this.SHELL.POWER_SHELL}">PowerShell</option>
-            <option value="${this.SHELL.GIT_BASH}">Git Bash</option>
-            <option value="${this.SHELL.WSL}">WSL</option>`;
-        const builtin = this.config.BUILTIN.map(ele => `<option shell="${ele.shell}" value='${ele.cmd}'>${ele.name}</option>`).join("");
-        const builtinSelect = !this.config.USE_BUILTIN ? "" : `<select class="plugin-commander-builtin">${builtin}</select>`;
-
-        const div = `
-        <div id="plugin-commander-form">
-            <input type="text" class="input" placeholder="Typora commander" autocorrect="off" spellcheck="false"
-                autocapitalize="off" data-lg="Front" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
-            <i class="ion-ios7-play plugin-commander-commit" ty-hint="执行命令"></i>
-            <select class="plugin-commander-shell"><option value="${this.SHELL.CMD_BASH}">cmd/bash</option>${windowsOption}</select>
-            ${builtinSelect}
-        </div>
-        <div class="plugin-commander-output"><pre tabindex="0"></pre></div>
-       `
-        const modal = document.createElement("div");
-        modal.id = 'plugin-commander';
-        modal.style.display = "none";
-        modal.innerHTML = div;
-        this.utils.insertDiv(modal);
-
-        if (!this.config.USE_BUILTIN) {
-            document.getElementById('plugin-commander').style.width = "500px";
-            document.querySelector("#plugin-commander-form input").style.width = "80%";
-            document.querySelector("#plugin-commander-form .plugin-commander-commit").style.left = "375px";
+    htmlTemplate = () => {
+        const shellChildren = [{ele: "option", value: this.SHELL.CMD_BASH, text: "cmd/bash"}];
+        if (File.isWin) {
+            shellChildren.push(
+                {ele: "option", value: this.SHELL.POWER_SHELL, text: "PowerShell"},
+                {ele: "option", value: this.SHELL.GIT_BASH, text: "Git Bash"},
+                {ele: "option", value: this.SHELL.WSL, text: "WSL"},
+            )
         }
+
+        const formChildren = [
+            {
+                ele: "input", type: "text", class_: "input", placeholder: "Typora commander",
+                autocorrect: "off", spellcheck: "false", autocapitalize: "off", "data-lg": "Front",
+                title: "提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录"
+            },
+            {ele: "i", class_: "ion-ios7-play plugin-commander-commit", "ty-hint": "执行命令"},
+            {ele: "select", class_: "plugin-commander-shell", children: shellChildren}
+        ]
+
+        if (this.config.USE_BUILTIN) {
+            formChildren.push({
+                ele: "select",
+                class_: "plugin-commander-builtin",
+                children: this.config.BUILTIN.map(e => ({ele: "option", shell: e.shell, value: e.cmd, text: e.name}))
+            })
+        }
+
+        return [{
+            id: "plugin-commander",
+            style: {display: "none"},
+            children: [
+                {id: "plugin-commander-form", children: formChildren},
+                {class_: "plugin-commander-output", children: [{ele: "pre", tabindex: "0"}]}
+            ]
+        }]
     }
 
     hotkey = () => {
@@ -68,16 +75,19 @@ class commanderPlugin extends global._basePlugin {
         this.callArgs = [{arg_name: "显示/隐藏", arg_value: "show"}];
         this.config.BUILTIN.forEach(builtin => {
             if (builtin.name) {
-                this.callArgs.push({
-                    arg_name: `${builtin.name}`,
-                    arg_value: this.arg_value_prefix + builtin.name
-                })
+                this.callArgs.push({arg_name: `${builtin.name}`, arg_value: this.arg_value_prefix + builtin.name})
             }
         });
     }
 
     process = () => {
         this.init();
+
+        if (!this.config.USE_BUILTIN) {
+            this.modal.modal.style.width = "500px";
+            this.modal.input.style.width = "80%";
+            this.modal.commit.style.left = "375px";
+        }
 
         // 提供不同入口，让鼠标操作的用户不必切换回键盘操作
         this.modal.commit.addEventListener("click", ev => {
@@ -141,7 +151,6 @@ class commanderPlugin extends global._basePlugin {
         if (this.config.ALLOW_DRAG) {
             this.utils.dragFixedModal(this.modal.input, this.modal.modal);
         }
-
     }
 
     convertPath = (path, shell) => {
@@ -165,18 +174,17 @@ class commanderPlugin extends global._basePlugin {
         }
     }
 
-    getFilePath = this.utils.getFilePath;
-    getFile = shell => this.convertPath(this.getFilePath(), shell);
-    getFolder = shell => this.convertPath(this.utils.Package.Path.dirname(this.getFilePath()), shell);
+    getFile = shell => this.convertPath(this.utils.getFilePath(), shell);
+    getFolder = shell => this.convertPath(this.utils.Package.Path.dirname(this.utils.getFilePath()), shell);
     getMountFolder = shell => this.convertPath(File.getMountFolder(), shell);
 
     replaceArgs = (cmd, shell) => {
         const file = this.getFile(shell);
         const folder = this.getFolder(shell);
         const mount = this.getMountFolder(shell);
-        cmd = cmd.replace(/\$f/g, `"${file}"`);
-        cmd = cmd.replace(/\$d/g, `"${folder}"`);
-        cmd = cmd.replace(/\$m/g, `"${mount}"`);
+        cmd = cmd.replace(/\$f/g, `"${file}"`)
+            .replace(/\$d/g, `"${folder}"`)
+            .replace(/\$m/g, `"${mount}"`);
         return cmd
     }
 

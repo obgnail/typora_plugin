@@ -31,7 +31,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
         searchModal.style.display = "none";
         searchModal.innerHTML = modal_div;
 
-        this.utils.insertDiv(searchModal);
+        return searchModal
     }
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]

@@ -43,7 +43,7 @@ class multiHighlighterPlugin extends global._basePlugin {
         modal.id = 'plugin-multi-highlighter';
         modal.style.display = "none";
         modal.innerHTML = div;
-        this.utils.insertDiv(modal);
+        return modal
     }
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
