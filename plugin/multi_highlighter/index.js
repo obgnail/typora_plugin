@@ -223,7 +223,7 @@ class multiHighlighterPlugin extends global._basePlugin {
     }
 
     clearFenceMultiHighlighterList = () => {
-        console.log("clearFenceMultiHighlighterList");
+        console.debug("clearFenceMultiHighlighterList");
         this.fenceMultiHighlighterList.forEach(highlighter => highlighter.clear());
         this.fenceMultiHighlighterList = [];
     }
@@ -253,7 +253,7 @@ class multiHighlighterPlugin extends global._basePlugin {
     }
 
     refreshFences = () => {
-        console.log("refreshFences");
+        console.debug("refreshFences");
         for (const id of Object.keys(File.editor.fences.queue)) {
             File.editor.fences.queue[id].refresh();
         }

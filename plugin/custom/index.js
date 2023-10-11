@@ -1,7 +1,7 @@
 class CustomPlugin extends global._basePlugin {
     beforeProcess = async () => {
         this.custom = {};     // 启用的插件
-        this.allCustom = [];  // 全部的插件
+        this.allCustom = {};  // 全部的插件
         this.hotkeyHelper = new hotkeyHelper(this);
         this.dynamicCallHelper = new dynamicCallHelper(this);
         this.loadPluginHelper = new loadPluginHelper(this);
@@ -55,26 +55,39 @@ class loadPluginHelper {
             }
             instance.process();
             this.controller.custom[instance.fixedName] = instance;
-            console.log(`custom plugin had been injected: [ ${instance.fixedName} ]`);
+            console.debug(`custom plugin had been injected: [ ${instance.fixedName} ]`);
         } catch (e) {
             console.error("load custom plugin error:", e);
         }
     }
 
+    // 兼容用户错误操作
+    mergeSettings = settings => {
+        if (this.controller.config.ALLOW_SET_CONFIG_IN_SETTINGS_TOML) {
+            for (const plugin of Object.keys(global._all_plugins)) {
+                if (plugin in settings) {
+                    settings[plugin] = this.controller.utils.merge(settings[plugin], global._all_plugins[plugin]);
+                }
+            }
+        }
+        return settings
+    }
+
     load = async () => {
-        const settings = this.utils.readSetting(
+        let settings = this.utils.readSetting(
             "./plugin/global/settings/custom_plugin.default.toml",
             "./plugin/global/settings/custom_plugin.user.toml",
         )
-        this.controller.allCustom = Array.from(Object.keys(settings));
+        settings = this.mergeSettings(settings);
+        this.controller.allCustom = settings;
 
         await Promise.all(
-            this.controller.allCustom.map(fixedName => {
+            Array.from(Object.keys(settings)).map(fixedName => {
                 const customSetting = settings[fixedName];
                 if (customSetting.enable) {
                     return this.loadCustomPlugin(fixedName, customSetting)
                 } else {
-                    console.log(`disable custom plugin: [ ${fixedName} ]`)
+                    console.debug(`disable custom plugin: [ ${fixedName} ]`)
                 }
             })
         )

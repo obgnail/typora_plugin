@@ -756,7 +756,7 @@ class diagramParser {
             extraStyleGetter,
             interactiveMode
         });
-        console.log(`register diagram parser: [ ${lang} ]`);
+        console.debug(`register diagram parser: [ ${lang} ]`);
     }
 
     unregister = lang => this.parsers.delete(lang)
@@ -1656,7 +1656,7 @@ class process {
             instance.afterProcess();
 
             global._plugins[instance.fixedName] = instance;
-            console.log(`plugin had been injected: [ ${instance.fixedName} ] `);
+            console.debug(`plugin had been injected: [ ${instance.fixedName} ] `);
         } catch (e) {
             console.error("plugin err:", e);
         }
@@ -1665,7 +1665,7 @@ class process {
     run = async () => {
         global._global_settings = {};
         global._plugins = {};     // 启用的插件
-        global._all_plugins = []; // 全部的插件
+        global._all_plugins = {}; // 全部的插件
 
         const pluginSettings = this.utils.readSetting(
             "./plugin/global/settings/settings.default.toml",
@@ -1674,17 +1674,17 @@ class process {
 
         if (!pluginSettings || pluginSettings && pluginSettings["global"] && !pluginSettings["global"]["ENABLE"]) return;
 
-        global._all_plugins = Array.from(Object.keys(pluginSettings));
+        global._all_plugins = pluginSettings;
 
         await Promise.all(
-            global._all_plugins.map(fixedName => {
+            Array.from(Object.keys(pluginSettings)).map(fixedName => {
                 const setting = pluginSettings[fixedName];
                 if (fixedName === "global") {
                     global._global_settings = setting;
-                } else if (setting.ENABLE) {
-                    return this.loadPlugin(fixedName, setting)
+                } else if (!setting.ENABLE) {
+                    console.debug(`disable plugin: [ ${fixedName} ] `);
                 } else {
-                    console.log(`disable plugin: [ ${fixedName} ] `);
+                    return this.loadPlugin(fixedName, setting)
                 }
             })
         );
