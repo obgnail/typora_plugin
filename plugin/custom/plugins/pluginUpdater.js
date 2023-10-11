@@ -160,10 +160,9 @@ class binFileUpdater {
                 }
                 return {path: file.path, mtimeMs}
             }))
-            if (maxMtimePath) {
-                const deleteFile = all.filter(file => file.path !== maxMtimePath).map(file => file.path);
-                return {delete: deleteFile, remain: maxMtimePath}
-            }
+            if (!maxMtimePath) return
+            const deleteFile = all.filter(file => file.path !== maxMtimePath).map(file => file.path);
+            return {delete: deleteFile, remain: maxMtimePath}
         }
 
         const compare = this.utils.compareVersion(fileList[0].version, fileList[1].version);
