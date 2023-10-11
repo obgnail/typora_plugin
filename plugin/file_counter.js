@@ -98,7 +98,7 @@ class fileCounterPlugin extends global._basePlugin {
     setAllDirCount = () => {
         const root = document.querySelector("#file-library-tree > .file-library-node");
         if (!root) return false;
-        console.log("setAllDirCount");
+        console.debug("setAllDirCount");
         this.setDirCount(root);
         return true
     }
