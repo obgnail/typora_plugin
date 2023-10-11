@@ -120,35 +120,30 @@ class resizeTablePlugin extends global._basePlugin {
     }
 
     findTarget = (ele, ev) => {
-        let target = null;
-        let direction = "";
+        const that = this;
 
-        for (let i = 1; i <= 3; i++) {
-            switch (i) {
-                case 1:
-                    target = ele;
-                    break
-                case 2:
-                    target = ele.previousElementSibling;
-                    break
-                case 3:
-                    const num = this.whichChildOfParent(ele);
-                    const uncle = ele.parentElement.previousElementSibling;
-                    if (uncle) {
-                        target = uncle.querySelector(`td:nth-child(${num})`);
-                    } else {
-                        // 第一行数据
-                        const tr = ele.closest("table").querySelector("thead tr");
-                        target = tr.querySelector(`th:nth-child(${num})`);
-                    }
-                    break
-            }
-
-            direction = this.getDirection(target, ev);
-            if (target && direction) break
+        function* find(ele) {
+            // 自己
+            yield ele
+            // 左边
+            yield ele.previousElementSibling
+            // 上边
+            const num = that.whichChildOfParent(ele);
+            const uncle = ele.parentElement.previousElementSibling;
+            yield (uncle)
+                // td
+                ? uncle.querySelector(`td:nth-child(${num})`)
+                // tr
+                : ele.closest("table").querySelector("thead tr").querySelector(`th:nth-child(${num})`)
         }
 
-        return {target, direction}
+        for (const target of find(ele)) {
+            const direction = this.getDirection(target, ev);
+            if (target && direction) {
+                return {target, direction}
+            }
+        }
+        return {target: null, direction: ""}
     }
 
     cleanStyle = (eleList, exclude, cleanStyle) => {
