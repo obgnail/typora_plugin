@@ -120,9 +120,15 @@ class binFileUpdater {
     run = async () => {
         const binFile = await this.getBinFile();
         if (binFile) {
-            await this.utils.Package.Fs.promises.unlink(binFile.delete);
-            const filepath = this.utils.Package.Path.join(this.utils.Package.Path.dirname(binFile.remain), "updater.exe");
-            await this.utils.Package.Fs.promises.rename(binFile.remain, filepath);
+            if (binFile.delete && binFile.delete.length) {
+                for (const file of binFile.delete) {
+                    await this.utils.Package.Fs.promises.unlink(file);
+                }
+            }
+            if (binFile.remain) {
+                const filepath = this.utils.Package.Path.join(this.utils.Package.Path.dirname(binFile.remain), "updater.exe");
+                await this.utils.Package.Fs.promises.rename(binFile.remain, filepath);
+            }
         }
     }
 
@@ -135,25 +141,41 @@ class binFileUpdater {
         filenames.forEach(file => {
             const result = file.match(regexp);
             if (result) {
+                const path = this.utils.Package.Path.join(dir, file);
                 const version = result.groups.version || "";
-                fileList.push({file, version});
+                fileList.push({file, path, version});
             }
         })
 
-        if (fileList.length !== 2) return
+        // 异常情况：不等于两个的情况，保留修改时间最晚的（除非用户作妖，否则不会触发此逻辑，作最大程度兼容）
+        if (fileList.length !== 2) {
+            let maxMtime = 0;
+            let maxMtimePath = "";
+            const all = await Promise.all(fileList.map(async file => {
+                const stat = await this.utils.Package.Fs.promises.stat(file.path);
+                const mtimeMs = stat.mtimeMs;
+                if (maxMtime < mtimeMs) {
+                    maxMtime = mtimeMs;
+                    maxMtimePath = file.path;
+                }
+                return {path: file.path, mtimeMs}
+            }))
+            if (maxMtimePath) {
+                const deleteFile = all.filter(file => file.path !== maxMtimePath).map(file => file.path);
+                return {delete: deleteFile, remain: maxMtimePath}
+            }
+        }
 
         const compare = this.utils.compareVersion(fileList[0].version, fileList[1].version);
         let deleteFile, remainFile;
         if (compare > 0) {
-            deleteFile = fileList[1].file;
-            remainFile = fileList[0].file;
+            deleteFile = fileList[1].path;
+            remainFile = fileList[0].path;
         } else {
-            deleteFile = fileList[0].file;
-            remainFile = fileList[1].file;
+            deleteFile = fileList[0].path;
+            remainFile = fileList[1].path;
         }
-        deleteFile = this.utils.Package.Path.join(dir, deleteFile);
-        remainFile = this.utils.Package.Path.join(dir, remainFile);
-        return {delete: deleteFile, remain: remainFile}
+        return {delete: [deleteFile], remain: remainFile}
     }
 }
 
