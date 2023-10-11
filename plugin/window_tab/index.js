@@ -363,7 +363,7 @@ class windowTabBarPlugin extends global._basePlugin {
             cloneObj = document.createElement('DIV');
             cloneObj.appendChild(fakeObj);
             cloneObj.className = 'drag-obj';
-            cloneObj.style = `transform:translate3d(${left}px, ${top}px, 0)`;
+            cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
             document.querySelector("content").appendChild(cloneObj);
         }).on("dragend", ".tab-container", function (ev) {
             that.newWindowIfNeed(ev.offsetY, this);
@@ -371,11 +371,11 @@ class windowTabBarPlugin extends global._basePlugin {
             if (!cloneObj) return;
             const rect = this.getBoundingClientRect();
             const reset = cloneObj.animate(
-                [{
-                    transform: cloneObj.style.transform
-                }, {
-                    transform: `translate3d(${rect.left}px, ${rect.top}px, 0)`
-                }], {
+                [
+                    {transform: cloneObj.style.transform},
+                    {transform: `translate3d(${rect.left}px, ${rect.top}px, 0)`}
+                ],
+                {
                     duration: 150,
                     easing: "ease-in-out",
                 }
@@ -405,8 +405,10 @@ class windowTabBarPlugin extends global._basePlugin {
                 } else if (_axis === 'Y') {
                     left = ~~(startX - offsetX);
                 } else {
-                    _axis = (~~Math.abs(ev.clientX - startX) > ~~Math.abs(ev.clientY - startY) && 'X' ||
-                        ~~Math.abs(ev.clientX - startX) < ~~Math.abs(ev.clientY - startY) && 'Y' || ''
+                    _axis = (
+                        ~~Math.abs(ev.clientX - startX) > ~~Math.abs(ev.clientY - startY) && 'X'
+                        || ~~Math.abs(ev.clientX - startX) < ~~Math.abs(ev.clientY - startY) && 'Y'
+                        || ''
                     )
                 }
             } else {
