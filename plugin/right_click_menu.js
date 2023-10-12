@@ -27,19 +27,17 @@ class rightClickMenuPlugin extends global._basePlugin {
 
     appendFirst = () => {
         const ul = document.querySelector(`#context-menu`);
+
         const line = document.createElement("li");
         line.classList.add("divider");
         line.setAttribute("data-group", "plugin");
         ul.appendChild(line);
 
-        const first = this.config.MENUS.map((menu, idx) => {
-            return `<li data-key="typora-plugin" class="has-extra-menu" idx="${idx}">
-                <a role="menuitem">
-                    <span data-localize="${menu.NAME}" data-lg="Menu">${menu.NAME}</span>
-                    <i class="fa fa-caret-right"></i>
-                </a>
+        const first = this.config.MENUS.map((menu, idx) => `
+            <li data-key="typora-plugin" class="has-extra-menu" idx="${idx}">
+                <a role="menuitem"><span data-lg="Menu">${menu.NAME}</span><i class="fa fa-caret-right"></i></a>
             </li>`
-        })
+        )
         ul.insertAdjacentHTML('beforeend', first.join(""));
     }
 
@@ -65,6 +63,7 @@ class rightClickMenuPlugin extends global._basePlugin {
     }
 
     appendThird = () => {
+        const content = document.querySelector("content");
         this.config.MENUS.forEach((menu, idx) => {
             menu.LIST.forEach(item => {
                 if (item === "---") return;
@@ -76,7 +75,7 @@ class rightClickMenuPlugin extends global._basePlugin {
                 thirdUl.setAttribute("idx", idx);
                 thirdUl.setAttribute("fixed_name", plugin.fixedName);
                 thirdUl.innerHTML = plugin.callArgs ? plugin.callArgs.map(arg => this.createThirdLi(arg)).join("") : "";
-                document.querySelector("content").appendChild(thirdUl);
+                content.appendChild(thirdUl);
             })
         })
     }
@@ -84,7 +83,7 @@ class rightClickMenuPlugin extends global._basePlugin {
     createSecondLi = plugin => {
         const hasNotArgs = !plugin.callArgs && !plugin.dynamicCallArgsGenerator;
         const style = (plugin.config.CLICKABLE) ? "" : `style="pointer-events: none;color: #c4c6cc;"`;
-        const content = (hasNotArgs) ? plugin.config.NAME : `<span data-lg="Menu">${plugin.config.NAME}</span> <i class="fa fa-caret-right"></i>`;
+        const content = (hasNotArgs) ? plugin.config.NAME : `<span data-lg="Menu">${plugin.config.NAME}</span><i class="fa fa-caret-right"></i>`;
         const className = (hasNotArgs) ? "" : "has-extra-menu";
         return `<li data-key="${plugin.fixedName}" class="plugin-menu-item ${className}" ${style}><a role="menuitem" data-lg="Menu">${content}</a></li>`
     }
@@ -130,14 +129,13 @@ class rightClickMenuPlugin extends global._basePlugin {
         let nextLeft = left + width + 6;
 
         if (nextTop + nextHeight > window.innerHeight) {
-            nextTop = window.innerHeight - nextHeight
+            nextTop = window.innerHeight - nextHeight;
         }
         if (nextLeft + nextWidth > window.innerWidth) {
-            nextLeft = window.innerWidth - nextWidth
+            nextLeft = window.innerWidth - nextWidth;
         }
 
-        next.css({top: nextTop + "px", left: nextLeft + "px"})
-        return false;
+        next.css({top: nextTop + "px", left: nextLeft + "px"});
     }
 
     appendThirdLi = (menu, dynamicCallArgs) => {
