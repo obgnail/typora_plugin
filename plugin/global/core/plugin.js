@@ -162,7 +162,8 @@ class utils {
 
     // 插入html
     static insertHtmlTemplate = elements => global._htmlTemplater.insert(elements)
-    static creatElement = element => global._htmlTemplater.create(element)
+    static createElement = element => global._htmlTemplater.create(element)
+    static createElements = elements => global._htmlTemplater.createList(elements)
     static getElementCreator = () => global._htmlTemplater.creator()
 
 
@@ -1408,7 +1409,7 @@ class styleTemplater {
 }
 
 // faster then innerHTML, less memory usage, more secure, but poor readable
-// don't use unless element is simple enough
+// don't use htmlTemplater unless element is simple enough or there are secure issues
 class htmlTemplater {
     constructor() {
         this.utils = utils
@@ -1468,7 +1469,8 @@ class htmlTemplater {
                 case "class":
                 case "className":
                 case "class_":
-                    el.setAttribute("class", value);
+                    const str = Array.isArray(value) ? value.join(" ") : value;
+                    el.setAttribute("class", str.trim());
                     break
                 case "text":
                     el.innerText = value;
@@ -1490,6 +1492,8 @@ class htmlTemplater {
         }
         return el
     }
+
+    createList = elements => elements.map(ele => this.create(ele))
 
     insert = elements => {
         for (const element of elements) {

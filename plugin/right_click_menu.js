@@ -26,23 +26,23 @@ class rightClickMenuPlugin extends global._basePlugin {
     }
 
     appendFirst = () => {
+        const template = [
+            {ele: "li", class_: "divider", "data-group": "plugin"},
+            ...this.config.MENUS.map((menu, idx) => ({
+                ele: "li", class_: "has-extra-menu", idx: idx, "data-key": "typora-plugin", children: [{
+                    ele: "a", role: "menuitem", children: [
+                        {ele: "span", "data-lg": "Menu", text: menu.NAME}, {ele: "i", class_: "fa fa-caret-right"}
+                    ]
+                }]
+            }))
+        ];
         const ul = document.querySelector(`#context-menu`);
-
-        const line = document.createElement("li");
-        line.classList.add("divider");
-        line.setAttribute("data-group", "plugin");
-        ul.appendChild(line);
-
-        const first = this.config.MENUS.map((menu, idx) => `
-            <li data-key="typora-plugin" class="has-extra-menu" idx="${idx}">
-                <a role="menuitem"><span data-lg="Menu">${menu.NAME}</span><i class="fa fa-caret-right"></i></a>
-            </li>`
-        )
-        ul.insertAdjacentHTML('beforeend', first.join(""));
+        this.utils.createElements(template).forEach(ele => ul.appendChild(ele));
     }
 
     appendSecond = () => {
         this.findLostPluginIfNeed();
+        const content = document.querySelector("content");
         this.config.MENUS.forEach((menu, idx) => {
             const plugins = menu.LIST.map(item => {
                 if (item === "---") {
@@ -54,11 +54,9 @@ class rightClickMenuPlugin extends global._basePlugin {
                 }
                 return ""
             })
-            const secondUl = this.createUl();
-            secondUl.classList.add("plugin-menu-second");
-            secondUl.setAttribute("idx", idx);
+            const secondUl = this.createUl({idx, class_: "plugin-menu-second"});
             secondUl.innerHTML = plugins.join("");
-            document.querySelector("content").appendChild(secondUl);
+            content.appendChild(secondUl);
         })
     }
 
@@ -70,10 +68,7 @@ class rightClickMenuPlugin extends global._basePlugin {
                 const plugin = this.utils.getPlugin(item);
                 if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return;
 
-                const thirdUl = this.createUl();
-                thirdUl.classList.add("plugin-menu-third");
-                thirdUl.setAttribute("idx", idx);
-                thirdUl.setAttribute("fixed_name", plugin.fixedName);
+                const thirdUl = this.createUl({idx, class_: "plugin-menu-third", fixed_name: plugin.fixedName});
                 thirdUl.innerHTML = plugin.callArgs ? plugin.callArgs.map(arg => this.createThirdLi(arg)).join("") : "";
                 content.appendChild(thirdUl);
             })
@@ -95,13 +90,10 @@ class rightClickMenuPlugin extends global._basePlugin {
         return `<li data-key="${arg.arg_name}" arg_value="${arg.arg_value}" ${className} ${hint}><a role="menuitem" data-lg="Menu">${arg.arg_name}</a></li>`
     }
 
-    createUl = () => {
-        const secondUl = document.createElement("ul");
-        secondUl.classList.add("dropdown-menu");
-        secondUl.classList.add("context-menu");
-        secondUl.classList.add("ext-context-menu");
-        secondUl.setAttribute("role", "menu");
-        return secondUl;
+    createUl = extra => {
+        const class_ = `dropdown-menu context-menu ext-context-menu ${extra.class_ || ""}`;
+        delete extra.class_;
+        return this.utils.createElement({ele: "ul", class_, role: "menu", ...extra})
     }
 
     findLostPluginIfNeed = () => {
