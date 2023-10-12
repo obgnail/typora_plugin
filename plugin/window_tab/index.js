@@ -473,14 +473,12 @@ class windowTabBarPlugin extends global._basePlugin {
     }
 
     saveTabs = () => {
-        const dataset = this.tabUtil.tabs.map((tab, idx) => {
-            return {
-                idx: idx,
-                path: tab.path,
-                active: idx === this.tabUtil.activeIdx,
-                scrollTop: tab.scrollTop,
-            }
-        })
+        const dataset = this.tabUtil.tabs.map((tab, idx) => ({
+            idx: idx,
+            path: tab.path,
+            active: idx === this.tabUtil.activeIdx,
+            scrollTop: tab.scrollTop,
+        }))
         const filepath = this.getTabFile();
         const str = JSON.stringify({"save_tabs": dataset}, null, "\t");
         this.utils.Package.Fs.writeFileSync(filepath, str);
@@ -533,7 +531,6 @@ class windowTabBarPlugin extends global._basePlugin {
         }
         return args
     }
-
 
     call = type => {
         const func = this.callMap[type];
