@@ -21,12 +21,13 @@ class utils {
     //   2. event
     //   3. state recorder
     //   4. diagram parser
-    //   5. fence enhance button
-    //   6. bar tool
-    //   7. export helper
-    //   8. style templater
-    //   9. html templater
-    //   10. modal
+    //   5. third party diagram parser
+    //   6. fence enhance button
+    //   7. bar tool
+    //   8. export helper
+    //   9. style templater
+    //   10. html templater
+    //   11. modal
 
     // 动态注册、动态注销hotkey
     // 注意: 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
@@ -98,7 +99,7 @@ class utils {
     //   4. async cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
     //   5. destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
     //   6. extraStyleGetter() => string: 用于导出时，新增css
-    //   7. interactiveMode: 交互模式下，只有ctrl+click才能展开代码块
+    //   7. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
     static registerDiagramParser = (lang, destroyWhenUpdate,
                                     renderFunc, cancelFunc = null, destroyAllFunc = null,
                                     extraStyleGetter = null, interactiveMode = true
@@ -106,6 +107,27 @@ class utils {
     static unregisterDiagramParser = lang => global._diagramParser.unregister(lang);
     // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
     static throwParseError = (errorLine, reason) => global._diagramParser.throwParseError(errorLine, reason)
+
+
+    // 动态注册、动态注销第三方代码块图表语法(派生自DiagramParser)
+    // f*ck，js不支持interface，只能将接口函数作为参数传入，一坨狗屎，整整11个参数，WTF
+    //   1. lang(string): language
+    //   2. destroyWhenUpdate(boolean): 更新前是否清空preview里的html
+    //   3. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
+    //   4. checkSelector(string): 检测当前fence下是否含有目标标签
+    //   5. wrapElement(string): 如果不含目标标签，需要创建
+    //   6. extraCss({defaultHeight, backgroundColor}): 控制fence的高度和背景颜色
+    //   7. async lazyLoadFunc() => null: 加载第三方资源
+    //   8. createFunc($Element, string) => Object: 传入目标标签和fence的内容，生成图形实例
+    //   9. destroyFunc(Object) => null: 传入图形实例，destroy图形实例
+    //  10. beforeExport
+    //  11. extraStyleGetter() => string: 用于导出时，新增css
+    static registerThirdPartyDiagramParser = (
+        lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
+        lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter,
+    ) => global._thirdPartyDiagramParser.register(lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
+        lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter);
+    static unregisterThirdPartyDiagramParser = lang => global._thirdPartyDiagramParser.unregister(lang);
 
 
     // 动态注册、动态注销代码块增强按钮(仅当fence_enhance插件启用时有效，通过返回bool值确定是否成功)
@@ -822,10 +844,11 @@ class diagramParser {
     }
 
     noticeRollback = async cid => {
-        for (const parser of this.parsers.values()) {
+        for (const lang of this.parsers.keys()) {
+            const parser = this.parsers.get(lang);
             if (parser.cancelFunc) {
                 try {
-                    await parser.cancelFunc(cid);
+                    await parser.cancelFunc(cid, lang);
                 } catch (e) {
                     console.error("call cancel func error:", e);
                 }
@@ -857,7 +880,7 @@ class diagramParser {
         const render = this.parsers.get(lang).renderFunc;
         if (!render) return;
         try {
-            await render(cid, content, $pre);
+            await render(cid, content, $pre, lang);
         } catch (error) {
             await this.whenCantDraw(cid, lang, $pre, content, error);
         }
@@ -1059,6 +1082,115 @@ class diagramParser {
         )
     }
 }
+
+class thirdPartyDiagramParser {
+    constructor() {
+        this.utils = utils;
+        this.parsers = new Map();
+    }
+
+    // extraCss: {defaultHeight, backgroundColor}
+    register = (
+        lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
+        lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter,
+    ) => {
+        this.parsers.set(lang.toLowerCase(), {
+            checkSelector, wrapElement, extraCss,
+            lazyLoadFunc, createFunc, destroyFunc, beforeExport,
+            map: {}
+        });
+        this.utils.registerDiagramParser(lang, destroyWhenUpdate, this.render, this.cancel, this.destroyAll, extraStyleGetter, interactiveMode)
+    }
+
+    unregister = lang => {
+        this.parsers.delete(lang);
+        this.utils.unregisterDiagramParser(lang);
+    }
+
+    render = async (cid, content, $pre, lang) => {
+        const parser = this.parsers.get(lang);
+        if (!parser) return
+
+        await parser.lazyLoadFunc();
+        const $wrap = this.getWrap(parser, $pre);
+        try {
+            this.setStyle(parser, $pre, $wrap, content);
+            if (parser.map.hasOwnProperty(cid)) {
+                await this.cancel(cid, lang);
+            }
+            const instance = parser.createFunc($wrap, content);
+            if (instance) {
+                parser.map[cid] = instance;
+            }
+        } catch (e) {
+            this.utils.throwParseError(null, e.toString());
+        }
+    }
+
+    getWrap = (parser, $pre) => {
+        let $wrap = $pre.find(parser.checkSelector);
+        if ($wrap.length === 0) {
+            $wrap = $(parser.wrapElement);
+        }
+        $pre.find(".md-diagram-panel-preview").html($wrap);
+        return $wrap
+    }
+
+    setStyle = (parser, $pre, $wrap, content) => {
+        const {height, width} = this.utils.getFenceUserSize(content);
+        $wrap.css({
+            "width": width || parseInt($pre.find(".md-diagram-panel").css("width").replace("px", "")) - 10 + "px",
+            "height": height || parser.extraCss["defaultHeight"] || "",
+            "background-color": parser.extraCss["backgroundColor"] || "",
+        });
+    }
+
+    cancel = async (cid, lang) => {
+        const parser = this.parsers.get(lang);
+        if (!parser) return
+        const instance = parser.map[cid];
+        if (instance) {
+            parser.destroyFunc(instance);
+            delete parser.map[cid];
+        }
+    }
+
+    destroyAll = () => {
+        for (const parser of this.parsers.values()) {
+            for (const cid of Object.keys(parser.map)) {
+                parser.destroyFunc(parser.map[cid]);
+                delete parser.map[cid];
+            }
+            parser.map = {};
+        }
+    }
+
+    beforeExport = () => {
+        for (const parser of this.parsers.values()) {
+            if (!parser.beforeExport) continue;
+            for (const cid of Object.keys(parser.map)) {
+                const instance = parser.map[cid];
+                const preview = document.querySelector(`#write .md-fences[cid=${cid}] .md-diagram-panel-preview`);
+                if (preview) {
+                    parser.beforeExport(preview, instance);
+                }
+            }
+        }
+    }
+
+    afterExport = () => {
+        setTimeout(() => {
+            for (const lang of this.parsers.keys()) {
+                this.utils.refreshAllLangFence(lang);
+            }
+        }, 300)
+    }
+
+    process = () => {
+        this.utils.registerExportHelper("third-party-diagram-parser", this.beforeExport, this.afterExport);
+    }
+}
+
 
 class eventHub {
     constructor() {
@@ -1706,6 +1838,7 @@ class process {
             global._stateRecorder.process(),
             global._hotkeyHub.process(),
             global._exportHelper.process(),
+            global._thirdPartyDiagramParser.process(),
         ]);
         // 全部完成后发布事件
         this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
@@ -1722,6 +1855,8 @@ global._basePlugin = basePlugin;
 global._eventHub = new eventHub();
 // 自定义代码块语法
 global._diagramParser = new diagramParser();
+// 第三方图形代码块语法
+global._thirdPartyDiagramParser = new thirdPartyDiagramParser();
 // 状态记录器
 global._stateRecorder = new stateRecorder();
 // 弹出模态框

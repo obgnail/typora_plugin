@@ -1,70 +1,33 @@
 class echartsPlugin extends BaseCustomPlugin {
     init = () => {
         this.lang = "echarts";
-        this.map = {} // {cid: instance}
+        this.exportType = this.config.EXPORT_TYPE.toLowerCase();
     }
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        this.utils.registerDiagramParser(this.lang, false, this.render, this.cancel, this.destroyAll, null, this.config.INTERACTIVE_MODE);
-        this.utils.registerExportHelper(this.lang, this.beforeExport, this.afterExport);
+        this.utils.registerThirdPartyDiagramParser(
+            this.lang,
+            false,
+            this.config.INTERACTIVE_MODE,
+            ".plugin-echarts-content",
+            '<div class="plugin-echarts-content"></div>',
+            {
+                defaultHeight: this.config.DEFAULT_FENCE_HEIGHT,
+                backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR
+            },
+            this.lazyLoad,
+            this.create,
+            this.destroy,
+            this.beforeExport,
+        );
     }
 
-    render = async (cid, content, $pre) => {
-        await this.lazyLoad();
-        const $div = this.getDiv($pre);
-        try {
-            this.setStyle($pre, $div, content);
-            if (this.map.hasOwnProperty(cid)) {
-                // 因为可能这个echarts有onClick等事件，不能update，只能destroy掉
-                await this.cancel(cid);
-            }
-            this.create(cid, $div, content);
-        } catch (e) {
-            this.utils.throwParseError(null, e.toString());
-            // console.error(e);
-        }
-    }
-    cancel = async cid => {
-        const instance = this.map[cid];
-        if (instance) {
-            instance.clear();
-            instance.dispose();
-            delete this.map[cid];
-        }
-    }
-    destroyAll = () => {
-        for (const cid of Object.keys(this.map)) {
-            this.map[cid].clear();
-            this.map[cid].dispose();
-            delete this.map[cid];
-        }
-        this.map = {};
-    }
-
-    setStyle = ($pre, $div, content) => {
-        const {height, width} = this.utils.getFenceUserSize(content);
-        $div.css({
-            "width": width || parseInt($pre.find(".md-diagram-panel").css("width").replace("px", "")) - 10 + "px",
-            "height": height || this.config.DEFAULT_FENCE_HEIGHT,
-            "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
-        });
-    }
-
-    getDiv = $pre => {
-        let $div = $pre.find(".plugin-echarts-content");
-        if ($div.length === 0) {
-            $div = $(`<div class="plugin-echarts-content"></div>`);
-        }
-        $pre.find(".md-diagram-panel-preview").html($div);
-        return $div
-    }
-
-    create = (cid, $div, content) => {
-        const chart = echarts.init($div[0], null, {renderer: this.config.RENDERER});
+    create = ($wrap, content) => {
+        const chart = echarts.init($wrap[0], null, {renderer: this.config.RENDERER});
         this.drawChart(chart, content);
-        this.map[cid] = chart;
+        return chart;
     }
 
     drawChart = (myChart, content, resize = false) => {
@@ -80,26 +43,22 @@ class echartsPlugin extends BaseCustomPlugin {
         // chart.hideLoading();
     }
 
-    beforeExport = () => {
-        const type = this.config.EXPORT_TYPE.toLowerCase();
-        for (const cid of Object.keys(this.map)) {
-            const instance = this.map[cid];
-            instance.setOption({aniamtion: false});
-
-            const preview = document.querySelector(`#write .md-fences[cid=${cid}] .md-diagram-panel-preview`);
-            if (!preview) continue
-            if (type === "png" || type === "jpg") {
-                const img = new Image();
-                img.src = instance.getDataURL({type: this.config.EXPORT_TYPE});
-                $(preview).html(img);
-            } else if (type === "svg") {
-                const svg = instance.renderToSVGString();
-                $(preview).html(svg);
-            }
-        }
+    destroy = instance => {
+        instance.clear();
+        instance.dispose();
     }
 
-    afterExport = () => setTimeout(() => this.utils.refreshAllLangFence(this.lang), 300)
+    beforeExport = (preview, instance) => {
+        instance.setOption({aniamtion: false});
+        if (this.exportType === "png" || this.exportType === "jpg") {
+            const img = new Image();
+            img.src = instance.getDataURL({type: this.exportType});
+            $(preview).html(img);
+        } else if (this.exportType === "svg") {
+            const svg = instance.renderToSVGString();
+            $(preview).html(svg);
+        }
+    }
 
     lazyLoad = async () => (!global.echarts) && await this.utils.insertScript("./plugin/custom/plugins/echarts/echarts.min.js");
 }
