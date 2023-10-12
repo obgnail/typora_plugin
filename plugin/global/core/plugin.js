@@ -164,6 +164,7 @@ class utils {
     static insertHtmlTemplate = elements => global._htmlTemplater.insert(elements)
     static createElement = element => global._htmlTemplater.create(element)
     static createElements = elements => global._htmlTemplater.createList(elements)
+    static appendElements = (parent, template) => global._htmlTemplater.appendElements(parent, template)
     static getElementCreator = () => global._htmlTemplater.creator()
 
 
@@ -1459,8 +1460,9 @@ class htmlTemplater {
     //     }
     //     const ele = this.create(element);
     create = element => {
-        const el = document.createElement(element.ele || this.defaultElement);
+        if (!element) return;
 
+        const el = document.createElement(element.ele || this.defaultElement);
         for (const prop of Object.keys(element)) {
             const value = element[prop];
             switch (prop) {
@@ -1494,6 +1496,7 @@ class htmlTemplater {
     }
 
     createList = elements => elements.map(ele => this.create(ele))
+    appendElements = (parent, template) => this.createList(template).forEach(ele => parent.appendChild(ele))
 
     insert = elements => {
         for (const element of elements) {
