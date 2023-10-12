@@ -190,6 +190,9 @@ class utils {
         const mountFolder = File.getMountFolder();
         return path && mountFolder && path.startsWith(mountFolder);
     }
+    static reload = async () => File.reloadContent(await File.getContent(), {
+        fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true,
+    })
     static openFile = filepath => {
         if (this.getPlugin("window_tab") && this.isUnderMountFolder(filepath)) {
             File.editor.library.openFile(filepath);
@@ -1706,6 +1709,8 @@ class process {
         ]);
         // 全部完成后发布事件
         this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
+        // 由于使用了async，有些事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍
+        setTimeout(this.utils.reload, 100);
     }
 }
 
