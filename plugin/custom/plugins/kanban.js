@@ -10,7 +10,7 @@ class kanbanPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        this.utils.registerDiagramParser("kanban", false, this.render, null, null, this.style, this.config.INTERACTIVE_MODE);
+        this.utils.registerDiagramParser("kanban", false, this.render, null, null, this.getStyleContent, this.config.INTERACTIVE_MODE);
 
         if (this.config.CTRL_WHEEL_TO_SCROLL) {
             const that = this;
@@ -21,6 +21,8 @@ class kanbanPlugin extends BaseCustomPlugin {
             })
         }
     }
+
+    getStyleContent = () => this.utils.getStyleContent(this.fixedName)
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 

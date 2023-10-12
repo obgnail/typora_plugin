@@ -96,7 +96,7 @@ class utils {
     //        1. cid: 当前代码块的cid
     //        2. content: 代码块的内容
     //        3. $pre: 代码块的jquery element
-    //   4. async cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
+    //   4. cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
     //   5. destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
     //   6. extraStyleGetter() => string: 用于导出时，新增css
     //   7. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
@@ -181,6 +181,7 @@ class utils {
     // 动态注册css模板文件
     static registerStyleTemplate = async (name, renderArg) => await global._styleTemplater.register(name, renderArg)
     static unregisterStyleTemplate = name => global._styleTemplater.unregister(name)
+    static getStyleContent = name => global._styleTemplater.getStyleContent(name)
 
     // 插入html
     static insertHtmlTemplate = elements => global._htmlTemplater.insert(elements)
@@ -283,7 +284,7 @@ class utils {
         return 0
     }
 
-    // { a: [{ b: 2 }] } { a: [{ c: 2 }]} -> { a: [{b:2}, {c:2}]}
+    // merge({a: [{ b: 2 }] } {a: [{ c: 2 }]}) -> {a: [{b:2}, {c:2}]}
     // merge({o: {a: 3}}, {o: {b:4}}) -> {o: {a:3, b:4}}
     static merge = (source, other) => {
         const isObject = value => {
@@ -848,7 +849,7 @@ class diagramParser {
             const parser = this.parsers.get(lang);
             if (parser.cancelFunc) {
                 try {
-                    await parser.cancelFunc(cid, lang);
+                    parser.cancelFunc(cid, lang);
                 } catch (e) {
                     console.error("call cancel func error:", e);
                 }
@@ -1116,7 +1117,7 @@ class thirdPartyDiagramParser {
         try {
             this.setStyle(parser, $pre, $wrap, content);
             if (parser.map.hasOwnProperty(cid)) {
-                await this.cancel(cid, lang);
+                this.cancel(cid, lang);
             }
             const instance = parser.createFunc($wrap, content);
             if (instance) {
@@ -1145,7 +1146,7 @@ class thirdPartyDiagramParser {
         });
     }
 
-    cancel = async (cid, lang) => {
+    cancel = (cid, lang) => {
         const parser = this.parsers.get(lang);
         if (!parser) return
         const instance = parser.map[cid];
@@ -1542,6 +1543,13 @@ class styleTemplater {
     }
 
     unregister = name => this.utils.removeStyle(`plugin-${name}-style`);
+
+    getStyleContent = name => {
+        const style = document.getElementById(`plugin-${name}-style`);
+        if (style) {
+            return style.innerHTML
+        }
+    }
 }
 
 // faster then innerHTML, less memory usage, more secure, but poor readable

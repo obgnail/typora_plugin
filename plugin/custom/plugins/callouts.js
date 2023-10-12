@@ -20,12 +20,14 @@ class callouts extends BaseCustomPlugin {
         const write = document.querySelector("#write");
         this.utils.registerExportHelper(
             "callouts",
-            () => (write.querySelector(".plugin-callout")) ? this.style() : "",
+            () => (write.querySelector(".plugin-callout")) ? this.getStyleContent() : "",
             this.exportToHtml
         )
 
         this.utils.addEventListener(this.utils.eventType.fileEdited, this.range);
     }
+
+    getStyleContent = () => this.utils.getStyleContent(this.fixedName)
 
     range = () => {
         const pList = document.querySelectorAll("#write blockquote > p:first-child");
