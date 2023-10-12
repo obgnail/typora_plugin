@@ -1,3 +1,4 @@
+// 插件名称是通过配置文件引入的，为了避免XSS注入，不可使用innerHTML
 class rightClickMenuPlugin extends global._basePlugin {
     init = () => {
         this.notavailableValue = "__not_available__";
@@ -26,74 +27,105 @@ class rightClickMenuPlugin extends global._basePlugin {
     }
 
     appendFirst = () => {
-        const template = [
+        const menu = document.querySelector(`#context-menu`);
+        const elements = [
             {ele: "li", class_: "divider", "data-group": "plugin"},
             ...this.config.MENUS.map((menu, idx) => ({
                 ele: "li", class_: "has-extra-menu", idx: idx, "data-key": "typora-plugin", children: [{
                     ele: "a", role: "menuitem", children: [
-                        {ele: "span", "data-lg": "Menu", text: menu.NAME}, {ele: "i", class_: "fa fa-caret-right"}
+                        {ele: "span", "data-lg": "Menu", text: menu.NAME},
+                        {ele: "i", class_: "fa fa-caret-right"}
                     ]
                 }]
             }))
-        ];
-        const ul = document.querySelector(`#context-menu`);
-        this.utils.createElements(template).forEach(ele => ul.appendChild(ele));
+        ]
+        this.utils.appendElements(menu, elements);
     }
 
     appendSecond = () => {
         this.findLostPluginIfNeed();
+
         const content = document.querySelector("content");
-        this.config.MENUS.forEach((menu, idx) => {
-            const plugins = menu.LIST.map(item => {
+        const elements = this.config.MENUS.map((menu, idx) => {
+            const children = menu.LIST.map(item => {
                 if (item === "---") {
-                    return `<li class="divider"></li>`
+                    return {"ele": "li", class_: "divider"}
                 }
                 const plugin = this.utils.getPlugin(item);
                 if (plugin) {
-                    return this.createSecondLi(plugin);
+                    return this.secondLiTemplate(plugin);
                 }
-                return ""
+                return {}
             })
-            const secondUl = this.createUl({idx, class_: "plugin-menu-second"});
-            secondUl.innerHTML = plugins.join("");
-            content.appendChild(secondUl);
+            return this.ulTemplate({idx, children, class_: "plugin-menu-second"});
         })
+
+        this.utils.appendElements(content, elements);
     }
 
     appendThird = () => {
         const content = document.querySelector("content");
         this.config.MENUS.forEach((menu, idx) => {
-            menu.LIST.forEach(item => {
-                if (item === "---") return;
+            const elements = menu.LIST.map(item => {
+                if (item === "---") return {};
                 const plugin = this.utils.getPlugin(item);
-                if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return;
+                if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return {};
 
-                const thirdUl = this.createUl({idx, class_: "plugin-menu-third", fixed_name: plugin.fixedName});
-                thirdUl.innerHTML = plugin.callArgs ? plugin.callArgs.map(arg => this.createThirdLi(arg)).join("") : "";
-                content.appendChild(thirdUl);
+                const children = (plugin.callArgs || []).map(arg => this.thirdLiTemplate(arg));
+                return this.ulTemplate({
+                    idx, children, class_: "plugin-menu-third", fixed_name: plugin.fixedName,
+                });
             })
+            this.utils.appendElements(content, elements);
         })
     }
 
-    createSecondLi = plugin => {
+    secondLiTemplate = plugin => {
         const hasNotArgs = !plugin.callArgs && !plugin.dynamicCallArgsGenerator;
-        const style = (plugin.config.CLICKABLE) ? "" : `style="pointer-events: none;color: #c4c6cc;"`;
-        const content = (hasNotArgs) ? plugin.config.NAME : `<span data-lg="Menu">${plugin.config.NAME}</span><i class="fa fa-caret-right"></i>`;
-        const className = (hasNotArgs) ? "" : "has-extra-menu";
-        return `<li data-key="${plugin.fixedName}" class="plugin-menu-item ${className}" ${style}><a role="menuitem" data-lg="Menu">${content}</a></li>`
+
+        const extra = {class_: "plugin-menu-item"};
+        if (hasNotArgs) {
+            extra.class_ += " has-extra-menu";
+        }
+        if (!plugin.config.CLICKABLE) {
+            extra.style = {color: "#c4c6cc", pointerEvents: "none"};
+        }
+
+        const childExtra = {};
+        if (hasNotArgs) {
+            childExtra.text = plugin.config.NAME;
+        } else {
+            childExtra.children = [{
+                ele: "span", "data-lg": "Menu", text: plugin.config.NAME,
+                children: [{ele: "i", class_: "fa fa-caret-right"}]
+            }]
+        }
+
+        return {
+            ele: "li", "data-key": plugin.fixedName, ...extra, children: [{
+                ele: "a", role: "menuitem", "data-lg": "Menu", ...childExtra
+            }]
+        }
     }
 
-    createThirdLi = (arg, dynamic) => {
-        const hint = (arg.arg_hint) ? `ty-hint="${arg.arg_hint}"` : "";
-        const disabled = (arg.arg_disabled) ? " disabled" : "";
-        const className = (dynamic) ? `class="plugin-dynamic-arg${disabled}"` : "";
-        return `<li data-key="${arg.arg_name}" arg_value="${arg.arg_value}" ${className} ${hint}><a role="menuitem" data-lg="Menu">${arg.arg_name}</a></li>`
+    thirdLiTemplate = (arg, dynamic) => {
+        const extra = {};
+        if (arg.arg_hint) {
+            extra["ty-hint"] = arg.arg_hint;
+        }
+        if (dynamic) {
+            extra["class_"] = `plugin-dynamic-arg ${(arg.arg_disabled) ? "disabled" : ""}`;
+        }
+        return {
+            ele: "li", "data-key": arg.arg_name, arg_value: arg.arg_value, ...extra,
+            children: [{ele: "a", role: "menuitem", "data-lg": "Menu", text: arg.arg_name}]
+        }
     }
 
-    createUl = extra => {
+    ulTemplate = extra => {
         const class_ = `dropdown-menu context-menu ext-context-menu ${extra.class_ || ""}`;
         delete extra.class_;
-        return this.utils.createElement({ele: "ul", class_, role: "menu", ...extra})
+        return {ele: "ul", class_, role: "menu", ...extra}
     }
 
     findLostPluginIfNeed = () => {
@@ -130,13 +162,12 @@ class rightClickMenuPlugin extends global._basePlugin {
         next.css({top: nextTop + "px", left: nextLeft + "px"});
     }
 
-    appendThirdLi = (menu, dynamicCallArgs) => {
-        const args = dynamicCallArgs.map(arg => this.createThirdLi(arg, true)).join("");
-        menu.append(args);
+    appendThirdLi = ($menu, dynamicCallArgs) => {
+        dynamicCallArgs.forEach(arg => $menu.append(this.utils.createElement(this.thirdLiTemplate(arg, true))))
     }
 
-    appendDummyThirdLi = menu => {
-        this.appendThirdLi(menu, [{
+    appendDummyThirdLi = $menu => {
+        this.appendThirdLi($menu, [{
             arg_name: "光标于此位置不可用",
             arg_value: this.notavailableValue,
             arg_disabled: true,
@@ -171,16 +202,16 @@ class rightClickMenuPlugin extends global._basePlugin {
             document.querySelectorAll(`.plugin-menu-third`).forEach(ele => ele.classList.remove("show"));
             document.querySelectorAll(".plugin-dynamic-arg").forEach(ele => ele.parentElement.removeChild(ele));
             const fixedName = second.attr("data-key");
-            const third = $(`.plugin-menu-third[fixed_name="${fixedName}"]`);
+            const $third = $(`.plugin-menu-third[fixed_name="${fixedName}"]`);
             const dynamicCallArgs = that.utils.generateDynamicCallArgs(fixedName);
             if (dynamicCallArgs) {
-                that.appendThirdLi(third, dynamicCallArgs);
+                that.appendThirdLi($third, dynamicCallArgs);
             }
-            if (third.children().length === 0) {
-                that.appendDummyThirdLi(third);
+            if ($third.children().length === 0) {
+                that.appendDummyThirdLi($third);
             }
             if (second.find(`span[data-lg="Menu"]`).length) {
-                that.show(third, second);
+                that.show($third, second);
             } else {
                 document.querySelector(".plugin-menu-second .has-extra-menu").classList.remove("active");
             }
