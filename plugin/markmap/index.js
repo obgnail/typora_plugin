@@ -86,7 +86,7 @@ class fenceMarkmap {
             await this.create(cid, svg, content);
         }
     }
-    cancel = async cid => {
+    cancel = cid => {
         const instance = this.map[cid];
         if (instance) {
             instance.destroy();
