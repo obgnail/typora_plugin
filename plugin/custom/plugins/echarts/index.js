@@ -1,6 +1,5 @@
 class echartsPlugin extends BaseCustomPlugin {
     init = () => {
-        this.lang = "echarts";
         this.exportType = this.config.EXPORT_TYPE.toLowerCase();
     }
 
@@ -8,7 +7,7 @@ class echartsPlugin extends BaseCustomPlugin {
 
     process = () => {
         this.utils.registerThirdPartyDiagramParser(
-            this.lang,
+            this.config.LANGUAGE,
             false,
             this.config.INTERACTIVE_MODE,
             ".plugin-echarts-content",
@@ -49,7 +48,7 @@ class echartsPlugin extends BaseCustomPlugin {
     }
 
     beforeExport = (preview, instance) => {
-        instance.setOption({aniamtion: false});
+        instance.setOption({animation: false});
         if (this.exportType === "png" || this.exportType === "jpg") {
             const img = new Image();
             img.src = instance.getDataURL({type: this.exportType});

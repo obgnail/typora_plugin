@@ -23,31 +23,32 @@
 | 13   | markmap                    | 提供 markmap 组件支持                |
 | 14   | echarts                    | 提供 echarts 组件支持                |
 | 15   | chart                      | 提供 chartjs 组件支持                |
-| 16   | callouts                   | 提供 callouts 支持                   |
-| 17   | read_only                  | 只读模式                             |
-| 18   | blur                       | 模糊模式                             |
-| 19   | kanban                     | 看板                                 |
-| 20 | timeline                   | 时间线                               |
-| 21  | file_counter               | 显示目录下的文件数                   |
-| 22  | outline                    | 以表格、图片、代码块形式的大纲       |
-| 23  | auto_number                | 章节、表格、图片、代码块等自动编号   |
-| 24  | chinese_symbol_auto_pairer | 中文符号自动补全                     |
-| 25  | datatables                 | 表格增强（搜索、过滤、分页、排序等） |
-| 26  | resize_table               | 调整表格行高列宽                     |
-| 27  | resize_image               | 调整图片显示大小                     |
-| 28  | export_enhance             | 导出 html 时避免图片丢失             |
-| 29  | go_top                     | 一键到文章顶部、底部               |
-| 30  | truncate_text              | 暂时隐藏内容，提高大文件渲染性能     |
-| 31  | markdown_lint              | markdown 格式规范检测                 |
-| 32  | plugin_updater             | 一键升级插件                         |
-| 33 | extract_range_to_new_file | 提取选区文字到新文件 |
-| 34 | full_path_copy | 复制标题路径 |
-| 35 | auto_trailing_white_space | 自动添加结尾空格 |
-| 36 | open_in_total_commander | 在 total commander 打开 |
-| 37   | mermaid_replace            | 替换 mermaid 组件              |
-| 38  | custom                     | 用户自定义命令（高级）               |
-| 39  | hotkey_hub                 | 快捷键注册中心（高级）               |
-| 40 | old_window_tab             | 标签页管理（已废弃）                 |
+| 16 | calendar | 提供 tui.calendar 组件支持 |
+| 17   | callouts                   | 提供 callouts 支持                   |
+| 18   | read_only                  | 只读模式                             |
+| 19   | blur                       | 模糊模式                             |
+| 20  | kanban                     | 看板                                 |
+| 21 | timeline                   | 时间线                               |
+| 22 | file_counter               | 显示目录下的文件数                   |
+| 23 | outline                    | 以表格、图片、代码块形式的大纲       |
+| 24 | auto_number                | 章节、表格、图片、代码块等自动编号   |
+| 25 | chinese_symbol_auto_pairer | 中文符号自动补全                     |
+| 26 | datatables                 | 表格增强（搜索、过滤、分页、排序等） |
+| 27 | resize_table               | 调整表格行高列宽                     |
+| 28 | resize_image               | 调整图片显示大小                     |
+| 29 | export_enhance             | 导出 html 时避免图片丢失             |
+| 30 | go_top                     | 一键到文章顶部、底部               |
+| 31 | truncate_text              | 暂时隐藏内容，提高大文件渲染性能     |
+| 32 | markdown_lint              | markdown 格式规范检测                 |
+| 33 | plugin_updater             | 一键升级插件                         |
+| 34 | extract_range_to_new_file | 提取选区文字到新文件 |
+| 35 | full_path_copy | 复制标题路径 |
+| 36 | auto_trailing_white_space | 自动添加结尾空格 |
+| 37 | open_in_total_commander | 在 total commander 打开 |
+| 38  | mermaid_replace            | 替换 mermaid 组件              |
+| 38 | custom                     | 用户自定义命令（高级）               |
+| 40 | hotkey_hub                 | 快捷键注册中心（高级）               |
+| 41 | old_window_tab             | 标签页管理（已废弃）                 |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -464,6 +465,14 @@ LIST = [
 使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 插入 chart
 
 ![chart](./assets/chart.png)
+
+
+
+### calendar：  提供 tui.calendar 组件支持
+
+使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 插入 calendar
+
+![calendar](./assets/calendar.png)
 
 
 
