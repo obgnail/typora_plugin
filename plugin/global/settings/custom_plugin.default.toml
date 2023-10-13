@@ -12,6 +12,9 @@ name = "插入kanban"
 enable = true
 # 插件配置
 [kanban.config]
+# 代码块语言
+# 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
+LANGUAGE = "kanban"
 # 严格模式，不会忽略存在语法错误的代码行，直接在页面上报错（此选项用于控制所有看板，如果设置为true，那么会强制所有看板进入严格模式）
 # 也可以在代码块首行添加use strict，进入严格模式（此操作用于控制单个看板）
 STRICT_MODE = false
@@ -69,6 +72,9 @@ name = "插入echarts"
 enable = true
 # 插件配置
 [echarts.config]
+# 代码块语言
+# 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
+LANGUAGE = "echarts"
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 渲染器: canvas/svg
@@ -118,6 +124,9 @@ name = "插入chart"
 enable = true
 # 插件配置
 [chart.config]
+# 代码块语言
+# 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
+LANGUAGE = "chart"
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 代码块默认高度
@@ -165,6 +174,56 @@ config = {
 """
 
 
+############### calendar ###############
+[calendar]
+# 右键菜单中展示的名称
+name = "插入calendar"
+# 是否启用此自定义插件
+enable = true
+# 插件配置
+[calendar.config]
+# 代码块语言
+# 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
+LANGUAGE = "calendar"
+# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
+INTERACTIVE_MODE = true
+# 代码块默认高度
+DEFAULT_FENCE_HEIGHT = "800px"
+# 代码块背景颜色
+DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
+# 自动插入的模板
+TEMPLATE = """```calendar
+// 提供内置变量:
+//   1. calendar: calendar实例
+//   2. Calendar: Calendar类
+//   3. option:   calendar的option
+//   4. this:     calendar插件实例
+// example：https://nhn.github.io/tui.calendar/latest/tutorial-06-daily-view
+// API: https://github.com/nhn/tui.calendar/blob/main/docs/en/apis/options.md
+// 代码块里的所有内容都会被eval，请注意安全问题
+// 可以使用如下注释设置图表宽高（否则使用默认）：
+// {height: "800px", width: ""}
+
+option = {
+    defaultView: 'week',
+    calendars: [
+        {
+            id: 'cal1',
+            name: 'Personal',
+            backgroundColor: '#03bd9e',
+        },
+        {
+            id: 'cal2',
+            name: 'Work',
+            backgroundColor: '#00a9ff',
+        },
+    ],
+};
+
+```
+"""
+
+
 ############### timeline ###############
 [timeline]
 # 右键菜单中展示的名称
@@ -173,6 +232,11 @@ name = "插入timeline"
 enable = true
 # 插件配置
 [timeline.config]
+# 代码块语言
+# 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
+LANGUAGE = "timeline"
+# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
+INTERACTIVE_MODE = false
 # 背景颜色
 BACKGROUND_COLOR = "#fafafa"
 # 标题的字体颜色
@@ -183,8 +247,6 @@ LINE_COLOR = "#eee"
 CIRCLE_COLOR = "#999"
 # 时间的字体颜色
 TIME_COLOR = "#555"
-# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
-INTERACTIVE_MODE = false
 # 自动插入的模板
 TEMPLATE = """```timeline
 # 使用一级标题表示timeline的标题

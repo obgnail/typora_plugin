@@ -10,7 +10,15 @@ class kanbanPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        this.utils.registerDiagramParser("kanban", false, this.render, null, null, this.getStyleContent, this.config.INTERACTIVE_MODE);
+        this.utils.registerDiagramParser(
+            this.config.LANGUAGE,
+            false,
+            this.render,
+            null,
+            null,
+            this.getStyleContent,
+            this.config.INTERACTIVE_MODE
+        );
 
         if (this.config.CTRL_WHEEL_TO_SCROLL) {
             const that = this;

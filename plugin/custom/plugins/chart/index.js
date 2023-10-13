@@ -1,6 +1,5 @@
 class chartPlugin extends BaseCustomPlugin {
     init = () => {
-        this.lang = "chart";
         this.ChartPkg = null;
     }
 
@@ -8,7 +7,7 @@ class chartPlugin extends BaseCustomPlugin {
 
     process = () => {
         this.utils.registerThirdPartyDiagramParser(
-            this.lang,
+            this.config.LANGUAGE,
             false,
             this.config.INTERACTIVE_MODE,
             ".plugin-chart-content",
