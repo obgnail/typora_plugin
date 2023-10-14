@@ -445,6 +445,7 @@ date: {{date}} {{weekday}}
 # 右键菜单中展示的名称
 name = "中文符号自动补全"
 # 是否启用此自定义插件
+# 注意：此插件受Typora本身配置【匹配括号和引号】的影响，如果此配置为false，那么此插件自动禁用
 enable = true
 # 插件配置
 [chineseSymbolAutoPairer.config]
