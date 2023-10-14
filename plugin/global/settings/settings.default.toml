@@ -310,7 +310,8 @@ BACKSPACE_TO_HIDE = true
 #   4. "ops"：常用操作
 #   5. "mode"：切换文件模式
 #   6. "theme"：临时切换主题
-DEFAULT_TOOL = ""
+#   7. "func"：全部功能
+DEFAULT_TOOL = "func"
 # 用户输入的防抖时间（单位：ms）（用户输入完200ms后才执行）
 DEBOUNCE_INTERVAL = 200
 # toolbar的在页面的20%位置出现

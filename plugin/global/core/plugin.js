@@ -754,6 +754,11 @@ class utils {
             if (new Date().getTime() - start > timeout) {
                 console.warn("loopDetector timeout!", until, after);
                 run = runWhenTimeout;
+                if (!run) {
+                    clearInterval(this.detectorContainer[uuid]);
+                    delete this.detectorContainer[uuid];
+                    return;
+                }
             }
 
             if (until() || run) {
