@@ -7,7 +7,8 @@ class toolbarPlugin extends global._basePlugin {
             RecentFileTool,
             operationTool,
             modeTool,
-            tempThemeTool
+            tempThemeTool,
+            functionTool,
         ].forEach(tool => this.registerBarTool(new tool()));
     }
 
@@ -32,6 +33,7 @@ class toolbarPlugin extends global._basePlugin {
     }]
 
     init = () => {
+        this.hideWhenEnter = true;
         this.entities = {
             content: document.querySelector("content"),
             toolbar: document.querySelector("#plugin-toolbar"),
@@ -50,7 +52,7 @@ class toolbarPlugin extends global._basePlugin {
                     const select = this.entities.result.querySelector(".plugin-toolbar-item.active");
                     if (select) {
                         this.run(select, ev);
-                        this.hide();
+                        this.hideWhenEnter && this.hide();
                     }
                     break
                 case "ArrowUp":
@@ -151,6 +153,8 @@ class toolbarPlugin extends global._basePlugin {
 class baseToolInterface {
     name = () => {
     }
+    translate = () => {
+    }
     init = () => {
     }
     // 要么返回 []string
@@ -180,6 +184,7 @@ class baseToolInterface {
 
 class tabTool extends baseToolInterface {
     name = () => "tab"
+    translate = () => "标签页"
 
     init = () => {
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
@@ -200,6 +205,7 @@ class tabTool extends baseToolInterface {
 
 class pluginTool extends baseToolInterface {
     name = () => "plu"
+    translate = () => "插件"
 
     collectAll = () => {
         const pluginsList = [];
@@ -256,6 +262,7 @@ class pluginTool extends baseToolInterface {
 
 class RecentFileTool extends baseToolInterface {
     name = () => "his"
+    translate = () => "最近文件"
 
     getRecentFile = async () => {
         if (!File.isNode) return;
@@ -299,6 +306,7 @@ class RecentFileTool extends baseToolInterface {
 
 class operationTool extends baseToolInterface {
     name = () => "ops"
+    translate = () => "常用操作"
 
     init = () => {
         this.ops = [
@@ -331,6 +339,7 @@ class operationTool extends baseToolInterface {
 
 class modeTool extends baseToolInterface {
     name = () => "mode"
+    translate = () => "模式"
 
     init = () => {
         this.modes = [
@@ -392,6 +401,7 @@ class modeTool extends baseToolInterface {
 
 class tempThemeTool extends baseToolInterface {
     name = () => "theme"
+    translate = () => "临时主题"
 
     setThemeForever = theme => ClientCommand.setTheme(theme);
     setThemeTemp = theme => File.setTheme(theme);
@@ -412,6 +422,30 @@ class tempThemeTool extends baseToolInterface {
                 return
             }
         }
+    }
+}
+
+class functionTool extends baseToolInterface {
+    name = () => "func"
+    translate = () => "全部功能"
+
+    search = async input => {
+        const name = this.name();
+        const all = Array.from(this.controller.tools.entries())
+            .filter(tool => tool[0] !== name)
+            .map(tool => {
+                const fixedName = tool[0];
+                const translate = tool[1].translate();
+                return {showName: `${fixedName} - ${translate}`, fixedName}
+            })
+        return this.baseSearch(input, all, ["showName"]);
+    }
+
+    callback = async fixedName => {
+        this.controller.plugin.entities.input.value = fixedName + " ";
+        this.controller.plugin.hideWhenEnter = false;
+        this.controller.plugin.entities.input.dispatchEvent(new Event('keydown'));
+        setTimeout(() => this.controller.plugin.hideWhenEnter = true, 100);
     }
 }
 
