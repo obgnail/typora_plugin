@@ -21,7 +21,7 @@ class windowTabBarPlugin extends global._basePlugin {
             content: document.querySelector("content"),
             tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
         }
-        this.tabUtil = {tabs: [], activeIdx: 0,}
+        this.tabUtil = {tabs: [], activeIdx: 0};
         this.loopDetectInterval = 35;
         this.callMap = {
             new_tab_open: () => this.config.LOCAL_OPEN = false,
@@ -509,7 +509,7 @@ class windowTabBarPlugin extends global._basePlugin {
             })
             if (activePath) {
                 this.switchTabByPath(activePath);
-            } else {
+            } else if (this.tabUtil.tabs.length) {
                 this.switchTab(this.tabUtil.activeIdx);
             }
         })
