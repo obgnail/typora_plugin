@@ -145,6 +145,7 @@ func NewUpdater(proxy string, timeout int) (*Updater, error) {
 			"./plugin/global/settings/settings.user.toml",
 			"./plugin/global/settings/hotkey.user.toml",
 			"./plugin/window_tab/save_tabs.json",
+			"./plugin/custom/plugins/reopenClosedFiles/remain.json",
 		},
 		unzipDir:       "",
 		oldVersionInfo: nil,
