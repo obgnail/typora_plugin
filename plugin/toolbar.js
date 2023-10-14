@@ -184,7 +184,7 @@ class baseToolInterface {
 
 class tabTool extends baseToolInterface {
     name = () => "tab"
-    translate = () => "标签页"
+    translate = () => "切换标签页"
 
     init = () => {
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
@@ -205,7 +205,7 @@ class tabTool extends baseToolInterface {
 
 class pluginTool extends baseToolInterface {
     name = () => "plu"
-    translate = () => "插件"
+    translate = () => "使用插件"
 
     collectAll = () => {
         const pluginsList = [];
@@ -262,7 +262,7 @@ class pluginTool extends baseToolInterface {
 
 class RecentFileTool extends baseToolInterface {
     name = () => "his"
-    translate = () => "最近文件"
+    translate = () => "打开最近文件"
 
     getRecentFile = async () => {
         if (!File.isNode) return;
@@ -306,7 +306,7 @@ class RecentFileTool extends baseToolInterface {
 
 class operationTool extends baseToolInterface {
     name = () => "ops"
-    translate = () => "常用操作"
+    translate = () => "执行操作"
 
     init = () => {
         this.ops = [
@@ -339,7 +339,7 @@ class operationTool extends baseToolInterface {
 
 class modeTool extends baseToolInterface {
     name = () => "mode"
-    translate = () => "模式"
+    translate = () => "切换模式"
 
     init = () => {
         this.modes = [
@@ -401,7 +401,7 @@ class modeTool extends baseToolInterface {
 
 class tempThemeTool extends baseToolInterface {
     name = () => "theme"
-    translate = () => "临时主题"
+    translate = () => "临时更换主题"
 
     setThemeForever = theme => ClientCommand.setTheme(theme);
     setThemeTemp = theme => File.setTheme(theme);
@@ -427,7 +427,7 @@ class tempThemeTool extends baseToolInterface {
 
 class functionTool extends baseToolInterface {
     name = () => "func"
-    translate = () => "全部功能"
+    translate = () => "功能列表"
 
     search = async input => {
         const name = this.name();
