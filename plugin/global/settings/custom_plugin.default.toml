@@ -529,6 +529,21 @@ name = "快捷键中心"
 enable = true
 
 
+############### reopenClosedFiles ###############
+[reopenClosedFiles]
+# 右键菜单中展示的名称
+name = "打开上次退出时尚未关闭的标签页"
+# 是否启用此自定义插件（此插件仅在window_tab启用时生效）
+enable = true
+# 插件配置
+[reopenClosedFiles.config]
+# 打开Typora自动打开
+# 注意：只当双击typora.exe打开Typora时生效（打开特定文件时，自动打开上次退出时尚未关闭的标签页，明显不符合用户预期）
+auto_reopen_when_init = true
+# 快捷键
+hotkey = ""
+
+
 ############### autoTrailingWhiteSpace ###############
 # 此插件是为了满足Markdown换行语法，除非有特殊需求，否则不建议开启此插件
 # 参考：https://markdown.com.cn/basic-syntax/line-breaks.html

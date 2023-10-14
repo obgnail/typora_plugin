@@ -472,20 +472,20 @@ class windowTabBarPlugin extends global._basePlugin {
         return this.utils.existPath(filepath)
     }
 
-    saveTabs = () => {
+    saveTabs = filepath => {
         const dataset = this.tabUtil.tabs.map((tab, idx) => ({
             idx: idx,
             path: tab.path,
             active: idx === this.tabUtil.activeIdx,
             scrollTop: tab.scrollTop,
         }))
-        const filepath = this.getTabFile();
+        filepath = filepath || this.getTabFile();
         const str = JSON.stringify({"save_tabs": dataset}, null, "\t");
         this.utils.Package.Fs.writeFileSync(filepath, str);
     }
 
-    openSaveTabs = () => {
-        const filepath = this.getTabFile();
+    openSaveTabs = filepath => {
+        filepath = filepath || this.getTabFile();
         this.utils.Package.Fs.readFile(filepath, 'utf8', (error, data) => {
             if (error) {
                 window.alert(error);
