@@ -38,17 +38,18 @@
 | 28 | resize_image               | 调整图片显示大小                     |
 | 29 | export_enhance             | 导出 html 时避免图片丢失             |
 | 30 | go_top                     | 一键到文章顶部、底部               |
-| 31 | truncate_text              | 暂时隐藏内容，提高大文件渲染性能     |
-| 32 | markdown_lint              | markdown 格式规范检测                 |
-| 33 | plugin_updater             | 一键升级插件                         |
-| 34 | extract_range_to_new_file | 提取选区文字到新文件 |
-| 35 | full_path_copy | 复制标题路径 |
-| 36 | auto_trailing_white_space | 自动添加结尾空格 |
-| 37 | open_in_total_commander | 在 total commander 打开 |
-| 38  | mermaid_replace            | 替换 mermaid 组件              |
-| 38 | custom                     | 用户自定义命令（高级）               |
-| 40 | hotkey_hub                 | 快捷键注册中心（高级）               |
-| 41 | old_window_tab             | 标签页管理（已废弃）                 |
+| 31 | reopen_closed_files | 打开上次退出Typora时尚未关闭的标签页 |
+| 32 | truncate_text              | 暂时隐藏内容，提高大文件渲染性能     |
+| 33 | markdown_lint              | markdown 格式规范检测                 |
+| 34 | plugin_updater             | 一键升级插件                         |
+| 35 | extract_range_to_new_file | 提取选区文字到新文件 |
+| 36 | full_path_copy | 复制标题路径 |
+| 37 | auto_trailing_white_space | 自动添加结尾空格 |
+| 38 | open_in_total_commander | 在 total commander 打开 |
+| 39 | mermaid_replace            | 替换 mermaid 组件              |
+| 40 | custom                     | 用户自定义命令（高级）               |
+| 41 | hotkey_hub                 | 快捷键注册中心（高级）               |
+| 42 | old_window_tab             | 标签页管理（已废弃）                 |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -637,6 +638,14 @@ auto_pair_symbols = [
 ### go_top： 一键到顶
 
 在右下角添加一个一键到顶的按钮。
+
+
+
+### reopen_closed_files：打开上次退出Typora时尚未关闭的标签页
+
+自动 或者 通过快捷键打开上一次退出Typora时尚未关闭的标签页
+
+> 此插件仅在window_tab启用时生效
 
 
 

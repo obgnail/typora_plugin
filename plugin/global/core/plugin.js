@@ -52,6 +52,7 @@ class utils {
     //   otherFileOpened: 和fileOpened的区别：重新打开当前标签不会触发otherFileOpened，但是fileOpened会
     //   fileContentLoaded: 文件内容加载完毕之后(依赖于window_tab)
     //   fileEdited: 文件编辑后
+    //   beforeUnload: 退出Typora之前
 
     //   beforeToggleSourceMode: 进入源码模式之前
     //   beforeAddCodeBlock: 添加代码块之前
@@ -67,6 +68,7 @@ class utils {
         otherFileOpened: "otherFileOpened",
         fileContentLoaded: "fileContentLoaded",
         fileEdited: "fileEdited",
+        beforeUnload: "beforeUnload",
         beforeToggleSourceMode: "beforeToggleSourceMode",
         beforeAddCodeBlock: "beforeAddCodeBlock",
         afterAddCodeBlock: "afterAddCodeBlock",
@@ -1264,6 +1266,8 @@ class eventHub {
             null,
             () => this.publishEvent(this.utils.eventType.outlineUpdated)
         )
+
+        window.addEventListener("beforeunload", () => this.utils.publishEvent(this.utils.eventType.beforeUnload), true)
 
         new MutationObserver(mutationList => {
             for (const mutation of mutationList) {
