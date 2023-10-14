@@ -268,7 +268,7 @@ class RecentFileTool extends baseToolInterface {
         if (!File.isNode) return;
 
         const file = await JSBridge.invoke("setting.getRecentFiles");
-        const fileJson = JSON.parse(file || "{}");
+        const fileJson = (typeof file === "string") ? JSON.parse(file || "{}") : file;
         const files = fileJson["files"] || [];
         const folders = fileJson["folders"] || [];
         const result = [];

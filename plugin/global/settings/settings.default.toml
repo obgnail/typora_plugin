@@ -312,8 +312,9 @@ BACKSPACE_TO_HIDE = true
 #   6. "theme"：临时切换主题
 #   7. "func"：全部功能
 DEFAULT_TOOL = "func"
-# 用户输入的防抖时间（单位：ms）（用户输入完200ms后才执行）
-DEBOUNCE_INTERVAL = 200
+# 用户输入的防抖时间（单位：ms）（用户输入完60ms后才执行）
+# 为什么时间默认这么短？因为这种查询都是非常简单的，甚至大部分是直接从内存取的（当然，不建议30以下）
+DEBOUNCE_INTERVAL = 60
 # toolbar的在页面的20%位置出现
 TOOLBAR_TOP_PERCENT = 20
 # toolbar的宽度为页面的80%
