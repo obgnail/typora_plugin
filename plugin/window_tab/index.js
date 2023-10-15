@@ -152,7 +152,7 @@ class windowTabBarPlugin extends global._basePlugin {
         }, 200)
     }
 
-    showTabsIfNeed = hide => document.querySelector("#plugin-window-tab").style.display = (hide) ? "none" : "";
+    showTabsIfNeed = hide => document.querySelector("#plugin-window-tab").style.visibility = (hide) ? "hidden" : "initial";
 
     // 新窗口打开
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)

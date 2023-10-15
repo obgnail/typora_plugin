@@ -49,7 +49,10 @@ class toolbarPlugin extends global._basePlugin {
         this.entities.input.addEventListener("keydown", async ev => {
             switch (ev.key) {
                 case "Enter":
-                    const select = this.entities.result.querySelector(".plugin-toolbar-item.active");
+                    let select = this.entities.result.querySelector(".plugin-toolbar-item.active");
+                    if (!select && this.entities.result.childElementCount === 1) {
+                        select = this.entities.result.firstChild;
+                    }
                     if (select) {
                         this.run(select, ev);
                         this.hideWhenEnter && this.hide();
@@ -168,17 +171,17 @@ class baseToolInterface {
         if (input === "") return list;
 
         input = input.toLowerCase();
-        return list.filter(item => {
-            if (!itemFields) {
-                return item.toLowerCase().indexOf(input) !== -1
-            }
 
-            for (const field of itemFields) {
-                if (item[field].toLowerCase().indexOf(input) !== -1) {
-                    return true
+        const func = (!itemFields)
+            ? item => item.toLowerCase().indexOf(input) !== -1
+            : item => {
+                for (const field of itemFields) {
+                    if (item[field].toLowerCase().indexOf(input) !== -1) {
+                        return true
+                    }
                 }
             }
-        })
+        return list.filter(func)
     }
 }
 
@@ -319,6 +322,11 @@ class operationTool extends baseToolInterface {
                 showName: "复制文件路径",
                 fixedName: "copyPath",
                 callback: () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath())
+            },
+            {
+                showName: "偏好设置",
+                fixedName: "togglePreferencePanel",
+                callback: () => File.megaMenu.togglePreferencePanel()
             }
         ]
 
