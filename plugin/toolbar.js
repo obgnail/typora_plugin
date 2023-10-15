@@ -109,13 +109,36 @@ class toolbarPlugin extends global._basePlugin {
     }
 
     search = async ev => {
-        const result = await this.handleInput(this.entities.input);
+        const result = await this.handleInput();
         const ok = result && result["matches"] && result["tool"];
         this.entities.result.innerHTML = ok ? this.newItems(result).join("") : "";
         if (ev) {
             ev.preventDefault();
             ev.stopPropagation();
         }
+    }
+
+    newItems = result => {
+        const {tool, matches, input} = result;
+
+        const toolName = tool.name();
+        return matches.map(match => {
+            let showName = match;
+            let fixedName = match;
+            let meta = "";
+            if (typeof match === "object") {
+                showName = match["showName"];
+                fixedName = match["fixedName"];
+                meta = match["meta"];
+            }
+
+            let content = showName;
+            if (input[0]) {
+                input.forEach(part => content = content.replace(new RegExp(part, "gi"), "<b>$&</b>"));
+            }
+            const metaContent = (meta) ? `meta="${meta}"` : "";
+            return `<div class="plugin-toolbar-item" data="${fixedName}" tool="${toolName}" ${metaContent}>${content}</div>`
+        })
     }
 
     show = async () => {
@@ -133,22 +156,6 @@ class toolbarPlugin extends global._basePlugin {
         this.entities.toolbar.style.display = "none";
         this.entities.input.value = "";
         this.entities.result.innerHTML = "";
-    }
-
-    newItems = result => {
-        const tool = result.tool.name();
-        return result.matches.map(match => {
-            let {showName, fixedName, meta = ""} = match || {};
-            let content = showName;
-            if (result.input[0]) {
-                for (const input of result.input) {
-                    const regExp = new RegExp(input, "gi");
-                    content = content.replace(regExp, `<b>$&</b>`);
-                }
-            }
-            const metaContent = (meta) ? `meta="${meta}"` : "";
-            return `<div class="plugin-toolbar-item" data="${fixedName}" tool="${tool}" ${metaContent}>${content}</div>`
-        })
     }
 }
 
@@ -228,20 +235,6 @@ class toolController {
         }
     }
 
-    handleInput = async inputElement => {
-        const raw = inputElement.value;
-        let {tool, input} = this.dispatch(raw);
-        if (!tool) return
-
-        const inputList = input.split(" ");
-        const resultList = await Promise.all(inputList.map(tool.search));
-
-        const matches = this.intersect(resultList);
-        if (matches && matches.length) {
-            return {tool, input: inputList, matches}
-        }
-    }
-
     dispatch = raw => {
         raw = raw.trimLeft();
         for (const short of this.tools.keys()) {
@@ -253,6 +246,20 @@ class toolController {
             return {tool: this.tools.get(this.plugin.config.DEFAULT_TOOL), input: raw.trim()}
         }
         return {tool: null, input: ""}
+    }
+
+    handleInput = async () => {
+        const raw = this.plugin.entities.input.value;
+        let {tool, input} = this.dispatch(raw);
+        if (!tool) return
+
+        const inputList = input.split(" ");
+        const resultList = await Promise.all(inputList.map(tool.search));
+
+        const matches = this.intersect(resultList);
+        if (matches && matches.length) {
+            return {tool, input: inputList, matches}
+        }
     }
 }
 
