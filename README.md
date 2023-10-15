@@ -6,50 +6,50 @@
 
 目前支持的功能：
 
-| 序号 | 文件名                     | 功能                                 |
-| ---- | -------------------------- | ------------------------------------ |
-| 1    | window_tab                 | 标签页管理                           |
-| 2    | search_multi               | 全局多关键字搜索                     |
-| 3    | multi_highlighter          | 多关键字高亮                         |
-| 4    | collapse_paragraph         | 章节折叠                             |
-| 5    | md_padding                 | 中英文混排优化                       |
-| 6    | templater                  | 文件模板                             |
-| 7    | resource_operation         | 一键清除无用图片，生成报告           |
-| 8    | fence_enhance              | 一键复制代码，折叠代码               |
-| 9    | commander                  | 命令行环境                           |
-| 10   | mindmap                    | 根据文档大纲一键生成思维导图         |
-| 11   | toolbar                    | 多功能搜索栏                         |
-| 12  | right_click_menu           | 右键菜单统一管理、调用插件           |
-| 13   | markmap                    | 提供 markmap 组件支持                |
-| 14   | echarts                    | 提供 echarts 组件支持                |
-| 15   | chart                      | 提供 chartjs 组件支持                |
-| 16 | calendar | 提供 tui.calendar 组件支持 |
-| 17   | callouts                   | 提供 callouts 支持                   |
-| 18   | read_only                  | 只读模式                             |
-| 19   | blur                       | 模糊模式                             |
-| 20  | kanban                     | 看板                                 |
-| 21 | timeline                   | 时间线                               |
-| 22 | file_counter               | 显示目录下的文件数                   |
-| 23 | outline                    | 以表格、图片、代码块形式的大纲       |
-| 24 | auto_number                | 章节、表格、图片、代码块等自动编号   |
-| 25 | chinese_symbol_auto_pairer | 中文符号自动补全                     |
-| 26 | datatables                 | 表格增强（搜索、过滤、分页、排序等） |
-| 27 | resize_table               | 调整表格行高列宽                     |
-| 28 | resize_image               | 调整图片显示大小                     |
-| 29 | export_enhance             | 导出 html 时避免图片丢失             |
-| 30 | go_top                     | 一键到文章顶部、底部               |
-| 31 | reopen_closed_files | 打开上次退出Typora时尚未关闭的标签页 |
-| 32 | truncate_text              | 暂时隐藏内容，提高大文件渲染性能     |
-| 33 | markdown_lint              | markdown 格式规范检测                 |
-| 34 | plugin_updater             | 一键升级插件                         |
-| 35 | extract_range_to_new_file | 提取选区文字到新文件 |
-| 36 | full_path_copy | 复制标题路径 |
-| 37 | auto_trailing_white_space | 自动添加结尾空格 |
-| 38 | open_in_total_commander | 在 total commander 打开 |
-| 39 | mermaid_replace            | 替换 mermaid 组件              |
-| 40 | custom                     | 用户自定义命令（高级）               |
-| 41 | hotkey_hub                 | 快捷键注册中心（高级）               |
-| 42 | old_window_tab             | 标签页管理（已废弃）                 |
+| 序号 | 文件名                     | 功能                                   |
+| ---- | -------------------------- | -------------------------------------- |
+| 1    | window_tab                 | 标签页管理                             |
+| 2    | search_multi               | 全局多关键字搜索                       |
+| 3    | multi_highlighter          | 多关键字高亮                           |
+| 4    | collapse_paragraph         | 章节折叠                               |
+| 5    | md_padding                 | 中英文混排优化                         |
+| 6    | templater                  | 文件模板                               |
+| 7    | resource_operation         | 一键清除无用图片，生成报告             |
+| 8    | fence_enhance              | 一键复制代码，折叠代码                 |
+| 9    | commander                  | 命令行环境                             |
+| 10   | mindmap                    | 根据文档大纲一键生成思维导图           |
+| 11   | toolbar                    | 多功能搜索栏                           |
+| 12   | right_click_menu           | 右键菜单统一管理、调用插件             |
+| 13   | markmap                    | 提供 markmap 组件支持                  |
+| 14   | echarts                    | 提供 echarts 组件支持                  |
+| 15   | chart                      | 提供 chartjs 组件支持                  |
+| 16   | calendar                   | 提供 tui.calendar 组件支持             |
+| 17   | callouts                   | 提供 callouts 支持                     |
+| 18   | read_only                  | 只读模式                               |
+| 19   | blur                       | 模糊模式                               |
+| 20   | kanban                     | 看板                                   |
+| 21   | timeline                   | 时间线                                 |
+| 22   | file_counter               | 显示目录下的文件数                     |
+| 23   | outline                    | 以表格、图片、代码块形式的大纲         |
+| 24   | auto_number                | 章节、表格、图片、代码块等自动编号     |
+| 25   | chinese_symbol_auto_pairer | 中文符号自动补全                       |
+| 26   | datatables                 | 表格增强（搜索、过滤、分页、排序等）   |
+| 27   | resize_table               | 调整表格行高列宽                       |
+| 28   | resize_image               | 调整图片显示大小                       |
+| 29   | export_enhance             | 导出 html 时避免图片丢失               |
+| 30   | go_top                     | 一键到文章顶部、底部                   |
+| 31   | reopen_closed_files        | 打开上次退出 Typora 时尚未关闭的标签页 |
+| 32   | truncate_text              | 暂时隐藏内容，提高大文件渲染性能       |
+| 33   | markdown_lint              | markdown 格式规范检测                  |
+| 34   | plugin_updater             | 一键升级插件                           |
+| 35   | extract_range_to_new_file  | 提取选区文字到新文件                   |
+| 36   | full_path_copy             | 复制标题路径                           |
+| 37   | auto_trailing_white_space  | 自动添加结尾空格                       |
+| 38   | open_in_total_commander    | 在 total commander 打开                |
+| 39   | mermaid_replace            | 替换 mermaid 组件                      |
+| 40   | custom                     | 用户自定义命令（高级）                 |
+| 41   | hotkey_hub                 | 快捷键注册中心（高级）                 |
+| 42   | old_window_tab             | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -396,8 +396,20 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 - `ops`：常用操作
 - `mode`：切换文件模式
 - `theme`：临时切换主题
+- `func`：功能列表
+- `all`：混合查找（所有项目都混在一起查找）
 
-> 键入内容 = 搜索工具名称 + 空格 + 搜索内容（eg：`ops 资源管理器打开`）
+键入内容说明：
+
+- 键入内容 = 搜索工具名称 + 空格 + 搜索内容
+- 支持 `交集查询`、`差集查询`，并且可以随意组合（类似于 google 的正负向查询）
+
+举例：
+
+- `his node learn`：查找最近打开的文件，要求文件标题【包含 node 和 learn 两个关键字】
+- `plu multi -search`：查找插件，要求插件名【包含 multi 关键字，但是不包含 search 关键字】
+- `tab -messing`：查找所有打开的标签页，要求标签页名称【不包含 messing 关键字】
+- `his close -win -mark 标签`：查找最近打开的文件，要求文件标题【包含 close、标签，不包含 win、mark】
 
 ![toolbar](assets/toolbar.gif)
 
@@ -641,11 +653,11 @@ auto_pair_symbols = [
 
 
 
-### reopen_closed_files：打开上次退出Typora时尚未关闭的标签页
+### reopen_closed_files：打开上次退出 Typora 时尚未关闭的标签页
 
-自动 或者 通过快捷键打开上一次退出Typora时尚未关闭的标签页
+自动 或者 通过快捷键打开上一次退出 Typora 时尚未关闭的标签页
 
-> 此插件仅在window_tab启用时生效
+> 此插件仅在 window_tab 启用时生效
 
 
 

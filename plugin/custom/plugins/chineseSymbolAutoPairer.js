@@ -1,4 +1,12 @@
 class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
+    beforeProcess = () => {
+        // 旧版本的Typora是延迟设置noPairingMatch的，导致beforeProcess失效
+        // 所以，为了兼容旧版本，后续还有再次判断此配置
+        if (File.option.noPairingMatch) {
+            return this.utils.stopLoadPluginError
+        }
+    }
+
     selector = () => this.utils.disableForeverSelector
 
     init = () => {
@@ -16,6 +24,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
 
         if (this.config.auto_delete_pair) {
             write.addEventListener("keydown", ev => {
+                if (File.option.noPairingMatch) return
                 if (ev.key === "Backspace" && !ev.shiftKey && !ev.altKey && !this.utils.metaKeyPressed(ev)) {
                     this.deletePair();
                 }
@@ -23,6 +32,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         }
 
         write.addEventListener("input", this.utils.throttle(ev => {
+            if (File.option.noPairingMatch) return
             const inputSymbol = ev.data;
             const pairSymbol = this.pairMap.get(inputSymbol);
             if (pairSymbol) {

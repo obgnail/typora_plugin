@@ -310,8 +310,16 @@ BACKSPACE_TO_HIDE = true
 #   4. "ops"：常用操作
 #   5. "mode"：切换文件模式
 #   6. "theme"：临时切换主题
-#   7. "func"：全部功能
+#   7. "func"：功能列表
+#   8. "all": 混合查找（所有项目都混在一起查找）
 DEFAULT_TOOL = "func"
+# 是否使用负向查询（类似于google）
+# 比如：【plu multi -search】
+#   - 若为false：查找【包含multi关键字，同时包含-search关键字】的插件
+#   - 若为true：查找【包含multi关键字，但是不包含search关键字】的插件
+# 负向查询和正向查询可以随意组合：
+#   - 【his close -win -mark 标签】：查找最近打开的文件，要求文件标题【包含close、标签，不包含win、mark】
+USE_NEGATIVE_SEARCH = true
 # 用户输入的防抖时间（单位：ms）（用户输入完60ms后才执行）
 # 为什么时间默认这么短？因为这种查询都是非常简单的，甚至大部分是直接从内存取的（当然，不建议30以下）
 DEBOUNCE_INTERVAL = 60

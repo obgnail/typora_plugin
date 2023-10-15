@@ -25,12 +25,12 @@ class markdownLintPlugin extends BaseCustomPlugin {
         }
         this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true);
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.renewLintResult);
-        this.utils.addEventListener(this.utils.eventType.fileEdited, async () => {
+        this.utils.addEventListener(this.utils.eventType.fileEdited, this.utils.debounce(async () => {
             const content = await this.renewLintResult();
             if (this.entities.modal.style.display !== "none") {
                 await this.updateModal(content);
             }
-        });
+        }, Math.min(0, this.config.debounce_interval - 500)));
     }
 
     callback = async anchorNode => {
@@ -56,6 +56,9 @@ class markdownLintPlugin extends BaseCustomPlugin {
     renewLintResult = async () => {
         this.lazyLoad();
         this.initDisableRules();
+        // if (this.utils.getFilePath()) {
+        //     await File.saveUseNode();
+        // }
         const fileContent = await File.getContent();
         const {content} = this.markdownlint.sync({strings: {content: fileContent}, config: this.disableRules});
         content.sort((a, b) => a.lineNumber - b.lineNumber);

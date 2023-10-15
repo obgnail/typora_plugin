@@ -445,6 +445,7 @@ date: {{date}} {{weekday}}
 # 右键菜单中展示的名称
 name = "中文符号自动补全"
 # 是否启用此自定义插件
+# 注意：此插件受Typora本身配置【匹配括号和引号】的影响，如果此配置为false，那么此插件自动禁用
 enable = true
 # 插件配置
 [chineseSymbolAutoPairer.config]
@@ -518,6 +519,9 @@ button_height = "12px"
 pass_color = "#499c54"
 # lint未通过时方块的颜色
 error_color = "#be9117"
+# 在编辑后多长时间重新检测一次（单位：ms）
+# 最低为500，若<500，则自动置为500
+debounce_interval = 1000
 
 
 ############### hotkeyHub ###############

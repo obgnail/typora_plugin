@@ -15,7 +15,9 @@ class goTopPlugin extends global._basePlugin {
     ]
 
     process = () => {
-        document.getElementById("plugin-go-top").addEventListener("click", ev => {
+        const buttons = document.getElementById("plugin-go-top");
+        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => buttons.style.visibility = (hide) ? "hidden" : "initial");
+        buttons.addEventListener("click", ev => {
             const target = ev.target.closest(".action-item");
             if (target) {
                 const action = target.getAttribute("action");

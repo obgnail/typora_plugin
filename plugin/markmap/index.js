@@ -227,9 +227,11 @@ class tocMarkmap {
         })
 
         if (this.config.USE_BUTTON) {
-            document.querySelector(".plugin-markmap-item").addEventListener("click", () => {
+            const button = document.querySelector(".plugin-markmap-item");
+            button.addEventListener("click", () => {
                 (this.entities.modal.style.display === "") ? this.drawToc() : this.onButtonClick("close");
             })
+            this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => button.style.visibility = (hide) ? "hidden" : "initial");
         }
     }
 
