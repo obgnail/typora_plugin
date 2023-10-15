@@ -219,6 +219,7 @@ class toolController {
 
     setAnchorNode = () => this.anchorNode = this.utils.getAnchorNode();
 
+    // 交集
     intersect = arrays => {
         if (!Array.isArray(arrays) || arrays.length === 0 || arrays.some(ele => !ele)) return [];
 
@@ -232,6 +233,71 @@ class toolController {
                 && item.fixedName === ele.fixedName
                 && item.meta === ele.meta
             ))))
+        }
+    }
+
+    // 并集
+    union = arrays => {
+        if (!Array.isArray(arrays) || arrays.length === 0) return [];
+
+        const set = new Set();
+        const first = arrays[0][0];
+        const isObj = first && typeof first === "object";
+        for (const arr of arrays) {
+            for (const ele of arr) {
+                set.add(isObj ? JSON.stringify(ele) : ele);
+            }
+        }
+        return Array.from(set).map(str => (isObj ? JSON.parse(str) : str));
+    }
+
+    // 差集
+    difference = (array1, array2) => {
+        if (!Array.isArray(array2) || array2.length === 0) return array1
+
+        const set = new Set(array2.map(val => JSON.stringify(val)));
+        return array1.filter(val => !set.has(JSON.stringify(val)));
+    }
+
+    kind = input => {
+        const all = input.split(" ").filter(Boolean);
+        const positive = [];
+        const negative = [];
+        all.forEach(ele => {
+            if (ele.startsWith("-")) {
+                const value = ele.slice(1);
+                value && negative.push(value);
+            } else {
+                positive.push(ele);
+            }
+        })
+        positive.length === 0 && positive.push("");
+        all.length === 0 && all.push("");
+        return {all, positive, negative}
+    }
+
+    searchWithNeg = async (tool, positive, negative) => {
+        const posList = await Promise.all(positive.map(tool.search));
+        const negList = await Promise.all(negative.map(tool.search));
+
+        const posResult = this.intersect(posList);
+        const negResult = this.union(negList);
+        const matches = this.difference(posResult, negResult);
+        return {inputList: positive, matches}
+    }
+
+    searchWithoutNeg = async (tool, all) => {
+        const resultList = await Promise.all(all.map(tool.search));
+        const matches = this.intersect(resultList);
+        return {inputList: all, matches}
+    }
+
+    search = async (tool, input) => {
+        const {all, positive, negative} = this.kind(input);
+        if (this.plugin.config.USE_NEGATIVE_SEARCH) {
+            return this.searchWithNeg(tool, positive, negative);
+        } else {
+            return this.searchWithoutNeg(tool, all);
         }
     }
 
@@ -253,10 +319,7 @@ class toolController {
         let {tool, input} = this.dispatch(raw);
         if (!tool) return
 
-        const inputList = input.split(" ");
-        const resultList = await Promise.all(inputList.map(tool.search));
-
-        const matches = this.intersect(resultList);
+        const {inputList, matches} = await this.search(tool, input);
         if (matches && matches.length) {
             return {tool, input: inputList, matches}
         }
