@@ -4,11 +4,12 @@ class toolbarPlugin extends global._basePlugin {
         [
             tabTool,
             pluginTool,
-            RecentFileTool,
+            recentFileTool,
             operationTool,
             modeTool,
             tempThemeTool,
             functionTool,
+            mixTool,
         ].forEach(tool => this.registerBarTool(new tool()));
     }
 
@@ -161,7 +162,7 @@ class baseToolInterface {
     init = () => {
     }
     // 要么返回 []string
-    // 要么返回 [{ showName:"", fixedName:"", mata:"" }]
+    // 要么返回 [{ showName:"", fixedName:"", meta:"" }]
     search = async input => {
     }
     callback = (fixedName, meta) => {
@@ -182,6 +183,58 @@ class baseToolInterface {
                 }
             }
         return list.filter(func)
+    }
+}
+
+class toolController {
+    constructor(plugin) {
+        this.plugin = plugin;
+        this.utils = plugin.utils;
+        this.tools = new Map();  // map[short]tool
+        this.anchorNode = null;
+    }
+
+    register = tool => {
+        tool.controller = this;
+        tool.utils = this.utils;
+        tool.init();
+
+        const short = tool.name();
+        this.tools.set(short, tool);
+    }
+
+    unregister = name => this.tools.delete(name);
+
+    callback = (toolName, fixedName, meta) => {
+        const tool = this.tools.get(toolName);
+        if (!tool) return;
+
+        tool.callback(fixedName, meta);
+    }
+
+    setAnchorNode = () => this.anchorNode = this.utils.getAnchorNode();
+
+    handleInput = async inputElement => {
+        const raw = inputElement.value;
+        let {tool, input} = this.dispatch(raw);
+        if (tool) {
+            const matches = await tool.search(input);
+            if (matches && matches.length) {
+                return {tool, input, matches}
+            }
+        }
+    }
+
+    dispatch = raw => {
+        for (const short of this.tools.keys()) {
+            if (raw.startsWith(short + " ")) {
+                return {tool: this.tools.get(short), input: raw.slice(short.length + 1).trim()}
+            }
+        }
+        if (this.plugin.config.DEFAULT_TOOL) {
+            return {tool: this.tools.get(this.plugin.config.DEFAULT_TOOL), input: raw.trim()}
+        }
+        return {tool: null, input: ""}
     }
 }
 
@@ -263,7 +316,7 @@ class pluginTool extends baseToolInterface {
     }
 }
 
-class RecentFileTool extends baseToolInterface {
+class recentFileTool extends baseToolInterface {
     name = () => "his"
     translate = () => "打开最近文件"
 
@@ -457,55 +510,40 @@ class functionTool extends baseToolInterface {
     }
 }
 
-class toolController {
-    constructor(plugin) {
-        this.plugin = plugin;
-        this.utils = plugin.utils;
-        this.tools = new Map();  // map[short]tool
-        this.anchorNode = null;
+class mixTool extends baseToolInterface {
+    name = () => "all"
+    translate = () => "混合查找"
+
+    search = async input => {
+        const name = this.name();
+        const all = await Promise.all(
+            Array.from(this.controller.tools.entries())
+                .filter(tool => tool[0] !== name)
+                .map(async tool => {
+                    const toolName = tool[0];
+                    const toolResult = await tool[1].search(input);
+                    if (!toolResult || !toolResult.length) return
+                    if (typeof toolResult[0] === "string") {
+                        return toolResult.map(ele => ({showName: ele, fixedName: ele, meta: `${toolName}@`}))
+                    } else {
+                        return toolResult.map(ele => ({
+                            showName: ele.showName, fixedName: ele.fixedName, meta: `${toolName}@${ele.meta || ""}`
+                        }))
+                    }
+                })
+        )
+        const list = all.filter(ele => !!ele);
+        return [].concat(...list)
     }
 
-    register = tool => {
-        tool.controller = this;
-        tool.utils = this.utils;
-        tool.init();
-
-        const short = tool.name();
-        this.tools.set(short, tool);
-    }
-
-    unregister = name => this.tools.delete(name);
-
-    callback = (toolName, fixedName, meta) => {
-        const tool = this.tools.get(toolName);
-        if (!tool) return;
-
-        tool.callback(fixedName, meta);
-    }
-
-    setAnchorNode = () => this.anchorNode = this.utils.getAnchorNode();
-
-    handleInput = async inputElement => {
-        const raw = inputElement.value;
-        let {tool, input} = this.dispatch(raw);
-        if (tool) {
-            const matches = await tool.search(input);
-            if (matches && matches.length) {
-                return {tool, input, matches}
-            }
+    callback = (fixedName, meta) => {
+        const at = meta.indexOf("@");
+        const tool = meta.substring(0, at);
+        const realMeta = meta.substring(at + 1);
+        const t = this.controller.tools.get(tool);
+        if (t) {
+            t.callback(fixedName, realMeta);
         }
-    }
-
-    dispatch = raw => {
-        for (const short of this.tools.keys()) {
-            if (raw.startsWith(short + " ")) {
-                return {tool: this.tools.get(short), input: raw.slice(short.length + 1).trim()}
-            }
-        }
-        if (this.plugin.config.DEFAULT_TOOL) {
-            return {tool: this.tools.get(this.plugin.config.DEFAULT_TOOL), input: raw.trim()}
-        }
-        return {tool: null, input: ""}
     }
 }
 
