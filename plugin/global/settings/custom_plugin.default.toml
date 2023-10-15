@@ -519,6 +519,9 @@ button_height = "12px"
 pass_color = "#499c54"
 # lint未通过时方块的颜色
 error_color = "#be9117"
+# 在编辑后多长时间重新检测一次（单位：ms）
+# 最低为500，若<500，则自动置为500
+debounce_interval = 1000
 
 
 ############### hotkeyHub ###############

@@ -30,7 +30,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             if (this.entities.modal.style.display !== "none") {
                 await this.updateModal(content);
             }
-        }, 500));
+        }, Math.min(0, this.config.debounce_interval - 500)));
     }
 
     callback = async anchorNode => {
