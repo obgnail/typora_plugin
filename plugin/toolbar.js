@@ -137,17 +137,15 @@ class toolbarPlugin extends global._basePlugin {
 
     newItems = result => {
         const tool = result.tool.name();
-        const regExp = new RegExp(result.input, "gi");
         return result.matches.map(match => {
-            let showName = match;
-            let fixedName = match;
-            let meta = "";
-            if (typeof match === "object") {
-                showName = match["showName"];
-                fixedName = match["fixedName"];
-                meta = match["meta"];
+            let {showName, fixedName, meta = ""} = match || {};
+            let content = showName;
+            if (result.input[0]) {
+                for (const input of result.input) {
+                    const regExp = new RegExp(input, "gi");
+                    content = content.replace(regExp, `<b>$&</b>`);
+                }
             }
-            const content = (result.input) ? showName.replace(regExp, `<b>$&</b>`) : showName;
             const metaContent = (meta) ? `meta="${meta}"` : "";
             return `<div class="plugin-toolbar-item" data="${fixedName}" tool="${tool}" ${metaContent}>${content}</div>`
         })
@@ -214,18 +212,38 @@ class toolController {
 
     setAnchorNode = () => this.anchorNode = this.utils.getAnchorNode();
 
+    intersect = arrays => {
+        if (!Array.isArray(arrays) || arrays.length === 0 || arrays.some(ele => !ele)) return [];
+
+        if (arrays.length === 1) return arrays[0]
+
+        if (typeof arrays[0][0] === "string") {
+            return arrays[0].filter(ele => arrays.every(array => array.includes(ele)));
+        } else {
+            return arrays[0].filter(ele => arrays.every(array => array.some(item => (
+                item.showName === ele.showName
+                && item.fixedName === ele.fixedName
+                && item.meta === ele.meta
+            ))))
+        }
+    }
+
     handleInput = async inputElement => {
         const raw = inputElement.value;
         let {tool, input} = this.dispatch(raw);
-        if (tool) {
-            const matches = await tool.search(input);
-            if (matches && matches.length) {
-                return {tool, input, matches}
-            }
+        if (!tool) return
+
+        const inputList = input.split(" ");
+        const resultList = await Promise.all(inputList.map(tool.search));
+
+        const matches = this.intersect(resultList);
+        if (matches && matches.length) {
+            return {tool, input: inputList, matches}
         }
     }
 
     dispatch = raw => {
+        raw = raw.trimLeft();
         for (const short of this.tools.keys()) {
             if (raw.startsWith(short + " ")) {
                 return {tool: this.tools.get(short), input: raw.slice(short.length + 1).trim()}
