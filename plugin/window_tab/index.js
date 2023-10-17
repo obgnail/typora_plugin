@@ -85,6 +85,15 @@ class windowTabBarPlugin extends global._basePlugin {
             })
         }
 
+        if (this.config.MIDDLE_CLICK_TO_CLOSE) {
+            this.entities.tabBar.addEventListener("mousedown", ev => {
+                if (ev.button === 1) {
+                    const tabContainer = ev.target.closest(".tab-container");
+                    tabContainer && tabContainer.querySelector(".close-button").click();
+                }
+            })
+        }
+
         this.entities.content.addEventListener("scroll", () => {
             if (this.tabUtil.tabs[this.tabUtil.activeIdx]) {
                 this.tabUtil.tabs[this.tabUtil.activeIdx].scrollTop = this.entities.content.scrollTop;

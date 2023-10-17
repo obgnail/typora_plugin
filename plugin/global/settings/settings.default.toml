@@ -47,6 +47,8 @@ SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
 SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
 # 当鼠标位于标签页时，可以使用ctrl+wheel切换标签页
 CTRL_WHEEL_TO_SCROLL = true
+# 当鼠标位于标签页时，可以点击鼠标中键关闭标签页
+MIDDLE_CLICK_TO_CLOSE = true
 # typora1.1版本以后，支持使用锚点跳转到本地文件，是否拦截处理（从新建窗口改成新建标签页）
 INTERCEPT_INTERNAL_AND_LOCAL_LINKS = true
 

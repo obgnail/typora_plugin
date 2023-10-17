@@ -257,6 +257,13 @@ class utils {
 
     static withMeta = func => func(this.meta)
 
+    // Repo: https://github.com/jimp-dev/jimp
+    // after loadJimp(), you can use globalThis.Jimp
+    static loadJimp = async () => {
+        const lib = (File.isNode ? "./lib.asar" : "./lib");
+        await $.getScript(lib + "/jimp/browser/lib/jimp.min.js")
+    }
+
 
     ////////////////////////////// 事件 //////////////////////////////
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
@@ -365,6 +372,26 @@ class utils {
 
 
     ////////////////////////////// 业务文件操作 //////////////////////////////
+    // Repo: https://github.com/microsoft/vscode-ripgrep
+    // Note: ripgrep built in Typora, is written in rust, so if the search folder is very large, CPU may skyrocket during queries
+    // Eg:
+    //   this.utils.ripgrep(
+    //       ["--max-filesize", "2M", "-g", "*.md", "XXX"],
+    //       data => console.log(data),
+    //       data => console.error(data),
+    //       code => console.log("finish code:", code),
+    //   );
+    static ripgrep = (args, onData, onErr, onClose) => {
+        const rgPath = reqnode("vscode-ripgrep").rgPath.replace("node_modules.asar", "node_modules");
+        const options = {cwd: File.getMountFolder(), stdio: ["ignore", "pipe", "pipe"]};
+        const child = this.Package.ChildProcess.spawn(rgPath, args, options);
+        child.stdout.setEncoding("utf8");
+        child.stderr.setEncoding("utf8");
+        child.stdout.on('data', onData);
+        child.stderr.on("data", onErr);
+        child.on('close', onClose);
+    }
+
     static readSetting = (defaultSetting, userSetting) => {
         let result = null;
         if (defaultSetting && this.existInPluginPath(defaultSetting)) {
