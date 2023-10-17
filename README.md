@@ -32,24 +32,25 @@
 | 22   | file_counter               | 显示目录下的文件数                     |
 | 23   | outline                    | 以表格、图片、代码块形式的大纲         |
 | 24   | auto_number                | 章节、表格、图片、代码块等自动编号     |
-| 25   | chinese_symbol_auto_pairer | 中文符号自动补全                       |
-| 26   | datatables                 | 表格增强（搜索、过滤、分页、排序等）   |
-| 27   | resize_table               | 调整表格行高列宽                       |
-| 28   | resize_image               | 调整图片显示大小                       |
-| 29   | export_enhance             | 导出 html 时避免图片丢失               |
-| 30   | go_top                     | 一键到文章顶部、底部                   |
-| 31   | reopen_closed_files        | 打开上次退出 Typora 时尚未关闭的标签页 |
-| 32   | truncate_text              | 暂时隐藏内容，提高大文件渲染性能       |
-| 33   | markdown_lint              | markdown 格式规范检测                  |
-| 34   | plugin_updater             | 一键升级插件                           |
-| 35   | extract_range_to_new_file  | 提取选区文字到新文件                   |
-| 36   | full_path_copy             | 复制标题路径                           |
-| 37   | auto_trailing_white_space  | 自动添加结尾空格                       |
-| 38   | open_in_total_commander    | 在 total commander 打开                |
-| 39   | mermaid_replace            | 替换 mermaid 组件                      |
-| 40   | custom                     | 用户自定义命令（高级）                 |
-| 41   | hotkey_hub                 | 快捷键注册中心（高级）                 |
-| 42   | old_window_tab             | 标签页管理（已废弃）                   |
+| 25   | image_reviewer             | 图片查看器                             |
+| 26   | chinese_symbol_auto_pairer | 中文符号自动补全                       |
+| 27   | datatables                 | 表格增强（搜索、过滤、分页、排序等）   |
+| 28   | resize_table               | 调整表格行高列宽                       |
+| 29   | resize_image               | 调整图片显示大小                       |
+| 30   | export_enhance             | 导出 html 时避免图片丢失               |
+| 31   | go_top                     | 一键到文章顶部、底部                   |
+| 32   | reopen_closed_files        | 打开上次退出 Typora 时尚未关闭的标签页 |
+| 33   | truncate_text              | 暂时隐藏内容，提高大文件渲染性能       |
+| 34   | markdown_lint              | markdown 格式规范检测                  |
+| 35   | plugin_updater             | 一键升级插件                           |
+| 36   | extract_range_to_new_file  | 提取选区文字到新文件                   |
+| 37   | full_path_copy             | 复制标题路径                           |
+| 38   | auto_trailing_white_space  | 自动添加结尾空格                       |
+| 39   | open_in_total_commander    | 在 total commander 打开                |
+| 40   | mermaid_replace            | 替换 mermaid 组件                      |
+| 41   | custom                     | 用户自定义命令（高级）                 |
+| 42   | hotkey_hub                 | 快捷键注册中心（高级）                 |
+| 43   | old_window_tab             | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -584,6 +585,58 @@ icon = "\\f040"
 > 和其他使用 Theme CSS 的实现方式不同，此插件通过修改内置函数，完美解决导出 PDF 后侧边栏没有编号的问题。:)
 
 > 根据 [Markdown 最佳实践](https://learn.microsoft.com/en-us/powershell/scripting/community/contributing/general-markdown?view=powershell-7.3)，一篇文档应该 **有且仅有** 一个 h1，故此插件从 h2 开始编号。
+
+
+
+### image_reviewer：图片查看器
+
+一站式图片查看，并且提供简单图片编辑。
+
+使用方式：
+
+- 方式一：点击右下角【查看图片】按钮
+- 方式二：右键菜单 -> 常用插件 ->  自定义插件 -> 图片查看器
+
+![image-reviewer](./assets/image-reviewer.png)
+
+目前支持的简单图片编辑：
+
+- dummy: 无功能
+ - close: 关闭
+ - nextImage: 下张图
+- previousImage: 上张图
+- zoomOut: 放大图片
+- zoomIn: 缩小图片
+- rotateLeft: 图片向左旋转
+- rotateRight: 图片向右旋转
+- hFlip: 水平翻转图片
+- vFlip: 垂直翻转图片
+- incHSkew: 图片增大水平倾斜
+- decHSkew: 图片减小水平倾斜
+- incVSkew: 图片增大垂直倾斜
+- decVSkew: 图片减小垂直倾斜
+
+并且可以使用【鼠标按键】【鼠标滚轮】 配合 shift、ctrl、alt 按键绑定上述功能：
+
+```toml
+# 鼠标点击图片绑定的功能（三项分别为左键、中键、右键）
+mousedown_function = ["nextImage", "close", "previousImage"]
+# ctrl+鼠标图片时，绑定的功能
+ctrl_mousedown_function = ["hFlip", "dummy", "vFlip"]
+# shift+鼠标图片时，绑定的功能
+shift_mousedown_function = ["dummy", "dummy", "dummy"]
+# alt+鼠标图片时，绑定的功能
+alt_mousedown_function = ["dummy", "dummy", "dummy"]
+
+# 当鼠标位于图片时，上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
+wheel_function = ["zoomOut", "zoomIn"]
+# 当鼠标位于图片时，ctrl+上下滚动绑定的功能
+ctrl_wheel_function = ["rotateRight", "rotateLeft"]
+# 当鼠标位于图片时，shift+上下滚动绑定的功能
+shift_wheel_function = ["incHSkew", "decHSkew"]
+# 当鼠标位于图片时，alt+上下滚动绑定的功能
+alt_wheel_function = ["incVSkew", "decVSkew"]
+```
 
 
 

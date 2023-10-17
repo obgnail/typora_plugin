@@ -495,6 +495,61 @@ auto_open = true
 auto_use_datetable = true
 
 
+############### imageReviewer ###############
+[imageReviewer]
+# 右键菜单中展示的名称
+name = "图片查看器"
+# 是否启用此自定义插件
+enable = true
+# 插件配置
+[imageReviewer.config]
+# 快捷键
+hotkey = ""
+# 在右下角添加一个快捷按钮
+use_button = true
+# 缩放的比率
+zoom_scale = 0.1
+# 旋转的角度
+totate_scale = 10
+# 倾斜的角度
+skew_scale = 1
+# 遮罩呈不透明度
+mask_background_opacity = 0.6
+
+# 目前支持以下功能：
+#   - dummy: 无功能
+#   - close: 关闭
+#   - nextImage: 下张图
+#   - previousImage: 上张图
+#   - zoomOut: 放大图片
+#   - zoomIn: 缩小图片
+#   - rotateLeft: 图片向左旋转
+#   - rotateRight: 图片向右旋转
+#   - hFlip: 水平翻转图片
+#   - vFlip: 垂直翻转图片
+#   - incHSkew: 图片增大水平倾斜
+#   - decHSkew: 图片减小水平倾斜
+#   - incVSkew: 图片增大垂直倾斜
+#   - decVSkew: 图片减小垂直倾斜
+# 鼠标点击图片绑定的功能（三项分别为左键、中键、右键）
+mousedown_function = ["nextImage", "close", "previousImage"]
+# ctrl+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
+ctrl_mousedown_function = ["hFlip", "dummy", "vFlip"]
+# shift+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
+shift_mousedown_function = ["dummy", "dummy", "dummy"]
+# alt+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
+alt_mousedown_function = ["dummy", "dummy", "dummy"]
+
+# 当鼠标位于图片时，上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
+wheel_function = ["zoomOut", "zoomIn"]
+# 当鼠标位于图片时，ctrl+上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
+ctrl_wheel_function = ["rotateRight", "rotateLeft"]
+# 当鼠标位于图片时，shift+上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
+shift_wheel_function = ["incHSkew", "decHSkew"]
+# 当鼠标位于图片时，alt+上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
+alt_wheel_function = ["incVSkew", "decVSkew"]
+
+
 ############### markdownLint ###############
 [markdownLint]
 # 右键菜单中展示的名称
