@@ -27,13 +27,6 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        if (this.config.use_button) {
-            this.utils.registerQuickButton(
-                "image-reviewer", [1, 1], "查看图片", "fa fa-image",
-                {fontSize: "17px"}, this.callback
-            )
-        }
-
         this.entities = {
             reviewer: document.getElementById("plugin-image-reviewer"),
             mask: document.querySelector("#plugin-image-reviewer .mask"),
@@ -42,8 +35,15 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             close: document.querySelector("#plugin-image-reviewer .close-review")
         }
 
-        this.entities.mask.addEventListener("click", this.callback);
+        if (this.config.use_button) {
+            this.utils.registerQuickButton("image-reviewer", [1, 1], "查看图片", "fa fa-image", {fontSize: "17px"}, this.callback)
+        }
+
         this.entities.close.addEventListener("click", this.callback);
+
+        if (this.config.click_mask_to_exit) {
+            this.entities.mask.addEventListener("click", this.callback);
+        }
 
         const that = this;
         $("#plugin-image-reviewer .review-item").on("click", function () {
