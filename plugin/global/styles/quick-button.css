@@ -1,0 +1,35 @@
+#plugin-quick-button {
+    position: fixed;
+    display: grid;
+    grid-row-gap: 10px;
+    grid-column-gap: 10px;
+    grid-template-columns: ${gridTemplateColumns};
+    grid-template-rows: ${gridTemplateRows};
+    right: 30px;
+    bottom: 50px;
+    z-index: 9998;
+    font-size: 28px;
+    text-align: center;
+    color: var(--active-file-border-color, black);
+}
+
+#plugin-quick-button .action-item {
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    box-shadow: rgba(0, 0, 0, 0.07) 0 0 10px;
+    border-radius: 4px;
+}
+
+#plugin-quick-button .action-item:hover {
+    background-color: var(--item-hover-bg-color, black);
+}
+
+#plugin-quick-button .unused {
+    visibility: hidden;
+}
+
+#plugin-quick-button .action-item i {
+    display: block;
+    line-height: 35px;
+}

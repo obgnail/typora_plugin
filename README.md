@@ -253,9 +253,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 中英文混排时，中文与英文之间、中文与数字之间添加空格。
 
-快捷键：ctrl+shift+K、ctrl+shift+B
-
-> 新版本 Typora 的 ctrl+shift+K 快捷键被占用了。故提供两个快捷键，也可以在右键菜单中使用。
+快捷键：ctrl+shift+B
 
 ![md_padding](assets/md_padding.gif)
 

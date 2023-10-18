@@ -28,6 +28,7 @@ class utils {
     //   9. style templater
     //   10. html templater
     //   11. modal
+    //   12. quick button
 
     // 动态注册、动态注销hotkey
     // 注意: 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
@@ -192,13 +193,25 @@ class utils {
     static appendElements = (parent, template) => global._htmlTemplater.appendElements(parent, template)
     static getElementCreator = () => global._htmlTemplater.creator()
 
-
     // 动态弹出自定义模态框（及刻弹出，因此无需注册）
     //   1. modal: { title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
     //   2. callback(components) => {}: 当用户点击【确认】后的回调函数
     //   3. onCancelCallback(components) => {}: 当用户点击【取消】后的回调函数
     // 具体使用请参考__modal_example.js，不再赘述
     static modal = (modal, callback, cancelCallback) => global._modalGenerator.modal(modal, callback, cancelCallback);
+
+    // 动态注册右下角的快捷按钮
+    //   1. action(string): 取个名字
+    //   2. coordinate[int, int]: 按钮的坐标(x, y) 注意x,y方向是相反的：往左为x正方向，往上为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
+    //   3. hint(string): 提示信息
+    //   3. iconClass(string): icon 的 class
+    //   4. style(Object): button 额外的样式
+    //   4. callback(ev, target, action) => null: 点击按钮后的回调函数
+    static registerQuickButton = (action, coordinate, hint, iconClass, style, callback) => global._quickButtonGenerator.register(action, coordinate, hint, iconClass, style, callback)
+    // 动态注销快捷按钮
+    // 一旦process后，标签就被渲染到HTML了，以后就不会再变了，再调用此函数也没有用了，因此此函数只能在插件初始化的时候调用
+    // 因此，此函数的唯一意义是：当两个插件在初始化阶段打架时（都想注册同一坐标的按钮），用此函数去注销掉别人
+    static unregisterQuickButton = action => global._quickButtonGenerator.unregister(action)
 
 
     ////////////////////////////// 插件相关 //////////////////////////////
@@ -1226,7 +1239,6 @@ class thirdPartyDiagramParser {
     }
 }
 
-
 class eventHub {
     constructor() {
         this.utils = utils
@@ -1503,6 +1515,83 @@ class modalGenerator {
             this.entities.body.innerHTML = `<form role="form">` + widgetList.join("") + "</form>";
             this.entities.modal.style.display = "block";
         }
+    }
+}
+
+class quickButtonGenerator {
+    constructor() {
+        this.utils = utils;
+        this.buttons = new Map();
+    }
+
+    htmlTemplate = (maxX, maxY) => {
+        const mapCoordinateToButton = new Map();
+        Array.from(this.buttons.values()).forEach(button => {
+            mapCoordinateToButton.set(`${button.coordinate[0]}-${button.coordinate[1]}`, button);
+        })
+
+        const children = [];
+        for (let x = 0; x <= maxX; x++) {
+            for (let y = 0; y <= maxY; y++) {
+                const button = mapCoordinateToButton.get(`${maxY - y}-${maxX - x}`);
+                const ele = !button
+                    ? {class_: "action-item unused"}
+                    : {
+                        class_: "action-item",
+                        action: button.action,
+                        "ty-hint": button.hint,
+                        style: button.style || {},
+                        children: [{ele: "i", class_: button.iconClass}]
+                    }
+                children.push(ele);
+            }
+        }
+        return [{id: "plugin-quick-button", children: children}]
+    }
+
+    register = (action, coordinate, hint, iconClass, style, callback) => {
+        const [x, y] = coordinate;
+        if (x < 0 || y < 0) return;
+        this.buttons.set(action, {coordinate, action, hint, iconClass, style, callback});
+    }
+
+    unregister = action => this.buttons.delete(action)
+
+    getMax = () => {
+        let maxX = -1;
+        let maxY = -1;
+        for (const button of this.buttons.values()) {
+            maxX = Math.max(maxX, button.coordinate[0]);
+            maxY = Math.max(maxY, button.coordinate[1]);
+        }
+        return [maxX, maxY]
+    }
+
+    process = async () => {
+        if (this.buttons.size === 0) return
+
+        const [maxX, maxY] = this.getMax();
+
+        await this.utils.registerStyleTemplate("quick-button", {
+            gridTemplateColumns: `repeat(${maxX + 1}, 35px)`,
+            gridTemplateRows: `repeat(${maxY + 1}, 35px)`
+        });
+        this.utils.insertHtmlTemplate(this.htmlTemplate(maxX, maxY));
+
+        const buttonGroup = document.querySelector("#plugin-quick-button");
+        buttonGroup.addEventListener("click", ev => {
+            const target = ev.target.closest(".action-item");
+            if (!target) return
+            ev.stopPropagation();
+            ev.preventDefault();
+            const action = target.getAttribute("action");
+            const button = this.buttons.get(action);
+            if (action && button) {
+                button.callback(ev, target, action);
+            }
+        })
+
+        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => buttonGroup.style.visibility = hide ? "hidden" : "initial");
     }
 }
 
@@ -1879,6 +1968,7 @@ class process {
             global._eventHub.process(),
             global._diagramParser.process(),
             global._modalGenerator.process(),
+            global._quickButtonGenerator.process(),
             global._stateRecorder.process(),
             global._hotkeyHub.process(),
             global._exportHelper.process(),
@@ -1905,6 +1995,8 @@ global._thirdPartyDiagramParser = new thirdPartyDiagramParser();
 global._stateRecorder = new stateRecorder();
 // 弹出模态框
 global._modalGenerator = new modalGenerator();
+// 右下角的快速按钮
+global._quickButtonGenerator = new quickButtonGenerator();
 // 注册、监听快捷键
 global._hotkeyHub = new hotkeyHub();
 // 注册样式模板文件

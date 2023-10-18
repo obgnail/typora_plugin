@@ -51,34 +51,6 @@
     height: 24px;
     border-left: 3px double var(--active-file-bg-color);
 }
-.plugin-markmap-button {
-    position: fixed;
-    right: 78px;
-    z-index: 9998;
-    bottom: 50px;
-    margin-left: 30px;
-    font-size: 22px;
-    text-align: center;
-    color: var(--active-file-border-color, black);
-}
-
-.plugin-markmap-button .plugin-markmap-item {
-    width: 35px;
-    height: 35px;
-    cursor: pointer;
-    box-shadow: rgba(0, 0, 0, 0.07) 0px 0px 10px;
-    border-radius: 4px;
-}
-
-.plugin-markmap-button .plugin-markmap-item:hover {
-    background-color: var(--item-hover-bg-color, black);
-}
-
-.plugin-markmap-button .plugin-markmap-item i {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-}
 
 ${icon_wrap}
 

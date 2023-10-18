@@ -162,14 +162,7 @@ class tocMarkmap {
             </div>
             <div class="plugin-markmap-grip grip-up"></div>`;
 
-        const result = [modal];
-        if (this.config.USE_BUTTON) {
-            const button = document.createElement("div");
-            button.className = "plugin-markmap-button";
-            button.innerHTML = `<div class="plugin-markmap-item" ty-hint="思维导图"><i class="fa fa-code-fork"></i></div>`;
-            result.push(button);
-        }
-        return result
+        return modal
     }
 
     init = () => {
@@ -227,11 +220,9 @@ class tocMarkmap {
         })
 
         if (this.config.USE_BUTTON) {
-            const button = document.querySelector(".plugin-markmap-item");
-            button.addEventListener("click", () => {
-                (this.entities.modal.style.display === "") ? this.drawToc() : this.onButtonClick("close");
-            })
-            this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => button.style.visibility = (hide) ? "hidden" : "initial");
+            this.utils.registerQuickButton("markmap", [1, 0], "思维导图", "fa fa-code-fork", {fontSize: "22px"},
+                () => (this.entities.modal.style.display === "") ? this.drawToc() : this.onButtonClick("close")
+            )
         }
     }
 

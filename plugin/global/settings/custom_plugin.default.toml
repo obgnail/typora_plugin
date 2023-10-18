@@ -1,7 +1,7 @@
 # 1. 如果您对 toml 格式不太了解，可以花三分钟时间学习一下：https://toml.io/cn/v1.0.0
 # 2. 修改配置前，请读本目录下的【请读我.md】文件
-# 3. 所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
-# 4. 如何修改配置？答：将此文件的内容粘贴到 custom_plugin.user.toml 文件中，接着关闭此文件，根据说明文字修改 custom_plugin.user.toml 文件，最后重启 Typora
+# 3. 如何修改配置？答：将此文件的内容粘贴到 custom_plugin.user.toml 文件中，接着关闭此文件，根据说明文字修改 custom_plugin.user.toml 文件，最后重启 Typora
+# 4. 所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
 
 
 ############### kanban ###############
@@ -407,7 +407,7 @@ enable = true
 hotkey = ""
 # 自动打开新文件
 auto_open = true
-# 模板(可以无限添加，在下面添加自定义的模板)
+# 模板
 # 当前支持的模板变量：
 #   {{date}}： 当前日期
 #   {{time}}：当前时间
@@ -507,14 +507,20 @@ enable = true
 hotkey = ""
 # 在右下角添加一个快捷按钮
 use_button = true
-# 缩放的比率
+# 点击遮罩空白处退出
+click_mask_to_exit = true
+# 每次缩放的比率
 zoom_scale = 0.1
-# 旋转的角度
+# 每次旋转的角度
 totate_scale = 10
-# 倾斜的角度
+# 每次倾斜的角度
 skew_scale = 1
-# 遮罩呈不透明度
+# 遮罩层的不透明度
 mask_background_opacity = 0.6
+# 图片最多占据80%的页面宽度
+image_max_width = 80
+# 图片最多占据80%的页面高度度
+image_max_height = 80
 
 # 目前支持以下功能：
 #   - dummy: 无功能
@@ -531,14 +537,18 @@ mask_background_opacity = 0.6
 #   - decHSkew: 图片减小水平倾斜
 #   - incVSkew: 图片增大垂直倾斜
 #   - decVSkew: 图片减小垂直倾斜
+#   - originSize: 还原图片大小
+#   - fixScreen: 图片大小适配屏幕
+#   - autoSize： 图片大小在originSize、fixScreen之间切换
+#   - restore: 图片恢复为最初状态
 # 鼠标点击图片绑定的功能（三项分别为左键、中键、右键）
 mousedown_function = ["nextImage", "close", "previousImage"]
 # ctrl+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
 ctrl_mousedown_function = ["hFlip", "dummy", "vFlip"]
 # shift+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
-shift_mousedown_function = ["dummy", "dummy", "dummy"]
+shift_mousedown_function = ["autoSize", "dummy", "dummy"]
 # alt+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
-alt_mousedown_function = ["dummy", "dummy", "dummy"]
+alt_mousedown_function = ["restore", "dummy", "dummy"]
 
 # 当鼠标位于图片时，上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
 wheel_function = ["zoomOut", "zoomIn"]
@@ -558,8 +568,7 @@ name = "md格式规范检测"
 enable = true
 # 插件配置
 [markdownLint.config]
-# 禁用的规则
-# 参考：https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md
+# 禁用的规则（参考：https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md）
 disable_rules = [
     "MD012",
     "MD013",

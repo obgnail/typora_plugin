@@ -267,8 +267,7 @@ NAME = "中英文混排优化"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 # 快捷键
-# 由于新版本Typora占用了ctrl+shift+k快捷键，所以ctrl+shift+k可能会失效
-HOTKEY = ["ctrl+shift+k", "ctrl+shift+b"]
+HOTKEY = ["ctrl+shift+b"]
 # 不希望拆分的单词：
 #   == 是github markdown的高亮拓展语法
 IGNORE_WORDS = ["=="]
@@ -408,16 +407,14 @@ ENABLE = true
 NAME = "一键到顶"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 滚动所用时间
+# 滚动所用时间（单位：ms）
 SCROLL_TIME = 600
 # 到顶快捷键
 HOTKEY_GO_TOP = ""
 # 到底快捷键
 HOTKEY_GO_BOTTOM = ""
-# 标签的颜色
-COLOR = "var(--active-file-border-color, black)"
-# hover时标签的颜色
-HOVER_COLOR = "var(--item-hover-bg-color, black)"
+# 在右下角添加按钮
+USE_BUTTON = true
 
 
 ############### mindmap ###############

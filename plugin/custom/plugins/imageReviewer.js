@@ -1,25 +1,19 @@
 class imageReviewerPlugin extends BaseCustomPlugin {
-    styleTemplate = () => true
+    styleTemplate = () => ({
+        imageMaxWidth: this.config.image_max_width + "%",
+        imageMaxHeight: this.config.image_max_height + "%",
+    })
 
-    htmlTemplate = () => {
-        const template = [{
-            id: "plugin-image-reviewer", class_: "plugin-cover-content", children: [
-                {class_: "mask plugin-cover-content"},
-                {ele: "img", class_: "review-image"},
-                {class_: "review-item", action: "get-previous", children: [{ele: "i", class_: "fa fa-angle-left"}]},
-                {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
-                {class_: "review-message"}
-            ]
-        }]
-        if (this.config.use_button) {
-            template.push({
-                class_: "plugin-image-reviewer-button", children: [{
-                    class_: "reviewer-button-item", "ty-hint": "查看图片", children: [{ele: "i", class_: "fa fa-image"}]
-                }]
-            })
-        }
-        return template
-    }
+    htmlTemplate = () => [{
+        id: "plugin-image-reviewer", class_: "plugin-cover-content", children: [
+            {class_: "mask plugin-cover-content"},
+            {ele: "img", class_: "review-image"},
+            {class_: "review-item", action: "get-previous", children: [{ele: "i", class_: "fa fa-angle-left"}]},
+            {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
+            {class_: "review-button review-message"},
+            {class_: "review-button close-review", text: "CLOSE"},
+        ]
+    }]
 
     hotkey = () => [this.config.hotkey]
 
@@ -38,12 +32,17 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             mask: document.querySelector("#plugin-image-reviewer .mask"),
             image: document.querySelector("#plugin-image-reviewer .review-image"),
             msg: document.querySelector("#plugin-image-reviewer .review-message"),
-            button: document.querySelector(".plugin-image-reviewer-button")
+            close: document.querySelector("#plugin-image-reviewer .close-review")
         }
 
-        this.entities.mask.addEventListener("click", this.callback);
         if (this.config.use_button) {
-            this.entities.button.addEventListener("click", this.callback);
+            this.utils.registerQuickButton("image-reviewer", [1, 1], "查看图片", "fa fa-image", {fontSize: "17px"}, this.callback)
+        }
+
+        this.entities.close.addEventListener("click", this.callback);
+
+        if (this.config.click_mask_to_exit) {
+            this.entities.mask.addEventListener("click", this.callback);
         }
 
         const that = this;
@@ -78,17 +77,29 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         moveCenter && this.moveImageCenter();
     }
 
-    rotate = isOut => this.replaceImageTransform(/rotate\((.*?)deg\)/, (_, curRotate) => {
-        const currentRotate = parseFloat(curRotate);
-        let newRotate = isOut ? currentRotate + this.config.totate_scale : currentRotate - this.config.totate_scale;
+    rotate = (isOut, newRotate) => this.replaceImageTransform(/rotate\((.*?)deg\)/, (_, curRotate) => {
+        if (!newRotate) {
+            const currentRotate = parseFloat(curRotate);
+            newRotate = isOut ? currentRotate + this.config.totate_scale : currentRotate - this.config.totate_scale;
+        }
         return `rotate(${newRotate}deg)`
     })
 
-    zoom = isOut => this.replaceImageTransform(/scale\((.*?)\)/, (_, curScale) => {
-        const currentScale = parseFloat(curScale);
-        let newScale = isOut ? currentScale - this.config.zoom_scale : currentScale + this.config.zoom_scale;
+    zoom = (isOut, newScale) => this.replaceImageTransform(/scale\((.*?)\)/, (_, curScale) => {
+        if (!newScale) {
+            const currentScale = parseFloat(curScale);
+            newScale = isOut ? currentScale - this.config.zoom_scale : currentScale + this.config.zoom_scale;
+        }
         newScale = Math.max(0.1, newScale);
         return `scale(${newScale})`
+    })
+
+    skew = (isOut, direction, newSkew) => this.replaceImageTransform(new RegExp(`skew${direction}\\((.*?)deg\\)`), (_, curSkew) => {
+        if (!newSkew) {
+            const currentSkew = parseFloat(curSkew);
+            newSkew = isOut ? currentSkew + this.config.skew_scale : currentSkew - this.config.skew_scale;
+        }
+        return `skew${direction}(${newSkew}deg)`
     })
 
     flip = direction => this.replaceImageTransform(new RegExp(`scale${direction}\\((.*?)\\)`), (_, curScale) => {
@@ -96,11 +107,19 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         return `scale${direction}(${-currentScale})`
     })
 
-    skew = (isOut, direction) => this.replaceImageTransform(new RegExp(`skew${direction}\\((.*?)deg\\)`), (_, curSkew) => {
-        const currentSkew = parseFloat(curSkew);
-        let newSkew = isOut ? currentSkew + this.config.skew_scale : currentSkew - this.config.skew_scale;
-        return `skew${direction}(${newSkew}deg)`
-    })
+    changeSize = (origin = true) => {
+        const value = origin ? "initial" : "";
+        this.entities.image.style.maxWidth = value;
+        this.entities.image.style.maxHeight = value;
+        this.zoom(true, 1);
+    }
+
+    restore = () => {
+        this.entities.image.style.maxWidth = "";
+        this.entities.image.style.maxHeight = "";
+        this.entities.image.style.transform = "scale(1) rotate(0deg) scaleX(1) scaleY(1) skewX(0deg) skewY(0deg)";
+        this.moveImageCenter();
+    }
 
     moveImageCenter = () => {
         const {width, height} = this.entities.mask.getBoundingClientRect();
@@ -110,15 +129,14 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     }
 
     showImage = (next = true) => {
-        this.imageGetter = this.imageGetter || this.imageSrGetter();
+        this.imageGetter = this.imageGetter || this.imageMsgGetter();
         const {src, idx, total} = this.imageGetter(next);
-        this.entities.image.setAttribute("src", src);
-        this.entities.image.style.transform = "scale(1) rotate(0deg) scaleX(1) scaleY(1) skewX(0deg) skewY(0deg)";
         this.entities.msg.textContent = `${idx} / ${total}`;
-        this.moveImageCenter();
+        this.entities.image.setAttribute("src", src);
+        this.restore();
     }
 
-    imageSrGetter = () => {
+    imageMsgGetter = () => {
         let idx = -1;
         const imageList = Array.from(document.querySelectorAll("#write img")).map(img => img.getAttribute("src"));
         return (next = true) => {
@@ -150,6 +168,9 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     decHSkew = () => this.skew(false, "X")
     incVSkew = () => this.skew(true, "Y")
     decVSkew = () => this.skew(false, "Y")
+    originSize = () => this.changeSize(true)
+    fixScreen = () => this.changeSize(false)
+    autoSize = () => this.changeSize(this.entities.image.style.maxWidth !== "initial")
 }
 
 module.exports = {
