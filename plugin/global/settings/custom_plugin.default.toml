@@ -507,14 +507,18 @@ enable = true
 hotkey = ""
 # 在右下角添加一个快捷按钮
 use_button = true
-# 缩放的比率
+# 每次缩放的比率
 zoom_scale = 0.1
-# 旋转的角度
+# 每次旋转的角度
 totate_scale = 10
-# 倾斜的角度
+# 每次倾斜的角度
 skew_scale = 1
 # 遮罩层的不透明度
 mask_background_opacity = 0.6
+# 图片最多占据80%的页面宽度
+image_max_width = 80
+# 图片最多占据80%的页面高度度
+image_max_height = 80
 
 # 目前支持以下功能：
 #   - dummy: 无功能
@@ -531,14 +535,18 @@ mask_background_opacity = 0.6
 #   - decHSkew: 图片减小水平倾斜
 #   - incVSkew: 图片增大垂直倾斜
 #   - decVSkew: 图片减小垂直倾斜
+#   - originSize: 还原图片大小
+#   - fixScreen: 图片大小适配屏幕
+#   - autoSize： 图片大小在originSize、fixScreen之间切换
+#   - restore: 图片恢复为最初状态
 # 鼠标点击图片绑定的功能（三项分别为左键、中键、右键）
 mousedown_function = ["nextImage", "close", "previousImage"]
 # ctrl+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
 ctrl_mousedown_function = ["hFlip", "dummy", "vFlip"]
 # shift+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
-shift_mousedown_function = ["dummy", "dummy", "dummy"]
+shift_mousedown_function = ["autoSize", "dummy", "dummy"]
 # alt+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
-alt_mousedown_function = ["dummy", "dummy", "dummy"]
+alt_mousedown_function = ["restore", "dummy", "dummy"]
 
 # 当鼠标位于图片时，上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
 wheel_function = ["zoomOut", "zoomIn"]

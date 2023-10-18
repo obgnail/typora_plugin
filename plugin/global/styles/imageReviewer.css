@@ -20,6 +20,8 @@
     position: fixed;
     z-index: 99999;
     height: auto;
+    max-width: ${imageMaxWidth};
+    max-height: ${imageMaxHeight};
     /*transition: transform .2s ease-in-out;*/
     /*transform-origin: 0 0;*/
 }
@@ -31,7 +33,7 @@
     transform: translateY(-50%);
     width: 60px;
     height: 60px;
-    font-size: 24px;
+    font-size: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -49,16 +51,25 @@
     right: 30px;
 }
 
-#plugin-image-reviewer .review-message {
+#plugin-image-reviewer .review-button {
     position: absolute;
     z-index: 99999;
-    top: 30px;
-    left: 50%;
-    transform: translate3d(-50%,0,0);
+    transform: translate3d(-50%, 0, 0);
     padding: 6px 16px;
     border-radius: 20px;
     border: 1px solid #fff;
-    background-color: rgba(0,0,0,.4);
+    background-color: rgba(0, 0, 0, .4);
     font-size: 14px;
     color: #fff;
+}
+
+#plugin-image-reviewer .review-message {
+    top: 30px;
+    left: 50%;
+}
+
+#plugin-image-reviewer .close-review {
+    top: 30px;
+    right: 30px;
+    cursor: pointer;
 }

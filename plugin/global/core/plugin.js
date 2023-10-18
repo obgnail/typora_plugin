@@ -193,7 +193,6 @@ class utils {
     static appendElements = (parent, template) => global._htmlTemplater.appendElements(parent, template)
     static getElementCreator = () => global._htmlTemplater.creator()
 
-
     // 动态弹出自定义模态框（及刻弹出，因此无需注册）
     //   1. modal: { title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
     //   2. callback(components) => {}: 当用户点击【确认】后的回调函数
@@ -203,14 +202,17 @@ class utils {
 
     // 动态注册右下角的快捷按钮
     //   1. action(string): 取个名字
-    //   2. coordinate[int, int]: (x, y) 注意x,y方向是相反的：往左为x正方向，往上为y正方向
+    //   2. coordinate[int, int]: 按钮的坐标(x, y) 注意x,y方向是相反的：往左为x正方向，往上为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
     //   3. hint(string): 提示信息
     //   3. iconClass(string): icon 的 class
-    //   4. style: {} button 额外的样式
-    //   4. callback() => null: 点击后的回调函数
+    //   4. style(Object): button 额外的样式
+    //   4. callback(ev, target, action) => null: 点击按钮后的回调函数
     static registerQuickButton = (action, coordinate, hint, iconClass, style, callback) => global._quickButtonGenerator.register(action, coordinate, hint, iconClass, style, callback)
-    // 一旦process后，标签就被渲染到HTML了，以后就不会再变了，其实这个函数没有太大意义
+    // 动态注销快捷按钮
+    // 一旦process后，标签就被渲染到HTML了，以后就不会再变了，再调用此函数也没有用了，因此此函数只能在插件初始化的时候调用
+    // 因此，此函数的唯一意义是：当两个插件在初始化阶段打架时（都想注册同一坐标的按钮），用此函数去注销掉别人
     static unregisterQuickButton = action => global._quickButtonGenerator.unregister(action)
+
 
     ////////////////////////////// 插件相关 //////////////////////////////
     static getGlobalSetting = name => global._global_settings[name]
@@ -1523,12 +1525,9 @@ class quickButtonGenerator {
     }
 
     htmlTemplate = (maxX, maxY) => {
-        const buttonList = Array.from(this.buttons.values());
-
         const mapCoordinateToButton = new Map();
-        buttonList.forEach(button => {
-            const key = `${button.coordinate[0]}-${button.coordinate[1]}`;
-            mapCoordinateToButton.set(key, button);
+        Array.from(this.buttons.values()).forEach(button => {
+            mapCoordinateToButton.set(`${button.coordinate[0]}-${button.coordinate[1]}`, button);
         })
 
         const children = [];
@@ -1544,11 +1543,9 @@ class quickButtonGenerator {
                         style: button.style || {},
                         children: [{ele: "i", class_: button.iconClass}]
                     }
-
                 children.push(ele);
             }
         }
-
         return [{id: "plugin-quick-button", children: children}]
     }
 
@@ -1581,8 +1578,8 @@ class quickButtonGenerator {
         });
         this.utils.insertHtmlTemplate(this.htmlTemplate(maxX, maxY));
 
-        const button = document.querySelector("#plugin-quick-button");
-        button.addEventListener("click", ev => {
+        const buttonGroup = document.querySelector("#plugin-quick-button");
+        buttonGroup.addEventListener("click", ev => {
             const target = ev.target.closest(".action-item");
             if (!target) return
             ev.stopPropagation();
@@ -1594,7 +1591,7 @@ class quickButtonGenerator {
             }
         })
 
-        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => button.style.visibility = (hide) ? "hidden" : "initial");
+        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => buttonGroup.style.visibility = hide ? "hidden" : "initial");
     }
 }
 
