@@ -257,6 +257,8 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ![md_padding](assets/md_padding.gif)
 
+> 由于新版本 Typora 已经占用了 ctrl+shift+K 快捷键，目前此插件的快捷键已经改成 ctrl+shift+B，上面的动图懒得改了。
+
 
 
 ### templater：文件模板功能
