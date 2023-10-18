@@ -513,7 +513,7 @@ zoom_scale = 0.1
 totate_scale = 10
 # 倾斜的角度
 skew_scale = 1
-# 遮罩呈不透明度
+# 遮罩层的不透明度
 mask_background_opacity = 0.6
 
 # 目前支持以下功能：

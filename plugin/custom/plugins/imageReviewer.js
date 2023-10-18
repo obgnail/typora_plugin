@@ -1,25 +1,15 @@
 class imageReviewerPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
-    htmlTemplate = () => {
-        const template = [{
-            id: "plugin-image-reviewer", class_: "plugin-cover-content", children: [
-                {class_: "mask plugin-cover-content"},
-                {ele: "img", class_: "review-image"},
-                {class_: "review-item", action: "get-previous", children: [{ele: "i", class_: "fa fa-angle-left"}]},
-                {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
-                {class_: "review-message"}
-            ]
-        }]
-        if (this.config.use_button) {
-            template.push({
-                class_: "plugin-image-reviewer-button", children: [{
-                    class_: "reviewer-button-item", "ty-hint": "查看图片", children: [{ele: "i", class_: "fa fa-image"}]
-                }]
-            })
-        }
-        return template
-    }
+    htmlTemplate = () => [{
+        id: "plugin-image-reviewer", class_: "plugin-cover-content", children: [
+            {class_: "mask plugin-cover-content"},
+            {ele: "img", class_: "review-image"},
+            {class_: "review-item", action: "get-previous", children: [{ele: "i", class_: "fa fa-angle-left"}]},
+            {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
+            {class_: "review-message"}
+        ]
+    }]
 
     hotkey = () => [this.config.hotkey]
 
@@ -33,18 +23,21 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
+        if (this.config.use_button) {
+            this.utils.registerQuickButton(
+                "image-reviewer", [1, 1], "查看图片", "fa fa-image",
+                {fontSize: "17px"}, this.callback
+            )
+        }
+
         this.entities = {
             reviewer: document.getElementById("plugin-image-reviewer"),
             mask: document.querySelector("#plugin-image-reviewer .mask"),
             image: document.querySelector("#plugin-image-reviewer .review-image"),
             msg: document.querySelector("#plugin-image-reviewer .review-message"),
-            button: document.querySelector(".plugin-image-reviewer-button")
         }
 
         this.entities.mask.addEventListener("click", this.callback);
-        if (this.config.use_button) {
-            this.entities.button.addEventListener("click", this.callback);
-        }
 
         const that = this;
         $("#plugin-image-reviewer .review-item").on("click", function () {

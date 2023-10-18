@@ -1,33 +1,15 @@
 class goTopPlugin extends global._basePlugin {
-    styleTemplate = () => true
-
-    htmlTemplate = () => [{
-        id: "plugin-go-top",
-        children: [
-            {class_: "action-item", action: "go-top", children: [{ele: "i", class_: "fa fa-angle-up"}]},
-            {class_: "action-item", action: "go-bottom", children: [{ele: "i", class_: "fa fa-angle-down"}]},
-        ]
-    }]
-
     hotkey = () => [
         {hotkey: this.config.HOTKEY_GO_TOP, callback: this.call},
         {hotkey: this.config.HOTKEY_GO_BOTTOM, callback: () => this.call("go-bottom")},
     ]
 
     process = () => {
-        const buttons = document.getElementById("plugin-go-top");
-        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => buttons.style.visibility = (hide) ? "hidden" : "initial");
-        buttons.addEventListener("click", ev => {
-            const target = ev.target.closest(".action-item");
-            if (target) {
-                const action = target.getAttribute("action");
-                if (action) {
-                    this.call(action);
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                }
-            }
-        });
+        if (this.config.USE_BUTTON) {
+            const call_ = (ev, target, action) => this.call(action);
+            this.utils.registerQuickButton("go-top", [0, 1], "到顶部", "fa fa-angle-up", null, call_);
+            this.utils.registerQuickButton("go-bottom", [0, 0], "到底部", "fa fa-angle-down", null, call_);
+        }
     }
 
     call = direction => {
