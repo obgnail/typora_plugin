@@ -14,8 +14,10 @@ class fileCounterPlugin extends global._basePlugin {
                 const target = ev.target.closest("#file-library");
                 if (target && this.utils.metaKeyPressed(ev)) {
                     target.scrollLeft += ev.deltaY * 0.2;
+                    ev.stopPropagation();
+                    ev.preventDefault();
                 }
-            })
+            },true)
         }
 
         new MutationObserver(mutationList => {

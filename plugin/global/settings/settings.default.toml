@@ -702,7 +702,7 @@ CLICKABLE = false
 MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
-# 当侧边栏出现横线滚动条时，ctrl+wheel进行横线滚动
+# 当侧边栏出现横向滚动条时，ctrl+wheel进行横向滚动
 CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU = true
 
 
