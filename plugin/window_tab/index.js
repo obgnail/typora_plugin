@@ -76,11 +76,10 @@ class windowTabBarPlugin extends global._basePlugin {
             this.entities.tabBar.addEventListener("wheel", ev => {
                 const target = ev.target.closest("#plugin-window-tab .tab-bar");
                 if (!target) return;
-
                 if (this.utils.metaKeyPressed(ev)) {
                     (ev.deltaY < 0) ? this.previousTab() : this.nextTab();
                 } else {
-                    target.scrollLeft += ev.deltaY;
+                    target.scrollLeft += ev.deltaY * 0.5;
                 }
             })
         }
