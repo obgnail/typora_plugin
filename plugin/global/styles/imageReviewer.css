@@ -22,8 +22,6 @@
     height: auto;
     max-width: ${imageMaxWidth};
     max-height: ${imageMaxHeight};
-    /*transition: transform .2s ease-in-out;*/
-    /*transform-origin: 0 0;*/
 }
 
 #plugin-image-reviewer .review-item {
@@ -43,12 +41,16 @@
     cursor: pointer;
 }
 
+#plugin-image-reviewer .review-item:hover {
+    background-color: rgba(64, 64, 64, .7);
+}
+
 #plugin-image-reviewer .review-item[action="get-previous"] {
-    left: 30px;
+    left: 24px;
 }
 
 #plugin-image-reviewer .review-item[action="get-next"] {
-    right: 30px;
+    right: 24px;
 }
 
 #plugin-image-reviewer .review-button {

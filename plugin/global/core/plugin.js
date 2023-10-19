@@ -836,12 +836,16 @@ class diagramParser {
 
     unregister = lang => this.parsers.delete(lang)
 
-    process = async () => {
-        if (this.parsers.size === 0) return;
-
+    registerStyleTemplate = async () => {
         if (this.utils.isBetaVersion) {
             await this.utils.registerStyleTemplate("diagram-parser");
         }
+    }
+
+    process = async () => {
+        if (this.parsers.size === 0) return;
+
+        await this.registerStyleTemplate();
 
         // 添加时
         this.onAddCodeBlock();
@@ -1403,8 +1407,10 @@ class modalGenerator {
         this.utils.insertDiv(modal);
     }
 
+    registerStyleTemplate = async () => await this.utils.registerStyleTemplate("modal-generator");
+
     process = async () => {
-        await this.utils.registerStyleTemplate("modal-generator");
+        await this.registerStyleTemplate();
         this.html();
 
         this.entities = {
@@ -1549,6 +1555,10 @@ class quickButtonGenerator {
         return [{id: "plugin-quick-button", children: children}]
     }
 
+    registerStyleTemplate = async (maxX, maxY) => {
+        await this.utils.registerStyleTemplate("quick-button", {colCount: maxX + 1, rowCount: maxY + 1});
+    }
+
     register = (action, coordinate, hint, iconClass, style, callback) => {
         const [x, y] = coordinate;
         if (x < 0 || y < 0) return;
@@ -1572,10 +1582,7 @@ class quickButtonGenerator {
 
         const [maxX, maxY] = this.getMax();
 
-        await this.utils.registerStyleTemplate("quick-button", {
-            gridTemplateColumns: `repeat(${maxX + 1}, 35px)`,
-            gridTemplateRows: `repeat(${maxY + 1}, 35px)`
-        });
+        await this.registerStyleTemplate(maxX, maxY);
         this.utils.insertHtmlTemplate(this.htmlTemplate(maxX, maxY));
 
         const buttonGroup = document.querySelector("#plugin-quick-button");

@@ -1,7 +1,5 @@
 .plugin-file-counter {
-    display: inline-block;
     float: right;
-    white-space: nowrap;
     overflow-x: visible;
     overflow-y: hidden;
     margin-right: 10px;
@@ -10,5 +8,4 @@
     border-radius: 3px;
     background: var(--active-file-bg-color);
     color: var(--active-file-text-color);
-    opacity: 1;
 }
