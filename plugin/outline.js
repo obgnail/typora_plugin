@@ -13,19 +13,17 @@ class outlinePlugin extends global._basePlugin {
             footerChildren.push({class_: "plugin-outline-icon ion-android-data", type: "all", "ty-hint": "混合"})
         }
         const [className, hint] = this.config.SHOW_HIDDEN ? ["ion-eye", "显示被其他插件隐藏的元素"] : ["ion-eye-disabled", "不显示被其他插件隐藏的元素"];
+        const headerChildren = [
+            {class_: `plugin-outline-icon ${className}`, type: "eye", "ty-hint": hint},
+            {class_: "plugin-outline-icon ion-arrow-move", type: "move", "ty-hint": "移动"},
+            {class_: "plugin-outline-icon ion-close", type: "close", "ty-hint": "关闭"},
+        ]
         return [{
             id: "plugin-outline",
             children: [
-                {
-                    class_: "plugin-outline-header",
-                    children: [
-                        {class_: `plugin-outline-icon ${className}`, type: "eye", "ty-hint": hint},
-                        {class_: "plugin-outline-icon ion-arrow-move", type: "move", "ty-hint": "移动"},
-                        {class_: "plugin-outline-icon ion-close", type: "close", "ty-hint": "关闭"},
-                    ]
-                },
+                {class_: "plugin-outline-header", children: headerChildren},
                 {class_: "plugin-outline-list"},
-                {class_: "plugin-outline-footer", children: footerChildren}
+                {class_: "plugin-outline-footer", children: footerChildren},
             ]
         }]
     }

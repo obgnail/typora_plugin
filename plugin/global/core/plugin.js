@@ -465,7 +465,7 @@ class utils {
     }
 
     static getFileName = filePath => {
-        let fileName = this.Package.Path.basename(filePath);
+        let fileName = filePath ? this.Package.Path.basename(filePath) : File.getFileName();
         const idx = fileName.lastIndexOf(".");
         if (idx !== -1) {
             fileName = fileName.substring(0, idx);
