@@ -269,8 +269,9 @@ CLICKABLE = true
 # 快捷键
 HOTKEY = ["ctrl+shift+b"]
 # 不希望拆分的单词：
-#   == 是github markdown的高亮拓展语法
-IGNORE_WORDS = ["=="]
+#   ==   是github markdown的高亮拓展语法
+#   > [! 是callouts拓展语法
+IGNORE_WORDS = ["==", "> [!"]
 
 
 ############### read_only ###############
