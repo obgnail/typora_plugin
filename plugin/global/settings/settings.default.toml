@@ -426,6 +426,8 @@ ENABLE = true
 NAME = "思维导图"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# 尽力修复跨等级标题问题（MD001规范）
+FIX_ERROR_LEVEL_HEADER = true
 
 
 ############### markmap ###############

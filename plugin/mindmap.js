@@ -1,30 +1,46 @@
 class mindmapPlugin extends global._basePlugin {
     process = () => {
-        this.paragraphList = ["H0", "H1", "H2", "H3", "H4", "H5", "H6"];
+        this.headerList = ["H0", "H1", "H2", "H3", "H4", "H5", "H6"];
         this.callArgs = [
             {arg_name: "复制到剪切板：mindmap", arg_value: "set_clipboard_mindmap"},
             {arg_name: "复制到剪切板：graph", arg_value: "set_clipboard_graph"},
         ];
     }
 
-    cleanTitle = title => `("${title.replace(/"/g, "")}")`;
+    cleanTitle = title => `("${title.replace(/"/g, "")}")`
 
-    wrapMermaid = (content, type) => "```mermaid\n" + this.wrapErrorMsg(type) + content + "```"
+    wrapMermaid = (content, type) => ["```", "mermaid", "\n", this.wrapErrorMsg(type), content, "```"].join("")
 
-    wrapErrorMsg = type => {
-        if (type === "mindmap" && !window.mermaidAPI.defaultConfig.mindmap) {
-            return `%%你的mermaid组件版本过低，不支持mindmap语法。内容已复制到剪贴板，请粘贴到https://mermaid.live/查看\n`
+    wrapErrorMsg = type => (type === "mindmap" && !window.mermaidAPI.defaultConfig.mindmap)
+        ? "%%你的mermaid组件版本过低，不支持mindmap语法。内容已复制到剪贴板，请粘贴到https://mermaid.live/查看\n"
+        : ""
+
+    fixLevelError = headers => {
+        let idx = 1;
+        while (idx < headers.length) {
+            const current = headers[idx];
+            const maxLevel = headers[idx - 1].levelIdx + 1;
+
+            if (current.levelIdx > maxLevel) {
+                const needFix = [current];
+                while (headers[idx + 1] && headers[idx + 1].levelIdx > maxLevel) {
+                    needFix.push(headers[idx + 1]);
+                    idx++;
+                }
+                const dec = Math.max(...needFix.map(header => header.levelIdx)) - maxLevel;
+                needFix.forEach(header => header.levelIdx -= dec);
+            }
+            idx++;
         }
-        return ""
     }
 
-    mindmap = (pList, root) => {
+    mindmap = (headers, root) => {
         const lines = ["mindmap", "\n", "\t", `root${this.cleanTitle(root)}`, "\n"];
-        pList.forEach(ele => lines.push("\t".repeat(ele.levelIdx + 1), this.cleanTitle(ele.title), "\n"))
+        headers.forEach(ele => lines.push("\t".repeat(ele.levelIdx + 1), this.cleanTitle(ele.title), "\n"))
         return this.wrapMermaid(lines.join(""), "mindmap")
     }
 
-    graph = (pList, root) => {
+    graph = (headers, root) => {
         const levelItems = [{id: "root", title: root, used: false}, null, null, null, null, null, null];
 
         const getItemTitle = item => {
@@ -45,7 +61,7 @@ class mindmapPlugin extends global._basePlugin {
         }
 
         const lines = ["graph LR", "\n"];
-        pList.forEach((item, idx) => {
+        headers.forEach((item, idx) => {
             item.id = "item" + idx;
             levelItems[item.levelIdx] = item;
             lines.push(getParentItemTitle(item), "-->", getItemTitle(item), "\n");
@@ -64,24 +80,28 @@ class mindmapPlugin extends global._basePlugin {
     }
 
     call = (type, meta) => {
-        const pList = Array.from(document.querySelectorAll("#write > .md-heading")).map(ele => ({
-            tagName: ele.tagName,
-            levelIdx: this.paragraphList.indexOf(ele.tagName),
-            title: ele.firstElementChild.textContent,
-        }))
-
-        if (pList.length === 0) return
-
-        let root = this.utils.getFileName();
-        if (pList.filter(ele => ele.tagName === pList[0].tagName).length === 1) {
-            root = pList[0].title;
-            pList.shift();
-        }
-
         const func = type.slice(type.lastIndexOf("_") + 1);
         if (func !== "mindmap" && func !== "graph") return;
 
-        const result = this[func](pList, root);
+        const headers = Array.from(document.querySelectorAll("#write > .md-heading")).map(ele => ({
+            tagName: ele.tagName,
+            levelIdx: this.headerList.indexOf(ele.tagName),
+            title: ele.firstElementChild.textContent,
+        }))
+
+        if (headers.length === 0) return
+
+        let root = this.utils.getFileName();
+        if (headers.filter(ele => ele.tagName === headers[0].tagName).length === 1) {
+            root = headers[0].title;
+            headers.shift();
+        }
+
+        if (this.config.FIX_ERROR_LEVEL_HEADER) {
+            this.fixLevelError(headers);
+        }
+
+        const result = this[func](headers, root);
         if (type === "set_clipboard_mindmap" || type === "set_clipboard_graph") {
             navigator.clipboard.writeText(result);
         } else if (type === "insert_mindmap" || type === "insert_graph") {
