@@ -70,6 +70,29 @@ class mindmapPlugin extends global._basePlugin {
         return this.wrapMermaid(lines.join(""), "graph")
     }
 
+    getContent = func => {
+        const headers = Array.from(document.querySelectorAll("#write > .md-heading")).map(ele => ({
+            tagName: ele.tagName,
+            levelIdx: this.headerList.indexOf(ele.tagName),
+            title: ele.firstElementChild.textContent,
+        }))
+
+        let root = this.utils.getFileName();
+        if (headers.length === 0) {
+            const type = (func === "mindmap" ? "mindmap" : "graph LR");
+            const content = [type, "\n", "\t", `root${this.cleanTitle(root)}`, "\n"];
+            return this.wrapMermaid(content.join(""), func)
+        }
+        if (headers.length !== 1 && headers.filter(ele => ele.tagName === headers[0].tagName).length === 1) {
+            root = headers[0].title;
+            headers.shift();
+        }
+        if (this.config.FIX_ERROR_LEVEL_HEADER) {
+            this.fixLevelError(headers);
+        }
+        return this[func](headers, root);
+    }
+
     dynamicCallArgsGenerator = (anchorNode, meta) => {
         meta.target = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
         const disabled = !meta.target || meta.target.querySelector("p > span");
@@ -83,29 +106,11 @@ class mindmapPlugin extends global._basePlugin {
         const func = type.slice(type.lastIndexOf("_") + 1);
         if (func !== "mindmap" && func !== "graph") return;
 
-        const headers = Array.from(document.querySelectorAll("#write > .md-heading")).map(ele => ({
-            tagName: ele.tagName,
-            levelIdx: this.headerList.indexOf(ele.tagName),
-            title: ele.firstElementChild.textContent,
-        }))
-
-        if (headers.length === 0) return
-
-        let root = this.utils.getFileName();
-        if (headers.filter(ele => ele.tagName === headers[0].tagName).length === 1) {
-            root = headers[0].title;
-            headers.shift();
-        }
-
-        if (this.config.FIX_ERROR_LEVEL_HEADER) {
-            this.fixLevelError(headers);
-        }
-
-        const result = this[func](headers, root);
+        const content = this.getContent(func);
         if (type === "set_clipboard_mindmap" || type === "set_clipboard_graph") {
-            navigator.clipboard.writeText(result);
+            navigator.clipboard.writeText(content);
         } else if (type === "insert_mindmap" || type === "insert_graph") {
-            meta.target && this.utils.insertText(meta.target, result);
+            meta.target && this.utils.insertText(meta.target, content);
         }
     }
 }
