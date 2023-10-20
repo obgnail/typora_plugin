@@ -269,8 +269,9 @@ CLICKABLE = true
 # 快捷键
 HOTKEY = ["ctrl+shift+b"]
 # 不希望拆分的单词：
-#   == 是github markdown的高亮拓展语法
-IGNORE_WORDS = ["=="]
+#   ==   是github markdown的高亮拓展语法
+#   > [! 是callouts拓展语法
+IGNORE_WORDS = ["==", "> [!"]
 
 
 ############### read_only ###############
@@ -702,6 +703,8 @@ CLICKABLE = false
 MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
+# 当侧边栏出现横向滚动条时，ctrl+wheel进行横向滚动
+CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU = true
 
 
 ############### mermaid_replace ###############

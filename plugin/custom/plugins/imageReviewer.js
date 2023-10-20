@@ -50,7 +50,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             that.showImage(this.getAttribute("action") === "get-next");
         })
 
-        this.entities.image.addEventListener("wheel", ev => {
+        this.entities.reviewer.addEventListener("wheel", ev => {
             ev.preventDefault();
             const list = this.getFuncList(ev, "wheel");
             list[ev.deltaY > 0 ? 0 : 1]();

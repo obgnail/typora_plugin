@@ -10,7 +10,6 @@
     border: 1px solid #ddd;
     border-top: none;
     color: var(--text-color);
-    transform: translate3d(0, 0, 0)
 }
 
 #plugin-multi-highlighter-input {

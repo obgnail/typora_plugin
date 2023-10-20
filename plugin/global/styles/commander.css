@@ -10,7 +10,6 @@
     border: 1px solid #ddd;
     border-top: none;
     color: var(--text-color);
-    transform: translate3d(0, 0, 0)
 }
 
 #plugin-commander-form {
@@ -32,14 +31,14 @@
 #plugin-commander-form input {
     width: 60%;
     margin-left: 0;
-    margin-right: 2.5px;
+    margin-right: 2px;
     padding-left: 5px;
     padding-right: 24px;
 }
 
 #plugin-commander-form select {
     width: 20%;
-    margin-left: 2.5px;
+    margin-left: 2px;
     margin-right: 0;
     padding: 1px 2px;
 }

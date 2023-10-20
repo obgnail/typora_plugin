@@ -9,6 +9,17 @@ class fileCounterPlugin extends global._basePlugin {
     process = () => {
         this.utils.loopDetector(this.setAllDirCount, null, this.loopDetectInterval);
 
+        if (this.config.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU) {
+            document.querySelector("#file-library").addEventListener("wheel", ev => {
+                const target = ev.target.closest("#file-library");
+                if (target && this.utils.metaKeyPressed(ev)) {
+                    target.scrollLeft += ev.deltaY * 0.2;
+                    ev.stopPropagation();
+                    ev.preventDefault();
+                }
+            },true)
+        }
+
         new MutationObserver(mutationList => {
             if (mutationList.length === 1) {
                 const add = mutationList[0].addedNodes[0];
