@@ -220,7 +220,7 @@ class tocMarkmap {
         })
 
         if (this.config.USE_BUTTON) {
-            this.utils.registerQuickButton("markmap", [1, 0], "思维导图", "fa fa-code-fork", {fontSize: "22px"},
+            this.utils.registerQuickButton("markmap", [0, 1], "思维导图", "fa fa-code-fork", {fontSize: "22px"},
                 () => (this.entities.modal.style.display === "") ? this.drawToc() : this.onButtonClick("close")
             )
         }

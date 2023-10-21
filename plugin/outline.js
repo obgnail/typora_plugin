@@ -4,8 +4,6 @@ class outlinePlugin extends global._basePlugin {
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     htmlTemplate = () => {
-        const hint = (this.config.SHOW_HIDDEN) ? "显示被其他插件隐藏的元素" : "不显示被其他插件隐藏的元素";
-        const class_name = (this.config.SHOW_HIDDEN) ? "ion-eye" : "ion-eye-disabled";
         const footerChildren = [
             {class_: "plugin-outline-icon ion-code", type: "fence", "ty-hint": "代码块"},
             {class_: "plugin-outline-icon ion-image", type: "image", "ty-hint": "图片"},
@@ -14,20 +12,18 @@ class outlinePlugin extends global._basePlugin {
         if (this.config.USE_ALL) {
             footerChildren.push({class_: "plugin-outline-icon ion-android-data", type: "all", "ty-hint": "混合"})
         }
+        const [className, hint] = this.config.SHOW_HIDDEN ? ["ion-eye", "显示被其他插件隐藏的元素"] : ["ion-eye-disabled", "不显示被其他插件隐藏的元素"];
+        const headerChildren = [
+            {class_: `plugin-outline-icon ${className}`, type: "eye", "ty-hint": hint},
+            {class_: "plugin-outline-icon ion-arrow-move", type: "move", "ty-hint": "移动"},
+            {class_: "plugin-outline-icon ion-close", type: "close", "ty-hint": "关闭"},
+        ]
         return [{
             id: "plugin-outline",
             children: [
-                {
-                    class_: "plugin-outline-header",
-                    children: [
-                        {class_: `plugin-outline-icon ${class_name} select`, type: "eye", "ty-hint": hint},
-                        {class_: "plugin-outline-icon", type: "refresh", children: [{class_: "ion-refresh"}]},
-                        {class_: "plugin-outline-icon ion-arrow-move", type: "move"},
-                        {class_: "plugin-outline-icon ion-close", type: "close"},
-                    ]
-                },
+                {class_: "plugin-outline-header", children: headerChildren},
                 {class_: "plugin-outline-list"},
-                {class_: "plugin-outline-footer", children: footerChildren}
+                {class_: "plugin-outline-footer", children: footerChildren},
             ]
         }]
     }
@@ -47,6 +43,8 @@ class outlinePlugin extends global._basePlugin {
         this.init();
 
         this.utils.dragFixedModal(this.entities.move, this.entities.modal, false);
+
+        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.entities.modal.style.display === "block" && this.refresh());
 
         this.utils.addEventListener(this.utils.eventType.fileOpened, () => {
             (this.config.AUTO_REFRESH_WHEN_OPEN_FILE && this.entities.modal.style.display === "block") && setTimeout(this.refresh, 300);
@@ -72,9 +70,6 @@ class outlinePlugin extends global._basePlugin {
                 const Type = headerIcon.getAttribute("type");
                 if (Type === "close") {
                     this.hide();
-                } else if (Type === "refresh") {
-                    this.refresh();
-                    this.rotate(headerIcon.firstElementChild);
                 } else if (Type === "eye") {
                     this.toggleEye(headerIcon);
                     this.refresh();
@@ -111,16 +106,6 @@ class outlinePlugin extends global._basePlugin {
             const search = this.entities.footer.querySelector(".plugin-outline-icon.select");
             this.collectAndShow(search.getAttribute("Type"));
         }
-    }
-
-    // 因为比较简单,就不用CSS做了
-    rotate = ele => {
-        let angle = 0;
-        const timer = setInterval(() => {
-            angle += 10;
-            requestAnimationFrame(() => ele.style.transform = "rotate(" + angle + "deg)");
-            (angle === 360) && clearInterval(timer);
-        }, 10)
     }
 
     toggleEye = icon => {
