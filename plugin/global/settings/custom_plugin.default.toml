@@ -588,15 +588,6 @@ error_color = "#be9117"
 debounce_interval = 1000
 
 
-############### hotkeyHub ###############
-[hotkeyHub]
-# 右键菜单中展示的名称
-name = "快捷键中心"
-# 是否启用此自定义插件
-# 注意：若置为false，那么hoteykey.toml的配置将失效
-enable = true
-
-
 ############### reopenClosedFiles ###############
 [reopenClosedFiles]
 # 右键菜单中展示的名称
@@ -610,6 +601,46 @@ enable = true
 auto_reopen_when_init = true
 # 快捷键
 hotkey = ""
+
+
+############### hotkeyHub ###############
+[hotkeyHub]
+# 右键菜单中展示的名称
+name = "快捷键中心"
+# 是否启用此自定义插件
+# 注意：若置为false，那么hoteykey.toml的配置将失效
+enable = true
+
+
+############### quickButton ###############
+[quickButton]
+# 右键菜单中展示的名称
+name = "快速按钮"
+# 是否启用此自定义插件
+enable = false
+# 插件配置
+[quickButton.config]
+# 添加的按钮
+#   action：取个名字，不可重名
+#   coordinate：往上为x正方向，往左为y正方向。(0,0) (0,1) (1,0) (1,1) 四个坐标已被其他插件占用
+#   icon：icon class
+#   font_size：控制icon大小
+#   hint：提示信息
+#   callback：回调函数
+[[quickButton.config.buttons]]
+action = "md_padding_button"
+coordinate = [2, 1]
+icon = "fa fa-indent"
+font_size = "17px"
+hint = "混排优化"
+callback = "md_padding.call"
+[[quickButton.config.buttons]]
+action = "open_in_tc_button"
+coordinate = [2, 0]
+icon = "fa fa-bookmark"
+font_size = "17px"
+hint = "TC打开"
+callback = "openInTotalCommander.callback"
 
 
 ############### autoTrailingWhiteSpace ###############

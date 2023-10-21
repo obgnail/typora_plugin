@@ -7,7 +7,7 @@ class goTopPlugin extends global._basePlugin {
     process = () => {
         if (this.config.USE_BUTTON) {
             const call_ = (ev, target, action) => this.call(action);
-            this.utils.registerQuickButton("go-top", [0, 1], "到顶部", "fa fa-angle-up", null, call_);
+            this.utils.registerQuickButton("go-top", [1, 0], "到顶部", "fa fa-angle-up", null, call_);
             this.utils.registerQuickButton("go-bottom", [0, 0], "到底部", "fa fa-angle-down", null, call_);
         }
     }

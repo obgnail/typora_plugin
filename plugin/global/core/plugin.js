@@ -202,7 +202,7 @@ class utils {
 
     // 动态注册右下角的快捷按钮
     //   1. action(string): 取个名字
-    //   2. coordinate[int, int]: 按钮的坐标(x, y) 注意x,y方向是相反的：往左为x正方向，往上为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
+    //   2. coordinate[int, int]: 按钮的坐标(x, y) 注意x,y方向是相反的：往上为x正方向，往左为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
     //   3. hint(string): 提示信息
     //   3. iconClass(string): icon 的 class
     //   4. style(Object): button 额外的样式
@@ -1539,7 +1539,7 @@ class quickButtonGenerator {
         const children = [];
         for (let x = 0; x <= maxX; x++) {
             for (let y = 0; y <= maxY; y++) {
-                const button = mapCoordinateToButton.get(`${maxY - y}-${maxX - x}`);
+                const button = mapCoordinateToButton.get(`${maxX - x}-${maxY - y}`);
                 const ele = !button
                     ? {class_: "action-item unused"}
                     : {
@@ -1556,7 +1556,7 @@ class quickButtonGenerator {
     }
 
     registerStyleTemplate = async (maxX, maxY) => {
-        await this.utils.registerStyleTemplate("quick-button", {colCount: maxX + 1, rowCount: maxY + 1});
+        await this.utils.registerStyleTemplate("quick-button", {rowCount: maxX + 1, colCount: maxY + 1});
     }
 
     register = (action, coordinate, hint, iconClass, style, callback) => {
@@ -1970,6 +1970,10 @@ class process {
                 }
             })
         );
+
+        // 发布事件
+        this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
+
         // 等待插件都注册完成才能执行process
         await Promise.all([
             global._eventHub.process(),
@@ -1981,9 +1985,8 @@ class process {
             global._exportHelper.process(),
             global._thirdPartyDiagramParser.process(),
         ]);
-        // 全部完成后发布事件
-        this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
-        // 由于使用了async，有些事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍
+
+        // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
         setTimeout(this.utils.reload, 100);
     }
 }
