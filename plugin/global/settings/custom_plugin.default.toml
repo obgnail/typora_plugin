@@ -637,8 +637,8 @@ callback = "md_padding.call"
 [[quickButton.config.buttons]]
 action = "open_in_tc_button"
 coordinate = [2, 0]
-icon = "fa fa-bookmark"
-font_size = "17px"
+icon = "fa fa-home"
+font_size = "20px"
 hint = "TC打开"
 callback = "openInTotalCommander.callback"
 
