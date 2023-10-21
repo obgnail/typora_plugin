@@ -16,21 +16,19 @@ class mindmapPlugin extends global._basePlugin {
         : ""
 
     fixLevelError = headers => {
-        let idx = 1;
-        while (idx < headers.length) {
-            const current = headers[idx];
-            const maxLevel = headers[idx - 1].levelIdx + 1;
-
+        for (let idx = 1; idx < headers.length; idx++) {
+            let startIdx = idx;
+            const current = headers[startIdx];
+            const maxLevel = headers[startIdx - 1].levelIdx + 1;
             if (current.levelIdx > maxLevel) {
                 const needFix = [current];
-                while (headers[idx + 1] && headers[idx + 1].levelIdx > maxLevel) {
-                    needFix.push(headers[idx + 1]);
-                    idx++;
+                while (headers[startIdx + 1] && headers[startIdx + 1].levelIdx > maxLevel) {
+                    needFix.push(headers[startIdx + 1]);
+                    startIdx++;
                 }
                 const dec = Math.max(...needFix.map(header => header.levelIdx)) - maxLevel;
                 needFix.forEach(header => header.levelIdx -= dec);
             }
-            idx++;
         }
     }
 

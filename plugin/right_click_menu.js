@@ -84,7 +84,7 @@ class rightClickMenuPlugin extends global._basePlugin {
         const hasNotArgs = !plugin.callArgs && !plugin.dynamicCallArgsGenerator;
 
         const extra = {class_: "plugin-menu-item"};
-        if (hasNotArgs) {
+        if (!hasNotArgs) {
             extra.class_ += " has-extra-menu";
         }
         if (!plugin.config.CLICKABLE) {
