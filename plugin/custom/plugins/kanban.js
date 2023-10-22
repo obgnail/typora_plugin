@@ -24,7 +24,7 @@ class kanbanPlugin extends BaseCustomPlugin {
             const that = this;
             $("#write").on("wheel", ".plugin-kanban-content", function (ev) {
                 if (that.utils.metaKeyPressed(ev.originalEvent)) {
-                    this.scrollLeft += ev.originalEvent.deltaY;
+                    this.scrollLeft += ev.originalEvent.deltaY * 0.3;
                 }
             })
         }
