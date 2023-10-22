@@ -40,6 +40,7 @@ class commanderPlugin extends global._basePlugin {
 
         return [{
             id: "plugin-commander",
+            class_: "plugin-common-modal",
             style: {display: "none"},
             children: [
                 {id: "plugin-commander-form", children: formChildren},

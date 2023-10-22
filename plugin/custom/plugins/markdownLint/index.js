@@ -4,7 +4,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
 
     htmlTemplate = () => {
-        const el = [{id: "plugin-markdownlint", style: {display: "none"}, children: [{ele: "pre", tabindex: "0"}]}]
+        const el = [{
+            id: "plugin-markdownlint", class_: "plugin-common-modal",
+            style: {display: "none"}, children: [{ele: "pre", tabindex: "0"}]
+        }]
         if (this.config.use_button) {
             el.push({id: "plugin-markdownlint-button", "ty-hint": "markdown格式规范检测"})
         }

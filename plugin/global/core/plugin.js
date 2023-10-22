@@ -1856,6 +1856,13 @@ class exportHelper {
     }
 }
 
+class commonStyle {
+    constructor() {
+        this.utils = utils;
+    }
+    process = async () => await this.utils.registerStyleTemplate("plugin-common");
+}
+
 class basePlugin {
     constructor(fixedName, setting) {
         this.fixedName = fixedName;
@@ -1975,6 +1982,7 @@ class process {
         // 等待插件都注册完成才能执行process
         await Promise.all([
             global._eventHub.process(),
+            global._commonStyle.process(),
             global._diagramParser.process(),
             global._modalGenerator.process(),
             global._quickButtonGenerator.process(),
@@ -1993,6 +2001,8 @@ class process {
 global._pluginUtils = utils;
 // 插件的父类
 global._basePlugin = basePlugin;
+// 公共样式
+global._commonStyle = new commonStyle();
 // 注册、发布生命周期事件
 global._eventHub = new eventHub();
 // 自定义代码块语法

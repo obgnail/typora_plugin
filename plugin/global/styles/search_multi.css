@@ -1,15 +1,7 @@
 #plugin-search-multi {
-    position: fixed;
     top: 40px;
     left: 60%;
     width: 420px;
-    z-index: 9999;
-    padding: 4px;
-    background-color: #f8f8f8;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
-    border: 1px solid #ddd;
-    border-top: none;
-    color: var(--text-color);
 }
 
 #plugin-search-multi .search-result-title {
