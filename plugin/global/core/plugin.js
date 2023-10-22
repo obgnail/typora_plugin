@@ -381,6 +381,8 @@ class utils {
         });
     }
 
+    static isPromise = obj => !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function'
+
 
     ////////////////////////////// 业务文件操作 //////////////////////////////
     // Repo: https://github.com/microsoft/vscode-ripgrep
@@ -1817,12 +1819,6 @@ class exportHelper {
         return new Promise(resolve => resolve(html));
     }
 
-    isPromise = obj => {
-        return !!obj
-            && (typeof obj === 'object' || typeof obj === 'function')
-            && typeof obj.then === 'function';
-    };
-
     afterExportSync = (exportResult, ...args) => {
         const exportConfig = args[0];
         if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
@@ -1834,7 +1830,7 @@ class exportHelper {
         for (const helper of this.helper.values()) {
             if (helper.afterExport) {
                 const newHtml = helper.afterExport(html, writeIdx);
-                if (newHtml && !this.isPromise(newHtml)) {
+                if (newHtml && !this.utils.isPromise(newHtml)) {
                     html = newHtml;
                 }
             }
