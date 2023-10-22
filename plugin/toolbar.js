@@ -19,6 +19,7 @@ class toolbarPlugin extends global._basePlugin {
 
     htmlTemplate = () => [{
         id: "plugin-toolbar",
+        class_: "plugin-common-modal",
         style: {display: "none"},
         children: [
             {
