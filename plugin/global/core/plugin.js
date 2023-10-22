@@ -306,7 +306,7 @@ class utils {
         return 0
     }
 
-    // merge({a: [{b: 2}] }, {a: [{c: 2}]}) -> {a: [ {c: 2} ] }
+    // merge({a: [{b: 2}] }, {a: [{c: 2}]}) -> {a: [{c: 2}] }
     // merge({o: {a: 3}}, {o: {b: 4}}) -> {o: {a: 3, b: 4} }
     static merge = (source, other) => {
         const isObject = value => {
@@ -317,11 +317,9 @@ class utils {
         if (!isObject(source) || !isObject(other)) {
             return other === undefined ? source : other
         }
-        return Object.keys({
-            ...source,
-            ...other
-        }).reduce((acc, key) => {
-            acc[key] = (Array.isArray(source[key]) && Array.isArray(other[key])) ? other[key] : this.merge(source[key], other[key])
+        return Object.keys({...source, ...other}).reduce((acc, key) => {
+            const isArray = Array.isArray(source[key]) && Array.isArray(other[key])
+            acc[key] = isArray ? other[key] : this.merge(source[key], other[key])
             return acc
         }, Array.isArray(source) ? [] : {})
     }
@@ -405,16 +403,12 @@ class utils {
         child.on('close', onClose);
     }
 
-    static readSetting = (defaultSetting, userSetting) => {
-        let result = null;
-        if (defaultSetting && this.existInPluginPath(defaultSetting)) {
-            result = this.readToml(defaultSetting);
-        }
-        if (userSetting && this.existInPluginPath(userSetting)) {
-            const _user = this.readToml(userSetting);
-            result = this.merge(result, _user);
-        }
-        return result
+    static readSetting = async (defaultSetting, userSetting) => {
+        const toml = this.requireFilePath("./plugin/global/utils/toml");
+        const files = [defaultSetting, userSetting].map(file => this.joinPath(file));
+        const contentList = await this.readFiles(files);
+        const [default_, user_] = contentList.map(c => c ? toml.parse(c) : {});
+        return this.merge(default_, user_);
     }
 
     static insertStyle = (id, css) => {
@@ -485,7 +479,7 @@ class utils {
 
     static existPath = filepath => {
         try {
-            this.Package.Fs.accessSync(filepath, this.Package.Fs.constants.F_OK);
+            this.Package.Fs.accessSync(filepath);
             return true
         } catch (err) {
         }
@@ -497,6 +491,13 @@ class utils {
         filepath = this.joinPath(filepath);
         return this.Package.Fs.readFileSync(filepath, 'utf8');
     }
+
+    static readFiles = async files => Promise.all(files.map(async file => {
+        try {
+            return await this.Package.Fs.promises.readFile(file, 'utf-8')
+        } catch (err) {
+        }
+    }))
 
     static readToml = filepath => {
         const pluginsFile = this.readFileSync(filepath);
@@ -1659,16 +1660,19 @@ class styleTemplater {
         this.utils = utils
     }
 
-    register = async (name, renderArg) => {
-        const filename = this.utils.joinPath("./plugin/global/styles", `${name}.css`);
+    register = async (name, args) => {
+        const files = ["user_styles", "styles"].map(dir => this.utils.joinPath("./plugin/global", dir, `${name}.css`));
+        const [userStyles, defaultStyles] = await this.utils.readFiles(files);
+        const data = userStyles || defaultStyles;
+        if (!data) {
+            console.error(`there is not such style file: ${name}`);
+            return
+        }
         try {
-            const data = await this.utils.Package.Fs.promises.readFile(filename, 'utf-8');
-            const css = data.replace(/\${(.+?)}/g, (_, src) => {
-                return src.split(".").reduce((total, current) => total[current], renderArg)
-            })
+            const css = data.replace(/\${(.+?)}/g, (_, $arg) => $arg.split(".").reduce((obj, attr) => obj[attr], args));
             this.utils.insertStyle(`plugin-${name}-style`, css);
-        } catch (e) {
-            console.error(e);
+        } catch (err) {
+            console.error(`replace args error. file: ${name}. err: ${err}`);
         }
     }
 
@@ -1944,7 +1948,7 @@ class process {
         global._plugins = {};     // 启用的插件
         global._all_plugins = {}; // 全部的插件
 
-        const pluginSettings = this.utils.readSetting(
+        const pluginSettings = await this.utils.readSetting(
             "./plugin/global/settings/settings.default.toml",
             "./plugin/global/settings/settings.user.toml",
         );

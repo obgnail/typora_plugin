@@ -40,7 +40,7 @@ class loadPluginHelper {
                 console.error("instance is not BaseCustomPlugin", instance.fixedName);
                 return
             }
-            const error = instance.beforeProcess();
+            const error = await instance.beforeProcess();
             if (error === this.utils.stopLoadPluginError) return
             instance.init();
             this.insertStyle(instance.fixedName, instance.style());
@@ -74,7 +74,7 @@ class loadPluginHelper {
     }
 
     load = async () => {
-        let settings = this.utils.readSetting(
+        let settings = await this.utils.readSetting(
             "./plugin/global/settings/custom_plugin.default.toml",
             "./plugin/global/settings/custom_plugin.user.toml",
         )

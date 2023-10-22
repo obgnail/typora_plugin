@@ -1,11 +1,16 @@
 class hotkeyHub extends BaseCustomPlugin {
+    beforeProcess = async () => {
+        this.settings = await this.utils.readSetting(
+            "./plugin/global/settings/hotkey.default.toml",
+            "./plugin/global/settings/hotkey.user.toml",
+        )
+    }
+
     process = () => {
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
-            const settings = this.getSettings();
-            if (!settings) return;
-            const hotkeys = Object.keys(settings).map(name => this.toHotkey(settings[name])).filter(Boolean);
-            if (hotkeys.length) {
-                this.utils.registerHotkey(hotkeys);
+            if (this.settings) {
+                const hotkeys = Object.values(this.settings).map(this.toHotkey).filter(Boolean);
+                hotkeys.length && this.utils.registerHotkey(hotkeys);
             }
         })
     }
@@ -15,34 +20,24 @@ class hotkeyHub extends BaseCustomPlugin {
         JSBridge.showInFinder(filepath);
     }
 
-    getSettings = () => this.utils.readSetting(
-        "./plugin/global/settings/hotkey.default.toml",
-        "./plugin/global/settings/hotkey.user.toml",
-    )
-
     toHotkey = setting => {
-        const hotkey = setting["hotkey"];
-        const enable = setting["enable"];
-        const evilFunc = setting["evil"];
-        const pluginFixedName = setting["plugin"];
-        const func = setting["function"];
-        const selector = setting["closestSelector"];
-
+        const {hotkey, enable, closestSelector, evil, plugin: fixedName, function: func} = setting;
         if (!hotkey || !enable) return;
 
         let callback = null;
-        if (evilFunc) {
-            callback = eval(evilFunc);
+        if (evil) {
+            callback = eval(evil);
         } else {
-            if (!pluginFixedName || !func) return;
-            const plugin = this.utils.getPlugin(pluginFixedName) || this.utils.getCustomPlugin(pluginFixedName);
+            if (!fixedName || !func) return;
+
+            const plugin = this.utils.getPlugin(fixedName) || this.utils.getCustomPlugin(fixedName);
             if (!plugin) return;
 
             callback = plugin[func];
-            if (!callback || !callback instanceof Function) return;
+            if (!callback || !(callback instanceof Function)) return;
 
-            if (selector) {
-                callback = this.utils.withAnchorNode(selector, callback);
+            if (closestSelector) {
+                callback = this.utils.withAnchorNode(closestSelector, callback);
             }
         }
         if (hotkey !== "-") {
