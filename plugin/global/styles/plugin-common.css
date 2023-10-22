@@ -1,0 +1,10 @@
+.plugin-common-modal {
+    position: fixed;
+    z-index: 9999;
+    padding: 4px;
+    background-color: #f8f8f8;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
+    border: 1px solid #ddd;
+    border-top: none;
+    color: var(--text-color);
+}

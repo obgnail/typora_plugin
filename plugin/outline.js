@@ -44,7 +44,11 @@ class outlinePlugin extends global._basePlugin {
 
         this.utils.dragFixedModal(this.entities.move, this.entities.modal, false);
 
-        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.entities.modal.style.display === "block" && this.refresh());
+        this.utils.addEventListener(this.utils.eventType.outlineUpdated, this.update);
+        // 旧版本的Typora的outlineUpdated事件很难触发
+        if (this.utils.isBetaVersion) {
+            this.utils.addEventListener(this.utils.eventType.fileEdited, this.update);
+        }
 
         this.utils.addEventListener(this.utils.eventType.fileOpened, () => {
             (this.config.AUTO_REFRESH_WHEN_OPEN_FILE && this.entities.modal.style.display === "block") && setTimeout(this.refresh, 300);
@@ -77,6 +81,8 @@ class outlinePlugin extends global._basePlugin {
             }
         })
     }
+
+    update = () => this.entities.modal.style.display === "block" && this.refresh()
 
     collectAndShow = Type => {
         this.setFooterActive(Type);

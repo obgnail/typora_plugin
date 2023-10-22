@@ -7,6 +7,9 @@ class fileCounterPlugin extends global._basePlugin {
     styleTemplate = () => true
 
     process = () => {
+        // typora有bug，有一定概率无法完整加载，强制刷一下
+        setTimeout(() => File.editor.library.refreshPanelCommand(), 1200);
+
         this.utils.loopDetector(this.setAllDirCount, null, this.loopDetectInterval);
 
         if (this.config.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU) {
@@ -17,7 +20,7 @@ class fileCounterPlugin extends global._basePlugin {
                     ev.stopPropagation();
                     ev.preventDefault();
                 }
-            },true)
+            }, true)
         }
 
         new MutationObserver(mutationList => {

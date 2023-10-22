@@ -4,6 +4,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
     html = () => {
         const modal = document.createElement("div");
         modal.id = 'plugin-search-multi';
+        modal.classList.add("plugin-common-modal");
         modal.style.display = "none";
         modal.innerHTML = `
             <div id="plugin-search-multi-input">

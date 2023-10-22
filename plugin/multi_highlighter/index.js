@@ -31,6 +31,7 @@ class multiHighlighterPlugin extends global._basePlugin {
     html = () => {
         const modal = document.createElement("div");
         modal.id = 'plugin-multi-highlighter';
+        modal.classList.add("plugin-common-modal");
         modal.style.display = "none";
         modal.innerHTML = `
             <div id="plugin-multi-highlighter-input">

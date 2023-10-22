@@ -306,8 +306,8 @@ class utils {
         return 0
     }
 
-    // merge({a: [{ b: 2 }] } {a: [{ c: 2 }]}) -> {a: [{b:2}, {c:2}]}
-    // merge({o: {a: 3}}, {o: {b:4}}) -> {o: {a:3, b:4}}
+    // merge({a: [{b: 2}] }, {a: [{c: 2}]}) -> {a: [{c: 2}] }
+    // merge({o: {a: 3}}, {o: {b: 4}}) -> {o: {a: 3, b: 4} }
     static merge = (source, other) => {
         const isObject = value => {
             const type = typeof value
@@ -317,13 +317,9 @@ class utils {
         if (!isObject(source) || !isObject(other)) {
             return other === undefined ? source : other
         }
-        // 合并两个对象的 key，另外要区分数组的初始值为 []
-        return Object.keys({
-            ...source,
-            ...other
-        }).reduce((acc, key) => {
-            // 递归合并 value
-            acc[key] = this.merge(source[key], other[key])
+        return Object.keys({...source, ...other}).reduce((acc, key) => {
+            const isArray = Array.isArray(source[key]) && Array.isArray(other[key])
+            acc[key] = isArray ? other[key] : this.merge(source[key], other[key])
             return acc
         }, Array.isArray(source) ? [] : {})
     }
@@ -383,6 +379,8 @@ class utils {
         });
     }
 
+    static isPromise = obj => !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function'
+
 
     ////////////////////////////// 业务文件操作 //////////////////////////////
     // Repo: https://github.com/microsoft/vscode-ripgrep
@@ -405,16 +403,12 @@ class utils {
         child.on('close', onClose);
     }
 
-    static readSetting = (defaultSetting, userSetting) => {
-        let result = null;
-        if (defaultSetting && this.existInPluginPath(defaultSetting)) {
-            result = this.readToml(defaultSetting);
-        }
-        if (userSetting && this.existInPluginPath(userSetting)) {
-            const _user = this.readToml(userSetting);
-            result = this.merge(result, _user);
-        }
-        return result
+    static readSetting = async (defaultSetting, userSetting) => {
+        const toml = this.requireFilePath("./plugin/global/utils/toml");
+        const files = [defaultSetting, userSetting].map(file => this.joinPath(file));
+        const contentList = await this.readFiles(files);
+        const [default_, user_] = contentList.map(c => c ? toml.parse(c) : {});
+        return this.merge(default_, user_);
     }
 
     static insertStyle = (id, css) => {
@@ -485,7 +479,7 @@ class utils {
 
     static existPath = filepath => {
         try {
-            this.Package.Fs.accessSync(filepath, this.Package.Fs.constants.F_OK);
+            this.Package.Fs.accessSync(filepath);
             return true
         } catch (err) {
         }
@@ -497,6 +491,13 @@ class utils {
         filepath = this.joinPath(filepath);
         return this.Package.Fs.readFileSync(filepath, 'utf8');
     }
+
+    static readFiles = async files => Promise.all(files.map(async file => {
+        try {
+            return await this.Package.Fs.promises.readFile(file, 'utf-8')
+        } catch (err) {
+        }
+    }))
 
     static readToml = filepath => {
         const pluginsFile = this.readFileSync(filepath);
@@ -1238,9 +1239,7 @@ class thirdPartyDiagramParser {
         }, 300)
     }
 
-    process = () => {
-        this.utils.registerExportHelper("third-party-diagram-parser", this.beforeExport, this.afterExport);
-    }
+    process = () => this.utils.registerExportHelper("third-party-diagram-parser", this.beforeExport, this.afterExport);
 }
 
 class eventHub {
@@ -1661,16 +1660,19 @@ class styleTemplater {
         this.utils = utils
     }
 
-    register = async (name, renderArg) => {
-        const filename = this.utils.joinPath("./plugin/global/styles", `${name}.css`);
+    register = async (name, args) => {
+        const files = ["user_styles", "styles"].map(dir => this.utils.joinPath("./plugin/global", dir, `${name}.css`));
+        const [userStyles, defaultStyles] = await this.utils.readFiles(files);
+        const data = userStyles || defaultStyles;
+        if (!data) {
+            console.error(`there is not such style file: ${name}`);
+            return
+        }
         try {
-            const data = await this.utils.Package.Fs.promises.readFile(filename, 'utf-8');
-            const css = data.replace(/\${(.+?)}/g, (_, src) => {
-                return src.split(".").reduce((total, current) => total[current], renderArg)
-            })
+            const css = data.replace(/\${(.+?)}/g, (_, $arg) => $arg.split(".").reduce((obj, attr) => obj[attr], args));
             this.utils.insertStyle(`plugin-${name}-style`, css);
-        } catch (e) {
-            console.error(e);
+        } catch (err) {
+            console.error(`replace args error. file: ${name}. err: ${err}`);
         }
     }
 
@@ -1682,6 +1684,9 @@ class styleTemplater {
             return style.innerHTML
         }
     }
+
+    // 注册公共样式
+    process = async () => await this.register("plugin-common");
 }
 
 // faster then innerHTML, less memory usage, more secure, but poor readable
@@ -1818,12 +1823,6 @@ class exportHelper {
         return new Promise(resolve => resolve(html));
     }
 
-    isPromise = obj => {
-        return !!obj
-            && (typeof obj === 'object' || typeof obj === 'function')
-            && typeof obj.then === 'function';
-    };
-
     afterExportSync = (exportResult, ...args) => {
         const exportConfig = args[0];
         if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
@@ -1835,7 +1834,7 @@ class exportHelper {
         for (const helper of this.helper.values()) {
             if (helper.afterExport) {
                 const newHtml = helper.afterExport(html, writeIdx);
-                if (newHtml && !this.isPromise(newHtml)) {
+                if (newHtml && !this.utils.isPromise(newHtml)) {
                     html = newHtml;
                 }
             }
@@ -1949,7 +1948,7 @@ class process {
         global._plugins = {};     // 启用的插件
         global._all_plugins = {}; // 全部的插件
 
-        const pluginSettings = this.utils.readSetting(
+        const pluginSettings = await this.utils.readSetting(
             "./plugin/global/settings/settings.default.toml",
             "./plugin/global/settings/settings.user.toml",
         );
@@ -1984,6 +1983,7 @@ class process {
             global._hotkeyHub.process(),
             global._exportHelper.process(),
             global._thirdPartyDiagramParser.process(),
+            global._styleTemplater.process(),
         ]);
 
         // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面

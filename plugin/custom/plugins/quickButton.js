@@ -4,7 +4,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
             this.config.buttons.forEach(btn => {
                 const [fixedName, func] = btn.callback.split(".");
                 const plugin = this.utils.getPlugin(fixedName) || this.utils.getCustomPlugin(fixedName);
-                if (plugin && plugin[func]) {
+                if (plugin && plugin[func] instanceof Function) {
                     const style = btn.font_size ? {fontSize: btn.font_size} : undefined;
                     this.utils.registerQuickButton(btn.action, btn.coordinate, btn.hint, btn.icon, style, plugin[func]);
                 }
