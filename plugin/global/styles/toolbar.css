@@ -27,7 +27,7 @@
     padding-right: 20px;
     overflow: hidden;
     cursor: pointer;
-    border-bottom: 0.5px solid #ddd;
+    border-bottom: 1px solid #ddd;
 }
 
 .plugin-toolbar-item:hover, .plugin-toolbar-item.active {

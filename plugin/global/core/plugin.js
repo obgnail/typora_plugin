@@ -1236,9 +1236,7 @@ class thirdPartyDiagramParser {
         }, 300)
     }
 
-    process = () => {
-        this.utils.registerExportHelper("third-party-diagram-parser", this.beforeExport, this.afterExport);
-    }
+    process = () => this.utils.registerExportHelper("third-party-diagram-parser", this.beforeExport, this.afterExport);
 }
 
 class eventHub {
@@ -1680,6 +1678,9 @@ class styleTemplater {
             return style.innerHTML
         }
     }
+
+    // 注册公共样式
+    process = async () => await this.register("plugin-common");
 }
 
 // faster then innerHTML, less memory usage, more secure, but poor readable
@@ -1856,13 +1857,6 @@ class exportHelper {
     }
 }
 
-class commonStyle {
-    constructor() {
-        this.utils = utils;
-    }
-    process = async () => await this.utils.registerStyleTemplate("plugin-common");
-}
-
 class basePlugin {
     constructor(fixedName, setting) {
         this.fixedName = fixedName;
@@ -1982,7 +1976,6 @@ class process {
         // 等待插件都注册完成才能执行process
         await Promise.all([
             global._eventHub.process(),
-            global._commonStyle.process(),
             global._diagramParser.process(),
             global._modalGenerator.process(),
             global._quickButtonGenerator.process(),
@@ -1990,6 +1983,7 @@ class process {
             global._hotkeyHub.process(),
             global._exportHelper.process(),
             global._thirdPartyDiagramParser.process(),
+            global._styleTemplater.process(),
         ]);
 
         // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
@@ -2001,8 +1995,6 @@ class process {
 global._pluginUtils = utils;
 // 插件的父类
 global._basePlugin = basePlugin;
-// 公共样式
-global._commonStyle = new commonStyle();
 // 注册、发布生命周期事件
 global._eventHub = new eventHub();
 // 自定义代码块语法
