@@ -306,8 +306,8 @@ class utils {
         return 0
     }
 
-    // merge({a: [{ b: 2 }] } {a: [{ c: 2 }]}) -> {a: [{b:2}, {c:2}]}
-    // merge({o: {a: 3}}, {o: {b:4}}) -> {o: {a:3, b:4}}
+    // merge({a: [{b: 2}] }, {a: [{c: 2}]}) -> {a: [ {c: 2} ] }
+    // merge({o: {a: 3}}, {o: {b: 4}}) -> {o: {a: 3, b: 4} }
     static merge = (source, other) => {
         const isObject = value => {
             const type = typeof value
@@ -317,13 +317,11 @@ class utils {
         if (!isObject(source) || !isObject(other)) {
             return other === undefined ? source : other
         }
-        // 合并两个对象的 key，另外要区分数组的初始值为 []
         return Object.keys({
             ...source,
             ...other
         }).reduce((acc, key) => {
-            // 递归合并 value
-            acc[key] = this.merge(source[key], other[key])
+            acc[key] = (Array.isArray(source[key]) && Array.isArray(other[key])) ? other[key] : this.merge(source[key], other[key])
             return acc
         }, Array.isArray(source) ? [] : {})
     }

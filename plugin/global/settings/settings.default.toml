@@ -7,7 +7,7 @@
 ############### global ###############
 # 通用配置
 [global]
-# 所有插件的开关，若设为false，则关闭全部插件
+# 所有插件的总开关，若为false，则关闭全部插件
 ENABLE = true
 # 如果你使用了自定义图表插件（kanban、markmap、echarts等等）并且使用了交互模式（INTERACTIVE_MODE置为true），那么下面两个配置请至少一个置为true，否则你将不能退出交互模式，修改fence
 # 为【自定义图表】添加一个【编辑】按钮（当点击【编辑】按钮时退出交互模式）
@@ -151,20 +151,20 @@ STYLE_COLOR = [
     '#dd6699',
 ]
 # 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
-# 20个关键字肯定够用了,此选项没太大意义
+# 20个关键字肯定够用了，此选项没太大意义
 # 就算20个真的不够用,那我也是建议你给STYLE_COLOR选项新增一些颜色，而不是修改此选项
 DEFAULT_COLOR = "aquamarine"
 # DO NOT edit this field unless you know what you are doing
 # Typora本身有限制: ctrl+F 搜索后，点击任意地方原先高亮的地方就会消失
 # 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
-# 如果此配置设置为 false，有可能导致你无法编辑页面，直到你重新打开此文件
+# 如果此选项为false，有可能导致你无法编辑页面，直到你重新打开此文件
 REMOVE_WHEN_EDIT = true
 # DO NOT edit this field unless you know what you are doing
-# 性能选项：关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0,则总是使用
+# 性能选项：关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0，则总是使用
 # 此选项用在当搜索了很多关键字时，保证有较快的响应速度
 USE_LIST_THRESHOLD = -1
 # DO NOT edit this field unless you know what you are doing
-# 性能选项：当fenceMultiHighlighterList数量超过X时，clear之（以时间换空间）。若<0,则总不启用
+# 性能选项：当fenceMultiHighlighterList数量超过X时，clear之（以时间换空间）。若<0，则总不启用
 # 此选项用在当上一个策略使用太多次后，花费时间去回收空间，保证不会占用太大内存
 CLEAR_LIST_THRESHOLD = 12
 
@@ -229,7 +229,7 @@ USE_BUILTIN = true
 # 目前支持4个参数:
 #   1. name:   命令展示的名称
 #   2. shell:  cmd/bash、powershell、gitbash、wsl（如果使用 gitbash、wsl，请确保已经将其加入环境变量）
-#   3. hotkey: 快捷键调用命令行
+#   3. hotkey: 快捷键调用命令行（可选）
 #   4. cmd:    执行的命令
 # cmd提供内置环境变量:
 #   1. $f: 当前文件路径
@@ -269,7 +269,7 @@ CLICKABLE = true
 # 快捷键
 HOTKEY = ["ctrl+shift+b"]
 # 不希望拆分的单词：
-#   ==   是github markdown的高亮拓展语法
+#   ==   是highlight拓展语法
 #   > [! 是callouts拓展语法
 IGNORE_WORDS = ["==", "> [!"]
 
@@ -333,8 +333,7 @@ TOOLBAR_WIDTH_PERCENT = 80
 
 ############### blur ###############
 [blur]
-# 启用插件
-# 此插件暂时无法在低版本Typora使用
+# 启用插件（此插件暂时无法在低版本Typora使用）
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "模糊模式"
@@ -342,13 +341,13 @@ NAME = "模糊模式"
 CLICKABLE = true
 # 快捷键
 HOTKEY = ""
-# 默认使用模糊模式
+# 默认使用模糊模式（打开Typora就进入模糊模式）
 BLUR_DEFAULT = false
-# 模糊类型: blur/hide（若为hide，则RESRTORE_WHEN_HOVER无效）
+# 模糊类型: blur/hide
 #   blur：非聚焦组件变模糊
 #   hide：非聚焦组件直接隐藏
 BLUR_TYPE = "blur"
-# 鼠标悬停时可见
+# 鼠标悬停时可见(BLUR_TYPE为hide时失效)
 RESRTORE_WHEN_HOVER = true
 # 模糊等级: 数值越大越模糊(BLUR_TYPE为hide时失效)
 BLUR_LEVEL = 10
@@ -548,13 +547,13 @@ CLICKABLE = true
 AUTO_HIDE = false
 # 启用复制代码功能
 ENABLE_COPY = true
-# 启用代码调整缩进功能(正式版Typora才可使用)
+# 启用代码调整缩进功能(此功能低版本Typora不可使用)
 ENABLE_INDENT = true
 # 启用折叠代码功能
 ENABLE_FOLD = true
 # 折叠形式：
 #   1.hidden: 隐藏除第一行外的所有行
-#   2.scroll: 添加滚动条（因为可视高度只有一行，所以非常反人类）
+#   2.scroll: 添加滚动条（可视高度只有一行，所以非常反人类）
 FOLD_OVERFLOW = "hidden"
 # 所有代码块默认使用折叠
 FOLD_DEFAULT = false
@@ -598,8 +597,8 @@ ENABLE = true
 NAME = "导出增强"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 是否下载网络图片(若为true,有可能因为网络问题导致超时)
-# 此选项可在右键菜单中修改，不建议设置为true，除非你有频繁导出html的需求
+# 是否下载网络图片(若为true，有可能因为网络问题导致导出超时)
+# 此选项可在右键菜单中修改，不建议在配置中置为true，除非你有频繁导出html的需求
 DOWNLOAD_NETWORK_IMAGE = false
 
 
@@ -650,7 +649,7 @@ DO_NOT_HIDE = false
 # 对于【启用但是没有出现在下面MENUS选项】的插件，自动加入到最后一个MENUS
 # 强烈不建议将此选项置为false，若置为false，且在MENUS中删去那些处于启用状态的插件，那么：
 #   1. 那些插件依旧处于启用状态，但是就不能通过右键菜单调用了
-#   2. 如果插件系统后续新增了插件，那么你就根本无法感知到新增的插件的存在
+#   2. 如果插件系统后续新增了插件，那么你就根本无法感知到新增插件的存在
 FIND_LOST_PLUGIN = true
 # 自定义右键菜单
 #  每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
