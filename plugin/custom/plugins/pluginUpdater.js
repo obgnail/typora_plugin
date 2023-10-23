@@ -1,20 +1,21 @@
 class pluginUpdater extends BaseCustomPlugin {
-    // 当前升级插件仅支持windows平台
-    beforeProcess = () => (!File.isWin) ? this.utils.stopLoadPluginError : undefined
+    beforeProcess = async () => {
+        // 当前升级插件仅支持windows平台
+        if (!File.isWin) return this.utils.stopLoadPluginError
+        const file = this.utils.joinPath("./plugin/updater/updater.exe");
+        const exist = await this.utils.existPath(file);
+        if (!exist) return this.utils.stopLoadPluginError
+        this.updaterEXE = file;
+    }
 
-    selector = () => (this.updaterExeExist && this.commanderPlugin) ? "" : this.utils.nonExistSelector
+    selector = () => (this.updaterEXE && this.commanderPlugin) ? "" : this.utils.nonExistSelector
 
     hint = () => "当你发现BUG，可以尝试更新，说不定就解决了"
-
-    init = () => {
-        this.commanderPlugin = null;
-        this.updaterExeExist = this.utils.existInPluginPath("./plugin/updater/updater.exe");
-    }
 
     process = () => {
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
             this.commanderPlugin = this.utils.getPlugin("commander");
-            if (this.updaterExeExist && this.commanderPlugin && this.config.auto_update) {
+            if (this.updaterEXE && this.commanderPlugin && this.config.auto_update) {
                 if (this.config.start_update_interval > 0) {
                     setTimeout(this.silentUpdate, this.config.start_update_interval);
                 }
@@ -60,13 +61,10 @@ class pluginUpdater extends BaseCustomPlugin {
         await this.update(proxy, this.config.auto_exec_show);
     }
 
-    getProxy = async () => this.config.proxy || (await new ProxyGetter(this.utils).getProxy()) || ""
+    getProxy = async () => this.config.proxy || (await new ProxyGetter(this).getProxy()) || ""
 
     // 保不齐有些用户就是不守规矩，升级前和升级后都执行一次
-    adjustFile = async () => {
-        await new binFileUpdater(this.utils).run();
-        await new extraOperation(this.utils).run();
-    }
+    adjustFile = async () => await new binFileUpdater(this).run();
 
     update = async (proxy, exec, hint, callback) => {
         proxy = (proxy || "").trim();
@@ -81,40 +79,9 @@ class pluginUpdater extends BaseCustomPlugin {
     }
 }
 
-// 处理每次升级后的额外操作
-// 理论上是不需要用到此工具的，但是由于之前的updater.exe有缺陷，遗留下一些问题，被迫用此工具处理存量的脏文件
-// 过段时间会删除掉此helper，不过保留也没啥问题，毕竟只在升级的时候执行
-class extraOperation {
-    constructor(utils) {
-        this.utils = utils
-    }
-
-    updateTo1_3_5 = () => {
-        if (this.utils.existInPluginPath("./plugin/md_padding.js")) {
-            [
-                "./plugin/global/utils/md-padding",
-                "./plugin/global/utils/node_modules",
-                "./plugin/global/utils/package.json",
-                "./plugin/global/utils/package-lock.json",
-                "./plugin/md_padding.js",
-            ].forEach(path => this.utils.Package.FsExtra.remove(this.utils.joinPath(path)))
-        }
-    }
-
-    updateTo1_3_10 = () => {
-        const file = this.utils.joinPath("./plugin/custom/plugins/modalExample.js");
-        this.utils.existPath(file) && this.utils.Package.FsExtra.remove(file);
-    }
-
-    run = async () => {
-        this.updateTo1_3_5();
-        this.updateTo1_3_10();
-    }
-}
-
 class binFileUpdater {
-    constructor(utils) {
-        this.utils = utils
+    constructor(controller) {
+        this.utils = controller.utils
     }
 
     run = async () => {
@@ -179,8 +146,8 @@ class binFileUpdater {
 }
 
 class ProxyGetter {
-    constructor(utils) {
-        this.utils = utils
+    constructor(controller) {
+        this.utils = controller.utils
     }
 
     getProxy = () => {
@@ -195,61 +162,40 @@ class ProxyGetter {
         }
     }
 
-    getWindowsProxy = () => {
-        return new Promise(resolve => {
-            this.utils.Package.ChildProcess.exec(`reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" | find /i "proxyserver"`,
-                (err, stdout, stderr) => {
-                    if (err || stderr) {
-                        resolve(null);
-                    } else {
-                        const match = stdout.match(/ProxyServer\s+REG_SZ\s+(.*)/i);
-                        if (match && match[1]) {
-                            resolve(match[1]);
-                        } else {
-                            resolve(null);
-                        }
-                    }
-                });
-        });
-    };
+    _getProxy = (cmd, func) => new Promise(resolve => {
+        this.utils.Package.ChildProcess.exec(cmd, (err, stdout, stderr) => {
+            const result = (err || stderr) ? null : func(stdout);
+            resolve(result);
+        })
+    })
 
-    getMacProxy = () => {
-        return new Promise(resolve => {
-            this.utils.Package.ChildProcess.exec('networksetup -getwebproxy "Wi-Fi"',
-                (err, stdout, stderr) => {
-                    if (err || stderr) {
-                        resolve(null);
-                    } else {
-                        const match = stdout.match(/Enabled: (.+)\nServer: (.+)\nPort: (.+)\n/i);
-                        if (match && match[1] === 'Yes' && match[2] && match[3]) {
-                            resolve(`${match[2]}:${match[3]}`);
-                        } else {
-                            resolve(null);
-                        }
-                    }
-                });
-        });
-    };
+    getWindowsProxy = () => this._getProxy(
+        `reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" | find /i "proxyserver"`,
+        stdout => {
+            const match = stdout.match(/ProxyServer\s+REG_SZ\s+(.*)/i);
+            return (match && match[1]) ? match[1] : null
+        }
+    )
 
-    getLinuxProxy = () => {
-        return new Promise(resolve => {
-            this.utils.Package.Fs.readFile('/etc/environment', 'utf8',
-                (err, data) => {
-                    if (err) {
-                        resolve(null);
-                    } else {
-                        const match = data.match(/http_proxy=(.+)/i);
-                        if (match && match[1]) {
-                            resolve(match[1]);
-                        } else {
-                            resolve(null);
-                        }
-                    }
-                });
+    getMacProxy = () => this._getProxy('networksetup -getwebproxy "Wi-Fi"', stdout => {
+        const match = stdout.match(/Enabled: (.+)\nServer: (.+)\nPort: (.+)\n/i);
+        return (match && match[1] === 'Yes' && match[2] && match[3])
+            ? `${match[2]}:${match[3]}`
+            : null
+    })
+
+    getLinuxProxy = () => new Promise(resolve => {
+        this.utils.Package.Fs.readFile('/etc/environment', 'utf8', (err, data) => {
+            if (err) {
+                resolve(null);
+            } else {
+                const match = data.match(/http_proxy=(.+)/i);
+                const result = (match && match[1]) ? match[1] : null;
+                resolve(result);
+            }
         });
-    };
+    });
 }
-
 
 module.exports = {
     plugin: pluginUpdater

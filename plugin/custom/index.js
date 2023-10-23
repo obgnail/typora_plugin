@@ -206,7 +206,7 @@ class BaseCustomPlugin {
 
     modal = (pluginModal, callback, cancelCallback) => this.utils.modal(pluginModal, callback, cancelCallback);
 
-    beforeProcess = () => {
+    beforeProcess = async () => {
     }
     init = () => {
     }

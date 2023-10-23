@@ -477,7 +477,7 @@ class windowTabBarPlugin extends global._basePlugin {
 
     exitTabFile = () => {
         const filepath = this.getTabFile();
-        return this.utils.existPath(filepath)
+        return this.utils.existPathSync(filepath)
     }
 
     saveTabs = filepath => {
