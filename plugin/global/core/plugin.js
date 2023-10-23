@@ -317,10 +317,10 @@ class utils {
         if (!isObject(source) || !isObject(other)) {
             return other === undefined ? source : other
         }
-        return Object.keys({...source, ...other}).reduce((acc, key) => {
+        return Object.keys({...source, ...other}).reduce((obj, key) => {
             const isArray = Array.isArray(source[key]) && Array.isArray(other[key])
-            acc[key] = isArray ? other[key] : this.merge(source[key], other[key])
-            return acc
+            obj[key] = isArray ? other[key] : this.merge(source[key], other[key])
+            return obj
         }, Array.isArray(source) ? [] : {})
     }
 
@@ -439,21 +439,14 @@ class utils {
         return $.getScript(`file:///${jsFilepath}`);
     }
 
-    static newFilePath = filepath => {
-        if (filepath) {
-            filepath = this.Package.Path.join(this.Package.Path.dirname(this.getFilePath()), filepath);
-        } else {
-            filepath = this.getFilePath();
-        }
-
+    static newFilePath = filename => {
+        const cur = this.getFilePath();
+        let filepath = !filename ? cur : this.Package.Path.join(this.Package.Path.dirname(cur), filename);
         if (this.existPathSync(filepath)) {
             const ext = this.Package.Path.extname(filepath);
-            if (ext) {
-                const regex = new RegExp(`${ext}$`);
-                filepath = filepath.replace(regex, `-copy${ext}`);
-            } else {
-                filepath = filepath + "-copy.md";
-            }
+            filepath = ext
+                ? filepath.replace(new RegExp(`${ext}$`), `-copy${ext}`)
+                : filepath + "-copy.md"
         }
         return filepath
     }
@@ -471,11 +464,15 @@ class utils {
     static getDirname = () => global.dirname || global.__dirname
     static getFilePath = () => File.filePath || File.bundle && File.bundle.filePath
     static joinPath = (...paths) => this.Package.Path.join(this.getDirname(), ...paths)
+    static requireFilePath = (...paths) => reqnode(this.joinPath(...paths))
+    static readFileSync = filepath => this.Package.Fs.readFileSync(this.joinPath(filepath), 'utf8')
 
-    static requireFilePath = (...paths) => {
-        const filepath = this.joinPath(...paths);
-        return reqnode(filepath)
-    }
+    static readFiles = async files => Promise.all(files.map(async file => {
+        try {
+            return await this.Package.Fs.promises.readFile(file, 'utf-8')
+        } catch (err) {
+        }
+    }))
 
     static existPathSync = filepath => {
         try {
@@ -492,18 +489,6 @@ class utils {
         } catch (err) {
         }
     }
-
-    static readFileSync = filepath => {
-        filepath = this.joinPath(filepath);
-        return this.Package.Fs.readFileSync(filepath, 'utf8');
-    }
-
-    static readFiles = async files => Promise.all(files.map(async file => {
-        try {
-            return await this.Package.Fs.promises.readFile(file, 'utf-8')
-        } catch (err) {
-        }
-    }))
 
     static readToml = filepath => {
         const pluginsFile = this.readFileSync(filepath);
@@ -830,13 +815,8 @@ class diagramParser {
     ) => {
         lang = lang.toLowerCase();
         this.parsers.set(lang, {
-            lang,
-            destroyWhenUpdate,
-            renderFunc,
-            cancelFunc,
-            destroyAllFunc,
-            extraStyleGetter,
-            interactiveMode
+            lang, destroyWhenUpdate, renderFunc, cancelFunc,
+            destroyAllFunc, extraStyleGetter, interactiveMode
         });
         console.debug(`register diagram parser: [ ${lang} ]`);
     }
@@ -851,23 +831,14 @@ class diagramParser {
 
     process = async () => {
         if (this.parsers.size === 0) return;
-
         await this.registerStyleTemplate();
-
-        // 添加时
-        this.onAddCodeBlock();
-        // 修改语言时
-        this.onTryAddLangUndo();
-        // 更新时
-        this.onUpdateDiagram();
-        // 导出时
-        this.onExportToHTML();
-        // 聚焦时
-        this.onFocus();
-        // 切换文件时
-        this.onChangeFile();
-        // 判断是否为Diagram时
-        this.onCheckIsDiagramType();
+        this.onAddCodeBlock();       // 添加代码块时
+        this.onTryAddLangUndo();     // 修改语言时
+        this.onUpdateDiagram();      // 更新时
+        this.onExportToHTML();       // 导出时
+        this.onFocus();              // 聚焦时
+        this.onChangeFile();         // 切换文件时
+        this.onCheckIsDiagramType(); // 判断是否为Diagram时
     }
 
     isDiagramType = lang => File.editor.diagrams.constructor.isDiagramType(lang)
@@ -1120,7 +1091,6 @@ class diagramParser {
 
     onCheckIsDiagramType = () => {
         this.utils.decorate(
-            // black magic
             () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor && File.editor.diagrams.constructor.isDiagramType),
             "File.editor.diagrams.constructor.isDiagramType",
             null,
@@ -1338,7 +1308,7 @@ class eventHub {
                 || mutationList.length && mutationList[0].addedNodes.length && mutationList[0].removedNodes.length) {
                 debouncePublish();
             }
-        }).observe(write, {characterData: true, childList: true, subtree: true});
+        }).observe(document.querySelector("#write"), {characterData: true, childList: true, subtree: true});
     }
 }
 
@@ -1638,7 +1608,7 @@ class hotkeyHub {
     }
 
     register = hotkeyList => {
-        if (hotkeyList) {
+        if (hotkeyList && hotkeyList.length) {
             for (const hotkey of hotkeyList) {
                 this._register(hotkey.hotkey, hotkey.callback);
             }
@@ -1770,8 +1740,7 @@ class htmlTemplater {
                     break
                 case "children":
                     for (const child of value) {
-                        const c = this.create(child);
-                        el.appendChild(c);
+                        el.appendChild(this.create(child));
                     }
                     break
                 default:
@@ -1849,8 +1818,7 @@ class exportHelper {
     }
 
     process = () => {
-        // 旧版本的Typora的export函数不是AsyncFunction
-        // 尽最大努力兼容旧版本
+        // 旧版本的Typora的export函数不是AsyncFunction，尽最大努力兼容旧版本
         this.utils.loopDetector(
             () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
             () => {
@@ -1907,10 +1875,7 @@ class process {
         if (typeof style === "string") {
             this.utils.insertStyle(`plugin-${fixedName.replace(/_/g, "-")}-style`, style);
         } else if (typeof style === "object") {
-            const textID = style["textID"] || null;
-            const text = style["text"] || null;
-            const fileID = style["fileID"] || null;
-            const file = style["file"] || null;
+            const {textID = null, text = null, fileID = null, file = null} = style;
             if (fileID && file) {
                 this.utils.insertStyleFile(fileID, file);
             }
@@ -1976,10 +1941,8 @@ class process {
             })
         );
 
-        // 发布事件
         this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
 
-        // 等待插件都注册完成才能执行process
         await Promise.all([
             global._eventHub.process(),
             global._diagramParser.process(),
@@ -2009,7 +1972,7 @@ global._diagramParser = new diagramParser();
 global._thirdPartyDiagramParser = new thirdPartyDiagramParser();
 // 状态记录器
 global._stateRecorder = new stateRecorder();
-// 弹出模态框
+// 模态框
 global._modalGenerator = new modalGenerator();
 // 右下角的快速按钮
 global._quickButtonGenerator = new quickButtonGenerator();
