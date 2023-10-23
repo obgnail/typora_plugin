@@ -446,7 +446,7 @@ class utils {
             filepath = this.getFilePath();
         }
 
-        if (this.existPath(filepath)) {
+        if (this.existPathSync(filepath)) {
             const ext = this.Package.Path.extname(filepath);
             if (ext) {
                 const regex = new RegExp(`${ext}$`);
@@ -477,7 +477,7 @@ class utils {
         return reqnode(filepath)
     }
 
-    static existPath = filepath => {
+    static existPathSync = filepath => {
         try {
             this.Package.Fs.accessSync(filepath);
             return true
@@ -485,7 +485,13 @@ class utils {
         }
     }
 
-    static existInPluginPath = filepath => this.existPath(this.joinPath(filepath))
+    static existPath = async filepath => {
+        try {
+            await this.Package.Fs.promises.access(filepath);
+            return true
+        } catch (err) {
+        }
+    }
 
     static readFileSync = filepath => {
         filepath = this.joinPath(filepath);

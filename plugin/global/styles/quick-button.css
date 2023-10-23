@@ -6,7 +6,7 @@
     gap: 10px;
     right: 30px;
     bottom: 50px;
-    z-index: auto;
+    z-index: 9998;
     font-size: 28px;
     text-align: center;
     color: var(--active-file-border-color);
