@@ -1,11 +1,8 @@
 class collapseParagraphPlugin extends global._basePlugin {
-    beforeProcess = () => {
-        this.className = "plugin-collapsed-paragraph";
-    }
-
     styleTemplate = () => true
 
     init = () => {
+        this.className = "plugin-collapsed-paragraph";
         this.paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
         this.callArgs = [
             {arg_name: "折叠全部章节", arg_value: "collapse_all"},
@@ -15,6 +12,7 @@ class collapseParagraphPlugin extends global._basePlugin {
 
     process = () => {
         this.init();
+
         this.recordCollapseState(false);
 
         document.getElementById("write").addEventListener("click", ev => {

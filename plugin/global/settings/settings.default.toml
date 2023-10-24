@@ -557,6 +557,12 @@ ENABLE_FOLD = true
 FOLD_OVERFLOW = "hidden"
 # 所有代码块默认使用折叠
 FOLD_DEFAULT = false
+# 高亮鼠标悬停所在的代码行，若置为false，则HIGHLIGHT_COLOR失效
+# 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
+HIGHLIGHT_WHEN_HOVER = false
+# 高亮颜色
+HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
+
 # 操作成功时，icon提示的保持时间（单位：ms）
 # 比如当你点击【复制代码】按钮后，icon会变成【✔】，并在保持一段时间后自动恢复。此选项就是设置这个保持时间
 WAIT_RECOVER_INTERVAL = 1000

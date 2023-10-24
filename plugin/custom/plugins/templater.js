@@ -48,24 +48,15 @@ date: {{date}} {{weekday}}
         const modal = {
             title: "新文件",
             components: [
-                {
-                    label: "文件名",
-                    type: "input",
-                    value: "",
-                    placeholder: "请输入新文件名，为空则创建副本",
-                },
-                {
-                    label: "模板",
-                    type: "select",
-                    list: templateList.map(template => template.name),
-                }
+                {label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本"},
+                {label: "模板", type: "select", list: templateList.map(template => template.name)}
             ]
         }
 
         this.modal(modal, components => {
             let filepath = components[0].submit;
             if (filepath && !filepath.endsWith(".md")) {
-                filepath += ".md"
+                filepath += ".md";
             }
             filepath = this.utils.newFilePath(filepath);
             const filename = this.utils.Package.Path.basename(filepath);

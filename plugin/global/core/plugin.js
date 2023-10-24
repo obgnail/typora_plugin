@@ -1956,7 +1956,7 @@ class process {
         ]);
 
         // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
-        setTimeout(this.utils.reload, 100);
+        setTimeout(this.utils.reload, 50);
     }
 }
 
