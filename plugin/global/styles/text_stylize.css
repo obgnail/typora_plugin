@@ -1,0 +1,20 @@
+#plugin-text-stylize {
+    top: 10%;
+    left: 60%;
+}
+
+#plugin-text-stylize table {
+    display: block;
+    margin: 10px;
+}
+
+#plugin-text-stylize td {
+    width: 30px;
+    height: 30px;
+    border: 1px #000 solid;
+    cursor: pointer;
+}
+
+#plugin-text-stylize td:hover {
+    border: 2px #fff solid;
+}

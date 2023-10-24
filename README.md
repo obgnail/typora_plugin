@@ -46,11 +46,13 @@
 | 36   | extract_range_to_new_file  | 提取选区文字到新文件                   |
 | 37   | full_path_copy             | 复制标题路径                           |
 | 38   | auto_trailing_white_space  | 自动添加结尾空格                       |
-| 39   | open_in_total_commander    | 在 total commander 打开                |
-| 40   | mermaid_replace            | 替换 mermaid 组件                      |
-| 41   | custom                     | 用户自定义命令（高级）                 |
-| 42   | hotkey_hub                 | 快捷键注册中心（高级）                 |
-| 43   | old_window_tab             | 标签页管理（已废弃）                   |
+| 39   | text_stylize               | 文字风格化                             |
+| 40   | open_in_total_commander    | 在 total commander 打开                |
+| 41   | mermaid_replace            | 替换 mermaid 组件                      |
+| 42   | custom                     | 用户自定义命令（高级）                 |
+| 43   | hotkey_hub                 | 快捷键注册中心（高级）                 |
+| 44   | quick_button               | 于右下角添加功能按钮（高级）           |
+| 45   | old_window_tab             | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -786,6 +788,14 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 
 
 
+### text_stylize：文字风格化
+
+将文字转为 html 格式，改变文字样式。
+
+使用方式：右键菜单 -> 非常用插件 -> 文字风格化。
+
+
+
 ### mermaid_replace：替换 mermaid
 
 如果你不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此插件。
@@ -801,6 +811,14 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 功能：以声明的形式，为【任意插件系统函数】或【任意自定义函数】设置快捷键。
 
 具体使用请参考 `hotkey.default.toml`。
+
+
+
+### quick_button：于右下角添加功能按钮（高级）
+
+> 此配置是高级配置，仅对有 javascript 基础的用户开放。
+
+功能和 hotkeyHub 类似，以声明的形式，为【任意插件系统函数】设置快捷按钮。
 
 
 

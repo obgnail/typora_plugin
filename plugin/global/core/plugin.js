@@ -586,11 +586,27 @@ class utils {
         File.isFocusMode && File.editor.updateFocusMode(false);
     }
 
-    static insertText = (anchorNode, content) => {
-        File.editor.contextMenu.hide();
-        // File.editor.writingArea.focus();
-        File.editor.restoreLastCursor();
+    static insertText = (anchorNode, content, restoreLastCursor = true) => {
+        if (restoreLastCursor) {
+            File.editor.contextMenu.hide();
+            // File.editor.writingArea.focus();
+            File.editor.restoreLastCursor();
+        }
         File.editor.insertText(content);
+    }
+
+    static getRangy = () => {
+        const range = File.editor.selection.getRangy();
+        const markElem = File.editor.getMarkElem(range.anchorNode);
+        const node = File.editor.findNodeByElem(markElem);
+        const bookmark = range.getBookmark(markElem[0]);
+        return {range, markElem, node, bookmark}
+    }
+
+    static getRangyText = () => {
+        const {node, bookmark} = this.getRangy();
+        const ele = File.editor.findElemById(node.cid);
+        return ele.rawText().substring(bookmark.start, bookmark.end);
     }
 
     static insertDiv = div => {
