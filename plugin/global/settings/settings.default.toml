@@ -557,6 +557,12 @@ ENABLE_FOLD = true
 FOLD_OVERFLOW = "hidden"
 # 所有代码块默认使用折叠
 FOLD_DEFAULT = false
+# 高亮鼠标悬停所在的代码行，若置为false，则HIGHLIGHT_COLOR失效
+# 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
+HIGHLIGHT_WHEN_HOVER = false
+# 高亮颜色
+HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
+
 # 操作成功时，icon提示的保持时间（单位：ms）
 # 比如当你点击【复制代码】按钮后，icon会变成【✔】，并在保持一段时间后自动恢复。此选项就是设置这个保持时间
 WAIT_RECOVER_INTERVAL = 1000
@@ -618,6 +624,34 @@ THRESHOLD = 20
 RECORD_RESIZE = true
 
 
+############### text_stylize ###############
+[text_stylize]
+# 启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "文字风格化"
+# 是否在右键菜单中可点击
+CLICKABLE = true
+# 弹出颜色面板的快捷键
+SHOW_MODAL_HOTKEY = ""
+# 设置字体颜色的快捷键
+SET_COLOR_HOTKEY = ""
+# 每13个颜色一行
+NUM_PER_LINE = 13
+# 颜色列表（由于markdown支持的html语法限制， 不支持rgb格式的颜色）
+COLORS = [
+    "#330000", "#331900", "#333300", "#193300", "#003300", "#003319", "#003333", "#001933", "#000033", "#190033", "#330033", "#330019", "#000000",
+    "#660000", "#663300", "#666600", "#336600", "#006600", "#006633", "#006666", "#003366", "#000066", "#330066", "#660066", "#660033", "#202020",
+    "#990000", "#994C00", "#999900", "#4C9900", "#009900", "#00994C", "#009999", "#004C99", "#000099", "#4C0099", "#990099", "#99004C", "#404040",
+    "#CC0000", "#CC6600", "#CCCC00", "#66CC00", "#00CC00", "#00CC66", "#00CCCC", "#0066CC", "#0000CC", "#6600CC", "#CC00CC", "#CC0066", "#606060",
+    "#FF0000", "#FF8000", "#FFFF00", "#80FF00", "#00FF00", "#00FF80", "#00FFFF", "#0080FF", "#0000FF", "#7F00FF", "#FF00FF", "#FF007F", "#808080",
+    "#FF3333", "#FF9933", "#FFFF33", "#99FF33", "#33FF33", "#33FF99", "#33FFFF", "#3399FF", "#3333FF", "#9933FF", "#FF33FF", "#FF3399", "#A0A0A0",
+    "#FF6666", "#FFB266", "#FFFF66", "#B2FF66", "#66FF66", "#66FFB2", "#66FFFF", "#66B2FF", "#6666FF", "#B266FF", "#FF66FF", "#FF66B2", "#C0C0C0",
+    "#FF9999", "#FFCC99", "#FFFF99", "#CCFF99", "#99FF99", "#99FFCC", "#99FFFF", "#99CCFF", "#9999FF", "#CC99FF", "#FF99FF", "#FF99CC", "#E0E0E0",
+    "#FFCCCC", "#FFE5CC", "#FFFFCC", "#E5FFCC", "#CCFFCC", "#CCFFE5", "#CCFFFF", "#CCE5FF", "#CCCCFF", "#E5CCFF", "#FFCCFF", "#FFCCE5", "#FFFFFF",
+]
+
+
 ############### custom ###############
 [custom]
 # 启用插件
@@ -668,6 +702,7 @@ LIST = [
     "truncate_text",
     "export_enhance",
     "resize_table",
+    "text_stylize",
     "toolbar",
     "right_click_menu",
     "---",

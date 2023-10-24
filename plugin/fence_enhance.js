@@ -1,21 +1,11 @@
-/*  1. Typora是延迟加载页面的，文件内容都是通过延迟执行的js写入document的，具体代码在frame.js中$__System.registerDynamic函数中。
-    2. 糟糕的是md-fences在frame.js中是很晚生成的，并且有清空innerHTML操作的，你必须等到frame.js执行完毕后才能执行你的脚本，使用onload，DOMContentLoaded，statechange什么的都不行。
-        否则你插入的标签都会被清空，一切白费。原因很简单：frame.js执行的时机很晚，你可以认为是一个在网页全部加载完毕后执行的Ajax请求。
-    3. 这里给出清空md-fences的函数链条，打个断点就知道了：
-        restoreEditStateFromData -> refresh -> refreshUnder -> refreshEditor -> addCodeBlock -> b.addClass("ty-contain-cm").html("");
-    4. 解决方法有很多，比如：
-        1. 使用::before伪标签。既然标签会被清空，伪标签不就可以了么
-        2. 循环检测md-fences的状态，检测到全部加载完成后执行脚本。
-    5. 我选择的是装饰器。给上述逻辑链条的addCodeBlock函数注入一段after逻辑。
-        这样的好处是:不管是文件本身就存在的，还是用户编辑文件时新增的都可以自动执行脚本，不必整一个MutationObserver。
-        坏处是:绿皮
-*/
 class fenceEnhancePlugin extends global._basePlugin {
     beforeProcess = () => {
         this.enableIndent = this.config.ENABLE_INDENT && !this.utils.isBetaVersion;
     }
 
-    styleTemplate = () => true
+    styleTemplate = () => this.config.HIGHLIGHT_WHEN_HOVER
+        ? {highlight_style: `.CodeMirror-line:hover { background: ${this.config.HIGHLIGHT_LINE_COLOR}; }`}
+        : true
 
     init = () => {
         this.builders = [];

@@ -44,7 +44,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     }
 
     insertText = (symbol, pairSymbol) => {
-        const {range, node} = this.getRangy();
+        const {range, node} = this.utils.getRangy();
         const textNode = document.createTextNode(pairSymbol);
         range.insertNode(textNode);
         // range.setStart(textNode, symbol.length);
@@ -54,7 +54,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     }
 
     skipSymbol = inputSymbol => {
-        const {node, bookmark} = this.getRangy();
+        const {node, bookmark} = this.utils.getRangy();
 
         File.editor.undo.endSnap();
         File.editor.undo.addSnap(node.cid, this.undoSnapType.NONE);
@@ -69,7 +69,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     }
 
     deletePair = () => {
-        const {node, bookmark} = this.getRangy();
+        const {node, bookmark} = this.utils.getRangy();
 
         File.editor.undo.endSnap();
         File.editor.undo.addSnap(node.cid, this.undoSnapType.NONE);
@@ -85,14 +85,6 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
                 this.deleteContent(bookmark);
             }
         }
-    }
-
-    getRangy = () => {
-        const range = File.editor.selection.getRangy();
-        const markElem = File.editor.getMarkElem(range.anchorNode);
-        const node = File.editor.findNodeByElem(markElem);
-        const bookmark = range.getBookmark(markElem[0]);
-        return {range, markElem, node, bookmark}
     }
 
     deleteContent = bookmark => {

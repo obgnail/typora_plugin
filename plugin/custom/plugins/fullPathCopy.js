@@ -1,11 +1,7 @@
 class fullPathCopy extends BaseCustomPlugin {
     selector = () => "#write h1, h2, h3, h4, h5, h6"
     hint = () => "将当前标题的路径复制到剪切板"
-    init = () => {}
-    style = () => {}
-    html = () => {}
     hotkey = () => [this.config.hotkey]
-    process = () => {}
     callback = anchorNode => {
         const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
         const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"];

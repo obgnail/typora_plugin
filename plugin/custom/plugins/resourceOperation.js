@@ -78,11 +78,7 @@ class resourceOperation extends BaseCustomPlugin {
         const nonExistInFile = new Set([...this.resources].filter(x => !this.resourcesInFile.has(x)));
         const nonExistInFolder = new Set([...this.resourcesInFile].filter(x => !this.resources.has(x)));
 
-        const operation = {
-            "report": this.report,
-            "delete": this.delete,
-            "move": this.move,
-        }[this.config.operation];
+        const operation = {"report": this.report, "delete": this.delete, "move": this.move}[this.config.operation];
         operation && operation(nonExistInFile, nonExistInFolder);
 
         // 避免占用内存

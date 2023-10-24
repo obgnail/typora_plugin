@@ -1,11 +1,6 @@
 class commanderPlugin extends global._basePlugin {
     beforeProcess() {
-        this.SHELL = {
-            CMD_BASH: "cmd/bash",
-            POWER_SHELL: "powershell",
-            GIT_BASH: "gitbash",
-            WSL: "wsl",
-        };
+        this.SHELL = {CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl"};
     }
 
     styleTemplate = () => true
@@ -76,7 +71,7 @@ class commanderPlugin extends global._basePlugin {
         this.callArgs = [{arg_name: "显示/隐藏", arg_value: "show"}];
         this.config.BUILTIN.forEach(builtin => {
             if (builtin.name) {
-                this.callArgs.push({arg_name: `${builtin.name}`, arg_value: this.arg_value_prefix + builtin.name})
+                this.callArgs.push({arg_name: `${builtin.name}`, arg_value: this.arg_value_prefix + builtin.name});
             }
         });
     }
@@ -225,9 +220,8 @@ class commanderPlugin extends global._basePlugin {
         this.modal.pre.classList.add("error");
     }
 
-    /* exec为什么不使用shell options? 答：不能支持wsl
-    *  exec为什么不使用env options?   答：为了兼容。cmd使用变量的方式为%VAR%，bash为$VAR。而且命令可能会跨越多层shell
-    */
+    // exec为什么不使用shell options? 答：不能支持wsl
+    // exec为什么不使用env options?   答：为了兼容。cmd使用变量的方式为%VAR%，bash为$VAR。而且命令可能会跨越多层shell
     exec = (cmd, shell, resolve, reject, callback, hint, options = {}) => {
         resolve = resolve || console.log;
         reject = reject || console.error;

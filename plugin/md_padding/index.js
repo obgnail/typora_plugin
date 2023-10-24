@@ -11,14 +11,9 @@ class mdPaddingPlugin extends global._basePlugin {
         // document.querySelector("content").scrollTop = scrollTop;
     };
 
-    getFormatter = () => {
-        const {padMarkdown} = this.utils.requireFilePath("./plugin/md_padding/md-padding");
-        return padMarkdown;
-    }
-
     formatFile = content => {
-        const formatter = this.getFormatter();
-        return formatter(content, {ignoreWords: this.config.IGNORE_WORDS})
+        const {padMarkdown} = this.utils.requireFilePath("./plugin/md_padding/md-padding");
+        return padMarkdown(content, {ignoreWords: this.config.IGNORE_WORDS})
     }
 
     call = () => {
