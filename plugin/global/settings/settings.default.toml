@@ -606,6 +606,8 @@ CLICKABLE = true
 # 是否下载网络图片(若为true，有可能因为网络问题导致导出超时)
 # 此选项可在右键菜单中修改，不建议在配置中置为true，除非你有频繁导出html的需求
 DOWNLOAD_NETWORK_IMAGE = false
+# 下载并发量(若DOWNLOAD_NETWORK_IMAGE为false，则此配置失效)
+DOWNLOAD_THREADS = 10
 
 
 ############### resize_table ###############

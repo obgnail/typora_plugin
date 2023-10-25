@@ -2,17 +2,7 @@ class textStylizePlugin extends global._basePlugin {
     styleTemplate = () => true
 
     htmlTemplate = () => {
-        function chunk(array, size = 10) {
-            let index = 0;
-            let result = [];
-            while (index < array.length) {
-                result.push(array.slice(index, (index + size)));
-                index += size;
-            }
-            return result;
-        }
-
-        const trList = Array.from(chunk(this.config.COLORS, this.config.NUM_PER_LINE)).map(colorList => ({
+        const trList = this.utils.chunk(this.config.COLORS, this.config.NUM_PER_LINE).map(colorList => ({
             ele: "tr", children: colorList.map(color => ({ele: "td", style: {backgroundColor: color}, color}))
         }))
 

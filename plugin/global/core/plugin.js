@@ -371,6 +371,16 @@ class utils {
         }
     }
 
+    static chunk = (array, size = 10) => {
+        let index = 0;
+        let result = [];
+        while (index < array.length) {
+            result.push(array.slice(index, (index + size)));
+            index += size;
+        }
+        return result;
+    }
+
     static getUUID = () => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             let r = (Math.random() * 16) | 0
