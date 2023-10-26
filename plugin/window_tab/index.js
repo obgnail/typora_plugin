@@ -36,7 +36,6 @@ class windowTabBarPlugin extends global._basePlugin {
 
         this.utils.addEventListener(this.utils.eventType.fileOpened, this.openTab);
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.openTab);
-        // 打开配置页面的时候自动隐藏
         this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.showTabsIfNeed);
 
         this.utils.loopDetector(

@@ -128,32 +128,14 @@ SHOW_KEYWORD_BAR = true
 # 每个关键字按序对应一个颜色，颜色数量不限，你可以修改、继续添加颜色
 STYLE_COLOR = [
     # 浅一些的颜色
-    '#bbeeff',
-    '#ffbbcc',
-    '#88ee88',
-    '#ccbbff',
-    '#ffee88',
-    '#FFFFa0',
-    '#88cccc',
-    '#ffbb88',
-    '#cccccc',
-    '#ffaabb',
+    '#bbeeff', '#ffbbcc', '#88ee88', '#ccbbff', '#ffee88', '#FFFFa0', '#88cccc', '#ffbb88', '#cccccc', '#ffaabb',
     # 深一些的颜色
-    '#99ccff',
-    '#ff99cc',
-    '#66cc66',
-    '#cc99ff',
-    '#ffcc66',
-    '#FFFF80',
-    '#dd9966',
-    '#aaaaaa',
-    '#66aaaa',
-    '#dd6699',
+    '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
 ]
 # 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
 # 20个关键字肯定够用了，此选项没太大意义
-# 就算20个真的不够用,那我也是建议你给STYLE_COLOR选项新增一些颜色，而不是修改此选项
-DEFAULT_COLOR = "aquamarine"
+# 就算20个真的不够用，那我也是建议你给STYLE_COLOR选项新增一些颜色，而不是修改此选项
+DEFAULT_COLOR = "#dd6699"
 # DO NOT edit this field unless you know what you are doing
 # Typora本身有限制: ctrl+F 搜索后，点击任意地方原先高亮的地方就会消失
 # 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
