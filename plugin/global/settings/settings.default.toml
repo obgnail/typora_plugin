@@ -128,32 +128,14 @@ SHOW_KEYWORD_BAR = true
 # 每个关键字按序对应一个颜色，颜色数量不限，你可以修改、继续添加颜色
 STYLE_COLOR = [
     # 浅一些的颜色
-    '#bbeeff',
-    '#ffbbcc',
-    '#88ee88',
-    '#ccbbff',
-    '#ffee88',
-    '#FFFFa0',
-    '#88cccc',
-    '#ffbb88',
-    '#cccccc',
-    '#ffaabb',
+    '#bbeeff', '#ffbbcc', '#88ee88', '#ccbbff', '#ffee88', '#FFFFa0', '#88cccc', '#ffbb88', '#cccccc', '#ffaabb',
     # 深一些的颜色
-    '#99ccff',
-    '#ff99cc',
-    '#66cc66',
-    '#cc99ff',
-    '#ffcc66',
-    '#FFFF80',
-    '#dd9966',
-    '#aaaaaa',
-    '#66aaaa',
-    '#dd6699',
+    '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
 ]
 # 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
 # 20个关键字肯定够用了，此选项没太大意义
-# 就算20个真的不够用,那我也是建议你给STYLE_COLOR选项新增一些颜色，而不是修改此选项
-DEFAULT_COLOR = "aquamarine"
+# 就算20个真的不够用，那我也是建议你给STYLE_COLOR选项新增一些颜色，而不是修改此选项
+DEFAULT_COLOR = "#dd6699"
 # DO NOT edit this field unless you know what you are doing
 # Typora本身有限制: ctrl+F 搜索后，点击任意地方原先高亮的地方就会消失
 # 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
@@ -543,6 +525,9 @@ ENABLE = true
 NAME = "代码块增强"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+
+# fence_enhance插件包含两个功能：button、hotkey，若置为false，以下配置全部失效
+ENABLE_BUTTON = true
 # 自动隐藏按钮，鼠标移动到代码块才显示
 AUTO_HIDE = false
 # 启用复制代码功能
@@ -557,18 +542,53 @@ ENABLE_FOLD = true
 FOLD_OVERFLOW = "hidden"
 # 所有代码块默认使用折叠
 FOLD_DEFAULT = false
-# 高亮鼠标悬停所在的代码行，若置为false，则HIGHLIGHT_COLOR失效
-# 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
-HIGHLIGHT_WHEN_HOVER = false
-# 高亮颜色
-HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
-
 # 操作成功时，icon提示的保持时间（单位：ms）
 # 比如当你点击【复制代码】按钮后，icon会变成【✔】，并在保持一段时间后自动恢复。此选项就是设置这个保持时间
 WAIT_RECOVER_INTERVAL = 1000
 # 节流时间（单位：ms）
 # 300毫秒内多次点击【复制代码】按钮，只会执行一次（此选项其实没啥意义，添加此配置只是出于强迫症）
 CLICK_CHECK_INTERVAL = 300
+# 高亮鼠标悬停所在的代码行，若置为false，则HIGHLIGHT_COLOR失效
+# 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
+HIGHLIGHT_WHEN_HOVER = false
+# 高亮颜色
+HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
+
+# fence_enhance插件包含三个功能：button、hotkey、highlight，若置为false，以下配置全部失效
+ENABLE_HOTKEY = true
+# 不建议修改下面的快捷键，原因有二：
+#   1. 和很多ide的快捷键保持一致
+#   2. typora强制绑定了很多快捷键，实际可修改的快捷键并不多
+# 强制绑定的快捷键如下：
+#   1. Ctrl-A: "selectAll",
+#   2. Ctrl-Up: "goDocStart",
+#   3. Ctrl-Down: "goDocEnd",
+#   4. Ctrl-Left: "goGroupLeft",
+#   5. Ctrl-Right: "goGroupRight",
+#   6. Alt-Left: "goLineStart",
+#   7. Alt-Right: "goLineEnd",
+#   8. Ctrl-Backspace: "delGroupBefore",
+#   9. Ctrl-Delete: "delGroupAfter",
+#   10.Ctrl-[: "indentLess",
+#   11.Ctrl-]: "indentMore",
+#   12.Ctrl-U: "undoSelection",
+#   13.Shift-Ctrl-U: "redoSelection",
+#   14.Alt-U: "redoSelection",
+
+# 注意：此处的快捷键字符串使用的是codeMirror的方式（doc: https://codemirror.net/5/doc/manual.html#keymaps）
+# 如果不想使用此功能，请置为""
+# 将当前行和上一行互换
+SWAP_PREVIOUS_LINE = "Shift-Alt-Up"
+# 将当前行和下一行互换
+SWAP_NEXT_LINE = "Shift-Alt-Down"
+# 复制当前行到下一行
+COPY_PREVIOUS_LINE = "Ctrl-Alt-Up"
+# 复制当前行到上一行
+COPY_NEXT_LINE = "Ctrl-Alt-Down"
+# 直接在下面新建一行
+INSERT_LINE_NEXT = "Ctrl-Enter"
+# 直接在上面新建一行
+INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
 
 ############### collapse_paragraph ###############
@@ -606,6 +626,8 @@ CLICKABLE = true
 # 是否下载网络图片(若为true，有可能因为网络问题导致导出超时)
 # 此选项可在右键菜单中修改，不建议在配置中置为true，除非你有频繁导出html的需求
 DOWNLOAD_NETWORK_IMAGE = false
+# 下载并发量(若DOWNLOAD_NETWORK_IMAGE为false，则此配置失效)
+DOWNLOAD_THREADS = 10
 
 
 ############### resize_table ###############

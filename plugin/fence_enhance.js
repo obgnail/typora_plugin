@@ -61,6 +61,15 @@ class fenceEnhancePlugin extends global._basePlugin {
     }
 
     process = () => {
+        if (this.config.ENABLE_HOTKEY) {
+            new editorHotkey(this).process();
+        }
+        if (this.config.ENABLE_BUTTON) {
+            this.processButton();
+        }
+    }
+
+    processButton = () => {
         this.init();
 
         [
@@ -224,6 +233,96 @@ class builder {
             button.style.display = "none";
         }
         return button
+    }
+}
+
+// doc: https://codemirror.net/5/doc/manual.html
+class editorHotkey {
+    constructor(controller) {
+        this.controller = controller;
+        this.utils = controller.utils;
+        this.config = controller.config;
+    }
+
+    process = () => {
+        const hotkeyDict = {};
+        const keyMap = {
+            SWAP_PREVIOUS_LINE: () => this.swapLine(true),
+            SWAP_NEXT_LINE: () => this.swapLine(false),
+            COPY_PREVIOUS_LINE: () => this.copyLine(true),
+            COPY_NEXT_LINE: () => this.copyLine(false),
+            INSERT_LINE_NEXT: () => this.newlineAndIndent(false),
+            INSERT_LINE_PREVIOUS: () => this.newlineAndIndent(true),
+        }
+        for (const [hotkey, callback] of Object.entries(keyMap)) {
+            const hk = this.config[hotkey];
+            if (hk) {
+                hotkeyDict[hk] = callback;
+            }
+        }
+        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, cid => {
+            const fence = File.editor.fences.queue[cid];
+            fence && fence.addKeyMap(hotkeyDict);
+        })
+    }
+
+    getFence = () => {
+        const activeLine = document.querySelector("#write .CodeMirror-activeline");
+        if (!activeLine) return
+
+        const pre = activeLine.closest(".md-fences[cid]");
+        if (!pre) return
+
+        const cid = pre.getAttribute("cid");
+        const fence = File.editor.fences.queue[cid];
+        const separator = fence.lineSeparator() || "\\n";
+        const lineNum = this.utils.whichChildOfParent(activeLine);
+        return {activeLine, pre, cid, fence, lineNum, separator}
+    }
+
+    goLineUp = () => {
+        // 不可使用fence.execCommand("goLineUp"); 因为它会检测shift键是否被pressed
+        document.activeElement.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'ArrowUp', keyCode: 38, code: 'ArrowUp', which: 38, shiftKey: false, ctrlKey: false, altKey: false
+        }));
+    }
+
+    goLineDown = () => {
+        document.activeElement.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'ArrowDown', keyCode: 40, code: 'ArrowDown', which: 40, shiftKey: false, ctrlKey: false, altKey: false
+        }));
+    }
+
+    swapLine = (previous = true) => {
+        const {activeLine, fence, separator, lineNum} = this.getFence();
+        if (!activeLine || !fence || previous && lineNum === 1 || !previous && this.utils.isLastChildOfParent(activeLine)) return
+
+        const lines = previous
+            ? [{line: lineNum - 2, ch: 0}, {line: lineNum - 1, ch: null}]
+            : [{line: lineNum - 1, ch: 0}, {line: lineNum, ch: null}];
+        const lineCount = fence.getRange(...lines);
+        const lineList = lineCount.split(separator);
+        if (lines.length !== 2) return
+
+        const newContent = [lineList[1], separator, lineList[0]].join("");
+        fence.replaceRange(newContent, ...lines);
+        previous && this.goLineUp();
+    }
+
+    copyLine = (previous = true) => {
+        const {activeLine, fence, separator, lineNum} = this.getFence();
+        if (!activeLine || !fence) return
+        const lineContent = fence.getLine(lineNum - 1);
+        const newContent = separator + lineContent;
+        fence.replaceRange(newContent, {line: lineNum - 1, ch: null});
+    }
+
+    newlineAndIndent = (previous = true) => {
+        const {activeLine, fence} = this.getFence();
+        if (!activeLine || !fence) return
+        previous && this.goLineUp();
+        fence.execCommand("goLineEnd");
+        fence.execCommand("newlineAndIndent");
     }
 }
 

@@ -1,3 +1,4 @@
+// 本插件没有处理fence下的中文输入，如果需要，可以通过监听afterAddCodeBlock事件，修改File.editor.fences.queue.n90.state.keyMaps[1]
 class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     beforeProcess = () => {
         // 旧版本的Typora是延迟设置noPairingMatch的，导致beforeProcess失效

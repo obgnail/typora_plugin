@@ -42,16 +42,27 @@ class exportEnhancePlugin extends global._basePlugin {
 
     downloadAllImage = async (html, writeIdx) => {
         const imageMap = {} // map src to localFileName, use for network image only
-        for (let result of html.matchAll(this.regexp)) {
-            if (result.length !== 2 || result.index < writeIdx || !this.utils.isNetworkImage(result[1])) continue
-            const src = result[1];
-            if (!imageMap.hasOwnProperty(src)) { // single flight
+        const matches = Array.from(html.matchAll(this.regexp));
+        const chunkList = this.utils.chunk(matches, this.config.DOWNLOAD_THREADS);
+        for (const list of chunkList) {
+            await Promise.all(list.map(async match => {
+                if (match.length !== 2
+                    || match.index < writeIdx
+                    || !this.utils.isNetworkImage(match[1])
+                    || imageMap.hasOwnProperty(match[1])
+                ) return;
+
+                const src = match[1];
                 const filename = Math.random() + "_" + this.Path.basename(src);
-                const {state} = await JSBridge.invoke("app.download", src, this.tempFolder, filename);
-                if (state === "completed") {
-                    imageMap[src] = filename;
+                try {
+                    const {state} = await JSBridge.invoke("app.download", src, this.tempFolder, filename);
+                    if (state === "completed") {
+                        imageMap[src] = filename;
+                    }
+                } catch (e) {
+                    console.error("download image error:", e);
                 }
-            }
+            }))
         }
         return new Promise(resolve => resolve(imageMap));
     }
