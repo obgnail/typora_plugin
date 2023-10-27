@@ -557,8 +557,8 @@ HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 # fence_enhance插件包含三个功能：button、hotkey、highlight，若置为false，以下配置全部失效
 ENABLE_HOTKEY = true
 # 不建议修改下面的快捷键，原因有二：
-#   1.和很多ide的快捷键保持一致
-#   2.typora强制绑定了很多快捷键，实际可修改的快捷键并不多
+#   1. 和很多ide的快捷键保持一致
+#   2. typora强制绑定了很多快捷键，实际可修改的快捷键并不多
 # 强制绑定的快捷键如下：
 #   1. Ctrl-A: "selectAll",
 #   2. Ctrl-Up: "goDocStart",
@@ -575,14 +575,20 @@ ENABLE_HOTKEY = true
 #   13.Shift-Ctrl-U: "redoSelection",
 #   14.Alt-U: "redoSelection",
 
+# 注意：此处的快捷键字符串使用的是codeMirror的方式（doc: https://codemirror.net/5/doc/manual.html#keymaps）
+# 如果不想使用此功能，请置为""
 # 将当前行和上一行互换
-SWAP_PREVIOUS_LINE = "alt+shift+ArrowUp"
+SWAP_PREVIOUS_LINE = "Shift-Alt-Up"
 # 将当前行和下一行互换
-SWAP_NEXT_LINE = "alt+shift+ArrowDown"
+SWAP_NEXT_LINE = "Shift-Alt-Down"
 # 复制当前行到下一行
-COPY_PREVIOUS_LINE = "ctrl+alt+ArrowUp"
+COPY_PREVIOUS_LINE = "Ctrl-Alt-Up"
 # 复制当前行到上一行
-COPY_NEXT_LINE = "ctrl+alt+ArrowDown"
+COPY_NEXT_LINE = "Ctrl-Alt-Down"
+# 直接在下面新建一行
+INSERT_LINE_NEXT = "Ctrl-Enter"
+# 直接在上面新建一行
+INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
 
 ############### collapse_paragraph ###############

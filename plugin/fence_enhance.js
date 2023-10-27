@@ -245,12 +245,25 @@ class editorHotkey {
     }
 
     process = () => {
-        this.utils.registerHotkey([
-            {hotkey: this.config.SWAP_PREVIOUS_LINE, callback: () => this.swapLine(true)},
-            {hotkey: this.config.SWAP_NEXT_LINE, callback: () => this.swapLine(false)},
-            {hotkey: this.config.COPY_PREVIOUS_LINE, callback: () => this.copyLine(true)},
-            {hotkey: this.config.COPY_NEXT_LINE, callback: () => this.copyLine(false)},
-        ])
+        const hotkeyDict = {};
+        const keyMap = {
+            SWAP_PREVIOUS_LINE: () => this.swapLine(true),
+            SWAP_NEXT_LINE: () => this.swapLine(false),
+            COPY_PREVIOUS_LINE: () => this.copyLine(true),
+            COPY_NEXT_LINE: () => this.copyLine(false),
+            INSERT_LINE_NEXT: () => this.newlineAndIndent(false),
+            INSERT_LINE_PREVIOUS: () => this.newlineAndIndent(true),
+        }
+        for (const [hotkey, callback] of Object.entries(keyMap)) {
+            const hk = this.config[hotkey];
+            if (hk) {
+                hotkeyDict[hk] = callback;
+            }
+        }
+        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, cid => {
+            const fence = File.editor.fences.queue[cid];
+            fence && fence.addKeyMap(hotkeyDict);
+        })
     }
 
     getFence = () => {
@@ -293,19 +306,23 @@ class editorHotkey {
 
         const newContent = [lineList[1], separator, lineList[0]].join("");
         fence.replaceRange(newContent, ...lines);
-
-        if (previous) {
-            this.goLineUp();
-        }
+        previous && this.goLineUp();
     }
 
     copyLine = (previous = true) => {
         const {activeLine, fence, separator, lineNum} = this.getFence();
         if (!activeLine || !fence) return
-
         const lineContent = fence.getLine(lineNum - 1);
         const newContent = separator + lineContent;
         fence.replaceRange(newContent, {line: lineNum - 1, ch: null});
+    }
+
+    newlineAndIndent = (previous = true) => {
+        const {activeLine, fence} = this.getFence();
+        if (!activeLine || !fence) return
+        previous && this.goLineUp();
+        fence.execCommand("goLineEnd");
+        fence.execCommand("newlineAndIndent");
     }
 }
 
