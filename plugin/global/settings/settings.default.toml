@@ -525,6 +525,9 @@ ENABLE = true
 NAME = "代码块增强"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+
+# fence_enhance插件包含两个功能：button、hotkey，若置为false，以下配置全部失效
+ENABLE_BUTTON = true
 # 自动隐藏按钮，鼠标移动到代码块才显示
 AUTO_HIDE = false
 # 启用复制代码功能
@@ -539,18 +542,47 @@ ENABLE_FOLD = true
 FOLD_OVERFLOW = "hidden"
 # 所有代码块默认使用折叠
 FOLD_DEFAULT = false
-# 高亮鼠标悬停所在的代码行，若置为false，则HIGHLIGHT_COLOR失效
-# 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
-HIGHLIGHT_WHEN_HOVER = false
-# 高亮颜色
-HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
-
 # 操作成功时，icon提示的保持时间（单位：ms）
 # 比如当你点击【复制代码】按钮后，icon会变成【✔】，并在保持一段时间后自动恢复。此选项就是设置这个保持时间
 WAIT_RECOVER_INTERVAL = 1000
 # 节流时间（单位：ms）
 # 300毫秒内多次点击【复制代码】按钮，只会执行一次（此选项其实没啥意义，添加此配置只是出于强迫症）
 CLICK_CHECK_INTERVAL = 300
+# 高亮鼠标悬停所在的代码行，若置为false，则HIGHLIGHT_COLOR失效
+# 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
+HIGHLIGHT_WHEN_HOVER = false
+# 高亮颜色
+HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
+
+# fence_enhance插件包含三个功能：button、hotkey、highlight，若置为false，以下配置全部失效
+ENABLE_HOTKEY = true
+# 不建议修改下面的快捷键，原因有二：
+#   1.和很多ide的快捷键保持一致
+#   2.typora强制绑定了很多快捷键，实际可修改的快捷键并不多
+# 强制绑定的快捷键如下：
+#   1. Ctrl-A: "selectAll",
+#   2. Ctrl-Up: "goDocStart",
+#   3. Ctrl-Down: "goDocEnd",
+#   4. Ctrl-Left: "goGroupLeft",
+#   5. Ctrl-Right: "goGroupRight",
+#   6. Alt-Left: "goLineStart",
+#   7. Alt-Right: "goLineEnd",
+#   8. Ctrl-Backspace: "delGroupBefore",
+#   9. Ctrl-Delete: "delGroupAfter",
+#   10.Ctrl-[: "indentLess",
+#   11.Ctrl-]: "indentMore",
+#   12.Ctrl-U: "undoSelection",
+#   13.Shift-Ctrl-U: "redoSelection",
+#   14.Alt-U: "redoSelection",
+
+# 将当前行和上一行互换
+SWAP_PREVIOUS_LINE = "alt+shift+ArrowUp"
+# 将当前行和下一行互换
+SWAP_NEXT_LINE = "alt+shift+ArrowDown"
+# 复制当前行到下一行
+COPY_PREVIOUS_LINE = "ctrl+alt+ArrowUp"
+# 复制当前行到上一行
+COPY_NEXT_LINE = "ctrl+alt+ArrowDown"
 
 
 ############### collapse_paragraph ###############

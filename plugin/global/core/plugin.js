@@ -561,6 +561,7 @@ class utils {
         if (cid) {
             const fence = File.editor.fences.queue[cid];
             if (fence) {
+                // return fence.getValue()
                 return fence.options.value
             }
         }
@@ -590,6 +591,18 @@ class utils {
     }
 
     ////////////////////////////// 业务DOM操作 //////////////////////////////
+    static whichChildOfParent = child => {
+        let i = 1;
+        for (const sibling of child.parentElement.children) {
+            if (sibling && sibling === child) {
+                return i
+            }
+            i++
+        }
+    }
+
+    static isLastChildOfParent = child => child.parentElement.lastElementChild === child
+
     static scroll = (target, height = 10) => {
         File.editor.focusAndRestorePos();
         File.editor.selection.scrollAdjust(target, height);

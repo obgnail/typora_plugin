@@ -37,7 +37,7 @@ class resizeTablePlugin extends global._basePlugin {
 
             if (direction === "right") {
                 target.style.cursor = "w-resize";
-                const num = this.whichChildOfParent(target);
+                const num = this.utils.whichChildOfParent(target);
                 const eleList = target.closest(closet).querySelectorAll(`tr ${self}:nth-child(${num})`);
                 this.cleanStyle(eleList, target, "width");
             } else if (direction === "bottom") {
@@ -97,16 +97,6 @@ class resizeTablePlugin extends global._basePlugin {
         }
     }
 
-    whichChildOfParent = child => {
-        let i = 1;
-        for (const sibling of child.parentElement.children) {
-            if (sibling && sibling === child) {
-                return i
-            }
-            i++
-        }
-    }
-
     getDirection = (target, ev) => {
         if (!target) return ""
         const rect = target.getBoundingClientRect();
@@ -128,7 +118,7 @@ class resizeTablePlugin extends global._basePlugin {
             // 左边
             yield ele.previousElementSibling
             // 上边
-            const num = that.whichChildOfParent(ele);
+            const num = that.utils.whichChildOfParent(ele);
             const uncle = ele.parentElement.previousElementSibling;
             yield (uncle)
                 // td
