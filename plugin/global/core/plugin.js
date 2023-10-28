@@ -5,7 +5,6 @@ class utils {
     static disableForeverSelector = "__disable_selector__";
     static stopLoadPluginError = new Error("stopLoadPlugin")
     static stopCallError = new Error("stopCall")
-    static detectorContainer = {}
     static meta = {}
     static Package = {
         Path: reqnode("path"),
@@ -795,44 +794,36 @@ class utils {
                 return result;
             };
         }
-
         const start = new Date().getTime();
-        const uuid = Math.random();
-        this.detectorContainer[uuid] = setInterval(() => {
+        const timer = setInterval(() => {
             if (new Date().getTime() - start > 10000) {
                 console.error("decorate timeout!", objGetter, attr, before, after, changeResult);
-                clearInterval(this.detectorContainer[uuid]);
-                delete this.detectorContainer[uuid];
+                clearInterval(timer);
                 return;
             }
             const obj = objGetter();
             if (obj && obj[attr]) {
-                clearInterval(this.detectorContainer[uuid]);
+                clearInterval(timer);
                 obj[attr] = decorator(obj[attr], before, after);
-                delete this.detectorContainer[uuid];
             }
         }, 20);
     }
 
     static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
         let run = false;
-        const uuid = Math.random();
         const start = new Date().getTime();
-        this.detectorContainer[uuid] = setInterval(() => {
+        const timer = setInterval(() => {
             if (new Date().getTime() - start > timeout) {
                 console.warn("loopDetector timeout!", until, after);
                 run = runWhenTimeout;
                 if (!run) {
-                    clearInterval(this.detectorContainer[uuid]);
-                    delete this.detectorContainer[uuid];
+                    clearInterval(timer);
                     return;
                 }
             }
-
             if (until() || run) {
-                clearInterval(this.detectorContainer[uuid]);
+                clearInterval(timer);
                 after && after();
-                delete this.detectorContainer[uuid];
             }
         }, detectInterval);
     }
