@@ -99,10 +99,7 @@ class windowTabBarPlugin extends global._basePlugin {
         })
 
         if (this.config.INTERCEPT_INTERNAL_AND_LOCAL_LINKS) {
-            this.utils.decorate(
-                () => (JSBridge && JSBridge.invoke),
-                "JSBridge.invoke",
-                (...args) => {
+            this.utils.decorate(() => JSBridge, "invoke", (...args) => {
                     if (args.length < 3 || args[0] !== "app.openFileOrFolder") return;
 
                     const anchor = args[2]["anchor"];

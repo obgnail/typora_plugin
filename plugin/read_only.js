@@ -36,7 +36,7 @@ class readOnlyPlugin extends global._basePlugin {
                 })
             }
         }
-        this.utils.decorate(() => (File && File.freshLock), "File.freshLock", null, () => {
+        this.utils.decorate(() => File, "freshLock", null, () => {
             setCheckbox(File.isLocked);
             setInput(File.isLocked);
         })

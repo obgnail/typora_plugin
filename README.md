@@ -56,7 +56,7 @@
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
-> 如果各位有其他的需求，或发现 BUG，欢迎提 issue，欢迎 PR。如果能给我颗 star ⭐ 就更好了  : )
+> 如果各位有其他的需求，或发现 BUG，欢迎提 [issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果能给我颗 star ⭐ 就更好了  : )
 
 
 

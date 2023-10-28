@@ -7,7 +7,7 @@ class mermaidReplacePlugin extends global._basePlugin {
             () => {
                 this.utils.insertScript("./plugin/mermaid_replace/mermaid.min.js").then(() => {
                         window.mermaidAPI = mermaid.mermaidAPI;
-                        window.editor.diagrams.refreshDiagram(editor);
+                        window.editor.diagrams.refreshDiagram(window.editor);
                     }
                 )
             }

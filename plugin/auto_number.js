@@ -320,11 +320,8 @@ class exportHelper {
     process = () => {
         this.controller.utils.registerExportHelper("auto_number", this.beforeExport);
         this.controller.utils.decorate(
-            () => (File && File.editor && File.editor.library && File.editor.library.outline
-                && File.editor.library.outline.getHeaderMatrix),
-            "File.editor.library.outline.getHeaderMatrix",
-            null,
-            this.afterGetHeaderMatrix
+            () => File && File.editor && File.editor.library && File.editor.library.outline,
+            "getHeaderMatrix", null, this.afterGetHeaderMatrix
         );
     }
 }

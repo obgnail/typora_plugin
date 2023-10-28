@@ -778,42 +778,39 @@ class utils {
     }
 
     ////////////////////////////// 黑魔法 //////////////////////////////
-    static decorate = (until, funcStr, before, after, changeResult = false) => {
+    static decorate = (objGetter, attr, before, after, changeResult = false) => {
+        function decorator(original, before, after) {
+            return function () {
+                if (before) {
+                    const error = before.call(this, ...arguments);
+                    if (error === utils.stopCallError) return;
+                }
+                let result = original.apply(this, arguments);
+                if (after) {
+                    const afterResult = after.call(this, result, ...arguments);
+                    if (changeResult) {
+                        result = afterResult;
+                    }
+                }
+                return result;
+            };
+        }
+
         const start = new Date().getTime();
         const uuid = Math.random();
         this.detectorContainer[uuid] = setInterval(() => {
             if (new Date().getTime() - start > 10000) {
-                console.error("decorate timeout!", until, funcStr, before, after, changeResult);
+                console.error("decorate timeout!", objGetter, attr, before, after, changeResult);
                 clearInterval(this.detectorContainer[uuid]);
                 delete this.detectorContainer[uuid];
                 return;
             }
-
-            if (!until()) return;
-            clearInterval(this.detectorContainer[uuid]);
-            const decorator = (original, before, after) => {
-                return function () {
-                    if (before) {
-                        const error = before.call(this, ...arguments);
-                        if (error === utils.stopCallError) return;
-                    }
-
-                    let result = original.apply(this, arguments);
-
-                    if (after) {
-                        const afterResult = after.call(this, result, ...arguments);
-                        if (changeResult) {
-                            result = afterResult;
-                        }
-                    }
-                    return result;
-                };
+            const obj = objGetter();
+            if (obj && obj[attr]) {
+                clearInterval(this.detectorContainer[uuid]);
+                obj[attr] = decorator(obj[attr], before, after);
+                delete this.detectorContainer[uuid];
             }
-            const idx = funcStr.lastIndexOf(".");
-            const obj = eval(funcStr.slice(0, idx));
-            const func = funcStr.slice(idx + 1);
-            obj[func] = decorator(obj[func], before, after);
-            delete this.detectorContainer[uuid];
         }, 20);
     }
 
@@ -986,19 +983,15 @@ class diagramParser {
 
     onTryAddLangUndo = () => {
         this.utils.decorate(
-            () => (File && File.editor && File.editor.fences && File.editor.fences.tryAddLangUndo),
-            "File.editor.fences.tryAddLangUndo",
-            null,
-            (result, ...args) => this.renderDiagram(args[0].cid)
+            () => File && File.editor && File.editor.fences, "tryAddLangUndo",
+            null, (result, ...args) => this.renderDiagram(args[0].cid)
         )
     }
 
     onUpdateDiagram = () => {
         this.utils.decorate(
-            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.updateDiagram),
-            "File.editor.diagrams.updateDiagram",
-            null,
-            (result, ...args) => this.renderDiagram(args[0])
+            () => File && File.editor && File.editor.diagrams, "updateDiagram",
+            null, (result, ...args) => this.renderDiagram(args[0])
         )
     }
 
@@ -1040,16 +1033,8 @@ class diagramParser {
             }
         }
 
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.fences && File.editor.fences.focus),
-            "File.editor.fences.focus",
-            stopCall,
-        )
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.refocus),
-            "File.editor.refocus",
-            stopCall,
-        )
+        this.utils.decorate(() => File && File.editor && File.editor.fences, "focus", stopCall)
+        this.utils.decorate(() => File && File.editor, "refocus", stopCall)
 
         const showAllTButton = fence => {
             const enhance = fence.querySelector(".fence-enhance");
@@ -1130,8 +1115,8 @@ class diagramParser {
 
     onCheckIsDiagramType = () => {
         this.utils.decorate(
-            () => (File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor && File.editor.diagrams.constructor.isDiagramType),
-            "File.editor.diagrams.constructor.isDiagramType",
+            () => File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor,
+            "isDiagramType",
             null,
             (result, ...args) => {
                 if (result === true) return true;
@@ -1284,10 +1269,7 @@ class eventHub {
     }
 
     process = () => {
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.library && File.editor.library.openFile),
-            "File.editor.library.openFile",
-            () => {
+        this.utils.decorate(() => File && File.editor && File.editor.library, "openFile", () => {
                 this.filepath = this.utils.getFilePath();
                 this.publishEvent(this.utils.eventType.beforeFileOpen);
             },
@@ -1303,9 +1285,7 @@ class eventHub {
             filePath && this.utils.publishEvent(this.utils.eventType.firstFileInit, filePath);
         });
 
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.fences && File.editor.fences.addCodeBlock),
-            "File.editor.fences.addCodeBlock",
+        this.utils.decorate(() => File && File.editor && File.editor.fences, "addCodeBlock",
             (...args) => {
                 const cid = args[0];
                 cid && this.publishEvent(this.utils.eventType.beforeAddCodeBlock, cid)
@@ -1316,17 +1296,11 @@ class eventHub {
             },
         )
 
-        this.utils.decorate(
-            () => (File && File.toggleSourceMode),
-            "File.toggleSourceMode",
-            () => this.publishEvent(this.utils.eventType.beforeToggleSourceMode)
-        )
+        this.utils.decorate(() => File, "toggleSourceMode", () => this.publishEvent(this.utils.eventType.beforeToggleSourceMode))
 
         this.utils.decorate(
-            () => File && File.editor && File.editor.library && File.editor.library.outline && File.editor.library.outline.updateOutlineHtml,
-            "File.editor.library.outline.updateOutlineHtml",
-            null,
-            () => this.publishEvent(this.utils.eventType.outlineUpdated)
+            () => File && File.editor && File.editor.library && File.editor.library.outline, "updateOutlineHtml",
+            null, () => this.publishEvent(this.utils.eventType.outlineUpdated)
         )
 
         window.addEventListener("beforeunload", () => this.utils.publishEvent(this.utils.eventType.beforeUnload), true)
@@ -1861,10 +1835,8 @@ class exportHelper {
         this.utils.loopDetector(
             () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
             () => {
-                const after = (File.editor.export.exportToHTML.constructor.name === 'AsyncFunction')
-                    ? this.afterExport
-                    : this.afterExportSync
-                this.utils.decorate(() => true, "File.editor.export.exportToHTML", this.beforeExport, after, true)
+                const after = (File.editor.export.exportToHTML.constructor.name === 'AsyncFunction') ? this.afterExport : this.afterExportSync
+                this.utils.decorate(() => File && File.editor && File.editor.export, "exportToHTML", this.beforeExport, after, true)
             }
         )
     }
