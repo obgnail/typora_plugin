@@ -1113,6 +1113,7 @@ class diagramParser {
                 if (result === true) return true;
 
                 let lang = args[0];
+                if (!lang) return false;
                 const type = typeof lang;
                 if (type === "object" && lang["name"]) {
                     lang = lang["name"];
@@ -1930,6 +1931,11 @@ class process {
 
         global._all_plugins = pluginSettings;
 
+        await Promise.all([
+            global._modalGenerator.process(),
+            global._styleTemplater.process(),
+        ])
+
         await Promise.all(
             Array.from(Object.keys(pluginSettings)).map(fixedName => {
                 const setting = pluginSettings[fixedName];
@@ -1948,13 +1954,11 @@ class process {
         await Promise.all([
             global._eventHub.process(),
             global._diagramParser.process(),
-            global._modalGenerator.process(),
             global._quickButtonGenerator.process(),
             global._stateRecorder.process(),
             global._hotkeyHub.process(),
             global._exportHelper.process(),
             global._thirdPartyDiagramParser.process(),
-            global._styleTemplater.process(),
         ]);
 
         // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
