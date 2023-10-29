@@ -530,6 +530,12 @@ class modeTool extends baseToolInterface {
                 fixedName: "blurMode",
                 callback: () => blur.call()
             })
+            const dark = this.utils.getCustomPlugin("darkMode");
+            dark && this.modes.push({
+                showName: "夜间模式",
+                fixedName: "darkMode",
+                callback: () => dark.callback()
+            })
             this.modes.push({
                 showName: "调试模式",
                 fixedName: "debugMode",

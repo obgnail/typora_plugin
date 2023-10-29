@@ -42,17 +42,18 @@
 | 32   | reopen_closed_files        | 打开上次退出 Typora 时尚未关闭的标签页 |
 | 33   | truncate_text              | 暂时隐藏内容，提高大文件渲染性能       |
 | 34   | markdown_lint              | markdown 格式规范检测                  |
-| 35   | plugin_updater             | 一键升级插件                           |
-| 36   | extract_range_to_new_file  | 提取选区文字到新文件                   |
-| 37   | full_path_copy             | 复制标题路径                           |
-| 38   | auto_trailing_white_space  | 自动添加结尾空格                       |
-| 39   | text_stylize               | 文字风格化                             |
-| 40   | open_in_total_commander    | 在 total commander 打开                |
-| 41   | mermaid_replace            | 替换 mermaid 组件                      |
-| 42   | custom                     | 用户自定义命令（高级）                 |
-| 43   | hotkey_hub                 | 快捷键注册中心（高级）                 |
-| 44   | quick_button               | 于右下角添加功能按钮（高级）           |
-| 45   | old_window_tab             | 标签页管理（已废弃）                   |
+| 35   | dark_mode                  | 夜间模式                               |
+| 36   | plugin_updater             | 一键升级插件                           |
+| 37   | extract_range_to_new_file  | 提取选区文字到新文件                   |
+| 38   | full_path_copy             | 复制标题路径                           |
+| 39   | auto_trailing_white_space  | 自动添加结尾空格                       |
+| 40   | text_stylize               | 文字风格化                             |
+| 41   | open_in_total_commander    | 在 total commander 打开                |
+| 42   | mermaid_replace            | 替换 mermaid 组件                      |
+| 43   | custom                     | 用户自定义命令（高级）                 |
+| 44   | hotkey_hub                 | 快捷键注册中心（高级）                 |
+| 45   | quick_button               | 于右下角添加功能按钮（高级）           |
+| 46   | old_window_tab             | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -739,6 +740,15 @@ auto_pair_symbols = [
 
 - 方式一：右键菜单 -> 常用插件 -> 自定义插件 -> md 格式规范检测
 - 方式二：点击右上角的小方块
+
+
+
+### dark_mode：夜间模式
+
+使用方式：
+
+- 方式一：右键菜单 -> 常用插件 -> 自定义插件 -> 夜间模式
+- 方式二：点击右下角的【夜间模式】按钮
 
 
 

@@ -45,7 +45,7 @@ class loadPluginHelper {
             if (renderArgs) {
                 await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
             }
-            instance.html();
+            this.utils.insertElement(instance.html());
             const elements = instance.htmlTemplate();
             if (elements) {
                 this.utils.insertHtmlTemplate(elements);
