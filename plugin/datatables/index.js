@@ -10,10 +10,7 @@ class datatablesPlugin extends global._basePlugin {
         this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.destroyAllDataTable);
         this.utils.addEventListener(this.utils.eventType.beforeToggleSourceMode, this.destroyAllDataTable);
 
-        this.utils.decorate(
-            () => (File && File.editor && File.editor.tableEdit && File.editor.tableEdit.showTableEdit),
-            "File.editor.tableEdit.showTableEdit",
-            (...args) => {
+        this.utils.decorate(() => File && File.editor && File.editor.tableEdit, "showTableEdit", (...args) => {
                 if (!args[0] || !args[0].find) return;
 
                 const table = args[0].find("table");

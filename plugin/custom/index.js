@@ -19,15 +19,12 @@ class loadPluginHelper {
     }
 
     insertStyle = (fixedName, style) => {
-        if (!style) return;
-
-        let textID = style["textID"];
-        let text = style["text"];
-        if (typeof style === "string") {
-            textID = `custom-plugin-${fixedName.replace(/_/g, "-")}-style`;
-            text = style;
+        if (style) {
+            const {textID, text} = typeof style !== "string"
+                ? style
+                : {textID: `custom-plugin-${fixedName.replace(/_/g, "-")}-style`, text: style}
+            this.utils.insertStyle(textID, text);
         }
-        this.utils.insertStyle(textID, text);
     }
 
     loadCustomPlugin = async (fixedName, customSetting) => {
@@ -96,17 +93,15 @@ class loadPluginHelper {
     }
 
     // 简易的判断是否为customBasePlugin的子类实例
-    check = instance => {
-        return !!instance
-            & instance.init instanceof Function
-            & instance.selector instanceof Function
-            & instance.hint instanceof Function
-            & instance.style instanceof Function
-            & instance.html instanceof Function
-            & instance.hotkey instanceof Function
-            & instance.process instanceof Function
-            & instance.callback instanceof Function
-    }
+    check = instance => instance
+        && instance.init instanceof Function
+        && instance.selector instanceof Function
+        && instance.hint instanceof Function
+        && instance.style instanceof Function
+        && instance.html instanceof Function
+        && instance.hotkey instanceof Function
+        && instance.process instanceof Function
+        && instance.callback instanceof Function
 }
 
 class dynamicCallHelper {
