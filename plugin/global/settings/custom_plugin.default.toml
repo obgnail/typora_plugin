@@ -361,6 +361,20 @@ left_line_color = "#777777"
 icon = "\\f00b"
 
 
+############### darkMode ###############
+[darkMode]
+# 右键菜单中展示的名称
+name = "夜间模式"
+# 是否启用此自定义插件
+enable = true
+# 插件配置
+[darkMode.config]
+# 默认进入夜间模式
+default_dark_mode = false
+# 在右下角添加快捷按钮
+use_button = true
+
+
 ############### fullPathCopy ###############
 [fullPathCopy]
 # 右键菜单中展示的名称
@@ -636,7 +650,7 @@ hint = "混排优化"
 callback = "md_padding.call"
 [[quickButton.config.buttons]]
 action = "open_in_tc_button"
-coordinate = [2, 0]
+coordinate = [3, 0]
 icon = "fa fa-home"
 font_size = "20px"
 hint = "TC打开"

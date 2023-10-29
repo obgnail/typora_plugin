@@ -438,10 +438,12 @@ class utils {
         document.getElementsByTagName('head')[0].appendChild(link);
     }
 
-    static removeStyle = id => {
+    static removeElementByID = id => {
         const ele = document.getElementById(id);
         ele && ele.parentElement && ele.parentElement.removeChild(ele);
     }
+
+    static removeStyle = id => this.removeElementByID(id)
 
     static insertScript = filepath => {
         const jsFilepath = this.joinPath(filepath);
@@ -794,6 +796,7 @@ class utils {
                 return result;
             };
         }
+
         const start = new Date().getTime();
         const timer = setInterval(() => {
             if (new Date().getTime() - start > 10000) {
@@ -1927,14 +1930,14 @@ class process {
             "./plugin/global/settings/settings.user.toml",
         );
 
-        if (!pluginSettings || pluginSettings && pluginSettings["global"] && !pluginSettings["global"]["ENABLE"]) return;
+        if (!pluginSettings || !pluginSettings["global"] || !pluginSettings["global"]["ENABLE"]) return;
 
         global._all_plugins = pluginSettings;
 
         await Promise.all([
             global._modalGenerator.process(),
             global._styleTemplater.process(),
-        ])
+        ]);
 
         await Promise.all(
             Array.from(Object.keys(pluginSettings)).map(fixedName => {
