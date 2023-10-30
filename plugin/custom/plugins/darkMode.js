@@ -34,17 +34,19 @@ class darkModePlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        if (this.config.default_dark_mode) {
-            this.enableDarkMode();
-        }
         if (this.config.use_button) {
             this.utils.registerQuickButton("dark-mode", [2, 0], "夜间模式", "fa fa-moon-o", {fontSize: "17px"}, this.onButtonClick);
+        }
+        if (this.config.default_dark_mode) {
+            this.enableDarkMode();
         }
     }
 
     onButtonClick = async (ev, target) => {
         await this.callback();
-        target.firstChild.className = this.isDarkMode ? "fa fa-sun-o" : "fa fa-moon-o";
+        const [className, hint] = this.isDarkMode ? ["fa fa-sun-o", "日间模式"] : ["fa fa-moon-o", "夜间模式"];
+        target.firstChild.className = className;
+        target.setAttribute("ty-hint", hint);
     }
 
     callback = async () => {

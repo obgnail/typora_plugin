@@ -21,8 +21,9 @@ class textStylizePlugin extends global._basePlugin {
         this.lastColor = this.config.COLORS[0];
         this.modal_ = document.querySelector("#plugin-text-stylize");
 
-        this.utils.dragFixedModal(this.modal_, this.modal_);
-
+        if (this.config.ALLOW_DRAG) {
+            this.utils.dragFixedModal(this.modal_, this.modal_);
+        }
         this.modal_.addEventListener("mousedown", ev => {
             if (this.utils.metaKeyPressed(ev)) return;
             const td = ev.target.closest("td");

@@ -26,7 +26,9 @@ class markdownLintPlugin extends BaseCustomPlugin {
         if (this.entities.button) {
             this.entities.button.addEventListener("click", this.callback);
         }
-        this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true);
+        if (this.config.allow_drag) {
+            this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true);
+        }
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.renewLintResult);
         this.utils.addEventListener(this.utils.eventType.fileEdited, this.utils.debounce(async () => {
             const content = await this.renewLintResult();

@@ -456,19 +456,23 @@ class operationTool extends baseToolInterface {
     init = () => {
         this.ops = [
             {
-                showName: "资源管理器打开",
-                fixedName: "explorer",
+                showName: "资源管理器打开", fixedName: "explorer",
                 callback: () => JSBridge.showInFinder(this.utils.getFilePath())
             },
             {
-                showName: "复制文件路径",
-                fixedName: "copyPath",
+                showName: "复制文件路径", fixedName: "copyPath",
                 callback: () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath())
             },
             {
-                showName: "偏好设置",
-                fixedName: "togglePreferencePanel",
+                showName: "偏好设置", fixedName: "togglePreferencePanel",
                 callback: () => File.megaMenu.togglePreferencePanel()
+            },
+            {
+                showName: "窗口置顶", fixedName: "togglePinWindow", callback: () => {
+                    const pined = document.body.classList.contains("always-on-top");
+                    const func = pined ? "unpinWindow" : "pinWindow";
+                    ClientCommand[func]();
+                }
             }
         ]
 
@@ -490,56 +494,33 @@ class operationTool extends baseToolInterface {
 class modeTool extends baseToolInterface {
     name = () => "mode"
     translate = () => "切换模式"
-
     init = () => {
         this.modes = [
             {
-                showName: "大纲视图",
-                fixedName: "outlineView",
-                callback: () => {
+                showName: "大纲视图", fixedName: "outlineView", callback: () => {
                     File.editor.library.toggleSidebar();
                     File.isNode && ClientCommand.refreshViewMenu();
                 }
             },
-            {
-                showName: "源代码模式",
-                fixedName: "sourceMode",
-                callback: () => File.toggleSourceMode()
-            },
-            {
-                showName: "专注模式",
-                fixedName: "focusMode",
-                callback: () => File.editor.toggleFocusMode()
-            },
-            {
-                showName: "打字机模式",
-                fixedName: "typewriterMode",
-                callback: () => File.editor.toggleTypeWriterMode()
-            },
+            {showName: "源代码模式", fixedName: "sourceMode", callback: () => File.toggleSourceMode()},
+            {showName: "专注模式", fixedName: "focusMode", callback: () => File.editor.toggleFocusMode()},
+            {showName: "打字机模式", fixedName: "typewriterMode", callback: () => File.editor.toggleTypeWriterMode()},
         ]
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
             const readonly = this.utils.getPlugin("read_only");
-            readonly && this.modes.push({
-                showName: "只读模式",
-                fixedName: "readOnlyMode",
-                callback: () => readonly.call()
-            });
+            if (readonly) {
+                this.modes.push({showName: "只读模式", fixedName: "readOnlyMode", callback: () => readonly.call()});
+            }
             const blur = this.utils.getPlugin("blur");
-            blur && this.modes.push({
-                showName: "模糊模式",
-                fixedName: "blurMode",
-                callback: () => blur.call()
-            })
+            if (blur) {
+                this.modes.push({showName: "模糊模式", fixedName: "blurMode", callback: () => blur.call()});
+            }
             const dark = this.utils.getCustomPlugin("darkMode");
-            dark && this.modes.push({
-                showName: "夜间模式",
-                fixedName: "darkMode",
-                callback: () => dark.callback()
-            })
+            if (dark) {
+                this.modes.push({showName: "夜间模式", fixedName: "darkMode", callback: () => dark.callback()})
+            }
             this.modes.push({
-                showName: "调试模式",
-                fixedName: "debugMode",
-                callback: () => JSBridge.invoke("window.toggleDevTools")
+                showName: "调试模式", fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools")
             })
             this.modes.forEach(mode => mode.showName += ` - ${mode.fixedName}`);
         })
