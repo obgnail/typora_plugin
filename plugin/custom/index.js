@@ -1,7 +1,7 @@
 class CustomPlugin extends global._basePlugin {
     beforeProcess = async () => {
-        this.custom = {};     // 启用的插件
-        this.allCustom = {};  // 全部的插件
+        this.custom = {};          // 启用的插件
+        this.customSettings = {};  // 全部的插件配置
         this.hotkeyHelper = new hotkeyHelper(this);
         this.dynamicCallHelper = new dynamicCallHelper(this);
         this.loadPluginHelper = new loadPluginHelper(this);
@@ -27,7 +27,12 @@ class loadPluginHelper {
         }
     }
 
-    loadCustomPlugin = async (fixedName, customSetting) => {
+    loadCustomPlugin = async fixedName => {
+        const customSetting = this.controller.customSettings[fixedName];
+        if (!customSetting || !customSetting.enable) {
+            console.debug(`disable custom plugin: [ ${fixedName} ]`);
+            return;
+        }
         try {
             const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins/${fixedName}`);
             if (!plugin) return;
@@ -61,9 +66,9 @@ class loadPluginHelper {
     // 兼容用户错误操作
     mergeSettings = settings => {
         if (this.controller.config.ALLOW_SET_CONFIG_IN_SETTINGS_TOML) {
-            for (const plugin of Object.keys(global._all_plugins)) {
+            for (const plugin of Object.keys(global._plugin_settings)) {
                 if (plugin in settings) {
-                    settings[plugin] = this.controller.utils.merge(settings[plugin], global._all_plugins[plugin]);
+                    settings[plugin] = this.controller.utils.merge(settings[plugin], global._plugin_settings[plugin]);
                 }
             }
         }
@@ -71,24 +76,10 @@ class loadPluginHelper {
     }
 
     load = async () => {
-        let settings = await this.utils.readSetting(
-            "./plugin/global/settings/custom_plugin.default.toml",
-            "./plugin/global/settings/custom_plugin.user.toml",
-        )
+        let settings = await this.utils.readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
         settings = this.mergeSettings(settings);
-        this.controller.allCustom = settings;
-
-        await Promise.all(
-            Array.from(Object.keys(settings)).map(fixedName => {
-                const customSetting = settings[fixedName];
-                if (customSetting.enable) {
-                    return this.loadCustomPlugin(fixedName, customSetting)
-                } else {
-                    console.debug(`disable custom plugin: [ ${fixedName} ]`)
-                }
-            })
-        )
-
+        this.controller.customSettings = settings;
+        await Promise.all(Array.from(Object.keys(settings)).map(this.loadCustomPlugin));
         this.utils.publishEvent(this.utils.eventType.allCustomPluginsHadInjected);
     }
 
@@ -115,7 +106,7 @@ class dynamicCallHelper {
         meta.target = anchorNode;
         const dynamicCallArgs = [];
 
-        for (const fixedName of Object.keys(this.controller.allCustom)) {
+        for (const fixedName of Object.keys(this.controller.customSettings)) {
             const plugin = this.custom[fixedName];
             if (!plugin) continue;
 

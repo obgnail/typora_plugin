@@ -414,7 +414,7 @@ class utils {
 
     static readSetting = async (defaultSetting, userSetting) => {
         const toml = this.requireFilePath("./plugin/global/utils/toml");
-        const files = [defaultSetting, userSetting].map(file => this.joinPath(file));
+        const files = [defaultSetting, userSetting].map(file => this.joinPath("./plugin/global/settings", file));
         const contentList = await this.readFiles(files);
         const [default_, user_] = contentList.map(c => c ? toml.parse(c) : {});
         return this.merge(default_, user_);
@@ -1886,7 +1886,12 @@ class process {
         }
     }
 
-    loadPlugin = async (fixedName, setting) => {
+    loadPlugin = async fixedName => {
+        const setting = global._plugin_settings[fixedName];
+        if (!setting || !setting.ENABLE) {
+            console.debug(`disable plugin: [ ${fixedName} ] `);
+            return
+        }
         try {
             const {plugin} = this.utils.requireFilePath(`./plugin/${fixedName}`);
             if (!plugin) return;
@@ -1916,41 +1921,30 @@ class process {
     }
 
     run = async () => {
-        global._global_settings = {}; // 通用配置
-        global._plugins = {};         // 启用的插件
-        global._all_plugins = {};     // 全部的插件
+        const pluginSettings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
+        if (!pluginSettings || !pluginSettings.global || !pluginSettings.global.ENABLE) return;
 
-        const pluginSettings = await this.utils.readSetting(
-            "./plugin/global/settings/settings.default.toml",
-            "./plugin/global/settings/settings.user.toml",
-        );
+        global._plugins = {};                             // 启用的插件
+        global._plugin_settings = pluginSettings;         // 全部的插件配置
+        global._global_settings = pluginSettings.global;  // 通用配置
+        delete pluginSettings.global;
 
-        if (!pluginSettings || !pluginSettings["global"] || !pluginSettings["global"]["ENABLE"]) return;
-
-        global._all_plugins = pluginSettings;
-
+        // 插件可能会在加载阶段用到_modalGenerator和_styleTemplater，所以必须先加载
         await Promise.all([
             global._modalGenerator.process(),
             global._styleTemplater.process(),
         ]);
 
-        await Promise.all(
-            Array.from(Object.keys(pluginSettings)).map(fixedName => {
-                const setting = pluginSettings[fixedName];
-                if (fixedName === "global") {
-                    global._global_settings = setting;
-                } else if (!setting.ENABLE) {
-                    console.debug(`disable plugin: [ ${fixedName} ] `);
-                } else {
-                    return this.loadPlugin(fixedName, setting)
-                }
-            })
-        );
+        // 加载插件
+        await Promise.all(Array.from(Object.keys(pluginSettings)).map(this.loadPlugin));
 
+        // 高级工具可能会用到_eventHub，所以必须先于高级工具加载；必须先等待插件注册事件后才能触发事件，所以必须后于插件加载
+        global._eventHub.process();
+        // 发布【所有插件加载完毕】事件
         this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
 
+        // 加载高级工具
         await Promise.all([
-            global._eventHub.process(),
             global._diagramParser.process(),
             global._quickButtonGenerator.process(),
             global._stateRecorder.process(),
@@ -1976,7 +1970,7 @@ global._diagramParser = new diagramParser();
 global._thirdPartyDiagramParser = new thirdPartyDiagramParser();
 // 状态记录器
 global._stateRecorder = new stateRecorder();
-// 模态框
+// 对话框
 global._modalGenerator = new modalGenerator();
 // 右下角的快速按钮
 global._quickButtonGenerator = new quickButtonGenerator();

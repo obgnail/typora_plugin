@@ -1,9 +1,6 @@
 class hotkeyHub extends BaseCustomPlugin {
     beforeProcess = async () => {
-        this.settings = await this.utils.readSetting(
-            "./plugin/global/settings/hotkey.default.toml",
-            "./plugin/global/settings/hotkey.user.toml",
-        )
+        this.settings = await this.utils.readSetting("hotkey.default.toml", "hotkey.user.toml");
     }
 
     process = () => {
