@@ -527,6 +527,8 @@ hotkey = ""
 use_button = true
 # 点击遮罩空白处退出
 click_mask_to_exit = true
+# 在遮罩添加一个退出按钮
+click_close_button_to_exit = false
 # 每次缩放的比率
 zoom_scale = 0.1
 # 每次旋转的角度

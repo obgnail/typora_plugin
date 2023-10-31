@@ -2,6 +2,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     styleTemplate = () => ({
         imageMaxWidth: this.config.image_max_width + "%",
         imageMaxHeight: this.config.image_max_height + "%",
+        closeButtonVisibility: this.config.click_close_button_to_exit ? "initial" : "hidden",
     })
 
     htmlTemplate = () => [{
@@ -38,9 +39,9 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         if (this.config.use_button) {
             this.utils.registerQuickButton("image-reviewer", [1, 1], "查看图片", "fa fa-image", {fontSize: "17px"}, this.callback)
         }
-
-        this.entities.close.addEventListener("click", this.callback);
-
+        if (this.config.click_close_button_to_exit) {
+            this.entities.close.addEventListener("click", this.callback);
+        }
         if (this.config.click_mask_to_exit) {
             this.entities.mask.addEventListener("click", this.callback);
         }
