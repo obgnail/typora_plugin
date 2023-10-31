@@ -1027,8 +1027,8 @@ class diagramParser {
             }
         }
 
-        this.utils.decorate(() => File && File.editor && File.editor.fences, "focus", stopCall)
-        this.utils.decorate(() => File && File.editor, "refocus", stopCall)
+        this.utils.decorate(() => File && File.editor && File.editor.fences, "focus", stopCall);
+        this.utils.decorate(() => File && File.editor, "refocus", stopCall);
 
         const showAllTButton = fence => {
             const enhance = fence.querySelector(".fence-enhance");
@@ -1055,7 +1055,8 @@ class diagramParser {
             enhance.style.display = "none";
         }
 
-        if (this.utils.getGlobalSetting("CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE")) {
+        const handleCtrlClick = () => {
+            if (!this.utils.getGlobalSetting("CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE")) return;
             document.querySelector("#write").addEventListener("mouseup", ev => {
                 if (ev.target.closest(".md-fences-interactive .md-diagram-panel-preview") && this.utils.metaKeyPressed(ev)) {
                     showAllTButton(ev.target.closest(".md-fences-interactive"));
@@ -1064,25 +1065,16 @@ class diagramParser {
             }, true)
         }
 
-        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
-            if (!this.utils.getGlobalSetting("CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE")) return;
+        const handleEditButton = () => {
+            if (!this.utils.getGlobalSetting("CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE")
+                || !Array.from(this.parsers.values()).some(parser => parser.interactiveMode)
+            ) return;
 
-            let hasInteractiveDiagram = false;
-            for (const parser of this.parsers.values()) {
-                if (parser.interactiveMode) {
-                    hasInteractiveDiagram = true;
-                    break
-                }
+            const listener = (ev, button) => {
+                button.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
+                enableFocus();
             }
-            if (!hasInteractiveDiagram) return;
-
-            const ok = this.utils.registerFenceEnhanceButton(
-                "edit-custom-diagram", "editDiagram", "编辑", "fa fa-edit", false,
-                (ev, button) => {
-                    button.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
-                    enableFocus();
-                }
-            )
+            const ok = this.utils.registerFenceEnhanceButton("edit-custom-diagram", "editDiagram", "编辑", "fa fa-edit", false, listener);
             if (!ok) return;
 
             $("#write").on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
@@ -1094,7 +1086,10 @@ class diagramParser {
             }).on("mouseleave", ".md-fences-interactive.md-focus", function () {
                 showEditButtonOnly(this);
             })
-        })
+        }
+
+        handleCtrlClick();
+        handleEditButton();
     }
 
     onChangeFile = () => {
@@ -1921,9 +1916,9 @@ class process {
     }
 
     run = async () => {
-        global._global_settings = {};
-        global._plugins = {};     // 启用的插件
-        global._all_plugins = {}; // 全部的插件
+        global._global_settings = {}; // 通用配置
+        global._plugins = {};         // 启用的插件
+        global._all_plugins = {};     // 全部的插件
 
         const pluginSettings = await this.utils.readSetting(
             "./plugin/global/settings/settings.default.toml",
