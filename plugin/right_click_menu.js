@@ -16,12 +16,9 @@ class rightClickMenuPlugin extends global._basePlugin {
 
     appendMenu = () => {
         setTimeout(() => {
-            // 一级菜单汇总所有插件
-            this.appendFirst();
-            // 二级菜单展示所有插件
-            this.appendSecond();
-            // 三级菜单展示插件的参数
-            this.appendThird();
+            this.appendFirst();  // 一级菜单汇总所有插件
+            this.appendSecond(); // 二级菜单展示所有插件
+            this.appendThird();  // 三级菜单展示插件的参数
             this.listen();
         }, 500)
     }
@@ -72,9 +69,7 @@ class rightClickMenuPlugin extends global._basePlugin {
                 if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return {};
 
                 const children = (plugin.callArgs || []).map(arg => this.thirdLiTemplate(arg));
-                return this.ulTemplate({
-                    idx, children, class_: "plugin-menu-third", fixed_name: plugin.fixedName,
-                });
+                return this.ulTemplate({idx, children, class_: "plugin-menu-third", fixed_name: plugin.fixedName});
             })
             this.utils.appendElements(content, elements);
         })
@@ -196,6 +191,7 @@ class rightClickMenuPlugin extends global._basePlugin {
                 document.querySelectorAll(".plugin-menu-third").forEach(ele => ele.classList.remove("show"));
             }
         })
+
         // 展示三级菜单
         $(".plugin-menu-second").on("mouseenter", "[data-key]", function () {
             const second = $(this);

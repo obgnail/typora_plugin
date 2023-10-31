@@ -33,11 +33,11 @@ DRAG_STYLE = 1
 HEIGHT_SCALE = 5
 # 总是在当前标签页打开(可以在右键菜单中设置)
 # 不建议设置为true，因为【总是】在当前标签页打开，而当你重启Typora时只有一个标签页，所以你永远就只会有一个标签，如此就失去了此插件的意义了
-# 这个配置的使用方法是：当你打开多个标签后，通过右键菜单将其临时设置为true，实现在当前标签页打开文件，每次重启后就会自动恢复为false
+# 这个配置的使用方法是：当你打开多个标签后，通过右键菜单激活【在当前标签打开文件】选项，将其临时设置为true，实现在当前标签页打开文件，每次重启后就会自动恢复为false
 LOCAL_OPEN = false
 # 调整content的top，以免被tab遮挡
 CHANGE_CONTENT_TOP = true
-# 调整.md-notification-container的z-index，以免被tab遮挡
+# 调整notification组件的图层顺序，以免被tab遮挡
 CHANGE_NOTIFICATION_Z_INDEX = true
 # 关闭标签页的快捷键
 CLOSE_HOTKEY = ["ctrl+w"]
@@ -50,6 +50,8 @@ CTRL_WHEEL_TO_SCROLL = true
 # 当鼠标位于标签页时，可以点击鼠标中键关闭标签页
 MIDDLE_CLICK_TO_CLOSE = true
 # typora1.1版本以后，支持使用锚点跳转到本地文件，是否拦截处理（从新建窗口改成新建标签页）
+# 参考1：https://support.typora.io/zh/What's-New-1.1/#文件链接
+# 参考2：https://support.typora.io/Links/#internal-links
 INTERCEPT_INTERNAL_AND_LOCAL_LINKS = true
 
 
@@ -70,7 +72,7 @@ AUTO_HIDE = false
 # 当输入框为空，且键入backspace时，隐藏模态框
 BACKSPACE_TO_HIDE = true
 # 打开文件后，自动聚焦
-# 设置此选项时为了键盘党可以通过键盘上下键、ctrl+enter进行快速操作，如果你是鼠标党，可以置为false
+# 此选项时为了键盘党可以通过键盘上下键、ctrl+enter进行快速操作，如果你是鼠标党，可以置为false
 REFOUCE_WHEN_OPEN_FILE = true
 # 搜索内容时大小写敏感(此选项不必手动调整，可以在UI设置)
 CASE_SENSITIVE = false
@@ -85,7 +87,7 @@ RELATIVE_PATH = true
 # 关键词按空格分割
 SEPARATOR = " "
 # hint展示文件修改时间
-# 设置此选项时为了通过额外的信息帮助查找文件，我嫌弃它扎眼就没开启，如果你总是找不到目标文件，可以开启
+# 此选项时为了通过额外的信息帮助查找文件，我嫌弃它扎眼就没开启，如果你总是找不到目标文件，可以开启
 SHOW_MTIME = false
 # 查找文件的最大尺寸。大于MAX_SIZE的文件在搜索时将被忽略。若<0则不过滤
 # Typora只支持打开小于2000000字节的文件，不建议修改成比2000000还大的值，毕竟找到了也不能在typora里打开
@@ -105,7 +107,7 @@ NAME = "多关键字高亮"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+h"
-# 允许【ctrl+鼠标拖拽】拖动
+# 允许【ctrl+鼠标拖拽】拖动模态框
 ALLOW_DRAG = true
 # 当输入框为空，且键入backspace时，隐藏模态框
 BACKSPACE_TO_HIDE = true
@@ -113,7 +115,7 @@ BACKSPACE_TO_HIDE = true
 CASE_SENSITIVE = false
 # 关键词按空格分割
 SEPARATOR = " "
-# 展示执行按钮
+# 展示【执行】按钮
 # 我嫌弃它丑就没开启，如果你是鼠标党，可以开启
 SHOW_RUN_BUTTON = false
 # 打开其他文件时自动重新搜索
@@ -195,22 +197,22 @@ ALLOW_DRAG = true
 # 当输入框为空，且键入backspace时，隐藏模态框
 BACKSPACE_TO_HIDE = true
 # 【快捷键】和【在右键菜单中】调用内建命令，是否弹出模态框
-# 注意: 123使用的是child_process.exec。因此如果程序的输出超出200K，会引发Error：maxBuffer exceeded。此时必须使用echo
+# 注意: 123使用的是child_process.exec，因此如果程序的输出超出200K，会引发Error：maxBuffer exceeded。此时必须使用echo
 #   1.always: 总是弹出
-#   2.error: 只在异常时弹出
+#   2.error:  只在异常时弹出
 #   3.silent: 总是静默（其实可以在控制台console中看到）
-#   4.echo: 立即回显程序输出、适合需要不断打印日志的耗时任务
+#   4.echo:   立即回显程序输出、适合需要不断打印日志的耗时任务
 QUICK_EXEC_SHOW = "error"
 # 【在命令输入框里回车】和【点击执行命令按钮】时，使用的回显类型
 #   1. always: 等待程序执行完毕后一次性输出
-#   2. echo: 立即回显程序输出
+#   2. echo:   立即回显程序输出
 COMMIT_EXEC_SHOW = "echo"
-# 启用内建的命令列表（若为false，则BUILTIN配置失效）
+# 启用内建的命令列表（若为false，则BUILTIN选项失效）
 USE_BUILTIN = true
 # 内建命令列表。支持无限添加。
 # 目前支持4个参数:
 #   1. name:   命令展示的名称
-#   2. shell:  cmd/bash、powershell、gitbash、wsl（如果使用 gitbash、wsl，请确保已经将其加入环境变量）
+#   2. shell:  cmd/bash、powershell、gitbash、wsl（如果使用gitbash、wsl，请确保已经将其加入环境变量）
 #   3. hotkey: 快捷键调用命令行（可选）
 #   4. cmd:    执行的命令
 # cmd提供内置环境变量:
@@ -268,7 +270,7 @@ CLICKABLE = true
 HOTKEY = "ctrl+shift+r"
 # 默认使用只读模式（打开Typora就进入只读模式）
 READ_ONLY_DEFAULT = false
-# 开启只读模式后，右下角数字统计区域出现的提示文件
+# 开启只读模式后，右下角数字统计区域出现的提示文字
 SHOW_TEXT = "ReadOnly"
 
 
@@ -287,20 +289,20 @@ BACKSPACE_TO_HIDE = true
 # 用户键入内容 = 搜索工具名称 + 空格 + 搜索内容
 # eg：【ops 资源管理器打开】
 # 如果没有匹配到搜索工具，使用默认工具
-#   0. ""：不使用默认
-#   1. "plu"：插件
-#   2. "tab"：当前标签页
-#   3. "his"：最近文件
-#   4. "ops"：常用操作
-#   5. "mode"：切换文件模式
+#   0. ""：     不使用默认
+#   1. "plu"：  插件
+#   2. "tab"：  当前标签页
+#   3. "his"：  最近文件
+#   4. "ops"：  常用操作
+#   5. "mode"： 切换文件模式
 #   6. "theme"：临时切换主题
-#   7. "func"：功能列表
-#   8. "all": 混合查找（所有项目都混在一起查找）
+#   7. "func"： 功能列表
+#   8. "all":   混合查找（所有项目都混在一起查找）
 DEFAULT_TOOL = "func"
 # 是否使用负向查询（类似于google）
 # 比如：【plu multi -search】
 #   - 若为false：查找【包含multi关键字，同时包含-search关键字】的插件
-#   - 若为true：查找【包含multi关键字，但是不包含search关键字】的插件
+#   - 若为true： 查找【包含multi关键字，但是不包含search关键字】的插件
 # 负向查询和正向查询可以随意组合：
 #   - 【his close -win -mark 标签】：查找最近打开的文件，要求文件标题【包含close、标签，不包含win、mark】
 USE_NEGATIVE_SEARCH = true
@@ -325,7 +327,7 @@ CLICKABLE = true
 HOTKEY = ""
 # 默认使用模糊模式（打开Typora就进入模糊模式）
 BLUR_DEFAULT = false
-# 模糊类型: blur/hide
+# 模糊类型:
 #   blur：非聚焦组件变模糊
 #   hide：非聚焦组件直接隐藏
 BLUR_TYPE = "blur"
@@ -432,10 +434,9 @@ ALLOW_ICON_WRAP = true
 HEIGHT_PRECENT_WHEN_PIN_UP = 30
 # 当pin到页面右侧时，占据页面的50%宽度
 WIDTH_PRECENT_WHEN_PIN_RIGHT = 50
-# 在拖拽模态框的时候是否使用动画
-# 使用动画视觉效果比较好，但是不跟手
+# 在拖拽模态框的时候是否使用动画（使用动画视觉效果比较好，但是不跟手）
 USE_ANIMATION_WHEN_DRAG = false
-# 在调整模态框的时候是否使用动画
+# 在调整模态框大小的时候是否使用动画
 USE_ANIMATION_WHEN_RESIZE = false
 
 # markmap共有两个功能:toc和fence，此为fence。若为false，以下配置全部失效
@@ -526,13 +527,13 @@ NAME = "代码块增强"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 
-# fence_enhance插件包含两个功能：button、hotkey，若置为false，以下配置全部失效
+# fence_enhance插件包含两个功能：button、hotkey，此为button，若置为false，以下配置全部失效
 ENABLE_BUTTON = true
 # 自动隐藏按钮，鼠标移动到代码块才显示
 AUTO_HIDE = false
 # 启用复制代码功能
 ENABLE_COPY = true
-# 启用代码调整缩进功能(此功能低版本Typora不可使用)
+# 启用代码调整缩进功能(低版本Typora不可使用此功能)
 ENABLE_INDENT = true
 # 启用折叠代码功能
 ENABLE_FOLD = true
@@ -548,13 +549,13 @@ WAIT_RECOVER_INTERVAL = 1000
 # 节流时间（单位：ms）
 # 300毫秒内多次点击【复制代码】按钮，只会执行一次（此选项其实没啥意义，添加此配置只是出于强迫症）
 CLICK_CHECK_INTERVAL = 300
-# 高亮鼠标悬停所在的代码行，若置为false，则HIGHLIGHT_COLOR失效
+# 高亮鼠标悬停的代码行，若置为false，则HIGHLIGHT_COLOR失效
 # 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
 HIGHLIGHT_WHEN_HOVER = false
 # 高亮颜色
 HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 
-# fence_enhance插件包含三个功能：button、hotkey、highlight，若置为false，以下配置全部失效
+# fence_enhance插件包含两个功能：button、hotkey，此为hotkey，若置为false，以下配置全部失效
 ENABLE_HOTKEY = true
 # 不建议修改下面的快捷键，原因有二：
 #   1. 和很多ide的快捷键保持一致
@@ -575,7 +576,7 @@ ENABLE_HOTKEY = true
 #   13.Shift-Ctrl-U: "redoSelection",
 #   14.Alt-U: "redoSelection",
 
-# 注意：此处的快捷键字符串使用的是codeMirror的方式（doc: https://codemirror.net/5/doc/manual.html#keymaps）
+# 注意：此处的快捷键字符串使用的是codeMirror的方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
 # 如果不想使用此功能，请置为""
 # 将当前行和上一行互换
 SWAP_PREVIOUS_LINE = "Shift-Alt-Up"
@@ -611,7 +612,7 @@ ENABLE = true
 NAME = "文段截断"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 剩余文本段
+# 截断后剩余文本段的数量
 REMAIN_LENGTH = 80
 
 
@@ -623,10 +624,10 @@ ENABLE = true
 NAME = "导出增强"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 是否下载网络图片(若为true，有可能因为网络问题导致导出超时)
-# 此选项可在右键菜单中修改，不建议在配置中置为true，除非你有频繁导出html的需求
+# 是否下载网络图片（若为true，有可能因为网络问题导致导出超时）
+# 若置为false，则DOWNLOAD_THREADS选项失效
 DOWNLOAD_NETWORK_IMAGE = false
-# 下载并发量(若DOWNLOAD_NETWORK_IMAGE为false，则此配置失效)
+# 下载网络图片的并发量（不建议设置得太高，否则可能触发网站/图床的反爬策略）
 DOWNLOAD_THREADS = 10
 
 
@@ -658,6 +659,8 @@ CLICKABLE = true
 SHOW_MODAL_HOTKEY = ""
 # 设置字体颜色的快捷键
 SET_COLOR_HOTKEY = ""
+# 允许【ctrl+鼠标拖拽】拖动模态框
+ALLOW_DRAG = true
 # 每13个颜色一行
 NUM_PER_LINE = 13
 # 颜色列表（由于markdown支持的html语法限制， 不支持rgb格式的颜色）
@@ -678,14 +681,14 @@ COLORS = [
 [custom]
 # 启用插件
 # 注意：若不启用此插件，那么所有自定义插件都会失效
+# 若要修改自定义插件的配置请前往同目录下的custom_plugin.user.toml
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "自定义插件"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 允许在settings.user.toml中设置custom_plugin.user.toml中的选项
+# 允许在settings.user.toml中设置custom_plugin.user.toml中的选项。若在两处皆有定义，settings.user.toml的优先级高于custom_plugin.user.toml
 # 本来【自定义插件】的选项应该在custom_plugin.user.toml中设置的，但是一直有收到反馈，用户错误地写在了settings.user.toml。无奈只能作此兼容
-# 若在两处皆有定义，settings.user.toml的优先级高于custom_plugin.user.toml
 # 1.如果你不理解我在说什么，并且不想弄懂，请将此选项置为true
 # 2.如果你不理解我在说什么，并且想弄懂，建议查看本目录下的【请读我.md】中的【settings.XXX.toml和custom_plugin.XXX.toml的区别是什么？】章节
 # 3.如果能理解我在说什么，并且知道settings.user.toml和custom_plugin.user.toml的区别，建议将此选项置为false
@@ -714,6 +717,7 @@ FIND_LOST_PLUGIN = true
 [[right_click_menu.MENUS]]
 NAME = "非常用插件"
 LIST = [
+    "window_tab",
     "blur",
     "markmap",
     "resize_image",
@@ -735,7 +739,6 @@ LIST = [
 [[right_click_menu.MENUS]]
 NAME = "常用插件"
 LIST = [
-    "window_tab",
     "search_multi",
     "multi_highlighter",
     "outline",
@@ -761,7 +764,7 @@ CLICKABLE = false
 MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
-# 当侧边栏出现横向滚动条时，ctrl+wheel进行横向滚动
+# 当侧边栏出现横向滚动条时，允许ctrl+wheel进行横向滚动
 CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU = true
 
 

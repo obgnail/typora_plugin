@@ -2,6 +2,7 @@
     top: 440px;
     left: 60%;
     width: 420px;
+    max-width: 100%;
 }
 
 #plugin-multi-highlighter-input {
@@ -60,16 +61,19 @@
     display: inline-flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    max-width: 100%;
 }
 
 .plugin-multi-highlighter-result-item {
     font-family: Arial;
-    cursor: pointer;
     font-size: 13px;
     line-height: 20px;
     margin: 3px 3px;
     padding: 0 5px;
     border-radius: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
 }
 
 .plugin-multi-highlighter-move {

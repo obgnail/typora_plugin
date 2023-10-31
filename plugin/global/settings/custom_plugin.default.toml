@@ -287,11 +287,15 @@ hover_to_show_fold_callout = true
 # 自动插入的模板
 template = "> [!NOTE]\n> this is note"
 # 使用的字体。一旦修改，就需要修改下面所有的icon
-# 具体的icon值请参考font-awesome.css
+# 具体的icon值请参考：
+#   旧版本Typora：Typora/resources/app/style/font-awesome-4.1.0/css/font-awesome.css
+#   新版本Typora：Typora/resources/style/font-awesome-4.1.0/css/font-awesome.css
 font_family = "FontAwesome"
-# 默认的颜色和icon
+# 默认的背景颜色
 default_background_color = "#fafafa"
+# 默认的左边线颜色
 default_left_line_color = "#777777"
+# 默认的icon
 default_icon = "\\f075"
 # callout的类型
 [[callouts.config.list]]
@@ -423,7 +427,7 @@ hotkey = ""
 auto_open = true
 # 模板
 # 当前支持的模板变量：
-#   {{date}}： 当前日期
+#   {{date}}：当前日期
 #   {{time}}：当前时间
 #   {{weekday}}：当前周几
 #   {{datetime}}：当前日期时间
@@ -468,7 +472,7 @@ auto_skip = true
 # 当光标在中间，左右两边都是成对符号，如：【|】；且用户键入Backspace时，同时删除左右两边的符号
 auto_delete_pair = true
 # 需要自动补全的符号（第一项为输入符号，第二项为补全符号）
-# NOTE：其实有个问题我不知道要不要修复：中文的前后引号是不一样的，如果你键入的是后引号，此时便无法正常配对补全（好像搜狗就没有修复此问题）
+# NOTE：其实有个问题我不知道要不要修复：中文的前后引号是不一样的，如果你键入的是后引号，此时便无法正常配对补全（好像搜狗输入法就没有修复此问题）
 auto_pair_symbols = [
     ["（", "）"],
     ["《", "》"],
@@ -583,11 +587,7 @@ enable = true
 # 插件配置
 [markdownLint.config]
 # 禁用的规则（参考：https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md）
-disable_rules = [
-    "MD012",
-    "MD013",
-    "MD041",
-]
+disable_rules = ["MD012", "MD013", "MD041"]
 # 在右上角添加一个方块，用以提示lint状态（类似于idea）
 use_button = true
 # 方块的尺寸
@@ -600,18 +600,20 @@ error_color = "#be9117"
 # 在编辑后多长时间重新检测一次（单位：ms）
 # 最低为500，若<500，则自动置为500
 debounce_interval = 1000
+# 允许【ctrl+鼠标拖拽】拖动模态框
+allow_drag = true
 
 
 ############### reopenClosedFiles ###############
 [reopenClosedFiles]
 # 右键菜单中展示的名称
 name = "打开上次退出时尚未关闭的标签页"
-# 是否启用此自定义插件（此插件仅在window_tab启用时生效）
+# 是否启用此自定义插件（此插件仅在window_tab插件启用时生效）
 enable = true
 # 插件配置
 [reopenClosedFiles.config]
-# 打开Typora自动打开
-# 注意：只当双击typora.exe打开Typora时生效（打开特定文件时，自动打开上次退出时尚未关闭的标签页，明显不符合用户预期）
+# 打开Typora自动恢复上次退出时尚未关闭的标签页
+# 注意：只当双击typora.exe打开Typora时生效（因为打开特定文件时，自动恢复上次退出时尚未关闭的标签页，明显不符合用户预期）
 auto_reopen_when_init = true
 # 快捷键
 hotkey = ""
@@ -621,7 +623,8 @@ hotkey = ""
 [hotkeyHub]
 # 右键菜单中展示的名称
 name = "快捷键中心"
-# 是否启用此自定义插件
+# 是否启用此自定义插件（此插件仅对有javascript基础的用户开放）
+# 若要修改hotkeyHub的配置请前往同目录下的hoteykey.user.toml
 # 注意：若置为false，那么hoteykey.toml的配置将失效
 enable = true
 
@@ -630,7 +633,7 @@ enable = true
 [quickButton]
 # 右键菜单中展示的名称
 name = "快速按钮"
-# 是否启用此自定义插件
+# 是否启用此自定义插件（此插件仅对有javascript基础的用户开放）
 enable = false
 # 插件配置
 [quickButton.config]
@@ -676,6 +679,7 @@ hotkey = "ctrl+shift+j"
 # 右键菜单中展示的名称
 name = "TC打开"
 # 是否启用此自定义插件
+# 若要使用此插件，请先修改tc_path选项
 enable = false
 # 插件配置
 [openInTotalCommander.config]
