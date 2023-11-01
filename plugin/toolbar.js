@@ -508,14 +508,14 @@ class modeTool extends baseToolInterface {
         ]
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
             const readonly = this.utils.getPlugin("read_only");
+            const blur = this.utils.getPlugin("blur");
+            const dark = this.utils.getCustomPlugin("darkMode");
             if (readonly) {
                 this.modes.push({showName: "只读模式", fixedName: "readOnlyMode", callback: () => readonly.call()});
             }
-            const blur = this.utils.getPlugin("blur");
             if (blur) {
                 this.modes.push({showName: "模糊模式", fixedName: "blurMode", callback: () => blur.call()});
             }
-            const dark = this.utils.getCustomPlugin("darkMode");
             if (dark) {
                 this.modes.push({showName: "夜间模式", fixedName: "darkMode", callback: () => dark.callback()})
             }

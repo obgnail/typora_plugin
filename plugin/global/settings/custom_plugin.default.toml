@@ -10,6 +10,8 @@
 name = "插入kanban"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [kanban.config]
 # 代码块语言
@@ -70,6 +72,8 @@ use strict
 name = "插入echarts"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [echarts.config]
 # 代码块语言
@@ -122,6 +126,8 @@ myChart.on('click', params => alert(params.name));
 name = "插入chart"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [chart.config]
 # 代码块语言
@@ -180,6 +186,8 @@ config = {
 name = "插入calendar"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [calendar.config]
 # 代码块语言
@@ -230,6 +238,8 @@ option = {
 name = "插入timeline"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [timeline.config]
 # 代码块语言
@@ -278,6 +288,8 @@ TEMPLATE = """```timeline
 name = "插入callouts"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [callouts.config]
 # 为标题设置颜色（和left_line_color一样）
@@ -371,6 +383,8 @@ icon = "\\f00b"
 name = "夜间模式"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [darkMode.config]
 # 默认进入夜间模式
@@ -385,6 +399,8 @@ use_button = true
 name = "复制标题路径"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [fullPathCopy.config]
 # 快捷键
@@ -403,6 +419,8 @@ full_file_path = false
 name = "提取选区文字到新文件"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [extractRangeToNewFile.config]
 # 快捷键
@@ -419,6 +437,8 @@ auto_open = true
 name = "文件模板"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [templater.config]
 # 快捷键
@@ -465,6 +485,8 @@ name = "中文符号自动补全"
 # 是否启用此自定义插件
 # 注意：此插件受Typora本身配置【匹配括号和引号】的影响，如果此配置为false，那么此插件自动禁用
 enable = true
+# 是否在右键菜单中显示
+show = false
 # 插件配置
 [chineseSymbolAutoPairer.config]
 # 兼容以前的行为：当用户输入【】时，不会变成【】】，而是将光标跳到】的右边
@@ -489,6 +511,8 @@ auto_pair_symbols = [
 name = "资源管理"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [resourceOperation.config]
 # 本插件是通过后缀名来判断是否是资源的
@@ -519,6 +543,8 @@ auto_use_datetable = true
 name = "图片查看器"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [imageReviewer.config]
 # 快捷键
@@ -586,6 +612,8 @@ alt_wheel_function = ["incVSkew", "decVSkew"]
 name = "md格式规范检测"
 # 是否启用此自定义插件
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [markdownLint.config]
 # 禁用的规则（参考：https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md）
@@ -612,6 +640,8 @@ allow_drag = true
 name = "打开上次退出时尚未关闭的标签页"
 # 是否启用此自定义插件（此插件仅在window_tab插件启用时生效）
 enable = true
+# 是否在右键菜单中显示
+show = false
 # 插件配置
 [reopenClosedFiles.config]
 # 打开Typora自动恢复上次退出时尚未关闭的标签页
@@ -629,6 +659,8 @@ name = "快捷键中心"
 # 若要修改hotkeyHub的配置请前往同目录下的hoteykey.user.toml
 # 注意：若置为false，那么hoteykey.toml的配置将失效
 enable = true
+# 是否在右键菜单中显示
+show = true
 
 
 ############### quickButton ###############
@@ -637,6 +669,8 @@ enable = true
 name = "快速按钮"
 # 是否启用此自定义插件（此插件仅对有javascript基础的用户开放）
 enable = false
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [quickButton.config]
 # 添加的按钮
@@ -670,6 +704,8 @@ callback = "openInTotalCommander.callback"
 name = "自动添加结尾空格"
 # 是否启用此自定义插件
 enable = false
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [autoTrailingWhiteSpace.config]
 # 快捷键
@@ -683,6 +719,8 @@ name = "TC打开"
 # 是否启用此自定义插件
 # 若要使用此插件，请先修改tc_path选项
 enable = false
+# 是否在右键菜单中显示
+show = false
 # 插件配置
 [openInTotalCommander.config]
 # 快捷键
@@ -701,6 +739,8 @@ name = "升级插件"
 # 注意：此插件目前仅支持windows系统，若为其他系统，则此插件失效
 # 注意：此插件依赖于commander插件，若禁用了commander，则此插件失效
 enable = true
+# 是否在右键菜单中显示
+show = true
 # 插件配置
 [pluginUpdater.config]
 # 众所周知，有些地区无法裸连github，需要使用代理（如：http://127.0.0.1:7890）

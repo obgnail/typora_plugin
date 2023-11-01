@@ -106,7 +106,9 @@ class dynamicCallHelper {
         meta.target = anchorNode;
         const dynamicCallArgs = [];
 
-        for (const fixedName of Object.keys(this.controller.customSettings)) {
+        for (const [fixedName, setting] of Object.entries(this.controller.customSettings)) {
+            if (!setting.show) continue;
+
             const plugin = this.custom[fixedName];
             if (!plugin) continue;
 
