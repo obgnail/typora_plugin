@@ -1,5 +1,5 @@
 class fullPathCopy extends BaseCustomPlugin {
-    selector = () => "#write h1, h2, h3, h4, h5, h6"
+    selector = () => "#write > [cid]"
     hint = () => "将当前标题的路径复制到剪切板"
     hotkey = () => [this.config.hotkey]
     callback = anchorNode => {

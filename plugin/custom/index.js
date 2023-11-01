@@ -15,7 +15,7 @@ class CustomPlugin extends global._basePlugin {
 class loadPluginHelper {
     constructor(controller) {
         this.controller = controller;
-        this.utils = this.controller.utils;
+        this.utils = controller.utils;
     }
 
     insertStyle = (fixedName, style) => {
@@ -156,10 +156,8 @@ class hotkeyHelper {
 
     hotkey = () => {
         const hotkeys = [];
-        for (const fixedName of Object.keys(this.custom)) {
-            const plugin = this.custom[fixedName];
+        for (const [fixedName, plugin] of Object.entries(this.custom)) {
             if (!plugin) continue;
-
             try {
                 const hotkey = plugin.hotkey();
                 if (!hotkey) continue;
