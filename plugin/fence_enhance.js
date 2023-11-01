@@ -3,9 +3,7 @@ class fenceEnhancePlugin extends global._basePlugin {
         this.enableIndent = this.config.ENABLE_INDENT && !this.utils.isBetaVersion;
     }
 
-    styleTemplate = () => this.config.HIGHLIGHT_WHEN_HOVER
-        ? {highlight_style: `.CodeMirror-line:hover { background: ${this.config.HIGHLIGHT_LINE_COLOR}; }`}
-        : true
+    styleTemplate = () => ({bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial"})
 
     init = () => {
         this.builders = [];

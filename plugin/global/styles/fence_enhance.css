@@ -6,16 +6,22 @@
     right: .5em;
     z-index: 8;
     font-size: 1.2em;
-    opacity: .5;
 }
 
-#write .fence-enhance .enhance-btn {
+.fence-enhance .enhance-btn {
+    opacity: .5;
     cursor: pointer;
     margin-left: .5em;
 }
 
-#write .fence-enhance .enhance-btn:last-child {
+.fence-enhance .enhance-btn:last-child {
     margin-left: 0;
 }
 
-${highlight_style}
+.fence-enhance .enhance-btn:hover {
+    opacity: .8;
+}
+
+.CodeMirror-line:hover {
+    background-color: ${bgColorWhenHover};
+}
