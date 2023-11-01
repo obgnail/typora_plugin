@@ -7,35 +7,14 @@ class templater extends BaseCustomPlugin {
 
     hotkey = () => [this.config.hotkey]
 
-    getTemplateList = () => {
-        const templates = [...this.config.template];
-        if (this.utils.getCustomPlugin("kanban")) {
-            templates.push({
+    process = () => {
+        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+            if (!this.utils.getCustomPlugin("kanban")) return;
+            this.config.template.push({
                 name: "今日任务",
-                text: `---
-title: {{title}}
-date: {{date}} {{weekday}}
----
-
-
-\`\`\`kanban
-# {{date}} Task List
-
-## Todo
-- task1(task description)
-- task2
-- task3
-
-## In-Progress
-
-## Completed
-
-\`\`\`
-
-`
+                text: "---\ntitle: {{title}}\ndate: {{date}} {{weekday}}\n---\n\n\n```kanban\n# {{date}} Task List\n\n## Todo\n- task1(task description)\n- task2\n- task3\n\n## In-Progress\n\n## Completed\n\n```\n\n"
             })
-        }
-        return templates
+        })
     }
 
     callback = anchorNode => {
@@ -44,7 +23,7 @@ date: {{date}} {{weekday}}
             window.parent.navigator.clipboard.readText().then(text => this.rangeText = text);
         }
 
-        const templateList = this.getTemplateList();
+        const templateList = this.config.template;
         const modal = {
             title: "新文件",
             components: [
@@ -65,7 +44,7 @@ date: {{date}} {{weekday}}
             const template = templateList.filter(template => template.name === option)[0];
             if (!template) return;
 
-            const helper = new templateHelper(filename, this.rangeText, this.utils);
+            const helper = new templateHelper(filename, this);
             const content = helper.convert(template.text);
             this.utils.Package.Fs.writeFileSync(filepath, content, "utf8");
             this.rangeText = "";
@@ -77,10 +56,10 @@ date: {{date}} {{weekday}}
 }
 
 class templateHelper {
-    constructor(title, rangeText, utils) {
+    constructor(title, controller) {
         this._title = title;
-        this.rangeText = rangeText || "";
-        this.utils = utils;
+        this.rangeText = controller.rangeText || "";
+        this.utils = controller.utils;
         this.today = new Date();
         this.templateVarMap = {
             date: "{{date}}",
@@ -99,10 +78,8 @@ class templateHelper {
     }
 
     convert = text => {
-        for (let varName in this.templateVarMap) {
-            const template = this.templateVarMap[varName];
-            const regex = new RegExp(template, "g");
-            text = text.replace(regex, this[varName](template));
+        for (let [varName, template] of Object.entries(this.templateVarMap)) {
+            text = text.replace(new RegExp(template, "g"), this[varName](template));
         }
         return text
     }
