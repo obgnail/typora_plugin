@@ -555,10 +555,12 @@ use_button = true
 click_mask_to_exit = true
 # 在遮罩添加一个退出按钮
 click_close_button_to_exit = false
+# 工具栏的位置：bottom/top
+tool_position = "bottom"
 # 每次缩放的比率
 zoom_scale = 0.1
 # 每次旋转的角度
-totate_scale = 10
+rotate_scale = 10
 # 每次倾斜的角度
 skew_scale = 1
 # 遮罩层的不透明度
@@ -571,6 +573,7 @@ image_max_height = 80
 # 目前支持以下功能：
 #   - dummy: 无功能
 #   - close: 关闭
+#   - location: 打开图片路径
 #   - nextImage: 下张图
 #   - previousImage: 上张图
 #   - zoomOut: 放大图片
@@ -594,7 +597,7 @@ ctrl_mousedown_function = ["hFlip", "dummy", "vFlip"]
 # shift+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
 shift_mousedown_function = ["autoSize", "dummy", "dummy"]
 # alt+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
-alt_mousedown_function = ["restore", "dummy", "dummy"]
+alt_mousedown_function = ["restore", "location", "dummy"]
 
 # 当鼠标位于图片时，上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
 wheel_function = ["zoomOut", "zoomIn"]

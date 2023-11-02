@@ -3,6 +3,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         imageMaxWidth: this.config.image_max_width + "%",
         imageMaxHeight: this.config.image_max_height + "%",
         closeButtonVisibility: this.config.click_close_button_to_exit ? "initial" : "hidden",
+        toolPosition: this.config.tool_position === "top" ? "initial" : 0,
     })
 
     htmlTemplate = () => [{
@@ -11,8 +12,26 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             {ele: "img", class_: "review-image"},
             {class_: "review-item", action: "get-previous", children: [{ele: "i", class_: "fa fa-angle-left"}]},
             {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
-            {class_: "review-button review-message"},
             {class_: "review-button close-review", text: "CLOSE"},
+            {
+                class_: "review-tool",
+                children: [
+                    {
+                        class_: "review-message",
+                        children: [{class_: "review-index"}, {class_: "review-title"}, {class_: "review-size"}]
+                    },
+                    {
+                        class_: "review-options",
+                        children: [
+                            {ele: "i", class_: "fa fa-arrows-v", option: "vFlip"},
+                            {ele: "i", class_: "fa fa-arrows-h", option: "hFlip"},
+                            {ele: "i", class_: "fa fa-search-plus", option: "autoSize"},
+                            {ele: "i", class_: "fa fa-rotate-right", option: "rotateRight"},
+                            {ele: "i", class_: "fa fa-location-arrow", option: "location"},
+                        ]
+                    }
+                ]
+            }
         ]
     }]
 
@@ -33,6 +52,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             mask: document.querySelector("#plugin-image-reviewer .mask"),
             image: document.querySelector("#plugin-image-reviewer .review-image"),
             msg: document.querySelector("#plugin-image-reviewer .review-message"),
+            ops: document.querySelector("#plugin-image-reviewer .review-options"),
             close: document.querySelector("#plugin-image-reviewer .close-review")
         }
 
@@ -61,6 +81,21 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             const list = this.getFuncList(ev, "mousedown");
             list[ev.button]();
         })
+
+        this.entities.ops.addEventListener("click", ev => {
+            const target = ev.target.closest("[option]");
+            if (target) {
+                const option = target.getAttribute("option");
+                if (option === "rotateRight") {
+                    this.rotateRight(90);
+                } else if (option === "autoSize") {
+                    this.autoSize();
+                    target.className = this.entities.image.style.maxWidth === "initial" ? "fa fa-search-minus" : "fa fa-search-plus";
+                } else {
+                    this[option]();
+                }
+            }
+        })
     }
 
     getFuncList = (ev, method) => {
@@ -78,27 +113,30 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         moveCenter && this.moveImageCenter();
     }
 
-    rotate = (isOut, newRotate) => this.replaceImageTransform(/rotate\((.*?)deg\)/, (_, curRotate) => {
+    rotate = (isOut, newRotate, rotateScale) => this.replaceImageTransform(/rotate\((.*?)deg\)/, (_, curRotate) => {
         if (!newRotate) {
             const currentRotate = parseFloat(curRotate);
-            newRotate = isOut ? currentRotate + this.config.totate_scale : currentRotate - this.config.totate_scale;
+            rotateScale = rotateScale || this.config.rotate_scale;
+            newRotate = isOut ? currentRotate + rotateScale : currentRotate - rotateScale;
         }
         return `rotate(${newRotate}deg)`
     })
 
-    zoom = (isOut, newScale) => this.replaceImageTransform(/scale\((.*?)\)/, (_, curScale) => {
+    zoom = (isOut, newScale, zoomScale) => this.replaceImageTransform(/scale\((.*?)\)/, (_, curScale) => {
         if (!newScale) {
             const currentScale = parseFloat(curScale);
-            newScale = isOut ? currentScale - this.config.zoom_scale : currentScale + this.config.zoom_scale;
+            zoomScale = zoomScale || this.config.zoom_scale;
+            newScale = isOut ? currentScale - zoomScale : currentScale + zoomScale;
         }
         newScale = Math.max(0.1, newScale);
         return `scale(${newScale})`
     })
 
-    skew = (isOut, direction, newSkew) => this.replaceImageTransform(new RegExp(`skew${direction}\\((.*?)deg\\)`), (_, curSkew) => {
+    skew = (isOut, direction, newSkew, skewScale) => this.replaceImageTransform(new RegExp(`skew${direction}\\((.*?)deg\\)`), (_, curSkew) => {
         if (!newSkew) {
             const currentSkew = parseFloat(curSkew);
-            newSkew = isOut ? currentSkew + this.config.skew_scale : currentSkew - this.config.skew_scale;
+            skewScale = skewScale || this.config.skew_scale;
+            newSkew = isOut ? currentSkew + skewScale : currentSkew - skewScale;
         }
         return `skew${direction}(${newSkew}deg)`
     })
@@ -112,7 +150,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         const value = origin ? "initial" : "";
         this.entities.image.style.maxWidth = value;
         this.entities.image.style.maxHeight = value;
-        this.zoom(true, 1);
+        this.zoom(null, 1);
     }
 
     restore = () => {
@@ -131,15 +169,18 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     showImage = (next = true) => {
         this.imageGetter = this.imageGetter || this.imageMsgGetter();
-        const {src, idx, total} = this.imageGetter(next);
-        this.entities.msg.textContent = `${idx} / ${total}`;
+        const {src, alt, naturalWidth, naturalHeight, idx, total} = this.imageGetter(next);
+        this.entities.msg.querySelector(".review-index").textContent = `[ ${idx} / ${total} ]`;
+        this.entities.msg.querySelector(".review-title").textContent = alt;
+        this.entities.msg.querySelector(".review-size").textContent = `${naturalWidth} × ${naturalHeight}`;
+        this.entities.ops.querySelector(`[option="autoSize"]`).className = "fa fa-search-plus";
         this.entities.image.setAttribute("src", src);
         this.restore();
     }
 
     imageMsgGetter = () => {
         let idx = -1;
-        const imageList = Array.from(document.querySelectorAll("#write img")).map(img => img.getAttribute("src"));
+        const imageList = Array.from(document.querySelectorAll("#write img"));
         return (next = true) => {
             (next) ? idx++ : idx--;
             if (idx > imageList.length - 1) {
@@ -148,7 +189,28 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                 idx = imageList.length - 1;
             }
             const showIdx = (imageList.length === 0) ? 0 : idx + 1;
-            return {src: imageList[idx] || "", idx: showIdx, total: imageList.length};
+            const img = imageList[idx];
+            return {
+                src: img.getAttribute("src") || "",
+                alt: img.getAttribute("alt") || "",
+                naturalWidth: img.naturalWidth,
+                naturalHeight: img.naturalHeight,
+                idx: showIdx,
+                total: imageList.length,
+            };
+        }
+    }
+
+    location = () => {
+        let src = this.entities.image.getAttribute("src");
+        if (this.utils.isNetworkImage(src)) {
+            this.utils.openUrl(src);
+        } else if (this.utils.isSpecialImage(src)) {
+            console.log("this image cannot locate");
+        } else {
+            // src = src.replace(/^file:\/[2-3]/, "");
+            src = decodeURI(src).substring(0, src.indexOf("?"));
+            JSBridge.showInFinder(src);
         }
     }
 
@@ -159,16 +221,16 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     dummy = () => null
     nextImage = () => this.showImage(true)
     previousImage = () => this.showImage(false)
-    rotateLeft = () => this.rotate(false)
-    rotateRight = () => this.rotate(true)
-    zoomOut = () => this.zoom(true)
-    zoomIn = () => this.zoom(false)
+    rotateLeft = rotateScale => this.rotate(false, null, rotateScale)
+    rotateRight = rotateScale => this.rotate(true, null, rotateScale)
+    zoomOut = zoomScale => this.zoom(true, null, zoomScale)
+    zoomIn = zoomScale => this.zoom(false, null, zoomScale)
     hFlip = () => this.flip("X")
     vFlip = () => this.flip("Y")
-    incHSkew = () => this.skew(true, "X")
-    decHSkew = () => this.skew(false, "X")
-    incVSkew = () => this.skew(true, "Y")
-    decVSkew = () => this.skew(false, "Y")
+    incHSkew = skewScale => this.skew(true, "X", null, skewScale)
+    decHSkew = skewScale => this.skew(false, "X", null, skewScale)
+    incVSkew = skewScale => this.skew(true, "Y", null, skewScale)
+    decVSkew = skewScale => this.skew(false, "Y", null, skewScale)
     originSize = () => this.changeSize(true)
     fixScreen = () => this.changeSize(false)
     autoSize = () => this.changeSize(this.entities.image.style.maxWidth !== "initial")

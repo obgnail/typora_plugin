@@ -65,14 +65,55 @@
     color: #fff;
 }
 
-#plugin-image-reviewer .review-message {
-    top: 30px;
-    left: 50%;
-}
-
 #plugin-image-reviewer .close-review {
     top: 30px;
     right: 30px;
     cursor: pointer;
     visibility: ${closeButtonVisibility};
+}
+
+#plugin-image-reviewer .review-tool {
+    position: fixed;
+    z-index: 99999;
+    height: 35px;
+    width: 100%;
+    bottom: ${toolPosition};
+    background-color: rgba(0, 0, 0, 0.5);
+    display: grid;
+    grid-auto-flow: column;
+    gap: 1.5em;
+    grid-template-columns: 1fr auto auto;
+    color: #ffffff;
+}
+
+#plugin-image-reviewer .review-message {
+    display: flex;
+    gap: 0 1em;
+    place-items: center;
+    padding-left: 1.5em;
+}
+
+#plugin-image-reviewer .review-title {
+    font-weight: bolder;
+}
+
+#plugin-image-reviewer .review-size {
+    font-size: 0.8em;
+    color: #919191;
+}
+
+#plugin-image-reviewer .review-options {
+    display: grid;
+    gap: 0 1em;
+    place-items: center;
+    grid-auto-flow: column;
+    font-size: large;
+}
+
+#plugin-image-reviewer .review-options > i {
+    cursor: pointer;
+}
+
+#plugin-image-reviewer .review-options > i:hover {
+    color: chartreuse;
 }
