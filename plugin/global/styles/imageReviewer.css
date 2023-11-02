@@ -81,16 +81,16 @@
     background-color: rgba(0, 0, 0, 0.5);
     display: grid;
     grid-auto-flow: column;
+    grid-template-columns: 1fr auto;
     gap: 1.5em;
-    grid-template-columns: 1fr auto auto;
+    padding: 0 1.5em;
     color: #ffffff;
 }
 
 #plugin-image-reviewer .review-message {
     display: flex;
-    gap: 0 1em;
+    gap: 1em;
     place-items: center;
-    padding-left: 1.5em;
 }
 
 #plugin-image-reviewer .review-title {
@@ -104,7 +104,7 @@
 
 #plugin-image-reviewer .review-options {
     display: grid;
-    gap: 0 1em;
+    gap: 1em;
     place-items: center;
     grid-auto-flow: column;
     font-size: large;
