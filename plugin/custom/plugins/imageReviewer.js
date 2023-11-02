@@ -86,9 +86,6 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                 const option = target.getAttribute("option");
                 if (option === "rotateRight") {
                     this.rotateRight(90);
-                } else if (option === "autoSize") {
-                    this.autoSize();
-                    target.className = this.entities.image.style.maxWidth === "initial" ? "fa fa-search-minus" : "fa fa-search-plus";
                 } else {
                     this[option]();
                 }
@@ -146,8 +143,10 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     changeSize = (origin = true) => {
         const value = origin ? "initial" : "";
+        const class_ = origin ? "fa fa-search-minus" : "fa fa-search-plus";
         this.entities.image.style.maxWidth = value;
         this.entities.image.style.maxHeight = value;
+        this.entities.ops.querySelector(`[option="autoSize"]`).className = class_;
         this.zoom(null, 1);
     }
 
