@@ -82,8 +82,11 @@
 
 #plugin-image-reviewer .review-message {
     display: flex;
-    gap: 1em;
     place-items: center;
+}
+
+#plugin-image-reviewer .review-message > div {
+    margin-right: 1em;
 }
 
 #plugin-image-reviewer .review-title {

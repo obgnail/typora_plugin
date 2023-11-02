@@ -21,6 +21,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                     {
                         class_: "review-options",
                         children: [
+                            {ele: "i", class_: "fa fa-question-circle", title: this.optionHint()},
                             {ele: "i", class_: "fa fa-arrows-v", option: "vFlip", title: "垂直翻转"},
                             {ele: "i", class_: "fa fa-arrows-h", option: "hFlip", title: "水平翻转"},
                             {ele: "i", class_: "fa fa-search-plus", option: "autoSize", title: "放缩"},
@@ -262,6 +263,47 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             src = decodeURI(src).substring(0, src.indexOf("?"));
             JSBridge.showInFinder(src);
         }
+    }
+
+    optionHint = () => {
+        const translate = {
+            dummy: '无功能',
+            close: '关闭',
+            location: '打开图片路径',
+            nextImage: '下张图',
+            previousImage: '上张图',
+            zoomOut: '放大图片',
+            zoomIn: '缩小图片',
+            rotateLeft: '图片向左旋转',
+            rotateRight: '图片向右旋转',
+            hFlip: '水平翻转图片',
+            vFlip: '垂直翻转图片',
+            incHSkew: '图片增大水平倾斜',
+            decHSkew: '图片减小水平倾斜',
+            incVSkew: '图片增大垂直倾斜',
+            decVSkew: '图片减小垂直倾斜',
+            originSize: '还原图片大小',
+            fixScreen: '图片大小适配屏幕',
+            autoSize: '图片大小切换',
+            restore: '图片恢复为最初状态',
+        }
+
+        const result = [];
+        const button = ["mousedown_function", "wheel_function"];
+        const extra = ["", "ctrl", "shift", "alt"];
+        button.forEach(btn => extra.forEach(ex => {
+            const cfg = !ex ? btn : ex + "_" + btn;
+            const config = this.config[cfg];
+            const funcs = (btn === "mousedown_function") ? ["鼠标左键", "鼠标中键", "鼠标右键"] : ["滚轮上滚", "滚轮下滚"];
+            funcs.forEach((ele, idx) => {
+                const info = translate[config[idx]];
+                if (info !== "无功能") {
+                    const ex_ = !ex ? "" : ex + "+";
+                    result.push(ex_ + ele + "\t" + info);
+                }
+            })
+        }))
+        return result.join("\n")
     }
 
     target = () => {
