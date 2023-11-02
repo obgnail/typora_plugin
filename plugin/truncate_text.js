@@ -2,18 +2,10 @@ class truncateTextPlugin extends global._basePlugin {
     beforeProcess = () => {
         this.className = "plugin-truncate-text";
     }
-    
+
     callbackOtherPlugin = () => {
         const outlinePlugin = this.utils.getPlugin("outline");
         outlinePlugin && outlinePlugin.refresh();
-    }
-
-    isInViewBox = el => {
-        if (el.style.display) return false;
-        const totalHeight = window.innerHeight || document.documentElement.clientHeight;
-        const totalWidth = window.innerWidth || document.documentElement.clientWidth;
-        const {top, right, bottom, left} = el.getBoundingClientRect();
-        return (top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight);
     }
 
     hideFront = () => {
@@ -38,7 +30,7 @@ class truncateTextPlugin extends global._basePlugin {
         const write = document.getElementById("write");
         let start = 0, end = 0;
         write.children.forEach((ele, idx) => {
-            if (this.isInViewBox(ele)) {
+            if (this.utils.isInViewBox(ele)) {
                 if (!start) start = idx;
                 start = Math.min(start, idx);
                 end = Math.max(end, idx);

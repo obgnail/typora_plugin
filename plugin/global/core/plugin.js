@@ -604,6 +604,14 @@ class utils {
 
     static isLastChildOfParent = child => child.parentElement.lastElementChild === child
 
+    static isInViewBox = el => {
+        if (el.style.display) return false;
+        const totalHeight = window.innerHeight || document.documentElement.clientHeight;
+        const totalWidth = window.innerWidth || document.documentElement.clientWidth;
+        const {top, right, bottom, left} = el.getBoundingClientRect();
+        return (top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight);
+    }
+
     static scroll = (target, height = 10) => {
         File.editor.focusAndRestorePos();
         File.editor.selection.scrollAdjust(target, height);
