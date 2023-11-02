@@ -107,12 +107,12 @@ class dynamicCallHelper {
         const dynamicCallArgs = [];
 
         for (const [fixedName, setting] of Object.entries(this.controller.customSettings)) {
-            if (!setting.show) continue;
+            if (setting.hide) continue;
 
             const plugin = this.custom[fixedName];
             if (!plugin) continue;
 
-            const callArg = {
+            const arg = {
                 arg_name: plugin.showName,
                 arg_value: plugin.fixedName,
                 arg_disabled: true,
@@ -121,15 +121,15 @@ class dynamicCallHelper {
             try {
                 const selector = plugin.selector();
                 if (selector === this.utils.disableForeverSelector) {
-                    callArg.arg_hint = "此插件不可点击";
+                    arg.arg_hint = "此插件不可点击";
                 } else {
-                    callArg.arg_disabled = selector && !anchorNode.closest(selector);
-                    callArg.arg_hint = (callArg.arg_disabled) ? "光标于此位置不可用" : plugin.hint();
+                    arg.arg_disabled = selector && !anchorNode.closest(selector);
+                    arg.arg_hint = (arg.arg_disabled) ? "光标于此位置不可用" : plugin.hint();
                 }
             } catch (e) {
                 console.error("plugin selector error:", fixedName, e);
             }
-            dynamicCallArgs.push(callArg);
+            dynamicCallArgs.push(arg);
         }
         return dynamicCallArgs;
     }
