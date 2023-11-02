@@ -65,13 +65,6 @@
     color: #fff;
 }
 
-#plugin-image-reviewer .close-review {
-    top: 30px;
-    right: 30px;
-    cursor: pointer;
-    visibility: ${closeButtonVisibility};
-}
-
 #plugin-image-reviewer .review-tool {
     position: fixed;
     z-index: 99999;

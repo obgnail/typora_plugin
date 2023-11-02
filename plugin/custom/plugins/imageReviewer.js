@@ -2,7 +2,6 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     styleTemplate = () => ({
         imageMaxWidth: this.config.image_max_width + "%",
         imageMaxHeight: this.config.image_max_height + "%",
-        closeButtonVisibility: this.config.click_close_button_to_exit ? "initial" : "hidden",
         toolPosition: this.config.tool_position === "top" ? "initial" : 0,
     })
 
@@ -12,7 +11,6 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             {ele: "img", class_: "review-image"},
             {class_: "review-item", action: "get-previous", children: [{ele: "i", class_: "fa fa-angle-left"}]},
             {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
-            {class_: "review-button close-review", text: "CLOSE"},
             {
                 class_: "review-tool",
                 children: [
@@ -23,11 +21,13 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                     {
                         class_: "review-options",
                         children: [
-                            {ele: "i", class_: "fa fa-arrows-v", option: "vFlip"},
-                            {ele: "i", class_: "fa fa-arrows-h", option: "hFlip"},
-                            {ele: "i", class_: "fa fa-search-plus", option: "autoSize"},
-                            {ele: "i", class_: "fa fa-rotate-right", option: "rotateRight"},
-                            {ele: "i", class_: "fa fa-location-arrow", option: "location"},
+                            {ele: "i", class_: "fa fa-arrows-v", option: "vFlip", title: "垂直翻转"},
+                            {ele: "i", class_: "fa fa-arrows-h", option: "hFlip", title: "水平翻转"},
+                            {ele: "i", class_: "fa fa-search-plus", option: "autoSize", title: "放缩"},
+                            {ele: "i", class_: "fa fa-rotate-right", option: "rotateRight", title: "旋转"},
+                            {ele: "i", class_: "fa fa-crosshairs", option: "target", title: "定位到文档"},
+                            {ele: "i", class_: "fa fa-location-arrow", option: "location", title: "资源管理器打开"},
+                            {ele: "i", class_: "fa fa-times", option: "close", title: "退出"},
                         ]
                     }
                 ]
@@ -58,9 +58,6 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
         if (this.config.use_button) {
             this.utils.registerQuickButton("image-reviewer", [1, 1], "查看图片", "fa fa-image", {fontSize: "17px"}, this.callback)
-        }
-        if (this.config.click_close_button_to_exit) {
-            this.entities.close.addEventListener("click", this.callback);
         }
         if (this.config.click_mask_to_exit) {
             this.entities.mask.addEventListener("click", this.callback);
@@ -168,7 +165,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     }
 
     showImage = (next = true) => {
-        this.imageGetter = this.imageGetter || this.imageMsgGetter();
+        this.initImageMsgGetter();
         const {src, alt, naturalWidth, naturalHeight, idx, total} = this.imageGetter(next);
         this.entities.msg.querySelector(".review-index").textContent = `[ ${idx} / ${total} ]`;
         this.entities.msg.querySelector(".review-title").textContent = alt;
@@ -176,6 +173,58 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         this.entities.ops.querySelector(`[option="autoSize"]`).className = "fa fa-search-plus";
         this.entities.image.setAttribute("src", src);
         this.restore();
+    }
+
+    closestViewBoxImage = imageList => {
+        let closestImg = null;
+        let minDistance = Number.MAX_VALUE;
+        imageList.forEach(img => {
+            const distance = Math.abs(img.getBoundingClientRect().top - window.innerHeight / 2);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestImg = img;
+            }
+        });
+        return closestImg
+    }
+
+    inViewBoxImage = imageList => imageList.find(img => this.utils.isInViewBox(img))
+
+    firstImage = imageList => imageList[0]
+
+    getImage = imageList => {
+        const strategies = [...this.config.first_image_strategies, "firstImage"];
+        for (const strategy of strategies) {
+            const image = this[strategy](imageList);
+            if (image) {
+                return image
+            }
+        }
+    }
+
+    initImageMsgGetter = () => {
+        if (this.imageGetter) return;
+
+        this.imageGetter = this.imageMsgGetter();
+        const imageList = Array.from(document.querySelectorAll("#write img"));
+        if (imageList.length === 0) return;
+
+        let target = this.getImage(imageList);
+        if (!target) return;
+
+        while (true) {
+            const {img, idx, total} = this.imageGetter(true);
+            if (!img) return;
+
+            if (img === target) {
+                this.imageGetter(false);
+                return
+            }
+            // 防御代码，防止死循环
+            if (idx === total) {
+                return img;
+            }
+        }
     }
 
     imageMsgGetter = () => {
@@ -191,12 +240,13 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             const showIdx = (imageList.length === 0) ? 0 : idx + 1;
             const img = imageList[idx];
             return {
-                src: img.getAttribute("src") || "",
-                alt: img.getAttribute("alt") || "",
-                naturalWidth: img.naturalWidth,
-                naturalHeight: img.naturalHeight,
+                img,
+                src: img && img.getAttribute("src") || "",
+                alt: img && img.getAttribute("alt") || "",
+                naturalWidth: img && img.naturalWidth || 0,
+                naturalHeight: img && img.naturalHeight || 0,
                 idx: showIdx,
-                total: imageList.length,
+                total: imageList.length || 0,
             };
         }
     }
@@ -212,6 +262,14 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             src = decodeURI(src).substring(0, src.indexOf("?"));
             JSBridge.showInFinder(src);
         }
+    }
+
+    target = () => {
+        const text = this.entities.msg.querySelector(".review-index").textContent;
+        const idx = parseInt(text.substring(1, text.indexOf("/")));
+        const image = Array.from(document.querySelectorAll("#write img"))[idx - 1];
+        this.close();
+        image && image.scrollIntoView();
     }
 
     close = () => {

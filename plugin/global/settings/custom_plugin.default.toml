@@ -302,6 +302,7 @@ template = "> [!NOTE]\n> this is note"
 # 具体的icon值请参考：
 #   旧版本Typora：Typora/resources/app/style/font-awesome-4.1.0/css/font-awesome.css
 #   新版本Typora：Typora/resources/style/font-awesome-4.1.0/css/font-awesome.css
+#   也可以下载：https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 font_family = "FontAwesome"
 # 默认的背景颜色
 default_background_color = "#fafafa"
@@ -553,10 +554,14 @@ hotkey = ""
 use_button = true
 # 点击遮罩空白处退出
 click_mask_to_exit = true
-# 在遮罩添加一个退出按钮
-click_close_button_to_exit = false
 # 工具栏的位置：bottom/top
-tool_position = "bottom"
+tool_position = "top"
+# 第一张图片是：
+#   1. inViewBoxImage：当前视图里第一张图片
+#   2. closestViewBoxImage：距离当前视图中心最近的一张图片
+#   3. firstImage：整篇文档的第一张图片
+# 值为什么是个列表？答：优先级。["inViewBoxImage", "firstImage"]：首先寻找当前视图里第一张图片，若找不到，则使用文档的第一张图片
+first_image_strategies = ["inViewBoxImage", "firstImage"]
 # 每次缩放的比率
 zoom_scale = 0.1
 # 每次旋转的角度
