@@ -1,0 +1,37 @@
+#plugin-scroll-bookmarker {
+    max-width: 500px;
+}
+
+#plugin-scroll-bookmarker .bookmark-item {
+    display: flex;
+    margin: 0.5rem;
+    align-items: center;
+    padding-left: 0.5em;
+    border-radius: 5px;
+    background-color: #f8f8f8;
+    cursor: pointer;
+}
+
+#plugin-scroll-bookmarker .bookmark-item:hover {
+    background-color: var(--item-hover-bg-color);
+}
+
+#plugin-scroll-bookmarker .bookmark-item-content {
+    padding-right: 7px;
+    /* word-wrap: break-word; */
+    /* flex-wrap: wrap; */
+    flex: 1;
+    font-size: 17px;
+    overflow-wrap: anywhere;
+}
+
+#plugin-scroll-bookmarker .bookmark-del-btn {
+    font-size: 19px;
+    cursor: pointer;
+    margin: 4px;
+    padding: 4px;
+}
+
+#plugin-scroll-bookmarker .bookmark-del-btn:hover {
+    color: #f70505;
+}

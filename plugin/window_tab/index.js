@@ -107,10 +107,7 @@ class windowTabBarPlugin extends global._basePlugin {
                 _linkUtils.file = "";
                 _linkUtils.anchor = "";
                 const ele = File.editor.EditHelper.findAnchorElem(anchor);
-                if (ele) {
-                    File.editor.selection.jumpIntoElemBegin(ele);
-                    File.editor.selection.scrollAdjust(ele, 10);
-                }
+                ele && this.utils.scroll(ele, 10);
             });
             this.utils.decorate(() => JSBridge, "invoke", (...args) => {
                     if (args.length < 3 || args[0] !== "app.openFileOrFolder") return;

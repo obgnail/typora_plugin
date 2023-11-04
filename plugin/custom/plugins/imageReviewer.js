@@ -310,7 +310,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         const idx = parseInt(text.substring(1, text.indexOf("/")));
         const image = Array.from(document.querySelectorAll("#write img"))[idx - 1];
         this.close();
-        image && image.scrollIntoView();
+        image && this.utils.scroll(image, 10);
     }
 
     close = () => {

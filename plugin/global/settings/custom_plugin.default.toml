@@ -538,6 +538,24 @@ auto_open = true
 auto_use_datetable = true
 
 
+############### scrollBookmarker ###############
+[scrollBookmarker]
+# 右键菜单中展示的名称
+name = "书签管理器"
+# 是否启用此自定义插件
+enable = true
+# 是否在右键菜单中隐藏
+hide = false
+# 插件配置
+[scrollBookmarker.config]
+# 允许【ctrl+鼠标拖拽】拖动模态框
+allow_drag = true
+# 在右下角添加一个快捷按钮
+use_button = true
+# 当alt+click时，自动弹出模态框
+auto_popup_modal = true
+
+
 ############### imageReviewer ###############
 [imageReviewer]
 # 右键菜单中展示的名称
