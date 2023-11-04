@@ -89,6 +89,12 @@ class utils {
     //   4. stateRestorer(Element, state) => {}: 为元素恢复状态。state就是stateGetter的返回值
     static registerStateRecorder = (recorderName, selector, stateGetter, stateRestorer) => global._stateRecorder.register(recorderName, selector, stateGetter, stateRestorer);
     static unregisterStateRecorder = recorderName => global._stateRecorder.unregister(recorderName);
+    // 手动触发
+    static collectState = recorderName => global._stateRecorder.collect(recorderName);
+    // 手动获取
+    static getState = (recorderName, filepath) => global._stateRecorder.getState(recorderName, filepath);
+    // 手动删除
+    static deleteState = (recorderName, filepath, idx) => global._stateRecorder.deleteState(recorderName, filepath, idx);
 
 
     // 动态注册、动态注销新的代码块图表语法
@@ -612,10 +618,18 @@ class utils {
         return (top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight);
     }
 
-    static scroll = (target, height = 10) => {
+    static scroll = (target, height = -1, moveCursor = false) => {
         File.editor.focusAndRestorePos();
+        if (moveCursor) {
+            File.editor.selection.jumpIntoElemBegin(target);
+        }
+        if (height === -1) {
+            height = (window.innerHeight || document.documentElement.clientHeight) / 2;
+        }
         File.editor.selection.scrollAdjust(target, height);
-        File.isFocusMode && File.editor.updateFocusMode(false);
+        if (File.isFocusMode) {
+            File.editor.updateFocusMode(false);
+        }
     }
 
     static insertText = (anchorNode, content, restoreLastCursor = true) => {
@@ -1316,7 +1330,7 @@ class eventHub {
         const debouncePublish = this.utils.debounce(() => this.utils.publishEvent(this.utils.eventType.fileEdited), 500);
         new MutationObserver(mutationList => {
             if (mutationList.some(m => m.type === "characterData")
-                || mutationList.length && mutationList[0].addedNodes.length && mutationList[0].removedNodes.length) {
+                || mutationList.length && mutationList.some(m => m.addedNodes.length) && mutationList.some(m => m.removedNodes.length)) {
                 debouncePublish();
             }
         }).observe(document.querySelector("#write"), {characterData: true, childList: true, subtree: true});
@@ -1335,18 +1349,20 @@ class stateRecorder {
     }
     unregister = recorderName => this.recorders.delete(recorderName);
 
-    collect = () => {
+    collect = name => {
         const filepath = this.utils.getFilePath();
-        for (const recorder of this.recorders.values()) {
-            const collection = new Map();
-            document.querySelectorAll(recorder.selector).forEach((ele, idx) => {
-                const state = recorder.stateGetter(ele);
-                state && collection.set(idx, state);
-            })
-            if (collection.size) {
-                recorder.collections.set(filepath, collection)
-            } else {
-                recorder.collections.delete(filepath);
+        for (const [recorderName, recorder] of this.recorders.entries()) {
+            if (!name || name === recorderName) {
+                const collection = new Map();
+                document.querySelectorAll(recorder.selector).forEach((ele, idx) => {
+                    const state = recorder.stateGetter(ele);
+                    state && collection.set(idx, state);
+                })
+                if (collection.size) {
+                    recorder.collections.set(filepath, collection)
+                } else {
+                    recorder.collections.delete(filepath);
+                }
             }
         }
     }
@@ -1361,6 +1377,21 @@ class stateRecorder {
                 })
             }
         }
+    }
+
+    getState = (name, filepath) => {
+        const recorder = this.recorders.get(name);
+        if (!recorder) return;
+        const collections = recorder.collections;
+        if (!collections.size) return;
+        if (!filepath) return collections
+        const map = collections.get(filepath);
+        if (map) return map
+    }
+
+    deleteState = (name, filepath, idx) => {
+        const map = this.getState(name, filepath);
+        map && map.delete(idx);
     }
 
     process = () => {

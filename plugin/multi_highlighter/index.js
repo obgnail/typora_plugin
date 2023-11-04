@@ -201,10 +201,10 @@ class multiHighlighterPlugin extends global._basePlugin {
             if (fence && !fence.classList.contains("modeLoaded")) {
                 this.showMarkerInfo.idxOfFence = this.whichMarker(fence, next);
                 // scroll到Fence，触发File.editor.fences.addCodeBlock函数，接下来的工作就交给他了
-                this.scroll(next);
+                this.utils.scroll(next);
             } else {
                 this.handleHiddenElement(next);
-                this.scroll(next);
+                this.utils.scroll(next);
                 this.showIfNeed(next);
             }
             target.setAttribute("cur", nextIdx + "");
@@ -292,16 +292,6 @@ class multiHighlighterPlugin extends global._basePlugin {
         }
     }
 
-    scroll = marker => {
-        const totalHeight = window.innerHeight || document.documentElement.clientHeight;
-        this.utils.scroll(marker, totalHeight / 2);
-    }
-
-    // // 已废弃
-    // scroll2 = marker => {
-    //     requestAnimationFrame(() => marker.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"}));
-    // }
-
     showIfNeed = marker => {
         if (this.config.SHOW_KEYWORD_OUTLINE) {
             document.querySelectorAll(".plugin-multi-highlighter-move").forEach(ele => ele.classList.remove("plugin-multi-highlighter-move"));
@@ -349,7 +339,7 @@ class multiHighlighterPlugin extends global._basePlugin {
         setTimeout(() => {
             const nthMarker = this.getMarker(parent, idx);
             if (nthMarker) {
-                this.scroll(nthMarker);
+                this.utils.scroll(nthMarker);
                 this.showIfNeed(nthMarker);
             }
         }, 120);

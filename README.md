@@ -48,12 +48,13 @@
 | 38   | full_path_copy             | 复制标题路径                           |
 | 39   | auto_trailing_white_space  | 自动添加结尾空格                       |
 | 40   | text_stylize               | 文字风格化                             |
-| 41   | open_in_total_commander    | 在 total commander 打开                |
-| 42   | mermaid_replace            | 替换 mermaid 组件                      |
-| 43   | custom                     | 用户自定义命令（高级）                 |
-| 44   | hotkey_hub                 | 快捷键注册中心（高级）                 |
-| 45   | quick_button               | 于右下角添加功能按钮（高级）           |
-| 46   | old_window_tab             | 标签页管理（已废弃）                   |
+| 41   | scroll_bookmarker          | 书签管理器                             |
+| 42   | open_in_total_commander    | 在 total commander 打开                |
+| 43   | mermaid_replace            | 替换 mermaid 组件                      |
+| 44   | custom                     | 用户自定义命令（高级）                 |
+| 45   | hotkey_hub                 | 快捷键注册中心（高级）                 |
+| 46   | quick_button               | 于右下角添加功能按钮（高级）           |
+| 47   | old_window_tab             | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -803,6 +804,20 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 将文字转为 html 格式，改变文字样式。
 
 使用方式：右键菜单 -> 非常用插件 -> 文字风格化。
+
+
+
+### scroll_bookmarker：  书签管理器
+
+使用方式：
+
+1. 使用 alt+click 正文内容，打上书签。
+2. 接着调出书签管理器，点击上面的书签，即可跳转到书签。
+
+调出书签管理器：
+
+- 方式一：右键菜单 -> 常用插件 -> 自定义插件 -> 书签管理器
+- 方式二：点击右下角的【书签管理器】按钮
 
 
 
