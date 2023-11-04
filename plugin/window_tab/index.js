@@ -99,6 +99,19 @@ class windowTabBarPlugin extends global._basePlugin {
         })
 
         if (this.config.INTERCEPT_INTERNAL_AND_LOCAL_LINKS) {
+            const _linkUtils = {file: "", anchor: ""};
+            this.utils.addEventListener(this.utils.eventType.fileContentLoaded, () => {
+                const {file, anchor} = _linkUtils;
+                if (!file) return;
+
+                _linkUtils.file = "";
+                _linkUtils.anchor = "";
+                const ele = File.editor.EditHelper.findAnchorElem(anchor);
+                if (ele) {
+                    File.editor.selection.jumpIntoElemBegin(ele);
+                    File.editor.selection.scrollAdjust(ele, 10);
+                }
+            });
             this.utils.decorate(() => JSBridge, "invoke", (...args) => {
                     if (args.length < 3 || args[0] !== "app.openFileOrFolder") return;
 
@@ -106,14 +119,9 @@ class windowTabBarPlugin extends global._basePlugin {
                     if (!anchor || typeof anchor !== "string" || !anchor.match(/^#/)) return;
 
                     const filePath = args[1];
+                    _linkUtils.file = filePath;
+                    _linkUtils.anchor = anchor;
                     this.openFile(filePath);
-                    setTimeout(() => {
-                        const ele = File.editor.EditHelper.findAnchorElem(anchor);
-                        if (ele) {
-                            File.editor.selection.jumpIntoElemBegin(ele);
-                            File.editor.selection.scrollAdjust(ele, 10);
-                        }
-                    }, 1000)
                     return this.utils.stopCallError
                 }
             )
