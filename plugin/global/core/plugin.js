@@ -87,7 +87,8 @@ class utils {
     //   2. selector(string): 通过选择器找到要你想记录状态的元素们
     //   3. stateGetter(Element) => {...}: 记录目标元素的状态。Element就是selector找到的元素，返回你想记录的标签的状态，返回值可以是任何类型
     //   4. stateRestorer(Element, state) => {}: 为元素恢复状态。state就是stateGetter的返回值
-    static registerStateRecorder = (recorderName, selector, stateGetter, stateRestorer) => global._stateRecorder.register(recorderName, selector, stateGetter, stateRestorer);
+    //   5. finalFunc() => {}: 最后执行的函数
+    static registerStateRecorder = (recorderName, selector, stateGetter, stateRestorer, finalFunc) => global._stateRecorder.register(recorderName, selector, stateGetter, stateRestorer, finalFunc);
     static unregisterStateRecorder = recorderName => global._stateRecorder.unregister(recorderName);
     // 手动触发
     static collectState = recorderName => global._stateRecorder.collect(recorderName);
@@ -1344,8 +1345,8 @@ class stateRecorder {
     }
 
     // collections: map[filepath]map[idx]state
-    register = (recorderName, selector, stateGetter, stateRestorer) => {
-        this.recorders.set(recorderName, {selector, stateGetter, stateRestorer, collections: new Map()})
+    register = (recorderName, selector, stateGetter, stateRestorer, finalFunc) => {
+        this.recorders.set(recorderName, {selector, stateGetter, stateRestorer, finalFunc, collections: new Map()})
     }
     unregister = recorderName => this.recorders.delete(recorderName);
 
@@ -1375,6 +1376,7 @@ class stateRecorder {
                     const state = collection.get(idx);
                     state && recorder.stateRestorer(ele, state);
                 })
+                recorder.finalFunc && recorder.finalFunc();
             }
         }
     }
@@ -1383,6 +1385,7 @@ class stateRecorder {
         const recorder = this.recorders.get(name);
         if (!recorder) return new Map();
         const collections = recorder.collections;
+        if (!collections) return new Map();
         if (!filepath || !collections.size) return collections;
         const map = collections.get(filepath);
         if (map) return map

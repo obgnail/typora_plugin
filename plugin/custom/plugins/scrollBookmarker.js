@@ -7,7 +7,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         this.recordName = "recordScrollBookmark";
         this.recordSelector = "#write [cid]";
         this.className = "plu-bookmark";
-        this.locateUtils = {file: "", idx: -1};
+        this.locateUtils = {file: "", idx: -1, time: new Date().getTime()};
     }
 
     process = () => {
@@ -28,6 +28,14 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             this.recordSelector,
             ele => ele.classList.contains(this.className),
             ele => ele.classList.add(this.className),
+            () => {
+                const {file, idx} = this.locateUtils;
+                if (file && idx !== -1) {
+                    this._locate(idx);
+                    this.locateUtils.file = "";
+                    this.locateUtils.idx = -1;
+                }
+            }
         )
 
         document.querySelector("#write").addEventListener("click", ev => {
@@ -60,17 +68,11 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             }
         })
 
-        this.utils.addEventListener(this.utils.eventType.fileEdited, this.utils.debounce(this.refreshIfNeed, 500))
-
-        this.utils.addEventListener(this.utils.eventType.fileContentLoaded, filePath => {
-            this.refreshIfNeed();
-            const {file, idx} = this.locateUtils;
-            if (file === filePath && idx !== -1) {
-                this._locate(idx);
-                this.locateUtils.file = "";
-                this.locateUtils.idx = -1;
+        this.utils.addEventListener(this.utils.eventType.fileEdited, () => {
+            if (new Date().getTime() > this.locateUtils.time + 2000) {
+                this.refreshIfNeed();
             }
-        });
+        })
     }
 
     callback = () => {
@@ -156,6 +158,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         if (filepath && filepath_ !== filepath) {
             this.locateUtils.file = filepath;
             this.locateUtils.idx = idx;
+            this.locateUtils.time = new Date().getTime();
             this.utils.openFile(filepath);
         } else {
             this._locate(idx);
