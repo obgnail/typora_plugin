@@ -229,6 +229,8 @@ class windowTabBarPlugin extends global._basePlugin {
 
         let count = 0;
         const stopCount = 3;
+        const timeout = 2000;
+        const end = new Date().getTime() + timeout;
         const scrollTop = activeTab.scrollTop;
         const _timer = setInterval(() => {
             const filePath = this.utils.getFilePath();
@@ -238,7 +240,7 @@ class windowTabBarPlugin extends global._basePlugin {
             } else {
                 count++;
             }
-            if (count === stopCount) {
+            if (count === stopCount || new Date().getTime() > end) {
                 clearInterval(_timer);
                 this.utils.publishEvent(this.utils.eventType.fileContentLoaded, filePath);
             }
