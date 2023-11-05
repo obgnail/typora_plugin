@@ -1381,10 +1381,9 @@ class stateRecorder {
 
     getState = (name, filepath) => {
         const recorder = this.recorders.get(name);
-        if (!recorder) return;
+        if (!recorder) return new Map();
         const collections = recorder.collections;
-        if (!collections.size) return;
-        if (!filepath) return collections
+        if (!filepath || !collections.size) return collections;
         const map = collections.get(filepath);
         if (map) return map
     }
@@ -1968,10 +1967,13 @@ class process {
         global._global_settings = pluginSettings.global;  // 通用配置
         delete pluginSettings.global;
 
-        // 插件可能会在加载阶段用到_modalGenerator和_styleTemplater，所以必须先加载
+        // 以下高级工具必须先加载
+        // 1.插件可能会在加载阶段用到_modalGenerator和_styleTemplater
+        // 2.必须先让_stateRecorder恢复状态，才能执行后续流程
         await Promise.all([
             global._modalGenerator.process(),
             global._styleTemplater.process(),
+            global._stateRecorder.process(),
         ]);
 
         // 加载插件
@@ -1986,7 +1988,6 @@ class process {
         await Promise.all([
             global._diagramParser.process(),
             global._quickButtonGenerator.process(),
-            global._stateRecorder.process(),
             global._hotkeyHub.process(),
             global._exportHelper.process(),
             global._thirdPartyDiagramParser.process(),

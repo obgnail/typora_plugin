@@ -1,10 +1,13 @@
 #plugin-scroll-bookmarker {
-    max-width: 500px;
+    right: 25px;
+    max-width: 400px;
+    max-height: 500px;
+    overflow-y: scroll;
 }
 
 #plugin-scroll-bookmarker .bookmark-item {
     display: flex;
-    margin: 0.5rem;
+    margin: 0.3rem;
     align-items: center;
     padding-left: 0.5em;
     border-radius: 5px;
@@ -21,12 +24,12 @@
     /* word-wrap: break-word; */
     /* flex-wrap: wrap; */
     flex: 1;
-    font-size: 17px;
+    font-size: 15px;
     overflow-wrap: anywhere;
 }
 
 #plugin-scroll-bookmarker .bookmark-del-btn {
-    font-size: 19px;
+    font-size: 17px;
     cursor: pointer;
     margin: 4px;
     padding: 4px;

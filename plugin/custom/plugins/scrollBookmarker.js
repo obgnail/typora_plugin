@@ -6,7 +6,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
     init = () => {
         this.recordName = "recordScrollBookmark";
         this.recordSelector = "#write [cid]";
-        this.className = "plugin-scroll-bookmark";
+        this.className = "plu-bookmark";
         this.locateUtils = {file: "", idx: -1};
     }
 
@@ -60,14 +60,10 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             }
         })
 
-        this.utils.addEventListener(this.utils.eventType.fileEdited, () => {
-            const map = this.utils.getState(this.recordName, this.utils.getFilePath());
-            if (map && map.size) {
-                this.refresh();
-            }
-        })
+        this.utils.addEventListener(this.utils.eventType.fileEdited, this.utils.debounce(this.refreshIfNeed, 500))
 
         this.utils.addEventListener(this.utils.eventType.fileContentLoaded, filePath => {
+            this.refreshIfNeed();
             const {file, idx} = this.locateUtils;
             if (file === filePath && idx !== -1) {
                 this._locate(idx);
@@ -86,6 +82,13 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         this.utils.collectState(this.recordName);
         if (this.entities.modal.style.display !== "none") {
             this.updateModal();
+        }
+    }
+
+    refreshIfNeed = () => {
+        const map = this.utils.getState(this.recordName, this.utils.getFilePath());
+        if (map && map.size) {
+            this.refresh();
         }
     }
 
