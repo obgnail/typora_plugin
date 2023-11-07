@@ -132,8 +132,6 @@ class multiHighlighterPlugin extends global._basePlugin {
                 return;
             }
 
-            this.utils.showHiddenElementByPlugin(next);
-
             this.showMarkerInfo.idxOfWrite = this.whichMarker(this.entities.write, next);
 
             const fence = next.closest("#write .md-fences");

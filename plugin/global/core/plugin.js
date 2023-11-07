@@ -619,18 +619,29 @@ class utils {
         return (top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight);
     }
 
-    static scroll = (target, height = -1, moveCursor = false) => {
+    static scroll = ($target, height = -1, moveCursor = false, showHiddenElement = true) => {
+        if ($target instanceof Element) {
+            $target = $($target);
+        }
         File.editor.focusAndRestorePos();
         if (moveCursor) {
-            File.editor.selection.jumpIntoElemBegin(target);
+            File.editor.selection.jumpIntoElemEnd($target);
+        }
+        if (showHiddenElement) {
+            this.showHiddenElementByPlugin($target[0]);
         }
         if (height === -1) {
             height = (window.innerHeight || document.documentElement.clientHeight) / 2;
         }
-        File.editor.selection.scrollAdjust(target, height);
+        File.editor.selection.scrollAdjust($target, height);
         if (File.isFocusMode) {
             File.editor.updateFocusMode(false);
         }
+    }
+
+    static scrollByCid = cid => {
+        const target = File.editor.findElemById(cid);
+        this.scroll(target);
     }
 
     static insertText = (anchorNode, content, restoreLastCursor = true) => {
