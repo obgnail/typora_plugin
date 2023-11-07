@@ -192,7 +192,7 @@ NAME = "命令行环境"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+g"
-# 允许拖动模态框
+# 允许【ctrl+鼠标拖拽】拖动模态框
 ALLOW_DRAG = true
 # 当输入框为空，且键入backspace时，隐藏模态框
 BACKSPACE_TO_HIDE = true

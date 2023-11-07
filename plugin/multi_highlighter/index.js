@@ -57,55 +57,17 @@ class multiHighlighterPlugin extends global._basePlugin {
             result: document.getElementById("plugin-multi-highlighter-result"),
         }
 
-        this.multiHighlighter = new multiHighlighter(this.utils);
+        this.multiHighlighter = new multiHighlighter(this);
         this.fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
-
-        this.lastHighlightFilePath = ""
-        this.showMarkerInfo = {idxOfFence: -1, idxOfWrite: -1}
-        this.hasMarker = false
-        this.decoMixin = {
-            before: cid => {
-                if (this.multiHighlighter.length() === 0) return;
-                const marker = this.entities.write.querySelector(`.md-fences[cid=${cid}] marker`);
-                this.hasMarker = !!marker;
-            },
-            after: cid => {
-                if (!this.hasMarker || this.multiHighlighter.length() === 0) return;
-
-                this.hasMarker = false;
-
-                const fence = this.entities.write.querySelector(`.md-fences[cid=${cid}]`);
-                if (!fence) return;
-
-                const tokens = this.multiHighlighter.getTokens();
-                if (this.config.USE_LIST_THRESHOLD > tokens.length
-                    || this.config.CLEAR_LIST_THRESHOLD > 0 && this.fenceMultiHighlighterList.length === this.config.CLEAR_LIST_THRESHOLD) {
-                    this.clearFenceMultiHighlighterList();
-                    this.multiHighlighter.removeHighlight();
-                    this.multiHighlighter.highlight();
-                    if (this.showMarkerInfo.idxOfWrite !== -1) {
-                        this.getAndShowMarker(this.entities.write, this.showMarkerInfo.idxOfWrite);
-                        this.showMarkerInfo.idxOfWrite = -1;
-                    }
-                } else {
-                    const fenceMultiHighlighter = new multiHighlighter(this.utils);
-                    fenceMultiHighlighter.new(tokens, fence, this.config.CASE_SENSITIVE, "plugin-search-hit");
-                    fenceMultiHighlighter.highlight();
-                    this.fenceMultiHighlighterList.push(fenceMultiHighlighter);
-                    if (this.showMarkerInfo.idxOfFence !== -1) {
-                        this.getAndShowMarker(fence, this.showMarkerInfo.idxOfFence);
-                        this.showMarkerInfo.idxOfFence = -1;
-                    }
-                }
-            }
-        }
+        this.lastHighlightFilePath = "";
+        this.showMarkerInfo = {idxOfFence: -1, idxOfWrite: -1};
     }
 
     process = () => {
         this.init();
 
-        this.utils.addEventListener(this.utils.eventType.beforeAddCodeBlock, this.decoMixin.before);
-        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, this.decoMixin.after);
+        this.processAddCodeBlock();
+
         this.utils.addEventListener(this.utils.eventType.fileOpened, () => {
             (this.config.RESEARCH_WHILE_OPEN_FILE && this.entities.modal.style.display === "block") && setTimeout(this.highlight, 300)
         });
@@ -115,14 +77,12 @@ class multiHighlighterPlugin extends global._basePlugin {
                 ev.stopPropagation();
                 ev.preventDefault();
                 this.highlight();
-            } else if (ev.key === "Escape" || ev.key === "Backspace") {
-                if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    this.clearHighlight();
-                    this.refreshFences();
-                    this.hide();
-                }
+            } else if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
+                ev.stopPropagation();
+                ev.preventDefault();
+                this.clearHighlight();
+                this.refreshFences();
+                this.hide();
             }
         })
 
@@ -132,27 +92,6 @@ class multiHighlighterPlugin extends global._basePlugin {
             ev.preventDefault();
             ev.stopPropagation();
         })
-
-        if (this.config.SHOW_RUN_BUTTON) {
-            this.entities.runButton.addEventListener("click", ev => {
-                this.highlight();
-                ev.preventDefault();
-                ev.stopPropagation();
-            })
-        }
-
-        if (this.config.REMOVE_WHEN_EDIT) {
-            document.querySelector("content").addEventListener("mousedown", ev => {
-                if (this.multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
-                    this.clearHighlight();
-                    this.refreshFences();
-                }
-            }, true)
-        }
-
-        if (this.config.ALLOW_DRAG) {
-            this.utils.dragFixedModal(this.entities.input, this.entities.modal);
-        }
 
         this.entities.result.addEventListener("mousedown", ev => {
             const target = ev.target.closest(".plugin-multi-highlighter-result-item");
@@ -168,7 +107,7 @@ class multiHighlighterPlugin extends global._basePlugin {
             }
 
             const idx = target.getAttribute("idx");
-            const className = `plugin-search-hit${idx}`
+            const className = `plugin-search-hit${idx}`;
             let resultList = document.getElementsByClassName(className);
 
             // 如果被刷新掉了，重新请求一次
@@ -211,10 +150,75 @@ class multiHighlighterPlugin extends global._basePlugin {
             if (this.config.SHOW_CURRENT_INDEX) {
                 const searcher = this.multiHighlighter.getHighlighter(idx);
                 if (searcher) {
-                    target.innerText = `${searcher.token.text} (${nextIdx + 1}/${searcher.matches.length})`
+                    target.innerText = `${searcher.token.text} (${nextIdx + 1}/${searcher.matches.length})`;
                 }
             }
         })
+
+        if (this.config.SHOW_RUN_BUTTON) {
+            this.entities.runButton.addEventListener("click", ev => {
+                this.highlight();
+                ev.preventDefault();
+                ev.stopPropagation();
+            })
+        }
+
+        if (this.config.REMOVE_WHEN_EDIT) {
+            document.querySelector("content").addEventListener("mousedown", ev => {
+                if (this.multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
+                    this.clearHighlight();
+                    this.refreshFences();
+                }
+            }, true)
+        }
+
+        if (this.config.ALLOW_DRAG) {
+            this.utils.dragFixedModal(this.entities.input, this.entities.modal);
+        }
+    }
+
+    processAddCodeBlock = () => {
+        let hasMarker = false;
+
+        const before = cid => {
+            if (this.multiHighlighter.length() !== 0) {
+                hasMarker = !!this.entities.write.querySelector(`.md-fences[cid=${cid}] marker`);
+            }
+        }
+
+        const after = cid => {
+            if (!hasMarker || this.multiHighlighter.length() === 0) return;
+
+            hasMarker = false;
+
+            const fence = this.entities.write.querySelector(`.md-fences[cid=${cid}]`);
+            if (!fence) return;
+
+            const tokens = this.multiHighlighter.getTokens();
+            if (this.config.USE_LIST_THRESHOLD > tokens.length
+                || this.config.CLEAR_LIST_THRESHOLD > 0 && this.fenceMultiHighlighterList.length === this.config.CLEAR_LIST_THRESHOLD
+            ) {
+                this.clearFenceMultiHighlighterList();
+                this.multiHighlighter.removeHighlight();
+                this.multiHighlighter.highlight();
+                if (this.showMarkerInfo.idxOfWrite !== -1) {
+                    this.getAndShowMarker(this.entities.write, this.showMarkerInfo.idxOfWrite);
+                    this.showMarkerInfo.idxOfWrite = -1;
+                }
+            } else {
+                const fenceMultiHighlighter = new multiHighlighter(this);
+                fenceMultiHighlighter.new(tokens, fence, this.config.CASE_SENSITIVE, "plugin-search-hit");
+                fenceMultiHighlighter.highlight();
+                this.fenceMultiHighlighterList.push(fenceMultiHighlighter);
+                if (this.showMarkerInfo.idxOfFence !== -1) {
+                    this.getAndShowMarker(fence, this.showMarkerInfo.idxOfFence);
+                    this.showMarkerInfo.idxOfFence = -1;
+                }
+            }
+        }
+
+        this.utils.addEventListener(this.utils.eventType.beforeAddCodeBlock, before);
+        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, after);
     }
 
     compatibleFenceEnhancePlugin = fence => {
@@ -356,9 +360,9 @@ class multiHighlighterPlugin extends global._basePlugin {
 }
 
 class multiHighlighter {
-    constructor(utils) {
-        this.highlighterList = []
-        this.InstantSearch = utils.requireFilePath("./plugin/multi_highlighter/highlighter.js").InstantSearch;
+    constructor(controller) {
+        this.highlighterList = [];
+        this.InstantSearch = controller.utils.requireFilePath("./plugin/multi_highlighter/highlighter.js").InstantSearch;
     }
 
     _newHighlighter(root, key, caseSensitive, className) {
