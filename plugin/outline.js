@@ -66,7 +66,7 @@ class outlinePlugin extends global._basePlugin {
 
             if (item) {
                 const cid = item.querySelector("span").getAttribute("data-ref");
-                this.scroll(cid);
+                this.utils.scrollByCid(cid);
             } else if (footerIcon) {
                 const Type = footerIcon.getAttribute("type");
                 this.collectAndShow(Type);
@@ -89,12 +89,6 @@ class outlinePlugin extends global._basePlugin {
         this.collectUtil.collect();
         this.collectUtil.bindDOM(Type);
         this.entities.modal.style.display = "block";
-    }
-
-    scroll = cid => {
-        const target = File.editor.findElemById(cid);
-        this.utils.showHiddenElementByPlugin(target[0]);
-        this.utils.scroll(target);
     }
 
     setFooterActive = Type => {

@@ -542,7 +542,7 @@ auto_use_datetable = true
 [scrollBookmarker]
 # 右键菜单中展示的名称
 name = "书签管理器"
-# 是否启用此自定义插件
+# 是否启用此自定义插件（此插件仅在window_tab插件启用时生效）
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -696,19 +696,19 @@ name = "快速按钮"
 # 是否启用此自定义插件（此插件仅对有javascript基础的用户开放）
 enable = false
 # 是否在右键菜单中隐藏
-hide = false
+hide = true
 # 插件配置
 [quickButton.config]
 # 添加的按钮
 #   action：取个名字，不可重名
-#   coordinate：往上为x正方向，往左为y正方向。(0,0) (0,1) (1,0) (1,1) 四个坐标已被其他插件占用
+#   coordinate：往上为x正方向，往左为y正方向。(0,0) (0,1) (1,0) (1,1) (2,0) (2,1) 坐标已被其他插件占用
 #   icon：icon class
 #   font_size：控制icon大小
 #   hint：提示信息
 #   callback：回调函数
 [[quickButton.config.buttons]]
 action = "md_padding_button"
-coordinate = [2, 1]
+coordinate = [3, 1]
 icon = "fa fa-indent"
 font_size = "17px"
 hint = "混排优化"
@@ -746,7 +746,7 @@ name = "TC打开"
 # 若要使用此插件，请先修改tc_path选项
 enable = false
 # 是否在右键菜单中隐藏
-hide = true
+hide = false
 # 插件配置
 [openInTotalCommander.config]
 # 快捷键

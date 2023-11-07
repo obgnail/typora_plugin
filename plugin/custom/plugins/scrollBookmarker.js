@@ -167,7 +167,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
 
     _locate = idx => {
         const ele = Array.from(document.querySelectorAll(this.recordSelector))[idx];
-        ele && this.utils.scroll(ele, 10);
+        ele && this.utils.scroll(ele, 20, true);
     }
 }
 
