@@ -18,14 +18,12 @@ class outlinePlugin extends global._basePlugin {
             {class_: "plugin-outline-icon ion-arrow-move", type: "move", "ty-hint": "移动"},
             {class_: "plugin-outline-icon ion-close", type: "close", "ty-hint": "关闭"},
         ]
-        return [{
-            id: "plugin-outline",
-            children: [
-                {class_: "plugin-outline-header", children: headerChildren},
-                {class_: "plugin-outline-list"},
-                {class_: "plugin-outline-footer", children: footerChildren},
-            ]
-        }]
+        const children = [
+            {class_: "plugin-outline-header", children: headerChildren},
+            {class_: "plugin-outline-list"},
+            {class_: "plugin-outline-footer", children: footerChildren},
+        ]
+        return [{id: "plugin-outline", children}]
     }
 
     init = () => {

@@ -5,11 +5,8 @@ class textStylizePlugin extends global._basePlugin {
         const trList = this.utils.chunk(this.config.COLORS, this.config.NUM_PER_LINE).map(colorList => ({
             ele: "tr", children: colorList.map(color => ({ele: "td", style: {backgroundColor: color}, color}))
         }))
-
-        return [{
-            id: "plugin-text-stylize", class_: "plugin-common-modal", style: {display: "none"},
-            children: [{ele: "table", children: [{ele: "tbody", children: trList}]}]
-        }]
+        const children = [{ele: "table", children: [{ele: "tbody", children: trList}]}];
+        return [{id: "plugin-text-stylize", class_: "plugin-common-modal", style: {display: "none"}, children}]
     }
 
     hotkey = () => [

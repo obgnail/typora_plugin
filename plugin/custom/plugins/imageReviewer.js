@@ -17,16 +17,15 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             {ele: "i", class_: "fa fa-location-arrow", option: "location", title: "资源管理器打开"},
             {ele: "i", class_: "fa fa-times", option: "close", title: "退出"},
         ]
-        const tool = [{class_: "review-message", children: messages}, {class_: "review-options", children: options}]
-        return [{
-            id: "plugin-image-reviewer", class_: "plugin-cover-content", children: [
-                {class_: "mask plugin-cover-content"},
-                {ele: "img", class_: "review-image"},
-                {class_: "review-item", action: "get-previous", children: [{ele: "i", class_: "fa fa-angle-left"}]},
-                {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
-                {class_: "review-tool", children: tool}
-            ]
-        }]
+        const tool = [{class_: "review-message", children: messages}, {class_: "review-options", children: options}];
+        const children = [
+            {class_: "mask plugin-cover-content"},
+            {ele: "img", class_: "review-image"},
+            {class_: "review-item", action: "get-previous", children: [{ele: "i", class_: "fa fa-angle-left"}]},
+            {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
+            {class_: "review-tool", children: tool}
+        ]
+        return [{id: "plugin-image-reviewer", class_: "plugin-cover-content", children}]
     }
 
     hotkey = () => [this.config.hotkey]
