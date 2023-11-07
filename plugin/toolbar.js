@@ -346,10 +346,8 @@ class pluginTool extends baseToolInterface {
 
     collectAll = () => {
         const pluginsList = [];
-        for (const fixedName of Object.keys(global._plugins)) {
-            const plugin = global._plugins[fixedName];
-
-            if (!plugin["call"]) continue
+        for (const [fixedName, plugin] of Object.entries(global._plugins)) {
+            if (!plugin.call) continue
 
             const chineseName = plugin.config.NAME;
             const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode);
@@ -367,7 +365,7 @@ class pluginTool extends baseToolInterface {
 
             if (dynamicCallArgs) {
                 for (const arg of dynamicCallArgs) {
-                    if (!arg["arg_disabled"]) {
+                    if (!arg.arg_disabled) {
                         const show = chineseName + " - " + arg.arg_name;
                         pluginsList.push({showName: show, fixedName: fixedName, meta: arg.arg_value});
                     }
@@ -375,7 +373,7 @@ class pluginTool extends baseToolInterface {
             }
         }
 
-        pluginsList.forEach(plugin => plugin.showName += (plugin["meta"]) ? ` （ ${plugin.fixedName} - ${plugin.meta} ）` : ` （ ${plugin.fixedName} ）`)
+        pluginsList.forEach(plugin => plugin.showName += (plugin.meta) ? ` （ ${plugin.fixedName} - ${plugin.meta} ）` : ` （ ${plugin.fixedName} ）`)
         return pluginsList
     }
 

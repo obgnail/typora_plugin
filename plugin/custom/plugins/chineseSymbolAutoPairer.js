@@ -96,7 +96,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
 
     reverseMap = map => {
         const result = new Map();
-        map.forEach((value, key) => result.set(value, key));
+        map.forEach((v, k) => result.set(v, k));
         return result
     }
 }

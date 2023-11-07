@@ -257,8 +257,8 @@ class multiHighlighterPlugin extends global._basePlugin {
 
     refreshFences = () => {
         console.debug("refreshFences");
-        for (const id of Object.keys(File.editor.fences.queue)) {
-            File.editor.fences.queue[id].refresh();
+        for (const fence of Object.values(File.editor.fences.queue)) {
+            fence.refresh();
         }
     }
 
