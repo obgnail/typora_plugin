@@ -102,8 +102,8 @@ class fenceMarkmap {
         }
     };
     destroyAll = () => {
-        for (let cid of Object.keys(this.map)) {
-            this.map[cid].destroy();
+        for (const instance of Object.values(this.map)) {
+            instance.destroy();
         }
         this.map = {};
     };

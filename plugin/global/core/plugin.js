@@ -1234,9 +1234,8 @@ class thirdPartyDiagramParser {
 
     destroyAll = () => {
         for (const parser of this.parsers.values()) {
-            for (const cid of Object.keys(parser.map)) {
-                parser.destroyFunc(parser.map[cid]);
-                delete parser.map[cid];
+            for (const instance of Object.values(parser.map)) {
+                parser.destroyFunc(instance);
             }
             parser.map = {};
         }
@@ -1245,8 +1244,7 @@ class thirdPartyDiagramParser {
     beforeExport = () => {
         for (const parser of this.parsers.values()) {
             if (!parser.beforeExport) continue;
-            for (const cid of Object.keys(parser.map)) {
-                const instance = parser.map[cid];
+            for (const [cid, instance] of Object.entries(parser.map)) {
                 const preview = document.querySelector(`#write .md-fences[cid=${cid}] .md-diagram-panel-preview`);
                 if (preview) {
                     parser.beforeExport(preview, instance);
@@ -1561,15 +1559,13 @@ class quickButtonGenerator {
     }
 
     htmlTemplate = (maxX, maxY) => {
-        const mapCoordinateToButton = new Map();
-        Array.from(this.buttons.values()).forEach(button => {
-            mapCoordinateToButton.set(`${button.coordinate[0]}-${button.coordinate[1]}`, button);
-        })
+        const list = Array.from(this.buttons.values()).map(button => [`${button.coordinate[0]}-${button.coordinate[1]}`, button]);
+        const mapCoordToBtn = new Map(list);
 
         const children = [];
         for (let x = 0; x <= maxX; x++) {
             for (let y = 0; y <= maxY; y++) {
-                const button = mapCoordinateToButton.get(`${maxX - x}-${maxY - y}`);
+                const button = mapCoordToBtn.get(`${maxX - x}-${maxY - y}`);
                 const ele = !button
                     ? {class_: "action-item unused"}
                     : {
@@ -1746,8 +1742,8 @@ class htmlTemplater {
         get(target, propertyKey) {
             return function (attrs = {}, ...children) {
                 const el = document.createElement(propertyKey);
-                for (const prop of Object.keys(attrs)) {
-                    el.setAttribute(prop, attrs[prop]);
+                for (const [prop, attr] of Object.entries(attrs)) {
+                    el.setAttribute(prop, attr);
                 }
                 for (let child of children) {
                     if (typeof child === 'string') {
@@ -1774,11 +1770,10 @@ class htmlTemplater {
         if (!element) return;
 
         const el = document.createElement(element.ele || this.defaultElement);
-        for (const prop of Object.keys(element)) {
-            const value = element[prop];
+        for (const [prop, value] of Object.entries(element)) {
             switch (prop) {
                 case "ele":
-                    continue
+                    break
                 case "class":
                 case "className":
                 case "class_":
@@ -1789,8 +1784,8 @@ class htmlTemplater {
                     el.innerText = value;
                     break
                 case "style":
-                    for (const key of Object.keys(value)) {
-                        el.style[key] = value[key];
+                    for (const [k, v] of Object.entries(value)) {
+                        el.style[k] = v;
                     }
                     break
                 case "children":

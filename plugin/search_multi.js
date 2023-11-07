@@ -8,8 +8,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
         modal.style.display = "none";
         modal.innerHTML = `
             <div id="plugin-search-multi-input">
-                <input type="text" class="input" tabindex="1" autocorrect="off" spellcheck="false" autocapitalize="off" 
-                    placeholder="多关键字查找 空格分隔" ty-hint="⌃↵当前页打开。⇧⌃↵新页面打开" data-lg="Front">
+                <input type="text" placeholder="多关键字查找 空格分隔" ty-hint="⌃↵当前页打开。⇧⌃↵新页面打开">
                 <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
                     <svg class="icon"> <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                 </span>

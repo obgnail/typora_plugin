@@ -5,36 +5,28 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         toolPosition: this.config.tool_position === "top" ? "initial" : 0,
     })
 
-    htmlTemplate = () => [{
-        id: "plugin-image-reviewer", class_: "plugin-cover-content", children: [
+    htmlTemplate = () => {
+        const messages = [{class_: "review-index"}, {class_: "review-title"}, {class_: "review-size"}];
+        const options = [
+            {ele: "i", class_: "fa fa-question-circle", title: this.optionHint()},
+            {ele: "i", class_: "fa fa-arrows-v", option: "vFlip", title: "垂直翻转"},
+            {ele: "i", class_: "fa fa-arrows-h", option: "hFlip", title: "水平翻转"},
+            {ele: "i", class_: "fa fa-search-plus", option: "autoSize", title: "放缩"},
+            {ele: "i", class_: "fa fa-rotate-right", option: "rotateRight", title: "旋转"},
+            {ele: "i", class_: "fa fa-crosshairs", option: "target", title: "定位到文档"},
+            {ele: "i", class_: "fa fa-location-arrow", option: "location", title: "资源管理器打开"},
+            {ele: "i", class_: "fa fa-times", option: "close", title: "退出"},
+        ]
+        const tool = [{class_: "review-message", children: messages}, {class_: "review-options", children: options}];
+        const children = [
             {class_: "mask plugin-cover-content"},
             {ele: "img", class_: "review-image"},
             {class_: "review-item", action: "get-previous", children: [{ele: "i", class_: "fa fa-angle-left"}]},
             {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
-            {
-                class_: "review-tool",
-                children: [
-                    {
-                        class_: "review-message",
-                        children: [{class_: "review-index"}, {class_: "review-title"}, {class_: "review-size"}]
-                    },
-                    {
-                        class_: "review-options",
-                        children: [
-                            {ele: "i", class_: "fa fa-question-circle", title: this.optionHint()},
-                            {ele: "i", class_: "fa fa-arrows-v", option: "vFlip", title: "垂直翻转"},
-                            {ele: "i", class_: "fa fa-arrows-h", option: "hFlip", title: "水平翻转"},
-                            {ele: "i", class_: "fa fa-search-plus", option: "autoSize", title: "放缩"},
-                            {ele: "i", class_: "fa fa-rotate-right", option: "rotateRight", title: "旋转"},
-                            {ele: "i", class_: "fa fa-crosshairs", option: "target", title: "定位到文档"},
-                            {ele: "i", class_: "fa fa-location-arrow", option: "location", title: "资源管理器打开"},
-                            {ele: "i", class_: "fa fa-times", option: "close", title: "退出"},
-                        ]
-                    }
-                ]
-            }
+            {class_: "review-tool", children: tool}
         ]
-    }]
+        return [{id: "plugin-image-reviewer", class_: "plugin-cover-content", children}]
+    }
 
     hotkey = () => [this.config.hotkey]
 
@@ -82,13 +74,12 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
         this.entities.ops.addEventListener("click", ev => {
             const target = ev.target.closest("[option]");
-            if (target) {
-                const option = target.getAttribute("option");
-                if (option === "rotateRight") {
-                    this.rotateRight(90);
-                } else {
-                    this[option]();
-                }
+            if (!target) return
+            const option = target.getAttribute("option");
+            if (option === "rotateRight") {
+                this.rotateRight(90);
+            } else {
+                this[option]();
             }
         })
     }
