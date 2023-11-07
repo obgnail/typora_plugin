@@ -15,29 +15,22 @@ class commanderPlugin extends global._basePlugin {
             )
         }
 
+        const hint = "提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录";
         const formChildren = [
-            {
-                ele: "input", type: "text", class_: "input", placeholder: "Typora commander",
-                autocorrect: "off", spellcheck: "false", autocapitalize: "off", "data-lg": "Front",
-                title: "提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录"
-            },
+            {ele: "input", type: "text", placeholder: "Typora commander", title: hint},
             {ele: "i", class_: "ion-ios7-play plugin-commander-commit", "ty-hint": "执行命令"},
             {ele: "select", class_: "plugin-commander-shell", children: shellChildren}
         ]
 
         if (this.config.USE_BUILTIN) {
             formChildren.push({
-                ele: "select",
-                class_: "plugin-commander-builtin",
+                ele: "select", class_: "plugin-commander-builtin",
                 children: this.config.BUILTIN.map(e => ({ele: "option", shell: e.shell, value: e.cmd, text: e.name}))
             })
         }
 
         return [{
-            id: "plugin-commander",
-            class_: "plugin-common-modal",
-            style: {display: "none"},
-            children: [
+            id: "plugin-commander", class_: "plugin-common-modal", style: {display: "none"}, children: [
                 {id: "plugin-commander-form", children: formChildren},
                 {class_: "plugin-commander-output", children: [{ele: "pre", tabindex: "0"}]}
             ]
