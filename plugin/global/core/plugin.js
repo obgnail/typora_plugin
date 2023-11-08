@@ -1646,7 +1646,8 @@ class hotkeyHub {
         const ctrl = keyList.indexOf("ctrl") !== -1;
         const shift = keyList.indexOf("shift") !== -1;
         const alt = keyList.indexOf("alt") !== -1;
-        const key = keyList.filter(key => key !== "ctrl" && key !== "shift" && key !== "alt")[0];
+        const key = (keyList.filter(key => key !== "ctrl" && key !== "shift" && key !== "alt")[0])
+            || (hotkeyString.indexOf("++") !== -1 ? "+" : " ");
 
         return ev => this.utils.metaKeyPressed(ev) === ctrl
             && this.utils.shiftKeyPressed(ev) === shift

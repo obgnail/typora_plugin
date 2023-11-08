@@ -567,44 +567,64 @@ hide = false
 # 插件配置
 [imageReviewer.config]
 # 快捷键
-hotkey = ""
+hotkey = "ctrl+alt+i"
 # 在右下角添加一个快捷按钮
 use_button = true
 # 点击遮罩空白处退出
 click_mask_to_exit = true
 # 工具栏的位置：bottom/top
 tool_position = "top"
-# 第一张图片是：
+# 第一张图片是？
 #   1. inViewBoxImage：当前视图里第一张图片
 #   2. closestViewBoxImage：距离当前视图中心最近的一张图片
 #   3. firstImage：整篇文档的第一张图片
-# 值为什么是个列表？答：优先级。["inViewBoxImage", "firstImage"]：首先寻找当前视图里第一张图片，若找不到，则使用文档的第一张图片
+# 为什么是个列表？答：优先级。["inViewBoxImage", "firstImage"]：首先寻找当前视图里第一张图片，若找不到，则使用文档的第一张图片
 first_image_strategies = ["inViewBoxImage", "firstImage"]
+# 在工具栏左侧，展示的图片信息
+#   1. index: 第几张图片
+#   2. title: 图片名称
+#   3. size: 图片大小
+show_message = ["index", "title", "size"]
 # 每次缩放的比率
 zoom_scale = 0.1
 # 每次旋转的角度
 rotate_scale = 10
 # 每次倾斜的角度
 skew_scale = 1
+# 每次移动的像素
+translate_scale = 10
+# 轮播图片时的停留时间（单位：s）
+play_second = 3
 # 遮罩层的不透明度
 mask_background_opacity = 0.6
 # 图片最多占据80%的页面宽度
 image_max_width = 80
 # 图片最多占据80%的页面高度度
 image_max_height = 80
+# 背景模糊等级: 数值越大越模糊（为0则不模糊）
+blur_level = 15
 
-# 目前支持以下功能：
+# 图片支持以下操作：
 #   - dummy: 无功能
 #   - close: 关闭
+#   - download: 下载网络图片（若此图片是本地图片，则失效）
+#   - scroll: 定位到文档
+#   - play: 轮播
 #   - location: 打开图片路径
 #   - nextImage: 下张图
 #   - previousImage: 上张图
-#   - zoomOut: 放大图片
-#   - zoomIn: 缩小图片
+#   - firstImage: 第一张图
+#   - lastImage: 最后一张图
+#   - zoomIn: 放大图片
+#   - zoomOut: 缩小图片
 #   - rotateLeft: 图片向左旋转
 #   - rotateRight: 图片向右旋转
 #   - hFlip: 水平翻转图片
 #   - vFlip: 垂直翻转图片
+#   - translateLeft: 向左移动
+#   - translateRight: 向右移动
+#   - translateUp: 向上移动
+#   - translateDown: 向下移动
 #   - incHSkew: 图片增大水平倾斜
 #   - decHSkew: 图片减小水平倾斜
 #   - incVSkew: 图片增大垂直倾斜
@@ -613,6 +633,19 @@ image_max_height = 80
 #   - fixScreen: 图片大小适配屏幕
 #   - autoSize： 图片大小在originSize、fixScreen之间切换
 #   - restore: 图片恢复为最初状态
+
+# 图片的操作提供多个入口：
+#   - 工具栏按钮
+#   - 鼠标左中右键（可同时配合ctrl、shift、alt等修饰按键）
+#   - 快捷键
+
+# 工具栏按钮:
+# 可选项比上面的功能多了一个info，用于提示
+# 若是本地图片，download按钮会自动隐藏
+tool_function = [
+    "info", "download", "play", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close",
+]
+
 # 鼠标点击图片绑定的功能（三项分别为左键、中键、右键）
 mousedown_function = ["nextImage", "close", "previousImage"]
 # ctrl+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
@@ -623,13 +656,49 @@ shift_mousedown_function = ["autoSize", "dummy", "dummy"]
 alt_mousedown_function = ["restore", "location", "dummy"]
 
 # 当鼠标位于图片时，上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
-wheel_function = ["zoomOut", "zoomIn"]
+wheel_function = ["zoomIn", "zoomOut"]
 # 当鼠标位于图片时，ctrl+上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
 ctrl_wheel_function = ["rotateRight", "rotateLeft"]
 # 当鼠标位于图片时，shift+上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
 shift_wheel_function = ["incHSkew", "decHSkew"]
 # 当鼠标位于图片时，alt+上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
 alt_wheel_function = ["incVSkew", "decVSkew"]
+
+# 在弹出遮罩层时可用的快捷键(第一项为快捷键，第二项为绑定的功能)
+hotkey_function = [
+    # 基础
+    ["j", "nextImage"],
+    ["k", "previousImage"],
+    ["=", "nextImage"],
+    ["-", "previousImage"],
+    ["shift+j", "lastImage"],
+    ["shift+k", "firstImage"],
+    ["l", "scroll"],
+    ["q", "close"],
+    ["escape", "close"],
+    [" ", "play"],
+    # 翻转
+    ["h", "hFlip"],
+    ["v", "vFlip"],
+    # 旋转
+    ["r", "rotateRight"],
+    ["shift+r", "rotateLeft"],
+    # 移动
+    ["ArrowUp", "translateUp"],
+    ["ArrowDown", "translateDown"],
+    ["ArrowLeft", "translateLeft"],
+    ["ArrowRight", "translateRight"],
+    ["w", "translateUp"],
+    ["s", "translateDown"],
+    ["a", "translateLeft"],
+    ["d", "translateRight"],
+    # 大小
+    ["z", "originSize"],
+    ["x", "zoomIn"],
+    ["c", "zoomOut"],
+    ["shift++", "zoomIn"],
+    ["shift+_", "zoomOut"],
+]
 
 
 ############### markdownLint ###############
