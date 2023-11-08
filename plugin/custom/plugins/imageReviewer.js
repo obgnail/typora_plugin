@@ -1,6 +1,6 @@
 class imageReviewerPlugin extends BaseCustomPlugin {
     beforeProcess = () => {
-        this.keyTranslate = {arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→'};
+        this.keyTranslate = {arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space"};
         this.funcTranslate = {
             dummy: ['无功能', ''],
             info: ['', 'fa fa-question-circle'],
@@ -46,14 +46,15 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     })
 
     htmlTemplate = () => {
-        const msg = [{class_: "review-index"}, {class_: "review-title"}, {class_: "review-size"}];
-        const tool = [{class_: "review-message", children: msg}, {class_: "review-options", children: this.getTools()}];
+        const msg = this.config.show_message.map(msg => ({class_: "review-" + msg}));
+        const options = this.getTools();
+        const toolbar = [{class_: "review-message", children: msg}, {class_: "review-options", children: options}];
         const children = [
             {class_: "mask plugin-cover-content"},
             {ele: "img", class_: "review-image"},
             {class_: "review-item", action: "get-previous", children: [{ele: "i", class_: "fa fa-angle-left"}]},
             {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
-            {class_: "review-tool", children: tool}
+            {class_: "review-tool", children: toolbar}
         ]
         return [{id: "plugin-image-reviewer", class_: "plugin-cover-content", children}]
     }
@@ -94,7 +95,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         this.entities.reviewer.addEventListener("wheel", ev => {
             ev.preventDefault();
             const list = this.getFuncList(ev, "wheel");
-            list[ev.deltaY > 0 ? 0 : 1]();
+            list[ev.deltaY > 0 ? 1 : 0]();
         });
 
         this.entities.image.addEventListener("mousedown", ev => {
@@ -206,12 +207,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     }
 
     _showImage = imgInfo => {
-        const {src, alt, naturalWidth, naturalHeight, showIdx, total} = imgInfo;
-        this.entities.image.setAttribute("src", src);
-        this.entities.msg.querySelector(".review-index").textContent = `[ ${showIdx} / ${total} ]`;
-        this.entities.msg.querySelector(".review-title").textContent = alt;
-        this.entities.msg.querySelector(".review-size").textContent = `${naturalWidth} × ${naturalHeight}`;
-        this.handleToolIcon(src);
+        this.handleMessage(imgInfo);
+        this.handleToolIcon(imgInfo.src);
         this.restore();
     }
 
@@ -301,6 +298,17 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         return this.config.tool_function.map(item => map.get(item)).filter(Boolean)
     }
 
+    handleMessage = imgInfo => {
+        const {src, alt, naturalWidth, naturalHeight, showIdx, total} = imgInfo;
+        this.entities.image.setAttribute("src", src);
+        const index = this.entities.msg.querySelector(".review-index");
+        const title = this.entities.msg.querySelector(".review-title");
+        const size = this.entities.msg.querySelector(".review-size");
+        index && (index.textContent = `[ ${showIdx} / ${total} ]`);
+        title && (title.textContent = alt);
+        size && (size.textContent = `${naturalWidth} × ${naturalHeight}`);
+    }
+
     handleToolIcon = src => {
         const autoSize = this.entities.ops.querySelector(`[option="autoSize"]`);
         const download = this.entities.ops.querySelector(`[option="download"]`);
@@ -340,12 +348,11 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         const func = remove
             ? ele => ele && ele.style.removeProperty("filter")
             : ele => ele && (ele.style.filter = `blur(${this.config.blur_level}px)`);
-        const list = [
+        [
             document.querySelector("#write"),
             document.querySelector(".sidebar-menu"),
             document.querySelector("#plugin-window-tab"),
-        ];
-        list.forEach(func);
+        ].forEach(func);
     }
 
     handleHotkey = (remove = false) => {

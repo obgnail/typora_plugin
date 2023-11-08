@@ -574,12 +574,17 @@ use_button = true
 click_mask_to_exit = true
 # 工具栏的位置：bottom/top
 tool_position = "top"
-# 第一张图片是：
+# 第一张图片是？
 #   1. inViewBoxImage：当前视图里第一张图片
 #   2. closestViewBoxImage：距离当前视图中心最近的一张图片
 #   3. firstImage：整篇文档的第一张图片
-# 值为什么是个列表？答：优先级。["inViewBoxImage", "firstImage"]：首先寻找当前视图里第一张图片，若找不到，则使用文档的第一张图片
+# 为什么是个列表？答：优先级。["inViewBoxImage", "firstImage"]：首先寻找当前视图里第一张图片，若找不到，则使用文档的第一张图片
 first_image_strategies = ["inViewBoxImage", "firstImage"]
+# 在工具栏左侧，展示的图片信息
+#   1. index: 第几张图片
+#   2. title: 图片名称
+#   3. size: 图片大小
+show_message = ["index", "title", "size"]
 # 每次缩放的比率
 zoom_scale = 0.1
 # 每次旋转的角度
@@ -599,12 +604,12 @@ image_max_height = 80
 # 背景模糊等级: 数值越大越模糊（为0则不模糊）
 blur_level = 15
 
-# 目前图片的操作支持以下功能：
+# 图片支持以下操作：
 #   - dummy: 无功能
 #   - close: 关闭
 #   - download: 下载网络图片（若此图片是本地图片，则失效）
 #   - scroll: 定位到文档
-#   - play: 轮播图片
+#   - play: 轮播
 #   - location: 打开图片路径
 #   - nextImage: 下张图
 #   - previousImage: 上张图
@@ -634,7 +639,9 @@ blur_level = 15
 #   - 鼠标左中右键（可同时配合ctrl、shift、alt等修饰按键）
 #   - 快捷键
 
-# 工具栏按钮（可选项比上面的功能多了一个info，用于提示）
+# 工具栏按钮:
+# 可选项比上面的功能多了一个info，用于提示
+# 若是本地图片，download按钮会自动隐藏
 tool_function = [
     "info", "download", "play", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close",
 ]
@@ -662,11 +669,14 @@ hotkey_function = [
     # 基础
     ["j", "nextImage"],
     ["k", "previousImage"],
+    ["=", "nextImage"],
+    ["-", "previousImage"],
     ["shift+j", "lastImage"],
     ["shift+k", "firstImage"],
     ["l", "scroll"],
     ["q", "close"],
     ["escape", "close"],
+    [" ", "play"],
     # 翻转
     ["h", "hFlip"],
     ["v", "vFlip"],
@@ -686,6 +696,8 @@ hotkey_function = [
     ["z", "originSize"],
     ["x", "zoomIn"],
     ["c", "zoomOut"],
+    ["shift++", "zoomIn"],
+    ["shift+_", "zoomOut"],
 ]
 
 
