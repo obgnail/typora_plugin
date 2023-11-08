@@ -1,4 +1,44 @@
 class imageReviewerPlugin extends BaseCustomPlugin {
+    beforeProcess = () => {
+        this.keyTranslate = {arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→'};
+        this.funcTranslate = {
+            dummy: ['无功能', ''],
+            info: ['', 'fa fa-question-circle'],
+            close: ['关闭', 'fa fa-times'],
+            download: ['下载网络图片', 'fa fa-download'],
+            scroll: ['定位到文档', 'fa fa-crosshairs'],
+            play: ['轮播图片', 'fa fa-play'],
+            location: ['打开图片路径', 'fa fa-location-arrow'],
+            nextImage: ['下张图', 'fa fa-angle-right'],
+            previousImage: ['上张图', 'fa fa-angle-left'],
+            firstImage: ['第一张图', 'fa fa-angle-double-left'],
+            lastImage: ['最后一张图', 'fa fa-angle-double-right'],
+            zoomOut: ['缩小图片', 'fa fa fa-search-minus'],
+            zoomIn: ['放大图片', 'fa fa fa-search-plus'],
+            rotateLeft: ['图片向左旋转', 'fa fa-rotate-left'],
+            rotateRight: ['图片向右旋转', 'fa fa-rotate-right'],
+            hFlip: ['水平翻转图片', 'fa fa-arrows-h'],
+            vFlip: ['垂直翻转图片', 'fa fa-arrows-v'],
+            translateLeft: ['向左移动', 'fa fa-arrow-left'],
+            translateRight: ['向右移动', 'fa fa-arrow-right'],
+            translateUp: ['向上移动', 'fa fa-arrow-up'],
+            translateDown: ['向下移动', 'fa fa-arrow-down'],
+            incHSkew: ['图片增大水平倾斜', 'fa fa-toggle-right'],
+            decHSkew: ['图片减小水平倾斜', 'fa fa-toggle-left'],
+            incVSkew: ['图片增大垂直倾斜', 'fa fa-toggle-up'],
+            decVSkew: ['图片减小垂直倾斜', 'fa fa-toggle-down'],
+            originSize: ['还原图片大小', 'fa fa-clock-o'],
+            fixScreen: ['图片大小适配屏幕', 'fa fa-codepen'],
+            autoSize: ['图片大小切换', 'fa fa-search-plus'],
+            restore: ['图片恢复为最初状态', 'fa fa-history'],
+        }
+    }
+
+    afterProcess = () => {
+        this.keyTranslate = null;
+        this.funcTranslate = null;
+    }
+
     styleTemplate = () => ({
         imageMaxWidth: this.config.image_max_width + "%",
         imageMaxHeight: this.config.image_max_height + "%",
@@ -6,26 +46,14 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     })
 
     htmlTemplate = () => {
-        const messages = [{class_: "review-index"}, {class_: "review-title"}, {class_: "review-size"}];
-        const options = [
-            {ele: "i", class_: "fa fa-question-circle", title: this.optionHint()},
-            {ele: "i", class_: "fa fa-download", option: "download", title: "下载网络图片"},
-            {ele: "i", class_: "fa fa-play", option: "play", title: "图片轮播"},
-            {ele: "i", class_: "fa fa-arrows-v", option: "vFlip", title: "垂直翻转"},
-            {ele: "i", class_: "fa fa-arrows-h", option: "hFlip", title: "水平翻转"},
-            {ele: "i", class_: "fa fa-search-plus", option: "autoSize", title: "放缩"},
-            {ele: "i", class_: "fa fa-rotate-right", option: "rotateRight", title: "旋转"},
-            {ele: "i", class_: "fa fa-crosshairs", option: "scroll", title: "定位到文档"},
-            {ele: "i", class_: "fa fa-location-arrow", option: "location", title: "资源管理器打开"},
-            {ele: "i", class_: "fa fa-times", option: "close", title: "退出"},
-        ]
-        const tools = [{class_: "review-message", children: messages}, {class_: "review-options", children: options}];
+        const msg = [{class_: "review-index"}, {class_: "review-title"}, {class_: "review-size"}];
+        const tool = [{class_: "review-message", children: msg}, {class_: "review-options", children: this.getTools()}];
         const children = [
             {class_: "mask plugin-cover-content"},
             {ele: "img", class_: "review-image"},
             {class_: "review-item", action: "get-previous", children: [{ele: "i", class_: "fa fa-angle-left"}]},
             {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
-            {class_: "review-tool", children: tools}
+            {class_: "review-tool", children: tool}
         ]
         return [{id: "plugin-image-reviewer", class_: "plugin-cover-content", children}]
     }
@@ -78,11 +106,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             const target = ev.target.closest("[option]");
             if (!target) return
             const option = target.getAttribute("option");
-            if (option === "rotateRight") {
-                this.rotateRight(90);
-            } else {
-                this[option]();
-            }
+            const arg = option.indexOf("rotate") !== -1 ? 90 : undefined;
+            this[option] && this[option](arg);
         })
     }
 
@@ -101,39 +126,39 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         moveCenter && this.moveImageCenter();
     }
 
-    rotate = (isOut, newRotate, rotateScale) => this.replaceImageTransform(/rotate\((.*?)deg\)/, (_, curRotate) => {
+    rotate = (dec, newRotate, rotateScale) => this.replaceImageTransform(/rotate\((.*?)deg\)/, (_, curRotate) => {
         if (!newRotate) {
             const currentRotate = parseFloat(curRotate);
             rotateScale = rotateScale || this.config.rotate_scale;
-            newRotate = isOut ? currentRotate + rotateScale : currentRotate - rotateScale;
+            newRotate = dec ? currentRotate + rotateScale : currentRotate - rotateScale;
         }
         return `rotate(${newRotate}deg)`
     })
 
-    zoom = (isOut, newScale, zoomScale) => this.replaceImageTransform(/scale\((.*?)\)/, (_, curScale) => {
+    zoom = (dec, newScale, zoomScale) => this.replaceImageTransform(/scale\((.*?)\)/, (_, curScale) => {
         if (!newScale) {
             const currentScale = parseFloat(curScale);
             zoomScale = zoomScale || this.config.zoom_scale;
-            newScale = isOut ? currentScale - zoomScale : currentScale + zoomScale;
+            newScale = dec ? currentScale - zoomScale : currentScale + zoomScale;
         }
         newScale = Math.max(0.1, newScale);
         return `scale(${newScale})`
     })
 
-    skew = (isOut, direction, newSkew, skewScale) => this.replaceImageTransform(new RegExp(`skew${direction}\\((.*?)deg\\)`), (_, curSkew) => {
+    skew = (dec, direction, newSkew, skewScale) => this.replaceImageTransform(new RegExp(`skew${direction}\\((.*?)deg\\)`), (_, curSkew) => {
         if (!newSkew) {
             const currentSkew = parseFloat(curSkew);
             skewScale = skewScale || this.config.skew_scale;
-            newSkew = isOut ? currentSkew + skewScale : currentSkew - skewScale;
+            newSkew = dec ? currentSkew - skewScale : currentSkew + skewScale;
         }
         return `skew${direction}(${newSkew}deg)`
     })
 
-    translate = (isOut, direction, newTranslate, translateScale) => this.replaceImageTransform(new RegExp(`translate${direction}\\((.*?)px\\)`), (_, curTranslate) => {
+    translate = (dec, direction, newTranslate, translateScale) => this.replaceImageTransform(new RegExp(`translate${direction}\\((.*?)px\\)`), (_, curTranslate) => {
         if (!newTranslate) {
             const currentTranslate = parseFloat(curTranslate);
             translateScale = translateScale || this.config.translate_scale;
-            newTranslate = isOut ? currentTranslate + translateScale : currentTranslate - translateScale;
+            newTranslate = dec ? currentTranslate - translateScale : currentTranslate + translateScale;
         }
         return `translate${direction}(${newTranslate}px)`
     }, false)
@@ -182,12 +207,11 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     _showImage = imgInfo => {
         const {src, alt, naturalWidth, naturalHeight, showIdx, total} = imgInfo;
+        this.entities.image.setAttribute("src", src);
         this.entities.msg.querySelector(".review-index").textContent = `[ ${showIdx} / ${total} ]`;
         this.entities.msg.querySelector(".review-title").textContent = alt;
         this.entities.msg.querySelector(".review-size").textContent = `${naturalWidth} × ${naturalHeight}`;
-        this.entities.ops.querySelector(`[option="autoSize"]`).className = "fa fa-search-plus";
-        this.entities.ops.querySelector(`[option="download"]`).style.display = this.utils.isNetworkImage(src) ? "block" : "none";
-        this.entities.image.setAttribute("src", src);
+        this.handleToolIcon(src);
         this.restore();
     }
 
@@ -267,40 +291,25 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
     }
 
-    optionHint = () => {
-        const translate = {
-            dummy: '无功能',
-            close: '关闭',
-            download: '下载网络图片',
-            scroll: '定位到文档',
-            play: '轮播图片',
-            location: '打开图片路径',
-            nextImage: '下张图',
-            previousImage: '上张图',
-            firstImage: '第一张图',
-            lastImage: '最后一张图',
-            zoomOut: '缩小图片',
-            zoomIn: '放大图片',
-            rotateLeft: '图片向左旋转',
-            rotateRight: '图片向右旋转',
-            hFlip: '水平翻转图片',
-            vFlip: '垂直翻转图片',
-            translateLeft: '向左移动',
-            translateRight: '向右移动',
-            translateUp: '向上移动',
-            translateDown: '向下移动',
-            incHSkew: '图片增大水平倾斜',
-            decHSkew: '图片减小水平倾斜',
-            incVSkew: '图片增大垂直倾斜',
-            decVSkew: '图片减小垂直倾斜',
-            originSize: '还原图片大小',
-            fixScreen: '图片大小适配屏幕',
-            autoSize: '图片大小切换',
-            restore: '图片恢复为最初状态',
-        }
-        const keyTranslate = {arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→'};
+    getTools = () => {
+        this.funcTranslate.info[0] = this.optionHint();
+        const tools = Array.from(Object.entries(this.funcTranslate)).map(item => {
+            const [option, [title, icon]] = item;
+            return [option, {ele: "i", class_: icon, option, title}]
+        })
+        const map = new Map(tools);
+        return this.config.tool_function.map(item => map.get(item)).filter(Boolean)
+    }
 
-        const result = ["当前的配置如下："];
+    handleToolIcon = src => {
+        const autoSize = this.entities.ops.querySelector(`[option="autoSize"]`);
+        const download = this.entities.ops.querySelector(`[option="download"]`);
+        autoSize && (autoSize.className = "fa fa-search-plus");
+        download && (download.style.display = this.utils.isNetworkImage(src) ? "block" : "none");
+    }
+
+    optionHint = () => {
+        const result = ["当前配置如下："];
         const button = ["mousedown_function", "wheel_function"];
         const extra = ["", "ctrl", "shift", "alt"];
         button.forEach(btn => extra.forEach(ex => {
@@ -308,7 +317,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             const config = this.config[cfg];
             const funcList = (btn === "mousedown_function") ? ["鼠标左键", "鼠标中键", "鼠标右键"] : ["滚轮上滚", "滚轮下滚"];
             funcList.forEach((ele, idx) => {
-                const info = translate[config[idx]];
+                const [info, _] = this.funcTranslate[config[idx]];
                 if (info && info !== "无功能") {
                     const ex_ = !ex ? "" : ex + "+";
                     result.push(ex_ + ele + "\t" + info);
@@ -317,9 +326,9 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }))
         this.config.hotkey_function.forEach(item => {
             const [key, func] = item;
-            const info = translate[func];
+            const [info, _] = this.funcTranslate[func];
             if (info && info !== "无功能") {
-                const translateKey = keyTranslate[key.toLowerCase()] || key;
+                const translateKey = this.keyTranslate[key.toLowerCase()] || key;
                 result.push(translateKey + "\t" + info);
             }
         })
@@ -416,18 +425,18 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     lastImage = () => this.dumpIndex(Number.MAX_VALUE)
     rotateLeft = rotateScale => this.rotate(false, null, rotateScale)
     rotateRight = rotateScale => this.rotate(true, null, rotateScale)
-    zoomIn = zoomScale => this.zoom(true, null, zoomScale)
-    zoomOut = zoomScale => this.zoom(false, null, zoomScale)
+    zoomOut = zoomScale => this.zoom(true, null, zoomScale)
+    zoomIn = zoomScale => this.zoom(false, null, zoomScale)
     hFlip = () => this.flip("X")
     vFlip = () => this.flip("Y")
     incHSkew = skewScale => this.skew(true, "X", null, skewScale)
     decHSkew = skewScale => this.skew(false, "X", null, skewScale)
     incVSkew = skewScale => this.skew(true, "Y", null, skewScale)
     decVSkew = skewScale => this.skew(false, "Y", null, skewScale)
-    translateLeft = translateScale => this.translate(false, "X", null, translateScale)
-    translateRight = translateScale => this.translate(true, "X", null, translateScale)
-    translateUp = translateScale => this.translate(false, "Y", null, translateScale)
-    translateDown = translateScale => this.translate(true, "Y", null, translateScale)
+    translateLeft = translateScale => this.translate(true, "X", null, translateScale)
+    translateRight = translateScale => this.translate(false, "X", null, translateScale)
+    translateUp = translateScale => this.translate(true, "Y", null, translateScale)
+    translateDown = translateScale => this.translate(false, "Y", null, translateScale)
     originSize = () => this.changeSize(true)
     fixScreen = () => this.changeSize(false)
     autoSize = () => this.changeSize(this.entities.image.style.maxWidth !== "initial")

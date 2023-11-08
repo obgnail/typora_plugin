@@ -599,7 +599,7 @@ image_max_height = 80
 # 背景模糊等级: 数值越大越模糊（为0则不模糊）
 blur_level = 15
 
-# 目前支持以下功能：
+# 目前图片的操作支持以下功能：
 #   - dummy: 无功能
 #   - close: 关闭
 #   - download: 下载网络图片（若此图片是本地图片，则失效）
@@ -629,6 +629,16 @@ blur_level = 15
 #   - autoSize： 图片大小在originSize、fixScreen之间切换
 #   - restore: 图片恢复为最初状态
 
+# 图片的操作提供多个入口：
+#   - 工具栏按钮
+#   - 鼠标左中右键（可同时配合ctrl、shift、alt等修饰按键）
+#   - 快捷键
+
+# 工具栏按钮（可选项比上面的功能多了一个info，用于提示）
+tool_function = [
+    "info", "download", "play", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close",
+]
+
 # 鼠标点击图片绑定的功能（三项分别为左键、中键、右键）
 mousedown_function = ["nextImage", "close", "previousImage"]
 # ctrl+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
@@ -656,7 +666,7 @@ hotkey_function = [
     ["shift+k", "firstImage"],
     ["l", "scroll"],
     ["q", "close"],
-    ["escape","close"],
+    ["escape", "close"],
     # 翻转
     ["h", "hFlip"],
     ["v", "vFlip"],
