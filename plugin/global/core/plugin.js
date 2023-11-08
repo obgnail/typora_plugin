@@ -283,6 +283,13 @@ class utils {
         await $.getScript(lib + "/jimp/browser/lib/jimp.min.js")
     }
 
+    static downloadImage = async (src, folder, filename) => {
+        folder = folder || this.tempFolder;
+        filename = filename || (Math.random() + "_" + this.Package.Path.basename(src));
+        const {state} = await JSBridge.invoke("app.download", src, folder, filename);
+        return {ok: state === "completed", filepath: this.Package.Path.join(folder, filename)}
+    }
+
 
     ////////////////////////////// 事件 //////////////////////////////
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
