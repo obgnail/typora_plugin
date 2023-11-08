@@ -9,6 +9,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         const messages = [{class_: "review-index"}, {class_: "review-title"}, {class_: "review-size"}];
         const options = [
             {ele: "i", class_: "fa fa-question-circle", title: this.optionHint()},
+            {ele: "i", class_: "fa fa-download", option: "download", title: "下载图片"},
             {ele: "i", class_: "fa fa-arrows-v", option: "vFlip", title: "垂直翻转"},
             {ele: "i", class_: "fa fa-arrows-h", option: "hFlip", title: "水平翻转"},
             {ele: "i", class_: "fa fa-search-plus", option: "autoSize", title: "放缩"},
@@ -162,6 +163,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         this.entities.msg.querySelector(".review-title").textContent = alt;
         this.entities.msg.querySelector(".review-size").textContent = `${naturalWidth} × ${naturalHeight}`;
         this.entities.ops.querySelector(`[option="autoSize"]`).className = "fa fa-search-plus";
+        this.entities.ops.querySelector(`[option="download"]`).style.display = this.utils.isNetworkImage(src) ? "block" : "none";
         this.entities.image.setAttribute("src", src);
         this.restore();
     }
@@ -252,6 +254,17 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             // src = src.replace(/^file:\/[2-3]/, "");
             src = decodeURI(src).substring(0, src.indexOf("?"));
             JSBridge.showInFinder(src);
+        }
+    }
+
+    download = async () => {
+        const src = this.entities.image.getAttribute("src");
+        if (!this.utils.isNetworkImage(src)) return;
+        const {ok, filepath} = await this.utils.downloadImage(src);
+        if (ok) {
+            JSBridge.showInFinder(filepath);
+        } else {
+            alert("download image failed");
         }
     }
 

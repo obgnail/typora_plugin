@@ -1,6 +1,5 @@
 class exportEnhancePlugin extends global._basePlugin {
     init = () => {
-        this.Path = this.utils.Package.Path;
         this.tempFolder = this.utils.tempFolder; // i‘d like to shit here
         this.regexp = new RegExp(`<img.*?src="(.*?)".*?>`, "gs");
     }
@@ -27,9 +26,9 @@ class exportEnhancePlugin extends global._basePlugin {
                 if (this.utils.isNetworkImage(src)) {
                     if (!this.config.DOWNLOAD_NETWORK_IMAGE || !imageMap.hasOwnProperty(src)) return origin
                     const path = imageMap[src];
-                    imagePath = this.Path.join(this.tempFolder, path);
+                    imagePath = this.utils.Package.Path.join(this.tempFolder, path);
                 } else {
-                    imagePath = this.Path.join(dirname, src);
+                    imagePath = this.utils.Package.Path.join(dirname, src);
                 }
                 const base64Data = this.toBase64(imagePath);
                 result = origin.replace(src, base64Data);
@@ -53,10 +52,10 @@ class exportEnhancePlugin extends global._basePlugin {
                 ) return;
 
                 const src = match[1];
-                const filename = Math.random() + "_" + this.Path.basename(src);
+                const filename = Math.random() + "_" + this.utils.Package.Path.basename(src);
                 try {
-                    const {state} = await JSBridge.invoke("app.download", src, this.tempFolder, filename);
-                    if (state === "completed") {
+                    const {ok} = await this.utils.downloadImage(src, this.tempFolder, filename);
+                    if (ok) {
                         imageMap[src] = filename;
                     }
                 } catch (e) {
@@ -69,7 +68,7 @@ class exportEnhancePlugin extends global._basePlugin {
 
     getCurDir = () => {
         const filepath = this.utils.getFilePath();
-        return this.Path.dirname(filepath)
+        return this.utils.Package.Path.dirname(filepath)
     }
 
     toBase64 = imagePath => {
