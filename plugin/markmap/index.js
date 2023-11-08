@@ -114,7 +114,7 @@ class fenceMarkmap {
             svg = $(`<svg class="plugin-fence-markmap-svg"></svg>`);
         }
         svg.css({
-            "width": parseInt($pre.find(".md-diagram-panel").css("width").replace("px", "")) - 10 + "px",
+            "width": parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
             "height": this.config.DEFAULT_FENCE_HEIGHT,
             "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
         });
@@ -366,17 +366,24 @@ class tocMarkmap {
             const {marginLeft, paddingRight} = document.defaultView.getComputedStyle(this.entities.header);
             const headerWidth = this.entities.header.getBoundingClientRect().width;
 
-            const _marginRight = (this.config.ALLOW_ICON_WRAP) ? 0 : parseInt(paddingRight);
-            return parseInt(marginLeft) + headerWidth + _marginRight
+            const _marginRight = (this.config.ALLOW_ICON_WRAP) ? 0 : parseFloat(paddingRight);
+            return parseFloat(marginLeft) + headerWidth + _marginRight
+        }
+
+        const onMouseUp = () => {
+            this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+            this.fit();
         }
 
         // 自由移动时调整大小
         {
             let deltaHeight = 0;
             let deltaWidth = 0;
+            let hint = this.entities.resize.getAttribute("ty-hint");
             this.utils.resizeFixedModal(
                 this.entities.resize, this.entities.modal, true, true,
                 (startX, startY, startWidth, startHeight) => {
+                    this.entities.resize.removeAttribute("ty-hint");
                     this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
                     deltaHeight = getModalMinHeight() - startHeight;
                     deltaWidth = getModalMinWidth() - startWidth;
@@ -387,6 +394,7 @@ class tocMarkmap {
                     return {deltaX, deltaY}
                 },
                 async () => {
+                    this.entities.resize.setAttribute("ty-hint", hint);
                     this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
                     await this.waitUnpin();
                     await this.setFullScreenIcon(this.entities.fullScreen, false);
@@ -414,10 +422,7 @@ class tocMarkmap {
                     this.entities.content.style.top = newContentTop + "px";
                     return {deltaX, deltaY}
                 },
-                () => {
-                    this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
-                    this.drawToc();
-                }
+                onMouseUp
             );
         }
 
@@ -453,10 +458,7 @@ class tocMarkmap {
                     this.entities.modal.style.left = modalStartLeft - deltaX + "px";
                     return {deltaX, deltaY}
                 },
-                () => {
-                    this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
-                    this.drawToc();
-                }
+                onMouseUp
             )
         }
     }

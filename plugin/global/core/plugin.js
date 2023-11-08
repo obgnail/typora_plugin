@@ -689,13 +689,13 @@ class utils {
         onMouseDown = null, onMouseMove = null, onMouseUp = null
     ) => {
         // 鼠标按下时记录当前鼠标位置和 div 的宽高
-        const radix = 10;
         let startX, startY, startWidth, startHeight;
         handleElement.addEventListener("mousedown", ev => {
+            const {width, height} = document.defaultView.getComputedStyle(resizeElement);
             startX = ev.clientX;
             startY = ev.clientY;
-            startWidth = parseInt(document.defaultView.getComputedStyle(resizeElement).width, radix);
-            startHeight = parseInt(document.defaultView.getComputedStyle(resizeElement).height, radix);
+            startWidth = parseFloat(width);
+            startHeight = parseFloat(height);
             onMouseDown && onMouseDown(startX, startY, startWidth, startHeight);
             document.addEventListener("mousemove", mousemove);
             document.addEventListener("mouseup", mouseup);
@@ -739,9 +739,9 @@ class utils {
         handleElement.addEventListener("mousedown", ev => {
             if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
             ev.stopPropagation();
-            const rect = moveElement.getBoundingClientRect();
-            const shiftX = ev.clientX - rect.left;
-            const shiftY = ev.clientY - rect.top;
+            const {left, top} = moveElement.getBoundingClientRect();
+            const shiftX = ev.clientX - left;
+            const shiftY = ev.clientY - top;
             _onMouseDown && _onMouseDown();
 
             const onMouseMove = ev => {
@@ -1216,7 +1216,7 @@ class thirdPartyDiagramParser {
     setStyle = (parser, $pre, $wrap, content) => {
         const {height, width} = this.utils.getFenceUserSize(content);
         $wrap.css({
-            "width": width || parseInt($pre.find(".md-diagram-panel").css("width").replace("px", "")) - 10 + "px",
+            "width": width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
             "height": height || parser.extraCss["defaultHeight"] || "",
             "background-color": parser.extraCss["backgroundColor"] || "",
         });

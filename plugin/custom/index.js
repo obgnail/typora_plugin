@@ -66,9 +66,9 @@ class loadPluginHelper {
     // 兼容用户错误操作
     mergeSettings = settings => {
         if (this.controller.config.ALLOW_SET_CONFIG_IN_SETTINGS_TOML) {
-            for (const plugin of Object.keys(global._plugin_settings)) {
-                if (plugin in settings) {
-                    settings[plugin] = this.controller.utils.merge(settings[plugin], global._plugin_settings[plugin]);
+            for (const [fixedName, settings_] of Object.entries(global._plugin_settings)) {
+                if (fixedName in settings) {
+                    settings[fixedName] = this.controller.utils.merge(settings[fixedName], settings_);
                 }
             }
         }
