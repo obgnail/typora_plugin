@@ -110,6 +110,7 @@
     cursor: pointer;
 }
 
+#plugin-image-reviewer .review-options > i.active,
 #plugin-image-reviewer .review-options > i:hover {
     color: chartreuse;
 }

@@ -567,7 +567,7 @@ hide = false
 # 插件配置
 [imageReviewer.config]
 # 快捷键
-hotkey = ""
+hotkey = "ctrl+alt+i"
 # 在右下角添加一个快捷按钮
 use_button = true
 # 点击遮罩空白处退出
@@ -586,25 +586,40 @@ zoom_scale = 0.1
 rotate_scale = 10
 # 每次倾斜的角度
 skew_scale = 1
+# 每次移动的像素
+translate_scale = 10
+# 轮播图片时的停留时间（单位：s）
+play_second = 3
 # 遮罩层的不透明度
 mask_background_opacity = 0.6
 # 图片最多占据80%的页面宽度
 image_max_width = 80
 # 图片最多占据80%的页面高度度
 image_max_height = 80
+# 背景模糊等级: 数值越大越模糊（为0则不模糊）
+blur_level = 15
 
 # 目前支持以下功能：
 #   - dummy: 无功能
 #   - close: 关闭
+#   - download: 下载网络图片（若此图片是本地图片，则失效）
+#   - scroll: 定位到文档
+#   - play: 轮播图片
 #   - location: 打开图片路径
 #   - nextImage: 下张图
 #   - previousImage: 上张图
-#   - zoomOut: 放大图片
-#   - zoomIn: 缩小图片
+#   - firstImage: 第一张图
+#   - lastImage: 最后一张图
+#   - zoomIn: 放大图片
+#   - zoomOut: 缩小图片
 #   - rotateLeft: 图片向左旋转
 #   - rotateRight: 图片向右旋转
 #   - hFlip: 水平翻转图片
 #   - vFlip: 垂直翻转图片
+#   - translateLeft: 向左移动
+#   - translateRight: 向右移动
+#   - translateUp: 向上移动
+#   - translateDown: 向下移动
 #   - incHSkew: 图片增大水平倾斜
 #   - decHSkew: 图片减小水平倾斜
 #   - incVSkew: 图片增大垂直倾斜
@@ -613,6 +628,7 @@ image_max_height = 80
 #   - fixScreen: 图片大小适配屏幕
 #   - autoSize： 图片大小在originSize、fixScreen之间切换
 #   - restore: 图片恢复为最初状态
+
 # 鼠标点击图片绑定的功能（三项分别为左键、中键、右键）
 mousedown_function = ["nextImage", "close", "previousImage"]
 # ctrl+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
@@ -623,13 +639,44 @@ shift_mousedown_function = ["autoSize", "dummy", "dummy"]
 alt_mousedown_function = ["restore", "location", "dummy"]
 
 # 当鼠标位于图片时，上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
-wheel_function = ["zoomOut", "zoomIn"]
+wheel_function = ["zoomIn", "zoomOut"]
 # 当鼠标位于图片时，ctrl+上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
 ctrl_wheel_function = ["rotateRight", "rotateLeft"]
 # 当鼠标位于图片时，shift+上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
 shift_wheel_function = ["incHSkew", "decHSkew"]
 # 当鼠标位于图片时，alt+上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
 alt_wheel_function = ["incVSkew", "decVSkew"]
+
+# 在弹出遮罩层时可用的快捷键(第一项为快捷键，第二项为绑定的功能)
+hotkey_function = [
+    # 基础
+    ["j", "nextImage"],
+    ["k", "previousImage"],
+    ["shift+j", "lastImage"],
+    ["shift+k", "firstImage"],
+    ["l", "scroll"],
+    ["q", "close"],
+    ["escape","close"],
+    # 翻转
+    ["h", "hFlip"],
+    ["v", "vFlip"],
+    # 旋转
+    ["r", "rotateRight"],
+    ["shift+r", "rotateLeft"],
+    # 移动
+    ["ArrowUp", "translateUp"],
+    ["ArrowDown", "translateDown"],
+    ["ArrowLeft", "translateLeft"],
+    ["ArrowRight", "translateRight"],
+    ["w", "translateUp"],
+    ["s", "translateDown"],
+    ["a", "translateLeft"],
+    ["d", "translateRight"],
+    # 大小
+    ["z", "originSize"],
+    ["x", "zoomIn"],
+    ["c", "zoomOut"],
+]
 
 
 ############### markdownLint ###############
