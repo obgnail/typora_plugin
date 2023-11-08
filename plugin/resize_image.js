@@ -62,10 +62,7 @@ class resizeImagePlugin extends global._basePlugin {
         }
     }
 
-    getWidth = image => {
-        const {width} = image.getBoundingClientRect();
-        return (!image.style.width) ? width : parseInt(image.style.width.replace("px", ""));
-    }
+    getWidth = image => image.style.width ? parseFloat(image.style.width) : image.getBoundingClientRect().width
 
     setAlign = (align, image, maxWidth) => {
         image.setAttribute("align", align);
