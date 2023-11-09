@@ -211,7 +211,7 @@ COMMIT_EXEC_SHOW = "echo"
 USE_BUILTIN = true
 # 内建命令列表。支持无限添加。
 # 目前支持4个参数:
-#   1. name:   命令展示的名称
+#   1. name:   命令展示的名称（不可重复）
 #   2. shell:  cmd/bash、powershell、gitbash、wsl（如果使用gitbash、wsl，请确保已经将其加入环境变量）
 #   3. hotkey: 快捷键调用命令行（可选）
 #   4. cmd:    执行的命令

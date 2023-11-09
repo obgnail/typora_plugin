@@ -404,6 +404,13 @@ class utils {
 
     static isPromise = obj => !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function'
 
+    static windowsPathToUnix = filepath => {
+        if (!File.isWin) return filepath;
+        const sep = filepath.split(this.Package.Path.win32.sep);
+        const newS = [].concat([sep[0].toLowerCase()], sep.slice(1));
+        return "/" + this.Package.Path.posix.join.apply(this.Package.Path.posix, newS).replace(":", "")
+    }
+
 
     ////////////////////////////// 业务文件操作 //////////////////////////////
     // Repo: https://github.com/microsoft/vscode-ripgrep

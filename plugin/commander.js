@@ -23,10 +23,8 @@ class commanderPlugin extends global._basePlugin {
         ]
 
         if (this.config.USE_BUILTIN) {
-            formChildren.push({
-                ele: "select", class_: "plugin-commander-builtin",
-                children: this.config.BUILTIN.map(e => ({ele: "option", shell: e.shell, value: e.cmd, text: e.name}))
-            })
+            const builtin = this.config.BUILTIN.map(e => ({ele: "option", shell: e.shell, value: e.cmd, text: e.name}));
+            formChildren.push({ele: "select", class_: "plugin-commander-builtin", children: builtin});
         }
 
         const children = [
@@ -40,8 +38,8 @@ class commanderPlugin extends global._basePlugin {
         const hotkeys = [{hotkey: this.config.HOTKEY, callback: this.call}];
         if (this.config.USE_BUILTIN) {
             this.config.BUILTIN.forEach(ele => {
-                if (ele["hotkey"] && ele["cmd"] && ele["shell"]) {
-                    hotkeys.push({hotkey: ele["hotkey"], callback: () => this.quickExecute(ele["cmd"], ele["shell"])});
+                if (ele.hotkey && ele.cmd && ele.shell) {
+                    hotkeys.push({hotkey: ele.hotkey, callback: () => this.quickExecute(ele.cmd, ele.shell)});
                 }
             })
         }
@@ -59,11 +57,11 @@ class commanderPlugin extends global._basePlugin {
             pre: document.querySelector(".plugin-commander-output pre"),
         }
 
-        this.arg_value_prefix = "call_builtin-";
+        this.arg_value_prefix = "BC5079B8910E@";
         this.callArgs = [{arg_name: "显示/隐藏", arg_value: "show"}];
         this.config.BUILTIN.forEach(builtin => {
             if (builtin.name) {
-                this.callArgs.push({arg_name: `${builtin.name}`, arg_value: this.arg_value_prefix + builtin.name});
+                this.callArgs.push({arg_name: builtin.name, arg_value: this.arg_value_prefix + builtin.name});
             }
         });
     }
@@ -146,15 +144,9 @@ class commanderPlugin extends global._basePlugin {
 
         switch (shell) {
             case this.SHELL.WSL:
+                return '/mnt' + this.utils.windowsPathToUnix(path)
             case this.SHELL.GIT_BASH:
-                path = path.replace(/\\/g, "/");
-                const tempList = path.split(":");
-                if (tempList.length !== 2) {
-                    return path
-                }
-                const disk = tempList[0].toLowerCase();
-                const remain = tempList[1];
-                return (shell === this.SHELL.GIT_BASH) ? `/${disk}${remain}` : `/mnt/${disk}${remain}`
+                return this.utils.windowsPathToUnix(path)
             case this.SHELL.CMD_BASH:
             case this.SHELL.POWER_SHELL:
             default:
@@ -212,8 +204,8 @@ class commanderPlugin extends global._basePlugin {
         this.modal.pre.classList.add("error");
     }
 
-    // exec为什么不使用shell options? 答：不能支持wsl
-    // exec为什么不使用env options?   答：为了兼容。cmd使用变量的方式为%VAR%，bash为$VAR。而且命令可能会跨越多层shell
+    // 为什么不使用shell options? 答：不能支持wsl
+    // 为什么不使用env options?   答：为了兼容。cmd使用变量的方式为%VAR%，bash为$VAR。而且命令可能会跨越多层shell
     exec = (cmd, shell, resolve, reject, callback, hint, options = {}) => {
         resolve = resolve || console.log;
         reject = reject || console.error;
@@ -291,14 +283,18 @@ class commanderPlugin extends global._basePlugin {
         this.execute(this.config.COMMIT_EXEC_SHOW, cmd, shell, null);
     }
 
+    toggleModal = () => {
+        if (this.modal.modal.style.display === "block") {
+            this.modal.modal.style.display = "none";
+        } else {
+            this.modal.modal.style.display = "block";
+            this.modal.input.select();
+        }
+    }
+
     call = (type = "show") => {
         if (type === "show") {
-            if (this.modal.modal.style.display === "block") {
-                this.modal.modal.style.display = "none";
-            } else {
-                this.modal.modal.style.display = "block";
-                this.modal.input.select();
-            }
+            this.toggleModal();
         } else if (type.startsWith(this.arg_value_prefix)) {
             const name = type.slice(this.arg_value_prefix.length);
             const builtin = this.config.BUILTIN.find(builtin => builtin.name === name);
