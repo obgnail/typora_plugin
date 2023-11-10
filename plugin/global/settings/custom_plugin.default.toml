@@ -4,6 +4,13 @@
 # 4. 所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
 
 
+#------------------------------------------------------------------------
+#   不要修改【custom_plugin.default.toml】文件，请读本目录下的【请读我.md】文件
+#   不要修改【custom_plugin.default.toml】文件，请读本目录下的【请读我.md】文件
+#   不要修改【custom_plugin.default.toml】文件，请读本目录下的【请读我.md】文件
+#------------------------------------------------------------------------
+
+
 ############### kanban ###############
 [kanban]
 # 右键菜单中展示的名称
@@ -605,34 +612,34 @@ image_max_height = 80
 blur_level = 15
 
 # 图片支持以下操作：
-#   - dummy: 无功能
-#   - close: 关闭
-#   - download: 下载网络图片（若此图片是本地图片，则失效）
-#   - scroll: 定位到文档
-#   - play: 轮播
-#   - location: 打开图片路径
-#   - nextImage: 下张图
-#   - previousImage: 上张图
-#   - firstImage: 第一张图
-#   - lastImage: 最后一张图
-#   - zoomIn: 放大图片
-#   - zoomOut: 缩小图片
-#   - rotateLeft: 图片向左旋转
-#   - rotateRight: 图片向右旋转
-#   - hFlip: 水平翻转图片
-#   - vFlip: 垂直翻转图片
-#   - translateLeft: 向左移动
+#   - dummy:          无功能
+#   - close:          关闭
+#   - download:       下载网络图片（若此图片是本地图片，则失效）
+#   - scroll:         定位到文档
+#   - play:           轮播
+#   - location:       打开图片路径
+#   - nextImage:      下张图
+#   - previousImage:  上张图
+#   - firstImage:     第一张图
+#   - lastImage:      最后一张图
+#   - zoomIn:         放大图片
+#   - zoomOut:        缩小图片
+#   - rotateLeft:     图片向左旋转
+#   - rotateRight:    图片向右旋转
+#   - hFlip:          水平翻转图片
+#   - vFlip:          垂直翻转图片
+#   - translateLeft:  向左移动
 #   - translateRight: 向右移动
-#   - translateUp: 向上移动
-#   - translateDown: 向下移动
-#   - incHSkew: 图片增大水平倾斜
-#   - decHSkew: 图片减小水平倾斜
-#   - incVSkew: 图片增大垂直倾斜
-#   - decVSkew: 图片减小垂直倾斜
-#   - originSize: 还原图片大小
-#   - fixScreen: 图片大小适配屏幕
-#   - autoSize： 图片大小在originSize、fixScreen之间切换
-#   - restore: 图片恢复为最初状态
+#   - translateUp:    向上移动
+#   - translateDown:  向下移动
+#   - incHSkew:       图片增大水平倾斜
+#   - decHSkew:       图片减小水平倾斜
+#   - incVSkew:       图片增大垂直倾斜
+#   - decVSkew:       图片减小垂直倾斜
+#   - originSize:     还原图片尺寸
+#   - fixScreen:      图片大小适配屏幕
+#   - autoSize:       图片大小在【原先尺寸】和【适配屏幕】之间切换
+#   - restore:        图片恢复为最初状态
 
 # 图片的操作提供多个入口：
 #   - 工具栏按钮
@@ -640,11 +647,9 @@ blur_level = 15
 #   - 快捷键
 
 # 工具栏按钮:
-# 可选项比上面的功能多了一个info，用于提示
-# 若是本地图片，download按钮会自动隐藏
-tool_function = [
-    "info", "download", "play", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close",
-]
+# 1. 可选项比上面的功能多了一个info，用于提示
+# 2. 若是本地图片，download按钮会自动隐藏
+tool_function = ["info", "download", "play", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close"]
 
 # 鼠标点击图片绑定的功能（三项分别为左键、中键、右键）
 mousedown_function = ["nextImage", "close", "previousImage"]
