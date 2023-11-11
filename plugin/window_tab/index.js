@@ -124,6 +124,36 @@ class windowTabBarPlugin extends global._basePlugin {
             )
         }
 
+        if (this.config.CONTEXT_MENU) {
+            let idx = -1;
+            const map = {
+                closeTab: "关闭标签",
+                closeOtherTabs: "删除其他标签",
+                closeLeftTabs: "删除左侧全部标签",
+                closeRightTabs: "删除右侧全部标签",
+                copyPath: "复制文件路径",
+                showInFinder: "打开文件位置",
+                openInNewWindow: "新窗口打开",
+            }
+            this.utils.registerMenu(
+                "window-tab-function",
+                "#plugin-window-tab .tab-container",
+                ({target}) => {
+                    idx = parseInt(target.getAttribute("idx"));
+                    return this.config.CONTEXT_MENU.map(ele => map[ele]).filter(Boolean)
+                },
+                ({text}) => {
+                    if (idx === -1) return;
+                    for (const [func, name] of Object.entries(map)) {
+                        if (name === text) {
+                            this[func] && this[func](idx);
+                            break;
+                        }
+                    }
+                }
+            )
+        }
+
         document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
             const target = ev.target.closest(".typora-quick-open-item");
             if (!target) return;
@@ -215,8 +245,9 @@ class windowTabBarPlugin extends global._basePlugin {
         })
 
         while (tabDiv) {
+            const next = tabDiv.nextElementSibling;
             tabDiv.parentElement.removeChild(tabDiv);
-            tabDiv = tabDiv.nextElementSibling;
+            tabDiv = next;
         }
     }
 
@@ -262,6 +293,8 @@ class windowTabBarPlugin extends global._basePlugin {
     }
 
     switchTab = idx => {
+        idx = Math.max(0, idx);
+        idx = Math.min(idx, this.tabUtil.tabs.length - 1);
         this.tabUtil.activeIdx = idx;
         this.openFile(this.tabUtil.tabs[this.tabUtil.activeIdx].path);
     }
@@ -298,6 +331,37 @@ class windowTabBarPlugin extends global._basePlugin {
     }
 
     closeActiveTab = () => this.closeTab(this.tabUtil.activeIdx);
+
+    closeOtherTabs = idx => {
+        this.tabUtil.tabs = [this.tabUtil.tabs[idx]];
+        this.switchTab(0);
+    }
+
+    closeLeftTabs = idx => {
+        const originFile = this.tabUtil.tabs[this.tabUtil.activeIdx].path;
+        this.tabUtil.tabs = this.tabUtil.tabs.slice(idx);
+        if (this.tabUtil.activeIdx < idx) {
+            this.switchTab(0);
+        } else {
+            this.switchTabByPath(originFile);
+        }
+    }
+
+    closeRightTabs = idx => {
+        const originFile = this.tabUtil.tabs[this.tabUtil.activeIdx].path;
+        this.tabUtil.tabs = this.tabUtil.tabs.slice(0, idx + 1);
+        if (this.tabUtil.activeIdx > idx) {
+            this.switchTab(this.tabUtil.tabs.length - 1);
+        } else {
+            this.switchTabByPath(originFile);
+        }
+    }
+
+    copyPath = idx => navigator.clipboard.writeText(this.tabUtil.tabs[idx].path)
+
+    showInFinder = idx => JSBridge.showInFinder(this.tabUtil.tabs[idx].path);
+
+    openInNewWindow = idx => this.openFileNewWindow(this.tabUtil.tabs[idx].path, false)
 
     newWindowIfNeed = (offsetY, tab) => {
         offsetY = Math.abs(offsetY);

@@ -53,7 +53,10 @@ class fenceEnhancePlugin extends global._basePlugin {
             set_auto_hide: () => {
                 this.config.AUTO_HIDE = !this.config.AUTO_HIDE;
                 const visibility = (this.config.AUTO_HIDE) ? "hidden" : "";
-                document.querySelectorAll(".fence-enhance").forEach(ele => ele.style.visibility = visibility);
+                document.querySelectorAll(".fence-enhance").forEach(ele => {
+                    // 处于折叠状态的代码块不可隐藏
+                    ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility;
+                });
             }
         }
     }
@@ -128,7 +131,7 @@ class fenceEnhancePlugin extends global._basePlugin {
             this.builders.forEach((builder, idx) => {
                 const button = buttons[idx];
                 enhance.appendChild(button);
-                builder["extraFunc"] && builder.extraFunc(button);
+                builder.extraFunc && builder.extraFunc(button);
             })
         }
     }
@@ -149,8 +152,11 @@ class fenceEnhancePlugin extends global._basePlugin {
 
     foldCode = (ev, foldButton) => {
         const fence = foldButton.closest(".md-fences");
+        if (!fence) return;
         const scroll = fence.querySelector(".CodeMirror-scroll");
         if (!scroll) return;
+        const enhance = foldButton.closest(".fence-enhance");
+        if (!enhance) return;
 
         // 图形不可折叠
         if (fence.classList.contains("md-fences-advanced")) return;
@@ -160,11 +166,13 @@ class fenceEnhancePlugin extends global._basePlugin {
             scroll.style.overflowY = "";
             foldButton.classList.remove("folded");
             foldButton.firstElementChild.className = "fa fa-minus";
+            this.config.AUTO_HIDE && (enhance.style.visibility = "hidden");
         } else {
             scroll.style.height = window.getComputedStyle(scroll).lineHeight;
             scroll.style.overflowY = this.config.FOLD_OVERFLOW;
             foldButton.classList.add("folded");
             foldButton.firstElementChild.className = "fa fa-plus";
+            this.config.AUTO_HIDE && (enhance.style.visibility = "");
         }
     }
 
