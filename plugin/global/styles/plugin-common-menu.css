@@ -1,0 +1,31 @@
+.plugin-common-menu {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    font-size: .9rem;
+    padding: 6px 0;
+    line-height: 2;
+    min-width: 160px;
+    border-radius: 6px;
+    background-color: var(--bg-color);
+    transition: opacity .25s ease-in-out;
+    transform-origin: top;
+    box-sizing: border-box;
+    box-shadow: rgba(15, 15, 15, .03) 0 0 0 1px, rgba(15, 15, 15, .04) 0 3px 6px, rgba(15, 15, 15, .05) 0 9px 24px;
+}
+
+.plugin-common-menu.show {
+    display: block;
+}
+
+.plugin-common-menu .menu-item {
+    padding: 0 10px;
+    cursor: pointer;
+    user-select: none;
+    min-width: 124px;
+    position: relative;
+}
+
+.plugin-common-menu .menu-item:hover {
+    background-color: var(--item-hover-bg-color);
+}

@@ -28,6 +28,7 @@ class utils {
     //   10. html templater
     //   11. modal
     //   12. quick button
+    //   13. menu
 
     // 动态注册、动态注销hotkey
     // 注意: 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
@@ -218,6 +219,14 @@ class utils {
     // 一旦process后，标签就被渲染到HTML了，以后就不会再变了，再调用此函数也没有用了，因此此函数只能在插件初始化的时候调用
     // 因此，此函数的唯一意义是：当两个插件在初始化阶段打架时（都想注册同一坐标的按钮），用此函数去注销掉别人
     static unregisterQuickButton = action => global._quickButtonGenerator.unregister(action)
+
+    // 动态注册右键菜单
+    // 1. name: 取个名字
+    // 2. selector: 在哪个位置右键将弹出菜单
+    // 3. func menuGenerator({ev, target}) => [string]: 生成右键菜单的列表，这里的Element即使上面的selector对用的元素
+    // 2. func callback({ev, target, text}) => null: 点击的回调
+    static registerMenu = (name, selector, menuGenerator, callback) => global._commonMenu.registerMenu(name, selector, menuGenerator, callback)
+    static unregisterMenu = name => global._commonMenu.unregisterMenu(name)
 
 
     ////////////////////////////// 插件相关 //////////////////////////////
@@ -1826,6 +1835,87 @@ class htmlTemplater {
     }
 }
 
+class commonMenu {
+    constructor() {
+        this.utils = utils;
+        this.menus = new Map();
+        this.callback = null;
+    }
+
+    registerStyle = async () => await this.utils.registerStyleTemplate("plugin-common-menu")
+    registerHTML = () => this.utils.insertHtmlTemplate([{class_: "plugin-common-menu"}])
+
+    process = async () => {
+        await this.registerStyle();
+        this.registerHTML();
+
+        this.menu = document.querySelector(".plugin-common-menu");
+        this.menu.addEventListener("click", ev => {
+            if (!this.callback) return;
+            const target = ev.target.closest(".menu-item");
+            if (!target) return;
+            ev.preventDefault();
+            ev.stopPropagation();
+            this.callback({ev, target, text: target.innerText});
+            this.callback = null;
+            this.menu.classList.remove("show");
+        })
+        // 仅限content内部
+        document.querySelector("content").addEventListener("mousedown", ev => {
+            !ev.target.closest(".menu-item") && this.menu.classList.remove("show");
+            if (ev.button !== 2) return;
+            for (const menu of this.menus.values()) {
+                const target = ev.target.closest(menu.selector);
+                if (!target) continue;
+                ev.preventDefault();
+                ev.stopPropagation();
+                const menus = menu.menuGenerator({ev, target});
+                this.render(menus);
+                this.show(ev);
+                this.callback = menu.callback;
+            }
+        }, true)
+    }
+
+    registerMenu = (name, selector, menuGenerator, callback) => {
+        this.menus.set(name, {selector, menuGenerator, callback});
+    }
+    unregisterMenu = name => this.menus.delete(name)
+
+    render = menus => {
+        let child = this.menu.firstElementChild;
+        for (let idx = 0; idx < menus.length; idx++) {
+            if (child) {
+                child.innerText = menus[idx];
+            } else {
+                const menuList = menus.slice(idx).map(ele => ({class_: "menu-item", text: ele}));
+                this.utils.appendElements(this.menu, menuList);
+                break
+            }
+            child = child.nextElementSibling;
+        }
+        while (child) {
+            const next = child.nextElementSibling;
+            this.menu.removeChild(child);
+            child = next;
+        }
+    }
+
+    show = ev => {
+        const menu = $(this.menu);
+        menu.addClass("show");
+        const {innerWidth, innerHeight} = window;
+        const {clientX, clientY} = ev;
+        let width = menu.width() + 20;
+        width = Math.min(clientX, innerWidth - width);
+        width = Math.max(0, width);
+        let height = menu.height() + 48;
+        height = clientY > innerHeight - height ? innerHeight - height : clientY - $("#top-titlebar").height() + 8;
+        height = Math.max(0, height);
+        menu.css({top: height + "px", left: width + "px"});
+    }
+}
+
 class exportHelper {
     constructor() {
         this.utils = utils;
@@ -1992,9 +2082,10 @@ class process {
         delete pluginSettings.global;
 
         // 以下高级工具必须先加载
-        // 1.插件可能会在加载阶段用到_modalGenerator和_styleTemplater
+        // 1.插件可能会在加载阶段用到_modalGenerator、_commonMenu和_styleTemplater
         // 2.必须先让_stateRecorder恢复状态，才能执行后续流程
         await Promise.all([
+            global._commonMenu.process(),
             global._modalGenerator.process(),
             global._styleTemplater.process(),
             global._stateRecorder.process(),
@@ -2028,6 +2119,8 @@ global._pluginUtils = utils;
 global._basePlugin = basePlugin;
 // 注册、发布生命周期事件
 global._eventHub = new eventHub();
+// 注册公共菜单
+global._commonMenu = new commonMenu();
 // 自定义代码块语法
 global._diagramParser = new diagramParser();
 // 第三方图形代码块语法

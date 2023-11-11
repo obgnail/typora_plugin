@@ -56,6 +56,15 @@ SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
 CTRL_WHEEL_TO_SCROLL = true
 # 当鼠标位于标签页时，可以点击鼠标中键关闭标签页
 MIDDLE_CLICK_TO_CLOSE = true
+# 在标签处，点击鼠标右键，弹出的右键菜单（若置为[]，则不使用此功能）
+#   - closeOtherTabs:  删除其他标签
+#   - closeLeftTabs:   删除左侧全部标签
+#   - closeRightTabs:  删除右侧全部标签
+#   - closeTab:        关闭标签
+#   - copyPath:        复制文件路径
+#   - showInFinder:    打开文件位置
+#   - openInNewWindow: 新窗口打开
+CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow"]
 # typora1.1版本以后，支持使用锚点跳转到本地文件，是否拦截处理（从新建窗口改成新建标签页）
 # 参考1：https://support.typora.io/zh/What's-New-1.1/#文件链接
 # 参考2：https://support.typora.io/Links/#internal-links

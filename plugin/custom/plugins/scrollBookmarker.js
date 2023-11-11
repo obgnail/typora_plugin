@@ -113,8 +113,9 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             }
         }
         while (item) {
+            const next = item.nextElementSibling;
             item.parentElement.removeChild(item);
-            item = item.nextElementSibling;
+            item = next
         }
 
         if (this.entities.modal.childElementCount === 0) {
