@@ -536,7 +536,7 @@ CLICKABLE = true
 
 # fence_enhance插件包含两个功能：button、hotkey，此为button，若置为false，以下配置全部失效
 ENABLE_BUTTON = true
-# 自动隐藏按钮，鼠标移动到代码块才显示
+# 自动隐藏按钮，鼠标移动到代码块才显示（注意：就算置为true，在折叠状态下的代码块也不会自动隐藏。因为必须提醒用户它处于折叠状态）
 AUTO_HIDE = false
 # 启用复制代码功能
 ENABLE_COPY = true
