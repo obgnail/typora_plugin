@@ -492,11 +492,13 @@ class utils {
         return filepath
     }
 
-    static getFileName = filePath => {
+    static getFileName = (filePath, removeSuffix = true) => {
         let fileName = filePath ? this.Package.Path.basename(filePath) : File.getFileName();
-        const idx = fileName.lastIndexOf(".");
-        if (idx !== -1) {
-            fileName = fileName.substring(0, idx);
+        if (removeSuffix) {
+            const idx = fileName.lastIndexOf(".");
+            if (idx !== -1) {
+                fileName = fileName.substring(0, idx);
+            }
         }
         return fileName
     }

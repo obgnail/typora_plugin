@@ -218,7 +218,7 @@ class windowTabBarPlugin extends global._basePlugin {
 
     updateTabDiv = (tabDiv, filePath, idx) => {
         tabDiv.setAttribute("idx", idx + "");
-        tabDiv.querySelector(".name").innerText = this.utils.getFileName(filePath);
+        tabDiv.querySelector(".name").innerText = this.utils.getFileName(filePath, this.config.REMOVE_FILE_SUFFIX);
         tabDiv.setAttribute("title", filePath);
     }
 

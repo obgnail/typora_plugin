@@ -46,6 +46,8 @@ LOCAL_OPEN = false
 CHANGE_CONTENT_TOP = true
 # 调整notification组件的图层顺序，以免被tab遮挡
 CHANGE_NOTIFICATION_Z_INDEX = true
+# 标签的标题是否去除文件后缀名
+REMOVE_FILE_SUFFIX = true
 # 关闭标签页的快捷键
 CLOSE_HOTKEY = ["ctrl+w"]
 # 切换下一个标签页的快捷键
