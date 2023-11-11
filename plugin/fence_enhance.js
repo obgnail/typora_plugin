@@ -148,8 +148,12 @@ class fenceEnhancePlugin extends global._basePlugin {
     }
 
     foldCode = (ev, foldButton) => {
-        const scroll = foldButton.closest(".md-fences").querySelector(".CodeMirror-scroll");
+        const fence = foldButton.closest(".md-fences");
+        const scroll = fence.querySelector(".CodeMirror-scroll");
         if (!scroll) return;
+
+        // 图形不可折叠
+        if (fence.classList.contains("md-fences-advanced")) return;
 
         if (scroll.style.height && scroll.style.overflowY) {
             scroll.style.height = "";

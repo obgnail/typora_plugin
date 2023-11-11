@@ -4,6 +4,13 @@
 # 4. 所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
 
 
+#-------------------------------------------------------------------
+#   不要修改【settings.default.toml】文件，请读本目录下的【请读我.md】文件
+#   不要修改【settings.default.toml】文件，请读本目录下的【请读我.md】文件
+#   不要修改【settings.default.toml】文件，请读本目录下的【请读我.md】文件
+#-------------------------------------------------------------------
+
+
 ############### global ###############
 # 通用配置
 [global]
@@ -211,7 +218,7 @@ COMMIT_EXEC_SHOW = "echo"
 USE_BUILTIN = true
 # 内建命令列表。支持无限添加。
 # 目前支持4个参数:
-#   1. name:   命令展示的名称
+#   1. name:   命令展示的名称（不可重复）
 #   2. shell:  cmd/bash、powershell、gitbash、wsl（如果使用gitbash、wsl，请确保已经将其加入环境变量）
 #   3. hotkey: 快捷键调用命令行（可选）
 #   4. cmd:    执行的命令
@@ -556,10 +563,13 @@ HIGHLIGHT_WHEN_HOVER = false
 HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 
 # fence_enhance插件包含两个功能：button、hotkey，此为hotkey，若置为false，以下配置全部失效
+# 注意：此处的快捷键使用的是codeMirror的方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
 ENABLE_HOTKEY = true
+
 # 不建议修改下面的快捷键，原因有二：
 #   1. 和很多ide的快捷键保持一致
 #   2. typora强制绑定了很多快捷键，实际可修改的快捷键并不多
+
 # 强制绑定的快捷键如下：
 #   1. Ctrl-A: "selectAll",
 #   2. Ctrl-Up: "goDocStart",
@@ -576,7 +586,6 @@ ENABLE_HOTKEY = true
 #   13.Shift-Ctrl-U: "redoSelection",
 #   14.Alt-U: "redoSelection",
 
-# 注意：此处的快捷键字符串使用的是codeMirror的方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
 # 如果不想使用此功能，请置为""
 # 将当前行和上一行互换
 SWAP_PREVIOUS_LINE = "Shift-Alt-Up"
