@@ -207,7 +207,7 @@ class windowTabBarPlugin extends global._basePlugin {
     closeWindow = () => JSBridge.invoke("window.close");
 
     insertTabDiv = (filePath, idx) => {
-        const fileName = this.utils.getFileName(filePath);
+        const fileName = this.utils.getFileName(filePath, this.config.REMOVE_FILE_SUFFIX);
         const tabDiv = `
                 <div class="tab-container" idx="${idx}" draggable="true" title="${filePath}">
                     <div class="active-indicator"></div><span class="name">${fileName}</span>
