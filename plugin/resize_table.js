@@ -75,7 +75,7 @@ class resizeTablePlugin extends global._basePlugin {
     }
 
     dynamicCallArgsGenerator = anchorNode => {
-        return [{arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记录表格状态`, arg_value: "record_resize_state"}];
+        return [{arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记住表格放缩状态`, arg_value: "record_resize_state"}];
     }
 
     call = type => {

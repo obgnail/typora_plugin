@@ -16,14 +16,9 @@ class callouts extends BaseCustomPlugin {
 
     process = () => {
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.range);
-
-        this.utils.registerExportHelper(
-            "callouts",
-            () => (document.querySelector("#write .plugin-callout")) ? this.getStyleContent() : "",
-            this.exportToHtml
-        )
-
         this.utils.addEventListener(this.utils.eventType.fileEdited, this.range);
+        const getExportStyle = () => (document.querySelector("#write .plugin-callout")) ? this.getStyleContent() : ""
+        this.utils.registerExportHelper("callouts", getExportStyle, this.exportToHtml);
     }
 
     getStyleContent = () => this.utils.getStyleContent(this.fixedName)

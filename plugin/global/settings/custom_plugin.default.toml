@@ -37,21 +37,9 @@ KANBAN_MAX_HEIGHT = 700
 CTRL_WHEEL_TO_SCROLL = true
 # 看板的颜色
 # 如果你新增了颜色，请保持 KANBAN_COLOR 和 TASK_COLOR 数量一致，否则颜色会乱套，就不好看了
-KANBAN_COLOR = [
-    "#FFE0B2",
-    "#DAE9F4",
-    "#FEDCCC",
-    "#C6E5D9",
-    "#FFF1B9",
-]
+KANBAN_COLOR = ["#FFE0B2", "#DAE9F4", "#FEDCCC", "#C6E5D9", "#FFF1B9"]
 # 任务的颜色
-TASK_COLOR = [
-    "#FFFDE7",
-    "#F8FAFF",
-    "#FFFFF2",
-    "#FFFCF0",
-    "#FFFFF5",
-]
+TASK_COLOR = ["#FFFDE7", "#F8FAFF", "#FFFFF2", "#FFFCF0", "#FFFFF5"]
 # 自动插入的模板
 TEMPLATE = """```kanban
 use strict
@@ -88,12 +76,11 @@ hide = false
 LANGUAGE = "echarts"
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = true
-# 渲染器: canvas/svg
-# 怎么选择请参考：https://echarts.apache.org/handbook/zh/best-practices/canvas-vs-svg/
+# 渲染器: canvas/svg（怎么选择请参考：https://echarts.apache.org/handbook/zh/best-practices/canvas-vs-svg/）
 RENDERER = "svg"
 # 导出时echarts转成什么格式
-# 可选 png, jpg, svg
-# 注意：png, jpg只有在canvas渲染器的时候可用，svg只有在使用svg渲染器的时候可用
+# 可选: png/jpg/svg
+# 注意: png/jpg只有在canvas渲染器的时候可用，svg只有在使用svg渲染器的时候可用
 EXPORT_TYPE = "svg"
 # 代码块默认高度
 DEFAULT_FENCE_HEIGHT = "300px"
@@ -122,7 +109,7 @@ option = {
         data: [5, 20, 36, 10, 10, 20]
     }]
 };
-myChart.on('click', params => alert(params.name));
+myChart.on('click', params => alert("你点击了："+params.name));
 ```
 """
 
@@ -179,7 +166,7 @@ config = {
   options: {
     onClick: (e) => {
       const canvasPosition = Chart.helpers.getRelativePosition(e, myChart);
-      window.alert(`click position: (${canvasPosition.x},${canvasPosition.y})`);
+      window.alert(`你点击了位置： (${canvasPosition.x},${canvasPosition.y})`);
     }
   }
 }
