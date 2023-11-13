@@ -166,6 +166,32 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
+## Q&A
+
+### 我的 Typora 版本能用吗？
+
+所有插件都在 0.9.8 版本和最新版本测试过，理论上支持所有 Typora 版本。
+
+
+
+### 插件会失效吗?
+
+理论上能保持长时间有效。且我在维护中。
+
+
+
+### 支持 Typora for Mac 吗？
+
+没有 Mac，故没做测试。
+
+
+
+### 如何永久禁用/启用某些插件？
+
+请看 [./plugin/golbal/settings/请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)
+
+
+
 ## 插件使用说明
 
 所有的插件都提供了三种使用方法：
@@ -585,7 +611,7 @@ icon = "\\f040"
 
 > 注意：通过注入 CSS 实现此功能，有可能会与你使用的 theme 冲突。
 
-> 和其他使用 Theme CSS 的实现方式不同，此插件通过修改内置函数，完美解决导出 PDF 后侧边栏没有编号的问题。:)
+> 和其他使用 Theme CSS 的实现方式不同，此插件通过修改内置函数，完美解决导出 PDF 后侧边栏没有编号的问题 :)
 
 > 根据 [Markdown 最佳实践](https://learn.microsoft.com/en-us/powershell/scripting/community/contributing/general-markdown?view=powershell-7.3)，一篇文档应该 **有且仅有** 一个 h1，故此插件从 h2 开始编号。
 
@@ -857,32 +883,6 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 
 
 
-## Q&A
-
-### 我的 Typora 版本能用吗？
-
-所有插件都在 0.9.8 版本和最新版本测试过，理论上支持所有 Typora 版本。
-
-
-
-### 插件会失效吗?
-
-理论上能保持长时间有效。且我在维护中。
-
-
-
-### 支持 Typora for Mac 吗？
-
-没有 Mac，故没做测试。
-
-
-
-### 如何永久禁用/启用某些插件？
-
-修改配置文件。具体修改方法请看 `./plugin/golbal/settings/请读我.md`。
-
-
-
 ## 小众软件推荐
 
 [通过注入 js 代码，为 Typora 额外增加 4 个功能](https://www.appinn.com/typora-4-plugin/)
@@ -897,5 +897,7 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 
 本人并非前端开发，前端技术全靠 Google，JS/CSS 写的很烂。
 
-如果对各位有用的话，欢迎 star ⭐
+**本项目遵循 MIT 协议，请自由地享受。**
+
+如果对各位有用的话，欢迎 star ⭐，欢迎推荐给你志同道合的朋友使用。
 
