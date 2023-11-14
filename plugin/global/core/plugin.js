@@ -1581,6 +1581,7 @@ class quickButtonGenerator {
     constructor() {
         this.utils = utils;
         this.buttons = new Map();
+        this.isHidden = false;
     }
 
     htmlTemplate = (maxX, maxY) => {
@@ -1632,20 +1633,23 @@ class quickButtonGenerator {
         if (this.buttons.size === 0) return
 
         const [maxX, maxY] = this.getMax();
-
         await this.registerStyleTemplate(maxX, maxY);
         this.utils.insertHtmlTemplate(this.htmlTemplate(maxX, maxY));
 
         const buttonGroup = document.querySelector("#plugin-quick-button");
-        buttonGroup.addEventListener("click", ev => {
+        buttonGroup.addEventListener("mousedown", ev => {
             const target = ev.target.closest(".action-item");
             if (!target) return
             ev.stopPropagation();
             ev.preventDefault();
-            const action = target.getAttribute("action");
-            const button = this.buttons.get(action);
-            if (action && button) {
-                button.callback(ev, target, action);
+            if (ev.button === 2) {
+                const buttons = Array.from(buttonGroup.children);
+                this.isHidden = !buttons.some(ele => ele.classList.contains("plu-hidden"));
+                buttons.forEach(ele => (ele !== target) && ele.classList.toggle("plu-hidden"));
+            } else {
+                const action = target.getAttribute("action");
+                const button = this.buttons.get(action);
+                action && button && button.callback(ev, target, action);
             }
         })
 

@@ -29,6 +29,6 @@
     line-height: 35px;
 }
 
-#plugin-quick-button .unused {
+#plugin-quick-button .unused, .plu-hidden {
     visibility: hidden;
 }
