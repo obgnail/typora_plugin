@@ -147,6 +147,7 @@ func NewUpdater(proxy string, timeout int) (*Updater, error) {
 			"./plugin/global/user_styles",
 			"./plugin/window_tab/save_tabs.json",
 			"./plugin/custom/plugins/reopenClosedFiles/remain.json",
+			"./plugin/custom/plugins/scrollBookmarker/bookmark.json",
 		},
 		unzipDir:       "",
 		oldVersionInfo: nil,

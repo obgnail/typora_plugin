@@ -97,6 +97,8 @@ class utils {
     static getState = (recorderName, filepath) => global._stateRecorder.getState(recorderName, filepath);
     // 手动删除
     static deleteState = (recorderName, filepath, idx) => global._stateRecorder.deleteState(recorderName, filepath, idx);
+    // 手动设置
+    static setState = (recorderName, collections) => global._stateRecorder.setState(recorderName, collections);
 
 
     // 动态注册、动态注销新的代码块图表语法
@@ -1428,6 +1430,13 @@ class stateRecorder {
     deleteState = (name, filepath, idx) => {
         const map = this.getState(name, filepath);
         map && map.delete(idx);
+    }
+
+    setState = (name, collections) => {
+        const recorder = this.recorders.get(name);
+        if (recorder) {
+            recorder.collections = collections;
+        }
     }
 
     process = () => {

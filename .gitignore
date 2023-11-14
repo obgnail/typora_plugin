@@ -1,7 +1,7 @@
 /.idea
 /temp
 /plugin/sync.ffs_db
-/plugin/plugins.json
 /plugin/window_tab/save_tabs.json
 /plugin/custom/plugins/reopenClosedFiles/remain.json
+/plugin/custom/plugins/scrollBookmarker/bookmark.json
 /version.json

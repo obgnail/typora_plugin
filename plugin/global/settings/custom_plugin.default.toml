@@ -542,6 +542,8 @@ enable = true
 hide = false
 # 插件配置
 [scrollBookmarker.config]
+# 数据持久化（作为文件保存起来）
+persistence = true
 # 允许【ctrl+鼠标拖拽】拖动模态框
 allow_drag = true
 # 在右下角添加一个快捷按钮
