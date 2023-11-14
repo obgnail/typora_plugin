@@ -60,7 +60,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             const content = item.querySelector(".bookmark-item-content");
             const file = content.getAttribute("file");
             const idx = content.getAttribute("idx");
-            const btn = ev.target.closest(".bookmark-del-btn");
+            const btn = ev.target.closest(".bookmark-btn");
             if (btn) {
                 this.removeMarker(idx, file);
             } else {
@@ -137,7 +137,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         const marker = [{
             class_: "bookmark-item", children: [
                 {class_: "bookmark-item-content", text: `${_filepath} - ${idx}`, file: filepath, idx},
-                {class_: "bookmark-del-btn fa fa-trash-o"}
+                {class_: "bookmark-btn fa fa-trash-o"}
             ]
         }]
         this.utils.appendElements(this.entities.modal, marker);
