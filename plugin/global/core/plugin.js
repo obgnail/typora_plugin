@@ -97,6 +97,8 @@ class utils {
     static getState = (recorderName, filepath) => global._stateRecorder.getState(recorderName, filepath);
     // 手动删除
     static deleteState = (recorderName, filepath, idx) => global._stateRecorder.deleteState(recorderName, filepath, idx);
+    // 手动设置
+    static setState = (recorderName, collections) => global._stateRecorder.setState(recorderName, collections);
 
 
     // 动态注册、动态注销新的代码块图表语法
@@ -492,11 +494,13 @@ class utils {
         return filepath
     }
 
-    static getFileName = filePath => {
+    static getFileName = (filePath, removeSuffix = true) => {
         let fileName = filePath ? this.Package.Path.basename(filePath) : File.getFileName();
-        const idx = fileName.lastIndexOf(".");
-        if (idx !== -1) {
-            fileName = fileName.substring(0, idx);
+        if (removeSuffix) {
+            const idx = fileName.lastIndexOf(".");
+            if (idx !== -1) {
+                fileName = fileName.substring(0, idx);
+            }
         }
         return fileName
     }
@@ -1428,6 +1432,13 @@ class stateRecorder {
         map && map.delete(idx);
     }
 
+    setState = (name, collections) => {
+        const recorder = this.recorders.get(name);
+        if (recorder) {
+            recorder.collections = collections;
+        }
+    }
+
     process = () => {
         this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.collect);
         this.utils.addEventListener(this.utils.eventType.fileContentLoaded, this.restore);
@@ -1579,6 +1590,7 @@ class quickButtonGenerator {
     constructor() {
         this.utils = utils;
         this.buttons = new Map();
+        this.isHidden = false;
     }
 
     htmlTemplate = (maxX, maxY) => {
@@ -1630,20 +1642,23 @@ class quickButtonGenerator {
         if (this.buttons.size === 0) return
 
         const [maxX, maxY] = this.getMax();
-
         await this.registerStyleTemplate(maxX, maxY);
         this.utils.insertHtmlTemplate(this.htmlTemplate(maxX, maxY));
 
         const buttonGroup = document.querySelector("#plugin-quick-button");
-        buttonGroup.addEventListener("click", ev => {
+        buttonGroup.addEventListener("mousedown", ev => {
             const target = ev.target.closest(".action-item");
             if (!target) return
             ev.stopPropagation();
             ev.preventDefault();
-            const action = target.getAttribute("action");
-            const button = this.buttons.get(action);
-            if (action && button) {
-                button.callback(ev, target, action);
+            if (ev.button === 2) {
+                const buttons = Array.from(buttonGroup.children);
+                this.isHidden = !buttons.some(ele => ele.classList.contains("plu-hidden"));
+                buttons.forEach(ele => (ele !== target) && ele.classList.toggle("plu-hidden"));
+            } else {
+                const action = target.getAttribute("action");
+                const button = this.buttons.get(action);
+                action && button && button.callback(ev, target, action);
             }
         })
 

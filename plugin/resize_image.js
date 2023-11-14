@@ -98,7 +98,7 @@ class resizeImagePlugin extends global._basePlugin {
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
         const args = [
-            {arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记录图片放缩状态`, arg_value: "record_resize_state"},
+            {arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记住图片放缩状态`, arg_value: "record_resize_state"},
             {arg_name: `${this.config.ALLOW_OVERSIZE ? "禁止" : "允许"}图片超出范围`, arg_value: "allow_oversize"},
         ];
 

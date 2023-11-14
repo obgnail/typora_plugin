@@ -52,6 +52,8 @@ CLOSE_HOTKEY = ["ctrl+w"]
 SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
 # 切换上一个标签页的快捷键
 SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
+# 标签的标题是否去除文件后缀名
+REMOVE_FILE_SUFFIX = true
 # 当鼠标位于标签页时，可以使用ctrl+wheel切换标签页
 CTRL_WHEEL_TO_SCROLL = true
 # 当鼠标位于标签页时，可以点击鼠标中键关闭标签页
@@ -317,8 +319,8 @@ BACKSPACE_TO_HIDE = true
 DEFAULT_TOOL = "func"
 # 是否使用负向查询（类似于google）
 # 比如：【plu multi -search】
-#   - 若为false：查找【包含multi关键字，同时包含-search关键字】的插件
 #   - 若为true： 查找【包含multi关键字，但是不包含search关键字】的插件
+#   - 若为false：查找【包含multi关键字，同时包含-search关键字】的插件
 # 负向查询和正向查询可以随意组合：
 #   - 【his close -win -mark 标签】：查找最近打开的文件，要求文件标题【包含close、标签，不包含win、mark】
 USE_NEGATIVE_SEARCH = true
@@ -367,7 +369,7 @@ SCALE = 0.1
 ALLOW_OVERSIZE = true
 # 图片水平位置：center/left/right
 IMAGE_ALIGN = "center"
-# 是否记录图片放缩状态（直到关闭typora）
+# 记住图片的放缩状态（直到关闭typora）
 RECORD_RESIZE = true
 
 
@@ -549,7 +551,7 @@ ENABLE_BUTTON = true
 AUTO_HIDE = false
 # 启用复制代码功能
 ENABLE_COPY = true
-# 启用代码调整缩进功能(低版本Typora不可使用此功能)
+# 启用代码调整缩进功能（低版本Typora不可使用此功能）
 ENABLE_INDENT = true
 # 启用折叠代码功能
 ENABLE_FOLD = true
@@ -574,26 +576,25 @@ HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 # fence_enhance插件包含两个功能：button、hotkey，此为hotkey，若置为false，以下配置全部失效
 # 注意：此处的快捷键使用的是codeMirror的方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
 ENABLE_HOTKEY = true
-
 # 不建议修改下面的快捷键，原因有二：
 #   1. 和很多ide的快捷键保持一致
 #   2. typora强制绑定了很多快捷键，实际可修改的快捷键并不多
 
 # 强制绑定的快捷键如下：
-#   1. Ctrl-A: "selectAll",
-#   2. Ctrl-Up: "goDocStart",
-#   3. Ctrl-Down: "goDocEnd",
-#   4. Ctrl-Left: "goGroupLeft",
-#   5. Ctrl-Right: "goGroupRight",
-#   6. Alt-Left: "goLineStart",
-#   7. Alt-Right: "goLineEnd",
+#   1. Ctrl-A:         "selectAll",
+#   2. Ctrl-Up:        "goDocStart",
+#   3. Ctrl-Down:      "goDocEnd",
+#   4. Ctrl-Left:      "goGroupLeft",
+#   5. Ctrl-Right:     "goGroupRight",
+#   6. Alt-Left:       "goLineStart",
+#   7. Alt-Right:      "goLineEnd",
 #   8. Ctrl-Backspace: "delGroupBefore",
-#   9. Ctrl-Delete: "delGroupAfter",
-#   10.Ctrl-[: "indentLess",
-#   11.Ctrl-]: "indentMore",
-#   12.Ctrl-U: "undoSelection",
-#   13.Shift-Ctrl-U: "redoSelection",
-#   14.Alt-U: "redoSelection",
+#   9. Ctrl-Delete:    "delGroupAfter",
+#   10.Ctrl-[:         "indentLess",
+#   11.Ctrl-]:         "indentMore",
+#   12.Ctrl-U:         "undoSelection",
+#   13.Shift-Ctrl-U:   "redoSelection",
+#   14.Alt-U:          "redoSelection",
 
 # 如果不想使用此功能，请置为""
 # 将当前行和上一行互换
@@ -618,7 +619,7 @@ ENABLE = true
 NAME = "章节折叠"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 是否记录章节放缩状态（直到关闭typora）
+# 记住章节是否折叠（直到关闭typora）
 RECORD_COLLAPSE = true
 
 
@@ -661,7 +662,7 @@ CLICKABLE = true
 REMOVE_MIX_WIDTH = true
 # 单元格边线的拖拽范围（单位：px）
 THRESHOLD = 20
-# 是否记录表格放缩状态（直到关闭typora）
+# 记住表格放缩状态（直到关闭typora）
 RECORD_RESIZE = true
 
 

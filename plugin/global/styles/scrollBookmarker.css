@@ -20,7 +20,7 @@
 }
 
 #plugin-scroll-bookmarker .bookmark-item-content {
-    padding-right: 7px;
+    padding-right: 10px;
     /* word-wrap: break-word; */
     /* flex-wrap: wrap; */
     flex: 1;
@@ -28,13 +28,12 @@
     overflow-wrap: anywhere;
 }
 
-#plugin-scroll-bookmarker .bookmark-del-btn {
+#plugin-scroll-bookmarker .bookmark-btn {
     font-size: 17px;
     cursor: pointer;
-    margin: 4px;
     padding: 4px;
 }
 
-#plugin-scroll-bookmarker .bookmark-del-btn:hover {
+#plugin-scroll-bookmarker .bookmark-btn:hover {
     color: #f70505;
 }

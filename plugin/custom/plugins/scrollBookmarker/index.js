@@ -10,6 +10,17 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         this.locateUtils = {file: "", idx: -1, time: new Date().getTime()};
     }
 
+    beforeProcess = async () => {
+        if (this.config.persistence) {
+            this.saveFile = this.utils.joinPath("./plugin/custom/plugins/scrollBookmarker/bookmark.json");
+            this.bookmarks = await this.loadBookmarks() || {};
+        }
+    }
+
+    afterProcess = () => {
+        this.bookmarks = null;
+    }
+
     process = () => {
         this.entities = {
             modal: document.querySelector("#plugin-scroll-bookmarker")
@@ -38,6 +49,11 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             }
         )
 
+        if (this.config.persistence) {
+            this.initState();
+            this.utils.addEventListener(this.utils.eventType.beforeUnload, () => this.saveBookmarks());
+        }
+
         document.querySelector("#write").addEventListener("click", ev => {
             if (!this.utils.altKeyPressed(ev)) return;
             const paragraph = ev.target.closest(this.recordSelector);
@@ -60,7 +76,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             const content = item.querySelector(".bookmark-item-content");
             const file = content.getAttribute("file");
             const idx = content.getAttribute("idx");
-            const btn = ev.target.closest(".bookmark-del-btn");
+            const btn = ev.target.closest(".bookmark-btn");
             if (btn) {
                 this.removeMarker(idx, file);
             } else {
@@ -137,7 +153,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         const marker = [{
             class_: "bookmark-item", children: [
                 {class_: "bookmark-item-content", text: `${_filepath} - ${idx}`, file: filepath, idx},
-                {class_: "bookmark-del-btn fa fa-trash-o"}
+                {class_: "bookmark-btn fa fa-trash-o"}
             ]
         }]
         this.utils.appendElements(this.entities.modal, marker);
@@ -169,6 +185,34 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
     _locate = idx => {
         const ele = Array.from(document.querySelectorAll(this.recordSelector))[idx];
         ele && this.utils.scroll(ele, 20, true);
+    }
+
+    loadBookmarks = async filepath => {
+        filepath = filepath || this.saveFile;
+        await this.utils.Package.FsExtra.ensureFile(filepath);
+        try {
+            return await this.utils.Package.FsExtra.readJson(filepath);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    saveBookmarks = filepath => {
+        filepath = filepath || this.saveFile;
+        const obj = {};
+        const map = this.utils.getState(this.recordName);
+        for (const [filepath, indexList] of map.entries()) {
+            obj[filepath] = Array.from(indexList.keys());
+        }
+        this.utils.Package.FsExtra.writeJsonSync(filepath, obj);
+    }
+
+    initState = () => {
+        const map = new Map();
+        for (const [filepath, idxList] of Object.entries(this.bookmarks)) {
+            map.set(filepath, new Map(idxList.map(ele => [ele, true])));
+        }
+        map.size && this.utils.setState(this.recordName, map);
     }
 }
 

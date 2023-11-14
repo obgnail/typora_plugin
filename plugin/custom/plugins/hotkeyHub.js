@@ -4,12 +4,12 @@ class hotkeyHub extends BaseCustomPlugin {
     }
 
     process = () => {
-        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
-            if (this.settings) {
+        if (this.settings) {
+            this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
                 const hotkeys = Object.values(this.settings).map(this.toHotkey).filter(Boolean);
                 hotkeys.length && this.utils.registerHotkey(hotkeys);
-            }
-        })
+            })
+        }
     }
 
     callback = anchorNode => {

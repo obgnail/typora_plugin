@@ -38,12 +38,8 @@ class windowTabBarPlugin extends global._basePlugin {
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.openTab);
         this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.showTabsIfNeed);
 
-        this.utils.loopDetector(
-            () => (this.utils.isBetaVersion) ? document.querySelector("header").getBoundingClientRect().height : true,
-            this.adjustTop,
-            this.loopDetectInterval,
-            1000
-        )
+        const isHeaderReady = () => (this.utils.isBetaVersion) ? document.querySelector("header").getBoundingClientRect().height : true
+        this.utils.loopDetector(isHeaderReady, this.adjustTop, this.loopDetectInterval, 1000);
 
         if (this.config.DRAG_STYLE === 1) {
             this.sort1();
@@ -71,6 +67,13 @@ class windowTabBarPlugin extends global._basePlugin {
             }
         })
 
+        this.entities.content.addEventListener("scroll", () => {
+            const activeTab = this.tabUtil.tabs[this.tabUtil.activeIdx];
+            if (activeTab) {
+                activeTab.scrollTop = this.entities.content.scrollTop;
+            }
+        })
+
         if (this.config.CTRL_WHEEL_TO_SCROLL) {
             this.entities.tabBar.addEventListener("wheel", ev => {
                 const target = ev.target.closest("#plugin-window-tab .tab-bar");
@@ -92,80 +95,15 @@ class windowTabBarPlugin extends global._basePlugin {
             })
         }
 
-        this.entities.content.addEventListener("scroll", () => {
-            if (this.tabUtil.tabs[this.tabUtil.activeIdx]) {
-                this.tabUtil.tabs[this.tabUtil.activeIdx].scrollTop = this.entities.content.scrollTop;
-            }
-        })
+        this.adjustQuickOpen();
 
         if (this.config.INTERCEPT_INTERNAL_AND_LOCAL_LINKS) {
-            const _linkUtils = {file: "", anchor: ""};
-            this.utils.addEventListener(this.utils.eventType.fileContentLoaded, () => {
-                const {file, anchor} = _linkUtils;
-                if (!file) return;
-
-                _linkUtils.file = "";
-                _linkUtils.anchor = "";
-                const ele = File.editor.EditHelper.findAnchorElem(anchor);
-                ele && this.utils.scroll(ele, 10);
-            });
-            this.utils.decorate(() => JSBridge, "invoke", (...args) => {
-                    if (args.length < 3 || args[0] !== "app.openFileOrFolder") return;
-
-                    const anchor = args[2]["anchor"];
-                    if (!anchor || typeof anchor !== "string" || !anchor.match(/^#/)) return;
-
-                    const filePath = args[1];
-                    _linkUtils.file = filePath;
-                    _linkUtils.anchor = anchor;
-                    this.openFile(filePath);
-                    return this.utils.stopCallError
-                }
-            )
+            this.interceptLink();
         }
 
         if (this.config.CONTEXT_MENU) {
-            let idx = -1;
-            const map = {
-                closeTab: "关闭标签",
-                closeOtherTabs: "删除其他标签",
-                closeLeftTabs: "删除左侧全部标签",
-                closeRightTabs: "删除右侧全部标签",
-                copyPath: "复制文件路径",
-                showInFinder: "打开文件位置",
-                openInNewWindow: "新窗口打开",
-            }
-            this.utils.registerMenu(
-                "window-tab-function",
-                "#plugin-window-tab .tab-container",
-                ({target}) => {
-                    idx = parseInt(target.getAttribute("idx"));
-                    return this.config.CONTEXT_MENU.map(ele => map[ele]).filter(Boolean)
-                },
-                ({text}) => {
-                    if (idx === -1) return;
-                    for (const [func, name] of Object.entries(map)) {
-                        if (name === text) {
-                            this[func] && this[func](idx);
-                            break;
-                        }
-                    }
-                }
-            )
+            this.handleContextMenu();
         }
-
-        document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
-            const target = ev.target.closest(".typora-quick-open-item");
-            if (!target) return;
-
-            // 将原先的click行为改成ctrl+click
-            if (this.utils.metaKeyPressed(ev)) return;
-
-            ev.preventDefault();
-            ev.stopPropagation();
-            const filePath = target.getAttribute("data-path");
-            this.openFile(filePath);
-        }, true)
     }
 
     adjustTop = () => {
@@ -191,6 +129,75 @@ class windowTabBarPlugin extends global._basePlugin {
         }, 200)
     }
 
+    interceptLink = () => {
+        const _linkUtils = {file: "", anchor: ""};
+        this.utils.addEventListener(this.utils.eventType.fileContentLoaded, () => {
+            const {file, anchor} = _linkUtils;
+            if (!file) return;
+
+            _linkUtils.file = "";
+            _linkUtils.anchor = "";
+            const ele = File.editor.EditHelper.findAnchorElem(anchor);
+            ele && this.utils.scroll(ele, 10);
+        });
+        this.utils.decorate(() => JSBridge, "invoke", (...args) => {
+                if (args.length < 3 || args[0] !== "app.openFileOrFolder") return;
+
+                const anchor = args[2]["anchor"];
+                if (!anchor || typeof anchor !== "string" || !anchor.match(/^#/)) return;
+
+                const filePath = args[1];
+                _linkUtils.file = filePath;
+                _linkUtils.anchor = anchor;
+                this.openFile(filePath);
+                return this.utils.stopCallError
+            }
+        )
+    }
+
+    handleContextMenu = () => {
+        let idx = -1;
+        const map = {
+            closeTab: "关闭标签",
+            closeOtherTabs: "删除其他标签",
+            closeLeftTabs: "删除左侧全部标签",
+            closeRightTabs: "删除右侧全部标签",
+            copyPath: "复制文件路径",
+            showInFinder: "打开文件位置",
+            openInNewWindow: "新窗口打开",
+        }
+        const name = "window-tab";
+        const showMenu = ({target}) => {
+            idx = parseInt(target.getAttribute("idx"));
+            return this.config.CONTEXT_MENU.map(ele => map[ele]).filter(Boolean)
+        }
+        const callback = ({text}) => {
+            if (idx === -1) return;
+            for (const [func, name] of Object.entries(map)) {
+                if (name === text) {
+                    this[func] && this[func](idx);
+                    break;
+                }
+            }
+        }
+        this.utils.registerMenu(name, "#plugin-window-tab .tab-container", showMenu, callback);
+    }
+
+    adjustQuickOpen = () => {
+        document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
+            const target = ev.target.closest(".typora-quick-open-item");
+            if (!target) return;
+
+            // 将原先的click行为改成ctrl+click
+            if (this.utils.metaKeyPressed(ev)) return;
+
+            ev.preventDefault();
+            ev.stopPropagation();
+            const filePath = target.getAttribute("data-path");
+            this.openFile(filePath);
+        }, true)
+    }
+
     showTabsIfNeed = hide => document.querySelector("#plugin-window-tab").style.visibility = (hide) ? "hidden" : "initial";
 
     // 新窗口打开
@@ -207,7 +214,7 @@ class windowTabBarPlugin extends global._basePlugin {
     closeWindow = () => JSBridge.invoke("window.close");
 
     insertTabDiv = (filePath, idx) => {
-        const fileName = this.utils.getFileName(filePath);
+        const fileName = this.utils.getFileName(filePath, this.config.REMOVE_FILE_SUFFIX);
         const tabDiv = `
                 <div class="tab-container" idx="${idx}" draggable="true" title="${filePath}">
                     <div class="active-indicator"></div><span class="name">${fileName}</span>
@@ -218,7 +225,7 @@ class windowTabBarPlugin extends global._basePlugin {
 
     updateTabDiv = (tabDiv, filePath, idx) => {
         tabDiv.setAttribute("idx", idx + "");
-        tabDiv.querySelector(".name").innerText = this.utils.getFileName(filePath);
+        tabDiv.querySelector(".name").innerText = this.utils.getFileName(filePath, this.config.REMOVE_FILE_SUFFIX);
         tabDiv.setAttribute("title", filePath);
     }
 
