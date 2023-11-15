@@ -14,9 +14,9 @@
 ############### global ###############
 # 通用配置
 [global]
-# 所有插件的总开关，若为false，则关闭全部插件
+# 总开关，若为false，则禁用全部插件
 ENABLE = true
-# 如果你使用了自定义图表插件（kanban、markmap、echarts等等）并且使用了交互模式（INTERACTIVE_MODE置为true），那么下面两个配置请至少一个置为true，否则你将不能退出交互模式，修改fence
+# 如果你使用了自定义图表插件（kanban、markmap、echarts等等）并且使用了交互模式（INTERACTIVE_MODE置为true），那么下面两个配置请至少一个置为true，否则你将不能退出交互模式
 # 为【自定义图表】添加一个【编辑】按钮（当点击【编辑】按钮时退出交互模式）
 CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE = true
 # ctrl+click【自定义图表】退出交互模式
@@ -25,7 +25,7 @@ CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE = false
 
 ############### window_tab ###############
 [window_tab]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "标签页管理"
@@ -36,13 +36,11 @@ HIDE_WINDOW_TITLE_BAR = false
 # 拖拽排序标签页的方式(1 or 2)
 # 1类似于idea，2类似于vscode
 DRAG_STYLE = 1
-# 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的5倍高度时，视为新建窗口
-HEIGHT_SCALE = 5
-# 总是在当前标签页打开(可以在右键菜单中设置)
-# 不建议设置为true，因为【总是】在当前标签页打开，而当你重启Typora时只有一个标签页，所以你永远就只会有一个标签，如此就失去了此插件的意义了
+# 总是在当前标签页打开
+# 强烈不建议置为true，因为【总是】在当前标签页打开，而当你重启Typora时只有一个标签页，所以你永远就只会有一个标签，如此就失去了此插件的意义了
 # 这个配置的使用方法是：当你打开多个标签后，通过右键菜单激活【在当前标签打开文件】选项，将其临时设置为true，实现在当前标签页打开文件，每次重启后就会自动恢复为false
 LOCAL_OPEN = false
-# 调整content的top，以免被tab遮挡
+# 调整正文区域的顶部位置，以免被tab遮挡
 CHANGE_CONTENT_TOP = true
 # 调整notification组件的图层顺序，以免被tab遮挡
 CHANGE_NOTIFICATION_Z_INDEX = true
@@ -54,11 +52,13 @@ SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
 SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
 # 标签的标题是否去除文件后缀名
 REMOVE_FILE_SUFFIX = true
+# 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的5倍高度时，视为新建窗口打开此文件
+HEIGHT_SCALE = 5
 # 当鼠标位于标签页时，可以使用ctrl+wheel切换标签页
 CTRL_WHEEL_TO_SCROLL = true
 # 当鼠标位于标签页时，可以点击鼠标中键关闭标签页
 MIDDLE_CLICK_TO_CLOSE = true
-# 在标签处，点击鼠标右键，弹出的右键菜单（若置为[]，则不使用此功能）
+# 鼠标位于标签处，点击右键，弹出的右键菜单（若置为[]，则不使用此功能）
 #   - closeOtherTabs:  删除其他标签
 #   - closeLeftTabs:   删除左侧全部标签
 #   - closeRightTabs:  删除右侧全部标签
@@ -75,7 +75,7 @@ INTERCEPT_INTERNAL_AND_LOCAL_LINKS = true
 
 ############### search_multi ###############
 [search_multi]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "全局多关键字搜索"
@@ -90,7 +90,7 @@ AUTO_HIDE = false
 # 当输入框为空，且键入backspace时，隐藏模态框
 BACKSPACE_TO_HIDE = true
 # 打开文件后，自动聚焦
-# 此选项时为了键盘党可以通过键盘上下键、ctrl+enter进行快速操作，如果你是鼠标党，可以置为false
+# 此选项是为了键盘党可以通过键盘上下键、ctrl+enter进行快速操作，如果你是鼠标党，可以置为false
 REFOUCE_WHEN_OPEN_FILE = true
 # 搜索内容时大小写敏感(此选项不必手动调整，可以在UI设置)
 CASE_SENSITIVE = false
@@ -107,7 +107,7 @@ SEPARATOR = " "
 # hint展示文件修改时间
 # 此选项时为了通过额外的信息帮助查找文件，我嫌弃它扎眼就没开启，如果你总是找不到目标文件，可以开启
 SHOW_MTIME = false
-# 查找文件的最大尺寸。大于MAX_SIZE的文件在搜索时将被忽略。若<0则不过滤
+# 查找文件的最大尺寸。大于MAX_SIZE的文件在搜索时将被忽略。若<0则不忽略任何文件
 # Typora只支持打开小于2000000字节的文件，不建议修改成比2000000还大的值，毕竟找到了也不能在typora里打开
 MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
@@ -117,7 +117,7 @@ ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "
 
 ############### multi_highlighter ###############
 [multi_highlighter]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "多关键字高亮"
@@ -173,7 +173,7 @@ CLEAR_LIST_THRESHOLD = 12
 
 ############### outline ###############
 [outline]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "类别大纲"
@@ -201,8 +201,8 @@ table = "Table"
 
 ############### commander ###############
 [commander]
-# 启用插件
-# 有一些插件（比如：更新功能）依赖于此插件，若关闭此插件，那些插件都将失效
+# 是否启用插件
+# 有一些插件（比如：pluginUpdater）依赖于此插件，若置为false，那些插件都将失效
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "命令行环境"
@@ -221,7 +221,7 @@ BACKSPACE_TO_HIDE = true
 #   3.silent: 总是静默（其实可以在控制台console中看到）
 #   4.echo:   立即回显程序输出、适合需要不断打印日志的耗时任务
 QUICK_EXEC_SHOW = "error"
-# 【在命令输入框里回车】和【点击执行命令按钮】时，使用的回显类型
+# 【在命令输入框里回车】和【点击执行按钮】执行命令时，使用的回显类型
 #   1. always: 等待程序执行完毕后一次性输出
 #   2. echo:   立即回显程序输出
 COMMIT_EXEC_SHOW = "echo"
@@ -262,7 +262,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ############### md_padding ###############
 [md_padding]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "中英文混排优化"
@@ -278,7 +278,7 @@ IGNORE_WORDS = ["==", "> [!"]
 
 ############### read_only ###############
 [read_only]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "只读模式"
@@ -294,7 +294,7 @@ SHOW_TEXT = "ReadOnly"
 
 ############### toolbar ###############
 [toolbar]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "多功能搜索栏"
@@ -304,8 +304,10 @@ CLICKABLE = true
 HOTKEY = "ctrl+j"
 # 当输入框为空，且键入backspace时，隐藏模态框
 BACKSPACE_TO_HIDE = true
+
 # 用户键入内容 = 搜索工具名称 + 空格 + 搜索内容
 # eg：【ops 资源管理器打开】
+
 # 如果没有匹配到搜索工具，使用默认工具
 #   0. ""：     不使用默认
 #   1. "plu"：  插件
@@ -324,9 +326,9 @@ DEFAULT_TOOL = "func"
 # 负向查询和正向查询可以随意组合：
 #   - 【his close -win -mark 标签】：查找最近打开的文件，要求文件标题【包含close、标签，不包含win、mark】
 USE_NEGATIVE_SEARCH = true
-# 用户输入的防抖时间（单位：ms）（用户输入完60ms后才执行）
+# 用户输入的防抖时间（单位：ms）（用户输入完50ms后才执行）
 # 为什么时间默认这么短？因为这种查询都是非常简单的，甚至大部分是直接从内存取的（当然，不建议30以下）
-DEBOUNCE_INTERVAL = 60
+DEBOUNCE_INTERVAL = 50
 # toolbar的在页面的20%位置出现
 TOOLBAR_TOP_PERCENT = 20
 # toolbar的宽度为页面的80%
@@ -335,7 +337,7 @@ TOOLBAR_WIDTH_PERCENT = 80
 
 ############### blur ###############
 [blur]
-# 启用插件（此插件暂时无法在低版本Typora使用）
+# 是否启用插件（此插件暂时无法在低版本Typora使用）
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "模糊模式"
@@ -357,7 +359,7 @@ BLUR_LEVEL = 10
 
 ############### resize_image ###############
 [resize_image]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "图片调整"
@@ -375,7 +377,7 @@ RECORD_RESIZE = true
 
 ############### datatables ###############
 [datatables]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "表格增强"
@@ -403,7 +405,7 @@ REGEX = false
 
 ############### go_top ###############
 [go_top]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "一键到顶"
@@ -421,7 +423,7 @@ USE_BUTTON = true
 
 ############### mindmap ###############
 [mindmap]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "思维导图"
@@ -433,7 +435,7 @@ FIX_ERROR_LEVEL_HEADER = true
 
 ############### markmap ###############
 [markmap]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "markmap"
@@ -442,7 +444,7 @@ CLICKABLE = true
 # js/css从何处加载: local/network
 RESOURCE_FROM = "local"
 
-# markmap共有两个功能:toc和fence，此为toc。若为false，以下配置全部失效
+# markmap共有两个功能：toc和fence，此为toc。若为false，以下配置全部失效
 ENABLE_TOC_MARKMAP = true
 # 在右下角添加一个快捷按钮
 USE_BUTTON = true
@@ -457,7 +459,7 @@ USE_ANIMATION_WHEN_DRAG = false
 # 在调整模态框大小的时候是否使用动画
 USE_ANIMATION_WHEN_RESIZE = false
 
-# markmap共有两个功能:toc和fence，此为fence。若为false，以下配置全部失效
+# markmap共有两个功能：toc和fence，此为fence。若为false，以下配置全部失效
 ENABLE_FENCE_MARKMAP = true
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
@@ -505,7 +507,7 @@ markmap:
 
 ############### auto_number ###############
 [auto_number]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "自动编号"
@@ -538,7 +540,7 @@ fence = "Fence"
 
 ############### fence_enhance ###############
 [fence_enhance]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "代码块增强"
@@ -570,7 +572,7 @@ CLICK_CHECK_INTERVAL = 300
 # 高亮鼠标悬停的代码行，若置为false，则HIGHLIGHT_COLOR失效
 # 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
 HIGHLIGHT_WHEN_HOVER = false
-# 高亮颜色
+# 代码行高亮时的颜色
 HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 
 # fence_enhance插件包含两个功能：button、hotkey，此为hotkey，若置为false，以下配置全部失效
@@ -596,7 +598,7 @@ ENABLE_HOTKEY = true
 #   13.Shift-Ctrl-U:   "redoSelection",
 #   14.Alt-U:          "redoSelection",
 
-# 如果不想使用此功能，请置为""
+# 如果不想使用某个功能，请置为""
 # 将当前行和上一行互换
 SWAP_PREVIOUS_LINE = "Shift-Alt-Up"
 # 将当前行和下一行互换
@@ -613,7 +615,7 @@ INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
 ############### collapse_paragraph ###############
 [collapse_paragraph]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "章节折叠"
@@ -625,7 +627,7 @@ RECORD_COLLAPSE = true
 
 ############### truncate_text ###############
 [truncate_text]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "文段截断"
@@ -637,7 +639,7 @@ REMAIN_LENGTH = 80
 
 ############### export_enhance ###############
 [export_enhance]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "导出增强"
@@ -652,7 +654,7 @@ DOWNLOAD_THREADS = 10
 
 ############### resize_table ###############
 [resize_table]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "表格调整"
@@ -668,7 +670,7 @@ RECORD_RESIZE = true
 
 ############### text_stylize ###############
 [text_stylize]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "文字风格化"
@@ -698,8 +700,8 @@ COLORS = [
 
 ############### custom ###############
 [custom]
-# 启用插件
-# 注意：若不启用此插件，那么所有自定义插件都会失效
+# 是否启用插件
+# 注意：若置为false，那么所有自定义插件都会失效
 # 若要修改自定义插件的配置请前往同目录下的custom_plugin.user.toml
 ENABLE = true
 # 在右键菜单中展示的名称
@@ -716,7 +718,7 @@ ALLOW_SET_CONFIG_IN_SETTINGS_TOML = true
 
 ############### right_click_menu ###############
 [right_click_menu]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "右键菜单"
@@ -779,7 +781,7 @@ LIST = [
 
 ############### file_counter ###############
 [file_counter]
-# 启用插件
+# 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "文件计数"
@@ -795,7 +797,7 @@ CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU = true
 
 ############### mermaid_replace ###############
 [mermaid_replace]
-# 启用插件
+# 是否启用插件
 ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "mermaid组件替换"
@@ -805,7 +807,7 @@ CLICKABLE = false
 
 ############### test ###############
 [test]
-# 启用插件
+# 是否启用插件
 ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "测试专用"

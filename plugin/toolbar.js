@@ -20,7 +20,7 @@ class toolbarPlugin extends global._basePlugin {
     htmlTemplate = () => {
         const title = "支持查询：\nplu：插件\ntab：标签页\nhis：最近文件\nops：常用操作\nmode：模式\ntheme：临时主题";
         const children = [
-            {id: "plugin-toolbar-input", children: [{ele: "input", placeholder: "ops 资源管理器打开", title}]},
+            {id: "plugin-toolbar-input", children: [{ele: "input", placeholder: "ops explorer", title}]},
             {class_: "plugin-toolbar-result"}
         ]
         return [{id: "plugin-toolbar", class_: "plugin-common-modal", style: {display: "none"}, children}]
@@ -444,28 +444,22 @@ class operationTool extends baseToolInterface {
     translate = () => "执行操作"
 
     init = () => {
+        const explorer = () => JSBridge.showInFinder(this.utils.getFilePath());
+        const copyPath = () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath());
+        const togglePreferencePanel = () => File.megaMenu.togglePreferencePanel();
+        const togglePinWindow = () => {
+            const pined = document.body.classList.contains("always-on-top");
+            const func = pined ? "unpinWindow" : "pinWindow";
+            ClientCommand[func]();
+        }
+        const openFileInNewWindow = () => File.editor.library.openFileInNewWindow(this.utils.getFilePath(), false)
         this.ops = [
-            {
-                showName: "资源管理器打开", fixedName: "explorer",
-                callback: () => JSBridge.showInFinder(this.utils.getFilePath())
-            },
-            {
-                showName: "复制文件路径", fixedName: "copyPath",
-                callback: () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath())
-            },
-            {
-                showName: "偏好设置", fixedName: "togglePreferencePanel",
-                callback: () => File.megaMenu.togglePreferencePanel()
-            },
-            {
-                showName: "窗口置顶", fixedName: "togglePinWindow", callback: () => {
-                    const pined = document.body.classList.contains("always-on-top");
-                    const func = pined ? "unpinWindow" : "pinWindow";
-                    ClientCommand[func]();
-                }
-            }
+            {showName: "资源管理器打开", fixedName: "explorer", callback: explorer},
+            {showName: "复制文件路径", fixedName: "copyPath", callback: copyPath},
+            {showName: "偏好设置", fixedName: "togglePreferencePanel", callback: togglePreferencePanel},
+            {showName: "窗口置顶", fixedName: "togglePinWindow", callback: togglePinWindow},
+            {showName: "新窗口打开", fixedName: "openFileInNewWindow", callback: openFileInNewWindow},
         ]
-
         this.ops.forEach(op => op.showName += ` - ${op.fixedName}`);
     }
 
@@ -485,13 +479,12 @@ class modeTool extends baseToolInterface {
     name = () => "mode"
     translate = () => "切换模式"
     init = () => {
+        const outlineView = () => {
+            File.editor.library.toggleSidebar();
+            File.isNode && ClientCommand.refreshViewMenu();
+        }
         this.modes = [
-            {
-                showName: "大纲视图", fixedName: "outlineView", callback: () => {
-                    File.editor.library.toggleSidebar();
-                    File.isNode && ClientCommand.refreshViewMenu();
-                }
-            },
+            {showName: "大纲视图", fixedName: "outlineView", callback: outlineView},
             {showName: "源代码模式", fixedName: "sourceMode", callback: () => File.toggleSourceMode()},
             {showName: "专注模式", fixedName: "focusMode", callback: () => File.editor.toggleFocusMode()},
             {showName: "打字机模式", fixedName: "typewriterMode", callback: () => File.editor.toggleTypeWriterMode()},
