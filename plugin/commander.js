@@ -57,7 +57,7 @@ class commanderPlugin extends global._basePlugin {
             pre: document.querySelector(".plugin-commander-output pre"),
         }
 
-        this.arg_value_prefix = "BC5079B8910E@";
+        this.arg_value_prefix = "call_builtin@";
         this.callArgs = [{arg_name: "显示/隐藏", arg_value: "show"}];
         this.config.BUILTIN.forEach(builtin => {
             if (builtin.name) {

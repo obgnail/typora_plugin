@@ -1,24 +1,17 @@
 class toolbarPlugin extends global._basePlugin {
     beforeProcess = () => {
         this.toolController = new toolController(this);
-        [
-            tabTool,
-            pluginTool,
-            recentFileTool,
-            operationTool,
-            modeTool,
-            tempThemeTool,
-            functionTool,
-            mixTool,
-        ].forEach(tool => this.registerBarTool(new tool()));
+        const tools = [tabTool, pluginTool, recentFileTool, operationTool, modeTool, tempThemeTool, functionTool, mixTool];
+        tools.forEach(tool => this.registerBarTool(new tool()));
     }
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
-    styleTemplate = () => ({topPercent: `${this.config.TOOLBAR_TOP_PERCENT}%`})
+    styleTemplate = () => ({topPercent: parseInt(this.config.TOOLBAR_TOP_PERCENT) + "%"})
 
     htmlTemplate = () => {
-        const title = "支持查询：\nplu：插件\ntab：标签页\nhis：最近文件\nops：常用操作\nmode：模式\ntheme：临时主题";
+        const tools = Array.from(this.toolController.tools.values()).map(tool => tool.name() + "：" + tool.translate());
+        const title = "支持：\n" + tools.join("\n");
         const children = [
             {id: "plugin-toolbar-input", children: [{ele: "input", placeholder: "ops explorer", title}]},
             {class_: "plugin-toolbar-result"}
@@ -103,7 +96,7 @@ class toolbarPlugin extends global._basePlugin {
 
     search = async ev => {
         const result = await this.handleInput();
-        const ok = result && result["matches"] && result["tool"];
+        const ok = result && result.matches && result.tool;
         this.entities.result.innerHTML = ok ? this.newItems(result).join("") : "";
         if (ev) {
             ev.preventDefault();
@@ -116,20 +109,15 @@ class toolbarPlugin extends global._basePlugin {
 
         const toolName = tool.name();
         return matches.map(match => {
-            let showName = match;
-            let fixedName = match;
-            let meta = "";
-            if (typeof match === "object") {
-                showName = match["showName"];
-                fixedName = match["fixedName"];
-                meta = match["meta"];
-            }
-
+            const showName = match.showName || match;
+            const fixedName = match.fixedName || match;
+            const meta = match.meta || "";
             let content = showName;
+
             if (input[0]) {
                 input.forEach(part => content = content.replace(new RegExp(part, "gi"), "<b>$&</b>"));
             }
-            const metaContent = (meta) ? `meta="${meta}"` : "";
+            const metaContent = meta ? `meta="${meta}"` : "";
             return `<div class="plugin-toolbar-item" data="${fixedName}" tool="${toolName}" ${metaContent}>${content}</div>`
         })
     }
@@ -153,33 +141,20 @@ class toolbarPlugin extends global._basePlugin {
 }
 
 class baseToolInterface {
-    name = () => {
-    }
-    translate = () => {
-    }
-    init = () => {
-    }
+    name = () => ""
+    translate = () => ""
+    init = () => null
     // 要么返回 []string
     // 要么返回 [{ showName:"", fixedName:"", meta:"" }]
-    search = async input => {
-    }
-    callback = (fixedName, meta) => {
-    }
-
-    baseSearch = (input, list, itemFields) => {
+    search = async input => null
+    callback = (fixedName, meta) => null
+    baseSearch = (input, list, searchFields) => {
         if (input === "") return list;
 
         input = input.toLowerCase();
-
-        const func = (!itemFields)
-            ? item => item.toLowerCase().indexOf(input) !== -1
-            : item => {
-                for (const field of itemFields) {
-                    if (item[field].toLowerCase().indexOf(input) !== -1) {
-                        return true
-                    }
-                }
-            }
+        const func = searchFields
+            ? item => searchFields.some(field => item[field].toLowerCase().indexOf(input) !== -1)
+            : item => item.toLowerCase().indexOf(input) !== -1
         return list.filter(func)
     }
 }
@@ -215,41 +190,41 @@ class toolController {
     // 交集
     intersect = arrays => {
         if (!Array.isArray(arrays) || arrays.length === 0 || arrays.some(ele => !ele)) return [];
-
         if (arrays.length === 1) return arrays[0]
 
-        if (typeof arrays[0][0] === "string") {
-            return arrays[0].filter(ele => arrays.every(array => array.includes(ele)));
-        } else {
-            return arrays[0].filter(ele => arrays.every(array => array.some(item => (
-                item.showName === ele.showName
-                && item.fixedName === ele.fixedName
-                && item.meta === ele.meta
-            ))))
-        }
+        const func = (typeof arrays[0][0] === "string")
+            ? ele => arrays.every(array => array.includes(ele))
+            : ele => arrays.every(array => array.some(item => item.showName === ele.showName && item.fixedName === ele.fixedName && item.meta === ele.meta))
+        return arrays[0].filter(func);
     }
+
+    uniqueString = item => typeof item === "object" ? item.showName + "6FF28E42" + item.fixedName + "741E8837" + item.meta : item
 
     // 并集
     union = arrays => {
         if (!Array.isArray(arrays) || arrays.length === 0) return [];
+        if (arrays.length === 1) return arrays[0]
 
         const set = new Set();
-        const first = arrays[0][0];
-        const isObj = first && typeof first === "object";
-        for (const arr of arrays) {
-            for (const ele of arr) {
-                set.add(isObj ? JSON.stringify(ele) : ele);
+        const result = [];
+        for (const array of arrays) {
+            for (const item of array) {
+                const value = this.uniqueString(item);
+                if (!set.has(value)) {
+                    set.add(value);
+                    result.push(item);
+                }
             }
         }
-        return Array.from(set).map(str => (isObj ? JSON.parse(str) : str));
+        return result
     }
 
     // 差集
     difference = (array1, array2) => {
-        if (!Array.isArray(array2) || array2.length === 0) return array1
+        if (!Array.isArray(array1) || !Array.isArray(array2) || array1.length === 0 || array2.length === 0) return array1
 
-        const set = new Set(array2.map(val => JSON.stringify(val)));
-        return array1.filter(val => !set.has(JSON.stringify(val)));
+        const set = new Set(array2.map(this.uniqueString));
+        return array1.filter(item => !set.has(this.uniqueString(item)));
     }
 
     kind = input => {
@@ -402,22 +377,19 @@ class recentFileTool extends baseToolInterface {
     getRecentFile = async () => {
         if (!File.isNode) return;
 
-        const file = await JSBridge.invoke("setting.getRecentFiles");
-        const fileJson = (typeof file === "string") ? JSON.parse(file || "{}") : (file || {});
-        const files = fileJson["files"] || [];
-        const folders = fileJson["folders"] || [];
         const result = [];
-        for (const file of files) {
-            if (file["path"]) {
-                result.push({showName: file.path, fixedName: file.path, meta: "file"});
+        const recent = await JSBridge.invoke("setting.getRecentFiles");
+        const {files = [], folders = []} = (typeof recent === "string") ? JSON.parse(recent || "{}") : (recent || {});
+        const add = (list, meta) => {
+            for (const file of list) {
+                if (file["path"]) {
+                    result.push({showName: file.path, fixedName: file.path, meta: meta});
+                }
             }
         }
-        for (const folder of folders) {
-            if (folder["path"]) {
-                result.push({showName: folder.path, fixedName: folder.path, meta: "folder"});
-            }
-        }
-        return result
+        add(files, "file");
+        add(folders, "folder");
+        return result;
     }
 
     search = async input => {
@@ -466,12 +438,8 @@ class operationTool extends baseToolInterface {
     search = async input => this.baseSearch(input, this.ops, ["showName"])
 
     callback = (fixedName, meta) => {
-        for (const op of this.ops) {
-            if (fixedName === op.fixedName) {
-                op.callback(meta);
-                return
-            }
-        }
+        const op = this.ops.find(ele => ele.fixedName === fixedName);
+        op && op.callback(meta);
     }
 }
 
@@ -510,12 +478,8 @@ class modeTool extends baseToolInterface {
     }
     search = async input => this.baseSearch(input, this.modes, ["showName"])
     callback = (fixedName, meta) => {
-        for (const mode of this.modes) {
-            if (fixedName === mode.fixedName) {
-                mode.callback(meta);
-                return
-            }
-        }
+        const mode = this.modes.find(ele => ele.fixedName === fixedName);
+        mode && mode.callback(meta);
     }
 }
 
@@ -528,21 +492,11 @@ class tempThemeTool extends baseToolInterface {
 
     search = async input => {
         const {all, current} = await JSBridge.invoke("setting.getThemes");
-        const list = all.map(theme => {
-            return {showName: theme.replace(/\.css/gi, ""), fixedName: theme}
-        });
+        const list = all.map(theme => ({showName: theme.replace(/\.css/gi, ""), fixedName: theme}));
         return this.baseSearch(input, list, ["showName"]);
     }
 
-    callback = async fixedName => {
-        const {all, current} = await JSBridge.invoke("setting.getThemes");
-        for (const theme of all) {
-            if (fixedName === theme) {
-                this.setThemeTemp(theme);
-                return
-            }
-        }
-    }
+    callback = fixedName => this.setThemeTemp(fixedName);
 }
 
 class functionTool extends baseToolInterface {
@@ -552,20 +506,17 @@ class functionTool extends baseToolInterface {
     search = async input => {
         const name = this.name();
         const all = Array.from(this.controller.tools.entries())
-            .filter(tool => tool[0] !== name)
-            .map(tool => {
-                const fixedName = tool[0];
-                const translate = tool[1].translate();
-                return {showName: `${fixedName} - ${translate}`, fixedName}
-            })
+            .filter(([fixedName]) => fixedName !== name)
+            .map(([fixedName, tool]) => ({showName: `${fixedName} - ${tool.translate()}`, fixedName}))
         return this.baseSearch(input, all, ["showName"]);
     }
 
-    callback = async fixedName => {
-        this.controller.plugin.entities.input.value = fixedName + " ";
-        this.controller.plugin.hideWhenEnter = false;
-        this.controller.plugin.entities.input.dispatchEvent(new Event('keydown'));
-        setTimeout(() => this.controller.plugin.hideWhenEnter = true, 100);
+    callback = fixedName => {
+        const {plugin} = this.controller;
+        plugin.entities.input.value = fixedName + " ";
+        plugin.hideWhenEnter = false;
+        plugin.entities.input.dispatchEvent(new Event('keydown'));
+        setTimeout(() => plugin.hideWhenEnter = true, 100);
     }
 }
 
@@ -574,25 +525,20 @@ class mixTool extends baseToolInterface {
     translate = () => "混合查找"
 
     search = async input => {
-        const name = this.name();
-        const all = await Promise.all(
-            Array.from(this.controller.tools.entries())
-                .filter(tool => tool[0] !== name)
-                .map(async tool => {
-                    const toolName = tool[0];
-                    const toolResult = await tool[1].search(input);
-                    if (!toolResult || !toolResult.length) return
-                    if (typeof toolResult[0] === "string") {
-                        return toolResult.map(ele => ({showName: ele, fixedName: ele, meta: `${toolName}@`}))
-                    } else {
-                        return toolResult.map(ele => ({
-                            showName: ele.showName, fixedName: ele.fixedName, meta: `${toolName}@${ele.meta || ""}`
-                        }))
-                    }
-                })
-        )
-        const list = all.filter(ele => !!ele);
-        return [].concat(...list)
+        const toolName = this.name();
+        const toolResult = await Promise.all(
+            Array.from(this.controller.tools.entries()).map(async ([name, tool]) => {
+                if (name === toolName) return;
+                const result = await tool.search(input);
+                if (result && result.length) {
+                    return result.map(ele => {
+                        const meta = name + "@" + (ele.meta || "");
+                        return typeof ele === "string" ? {showName: ele, fixedName: ele, meta} : {...ele, meta};
+                    });
+                }
+            })
+        );
+        return toolResult.flat().filter(Boolean);
     }
 
     callback = (fixedName, meta) => {
@@ -600,9 +546,7 @@ class mixTool extends baseToolInterface {
         const tool = meta.substring(0, at);
         const realMeta = meta.substring(at + 1);
         const t = this.controller.tools.get(tool);
-        if (t) {
-            t.callback(fixedName, realMeta);
-        }
+        t && t.callback(fixedName, realMeta);
     }
 }
 
