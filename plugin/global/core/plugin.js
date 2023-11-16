@@ -273,14 +273,14 @@ class utils {
             }
         }
     }
-    static generateDynamicCallArgs = (fixedName, anchorNode) => {
+    static generateDynamicCallArgs = (fixedName, anchorNode, notInContextMenu = false) => {
         if (!fixedName) return;
         const plugin = this.getPlugin(fixedName);
         if (plugin && plugin.dynamicCallArgsGenerator) {
             anchorNode = anchorNode || this.getAnchorNode();
             if (anchorNode[0]) {
                 this.meta = {};
-                return plugin.dynamicCallArgsGenerator(anchorNode[0], this.meta);
+                return plugin.dynamicCallArgsGenerator(anchorNode[0], this.meta, notInContextMenu);
             }
         }
     }
