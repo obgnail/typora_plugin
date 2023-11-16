@@ -39,7 +39,7 @@ class timelinePlugin extends BaseCustomPlugin {
         // timeline: {title, bucket: [{time, itemList: [{ type, value }]}]}
         const timeline = {title: "", bucket: []};
         const lines = content.split("\n");
-        this.dir = this.utils.Package.Path.dirname(this.utils.getFilePath());
+        this.dir = this.utils.getCurrentDirPath();
         lines.forEach((line, idx) => {
             if (!line.trim()) return;
             idx += 1;

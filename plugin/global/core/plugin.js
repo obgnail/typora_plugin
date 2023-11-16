@@ -470,11 +470,6 @@ class utils {
         document.getElementsByTagName('head')[0].appendChild(link);
     }
 
-    static removeElementByID = id => {
-        const ele = document.getElementById(id);
-        ele && ele.parentElement && ele.parentElement.removeChild(ele);
-    }
-
     static removeStyle = id => this.removeElementByID(id)
 
     static insertScript = filepath => {
@@ -511,6 +506,11 @@ class utils {
     static joinPath = (...paths) => this.Package.Path.join(this.getDirname(), ...paths)
     static requireFilePath = (...paths) => reqnode(this.joinPath(...paths))
     static readFileSync = filepath => this.Package.Fs.readFileSync(this.joinPath(filepath), 'utf8')
+
+    static getCurrentDirPath = () => {
+        const filepath = this.getFilePath();
+        return this.Package.Path.dirname(filepath)
+    }
 
     static readFiles = async files => Promise.all(files.map(async file => {
         try {
@@ -626,6 +626,9 @@ class utils {
     }
 
     ////////////////////////////// 业务DOM操作 //////////////////////////////
+    static removeElement = ele => ele && ele.parentElement && ele.parentElement.removeChild(ele)
+    static removeElementByID = id => this.removeElement(document.getElementById(id))
+    static isLastChildOfParent = child => child.parentElement.lastElementChild === child
     static whichChildOfParent = child => {
         let i = 1;
         for (const sibling of child.parentElement.children) {
@@ -635,8 +638,6 @@ class utils {
             i++
         }
     }
-
-    static isLastChildOfParent = child => child.parentElement.lastElementChild === child
 
     static isInViewBox = el => {
         if (el.style.display) return false;
@@ -1525,6 +1526,8 @@ class modalGenerator {
                 return widget.querySelector("select").value
             case "file":
                 return widget.querySelector("input").files
+            default:
+                return ""
         }
     }
 
@@ -1989,13 +1992,12 @@ class exportHelper {
 
     process = () => {
         // 旧版本的Typora的export函数不是AsyncFunction，尽最大努力兼容旧版本
-        this.utils.loopDetector(
-            () => (File && File.editor && File.editor.export && File.editor.export.exportToHTML),
-            () => {
-                const after = (File.editor.export.exportToHTML.constructor.name === 'AsyncFunction') ? this.afterExport : this.afterExportSync
-                this.utils.decorate(() => File && File.editor && File.editor.export, "exportToHTML", this.beforeExport, after, true)
-            }
-        )
+        const until = () => File && File.editor && File.editor.export && File.editor.export.exportToHTML
+        const callback = () => {
+            const after = (File.editor.export.exportToHTML.constructor.name === 'AsyncFunction') ? this.afterExport : this.afterExportSync
+            this.utils.decorate(() => File && File.editor && File.editor.export, "exportToHTML", this.beforeExport, after, true)
+        }
+        this.utils.loopDetector(until, callback);
     }
 }
 

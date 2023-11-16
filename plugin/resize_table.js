@@ -12,33 +12,22 @@ class resizeTablePlugin extends global._basePlugin {
             ev.stopPropagation();
             ev.preventDefault();
 
-            let closet = "thead";
-            let self = "th";
-            let ele = ev.target.closest(self);
-            if (!ele) {
-                closet = "tbody";
-                self = "td";
-                ele = ev.target.closest(self);
-            }
-
+            const ele = ev.target.closest("th, td");
             if (!ele) return;
-
+            const tag = ele.tagName;
+            const closestElement = tag === "TD" ? "tbody" : "thead";
             const {target, direction} = this.findTarget(ele, ev);
-            if ((!target) || (direction !== "right" && direction !== "bottom")) return;
+            if (!target || !direction) return;
 
-            const rect = target.getBoundingClientRect();
-            const startWidth = rect.width;
-            const startHeight = rect.height;
-            const startX = ev.clientX;
-            const startY = ev.clientY;
-
+            const {width: startWidth, height: startHeight} = target.getBoundingClientRect();
+            const {clientX: startX, clientY: startY} = ev;
             target.style.width = startWidth + "px";
             target.style.height = startHeight + "px";
 
             if (direction === "right") {
                 target.style.cursor = "w-resize";
                 const num = this.utils.whichChildOfParent(target);
-                const eleList = target.closest(closet).querySelectorAll(`tr ${self}:nth-child(${num})`);
+                const eleList = target.closest(closestElement).querySelectorAll(`tr ${tag}:nth-child(${num})`);
                 this.cleanStyle(eleList, target, "width");
             } else if (direction === "bottom") {
                 target.style.cursor = "s-resize";
@@ -49,7 +38,6 @@ class resizeTablePlugin extends global._basePlugin {
             const onMouseMove = ev => {
                 ev.stopPropagation();
                 ev.preventDefault();
-
                 if (!this.utils.metaKeyPressed(ev)) return;
 
                 requestAnimationFrame(() => {
@@ -74,9 +62,10 @@ class resizeTablePlugin extends global._basePlugin {
         })
     }
 
-    dynamicCallArgsGenerator = anchorNode => {
-        return [{arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记住表格放缩状态`, arg_value: "record_resize_state"}];
-    }
+    dynamicCallArgsGenerator = anchorNode => [{
+        arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记住表格放缩状态`,
+        arg_value: "record_resize_state"
+    }]
 
     call = type => {
         if (type === "record_resize_state") {
@@ -89,9 +78,11 @@ class resizeTablePlugin extends global._basePlugin {
             this.config.RECORD_RESIZE = !this.config.RECORD_RESIZE;
         }
         const name = "recordResizeTable";
+        const selector = "#write th,td";
+        const stateGetter = ele => ele.style.cssText
+        const stateRestorer = (ele, state) => ele.style = state
         if (this.config.RECORD_RESIZE) {
-            this.utils.registerStateRecorder(name, "#write th,td",
-                ele => ele.style.cssText, (ele, state) => ele.style = state);
+            this.utils.registerStateRecorder(name, selector, stateGetter, stateRestorer);
         } else {
             this.utils.unregisterStateRecorder(name);
         }
@@ -99,10 +90,12 @@ class resizeTablePlugin extends global._basePlugin {
 
     getDirection = (target, ev) => {
         if (!target) return ""
-        const rect = target.getBoundingClientRect();
-        if (rect.right - this.config.THRESHOLD < ev.clientX && ev.clientX < rect.right + this.config.THRESHOLD) {
+        const {right, bottom} = target.getBoundingClientRect();
+        const {clientX, clientY} = ev;
+        const threshold = this.config.THRESHOLD;
+        if (right - threshold < clientX && clientX < right + threshold) {
             return "right"
-        } else if (rect.bottom - this.config.THRESHOLD < ev.clientY && ev.clientY < rect.bottom + this.config.THRESHOLD) {
+        } else if (bottom - threshold < clientY && clientY < bottom + threshold) {
             return "bottom"
         } else {
             return ""
@@ -110,15 +103,14 @@ class resizeTablePlugin extends global._basePlugin {
     }
 
     findTarget = (ele, ev) => {
-        const that = this;
-
+        const {utils} = this;
         function* find(ele) {
             // 自己
             yield ele
             // 左边
             yield ele.previousElementSibling
             // 上边
-            const num = that.utils.whichChildOfParent(ele);
+            const num = utils.whichChildOfParent(ele);
             const uncle = ele.parentElement.previousElementSibling;
             yield (uncle)
                 // td

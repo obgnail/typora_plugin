@@ -11,18 +11,9 @@ class autoNumberPlugin extends global._basePlugin {
         #write > h5 { counter-reset: write-h6; }
         
         @media print {
-            pb {
-                display: block;
-                page-break-after: always;
-            }
-        
-            h1 {
-                page-break-before: always;
-            }
-        
-            h1:first-of-type {
-                page-break-before: avoid;
-            }
+            pb { display: block; page-break-after: always; }
+            h1 { page-break-before: always; }
+            h1:first-of-type { page-break-before: avoid; }
         }`
 
         this.content_css = `
@@ -185,9 +176,7 @@ class autoNumberPlugin extends global._basePlugin {
         `
     }
 
-    style = () => {
-        return {textID: this.css_id, text: this.getResultStyle()}
-    }
+    style = () => ({textID: this.css_id, text: this.getResultStyle()})
 
     init = () => {
         this.callArgs = [
@@ -198,7 +187,6 @@ class autoNumberPlugin extends global._basePlugin {
             {arg_name: "禁用/启用图片自动编号", arg_value: "set_image"},
             {arg_name: "禁用/启用代码块自动编号", arg_value: "set_fence"},
         ];
-
         this.callMap = {
             disable: this.removeStyle,
             enable: this.insertStyle,
@@ -237,7 +225,6 @@ class autoNumberPlugin extends global._basePlugin {
             this.config[toggle] = !this.config[toggle];
             this.removeStyle();
         }
-
         return this.getStyleString()
     }
 
@@ -247,12 +234,8 @@ class autoNumberPlugin extends global._basePlugin {
     }
 
     dynamicCallArgsGenerator = () => {
-        let arg_name = "启用";
-        let arg_value = "enable";
-        if (!!document.getElementById(this.css_id)) {
-            arg_name = "禁用";
-            arg_value = "disable";
-        }
+        const disable = document.getElementById(this.css_id);
+        const [arg_name, arg_value] = disable ? ["禁用", "disable"] : ["启用", "enable"];
         return [{arg_name, arg_value}]
     }
 
@@ -278,42 +261,42 @@ class exportHelper {
         if (!this.inExport) return;
         this.inExport = false;
 
-        const pValue = {H2: 0, H3: 0, H4: 0, H5: 0, H6: 0};
+        const numbering = {H2: 0, H3: 0, H4: 0, H5: 0, H6: 0};
         headers.forEach(header => {
             const tagName = "H" + header[0];
-            if (!pValue.hasOwnProperty(tagName)) return;
+            if (!numbering.hasOwnProperty(tagName)) return;
 
-            let numbering = "";
+            let val = "";
             switch (tagName) {
                 case "H1":
-                    pValue.H2 = 0;
+                    numbering.H2 = 0;
                     break
                 case "H2":
-                    pValue.H3 = 0;
-                    pValue.H2++;
-                    numbering = `${pValue.H2}. `;
+                    numbering.H3 = 0;
+                    numbering.H2++;
+                    val = `${numbering.H2}. `;
                     break
                 case "H3":
-                    pValue.H4 = 0;
-                    pValue.H3++;
-                    numbering = `${pValue.H2}.${pValue.H3} `;
+                    numbering.H4 = 0;
+                    numbering.H3++;
+                    val = `${numbering.H2}.${numbering.H3} `;
                     break
                 case "H4":
-                    pValue.H5 = 0;
-                    pValue.H4++;
-                    numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4} `;
+                    numbering.H5 = 0;
+                    numbering.H4++;
+                    val = `${numbering.H2}.${numbering.H3}.${numbering.H4} `;
                     break
                 case "H5":
-                    pValue.H6 = 0;
-                    pValue.H5++;
-                    numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4}.${pValue.H5} `;
+                    numbering.H6 = 0;
+                    numbering.H5++;
+                    val = `${numbering.H2}.${numbering.H3}.${numbering.H4}.${numbering.H5} `;
                     break
                 case "H6":
-                    pValue.H6++;
-                    numbering = `${pValue.H2}.${pValue.H3}.${pValue.H4}.${pValue.H5}.${pValue.H6} `;
+                    numbering.H6++;
+                    val = `${numbering.H2}.${numbering.H3}.${numbering.H4}.${numbering.H5}.${numbering.H6} `;
                     break
             }
-            header[1] = numbering + header[1];
+            header[1] = val + header[1];
         })
     }
 

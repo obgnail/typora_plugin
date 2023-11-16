@@ -67,7 +67,6 @@ class rightClickMenuPlugin extends global._basePlugin {
             })
             return this.ulTemplate({idx, children, class_: "plugin-menu-second"});
         })
-
         this.utils.appendElements(content, elements);
     }
 
@@ -101,17 +100,12 @@ class rightClickMenuPlugin extends global._basePlugin {
         if (hasNotArgs) {
             childExtra.text = plugin.config.NAME;
         } else {
-            childExtra.children = [{
-                ele: "span", "data-lg": "Menu", text: plugin.config.NAME,
-                children: [{ele: "i", class_: "fa fa-caret-right"}]
-            }]
+            const children = [{ele: "i", class_: "fa fa-caret-right"}];
+            childExtra.children = [{ele: "span", "data-lg": "Menu", text: plugin.config.NAME, children: children}];
         }
 
-        return {
-            ele: "li", "data-key": plugin.fixedName, ...extra, children: [{
-                ele: "a", role: "menuitem", "data-lg": "Menu", ...childExtra
-            }]
-        }
+        const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", ...childExtra}];
+        return {ele: "li", "data-key": plugin.fixedName, ...extra, children: children}
     }
 
     thirdLiTemplate = (arg, dynamic) => {
@@ -122,10 +116,8 @@ class rightClickMenuPlugin extends global._basePlugin {
         if (dynamic) {
             extra["class_"] = `plugin-dynamic-arg ${(arg.arg_disabled) ? "disabled" : ""}`;
         }
-        return {
-            ele: "li", "data-key": arg.arg_name, arg_value: arg.arg_value, ...extra,
-            children: [{ele: "a", role: "menuitem", "data-lg": "Menu", text: arg.arg_name}]
-        }
+        const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", text: arg.arg_name}];
+        return {ele: "li", "data-key": arg.arg_name, arg_value: arg.arg_value, ...extra, children: children}
     }
 
     ulTemplate = extra => {

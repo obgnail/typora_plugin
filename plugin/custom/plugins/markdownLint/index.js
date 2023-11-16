@@ -4,10 +4,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
 
     htmlTemplate = () => {
-        const el = [{
-            id: "plugin-markdownlint", class_: "plugin-common-modal",
-            style: {display: "none"}, children: [{ele: "pre", tabindex: "0"}]
-        }]
+        const pre = [{ele: "pre", tabindex: "0"}]
+        const el = [{id: "plugin-markdownlint", class_: "plugin-common-modal", style: {display: "none"}, children: pre}]
         if (this.config.use_button) {
             el.push({id: "plugin-markdownlint-button", "ty-hint": "markdown格式规范检测"})
         }
@@ -50,7 +48,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
     updateModal = async content => {
         this.entities.pre.textContent = (!content.length)
-            ? "this file meets the lint specification requirements"
+            ? this.config.pass_text
             : "line  rule   description\n" + content.map(line => {
                 const lineNo = line.lineNumber + "";
                 return "\n" + lineNo.padEnd(6) + line.ruleNames[0].padEnd(7) + line.ruleDescription;

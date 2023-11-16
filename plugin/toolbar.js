@@ -320,14 +320,12 @@ class pluginTool extends baseToolInterface {
                 pluginsList.push({showName: chineseName, fixedName: fixedName});
                 continue
             }
-
             if (plugin.callArgs) {
                 for (const arg of plugin.callArgs) {
                     const show = chineseName + " - " + arg.arg_name;
                     pluginsList.push({showName: show, fixedName: fixedName, meta: arg.arg_value});
                 }
             }
-
             if (dynamicCallArgs) {
                 for (const arg of dynamicCallArgs) {
                     if (!arg.arg_disabled) {
@@ -409,11 +407,11 @@ class operationTool extends baseToolInterface {
         }
         const openFileInNewWindow = () => File.editor.library.openFileInNewWindow(this.utils.getFilePath(), false)
         this.ops = [
-            {showName: "资源管理器打开", fixedName: "explorer", callback: explorer},
+            {showName: "在资源管理器中打开", fixedName: "explorer", callback: explorer},
             {showName: "复制文件路径", fixedName: "copyPath", callback: copyPath},
             {showName: "偏好设置", fixedName: "togglePreferencePanel", callback: togglePreferencePanel},
             {showName: "窗口置顶", fixedName: "togglePinWindow", callback: togglePinWindow},
-            {showName: "新窗口打开", fixedName: "openFileInNewWindow", callback: openFileInNewWindow},
+            {showName: "在新窗口中打开", fixedName: "openFileInNewWindow", callback: openFileInNewWindow},
         ]
         this.ops.forEach(op => op.showName += ` - ${op.fixedName}`);
     }

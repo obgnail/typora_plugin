@@ -1,18 +1,21 @@
 class callouts extends BaseCustomPlugin {
-    styleTemplate = () => ({
-        callouts: this.config.list.map(callout => {
-            return `.plugin-callout[callout-type="${callout.type}"] {
+    styleTemplate = () => {
+        const calloutList = this.config.list.map(callout => (
+            `.plugin-callout[callout-type="${callout.type}"] {
                 --callout-bg-color: ${callout.background_color};
                 --callout-left-line-color: ${callout.left_line_color};
                 --callout-icon: "${callout.icon}";
             }`
-        }).join("\n"),
-        hover: (!this.config.hover_to_show_fold_callout) ? "" :
-            `.callout-folded:hover :not(:first-child):not(.md-softbreak) { display: inherit !important; }`,
-        color: (!this.config.set_title_color) ? "" : `
-            .plugin-callout > p:first-child span:first-child { color: var(--callout-left-line-color); }
-            .plugin-callout > p:first-child::before { color: var(--callout-left-line-color); }`
-    })
+        ))
+        const hoverCss = `.callout-folded:hover :not(:first-child):not(.md-softbreak) { display: inherit !important; }`
+        const colorCss = `.plugin-callout > p:first-child span:first-child { color: var(--callout-left-line-color); }
+               .plugin-callout > p:first-child::before { color: var(--callout-left-line-color); }`;
+
+        const callouts = calloutList.join("\n");
+        const hover = (!this.config.hover_to_show_fold_callout) ? "" : hoverCss
+        const color = (!this.config.set_title_color) ? "" : colorCss
+        return {callouts, hover, color}
+    }
 
     process = () => {
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.range);

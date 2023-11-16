@@ -33,24 +33,21 @@ class pluginUpdater extends BaseCustomPlugin {
         }
 
         const proxy = await this.getProxy();
-        const modal = {
-            title: "设置代理",
-            components: [
-                {label: "默认使用当前系统代理。你可以手动修改：", type: "p"},
-                {label: "代理（为空则不设置）", type: "input", value: proxy, placeholder: "http://127.0.0.1:7890"}
-            ]
-        }
-        this.modal(modal, async components => await this.modalUpdate(components[1].submit))
+        const components = [
+            {label: "默认使用当前系统代理。你可以手动修改：", type: "p"},
+            {label: "代理（为空则不设置）", type: "input", value: proxy, placeholder: "http://127.0.0.1:7890"}
+        ]
+        const modal = {title: "设置代理", components};
+        this.modal(modal, async ([_, {submit: proxy_}]) => await this.modalUpdate(proxy_))
     }
 
     modalUpdate = async proxy => {
         await this.update(proxy, this.config.exec_show, "升级中，请稍等\n\n", code => {
             this.adjustFile();
             if (code !== 0) {
-                this.modal(
-                    {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]},
-                    () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
-                )
+                const modal = {title: "更新失败", type: "p", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新"}]}
+                const callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
+                this.modal(modal, callback);
             }
         })
     }

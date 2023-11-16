@@ -220,9 +220,8 @@ class tocMarkmap {
         })
 
         if (this.config.USE_BUTTON) {
-            this.utils.registerQuickButton("markmap", [0, 1], "思维导图", "fa fa-code-fork", {fontSize: "22px"},
-                () => (this.entities.modal.style.display === "") ? this.drawToc() : this.onButtonClick("close")
-            )
+            const callback = () => (this.entities.modal.style.display === "") ? this.drawToc() : this.onButtonClick("close")
+            this.utils.registerQuickButton("markmap", [0, 1], "思维导图", "fa fa-code-fork", {fontSize: "22px"}, callback)
         }
     }
 
@@ -249,24 +248,22 @@ class tocMarkmap {
             await this.pinUtils.init();
             const {top, height, width, left} = this.contentOriginRect;
             const newHeight = height * this.config.HEIGHT_PRECENT_WHEN_PIN_UP / 100;
-            this.entities.modal.style.left = left + "px";
-            this.entities.modal.style.width = width + "px";
-            this.entities.modal.style.top = top + "px";
-            this.entities.modal.style.height = newHeight + "px";
-            this.entities.modal.style.boxShadow = "initial";
-
-            this.entities.content.style.top = top + newHeight + "px";
-
+            Object.assign(this.entities.modal.style, {
+                left: `${left}px`,
+                width: `${width}px`,
+                top: `${top}px`,
+                height: `${newHeight}px`,
+                boxShadow: "initial"
+            });
+            this.entities.content.style.top = `${top + newHeight}px`;
             this.entities.gripUp.style.display = "block";
-
             button.classList.replace("ion-chevron-up", "ion-ios7-undo");
             button.setAttribute("ty-hint", "还原窗口");
         } else {
             this.setModalRect(this.modalOriginRect);
             this.entities.modal.style.boxShadow = "";
-            this.entities.content.style.top = this.contentOriginRect.top + "px";
+            this.entities.content.style.top = `${this.contentOriginRect.top}px`;
             this.entities.gripUp.style.display = "";
-
             button.classList.replace("ion-ios7-undo", "ion-chevron-up");
             button.setAttribute("ty-hint", "固定到顶部");
         }
@@ -277,6 +274,7 @@ class tocMarkmap {
 
     pinRight = async (draw = true) => {
         const button = document.querySelector('.plugin-markmap-icon[action="pinRight"]');
+        const write = document.querySelector("#write");
         this.pinUtils.isPinRight = !this.pinUtils.isPinRight;
         if (this.pinUtils.isPinRight) {
             if (this.pinUtils.isPinUp) {
@@ -286,20 +284,20 @@ class tocMarkmap {
             await this.pinUtils.init();
             const {top, width, height, right} = this.contentOriginRect;
             const newWidth = width * this.config.WIDTH_PRECENT_WHEN_PIN_RIGHT / 100;
-            this.entities.modal.style.top = top + "px";
-            this.entities.modal.style.right = right + "px";
-            this.entities.modal.style.left = right - newWidth + "px";
-            this.entities.modal.style.height = height + "px";
-            this.entities.modal.style.width = newWidth + "px";
-            this.entities.modal.style.boxShadow = "initial";
-
-            this.entities.content.style.right = right - newWidth + "px";
-            this.entities.content.style.width = width - newWidth + "px";
-
-            document.querySelector("#write").style.width = "initial";
-
+            Object.assign(this.entities.modal.style, {
+                top: `${top}px`,
+                right: `${right}px`,
+                left: `${right - newWidth}px`,
+                height: `${height}px`,
+                width: `${newWidth}px`,
+                boxShadow: "initial"
+            });
+            Object.assign(this.entities.content.style, {
+                right: `${right - newWidth}px`,
+                width: `${width - newWidth}px`
+            });
+            write.style.width = "initial";
             this.entities.gripRight.style.display = "block";
-
             button.classList.replace("ion-chevron-right", "ion-ios7-undo");
             button.setAttribute("ty-hint", "还原窗口");
         } else {
@@ -307,7 +305,7 @@ class tocMarkmap {
             this.entities.modal.style.boxShadow = "";
             this.entities.content.style.width = "";
             this.entities.content.style.right = "";
-            document.querySelector("#write").style.width = "";
+            write.style.width = "";
             this.entities.gripRight.style.display = "";
 
             button.classList.replace("ion-ios7-undo", "ion-chevron-right");
@@ -338,16 +336,13 @@ class tocMarkmap {
     }
 
     onDrag = () => {
+        const onMouseDown = () => {
+            this.cleanTransition(!this.config.USE_ANIMATION_WHEN_DRAG);
+            this.waitUnpin();
+        }
+        const onMouseUp = () => this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_DRAG)
         const dragModal = (handleElement, withMetaKey) => {
-            this.utils.dragFixedModal(
-                handleElement, this.entities.modal, withMetaKey,
-                () => {
-                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_DRAG);
-                    this.waitUnpin();
-                },
-                null,
-                () => this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_DRAG)
-            );
+            this.utils.dragFixedModal(handleElement, this.entities.modal, withMetaKey, onMouseDown, null, onMouseUp);
         }
 
         // 提供两种拖拽的方式
@@ -365,7 +360,6 @@ class tocMarkmap {
         const getModalMinWidth = () => {
             const {marginLeft, paddingRight} = document.defaultView.getComputedStyle(this.entities.header);
             const headerWidth = this.entities.header.getBoundingClientRect().width;
-
             const _marginRight = (this.config.ALLOW_ICON_WRAP) ? 0 : parseFloat(paddingRight);
             return parseFloat(marginLeft) + headerWidth + _marginRight
         }
@@ -380,50 +374,45 @@ class tocMarkmap {
             let deltaHeight = 0;
             let deltaWidth = 0;
             let hint = this.entities.resize.getAttribute("ty-hint");
-            this.utils.resizeFixedModal(
-                this.entities.resize, this.entities.modal, true, true,
-                (startX, startY, startWidth, startHeight) => {
-                    this.entities.resize.removeAttribute("ty-hint");
-                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
-                    deltaHeight = getModalMinHeight() - startHeight;
-                    deltaWidth = getModalMinWidth() - startWidth;
-                },
-                (deltaX, deltaY) => {
-                    deltaY = Math.max(deltaY, deltaHeight);
-                    deltaX = Math.max(deltaX, deltaWidth);
-                    return {deltaX, deltaY}
-                },
-                async () => {
-                    this.entities.resize.setAttribute("ty-hint", hint);
-                    this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
-                    await this.waitUnpin();
-                    await this.setFullScreenIcon(this.entities.fullScreen, false);
-                }
-            );
+            const onMouseDown = (startX, startY, startWidth, startHeight) => {
+                this.entities.resize.removeAttribute("ty-hint");
+                this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+                deltaHeight = getModalMinHeight() - startHeight;
+                deltaWidth = getModalMinWidth() - startWidth;
+            }
+            const onMouseMove = (deltaX, deltaY) => {
+                deltaY = Math.max(deltaY, deltaHeight);
+                deltaX = Math.max(deltaX, deltaWidth);
+                return {deltaX, deltaY}
+            }
+            const onMouseUp = async () => {
+                this.entities.resize.setAttribute("ty-hint", hint);
+                this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+                await this.waitUnpin();
+                await this.setFullScreenIcon(this.entities.fullScreen, false);
+            }
+            this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, true, true, onMouseDown, onMouseMove, onMouseUp);
         }
 
         // 固定到顶部时调整大小
         {
             let contentStartTop = 0;
             let contentMinTop = 0;
-            this.utils.resizeFixedModal(
-                this.entities.gripUp, this.entities.modal, false, true,
-                () => {
-                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
-                    contentStartTop = this.entities.content.getBoundingClientRect().top;
-                    contentMinTop = getModalMinHeight() + this.entities.header.getBoundingClientRect().top;
-                },
-                (deltaX, deltaY) => {
-                    let newContentTop = contentStartTop + deltaY;
-                    if (newContentTop < contentMinTop) {
-                        newContentTop = contentMinTop;
-                        deltaY = contentMinTop - contentStartTop;
-                    }
-                    this.entities.content.style.top = newContentTop + "px";
-                    return {deltaX, deltaY}
-                },
-                onMouseUp
-            );
+            const onMouseDown = () => {
+                this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+                contentStartTop = this.entities.content.getBoundingClientRect().top;
+                contentMinTop = getModalMinHeight() + this.entities.header.getBoundingClientRect().top;
+            }
+            const onMouseMove = (deltaX, deltaY) => {
+                let newContentTop = contentStartTop + deltaY;
+                if (newContentTop < contentMinTop) {
+                    newContentTop = contentMinTop;
+                    deltaY = contentMinTop - contentStartTop;
+                }
+                this.entities.content.style.top = newContentTop + "px";
+                return {deltaX, deltaY}
+            }
+            this.utils.resizeFixedModal(this.entities.gripUp, this.entities.modal, false, true, onMouseDown, onMouseMove, onMouseUp);
         }
 
         // 固定到右侧时调整大小
@@ -432,34 +421,31 @@ class tocMarkmap {
             let contentStartWidth = 0;
             let modalStartLeft = 0;
             let contentMaxRight = 0;
-            this.utils.resizeFixedModal(
-                this.entities.gripRight, this.entities.modal, true, false,
-                () => {
-                    this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
+            const onMouseDown = () => {
+                this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
 
-                    const contentRect = this.entities.content.getBoundingClientRect();
-                    contentStartRight = contentRect.right;
-                    contentStartWidth = contentRect.width;
+                const contentRect = this.entities.content.getBoundingClientRect();
+                contentStartRight = contentRect.right;
+                contentStartWidth = contentRect.width;
 
-                    const modalRect = this.entities.modal.getBoundingClientRect();
-                    modalStartLeft = modalRect.left;
-                    contentMaxRight = modalRect.right - getModalMinWidth();
-                },
-                (deltaX, deltaY) => {
-                    deltaX = -deltaX;
-                    deltaY = -deltaY;
-                    let newContentRight = contentStartRight - deltaX;
-                    if (newContentRight > contentMaxRight) {
-                        newContentRight = contentMaxRight;
-                        deltaX = contentStartRight - contentMaxRight;
-                    }
-                    this.entities.content.style.right = newContentRight + "px";
-                    this.entities.content.style.width = contentStartWidth - deltaX + "px";
-                    this.entities.modal.style.left = modalStartLeft - deltaX + "px";
-                    return {deltaX, deltaY}
-                },
-                onMouseUp
-            )
+                const modalRect = this.entities.modal.getBoundingClientRect();
+                modalStartLeft = modalRect.left;
+                contentMaxRight = modalRect.right - getModalMinWidth();
+            }
+            const onMouseMove = (deltaX, deltaY) => {
+                deltaX = -deltaX;
+                deltaY = -deltaY;
+                let newContentRight = contentStartRight - deltaX;
+                if (newContentRight > contentMaxRight) {
+                    newContentRight = contentMaxRight;
+                    deltaX = contentStartRight - contentMaxRight;
+                }
+                this.entities.content.style.right = newContentRight + "px";
+                this.entities.content.style.width = contentStartWidth - deltaX + "px";
+                this.entities.modal.style.left = modalStartLeft - deltaX + "px";
+                return {deltaX, deltaY}
+            }
+            this.utils.resizeFixedModal(this.entities.gripRight, this.entities.modal, true, false, onMouseDown, onMouseMove, onMouseUp);
         }
     }
 
@@ -490,17 +476,21 @@ class tocMarkmap {
     setModalRect = rect => {
         if (!rect) return;
         const {left, top, height, width} = rect;
-        this.entities.modal.style.left = left + "px";
-        this.entities.modal.style.top = top + "px";
-        this.entities.modal.style.height = height + "px";
-        this.entities.modal.style.width = width + "px";
+        Object.assign(this.entities.modal.style, {
+            left: `${left}px`,
+            top: `${top}px`,
+            height: `${height}px`,
+            width: `${width}px`
+        });
     }
 
     initModalRect = () => {
         const {left, width, height} = this.entities.content.getBoundingClientRect();
-        this.entities.modal.style.left = left + width / 6 + "px";
-        this.entities.modal.style.width = width * 2 / 3 + "px";
-        this.entities.modal.style.height = height / 3 + "px";
+        Object.assign(this.entities.modal.style, {
+            left: `${left + width / 6}px`,
+            width: `${width * 2 / 3}px`,
+            height: `${height / 3}px`
+        });
     }
 
     drawToc = async () => {

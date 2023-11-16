@@ -8,12 +8,11 @@ class templater extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     process = () => {
+        const template = "---\ntitle: {{title}}\ndate: {{date}} {{weekday}}\n---\n\n\n```kanban\n# {{date}} Task List\n\n## Todo\n- task1(task description)\n- task2\n- task3\n\n## In-Progress\n\n## Completed\n\n```\n\n"
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
-            if (!this.utils.getCustomPlugin("kanban")) return;
-            this.config.template.push({
-                name: "今日任务",
-                text: "---\ntitle: {{title}}\ndate: {{date}} {{weekday}}\n---\n\n\n```kanban\n# {{date}} Task List\n\n## Todo\n- task1(task description)\n- task2\n- task3\n\n## In-Progress\n\n## Completed\n\n```\n\n"
-            })
+            if (this.utils.getCustomPlugin("kanban")) {
+                this.config.template.push({name: "今日任务", text: template});
+            }
         })
     }
 
@@ -23,29 +22,24 @@ class templater extends BaseCustomPlugin {
             window.parent.navigator.clipboard.readText().then(text => this.rangeText = text);
         }
 
-        const templateList = this.config.template;
-        const modal = {
-            title: "新文件",
-            components: [
-                {label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本"},
-                {label: "模板", type: "select", list: templateList.map(template => template.name)}
-            ]
-        }
+        const templates = this.config.template;
+        const components = [
+            {label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本"},
+            {label: "模板", type: "select", list: templates.map(template => template.name)}
+        ]
+        const modal = {title: "新文件", components};
 
-        this.modal(modal, components => {
-            let filepath = components[0].submit;
+        this.modal(modal, ([{submit: filepath}, {submit: template}]) => {
+            const tpl = templates.find(tpl => tpl.name === template);
+            if (!tpl) return;
+
             if (filepath && !filepath.endsWith(".md")) {
                 filepath += ".md";
             }
             filepath = this.utils.newFilePath(filepath);
             const filename = this.utils.Package.Path.basename(filepath);
-
-            const option = components[1].submit;
-            const template = templateList.filter(template => template.name === option)[0];
-            if (!template) return;
-
             const helper = new templateHelper(filename, this);
-            const content = helper.convert(template.text);
+            const content = helper.convert(tpl.text);
             this.utils.Package.Fs.writeFileSync(filepath, content, "utf8");
             this.rangeText = "";
             if (this.config.auto_open) {
@@ -78,7 +72,7 @@ class templateHelper {
     }
 
     convert = text => {
-        for (let [varName, template] of Object.entries(this.templateVarMap)) {
+        for (const [varName, template] of Object.entries(this.templateVarMap)) {
             text = text.replace(new RegExp(template, "g"), this[varName](template));
         }
         return text
@@ -93,7 +87,7 @@ class templateHelper {
     random = () => Math.random();
     range = () => this.rangeText;
     title = () => this._title;
-    folder = () => this.utils.Package.Path.dirname(this.utils.getFilePath());
+    folder = () => this.utils.getCurrentDirPath();
     filepath = () => this.utils.Package.Path.join(this.folder(), this.title());
     weekday = () => "周" + '日一二三四五六'.charAt(this.today.getDay());
     datetime = () => this.today.toLocaleString('chinese', {hour12: false});

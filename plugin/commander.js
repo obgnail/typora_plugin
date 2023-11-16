@@ -155,7 +155,7 @@ class commanderPlugin extends global._basePlugin {
     }
 
     getFile = shell => this.convertPath(this.utils.getFilePath(), shell);
-    getFolder = shell => this.convertPath(this.utils.Package.Path.dirname(this.utils.getFilePath()), shell);
+    getFolder = shell => this.convertPath(this.utils.getCurrentDirPath(), shell);
     getMountFolder = shell => this.convertPath(File.getMountFolder(), shell);
 
     replaceArgs = (cmd, shell) => {
