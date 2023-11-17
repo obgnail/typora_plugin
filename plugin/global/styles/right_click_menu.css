@@ -1,0 +1,3 @@
+.plugin-menu-second.ext-context-menu, .plugin-menu-third.ext-context-menu {
+    min-width: ${menu_min_width};
+}

@@ -33,8 +33,10 @@ class fileCounterPlugin extends global._basePlugin {
             }
 
             for (const mutation of mutationList) {
-                if (mutation.target && mutation.target.classList && mutation.target.classList.contains(this.className)
-                    || mutation.addedNodes[0] && mutation.addedNodes[0].classList && mutation.addedNodes[0].classList.contains(this.className)) {
+                const {target} = mutation;
+                const add = mutation.addedNodes[0];
+                if (target && target.classList && target.classList.contains(this.className)
+                    || add && add.classList && add.classList.contains(this.className)) {
                     continue
                 }
                 this.setAllDirCount();

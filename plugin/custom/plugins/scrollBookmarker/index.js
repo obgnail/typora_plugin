@@ -29,25 +29,21 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         if (this.config.allow_drag) {
             this.utils.dragFixedModal(this.entities.modal, this.entities.modal);
         }
-
         if (this.config.use_button) {
             this.utils.registerQuickButton("bookmarker", [2, 1], "书签管理器", "fa fa-bookmark", {fontSize: "17px"}, this.callback);
         }
 
-        this.utils.registerStateRecorder(
-            this.recordName,
-            this.recordSelector,
-            ele => ele.classList.contains(this.className),
-            ele => ele.classList.add(this.className),
-            () => {
-                const {file, idx} = this.locateUtils;
-                if (file && idx !== -1) {
-                    this._locate(idx);
-                    this.locateUtils.file = "";
-                    this.locateUtils.idx = -1;
-                }
+        const stateGetter = ele => ele.classList.contains(this.className);
+        const stateRestorer = ele => ele.classList.add(this.className);
+        const finalFunc = () => {
+            const {file, idx} = this.locateUtils;
+            if (file && idx !== -1) {
+                this._locate(idx);
+                this.locateUtils.file = "";
+                this.locateUtils.idx = -1;
             }
-        )
+        }
+        this.utils.registerStateRecorder(this.recordName, this.recordSelector, stateGetter, stateRestorer, finalFunc);
 
         if (this.config.persistence) {
             this.initState();
@@ -150,12 +146,11 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
 
     appendMarker = (filepath, idx) => {
         const _filepath = this.utils.getFileName(filepath);
-        const marker = [{
-            class_: "bookmark-item", children: [
-                {class_: "bookmark-item-content", text: `${_filepath} - ${idx}`, file: filepath, idx},
-                {class_: "bookmark-btn fa fa-trash-o"}
-            ]
-        }]
+        const children = [
+            {class_: "bookmark-item-content", text: `${_filepath} - ${idx}`, file: filepath, idx},
+            {class_: "bookmark-btn fa fa-trash-o"}
+        ]
+        const marker = [{class_: "bookmark-item", children}];
         this.utils.appendElements(this.entities.modal, marker);
     }
 

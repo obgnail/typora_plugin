@@ -1,28 +1,19 @@
 class toolbarPlugin extends global._basePlugin {
     beforeProcess = () => {
         this.toolController = new toolController(this);
-        [
-            tabTool,
-            pluginTool,
-            recentFileTool,
-            operationTool,
-            modeTool,
-            tempThemeTool,
-            functionTool,
-            mixTool,
-        ].forEach(tool => this.registerBarTool(new tool()));
+        const tools = [tabTool, pluginTool, recentFileTool, operationTool, modeTool, tempThemeTool, functionTool, mixTool];
+        tools.forEach(tool => this.registerBarTool(new tool()));
     }
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
-    styleTemplate = () => ({topPercent: `${this.config.TOOLBAR_TOP_PERCENT}%`})
+    styleTemplate = () => ({topPercent: parseInt(this.config.TOOLBAR_TOP_PERCENT) + "%"})
 
     htmlTemplate = () => {
-        const title = "支持查询：\nplu：插件\ntab：标签页\nhis：最近文件\nops：常用操作\nmode：模式\ntheme：临时主题";
-        const children = [
-            {id: "plugin-toolbar-input", children: [{ele: "input", placeholder: "ops 资源管理器打开", title}]},
-            {class_: "plugin-toolbar-result"}
-        ]
+        const tools = Array.from(this.toolController.tools.values()).map(t => t.name() + "：" + t.translate());
+        const title = "支持：\n" + tools.join("\n");
+        const input = [{ele: "input", placeholder: "ops explorer", title}];
+        const children = [{id: "plugin-toolbar-input", children: input}, {class_: "plugin-toolbar-result"}];
         return [{id: "plugin-toolbar", class_: "plugin-common-modal", style: {display: "none"}, children}]
     }
 
@@ -103,7 +94,7 @@ class toolbarPlugin extends global._basePlugin {
 
     search = async ev => {
         const result = await this.handleInput();
-        const ok = result && result["matches"] && result["tool"];
+        const ok = result && result.matches && result.tool;
         this.entities.result.innerHTML = ok ? this.newItems(result).join("") : "";
         if (ev) {
             ev.preventDefault();
@@ -113,23 +104,16 @@ class toolbarPlugin extends global._basePlugin {
 
     newItems = result => {
         const {tool, matches, input} = result;
-
         const toolName = tool.name();
         return matches.map(match => {
-            let showName = match;
-            let fixedName = match;
-            let meta = "";
-            if (typeof match === "object") {
-                showName = match["showName"];
-                fixedName = match["fixedName"];
-                meta = match["meta"];
-            }
-
+            const showName = match.showName || match;
+            const fixedName = match.fixedName || match;
+            const meta = match.meta || "";
             let content = showName;
             if (input[0]) {
                 input.forEach(part => content = content.replace(new RegExp(part, "gi"), "<b>$&</b>"));
             }
-            const metaContent = (meta) ? `meta="${meta}"` : "";
+            const metaContent = meta ? `meta="${meta}"` : "";
             return `<div class="plugin-toolbar-item" data="${fixedName}" tool="${toolName}" ${metaContent}>${content}</div>`
         })
     }
@@ -153,33 +137,20 @@ class toolbarPlugin extends global._basePlugin {
 }
 
 class baseToolInterface {
-    name = () => {
-    }
-    translate = () => {
-    }
-    init = () => {
-    }
+    name = () => ""
+    translate = () => ""
+    init = () => null
     // 要么返回 []string
     // 要么返回 [{ showName:"", fixedName:"", meta:"" }]
-    search = async input => {
-    }
-    callback = (fixedName, meta) => {
-    }
-
-    baseSearch = (input, list, itemFields) => {
+    search = async input => null
+    callback = (fixedName, meta) => null
+    baseSearch = (input, list, searchFields) => {
         if (input === "") return list;
 
         input = input.toLowerCase();
-
-        const func = (!itemFields)
-            ? item => item.toLowerCase().indexOf(input) !== -1
-            : item => {
-                for (const field of itemFields) {
-                    if (item[field].toLowerCase().indexOf(input) !== -1) {
-                        return true
-                    }
-                }
-            }
+        const func = searchFields
+            ? item => searchFields.some(field => item[field].toLowerCase().indexOf(input) !== -1)
+            : item => item.toLowerCase().indexOf(input) !== -1
         return list.filter(func)
     }
 }
@@ -205,9 +176,7 @@ class toolController {
 
     callback = (toolName, fixedName, meta) => {
         const tool = this.tools.get(toolName);
-        if (!tool) return;
-
-        tool.callback(fixedName, meta);
+        tool && tool.callback(fixedName, meta);
     }
 
     setAnchorNode = () => this.anchorNode = this.utils.getAnchorNode();
@@ -215,41 +184,41 @@ class toolController {
     // 交集
     intersect = arrays => {
         if (!Array.isArray(arrays) || arrays.length === 0 || arrays.some(ele => !ele)) return [];
-
         if (arrays.length === 1) return arrays[0]
 
-        if (typeof arrays[0][0] === "string") {
-            return arrays[0].filter(ele => arrays.every(array => array.includes(ele)));
-        } else {
-            return arrays[0].filter(ele => arrays.every(array => array.some(item => (
-                item.showName === ele.showName
-                && item.fixedName === ele.fixedName
-                && item.meta === ele.meta
-            ))))
-        }
+        const func = (typeof arrays[0][0] === "string")
+            ? ele => arrays.every(array => array.includes(ele))
+            : ele => arrays.every(array => array.some(item => item.showName === ele.showName && item.fixedName === ele.fixedName && item.meta === ele.meta))
+        return arrays[0].filter(func);
     }
+
+    uniqueString = item => typeof item === "object" ? item.showName + "6FF28E42" + item.fixedName + "741E8837" + item.meta : item
 
     // 并集
     union = arrays => {
         if (!Array.isArray(arrays) || arrays.length === 0) return [];
+        if (arrays.length === 1) return arrays[0]
 
         const set = new Set();
-        const first = arrays[0][0];
-        const isObj = first && typeof first === "object";
-        for (const arr of arrays) {
-            for (const ele of arr) {
-                set.add(isObj ? JSON.stringify(ele) : ele);
+        const result = [];
+        for (const array of arrays) {
+            for (const item of array) {
+                const value = this.uniqueString(item);
+                if (!set.has(value)) {
+                    set.add(value);
+                    result.push(item);
+                }
             }
         }
-        return Array.from(set).map(str => (isObj ? JSON.parse(str) : str));
+        return result
     }
 
     // 差集
     difference = (array1, array2) => {
-        if (!Array.isArray(array2) || array2.length === 0) return array1
+        if (!Array.isArray(array1) || !Array.isArray(array2) || array1.length === 0 || array2.length === 0) return array1
 
-        const set = new Set(array2.map(val => JSON.stringify(val)));
-        return array1.filter(val => !set.has(JSON.stringify(val)));
+        const set = new Set(array2.map(this.uniqueString));
+        return array1.filter(item => !set.has(this.uniqueString(item)));
     }
 
     kind = input => {
@@ -322,13 +291,11 @@ class toolController {
 class tabTool extends baseToolInterface {
     name = () => "tab"
     translate = () => "切换标签页"
-
     init = () => {
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
             this.windowTabBarPlugin = this.utils.getPlugin("window_tab");
         })
     }
-
     search = async input => {
         if (!this.windowTabBarPlugin) return;
 
@@ -336,33 +303,29 @@ class tabTool extends baseToolInterface {
         const paths = this.windowTabBarPlugin.tabUtil.tabs.filter(tab => tab.path !== current).map(tab => tab.path);
         return this.baseSearch(input, paths);
     }
-
     callback = fixedName => this.windowTabBarPlugin.switchTabByPath(fixedName)
 }
 
 class pluginTool extends baseToolInterface {
     name = () => "plu"
     translate = () => "使用插件"
-
     collectAll = () => {
         const pluginsList = [];
         for (const [fixedName, plugin] of Object.entries(global._plugins)) {
             if (!plugin.call) continue
 
             const chineseName = plugin.config.NAME;
-            const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode);
+            const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode, true);
             if ((!dynamicCallArgs || dynamicCallArgs.length === 0) && (!plugin.callArgs || plugin.callArgs === 0)) {
                 pluginsList.push({showName: chineseName, fixedName: fixedName});
                 continue
             }
-
             if (plugin.callArgs) {
                 for (const arg of plugin.callArgs) {
                     const show = chineseName + " - " + arg.arg_name;
                     pluginsList.push({showName: show, fixedName: fixedName, meta: arg.arg_value});
                 }
             }
-
             if (dynamicCallArgs) {
                 for (const arg of dynamicCallArgs) {
                     if (!arg.arg_disabled) {
@@ -376,12 +339,10 @@ class pluginTool extends baseToolInterface {
         pluginsList.forEach(plugin => plugin.showName += (plugin.meta) ? ` （ ${plugin.fixedName} - ${plugin.meta} ）` : ` （ ${plugin.fixedName} ）`)
         return pluginsList
     }
-
     search = async input => {
         const pluginsList = this.collectAll();
         return this.baseSearch(input, pluginsList, ["showName"])
     }
-
     callback = (fixedName, meta) => {
         const plugin = this.utils.getPlugin(fixedName);
         if (plugin) {
@@ -398,38 +359,31 @@ class pluginTool extends baseToolInterface {
 class recentFileTool extends baseToolInterface {
     name = () => "his"
     translate = () => "打开最近文件"
-
     getRecentFile = async () => {
         if (!File.isNode) return;
 
-        const file = await JSBridge.invoke("setting.getRecentFiles");
-        const fileJson = (typeof file === "string") ? JSON.parse(file || "{}") : (file || {});
-        const files = fileJson["files"] || [];
-        const folders = fileJson["folders"] || [];
         const result = [];
-        for (const file of files) {
-            if (file["path"]) {
-                result.push({showName: file.path, fixedName: file.path, meta: "file"});
+        const recent = await JSBridge.invoke("setting.getRecentFiles");
+        const {files = [], folders = []} = (typeof recent === "string") ? JSON.parse(recent || "{}") : (recent || {});
+        const add = (list, meta) => {
+            for (const file of list) {
+                if (file["path"]) {
+                    result.push({showName: file.path, fixedName: file.path, meta: meta});
+                }
             }
         }
-        for (const folder of folders) {
-            if (folder["path"]) {
-                result.push({showName: folder.path, fixedName: folder.path, meta: "folder"});
-            }
-        }
-        return result
+        add(files, "file");
+        add(folders, "folder");
+        return result;
     }
-
     search = async input => {
         let files = await this.getRecentFile();
         if (!files || files.length === 0) return;
 
         const current = this.utils.getFilePath();
         files = files.filter(file => file.showName !== current); // 小细节：去掉当前的文件
-
         return this.baseSearch(input, files, ["fixedName"])
     }
-
     callback = (fixedName, meta) => {
         if (meta === "file") {
             this.utils.openFile(fixedName);
@@ -442,42 +396,29 @@ class recentFileTool extends baseToolInterface {
 class operationTool extends baseToolInterface {
     name = () => "ops"
     translate = () => "执行操作"
-
     init = () => {
+        const explorer = () => JSBridge.showInFinder(this.utils.getFilePath());
+        const copyPath = () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath());
+        const togglePreferencePanel = () => File.megaMenu.togglePreferencePanel();
+        const togglePinWindow = () => {
+            const pined = document.body.classList.contains("always-on-top");
+            const func = pined ? "unpinWindow" : "pinWindow";
+            ClientCommand[func]();
+        }
+        const openFileInNewWindow = () => File.editor.library.openFileInNewWindow(this.utils.getFilePath(), false)
         this.ops = [
-            {
-                showName: "资源管理器打开", fixedName: "explorer",
-                callback: () => JSBridge.showInFinder(this.utils.getFilePath())
-            },
-            {
-                showName: "复制文件路径", fixedName: "copyPath",
-                callback: () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath())
-            },
-            {
-                showName: "偏好设置", fixedName: "togglePreferencePanel",
-                callback: () => File.megaMenu.togglePreferencePanel()
-            },
-            {
-                showName: "窗口置顶", fixedName: "togglePinWindow", callback: () => {
-                    const pined = document.body.classList.contains("always-on-top");
-                    const func = pined ? "unpinWindow" : "pinWindow";
-                    ClientCommand[func]();
-                }
-            }
+            {showName: "在资源管理器中打开", fixedName: "explorer", callback: explorer},
+            {showName: "复制文件路径", fixedName: "copyPath", callback: copyPath},
+            {showName: "偏好设置", fixedName: "togglePreferencePanel", callback: togglePreferencePanel},
+            {showName: "窗口置顶", fixedName: "togglePinWindow", callback: togglePinWindow},
+            {showName: "在新窗口中打开", fixedName: "openFileInNewWindow", callback: openFileInNewWindow},
         ]
-
         this.ops.forEach(op => op.showName += ` - ${op.fixedName}`);
     }
-
     search = async input => this.baseSearch(input, this.ops, ["showName"])
-
     callback = (fixedName, meta) => {
-        for (const op of this.ops) {
-            if (fixedName === op.fixedName) {
-                op.callback(meta);
-                return
-            }
-        }
+        const op = this.ops.find(ele => ele.fixedName === fixedName);
+        op && op.callback(meta);
     }
 }
 
@@ -485,13 +426,12 @@ class modeTool extends baseToolInterface {
     name = () => "mode"
     translate = () => "切换模式"
     init = () => {
+        const outlineView = () => {
+            File.editor.library.toggleSidebar();
+            File.isNode && ClientCommand.refreshViewMenu();
+        }
         this.modes = [
-            {
-                showName: "大纲视图", fixedName: "outlineView", callback: () => {
-                    File.editor.library.toggleSidebar();
-                    File.isNode && ClientCommand.refreshViewMenu();
-                }
-            },
+            {showName: "大纲视图", fixedName: "outlineView", callback: outlineView},
             {showName: "源代码模式", fixedName: "sourceMode", callback: () => File.toggleSourceMode()},
             {showName: "专注模式", fixedName: "focusMode", callback: () => File.editor.toggleFocusMode()},
             {showName: "打字机模式", fixedName: "typewriterMode", callback: () => File.editor.toggleTypeWriterMode()},
@@ -507,109 +447,78 @@ class modeTool extends baseToolInterface {
                 this.modes.push({showName: "模糊模式", fixedName: "blurMode", callback: () => blur.call()});
             }
             if (dark) {
-                this.modes.push({showName: "夜间模式", fixedName: "darkMode", callback: () => dark.callback()})
+                this.modes.push({showName: "夜间模式", fixedName: "darkMode", callback: () => dark.callback()});
             }
             this.modes.push({
                 showName: "调试模式", fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools")
-            })
+            });
             this.modes.forEach(mode => mode.showName += ` - ${mode.fixedName}`);
         })
     }
     search = async input => this.baseSearch(input, this.modes, ["showName"])
     callback = (fixedName, meta) => {
-        for (const mode of this.modes) {
-            if (fixedName === mode.fixedName) {
-                mode.callback(meta);
-                return
-            }
-        }
+        const mode = this.modes.find(ele => ele.fixedName === fixedName);
+        mode && mode.callback(meta);
     }
 }
 
 class tempThemeTool extends baseToolInterface {
     name = () => "theme"
     translate = () => "临时更换主题"
-
     setThemeForever = theme => ClientCommand.setTheme(theme);
     setThemeTemp = theme => File.setTheme(theme);
-
     search = async input => {
         const {all, current} = await JSBridge.invoke("setting.getThemes");
-        const list = all.map(theme => {
-            return {showName: theme.replace(/\.css/gi, ""), fixedName: theme}
-        });
+        const list = all.map(theme => ({showName: theme.replace(/\.css/gi, ""), fixedName: theme}));
         return this.baseSearch(input, list, ["showName"]);
     }
-
-    callback = async fixedName => {
-        const {all, current} = await JSBridge.invoke("setting.getThemes");
-        for (const theme of all) {
-            if (fixedName === theme) {
-                this.setThemeTemp(theme);
-                return
-            }
-        }
-    }
+    callback = fixedName => this.setThemeTemp(fixedName);
 }
 
 class functionTool extends baseToolInterface {
     name = () => "func"
     translate = () => "功能列表"
-
     search = async input => {
         const name = this.name();
         const all = Array.from(this.controller.tools.entries())
-            .filter(tool => tool[0] !== name)
-            .map(tool => {
-                const fixedName = tool[0];
-                const translate = tool[1].translate();
-                return {showName: `${fixedName} - ${translate}`, fixedName}
-            })
+            .filter(([fixedName]) => fixedName !== name)
+            .map(([fixedName, tool]) => ({showName: `${fixedName} - ${tool.translate()}`, fixedName}))
         return this.baseSearch(input, all, ["showName"]);
     }
-
-    callback = async fixedName => {
-        this.controller.plugin.entities.input.value = fixedName + " ";
-        this.controller.plugin.hideWhenEnter = false;
-        this.controller.plugin.entities.input.dispatchEvent(new Event('keydown'));
-        setTimeout(() => this.controller.plugin.hideWhenEnter = true, 100);
+    callback = fixedName => {
+        const {plugin} = this.controller;
+        plugin.entities.input.value = fixedName + " ";
+        plugin.hideWhenEnter = false;
+        plugin.entities.input.dispatchEvent(new Event('keydown'));
+        setTimeout(() => plugin.hideWhenEnter = true, 100);
     }
 }
 
 class mixTool extends baseToolInterface {
     name = () => "all"
     translate = () => "混合查找"
-
     search = async input => {
-        const name = this.name();
-        const all = await Promise.all(
-            Array.from(this.controller.tools.entries())
-                .filter(tool => tool[0] !== name)
-                .map(async tool => {
-                    const toolName = tool[0];
-                    const toolResult = await tool[1].search(input);
-                    if (!toolResult || !toolResult.length) return
-                    if (typeof toolResult[0] === "string") {
-                        return toolResult.map(ele => ({showName: ele, fixedName: ele, meta: `${toolName}@`}))
-                    } else {
-                        return toolResult.map(ele => ({
-                            showName: ele.showName, fixedName: ele.fixedName, meta: `${toolName}@${ele.meta || ""}`
-                        }))
-                    }
-                })
-        )
-        const list = all.filter(ele => !!ele);
-        return [].concat(...list)
+        const toolName = this.name();
+        const toolResult = await Promise.all(
+            Array.from(this.controller.tools.entries()).map(async ([name, tool]) => {
+                if (name === toolName) return;
+                const result = await tool.search(input);
+                if (result && result.length) {
+                    return result.map(ele => {
+                        const meta = name + "@" + (ele.meta || "");
+                        return typeof ele === "string" ? {showName: ele, fixedName: ele, meta} : {...ele, meta};
+                    });
+                }
+            })
+        );
+        return toolResult.flat().filter(Boolean);
     }
-
     callback = (fixedName, meta) => {
         const at = meta.indexOf("@");
         const tool = meta.substring(0, at);
         const realMeta = meta.substring(at + 1);
         const t = this.controller.tools.get(tool);
-        if (t) {
-            t.callback(fixedName, realMeta);
-        }
+        t && t.callback(fixedName, realMeta);
     }
 }
 

@@ -91,12 +91,8 @@ class fenceEnhancePlugin extends global._basePlugin {
             ev.stopPropagation();
             document.activeElement.blur();
             const action = target.getAttribute("action");
-            for (const builder of this.builders) {
-                if (builder.action === action) {
-                    builder.listener(ev, target);
-                    return
-                }
-            }
+            const builder = this.builders.find(builder => builder.action === action);
+            builder && builder.listener(ev, target);
         })
 
         const config = this.config;
@@ -238,7 +234,6 @@ class builder {
         const span = document.createElement("span");
         span.className = this.iconClassName;
         button.appendChild(span);
-
         if (!this.enable) {
             button.style.display = "none";
         }
@@ -279,7 +274,6 @@ class editorHotkey {
     getFence = () => {
         const activeLine = document.querySelector("#write .CodeMirror-activeline");
         if (!activeLine) return
-
         const pre = activeLine.closest(".md-fences[cid]");
         if (!pre) return
 
@@ -290,22 +284,21 @@ class editorHotkey {
         return {activeLine, pre, cid, fence, lineNum, separator}
     }
 
-    goLineUp = () => {
-        // 不可使用fence.execCommand("goLineUp"); 因为它会检测shift键是否被pressed
-        document.activeElement.dispatchEvent(new KeyboardEvent('keydown', {
-            key: 'ArrowUp', keyCode: 38, code: 'ArrowUp', which: 38, shiftKey: false, ctrlKey: false, altKey: false
-        }));
+    keydown = keyObj => {
+        const dict = {shiftKey: false, ctrlKey: false, altKey: false, ...keyObj};
+        document.activeElement.dispatchEvent(new KeyboardEvent('keydown', dict));
     }
-
-    goLineDown = () => {
-        document.activeElement.dispatchEvent(new KeyboardEvent('keydown', {
-            key: 'ArrowDown', keyCode: 40, code: 'ArrowDown', which: 40, shiftKey: false, ctrlKey: false, altKey: false
-        }));
-    }
+    // 不可使用fence.execCommand("goLineUp")：因为它会检测shift键是否被pressed
+    goLineUp = () => this.keydown({key: 'ArrowUp', keyCode: 38, code: 'ArrowUp', which: 38});
+    goLineDown = () => this.keydown({key: 'ArrowDown', keyCode: 40, code: 'ArrowDown', which: 40});
 
     swapLine = (previous = true) => {
         const {activeLine, fence, separator, lineNum} = this.getFence();
-        if (!activeLine || !fence || previous && lineNum === 1 || !previous && this.utils.isLastChildOfParent(activeLine)) return
+        if (!activeLine
+            || !fence
+            || (previous && lineNum === 1)
+            || (!previous && this.utils.isLastChildOfParent(activeLine))
+        ) return
 
         const lines = previous
             ? [{line: lineNum - 2, ch: 0}, {line: lineNum - 1, ch: null}]

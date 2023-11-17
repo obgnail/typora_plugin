@@ -8,7 +8,7 @@ class CustomPlugin extends global._basePlugin {
         await this.loadPluginHelper.load();
     }
     hotkey = () => this.hotkeyHelper.hotkey()
-    dynamicCallArgsGenerator = (anchorNode, meta) => this.dynamicCallHelper.dynamicCallArgsGenerator(anchorNode, meta)
+    dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => this.dynamicCallHelper.dynamicCallArgsGenerator(anchorNode, meta, notInContextMenu)
     call = (fixedName, meta) => this.dynamicCallHelper.call(fixedName, meta)
 }
 
@@ -102,12 +102,12 @@ class dynamicCallHelper {
         this.utils = controller.utils;
     }
 
-    dynamicCallArgsGenerator = (anchorNode, meta) => {
+    dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => {
         meta.target = anchorNode;
         const dynamicCallArgs = [];
 
         for (const [fixedName, setting] of Object.entries(this.controller.customSettings)) {
-            if (setting.hide) continue;
+            if (!notInContextMenu && setting.hide) continue;
 
             const plugin = this.custom[fixedName];
             if (!plugin) continue;

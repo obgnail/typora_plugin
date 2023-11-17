@@ -228,9 +228,7 @@ class searchMultiKeywordPlugin extends global._basePlugin {
 
     verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
 
-    allowRead = (filepath, stat) => {
-        return this.verifySize(stat) && this.verifyExt(filepath);
-    }
+    allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath)
 
     searchMulti = (rootPath, keys, then) => {
         if (!rootPath) return;
@@ -334,7 +332,7 @@ class LinkHelper {
     }
 
     moveElement = () => {
-        this.highlighterDiv.parentElement.removeChild(this.highlighterDiv);
+        this.utils.removeElement(this.highlighterDiv);
         this.searcherInput.parentNode.insertBefore(this.highlighterDiv, this.searcherInput.nextSibling);
 
         this.highlighterDiv.style.display = "block";
@@ -344,7 +342,7 @@ class LinkHelper {
     }
 
     restoreMove = forceHide => {
-        this.highlighterDiv.parentElement.removeChild(this.highlighterDiv);
+        this.utils.removeElement(this.highlighterDiv);
         this.utils.insertDiv(this.highlighterDiv);
 
         this.highlighterDiv.style.display = (forceHide) ? "none" : "block";

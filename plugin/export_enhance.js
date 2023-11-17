@@ -14,7 +14,7 @@ class exportEnhancePlugin extends global._basePlugin {
 
         const imageMap = (this.config.DOWNLOAD_NETWORK_IMAGE) ? await this.downloadAllImage(html, writeIdx) : {};
 
-        const dirname = this.getCurDir();
+        const dirname = this.utils.getCurrentDirPath();
         return html.replace(this.regexp, (origin, src, srcIdx) => {
             if (srcIdx < writeIdx) return origin;
 
@@ -64,11 +64,6 @@ class exportEnhancePlugin extends global._basePlugin {
             }))
         }
         return new Promise(resolve => resolve(imageMap));
-    }
-
-    getCurDir = () => {
-        const filepath = this.utils.getFilePath();
-        return this.utils.Package.Path.dirname(filepath)
     }
 
     toBase64 = imagePath => {

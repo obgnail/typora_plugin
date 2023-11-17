@@ -36,7 +36,7 @@ class resourceOperation extends BaseCustomPlugin {
         const fileContent = `## 存在于文件夹，但是不存在于 md 文件的资源(共${_nonExistInFile.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n
 ## 存在于 md 文件，但是不存在于文件夹的资源(共${_nonExistInFolder.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFolder.join("\n")}`;
 
-        const filepath = this.utils.Package.Path.join(this.utils.Package.Path.dirname(this.utils.getFilePath()), "resource-report.md");
+        const filepath = this.utils.Package.Path.join(this.utils.getCurrentDirPath(), "resource-report.md");
         this.utils.Package.Fs.writeFileSync(filepath, fileContent, "utf8");
         if (this.config.auto_open) {
             this.utils.openFile(filepath);

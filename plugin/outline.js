@@ -45,7 +45,7 @@ class outlinePlugin extends global._basePlugin {
         this.utils.addEventListener(this.utils.eventType.outlineUpdated, this.update);
         // 旧版本的Typora的outlineUpdated事件很难触发
         if (this.utils.isBetaVersion) {
-            this.utils.addEventListener(this.utils.eventType.fileEdited, this.update);
+            this.utils.addEventListener(this.utils.eventType.fileEdited, this.utils.throttle(this.update, 300));
         }
 
         this.utils.addEventListener(this.utils.eventType.fileOpened, () => {
@@ -168,30 +168,18 @@ class _collectUtil {
             // table
             if (ele.classList.contains("md-table")) {
                 this.tableIdx++;
-                this.collection.table.push({
-                    cid: cid,
-                    type: "table",
-                    paragraphIdx: this.paragraphIdx,
-                    idx: this.tableIdx
-                });
+                const collection = {cid: cid, type: "table", paragraphIdx: this.paragraphIdx, idx: this.tableIdx};
+                this.collection.table.push(collection);
                 // fence
             } else if (ele.classList.contains("md-fences")) {
                 this.fenceIdx++;
-                this.collection.fence.push({
-                    cid: cid,
-                    type: "fence",
-                    paragraphIdx: this.paragraphIdx,
-                    idx: this.fenceIdx
-                });
+                const collection = {cid: cid, type: "fence", paragraphIdx: this.paragraphIdx, idx: this.fenceIdx};
+                this.collection.fence.push(collection);
                 // image
             } else if (ele.classList.contains("md-image")) {
                 this.imageIdx++;
-                this.collection.image.push({
-                    cid: cid,
-                    type: "image",
-                    paragraphIdx: this.paragraphIdx,
-                    idx: this.imageIdx
-                });
+                const collection = {cid: cid, type: "image", paragraphIdx: this.paragraphIdx, idx: this.imageIdx};
+                this.collection.image.push(collection);
             }
         })
     }

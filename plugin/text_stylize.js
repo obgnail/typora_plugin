@@ -35,10 +35,11 @@ class textStylizePlugin extends global._basePlugin {
     call = () => this.modal_.style.display = (this.modal_.style.display === "block") ? "none" : "block";
 
     setColor = () => {
+        const activeElement = document.activeElement.tagName;
         if (!File.isLocked
+            && "INPUT" !== activeElement
+            && "TEXTAREA" !== activeElement
             && window.getSelection().rangeCount
-            && "INPUT" !== document.activeElement.tagName
-            && "TEXTAREA" !== document.activeElement.tagName
         ) {
             const rawText = this.utils.getRangyText();
             const content = `<font color="${this.lastColor}">${rawText}</font>`;

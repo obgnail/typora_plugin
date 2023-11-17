@@ -112,9 +112,11 @@ class collapseParagraphPlugin extends global._basePlugin {
             this.config.RECORD_COLLAPSE = !this.config.RECORD_COLLAPSE;
         }
         const name = "recordCollapseParagraph";
+        const selector = "#write h1,h2,h3,h4,h5,h6";
+        const stateGetter = ele => ele.classList.contains(this.className);
+        const stateRestorer = ele => this.trigger(ele, false);
         if (this.config.RECORD_COLLAPSE) {
-            this.utils.registerStateRecorder(name, "#write h1,h2,h3,h4,h5,h6",
-                ele => ele.classList.contains(this.className), ele => this.trigger(ele, false));
+            this.utils.registerStateRecorder(name, selector, stateGetter, stateRestorer)
         } else {
             this.utils.unregisterStateRecorder(name);
         }

@@ -234,8 +234,7 @@ class multiHighlighterPlugin extends global._basePlugin {
     clearHighlight = () => {
         this.multiHighlighter.clear();
         this.clearFenceMultiHighlighterList();
-        this.entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(
-            ele => ele && ele.parentElement && ele.parentElement.removeChild(ele));
+        this.entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(this.utils.removeElement);
     }
 
     doSearch = (keyArr, refreshResult = true) => {
@@ -311,7 +310,7 @@ class multiHighlighterPlugin extends global._basePlugin {
             bar.style.top = "0";
             marker.appendChild(bar);
 
-            setTimeout(() => bar && bar.parentElement && bar.parentElement.removeChild(bar), 3000);
+            setTimeout(() => this.utils.removeElement(bar), 3000);
         }
     }
 

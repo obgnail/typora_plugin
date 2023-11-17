@@ -14,24 +14,13 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         this.pairMap = new Map(this.config.auto_pair_symbols);
         this.reversePairMap = this.reverseMap(this.pairMap);
         // 旧版本Typora是延迟加载SnapFlag的
-        this.utils.loopDetector(
-            () => File && File.editor && File.editor.undo && File.editor.undo.UndoManager && File.editor.undo.UndoManager.SnapFlag,
-            () => this.undoSnapType = File.editor.undo.UndoManager.SnapFlag
-        )
+        const until = () => File && File.editor && File.editor.undo && File.editor.undo.UndoManager && File.editor.undo.UndoManager.SnapFlag
+        const after = () => this.undoSnapType = File.editor.undo.UndoManager.SnapFlag
+        this.utils.loopDetector(until, after);
     }
 
     process = () => {
         const write = document.querySelector("#write");
-
-        if (this.config.auto_delete_pair) {
-            write.addEventListener("keydown", ev => {
-                if (File.option.noPairingMatch) return
-                if (ev.key === "Backspace" && !ev.shiftKey && !ev.altKey && !this.utils.metaKeyPressed(ev)) {
-                    this.deletePair();
-                }
-            }, true);
-        }
-
         write.addEventListener("input", this.utils.throttle(ev => {
             if (File.option.noPairingMatch) return
             const inputSymbol = ev.data;
@@ -42,6 +31,15 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
                 this.skipSymbol(inputSymbol);
             }
         }, 30));
+
+        if (this.config.auto_delete_pair) {
+            write.addEventListener("keydown", ev => {
+                if (File.option.noPairingMatch) return
+                if (ev.key === "Backspace" && !ev.shiftKey && !ev.altKey && !this.utils.metaKeyPressed(ev)) {
+                    this.deletePair();
+                }
+            }, true);
+        }
     }
 
     insertText = (symbol, pairSymbol) => {

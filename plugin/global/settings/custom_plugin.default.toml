@@ -707,7 +707,15 @@ hide = false
 [markdownLint.config]
 # 禁用的规则（参考：https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md）
 disable_rules = ["MD012", "MD013", "MD041"]
+# 在编辑后多长时间重新检测一次（单位：ms）
+# 最低为500，若<500，则自动置为500
+debounce_interval = 1000
+# 允许【ctrl+鼠标拖拽】拖动模态框
+allow_drag = true
+# lint通过时的提示文本
+pass_text = "this file meets the lint specification requirements"
 # 在右上角添加一个方块，用以提示lint状态（类似于idea）
+# 若置为false，以下配置全部失效
 use_button = true
 # 方块的尺寸
 button_width = "12px"
@@ -716,11 +724,6 @@ button_height = "12px"
 pass_color = "#499c54"
 # lint未通过时方块的颜色
 error_color = "#be9117"
-# 在编辑后多长时间重新检测一次（单位：ms）
-# 最低为500，若<500，则自动置为500
-debounce_interval = 1000
-# 允许【ctrl+鼠标拖拽】拖动模态框
-allow_drag = true
 
 
 ############### reopenClosedFiles ###############

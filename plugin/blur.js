@@ -22,11 +22,14 @@ class blurPlugin extends global._basePlugin {
     }
 
     getStyleText = () => {
-        const content = (this.config.BLUR_TYPE === "hide") ? "visibility: hidden;" : `filter: blur(${this.config.BLUR_LEVEL}px);`;
-        let css = `#write > [cid]:not(.md-focus):not(:has(.md-focus)):not(:has(.md-focus-container)) { ${content} }`;
+        const hide = this.config.BLUR_TYPE === "hide";
+        const effect = hide ? "visibility: hidden;" : `filter: blur(${this.config.BLUR_LEVEL}px);`;
+        const restore = hide ? `visibility: visible;` : `filter: initial;`;
+        const selector = "#write > [cid]:not(.md-focus):not(:has(.md-focus)):not(:has(.md-focus-container))";
+
+        let css = `${selector} { ${effect} }`;
         if (this.config.RESRTORE_WHEN_HOVER) {
-            const restore = (this.config.BLUR_TYPE === "hide") ? `visibility: visible;` : `filter: initial;`;
-            css += `#write > [cid]:not(.md-focus):not(:has(.md-focus)):not(:has(.md-focus-container)):hover { ${restore} }`;
+            css += `${selector}:hover { ${restore} }`;
         }
         return css
     }
