@@ -1,14 +1,10 @@
-# 1. 如果您对 toml 格式不太了解，可以花三分钟时间学习一下：https://toml.io/cn/v1.0.0
-# 2. 修改配置前，请读本目录下的【请读我.md】文件
-# 3. 如何修改配置？答：将此文件的内容粘贴到 settings.user.toml 文件中，接着关闭此文件，根据说明文字修改 settings.user.toml 文件，最后重启 Typora
-# 4. 所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
-
-
-#-------------------------------------------------------------------
-#   不要修改【settings.default.toml】文件，请读本目录下的【请读我.md】文件
-#   不要修改【settings.default.toml】文件，请读本目录下的【请读我.md】文件
-#   不要修改【settings.default.toml】文件，请读本目录下的【请读我.md】文件
-#-------------------------------------------------------------------
+#  如果您对 toml 格式不太了解，可以花三分钟时间学习一下：https://toml.io/cn/v1.0.0
+#  所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
+#-------------------------------------------------------------------------
+#  请勿修改【settings.default.toml】文件，请读本目录下的【请读我.md】文件
+#  请勿修改【settings.default.toml】文件，请读本目录下的【请读我.md】文件
+#  请勿修改【settings.default.toml】文件，请读本目录下的【请读我.md】文件
+#-------------------------------------------------------------------------
 
 
 ############### global ###############
@@ -746,19 +742,20 @@ FIND_LOST_PLUGIN = true
 [[right_click_menu.MENUS]]
 NAME = "非常用插件"
 LIST = [
-    "window_tab",
     "blur",
-    "markmap",
-    "resize_image",
-    "datatables",
     "go_top",
-    "auto_number",
-    "fence_enhance",
-    "truncate_text",
-    "export_enhance",
-    "resize_table",
     "text_stylize",
     "toolbar",
+    "---",
+    "window_tab",
+    "resize_image",
+    "resize_table",
+    "fence_enhance",
+    "export_enhance",
+    "datatables",
+    "markmap",
+    "auto_number",
+    "truncate_text",
     "right_click_menu",
     "---",
     "file_counter",

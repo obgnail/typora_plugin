@@ -12,6 +12,7 @@ class rightClickMenuPlugin extends global._basePlugin {
     }
 
     init = () => {
+        this.groupName = "typora-plugin";
         this.notavailableValue = "__not_available__";
         this.callArgs = [
             {arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"},
@@ -35,29 +36,23 @@ class rightClickMenuPlugin extends global._basePlugin {
     }
 
     appendFirst = () => {
+        const items = this.config.MENUS.map((menu, idx) => {
+            const sp = [{ele: "span", "data-lg": "Menu", text: menu.NAME}, {ele: "i", class_: "fa fa-caret-right"}];
+            const children = [{ele: "a", role: "menuitem", children: sp}];
+            return {ele: "li", class_: "has-extra-menu", idx: idx, "data-key": this.groupName, children}
+        })
+        const elements = [this.divider(), ...items];
         const menu = document.querySelector(`#context-menu`);
-        const elements = [
-            {ele: "li", class_: "divider", "data-group": "plugin"},
-            ...this.config.MENUS.map((menu, idx) => ({
-                ele: "li", class_: "has-extra-menu", idx: idx, "data-key": "typora-plugin", children: [{
-                    ele: "a", role: "menuitem", children: [
-                        {ele: "span", "data-lg": "Menu", text: menu.NAME},
-                        {ele: "i", class_: "fa fa-caret-right"}
-                    ]
-                }]
-            }))
-        ]
         this.utils.appendElements(menu, elements);
     }
 
     appendSecond = () => {
         this.findLostPluginIfNeed();
 
-        const content = document.querySelector("content");
         const elements = this.config.MENUS.map((menu, idx) => {
             const children = menu.LIST.map(item => {
                 if (item === "---") {
-                    return {"ele": "li", class_: "divider"}
+                    return this.divider();
                 }
                 const plugin = this.utils.getPlugin(item);
                 if (plugin) {
@@ -65,8 +60,9 @@ class rightClickMenuPlugin extends global._basePlugin {
                 }
                 return {}
             })
-            return this.ulTemplate({idx, children, class_: "plugin-menu-second"});
+            return this.ulTemplate({class_: "plugin-menu-second", idx, children});
         })
+        const content = document.querySelector("content");
         this.utils.appendElements(content, elements);
     }
 
@@ -79,7 +75,7 @@ class rightClickMenuPlugin extends global._basePlugin {
                 if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return {};
 
                 const children = (plugin.callArgs || []).map(arg => this.thirdLiTemplate(arg));
-                return this.ulTemplate({idx, children, class_: "plugin-menu-third", fixed_name: plugin.fixedName});
+                return this.ulTemplate({class_: "plugin-menu-third", fixed_name: plugin.fixedName, idx, children});
             })
             this.utils.appendElements(content, elements);
         })
@@ -100,12 +96,12 @@ class rightClickMenuPlugin extends global._basePlugin {
         if (hasNotArgs) {
             childExtra.text = plugin.config.NAME;
         } else {
-            const children = [{ele: "i", class_: "fa fa-caret-right"}];
-            childExtra.children = [{ele: "span", "data-lg": "Menu", text: plugin.config.NAME, children: children}];
+            const i = [{ele: "i", class_: "fa fa-caret-right"}];
+            childExtra.children = [{ele: "span", "data-lg": "Menu", text: plugin.config.NAME, children: i}];
         }
 
         const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", ...childExtra}];
-        return {ele: "li", "data-key": plugin.fixedName, ...extra, children: children}
+        return {ele: "li", "data-key": plugin.fixedName, children: children, ...extra}
     }
 
     thirdLiTemplate = (arg, dynamic) => {
@@ -114,7 +110,7 @@ class rightClickMenuPlugin extends global._basePlugin {
             extra["ty-hint"] = arg.arg_hint;
         }
         if (dynamic) {
-            extra["class_"] = `plugin-dynamic-arg ${(arg.arg_disabled) ? "disabled" : ""}`;
+            extra.class_ = `plugin-dynamic-arg ${(arg.arg_disabled) ? "disabled" : ""}`;
         }
         const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", text: arg.arg_name}];
         return {ele: "li", "data-key": arg.arg_name, arg_value: arg.arg_value, ...extra, children: children}
@@ -126,6 +122,8 @@ class rightClickMenuPlugin extends global._basePlugin {
         return {ele: "ul", class_, role: "menu", ...extra}
     }
 
+    divider = () => ({ele: "li", class_: "divider"})
+
     findLostPluginIfNeed = () => {
         if (!this.config.FIND_LOST_PLUGIN) return;
 
@@ -136,23 +134,16 @@ class rightClickMenuPlugin extends global._basePlugin {
         }
     }
 
-    show = (after, before) => {
-        const next = after.addClass("show");
+    show = ($after, $before) => {
+        const next = $after.addClass("show");
 
-        const rect = next[0].getBoundingClientRect();
-        const nextHeight = rect.height;
-        const nextWidth = rect.width;
-
-        const {left, top, width, height} = before[0].getBoundingClientRect();
+        const {left, top, width, height} = $before[0].getBoundingClientRect();
         let nextTop = top - height;
         let nextLeft = left + width + 6;
 
-        if (nextTop + nextHeight > window.innerHeight) {
-            nextTop = window.innerHeight - nextHeight;
-        }
-        if (nextLeft + nextWidth > window.innerWidth) {
-            nextLeft = window.innerWidth - nextWidth;
-        }
+        const {height: nextHeight, width: nextWidth} = next[0].getBoundingClientRect();
+        nextTop = Math.min(nextTop, window.innerHeight - nextHeight);
+        nextLeft = Math.min(nextLeft, window.innerWidth - nextWidth);
 
         next.css({top: nextTop + "px", left: nextLeft + "px"});
     }
@@ -175,7 +166,7 @@ class rightClickMenuPlugin extends global._basePlugin {
         // 展示二级菜单
         $("#context-menu").on("mouseenter", "[data-key]", function () {
             const first = $(this);
-            if ("typora-plugin" === first.attr("data-key")) {
+            if (that.groupName === first.attr("data-key")) {
                 const idx = this.getAttribute("idx");
                 if (document.querySelector(`.plugin-menu-second.show`)) {
                     document.querySelectorAll(`.plugin-menu-third:not([idx="${idx}"])`).forEach(ele => ele.classList.remove("show"));
@@ -186,8 +177,8 @@ class rightClickMenuPlugin extends global._basePlugin {
                 that.show($(`.plugin-menu-second[idx="${idx}"]`), first);
                 first.addClass("active");
             } else {
+                document.querySelectorAll(`[data-key='${that.groupName}']`).forEach(ele => ele.classList.remove("active"));
                 document.querySelectorAll(".plugin-menu-second").forEach(ele => ele.classList.remove("show"));
-                document.querySelectorAll("[data-key='typora-plugin']").forEach(ele => ele.classList.remove("active"));
                 document.querySelectorAll(".plugin-menu-third").forEach(ele => ele.classList.remove("show"));
             }
         })
@@ -216,10 +207,10 @@ class rightClickMenuPlugin extends global._basePlugin {
             const fixedName = this.getAttribute("data-key");
             const plugin = that.utils.getPlugin(fixedName);
             // 拥有三级菜单的，不允许点击二级菜单
-            if (plugin.callArgs || plugin.dynamicCallArgsGenerator) {
+            if (!plugin || plugin.callArgs || plugin.dynamicCallArgsGenerator) {
                 return false
             }
-            if (plugin && plugin.call) {
+            if (plugin.call) {
                 plugin.call();
             }
             if (!that.config.DO_NOT_HIDE) {

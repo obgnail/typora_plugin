@@ -446,6 +446,7 @@ class modeTool extends baseToolInterface {
             const readonly = this.utils.getPlugin("read_only");
             const blur = this.utils.getPlugin("blur");
             const dark = this.utils.getCustomPlugin("darkMode");
+            const image = this.utils.getCustomPlugin("imageReviewer");
             if (readonly) {
                 this.modes.push({showName: "只读模式", fixedName: "readOnlyMode", callback: () => readonly.call()});
             }
@@ -454,6 +455,9 @@ class modeTool extends baseToolInterface {
             }
             if (dark) {
                 this.modes.push({showName: "夜间模式", fixedName: "darkMode", callback: () => dark.callback()});
+            }
+            if (image) {
+                this.modes.push({showName: "看图模式", fixedName: "imageReviewer", callback: () => image.callback()});
             }
             this.modes.push({
                 showName: "调试模式", fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools")
@@ -526,7 +530,7 @@ class mixTool extends baseToolInterface {
             Array.from(this.controller.tools.entries()).map(async ([name, tool]) => {
                 if (name === toolName) return;
                 const result = await tool.search(input);
-                if (result && result.length) {
+                if (result) {
                     return result.map(ele => {
                         const meta = name + "@" + (ele.meta || "");
                         return typeof ele === "string" ? {showName: ele, fixedName: ele, meta} : {...ele, meta};
