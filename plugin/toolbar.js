@@ -1,7 +1,7 @@
 class toolbarPlugin extends global._basePlugin {
     beforeProcess = () => {
         this.toolController = new toolController(this);
-        const tools = [tabTool, pluginTool, recentFileTool, operationTool, modeTool, tempThemeTool, functionTool, mixTool];
+        const tools = [tabTool, pluginTool, recentFileTool, operationTool, modeTool, tempThemeTool, outlineTool, functionTool, mixTool];
         tools.forEach(tool => this.registerBarTool(new tool()));
     }
 
@@ -17,7 +17,8 @@ class toolbarPlugin extends global._basePlugin {
         return [{id: "plugin-toolbar", class_: "plugin-common-modal", style: {display: "none"}, children}]
     }
 
-    init = () => {
+    process = () => {
+        this.canInput = true;
         this.hideWhenEnter = true;
         this.entities = {
             content: document.querySelector("content"),
@@ -27,10 +28,7 @@ class toolbarPlugin extends global._basePlugin {
         }
         this.handleInput = this.utils.debouncePromise(this.toolController.handleInput, this.config.DEBOUNCE_INTERVAL);
         this.selectItem = this.utils.selectItemFromList(this.entities.result, ".plugin-toolbar-item.active");
-    }
 
-    process = () => {
-        this.init();
         this.entities.input.addEventListener("keydown", async ev => {
             switch (ev.key) {
                 case "Enter":
@@ -60,14 +58,21 @@ class toolbarPlugin extends global._basePlugin {
                     }
                     break
                 default:
-                    await this.search(ev);
+                    setTimeout(() => this.canInput && this.search(ev));
             }
         })
-
         this.entities.result.addEventListener("click", ev => {
             const target = ev.target.closest(".plugin-toolbar-item");
             target && this.run(target, ev);
         });
+
+        if (this.config.IGNORE_WHEN_COMPOSITION) {
+            this.entities.input.addEventListener("compositionstart", () => this.canInput = false, true);
+            this.entities.input.addEventListener("compositionend", async () => {
+                this.canInput = true;
+                await this.search();
+            });
+        }
     }
 
     call = async () => {
@@ -239,9 +244,10 @@ class toolController {
     }
 
     searchWithNeg = async (tool, positive, negative) => {
-        const posList = await Promise.all(positive.map(tool.search));
-        const negList = await Promise.all(negative.map(tool.search));
-
+        const [posList, negList] = await Promise.all([
+            Promise.all(positive.map(tool.search)),
+            Promise.all(negative.map(tool.search)),
+        ]);
         const posResult = this.intersect(posList);
         const negResult = this.union(negList);
         const matches = this.difference(posResult, negResult);
@@ -382,7 +388,7 @@ class recentFileTool extends baseToolInterface {
 
         const current = this.utils.getFilePath();
         files = files.filter(file => file.showName !== current); // 小细节：去掉当前的文件
-        return this.baseSearch(input, files, ["fixedName"])
+        return this.baseSearch(input, files, ["showName"])
     }
     callback = (fixedName, meta) => {
         if (meta === "file") {
@@ -440,6 +446,7 @@ class modeTool extends baseToolInterface {
             const readonly = this.utils.getPlugin("read_only");
             const blur = this.utils.getPlugin("blur");
             const dark = this.utils.getCustomPlugin("darkMode");
+            const image = this.utils.getCustomPlugin("imageReviewer");
             if (readonly) {
                 this.modes.push({showName: "只读模式", fixedName: "readOnlyMode", callback: () => readonly.call()});
             }
@@ -448,6 +455,9 @@ class modeTool extends baseToolInterface {
             }
             if (dark) {
                 this.modes.push({showName: "夜间模式", fixedName: "darkMode", callback: () => dark.callback()});
+            }
+            if (image) {
+                this.modes.push({showName: "看图模式", fixedName: "imageReviewer", callback: () => image.callback()});
             }
             this.modes.push({
                 showName: "调试模式", fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools")
@@ -475,14 +485,31 @@ class tempThemeTool extends baseToolInterface {
     callback = fixedName => this.setThemeTemp(fixedName);
 }
 
+class outlineTool extends baseToolInterface {
+    name = () => "out"
+    translate = () => "文档大纲"
+    getAll = () => {
+        const headers = File.editor.nodeMap.toc && File.editor.nodeMap.toc.headers;
+        if (!headers) return
+        const result = [];
+        headers.forEach(header => {
+            const {attributes, cid} = header || {};
+            if (attributes && cid) {
+                result.push({showName: attributes.pattern.replace("{0}", attributes.text), fixedName: cid});
+            }
+        })
+        return result
+    }
+    search = async input => this.baseSearch(input, this.getAll(), ["showName"])
+    callback = fixedName => this.utils.scrollByCid(fixedName)
+}
+
 class functionTool extends baseToolInterface {
     name = () => "func"
     translate = () => "功能列表"
     search = async input => {
-        const name = this.name();
-        const all = Array.from(this.controller.tools.entries())
-            .filter(([fixedName]) => fixedName !== name)
-            .map(([fixedName, tool]) => ({showName: `${fixedName} - ${tool.translate()}`, fixedName}))
+        const mapFunc = ([fixedName, tool]) => ({showName: `${fixedName} - ${tool.translate()}`, fixedName});
+        const all = Array.from(this.controller.tools.entries()).map(mapFunc);
         return this.baseSearch(input, all, ["showName"]);
     }
     callback = fixedName => {
@@ -503,7 +530,7 @@ class mixTool extends baseToolInterface {
             Array.from(this.controller.tools.entries()).map(async ([name, tool]) => {
                 if (name === toolName) return;
                 const result = await tool.search(input);
-                if (result && result.length) {
+                if (result) {
                     return result.map(ele => {
                         const meta = name + "@" + (ele.meta || "");
                         return typeof ele === "string" ? {showName: ele, fixedName: ele, meta} : {...ele, meta};

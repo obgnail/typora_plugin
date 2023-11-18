@@ -345,21 +345,18 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     handleBlurBackground = (remove = false) => {
         if (this.config.blur_level === 0) return;
-        const func = remove
-            ? ele => ele && ele.style.removeProperty("filter")
-            : ele => ele && (ele.style.filter = `blur(${this.config.blur_level}px)`);
-        [
-            document.querySelector("#write"),
-            document.querySelector(".sidebar-menu"),
-            document.querySelector("#plugin-window-tab"),
-        ].forEach(func);
+        const blurStyle = `blur(${this.config.blur_level}px)`;
+        const removeFilter = ele => ele && ele.style.removeProperty("filter");
+        const addFilter = ele => ele && (ele.style.filter = blurStyle);
+        const func = remove ? removeFilter : addFilter;
+        const selectors = ["#write", ".sidebar-menu", "#plugin-window-tab", "#plugin-quick-button"];
+        selectors.forEach(selector => func(document.querySelector(selector)));
     }
 
     handleHotkey = (remove = false) => {
-        const func = remove
-            ? item => this.utils.unregisterHotkey(item[0])
-            : item => this.utils.registerSingleHotkey(item[0], this[item[1]] || this.dummy);
-        this.config.hotkey_function.forEach(func);
+        const unregister = item => this.utils.unregisterHotkey(item[0]);
+        const register = item => this.utils.registerSingleHotkey(item[0], this[item[1]] || this.dummy);
+        this.config.hotkey_function.forEach(remove ? unregister : register);
     }
 
     handlePlayTimer = (stop = false) => {

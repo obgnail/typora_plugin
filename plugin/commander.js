@@ -1,5 +1,5 @@
 class commanderPlugin extends global._basePlugin {
-    beforeProcess() {
+    beforeProcess = () => {
         this.SHELL = {CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl"};
     }
 
@@ -211,20 +211,20 @@ class commanderPlugin extends global._basePlugin {
         reject = reject || console.error;
         const cb = (err, stdout, stderr) => callback && callback(err, stdout, stderr);
 
-        const defaultOptions = {encoding: 'utf8', cwd: this.getFolder()};
+        const prefix = File.isWin ? `chcp 65001 |` : "";
         const {cmd_, shell_} = this.beforeExecute(cmd, shell, hint);
-        this.utils.Package.ChildProcess.exec(
-            `chcp 65001 | ${shell_} "${cmd_}"`,
-            {...defaultOptions, ...options},
-            (err, stdout, stderr) => {
-                if (err || stderr.length) {
-                    reject(err || stderr.toString());
-                } else {
-                    resolve(stdout);
-                }
-                cb(err, stdout, stderr);
+        const command_ = `${prefix} ${shell_} "${cmd_}"`;
+        const defaultOptions = {encoding: 'utf8', cwd: this.getFolder()};
+        const option_ = {...defaultOptions, ...options};
+        const callback_ = (err, stdout, stderr) => {
+            if (err || stderr.length) {
+                reject(err || stderr.toString());
+            } else {
+                resolve(stdout);
             }
-        )
+            cb(err, stdout, stderr);
+        }
+        this.utils.Package.ChildProcess.exec(command_, option_, callback_);
     }
 
     spawn = (cmd, shell, resolve, reject, callback, hint, options = {}) => {
@@ -232,12 +232,12 @@ class commanderPlugin extends global._basePlugin {
         reject = reject || console.error;
         const cb = code => callback && callback(code);
 
-        const defaultOptions = {encoding: 'utf8', cwd: this.getFolder(), shell: true};
+        const prefix = File.isWin ? "chcp 65001 |" : "";
         const {cmd_, shell_} = this.beforeExecute(cmd, shell, hint || ""); // 执行前清空输出
-        const child = this.utils.Package.ChildProcess.spawn(
-            `chcp 65001 | ${shell_} "${cmd_}"`,
-            {...defaultOptions, ...options},
-        );
+        const command_ = `${prefix} ${shell_} "${cmd_}"`;
+        const defaultOptions = {encoding: 'utf8', cwd: this.getFolder(), shell: true};
+        const option_ = {...defaultOptions, ...options};
+        const child = this.utils.Package.ChildProcess.spawn(command_, option_);
         child.stdout.on('data', resolve);
         child.stderr.on("data", reject);
         child.on('close', cb);
