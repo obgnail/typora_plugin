@@ -221,6 +221,7 @@ class utils {
     // 一旦process后，标签就被渲染到HTML了，以后就不会再变了，再调用此函数也没有用了，因此此函数只能在插件初始化的时候调用
     // 因此，此函数的唯一意义是：当两个插件在初始化阶段打架时（都想注册同一坐标的按钮），用此函数去注销掉别人
     static unregisterQuickButton = action => global._quickButtonGenerator.unregister(action)
+    static toggleQuickButton = hide => global._quickButtonGenerator.toggle(hide)
 
     // 动态注册右键菜单
     // 1. name: 取个名字
@@ -1641,6 +1642,13 @@ class quickButtonGenerator {
         return [maxX, maxY]
     }
 
+    toggle = hide => {
+        const buttonGroup = document.querySelector("#plugin-quick-button");
+        if (buttonGroup) {
+            buttonGroup.style.visibility = hide ? "hidden" : "initial";
+        }
+    }
+
     process = async () => {
         if (this.buttons.size === 0) return
 
@@ -1664,8 +1672,7 @@ class quickButtonGenerator {
                 action && button && button.callback(ev, target, action);
             }
         })
-
-        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => buttonGroup.style.visibility = hide ? "hidden" : "initial");
+        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.toggle);
     }
 }
 
