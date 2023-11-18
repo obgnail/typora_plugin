@@ -45,7 +45,7 @@ class pluginUpdater extends BaseCustomPlugin {
         await this.update(proxy, this.config.exec_show, "升级中，请稍等\n\n", code => {
             this.adjustFile();
             if (code !== 0) {
-                const modal = {title: "更新失败", type: "p", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新"}]}
+                const modal = {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]}
                 const callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
                 this.modal(modal, callback);
             }

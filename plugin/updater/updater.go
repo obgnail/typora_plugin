@@ -171,17 +171,17 @@ type VersionInfo struct {
 	ZipBallUrl string `json:"zipball_url"`
 }
 
-func (u *Updater) needUpdate() bool {
+func (u *Updater) needUpdate() (bool, error) {
 	fmt.Println("[2/9] check whether need update")
 	var err error
 	if u.newVersionInfo, err = u.getLatestVersion(); err != nil {
-		fmt.Println("get latest version error:", err)
-		return false
+		return false, errors.Trace(err)
 	}
 	if u.oldVersionInfo, err = u.getCurrentVersion(); err != nil {
-		return true
+		return true, nil
 	}
-	return u.compareVersion(u.newVersionInfo.TagName, u.oldVersionInfo.TagName) != 0
+	need := u.compareVersion(u.newVersionInfo.TagName, u.oldVersionInfo.TagName) != 0
+	return need, nil
 }
 
 func (u *Updater) getCurrentVersion() (versionInfo *VersionInfo, err error) {
@@ -561,7 +561,11 @@ func update(proxy string, timeout int) (err error) {
 	if updater, err = NewUpdater(proxy, timeout); err != nil {
 		return errors.Trace(err)
 	}
-	if need := updater.needUpdate(); !need {
+	need, err := updater.needUpdate()
+	if err != nil {
+		return errors.Trace(err)
+	}
+	if !need {
 		fmt.Println("\nIt is already the latest version. Do not need update.")
 		fmt.Println("Current Plugin Version:", updater.newVersionInfo.TagName)
 		return
