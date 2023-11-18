@@ -244,9 +244,10 @@ class toolController {
     }
 
     searchWithNeg = async (tool, positive, negative) => {
-        const posList = await Promise.all(positive.map(tool.search));
-        const negList = await Promise.all(negative.map(tool.search));
-
+        const [posList, negList] = await Promise.all([
+            Promise.all(positive.map(tool.search)),
+            Promise.all(negative.map(tool.search)),
+        ]);
         const posResult = this.intersect(posList);
         const negResult = this.union(negList);
         const matches = this.difference(posResult, negResult);

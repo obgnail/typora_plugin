@@ -308,7 +308,7 @@ BACKSPACE_TO_HIDE = true
 IGNORE_WHEN_COMPOSITION = true
 # 用户输入的防抖时间（单位：ms）（用户输入完50ms后才执行）
 # 为什么时间默认这么短？答：都是非常简单的查询，甚至大部分是直接从内存取的（当然，不建议30以下）
-DEBOUNCE_INTERVAL = 50
+DEBOUNCE_INTERVAL = 70
 # toolbar的在页面的20%位置出现
 TOOLBAR_TOP_PERCENT = 20
 # toolbar的宽度为页面的80%
