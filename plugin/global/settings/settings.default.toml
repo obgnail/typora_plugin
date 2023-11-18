@@ -304,6 +304,15 @@ CLICKABLE = true
 HOTKEY = "ctrl+j"
 # 当输入框为空，且键入backspace时，隐藏模态框
 BACKSPACE_TO_HIDE = true
+# 等待输入法输入完毕后才执行搜索
+IGNORE_WHEN_COMPOSITION = true
+# 用户输入的防抖时间（单位：ms）（用户输入完50ms后才执行）
+# 为什么时间默认这么短？答：都是非常简单的查询，甚至大部分是直接从内存取的（当然，不建议30以下）
+DEBOUNCE_INTERVAL = 50
+# toolbar的在页面的20%位置出现
+TOOLBAR_TOP_PERCENT = 20
+# toolbar的宽度为页面的80%
+TOOLBAR_WIDTH_PERCENT = 80
 
 # 用户键入内容 = 搜索工具名称 + 空格 + 搜索内容
 # eg：【ops 资源管理器打开】
@@ -326,13 +335,6 @@ DEFAULT_TOOL = "func"
 # 负向查询和正向查询可以随意组合：
 #   - 【his close -win -mark 标签】：查找最近打开的文件，要求文件标题【包含close、标签，不包含win、mark】
 USE_NEGATIVE_SEARCH = true
-# 用户输入的防抖时间（单位：ms）（用户输入完50ms后才执行）
-# 为什么时间默认这么短？因为这种查询都是非常简单的，甚至大部分是直接从内存取的（当然，不建议30以下）
-DEBOUNCE_INTERVAL = 50
-# toolbar的在页面的20%位置出现
-TOOLBAR_TOP_PERCENT = 20
-# toolbar的宽度为页面的80%
-TOOLBAR_WIDTH_PERCENT = 80
 
 
 ############### blur ###############
