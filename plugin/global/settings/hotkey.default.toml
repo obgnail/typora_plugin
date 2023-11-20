@@ -7,7 +7,7 @@
 #   4. 此插件不能覆盖现有的快捷键，此插件充分信任用户，没有做任何防护措施(也意味着很简陋，需要你自己调试)
 
 # 参数说明:
-#   1. desc（可选）: 描述
+#   1. desc（可选）: 描述。可填写任意内容，对功能没有影响
 #   2. enable: 是否启用
 #   3. hotkey: 快捷键
 #   4. plugin: 调用的插件
@@ -26,7 +26,7 @@
 
 # 支持但邪恶的使用方法
 [openCalc]
-desc = "打开计算器"
+desc = "打开windows计算器"
 enable = false
 hotkey = "ctrl+shift+e"
 evil = "() => this.utils.Package.ChildProcess.exec('cmd /C calc')"

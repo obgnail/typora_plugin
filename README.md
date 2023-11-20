@@ -58,7 +58,7 @@
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
-> 如果各位有其他的需求，或发现 BUG，欢迎提 [issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果能给我颗 star ⭐ 就更好了  : )
+> 如果各位有其他的需求，或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果能给我颗 star ⭐ 就更好了  : )
 
 
 
@@ -78,7 +78,7 @@
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
-> 每个插件皆有配置选项，可以通过修改配置文件 **永久** 启用 / 禁用任何插件。配置文件夹：`A/plugin/global/settings/`
+> 每个插件皆有配置选项，可以通过修改配置文件 **永久** 启用 / 禁用任何插件。配置文件夹：[A/plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings)
 
 > 本插件系统支持一键升级：`常用插件 -> 自定义插件 -> 升级插件`
 
@@ -194,13 +194,14 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ## 插件使用说明
 
-所有的插件都提供了三种使用方法：
+所有的插件都提供了四种使用方法：
 
 - 键盘党：
   - 键入 ctrl+j，在输入框键入 `plu+空格+插件名称` 调出插件列表（详见 `toolbar` 插件）
   - 快捷键（详见 `hotkey_hub` 插件）
 - 鼠标党：
   - 在正文区域右键，在弹出的 `右键菜单` 中直接调用（详见 `right_click_menu` 插件）
+  - 快捷按钮（详见 `quick_button` 插件）
 
 ---
 
@@ -311,7 +312,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 - `{{range}}`：当前选取的文字
 - `{{uuid}}`：uuid
 
-> 模板列表可以在 `custom_plugin.user.toml` 中配置。
+> 模板列表请前往配置文件修改。
 
 ![templater](assets/templater.gif)
 
@@ -412,6 +413,8 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 
 ### toolbar：多功能搜索栏
+
+> 类似于 vscode 的 ctrl+shift+p 功能
 
 使用方式：
 
@@ -757,7 +760,7 @@ auto_pair_symbols = [
 
 > 原理：通过设置 DOM 元素的 display 样式为 none 来隐藏元素，让元素不占用渲染树中的位置，对隐藏的元素操作不会引发其他元素的重排。
 
-> collapse_paragraph.js 的章节折叠功能可以很好的替代此插件，建议使用 collapse_paragraph。
+> collapse_paragraph （章节折叠功能）可以很好的替代此插件，建议使用 collapse_paragraph。
 
 
 
@@ -833,7 +836,7 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 
 
 
-### scroll_bookmarker：  书签管理器
+### scroll_bookmarker： 书签管理器
 
 使用方式：
 
@@ -861,7 +864,7 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 
 功能：以声明的形式，为【任意插件系统函数】或【任意自定义函数】设置快捷键。
 
-具体使用请参考 `hotkey.default.toml`。
+具体使用请参考 [hotkey.default.toml](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/hotkey.default.toml)。
 
 
 
@@ -879,7 +882,7 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 
 功能：提供开放能力，支持用户在右键菜单中调用自定义的命令。
 
-具体使用请参考 `./plugin/custom/请读我.md`。
+具体使用请参考 [./plugin/custom/请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
 
 
 

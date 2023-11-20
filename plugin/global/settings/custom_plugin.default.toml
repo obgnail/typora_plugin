@@ -288,11 +288,11 @@ set_title_color = true
 hover_to_show_fold_callout = true
 # 自动插入的模板
 template = "> [!NOTE]\n> this is note"
-# 使用的字体。一旦修改，就需要修改下面所有的icon
+# 使用的字体。一旦修改font_family，就需要修改下面所有的icon
 # 具体的icon值请参考：
 #   旧版本Typora：Typora/resources/app/style/font-awesome-4.1.0/css/font-awesome.css
 #   新版本Typora：Typora/resources/style/font-awesome-4.1.0/css/font-awesome.css
-#   也可以下载：https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
+#   所有的icon及其对应的值：https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 font_family = "FontAwesome"
 # 默认的背景颜色
 default_background_color = "#fafafa"
