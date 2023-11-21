@@ -550,5 +550,6 @@ class mixTool extends baseToolInterface {
 }
 
 module.exports = {
-    plugin: toolbarPlugin
+    plugin: toolbarPlugin,
+    baseToolInterface,
 };

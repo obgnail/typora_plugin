@@ -56,6 +56,7 @@ class utils {
     //   beforeUnload: 退出Typora之前
 
     //   beforeToggleSourceMode: 进入源码模式之前
+    //   afterToggleSidebar: 切换侧边栏状态之后
     //   beforeAddCodeBlock: 添加代码块之前
     //   afterAddCodeBlock: 添加代码块之后
     //   outlineUpdated: 大纲更新之时
@@ -71,6 +72,7 @@ class utils {
         fileEdited: "fileEdited",
         beforeUnload: "beforeUnload",
         beforeToggleSourceMode: "beforeToggleSourceMode",
+        afterToggleSidebar: "afterToggleSidebar",
         beforeAddCodeBlock: "beforeAddCodeBlock",
         afterAddCodeBlock: "afterAddCodeBlock",
         outlineUpdated: "outlineUpdated",
@@ -1353,6 +1355,14 @@ class eventHub {
             () => File && File.editor && File.editor.library && File.editor.library.outline, "updateOutlineHtml",
             null, () => this.publishEvent(this.utils.eventType.outlineUpdated)
         )
+
+        this.utils.decorate(() => File && File.editor && File.editor.library, "toggleSidebar", null, () => {
+            const sidebar = document.querySelector("#typora-sidebar");
+            if (sidebar) {
+                const open = sidebar.classList.contains("open");
+                this.publishEvent(this.utils.eventType.afterToggleSidebar, open);
+            }
+        })
 
         window.addEventListener("beforeunload", () => this.utils.publishEvent(this.utils.eventType.beforeUnload), true)
 

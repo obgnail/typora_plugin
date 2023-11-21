@@ -29,6 +29,8 @@ INTERACTIVE_MODE = false
 HIDE_DESC_WHEN_EMPTY = true
 # 看板最大高度（单位：px）（若<0，则全部显示）
 KANBAN_MAX_HEIGHT = 700
+# 当看板数量太多时是否换行显示
+WRAP = false
 # 当鼠标位于看板时，ctrl+wheel滚动看板
 CTRL_WHEEL_TO_SCROLL = true
 # 看板的颜色

@@ -1,5 +1,8 @@
 class kanbanPlugin extends BaseCustomPlugin {
-    styleTemplate = () => ({maxHeight: (this.config.KANBAN_MAX_HEIGHT < 0) ? "initial" : this.config.KANBAN_MAX_HEIGHT + "px"})
+    styleTemplate = () => ({
+        maxHeight: (this.config.KANBAN_MAX_HEIGHT < 0) ? "initial" : this.config.KANBAN_MAX_HEIGHT + "px",
+        wrap: this.config.WRAP ? "wrap" : "initial",
+    })
 
     init = () => {
         this.fenceStrictMode = false; // 单个fence是否使用严格模式
