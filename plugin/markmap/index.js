@@ -161,7 +161,6 @@ class tocMarkmap {
                 <div class="plugin-markmap-icon ion-android-arrow-down-right" action="resize" ty-hint="拖动调整大小"></div>
             </div>
             <div class="plugin-markmap-grip grip-up"></div>`;
-
         return modal
     }
 
@@ -206,16 +205,16 @@ class tocMarkmap {
 
         this.onDrag();
         this.onResize();
+        this.onToggleSidebar();
 
         this.entities.header.addEventListener("click", ev => {
             const button = ev.target.closest(".plugin-markmap-icon");
-            if (button) {
-                const action = button.getAttribute("action");
-                if (action !== "move" && this[action]) {
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    this.onButtonClick(action, button);
-                }
+            if (!button) return
+            ev.stopPropagation();
+            ev.preventDefault();
+            const action = button.getAttribute("action");
+            if (action !== "move" && this[action]) {
+                this.onButtonClick(action, button);
             }
         })
 
@@ -238,6 +237,7 @@ class tocMarkmap {
     fit = () => this.markmap && this.markmap.fit();
 
     pinUp = async (draw = true) => {
+        this.entities.modal.classList.toggle("pinUp");
         const button = document.querySelector('.plugin-markmap-icon[action="pinUp"]');
         this.pinUtils.isPinUp = !this.pinUtils.isPinUp;
         if (this.pinUtils.isPinUp) {
@@ -273,6 +273,7 @@ class tocMarkmap {
     }
 
     pinRight = async (draw = true) => {
+        this.entities.modal.classList.toggle("pinRight");
         const button = document.querySelector('.plugin-markmap-icon[action="pinRight"]');
         const write = document.querySelector("#write");
         this.pinUtils.isPinRight = !this.pinUtils.isPinRight;
@@ -335,18 +336,37 @@ class tocMarkmap {
         await this[action](button);
     }
 
+    onToggleSidebar = () => {
+        this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, () => {
+            if (!this.markmap) return
+            const func = ["pinUp", "pinRight"].find(func => this.entities.modal.classList.contains(func));
+            if (!func) return
+            setTimeout(async () => {
+                await this[func]();
+                await this[func]();
+            }, 300)
+        })
+    }
+
     onDrag = () => {
+        const moveElement = this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`);
+        const hint = "ty-hint";
+        const value = moveElement.getAttribute(hint);
         const onMouseDown = () => {
+            moveElement.removeAttribute(hint);
             this.cleanTransition(!this.config.USE_ANIMATION_WHEN_DRAG);
             this.waitUnpin();
         }
-        const onMouseUp = () => this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_DRAG)
+        const onMouseUp = () => {
+            moveElement.setAttribute(hint, value);
+            this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_DRAG);
+        }
         const dragModal = (handleElement, withMetaKey) => {
             this.utils.dragFixedModal(handleElement, this.entities.modal, withMetaKey, onMouseDown, null, onMouseUp);
         }
 
         // 提供两种拖拽的方式
-        dragModal(this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`), false);
+        dragModal(moveElement, false);
         dragModal(this.entities.modal, true);
     }
 
@@ -371,11 +391,12 @@ class tocMarkmap {
 
         // 自由移动时调整大小
         {
+            const attr = "ty-hint";
             let deltaHeight = 0;
             let deltaWidth = 0;
-            let hint = this.entities.resize.getAttribute("ty-hint");
+            let hint = this.entities.resize.getAttribute(attr);
             const onMouseDown = (startX, startY, startWidth, startHeight) => {
-                this.entities.resize.removeAttribute("ty-hint");
+                this.entities.resize.removeAttribute(attr);
                 this.cleanTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
                 deltaHeight = getModalMinHeight() - startHeight;
                 deltaWidth = getModalMinWidth() - startWidth;
@@ -386,7 +407,7 @@ class tocMarkmap {
                 return {deltaX, deltaY}
             }
             const onMouseUp = async () => {
-                this.entities.resize.setAttribute("ty-hint", hint);
+                this.entities.resize.setAttribute(attr, hint);
                 this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
                 await this.waitUnpin();
                 await this.setFullScreenIcon(this.entities.fullScreen, false);
