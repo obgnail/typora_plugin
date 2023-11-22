@@ -14,6 +14,7 @@ class windowTabBarPlugin extends global._basePlugin {
         {hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: this.nextTab},
         {hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY, callback: this.previousTab},
         {hotkey: this.config.CLOSE_HOTKEY, callback: this.closeActiveTab},
+        {hotkey: this.config.COPY_PATH_HOTKEY, callback: this.copyActiveTabPath}
     ]
 
     init = () => {
@@ -42,9 +43,9 @@ class windowTabBarPlugin extends global._basePlugin {
         this.utils.loopDetector(isHeaderReady, this.adjustTop, this.loopDetectInterval, 1000);
 
         if (this.config.DRAG_STYLE === 1) {
-            this.sort1();
+            this.sortIDEA();
         } else {
-            this.sort2();
+            this.sortVscode();
         }
 
         this.entities.tabBar.addEventListener("click", ev => {
@@ -365,6 +366,7 @@ class windowTabBarPlugin extends global._basePlugin {
     }
 
     copyPath = idx => navigator.clipboard.writeText(this.tabUtil.tabs[idx].path)
+    copyActiveTabPath = () => this.copyPath(this.tabUtil.activeIdx)
 
     showInFinder = idx => JSBridge.showInFinder(this.tabUtil.tabs[idx].path);
 
@@ -380,7 +382,7 @@ class windowTabBarPlugin extends global._basePlugin {
         }
     }
 
-    sort1 = () => {
+    sortIDEA = () => {
         const that = this;
 
         const resetTabBar = () => {
@@ -505,7 +507,7 @@ class windowTabBarPlugin extends global._basePlugin {
         })
     }
 
-    sort2 = () => {
+    sortVscode = () => {
         const that = this;
 
         const toggleOver = (target, f) => {

@@ -3,6 +3,8 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
 
     htmlTemplate = () => [{id: "plugin-scroll-bookmarker", class_: "plugin-common-modal", style: {display: "none"}}]
 
+    hotkey = () => [this.config.hotkey]
+
     init = () => {
         this.recordName = "recordScrollBookmark";
         this.recordSelector = "#write [cid]";

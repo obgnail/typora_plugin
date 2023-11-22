@@ -3,6 +3,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
 
+    hotkey = () => [this.config.hotkey]
+
     htmlTemplate = () => {
         const pre = [{ele: "pre", tabindex: "0"}]
         const el = [{id: "plugin-markdownlint", class_: "plugin-common-modal", style: {display: "none"}, children: pre}]
