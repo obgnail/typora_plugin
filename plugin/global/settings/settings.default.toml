@@ -46,6 +46,8 @@ CLOSE_HOTKEY = ["ctrl+w"]
 SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
 # 切换上一个标签页的快捷键
 SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
+# 复制当前文件路径的快捷键
+COPY_PATH_HOTKEY = []
 # 标签的标题是否去除文件后缀名
 REMOVE_FILE_SUFFIX = true
 # 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的5倍高度时，视为新建窗口打开此文件
@@ -265,7 +267,7 @@ NAME = "中英文混排优化"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 # 快捷键
-HOTKEY = ["ctrl+shift+b"]
+HOTKEY = "ctrl+shift+b"
 # 不希望拆分的单词：
 #   ==   是highlight拓展语法
 #   > [! 是callouts拓展语法
@@ -427,7 +429,7 @@ ENABLE = true
 NAME = "思维导图"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 尽力修复跨等级标题问题（MD001规范）
+# 若文档存在跨等级标题问题（MD001规范），尽力修复之
 FIX_ERROR_LEVEL_HEADER = true
 
 
@@ -442,8 +444,11 @@ CLICKABLE = true
 # js/css从何处加载: local/network
 RESOURCE_FROM = "local"
 
-# markmap共有两个功能：toc和fence，此为toc。若为false，以下配置全部失效
+# markmap共有两个功能：toc和fence。此为toc，功能：以弹窗的形式展示当前文件的思维导图
+# 若为false，以下配置全部失效
 ENABLE_TOC_MARKMAP = true
+# 快捷键
+TOC_HOTKEY = ""
 # 在右下角添加一个快捷按钮
 USE_BUTTON = true
 # 是否允许icon换行
@@ -457,8 +462,11 @@ USE_ANIMATION_WHEN_DRAG = false
 # 在调整模态框大小的时候是否使用动画
 USE_ANIMATION_WHEN_RESIZE = false
 
-# markmap共有两个功能：toc和fence，此为fence。若为false，以下配置全部失效
+# markmap共有两个功能：toc和fence。此为fence，功能：在当前鼠标光标处插入markmap代码块
+# 若为false，以下配置全部失效
 ENABLE_FENCE_MARKMAP = true
+# 快捷键
+FENCE_HOTKEY = ""
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "markmap"
@@ -545,7 +553,8 @@ NAME = "代码块增强"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 
-# fence_enhance插件包含两个功能：button、hotkey，此为button，若置为false，以下配置全部失效
+# fence_enhance插件包含两个功能：button、hotkey。此为button，功能：在代码块右上角添加按钮
+# 若置为false，以下配置全部失效
 ENABLE_BUTTON = true
 # 自动隐藏按钮，鼠标移动到代码块才显示（注意：就算置为true，在折叠状态下的代码块也不会自动隐藏。因为必须提醒用户它处于折叠状态）
 AUTO_HIDE = false
@@ -559,7 +568,7 @@ ENABLE_FOLD = true
 #   1.hidden: 隐藏除第一行外的所有行
 #   2.scroll: 添加滚动条（可视高度只有一行，所以非常反人类）
 FOLD_OVERFLOW = "hidden"
-# 所有代码块默认使用折叠
+# 默认折叠所有代码块
 FOLD_DEFAULT = false
 # 操作成功时，icon提示的保持时间（单位：ms）
 # 比如当你点击【复制代码】按钮后，icon会变成【✔】，并在保持一段时间后自动恢复。此选项就是设置这个保持时间
@@ -573,7 +582,8 @@ HIGHLIGHT_WHEN_HOVER = false
 # 代码行高亮时的颜色
 HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 
-# fence_enhance插件包含两个功能：button、hotkey，此为hotkey，若置为false，以下配置全部失效
+# fence_enhance插件包含两个功能：button、hotkey。此为hotkey，功能：为代码块添加快捷键
+# 若置为false，以下配置全部失效
 # 注意：此处的快捷键使用的是codeMirror的方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
 ENABLE_HOTKEY = true
 # 不建议修改下面的快捷键，原因有二：

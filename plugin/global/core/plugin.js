@@ -1710,6 +1710,7 @@ class hotkeyHub {
         if (typeof hk === "string" && hk.length) {
             const hotkey = this.toHotkeyFunc(hk);
             this.hotkeyMap.set(hk, {hotkey, call});
+            // 可能一个callback对应多个hotkey
         } else if (hk instanceof Array) {
             for (const _hk of hk) {
                 this._register(_hk, call);
@@ -1718,9 +1719,12 @@ class hotkeyHub {
     }
 
     register = hotkeyList => {
-        if (hotkeyList && hotkeyList.length) {
-            for (const hotkey of hotkeyList) {
-                this._register(hotkey.hotkey, hotkey.callback);
+        if (!hotkeyList) return;
+        for (const item of hotkeyList) {
+            if (item instanceof Array) {
+                this.register(item);
+            } else {
+                this._register(item.hotkey, item.callback);
             }
         }
     }

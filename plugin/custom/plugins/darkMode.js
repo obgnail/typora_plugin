@@ -3,6 +3,8 @@ class darkModePlugin extends BaseCustomPlugin {
         this.isDarkMode = false;
     }
 
+    hotkey = () => [this.config.hotkey]
+
     createDarkFilter = () => {
         const div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
         div.innerHTML = `
