@@ -15,6 +15,8 @@ class markmapPlugin extends global._basePlugin {
 
     html = () => this.tocMarkmap && this.tocMarkmap.html();
 
+    hotkey = () => [this.tocMarkmap, this.fenceMarkmap].map(p => p && p.hotkey()).filter(Boolean).flat()
+
     init = () => {
         this.callArgs = [];
         this.tocMarkmap && this.callArgs.push({arg_name: "展示思维导图", arg_value: "draw_toc"});
@@ -81,7 +83,11 @@ class fenceMarkmap {
         );
     }
 
-    call = async type => type === "draw_fence" && this.utils.insertText(null, this.config.FENCE_TEMPLATE)
+    call = async type => type === "draw_fence" && this.callback()
+
+    callback = () => this.utils.insertText(null, this.config.FENCE_TEMPLATE)
+
+    hotkey = () => [{hotkey: this.config.FENCE_HOTKEY, callback: this.callback}]
 
     render = async (cid, content, $pre) => {
         if (!this.controller.transformer || !this.controller.Markmap) {
@@ -164,6 +170,8 @@ class tocMarkmap {
         return modal
     }
 
+    hotkey = () => [{hotkey: this.config.TOC_HOTKEY, callback: this.callback}]
+
     init = () => {
         this.markmap = null;
         this.editor = null;
@@ -219,10 +227,11 @@ class tocMarkmap {
         })
 
         if (this.config.USE_BUTTON) {
-            const callback = () => (this.entities.modal.style.display === "") ? this.drawToc() : this.onButtonClick("close")
-            this.utils.registerQuickButton("markmap", [0, 1], "思维导图", "fa fa-code-fork", {fontSize: "22px"}, callback)
+            this.utils.registerQuickButton("markmap", [0, 1], "思维导图", "fa fa-code-fork", {fontSize: "22px"}, this.callback)
         }
     }
+
+    callback = () => (this.entities.modal.style.display === "") ? this.drawToc() : this.onButtonClick("close")
 
     call = async type => type === "draw_toc" && await this.drawToc()
 

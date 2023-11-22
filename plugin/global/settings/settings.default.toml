@@ -427,7 +427,7 @@ ENABLE = true
 NAME = "思维导图"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 尽力修复跨等级标题问题（MD001规范）
+# 若文档存在跨等级标题问题（MD001规范），尽力修复之
 FIX_ERROR_LEVEL_HEADER = true
 
 
@@ -444,6 +444,8 @@ RESOURCE_FROM = "local"
 
 # markmap共有两个功能：toc和fence，此为toc。若为false，以下配置全部失效
 ENABLE_TOC_MARKMAP = true
+# 快捷键
+TOC_HOTKEY = ""
 # 在右下角添加一个快捷按钮
 USE_BUTTON = true
 # 是否允许icon换行
@@ -459,6 +461,8 @@ USE_ANIMATION_WHEN_RESIZE = false
 
 # markmap共有两个功能：toc和fence，此为fence。若为false，以下配置全部失效
 ENABLE_FENCE_MARKMAP = true
+# 快捷键
+FENCE_HOTKEY = ""
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "markmap"
