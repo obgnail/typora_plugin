@@ -390,12 +390,10 @@ class windowTabBarPlugin extends global._basePlugin {
             const tabs = document.querySelectorAll("#plugin-window-tab .tab-container");
             const activeIdx = parseInt(that.entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
             const activePath = that.tabUtil.tabs[activeIdx].path;
-            const newTabList = []
-            tabs.forEach(tab => {
+            that.tabUtil.tabs = Array.from(tabs).map(tab => {
                 const idx = parseInt(tab.getAttribute("idx"));
-                newTabList.push(that.tabUtil.tabs[idx]);
-            })
-            that.tabUtil.tabs = newTabList;
+                return that.tabUtil.tabs[idx];
+            });
             that.openTab(activePath);
         }
 
@@ -410,18 +408,20 @@ class windowTabBarPlugin extends global._basePlugin {
             currentDragItem = null;
         }).on("dragover", ".tab-container", function (ev) {
             ev.preventDefault();
-            if (!currentDragItem) return;
-            this[ev.offsetX > _offsetX ? 'after' : 'before'](currentDragItem);
+            if (currentDragItem) {
+                const func = ev.offsetX > _offsetX ? 'after' : 'before';
+                this[func](currentDragItem);
+            }
         }).on("dragenter", function () {
             return false
         })
 
+        let dragBox = null;
         let cloneObj = null;
         let offsetX = 0;
         let offsetY = 0;
         let startX = 0;
         let startY = 0;
-        let dragBox = null;
         let axis, _axis;
 
         tabBar.on("dragstart", ".tab-container", function (ev) {
@@ -430,15 +430,12 @@ class windowTabBarPlugin extends global._basePlugin {
             axis = dragBox.getAttribute('axis');
             _axis = axis;
             ev.originalEvent.dataTransfer.effectAllowed = "move";
-            ev.originalEvent.dataTransfer.dropEffect = 'move';
-            let rect = dragBox.getBoundingClientRect();
-            let left = rect.left;
-            let top = rect.top;
+            ev.originalEvent.dataTransfer.dropEffect = "move";
+            let {left, top} = dragBox.getBoundingClientRect();
             startX = ev.clientX;
             startY = ev.clientY;
             offsetX = startX - left;
             offsetY = startY - top;
-            dragBox.style.transition = 'none';
 
             const fakeObj = dragBox.cloneNode(true);
             fakeObj.style.width = dragBox.offsetWidth + 'px';
@@ -454,16 +451,10 @@ class windowTabBarPlugin extends global._basePlugin {
             that.newWindowIfNeed(ev.offsetY, this);
 
             if (!cloneObj) return;
-            const rect = this.getBoundingClientRect();
+            const {left, top} = this.getBoundingClientRect();
             const reset = cloneObj.animate(
-                [
-                    {transform: cloneObj.style.transform},
-                    {transform: `translate3d(${rect.left}px, ${rect.top}px, 0)`}
-                ],
-                {
-                    duration: 150,
-                    easing: "ease-in-out",
-                }
+                [{transform: cloneObj.style.transform}, {transform: `translate3d(${left}px, ${top}px, 0)`}],
+                {duration: 150, easing: "ease-in-out"}
             )
 
             reset.onfinish = function () {
@@ -482,19 +473,17 @@ class windowTabBarPlugin extends global._basePlugin {
             ev.stopPropagation();
             ev.dataTransfer.dropEffect = 'move';
             dragBox.style.visibility = 'hidden';
-            let left = ~~(ev.clientX - offsetX);
-            let top = ~~(ev.clientY - offsetY);
-            if (ev.shiftKey || axis) {
+            let left = Math.floor(ev.clientX - offsetX);
+            let top = Math.floor(ev.clientY - offsetY);
+            if (axis) {
                 if (_axis === 'X') {
-                    top = ~~(startY - offsetY);
+                    top = Math.floor(startY - offsetY);
                 } else if (_axis === 'Y') {
-                    left = ~~(startX - offsetX);
+                    left = Math.floor(startX - offsetX);
                 } else {
-                    _axis = (
-                        ~~Math.abs(ev.clientX - startX) > ~~Math.abs(ev.clientY - startY) && 'X'
-                        || ~~Math.abs(ev.clientX - startX) < ~~Math.abs(ev.clientY - startY) && 'Y'
-                        || ''
-                    )
+                    const x = Math.abs(ev.clientX - startX);
+                    const y = Math.abs(ev.clientY - startY);
+                    _axis = ((x > y && 'X') || (x < y && 'Y') || '');
                 }
             } else {
                 _axis = '';
