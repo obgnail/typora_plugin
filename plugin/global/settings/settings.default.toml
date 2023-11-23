@@ -1,9 +1,10 @@
 #  如果您对 toml 格式不太了解，可以花三分钟时间学习一下：https://toml.io/cn/v1.0.0
+#  插件使用说明：https://github.com/obgnail/typora_plugin
 #  所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
 #-------------------------------------------------------------------------
-#  请勿修改【settings.default.toml】文件，请读本目录下的【请读我.md】文件
-#  请勿修改【settings.default.toml】文件，请读本目录下的【请读我.md】文件
-#  请勿修改【settings.default.toml】文件，请读本目录下的【请读我.md】文件
+#  请勿修改【settings.default.toml】文件，请阅读本目录下的【请读我.md】文件
+#  请勿修改【settings.default.toml】文件，请阅读本目录下的【请读我.md】文件
+#  请勿修改【settings.default.toml】文件，请阅读本目录下的【请读我.md】文件
 #-------------------------------------------------------------------------
 
 
@@ -12,7 +13,7 @@
 [global]
 # 总开关，若为false，则禁用全部插件
 ENABLE = true
-# 如果你使用了自定义图表插件（kanban、markmap、echarts等等）并且使用了交互模式（INTERACTIVE_MODE置为true），那么下面两个配置请至少一个置为true，否则你将不能退出交互模式
+# 如果你使用了自定义图表插件（kanban、markmap、echarts等等）并且使用了交互模式（INTERACTIVE_MODE置为true），那么下面两个配置请至少一个置为true，否则你将无法退出交互模式
 # 为【自定义图表】添加一个【编辑】按钮（当点击【编辑】按钮时退出交互模式）
 CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE = true
 # ctrl+click【自定义图表】退出交互模式
@@ -46,17 +47,18 @@ CLOSE_HOTKEY = ["ctrl+w"]
 SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
 # 切换上一个标签页的快捷键
 SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
-# 复制当前文件路径的快捷键
-COPY_PATH_HOTKEY = []
+# 复制当前文件路径的快捷键（为空则不设置）
+COPY_PATH_HOTKEY = [""]
 # 标签的标题是否去除文件后缀名
 REMOVE_FILE_SUFFIX = true
-# 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的5倍高度时，视为新建窗口打开此文件
+# 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的5倍高度时，视为新建窗口打开此文件（若为-1，则不启用此功能）
 HEIGHT_SCALE = 5
 # 当鼠标位于标签页时，可以使用ctrl+wheel切换标签页
 CTRL_WHEEL_TO_SCROLL = true
 # 当鼠标位于标签页时，可以点击鼠标中键关闭标签页
 MIDDLE_CLICK_TO_CLOSE = true
-# 鼠标位于标签处，点击右键，弹出的右键菜单（若置为[]，则不使用此功能）
+# 当鼠标位于标签页时，点击右键，弹出的右键菜单列表（若置为[]，则不使用此功能）
+# 支持如下功能：
 #   - closeOtherTabs:  删除其他标签
 #   - closeLeftTabs:   删除左侧全部标签
 #   - closeRightTabs:  删除右侧全部标签
@@ -81,13 +83,13 @@ NAME = "全局多关键字搜索"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+p"
-# 允许【ctrl+鼠标拖拽】拖动模态框
+# 允许通过【ctrl+鼠标拖拽输入框】拖动模态框
 ALLOW_DRAG = true
 # 模态框自动隐藏
 AUTO_HIDE = false
 # 当输入框为空，且键入backspace时，隐藏模态框
 BACKSPACE_TO_HIDE = true
-# 打开文件后，自动聚焦
+# 打开文件后，自动聚焦输入框
 # 此选项是为了键盘党可以通过键盘上下键、ctrl+enter进行快速操作，如果你是鼠标党，可以置为false
 REFOUCE_WHEN_OPEN_FILE = true
 # 搜索内容时大小写敏感(此选项不必手动调整，可以在UI设置)
@@ -102,11 +104,11 @@ LINK_PLUGIN_AUTO_HIDE = false
 RELATIVE_PATH = true
 # 关键词按空格分割
 SEPARATOR = " "
-# hint展示文件修改时间
-# 此选项时为了通过额外的信息帮助查找文件，我嫌弃它扎眼就没开启，如果你总是找不到目标文件，可以开启
+# 鼠标悬停到搜索项时展示文件的修改时间
+# 此选项时为了通过额外的信息帮助查找文件，我嫌弃它扎眼就没开启，如果你总是找不到目标文件，可以置为true
 SHOW_MTIME = false
 # 查找文件的最大尺寸。大于MAX_SIZE的文件在搜索时将被忽略。若<0则不忽略任何文件
-# Typora只支持打开小于2000000字节的文件，不建议修改成比2000000还大的值，毕竟找到了也不能在typora里打开
+# 注意：Typora只支持打开小于2000000字节的文件，所以不建议修改成比2000000还大的值，毕竟找到了也不能在typora里打开
 MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
 # 不建议新增后缀名，毕竟找到了也不能在typora里打开
@@ -123,7 +125,7 @@ NAME = "多关键字高亮"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+h"
-# 允许【ctrl+鼠标拖拽】拖动模态框
+# 允许通过【ctrl+鼠标拖拽输入框】拖动模态框
 ALLOW_DRAG = true
 # 当输入框为空，且键入backspace时，隐藏模态框
 BACKSPACE_TO_HIDE = true
@@ -132,11 +134,11 @@ CASE_SENSITIVE = false
 # 关键词按空格分割
 SEPARATOR = " "
 # 展示【执行】按钮
-# 我嫌弃它丑就没开启，如果你是鼠标党，可以开启
+# 我嫌弃它丑就没开启，如果你是鼠标党，可以置为true
 SHOW_RUN_BUTTON = false
-# 打开其他文件时自动重新搜索
+# 切换到其他文件时自动重新搜索
 RESEARCH_WHILE_OPEN_FILE = true
-# 点击时显示当前的索引数
+# 点击关键字时显示当前的索引数
 SHOW_CURRENT_INDEX = true
 # 定位时高亮关键字出现提示边框
 SHOW_KEYWORD_OUTLINE = true
@@ -157,7 +159,7 @@ DEFAULT_COLOR = "#dd6699"
 # DO NOT edit this field unless you know what you are doing
 # Typora本身有限制: ctrl+F 搜索后，点击任意地方原先高亮的地方就会消失
 # 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
-# 如果此选项为false，有可能导致你无法编辑页面，直到你重新打开此文件
+# 若置为false，有可能导致你无法编辑页面，直到你重新打开此文件
 REMOVE_WHEN_EDIT = true
 # DO NOT edit this field unless you know what you are doing
 # 性能选项：关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0，则总是使用
@@ -200,7 +202,7 @@ table = "Table"
 ############### commander ###############
 [commander]
 # 是否启用插件
-# 有一些插件（比如：pluginUpdater）依赖于此插件，若置为false，那些插件都将失效
+# 强烈不建议置为false。有一些插件（如pluginUpdater）依赖于此插件，若置为false，那些插件都将失效
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "命令行环境"
@@ -208,7 +210,7 @@ NAME = "命令行环境"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+g"
-# 允许【ctrl+鼠标拖拽】拖动模态框
+# 允许【ctrl+鼠标拖拽输入框】拖动模态框
 ALLOW_DRAG = true
 # 当输入框为空，且键入backspace时，隐藏模态框
 BACKSPACE_TO_HIDE = true
@@ -227,14 +229,14 @@ COMMIT_EXEC_SHOW = "echo"
 USE_BUILTIN = true
 # 内建命令列表。支持无限添加。
 # 目前支持4个参数:
-#   1. name:   命令展示的名称（不可重复）
-#   2. shell:  cmd/bash、powershell、gitbash、wsl（如果使用gitbash、wsl，请确保已经将其加入环境变量）
-#   3. hotkey: 快捷键调用命令行（可选）
+#   1. name:   展示的名称（不可重复）
+#   2. shell:  cmd/bash、powershell、gitbash、wsl（如果使用gitbash、wsl，请确保已经将其加入环境变量。非windows平台则后三者不可用）
+#   3. hotkey: 快捷键（可选）
 #   4. cmd:    执行的命令
 # cmd提供内置环境变量:
 #   1. $f: 当前文件路径
 #   2. $d: 当前文件所属目录
-#   3. $m: 当前挂载目录（你在侧边栏看到的根目录）
+#   3. $m: 当前挂载目录（侧边栏的根目录）
 [[commander.BUILTIN]] # dummy
 name = ""
 shell = "cmd/bash"
@@ -304,7 +306,7 @@ HOTKEY = "ctrl+j"
 BACKSPACE_TO_HIDE = true
 # 等待输入法输入完毕后才执行搜索
 IGNORE_WHEN_COMPOSITION = true
-# 用户输入的防抖时间（单位：ms）（用户输入完50ms后才执行）
+# 用户输入的防抖时间（单位：ms）（用户输入完70ms后才执行）
 # 为什么时间默认这么短？答：都是非常简单的查询，甚至大部分是直接从内存取的（当然，不建议30以下）
 DEBOUNCE_INTERVAL = 70
 # toolbar的在页面的20%位置出现
@@ -323,15 +325,17 @@ TOOLBAR_WIDTH_PERCENT = 80
 #   4. "ops"：  常用操作
 #   5. "mode"： 切换文件模式
 #   6. "theme"：临时切换主题
-#   7. "func"： 功能列表
-#   8. "all":   混合查找（所有项目都混在一起查找）
+#   7. "out":   文档大纲
+#   8. "func"： 功能列表
+#   9. "all":   混合查找（所有项目都混在一起查找）
 DEFAULT_TOOL = "func"
 # 是否使用负向查询（类似于google）
-# 比如：【plu multi -search】
+# 举例1：【plu multi -search】
 #   - 若为true： 查找【包含multi关键字，但是不包含search关键字】的插件
 #   - 若为false：查找【包含multi关键字，同时包含-search关键字】的插件
-# 负向查询和正向查询可以随意组合：
-#   - 【his close -win -mark 标签】：查找最近打开的文件，要求文件标题【包含close、标签，不包含win、mark】
+# 举例2：【his close -win -mark 标签】
+#   - 若为true： 查找最近打开的文件，要求文件标题【包含close、标签，不包含win、mark】
+#   - 若为false：查找最近打开的文件，要求文件标题【包含close、-win、-mark、标签】
 USE_NEGATIVE_SEARCH = true
 
 
@@ -411,14 +415,14 @@ ENABLE = true
 NAME = "一键到顶"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# 在右下角添加按钮
+USE_BUTTON = true
 # 滚动所用时间（单位：ms）
 SCROLL_TIME = 600
 # 到顶快捷键
 HOTKEY_GO_TOP = ""
 # 到底快捷键
 HOTKEY_GO_BOTTOM = ""
-# 在右下角添加按钮
-USE_BUTTON = true
 
 
 ############### mindmap ###############
@@ -589,7 +593,6 @@ ENABLE_HOTKEY = true
 # 不建议修改下面的快捷键，原因有二：
 #   1. 和很多ide的快捷键保持一致
 #   2. typora强制绑定了很多快捷键，实际可修改的快捷键并不多
-
 # 强制绑定的快捷键如下：
 #   1. Ctrl-A:         "selectAll",
 #   2. Ctrl-Up:        "goDocStart",
@@ -709,12 +712,13 @@ COLORS = [
 ############### custom ###############
 [custom]
 # 是否启用插件
-# 注意：若置为false，那么所有自定义插件都会失效
+# 若置为false，那么所有自定义插件都会失效
 # 若要修改自定义插件的配置请前往同目录下的custom_plugin.user.toml
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "自定义插件"
 # 是否在右键菜单中可点击
+# 若置为false，则：不影响所有自定义插件的启用状态，但是无法在右键菜单中触及
 CLICKABLE = true
 # 允许在settings.user.toml中设置custom_plugin.user.toml中的选项。若在两处皆有定义，settings.user.toml的优先级高于custom_plugin.user.toml
 # 本来【自定义插件】的选项应该在custom_plugin.user.toml中设置的，但是一直有收到反馈，用户错误地写在了settings.user.toml。无奈只能作此兼容
@@ -740,7 +744,7 @@ DO_NOT_HIDE = false
 #  - "auto"   : 最小宽度根据文本长度自适应
 #  - "232px"  : 最小宽度为232px（不一定是232，可以是任何正整数）
 MENU_MIN_WIDTH = "default"
-# 对于【启用但是没有出现在下面MENUS选项】的插件，自动加入到最后一个MENUS
+# 对于【启用但是没有出现在下面MENUS选项】的插件，自动将其加入到最后一个MENUS
 # 强烈不建议将此选项置为false，若置为false，且在MENUS中删去那些处于启用状态的插件，那么：
 #   1. 那些插件依旧处于启用状态，但是就不能通过右键菜单调用了
 #   2. 如果插件系统后续新增了插件，那么你就根本无法感知到新增插件的存在

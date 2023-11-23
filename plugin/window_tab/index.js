@@ -373,6 +373,7 @@ class windowTabBarPlugin extends global._basePlugin {
     openInNewWindow = idx => this.openFileNewWindow(this.tabUtil.tabs[idx].path, false)
 
     newWindowIfNeed = (offsetY, tab) => {
+        if (this.config.HEIGHT_SCALE < 0) return;
         offsetY = Math.abs(offsetY);
         const height = this.entities.tabBar.getBoundingClientRect().height;
         if (offsetY > height * this.config.HEIGHT_SCALE) {

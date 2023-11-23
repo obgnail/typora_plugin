@@ -51,7 +51,7 @@
 | 41   | scroll_bookmarker          | 书签管理器                             |
 | 42   | open_in_total_commander    | 在 total commander 打开                |
 | 43   | mermaid_replace            | 替换 mermaid 组件                      |
-| 44   | custom                     | 用户自定义命令（高级）                 |
+| 44   | custom                     | 开放平台，用户自定义插件（高级）       |
 | 45   | hotkey_hub                 | 快捷键注册中心（高级）                 |
 | 46   | quick_button               | 于右下角添加功能按钮（高级）           |
 | 47   | old_window_tab             | 标签页管理（已废弃）                   |
@@ -876,11 +876,11 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 
 
 
-### custom：用户自定义命令（高级）
+### custom：开放平台，用户自定义插件（高级）
 
 > 此配置是高级配置，仅对有 javascript 基础的用户开放。
 
-功能：提供开放能力，支持用户在右键菜单中调用自定义的命令。
+功能：提供开放能力，支持用户自定义插件。
 
 具体使用请参考 [./plugin/custom/请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
 
