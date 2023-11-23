@@ -1,7 +1,8 @@
 class blurPlugin extends global._basePlugin {
     beforeProcess = () => {
         this.css_id = "plugin-blur-style";
-        // todo: 低版本 typora 不支持 css3
+        this.inBlur = this.config.BLUR_DEFAULT;
+        // todo: 低版本typora不支持:has
         if (this.utils.isBetaVersion) {
             return this.utils.stopLoadPluginError
         }
@@ -11,10 +12,7 @@ class blurPlugin extends global._basePlugin {
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
-    process = () => {
-        this.inBlur = this.config.BLUR_DEFAULT;
-        this.run();
-    }
+    process = () => this.run();
 
     call = () => {
         this.inBlur = !this.inBlur;
@@ -22,10 +20,10 @@ class blurPlugin extends global._basePlugin {
     }
 
     getStyleText = () => {
-        const hide = this.config.BLUR_TYPE === "hide";
-        const effect = hide ? "visibility: hidden;" : `filter: blur(${this.config.BLUR_LEVEL}px);`;
-        const restore = hide ? `visibility: visible;` : `filter: initial;`;
         const selector = "#write > [cid]:not(.md-focus):not(:has(.md-focus)):not(:has(.md-focus-container))";
+        const [effect, restore] = (this.config.BLUR_TYPE === "hide")
+            ? ["visibility: hidden;", "visibility: visible;"]
+            : [`filter: blur(${this.config.BLUR_LEVEL}px);`, "filter: initial;"]
 
         let css = `${selector} { ${effect} }`;
         if (this.config.RESRTORE_WHEN_HOVER) {
