@@ -1,9 +1,10 @@
 #  如果您对 toml 格式不太了解，可以花三分钟时间学习一下：https://toml.io/cn/v1.0.0
+#  插件使用说明：https://github.com/obgnail/typora_plugin
 #  所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
 #-------------------------------------------------------------------------
-#  请勿修改【custom_plugin.default.toml】文件，请读本目录下的【请读我.md】文件
-#  请勿修改【custom_plugin.default.toml】文件，请读本目录下的【请读我.md】文件
-#  请勿修改【custom_plugin.default.toml】文件，请读本目录下的【请读我.md】文件
+#  请勿修改【custom_plugin.default.toml】文件，请阅读本目录下的【请读我.md】文件
+#  请勿修改【custom_plugin.default.toml】文件，请阅读本目录下的【请读我.md】文件
+#  请勿修改【custom_plugin.default.toml】文件，请阅读本目录下的【请读我.md】文件
 #-------------------------------------------------------------------------
 
 
@@ -20,12 +21,12 @@ hide = false
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "kanban"
-# 严格模式，不会忽略存在语法错误的代码行，直接在页面上报错（此选项用于控制所有看板，如果设置为true，那么会强制所有看板进入严格模式）
+# 严格模式：不会忽略存在语法错误的代码行，直接在页面上报错（此选项用于控制所有看板，如果设置为true，那么会强制所有看板进入严格模式）
 # 也可以在代码块首行添加use strict，进入严格模式（此操作用于控制单个看板）
 STRICT_MODE = false
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = false
-# 当描述为空时隐藏
+# 当描述为空时隐藏描述框
 HIDE_DESC_WHEN_EMPTY = true
 # 看板最大高度（单位：px）（若<0，则全部显示）
 KANBAN_MAX_HEIGHT = 700
@@ -33,10 +34,10 @@ KANBAN_MAX_HEIGHT = 700
 WRAP = false
 # 当鼠标位于看板时，ctrl+wheel滚动看板
 CTRL_WHEEL_TO_SCROLL = true
-# 看板的颜色
+# 看板框的颜色
 # 如果你新增了颜色，请保持 KANBAN_COLOR 和 TASK_COLOR 数量一致，否则颜色会乱套，就不好看了
 KANBAN_COLOR = ["#FFE0B2", "#DAE9F4", "#FEDCCC", "#C6E5D9", "#FFF1B9"]
-# 任务的颜色
+# 任务框的颜色
 TASK_COLOR = ["#FFFDE7", "#F8FAFF", "#FFFFF2", "#FFFCF0", "#FFFFF5"]
 # 自动插入的模板
 TEMPLATE = """```kanban
@@ -290,19 +291,26 @@ set_title_color = true
 hover_to_show_fold_callout = true
 # 自动插入的模板
 template = "> [!NOTE]\n> this is note"
-# 使用的字体。一旦修改font_family，就需要修改下面所有的icon
+# 使用的字体。一旦修改此选项，就需要修改下面所有的icon
 # 具体的icon值请参考：
 #   旧版本Typora：Typora/resources/app/style/font-awesome-4.1.0/css/font-awesome.css
 #   新版本Typora：Typora/resources/style/font-awesome-4.1.0/css/font-awesome.css
 #   所有的icon及其对应的值：https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 font_family = "FontAwesome"
+
+# 所有【类型不属于list选项的callouts】都会使用默认的样式
 # 默认的背景颜色
 default_background_color = "#fafafa"
 # 默认的左边线颜色
 default_left_line_color = "#777777"
 # 默认的icon
 default_icon = "\\f075"
-# callout的类型
+
+# callout的类型：
+#  - type：            类型
+#  - background_color：背景颜色
+#  - left_line_color： 左侧竖线颜色
+#  - icon：            图标
 [[callouts.config.list]]
 type = "note"
 background_color = "#e1d1eb"
@@ -520,9 +528,9 @@ ignore_image_div = false
 # 对于无后缀名的文件是否加入资源列表
 append_empty_suffix_file = false
 # 分析后的操作(delete和move都是危险操作，请务必查看report之后才选用)
-# 1.report: 生成报告
-# 2.delete: 直接删除
-# 3.move  : 移动到当前文件夹
+#   1.report: 生成报告
+#   2.delete: 直接删除
+#   3.move  : 移动到当前文件夹
 operation = "report"
 # 是否在报告中使用md语法展示图片
 use_md_syntax_in_report = false
@@ -573,12 +581,13 @@ click_mask_to_exit = true
 # 工具栏的位置：bottom/top
 tool_position = "top"
 # 第一张图片是？
-#   1. inViewBoxImage：当前视图里第一张图片
+#   1. inViewBoxImage：     当前视图里第一张图片
 #   2. closestViewBoxImage：距离当前视图中心最近的一张图片
-#   3. firstImage：整篇文档的第一张图片
-# 为什么是个列表？答：优先级。["inViewBoxImage", "firstImage"]：首先寻找当前视图里第一张图片，若找不到，则使用文档的第一张图片
+#   3. firstImage：         整篇文档的第一张图片
+# 为什么是个列表？答：优先级。
+# ["inViewBoxImage", "firstImage"]：首先寻找当前视图里第一张图片，若找不到，则使用文档的第一张图片
 first_image_strategies = ["inViewBoxImage", "firstImage"]
-# 在工具栏左侧，展示的图片信息
+# 在工具栏左侧，展示的图片信息：
 #   1. index: 第几张图片
 #   2. title: 图片名称
 #   3. size: 图片大小
@@ -637,30 +646,34 @@ blur_level = 15
 #   - 鼠标左中右键（可同时配合ctrl、shift、alt等修饰按键）
 #   - 快捷键
 
-# 工具栏按钮:
-# 1. 可选项比上面的功能多了一个info，用于提示
-# 2. 若是本地图片，download按钮会自动隐藏
+# 工具栏按钮
+# 有两点需要注意：
+#   1. 可选项比上面的功能多了一个info，用于提示
+#   2. 若是本地图片，download按钮会自动隐藏
 tool_function = ["info", "download", "play", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close"]
 
-# 鼠标点击图片绑定的功能（三项分别为左键、中键、右键）
+# 鼠标点击图片绑定的功能
+# 三项分别为左键、中键、右键
 mousedown_function = ["nextImage", "close", "previousImage"]
-# ctrl+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
+# ctrl+鼠标图片时，绑定的功能
 ctrl_mousedown_function = ["hFlip", "dummy", "vFlip"]
-# shift+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
+# shift+鼠标图片时，绑定的功能
 shift_mousedown_function = ["autoSize", "dummy", "dummy"]
-# alt+鼠标图片时，绑定的功能（三项分别为左键、中键、右键）
+# alt+鼠标图片时，绑定的功能
 alt_mousedown_function = ["restore", "location", "dummy"]
 
-# 当鼠标位于图片时，上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
+# 当鼠标位于图片时，上下滚动绑定的功能
+# 两项分别为向上滚动、向下滚动
 wheel_function = ["zoomIn", "zoomOut"]
-# 当鼠标位于图片时，ctrl+上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
+# 当鼠标位于图片时，ctrl+上下滚动绑定的功能
 ctrl_wheel_function = ["rotateRight", "rotateLeft"]
-# 当鼠标位于图片时，shift+上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
+# 当鼠标位于图片时，shift+上下滚动绑定的功能
 shift_wheel_function = ["incHSkew", "decHSkew"]
-# 当鼠标位于图片时，alt+上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
+# 当鼠标位于图片时，alt+上下滚动绑定的功能
 alt_wheel_function = ["incVSkew", "decVSkew"]
 
-# 在弹出遮罩层时可用的快捷键(第一项为快捷键，第二项为绑定的功能)
+# 快捷键（仅在弹出遮罩层时可用）
+# 第一项为快捷键，第二项为绑定的功能
 hotkey_function = [
     # 基础
     ["j", "nextImage"],
@@ -806,6 +819,24 @@ hide = false
 [autoTrailingWhiteSpace.config]
 # 快捷键
 hotkey = "ctrl+shift+j"
+
+
+############### redirectLocalRootUrl ###############
+[redirectLocalRootUrl]
+# 右键菜单中展示的名称
+name = "替换本地资源根目录"
+# 是否启用此自定义插件
+# 由于typora本身的bug，此插件仅在typora1.7.5及以后才可用（参考：https://github.com/typora/typora-issues/issues/5672）
+# 【metaNode的typora-root-url参数】的优先级大于【此插件】。也就是说，若文件显式设置了typora-root-url，那么此插件在该文件失效。
+enable = false
+# 是否在右键菜单中隐藏
+hide = true
+# 插件配置
+[redirectLocalRootUrl.config]
+# 根目录，支持绝对路径(如D:\tmp\img)和相对路径(如.\assets)，填写时请注意转义反斜线（若为空，则此插件失效）
+root = "./"
+# 过滤的正则表达式：只有文件名命中filter_regex匹配的文件才使用此插件（若为空，则全部文件都使用此插件）
+filter_regexp = ""
 
 
 ############### openInTotalCommander ###############
