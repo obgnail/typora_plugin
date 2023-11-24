@@ -2,7 +2,7 @@
     right: 25px;
     max-width: 400px;
     max-height: 500px;
-    overflow-y: scroll;
+    overflow-y: overlay;
 }
 
 #plugin-scroll-bookmarker .bookmark-item {

@@ -821,6 +821,24 @@ hide = false
 hotkey = "ctrl+shift+j"
 
 
+############### redirectLocalRootUrl ###############
+[redirectLocalRootUrl]
+# 右键菜单中展示的名称
+name = "替换本地资源根目录"
+# 是否启用此自定义插件
+# 由于typora本身的bug，此插件仅在typora1.7.5及以后才可用（参考：https://github.com/typora/typora-issues/issues/5672）
+# 【metaNode的typora-root-url参数】的优先级大于【此插件】。也就是说，若文件显式设置了typora-root-url，那么此插件在该文件失效。
+enable = false
+# 是否在右键菜单中隐藏
+hide = true
+# 插件配置
+[redirectLocalRootUrl.config]
+# 根目录，支持绝对路径(如D:\tmp\img)和相对路径(如.\assets)，填写时请注意转义反斜线（若为空，则此插件失效）
+root = "./"
+# 过滤的正则表达式：只有文件名命中filter_regex匹配的文件才使用此插件（若为空，则全部文件都使用此插件）
+filter_regexp = ""
+
+
 ############### openInTotalCommander ###############
 [openInTotalCommander]
 # 右键菜单中展示的名称

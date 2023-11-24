@@ -47,14 +47,15 @@
 | 37   | extract_range_to_new_file  | 提取选区文字到新文件                   |
 | 38   | full_path_copy             | 复制标题路径                           |
 | 39   | auto_trailing_white_space  | 自动添加结尾空格                       |
-| 40   | text_stylize               | 文字风格化                             |
-| 41   | scroll_bookmarker          | 书签管理器                             |
-| 42   | open_in_total_commander    | 在 total commander 打开                |
-| 43   | mermaid_replace            | 替换 mermaid 组件                      |
-| 44   | custom                     | 开放平台，用户自定义插件（高级）       |
-| 45   | hotkey_hub                 | 快捷键注册中心（高级）                 |
-| 46   | quick_button               | 于右下角添加功能按钮（高级）           |
-| 47   | old_window_tab             | 标签页管理（已废弃）                   |
+| 40   | redirect_local_root_url    | 重定向本地资源根目录                   |
+| 41   | text_stylize               | 文字风格化                             |
+| 42   | scroll_bookmarker          | 书签管理器                             |
+| 43   | open_in_total_commander    | 在 total commander 打开                |
+| 44   | mermaid_replace            | 替换 mermaid 组件                      |
+| 45   | custom                     | 开放平台，用户自定义插件（高级）       |
+| 46   | hotkey_hub                 | 快捷键注册中心（高级）                 |
+| 47   | quick_button               | 于右下角添加功能按钮（高级）           |
+| 48   | old_window_tab             | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -815,6 +816,25 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 > 根据严格的 Markdown 换行语法，需要在结尾添加两个空格以表示换行。此工具能一键添加空格。
 
 > 此插件默认关闭，需手动开启。
+
+
+
+###  redirect_local_root_url：重定向本地资源根目录
+
+如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 typora 打开文件。就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中（vault），这导致在 typora 打开后文件由于路径错误，无法访问本地资源。此插件就是为了解决此问题，重定向本地资源根目录。
+
+> 由于 [typora 本身的 bug](https://github.com/typora/typora-issues/issues/5672)，此插件仅在 typora1.7.5 及以后才可用。
+
+> 此插件默认关闭，需手动开启。
+
+使用此插件需要修改如下配置选项：
+
+```toml
+# 根目录，支持绝对路径(如D:\tmp\img)和相对路径(如.\assets)，填写时请注意转义反斜线（若为空，则此插件失效）
+root = "./"
+# 过滤的正则表达式：只有文件名命中filter_regex匹配的文件才使用此插件（若为空，则全部文件都使用此插件）
+filter_regexp = ""
+```
 
 
 
