@@ -644,7 +644,13 @@ ENABLE = true
 NAME = "文段截断"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 截断后剩余文本段的数量
+# 快捷键：隐藏前面的文本段
+HIDE_FRONT_HOTKEY = ""
+# 快捷键：显示全部的文本段
+SHOW_ALL_HOTKEY = ""
+# 快捷键：根据当前视图隐藏文本段
+HIDE_BASE_VIEW_HOTKEY = ""
+# hide_front截断后剩余文本段的数量
 REMAIN_LENGTH = 80
 
 

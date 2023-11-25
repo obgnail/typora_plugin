@@ -3,6 +3,12 @@ class truncateTextPlugin extends global._basePlugin {
         this.className = "plugin-truncate-text";
     }
 
+    hotkey = () => [
+        {hotkey: this.config.HIDE_FRONT_HOTKEY, callback: () => this.call("hide_front")},
+        {hotkey: this.config.SHOW_ALL_HOTKEY, callback: () => this.call("show_all")},
+        {hotkey: this.config.HIDE_BASE_VIEW_HOTKEY, callback: () => this.call("hide_base_view")},
+    ]
+
     callbackOtherPlugin = () => {
         const outlinePlugin = this.utils.getPlugin("outline");
         outlinePlugin && outlinePlugin.refresh();
