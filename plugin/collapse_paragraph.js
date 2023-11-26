@@ -3,29 +3,59 @@ class collapseParagraphPlugin extends global._basePlugin {
 
     init = () => {
         this.className = "plugin-collapsed-paragraph";
+        this.selector = `#write > [mdtype="heading"]`;
         this.paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
         this.callArgs = [
             {arg_name: "折叠全部章节", arg_value: "collapse_all"},
             {arg_name: "展开全部章节", arg_value: "expand_all"},
         ];
+        this.funcList = this.getFuncList();
     }
 
     process = () => {
         this.init();
-
         this.recordCollapseState(false);
-
         document.getElementById("write").addEventListener("click", ev => {
-            if (!this.utils.metaKeyPressed(ev)) return;
-            const paragraph = ev.target.closest("h1, h2, h3, h4, h5, h6");
+            const paragraph = this.getTargetHeader(ev.target);
             if (!paragraph) return;
-
             document.activeElement.blur();
+            const obj = this.funcList.find(({filter}) => filter(ev));
+            if (!obj) return;
             const collapsed = paragraph.classList.contains(this.className);
-            const list = ev.altKey ? (ev.shiftKey ? this.findAllSiblings(paragraph) : this.findSiblings(paragraph)) : [paragraph];
+            const list = obj.callback(paragraph);
             list.forEach(ele => this.trigger(ele, collapsed));
             this.callbackOtherPlugin();
         })
+    }
+
+    getTargetHeader = target => {
+        if (this.config.STRICT_MODE) {
+            return target.closest(this.selector)
+        }
+        let ele = target.closest("#write > [cid]");
+        while (ele) {
+            if (ele.getAttribute("mdtype") === "heading") {
+                return ele
+            }
+            ele = ele.previousElementSibling;
+        }
+    }
+
+    getFuncList = () => {
+        const funcMap = {
+            COLLAPSE_SINGLE: ele => [ele],
+            COLLAPSE_SIBLINGS: this.findSiblings,
+            COLLAPSE_ALL_SIBLINGS: this.findAllSiblings,
+            COLLAPSE_RECURSIVE: this.findSubSiblings,
+        }
+        const result = [];
+        for (const [key, callback] of Object.entries(funcMap)) {
+            const modifier = this.config.MODIFIER_KEY[key];
+            if (modifier) {
+                result.push({filter: this.utils.modifierKey(modifier), callback});
+            }
+        }
+        return result
     }
 
     callbackOtherPlugin = () => {
@@ -87,20 +117,33 @@ class collapseParagraphPlugin extends global._basePlugin {
         }
     }
 
+    rangeSiblings = (paragraph, rangeFunc) => {
+        ["previousElementSibling", "nextElementSibling"].forEach(direction => {
+            for (let ele = paragraph[direction]; !!ele; ele = ele[direction]) {
+                const stop = rangeFunc(ele);
+                if (stop) return;
+            }
+        })
+    }
+
     findSiblings = paragraph => {
         const idx = this.paragraphList.indexOf(paragraph.tagName);
         const stop = this.paragraphList.slice(0, idx);
-
         const result = [paragraph];
-        ["previousElementSibling", "nextElementSibling"].forEach(direction => {
-            for (let ele = paragraph[direction]; !!ele; ele = ele[direction]) {
-                if (stop.indexOf(ele.tagName) !== -1) {
-                    return
-                }
-                if (ele.tagName === paragraph.tagName) {
-                    result.push(ele);
-                }
-            }
+        this.rangeSiblings(paragraph, ele => {
+            if (stop.indexOf(ele.tagName) !== -1) return true;
+            (ele.tagName === paragraph.tagName) && result.push(ele);
+        })
+        return result;
+    }
+
+    findSubSiblings = paragraph => {
+        const idx = this.paragraphList.indexOf(paragraph.tagName);
+        const stop = this.paragraphList.slice(0, idx + 1);
+        const result = [paragraph];
+        this.rangeSiblings(paragraph, ele => {
+            if (stop.indexOf(ele.tagName) !== -1) return true;
+            (idx < this.paragraphList.indexOf(ele.tagName)) && result.push(ele);
         })
         return result;
     }
@@ -112,7 +155,7 @@ class collapseParagraphPlugin extends global._basePlugin {
             this.config.RECORD_COLLAPSE = !this.config.RECORD_COLLAPSE;
         }
         const name = "recordCollapseParagraph";
-        const selector = "#write h1,h2,h3,h4,h5,h6";
+        const selector = this.selector;
         const stateGetter = ele => ele.classList.contains(this.className);
         const stateRestorer = ele => this.trigger(ele, false);
         if (this.config.RECORD_COLLAPSE) {
@@ -123,31 +166,32 @@ class collapseParagraphPlugin extends global._basePlugin {
     }
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
-        const target = anchorNode.closest("#write h1,h2,h3,h4,h5,h6");
-        meta.target = target;
-
-        return [
-            {arg_name: `${this.config.RECORD_COLLAPSE ? "不" : ""}记住章节折叠状态`, arg_value: "record_collapse_state"},
-            {arg_name: "折叠/展开当前章节", arg_value: "call_current", arg_disabled: !target},
-            {arg_name: "折叠/展开全部兄弟章节", arg_value: "call_siblings", arg_disabled: !target},
-            {arg_name: "折叠/展开全局同级章节", arg_value: "call_all_siblings", arg_disabled: !target}
-        ]
+        const result = [{arg_name: `${this.config.RECORD_COLLAPSE ? "不" : ""}记住章节折叠状态`, arg_value: "record_collapse_state"}];
+        const target = this.getTargetHeader(anchorNode);
+        if (target) {
+            meta.target = target;
+            result.push(
+                {arg_name: "折叠/展开当前章节", arg_value: "call_current", arg_disabled: !target},
+                {arg_name: "折叠/展开当前章节（递归）", arg_value: "call_recursive", arg_disabled: !target},
+                {arg_name: "折叠/展开全部兄弟章节", arg_value: "call_siblings", arg_disabled: !target},
+                {arg_name: "折叠/展开全局同级章节", arg_value: "call_all_siblings", arg_disabled: !target},
+            )
+        }
+        return result
     }
 
     dynamicCall = (type, meta) => {
         if (!meta.target) return;
-
-        const collapsed = meta.target.classList.contains(this.className);
-
-        let list;
-        if (type === "call_current") {
-            list = [meta.target];
-        } else if (type === "call_siblings") {
-            list = this.findSiblings(meta.target);
-        } else if (type === "call_all_siblings") {
-            list = this.findAllSiblings(meta.target);
+        const map = {
+            call_current: el => [el],
+            call_siblings: this.findSiblings,
+            call_all_siblings: this.findAllSiblings,
+            call_recursive: this.findSubSiblings,
         }
-
+        const func = map[type];
+        if (!func) return;
+        const collapsed = meta.target.classList.contains(this.className);
+        const list = func(meta.target);
         if (list) {
             list.forEach(ele => this.trigger(ele, collapsed));
         }

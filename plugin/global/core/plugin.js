@@ -310,6 +310,13 @@ class utils {
     static shiftKeyPressed = ev => !!ev.shiftKey
     static altKeyPressed = ev => !!ev.altKey
     static chineseInputMethodActivated = ev => ev.key === "Process"
+    static modifierKey = keyString => {
+        const keys = keyString.toLowerCase().split("+").map(k => k.trim());
+        const ctrl = keys.indexOf("ctrl") !== -1;
+        const shift = keys.indexOf("shift") !== -1;
+        const alt = keys.indexOf("alt") !== -1;
+        return ev => this.metaKeyPressed(ev) === ctrl && this.shiftKeyPressed(ev) === shift && this.altKeyPressed(ev) === alt
+    }
 
 
     ////////////////////////////// 基础纯函数 //////////////////////////////
@@ -506,14 +513,10 @@ class utils {
     ////////////////////////////// 基础文件操作 //////////////////////////////
     static getDirname = () => global.dirname || global.__dirname
     static getFilePath = () => File.filePath || File.bundle && File.bundle.filePath
+    static getCurrentDirPath = () => this.Package.Path.dirname(this.getFilePath())
     static joinPath = (...paths) => this.Package.Path.join(this.getDirname(), ...paths)
     static requireFilePath = (...paths) => reqnode(this.joinPath(...paths))
     static readFileSync = filepath => this.Package.Fs.readFileSync(this.joinPath(filepath), 'utf8')
-
-    static getCurrentDirPath = () => {
-        const filepath = this.getFilePath();
-        return this.Package.Path.dirname(filepath)
-    }
 
     static readFiles = async files => Promise.all(files.map(async file => {
         try {

@@ -457,6 +457,8 @@ TOC_HOTKEY = ""
 USE_BUTTON = true
 # 是否允许icon换行
 ALLOW_ICON_WRAP = true
+# 点击markmap节点，定位到文档位置（跳转到对应章节）
+CLICK_TO_LOCALE = true
 # 当pin到页面顶部时，占据页面的30%高度
 HEIGHT_PRECENT_WHEN_PIN_UP = 30
 # 当pin到页面右侧时，占据页面的50%宽度
@@ -472,7 +474,7 @@ ENABLE_FENCE_MARKMAP = true
 # 快捷键
 FENCE_HOTKEY = ""
 # 代码块语言
-# 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
+# 强烈建议不要修改。如果要修改，请跟着修改FENCE_TEMPLATE选项里的语言
 LANGUAGE = "markmap"
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = true
@@ -632,8 +634,24 @@ ENABLE = true
 NAME = "章节折叠"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# 严格模式：只当点击到h1~h6时，才触发折叠/展开。若为false，则自动向上寻找最近的h1~h6
+STRICT_MODE = false
 # 记住章节是否折叠（直到关闭typora）
 RECORD_COLLAPSE = true
+# 各个功能对应的修饰键
+# 1.支持ctrl/alt/shift的随意组合（如"shift+alt"，"ctrl+shift"）
+# 2.但是不能为"alt"（因为alt+click已经被【scrollBookmarker】插件占用），也不能为"shift"（因为shift+click被系统自带的【框选】功能占用）
+# 3.若为空，表示不启用此功能
+# 4.举例：【COLLAPSE_SIBLINGS = "ctrl+alt"】：当用户同时按住键盘ctrl和alt，并且鼠标click标题时，折叠/展开父章节下所有同级的章节
+[collapse_paragraph.MODIFIER_KEY]
+# 折叠/展开 单个章节
+COLLAPSE_SINGLE = "ctrl"
+# 折叠/展开 父章节下所有同级的章节
+COLLAPSE_SIBLINGS = "ctrl+alt"
+# 折叠/展开 当前文件所有同级的章节
+COLLAPSE_ALL_SIBLINGS = "ctrl+shift+alt"
+# 递归折叠/展开 当前章节
+COLLAPSE_RECURSIVE = ""
 
 
 ############### truncate_text ###############
@@ -644,7 +662,13 @@ ENABLE = true
 NAME = "文段截断"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 截断后剩余文本段的数量
+# 快捷键：隐藏前面的文本段
+HIDE_FRONT_HOTKEY = ""
+# 快捷键：显示全部的文本段
+SHOW_ALL_HOTKEY = ""
+# 快捷键：根据当前视图隐藏文本段
+HIDE_BASE_VIEW_HOTKEY = ""
+# hide_front截断后剩余文本段的数量
 REMAIN_LENGTH = 80
 
 

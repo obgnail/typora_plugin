@@ -7,10 +7,11 @@ class markmapPlugin extends global._basePlugin {
     }
 
     styleTemplate = () => ({
+        node_hover: (!this.config.CLICK_TO_LOCALE) ? "" : `#plugin-markmap-svg .markmap-node:hover { cursor: pointer; }`,
         icon_wrap: (!this.config.ALLOW_ICON_WRAP) ? "" : `
             .plugin-markmap-header { flex-wrap: wrap; justify-content: flex-start; }
             .plugin-markmap-header .plugin-markmap-icon { padding-right: 0.5em; }
-            `
+            `,
     })
 
     html = () => this.tocMarkmap && this.tocMarkmap.html();
@@ -20,7 +21,10 @@ class markmapPlugin extends global._basePlugin {
     init = () => {
         this.callArgs = [];
         this.tocMarkmap && this.callArgs.push({arg_name: "展示思维导图", arg_value: "draw_toc"});
-        this.fenceMarkmap && this.callArgs.push({arg_name: "插入markmap", arg_value: "draw_fence"});
+        this.fenceMarkmap && this.callArgs.push(
+            {arg_name: "插入markmap：大纲", arg_value: "draw_fence_outline"},
+            {arg_name: "插入markmap：模板", arg_value: "draw_fence_template"},
+        );
     }
 
     process = async () => {
@@ -32,8 +36,21 @@ class markmapPlugin extends global._basePlugin {
     call = async type => {
         if (type === "draw_toc") {
             this.tocMarkmap && await this.tocMarkmap.call(type);
-        } else if (type === "draw_fence") {
+        } else if (type === "draw_fence_template" || type === "draw_fence_outline") {
             this.fenceMarkmap && await this.fenceMarkmap.call(type);
+        }
+    }
+
+    getToc = () => {
+        const toc = File.editor.nodeMap.toc;
+        const headers = [];
+        if (toc) {
+            for (const header of toc["headers"]) {
+                if (header && header["attributes"]) {
+                    headers.push(header.attributes.pattern.replace("{0}", header.attributes.text));
+                }
+            }
+            return headers.join("\n")
         }
     }
 
@@ -83,11 +100,17 @@ class fenceMarkmap {
         );
     }
 
-    call = async type => type === "draw_fence" && this.callback()
+    call = async type => this.callback(type)
 
-    callback = () => this.utils.insertText(null, this.config.FENCE_TEMPLATE)
+    callback = type => {
+        const md = type === "draw_fence_template" ? this.config.FENCE_TEMPLATE : this.getToc();
+        this.utils.insertText(null, md);
+    }
 
     hotkey = () => [{hotkey: this.config.FENCE_HOTKEY, callback: this.callback}]
+
+    wrapFenceCode = content => "```" + this.config.LANGUAGE + "\n" + content + "\n" + "```"
+    getToc = () => this.wrapFenceCode(this.controller.getToc() || "# empty")
 
     render = async (cid, content, $pre) => {
         if (!this.controller.transformer || !this.controller.Markmap) {
@@ -158,7 +181,7 @@ class tocMarkmap {
                 <div class="plugin-markmap-header">
                     <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
-                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag模态框也可以移动）"></div>
+                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图形重新适配窗口"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
@@ -214,17 +237,8 @@ class tocMarkmap {
         this.onDrag();
         this.onResize();
         this.onToggleSidebar();
-
-        this.entities.header.addEventListener("click", ev => {
-            const button = ev.target.closest(".plugin-markmap-icon");
-            if (!button) return
-            ev.stopPropagation();
-            ev.preventDefault();
-            const action = button.getAttribute("action");
-            if (action !== "move" && this[action]) {
-                this.onButtonClick(action, button);
-            }
-        })
+        this.onHeaderClick();
+        this.onSvgClick();
 
         if (this.config.USE_BUTTON) {
             this.utils.registerQuickButton("markmap", [0, 1], "思维导图", "fa fa-code-fork", {fontSize: "22px"}, this.callback)
@@ -479,6 +493,44 @@ class tocMarkmap {
         }
     }
 
+    onHeaderClick = () => {
+        this.entities.header.addEventListener("click", ev => {
+            const button = ev.target.closest(".plugin-markmap-icon");
+            if (!button) return
+            ev.stopPropagation();
+            ev.preventDefault();
+            const action = button.getAttribute("action");
+            if (action !== "move" && this[action]) {
+                this.onButtonClick(action, button);
+            }
+        })
+    }
+
+    onSvgClick = () => {
+        if (!this.config.CLICK_TO_LOCALE) return;
+        this.entities.svg.addEventListener("click", ev => {
+            if (ev.target.closest("circle")) return;
+            const target = ev.target.closest(".markmap-node");
+            if (!target) return;
+            ev.stopPropagation();
+            ev.preventDefault();
+            const headers = File.editor.nodeMap.toc.headers;
+            if (!headers || headers.length === 0) return;
+            const list = target.getAttribute("data-path").split(".");
+            if (!list) return;
+            const nodeIdx = list[list.length - 1];
+            let tocIdx = parseInt(nodeIdx - 1); // markmap节点的索引从1开始，要-1
+            if (!this.markmap.state.data.content) {
+                tocIdx--; // 若markmap第一个节点是空节点，再-1
+            }
+            const header = headers[tocIdx];
+            if (header) {
+                const cid = header.attributes.id;
+                this.utils.scrollByCid(cid);
+            }
+        })
+    }
+
     expand = async button => {
         this.modalOriginRect = this.entities.modal.getBoundingClientRect();
         this.setModalRect(this.entities.content.getBoundingClientRect());
@@ -524,15 +576,8 @@ class tocMarkmap {
     }
 
     drawToc = async () => {
-        const toc = File.editor.nodeMap.toc;
-        const headers = [];
-        if (toc) {
-            for (const header of toc["headers"]) {
-                if (header && header["attributes"]) {
-                    headers.push(header.attributes.pattern.replace("{0}", header.attributes.text));
-                }
-            }
-            const md = headers.join("\n");
+        const md = this.controller.getToc();
+        if (typeof md !== "undefined") {
             await this.draw(md);
         }
     }

@@ -52,8 +52,9 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             this.utils.addEventListener(this.utils.eventType.beforeUnload, () => this.saveBookmarks());
         }
 
+        const altKeyPressed = this.utils.modifierKey("alt");
         document.querySelector("#write").addEventListener("click", ev => {
-            if (!this.utils.altKeyPressed(ev)) return;
+            if (!altKeyPressed(ev)) return;
             const paragraph = ev.target.closest(this.recordSelector);
             if (!paragraph) return;
             ev.stopPropagation();

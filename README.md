@@ -823,16 +823,14 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 
 如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 typora 打开文件。就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中（vault），这导致在 typora 打开后文件由于路径错误，无法访问本地资源。此插件就是为了解决此问题，重定向本地资源根目录。
 
-> 由于 [typora 本身的 bug](https://github.com/typora/typora-issues/issues/5672)，此插件仅在 typora1.7.5 及以后才可用。
-
 > 此插件默认关闭，需手动开启。
 
-使用此插件需要修改如下配置选项：
+使用此插件需要设置如下配置选项：
 
 ```toml
-# 根目录，支持绝对路径(如D:\tmp\img)和相对路径(如.\assets)，填写时请注意转义反斜线（若为空，则此插件失效）
+# 资源根目录，支持绝对路径(如D:\\tmp\\img)和相对路径(如.\\assets)，填写时请注意转义反斜线（若为空，则此插件失效）
 root = "./"
-# 过滤的正则表达式：只有文件名命中filter_regex匹配的文件才使用此插件（若为空，则全部文件都使用此插件）
+# 过滤的正则表达式：只有文件路径命中filter_regexp匹配的文件才使用此插件（若为空，则全部文件都使用此插件）
 filter_regexp = ""
 ```
 
