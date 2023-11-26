@@ -3,7 +3,7 @@ class collapseParagraphPlugin extends global._basePlugin {
 
     init = () => {
         this.className = "plugin-collapsed-paragraph";
-        this.selector = "#write h1, #write h2, #write h3, #write h4, #write h5, #write h6";
+        this.selector = `#write > [mdtype="heading"]`;
         this.paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
         this.callArgs = [
             {arg_name: "折叠全部章节", arg_value: "collapse_all"},
@@ -16,7 +16,7 @@ class collapseParagraphPlugin extends global._basePlugin {
         this.init();
         this.recordCollapseState(false);
         document.getElementById("write").addEventListener("click", ev => {
-            const paragraph = this.getTargetHeader(ev);
+            const paragraph = this.getTargetHeader(ev.target);
             if (!paragraph) return;
             document.activeElement.blur();
             const obj = this.funcList.find(({filter}) => filter(ev));
@@ -28,11 +28,11 @@ class collapseParagraphPlugin extends global._basePlugin {
         })
     }
 
-    getTargetHeader = ev => {
+    getTargetHeader = target => {
         if (this.config.STRICT_MODE) {
-            return ev.target.closest(this.selector)
+            return target.closest(this.selector)
         }
-        let ele = ev.target.closest("#write > [cid]");
+        let ele = target.closest("#write > [cid]");
         while (ele) {
             if (ele.getAttribute("mdtype") === "heading") {
                 return ele
@@ -166,31 +166,32 @@ class collapseParagraphPlugin extends global._basePlugin {
     }
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
-        const target = anchorNode.closest("#write h1,h2,h3,h4,h5,h6");
-        meta.target = target;
-
-        return [
-            {arg_name: `${this.config.RECORD_COLLAPSE ? "不" : ""}记住章节折叠状态`, arg_value: "record_collapse_state"},
-            {arg_name: "折叠/展开当前章节", arg_value: "call_current", arg_disabled: !target},
-            {arg_name: "折叠/展开全部兄弟章节", arg_value: "call_siblings", arg_disabled: !target},
-            {arg_name: "折叠/展开全局同级章节", arg_value: "call_all_siblings", arg_disabled: !target}
-        ]
+        const result = [{arg_name: `${this.config.RECORD_COLLAPSE ? "不" : ""}记住章节折叠状态`, arg_value: "record_collapse_state"}];
+        const target = this.getTargetHeader(anchorNode);
+        if (target) {
+            meta.target = target;
+            result.push(
+                {arg_name: "折叠/展开当前章节", arg_value: "call_current", arg_disabled: !target},
+                {arg_name: "折叠/展开当前章节（递归）", arg_value: "call_recursive", arg_disabled: !target},
+                {arg_name: "折叠/展开全部兄弟章节", arg_value: "call_siblings", arg_disabled: !target},
+                {arg_name: "折叠/展开全局同级章节", arg_value: "call_all_siblings", arg_disabled: !target},
+            )
+        }
+        return result
     }
 
     dynamicCall = (type, meta) => {
         if (!meta.target) return;
-
-        const collapsed = meta.target.classList.contains(this.className);
-
-        let list;
-        if (type === "call_current") {
-            list = [meta.target];
-        } else if (type === "call_siblings") {
-            list = this.findSiblings(meta.target);
-        } else if (type === "call_all_siblings") {
-            list = this.findAllSiblings(meta.target);
+        const map = {
+            call_current: el => [el],
+            call_siblings: this.findSiblings,
+            call_all_siblings: this.findAllSiblings,
+            call_recursive: this.findSubSiblings,
         }
-
+        const func = map[type];
+        if (!func) return;
+        const collapsed = meta.target.classList.contains(this.className);
+        const list = func(meta.target);
         if (list) {
             list.forEach(ele => this.trigger(ele, collapsed));
         }
