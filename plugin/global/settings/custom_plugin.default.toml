@@ -826,7 +826,6 @@ hotkey = "ctrl+shift+j"
 # 右键菜单中展示的名称
 name = "重定向本地资源根目录"
 # 是否启用此自定义插件
-# 由于typora本身的bug，此插件仅在typora1.7.5及以后才可用（参考：https://github.com/typora/typora-issues/issues/5672）
 # 【metaNode的typora-root-url参数】的优先级大于【此插件】。也就是说，若文件显式设置了typora-root-url，那么此插件在该文件失效
 enable = false
 # 是否在右键菜单中隐藏
