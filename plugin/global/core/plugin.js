@@ -310,6 +310,13 @@ class utils {
     static shiftKeyPressed = ev => !!ev.shiftKey
     static altKeyPressed = ev => !!ev.altKey
     static chineseInputMethodActivated = ev => ev.key === "Process"
+    static modifierKey = keyString => {
+        const keys = keyString.toLowerCase().split("+").map(k => k.trim());
+        const ctrl = keys.indexOf("ctrl") !== -1;
+        const shift = keys.indexOf("shift") !== -1;
+        const alt = keys.indexOf("alt") !== -1;
+        return ev => this.metaKeyPressed(ev) === ctrl && this.shiftKeyPressed(ev) === shift && this.altKeyPressed(ev) === alt
+    }
 
 
     ////////////////////////////// 基础纯函数 //////////////////////////////

@@ -7,11 +7,11 @@ class markmapPlugin extends global._basePlugin {
     }
 
     styleTemplate = () => ({
+        node_hover: (!this.config.CLICK_TO_LOCALE) ? "" : `#plugin-markmap-svg .markmap-node:hover { cursor: pointer; }`,
         icon_wrap: (!this.config.ALLOW_ICON_WRAP) ? "" : `
             .plugin-markmap-header { flex-wrap: wrap; justify-content: flex-start; }
             .plugin-markmap-header .plugin-markmap-icon { padding-right: 0.5em; }
             `,
-        node_hover: (!this.config.CLICK_TO_LOCALE) ? "" : `#plugin-markmap-svg .markmap-node:hover { cursor: pointer; }`
     })
 
     html = () => this.tocMarkmap && this.tocMarkmap.html();
@@ -181,7 +181,7 @@ class tocMarkmap {
                 <div class="plugin-markmap-header">
                     <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
-                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag模态框也可以移动）"></div>
+                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图形重新适配窗口"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
