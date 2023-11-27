@@ -20,6 +20,7 @@ class collapseParagraphPlugin extends global._basePlugin {
             if (!paragraph) return;
             const obj = this.funcList.find(({filter}) => filter(ev));
             if (!obj) return;
+            if (ev.target.closest('.md-link')) return; // 特殊处理
             document.activeElement.blur();
             const collapsed = paragraph.classList.contains(this.className);
             const list = obj.callback(paragraph);
