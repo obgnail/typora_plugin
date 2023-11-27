@@ -1,12 +1,19 @@
 class resizeTablePlugin extends global._basePlugin {
-    style = () => {
-        if (this.config.REMOVE_MIX_WIDTH) {
-            return `table.md-table td { min-width: 1px !important; }`;
-        }
-    }
+    styleTemplate = () => this.config.REMOVE_MIX_WIDTH
 
     process = () => {
-        this.recordResizeState(false);
+        this.toggleRecorder(false);
+        this.onResize();
+    }
+
+    dynamicCallArgsGenerator = anchorNode => [{
+        arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记住表格放缩状态`,
+        arg_value: "record_resize_state"
+    }]
+
+    call = type => type === "record_resize_state" && this.toggleRecorder();
+
+    onResize = () => {
         document.querySelector("#write").addEventListener("mousedown", ev => {
             if (!this.utils.metaKeyPressed(ev)) return;
             ev.stopPropagation();
@@ -62,23 +69,12 @@ class resizeTablePlugin extends global._basePlugin {
         })
     }
 
-    dynamicCallArgsGenerator = anchorNode => [{
-        arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记住表格放缩状态`,
-        arg_value: "record_resize_state"
-    }]
-
-    call = type => {
-        if (type === "record_resize_state") {
-            this.recordResizeState();
-        }
-    }
-
-    recordResizeState = (needChange = true) => {
+    toggleRecorder = (needChange = true) => {
         if (needChange) {
             this.config.RECORD_RESIZE = !this.config.RECORD_RESIZE;
         }
         const name = "recordResizeTable";
-        const selector = "#write th,td";
+        const selector = "#write th, #write td";
         const stateGetter = ele => ele.style.cssText
         const stateRestorer = (ele, state) => ele.style = state
         if (this.config.RECORD_RESIZE) {
@@ -92,10 +88,10 @@ class resizeTablePlugin extends global._basePlugin {
         if (!target) return ""
         const {right, bottom} = target.getBoundingClientRect();
         const {clientX, clientY} = ev;
-        const threshold = this.config.THRESHOLD;
-        if (right - threshold < clientX && clientX < right + threshold) {
+        const {THRESHOLD} = this.config;
+        if (right - THRESHOLD < clientX && clientX < right + THRESHOLD) {
             return "right"
-        } else if (bottom - threshold < clientY && clientY < bottom + threshold) {
+        } else if (bottom - THRESHOLD < clientY && clientY < bottom + THRESHOLD) {
             return "bottom"
         } else {
             return ""
@@ -104,6 +100,7 @@ class resizeTablePlugin extends global._basePlugin {
 
     findTarget = (ele, ev) => {
         const {utils} = this;
+
         function* find(ele) {
             // 自己
             yield ele

@@ -21,43 +21,15 @@ class fenceEnhancePlugin extends global._basePlugin {
         }
 
         this.callMap = {
-            disable_or_enable_fold: () => {
-                this.config.ENABLE_FOLD = !this.config.ENABLE_FOLD;
-                if (!this.config.ENABLE_FOLD) {
-                    document.querySelectorAll(".fold-code.folded").forEach(ele => ele.click());
-                }
-                const display = (this.config.ENABLE_FOLD) ? "block" : "none";
-                document.querySelectorAll(".fence-enhance .fold-code").forEach(ele => ele.style.display = display);
-            },
-            disable_or_enable_copy: () => {
-                this.config.ENABLE_COPY = !this.config.ENABLE_COPY;
-                const display = (this.config.ENABLE_COPY) ? "block" : "none";
-                document.querySelectorAll(".fence-enhance .copy-code").forEach(ele => ele.style.display = display);
-            },
-            disable_or_enable_indent: () => {
-                this.enableIndent = !this.enableIndent;
-                const display = (this.enableIndent) ? "block" : "none";
-                document.querySelectorAll(".fence-enhance .indent-code").forEach(ele => ele.style.display = display);
-            },
-            fold_all: () => {
-                document.querySelectorAll(".fold-code:not(.folded)").forEach(ele => ele.click());
-                this.config.FOLD_DEFAULT = true;
-            },
-            expand_all: () => {
-                document.querySelectorAll(".fold-code.folded").forEach(ele => ele.click());
-                this.config.FOLD_DEFAULT = false;
-            },
+            disable_or_enable_fold: this.disableOrEnableFold,
+            disable_or_enable_copy: this.disableOrEnableCopy,
+            disable_or_enable_indent: this.disableOrEnableIndent,
+            fold_all: this.foldAll,
+            expand_all: this.expandAll,
+            set_auto_hide: this.setAutoHide,
             fold_current: meta => this.foldFence(meta.target),
             copy_current: meta => this.copyFence(meta.target),
             indent_current: meta => this.indentFence(meta.target),
-            set_auto_hide: () => {
-                this.config.AUTO_HIDE = !this.config.AUTO_HIDE;
-                const visibility = (this.config.AUTO_HIDE) ? "hidden" : "";
-                document.querySelectorAll(".fence-enhance").forEach(ele => {
-                    // 处于折叠状态的代码块不可隐藏
-                    ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility;
-                });
-            }
         }
     }
 
@@ -134,16 +106,19 @@ class fenceEnhancePlugin extends global._basePlugin {
 
     defaultFold = foldButton => this.config.FOLD_DEFAULT && foldButton.click();
 
+    changeIcon = (btn, newClass, originClass) => {
+        const icon = btn.firstElementChild;
+        originClass = originClass || icon.className;
+        icon.className = newClass;
+        setTimeout(() => icon.className = originClass, this.config.WAIT_RECOVER_INTERVAL);
+    }
+
     copyCode = (ev, copyButton) => {
         if (ev.timeStamp - this.lastClickTime < this.config.CLICK_CHECK_INTERVAL) return;
         this.lastClickTime = ev.timeStamp;
 
-        const result = this.utils.getFenceContent(copyButton.closest(".md-fences"))
-        // File.editor.UserOp.setClipboard(null, null, result);
-        navigator.clipboard.writeText(result).then(() => {
-            copyButton.firstElementChild.className = "fa fa-check";
-            setTimeout(() => copyButton.firstElementChild.className = "fa fa-clipboard", this.config.WAIT_RECOVER_INTERVAL);
-        })
+        const result = this.utils.getFenceContent(copyButton.closest(".md-fences"));
+        navigator.clipboard.writeText(result).then(() => this.changeIcon(copyButton, "fa fa-check", "fa fa-clipboard"));
     }
 
     foldCode = (ev, foldButton) => {
@@ -180,8 +155,7 @@ class fenceEnhancePlugin extends global._basePlugin {
         File.editor.refocus(cid);
         File.editor.fences.formatContent();
 
-        indentButton.firstElementChild.className = "fa fa-check";
-        setTimeout(() => indentButton.firstElementChild.className = "fa fa-indent", this.config.WAIT_RECOVER_INTERVAL);
+        this.changeIcon(indentButton, "fa fa-check", "fa fa-indent");
     }
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
@@ -205,6 +179,40 @@ class fenceEnhancePlugin extends global._basePlugin {
     expandFence = fence => {
         const button = fence.querySelector(".fence-enhance .fold-code.folded");
         button && button.click();
+    }
+    disableOrEnableFold = () => {
+        this.config.ENABLE_FOLD = !this.config.ENABLE_FOLD;
+        if (!this.config.ENABLE_FOLD) {
+            document.querySelectorAll(".fold-code.folded").forEach(ele => ele.click());
+        }
+        const display = (this.config.ENABLE_FOLD) ? "block" : "none";
+        document.querySelectorAll(".fence-enhance .fold-code").forEach(ele => ele.style.display = display);
+    }
+    disableOrEnableCopy = () => {
+        this.config.ENABLE_COPY = !this.config.ENABLE_COPY;
+        const display = (this.config.ENABLE_COPY) ? "block" : "none";
+        document.querySelectorAll(".fence-enhance .copy-code").forEach(ele => ele.style.display = display);
+    }
+    disableOrEnableIndent = () => {
+        this.enableIndent = !this.enableIndent;
+        const display = (this.enableIndent) ? "block" : "none";
+        document.querySelectorAll(".fence-enhance .indent-code").forEach(ele => ele.style.display = display);
+    }
+    foldAll = () => {
+        document.querySelectorAll(".fold-code:not(.folded)").forEach(ele => ele.click());
+        this.config.FOLD_DEFAULT = true;
+    }
+    expandAll = () => {
+        document.querySelectorAll(".fold-code.folded").forEach(ele => ele.click());
+        this.config.FOLD_DEFAULT = false;
+    }
+    setAutoHide = () => {
+        this.config.AUTO_HIDE = !this.config.AUTO_HIDE;
+        const visibility = (this.config.AUTO_HIDE) ? "hidden" : "";
+        document.querySelectorAll(".fence-enhance").forEach(ele => {
+            // 处于折叠状态的代码块不可隐藏
+            ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility;
+        });
     }
 
     call = (type, meta) => {

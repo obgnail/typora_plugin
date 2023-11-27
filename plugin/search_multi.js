@@ -276,17 +276,16 @@ class LinkHelper {
         this.appendButton();
 
         // 当处于联动状态，在search_multi搜索前先设置highlighter的inputValue和caseSensitive
-        this.utils.decorate(() => this.highlighter, "highlight",
-            () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.modal.modal.style.display === "block" && this.syncValue()
-        )
+        const beforeHighlight = () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.modal.modal.style.display === "block" && this.syncValue()
+        this.utils.decorate(() => this.highlighter, "highlight", beforeHighlight);
+
         // 当处于联动状态，search_multi触发搜索的时候，先触发highlighter搜索
-        this.utils.decorate(() => this.searcher, "searchMulti",
-            () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.modal.modal.style.display === "block" && this.highlight()
-        )
+        const beforeSearchMulti = () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.modal.modal.style.display === "block" && this.highlight()
+        this.utils.decorate(() => this.searcher, "searchMulti", beforeSearchMulti);
+
         // 当处于联动状态，search_multi隐藏前，先恢复highlighter modal
-        this.utils.decorate(() => this.searcher, "hide",
-            () => this.searcher.config.LINK_OTHER_PLUGIN && this.toggle(this.searcher.config.LINK_PLUGIN_AUTO_HIDE)
-        )
+        const beforeHide = () => this.searcher.config.LINK_OTHER_PLUGIN && this.toggle(this.searcher.config.LINK_PLUGIN_AUTO_HIDE)
+        this.utils.decorate(() => this.searcher, "hide", beforeHide);
 
         this.searcher.modal.modal.addEventListener("click", ev => {
             if (ev.target.closest("#plugin-search-multi-input .link-option-btn")) {
@@ -345,7 +344,7 @@ class LinkHelper {
         this.utils.removeElement(this.highlighterDiv);
         this.utils.insertDiv(this.highlighterDiv);
 
-        this.highlighterDiv.style.display = (forceHide) ? "none" : "block";
+        this.highlighterDiv.style.display = forceHide ? "none" : "block";
         this.highlighterDiv.querySelector("#plugin-multi-highlighter-input").style.display = "";
         this.styleList.forEach(style => this.highlighterDiv.style[style] = "");
         this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = this.originValue;
