@@ -18,9 +18,9 @@ class collapseParagraphPlugin extends global._basePlugin {
         document.getElementById("write").addEventListener("click", ev => {
             const paragraph = this.getTargetHeader(ev.target);
             if (!paragraph) return;
-            document.activeElement.blur();
             const obj = this.funcList.find(({filter}) => filter(ev));
             if (!obj) return;
+            document.activeElement.blur();
             const collapsed = paragraph.classList.contains(this.className);
             const list = obj.callback(paragraph);
             list.forEach(ele => this.trigger(ele, collapsed));
