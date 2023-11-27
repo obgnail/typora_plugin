@@ -63,6 +63,17 @@ class loadPluginHelper {
         }
     }
 
+    // 检测用户错误的配置
+    errorSettingDetector = customSetting => {
+        const errorPluginSetting = Object.keys(customSetting).filter(fixedName => fixedName in global._plugin_settings);
+        if (errorPluginSetting && errorPluginSetting.length) {
+            const msg = "以下插件错误地配置到 custom_plugin.user.toml，正确配置文件为 settings.user.toml：";
+            const components = [msg, ...errorPluginSetting].map(label => ({label, type: "p"}));
+            const openSettingFile = () => JSBridge.showInFinder(this.utils.joinPath("./plugin/global/settings/settings.user.toml"));
+            this.utils.modal({title: "配置错误", components}, openSettingFile, openSettingFile);
+        }
+    }
+
     // 兼容用户错误操作
     mergeSettings = settings => {
         if (this.controller.config.ALLOW_SET_CONFIG_IN_SETTINGS_TOML) {
@@ -78,6 +89,7 @@ class loadPluginHelper {
     load = async () => {
         let settings = await this.utils.readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
         settings = this.mergeSettings(settings);
+        this.errorSettingDetector(settings);
         this.controller.customSettings = settings;
         await Promise.all(Array.from(Object.keys(settings)).map(this.loadCustomPlugin));
         this.utils.publishEvent(this.utils.eventType.allCustomPluginsHadInjected);
