@@ -80,9 +80,9 @@ class collapseParagraphPlugin extends global._basePlugin {
             ele.style.display = display;
             ele = ele.nextElementSibling;
         }
-
         return ele;
     }
+
     trigger = (paragraph, collapsed) => {
         if (collapsed) {
             paragraph.classList.remove(this.className);
@@ -148,7 +148,7 @@ class collapseParagraphPlugin extends global._basePlugin {
         return result;
     }
 
-    findAllSiblings = paragraph => document.querySelectorAll(`#write ${paragraph.tagName}`);
+    findAllSiblings = paragraph => document.querySelectorAll(`#write > ${paragraph.tagName}`);
 
     recordCollapseState = (needChange = true) => {
         if (needChange) {
@@ -166,7 +166,8 @@ class collapseParagraphPlugin extends global._basePlugin {
     }
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
-        const result = [{arg_name: `${this.config.RECORD_COLLAPSE ? "不" : ""}记住章节折叠状态`, arg_value: "record_collapse_state"}];
+        const arg_name = `${this.config.RECORD_COLLAPSE ? "不" : ""}记住章节折叠状态`;
+        const result = [{arg_name: arg_name, arg_value: "record_collapse_state"}];
         const target = this.getTargetHeader(anchorNode);
         if (target) {
             meta.target = target;

@@ -2067,7 +2067,8 @@ class process {
         if (!style) return;
 
         if (typeof style === "string") {
-            this.utils.insertStyle(`plugin-${fixedName.replace(/_/g, "-")}-style`, style);
+            const name = fixedName.replace(/_/g, "-");
+            this.utils.insertStyle(`plugin-${name}-style`, style);
         } else if (typeof style === "object") {
             const {textID = null, text = null, fileID = null, file = null} = style;
             if (fileID && file) {
@@ -2086,7 +2087,7 @@ class process {
             return
         }
         try {
-            const {plugin} = this.utils.requireFilePath(`./plugin/${fixedName}`);
+            const {plugin} = this.utils.requireFilePath("./plugin", fixedName);
             if (!plugin) return;
             const instance = new plugin(fixedName, setting);
 
@@ -2109,7 +2110,7 @@ class process {
             global._plugins[instance.fixedName] = instance;
             console.debug(`plugin had been injected: [ ${instance.fixedName} ] `);
         } catch (e) {
-            console.error("plugin err:", e);
+            console.error("load plugin err:", e);
         }
     }
 

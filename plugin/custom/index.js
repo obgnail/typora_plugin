@@ -34,7 +34,7 @@ class loadPluginHelper {
             return;
         }
         try {
-            const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins/${fixedName}`);
+            const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins`, fixedName);
             if (!plugin) return;
 
             const instance = new plugin(fixedName, customSetting, this.controller);
