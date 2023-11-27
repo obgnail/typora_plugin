@@ -725,8 +725,8 @@ hotkey = ""
 # 禁用的规则（参考：https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md）
 disable_rules = ["MD012", "MD013", "MD041"]
 # 在编辑后多长时间重新检测一次（单位：ms）
-# 最低为500，若<500，则自动置为500
-debounce_interval = 1000
+# 最低为3000，若<3000，则自动置为3000
+debounce_interval = 3500
 # 允许【ctrl+鼠标拖拽】拖动模态框
 allow_drag = true
 # lint通过时的提示文本

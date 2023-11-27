@@ -29,13 +29,9 @@ class markdownLintPlugin extends BaseCustomPlugin {
         if (this.config.allow_drag) {
             this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true);
         }
-        this.utils.addEventListener(this.utils.eventType.firstFileInit, this.renewLintResult);
-        this.utils.addEventListener(this.utils.eventType.fileEdited, this.utils.debounce(async () => {
-            const content = await this.renewLintResult();
-            if (this.entities.modal.style.display !== "none") {
-                await this.updateModal(content);
-            }
-        }, Math.min(0, this.config.debounce_interval - 500)));
+        this.utils.addEventListener(this.utils.eventType.firstFileInit, () => setTimeout(this.renewLintResult, 500));
+        const debounce = this.utils.debounce(this.updateAll, Math.max(2500, this.config.debounce_interval - 500));
+        this.utils.addEventListener(this.utils.eventType.fileEdited, debounce);
     }
 
     callback = async anchorNode => {
@@ -45,6 +41,14 @@ class markdownLintPlugin extends BaseCustomPlugin {
             this.entities.modal.style.display = "";
         } else {
             this.entities.modal.style.display = "none";
+        }
+    }
+
+    updateAll = async () => {
+        console.debug("markdown lint detector");
+        const content = await this.renewLintResult();
+        if (this.entities.modal.style.display !== "none") {
+            await this.updateModal(content);
         }
     }
 
