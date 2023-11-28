@@ -230,7 +230,7 @@ class tocMarkmap {
     process = async () => {
         this.init();
 
-        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.entities.modal.style.display === "block" && this.drawToc());
+        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.entities.modal.style.display === "block" && this.drawToc(this.config.AUTO_FIT_WHEN_UPDARE));
         this.entities.content.addEventListener("transitionend", this.fit);
         this.entities.modal.addEventListener("transitionend", this.fit);
 
@@ -575,17 +575,17 @@ class tocMarkmap {
         });
     }
 
-    drawToc = async () => {
+    drawToc = async (fit = true) => {
         const md = this.controller.getToc();
         if (typeof md !== "undefined") {
-            await this.draw(md);
+            await this.draw(md, fit);
         }
     }
 
-    draw = async md => {
+    draw = async (md, fit = true) => {
         this.entities.modal.style.display = "block";
         if (this.markmap) {
-            await this.update(md);
+            await this.update(md, fit);
         } else {
             this.initModalRect();
             await this.controller.lazyLoad();
@@ -598,10 +598,12 @@ class tocMarkmap {
         this.markmap = this.controller.Markmap.create(this.entities.svg, null, root);
     }
 
-    update = async md => {
+    update = async (md, fit = true) => {
         const {root} = this.controller.transformer.transform(md);
         this.markmap.setData(root);
-        await this.markmap.fit();
+        if (fit) {
+            await this.markmap.fit();
+        }
     }
 }
 

@@ -459,6 +459,8 @@ USE_BUTTON = true
 ALLOW_ICON_WRAP = true
 # 点击markmap节点，定位到文档位置（跳转到对应章节）
 CLICK_TO_LOCALE = true
+# 当用户编辑文档，导致markmap更新图形时，新markmap的图形大小是否重新适配窗口
+AUTO_FIT_WHEN_UPDARE = true
 # 当pin到页面顶部时，占据页面的30%高度
 HEIGHT_PRECENT_WHEN_PIN_UP = 30
 # 当pin到页面右侧时，占据页面的50%宽度
