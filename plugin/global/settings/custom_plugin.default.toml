@@ -508,6 +508,20 @@ auto_pair_symbols = [
 ]
 
 
+############### toc ###############
+[toc]
+# 右键菜单中展示的名称
+name = "大纲"
+# 是否启用此自定义插件
+enable = false
+# 是否在右键菜单中隐藏
+hide = false
+# 插件配置
+[toc.config]
+# 快捷键
+hotkey = ""
+
+
 ############### resourceOperation ###############
 [resourceOperation]
 # 右键菜单中展示的名称

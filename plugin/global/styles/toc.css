@@ -1,0 +1,49 @@
+.plugin-toc {
+    display: table;
+    list-style-type: none;
+    margin-left: 0;
+    direction: ltr;
+    text-align: left;
+    border: 1px solid #a2a9b1;
+    background-color: #f8f9fa;
+    padding: 5px;
+    font-size: 95%;
+    overflow-y: scroll;
+    right: 0;
+    box-shadow: initial;
+}
+
+.plugin-toc li {
+    margin-bottom: 0.1em;
+    display: list-item;
+    text-align: -webkit-match-parent;
+}
+
+.plugin-toc ul {
+    list-style: none;
+    line-height: 1.6;
+    padding: 0;
+}
+
+.plugin-toc ul ul {
+    margin: 0 0 0 1.5em;
+    text-align: left;
+}
+
+.plugin-toc .toc-node {
+    text-decoration: none;
+    color: #0645ad;
+    background: none;
+}
+
+.plugin-toc .toc-node:hover {
+    cursor: pointer;
+}
+
+.plugin-toc .toc-node:hover .toc-text {
+    text-decoration: underline;
+}
+
+.plugin-toc .toc-node:active .toc-text {
+    color: orange;
+}
