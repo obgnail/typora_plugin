@@ -79,7 +79,7 @@
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
-> 每个插件皆有配置选项，可以通过修改配置文件 **永久** 启用 / 禁用任何插件。配置文件夹：[A/plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings)
+> 每个插件皆有配置选项。开发者鼓励您修改配置，以符合自身需求。配置文件夹：[A/plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings)
 
 > 本插件系统支持一键升级：`常用插件 -> 自定义插件 -> 升级插件`
 
