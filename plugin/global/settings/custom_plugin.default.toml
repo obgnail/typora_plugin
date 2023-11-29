@@ -81,9 +81,9 @@ RENDERER = "svg"
 # 可选: png/jpg/svg
 # 注意: png/jpg只有在canvas渲染器的时候可用，svg只有在使用svg渲染器的时候可用
 EXPORT_TYPE = "svg"
-# 代码块默认高度
+# 图表默认高度
 DEFAULT_FENCE_HEIGHT = "300px"
-# 代码块背景颜色
+# 图表背景颜色
 DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 # 自动插入的模板
 TEMPLATE = """```echarts
@@ -128,9 +128,9 @@ hide = false
 LANGUAGE = "chart"
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = true
-# 代码块默认高度
+# 图表默认高度
 DEFAULT_FENCE_HEIGHT = "300px"
-# 代码块背景颜色
+# 图表背景颜色
 DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 # 自动插入的模板
 TEMPLATE = """```chart
@@ -188,9 +188,9 @@ hide = false
 LANGUAGE = "calendar"
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = true
-# 代码块默认高度
+# 图表默认高度
 DEFAULT_FENCE_HEIGHT = "800px"
-# 代码块背景颜色
+# 图表背景颜色
 DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 # 自动插入的模板
 TEMPLATE = """```calendar
@@ -240,7 +240,7 @@ hide = false
 LANGUAGE = "timeline"
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = false
-# 背景颜色
+# 图表背景颜色
 BACKGROUND_COLOR = "#fafafa"
 # 标题的字体颜色
 TITLE_COLOR = "#555"
@@ -307,75 +307,25 @@ default_left_line_color = "#777777"
 default_icon = "\\f075"
 
 # callout的类型：
-#  - type：            类型
+#  - type：            自定义的类型
 #  - background_color：背景颜色
 #  - left_line_color： 左侧竖线颜色
 #  - icon：            图标
-[[callouts.config.list]]
-type = "note"
-background_color = "#e1d1eb"
-left_line_color = "#6a1b9a"
-icon = "\\f040"
-[[callouts.config.list]]
-type = "tip"
-background_color = "#d8f2e5"
-left_line_color = "#3abd7e"
-icon = "\\f02c"
-[[callouts.config.list]]
-type = "example"
-background_color = "#f1edfd"
-left_line_color = "#777777"
-icon = "\\f133"
-[[callouts.config.list]]
-type = "caution"
-background_color = "#fde7e9"
-left_line_color = "#c62828"
-icon = "\\f024"
-[[callouts.config.list]]
-type = "failure"
-background_color = "#f4d4d4"
-left_line_color = "#c62828"
-icon = "\\f00d"
-[[callouts.config.list]]
-type = "important"
-background_color = "#d8e6f3"
-left_line_color = "#3b83c1"
-icon = "\\f132"
-[[callouts.config.list]]
-type = "warning"
-background_color = "#feeed3"
-left_line_color = "#E0AC00"
-icon = "\\f071"
-[[callouts.config.list]]
-type = "success"
-background_color = "#d8f2e5"
-left_line_color = "#3abd7e"
-icon = "\\f00c"
-[[callouts.config.list]]
-type = "question"
-background_color = "#fff4ce"
-left_line_color = "#E0AC00"
-icon = "\\f128"
-[[callouts.config.list]]
-type = "info"
-background_color = "#dff6dd"
-left_line_color = "#3abd7e"
-icon = "\\f05a"
-[[callouts.config.list]]
-type = "bug"
-background_color = "#feeed3"
-left_line_color = "#E0AC00"
-icon = "\\f188"
-[[callouts.config.list]]
-type = "quote"
-background_color = "#fafafa"
-left_line_color = "#777777"
-icon = "\\f10d"
-[[callouts.config.list]]
-type = "abstract"
-background_color = "#e5f8f8"
-left_line_color = "#777777"
-icon = "\\f00b"
+list = [
+    { type = "tip", background_color = "#d8f2e5", left_line_color = "#3abd7e", icon = "\\f02c" },
+    { type = "bug", background_color = "#feeed3", left_line_color = "#E0AC00", icon = "\\f188" },
+    { type = "info", background_color = "#dff6dd", left_line_color = "#3abd7e", icon = "\\f05a" },
+    { type = "note", background_color = "#e1d1eb", left_line_color = "#6a1b9a", icon = "\\f040" },
+    { type = "quote", background_color = "#fafafa", left_line_color = "#777777", icon = "\\f10d" },
+    { type = "example", background_color = "#f1edfd", left_line_color = "#777777", icon = "\\f133" },
+    { type = "caution", background_color = "#fde7e9", left_line_color = "#c62828", icon = "\\f024" },
+    { type = "failure", background_color = "#f4d4d4", left_line_color = "#c62828", icon = "\\f00d" },
+    { type = "warning", background_color = "#feeed3", left_line_color = "#E0AC00", icon = "\\f071" },
+    { type = "success", background_color = "#d8f2e5", left_line_color = "#3abd7e", icon = "\\f00c" },
+    { type = "question", background_color = "#fff4ce", left_line_color = "#E0AC00", icon = "\\f128" },
+    { type = "abstract", background_color = "#e5f8f8", left_line_color = "#777777", icon = "\\f00b" },
+    { type = "important", background_color = "#d8e6f3", left_line_color = "#3b83c1", icon = "\\f132" },
+]
 
 
 ############### darkMode ###############
@@ -537,7 +487,7 @@ hide = false
 resource_suffix = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".bmp", ".mp3", ".mp4", ".image", ".jfif", ".gif!large"]
 # 什么后缀判定为md文件
 markdown_suffix = [".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]
-# 是否忽略<img src="example.jpg">里的资源（markdown是支持插入html的，此选项问是否要忽略img标签）
+# 是否忽略html标签<img src="example.jpg">里的资源（markdown是支持插入html的，此选项问是否要忽略img标签）
 ignore_image_div = false
 # 对于无后缀名的文件是否加入资源列表
 append_empty_suffix_file = false
@@ -594,7 +544,7 @@ use_button = true
 click_mask_to_exit = true
 # 工具栏的位置：bottom/top
 tool_position = "top"
-# 第一张图片是？
+# 进入查看器后，第一张图片是？
 #   1. inViewBoxImage：     当前视图里第一张图片
 #   2. closestViewBoxImage：距离当前视图中心最近的一张图片
 #   3. firstImage：         整篇文档的第一张图片
@@ -604,7 +554,7 @@ first_image_strategies = ["inViewBoxImage", "firstImage"]
 # 在工具栏左侧，展示的图片信息：
 #   1. index: 第几张图片
 #   2. title: 图片名称
-#   3. size: 图片大小
+#   3. size:  图片大小
 show_message = ["index", "title", "size"]
 # 每次缩放的比率
 zoom_scale = 0.1
@@ -686,7 +636,7 @@ shift_wheel_function = ["incHSkew", "decHSkew"]
 # 当鼠标位于图片时，alt+上下滚动绑定的功能
 alt_wheel_function = ["incVSkew", "decVSkew"]
 
-# 快捷键（仅在弹出遮罩层时可用）
+# 快捷键（仅在进入查看器后可用）
 # 第一项为快捷键，第二项为绑定的功能
 hotkey_function = [
     # 基础
@@ -758,7 +708,6 @@ modal_font_size = "13px"
 # 在右上角添加一个方块，用以提示lint状态（类似于idea）
 # 若置为false，以下配置全部失效
 use_button = true
-# 方块的尺寸
 # 方块的宽度
 button_width = "12px"
 # 方块的高度
