@@ -193,9 +193,11 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### 如何永久禁用/启用某些插件？
 
-请看 [./plugin/golbal/settings/请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)
+请看 [./plugin/global/settings/请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)
 
 
+
+---
 
 ## 插件使用说明
 
@@ -216,9 +218,9 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 同理 `代码块增强` 功能需要光标定位到代码块中才会出现更多的功能选项。其他功能需要您自己去探索发现。
 
-![right_click_menu1](assets/right_click_menu1.png)
-
-![right_click_menu2](assets/right_click_menu2.png)
+| 光标位于标题中                                     | 光标位于非标题中                                   |
+| -------------------------------------------------- | -------------------------------------------------- |
+| ![right_click_menu1](assets/right_click_menu1.png) | ![right_click_menu2](assets/right_click_menu2.png) |
 
 
 
@@ -432,6 +434,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 - `plu`：插件
 - `tab`：打开的标签页
 - `ops`：常用操作
+- `out`：文档大纲
 - `mode`：切换文件模式
 - `theme`：临时切换主题
 - `func`：功能列表
@@ -904,7 +907,7 @@ filter_regexp = ""
 
 功能：提供开放能力，支持用户自定义插件。
 
-具体使用请参考 [./plugin/custom/请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
+具体使用请参考 [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
 
 
 

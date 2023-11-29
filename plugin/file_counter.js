@@ -92,6 +92,10 @@ class fileCounterPlugin extends global._basePlugin {
         const dir = treeNode.getAttribute("data-path");
         this.countFiles(dir, this.allowRead, fileCount => {
             let countDiv = this.getChild(treeNode, this.className);
+            if (fileCount <= this.config.IGNORE_MIN_NUM) {
+                this.utils.removeElement(countDiv);
+                return
+            }
             if (!countDiv) {
                 countDiv = document.createElement("div");
                 countDiv.classList.add(this.className);

@@ -827,6 +827,8 @@ ENABLE = true
 NAME = "文件计数"
 # 是否在右键菜单中可点击
 CLICKABLE = false
+# 当目录下的文件数量少于等于IGNORE_MIN_NUM时，忽略此目录
+IGNORE_MIN_NUM = 0
 # Typora允许打开小于2000000(即MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
 MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
