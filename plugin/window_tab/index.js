@@ -199,7 +199,7 @@ class windowTabBarPlugin extends global._basePlugin {
         }, true)
     }
 
-    showTabsIfNeed = hide => document.querySelector("#plugin-window-tab").style.visibility = (hide) ? "hidden" : "initial";
+    showTabsIfNeed = hide => document.querySelector("#plugin-window-tab").style.visibility = hide ? "hidden" : "initial";
 
     // 新窗口打开
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
@@ -296,6 +296,9 @@ class windowTabBarPlugin extends global._basePlugin {
             this.tabUtil.activeIdx = this.tabUtil.tabs.length - 1;
         } else if (pathIdx !== -1) {
             this.tabUtil.activeIdx = pathIdx;
+        }
+        if (0 < this.config.TAB_MAX_NUM && this.config.TAB_MAX_NUM < this.tabUtil.tabs.length) {
+            this.tabUtil.tabs = this.tabUtil.tabs.slice(-this.config.TAB_MAX_NUM);
         }
         this.renderDOM(wantOpenPath);
     }

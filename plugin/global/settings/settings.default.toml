@@ -51,6 +51,8 @@ SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
 COPY_PATH_HOTKEY = [""]
 # 标签的标题是否去除文件后缀名
 REMOVE_FILE_SUFFIX = true
+# 最多打开x个标签，超过时会删除最左边的tab，若为-1则保留全部
+TAB_MAX_NUM = -1
 # 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的5倍高度时，视为新建窗口打开此文件（若为-1，则不启用此功能）
 HEIGHT_SCALE = 5
 # 当鼠标位于标签页时，可以使用ctrl+wheel切换标签页
