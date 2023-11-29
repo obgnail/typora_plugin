@@ -741,15 +741,20 @@ disable_rules = ["MD009", "MD012", "MD013", "MD033", "MD041"]
 # 将检测规则的案文翻译为中文
 translate = true
 # 防抖时间，在编辑后多长时间重新检测一次（单位：ms）
-# 最低为3000，若<3000，则自动置为3000
-# 为什么这么长？
-#   1. 检测比较耗资源
-#   2. typora1.7.x后，【读取文件内容】会和【打开文件】发生竞争冒险，导致window_tab无法顺利切换，无奈只能做回避处理
-debounce_interval = 3500
+# 最低为1000，若<1000，则自动置为1000
+debounce_interval = 1000
 # 允许【ctrl+鼠标拖拽】拖动模态框
 allow_drag = true
 # lint通过时的提示文本
 pass_text = "该文件符合规范要求"
+# 弹窗的宽度
+#   1. auto:  根据文字自适应
+#   2. 500px: 500像素（不一定是500，可以任何正整数）
+modal_width = "auto"
+# 弹窗的最大高度
+modal_max_height = "500px"
+# 弹窗的字体大小
+modal_font_size = "13px"
 # 在右上角添加一个方块，用以提示lint状态（类似于idea）
 # 若置为false，以下配置全部失效
 use_button = true

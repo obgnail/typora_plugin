@@ -1,10 +1,7 @@
 class markdownLintPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
-
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
-
     hotkey = () => [this.config.hotkey]
-
     htmlTemplate = () => {
         const pre = [{ele: "pre", tabindex: "0"}]
         const el = [{id: "plugin-markdownlint", class_: "plugin-common-modal", style: {display: "none"}, children: pre}]
@@ -12,59 +9,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
             el.push({id: "plugin-markdownlint-button", "ty-hint": "markdown格式规范检测"})
         }
         return el
-    }
-
-    init = () => {
-        if (!this.config.translate) return;
-        this.i18n = {
-            "MD001": "标题层级一次只应增加一个级别",
-            "MD002": "第一个标题必须是最高级的标题",
-            "MD003": "在标题前加#号来表示标题级别",
-            "MD004": "无序列表的格式要一致",
-            "MD005": "同一个等级的列表的缩进要一致",
-            "MD006": "最高级标题不能缩进",
-            "MD007": "无序列表嵌套时，使用两个空格缩进",
-            "MD008": "MD008",
-            "MD009": "行尾最多可以添加两个空格，用于换行",
-            "MD010": "不能使用tab缩进，要使用空格",
-            "MD011": "内联形式的链接的中括号和圆括号使用错误",
-            "MD012": "不能有连续的空行",
-            "MD013": "行的最大长度是80",
-            "MD014": "代码块中，终端命令除非后接其输出，否则前面不能有$符号",
-            "MD015": "MD015",
-            "MD016": "MD016",
-            "MD017": "MD017",
-            "MD018": "atx标题格式下，#号和文字之间需要一个空格隔开",
-            "MD019": "atx标题格式下，#号和文字之间的空格不能多于一个",
-            "MD020": "closed_atx标题格式下，文字和前后#号之间需用一个空格隔开",
-            "MD021": "closed_atx标题格式下，文字和前后#号之间的空格不能多于一个",
-            "MD022": "标题行的上下行必须都是空行",
-            "MD023": "标题行不能缩进",
-            "MD024": "不能连续出现内容重复的标题",
-            "MD025": "只能有一个一级标题",
-            "MD026": "标题的末尾不应以标点符号结尾",
-            "MD027": "引用区块的引用符号和文字之间有且只有一个空格",
-            "MD028": "两个引用区块间不能用空行隔开。引用区块中的空行要用>开头",
-            "MD029": "有序列表必须从1开始，按顺序递增",
-            "MD030": "列表的每一列表项的标识符后只能空一格，后接列表内容",
-            "MD031": "单独的代码块前后需要用空行隔开",
-            "MD032": "列表前后需要用空行隔开，列表的缩进必须一致",
-            "MD033": "不允许使用HTML语句",
-            "MD034": "单纯的链接地址需要用尖括号包裹",
-            "MD035": "所有的水平线要和第一次创建时使用的符号一致",
-            "MD036": "不应为整行文字加粗或斜体",
-            "MD037": "强调标记的内侧不应紧邻空格",
-            "MD038": "单反引号的内侧不应紧邻空格",
-            "MD039": "链接中，中括号的内侧不应紧邻空格",
-            "MD040": "代码块应该指定编程语言",
-            "MD041": "文档正文一开始必须是一级标题",
-            "MD042": "链接的地址不能为空",
-            "MD043": "要求标题遵循一定的结构",
-            "MD044": "指定一些名称，检查它是否有正确的大写",
-            "MD045": "图片链接必须包含描述文本",
-            "MD046": "代码块要用三个反引号包裹",
-            "MD047": "文档末尾需要一个空行结尾",
-        }
     }
 
     process = () => {
@@ -83,7 +27,9 @@ class markdownLintPlugin extends BaseCustomPlugin {
             this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true);
         }
         this.utils.addEventListener(this.utils.eventType.firstFileInit, () => setTimeout(this.renewLintResult, 500));
-        const debounce = this.utils.debounce(this.updateAll, Math.max(2500, this.config.debounce_interval - 500));
+
+        const defaultTime = 500;
+        const debounce = this.utils.debounce(this.updateAll, Math.max(defaultTime, this.config.debounce_interval - defaultTime));
         this.utils.addEventListener(this.utils.eventType.fileEdited, debounce);
     }
 
@@ -107,12 +53,64 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
     updateModal = async content => this.entities.pre.textContent = content.length ? this.genMarkdownlint(content) : this.config.pass_text
 
+    // 这么大的对象，不希望它常驻内存
+    translate = () => ({
+        "MD001": "标题层级一次只应增加一个级别",
+        "MD002": "第一个标题必须是最高级的标题",
+        "MD003": "在标题前加#号来表示标题级别",
+        "MD004": "无序列表的格式要一致",
+        "MD005": "同一个等级的列表的缩进要一致",
+        "MD006": "最高级标题不能缩进",
+        "MD007": "无序列表嵌套时，使用两个空格缩进",
+        "MD008": "MD008",
+        "MD009": "行尾最多可以添加两个空格，用于换行",
+        "MD010": "不能使用tab缩进，要使用空格",
+        "MD011": "内联形式的链接的中括号和圆括号使用错误",
+        "MD012": "不能有连续的空行",
+        "MD013": "行的最大长度是80",
+        "MD014": "代码块中，终端命令除非后接其输出，否则前面不能有$符号",
+        "MD015": "MD015",
+        "MD016": "MD016",
+        "MD017": "MD017",
+        "MD018": "atx标题格式下，#号和文字之间需要一个空格隔开",
+        "MD019": "atx标题格式下，#号和文字之间的空格不能多于一个",
+        "MD020": "closed_atx标题格式下，文字和前后#号之间需用一个空格隔开",
+        "MD021": "closed_atx标题格式下，文字和前后#号之间的空格不能多于一个",
+        "MD022": "标题行的上下行必须都是空行",
+        "MD023": "标题行不能缩进",
+        "MD024": "不能连续出现内容重复的标题",
+        "MD025": "只能有一个一级标题",
+        "MD026": "标题的末尾不应以标点符号结尾",
+        "MD027": "引用区块的引用符号和文字之间有且只有一个空格",
+        "MD028": "两个引用区块间不能用空行隔开。引用区块中的空行要用>开头",
+        "MD029": "有序列表必须从1开始，按顺序递增",
+        "MD030": "列表的每一列表项的标识符后只能空一格，后接列表内容",
+        "MD031": "单独的代码块前后需要用空行隔开",
+        "MD032": "列表前后需要用空行隔开，列表的缩进必须一致",
+        "MD033": "不允许使用HTML语句",
+        "MD034": "单纯的链接地址需要用尖括号包裹",
+        "MD035": "所有的水平线要和第一次创建时使用的符号一致",
+        "MD036": "不应为整行文字加粗或斜体",
+        "MD037": "强调标记的内侧不应紧邻空格",
+        "MD038": "单反引号的内侧不应紧邻空格",
+        "MD039": "链接中，中括号的内侧不应紧邻空格",
+        "MD040": "代码块应该指定编程语言",
+        "MD041": "文档正文一开始必须是一级标题",
+        "MD042": "链接的地址不能为空",
+        "MD043": "要求标题遵循一定的结构",
+        "MD044": "指定一些名称，检查它是否有正确的大写",
+        "MD045": "图片链接必须包含描述文本",
+        "MD046": "代码块要用三个反引号包裹",
+        "MD047": "文档末尾需要一个空行结尾",
+    })
+
     genMarkdownlint = content => {
+        const map = this.translate();
         const header = "line  rule   error\n";
         const result = content.map(line => {
             const lineNo = line.lineNumber + "";
             const [ruleName, _] = line.ruleNames;
-            const desc = this.config.translate ? this.i18n[ruleName] : line.ruleDescription;
+            const desc = this.config.translate ? map[ruleName] : line.ruleDescription;
             return "\n" + lineNo.padEnd(6) + ruleName.padEnd(7) + desc;
         })
         return header + result
@@ -121,10 +119,12 @@ class markdownLintPlugin extends BaseCustomPlugin {
     renewLintResult = async () => {
         this.lazyLoad();
         this.initDisableRules();
-        // if (this.utils.getFilePath()) {
+        const filepath = this.utils.getFilePath();
+        // if (filepath) {
         //     await File.saveUseNode();
         // }
-        const fileContent = await File.getContent();
+        // const fileContent = await File.getContent();
+        const fileContent = await this.utils.Package.Fs.promises.readFile(filepath, 'utf-8');
         const {content} = this.markdownlint.sync({strings: {content: fileContent}, config: this.disableRules});
         content.sort((a, b) => a.lineNumber - b.lineNumber);
         this.setButtonColor(content);
