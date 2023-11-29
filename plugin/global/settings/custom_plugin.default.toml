@@ -75,7 +75,7 @@ hide = false
 LANGUAGE = "echarts"
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = true
-# 渲染器: canvas/svg（怎么选择请参考：https://echarts.apache.org/handbook/zh/best-practices/canvas-vs-svg/）
+# 渲染器: canvas/svg（参考：https://echarts.apache.org/handbook/zh/best-practices/canvas-vs-svg/）
 RENDERER = "svg"
 # 导出时echarts转成什么格式
 # 可选: png/jpg/svg
@@ -736,15 +736,15 @@ hide = false
 [markdownLint.config]
 # 快捷键
 hotkey = ""
-# 禁用的规则（参考：https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md）
-disable_rules = ["MD009", "MD012", "MD013", "MD041"]
-# 将markdownlint翻译为中文
+# 禁用的检测规则（参考：https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md）
+disable_rules = ["MD009", "MD012", "MD013", "MD033", "MD041"]
+# 将检测规则的案文翻译为中文
 translate = true
 # 防抖时间，在编辑后多长时间重新检测一次（单位：ms）
 # 最低为3000，若<3000，则自动置为3000
 # 为什么这么长？
 #   1. 检测比较耗资源
-#   2. typora1.7.x后，读取文件内容操作会和打开文件操作发生竞态，导致window_tab无法顺利切换，无奈只能做回避处理
+#   2. typora1.7.x后，【读取文件内容】会和【打开文件】发生竞争冒险，导致window_tab无法顺利切换，无奈只能做回避处理
 debounce_interval = 3500
 # 允许【ctrl+鼠标拖拽】拖动模态框
 allow_drag = true
@@ -754,7 +754,9 @@ pass_text = "该文件符合规范要求"
 # 若置为false，以下配置全部失效
 use_button = true
 # 方块的尺寸
+# 方块的宽度
 button_width = "12px"
+# 方块的高度
 button_height = "12px"
 # lint通过时方块的颜色
 pass_color = "#499c54"
@@ -802,12 +804,12 @@ hide = true
 # 插件配置
 [quickButton.config]
 # 添加的按钮
-#   action：取个名字，不可重名
-#   coordinate：往上为x正方向，往左为y正方向。(0,0) (0,1) (1,0) (1,1) (2,0) (2,1) 坐标已被其他插件占用
-#   icon：icon class
-#   font_size：控制icon大小
-#   hint：提示信息
-#   callback：回调函数
+#   action:     取个名字，不可重名
+#   coordinate: 坐标。往上为x正方向，往左为y正方向。(0,0) (0,1) (1,0) (1,1) (2,0) (2,1) 已被其他插件占用
+#   icon:       iconClass
+#   font_size:  控制icon大小
+#   hint:       提示信息
+#   callback:   回调函数
 [[quickButton.config.buttons]]
 action = "md_padding_button"
 coordinate = [3, 1]
@@ -837,7 +839,7 @@ hide = false
 # 插件配置
 [autoTrailingWhiteSpace.config]
 # 快捷键
-hotkey = "ctrl+shift+j"
+hotkey = ""
 
 
 ############### redirectLocalRootUrl ###############
@@ -872,7 +874,11 @@ hide = false
 hotkey = ""
 # tc路径
 tc_path = "D:\\software\\TotalCMD_64bit_10.52\\TOTALCMD64.EXE"
-# tc命令参数
+# tc命令参数（参考：https://www.ghisler.ch/wiki/index.php/Command_line_parameters）
+# 提供内置环境变量:
+#   1. $f: 当前文件路径
+#   2. $d: 当前文件所属目录
+#   3. $m: 当前挂载目录（侧边栏的根目录）
 tc_args = '/O /T /P=L  /L="$f"'
 
 
@@ -903,7 +909,7 @@ exec_show = "echo"
 #   2.策略二：每隔一段时间，执行一次升级流程
 auto_update = true
 # 策略一（单位：ms，若<0，则不使用此策略）
-start_update_interval = 300000 # (1000 * 60 * 5)
+start_update_interval = 300000   # (1000 * 60 * 5)
 # 策略二（单位：ms，若<0，则不使用此策略）
 update_loop_interval = -1
 # 自动升级时使用的回显方式（可选项和exec_show相同）
