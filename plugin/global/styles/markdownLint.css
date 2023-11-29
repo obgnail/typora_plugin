@@ -1,14 +1,14 @@
 #plugin-markdownlint {
     top: 10%;
-    left: 55%;
-    width: 600px;
+    right: 25px;
+    width: ${this.config.modal_width};
 }
 
 #plugin-markdownlint pre {
-    font-size: 13px;
-    line-height: 1.1;
+    font-size: ${this.config.modal_font_size};
+    line-height: 1.2;
     margin: 5px;
-    max-height: 500px;
+    max-height: ${this.config.modal_max_height};
     width: 100%;
 }
 

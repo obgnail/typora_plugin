@@ -3,8 +3,7 @@
     overflow-x: visible;
     overflow-y: hidden;
     margin-right: 10px;
-    padding-left: 3px;
-    padding-right: 3px;
+    padding: 0 3px;
     border-radius: 3px;
     background: var(--active-file-bg-color);
     color: var(--active-file-text-color);

@@ -459,6 +459,8 @@ USE_BUTTON = true
 ALLOW_ICON_WRAP = true
 # 点击markmap节点，定位到文档位置（跳转到对应章节）
 CLICK_TO_LOCALE = true
+# 当用户编辑文档，导致markmap更新图形时，新markmap的图形大小是否重新适配窗口
+AUTO_FIT_WHEN_UPDARE = true
 # 当pin到页面顶部时，占据页面的30%高度
 HEIGHT_PRECENT_WHEN_PIN_UP = 30
 # 当pin到页面右侧时，占据页面的50%宽度
@@ -825,6 +827,8 @@ ENABLE = true
 NAME = "文件计数"
 # 是否在右键菜单中可点击
 CLICKABLE = false
+# 当目录下的文件数量少于等于IGNORE_MIN_NUM时，忽略此目录
+IGNORE_MIN_NUM = 0
 # Typora允许打开小于2000000(即MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
 MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
