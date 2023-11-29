@@ -737,14 +737,19 @@ hide = false
 # 快捷键
 hotkey = ""
 # 禁用的规则（参考：https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md）
-disable_rules = ["MD012", "MD013", "MD041"]
-# 在编辑后多长时间重新检测一次（单位：ms）
+disable_rules = ["MD009", "MD012", "MD013", "MD041"]
+# 将markdownlint翻译为中文
+translate = true
+# 防抖时间，在编辑后多长时间重新检测一次（单位：ms）
 # 最低为3000，若<3000，则自动置为3000
+# 为什么这么长？
+#   1. 检测比较耗资源
+#   2. typora1.7.x后，读取文件内容操作会和打开文件操作发生竞态，导致window_tab无法顺利切换，无奈只能做回避处理
 debounce_interval = 3500
 # 允许【ctrl+鼠标拖拽】拖动模态框
 allow_drag = true
 # lint通过时的提示文本
-pass_text = "this file meets the lint specification requirements"
+pass_text = "该文件符合规范要求"
 # 在右上角添加一个方块，用以提示lint状态（类似于idea）
 # 若置为false，以下配置全部失效
 use_button = true
