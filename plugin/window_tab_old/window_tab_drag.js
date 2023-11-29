@@ -261,6 +261,8 @@
         showTitleBarIfNeed();
     })()
 
+    const metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
+
     const windowTabs = {
         tabs: document.getElementById('title-bar-window-tabs'),
         list: document.querySelector(".title-bar-window-tabs-list"),
@@ -505,7 +507,7 @@
         const _winId = target.getAttribute("winid");
         const winId = parseInt(_winId);
 
-        if (global._pluginUtils.metaKeyPressed(ev)) {
+        if (metaKeyPressed(ev)) {
             openFileInNewWindow(winId);
         } else {
             setFocusWindow(winId);

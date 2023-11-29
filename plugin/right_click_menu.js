@@ -127,7 +127,7 @@ class rightClickMenuPlugin extends global._basePlugin {
     findLostPluginIfNeed = () => {
         if (!this.config.FIND_LOST_PLUGIN) return;
 
-        const allPlugins = new Map(Object.entries(global._plugins));
+        const allPlugins = new Map(Object.entries(this.utils.getAllPlugins()));
         this.config.MENUS.forEach(menu => menu.LIST.forEach(plugin => allPlugins.delete(plugin)));
         for (const plugin of allPlugins.values()) {
             this.config.MENUS[this.config.MENUS.length - 1].LIST.push(plugin.fixedName);

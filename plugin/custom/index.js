@@ -65,7 +65,8 @@ class loadPluginHelper {
 
     // 检测用户错误的配置
     errorSettingDetector = customSetting => {
-        const errorPluginSetting = Object.keys(customSetting).filter(fixedName => fixedName in global._plugin_settings);
+        const allSettings = this.utils.getAllPluginSettings();
+        const errorPluginSetting = Object.keys(customSetting).filter(fixedName => fixedName in allSettings);
         if (errorPluginSetting && errorPluginSetting.length) {
             const msg = "以下插件错误地配置到 custom_plugin.user.toml，正确配置文件为 settings.user.toml：";
             const components = [msg, ...errorPluginSetting].map(label => ({label, type: "p"}));
@@ -77,7 +78,7 @@ class loadPluginHelper {
     // 兼容用户错误操作
     mergeSettings = settings => {
         if (this.controller.config.ALLOW_SET_CONFIG_IN_SETTINGS_TOML) {
-            for (const [fixedName, settings_] of Object.entries(global._plugin_settings)) {
+            for (const [fixedName, settings_] of Object.entries(this.utils.getAllPluginSettings())) {
                 if (fixedName in settings) {
                     settings[fixedName] = this.controller.utils.merge(settings[fixedName], settings_);
                 }
