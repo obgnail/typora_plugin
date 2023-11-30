@@ -1,4 +1,4 @@
-class commanderPlugin extends global._basePlugin {
+class commanderPlugin extends BasePlugin {
     beforeProcess = () => {
         this.SHELL = {CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl"};
     }

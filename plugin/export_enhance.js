@@ -1,4 +1,4 @@
-class exportEnhancePlugin extends global._basePlugin {
+class exportEnhancePlugin extends BasePlugin {
     init = () => {
         this.tempFolder = this.utils.tempFolder; // i‘d like to shit here
         this.regexp = new RegExp(`<img.*?src="(.*?)".*?>`, "gs");

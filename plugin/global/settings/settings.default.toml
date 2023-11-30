@@ -51,13 +51,15 @@ SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
 COPY_PATH_HOTKEY = [""]
 # 标签的标题是否去除文件后缀名
 REMOVE_FILE_SUFFIX = true
-# 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的5倍高度时，视为新建窗口打开此文件（若为-1，则不启用此功能）
+# 最多打开x个标签，超过时会删除最左边的tab，若为-1则保留全部
+TAB_MAX_NUM = -1
+# 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的x倍高度时，视为新建窗口打开此文件（若为-1，则不启用此功能）
 HEIGHT_SCALE = 5
-# 当鼠标位于标签页时，可以使用ctrl+wheel切换标签页
+# 当鼠标位于标签页时，允许ctrl+wheel切换标签页
 CTRL_WHEEL_TO_SCROLL = true
-# 当鼠标位于标签页时，可以点击鼠标中键关闭标签页
+# 鼠标中键标签页关闭标签页
 MIDDLE_CLICK_TO_CLOSE = true
-# 当鼠标位于标签页时，点击右键，弹出的右键菜单列表（若置为[]，则不使用此功能）
+# 鼠标右键标签页，弹出的右键菜单列表（若置为[]，则不使用此功能）
 # 支持如下功能：
 #   - closeOtherTabs:  删除其他标签
 #   - closeLeftTabs:   删除左侧全部标签
@@ -777,9 +779,9 @@ MENU_MIN_WIDTH = "default"
 #   2. 如果插件系统后续新增了插件，那么你就根本无法感知到新增插件的存在
 FIND_LOST_PLUGIN = true
 # 自定义右键菜单
-#  每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
-#  NAME: 一级菜单的名称
-#  LIST: 二级菜单的插件列表（"---"：代表在页面上插入一个divider，以作分隔）
+# 每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
+#   NAME: 一级菜单的名称
+#   LIST: 二级菜单的插件列表（"---"：代表在页面上插入一个分隔横线）
 [[right_click_menu.MENUS]]
 NAME = "非常用插件"
 LIST = [

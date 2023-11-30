@@ -1,4 +1,4 @@
-class readOnlyPlugin extends global._basePlugin {
+class readOnlyPlugin extends BasePlugin {
     styleTemplate = () => true
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]

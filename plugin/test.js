@@ -1,4 +1,4 @@
-class testPlugin extends global._basePlugin {
+class testPlugin extends BasePlugin {
     init = () => {
         console.log("-------- test.js")
 

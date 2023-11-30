@@ -95,25 +95,17 @@
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`，推荐使用 everything 找一下）
 3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
 4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
-6. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利。
+5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利。
 
 
-
-### 新版本操作
 
 > 根据文件夹 A 下是否有 `appsrc` 目录判断是否为新版本，有则新版本，无则旧版本。
 
-![new_typora_dir](assets/new_typora_dir.png)
 
-![new_typora_framejs](assets/new_typora_framejs.png)
-
-
-
-### 旧版本操作
-
-![where_is_windowhtml](assets/where_is_windowhtml.png)
-
-![where_is_framejs](assets/where_is_framejs.png)
+|       | 新版本操作                                           | 旧版本操作                                             |
+| ----- | ---------------------------------------------------- | ------------------------------------------------------ |
+| 步骤1 | ![new_typora_dir](assets/new_typora_dir.png)         | ![where_is_windowhtml](assets/where_is_windowhtml.png) |
+| 步骤2 | ![new_typora_framejs](assets/new_typora_framejs.png) | ![where_is_framejs](assets/where_is_framejs.png)       |
 
 > 虽然操作简单，还请务必对照上图谨慎操作。如果修改完 Typora 白屏了，很可能是你修改的时候疏忽了。
 
@@ -638,8 +630,8 @@ icon = "\\f040"
 目前支持的简单图片编辑：
 
 - dummy: 无功能
- - close: 关闭
- - nextImage: 下张图
+- close: 关闭
+- nextImage: 下张图
 - previousImage: 上张图
 - zoomOut: 放大图片
 - zoomIn: 缩小图片
@@ -822,7 +814,7 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 
 
 
-###  redirect_local_root_url：重定向本地资源根目录
+### redirect_local_root_url：重定向本地资源根目录
 
 如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 typora 打开文件。就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中（vault），这导致在 typora 打开后文件由于路径错误，无法访问本地资源。此插件就是为了解决此问题，重定向本地资源根目录。
 

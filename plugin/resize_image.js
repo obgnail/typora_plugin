@@ -1,4 +1,4 @@
-class resizeImagePlugin extends global._basePlugin {
+class resizeImagePlugin extends BasePlugin {
     init = () => {
         this.dynamicCallMap = {
             record_resize_state: () => this.recordResizeState(),

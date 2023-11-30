@@ -1,4 +1,4 @@
-class markmapPlugin extends global._basePlugin {
+class markmapPlugin extends BasePlugin {
     beforeProcess = () => {
         this.tocMarkmap = (this.config.ENABLE_TOC_MARKMAP) ? new tocMarkmap(this) : null;
         this.fenceMarkmap = (this.config.ENABLE_FENCE_MARKMAP) ? new fenceMarkmap(this) : null;

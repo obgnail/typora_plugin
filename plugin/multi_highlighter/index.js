@@ -18,7 +18,7 @@
 6. 下面代码就是本着【又不是不能用】的心态码的，只追求实现速度。若你有心重构，我帮你抽象出了multiHighlighter类，可以方便的搜索并添加高亮标签，接下来你需要的就是和Typora混淆后的frame.js做斗争，和Typora各自特性作斗争。
 */
 
-class multiHighlighterPlugin extends global._basePlugin {
+class multiHighlighterPlugin extends BasePlugin {
     styleTemplate = () => ({
         run_style: {
             input_width: (this.config.SHOW_RUN_BUTTON) ? "95%" : "100%",

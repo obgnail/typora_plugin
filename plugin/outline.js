@@ -1,4 +1,4 @@
-class outlinePlugin extends global._basePlugin {
+class outlinePlugin extends BasePlugin {
     styleTemplate = () => true
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]

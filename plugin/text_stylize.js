@@ -1,4 +1,4 @@
-class textStylizePlugin extends global._basePlugin {
+class textStylizePlugin extends BasePlugin {
     styleTemplate = () => true
 
     htmlTemplate = () => {

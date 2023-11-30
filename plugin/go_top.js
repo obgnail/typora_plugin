@@ -1,4 +1,4 @@
-class goTopPlugin extends global._basePlugin {
+class goTopPlugin extends BasePlugin {
     hotkey = () => [
         {hotkey: this.config.HOTKEY_GO_TOP, callback: this.call},
         {hotkey: this.config.HOTKEY_GO_BOTTOM, callback: () => this.call("go-bottom")},

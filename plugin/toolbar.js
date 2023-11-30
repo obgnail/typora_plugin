@@ -1,4 +1,4 @@
-class toolbarPlugin extends global._basePlugin {
+class toolbarPlugin extends BasePlugin {
     beforeProcess = () => {
         this.toolController = new toolController(this);
         const tools = [tabTool, pluginTool, recentFileTool, operationTool, modeTool, tempThemeTool, outlineTool, functionTool, mixTool];
@@ -317,7 +317,7 @@ class pluginTool extends baseToolInterface {
     translate = () => "使用插件"
     collectAll = () => {
         const pluginsList = [];
-        for (const [fixedName, plugin] of Object.entries(global._plugins)) {
+        for (const [fixedName, plugin] of Object.entries(this.utils.getAllPlugins())) {
             if (!plugin.call) continue
 
             const chineseName = plugin.config.NAME;
@@ -353,11 +353,6 @@ class pluginTool extends baseToolInterface {
         const plugin = this.utils.getPlugin(fixedName);
         if (plugin) {
             plugin.call(meta || undefined, this.controller.anchorNode);
-            return
-        }
-        const customPlugin = this.utils.getCustomPlugin(fixedName);
-        if (customPlugin) {
-            global._plugins.custom.call(fixedName, this.controller.anchorNode);
         }
     }
 }

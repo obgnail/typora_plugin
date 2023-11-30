@@ -1,4 +1,4 @@
-class blurPlugin extends global._basePlugin {
+class blurPlugin extends BasePlugin {
     beforeProcess = () => {
         this.css_id = "plugin-blur-style";
         this.inBlur = this.config.BLUR_DEFAULT;

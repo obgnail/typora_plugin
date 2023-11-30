@@ -1,4 +1,4 @@
-class fileCounterPlugin extends global._basePlugin {
+class fileCounterPlugin extends BasePlugin {
     beforeProcess = () => {
         this.loopDetectInterval = 300;
         this.className = "plugin-file-counter";
