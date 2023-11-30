@@ -28,7 +28,7 @@ class switchFirstTab extends BaseCustomPlugin {
 #### window_tab
 
 ```js
-class windowTabBarPlugin extends global._basePlugin {
+class windowTabBarPlugin extends BasePlugin {
     // 打开文件路径（wantOpenPath：文件的绝对路径）
     openTab = wantOpenPath => {
         return null
@@ -112,7 +112,7 @@ class windowTabBarPlugin extends global._basePlugin {
 #### search_multi
 
 ```js
-class windowTabBarPlugin extends global._basePlugin {
+class windowTabBarPlugin extends BasePlugin {
     // 显示/隐藏模态框
     call = () => {
         return null
@@ -125,7 +125,7 @@ class windowTabBarPlugin extends global._basePlugin {
 #### multi_highlighter
 
 ```js
-class multiHighlighterPlugin extends global._basePlugin {
+class multiHighlighterPlugin extends BasePlugin {
     // 给出关键字数组，高亮当前文档的关键字
     // args:
     //  1. keyArr(Array[string]): 关键字数组
@@ -156,7 +156,7 @@ class multiHighlighterPlugin extends global._basePlugin {
 #### outline
 
 ```js
-class outlinePlugin extends global._basePlugin {
+class outlinePlugin extends BasePlugin {
     // 切换类别大纲
     // Type: fence/image/table/all
     collectAndShow = Type => {
@@ -180,7 +180,7 @@ class outlinePlugin extends global._basePlugin {
 #### commander
 
 ```js
-class commanderPlugin extends global._basePlugin {
+class commanderPlugin extends BasePlugin {
     // 执行命令时，是否弹出模态框
     // 	always: 总是弹出
     // 	error: 只在异常时弹出
@@ -217,7 +217,7 @@ class commanderPlugin extends global._basePlugin {
 #### md_padding
 
 ```js
-class mdPaddingPlugin extends global._basePlugin {
+class mdPaddingPlugin extends BasePlugin {
     // 提供markdown字符串，将其格式化
     // args:
     //   1. content(string): markdown字符串
@@ -239,7 +239,7 @@ class mdPaddingPlugin extends global._basePlugin {
 #### read_only
 
 ```js
-class readOnlyPlugin extends global._basePlugin {
+class readOnlyPlugin extends BasePlugin {
     // 进入/退出只读模式
     call = () => {
         return nil
@@ -252,7 +252,7 @@ class readOnlyPlugin extends global._basePlugin {
 #### blur
 
 ```js
-class blurPlugin extends global._basePlugin {
+class blurPlugin extends BasePlugin {
     // 进入/退出模糊模式
     call = () => {
         return nil
@@ -265,7 +265,7 @@ class blurPlugin extends global._basePlugin {
 #### resize_image
 
 ```js
-class resizeImagePlugin extends global._basePlugin {
+class resizeImagePlugin extends BasePlugin {
     // 缩放图片
     // args:
     //   1.image(Element): 图片标签，如 document.querySelector("#write img")
@@ -288,7 +288,7 @@ class resizeImagePlugin extends global._basePlugin {
 #### datatables
 
 ```js
-class datatablesPlugin extends global._basePlugin {
+class datatablesPlugin extends BasePlugin {
     // 将普通表格转为增强表格
     // args:
     //   1.target(Element): 表格标签，如 document.querySelector("#write table.md-table")
@@ -312,7 +312,7 @@ class datatablesPlugin extends global._basePlugin {
 #### go_top
 
 ```js
-class goTopPlugin extends global._basePlugin {
+class goTopPlugin extends BasePlugin {
     // 置顶/置底
     // direction(string): go-bottom、go-top
     call = direction => {
@@ -326,7 +326,7 @@ class goTopPlugin extends global._basePlugin {
 #### mindmap
 
 ```js
-class mindmapPlugin extends global._basePlugin {
+class mindmapPlugin extends BasePlugin {
     // 生成页面的思维导图，并写入剪切板
     // Type(string): set_clipboard_mindmap/set_clipboard_graph
     call = Type => {
@@ -340,7 +340,7 @@ class mindmapPlugin extends global._basePlugin {
 #### markmap
 
 ```js
-class markmapPlugin extends global._basePlugin {
+class markmapPlugin extends BasePlugin {
     // type: draw_toc/draw_fence
     call = async type => {
         return null
@@ -353,7 +353,7 @@ class markmapPlugin extends global._basePlugin {
 #### auto_number
 
 ```js
-class autoNumberPlugin extends global._basePlugin {
+class autoNumberPlugin extends BasePlugin {
     // type(string):
     //  1. disable: 禁用
     //  2. enable: 启用
@@ -374,7 +374,7 @@ class autoNumberPlugin extends global._basePlugin {
 #### fence_enhance
 
 ```js
-class fenceEnhancePlugin extends global._basePlugin {
+class fenceEnhancePlugin extends BasePlugin {
     // 注册button
     // args:
     //   className: button的class name
@@ -424,7 +424,7 @@ class fenceEnhancePlugin extends global._basePlugin {
 #### collaspe_paragraph
 
 ```js
-class collapseParagraphPlugin extends global._basePlugin {
+class collapseParagraphPlugin extends BasePlugin {
     // 切换标题的收缩/展开状态
     // args:
     //   1. paragraph(Element): 目标标题。 如：document.querySelector(`#write h1`)
@@ -454,7 +454,7 @@ class collapseParagraphPlugin extends global._basePlugin {
 #### truncate_text
 
 ```js
-class truncateTextPlugin extends global._basePlugin {
+class truncateTextPlugin extends BasePlugin {
     // 隐藏最前面的文本段，只留下最后 80 段。
     hideFront = () => {
         return null
@@ -477,7 +477,7 @@ class truncateTextPlugin extends global._basePlugin {
 #### export_enhance
 
 ```js
-class exportEnhancePlugin extends global._basePlugin {
+class exportEnhancePlugin extends BasePlugin {
     // type(string):
     //  1. download_network_image: 导出HTML时下载网络图片
     //  2. dont_download_network_image: 导出HTML时不下载网络图片
@@ -500,7 +500,7 @@ class exportEnhancePlugin extends global._basePlugin {
 #### right_click_menu
 
 ```js
-class rightClickMenuPlugin extends global._basePlugin {
+class rightClickMenuPlugin extends BasePlugin {
     // type(string):
     //  1. about: 打开帮助页面
     //  2. do_not_hide: 右键菜单点击后保持显示/隐藏
@@ -516,7 +516,7 @@ class rightClickMenuPlugin extends global._basePlugin {
 #### file_counter
 
 ```js
-class fileCounterPlugin extends global._basePlugin {
+class fileCounterPlugin extends BasePlugin {
     // 刷新
     setAllDirCount = () => {
         return nil

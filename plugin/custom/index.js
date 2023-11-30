@@ -1,4 +1,4 @@
-class CustomPlugin extends global._basePlugin {
+class CustomPlugin extends BasePlugin {
     beforeProcess = async () => {
         this.custom = {};          // 启用的插件
         this.customSettings = {};  // 全部的插件配置
@@ -96,7 +96,7 @@ class loadPluginHelper {
         this.utils.publishEvent(this.utils.eventType.allCustomPluginsHadInjected);
     }
 
-    // 简易的判断是否为customBasePlugin的子类实例
+    // 简易的判断是否为baseCustomPlugin的子类实例
     check = instance => instance
         && instance.init instanceof Function
         && instance.selector instanceof Function
@@ -192,44 +192,6 @@ class hotkeyHelper {
         return hotkeys
     }
 }
-
-class BaseCustomPlugin {
-    constructor(fixedName, setting, controller) {
-        this.fixedName = fixedName;
-        this.info = setting;
-        this.showName = setting.name;
-        this.config = setting.config;
-        this.utils = controller.utils;
-        this.controller = controller;
-    }
-
-    modal = (pluginModal, callback, cancelCallback) => this.utils.modal(pluginModal, callback, cancelCallback);
-
-    beforeProcess = async () => {
-    }
-    init = () => {
-    }
-    selector = () => {
-    }
-    hint = () => {
-    }
-    style = () => {
-    }
-    styleTemplate = () => {
-    }
-    html = () => {
-    }
-    htmlTemplate = () => {
-    }
-    hotkey = () => {
-    }
-    process = () => {
-    }
-    callback = anchorNode => {
-    }
-}
-
-global.BaseCustomPlugin = BaseCustomPlugin;
 
 module.exports = {
     plugin: CustomPlugin

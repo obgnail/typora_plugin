@@ -1,4 +1,4 @@
-class mdPaddingPlugin extends global._basePlugin {
+class mdPaddingPlugin extends BasePlugin {
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     reload = content => File.reloadContent(content, {fromDiskChange: false});

@@ -1,4 +1,4 @@
-class toolbarPlugin extends global._basePlugin {
+class toolbarPlugin extends BasePlugin {
     beforeProcess = () => {
         this.toolController = new toolController(this);
         const tools = [tabTool, pluginTool, recentFileTool, operationTool, modeTool, tempThemeTool, outlineTool, functionTool, mixTool];

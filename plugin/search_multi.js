@@ -1,4 +1,4 @@
-class searchMultiKeywordPlugin extends global._basePlugin {
+class searchMultiKeywordPlugin extends BasePlugin {
     styleTemplate = () => true
 
     html = () => {

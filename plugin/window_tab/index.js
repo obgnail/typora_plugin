@@ -1,4 +1,4 @@
-class windowTabBarPlugin extends global._basePlugin {
+class windowTabBarPlugin extends BasePlugin {
     beforeProcess = () => {
         if (window._options.framelessWindow && this.config.HIDE_WINDOW_TITLE_BAR) {
             document.querySelector("header").style.zIndex = "897";

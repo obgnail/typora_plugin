@@ -1,5 +1,5 @@
 // 插件名称是通过配置文件引入的，为了避免XSS注入，不可使用innerHTML
-class rightClickMenuPlugin extends global._basePlugin {
+class rightClickMenuPlugin extends BasePlugin {
     styleTemplate = () => {
         switch (this.config.MENU_MIN_WIDTH) {
             case "default":

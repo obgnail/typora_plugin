@@ -1,4 +1,4 @@
-class fenceEnhancePlugin extends global._basePlugin {
+class fenceEnhancePlugin extends BasePlugin {
     beforeProcess = () => {
         this.enableIndent = this.config.ENABLE_INDENT && !this.utils.isBetaVersion;
     }

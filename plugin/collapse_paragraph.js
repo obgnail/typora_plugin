@@ -1,4 +1,4 @@
-class collapseParagraphPlugin extends global._basePlugin {
+class collapseParagraphPlugin extends BasePlugin {
     styleTemplate = () => true
 
     init = () => {

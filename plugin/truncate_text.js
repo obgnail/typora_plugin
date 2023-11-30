@@ -1,4 +1,4 @@
-class truncateTextPlugin extends global._basePlugin {
+class truncateTextPlugin extends BasePlugin {
     beforeProcess = () => {
         this.className = "plugin-truncate-text";
     }

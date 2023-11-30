@@ -1,4 +1,4 @@
-class autoNumberPlugin extends global._basePlugin {
+class autoNumberPlugin extends BasePlugin {
     beforeProcess = () => {
         this.css_id = "plugin-auto-number-style";
 

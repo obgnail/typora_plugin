@@ -15,21 +15,6 @@ class utils {
 
 
     ////////////////////////////// 高级工具 //////////////////////////////
-    // 当前支持的高级工具（全部支持动态注册、动态注销）
-    //   1. hotkey
-    //   2. event
-    //   3. state recorder
-    //   4. diagram parser
-    //   5. third party diagram parser
-    //   6. fence enhance button
-    //   7. bar tool
-    //   8. export helper
-    //   9. style templater
-    //   10. html templater
-    //   11. modal
-    //   12. quick button
-    //   13. menu
-
     // 动态注册、动态注销hotkey
     // 注意: 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
     //   hotkeyList: [
@@ -37,9 +22,9 @@ class utils {
     //     { hotkey: "ctrl+shift+e", callback: () => console.log("ctrl+shift+e pressed") },
     //   ]
     //   hotkeyString(string): eg: "ctrl+shift+c"
-    static registerHotkey = hotkeyList => global._pluginHelper.hotkeyHub.register(hotkeyList);
-    static registerSingleHotkey = (hotkeyString, callback) => global._pluginHelper.hotkeyHub.registerSingle(hotkeyString, callback);
-    static unregisterHotkey = hotkeyString => global._pluginHelper.hotkeyHub.unregister(hotkeyString);
+    static registerHotkey = hotkeyList => helper.hotkeyHub.register(hotkeyList);
+    static registerSingleHotkey = (hotkeyString, callback) => helper.hotkeyHub.registerSingle(hotkeyString, callback);
+    static unregisterHotkey = hotkeyString => helper.hotkeyHub.unregister(hotkeyString);
 
 
     // 动态注册、动态注销、动态发布生命周期事件
@@ -78,9 +63,9 @@ class utils {
         outlineUpdated: "outlineUpdated",
         toggleSettingPage: "toggleSettingPage",
     }
-    static addEventListener = (eventType, listener) => global._pluginHelper.eventHub.addEventListener(eventType, listener);
-    static removeEventListener = (eventType, listener) => global._pluginHelper.eventHub.removeEventListener(eventType, listener);
-    static publishEvent = (eventType, payload) => global._pluginHelper.eventHub.publishEvent(eventType, payload);
+    static addEventListener = (eventType, listener) => helper.eventHub.addEventListener(eventType, listener);
+    static removeEventListener = (eventType, listener) => helper.eventHub.removeEventListener(eventType, listener);
+    static publishEvent = (eventType, payload) => helper.eventHub.publishEvent(eventType, payload);
 
 
     // 动态注册、动态注销元素状态记录器（仅当window_tab插件启用时有效）
@@ -91,16 +76,16 @@ class utils {
     //   3. stateGetter(Element) => {...}: 记录目标元素的状态。Element就是selector找到的元素，返回你想记录的标签的状态，返回值可以是任何类型
     //   4. stateRestorer(Element, state) => {}: 为元素恢复状态。state就是stateGetter的返回值
     //   5. finalFunc() => {}: 最后执行的函数
-    static registerStateRecorder = (recorderName, selector, stateGetter, stateRestorer, finalFunc) => global._pluginHelper.stateRecorder.register(recorderName, selector, stateGetter, stateRestorer, finalFunc);
-    static unregisterStateRecorder = recorderName => global._pluginHelper.stateRecorder.unregister(recorderName);
+    static registerStateRecorder = (recorderName, selector, stateGetter, stateRestorer, finalFunc) => helper.stateRecorder.register(recorderName, selector, stateGetter, stateRestorer, finalFunc);
+    static unregisterStateRecorder = recorderName => helper.stateRecorder.unregister(recorderName);
     // 手动触发
-    static collectState = recorderName => global._pluginHelper.stateRecorder.collect(recorderName);
+    static collectState = recorderName => helper.stateRecorder.collect(recorderName);
     // 手动获取
-    static getState = (recorderName, filepath) => global._pluginHelper.stateRecorder.getState(recorderName, filepath);
+    static getState = (recorderName, filepath) => helper.stateRecorder.getState(recorderName, filepath);
     // 手动删除
-    static deleteState = (recorderName, filepath, idx) => global._pluginHelper.stateRecorder.deleteState(recorderName, filepath, idx);
+    static deleteState = (recorderName, filepath, idx) => helper.stateRecorder.deleteState(recorderName, filepath, idx);
     // 手动设置
-    static setState = (recorderName, collections) => global._pluginHelper.stateRecorder.setState(recorderName, collections);
+    static setState = (recorderName, collections) => helper.stateRecorder.setState(recorderName, collections);
 
 
     // 动态注册、动态注销新的代码块图表语法
@@ -117,10 +102,10 @@ class utils {
     static registerDiagramParser = (lang, destroyWhenUpdate,
                                     renderFunc, cancelFunc = null, destroyAllFunc = null,
                                     extraStyleGetter = null, interactiveMode = true
-    ) => global._pluginHelper.diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode)
-    static unregisterDiagramParser = lang => global._pluginHelper.diagramParser.unregister(lang);
+    ) => helper.diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode)
+    static unregisterDiagramParser = lang => helper.diagramParser.unregister(lang);
     // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
-    static throwParseError = (errorLine, reason) => global._pluginHelper.diagramParser.throwParseError(errorLine, reason)
+    static throwParseError = (errorLine, reason) => helper.diagramParser.throwParseError(errorLine, reason)
 
 
     // 动态注册、动态注销第三方代码块图表语法(派生自DiagramParser)
@@ -139,9 +124,9 @@ class utils {
     static registerThirdPartyDiagramParser = (
         lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
         lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter,
-    ) => global._pluginHelper.thirdPartyDiagramParser.register(lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
+    ) => helper.thirdPartyDiagramParser.register(lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
         lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter);
-    static unregisterThirdPartyDiagramParser = lang => global._pluginHelper.thirdPartyDiagramParser.unregister(lang);
+    static unregisterThirdPartyDiagramParser = lang => helper.thirdPartyDiagramParser.unregister(lang);
 
 
     // 动态注册、动态注销代码块增强按钮(仅当fence_enhance插件启用时有效，通过返回bool值确定是否成功)
@@ -189,27 +174,27 @@ class utils {
     //   1. name: 取个名字
     //   2. beforeExport() => cssString || null , 如果返回string，将加入到extraCSS
     //   3. async afterExport() => html || null,  如果返回string，将替换HTML
-    static registerExportHelper = (name, beforeExport, afterExport) => global._pluginHelper.exportHelper.register(name, beforeExport, afterExport)
-    static unregisterExportHelper = name => global._pluginHelper.exportHelper.unregister(name)
+    static registerExportHelper = (name, beforeExport, afterExport) => helper.exportHelper.register(name, beforeExport, afterExport)
+    static unregisterExportHelper = name => helper.exportHelper.unregister(name)
 
     // 动态注册css模板文件
-    static registerStyleTemplate = async (name, renderArg) => await global._pluginHelper.styleTemplater.register(name, renderArg)
-    static unregisterStyleTemplate = name => global._pluginHelper.styleTemplater.unregister(name)
-    static getStyleContent = name => global._pluginHelper.styleTemplater.getStyleContent(name)
+    static registerStyleTemplate = async (name, renderArg) => await helper.styleTemplater.register(name, renderArg)
+    static unregisterStyleTemplate = name => helper.styleTemplater.unregister(name)
+    static getStyleContent = name => helper.styleTemplater.getStyleContent(name)
 
     // 插入html
-    static insertHtmlTemplate = elements => global._pluginHelper.htmlTemplater.insert(elements)
-    static createElement = element => global._pluginHelper.htmlTemplater.create(element)
-    static createElements = elements => global._pluginHelper.htmlTemplater.createList(elements)
-    static appendElements = (parent, template) => global._pluginHelper.htmlTemplater.appendElements(parent, template)
-    static getElementCreator = () => global._pluginHelper.htmlTemplater.creator()
+    static insertHtmlTemplate = elements => helper.htmlTemplater.insert(elements)
+    static createElement = element => helper.htmlTemplater.create(element)
+    static createElements = elements => helper.htmlTemplater.createList(elements)
+    static appendElements = (parent, template) => helper.htmlTemplater.appendElements(parent, template)
+    static getElementCreator = () => helper.htmlTemplater.creator()
 
     // 动态弹出自定义模态框（及刻弹出，因此无需注册）
     //   1. modal: { title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
     //   2. callback(components) => {}: 当用户点击【确认】后的回调函数
     //   3. onCancelCallback(components) => {}: 当用户点击【取消】后的回调函数
     // 具体使用请参考__modal_example.js，不再赘述
-    static modal = (modal, callback, cancelCallback) => global._pluginHelper.modalGenerator.modal(modal, callback, cancelCallback);
+    static modal = (modal, callback, cancelCallback) => helper.dialog.modal(modal, callback, cancelCallback);
 
     // 动态注册右下角的快捷按钮
     //   1. action(string): 取个名字
@@ -218,33 +203,33 @@ class utils {
     //   3. iconClass(string): icon 的 class
     //   4. style(Object): button 额外的样式
     //   4. callback(ev, target, action) => null: 点击按钮后的回调函数
-    static registerQuickButton = (action, coordinate, hint, iconClass, style, callback) => global._pluginHelper.quickButtonGenerator.register(action, coordinate, hint, iconClass, style, callback)
+    static registerQuickButton = (action, coordinate, hint, iconClass, style, callback) => helper.quickButton.register(action, coordinate, hint, iconClass, style, callback)
     // 动态注销快捷按钮
     // 一旦process后，标签就被渲染到HTML了，以后就不会再变了，再调用此函数也没有用了，因此此函数只能在插件初始化的时候调用
     // 因此，此函数的唯一意义是：当两个插件在初始化阶段打架时（都想注册同一坐标的按钮），用此函数去注销掉别人
-    static unregisterQuickButton = action => global._pluginHelper.quickButtonGenerator.unregister(action)
-    static toggleQuickButton = hide => global._pluginHelper.quickButtonGenerator.toggle(hide)
+    static unregisterQuickButton = action => helper.quickButton.unregister(action)
+    static toggleQuickButton = hide => helper.quickButton.toggle(hide)
 
     // 动态注册右键菜单
     // 1. name: 取个名字
     // 2. selector: 在哪个位置右键将弹出菜单
     // 3. func menuGenerator({ev, target}) => [string]: 生成右键菜单的列表，这里的Element即使上面的selector对用的元素
     // 2. func callback({ev, target, text}) => null: 点击的回调
-    static registerMenu = (name, selector, menuGenerator, callback) => global._pluginHelper.commonMenu.registerMenu(name, selector, menuGenerator, callback)
-    static unregisterMenu = name => global._pluginHelper.commonMenu.unregisterMenu(name)
+    static registerMenu = (name, selector, menuGenerator, callback) => helper.contextMenu.registerMenu(name, selector, menuGenerator, callback)
+    static unregisterMenu = name => helper.contextMenu.unregisterMenu(name)
 
 
     ////////////////////////////// 插件相关 //////////////////////////////
     static getAllPlugins = () => global._plugins
     static getAllPluginSettings = () => global._plugin_settings
-    static getAllGlobalSettings = () => global._global_settings
+    static getAllGlobalSettings = () => global._plugin_global_settings
 
-    static getGlobalSetting = name => global._global_settings[name]
+    static getGlobalSetting = name => global._plugin_global_settings[name]
     static getPlugin = fixedName => global._plugins[fixedName]
     static getCustomPlugin = fixedName => {
-        const plugin = global._plugins["custom"];
+        const plugin = global._plugins.custom;
         if (plugin) {
-            return plugin["custom"][fixedName]
+            return plugin.custom[fixedName]
         }
     }
     // 路径是否在挂载文件夹下
@@ -271,13 +256,11 @@ class utils {
         truncatePlugin && truncatePlugin.rollback(target);
     }
     static getAnchorNode = () => File.editor.getJQueryElem(window.getSelection().anchorNode);
-    static withAnchorNode = (selector, func) => {
-        return () => {
-            const anchorNode = this.getAnchorNode();
-            const target = anchorNode.closest(selector);
-            if (target && target[0]) {
-                func(target[0]);
-            }
+    static withAnchorNode = (selector, func) => () => {
+        const anchorNode = this.getAnchorNode();
+        const target = anchorNode.closest(selector);
+        if (target && target[0]) {
+            func(target[0]);
         }
     }
     static generateDynamicCallArgs = (fixedName, anchorNode, notInContextMenu = false) => {
@@ -1463,7 +1446,7 @@ class stateRecorder {
     }
 }
 
-class modalGenerator {
+class dialog {
     constructor() {
         this.utils = utils;
         this.pluginModal = null;
@@ -1557,27 +1540,26 @@ class modalGenerator {
             case "input":
             case "password":
             case "file":
-                inner = `<input type="${type === "input" ? "text" : type}" class="form-control" 
-                            placeholder="${component.placeholder}" value="${component.value}">`;
+                const t = type === "input" ? "text" : type;
+                inner = `<input type="${t}" class="form-control" placeholder="${component.placeholder}" value="${component.value}">`;
                 break
             case "textarea":
                 const rows = component.rows || 3;
                 inner = `<textarea class="form-control" rows="${rows}" placeholder="${component.placeholder}"></textarea>`;
                 break
             case "checkbox":
-                const checkBoxList = component.list.map(box => `
-                    <div class="checkbox">
-                        <label><input type="checkbox" value="${box.value}" ${box.checked ? "checked" : ""}>${box.label}</label>
-                    </div>`
-                );
+                const checkBoxList = component.list.map(box => {
+                    const checked = box.checked ? "checked" : "";
+                    return `<div class="checkbox"><label><input type="checkbox" value="${box.value}" ${checked}>${box.label}</label></div>`
+                });
                 inner = checkBoxList.join("");
                 break
             case "radio":
-                const radioList = component.list.map(radio => `
-                    <div class="radio">
-                        <label><input type="radio" name="radio-${component.id}" value="${radio.value}" ${radio.checked ? "checked" : ""}>${radio.label}</label>
-                    </div>`
-                );
+                const radioList = component.list.map(radio => {
+                    const {checked, value, label} = radio;
+                    const checked_ = checked ? "checked" : "";
+                    return `<div class="radio"><label><input type="radio" name="radio-${component.id}" value="${value}" ${checked_}>${label}</label></div>`
+                });
                 inner = radioList.join("");
                 break
             case "select":
@@ -1606,7 +1588,7 @@ class modalGenerator {
     }
 }
 
-class quickButtonGenerator {
+class quickButton {
     constructor() {
         this.utils = utils;
         this.buttons = new Map();
@@ -1880,7 +1862,7 @@ class htmlTemplater {
     }
 }
 
-class commonMenu {
+class contextMenu {
     constructor() {
         this.utils = utils;
         this.menus = new Map();
@@ -1964,16 +1946,16 @@ class commonMenu {
 class exportHelper {
     constructor() {
         this.utils = utils;
-        this.helper = new Map();
+        this.helpers = new Map();
     }
 
-    register = (name, beforeExport, afterExport) => this.helper.set(name, {beforeExport, afterExport});
-    unregister = name => this.helper.delete(name);
+    register = (name, beforeExport, afterExport) => this.helpers.set(name, {beforeExport, afterExport});
+    unregister = name => this.helpers.delete(name);
 
     beforeExport = (...args) => {
-        for (const helper of this.helper.values()) {
-            if (helper.beforeExport) {
-                const css = helper.beforeExport() || "";
+        for (const h of this.helpers.values()) {
+            if (h.beforeExport) {
+                const css = h.beforeExport() || "";
                 args[0].extraCss = (args[0].extraCss || "") + css;
             }
         }
@@ -1987,9 +1969,9 @@ class exportHelper {
         const writeIdx = html.indexOf(`id='write'`);
         if (writeIdx === -1) return new Promise(resolve => resolve(html));
 
-        for (const helper of this.helper.values()) {
-            if (helper.afterExport) {
-                const newHtml = await helper.afterExport(html, writeIdx);
+        for (const h of this.helpers.values()) {
+            if (h.afterExport) {
+                const newHtml = await h.afterExport(html, writeIdx);
                 if (newHtml) {
                     html = newHtml;
                 }
@@ -2006,9 +1988,9 @@ class exportHelper {
         const writeIdx = html.indexOf(`id='write'`);
         if (writeIdx === -1) return html;
 
-        for (const helper of this.helper.values()) {
-            if (helper.afterExport) {
-                const newHtml = helper.afterExport(html, writeIdx);
+        for (const h of this.helpers.values()) {
+            if (h.afterExport) {
+                const newHtml = h.afterExport(html, writeIdx);
                 if (newHtml && !this.utils.isPromise(newHtml)) {
                     html = newHtml;
                 }
@@ -2028,39 +2010,113 @@ class exportHelper {
     }
 }
 
+const helper = {
+    // 生命周期事件
+    eventHub: new eventHub(),
+    // 公共菜单
+    contextMenu: new contextMenu(),
+    // 自定义代码块语法
+    diagramParser: new diagramParser(),
+    // 第三方图形代码块语法
+    thirdPartyDiagramParser: new thirdPartyDiagramParser(),
+    // 状态记录器
+    stateRecorder: new stateRecorder(),
+    // 对话框
+    dialog: new dialog(),
+    // 快速按钮
+    quickButton: new quickButton(),
+    // 快捷键
+    hotkeyHub: new hotkeyHub(),
+    // 样式模板
+    styleTemplater: new styleTemplater(),
+    // html模板
+    htmlTemplater: new htmlTemplater(),
+    // 导出时的额外操作
+    exportHelper: new exportHelper(),
+}
+
 class basePlugin {
     constructor(fixedName, setting) {
         this.fixedName = fixedName;
         this.config = setting;
-        this.utils = utils
+        this.utils = utils;
     }
 
-    beforeProcess() {
-    }
-
-    style() {
-    }
-
-    styleTemplate() {
-        return false
-    }
-
-    html() {
-    }
-
-    htmlTemplate() {
-    }
-
-    hotkey() {
-    }
-
-    process() {
-    }
-
-    afterProcess() {
-    }
+    // 最先执行的函数，唯一一个asyncFunction，在这里初始化插件需要的数据
+    beforeProcess = async () => undefined
+    // 以字符串形式导入样式
+    style = () => undefined
+    // 以文件形式导入样式
+    styleTemplate = () => undefined
+    // 原生插入html标签
+    html = () => undefined
+    // 使用htmlTemplater插入html标签，见htmlTemplater
+    htmlTemplate = () => undefined
+    // 注册快捷键
+    hotkey = () => undefined
+    // 主要的处理流程
+    process = () => undefined
+    // 收尾，一般用于回收内存，用的比较少
+    afterProcess = () => undefined
 }
 
+// 各个函数功能见./plugin/custom/请读我.md
+// 因为是用户自定义的插件，比起basePlugin，提供了更多的快捷对象
+class baseCustomPlugin {
+    constructor(fixedName, setting, controller) {
+        this.fixedName = fixedName;
+        this.info = setting;
+        this.showName = setting.name;
+        this.config = setting.config;
+        this.utils = utils;
+        this.modal = utils.modal;
+        this.controller = controller;
+    }
+
+    beforeProcess = async () => undefined
+    init = () => undefined
+    style = () => undefined
+    styleTemplate = () => undefined
+    html = () => undefined
+    htmlTemplate = () => undefined
+    hotkey = () => undefined
+    process = () => undefined
+    selector = () => undefined
+    hint = () => undefined
+    callback = anchorNode => undefined
+}
+
+// 实际上clickablePlugin并没有投入使用，我嫌弃太死板了，打个样就行了，js也不是什么正经OOP语言
+// 右键菜单的选项分为两部分：静态菜单选项和动态菜单选项，皆返回[{arg_name, arg_value, arg_disabled(可选), arg_hint(可选)}]
+class clickablePlugin extends basePlugin {
+    // 静态菜单选项
+    static callArgs = []
+    // 动态菜单选项
+    //   anchorNode: 右键时鼠标所在的html标签
+    //   meta: 一个空的object，可以在这里设置任何值，传给call
+    //   notInContextMenu: right_click_menu调用（鼠标调用）还是toolbar调用（键盘调用），一般不用此参数
+    dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => []
+    // 回调函数:
+    //   argValue: callArgs和dynamicCallArgsGenerator返回的arg_value
+    //   meta: dynamicCallArgsGenerator传过来的
+    call = (argValue, meta) => undefined
+}
+
+/*
+整个插件系统，实际有用的全局变量只有两个：
+  1. global.BasePlugin:       插件的父类
+  2. global.BaseCustomPlugin: 自定义插件的父类
+其他的全局变量皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是上面两个父类的实例属性，所以utils自己也不需要暴露
+既然永远不会被外部文件引用，为什么还要将它们设置为什么全局变量？答：方便调试
+
+进而得出，整个插件系统的基本框架：
+  1. BasePlugin、BaseCustomPlugin的内置生命周期函数负责执行环境和执行流程
+  2. utils负责辅助功能实现(类似于标准库)(这里有个技术债：utils没有做分层处理，导致utils巨大无比)
+
+进而得出，插件的基本实现流程：
+  1. 创建插件类继承上述任意一个父类
+  2. 在父类的内置生命周期函数内调用utils实现功能
+ */
 class process {
     constructor() {
         this.utils = utils;
@@ -2117,10 +2173,19 @@ class process {
         }
     }
 
-    initVar = settings => {
-        global._plugins = {};                       // 启用的插件
-        global._plugin_settings = settings;         // 全部的插件配置
-        global._global_settings = settings.global;  // 通用配置
+    loadPlugins = () => Promise.all(Array.from(Object.keys(global._plugin_settings)).map(this.loadPlugin));
+
+    loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
+
+    initial = settings => {
+        global.BasePlugin = basePlugin;             // 插件的父类
+        global.BaseCustomPlugin = baseCustomPlugin; // 自定义插件的父类
+
+        global._plugins = {};                              // 启用的插件
+        global._plugin_utils = utils;                      // 通用工具
+        global._plugin_helper = helper;                    // 高级工具
+        global._plugin_settings = settings;                // 插件配置
+        global._plugin_global_settings = settings.global;  // 通用配置
         delete settings.global;
     }
 
@@ -2128,63 +2193,33 @@ class process {
         const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
         if (!settings || !settings.global || !settings.global.ENABLE) return;
 
-        this.initVar(settings);
+        this.initial(settings);
 
         const {
-            commonMenu, modalGenerator, styleTemplater, stateRecorder, eventHub,
-            diagramParser, quickButtonGenerator, hotkeyHub, exportHelper, thirdPartyDiagramParser,
-        } = global._pluginHelper;
+            contextMenu, dialog, styleTemplater, stateRecorder, eventHub,
+            diagramParser, quickButton, hotkeyHub, exportHelper, thirdPartyDiagramParser,
+        } = helper;
 
         // 以下高级工具必须先加载
-        // 1.插件可能会在加载阶段用到_modalGenerator、_commonMenu和_styleTemplater
-        // 2.必须先让_stateRecorder恢复状态，才能执行后续流程
-        await Promise.all([commonMenu, modalGenerator, styleTemplater, stateRecorder].map(async e => e.process()));
+        // 1.插件可能会在加载阶段用到dialog、contextMenu和styleTemplater
+        // 2.必须先让stateRecorder恢复状态，才能执行后续流程
+        await this.loadHelpers(contextMenu, dialog, styleTemplater, stateRecorder);
 
         // 加载插件
-        await Promise.all(Array.from(Object.keys(settings)).map(this.loadPlugin));
+        await this.loadPlugins();
 
-        // 高级工具可能会用到eventHub，所以必须先于高级工具加载；必须先等待插件注册事件后才能触发事件，所以必须后于插件加载
-        eventHub.process();
+        // 其他高级工具可能会用到eventHub，所以必须先于高级工具加载；必须先等待插件注册事件后才能触发事件，所以必须后于插件加载
+        await this.loadHelpers(eventHub);
 
         // 发布【所有插件加载完毕】事件。有些插件会监听此事件，在其回调函数中注册高级工具，所以必须先于高级工具执行
         this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
 
         // 加载剩余的高级工具
-        await Promise.all([diagramParser, quickButtonGenerator, hotkeyHub, exportHelper, thirdPartyDiagramParser].map(async e => e.process()));
+        await this.loadHelpers(diagramParser, quickButton, hotkeyHub, exportHelper, thirdPartyDiagramParser);
 
         // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
         setTimeout(this.utils.reload, 50);
     }
-}
-
-// 插件的父类
-global._basePlugin = basePlugin;
-// 通用工具
-global._pluginUtils = utils;
-// 高级工具
-global._pluginHelper = {
-    // 生命周期事件
-    eventHub: new eventHub(),
-    // 公共菜单
-    commonMenu: new commonMenu(),
-    // 自定义代码块语法
-    diagramParser: new diagramParser(),
-    // 第三方图形代码块语法
-    thirdPartyDiagramParser: new thirdPartyDiagramParser(),
-    // 状态记录器
-    stateRecorder: new stateRecorder(),
-    // 对话框
-    modalGenerator: new modalGenerator(),
-    // 快速按钮
-    quickButtonGenerator: new quickButtonGenerator(),
-    // 快捷键
-    hotkeyHub: new hotkeyHub(),
-    // 样式模板
-    styleTemplater: new styleTemplater(),
-    // html模板
-    htmlTemplater: new htmlTemplater(),
-    // 导出时的额外操作
-    exportHelper: new exportHelper(),
 }
 
 module.exports = {

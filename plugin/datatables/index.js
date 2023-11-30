@@ -1,4 +1,4 @@
-class datatablesPlugin extends global._basePlugin {
+class datatablesPlugin extends BasePlugin {
     init = () => {
         this.dataTablesConfig = null;
         this.tableList = [];

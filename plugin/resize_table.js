@@ -1,4 +1,4 @@
-class resizeTablePlugin extends global._basePlugin {
+class resizeTablePlugin extends BasePlugin {
     styleTemplate = () => this.config.REMOVE_MIX_WIDTH
 
     process = () => {

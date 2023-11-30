@@ -1,4 +1,4 @@
-class mindmapPlugin extends global._basePlugin {
+class mindmapPlugin extends BasePlugin {
     process = () => {
         this.headerList = ["H0", "H1", "H2", "H3", "H4", "H5", "H6"];
         this.callArgs = [
