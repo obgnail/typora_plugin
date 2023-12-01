@@ -1,7 +1,7 @@
 #plugin-markdownlint {
     top: 10%;
     right: 25px;
-    width: ${this.config.modal_width};
+    width: ${modal_width};
 }
 
 #plugin-markdownlint pre {

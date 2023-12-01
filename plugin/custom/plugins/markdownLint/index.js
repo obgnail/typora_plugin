@@ -1,9 +1,10 @@
 class markdownLintPlugin extends BaseCustomPlugin {
-    styleTemplate = () => true
+    styleTemplate = () => ({modal_width: (this.config.modal_width === "auto" ? "fit-content" : this.config.modal_width)})
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
     hotkey = () => [this.config.hotkey]
     htmlTemplate = () => {
-        const pre = [{ele: "pre", tabindex: "0"}]
+        const hint = "当前禁用的检测规则：\n" + this.config.disable_rules.join("\n");
+        const pre = [{ele: "pre", tabindex: "0", title: hint}];
         const el = [{id: "plugin-markdownlint", class_: "plugin-common-modal", style: {display: "none"}, children: pre}]
         if (this.config.use_button) {
             el.push({id: "plugin-markdownlint-button", "ty-hint": "markdown格式规范检测"})
@@ -80,7 +81,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         "MD023": "标题行不能缩进",
         "MD024": "不能连续出现内容重复的标题",
         "MD025": "只能有一个一级标题",
-        "MD026": "标题的末尾不应以标点符号结尾",
+        "MD026": "标题不应以标点符号结尾",
         "MD027": "引用区块的引用符号和文字之间有且只有一个空格",
         "MD028": "两个引用区块间不能用空行隔开。引用区块中的空行要用>开头",
         "MD029": "有序列表必须从1开始，按顺序递增",
