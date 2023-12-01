@@ -384,11 +384,11 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         if (this.utils.isNetworkImage(src)) {
             this.utils.openUrl(src);
         } else if (this.utils.isSpecialImage(src)) {
-            console.log("this image cannot locate");
+            alert("this image cannot locate");
         } else {
             // src = src.replace(/^file:\/[2-3]/, "");
             src = decodeURI(src).substring(0, src.indexOf("?"));
-            JSBridge.showInFinder(src);
+            src && this.utils.showInFinder(src);
         }
     }
     download = async () => {
@@ -396,7 +396,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         if (!this.utils.isNetworkImage(src)) return;
         const {ok, filepath} = await this.utils.downloadImage(src);
         if (ok) {
-            JSBridge.showInFinder(filepath);
+            this.utils.showInFinder(filepath);
         } else {
             alert("download image failed");
         }

@@ -129,15 +129,9 @@ class binFileUpdater {
             return {delete: deleteFile, remain: maxMtimePath}
         }
 
-        const compare = this.utils.compareVersion(fileList[0].version, fileList[1].version);
-        let deleteFile, remainFile;
-        if (compare > 0) {
-            deleteFile = fileList[1].path;
-            remainFile = fileList[0].path;
-        } else {
-            deleteFile = fileList[0].path;
-            remainFile = fileList[1].path;
-        }
+        const [f0, f1] = fileList;
+        const compare = this.utils.compareVersion(f0.version, f1.version);
+        const [deleteFile, remainFile] = compare > 0 ? [f1.path, f0.path] : [f0.path, f1.path];
         return {delete: [deleteFile], remain: remainFile}
     }
 }

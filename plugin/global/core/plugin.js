@@ -1,8 +1,8 @@
 class utils {
     static isBetaVersion = parseInt(window._options.appVersion.split(".")[0]) === 0
     static tempFolder = File.option.tempPath
-    static nonExistSelector = "#write #__has_not_this_element_id__";
-    static disableForeverSelector = "__disable_selector__";
+    static nonExistSelector = "#__non_exist_selector__"
+    static disableForeverSelector = "#__disable_selector__"
     static stopLoadPluginError = new Error("stopLoadPlugin")
     static stopCallError = new Error("stopCall")
     static meta = {}
@@ -30,22 +30,22 @@ class utils {
     // 动态注册、动态注销、动态发布生命周期事件
     // 理论上不应该暴露publishEvent()的，但是我还是希望给予最大自由度，充分信任插件，允许所有插件调用发布事件。所以调用者需要自觉维护，一旦错误发布事件，会影响整个插件系统
     // 触发顺序：
-    //   allCustomPluginsHadInjected: 自定义插件加载完毕
-    //   allPluginsHadInjected: 所有插件加载完毕
-    //   firstFileInit: 打开Typora后文件被加载
-    //   beforeFileOpen: 打开文件之前
-    //   fileOpened: 打开文件之后
-    //   otherFileOpened: 和fileOpened的区别：重新打开当前标签不会触发otherFileOpened，但是fileOpened会
-    //   fileContentLoaded: 文件内容加载完毕之后(依赖于window_tab)
-    //   fileEdited: 文件编辑后
-    //   beforeUnload: 退出Typora之前
+    //   allCustomPluginsHadInjected 自定义插件加载完毕
+    //   allPluginsHadInjected       所有插件加载完毕
+    //   firstFileInit               打开Typora后文件被加载
+    //   beforeFileOpen              打开文件之前
+    //   fileOpened                  打开文件之后
+    //   otherFileOpened             和fileOpened的区别：重新打开当前标签不会触发otherFileOpened，但是fileOpened会
+    //   fileContentLoaded           文件内容加载完毕之后(依赖于window_tab)
+    //   fileEdited                  文件编辑后
+    //   beforeUnload                退出Typora之前
 
-    //   beforeToggleSourceMode: 进入源码模式之前
-    //   afterToggleSidebar: 切换侧边栏状态之后
-    //   beforeAddCodeBlock: 添加代码块之前
-    //   afterAddCodeBlock: 添加代码块之后
-    //   outlineUpdated: 大纲更新之时
-    //   toggleSettingPage: 切换到/回配置页面
+    //   beforeToggleSourceMode      进入源码模式之前
+    //   afterToggleSidebar          切换侧边栏状态之后
+    //   beforeAddCodeBlock          添加代码块之前
+    //   afterAddCodeBlock           添加代码块之后
+    //   outlineUpdated              大纲更新之时
+    //   toggleSettingPage           切换到/回配置页面
     static eventType = {
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
         allPluginsHadInjected: "allPluginsHadInjected",
@@ -99,9 +99,10 @@ class utils {
     //   5. destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
     //   6. extraStyleGetter() => string: 用于导出时，新增css
     //   7. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
-    static registerDiagramParser = (lang, destroyWhenUpdate,
-                                    renderFunc, cancelFunc = null, destroyAllFunc = null,
-                                    extraStyleGetter = null, interactiveMode = true
+    static registerDiagramParser = (
+        lang, destroyWhenUpdate,
+        renderFunc, cancelFunc = null, destroyAllFunc = null,
+        extraStyleGetter = null, interactiveMode = true
     ) => helper.diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode)
     static unregisterDiagramParser = lang => helper.diagramParser.unregister(lang);
     // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
@@ -124,8 +125,7 @@ class utils {
     static registerThirdPartyDiagramParser = (
         lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
         lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter,
-    ) => helper.thirdPartyDiagramParser.register(lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
-        lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter);
+    ) => helper.thirdPartyDiagramParser.register(lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter);
     static unregisterThirdPartyDiagramParser = lang => helper.thirdPartyDiagramParser.unregister(lang);
 
 
@@ -140,40 +140,32 @@ class utils {
     //   extraFunc(button)=>{}: 插入html后的额外操作
     static registerFenceEnhanceButton = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
         const enhancePlugin = this.getPlugin("fence_enhance");
-        if (enhancePlugin) {
-            enhancePlugin.registerBuilder(className, action, hint, iconClassName, enable, listener, extraFunc);
-        }
-        return (!!enhancePlugin)
+        enhancePlugin && enhancePlugin.registerBuilder(className, action, hint, iconClassName, enable, listener, extraFunc);
+        return enhancePlugin
     }
     static unregisterFenceEnhanceButton = action => {
         const enhancePlugin = this.getPlugin("fence_enhance");
-        if (enhancePlugin) {
-            enhancePlugin.removeBuilder(action);
-        }
-        return (!!enhancePlugin)
+        enhancePlugin && enhancePlugin.removeBuilder(action);
+        return enhancePlugin
     }
 
     // 动态注册barTool里的tool(仅当toolbar插件启用时有效，通过返回bool值确定是否成功)
     // tool: baseToolInterface的子类
     static registerBarTool = tool => {
         const toolbarPlugin = this.getPlugin("toolbar");
-        if (toolbarPlugin) {
-            toolbarPlugin.registerBarTool(tool);
-        }
-        return (!!toolbarPlugin)
+        toolbarPlugin && toolbarPlugin.registerBarTool(tool);
+        return toolbarPlugin
     }
     static unregisterBarTool = name => {
         const toolbarPlugin = this.getPlugin("toolbar");
-        if (toolbarPlugin) {
-            toolbarPlugin.unregisterBarTool(name);
-        }
-        return (!!toolbarPlugin)
+        toolbarPlugin && toolbarPlugin.unregisterBarTool(name);
+        return toolbarPlugin
     }
 
     // 动态注册导出时的额外操作
     //   1. name: 取个名字
-    //   2. beforeExport() => cssString || null , 如果返回string，将加入到extraCSS
-    //   3. async afterExport() => html || null,  如果返回string，将替换HTML
+    //   2. beforeExport() => cssString || null  如果返回string，将加入到extraCSS
+    //   3. async afterExport() => html || null  如果返回string，将替换HTML
     static registerExportHelper = (name, beforeExport, afterExport) => helper.exportHelper.register(name, beforeExport, afterExport)
     static unregisterExportHelper = name => helper.exportHelper.unregister(name)
 
@@ -190,7 +182,7 @@ class utils {
     static getElementCreator = () => helper.htmlTemplater.creator()
 
     // 动态弹出自定义模态框（及刻弹出，因此无需注册）
-    //   1. modal: { title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
+    //   1. modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
     //   2. callback(components) => {}: 当用户点击【确认】后的回调函数
     //   3. onCancelCallback(components) => {}: 当用户点击【取消】后的回调函数
     // 具体使用请参考__modal_example.js，不再赘述
@@ -213,9 +205,9 @@ class utils {
     // 动态注册右键菜单
     // 1. name: 取个名字
     // 2. selector: 在哪个位置右键将弹出菜单
-    // 3. func menuGenerator({ev, target}) => [string]: 生成右键菜单的列表，这里的Element即使上面的selector对用的元素
+    // 3. func generator({ev, target}) => [string]: 生成右键菜单的列表，这里的Element即使上面的selector对用的元素
     // 2. func callback({ev, target, text}) => null: 点击的回调
-    static registerMenu = (name, selector, menuGenerator, callback) => helper.contextMenu.registerMenu(name, selector, menuGenerator, callback)
+    static registerMenu = (name, selector, generator, callback) => helper.contextMenu.registerMenu(name, selector, generator, callback)
     static unregisterMenu = name => helper.contextMenu.unregisterMenu(name)
 
 
@@ -223,7 +215,6 @@ class utils {
     static getAllPlugins = () => global._plugins
     static getAllPluginSettings = () => global._plugin_settings
     static getAllGlobalSettings = () => global._plugin_global_settings
-
     static getGlobalSetting = name => global._plugin_global_settings[name]
     static getPlugin = fixedName => global._plugins[fixedName]
     static getCustomPlugin = fixedName => {
@@ -232,14 +223,17 @@ class utils {
             return plugin.custom[fixedName]
         }
     }
+
     // 路径是否在挂载文件夹下
     static isUnderMountFolder = path => {
         const mountFolder = File.getMountFolder();
         return path && mountFolder && path.startsWith(mountFolder);
     }
-    static reload = async () => File.reloadContent(await File.getContent(), {
-        fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true,
-    })
+    static reload = async () => {
+        const content = await File.getContent();
+        const arg = {fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true};
+        File.reloadContent(content, arg);
+    }
     static openFile = filepath => {
         if (this.getPlugin("window_tab") && this.isUnderMountFolder(filepath)) {
             File.editor.library.openFile(filepath);
@@ -248,6 +242,7 @@ class utils {
         }
     }
     static openFolder = folder => File.editor.library.openFileInNewWindow(folder, true);
+
     static showHiddenElementByPlugin = target => {
         if (!target) return;
         const collapsePlugin = this.getPlugin("collapse_paragraph");
@@ -274,7 +269,6 @@ class utils {
             }
         }
     }
-
     static withMeta = func => func(this.meta)
 
     // Repo: https://github.com/jimp-dev/jimp
@@ -294,8 +288,8 @@ class utils {
 
     ////////////////////////////// 事件 //////////////////////////////
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
-    static shiftKeyPressed = ev => !!ev.shiftKey
-    static altKeyPressed = ev => !!ev.altKey
+    static shiftKeyPressed = ev => ev.shiftKey
+    static altKeyPressed = ev => ev.altKey
     static chineseInputMethodActivated = ev => ev.key === "Process"
     static modifierKey = keyString => {
         const keys = keyString.toLowerCase().split("+").map(k => k.trim());
@@ -552,6 +546,11 @@ class utils {
         openUrl(url, 1);
     }
 
+    static showInFinder = filepath => {
+        filepath = filepath || this.getFilePath();
+        JSBridge.showInFinder(filepath);
+    }
+
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
     // data:image;base64、data:image\svg+xml 等等
     static isSpecialImage = src => src.startsWith("data:image");
@@ -567,25 +566,23 @@ class utils {
                     "%0A" // NO-BREAK SPACE \u0A
                 ];
                 const replaceChars = ["", "%20", ""];
-                const contentList = [];
-                lines.forEach(line => {
+                const contentList = Array.from(lines).map(line => {
                     let encodeText = encodeURI(line.textContent);
                     for (let i = 0; i < badChars.length; i++) {
                         if (encodeText.indexOf(badChars[i]) !== -1) {
                             encodeText = encodeText.replace(new RegExp(badChars[i], "g"), replaceChars[i]);
                         }
                     }
-                    const decodeText = decodeURI(encodeText);
-                    contentList.push(decodeText);
-                })
-                if (contentList) {
+                    return decodeURI(encodeText);
+                });
+                if (contentList && contentList.length) {
                     return contentList.join("\n")
                 }
             }
         }
 
         // from queue
-        cid = cid || pre && pre.getAttribute("cid");
+        cid = cid || (pre && pre.getAttribute("cid"));
         if (cid) {
             const fence = File.editor.fences.queue[cid];
             if (fence) {
@@ -898,10 +895,8 @@ class diagramParser {
         extraStyleGetter = null, interactiveMode = true,
     ) => {
         lang = lang.toLowerCase();
-        this.parsers.set(lang, {
-            lang, destroyWhenUpdate, renderFunc, cancelFunc,
-            destroyAllFunc, extraStyleGetter, interactiveMode
-        });
+        const obj = {lang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode}
+        this.parsers.set(lang, obj);
         console.debug(`register diagram parser: [ ${lang} ]`);
     }
 
@@ -1030,17 +1025,15 @@ class diagramParser {
     }
 
     onTryAddLangUndo = () => {
-        this.utils.decorate(
-            () => File && File.editor && File.editor.fences, "tryAddLangUndo",
-            null, (result, ...args) => this.renderDiagram(args[0].cid)
-        )
+        const objGetter = () => File && File.editor && File.editor.fences;
+        const after = (result, ...args) => this.renderDiagram(args[0].cid);
+        this.utils.decorate(objGetter, "tryAddLangUndo", null, after);
     }
 
     onUpdateDiagram = () => {
-        this.utils.decorate(
-            () => File && File.editor && File.editor.diagrams, "updateDiagram",
-            null, (result, ...args) => this.renderDiagram(args[0])
-        )
+        const objGetter = () => File && File.editor && File.editor.diagrams;
+        const after = (result, ...args) => this.renderDiagram(args[0]);
+        this.utils.decorate(objGetter, "updateDiagram", null, after);
     }
 
     onExportToHTML = () => {
@@ -1110,9 +1103,10 @@ class diagramParser {
         }
 
         const handleCtrlClick = () => {
-            if (!this.utils.getGlobalSetting("CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE")) return;
+            const ctrlClick = this.utils.getGlobalSetting("CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE");
+            if (!ctrlClick) return;
             document.querySelector("#write").addEventListener("mouseup", ev => {
-                if (ev.target.closest(".md-fences-interactive .md-diagram-panel-preview") && this.utils.metaKeyPressed(ev)) {
+                if (this.utils.metaKeyPressed(ev) && ev.target.closest(".md-fences-interactive .md-diagram-panel-preview")) {
                     showAllTButton(ev.target.closest(".md-fences-interactive"));
                     enableFocus();
                 }
@@ -1120,9 +1114,9 @@ class diagramParser {
         }
 
         const handleEditButton = () => {
-            if (!this.utils.getGlobalSetting("CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE")
-                || !Array.from(this.parsers.values()).some(parser => parser.interactiveMode)
-            ) return;
+            const editBtn = this.utils.getGlobalSetting("CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE");
+            const hasInteractive = Array.from(this.parsers.values()).some(parser => parser.interactiveMode);
+            if (!editBtn || !hasInteractive) return;
 
             const listener = (ev, button) => {
                 button.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
@@ -1157,26 +1151,22 @@ class diagramParser {
     }
 
     onCheckIsDiagramType = () => {
-        this.utils.decorate(
-            () => File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor,
-            "isDiagramType",
-            null,
-            (result, ...args) => {
-                if (result === true) return true;
+        const objGetter = () => File && File.editor && File.editor.diagrams && File.editor.diagrams.constructor
+        const after = (result, ...args) => {
+            if (result === true) return true;
 
-                let lang = args[0];
-                if (!lang) return false;
-                const type = typeof lang;
-                if (type === "object" && lang["name"]) {
-                    lang = lang["name"];
-                }
-                if (type === "string") {
-                    return this.parsers.get(lang.toLowerCase());
-                }
-                return result
-            },
-            true
-        )
+            let lang = args[0];
+            if (!lang) return false;
+            const type = typeof lang;
+            if (type === "object" && lang.name) {
+                lang = lang.name;
+            }
+            if (type === "string") {
+                return this.parsers.get(lang.toLowerCase());
+            }
+            return result
+        }
+        this.utils.decorate(objGetter, "isDiagramType", null, after, true);
     }
 }
 
@@ -1191,11 +1181,10 @@ class thirdPartyDiagramParser {
         lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
         lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter,
     ) => {
-        this.parsers.set(lang.toLowerCase(), {
-            checkSelector, wrapElement, extraCss,
-            lazyLoadFunc, createFunc, destroyFunc, beforeExport,
-            map: {}
-        });
+        const parser = {
+            checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {}
+        }
+        this.parsers.set(lang.toLowerCase(), parser);
         this.utils.registerDiagramParser(lang, destroyWhenUpdate, this.render, this.cancel, this.destroyAll, extraStyleGetter, interactiveMode)
     }
 
@@ -1382,8 +1371,9 @@ class stateRecorder {
     }
 
     // collections: map[filepath]map[idx]state
-    register = (recorderName, selector, stateGetter, stateRestorer, finalFunc) => {
-        this.recorders.set(recorderName, {selector, stateGetter, stateRestorer, finalFunc, collections: new Map()})
+    register = (name, selector, stateGetter, stateRestorer, finalFunc) => {
+        const obj = {selector, stateGetter, stateRestorer, finalFunc, collections: new Map()};
+        this.recorders.set(name, obj);
     }
     unregister = recorderName => this.recorders.delete(recorderName);
 
@@ -1563,7 +1553,7 @@ class dialog {
                 inner = radioList.join("");
                 break
             case "select":
-                const optionsList = component.list.map(option => `<option ${option === component.selected ? "selected" : ""}>${option}</option>`);
+                const optionsList = component.list.map(option => `<option ${(option === component.selected) ? "selected" : ""}>${option}</option>`);
                 inner = `<select class="form-control">${optionsList}</select>`
                 break
             case "p":
@@ -1582,7 +1572,7 @@ class dialog {
             this.entities.title.innerText = modal.title;
             modal.components.forEach(component => component.id = Math.random());
             const widgetList = modal.components.map(component => this.newWidget(component));
-            this.entities.body.innerHTML = `<form role="form">` + widgetList.join("") + "</form>";
+            this.entities.body.innerHTML = `<form role="form">${widgetList.join("")}</form>`;
             this.entities.modal.style.display = "block";
         }
     }
@@ -1633,9 +1623,9 @@ class quickButton {
     getMax = () => {
         let maxX = -1;
         let maxY = -1;
-        for (const button of this.buttons.values()) {
-            maxX = Math.max(maxX, button.coordinate[0]);
-            maxY = Math.max(maxY, button.coordinate[1]);
+        for (const {coordinate: [x, y]} of this.buttons.values()) {
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
         }
         return [maxX, maxY]
     }
@@ -1835,9 +1825,7 @@ class htmlTemplater {
                     el.innerText = value;
                     break
                 case "style":
-                    for (const [k, v] of Object.entries(value)) {
-                        el.style[k] = v;
-                    }
+                    Object.assign(el.style, value);
                     break
                 case "children":
                     for (const child of value) {
@@ -1851,15 +1839,9 @@ class htmlTemplater {
         return el
     }
 
-    createList = elements => elements.map(ele => this.create(ele))
+    createList = elements => elements.map(this.create)
     appendElements = (parent, template) => this.createList(template).forEach(ele => parent.appendChild(ele))
-
-    insert = elements => {
-        for (const element of elements) {
-            const el = this.create(element);
-            this.utils.insertDiv(el);
-        }
-    }
+    insert = elements => elements.forEach(ele => this.utils.insertDiv(this.create(ele)))
 }
 
 class contextMenu {
@@ -1896,7 +1878,7 @@ class contextMenu {
                 if (!target) continue;
                 ev.preventDefault();
                 ev.stopPropagation();
-                const menus = menu.menuGenerator({ev, target});
+                const menus = menu.generator({ev, target});
                 this.render(menus);
                 this.show(ev);
                 this.callback = menu.callback;
@@ -1904,9 +1886,7 @@ class contextMenu {
         }, true)
     }
 
-    registerMenu = (name, selector, menuGenerator, callback) => {
-        this.menus.set(name, {selector, menuGenerator, callback});
-    }
+    registerMenu = (name, selector, generator, callback) => this.menus.set(name, {selector, generator, callback})
     unregisterMenu = name => this.menus.delete(name)
 
     render = menus => {
@@ -1929,17 +1909,17 @@ class contextMenu {
     }
 
     show = ev => {
-        const menu = $(this.menu);
-        menu.addClass("show");
+        const $menu = $(this.menu);
+        $menu.addClass("show");
         const {innerWidth, innerHeight} = window;
         const {clientX, clientY} = ev;
-        let width = menu.width() + 20;
+        let width = $menu.width() + 20;
         width = Math.min(clientX, innerWidth - width);
         width = Math.max(0, width);
-        let height = menu.height() + 48;
+        let height = $menu.height() + 48;
         height = clientY > innerHeight - height ? innerHeight - height : clientY - $("#top-titlebar").height() + 8;
         height = Math.max(0, height);
-        menu.css({top: height + "px", left: width + "px"});
+        $menu.css({top: height + "px", left: width + "px"});
     }
 }
 
@@ -1961,9 +1941,13 @@ class exportHelper {
         }
     }
 
+    check = args => {
+        const {type} = args[0] || {};
+        return type === "html" || type === "html-plain"
+    }
+
     afterExport = async (exportResult, ...args) => {
-        const exportConfig = args[0];
-        if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
+        if (!this.check(args)) return exportResult
 
         let html = await exportResult;
         const writeIdx = html.indexOf(`id='write'`);
@@ -1981,8 +1965,7 @@ class exportHelper {
     }
 
     afterExportSync = (exportResult, ...args) => {
-        const exportConfig = args[0];
-        if (!exportConfig || exportConfig["type"] !== "html" && exportConfig["type"] !== "html-plain") return exportResult;
+        if (!this.check(args)) return exportResult
 
         let html = exportResult;
         const writeIdx = html.indexOf(`id='write'`);

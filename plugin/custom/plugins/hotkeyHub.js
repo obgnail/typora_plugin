@@ -14,7 +14,7 @@ class hotkeyHub extends BaseCustomPlugin {
 
     callback = anchorNode => {
         const filepath = this.utils.joinPath("./plugin/global/settings/hotkey.default.toml");
-        JSBridge.showInFinder(filepath);
+        this.utils.showInFinder(filepath);
     }
 
     toHotkey = setting => {

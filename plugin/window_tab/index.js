@@ -371,7 +371,7 @@ class windowTabBarPlugin extends BasePlugin {
     copyPath = idx => navigator.clipboard.writeText(this.tabUtil.tabs[idx].path)
     copyActiveTabPath = () => this.copyPath(this.tabUtil.activeIdx)
 
-    showInFinder = idx => JSBridge.showInFinder(this.tabUtil.tabs[idx].path);
+    showInFinder = idx => this.utils.showInFinder(this.tabUtil.tabs[idx].path);
 
     openInNewWindow = idx => this.openFileNewWindow(this.tabUtil.tabs[idx].path, false)
 
