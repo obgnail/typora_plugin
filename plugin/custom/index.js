@@ -29,7 +29,7 @@ class loadPluginHelper {
 
     loadCustomPlugin = async fixedName => {
         const customSetting = this.controller.customSettings[fixedName];
-        if (!customSetting || !customSetting.enable) {
+        if (!customSetting || !customSetting.enable || this.controller.config.DISABLE_CUSTOM_PLUGINS.indexOf(fixedName) !== -1) {
             console.debug(`disable custom plugin: [ ${fixedName} ]`);
             return;
         }
