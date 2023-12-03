@@ -70,7 +70,7 @@ class loadPluginHelper {
         if (errorPluginSetting && errorPluginSetting.length) {
             const msg = "以下插件错误地配置到 custom_plugin.user.toml，正确配置文件为 settings.user.toml：";
             const components = [msg, ...errorPluginSetting].map(label => ({label, type: "p"}));
-            const openSettingFile = () => JSBridge.showInFinder(this.utils.joinPath("./plugin/global/settings/settings.user.toml"));
+            const openSettingFile = () => this.utils.showInFinder(this.utils.joinPath("./plugin/global/settings/settings.user.toml"));
             this.utils.modal({title: "配置错误", components}, openSettingFile, openSettingFile);
         }
     }
@@ -97,15 +97,7 @@ class loadPluginHelper {
     }
 
     // 简易的判断是否为baseCustomPlugin的子类实例
-    check = instance => instance
-        && instance.init instanceof Function
-        && instance.selector instanceof Function
-        && instance.hint instanceof Function
-        && instance.style instanceof Function
-        && instance.html instanceof Function
-        && instance.hotkey instanceof Function
-        && instance.process instanceof Function
-        && instance.callback instanceof Function
+    check = instance => ["init", "selector", "hint", "style", "html", "hotkey", "process", "callback"].every(attr => instance[attr] instanceof Function)
 }
 
 class dynamicCallHelper {

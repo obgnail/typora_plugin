@@ -398,7 +398,7 @@ class operationTool extends baseToolInterface {
     name = () => "ops"
     translate = () => "执行操作"
     init = () => {
-        const explorer = () => JSBridge.showInFinder(this.utils.getFilePath());
+        const explorer = () => this.utils.showInFinder(this.utils.getFilePath());
         const copyPath = () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath());
         const togglePreferencePanel = () => File.megaMenu.togglePreferencePanel();
         const togglePinWindow = () => {

@@ -446,6 +446,10 @@ hide = true
 auto_skip = true
 # 当光标在中间，左右两边都是成对符号，如：【|】；且用户键入Backspace时，同时删除左右两边的符号
 auto_delete_pair = true
+# 当框选文字时，键入中文符号，自动包裹框选文字
+auto_surround_pair = true
+# 自动包裹框选文字后，自动框选文字
+auto_select_after_surround = true
 # 需要自动补全的符号（第一项为输入符号，第二项为补全符号）
 # NOTE：其实有个问题我不知道要不要修复：中文的前后引号是不一样的，如果你键入的是后引号，此时便无法正常配对补全（好像搜狗输入法就没有修复此问题）
 auto_pair_symbols = [

@@ -1,4 +1,4 @@
-// 本插件没有处理fence下的中文输入，如果需要，可以通过监听afterAddCodeBlock事件，修改File.editor.fences.queue.n90.state.keyMaps[1]
+// 本插件没有处理fence下的中文输入，如果需要，可以通过监听afterAddCodeBlock事件，修改File.editor.fences.queue.n90.state.keyMaps[1]，可以参考fence_enhance插件的editorHotkey
 class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     beforeProcess = () => {
         // 旧版本的Typora是延迟设置noPairingMatch的，导致beforeProcess失效
@@ -11,6 +11,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     selector = () => this.utils.disableForeverSelector
 
     init = () => {
+        this.rangyText = "";
         this.pairMap = new Map(this.config.auto_pair_symbols);
         this.reversePairMap = this.reverseMap(this.pairMap);
         // 旧版本Typora是延迟加载SnapFlag的
@@ -23,23 +24,39 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         const write = document.querySelector("#write");
         write.addEventListener("input", this.utils.throttle(ev => {
             if (File.option.noPairingMatch) return
+
             const inputSymbol = ev.data;
             const pairSymbol = this.pairMap.get(inputSymbol);
             if (pairSymbol) {
-                this.insertText(inputSymbol, pairSymbol);
+                this.insertText(inputSymbol, this.rangyText + pairSymbol);
+                setTimeout(this.selectText);
             } else if (this.config.auto_skip && this.reversePairMap.get(inputSymbol)) {
                 this.skipSymbol(inputSymbol);
             }
         }, 30));
 
-        if (this.config.auto_delete_pair) {
+        if (this.config.auto_delete_pair || this.config.auto_surround_pair) {
             write.addEventListener("keydown", ev => {
-                if (File.option.noPairingMatch) return
-                if (ev.key === "Backspace" && !ev.shiftKey && !ev.altKey && !this.utils.metaKeyPressed(ev)) {
+                if (File.option.noPairingMatch) return;
+
+                if (this.config.auto_surround_pair) {
+                    this.rangyText = this.utils.getRangyText();
+                }
+                if (this.config.auto_delete_pair && ev.key === "Backspace" && !ev.shiftKey && !ev.altKey && !this.utils.metaKeyPressed(ev)) {
                     this.deletePair();
                 }
             }, true);
         }
+    }
+
+    selectText = () => {
+        if (this.config.auto_select_after_surround || this.rangyText) {
+            const {range, bookmark} = this.utils.getRangy();
+            bookmark.end += this.rangyText.length;
+            range.moveToBookmark(bookmark);
+            range.select();
+        }
+        this.rangyText = "";
     }
 
     insertText = (symbol, pairSymbol) => {
