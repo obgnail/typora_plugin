@@ -24,6 +24,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         const write = document.querySelector("#write");
         write.addEventListener("input", this.utils.throttle(ev => {
             if (File.option.noPairingMatch) return
+
             const inputSymbol = ev.data;
             const pairSymbol = this.pairMap.get(inputSymbol);
             if (pairSymbol) {
@@ -37,10 +38,11 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         if (this.config.auto_delete_pair || this.config.auto_surround_pair) {
             write.addEventListener("keydown", ev => {
                 if (File.option.noPairingMatch) return;
+
                 if (this.config.auto_surround_pair) {
                     this.rangyText = this.utils.getRangyText();
                 }
-                if (ev.key === "Backspace" && !ev.shiftKey && !ev.altKey && !this.utils.metaKeyPressed(ev)) {
+                if (this.config.auto_delete_pair && ev.key === "Backspace" && !ev.shiftKey && !ev.altKey && !this.utils.metaKeyPressed(ev)) {
                     this.deletePair();
                 }
             }, true);
