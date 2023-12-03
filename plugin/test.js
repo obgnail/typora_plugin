@@ -24,7 +24,7 @@ class testPlugin extends BasePlugin {
         }
     }
 
-    process() {
+    process = () => {
         this.init();
 
         this.utils.decorate(() => File && File.editor && File.editor.library, "openFileInNewWindow", null,
