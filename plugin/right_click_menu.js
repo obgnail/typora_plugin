@@ -162,31 +162,33 @@ class rightClickMenuPlugin extends BasePlugin {
 
     listen = () => {
         const that = this;
+        const removeShow = ele => ele.classList.remove("show");
+        const removeActive = ele => ele.classList.remove("active");
 
         // 展示二级菜单
         $("#context-menu").on("mouseenter", "[data-key]", function () {
             const first = $(this);
             if (that.groupName === first.attr("data-key")) {
                 const idx = this.getAttribute("idx");
-                if (document.querySelector(`.plugin-menu-second.show`)) {
-                    document.querySelectorAll(`.plugin-menu-third:not([idx="${idx}"])`).forEach(ele => ele.classList.remove("show"));
+                if (document.querySelector(".plugin-menu-second.show")) {
+                    document.querySelectorAll(`.plugin-menu-third:not([idx="${idx}"])`).forEach(removeShow);
                 }
                 const otherSecond = document.querySelectorAll(`.plugin-menu-second:not([idx="${idx}"])`);
-                otherSecond.forEach(ele => ele.querySelectorAll(`.plugin-menu-item.active`).forEach(ele => ele.classList.remove("active")));
-                otherSecond.forEach(ele => ele.classList.remove("show"));
+                otherSecond.forEach(ele => ele.querySelectorAll(".plugin-menu-item.active").forEach(removeActive));
+                otherSecond.forEach(removeShow);
                 that.show($(`.plugin-menu-second[idx="${idx}"]`), first);
                 first.addClass("active");
             } else {
-                document.querySelectorAll(`[data-key='${that.groupName}']`).forEach(ele => ele.classList.remove("active"));
-                document.querySelectorAll(".plugin-menu-second").forEach(ele => ele.classList.remove("show"));
-                document.querySelectorAll(".plugin-menu-third").forEach(ele => ele.classList.remove("show"));
+                document.querySelectorAll(`[data-key='${that.groupName}']`).forEach(removeActive);
+                document.querySelectorAll(".plugin-menu-second").forEach(removeShow);
+                document.querySelectorAll(".plugin-menu-third").forEach(removeShow);
             }
         })
 
         // 展示三级菜单
         $(".plugin-menu-second").on("mouseenter", "[data-key]", function () {
             const second = $(this);
-            document.querySelectorAll(`.plugin-menu-third`).forEach(ele => ele.classList.remove("show"));
+            document.querySelectorAll(`.plugin-menu-third`).forEach(removeShow);
             document.querySelectorAll(".plugin-dynamic-arg").forEach(ele => ele.parentElement.removeChild(ele));
             const fixedName = second.attr("data-key");
             const $third = $(`.plugin-menu-third[fixed_name="${fixedName}"]`);
@@ -200,7 +202,7 @@ class rightClickMenuPlugin extends BasePlugin {
             if (second.find(`span[data-lg="Menu"]`).length) {
                 that.show($third, second);
             } else {
-                document.querySelector(".plugin-menu-second .has-extra-menu").classList.remove("active");
+                removeActive(document.querySelector(".plugin-menu-second .has-extra-menu"));
             }
             // 在二级菜单中调用插件
         }).on("click", "[data-key]", function () {

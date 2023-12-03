@@ -241,12 +241,11 @@ class windowTabBarPlugin extends BasePlugin {
                 this.updateTabDiv(tabDiv, tab.path, idx);
             }
 
-            if (tab.path === wantOpenPath) {
-                tabDiv.classList.add("active");
+            const active = tab.path === wantOpenPath;
+            tabDiv.classList.toggle("active", active);
+            if (active) {
                 tabDiv.scrollIntoViewIfNeeded();
                 this.scrollContent(tab);
-            } else {
-                tabDiv.classList.remove("active");
             }
 
             tabDiv = tabDiv.nextElementSibling;

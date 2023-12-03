@@ -14,6 +14,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         this.rangyText = "";
         this.pairMap = new Map(this.config.auto_pair_symbols);
         this.reversePairMap = this.reverseMap(this.pairMap);
+        this.codeSet = this.getCodeSet();
         // 旧版本Typora是延迟加载SnapFlag的
         const until = () => File && File.editor && File.editor.undo && File.editor.undo.UndoManager && File.editor.undo.UndoManager.SnapFlag
         const after = () => this.undoSnapType = File.editor.undo.UndoManager.SnapFlag
@@ -23,7 +24,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     process = () => {
         const write = document.querySelector("#write");
         write.addEventListener("input", this.utils.throttle(ev => {
-            if (File.option.noPairingMatch) return
+            if (File.option.noPairingMatch) return;
 
             const inputSymbol = ev.data;
             const pairSymbol = this.pairMap.get(inputSymbol);
@@ -39,7 +40,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
             write.addEventListener("keydown", ev => {
                 if (File.option.noPairingMatch) return;
 
-                if (this.config.auto_surround_pair) {
+                if (this.config.auto_surround_pair && this.utils.chineseInputMethodActivated(ev) && this.codeSet.has(ev.code)) {
                     this.rangyText = this.utils.getRangyText();
                 }
                 if (this.config.auto_delete_pair && ev.key === "Backspace" && !ev.shiftKey && !ev.altKey && !this.utils.metaKeyPressed(ev)) {
@@ -48,6 +49,11 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
             }, true);
         }
     }
+
+    getCodeSet = () => new Set([
+        "Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0",
+        "Backquote", "BracketLeft", "BracketRight", "Backslash", "Semicolon", "Quote", "Comma", "Period", "Slash",
+    ])
 
     selectText = () => {
         if (this.config.auto_select_after_surround || this.rangyText) {
