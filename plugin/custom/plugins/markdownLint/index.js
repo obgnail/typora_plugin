@@ -121,6 +121,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.lazyLoad();
         this.initDisableRules();
         const filepath = this.utils.getFilePath();
+        if (!filepath) return;
         // if (filepath) {
         //     await File.saveUseNode();
         // }
