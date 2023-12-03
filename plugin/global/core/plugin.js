@@ -1818,8 +1818,8 @@ class htmlTemplater {
                 case "class":
                 case "className":
                 case "class_":
-                    const str = Array.isArray(value) ? value.join(" ") : value;
-                    el.setAttribute("class", str.trim());
+                    const li = Array.isArray(value) ? value : value.trim().split(" ");
+                    el.classList.add(...li);
                     break
                 case "text":
                     el.innerText = value;

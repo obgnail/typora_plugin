@@ -85,13 +85,8 @@ class collapseParagraphPlugin extends BasePlugin {
     }
 
     trigger = (paragraph, collapsed) => {
-        if (collapsed) {
-            paragraph.classList.remove(this.className);
-            this.toggle(paragraph, "");
-        } else {
-            paragraph.classList.add(this.className);
-            this.toggle(paragraph, "none");
-        }
+        paragraph.classList.toggle(this.className, !collapsed);
+        this.toggle(paragraph, collapsed ? "" : "none");
     }
 
     rollback = start => {

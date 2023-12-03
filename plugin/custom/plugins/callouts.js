@@ -12,15 +12,15 @@ class callouts extends BaseCustomPlugin {
                .plugin-callout > p:first-child::before { color: var(--callout-left-line-color); }`;
 
         const callouts = calloutList.join("\n");
-        const hover = (!this.config.hover_to_show_fold_callout) ? "" : hoverCss
-        const color = (!this.config.set_title_color) ? "" : colorCss
+        const hover = this.config.hover_to_show_fold_callout ? hoverCss : ""
+        const color = this.config.set_title_color ? colorCss : ""
         return {callouts, hover, color}
     }
 
     process = () => {
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.range);
         this.utils.addEventListener(this.utils.eventType.fileEdited, this.range);
-        const getExportStyle = () => (document.querySelector("#write .plugin-callout")) ? this.getStyleContent() : ""
+        const getExportStyle = () => document.querySelector("#write .plugin-callout") ? this.getStyleContent() : ""
         this.utils.registerExportHelper("callouts", getExportStyle, this.exportToHtml);
     }
 
@@ -31,16 +31,12 @@ class callouts extends BaseCustomPlugin {
         pList.forEach(p => {
             const blockquote = p.parentElement;
             const result = p.textContent.match(/^\[!(?<type>\w+)\](?<fold>[+-]?)/);
-            if (result && result.groups) {
-                blockquote.classList.add("plugin-callout");
-                blockquote.setAttribute("callout-type", result.groups.type.toLowerCase());
-                if (result.groups.fold === "-") {
-                    blockquote.classList.add("callout-folded");
-                } else {
-                    blockquote.classList.remove("callout-folded");
-                }
-            } else {
-                blockquote.classList.remove("plugin-callout");
+            const ok = result && result.groups;
+            blockquote.classList.toggle("plugin-callout", ok);
+            if (ok) {
+                const {type, fold} = result.groups;
+                blockquote.setAttribute("callout-type", type.toLowerCase());
+                blockquote.classList.toggle("callout-folded", fold === "-");
             }
         })
     }

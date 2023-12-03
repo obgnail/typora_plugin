@@ -235,8 +235,7 @@ class builder {
 
     createButton = () => {
         const button = document.createElement("div");
-        button.classList.add("enhance-btn");
-        button.classList.add(this.className);
+        button.classList.add("enhance-btn", this.className);
         button.setAttribute("action", this.action);
         this.hint && button.setAttribute("ty-hint", this.hint);
         const span = document.createElement("span");

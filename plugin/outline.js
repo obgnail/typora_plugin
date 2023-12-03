@@ -91,11 +91,8 @@ class outlinePlugin extends BasePlugin {
 
     setFooterActive = Type => {
         for (let ele = this.entities.footer.firstElementChild; !!ele; ele = ele.nextElementSibling) {
-            if (ele.getAttribute("type") === Type) {
-                ele.classList.add("select");
-            } else {
-                ele.classList.remove("select");
-            }
+            const force = ele.getAttribute("type") === Type;
+            ele.classList.toggle("select", force);
         }
     }
 
