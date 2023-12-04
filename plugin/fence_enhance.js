@@ -38,11 +38,29 @@ class fenceEnhancePlugin extends BasePlugin {
             new editorHotkey(this).process();
         }
         if (this.config.INDENTED_WRAPPED_LINE) {
-            new lineWrapHelper(this).process();
+            this.processIndentedWrappedLine();
         }
         if (this.config.ENABLE_BUTTON) {
             this.processButton();
         }
+    }
+
+    processIndentedWrappedLine = () => {
+        let charWidth = 0;
+        const codeIndentSize = File.option.codeIndentSize;
+        const callback = (cm, line, elt) => {
+            const off = CodeMirror.countColumn(line.text, null, cm.getOption("tabSize")) * charWidth;
+            elt.style.textIndent = "-" + off + "px";
+            elt.style.paddingLeft = (codeIndentSize + off) + "px";
+        }
+        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, cid => {
+            const fence = File.editor.fences.queue[cid];
+            if (fence) {
+                charWidth = charWidth || fence.defaultCharWidth();
+                fence.on("renderLine", callback);
+                setTimeout(() => fence && fence.refresh(), 100);
+            }
+        })
     }
 
     processButton = () => {
@@ -338,32 +356,6 @@ class editorHotkey {
         fence.execCommand("newlineAndIndent");
     }
 }
-
-class lineWrapHelper {
-    constructor(controller) {
-        this.utils = controller.utils;
-    }
-
-    process = () => {
-        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, cid => {
-            const fence = File.editor.fences.queue[cid];
-            if (fence) {
-                this.onRenderLine(fence);
-                setTimeout(() => fence && fence.refresh(), 100);
-            }
-        })
-    }
-
-    onRenderLine = editor => {
-        const charWidth = editor.defaultCharWidth();
-        editor.on("renderLine", function (cm, line, elt) {
-            const off = CodeMirror.countColumn(line.text, null, cm.getOption("tabSize")) * charWidth;
-            elt.style.textIndent = "-" + off + "px";
-            elt.style.paddingLeft = (File.option.codeIndentSize + off) + "px";
-        });
-    }
-}
-
 
 module.exports = {
     plugin: fenceEnhancePlugin,
