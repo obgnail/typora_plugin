@@ -14,6 +14,7 @@ class autoNumberPlugin extends BasePlugin {
             pb { display: block; page-break-after: always; }
             h1 { page-break-before: always; }
             h1:first-of-type { page-break-before: avoid; }
+            p:has(img:first-child) { page-break-inside: avoid; }
         }`
 
         this.content_css = `
@@ -135,18 +136,19 @@ class autoNumberPlugin extends BasePlugin {
             content: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) "." counter(toc-h6) " ";
         }`
 
-        this.image_css = `
-        #write span.md-image.md-img-loaded::after {
+        const image_content = `
             counter-increment: Figures;
             content: "${this.config.NAMES.image} " counter(write-h2) "-" counter(Figures);
             font-family: ${this.config.FONT_FAMILY};
             display: block;
             text-align: ${this.config.ALIGN};
             margin: 4px 0;
-        }`
+        `
+        this.image_css = `#write .md-image::after {${image_content}}`
+        this.image_export_css = `#write p:has(img:first-child)::after {${image_content}}`
 
         this.table_css = `
-        #write figure.table-figure::after {
+        #write .table-figure::after {
             counter-increment: Tables;
             content: "${this.config.NAMES.table} " counter(write-h2) "-" counter(Tables);
             font-family: ${this.config.FONT_FAMILY};
@@ -208,13 +210,15 @@ class autoNumberPlugin extends BasePlugin {
 
     removeStyle = () => this.utils.removeStyle(this.css_id);
 
-    getStyleString = () => {
+    getStyleString = (inExport = false) => {
+        // beta版本不支持:has语法
+        const image_css = (inExport && !this.utils.isBetaVersion) ? this.image_export_css : this.image_css;
         return [
             this.base_css,
             (this.config.ENABLE_CONTENT) ? this.content_css : "",
             (this.config.ENABLE_SIDE_BAR) ? this.side_bar_css : "",
             (this.config.ENABLE_TOC) ? this.toc_css : "",
-            (this.config.ENABLE_IMAGE) ? this.image_css : "",
+            (this.config.ENABLE_IMAGE) ? image_css : "",
             (this.config.ENABLE_TABLE) ? this.table_css : "",
             (this.config.ENABLE_FENCE) ? this.fence_css : "",
         ].join("\n")
@@ -249,12 +253,12 @@ class autoNumberPlugin extends BasePlugin {
 class exportHelper {
     constructor(controller) {
         this.inExport = false;
-        this.controller = controller
+        this.controller = controller;
     }
 
     beforeExport = () => {
         this.inExport = true;
-        return `body {font-variant-ligatures: no-common-ligatures;} ` + this.controller.getStyleString();
+        return `body {font-variant-ligatures: no-common-ligatures;} ` + this.controller.getStyleString(true);
     }
 
     afterGetHeaderMatrix = headers => {
