@@ -37,6 +37,9 @@ class fenceEnhancePlugin extends BasePlugin {
         if (this.config.ENABLE_HOTKEY) {
             new editorHotkey(this).process();
         }
+        if (this.config.INDENTED_WRAPPED_LINE) {
+            new lineWrapHelper(this).process();
+        }
         if (this.config.ENABLE_BUTTON) {
             this.processButton();
         }
@@ -335,6 +338,32 @@ class editorHotkey {
         fence.execCommand("newlineAndIndent");
     }
 }
+
+class lineWrapHelper {
+    constructor(controller) {
+        this.utils = controller.utils;
+    }
+
+    process = () => {
+        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, cid => {
+            const fence = File.editor.fences.queue[cid];
+            if (fence) {
+                this.onRenderLine(fence);
+                setTimeout(() => fence && fence.refresh(), 100);
+            }
+        })
+    }
+
+    onRenderLine = editor => {
+        const charWidth = editor.defaultCharWidth();
+        editor.on("renderLine", function (cm, line, elt) {
+            const off = CodeMirror.countColumn(line.text, null, cm.getOption("tabSize")) * charWidth;
+            elt.style.textIndent = "-" + off + "px";
+            elt.style.paddingLeft = (File.option.codeIndentSize + off) + "px";
+        });
+    }
+}
+
 
 module.exports = {
     plugin: fenceEnhancePlugin,

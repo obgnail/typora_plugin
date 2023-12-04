@@ -566,7 +566,7 @@ NAME = "代码块增强"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 
-# fence_enhance插件包含两个功能：button、hotkey。此为button，功能：在代码块右上角添加按钮
+# fence_enhance插件包含三个功能：button、hotkey、other。此为button，功能：在代码块右上角添加按钮
 # 若置为false，以下配置全部失效
 ENABLE_BUTTON = true
 # 自动隐藏按钮，鼠标移动到代码块才显示（注意：就算置为true，在折叠状态下的代码块也不会自动隐藏。因为必须提醒用户它处于折叠状态）
@@ -589,13 +589,8 @@ WAIT_RECOVER_INTERVAL = 1000
 # 节流时间（单位：ms）
 # 300毫秒内多次点击【复制代码】按钮，只会执行一次（此选项其实没啥意义，添加此配置只是出于强迫症）
 CLICK_CHECK_INTERVAL = 300
-# 高亮鼠标悬停的代码行，若置为false，则HIGHLIGHT_COLOR失效
-# 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
-HIGHLIGHT_WHEN_HOVER = false
-# 代码行高亮时的颜色
-HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 
-# fence_enhance插件包含两个功能：button、hotkey。此为hotkey，功能：为代码块添加快捷键
+# fence_enhance插件包含三个功能：button、hotkey、other。此为hotkey，功能：为代码块添加快捷键
 # 若置为false，以下配置全部失效
 # 注意：此处的快捷键使用的是codeMirror的方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
 ENABLE_HOTKEY = true
@@ -631,6 +626,17 @@ COPY_NEXT_LINE = "Ctrl-Alt-Down"
 INSERT_LINE_NEXT = "Ctrl-Enter"
 # 直接在上面新建一行
 INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
+
+# fence_enhance插件包含三个功能：button、hotkey、other。此为other
+# 长文本的换行会保持相同的缩进
+#   1.详见：https://github.com/codemirror/codemirror5/issues/2085
+#   2.除非你电脑性能足够，否则不建议开启，有较大的性能损失，实测会消耗大量时间去计算缩进
+INDENTED_WRAPPED_LINE = false
+# 高亮鼠标悬停的代码行，若置为false，则HIGHLIGHT_COLOR失效
+# 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
+HIGHLIGHT_WHEN_HOVER = false
+# 代码行高亮时的颜色
+HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 
 
 ############### collapse_paragraph ###############
