@@ -2124,7 +2124,7 @@ class process {
 
     loadPlugin = async fixedName => {
         const setting = global._plugin_settings[fixedName];
-        if (!setting || !setting.ENABLE) {
+        if (!setting || !setting.ENABLE || global._plugin_global_settings.DISABLE_PLUGINS.indexOf(fixedName) !== -1) {
             console.debug(`disable plugin: [ ${fixedName} ] `);
             return
         }

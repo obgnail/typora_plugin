@@ -13,6 +13,9 @@
 [global]
 # 总开关，若为false，则禁用全部插件
 ENABLE = true
+# 禁用的插件。优先级高于业务插件的ENABLE选项
+# 填入业务插件的fixedName。举例：["window_tab", "search_multi"]
+DISABLE_PLUGINS = []
 # 如果你使用了自定义图表插件（kanban、markmap、echarts等等）并且使用了交互模式（INTERACTIVE_MODE置为true），那么下面两个配置请至少一个置为true，否则你将无法退出交互模式
 # 为【自定义图表】添加一个【编辑】按钮（当点击【编辑】按钮时退出交互模式）
 CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE = true
@@ -563,7 +566,7 @@ NAME = "代码块增强"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 
-# fence_enhance插件包含两个功能：button、hotkey。此为button，功能：在代码块右上角添加按钮
+# fence_enhance插件包含三个功能：button、hotkey、other。此为button，功能：在代码块右上角添加按钮
 # 若置为false，以下配置全部失效
 ENABLE_BUTTON = true
 # 自动隐藏按钮，鼠标移动到代码块才显示（注意：就算置为true，在折叠状态下的代码块也不会自动隐藏。因为必须提醒用户它处于折叠状态）
@@ -586,13 +589,8 @@ WAIT_RECOVER_INTERVAL = 1000
 # 节流时间（单位：ms）
 # 300毫秒内多次点击【复制代码】按钮，只会执行一次（此选项其实没啥意义，添加此配置只是出于强迫症）
 CLICK_CHECK_INTERVAL = 300
-# 高亮鼠标悬停的代码行，若置为false，则HIGHLIGHT_COLOR失效
-# 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
-HIGHLIGHT_WHEN_HOVER = false
-# 代码行高亮时的颜色
-HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 
-# fence_enhance插件包含两个功能：button、hotkey。此为hotkey，功能：为代码块添加快捷键
+# fence_enhance插件包含三个功能：button、hotkey、other。此为hotkey，功能：为代码块添加快捷键
 # 若置为false，以下配置全部失效
 # 注意：此处的快捷键使用的是codeMirror的方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
 ENABLE_HOTKEY = true
@@ -628,6 +626,17 @@ COPY_NEXT_LINE = "Ctrl-Alt-Down"
 INSERT_LINE_NEXT = "Ctrl-Enter"
 # 直接在上面新建一行
 INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
+
+# fence_enhance插件包含三个功能：button、hotkey、other。此为other
+# 长文本的换行会保持相同的缩进
+#   1.详见：https://github.com/codemirror/codemirror5/issues/2085
+#   2.除非你电脑性能足够，否则不建议开启，有较大的性能损失，实测会消耗大量时间去计算缩进
+INDENTED_WRAPPED_LINE = false
+# 高亮鼠标悬停的代码行，若置为false，则HIGHLIGHT_COLOR失效
+# 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
+HIGHLIGHT_WHEN_HOVER = false
+# 代码行高亮时的颜色
+HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 
 
 ############### collapse_paragraph ###############
@@ -749,6 +758,9 @@ NAME = "自定义插件"
 # 是否在右键菜单中可点击
 # 若置为false，则：不影响所有自定义插件的启用状态，但是无法在右键菜单中触及
 CLICKABLE = true
+# 禁用的自定义插件。优先级高于业务插件的ENABLE选项
+# 填入业务插件的fixedName。举例：["kanban", "echarts"]
+DISABLE_CUSTOM_PLUGINS = []
 # 允许在settings.user.toml中设置custom_plugin.user.toml中的选项。若在两处皆有定义，settings.user.toml的优先级高于custom_plugin.user.toml
 # 本来【自定义插件】的选项应该在custom_plugin.user.toml中设置的，但是一直有收到反馈，用户错误地写在了settings.user.toml。无奈只能作此兼容
 # 1.如果你不理解我在说什么，并且不想弄懂，请将此选项置为true

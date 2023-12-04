@@ -30,7 +30,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
             const pairSymbol = this.pairMap.get(inputSymbol);
             if (pairSymbol) {
                 this.insertText(inputSymbol, this.rangyText + pairSymbol);
-                setTimeout(this.selectText);
+                setTimeout(this.selectText, 50);
             } else if (this.config.auto_skip && this.reversePairMap.get(inputSymbol)) {
                 this.skipSymbol(inputSymbol);
             }
