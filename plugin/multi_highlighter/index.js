@@ -80,8 +80,7 @@ class multiHighlighterPlugin extends BasePlugin {
             } else if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
                 ev.stopPropagation();
                 ev.preventDefault();
-                this.clearHighlight();
-                this.refreshFences();
+                this.clearHighlight(true);
                 this.hide();
             }
         })
@@ -164,8 +163,7 @@ class multiHighlighterPlugin extends BasePlugin {
         if (this.config.REMOVE_WHEN_EDIT) {
             document.querySelector("content").addEventListener("mousedown", ev => {
                 if (this.multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
-                    this.clearHighlight();
-                    this.refreshFences();
+                    this.clearHighlight(true);
                 }
             }, true)
         }
@@ -231,10 +229,25 @@ class multiHighlighterPlugin extends BasePlugin {
         this.fenceMultiHighlighterList = [];
     }
 
-    clearHighlight = () => {
+    clearHighlight = (refreshFences = false) => {
+        const queue = refreshFences ? this.getNeedRefreshFences() : [];
         this.multiHighlighter.clear();
         this.clearFenceMultiHighlighterList();
         this.entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(this.utils.removeElement);
+        for (const fence of queue) {
+            fence && fence.refresh();
+        }
+    }
+
+    getNeedRefreshFences = () => {
+        const queue = File.editor.fences.queue;
+        return Array.from(this.entities.write.getElementsByTagName("marker")).map(el => {
+            const target = el.closest(".md-fences[cid]");
+            if (target) {
+                const cid = target.getAttribute("cid");
+                return queue[cid]
+            }
+        })
     }
 
     doSearch = (keyArr, refreshResult = true) => {
@@ -252,13 +265,6 @@ class multiHighlighterPlugin extends BasePlugin {
             this.entities.result.innerHTML = itemList.join("");
         }
         this.entities.result.style.display = "";
-    }
-
-    refreshFences = () => {
-        console.debug("refreshFences");
-        for (const fence of Object.values(File.editor.fences.queue)) {
-            fence.refresh();
-        }
     }
 
     getKeyArr = () => {
