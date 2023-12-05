@@ -64,14 +64,13 @@ class CustomPlugin extends BasePlugin {
 
     call = (fixedName, meta) => {
         const plugin = this.custom[fixedName];
-        if (plugin) {
-            try {
-                const selector = plugin.selector();
-                const target = selector ? meta.target.closest(selector) : meta.target;
-                plugin.callback(target);
-            } catch (e) {
-                console.error("plugin callback error", plugin.fixedName, e);
-            }
+        if (!plugin) return;
+        try {
+            const selector = plugin.selector();
+            const target = selector ? meta.target.closest(selector) : meta.target;
+            plugin.callback(target);
+        } catch (e) {
+            console.error("plugin callback error", plugin.fixedName, e);
         }
     }
 }
@@ -80,6 +79,7 @@ class loadPluginHelper {
     constructor(controller) {
         this.controller = controller;
         this.utils = controller.utils;
+        this.config = controller.config;
     }
 
     insertStyle = (fixedName, style) => {
@@ -93,7 +93,7 @@ class loadPluginHelper {
 
     loadCustomPlugin = async fixedName => {
         const customSetting = this.controller.customSettings[fixedName];
-        if (!customSetting || !customSetting.enable || this.controller.config.DISABLE_CUSTOM_PLUGINS.indexOf(fixedName) !== -1) {
+        if (!customSetting || !customSetting.enable || this.config.DISABLE_CUSTOM_PLUGINS.indexOf(fixedName) !== -1) {
             console.debug(`disable custom plugin: [ ${fixedName} ]`);
             return;
         }
@@ -144,10 +144,10 @@ class loadPluginHelper {
 
     // 兼容用户错误操作
     mergeSettings = settings => {
-        if (this.controller.config.ALLOW_SET_CONFIG_IN_SETTINGS_TOML) {
+        if (this.config.ALLOW_SET_CONFIG_IN_SETTINGS_TOML) {
             for (const [fixedName, settings_] of Object.entries(this.utils.getAllPluginSettings())) {
                 if (fixedName in settings) {
-                    settings[fixedName] = this.controller.utils.merge(settings[fixedName], settings_);
+                    settings[fixedName] = this.utils.merge(settings[fixedName], settings_);
                 }
             }
         }
