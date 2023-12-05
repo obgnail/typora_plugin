@@ -551,6 +551,8 @@ class utils {
         JSBridge.showInFinder(filepath);
     }
 
+    static isDiscardableUntitled = () => File && File.changeCounter && File.changeCounter.isDiscardableUntitled();
+
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
     // data:image;base64、data:image\svg+xml 等等
     static isSpecialImage = src => src.startsWith("data:image");

@@ -12,8 +12,7 @@ class reopenClosedFilesPlugin extends BaseCustomPlugin {
             if (!this.windowTabBarPlugin) return;
             await this.ensureFile();
             if (this.config.auto_reopen_when_init) {
-                // NOTE: 初始化阶段getFilePath的结果可能是undefined，所以这里必须是和空串严格相等
-                this.utils.loopDetector(() => File && this.utils.getFilePath() === "", this.callback, 40, 2000, false);
+                this.utils.loopDetector(this.utils.isDiscardableUntitled, this.callback, 40, 2000, false);
             }
         })
         this.utils.addEventListener(this.utils.eventType.beforeUnload, () => this.windowTabBarPlugin && this.windowTabBarPlugin.saveTabs(this.saveFile));
