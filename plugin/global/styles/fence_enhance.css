@@ -1,17 +1,17 @@
-#write .md-fences .fence-enhance {
+#write .fence-enhance {
     display: inline-flex;
     flex-direction: row-reverse;
     position: absolute;
     top: .3em;
     right: .5em;
     z-index: 8;
-    font-size: 1.2em;
+    font-size: ${this.config.BUTTON_SIZE};
 }
 
 .fence-enhance .enhance-btn {
-    opacity: .5;
+    opacity: ${this.config.BUTTON_OPACITY};
     cursor: pointer;
-    margin-left: .5em;
+    margin-left: ${this.config.BUTTON_MARGIN};
 }
 
 .fence-enhance .enhance-btn:last-child {
@@ -19,7 +19,7 @@
 }
 
 .fence-enhance .enhance-btn:hover {
-    opacity: .8;
+    opacity: ${this.config.BUTTON_OPACITY_HOVER};
 }
 
 .CodeMirror-line:hover {

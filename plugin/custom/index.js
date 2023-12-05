@@ -167,16 +167,14 @@ class hotkeyHelper {
                 const hotkey = plugin.hotkey();
                 if (!hotkey) continue;
 
-                hotkeys.push({
-                    hotkey,
-                    callback: () => {
-                        const $anchorNode = this.utils.getAnchorNode();
-                        const anchorNode = $anchorNode && $anchorNode[0];
-                        const selector = plugin.selector();
-                        const target = (selector && anchorNode) ? anchorNode.closest(selector) : anchorNode;
-                        plugin.callback(target);
-                    }
-                })
+                const callback = () => {
+                    const $anchorNode = this.utils.getAnchorNode();
+                    const anchorNode = $anchorNode && $anchorNode[0];
+                    const selector = plugin.selector();
+                    const target = (selector && anchorNode) ? anchorNode.closest(selector) : anchorNode;
+                    plugin.callback(target);
+                }
+                hotkeys.push({hotkey, callback});
             } catch (e) {
                 console.error("register hotkey error:", fixedName, e);
             }

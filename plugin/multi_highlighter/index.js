@@ -80,8 +80,7 @@ class multiHighlighterPlugin extends BasePlugin {
             } else if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
                 ev.stopPropagation();
                 ev.preventDefault();
-                this.clearHighlight();
-                this.refreshFences();
+                this.clearHighlight(true);
                 this.hide();
             }
         })
@@ -164,8 +163,7 @@ class multiHighlighterPlugin extends BasePlugin {
         if (this.config.REMOVE_WHEN_EDIT) {
             document.querySelector("content").addEventListener("mousedown", ev => {
                 if (this.multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
-                    this.clearHighlight();
-                    this.refreshFences();
+                    this.clearHighlight(true);
                 }
             }, true)
         }
@@ -231,10 +229,21 @@ class multiHighlighterPlugin extends BasePlugin {
         this.fenceMultiHighlighterList = [];
     }
 
-    clearHighlight = () => {
+    clearHighlight = (refreshFences = false) => {
+        const fences = refreshFences ? this.getNeedRefreshFences() : [];
         this.multiHighlighter.clear();
         this.clearFenceMultiHighlighterList();
         this.entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(this.utils.removeElement);
+        fences.forEach(cid => File.editor.fences.queue[cid].refresh());
+    }
+
+    getNeedRefreshFences = () => {
+        const set = new Set();
+        this.entities.write.getElementsByTagName("marker").forEach(el => {
+            const target = el.closest(".md-fences[cid]");
+            target && set.add(target.getAttribute("cid"));
+        })
+        return set
     }
 
     doSearch = (keyArr, refreshResult = true) => {
@@ -252,13 +261,6 @@ class multiHighlighterPlugin extends BasePlugin {
             this.entities.result.innerHTML = itemList.join("");
         }
         this.entities.result.style.display = "";
-    }
-
-    refreshFences = () => {
-        console.debug("refreshFences");
-        for (const fence of Object.values(File.editor.fences.queue)) {
-            fence.refresh();
-        }
     }
 
     getKeyArr = () => {

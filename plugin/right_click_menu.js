@@ -13,11 +13,13 @@ class rightClickMenuPlugin extends BasePlugin {
 
     init = () => {
         this.groupName = "typora-plugin";
-        this.notavailableValue = "__not_available__";
+        this.unavailableName = "光标于此位置不可用";
+        this.unavailableValue = "__not_available__";
         this.callArgs = [
             {arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"},
             {arg_name: "打开插件配置文件", arg_value: "open_setting_folder"},
             {arg_name: "关于/帮助", arg_value: "about"},
+            {arg_name: "提出需求/报告缺陷", arg_value: "new_issue"},
         ]
     }
 
@@ -153,11 +155,8 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     appendDummyThirdLi = $menu => {
-        this.appendThirdLi($menu, [{
-            arg_name: "光标于此位置不可用",
-            arg_value: this.notavailableValue,
-            arg_disabled: true,
-        }])
+        const args = [{arg_name: this.unavailableName, arg_value: this.unavailableValue, arg_disabled: true}];
+        this.appendThirdLi($menu, args)
     }
 
     listen = () => {
@@ -228,7 +227,7 @@ class rightClickMenuPlugin extends BasePlugin {
             const fixedName = this.parentElement.getAttribute("fixed_name");
             const argValue = this.getAttribute("arg_value");
             const plugin = that.utils.getPlugin(fixedName);
-            if (argValue !== that.notavailableValue && plugin && plugin.call) {
+            if (argValue !== that.unavailableValue && plugin && plugin.call) {
                 that.utils.withMeta(meta => plugin.call(argValue, meta));
             }
             if (!that.config.DO_NOT_HIDE) {
@@ -240,6 +239,8 @@ class rightClickMenuPlugin extends BasePlugin {
     call = type => {
         if (type === "about") {
             this.utils.openUrl("https://github.com/obgnail/typora_plugin");
+        } else if (type === "new_issue") {
+            this.utils.openUrl("https://github.com/obgnail/typora_plugin/issues/new");
         } else if (type === "do_not_hide") {
             this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE;
         } else if (type === "open_setting_folder") {
