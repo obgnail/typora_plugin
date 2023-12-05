@@ -105,15 +105,11 @@ class outlinePlugin extends BasePlugin {
 
     toggleEye = icon => {
         this.config.SHOW_HIDDEN = !this.config.SHOW_HIDDEN;
-        if (icon.classList.contains("ion-eye")) {
-            icon.classList.remove("ion-eye");
-            icon.classList.add("ion-eye-disabled");
-            icon.setAttribute("ty-hint", "不显示被其他插件隐藏的元素");
-        } else {
-            icon.classList.remove("ion-eye-disabled");
-            icon.classList.add("ion-eye");
-            icon.setAttribute("ty-hint", "显示被其他插件隐藏的元素");
-        }
+        const eye = icon.classList.contains("ion-eye");
+        const hint = (eye ? "不" : "") + "显示被其他插件隐藏的元素";
+        icon.setAttribute("ty-hint", hint);
+        icon.classList.toggle("ion-eye");
+        icon.classList.toggle("ion-eye-disabled");
     }
 
     call = () => {

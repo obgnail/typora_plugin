@@ -145,27 +145,22 @@ class fenceEnhancePlugin extends BasePlugin {
     foldCode = (ev, foldButton) => {
         const fence = foldButton.closest(".md-fences");
         if (!fence) return;
+        const isDiagram = fence.classList.contains("md-fences-advanced");  // 图形不可折叠
+        if (isDiagram) return;
         const scroll = fence.querySelector(".CodeMirror-scroll");
         if (!scroll) return;
         const enhance = foldButton.closest(".fence-enhance");
         if (!enhance) return;
 
-        // 图形不可折叠
-        if (fence.classList.contains("md-fences-advanced")) return;
-
-        if (scroll.style.height && scroll.style.overflowY) {
-            scroll.style.height = "";
-            scroll.style.overflowY = "";
-            foldButton.classList.remove("folded");
-            foldButton.firstElementChild.className = "fa fa-minus";
-            this.config.AUTO_HIDE && (enhance.style.visibility = "hidden");
-        } else {
-            scroll.style.height = window.getComputedStyle(scroll).lineHeight;
-            scroll.style.overflowY = this.config.FOLD_OVERFLOW;
-            foldButton.classList.add("folded");
-            foldButton.firstElementChild.className = "fa fa-plus";
-            this.config.AUTO_HIDE && (enhance.style.visibility = "");
-        }
+        const folded = scroll.style.height && scroll.style.overflowY;
+        const [height, overflowY, force, className, visibility] = folded
+            ? ["", "", false, "fa fa-minus", "hidden"]
+            : [window.getComputedStyle(scroll).lineHeight, this.config.FOLD_OVERFLOW, true, "fa fa-plus", ""];
+        scroll.style.height = height;
+        scroll.style.overflowY = overflowY;
+        foldButton.classList.toggle("folded", force);
+        foldButton.firstElementChild.className = className;
+        this.config.AUTO_HIDE && (enhance.style.visibility = visibility);
     }
 
     indentCode = (ev, indentButton) => {
