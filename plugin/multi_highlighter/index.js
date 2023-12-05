@@ -230,24 +230,20 @@ class multiHighlighterPlugin extends BasePlugin {
     }
 
     clearHighlight = (refreshFences = false) => {
-        const queue = refreshFences ? this.getNeedRefreshFences() : [];
+        const fences = refreshFences ? this.getNeedRefreshFences() : [];
         this.multiHighlighter.clear();
         this.clearFenceMultiHighlighterList();
         this.entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(this.utils.removeElement);
-        for (const fence of queue) {
-            fence && fence.refresh();
-        }
+        fences.forEach(cid => File.editor.fences.queue[cid].refresh());
     }
 
     getNeedRefreshFences = () => {
-        const queue = File.editor.fences.queue;
-        return Array.from(this.entities.write.getElementsByTagName("marker")).map(el => {
+        const set = new Set();
+        this.entities.write.getElementsByTagName("marker").forEach(el => {
             const target = el.closest(".md-fences[cid]");
-            if (target) {
-                const cid = target.getAttribute("cid");
-                return queue[cid]
-            }
+            target && set.add(target.getAttribute("cid"));
         })
+        return set
     }
 
     doSearch = (keyArr, refreshResult = true) => {
