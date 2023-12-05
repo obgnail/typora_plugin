@@ -33,6 +33,9 @@ class loadPluginHelper {
             console.debug(`disable custom plugin: [ ${fixedName} ]`);
             return;
         }
+        if (!customSetting.order || typeof customSetting.order !== 'number') {
+            customSetting.order = 1;
+        }
         try {
             const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins`, fixedName);
             if (!plugin) return;
@@ -111,7 +114,10 @@ class dynamicCallHelper {
         meta.target = anchorNode;
         const dynamicCallArgs = [];
 
-        for (const [fixedName, setting] of Object.entries(this.controller.customSettings)) {
+        const settings = Array.from(Object.entries(this.controller.customSettings));
+        settings.sort(([, {order: o1}], [, {order: o2}]) => o1 - o2);
+
+        for (const [fixedName, setting] of settings) {
             if (!notInContextMenu && setting.hide) continue;
 
             const plugin = this.custom[fixedName];
@@ -129,7 +135,7 @@ class dynamicCallHelper {
                     arg.arg_hint = "此插件不可点击";
                 } else {
                     arg.arg_disabled = selector && !anchorNode.closest(selector);
-                    arg.arg_hint = (arg.arg_disabled) ? "光标于此位置不可用" : plugin.hint();
+                    arg.arg_hint = arg.arg_disabled ? "光标于此位置不可用" : plugin.hint();
                 }
             } catch (e) {
                 console.error("plugin selector error:", fixedName, e);
@@ -144,7 +150,7 @@ class dynamicCallHelper {
         if (plugin) {
             try {
                 const selector = plugin.selector();
-                const target = (selector) ? meta.target.closest(selector) : meta.target;
+                const target = selector ? meta.target.closest(selector) : meta.target;
                 plugin.callback(target);
             } catch (e) {
                 console.error("plugin callback error", plugin.fixedName, e);

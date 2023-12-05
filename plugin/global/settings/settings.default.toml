@@ -152,9 +152,7 @@ SHOW_KEYWORD_BAR = true
 # 高亮的颜色
 # 每个关键字按序对应一个颜色，颜色数量不限，你可以修改、继续添加颜色
 STYLE_COLOR = [
-    # 浅一些的颜色
     '#bbeeff', '#ffbbcc', '#88ee88', '#ccbbff', '#ffee88', '#FFFFa0', '#88cccc', '#ffbb88', '#cccccc', '#ffaabb',
-    # 深一些的颜色
     '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
 ]
 # 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
@@ -162,7 +160,7 @@ STYLE_COLOR = [
 # 就算20个真的不够用，那我也是建议你给STYLE_COLOR选项新增一些颜色，而不是修改此选项
 DEFAULT_COLOR = "#dd6699"
 # DO NOT edit this field unless you know what you are doing
-# Typora本身有限制: ctrl+F 搜索后，点击任意地方原先高亮的地方就会消失
+# Typora本身有限制: ctrl+F搜索后，点击任意地方原先高亮的地方就会消失
 # 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
 # 若置为false，有可能导致你无法编辑页面，直到你重新打开此文件
 REMOVE_WHEN_EDIT = true
@@ -262,7 +260,7 @@ cmd = "cd $d && wt"
 [[commander.BUILTIN]]
 name = "GitCommit"
 shell = "cmd/bash"
-cmd = "cd $m && git add . && git commit -m \"message\""
+cmd = 'cd $m && git add . && git commit -m "message"'
 
 
 ############### md_padding ###############
@@ -595,7 +593,7 @@ FOLD_DEFAULT = false
 # 比如当你点击【复制代码】按钮后，icon会变成【✔】，并在保持一段时间后自动恢复。此选项就是设置这个保持时间
 WAIT_RECOVER_INTERVAL = 1000
 # 节流时间（单位：ms）
-# 300毫秒内多次点击【复制代码】按钮，只会执行一次（此选项其实没啥意义，添加此配置只是出于强迫症）
+# 300毫秒内多次点击【复制代码】按钮，只会执行一次（此选项其实没啥意义，添加此选项只是出于强迫症）
 CLICK_CHECK_INTERVAL = 300
 
 # fence_enhance插件包含三个功能：button、hotkey、other。此为hotkey，功能：为代码块添加快捷键
@@ -605,7 +603,7 @@ ENABLE_HOTKEY = true
 # 不建议修改下面的快捷键，原因有二：
 #   1. 和很多ide的快捷键保持一致
 #   2. typora强制绑定了很多快捷键，实际可修改的快捷键并不多
-# 强制绑定的快捷键如下：
+# typora强制绑定的快捷键如下：
 #   1. Ctrl-A:         "selectAll",
 #   2. Ctrl-Up:        "goDocStart",
 #   3. Ctrl-Down:      "goDocEnd",
@@ -663,8 +661,8 @@ RECORD_COLLAPSE = true
 # 各个功能对应的修饰键
 # 1.支持ctrl/alt/shift的随意组合（如"shift+alt"，"ctrl+shift"）
 # 2.但是不能为"alt"（因为alt+click已经被【scrollBookmarker】插件占用），也不能为"shift"（因为shift+click被系统自带的【框选】功能占用）
-# 3.若为空，表示不启用此功能
-# 4.举例：【COLLAPSE_SIBLINGS = "ctrl+alt"】：当用户同时按住键盘ctrl和alt，并且鼠标click标题时，折叠/展开父章节下所有同级的章节
+# 3.若为""，表示不启用此功能
+# 4.例如【COLLAPSE_SIBLINGS = "ctrl+alt"】：当用户同时按住键盘ctrl和alt，并且鼠标click标题时，折叠/展开父章节下所有同级的章节
 [collapse_paragraph.MODIFIER_KEY]
 # 折叠/展开 单个章节
 COLLAPSE_SINGLE = "ctrl"
