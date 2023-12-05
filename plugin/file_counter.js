@@ -74,18 +74,10 @@ class fileCounterPlugin extends BasePlugin {
         traverse(dir).then(() => then(fileCount)).catch(err => console.error(err));
     }
 
-    getDirectChildByClassName = (ele, className) => {
-        for (const child of ele.children) {
-            if (child.classList.contains(className)) {
-                return child
-            }
-        }
-    }
-
     setDirCount = treeNode => {
         const dir = treeNode.getAttribute("data-path");
         this.countFiles(dir, this.allowRead, fileCount => {
-            let countDiv = this.getDirectChildByClassName(treeNode, this.className);
+            let countDiv = treeNode.querySelector(`:scope > .${this.className}`);
             if (fileCount <= this.config.IGNORE_MIN_NUM) {
                 this.utils.removeElement(countDiv);
                 return
@@ -99,12 +91,9 @@ class fileCounterPlugin extends BasePlugin {
             countDiv.innerText = fileCount + "";
         })
 
-        const fileNode = this.getDirectChildByClassName(treeNode, "file-node-children");
+        const fileNode = treeNode.querySelector(":scope > .file-node-children");
         if (fileNode) {
-            for (const child of fileNode.children) {
-                const hasSub = child.getAttribute("data-has-sub") === "true";
-                hasSub && this.setDirCount(child);
-            }
+            fileNode.querySelectorAll(`:scope > [data-has-sub="true"]`).forEach(this.setDirCount);
         }
     }
 
