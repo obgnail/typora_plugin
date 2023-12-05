@@ -2,14 +2,78 @@ class CustomPlugin extends BasePlugin {
     beforeProcess = async () => {
         this.custom = {};          // 启用的插件
         this.customSettings = {};  // 全部的插件配置
-        this.hotkeyHelper = new hotkeyHelper(this);
-        this.dynamicCallHelper = new dynamicCallHelper(this);
-        this.loadPluginHelper = new loadPluginHelper(this);
-        await this.loadPluginHelper.load();
+        await new loadPluginHelper(this).process();
     }
-    hotkey = () => this.hotkeyHelper.hotkey()
-    dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => this.dynamicCallHelper.dynamicCallArgsGenerator(anchorNode, meta, notInContextMenu)
-    call = (fixedName, meta) => this.dynamicCallHelper.call(fixedName, meta)
+
+    hotkey = () => {
+        const hotkeys = [];
+        for (const [fixedName, plugin] of Object.entries(this.custom)) {
+            if (!plugin) continue;
+            try {
+                const hotkey = plugin.hotkey();
+                if (!hotkey) continue;
+
+                const callback = () => {
+                    const $anchorNode = this.utils.getAnchorNode();
+                    const anchorNode = $anchorNode && $anchorNode[0];
+                    const selector = plugin.selector();
+                    const target = (selector && anchorNode) ? anchorNode.closest(selector) : anchorNode;
+                    plugin.callback(target);
+                }
+                hotkeys.push({hotkey, callback});
+            } catch (e) {
+                console.error("register hotkey error:", fixedName, e);
+            }
+        }
+        return hotkeys
+    }
+
+    dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => {
+        const settings = Array.from(Object.entries(this.customSettings));
+        settings.sort(([, {order: o1}], [, {order: o2}]) => o1 - o2);
+
+        meta.target = anchorNode;
+        const dynamicCallArgs = [];
+        for (const [fixedName, setting] of settings) {
+            if (!notInContextMenu && setting.hide) continue;
+
+            const plugin = this.custom[fixedName];
+            if (!plugin) continue;
+
+            const arg = {
+                arg_name: plugin.showName,
+                arg_value: plugin.fixedName,
+                arg_disabled: true,
+                arg_hint: "未知错误！请向开发者反馈",
+            };
+            try {
+                const selector = plugin.selector();
+                if (selector === this.utils.disableForeverSelector) {
+                    arg.arg_hint = "此插件不可点击";
+                } else {
+                    arg.arg_disabled = selector && !anchorNode.closest(selector);
+                    arg.arg_hint = arg.arg_disabled ? "光标于此位置不可用" : plugin.hint();
+                }
+            } catch (e) {
+                console.error("plugin selector error:", fixedName, e);
+            }
+            dynamicCallArgs.push(arg);
+        }
+        return dynamicCallArgs;
+    }
+
+    call = (fixedName, meta) => {
+        const plugin = this.custom[fixedName];
+        if (plugin) {
+            try {
+                const selector = plugin.selector();
+                const target = selector ? meta.target.closest(selector) : meta.target;
+                plugin.callback(target);
+            } catch (e) {
+                console.error("plugin callback error", plugin.fixedName, e);
+            }
+        }
+    }
 }
 
 class loadPluginHelper {
@@ -90,7 +154,7 @@ class loadPluginHelper {
         return settings
     }
 
-    load = async () => {
+    process = async () => {
         let settings = await this.utils.readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
         settings = this.mergeSettings(settings);
         this.errorSettingDetector(settings);
@@ -101,92 +165,6 @@ class loadPluginHelper {
 
     // 简易的判断是否为baseCustomPlugin的子类实例
     check = instance => ["init", "selector", "hint", "style", "html", "hotkey", "process", "callback"].every(attr => instance[attr] instanceof Function)
-}
-
-class dynamicCallHelper {
-    constructor(controller) {
-        this.controller = controller;
-        this.custom = controller.custom;
-        this.utils = controller.utils;
-    }
-
-    dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => {
-        meta.target = anchorNode;
-        const dynamicCallArgs = [];
-
-        const settings = Array.from(Object.entries(this.controller.customSettings));
-        settings.sort(([, {order: o1}], [, {order: o2}]) => o1 - o2);
-
-        for (const [fixedName, setting] of settings) {
-            if (!notInContextMenu && setting.hide) continue;
-
-            const plugin = this.custom[fixedName];
-            if (!plugin) continue;
-
-            const arg = {
-                arg_name: plugin.showName,
-                arg_value: plugin.fixedName,
-                arg_disabled: true,
-                arg_hint: "未知错误！请向开发者反馈",
-            };
-            try {
-                const selector = plugin.selector();
-                if (selector === this.utils.disableForeverSelector) {
-                    arg.arg_hint = "此插件不可点击";
-                } else {
-                    arg.arg_disabled = selector && !anchorNode.closest(selector);
-                    arg.arg_hint = arg.arg_disabled ? "光标于此位置不可用" : plugin.hint();
-                }
-            } catch (e) {
-                console.error("plugin selector error:", fixedName, e);
-            }
-            dynamicCallArgs.push(arg);
-        }
-        return dynamicCallArgs;
-    }
-
-    call = (fixedName, meta) => {
-        const plugin = this.custom[fixedName];
-        if (plugin) {
-            try {
-                const selector = plugin.selector();
-                const target = selector ? meta.target.closest(selector) : meta.target;
-                plugin.callback(target);
-            } catch (e) {
-                console.error("plugin callback error", plugin.fixedName, e);
-            }
-        }
-    }
-}
-
-class hotkeyHelper {
-    constructor(controller) {
-        this.custom = controller.custom;
-        this.utils = controller.utils;
-    }
-
-    hotkey = () => {
-        const hotkeys = [];
-        for (const [fixedName, plugin] of Object.entries(this.custom)) {
-            if (!plugin) continue;
-            try {
-                const hotkey = plugin.hotkey();
-                if (!hotkey) continue;
-
-                const callback = () => {
-                    const $anchorNode = this.utils.getAnchorNode();
-                    const anchorNode = $anchorNode && $anchorNode[0];
-                    const selector = plugin.selector();
-                    const target = (selector && anchorNode) ? anchorNode.closest(selector) : anchorNode;
-                    plugin.callback(target);
-                }
-                hotkeys.push({hotkey, callback});
-            } catch (e) {
-                console.error("register hotkey error:", fixedName, e);
-            }
-        }
-        return hotkeys
-    }
 }
 
 module.exports = {
