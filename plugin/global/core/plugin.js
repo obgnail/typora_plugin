@@ -28,7 +28,7 @@ class utils {
 
 
     // 动态注册、动态注销、动态发布生命周期事件
-    // 理论上不应该暴露publishEvent()的，但是我还是希望给予最大自由度，充分信任插件，允许所有插件调用发布事件。所以调用者需要自觉维护，一旦错误发布事件，会影响整个插件系统
+    // 理论上不应该暴露publishEvent()的，但我还是希望给予最大自由度，充分信任插件，允许所有插件发布事件。所以调用者需要自觉维护，一旦错误发布事件，会影响整个插件系统
     // 触发顺序：
     //   allCustomPluginsHadInjected 自定义插件加载完毕
     //   allPluginsHadInjected       所有插件加载完毕
@@ -120,7 +120,7 @@ class utils {
     //   7. async lazyLoadFunc() => null: 加载第三方资源
     //   8. createFunc($Element, string) => Object: 传入目标标签和fence的内容，生成图形实例
     //   9. destroyFunc(Object) => null: 传入图形实例，destroy图形实例
-    //  10. beforeExport
+    //  10. beforeExport(element, instance) => null: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
     //  11. extraStyleGetter() => string: 用于导出时，新增css
     static registerThirdPartyDiagramParser = (
         lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
@@ -192,7 +192,7 @@ class utils {
     //   1. action(string): 取个名字
     //   2. coordinate[int, int]: 按钮的坐标(x, y) 注意x,y方向是相反的：往上为x正方向，往左为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
     //   3. hint(string): 提示信息
-    //   3. iconClass(string): icon 的 class
+    //   3. iconClass(string): icon的class
     //   4. style(Object): button 额外的样式
     //   4. callback(ev, target, action) => null: 点击按钮后的回调函数
     static registerQuickButton = (action, coordinate, hint, iconClass, style, callback) => helper.quickButton.register(action, coordinate, hint, iconClass, style, callback)
@@ -205,8 +205,8 @@ class utils {
     // 动态注册右键菜单
     // 1. name: 取个名字
     // 2. selector: 在哪个位置右键将弹出菜单
-    // 3. func generator({ev, target}) => [string]: 生成右键菜单的列表，这里的Element即使上面的selector对用的元素
-    // 2. func callback({ev, target, text}) => null: 点击的回调
+    // 3. generator({ev, target}) => [string]: 生成右键菜单的列表，这里的Element即使上面的selector对用的元素
+    // 2. callback({ev, target, text}) => null: 点击的回调
     static registerMenu = (name, selector, generator, callback) => helper.contextMenu.registerMenu(name, selector, generator, callback)
     static unregisterMenu = name => helper.contextMenu.unregisterMenu(name)
 
@@ -229,11 +229,6 @@ class utils {
         const mountFolder = File.getMountFolder();
         return path && mountFolder && path.startsWith(mountFolder);
     }
-    static reload = async () => {
-        const content = await File.getContent();
-        const arg = {fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true};
-        File.reloadContent(content, arg);
-    }
     static openFile = filepath => {
         if (this.getPlugin("window_tab") && this.isUnderMountFolder(filepath)) {
             File.editor.library.openFile(filepath);
@@ -242,6 +237,11 @@ class utils {
         }
     }
     static openFolder = folder => File.editor.library.openFileInNewWindow(folder, true);
+    static reload = async () => {
+        const content = await File.getContent();
+        const arg = {fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true};
+        File.reloadContent(content, arg);
+    }
 
     static showHiddenElementByPlugin = target => {
         if (!target) return;
@@ -321,8 +321,8 @@ class utils {
         return 0
     }
 
-    // merge({a: [{b: 2}] }, {a: [{c: 2}]}) -> {a: [{c: 2}] }
-    // merge({o: {a: 3}}, {o: {b: 4}}) -> {o: {a: 3, b: 4} }
+    // merge({ a: [{ b: 2 }] }, { a: [{ c: 2 }] }) -> { a: [{ c: 2 }] }
+    // merge({ o: { a: 3 } }, { o: { b: 4 } }) -> { o: { a: 3, b: 4 } }
     static merge = (source, other) => {
         const isObject = value => {
             const type = typeof value
@@ -398,13 +398,13 @@ class utils {
 
     static getUUID = () => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            let r = (Math.random() * 16) | 0
-            let v = c === 'x' ? r : (r & 0x3) | 0x8;
+            const r = (Math.random() * 16) | 0
+            const v = c === 'x' ? r : (r & 0x3) | 0x8;
             return v.toString(16);
         });
     }
 
-    static isPromise = obj => !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function'
+    static isPromise = obj => obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function'
 
     static windowsPathToUnix = filepath => {
         if (!File.isWin) return filepath;
@@ -503,6 +503,7 @@ class utils {
         try {
             return await this.Package.Fs.promises.readFile(file, 'utf-8')
         } catch (err) {
+            console.error("read files error:", files);
         }
     }))
 
@@ -870,7 +871,7 @@ class utils {
         const start = new Date().getTime();
         const timer = setInterval(() => {
             if (new Date().getTime() - start > timeout) {
-                console.warn("loopDetector timeout!", until, after);
+                // console.warn("loopDetector timeout!", until, after);
                 run = runWhenTimeout;
                 if (!run) {
                     clearInterval(timer);
@@ -1004,8 +1005,7 @@ class diagramParser {
         // 不是Diagram类型，需要展示增强按钮
         if (!this.isDiagramType(lang)) {
             $pre.children(".fence-enhance").show();
-            $pre.removeClass("md-fences-advanced");
-            $pre.removeClass("md-fences-interactive");
+            $pre.removeClass("md-fences-advanced md-fences-interactive");
             await this.noticeRollback(cid);
         } else {
             // 是Diagram类型，但是不是自定义类型，不展示增强按钮，直接返回即可
@@ -1302,7 +1302,8 @@ class eventHub {
     }
 
     process = () => {
-        this.utils.decorate(() => File && File.editor && File.editor.library, "openFile", () => {
+        this.utils.decorate(() => File && File.editor && File.editor.library, "openFile",
+            () => {
                 this.filepath = this.utils.getFilePath();
                 this.publishEvent(this.utils.eventType.beforeFileOpen);
             },
@@ -2027,7 +2028,7 @@ class basePlugin {
         this.utils = utils;
     }
 
-    // 最先执行的函数，唯一一个asyncFunction，在这里初始化插件需要的数据
+    // 最先执行的函数，唯一一个asyncFunction，在这里初始化插件需要的数据。若返回this.utils.stopLoadPluginError，则停止加载插件
     beforeProcess = async () => undefined
     // 以字符串形式导入样式
     style = () => undefined
@@ -2035,7 +2036,7 @@ class basePlugin {
     styleTemplate = () => undefined
     // 原生插入html标签
     html = () => undefined
-    // 使用htmlTemplater插入html标签，见htmlTemplater
+    // 使用htmlTemplater插入html标签，详见htmlTemplater
     htmlTemplate = () => undefined
     // 注册快捷键
     hotkey = () => undefined
@@ -2096,7 +2097,7 @@ class clickablePlugin extends basePlugin {
 
 进而得出，整个插件系统的基本框架：
   1. BasePlugin、BaseCustomPlugin的内置生命周期函数负责执行环境和执行流程
-  2. utils负责辅助功能实现(类似于标准库)(这里有个技术债：utils没有做分层处理，导致utils巨大无比)
+  2. utils类似于标准库，负责辅助功能实现(这里有个技术债：utils没有做分层处理，导致utils巨大无比)
 
 进而得出，插件的基本实现流程：
   1. 创建插件类继承上述任意一个父类

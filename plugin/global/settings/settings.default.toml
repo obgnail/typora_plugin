@@ -16,10 +16,10 @@ ENABLE = true
 # 禁用的插件。优先级高于业务插件的ENABLE选项
 # 填入业务插件的fixedName。举例：["window_tab", "search_multi"]
 DISABLE_PLUGINS = []
-# 如果你使用了自定义图表插件（kanban、markmap、echarts等等）并且使用了交互模式（INTERACTIVE_MODE置为true），那么下面两个配置请至少一个置为true，否则你将无法退出交互模式
-# 为【自定义图表】添加一个【编辑】按钮（当点击【编辑】按钮时退出交互模式）
+# 如果你使用了图表插件（kanban、markmap、echarts等等）并且默认开启交互模式（INTERACTIVE_MODE置为true），那么下面两个配置请至少一个置为true，否则你将无法退出交互模式
+# 为图表添加一个【编辑】按钮（当点击【编辑】按钮时退出交互模式）
 CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE = true
-# ctrl+click【自定义图表】退出交互模式
+# ctrl+click图表退出交互模式
 CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE = false
 
 
@@ -36,14 +36,16 @@ HIDE_WINDOW_TITLE_BAR = false
 # 拖拽排序标签页的方式(1 or 2)
 # 1类似于idea，2类似于vscode
 DRAG_STYLE = 1
-# 总是在当前标签页打开
-# 强烈不建议置为true，因为【总是】在当前标签页打开，而当你重启Typora时只有一个标签页，所以你永远就只会有一个标签，如此就失去了此插件的意义了
-# 这个配置的使用方法是：当你打开多个标签后，通过右键菜单激活【在当前标签打开文件】选项，将其临时设置为true，实现在当前标签页打开文件，每次重启后就会自动恢复为false
-LOCAL_OPEN = false
-# 调整正文区域的顶部位置，以免被tab遮挡
-CHANGE_CONTENT_TOP = true
-# 调整notification组件的图层顺序，以免被tab遮挡
-CHANGE_NOTIFICATION_Z_INDEX = true
+# 标签的标题是否去除文件后缀名（filename.md -> filename）
+REMOVE_FILE_SUFFIX = true
+# 最多打开x个标签，超过时会删除最左边的tab（若为-1，则无限制）
+TAB_MAX_NUM = -1
+# 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的x倍高度时，视为新建窗口打开此文件（若为-1，则不启用此功能）
+HEIGHT_SCALE = 5
+# 当鼠标位于标签页时，允许ctrl+wheel切换标签页
+CTRL_WHEEL_TO_SCROLL = true
+# 鼠标中键点击标签页关闭标签页
+MIDDLE_CLICK_TO_CLOSE = true
 # 关闭标签页的快捷键
 CLOSE_HOTKEY = ["ctrl+w"]
 # 切换下一个标签页的快捷键
@@ -52,26 +54,24 @@ SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
 SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
 # 复制当前文件路径的快捷键（为空则不设置）
 COPY_PATH_HOTKEY = [""]
-# 标签的标题是否去除文件后缀名
-REMOVE_FILE_SUFFIX = true
-# 最多打开x个标签，超过时会删除最左边的tab，若为-1则保留全部
-TAB_MAX_NUM = -1
-# 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的x倍高度时，视为新建窗口打开此文件（若为-1，则不启用此功能）
-HEIGHT_SCALE = 5
-# 当鼠标位于标签页时，允许ctrl+wheel切换标签页
-CTRL_WHEEL_TO_SCROLL = true
-# 鼠标中键标签页关闭标签页
-MIDDLE_CLICK_TO_CLOSE = true
-# 鼠标右键标签页，弹出的右键菜单列表（若置为[]，则不使用此功能）
+# 鼠标右键点击标签页，弹出的右键菜单列表（若置为[]，则不使用此功能）
 # 支持如下功能：
-#   - closeOtherTabs:  删除其他标签
-#   - closeLeftTabs:   删除左侧全部标签
-#   - closeRightTabs:  删除右侧全部标签
 #   - closeTab:        关闭标签
+#   - closeOtherTabs:  关闭其他标签
+#   - closeLeftTabs:   关闭左侧全部标签
+#   - closeRightTabs:  关闭右侧全部标签
 #   - copyPath:        复制文件路径
 #   - showInFinder:    打开文件位置
 #   - openInNewWindow: 新窗口打开
 CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow"]
+# 调整正文区域的顶部位置，以免被tab遮挡
+CHANGE_CONTENT_TOP = true
+# 调整notification组件的图层顺序，以免被tab遮挡
+CHANGE_NOTIFICATION_Z_INDEX = true
+# 总是在当前标签页打开
+# 强烈不建议置为true，因为【总是】在当前标签页打开，而当你重启Typora时只有一个标签页，所以你永远就只会有一个标签，如此就失去了此插件的意义了
+# 这个配置的使用方法是：当你打开多个标签后，通过右键菜单激活【在当前标签打开文件】选项，将其临时设置为true，实现在当前标签页打开文件，每次重启后就会自动恢复为false
+LOCAL_OPEN = false
 # typora1.1版本以后，支持使用锚点跳转到本地文件，是否拦截处理（从新建窗口改成新建标签页）
 # 参考1：https://support.typora.io/zh/What's-New-1.1/#文件链接
 # 参考2：https://support.typora.io/Links/#internal-links
@@ -88,12 +88,19 @@ NAME = "全局多关键字搜索"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+p"
-# 允许通过【ctrl+鼠标拖拽输入框】拖动模态框
+# 允许通过【ctrl+鼠标拖拽输入框】拖动窗口
 ALLOW_DRAG = true
-# 模态框自动隐藏
+# 自动隐藏窗口
 AUTO_HIDE = false
-# 当输入框为空，且键入backspace时，隐藏模态框
+# 当输入框为空，且键入backspace时，隐藏窗口
 BACKSPACE_TO_HIDE = true
+# 展示文件路径时使用相对路径
+RELATIVE_PATH = true
+# 关键词按空格分割
+SEPARATOR = " "
+# 鼠标悬停到搜索项时展示文件的修改时间
+# 此选项时为了通过额外的信息帮助查找文件，我嫌弃它扎眼就没开启，如果你总是找不到目标文件，可以置为true
+SHOW_MTIME = false
 # 打开文件后，自动聚焦输入框
 # 此选项是为了键盘党可以通过键盘上下键、ctrl+enter进行快速操作，如果你是鼠标党，可以置为false
 REFOUCE_WHEN_OPEN_FILE = true
@@ -103,15 +110,8 @@ CASE_SENSITIVE = false
 INCLUDE_FILE_PATH = true
 # 搜索时联动其他插件(此选项不必手动调整，可以在UI设置)
 LINK_OTHER_PLUGIN = false
-# 当处于联动状态时，search_multi模态框隐藏时，联动插件跟着隐藏
+# 当处于联动状态时，search_multi窗口隐藏时，联动插件跟着隐藏
 LINK_PLUGIN_AUTO_HIDE = false
-# 展示文件路径时使用相对路径
-RELATIVE_PATH = true
-# 关键词按空格分割
-SEPARATOR = " "
-# 鼠标悬停到搜索项时展示文件的修改时间
-# 此选项时为了通过额外的信息帮助查找文件，我嫌弃它扎眼就没开启，如果你总是找不到目标文件，可以置为true
-SHOW_MTIME = false
 # 查找文件的最大尺寸。大于MAX_SIZE的文件在搜索时将被忽略。若<0则不忽略任何文件
 # 注意：Typora只支持打开小于2000000字节的文件，所以不建议修改成比2000000还大的值，毕竟找到了也不能在typora里打开
 MAX_SIZE = 2000000
@@ -130,10 +130,16 @@ NAME = "多关键字高亮"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+h"
-# 允许通过【ctrl+鼠标拖拽输入框】拖动模态框
+# 允许通过【ctrl+鼠标拖拽输入框】拖动窗口
 ALLOW_DRAG = true
-# 当输入框为空，且键入backspace时，隐藏模态框
+# 当输入框为空，且键入backspace时，隐藏窗口
 BACKSPACE_TO_HIDE = true
+# 高亮的颜色
+# 每个关键字按序对应一个颜色，数量不限，你可以修改、新增、删除颜色
+STYLE_COLOR = [
+    '#bbeeff', '#ffbbcc', '#88ee88', '#ccbbff', '#ffee88', '#FFFFa0', '#88cccc', '#ffbb88', '#cccccc', '#ffaabb',
+    '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
+]
 # 大小写敏感(此选项不必手动调整，可以在UI设置)
 CASE_SENSITIVE = false
 # 关键词按空格分割
@@ -149,12 +155,6 @@ SHOW_CURRENT_INDEX = true
 SHOW_KEYWORD_OUTLINE = true
 # 定位时高亮关键字提示所在行
 SHOW_KEYWORD_BAR = true
-# 高亮的颜色
-# 每个关键字按序对应一个颜色，颜色数量不限，你可以修改、继续添加颜色
-STYLE_COLOR = [
-    '#bbeeff', '#ffbbcc', '#88ee88', '#ccbbff', '#ffee88', '#FFFFa0', '#88cccc', '#ffbb88', '#cccccc', '#ffaabb',
-    '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
-]
 # 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
 # 20个关键字肯定够用了，此选项没太大意义
 # 就算20个真的不够用，那我也是建议你给STYLE_COLOR选项新增一些颜色，而不是修改此选项
@@ -184,18 +184,18 @@ NAME = "类别大纲"
 CLICKABLE = true
 # 快捷键
 HOTKEY = ""
-# 打开模态框后默认使用的大纲类型 fence/image/table/all
+# 打开窗口后默认使用的大纲类型 fence/image/table/all
 DEFAULT_TYPE = "fence"
 # 是否使用混合标签
 USE_ALL = true
 # 给混合标签上色
 SET_COLOR_IN_ALL = true
-# 当显示模态框时，打开新文件后自动检测并重新生成大纲
+# 当显示窗口时，打开新文件后自动检测并重新生成大纲
 AUTO_REFRESH_WHEN_OPEN_FILE = true
 # 统计并显示被其他插件隐藏的元素(此选项不必手动调整，可以在UI设置)
 # 比如使用了【章节折叠】插件隐藏文件内容，如果你希望outline能统计被隐藏内容，就置为true，不过这样就会导致统计的编号不对（因为你把隐藏的也算进去了）
 SHOW_HIDDEN = false
-# 在模态框里展示的名字
+# 在窗口里展示的名字
 [outline.SHOW_NAME]
 fence = "Fence"
 image = "Figure"
@@ -213,16 +213,16 @@ NAME = "命令行环境"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+g"
-# 允许【ctrl+鼠标拖拽输入框】拖动模态框
+# 允许【ctrl+鼠标拖拽输入框】拖动窗口
 ALLOW_DRAG = true
-# 当输入框为空，且键入backspace时，隐藏模态框
+# 当输入框为空，且键入backspace时，隐藏窗口
 BACKSPACE_TO_HIDE = true
-# 【快捷键】和【在右键菜单中】调用内建命令，是否弹出模态框
+# 【快捷键】和【在右键菜单中】调用内建命令，是否弹出窗口
 # 注意: 123使用的是child_process.exec，因此如果程序的输出超出200K，会引发Error：maxBuffer exceeded。此时必须使用echo
 #   1.always: 总是弹出
 #   2.error:  只在异常时弹出
-#   3.silent: 总是静默（其实可以在控制台console中看到）
-#   4.echo:   立即回显程序输出、适合需要不断打印日志的耗时任务
+#   3.silent: 总是静默
+#   4.echo:   弹窗并回显程序输出、适合需要不断打印日志的耗时任务
 QUICK_EXEC_SHOW = "error"
 # 【在命令输入框里回车】和【点击执行按钮】执行命令时，使用的回显类型
 #   1. always: 等待程序执行完毕后一次性输出
@@ -305,17 +305,17 @@ NAME = "多功能搜索栏"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+j"
-# 当输入框为空，且键入backspace时，隐藏模态框
+# 当输入框为空，且键入backspace时，隐藏窗口
 BACKSPACE_TO_HIDE = true
 # 等待输入法输入完毕后才执行搜索
 IGNORE_WHEN_COMPOSITION = true
-# 用户输入的防抖时间（单位：ms）（用户输入完70ms后才执行）
-# 为什么时间默认这么短？答：都是非常简单的查询，甚至大部分是直接从内存取的（当然，不建议30以下）
-DEBOUNCE_INTERVAL = 70
 # toolbar的在页面的20%位置出现
 TOOLBAR_TOP_PERCENT = 20
 # toolbar的宽度为页面的80%
 TOOLBAR_WIDTH_PERCENT = 80
+# 用户输入的防抖时间（单位：ms）（用户输入完70ms后才执行）
+# 为什么时间默认这么短？答：都是非常简单的查询，甚至大部分是直接从内存取的（当然，不建议30以下）
+DEBOUNCE_INTERVAL = 70
 
 # 用户键入内容 = 搜索工具名称 + 空格 + 搜索内容
 # eg：【ops 资源管理器打开】
@@ -374,7 +374,7 @@ NAME = "图片调整"
 CLICKABLE = true
 # 每次操作的缩放倍率
 SCALE = 0.1
-# 允许超出范围
+# 允许图片超出范围
 ALLOW_OVERSIZE = true
 # 图片水平位置：center/left/right
 IMAGE_ALIGN = "center"
@@ -422,9 +422,9 @@ CLICKABLE = true
 USE_BUTTON = true
 # 滚动所用时间（单位：ms）
 SCROLL_TIME = 600
-# 到顶快捷键
+# 到顶的快捷键
 HOTKEY_GO_TOP = ""
-# 到底快捷键
+# 到底的快捷键
 HOTKEY_GO_BOTTOM = ""
 
 
@@ -456,21 +456,21 @@ RESOURCE_FROM = "local"
 ENABLE_TOC_MARKMAP = true
 # 快捷键
 TOC_HOTKEY = ""
-# 在右下角添加一个快捷按钮
-USE_BUTTON = true
-# 是否允许icon换行
-ALLOW_ICON_WRAP = true
 # 点击markmap节点，定位到文档位置（跳转到对应章节）
 CLICK_TO_LOCALE = true
+# 在右下角添加一个快捷按钮
+USE_BUTTON = true
+# 当窗口太小时，是否允许icon换行显示
+ALLOW_ICON_WRAP = true
 # 当用户编辑文档，导致markmap更新图形时，新markmap的图形大小是否重新适配窗口
-AUTO_FIT_WHEN_UPDARE = true
+AUTO_FIT_WHEN_UPDATE = true
 # 当pin到页面顶部时，占据页面的30%高度
 HEIGHT_PRECENT_WHEN_PIN_UP = 30
 # 当pin到页面右侧时，占据页面的50%宽度
 WIDTH_PRECENT_WHEN_PIN_RIGHT = 50
-# 在拖拽模态框的时候是否使用动画（使用动画视觉效果比较好，但是不跟手）
+# 在拖拽窗口的时候是否使用动画（使用动画视觉效果比较好，但是不跟手）
 USE_ANIMATION_WHEN_DRAG = false
-# 在调整模态框大小的时候是否使用动画
+# 在调整窗口大小的时候是否使用动画
 USE_ANIMATION_WHEN_RESIZE = false
 
 # markmap共有两个功能：toc和fence。此为fence，功能：在当前鼠标光标处插入markmap代码块
@@ -735,7 +735,7 @@ CLICKABLE = true
 SHOW_MODAL_HOTKEY = ""
 # 设置字体颜色的快捷键
 SET_COLOR_HOTKEY = ""
-# 允许【ctrl+鼠标拖拽】拖动模态框
+# 允许【ctrl+鼠标拖拽】拖动窗口
 ALLOW_DRAG = true
 # 每13个颜色一行
 NUM_PER_LINE = 13

@@ -388,7 +388,7 @@ order = 1
 [extractRangeToNewFile.config]
 # 快捷键
 hotkey = ""
-# 展示模态框
+# 展示窗口
 show_modal = true
 # 自动打开新文件
 auto_open = true
@@ -543,11 +543,11 @@ order = 1
 hotkey = ""
 # 数据持久化（作为文件保存起来）
 persistence = true
-# 允许【ctrl+鼠标拖拽】拖动模态框
+# 允许【ctrl+鼠标拖拽】拖动窗口
 allow_drag = true
 # 在右下角添加一个快捷按钮
 use_button = true
-# 当alt+click时，自动弹出模态框
+# 当alt+click时，自动弹出窗口
 auto_popup_modal = true
 
 
@@ -722,7 +722,7 @@ translate = true
 # 防抖时间，在编辑后多长时间重新检测一次（单位：ms）
 # 最低为1000，若<1000，则自动置为1000
 debounce_interval = 1000
-# 允许【ctrl+鼠标拖拽】拖动模态框
+# 允许【ctrl+鼠标拖拽】拖动窗口
 allow_drag = true
 # lint通过时的提示文本
 pass_text = "该文件符合规范要求"
@@ -892,7 +892,7 @@ order = 1
 # 插件配置
 [pluginUpdater.config]
 # 众所周知，有些地区无法裸连github，需要使用代理（如：http://127.0.0.1:7890）
-# 若值为空，则将弹出模态框，让用户填入代理；若有值，则将直接使用此代理，不再弹出模态框（除非你固定使用某代理，否则不建议使用此配置）
+# 若值为空，则将弹出窗口，让用户填入代理；若有值，则将直接使用此代理，不再弹出窗口（除非你固定使用某代理，否则不建议使用此配置）
 proxy = ""
 # 升级时是否弹窗
 #   1.always: 总是弹出（等待程序执行完毕后一次性弹出）

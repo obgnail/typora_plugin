@@ -5,7 +5,7 @@ class rightClickMenuPlugin extends BasePlugin {
         const map = {"default": "", "auto": "inherit"};
         const width = map[MENU_MIN_WIDTH] || MENU_MIN_WIDTH;
         const display = HIDE_OTHER_OPTIONS ? "none" : "";
-        if (width || HIDE_OTHER_OPTIONS) {
+        if (width || display) {
             return {menu_min_width: width, menu_option_display: display}
         }
     }

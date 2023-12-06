@@ -230,7 +230,7 @@ class tocMarkmap {
     process = async () => {
         this.init();
 
-        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.entities.modal.style.display === "block" && this.drawToc(this.config.AUTO_FIT_WHEN_UPDARE));
+        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.entities.modal.style.display === "block" && this.drawToc(this.config.AUTO_FIT_WHEN_UPDATE));
         this.entities.content.addEventListener("transitionend", this.fit);
         this.entities.modal.addEventListener("transitionend", this.fit);
 
