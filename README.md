@@ -6,56 +6,56 @@
 
 目前支持的功能：
 
-| 序号 | 文件名                     | 功能                                   |
-| ---- | -------------------------- | -------------------------------------- |
-| 1    | window_tab                 | 标签页管理                             |
-| 2    | search_multi               | 全局多关键字搜索                       |
-| 3    | multi_highlighter          | 多关键字高亮                           |
-| 4    | collapse_paragraph         | 章节折叠                               |
-| 5    | md_padding                 | 中英文混排优化                         |
-| 6    | templater                  | 文件模板                               |
-| 7    | resource_operation         | 一键清除无用图片，生成报告             |
-| 8    | fence_enhance              | 一键复制代码，折叠代码                 |
-| 9    | commander                  | 命令行环境                             |
-| 10   | mindmap                    | 根据文档大纲一键生成思维导图           |
-| 11   | toolbar                    | 多功能搜索栏                           |
-| 12   | right_click_menu           | 右键菜单统一管理、调用插件             |
-| 13   | markmap                    | 提供 markmap 组件支持                  |
-| 14   | echarts                    | 提供 echarts 组件支持                  |
-| 15   | chart                      | 提供 chartjs 组件支持                  |
-| 16   | calendar                   | 提供 tui.calendar 组件支持             |
-| 17   | callouts                   | 提供 callouts 支持                     |
-| 18   | read_only                  | 只读模式                               |
-| 19   | blur                       | 模糊模式                               |
-| 20   | kanban                     | 看板                                   |
-| 21   | timeline                   | 时间线                                 |
-| 22   | file_counter               | 显示目录下的文件数                     |
-| 23   | outline                    | 以表格、图片、代码块形式的大纲         |
-| 24   | auto_number                | 章节、表格、图片、代码块等自动编号     |
-| 25   | image_reviewer             | 图片查看器                             |
-| 26   | chinese_symbol_auto_pairer | 中文符号自动补全                       |
-| 27   | datatables                 | 表格增强（搜索、过滤、分页、排序等）   |
-| 28   | resize_table               | 调整表格行高列宽                       |
-| 29   | resize_image               | 调整图片显示大小                       |
-| 30   | export_enhance             | 导出 html 时避免图片丢失               |
-| 31   | go_top                     | 一键到文章顶部、底部                   |
-| 32   | reopen_closed_files        | 打开上次退出 Typora 时尚未关闭的标签页 |
-| 33   | truncate_text              | 暂时隐藏内容，提高大文件渲染性能       |
-| 34   | markdown_lint              | markdown 格式规范检测                  |
-| 35   | dark_mode                  | 夜间模式                               |
-| 36   | plugin_updater             | 一键升级插件                           |
-| 37   | extract_range_to_new_file  | 提取选区文字到新文件                   |
-| 38   | full_path_copy             | 复制标题路径                           |
-| 39   | auto_trailing_white_space  | 自动添加结尾空格                       |
-| 40   | redirect_local_root_url    | 重定向本地资源根目录                   |
-| 41   | text_stylize               | 文字风格化                             |
-| 42   | scroll_bookmarker          | 书签管理器                             |
-| 43   | open_in_total_commander    | 在 total commander 打开                |
-| 44   | mermaid_replace            | 替换 mermaid 组件                      |
-| 45   | custom                     | 开放平台，用户自定义插件（高级）       |
-| 46   | hotkey_hub                 | 快捷键注册中心（高级）                 |
-| 47   | quick_button               | 于右下角添加功能按钮（高级）           |
-| 48   | old_window_tab             | 标签页管理（已废弃）                   |
+| 序号 | 文件名                  | 功能                                   |
+| ---- | ----------------------- | -------------------------------------- |
+| 1    | window_tab              | 标签页管理                             |
+| 2    | search_multi            | 全局多关键字搜索                       |
+| 3    | multi_highlighter       | 多关键字高亮                           |
+| 4    | collapse_paragraph      | 章节折叠                               |
+| 5    | md_padding              | 中英文混排优化                         |
+| 6    | templater               | 文件模板                               |
+| 7    | resourceOperation       | 一键清除无用图片，生成报告             |
+| 8    | fence_enhance           | 一键复制代码，折叠代码                 |
+| 9    | commander               | 命令行环境                             |
+| 10   | mindmap                 | 根据文档大纲一键生成思维导图           |
+| 11   | toolbar                 | 多功能搜索栏                           |
+| 12   | right_click_menu        | 右键菜单统一管理、调用插件             |
+| 13   | markmap                 | 提供 markmap 组件支持                  |
+| 14   | echarts                 | 提供 echarts 组件支持                  |
+| 15   | chart                   | 提供 chartjs 组件支持                  |
+| 16   | calendar                | 提供 tui.calendar 组件支持             |
+| 17   | callouts                | 提供 callouts 支持                     |
+| 18   | read_only               | 只读模式                               |
+| 19   | blur                    | 模糊模式                               |
+| 20   | kanban                  | 看板                                   |
+| 21   | timeline                | 时间线                                 |
+| 22   | file_counter            | 显示目录下的文件数                     |
+| 23   | outline                 | 以表格、图片、代码块形式的大纲         |
+| 24   | auto_number             | 章节、表格、图片、代码块等自动编号     |
+| 25   | imageReviewer           | 图片查看器                             |
+| 26   | chineseSymbolAutoPairer | 中文符号自动补全                       |
+| 27   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
+| 28   | resize_table            | 调整表格行高列宽                       |
+| 29   | resize_image            | 调整图片显示大小                       |
+| 30   | export_enhance          | 导出 html 时避免图片丢失               |
+| 31   | go_top                  | 一键到文章顶部、底部                   |
+| 32   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
+| 33   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
+| 34   | markdownLint            | markdown 格式规范检测                  |
+| 35   | darkMode                | 夜间模式                               |
+| 36   | pluginUpdater           | 一键升级插件                           |
+| 37   | extractRangeToNewFile   | 提取选区文字到新文件                   |
+| 38   | fullPathCopy            | 复制标题路径                           |
+| 39   | autoTrailingWhiteSpace  | 自动添加结尾空格                       |
+| 40   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
+| 41   | text_stylize            | 文字风格化                             |
+| 42   | scrollBookmarker        | 书签管理器                             |
+| 43   | openInTotalCommander    | 在 total commander 打开                |
+| 44   | mermaid_replace         | 替换 mermaid 组件                      |
+| 45   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 46   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 47   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 48   | old_window_tab          | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -104,8 +104,8 @@
 
 |       | 新版本操作                                           | 旧版本操作                                             |
 | ----- | ---------------------------------------------------- | ------------------------------------------------------ |
-| 步骤1 | ![new_typora_dir](assets/new_typora_dir.png)         | ![where_is_windowhtml](assets/where_is_windowhtml.png) |
-| 步骤2 | ![new_typora_framejs](assets/new_typora_framejs.png) | ![where_is_framejs](assets/where_is_framejs.png)       |
+| 步骤3 | ![new_typora_dir](assets/new_typora_dir.png)         | ![where_is_windowhtml](assets/where_is_windowhtml.png) |
+| 步骤4 | ![new_typora_framejs](assets/new_typora_framejs.png) | ![where_is_framejs](assets/where_is_framejs.png)       |
 
 > 虽然操作简单，还请务必对照上图谨慎操作。如果修改完 Typora 白屏了，很可能是你修改的时候疏忽了。
 
@@ -185,6 +185,12 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
+### 我不想用了，如何恢复原状？
+
+上述的方法二逆序操作即可。
+
+
+
 ---
 
 ## 插件使用说明
@@ -193,10 +199,10 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 - 键盘党：
   - 键入 ctrl+j，在输入框键入 `plu+空格+插件名称` 调出插件列表（详见 `toolbar` 插件）
-  - 快捷键（详见 `hotkey_hub` 插件）
+  - 快捷键（详见 `hotkeyHub` 插件）
 - 鼠标党：
   - 在正文区域右键，在弹出的 `右键菜单` 中直接调用（详见 `right_click_menu` 插件）
-  - 快捷按钮（详见 `quick_button` 插件）
+  - 快捷按钮（详见 `quickButton` 插件）
 
 ---
 
@@ -313,7 +319,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
-### resource_operation：一键清除无用图片，生成报告
+### resourceOperation：一键清除无用图片，生成报告
 
 使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 资源管理
 
@@ -616,7 +622,7 @@ icon = "\\f040"
 
 
 
-### image_reviewer：图片查看器
+### imageReviewer：图片查看器
 
 一站式图片查看，并且提供简单图片编辑。
 
@@ -668,7 +674,7 @@ alt_wheel_function = ["incVSkew", "decVSkew"]
 
 
 
-### chinese_symbol_auto_pairer：中文符号自动补全
+### chineseSymbolAutoPairer：中文符号自动补全
 
 输入 `《 【 （ ‘ “ 「` 符号时自动补全。
 
@@ -734,7 +740,7 @@ auto_pair_symbols = [
 
 
 
-### reopen_closed_files：打开上次退出 Typora 时尚未关闭的标签页
+### reopenClosedFiles：打开上次退出 Typora 时尚未关闭的标签页
 
 自动 或者 通过快捷键打开上一次退出 Typora 时尚未关闭的标签页
 
@@ -760,7 +766,7 @@ auto_pair_symbols = [
 
 
 
-### markdown_lint：markdown 格式规范检测
+### markdownLint：markdown 格式规范检测
 
 使用方式：
 
@@ -769,7 +775,7 @@ auto_pair_symbols = [
 
 
 
-### dark_mode：夜间模式
+### darkMode：夜间模式
 
 使用方式：
 
@@ -778,7 +784,7 @@ auto_pair_symbols = [
 
 
 
-### plugin_updater：一键升级插件
+### pluginUpdater：一键升级插件
 
 使用方式：右键菜单 -> 常用插件 -> 自定义插件 ->  升级插件。
 
@@ -786,25 +792,25 @@ auto_pair_symbols = [
 
 
 
-### extract_range_to_new_file：提取选区文字到新文件
+### extractRangeToNewFile：提取选区文字到新文件
 
 使用方式：选中一些文字 -> 右键菜单 -> 常用插件 -> 自定义插件 ->  提取选区文字到新文件。
 
 
 
-### full_path_copy：复制标题路径
+### fullPathCopy：复制标题路径
 
 使用方式：将光标定位到标题上 -> 右键菜单 -> 常用插件 -> 自定义插件 ->  复制标题路径。
 
 就会生成如下文字，并复制到剪切板：
 
 ```
-README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_copy：复制标题路径 三级标题
+README.md\Typora Plugin 一级标题\插件使用说明 二级标题\fullPathCopy：复制标题路径 三级标题
 ```
 
 
 
-### auto_trailing_white_space：自动添加结尾空格
+### autoTrailingWhiteSpace：自动添加结尾空格
 
 使用方式：将光标定位到标题上 -> 右键菜单 -> 常用插件 -> 自定义插件 ->  自动添加结尾空格。
 
@@ -814,7 +820,7 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\full_path_c
 
 
 
-### redirect_local_root_url：重定向本地资源根目录
+### redirectLocalRootUrl：重定向本地资源根目录
 
 如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 typora 打开文件。就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中（vault），这导致在 typora 打开后文件由于路径错误，无法访问本地资源。此插件就是为了解决此问题，重定向本地资源根目录。
 
@@ -831,7 +837,7 @@ filter_regexp = ""
 
 
 
-### open_in_total_commander：在 total commander 打开当前文件
+### openInTotalCommander：在 total commander 打开当前文件
 
 使用方式：将光标定位到标题上 -> 右键菜单 -> 常用插件 -> 自定义插件 ->  TC 打开。
 
@@ -849,7 +855,7 @@ filter_regexp = ""
 
 
 
-### scroll_bookmarker： 书签管理器
+### scrollBookmarker： 书签管理器
 
 使用方式：
 
@@ -881,7 +887,7 @@ filter_regexp = ""
 
 
 
-### quick_button：于右下角添加功能按钮（高级）
+### quickButton：于右下角添加功能按钮（高级）
 
 > 此配置是高级配置，仅对有 javascript 基础的用户开放。
 

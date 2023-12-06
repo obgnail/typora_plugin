@@ -1,13 +1,12 @@
 // 插件名称是通过配置文件引入的，为了避免XSS注入，不可使用innerHTML
 class rightClickMenuPlugin extends BasePlugin {
     styleTemplate = () => {
-        switch (this.config.MENU_MIN_WIDTH) {
-            case "default":
-                return false
-            case "auto":
-                return {menu_min_width: "inherit"}
-            default:
-                return {menu_min_width: this.config.MENU_MIN_WIDTH}
+        const {MENU_MIN_WIDTH, HIDE_OTHER_OPTIONS} = this.config;
+        const map = {"default": "", "auto": "inherit"};
+        const width = map[MENU_MIN_WIDTH] || MENU_MIN_WIDTH;
+        const display = HIDE_OTHER_OPTIONS ? "none" : "";
+        if (width || display) {
+            return {menu_min_width: width, menu_option_display: display}
         }
     }
 
@@ -41,7 +40,7 @@ class rightClickMenuPlugin extends BasePlugin {
         const items = this.config.MENUS.map((menu, idx) => {
             const sp = [{ele: "span", "data-lg": "Menu", text: menu.NAME}, {ele: "i", class_: "fa fa-caret-right"}];
             const children = [{ele: "a", role: "menuitem", children: sp}];
-            return {ele: "li", class_: "has-extra-menu", idx: idx, "data-key": this.groupName, children}
+            return {ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children}
         })
         const elements = [this.divider(), ...items];
         const menu = document.querySelector(`#context-menu`);

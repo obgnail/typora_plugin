@@ -1,3 +1,7 @@
 .plugin-menu-second.ext-context-menu, .plugin-menu-third.ext-context-menu {
     min-width: ${menu_min_width};
 }
+
+#context-menu > li:not([data-key="typora-plugin"]) {
+    display: ${menu_option_display};
+}

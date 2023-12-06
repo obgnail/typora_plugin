@@ -160,9 +160,9 @@ class windowTabBarPlugin extends BasePlugin {
         let idx = -1;
         const map = {
             closeTab: "关闭标签",
-            closeOtherTabs: "删除其他标签",
-            closeLeftTabs: "删除左侧全部标签",
-            closeRightTabs: "删除右侧全部标签",
+            closeOtherTabs: "关闭其他标签",
+            closeLeftTabs: "关闭左侧全部标签",
+            closeRightTabs: "关闭右侧全部标签",
             copyPath: "复制文件路径",
             showInFinder: "打开文件位置",
             openInNewWindow: "新窗口打开",
