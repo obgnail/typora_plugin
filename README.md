@@ -226,6 +226,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 - `ctrl+w`：关闭标签
 - `ctrl+click 标签`、`向下拖拽标签`：新窗口打开
 - `拖拽`：排序标签
+- `鼠标右键标签页`：弹出标签的右键菜单
 
 ![new_window_tab](assets/new_window_tab.gif)
 
@@ -454,7 +455,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 所有插件都支持在右键菜单中直接调用。鼠标党可以将右键菜单作为所有插件的主要调用方式。
 
-从 Typora Plugin 1.4.7 版本开始，可以通过修改配置文件自定义右键菜单
+可以通过修改配置文件自定义右键菜单：
 
 ```toml
 #  每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
@@ -463,17 +464,21 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 [[right_click_menu.MENUS]]
 NAME = "非常用插件"
 LIST = [
-    "blur",
-    "markmap",
+    "window_tab",
     "resize_image",
-    "datatables",
-    "go_top",
-    "auto_number",
-    "fence_enhance",
-    "truncate_text",
-    "export_enhance",
     "resize_table",
+    "fence_enhance",
+    "export_enhance",
+    "datatables",
+    "markmap",
+    "auto_number",
+    "truncate_text",
     "right_click_menu",
+    "---",
+    "blur",
+    "go_top",
+    "text_stylize",
+    "toolbar",
     "---",
     "file_counter",
     "mermaid_replace",
@@ -482,17 +487,16 @@ LIST = [
 [[right_click_menu.MENUS]]
 NAME = "常用插件"
 LIST = [
-    "window_tab",
+    "commander",
+    "mindmap",
+    "collapse_paragraph",
+    "custom",
+    "---",
     "search_multi",
     "multi_highlighter",
     "outline",
     "md_padding",
     "read_only",
-    "---",
-    "commander",
-    "mindmap",
-    "collapse_paragraph",
-    "custom",
 ]
 ```
 
@@ -632,45 +636,6 @@ icon = "\\f040"
 - 方式二：右键菜单 -> 常用插件 ->  自定义插件 -> 图片查看器
 
 ![image-reviewer](./assets/image-reviewer.png)
-
-目前支持的简单图片编辑：
-
-- dummy: 无功能
-- close: 关闭
-- nextImage: 下张图
-- previousImage: 上张图
-- zoomOut: 放大图片
-- zoomIn: 缩小图片
-- rotateLeft: 图片向左旋转
-- rotateRight: 图片向右旋转
-- hFlip: 水平翻转图片
-- vFlip: 垂直翻转图片
-- incHSkew: 图片增大水平倾斜
-- decHSkew: 图片减小水平倾斜
-- incVSkew: 图片增大垂直倾斜
-- decVSkew: 图片减小垂直倾斜
-
-并且可以使用【鼠标按键】【鼠标滚轮】 配合 shift、ctrl、alt 按键绑定上述功能：
-
-```toml
-# 鼠标点击图片绑定的功能（三项分别为左键、中键、右键）
-mousedown_function = ["nextImage", "close", "previousImage"]
-# ctrl+鼠标图片时，绑定的功能
-ctrl_mousedown_function = ["hFlip", "dummy", "vFlip"]
-# shift+鼠标图片时，绑定的功能
-shift_mousedown_function = ["dummy", "dummy", "dummy"]
-# alt+鼠标图片时，绑定的功能
-alt_mousedown_function = ["dummy", "dummy", "dummy"]
-
-# 当鼠标位于图片时，上下滚动绑定的功能（两项分别为向上滚动、向下滚动）
-wheel_function = ["zoomOut", "zoomIn"]
-# 当鼠标位于图片时，ctrl+上下滚动绑定的功能
-ctrl_wheel_function = ["rotateRight", "rotateLeft"]
-# 当鼠标位于图片时，shift+上下滚动绑定的功能
-shift_wheel_function = ["incHSkew", "decHSkew"]
-# 当鼠标位于图片时，alt+上下滚动绑定的功能
-alt_wheel_function = ["incVSkew", "decVSkew"]
-```
 
 
 
@@ -899,7 +864,7 @@ filter_regexp = ""
 
 > 此配置是高级配置，仅对有 javascript 基础的用户开放。
 
-功能：提供开放能力，支持用户自定义插件。
+功能：提供开放能力，支持用户自己写插件。
 
 具体使用请参考 [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
 

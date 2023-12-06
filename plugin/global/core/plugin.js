@@ -503,7 +503,6 @@ class utils {
         try {
             return await this.Package.Fs.promises.readFile(file, 'utf-8')
         } catch (err) {
-            console.error("read files error:", files);
         }
     }))
 
