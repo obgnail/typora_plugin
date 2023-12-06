@@ -791,6 +791,8 @@ DO_NOT_HIDE = false
 #  - "auto"   : 最小宽度根据文本长度自适应
 #  - "232px"  : 最小宽度为232px（不一定是232，可以是任何正整数）
 MENU_MIN_WIDTH = "default"
+# 移除右键菜单中除了插件以外的选项（如果你之前从不使用右键菜单，可以置为true）
+HIDE_OTHER_OPTIONS = false
 # 对于【启用但是没有出现在下面MENUS选项】的插件，自动将其加入到最后一个MENUS
 # 强烈不建议将此选项置为false，若置为false，且在MENUS中删去那些处于启用状态的插件，那么：
 #   1. 那些插件依旧处于启用状态，但是就不能通过右键菜单调用了
@@ -803,11 +805,6 @@ FIND_LOST_PLUGIN = true
 [[right_click_menu.MENUS]]
 NAME = "非常用插件"
 LIST = [
-    "blur",
-    "go_top",
-    "text_stylize",
-    "toolbar",
-    "---",
     "window_tab",
     "resize_image",
     "resize_table",
@@ -819,6 +816,11 @@ LIST = [
     "truncate_text",
     "right_click_menu",
     "---",
+    "blur",
+    "go_top",
+    "text_stylize",
+    "toolbar",
+    "---",
     "file_counter",
     "mermaid_replace",
     "test",
@@ -826,16 +828,16 @@ LIST = [
 [[right_click_menu.MENUS]]
 NAME = "常用插件"
 LIST = [
+    "commander",
+    "mindmap",
+    "collapse_paragraph",
+    "custom",
+    "---",
     "search_multi",
     "multi_highlighter",
     "outline",
     "md_padding",
     "read_only",
-    "---",
-    "commander",
-    "mindmap",
-    "collapse_paragraph",
-    "custom",
 ]
 
 

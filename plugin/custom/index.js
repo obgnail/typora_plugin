@@ -30,7 +30,7 @@ class CustomPlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => {
         const settings = Array.from(Object.entries(this.customSettings));
-        settings.sort(([, {order: o1}], [, {order: o2}]) => o1 - o2);
+        settings.sort(([, {order: o1 = 1}], [, {order: o2 = 1}]) => o1 - o2);
 
         meta.target = anchorNode;
         const dynamicCallArgs = [];
@@ -96,9 +96,6 @@ class loadPluginHelper {
         if (!customSetting || !customSetting.enable || this.config.DISABLE_CUSTOM_PLUGINS.indexOf(fixedName) !== -1) {
             console.debug(`disable custom plugin: [ ${fixedName} ]`);
             return;
-        }
-        if (!customSetting.order || typeof customSetting.order !== 'number') {
-            customSetting.order = 1;
         }
         try {
             const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins`, fixedName);
