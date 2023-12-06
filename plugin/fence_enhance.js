@@ -19,18 +19,6 @@ class fenceEnhancePlugin extends BasePlugin {
         if (this.enableIndent) {
             this.callArgs.splice(2, 0, {arg_name: "禁用/启用缩进调整按钮", arg_value: "disable_or_enable_indent"});
         }
-
-        this.callMap = {
-            disable_or_enable_fold: this.disableOrEnableFold,
-            disable_or_enable_copy: this.disableOrEnableCopy,
-            disable_or_enable_indent: this.disableOrEnableIndent,
-            fold_all: this.foldAll,
-            expand_all: this.expandAll,
-            set_auto_hide: this.setAutoHide,
-            fold_current: meta => this.foldFence(meta.target),
-            copy_current: meta => this.copyFence(meta.target),
-            indent_current: meta => this.indentFence(meta.target),
-        }
     }
 
     process = () => {
@@ -232,7 +220,18 @@ class fenceEnhancePlugin extends BasePlugin {
     }
 
     call = (type, meta) => {
-        const func = this.callMap[type];
+        const callMap = {
+            disable_or_enable_fold: this.disableOrEnableFold,
+            disable_or_enable_copy: this.disableOrEnableCopy,
+            disable_or_enable_indent: this.disableOrEnableIndent,
+            fold_all: this.foldAll,
+            expand_all: this.expandAll,
+            set_auto_hide: this.setAutoHide,
+            fold_current: meta => this.foldFence(meta.target),
+            copy_current: meta => this.copyFence(meta.target),
+            indent_current: meta => this.indentFence(meta.target),
+        }
+        const func = callMap[type];
         func && func(meta);
     }
 }

@@ -24,12 +24,6 @@ class windowTabBarPlugin extends BasePlugin {
         }
         this.tabUtil = {tabs: [], activeIdx: 0};
         this.loopDetectInterval = 35;
-        this.callMap = {
-            new_tab_open: () => this.config.LOCAL_OPEN = false,
-            local_open: () => this.config.LOCAL_OPEN = true,
-            save_tabs: this.saveTabs,
-            open_save_tabs: this.openSaveTabs,
-        }
     }
 
     process = () => {
@@ -124,7 +118,7 @@ class windowTabBarPlugin extends BasePlugin {
 
             if (this.config.CHANGE_CONTENT_TOP) {
                 const {height, top} = windowTab.getBoundingClientRect();
-                document.querySelector("content").style.top = top + height + "px";
+                this.entities.content.style.top = top + height + "px";
                 document.querySelector("#typora-source").style.top = top + height + "px";
             }
         }, 200)
@@ -166,6 +160,7 @@ class windowTabBarPlugin extends BasePlugin {
             copyPath: "复制文件路径",
             showInFinder: "打开文件位置",
             openInNewWindow: "新窗口打开",
+            sortTabs: "排序标签",
             toggleSuffix: "显示/隐藏文件名后缀",
         }
         const name = "window-tab";
@@ -215,10 +210,13 @@ class windowTabBarPlugin extends BasePlugin {
     // 关闭窗口
     closeWindow = () => JSBridge.invoke("window.close");
 
+    getTabShowName = filePath => this.utils.getFileName(filePath, this.config.REMOVE_FILE_SUFFIX)
+
     insertTabDiv = (filePath, idx) => {
-        const fileName = this.utils.getFileName(filePath, this.config.REMOVE_FILE_SUFFIX);
+        const fileName = this.getTabShowName(filePath);
+        const title = this.config.SHOW_FULL_PATH_WHEN_HOVER ? `title="${filePath}"` : "";
         const tabDiv = `
-                <div class="tab-container" idx="${idx}" draggable="true" title="${filePath}">
+                <div class="tab-container" idx="${idx}" draggable="true" ${title}>
                     <div class="active-indicator"></div><span class="name">${fileName}</span>
                     <span class="close-button"><div class="close-icon"></div></span>
                 </div>`
@@ -227,8 +225,10 @@ class windowTabBarPlugin extends BasePlugin {
 
     updateTabDiv = (tabDiv, filePath, idx) => {
         tabDiv.setAttribute("idx", idx + "");
-        tabDiv.querySelector(".name").innerText = this.utils.getFileName(filePath, this.config.REMOVE_FILE_SUFFIX);
-        tabDiv.setAttribute("title", filePath);
+        tabDiv.querySelector(".name").innerText = this.getTabShowName(filePath);
+        if (this.config.SHOW_FULL_PATH_WHEN_HOVER) {
+            tabDiv.setAttribute("title", filePath);
+        }
     }
 
     // tabs->DOM的简易数据单向绑定
@@ -368,6 +368,14 @@ class windowTabBarPlugin extends BasePlugin {
         }
     }
 
+    sortTabs = () => {
+        if (this.tabUtil.tabs.length === 1) return;
+        const {basename} = this.utils.Package.Path;
+        const current = this.tabUtil.tabs[this.tabUtil.activeIdx];
+        this.tabUtil.tabs.sort(({path: p1}, {path: p2}) => basename(p1).localeCompare(basename(p2)));
+        this.switchTab(this.tabUtil.tabs.indexOf(current));
+    }
+
     copyPath = idx => navigator.clipboard.writeText(this.tabUtil.tabs[idx].path)
     copyActiveTabPath = () => this.copyPath(this.tabUtil.activeIdx)
 
@@ -454,7 +462,7 @@ class windowTabBarPlugin extends BasePlugin {
             cloneObj.appendChild(fakeObj);
             cloneObj.className = 'drag-obj';
             cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-            document.querySelector("content").appendChild(cloneObj);
+            that.entities.content.appendChild(cloneObj);
         }).on("dragend", ".tab-container", function (ev) {
             that.newWindowIfNeed(ev.offsetY, this);
 
@@ -466,7 +474,7 @@ class windowTabBarPlugin extends BasePlugin {
             )
 
             reset.onfinish = function () {
-                document.querySelector("content").removeChild(cloneObj);
+                that.entities.content.removeChild(cloneObj);
                 cloneObj = null;
                 dragBox.dragData = null;
                 dragBox.style.visibility = 'visible';
@@ -611,11 +619,21 @@ class windowTabBarPlugin extends BasePlugin {
         } else if (this.utils.getFilePath()) {
             args.push({arg_name: "在当前标签打开文件", arg_value: "local_open"});
         }
+        if (this.tabUtil.tabs.length > 1) {
+            args.push({arg_name: "排序标签", arg_value: "sort_tabs"});
+        }
         return args
     }
 
     call = type => {
-        const func = this.callMap[type];
+        const callMap = {
+            new_tab_open: () => this.config.LOCAL_OPEN = false,
+            local_open: () => this.config.LOCAL_OPEN = true,
+            save_tabs: this.saveTabs,
+            open_save_tabs: this.openSaveTabs,
+            sort_tabs: this.sortTabs,
+        }
+        const func = callMap[type];
         func && func();
     }
 }
@@ -623,4 +641,3 @@ class windowTabBarPlugin extends BasePlugin {
 module.exports = {
     plugin: windowTabBarPlugin
 };
-

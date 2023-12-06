@@ -42,6 +42,8 @@ REMOVE_FILE_SUFFIX = true
 TAB_MAX_NUM = -1
 # 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的x倍高度时，视为新建窗口打开此文件（若为-1，则不启用此功能）
 HEIGHT_SCALE = 5
+# 当鼠标悬停于标签页时，显示文件完整路径
+SHOW_FULL_PATH_WHEN_HOVER = true
 # 当鼠标位于标签页时，允许ctrl+wheel切换标签页
 CTRL_WHEEL_TO_SCROLL = true
 # 鼠标中键点击标签页关闭标签页
@@ -63,8 +65,9 @@ COPY_PATH_HOTKEY = [""]
 #   - copyPath:        复制文件路径
 #   - showInFinder:    打开文件位置
 #   - openInNewWindow: 新窗口打开
+#   - sortTabs:        排序标签
 #   - toggleSuffix:    显示/隐藏标签中文件名后缀
-CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow"]
+CONTEXT_MENU = ["closeOtherTabs", "closeLeftTabs", "closeRightTabs", "sortTabs", "copyPath", "showInFinder", "openInNewWindow"]
 # 调整正文区域的顶部位置，以免被tab遮挡
 CHANGE_CONTENT_TOP = true
 # 调整notification组件的图层顺序，以免被tab遮挡
