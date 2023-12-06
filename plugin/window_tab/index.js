@@ -166,6 +166,7 @@ class windowTabBarPlugin extends BasePlugin {
             copyPath: "复制文件路径",
             showInFinder: "打开文件位置",
             openInNewWindow: "新窗口打开",
+            toggleSuffix: "显示/隐藏文件名后缀",
         }
         const name = "window-tab";
         const showMenu = ({target}) => {
@@ -369,6 +370,11 @@ class windowTabBarPlugin extends BasePlugin {
 
     copyPath = idx => navigator.clipboard.writeText(this.tabUtil.tabs[idx].path)
     copyActiveTabPath = () => this.copyPath(this.tabUtil.activeIdx)
+
+    toggleSuffix = () => {
+        this.config.REMOVE_FILE_SUFFIX = !this.config.REMOVE_FILE_SUFFIX;
+        this.switchTab(this.tabUtil.activeIdx);
+    }
 
     showInFinder = idx => this.utils.showInFinder(this.tabUtil.tabs[idx].path);
 

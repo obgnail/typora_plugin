@@ -63,6 +63,7 @@ COPY_PATH_HOTKEY = [""]
 #   - copyPath:        复制文件路径
 #   - showInFinder:    打开文件位置
 #   - openInNewWindow: 新窗口打开
+#   - toggleSuffix:    显示/隐藏标签中文件名后缀
 CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow"]
 # 调整正文区域的顶部位置，以免被tab遮挡
 CHANGE_CONTENT_TOP = true
