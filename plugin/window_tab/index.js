@@ -451,26 +451,28 @@ class windowTabBarPlugin extends BasePlugin {
         let startX = 0;
         let startY = 0;
         let axis, _axis;
+        let dragROI;
+        const previewImage = new Image();
 
         tabBar.on("dragstart", ".tab-container", function (ev) {
             dragBox = this;
-            dragBox.dragData = {};
             axis = dragBox.getAttribute('axis');
             _axis = axis;
+            ev.originalEvent.dataTransfer.setDragImage(previewImage, 0, 0);
             ev.originalEvent.dataTransfer.effectAllowed = "move";
             ev.originalEvent.dataTransfer.dropEffect = "move";
-            let {left, top} = dragBox.getBoundingClientRect();
+            let {left, top, height} = dragBox.getBoundingClientRect();
             startX = ev.clientX;
             startY = ev.clientY;
             offsetX = startX - left;
             offsetY = startY - top;
+            dragROI = height / 2;
 
             const fakeObj = dragBox.cloneNode(true);
-            fakeObj.style.width = dragBox.offsetWidth + 'px';
-            fakeObj.style.height = dragBox.offsetHeight + 'px';
+            fakeObj.style.height = dragBox.offsetHeight + 'px'; // dragBox使用了height: 100%，需要重新设置一下
             fakeObj.style.transform = 'translate3d(0,0,0)';
             fakeObj.setAttribute('dragging', '');
-            cloneObj = document.createElement('DIV');
+            cloneObj = document.createElement('div');
             cloneObj.appendChild(fakeObj);
             cloneObj.className = 'drag-obj';
             cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
@@ -488,7 +490,6 @@ class windowTabBarPlugin extends BasePlugin {
             reset.onfinish = function () {
                 that.entities.tabBar.removeChild(cloneObj);
                 cloneObj = null;
-                dragBox.dragData = null;
                 dragBox.style.visibility = 'visible';
                 resetTabBar();
             }
@@ -519,9 +520,10 @@ class windowTabBarPlugin extends BasePlugin {
             startX = left + offsetX;
             startY = top + offsetY;
 
+            if (that.config.LIMIT_TAB_ROI || (that.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG && top < dragROI)) {
+                top = 0;
+            }
             cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-            dragBox.dragData.left = left;
-            dragBox.dragData.top = top;
         })
     }
 
