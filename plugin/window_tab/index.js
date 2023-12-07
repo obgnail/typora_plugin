@@ -292,8 +292,14 @@ class windowTabBarPlugin extends BasePlugin {
         if (this.config.LOCAL_OPEN && pathIdx === -1) {
             this.tabUtil.tabs[this.tabUtil.activeIdx].path = wantOpenPath;
         } else if (pathIdx === -1) {
-            this.tabUtil.tabs.push({path: wantOpenPath, scrollTop: 0});
-            this.tabUtil.activeIdx = this.tabUtil.tabs.length - 1;
+            const newTab = {path: wantOpenPath, scrollTop: 0};
+            if (this.config.NEW_TAB_AT === "end") {
+                this.tabUtil.tabs.push(newTab);
+                this.tabUtil.activeIdx = this.tabUtil.tabs.length - 1;
+            } else if (this.config.NEW_TAB_AT === "right") {
+                this.tabUtil.tabs.splice(this.tabUtil.activeIdx + 1, 0, newTab);
+                this.tabUtil.activeIdx++;
+            }
         } else if (pathIdx !== -1) {
             this.tabUtil.activeIdx = pathIdx;
         }
@@ -330,15 +336,21 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     closeTab = idx => {
-        this.tabUtil.tabs.splice(idx, 1);
-        if (this.tabUtil.tabs.length === 0) {
+        const tabUtil = this.tabUtil;
+        tabUtil.tabs.splice(idx, 1);
+        if (tabUtil.tabs.length === 0) {
             this.closeWindow();
             return
         }
-        if (this.tabUtil.activeIdx !== 0 && idx <= this.tabUtil.activeIdx) {
-            this.tabUtil.activeIdx--;
+        if (tabUtil.activeIdx !== 0) {
+            const isLeft = this.config.ACTIVETE_TAB_WHEN_CLOSE === "left";
+            if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && isLeft)) {
+                tabUtil.activeIdx--;
+            } else {
+                tabUtil.activeIdx = Math.min(tabUtil.activeIdx, tabUtil.tabs.length - 1);
+            }
         }
-        this.switchTab(this.tabUtil.activeIdx);
+        this.switchTab(tabUtil.activeIdx);
     }
 
     closeActiveTab = () => this.closeTab(this.tabUtil.activeIdx);
