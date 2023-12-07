@@ -53,7 +53,7 @@ class windowTabBarPlugin extends BasePlugin {
             const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
             const idx = parseInt(tab.getAttribute("idx"));
 
-            if (this.utils.metaKeyPressed(ev)) {
+            if (this.config.CTRL_CLICK_TO_NEW_WINDOW && this.utils.metaKeyPressed(ev)) {
                 this.openFileNewWindow(this.tabUtil.tabs[idx].path, false);
             } else if (closeButton) {
                 this.closeTab(idx);
@@ -215,10 +215,10 @@ class windowTabBarPlugin extends BasePlugin {
     insertTabDiv = (filePath, idx) => {
         const fileName = this.getTabShowName(filePath);
         const title = this.config.SHOW_FULL_PATH_WHEN_HOVER ? `title="${filePath}"` : "";
+        const btn = this.config.SHOW_TAB_CLOSE_BUTTON ? `<span class="close-button"><div class="close-icon"></div></span>` : "";
         const tabDiv = `
                 <div class="tab-container" idx="${idx}" draggable="true" ${title}>
-                    <div class="active-indicator"></div><span class="name">${fileName}</span>
-                    <span class="close-button"><div class="close-icon"></div></span>
+                    <div class="active-indicator"></div><span class="name">${fileName}</span>${btn}
                 </div>`
         this.entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
     }
@@ -403,7 +403,7 @@ class windowTabBarPlugin extends BasePlugin {
     newWindowIfNeed = (offsetY, tab) => {
         if (this.config.HEIGHT_SCALE < 0) return;
         offsetY = Math.abs(offsetY);
-        const height = this.entities.tabBar.getBoundingClientRect().height;
+        const {height} = this.entities.tabBar.getBoundingClientRect();
         if (offsetY > height * this.config.HEIGHT_SCALE) {
             const idx = parseInt(tab.getAttribute("idx"));
             const _path = this.tabUtil.tabs[idx].path;
@@ -474,7 +474,7 @@ class windowTabBarPlugin extends BasePlugin {
             cloneObj.appendChild(fakeObj);
             cloneObj.className = 'drag-obj';
             cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-            that.entities.content.appendChild(cloneObj);
+            that.entities.tabBar.appendChild(cloneObj);
         }).on("dragend", ".tab-container", function (ev) {
             that.newWindowIfNeed(ev.offsetY, this);
 
@@ -482,11 +482,11 @@ class windowTabBarPlugin extends BasePlugin {
             const {left, top} = this.getBoundingClientRect();
             const reset = cloneObj.animate(
                 [{transform: cloneObj.style.transform}, {transform: `translate3d(${left}px, ${top}px, 0)`}],
-                {duration: 150, easing: "ease-in-out"}
+                {duration: 70, easing: "ease-in-out"}
             )
 
             reset.onfinish = function () {
-                that.entities.content.removeChild(cloneObj);
+                that.entities.tabBar.removeChild(cloneObj);
                 cloneObj = null;
                 dragBox.dragData = null;
                 dragBox.style.visibility = 'visible';
@@ -501,13 +501,13 @@ class windowTabBarPlugin extends BasePlugin {
             ev.stopPropagation();
             ev.dataTransfer.dropEffect = 'move';
             dragBox.style.visibility = 'hidden';
-            let left = Math.floor(ev.clientX - offsetX);
-            let top = Math.floor(ev.clientY - offsetY);
+            let left = ev.clientX - offsetX;
+            let top = ev.clientY - offsetY;
             if (axis) {
                 if (_axis === 'X') {
-                    top = Math.floor(startY - offsetY);
+                    top = startY - offsetY;
                 } else if (_axis === 'Y') {
-                    left = Math.floor(startX - offsetX);
+                    left = startX - offsetX;
                 } else {
                     const x = Math.abs(ev.clientX - startX);
                     const y = Math.abs(ev.clientY - startY);

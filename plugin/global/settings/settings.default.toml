@@ -54,6 +54,10 @@ NEW_TAB_AT = "right"
 #   left:  当前tab的左侧
 #   right: 当前tab的右侧
 ACTIVETE_TAB_WHEN_CLOSE = "right"
+# 显示tab的关闭按钮
+SHOW_TAB_CLOSE_BUTTON = true
+# ctrl+鼠标左键点击标签，新建窗口
+CTRL_CLICK_TO_NEW_WINDOW = true
 # 当鼠标位于标签页时，允许ctrl+wheel切换标签页
 CTRL_WHEEL_TO_SCROLL = true
 # 鼠标中键点击标签页关闭标签页
