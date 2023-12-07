@@ -36,6 +36,8 @@ CLICKABLE = true
 DRAG_STYLE = 1
 # 标签的标题是否去除文件后缀名（filename.md -> filename）
 REMOVE_FILE_SUFFIX = true
+# 当出现同名文件时，同时显示其父目录（filename -> dir/filename）
+SHOW_DIR_FOR_SAME_NAME_FILE = true
 # 限制最多打开x个标签，超过时会删除最左边的tab（若为-1，则无限制）
 TAB_MAX_NUM = -1
 # 标签页Y轴防抖：拖拽标签页，若垂直高度变化很小，保持Y轴不变，帮助更好的排序标签页（仅当DRAG_STYLE=1时生效。为什么不给2做此功能？答：vscode也没有做）

@@ -469,8 +469,7 @@ class utils {
     }
 
     static newFilePath = filename => {
-        const cur = this.getFilePath();
-        let filepath = !filename ? cur : this.Package.Path.join(this.Package.Path.dirname(cur), filename);
+        let filepath = !filename ? this.getFilePath() : this.Package.Path.join(this.getCurrentDirPath(), filename);
         if (this.existPathSync(filepath)) {
             const ext = this.Package.Path.extname(filepath);
             filepath = ext
@@ -535,12 +534,6 @@ class utils {
 
 
     ////////////////////////////// 业务操作 //////////////////////////////
-    static findActiveNode = range => {
-        range = range || File.editor.selection.getRangy();
-        const markElem = File.editor.getMarkElem(range.anchorNode);
-        return File.editor.findNodeByElem(markElem)
-    }
-
     static openUrl = url => {
         const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl;
         openUrl(url, 1);
@@ -658,10 +651,7 @@ class utils {
         }
     }
 
-    static scrollByCid = cid => {
-        const target = File.editor.findElemById(cid);
-        this.scroll(target);
-    }
+    static scrollByCid = cid => this.scroll(File.editor.findElemById(cid));
 
     static insertText = (anchorNode, content, restoreLastCursor = true) => {
         if (restoreLastCursor) {
@@ -670,6 +660,12 @@ class utils {
             File.editor.restoreLastCursor();
         }
         File.editor.insertText(content);
+    }
+
+    static findActiveNode = range => {
+        range = range || File.editor.selection.getRangy();
+        const markElem = File.editor.getMarkElem(range.anchorNode);
+        return File.editor.findNodeByElem(markElem)
     }
 
     static getRangy = () => {
@@ -691,6 +687,7 @@ class utils {
         const quickOpenNode = document.getElementById("typora-quick-open");
         quickOpenNode.parentNode.insertBefore(div, quickOpenNode.nextSibling);
     }
+
     static insertElement = (elements, sibling) => {
         if (!elements) return
         if (!(elements instanceof Array)) {

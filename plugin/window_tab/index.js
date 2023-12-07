@@ -210,22 +210,59 @@ class windowTabBarPlugin extends BasePlugin {
     // 关闭窗口
     closeWindow = () => JSBridge.invoke("window.close");
 
-    getTabShowName = filePath => this.utils.getFileName(filePath, this.config.REMOVE_FILE_SUFFIX)
+    setShowName = () => {
+        this.tabUtil.tabs.forEach(tab => tab.showName = this.utils.getFileName(tab.path, this.config.REMOVE_FILE_SUFFIX));
+        if (this.config.SHOW_DIR_FOR_SAME_NAME_FILE) {
+            this.addDir();
+        }
+    }
 
-    insertTabDiv = (filePath, idx) => {
-        const fileName = this.getTabShowName(filePath);
+    addDir = () => {
+        const map = new Map();
+        let unique = true;
+
+        this.tabUtil.tabs.forEach(tab => {
+            const tabs = map.get(tab.showName);
+            if (!tabs) {
+                map.set(tab.showName, [tab]);
+            } else {
+                unique = false;
+                tabs.push(tab);
+            }
+        });
+        if (unique) return;
+
+        const separator = File.isWin ? "\\" : "/";
+        const isUnique = tabs => new Set(tabs.map(tab => tab.showName)).size === tabs.length
+
+        for (const group of map.values()) {
+            if (group.length === 1) continue;
+            const parts = group.map(tab => tab.path.split(separator).slice(0, -1));
+            // 每次do逻辑都会给group下每个tab的showName都加一层父目录
+            do {
+                for (let i = 0; i < group.length; i++) {
+                    const tab = group[i];
+                    const dir = parts[i].pop();
+                    if (!dir) return;  // 文件系统决定了此分支不可能执行，不过还是防一手
+                    tab.showName = dir + separator + tab.showName;
+                }
+            } while (!isUnique(group))
+        }
+    }
+
+    insertTabDiv = (filePath, showName, idx) => {
         const title = this.config.SHOW_FULL_PATH_WHEN_HOVER ? `title="${filePath}"` : "";
         const btn = this.config.SHOW_TAB_CLOSE_BUTTON ? `<span class="close-button"><div class="close-icon"></div></span>` : "";
         const tabDiv = `
                 <div class="tab-container" idx="${idx}" draggable="true" ${title}>
-                    <div class="active-indicator"></div><span class="name">${fileName}</span>${btn}
+                    <div class="active-indicator"></div><span class="name">${showName}</span>${btn}
                 </div>`
         this.entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
     }
 
-    updateTabDiv = (tabDiv, filePath, idx) => {
+    updateTabDiv = (tabDiv, filePath, showName, idx) => {
         tabDiv.setAttribute("idx", idx + "");
-        tabDiv.querySelector(".name").innerText = this.getTabShowName(filePath);
+        tabDiv.querySelector(".name").innerText = showName;
         if (this.config.SHOW_FULL_PATH_WHEN_HOVER) {
             tabDiv.setAttribute("title", filePath);
         }
@@ -233,13 +270,15 @@ class windowTabBarPlugin extends BasePlugin {
 
     // tabs->DOM的简易数据单向绑定
     renderDOM = wantOpenPath => {
+        this.setShowName();
+
         let tabDiv = this.entities.tabBar.firstElementChild;
         this.tabUtil.tabs.forEach((tab, idx) => {
             if (!tabDiv) {
-                this.insertTabDiv(tab.path, idx);
+                this.insertTabDiv(tab.path, tab.showName, idx);
                 tabDiv = this.entities.tabBar.lastElementChild;
             } else {
-                this.updateTabDiv(tabDiv, tab.path, idx);
+                this.updateTabDiv(tabDiv, tab.path, tab.showName, idx);
             }
 
             const active = tab.path === wantOpenPath;
