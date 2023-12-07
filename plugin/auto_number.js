@@ -189,16 +189,6 @@ class autoNumberPlugin extends BasePlugin {
             {arg_name: "禁用/启用图片自动编号", arg_value: "set_image"},
             {arg_name: "禁用/启用代码块自动编号", arg_value: "set_fence"},
         ];
-        this.callMap = {
-            disable: this.removeStyle,
-            enable: this.insertStyle,
-            set_outline: () => this.insertStyle("ENABLE_SIDE_BAR"),
-            set_content: () => this.insertStyle("ENABLE_CONTENT"),
-            set_toc: () => this.insertStyle("ENABLE_TOC"),
-            set_table: () => this.insertStyle("ENABLE_TABLE"),
-            set_image: () => this.insertStyle("ENABLE_IMAGE"),
-            set_fence: () => this.insertStyle("ENABLE_FENCE"),
-        }
     }
 
     process = () => {
@@ -244,7 +234,17 @@ class autoNumberPlugin extends BasePlugin {
     }
 
     call = type => {
-        const func = this.callMap[type];
+        const callMap = {
+            disable: this.removeStyle,
+            enable: this.insertStyle,
+            set_outline: () => this.insertStyle("ENABLE_SIDE_BAR"),
+            set_content: () => this.insertStyle("ENABLE_CONTENT"),
+            set_toc: () => this.insertStyle("ENABLE_TOC"),
+            set_table: () => this.insertStyle("ENABLE_TABLE"),
+            set_image: () => this.insertStyle("ENABLE_IMAGE"),
+            set_fence: () => this.insertStyle("ENABLE_FENCE"),
+        }
+        const func = callMap[type];
         func && func();
     }
 }

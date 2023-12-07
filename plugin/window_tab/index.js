@@ -5,18 +5,14 @@ class windowTabBarPlugin extends BasePlugin {
             document.getElementById("top-titlebar").style.display = "none";
         }
     }
-
     styleTemplate = () => true
-
     htmlTemplate = () => [{id: "plugin-window-tab", children: [{class_: "tab-bar"}]}]
-
     hotkey = () => [
         {hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: this.nextTab},
         {hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY, callback: this.previousTab},
         {hotkey: this.config.CLOSE_HOTKEY, callback: this.closeActiveTab},
         {hotkey: this.config.COPY_PATH_HOTKEY, callback: this.copyActiveTabPath}
     ]
-
     init = () => {
         this.entities = {
             content: document.querySelector("content"),
@@ -24,42 +20,66 @@ class windowTabBarPlugin extends BasePlugin {
         }
         this.tabUtil = {tabs: [], activeIdx: 0};
         this.loopDetectInterval = 35;
-        this.callMap = {
-            new_tab_open: () => this.config.LOCAL_OPEN = false,
-            local_open: () => this.config.LOCAL_OPEN = true,
-            save_tabs: this.saveTabs,
-            open_save_tabs: this.openSaveTabs,
+    }
+    process = () => {
+        this.init();
+        this.handleLifeCycle();
+        this.handleClick();
+        this.handleScroll();
+        this.handleDrag();
+        this.adjustQuickOpen();
+        if (this.config.CTRL_WHEEL_TO_SCROLL) {
+            this.handleWheel();
+        }
+        if (this.config.MIDDLE_CLICK_TO_CLOSE) {
+            this.handleMiddleClick();
+        }
+        if (this.config.INTERCEPT_INTERNAL_AND_LOCAL_LINKS) {
+            this.interceptLink();
+        }
+        if (this.config.CONTEXT_MENU) {
+            this.handleContextMenu();
         }
     }
 
-    process = () => {
-        this.init();
-
+    handleLifeCycle = () => {
         this.utils.addEventListener(this.utils.eventType.fileOpened, this.openTab);
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.openTab);
         this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.showTabsIfNeed);
-
-        const isHeaderReady = () => (this.utils.isBetaVersion) ? document.querySelector("header").getBoundingClientRect().height : true
-        this.utils.loopDetector(isHeaderReady, this.adjustTop, this.loopDetectInterval, 1000);
-
-        if (this.config.DRAG_STYLE === 1) {
-            this.sortIDEA();
-        } else {
-            this.sortVscode();
+        const isHeaderReady = () => this.utils.isBetaVersion ? document.querySelector("header").getBoundingClientRect().height : true
+        const adjustTop = () => {
+            setTimeout(() => {
+                if (this.config.CHANGE_NOTIFICATION_Z_INDEX) {
+                    const container = document.querySelector(".md-notification-container");
+                    if (container) {
+                        container.style.zIndex = "99999";
+                    }
+                }
+                const windowTab = document.querySelector("#plugin-window-tab");
+                if (!this.config.HIDE_WINDOW_TITLE_BAR) {
+                    const {height, top} = document.querySelector("header").getBoundingClientRect();
+                    windowTab.style.top = height + top + "px";
+                }
+                if (this.config.CHANGE_CONTENT_TOP) {
+                    const {height, top} = windowTab.getBoundingClientRect();
+                    this.entities.content.style.top = top + height + "px";
+                    document.querySelector("#typora-source").style.top = top + height + "px";
+                }
+            }, 200)
         }
+        this.utils.loopDetector(isHeaderReady, adjustTop, this.loopDetectInterval, 1000);
+    }
 
+    handleClick = () => {
         this.entities.tabBar.addEventListener("click", ev => {
             const closeButton = ev.target.closest(".close-button");
             const tabContainer = ev.target.closest(".tab-container");
             if (!closeButton && !tabContainer) return;
-
             ev.stopPropagation();
             ev.preventDefault();
-
             const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
             const idx = parseInt(tab.getAttribute("idx"));
-
-            if (this.utils.metaKeyPressed(ev)) {
+            if (this.config.CTRL_CLICK_TO_NEW_WINDOW && this.utils.metaKeyPressed(ev)) {
                 this.openFileNewWindow(this.tabUtil.tabs[idx].path, false);
             } else if (closeButton) {
                 this.closeTab(idx);
@@ -67,67 +87,59 @@ class windowTabBarPlugin extends BasePlugin {
                 this.switchTab(idx);
             }
         })
+    }
 
+    handleScroll = () => {
         this.entities.content.addEventListener("scroll", () => {
             const activeTab = this.tabUtil.tabs[this.tabUtil.activeIdx];
             if (activeTab) {
                 activeTab.scrollTop = this.entities.content.scrollTop;
             }
         })
+    }
 
-        if (this.config.CTRL_WHEEL_TO_SCROLL) {
-            this.entities.tabBar.addEventListener("wheel", ev => {
-                const target = ev.target.closest("#plugin-window-tab .tab-bar");
-                if (!target) return;
-                if (this.utils.metaKeyPressed(ev)) {
-                    (ev.deltaY < 0) ? this.previousTab() : this.nextTab();
-                } else {
-                    target.scrollLeft += ev.deltaY * 0.5;
-                }
-            })
-        }
-
-        if (this.config.MIDDLE_CLICK_TO_CLOSE) {
-            this.entities.tabBar.addEventListener("mousedown", ev => {
-                if (ev.button === 1) {
-                    const tabContainer = ev.target.closest(".tab-container");
-                    tabContainer && tabContainer.querySelector(".close-button").click();
-                }
-            })
-        }
-
-        this.adjustQuickOpen();
-
-        if (this.config.INTERCEPT_INTERNAL_AND_LOCAL_LINKS) {
-            this.interceptLink();
-        }
-
-        if (this.config.CONTEXT_MENU) {
-            this.handleContextMenu();
+    handleDrag = () => {
+        if (this.config.DRAG_STYLE === 1) {
+            this.sortIDEA();
+        } else {
+            this.sortVscode();
         }
     }
 
-    adjustTop = () => {
-        setTimeout(() => {
-            if (this.config.CHANGE_NOTIFICATION_Z_INDEX) {
-                const container = document.querySelector(".md-notification-container");
-                if (container) {
-                    container.style.zIndex = "99999";
-                }
-            }
+    adjustQuickOpen = () => {
+        document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
+            const target = ev.target.closest(".typora-quick-open-item");
+            if (!target) return;
 
-            const windowTab = document.querySelector("#plugin-window-tab");
-            if (!this.config.HIDE_WINDOW_TITLE_BAR) {
-                const {height, top} = document.querySelector("header").getBoundingClientRect();
-                windowTab.style.top = height + top + "px";
-            }
+            // 将原先的click行为改成ctrl+click
+            if (this.utils.metaKeyPressed(ev)) return;
 
-            if (this.config.CHANGE_CONTENT_TOP) {
-                const {height, top} = windowTab.getBoundingClientRect();
-                document.querySelector("content").style.top = top + height + "px";
-                document.querySelector("#typora-source").style.top = top + height + "px";
+            ev.preventDefault();
+            ev.stopPropagation();
+            const filePath = target.getAttribute("data-path");
+            this.openFile(filePath);
+        }, true)
+    }
+
+    handleWheel = () => {
+        this.entities.tabBar.addEventListener("wheel", ev => {
+            const target = ev.target.closest("#plugin-window-tab .tab-bar");
+            if (!target) return;
+            if (this.utils.metaKeyPressed(ev)) {
+                (ev.deltaY < 0) ? this.previousTab() : this.nextTab();
+            } else {
+                target.scrollLeft += ev.deltaY * 0.5;
             }
-        }, 200)
+        })
+    }
+
+    handleMiddleClick = () => {
+        this.entities.tabBar.addEventListener("mousedown", ev => {
+            if (ev.button === 1) {
+                const tabContainer = ev.target.closest(".tab-container");
+                tabContainer && tabContainer.querySelector(".close-button").click();
+            }
+        })
     }
 
     interceptLink = () => {
@@ -166,6 +178,8 @@ class windowTabBarPlugin extends BasePlugin {
             copyPath: "复制文件路径",
             showInFinder: "打开文件位置",
             openInNewWindow: "新窗口打开",
+            sortTabs: "排序标签",
+            toggleSuffix: "显示/隐藏文件名后缀",
         }
         const name = "window-tab";
         const showMenu = ({target}) => {
@@ -184,21 +198,6 @@ class windowTabBarPlugin extends BasePlugin {
         this.utils.registerMenu(name, "#plugin-window-tab .tab-container", showMenu, callback);
     }
 
-    adjustQuickOpen = () => {
-        document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
-            const target = ev.target.closest(".typora-quick-open-item");
-            if (!target) return;
-
-            // 将原先的click行为改成ctrl+click
-            if (this.utils.metaKeyPressed(ev)) return;
-
-            ev.preventDefault();
-            ev.stopPropagation();
-            const filePath = target.getAttribute("data-path");
-            this.openFile(filePath);
-        }, true)
-    }
-
     showTabsIfNeed = hide => document.querySelector("#plugin-window-tab").style.visibility = hide ? "hidden" : "initial";
 
     // 新窗口打开
@@ -208,37 +207,79 @@ class windowTabBarPlugin extends BasePlugin {
     // 当前标签页打开
     OpenFileLocal = filePath => {
         this.config.LOCAL_OPEN = true;
-        File.editor.library.openFile(filePath);
+        this.utils.openFile(filePath);
         this.config.LOCAL_OPEN = false;  // 自动还原
     }
-    // 关闭窗口
-    closeWindow = () => JSBridge.invoke("window.close");
 
-    insertTabDiv = (filePath, idx) => {
-        const fileName = this.utils.getFileName(filePath, this.config.REMOVE_FILE_SUFFIX);
+    setShowName = () => {
+        this.tabUtil.tabs.forEach(tab => tab.showName = this.utils.getFileName(tab.path, this.config.REMOVE_FILE_SUFFIX));
+        if (this.config.SHOW_DIR_FOR_SAME_NAME_FILE) {
+            this.addDir();
+        }
+    }
+
+    addDir = () => {
+        const map = new Map();
+        let unique = true;
+
+        this.tabUtil.tabs.forEach(tab => {
+            const tabs = map.get(tab.showName);
+            if (!tabs) {
+                map.set(tab.showName, [tab]);
+            } else {
+                unique = false;
+                tabs.push(tab);
+            }
+        });
+        if (unique) return;
+
+        const separator = File.isWin ? "\\" : "/";
+        const isUnique = tabs => new Set(tabs.map(tab => tab.showName)).size === tabs.length
+
+        for (const group of map.values()) {
+            if (group.length === 1) continue;
+            const parts = group.map(tab => tab.path.split(separator).slice(0, -1));
+            // 每次执行do逻辑都会给group下每个tab的showName都加一层父目录
+            do {
+                for (let i = 0; i < group.length; i++) {
+                    const tab = group[i];
+                    const dir = parts[i].pop();
+                    if (!dir) return;  // 文件系统决定了此分支不可能执行，不过还是防一手
+                    tab.showName = dir + separator + tab.showName;
+                }
+            } while (!isUnique(group))
+        }
+    }
+
+    insertTabDiv = (filePath, showName, idx) => {
+        const title = this.config.SHOW_FULL_PATH_WHEN_HOVER ? `title="${filePath}"` : "";
+        const btn = this.config.SHOW_TAB_CLOSE_BUTTON ? `<span class="close-button"><div class="close-icon"></div></span>` : "";
         const tabDiv = `
-                <div class="tab-container" idx="${idx}" draggable="true" title="${filePath}">
-                    <div class="active-indicator"></div><span class="name">${fileName}</span>
-                    <span class="close-button"><div class="close-icon"></div></span>
+                <div class="tab-container" idx="${idx}" draggable="true" ${title}>
+                    <div class="active-indicator"></div><span class="name">${showName}</span>${btn}
                 </div>`
         this.entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
     }
 
-    updateTabDiv = (tabDiv, filePath, idx) => {
+    updateTabDiv = (tabDiv, filePath, showName, idx) => {
         tabDiv.setAttribute("idx", idx + "");
-        tabDiv.querySelector(".name").innerText = this.utils.getFileName(filePath, this.config.REMOVE_FILE_SUFFIX);
-        tabDiv.setAttribute("title", filePath);
+        tabDiv.querySelector(".name").innerText = showName;
+        if (this.config.SHOW_FULL_PATH_WHEN_HOVER) {
+            tabDiv.setAttribute("title", filePath);
+        }
     }
 
     // tabs->DOM的简易数据单向绑定
     renderDOM = wantOpenPath => {
+        this.setShowName();
+
         let tabDiv = this.entities.tabBar.firstElementChild;
         this.tabUtil.tabs.forEach((tab, idx) => {
             if (!tabDiv) {
-                this.insertTabDiv(tab.path, idx);
+                this.insertTabDiv(tab.path, tab.showName, idx);
                 tabDiv = this.entities.tabBar.lastElementChild;
             } else {
-                this.updateTabDiv(tabDiv, tab.path, idx);
+                this.updateTabDiv(tabDiv, tab.path, tab.showName, idx);
             }
 
             const active = tab.path === wantOpenPath;
@@ -291,8 +332,14 @@ class windowTabBarPlugin extends BasePlugin {
         if (this.config.LOCAL_OPEN && pathIdx === -1) {
             this.tabUtil.tabs[this.tabUtil.activeIdx].path = wantOpenPath;
         } else if (pathIdx === -1) {
-            this.tabUtil.tabs.push({path: wantOpenPath, scrollTop: 0});
-            this.tabUtil.activeIdx = this.tabUtil.tabs.length - 1;
+            const newTab = {path: wantOpenPath, scrollTop: 0};
+            if (this.config.NEW_TAB_AT === "end") {
+                this.tabUtil.tabs.push(newTab);
+                this.tabUtil.activeIdx = this.tabUtil.tabs.length - 1;
+            } else if (this.config.NEW_TAB_AT === "right") {
+                this.tabUtil.tabs.splice(this.tabUtil.activeIdx + 1, 0, newTab);
+                this.tabUtil.activeIdx++;
+            }
         } else if (pathIdx !== -1) {
             this.tabUtil.activeIdx = pathIdx;
         }
@@ -329,15 +376,21 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     closeTab = idx => {
-        this.tabUtil.tabs.splice(idx, 1);
-        if (this.tabUtil.tabs.length === 0) {
-            this.closeWindow();
+        const tabUtil = this.tabUtil;
+        tabUtil.tabs.splice(idx, 1);
+        if (tabUtil.tabs.length === 0) {
+            this.utils.exitTypora();
             return
         }
-        if (this.tabUtil.activeIdx !== 0 && idx <= this.tabUtil.activeIdx) {
-            this.tabUtil.activeIdx--;
+        if (tabUtil.activeIdx !== 0) {
+            const isLeft = this.config.ACTIVETE_TAB_WHEN_CLOSE === "left";
+            if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && isLeft)) {
+                tabUtil.activeIdx--;
+            } else {
+                tabUtil.activeIdx = Math.min(tabUtil.activeIdx, tabUtil.tabs.length - 1);
+            }
         }
-        this.switchTab(this.tabUtil.activeIdx);
+        this.switchTab(tabUtil.activeIdx);
     }
 
     closeActiveTab = () => this.closeTab(this.tabUtil.activeIdx);
@@ -367,8 +420,20 @@ class windowTabBarPlugin extends BasePlugin {
         }
     }
 
+    sortTabs = () => {
+        if (this.tabUtil.tabs.length === 1) return;
+        const current = this.tabUtil.tabs[this.tabUtil.activeIdx];
+        this.tabUtil.tabs.sort(({showName: n1}, {showName: n2}) => n1.localeCompare(n2));
+        this.switchTab(this.tabUtil.tabs.indexOf(current));
+    }
+
     copyPath = idx => navigator.clipboard.writeText(this.tabUtil.tabs[idx].path)
     copyActiveTabPath = () => this.copyPath(this.tabUtil.activeIdx)
+
+    toggleSuffix = () => {
+        this.config.REMOVE_FILE_SUFFIX = !this.config.REMOVE_FILE_SUFFIX;
+        this.switchTab(this.tabUtil.activeIdx);
+    }
 
     showInFinder = idx => this.utils.showInFinder(this.tabUtil.tabs[idx].path);
 
@@ -377,7 +442,7 @@ class windowTabBarPlugin extends BasePlugin {
     newWindowIfNeed = (offsetY, tab) => {
         if (this.config.HEIGHT_SCALE < 0) return;
         offsetY = Math.abs(offsetY);
-        const height = this.entities.tabBar.getBoundingClientRect().height;
+        const {height} = this.entities.tabBar.getBoundingClientRect();
         if (offsetY > height * this.config.HEIGHT_SCALE) {
             const idx = parseInt(tab.getAttribute("idx"));
             const _path = this.tabUtil.tabs[idx].path;
@@ -425,30 +490,32 @@ class windowTabBarPlugin extends BasePlugin {
         let startX = 0;
         let startY = 0;
         let axis, _axis;
+        let dragROI;
+        const previewImage = new Image();
 
         tabBar.on("dragstart", ".tab-container", function (ev) {
             dragBox = this;
-            dragBox.dragData = {};
             axis = dragBox.getAttribute('axis');
             _axis = axis;
+            ev.originalEvent.dataTransfer.setDragImage(previewImage, 0, 0);
             ev.originalEvent.dataTransfer.effectAllowed = "move";
             ev.originalEvent.dataTransfer.dropEffect = "move";
-            let {left, top} = dragBox.getBoundingClientRect();
+            let {left, top, height} = dragBox.getBoundingClientRect();
             startX = ev.clientX;
             startY = ev.clientY;
             offsetX = startX - left;
             offsetY = startY - top;
+            dragROI = height / 2;
 
             const fakeObj = dragBox.cloneNode(true);
-            fakeObj.style.width = dragBox.offsetWidth + 'px';
-            fakeObj.style.height = dragBox.offsetHeight + 'px';
+            fakeObj.style.height = dragBox.offsetHeight + 'px'; // dragBox使用了height: 100%，需要重新设置一下
             fakeObj.style.transform = 'translate3d(0,0,0)';
             fakeObj.setAttribute('dragging', '');
-            cloneObj = document.createElement('DIV');
+            cloneObj = document.createElement('div');
             cloneObj.appendChild(fakeObj);
             cloneObj.className = 'drag-obj';
             cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-            document.querySelector("content").appendChild(cloneObj);
+            that.entities.tabBar.appendChild(cloneObj);
         }).on("dragend", ".tab-container", function (ev) {
             that.newWindowIfNeed(ev.offsetY, this);
 
@@ -456,13 +523,12 @@ class windowTabBarPlugin extends BasePlugin {
             const {left, top} = this.getBoundingClientRect();
             const reset = cloneObj.animate(
                 [{transform: cloneObj.style.transform}, {transform: `translate3d(${left}px, ${top}px, 0)`}],
-                {duration: 150, easing: "ease-in-out"}
+                {duration: 70, easing: "ease-in-out"}
             )
 
             reset.onfinish = function () {
-                document.querySelector("content").removeChild(cloneObj);
+                that.entities.tabBar.removeChild(cloneObj);
                 cloneObj = null;
-                dragBox.dragData = null;
                 dragBox.style.visibility = 'visible';
                 resetTabBar();
             }
@@ -475,13 +541,13 @@ class windowTabBarPlugin extends BasePlugin {
             ev.stopPropagation();
             ev.dataTransfer.dropEffect = 'move';
             dragBox.style.visibility = 'hidden';
-            let left = Math.floor(ev.clientX - offsetX);
-            let top = Math.floor(ev.clientY - offsetY);
+            let left = ev.clientX - offsetX;
+            let top = ev.clientY - offsetY;
             if (axis) {
                 if (_axis === 'X') {
-                    top = Math.floor(startY - offsetY);
+                    top = startY - offsetY;
                 } else if (_axis === 'Y') {
-                    left = Math.floor(startX - offsetX);
+                    left = startX - offsetX;
                 } else {
                     const x = Math.abs(ev.clientX - startX);
                     const y = Math.abs(ev.clientY - startY);
@@ -493,9 +559,10 @@ class windowTabBarPlugin extends BasePlugin {
             startX = left + offsetX;
             startY = top + offsetY;
 
+            if (that.config.LIMIT_TAB_ROI || (that.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG && top < dragROI)) {
+                top = 0;
+            }
             cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-            dragBox.dragData.left = left;
-            dragBox.dragData.top = top;
         })
     }
 
@@ -605,11 +672,21 @@ class windowTabBarPlugin extends BasePlugin {
         } else if (this.utils.getFilePath()) {
             args.push({arg_name: "在当前标签打开文件", arg_value: "local_open"});
         }
+        if (this.tabUtil.tabs.length > 1) {
+            args.push({arg_name: "排序标签", arg_value: "sort_tabs"});
+        }
         return args
     }
 
     call = type => {
-        const func = this.callMap[type];
+        const callMap = {
+            new_tab_open: () => this.config.LOCAL_OPEN = false,
+            local_open: () => this.config.LOCAL_OPEN = true,
+            save_tabs: this.saveTabs,
+            open_save_tabs: this.openSaveTabs,
+            sort_tabs: this.sortTabs,
+        }
+        const func = callMap[type];
         func && func();
     }
 }
@@ -617,4 +694,3 @@ class windowTabBarPlugin extends BasePlugin {
 module.exports = {
     plugin: windowTabBarPlugin
 };
-

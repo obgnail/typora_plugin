@@ -40,7 +40,8 @@
 #plugin-window-tab .tab-container {
     background-color: var(--side-bar-bg-color, gray);
     height: 100%;
-    min-width: 100px;
+    min-width: ${this.config.TAB_MIN_WIDTH};
+    max-width: ${this.config.TAB_MAX_WIDTH};
     position: relative;
     padding: 0 15px;
     padding-right: 10px;
@@ -59,7 +60,7 @@
 
 #plugin-window-tab .name {
     max-width: 350px;
-    padding-right: 15px;
+    padding-right: 10px;
     font-size: 14px;
     overflow: hidden;
     white-space: nowrap;
