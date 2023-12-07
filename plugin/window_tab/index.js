@@ -5,18 +5,14 @@ class windowTabBarPlugin extends BasePlugin {
             document.getElementById("top-titlebar").style.display = "none";
         }
     }
-
     styleTemplate = () => true
-
     htmlTemplate = () => [{id: "plugin-window-tab", children: [{class_: "tab-bar"}]}]
-
     hotkey = () => [
         {hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: this.nextTab},
         {hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY, callback: this.previousTab},
         {hotkey: this.config.CLOSE_HOTKEY, callback: this.closeActiveTab},
         {hotkey: this.config.COPY_PATH_HOTKEY, callback: this.copyActiveTabPath}
     ]
-
     init = () => {
         this.entities = {
             content: document.querySelector("content"),
@@ -25,34 +21,64 @@ class windowTabBarPlugin extends BasePlugin {
         this.tabUtil = {tabs: [], activeIdx: 0};
         this.loopDetectInterval = 35;
     }
-
     process = () => {
         this.init();
+        this.handleLifeCycle();
+        this.handleClick();
+        this.handleScroll();
+        this.handleDrag();
+        this.adjustQuickOpen();
+        if (this.config.CTRL_WHEEL_TO_SCROLL) {
+            this.handleWheel();
+        }
+        if (this.config.MIDDLE_CLICK_TO_CLOSE) {
+            this.handleMiddleClick();
+        }
+        if (this.config.INTERCEPT_INTERNAL_AND_LOCAL_LINKS) {
+            this.interceptLink();
+        }
+        if (this.config.CONTEXT_MENU) {
+            this.handleContextMenu();
+        }
+    }
 
+    handleLifeCycle = () => {
         this.utils.addEventListener(this.utils.eventType.fileOpened, this.openTab);
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.openTab);
         this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.showTabsIfNeed);
-
-        const isHeaderReady = () => (this.utils.isBetaVersion) ? document.querySelector("header").getBoundingClientRect().height : true
-        this.utils.loopDetector(isHeaderReady, this.adjustTop, this.loopDetectInterval, 1000);
-
-        if (this.config.DRAG_STYLE === 1) {
-            this.sortIDEA();
-        } else {
-            this.sortVscode();
+        const isHeaderReady = () => this.utils.isBetaVersion ? document.querySelector("header").getBoundingClientRect().height : true
+        const adjustTop = () => {
+            setTimeout(() => {
+                if (this.config.CHANGE_NOTIFICATION_Z_INDEX) {
+                    const container = document.querySelector(".md-notification-container");
+                    if (container) {
+                        container.style.zIndex = "99999";
+                    }
+                }
+                const windowTab = document.querySelector("#plugin-window-tab");
+                if (!this.config.HIDE_WINDOW_TITLE_BAR) {
+                    const {height, top} = document.querySelector("header").getBoundingClientRect();
+                    windowTab.style.top = height + top + "px";
+                }
+                if (this.config.CHANGE_CONTENT_TOP) {
+                    const {height, top} = windowTab.getBoundingClientRect();
+                    this.entities.content.style.top = top + height + "px";
+                    document.querySelector("#typora-source").style.top = top + height + "px";
+                }
+            }, 200)
         }
+        this.utils.loopDetector(isHeaderReady, adjustTop, this.loopDetectInterval, 1000);
+    }
 
+    handleClick = () => {
         this.entities.tabBar.addEventListener("click", ev => {
             const closeButton = ev.target.closest(".close-button");
             const tabContainer = ev.target.closest(".tab-container");
             if (!closeButton && !tabContainer) return;
-
             ev.stopPropagation();
             ev.preventDefault();
-
             const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
             const idx = parseInt(tab.getAttribute("idx"));
-
             if (this.config.CTRL_CLICK_TO_NEW_WINDOW && this.utils.metaKeyPressed(ev)) {
                 this.openFileNewWindow(this.tabUtil.tabs[idx].path, false);
             } else if (closeButton) {
@@ -61,67 +87,59 @@ class windowTabBarPlugin extends BasePlugin {
                 this.switchTab(idx);
             }
         })
+    }
 
+    handleScroll = () => {
         this.entities.content.addEventListener("scroll", () => {
             const activeTab = this.tabUtil.tabs[this.tabUtil.activeIdx];
             if (activeTab) {
                 activeTab.scrollTop = this.entities.content.scrollTop;
             }
         })
+    }
 
-        if (this.config.CTRL_WHEEL_TO_SCROLL) {
-            this.entities.tabBar.addEventListener("wheel", ev => {
-                const target = ev.target.closest("#plugin-window-tab .tab-bar");
-                if (!target) return;
-                if (this.utils.metaKeyPressed(ev)) {
-                    (ev.deltaY < 0) ? this.previousTab() : this.nextTab();
-                } else {
-                    target.scrollLeft += ev.deltaY * 0.5;
-                }
-            })
-        }
-
-        if (this.config.MIDDLE_CLICK_TO_CLOSE) {
-            this.entities.tabBar.addEventListener("mousedown", ev => {
-                if (ev.button === 1) {
-                    const tabContainer = ev.target.closest(".tab-container");
-                    tabContainer && tabContainer.querySelector(".close-button").click();
-                }
-            })
-        }
-
-        this.adjustQuickOpen();
-
-        if (this.config.INTERCEPT_INTERNAL_AND_LOCAL_LINKS) {
-            this.interceptLink();
-        }
-
-        if (this.config.CONTEXT_MENU) {
-            this.handleContextMenu();
+    handleDrag = () => {
+        if (this.config.DRAG_STYLE === 1) {
+            this.sortIDEA();
+        } else {
+            this.sortVscode();
         }
     }
 
-    adjustTop = () => {
-        setTimeout(() => {
-            if (this.config.CHANGE_NOTIFICATION_Z_INDEX) {
-                const container = document.querySelector(".md-notification-container");
-                if (container) {
-                    container.style.zIndex = "99999";
-                }
-            }
+    adjustQuickOpen = () => {
+        document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
+            const target = ev.target.closest(".typora-quick-open-item");
+            if (!target) return;
 
-            const windowTab = document.querySelector("#plugin-window-tab");
-            if (!this.config.HIDE_WINDOW_TITLE_BAR) {
-                const {height, top} = document.querySelector("header").getBoundingClientRect();
-                windowTab.style.top = height + top + "px";
-            }
+            // 将原先的click行为改成ctrl+click
+            if (this.utils.metaKeyPressed(ev)) return;
 
-            if (this.config.CHANGE_CONTENT_TOP) {
-                const {height, top} = windowTab.getBoundingClientRect();
-                this.entities.content.style.top = top + height + "px";
-                document.querySelector("#typora-source").style.top = top + height + "px";
+            ev.preventDefault();
+            ev.stopPropagation();
+            const filePath = target.getAttribute("data-path");
+            this.openFile(filePath);
+        }, true)
+    }
+
+    handleWheel = () => {
+        this.entities.tabBar.addEventListener("wheel", ev => {
+            const target = ev.target.closest("#plugin-window-tab .tab-bar");
+            if (!target) return;
+            if (this.utils.metaKeyPressed(ev)) {
+                (ev.deltaY < 0) ? this.previousTab() : this.nextTab();
+            } else {
+                target.scrollLeft += ev.deltaY * 0.5;
             }
-        }, 200)
+        })
+    }
+
+    handleMiddleClick = () => {
+        this.entities.tabBar.addEventListener("mousedown", ev => {
+            if (ev.button === 1) {
+                const tabContainer = ev.target.closest(".tab-container");
+                tabContainer && tabContainer.querySelector(".close-button").click();
+            }
+        })
     }
 
     interceptLink = () => {
@@ -180,21 +198,6 @@ class windowTabBarPlugin extends BasePlugin {
         this.utils.registerMenu(name, "#plugin-window-tab .tab-container", showMenu, callback);
     }
 
-    adjustQuickOpen = () => {
-        document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
-            const target = ev.target.closest(".typora-quick-open-item");
-            if (!target) return;
-
-            // 将原先的click行为改成ctrl+click
-            if (this.utils.metaKeyPressed(ev)) return;
-
-            ev.preventDefault();
-            ev.stopPropagation();
-            const filePath = target.getAttribute("data-path");
-            this.openFile(filePath);
-        }, true)
-    }
-
     showTabsIfNeed = hide => document.querySelector("#plugin-window-tab").style.visibility = hide ? "hidden" : "initial";
 
     // 新窗口打开
@@ -204,11 +207,9 @@ class windowTabBarPlugin extends BasePlugin {
     // 当前标签页打开
     OpenFileLocal = filePath => {
         this.config.LOCAL_OPEN = true;
-        File.editor.library.openFile(filePath);
+        this.utils.openFile(filePath);
         this.config.LOCAL_OPEN = false;  // 自动还原
     }
-    // 关闭窗口
-    closeWindow = () => JSBridge.invoke("window.close");
 
     setShowName = () => {
         this.tabUtil.tabs.forEach(tab => tab.showName = this.utils.getFileName(tab.path, this.config.REMOVE_FILE_SUFFIX));
@@ -238,7 +239,7 @@ class windowTabBarPlugin extends BasePlugin {
         for (const group of map.values()) {
             if (group.length === 1) continue;
             const parts = group.map(tab => tab.path.split(separator).slice(0, -1));
-            // 每次do逻辑都会给group下每个tab的showName都加一层父目录
+            // 每次执行do逻辑都会给group下每个tab的showName都加一层父目录
             do {
                 for (let i = 0; i < group.length; i++) {
                     const tab = group[i];
@@ -378,7 +379,7 @@ class windowTabBarPlugin extends BasePlugin {
         const tabUtil = this.tabUtil;
         tabUtil.tabs.splice(idx, 1);
         if (tabUtil.tabs.length === 0) {
-            this.closeWindow();
+            this.utils.exitTypora();
             return
         }
         if (tabUtil.activeIdx !== 0) {
@@ -421,9 +422,8 @@ class windowTabBarPlugin extends BasePlugin {
 
     sortTabs = () => {
         if (this.tabUtil.tabs.length === 1) return;
-        const {basename} = this.utils.Package.Path;
         const current = this.tabUtil.tabs[this.tabUtil.activeIdx];
-        this.tabUtil.tabs.sort(({path: p1}, {path: p2}) => basename(p1).localeCompare(basename(p2)));
+        this.tabUtil.tabs.sort(({showName: n1}, {showName: n2}) => n1.localeCompare(n2));
         this.switchTab(this.tabUtil.tabs.indexOf(current));
     }
 

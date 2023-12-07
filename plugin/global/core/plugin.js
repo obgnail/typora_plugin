@@ -534,6 +534,8 @@ class utils {
 
 
     ////////////////////////////// 业务操作 //////////////////////////////
+    static exitTypora = () => JSBridge.invoke("window.close");
+
     static openUrl = url => {
         const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl;
         openUrl(url, 1);
