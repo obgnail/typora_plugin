@@ -32,6 +32,7 @@ class utils {
     // 触发顺序：
     //   allCustomPluginsHadInjected 自定义插件加载完毕
     //   allPluginsHadInjected       所有插件加载完毕
+    //   everythingReady             一切准备就绪
     //   firstFileInit               打开Typora后文件被加载
     //   beforeFileOpen              打开文件之前
     //   fileOpened                  打开文件之后
@@ -49,6 +50,7 @@ class utils {
     static eventType = {
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
         allPluginsHadInjected: "allPluginsHadInjected",
+        everythingReady: "everythingReady",
         firstFileInit: "firstFileInit",
         beforeFileOpen: "beforeFileOpen",
         fileOpened: "fileOpened",
@@ -2074,7 +2076,7 @@ class baseCustomPlugin {
 // 右键菜单的选项分为两部分：静态菜单选项和动态菜单选项，皆返回[{arg_name, arg_value, arg_disabled(可选), arg_hint(可选)}]
 class clickablePlugin extends basePlugin {
     // 静态菜单选项
-    static callArgs = []
+    callArgs = []
     // 动态菜单选项
     //   anchorNode: 右键时鼠标所在的html标签
     //   meta: 一个空的object，可以在这里设置任何值，传给call
@@ -2200,6 +2202,9 @@ class process {
 
         // 加载剩余的高级工具
         await this.loadHelpers(diagramParser, quickButton, hotkeyHub, exportHelper, thirdPartyDiagramParser);
+
+        // 一切准备就绪
+        this.utils.publishEvent(this.utils.eventType.everythingReady);
 
         // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
         setTimeout(this.utils.reload, 50);

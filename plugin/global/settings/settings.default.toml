@@ -841,6 +841,7 @@ LIST = [
     "auto_number",
     "truncate_text",
     "right_click_menu",
+    "help",
     "---",
     "blur",
     "go_top",
@@ -883,6 +884,16 @@ MAX_SIZE = 2000000
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 # 当侧边栏出现横向滚动条时，允许ctrl+wheel进行横向滚动
 CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU = true
+
+
+############### file_counter ###############
+[help]
+# 是否启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "帮助"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 
 
 ############### mermaid_replace ###############
