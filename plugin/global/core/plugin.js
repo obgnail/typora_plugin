@@ -285,7 +285,7 @@ class utils {
 
     static downloadImage = async (src, folder, filename) => {
         folder = folder || this.tempFolder;
-        filename = filename || (Math.random() + "_" + this.Package.Path.basename(src));
+        filename = filename || (this.randomString() + "_" + this.Package.Path.basename(src));
         const {state} = await JSBridge.invoke("app.download", src, folder, filename);
         return {ok: state === "completed", filepath: this.Package.Path.join(folder, filename)}
     }
@@ -401,6 +401,7 @@ class utils {
         return result;
     }
 
+    static randomString = () => Math.random().toString(36).slice(2)
     static getUUID = () => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             const r = (Math.random() * 16) | 0
@@ -1576,7 +1577,7 @@ class dialog {
             this.cancelCallback = cancelCallback;
 
             this.entities.title.innerText = modal.title;
-            modal.components.forEach(component => component.id = Math.random());
+            modal.components.forEach(component => component.id = this.utils.randomString());
             const widgetList = modal.components.map(component => this.newWidget(component));
             this.entities.body.innerHTML = `<form role="form">${widgetList.join("")}</form>`;
             this.entities.modal.style.display = "block";

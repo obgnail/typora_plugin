@@ -832,14 +832,14 @@ FIND_LOST_PLUGIN = true
 NAME = "非常用插件"
 LIST = [
     "window_tab",
-    "resize_image",
-    "resize_table",
     "fence_enhance",
-    "export_enhance",
-    "datatables",
     "markmap",
     "auto_number",
+    "datatables",
+    "resize_image",
+    "resize_table",
     "truncate_text",
+    "export_enhance",
     "right_click_menu",
     "help",
     "---",

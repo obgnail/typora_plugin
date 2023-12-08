@@ -1,14 +1,26 @@
 class helpPlugin extends BasePlugin {
-    beforeProcess = () => {
+    beforeProcess = async () => {
+        const filepath = this.utils.joinPath("./plugin/updater/version.json");
+        try {
+            const versionMsg = await this.utils.Package.FsExtra.readJson(filepath);
+            this.version = versionMsg.tag_name;
+        } catch (err) {
+        }
+    }
+
+    process = () => {
         this.callArgs = [
             {arg_name: "打开配置文件", arg_value: "open_setting_folder"},
             {arg_name: "反馈 - github", arg_value: "new_issue"},
             {arg_name: "反馈 - email", arg_value: "send_email"},
             {arg_name: "关于", arg_value: "about"},
         ]
+
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
             this.updater = this.utils.getCustomPlugin("pluginUpdater");
-            this.updater && this.callArgs.unshift({arg_name: "检查更新", arg_value: "update_plugin"});
+            if (!this.updater) return;
+            const arg_name = "检查更新" + (this.version ? `（当前版本：${this.version}）` : "");
+            this.callArgs.unshift({arg_name: arg_name, arg_value: "update_plugin"});
         })
     }
 
