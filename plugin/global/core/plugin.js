@@ -1,5 +1,6 @@
 class utils {
     static isBetaVersion = parseInt(window._options.appVersion.split(".")[0]) === 0
+    static separator = File.isWin ? "\\" : "/"
     static tempFolder = File.option.tempPath
     static nonExistSelector = "#__non_exist_selector__"
     static disableForeverSelector = "#__disable_selector__"
@@ -279,6 +280,8 @@ class utils {
         const lib = (File.isNode ? "./lib.asar" : "./lib");
         await $.getScript(lib + "/jimp/browser/lib/jimp.min.js")
     }
+
+    static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
 
     static downloadImage = async (src, folder, filename) => {
         folder = folder || this.tempFolder;

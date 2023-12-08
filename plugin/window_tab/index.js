@@ -233,19 +233,18 @@ class windowTabBarPlugin extends BasePlugin {
         });
         if (unique) return;
 
-        const separator = File.isWin ? "\\" : "/";
         const isUnique = tabs => new Set(tabs.map(tab => tab.showName)).size === tabs.length
 
         for (const group of map.values()) {
             if (group.length === 1) continue;
-            const parts = group.map(tab => tab.path.split(separator).slice(0, -1));
+            const parts = group.map(tab => tab.path.split(this.utils.separator).slice(0, -1));
             // 每次执行do逻辑都会给group下每个tab的showName都加一层父目录
             do {
                 for (let i = 0; i < group.length; i++) {
                     const tab = group[i];
                     const dir = parts[i].pop();
                     if (!dir) return;  // 文件系统决定了此分支不可能执行，不过还是防一手
-                    tab.showName = dir + separator + tab.showName;
+                    tab.showName = dir + this.utils.separator + tab.showName;
                 }
             } while (!isUnique(group))
         }
