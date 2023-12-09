@@ -392,7 +392,7 @@ hotkey = ""
 show_modal = true
 # 自动打开新文件
 auto_open = true
-# 使用删除原文件中提取的内容
+# 删除原文件中提取的内容
 delete_content = false
 
 
