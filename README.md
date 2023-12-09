@@ -163,7 +163,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### 我的 Typora 版本能用吗？
 
-所有插件都在 0.9.8 版本和最新版本测试过，理论上支持所有 Typora 版本。
+所有插件都在 0.9.98 版本和最新版本测试过，理论上支持所有 Typora 版本。
 
 
 

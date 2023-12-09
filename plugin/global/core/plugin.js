@@ -344,6 +344,9 @@ class utils {
         }, Array.isArray(source) ? [] : {})
     }
 
+    // pick({ a: 1, b: 2, c: 3 }, 'a', 'b') -> { a: 1, b: 2 }
+    static pick = (obj, ...props) => Object.fromEntries(Object.entries(obj).filter(([k]) => props.includes(k)))
+
     static throttle = (fn, delay = 100) => {
         let timer;
         return function () {
