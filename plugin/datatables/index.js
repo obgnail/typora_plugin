@@ -100,7 +100,7 @@ class datatablesPlugin extends BasePlugin {
         await this.lazyLoad();
         const edit = target.parentElement.querySelector(".md-table-edit");
         const $table = $(target);
-        const uuid = Math.random() + "";
+        const uuid = this.utils.randomString();
         $table.attr("table-uuid", uuid);
         // addTfoot($table);
         const table = $table.dataTable(this.dataTablesConfig);

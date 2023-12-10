@@ -52,7 +52,7 @@ class exportEnhancePlugin extends BasePlugin {
                 ) return;
 
                 const src = match[1];
-                const filename = Math.random() + "_" + this.utils.Package.Path.basename(src);
+                const filename = this.utils.randomString() + "_" + this.utils.Package.Path.basename(src);
                 try {
                     const {ok} = await this.utils.downloadImage(src, this.tempFolder, filename);
                     if (ok) {

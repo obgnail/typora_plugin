@@ -660,6 +660,9 @@ INSERT_LINE_NEXT = "Ctrl-Enter"
 INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
 # fence_enhance插件包含三个功能：button、hotkey、other。此为other
+# 在右键菜单中启用危险的功能
+#   危险功能：此功能会消耗巨量资源并导致Typora长时间（几秒到几十秒）失去响应
+ENABLE_DANGEROUS_FEATURES = false
 # 长文本的换行会保持相同的缩进
 #   1.详见：https://github.com/codemirror/codemirror5/issues/2085
 #   2.除非你电脑性能足够，否则不建议开启，有较大的性能损失，实测会消耗大量时间去计算缩进
@@ -832,15 +835,16 @@ FIND_LOST_PLUGIN = true
 NAME = "非常用插件"
 LIST = [
     "window_tab",
-    "resize_image",
-    "resize_table",
     "fence_enhance",
-    "export_enhance",
-    "datatables",
     "markmap",
     "auto_number",
+    "datatables",
+    "resize_image",
+    "resize_table",
     "truncate_text",
+    "export_enhance",
     "right_click_menu",
+    "help",
     "---",
     "blur",
     "go_top",
@@ -883,6 +887,16 @@ MAX_SIZE = 2000000
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 # 当侧边栏出现横向滚动条时，允许ctrl+wheel进行横向滚动
 CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU = true
+
+
+############### file_counter ###############
+[help]
+# 是否启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "帮助"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 
 
 ############### mermaid_replace ###############

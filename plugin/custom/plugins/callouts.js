@@ -20,11 +20,18 @@ class callouts extends BaseCustomPlugin {
     process = () => {
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.range);
         this.utils.addEventListener(this.utils.eventType.fileEdited, this.range);
-        const getExportStyle = () => document.querySelector("#write .plugin-callout") ? this.getStyleContent() : ""
+        const getExportStyle = () => document.querySelector("#write .plugin-callout") ? this.getStyleContent(true) : ""
         this.utils.registerExportHelper("callouts", getExportStyle, this.exportToHtml);
     }
 
-    getStyleContent = () => this.utils.getStyleContent(this.fixedName)
+    getStyleContent = (removeIcon = false) => {
+        let result = this.utils.getStyleContent(this.fixedName);
+        // icon需要用到font，但是导出时又没有font，因此只能移除
+        if (removeIcon) {
+            result = result.replace(/--callout-icon: ".*?";/g, "");
+        }
+        return result
+    }
 
     range = () => {
         const pList = document.querySelectorAll("#write blockquote > p:first-child");

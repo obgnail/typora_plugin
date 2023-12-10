@@ -8,6 +8,7 @@ class fenceEnhancePlugin extends BasePlugin {
     init = () => {
         this.builders = [];
         this.lastClickTime = 0;
+        this.dangerousHint = "警告：消耗巨量资源并导致Typora长时间失去响应";
         this.callArgs = [
             {arg_name: "自动隐藏/显示按钮", arg_value: "set_auto_hide"},
             {arg_name: "禁用/启用折叠按钮", arg_value: "disable_or_enable_fold"},
@@ -169,6 +170,9 @@ class fenceEnhancePlugin extends BasePlugin {
         const arr = [];
         if (this.enableIndent) {
             arr.push({arg_name: "调整缩进", arg_value: "indent_current"});
+            if (this.config.ENABLE_DANGEROUS_FEATURES) {
+                arr.push({arg_name: "调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint});
+            }
         }
         arr.push(
             {arg_name: "折叠/展开代码块", arg_value: "fold_current", arg_disabled: !target},
@@ -183,6 +187,16 @@ class fenceEnhancePlugin extends BasePlugin {
     expandFence = fence => {
         const button = fence.querySelector(".fence-enhance .fold-code.folded");
         button && button.click();
+    }
+    indentAllFences = () => {
+        document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
+            const codeMirror = fence.querySelector(":scope > .CodeMirror");
+            if (!codeMirror) {
+                const cid = fence.getAttribute("cid");
+                File.editor.fences.addCodeBlock(cid);
+            }
+        })
+        document.querySelectorAll("#write .md-fences[cid]").forEach(fence => this.indentFence(fence));
     }
     disableOrEnableFold = () => {
         this.config.ENABLE_FOLD = !this.config.ENABLE_FOLD;
@@ -230,6 +244,7 @@ class fenceEnhancePlugin extends BasePlugin {
             fold_current: meta => this.foldFence(meta.target),
             copy_current: meta => this.copyFence(meta.target),
             indent_current: meta => this.indentFence(meta.target),
+            indent_all_fences: this.indentAllFences,
         }
         const func = callMap[type];
         func && func(meta);

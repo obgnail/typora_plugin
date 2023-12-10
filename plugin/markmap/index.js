@@ -42,16 +42,17 @@ class markmapPlugin extends BasePlugin {
     }
 
     getToc = () => {
-        const toc = File.editor.nodeMap.toc;
-        const headers = [];
-        if (toc) {
-            for (const header of toc["headers"]) {
-                if (header && header["attributes"]) {
-                    headers.push(header.attributes.pattern.replace("{0}", header.attributes.text));
-                }
+        const {headers} = File.editor.nodeMap.toc || {};
+        if (!headers) return;
+
+        const result = [];
+        for (const header of headers) {
+            const {pattern, text = ""} = (header && header.attributes) || {};
+            if (pattern) {
+                result.push(pattern.replace("{0}", text));
             }
-            return headers.join("\n")
         }
+        return result.join("\n")
     }
 
     lazyLoad = async () => {

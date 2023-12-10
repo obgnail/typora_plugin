@@ -14,17 +14,12 @@ class rightClickMenuPlugin extends BasePlugin {
         this.groupName = "typora-plugin";
         this.unavailableName = "光标于此位置不可用";
         this.unavailableValue = "__not_available__";
-        this.callArgs = [
-            {arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"},
-            {arg_name: "打开插件配置文件", arg_value: "open_setting_folder"},
-            {arg_name: "关于/帮助", arg_value: "about"},
-            {arg_name: "提出需求/报告缺陷", arg_value: "new_issue"},
-        ]
+        this.callArgs = [{arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"}];
     }
 
     process = () => {
         this.init();
-        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, this.appendMenu);
+        this.utils.addEventListener(this.utils.eventType.everythingReady, this.appendMenu);
     }
 
     appendMenu = () => {
@@ -236,15 +231,8 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     call = type => {
-        if (type === "about") {
-            this.utils.openUrl("https://github.com/obgnail/typora_plugin");
-        } else if (type === "new_issue") {
-            this.utils.openUrl("https://github.com/obgnail/typora_plugin/issues/new");
-        } else if (type === "do_not_hide") {
+        if (type === "do_not_hide") {
             this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE;
-        } else if (type === "open_setting_folder") {
-            const filepath = this.utils.joinPath("./plugin/global/settings/settings.user.toml");
-            this.utils.showInFinder(filepath);
         }
     }
 }

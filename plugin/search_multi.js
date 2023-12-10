@@ -135,7 +135,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
         })
     }
 
-    separator = File.isWin ? "\\" : "/";
     openFileInThisWindow = filePath => File.editor.library.openFile(filePath);
     openFileInNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder);
 
@@ -197,7 +196,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             title.innerText = parseUrl.base;
             const path = document.createElement("div");
             path.classList.add("plugin-search-multi-item-path");
-            path.innerText = dirPath + this.separator;
+            path.innerText = dirPath + this.utils.separator;
             item.appendChild(title);
             item.appendChild(path);
             this.modal.resultList.appendChild(item);
