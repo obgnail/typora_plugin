@@ -660,8 +660,7 @@ INSERT_LINE_NEXT = "Ctrl-Enter"
 INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
 # fence_enhance插件包含三个功能：button、hotkey、other。此为other
-# 在右键菜单中启用危险的功能
-#   危险功能：此功能会消耗巨量资源并导致Typora长时间（几秒到几十秒）失去响应
+# 在右键菜单中启用有风险的功能（此功能会消耗巨量资源并导致Typora长时间（几秒到几十秒）失去响应）
 ENABLE_DANGEROUS_FEATURES = false
 # 长文本的换行会保持相同的缩进
 #   1.详见：https://github.com/codemirror/codemirror5/issues/2085
