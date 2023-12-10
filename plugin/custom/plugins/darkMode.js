@@ -8,7 +8,7 @@ class darkModePlugin extends BaseCustomPlugin {
     createDarkFilter = () => {
         const div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
         div.innerHTML = `
-            <svg id="plugin-dark-mode-svg" style="height: 0; width: 0;">
+            <svg id="plugin-dark-mode-svg" style="height: 0; width: 0; position: absolute;">
                 <filter id="plugin-dark-mode-filter" x="0" y="0" width="99999" height="99999">
                     <feColorMatrix type="matrix" values="0.283 -0.567 -0.567 0 0.925 -0.567 0.283 -0.567 0 0.925 -0.567 -0.567 0.283 0 0.925 0 0 0 1 0"/>
                 </filter>
