@@ -130,14 +130,12 @@ SHOW_MTIME = false
 # 打开文件后，自动聚焦输入框
 # 此选项是为了键盘党可以通过键盘上下键、ctrl+enter进行快速操作，如果你是鼠标党，可以置为false
 REFOUCE_WHEN_OPEN_FILE = true
-# 搜索内容时大小写敏感(此选项不必手动调整，可以在UI设置)
+# 搜索内容时大小写敏感(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
 CASE_SENSITIVE = false
-# 将文件路径加入搜索内容(此选项不必手动调整，可以在UI设置)
+# 将文件路径加入搜索内容(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
 INCLUDE_FILE_PATH = true
-# 搜索时联动其他插件(此选项不必手动调整，可以在UI设置)
-LINK_OTHER_PLUGIN = false
-# 当处于联动状态时，search_multi窗口隐藏时，联动插件跟着隐藏
-LINK_PLUGIN_AUTO_HIDE = false
+# 搜索时联动其他插件(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
+LINK_OTHER_PLUGIN = true
 # 查找文件的最大尺寸。大于MAX_SIZE的文件在搜索时将被忽略。若<0则不忽略任何文件
 # 注意：Typora只支持打开小于2000000字节的文件，所以不建议修改成比2000000还大的值，毕竟找到了也不能在typora里打开
 MAX_SIZE = 2000000
@@ -166,7 +164,7 @@ STYLE_COLOR = [
     '#bbeeff', '#ffbbcc', '#88ee88', '#ccbbff', '#ffee88', '#FFFFa0', '#88cccc', '#ffbb88', '#cccccc', '#ffaabb',
     '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
 ]
-# 大小写敏感(此选项不必手动调整，可以在UI设置)
+# 大小写敏感(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
 CASE_SENSITIVE = false
 # 关键词按空格分割
 SEPARATOR = " "
@@ -218,7 +216,7 @@ USE_ALL = true
 SET_COLOR_IN_ALL = true
 # 当显示窗口时，打开新文件后自动检测并重新生成大纲
 AUTO_REFRESH_WHEN_OPEN_FILE = true
-# 统计并显示被其他插件隐藏的元素(此选项不必手动调整，可以在UI设置)
+# 统计并显示被其他插件隐藏的元素(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
 # 比如使用了【章节折叠】插件隐藏文件内容，如果你希望outline能统计被隐藏内容，就置为true，不过这样就会导致统计的编号不对（因为你把隐藏的也算进去了）
 SHOW_HIDDEN = false
 # 在窗口里展示的名字
@@ -660,8 +658,7 @@ INSERT_LINE_NEXT = "Ctrl-Enter"
 INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
 # fence_enhance插件包含三个功能：button、hotkey、other。此为other
-# 在右键菜单中启用危险的功能
-#   危险功能：此功能会消耗巨量资源并导致Typora长时间（几秒到几十秒）失去响应
+# 在右键菜单中启用有风险的功能（此功能会消耗巨量资源并导致Typora长时间（几秒到几十秒）失去响应）
 ENABLE_DANGEROUS_FEATURES = false
 # 长文本的换行会保持相同的缩进
 #   1.详见：https://github.com/codemirror/codemirror5/issues/2085

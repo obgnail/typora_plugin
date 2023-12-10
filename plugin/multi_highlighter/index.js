@@ -337,6 +337,17 @@ class multiHighlighterPlugin extends BasePlugin {
         this.clearHighlight();
         this.entities.modal.style.display = "none";
     }
+    show = () => {
+        this.entities.modal.style.display = "block";
+        this.entities.input.select();
+    }
+    toggleModal = () => {
+        if (this.entities.modal.style.display === "block") {
+            this.hide();
+        } else {
+            this.show();
+        }
+    }
 
     getAndShowMarker = (parent, idx) => {
         setTimeout(() => {
@@ -348,14 +359,7 @@ class multiHighlighterPlugin extends BasePlugin {
         }, 120);
     }
 
-    call = () => {
-        if (this.entities.modal.style.display === "block") {
-            this.hide();
-        } else {
-            this.entities.modal.style.display = "block";
-            this.entities.input.select();
-        }
-    }
+    call = () => this.toggleModal();
 }
 
 class multiHighlighter {
