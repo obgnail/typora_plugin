@@ -282,11 +282,7 @@ class LinkHelper {
         this.utils.decorate(() => this.searcher, "searchMulti", () => isLinking() && this.highlighter.highlight());
 
         // 当处于联动状态，highlighter要展示modal之前，先恢复状态
-        this.utils.decorate(() => this.highlighter, "toggleModal", () => isLinking() && this.toggle(true));
-
-        // 当处于联动状态，search_multi隐藏前，先恢复highlighter modal
-        const beforeHide = () => this.searcher.config.LINK_OTHER_PLUGIN && this.toggle(this.searcher.config.LINK_PLUGIN_AUTO_HIDE)
-        this.utils.decorate(() => this.searcher, "hide", beforeHide);
+        this.utils.decorate(() => this.highlighter, "toggleModal", () => this.searcher.config.LINK_OTHER_PLUGIN && this.toggle(true));
 
         this.searcher.modal.modal.addEventListener("click", ev => {
             if (ev.target.closest("#plugin-search-multi-input .link-option-btn")) {
