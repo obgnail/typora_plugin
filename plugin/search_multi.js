@@ -273,14 +273,13 @@ class LinkHelper {
 
     process = () => {
         this.appendButton();
+        const isLinking = () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.modal.modal.style.display === "block";
 
         // 当处于联动状态，在search_multi搜索前先设置highlighter的inputValue和caseSensitive
-        const beforeHighlight = () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.modal.modal.style.display === "block" && this.syncValue()
-        this.utils.decorate(() => this.highlighter, "highlight", beforeHighlight);
+        this.utils.decorate(() => this.highlighter, "highlight", () => isLinking() && this.syncValue());
 
         // 当处于联动状态，search_multi触发搜索的时候，先触发highlighter搜索
-        const beforeSearchMulti = () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.modal.modal.style.display === "block" && this.highlight()
-        this.utils.decorate(() => this.searcher, "searchMulti", beforeSearchMulti);
+        this.utils.decorate(() => this.searcher, "searchMulti", () => isLinking() && this.highlighter.highlight());
 
         // 当处于联动状态，search_multi隐藏前，先恢复highlighter modal
         const beforeHide = () => this.searcher.config.LINK_OTHER_PLUGIN && this.toggle(this.searcher.config.LINK_PLUGIN_AUTO_HIDE)
@@ -288,7 +287,7 @@ class LinkHelper {
 
         this.searcher.modal.modal.addEventListener("click", ev => {
             if (ev.target.closest("#plugin-search-multi-input .link-option-btn")) {
-                this.toggle();
+                this.toggle(true);
                 ev.preventDefault();
                 ev.stopPropagation();
             }
@@ -315,7 +314,7 @@ class LinkHelper {
         this.searcher.config.LINK_OTHER_PLUGIN = !this.searcher.config.LINK_OTHER_PLUGIN;
         if (this.searcher.config.LINK_OTHER_PLUGIN) {
             this.moveElement();
-            this.highlight();
+            this.highlighter.highlight();
         } else {
             this.restoreMove(forceHide);
         }
@@ -348,8 +347,6 @@ class LinkHelper {
         this.styleList.forEach(style => this.highlighterDiv.style[style] = "");
         this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = this.originValue;
     }
-
-    highlight = () => this.highlighter.highlight();
 }
 
 module.exports = {
