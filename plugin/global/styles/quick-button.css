@@ -1,3 +1,7 @@
+.ty-footer {
+    z-index: 9999 !important;
+}
+
 #plugin-quick-button {
     position: fixed;
     display: grid;
