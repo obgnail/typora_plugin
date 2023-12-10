@@ -8,7 +8,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         modal.style.display = "none";
         modal.innerHTML = `
             <div id="plugin-search-multi-input">
-                <input type="text" placeholder="多关键字查找 空格分隔" ty-hint="⌃↵当前页打开。⇧⌃↵新页面打开">
+                <input type="text" placeholder="多关键字查找 空格分隔">
                 <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
                     <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                 </span>
@@ -36,6 +36,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     process = () => {
         this.entities = {
             modal: document.getElementById('plugin-search-multi'),
+            inputBar: document.querySelector("#plugin-search-multi-input"),
             input: document.querySelector("#plugin-search-multi-input input"),
             result: document.querySelector(".plugin-search-multi-result"),
             resultTitle: document.querySelector(".plugin-search-multi-result .search-result-title"),
@@ -79,11 +80,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
                             return
                         }
                     }
-                    this.entities.result.style.display = "none";
-                    this.entities.info.style.display = "block";
-                    this.entities.resultList.innerHTML = "";
-                    const workspace = File.getMountFolder();
-                    this.searchMulti(workspace, this.entities.input.value, () => this.entities.info.style.display = "none");
+                    this.searchMulti();
                     break
                 case "Escape":
                 case "Backspace":
@@ -117,7 +114,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             this.hideIfNeed();
         });
 
-        this.entities.modal.addEventListener("click", ev => {
+        this.entities.inputBar.addEventListener("click", ev => {
             const caseButton = ev.target.closest(".case-option-btn");
             const pathButton = ev.target.closest(".path-option-btn");
 
@@ -210,11 +207,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
     }
 
-    hideIfNeed = () => {
-        if (this.config.AUTO_HIDE) {
-            this.entities.modal.style.display = "none";
-        }
-    }
+    hideIfNeed = () => this.config.AUTO_HIDE && (this.entities.modal.style.display = "none")
 
     verifyExt = filename => {
         if (filename[0] === ".") {
@@ -228,17 +221,24 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
     verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
 
-    allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath)
+    searchMulti = (rootPath, keys) => {
+        this.entities.result.style.display = "none";
+        this.entities.info.style.display = "block";
+        this.entities.resultList.innerHTML = "";
 
-    searchMulti = (rootPath, keys, then) => {
-        if (!rootPath) return;
+        rootPath = rootPath || File.getMountFolder();
+        keys = keys || this.entities.input.value;
+
         let keyArr = keys.split(this.config.SEPARATOR).filter(Boolean);
         if (!keyArr) return;
         if (!this.config.CASE_SENSITIVE) {
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }
+
+        const allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
         const appendItem = this.appendItemFunc(keyArr);
-        this.traverseDir(rootPath, this.allowRead, appendItem, then);
+        const then = () => this.entities.info.style.display = "none";
+        this.traverseDir(rootPath, allowRead, appendItem, then);
     }
 
     hide = () => {
@@ -266,7 +266,7 @@ class LinkHelper {
         this.styleList = ["position", "padding", "backgroundColor", "boxShadow", "border"];
 
         this.highlighterModal = document.querySelector("#plugin-multi-highlighter");
-        this.searcherInput = document.querySelector("#plugin-search-multi-input");
+        this.searcherInput = this.searcher.entities.inputBar;
         this.button = this.genButton();
     }
 

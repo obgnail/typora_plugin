@@ -1,18 +1,5 @@
 class resizeImagePlugin extends BasePlugin {
-    init = () => {
-        this.dynamicCallMap = {
-            record_resize_state: () => this.recordResizeState(),
-            allow_oversize: () => this.resetImageSize(),
-            zoom_out_20_percent: meta => this.zoom(meta.target, true, 0.2),
-            zoom_in_20_percent: meta => this.zoom(meta.target, false, 0.2),
-            set_align_left: meta => this.setAlign("left", meta.target),
-            set_align_center: meta => this.setAlign("center", meta.target),
-            set_align_right: meta => this.setAlign("right", meta.target),
-        }
-    }
-
     process = () => {
-        this.init();
         this.recordResizeState(false);
 
         document.getElementById("write").addEventListener("wheel", ev => {
@@ -123,7 +110,16 @@ class resizeImagePlugin extends BasePlugin {
     }
 
     call = (type, meta) => {
-        const func = this.dynamicCallMap[type];
+        const callMap = {
+            record_resize_state: () => this.recordResizeState(),
+            allow_oversize: () => this.resetImageSize(),
+            zoom_out_20_percent: meta => this.zoom(meta.target, true, 0.2),
+            zoom_in_20_percent: meta => this.zoom(meta.target, false, 0.2),
+            set_align_left: meta => this.setAlign("left", meta.target),
+            set_align_center: meta => this.setAlign("center", meta.target),
+            set_align_right: meta => this.setAlign("right", meta.target),
+        }
+        const func = callMap[type];
         func && func(meta);
     }
 }

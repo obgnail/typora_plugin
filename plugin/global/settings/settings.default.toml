@@ -139,8 +139,8 @@ LINK_OTHER_PLUGIN = true
 # 查找文件的最大尺寸。大于MAX_SIZE的文件在搜索时将被忽略。若<0则不忽略任何文件
 # 注意：Typora只支持打开小于2000000字节的文件，所以不建议修改成比2000000还大的值，毕竟找到了也不能在typora里打开
 MAX_SIZE = 2000000
-# Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
-# 不建议新增后缀名，毕竟找到了也不能在typora里打开
+# 查找文件的后缀名，此外的文件在搜索时将被忽略
+# 注意：默认值为Typora允许打开的文件的后缀名列表。所以不建议新增后缀名，毕竟找到了也不能在typora里打开
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 
 
