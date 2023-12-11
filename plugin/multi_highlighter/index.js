@@ -234,7 +234,10 @@ class multiHighlighterPlugin extends BasePlugin {
         this.multiHighlighter.clear();
         this.clearFenceMultiHighlighterList();
         this.entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(this.utils.removeElement);
-        fences.forEach(cid => File.editor.fences.queue[cid].refresh());
+        fences.forEach(cid => {
+            const fence = File.editor.fences.queue[cid];
+            fence && fence.refresh();
+        });
     }
 
     getNeedRefreshFences = () => {
