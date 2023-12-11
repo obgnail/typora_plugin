@@ -102,8 +102,8 @@ class loadPluginHelper {
             if (!plugin) return;
 
             const instance = new plugin(fixedName, customSetting, this.controller);
-            if (!this.check(instance)) {
-                console.error("instance is not BaseCustomPlugin", instance.fixedName);
+            if (!(instance instanceof BaseCustomPlugin)) {
+                console.error("instance is not instanceof BaseCustomPlugin:", fixedName);
                 return
             }
             const error = await instance.beforeProcess();
@@ -159,9 +159,6 @@ class loadPluginHelper {
         await Promise.all(Array.from(Object.keys(settings)).map(this.loadCustomPlugin));
         this.utils.publishEvent(this.utils.eventType.allCustomPluginsHadInjected);
     }
-
-    // 简易的判断是否为baseCustomPlugin的子类实例
-    check = instance => ["init", "selector", "hint", "style", "html", "hotkey", "process", "callback"].every(attr => instance[attr] instanceof Function)
 }
 
 module.exports = {
