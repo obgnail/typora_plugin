@@ -161,6 +161,15 @@ class collapseParagraphPlugin extends BasePlugin {
         }
     }
 
+    collapseAll = () => {
+        for (let i = this.paragraphList.length - 1; i >= 0; i--) {
+            document.getElementsByTagName(this.paragraphList[i]).forEach(ele => this.trigger(ele, false));
+        }
+    }
+    expandAll = () => {
+        this.paragraphList.forEach(tag => document.getElementsByTagName(tag).forEach(ele => this.trigger(ele, true)));
+    }
+
     dynamicCallArgsGenerator = (anchorNode, meta) => {
         const arg_name = `${this.config.RECORD_COLLAPSE ? "不" : ""}记住章节折叠状态`;
         const result = [{arg_name: arg_name, arg_value: "record_collapse_state"}];
@@ -196,11 +205,9 @@ class collapseParagraphPlugin extends BasePlugin {
 
     call = (type, meta) => {
         if (type === "collapse_all") {
-            for (let i = this.paragraphList.length - 1; i >= 0; i--) {
-                document.getElementsByTagName(this.paragraphList[i]).forEach(ele => this.trigger(ele, false));
-            }
+            this.collapseAll();
         } else if (type === "expand_all") {
-            this.paragraphList.forEach(tag => document.getElementsByTagName(tag).forEach(ele => this.trigger(ele, true)));
+            this.expandAll();
         } else if (type === "record_collapse_state") {
             this.recordCollapseState();
         } else {

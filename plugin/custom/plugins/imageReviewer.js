@@ -290,7 +290,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     getTools = () => {
         this.funcTranslate.info[0] = this.optionHint();
-        const tools = Array.from(Object.entries(this.funcTranslate)).map(item => {
+        const tools = Array.from(Object.entries(this.funcTranslate), item => {
             const [option, [title, icon]] = item;
             return [option, {ele: "i", class_: icon, option, title}]
         })

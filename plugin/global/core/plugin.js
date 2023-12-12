@@ -29,7 +29,7 @@ class utils {
 
 
     // 动态注册、动态注销、动态发布生命周期事件
-    // 理论上不应该暴露publishEvent()的，但我还是希望给予最大自由度，充分信任插件，允许所有插件发布事件。所以调用者需要自觉维护，一旦错误发布事件，会影响整个插件系统
+    // 理论上不应该暴露publishEvent()的，但我希望给予最大自由度，充分信任插件，允许所有插件发布事件。所以需要调用者自觉维护，一旦错误发布事件，会影响整个插件系统
     // 触发顺序：
     //   allCustomPluginsHadInjected 自定义插件加载完毕
     //   allPluginsHadInjected       所有插件加载完毕
@@ -48,7 +48,7 @@ class utils {
     //   afterAddCodeBlock           添加代码块之后
     //   outlineUpdated              大纲更新之时
     //   toggleSettingPage           切换到/回配置页面
-    static eventType = {
+    static eventType = Object.freeze({
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
         allPluginsHadInjected: "allPluginsHadInjected",
         everythingReady: "everythingReady",
@@ -65,7 +65,7 @@ class utils {
         afterAddCodeBlock: "afterAddCodeBlock",
         outlineUpdated: "outlineUpdated",
         toggleSettingPage: "toggleSettingPage",
-    }
+    })
     static addEventListener = (eventType, listener) => helper.eventHub.addEventListener(eventType, listener);
     static removeEventListener = (eventType, listener) => helper.eventHub.removeEventListener(eventType, listener);
     static publishEvent = (eventType, payload) => helper.eventHub.publishEvent(eventType, payload);
@@ -113,7 +113,7 @@ class utils {
 
 
     // 动态注册、动态注销第三方代码块图表语法(派生自DiagramParser)
-    // f*ck，js不支持interface，只能将接口函数作为参数传入，一坨狗屎，整整11个参数，WTF
+    // f*ck，js不支持interface，只能将接口函数作为参数传入，整整11个参数，一坨狗屎
     //   1. lang(string): language
     //   2. destroyWhenUpdate(boolean): 更新前是否清空preview里的html
     //   3. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
@@ -193,7 +193,7 @@ class utils {
 
     // 动态注册右下角的快捷按钮
     //   1. action(string): 取个名字
-    //   2. coordinate[int, int]: 按钮的坐标(x, y) 注意x,y方向是相反的：往上为x正方向，往左为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
+    //   2. coordinate[int, int]: 按钮的坐标(x, y)。注意：往上为x正方向，往左为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
     //   3. hint(string): 提示信息
     //   3. iconClass(string): icon的class
     //   4. style(Object): button 额外的样式
@@ -343,9 +343,6 @@ class utils {
             return obj
         }, Array.isArray(source) ? [] : {})
     }
-
-    // pick({ a: 1, b: 2, c: 3 }, 'a', 'b') -> { a: 1, b: 2 }
-    static pick = (obj, ...props) => Object.fromEntries(Object.entries(obj).filter(([k]) => props.includes(k)))
 
     static throttle = (fn, delay = 100) => {
         let timer;
@@ -544,18 +541,13 @@ class utils {
 
     ////////////////////////////// 业务操作 //////////////////////////////
     static exitTypora = () => JSBridge.invoke("window.close");
+    static showInFinder = filepath => JSBridge.showInFinder(filepath || this.getFilePath())
+    static isDiscardableUntitled = () => File && File.changeCounter && File.changeCounter.isDiscardableUntitled();
 
     static openUrl = url => {
         const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl;
         openUrl(url, 1);
     }
-
-    static showInFinder = filepath => {
-        filepath = filepath || this.getFilePath();
-        JSBridge.showInFinder(filepath);
-    }
-
-    static isDiscardableUntitled = () => File && File.changeCounter && File.changeCounter.isDiscardableUntitled();
 
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
     // data:image;base64、data:image\svg+xml 等等
@@ -572,7 +564,7 @@ class utils {
                     "%0A" // NO-BREAK SPACE \u0A
                 ];
                 const replaceChars = ["", "%20", ""];
-                const contentList = Array.from(lines).map(line => {
+                const contentList = Array.from(lines, line => {
                     let encodeText = encodeURI(line.textContent);
                     for (let i = 0; i < badChars.length; i++) {
                         if (encodeText.indexOf(badChars[i]) !== -1) {
@@ -1029,9 +1021,7 @@ class diagramParser {
         }
     }
 
-    onAddCodeBlock = () => {
-        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, this.renderDiagram)
-    }
+    onAddCodeBlock = () => this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, this.renderDiagram)
 
     onTryAddLangUndo = () => {
         const objGetter = () => File && File.editor && File.editor.fences;
@@ -1151,10 +1141,8 @@ class diagramParser {
 
     onChangeFile = () => {
         this.utils.addEventListener(this.utils.eventType.otherFileOpened, () => {
-            for (const parser of this.parsers.values()) {
-                if (parser.destroyAllFunc) {
-                    parser.destroyAllFunc();
-                }
+            for (const {destroyAllFunc} of this.parsers.values()) {
+                destroyAllFunc && destroyAllFunc();
             }
         });
     }
@@ -1190,10 +1178,8 @@ class thirdPartyDiagramParser {
         lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
         lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter,
     ) => {
-        const parser = {
-            checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {}
-        }
-        this.parsers.set(lang.toLowerCase(), parser);
+        const p = {checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {}};
+        this.parsers.set(lang.toLowerCase(), p);
         this.utils.registerDiagramParser(lang, destroyWhenUpdate, this.render, this.cancel, this.destroyAll, extraStyleGetter, interactiveMode)
     }
 
@@ -1264,9 +1250,7 @@ class thirdPartyDiagramParser {
             if (!parser.beforeExport) continue;
             for (const [cid, instance] of Object.entries(parser.map)) {
                 const preview = document.querySelector(`#write .md-fences[cid=${cid}] .md-diagram-panel-preview`);
-                if (preview) {
-                    parser.beforeExport(preview, instance);
-                }
+                preview && parser.beforeExport(preview, instance);
             }
         }
     }
@@ -1321,7 +1305,7 @@ class eventHub {
             }
         )
 
-        this.utils.loopDetector(() => (File && this.utils.getFilePath()), () => {
+        this.utils.loopDetector(() => File && this.utils.getFilePath(), () => {
             const filePath = this.utils.getFilePath();
             filePath && this.utils.publishEvent(this.utils.eventType.firstFileInit, filePath);
         });
@@ -1596,7 +1580,7 @@ class quickButton {
     }
 
     htmlTemplate = (maxX, maxY) => {
-        const list = Array.from(this.buttons.values()).map(button => [`${button.coordinate[0]}-${button.coordinate[1]}`, button]);
+        const list = Array.from(this.buttons.values(), button => [`${button.coordinate[0]}-${button.coordinate[1]}`, button]);
         const mapCoordToBtn = new Map(list);
 
         const children = [];
@@ -1698,7 +1682,7 @@ class hotkeyHub {
         if (typeof hk === "string" && hk.length) {
             const hotkey = this.toHotkeyFunc(hk);
             this.hotkeyMap.set(hk, {hotkey, call});
-            // 可能一个callback对应多个hotkey
+            // 一个callback可能对应多个hotkey
         } else if (hk instanceof Array) {
             for (const _hk of hk) {
                 this._register(_hk, call);
@@ -1808,7 +1792,6 @@ class htmlTemplater {
     })
 
     // 3x faster then innerHTML
-    // create:
     //     const element = {
     //         id: "plugin-go-top",
     //         children: [
@@ -2035,7 +2018,7 @@ class basePlugin {
         this.utils = utils;
     }
 
-    // 最先执行的函数，唯一一个asyncFunction，在这里初始化插件需要的数据。若返回this.utils.stopLoadPluginError，则停止加载插件
+    // 最先执行的函数，唯一一个asyncFunction，在这里初始化插件需要的数据。若返回stopLoadPluginError，则停止加载插件
     beforeProcess = async () => undefined
     // 以字符串形式导入样式
     style = () => undefined
@@ -2079,6 +2062,7 @@ class baseCustomPlugin {
     callback = anchorNode => undefined
 }
 
+// clickablePlugin: 支持在右键菜单中使用的插件
 // 实际上clickablePlugin并没有投入使用，我嫌弃太死板了，打个样就行了，js也不是什么正经OOP语言
 // 右键菜单的选项分为两部分：静态菜单选项和动态菜单选项，皆返回[{arg_name, arg_value, arg_disabled(可选), arg_hint(可选)}]
 class clickablePlugin extends basePlugin {
@@ -2086,8 +2070,8 @@ class clickablePlugin extends basePlugin {
     callArgs = []
     // 动态菜单选项
     //   anchorNode: 右键时鼠标所在的html标签
-    //   meta: 一个空的object，可以在这里设置任何值，传给call
-    //   notInContextMenu: right_click_menu调用（鼠标调用）还是toolbar调用（键盘调用），一般不用此参数
+    //   meta: 一个空的object，可以在这里设置任何值，传给call方法
+    //   notInContextMenu: 调用此方法的环境：是right_click_menu调用（鼠标调用）还是toolbar调用（键盘调用），一般不用此参数
     dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => []
     // 回调函数:
     //   argValue: callArgs和dynamicCallArgsGenerator返回的arg_value
@@ -2096,10 +2080,10 @@ class clickablePlugin extends basePlugin {
 }
 
 /*
-整个插件系统，实际有用的全局变量只有两个：
+整个插件系统，一共暴露了7个全局变量(见下面的initial函数)，实际有用的全局变量只有2个：
   1. global.BasePlugin:       插件的父类
   2. global.BaseCustomPlugin: 自定义插件的父类
-其他的全局变量皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是上面两个父类的实例属性，所以utils自己也不需要暴露
+其他5个皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是上面两个父类的实例属性，所以utils自己也不需要暴露
 既然永远不会被外部文件引用，为什么还要将它们设置为什么全局变量？答：方便调试
 
 进而得出，整个插件系统的基本框架：
@@ -2143,6 +2127,10 @@ class process {
             if (!plugin) return;
             const instance = new plugin(fixedName, setting);
 
+            if (!(instance instanceof BasePlugin)) {
+                console.error("instance is not instanceof BasePlugin:", fixedName);
+                return
+            }
             const error = await instance.beforeProcess();
             if (error === this.utils.stopLoadPluginError) return
             this.insertStyle(instance.fixedName, instance.style());
@@ -2166,7 +2154,7 @@ class process {
         }
     }
 
-    loadPlugins = () => Promise.all(Array.from(Object.keys(global._plugin_settings)).map(this.loadPlugin));
+    loadPlugins = () => Promise.all(Array.from(Object.keys(global._plugin_settings), this.loadPlugin));
 
     loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
 
@@ -2179,6 +2167,7 @@ class process {
         global._plugin_helper = helper;                    // 高级工具
         global._plugin_settings = settings;                // 插件配置
         global._plugin_global_settings = settings.global;  // 通用配置
+
         delete settings.global;
     }
 
@@ -2186,6 +2175,7 @@ class process {
         const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
         if (!settings || !settings.global || !settings.global.ENABLE) return;
 
+        // 初始化全局变量
         this.initial(settings);
 
         const {

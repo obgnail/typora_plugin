@@ -10,7 +10,7 @@ class toolbarPlugin extends BasePlugin {
     styleTemplate = () => ({topPercent: parseInt(this.config.TOOLBAR_TOP_PERCENT) + "%"})
 
     htmlTemplate = () => {
-        const tools = Array.from(this.toolController.tools.values()).map(t => t.name() + "：" + t.translate());
+        const tools = Array.from(this.toolController.tools.values(), t => t.name() + "：" + t.translate());
         const title = "支持：\n" + tools.join("\n");
         const input = [{ele: "input", placeholder: "ops explorer", title}];
         const children = [{id: "plugin-toolbar-input", children: input}, {class_: "plugin-toolbar-result"}];
@@ -368,7 +368,7 @@ class recentFileTool extends baseToolInterface {
         const {files = [], folders = []} = (typeof recent === "string") ? JSON.parse(recent || "{}") : (recent || {});
         const add = (list, meta) => {
             for (const file of list) {
-                if (file["path"]) {
+                if (file.path) {
                     result.push({showName: file.path, fixedName: file.path, meta: meta});
                 }
             }
@@ -504,7 +504,7 @@ class functionTool extends baseToolInterface {
     translate = () => "功能列表"
     search = async input => {
         const mapFunc = ([fixedName, tool]) => ({showName: `${fixedName} - ${tool.translate()}`, fixedName});
-        const all = Array.from(this.controller.tools.entries()).map(mapFunc);
+        const all = Array.from(this.controller.tools.entries(), mapFunc);
         return this.baseSearch(input, all, ["showName"]);
     }
     callback = fixedName => {
@@ -522,7 +522,7 @@ class mixTool extends baseToolInterface {
     search = async input => {
         const toolName = this.name();
         const toolResult = await Promise.all(
-            Array.from(this.controller.tools.entries()).map(async ([name, tool]) => {
+            Array.from(this.controller.tools.entries(), async ([name, tool]) => {
                 if (name === toolName) return;
                 const result = await tool.search(input);
                 if (result) {

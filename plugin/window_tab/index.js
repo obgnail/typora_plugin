@@ -456,10 +456,7 @@ class windowTabBarPlugin extends BasePlugin {
             const tabs = document.querySelectorAll("#plugin-window-tab .tab-container");
             const activeIdx = parseInt(that.entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
             const activePath = that.tabUtil.tabs[activeIdx].path;
-            that.tabUtil.tabs = Array.from(tabs).map(tab => {
-                const idx = parseInt(tab.getAttribute("idx"));
-                return that.tabUtil.tabs[idx];
-            });
+            that.tabUtil.tabs = Array.from(tabs, tab => that.tabUtil.tabs[parseInt(tab.getAttribute("idx"))]);
             that.openTab(activePath);
         }
 

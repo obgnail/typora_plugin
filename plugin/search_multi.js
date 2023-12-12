@@ -8,22 +8,22 @@ class searchMultiKeywordPlugin extends BasePlugin {
         modal.style.display = "none";
         modal.innerHTML = `
             <div id="plugin-search-multi-input">
-                <input type="text" placeholder="多关键字查找 空格分隔" ty-hint="⌃↵当前页打开。⇧⌃↵新页面打开">
+                <input type="text" placeholder="多关键字查找 空格分隔">
                 <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
-                    <svg class="icon"> <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
+                    <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                 </span>
                 <span class="option-btn path-option-btn ${(this.config.INCLUDE_FILE_PATH) ? "select" : ""}" ty-hint="将文件路径加入搜索内容">
                     <div class="ion-ionic"></div>
                 </span>
             </div>
-        
+
             <div class="plugin-search-multi-result">
-                <div class="search-result-title" data-localize="File Results" data-lg="Menu">匹配的文件</div>
+                <div class="search-result-title" data-lg="Menu">匹配的文件</div>
                 <div class="search-result-list"></div>
             </div>
-        
+
             <div class="plugin-search-multi-info-item">
-                <div class="plugin-search-multi-info" data-localize="Searching" data-lg="Front">Searching</div>
+                <div class="plugin-search-multi-info" data-lg="Front">Searching</div>
                 <div class="typora-search-spinner">
                     <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
                 </div>
@@ -34,8 +34,9 @@ class searchMultiKeywordPlugin extends BasePlugin {
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     process = () => {
-        this.modal = {
+        this.entities = {
             modal: document.getElementById('plugin-search-multi'),
+            inputBar: document.querySelector("#plugin-search-multi-input"),
             input: document.querySelector("#plugin-search-multi-input input"),
             result: document.querySelector(".plugin-search-multi-result"),
             resultTitle: document.querySelector(".plugin-search-multi-result .search-result-title"),
@@ -44,27 +45,28 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
 
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
-            this.utils.getPlugin("multi_highlighter") && new LinkHelper(this).process();
+            const highlighter = this.utils.getPlugin("multi_highlighter");
+            highlighter && new LinkHelper(this, highlighter).process();
         })
 
         if (this.config.REFOUCE_WHEN_OPEN_FILE) {
             this.utils.addEventListener(this.utils.eventType.fileOpened, () => {
-                if (this.modal.modal.style.display === "block") {
-                    setTimeout(() => this.modal.input.select(), 300);
+                if (this.entities.modal.style.display === "block") {
+                    setTimeout(() => this.entities.input.select(), 300);
                 }
             })
         }
 
         if (this.config.ALLOW_DRAG) {
-            this.utils.dragFixedModal(this.modal.input, this.modal.modal);
+            this.utils.dragFixedModal(this.entities.input, this.entities.modal);
         }
 
-        const selectItem = this.utils.selectItemFromList(this.modal.resultList, ".plugin-search-multi-item.active");
-        this.modal.input.addEventListener("keydown", ev => {
+        const selectItem = this.utils.selectItemFromList(this.entities.resultList, ".plugin-search-multi-item.active");
+        this.entities.input.addEventListener("keydown", ev => {
             switch (ev.key) {
                 case "Enter":
                     if (this.utils.metaKeyPressed(ev)) {
-                        const select = this.modal.resultList.querySelector(".plugin-search-multi-item.active");
+                        const select = this.entities.resultList.querySelector(".plugin-search-multi-item.active");
                         if (select) {
                             ev.preventDefault();
                             ev.stopPropagation();
@@ -74,19 +76,15 @@ class searchMultiKeywordPlugin extends BasePlugin {
                             } else {
                                 this.openFileInThisWindow(filepath);
                             }
-                            this.modal.input.focus();
+                            this.entities.input.focus();
                             return
                         }
                     }
-                    this.modal.result.style.display = "none";
-                    this.modal.info.style.display = "block";
-                    this.modal.resultList.innerHTML = "";
-                    const workspace = File.getMountFolder();
-                    this.searchMulti(workspace, this.modal.input.value, () => this.modal.info.style.display = "none");
+                    this.searchMulti();
                     break
                 case "Escape":
                 case "Backspace":
-                    if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.modal.input.value) {
+                    if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
                         ev.stopPropagation();
                         ev.preventDefault();
                         this.hide();
@@ -100,7 +98,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             }
         });
 
-        this.modal.resultList.addEventListener("click", ev => {
+        this.entities.resultList.addEventListener("click", ev => {
             const target = ev.target.closest(".plugin-search-multi-item");
             if (!target) return;
 
@@ -116,9 +114,9 @@ class searchMultiKeywordPlugin extends BasePlugin {
             this.hideIfNeed();
         });
 
-        this.modal.modal.addEventListener("click", ev => {
-            const caseButton = ev.target.closest("#plugin-search-multi-input .case-option-btn");
-            const pathButton = ev.target.closest("#plugin-search-multi-input .path-option-btn");
+        this.entities.inputBar.addEventListener("click", ev => {
+            const caseButton = ev.target.closest(".case-option-btn");
+            const pathButton = ev.target.closest(".path-option-btn");
 
             if (caseButton || pathButton) {
                 ev.preventDefault();
@@ -165,7 +163,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     appendItemFunc = keyArr => {
         let index = 0;
         const rootPath = File.getMountFolder();
-        const showResult = this.utils.once(() => this.modal.result.style.display = "block");
+        const showResult = this.utils.once(() => this.entities.result.style.display = "block");
 
         return (filePath, stats, buffer) => {
             let data = buffer.toString();
@@ -199,21 +197,17 @@ class searchMultiKeywordPlugin extends BasePlugin {
             path.innerText = dirPath + this.utils.separator;
             item.appendChild(title);
             item.appendChild(path);
-            this.modal.resultList.appendChild(item);
+            this.entities.resultList.appendChild(item);
 
-            this.modal.resultTitle.textContent = `匹配的文件：${index}`;
+            this.entities.resultTitle.textContent = `匹配的文件：${index}`;
             if (index <= 8) {
-                this.modal.resultList.style.height = 40 * index + "px";
+                this.entities.resultList.style.height = 40 * index + "px";
             }
             showResult();
         }
     }
 
-    hideIfNeed = () => {
-        if (this.config.AUTO_HIDE) {
-            this.modal.modal.style.display = "none";
-        }
-    }
+    hideIfNeed = () => this.config.AUTO_HIDE && (this.entities.modal.style.display = "none")
 
     verifyExt = filename => {
         if (filename[0] === ".") {
@@ -227,65 +221,73 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
     verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
 
-    allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath)
+    searchMulti = (rootPath, keys) => {
+        this.entities.result.style.display = "none";
+        this.entities.info.style.display = "block";
+        this.entities.resultList.innerHTML = "";
 
-    searchMulti = (rootPath, keys, then) => {
-        if (!rootPath) return;
+        rootPath = rootPath || File.getMountFolder();
+        keys = keys || this.entities.input.value;
 
         let keyArr = keys.split(this.config.SEPARATOR).filter(Boolean);
         if (!keyArr) return;
-
         if (!this.config.CASE_SENSITIVE) {
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }
+
+        const allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
         const appendItem = this.appendItemFunc(keyArr);
-        this.traverseDir(rootPath, this.allowRead, appendItem, then);
+        const then = () => this.entities.info.style.display = "none";
+        this.traverseDir(rootPath, allowRead, appendItem, then);
     }
 
     hide = () => {
-        this.modal.modal.style.display = "none";
-        this.modal.info.style.display = "none";
+        this.entities.modal.style.display = "none";
+        this.entities.info.style.display = "none";
     }
-
+    show = () => {
+        this.entities.modal.style.display = "block";
+        this.entities.input.select();
+    }
     call = () => {
-        if (this.modal.modal.style.display === "block") {
+        if (this.entities.modal.style.display === "block") {
             this.hide();
         } else {
-            this.modal.modal.style.display = "block";
-            this.modal.input.select();
+            this.show();
         }
     }
 }
 
 class LinkHelper {
-    constructor(searcher) {
+    constructor(searcher, highlighter) {
         this.searcher = searcher;
-        this.utils = this.searcher.utils;
+        this.highlighter = highlighter;
+        this.utils = searcher.utils;
 
-        this.highlighter = this.utils.getPlugin("multi_highlighter");
         this.originValue = this.highlighter.config.RESEARCH_WHILE_OPEN_FILE;
         this.styleList = ["position", "padding", "backgroundColor", "boxShadow", "border"];
 
-        this.highlighterDiv = document.querySelector("#plugin-multi-highlighter");
-        this.searcherInput = document.querySelector("#plugin-search-multi-input");
-        this.button = null;
+        this.highlighterModal = document.querySelector("#plugin-multi-highlighter");
+        this.searcherInput = this.searcher.entities.inputBar;
+        this.button = this.genButton();
     }
 
     process = () => {
-        this.appendButton();
-        const isLinking = () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.modal.modal.style.display === "block";
+        const isLinking = () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.entities.modal.style.display === "block";
 
         // 当处于联动状态，在search_multi搜索前先设置highlighter的inputValue和caseSensitive
-        this.utils.decorate(() => this.highlighter, "highlight", () => isLinking() && this.syncValue());
-
+        this.utils.decorate(() => this.highlighter, "highlight", () => isLinking() && this.syncOption());
         // 当处于联动状态，search_multi触发搜索的时候，先触发highlighter搜索
         this.utils.decorate(() => this.searcher, "searchMulti", () => isLinking() && this.highlighter.highlight());
-
         // 当处于联动状态，highlighter要展示modal之前，先恢复状态
         this.utils.decorate(() => this.highlighter, "toggleModal", () => this.searcher.config.LINK_OTHER_PLUGIN && this.toggle(true));
+        // 当处于联动状态，在search_multi关闭前关闭highlighter
+        this.utils.decorate(() => this.searcher, "hide", () => isLinking() && this.toggle(true));
+        // 当处于联动状态，在search_multi开启前开启highlighter
+        this.utils.decorate(() => this.searcher, "show", () => !this.searcher.config.LINK_OTHER_PLUGIN && this.toggle());
 
-        this.searcher.modal.modal.addEventListener("click", ev => {
-            if (ev.target.closest("#plugin-search-multi-input .link-option-btn")) {
+        this.searcherInput.addEventListener("click", ev => {
+            if (ev.target.closest(".link-option-btn")) {
                 this.toggle(true);
                 ev.preventDefault();
                 ev.stopPropagation();
@@ -293,19 +295,17 @@ class LinkHelper {
         }, true)
     }
 
-    appendButton = () => {
+    genButton = () => {
         const wantLink = this.searcher.config.LINK_OTHER_PLUGIN;
-
         const span = document.createElement("span");
-        this.button = span;
         span.className = `option-btn link-option-btn ${wantLink ? "select" : ""}`;
         span.setAttribute("ty-hint", "插件联动");
         const div = document.createElement("div");
         div.className = "fa fa-link";
         span.appendChild(div);
         this.searcherInput.appendChild(span);
-
         wantLink && this.moveElement();
+        return span
     }
 
     toggle = (forceHide = false) => {
@@ -315,35 +315,35 @@ class LinkHelper {
             this.moveElement();
             this.highlighter.highlight();
         } else {
-            this.restoreMove(forceHide);
+            this.restoreElement(forceHide);
         }
-        this.syncValue();
+        this.syncOption();
     }
 
-    syncValue = () => {
-        this.highlighter.setInputValue(this.searcher.modal.input.value);
+    syncOption = () => {
+        this.highlighter.setInputValue(this.searcher.entities.input.value);
         if (this.searcher.config.CASE_SENSITIVE !== this.highlighter.config.CASE_SENSITIVE) {
             document.querySelector(".plugin-multi-highlighter-option-btn").click();
         }
     }
 
     moveElement = () => {
-        this.utils.removeElement(this.highlighterDiv);
-        this.searcherInput.parentNode.insertBefore(this.highlighterDiv, this.searcherInput.nextSibling);
+        this.utils.removeElement(this.highlighterModal);
+        this.searcherInput.parentNode.insertBefore(this.highlighterModal, this.searcherInput.nextSibling);
 
-        this.highlighterDiv.style.display = "block";
-        this.highlighterDiv.querySelector("#plugin-multi-highlighter-input").style.display = "none";
-        this.styleList.forEach(style => this.highlighterDiv.style[style] = "initial");
+        this.highlighterModal.style.display = "block";
+        this.highlighterModal.querySelector("#plugin-multi-highlighter-input").style.display = "none";
+        this.styleList.forEach(style => this.highlighterModal.style[style] = "initial");
         this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = true;
     }
 
-    restoreMove = forceHide => {
-        this.utils.removeElement(this.highlighterDiv);
-        this.utils.insertDiv(this.highlighterDiv);
+    restoreElement = forceHide => {
+        this.utils.removeElement(this.highlighterModal);
+        this.utils.insertDiv(this.highlighterModal);
 
-        this.highlighterDiv.style.display = forceHide ? "none" : "block";
-        this.highlighterDiv.querySelector("#plugin-multi-highlighter-input").style.display = "";
-        this.styleList.forEach(style => this.highlighterDiv.style[style] = "");
+        this.highlighterModal.style.display = forceHide ? "none" : "block";
+        this.highlighterModal.querySelector("#plugin-multi-highlighter-input").style.display = "";
+        this.styleList.forEach(style => this.highlighterModal.style[style] = "");
         this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = this.originValue;
     }
 }
