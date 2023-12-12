@@ -24,6 +24,14 @@
 
 ############### evil example ###############
 
+# 简单使用
+[fastInput]
+desc = "快读插入javascript代码块"
+enable = false
+hotkey = "ctrl+shift+e"
+evil = '() => this.utils.insertText(null, "```javascript\n```", false);'
+
+
 # 支持但邪恶的使用方法
 [openCalc]
 desc = "打开windows计算器"
