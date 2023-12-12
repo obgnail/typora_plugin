@@ -7,12 +7,12 @@ class utils {
     static stopLoadPluginError = new Error("stopLoadPlugin")
     static stopCallError = new Error("stopCall")
     static meta = {}
-    static Package = {
+    static Package = Object.freeze({
         Path: reqnode("path"),
         Fs: reqnode("fs"),
         FsExtra: reqnode("fs-extra"),
         ChildProcess: reqnode('child_process'),
-    }
+    })
 
 
     ////////////////////////////// 高级工具 //////////////////////////////
@@ -1986,7 +1986,7 @@ class exportHelper {
     }
 }
 
-const helper = {
+const helper = Object.freeze({
     // 生命周期事件
     eventHub: new eventHub(),
     // 公共菜单
@@ -2009,7 +2009,7 @@ const helper = {
     htmlTemplater: new htmlTemplater(),
     // 导出时的额外操作
     exportHelper: new exportHelper(),
-}
+})
 
 class basePlugin {
     constructor(fixedName, setting) {

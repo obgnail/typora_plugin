@@ -5,6 +5,8 @@
          [pluginUpdater]
          [pluginUpdater.config]
          auto_update = false
+
+  note: 尽量不要使用ES2015(ES6)以后的特性，因为低版本Typora不兼容
 */
 window.onload = () => {
     const dir = global.dirname || global.__dirname;
