@@ -190,8 +190,8 @@ class _collectUtil {
             return this.collection[Type]
         }
         let list = [];
-        for (const type in this.collection) {
-            list.push(...this.collection[type])
+        for (const collect of Object.values(this.collection)) {
+            list.push(...collect);
         }
         list.sort(this.compare("cid"));
         return list
