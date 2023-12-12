@@ -245,13 +245,15 @@ class searchMultiKeywordPlugin extends BasePlugin {
         this.entities.modal.style.display = "none";
         this.entities.info.style.display = "none";
     }
-
+    show = () => {
+        this.entities.modal.style.display = "block";
+        this.entities.input.select();
+    }
     call = () => {
         if (this.entities.modal.style.display === "block") {
             this.hide();
         } else {
-            this.entities.modal.style.display = "block";
-            this.entities.input.select();
+            this.show();
         }
     }
 }
@@ -279,6 +281,10 @@ class LinkHelper {
         this.utils.decorate(() => this.searcher, "searchMulti", () => isLinking() && this.highlighter.highlight());
         // 当处于联动状态，highlighter要展示modal之前，先恢复状态
         this.utils.decorate(() => this.highlighter, "toggleModal", () => this.searcher.config.LINK_OTHER_PLUGIN && this.toggle(true));
+        // 当处于联动状态，在search_multi关闭前关闭highlighter
+        this.utils.decorate(() => this.searcher, "hide", () => isLinking() && this.toggle(true));
+        // 当处于联动状态，在search_multi开启前开启highlighter
+        this.utils.decorate(() => this.searcher, "show", () => !this.searcher.config.LINK_OTHER_PLUGIN && this.toggle());
 
         this.searcherInput.addEventListener("click", ev => {
             if (ev.target.closest(".link-option-btn")) {

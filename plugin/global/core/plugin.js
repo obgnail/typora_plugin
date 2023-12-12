@@ -48,7 +48,7 @@ class utils {
     //   afterAddCodeBlock           添加代码块之后
     //   outlineUpdated              大纲更新之时
     //   toggleSettingPage           切换到/回配置页面
-    static eventType = {
+    static eventType = Object.freeze({
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
         allPluginsHadInjected: "allPluginsHadInjected",
         everythingReady: "everythingReady",
@@ -65,7 +65,7 @@ class utils {
         afterAddCodeBlock: "afterAddCodeBlock",
         outlineUpdated: "outlineUpdated",
         toggleSettingPage: "toggleSettingPage",
-    }
+    })
     static addEventListener = (eventType, listener) => helper.eventHub.addEventListener(eventType, listener);
     static removeEventListener = (eventType, listener) => helper.eventHub.removeEventListener(eventType, listener);
     static publishEvent = (eventType, payload) => helper.eventHub.publishEvent(eventType, payload);
@@ -564,7 +564,7 @@ class utils {
                     "%0A" // NO-BREAK SPACE \u0A
                 ];
                 const replaceChars = ["", "%20", ""];
-                const contentList = Array.from(lines).map(line => {
+                const contentList = Array.from(lines, line => {
                     let encodeText = encodeURI(line.textContent);
                     for (let i = 0; i < badChars.length; i++) {
                         if (encodeText.indexOf(badChars[i]) !== -1) {
@@ -1580,7 +1580,7 @@ class quickButton {
     }
 
     htmlTemplate = (maxX, maxY) => {
-        const list = Array.from(this.buttons.values()).map(button => [`${button.coordinate[0]}-${button.coordinate[1]}`, button]);
+        const list = Array.from(this.buttons.values(), button => [`${button.coordinate[0]}-${button.coordinate[1]}`, button]);
         const mapCoordToBtn = new Map(list);
 
         const children = [];
@@ -2154,7 +2154,7 @@ class process {
         }
     }
 
-    loadPlugins = () => Promise.all(Array.from(Object.keys(global._plugin_settings)).map(this.loadPlugin));
+    loadPlugins = () => Promise.all(Array.from(Object.keys(global._plugin_settings), this.loadPlugin));
 
     loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
 

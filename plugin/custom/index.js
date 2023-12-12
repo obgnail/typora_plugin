@@ -156,7 +156,7 @@ class loadPluginHelper {
         settings = this.mergeSettings(settings);
         this.errorSettingDetector(settings);
         this.controller.customSettings = settings;
-        await Promise.all(Array.from(Object.keys(settings)).map(this.loadCustomPlugin));
+        await Promise.all(Array.from(Object.keys(settings), this.loadCustomPlugin));
         this.utils.publishEvent(this.utils.eventType.allCustomPluginsHadInjected);
     }
 }
