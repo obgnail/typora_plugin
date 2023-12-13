@@ -128,9 +128,9 @@ class loadPluginHelper {
     }
 
     // 检测用户错误的配置
-    errorSettingDetector = customSetting => {
+    errorSettingDetector = customSettings => {
         const allSettings = this.utils.getAllPluginSettings();
-        const errorPluginSetting = Object.keys(customSetting).filter(fixedName => fixedName in allSettings);
+        const errorPluginSetting = Object.keys(customSettings).filter(fixedName => allSettings.hasOwnProperty(fixedName));
         if (errorPluginSetting && errorPluginSetting.length) {
             const msg = "以下插件错误地配置到 custom_plugin.user.toml，正确配置文件为 settings.user.toml：";
             const components = [msg, ...errorPluginSetting].map(label => ({label, type: "p"}));
@@ -140,20 +140,21 @@ class loadPluginHelper {
     }
 
     // 兼容用户错误操作
-    mergeSettings = settings => {
-        if (this.config.ALLOW_SET_CONFIG_IN_SETTINGS_TOML) {
-            for (const [fixedName, settings_] of Object.entries(this.utils.getAllPluginSettings())) {
-                if (fixedName in settings) {
-                    settings[fixedName] = this.utils.merge(settings[fixedName], settings_);
-                }
+    mergeSettings = customSettings => {
+        if (!this.config.ALLOW_SET_CONFIG_IN_SETTINGS_TOML) return;
+
+        const allSettings = this.utils.getAllPluginSettings();
+        for (const [fixedName, settings_] of Object.entries(allSettings)) {
+            if (customSettings.hasOwnProperty(fixedName)) {
+                customSettings[fixedName] = this.utils.merge(customSettings[fixedName], settings_);
+                delete allSettings[fixedName];
             }
         }
-        return settings
     }
 
     process = async () => {
-        let settings = await this.utils.readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
-        settings = this.mergeSettings(settings);
+        const settings = await this.utils.readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
+        this.mergeSettings(settings);
         this.errorSettingDetector(settings);
         this.controller.customSettings = settings;
         await Promise.all(Array.from(Object.keys(settings), this.loadCustomPlugin));
