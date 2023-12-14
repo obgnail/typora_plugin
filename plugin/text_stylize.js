@@ -19,7 +19,7 @@ class textStylizePlugin extends BasePlugin {
         this.modal_ = document.querySelector("#plugin-text-stylize");
 
         if (this.config.ALLOW_DRAG) {
-            this.utils.dragFixedModal(this.modal_, this.modal_);
+            this.utils.dragFixedModal(this.modal_, this.modal_, false);
         }
         this.modal_.addEventListener("mousedown", ev => {
             if (this.utils.metaKeyPressed(ev)) return;
