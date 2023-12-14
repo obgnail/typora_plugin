@@ -68,9 +68,9 @@ class multiHighlighterPlugin extends BasePlugin {
 
         this.processAddCodeBlock();
 
-        this.utils.addEventListener(this.utils.eventType.fileOpened, () => {
-            (this.config.RESEARCH_WHILE_OPEN_FILE && this.entities.modal.style.display === "block") && setTimeout(this.highlight, 500)
-        });
+        this.utils.addEventListener(this.utils.eventType.fileOpened, this.utils.debounce(() => {
+            this.config.RESEARCH_WHILE_OPEN_FILE && this.entities.modal.style.display === "block" && this.highlight();
+        }, 1000));
 
         this.entities.input.addEventListener("keydown", ev => {
             if (ev.key === "Enter") {
