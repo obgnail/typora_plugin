@@ -80,9 +80,6 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             close: document.querySelector("#plugin-image-reviewer .close-review")
         }
 
-        if (this.config.use_button) {
-            this.utils.registerQuickButton("image-reviewer", [1, 1], "查看图片", "fa fa-image", {fontSize: "17px"}, this.callback)
-        }
         if (this.config.click_mask_to_exit) {
             this.entities.mask.addEventListener("click", this.callback);
         }

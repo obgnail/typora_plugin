@@ -1651,7 +1651,7 @@ class quickButton {
             } else {
                 const action = target.getAttribute("action");
                 const button = this.buttons.get(action);
-                action && button && button.callback(ev, target, action);
+                action && button && button.callback(ev, target);
             }
         })
         this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.toggle);
@@ -2013,6 +2013,9 @@ const helper = Object.freeze({
 
 class basePlugin {
     constructor(fixedName, setting) {
+        if (new.target === basePlugin) {
+            throw new Error("basePlugin cannot be directly instantiated");
+        }
         this.fixedName = fixedName;
         this.config = setting;
         this.utils = utils;
@@ -2040,6 +2043,9 @@ class basePlugin {
 // 因为是用户自定义的插件，比起basePlugin，提供了更多的快捷对象
 class baseCustomPlugin {
     constructor(fixedName, setting, controller) {
+        if (new.target === baseCustomPlugin) {
+            throw new Error("baseCustomPlugin cannot be directly instantiated");
+        }
         this.fixedName = fixedName;
         this.info = setting;
         this.showName = setting.name;

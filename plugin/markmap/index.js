@@ -55,6 +55,8 @@ class markmapPlugin extends BasePlugin {
         return result.join("\n")
     }
 
+    onButtonClick = () => this.tocMarkmap && this.tocMarkmap.callback()
+
     lazyLoad = async () => {
         if (this.transformer && this.Markmap) return;
 
@@ -240,10 +242,6 @@ class tocMarkmap {
         this.onToggleSidebar();
         this.onHeaderClick();
         this.onSvgClick();
-
-        if (this.config.USE_BUTTON) {
-            this.utils.registerQuickButton("markmap", [0, 1], "思维导图", "fa fa-code-fork", {fontSize: "22px"}, this.callback)
-        }
     }
 
     callback = () => (this.entities.modal.style.display === "") ? this.drawToc() : this.onButtonClick("close")

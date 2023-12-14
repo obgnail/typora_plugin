@@ -21,7 +21,7 @@
     height: 35px;
     cursor: pointer;
     box-shadow: rgba(0, 0, 0, 0.15) 0 0 8px;
-    border-radius: 4px;
+    border-radius: 8px;
 }
 
 #plugin-quick-button .action-item:hover {

@@ -31,9 +31,6 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         if (this.config.allow_drag) {
             this.utils.dragFixedModal(this.entities.modal, this.entities.modal);
         }
-        if (this.config.use_button) {
-            this.utils.registerQuickButton("bookmarker", [2, 1], "书签管理器", "fa fa-bookmark", {fontSize: "17px"}, this.callback);
-        }
 
         const stateGetter = ele => ele.classList.contains(this.className);
         const stateRestorer = ele => ele.classList.add(this.className);

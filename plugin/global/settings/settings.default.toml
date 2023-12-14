@@ -442,8 +442,6 @@ ENABLE = true
 NAME = "一键到顶"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 在右下角添加按钮
-USE_BUTTON = true
 # 滚动所用时间（单位：ms）
 SCROLL_TIME = 600
 # 到顶的快捷键
@@ -482,8 +480,6 @@ ENABLE_TOC_MARKMAP = true
 TOC_HOTKEY = ""
 # 点击markmap节点，定位到文档位置（跳转到对应章节）
 CLICK_TO_LOCALE = true
-# 在右下角添加一个快捷按钮
-USE_BUTTON = true
 # 当窗口太小时，是否允许icon换行显示
 ALLOW_ICON_WRAP = true
 # 当用户编辑文档，导致markmap更新图形时，新markmap的图形大小是否重新适配窗口
