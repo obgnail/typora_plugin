@@ -142,28 +142,30 @@ class utils {
     //   listener(ev, button)=>{}: 点击按钮的回调函数(ev: 时间，button: 按钮本身element)
     //   extraFunc(button)=>{}: 插入html后的额外操作
     static registerFenceEnhanceButton = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
-        const enhancePlugin = this.getPlugin("fence_enhance");
-        enhancePlugin && enhancePlugin.registerBuilder(className, action, hint, iconClassName, enable, listener, extraFunc);
-        return enhancePlugin
+        return this.callPluginFunction("fence_enhance", "registerBuilder", className, action, hint, iconClassName, enable, listener, extraFunc)
     }
-    static unregisterFenceEnhanceButton = action => {
-        const enhancePlugin = this.getPlugin("fence_enhance");
-        enhancePlugin && enhancePlugin.removeBuilder(action);
-        return enhancePlugin
-    }
+    static unregisterFenceEnhanceButton = action => this.callPluginFunction("fence_enhance", "removeBuilder", action)
 
     // 动态注册barTool里的tool(仅当toolbar插件启用时有效，通过返回bool值确定是否成功)
     // tool: baseToolInterface的子类
-    static registerBarTool = tool => {
-        const toolbarPlugin = this.getPlugin("toolbar");
-        toolbarPlugin && toolbarPlugin.registerBarTool(tool);
-        return toolbarPlugin
+    static registerBarTool = tool => this.callPluginFunction("toolbar", "registerBarTool", tool)
+    static unregisterBarTool = name => this.callPluginFunction("toolbar", "unregisterBarTool", name)
+
+    // 动态注册右下角的快捷按钮
+    //   1. action(string): 取个名字
+    //   2. coordinate[int, int]: 按钮的坐标(x, y)。注意：往上为x正方向，往左为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
+    //   3. hint(string): 提示信息
+    //   4. iconClass(string): icon的class
+    //   5. style(Object): button 额外的样式
+    //   6. callback(ev, target, action) => null: 点击按钮后的回调函数
+    // 动态注销快捷按钮
+    //   一旦process后，标签就被渲染到HTML了，以后就不会再变了，再调用此函数也没有用了，因此此函数只能在插件初始化的时候调用
+    //   因此，unregisterQuickButton的唯一意义是：当两个插件在初始化阶段打架时（都想注册同一坐标的按钮），用此函数去注销掉别人
+    static registerQuickButton = (action, coordinate, hint, iconClass, style, callback) => {
+        return this.callPluginFunction("quickButton", "register", action, coordinate, hint, iconClass, style, callback)
     }
-    static unregisterBarTool = name => {
-        const toolbarPlugin = this.getPlugin("toolbar");
-        toolbarPlugin && toolbarPlugin.unregisterBarTool(name);
-        return toolbarPlugin
-    }
+    static unregisterQuickButton = action => this.callPluginFunction("quickButton", "unregister", action)
+    static toggleQuickButton = hide => this.callPluginFunction("quickButton", "toggle", hide)
 
     // 动态注册导出时的额外操作
     //   1. name: 取个名字
@@ -191,20 +193,6 @@ class utils {
     // 具体使用请参考__modal_example.js，不再赘述
     static modal = (modal, callback, cancelCallback) => helper.dialog.modal(modal, callback, cancelCallback);
 
-    // 动态注册右下角的快捷按钮
-    //   1. action(string): 取个名字
-    //   2. coordinate[int, int]: 按钮的坐标(x, y)。注意：往上为x正方向，往左为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
-    //   3. hint(string): 提示信息
-    //   3. iconClass(string): icon的class
-    //   4. style(Object): button 额外的样式
-    //   4. callback(ev, target, action) => null: 点击按钮后的回调函数
-    static registerQuickButton = (action, coordinate, hint, iconClass, style, callback) => helper.quickButton.register(action, coordinate, hint, iconClass, style, callback)
-    // 动态注销快捷按钮
-    // 一旦process后，标签就被渲染到HTML了，以后就不会再变了，再调用此函数也没有用了，因此此函数只能在插件初始化的时候调用
-    // 因此，此函数的唯一意义是：当两个插件在初始化阶段打架时（都想注册同一坐标的按钮），用此函数去注销掉别人
-    static unregisterQuickButton = action => helper.quickButton.unregister(action)
-    static toggleQuickButton = hide => helper.quickButton.toggle(hide)
-
     // 动态注册右键菜单
     // 1. name: 取个名字
     // 2. selector: 在哪个位置右键将弹出菜单
@@ -225,6 +213,13 @@ class utils {
         if (plugin) {
             return plugin.custom[fixedName]
         }
+    }
+
+    static callPluginFunction = (fixedName, func, ...args) => {
+        const plugin = this.getPlugin(fixedName) || this.getCustomPlugin(fixedName);
+        const _func = plugin && plugin[func];
+        _func && _func.apply(plugin, args);
+        return _func
     }
 
     // 路径是否在挂载文件夹下
@@ -1572,92 +1567,6 @@ class dialog {
     }
 }
 
-class quickButton {
-    constructor() {
-        this.utils = utils;
-        this.buttons = new Map();
-        this.isHidden = false;
-    }
-
-    htmlTemplate = (maxX, maxY) => {
-        const list = Array.from(this.buttons.values(), button => [`${button.coordinate[0]}-${button.coordinate[1]}`, button]);
-        const mapCoordToBtn = new Map(list);
-
-        const children = [];
-        for (let x = 0; x <= maxX; x++) {
-            for (let y = 0; y <= maxY; y++) {
-                const button = mapCoordToBtn.get(`${maxX - x}-${maxY - y}`);
-                const ele = !button
-                    ? {class_: "action-item unused"}
-                    : {
-                        class_: "action-item",
-                        action: button.action,
-                        "ty-hint": button.hint,
-                        style: button.style || {},
-                        children: [{ele: "i", class_: button.iconClass}]
-                    }
-                children.push(ele);
-            }
-        }
-        return [{id: "plugin-quick-button", children: children}]
-    }
-
-    registerStyleTemplate = async (maxX, maxY) => {
-        await this.utils.registerStyleTemplate("quick-button", {rowCount: maxX + 1, colCount: maxY + 1});
-    }
-
-    register = (action, coordinate, hint, iconClass, style, callback) => {
-        const [x, y] = coordinate;
-        if (x < 0 || y < 0) return;
-        this.buttons.set(action, {coordinate, action, hint, iconClass, style, callback});
-    }
-
-    unregister = action => this.buttons.delete(action)
-
-    getMax = () => {
-        let maxX = -1;
-        let maxY = -1;
-        for (const {coordinate: [x, y]} of this.buttons.values()) {
-            maxX = Math.max(maxX, x);
-            maxY = Math.max(maxY, y);
-        }
-        return [maxX, maxY]
-    }
-
-    toggle = hide => {
-        const buttonGroup = document.querySelector("#plugin-quick-button");
-        if (buttonGroup) {
-            buttonGroup.style.visibility = hide ? "hidden" : "initial";
-        }
-    }
-
-    process = async () => {
-        if (this.buttons.size === 0) return
-
-        const [maxX, maxY] = this.getMax();
-        await this.registerStyleTemplate(maxX, maxY);
-        this.utils.insertHtmlTemplate(this.htmlTemplate(maxX, maxY));
-
-        const buttonGroup = document.querySelector("#plugin-quick-button");
-        buttonGroup.addEventListener("mousedown", ev => {
-            const target = ev.target.closest(".action-item");
-            if (!target) return
-            ev.stopPropagation();
-            ev.preventDefault();
-            if (ev.button === 2) {
-                const buttons = Array.from(buttonGroup.children);
-                this.isHidden = !buttons.some(ele => ele.classList.contains("plu-hidden"));
-                buttons.forEach(ele => (ele !== target) && ele.classList.toggle("plu-hidden"));
-            } else {
-                const action = target.getAttribute("action");
-                const button = this.buttons.get(action);
-                action && button && button.callback(ev, target);
-            }
-        })
-        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.toggle);
-    }
-}
-
 class hotkeyHub {
     constructor() {
         this.utils = utils;
@@ -1999,8 +1908,6 @@ const helper = Object.freeze({
     stateRecorder: new stateRecorder(),
     // 对话框
     dialog: new dialog(),
-    // 快速按钮
-    quickButton: new quickButton(),
     // 快捷键
     hotkeyHub: new hotkeyHub(),
     // 样式模板
@@ -2186,7 +2093,7 @@ class process {
 
         const {
             contextMenu, dialog, styleTemplater, stateRecorder, eventHub,
-            diagramParser, quickButton, hotkeyHub, exportHelper, thirdPartyDiagramParser,
+            diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser,
         } = helper;
 
         // 以下高级工具必须先加载
@@ -2204,7 +2111,7 @@ class process {
         this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
 
         // 加载剩余的高级工具
-        await this.loadHelpers(diagramParser, quickButton, hotkeyHub, exportHelper, thirdPartyDiagramParser);
+        await this.loadHelpers(diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser);
 
         // 一切准备就绪
         this.utils.publishEvent(this.utils.eventType.everythingReady);
