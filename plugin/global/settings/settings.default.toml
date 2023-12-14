@@ -761,7 +761,7 @@ CLICKABLE = true
 SHOW_MODAL_HOTKEY = ""
 # 设置字体颜色的快捷键
 SET_COLOR_HOTKEY = ""
-# 允许【ctrl+鼠标拖拽】拖动窗口
+# 允许拖动窗口
 ALLOW_DRAG = true
 # 每13个颜色一行
 NUM_PER_LINE = 13
