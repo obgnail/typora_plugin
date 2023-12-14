@@ -27,7 +27,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
 
     processButtons = () => {
         this.utils.addEventListener(this.utils.eventType.everythingReady, async () => {
-            if (this.buttons.size === 0) return
+            if (this.buttons.size === 0) return;
 
             const [maxX, maxY] = this.getMax();
             await this.registerStyleTemplate(maxX, maxY);
@@ -82,7 +82,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
 
     register = (action, coordinate, hint, iconClass, style, callback) => {
         const [x, y] = coordinate;
-        if (x < 0 || y < 0) return;
+        if (x < 0 || y < 0 || !(callback instanceof Function)) return;
         this.buttons.set(action, {coordinate, action, hint, iconClass, style, callback});
     }
 

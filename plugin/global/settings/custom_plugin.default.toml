@@ -799,23 +799,21 @@ position_right = "30px"
 # 按钮距离底边框的距离
 position_bottom = "50px"
 # 添加的按钮
-#   action:     取个名字。若不想取名请置为空；若取名则不可重名，建议使用不带空格的纯英文
 #   disable:    禁用此按钮
 #   coordinate: 坐标。往上为x轴正方向，往左为y轴正方向，从零开始计数。
-#   icon:       icon css class。所有的 icon 及其对应的 css class 请参考：https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
+#   icon:       icon css class。所有的icon及其对应的css class，请参考：https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 #   size:       控制icon大小
 #   hint:       提示信息
-#   callback:   回调函数。采用 pluginName.MethodName 的形式。
-#                 MethodName 请通过阅读源码查找。如果您不懂代码，但还是想添加按钮，有个碰运气技巧：在【右键菜单->常用插件->自定义插件下的插件】基本都是 XXX.callback，其余插件基本都是 XXX.call
+#   callback:   回调函数。采用pluginName.MethodName的形式。MethodName请通过阅读源码查找。如果您不懂代码，但还是想添加按钮，有个碰运气技巧：在【右键菜单->常用插件->自定义插件下的插件】基本都是 callback，其余插件基本都是 call
 buttons = [
-    { action = "", disable = false, coordinate = [0, 0], hint = "直达底部", size = "28px", icon = "fa fa-angle-down", callback = "go_top.goBottom" },
-    { action = "", disable = false, coordinate = [1, 0], hint = "直达顶部", size = "28px", icon = "fa fa-angle-up", callback = "go_top.goTop" },
-    { action = "", disable = false, coordinate = [2, 0], hint = "夜间模式", size = "18px", icon = "fa fa-adjust", callback = "darkMode.callback" },
-    { action = "", disable = false, coordinate = [3, 0], hint = "混排优化", size = "17px", icon = "fa fa-align-justify", callback = "md_padding.call" },
-    { action = "", disable = false, coordinate = [0, 1], hint = "思维导图", size = "22px", icon = "fa fa-code-fork", callback = "markmap.onButtonClick" },
-    { action = "", disable = false, coordinate = [1, 1], hint = "图片管理", size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
-    { action = "", disable = false, coordinate = [2, 1], hint = "书签管理", size = "17px", icon = "fa fa-bookmark", callback = "scrollBookmarker.callback" },
-    { action = "", disable = false, coordinate = [3, 1], hint = "高亮搜索", size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
+    { disable = false, coordinate = [0, 0], hint = "直达底部", size = "28px", icon = "fa fa-angle-down", callback = "go_top.goBottom" },
+    { disable = false, coordinate = [1, 0], hint = "直达顶部", size = "28px", icon = "fa fa-angle-up", callback = "go_top.goTop" },
+    { disable = false, coordinate = [2, 0], hint = "夜间模式", size = "18px", icon = "fa fa-adjust", callback = "darkMode.callback" },
+    { disable = false, coordinate = [3, 0], hint = "混排优化", size = "17px", icon = "fa fa-align-justify", callback = "md_padding.call" },
+    { disable = false, coordinate = [0, 1], hint = "思维导图", size = "22px", icon = "fa fa-code-fork", callback = "markmap.onButtonClick" },
+    { disable = false, coordinate = [1, 1], hint = "图片管理", size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
+    { disable = false, coordinate = [2, 1], hint = "书签管理", size = "17px", icon = "fa fa-bookmark", callback = "scrollBookmarker.callback" },
+    { disable = false, coordinate = [3, 1], hint = "高亮搜索", size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
 ]
 
 
