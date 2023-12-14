@@ -77,7 +77,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
     }
 
     registerStyleTemplate = async (maxX, maxY) => {
-        await this.utils.registerStyleTemplate("quickButton", {rowCount: maxX + 1, colCount: maxY + 1});
+        await this.utils.registerStyleTemplate("quickButton", {rowCount: maxX + 1, colCount: maxY + 1, "this": this});
     }
 
     register = (action, coordinate, hint, iconClass, style, callback) => {
