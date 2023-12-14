@@ -788,6 +788,16 @@ hide = true
 order = 1
 # 插件配置
 [quickButton.config]
+# 按钮的尺寸
+button_size = "35px"
+# 按钮的圆角半径
+button_border_radius = "8px"
+# 按钮之间的间隔长度
+button_gap = "10px"
+# 按钮距离右边框的距离
+position_right = "30px"
+# 按钮距离底边框的距离
+position_bottom = "50px"
 # 添加的按钮
 #   action:     取个名字。若不想取名请置为空；若取名则不可重名，建议使用不带空格的纯英文
 #   disable:    禁用此按钮
@@ -796,7 +806,7 @@ order = 1
 #   size:       控制icon大小
 #   hint:       提示信息
 #   callback:   回调函数。采用 pluginName.MethodName 的形式。
-#               MethodName 请通过阅读源码查找。如果您不懂代码，但还是想添加按钮，有个碰运气技巧：在【右键菜单->常用插件->自定义插件下的插件】基本都是 XXX.callback，其余插件基本都是 XXX.call
+#                 MethodName 请通过阅读源码查找。如果您不懂代码，但还是想添加按钮，有个碰运气技巧：在【右键菜单->常用插件->自定义插件下的插件】基本都是 XXX.callback，其余插件基本都是 XXX.call
 buttons = [
     { action = "", disable = false, coordinate = [0, 0], hint = "直达底部", size = "28px", icon = "fa fa-angle-down", callback = "go_top.goBottom" },
     { action = "", disable = false, coordinate = [1, 0], hint = "直达顶部", size = "28px", icon = "fa fa-angle-up", callback = "go_top.goTop" },

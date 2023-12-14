@@ -7,21 +7,21 @@
     display: grid;
     grid-template-columns: repeat(${colCount}, 1fr);
     grid-template-rows: repeat(${rowCount}, 1fr);
-    gap: 10px;
-    right: 30px;
-    bottom: 50px;
+    gap: ${this.config.button_gap};
+    right: ${this.config.position_right};
+    bottom: ${this.config.position_bottom};
     z-index: 9998;
-    font-size: 28px;
+    font-size: 17px;
     text-align: center;
     color: var(--active-file-border-color);
 }
 
 #plugin-quick-button .action-item {
-    width: 35px;
-    height: 35px;
+    width: ${this.config.button_size};
+    height: ${this.config.button_size};
     cursor: pointer;
     box-shadow: rgba(0, 0, 0, 0.15) 0 0 8px;
-    border-radius: 8px;
+    border-radius: ${this.config.button_border_radius};
 }
 
 #plugin-quick-button .action-item:hover {
@@ -30,7 +30,7 @@
 
 #plugin-quick-button .action-item i {
     display: block;
-    line-height: 35px;
+    line-height: ${this.config.button_size};
 }
 
 #plugin-quick-button .unused, .plu-hidden {
