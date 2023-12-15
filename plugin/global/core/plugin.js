@@ -449,7 +449,7 @@ class utils {
         style.id = id;
         style.type = 'text/css';
         style.innerHTML = css;
-        document.getElementsByTagName("head")[0].appendChild(style);
+        document.head.appendChild(style);
     }
 
     static insertStyleFile = (id, filepath) => {
@@ -459,7 +459,7 @@ class utils {
         link.type = 'text/css'
         link.rel = 'stylesheet'
         link.href = cssFilePath;
-        document.getElementsByTagName('head')[0].appendChild(link);
+        document.head.appendChild(link);
     }
 
     static removeStyle = id => this.removeElementByID(id)
@@ -660,6 +660,18 @@ class utils {
         File.editor.insertText(content);
     }
 
+    static insertElement = elements => {
+        if (!elements) return;
+
+        let target = elements;
+        if (elements instanceof Array) {
+            target = document.createDocumentFragment();
+            elements.forEach(ele => target.appendChild(ele));
+        }
+        const quickOpenNode = document.getElementById("typora-quick-open");
+        quickOpenNode.parentNode.insertBefore(target, quickOpenNode.nextSibling);
+    }
+
     static findActiveNode = range => {
         range = range || File.editor.selection.getRangy();
         const markElem = File.editor.getMarkElem(range.anchorNode);
@@ -678,23 +690,6 @@ class utils {
         const {node, bookmark} = this.getRangy();
         const ele = File.editor.findElemById(node.cid);
         return ele.rawText().substring(bookmark.start, bookmark.end);
-    }
-
-    static insertDiv = div => {
-        if (!div) return
-        const quickOpenNode = document.getElementById("typora-quick-open");
-        quickOpenNode.parentNode.insertBefore(div, quickOpenNode.nextSibling);
-    }
-
-    static insertElement = (elements, sibling) => {
-        if (!elements) return
-        if (!(elements instanceof Array)) {
-            elements = [elements]
-        }
-        sibling = sibling || document.getElementById("typora-quick-open");
-        for (const ele of elements) {
-            sibling.parentNode.insertBefore(ele, sibling.nextSibling);
-        }
     }
 
     static resizeFixedModal = (
@@ -1446,7 +1441,7 @@ class dialog {
                 <button type="button" class="btn btn-primary plugin-modal-submit" data-lg="Front">确定</button>
               </div>
             </div>`;
-        this.utils.insertDiv(modal);
+        this.utils.insertElement(modal);
     }
 
     registerStyleTemplate = async () => await this.utils.registerStyleTemplate("modal-generator");
@@ -1742,8 +1737,12 @@ class htmlTemplater {
     }
 
     createList = elements => elements.map(this.create)
-    appendElements = (parent, template) => this.createList(template).forEach(ele => parent.appendChild(ele))
-    insert = elements => elements.forEach(ele => this.utils.insertDiv(this.create(ele)))
+    insert = elements => this.utils.insertElement(this.createList(elements))
+    appendElements = (parent, templates) => {
+        const target = document.createDocumentFragment();
+        this.createList(templates).forEach(ele => target.appendChild(ele));
+        parent.appendChild(target);
+    }
 }
 
 class contextMenu {

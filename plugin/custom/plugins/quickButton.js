@@ -5,38 +5,19 @@ class quickButtonPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        this.registerSettingButtons();
-        this.processButtons();
-    }
-
-    registerSettingButtons = () => {
-        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
-            this.config.buttons.forEach(btn => {
-                if (btn.disable) return;
-                const [fixedName, func] = btn.callback.split(".");
-                const plugin = this.utils.getPlugin(fixedName) || this.utils.getCustomPlugin(fixedName);
-                const callback = plugin && plugin[func];
-                if (callback instanceof Function) {
-                    const style = btn.size ? {fontSize: btn.size} : undefined;
-                    const action = btn.action || this.utils.randomString();
-                    this.register(action, btn.coordinate, btn.hint, btn.icon, style, callback);
-                }
-            })
-        })
-    }
-
-    processButtons = () => {
         this.utils.addEventListener(this.utils.eventType.everythingReady, async () => {
-            if (this.buttons.size === 0) return
+            this.registerConfigButtons();
+
+            if (this.buttons.size === 0) return;
 
             const [maxX, maxY] = this.getMax();
-            await this.registerStyleTemplate(maxX, maxY);
+            await this.utils.registerStyleTemplate("quickButton", {rowCount: maxX + 1, colCount: maxY + 1, this: this});
             this.utils.insertHtmlTemplate(this.genHTML(maxX, maxY));
 
             const buttonGroup = document.querySelector("#plugin-quick-button");
             buttonGroup.addEventListener("mousedown", ev => {
                 const target = ev.target.closest(".action-item");
-                if (!target) return
+                if (!target) return;
                 ev.stopPropagation();
                 ev.preventDefault();
                 if (ev.button === 2) {
@@ -52,6 +33,29 @@ class quickButtonPlugin extends BaseCustomPlugin {
             this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.toggle);
         })
     }
+
+    registerConfigButtons = () => {
+        this.config.buttons.forEach(btn => {
+            const {coordinate, hint, icon, size, disable, callback} = btn || {};
+            if (disable || !callback) return;
+            const [fixedName, func] = callback.split(".");
+            const plugin = this.utils.getPlugin(fixedName) || this.utils.getCustomPlugin(fixedName);
+            const cb = plugin && plugin[func];
+            if (cb instanceof Function) {
+                const style = size ? {fontSize: size} : undefined;
+                const action = this.utils.randomString();
+                this.register(action, coordinate, hint, icon, style, cb);
+            }
+        })
+    }
+
+    register = (action, coordinate, hint, iconClass, style, callback) => {
+        const [x, y] = coordinate;
+        if (x < 0 || y < 0 || !(callback instanceof Function)) return;
+        this.buttons.set(action, {coordinate, action, hint, iconClass, style, callback});
+    }
+
+    unregister = action => this.buttons.delete(action)
 
     genHTML = (maxX, maxY) => {
         const list = Array.from(this.buttons.values(), button => [`${button.coordinate[0]}-${button.coordinate[1]}`, button]);
@@ -75,18 +79,6 @@ class quickButtonPlugin extends BaseCustomPlugin {
         }
         return [{id: "plugin-quick-button", children: children}]
     }
-
-    registerStyleTemplate = async (maxX, maxY) => {
-        await this.utils.registerStyleTemplate("quickButton", {rowCount: maxX + 1, colCount: maxY + 1, "this": this});
-    }
-
-    register = (action, coordinate, hint, iconClass, style, callback) => {
-        const [x, y] = coordinate;
-        if (x < 0 || y < 0) return;
-        this.buttons.set(action, {coordinate, action, hint, iconClass, style, callback});
-    }
-
-    unregister = action => this.buttons.delete(action)
 
     getMax = () => {
         let maxX = -1;

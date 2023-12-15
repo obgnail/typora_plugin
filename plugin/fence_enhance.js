@@ -309,10 +309,12 @@ class editorHotkey {
     }
 
     getFence = () => {
-        const activeLine = document.querySelector("#write .CodeMirror-activeline");
-        if (!activeLine) return
-        const pre = activeLine.closest(".md-fences[cid]");
-        if (!pre) return
+        const anchor = this.utils.getAnchorNode();
+        if (anchor.length === 0) return;
+        const pre = anchor.closest(".md-fences[cid]")[0];
+        if (!pre) return;
+        const activeLine = pre.querySelector(".CodeMirror-activeline");
+        if (!activeLine) return;
 
         const cid = pre.getAttribute("cid");
         const fence = File.editor.fences.queue[cid];

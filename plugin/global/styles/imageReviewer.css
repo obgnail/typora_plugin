@@ -68,7 +68,7 @@
 #plugin-image-reviewer .review-tool {
     position: fixed;
     z-index: 99999;
-    height: 35px;
+    height: 40px;
     width: 100%;
     bottom: ${toolPosition};
     background-color: rgba(0, 0, 0, 0.5);

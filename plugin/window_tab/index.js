@@ -284,7 +284,7 @@ class windowTabBarPlugin extends BasePlugin {
             const active = tab.path === wantOpenPath;
             tabDiv.classList.toggle("active", active);
             if (active) {
-                tabDiv.scrollIntoViewIfNeeded();
+                tabDiv.scrollIntoView();
                 this.scrollContent(tab);
             }
 
@@ -376,11 +376,18 @@ class windowTabBarPlugin extends BasePlugin {
 
     closeTab = idx => {
         const tabUtil = this.tabUtil;
-        tabUtil.tabs.splice(idx, 1);
-        if (tabUtil.tabs.length === 0) {
-            this.utils.exitTypora();
-            return
+
+        if (tabUtil.tabs.length === 1) {
+            if (this.config.RECONFIRM_WHEN_CLOES_LAST_TAB) {
+                const modal = {title: "退出 Typora", components: [{label: "是否退出？", type: "p"}]};
+                this.utils.modal(modal, this.utils.exitTypora);
+            } else {
+                this.utils.exitTypora();
+            }
+            return;
         }
+
+        tabUtil.tabs.splice(idx, 1);
         if (tabUtil.activeIdx !== 0) {
             const isLeft = this.config.ACTIVETE_TAB_WHEN_CLOSE === "left";
             if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && isLeft)) {
