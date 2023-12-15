@@ -205,7 +205,7 @@
         const style = document.createElement('style');
         style.type = 'text/css';
         style.innerHTML = title_bar_css;
-        document.getElementsByTagName("head")[0].appendChild(style);
+        document.head.appendChild(style);
 
         // insert html
         const title_bar_div = `<div class="title-bar-window-tabs-list"></div>`;

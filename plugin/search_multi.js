@@ -339,7 +339,7 @@ class LinkHelper {
 
     restoreElement = forceHide => {
         this.utils.removeElement(this.highlighterModal);
-        this.utils.insertDiv(this.highlighterModal);
+        this.utils.insertElement(this.highlighterModal);
 
         this.highlighterModal.style.display = forceHide ? "none" : "block";
         this.highlighterModal.querySelector("#plugin-multi-highlighter-input").style.display = "";

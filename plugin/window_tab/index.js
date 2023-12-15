@@ -284,7 +284,7 @@ class windowTabBarPlugin extends BasePlugin {
             const active = tab.path === wantOpenPath;
             tabDiv.classList.toggle("active", active);
             if (active) {
-                tabDiv.scrollIntoViewIfNeeded();
+                tabDiv.scrollIntoView();
                 this.scrollContent(tab);
             }
 

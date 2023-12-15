@@ -112,7 +112,7 @@ option = {
         data: [5, 20, 36, 10, 10, 20]
     }]
 };
-myChart.on('click', params => alert("你点击了："+params.name));
+myChart.on('click', params => confirm("你点击了："+params.name));
 ```
 """
 
@@ -171,7 +171,7 @@ config = {
   options: {
     onClick: (e) => {
       const canvasPosition = Chart.helpers.getRelativePosition(e, myChart);
-      window.alert(`你点击了位置： (${canvasPosition.x},${canvasPosition.y})`);
+      confirm(`你点击了位置： (${canvasPosition.x},${canvasPosition.y})`);
     }
   }
 }
