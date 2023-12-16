@@ -29,7 +29,7 @@ class CustomPlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => {
-        const settings = Array.from(Object.entries(this.customSettings));
+        const settings = Object.entries(this.customSettings);
         settings.sort(([, {order: o1 = 1}], [, {order: o2 = 1}]) => o1 - o2);
 
         meta.target = anchorNode;
@@ -157,7 +157,7 @@ class loadPluginHelper {
         this.mergeSettings(settings);
         this.errorSettingDetector(settings);
         this.controller.customSettings = settings;
-        await Promise.all(Array.from(Object.keys(settings), this.loadCustomPlugin));
+        await Promise.all(Object.keys(settings).map(this.loadCustomPlugin));
         this.utils.publishEvent(this.utils.eventType.allCustomPluginsHadInjected);
     }
 }

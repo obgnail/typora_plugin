@@ -188,12 +188,8 @@ class windowTabBarPlugin extends BasePlugin {
         }
         const callback = ({text}) => {
             if (idx === -1) return;
-            for (const [func, name] of Object.entries(map)) {
-                if (name === text) {
-                    this[func] && this[func](idx);
-                    break;
-                }
-            }
+            const [func, _] = Object.entries(map).find(([_, name]) => name === text);
+            func && this[func] && this[func](idx);
         }
         this.utils.registerMenu(name, "#plugin-window-tab .tab-container", showMenu, callback);
     }

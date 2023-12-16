@@ -1722,12 +1722,9 @@ class contextMenu {
         this.callback = null;
     }
 
-    registerStyle = async () => await this.utils.registerStyleTemplate("plugin-common-menu")
-    registerHTML = () => this.utils.insertHtmlTemplate([{class_: "plugin-common-menu"}])
-
     process = async () => {
-        await this.registerStyle();
-        this.registerHTML();
+        await this.utils.registerStyleTemplate("plugin-common-menu");
+        this.utils.insertHtmlTemplate([{class_: "plugin-common-menu"}]);
 
         this.menu = document.querySelector(".plugin-common-menu");
         this.menu.addEventListener("click", ev => {
@@ -2036,7 +2033,7 @@ class process {
         }
     }
 
-    loadPlugins = () => Promise.all(Array.from(Object.keys(global._plugin_settings), this.loadPlugin));
+    loadPlugins = () => Promise.all(Object.keys(global._plugin_settings).map(this.loadPlugin));
 
     loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
 
