@@ -33,8 +33,8 @@ class rightClickMenuPlugin extends BasePlugin {
 
     appendFirst = () => {
         const items = this.config.MENUS.map((menu, idx) => {
-            const sp = [{ele: "span", "data-lg": "Menu", text: menu.NAME}, {ele: "i", class_: "fa fa-caret-right"}];
-            const children = [{ele: "a", role: "menuitem", children: sp}];
+            const item = [{ele: "span", "data-lg": "Menu", text: menu.NAME}, {ele: "i", class_: "fa fa-caret-right"}];
+            const children = [{ele: "a", role: "menuitem", children: item}];
             return {ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children}
         })
         const elements = [this.divider(), ...items];
@@ -71,7 +71,7 @@ class rightClickMenuPlugin extends BasePlugin {
                 if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return {};
 
                 const children = (plugin.callArgs || []).map(arg => this.thirdLiTemplate(arg));
-                return this.ulTemplate({class_: "plugin-menu-third", fixed_name: plugin.fixedName, idx, children});
+                return this.ulTemplate({class_: "plugin-menu-third", "data-plugin": plugin.fixedName, idx, children});
             })
             this.utils.appendElements(content, elements);
         })
@@ -109,7 +109,7 @@ class rightClickMenuPlugin extends BasePlugin {
             extra.class_ = `plugin-dynamic-arg ${(arg.arg_disabled) ? "disabled" : ""}`;
         }
         const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", text: arg.arg_name}];
-        return {ele: "li", "data-key": arg.arg_name, arg_value: arg.arg_value, ...extra, children: children}
+        return {ele: "li", "data-key": arg.arg_name, "data-arg-value": arg.arg_value, ...extra, children}
     }
 
     ulTemplate = extra => {
@@ -149,7 +149,7 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     appendDummyThirdLi = $menu => {
-        const args = [{arg_name: this.unavailableName, arg_value: this.unavailableValue, arg_disabled: true}];
+        const args = [{arg_name: this.unavailableName, "data-arg-value": this.unavailableValue, arg_disabled: true}];
         this.appendThirdLi($menu, args)
     }
 
@@ -184,7 +184,7 @@ class rightClickMenuPlugin extends BasePlugin {
             document.querySelectorAll(`.plugin-menu-third`).forEach(removeShow);
             document.querySelectorAll(".plugin-dynamic-arg").forEach(ele => ele.parentElement.removeChild(ele));
             const fixedName = second.attr("data-key");
-            const $third = $(`.plugin-menu-third[fixed_name="${fixedName}"]`);
+            const $third = $(`.plugin-menu-third[data-plugin="${fixedName}"]`);
             const dynamicCallArgs = that.utils.generateDynamicCallArgs(fixedName);
             if (dynamicCallArgs) {
                 that.appendThirdLi($third, dynamicCallArgs);
@@ -218,8 +218,8 @@ class rightClickMenuPlugin extends BasePlugin {
             // 点击禁用的选项
             if (this.classList.contains("disabled")) return false;
 
-            const fixedName = this.parentElement.getAttribute("fixed_name");
-            const argValue = this.getAttribute("arg_value");
+            const fixedName = this.parentElement.getAttribute("data-plugin");
+            const argValue = this.getAttribute("data-arg-value");
             const plugin = that.utils.getPlugin(fixedName);
             if (argValue !== that.unavailableValue && plugin && plugin.call) {
                 that.utils.withMeta(meta => plugin.call(argValue, meta));
