@@ -2,8 +2,8 @@ class utils {
     static isBetaVersion = window._options.appVersion[0] === "0"
     static separator = File.isWin ? "\\" : "/"
     static tempFolder = File.option.tempPath
-    static nonExistSelector = "#__non_exist_selector__"      // 插件临时不可点击，返回此
-    static disableForeverSelector = "#__disable_selector__"  // 插件永远不可点击，返回此
+    static nonExistSelector = "#__nonExist__"              // 插件临时不可点击，返回此
+    static disableForeverSelector = "#__disableForever__"  // 插件永远不可点击，返回此
     static stopLoadPluginError = new Error("stopLoadPlugin")
     static stopCallError = new Error("stopCall")
     static meta = {}
@@ -27,69 +27,48 @@ class utils {
     static registerSingleHotkey = (hotkeyString, callback) => helper.hotkeyHub.registerSingle(hotkeyString, callback);
     static unregisterHotkey = hotkeyString => helper.hotkeyHub.unregister(hotkeyString);
 
-
     // 动态注册、动态注销、动态发布生命周期事件
     // 理论上不应该暴露publishEvent()的，但我希望给予最大自由度，充分信任插件，允许所有插件发布事件。所以需要调用者自觉维护，一旦错误发布事件，会影响整个插件系统
-    // 触发顺序：
-    //   allCustomPluginsHadInjected 自定义插件加载完毕
-    //   allPluginsHadInjected       所有插件加载完毕
-    //   everythingReady             一切准备就绪
-    //   firstFileInit               打开Typora后文件被加载
-    //   beforeFileOpen              打开文件之前
-    //   fileOpened                  打开文件之后
-    //   otherFileOpened             和fileOpened的区别：重新打开当前标签不会触发otherFileOpened，但是fileOpened会
-    //   fileContentLoaded           文件内容加载完毕之后(依赖于window_tab)
-    //   fileEdited                  文件编辑后
-    //   beforeUnload                退出Typora之前
-
-    //   beforeToggleSourceMode      进入源码模式之前
-    //   afterToggleSidebar          切换侧边栏状态之后
-    //   beforeAddCodeBlock          添加代码块之前
-    //   afterAddCodeBlock           添加代码块之后
-    //   outlineUpdated              大纲更新之时
-    //   toggleSettingPage           切换到/回配置页面
     static eventType = Object.freeze({
-        allCustomPluginsHadInjected: "allCustomPluginsHadInjected",
-        allPluginsHadInjected: "allPluginsHadInjected",
-        everythingReady: "everythingReady",
-        firstFileInit: "firstFileInit",
-        beforeFileOpen: "beforeFileOpen",
-        fileOpened: "fileOpened",
-        otherFileOpened: "otherFileOpened",
-        fileContentLoaded: "fileContentLoaded",
-        fileEdited: "fileEdited",
-        beforeUnload: "beforeUnload",
-        beforeToggleSourceMode: "beforeToggleSourceMode",
-        afterToggleSidebar: "afterToggleSidebar",
-        beforeAddCodeBlock: "beforeAddCodeBlock",
-        afterAddCodeBlock: "afterAddCodeBlock",
-        outlineUpdated: "outlineUpdated",
-        toggleSettingPage: "toggleSettingPage",
+        allCustomPluginsHadInjected: "allCustomPluginsHadInjected", // 自定义插件加载完毕
+        allPluginsHadInjected: "allPluginsHadInjected",             // 所有插件加载完毕
+        everythingReady: "everythingReady",                         // 一切准备就绪
+        firstFileInit: "firstFileInit",                             // 打开Typora后文件被加载
+        beforeFileOpen: "beforeFileOpen",                           // 打开文件之前
+        fileOpened: "fileOpened",                                   // 打开文件之后
+        otherFileOpened: "otherFileOpened",                         // 和fileOpened的区别：重新打开当前标签不会触发otherFileOpened，但是fileOpened会
+        fileContentLoaded: "fileContentLoaded",                     // 文件内容加载完毕之后(依赖于window_tab)
+        fileEdited: "fileEdited",                                   // 文件编辑后
+        beforeUnload: "beforeUnload",                               // 退出Typora之前
+        beforeToggleSourceMode: "beforeToggleSourceMode",           // 进入源码模式之前
+        afterToggleSidebar: "afterToggleSidebar",                   // 切换侧边栏状态之后
+        beforeAddCodeBlock: "beforeAddCodeBlock",                   // 添加代码块之前
+        afterAddCodeBlock: "afterAddCodeBlock",                     //  添加代码块之后
+        outlineUpdated: "outlineUpdated",                           // 大纲更新之时
+        toggleSettingPage: "toggleSettingPage",                     // 切换到/回配置页面
     })
     static addEventListener = (eventType, listener) => helper.eventHub.addEventListener(eventType, listener);
     static removeEventListener = (eventType, listener) => helper.eventHub.removeEventListener(eventType, listener);
     static publishEvent = (eventType, payload) => helper.eventHub.publishEvent(eventType, payload);
 
-
     // 动态注册、动态注销元素状态记录器（仅当window_tab插件启用时有效）
     // 功能是：在用户切换标签页前记录元素的状态，等用户切换回来时恢复元素的状态
     // 比如说：【章节折叠】功能：需要在用户切换标签页前记录有哪些章节被折叠了，等用户切换回来后需要把章节自动折叠回去，保持前后一致。
-    //   1. recorderName(string): 取个名字
+    //   1. name(string): 取个名字
     //   2. selector(string): 通过选择器找到要你想记录状态的元素们
     //   3. stateGetter(Element) => {...}: 记录目标元素的状态。Element就是selector找到的元素，返回你想记录的标签的状态，返回值可以是任何类型
     //   4. stateRestorer(Element, state) => {}: 为元素恢复状态。state就是stateGetter的返回值
     //   5. finalFunc() => {}: 最后执行的函数
-    static registerStateRecorder = (recorderName, selector, stateGetter, stateRestorer, finalFunc) => helper.stateRecorder.register(recorderName, selector, stateGetter, stateRestorer, finalFunc);
-    static unregisterStateRecorder = recorderName => helper.stateRecorder.unregister(recorderName);
+    static registerStateRecorder = (name, selector, stateGetter, stateRestorer, finalFunc) => helper.stateRecorder.register(name, selector, stateGetter, stateRestorer, finalFunc);
+    static unregisterStateRecorder = name => helper.stateRecorder.unregister(name);
     // 手动触发
-    static collectState = recorderName => helper.stateRecorder.collect(recorderName);
+    static collectState = name => helper.stateRecorder.collect(name);
     // 手动获取
-    static getState = (recorderName, filepath) => helper.stateRecorder.getState(recorderName, filepath);
+    static getState = (name, filepath) => helper.stateRecorder.getState(name, filepath);
     // 手动删除
-    static deleteState = (recorderName, filepath, idx) => helper.stateRecorder.deleteState(recorderName, filepath, idx);
+    static deleteState = (name, filepath, idx) => helper.stateRecorder.deleteState(name, filepath, idx);
     // 手动设置
-    static setState = (recorderName, collections) => helper.stateRecorder.setState(recorderName, collections);
-
+    static setState = (name, collections) => helper.stateRecorder.setState(name, collections);
 
     // 动态注册、动态注销新的代码块图表语法
     //   1. lang(string): language
@@ -102,15 +81,11 @@ class utils {
     //   5. destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
     //   6. extraStyleGetter() => string: 用于导出时，新增css
     //   7. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
-    static registerDiagramParser = (
-        lang, destroyWhenUpdate,
-        renderFunc, cancelFunc = null, destroyAllFunc = null,
-        extraStyleGetter = null, interactiveMode = true
+    static registerDiagramParser = (lang, destroyWhenUpdate, renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true
     ) => helper.diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode)
     static unregisterDiagramParser = lang => helper.diagramParser.unregister(lang);
     // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
     static throwParseError = (errorLine, reason) => helper.diagramParser.throwParseError(errorLine, reason)
-
 
     // 动态注册、动态注销第三方代码块图表语法(派生自DiagramParser)
     // f*ck，js不支持interface，只能将接口函数作为参数传入，整整11个参数，一坨狗屎
@@ -125,47 +100,9 @@ class utils {
     //   9. destroyFunc(Object) => null: 传入图形实例，destroy图形实例
     //  10. beforeExport(element, instance) => null: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
     //  11. extraStyleGetter() => string: 用于导出时，新增css
-    static registerThirdPartyDiagramParser = (
-        lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
-        lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter,
+    static registerThirdPartyDiagramParser = (lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter,
     ) => helper.thirdPartyDiagramParser.register(lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter);
     static unregisterThirdPartyDiagramParser = lang => helper.thirdPartyDiagramParser.unregister(lang);
-
-
-    // 动态注册、动态注销代码块增强按钮(仅当fence_enhance插件启用时有效，通过返回值确定是否成功)
-    // 需要注意的是：注册、注销只会影响新增的代码块，已经渲染到html的代码块不会改变，所以一般此函数的执行时机是在初始化的时候
-    //   action: 取个名字
-    //   className: button的className
-    //   hint: 提示
-    //   iconClassName: 通过className设置icon
-    //   enable: 是否使用
-    //   listener(ev, button)=>{}: 点击按钮的回调函数(ev: 时间，button: 按钮本身element)
-    //   extraFunc(button)=>{}: 插入html后的额外操作
-    static registerFenceEnhanceButton = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
-        return this.callPluginFunction("fence_enhance", "registerBuilder", className, action, hint, iconClassName, enable, listener, extraFunc)
-    }
-    static unregisterFenceEnhanceButton = action => this.callPluginFunction("fence_enhance", "removeBuilder", action)
-
-    // 动态注册barTool里的tool(仅当toolbar插件启用时有效，通过返回值确定是否成功)
-    // tool: baseToolInterface的子类
-    static registerBarTool = tool => this.callPluginFunction("toolbar", "registerBarTool", tool)
-    static unregisterBarTool = name => this.callPluginFunction("toolbar", "unregisterBarTool", name)
-
-    // 动态注册右下角的快捷按钮(仅当quickButton插件启用时有效，通过返回值确定是否成功)
-    //   1. action(string): 取个名字
-    //   2. coordinate[int, int]: 按钮的坐标(x, y)。注意：往上为x正方向，往左为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
-    //   3. hint(string): 提示信息
-    //   4. iconClass(string): icon的class
-    //   5. style(Object): button 额外的样式
-    //   6. callback(ev, target, action) => null: 点击按钮后的回调函数
-    // 动态注销快捷按钮
-    //   一旦process后，标签就被渲染到HTML了，以后就不会再变了，再调用此函数也没有用了，因此此函数只能在插件初始化的时候调用
-    //   因此，unregisterQuickButton的唯一意义是：当两个插件在初始化阶段打架时（都想注册同一坐标的按钮），用此函数去注销掉别人
-    static registerQuickButton = (action, coordinate, hint, iconClass, style, callback) => {
-        return this.callPluginFunction("quickButton", "register", action, coordinate, hint, iconClass, style, callback)
-    }
-    static unregisterQuickButton = action => this.callPluginFunction("quickButton", "unregister", action)
-    static toggleQuickButton = hide => this.callPluginFunction("quickButton", "toggle", hide)
 
     // 动态注册导出时的额外操作
     //   1. name: 取个名字
@@ -186,13 +123,6 @@ class utils {
     static appendElements = (parent, template) => helper.htmlTemplater.appendElements(parent, template)
     static getElementCreator = () => helper.htmlTemplater.creator()
 
-    // 动态弹出自定义模态框（及刻弹出，因此无需注册）
-    //   1. modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
-    //   2. callback(components) => {}: 当用户点击【确认】后的回调函数
-    //   3. onCancelCallback(components) => {}: 当用户点击【取消】后的回调函数
-    // 具体使用请参考__modal_example.js，不再赘述
-    static modal = (modal, callback, cancelCallback) => helper.dialog.modal(modal, callback, cancelCallback);
-
     // 动态注册右键菜单
     // 1. name: 取个名字
     // 2. selector: 在哪个位置右键将弹出菜单
@@ -200,6 +130,46 @@ class utils {
     // 2. callback({ev, target, text}) => null: 点击的回调
     static registerMenu = (name, selector, generator, callback) => helper.contextMenu.registerMenu(name, selector, generator, callback)
     static unregisterMenu = name => helper.contextMenu.unregisterMenu(name)
+
+    // 动态弹出自定义模态框（即刻弹出，因此无需注册）
+    //   1. modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
+    //   2. callback(components) => {}: 当用户点击【确认】后的回调函数
+    //   3. onCancelCallback(components) => {}: 当用户点击【取消】后的回调函数
+    // 具体使用请参考__modal_example.js，不再赘述
+    static modal = (modal, callback, cancelCallback) => helper.dialog.modal(modal, callback, cancelCallback);
+
+    // 动态注册、动态注销代码块增强按钮(仅当fence_enhance插件启用时有效，通过返回值确定是否成功)
+    // 需要注意的是：注册、注销只会影响新增的代码块，已经渲染到html的代码块不会改变，所以一般此函数的执行时机是在初始化的时候
+    //   action: 取个名字
+    //   className: button的className
+    //   hint: 提示
+    //   iconClassName: 通过className设置icon
+    //   enable: 是否使用
+    //   listener(ev, button)=>{}: 点击按钮的回调函数(ev: 时间，button: 按钮本身element)
+    //   extraFunc(button)=>{}: 插入html后的额外操作
+    static registerFenceEnhanceButton = (className, action, hint, iconClassName, enable, listener, extraFunc,
+    ) => this.callPluginFunction("fence_enhance", "registerBuilder", className, action, hint, iconClassName, enable, listener, extraFunc)
+    static unregisterFenceEnhanceButton = action => this.callPluginFunction("fence_enhance", "removeBuilder", action)
+
+    // 动态注册barTool里的tool(仅当toolbar插件启用时有效，通过返回值确定是否成功)
+    // tool: baseToolInterface的子类
+    static registerBarTool = tool => this.callPluginFunction("toolbar", "registerBarTool", tool)
+    static unregisterBarTool = name => this.callPluginFunction("toolbar", "unregisterBarTool", name)
+
+    // 动态注册右下角的快捷按钮(仅当quickButton插件启用时有效，通过返回值确定是否成功)
+    //   1. action(string): 取个名字
+    //   2. coordinate[int, int]: 按钮的坐标(x, y)。注意：往上为x正方向，往左为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
+    //   3. hint(string): 提示信息
+    //   4. iconClass(string): icon的class
+    //   5. style(Object): button 额外的样式
+    //   6. callback(ev, target, action) => null: 点击按钮后的回调函数
+    // 动态注销快捷按钮
+    //   一旦process后，标签就被渲染到HTML了，以后就不会再变了，再调用此函数也没有用了，因此此函数只能在插件初始化的时候调用
+    //   因此，unregisterQuickButton的唯一意义是：当两个插件在初始化阶段打架时（都想注册同一坐标的按钮），用此函数去注销掉别人
+    static registerQuickButton = (action, coordinate, hint, iconClass, style, callback
+    ) => this.callPluginFunction("quickButton", "register", action, coordinate, hint, iconClass, style, callback)
+    static unregisterQuickButton = action => this.callPluginFunction("quickButton", "unregister", action)
+    static toggleQuickButton = hide => this.callPluginFunction("quickButton", "toggle", hide)
 
 
     ////////////////////////////// 插件相关 //////////////////////////////
