@@ -619,7 +619,7 @@ class utils {
         }
     }
 
-    static scrollByCid = cid => this.scroll(File.editor.findElemById(cid));
+    static scrollByCid = (cid, height = -1, moveCursor = false, showHiddenElement = true) => this.scroll(File.editor.findElemById(cid), height, moveCursor, showHiddenElement);
 
     static insertText = (anchorNode, content, restoreLastCursor = true) => {
         if (restoreLastCursor) {

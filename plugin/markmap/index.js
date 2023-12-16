@@ -525,7 +525,8 @@ class tocMarkmap {
             const header = headers[tocIdx];
             if (header) {
                 const cid = header.attributes.id;
-                this.utils.scrollByCid(cid);
+                const height = (window.innerHeight || document.documentElement.clientHeight) * this.config.LOCALE_HIGHT_RATIO
+                this.utils.scrollByCid(cid, height);
             }
         })
     }
