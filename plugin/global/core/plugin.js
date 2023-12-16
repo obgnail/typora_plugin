@@ -415,10 +415,9 @@ class utils {
     }
 
     static insertStyle = (id, css) => {
-        const style = document.createElement('style');
+        const style = document.createElement("style");
         style.id = id;
-        style.type = 'text/css';
-        style.innerHTML = css;
+        style.appendChild(document.createTextNode(css));
         document.head.appendChild(style);
     }
 
@@ -432,12 +431,8 @@ class utils {
         document.head.appendChild(link);
     }
 
+    static insertScript = filepath => $.getScript(`file:///${this.joinPath(filepath)}`)
     static removeStyle = id => this.removeElementByID(id)
-
-    static insertScript = filepath => {
-        const jsFilepath = this.joinPath(filepath);
-        return $.getScript(`file:///${jsFilepath}`);
-    }
 
     static newFilePath = filename => {
         let filepath = !filename ? this.getFilePath() : this.Package.Path.join(this.getCurrentDirPath(), filename);
