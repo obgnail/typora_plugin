@@ -378,7 +378,7 @@ class windowTabBarPlugin extends BasePlugin {
         const tabUtil = this.tabUtil;
 
         if (tabUtil.tabs.length === 1) {
-            if (this.config.RECONFIRM_WHEN_CLOES_LAST_TAB) {
+            if (this.config.RECONFIRM_WHEN_CLOSE_LAST_TAB) {
                 const modal = {title: "退出 Typora", components: [{label: "是否退出？", type: "p"}]};
                 this.utils.modal(modal, this.utils.exitTypora);
             } else {

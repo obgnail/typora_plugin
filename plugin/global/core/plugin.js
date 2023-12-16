@@ -1,9 +1,9 @@
 class utils {
-    static isBetaVersion = parseInt(window._options.appVersion.split(".")[0]) === 0
+    static isBetaVersion = window._options.appVersion[0] === "0"
     static separator = File.isWin ? "\\" : "/"
     static tempFolder = File.option.tempPath
-    static nonExistSelector = "#__non_exist_selector__"
-    static disableForeverSelector = "#__disable_selector__"
+    static nonExistSelector = "#__non_exist_selector__"      // 插件临时不可点击，返回此
+    static disableForeverSelector = "#__disable_selector__"  // 插件永远不可点击，返回此
     static stopLoadPluginError = new Error("stopLoadPlugin")
     static stopCallError = new Error("stopCall")
     static meta = {}
@@ -132,7 +132,7 @@ class utils {
     static unregisterThirdPartyDiagramParser = lang => helper.thirdPartyDiagramParser.unregister(lang);
 
 
-    // 动态注册、动态注销代码块增强按钮(仅当fence_enhance插件启用时有效，通过返回bool值确定是否成功)
+    // 动态注册、动态注销代码块增强按钮(仅当fence_enhance插件启用时有效，通过返回值确定是否成功)
     // 需要注意的是：注册、注销只会影响新增的代码块，已经渲染到html的代码块不会改变，所以一般此函数的执行时机是在初始化的时候
     //   action: 取个名字
     //   className: button的className
@@ -146,12 +146,12 @@ class utils {
     }
     static unregisterFenceEnhanceButton = action => this.callPluginFunction("fence_enhance", "removeBuilder", action)
 
-    // 动态注册barTool里的tool(仅当toolbar插件启用时有效，通过返回bool值确定是否成功)
+    // 动态注册barTool里的tool(仅当toolbar插件启用时有效，通过返回值确定是否成功)
     // tool: baseToolInterface的子类
     static registerBarTool = tool => this.callPluginFunction("toolbar", "registerBarTool", tool)
     static unregisterBarTool = name => this.callPluginFunction("toolbar", "unregisterBarTool", name)
 
-    // 动态注册右下角的快捷按钮
+    // 动态注册右下角的快捷按钮(仅当quickButton插件启用时有效，通过返回值确定是否成功)
     //   1. action(string): 取个名字
     //   2. coordinate[int, int]: 按钮的坐标(x, y)。注意：往上为x正方向，往左为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
     //   3. hint(string): 提示信息
