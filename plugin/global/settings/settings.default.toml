@@ -593,6 +593,8 @@ ENABLE_BUTTON = true
 BUTTON_SIZE = "1.2em"
 # 按钮的间距
 BUTTON_MARGIN = "0.4em"
+# 去掉按钮上的功能提示
+REMOVE_BUTTON_HINT = false
 # 按钮的不透明度
 BUTTON_OPACITY = 0.5
 # 鼠标悬停时按钮的不透明度
