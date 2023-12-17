@@ -53,7 +53,7 @@ TAB_MAX_WIDTH = ""
 # 当鼠标悬停于标签页时，显示文件完整路径
 SHOW_FULL_PATH_WHEN_HOVER = true
 # 当关闭最后一个标签时，弹出弹窗确认是否退出Typora
-RECONFIRM_WHEN_CLOES_LAST_TAB = true
+RECONFIRM_WHEN_CLOSE_LAST_TAB = true
 # 新增tab的位置：
 #   end:   在最右侧
 #   right: 在当前tab右侧
@@ -482,6 +482,8 @@ ENABLE_TOC_MARKMAP = true
 TOC_HOTKEY = ""
 # 点击markmap节点，定位到文档位置（跳转到对应章节）
 CLICK_TO_LOCALE = true
+# 定位时，目标章节滚动到当前视口的高度位置百分比（即：0为当前视口的第一行，1为最后一行）（若CLICK_TO_LOCALE为false，此选项失效）
+LOCALE_HIGHT_RATIO = 0.2
 # 当窗口太小时，是否允许icon换行显示
 ALLOW_ICON_WRAP = true
 # 当用户编辑文档，导致markmap更新图形时，新markmap的图形大小是否重新适配窗口
@@ -593,6 +595,8 @@ ENABLE_BUTTON = true
 BUTTON_SIZE = "1.2em"
 # 按钮的间距
 BUTTON_MARGIN = "0.4em"
+# 去掉按钮上的功能提示
+REMOVE_BUTTON_HINT = false
 # 按钮的不透明度
 BUTTON_OPACITY = 0.5
 # 鼠标悬停时按钮的不透明度

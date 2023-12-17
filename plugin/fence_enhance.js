@@ -105,7 +105,7 @@ class fenceEnhancePlugin extends BasePlugin {
             }
             fence.appendChild(enhance);
 
-            const buttons = this.builders.map(builder => builder.createButton());
+            const buttons = this.builders.map(builder => builder.createButton(this.config.REMOVE_BUTTON_HINT));
             this.builders.forEach((builder, idx) => {
                 const button = buttons[idx];
                 enhance.appendChild(button);
@@ -263,11 +263,11 @@ class builder {
         this.extraFunc = extraFunc;
     }
 
-    createButton = () => {
+    createButton = (removeHint = false) => {
         const button = document.createElement("div");
         button.classList.add("enhance-btn", this.className);
         button.setAttribute("action", this.action);
-        this.hint && button.setAttribute("ty-hint", this.hint);
+        !removeHint && this.hint && button.setAttribute("ty-hint", this.hint);
         const span = document.createElement("span");
         span.className = this.iconClassName;
         button.appendChild(span);
