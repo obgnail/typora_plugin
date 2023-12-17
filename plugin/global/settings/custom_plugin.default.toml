@@ -804,7 +804,9 @@ position_bottom = "50px"
 #   icon:       icon css class。所有的icon及其对应的css class，请参考：https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 #   size:       控制icon大小
 #   hint:       提示信息
-#   callback:   回调函数。采用pluginName.MethodName的形式。MethodName请通过阅读源码查找。如果您不懂代码，但还是想添加按钮，有个碰运气技巧：在【右键菜单->常用插件->自定义插件下的插件】基本都是 callback，其余插件基本都是 call
+#   callback:   回调函数。采用pluginName.MethodName的形式。功能就像hotkey.default.toml中的plugin参数和function参数的合体
+#                       MethodName请通过阅读源码查找。如果您不懂代码，但还是想添加按钮，有个碰运气技巧：在【右键菜单->常用插件->自定义插件下的插件】基本都是 callback，其余插件基本都是 call
+#   *evil:      自定义回调函数。功能同hotkey.default.toml中的evil参数。这里的文本内容会被eval()。如果设置此参数，callback参数会失效
 buttons = [
     { disable = false, coordinate = [0, 0], hint = "直达底部", size = "28px", icon = "fa fa-angle-down", callback = "go_top.goBottom" },
     { disable = false, coordinate = [1, 0], hint = "直达顶部", size = "28px", icon = "fa fa-angle-up", callback = "go_top.goTop" },
