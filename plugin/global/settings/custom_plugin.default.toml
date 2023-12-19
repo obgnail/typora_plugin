@@ -225,6 +225,45 @@ option = {
 """
 
 
+############### abc ###############
+[abc]
+# 右键菜单中展示的名称
+name = "插入abc"
+# 是否启用此自定义插件
+enable = true
+# 是否在右键菜单中隐藏
+hide = false
+# 在右键菜单中的出现顺序（越大越排到后面）
+order = 1
+# 插件配置
+[abc.config]
+# 代码块语言
+# 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
+LANGUAGE = "abc"
+# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
+INTERACTIVE_MODE = true
+# 乐谱的可视化选项，请参考: https://paulrosen.github.io/abcjs/visual/render-abc-options.html
+# 常用的配置：
+#   - scale: 用于指定乐谱的缩放比例。
+#   - staffwidth: 用于指定乐谱谱表的宽度。
+#   - responsive: 用于指定乐谱在响应式布局中的行为，例如 "resize" 表示在窗口大小改变时重新渲染乐谱。
+VISUAL_OPTIONS = { scale = 1.0, staffwidth = 400, responsive = "resize" }
+# 图表默认高度
+DEFAULT_FENCE_HEIGHT = "300px"
+# 图表背景颜色
+DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
+# 自动插入的模板
+TEMPLATE = """```abc
+X:1
+T:Twinkle, Twinkle, Little Star
+M:4/4
+L:1/4
+K:C
+G2 G2|A2 A2|B2 B2|c3 z|G2 G2|A2 A2|B2 G2|c3 z||
+```
+"""
+
+
 ############### timeline ###############
 [timeline]
 # 右键菜单中展示的名称
