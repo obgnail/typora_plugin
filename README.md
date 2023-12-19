@@ -23,39 +23,40 @@
 | 13   | markmap                 | 提供 markmap 组件支持                  |
 | 14   | echarts                 | 提供 echarts 组件支持                  |
 | 15   | chart                   | 提供 chartjs 组件支持                  |
-| 16   | calendar                | 提供 tui.calendar 组件支持             |
-| 17   | callouts                | 提供 callouts 支持                     |
-| 18   | read_only               | 只读模式                               |
-| 19   | blur                    | 模糊模式                               |
-| 20   | kanban                  | 看板                                   |
-| 21   | timeline                | 时间线                                 |
-| 22   | file_counter            | 显示目录下的文件数                     |
-| 23   | outline                 | 以表格、图片、代码块形式的大纲         |
-| 24   | auto_number             | 章节、表格、图片、代码块等自动编号     |
-| 25   | imageReviewer           | 图片查看器                             |
-| 26   | chineseSymbolAutoPairer | 中文符号自动补全                       |
-| 27   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
-| 28   | resize_table            | 调整表格行高列宽                       |
-| 29   | resize_image            | 调整图片显示大小                       |
-| 30   | export_enhance          | 导出 html 时避免图片丢失               |
-| 31   | go_top                  | 一键到文章顶部、底部                   |
-| 32   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
-| 33   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
-| 34   | markdownLint            | markdown 格式规范检测                  |
-| 35   | darkMode                | 夜间模式                               |
-| 36   | pluginUpdater           | 一键升级插件                           |
-| 37   | extractRangeToNewFile   | 提取选区文字到新文件                   |
-| 38   | fullPathCopy            | 复制标题路径                           |
-| 39   | autoTrailingWhiteSpace  | 自动添加结尾空格                       |
-| 40   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
-| 41   | text_stylize            | 文字风格化                             |
-| 42   | scrollBookmarker        | 书签管理器                             |
-| 43   | openInTotalCommander    | 在 total commander 打开                |
-| 44   | mermaid_replace         | 替换 mermaid 组件                      |
-| 45   | custom                  | 开放平台，用户自定义插件（高级）       |
-| 46   | hotkeyHub               | 快捷键注册中心（高级）                 |
-| 47   | quickButton             | 于右下角添加功能按钮（高级）           |
-| 48   | old_window_tab          | 标签页管理（已废弃）                   |
+| 16   | abc                     | 提供 abcjs 组件支持                    |
+| 17   | calendar                | 提供 tui.calendar 组件支持             |
+| 18   | callouts                | 提供 callouts 支持                     |
+| 19   | read_only               | 只读模式                               |
+| 20   | blur                    | 模糊模式                               |
+| 21   | kanban                  | 看板                                   |
+| 22   | timeline                | 时间线                                 |
+| 23   | file_counter            | 显示目录下的文件数                     |
+| 24   | outline                 | 以表格、图片、代码块形式的大纲         |
+| 25   | auto_number             | 章节、表格、图片、代码块等自动编号     |
+| 26   | imageReviewer           | 图片查看器                             |
+| 27   | chineseSymbolAutoPairer | 中文符号自动补全                       |
+| 28   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
+| 29   | resize_table            | 调整表格行高列宽                       |
+| 30   | resize_image            | 调整图片显示大小                       |
+| 31   | export_enhance          | 导出 html 时避免图片丢失               |
+| 32   | go_top                  | 一键到文章顶部、底部                   |
+| 33   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
+| 34   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
+| 35   | markdownLint            | markdown 格式规范检测                  |
+| 36   | darkMode                | 夜间模式                               |
+| 37   | pluginUpdater           | 一键升级插件                           |
+| 38   | extractRangeToNewFile   | 提取选区文字到新文件                   |
+| 39   | fullPathCopy            | 复制标题路径                           |
+| 40   | autoTrailingWhiteSpace  | 自动添加结尾空格                       |
+| 41   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
+| 42   | text_stylize            | 文字风格化                             |
+| 43   | scrollBookmarker        | 书签管理器                             |
+| 44   | openInTotalCommander    | 在 total commander 打开                |
+| 45   | mermaid_replace         | 替换 mermaid 组件                      |
+| 46   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 47   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 48   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 49   | old_window_tab          | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -517,6 +518,12 @@ LIST = [
 使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 插入 chart
 
 ![chart](./assets/chart.png)
+
+
+
+### abc：提供 abc 组件支持
+
+![abcjs](./assets/abcjs.png)
 
 
 

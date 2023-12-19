@@ -88,7 +88,7 @@ class utils {
     static throwParseError = (errorLine, reason) => helper.diagramParser.throwParseError(errorLine, reason)
 
     // 动态注册、动态注销第三方代码块图表语法(派生自DiagramParser)
-    // f*ck，js不支持interface，只能将接口函数作为参数传入，整整11个参数，一坨狗屎
+    // f**k，js不支持interface，只能将接口函数作为参数传入，整整11个参数，一坨狗屎
     //   1. lang(string): language
     //   2. destroyWhenUpdate(boolean): 更新前是否清空preview里的html
     //   3. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
@@ -1186,7 +1186,7 @@ class thirdPartyDiagramParser {
         if (!parser) return
         const instance = parser.map[cid];
         if (instance) {
-            parser.destroyFunc(instance);
+            parser.destroyFunc && parser.destroyFunc(instance);
             delete parser.map[cid];
         }
     }
@@ -1194,7 +1194,7 @@ class thirdPartyDiagramParser {
     destroyAll = () => {
         for (const parser of this.parsers.values()) {
             for (const instance of Object.values(parser.map)) {
-                parser.destroyFunc(instance);
+                parser.destroyFunc && parser.destroyFunc(instance);
             }
             parser.map = {};
         }

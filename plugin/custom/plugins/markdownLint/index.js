@@ -7,52 +7,52 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const pre = [{ele: "pre", tabindex: "0", title: hint}];
         const el = [{id: "plugin-markdownlint", class_: "plugin-common-modal", style: {display: "none"}, children: pre}]
         if (this.config.use_button) {
-            el.push({id: "plugin-markdownlint-button", "ty-hint": "markdown格式规范检测"})
+            el.push({id: "plugin-markdownlint-button", "ty-hint": "markdown格式规范检测"});
         }
         return el
     }
 
     process = () => {
-        this.markdownlint = null;
-        this.disableRules = null;
         this.entities = {
             modal: document.querySelector("#plugin-markdownlint"),
             pre: document.querySelector("#plugin-markdownlint pre"),
             button: document.querySelector("#plugin-markdownlint-button"),
         }
+        this.initWorker();
+        this.initEventHandler();
+    }
 
+    initWorker = () => {
+        this.worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linterWorker.js"));
+        this.worker.onmessage = ({data: content}) => {
+            if (this.entities.button) {
+                this.entities.button.style.backgroundColor = content.length ? this.config.error_color : this.config.pass_color;
+            }
+            if (this.entities.modal.style.display !== "none") {
+                this.entities.pre.textContent = content.length ? this.genMarkdownlint(content) : this.config.pass_text
+            }
+        }
+        setTimeout(() => this.worker.postMessage({action: "init", payload: this.config.disable_rules}), 1000);
+    }
+
+    initEventHandler = () => {
         if (this.entities.button) {
             this.entities.button.addEventListener("click", this.callback);
         }
         if (this.config.allow_drag) {
             this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true);
         }
-        this.utils.addEventListener(this.utils.eventType.firstFileInit, () => setTimeout(this.renewLintResult, 500));
-
         const defaultTime = 500;
-        const debounce = this.utils.debounce(this.updateAll, Math.max(defaultTime, this.config.debounce_interval - defaultTime));
+        const debounce = this.utils.debounce(this.updateLinter, Math.max(defaultTime, this.config.debounce_interval - defaultTime));
         this.utils.addEventListener(this.utils.eventType.fileEdited, debounce);
     }
 
+    updateLinter = () => this.worker.postMessage({action: "lint", payload: this.utils.getFilePath() || ""});
+
     callback = async anchorNode => {
-        if (this.entities.modal.style.display === "none") {
-            const content = await this.renewLintResult();
-            await this.updateModal(content);
-            this.entities.modal.style.display = "";
-        } else {
-            this.entities.modal.style.display = "none";
-        }
+        this.entities.modal.style.display = this.entities.modal.style.display === "none" ? "" : "none";
+        await this.updateLinter();
     }
-
-    updateAll = async () => {
-        console.debug("markdown lint detector");
-        const content = await this.renewLintResult();
-        if (this.entities.modal.style.display !== "none") {
-            await this.updateModal(content);
-        }
-    }
-
-    updateModal = async content => this.entities.pre.textContent = content.length ? this.genMarkdownlint(content) : this.config.pass_text
 
     // 这么大的对象，不希望它常驻内存
     translate = () => ({
@@ -115,45 +115,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
             return "\n" + lineNo.padEnd(6) + ruleName.padEnd(7) + desc;
         })
         return header + result
-    }
-
-    renewLintResult = async () => {
-        this.lazyLoad();
-        this.initDisableRules();
-        const filepath = this.utils.getFilePath();
-        if (!filepath) return;
-        // if (filepath) {
-        //     await File.saveUseNode();
-        // }
-        // const fileContent = await File.getContent();
-        const fileContent = await this.utils.Package.Fs.promises.readFile(filepath, 'utf-8');
-        const {content} = this.markdownlint.sync({strings: {content: fileContent}, config: this.disableRules});
-        content.sort((a, b) => a.lineNumber - b.lineNumber);
-        this.setButtonColor(content);
-        return content
-    }
-
-    setButtonColor = content => {
-        if (this.entities.button) {
-            this.entities.button.style.backgroundColor = (content.length) ? this.config.error_color : this.config.pass_color;
-        }
-    }
-
-    initDisableRules = () => {
-        if (!this.disableRules) {
-            const rules = {"default": true};
-            for (const rule of this.config.disable_rules) {
-                rules[rule] = false
-            }
-            this.disableRules = rules;
-        }
-    }
-
-    lazyLoad = () => {
-        if (!this.markdownlint) {
-            const {markdownlint} = this.utils.requireFilePath("./plugin/custom/plugins/markdownLint/markdownlint.js");
-            this.markdownlint = markdownlint;
-        }
     }
 }
 
