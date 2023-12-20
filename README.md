@@ -53,10 +53,11 @@
 | 43   | scrollBookmarker        | 书签管理器                             |
 | 44   | openInTotalCommander    | 在 total commander 打开                |
 | 45   | mermaid_replace         | 替换 mermaid 组件                      |
-| 46   | custom                  | 开放平台，用户自定义插件（高级）       |
-| 47   | hotkeyHub               | 快捷键注册中心（高级）                 |
-| 48   | quickButton             | 于右下角添加功能按钮（高级）           |
-| 49   | old_window_tab          | 标签页管理（已废弃）                   |
+| 46   | help                    | 用户帮助                               |
+| 47   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 48   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 49   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 50   | old_window_tab          | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -856,6 +857,14 @@ filter_regexp = ""
 功能：以声明的形式，为【任意插件系统函数】或【任意自定义函数】设置快捷键。
 
 具体使用请参考 [hotkey.default.toml](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/hotkey.default.toml)。
+
+
+
+### help
+
+功能：用于用户反馈
+
+使用方式：右键菜单 -> 非常用插件 -> 帮助。
 
 
 
