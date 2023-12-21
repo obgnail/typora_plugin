@@ -366,6 +366,11 @@ class utils {
         return result;
     }
 
+    static zip = (...arrays) => {
+        const length = Math.min(...arrays.map(arr => arr.length));
+        return Array.from({length}, (_, index) => arrays.map(arr => arr[index]));
+    }
+
     static randomString = () => Math.random().toString(36).slice(2)
     static getUUID = () => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {

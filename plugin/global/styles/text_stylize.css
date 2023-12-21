@@ -9,7 +9,7 @@
     place-items: center;
     grid-auto-flow: column;
     font-size: large;
-    width: 360px;
+    width: 425px;
 }
 
 #plugin-text-stylize .stylize-tool > [action] {
