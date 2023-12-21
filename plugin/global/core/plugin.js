@@ -1671,6 +1671,7 @@ class htmlTemplater {
     //     const ele = this.create(element);
     create = element => {
         if (!element) return;
+        if (element instanceof Element) return element
 
         const el = document.createElement(element.ele || this.defaultElement);
         for (const [prop, value] of Object.entries(element)) {

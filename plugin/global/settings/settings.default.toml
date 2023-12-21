@@ -761,10 +761,6 @@ NAME = "文字风格化"
 CLICKABLE = true
 # 弹出颜色面板的快捷键
 SHOW_MODAL_HOTKEY = ""
-# 设置字体颜色的快捷键
-SET_COLOR_HOTKEY = ""
-# 允许拖动窗口
-ALLOW_DRAG = true
 # 每13个颜色一行
 NUM_PER_LINE = 13
 # 颜色列表（由于markdown支持的html语法限制， 不支持rgb格式的颜色）
