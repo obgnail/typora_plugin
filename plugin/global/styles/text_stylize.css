@@ -31,11 +31,12 @@
     position: absolute;
     left: 0;
     top: 30px;
+    margin-top: 10px;
 }
 
 #plugin-text-stylize .stylize-palette td {
     width: 30px;
-    height: 20px;
+    height: 17px;
     border: 1px #000 solid;
     cursor: pointer;
 }

@@ -761,6 +761,20 @@ NAME = "文字风格化"
 CLICKABLE = true
 # 弹出颜色面板的快捷键
 SHOW_MODAL_HOTKEY = ""
+# 工具栏的按钮:
+#   1. weight:    字体粗细
+#   2. italic:    斜体
+#   3. underline: 下划线
+#   4. size:      字体尺寸
+#   5. family:    字体
+#   6. fore:      前景色
+#   7. back:      背景色
+#   8. border:    边框
+#   9. erase:     移除格式
+#  10. blank:     无功能，用于占位
+#  11. move:      移动工具栏
+#  12. close:     关闭工具栏
+TOOLBAR = ["weight", "italic", "underline", "size", "family", "fore", "back", "border", "erase", "blank", "move", "close"]
 # 每13个颜色一行
 NUM_PER_LINE = 13
 # 颜色列表（由于markdown支持的html语法限制， 不支持rgb格式的颜色）
