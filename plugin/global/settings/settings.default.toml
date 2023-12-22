@@ -761,12 +761,42 @@ NAME = "文字风格化"
 CLICKABLE = true
 # 弹出颜色面板的快捷键
 SHOW_MODAL_HOTKEY = ""
-# 设置字体颜色的快捷键
-SET_COLOR_HOTKEY = ""
-# 允许拖动窗口
-ALLOW_DRAG = true
-# 每13个颜色一行
-NUM_PER_LINE = 13
+# 工具栏的按钮:
+#   - weight:                加粗
+#   - italic:                斜体
+#   - underline:             下划线
+#   - throughline:           中划线
+#   - overline:              上划线
+#   - superScript:           上标
+#   - subScript:             下标
+#   - emphasis:              强调符号
+#   - title:                 标题尺寸
+#   - increaseSize:          增大尺寸
+#   - decreaseSize:          减小尺寸
+#   - increaseLetterSpacing: 增大间隙
+#   - decreaseLetterSpacing: 减小间隙
+#   - family:                字体
+#   - foregroundColor:       前景色
+#   - backgroundColor:       背景色
+#   - borderColor:           边框
+#   - erase:                 移除格式
+#   - blank:                 无功能，用于占位
+#   - setBrush:              设置格式刷
+#   - useBrush:              使用格式刷
+#   - move:                  移动工具栏
+#   - close:                 关闭工具栏
+TOOLBAR = [
+    "weight", "italic", "underline", "throughline", "overline", "title", "superScript", "subScript",
+    "emphasis", "increaseLetterSpacing", "decreaseLetterSpacing", "increaseSize", "decreaseSize", "family",
+    "foregroundColor", "backgroundColor", "borderColor", "setBrush", "useBrush", "erase", "blank", "move", "close"
+]
+# 设置样式的快捷键
+#   1. hotkey: 快捷键
+#   2. action: 上述的工具栏按钮
+ACTION_HOTKEYS = [
+    { hotkey = "", action = "foregroundColor" },
+    { hotkey = "", action = "backgroundColor" },
+]
 # 颜色列表（由于markdown支持的html语法限制， 不支持rgb格式的颜色）
 COLORS = [
     "#330000", "#331900", "#333300", "#193300", "#003300", "#003319", "#003333", "#001933", "#000033", "#190033", "#330033", "#330019", "#000000",
@@ -779,6 +809,10 @@ COLORS = [
     "#FF9999", "#FFCC99", "#FFFF99", "#CCFF99", "#99FF99", "#99FFCC", "#99FFFF", "#99CCFF", "#9999FF", "#CC99FF", "#FF99FF", "#FF99CC", "#E0E0E0",
     "#FFCCCC", "#FFE5CC", "#FFFFCC", "#E5FFCC", "#CCFFCC", "#CCFFE5", "#CCFFFF", "#CCE5FF", "#CCCCFF", "#E5CCFF", "#FFCCFF", "#FFCCE5", "#FFFFFF",
 ]
+# 每13个颜色一行
+NUM_PER_LINE = 13
+# 默认颜色
+DEFAULT_COLORS = { FOREGROUND = "#330000", BACKGROUND = "#FFFFFF", BORDER = "#330000" }
 
 
 ############### custom ###############

@@ -26,37 +26,38 @@
 | 16   | abc                     | 提供 abcjs 组件支持                    |
 | 17   | calendar                | 提供 tui.calendar 组件支持             |
 | 18   | callouts                | 提供 callouts 支持                     |
-| 19   | read_only               | 只读模式                               |
-| 20   | blur                    | 模糊模式                               |
-| 21   | kanban                  | 看板                                   |
-| 22   | timeline                | 时间线                                 |
-| 23   | file_counter            | 显示目录下的文件数                     |
-| 24   | outline                 | 以表格、图片、代码块形式的大纲         |
-| 25   | auto_number             | 章节、表格、图片、代码块等自动编号     |
-| 26   | imageReviewer           | 图片查看器                             |
-| 27   | chineseSymbolAutoPairer | 中文符号自动补全                       |
-| 28   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
-| 29   | resize_table            | 调整表格行高列宽                       |
-| 30   | resize_image            | 调整图片显示大小                       |
-| 31   | export_enhance          | 导出 html 时避免图片丢失               |
-| 32   | go_top                  | 一键到文章顶部、底部                   |
-| 33   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
-| 34   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
-| 35   | markdownLint            | markdown 格式规范检测                  |
-| 36   | darkMode                | 夜间模式                               |
-| 37   | pluginUpdater           | 一键升级插件                           |
-| 38   | extractRangeToNewFile   | 提取选区文字到新文件                   |
-| 39   | fullPathCopy            | 复制标题路径                           |
-| 40   | autoTrailingWhiteSpace  | 自动添加结尾空格                       |
-| 41   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
-| 42   | text_stylize            | 文字风格化                             |
+| 19   | text_stylize            | 文字风格化                             |
+| 20   | read_only               | 只读模式                               |
+| 21   | blur                    | 模糊模式                               |
+| 22   | kanban                  | 看板                                   |
+| 23   | timeline                | 时间线                                 |
+| 24   | file_counter            | 显示目录下的文件数                     |
+| 25   | outline                 | 以表格、图片、代码块形式的大纲         |
+| 26   | auto_number             | 章节、表格、图片、代码块等自动编号     |
+| 27   | imageReviewer           | 图片查看器                             |
+| 28   | chineseSymbolAutoPairer | 中文符号自动补全                       |
+| 29   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
+| 30   | resize_table            | 调整表格行高列宽                       |
+| 31   | resize_image            | 调整图片显示大小                       |
+| 32   | export_enhance          | 导出 html 时避免图片丢失               |
+| 33   | go_top                  | 一键到文章顶部、底部                   |
+| 34   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
+| 35   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
+| 36   | markdownLint            | markdown 格式规范检测                  |
+| 37   | darkMode                | 夜间模式                               |
+| 38   | pluginUpdater           | 一键升级插件                           |
+| 39   | extractRangeToNewFile   | 提取选区文字到新文件                   |
+| 40   | fullPathCopy            | 复制标题路径                           |
+| 41   | autoTrailingWhiteSpace  | 自动添加结尾空格                       |
+| 42   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
 | 43   | scrollBookmarker        | 书签管理器                             |
 | 44   | openInTotalCommander    | 在 total commander 打开                |
 | 45   | mermaid_replace         | 替换 mermaid 组件                      |
-| 46   | custom                  | 开放平台，用户自定义插件（高级）       |
-| 47   | hotkeyHub               | 快捷键注册中心（高级）                 |
-| 48   | quickButton             | 于右下角添加功能按钮（高级）           |
-| 49   | old_window_tab          | 标签页管理（已废弃）                   |
+| 46   | help                    | 用户帮助                               |
+| 47   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 48   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 49   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 50   | old_window_tab          | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -553,6 +554,16 @@ icon = "\\f040"
 
 
 
+### text_stylize：文字风格化
+
+将文字转为 html 格式，改变文字样式。
+
+使用方式：右键菜单 -> 非常用插件 -> 文字风格化。
+
+![text_stylize](./assets/text_stylize.gif)
+
+
+
 ### read_only：只读模式
 
 只读模式下文档不可编辑。
@@ -819,14 +830,6 @@ filter_regexp = ""
 
 
 
-### text_stylize：文字风格化
-
-将文字转为 html 格式，改变文字样式。
-
-使用方式：右键菜单 -> 非常用插件 -> 文字风格化。
-
-
-
 ### scrollBookmarker： 书签管理器
 
 使用方式：
@@ -856,6 +859,14 @@ filter_regexp = ""
 功能：以声明的形式，为【任意插件系统函数】或【任意自定义函数】设置快捷键。
 
 具体使用请参考 [hotkey.default.toml](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/hotkey.default.toml)。
+
+
+
+### help
+
+功能：用于用户反馈
+
+使用方式：右键菜单 -> 非常用插件 -> 帮助。
 
 
 
