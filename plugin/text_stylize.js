@@ -18,10 +18,13 @@ class textStylizePlugin extends BasePlugin {
 
         this.utils.dragFixedModal(this.entities.toolbar.querySelector(`[action="move"]`), this.entities.modal, false);
 
-        const colorSelector = `#plugin-text-stylize [action="fore"], #plugin-text-stylize [action="back"], #plugin-text-stylize [action="border"]`;
-        $(colorSelector).on("mouseenter", function () {
-            document.querySelectorAll(colorSelector).forEach(ele => ele.classList.remove("select"));
+        const that = this;
+        $(this.entities.toolbar).on("mouseenter", "[action]", function () {
+            const action = this.getAttribute("action");
+            const showPalette = action === "fore" || action === "back" || action === "border";
+            that.entities.toolbar.querySelectorAll(":scope > [action]").forEach(ele => ele.classList.remove("select"));
             this.classList.add("select");
+            that.entities.palette.style.display = showPalette ? "block" : "none";
         })
 
         this.entities.toolbar.addEventListener("mousedown", ev => {
@@ -58,12 +61,16 @@ class textStylizePlugin extends BasePlugin {
             weight: ["粗体", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M272-200v-560h221q65 0 120 40t55 111q0 51-23 78.5T602-491q25 11 55.5 41t30.5 90q0 89-65 124.5T501-200H272Zm121-112h104q48 0 58.5-24.5T566-372q0-11-10.5-35.5T494-432H393v120Zm0-228h93q33 0 48-17t15-38q0-24-17-39t-44-15h-95v109Z"/></svg>`],
             italic: ["斜体", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-200v-100h160l120-360H320v-100h400v100H580L460-300h140v100H200Z"/></svg>`],
             underline: ["下划线", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-120v-80h560v80H200Zm280-160q-101 0-157-63t-56-167v-330h103v336q0 56 28 91t82 35q54 0 82-35t28-91v-336h103v330q0 104-56 167t-157 63Z"/></svg>`],
-            throughline: ["删除线", `<svg xmlns="http://www.w3.org/2000/svg" height="25" viewBox="0 -960 960 960" width="24"><path d="M293-120q-15 0-31.5-6T233-140q-8-5-16-12.5t-17-7.5h-40v-80h40q15 0 31.5 6t28.5 14q8 5 16 12.5t17 7.5q10 0 18-7.5t16-12.5q12-9 28.5-14.5T387-240q15 0 31.5 5.5T447-220q8 5 15.5 12.5T480-200q10 0 18-7.5t16-12.5q12-9 28.5-14.5T574-240q14 0 31 6t29 14q8 5 16 12.5t18 7.5q10 0 17.5-7.5T701-220q12-8 28.5-14t31.5-6h40v80h-40q-10 0-18 7.5T727-140q-12 8-29 14t-32 6q-14 0-30.5-6T607-140q-8-5-16-12.5t-18-7.5q-10 0-18 7.5T539-140q-12 9-28.5 14.5T479-120q-15 0-31.5-5.5T419-140q-8-5-15.5-12.5T386-160q-9 0-17.5 7.5T352-140q-11 9-28 14.5t-31 5.5Zm187-180q-101 0-170.5-69.5T240-540v-320h100v320q0 59 40.5 99.5T480-400q59 0 99.5-40.5T620-540v-320h100v320q0 101-69.5 170.5T480-300Z"/></svg>`],
-            superScript: ["上标",`<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M760-600v-80q0-17 11.5-28.5T800-720h80v-40H760v-40h120q17 0 28.5 11.5T920-760v40q0 17-11.5 28.5T880-680h-80v40h120v40H760ZM235-160l185-291-172-269h106l124 200h4l123-200h107L539-451l186 291H618L482-377h-4L342-160H235Z"/></svg>`],
-            subScript: ["下标",`<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M760-160v-80q0-17 11.5-28.5T800-280h80v-40H760v-40h120q17 0 28.5 11.5T920-320v40q0 17-11.5 28.5T880-240h-80v40h120v40H760Zm-525-80 185-291-172-269h106l124 200h4l123-200h107L539-531l186 291H618L482-457h-4L342-240H235Z"/></svg>`],
-            size: ["标题尺寸", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M560-160v-520H360v-120h520v120H680v520H560Zm-360 0v-320H80v-120h360v120H320v320H200Z"/></svg>`],
+            throughline: ["中划线", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M80-400v-80h800v80H80Zm340-160v-120H200v-120h560v120H540v120H420Zm0 400v-160h120v160H420Z"/></svg>`],
+            overline: ["上划线", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-760v-80h560v80H200Zm280 640q-117 0-198.5-81.5T200-400q0-117 81.5-198.5T480-680q117 0 198.5 81.5T760-400q0 117-81.5 198.5T480-120Zm0-100q75 0 127.5-52.5T660-400q0-75-52.5-127.5T480-580q-75 0-127.5 52.5T300-400q0 75 52.5 127.5T480-220Z"/></svg>`],
+            superScript: ["上标", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M760-600v-80q0-17 11.5-28.5T800-720h80v-40H760v-40h120q17 0 28.5 11.5T920-760v40q0 17-11.5 28.5T880-680h-80v40h120v40H760ZM235-160l185-291-172-269h106l124 200h4l123-200h107L539-451l186 291H618L482-377h-4L342-160H235Z"/></svg>`],
+            subScript: ["下标", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M760-160v-80q0-17 11.5-28.5T800-280h80v-40H760v-40h120q17 0 28.5 11.5T920-320v40q0 17-11.5 28.5T880-240h-80v40h120v40H760Zm-525-80 185-291-172-269h106l124 200h4l123-200h107L539-531l186 291H618L482-457h-4L342-240H235Z"/></svg>`],
+            emphasis: ["强调符号", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M477-80q-83 0-156-31.5T194-197q-54-54-85.5-127T77-480q0-83 31.5-156T194-763q54-54 127-85.5T477-880q83 0 156 31.5T760-763q54 54 85.5 127T877-480q0 83-31.5 156T760-197q-54 54-127 85.5T477-80Zm91-93q78-23 135.5-80.5T784-389L568-173ZM171-574l212-212q-77 23-133 79t-79 133Zm-4 176 392-391q-12-3-24-5t-25-4L159-447q2 13 3.5 25t4.5 24Zm57 114 449-450q-8-6-16.5-12T639-757L200-318q5 9 11 17.5t13 16.5Zm91 81 438-439q-5-9-11-17.5T730-676L281-226q8 6 16.5 12t17.5 11Zm129 41 351-351q-2-13-4-25t-5-24L395-171q12 3 24 5t25 4Z"/></svg>`],
+            title: ["标题尺寸", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M420-160v-520H200v-120h560v120H540v520H420Z"/></svg>`],
             increaseSize: ["增大尺寸", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m40-200 210-560h100l210 560h-96l-51-143H187l-51 143H40Zm176-224h168l-82-232h-4l-82 232Zm504 104v-120H600v-80h120v-120h80v120h120v80H800v120h-80Z"/></svg>`],
             decreaseSize: ["减小尺寸", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m40-200 210-560h100l210 560h-96l-51-143H187l-51 143H40Zm176-224h168l-82-232h-4l-82 232Zm384-16v-80h320v80H600Z"/></svg>`],
+            increaseLetterSpacing: ["增大间隙", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M120-160v-640h80v640h-80Zm640 0v-640h80v640h-80ZM294-280l150-400h72l150 400h-70l-34-102H400l-36 102h-70Zm126-160h120l-58-166-62 166Z"/></svg>`],
+            decreaseLetterSpacing: ["减小间隙", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M160-160v-640h80v640h-80Zm560 0v-640h80v640h-80ZM294-280l150-400h72l150 400h-69l-36-102H399l-36 102h-69Zm126-160h120l-58-166h-4l-58 166Z"/></svg>`],
             family: ["字体", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M186-80q-54 0-80-22t-26-66q0-58 49-74t116-16h21v-56q0-34-1-55.5t-6-35.5q-5-14-11.5-19.5T230-430q-9 0-16.5 3t-12.5 8q-4 5-5 10.5t1 11.5q6 11 14 21.5t8 24.5q0 25-17.5 42.5T159-291q-25 0-42.5-17.5T99-351q0-27 12-44t32.5-27q20.5-10 47.5-14t58-4q85 0 118 30.5T400-302v147q0 19 4.5 28t15.5 9q12 0 19.5-18t9.5-56h11q-3 62-23.5 87T368-80q-43 0-67.5-13.5T269-134q-10 29-29.5 41.5T186-80Zm373 0q-20 0-32.5-16.5T522-132l102-269q7-17 22-28t34-11q19 0 34 11t22 28l102 269q8 19-4.5 35.5T801-80q-12 0-22-7t-15-19l-20-58H616l-20 58q-4 11-14 18.5T559-80Zm-324-29q13 0 22-20.5t9-49.5v-67q-26 0-38 15.5T216-180v11q0 36 4 48t15 12Zm407-125h77l-39-114-38 114Zm-37-285q-48 0-76.5-33.5T500-643q0-104 66-170.5T735-880q42 0 68 9.5t26 24.5q0 6-2 12t-7 11q-5 7-12.5 10t-15.5 1q-14-4-32-7t-33-3q-71 0-114 48t-43 127q0 22 8 46t36 24q11 0 21.5-5t18.5-14q17-18 31.5-60T712-758q2-13 10.5-18.5T746-782q18 0 27.5 9.5T779-749q-12 43-17.5 75t-5.5 58q0 20 5.5 29t16.5 9q11 0 21.5-8t29.5-30q2-3 15-7 8 0 12 6t4 17q0 28-32 54t-67 26q-26 0-44.5-14T691-574q-15 26-37 40.5T605-519Zm-485-1v-220q0-58 41-99t99-41q58 0 99 41t41 99v220h-80v-80H200v80h-80Zm80-160h120v-60q0-25-17.5-42.5T260-800q-25 0-42.5 17.5T200-740v60Z"/></svg>`],
             fore: ["前景色", `<svg xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 -960 960 960" width="22"><path d="M80 0v-160h800V0H80Zm140-280 210-560h100l210 560h-96l-50-144H368l-52 144h-96Zm176-224h168l-82-232h-4l-82 232Z"/></svg>`],
             back: ["背景色", `<svg xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 -960 960 960" width="22"><path d="m247-904 57-56 343 343q23 23 23 57t-23 57L457-313q-23 23-57 23t-57-23L153-503q-23-23-23-57t23-57l190-191-96-96Zm153 153L209-560h382L400-751Zm360 471q-33 0-56.5-23.5T680-360q0-21 12.5-45t27.5-45q9-12 19-25t21-25q11 12 21 25t19 25q15 21 27.5 45t12.5 45q0 33-23.5 56.5T760-280ZM80 0v-160h800V0H80Z"/></svg>`],
@@ -80,9 +87,7 @@ class textStylizePlugin extends BasePlugin {
             const span = document.createElement("span");
             span.setAttribute("action", name);
             span.setAttribute("ty-hint", hint);
-            if (name === "fore") {
-                span.classList.add("select");
-            } else if (name === "blank") {
+            if (name === "blank") {
                 span.style.visibility = "hidden";
             }
             span.innerHTML = svg;
@@ -111,12 +116,16 @@ class textStylizePlugin extends BasePlugin {
         italic: this.toggleItalic,
         underline: this.toggleUnderline,
         throughline: this.toggleThroughline,
-        superScript: this.superScript,
-        subScript: this.subScript,
+        overline: this.toggleOverline,
+        superScript: this.toggleSuperScript,
+        subScript: this.toggleSubScript,
+        emphasis: () => this.toggleEmphasis("filled red"),
         weight: () => this.toggleWeight("bold"),
-        size: () => this.toggleSize("2em"),
+        title: () => this.toggleSize("2em"),
         increaseSize: () => this.increaseSize(0.1),
         decreaseSize: () => this.decreaseSize(0.1),
+        increaseLetterSpacing: () => this.increaseLetterSpacing(1),
+        decreaseLetterSpacing: () => this.decreaseLetterSpacing(1),
         family: () => this.toggleFamily("serif"),
         fore: () => this.toggleFore(color),
         back: () => this.toggleBack(color),
@@ -272,11 +281,13 @@ class textStylizePlugin extends BasePlugin {
     toggleWeight = weight => this.setStyle({toggleMap: {"font-weight": weight}});
     toggleFamily = family => this.setStyle({toggleMap: {"font-family": family}});
     toggleBorder = border => this.setStyle({toggleMap: {border}});
+    toggleEmphasis = emphasis => this.setStyle({toggleMap: {"text-emphasis": emphasis}})
     toggleItalic = () => this.setStyle({toggleMap: {"font-style": "italic"}});
     toggleUnderline = () => this.setStyle({mergeMap: {"text-decoration": "underline"}});
     toggleThroughline = () => this.setStyle({mergeMap: {"text-decoration": "line-through"}});
-    superScript = () => this.setStyle({toggleMap: {"vertical-align": "super"}})
-    subScript = () => this.setStyle({toggleMap: {"vertical-align": "sub"}})
+    toggleOverline = () => this.setStyle({mergeMap: {"text-decoration": "overline"}});
+    toggleSuperScript = () => this.setStyle({toggleMap: {"vertical-align": "super"}});
+    toggleSubScript = () => this.setStyle({toggleMap: {"vertical-align": "sub"}});
     setBrush = () => this.setStyle({upsertMap: {}, rememberFormat: true});
     useBrush = () => this.setStyle({replaceMap: this.formatBrushObj});
     clearAll = () => this.setStyle({replaceMap: {}});
@@ -285,10 +296,27 @@ class textStylizePlugin extends BasePlugin {
             styleMap["font-size"] = styleMap["font-size"] || "1.0em";
             const origin = parseFloat(styleMap["font-size"]);
             const size = Math.max(0.1, (origin + num).toFixed(1));
-            styleMap["font-size"] = size + "em";
+            if (size !== 1) {
+                styleMap["font-size"] = size + "em";
+            } else {
+                delete styleMap["font-size"]
+            }
         }
-    })
+    });
     decreaseSize = (num = 0.1) => this.increaseSize(-num);
+    increaseLetterSpacing = (num = 1) => this.setStyle({
+        hook: styleMap => {
+            styleMap["letter-spacing"] = styleMap["letter-spacing"] || "1pt";
+            const origin = parseInt(styleMap["letter-spacing"]);
+            const spacing = Math.max(0, origin + num);
+            if (spacing !== 0) {
+                styleMap["letter-spacing"] = spacing + "pt";
+            } else {
+                delete styleMap["letter-spacing"];
+            }
+        }
+    });
+    decreaseLetterSpacing = (num = 1) => this.increaseLetterSpacing(-num);
 }
 
 module.exports = {

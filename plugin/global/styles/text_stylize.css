@@ -1,15 +1,9 @@
 #plugin-text-stylize {
     top: 10%;
-    right: 25px;
-    width: 550px;
 }
 
 #plugin-text-stylize .stylize-tool {
-    display: grid;
-    gap: 0.2em;
-    place-items: center;
-    grid-auto-flow: column;
-    font-size: large;
+    display: flex;
 }
 
 #plugin-text-stylize .stylize-tool > [action] {
@@ -19,7 +13,6 @@
     opacity: 0.6;
 }
 
-#plugin-text-stylize .stylize-tool > [action]:hover,
 #plugin-text-stylize .stylize-tool > [action].select {
     background: var(--active-file-bg-color);
     color: var(--active-file-text-color);
@@ -32,6 +25,7 @@
     left: 0;
     top: 30px;
     margin-top: 10px;
+    display: none;
 }
 
 #plugin-text-stylize .stylize-palette td {

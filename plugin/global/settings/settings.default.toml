@@ -762,26 +762,34 @@ CLICKABLE = true
 # 弹出颜色面板的快捷键
 SHOW_MODAL_HOTKEY = ""
 # 工具栏的按钮:
-#   - weight:       粗细
-#   - italic:       斜体
-#   - underline:    下划线
-#   - throughline:  删除线
-#   - superScript:  上标
-#   - subScript:    下标
-#   - size:         两倍尺寸
-#   - increaseSize: 增大尺寸
-#   - decreaseSize: 减小尺寸
-#   - family:       字体
-#   - fore:         前景色
-#   - back:         背景色
-#   - border:       边框
-#   - erase:        移除格式
-#   - blank:        无功能，用于占位
-#   - setBrush:     设置格式刷
-#   - useBrush:     使用格式刷
-#   - move:         移动工具栏
-#   - close:        关闭工具栏
-TOOLBAR = ["weight", "italic", "underline", "throughline", "superScript", "subScript", "size", "increaseSize", "decreaseSize", "family", "fore", "back", "border", "setBrush", "useBrush", "erase", "blank", "move", "close"]
+#   - weight:                粗细
+#   - italic:                斜体
+#   - underline:             下划线
+#   - throughline:           中划线
+#   - overline:              上划线
+#   - superScript:           上标
+#   - subScript:             下标
+#   - emphasis:              强调符号
+#   - title:                 标题尺寸
+#   - increaseSize:          增大尺寸
+#   - decreaseSize:          减小尺寸
+#   - increaseLetterSpacing: 增大间隙
+#   - decreaseLetterSpacing: 减小间隙
+#   - family:                字体
+#   - fore:                  前景色
+#   - back:                  背景色
+#   - border:                边框
+#   - erase:                 移除格式
+#   - blank:                 无功能，用于占位
+#   - setBrush:              设置格式刷
+#   - useBrush:              使用格式刷
+#   - move:                  移动工具栏
+#   - close:                 关闭工具栏
+TOOLBAR = [
+    "weight", "italic", "underline", "throughline", "overline", "title", "superScript", "subScript",
+    "emphasis", "increaseLetterSpacing", "decreaseLetterSpacing", "increaseSize", "decreaseSize", "family",
+    "fore", "back", "border", "setBrush", "useBrush", "erase", "blank", "move", "close"
+]
 # 每13个颜色一行
 NUM_PER_LINE = 13
 # 颜色列表（由于markdown支持的html语法限制， 不支持rgb格式的颜色）
