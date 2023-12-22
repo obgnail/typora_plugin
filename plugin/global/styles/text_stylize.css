@@ -1,6 +1,7 @@
 #plugin-text-stylize {
     top: 10%;
-    left: 60%;
+    right: 25px;
+    width: 550px;
 }
 
 #plugin-text-stylize .stylize-tool {
@@ -9,7 +10,6 @@
     place-items: center;
     grid-auto-flow: column;
     font-size: large;
-    width: 425px;
 }
 
 #plugin-text-stylize .stylize-tool > [action] {
