@@ -762,7 +762,7 @@ CLICKABLE = true
 # 弹出颜色面板的快捷键
 SHOW_MODAL_HOTKEY = ""
 # 工具栏的按钮:
-#   - weight:                粗细
+#   - weight:                加粗
 #   - italic:                斜体
 #   - underline:             下划线
 #   - throughline:           中划线
@@ -776,9 +776,9 @@ SHOW_MODAL_HOTKEY = ""
 #   - increaseLetterSpacing: 增大间隙
 #   - decreaseLetterSpacing: 减小间隙
 #   - family:                字体
-#   - fore:                  前景色
-#   - back:                  背景色
-#   - border:                边框
+#   - foregroundColor:       前景色
+#   - backgroundColor:       背景色
+#   - borderColor:           边框
 #   - erase:                 移除格式
 #   - blank:                 无功能，用于占位
 #   - setBrush:              设置格式刷
@@ -788,10 +788,15 @@ SHOW_MODAL_HOTKEY = ""
 TOOLBAR = [
     "weight", "italic", "underline", "throughline", "overline", "title", "superScript", "subScript",
     "emphasis", "increaseLetterSpacing", "decreaseLetterSpacing", "increaseSize", "decreaseSize", "family",
-    "fore", "back", "border", "setBrush", "useBrush", "erase", "blank", "move", "close"
+    "foregroundColor", "backgroundColor", "borderColor", "setBrush", "useBrush", "erase", "blank", "move", "close"
 ]
-# 每13个颜色一行
-NUM_PER_LINE = 13
+# 设置样式的快捷键
+#   1. hotkey: 快捷键
+#   2. action: 上述的工具栏按钮
+ACTION_HOTKEYS = [
+    { hotkey = "", action = "foregroundColor" },
+    { hotkey = "", action = "backgroundColor" },
+]
 # 颜色列表（由于markdown支持的html语法限制， 不支持rgb格式的颜色）
 COLORS = [
     "#330000", "#331900", "#333300", "#193300", "#003300", "#003319", "#003333", "#001933", "#000033", "#190033", "#330033", "#330019", "#000000",
@@ -804,6 +809,10 @@ COLORS = [
     "#FF9999", "#FFCC99", "#FFFF99", "#CCFF99", "#99FF99", "#99FFCC", "#99FFFF", "#99CCFF", "#9999FF", "#CC99FF", "#FF99FF", "#FF99CC", "#E0E0E0",
     "#FFCCCC", "#FFE5CC", "#FFFFCC", "#E5FFCC", "#CCFFCC", "#CCFFE5", "#CCFFFF", "#CCE5FF", "#CCCCFF", "#E5CCFF", "#FFCCFF", "#FFCCE5", "#FFFFFF",
 ]
+# 每13个颜色一行
+NUM_PER_LINE = 13
+# 默认颜色
+DEFAULT_COLORS = { FOREGROUND = "#330000", BACKGROUND = "#FFFFFF", BORDER = "#330000" }
 
 
 ############### custom ###############
