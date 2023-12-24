@@ -153,14 +153,14 @@ class textStylizePlugin extends BasePlugin {
         const activeElement = document.activeElement.tagName;
         if (File.isLocked || "INPUT" === activeElement || "TEXTAREA" === activeElement || !selection.rangeCount) return
 
-        // todo: 处理多行的情况
-        const originRange = selection.getRangeAt(0);
-        if (originRange.startContainer !== originRange.endContainer) {
-            const cloneRange = originRange.cloneRange();
-            cloneRange.setEnd(cloneRange.startContainer, cloneRange.startContainer.length);
-            selection.removeAllRanges();
-            selection.addRange(cloneRange);
-        }
+        // // todo: 处理多行的情况
+        // const originRange = selection.getRangeAt(0);
+        // if (originRange.startContainer !== originRange.endContainer) {
+        //     const cloneRange = originRange.cloneRange();
+        //     cloneRange.setEnd(cloneRange.startContainer, cloneRange.startContainer.length);
+        //     selection.removeAllRanges();
+        //     selection.addRange(cloneRange);
+        // }
 
         const {range, node, bookmark} = this.utils.getRangy();
         if (!node) return;
