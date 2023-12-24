@@ -107,17 +107,31 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     adjustQuickOpen = () => {
+        const open = (item, ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            const path = item.dataset.path;
+            const isDir = item.dataset.isDir + "" === "true";
+            if (isDir) {
+                this.utils.openFolder(path);
+            } else {
+                this.utils.openFile(path);
+            }
+            $("#typora-quick-open:visible").hide().length && File.isMac && bridge.callHandler("quickOpen.stopQuery")
+        }
         document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
             const target = ev.target.closest(".typora-quick-open-item");
             if (!target) return;
-
             // 将原先的click行为改成ctrl+click
             if (this.utils.metaKeyPressed(ev)) return;
+            open(target, ev);
+        }, true)
 
-            ev.preventDefault();
-            ev.stopPropagation();
-            const filePath = target.getAttribute("data-path");
-            this.openFile(filePath);
+        document.querySelector("#typora-quick-open-input > input").addEventListener("keydown", ev => {
+            if (ev.key === "Enter") {
+                const ele = document.querySelector(".typora-quick-open-item.active");
+                ele && open(ele, ev);
+            }
         }, true)
     }
 

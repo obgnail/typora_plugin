@@ -149,8 +149,18 @@ class textStylizePlugin extends BasePlugin {
     //   3. 选中了内部文字（abc）：需要修改outerText
     //   4. 选中了外部文字（<span style="color:#FF0000;">abc</span>）：需要修改innerText
     setStyle = ({toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark = true, rememberFormat = false}) => {
+        const selection = window.getSelection();
         const activeElement = document.activeElement.tagName;
-        if (File.isLocked || "INPUT" === activeElement || "TEXTAREA" === activeElement || !window.getSelection().rangeCount) return
+        if (File.isLocked || "INPUT" === activeElement || "TEXTAREA" === activeElement || !selection.rangeCount) return
+
+        // todo: 处理多行的情况
+        const originRange = selection.getRangeAt(0);
+        if (originRange.startContainer !== originRange.endContainer) {
+            const cloneRange = originRange.cloneRange();
+            cloneRange.setEnd(cloneRange.startContainer, cloneRange.startContainer.length);
+            selection.removeAllRanges();
+            selection.addRange(cloneRange);
+        }
 
         const {range, node, bookmark} = this.utils.getRangy();
         if (!node) return;
