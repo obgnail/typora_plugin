@@ -143,19 +143,6 @@ class textStylizePlugin extends BasePlugin {
         borderColor: () => this.toggleBorder(`1px solid ${color || this.config.DEFAULT_COLORS.BORDER}`),
     })
 
-    getSelectType = range => {
-        range = range || window.getSelection().getRangeAt(0);
-        const {commonAncestorContainer, collapsed} = range;
-        if (collapsed) return -1
-        if (commonAncestorContainer.nodeType === document.TEXT_NODE) {
-            return 0
-        } else if (commonAncestorContainer === File.editor.writingArea) {
-            return 2
-        } else {
-            return 1
-        }
-    }
-
     // 有四种用户选中情况，比如：123<span style="color:#FF0000;">abc</span>defg
     //   1. 什么都没选中
     //   2. 普通选中（efg）
@@ -168,11 +155,11 @@ class textStylizePlugin extends BasePlugin {
 
         // todo: 处理多行的情况
         const originRange = selection.getRangeAt(0);
-        const type = this.getSelectType(originRange);
-        if (type !== 0) {
-            originRange.setEnd(originRange.startContainer, originRange.startContainer.length);
+        if (originRange.startContainer !== originRange.endContainer) {
+            const cloneRange = originRange.cloneRange();
+            cloneRange.setEnd(cloneRange.startContainer, cloneRange.startContainer.length);
             selection.removeAllRanges();
-            selection.addRange(originRange);
+            selection.addRange(cloneRange);
         }
 
         const {range, node, bookmark} = this.utils.getRangy();
