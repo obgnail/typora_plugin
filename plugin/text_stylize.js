@@ -143,17 +143,108 @@ class textStylizePlugin extends BasePlugin {
         borderColor: () => this.toggleBorder(`1px solid ${color || this.config.DEFAULT_COLORS.BORDER}`),
     })
 
+    collectNodeInSelection = range => {
+        const {startContainer, endContainer, commonAncestorContainer} = range;
+
+        const nodeList = [];
+        const treeWalker = document.createTreeWalker(
+            commonAncestorContainer,
+            NodeFilter.SHOW_ELEMENT + NodeFilter.SHOW_TEXT,
+            {acceptNode: node => NodeFilter.FILTER_ACCEPT},
+            false
+        );
+        while (treeWalker.currentNode !== startContainer) {
+            treeWalker.nextNode();
+        }
+        while (true) {
+            const currentNode = treeWalker.currentNode;
+            nodeList.push(currentNode);
+            if (currentNode === endContainer) {
+                break;
+            }
+            treeWalker.nextNode();
+        }
+        return nodeList
+    }
+
+    splitRanges = (nodeList, range) => {
+        const isText = node => node && node.nodeType === document.TEXT_NODE
+        const isElement = node => node && node.nodeType === document.ELEMENT_NODE
+        const isSoftBreakElement = node => isElement(node) && node.classList.contains("md-softbreak")
+        const isHardBreakElement = node => isElement(node) && node.getAttribute("cid")
+        const isBreakElement = node => isSoftBreakElement(node) || isHardBreakElement(node)
+
+        const isRangeCollapsed = range => range.startContainer === range.endContainer && range.startOffset === range.endOffset
+        const isEqualRange = (a, b) => (
+            a && b && a.startContainer === b.startContainer && a.startOffset === b.startOffset
+            && a.endContainer === b.endContainer && a.endOffset === b.endOffset
+        )
+        const newRange = (startContainer, startOffset, endContainer, endOffset) => ({
+            startContainer, startOffset, endContainer, endOffset
+        })
+
+        if (nodeList.length <= 1 || !nodeList.some(isBreakElement)) {
+            return [range]
+        }
+
+        let filterEmptyText = nodeList.filter((node, idx) => !(isText(node) && isSoftBreakElement(nodeList[idx - 1])));
+        const selectLines = this.utils.splitArray(filterEmptyText, isBreakElement)
+            .map(line => line.filter(isText))
+            .filter(ele => ele.length)
+
+        const startLineTexts = selectLines.shift();
+        const endLineTexts = selectLines.pop() || startLineTexts;
+        const startLineLastText = startLineTexts[startLineTexts.length - 1];
+        const endLineFirstText = endLineTexts[0];
+
+        const firstRange = newRange(range.startContainer, range.startOffset, startLineLastText, startLineLastText.length);
+        const middleRanges = selectLines.map(line => newRange(line[0], 0, line[line.length - 1], line[line.length - 1].length));
+        const ranges = [firstRange, ...middleRanges];
+        const isEndWithBreakSymbol = isText(nodeList[nodeList.length - 1]) && isSoftBreakElement(nodeList[nodeList.length - 2]);
+        if (!isEndWithBreakSymbol) {
+            ranges.push(newRange(endLineFirstText, 0, range.endContainer, range.endOffset));
+        }
+        return ranges.filter((node, idx) => !isRangeCollapsed(node) && !isEqualRange(ranges[idx - 1], node));
+    }
+
+    genRanges = () => {
+        const range = window.getSelection().getRangeAt(0);
+        const nodeList = this.collectNodeInSelection(range);
+        return this.splitRanges(nodeList, range)
+    }
+
+    setStyle = ({toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark = true, rememberFormat = false}) => {
+        const args = {toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark, rememberFormat};
+        const ranges = this.genRanges();
+        if (!ranges || ranges.length === 0) {
+            console.debug("has not ranges");
+        } else if (ranges.length === 1) {
+            this.setInlineStyle(args);
+        } else {
+            args.moveBookmark = false;
+            const selection = window.getSelection();
+            for (const rangeObj of ranges) {
+                const range = document.createRange();
+                range.setStart(rangeObj.startContainer, rangeObj.startOffset);
+                range.setEnd(rangeObj.endContainer, rangeObj.endOffset);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                this.setInlineStyle(args);
+            }
+        }
+    }
+
     // 有四种用户选中情况，比如：123<span style="color:#FF0000;">abc</span>defg
     //   1. 什么都没选中
     //   2. 普通选中（efg）
     //   3. 选中了内部文字（abc）：需要修改outerText
     //   4. 选中了外部文字（<span style="color:#FF0000;">abc</span>）：需要修改innerText
-    setStyle = ({toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark = true, rememberFormat = false}) => {
+    setInlineStyle = ({toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark, rememberFormat}) => {
         const selection = window.getSelection();
         const activeElement = document.activeElement.tagName;
         if (File.isLocked || "INPUT" === activeElement || "TEXTAREA" === activeElement || !selection.rangeCount) return
 
-        // todo: 处理多行的情况
+        // 只处理一行，其余不要
         const originRange = selection.getRangeAt(0);
         const {startContainer, endContainer, commonAncestorContainer: ancestor} = originRange;
         if (startContainer !== endContainer && !(ancestor.nodeType === document.ELEMENT_NODE && ancestor.classList.contains("md-html-inline"))) {

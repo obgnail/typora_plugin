@@ -371,6 +371,20 @@ class utils {
         return Array.from({length}, (_, index) => arrays.map(arr => arr[index]));
     }
 
+    static splitArray = (array, separatorFunc) => {
+        return array.reduce((acc, current) => {
+            if (separatorFunc(current)) {
+                acc.push([]);
+            } else {
+                if (acc.length === 0) {
+                    acc.push([]);
+                }
+                acc[acc.length - 1].push(current);
+            }
+            return acc;
+        }, []);
+    }
+
     static randomString = () => Math.random().toString(36).slice(2)
     static getUUID = () => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
