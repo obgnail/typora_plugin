@@ -1,3 +1,40 @@
+/* warning: 不要试图搞懂下面代码，理由：为了绕过Typora的很多特性，使用了大量的瓜皮代码
+*  为了方便以后修改，在此写入实现的思路：
+*    1. 先把问题简单化，假设用户的Selection只有一行，那么
+*       1. 此时有四种用户选中情况，比如：123<span style="color:#FF0000;">abc</span>defg
+*            1. 什么都没选中
+*            2. 普通选中（非情况3和4的都为普通选中，如：efg）
+*            3. 选中了内部文字（abc）
+*            4. 选中了外部文字（<span style="color:#FF0000;">abc</span>）
+*       2. 为了方便后续操作，将123<span style="color:#FF0000;">abc</span>defg拆成：
+*            1. beforeText: 123
+*            2. innerText: abc
+*            3. outerText: <span style="color:#FF0000;">abc</span>
+*            4. styleObject: style对象化
+*          其中情况1-3比较简单，好处理：
+*            1. 情况1: 在光标处插入: <span style="XXX"></span>
+*            2. 情况2: 读取选区内容（efg），使用span标签包裹，得到<span style="XXX">efg</span>，将内容插入回去
+*            3. 情况3稍作修改就可以变成情况4，即：修改选区为<span style="color:#FF0000;">abc</span>
+*       3. 下面重点解释情况4：
+*            1. 上面已经获取到styleObject，接下来按需操作styleObject
+*            2. 将上面的innerText、styleObject重新组合成新的outerText，重新插回去
+*            3. 因为有beforeText和styleObject，可以得知innerText的最终位置，然后moveBookmark，重新框选innerText
+*       4. 上面的所有流程都在方法setInlineStyle中
+*    2. 当用户框选跨越多个标签，有多行文本时，需要将多行全部拆分成单行，然后为每一行调用setInlineStyle
+*       1. 使用TreeWalker，配合range的commonAncestorContainer、startContainer、endContainer获取到选中的全部标签数组nodeList
+*       2. 考虑到用户使用shift+enter会生成：<span md-inline="softbreak" class="md-softbreak"> </span>，这个标签里的TEXT_NODE是无用的，将其从nodeList过滤掉
+*       3. 对nodeList进行分割，其中分割标志是node.classList.contains("md-softbreak")和!!node.getAttribute("cid")，前者为软回车，后者为硬回车
+*          并且，将多行全部拆分成单行，需要用到range.setStart(startContainer, startOffset)和range.setEnd(endContainer, endOffset);
+*          这里的startContainer、endContainer都是TEXT_NODE，所以将所有的ELEMENT_NODE过滤掉，得到selectLines
+*       4. selectLines是一个二维数组，每个元素是某一行所包含的全部TEXT_NODE组成的一维数组，很明显，startContainer对应某一行的第一个TEXT，endContainer对应一行中最后一个TEXT
+*          注意：第一行和最后一行要特殊处理（因为第一行和最后一行有可能不是全部选中的）
+*       5. 如此，将多行全部拆分成单行，得到每一行的startContainer, startOffset、endContainer, endOffset
+*       6. 上面的所有流程都在方法genRanges中
+*    3. 获取到每一行的Range就可以批量操作了吗？不。因为Typora在给某个paragraph插入一段文本后，会修改paragraph标签的innerHTML，导致上面获取的ranges中的TEXT_NODE失效，如何解决？
+*       1. 注意到插入span标签后，paragraph的textContent没有发生改变，于是我们可以记录旧的TEXT_NODE在文档中的位置，在生成新的TEXT_NODE后，我们可以根据此位置获取到新的TEXT_NODE
+*          接着将新的TEXT_NODE替换掉旧的TEXT_NODE，接着就可以调用setInlineStyle了
+*       2. 上面的所有流程都在方法setMultilineStyle中。记录逻辑在方法recordTEXTPosition中，替换逻辑在方法renewRange中
+* */
 class textStylizePlugin extends BasePlugin {
     styleTemplate = () => true
 
@@ -213,6 +250,67 @@ class textStylizePlugin extends BasePlugin {
         return this.splitRanges(nodeList, range)
     }
 
+    getAllTEXT = element => {
+        const textNodes = [];
+
+        const getTextNodes = node => {
+            if (node.nodeType === document.TEXT_NODE) {
+                textNodes.push(node);
+            } else if (node.nodeType === document.ELEMENT_NODE && (node.classList.contains("md-raw-inline") || node.classList.contains("md-softbreak"))) {
+            } else {
+                for (let i = 0; i < node.childNodes.length; i++) {
+                    getTextNodes(node.childNodes[i]);
+                }
+            }
+        }
+
+        if (element) {
+            getTextNodes(element);
+        }
+
+        return textNodes
+    }
+
+    recordTEXTPosition = ranges => {
+        for (const range of ranges) {
+            const startTEXT = range.startContainer;
+            const endTEXT = range.endContainer;
+            const ele = startTEXT.parentElement;
+            const target = ele.closest("[cid]");
+            const TEXTs = this.getAllTEXT(target);
+
+            for (let i = 0; i < TEXTs.length; i++) {
+                const TEXT = TEXTs[i];
+                if (TEXT === startTEXT) {
+                    range.beforeContent = TEXTs.slice(0, i).map(e => e.textContent).join("");
+                    range.cid = target.getAttribute("cid");
+                }
+                if (TEXT === endTEXT) {
+                    range.afterContent = TEXTs.slice(0, i).map(e => e.textContent).join("");
+                }
+            }
+        }
+    }
+
+    renewRange = range => {
+        const {beforeContent, afterContent, cid} = range;
+        const target = document.querySelector(`#write [cid="${cid}"]`);
+        const TEXTs = this.getAllTEXT(target);
+
+        let textContent = "";
+        for (let i = 0; i < TEXTs.length; i++) {
+            let TEXT = TEXTs[i];
+            textContent += TEXT.textContent;
+            if (textContent === beforeContent) {
+                range.startContainer = TEXTs[i + 1];
+            }
+            if (textContent === afterContent) {
+                range.endContainer = TEXTs[i + 1] || TEXT;
+                break;
+            }
+        }
+    }
+
     setStyle = ({toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark = true, rememberFormat = false}) => {
         const args = {toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark, rememberFormat};
         const ranges = this.genRanges();
@@ -221,16 +319,22 @@ class textStylizePlugin extends BasePlugin {
         } else if (ranges.length === 1) {
             this.setInlineStyle(args);
         } else {
-            args.moveBookmark = false;
-            const selection = window.getSelection();
-            for (const rangeObj of ranges) {
-                const range = document.createRange();
-                range.setStart(rangeObj.startContainer, rangeObj.startOffset);
-                range.setEnd(rangeObj.endContainer, rangeObj.endOffset);
-                selection.removeAllRanges();
-                selection.addRange(range);
-                this.setInlineStyle(args);
-            }
+            this.setMultilineStyle(ranges, args);
+        }
+    }
+
+    setMultilineStyle = (ranges, args) => {
+        this.recordTEXTPosition(ranges);
+        args.moveBookmark = false;
+        const selection = window.getSelection();
+        for (const rangeObj of ranges) {
+            this.renewRange(rangeObj);
+            const range = document.createRange();
+            range.setStart(rangeObj.startContainer, rangeObj.startOffset);
+            range.setEnd(rangeObj.endContainer, rangeObj.endOffset);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            this.setInlineStyle(args);
         }
     }
 
@@ -243,13 +347,6 @@ class textStylizePlugin extends BasePlugin {
         const selection = window.getSelection();
         const activeElement = document.activeElement.tagName;
         if (File.isLocked || "INPUT" === activeElement || "TEXTAREA" === activeElement || !selection.rangeCount) return
-
-        // 只处理一行，其余不要
-        const originRange = selection.getRangeAt(0);
-        const {startContainer, endContainer, commonAncestorContainer: ancestor} = originRange;
-        if (startContainer !== endContainer && !(ancestor.nodeType === document.ELEMENT_NODE && ancestor.classList.contains("md-html-inline"))) {
-            originRange.setEnd(startContainer, startContainer.length);
-        }
 
         const {range, node, bookmark} = this.utils.getRangy();
         if (!node) return;
