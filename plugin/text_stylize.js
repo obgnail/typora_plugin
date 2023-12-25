@@ -324,9 +324,20 @@ class textStylizePlugin extends BasePlugin {
     }
 
     setMultilineStyle = (ranges, args) => {
+        // todo: html element needs add class "md-expand"
+        const originMoveBookmark = false
+        // const originMoveBookmark = args.moveBookmark;
+
         this.recordTEXTPosition(ranges);
-        args.moveBookmark = false;
         const selection = window.getSelection();
+
+        let startBeforeContent, endBeforeContent;
+        if (originMoveBookmark) {
+            const bookMark = this.recodeBookmark(selection);
+            ({startBeforeContent, endBeforeContent} = bookMark);
+        }
+
+        args.moveBookmark = false;
         for (const rangeObj of ranges) {
             this.renewRange(rangeObj);
             const range = document.createRange();
@@ -336,6 +347,42 @@ class textStylizePlugin extends BasePlugin {
             selection.addRange(range);
             this.setInlineStyle(args);
         }
+
+        if (originMoveBookmark) {
+            setTimeout(() => {
+                const startRange = ranges[0];
+                const endRange = ranges[ranges.length - 1];
+
+                startRange.beforeContent = startBeforeContent;
+                endRange.beforeContent = endBeforeContent;
+                this.renewRange(startRange);
+                this.renewRange(endRange);
+
+                const range = document.createRange();
+                range.setStartBefore(startRange.startContainer);
+                range.setEndBefore(endRange.startContainer);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }, 100)
+        }
+    }
+
+    recodeBookmark = selection => {
+        const range = selection.getRangeAt(0);
+        const {endContainer, endOffset, startContainer, startOffset} = range;
+
+        range.setStart(startContainer, 0);
+        range.setEnd(startContainer, startOffset);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        const startBeforeContent = range.toString();
+
+        range.setStart(endContainer, 0);
+        range.setEnd(endContainer, endOffset);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        const endBeforeContent = range.toString();
+        return {startBeforeContent, endBeforeContent}
     }
 
     // 有四种用户选中情况，比如：123<span style="color:#FF0000;">abc</span>defg
