@@ -212,6 +212,7 @@ function parse(str, options) {
         }
         else if (c3 === '```' && allow(16 /* BlockCode */)) {
             push(state_1.State.BlockCodeLang);
+            blockCodeDelimiter = c3;
             i += 3;
         }
         else if (c3 === '---' && allowFrontMatter()) {

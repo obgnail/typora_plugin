@@ -1,5 +1,6 @@
 class utils {
     static isBetaVersion = window._options.appVersion[0] === "0"
+    static supportHasSelector = CSS.supports("selector(:has(*))")
     static separator = File.isWin ? "\\" : "/"
     static tempFolder = File.option.tempPath
     static nonExistSelector = "#__nonExist__"              // 插件临时不可点击，返回此

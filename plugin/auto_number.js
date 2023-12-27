@@ -202,7 +202,7 @@ class autoNumberPlugin extends BasePlugin {
 
     getStyleString = (inExport = false) => {
         // beta版本不支持:has语法
-        const image_css = (inExport && !this.utils.isBetaVersion) ? this.image_export_css : this.image_css;
+        const image_css = (inExport && this.utils.supportHasSelector) ? this.image_export_css : this.image_css;
         return [
             this.base_css,
             (this.config.ENABLE_CONTENT) ? this.content_css : "",

@@ -1,11 +1,10 @@
 class blurPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.css_id = "plugin-blur-style";
-        this.inBlur = this.config.BLUR_DEFAULT;
-        // todo: 低版本typora不支持:has
-        if (this.utils.isBetaVersion) {
+        if (!this.utils.supportHasSelector) {
             return this.utils.stopLoadPluginError
         }
+        this.css_id = "plugin-blur-style";
+        this.inBlur = this.config.BLUR_DEFAULT;
     }
 
     style = () => ({textID: this.css_id, text: this.getStyleText()})
