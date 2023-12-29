@@ -1,6 +1,7 @@
 class kanbanPlugin extends BaseCustomPlugin {
     styleTemplate = () => ({
         maxHeight: (this.config.KANBAN_MAX_HEIGHT < 0) ? "initial" : this.config.KANBAN_MAX_HEIGHT + "px",
+        taskDescMaxHeight: (this.config.KANBAN_TASK_DESC_MAX_HEIGHT < 0) ? "initial" : this.config.KANBAN_TASK_DESC_MAX_HEIGHT + "em",
         wrap: this.config.WRAP ? "wrap" : "initial",
     })
 
@@ -58,10 +59,12 @@ class kanbanPlugin extends BaseCustomPlugin {
     }
 
     newKanbanElement = (pre, cid, content) => {
-        this.fenceStrictMode = false;
+        const useStrict = "use strict";
+        const dir = this.utils.getCurrentDirPath();
 
         let firstLine = 0
         const setFirstLine = this.utils.once(idx => firstLine = idx);
+        this.fenceStrictMode = false;
 
         const kanban = {title: "", list: []};
         const lines = content.split("\n").map(line => line.trim());
@@ -82,12 +85,12 @@ class kanbanPlugin extends BaseCustomPlugin {
             } else if (line.startsWith("## ")) {
                 const name = line.replace("## ", "");
                 kanban.list.push({name: name, item: []});
-            } else if (line === "use strict") {
-                const strictLine = lines.indexOf("use strict");
+            } else if (line === useStrict) {
+                const strictLine = lines.indexOf(useStrict);
                 if (strictLine !== -1) {
                     this.fenceStrictMode = true;
                     if (strictLine + 1 !== firstLine) {
-                        this.throwParseError(idx, "use strict 必须位于首行");
+                        this.throwParseError(idx, `${useStrict} 必须位于首行`);
                     }
                 } else {
                     this.utils.throwParseError(idx, "未知错误！请联系开发者");
@@ -103,7 +106,10 @@ class kanbanPlugin extends BaseCustomPlugin {
                             this.throwParseError(idx, "【任务】不能先于【看板】出现");
                         } else {
                             const last = kanban.list[kanban.list.length - 1];
-                            const desc = (match.groups.desc || "").replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t");
+                            let desc = (match.groups.desc || "").replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t");
+                            if (this.config.ALLOW_MARKDOWN_INLINE_STYLE) {
+                                desc = this.utils.markdownInlineStyleToHTML(desc, dir);
+                            }
                             last && last.item.push({title, desc});
                         }
                     } else {

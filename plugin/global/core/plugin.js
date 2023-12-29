@@ -614,6 +614,22 @@ class utils {
         return (top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight);
     }
 
+    static markdownInlineStyleToHTML = (content, dir) => {
+        dir = dir || this.getCurrentDirPath();
+        // code
+        return content.replace(/(?<!\\)`(.+?)(?<!\\)`/gs, `<code>$1</code>`)
+            // strong
+            .replace(/(?<!\\)[*_]{2}(.+?)(?<!\\)[*_]{2}/gs, `<strong>$1</strong>`)
+            // em
+            .replace(/(?<![*\\])\*(?![\\*])(.+?)(?<![*\\])\*(?![\\*])/gs, `<em>$1</em>`)
+            // del
+            .replace(/(?<!\\)~~(.+?)(?<!\\)~~/gs, "<del>$1</del>")
+            // link
+            .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
+            // img
+            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => `<img alt="${alt}" src="${this.Package.Path.resolve(dir, src)}">`)
+    }
+
     static scroll = ($target, height = -1, moveCursor = false, showHiddenElement = true) => {
         if ($target instanceof Element) {
             $target = $($target);

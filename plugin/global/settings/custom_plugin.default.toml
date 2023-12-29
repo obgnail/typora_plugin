@@ -32,10 +32,14 @@ INTERACTIVE_MODE = false
 HIDE_DESC_WHEN_EMPTY = true
 # 看板最大高度（单位：px）（若<0，则全部显示）
 KANBAN_MAX_HEIGHT = 700
+# 看板任务描述框的最大高度（单位：em）（若<0，则全部显示）
+KANBAN_TASK_DESC_MAX_HEIGHT = -1
 # 当看板数量太多时是否换行显示
 WRAP = false
 # 当鼠标位于看板时，ctrl+wheel滚动看板
 CTRL_WHEEL_TO_SCROLL = true
+# 允许在描述框使用markdown内联样式（code、strong、em、del、link、img）
+ALLOW_MARKDOWN_INLINE_STYLE = true
 # 看板框的颜色
 # 请保持 KANBAN_COLOR 和 TASK_COLOR 数量一致，否则颜色会乱套，就不好看了
 KANBAN_COLOR = ["#FFE0B2", "#DAE9F4", "#FEDCCC", "#C6E5D9", "#FFF1B9"]
@@ -48,16 +52,17 @@ use strict
 
 ## Todo
 * 语法说明(一级标题表示看板标题\\n二级标题表示看板\\n- 或 * 表示任务)
-- 数量、配色(看板和任务都可以无限添加\\n\\n可以前往配置修改你喜欢的颜色)
+- 描述框样式(支持在描述框添加 markdown 行内样式：\\n**加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，![图片](./assets/test.jpg))
 - 严格模式(在首行添加 use strict 进入严格模式，将不会忽略语法错误)
 - 当描述为空时隐藏描述框
 
 ## In-Progress
+- 数量、配色(看板和任务都可以无限添加\\n\\n可以前往配置修改你喜欢的颜色)
 - 当任务数量太多，出现滚动条时(可以将鼠标置于看板下，使用【鼠标滚轮】滚动任务)
 - 当看板数量太多，出现滚动条时(可以将鼠标置于看板下，使用【ctrl+鼠标滚轮】滚动看板)
 
 ## Completed
-- NOTE(语法是开发者定义的，没有通用性，只建议用于【每日任务】临时使用)
+- NOTE(语法是插件开发者定义的，无法通用，只建议【每日任务】临时使用)
 ```
 """
 

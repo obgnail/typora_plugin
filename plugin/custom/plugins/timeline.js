@@ -39,7 +39,7 @@ class timelinePlugin extends BaseCustomPlugin {
         // timeline: {title, bucket: [{time, itemList: [{ type, value }]}]}
         const timeline = {title: "", bucket: []};
         const lines = content.split("\n");
-        this.dir = this.utils.getCurrentDirPath();
+        const dir = this.utils.getCurrentDirPath();
         lines.forEach((line, idx) => {
             if (!line.trim()) return;
             idx += 1;
@@ -110,12 +110,12 @@ class timelinePlugin extends BaseCustomPlugin {
                     case "h6":
                     case "p":
                     case "blockquote":
-                        return `<${item.type}>${this.handleParagraph(item.value)}</${item.type}>`
+                        return `<${item.type}>${this.utils.markdownInlineStyleToHTML(item.value, dir)}</${item.type}>`
                     case "hr":
                         return `<hr>`
                     case "ul":
                     case "ol":
-                        const value = `<li>${this.handleParagraph(item.value)}</li>`;
+                        const value = `<li>${this.utils.markdownInlineStyleToHTML(item.value, dir)}</li>`;
                         if (idx === 0 || bucket.itemList[idx - 1].type !== item.type) {
                             return `<${item.type}>` + value
                         } else if (idx === bucket.itemList.length - 1 || bucket.itemList[idx + 1].type !== item.type) {
@@ -135,23 +135,6 @@ class timelinePlugin extends BaseCustomPlugin {
             `)
         })
         return timeline
-    }
-
-    resolvePath = src => this.utils.Package.Path.resolve(this.dir, src)
-
-    handleParagraph = value => {
-        // code
-        return value.replace(/(?<!\\)`(.+?)(?<!\\)`/gs, `<code>$1</code>`)
-            // strong
-            .replace(/(?<!\\)[*_]{2}(.+?)(?<!\\)[*_]{2}/gs, `<strong>$1</strong>`)
-            // em
-            .replace(/(?<![*\\])\*(?![\\*])(.+?)(?<![*\\])\*(?![\\*])/gs, `<em>$1</em>`)
-            // del
-            .replace(/(?<!\\)~~(.+?)(?<!\\)~~/gs, "<del>$1</del>")
-            //  link
-            .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
-            // img
-            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => `<img alt="${alt}" src="${this.resolvePath(src)}">`)
     }
 }
 
