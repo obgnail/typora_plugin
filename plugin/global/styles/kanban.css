@@ -65,7 +65,7 @@
 .plugin-kanban-content .plugin-kanban-col-item-desc {
     overflow: hidden;
     margin-top: 5px;
-    height: 5rem;
+    height: ${taskDescMaxHeight};
     padding-left: 4px;
     text-align: left;
     white-space: break-spaces;
