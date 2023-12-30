@@ -1016,7 +1016,7 @@ class diagramParser {
 
     onTryAddLangUndo = () => {
         const objGetter = () => File && File.editor && File.editor.fences;
-        const after = (result, ...args) => this.renderDiagram(args[0].cid);
+        const after = (result, ...args) => args && args[0] && this.renderDiagram(args[0].cid);
         this.utils.decorate(objGetter, "tryAddLangUndo", null, after);
     }
 

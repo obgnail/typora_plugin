@@ -171,7 +171,10 @@ class fenceEnhancePlugin extends BasePlugin {
         if (this.enableIndent) {
             arr.push({arg_name: "调整缩进", arg_value: "indent_current"});
             if (this.config.ENABLE_DANGEROUS_FEATURES) {
-                arr.push({arg_name: "调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint});
+                arr.push(
+                    {arg_name: "调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint},
+                    {arg_name: "为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint},
+                );
             }
         }
         arr.push(
@@ -188,7 +191,7 @@ class fenceEnhancePlugin extends BasePlugin {
         const button = fence.querySelector(".fence-enhance .fold-code.folded");
         button && button.click();
     }
-    indentAllFences = () => {
+    initAllFence = () => {
         document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
             const codeMirror = fence.querySelector(":scope > .CodeMirror");
             if (!codeMirror) {
@@ -196,7 +199,28 @@ class fenceEnhancePlugin extends BasePlugin {
                 File.editor.fences.addCodeBlock(cid);
             }
         })
+    }
+    indentAllFences = () => {
+        this.initAllFence();
         document.querySelectorAll("#write .md-fences[cid]").forEach(fence => this.indentFence(fence));
+    }
+    addFencesLang = () => {
+        const components = [{label: "语言", type: "input", value: "javascript"}];
+        this.utils.modal({title: "添加语言", components}, ([{submit: targetLang}]) => {
+            if (!targetLang) return;
+
+            this.initAllFence();
+            document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
+                const lang = fence.getAttribute("lang");
+                if (lang) return;
+                const cid = fence.getAttribute("cid");
+                File.editor.fences.focus(cid);
+                const input = fence.querySelector(".ty-cm-lang-input");
+                if (!input) return;
+                input.textContent = targetLang;
+                File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input);
+            })
+        })
     }
     disableOrEnableFold = () => {
         this.config.ENABLE_FOLD = !this.config.ENABLE_FOLD;
@@ -245,6 +269,7 @@ class fenceEnhancePlugin extends BasePlugin {
             copy_current: meta => this.copyFence(meta.target),
             indent_current: meta => this.indentFence(meta.target),
             indent_all_fences: this.indentAllFences,
+            add_fences_lang: this.addFencesLang,
         }
         const func = callMap[type];
         func && func(meta);
