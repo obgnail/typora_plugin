@@ -9,10 +9,14 @@ class mdPaddingPlugin extends BasePlugin {
     }
 
     removeMultiLineBreak = content => {
-        const lineBreak = content.indexOf("\r\n") !== -1 ? "\r\n" : "\n";
-        const reg = new RegExp(`(${lineBreak}){3,}`, "g");
-        const double = lineBreak + lineBreak;
-        return content.replace(reg, double);
+        const maxNum = this.config.LINE_BREAK_MAX_NUM;
+        if (maxNum > 0) {
+            const lineBreak = content.indexOf("\r\n") !== -1 ? "\r\n" : "\n";
+            const regexp = new RegExp(`(${lineBreak}){${maxNum + 1},}`, "g");
+            const breaks = lineBreak.repeat(maxNum);
+            content = content.replace(regexp, breaks);
+        }
+        return content;
     }
 
     call = async () => {
@@ -20,9 +24,7 @@ class mdPaddingPlugin extends BasePlugin {
         const filepath = this.utils.getFilePath();
         const content = await this.utils.Package.Fs.promises.readFile(filepath, 'utf-8');
         let formattedContent = this.formatFile(content);
-        if (this.config.REMOVE_MULTI_LINE_BREAK) {
-            formattedContent = this.removeMultiLineBreak(formattedContent);
-        }
+        formattedContent = this.removeMultiLineBreak(formattedContent);
         await this.utils.Package.Fs.promises.writeFile(filepath, formattedContent);
         this.reload(formattedContent);
     }
