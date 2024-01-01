@@ -303,6 +303,9 @@ HOTKEY = "ctrl+shift+b"
 #   ==   是highlight拓展语法
 #   > [! 是callouts拓展语法
 IGNORE_WORDS = ["==", "> [!"]
+# 最多连续两个换行符，多余的删除
+# 举例：\n\n\n\n【a】\n\n\n\n\n【b】 -> \n\n【a】\n\n【b】
+REMOVE_MULTI_LINE_BREAK = false
 
 
 ############### read_only ###############
