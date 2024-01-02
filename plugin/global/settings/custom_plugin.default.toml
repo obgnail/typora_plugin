@@ -27,11 +27,13 @@ LANGUAGE = "kanban"
 # 也可以在代码块首行添加use strict，进入严格模式（此操作用于控制单个看板）
 STRICT_MODE = false
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
-INTERACTIVE_MODE = false
+INTERACTIVE_MODE = true
 # 当描述为空时隐藏描述框
 HIDE_DESC_WHEN_EMPTY = true
 # 看板最大高度（单位：px）（若<0，则全部显示）
 KANBAN_MAX_HEIGHT = 700
+# 看板的宽度（单位：px）
+KANBAN_WIDTH = 250
 # 看板任务描述框的最大高度（单位：em）（若<0，则全部显示）
 KANBAN_TASK_DESC_MAX_HEIGHT = -1
 # 当看板数量太多时是否换行显示

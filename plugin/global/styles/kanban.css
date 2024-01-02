@@ -32,7 +32,7 @@
 }
 
 .plugin-kanban-content .plugin-kanban-col {
-    width: 250px !important;
+    width: ${kanbanWidth} !important;
     margin: 8px;
 }
 
