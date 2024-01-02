@@ -299,6 +299,8 @@ NAME = "中英文混排优化"
 CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+b"
+# 仅在选区中生效：当框选文字时，调用此功能只会对当前框选的文字生效
+FORMAT_IN_SELECTION_ONLY = false
 # 不希望拆分的单词：
 #   ==   是highlight拓展语法
 #   > [! 是callouts拓展语法
