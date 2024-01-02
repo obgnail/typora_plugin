@@ -117,7 +117,9 @@ option = {
         data: [5, 20, 36, 10, 10, 20]
     }]
 };
-myChart.on('click', params => confirm("你点击了："+params.name));
+
+// 添加事件
+// myChart.on('click', params => confirm("你点击了："+params.name));
 ```
 """
 
@@ -173,12 +175,13 @@ config = {
       borderWidth: 1
     }]
   },
-  options: {
-    onClick: (e) => {
-      const canvasPosition = Chart.helpers.getRelativePosition(e, myChart);
-      confirm(`你点击了位置： (${canvasPosition.x},${canvasPosition.y})`);
-    }
-  }
+  // 添加事件
+  // options: {
+  //   onClick: e => {
+  //     const canvasPosition = Chart.helpers.getRelativePosition(e, myChart);
+  //     confirm(`你点击了位置： (${canvasPosition.x},${canvasPosition.y})`);
+  //   }
+  // }
 }
 ```
 """
