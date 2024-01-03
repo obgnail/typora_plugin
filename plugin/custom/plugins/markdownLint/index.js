@@ -20,6 +20,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         }
         this.initWorker();
         this.initEventHandler();
+        this.onLineClick();
     }
 
     initWorker = () => {
@@ -29,7 +30,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 this.entities.button.style.backgroundColor = content.length ? this.config.error_color : this.config.pass_color;
             }
             if (this.entities.modal.style.display !== "none") {
-                this.entities.pre.textContent = content.length ? this.genMarkdownlint(content) : this.config.pass_text
+                this.entities.pre.innerHTML = content.length ? this.genMarkdownlint(content) : this.config.pass_text
             }
         }
         setTimeout(() => this.worker.postMessage({action: "init", payload: this.config.disable_rules}), 1000);
@@ -45,6 +46,24 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const defaultTime = 500;
         const debounce = this.utils.debounce(this.updateLinter, Math.max(defaultTime, this.config.debounce_interval - defaultTime));
         this.utils.addEventListener(this.utils.eventType.fileEdited, debounce);
+    }
+
+    onLineClick = () => {
+        this.entities.pre.addEventListener("click", ev => {
+            const target = ev.target.closest("a");
+            if (!target) return;
+            const lineToGo = parseInt(target.textContent);
+            if (!lineToGo) return;
+
+            ev.preventDefault();
+            ev.stopPropagation();
+            if (!File.editor.sourceView.inSourceMode) {
+                File.toggleSourceMode();
+            }
+            const cm = File.editor.sourceView.cm;
+            cm.scrollIntoView({line: lineToGo - 1, ch: 0});
+            cm.setCursor({line: lineToGo - 1, ch: 0});
+        })
     }
 
     updateLinter = () => this.worker.postMessage({action: "lint", payload: this.utils.getFilePath() || ""});
@@ -111,8 +130,9 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const result = content.map(line => {
             const lineNo = line.lineNumber + "";
             const [ruleName, _] = line.ruleNames;
+            const lineNum = `<a>${lineNo.padEnd(6)}</a>`;
             const desc = this.config.translate ? map[ruleName] : line.ruleDescription;
-            return "\n" + lineNo.padEnd(6) + ruleName.padEnd(7) + desc;
+            return "\n" + lineNum + ruleName.padEnd(7) + desc;
         })
         return header + result
     }
