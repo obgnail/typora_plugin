@@ -2,6 +2,7 @@ class kanbanPlugin extends BaseCustomPlugin {
     styleTemplate = () => ({
         maxHeight: (this.config.KANBAN_MAX_HEIGHT < 0) ? "initial" : this.config.KANBAN_MAX_HEIGHT + "px",
         taskDescMaxHeight: (this.config.KANBAN_TASK_DESC_MAX_HEIGHT < 0) ? "initial" : this.config.KANBAN_TASK_DESC_MAX_HEIGHT + "em",
+        kanbanWidth: this.config.KANBAN_WIDTH + "px",
         wrap: this.config.WRAP ? "wrap" : "initial",
     })
 
@@ -106,7 +107,10 @@ class kanbanPlugin extends BaseCustomPlugin {
                             this.throwParseError(idx, "【任务】不能先于【看板】出现");
                         } else {
                             const last = kanban.list[kanban.list.length - 1];
-                            let desc = (match.groups.desc || "").replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t");
+                            let desc = (match.groups.desc || "")
+                                .replace(/\\n/g, "\n")
+                                .replace(/\\r/g, "\r")
+                                .replace(/\\t/g, "\t");
                             if (this.config.ALLOW_MARKDOWN_INLINE_STYLE) {
                                 desc = this.utils.markdownInlineStyleToHTML(desc, dir);
                             }
@@ -120,14 +124,15 @@ class kanbanPlugin extends BaseCustomPlugin {
         })
 
         kanban.list = kanban.list.map((col, listIdx) => {
-            const items = col.item.map(item => `
-                <div class="plugin-kanban-col-item kanban-item-box" style="background-color: ${this.getColor("TASK_COLOR", listIdx)}">
-                    <div class="plugin-kanban-col-item-title no-wrap-title"><b>${item.title}</b></div>
-                    <div class="plugin-kanban-col-item-desc" ${(!item.desc && this.config.HIDE_DESC_WHEN_EMPTY) ? 'style="display: none;"' : ""}>${item.desc}</div>
+            const taskColor = this.getColor("TASK_COLOR", listIdx);
+            const kanbanColor = this.getColor("KANBAN_COLOR", listIdx);
+            const items = col.item.map(({title, desc}) => `
+                <div class="plugin-kanban-col-item kanban-item-box" style="background-color: ${taskColor}">
+                    <div class="plugin-kanban-col-item-title no-wrap-title"><b>${title}</b></div>
+                    <div class="plugin-kanban-col-item-desc" ${(!desc && this.config.HIDE_DESC_WHEN_EMPTY) ? 'style="display: none;"' : ""}>${desc}</div>
                 </div>`);
-
             return $(
-                `<div class="plugin-kanban-col kanban-box" style="background-color: ${this.getColor("KANBAN_COLOR", listIdx)}">
+                `<div class="plugin-kanban-col kanban-box" style="background-color: ${kanbanColor}">
                     <div class="plugin-kanban-col-name no-wrap-title">${col.name}</div><p></p>
                     <div class="plugin-kanban-col-item-list">${items.join("")}</div>
                 </div>`)
