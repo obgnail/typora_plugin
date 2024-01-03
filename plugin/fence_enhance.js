@@ -172,8 +172,8 @@ class fenceEnhancePlugin extends BasePlugin {
             arr.push({arg_name: "调整缩进", arg_value: "indent_current"});
             if (this.config.ENABLE_DANGEROUS_FEATURES) {
                 arr.push(
-                    {arg_name: "调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint},
-                    {arg_name: "为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint},
+                    {arg_name: "(危)调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint},
+                    {arg_name: "(危)为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint},
                 );
             }
         }
@@ -256,6 +256,10 @@ class fenceEnhancePlugin extends BasePlugin {
             ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility;
         });
     }
+    showIndentAllFencesModal = () => {
+        const label = "调整缩进功能的能力有限，对于 Python 这种游标卡尺语言甚至会出现误判，你确定吗？";
+        this.utils.modal({title: "为所有代码块调整缩进", components: [{label, type: "p"}]}, this.indentAllFences)
+    }
 
     call = (type, meta) => {
         const callMap = {
@@ -268,7 +272,7 @@ class fenceEnhancePlugin extends BasePlugin {
             fold_current: meta => this.foldFence(meta.target),
             copy_current: meta => this.copyFence(meta.target),
             indent_current: meta => this.indentFence(meta.target),
-            indent_all_fences: this.indentAllFences,
+            indent_all_fences: this.showIndentAllFencesModal,
             add_fences_lang: this.addFencesLang,
         }
         const func = callMap[type];
