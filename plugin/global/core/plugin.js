@@ -1566,14 +1566,13 @@ class dialog {
 class hotkeyHub {
     constructor() {
         this.utils = utils;
-        this.modifier = ["ctrl", "shift", "alt"];
-        this.hotkeyMap = new Map();
+        this.map = new Map();
     }
 
     normalize = hotkeyString => {
         const arr = [];
         const keyList = hotkeyString.toLowerCase().split("+").map(k => k.trim());
-        this.modifier.forEach(key => keyList.indexOf(key) !== -1 && arr.push(key));
+        ["ctrl", "shift", "alt"].forEach(key => keyList.indexOf(key) !== -1 && arr.push(key));
         const key = keyList.find(k => k !== "ctrl" && k !== "shift" && k !== "alt")
             || (hotkeyString.indexOf("++") !== -1 ? "+" : " ");
         arr.push(key);
@@ -1582,7 +1581,7 @@ class hotkeyHub {
 
     _register = (hotkey, call) => {
         if (typeof hotkey === "string" && hotkey.length) {
-            this.hotkeyMap.set(this.normalize(hotkey), call);
+            this.map.set(this.normalize(hotkey), call);
             // 一个callback可能对应多个hotkey
         } else if (hotkey instanceof Array) {
             for (const hk of hotkey) {
@@ -1601,7 +1600,7 @@ class hotkeyHub {
             }
         }
     }
-    unregister = hotkeyString => this.hotkeyMap.delete(this.normalize(hotkeyString))
+    unregister = hotkeyString => this.map.delete(this.normalize(hotkeyString))
     registerSingle = (hotkeyString, callback) => this._register(hotkeyString, callback)
 
     process = () => {
@@ -1612,7 +1611,7 @@ class hotkeyHub {
             this.utils.altKeyPressed(ev) && arr.push("alt");
             arr.push(ev.key.toLowerCase());
             const key = arr.join("+");
-            const callback = this.hotkeyMap.get(key);
+            const callback = this.map.get(key);
             if (callback) {
                 callback();
                 ev.preventDefault();
