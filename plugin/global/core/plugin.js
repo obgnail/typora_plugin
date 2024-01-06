@@ -1566,31 +1566,24 @@ class dialog {
 class hotkeyHub {
     constructor() {
         this.utils = utils;
-        this.hotkeyMap = new Map();
+        this.map = new Map();
     }
 
-    toHotkeyFunc = hotkeyString => {
+    normalize = hotkeyString => {
+        const modifier = ["ctrl", "shift", "alt"];
         const keyList = hotkeyString.toLowerCase().split("+").map(k => k.trim());
-        const ctrl = keyList.indexOf("ctrl") !== -1;
-        const shift = keyList.indexOf("shift") !== -1;
-        const alt = keyList.indexOf("alt") !== -1;
-        const key = (keyList.filter(key => key !== "ctrl" && key !== "shift" && key !== "alt")[0])
-            || (hotkeyString.indexOf("++") !== -1 ? "+" : " ");
-
-        return ev => this.utils.metaKeyPressed(ev) === ctrl
-            && this.utils.shiftKeyPressed(ev) === shift
-            && this.utils.altKeyPressed(ev) === alt
-            && ev.key.toLowerCase() === key
+        const modifierKeys = modifier.filter(k => keyList.includes(k));
+        const mainKey = keyList.find(k => !modifier.includes(k)) || (hotkeyString.includes("++") ? "+" : " ");
+        return [...modifierKeys, mainKey].join("+");
     }
 
-    _register = (hk, call) => {
-        if (typeof hk === "string" && hk.length) {
-            const hotkey = this.toHotkeyFunc(hk);
-            this.hotkeyMap.set(hk, {hotkey, call});
+    _register = (hotkey, call) => {
+        if (typeof hotkey === "string" && hotkey.length) {
+            this.map.set(this.normalize(hotkey), call);
             // 一个callback可能对应多个hotkey
-        } else if (hk instanceof Array) {
-            for (const _hk of hk) {
-                this._register(_hk, call);
+        } else if (hotkey instanceof Array) {
+            for (const hk of hotkey) {
+                this._register(hk, call);
             }
         }
     }
@@ -1605,18 +1598,22 @@ class hotkeyHub {
             }
         }
     }
-    unregister = hotkeyString => this.hotkeyMap.delete(hotkeyString)
+    unregister = hotkeyString => this.map.delete(this.normalize(hotkeyString))
     registerSingle = (hotkeyString, callback) => this._register(hotkeyString, callback)
 
     process = () => {
         window.addEventListener("keydown", ev => {
-            for (const hotkey of this.hotkeyMap.values()) {
-                if (hotkey.hotkey(ev)) {
-                    hotkey.call();
-                    ev.preventDefault();
-                    ev.stopPropagation();
-                    return
-                }
+            const arr = [];
+            this.utils.metaKeyPressed(ev) && arr.push("ctrl");
+            this.utils.shiftKeyPressed(ev) && arr.push("shift");
+            this.utils.altKeyPressed(ev) && arr.push("alt");
+            arr.push(ev.key.toLowerCase());
+            const key = arr.join("+");
+            const callback = this.map.get(key);
+            if (callback) {
+                callback();
+                ev.preventDefault();
+                ev.stopPropagation();
             }
         }, true)
     }
