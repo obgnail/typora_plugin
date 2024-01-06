@@ -12,10 +12,7 @@ class hotkeyHub extends BaseCustomPlugin {
         }
     }
 
-    callback = anchorNode => {
-        const filepath = this.utils.joinPath("./plugin/global/settings/hotkey.default.toml");
-        this.utils.showInFinder(filepath);
-    }
+    callback = anchorNode => this.utils.showInFinder(this.utils.joinPath("./plugin/global/settings/hotkey.default.toml"));
 
     toHotkey = setting => {
         const {hotkey, enable, closestSelector, evil, plugin: fixedName, function: func} = setting;

@@ -49,20 +49,25 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     onLineClick = () => {
-        this.entities.pre.addEventListener("click", ev => {
-            const target = ev.target.closest("a");
-            if (!target) return;
-            const lineToGo = parseInt(target.textContent);
-            if (!lineToGo) return;
-
-            ev.preventDefault();
-            ev.stopPropagation();
-            if (!File.editor.sourceView.inSourceMode) {
+        this.entities.pre.addEventListener("mousedown", ev => {
+            if (ev.button === 0) {
+                const target = ev.target.closest("a");
+                if (!target) return;
+                const lineToGo = parseInt(target.textContent);
+                if (!lineToGo) return;
+                ev.preventDefault();
+                ev.stopPropagation();
+                if (!File.editor.sourceView.inSourceMode) {
+                    File.toggleSourceMode();
+                }
+                const cm = File.editor.sourceView.cm;
+                cm.scrollIntoView({line: lineToGo - 1, ch: 0});
+                cm.setCursor({line: lineToGo - 1, ch: 0});
+            } else if (ev.button === 2) {
                 File.toggleSourceMode();
+                ev.preventDefault();
+                ev.stopPropagation();
             }
-            const cm = File.editor.sourceView.cm;
-            cm.scrollIntoView({line: lineToGo - 1, ch: 0});
-            cm.setCursor({line: lineToGo - 1, ch: 0});
         })
     }
 

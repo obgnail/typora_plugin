@@ -181,15 +181,17 @@ class commanderPlugin extends BasePlugin {
         }
     }
 
-    beforeExecute = (cmd, shell, hint) => {
+    normalizeModal = (cmd, shell, hint) => {
         this.modal.input.value = cmd;
         this.modal.shellSelect.value = shell;
         this.modal.commit.style.display = "block";
         typeof hint === "string" && this.showStdout(hint);
+    }
 
-        const shell_ = this.getShellCommand(shell);
-        const cmd_ = this.replaceArgs(cmd, shell);
-        return {shell_, cmd_}
+    normalizeCommand = (cmd, shell) => {
+        cmd = this.replaceArgs(cmd, shell);
+        shell = this.getShellCommand(shell);
+        return [cmd, shell]
     }
 
     showStdout = stdout => {
@@ -212,7 +214,8 @@ class commanderPlugin extends BasePlugin {
         const cb = (err, stdout, stderr) => callback && callback(err, stdout, stderr);
 
         const prefix = File.isWin ? `chcp 65001 |` : "";
-        const {cmd_, shell_} = this.beforeExecute(cmd, shell, hint);
+        this.normalizeModal(cmd, shell, hint);
+        const [cmd_, shell_] = this.normalizeCommand(cmd, shell)
         const command_ = `${prefix} ${shell_} "${cmd_}"`;
         const defaultOptions = {encoding: 'utf8', cwd: this.getFolder()};
         const option_ = {...defaultOptions, ...options};
@@ -233,7 +236,8 @@ class commanderPlugin extends BasePlugin {
         const cb = code => callback && callback(code);
 
         const prefix = File.isWin ? "chcp 65001 |" : "";
-        const {cmd_, shell_} = this.beforeExecute(cmd, shell, hint || ""); // 执行前清空输出
+        this.normalizeModal(cmd, shell, hint || ""); // 执行前清空输出
+        const [cmd_, shell_] = this.normalizeCommand(cmd, shell)
         const command_ = `${prefix} ${shell_} "${cmd_}"`;
         const defaultOptions = {encoding: 'utf8', cwd: this.getFolder(), shell: true};
         const option_ = {...defaultOptions, ...options};

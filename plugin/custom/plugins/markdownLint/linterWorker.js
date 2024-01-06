@@ -11,7 +11,7 @@ const init = rules => {
         result[rule] = false;
     }
     disableRules = result;
-    console.debug("markdown linter worker initialed");
+    console.debug("markdown linter worker is initialized");
 }
 
 const lint = async filepath => {
