@@ -35,16 +35,12 @@ class resizeImagePlugin extends BasePlugin {
                 if (image.style.maxWidth) {
                     const maxSize = image.parentElement.offsetWidth;
                     if (this.getWidth(image) > maxSize) {
-                        image.style.width = "";
+                        image.style.removeProperty("width");
                     }
-                    image.style.maxWidth = "";
+                    image.style.removeProperty("maxWidth");
                 }
-                if (image.style.left) {
-                    image.style.left = "";
-                }
-                if (image.style.position) {
-                    image.style.position = "";
-                }
+                image.style.removeProperty("left");
+                image.style.removeProperty("position");
             })
         }
     }

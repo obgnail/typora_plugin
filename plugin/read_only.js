@@ -5,19 +5,17 @@ class readOnlyPlugin extends BasePlugin {
 
     process = () => {
         const write = document.getElementById("write");
-        write.addEventListener("compositionstart", ev => (File.isLocked) && this.stop(ev), true);
-        write.addEventListener("keydown", ev => {
-            if (File.isLocked && (ev.key === "Enter" || ev.key === "Backspace" || ev.key === "Delete" || ev.key === ' ')) {
-                this.stop(ev);
-            }
-        }, true);
+        const forbiddenKeys = ["Enter", "Backspace", "Delete", " "];
+        write.addEventListener("compositionstart", ev => File.isLocked && this.stop(ev), true);
+        write.addEventListener("keydown", ev => File.isLocked && forbiddenKeys.includes(ev.key) && this.stop(ev), true);
 
         if (this.config.READ_ONLY_DEFAULT) {
             this.utils.loopDetector(() => File && File.lock, this.call);
         }
 
         const setCheckbox = disabled => {
-            write.querySelectorAll(`input[type="checkbox"]`).forEach(input => {
+            const checkboxes = write.querySelectorAll(`input[type="checkbox"]`);
+            checkboxes.forEach(input => {
                 if (disabled) {
                     input.setAttribute("disabled", "true");
                 } else {
@@ -26,20 +24,24 @@ class readOnlyPlugin extends BasePlugin {
             });
         }
         const setInput = disabled => {
-            if (disabled) {
-                [
-                    "#plugin-search-multi-input input", "#plugin-commander-form input", "#plugin-toolbar-input input",
-                    "#plugin-multi-highlighter-input input", "#typora-quick-open-input input"
-                ].forEach(selector => {
-                    const input = document.querySelector(selector);
-                    input && input.removeAttribute("readonly");
-                })
-            }
+            if (!disabled) return;
+            const inputs = [
+                "#plugin-search-multi-input input",
+                "#plugin-commander-form input",
+                "#plugin-toolbar-input input",
+                "#plugin-multi-highlighter-input input",
+                "#typora-quick-open-input input"
+            ]
+            inputs.forEach(selector => {
+                const input = document.querySelector(selector);
+                input && input.removeAttribute("readonly");
+            })
         }
-        this.utils.decorate(() => File, "freshLock", null, () => {
+        const setComponents = () => {
             setCheckbox(File.isLocked);
             setInput(File.isLocked);
-        })
+        }
+        this.utils.decorate(() => File, "freshLock", null, setComponents)
     }
 
     stop = ev => {
