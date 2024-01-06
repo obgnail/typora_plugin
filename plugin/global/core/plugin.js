@@ -1570,13 +1570,11 @@ class hotkeyHub {
     }
 
     normalize = hotkeyString => {
-        const arr = [];
+        const modifier = ["ctrl", "shift", "alt"];
         const keyList = hotkeyString.toLowerCase().split("+").map(k => k.trim());
-        ["ctrl", "shift", "alt"].forEach(key => keyList.indexOf(key) !== -1 && arr.push(key));
-        const key = keyList.find(k => k !== "ctrl" && k !== "shift" && k !== "alt")
-            || (hotkeyString.indexOf("++") !== -1 ? "+" : " ");
-        arr.push(key);
-        return arr.join("+")
+        const modifierKeys = modifier.filter(k => keyList.includes(k));
+        const mainKey = keyList.find(k => !modifier.includes(k)) || (hotkeyString.includes("++") ? "+" : " ");
+        return [...modifierKeys, mainKey].join("+");
     }
 
     _register = (hotkey, call) => {

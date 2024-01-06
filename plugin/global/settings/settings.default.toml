@@ -687,6 +687,10 @@ CLICKABLE = true
 # 严格模式：只当点击到h1~h6时，才触发折叠/展开。若为false，则自动向上寻找最近的h1~h6
 # 非严格模式可能会出现意想不到的事：ctrl+click在typora是非常常用的，当你不小心点错位置，标题就被折叠起来了
 STRICT_MODE = true
+# 在右键菜单中使用严格模式
+# 此选项是STRICT_MODE的特别情况，是考虑到方便使用才添加此选项的
+# 若置为false，那么右键菜单不再严格限制光标必须在标题行中，在正文区域任意位置右键就可以显示所有菜单选项
+STRICT_MODE_IN_CONTEXT_MENU = false
 # 记住章节是否折叠（直到关闭typora）
 RECORD_COLLAPSE = true
 # 各个功能对应的修饰键

@@ -29,8 +29,8 @@ class collapseParagraphPlugin extends BasePlugin {
         })
     }
 
-    getTargetHeader = target => {
-        if (this.config.STRICT_MODE) {
+    getTargetHeader = (target, forceLoose = false) => {
+        if (this.config.STRICT_MODE && !forceLoose) {
             return target.closest(this.selector)
         }
         let ele = target.closest("#write > [cid]");
@@ -173,7 +173,7 @@ class collapseParagraphPlugin extends BasePlugin {
     dynamicCallArgsGenerator = (anchorNode, meta) => {
         const arg_name = `${this.config.RECORD_COLLAPSE ? "不" : ""}记住章节折叠状态`;
         const result = [{arg_name: arg_name, arg_value: "record_collapse_state"}];
-        const target = this.getTargetHeader(anchorNode);
+        const target = this.getTargetHeader(anchorNode, !this.config.STRICT_MODE_IN_CONTEXT_MENU);
         if (target) {
             meta.target = target;
             result.push(
