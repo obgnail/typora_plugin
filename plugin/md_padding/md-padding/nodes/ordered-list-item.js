@@ -13,7 +13,7 @@ class OrderedListItem {
         return this.prefix + this.children.map(x => x.toMarkdown()).join('');
     }
     static isValidPrefix(str) {
-        return (0, char_1.isNumeric)(str[0]) && str[1] === '.' && str[2] === ' ';
+        return (0, char_1.isNumeric)(str[0]) && str[1] === '.' && (0, char_1.isInlineBlank)(str[2]);
     }
 }
 exports.OrderedListItem = OrderedListItem;

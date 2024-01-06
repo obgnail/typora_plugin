@@ -26,6 +26,7 @@ const blank_1 = require("../nodes/blank");
 const raw_1 = require("../nodes/raw");
 const ordered_list_item_1 = require("../nodes/ordered-list-item");
 const unordered_list_item_1 = require("../nodes/unordered-list-item");
+const blockquote_item_1 = require("../nodes/blockquote-item");
 const state_1 = require("./state");
 const stack_1 = require("../utils/stack");
 const mask_1 = require("./mask");
@@ -39,6 +40,7 @@ function parse(str, options) {
     let blankLine = true;
     let listPrefix = '';
     let codeLang = '';
+    const blockquotePrefix = '> ';
     let strongDelimiter = '**';
     let emphasisDelimiter = '*';
     let inlineCodeDelimiter = '`';
@@ -192,6 +194,10 @@ function parse(str, options) {
             resolve(new ordered_list_item_1.OrderedListItem(listPrefix, popNodes()), new blank_1.Blank(c));
             i++;
         }
+        else if (state === state_1.State.BlockquoteItem && c === '\n') {
+            resolve(new blockquote_item_1.BlockquoteItem(blockquotePrefix, popNodes()), new blank_1.Blank(c));
+            i++;
+        }
         // Quoted
         else if (state === state_1.State.Quoted && c === '"') {
             resolve(new quoted_1.Quoted(popNodes()));
@@ -249,6 +255,11 @@ function parse(str, options) {
             push(state_1.State.OrderedListItem);
             listPrefix = c3;
             i += 3;
+        }
+        else if (blankLine && blockquote_item_1.BlockquoteItem.isValidPrefix(c2) && allow(4194304 /* BlockquoteItem */)) {
+            push(state_1.State.BlockquoteItem);
+            i += 2;
+            continue;
         }
         else if (c2 === '~~' && allow(8192 /* Strikethrough */)) {
             push(state_1.State.Strikethrough);
@@ -379,6 +390,9 @@ function parse(str, options) {
                 break;
             case state_1.State.UnorderedListItem:
                 resolve(new unordered_list_item_1.UnorderedListItem(listPrefix, popNodes()));
+                break;
+            case state_1.State.BlockquoteItem:
+                resolve(new blockquote_item_1.BlockquoteItem(blockquotePrefix, popNodes()));
                 break;
             case state_1.State.BlockCodeBody:
                 resolve(new block_code_1.BlockCode(codeLang, blockCodeDelimiter, (0, parse_code_1.parseCode)(popMarkdown(), codeLang, parse, options), false));

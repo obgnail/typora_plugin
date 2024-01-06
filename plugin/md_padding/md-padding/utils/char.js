@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isStartCharacter = exports.isEndCharacter = exports.isWordBoundary = exports.isAlphabet = exports.isBlank = exports.isFullwidthPunctuation = exports.isNumeric = exports.isPunctuationCharacter = void 0;
+exports.isStartCharacter = exports.isEndCharacter = exports.isWordBoundary = exports.isAlphabet = exports.isInlineBlank = exports.isBlank = exports.isFullwidthPunctuation = exports.isNumeric = exports.isPunctuationCharacter = void 0;
 // * General Punctuation: https://en.wikipedia.org/wiki/General_Punctuation
 // * Supplemental Punctuation: https://en.wikipedia.org/wiki/Supplemental_Punctuation
 // * ASCII Punctuations
@@ -33,6 +33,10 @@ function isBlank(char) {
     return !!/^\s$/.exec(char);
 }
 exports.isBlank = isBlank;
+function isInlineBlank(char) {
+    return char === ' ' || char === '\t';
+}
+exports.isInlineBlank = isInlineBlank;
 function isAlphabet(char) {
     return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z');
 }
