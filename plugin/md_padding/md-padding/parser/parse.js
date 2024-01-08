@@ -40,7 +40,7 @@ function parse(str, options) {
     let blankLine = true;
     let listPrefix = '';
     let codeLang = '';
-    const blockquotePrefix = '> ';
+    const blockquotePrefix = '>';
     let strongDelimiter = '**';
     let emphasisDelimiter = '*';
     let inlineCodeDelimiter = '`';
@@ -258,7 +258,7 @@ function parse(str, options) {
         }
         else if (blankLine && blockquote_item_1.BlockquoteItem.isValidPrefix(c2) && allow(4194304 /* BlockquoteItem */)) {
             push(state_1.State.BlockquoteItem);
-            i += 2;
+            i++;
             continue;
         }
         else if (c2 === '~~' && allow(8192 /* Strikethrough */)) {

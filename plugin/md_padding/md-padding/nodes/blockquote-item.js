@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlockquoteItem = void 0;
-const char_1 = require("../utils/char");
 class BlockquoteItem {
     constructor(prefix, children) {
         this.children = [];
@@ -13,7 +12,7 @@ class BlockquoteItem {
         return this.prefix + this.children.map(x => x.toMarkdown()).join('');
     }
     static isValidPrefix(str) {
-        return str[0] === '>' && (0, char_1.isInlineBlank)(str[1]);
+        return str[0] === '>';
     }
 }
 exports.BlockquoteItem = BlockquoteItem;
