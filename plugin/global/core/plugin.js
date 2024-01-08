@@ -529,6 +529,12 @@ class utils {
         openUrl(url, 1);
     }
 
+    static getRecentFiles = async () => {
+        const recent = await JSBridge.invoke("setting.getRecentFiles");
+        const {files = [], folders = []} = (typeof recent === "string") ? JSON.parse(recent || "{}") : (recent || {});
+        return {files, folders}
+    }
+
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
     // data:image;base64、data:image\svg+xml 等等
     static isSpecialImage = src => src.startsWith("data:image");

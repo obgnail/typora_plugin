@@ -364,17 +364,18 @@ class recentFileTool extends baseToolInterface {
         if (!File.isNode) return;
 
         const result = [];
-        const recent = await JSBridge.invoke("setting.getRecentFiles");
-        const {files = [], folders = []} = (typeof recent === "string") ? JSON.parse(recent || "{}") : (recent || {});
+        const blank = String.fromCharCode(160).repeat(3);
+        const {files, folders} = await this.utils.getRecentFiles();
         const add = (list, meta) => {
             for (const file of list) {
                 if (file.path) {
-                    result.push({showName: file.path, fixedName: file.path, meta: meta});
+                    const prefix = (meta === "file") ? "📄" : "📁";
+                    result.push({showName: prefix + blank + file.path, fixedName: file.path, meta: meta});
                 }
             }
         }
-        add(files, "file");
         add(folders, "folder");
+        add(files, "file");
         return result;
     }
     search = async input => {
@@ -382,7 +383,7 @@ class recentFileTool extends baseToolInterface {
         if (!files || files.length === 0) return;
 
         const current = this.utils.getFilePath();
-        files = files.filter(file => file.showName !== current); // 小细节：去掉当前的文件
+        files = files.filter(file => file.fixedName !== current); // 小细节：去掉当前的文件
         return this.baseSearch(input, files, ["showName"])
     }
     callback = (fixedName, meta) => {
