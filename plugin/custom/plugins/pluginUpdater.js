@@ -33,12 +33,9 @@ class pluginUpdater extends BaseCustomPlugin {
         }
 
         const proxy = await this.getProxy();
-        const components = [
-            {label: "默认使用当前系统代理。你可以手动修改：", type: "p"},
-            {label: "代理（为空则不设置）", type: "input", value: proxy, placeholder: "http://127.0.0.1:7890"}
-        ]
-        const modal = {title: "设置代理", components};
-        this.modal(modal, async ([_, {submit: proxy_}]) => await this.modalUpdate(proxy_))
+        const label = "代理（填入URL，默认使用系统代理，为空则不使用代理）";
+        const components = [{label, type: "input", value: proxy, placeholder: "http://127.0.0.1:7890"}];
+        this.modal({title: "设置代理", components}, async ([{submit: proxy_}]) => await this.modalUpdate(proxy_))
     }
 
     modalUpdate = async proxy => {
