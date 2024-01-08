@@ -364,8 +364,7 @@ class recentFileTool extends baseToolInterface {
         if (!File.isNode) return;
 
         const result = [];
-        const recent = await JSBridge.invoke("setting.getRecentFiles");
-        const {files = [], folders = []} = (typeof recent === "string") ? JSON.parse(recent || "{}") : (recent || {});
+        const {files, folders} = await this.utils.getRecentFiles();
         const add = (list, meta) => {
             for (const file of list) {
                 if (file.path) {
