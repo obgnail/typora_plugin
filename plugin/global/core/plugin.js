@@ -478,7 +478,7 @@ class utils {
 
     ////////////////////////////// 基础文件操作 //////////////////////////////
     static getDirname = () => global.dirname || global.__dirname
-    static getFilePath = () => File.filePath || File.bundle && File.bundle.filePath
+    static getFilePath = () => File.filePath || File.bundle && File.bundle.filePath || ""
     static getCurrentDirPath = () => this.Package.Path.dirname(this.getFilePath())
     static joinPath = (...paths) => this.Package.Path.join(this.getDirname(), ...paths)
     static requireFilePath = (...paths) => reqnode(this.joinPath(...paths))
