@@ -71,7 +71,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         })
     }
 
-    updateLinter = () => this.worker.postMessage({action: "lint", payload: this.utils.getFilePath() || ""});
+    updateLinter = () => this.worker.postMessage({action: "lint", payload: this.utils.getFilePath()});
 
     callback = async anchorNode => {
         this.entities.modal.style.display = this.entities.modal.style.display === "none" ? "" : "none";
