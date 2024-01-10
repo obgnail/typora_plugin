@@ -232,8 +232,6 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ![new_window_tab](assets/new_window_tab.gif)
 
-> 此插件是 [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) 的重新实现，修复了原项目的诸多 BUG 和不适配问题；去掉了类似于 vscode 的预览功能，改成了 idea 的标签页逻辑；修改了一些交互。
-
 
 
 ### search_multi：全局多关键字搜索
@@ -895,6 +893,30 @@ filter_regexp = ""
 > 第一次上榜小众软件，心情非常冲动。同时祝小众软件越办越好。
 
 ![appinn](assets/appinn.png)
+
+
+
+## 致谢
+
+本项目使用或参考了如下开源项目
+
+MIT：
+
+- [markmap](https://markmap.js.org/)
+- [chartjs](https://www.chartjs.org/)
+- [abcjs](https://github.com/paulrosen/abcjs)
+- [tui.calendar](https://github.com/nhn/tui.calendar)
+- [DataTables](https://github.com/DataTables/DataTables)
+- [markdownlint](https://github.com/markdownlint/markdownlint)
+
+Apache-2.0：
+
+- [echarts](https://echarts.apache.org/zh/index.html)
+
+without-licence：
+
+- [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin)
+- [md-padding](https://github.com/harttle/md-padding)
 
 
 
