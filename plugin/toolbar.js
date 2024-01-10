@@ -144,6 +144,7 @@ class toolbarPlugin extends BasePlugin {
 class baseToolInterface {
     name = () => ""
     translate = () => ""
+    icon = () => "🎯"
     init = () => null
     // 要么返回 []string
     // 要么返回 [{ showName:"", fixedName:"", meta:"" }]
@@ -297,6 +298,7 @@ class toolController {
 class tabTool extends baseToolInterface {
     name = () => "tab"
     translate = () => "切换标签页"
+    icon = () => "📖"
     init = () => {
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
             this.windowTabBarPlugin = this.utils.getPlugin("window_tab");
@@ -315,6 +317,7 @@ class tabTool extends baseToolInterface {
 class pluginTool extends baseToolInterface {
     name = () => "plu"
     translate = () => "使用插件"
+    icon = () => "🔌"
     collectAll = () => {
         const pluginsList = [];
         for (const [fixedName, plugin] of Object.entries(this.utils.getAllPlugins())) {
@@ -360,6 +363,7 @@ class pluginTool extends baseToolInterface {
 class recentFileTool extends baseToolInterface {
     name = () => "his"
     translate = () => "打开最近文件"
+    icon = () => "⏱"
     getRecentFile = async () => {
         if (!File.isNode) return;
 
@@ -398,6 +402,7 @@ class recentFileTool extends baseToolInterface {
 class operationTool extends baseToolInterface {
     name = () => "ops"
     translate = () => "执行操作"
+    icon = () => "🔨"
     init = () => {
         const explorer = () => this.utils.showInFinder(this.utils.getFilePath());
         const copyPath = () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath());
@@ -427,6 +432,7 @@ class operationTool extends baseToolInterface {
 class modeTool extends baseToolInterface {
     name = () => "mode"
     translate = () => "切换模式"
+    icon = () => "🌗"
     init = () => {
         const outlineView = () => {
             File.editor.library.toggleSidebar();
@@ -471,6 +477,7 @@ class modeTool extends baseToolInterface {
 class tempThemeTool extends baseToolInterface {
     name = () => "theme"
     translate = () => "临时更换主题"
+    icon = () => "🎨"
     setThemeForever = theme => ClientCommand.setTheme(theme);
     setThemeTemp = theme => File.setTheme(theme);
     search = async input => {
@@ -484,6 +491,7 @@ class tempThemeTool extends baseToolInterface {
 class outlineTool extends baseToolInterface {
     name = () => "out"
     translate = () => "文档大纲"
+    icon = () => "🔗"
     getAll = () => {
         const headers = File.editor.nodeMap.toc && File.editor.nodeMap.toc.headers;
         if (!headers) return
@@ -503,9 +511,13 @@ class outlineTool extends baseToolInterface {
 class functionTool extends baseToolInterface {
     name = () => "func"
     translate = () => "功能列表"
+    icon = () => "💡"
     search = async input => {
-        const mapFunc = ([fixedName, tool]) => ({showName: `${fixedName} - ${tool.translate()}`, fixedName});
-        const all = Array.from(this.controller.tools.entries(), mapFunc);
+        const blank = String.fromCharCode(160).repeat(3);
+        const all = Array.from(this.controller.tools.entries(), ([name, tool]) => ({
+            showName: tool.icon() + blank + name + " - " + tool.translate(),
+            fixedName: name
+        }));
         return this.baseSearch(input, all, ["showName"]);
     }
     callback = fixedName => {
@@ -520,8 +532,10 @@ class functionTool extends baseToolInterface {
 class mixTool extends baseToolInterface {
     name = () => "all"
     translate = () => "混合查找"
+    icon = () => "🔱"
     search = async input => {
         const toolName = this.name();
+        const blank = String.fromCharCode(160).repeat(3);
         const toolResult = await Promise.all(
             Array.from(this.controller.tools.entries(), async ([name, tool]) => {
                 if (name === toolName) return;
@@ -529,7 +543,9 @@ class mixTool extends baseToolInterface {
                 if (result) {
                     return result.map(ele => {
                         const meta = name + "@" + (ele.meta || "");
-                        return typeof ele === "string" ? {showName: ele, fixedName: ele, meta} : {...ele, meta};
+                        const item = typeof ele === "string" ? {showName: ele, fixedName: ele, meta} : {...ele, meta};
+                        item.showName = tool.icon() + blank + item.showName;
+                        return item
                     });
                 }
             })
