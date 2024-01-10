@@ -363,7 +363,7 @@ class pluginTool extends baseToolInterface {
 class recentFileTool extends baseToolInterface {
     name = () => "his"
     translate = () => "打开最近文件"
-    icon = () => "⏱"
+    icon = () => "🕖"
     getRecentFile = async () => {
         if (!File.isNode) return;
 
@@ -491,7 +491,7 @@ class tempThemeTool extends baseToolInterface {
 class outlineTool extends baseToolInterface {
     name = () => "out"
     translate = () => "文档大纲"
-    icon = () => "🔗"
+    icon = () => "🧷"
     getAll = () => {
         const headers = File.editor.nodeMap.toc && File.editor.nodeMap.toc.headers;
         if (!headers) return
