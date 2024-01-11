@@ -259,24 +259,37 @@ class tocMarkmap {
 
     fit = () => this.markmap && this.markmap.fit();
 
-    getDownloadSvgElement = () => {
+    getSvgBounding = cloneSvg => {
+        cloneSvg = cloneSvg || this.entities.svg.cloneNode(true);
         const {width, height} = this.entities.svg.querySelector("g").getBoundingClientRect();
-        const cloneSvg = this.entities.svg.cloneNode(true);
-        const cloneG = cloneSvg.querySelector("g");
-
-        const match = cloneG.getAttribute("transform").match(/scale\((?<scale>.+?\))/);
-        if (!match || !match.groups || !match.groups.scale) return;
+        const match = cloneSvg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/);
+        if (!match || !match.groups || !match.groups.scale) return {};
         const scale = parseFloat(match.groups.scale);
         const realWidth = parseInt(width / scale);
         const realHeight = parseInt(height / scale);
 
+        let minY = 0, maxY = 0;
+        cloneSvg.querySelectorAll("g.markmap-node").forEach(node => {
+            const match = node.getAttribute("transform").match(/translate\((?<x>.+?),\s(?<y>.+?)\)/);
+            if (!match || !match.groups || !match.groups.x || !match.groups.y) return;
+            const y = parseInt(match.groups.y);
+            minY = Math.min(minY, y);
+            maxY = Math.max(maxY, y);
+        })
+
+        return {minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight}
+    }
+
+    getDownloadSvgElement = () => {
+        const cloneSvg = this.entities.svg.cloneNode(true);
+        const {width = 100, height = 100, minY = 0} = this.getSvgBounding(cloneSvg);
         cloneSvg.removeAttribute("id");
         cloneSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         cloneSvg.setAttribute("class", "markmap");
-        cloneSvg.setAttribute("width", realWidth + 100 + "");
-        cloneSvg.setAttribute("height", realHeight + 100 + "");
-        cloneSvg.setAttribute("viewBox", `0 -${realHeight / 2} ${realWidth} ${realHeight + 100}`);
-        cloneG.setAttribute("transform", "translate(0, 50)");
+        cloneSvg.setAttribute("width", `${width + 100}`);
+        cloneSvg.setAttribute("height", `${height + 100}`);
+        cloneSvg.setAttribute("viewBox", `0 ${minY} ${width} ${height + 100}`);
+        cloneSvg.querySelector("g").setAttribute("transform", "translate(0, 50)");
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
             cloneSvg.querySelectorAll("foreignObject").forEach(foreign => {
                 const {textContent, previousSibling} = foreign;
