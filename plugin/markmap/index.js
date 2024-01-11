@@ -271,6 +271,7 @@ class tocMarkmap {
         const realHeight = parseInt(height / scale);
 
         cloneSvg.removeAttribute("id");
+        cloneSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         cloneSvg.setAttribute("class", "markmap");
         cloneSvg.setAttribute("width", realWidth + 100 + "");
         cloneSvg.setAttribute("height", realHeight + 100 + "");
