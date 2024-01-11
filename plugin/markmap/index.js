@@ -186,7 +186,7 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图形重新适配窗口"></div>
-                    <div class="plugin-markmap-icon icon ion-archive" action="download" ty-hint="下载图片"></div>
+                    <div class="plugin-markmap-icon icon ion-archive" action="download" ty-hint="下载（试验性功能）"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
                 </div>
@@ -260,20 +260,23 @@ class tocMarkmap {
     fit = () => this.markmap && this.markmap.fit();
 
     download = () => {
-        const svg = this.entities.svg.cloneNode(true);
-        svg.removeAttribute("id");
-        svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-        svg.setAttribute("class", "markmap");
-        svg.setAttribute("width", "3000");
-        svg.setAttribute("height", "12000");
-        svg.setAttribute("viewBox", "0 0 1000 1000");
-        svg.querySelector("g").setAttribute("transform", "translate(10,50)");
-        const svgHTML = svg.outerHTML.replace(/<br>/g, "<br/>");
-        const a = document.createElement("a");
-        const fileName = this.utils.getFileName() || "markmap";
-        a.download = fileName + ".svg";
-        a.href = "data:image/svg;utf8," + encodeURIComponent(svgHTML);
-        a.click();
+        const label = "浏览器不支持直接导出包含 foreignObject 的 SVG 标签🙃</br>插件开发者并不了解 SVG，只能瞎处理😢，所以导出的文件会有显示上的 BUG，是否继续？"
+        this.utils.modal({title: "实验性功能", components: [{type: "p", label}]}, () => {
+            const svg = this.entities.svg.cloneNode(true);
+            svg.removeAttribute("id");
+            svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+            svg.setAttribute("class", "markmap");
+            svg.setAttribute("width", "3000");
+            svg.setAttribute("height", "12000");
+            svg.setAttribute("viewBox", "0 0 1000 1000");
+            svg.querySelector("g").setAttribute("transform", "translate(10,50)");
+            const svgHTML = svg.outerHTML.replace(/<br>/g, "<br/>");
+            const a = document.createElement("a");
+            const fileName = this.utils.getFileName() || "markmap";
+            a.download = fileName + ".svg";
+            a.href = "data:image/svg;utf8," + encodeURIComponent(svgHTML);
+            a.click();
+        })
     }
 
     pinUp = async (draw = true) => {
