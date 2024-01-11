@@ -898,25 +898,9 @@ filter_regexp = ""
 
 ## 致谢
 
-本项目使用或参考了如下开源项目
-
-MIT：
-
-- [markmap](https://markmap.js.org/)
-- [chartjs](https://www.chartjs.org/)
-- [abcjs](https://github.com/paulrosen/abcjs)
-- [tui.calendar](https://github.com/nhn/tui.calendar)
-- [DataTables](https://github.com/DataTables/DataTables)
-- [markdownlint](https://github.com/markdownlint/markdownlint)
-
-Apache-2.0：
-
-- [echarts](https://echarts.apache.org/zh/index.html)
-
-without-licence：
-
-- [typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin)
-- [md-padding](https://github.com/harttle/md-padding)
+- MIT：[markmap](https://markmap.js.org/) | [chartjs ](https://www.chartjs.org/)| [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar ](https://github.com/nhn/tui.calendar)| [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/markdownlint/markdownlint)
+- Apache-2.0：[echarts](https://echarts.apache.org/zh/index.html)
+- without-licence：[typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [md-padding](https://github.com/harttle/md-padding)
 
 
 

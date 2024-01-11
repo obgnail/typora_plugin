@@ -186,6 +186,7 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图形重新适配窗口"></div>
+                    <div class="plugin-markmap-icon icon ion-archive" action="download" ty-hint="下载"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
                 </div>
@@ -257,6 +258,50 @@ class tocMarkmap {
     };
 
     fit = () => this.markmap && this.markmap.fit();
+
+    getDownloadSvgElement = () => {
+        const {width, height} = this.entities.svg.querySelector("g").getBoundingClientRect();
+        const cloneSvg = this.entities.svg.cloneNode(true);
+        const cloneG = cloneSvg.querySelector("g");
+
+        const match = cloneG.getAttribute("transform").match(/scale\((?<scale>.+?\))/);
+        if (!match || !match.groups || !match.groups.scale) return;
+        const scale = parseFloat(match.groups.scale);
+        const realWidth = parseInt(width / scale);
+        const realHeight = parseInt(height / scale);
+
+        cloneSvg.removeAttribute("id");
+        cloneSvg.setAttribute("class", "markmap");
+        cloneSvg.setAttribute("width", realWidth + 100 + "");
+        cloneSvg.setAttribute("height", realHeight + 100 + "");
+        cloneSvg.setAttribute("viewBox", `0 -${realHeight / 2} ${realWidth} ${realHeight + 100}`);
+        cloneG.setAttribute("transform", "translate(0, 50)");
+        if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
+            cloneSvg.querySelectorAll("foreignObject").forEach(foreign => {
+                const {textContent, previousSibling} = foreign;
+                const text = document.createElement("text");
+                const [xAttr, yAttr] = (previousSibling.tagName === "line") ? ["x2", "y2"] : ["cx", "cy"];
+                const x = parseInt(previousSibling.getAttribute(xAttr)) - 12;
+                const y = parseInt(previousSibling.getAttribute(yAttr)) - 5;
+                text.setAttribute("x", x);
+                text.setAttribute("y", y);
+                text.setAttribute("text-anchor", "end");
+                text.textContent = textContent;
+                foreign.parentNode.replaceChild(text, foreign);
+            })
+        }
+        return cloneSvg
+    }
+
+    download = () => {
+        const svg = this.getDownloadSvgElement();
+        const svgHTML = svg.outerHTML.replace(/<br>/g, "<br/>");
+        const a = document.createElement("a");
+        const fileName = this.utils.getFileName() || "markmap";
+        a.download = fileName + ".svg";
+        a.href = "data:image/svg;utf8," + encodeURIComponent(svgHTML);
+        a.click();
+    }
 
     pinUp = async (draw = true) => {
         this.entities.modal.classList.toggle("pinUp");
