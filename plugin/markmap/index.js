@@ -186,7 +186,7 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图形重新适配窗口"></div>
-                    <div class="plugin-markmap-icon icon ion-archive" action="download" ty-hint="下载"></div>
+                    <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="下载"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
                 </div>
@@ -283,13 +283,14 @@ class tocMarkmap {
     getDownloadSvgElement = () => {
         const cloneSvg = this.entities.svg.cloneNode(true);
         const {width = 100, height = 100, minY = 0} = this.getSvgBounding(cloneSvg);
+        const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
         cloneSvg.removeAttribute("id");
         cloneSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         cloneSvg.setAttribute("class", "markmap");
-        cloneSvg.setAttribute("width", `${width + 100}`);
-        cloneSvg.setAttribute("height", `${height + 100}`);
-        cloneSvg.setAttribute("viewBox", `0 ${minY} ${width} ${height + 100}`);
-        cloneSvg.querySelector("g").setAttribute("transform", "translate(0, 50)");
+        cloneSvg.setAttribute("width", `${width + borderX}`);
+        cloneSvg.setAttribute("height", `${height + borderY}`);
+        cloneSvg.setAttribute("viewBox", `0 ${minY} ${width + borderX} ${height + borderY}`);
+        cloneSvg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
             cloneSvg.querySelectorAll("foreignObject").forEach(foreign => {
                 const {textContent, previousSibling} = foreign;

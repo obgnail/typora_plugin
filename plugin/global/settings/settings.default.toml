@@ -505,6 +505,9 @@ USE_ANIMATION_WHEN_RESIZE = false
 # - 保留foreignObject: 对含有foreignObject的svg标签的操作处处受限（比如说转为jpg），但是有好看的样式
 # - 删除foreignObject: foreignObject全部由<text>替换，操作不受限，但是丢失了样式
 REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = false
+# 导出svg时，边框留白的宽度
+# 第一项为左右宽度，第二项为上下宽度
+BORDER_WHEN_DOWNLOAD_SVG = [50, 50]
 
 # markmap共有两个功能：toc和fence。此为fence，功能：在当前鼠标光标处插入markmap代码块
 # 若为false，以下配置全部失效
