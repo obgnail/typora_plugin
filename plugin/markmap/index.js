@@ -283,13 +283,14 @@ class tocMarkmap {
     getDownloadSvgElement = () => {
         const cloneSvg = this.entities.svg.cloneNode(true);
         const {width = 100, height = 100, minY = 0} = this.getSvgBounding(cloneSvg);
+        const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
         cloneSvg.removeAttribute("id");
         cloneSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         cloneSvg.setAttribute("class", "markmap");
-        cloneSvg.setAttribute("width", `${width + 100}`);
-        cloneSvg.setAttribute("height", `${height + 100}`);
-        cloneSvg.setAttribute("viewBox", `0 ${minY} ${width} ${height + 100}`);
-        cloneSvg.querySelector("g").setAttribute("transform", "translate(0, 50)");
+        cloneSvg.setAttribute("width", `${width + borderX}`);
+        cloneSvg.setAttribute("height", `${height + borderY}`);
+        cloneSvg.setAttribute("viewBox", `0 ${minY} ${width + borderX} ${height + borderY}`);
+        cloneSvg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
             cloneSvg.querySelectorAll("foreignObject").forEach(foreign => {
                 const {textContent, previousSibling} = foreign;
