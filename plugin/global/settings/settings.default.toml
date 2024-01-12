@@ -301,8 +301,7 @@ CLICKABLE = true
 HOTKEY = "ctrl+shift+b"
 # 不希望拆分的单词：
 #   ==   是highlight拓展语法
-#   > [! 是callouts拓展语法
-IGNORE_WORDS = ["==", "> [!"]
+IGNORE_WORDS = ["=="]
 # 最多连续X个换行符，多余的删除（若为-1，则不使用此功能，推荐为2）
 # 举例，为2时：\n\n\n\n【a】\n\n\n\n\n【b】 -> \n\n【a】\n\n【b】
 LINE_BREAK_MAX_NUM = -1
