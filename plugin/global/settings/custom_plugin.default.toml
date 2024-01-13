@@ -853,7 +853,7 @@ position_bottom = "50px"
 #   coordinate: 按钮坐标。往上为x轴正方向，往左为y轴正方向，从零开始计数。
 #   icon:       按钮图标。填入icon css class。所有的icon及其对应的css class请参考：https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 #   size:       图标大小
-#   hint:       按钮的提示信息
+#   hint:       提示信息
 #   callback:   回调函数。采用pluginName.MethodName的形式（功能就像hotkey.default.toml中的plugin参数和function参数的合体）
 #                   MethodName请通过阅读源码查找。如果您不懂代码，但还是想添加按钮，有个碰运气技巧：在【右键菜单->常用插件->自定义插件下的插件】基本都是XXX.callback，其余插件基本都是XXX.call
 #   evil(危险):  自定义回调函数。功能同hotkey.default.toml中的evil参数（它能用的，这里也能用）。这里的文本内容会被eval()。如果设置此参数，callback参数会失效
