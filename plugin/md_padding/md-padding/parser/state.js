@@ -23,7 +23,8 @@ var State;
     State[State["OrderedListItem"] = 16] = "OrderedListItem";
     State[State["UnorderedListItem"] = 17] = "UnorderedListItem";
     State[State["BlockquoteItem"] = 18] = "BlockquoteItem";
+    State[State["CalloutItem"] = 19] = "CalloutItem";
     // natural language syntax
-    State[State["Quoted"] = 19] = "Quoted";
-    State[State["Init"] = 20] = "Init";
+    State[State["Quoted"] = 20] = "Quoted";
+    State[State["Init"] = 21] = "Init";
 })(State = exports.State || (exports.State = {}));
