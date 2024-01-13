@@ -6,6 +6,8 @@ class pluginUpdater extends BaseCustomPlugin {
         const exist = await this.utils.existPath(file);
         if (!exist) return this.utils.stopLoadPluginError
         this.updaterEXE = file;
+
+        await this.adjustFile();
     }
 
     selector = () => (this.updaterEXE && this.commanderPlugin) ? "" : this.utils.nonExistSelector
