@@ -26,6 +26,7 @@ const blank_1 = require("../nodes/blank");
 const raw_1 = require("../nodes/raw");
 const ordered_list_item_1 = require("../nodes/ordered-list-item");
 const unordered_list_item_1 = require("../nodes/unordered-list-item");
+const callout_1 = require("../nodes/callout");
 const blockquote_item_1 = require("../nodes/blockquote-item");
 const state_1 = require("./state");
 const stack_1 = require("../utils/stack");
@@ -40,6 +41,7 @@ function parse(str, options) {
     let blankLine = true;
     let listPrefix = '';
     let codeLang = '';
+    let calloutType = '';
     const blockquotePrefix = '>';
     let strongDelimiter = '**';
     let emphasisDelimiter = '*';
@@ -130,6 +132,10 @@ function parse(str, options) {
                 i++;
             }
         }
+        else if (state === state_1.State.CalloutItem && c === ']') {
+            resolve(new callout_1.Callout(popMarkdown()));
+            i++;
+        }
         // Links
         else if (state === state_1.State.ReferingID && c === ']') {
             resolve(new reference_link_1.ReferenceLink(linkText, popMarkdown()));
@@ -202,6 +208,10 @@ function parse(str, options) {
         else if (state === state_1.State.Quoted && c === '"') {
             resolve(new quoted_1.Quoted(popNodes()));
             i++;
+        }
+        else if (blankLine && c2 === '[!' && state === state_1.State.BlockquoteItem) {
+            push(state_1.State.CalloutItem);
+            i += 2;
         }
         // state === State.Text
         else if (c === '[' && allow(640 /* Link */)) {
@@ -400,6 +410,10 @@ function parse(str, options) {
             case state_1.State.BlockCodeLang:
                 codeLang = popMarkdown();
                 resolve(new block_code_1.BlockCode(codeLang, blockCodeDelimiter, [], false, false));
+                break;
+            case state_1.State.CalloutItem:
+                calloutType = popMarkdown();
+                resolve(new callout_1.Callout(calloutType));
                 break;
             default:
                 return false;

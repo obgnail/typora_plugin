@@ -500,9 +500,9 @@ WIDTH_PRECENT_WHEN_PIN_RIGHT = 50
 USE_ANIMATION_WHEN_DRAG = false
 # 在调整窗口大小的时候是否使用动画
 USE_ANIMATION_WHEN_RESIZE = false
-# 导出svg时，是否保留foreignObject（若不了解SVG，请不要修改此选项）
-# - 保留foreignObject: 对含有foreignObject的svg标签的操作处处受限（比如说转为jpg），但是有好看的样式
-# - 删除foreignObject: foreignObject全部由<text>替换，操作不受限，但是丢失了样式
+# 导出svg时，是否删除foreignObject，并替换成<text>（若您不了解SVG，请不要修改此选项）
+# - false: 操作含有foreignObject的svg标签处处受限（比如说转为jpg），但是有好看的样式
+# - true:  操作不受限，但是丢失了样式
 REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = false
 # 导出svg时，边框留白的宽度
 # 第一项为左右宽度，第二项为上下宽度
@@ -692,8 +692,9 @@ ENABLE = true
 NAME = "章节折叠"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 严格模式：只当点击到h1~h6时，才触发折叠/展开。若为false，则自动向上寻找最近的h1~h6
-# 非严格模式可能会出现意想不到的事：ctrl+click在typora是非常常用的，当你不小心点错位置，标题就被折叠起来了
+# 严格模式
+# - true:  只当点击到h1~h6时，才触发折叠/展开
+# - false: 自动向上寻找最近的h1~h6，并触发折叠/展开。非严格模式可能会出现意想不到的事：ctrl+click在typora是非常常用的，当你不小心点错位置，标题就被折叠起来了
 STRICT_MODE = true
 # 在右键菜单中使用严格模式
 # 此选项是STRICT_MODE的特别情况，是考虑到方便使用才添加此选项的
@@ -705,7 +706,7 @@ RECORD_COLLAPSE = true
 # 1.支持ctrl/alt/shift的随意组合（如"shift+alt"，"ctrl+shift"）
 # 2.但是不能为"alt"（因为alt+click已经被【scrollBookmarker】插件占用），也不能为"shift"（因为shift+click被系统自带的【框选】功能占用）
 # 3.若为""，表示不启用此功能
-# 4.例如【COLLAPSE_SIBLINGS = "ctrl+alt"】：当用户同时按住键盘ctrl和alt，并且鼠标click标题时，折叠/展开父章节下所有同级的章节
+# 4.例如【COLLAPSE_SIBLINGS = "ctrl+alt"】：当用户同时按住键盘ctrl和alt，并且鼠标click标题时，会折叠/展开父章节下所有同级的章节
 [collapse_paragraph.MODIFIER_KEY]
 # 折叠/展开 单个章节
 COLLAPSE_SINGLE = "ctrl"
@@ -870,7 +871,7 @@ DO_NOT_HIDE = false
 MENU_MIN_WIDTH = "default"
 # 移除右键菜单中除了插件以外的选项（如果你之前从不使用右键菜单，可以置为true）
 HIDE_OTHER_OPTIONS = false
-# 对于【启用但是没有出现在下面MENUS选项】的插件，自动将其加入到最后一个MENUS
+# 对于【启用但是没有出现在下面MENUS选项】的插件，自动将其加入到最后一个MENU
 # 强烈不建议将此选项置为false，若置为false，且在MENUS中删去那些处于启用状态的插件，那么：
 #   1. 那些插件依旧处于启用状态，但是就不能通过右键菜单调用了
 #   2. 如果插件系统后续新增了插件，那么你就根本无法感知到新增插件的存在
