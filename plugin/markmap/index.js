@@ -280,6 +280,21 @@ class tocMarkmap {
         return {minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight}
     }
 
+    removeForeignObjectInSVG = svg => {
+        svg.querySelectorAll("foreignObject").forEach(foreign => {
+            const {textContent, previousSibling} = foreign;
+            const text = document.createElement("text");
+            const [xAttr, yAttr] = (previousSibling.tagName === "line") ? ["x2", "y2"] : ["cx", "cy"];
+            const x = parseInt(previousSibling.getAttribute(xAttr)) - 12;
+            const y = parseInt(previousSibling.getAttribute(yAttr)) - 5;
+            text.setAttribute("x", x);
+            text.setAttribute("y", y);
+            text.setAttribute("text-anchor", "end");
+            text.textContent = textContent;
+            foreign.parentNode.replaceChild(text, foreign);
+        })
+    }
+
     getDownloadSvgElement = () => {
         const cloneSvg = this.entities.svg.cloneNode(true);
         const {width = 100, height = 100, minY = 0} = this.getSvgBounding(cloneSvg);
@@ -292,18 +307,7 @@ class tocMarkmap {
         cloneSvg.setAttribute("viewBox", `0 ${minY} ${width + borderX} ${height + borderY}`);
         cloneSvg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
-            cloneSvg.querySelectorAll("foreignObject").forEach(foreign => {
-                const {textContent, previousSibling} = foreign;
-                const text = document.createElement("text");
-                const [xAttr, yAttr] = (previousSibling.tagName === "line") ? ["x2", "y2"] : ["cx", "cy"];
-                const x = parseInt(previousSibling.getAttribute(xAttr)) - 12;
-                const y = parseInt(previousSibling.getAttribute(yAttr)) - 5;
-                text.setAttribute("x", x);
-                text.setAttribute("y", y);
-                text.setAttribute("text-anchor", "end");
-                text.textContent = textContent;
-                foreign.parentNode.replaceChild(text, foreign);
-            })
+            this.removeForeignObjectInSVG(cloneSvg);
         }
         return cloneSvg
     }
