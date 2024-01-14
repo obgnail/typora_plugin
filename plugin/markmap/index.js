@@ -280,6 +280,13 @@ class tocMarkmap {
         return {minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight}
     }
 
+    removeUselessStyleInSVG = svg => {
+        const style = svg.querySelector("style");
+        if (style) {
+            style.textContent = style.textContent.replace(".markmap-node>circle{cursor:pointer}", "");
+        }
+    }
+
     removeForeignObjectInSVG = svg => {
         svg.querySelectorAll("foreignObject").forEach(foreign => {
             const {textContent, previousSibling} = foreign;
@@ -306,6 +313,7 @@ class tocMarkmap {
         cloneSvg.setAttribute("height", `${height + borderY}`);
         cloneSvg.setAttribute("viewBox", `0 ${minY} ${width + borderX} ${height + borderY}`);
         cloneSvg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
+        this.removeUselessStyleInSVG(cloneSvg);
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
             this.removeForeignObjectInSVG(cloneSvg);
         }
