@@ -280,30 +280,44 @@ class tocMarkmap {
         return {minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight}
     }
 
+    removeUselessStyleInSVG = svg => {
+        const style = svg.querySelector("style");
+        if (style) {
+            style.textContent = style.textContent.replace(".markmap-node>circle{cursor:pointer}", "");
+        }
+    }
+
+    removeForeignObjectInSVG = svg => {
+        svg.querySelectorAll("foreignObject").forEach(foreign => {
+            const {textContent, previousSibling} = foreign;
+            const text = document.createElement("text");
+            const [xAttr, yAttr] = (previousSibling.tagName === "line") ? ["x2", "y2"] : ["cx", "cy"];
+            const x = parseInt(previousSibling.getAttribute(xAttr)) - 12;
+            const y = parseInt(previousSibling.getAttribute(yAttr)) - 5;
+            text.setAttribute("x", x);
+            text.setAttribute("y", y);
+            text.setAttribute("text-anchor", "end");
+            text.textContent = textContent;
+            foreign.parentNode.replaceChild(text, foreign);
+        })
+    }
+
     getDownloadSvgElement = () => {
         const cloneSvg = this.entities.svg.cloneNode(true);
         const {width = 100, height = 100, minY = 0} = this.getSvgBounding(cloneSvg);
         const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
+        const svgWidth = width + borderX;
+        const svgHeight = height + borderY;
         cloneSvg.removeAttribute("id");
         cloneSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
         cloneSvg.setAttribute("class", "markmap");
-        cloneSvg.setAttribute("width", `${width + borderX}`);
-        cloneSvg.setAttribute("height", `${height + borderY}`);
-        cloneSvg.setAttribute("viewBox", `0 ${minY} ${width + borderX} ${height + borderY}`);
+        cloneSvg.setAttribute("width", svgWidth + "");
+        cloneSvg.setAttribute("height", svgHeight + "");
+        cloneSvg.setAttribute("viewBox", `0 ${minY} ${svgWidth} ${svgHeight}`);
         cloneSvg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
+        this.removeUselessStyleInSVG(cloneSvg);
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
-            cloneSvg.querySelectorAll("foreignObject").forEach(foreign => {
-                const {textContent, previousSibling} = foreign;
-                const text = document.createElement("text");
-                const [xAttr, yAttr] = (previousSibling.tagName === "line") ? ["x2", "y2"] : ["cx", "cy"];
-                const x = parseInt(previousSibling.getAttribute(xAttr)) - 12;
-                const y = parseInt(previousSibling.getAttribute(yAttr)) - 5;
-                text.setAttribute("x", x);
-                text.setAttribute("y", y);
-                text.setAttribute("text-anchor", "end");
-                text.textContent = textContent;
-                foreign.parentNode.replaceChild(text, foreign);
-            })
+            this.removeForeignObjectInSVG(cloneSvg);
         }
         return cloneSvg
     }
