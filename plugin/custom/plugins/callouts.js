@@ -1,4 +1,12 @@
 class callouts extends BaseCustomPlugin {
+    beforeProcess = () => {
+        const appVersion = window._options.appVersion || "";
+        // Typora 1.8.0及其之后，已经内置callouts，此时此插件会自动失效
+        if (this.utils.compareVersion(appVersion, "1.8.0") >= 0) {
+            return this.utils.stopLoadPluginError
+        }
+    }
+
     styleTemplate = () => {
         const calloutList = this.config.list.map(callout => (
             `.plugin-callout[callout-type="${callout.type}"] {
