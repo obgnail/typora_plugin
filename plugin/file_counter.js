@@ -85,7 +85,7 @@ class fileCounterPlugin extends BasePlugin {
             let countDiv = treeNode.querySelector(`:scope > .${this.className}`);
             if (fileCount <= this.config.IGNORE_MIN_NUM) {
                 this.utils.removeElement(countDiv);
-                return
+                return;
             }
             if (!countDiv) {
                 countDiv = document.createElement("div");
@@ -94,7 +94,11 @@ class fileCounterPlugin extends BasePlugin {
                 treeNode.insertBefore(countDiv, background.nextElementSibling);
             }
             countDiv.innerText = this.config.BEFORE_TEXT + fileCount;
-        })
+            const titleNode = treeNode.querySelector(".file-node-title");
+            if (titleNode) {
+                titleNode.style.setProperty('overflow-x', 'hidden', 'important');
+            }
+        });
 
         const fileNode = treeNode.querySelector(":scope > .file-node-children");
         if (fileNode) {
