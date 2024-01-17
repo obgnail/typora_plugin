@@ -17,6 +17,7 @@ class windowTabBarPlugin extends BasePlugin {
         this.entities = {
             content: document.querySelector("content"),
             tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
+            windowTab: document.querySelector("#plugin-window-tab")
         }
         this.tabUtil = {tabs: [], activeIdx: 0};
         this.loopDetectInterval = 35;
@@ -56,13 +57,12 @@ class windowTabBarPlugin extends BasePlugin {
                         container.style.zIndex = "99999";
                     }
                 }
-                const windowTab = document.querySelector("#plugin-window-tab");
                 if (!this.config.HIDE_WINDOW_TITLE_BAR) {
                     const {height, top} = document.querySelector("header").getBoundingClientRect();
-                    windowTab.style.top = height + top + "px";
+                    this.entities.windowTab.style.top = height + top + "px";
                 }
                 if (this.config.CHANGE_CONTENT_TOP) {
-                    const {height, top} = windowTab.getBoundingClientRect();
+                    const {height, top} = this.entities.windowTab.getBoundingClientRect();
                     this.entities.content.style.top = top + height + "px";
                     document.querySelector("#typora-source").style.top = top + height + "px";
                 }
@@ -209,7 +209,7 @@ class windowTabBarPlugin extends BasePlugin {
         this.utils.registerMenu(name, "#plugin-window-tab .tab-container", showMenu, callback);
     }
 
-    showTabsIfNeed = hide => document.querySelector("#plugin-window-tab").style.visibility = hide ? "hidden" : "initial";
+    showTabsIfNeed = hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial";
 
     // 新窗口打开
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
@@ -356,7 +356,7 @@ class windowTabBarPlugin extends BasePlugin {
         if (0 < this.config.TAB_MAX_NUM && this.config.TAB_MAX_NUM < this.tabUtil.tabs.length) {
             this.tabUtil.tabs = this.tabUtil.tabs.slice(-this.config.TAB_MAX_NUM);
         }
-        document.querySelector("#plugin-window-tab").style.height = "40px";
+        this.entities.windowTab.style.height = "40px";
         this.renderDOM(wantOpenPath);
         this.entities.content.style.top = "68px";
     }
@@ -397,7 +397,7 @@ class windowTabBarPlugin extends BasePlugin {
             } else {
                 this.utils.exitTypora();
             }
-            document.querySelector("#plugin-window-tab").style.height = "0px";
+            this.entities.windowTab.style.height = "0px";
             this.init();
             return;
         }
