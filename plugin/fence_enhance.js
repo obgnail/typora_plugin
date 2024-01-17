@@ -174,6 +174,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 arr.push(
                     {arg_name: "(危)调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint},
                     {arg_name: "(危)为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint},
+                    {arg_name: "(危)修改代码块语言", arg_value: "replace_fences_lang", arg_hint: this.dangerousHint},
                 );
             }
         }
@@ -184,6 +185,17 @@ class fenceEnhancePlugin extends BasePlugin {
         return arr
     }
 
+    rangeAllFences = rangeFunc => {
+        document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
+            const codeMirror = fence.querySelector(":scope > .CodeMirror");
+            if (!codeMirror) {
+                const cid = fence.getAttribute("cid");
+                File.editor.fences.addCodeBlock(cid);
+            }
+            rangeFunc(fence);
+        })
+    }
+
     copyFence = target => target.querySelector(".copy-code").click();
     indentFence = target => target.querySelector(".indent-code").click();
     foldFence = target => target.querySelector(".fold-code").click();
@@ -191,26 +203,33 @@ class fenceEnhancePlugin extends BasePlugin {
         const button = fence.querySelector(".fence-enhance .fold-code.folded");
         button && button.click();
     }
-    initAllFence = () => {
-        document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
-            const codeMirror = fence.querySelector(":scope > .CodeMirror");
-            if (!codeMirror) {
+    indentAllFences = () => this.rangeAllFences(this.indentFence)
+    replaceFencesLang = () => {
+        const components = [
+            {label: "被替换语言", type: "input", value: "js"},
+            {label: "替换语言", type: "input", value: "javascript"}
+        ];
+        this.utils.modal({title: "替换语言", components}, ([{submit: waitToReplaceLang}, {submit: replaceLang}]) => {
+            if (!waitToReplaceLang || !replaceLang) return;
+
+            this.rangeAllFences(fence => {
+                const lang = fence.getAttribute("lang");
+                if (lang && lang !== waitToReplaceLang) return;
                 const cid = fence.getAttribute("cid");
-                File.editor.fences.addCodeBlock(cid);
-            }
+                File.editor.fences.focus(cid);
+                const input = fence.querySelector(".ty-cm-lang-input");
+                if (!input) return;
+                input.textContent = replaceLang;
+                File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input);
+            })
         })
-    }
-    indentAllFences = () => {
-        this.initAllFence();
-        document.querySelectorAll("#write .md-fences[cid]").forEach(fence => this.indentFence(fence));
     }
     addFencesLang = () => {
         const components = [{label: "语言", type: "input", value: "javascript"}];
         this.utils.modal({title: "添加语言", components}, ([{submit: targetLang}]) => {
             if (!targetLang) return;
 
-            this.initAllFence();
-            document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
+            this.rangeAllFences(fence => {
                 const lang = fence.getAttribute("lang");
                 if (lang) return;
                 const cid = fence.getAttribute("cid");
@@ -274,6 +293,7 @@ class fenceEnhancePlugin extends BasePlugin {
             indent_current: meta => this.indentFence(meta.target),
             indent_all_fences: this.showIndentAllFencesModal,
             add_fences_lang: this.addFencesLang,
+            replace_fences_lang: this.replaceFencesLang,
         }
         const func = callMap[type];
         func && func(meta);
