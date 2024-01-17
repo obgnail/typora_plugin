@@ -94,7 +94,6 @@ class fileCounterPlugin extends BasePlugin {
                 treeNode.insertBefore(countDiv, background.nextElementSibling);
             }
             countDiv.innerText = this.config.BEFORE_TEXT + fileCount;
-            countDiv.style.setProperty('overflow-x', 'hidden', 'important');
             const titleNode = treeNode.querySelector(".file-node-title");
             if (titleNode) {
                 titleNode.style.setProperty('overflow-x', 'hidden', 'important');
