@@ -934,8 +934,18 @@ IGNORE_MIN_NUM = 0
 MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
+# 忽略的目录名
+IGNORE_FOLDERS = [".git", "node_modules"]
 # 当侧边栏出现横向滚动条时，允许ctrl+wheel进行横向滚动
 CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU = true
+# 文本字体粗细（填入font-weight的CSS值，保持默认则填入""）
+FONT_WEIGHT = "bold"
+# 文本字体颜色（填入color的CSS值，保持默认则填入""）
+COLOR = ""
+# 文本背景颜色（填入background-color的CSS值，保持默认则填入""）
+BACKGROUND_COLOR = ""
+# 文本插入前缀
+BEFORE_TEXT = ""
 
 
 ############### file_counter ###############

@@ -4,7 +4,11 @@ class fileCounterPlugin extends BasePlugin {
         this.className = "plugin-file-counter";
     }
 
-    styleTemplate = () => true
+    styleTemplate = () => ({
+        font_weight: this.config.FONT_WEIGHT || "initial",
+        color: this.config.COLOR || "var(--active-file-text-color)",
+        background_color: this.config.BACKGROUND_COLOR || "var(--active-file-bg-color)",
+    })
 
     process = () => {
         // typora有bug，有一定概率无法完整加载，强制刷一下
@@ -54,6 +58,7 @@ class fileCounterPlugin extends BasePlugin {
     allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
 
     countFiles = (dir, filter, then) => {
+        const {config} = this;
         const {Fs: {promises}, Path} = this.utils.Package;
         let fileCount = 0;
 
@@ -65,7 +70,7 @@ class fileCounterPlugin extends BasePlugin {
                 if (stats.isFile() && filter(filePath, stats)) {
                     fileCount++;
                 }
-                if (stats.isDirectory()) {
+                if (stats.isDirectory() && !config.IGNORE_FOLDERS.includes(file)) {
                     await traverse(filePath);
                 }
             }
@@ -88,7 +93,7 @@ class fileCounterPlugin extends BasePlugin {
                 const background = treeNode.querySelector(".file-node-background");
                 treeNode.insertBefore(countDiv, background.nextElementSibling);
             }
-            countDiv.innerText = fileCount + "";
+            countDiv.innerText = this.config.BEFORE_TEXT + fileCount;
         })
 
         const fileNode = treeNode.querySelector(":scope > .file-node-children");
