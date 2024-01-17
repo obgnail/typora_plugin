@@ -185,6 +185,17 @@ class fenceEnhancePlugin extends BasePlugin {
         return arr
     }
 
+    rangeAllFences = rangeFunc => {
+        document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
+            const codeMirror = fence.querySelector(":scope > .CodeMirror");
+            if (!codeMirror) {
+                const cid = fence.getAttribute("cid");
+                File.editor.fences.addCodeBlock(cid);
+            }
+            rangeFunc(fence);
+        })
+    }
+
     copyFence = target => target.querySelector(".copy-code").click();
     indentFence = target => target.querySelector(".indent-code").click();
     foldFence = target => target.querySelector(".fold-code").click();
@@ -192,19 +203,7 @@ class fenceEnhancePlugin extends BasePlugin {
         const button = fence.querySelector(".fence-enhance .fold-code.folded");
         button && button.click();
     }
-    initAllFence = () => {
-        document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
-            const codeMirror = fence.querySelector(":scope > .CodeMirror");
-            if (!codeMirror) {
-                const cid = fence.getAttribute("cid");
-                File.editor.fences.addCodeBlock(cid);
-            }
-        })
-    }
-    indentAllFences = () => {
-        this.initAllFence();
-        document.querySelectorAll("#write .md-fences[cid]").forEach(fence => this.indentFence(fence));
-    }
+    indentAllFences = () => this.rangeAllFences(this.indentFence)
     replaceFencesLang = () => {
         const components = [
             {label: "被替换语言", type: "input", value: "js"},
@@ -213,8 +212,7 @@ class fenceEnhancePlugin extends BasePlugin {
         this.utils.modal({title: "替换语言", components}, ([{submit: waitToReplaceLang}, {submit: replaceLang}]) => {
             if (!waitToReplaceLang || !replaceLang) return;
 
-            this.initAllFence();
-            document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
+            this.rangeAllFences(fence => {
                 const lang = fence.getAttribute("lang");
                 if (lang && lang !== waitToReplaceLang) return;
                 const cid = fence.getAttribute("cid");
@@ -231,8 +229,7 @@ class fenceEnhancePlugin extends BasePlugin {
         this.utils.modal({title: "添加语言", components}, ([{submit: targetLang}]) => {
             if (!targetLang) return;
 
-            this.initAllFence();
-            document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
+            this.rangeAllFences(fence => {
                 const lang = fence.getAttribute("lang");
                 if (lang) return;
                 const cid = fence.getAttribute("cid");
