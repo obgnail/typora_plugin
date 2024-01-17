@@ -20,6 +20,7 @@ class windowTabBarPlugin extends BasePlugin {
         }
         this.tabUtil = {tabs: [], activeIdx: 0};
         this.loopDetectInterval = 35;
+        this.entities['content'].style.top = "30px";
     }
     process = () => {
         this.init();
@@ -355,9 +356,8 @@ class windowTabBarPlugin extends BasePlugin {
         if (0 < this.config.TAB_MAX_NUM && this.config.TAB_MAX_NUM < this.tabUtil.tabs.length) {
             this.tabUtil.tabs = this.tabUtil.tabs.slice(-this.config.TAB_MAX_NUM);
         }
-        document.querySelector("#plugin-window-tab").style.display = "initial";
+        document.querySelector("#plugin-window-tab").style.height = "40px";
         this.renderDOM(wantOpenPath);
-        // 在有标签的情况下，修改 <content> 样式
         const content = document.querySelector("content");
         if (content) {
             content.style.top = "68px";
@@ -400,10 +400,10 @@ class windowTabBarPlugin extends BasePlugin {
             } else {
                 this.utils.exitTypora();
             }
-            document.querySelector("#plugin-window-tab").style.display = "none";
+            document.querySelector("#plugin-window-tab").style.height = "0px";
             const content = document.querySelector("content");
             if (content) {
-                content.style.top = "0px";
+                content.style.top = "30px";
             }
             return;
         }
