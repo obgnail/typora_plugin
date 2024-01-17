@@ -355,6 +355,7 @@ class windowTabBarPlugin extends BasePlugin {
         if (0 < this.config.TAB_MAX_NUM && this.config.TAB_MAX_NUM < this.tabUtil.tabs.length) {
             this.tabUtil.tabs = this.tabUtil.tabs.slice(-this.config.TAB_MAX_NUM);
         }
+        document.querySelector("#plugin-window-tab").style.display = "initial";
         this.renderDOM(wantOpenPath);
     }
 

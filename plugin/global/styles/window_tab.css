@@ -4,6 +4,7 @@
     width: 100%;
     height: 40px;
     z-index: 898;
+    display: none;
 }
 
 #plugin-window-tab .tab-bar {
