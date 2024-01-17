@@ -20,7 +20,7 @@ class windowTabBarPlugin extends BasePlugin {
         }
         this.tabUtil = {tabs: [], activeIdx: 0};
         this.loopDetectInterval = 35;
-        this.entities['content'].style.top = "30px";
+        this.entities.content.style.top = "30px";
     }
     process = () => {
         this.init();
@@ -358,10 +358,7 @@ class windowTabBarPlugin extends BasePlugin {
         }
         document.querySelector("#plugin-window-tab").style.height = "40px";
         this.renderDOM(wantOpenPath);
-        const content = document.querySelector("content");
-        if (content) {
-            content.style.top = "68px";
-        }
+        this.entities.content.style.top = "68px";
     }
 
     switchTab = idx => {
@@ -401,10 +398,7 @@ class windowTabBarPlugin extends BasePlugin {
                 this.utils.exitTypora();
             }
             document.querySelector("#plugin-window-tab").style.height = "0px";
-            const content = document.querySelector("content");
-            if (content) {
-                content.style.top = "30px";
-            }
+            this.init();
             return;
         }
 
