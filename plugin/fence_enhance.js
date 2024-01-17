@@ -174,6 +174,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 arr.push(
                     {arg_name: "(危)调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint},
                     {arg_name: "(危)为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint},
+                    {arg_name: "(危)修改代码块语言", arg_value: "replace_fences_lang", arg_hint: this.dangerousHint},
                 );
             }
         }
@@ -203,6 +204,27 @@ class fenceEnhancePlugin extends BasePlugin {
     indentAllFences = () => {
         this.initAllFence();
         document.querySelectorAll("#write .md-fences[cid]").forEach(fence => this.indentFence(fence));
+    }
+    replaceFencesLang = () => {
+        const components = [
+            {label: "被替换语言", type: "input", value: "js"},
+            {label: "替换语言", type: "input", value: "javascript"}
+        ];
+        this.utils.modal({title: "替换语言", components}, ([{submit: waitToReplaceLang}, {submit: replaceLang}]) => {
+            if (!waitToReplaceLang || !replaceLang) return;
+
+            this.initAllFence();
+            document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
+                const lang = fence.getAttribute("lang");
+                if (lang && lang !== waitToReplaceLang) return;
+                const cid = fence.getAttribute("cid");
+                File.editor.fences.focus(cid);
+                const input = fence.querySelector(".ty-cm-lang-input");
+                if (!input) return;
+                input.textContent = replaceLang;
+                File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input);
+            })
+        })
     }
     addFencesLang = () => {
         const components = [{label: "语言", type: "input", value: "javascript"}];
@@ -274,6 +296,7 @@ class fenceEnhancePlugin extends BasePlugin {
             indent_current: meta => this.indentFence(meta.target),
             indent_all_fences: this.showIndentAllFencesModal,
             add_fences_lang: this.addFencesLang,
+            replace_fences_lang: this.replaceFencesLang,
         }
         const func = callMap[type];
         func && func(meta);
