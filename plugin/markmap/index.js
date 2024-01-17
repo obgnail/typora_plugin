@@ -10,8 +10,7 @@ class markmapPlugin extends BasePlugin {
         node_hover: (!this.config.CLICK_TO_LOCALE) ? "" : `#plugin-markmap-svg .markmap-node:hover { cursor: pointer; }`,
         icon_wrap: (!this.config.ALLOW_ICON_WRAP) ? "" : `
             .plugin-markmap-header { flex-wrap: wrap; justify-content: flex-start; }
-            .plugin-markmap-header .plugin-markmap-icon { padding-right: 0.5em; }
-            `,
+            .plugin-markmap-header .plugin-markmap-icon { padding-right: 0.5em; }`,
     })
 
     html = () => this.tocMarkmap && this.tocMarkmap.html();
@@ -426,7 +425,7 @@ class tocMarkmap {
     rollbackTransition = (run = true) => (run) ? this.entities.modal.style.transition = "" : undefined
 
     onButtonClick = async (action, button) => {
-        if (action !== "pinUp" && action !== "pinRight" && action !== "fit") {
+        if (!["pinUp", "pinRight", "fit", "download"].includes(action)) {
             await this.waitUnpin();
         }
         await this[action](button);
@@ -617,15 +616,10 @@ class tocMarkmap {
     }
 
     setFullScreenIcon = async (button, fullScreen) => {
-        if (fullScreen) {
-            this.entities.modal.style.boxShadow = "initial";
-            button.className = "plugin-markmap-icon ion-arrow-shrink";
-            button.setAttribute("action", "shrink");
-        } else {
-            this.entities.modal.style.boxShadow = "";
-            button.className = "plugin-markmap-icon ion-arrow-expand";
-            button.setAttribute("action", "expand");
-        }
+        const boxShadow = fullScreen ? "initial" : "";
+        const action = fullScreen ? "shrink" : "expand";
+        this.entities.modal.style.boxShadow = boxShadow;
+        button.setAttribute("action", action);
         await this.drawToc();
     }
 
