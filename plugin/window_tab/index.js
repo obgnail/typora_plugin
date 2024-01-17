@@ -357,6 +357,11 @@ class windowTabBarPlugin extends BasePlugin {
         }
         document.querySelector("#plugin-window-tab").style.display = "initial";
         this.renderDOM(wantOpenPath);
+        // 在有标签的情况下，修改 <content> 样式
+        const content = document.querySelector("content");
+        if (content) {
+            content.style.top = "68px";
+        }
     }
 
     switchTab = idx => {
@@ -394,6 +399,11 @@ class windowTabBarPlugin extends BasePlugin {
                 this.utils.modal(modal, this.utils.exitTypora);
             } else {
                 this.utils.exitTypora();
+            }
+            document.querySelector("#plugin-window-tab").style.display = "none";
+            const content = document.querySelector("content");
+            if (content) {
+                content.style.top = "0px";
             }
             return;
         }
