@@ -56,9 +56,9 @@ class fileCounterPlugin extends BasePlugin {
 
     verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
     allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
+    allowTraverse = path => !this.config.IGNORE_FOLDERS.includes(path)
 
-    countFiles = (dir, filter, then) => {
-        const {config} = this;
+    countFiles = (dir, fileFilter, dirFilter, then) => {
         const {Fs: {promises}, Path} = this.utils.Package;
         let fileCount = 0;
 
@@ -67,10 +67,10 @@ class fileCounterPlugin extends BasePlugin {
             for (const file of files) {
                 const filePath = Path.join(dir, file);
                 const stats = await promises.stat(filePath);
-                if (stats.isFile() && filter(filePath, stats)) {
+                if (stats.isFile() && fileFilter(filePath, stats)) {
                     fileCount++;
                 }
-                if (stats.isDirectory() && !config.IGNORE_FOLDERS.includes(file)) {
+                if (stats.isDirectory() && dirFilter(file)) {
                     await traverse(filePath);
                 }
             }
@@ -81,7 +81,7 @@ class fileCounterPlugin extends BasePlugin {
 
     setDirCount = treeNode => {
         const dir = treeNode.getAttribute("data-path");
-        this.countFiles(dir, this.allowRead, fileCount => {
+        this.countFiles(dir, this.allowRead, this.allowTraverse, fileCount => {
             let countDiv = treeNode.querySelector(`:scope > .${this.className}`);
             if (fileCount <= this.config.IGNORE_MIN_NUM) {
                 this.utils.removeElement(countDiv);
