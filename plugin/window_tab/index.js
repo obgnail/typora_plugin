@@ -582,7 +582,9 @@ class windowTabBarPlugin extends BasePlugin {
             )
 
             reset.onfinish = function () {
-                that.entities.tabBar.removeChild(cloneObj);
+                if (cloneObj && cloneObj.parentNode === that.entities.tabBar) {
+                    that.entities.tabBar.removeChild(cloneObj);
+                }
                 cloneObj = null;
                 dragBox.style.visibility = 'visible';
                 resetTabBar();
