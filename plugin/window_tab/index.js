@@ -38,23 +38,22 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     checkTabs = async () => {
-        if (this.tabUtil.tabs.length === 0) {
+        if (this.tabUtil.tabs.length <= 0) {
             this.stopCheckTabsInterval();
+            this.resetAndSetTitle();
             return;
         }
-
-        for (let idx = this.tabUtil.tabs.length - 1; idx >= 0; idx--) {
-            const tab = this.tabUtil.tabs[idx];
-            const exists = await this.utils.existPath(tab.path);
-            if (!exists) {
-                // 如果文件不存在，移除标签
-                this.closeTab(idx);
-            }
-        }
-        if (this.tabUtil.tabs[this.tabUtil.activeIdx]) {
-            this.renderDOM(this.tabUtil.tabs[this.tabUtil.activeIdx].path);
-        } else {
-            this.renderDOM(undefined);
+        console.log(this.tabUtil.tabs.length);
+        const checkPromises = this.tabUtil.tabs.map(tab => this.utils.existPath(tab.path));
+        const results = await Promise.all(checkPromises);
+        const tabsToClose = [];
+        results.forEach((exists, idx) => {
+            if (!exists) tabsToClose.push(idx);
+        });
+        this.tabUtil.tabs = this.tabUtil.tabs.filter((_, idx) => !tabsToClose.includes(idx));
+    
+        if (this.tabUtil.tabs.length > 0) {
+            this.switchTab(this.tabUtil.activeIdx);
         }
     }
 
@@ -431,9 +430,6 @@ class windowTabBarPlugin extends BasePlugin {
                 const modal = { title: "退出 Typora", components: [{ label: "是否退出？", type: "p" }] };
                 this.utils.modal(modal, this.utils.exitTypora);
             } else {
-                this.entities.windowTab.style.height = "0px";
-                this.entities.content.style.top = "30px";
-                this.tabUtil = { tabs: [], activeIdx: -1 };
                 this.stopCheckTabsInterval();
                 this.resetAndSetTitle();
             }
@@ -736,6 +732,9 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     resetAndSetTitle = () => {
+        this.entities.windowTab.style.height = "0px";
+        this.entities.content.style.top = "30px";
+        this.tabUtil = { tabs: [], activeIdx: -1 };
         File.bundle = {
             filePath: '',
             originalPath: null,
