@@ -67,8 +67,6 @@ class windowTabBarPlugin extends BasePlugin {
             this.resetAndSetTitle();
             return;
         }
-        // 记录原始的活跃标签页索引
-        const originalActiveIdx = this.tabUtil.activeIdx;
         const checkPromises = this.tabUtil.tabs.map(tab => this.utils.existPath(tab.path));
         const results = await Promise.all(checkPromises);
         const tabsToClose = new Set();
@@ -77,33 +75,37 @@ class windowTabBarPlugin extends BasePlugin {
         });
         let tabsChanged = false;
         if (tabsToClose.size > 0) {
+            let wasActiveTabClosed = tabsToClose.has(this.tabUtil.activeIdx);
+            let closedTabsBeforeActive = 0;
             // 从数组末尾开始逆向遍历并删除标签页
             for (let i = this.tabUtil.tabs.length - 1; i >= 0; i--) {
                 if (tabsToClose.has(i)) {
                     this.tabUtil.tabs.splice(i, 1);
                     tabsChanged = true;
+                    if (i < this.tabUtil.activeIdx) {
+                        closedTabsBeforeActive++;
+                    }
                 }
             }
-            // 根据配置和删除的标签页更新活跃标签页的索引
-            if (this.config.ACTIVETE_TAB_WHEN_CLOSE === "left") {
-                // 找到最近的左侧标签页
-                this.tabUtil.activeIdx = Math.max(0, originalActiveIdx - 1);
-                while (tabsToClose.has(this.tabUtil.activeIdx) && this.tabUtil.activeIdx > 0) {
-                    this.tabUtil.activeIdx--;
+            if (wasActiveTabClosed) {
+                // 如果关闭了当前激活的标签页
+                this.tabUtil.activeIdx -= closedTabsBeforeActive;
+                if (this.config.ACTIVETE_TAB_WHEN_CLOSE !== "left" && this.tabUtil.activeIdx < this.tabUtil.tabs.length) {
+                    // 如果配置不是左侧激活，则保持当前索引
+                } else {
+                    // 否则，尝试激活左侧标签页
+                    this.tabUtil.activeIdx = Math.max(this.tabUtil.activeIdx - 1, 0);
                 }
             } else {
-                // 激活右侧的标签页（如果存在）
-                this.tabUtil.activeIdx = originalActiveIdx;
-                while (tabsToClose.has(this.tabUtil.activeIdx) && this.tabUtil.activeIdx < this.tabUtil.tabs.length - 1) {
-                    this.tabUtil.activeIdx++;
-                }
+                // 如果当前激活的标签页没有关闭，则根据关闭的标签页数量向左移动索引
+                this.tabUtil.activeIdx -= closedTabsBeforeActive;
             }
         }
         if (tabsChanged && this.tabUtil.tabs.length > 0) {
             this.switchTab(this.tabUtil.activeIdx);
         }
-    }
-
+    }    
+    
     handleActiveTabClose = () => {
         const tabUtil = this.tabUtil;
         if (this.config.ACTIVETE_TAB_WHEN_CLOSE === "left") {
