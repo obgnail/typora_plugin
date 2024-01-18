@@ -174,7 +174,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 arr.push(
                     {arg_name: "(危)调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint},
                     {arg_name: "(危)为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint},
-                    {arg_name: "(危)修改代码块语言", arg_value: "replace_fences_lang", arg_hint: this.dangerousHint},
+                    {arg_name: "(危)批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: this.dangerousHint},
                 );
             }
         }
