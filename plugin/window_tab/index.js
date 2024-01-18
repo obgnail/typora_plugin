@@ -728,7 +728,7 @@ class windowTabBarPlugin extends BasePlugin {
 
     resetAndSetTitle = () => {
         File.bundle = {
-            filePath: null,
+            filePath: '',
             originalPath: null,
             untitledId: +new Date,
             fileName: null,
