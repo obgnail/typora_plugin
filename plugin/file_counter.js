@@ -61,21 +61,23 @@ class fileCounterPlugin extends BasePlugin {
     countFiles = (dir, fileFilter, dirFilter, then) => {
         const {Fs: {promises}, Path} = this.utils.Package;
         let fileCount = 0;
-
         async function traverse(dir) {
+            const stats = await promises.stat(dir);
+            if (!stats.isDirectory()) {
+                return;
+            }
             const files = await promises.readdir(dir);
             for (const file of files) {
                 const filePath = Path.join(dir, file);
-                const stats = await promises.stat(filePath);
-                if (stats.isFile() && fileFilter(filePath, stats)) {
+                const fileStats = await promises.stat(filePath);
+                if (fileStats.isFile() && fileFilter(filePath, fileStats)) {
                     fileCount++;
                 }
-                if (stats.isDirectory() && dirFilter(file)) {
+                if (fileStats.isDirectory() && dirFilter(file)) {
                     await traverse(filePath);
                 }
             }
         }
-
         traverse(dir).then(() => then(fileCount)).catch(err => console.error(err));
     }
 
