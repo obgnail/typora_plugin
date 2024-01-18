@@ -23,6 +23,7 @@ class windowTabBarPlugin extends BasePlugin {
         this.loopDetectInterval = 35;
         this.entities.content.style.top = "30px";
     }
+
     startCheckTabsInterval = () => {
         if (!this.checkTabsInterval) {
             this.checkTabsInterval = setInterval(this.checkTabs, 1000);
@@ -387,6 +388,7 @@ class windowTabBarPlugin extends BasePlugin {
         }
         this.entities.windowTab.style.height = "40px";
         this.entities.content.style.top = "68px";
+        this.startCheckTabsInterval();
         this.renderDOM(wantOpenPath);
     }
 
