@@ -19,40 +19,39 @@ class windowTabBarPlugin extends BasePlugin {
             tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
             windowTab: document.querySelector("#plugin-window-tab")
         }
+        this.checkTabsInterval = null;
         this.tabUtil = { tabs: [], activeIdx: -1 };
         this.loopDetectInterval = 35;
         this.entities.content.style.top = "30px";
-        window.addEventListener('focus', this.onWindowFocus);
-        window.addEventListener('blur', this.onWindowBlur);
     }
 
-    onWindowFocus = () => {
+    onWindowFocus = async () => {
         if (this.tabUtil.tabs.length > 0) {
             this.checkTabs();
+            await this.checkTabs();
             this.startCheckTabsInterval();
         }
     }
-    
+
     onWindowBlur = () => {
         this.stopCheckTabsInterval();
     }
 
     startCheckTabsInterval = () => {
         if (!this.checkTabsInterval) {
-            const interval = this.getDynamicInterval();
+            const getDynamicInterval = () => {
+                const tabCount = this.tabUtil.tabs.length;
+                let interval = 1000;
+                if (tabCount > 10 && tabCount <= 20) {
+                    interval = 2000;
+                } else if (tabCount > 30) {
+                    interval = 3000;
+                }
+                return interval;
+            };
+            const interval = getDynamicInterval();
             this.checkTabsInterval = setInterval(this.checkTabs, interval);
         }
-    }
-
-    getDynamicInterval = () => {
-        const tabCount = this.tabUtil.tabs.length;
-        let interval = 1000;
-        if (tabCount > 10 && tabCount <= 20) {
-            interval = 2000;
-        } else if (tabCount > 30) {
-            interval = 3000;
-        }
-        return interval;
     }
 
     stopCheckTabsInterval = () => {
@@ -68,6 +67,8 @@ class windowTabBarPlugin extends BasePlugin {
             this.resetAndSetTitle();
             return;
         }
+        // 记录原始的活跃标签页索引
+        const originalActiveIdx = this.tabUtil.activeIdx;
         const checkPromises = this.tabUtil.tabs.map(tab => this.utils.existPath(tab.path));
         const results = await Promise.all(checkPromises);
         const tabsToClose = new Set();
@@ -76,28 +77,51 @@ class windowTabBarPlugin extends BasePlugin {
         });
         let tabsChanged = false;
         if (tabsToClose.size > 0) {
-            if (tabsToClose.has(this.tabUtil.activeIdx)) {
-                this.handleActiveTabClose();
-                tabsChanged = true;
+            // 从数组末尾开始逆向遍历并删除标签页
+            for (let i = this.tabUtil.tabs.length - 1; i >= 0; i--) {
+                if (tabsToClose.has(i)) {
+                    this.tabUtil.tabs.splice(i, 1);
+                    tabsChanged = true;
+                }
             }
-            const originalTabsLength = this.tabUtil.tabs.length;
-            this.tabUtil.tabs = this.tabUtil.tabs.filter((_, idx) => !tabsToClose.has(idx));
-            if (this.tabUtil.tabs.length !== originalTabsLength) {
-                tabsChanged = true;
+            // 根据配置和删除的标签页更新活跃标签页的索引
+            if (this.config.ACTIVETE_TAB_WHEN_CLOSE === "left") {
+                // 找到最近的左侧标签页
+                this.tabUtil.activeIdx = Math.max(0, originalActiveIdx - 1);
+                while (tabsToClose.has(this.tabUtil.activeIdx) && this.tabUtil.activeIdx > 0) {
+                    this.tabUtil.activeIdx--;
+                }
+            } else {
+                // 激活右侧的标签页（如果存在）
+                this.tabUtil.activeIdx = originalActiveIdx;
+                while (tabsToClose.has(this.tabUtil.activeIdx) && this.tabUtil.activeIdx < this.tabUtil.tabs.length - 1) {
+                    this.tabUtil.activeIdx++;
+                }
             }
         }
         if (tabsChanged && this.tabUtil.tabs.length > 0) {
             this.switchTab(this.tabUtil.activeIdx);
         }
     }
-    
+
     handleActiveTabClose = () => {
-        if (this.config.ACTIVETE_TAB_WHEN_CLOSE === "left" && this.tabUtil.activeIdx > 0) {
-            this.tabUtil.activeIdx--;
-        } else if (this.tabUtil.activeIdx < this.tabUtil.tabs.length - 1) {
-            this.tabUtil.activeIdx++;
+        const tabUtil = this.tabUtil;
+        if (this.config.ACTIVETE_TAB_WHEN_CLOSE === "left") {
+            if (tabUtil.activeIdx > 0) {
+                // 如果当前激活的tab不是第一个，则激活左侧的tab
+                tabUtil.activeIdx--;
+            } else {
+                // 如果当前激活的tab是第一个，则激活右侧的tab（现在成为第一个）
+                tabUtil.activeIdx = 0;
+            }
         } else {
-            this.tabUtil.activeIdx = -1;
+            if (tabUtil.activeIdx < tabUtil.tabs.length - 1) {
+                // 如果当前激活的tab不是最后一个，则激活右侧的tab
+                // 注意：由于当前tab将被关闭，因此不需要改变activeIdx
+            } else {
+                // 如果当前激活的tab是最后一个，则激活左侧的tab
+                tabUtil.activeIdx--;
+            }
         }
     }
 
@@ -108,6 +132,8 @@ class windowTabBarPlugin extends BasePlugin {
         this.handleScroll();
         this.handleDrag();
         this.adjustQuickOpen();
+        window.addEventListener('focus', this.onWindowFocus);
+        window.addEventListener('blur', this.onWindowBlur);
         if (this.config.CTRL_WHEEL_TO_SCROLL) {
             this.handleWheel();
         }
@@ -478,7 +504,7 @@ class windowTabBarPlugin extends BasePlugin {
             }
             return;
         }
-    
+
         tabUtil.tabs.splice(idx, 1);
 
         if (idx === tabUtil.activeIdx) {
@@ -491,14 +517,14 @@ class windowTabBarPlugin extends BasePlugin {
         } else if (idx < tabUtil.activeIdx) {
             tabUtil.activeIdx--;
         }
-    
+
         if (tabUtil.activeIdx >= 0 && tabUtil.activeIdx < tabUtil.tabs.length) {
             this.switchTab(tabUtil.activeIdx);
         } else {
             this.resetAndSetTitle();
         }
     }
-    
+
 
     closeActiveTab = () => this.closeTab(this.tabUtil.activeIdx);
 
@@ -774,7 +800,6 @@ class windowTabBarPlugin extends BasePlugin {
         }
         if (this.config.LOCAL_OPEN) {
             args.push({ arg_name: "在新标签打开文件", arg_value: "new_tab_open" });
-            // 空白标签不允许当前标签打开
         } else if (this.utils.getFilePath()) {
             args.push({ arg_name: "在当前标签打开文件", arg_value: "local_open" });
         }
