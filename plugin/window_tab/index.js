@@ -104,27 +104,6 @@ class windowTabBarPlugin extends BasePlugin {
         if (tabsChanged && this.tabUtil.tabs.length > 0) {
             this.switchTab(this.tabUtil.activeIdx);
         }
-    }    
-    
-    handleActiveTabClose = () => {
-        const tabUtil = this.tabUtil;
-        if (this.config.ACTIVETE_TAB_WHEN_CLOSE === "left") {
-            if (tabUtil.activeIdx > 0) {
-                // 如果当前激活的tab不是第一个，则激活左侧的tab
-                tabUtil.activeIdx--;
-            } else {
-                // 如果当前激活的tab是第一个，则激活右侧的tab（现在成为第一个）
-                tabUtil.activeIdx = 0;
-            }
-        } else {
-            if (tabUtil.activeIdx < tabUtil.tabs.length - 1) {
-                // 如果当前激活的tab不是最后一个，则激活右侧的tab
-                // 注意：由于当前tab将被关闭，因此不需要改变activeIdx
-            } else {
-                // 如果当前激活的tab是最后一个，则激活左侧的tab
-                tabUtil.activeIdx--;
-            }
-        }
     }
 
     process = () => {
