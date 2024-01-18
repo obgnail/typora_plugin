@@ -14,15 +14,44 @@ class windowTabBarPlugin extends BasePlugin {
         {hotkey: this.config.COPY_PATH_HOTKEY, callback: this.copyActiveTabPath}
     ]
     init = () => {
-        this.entities = {
+         this.entities = {
             content: document.querySelector("content"),
             tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
             windowTab: document.querySelector("#plugin-window-tab")
         }
-        this.tabUtil = {tabs: [], activeIdx: 0};
+        this.tabUtil = {tabs: [], activeIdx: -1};
         this.loopDetectInterval = 35;
         this.entities.content.style.top = "30px";
     }
+    startCheckTabsInterval = () => {
+        if (!this.checkTabsInterval) {
+            this.checkTabsInterval = setInterval(this.checkTabs, 1000);
+        }
+    }
+
+    stopCheckTabsInterval = () => {
+        if (this.checkTabsInterval) {
+            clearInterval(this.checkTabsInterval);
+            this.checkTabsInterval = null;
+        }
+    }
+    checkTabs = () => {
+        if (this.tabUtil.tabs.length === 0) {
+            this.stopCheckTabsInterval();
+            return;
+        }
+
+        this.tabUtil.tabs.forEach((tab, idx) => {
+            if (!this.utils.existPathSync(tab.path)) {
+                // 如果文件不存在，移除标签
+                this.closeTab(idx);
+            }
+        });
+
+        // 更新 DOM
+        this.renderDOM(this.tabUtil.tabs[this.tabUtil.activeIdx]?.path);
+    }
+
     process = () => {
         this.init();
         this.handleLifeCycle();
@@ -357,8 +386,9 @@ class windowTabBarPlugin extends BasePlugin {
             this.tabUtil.tabs = this.tabUtil.tabs.slice(-this.config.TAB_MAX_NUM);
         }
         this.entities.windowTab.style.height = "40px";
-        this.renderDOM(wantOpenPath);
         this.entities.content.style.top = "68px";
+        this.startCheckTabsInterval();
+        this.renderDOM(wantOpenPath);
     }
 
     switchTab = idx => {
@@ -398,10 +428,10 @@ class windowTabBarPlugin extends BasePlugin {
                 this.utils.exitTypora();
             }
             this.entities.windowTab.style.height = "0px";
-            this.init();
+            this.tabUtil = {tabs: [], activeIdx: -1};
+            this.stopCheckTabsInterval();
             return;
         }
-
         tabUtil.tabs.splice(idx, 1);
         if (tabUtil.activeIdx !== 0) {
             const isLeft = this.config.ACTIVETE_TAB_WHEN_CLOSE === "left";
