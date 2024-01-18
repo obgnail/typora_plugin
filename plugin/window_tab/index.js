@@ -22,12 +22,37 @@ class windowTabBarPlugin extends BasePlugin {
         this.tabUtil = { tabs: [], activeIdx: -1 };
         this.loopDetectInterval = 35;
         this.entities.content.style.top = "30px";
+        window.addEventListener('focus', this.onWindowFocus);
+        window.addEventListener('blur', this.onWindowBlur);
+    }
+
+    onWindowFocus = () => {
+        if (this.tabUtil.tabs.length > 0) {
+            this.checkTabs();
+            this.startCheckTabsInterval();
+        }
+    }
+    
+    onWindowBlur = () => {
+        this.stopCheckTabsInterval();
     }
 
     startCheckTabsInterval = () => {
         if (!this.checkTabsInterval) {
-            this.checkTabsInterval = setInterval(this.checkTabs, 1000);
+            const interval = this.getDynamicInterval();
+            this.checkTabsInterval = setInterval(this.checkTabs, interval);
         }
+    }
+
+    getDynamicInterval = () => {
+        const tabCount = this.tabUtil.tabs.length;
+        let interval = 1000;
+        if (tabCount > 10 && tabCount <= 20) {
+            interval = 2000;
+        } else if (tabCount > 30) {
+            interval = 3000;
+        }
+        return interval;
     }
 
     stopCheckTabsInterval = () => {
@@ -43,17 +68,31 @@ class windowTabBarPlugin extends BasePlugin {
             this.resetAndSetTitle();
             return;
         }
-        console.log(this.tabUtil.tabs.length);
         const checkPromises = this.tabUtil.tabs.map(tab => this.utils.existPath(tab.path));
         const results = await Promise.all(checkPromises);
-        const tabsToClose = [];
+        const tabsToClose = new Set();
         results.forEach((exists, idx) => {
-            if (!exists) tabsToClose.push(idx);
+            if (!exists) tabsToClose.add(idx);
         });
-        this.tabUtil.tabs = this.tabUtil.tabs.filter((_, idx) => !tabsToClose.includes(idx));
+        if (tabsToClose.size > 0) {
+            if (tabsToClose.has(this.tabUtil.activeIdx)) {
+                this.handleActiveTabClose();
+            }
+            this.tabUtil.tabs = this.tabUtil.tabs.filter((_, idx) => !tabsToClose.has(idx));
+        }
     
         if (this.tabUtil.tabs.length > 0) {
             this.switchTab(this.tabUtil.activeIdx);
+        }
+    }
+    
+    handleActiveTabClose = () => {
+        if (this.config.ACTIVETE_TAB_WHEN_CLOSE === "left" && this.tabUtil.activeIdx > 0) {
+            this.tabUtil.activeIdx--;
+        } else if (this.tabUtil.activeIdx < this.tabUtil.tabs.length - 1) {
+            this.tabUtil.activeIdx++;
+        } else {
+            this.tabUtil.activeIdx = -1;
         }
     }
 
@@ -424,7 +463,6 @@ class windowTabBarPlugin extends BasePlugin {
 
     closeTab = idx => {
         const tabUtil = this.tabUtil;
-
         if (tabUtil.tabs.length === 1) {
             if (this.config.RECONFIRM_WHEN_CLOSE_LAST_TAB) {
                 const modal = { title: "退出 Typora", components: [{ label: "是否退出？", type: "p" }] };
@@ -435,17 +473,27 @@ class windowTabBarPlugin extends BasePlugin {
             }
             return;
         }
+    
         tabUtil.tabs.splice(idx, 1);
-        if (tabUtil.activeIdx !== 0) {
-            const isLeft = this.config.ACTIVETE_TAB_WHEN_CLOSE === "left";
-            if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && isLeft)) {
+
+        if (idx === tabUtil.activeIdx) {
+            if (this.config.ACTIVETE_TAB_WHEN_CLOSE === "left" && tabUtil.activeIdx > 0) {
                 tabUtil.activeIdx--;
+            } else if (tabUtil.activeIdx < tabUtil.tabs.length) {
             } else {
-                tabUtil.activeIdx = Math.min(tabUtil.activeIdx, tabUtil.tabs.length - 1);
+                tabUtil.activeIdx = tabUtil.tabs.length - 1;
             }
+        } else if (idx < tabUtil.activeIdx) {
+            tabUtil.activeIdx--;
         }
-        this.switchTab(tabUtil.activeIdx);
+    
+        if (tabUtil.activeIdx >= 0 && tabUtil.activeIdx < tabUtil.tabs.length) {
+            this.switchTab(tabUtil.activeIdx);
+        } else {
+            this.resetAndSetTitle();
+        }
     }
+    
 
     closeActiveTab = () => this.closeTab(this.tabUtil.activeIdx);
 
