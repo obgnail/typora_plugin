@@ -36,21 +36,26 @@ class windowTabBarPlugin extends BasePlugin {
             this.checkTabsInterval = null;
         }
     }
-    checkTabs = () => {
+
+    checkTabs = async () => {
         if (this.tabUtil.tabs.length === 0) {
             this.stopCheckTabsInterval();
             return;
         }
 
-        this.tabUtil.tabs.forEach((tab, idx) => {
-            if (!this.utils.existPathSync(tab.path)) {
+        for (let idx = this.tabUtil.tabs.length - 1; idx >= 0; idx--) {
+            const tab = this.tabUtil.tabs[idx];
+            const exists = await this.utils.existPath(tab.path);
+            if (!exists) {
                 // 如果文件不存在，移除标签
                 this.closeTab(idx);
             }
-        });
-
-        // 更新 DOM
-        this.renderDOM(this.tabUtil.tabs[this.tabUtil.activeIdx]?.path);
+        }
+        if (this.tabUtil.tabs[this.tabUtil.activeIdx]) {
+            this.renderDOM(this.tabUtil.tabs[this.tabUtil.activeIdx].path);
+        } else {
+            this.renderDOM(undefined);
+        }
     }
 
     process = () => {
