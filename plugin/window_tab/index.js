@@ -74,14 +74,19 @@ class windowTabBarPlugin extends BasePlugin {
         results.forEach((exists, idx) => {
             if (!exists) tabsToClose.add(idx);
         });
+        let tabsChanged = false;
         if (tabsToClose.size > 0) {
             if (tabsToClose.has(this.tabUtil.activeIdx)) {
                 this.handleActiveTabClose();
+                tabsChanged = true;
             }
+            const originalTabsLength = this.tabUtil.tabs.length;
             this.tabUtil.tabs = this.tabUtil.tabs.filter((_, idx) => !tabsToClose.has(idx));
+            if (this.tabUtil.tabs.length !== originalTabsLength) {
+                tabsChanged = true;
+            }
         }
-    
-        if (this.tabUtil.tabs.length > 0) {
+        if (tabsChanged && this.tabUtil.tabs.length > 0) {
             this.switchTab(this.tabUtil.activeIdx);
         }
     }
