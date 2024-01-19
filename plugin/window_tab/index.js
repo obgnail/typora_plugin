@@ -20,7 +20,7 @@ class windowTabBarPlugin extends BasePlugin {
             windowTab: document.querySelector("#plugin-window-tab")
         }
         this.checkTabsInterval = null;
-        this.tabUtil = { tabs: [], activeIdx: -1 };
+        this.tabUtil = { tabs: [], activeIdx: 0 };
         this.loopDetectInterval = 35;
         this.entities.content.style.top = "30px";
     }
@@ -787,7 +787,7 @@ class windowTabBarPlugin extends BasePlugin {
     resetAndSetTitle = () => {
         this.entities.windowTab.style.height = "0px";
         this.entities.content.style.top = "30px";
-        this.tabUtil = { tabs: [], activeIdx: -1 };
+        this.tabUtil = { tabs: [], activeIdx: 0 };
         File.bundle = {
             filePath: '',
             originalPath: null,
@@ -808,17 +808,10 @@ class windowTabBarPlugin extends BasePlugin {
             zip: null
         };
 
-        File.reloadContent('');
-
-        const titleSpan = document.getElementById("title-text");
-        if (titleSpan) {
-            titleSpan.innerHTML = "Typora";
-        }
-
+        this.utils.reload();
+        document.getElementById("title-text").innerHTML = "Typora";
         const activeElements = document.querySelectorAll('.file-library-node.active');
-        activeElements.forEach(element => {
-            element.classList.remove('active');
-        });
+        activeElements[0].classList.remove('active');
     }
 
     call = type => {
