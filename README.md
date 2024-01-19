@@ -48,7 +48,7 @@
 | 38   | pluginUpdater           | 一键升级插件                           |
 | 39   | extractRangeToNewFile   | 提取选区文字到新文件                   |
 | 40   | fullPathCopy            | 复制标题路径                           |
-| 41   | autoTrailingWhiteSpace  | 自动添加结尾空格                       |
+| 41   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
 | 42   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
 | 43   | scrollBookmarker        | 书签管理器                             |
 | 44   | openInTotalCommander    | 在 total commander 打开                |
@@ -106,8 +106,8 @@
 
 |       | 新版本操作                                           | 旧版本操作                                             |
 | ----- | ---------------------------------------------------- | ------------------------------------------------------ |
-| 步骤3 | ![new_typora_dir](assets/new_typora_dir.png)         | ![where_is_windowhtml](assets/where_is_windowhtml.png) |
-| 步骤4 | ![new_typora_framejs](assets/new_typora_framejs.png) | ![where_is_framejs](assets/where_is_framejs.png)       |
+| 步骤 3 | ![new_typora_dir](assets/new_typora_dir.png)         | ![where_is_windowhtml](assets/where_is_windowhtml.png) |
+| 步骤 4 | ![new_typora_framejs](assets/new_typora_framejs.png) | ![where_is_framejs](assets/where_is_framejs.png)       |
 
 > 虽然操作简单，还请务必对照上图谨慎操作。如果修改完 Typora 白屏了，很可能是你修改的时候疏忽了。
 
@@ -187,9 +187,25 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
+### 如何升级插件？
+
+- 方法一（全自动，仅限 windows）：`右键菜单 -> 常用插件 -> 自定义插件 -> 升级插件`。
+
+- 方法二（半自动，仅限 windows）：有些用户将 Typora 装在 C 盘或者 Typora 的安装路径包含 `Program Files` 目录，经常会因为权限问题导致升级失败。此时可以通过以管理员身份打开终端，执行下面命令升级：
+
+  ```bash
+  # A: 之前安装插件时文件夹A的路径
+  # proxy参数：你的代理URL。如果你所在地区能直连GitHub，可以删除此参数
+  A/plugin/updater/updater.exe --action=update --proxy=http://127.0.0.1:7890
+  ```
+
+- 方法三（手动）：[前面的安装插件的流程](#如何使用：方法二（手动）) 重新走一遍。
+
+
+
 ### 我不想用了，如何恢复原状？
 
-上述的方法二逆序操作即可。
+[安装方法二](#如何使用：方法二（手动）) 逆序操作即可。
 
 
 
@@ -263,7 +279,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ![multi_highlighter](assets/multi_highlighter.png)
 
-> 注意：当你鼠标点击文档内容时，会自动退出高亮状态。**这是 Typora 本身的限制导致的**：高亮功能是通过添加标签实现的，但是为了保证数据安全，`#write` 标签不允许手动添加任何标签，所以需要在编辑的时候 remove 掉之前添加的标签。（你可以试试 Typora 自身的 ctrl+F 搜索，在搜索关键字后，点击任意地方原先高亮的地方也会消失）
+> 注意：当你鼠标点击文档内容时，会自动退出高亮状态。**这是 Typora 本身的限制导致的**。你可以试试 Typora 自身的 ctrl+F 搜索，在搜索关键字后，点击任意地方原先高亮的地方也会消失。
 
 
 
@@ -275,7 +291,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 - `ctrl+click`：折叠 / 展开【单个章节】
 - `ctrl+alt+click`：折叠 / 展开【父章节下所有同级的章节】
-- `ctrl+shift+alt+click`：折叠 / 展开【全局所有同级的章节】
+- `ctrl+shift+alt+click`：折叠 / 展开【所有同级的章节】
 
 ![collapse_paragraph](assets/collapse_paragraph.gif)
 
@@ -289,7 +305,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ![md_padding](assets/md_padding.gif)
 
-> 由于新版本 Typora 已经占用了 ctrl+shift+K 快捷键，目前此插件的快捷键已经改成 ctrl+shift+B，上面的动图懒得改了。
+> 插件本来快捷键是 ctrl+shift+K，但是已经被新版本 Typora 占用了，目前此插件的快捷键已经改成 ctrl+shift+B，上面的动图懒得改了。
 
 
 
@@ -619,8 +635,6 @@ icon = "\\f040"
 
 
 
-
-
 ### auto_number：自动编号
 
 ![auto_number](assets/auto_number.png)
@@ -758,10 +772,7 @@ auto_pair_symbols = [
 
 ### darkMode：夜间模式
 
-使用方式：
-
-- 方式一：右键菜单 -> 常用插件 -> 自定义插件 -> 夜间模式
-- 方式二：点击右下角的【夜间模式】按钮
+使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 夜间模式
 
 
 
@@ -791,9 +802,9 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\fullPathCop
 
 
 
-### autoTrailingWhiteSpace：自动添加结尾空格
+### autoTrailingWhiteSpace：为文档添加结尾空格
 
-使用方式：将光标定位到标题上 -> 右键菜单 -> 常用插件 -> 自定义插件 ->  自动添加结尾空格。
+使用方式：将光标定位到标题上 -> 右键菜单 -> 常用插件 -> 自定义插件 ->  为文档添加结尾空格。
 
 > 根据严格的 Markdown 换行语法，需要在结尾添加两个空格以表示换行。此工具能一键添加空格。
 
@@ -807,7 +818,7 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\fullPathCop
 
 > 此插件默认关闭，需手动开启。
 
-使用此插件需要设置如下配置选项：
+使用此插件前需要设置如下配置选项：
 
 ```toml
 # 资源根目录，支持绝对路径(如D:\\tmp\\img)和相对路径(如.\\assets)，填写时请注意转义反斜线（若为空，则此插件失效）
@@ -850,21 +861,21 @@ filter_regexp = ""
 
 
 
+### help
+
+功能：用户反馈
+
+使用方式：右键菜单 -> 非常用插件 -> 帮助。
+
+
+
 ### hotkeyHub：快捷键注册中心（高级）
 
 > 此配置是高级配置，仅对有 javascript 基础的用户开放。
 
-功能：以声明的形式，为【任意插件系统函数】或【任意自定义函数】设置快捷键。
+功能：以声明的形式，为【任意插件系统函数】或【任意自定义函数】绑定快捷键。
 
 具体使用请参考 [hotkey.default.toml](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/hotkey.default.toml)。
-
-
-
-### help
-
-功能：用于用户反馈
-
-使用方式：右键菜单 -> 非常用插件 -> 帮助。
 
 
 
@@ -899,7 +910,7 @@ filter_regexp = ""
 ## 致谢
 
 - MIT：[markmap](https://markmap.js.org/) | [chartjs ](https://www.chartjs.org/)| [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar ](https://github.com/nhn/tui.calendar)| [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/markdownlint/markdownlint)
-- Apache-2.0：[echarts](https://echarts.apache.org/zh/index.html)
+- Apache：[echarts](https://echarts.apache.org/zh/index.html)
 - without-licence：[typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [md-padding](https://github.com/harttle/md-padding)
 
 
