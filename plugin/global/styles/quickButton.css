@@ -20,7 +20,7 @@
     width: ${this.config.button_size};
     height: ${this.config.button_size};
     cursor: pointer;
-    box-shadow: rgba(0, 0, 0, 0.15) 0 0 8px;
+    box-shadow: ${this.config.button_box_shadow};
     border-radius: ${this.config.button_border_radius};
 }
 
