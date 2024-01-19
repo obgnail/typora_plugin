@@ -881,6 +881,7 @@ buttons = [
 ############### autoTrailingWhiteSpace ###############
 # 此插件是为了满足Markdown换行语法，除非有特殊需求，否则不建议开启此插件
 # 参考：https://markdown.com.cn/basic-syntax/line-breaks.html
+# issue：https://github.com/obgnail/typora_plugin/issues/202
 [autoTrailingWhiteSpace]
 # 右键菜单中展示的名称
 name = "自动添加结尾空格"
@@ -902,6 +903,7 @@ hotkey = ""
 name = "重定向本地资源根目录"
 # 是否启用此自定义插件
 # 【metaNode的typora-root-url参数】的优先级大于【此插件】。也就是说，若文件显式设置了typora-root-url，那么此插件在该文件失效
+# issue: https://github.com/obgnail/typora_plugin/issues/259
 enable = false
 # 是否在右键菜单中隐藏
 hide = true
