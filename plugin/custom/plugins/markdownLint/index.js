@@ -51,6 +51,11 @@ class markdownLintPlugin extends BaseCustomPlugin {
     onLineClick = () => {
         this.entities.pre.addEventListener("mousedown", ev => {
             if (ev.button === 0) {
+                const doc = ev.target.closest(".markdown-lint-doc");
+                if (doc) {
+                    this.utils.openUrl("https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md");
+                    return;
+                }
                 const target = ev.target.closest("a");
                 if (!target) return;
                 const lineToGo = parseInt(target.textContent);
@@ -131,7 +136,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
     genMarkdownlint = content => {
         const map = this.translate();
-        const header = "line  rule   error\n";
+        const doc = `<a class="markdown-lint-doc" title="document">📖</a>`;
+        const header = `line  rule   error${doc}\n`;
         const result = content.map(line => {
             const lineNo = line.lineNumber + "";
             const [ruleName, _] = line.ruleNames;
