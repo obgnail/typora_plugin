@@ -884,7 +884,7 @@ buttons = [
 # issue：https://github.com/obgnail/typora_plugin/issues/202
 [autoTrailingWhiteSpace]
 # 右键菜单中展示的名称
-name = "自动添加结尾空格"
+name = "为文档添加结尾空格"
 # 是否启用此自定义插件
 enable = false
 # 是否在右键菜单中隐藏
