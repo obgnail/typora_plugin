@@ -16,7 +16,7 @@ name = "插入kanban"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [kanban.config]
@@ -77,7 +77,7 @@ name = "插入echarts"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [echarts.config]
@@ -134,7 +134,7 @@ name = "插入chart"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [chart.config]
@@ -197,7 +197,7 @@ name = "插入calendar"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [calendar.config]
@@ -243,7 +243,7 @@ name = "插入abc"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [abc.config]
@@ -282,7 +282,7 @@ name = "插入timeline"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [timeline.config]
@@ -334,7 +334,7 @@ name = "插入callouts"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [callouts.config]
@@ -389,7 +389,7 @@ name = "夜间模式"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [darkMode.config]
@@ -407,7 +407,7 @@ name = "复制标题路径"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [fullPathCopy.config]
@@ -429,7 +429,7 @@ name = "提取选区文字到新文件"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [extractRangeToNewFile.config]
@@ -451,7 +451,7 @@ name = "文件模板"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [templater.config]
@@ -501,7 +501,7 @@ name = "中文符号自动补全"
 enable = true
 # 是否在右键菜单中隐藏
 hide = true
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [chineseSymbolAutoPairer.config]
@@ -534,7 +534,7 @@ name = "大纲"
 enable = false
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [toc.config]
@@ -550,7 +550,7 @@ name = "资源管理"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [resourceOperation.config]
@@ -584,7 +584,7 @@ name = "书签管理器"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [scrollBookmarker.config]
@@ -606,7 +606,7 @@ name = "图片查看器"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [imageReviewer.config]
@@ -754,7 +754,7 @@ name = "md格式规范检测"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [markdownLint.config]
@@ -800,7 +800,7 @@ name = "打开上次退出时尚未关闭的标签页"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [reopenClosedFiles.config]
@@ -821,7 +821,7 @@ name = "快捷键中心"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 
 
@@ -833,7 +833,7 @@ name = "快速按钮"
 enable = true
 # 是否在右键菜单中隐藏
 hide = true
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [quickButton.config]
@@ -884,12 +884,12 @@ buttons = [
 # issue：https://github.com/obgnail/typora_plugin/issues/202
 [autoTrailingWhiteSpace]
 # 右键菜单中展示的名称
-name = "自动添加结尾空格"
+name = "为文档添加结尾空格"
 # 是否启用此自定义插件
 enable = false
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [autoTrailingWhiteSpace.config]
@@ -898,16 +898,20 @@ hotkey = ""
 
 
 ############### redirectLocalRootUrl ###############
+# 如果你主要使用obsidian或joplin来管理文件，偶尔用typora打开文件。
+# 就会遇到一个问题：obsidian或joplin都是将本地资源放在同一个目录中（vault），这导致在typora打开后文件由于路径错误，无法访问本地资源。
+# 此插件就是为了解决此问题，重定向本地资源根目录。
+# 除非你有此需求，否则不建议开启此插件
+# issue: https://github.com/obgnail/typora_plugin/issues/259
 [redirectLocalRootUrl]
 # 右键菜单中展示的名称
 name = "重定向本地资源根目录"
 # 是否启用此自定义插件
-# 【metaNode的typora-root-url参数】的优先级大于【此插件】。也就是说，若文件显式设置了typora-root-url，那么此插件在该文件失效
-# issue: https://github.com/obgnail/typora_plugin/issues/259
+# 注意：【文件的front matter的typora-root-url参数】的优先级大于【此插件】。也就是说：若文件的front matter显式设置了typora-root-url，那么此插件在该文件失效
 enable = false
 # 是否在右键菜单中隐藏
 hide = true
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [redirectLocalRootUrl.config]
@@ -926,7 +930,7 @@ name = "TC打开"
 enable = false
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [openInTotalCommander.config]
@@ -952,12 +956,13 @@ name = "升级插件"
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
-# 在右键菜单中的出现顺序（越大越排到后面）
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置
 [pluginUpdater.config]
 # 众所周知，有些地区无法裸连github，需要使用代理（如：http://127.0.0.1:7890）
-# 若值为空，则将弹出窗口，让用户填入代理；若有值，则将直接使用此代理，不再弹出窗口（除非你固定使用某代理，否则不建议使用此配置）
+# 若值为空，则将弹出窗口，让用户填入代理；若有值，则将直接使用此代理，不再弹出窗口
+# 除非你固定使用某代理，否则不建议使用此配置
 proxy = ""
 # 升级时是否弹窗
 #   1.always: 总是弹出（等待程序执行完毕后一次性弹出）
