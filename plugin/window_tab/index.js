@@ -475,37 +475,31 @@ class windowTabBarPlugin extends BasePlugin {
 
     closeTab = idx => {
         const tabUtil = this.tabUtil;
-        if (tabUtil.tabs.length === 1) {
-            if (this.config.RECONFIRM_WHEN_CLOSE_LAST_TAB) {
-                const modal = { title: "退出 Typora", components: [{ label: "是否退出？", type: "p" }] };
-                this.utils.modal(modal, this.utils.exitTypora);
-            } else {
-                this.stopCheckTabsInterval();
-                this.resetAndSetTitle();
-            }
+
+        if (tabUtil.tabs.length === 1 && this.config.RECONFIRM_WHEN_CLOSE_LAST_TAB) {
+            const modal = {title: "退出 Typora", components: [{label: "是否退出？", type: "p"}]};
+            this.utils.modal(modal, this.utils.exitTypora);
             return;
         }
 
         tabUtil.tabs.splice(idx, 1);
 
-        if (idx === tabUtil.activeIdx) {
-            if (this.config.ACTIVETE_TAB_WHEN_CLOSE === "left" && tabUtil.activeIdx > 0) {
-                tabUtil.activeIdx--;
-            } else if (tabUtil.activeIdx < tabUtil.tabs.length) {
-            } else {
-                tabUtil.activeIdx = tabUtil.tabs.length - 1;
-            }
-        } else if (idx < tabUtil.activeIdx) {
-            tabUtil.activeIdx--;
-        }
-
-        if (tabUtil.activeIdx >= 0 && tabUtil.activeIdx < tabUtil.tabs.length) {
-            this.switchTab(tabUtil.activeIdx);
-        } else {
+        if (tabUtil.tabs.length === 0) {
+            this.stopCheckTabsInterval();
             this.resetAndSetTitle();
+            return;
         }
-    }
 
+        if (tabUtil.activeIdx !== 0) {
+            const isLeft = this.config.ACTIVETE_TAB_WHEN_CLOSE === "left";
+            if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && isLeft)) {
+                tabUtil.activeIdx--;
+            } else {
+                tabUtil.activeIdx = Math.min(tabUtil.activeIdx, tabUtil.tabs.length - 1);
+            }
+        }
+        this.switchTab(tabUtil.activeIdx);
+    }
 
     closeActiveTab = () => this.closeTab(this.tabUtil.activeIdx);
 
