@@ -1,4 +1,4 @@
-class autoTailingWhiteSpacePlugin extends BaseCustomPlugin {
+class autoTrailingWhiteSpacePlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     callback = () => {
@@ -7,7 +7,7 @@ class autoTailingWhiteSpacePlugin extends BaseCustomPlugin {
         document.querySelectorAll("#write p[cid]").forEach(ele => {
             const textContent = ele.textContent;
             if (!textContent.trim() || textContent.endsWith(tailSpace)) return
-            const span = ele.querySelector("span");
+            const span = ele.querySelector(":scope > span:last-child");
             if (span) {
                 const textContent = span.textContent;
                 if (!textContent.trim() || textContent.endsWith(tailSpace)) return
@@ -21,5 +21,5 @@ class autoTailingWhiteSpacePlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: autoTailingWhiteSpacePlugin
+    plugin: autoTrailingWhiteSpacePlugin
 };
