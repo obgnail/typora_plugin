@@ -13,7 +13,7 @@
 
 // 插件功能：总是切换到第一个标签
 class switchFirstTab extends BaseCustomPlugin {
-    hint => "切换到第一个标签"
+    hint = () => "切换到第一个标签"
     callback = () => {
         // 获取到window_tab插件的实例
         const windowTabInstance = this.utils.getPlugin("window_tab");

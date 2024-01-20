@@ -36,7 +36,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
 
     registerConfigButtons = () => {
         this.config.buttons.forEach(btn => {
-            const {coordinate, hint, icon, size, disable, callback = "", evil} = btn || {};
+            const {coordinate, hint, icon, size, color, bgColor, disable, callback = "", evil} = btn || {};
             if (disable) return;
 
             let cb;
@@ -50,7 +50,10 @@ class quickButtonPlugin extends BaseCustomPlugin {
                 }
             }
             if (cb instanceof Function) {
-                const style = size ? {fontSize: size} : undefined;
+                const style = {};
+                size && (style["fontSize"] = size);
+                color && (style["color"] = color);
+                bgColor && (style["backgroundColor"] = bgColor);
                 const action = this.utils.randomString();
                 this.register(action, coordinate, hint, icon, style, cb);
             }
