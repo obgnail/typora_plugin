@@ -53,7 +53,7 @@ TAB_MAX_WIDTH = ""
 # 当鼠标悬停于标签页时，显示文件完整路径
 SHOW_FULL_PATH_WHEN_HOVER = true
 # 当关闭最后一个标签时，弹出弹窗确认是否退出Typora
-RECONFIRM_WHEN_CLOSE_LAST_TAB = false
+RECONFIRM_WHEN_CLOSE_LAST_TAB = true
 # 新增tab的位置：
 #   end:   在最右侧
 #   right: 在当前tab右侧
