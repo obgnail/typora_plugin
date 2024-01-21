@@ -50,10 +50,12 @@ HEIGHT_SCALE = 5
 TAB_MIN_WIDTH = "100px"
 # tab最大宽度（填入css长度，如200px、12em，最长不超过400px）
 TAB_MAX_WIDTH = ""
+# tab和正文内容之间的间隙高度（单位：px）
+GAP_BETWEEN_TAB_AND_CONTENT = 0
 # 当鼠标悬停于标签页时，显示文件完整路径
 SHOW_FULL_PATH_WHEN_HOVER = true
 # 当关闭最后一个标签时，弹出弹窗确认是否退出Typora
-RECONFIRM_WHEN_CLOSE_LAST_TAB = true
+RECONFIRM_WHEN_CLOSE_LAST_TAB = false
 # 新增tab的位置：
 #   end:   在最右侧
 #   right: 在当前tab右侧
