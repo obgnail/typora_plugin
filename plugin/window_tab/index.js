@@ -66,7 +66,7 @@ class windowTabBarPlugin extends BasePlugin {
                 this.adjustContentTop();
             }
         }, 200);
-        this.checkTabs();
+        this.checkTabsExist();
         this.utils.loopDetector(isHeaderReady, adjustTop, this.loopDetectInterval, 1000);
     }
 
@@ -138,7 +138,7 @@ class windowTabBarPlugin extends BasePlugin {
     handleFocusChange = () => {
         window.addEventListener("focus", async () => {
             if (this.tabUtil.tabs.length > 0) {
-                await this.checkTabs();
+                await this.checkTabsExist();
                 this.startCheckTabsInterval();
             }
         });
@@ -233,7 +233,7 @@ class windowTabBarPlugin extends BasePlugin {
     }
     adjustContentTop = () => {
         const {height, top} = this.entities.windowTab.getBoundingClientRect();
-        const _top = top + height + "px";
+        const _top = top + height + this.config.GAP_BETWEEN_TAB_AND_CONTENT + "px";
         this.entities.content.style.top = _top;
         this.entities.source.style.top = _top;
     }
@@ -255,7 +255,7 @@ class windowTabBarPlugin extends BasePlugin {
             return interval;
         };
         const interval = getDynamicInterval();
-        this.checkTabsInterval = setInterval(this.checkTabs, interval);
+        this.checkTabsInterval = setInterval(this.checkTabsExist, interval);
     }
 
     stopCheckTabsInterval = () => {
@@ -271,7 +271,7 @@ class windowTabBarPlugin extends BasePlugin {
         await this.resetAndSetTitle();
     }
 
-    checkTabs = async () => {
+    checkTabsExist = async () => {
         if (this.tabUtil.tabs.length === 0) {
             await this.onEmptyTabs();
             return;
@@ -809,8 +809,6 @@ class windowTabBarPlugin extends BasePlugin {
         document.getElementById("title-text").innerHTML = "Typora";
         const activeElement = document.querySelector(".file-library-node.active");
         activeElement && activeElement.classList.remove("active");
-        const fileCounterPlugin = this.utils.getPlugin("file_counter");
-        fileCounterPlugin && fileCounterPlugin.setAllDirCount();
     }
 
     call = type => {
