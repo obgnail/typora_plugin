@@ -16,8 +16,11 @@ class windowTabBarPlugin extends BasePlugin {
     init = () => {
         this.entities = {
             content: document.querySelector("content"),
+            source: document.querySelector("#typora-source"),
             tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
+            windowTab: document.querySelector("#plugin-window-tab"),
         }
+        this.checkTabsInterval = null;
         this.tabUtil = {tabs: [], activeIdx: 0};
         this.loopDetectInterval = 35;
     }
@@ -28,6 +31,7 @@ class windowTabBarPlugin extends BasePlugin {
         this.handleScroll();
         this.handleDrag();
         this.adjustQuickOpen();
+        this.handleFocusChange();
         if (this.config.CTRL_WHEEL_TO_SCROLL) {
             this.handleWheel();
         }
@@ -47,26 +51,22 @@ class windowTabBarPlugin extends BasePlugin {
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.openTab);
         this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.showTabsIfNeed);
         const isHeaderReady = () => this.utils.isBetaVersion ? document.querySelector("header").getBoundingClientRect().height : true
-        const adjustTop = () => {
-            setTimeout(() => {
-                if (this.config.CHANGE_NOTIFICATION_Z_INDEX) {
-                    const container = document.querySelector(".md-notification-container");
-                    if (container) {
-                        container.style.zIndex = "99999";
-                    }
+        const adjustTop = () => setTimeout(() => {
+            if (this.config.CHANGE_NOTIFICATION_Z_INDEX) {
+                const container = document.querySelector(".md-notification-container");
+                if (container) {
+                    container.style.zIndex = "99999";
                 }
-                const windowTab = document.querySelector("#plugin-window-tab");
-                if (!this.config.HIDE_WINDOW_TITLE_BAR) {
-                    const {height, top} = document.querySelector("header").getBoundingClientRect();
-                    windowTab.style.top = height + top + "px";
-                }
-                if (this.config.CHANGE_CONTENT_TOP) {
-                    const {height, top} = windowTab.getBoundingClientRect();
-                    this.entities.content.style.top = top + height + "px";
-                    document.querySelector("#typora-source").style.top = top + height + "px";
-                }
-            }, 200)
-        }
+            }
+            if (!this.config.HIDE_WINDOW_TITLE_BAR) {
+                const {height, top} = document.querySelector("header").getBoundingClientRect();
+                this.entities.windowTab.style.top = height + top + "px";
+            }
+            if (this.config.CHANGE_CONTENT_TOP) {
+                this.adjustContentTop();
+            }
+        }, 200);
+        this.checkTabs();
         this.utils.loopDetector(isHeaderReady, adjustTop, this.loopDetectInterval, 1000);
     }
 
@@ -135,6 +135,16 @@ class windowTabBarPlugin extends BasePlugin {
         }, true)
     }
 
+    handleFocusChange = () => {
+        window.addEventListener("focus", async () => {
+            if (this.tabUtil.tabs.length > 0) {
+                await this.checkTabs();
+                this.startCheckTabsInterval();
+            }
+        });
+        window.addEventListener("blur", this.stopCheckTabsInterval);
+    }
+
     handleWheel = () => {
         this.entities.tabBar.addEventListener("wheel", ev => {
             const target = ev.target.closest("#plugin-window-tab .tab-bar");
@@ -168,18 +178,17 @@ class windowTabBarPlugin extends BasePlugin {
             ele && this.utils.scroll(ele, 10);
         });
         this.utils.decorate(() => JSBridge, "invoke", (...args) => {
-                if (args.length < 3 || args[0] !== "app.openFileOrFolder") return;
+            if (args.length < 3 || args[0] !== "app.openFileOrFolder") return;
 
-                const anchor = args[2]["anchor"];
-                if (!anchor || typeof anchor !== "string" || !anchor.match(/^#/)) return;
+            const anchor = args[2]["anchor"];
+            if (!anchor || typeof anchor !== "string" || !anchor.match(/^#/)) return;
 
-                const filePath = args[1];
-                _linkUtils.file = filePath;
-                _linkUtils.anchor = anchor;
-                this.openFile(filePath);
-                return this.utils.stopCallError
-            }
-        )
+            const filePath = args[1];
+            _linkUtils.file = filePath;
+            _linkUtils.anchor = anchor;
+            this.openFile(filePath);
+            return this.utils.stopCallError
+        })
     }
 
     handleContextMenu = () => {
@@ -208,7 +217,83 @@ class windowTabBarPlugin extends BasePlugin {
         this.utils.registerMenu(name, "#plugin-window-tab .tab-container", showMenu, callback);
     }
 
-    showTabsIfNeed = hide => document.querySelector("#plugin-window-tab").style.visibility = hide ? "hidden" : "initial";
+    showTabsIfNeed = hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial";
+    isShowTabBar = () => this.entities.windowTab.style.display !== "none";
+    hideTabBar = () => {
+        if (this.isShowTabBar()) {
+            this.entities.windowTab.style.display = "none";
+            this.resetContentTop();
+        }
+    }
+    showTabBar = () => {
+        if (!this.isShowTabBar()) {
+            this.entities.windowTab.style.display = "initial";
+            this.adjustContentTop();
+        }
+    }
+    adjustContentTop = () => {
+        const {height, top} = this.entities.windowTab.getBoundingClientRect();
+        const _top = top + height + "px";
+        this.entities.content.style.top = _top;
+        this.entities.source.style.top = _top;
+    }
+    resetContentTop = () => {
+        this.entities.content.style.removeProperty("top");
+        this.entities.source.style.removeProperty("top");
+    }
+
+    startCheckTabsInterval = () => {
+        if (this.checkTabsInterval) return;
+        const getDynamicInterval = () => {
+            const tabCount = this.tabUtil.tabs.length;
+            let interval = 1000;
+            if (tabCount > 10 && tabCount <= 20) {
+                interval = 2000;
+            } else if (tabCount > 30) {
+                interval = 3000;
+            }
+            return interval;
+        };
+        const interval = getDynamicInterval();
+        this.checkTabsInterval = setInterval(this.checkTabs, interval);
+    }
+
+    stopCheckTabsInterval = () => {
+        if (this.checkTabsInterval) {
+            clearInterval(this.checkTabsInterval);
+            this.checkTabsInterval = null;
+        }
+    }
+
+    onEmptyTabs = async () => {
+        this.hideTabBar();
+        this.stopCheckTabsInterval();
+        await this.resetAndSetTitle();
+    }
+
+    checkTabs = async () => {
+        if (this.tabUtil.tabs.length === 0) {
+            await this.onEmptyTabs();
+            return;
+        }
+        const result = await Promise.all(this.tabUtil.tabs.map(async (tab, idx) => {
+            const exist = await this.utils.existPath(tab.path);
+            if (!exist) {
+                return idx
+            }
+        }));
+        const waitToClose = result.filter(idx => typeof idx !== "undefined");
+        if (waitToClose.length === 0) return;
+
+        const closeActive = waitToClose.some(idx => idx === this.tabUtil.activeIdx);
+        waitToClose.reverse().forEach(idx => this.tabUtil.tabs.splice(idx, 1));
+        const leftCount = waitToClose.filter(idx => idx <= this.tabUtil.activeIdx).length;  // 删除了左侧X个tab
+        this.tabUtil.activeIdx -= leftCount;
+        if (closeActive && this.config.ACTIVETE_TAB_WHEN_CLOSE !== "left") {
+            this.tabUtil.activeIdx++;
+        }
+        this.switchTab(this.tabUtil.activeIdx);
+    }
 
     // 新窗口打开
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
@@ -355,6 +440,8 @@ class windowTabBarPlugin extends BasePlugin {
         if (0 < this.config.TAB_MAX_NUM && this.config.TAB_MAX_NUM < this.tabUtil.tabs.length) {
             this.tabUtil.tabs = this.tabUtil.tabs.slice(-this.config.TAB_MAX_NUM);
         }
+        this.showTabBar();
+        this.startCheckTabsInterval();
         this.renderDOM(wantOpenPath);
     }
 
@@ -387,17 +474,20 @@ class windowTabBarPlugin extends BasePlugin {
     closeTab = idx => {
         const tabUtil = this.tabUtil;
 
-        if (tabUtil.tabs.length === 1) {
-            if (this.config.RECONFIRM_WHEN_CLOSE_LAST_TAB) {
-                const modal = {title: "退出 Typora", components: [{label: "是否退出？", type: "p"}]};
-                this.utils.modal(modal, this.utils.exitTypora);
-            } else {
+        if (tabUtil.tabs.length === 1 && (this.config.RECONFIRM_WHEN_CLOSE_LAST_TAB || this.utils.isBetaVersion)) {
+            const modal = {title: "退出 Typora", components: [{label: "是否退出？", type: "p"}]};
+            this.utils.modal(modal, () => {
+                tabUtil.tabs.splice(idx, 1); // 删除全部的tab，保证【reopenClosedFiles】插件能正常工作
                 this.utils.exitTypora();
-            }
+            });
             return;
         }
 
         tabUtil.tabs.splice(idx, 1);
+        if (tabUtil.tabs.length === 0) {
+            this.onEmptyTabs();
+            return;
+        }
         if (tabUtil.activeIdx !== 0) {
             const isLeft = this.config.ACTIVETE_TAB_WHEN_CLOSE === "left";
             if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && isLeft)) {
@@ -540,7 +630,9 @@ class windowTabBarPlugin extends BasePlugin {
             )
 
             reset.onfinish = function () {
-                that.entities.tabBar.removeChild(cloneObj);
+                if (cloneObj && cloneObj.parentNode === that.entities.tabBar) {
+                    that.entities.tabBar.removeChild(cloneObj);
+                }
                 cloneObj = null;
                 dragBox.style.visibility = 'visible';
                 resetTabBar();
@@ -681,7 +773,6 @@ class windowTabBarPlugin extends BasePlugin {
         }
         if (this.config.LOCAL_OPEN) {
             args.push({arg_name: "在新标签打开文件", arg_value: "new_tab_open"});
-            // 空白标签不允许当前标签打开
         } else if (this.utils.getFilePath()) {
             args.push({arg_name: "在当前标签打开文件", arg_value: "local_open"});
         }
@@ -689,6 +780,37 @@ class windowTabBarPlugin extends BasePlugin {
             args.push({arg_name: "排序标签", arg_value: "sort_tabs"});
         }
         return args
+    }
+
+    resetAndSetTitle = async () => {
+        this.tabUtil.tabs = [];
+        this.tabUtil.activeIdx = 0;
+        File.bundle = {
+            filePath: '',
+            originalPath: null,
+            untitledId: +new Date,
+            fileName: null,
+            fileEncode: null,
+            removed: false,
+            useCRLF: File.useCRLF || false,
+            unsupported: "",
+            hasModified: false,
+            modifiedDate: null,
+            lastSnapDate: null,
+            savedContent: null,
+            isLocked: false,
+            oversize: false,
+            fileMissingWhenOpen: false,
+            bundleFile: null,
+            zip: null
+        };
+
+        await this.utils.reload();
+        document.getElementById("title-text").innerHTML = "Typora";
+        const activeElement = document.querySelector(".file-library-node.active");
+        activeElement && activeElement.classList.remove("active");
+        const fileCounterPlugin = this.utils.getPlugin("file_counter");
+        fileCounterPlugin && fileCounterPlugin.setAllDirCount();
     }
 
     call = type => {
