@@ -8,6 +8,7 @@ class readOnlyPlugin extends BasePlugin {
         const forbiddenKeys = ["Enter", "Backspace", "Delete", " "];
         write.addEventListener("compositionstart", ev => File.isLocked && this.stop(ev), true);
         write.addEventListener("keydown", ev => File.isLocked && forbiddenKeys.includes(ev.key) && this.stop(ev), true);
+        write.addEventListener("paste", ev => File.isLocked && this.stop(ev), true);
 
         if (this.config.READ_ONLY_DEFAULT) {
             this.utils.loopDetector(() => File && File.lock, this.call);
