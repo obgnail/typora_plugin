@@ -233,9 +233,15 @@ class windowTabBarPlugin extends BasePlugin {
     }
     adjustContentTop = () => {
         const {height, top} = this.entities.windowTab.getBoundingClientRect();
-        const _top = top + height + this.config.GAP_BETWEEN_TAB_AND_CONTENT + "px";
-        this.entities.content.style.top = _top;
-        this.entities.source.style.top = _top;
+        if (height + top === 0) {  // 等于0，说明没有任何一个tab
+            this.resetContentTop();
+        } else {
+            const {height: headerHeight, top: headerTop} = document.querySelector("header").getBoundingClientRect();
+            const _top = Math.max(top + height + this.config.GAP_BETWEEN_TAB_AND_CONTENT, headerHeight + headerTop);
+            const t = _top + "px";
+            this.entities.content.style.top = t;
+            this.entities.source.style.top = t;
+        }
     }
     resetContentTop = () => {
         this.entities.content.style.removeProperty("top");
