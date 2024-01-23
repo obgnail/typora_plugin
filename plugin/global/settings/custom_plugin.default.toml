@@ -598,6 +598,18 @@ allow_drag = true
 auto_popup_modal = true
 
 
+############### bingSpeech ###############
+[bingSpeech]
+# 右键菜单中展示的名称
+name = "必应文本转语音"
+# 是否启用此自定义插件
+enable = true
+# 是否在右键菜单中隐藏
+hide = false
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
+order = 1
+
+
 ############### imageReviewer ###############
 [imageReviewer]
 # 右键菜单中展示的名称

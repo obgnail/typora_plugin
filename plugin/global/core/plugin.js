@@ -404,6 +404,11 @@ class utils {
         return "/" + this.Package.Path.posix.join.apply(this.Package.Path.posix, newS).replace(":", "")
     }
 
+    static escape = htmlStr => htmlStr.replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 
     ////////////////////////////// 业务文件操作 //////////////////////////////
     // Repo: https://github.com/microsoft/vscode-ripgrep
