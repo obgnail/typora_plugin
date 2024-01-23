@@ -47,6 +47,7 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     handleLifeCycle = () => {
+        this.hideTabBar();
         this.utils.addEventListener(this.utils.eventType.fileOpened, this.openTab);
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.openTab);
         this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.showTabsIfNeed);
@@ -66,7 +67,6 @@ class windowTabBarPlugin extends BasePlugin {
                 this.adjustContentTop();
             }
         }, 200);
-        this.checkTabsExist();
         this.utils.loopDetector(isHeaderReady, adjustTop, this.loopDetectInterval, 1000);
     }
 
@@ -220,7 +220,7 @@ class windowTabBarPlugin extends BasePlugin {
     showTabsIfNeed = hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial";
     isShowTabBar = () => this.entities.windowTab.style.display !== "none";
     hideTabBar = () => {
-        if (this.isShowTabBar()) {
+        if (this.isShowTabBar() && this.tabUtil.tabs.length === 0) {
             this.entities.windowTab.style.display = "none";
             this.resetContentTop();
         }
@@ -284,21 +284,23 @@ class windowTabBarPlugin extends BasePlugin {
         }
         const result = await Promise.all(this.tabUtil.tabs.map(async (tab, idx) => {
             const exist = await this.utils.existPath(tab.path);
-            if (!exist) {
-                return idx
-            }
+            return !exist ? idx : undefined;
         }));
         const waitToClose = result.filter(idx => typeof idx !== "undefined");
         if (waitToClose.length === 0) return;
 
-        const closeActive = waitToClose.some(idx => idx === this.tabUtil.activeIdx);
+        const closeActive = waitToClose.includes(this.tabUtil.activeIdx);
         waitToClose.reverse().forEach(idx => this.tabUtil.tabs.splice(idx, 1));
         const leftCount = waitToClose.filter(idx => idx <= this.tabUtil.activeIdx).length;  // 删除了左侧X个tab
         this.tabUtil.activeIdx -= leftCount;
         if (closeActive && this.config.ACTIVETE_TAB_WHEN_CLOSE !== "left") {
             this.tabUtil.activeIdx++;
         }
-        this.switchTab(this.tabUtil.activeIdx);
+        if (this.tabUtil.tabs.length === 0) {
+            await this.onEmptyTabs();
+        } else {
+            this.switchTab(this.tabUtil.activeIdx);
+        }
     }
 
     // 新窗口打开
