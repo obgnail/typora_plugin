@@ -37,7 +37,7 @@ class bingSpeech extends BaseCustomPlugin {
             // 文本转语音参数
             VoiceName: "zh-CN-YunXiNeural", // 文本转语音输出的语音角色
             ProsodyPitch: "0%",     // 指示文本的基线音节。
-            ProsodyRate: "0%",   // 指示文本的讲出速率。
+            ProsodyRate: "+20%",   // 指示文本的讲出速率。
 
             // 翻译
             FromLang: "zh-Hans",
@@ -46,17 +46,52 @@ class bingSpeech extends BaseCustomPlugin {
     }
 
     textToAudio = async (options, text) => {
-        const textArr = text
+        const bodyList = text
             .replace(/\r\n/g, "\n")
             .replace(/\n+/g, "\n")
             .split("\n")
             .map(line => this.utils.escape(line.trim()))
             .filter(Boolean)
-            .map(line => `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="zh-CN"><voice name="${options.VoiceName}"><prosody pitch="${options.ProsodyPitch}" rate="${options.ProsodyRate}">${line}</prosody></voice></speak>`)
+            .map(line => {
+                const data = new URLSearchParams();
+                const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="zh-CN"><voice name="${options.VoiceName}"><prosody pitch="${options.ProsodyPitch}" rate="${options.ProsodyRate}">${line}</prosody></voice></speak>`
+                data.append("key", options.Key);
+                data.append("ssml", ssml);
+                data.append("token", options.Token);
+                return data.toString()
+            })
 
-        textArr.forEach(text => {
+        const buffers = await Promise.all(bodyList.map(async body => {
+            const url = new URL(this.AudioApi);
+            url.searchParams.append("IG", options.IG);
+            url.searchParams.append("IID", options.IID + ".2");
+            url.searchParams.append("isVertical", "1");
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'User-Agent': this.UA,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    credentials: "include",
+                },
+                body: body,
+            })
+            return await resp.arrayBuffer()
+        }))
 
-        })
+        // 合并二进制数据
+        const combinedBuffer = new Uint8Array(buffers.reduce((acc, buffer) => {
+            const tmp = new Uint8Array(acc.byteLength + buffer.byteLength);
+            tmp.set(new Uint8Array(acc), 0);
+            tmp.set(new Uint8Array(buffer), acc.byteLength);
+            return tmp;
+        }, new ArrayBuffer(0)));
+
+        const audioContext = new window.AudioContext();
+        const audioBuffer = await audioContext.decodeAudioData(combinedBuffer.buffer);
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        source.start(0);
     }
 }
 
