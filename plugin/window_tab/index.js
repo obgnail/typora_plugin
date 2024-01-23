@@ -66,7 +66,7 @@ class windowTabBarPlugin extends BasePlugin {
                 this.adjustContentTop();
             }
         }, 200);
-        this.checkTabsExist();
+        this.hideTabBar();
         this.utils.loopDetector(isHeaderReady, adjustTop, this.loopDetectInterval, 1000);
     }
 
@@ -298,9 +298,12 @@ class windowTabBarPlugin extends BasePlugin {
         if (closeActive && this.config.ACTIVETE_TAB_WHEN_CLOSE !== "left") {
             this.tabUtil.activeIdx++;
         }
-        this.switchTab(this.tabUtil.activeIdx);
+        if (this.tabUtil.tabs.length === 0) {
+            await this.onEmptyTabs();
+        } else {
+            this.switchTab(this.tabUtil.activeIdx);
+        }
     }
-
     // 新窗口打开
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
     // 新标签页打开
