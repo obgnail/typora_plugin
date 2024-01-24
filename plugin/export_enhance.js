@@ -12,7 +12,7 @@ class exportEnhancePlugin extends BasePlugin {
     afterExport = async (html, writeIdx) => {
         if (!this.config.ENABLE) return html;
 
-        const imageMap = (this.config.DOWNLOAD_NETWORK_IMAGE) ? await this.downloadAllImage(html, writeIdx) : {};
+        const imageMap = this.config.DOWNLOAD_NETWORK_IMAGE ? await this.downloadAllImage(html, writeIdx) : {};
 
         const dirname = this.utils.getCurrentDirPath();
         return html.replace(this.regexp, (origin, src, srcIdx) => {
@@ -28,7 +28,7 @@ class exportEnhancePlugin extends BasePlugin {
                     const path = imageMap[src];
                     imagePath = this.utils.Package.Path.join(this.tempFolder, path);
                 } else {
-                    imagePath = this.utils.Package.Path.join(dirname, src);
+                    imagePath = this.utils.Package.Path.resolve(dirname, src);
                 }
                 const base64Data = this.toBase64(imagePath);
                 result = origin.replace(src, base64Data);
