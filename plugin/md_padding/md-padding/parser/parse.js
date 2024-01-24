@@ -11,6 +11,7 @@ const square_quoted_1 = require("../nodes/square-quoted");
 const empasis_1 = require("../nodes/empasis");
 const quoted_1 = require("../nodes/quoted");
 const strong_1 = require("../nodes/strong");
+const highlight_1 = require("../nodes/highlight");
 const strikethrough_1 = require("../nodes/strikethrough");
 const document_1 = require("../nodes/document");
 const compact_1 = require("../transformers/compact");
@@ -133,7 +134,8 @@ function parse(str, options) {
             }
         }
         else if (state === state_1.State.CalloutItem && c === ']') {
-            resolve(new callout_1.Callout(popMarkdown()));
+            calloutType = popMarkdown();
+            resolve(new callout_1.Callout(calloutType));
             i++;
         }
         // Links
@@ -174,7 +176,7 @@ function parse(str, options) {
             resolve(new html_tag_1.HTMLTag(popMarkdown()));
             i++;
         }
-        // Strong, Emphasis, Strikethrough
+        // Strong, Emphasis, Strikethrough, highlight
         else if (state === state_1.State.Emphasis && c === emphasisDelimiter && c === '_' && (0, char_1.isWordBoundary)(str[i + 1])) {
             resolve(new empasis_1.Emphasis(popNodes(), emphasisDelimiter));
             i++;
@@ -189,6 +191,10 @@ function parse(str, options) {
         }
         else if (state === state_1.State.Strikethrough && c2 === '~~') {
             resolve(new strikethrough_1.Strikethrough(popNodes()));
+            i += 2;
+        }
+        else if (state === state_1.State.Highlight && c2 === '==') {
+            resolve(new highlight_1.Highlight(popNodes()));
             i += 2;
         }
         // ListItems
@@ -280,6 +286,10 @@ function parse(str, options) {
             i += 2;
             push(state_1.State.Strong);
         }
+        else if (c2 === '==' && allow(16777216 /* Highlight */)) {
+            i += 2;
+            push(state_1.State.Highlight);
+        }
         else if (c === '*' && allow(32768 /* Emphasis */)) {
             emphasisDelimiter = c;
             i++;
@@ -358,6 +368,9 @@ function parse(str, options) {
                 break;
             case state_1.State.Strong:
                 resolve(...[...strongDelimiter].map(c => punctuation_1.Punctuation.create(c)), ...popNodes());
+                break;
+            case state_1.State.Highlight:
+                resolve(punctuation_1.Punctuation.create('='), punctuation_1.Punctuation.create('='), ...popNodes());
                 break;
             case state_1.State.InlineCode:
                 resolve(...[...inlineCodeDelimiter].map(c => punctuation_1.Punctuation.create(c)), ...popNodes());
