@@ -17,8 +17,8 @@ class bingSpeech extends BaseCustomPlugin {
 
     genOptions = async () => {
         const response = await fetch(this.ParamsApi, {
-            method: 'GET',
-            headers: new Headers({'User-Agent': this.UA})
+            method: "GET",
+            headers: new Headers({"User-Agent": this.UA})
         })
         const result = await response.text();
         const matchIG = result.match(/IG:"(?<ig>[0-9a-zA-Z]*?)"/);
@@ -66,13 +66,12 @@ class bingSpeech extends BaseCustomPlugin {
             url.searchParams.append("IG", options.IG);
             url.searchParams.append("IID", options.IID + ".2");
             url.searchParams.append("isVertical", "1");
-            const resp = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'User-Agent': this.UA,
+            const resp = await fetch(url.toString(), {
+                method: "POST",
+                headers: new Headers({
+                    "User-Agent": this.UA,
                     "Content-Type": "application/x-www-form-urlencoded",
-                    credentials: "include",
-                },
+                }),
                 body: body,
             })
             return await resp.arrayBuffer()
