@@ -331,6 +331,11 @@ TEMPLATE = """```timeline
 # 右键菜单中展示的名称
 name = "插入callouts"
 # 是否启用此自定义插件
+# typora1.8版本已经原生支持callouts，但是：
+#   1. 其仅支持五种类型的callouts，
+#   2. 其不支持fold callouts（如： > [!NOTE]-）。
+#   3. 此插件并不影响原生callouts
+# 请考虑以上信息确定是否开启此插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -338,9 +343,11 @@ hide = false
 order = 1
 # 插件配置
 [callouts.config]
+# callout的阴影
+box_shadow = "0 0.2rem 0.5rem #0000000d, 0 0 0.05rem #0000001a"
 # 为标题设置颜色（和left_line_color一样）
 set_title_color = true
-# 鼠标悬停时展示fold callout的内容
+# 鼠标悬停在fold callout时展示其内容
 hover_to_show_fold_callout = true
 # 自动插入的模板
 template = "> [!NOTE]\n> this is note"
