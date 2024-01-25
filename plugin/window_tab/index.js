@@ -47,7 +47,6 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     handleLifeCycle = () => {
-        this.hideTabBar();
         this.utils.addEventListener(this.utils.eventType.fileOpened, this.openTab);
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.openTab);
         this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.showTabsIfNeed);
@@ -67,6 +66,7 @@ class windowTabBarPlugin extends BasePlugin {
                 this.adjustContentTop();
             }
         }, 200);
+        this.hideTabBar();
         this.utils.loopDetector(isHeaderReady, adjustTop, this.loopDetectInterval, 1000);
     }
 
@@ -220,7 +220,7 @@ class windowTabBarPlugin extends BasePlugin {
     showTabsIfNeed = hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial";
     isShowTabBar = () => this.entities.windowTab.style.display !== "none";
     hideTabBar = () => {
-        if (this.isShowTabBar() && this.tabUtil.tabs.length === 0) {
+        if (this.isShowTabBar()) {
             this.entities.windowTab.style.display = "none";
             this.resetContentTop();
         }
@@ -284,7 +284,7 @@ class windowTabBarPlugin extends BasePlugin {
         }
         const result = await Promise.all(this.tabUtil.tabs.map(async (tab, idx) => {
             const exist = await this.utils.existPath(tab.path);
-            return !exist ? idx : undefined;
+            return !exist ? idx : undefined
         }));
         const waitToClose = result.filter(idx => typeof idx !== "undefined");
         if (waitToClose.length === 0) return;
@@ -302,7 +302,6 @@ class windowTabBarPlugin extends BasePlugin {
             this.switchTab(this.tabUtil.activeIdx);
         }
     }
-
     // 新窗口打开
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
     // 新标签页打开
