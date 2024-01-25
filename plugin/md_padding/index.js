@@ -30,12 +30,12 @@ class mdPaddingPlugin extends BasePlugin {
             return text;
         }
     }
-    formatAndRemoveMultiLineBreak = content => this.removeMultiLineBreak(this.formatContent(content))
+    formatAndRemoveMultiLineBreak = content => this.removeMultiLineBreak(this.formatContent(this.formatCodeBlocks(content)))
 
     formatSelection = async () => {
         ClientCommand.copyAsMarkdown();
         const content = await window.parent.navigator.clipboard.readText();
-        const formattedContent = this.formatAndRemoveMultiLineBreak(this.formatCodeBlocks(content));
+        const formattedContent = this.formatAndRemoveMultiLineBreak(content);
         await window.parent.navigator.clipboard.writeText(formattedContent);
         ClientCommand.paste();
     }
@@ -43,7 +43,7 @@ class mdPaddingPlugin extends BasePlugin {
     formatFile = async () => {
         const filepath = this.utils.getFilePath();
         const content = await this.utils.Package.Fs.promises.readFile(filepath, 'utf-8');
-        const formattedContent = this.formatAndRemoveMultiLineBreak(this.formatCodeBlocks(content));
+        const formattedContent = this.formatAndRemoveMultiLineBreak(content);
         await this.utils.Package.Fs.promises.writeFile(filepath, formattedContent);
         this.reload(formattedContent);
     }
