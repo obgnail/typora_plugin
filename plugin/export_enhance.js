@@ -1,11 +1,6 @@
 class exportEnhancePlugin extends BasePlugin {
-    init = () => {
-        this.tempFolder = this.utils.tempFolder; // i‘d like to shit here
-        this.regexp = new RegExp(`<img.*?src="(.*?)".*?>`, "gs");
-    }
-
     process = () => {
-        this.init();
+        this.regexp = new RegExp(`<img.*?src="(.*?)".*?>`, "gs");
         this.utils.registerExportHelper("export_enhance", null, this.afterExport);
     }
 
@@ -24,7 +19,7 @@ class exportEnhancePlugin extends BasePlugin {
                 let imagePath;
                 if (this.utils.isNetworkImage(src)) {
                     if (!this.config.DOWNLOAD_NETWORK_IMAGE || !imageMap.hasOwnProperty(src)) return origin;
-                    imagePath = this.utils.Package.Path.join(this.tempFolder, imageMap[src]);
+                    imagePath = imageMap[src];
                 } else {
                     imagePath = this.utils.Package.Path.resolve(dirname, src);
                 }
@@ -51,11 +46,10 @@ class exportEnhancePlugin extends BasePlugin {
                 ) return;
 
                 const src = match[1];
-                const filename = this.utils.randomString() + "_" + this.utils.Package.Path.basename(src);
                 try {
-                    const {ok} = await this.utils.downloadImage(src, this.tempFolder, filename);
+                    const {ok, filepath} = await this.utils.downloadImage(src);
                     if (ok) {
-                        imageMap[src] = filename;
+                        imageMap[src] = filepath;
                     }
                 } catch (e) {
                     console.error("download image error:", e);
@@ -81,7 +75,7 @@ class exportEnhancePlugin extends BasePlugin {
         if (this.config.ENABLE) {
             call_args.push({arg_name: "禁用", arg_value: "disable"});
         } else {
-            call_args.push({arg_name: "启用", arg_value: "enable"})
+            call_args.push({arg_name: "启用", arg_value: "enable"});
         }
 
         return call_args
