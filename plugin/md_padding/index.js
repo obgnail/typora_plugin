@@ -17,12 +17,25 @@ class mdPaddingPlugin extends BasePlugin {
         }
         return content;
     }
+    formatCodeBlocks(text) {
+        const regex = /(\s*)\n*\s*```[\s\S]*?```/g;
+        const codeBlocks = text.match(regex);
+        if (codeBlocks) {
+            const formattedText = text.replace(regex, (match, leadingSpaces) => {
+                const trimmedMatch = match.trim();
+                return `\n${leadingSpaces}${trimmedMatch}\n`;
+            }).replace(/\n(\s*)\n/g, '\n\n');
+            return formattedText;
+        } else {
+            return text;
+        }
+    }
     formatAndRemoveMultiLineBreak = content => this.removeMultiLineBreak(this.formatContent(content))
 
     formatSelection = async () => {
         ClientCommand.copyAsMarkdown();
         const content = await window.parent.navigator.clipboard.readText();
-        const formattedContent = this.formatAndRemoveMultiLineBreak(content);
+        const formattedContent = this.formatAndRemoveMultiLineBreak(this.formatCodeBlocks(content));
         await window.parent.navigator.clipboard.writeText(formattedContent);
         ClientCommand.paste();
     }
@@ -30,7 +43,7 @@ class mdPaddingPlugin extends BasePlugin {
     formatFile = async () => {
         const filepath = this.utils.getFilePath();
         const content = await this.utils.Package.Fs.promises.readFile(filepath, 'utf-8');
-        const formattedContent = this.formatAndRemoveMultiLineBreak(content);
+        const formattedContent = this.formatAndRemoveMultiLineBreak(this.formatCodeBlocks(content));
         await this.utils.Package.Fs.promises.writeFile(filepath, formattedContent);
         this.reload(formattedContent);
     }
