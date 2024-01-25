@@ -13,29 +13,28 @@ class exportEnhancePlugin extends BasePlugin {
         if (!this.config.ENABLE) return html;
 
         const imageMap = this.config.DOWNLOAD_NETWORK_IMAGE ? await this.downloadAllImage(html, writeIdx) : {};
-
         const dirname = this.utils.getCurrentDirPath();
+
         return html.replace(this.regexp, (origin, src, srcIdx) => {
             if (srcIdx < writeIdx) return origin;
 
-            let result = origin;
-            let imagePath;
             try {
-                if (this.utils.isSpecialImage(src)) return result;
+                if (this.utils.isSpecialImage(src)) return origin;
 
+                let imagePath;
                 if (this.utils.isNetworkImage(src)) {
-                    if (!this.config.DOWNLOAD_NETWORK_IMAGE || !imageMap.hasOwnProperty(src)) return origin
-                    const path = imageMap[src];
-                    imagePath = this.utils.Package.Path.join(this.tempFolder, path);
+                    if (!this.config.DOWNLOAD_NETWORK_IMAGE || !imageMap.hasOwnProperty(src)) return origin;
+                    imagePath = this.utils.Package.Path.join(this.tempFolder, imageMap[src]);
                 } else {
                     imagePath = this.utils.Package.Path.resolve(dirname, src);
                 }
+
                 const base64Data = this.toBase64(imagePath);
-                result = origin.replace(src, base64Data);
+                return origin.replace(src, base64Data);
             } catch (e) {
-                console.error("export error:", e);
+                console.error("toBase64 error:", e);
             }
-            return result;
+            return origin;
         })
     }
 
