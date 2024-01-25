@@ -47,6 +47,7 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     handleLifeCycle = () => {
+        this.hideTabBar();
         this.utils.addEventListener(this.utils.eventType.fileOpened, this.openTab);
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.openTab);
         this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.showTabsIfNeed);
@@ -66,7 +67,6 @@ class windowTabBarPlugin extends BasePlugin {
                 this.adjustContentTop();
             }
         }, 200);
-        this.hideTabBar();
         this.utils.loopDetector(isHeaderReady, adjustTop, this.loopDetectInterval, 1000);
     }
 
@@ -220,7 +220,7 @@ class windowTabBarPlugin extends BasePlugin {
     showTabsIfNeed = hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial";
     isShowTabBar = () => this.entities.windowTab.style.display !== "none";
     hideTabBar = () => {
-        if (this.isShowTabBar()) {
+        if (this.isShowTabBar() && this.tabUtil.tabs.length === 0) {
             this.entities.windowTab.style.display = "none";
             this.resetContentTop();
         }
