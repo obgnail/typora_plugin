@@ -17,20 +17,7 @@ class mdPaddingPlugin extends BasePlugin {
         }
         return content;
     }
-    formatCodeBlocks(text) {
-        const regex = /(\s*)\n*\s*```[\s\S]*?```/g;
-        const codeBlocks = text.match(regex);
-        if (codeBlocks) {
-            const formattedText = text.replace(regex, (match, leadingSpaces) => {
-                const trimmedMatch = match.trim();
-                return `\n${leadingSpaces}${trimmedMatch}\n`;
-            }).replace(/\n(\s*)\n/g, '\n\n');
-            return formattedText;
-        } else {
-            return text;
-        }
-    }
-    formatAndRemoveMultiLineBreak = content => this.removeMultiLineBreak(this.formatContent(this.formatCodeBlocks(content)))
+    formatAndRemoveMultiLineBreak = content => this.removeMultiLineBreak(this.formatContent(content));
 
     formatSelection = async () => {
         ClientCommand.copyAsMarkdown();
