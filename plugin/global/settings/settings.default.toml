@@ -780,7 +780,9 @@ ENABLE = true
 NAME = "文字风格化"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 弹出颜色面板的快捷键
+# 面板的背景颜色。若为""，则跟随主题的配色方案
+MODAL_BACKGROUND_COLOR = ""
+# 弹出面板的快捷键
 SHOW_MODAL_HOTKEY = ""
 # 工具栏的按钮:
 #   - weight:                加粗

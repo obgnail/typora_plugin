@@ -36,7 +36,7 @@
 *       2. 上面的所有流程都在方法setMultilineStyle中。记录逻辑在方法recordTEXTPosition中，替换逻辑在方法renewRange中
 * */
 class textStylizePlugin extends BasePlugin {
-    styleTemplate = () => true
+    styleTemplate = () => ({backgroundColor: this.config.MODAL_BACKGROUND_COLOR || "var(--side-bar-bg-color)"})
 
     htmlTemplate = () => {
         const children = [{class_: "stylize-tool", children: this.genToolbarHTML()}, this.genTableHTML()];
