@@ -147,6 +147,40 @@ class markdownLintPlugin extends BaseCustomPlugin {
         })
         return header + result
     }
+
+    // 修复逻辑的入口函数
+    fixLintError = async () => {
+        const content = await this.utils.Package.Fs.promises.readFile(this.utils.getFilePath(), 'utf-8');
+        const newContent = new lintFixer(content).prepare().format(this.config.try_fix_lint_error);
+        File.reloadContent(newContent, {fromDiskChange: false});
+    }
+}
+
+class lintFixer {
+    constructor(content) {
+        this.content = content;
+    }
+
+    prepare = () => {
+        // 怀疑处理这些规范问题需要进行词法解析、语法解析，可以在这里准备好相关数据
+        return this
+    }
+
+    format = lintTypeList => {
+        lintTypeList.forEach(lintType => {
+            const func = this[lintType.toUpperCase()];
+            func && func();
+        })
+        return this.content
+    }
+    MD031 = () => {
+        const codeBlockRegex = /(\s*)\n*\s*```[\s\S]*?```/g;
+        this.content = this.content.replace(codeBlockRegex, (match, leadingSpaces) => {
+            const trimmedMatch = match.trim();
+            return `\n${leadingSpaces}${trimmedMatch}\n`;
+        }).replace(/\n(\s*)\n/g, '\n\n');
+        return this.content;
+    }
 }
 
 module.exports = {
