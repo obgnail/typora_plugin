@@ -34,7 +34,7 @@ class exportEnhancePlugin extends BasePlugin {
     }
 
     downloadAllImage = async (html, writeIdx) => {
-        const imageMap = {} // map src to localFileName, use for network image only
+        const imageMap = {} // map src to localFilePath, use for network image only
         const matches = Array.from(html.matchAll(this.regexp));
         const chunkList = this.utils.chunk(matches, this.config.DOWNLOAD_THREADS);
         for (const list of chunkList) {

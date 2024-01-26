@@ -1,5 +1,6 @@
 #plugin-text-stylize {
     top: 10%;
+    background-color: ${backgroundColor};
 }
 
 #plugin-text-stylize .stylize-tool {
