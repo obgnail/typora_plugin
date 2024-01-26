@@ -179,7 +179,6 @@ class lintFixer {
             const trimmedMatch = match.trim();
             return `\n${leadingSpaces}${trimmedMatch}\n`;
         }).replace(/\n(\s*)\n/g, '\n\n');
-        return this.content;
     }
 }
 
