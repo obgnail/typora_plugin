@@ -769,9 +769,6 @@ order = 1
 hotkey = ""
 # 禁用的检测规则（参考：https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md）
 disable_rules = ["MD009", "MD012", "MD013", "MD033", "MD041"]
-# 在列表中填入你想修复的规范
-# 目前仅支持修复 MD031 规范
-try_fix_lint_error = ["MD031"]
 # 将检测规则的案文翻译为中文
 translate = true
 # 防抖时间，在编辑后多长时间重新检测一次（单位：ms）
@@ -800,6 +797,12 @@ button_height = "12px"
 pass_color = "#499c54"
 # lint未通过时方块的颜色
 error_color = "#be9117"
+# 快捷键：尽力修复规范
+# 目前支持修复的规范：
+#   - MD031
+hotkey_fix_lint_error = ""
+# 在列表中填入你希望修复的规范
+try_fix_lint_error = ["MD031"]
 
 
 ############### reopenClosedFiles ###############
@@ -880,6 +883,7 @@ buttons = [
     { disable = false, coordinate = [1, 1], hint = "图片管理", size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
     { disable = false, coordinate = [2, 1], hint = "书签管理", size = "17px", icon = "fa fa-bookmark", callback = "scrollBookmarker.callback" },
     { disable = false, coordinate = [3, 1], hint = "高亮搜索", size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
+
     # 根据try_fix_lint_error配置进行语法优化
     { disable = true, coordinate = [4, 1], hint = "语法优化", size = "17px", icon = "fa fa-book", callback = "markdownLint.fixLintError" },
 

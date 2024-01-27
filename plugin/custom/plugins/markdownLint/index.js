@@ -21,6 +21,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.initWorker();
         this.initEventHandler();
         this.onLineClick();
+        this.registerHotkey();
     }
 
     initWorker = () => {
@@ -77,6 +78,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     updateLinter = () => this.worker.postMessage({action: "lint", payload: this.utils.getFilePath()});
+
+    registerHotkey = () => {
+        this.utils.registerSingleHotkey(this.config.hotkey_fix_lint_error, this.fixLintError);
+    }
 
     callback = async anchorNode => {
         this.entities.modal.style.display = this.entities.modal.style.display === "none" ? "" : "none";
@@ -162,7 +167,7 @@ class lintFixer {
     }
 
     prepare = () => {
-        // 怀疑处理这些规范问题需要进行词法解析、语法解析，可以在这里准备好相关数据
+        this.lineBreak = this.content.indexOf("\r\n") !== -1 ? "\r\n" : "\n";
         return this
     }
 
@@ -173,12 +178,11 @@ class lintFixer {
         })
         return this.content
     }
+
     MD031 = () => {
-        const codeBlockRegex = /(\s*)\n*\s*```[\s\S]*?```/g;
-        this.content = this.content.replace(codeBlockRegex, (match, leadingSpaces) => {
-            const trimmedMatch = match.trim();
-            return `\n${leadingSpaces}${trimmedMatch}\n`;
-        }).replace(/\n(\s*)\n/g, '\n\n');
+        this.content = this.content
+            .replace(/(\s*)(\r?\n)*\s*```[\s\S]*?```/g, (match, leadingSpaces) => this.lineBreak + leadingSpaces + match.trim() + this.lineBreak)
+            .replace(/\r?\n(\s*)\r?\n/g, this.lineBreak.repeat(2));
     }
 }
 
