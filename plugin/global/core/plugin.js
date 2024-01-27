@@ -507,6 +507,11 @@ class utils {
         }
     }
 
+    static readYaml = content => {
+        const yaml = this.requireFilePath("./plugin/global/utils/yaml");
+        return yaml.safeLoad(content)
+    }
+
     static readToml = filepath => {
         const pluginsFile = this.readFileSync(filepath);
         const toml = this.requireFilePath("./plugin/global/utils/toml");

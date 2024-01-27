@@ -80,6 +80,17 @@ class markmapPlugin extends BasePlugin {
             await this.utils.insertScript("./plugin/markmap/resource/webfontloader.js");
         }
     }
+
+    getFrontMatter = content => {
+        content = content.trimLeft();
+        if (!/^---\r?\n/.test(content)) return;
+        const matchResult = /\n---\r?\n/.exec(content);
+        if (!matchResult) return;
+        const yamlContent = content.slice(4, matchResult.index);
+        const yamlObject = this.utils.readYaml(yamlContent);
+        const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap");
+        return attr ? yamlObject[attr] : yamlObject
+    }
 }
 
 class fenceMarkmap {
@@ -153,9 +164,12 @@ class fenceMarkmap {
         return svg
     }
 
+    getFrontMatter = content => this.controller.getFrontMatter(content) || this.config.DEFAULT_FENCE_OPTIONS || null;
+
     create = async (cid, svg, md) => {
         const {root} = this.controller.transformer.transform(md);
-        this.map[cid] = this.controller.Markmap.create(svg[0], null, root);
+        const options = this.getFrontMatter(md);
+        this.map[cid] = this.controller.Markmap.create(svg[0], options, root);
         setTimeout(() => this.map[cid] && this.map[cid].fit(), 200);
     }
 
@@ -163,6 +177,8 @@ class fenceMarkmap {
         const instance = this.map[cid];
         const {root} = this.controller.transformer.transform(md);
         instance.setData(root);
+        const options = this.getFrontMatter(md)
+        instance.setOptions(options);
         await instance.fit();
     }
 }
@@ -664,7 +680,8 @@ class tocMarkmap {
 
     create = async md => {
         const {root} = this.controller.transformer.transform(md);
-        this.markmap = this.controller.Markmap.create(this.entities.svg, null, root);
+        const options = this.config.DEFAULT_TOC_OPTIONS || null;
+        this.markmap = this.controller.Markmap.create(this.entities.svg, options, root);
     }
 
     update = async (md, fit = true) => {
