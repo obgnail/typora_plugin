@@ -17,7 +17,7 @@ class mdPaddingPlugin extends BasePlugin {
         }
         return content;
     }
-    formatAndRemoveMultiLineBreak = content => this.removeMultiLineBreak(this.formatContent(content))
+    formatAndRemoveMultiLineBreak = content => this.removeMultiLineBreak(this.formatContent(content));
 
     formatSelection = async () => {
         ClientCommand.copyAsMarkdown();

@@ -797,6 +797,12 @@ button_height = "12px"
 pass_color = "#499c54"
 # lint未通过时方块的颜色
 error_color = "#be9117"
+# 快捷键：尽力修复规范
+# 目前支持修复的规范：
+#   - MD031
+hotkey_fix_lint_error = ""
+# 在列表中填入你希望修复的规范
+try_fix_lint_error = ["MD031"]
 
 
 ############### reopenClosedFiles ###############
@@ -877,6 +883,10 @@ buttons = [
     { disable = false, coordinate = [1, 1], hint = "图片管理", size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
     { disable = false, coordinate = [2, 1], hint = "书签管理", size = "17px", icon = "fa fa-bookmark", callback = "scrollBookmarker.callback" },
     { disable = false, coordinate = [3, 1], hint = "高亮搜索", size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
+
+    # 根据try_fix_lint_error配置进行语法优化
+    { disable = true, coordinate = [4, 1], hint = "语法优化", size = "17px", icon = "fa fa-book", callback = "markdownLint.fixLintError" },
+
     # evil使用示例（更多示例请参考hotkey.default.toml）：
     #   弹窗提示
     { disable = true, coordinate = [4, 0], hint = "危险操作", size = "17px", icon = "ion-asterisk", color = "#f0f8ff", bgColor = "#ff4500", evil = "() => window.confirm('this is message')" },

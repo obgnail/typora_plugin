@@ -21,6 +21,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.initWorker();
         this.initEventHandler();
         this.onLineClick();
+        this.registerHotkey();
     }
 
     initWorker = () => {
@@ -77,6 +78,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     updateLinter = () => this.worker.postMessage({action: "lint", payload: this.utils.getFilePath()});
+
+    registerHotkey = () => {
+        this.utils.registerSingleHotkey(this.config.hotkey_fix_lint_error, this.fixLintError);
+    }
 
     callback = async anchorNode => {
         this.entities.modal.style.display = this.entities.modal.style.display === "none" ? "" : "none";
@@ -146,6 +151,38 @@ class markdownLintPlugin extends BaseCustomPlugin {
             return "\n" + lineNum + ruleName.padEnd(7) + desc;
         })
         return header + result
+    }
+
+    // 修复逻辑的入口函数
+    fixLintError = async () => {
+        const content = await this.utils.Package.Fs.promises.readFile(this.utils.getFilePath(), 'utf-8');
+        const newContent = new lintFixer(content).prepare().format(this.config.try_fix_lint_error);
+        File.reloadContent(newContent, {fromDiskChange: false});
+    }
+}
+
+class lintFixer {
+    constructor(content) {
+        this.content = content;
+    }
+
+    prepare = () => {
+        this.lineBreak = this.content.indexOf("\r\n") !== -1 ? "\r\n" : "\n";
+        return this
+    }
+
+    format = lintTypeList => {
+        lintTypeList.forEach(lintType => {
+            const func = this[lintType.toUpperCase()];
+            func && func();
+        })
+        return this.content
+    }
+
+    MD031 = () => {
+        this.content = this.content
+            .replace(/(\s*)(\r?\n)*\s*```[\s\S]*?```/g, (match, leadingSpaces) => this.lineBreak + leadingSpaces + match.trim() + this.lineBreak)
+            .replace(/\r?\n(\s*)\r?\n/g, this.lineBreak.repeat(2));
     }
 }
 
