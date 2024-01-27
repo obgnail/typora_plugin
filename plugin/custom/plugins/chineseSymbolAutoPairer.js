@@ -24,7 +24,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     process = () => {
         const write = document.querySelector("#write");
         write.addEventListener("input", this.utils.throttle(ev => {
-            if (File.option.noPairingMatch) return;
+            if (File.option.noPairingMatch || ev.target.tagName === "TEXTAREA") return;
 
             const inputSymbol = ev.data;
             const pairSymbol = this.pairMap.get(inputSymbol);
@@ -38,7 +38,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
 
         if (this.config.auto_delete_pair || this.config.auto_surround_pair) {
             write.addEventListener("keydown", ev => {
-                if (File.option.noPairingMatch) return;
+                if (File.option.noPairingMatch || ev.target.tagName === "TEXTAREA") return;
 
                 if (this.config.auto_surround_pair && this.utils.chineseInputMethodActivated(ev) && this.codeSet.has(ev.code)) {
                     this.rangyText = this.utils.getRangyText();
