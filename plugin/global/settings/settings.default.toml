@@ -497,6 +497,13 @@ AUTO_FIT_WHEN_UPDATE = true
 HEIGHT_PRECENT_WHEN_PIN_UP = 30
 # 当pin到页面右侧时，占据页面的50%宽度
 WIDTH_PRECENT_WHEN_PIN_RIGHT = 50
+# 默认的toc markmap options（参考：https://markmap.js.org/docs/json-options）
+#   - colorFreezeLevel  : 从第几级节点开始冻结分支的颜色（0则不冻结）
+#   - duration          : 折叠/展开节点时的动画持续时间
+#   - initialExpandLevel: 首次渲染时要展开多少级分支（-1则展开全部）
+#   - zoom              : 是否允许缩放
+#   - pan               : 是否允许平移
+DEFAULT_TOC_OPTIONS = { colorFreezeLevel = 0, duration = 500, initialExpandLevel = -1, zoom = true, pan = true }
 # 在拖拽窗口的时候是否使用动画（使用动画视觉效果比较好，但是不跟手）
 USE_ANIMATION_WHEN_DRAG = false
 # 在调整窗口大小的时候是否使用动画
@@ -523,13 +530,15 @@ INTERACTIVE_MODE = true
 DEFAULT_FENCE_HEIGHT = "300px"
 # 代码块背景颜色
 DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
+# 默认的fence markmap options（参考：https://markmap.js.org/docs/json-options）
+#   - colorFreezeLevel  : 从第几级节点开始冻结颜色（0则不冻结）
+#   - duration          : 折叠/展开节点时的动画持续时间
+#   - initialExpandLevel: 初始渲染时要展开的最大节点级别（-1则展开全部）
+#   - zoom              : 是否允许缩放
+#   - pan               : 是否允许平移
+DEFAULT_FENCE_OPTIONS = { colorFreezeLevel = 0, duration = 500, initialExpandLevel = -1, zoom = false, pan = false }
 # 插入的模板
 FENCE_TEMPLATE = """```markmap
----
-markmap:
-  colorFreezeLevel: 2
----
-
 # markmap
 
 ## Links

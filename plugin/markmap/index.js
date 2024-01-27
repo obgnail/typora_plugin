@@ -155,7 +155,8 @@ class fenceMarkmap {
 
     create = async (cid, svg, md) => {
         const {root} = this.controller.transformer.transform(md);
-        this.map[cid] = this.controller.Markmap.create(svg[0], null, root);
+        const options = this.config.DEFAULT_FENCE_OPTIONS || null;
+        this.map[cid] = this.controller.Markmap.create(svg[0], options, root);
         setTimeout(() => this.map[cid] && this.map[cid].fit(), 200);
     }
 
@@ -664,7 +665,8 @@ class tocMarkmap {
 
     create = async md => {
         const {root} = this.controller.transformer.transform(md);
-        this.markmap = this.controller.Markmap.create(this.entities.svg, null, root);
+        const options = this.config.DEFAULT_TOC_OPTIONS || null;
+        this.markmap = this.controller.Markmap.create(this.entities.svg, options, root);
     }
 
     update = async (md, fit = true) => {
