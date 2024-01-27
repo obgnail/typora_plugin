@@ -89,7 +89,9 @@ class markmapPlugin extends BasePlugin {
         const yamlContent = content.slice(4, matchResult.index);
         const yamlObject = this.utils.readYaml(yamlContent);
         const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap");
-        return attr ? yamlObject[attr] : yamlObject
+        const options = attr ? yamlObject[attr] : yamlObject;
+        const defaultOptions = {colorFreezeLevel: 0, duration: 500, initialExpandLevel: -1, zoom: true, pan: true};
+        return Object.assign(defaultOptions, options);
     }
 }
 
