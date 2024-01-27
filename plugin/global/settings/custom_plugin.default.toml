@@ -799,10 +799,11 @@ pass_color = "#499c54"
 error_color = "#be9117"
 # 快捷键：尽力修复规范
 # 目前支持修复的规范：
-#   - MD031
+#   - MD031: 单独的代码块前后需要用空行隔开
+#   - MD047: 文档末尾需要一个空行结尾
 hotkey_fix_lint_error = ""
 # 在列表中填入你希望修复的规范
-try_fix_lint_error = ["MD031"]
+try_fix_lint_error = ["MD031", "MD047"]
 
 
 ############### reopenClosedFiles ###############

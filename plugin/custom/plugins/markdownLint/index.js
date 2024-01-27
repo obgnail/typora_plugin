@@ -184,6 +184,12 @@ class lintFixer {
             .replace(/(\s*)(\r?\n)*\s*```[\s\S]*?```/g, (match, leadingSpaces) => this.lineBreak + leadingSpaces + match.trim() + this.lineBreak)
             .replace(/\r?\n(\s*)\r?\n/g, this.lineBreak.repeat(2));
     }
+
+    MD047 = () => {
+        if (!this.content.endsWith(this.lineBreak)) {
+            this.content += this.lineBreak;
+        }
+    }
 }
 
 module.exports = {
