@@ -605,6 +605,43 @@ allow_drag = true
 auto_popup_modal = true
 
 
+############### bingSpeech ###############
+[bingSpeech]
+# 右键菜单中展示的名称
+name = "必应文本转语音"
+# 是否启用此自定义插件
+#  1.实现原理：采用爬虫技术，盗取必应翻译的播放语音功能
+#  2.功能完全依赖于外部环境，因此不能保证成功
+#  3.开发者一时兴起做的，就图一乐，并不会维护它
+enable = true
+# 是否在右键菜单中隐藏
+hide = false
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
+order = 1
+# 插件配置
+[bingSpeech.config]
+# 配音。可选：
+#   zh-CN-YunxiNeural
+#   zh-CN-XiaoxiaoNeural
+#   zh-CN-XiaoyiNeural
+#   zh-CN-YunjianNeural
+#   zh-CN-YunxiaNeural
+#   zh-CN-YunyangNeural
+#   zh-CN-liaoning-XiaobeiNeural
+#   zh-CN-shaanxi-XiaoniNeural
+#   zh-HK-HiuMaanNeural
+#   zh-HK-WanLungNeural
+#   zh-HK-HiuGaaiNeural
+#   zh-TW-HsiaoChenNeural
+#   zh-TW-YunJheNeural
+#   zh-TW-HsiaoYuNeural
+voice = "zh-CN-YunXiNeural"
+# 语速（如: 20%、-50%、0%）
+rate = "+20%"
+# 语调（如: 20%、-50%、0%）
+pitch = "0%"
+
+
 ############### imageReviewer ###############
 [imageReviewer]
 # 右键菜单中展示的名称
