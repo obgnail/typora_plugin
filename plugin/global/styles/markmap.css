@@ -6,7 +6,7 @@
     position: fixed;
     z-index: 9999;
     box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
-    background-color: #f8f8f8;
+    background-color: var(--side-bar-bg-color);
     display: none;
     transition: all 0.2s ease 0s;
 }
