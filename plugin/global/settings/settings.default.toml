@@ -54,8 +54,11 @@ TAB_MAX_WIDTH = ""
 GAP_BETWEEN_TAB_AND_CONTENT = 0
 # 当鼠标悬停于标签页时，显示文件完整路径
 SHOW_FULL_PATH_WHEN_HOVER = true
-# 当关闭最后一个标签时，弹出弹窗确认是否退出Typora
-RECONFIRM_WHEN_CLOSE_LAST_TAB = false
+# 当关闭最后一个标签时:
+#   reconfirm: 弹出弹窗确认是否退出Typora
+#   exit:      退出Typora
+#   blankPage: 展示空白页（此选项仅新版本Typora可用，低版本下此选项会自动修改为reconfirm）
+WHEN_CLOSE_LAST_TAB = "blankPage"
 # 新增tab的位置：
 #   end:   在最右侧
 #   right: 在当前tab右侧
@@ -303,7 +306,7 @@ CLICKABLE = true
 HOTKEY = "ctrl+shift+b"
 # 仅在选区中生效：当框选文字时，调用此功能只会对当前框选的文字生效
 FORMAT_IN_SELECTION_ONLY = false
-# 不希望拆分的单词：
+# 不希望拆分的词组：
 IGNORE_WORDS = []
 # 最多连续X个换行符，多余的删除（若为-1，则不使用此功能，推荐为2）
 # 举例，为2时：\n\n\n\n【a】\n\n\n\n\n【b】 -> \n\n【a】\n\n【b】
@@ -497,6 +500,14 @@ AUTO_FIT_WHEN_UPDATE = true
 HEIGHT_PRECENT_WHEN_PIN_UP = 30
 # 当pin到页面右侧时，占据页面的50%宽度
 WIDTH_PRECENT_WHEN_PIN_RIGHT = 50
+# 当鼠标悬停于节点时，显示边框
+SHOW_BORDER_WHEN_NODE_HOVER = true
+# 默认的toc markmap options（参考：https://markmap.js.org/docs/json-options）
+#   - duration          : 折叠/展开节点时的动画持续时间
+#   - initialExpandLevel: 首次渲染时要展开多少级分支（-1则展开全部）
+#   - zoom              : 是否允许缩放
+#   - pan               : 是否允许平移
+DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, zoom = true, pan = true }
 # 在拖拽窗口的时候是否使用动画（使用动画视觉效果比较好，但是不跟手）
 USE_ANIMATION_WHEN_DRAG = false
 # 在调整窗口大小的时候是否使用动画
@@ -506,7 +517,7 @@ USE_ANIMATION_WHEN_RESIZE = false
 # - true:  操作不受限，但是丢失了样式
 REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = false
 # 导出svg时，边框留白的宽度
-# 第一项为左右宽度，第二项为上下宽度
+# 第一项为左右宽度之和，第二项为上下宽度之和
 BORDER_WHEN_DOWNLOAD_SVG = [50, 50]
 
 # markmap共有两个功能：toc和fence。此为fence，功能：在当前鼠标光标处插入markmap代码块
@@ -523,11 +534,29 @@ INTERACTIVE_MODE = true
 DEFAULT_FENCE_HEIGHT = "300px"
 # 代码块背景颜色
 DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
+# 默认的fence markmap options（参考：https://markmap.js.org/docs/json-options）
+#   - duration          : 折叠/展开节点时的动画持续时间
+#   - initialExpandLevel: 初始渲染时要展开的最大节点级别（-1则展开全部）
+#   - zoom              : 是否允许缩放
+#   - pan               : 是否允许平移
+#   - height            : 高度
+#   - backgroundColor   : 背景色
+DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, zoom = false, pan = false, height = "300px", backgroundColor = "#f8f8f8" }
 # 插入的模板
 FENCE_TEMPLATE = """```markmap
 ---
+# 配置:
 markmap:
-  colorFreezeLevel: 2
+  # 是否允许缩放
+  zoom: false
+  # 是否允许平移
+  pan: false
+  # 初始渲染时要展开的最大节点级别（-1则展开全部）
+  initialExpandLevel: -1
+  # 高度
+  height: 300px
+  # 背景色
+  backgroundColor: "#f8f8f8"
 ---
 
 # markmap
@@ -673,10 +702,14 @@ INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
 # fence_enhance插件包含三个功能：button、hotkey、other。此为other
 # 在右键菜单中启用有风险的功能（此功能会消耗巨量资源并导致Typora长时间（几秒到几十秒）失去响应）
+# 目前支持的风险功能：
+#   1. 调整所有代码块的缩进
+#   2. 为所有无语言代码块添加语言
+#   3. 批量替换代码块语言
 ENABLE_DANGEROUS_FEATURES = false
 # 长文本的换行会保持相同的缩进
-#   1.详见：https://github.com/codemirror/codemirror5/issues/2085
-#   2.除非你电脑性能足够，否则不建议开启，有较大的性能损失，实测会消耗大量时间去计算缩进
+#   1. 详见：https://github.com/codemirror/codemirror5/issues/2085
+#   2. 不建议开启，此功能有较大的性能损失，实测会消耗大量时间去计算缩进
 INDENTED_WRAPPED_LINE = false
 # 高亮鼠标悬停的代码行，若置为false，则HIGHLIGHT_COLOR失效
 # 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
@@ -695,7 +728,7 @@ NAME = "章节折叠"
 CLICKABLE = true
 # 严格模式
 # - true:  只当点击到h1~h6时，才触发折叠/展开
-# - false: 自动向上寻找最近的h1~h6，并触发折叠/展开。非严格模式可能会出现意想不到的事：ctrl+click在typora是非常常用的，当你不小心点错位置，标题就被折叠起来了
+# - false: 若没有点击到h1~h6，会自动向上寻找最近的h1~h6，并触发折叠/展开。非严格模式可能会出现意想不到的事：ctrl+click在typora是非常常用的，当你不小心点错位置，标题就被折叠起来了
 STRICT_MODE = true
 # 在右键菜单中使用严格模式
 # 此选项是STRICT_MODE的特别情况，是考虑到方便使用才添加此选项的
@@ -704,10 +737,10 @@ STRICT_MODE_IN_CONTEXT_MENU = false
 # 记住章节是否折叠（直到关闭typora）
 RECORD_COLLAPSE = true
 # 各个功能对应的修饰键
-# 1.支持ctrl/alt/shift的随意组合（如"shift+alt"，"ctrl+shift"）
-# 2.但是不能为"alt"（因为alt+click已经被【scrollBookmarker】插件占用），也不能为"shift"（因为shift+click被系统自带的【框选】功能占用）
-# 3.若为""，表示不启用此功能
-# 4.例如【COLLAPSE_SIBLINGS = "ctrl+alt"】：当用户同时按住键盘ctrl和alt，并且鼠标click标题时，会折叠/展开父章节下所有同级的章节
+#   1. 支持ctrl/alt/shift的随意组合（如"shift+alt"，"ctrl+shift"）
+#   2. 但是不能为"alt"（因为alt+click已经被【scrollBookmarker】插件占用），也不能为"shift"（因为shift+click被系统自带的【框选】功能占用）
+#   3. 若为""，表示不启用此功能
+#   4. 例如【COLLAPSE_SIBLINGS = "ctrl+alt"】：当用户同时按住键盘ctrl和alt，并且鼠标click标题时，会折叠/展开父章节下所有同级的章节
 [collapse_paragraph.MODIFIER_KEY]
 # 折叠/展开 单个章节
 COLLAPSE_SINGLE = "ctrl"
@@ -776,7 +809,9 @@ ENABLE = true
 NAME = "文字风格化"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 弹出颜色面板的快捷键
+# 面板的背景颜色。若为""，则跟随主题的配色方案
+MODAL_BACKGROUND_COLOR = ""
+# 弹出面板的快捷键
 SHOW_MODAL_HOTKEY = ""
 # 工具栏的按钮:
 #   - weight:                加粗
@@ -962,6 +997,7 @@ CLICKABLE = true
 ############### mermaid_replace ###############
 [mermaid_replace]
 # 是否启用插件
+# 此插件目前已经处于半废弃状态，请勿开启
 ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "mermaid组件替换"
@@ -972,6 +1008,7 @@ CLICKABLE = false
 ############### test ###############
 [test]
 # 是否启用插件
+# 此插件乃开发者于开发阶段使用，请勿开启
 ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "测试专用"

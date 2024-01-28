@@ -1,14 +1,15 @@
 class markmapPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.tocMarkmap = (this.config.ENABLE_TOC_MARKMAP) ? new tocMarkmap(this) : null;
-        this.fenceMarkmap = (this.config.ENABLE_FENCE_MARKMAP) ? new fenceMarkmap(this) : null;
+        this.tocMarkmap = this.config.ENABLE_TOC_MARKMAP ? new tocMarkmap(this) : null;
+        this.fenceMarkmap = this.config.ENABLE_FENCE_MARKMAP ? new fenceMarkmap(this) : null;
         this.transformer = null;
         this.Markmap = null;
     }
 
     styleTemplate = () => ({
-        node_hover: (!this.config.CLICK_TO_LOCALE) ? "" : `#plugin-markmap-svg .markmap-node:hover { cursor: pointer; }`,
-        icon_wrap: (!this.config.ALLOW_ICON_WRAP) ? "" : `
+        node_hover: !this.config.CLICK_TO_LOCALE ? "" : `#plugin-markmap-svg .markmap-node:hover { cursor: pointer; }`,
+        show_outline: !this.config.SHOW_BORDER_WHEN_NODE_HOVER ? "" : `#plugin-markmap-svg .markmap-node .markmap-foreign:hover { outline: 4px solid #FF7B00; }`,
+        icon_wrap: !this.config.ALLOW_ICON_WRAP ? "" : `
             .plugin-markmap-header { flex-wrap: wrap; justify-content: flex-start; }
             .plugin-markmap-header .plugin-markmap-icon { padding-right: 0.5em; }`,
     })
@@ -80,6 +81,22 @@ class markmapPlugin extends BasePlugin {
             await this.utils.insertScript("./plugin/markmap/resource/webfontloader.js");
         }
     }
+
+    getFrontMatter = content => {
+        content = content.trimLeft();
+        if (!/^---\r?\n/.test(content)) return;
+        const matchResult = /\n---\r?\n/.exec(content);
+        if (!matchResult) return;
+        const yamlContent = content.slice(4, matchResult.index);
+        const yamlObject = this.utils.readYaml(yamlContent) || {};
+        const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap");
+        const options = attr ? yamlObject[attr] : yamlObject;
+        const defaultOptions = {
+            colorFreezeLevel: 0, duration: 500, initialExpandLevel: -1, zoom: true, pan: true,
+            height: "300px", backgroundColor: "#f8f8f8",
+        };
+        return Object.assign(defaultOptions, options);
+    }
 }
 
 class fenceMarkmap {
@@ -88,6 +105,7 @@ class fenceMarkmap {
         this.utils = this.controller.utils;
         this.config = this.controller.config;
         this.map = {}; // {cid: instance}
+        this.defaultFrontMatter = `---\nmarkmap:\n  zoom: false\n  pan: false\n  height: 300px\n  backgroundColor: "#f8f8f8"\n---\n\n`;
     }
 
     process = () => {
@@ -111,18 +129,19 @@ class fenceMarkmap {
 
     hotkey = () => [{hotkey: this.config.FENCE_HOTKEY, callback: this.callback}]
 
-    wrapFenceCode = content => "```" + this.config.LANGUAGE + "\n" + content + "\n" + "```"
+    wrapFenceCode = content => "```" + this.config.LANGUAGE + "\n" + this.defaultFrontMatter + content + "\n" + "```"
     getToc = () => this.wrapFenceCode(this.controller.getToc() || "# empty")
 
     render = async (cid, content, $pre) => {
         if (!this.controller.transformer || !this.controller.Markmap) {
             await this.controller.lazyLoad();
         }
+        const options = this.getFrontMatter(content);
+        const svg = this.createSvg($pre, options);
         if (this.map.hasOwnProperty(cid)) {
-            await this.update(cid, content);
+            await this.update(cid, content, options);
         } else {
-            const svg = this.createSvg($pre);
-            await this.create(cid, svg, content);
+            await this.create(cid, svg, content, options);
         }
     }
     cancel = cid => {
@@ -139,30 +158,33 @@ class fenceMarkmap {
         this.map = {};
     };
 
-    createSvg = $pre => {
+    createSvg = ($pre, options) => {
         let svg = $pre.find(".plugin-fence-markmap-svg");
         if (svg.length === 0) {
             svg = $(`<svg class="plugin-fence-markmap-svg"></svg>`);
         }
         svg.css({
             "width": parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-            "height": this.config.DEFAULT_FENCE_HEIGHT,
-            "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+            "height": options.height || this.config.DEFAULT_FENCE_HEIGHT,
+            "background-color": options.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
         });
         $pre.find(".md-diagram-panel-preview").html(svg);
         return svg
     }
 
-    create = async (cid, svg, md) => {
+    getFrontMatter = content => this.controller.getFrontMatter(content) || this.config.DEFAULT_FENCE_OPTIONS || {};
+
+    create = async (cid, svg, md, options) => {
         const {root} = this.controller.transformer.transform(md);
-        this.map[cid] = this.controller.Markmap.create(svg[0], null, root);
+        this.map[cid] = this.controller.Markmap.create(svg[0], options, root);
         setTimeout(() => this.map[cid] && this.map[cid].fit(), 200);
     }
 
-    update = async (cid, md) => {
+    update = async (cid, md, options) => {
         const instance = this.map[cid];
         const {root} = this.controller.transformer.transform(md);
         instance.setData(root);
+        instance.setOptions(options);
         await instance.fit();
     }
 }
@@ -598,7 +620,8 @@ class tocMarkmap {
             const header = headers[tocIdx];
             if (header) {
                 const cid = header.attributes.id;
-                const height = (window.innerHeight || document.documentElement.clientHeight) * this.config.LOCALE_HIGHT_RATIO
+                const {height: contentHeight, top: contentTop} = this.entities.content.getBoundingClientRect();
+                const height = contentHeight * this.config.LOCALE_HIGHT_RATIO + contentTop;
                 this.utils.scrollByCid(cid, height);
             }
         })
@@ -663,7 +686,8 @@ class tocMarkmap {
 
     create = async md => {
         const {root} = this.controller.transformer.transform(md);
-        this.markmap = this.controller.Markmap.create(this.entities.svg, null, root);
+        const options = this.config.DEFAULT_TOC_OPTIONS || null;
+        this.markmap = this.controller.Markmap.create(this.entities.svg, options, root);
     }
 
     update = async (md, fit = true) => {

@@ -909,7 +909,7 @@ filter_regexp = ""
 
 ## 致谢
 
-- MIT：[markmap](https://markmap.js.org/) | [chartjs ](https://www.chartjs.org/)| [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar ](https://github.com/nhn/tui.calendar)| [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/markdownlint/markdownlint)
+- MIT：[markmap](https://markmap.js.org/) | [chartjs ](https://www.chartjs.org/)| [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar ](https://github.com/nhn/tui.calendar)| [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
 - Apache：[echarts](https://echarts.apache.org/zh/index.html)
 - without-licence：[typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [md-padding](https://github.com/harttle/md-padding)
 

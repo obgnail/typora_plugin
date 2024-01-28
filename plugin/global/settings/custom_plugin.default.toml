@@ -331,6 +331,11 @@ TEMPLATE = """```timeline
 # 右键菜单中展示的名称
 name = "插入callouts"
 # 是否启用此自定义插件
+# typora1.8版本已经原生支持callouts，但是：
+#   1. 其仅支持五种类型的callouts，
+#   2. 其不支持fold callouts（如： > [!NOTE]-）。
+#   3. 此插件并不影响原生callouts
+# 请考虑以上信息确定是否开启此插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -338,9 +343,11 @@ hide = false
 order = 1
 # 插件配置
 [callouts.config]
+# callout的阴影
+box_shadow = "0 0.2rem 0.5rem #0000000d, 0 0 0.05rem #0000001a"
 # 为标题设置颜色（和left_line_color一样）
 set_title_color = true
-# 鼠标悬停时展示fold callout的内容
+# 鼠标悬停在fold callout时展示其内容
 hover_to_show_fold_callout = true
 # 自动插入的模板
 template = "> [!NOTE]\n> this is note"
@@ -802,6 +809,13 @@ button_height = "12px"
 pass_color = "#499c54"
 # lint未通过时方块的颜色
 error_color = "#be9117"
+# 快捷键：尽力修复规范
+# 目前支持修复的规范：
+#   - MD031: 单独的代码块前后需要用空行隔开
+#   - MD047: 文档末尾需要一个空行结尾
+hotkey_fix_lint_error = ""
+# 在列表中填入你希望修复的规范
+try_fix_lint_error = ["MD031", "MD047"]
 
 
 ############### reopenClosedFiles ###############
@@ -882,6 +896,10 @@ buttons = [
     { disable = false, coordinate = [1, 1], hint = "图片管理", size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
     { disable = false, coordinate = [2, 1], hint = "书签管理", size = "17px", icon = "fa fa-bookmark", callback = "scrollBookmarker.callback" },
     { disable = false, coordinate = [3, 1], hint = "高亮搜索", size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
+
+    # 根据try_fix_lint_error配置进行语法优化
+    { disable = true, coordinate = [4, 1], hint = "语法优化", size = "17px", icon = "fa fa-book", callback = "markdownLint.fixLintError" },
+
     # evil使用示例（更多示例请参考hotkey.default.toml）：
     #   弹窗提示
     { disable = true, coordinate = [4, 0], hint = "危险操作", size = "17px", icon = "ion-asterisk", color = "#f0f8ff", bgColor = "#ff4500", evil = "() => window.confirm('this is message')" },
