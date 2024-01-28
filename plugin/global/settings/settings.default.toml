@@ -537,17 +537,24 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 #   - initialExpandLevel: 初始渲染时要展开的最大节点级别（-1则展开全部）
 #   - zoom              : 是否允许缩放
 #   - pan               : 是否允许平移
-#   - height            : 代码块高度
-#   - backgroundColor   : 代码块背景颜色
+#   - height            : 高度
+#   - backgroundColor   : 背景色
 DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, zoom = false, pan = false, height = "300px", backgroundColor = "#f8f8f8" }
 # 插入的模板
 FENCE_TEMPLATE = """```markmap
 ---
+# 配置:
 markmap:
+  # 是否允许缩放
   zoom: false
+  # 是否允许平移
   pan: false
+  # 初始渲染时要展开的最大节点级别（-1则展开全部）
+  initialExpandLevel: -1
+  # 高度
   height: 300px
-  backgroundColor: #f8f8f8
+  # 背景色
+  backgroundColor: "#f8f8f8"
 ---
 
 # markmap

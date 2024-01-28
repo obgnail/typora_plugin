@@ -104,7 +104,7 @@ class fenceMarkmap {
         this.utils = this.controller.utils;
         this.config = this.controller.config;
         this.map = {}; // {cid: instance}
-        this.defaultFrontMatter = `---\nmarkmap:\n  zoom: false\n  pan: false\n  height: 300px\n  backgroundColor: #f8f8f8\n---\n\n`;
+        this.defaultFrontMatter = `---\nmarkmap:\n  zoom: false\n  pan: false\n  height: 300px\n  backgroundColor: "#f8f8f8"\n---\n\n`;
     }
 
     process = () => {
