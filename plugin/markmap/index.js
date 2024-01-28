@@ -87,10 +87,13 @@ class markmapPlugin extends BasePlugin {
         const matchResult = /\n---\r?\n/.exec(content);
         if (!matchResult) return;
         const yamlContent = content.slice(4, matchResult.index);
-        const yamlObject = this.utils.readYaml(yamlContent);
+        const yamlObject = this.utils.readYaml(yamlContent) || {};
         const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap");
         const options = attr ? yamlObject[attr] : yamlObject;
-        const defaultOptions = {colorFreezeLevel: 0, duration: 500, initialExpandLevel: -1, zoom: true, pan: true};
+        const defaultOptions = {
+            colorFreezeLevel: 0, duration: 500, initialExpandLevel: -1, zoom: true, pan: true,
+            height: "300px", backgroundColor: "#f8f8f8",
+        };
         return Object.assign(defaultOptions, options);
     }
 }
@@ -101,6 +104,7 @@ class fenceMarkmap {
         this.utils = this.controller.utils;
         this.config = this.controller.config;
         this.map = {}; // {cid: instance}
+        this.defaultFrontMatter = `---\nmarkmap:\n  zoom: false\n  pan: false\n  height: 300px\n  backgroundColor: #f8f8f8\n---\n\n`;
     }
 
     process = () => {
@@ -124,18 +128,19 @@ class fenceMarkmap {
 
     hotkey = () => [{hotkey: this.config.FENCE_HOTKEY, callback: this.callback}]
 
-    wrapFenceCode = content => "```" + this.config.LANGUAGE + "\n" + content + "\n" + "```"
+    wrapFenceCode = content => "```" + this.config.LANGUAGE + "\n" + this.defaultFrontMatter + content + "\n" + "```"
     getToc = () => this.wrapFenceCode(this.controller.getToc() || "# empty")
 
     render = async (cid, content, $pre) => {
         if (!this.controller.transformer || !this.controller.Markmap) {
             await this.controller.lazyLoad();
         }
+        const options = this.getFrontMatter(content);
+        const svg = this.createSvg($pre, options);
         if (this.map.hasOwnProperty(cid)) {
-            await this.update(cid, content);
+            await this.update(cid, content, options);
         } else {
-            const svg = this.createSvg($pre);
-            await this.create(cid, svg, content);
+            await this.create(cid, svg, content, options);
         }
     }
     cancel = cid => {
@@ -152,34 +157,32 @@ class fenceMarkmap {
         this.map = {};
     };
 
-    createSvg = $pre => {
+    createSvg = ($pre, options) => {
         let svg = $pre.find(".plugin-fence-markmap-svg");
         if (svg.length === 0) {
             svg = $(`<svg class="plugin-fence-markmap-svg"></svg>`);
         }
         svg.css({
             "width": parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-            "height": this.config.DEFAULT_FENCE_HEIGHT,
-            "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
+            "height": options.height || this.config.DEFAULT_FENCE_HEIGHT,
+            "background-color": options.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
         });
         $pre.find(".md-diagram-panel-preview").html(svg);
         return svg
     }
 
-    getFrontMatter = content => this.controller.getFrontMatter(content) || this.config.DEFAULT_FENCE_OPTIONS || null;
+    getFrontMatter = content => this.controller.getFrontMatter(content) || this.config.DEFAULT_FENCE_OPTIONS || {};
 
-    create = async (cid, svg, md) => {
+    create = async (cid, svg, md, options) => {
         const {root} = this.controller.transformer.transform(md);
-        const options = this.getFrontMatter(md);
         this.map[cid] = this.controller.Markmap.create(svg[0], options, root);
         setTimeout(() => this.map[cid] && this.map[cid].fit(), 200);
     }
 
-    update = async (cid, md) => {
+    update = async (cid, md, options) => {
         const instance = this.map[cid];
         const {root} = this.controller.transformer.transform(md);
         instance.setData(root);
-        const options = this.getFrontMatter(md)
         instance.setOptions(options);
         await instance.fit();
     }
