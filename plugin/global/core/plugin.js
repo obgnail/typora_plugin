@@ -9,6 +9,7 @@ class utils {
     static stopCallError = new Error("stopCall")
     static meta = {}
     static Package = Object.freeze({
+        HTTPS: reqnode("https"),
         OS: reqnode("os"),
         Path: reqnode("path"),
         Fs: reqnode("fs"),
@@ -541,6 +542,22 @@ class utils {
     static openUrl = url => {
         const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl;
         openUrl(url, 1);
+    }
+
+    // 拥有browser、node两套环境，太爽了，完美绕过浏览器安全限制。fetch狗都不用
+    static request = (options, data) => {
+        return new Promise((resolve, reject) => {
+            const req = this.Package.HTTPS.request(options, resp => {
+                const chunks = [];
+                resp.on("data", chunk => chunks.push(chunk));
+                resp.on("end", () => resolve(Buffer.concat(chunks)));
+            });
+            req.on("error", err => reject(err));
+            if (data) {
+                req.write(data);
+            }
+            req.end();
+        });
     }
 
     static getRecentFiles = async () => {
