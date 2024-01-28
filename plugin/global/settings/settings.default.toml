@@ -54,8 +54,11 @@ TAB_MAX_WIDTH = ""
 GAP_BETWEEN_TAB_AND_CONTENT = 0
 # 当鼠标悬停于标签页时，显示文件完整路径
 SHOW_FULL_PATH_WHEN_HOVER = true
-# 当关闭最后一个标签时，弹出弹窗确认是否退出Typora
-RECONFIRM_WHEN_CLOSE_LAST_TAB = false
+# 当关闭最后一个标签时:
+#   reconfirm: 弹出弹窗确认是否退出Typora
+#   exit:      退出Typora
+#   blankPage: 展示空白页（此选项仅新版本Typora可用，低版本下此选项会自动修改为reconfirm）
+WHEN_CLOSE_LAST_TAB = "blankPage"
 # 新增tab的位置：
 #   end:   在最右侧
 #   right: 在当前tab右侧
@@ -497,6 +500,8 @@ AUTO_FIT_WHEN_UPDATE = true
 HEIGHT_PRECENT_WHEN_PIN_UP = 30
 # 当pin到页面右侧时，占据页面的50%宽度
 WIDTH_PRECENT_WHEN_PIN_RIGHT = 50
+# 当鼠标悬停于节点时，显示边框
+SHOW_BORDER_WHEN_NODE_HOVER = true
 # 默认的toc markmap options（参考：https://markmap.js.org/docs/json-options）
 #   - duration          : 折叠/展开节点时的动画持续时间
 #   - initialExpandLevel: 首次渲染时要展开多少级分支（-1则展开全部）
@@ -534,9 +539,26 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 #   - initialExpandLevel: 初始渲染时要展开的最大节点级别（-1则展开全部）
 #   - zoom              : 是否允许缩放
 #   - pan               : 是否允许平移
-DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, zoom = false, pan = false }
+#   - height            : 高度
+#   - backgroundColor   : 背景色
+DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, zoom = false, pan = false, height = "300px", backgroundColor = "#f8f8f8" }
 # 插入的模板
 FENCE_TEMPLATE = """```markmap
+---
+# 配置:
+markmap:
+  # 是否允许缩放
+  zoom: false
+  # 是否允许平移
+  pan: false
+  # 初始渲染时要展开的最大节点级别（-1则展开全部）
+  initialExpandLevel: -1
+  # 高度
+  height: 300px
+  # 背景色
+  backgroundColor: "#f8f8f8"
+---
+
 # markmap
 
 ## Links
