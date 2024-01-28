@@ -9,6 +9,7 @@ class utils {
     static stopCallError = new Error("stopCall")
     static meta = {}
     static Package = Object.freeze({
+        OS: reqnode("os"),
         Path: reqnode("path"),
         Fs: reqnode("fs"),
         FsExtra: reqnode("fs-extra"),
@@ -428,10 +429,13 @@ class utils {
 
     static readSetting = async (defaultSetting, userSetting) => {
         const toml = this.requireFilePath("./plugin/global/utils/toml");
-        const files = [defaultSetting, userSetting].map(file => this.joinPath("./plugin/global/settings", file));
-        const contentList = await this.readFiles(files);
-        const [default_, user_] = contentList.map(c => c ? toml.parse(c) : {});
-        return this.merge(default_, user_);
+        const home = this.Package.OS.homedir() || File.option.userPath;
+        const default_ = this.joinPath("./plugin/global/settings", defaultSetting);
+        const user_ = this.joinPath("./plugin/global/settings", userSetting);
+        const home_ = this.Package.Path.join(home, ".config", "typora_plugin", userSetting);
+        const contentList = await this.readFiles([default_, user_, home_]);
+        const configList = contentList.map(c => c ? toml.parse(c) : {});
+        return configList.reduce(this.merge)
     }
 
     static insertStyle = (id, css) => {
