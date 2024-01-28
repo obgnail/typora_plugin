@@ -4,6 +4,9 @@ class windowTabBarPlugin extends BasePlugin {
             document.querySelector("header").style.zIndex = "897";
             document.getElementById("top-titlebar").style.display = "none";
         }
+        if (this.config.WHEN_CLOSE_LAST_TAB === "blankPage" && this.utils.isBetaVersion) {
+            this.config.WHEN_CLOSE_LAST_TAB = "reconfirm";
+        }
     }
     styleTemplate = () => true
     htmlTemplate = () => [{id: "plugin-window-tab", children: [{class_: "tab-bar"}]}]
@@ -481,20 +484,29 @@ class windowTabBarPlugin extends BasePlugin {
     closeTab = idx => {
         const tabUtil = this.tabUtil;
 
-        if (tabUtil.tabs.length === 1 && (this.config.RECONFIRM_WHEN_CLOSE_LAST_TAB || this.utils.isBetaVersion)) {
-            const modal = {title: "退出 Typora", components: [{label: "是否退出？", type: "p"}]};
-            this.utils.modal(modal, () => {
+        if (tabUtil.tabs.length === 1) {
+            const exit = () => {
                 tabUtil.tabs.splice(idx, 1); // 删除全部的tab，保证【reopenClosedFiles】插件能正常工作
                 this.utils.exitTypora();
-            });
-            return;
+            }
+            switch (this.config.WHEN_CLOSE_LAST_TAB) {
+                case "reconfirm":
+                    this.utils.modal({title: "退出 Typora", components: [{label: "是否退出？", type: "p"}]}, exit);
+                    return;
+                case "exit":
+                    exit();
+                    return;
+                case "blankPage":
+                    tabUtil.tabs.splice(idx, 1);
+                    this.onEmptyTabs();
+                    return;
+                default:
+                    alert(`error arg WHEN_CLOSE_LAST_TAB: ${this.config.WHEN_CLOSE_LAST_TAB}`);
+                    return;
+            }
         }
 
         tabUtil.tabs.splice(idx, 1);
-        if (tabUtil.tabs.length === 0) {
-            this.onEmptyTabs();
-            return;
-        }
         if (tabUtil.activeIdx !== 0) {
             const isLeft = this.config.ACTIVETE_TAB_WHEN_CLOSE === "left";
             if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && isLeft)) {
