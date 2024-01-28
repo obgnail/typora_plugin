@@ -500,6 +500,8 @@ AUTO_FIT_WHEN_UPDATE = true
 HEIGHT_PRECENT_WHEN_PIN_UP = 30
 # 当pin到页面右侧时，占据页面的50%宽度
 WIDTH_PRECENT_WHEN_PIN_RIGHT = 50
+# 当鼠标悬停于节点时，显示边框
+SHOW_BORDER_WHEN_NODE_HOVER = true
 # 默认的toc markmap options（参考：https://markmap.js.org/docs/json-options）
 #   - duration          : 折叠/展开节点时的动画持续时间
 #   - initialExpandLevel: 首次渲染时要展开多少级分支（-1则展开全部）

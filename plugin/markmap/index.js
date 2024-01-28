@@ -1,14 +1,15 @@
 class markmapPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.tocMarkmap = (this.config.ENABLE_TOC_MARKMAP) ? new tocMarkmap(this) : null;
-        this.fenceMarkmap = (this.config.ENABLE_FENCE_MARKMAP) ? new fenceMarkmap(this) : null;
+        this.tocMarkmap = this.config.ENABLE_TOC_MARKMAP ? new tocMarkmap(this) : null;
+        this.fenceMarkmap = this.config.ENABLE_FENCE_MARKMAP ? new fenceMarkmap(this) : null;
         this.transformer = null;
         this.Markmap = null;
     }
 
     styleTemplate = () => ({
-        node_hover: (!this.config.CLICK_TO_LOCALE) ? "" : `#plugin-markmap-svg .markmap-node:hover { cursor: pointer; }`,
-        icon_wrap: (!this.config.ALLOW_ICON_WRAP) ? "" : `
+        node_hover: !this.config.CLICK_TO_LOCALE ? "" : `#plugin-markmap-svg .markmap-node:hover { cursor: pointer; }`,
+        show_outline: !this.config.SHOW_BORDER_WHEN_NODE_HOVER ? "" : `#plugin-markmap-svg .markmap-node .markmap-foreign:hover { outline: 4px solid #FF7B00; }`,
+        icon_wrap: !this.config.ALLOW_ICON_WRAP ? "" : `
             .plugin-markmap-header { flex-wrap: wrap; justify-content: flex-start; }
             .plugin-markmap-header .plugin-markmap-icon { padding-right: 0.5em; }`,
     })
