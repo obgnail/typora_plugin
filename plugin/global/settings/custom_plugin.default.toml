@@ -608,11 +608,11 @@ auto_popup_modal = true
 ############### bingSpeech ###############
 [bingSpeech]
 # 右键菜单中展示的名称
-name = "必应文本转语音"
+name = "必应朗读"
 # 是否启用此自定义插件
 #  1.实现原理：采用爬虫技术，盗取必应翻译的播放语音功能
 #  2.功能完全依赖于外部环境，因此不能保证成功
-#  3.开发者一时兴起做的，就图一乐，并不会维护它
+#  3.开发者一时兴起做的，仅作娱乐使用
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -620,6 +620,8 @@ hide = false
 order = 1
 # 插件配置
 [bingSpeech.config]
+# 快捷键
+hotkey = ""
 # 配音。可选：
 #   zh-CN-YunxiNeural
 #   zh-CN-XiaoxiaoNeural

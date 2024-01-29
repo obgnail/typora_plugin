@@ -52,12 +52,13 @@
 | 42   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
 | 43   | scrollBookmarker        | 书签管理器                             |
 | 44   | openInTotalCommander    | 在 total commander 打开                |
-| 45   | mermaid_replace         | 替换 mermaid 组件                      |
-| 46   | help                    | 用户帮助                               |
-| 47   | custom                  | 开放平台，用户自定义插件（高级）       |
-| 48   | hotkeyHub               | 快捷键注册中心（高级）                 |
-| 49   | quickButton             | 于右下角添加功能按钮（高级）           |
-| 50   | old_window_tab          | 标签页管理（已废弃）                   |
+| 45   | bingSpeech              | 必应朗读                               |
+| 46   | mermaid_replace         | 替换 mermaid 组件                      |
+| 47   | help                    | 用户帮助                               |
+| 48   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 49   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 50   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 51   | old_window_tab          | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -853,6 +854,16 @@ filter_regexp = ""
 
 
 
+### bingSpeech：必应朗读
+
+使用方式：鼠标框选一小段文字 -> 右键菜单 -> 常用插件 -> 自定义插件 -> 必应朗读
+
+实现原理：采用爬虫技术，盗取必应翻译的播放语音功能
+
+> 注意：功能完全依赖于外部环境，因此不能保证成功。开发者一时兴起做的，仅作娱乐使用。
+
+
+
 ### mermaid_replace：替换 mermaid
 
 如果你不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此插件。
@@ -861,9 +872,7 @@ filter_regexp = ""
 
 
 
-### help
-
-功能：用户反馈
+### help：  用户帮助
 
 使用方式：右键菜单 -> 非常用插件 -> 帮助。
 

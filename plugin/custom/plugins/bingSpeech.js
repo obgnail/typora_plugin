@@ -1,12 +1,15 @@
 /* 本插件:
 *    1.实现原理：采用爬虫技术，盗取必应翻译的播放语音功能
 *    2.功能完全依赖于外部环境，因此不能保证成功
-*    3.开发者一时兴起做的，就图一乐，并不会维护它
+*    3.开发者一时兴起做的，仅作娱乐使用
 */
 class bingSpeech extends BaseCustomPlugin {
+    hint = () => "功能依赖外部环境，不能保证成功，仅作娱乐使用"
+    hotkey = () => [this.config.hotkey]
+
     callback = async () => {
         if (File.editor.selection.getRangy().collapsed) {
-            this.modal({title: "提示", components: [{label: "请框选一小段文字", type: "p"}]}, console.log);
+            this.modal({title: "提示", components: [{label: "请框选一小段文字", type: "p"}]}, console.debug);
         } else {
             await this.speech();
         }
@@ -26,15 +29,18 @@ class bingSpeech extends BaseCustomPlugin {
         })
     }
 
+    // 生成的文件是mp3格式
+    // 为了防止有人干坏事，此方法并不暴露到产品中
     download = async (filepath, text) => {
         text = text || File.editor.UserOp.getSpeechText();
         const chunks = [];
         await this.crawl(text, binary => chunks.push(binary));
         await this.utils.Package.Fs.promises.writeFile(filepath, Buffer.concat(chunks));
-        console.log("done");
+        console.debug("done");
     }
 
     crawl = async (text, iter) => {
+        console.debug("start crawl");
         const spider = new bingSpeechSpider(this);
         for await (const binary of spider.crawl(this.config, text)) {
             await iter(binary);
@@ -74,19 +80,12 @@ class bingSpeechSpider {
         }
         const {voice, rate, pitch} = config;
         return {
-            IG: ig,
-            IID: "translator.5024",
-            Key: tokenArr[0],
-            Token: tokenArr[1].replace(/"/g, ""),
-
+            // token
+            IG: ig, IID: "translator.5024", Key: tokenArr[0], Token: tokenArr[1].replace(/"/g, ""),
             // 文本转语音参数
-            VoiceName: voice,
-            ProsodyPitch: pitch,
-            ProsodyRate: rate,
-
+            VoiceName: voice, ProsodyPitch: pitch, ProsodyRate: rate,
             // 翻译
-            FromLang: "zh-Hans",
-            ToLang: "en"
+            FromLang: "zh-Hans", ToLang: "en"
         }
     }
 
