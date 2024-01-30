@@ -642,6 +642,10 @@ voice = "zh-CN-YunXiNeural"
 rate = "+20%"
 # 语调（如: 20%、-50%、0%）
 pitch = "0%"
+# 源语言
+from_language = "zh-Hans"
+# 翻译语言
+to_language = "en"
 
 
 ############### imageReviewer ###############
