@@ -276,7 +276,7 @@ class utils {
     }
 
 
-    ////////////////////////////// 基础纯函数 //////////////////////////////
+    ////////////////////////////// 纯函数 //////////////////////////////
     static compareVersion = (v1, v2) => {
         if (v1 === "" && v2 !== "") {
             return -1
@@ -668,6 +668,11 @@ class utils {
             .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
             // img
             .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => `<img alt="${alt}" src="${this.Package.Path.resolve(dir, src)}">`)
+    }
+
+    static flashScaleButton = (button, scale = 0.9, timeout = 200) => {
+        button.style.transform = `scale(${scale})`;
+        setTimeout(() => button.style.transform = "scale(1)", timeout);
     }
 
     static scroll = ($target, height = -1, moveCursor = false, showHiddenElement = true) => {
