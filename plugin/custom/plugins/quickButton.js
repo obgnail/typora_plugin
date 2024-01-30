@@ -45,8 +45,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
             } else {
                 const [fixedName, func] = callback.split(".");
                 if (fixedName && func) {
-                    const plugin = this.utils.getPlugin(fixedName) || this.utils.getCustomPlugin(fixedName);
-                    cb = plugin && plugin[func];
+                    cb = this.utils.getPluginFunction(fixedName, func);
                 }
             }
             if (cb instanceof Function) {

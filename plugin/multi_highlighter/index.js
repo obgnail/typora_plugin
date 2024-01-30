@@ -217,12 +217,6 @@ class multiHighlighterPlugin extends BasePlugin {
         this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, after);
     }
 
-    compatibleFenceEnhancePlugin = fence => {
-        if (!fence) return;
-        const fenceEnhancePlugin = this.utils.getPlugin("fence_enhance");
-        fenceEnhancePlugin && fenceEnhancePlugin.expandFence(fence);
-    }
-
     clearFenceMultiHighlighterList = () => {
         console.debug("clearFenceMultiHighlighterList");
         this.fenceMultiHighlighterList.forEach(highlighter => highlighter.clear());
@@ -294,7 +288,7 @@ class multiHighlighterPlugin extends BasePlugin {
         }
         const fence = marker.closest("#write .md-fences");
         if (fence) {
-            this.compatibleFenceEnhancePlugin(fence);
+            this.utils.callPluginFunction("fence_enhance", "expandFence", fence);
         }
     }
 

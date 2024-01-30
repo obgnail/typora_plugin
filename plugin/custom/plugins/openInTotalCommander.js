@@ -8,11 +8,9 @@ class openInTotalCommander extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     callback = anchorNode => {
-        const commander = this.utils.getPlugin("commander");
-        if (commander) {
-            const cmd = this.config.tc_path + " " + this.config.tc_args;
-            commander.silentExec(cmd, "cmd/bash");
-        }
+        const cmd = this.config.tc_path + " " + this.config.tc_args;
+        const shell = "cmd/bash";
+        this.utils.callPluginFunction("commander", "silentExec", cmd, shell);
     }
 }
 

@@ -3,11 +3,11 @@ class utils {
     static supportHasSelector = CSS.supports("selector(:has(*))")
     static separator = File.isWin ? "\\" : "/"
     static tempFolder = File.option.tempPath
-    static nonExistSelector = "#__nonExist__"              // 插件临时不可点击，返回此
-    static disableForeverSelector = "#__disableForever__"  // 插件永远不可点击，返回此
-    static stopLoadPluginError = new Error("stopLoadPlugin")
-    static stopCallError = new Error("stopCall")
-    static meta = {}
+    static nonExistSelector = "#__nonExist__"                 // 插件临时不可点击，返回此
+    static disableForeverSelector = "#__disableForever__"     // 插件永远不可点击，返回此
+    static stopLoadPluginError = new Error("stopLoadPlugin")  // 用于插件的beforeProcess方法，若希望停止加载插件，返回此
+    static stopCallError = new Error("stopCall")              // 用于decorate方法，若希望停止执行原生函数，返回此
+    static meta = {}                                          // 用于在右键菜单功能中传递数据，不可手动调用此变量
     static Package = Object.freeze({
         HTTPS: reqnode("https"),
         OS: reqnode("os"),
@@ -31,7 +31,6 @@ class utils {
     static unregisterHotkey = hotkeyString => helper.hotkeyHub.unregister(hotkeyString);
 
     // 动态注册、动态注销、动态发布生命周期事件
-    // 理论上不应该暴露publishEvent()的，但我希望给予最大自由度，充分信任插件，允许所有插件发布事件。所以需要调用者自觉维护，一旦错误发布事件，会影响整个插件系统
     static eventType = Object.freeze({
         allCustomPluginsHadInjected: "allCustomPluginsHadInjected", // 自定义插件加载完毕
         allPluginsHadInjected: "allPluginsHadInjected",             // 所有插件加载完毕
@@ -52,6 +51,7 @@ class utils {
     })
     static addEventListener = (eventType, listener) => helper.eventHub.addEventListener(eventType, listener);
     static removeEventListener = (eventType, listener) => helper.eventHub.removeEventListener(eventType, listener);
+    // 理论上不应该暴露publishEvent的，但我希望给予最大自由度，充分信任插件，允许所有插件发布事件。所以需要调用者自觉维护，一旦错误发布事件，会影响整个插件系统
     static publishEvent = (eventType, payload) => helper.eventHub.publishEvent(eventType, payload);
 
     // 动态注册、动态注销元素状态记录器（仅当window_tab插件启用时有效）
@@ -188,6 +188,11 @@ class utils {
         }
     }
 
+    static getPluginFunction = (fixedName, func) => {
+        const plugin = this.getPlugin(fixedName) || this.getCustomPlugin(fixedName);
+        return plugin && plugin[func];
+    }
+
     static callPluginFunction = (fixedName, func, ...args) => {
         const plugin = this.getPlugin(fixedName) || this.getCustomPlugin(fixedName);
         const _func = plugin && plugin[func];
@@ -216,10 +221,8 @@ class utils {
 
     static showHiddenElementByPlugin = target => {
         if (!target) return;
-        const collapsePlugin = this.getPlugin("collapse_paragraph");
-        const truncatePlugin = this.getPlugin("truncate_text");
-        collapsePlugin && collapsePlugin.rollback(target);
-        truncatePlugin && truncatePlugin.rollback(target);
+        this.callPluginFunction("collapse_paragraph", "rollback", target);
+        this.callPluginFunction("truncate_text", "rollback", target);
     }
     static getAnchorNode = () => File.editor.getJQueryElem(window.getSelection().anchorNode);
     static withAnchorNode = (selector, func) => () => {
