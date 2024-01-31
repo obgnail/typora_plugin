@@ -58,7 +58,8 @@
 | 48   | custom                  | 开放平台，用户自定义插件（高级）       |
 | 49   | hotkeyHub               | 快捷键注册中心（高级）                 |
 | 50   | quickButton             | 于右下角添加功能按钮（高级）           |
-| 51   | old_window_tab          | 标签页管理（已废弃）                   |
+| 51   | json_rpc                | 外部操纵 Typora（高级） |
+| 52   | old_window_tab          | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -864,6 +865,12 @@ filter_regexp = ""
 
 
 
+### help：  用户帮助
+
+使用方式：右键菜单 -> 非常用插件 -> 帮助。
+
+
+
 ### mermaid_replace：替换 mermaid
 
 如果你不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此插件。
@@ -872,15 +879,9 @@ filter_regexp = ""
 
 
 
-### help：  用户帮助
-
-使用方式：右键菜单 -> 非常用插件 -> 帮助。
-
-
-
 ### hotkeyHub：快捷键注册中心（高级）
 
-> 此配置是高级配置，仅对有 javascript 基础的用户开放。
+> 此插件是高级插件，仅对有 javascript 基础的用户开放。
 
 功能：以声明的形式，为【任意插件系统函数】或【任意自定义函数】绑定快捷键。
 
@@ -890,7 +891,7 @@ filter_regexp = ""
 
 ### quickButton：于右下角添加功能按钮（高级）
 
-> 此配置是高级配置，仅对有 javascript 基础的用户开放。
+> 此插件是高级插件，仅对有 javascript 基础的用户开放。
 
 功能和 hotkeyHub 类似，以声明的形式，为【任意插件系统函数】设置快捷按钮。
 
@@ -898,11 +899,23 @@ filter_regexp = ""
 
 ### custom：开放平台，用户自定义插件（高级）
 
-> 此配置是高级配置，仅对有 javascript 基础的用户开放。
+> 此插件是高级插件，仅对有 javascript 基础的用户开放。
 
 功能：提供开放能力，支持用户自己写插件。
 
 具体使用请参考 [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
+
+
+
+### json_rpc：外部操纵 Typora（高级）
+
+功能：将包括 typora-plugin 所有功能在内的一切能力通过 `json-rpc` 的形式暴露出去，以供外部操纵 Typora。
+
+具体使用请参考 [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/json_rpc/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
+
+> 此插件是高级插件，默认关闭，需手动开启，且仅对开发人员开放。
+>
+> 开启此插件后，外部将拥有 node、browser 两套环境，能完全控制电脑，因此如果您不是开发人员，请勿开启此插件。
 
 
 
