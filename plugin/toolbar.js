@@ -353,10 +353,7 @@ class pluginTool extends baseToolInterface {
         return this.baseSearch(input, pluginsList, ["showName"])
     }
     callback = (fixedName, meta) => {
-        const plugin = this.utils.getPlugin(fixedName);
-        if (plugin) {
-            plugin.call(meta || undefined, this.controller.anchorNode);
-        }
+        this.utils.callPluginFunction(fixedName, "call", meta || undefined, this.controller.anchorNode);
     }
 }
 

@@ -24,10 +24,7 @@ class hotkeyHub extends BaseCustomPlugin {
         } else {
             if (!fixedName || !func) return;
 
-            const plugin = this.utils.getPlugin(fixedName) || this.utils.getCustomPlugin(fixedName);
-            if (!plugin) return;
-
-            callback = plugin[func];
+            callback = this.utils.getPluginFunction(fixedName, func);
             if (!callback || !(callback instanceof Function)) return;
 
             if (closestSelector) {

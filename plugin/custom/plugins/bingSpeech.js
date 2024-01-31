@@ -39,6 +39,15 @@ class bingSpeech extends BaseCustomPlugin {
         console.debug("done");
     }
 
+    translate = async (text, fromLang, toLang) => {
+        console.debug("start translate");
+        const config = (fromLang && toLang)
+            ? this.utils.merge(this.config, {from_language: fromLang, to_language: toLang})
+            : this.config
+        const spider = new bingSpeechSpider(this);
+        return await spider.translate(config, text)
+    }
+
     crawl = async (text, iter) => {
         console.debug("start crawl");
         const spider = new bingSpeechSpider(this);
@@ -64,6 +73,43 @@ class bingSpeechSpider {
         }
     }
 
+    translate = async (config, text) => {
+        const options = await this._genOptions(config);
+
+        const pathParams = new URLSearchParams();
+        pathParams.append("IG", options.IG);
+        pathParams.append("IID", options.IID);
+        pathParams.append("isVertical", "1");
+        const path = "/ttranslatev3?" + pathParams.toString()   // 翻译API
+
+        const {from_language: from, to_language: to} = config;
+        const bodyParams = new URLSearchParams();
+        bodyParams.append("key", options.Key);
+        bodyParams.append("token", options.Token);
+        bodyParams.append("from", from);
+        bodyParams.append("fromLang", from);
+        bodyParams.append("to", to);
+        bodyParams.append("text", text);
+        const body = bodyParams.toString();
+
+        const requestOptions = this._getPostRequestOptions(path, body);
+        const buffer = await this.utils.request(requestOptions, body);
+        return JSON.parse(buffer.toString() || "{}")
+    }
+
+    _getPostRequestOptions = (path, body) => ({
+        hostname: "cn.bing.com",
+        port: 443,
+        path: path,
+        method: "POST",
+        headers: {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Content-Length": Buffer.byteLength(body),
+        },
+        followAllRedirects: true,
+    })
+
     _genOptions = async config => {
         const response = await fetch("https://cn.bing.com/translator");  // 获取参数的API
         const result = await response.text();
@@ -78,14 +124,14 @@ class bingSpeechSpider {
         if (tokenArr.length < 3) {
             throw Error("get options error: tokenArr.length < 3");
         }
-        const {voice, rate, pitch} = config;
+        const {voice, rate, pitch, from_language, to_language} = config;
         return {
             // token
             IG: ig, IID: "translator.5024", Key: tokenArr[0], Token: tokenArr[1].replace(/"/g, ""),
             // 文本转语音参数
             VoiceName: voice, ProsodyPitch: pitch, ProsodyRate: rate,
             // 翻译
-            FromLang: "zh-Hans", ToLang: "en"
+            FromLang: from_language, ToLang: to_language
         }
     }
 
@@ -116,18 +162,7 @@ class bingSpeechSpider {
         bodyParams.append("token", options.Token);
         const body = bodyParams.toString();
 
-        const requestOptions = {
-            hostname: "cn.bing.com",
-            port: 443,
-            path: path,
-            method: "POST",
-            headers: {
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-                "Content-Type": "application/x-www-form-urlencoded",
-                "Content-Length": Buffer.byteLength(body),
-            },
-            followAllRedirects: true,
-        }
+        const requestOptions = this._getPostRequestOptions(path, body);
         return this.utils.request(requestOptions, body)
     }
 }

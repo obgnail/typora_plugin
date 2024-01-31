@@ -25,6 +25,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
                     this.isHidden = !buttons.some(ele => ele.classList.contains("plu-hidden"));
                     buttons.forEach(ele => (ele !== target) && ele.classList.toggle("plu-hidden"));
                 } else {
+                    this.utils.flashScaleButton(target);
                     const action = target.getAttribute("action");
                     const button = this.buttons.get(action);
                     action && button && button.callback(ev, target);
@@ -45,8 +46,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
             } else {
                 const [fixedName, func] = callback.split(".");
                 if (fixedName && func) {
-                    const plugin = this.utils.getPlugin(fixedName) || this.utils.getCustomPlugin(fixedName);
-                    cb = plugin && plugin[func];
+                    cb = this.utils.getPluginFunction(fixedName, func);
                 }
             }
             if (cb instanceof Function) {

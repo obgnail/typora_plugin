@@ -60,8 +60,7 @@ class collapseParagraphPlugin extends BasePlugin {
     }
 
     callbackOtherPlugin = () => {
-        const outlinePlugin = this.utils.getPlugin("outline");
-        outlinePlugin && outlinePlugin.refresh();
+        this.utils.callPluginFunction("outline", "refresh");
     }
 
     toggle = (paragraph, display) => {

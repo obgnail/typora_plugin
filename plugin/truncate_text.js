@@ -1,6 +1,11 @@
 class truncateTextPlugin extends BasePlugin {
     beforeProcess = () => {
         this.className = "plugin-truncate-text";
+        this.callArgs = [
+            {arg_name: `只保留最后${this.config.REMAIN_LENGTH}段`, arg_value: "hide_front"},
+            {arg_name: "重新显示所有内容", arg_value: "show_all"},
+            {arg_name: "根据当前可视范围显示", arg_value: "hide_base_view"}
+        ];
     }
 
     hotkey = () => [
@@ -10,8 +15,7 @@ class truncateTextPlugin extends BasePlugin {
     ]
 
     callbackOtherPlugin = () => {
-        const outlinePlugin = this.utils.getPlugin("outline");
-        outlinePlugin && outlinePlugin.refresh();
+        this.utils.callPluginFunction("outline", "refresh");
     }
 
     hideFront = () => {
@@ -64,20 +68,6 @@ class truncateTextPlugin extends BasePlugin {
         }
     };
 
-    // // 已废弃
-    // rollback2 = start => {
-    //     if (document.querySelector(`#write > .${this.className}`)) {
-    //         let ele = start.closest("#write > [cid]");
-    //         while (ele) {
-    //             if (ele.classList.contains(this.className)) {
-    //                 ele.classList.remove(this.className);
-    //                 ele.style.display = "";
-    //             }
-    //             ele = ele.nextElementSibling;
-    //         }
-    //     }
-    // }
-
     call = type => {
         if (type === "hide_front") {
             this.hideFront();
@@ -88,12 +78,6 @@ class truncateTextPlugin extends BasePlugin {
         }
         this.callbackOtherPlugin();
     }
-
-    callArgs = [
-        {arg_name: `只保留最后${this.config.REMAIN_LENGTH}段`, arg_value: "hide_front"},
-        {arg_name: "重新显示所有内容", arg_value: "show_all"},
-        {arg_name: "根据当前可视范围显示", arg_value: "hide_base_view"}
-    ];
 }
 
 module.exports = {
