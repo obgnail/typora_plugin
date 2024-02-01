@@ -82,8 +82,10 @@
 }
 
 .plugin-multi-highlighter-bar {
-    background: rgba(29,163,63,.3);
+    display: inline;
     position: absolute;
+    left: 0;
+    background: rgba(29,163,63,.3);
     z-index: 99999;
     animation-name: fadeit;
     animation-duration: 3s;
