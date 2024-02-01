@@ -277,13 +277,10 @@ class multiHighlighterPlugin extends BasePlugin {
     }
 
     handleHiddenElement = marker => {
-        const image = marker.closest(`#write span[md-inline="image"]`);
-        if (image) {
-            image.classList.add("md-expand");
-        }
-        const link = marker.closest(`#write span[md-inline="link"]`);
-        if (link) {
-            link.classList.add("md-expand");
+        const imageOrLink = marker.closest('#write span[md-inline="image"], #write span[md-inline="link"]');
+        if (imageOrLink) {
+            imageOrLink.classList.add("md-expand");
+            return;
         }
         const fence = marker.closest("#write .md-fences");
         if (fence) {
