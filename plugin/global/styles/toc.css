@@ -43,18 +43,15 @@
     margin-left: 1.5em;
 }
 
-.plugin-toc .toc-node {
-    color: #0645ad;
-}
-
 .plugin-toc .toc-node:hover {
     cursor: pointer;
+    background-color: var(--item-hover-bg-color);
 }
 
-.plugin-toc .toc-node:hover .toc-text {
+.plugin-toc .toc-text:hover {
     text-decoration: underline;
 }
 
-.plugin-toc .toc-node:active .toc-text {
-    color: orange;
+.plugin-toc .toc-text.active {
+    font-weight: 700;
 }

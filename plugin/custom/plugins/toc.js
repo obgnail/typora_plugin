@@ -31,7 +31,9 @@ class tocPlugin extends BaseCustomPlugin {
     callback = () => this.toggle(this.entities.modal.style.display !== "none")
 
     toggle = (show = false) => {
+        const write = document.querySelector("#write");
         if (show) {
+            write.style.width = "";
             this.entities.modal.style.display = "none";
             this.entities.content.style.removeProperty("right");
             this.entities.content.style.removeProperty("width");
@@ -40,11 +42,14 @@ class tocPlugin extends BaseCustomPlugin {
 
         this.entities.modal.style.removeProperty("display");
         const {width, right} = this.entities.content.getBoundingClientRect();
-        this.renewModal();
         const modalWidth = width * this.config.width_percent_when_pin_right / 100;
-        const contentStyle = {right: `${right - modalWidth}px`, width: `${width - modalWidth}px`};
         this.entities.modal.style.width = modalWidth + "px";
-        Object.assign(this.entities.content.style, contentStyle);
+        Object.assign(this.entities.content.style, {
+            right: `${right - modalWidth}px`,
+            width: `${width - modalWidth}px`,
+        });
+        write.style.width = "initial";
+        this.renewModal();
     }
 
     renewModal = () => {
@@ -66,7 +71,7 @@ class tocPlugin extends BaseCustomPlugin {
 
             const modalRect = this.entities.modal.getBoundingClientRect();
             modalStartLeft = modalRect.left;
-            contentMaxRight = modalRect.right - 50;
+            contentMaxRight = modalRect.right - 100;
         }
         const onMouseMove = (deltaX, deltaY) => {
             deltaX = -deltaX;
@@ -120,7 +125,6 @@ class tocPlugin extends BaseCustomPlugin {
         return toc[idx]
     }
 }
-
 
 module.exports = {
     plugin: tocPlugin
