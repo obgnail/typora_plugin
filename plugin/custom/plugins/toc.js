@@ -17,7 +17,8 @@ class tocPlugin extends BaseCustomPlugin {
         };
 
         this.onResize();
-        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.entities.modal.style.display !== "none" && this.renewModal());
+        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.isModalShow() && this.renewModal());
+        this.utils.decorate(() => File && File.editor && File.editor.library && File.editor.library.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader);
         this.entities.modal.addEventListener("click", ev => {
             const target = ev.target.closest(".toc-node");
             if (!target) return;
@@ -28,11 +29,13 @@ class tocPlugin extends BaseCustomPlugin {
         })
     }
 
-    callback = () => this.toggle(this.entities.modal.style.display !== "none")
+    callback = () => this.toggle()
 
-    toggle = (show = false) => {
+    isModalShow = () => this.entities.modal.style.display !== "none"
+
+    toggle = () => {
         const write = document.querySelector("#write");
-        if (show) {
+        if (this.isModalShow()) {
             write.style.width = "";
             this.entities.modal.style.display = "none";
             this.entities.content.style.removeProperty("right");
@@ -57,6 +60,7 @@ class tocPlugin extends BaseCustomPlugin {
         const toc = this.utils.createElement(ul);
         this.entities.ul.firstElementChild && this.entities.ul.removeChild(this.entities.ul.firstElementChild);
         this.entities.ul.appendChild(toc);
+        this.highlightVisibleHeader();
     }
 
     onResize = () => {
@@ -89,10 +93,57 @@ class tocPlugin extends BaseCustomPlugin {
         this.utils.resizeFixedModal(this.entities.grip, this.entities.modal, true, false, onMouseDown, onMouseMove);
     }
 
+    highlightVisibleHeader = (_, $header, targetIdx) => {
+        if (!this.isModalShow()) return;
+
+        const editor = File.editor;
+        const outline = editor.library.outline;
+
+        const headers = $header || $(editor.writingArea).children(outline.headerStr);
+        if (!headers.length) return;
+
+        const contentScrollTop = $("content").scrollTop();
+        const isBelowViewBox = 1 === this.utils.compareScrollPosition(headers[headers.length - 1], contentScrollTop);
+        const findActiveIndex = index => {
+            for (index--; headers[index] && this.utils.compareScrollPosition(headers[index], contentScrollTop) === 0;) {
+                index--;
+            }
+            return index + 1;
+        }
+
+        let start = isBelowViewBox ? 0 : headers.length - 1;
+        let end = headers.length - 1;
+        let activeIndex = targetIdx === undefined ? undefined : targetIdx;
+
+        while (1 < end - start && activeIndex === undefined) {
+            let middleIndex = Math.floor((start + end) / 2);
+            let scrollPosition = this.utils.compareScrollPosition(headers[middleIndex], contentScrollTop);
+            if (scrollPosition === 1) {
+                end = middleIndex;
+            } else if (scrollPosition === -1) {
+                start = middleIndex;
+            } else {
+                activeIndex = findActiveIndex(middleIndex);
+            }
+        }
+        if (activeIndex === undefined) {
+            activeIndex = start;
+        }
+
+        if (activeIndex >= headers.length) return;
+
+        const targetCid = headers[activeIndex].getAttribute("cid");
+        this.entities.ul.querySelectorAll(".toc-node.active").forEach(ele => ele.classList.remove("active"));
+        const targetNode = this.entities.ul.querySelector(`.toc-node[cid=${targetCid}]`);
+        if (!targetNode) return;
+
+        targetNode.classList.add("active");
+    }
+
     _getTocTemplate = () => {
         const rootNode = this._getTocRootNode();
         const li = rootNode.children.map(this._tocTemplate);
-        return {ele: "ul", children: li}
+        return {ele: "ul", class_: "toc-root", children: li}
     }
 
     _getTocRootNode = () => {

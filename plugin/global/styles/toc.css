@@ -28,6 +28,10 @@
     overflow-y: scroll;
 }
 
+.plugin-toc .toc-root {
+    margin-bottom: 4em;
+}
+
 .plugin-toc ul {
     list-style: none;
     padding: 0;
@@ -48,10 +52,10 @@
     background-color: var(--item-hover-bg-color);
 }
 
-.plugin-toc .toc-text:hover {
-    text-decoration: underline;
+.plugin-toc .toc-node.active {
+    font-weight: 700;
 }
 
-.plugin-toc .toc-text.active {
-    font-weight: 700;
+.plugin-toc .toc-text:hover {
+    text-decoration: underline;
 }
