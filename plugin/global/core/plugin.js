@@ -651,7 +651,19 @@ class utils {
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
         const totalWidth = window.innerWidth || document.documentElement.clientWidth;
         const {top, right, bottom, left} = el.getBoundingClientRect();
-        return (top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight);
+        return top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight;
+    }
+
+    static compareScrollPosition = (element, contentScrollTop) => {
+        contentScrollTop = contentScrollTop || $("content").scrollTop();
+        const elementOffsetTop = element.offsetTop;
+        if (elementOffsetTop < contentScrollTop) {
+            return -1;
+        } else if (elementOffsetTop > contentScrollTop + window.innerHeight) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
     static markdownInlineStyleToHTML = (content, dir) => {

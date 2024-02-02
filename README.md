@@ -16,50 +16,51 @@
 | 6    | templater               | 文件模板                               |
 | 7    | resourceOperation       | 一键清除无用图片，生成报告             |
 | 8    | fence_enhance           | 一键复制代码，折叠代码                 |
-| 9    | commander               | 命令行环境                             |
-| 10   | mindmap                 | 根据文档大纲一键生成思维导图           |
-| 11   | toolbar                 | 多功能搜索栏                           |
-| 12   | right_click_menu        | 右键菜单统一管理、调用插件             |
-| 13   | markmap                 | 提供 markmap 组件支持                  |
-| 14   | echarts                 | 提供 echarts 组件支持                  |
-| 15   | chart                   | 提供 chartjs 组件支持                  |
-| 16   | abc                     | 提供 abcjs 组件支持                    |
-| 17   | calendar                | 提供 tui.calendar 组件支持             |
-| 18   | callouts                | 提供 callouts 支持                     |
-| 19   | text_stylize            | 文字风格化                             |
-| 20   | read_only               | 只读模式                               |
-| 21   | blur                    | 模糊模式                               |
-| 22   | kanban                  | 看板                                   |
-| 23   | timeline                | 时间线                                 |
-| 24   | file_counter            | 显示目录下的文件数                     |
-| 25   | outline                 | 以表格、图片、代码块形式的大纲         |
-| 26   | auto_number             | 章节、表格、图片、代码块等自动编号     |
-| 27   | imageReviewer           | 图片查看器                             |
-| 28   | chineseSymbolAutoPairer | 中文符号自动补全                       |
-| 29   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
-| 30   | resize_table            | 调整表格行高列宽                       |
-| 31   | resize_image            | 调整图片显示大小                       |
-| 32   | export_enhance          | 导出 html 时避免图片丢失               |
-| 33   | go_top                  | 一键到文章顶部、底部                   |
-| 34   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
-| 35   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
-| 36   | markdownLint            | markdown 格式规范检测                  |
-| 37   | darkMode                | 夜间模式                               |
-| 38   | pluginUpdater           | 一键升级插件                           |
-| 39   | extractRangeToNewFile   | 提取选区文字到新文件                   |
-| 40   | fullPathCopy            | 复制标题路径                           |
-| 41   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
-| 42   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
-| 43   | scrollBookmarker        | 书签管理器                             |
-| 44   | openInTotalCommander    | 在 total commander 打开                |
-| 45   | bingSpeech              | 必应朗读                               |
-| 46   | mermaid_replace         | 替换 mermaid 组件                      |
-| 47   | help                    | 用户帮助                               |
-| 48   | custom                  | 开放平台，用户自定义插件（高级）       |
-| 49   | hotkeyHub               | 快捷键注册中心（高级）                 |
-| 50   | quickButton             | 于右下角添加功能按钮（高级）           |
-| 51   | json_rpc                | 外部操纵 Typora（高级） |
-| 52   | old_window_tab          | 标签页管理（已废弃）                   |
+| 9    | toc                     | 在右侧生成大纲目录                     |
+| 10   | commander               | 命令行环境                             |
+| 11   | mindmap                 | 根据文档大纲一键生成思维导图           |
+| 12   | toolbar                 | 多功能搜索栏                           |
+| 13   | right_click_menu        | 右键菜单统一管理、调用插件             |
+| 14   | markmap                 | 提供 markmap 组件支持                  |
+| 15   | echarts                 | 提供 echarts 组件支持                  |
+| 16   | chart                   | 提供 chartjs 组件支持                  |
+| 17   | abc                     | 提供 abcjs 组件支持                    |
+| 18   | calendar                | 提供 tui.calendar 组件支持             |
+| 19   | callouts                | 提供 callouts 支持                     |
+| 20   | text_stylize            | 文字风格化                             |
+| 21   | read_only               | 只读模式                               |
+| 22   | blur                    | 模糊模式                               |
+| 23   | kanban                  | 看板                                   |
+| 24   | timeline                | 时间线                                 |
+| 25   | file_counter            | 显示目录下的文件数                     |
+| 26   | outline                 | 以表格、图片、代码块形式的大纲         |
+| 27   | auto_number             | 章节、表格、图片、代码块等自动编号     |
+| 28   | imageReviewer           | 图片查看器                             |
+| 29   | chineseSymbolAutoPairer | 中文符号自动补全                       |
+| 30   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
+| 31   | resize_table            | 调整表格行高列宽                       |
+| 32   | resize_image            | 调整图片显示大小                       |
+| 33   | export_enhance          | 导出 html 时避免图片丢失               |
+| 34   | go_top                  | 一键到文章顶部、底部                   |
+| 35   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
+| 36   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
+| 37   | markdownLint            | markdown 格式规范检测                  |
+| 38   | darkMode                | 夜间模式                               |
+| 39   | pluginUpdater           | 一键升级插件                           |
+| 40   | extractRangeToNewFile   | 提取选区文字到新文件                   |
+| 41   | fullPathCopy            | 复制标题路径                           |
+| 42   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
+| 43   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
+| 44   | scrollBookmarker        | 书签管理器                             |
+| 45   | openInTotalCommander    | 在 total commander 打开                |
+| 46   | bingSpeech              | 必应朗读                               |
+| 47   | mermaid_replace         | 替换 mermaid 组件                      |
+| 48   | help                    | 用户帮助                               |
+| 49   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 50   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 51   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 52   | json_rpc                | 外部操纵 Typora（高级）                |
+| 53   | old_window_tab          | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -356,6 +357,17 @@ operation = "report"
 ### fence_enhance：一键复制代码，折叠代码
 
 ![fence_enhance](assets/fence_enhance.png)
+
+
+
+### toc：在右侧生成大纲目录
+
+Typora 侧边栏的【文件】和【大纲】不能同时显示，为了解决此问题，此插件会在右侧新增一个【大纲】。
+
+使用方式：
+
+- 方式一：常用插件 -> 自定义插件 -> 大纲目录
+- 方式二：右键点击侧边栏的【大纲】按钮
 
 
 

@@ -15,15 +15,14 @@
         4. 将这个过程产生的高亮对象记录在案，并在合适的时机取消高亮。
 4. 这整套下来，导致逻辑被切的稀碎。同时你还需要注意很多小细节，比如图片和链接上的关键字，你需要显示其markdown源码后才能定位。
 5. 解决方式：我本来想使用类似于Golang的channel。channel非常适合这种逻辑代码各种跳跃的情况，且十分优雅。想来想去，去他妈，直接硬撸算了，全局变量直接上，没有遵循任何设计原则，代码非常难懂。
-6. 下面代码就是本着【又不是不能用】的心态码的，只追求实现速度。若你有心重构，我帮你抽象出了multiHighlighter类，可以方便的搜索并添加高亮标签，接下来你需要的就是和Typora混淆后的frame.js做斗争，和Typora各自特性作斗争。
+6. 下面代码就是本着【又不是不能用】的心态码的，只追求实现速度。若你有心重构，我帮你抽象出了multiHighlighter类，可以方便的搜索并添加高亮标签，接下来你需要的就是和Typora各自特性作斗争。
 */
-
 class multiHighlighterPlugin extends BasePlugin {
     styleTemplate = () => ({
         run_style: {
-            input_width: (this.config.SHOW_RUN_BUTTON) ? "95%" : "100%",
-            case_button_right: (this.config.SHOW_RUN_BUTTON) ? "32px" : "6px",
-            run_button_display: (this.config.SHOW_RUN_BUTTON) ? "" : "none",
+            input_width: this.config.SHOW_RUN_BUTTON ? "95%" : "100%",
+            case_button_right: this.config.SHOW_RUN_BUTTON ? "32px" : "6px",
+            run_button_display: this.config.SHOW_RUN_BUTTON ? "" : "none",
         },
         colors_style: this.config.STYLE_COLOR.map((color, idx) => `.plugin-search-hit${idx} { background-color: ${color}; }`).join("\n")
     })
@@ -278,13 +277,10 @@ class multiHighlighterPlugin extends BasePlugin {
     }
 
     handleHiddenElement = marker => {
-        const image = marker.closest(`#write span[md-inline="image"]`);
-        if (image) {
-            image.classList.add("md-expand");
-        }
-        const link = marker.closest(`#write span[md-inline="link"]`);
-        if (link) {
-            link.classList.add("md-expand");
+        const imageOrLink = marker.closest('#write span[md-inline="image"], #write span[md-inline="link"]');
+        if (imageOrLink) {
+            imageOrLink.classList.add("md-expand");
+            return;
         }
         const fence = marker.closest("#write .md-fences");
         if (fence) {
@@ -306,7 +302,6 @@ class multiHighlighterPlugin extends BasePlugin {
             bar.classList.add("plugin-multi-highlighter-bar");
             bar.style.height = markerRect.height + "px";
             bar.style.width = writeRect.width + "px";
-            bar.style.top = "0";
             marker.appendChild(bar);
 
             setTimeout(() => this.utils.removeElement(bar), 3000);
