@@ -3,6 +3,7 @@
     height: 100%;
     right: 0;
     box-shadow: initial;
+    transition: all 0.2s ease 0s;
 }
 
 #plugin-toc .grip-right {
@@ -29,6 +30,7 @@
 }
 
 .plugin-toc .toc-root {
+    margin-left: 1em;
     margin-bottom: 4em;
 }
 
@@ -43,7 +45,7 @@
     overflow-wrap: break-word;
 }
 
-.plugin-toc ul li {
+.plugin-toc ul ul {
     margin-left: 1.5em;
 }
 

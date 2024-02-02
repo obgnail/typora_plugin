@@ -1,11 +1,9 @@
 class tocPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
-    htmlTemplate = () => [{
-        id: "plugin-toc",
-        class_: "plugin-common-modal plugin-toc",
-        style: {display: "none"},
-        children: [{class_: "grip-right"}, {class_: "toc-ul"}]
-    }]
+    htmlTemplate = () => {
+        const children = [{class_: "grip-right"}, {class_: "toc-ul"}];
+        return [{id: "plugin-toc", class_: "plugin-common-modal plugin-toc", style: {display: "none"}, children}]
+    }
     hotkey = () => [this.config.hotkey]
 
     process = () => {
@@ -27,6 +25,9 @@ class tocPlugin extends BaseCustomPlugin {
             const cid = target.getAttribute("cid");
             this.utils.scrollByCid(cid);
         })
+        if (this.config.right_click_outline_button_to_toggle) {
+            document.querySelector("#info-panel-tab-outline .info-panel-tab-title").addEventListener("mousedown", ev => ev.button === 2 && this.toggle());
+        }
     }
 
     callback = () => this.toggle()
@@ -38,6 +39,8 @@ class tocPlugin extends BaseCustomPlugin {
         if (this.isModalShow()) {
             write.style.width = "";
             this.entities.modal.style.display = "none";
+            this.entities.modal.style.removeProperty("left");
+            this.entities.modal.style.removeProperty("width");
             this.entities.content.style.removeProperty("right");
             this.entities.content.style.removeProperty("width");
             return
@@ -96,10 +99,7 @@ class tocPlugin extends BaseCustomPlugin {
     highlightVisibleHeader = (_, $header, targetIdx) => {
         if (!this.isModalShow()) return;
 
-        const editor = File.editor;
-        const outline = editor.library.outline;
-
-        const headers = $header || $(editor.writingArea).children(outline.headerStr);
+        const headers = $header || $(File.editor.writingArea).children(File.editor.library.outline.headerStr);
         if (!headers.length) return;
 
         const contentScrollTop = $("content").scrollTop();
