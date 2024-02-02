@@ -547,6 +547,8 @@ order = 1
 [toc.config]
 # 快捷键
 hotkey = ""
+# 当pin到页面右侧时，占据页面的20%宽度
+width_percent_when_pin_right = 20
 
 
 ############### resourceOperation ###############

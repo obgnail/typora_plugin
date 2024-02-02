@@ -1,8 +1,31 @@
 .plugin-toc {
-    padding: 5px;
-    overflow-y: scroll;
-    box-shadow: initial;
+    display: flex;
+    height: 100%;
     right: 0;
+    box-shadow: initial;
+}
+
+#plugin-toc .grip-right {
+    flex-grow: 0;
+    padding: 0 4px;
+    cursor: col-resize;
+    background-color: var(--active-file-border-color, black);
+}
+
+#plugin-toc .grip-right::before {
+    content: "";
+    display: block;
+    margin: auto;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    height: 24px;
+    border-left: 3px double var(--active-file-bg-color);
+}
+
+.plugin-toc .toc-ul {
+    flex-grow: 1;
+    overflow-y: scroll;
 }
 
 .plugin-toc ul {
