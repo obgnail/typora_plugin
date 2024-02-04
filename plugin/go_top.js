@@ -5,12 +5,11 @@ class goTopPlugin extends BasePlugin {
     ]
 
     call = direction => {
-        const scrollTop = (direction === "go-bottom") ? document.querySelector("#write").getBoundingClientRect().height : 0;
-        $("content").animate({scrollTop: scrollTop}, this.config.SCROLL_TIME);
+        const func = (direction === "go-bottom") ? "jumpBottom" : "jumpTop";
+        File.editor.selection[func]();
     }
 
     goTop = () => this.call("go-top")
-
     goBottom = () => this.call("go-bottom")
 }
 

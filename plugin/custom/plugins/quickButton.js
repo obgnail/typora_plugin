@@ -20,11 +20,11 @@ class quickButtonPlugin extends BaseCustomPlugin {
                 if (!target) return;
                 ev.stopPropagation();
                 ev.preventDefault();
-                if (ev.button === 2) {
+                if (ev.button === 2 && this.config.support_right_click) {
                     const buttons = Array.from(buttonGroup.children);
                     this.isHidden = !buttons.some(ele => ele.classList.contains("plu-hidden"));
                     buttons.forEach(ele => (ele !== target) && ele.classList.toggle("plu-hidden"));
-                } else {
+                } else if (ev.button === 0) {
                     this.utils.flashScaleButton(target);
                     const action = target.getAttribute("action");
                     const button = this.buttons.get(action);

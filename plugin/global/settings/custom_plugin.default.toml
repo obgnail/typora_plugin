@@ -898,6 +898,8 @@ hide = true
 order = 1
 # 插件配置
 [quickButton.config]
+# 是否支持右键（右键点击按钮后，其他按钮将被隐藏）
+support_right_click = true
 # 按钮的尺寸
 button_size = "35px"
 # 按钮的圆角半径
