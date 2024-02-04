@@ -76,6 +76,10 @@
     cursor: pointer;
 }
 
+.plugin-multi-highlighter-result-item:hover {
+    filter: brightness(1.07);
+}
+
 .plugin-multi-highlighter-move {
     outline: 4px solid #FF7B00;
     text-decoration: blink;
