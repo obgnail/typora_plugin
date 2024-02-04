@@ -264,6 +264,7 @@ class tocMarkmap {
         this.onToggleSidebar();
         this.onHeaderClick();
         this.onSvgClick();
+        this.onContextMenu();
     }
 
     callback = () => (this.entities.modal.style.display === "") ? this.drawToc() : this.onButtonClick("close")
@@ -446,6 +447,15 @@ class tocMarkmap {
     cleanTransition = (run = true) => (run) ? this.entities.modal.style.transition = "0s" : undefined
     rollbackTransition = (run = true) => (run) ? this.entities.modal.style.transition = "" : undefined
 
+    hideToolbar = () => {
+        this.entities.header.style.display = "none";
+        this.fit();
+    }
+    showToolbar = () => {
+        this.entities.header.style.removeProperty("display");
+        this.fit();
+    }
+
     onButtonClick = async (action, button) => {
         if (!["pinUp", "pinRight", "fit", "download"].includes(action)) {
             await this.waitUnpin();
@@ -463,6 +473,27 @@ class tocMarkmap {
                 await this[func]();
             }, 300)
         })
+    }
+
+    onContextMenu = () => {
+        const menuMap = {
+            expand: "全屏",
+            shrink: "取消全屏",
+            fit: "图形适配窗口",
+            download: "下载",
+            close: "关闭",
+            pinUp: "固定到顶部",
+            pinRight: "固定到右侧",
+            hideToolbar: "隐藏工具栏",
+            showToolbar: "显示工具栏",
+        };
+        const showMenu = () => {
+            const fullScreen = this.entities.fullScreen.getAttribute("action");
+            const toolbarVisibility = (this.entities.header.style.display === "none") ? "showToolbar" : "hideToolbar";
+            return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "download", "close"])
+        }
+        const callback = ({key}) => this[key] && this[key]();
+        this.utils.registerMenu("markmap", "#plugin-markmap-svg", showMenu, callback);
     }
 
     onDrag = () => {
@@ -639,6 +670,7 @@ class tocMarkmap {
     }
 
     setFullScreenIcon = async (button, fullScreen) => {
+        button = button || this.entities.fullScreen;
         const boxShadow = fullScreen ? "initial" : "";
         const action = fullScreen ? "shrink" : "expand";
         this.entities.modal.style.boxShadow = boxShadow;
@@ -698,7 +730,6 @@ class tocMarkmap {
         }
     }
 }
-
 
 module.exports = {
     plugin: markmapPlugin

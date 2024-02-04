@@ -129,8 +129,8 @@ class utils {
     // 动态注册右键菜单
     // 1. name: 取个名字
     // 2. selector: 在哪个位置右键将弹出菜单
-    // 3. generator({ev, target}) => [string]: 生成右键菜单的列表，这里的Element即使上面的selector对用的元素
-    // 2. callback({ev, target, text}) => null: 点击的回调
+    // 3. generator({ev, target}) => {key1: showName1}: 生成右键菜单选项组成的object，参数target是上面的selector对应的元素
+    // 4. callback({ev, key}) => null: 点击的回调，参数key是点击的选项
     static registerMenu = (name, selector, generator, callback) => helper.contextMenu.registerMenu(name, selector, generator, callback)
     static unregisterMenu = name => helper.contextMenu.unregisterMenu(name)
 
@@ -313,6 +313,16 @@ class utils {
             obj[key] = isArray ? other[key] : this.merge(source[key], other[key])
             return obj
         }, Array.isArray(source) ? [] : {})
+    }
+
+    static fromObject = (object, attrs) => {
+        const newObject = {};
+        attrs.forEach(attr => {
+            if (object[attr]) {
+                newObject[attr] = object[attr];
+            }
+        });
+        return newObject;
     }
 
     static throttle = (fn, delay = 100) => {
@@ -1820,7 +1830,7 @@ class contextMenu {
             if (!target) return;
             ev.preventDefault();
             ev.stopPropagation();
-            this.callback({ev, target, text: target.innerText});
+            this.callback({ev, key: target.getAttribute("key")});
             this.callback = null;
             this.menu.classList.remove("show");
         })
@@ -1845,14 +1855,17 @@ class contextMenu {
     unregisterMenu = name => this.menus.delete(name)
 
     render = menus => {
+        const entries = Object.entries(menus);
         let child = this.menu.firstElementChild;
-        for (let idx = 0; idx < menus.length; idx++) {
+        for (let idx = 0; idx < entries.length; idx++) {
+            const [key, text] = entries[idx];
             if (child) {
-                child.innerText = menus[idx];
+                child.setAttribute("key", key);
+                child.innerText = text;
             } else {
-                const menuList = menus.slice(idx).map(ele => ({class_: "menu-item", text: ele}));
+                const menuList = entries.slice(idx).map(([key, text]) => ({class_: "menu-item", key, text}));
                 this.utils.appendElements(this.menu, menuList);
-                break
+                break;
             }
             child = child.nextElementSibling;
         }

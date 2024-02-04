@@ -196,7 +196,7 @@ class windowTabBarPlugin extends BasePlugin {
 
     handleContextMenu = () => {
         let idx = -1;
-        const map = {
+        const map = this.utils.fromObject({
             closeTab: "关闭标签",
             closeOtherTabs: "关闭其他标签",
             closeLeftTabs: "关闭左侧全部标签",
@@ -206,18 +206,13 @@ class windowTabBarPlugin extends BasePlugin {
             openInNewWindow: "新窗口打开",
             sortTabs: "排序标签",
             toggleSuffix: "显示/隐藏文件名后缀",
-        }
-        const name = "window-tab";
+        }, this.config.CONTEXT_MENU);
         const showMenu = ({target}) => {
             idx = parseInt(target.getAttribute("idx"));
-            return this.config.CONTEXT_MENU.map(ele => map[ele]).filter(Boolean)
+            return map
         }
-        const callback = ({text}) => {
-            if (idx === -1) return;
-            const [func, _] = Object.entries(map).find(([_, name]) => name === text);
-            func && this[func] && this[func](idx);
-        }
-        this.utils.registerMenu(name, "#plugin-window-tab .tab-container", showMenu, callback);
+        const callback = ({key: func}) => idx !== -1 && func && this[func] && this[func](idx);
+        this.utils.registerMenu("window-tab", "#plugin-window-tab .tab-container", showMenu, callback);
     }
 
     showTabsIfNeed = hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial";
