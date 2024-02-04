@@ -557,7 +557,6 @@ class utils {
         openUrl(url, 1);
     }
 
-    // 拥有browser、node两套环境，太爽了，完美绕过浏览器安全限制。fetch狗都不用
     static request = (options, data) => {
         return new Promise((resolve, reject) => {
             const req = this.Package.HTTPS.request(options, resp => {
@@ -1624,7 +1623,7 @@ class dialog {
 
             this.entities.title.innerText = modal.title;
             modal.components.forEach(component => component.id = this.utils.randomString());
-            const widgetList = modal.components.map(component => this.newWidget(component));
+            const widgetList = modal.components.map(this.newWidget);
             this.entities.body.innerHTML = `<form role="form">${widgetList.join("")}</form>`;
             this.entities.modal.style.display = "block";
         }
