@@ -68,9 +68,9 @@ class exportEnhancePlugin extends BasePlugin {
     dynamicCallArgsGenerator = () => {
         const call_args = [];
         if (this.config.DOWNLOAD_NETWORK_IMAGE) {
-            call_args.push({arg_name: "导出HTML时不下载网络图片", arg_value: "dont_download_network_image"});
+            call_args.push({arg_name: "导出时不下载网络图片", arg_value: "dont_download_network_image"});
         } else {
-            call_args.push({arg_name: "导出HTML时下载网络图片", arg_value: "download_network_image"});
+            call_args.push({arg_name: "导出时下载网络图片", arg_value: "download_network_image"});
         }
         if (this.config.ENABLE) {
             call_args.push({arg_name: "禁用", arg_value: "disable"});
