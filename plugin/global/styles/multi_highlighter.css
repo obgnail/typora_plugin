@@ -71,6 +71,7 @@
     margin: 3px 3px;
     padding: 0 5px;
     border-radius: 5px;
+    color: #333333;
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
