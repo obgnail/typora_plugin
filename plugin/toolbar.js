@@ -416,6 +416,7 @@ class operationTool extends baseToolInterface {
             {showName: "偏好设置", fixedName: "togglePreferencePanel", callback: togglePreferencePanel},
             {showName: "窗口置顶", fixedName: "togglePinWindow", callback: togglePinWindow},
             {showName: "在新窗口中打开", fixedName: "openFileInNewWindow", callback: openFileInNewWindow},
+            {showName: "修改插件配置", fixedName: "openSettingFolder", callback: this.utils.openSettingFolder},
         ]
         this.ops.forEach(op => op.showName += ` - ${op.fixedName}`);
     }
