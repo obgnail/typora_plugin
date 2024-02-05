@@ -492,7 +492,7 @@ class tocMarkmap {
             const toolbarVisibility = (this.entities.header.style.display === "none") ? "showToolbar" : "hideToolbar";
             return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "download", "close"])
         }
-        const callback = ({key}) => this[key] && this[key]();
+        const callback = ({key}) => this.onButtonClick(key);
         this.utils.registerMenu("markmap", "#plugin-markmap-svg", showMenu, callback);
     }
 

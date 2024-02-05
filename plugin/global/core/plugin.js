@@ -457,6 +457,14 @@ class utils {
         return configList.reduce(this.merge)
     }
 
+    static openSettingFolder = async () => {
+        const homeDir = this.Package.OS.homedir() || File.option.userPath;
+        const homeSetting = this.Package.Path.join(homeDir, ".config", "typora_plugin", "settings.user.toml");
+        const exist = await this.existPath(homeSetting);
+        const targetPath = exist ? homeSetting : this.joinPath("./plugin/global/settings/settings.user.toml");
+        this.showInFinder(targetPath);
+    }
+
     static insertStyle = (id, css) => {
         const style = document.createElement("style");
         style.id = id;

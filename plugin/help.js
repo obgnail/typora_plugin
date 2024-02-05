@@ -28,24 +28,16 @@ class helpPlugin extends BasePlugin {
 
     call = type => {
         const map = {
-            about: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
-            new_issue: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/issues/new"),
-            github_picture_bed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
-            open_setting_folder: this.openSettingFolder,
-            update_plugin: () => this.updater.callback(),
-            send_email: () => this.utils.sendEmail("he1251698542@gmail.com", "插件反馈"),
+            open_setting_folder: this.utils.openSettingFolder,
             new_custom_plugin: () => this.utils.openFile(this.utils.joinPath("./plugin/custom/请读我.md")),
+            github_picture_bed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
+            new_issue: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/issues/new"),
+            send_email: () => this.utils.sendEmail("he1251698542@gmail.com", "插件反馈"),
+            update_plugin: () => this.updater.callback(),
+            about: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
         }
         const func = map[type];
         func && func();
-    }
-
-    openSettingFolder = async () => {
-        const homeDir = this.utils.Package.OS.homedir() || File.option.userPath;
-        const homeSetting = this.utils.Package.Path.join(homeDir, ".config", "typora_plugin", "settings.user.toml");
-        const exist = await this.utils.existPath(homeSetting);
-        const targetPath = exist ? homeSetting : this.utils.joinPath("./plugin/global/settings/settings.user.toml");
-        this.utils.showInFinder(targetPath);
     }
 }
 
