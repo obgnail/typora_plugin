@@ -406,6 +406,30 @@ hotkey = ""
 default_dark_mode = false
 
 
+############### noImageMode ###############
+[noImageMode]
+# 右键菜单中展示的名称
+name = "无图模式"
+# 是否启用此自定义插件
+enable = true
+# 是否在右键菜单中隐藏
+hide = false
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
+order = 1
+# 插件配置
+[noImageMode.config]
+# 快捷键
+hotkey = ""
+# 当处于无图模式时，鼠标悬停时重新显示图片
+reshow_when_hover = true
+# 默认进入无图模式
+default_no_image_mode = false
+# 动画持续时间（单位：ms）
+transition_duration = 300
+# 延迟动画时间（单位：ms）
+transition_delay = 0
+
+
 ############### fullPathCopy ###############
 [fullPathCopy]
 # 右键菜单中展示的名称

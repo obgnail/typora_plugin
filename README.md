@@ -46,21 +46,22 @@
 | 36   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
 | 37   | markdownLint            | markdown 格式规范检测                  |
 | 38   | darkMode                | 夜间模式                               |
-| 39   | pluginUpdater           | 一键升级插件                           |
-| 40   | extractRangeToNewFile   | 提取选区文字到新文件                   |
-| 41   | fullPathCopy            | 复制标题路径                           |
-| 42   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
-| 43   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
-| 44   | scrollBookmarker        | 书签管理器                             |
-| 45   | openInTotalCommander    | 在 total commander 打开                |
-| 46   | bingSpeech              | 必应朗读                               |
-| 47   | mermaid_replace         | 替换 mermaid 组件                      |
-| 48   | help                    | 用户帮助                               |
-| 49   | custom                  | 开放平台，用户自定义插件（高级）       |
-| 50   | hotkeyHub               | 快捷键注册中心（高级）                 |
-| 51   | quickButton             | 于右下角添加功能按钮（高级）           |
-| 52   | json_rpc                | 外部操纵 Typora（高级）                |
-| 53   | old_window_tab          | 标签页管理（已废弃）                   |
+| 39   | noImageMode             | 无图模式                               |
+| 40   | pluginUpdater           | 一键升级插件                           |
+| 41   | extractRangeToNewFile   | 提取选区文字到新文件                   |
+| 42   | fullPathCopy            | 复制标题路径                           |
+| 43   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
+| 44   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
+| 45   | scrollBookmarker        | 书签管理器                             |
+| 46   | openInTotalCommander    | 在 total commander 打开                |
+| 47   | bingSpeech              | 必应朗读                               |
+| 48   | mermaid_replace         | 替换 mermaid 组件                      |
+| 49   | help                    | 用户帮助                               |
+| 50   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 51   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 52   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 53   | json_rpc                | 外部操纵 Typora（高级）                |
+| 54   | old_window_tab          | 标签页管理（已废弃）                   |
 
 > 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
 
@@ -787,6 +788,12 @@ auto_pair_symbols = [
 ### darkMode：夜间模式
 
 使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 夜间模式
+
+
+
+### noImageMode：无图模式
+
+使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 无图模式
 
 
 

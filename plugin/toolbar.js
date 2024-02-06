@@ -447,6 +447,7 @@ class modeTool extends baseToolInterface {
             const blur = this.utils.getPlugin("blur");
             const dark = this.utils.getCustomPlugin("darkMode");
             const image = this.utils.getCustomPlugin("imageReviewer");
+            const noImage = this.utils.getCustomPlugin("noImageMode");
             if (readonly) {
                 this.modes.push({showName: "只读模式", fixedName: "readOnlyMode", callback: () => readonly.call()});
             }
@@ -458,6 +459,9 @@ class modeTool extends baseToolInterface {
             }
             if (image) {
                 this.modes.push({showName: "看图模式", fixedName: "imageReviewer", callback: () => image.callback()});
+            }
+            if (noImage) {
+                this.modes.push({showName: "无图模式", fixedName: "noImageMode", callback: () => noImage.callback()});
             }
             this.modes.push({
                 showName: "调试模式", fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools")
