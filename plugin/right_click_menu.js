@@ -137,8 +137,11 @@ class rightClickMenuPlugin extends BasePlugin {
         let nextTop = top - height;
         let nextLeft = left + width + 6;
 
+        const footer = document.querySelector("footer");
+        const footerHeight = footer ? footer.getBoundingClientRect().height : 0;
+
         const {height: nextHeight, width: nextWidth} = next[0].getBoundingClientRect();
-        nextTop = Math.min(nextTop, window.innerHeight - nextHeight);
+        nextTop = Math.min(nextTop, window.innerHeight - nextHeight - footerHeight);
         nextLeft = Math.min(nextLeft, window.innerWidth - nextWidth);
 
         next.css({top: nextTop + "px", left: nextLeft + "px"});
