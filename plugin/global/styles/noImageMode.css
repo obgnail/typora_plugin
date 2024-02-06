@@ -1,8 +1,10 @@
+#write .md-htmlblock-container img,
 #write .md-image {
     opacity: 0;
     transition: opacity ${transition_duration}ms ease ${transition_delay}ms;
 }
 
+#write .md-htmlblock-container img:hover,
 #write .md-image:hover {
     opacity: ${opacity_on_hover};
 }
