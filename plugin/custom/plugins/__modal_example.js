@@ -17,7 +17,6 @@
       3. onCancelCallback: 当用户点击【取消】后的回调函数
 */
 class modalExample extends BaseCustomPlugin {
-    selector = () => ""
     callback = anchorNode => {
         const modal = {
             title: "新文件路径",

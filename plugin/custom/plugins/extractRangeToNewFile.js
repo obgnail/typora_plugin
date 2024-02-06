@@ -5,6 +5,8 @@ class extractRangeToNewFile extends BaseCustomPlugin {
         }
     }
 
+    hint = isDisable => isDisable && "请框选待提取的文段"
+
     hotkey = () => [this.config.hotkey]
 
     callback = async anchorNode => {

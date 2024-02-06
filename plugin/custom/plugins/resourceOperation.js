@@ -9,6 +9,9 @@ class resourceOperation extends BaseCustomPlugin {
             return this.utils.nonExistSelector
         }
     }
+
+    hint = isDisable => isDisable && "空白页不可使用此插件"
+
     init = () => {
         if (this.config.ignore_image_div) {
             this.regexp = new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)", "g");

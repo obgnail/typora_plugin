@@ -12,7 +12,7 @@ class pluginUpdater extends BaseCustomPlugin {
 
     selector = () => (this.updaterEXE && this.commanderPlugin) ? "" : this.utils.nonExistSelector
 
-    hint = () => "当你发现BUG，可以尝试更新，说不定就解决了"
+    hint = isDisable => isDisable ? "updater.exe不存在或者commander插件被禁用" : "当你发现BUG，可以尝试更新，说不定就解决了"
 
     process = () => {
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {

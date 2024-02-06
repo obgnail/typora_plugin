@@ -52,7 +52,10 @@ class CustomPlugin extends BasePlugin {
                     arg.arg_hint = "此插件不可点击";
                 } else {
                     arg.arg_disabled = selector && !anchorNode.closest(selector);
-                    arg.arg_hint = arg.arg_disabled ? "光标于此位置不可用" : plugin.hint();
+                    arg.arg_hint = plugin.hint(arg.arg_disabled);
+                    if (arg.arg_disabled) {
+                        arg.arg_hint = arg.arg_hint || "光标于此位置不可用";
+                    }
                 }
             } catch (e) {
                 console.error("plugin selector error:", fixedName, e);
