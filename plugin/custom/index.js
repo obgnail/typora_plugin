@@ -57,6 +57,9 @@ class CustomPlugin extends BasePlugin {
             } catch (e) {
                 console.error("plugin selector error:", fixedName, e);
             }
+
+            if (this.config.HIDE_DISABLE_PLUGINS && arg.arg_disabled) continue;
+
             dynamicCallArgs.push(arg);
         }
         return dynamicCallArgs;

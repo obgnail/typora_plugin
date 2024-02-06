@@ -876,11 +876,14 @@ NAME = "自定义插件"
 # 是否在右键菜单中可点击
 # 若置为false，则：不影响所有自定义插件的启用状态，但是无法在右键菜单中触及
 CLICKABLE = true
+# 有些插件在当前光标位置下临时处于不可用状态，是否隐藏它
+# 不建议置为true，否则可能导致你忘记该插件的存在，此选项是牺牲功能换取美观。
+HIDE_DISABLE_PLUGINS = false
 # 禁用的自定义插件。优先级高于业务插件的ENABLE选项
 # 填入业务插件的fixedName。举例：["kanban", "echarts"]
 DISABLE_CUSTOM_PLUGINS = []
 # 允许在settings.user.toml中设置custom_plugin.user.toml中的选项。若在两处皆有定义，settings.user.toml的优先级高于custom_plugin.user.toml
-# 本来【自定义插件】的选项应该在custom_plugin.user.toml中设置的，但是一直有收到反馈，用户错误地写在了settings.user.toml。无奈只能作此兼容
+# 本来【自定义插件】的选项应该在custom_plugin.user.toml中设置的，但是一直有收到反馈，总是有用户错误地写在了settings.user.toml。无奈只能作此兼容
 # 1.如果你不理解我在说什么，并且不想弄懂，请将此选项置为true
 # 2.如果你不理解我在说什么，并且想弄懂，建议查看本目录下的【请读我.md】中的【settings.XXX.toml和custom_plugin.XXX.toml的区别是什么？】章节
 # 3.如果能理解我在说什么，并且知道settings.user.toml和custom_plugin.user.toml的区别，建议将此选项置为false
