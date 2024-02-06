@@ -1,6 +1,4 @@
 class timelinePlugin extends BaseCustomPlugin {
-    selector = () => ""
-
     styleTemplate = () => true
 
     process = () => {

@@ -5,6 +5,8 @@ class templater extends BaseCustomPlugin {
         }
     }
 
+    hint = isDisable => isDisable && "空白页不可使用此插件"
+
     hotkey = () => [this.config.hotkey]
 
     process = () => {

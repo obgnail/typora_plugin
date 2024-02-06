@@ -2044,7 +2044,7 @@ class baseCustomPlugin {
     hotkey = () => undefined
     process = () => undefined
     selector = () => undefined
-    hint = () => undefined
+    hint = isDisable => undefined
     callback = anchorNode => undefined
 }
 
