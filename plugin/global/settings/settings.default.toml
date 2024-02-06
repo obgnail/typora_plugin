@@ -983,7 +983,7 @@ BACKGROUND_COLOR = ""
 BEFORE_TEXT = ""
 
 
-############### file_counter ###############
+############### help ###############
 [help]
 # 是否启用插件
 ENABLE = true
