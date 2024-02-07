@@ -1,5 +1,6 @@
 class echartsPlugin extends BaseCustomPlugin {
     init = () => {
+        this.echartsPkg = null;
         this.exportType = this.config.EXPORT_TYPE.toLowerCase();
     }
 
@@ -24,14 +25,14 @@ class echartsPlugin extends BaseCustomPlugin {
     }
 
     create = ($wrap, content) => {
-        const chart = echarts.init($wrap[0], null, {renderer: this.config.RENDERER});
+        const chart = this.echartsPkg.init($wrap[0], null, {renderer: this.config.RENDERER});
         this.drawChart(chart, content);
         return chart;
     }
 
     drawChart = (myChart, content, resize = false) => {
         // chart.showLoading();
-        let echarts = global.echarts;
+        let echarts = this.echartsPkg;
         let option = "";
         eval(content);
         myChart.clear();
@@ -59,7 +60,7 @@ class echartsPlugin extends BaseCustomPlugin {
         }
     }
 
-    lazyLoad = async () => (!global.echarts) && await this.utils.insertScript("./plugin/custom/plugins/echarts/echarts.min.js");
+    lazyLoad = () => this.echartsPkg = this.echartsPkg || this.utils.requireFilePath("./plugin/custom/plugins/echarts/echarts.min.js");
 }
 
 module.exports = {
