@@ -465,6 +465,14 @@ class utils {
         this.showInFinder(targetPath);
     }
 
+    static editCurrentFile = async (editFileFunc, reloadTypora = true) => {
+        const filepath = this.getFilePath();
+        const content = await this.Package.Fs.promises.readFile(filepath, "utf-8");
+        const replacedContent = editFileFunc(content);
+        await this.Package.Fs.promises.writeFile(filepath, replacedContent);
+        reloadTypora && File.reloadContent(replacedContent, {fromDiskChange: false});
+    }
+
     static insertStyle = (id, css) => {
         const style = document.createElement("style");
         style.id = id;
