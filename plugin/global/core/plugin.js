@@ -401,6 +401,29 @@ class utils {
         }, []);
     }
 
+    static asyncReplaceAll = (content, regexp, replaceFunc) => {
+        if (!regexp.global) {
+            throw Error("regexp must global");
+        }
+
+        let match;
+        let lastIndex = 0;
+        const reg = new RegExp(regexp);  // 为了不影响regexp的lastIndex属性，复制一个新的对象
+        const promises = [];
+
+        while ((match = reg.exec(content))) {
+            const str = content.slice(lastIndex, match.index);
+            lastIndex = reg.lastIndex;
+            const args = [...match, match.index, match.input];
+            if (match.groups) {
+                args.push(match.groups);
+            }
+            promises.push(str, replaceFunc(...args));
+        }
+        promises.push(content.slice(lastIndex));
+        return Promise.all(promises).then(results => results.join(""))
+    }
+
     static randomString = () => Math.random().toString(36).slice(2)
     static getUUID = () => {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
