@@ -1,12 +1,11 @@
 class mdPaddingPlugin extends BasePlugin {
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
-    reload = content => File.reloadContent(content, {fromDiskChange: false});
-
     formatContent = content => {
         const {padMarkdown} = this.utils.requireFilePath("./plugin/md_padding/md-padding");
         return padMarkdown(content, {ignoreWords: this.config.IGNORE_WORDS})
     }
+
     removeMultiLineBreak = content => {
         const maxNum = this.config.LINE_BREAK_MAX_NUM;
         if (maxNum > 0) {
@@ -17,6 +16,7 @@ class mdPaddingPlugin extends BasePlugin {
         }
         return content;
     }
+
     formatAndRemoveMultiLineBreak = content => this.removeMultiLineBreak(this.formatContent(content));
 
     formatSelection = async () => {
@@ -27,13 +27,7 @@ class mdPaddingPlugin extends BasePlugin {
         ClientCommand.paste();
     }
 
-    formatFile = async () => {
-        const filepath = this.utils.getFilePath();
-        const content = await this.utils.Package.Fs.promises.readFile(filepath, 'utf-8');
-        const formattedContent = this.formatAndRemoveMultiLineBreak(content);
-        await this.utils.Package.Fs.promises.writeFile(filepath, formattedContent);
-        this.reload(formattedContent);
-    }
+    formatFile = async () => await this.utils.editCurrentFile(this.formatAndRemoveMultiLineBreak)
 
     call = async () => {
         await File.saveUseNode();

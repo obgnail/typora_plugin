@@ -154,11 +154,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     // 修复逻辑的入口函数
-    fixLintError = async () => {
-        const content = await this.utils.Package.Fs.promises.readFile(this.utils.getFilePath(), 'utf-8');
-        const newContent = new lintFixer(content).prepare().format(this.config.try_fix_lint_error);
-        File.reloadContent(newContent, {fromDiskChange: false});
-    }
+    fixLintError = async () => await this.utils.editCurrentFile(content => new lintFixer(content).prepare().format(this.config.try_fix_lint_error))
 }
 
 class lintFixer {
