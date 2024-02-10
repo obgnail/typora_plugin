@@ -403,7 +403,7 @@ class utils {
 
     static asyncReplaceAll = (content, regexp, replaceFunc) => {
         if (!regexp.global) {
-            throw Error("regexp must global");
+            throw Error("regexp must be global");
         }
 
         let match;
@@ -412,13 +412,9 @@ class utils {
         const promises = [];
 
         while ((match = reg.exec(content))) {
-            const str = content.slice(lastIndex, match.index);
-            lastIndex = reg.lastIndex;
             const args = [...match, match.index, match.input];
-            if (match.groups) {
-                args.push(match.groups);
-            }
-            promises.push(str, replaceFunc(...args));
+            promises.push(content.slice(lastIndex, match.index), replaceFunc(...args));
+            lastIndex = reg.lastIndex;
         }
         promises.push(content.slice(lastIndex));
         return Promise.all(promises).then(results => results.join(""))
