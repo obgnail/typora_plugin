@@ -1958,7 +1958,7 @@ class exportHelper {
 
         let html = await exportResult;
         const writeIdx = html.indexOf(`id='write'`);
-        if (writeIdx === -1) return new Promise(resolve => resolve(html));
+        if (writeIdx === -1) return html;
 
         for (const h of this.helpers.values()) {
             if (h.afterExport) {
@@ -1968,7 +1968,7 @@ class exportHelper {
                 }
             }
         }
-        return new Promise(resolve => resolve(html));
+        return html;
     }
 
     afterExportSync = (exportResult, ...args) => {
@@ -2104,38 +2104,21 @@ class baseCustomPlugin {
     callback = anchorNode => undefined
 }
 
-// clickablePlugin: 支持在右键菜单中使用的插件
-// 实际上clickablePlugin并没有投入使用，我嫌弃太死板了，打个样就行了，js也不是什么正经OOP语言
-// 右键菜单的选项分为两部分：静态菜单选项和动态菜单选项，皆返回[{arg_name, arg_value, arg_disabled(可选), arg_hint(可选)}]
-class clickablePlugin extends basePlugin {
-    // 静态菜单选项
-    callArgs = []
-    // 动态菜单选项
-    //   anchorNode: 右键时鼠标所在的html标签
-    //   meta: 一个空的object，可以在这里设置任何值，传给call方法
-    //   notInContextMenu: 调用此方法的环境：是right_click_menu调用（鼠标调用）还是toolbar调用（键盘调用），一般不用此参数
-    dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => []
-    // 回调函数:
-    //   argValue: callArgs和dynamicCallArgsGenerator返回的arg_value
-    //   meta: dynamicCallArgsGenerator传过来的
-    call = (argValue, meta) => undefined
-}
-
 /*
-整个插件系统，一共暴露了7个全局变量(见下面的initial函数)，实际有用的全局变量只有2个：
-  1. global.BasePlugin:       插件的父类
-  2. global.BaseCustomPlugin: 自定义插件的父类
-其他5个皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是上面两个父类的实例属性，所以utils自己也不需要暴露
-既然永远不会被外部文件引用，为什么还要将它们设置为什么全局变量？答：方便调试
-
-进而得出，整个插件系统的基本框架：
-  1. BasePlugin、BaseCustomPlugin的内置生命周期函数负责执行环境和执行流程
-  2. utils类似于标准库，负责辅助功能实现(这里有个技术债：utils没有做分层处理，导致utils巨大无比)
-
-进而得出，插件的基本实现流程：
-  1. 创建插件类继承上述任意一个父类
-  2. 在父类的内置生命周期函数内调用utils实现功能
- */
+* 整个插件系统，一共暴露了7个全局变量(见下面的prepare函数)，实际有用的全局变量只有2个：
+*   1. global.BasePlugin:       插件的父类
+*   2. global.BaseCustomPlugin: 自定义插件的父类
+* 其他5个皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是上面两个父类的实例属性，所以utils自己也不需要暴露
+* 既然永远不会被外部文件引用，为什么还要将它们设置为什么全局变量？答：方便调试
+*
+* 整个插件系统的基本框架：
+*   1. BasePlugin、BaseCustomPlugin的内置生命周期函数负责执行环境和执行流程
+*   2. utils类似于library，负责辅助功能实现(这里有个技术债：utils没有做分层处理，导致utils巨大无比)
+*
+* 插件的基本实现流程：
+*   1. 创建插件类继承上述任意一个父类
+*   2. 在父类的内置生命周期函数内调用utils实现功能
+*/
 class process {
     constructor() {
         this.utils = utils;
@@ -2200,7 +2183,7 @@ class process {
 
     loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
 
-    initial = settings => {
+    prepare = settings => {
         global.BasePlugin = basePlugin;             // 插件的父类
         global.BaseCustomPlugin = baseCustomPlugin; // 自定义插件的父类
 
@@ -2218,7 +2201,7 @@ class process {
         if (!settings || !settings.global || !settings.global.ENABLE) return;
 
         // 初始化全局变量
-        this.initial(settings);
+        this.prepare(settings);
 
         const {
             contextMenu, dialog, styleTemplater, stateRecorder, eventHub,
