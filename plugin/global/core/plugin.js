@@ -126,6 +126,11 @@ class utils {
     static appendElements = (parent, template) => helper.htmlTemplater.appendElements(parent, template)
     static getElementCreator = () => helper.htmlTemplater.creator()
 
+    // 解析markdown语法
+    static parseMarkdown = markdown => helper.markdownParser.parse(markdown)
+    static getNodeKindByNode = node => helper.markdownParser.getNodeKindByNode(node)
+    static getNodeKindByNum = num => helper.markdownParser.getNodeKindByNum(num)
+
     // 动态注册右键菜单
     // 1. name: 取个名字
     // 2. selector: 在哪个位置右键将弹出菜单
@@ -403,7 +408,7 @@ class utils {
 
     static asyncReplaceAll = (content, regexp, replaceFunc) => {
         if (!regexp.global) {
-            throw Error("regexp must global");
+            throw Error("regexp must be global");
         }
 
         let match;
@@ -412,13 +417,9 @@ class utils {
         const promises = [];
 
         while ((match = reg.exec(content))) {
-            const str = content.slice(lastIndex, match.index);
-            lastIndex = reg.lastIndex;
             const args = [...match, match.index, match.input];
-            if (match.groups) {
-                args.push(match.groups);
-            }
-            promises.push(str, replaceFunc(...args));
+            promises.push(content.slice(lastIndex, match.index), replaceFunc(...args));
+            lastIndex = reg.lastIndex;
         }
         promises.push(content.slice(lastIndex));
         return Promise.all(promises).then(results => results.join(""))
@@ -1999,6 +2000,28 @@ class exportHelper {
     }
 }
 
+class markdownParser {
+    constructor() {
+        this.utils = utils;
+        const nodeKind = {
+            Blank: 1, Punctuation: 1 << 1, AlphabetNumeric: 1 << 2, UnicodeString: 1 << 3, BlockCode: 1 << 4,
+            Document: 1 << 5, HTMLTag: 1 << 6, ReferenceLink: 1 << 7, ReferenceDefinition: 1 << 8, InlineLink: 1 << 9,
+            OrderedListItem: 1 << 10, Quoted: 1 << 11, SquareQuoted: 1 << 12, Strikethrough: 1 << 13, Strong: 1 << 14,
+            Emphasis: 1 << 15, InlineCode: 1 << 16, UnorderedListItem: 1 << 17, InlineImage: 1 << 18,
+            ReferenceImage: 1 << 19, Raw: 1 << 20, Math: 1 << 21, BlockquoteItem: 1 << 22,
+            CalloutItem: 1 << 23, Highlight: 1 << 24,
+        }
+        this.nodeKind = new Map(Object.entries(nodeKind).map(([key, value]) => [value, key]));
+    }
+
+    parse = markdown => {
+        this.parser = this.parser || this.utils.requireFilePath("./plugin/md_padding/md-padding/parser/parse");
+        return this.parser.parse(markdown, {ignoreWords: []});
+    }
+    getNodeKindByNode = node => this.nodeKind.get(node.kind)
+    getNodeKindByNum = num => this.nodeKind.get(num)
+}
+
 const helper = Object.freeze({
     // 生命周期事件
     eventHub: new eventHub(),
@@ -2020,6 +2043,8 @@ const helper = Object.freeze({
     htmlTemplater: new htmlTemplater(),
     // 导出时的额外操作
     exportHelper: new exportHelper(),
+    // markdown语法解析器
+    markdownParser: new markdownParser(),
 })
 
 class basePlugin {
