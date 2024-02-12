@@ -34,16 +34,12 @@ class exportEnhancePlugin extends BasePlugin {
     }
 
     downloadAllImage = async (html, writeIdx) => {
-        const imageMap = {} // map src to localFilePath, use for network image only
+        const imageMap = {}; // map src to localFilePath, use for network image only
         const matches = Array.from(html.matchAll(this.regexp));
         const chunkList = this.utils.chunk(matches, this.config.DOWNLOAD_THREADS);
         for (const list of chunkList) {
             await Promise.all(list.map(async match => {
-                if (match.length !== 2
-                    || match.index < writeIdx
-                    || !this.utils.isNetworkImage(match[1])
-                    || imageMap.hasOwnProperty(match[1])
-                ) return;
+                if (match.length !== 2 || match.index < writeIdx || !this.utils.isNetworkImage(match[1]) || imageMap.hasOwnProperty(match[1])) return;
 
                 const src = match[1];
                 try {
@@ -56,7 +52,7 @@ class exportEnhancePlugin extends BasePlugin {
                 }
             }))
         }
-        return new Promise(resolve => resolve(imageMap));
+        return imageMap;
     }
 
     toBase64 = imagePath => {
