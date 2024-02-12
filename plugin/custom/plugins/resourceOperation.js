@@ -146,21 +146,19 @@ class resourceOperation extends BaseCustomPlugin {
         }
     }
 
-    getRealPath = async (imagePath) => {
-        const access = this.utils.Package.Fs.promises.access;
-        const constants = this.utils.Package.Fs.promises.constants;
-
+    getRealPath = async imagePath => {
+        const {access, constants} = this.utils.Package.Fs.promises;
         let idx = imagePath.lastIndexOf(")");
         while (idx !== -1) {
             try {
                 await access(imagePath, constants.R_OK | constants.W_OK);
-                break
+                return imagePath;
             } catch {
                 imagePath = imagePath.slice(0, idx);
                 idx = imagePath.lastIndexOf(")");
             }
         }
-        return new Promise(resolve => resolve(imagePath))
+        return imagePath;
     }
 }
 
