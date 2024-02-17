@@ -229,8 +229,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
         rootPath = rootPath || File.getMountFolder();
         keys = keys || this.entities.input.value;
 
-        let keyArr = keys.split(this.config.SEPARATOR).filter(Boolean);
-        if (!keyArr) return;
+        let keyArr = this.utils.splitKeyword(keys);
+        if (!keyArr || keyArr.length === 0) return;
         if (!this.config.CASE_SENSITIVE) {
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }

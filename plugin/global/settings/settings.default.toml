@@ -129,8 +129,6 @@ AUTO_HIDE = false
 BACKSPACE_TO_HIDE = true
 # 展示文件路径时使用相对路径
 RELATIVE_PATH = true
-# 关键词按空格分割
-SEPARATOR = " "
 # 鼠标悬停到搜索项时展示文件的修改时间
 # 此选项时为了通过额外的信息帮助查找文件，我嫌弃它扎眼就没开启，如果你总是找不到目标文件，可以置为true
 SHOW_MTIME = false
@@ -173,8 +171,6 @@ STYLE_COLOR = [
 ]
 # 大小写敏感(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
 CASE_SENSITIVE = false
-# 关键词按空格分割
-SEPARATOR = " "
 # 展示【执行】按钮
 # 我嫌弃它丑就没开启，如果你是鼠标党，可以置为true
 SHOW_RUN_BUTTON = false
