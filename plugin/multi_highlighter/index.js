@@ -259,19 +259,12 @@ class multiHighlighterPlugin extends BasePlugin {
         this.entities.result.style.display = "";
     }
 
-    getKeyArr = () => {
-        const value = this.entities.input.value;
-        if (value) {
-            return value.split(this.config.SEPARATOR).filter(Boolean)
-        }
-    }
-
     setInputValue = value => this.entities.input.value = value;
 
     highlight = (refreshResult = true) => {
         this.lastHighlightFilePath = this.utils.getFilePath();
-        const keyArr = this.getKeyArr();
-        if (!keyArr) return false;
+        const keyArr = this.utils.splitKeyword(this.entities.input.value);
+        if (!keyArr || keyArr.length === 0) return false;
         this.doSearch(keyArr, refreshResult);
         return true;
     }

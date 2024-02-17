@@ -392,6 +392,16 @@ class utils {
         return Array.from({length}, (_, index) => arrays.map(arr => arr[index]));
     }
 
+    static splitKeyword = str => {
+        const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
+        let result = [];
+        let match;
+        while ((match = regex.exec(str))) {
+            result.push(match[1] || match[2] || match[0]);
+        }
+        return result;
+    }
+
     static splitArray = (array, separatorFunc) => {
         return array.reduce((acc, current) => {
             if (separatorFunc(current)) {
