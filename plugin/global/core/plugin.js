@@ -1596,11 +1596,11 @@ class dialog {
         this.pluginModal.components.forEach(component => {
             if (!component.label || !component.type || !component.id) return;
             const div = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
-            if (div) {
-                component.submit = this.getWidgetValue(component.type, div);
-            }
+            component.submit = div ? this.getWidgetValue(component.type, div) : undefined;
         })
         callback && callback(this.pluginModal.components);
+        this.callback = null;
+        this.cancelCallback = null;
         this.entities.modal.style.display = "none";
     }
 
