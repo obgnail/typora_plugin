@@ -8,7 +8,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         modal.style.display = "none";
         modal.innerHTML = `
             <div id="plugin-search-multi-input">
-                <input type="text" placeholder="多关键字查找 空格分隔">
+                <input type="text" placeholder="多关键字查找 空格分隔" title="空格分隔 引号包裹视为词组">
                 <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
                     <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                 </span>
@@ -222,19 +222,17 @@ class searchMultiKeywordPlugin extends BasePlugin {
     verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
 
     searchMulti = (rootPath, keys) => {
-        this.entities.result.style.display = "none";
-        this.entities.info.style.display = "block";
-        this.entities.resultList.innerHTML = "";
-
-        rootPath = rootPath || File.getMountFolder();
-        keys = keys || this.entities.input.value;
-
-        let keyArr = this.utils.splitKeyword(keys);
+        let keyArr = this.utils.splitKeyword(keys || this.entities.input.value);
         if (!keyArr || keyArr.length === 0) return;
         if (!this.config.CASE_SENSITIVE) {
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }
 
+        this.entities.result.style.display = "none";
+        this.entities.info.style.display = "block";
+        this.entities.resultList.innerHTML = "";
+
+        rootPath = rootPath || File.getMountFolder();
         const allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
         const appendItem = this.appendItemFunc(keyArr);
         const then = () => this.entities.info.style.display = "none";

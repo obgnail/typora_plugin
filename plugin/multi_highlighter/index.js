@@ -34,7 +34,7 @@ class multiHighlighterPlugin extends BasePlugin {
         modal.style.display = "none";
         modal.innerHTML = `
             <div id="plugin-multi-highlighter-input">
-                <input type="text" placeholder="多关键字高亮 空格分隔">
+                <input type="text" placeholder="多关键字高亮 空格分隔" title="空格分隔 引号包裹视为词组">
                 <span ty-hint="区分大小写" class="plugin-multi-highlighter-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" aria-label="区分大小写">
                     <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                 </span>
@@ -262,9 +262,10 @@ class multiHighlighterPlugin extends BasePlugin {
     setInputValue = value => this.entities.input.value = value;
 
     highlight = (refreshResult = true) => {
-        this.lastHighlightFilePath = this.utils.getFilePath();
         const keyArr = this.utils.splitKeyword(this.entities.input.value);
         if (!keyArr || keyArr.length === 0) return false;
+
+        this.lastHighlightFilePath = this.utils.getFilePath();
         this.doSearch(keyArr, refreshResult);
         return true;
     }
