@@ -1605,19 +1605,18 @@ class dialog {
     }
 
     getWidgetValue = (type, widget) => {
-        switch (type.toLowerCase()) {
+        type = type.toLowerCase()
+        switch (type) {
             case "input":
-                return widget.querySelector("input").value
             case "textarea":
-                return widget.querySelector("textarea").value
-            case "checkbox":
-                return [...widget.querySelectorAll("input:checked")].map(box => box.value)
+            case "select":
+                return widget.querySelector(type).value
             case "radio":
                 return widget.querySelector("input:checked").value
-            case "select":
-                return widget.querySelector("select").value
             case "file":
                 return widget.querySelector("input").files
+            case "checkbox":
+                return [...widget.querySelectorAll("input:checked")].map(box => box.value)
             default:
                 return ""
         }
@@ -1697,8 +1696,7 @@ class hotkeyHub {
     _register = (hotkey, call) => {
         if (typeof hotkey === "string" && hotkey.length) {
             this.map.set(this.normalize(hotkey), call);
-            // 一个callback可能对应多个hotkey
-        } else if (hotkey instanceof Array) {
+        } else if (hotkey instanceof Array) {   // 一个callback可能对应多个hotkey
             for (const hk of hotkey) {
                 this._register(hk, call);
             }
@@ -1741,6 +1739,8 @@ class styleTemplater {
         this.utils = utils
     }
 
+    getID = name => `plugin-${name}-style`
+
     register = async (name, args) => {
         const files = ["user_styles", "styles"].map(dir => this.utils.joinPath("./plugin/global", dir, `${name}.css`));
         const [userStyles, defaultStyles] = await this.utils.readFiles(files);
@@ -1751,19 +1751,17 @@ class styleTemplater {
         }
         try {
             const css = data.replace(/\${(.+?)}/g, (_, $arg) => $arg.split(".").reduce((obj, attr) => obj[attr], args));
-            this.utils.insertStyle(`plugin-${name}-style`, css);
+            this.utils.insertStyle(this.getID(name), css);
         } catch (err) {
             console.error(`replace args error. file: ${name}. err: ${err}`);
         }
     }
 
-    unregister = name => this.utils.removeStyle(`plugin-${name}-style`);
+    unregister = name => this.utils.removeStyle(this.getID(name));
 
     getStyleContent = name => {
-        const style = document.getElementById(`plugin-${name}-style`);
-        if (style) {
-            return style.innerHTML
-        }
+        const style = document.getElementById(this.getID(name));
+        return style ? style.innerHTML : undefined;
     }
 
     // 注册公共样式
