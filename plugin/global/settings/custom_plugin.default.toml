@@ -388,6 +388,49 @@ list = [
 ]
 
 
+############### marp ###############
+[marp]
+# 右键菜单中展示的名称
+name = "插入marp"
+# 是否启用此自定义插件
+enable = true
+# 是否在右键菜单中隐藏
+hide = false
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
+order = 1
+# 插件配置
+[marp.config]
+# 代码块语言
+# 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
+LANGUAGE = "marp"
+# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
+INTERACTIVE_MODE = true
+# 自动插入的模板
+TEMPLATE = """```marp
+---
+theme: gaia
+_class: lead
+paginate: true
+backgroundColor: #fff
+backgroundImage: url('https://marp.app/assets/hero-background.svg')
+---
+
+![bg left:40% 80%](https://marp.app/assets/marp.svg)
+
+# **Marp**
+
+Markdown Presentation Ecosystem
+
+https://marp.app/
+
+---
+
+# How to write slides
+
+Split pages by horizontal ruler (`---`). It's very simple! :satisfied:
+
+"""
+
 ############### darkMode ###############
 [darkMode]
 # 右键菜单中展示的名称
