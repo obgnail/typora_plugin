@@ -4,9 +4,13 @@
     width: ${modal_width};
 }
 
+#plugin-markdownlint a:hover {
+    text-decoration: underline;
+}
+
 #plugin-markdownlint pre {
     font-size: ${this.config.modal_font_size};
-    line-height: 1.2;
+    line-height: ${this.config.modal_line_height};
     margin: 5px;
     max-height: ${this.config.modal_max_height};
     width: 100%;

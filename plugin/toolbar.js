@@ -95,6 +95,9 @@ class toolbarPlugin extends BasePlugin {
         const fixedName = target.getAttribute("data");
         const meta = target.getAttribute("meta");
         this.toolController.callback(tool, fixedName, meta);
+        if (tool !== "func") {
+            this.hide();
+        }
     }
 
     search = async ev => {

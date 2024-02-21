@@ -1728,6 +1728,7 @@ class hotkeyHub {
 
     process = () => {
         window.addEventListener("keydown", ev => {
+            if (ev.key === undefined) return;
             const arr = [];
             this.utils.metaKeyPressed(ev) && arr.push("ctrl");
             this.utils.shiftKeyPressed(ev) && arr.push("shift");
