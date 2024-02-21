@@ -3,8 +3,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
     hotkey = () => [this.config.hotkey]
     htmlTemplate = () => {
-        const hint = "当前禁用的检测规则：\n" + this.config.disable_rules.join("\n");
-        const pre = [{ele: "pre", tabindex: "0", title: hint}];
+        const pre = [{ele: "pre", tabindex: "0"}];
         const el = [{id: "plugin-markdownlint", class_: "plugin-common-modal", style: {display: "none"}, children: pre}]
         if (this.config.use_button) {
             el.push({id: "plugin-markdownlint-button", "ty-hint": "markdown格式规范检测"});
@@ -52,9 +51,13 @@ class markdownLintPlugin extends BaseCustomPlugin {
     onLineClick = () => {
         this.entities.pre.addEventListener("mousedown", ev => {
             if (ev.button === 0) {
-                const doc = ev.target.closest(".markdown-lint-doc");
-                if (doc) {
+                if (ev.target.closest(".markdown-lint-doc")) {
                     this.utils.openUrl("https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md");
+                    return;
+                }
+                if (ev.target.closest(".markdown-lint-translate")) {
+                    this.config.translate = !this.config.translate;
+                    this.utils.getFilePath() && File.saveUseNode().then(this.updateLinter());
                     return;
                 }
                 const target = ev.target.closest("a");
@@ -141,12 +144,23 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
     genMarkdownlint = content => {
         const map = this.translate();
-        const doc = `<a class="markdown-lint-doc" title="document">📖</a>`;
-        const header = `line  rule   error${doc}\n`;
+
+        const translate = `<a class="markdown-lint-translate" title="翻译">🌏</a>`;
+
+        const doc = `<a class="markdown-lint-doc" title="具体规则文档">📖</a>`;
+
+        const hintList = ["鼠标右键切换源码模式"];
+        this.config.allow_drag && hintList.push("ctrl+鼠标拖动可移动");
+        const operateInfo = `<span title="${hintList.join('\n')}">ℹ️</span>`;
+
+        const disableRule = '当前禁用的检测规则：\n' + this.config.disable_rules.join('\n');
+        const ruleInfo = `<span title="${disableRule}">⚠️</span>`
+
+        const header = `Line  Rule   Error | ${operateInfo} ${ruleInfo} | ${translate} ${doc}\n`;
         const result = content.map(line => {
             const lineNo = line.lineNumber + "";
             const [ruleName, _] = line.ruleNames;
-            const lineNum = `<a>${lineNo.padEnd(6)}</a>`;
+            const lineNum = `<a>${lineNo}</a>` + " ".repeat(6 - lineNo.length);
             const desc = this.config.translate ? map[ruleName] : line.ruleDescription;
             return "\n" + lineNum + ruleName.padEnd(7) + desc;
         })
