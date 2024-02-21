@@ -685,9 +685,18 @@ class utils {
         return {height, width}
     }
 
+    static renderAllLangFence = lang => {
+        document.querySelectorAll(`#write .md-fences[lang=${lang}]`).forEach(fence => {
+            const codeMirror = fence.querySelector(":scope > .CodeMirror");
+            if (!codeMirror) {
+                const cid = fence.getAttribute("cid");
+                cid && File.editor.fences.addCodeBlock(cid);
+            }
+        })
+    }
     static refreshAllLangFence = lang => {
-        document.querySelectorAll(`#write .md-fences[lang="${lang}"]`).forEach(ele => {
-            const cid = ele.getAttribute("cid");
+        document.querySelectorAll(`#write .md-fences[lang="${lang}"]`).forEach(fence => {
+            const cid = fence.getAttribute("cid");
             cid && File.editor.diagrams.updateDiagram(cid);
         })
     }
@@ -1354,8 +1363,9 @@ class thirdPartyDiagramParser {
     }
 
     beforeExport = () => {
-        for (const parser of this.parsers.values()) {
+        for (const [lang, parser] of this.parsers.entries()) {
             if (!parser.beforeExport) continue;
+            this.utils.renderAllLangFence(lang);
             for (const [cid, instance] of Object.entries(parser.map)) {
                 const preview = document.querySelector(`#write .md-fences[cid=${cid}] .md-diagram-panel-preview`);
                 preview && parser.beforeExport(preview, instance);
