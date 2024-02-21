@@ -22,7 +22,7 @@ class tocPlugin extends BaseCustomPlugin {
             if (!target) return;
             ev.stopPropagation();
             ev.preventDefault();
-            const cid = target.getAttribute("cid");
+            const cid = target.getAttribute("ref");
             this.utils.scrollByCid(cid);
         })
         if (this.config.right_click_outline_button_to_toggle) {
@@ -134,7 +134,7 @@ class tocPlugin extends BaseCustomPlugin {
 
         const targetCid = headers[activeIndex].getAttribute("cid");
         this.entities.ul.querySelectorAll(".toc-node.active").forEach(ele => ele.classList.remove("active"));
-        const targetNode = this.entities.ul.querySelector(`.toc-node[cid=${targetCid}]`);
+        const targetNode = this.entities.ul.querySelector(`.toc-node[ref=${targetCid}]`);
         if (!targetNode) return;
 
         targetNode.classList.add("active");
@@ -161,12 +161,12 @@ class tocPlugin extends BaseCustomPlugin {
 
     _tocTemplate = rootNode => {
         const {text, cid, depth, children = []} = rootNode;
-        const content = [{class_: "toc-node", cid, children: [{ele: "span", class_: "toc-text", text}]}];
+        const content = [{class_: "toc-node", ref: cid, children: [{ele: "span", class_: "toc-text", text}]}];
         const list = children.map(this._tocTemplate);
         if (list.length) {
             content.push({ele: "ul", children: list});
         }
-        return {ele: "li", class_: "plugin-toc-depth" + depth, children: content}
+        return {ele: "li", class_: "plugin-toc-depth-" + depth, children: content}
     }
 
     _findParent = (toc, idx, depth) => {
