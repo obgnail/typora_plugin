@@ -467,7 +467,7 @@ class tocMarkmap {
     }
 
     onButtonClick = async (action, button) => {
-        if (!["pinUp", "pinRight", "fit", "download"].includes(action)) {
+        if (!["pinUp", "pinRight", "fit", "download", "setPointerEvent"].includes(action)) {
             await this.waitUnpin();
         }
         await this[action](button);
