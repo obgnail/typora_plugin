@@ -207,7 +207,7 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图表重新适配窗口"></div>
-                    <div class="plugin-markmap-icon ion-android-hand" action="setPointerEvent" ty-hint="鼠标穿透"></div>
+                    <div class="plugin-markmap-icon ion-android-hand" action="penetrateMouse" ty-hint="鼠标穿透"></div>
                     <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="下载"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
@@ -282,7 +282,7 @@ class tocMarkmap {
 
     fit = () => this.markmap && this.markmap.fit();
 
-    setPointerEvent = async () => {
+    penetrateMouse = async () => {
         const options = this.config.DEFAULT_TOC_OPTIONS;
         options.zoom = !options.zoom;
         options.pan = !options.pan;
@@ -468,7 +468,7 @@ class tocMarkmap {
     }
 
     onButtonClick = async (action, button) => {
-        if (!["pinUp", "pinRight", "fit", "download", "setPointerEvent"].includes(action)) {
+        if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse"].includes(action)) {
             await this.waitUnpin();
         }
         await this[action](button);
