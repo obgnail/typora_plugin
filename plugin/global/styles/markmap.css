@@ -68,6 +68,7 @@ ${show_outline}
     cursor: pointer;
     font-size: 1.2em;
     opacity: 0.5;
+    pointer-events: auto;
 }
 
 .plugin-markmap-icon:hover {
@@ -83,4 +84,5 @@ ${show_outline}
 #plugin-markmap-svg {
     flex: 1;
     line-height: initial;
+    user-select: none;
 }
