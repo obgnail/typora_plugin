@@ -83,4 +83,5 @@ ${show_outline}
 #plugin-markmap-svg {
     flex: 1;
     line-height: initial;
+    user-select: none;
 }
