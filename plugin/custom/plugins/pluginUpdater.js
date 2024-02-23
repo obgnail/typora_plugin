@@ -42,12 +42,22 @@ class pluginUpdater extends BaseCustomPlugin {
 
     modalUpdate = async proxy => {
         await this.update(proxy, this.config.exec_show, "升级中，请稍等\n\n", code => {
-            this.adjustFile();
-            if (code !== 0) {
-                const modal = {title: "更新失败", components: [{label: "出于未知原因，更新失败，建议您稍后重试或手动更新", type: "p"}]}
-                const callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
-                this.modal(modal, callback);
+            if (code === 0) return;
+
+            const openGithub = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
+            let components = [{type: "p", label: "出于未知原因，更新失败，建议您稍后重试或手动更新"}];
+            let callback = openGithub;
+            let cancelCallback = console.debug;
+
+            if (this.updaterEXE.includes("Program Files")) {
+                const disk = this.updaterEXE.split(this.utils.Package.Path.win32.sep)[0];
+                const label = "Typora 安装路径包含 Program Files，由于 Windows 的权限限制，需要您手动操作。以管理员身份打开 CMD，如下运行命令";
+                const value = `${disk} && "${this.updaterEXE}" --action=update --proxy=${this.cleanProxy(proxy)}`;
+                components = [{label, type: "input", value}];
+                callback = console.debug;
+                cancelCallback = openGithub;
             }
+            this.modal({title: "更新失败", components}, callback, cancelCallback);
         })
     }
 
@@ -59,19 +69,27 @@ class pluginUpdater extends BaseCustomPlugin {
 
     getProxy = async () => this.config.proxy || (await new ProxyGetter(this).getProxy()) || ""
 
-    // 保不齐有些用户就是不守规矩，升级前和升级后都执行一次
-    adjustFile = async () => await new binFileUpdater(this).run();
-
-    update = async (proxy, exec, hint, callback) => {
+    cleanProxy = proxy => {
         proxy = (proxy || "").trim();
         if (proxy && !/^https?:\/\//.test(proxy)) {
             proxy = "http://" + proxy;
         }
-        callback = callback || this.adjustFile;
+        return proxy
+    }
+
+    // 保不齐有些用户就是不守规矩，升级前和升级后都执行一次
+    adjustFile = async () => await new binFileUpdater(this).run();
+
+    update = async (proxy, exec, hint, callback) => {
+        proxy = this.cleanProxy(proxy);
+        const after = async (...args) => {
+            await this.adjustFile();
+            callback && callback.apply(this, args);
+        }
         await this.adjustFile();
         const dir = this.utils.joinPath("./plugin/updater");
         const cmd = `updater.exe --action=update --proxy=${proxy}`;
-        this.commanderPlugin.execute(exec, cmd, "cmd/bash", callback, hint, {cwd: dir});
+        this.commanderPlugin.execute(exec, cmd, "cmd/bash", after, hint, {cwd: dir});
     }
 }
 

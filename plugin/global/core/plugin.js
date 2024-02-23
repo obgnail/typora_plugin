@@ -1608,10 +1608,10 @@ class dialog {
             const div = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
             component.submit = div ? this.getWidgetValue(component.type, div) : undefined;
         })
+        this.entities.modal.style.display = "none";
         callback && callback(this.pluginModal.components);
         this.callback = null;
         this.cancelCallback = null;
-        this.entities.modal.style.display = "none";
     }
 
     getWidgetValue = (type, widget) => {
