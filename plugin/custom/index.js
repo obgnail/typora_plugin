@@ -138,7 +138,7 @@ class loadPluginHelper {
         const allSettings = this.utils.getAllPluginSettings();
         const errorPluginSetting = Object.keys(customSettings).filter(fixedName => allSettings.hasOwnProperty(fixedName));
         if (errorPluginSetting && errorPluginSetting.length) {
-            const msg = "以下插件错误地配置到 custom_plugin.user.toml，正确配置文件为 settings.user.toml：";
+            const msg = "以下插件错误地配置到 settings.user.toml，正确配置文件为 custom_plugin.user.toml：";
             const components = [msg, ...errorPluginSetting].map(label => ({label, type: "p"}));
             const openSettingFile = () => this.utils.showInFinder(this.utils.joinPath("./plugin/global/settings/settings.user.toml"));
             this.utils.modal({title: "配置错误", components}, openSettingFile, openSettingFile);

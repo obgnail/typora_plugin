@@ -4,6 +4,8 @@ class quickButtonPlugin extends BaseCustomPlugin {
         this.isHidden = false;
     }
 
+    callback = anchorNode => this.toggle(document.querySelector("#plugin-quick-button").style.visibility !== "hidden")
+
     process = () => {
         this.utils.addEventListener(this.utils.eventType.everythingReady, async () => {
             this.registerConfigButtons();
