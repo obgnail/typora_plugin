@@ -52,15 +52,32 @@ class readOnlyPlugin extends BasePlugin {
         ev.stopPropagation();
     }
 
+    toggleMenu = () => {
+        if (this.config.DISABLE_CONTEXT_MENU_WHEN_READ_ONLY) {
+            const selector = `#context-menu > li:not([data-key="typora-plugin"]):not([data-key="dev-tool"])`;
+            document.querySelectorAll(selector).forEach(ele => ele.classList.toggle("plu-disable-menu"));
+        }
+    }
+
+    lock = span => {
+        File.lock();
+        document.activeElement.blur();
+        span.setAttribute("data-value", this.config.SHOW_TEXT + String.fromCharCode(160).repeat(3));
+        this.toggleMenu();
+    }
+
+    unlock = span => {
+        File.unlock();
+        span.setAttribute("data-value", "");
+        this.toggleMenu();
+    }
+
     call = () => {
         const span = document.getElementById("footer-word-count-label");
         if (File.isLocked) {
-            File.unlock();
-            span.setAttribute("data-value", "");
+            this.unlock(span);
         } else {
-            File.lock();
-            document.activeElement.blur();
-            span.setAttribute("data-value", this.config.SHOW_TEXT + String.fromCharCode(160).repeat(3));
+            this.lock(span);
         }
     }
 }

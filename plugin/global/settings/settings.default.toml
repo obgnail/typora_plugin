@@ -321,6 +321,8 @@ CLICKABLE = true
 HOTKEY = "ctrl+shift+r"
 # 默认使用只读模式（打开Typora就进入只读模式）
 READ_ONLY_DEFAULT = false
+# 只读时禁用右键菜单
+DISABLE_CONTEXT_MENU_WHEN_READ_ONLY = true
 # 开启只读模式后，右下角数字统计区域出现的提示文字
 SHOW_TEXT = "ReadOnly"
 
