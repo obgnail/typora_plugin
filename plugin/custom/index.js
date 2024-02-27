@@ -47,7 +47,7 @@ class CustomPlugin extends BasePlugin {
                 arg_hint: "未知错误！请向开发者反馈",
             };
             try {
-                const selector = plugin.selector();
+                const selector = plugin.selector(false);
                 if (selector === this.utils.disableForeverSelector) {
                     arg.arg_hint = "此插件不可点击";
                 } else {
@@ -72,7 +72,7 @@ class CustomPlugin extends BasePlugin {
         const plugin = this.custom[fixedName];
         if (!plugin) return;
         try {
-            const selector = plugin.selector();
+            const selector = plugin.selector(true);
             const target = selector ? meta.target.closest(selector) : meta.target;
             plugin.callback(target);
         } catch (e) {

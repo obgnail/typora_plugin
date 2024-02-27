@@ -1,6 +1,9 @@
 class extractRangeToNewFile extends BaseCustomPlugin {
-    selector = () => {
-        if (File.editor.selection.getRangy().collapsed) {
+    selector = onClick => {
+        if (onClick) return;
+        this.savedSelection = window.getSelection().getRangeAt(0);
+        if (this.savedSelection.collapsed) {
+            this.savedSelection = null;
             return this.utils.nonExistSelector
         }
     }
@@ -10,11 +13,18 @@ class extractRangeToNewFile extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     callback = async anchorNode => {
+        if (this.savedSelection) {
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(this.savedSelection);
+        }
         ClientCommand.copyAsMarkdown();
         this.text = await window.parent.navigator.clipboard.readText();
         if (this.config.delete_content) {
             File.editor.UserOp.backspaceHandler(File.editor, null, "Delete");
         }
+        this.savedSelection = null;
+
         if (!this.config.show_modal) {
             this.extract("");
         } else {

@@ -4,19 +4,27 @@
 *    3.开发者一时兴起做的，仅作娱乐使用
 */
 class bingSpeech extends BaseCustomPlugin {
-    hint = () => "功能依赖外部环境，不能保证成功，仅作娱乐使用"
-    hotkey = () => [this.config.hotkey]
-
-    callback = async () => {
-        if (File.editor.selection.getRangy().collapsed) {
-            this.modal({title: "提示", components: [{label: "请框选一小段文字", type: "p"}]}, console.debug);
-        } else {
-            await this.speech();
+    selector = onClick => {
+        if (onClick) return;
+        this.savedSelection = window.getSelection().getRangeAt(0);
+        if (this.savedSelection.collapsed) {
+            this.savedSelection = null;
+            return this.utils.nonExistSelector
         }
     }
 
+    hint = isDisable => isDisable ? "请框选一小段文字" : "功能依赖外部环境，不能保证成功，仅作娱乐使用"
+
+    hotkey = () => [this.config.hotkey]
+
+    callback = () => this.speech();
+
     speech = async text => {
-        text = text || File.editor.UserOp.getSpeechText();
+        text = this.getText(text);
+        if (!text) {
+            console.debug("has not text");
+            return
+        }
         const audioContext = new window.AudioContext();
         await this.crawl(text, async binary => {
             const audioBuffer = await audioContext.decodeAudioData(binary.buffer);
@@ -32,11 +40,26 @@ class bingSpeech extends BaseCustomPlugin {
     // 生成的文件是mp3格式
     // 为了防止有人干坏事，此方法并不暴露到产品中
     download = async (filepath, text) => {
-        text = text || File.editor.UserOp.getSpeechText();
+        text = this.getText(text);
+        if (!text) {
+            console.debug("has not text");
+            return
+        }
         const chunks = [];
         await this.crawl(text, binary => chunks.push(binary));
         await this.utils.Package.Fs.promises.writeFile(filepath, Buffer.concat(chunks));
         console.debug("done");
+    }
+
+    getText = text => {
+        if (!text && this.savedSelection) {
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(this.savedSelection);
+            text = File.editor.UserOp.getSpeechText();
+        }
+        this.savedSelection = null;
+        return text
     }
 
     translate = async (text, fromLang, toLang) => {
