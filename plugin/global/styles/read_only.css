@@ -1,3 +1,8 @@
 #footer-word-count-label::before {
     content: attr(data-value) !important
 }
+
+.plu-disable-menu {
+    color: rgb(196, 198, 204);
+    pointer-events: none;
+}
