@@ -24,6 +24,9 @@ class extractRangeToNewFile extends BaseCustomPlugin {
     }
 
     extract = filepath => {
+        if (filepath && !filepath.endsWith(".md")) {
+            filepath += ".md";
+        }
         filepath = this.utils.newFilePath(filepath);
         this.utils.Package.Fs.writeFileSync(filepath, this.text, "utf8");
         this.config.auto_open && this.utils.openFile(filepath);
