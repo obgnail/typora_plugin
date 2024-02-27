@@ -149,8 +149,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
         const doc = `<a class="markdown-lint-doc" title="具体规则文档">📖</a>`;
 
-        const hintList = ["鼠标右键切换源码模式"];
-        this.config.allow_drag && hintList.push("ctrl+鼠标拖动可移动");
+        const hintList = ["鼠标右键：切换源码模式"];
+        this.config.allow_drag && hintList.push("ctrl+鼠标拖动：移动窗口");
         const operateInfo = `<span title="${hintList.join('\n')}">ℹ️</span>`;
 
         const disableRule = '当前禁用的检测规则：\n' + this.config.disable_rules.join('\n');

@@ -6,7 +6,7 @@
 
 目前支持的功能：
 
-| 序号 | 文件名                  | 功能                                   |
+| 序号 | 插件                    | 功能                                   |
 | ---- | ----------------------- | -------------------------------------- |
 | 1    | window_tab              | 标签页管理                             |
 | 2    | search_multi            | 全局多关键字搜索                       |
@@ -64,7 +64,7 @@
 | 54   | json_rpc                | 外部操纵 Typora（高级）                |
 | 55   | old_window_tab          | 标签页管理（已废弃）                   |
 
-> 尊重用户的一切选择。本项目的任何插件、任何功能皆可永久启用 / 禁用
+**尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
 > 如果各位有其他的需求，或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果能给我颗 star ⭐ 就更好了  : )
 
@@ -72,7 +72,7 @@
 
 ## 如何使用：方法一（自动）
 
-> 目前此方法仅限 windows 平台。
+> 目前此方法仅限 Windows 平台。
 
 1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压
 
@@ -98,10 +98,16 @@
 
 ## 如何使用：方法二（手动）
 
+> 此方法支持 Windows、Linux 平台。
+
 1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压。
+
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`，推荐使用 everything 找一下）
+
 3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
+
 4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
+
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利。
 
 
@@ -109,8 +115,8 @@
 > 根据文件夹 A 下是否有 `appsrc` 目录判断是否为新版本，有则新版本，无则旧版本。
 
 
-|       | 新版本操作                                           | 旧版本操作                                             |
-| ----- | ---------------------------------------------------- | ------------------------------------------------------ |
+|        | 新版本操作                                           | 旧版本操作                                             |
+| ------ | ---------------------------------------------------- | ------------------------------------------------------ |
 | 步骤 3 | ![new_typora_dir](assets/new_typora_dir.png)         | ![where_is_windowhtml](assets/where_is_windowhtml.png) |
 | 步骤 4 | ![new_typora_framejs](assets/new_typora_framejs.png) | ![where_is_framejs](assets/where_is_framejs.png)       |
 
@@ -142,7 +148,7 @@ yay -S typora-plugin
 
 ### 后端
 
-1. 因为 Typora 暴露了 `reqnode` 函数（require 的封装），所以可以使用 `reqnode('path')` 导入 Node.js 的 path 库，其他内置库同理。
+1. 因为 Typora 暴露了 `reqnode` 函数（require 的别名），所以可以使用 `reqnode('path')` 导入 Node.js 的 path 库，其他内置库同理。
 2. 因为 Typora 使用了不太安全的 `executeJavaScript` 功能，所以可以用此注入 JS 代码，从而劫持后端关键对象，进而实现 electron 的后端功能注入。理论上劫持了 electron 对象，你甚至可以在 Typora 里斗地主。
 
 ```javascript
@@ -194,17 +200,17 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### 如何升级插件？
 
-- 方法一（全自动，仅限 windows）：`右键菜单 -> 常用插件 -> 自定义插件 -> 升级插件`。
+- 方法一（全自动，仅限 Windows）：`右键菜单 -> 常用插件 -> 自定义插件 -> 升级插件`。
 
-- 方法二（半自动，仅限 windows）：有些用户将 Typora 装在 C 盘或者 Typora 的安装路径包含 `Program Files` 目录，经常会因为权限问题导致升级失败。此时可以通过以管理员身份打开终端，执行下面命令升级：
+- 方法二（半自动，仅限 Windows）：有些用户将 Typora 装在 C 盘或者 Typora 的安装路径包含 `Program Files` 目录，经常会因为权限问题导致升级失败。此时可以通过以管理员身份打开终端，执行下面命令升级：
 
   ```bash
-  # A: 之前安装插件时文件夹A的路径
+  # 注意updater.exe改成你的路径
   # proxy参数：你的代理URL。如果你所在地区能直连GitHub，可以删除此参数
-  A/plugin/updater/updater.exe --action=update --proxy=http://127.0.0.1:7890
+  D:/software/typora/resources/plugin/updater/updater.exe --action=update --proxy=http://127.0.0.1:7890
   ```
 
-- 方法三（手动）：[前面的安装插件的流程](#如何使用：方法二（手动）) 重新走一遍。
+- 方法三（手动，支持 Windows、Linux）：[安装方法二](#如何使用：方法二（手动）) 重新走一遍。
 
 
 
@@ -224,12 +230,12 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
   - 键入 ctrl+j，在输入框键入 `plu+空格+插件名称` 调出插件列表（详见 `toolbar` 插件）
   - 快捷键（详见 `hotkeyHub` 插件）
 - 鼠标党：
-  - 在正文区域右键，在弹出的 `右键菜单` 中直接调用（详见 `right_click_menu` 插件）
+  - 在正文区域右键，在弹出的右键菜单中直接调用（详见 `right_click_menu` 插件）
   - 快捷按钮（详见 `quickButton` 插件）
 
 ---
 
-这里简单介绍一下 `右键菜单`  的注意事项：**不同光标位置调出来的菜单有所不同**。
+简单介绍一下 `右键菜单`  的注意事项：**不同光标位置调出来的菜单有所不同**。
 
 比如 `章节折叠` 功能需要光标定位到标题上，才会出现 `折叠/展开当前章节` 的功能选项。
 
@@ -496,39 +502,19 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 [[right_click_menu.MENUS]]
 NAME = "非常用插件"
 LIST = [
-    "window_tab",
-    "resize_image",
-    "resize_table",
-    "fence_enhance",
-    "export_enhance",
-    "datatables",
-    "markmap",
-    "auto_number",
-    "truncate_text",
-    "right_click_menu",
+    "window_tab", "resize_image", "resize_table", "fence_enhance", "export_enhance",
+    "datatables", "markmap", "auto_number", "truncate_text", "right_click_menu",
     "---",
-    "blur",
-    "go_top",
-    "text_stylize",
-    "toolbar",
+    "blur", "go_top", "text_stylize", "toolbar",
     "---",
-    "file_counter",
-    "mermaid_replace",
-    "test",
+    "file_counter", "mermaid_replace", "test",
 ]
 [[right_click_menu.MENUS]]
 NAME = "常用插件"
 LIST = [
-    "commander",
-    "mindmap",
-    "collapse_paragraph",
-    "custom",
+    "commander", "mindmap", "collapse_paragraph", "custom",
     "---",
-    "search_multi",
-    "multi_highlighter",
-    "outline",
-    "md_padding",
-    "read_only",
+    "search_multi", "multi_highlighter", "outline", "md_padding", "read_only",
 ]
 ```
 
@@ -957,7 +943,7 @@ filter_regexp = ""
 
 ## 致谢
 
-- MIT：[markmap](https://markmap.js.org/) | [chartjs](https://www.chartjs.org/)| [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
+- MIT：[markmap](https://markmap.js.org/) | [chartjs](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
 - Apache：[echarts](https://echarts.apache.org/zh/index.html)
 - without-licence：[typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [md-padding](https://github.com/harttle/md-padding)
 
