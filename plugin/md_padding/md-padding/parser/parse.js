@@ -232,7 +232,7 @@ function parse(str, options) {
             push(state_1.State.HTMLTag);
             i++;
         }
-        else if (c3 === '```' && allow(16 /* BlockCode */)) {
+        else if (blankLine && c3 === '```') {
             push(state_1.State.BlockCodeLang);
             blockCodeDelimiter = c3;
             i += 3;
@@ -266,11 +266,13 @@ function parse(str, options) {
             push(state_1.State.UnorderedListItem);
             listPrefix = c2;
             i += 2;
+            continue;
         }
         else if (blankLine && ordered_list_item_1.OrderedListItem.isValidPrefix(c3) && allow(1024 /* OrderedListItem */)) {
             push(state_1.State.OrderedListItem);
             listPrefix = c3;
             i += 3;
+            continue;
         }
         else if (blankLine && blockquote_item_1.BlockquoteItem.isValidPrefix(c2) && allow(4194304 /* BlockquoteItem */)) {
             push(state_1.State.BlockquoteItem);
