@@ -295,10 +295,20 @@ INTERACTIVE_MODE = false
 BACKGROUND_COLOR = "#fafafa"
 # 标题的字体颜色
 TITLE_COLOR = "#555"
+# 标题的字体大小
+TITLE_FONT_SIZE = "1.5rem"
+# 标题的字宽
+TITLE_FONT_WEIGHT = "bold"
 # 左侧时间线的颜色
 LINE_COLOR = "#eee"
+# 左侧时间线的宽度
+LINE_WIDTH = "2px"
 # 时间圆点的颜色
 CIRCLE_COLOR = "#999"
+# 时间圆点的直径
+CIRCLE_DIAMETER = "0.7em"
+# 时间圆点的位置: top
+CIRCLE_TOP = "0.6em"
 # 时间的字体颜色
 TIME_COLOR = "#555"
 # 自动插入的模板
