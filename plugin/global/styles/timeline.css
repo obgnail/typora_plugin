@@ -4,14 +4,14 @@
 }
 
 .plugin-timeline .timeline-title {
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: ${this.config.TITLE_FONT_SIZE};
+    font-weight: ${this.config.TITLE_FONT_WEIGHT};
     color: ${this.config.TITLE_COLOR};
 }
 
 .plugin-timeline .timeline-content {
     display: grid;
-    grid-template-columns: 2px calc(100% - 2px);
+    grid-template-columns: ${this.config.LINE_WIDTH} calc(100% - ${this.config.LINE_WIDTH});
 }
 
 .plugin-timeline .line {
@@ -21,10 +21,10 @@
 
 .plugin-timeline .circle {
     position: absolute;
-    top: 0.6em;
+    top: ${this.config.CIRCLE_TOP};
     left: 50%;
-    width: 0.7em !important;
-    height: 0.7em !important;
+    width: ${this.config.CIRCLE_DIAMETER} !important;
+    height: ${this.config.CIRCLE_DIAMETER} !important;
     border-radius: 50%;
     background-color: ${this.config.CIRCLE_COLOR};
     transform: translateX(-50%);
@@ -38,6 +38,8 @@
 .plugin-timeline .time {
     font-size: large;
     font-weight: bold;
+    white-space: break-spaces;
+    word-break: break-word;
     color: ${this.config.TIME_COLOR};
 }
 

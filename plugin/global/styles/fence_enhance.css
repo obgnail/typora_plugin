@@ -2,9 +2,9 @@
     display: inline-flex;
     flex-direction: row-reverse;
     position: absolute;
-    top: .3em;
-    right: .5em;
     z-index: 8;
+    top: ${this.config.BUTTON_TOP};
+    right: ${this.config.BUTTON_RIGHT};
     font-size: ${this.config.BUTTON_SIZE};
 }
 
