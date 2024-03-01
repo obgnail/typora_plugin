@@ -16,13 +16,7 @@ class readOnlyPlugin extends BasePlugin {
 
         const setCheckbox = disabled => {
             const checkboxes = write.querySelectorAll(`input[type="checkbox"]`);
-            checkboxes.forEach(input => {
-                if (disabled) {
-                    input.setAttribute("disabled", "true");
-                } else {
-                    input.removeAttribute("disabled");
-                }
-            });
+            checkboxes.forEach(input => input.toggleAttribute("disabled", disabled));
         }
         const setInput = disabled => {
             if (!disabled) return;
@@ -38,9 +32,14 @@ class readOnlyPlugin extends BasePlugin {
                 input && input.removeAttribute("readonly");
             })
         }
+        const setReplaceButton = disabled => {
+            const elements = ["#search-panel-replace-btn", "#search-panel-replaceall-btn", "#search-panel-replace-input"];
+            elements.forEach(selector => document.querySelector(selector).toggleAttribute("disabled", disabled));
+        }
         const setComponents = () => {
             setCheckbox(File.isLocked);
             setInput(File.isLocked);
+            setReplaceButton(File.isLocked);
         }
         this.utils.decorate(() => File, "freshLock", null, setComponents)
     }
