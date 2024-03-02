@@ -7,6 +7,8 @@
     font-size: ${this.config.TITLE_FONT_SIZE};
     font-weight: ${this.config.TITLE_FONT_WEIGHT};
     color: ${this.config.TITLE_COLOR};
+    white-space: break-spaces;
+    word-break: break-word;
 }
 
 .plugin-timeline .timeline-content {
