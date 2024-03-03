@@ -134,8 +134,9 @@ class datatablesPlugin extends BasePlugin {
         meta.target = table;
 
         return [{
-            arg_name: (uuid) ? "转回普通表格" : "增强表格",
-            arg_value: (uuid) ? "rollback_current" : "convert_current",
+            arg_name: uuid ? "转回普通表格" : "增强表格",
+            arg_value: uuid ? "rollback_current" : "convert_current",
+            arg_hint: !table ? "请将光标定位到表格后点击鼠标右键" : "",
             arg_disabled: !table,
         }]
     }

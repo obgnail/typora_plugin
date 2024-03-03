@@ -18,7 +18,7 @@ class helpPlugin extends BasePlugin {
             {arg_name: "Github图床", arg_value: "github_picture_bed"},
             {arg_name: "反馈 - Github", arg_value: "new_issue"},
             {arg_name: "反馈 - Email", arg_value: "send_email"},
-            {arg_name: "关于", arg_value: "about"},
+            {arg_name: "关于", arg_value: "about", arg_hint: "Designed with ♥ by obgnail"},
         ]
 
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
