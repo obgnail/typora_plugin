@@ -60,6 +60,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
                     this.utils.getFilePath() && File.saveUseNode().then(this.updateLinter());
                     return;
                 }
+                if (ev.target.closest(".markdown-lint-close")) {
+                    this.callback();
+                    return;
+                }
                 const target = ev.target.closest("a");
                 if (!target) return;
                 const lineToGo = parseInt(target.textContent);
@@ -146,8 +150,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const map = this.translate();
 
         const translate = `<a class="markdown-lint-translate" title="翻译">🌏</a>`;
-
         const doc = `<a class="markdown-lint-doc" title="具体规则文档">📖</a>`;
+        const close = `<a class="markdown-lint-close" title="关闭窗口">❌</a>`;
 
         const hintList = ["鼠标右键：切换源码模式"];
         this.config.allow_drag && hintList.push("ctrl+鼠标拖动：移动窗口");
@@ -156,7 +160,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const disableRule = '当前禁用的检测规则：\n' + this.config.disable_rules.join('\n');
         const ruleInfo = `<span title="${disableRule}">⚠️</span>`
 
-        const header = `Line  Rule   Error | ${operateInfo} ${ruleInfo} | ${translate} ${doc}\n`;
+        const header = `Line  Rule   Error | ${operateInfo} ${ruleInfo} | ${translate} ${doc} ${close}\n`;
         const result = content.map(line => {
             const lineNo = line.lineNumber + "";
             const [ruleName, _] = line.ruleNames;
