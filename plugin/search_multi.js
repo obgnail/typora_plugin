@@ -200,9 +200,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
             this.entities.resultList.appendChild(item);
 
             this.entities.resultTitle.textContent = `匹配的文件：${index}`;
-            if (index <= 8) {
-                this.entities.resultList.style.height = 40 * index + "px";
-            }
             showResult();
         }
     }

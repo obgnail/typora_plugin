@@ -105,7 +105,6 @@
 
 .plugin-search-multi-result .search-result-list {
     position: relative;
-    height: 520px;
     overflow-y: auto;
     width: 100%;
 }
