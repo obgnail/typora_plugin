@@ -12,6 +12,7 @@ class helpPlugin extends BasePlugin {
         const arg_hint = "此功能仅对开发者开放";
         this.callArgs = [
             {arg_name: "修改配置", arg_value: "open_setting_folder"},
+            {arg_name: "备份配置文件", arg_value: "backup_setting_file"},
             {arg_name: "修改插件样式", arg_value: "set_user_styles", arg_hint},
             {arg_name: "我要写插件", arg_value: "new_custom_plugin", arg_hint},
             {arg_name: "Typora自动化", arg_value: "json_rpc", arg_hint},
@@ -32,6 +33,7 @@ class helpPlugin extends BasePlugin {
     call = type => {
         const map = {
             open_setting_folder: () => this.utils.openSettingFolder(),
+            backup_setting_file: () => this.utils.backupSettingFile(),
             set_user_styles: () => this.utils.openFile(this.utils.joinPath("./plugin/global/user_styles/请读我.md")),
             new_custom_plugin: () => this.utils.openFile(this.utils.joinPath("./plugin/custom/请读我.md")),
             json_rpc: () => this.utils.openFile(this.utils.joinPath("./plugin/json_rpc/请读我.md")),
