@@ -229,7 +229,7 @@ class autoNumberPlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = () => {
         const disable = document.getElementById(this.css_id);
-        const [arg_name, arg_value] = disable ? ["禁用", "disable"] : ["启用", "enable"];
+        const [arg_name, arg_value] = disable ? ["临时禁用", "disable"] : ["临时启用", "enable"];
         return [{arg_name, arg_value}]
     }
 

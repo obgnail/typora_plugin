@@ -4,23 +4,25 @@ class readOnlyPlugin extends BasePlugin {
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     process = () => {
+        this.inReadOnlyMode = false;
         this.forbiddenKeys = ["Enter", "Backspace", "Delete", " "];
-        this.onFreshLock();
-        if (this.config.READ_ONLY_DEFAULT) {
-            this.utils.loopDetector(() => File && File.lock, this.call);
-        }
+        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+            this.utils.decorate(() => File, "freshLock", null, this.afterFreshLock);
+            if (this.config.READ_ONLY_DEFAULT) {
+                this.utils.loopDetector(() => File && File.lock, this.toggleLock);
+            }
+        })
     }
 
-    onFreshLock = () => {
+    afterFreshLock = () => {
+        if (!this.inReadOnlyMode) return;
+
         const setCheckbox = disabled => document.querySelectorAll('#write input[type="checkbox"]').forEach(box => box.toggleAttribute("disabled", disabled))
         const setInput = disabled => {
             if (!disabled) return;
             [
-                "#plugin-search-multi-input input",
-                "#plugin-commander-form input",
-                "#plugin-toolbar-input input",
-                "#plugin-multi-highlighter-input input",
-                "#typora-quick-open-input input",
+                "#plugin-search-multi-input input", "#plugin-commander-form input", "#plugin-toolbar-input input",
+                "#plugin-multi-highlighter-input input", "#typora-quick-open-input input",
             ].forEach(selector => {
                 const input = document.querySelector(selector);
                 input && input.removeAttribute("readonly");
@@ -30,12 +32,11 @@ class readOnlyPlugin extends BasePlugin {
             const elements = ["#search-panel-replace-btn", "#search-panel-replaceall-btn", "#search-panel-replace-input"];
             elements.forEach(selector => document.querySelector(selector).toggleAttribute("disabled", disabled));
         }
-        const setComponents = () => {
-            setCheckbox(File.isLocked);
-            setInput(File.isLocked);
-            setReplaceButton(File.isLocked);
-        }
-        this.utils.decorate(() => File, "freshLock", null, setComponents)
+
+        const disabled = File.isLocked;
+        setCheckbox(disabled);
+        setInput(disabled);
+        setReplaceButton(disabled);
     }
 
     stop = ev => {
@@ -64,21 +65,24 @@ class readOnlyPlugin extends BasePlugin {
     }
 
     lock = () => {
+        this.inReadOnlyMode = true;
         File.lock();
         document.activeElement.blur();
         this.extraOperation(true);
         this.setLabel(this.config.SHOW_TEXT + String.fromCharCode(160).repeat(3));
         this.toggleMenu();
-    }
 
+    }
     unlock = () => {
+        this.inReadOnlyMode = false;
         File.unlock();
         this.extraOperation(false);
         this.setLabel("");
         this.toggleMenu();
     }
+    toggleLock = () => (File.isLocked ? this.unlock : this.lock)()
 
-    call = () => (File.isLocked ? this.unlock : this.lock)()
+    call = () => this.toggleLock()
 }
 
 module.exports = {

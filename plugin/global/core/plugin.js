@@ -499,6 +499,29 @@ class utils {
         this.showInFinder(targetPath);
     }
 
+    static backupSettingFile = async (showInFinder = true) => {
+        const {FsExtra, Path, OS} = this.Package;
+        const backupDir = Path.join(this.tempFolder, "typora_plugin_config");
+        const homeDir = OS.homedir() || File.option.userPath;
+        const getHomeSettingFile = file => Path.join(homeDir, ".config", "typora_plugin", file);
+        const getUserSettingFile = file => this.joinPath("./plugin/global/settings", file);
+        const settingFiles = ["settings.user.toml", "custom_plugin.user.toml", "hotkey.user.toml"];
+        await FsExtra.emptyDir(backupDir);
+        for (const file of settingFiles) {
+            const homeFile = getHomeSettingFile(file);
+            const userFile = getUserSettingFile(file);
+            const hasHomeFile = await FsExtra.pathExists(homeFile);
+            const source = hasHomeFile ? homeFile : userFile;
+            const target = Path.join(backupDir, file);
+            try {
+                await FsExtra.copy(source, target)
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        showInFinder && this.showInFinder(backupDir);
+    }
+
     static editCurrentFile = async (editFileFunc, reloadTypora = true) => {
         const filepath = this.getFilePath();
         const content = await this.Package.Fs.promises.readFile(filepath, "utf-8");

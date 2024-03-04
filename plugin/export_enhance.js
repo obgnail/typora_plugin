@@ -61,21 +61,14 @@ class exportEnhancePlugin extends BasePlugin {
         return `data:image;base64,${data}`;
     }
 
-    dynamicCallArgsGenerator = () => {
-        const call_args = [];
-        if (this.config.DOWNLOAD_NETWORK_IMAGE) {
-            call_args.push({arg_name: "导出时不下载网络图片", arg_value: "dont_download_network_image"});
-        } else {
-            call_args.push({arg_name: "导出时下载网络图片", arg_value: "download_network_image"});
-        }
-        if (this.config.ENABLE) {
-            call_args.push({arg_name: "禁用", arg_value: "disable"});
-        } else {
-            call_args.push({arg_name: "启用", arg_value: "enable"});
-        }
-
-        return call_args
-    }
+    dynamicCallArgsGenerator = () => [
+        this.config.DOWNLOAD_NETWORK_IMAGE
+            ? {arg_name: "导出时忽略网络图片", arg_value: "dont_download_network_image"}
+            : {arg_name: "导出时转化网络图片", arg_value: "download_network_image"},
+        this.config.ENABLE
+            ? {arg_name: "临时禁用", arg_value: "disable"}
+            : {arg_name: "临时启用", arg_value: "enable"}
+    ]
 
     call = type => {
         if (type === "download_network_image") {

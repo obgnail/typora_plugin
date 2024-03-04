@@ -20,7 +20,7 @@ class markmapPlugin extends BasePlugin {
 
     init = () => {
         this.callArgs = [];
-        this.tocMarkmap && this.callArgs.push({arg_name: "展示思维导图", arg_value: "draw_toc"});
+        this.tocMarkmap && this.callArgs.push({arg_name: "思维导图", arg_value: "toggle_toc"});
         this.fenceMarkmap && this.callArgs.push(
             {arg_name: "插入markmap：大纲", arg_value: "draw_fence_outline"},
             {arg_name: "插入markmap：模板", arg_value: "draw_fence_template"},
@@ -34,8 +34,8 @@ class markmapPlugin extends BasePlugin {
     }
 
     call = async type => {
-        if (type === "draw_toc") {
-            this.tocMarkmap && await this.tocMarkmap.call(type);
+        if (type === "toggle_toc") {
+            this.tocMarkmap && await this.tocMarkmap.callback(type);
         } else if (type === "draw_fence_template" || type === "draw_fence_outline") {
             this.fenceMarkmap && await this.fenceMarkmap.call(type);
         }

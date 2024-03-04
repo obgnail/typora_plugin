@@ -77,6 +77,8 @@ class fenceEnhancePlugin extends BasePlugin {
             builder && builder.listener(ev, target);
         })
 
+        this.utils.registerExportHelper("fence_enhance", this.beforeExport);
+
         const config = this.config;
         $("#write").on("mouseenter", ".md-fences", function () {
             if (config.AUTO_HIDE) {
@@ -113,6 +115,8 @@ class fenceEnhancePlugin extends BasePlugin {
             })
         }
     }
+
+    beforeExport = () => document.querySelectorAll("#write .fold-code.folded").forEach(ele => ele.click())
 
     defaultFold = foldButton => this.config.FOLD_DEFAULT && foldButton.click();
 
