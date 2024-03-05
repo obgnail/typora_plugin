@@ -1,0 +1,662 @@
+.plugin-talk {
+    background-color: #ebebeb;
+    overflow: hidden;
+    color: #000;
+    background-repeat: no-repeat;
+    background-size: 100%;
+    font-family: Arial, "微软雅黑";
+    height: 1136px;
+}
+
+
+.iphone-nodel .msg-del {
+    display: None
+}
+
+.i-body {
+    overflow-y: scroll;
+    position: absolute;
+    width: 100%;
+    top: 128px;
+    bottom: 100px;
+    left: 0;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.i-body::-webkit-scrollbar {
+    display: none;
+}
+
+.slider_bar_height {
+    background-color: #999;
+}
+
+.slider_bar_width {
+    background-color: #999;
+}
+
+.i-top {
+    z-index: 100;
+}
+
+.i-nav {
+    color: #181818;
+}
+
+.i-nav {
+    font-size: 34px;
+}
+
+.i-n-back {
+    width: 60px;
+}
+
+.i-b-rec-text div.i-b-pay2 span,
+.i-b-sen-text div.i-b-pay2 span {
+    background: url(/static/images/wx/i-pay-send-2.png?v=1) no-repeat left;
+    background-size: 100%;
+    width: 429px;
+    height: 162px;
+    border: none;
+    margin-left: 10px;
+}
+
+.i-b-sen-text .i-b-pay2 span.i-pay-send {
+    background: url(/static/images/weixin/i-pay-rec-2.png?v=1) no-repeat 100%;
+    margin-right: 10px;
+    background-size: 100%;
+}
+
+.i-b-sen-text .i-b-pay2 span.i-pay-rec {
+    background: url(/static/images/weixin/i-pay-rec-2.png?v=1) no-repeat 100%;
+    margin-right: 10px;
+    background-size: 100%;
+}
+
+.i-b-rec-text div.i-b-pay2 span em,
+.i-b-sen-text div.i-b-pay2 span em {
+    position: absolute;
+    color: #fff;
+    margin: -8px 0 0 110px;
+    font-size: 36px;
+    padding-left: 23px;
+    background: url(/static/images/weixin/i-pay-money-2.png) 0 31px no-repeat;
+}
+
+.i-b-sen-text div.i-b-pay2 span.i-pay-send em,
+.i-b-sen-text div.i-b-pay2 span.i-pay-rec em {
+    margin-left: 124px;
+    padding-left: 25px;
+}
+
+.i-b-rec-text div.i-b-pay2 span i,
+.i-b-sen-text div.i-b-pay2 span i {
+    width: 260px;
+    height: 72px;
+    background: url(/static/images/weixin/i-pay-icon-send-2.png) no-repeat left;
+    left: 28px;
+    top: 23px;
+}
+
+.i-b-rec-text div.i-b-pay2 span.i-pay-rec i,
+.i-b-sen-text div.i-b-pay2 span.i-pay-rec i {
+    background: url(/static/images/weixin/i-pay-icon-send-2.png) no-repeat left;
+
+}
+
+.i-b-sen-text div.i-b-pay2 span.i-pay-send i,
+.i-b-sen-text div.i-b-pay2 span.i-pay-rec i {
+    left: 38px;
+}
+
+.i-b-sen-text div span {
+    background: #95ec69;
+    border-color: #95ec69;
+    float: right;
+    margin-left: 0;
+    margin-right: 24px;
+}
+
+.i-b-rec-text div span em,
+.i-b-sen-text div span em {
+    font-style: normal;
+    padding: 20px;
+    display: block;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+
+.i-b-sen-text .i-b-pay2 .i-b-nick2, .i-b-sen-text .i-pay-rec .i-b-nick2 {
+    display: block;
+    position: absolute;
+    z-index: 100;
+    top: 61px;
+    color: #fddfc0;
+    font-size: 20px;
+    width: 429px;
+    right: 0;
+    left: auto;
+    text-align: left;
+    overflow: hidden;
+    padding-left: 130px;
+    height: 29px;
+}
+
+
+.i-b-rec-text .i-b-pay2 .i-b-nick2, .i-b-rec-text .i-pay-rec .i-b-nick2 {
+    display: block;
+    position: absolute;
+    z-index: 100;
+    left: 127px;
+    top: 61px;
+    color: #fddfc0;
+    font-size: 20px;
+}
+
+
+.i-pay-rec .i-b-nick2 {
+    left: 97px;
+    top: 61px;
+}
+
+.i-b-pay2 p.i-b-nick2 {
+    padding-left: 0;
+}
+
+.i-b-sen-text img, .i-b-rec-text img {
+    border-radius: 10px;
+}
+
+.wx_pic_diy img {
+    border-radius: 5px;
+}
+
+.i-b-rec-text div.i-b-voice em, .i-b-sen-text div.i-b-voice em {
+    top: 0;
+    color: #000;
+    left: 61px;
+}
+
+.i-b-sen-text div.i-b-voice em {
+    text-align: inherit;
+}
+
+.i-b-sen-text div.i-b-voice em {
+    right: 6px;
+    left: auto;
+}
+
+.bg-body .wx-img-box {
+    display: none;
+}
+
+.i-n-count {
+    left: 63px;
+    display: inline-block;
+    padding: 2px 13px;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+    vertical-align: baseline;
+    background-color: #d5d5d5;
+}
+
+.i-n-count {
+    border-radius: 24px;
+    height: 48px;
+    min-width: 48px;
+    line-height: 48px;
+    top: 15px;
+    color: #181818;
+}
+
+
+.iphone {
+    width: 750px;
+    height: 1334px;
+}
+
+.i-top {
+    background: url(/static/images/wx/wxdh-top.png) top left;
+    height: 129px;
+}
+
+.i-nav {
+    border: none;
+}
+
+.i-n-back {
+    background: none;
+}
+
+.i-n-count {
+    top: 20px;
+}
+
+.i-top-elm {
+    margin-right: 0px;
+}
+
+.i-signal {
+    width: 33px;
+    height: 20px;
+    background: url(/static/images/wx/signal2.png) no-repeat;
+    margin-top: 10px;
+    margin-left: 12px;
+}
+
+.i-signal {
+    width: 33px;
+    height: 20px;
+    background: url(/static/images/wx/signal5.png) no-repeat;
+    margin-top: 10px;
+    margin-left: 12px;
+}
+
+.i-signal1 {
+    background: url(/static/images/wx/signal1.png) no-repeat;
+}
+
+.i-signal2 {
+    background: url(/static/images/wx/signal2.png) no-repeat;
+}
+
+.i-signal3 {
+    background: url(/static/images/wx/signal3.png) no-repeat;
+}
+
+.i-signal4 {
+    background: url(/static/images/wx/signal4.png) no-repeat;
+}
+
+.i-signal5 {
+    background: url(/static/images/wx/signal4.png) no-repeat;
+}
+
+.i-carrier {
+    width: 92px;
+    height: 23px;
+    background: url(/static/images/wx/cnyd.png) no-repeat;
+    margin-top: 10px;
+    margin-left: 12px;
+}
+
+.i-c-yd {
+    background: url(/static/images/wx/cnyd.png) no-repeat;
+}
+
+.i-c-lt {
+    background: url(/static/images/wx/cnlt.png) no-repeat;
+}
+
+.i-c-dx {
+    background: url(/static/images/wx/cndx.png) no-repeat;
+}
+
+
+.i-network {
+    width: 30px;
+    height: 20px;
+    background: url(/static/images/wx/nw-wifi.png) no-repeat;
+    margin-top: 10px;
+    margin-left: 12px;
+}
+
+.i-n-wifi {
+    background: url(/static/images/wx/nw-wifi.png) no-repeat;
+}
+
+.i-n-4g {
+    background: url(/static/images/wx/nw-4g.png) no-repeat;
+}
+
+.i-n-5g {
+    background: url(/static/images/wx/nw-5g.png) no-repeat;
+}
+
+
+.i-b-rec-text, .i-b-sen-text {
+    margin: 26px 25px 0 25px;
+}
+
+.i-b-rec-text div span {
+    background: #fff;
+    margin-left: 18px;
+}
+
+.i-b-sen-text div span {
+    background: #95ec69;
+    margin-left: 0;
+    margin-right: 25px;
+}
+
+.i-bottom-wechat {
+    height: 112px;
+    z-index: 100;
+    background: url(/static/images/wx/wxdh-bottom.png) no-repeat;
+}
+
+.i-b-rec-text div.redpacket, .i-b-sen-text div.redpacket {
+    display: inline-block;
+    margin-left: 82px;
+    vertical-align: top;
+}
+
+.i-b-sen-text div.redpacket {
+    float: right;
+    margin-left: 0px;
+    margin-right: 24px;
+}
+
+.i-b-rec-text div.redpacket i.arraw, .i-b-sen-text div.redpacket i.arraw {
+    position: absolute;
+    width: 14px;
+    height: 24px;
+    left: -13px;
+    top: 28px;
+    background: url(/static/images/wx/chat_arraw_orange.png) no-repeat;
+    background-size: 100%;
+}
+
+.i-b-sen-text div.redpacket i.arraw {
+    left: auto;
+    right: -13px;
+    -webkit-transform: scaleX(-1);
+}
+
+.i-b-rec-text .main, .i-b-sen-text .main {
+    display: block;
+    height: 142px;
+    -webkit-border-radius: 10px 10px 0 0;
+    border: 1px solid rgba(0, 0, 0, 0.0);
+    border-bottom: 0;
+    background: #ff9808;
+}
+
+.i-b-rec-text .clear-div, .i-b-sen-text .clear-div {
+    margin: 0;
+    position: inherit;
+    clear: both;
+}
+
+.i-b-rec-text .content, .i-b-sen-text .content {
+    display: block;
+    position: relative;
+    width: 416px;
+    margin-left: 30px;
+}
+
+.i-b-rec-text .redpacket .main .icon, .i-b-sen-text .redpacket .main .icon {
+    float: left;
+    position: static;
+    margin: 31px 0 0 25px;
+    width: 68px;
+    height: 76px;
+    background: url(/static/images/wx/i-redpacket-icon@3x.png) no-repeat;
+    background-size: 100%;
+}
+
+.i-b-rec-text .main > h3, .i-b-sen-text .main > h3,
+.i-b-rec-text .main > h4, .i-b-sen-text .main > h4 {
+    float: left;
+    margin: 33px 15px 0;
+    font-size: 26px;
+    color: #fff;
+    font-weight: normal;
+}
+
+.i-b-rec-text .main > h4, .i-b-sen-text .main > h4 {
+    width: 60%;
+    margin-top: 12px;
+    font-size: 30px;
+}
+
+.i-b-rec-text .redpacket .main > h3, .i-b-sen-text .redpacket .main > h3,
+.i-b-rec-text .redpacket .main > h4, .i-b-sen-text .redpacket .main > h4 {
+    float: left;
+    margin: 36px 20px 0;
+    font-size: 26px;
+    color: #fff;
+    font-weight: normal;
+    width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.i-b-rec-text .redpacket .main > h4, .i-b-sen-text .redpacket .main > h4 {
+    width: 60%;
+    margin-top: 17px;
+}
+
+.i-b-rec-text .foot, .i-b-sen-text .foot {
+    display: block;
+    height: 48px;
+    -webkit-border-radius: 0 0 10px 10px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-top: 0;
+    background: #ffffff;
+}
+
+.i-b-rec-text .foot h3, .i-b-sen-text .foot h3 {
+    float: left;
+    font-size: 24px;
+    margin: 10px 0px 0 21px;
+    color: #a5a5a5;
+    font-weight: normal;
+}
+
+.i-b-time > span .orange {
+    color: #FA9D3B;
+}
+
+.i-b-time > span .icon_redpacket {
+    display: inline-block;
+    height: 34px;
+    vertical-align: center;
+}
+
+
+.i-top-time, .i-top-berry-num {
+    color: #000;
+}
+
+.i-top-dir {
+    background: url(/static/images/wx/i-top-dir.png) no-repeat;
+}
+
+.i-top-berry,
+.i-top-berry2{
+    width: 70px;
+    background: url(/static/images/2019/i-top-berry1.png) no-repeat;
+    position: relative;
+}
+.i-top-berry2{
+    background: url(/static/images/2019/i-top-berry2.png) right 0 no-repeat;
+    width: 95px;
+}
+.i-top-berry i em{
+    width: 50%;
+    background: #000;
+    height: 100%;
+    display: block;
+
+}
+
+.i-b-rec-text div.i-b-voice b, .i-b-sen-text div.i-b-voice b {
+    background: url(/static/images/wx/rec-record.png) no-repeat;
+}
+
+.i-b-sen-text div.i-b-voice b {
+    background: url(/static/images/wx/sen-record.png) no-repeat;
+}
+
+.i-b-rec-text div.i-b-pay span i, .i-b-sen-text div.i-b-pay span i {
+    background: url(/static/images/wx/i-pay-icon-send.png) no-repeat;
+    width: 261px;
+    height: 86px;
+    top: 21px;
+    left: 33px;
+}
+
+.i-b-rec-text div.i-b-pay span, .i-b-sen-text div.i-b-pay span {
+    background: url(/static/images/wx/i-pay-send.png) no-repeat;
+    width: 478px;
+    height: 176px;
+}
+
+.i-b-rec-text div.i-b-pay span em, .i-b-sen-text div.i-b-pay span em {
+    margin: 0 0 0 134px;
+    background: url(/static/images/wx/i-pay-money.png) 0 27px no-repeat;
+    padding: 19px 20px 20px 29px;
+    font-size: 30px;
+}
+
+.i-b-rec-text div.i-b-pay span.i-pay-rec i, .i-b-sen-text div.i-b-pay span.i-pay-rec i {
+    background: url(/static/images/wx/i-pay-icon-rec.png) no-repeat;
+}
+
+.i-b-sen-text .i-b-pay span.i-pay-send, .i-b-sen-text .i-b-pay span.i-pay-rec {
+    background: url(/static/images/wx/i-pay-rec.png) no-repeat;
+}
+
+.i-b-sen-text div.i-b-pay span.i-pay-send em, .i-b-sen-text div.i-b-pay span.i-pay-rec em {
+    margin-left: 124px;
+}
+
+.i-b-rec-text .redpacket .content, .i-b-sen-text .redpacket .content {
+    width: 468px;
+}
+
+.i-b-rec-text .redpacket .main, .i-b-sen-text .redpacket .main {
+    height: 128px;
+}
+
+.i-b-rec-text .redpacket .main .icon, .i-b-sen-text .redpacket .main .icon {
+    margin: 24px 0 0 30px;
+}
+
+.i-b-rec-text .redpacket .main > h3, .i-b-sen-text .redpacket .main > h3, .i-b-rec-text .redpacket .main > h4, .i-b-sen-text .redpacket .main > h4 {
+    font-size: 30px;
+    margin: 48px 27px 0;
+    width: 300px;
+}
+
+.i-b-time span {
+    background: none;
+    color: #a5a5a5;
+}
+
+.a-u-pic-pic {
+    width: 80px;
+    height: 80px;
+    background: url(/static/images/wx/add-pic-pic.png) no-repeat;
+    background-size: 100%;
+    cursor: pointer;
+}
+
+.a-u-pic-show-pic {
+    position: relative;
+    background: #fff;
+}
+
+.a-u-pic-show-pic img {
+    width: 80px;
+    height: 80px;
+    vertical-align: top;
+}
+
+.a-u-pic-show-pic input {
+    width: 80px;
+    height: 80px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 99999999;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.a-u-pic-show-pic p {
+    position: absolute;
+    margin: 0;
+    width: 200px;
+    top: 90px;
+    font-size: 12px;
+    color: #f00;
+}
+
+h6.wx_pic_pos {
+    width: 209px;
+    position: absolute;
+    top: 0px;
+    left: 0;
+    z-index: 999;
+    background: url(../../images/make/wx_pic_box.png) no-repeat;
+    margin: 0;
+    padding: 0;
+}
+
+h6.wx_pic_pos2 {
+    width: 209px;
+    position: absolute;
+    top: 0px;
+    left: -2px;
+    z-index: 999;
+    background: url(../../images/make/wx_pic_box2.png) no-repeat;
+    margin: 0;
+    padding: 0;
+}
+
+span.wx_pic_diy img {
+    background: #fff none repeat scroll 0 0;
+    height: auto;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 209px;
+    max-width: auto;
+}
+
+span.wx_pic_diy {
+    width: 209px;
+    position: relative;
+    border: none;
+    background: none;
+}
+
+.i-b-sen-text div span.wx_pic_diy {
+    border: none;
+    background: none;
+}
+
+.i-b-rec-text div span, .i-b-sen-text div span {
+    max-width: 552px;
+}
+
+
+.modal-dialog {
+    z-index: 2048;
+}
+
+#bglist li {
+    list-style: none;
+    float: left;
+    margin: 5px;
+}
+
+#bglist li img {
+    height: 200px;
+}
+
+.i-b-time>span .orange{
+    color: #FA9D3B !important;
+}
+
+@media (max-width: 1025px) {
+    .panel-wx-tab {
+        margin-top: 640px;
+    }
+}
