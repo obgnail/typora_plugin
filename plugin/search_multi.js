@@ -137,27 +137,22 @@ class searchMultiKeywordPlugin extends BasePlugin {
     openFileInNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder);
 
     traverseDir = (dir, filter, callback, then) => {
-        const utils = this.utils;
+        const {Fs: {promises: {readdir, stat, readFile}}, Path} = this.utils.Package;
 
         async function traverse(dir) {
-            const files = await utils.Package.Fs.promises.readdir(dir);
+            const files = await readdir(dir);
             for (const file of files) {
-                const filePath = utils.Package.Path.join(dir, file);
-                const stats = await utils.Package.Fs.promises.stat(filePath);
-                if (stats.isFile()) {
-                    if (filter && !filter(filePath, stats)) {
-                        continue
-                    }
-                    utils.Package.Fs.promises.readFile(filePath)
-                        .then(buffer => callback(filePath, stats, buffer))
-                        .catch(error => console.error(error))
+                const filePath = Path.join(dir, file);
+                const stats = await stat(filePath);
+                if (stats.isFile() && (!filter || filter(filePath, stats))) {
+                    readFile(filePath).then(buffer => callback(filePath, stats, buffer)).catch(console.error);
                 } else if (stats.isDirectory()) {
                     await traverse(filePath);
                 }
             }
         }
 
-        traverse(dir).then(then).catch(err => console.error(err));
+        traverse(dir).then(then).catch(console.error);
     }
 
     appendItemFunc = keyArr => {
@@ -200,9 +195,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
             this.entities.resultList.appendChild(item);
 
             this.entities.resultTitle.textContent = `匹配的文件：${index}`;
-            if (index <= 8) {
-                this.entities.resultList.style.height = 40 * index + "px";
-            }
             showResult();
         }
     }
