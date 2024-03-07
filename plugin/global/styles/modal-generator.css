@@ -7,6 +7,11 @@
     display: none;
 }
 
+#plugin-custom-modal .modal-body {
+    max-height: calc(80vh - 150px);
+    overflow: auto;
+}
+
 #plugin-custom-modal label {
     display: block;
     margin-bottom: 5px;
