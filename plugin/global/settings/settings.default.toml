@@ -940,6 +940,7 @@ LIST = [
     "go_top",
     "text_stylize",
     "toolbar",
+    "preferences",
     "---",
     "file_counter",
     "json_rpc",
@@ -960,6 +961,18 @@ LIST = [
     "md_padding",
     "read_only",
 ]
+
+
+############### preferences ###############
+[preferences]
+# 是否启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "启停插件"
+# 是否在右键菜单中可点击
+CLICKABLE = true
+# 不允许通过此插件修改启停的插件
+IGNORE_PLUGINS = ["preferences", "mermaid_replace"]
 
 
 ############### file_counter ###############
