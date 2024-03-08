@@ -1,8 +1,13 @@
 class preferencesPlugin extends BasePlugin {
-    togglePlugin = async (enablePlugins, enableCustomPlugins) => {
+    getSettings = async () => {
         const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
         const customSettings = await this.utils.readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
         delete settings.global;
+        return [settings, customSettings]
+    }
+
+    togglePlugin = async (enablePlugins, enableCustomPlugins) => {
+        const [settings, customSettings] = this.getSettings();
 
         const pluginState = {};
         const customPluginState = {};

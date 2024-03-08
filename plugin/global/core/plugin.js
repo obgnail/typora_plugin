@@ -182,28 +182,24 @@ class utils {
 
     ////////////////////////////// 插件相关 //////////////////////////////
     static getAllPlugins = () => global._plugins
+    static getAllCustomPlugins = () => global._plugins.custom && global._plugins.custom.custom
+    static getPlugin = fixedName => global._plugins[fixedName]
+    static getCustomPlugin = fixedName => global._plugins.custom && global._plugins.custom.custom[fixedName]
     static getAllPluginSettings = () => global._plugin_settings
     static getAllGlobalSettings = () => global._plugin_global_settings
-    static getAllCustomPluginSettings = () => {
-        const plugin = global._plugins.custom;
-        return plugin ? plugin.customSettings : {}
-    }
+    static getAllCustomPluginSettings = () => (global._plugins.custom && global._plugins.custom.customSettings) || {}
     static getGlobalSetting = name => global._plugin_global_settings[name]
-    static getPlugin = fixedName => global._plugins[fixedName]
-    static getCustomPlugin = fixedName => {
-        const plugin = global._plugins.custom;
-        if (plugin) {
-            return plugin.custom[fixedName]
-        }
-    }
+    static getPluginSetting = fixedName => global._plugin_settings[fixedName]
+    static getCustomPluginSetting = fixedName => this.getAllCustomPluginSettings()[fixedName]
+    static tryGetPlugin = fixedName => this.getPlugin(fixedName) || this.getCustomPlugin(fixedName)
+    static tryGetPluginSetting = fixedName => this.getAllPluginSettings()[fixedName] || this.getAllCustomPluginSettings()[fixedName]
 
     static getPluginFunction = (fixedName, func) => {
-        const plugin = this.getPlugin(fixedName) || this.getCustomPlugin(fixedName);
+        const plugin = this.tryGetPlugin(fixedName);
         return plugin && plugin[func];
     }
-
     static callPluginFunction = (fixedName, func, ...args) => {
-        const plugin = this.getPlugin(fixedName) || this.getCustomPlugin(fixedName);
+        const plugin = this.tryGetPlugin(fixedName);
         const _func = plugin && plugin[func];
         _func && _func.apply(plugin, args);
         return _func
