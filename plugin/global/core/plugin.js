@@ -1657,8 +1657,13 @@ class dialog {
             case "checkbox":
             case "radio":
                 const checked = c => c.checked ? "checked" : "";
-                const els = component.list.map(e => `<div class="${type}"><input type="${type}" value="${e.value}" ${disabled(e)} ${checked(e)}><label>${e.label}</label></div>`);
-                inner = els.join("");
+                const prefix = this.utils.randomString() + "-";
+                const elements = component.list.map(el => {
+                    const id = prefix + el.value;
+                    return `<div class="${type}"><input type="${type}" id="${id}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}</label></div>`
+                });
+                const content = elements.join("");
+                inner = (component.legend === undefined) ? content : `<fieldset><legend>${component.legend}</legend>${content}</fieldset>`;
                 break
             case "select":
                 const selected = option => (option === component.selected) ? "selected" : "";
@@ -1667,7 +1672,7 @@ class dialog {
                 break
             case "textarea":
                 const rows = component.rows || 3;
-                inner = `<textarea class="form-control" ${disabled(component)} rows="${rows}" placeholder="${component.placeholder}"></textarea>`;
+                inner = `<textarea class="form-control" rows="${rows}" placeholder="${component.placeholder}" ${disabled(component)}></textarea>`;
                 break
             case "p":
                 break

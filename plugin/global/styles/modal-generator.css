@@ -17,6 +17,10 @@
     margin-bottom: 5px;
 }
 
+#plugin-custom-modal fieldset label {
+    user-select: none;
+}
+
 #plugin-custom-modal input[type="checkbox"], input[type="radio"] {
     position: absolute;
     margin-left: 0 !important;
