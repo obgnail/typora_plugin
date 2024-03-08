@@ -326,11 +326,7 @@ class utils {
 
     static fromObject = (object, attrs) => {
         const newObject = {};
-        attrs.forEach(attr => {
-            if (object[attr]) {
-                newObject[attr] = object[attr];
-            }
-        });
+        attrs.forEach(attr => object[attr] !== undefined && (newObject[attr] = object[attr]));
         return newObject;
     }
 
@@ -727,16 +723,6 @@ class utils {
     ////////////////////////////// 业务DOM操作 //////////////////////////////
     static removeElement = ele => ele && ele.parentElement && ele.parentElement.removeChild(ele)
     static removeElementByID = id => this.removeElement(document.getElementById(id))
-    static isLastChildOfParent = child => child.parentElement.lastElementChild === child
-    static whichChildOfParent = child => {
-        let i = 1;
-        for (const sibling of child.parentElement.children) {
-            if (sibling && sibling === child) {
-                return i
-            }
-            i++
-        }
-    }
 
     static isInViewBox = el => {
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
@@ -1120,12 +1106,12 @@ class diagramParser {
         if (!content) {
             await this.whenCantDraw(cid, lang, $pre); // empty content
             return;
-        } else {
-            $pre.addClass("md-fences-advanced");
-            if ($pre.find(".md-diagram-panel").length === 0) {
-                $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div>
+        }
+
+        $pre.addClass("md-fences-advanced");
+        if ($pre.find(".md-diagram-panel").length === 0) {
+            $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div>
                     <div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
-            }
         }
 
         const render = this.parsers.get(lang).renderFunc;
@@ -1627,9 +1613,9 @@ class dialog {
 
     onButtonClick = callback => {
         this.pluginModal.components.forEach(component => {
-            if (!component.label || !component.type || !component.id) return;
-            const div = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
-            component.submit = div ? this.getWidgetValue(component.type, div) : undefined;
+            if (component.label === undefined || !component.type || !component.id) return;
+            const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
+            component.submit = widget ? this.getWidgetValue(component.type, widget) : undefined;
         })
         this.entities.modal.style.display = "none";
         callback && callback(this.pluginModal.components);
@@ -1649,7 +1635,7 @@ class dialog {
             case "file":
                 return widget.querySelector("input").files
             case "checkbox":
-                return [...widget.querySelectorAll("input:checked")].map(box => box.value)
+                return Array.from(widget.querySelectorAll("input:checked"), box => box.value)
             default:
                 return ""
         }
@@ -1660,36 +1646,28 @@ class dialog {
 
         let inner = "";
         const type = component.type.toLowerCase();
-        const disabled = c => c.disabled ? "disabled" : "";
+        const disabled = c => c.disabled ? "disabled" : ""
         switch (type) {
             case "input":
             case "password":
             case "file":
                 const t = type === "input" ? "text" : type;
-                inner = `<input type="${t}" class="form-control" ${disabled(component)} placeholder="${component.placeholder}" value="${component.value}">`;
+                inner = `<input type="${t}" class="form-control" value="${component.value}" placeholder="${component.placeholder}" ${disabled(component)}>`;
+                break
+            case "checkbox":
+            case "radio":
+                const checked = c => c.checked ? "checked" : "";
+                const els = component.list.map(e => `<div class="${type}"><input type="${type}" value="${e.value}" ${disabled(e)} ${checked(e)}><label>${e.label}</label></div>`);
+                inner = els.join("");
+                break
+            case "select":
+                const selected = option => (option === component.selected) ? "selected" : "";
+                const options = component.list.map(option => `<option ${selected(option)}>${option}</option>`);
+                inner = `<select class="form-control" ${disabled(component)}>${options.join("")}</select>`;
                 break
             case "textarea":
                 const rows = component.rows || 3;
                 inner = `<textarea class="form-control" ${disabled(component)} rows="${rows}" placeholder="${component.placeholder}"></textarea>`;
-                break
-            case "checkbox":
-                const checkBoxList = component.list.map(box => {
-                    const checked = box.checked ? "checked" : "";
-                    return `<div class="checkbox"><label><input type="checkbox" ${disabled(box)} value="${box.value}" ${checked}>${box.label}</label></div>`
-                });
-                inner = checkBoxList.join("");
-                break
-            case "radio":
-                const radioList = component.list.map(radio => {
-                    const {checked, value, label} = radio;
-                    const checked_ = checked ? "checked" : "";
-                    return `<div class="radio"><label><input type="radio" ${disabled(radio)} name="radio-${component.id}" value="${value}" ${checked_}>${label}</label></div>`
-                });
-                inner = radioList.join("");
-                break
-            case "select":
-                const optionsList = component.list.map(option => `<option ${(option === component.selected) ? "selected" : ""}>${option}</option>`);
-                inner = `<select class="form-control" ${disabled(component)}>${optionsList}</select>`
                 break
             case "p":
                 break
