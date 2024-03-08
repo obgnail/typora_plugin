@@ -93,10 +93,11 @@ class mindmapPlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
         meta.target = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
-        const disabled = !meta.target || meta.target.querySelector("p > span");
+        const arg_disabled = !meta.target || meta.target.querySelector("p > span");
+        const arg_hint = arg_disabled ? "请将光标定位到空白行" : "";
         return [
-            {arg_name: "在此处插入：mindmap", arg_value: "insert_mindmap", arg_disabled: disabled},
-            {arg_name: "在此处插入：graph", arg_value: "insert_graph", arg_disabled: disabled},
+            {arg_name: "在此处插入：mindmap", arg_value: "insert_mindmap", arg_disabled, arg_hint},
+            {arg_name: "在此处插入：graph", arg_value: "insert_graph", arg_disabled, arg_hint},
         ]
     }
 

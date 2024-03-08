@@ -7,12 +7,25 @@
     display: none;
 }
 
+#plugin-custom-modal .modal-body {
+    max-height: calc(80vh - 150px);
+    overflow: auto;
+}
+
 #plugin-custom-modal label {
     display: block;
     margin-bottom: 5px;
 }
 
+#plugin-custom-modal fieldset label {
+    user-select: none;
+}
+
 #plugin-custom-modal input[type="checkbox"], input[type="radio"] {
+    position: absolute;
+    margin-left: 0 !important;
+    margin-top: 0 !important;
+    top: 50%;
+    transform: translateY(-50%);
     box-shadow: none;
-    margin-top: -3px;
 }

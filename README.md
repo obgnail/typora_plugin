@@ -21,48 +21,49 @@
 | 11   | mindmap                 | 根据文档大纲一键生成思维导图           |
 | 12   | toolbar                 | 多功能搜索栏                           |
 | 13   | right_click_menu        | 右键菜单统一管理、调用插件             |
-| 14   | markmap                 | 提供 markmap 组件支持                  |
-| 15   | echarts                 | 提供 echarts 组件支持                  |
-| 16   | chart                   | 提供 chartjs 组件支持                  |
-| 17   | abc                     | 提供 abcjs 组件支持                    |
-| 18   | calendar                | 提供 tui.calendar 组件支持             |
-| 19   | marp                    | 提供 marp 组件支持                     |
-| 20   | callouts                | 提供 callouts 支持                     |
-| 21   | text_stylize            | 文字风格化                             |
-| 22   | read_only               | 只读模式                               |
-| 23   | blur                    | 模糊模式                               |
-| 24   | kanban                  | 看板                                   |
-| 25   | timeline                | 时间线                                 |
-| 26   | file_counter            | 显示目录下的文件数                     |
-| 27   | outline                 | 以表格、图片、代码块形式的大纲         |
-| 28   | auto_number             | 章节、表格、图片、代码块等自动编号     |
-| 29   | imageReviewer           | 图片查看器                             |
-| 30   | chineseSymbolAutoPairer | 中文符号自动补全                       |
-| 31   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
-| 32   | resize_table            | 调整表格行高列宽                       |
-| 33   | resize_image            | 调整图片显示大小                       |
-| 34   | export_enhance          | 导出 html 时避免图片丢失               |
-| 35   | go_top                  | 一键到文章顶部、底部                   |
-| 36   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
-| 37   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
-| 38   | markdownLint            | markdown 格式规范检测                  |
-| 39   | darkMode                | 夜间模式                               |
-| 40   | noImageMode             | 无图模式                               |
-| 41   | pluginUpdater           | 一键升级插件                           |
-| 42   | extractRangeToNewFile   | 提取选区文字到新文件                   |
-| 43   | fullPathCopy            | 复制标题路径                           |
-| 44   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
-| 45   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
-| 46   | scrollBookmarker        | 书签管理器                             |
-| 47   | openInTotalCommander    | 在 total commander 打开                |
-| 48   | bingSpeech              | 必应朗读                               |
-| 49   | mermaid_replace         | 替换 mermaid 组件                      |
-| 50   | help                    | 用户帮助                               |
-| 51   | custom                  | 开放平台，用户自定义插件（高级）       |
-| 52   | hotkeyHub               | 快捷键注册中心（高级）                 |
-| 53   | quickButton             | 于右下角添加功能按钮（高级）           |
-| 54   | json_rpc                | 外部操纵 Typora（高级）                |
-| 55   | old_window_tab          | 标签页管理（已废弃）                   |
+| 14   | preferences             | 启停插件                               |
+| 15   | markmap                 | 提供 markmap 组件支持                  |
+| 16   | echarts                 | 提供 echarts 组件支持                  |
+| 17   | chart                   | 提供 chartjs 组件支持                  |
+| 18   | abc                     | 提供 abcjs 组件支持                    |
+| 19   | calendar                | 提供 tui.calendar 组件支持             |
+| 20   | marp                    | 提供 marp 组件支持                     |
+| 21   | callouts                | 提供 callouts 支持                     |
+| 22   | text_stylize            | 文字风格化                             |
+| 23   | read_only               | 只读模式                               |
+| 24   | blur                    | 模糊模式                               |
+| 25   | kanban                  | 看板                                   |
+| 26   | timeline                | 时间线                                 |
+| 27   | file_counter            | 显示目录下的文件数                     |
+| 28   | outline                 | 以表格、图片、代码块形式的大纲         |
+| 29   | auto_number             | 章节、表格、图片、代码块等自动编号     |
+| 30   | imageReviewer           | 图片查看器                             |
+| 31   | chineseSymbolAutoPairer | 中文符号自动补全                       |
+| 32   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
+| 33   | resize_table            | 调整表格行高列宽                       |
+| 34   | resize_image            | 调整图片显示大小                       |
+| 35   | export_enhance          | 导出 html 时避免图片丢失               |
+| 36   | go_top                  | 一键到文章顶部、底部                   |
+| 37   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
+| 38   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
+| 39   | markdownLint            | markdown 格式规范检测                  |
+| 40   | darkMode                | 夜间模式                               |
+| 41   | noImageMode             | 无图模式                               |
+| 42   | pluginUpdater           | 一键升级插件                           |
+| 43   | extractRangeToNewFile   | 提取选区文字到新文件                   |
+| 44   | fullPathCopy            | 复制标题路径                           |
+| 45   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
+| 46   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
+| 47   | scrollBookmarker        | 书签管理器                             |
+| 48   | openInTotalCommander    | 在 total commander 打开                |
+| 49   | bingSpeech              | 必应朗读                               |
+| 50   | mermaid_replace         | 替换 mermaid 组件                      |
+| 51   | help                    | 用户帮助                               |
+| 52   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 53   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 54   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 55   | json_rpc                | 外部操纵 Typora（高级）                |
+| 56   | old_window_tab          | 标签页管理（已废弃）                   |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -182,17 +183,17 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### 插件会失效吗?
 
-理论上能保持长时间有效。且我在维护中。
-
-
-
-### 支持 Typora for Mac 吗？
-
-没有 Mac，故没做测试。
+理论上能保持长时间有效，且我在维护中。
 
 
 
 ### 如何永久禁用/启用某些插件？
+
+右键菜单 -> 非常用插件 -> 启停插件。
+
+
+
+### 如何修改插件配置？
 
 请看 [./plugin/global/settings/请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)
 
@@ -217,6 +218,12 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 ### 我不想用了，如何恢复原状？
 
 [安装方法二](#如何使用：方法二（手动）) 逆序操作即可。
+
+
+
+### 支持 Typora for Mac 吗？
+
+没有 Mac，故没做测试。
 
 
 
@@ -517,6 +524,12 @@ LIST = [
     "search_multi", "multi_highlighter", "outline", "md_padding", "read_only",
 ]
 ```
+
+
+
+## preferences：启停插件
+
+使用方式：右键菜单 -> 非常用插件 -> 启停插件
 
 
 
@@ -943,8 +956,8 @@ filter_regexp = ""
 
 ## 致谢
 
-- MIT：[markmap](https://markmap.js.org/) | [chartjs](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
 - Apache：[echarts](https://echarts.apache.org/zh/index.html)
+- MIT：[markmap](https://markmap.js.org/) | [chartjs](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
 - without-licence：[typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [md-padding](https://github.com/harttle/md-padding)
 
 

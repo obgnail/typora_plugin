@@ -182,24 +182,24 @@ class utils {
 
     ////////////////////////////// 插件相关 //////////////////////////////
     static getAllPlugins = () => global._plugins
+    static getAllCustomPlugins = () => global._plugins.custom && global._plugins.custom.custom
+    static getPlugin = fixedName => global._plugins[fixedName]
+    static getCustomPlugin = fixedName => global._plugins.custom && global._plugins.custom.custom[fixedName]
     static getAllPluginSettings = () => global._plugin_settings
     static getAllGlobalSettings = () => global._plugin_global_settings
+    static getAllCustomPluginSettings = () => (global._plugins.custom && global._plugins.custom.customSettings) || {}
     static getGlobalSetting = name => global._plugin_global_settings[name]
-    static getPlugin = fixedName => global._plugins[fixedName]
-    static getCustomPlugin = fixedName => {
-        const plugin = global._plugins.custom;
-        if (plugin) {
-            return plugin.custom[fixedName]
-        }
-    }
+    static getPluginSetting = fixedName => global._plugin_settings[fixedName]
+    static getCustomPluginSetting = fixedName => this.getAllCustomPluginSettings()[fixedName]
+    static tryGetPlugin = fixedName => this.getPlugin(fixedName) || this.getCustomPlugin(fixedName)
+    static tryGetPluginSetting = fixedName => this.getAllPluginSettings()[fixedName] || this.getAllCustomPluginSettings()[fixedName]
 
     static getPluginFunction = (fixedName, func) => {
-        const plugin = this.getPlugin(fixedName) || this.getCustomPlugin(fixedName);
+        const plugin = this.tryGetPlugin(fixedName);
         return plugin && plugin[func];
     }
-
     static callPluginFunction = (fixedName, func, ...args) => {
-        const plugin = this.getPlugin(fixedName) || this.getCustomPlugin(fixedName);
+        const plugin = this.tryGetPlugin(fixedName);
         const _func = plugin && plugin[func];
         _func && _func.apply(plugin, args);
         return _func
@@ -322,11 +322,7 @@ class utils {
 
     static fromObject = (object, attrs) => {
         const newObject = {};
-        attrs.forEach(attr => {
-            if (object[attr]) {
-                newObject[attr] = object[attr];
-            }
-        });
+        attrs.forEach(attr => object[attr] !== undefined && (newObject[attr] = object[attr]));
         return newObject;
     }
 
@@ -480,41 +476,36 @@ class utils {
         child.on('close', onClose);
     }
 
+    static getOriginSettingPath = settingFile => this.joinPath("./plugin/global/settings", settingFile)
+    static getHomeSettingPath = settingFile => this.Package.Path.join(this.getHomeDir(), ".config", "typora_plugin", settingFile)
+    static getActualSettingPath = async settingFile => {
+        const homeSetting = this.getHomeSettingPath(settingFile);
+        const exist = await this.existPath(homeSetting);
+        return exist ? homeSetting : this.getOriginSettingPath(settingFile);
+    }
+
     static readSetting = async (defaultSetting, userSetting) => {
         const toml = this.requireFilePath("./plugin/global/utils/toml");
-        const home = this.Package.OS.homedir() || File.option.userPath;
-        const default_ = this.joinPath("./plugin/global/settings", defaultSetting);
-        const user_ = this.joinPath("./plugin/global/settings", userSetting);
-        const home_ = this.Package.Path.join(home, ".config", "typora_plugin", userSetting);
+        const default_ = this.getOriginSettingPath(defaultSetting);
+        const user_ = this.getOriginSettingPath(userSetting);
+        const home_ = this.getHomeSettingPath(userSetting);
         const contentList = await this.readFiles([default_, user_, home_]);
         const configList = contentList.map(c => c ? toml.parse(c) : {});
         return configList.reduce(this.merge)
     }
 
-    static openSettingFolder = async () => {
-        const homeDir = this.Package.OS.homedir() || File.option.userPath;
-        const homeSetting = this.Package.Path.join(homeDir, ".config", "typora_plugin", "settings.user.toml");
-        const exist = await this.existPath(homeSetting);
-        const targetPath = exist ? homeSetting : this.joinPath("./plugin/global/settings/settings.user.toml");
-        this.showInFinder(targetPath);
-    }
+    static openSettingFolder = async () => this.showInFinder(await this.getActualSettingPath("settings.user.toml"))
 
     static backupSettingFile = async (showInFinder = true) => {
-        const {FsExtra, Path, OS} = this.Package;
+        const {FsExtra, Path} = this.Package;
         const backupDir = Path.join(this.tempFolder, "typora_plugin_config");
-        const homeDir = OS.homedir() || File.option.userPath;
-        const getHomeSettingFile = file => Path.join(homeDir, ".config", "typora_plugin", file);
-        const getUserSettingFile = file => this.joinPath("./plugin/global/settings", file);
-        const settingFiles = ["settings.user.toml", "custom_plugin.user.toml", "hotkey.user.toml"];
         await FsExtra.emptyDir(backupDir);
+        const settingFiles = ["settings.user.toml", "custom_plugin.user.toml", "hotkey.user.toml"];
         for (const file of settingFiles) {
-            const homeFile = getHomeSettingFile(file);
-            const userFile = getUserSettingFile(file);
-            const hasHomeFile = await FsExtra.pathExists(homeFile);
-            const source = hasHomeFile ? homeFile : userFile;
+            const source = await this.getActualSettingPath(file);
             const target = Path.join(backupDir, file);
             try {
-                await FsExtra.copy(source, target)
+                await FsExtra.copy(source, target);
             } catch (e) {
                 console.error(e);
             }
@@ -574,6 +565,7 @@ class utils {
 
     ////////////////////////////// 基础文件操作 //////////////////////////////
     static getDirname = () => global.dirname || global.__dirname
+    static getHomeDir = () => this.Package.OS.homedir() || File.option.userPath
     static getFilePath = () => File.filePath || (File.bundle && File.bundle.filePath) || ""
     static getCurrentDirPath = () => this.Package.Path.dirname(this.getFilePath())
     static joinPath = (...paths) => this.Package.Path.join(this.getDirname(), ...paths)
@@ -608,10 +600,10 @@ class utils {
         return yaml.safeLoad(content)
     }
 
-    static readToml = filepath => {
-        const pluginsFile = this.readFileSync(filepath);
+    static readToml = async filepath => {
+        const file = await this.Package.Fs.promises.readFile(filepath, "utf-8");
         const toml = this.requireFilePath("./plugin/global/utils/toml");
-        return toml.parse(pluginsFile);
+        return toml.parse(file);
     }
 
     static stringifyToml = obj => {
@@ -727,16 +719,6 @@ class utils {
     ////////////////////////////// 业务DOM操作 //////////////////////////////
     static removeElement = ele => ele && ele.parentElement && ele.parentElement.removeChild(ele)
     static removeElementByID = id => this.removeElement(document.getElementById(id))
-    static isLastChildOfParent = child => child.parentElement.lastElementChild === child
-    static whichChildOfParent = child => {
-        let i = 1;
-        for (const sibling of child.parentElement.children) {
-            if (sibling && sibling === child) {
-                return i
-            }
-            i++
-        }
-    }
 
     static isInViewBox = el => {
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
@@ -1120,12 +1102,12 @@ class diagramParser {
         if (!content) {
             await this.whenCantDraw(cid, lang, $pre); // empty content
             return;
-        } else {
-            $pre.addClass("md-fences-advanced");
-            if ($pre.find(".md-diagram-panel").length === 0) {
-                $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div>
+        }
+
+        $pre.addClass("md-fences-advanced");
+        if ($pre.find(".md-diagram-panel").length === 0) {
+            $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div>
                     <div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
-            }
         }
 
         const render = this.parsers.get(lang).renderFunc;
@@ -1627,9 +1609,9 @@ class dialog {
 
     onButtonClick = callback => {
         this.pluginModal.components.forEach(component => {
-            if (!component.label || !component.type || !component.id) return;
-            const div = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
-            component.submit = div ? this.getWidgetValue(component.type, div) : undefined;
+            if (component.label === undefined || !component.type || !component.id) return;
+            const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
+            component.submit = widget ? this.getWidgetValue(component.type, widget) : undefined;
         })
         this.entities.modal.style.display = "none";
         callback && callback(this.pluginModal.components);
@@ -1649,46 +1631,44 @@ class dialog {
             case "file":
                 return widget.querySelector("input").files
             case "checkbox":
-                return [...widget.querySelectorAll("input:checked")].map(box => box.value)
+                return Array.from(widget.querySelectorAll("input:checked"), box => box.value)
             default:
                 return ""
         }
     }
 
     newWidget = component => {
-        if (!component || !component.label || !component.type) return;
+        if (!component || component.label === undefined || !component.type) return;
 
         let inner = "";
         const type = component.type.toLowerCase();
+        const disabled = c => c.disabled ? "disabled" : ""
         switch (type) {
             case "input":
             case "password":
             case "file":
                 const t = type === "input" ? "text" : type;
-                inner = `<input type="${t}" class="form-control" placeholder="${component.placeholder}" value="${component.value}">`;
+                inner = `<input type="${t}" class="form-control" value="${component.value}" placeholder="${component.placeholder}" ${disabled(component)}>`;
+                break
+            case "checkbox":
+            case "radio":
+                const checked = c => c.checked ? "checked" : "";
+                const prefix = this.utils.randomString() + "-";
+                const elements = component.list.map(el => {
+                    const id = prefix + el.value;
+                    return `<div class="${type}"><input type="${type}" id="${id}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}</label></div>`
+                });
+                const content = elements.join("");
+                inner = (component.legend === undefined) ? content : `<fieldset><legend>${component.legend}</legend>${content}</fieldset>`;
+                break
+            case "select":
+                const selected = option => (option === component.selected) ? "selected" : "";
+                const options = component.list.map(option => `<option ${selected(option)}>${option}</option>`);
+                inner = `<select class="form-control" ${disabled(component)}>${options.join("")}</select>`;
                 break
             case "textarea":
                 const rows = component.rows || 3;
-                inner = `<textarea class="form-control" rows="${rows}" placeholder="${component.placeholder}"></textarea>`;
-                break
-            case "checkbox":
-                const checkBoxList = component.list.map(box => {
-                    const checked = box.checked ? "checked" : "";
-                    return `<div class="checkbox"><label><input type="checkbox" value="${box.value}" ${checked}>${box.label}</label></div>`
-                });
-                inner = checkBoxList.join("");
-                break
-            case "radio":
-                const radioList = component.list.map(radio => {
-                    const {checked, value, label} = radio;
-                    const checked_ = checked ? "checked" : "";
-                    return `<div class="radio"><label><input type="radio" name="radio-${component.id}" value="${value}" ${checked_}>${label}</label></div>`
-                });
-                inner = radioList.join("");
-                break
-            case "select":
-                const optionsList = component.list.map(option => `<option ${(option === component.selected) ? "selected" : ""}>${option}</option>`);
-                inner = `<select class="form-control">${optionsList}</select>`
+                inner = `<textarea class="form-control" rows="${rows}" placeholder="${component.placeholder}" ${disabled(component)}></textarea>`;
                 break
             case "p":
                 break
@@ -2238,12 +2218,18 @@ class process {
         delete settings.global;
     }
 
+    existEnablePlugin = () => Object.entries(global._plugin_settings).some(
+        ([fixedName, plugin]) => plugin.ENABLE && !global._plugin_global_settings.DISABLE_PLUGINS.includes(fixedName)
+    )
+
     run = async () => {
         const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
         if (!settings || !settings.global || !settings.global.ENABLE) return;
 
         // 初始化全局变量
         this.prepare(settings);
+
+        if (!this.existEnablePlugin(settings)) return;
 
         const {
             contextMenu, dialog, styleTemplater, stateRecorder, eventHub,
