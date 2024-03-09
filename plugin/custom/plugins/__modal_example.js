@@ -1,5 +1,5 @@
-/* modalExample 类展示了如何使用 this.modal 函数:
-    直接使用this.modal即可弹出自定义的模态框，待用户点击【确定】后会调用回调函数
+/* modalExample 类展示了如何使用 this.utils.modal 函数:
+    直接使用this.utils.modal即可弹出自定义的模态框，待用户点击【确定】后会调用回调函数
 
     this.modal args:
       1. modal:
@@ -20,6 +20,7 @@ class modalExample extends BaseCustomPlugin {
     callback = anchorNode => {
         const modal = {
             title: "新文件路径",
+            // 所有的component都有disabled属性，表示是否禁用
             components: [
                 {
                     label: "文件路径",
@@ -46,6 +47,7 @@ class modalExample extends BaseCustomPlugin {
                 {
                     label: "test checkbox",
                     type: "checkbox",  // 复选框
+                    legend: "this is legend",
                     list: [
                         {
                             label: "label1",

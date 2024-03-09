@@ -1,8 +1,13 @@
 class preferencesPlugin extends BasePlugin {
-    togglePlugin = async (enablePlugins, enableCustomPlugins) => {
+    getSettings = async () => {
         const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
         const customSettings = await this.utils.readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
         delete settings.global;
+        return [settings, customSettings]
+    }
+
+    togglePlugin = async (enablePlugins, enableCustomPlugins) => {
+        const [settings, customSettings] = await this.getSettings();
 
         const pluginState = {};
         const customPluginState = {};
@@ -29,8 +34,8 @@ class preferencesPlugin extends BasePlugin {
         const plugins = Object.entries(this.utils.getAllPluginSettings()).map(displayFunc);
         const customPlugins = Object.entries(this.utils.getAllCustomPluginSettings()).map(displayFunc);
         const components = [
-            {label: "一级插件", type: "checkbox", list: plugins},
-            {label: "自定义插件", type: "checkbox", list: customPlugins},
+            {label: "", legend: "一级插件", type: "checkbox", list: plugins},
+            {label: "", legend: "自定义插件", type: "checkbox", list: customPlugins},
         ];
         const modal = {title: "启停插件", components};
         this.utils.modal(modal, async ([{submit: enablePlugins}, {submit: enableCustomPlugins}]) => {

@@ -83,12 +83,8 @@ class markmapPlugin extends BasePlugin {
     }
 
     getFrontMatter = content => {
-        content = content.trimLeft();
-        if (!/^---\r?\n/.test(content)) return;
-        const matchResult = /\n---\r?\n/.exec(content);
-        if (!matchResult) return;
-        const yamlContent = content.slice(4, matchResult.index);
-        const yamlObject = this.utils.readYaml(yamlContent) || {};
+        const {yamlObject} = this.utils.splitFrontMatter(content);
+        if (!yamlObject) return;
         const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap");
         const options = attr ? yamlObject[attr] : yamlObject;
         const defaultOptions = {

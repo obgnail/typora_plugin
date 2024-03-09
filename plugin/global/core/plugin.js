@@ -182,28 +182,24 @@ class utils {
 
     ////////////////////////////// 插件相关 //////////////////////////////
     static getAllPlugins = () => global._plugins
+    static getAllCustomPlugins = () => global._plugins.custom && global._plugins.custom.custom
+    static getPlugin = fixedName => global._plugins[fixedName]
+    static getCustomPlugin = fixedName => global._plugins.custom && global._plugins.custom.custom[fixedName]
     static getAllPluginSettings = () => global._plugin_settings
     static getAllGlobalSettings = () => global._plugin_global_settings
-    static getAllCustomPluginSettings = () => {
-        const plugin = global._plugins.custom;
-        return plugin ? plugin.customSettings : {}
-    }
+    static getAllCustomPluginSettings = () => (global._plugins.custom && global._plugins.custom.customSettings) || {}
     static getGlobalSetting = name => global._plugin_global_settings[name]
-    static getPlugin = fixedName => global._plugins[fixedName]
-    static getCustomPlugin = fixedName => {
-        const plugin = global._plugins.custom;
-        if (plugin) {
-            return plugin.custom[fixedName]
-        }
-    }
+    static getPluginSetting = fixedName => global._plugin_settings[fixedName]
+    static getCustomPluginSetting = fixedName => this.getAllCustomPluginSettings()[fixedName]
+    static tryGetPlugin = fixedName => this.getPlugin(fixedName) || this.getCustomPlugin(fixedName)
+    static tryGetPluginSetting = fixedName => this.getAllPluginSettings()[fixedName] || this.getAllCustomPluginSettings()[fixedName]
 
     static getPluginFunction = (fixedName, func) => {
-        const plugin = this.getPlugin(fixedName) || this.getCustomPlugin(fixedName);
+        const plugin = this.tryGetPlugin(fixedName);
         return plugin && plugin[func];
     }
-
     static callPluginFunction = (fixedName, func, ...args) => {
-        const plugin = this.getPlugin(fixedName) || this.getCustomPlugin(fixedName);
+        const plugin = this.tryGetPlugin(fixedName);
         const _func = plugin && plugin[func];
         _func && _func.apply(plugin, args);
         return _func
@@ -326,11 +322,7 @@ class utils {
 
     static fromObject = (object, attrs) => {
         const newObject = {};
-        attrs.forEach(attr => {
-            if (object[attr]) {
-                newObject[attr] = object[attr];
-            }
-        });
+        attrs.forEach(attr => object[attr] !== undefined && (newObject[attr] = object[attr]));
         return newObject;
     }
 
@@ -605,7 +597,11 @@ class utils {
 
     static readYaml = content => {
         const yaml = this.requireFilePath("./plugin/global/utils/yaml");
-        return yaml.safeLoad(content)
+        try {
+            return yaml.safeLoad(content);
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     static readToml = async filepath => {
@@ -643,6 +639,19 @@ class utils {
             }
             req.end();
         });
+    }
+
+    static splitFrontMatter = content => {
+        const result = {yamlObject: null, remainContent: content, yamlLineCount: 0};
+        content = content.trimLeft();
+        if (!/^---\r?\n/.test(content)) return result;
+        const matchResult = /\n---\r?\n/.exec(content);
+        if (!matchResult) return result;
+        const yamlContent = content.slice(4, matchResult.index);
+        const remainContent = content.slice(matchResult.index + matchResult[0].length);
+        const yamlLineCount = (yamlContent.match(/\n/g) || []).length + 3;
+        const yamlObject = this.readYaml(yamlContent);
+        return {yamlObject, remainContent, yamlLineCount}
     }
 
     static getRecentFiles = async () => {
@@ -727,16 +736,6 @@ class utils {
     ////////////////////////////// 业务DOM操作 //////////////////////////////
     static removeElement = ele => ele && ele.parentElement && ele.parentElement.removeChild(ele)
     static removeElementByID = id => this.removeElement(document.getElementById(id))
-    static isLastChildOfParent = child => child.parentElement.lastElementChild === child
-    static whichChildOfParent = child => {
-        let i = 1;
-        for (const sibling of child.parentElement.children) {
-            if (sibling && sibling === child) {
-                return i
-            }
-            i++
-        }
-    }
 
     static isInViewBox = el => {
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
@@ -770,7 +769,12 @@ class utils {
             // link
             .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
             // img
-            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => `<img alt="${alt}" src="${this.Package.Path.resolve(dir, src)}">`)
+            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => {
+                if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
+                    src = this.Package.Path.resolve(dir, src);
+                }
+                return `<img alt="${alt}" src="${src}">`
+            })
     }
 
     static flashScaleButton = (button, scale = 0.9, timeout = 200) => {
@@ -1120,12 +1124,12 @@ class diagramParser {
         if (!content) {
             await this.whenCantDraw(cid, lang, $pre); // empty content
             return;
-        } else {
-            $pre.addClass("md-fences-advanced");
-            if ($pre.find(".md-diagram-panel").length === 0) {
-                $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div>
+        }
+
+        $pre.addClass("md-fences-advanced");
+        if ($pre.find(".md-diagram-panel").length === 0) {
+            $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div>
                     <div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
-            }
         }
 
         const render = this.parsers.get(lang).renderFunc;
@@ -1627,9 +1631,9 @@ class dialog {
 
     onButtonClick = callback => {
         this.pluginModal.components.forEach(component => {
-            if (!component.label || !component.type || !component.id) return;
-            const div = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
-            component.submit = div ? this.getWidgetValue(component.type, div) : undefined;
+            if (component.label === undefined || !component.type || !component.id) return;
+            const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
+            component.submit = widget ? this.getWidgetValue(component.type, widget) : undefined;
         })
         this.entities.modal.style.display = "none";
         callback && callback(this.pluginModal.components);
@@ -1649,7 +1653,7 @@ class dialog {
             case "file":
                 return widget.querySelector("input").files
             case "checkbox":
-                return [...widget.querySelectorAll("input:checked")].map(box => box.value)
+                return Array.from(widget.querySelectorAll("input:checked"), box => box.value)
             default:
                 return ""
         }
@@ -1660,36 +1664,33 @@ class dialog {
 
         let inner = "";
         const type = component.type.toLowerCase();
-        const disabled = c => c.disabled ? "disabled" : "";
+        const disabled = c => c.disabled ? "disabled" : ""
         switch (type) {
             case "input":
             case "password":
             case "file":
                 const t = type === "input" ? "text" : type;
-                inner = `<input type="${t}" class="form-control" ${disabled(component)} placeholder="${component.placeholder}" value="${component.value}">`;
+                inner = `<input type="${t}" class="form-control" value="${component.value}" placeholder="${component.placeholder}" ${disabled(component)}>`;
+                break
+            case "checkbox":
+            case "radio":
+                const checked = c => c.checked ? "checked" : "";
+                const prefix = this.utils.randomString() + "-";
+                const elements = component.list.map(el => {
+                    const id = prefix + el.value;
+                    return `<div class="${type}"><input type="${type}" id="${id}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}</label></div>`
+                });
+                const content = elements.join("");
+                inner = (component.legend === undefined) ? content : `<fieldset><legend>${component.legend}</legend>${content}</fieldset>`;
+                break
+            case "select":
+                const selected = option => (option === component.selected) ? "selected" : "";
+                const options = component.list.map(option => `<option ${selected(option)}>${option}</option>`);
+                inner = `<select class="form-control" ${disabled(component)}>${options.join("")}</select>`;
                 break
             case "textarea":
                 const rows = component.rows || 3;
-                inner = `<textarea class="form-control" ${disabled(component)} rows="${rows}" placeholder="${component.placeholder}"></textarea>`;
-                break
-            case "checkbox":
-                const checkBoxList = component.list.map(box => {
-                    const checked = box.checked ? "checked" : "";
-                    return `<div class="checkbox"><label><input type="checkbox" ${disabled(box)} value="${box.value}" ${checked}>${box.label}</label></div>`
-                });
-                inner = checkBoxList.join("");
-                break
-            case "radio":
-                const radioList = component.list.map(radio => {
-                    const {checked, value, label} = radio;
-                    const checked_ = checked ? "checked" : "";
-                    return `<div class="radio"><label><input type="radio" ${disabled(radio)} name="radio-${component.id}" value="${value}" ${checked_}>${label}</label></div>`
-                });
-                inner = radioList.join("");
-                break
-            case "select":
-                const optionsList = component.list.map(option => `<option ${(option === component.selected) ? "selected" : ""}>${option}</option>`);
-                inner = `<select class="form-control" ${disabled(component)}>${optionsList}</select>`
+                inner = `<textarea class="form-control" rows="${rows}" placeholder="${component.placeholder}" ${disabled(component)}></textarea>`;
                 break
             case "p":
                 break
