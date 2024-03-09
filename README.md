@@ -34,36 +34,37 @@
 | 24   | blur                    | 模糊模式                               |
 | 25   | kanban                  | 看板                                   |
 | 26   | timeline                | 时间线                                 |
-| 27   | file_counter            | 显示目录下的文件数                     |
-| 28   | outline                 | 以表格、图片、代码块形式的大纲         |
-| 29   | auto_number             | 章节、表格、图片、代码块等自动编号     |
-| 30   | imageReviewer           | 图片查看器                             |
-| 31   | chineseSymbolAutoPairer | 中文符号自动补全                       |
-| 32   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
-| 33   | resize_table            | 调整表格行高列宽                       |
-| 34   | resize_image            | 调整图片显示大小                       |
-| 35   | export_enhance          | 导出 html 时避免图片丢失               |
-| 36   | go_top                  | 一键到文章顶部、底部                   |
-| 37   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
-| 38   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
-| 39   | markdownLint            | markdown 格式规范检测                  |
-| 40   | darkMode                | 夜间模式                               |
-| 41   | noImageMode             | 无图模式                               |
-| 42   | pluginUpdater           | 一键升级插件                           |
-| 43   | extractRangeToNewFile   | 提取选区文字到新文件                   |
-| 44   | fullPathCopy            | 复制标题路径                           |
-| 45   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
-| 46   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
-| 47   | scrollBookmarker        | 书签管理器                             |
-| 48   | openInTotalCommander    | 在 total commander 打开                |
-| 49   | bingSpeech              | 必应朗读                               |
-| 50   | mermaid_replace         | 替换 mermaid 组件                      |
-| 51   | help                    | 用户帮助                               |
-| 52   | custom                  | 开放平台，用户自定义插件（高级）       |
-| 53   | hotkeyHub               | 快捷键注册中心（高级）                 |
-| 54   | quickButton             | 于右下角添加功能按钮（高级）           |
-| 55   | json_rpc                | 外部操纵 Typora（高级）                |
-| 56   | old_window_tab          | 标签页管理（已废弃）                   |
+| 27   | chat                    | 聊天                                   |
+| 28   | file_counter            | 显示目录下的文件数                     |
+| 29   | outline                 | 以表格、图片、代码块形式的大纲         |
+| 30   | auto_number             | 章节、表格、图片、代码块等自动编号     |
+| 31   | imageReviewer           | 图片查看器                             |
+| 32   | chineseSymbolAutoPairer | 中文符号自动补全                       |
+| 33   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
+| 34   | resize_table            | 调整表格行高列宽                       |
+| 35   | resize_image            | 调整图片显示大小                       |
+| 36   | export_enhance          | 导出 html 时避免图片丢失               |
+| 37   | go_top                  | 一键到文章顶部、底部                   |
+| 38   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
+| 39   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
+| 40   | markdownLint            | markdown 格式规范检测                  |
+| 41   | darkMode                | 夜间模式                               |
+| 42   | noImageMode             | 无图模式                               |
+| 43   | pluginUpdater           | 一键升级插件                           |
+| 44   | extractRangeToNewFile   | 提取选区文字到新文件                   |
+| 45   | fullPathCopy            | 复制标题路径                           |
+| 46   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
+| 47   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
+| 48   | scrollBookmarker        | 书签管理器                             |
+| 49   | openInTotalCommander    | 在 total commander 打开                |
+| 50   | bingSpeech              | 必应朗读                               |
+| 51   | mermaid_replace         | 替换 mermaid 组件                      |
+| 52   | help                    | 用户帮助                               |
+| 53   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 54   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 55   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 56   | json_rpc                | 外部操纵 Typora（高级）                |
+| 57   | old_window_tab          | 标签页管理（已废弃）                   |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -527,7 +528,7 @@ LIST = [
 
 
 
-## preferences：启停插件
+### preferences：启停插件
 
 使用方式：右键菜单 -> 非常用插件 -> 启停插件
 
@@ -567,7 +568,9 @@ LIST = [
 
 ### marp：提供 marp 组件支持
 
-使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 插入 marp
+功能：使用 markdown 做 PPT。
+
+使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 插入 marp。
 
 
 
@@ -586,6 +589,30 @@ background_color = "#e1d1eb"
 left_line_color = "#6a1b9a"
 icon = "\\f040"
 ```
+
+
+
+### kanban：看板
+
+拓展代码语法，添加看板功能。
+
+![kanban](assets/kanban.png)
+
+
+
+### timeline：时间线
+
+拓展代码语法，添加时间线功能。
+
+![timeline](./assets/timeline.png)
+
+
+
+### chat：聊天
+
+拓展代码语法，添加聊天功能。
+
+![chat](./assets/chat.png)
 
 
 
@@ -616,29 +643,6 @@ icon = "\\f040"
 使用方式：右键菜单 -> 非常用插件 -> 模糊模式
 
 > 此插件只能高版本 Typora 使用，暂时没有兼容低版本。
-
-
-
-### kanban：看板
-
-拓展代码语法，添加看板功能。
-
-语法：
-
-- 一级标题表示看板标题
-- 二级标题表示看板
-- `-` 或 `*` 表示任务
-- 任务后面的 `()` 表示任务描述
-
-![kanban](assets/kanban.png)
-
-
-
-### timeline：时间线
-
-拓展代码语法，添加时间线功能。
-
-![timeline](./assets/timeline.png)
 
 
 

@@ -597,7 +597,11 @@ class utils {
 
     static readYaml = content => {
         const yaml = this.requireFilePath("./plugin/global/utils/yaml");
-        return yaml.safeLoad(content)
+        try {
+            return yaml.safeLoad(content);
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     static readToml = async filepath => {
@@ -635,6 +639,19 @@ class utils {
             }
             req.end();
         });
+    }
+
+    static splitFrontMatter = content => {
+        const result = {yamlObject: null, remainContent: content, yamlLineCount: 0};
+        content = content.trimLeft();
+        if (!/^---\r?\n/.test(content)) return result;
+        const matchResult = /\n---\r?\n/.exec(content);
+        if (!matchResult) return result;
+        const yamlContent = content.slice(4, matchResult.index);
+        const remainContent = content.slice(matchResult.index + matchResult[0].length);
+        const yamlLineCount = (yamlContent.match(/\n/g) || []).length + 3;
+        const yamlObject = this.readYaml(yamlContent);
+        return {yamlObject, remainContent, yamlLineCount}
     }
 
     static getRecentFiles = async () => {
@@ -752,7 +769,12 @@ class utils {
             // link
             .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
             // img
-            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => `<img alt="${alt}" src="${this.Package.Path.resolve(dir, src)}">`)
+            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => {
+                if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
+                    src = this.Package.Path.resolve(dir, src);
+                }
+                return `<img alt="${alt}" src="${src}">`
+            })
     }
 
     static flashScaleButton = (button, scale = 0.9, timeout = 200) => {
