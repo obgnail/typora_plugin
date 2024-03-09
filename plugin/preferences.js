@@ -7,7 +7,7 @@ class preferencesPlugin extends BasePlugin {
     }
 
     togglePlugin = async (enablePlugins, enableCustomPlugins) => {
-        const [settings, customSettings] = this.getSettings();
+        const [settings, customSettings] = await this.getSettings();
 
         const pluginState = {};
         const customPluginState = {};
