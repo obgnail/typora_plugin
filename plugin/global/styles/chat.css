@@ -17,6 +17,8 @@
     margin-bottom: 1.2em;
     font-size: 0.9em;
     color: #888;
+    white-space: break-spaces;
+    word-wrap: break-word;
 }
 
 
