@@ -139,7 +139,7 @@ order = 1
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "timeline"
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
-INTERACTIVE_MODE = false
+INTERACTIVE_MODE = true
 # 图表背景颜色
 BACKGROUND_COLOR = "#fafafa"
 # 标题的字体颜色
