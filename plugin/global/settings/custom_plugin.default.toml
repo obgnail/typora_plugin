@@ -54,7 +54,7 @@ use strict
 
 ## Todo
 * 语法说明(一级标题表示看板标题\\n二级标题表示看板\\n- 或 * 表示任务)
-- 描述框样式(支持在描述框添加 markdown 行内样式：\\n**加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，![图片](./assets/test.jpg))
+- 描述框样式(支持在描述框添加 markdown 行内样式：\\n**加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，![图片](https://avatars.githubusercontent.com/u/48992887?s=96&v=4))
 - 严格模式(在首行添加 use strict 进入严格模式，将不会忽略语法错误)
 - 当描述为空时隐藏描述框
 
@@ -114,11 +114,11 @@ testUser1: 使用冒号分割用户名和消息
 
 me: 右边的用户名强制为 me，时间强制为 time
 
-me: 支持部分 markdown 语法。比如 **加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，\\n![图片](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)\\n不支持代码块，因为开发者不希望代码块发生嵌套
+me: 支持部分 markdown 语法。比如 **加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，\\n![图片](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
 
 nickname1: 支持使用 yaml 格式的 front matter 修改配置（就和 markdown 一样）\\n\\n其中的 avatars 选项用于配置用户的头像，如果没有配置头像，默认为用户名的首字符\\n\\n你可以试试在本文件所属目录下添加 `./assets/1.jpg` 文件，便可以看到对应用户的头像被修改了
 
-注意: 支持导出成 HTML、PDF 等格式。语法是插件开发自定义的，不具备通用性
+注意: 支持导出成 HTML、PDF 等格式。语法是插件开发者自定义的，不具备通用性
 
 """
 
@@ -173,7 +173,7 @@ TEMPLATE = """```timeline
 1. 这是有序列表1
 2. 这是有效列表2
 
-支持**加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，![图片](./assets/test.jpg)
+支持**加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，![图片](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
 不支持代码块，因为开发者不希望代码块发生嵌套
 
 ## 2023-10-1
