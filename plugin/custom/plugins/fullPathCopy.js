@@ -21,7 +21,8 @@ class fullPathCopy extends BaseCustomPlugin {
 
         pList.reverse();
 
-        const filePath = (this.config.full_file_path) ? this.utils.getFilePath() : File.getFileName();
+        let filePath = (this.config.full_file_path) ? this.utils.getFilePath() : File.getFileName();
+        filePath = filePath || this.config.untitled_file_name;
         const result = [filePath];
         let headerIdx = 0;
         for (const p of pList) {
