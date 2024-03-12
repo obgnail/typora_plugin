@@ -551,6 +551,8 @@ order = 1
 [fullPathCopy.config]
 # 快捷键
 hotkey = "ctrl+shift+y"
+# 如果在空白页调用此插件，使用的文件名（因为尚不存在该文件，需要用一个默认的文件名代替）
+untitled_file_name = "untitled"
 # 跳过空白的标题
 ignore_empty_header = false
 # 标题和提示之前添加空格
