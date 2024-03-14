@@ -201,6 +201,7 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图表重新适配窗口"></div>
+                    <div class="plugin-markmap-icon ion-merge" action="setExpandLevel" ty-hint="展开分支等级"></div>
                     <div class="plugin-markmap-icon ion-android-hand" action="penetrateMouse" ty-hint="鼠标穿透"></div>
                     <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="下载"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
@@ -277,13 +278,23 @@ class tocMarkmap {
     fit = () => this.markmap && this.markmap.fit();
 
     penetrateMouse = async () => {
-        const options = this.config.DEFAULT_TOC_OPTIONS;
+        const options = this.markmap.options;
         options.zoom = !options.zoom;
         options.pan = !options.pan;
-        this.markmap.destroy();
-        const md = this.controller.getToc();
-        await this.create(md, options);
+        await this.redraw(options);
         this.entities.modal.style.pointerEvents = (options.zoom || options.pan) ? "auto" : "none";
+    }
+
+    _setExpandLevel = async level => {
+        level = parseInt(level);
+        const options = this.markmap.options;
+        options.initialExpandLevel = isNaN(level) ? 1 : level;
+        await this.redraw(options);
+    }
+
+    setExpandLevel = async () => {
+        const components = [{label: "展开几级分支（-1则全部展开）", type: "input", value: "1", placeholder: "1"}];
+        this.utils.modal({title: "展开等级", components}, async ([{submit: level}]) => this._setExpandLevel(level));
     }
 
     getSvgBounding = cloneSvg => {
@@ -482,20 +493,13 @@ class tocMarkmap {
 
     onContextMenu = () => {
         const menuMap = {
-            expand: "全屏",
-            shrink: "取消全屏",
-            fit: "图形适配窗口",
-            download: "下载",
-            close: "关闭",
-            pinUp: "固定到顶部",
-            pinRight: "固定到右侧",
-            hideToolbar: "隐藏工具栏",
-            showToolbar: "显示工具栏",
+            expand: "全屏", shrink: "取消全屏", fit: "图形适配窗口", download: "下载", setExpandLevel: "设置展开等级",
+            close: "关闭", pinUp: "固定到顶部", pinRight: "固定到右侧", hideToolbar: "隐藏工具栏", showToolbar: "显示工具栏",
         };
         const showMenu = () => {
             const fullScreen = this.entities.fullScreen.getAttribute("action");
             const toolbarVisibility = (this.entities.header.style.display === "none") ? "showToolbar" : "hideToolbar";
-            return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "download", "close"])
+            return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "setExpandLevel", "download", "close"])
         }
         const callback = ({key}) => this.onButtonClick(key);
         this.utils.registerMenu("markmap", "#plugin-markmap-svg", showMenu, callback);
@@ -733,6 +737,12 @@ class tocMarkmap {
         if (fit) {
             await this.markmap.fit();
         }
+    }
+
+    redraw = async options => {
+        this.markmap.destroy();
+        const md = this.controller.getToc();
+        await this.create(md, options);
     }
 }
 
