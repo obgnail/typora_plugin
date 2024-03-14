@@ -341,12 +341,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     handleBlurBackground = (remove = false) => {
         if (this.config.blur_level === 0) return;
-        const blurStyle = `blur(${this.config.blur_level}px)`;
-        const removeFilter = ele => ele && ele.style.removeProperty("filter");
-        const addFilter = ele => ele && (ele.style.filter = blurStyle);
-        const func = remove ? removeFilter : addFilter;
-        const selectors = ["#write", ".sidebar-menu", "#plugin-window-tab", "#plugin-quick-button"];
-        selectors.forEach(selector => func(document.querySelector(selector)));
+        this.entities.mask.style["backdrop-filter"] = remove ? "" : `blur(${this.config.blur_level}px)`;
     }
 
     handleHotkey = (remove = false) => {

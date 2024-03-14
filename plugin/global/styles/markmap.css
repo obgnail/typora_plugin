@@ -3,10 +3,6 @@
 }
 
 #plugin-markmap {
-    position: fixed;
-    z-index: 9999;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
-    background-color: var(--side-bar-bg-color);
     display: none;
     transition: all 0.5s ease 0s;
     user-select: none;
