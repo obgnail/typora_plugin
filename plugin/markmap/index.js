@@ -473,7 +473,7 @@ class tocMarkmap {
     }
 
     onButtonClick = async (action, button) => {
-        if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse"].includes(action)) {
+        if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setExpandLevel"].includes(action)) {
             await this.waitUnpin();
         }
         await this[action](button);
