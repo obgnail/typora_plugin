@@ -8,10 +8,8 @@ class markmapPlugin extends BasePlugin {
 
     styleTemplate = () => ({
         node_hover: !this.config.CLICK_TO_LOCALE ? "" : `#plugin-markmap-svg .markmap-node:hover { cursor: pointer; }`,
-        show_outline: !this.config.SHOW_BORDER_WHEN_NODE_HOVER ? "" : `#plugin-markmap-svg .markmap-node .markmap-foreign:hover { outline: 4px solid #FF7B00; }`,
-        icon_wrap: !this.config.ALLOW_ICON_WRAP ? "" : `
-            .plugin-markmap-header { flex-wrap: wrap; justify-content: flex-start; }
-            .plugin-markmap-header .plugin-markmap-icon { padding-right: 0.5em; }`,
+        show_outline: !this.config.SHOW_BORDER_WHEN_NODE_HOVER ? "" : `#plugin-markmap-svg .markmap-node .markmap-foreign:hover { outline: ${this.config.BORDER_STYLE_WHEN_NODE_HOVER}; }`,
+        icon_wrap: !this.config.ALLOW_ICON_WRAP ? "" : `.plugin-markmap-header { flex-wrap: wrap; justify-content: flex-start; }`,
     })
 
     html = () => this.tocMarkmap && this.tocMarkmap.html();
