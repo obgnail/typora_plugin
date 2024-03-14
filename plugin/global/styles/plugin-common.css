@@ -6,4 +6,5 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
     border-top: none;
     color: var(--text-color);
+    border-radius: 4px;
 }

@@ -23,7 +23,7 @@ class outlinePlugin extends BasePlugin {
             {class_: "plugin-outline-list"},
             {class_: "plugin-outline-footer", children: footerChildren},
         ]
-        return [{id: "plugin-outline", children}]
+        return [{id: "plugin-outline", class_: "plugin-common-modal", children}]
     }
 
     init = () => {
@@ -233,10 +233,8 @@ class _collectUtil {
 
         if (this.entities.list.childElementCount === 0) {
             const div = document.createElement("div");
+            div.classList.add("plugin-outline-empty");
             div.innerText = "Empty";
-            div.style.display = "block";
-            div.style.textAlign = "center";
-            div.style.padding = "10px";
             this.entities.list.appendChild(div);
             return
         }
