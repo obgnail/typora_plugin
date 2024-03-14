@@ -832,7 +832,7 @@ image_max_width = 80
 # 图片最多占据80%的页面高度度
 image_max_height = 80
 # 背景模糊等级: 数值越大越模糊（为0则不模糊）
-blur_level = 15
+blur_level = 6
 
 # 图片支持以下操作：
 #   - dummy:          无功能
