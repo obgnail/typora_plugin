@@ -26,6 +26,7 @@
 
 #plugin-quick-button .action-item:hover {
     background-color: var(--item-hover-bg-color);
+    transform: scale(1.2);
 }
 
 #plugin-quick-button .action-item i {
