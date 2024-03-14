@@ -777,11 +777,6 @@ class utils {
             })
     }
 
-    static flashScaleButton = (button, scale = 0.9, timeout = 200) => {
-        button.style.transform = `scale(${scale})`;
-        setTimeout(() => button.style.transform = "scale(1)", timeout);
-    }
-
     static scroll = ($target, height = -1, moveCursor = false, showHiddenElement = true) => {
         if ($target instanceof Element) {
             $target = $($target);

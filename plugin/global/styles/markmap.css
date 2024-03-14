@@ -8,7 +8,8 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, .5);
     background-color: var(--side-bar-bg-color);
     display: none;
-    transition: all 0.2s ease 0s;
+    transition: all 0.5s ease 0s;
+    user-select: none;
 }
 
 .plugin-markmap-wrap {
@@ -58,8 +59,6 @@ ${node_hover}
 ${show_outline}
 
 .plugin-markmap-header {
-    margin: 0 0.5em;
-    padding-top: 0.1em;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -68,18 +67,21 @@ ${show_outline}
 .plugin-markmap-icon {
     cursor: pointer;
     font-size: 1.2em;
-    opacity: 0.5;
+    opacity: 0.6;
+    margin: 0 0.4em;
     pointer-events: auto;
 }
 
 .plugin-markmap-icon:hover {
     opacity: 1;
+    transform: scale(1.2);
 }
 
 .plugin-markmap-icon[action="resize"] {
     position: absolute;
     bottom: 0.1em;
     right: 0.4em;
+    margin: 0;
 }
 
 #plugin-markmap-svg {
