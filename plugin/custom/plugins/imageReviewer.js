@@ -83,6 +83,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         if (this.config.click_mask_to_exit) {
             this.entities.mask.addEventListener("click", this.callback);
         }
+        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => hide && this.close());
 
         const that = this;
         $("#plugin-image-reviewer .review-item").on("click", function () {

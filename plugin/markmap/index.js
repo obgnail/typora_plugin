@@ -253,6 +253,7 @@ class tocMarkmap {
         this.init();
 
         this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.entities.modal.style.display === "block" && this.drawToc(this.config.AUTO_FIT_WHEN_UPDATE));
+        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => hide && this.markmap && this.onButtonClick("close"));
         this.entities.content.addEventListener("transitionend", this.fit);
         this.entities.modal.addEventListener("transitionend", this.fit);
 
@@ -701,10 +702,11 @@ class tocMarkmap {
 
     initModalRect = () => {
         const {left, width, height} = this.entities.content.getBoundingClientRect();
+        const {LEFT_PERCENT_WHEN_INIT, WIDTH_PERCENT_WHEN_INIT, HEIGHT_PERCENT_WHEN_INIT} = this.config;
         Object.assign(this.entities.modal.style, {
-            left: `${left + width / 6}px`,
-            width: `${width * 2 / 3}px`,
-            height: `${height / 3}px`
+            left: `${left + width * LEFT_PERCENT_WHEN_INIT / 100}px`,
+            width: `${width * WIDTH_PERCENT_WHEN_INIT / 100}px`,
+            height: `${height * HEIGHT_PERCENT_WHEN_INIT / 100}px`
         });
     }
 
