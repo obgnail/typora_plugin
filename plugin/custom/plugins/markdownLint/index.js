@@ -46,6 +46,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const defaultTime = 500;
         const debounce = this.utils.debounce(this.updateLinter, Math.max(defaultTime, this.config.debounce_interval - defaultTime));
         this.utils.addEventListener(this.utils.eventType.fileEdited, debounce);
+        this.utils.addEventListener(this.utils.eventType.otherFileOpened, debounce);
     }
 
     onLineClick = () => {

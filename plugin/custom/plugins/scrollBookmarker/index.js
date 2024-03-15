@@ -46,7 +46,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
 
         if (this.config.persistence) {
             this.initState();
-            this.utils.addEventListener(this.utils.eventType.beforeUnload, () => this.saveBookmarks());
+            this.utils.addEventListener(this.utils.eventType.beforeUnload, this.saveBookmarks);
         }
 
         const altKeyPressed = this.utils.modifierKey("alt");
@@ -80,6 +80,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             }
         })
 
+        this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.refreshIfNeed);
         this.utils.addEventListener(this.utils.eventType.fileEdited, () => {
             if (new Date().getTime() > this.locateUtils.time + 2000) {
                 this.refreshIfNeed();
