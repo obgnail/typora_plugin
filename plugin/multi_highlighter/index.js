@@ -67,7 +67,7 @@ class multiHighlighterPlugin extends BasePlugin {
 
         this.processAddCodeBlock();
 
-        this.utils.addEventListener(this.utils.eventType.fileOpened, this.utils.debounce(() => {
+        this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.utils.debounce(() => {
             this.config.RESEARCH_WHILE_OPEN_FILE && this.entities.modal.style.display === "block" && this.highlight();
         }, 1000));
 
