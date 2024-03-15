@@ -6,12 +6,6 @@ class preferencesPlugin extends BasePlugin {
         return [settings, customSettings]
     }
 
-    checkNeedUpdateFile = (settings, customSettings, pluginState, customPluginState) => {
-        const update1 = Object.entries(settings).some(([name, plugin]) => plugin.ENABLE !== pluginState[name].ENABLE);
-        const update2 = Object.entries(customSettings).some(([name, plugin]) => plugin.enable !== customPluginState[name].enable);
-        return update1 || update2
-    }
-
     togglePlugin = async (enablePlugins, enableCustomPlugins, showModal = false) => {
         const [settings, customSettings] = await this.getSettings();
 
@@ -20,7 +14,10 @@ class preferencesPlugin extends BasePlugin {
         Object.keys(settings).forEach(fixedName => (pluginState[fixedName] = {ENABLE: enablePlugins.includes(fixedName)}))
         Object.keys(customSettings).forEach(fixedName => (customPluginState[fixedName] = {enable: enableCustomPlugins.includes(fixedName)}))
 
-        if (!this.checkNeedUpdateFile(settings, customSettings, pluginState, customPluginState)) return;
+        // check need update file
+        const settingsHasUpdate = Object.entries(settings).some(([name, plugin]) => plugin.ENABLE !== pluginState[name].ENABLE);
+        const customSettingsHasUpdate = Object.entries(customSettings).some(([name, plugin]) => plugin.enable !== customPluginState[name].enable);
+        if (!settingsHasUpdate && !customSettingsHasUpdate) return;
 
         for (const file of ["settings.user.toml", "custom_plugin.user.toml"]) {
             const settingPath = await this.utils.getActualSettingPath(file);
