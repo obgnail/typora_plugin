@@ -1433,8 +1433,19 @@ class eventHub {
     }
 
     process = () => {
+        const debouncePublish = this.utils.debounce(() => this.utils.publishEvent(this.utils.eventType.fileEdited), 500);
+        const observer = new MutationObserver(mutationList => {
+            if (mutationList.some(m => m.type === "characterData")
+                || mutationList.length && mutationList.some(m => m.addedNodes.length) && mutationList.some(m => m.removedNodes.length)) {
+                debouncePublish();
+            }
+        });
+        const write = document.querySelector("#write");
+        const observe = () => observer.observe(write, {characterData: true, childList: true, subtree: true});
+
         this.utils.decorate(() => File && File.editor && File.editor.library, "openFile",
             () => {
+                observer.disconnect();
                 this.filepath = this.utils.getFilePath();
                 this.publishEvent(this.utils.eventType.beforeFileOpen);
             },
@@ -1442,6 +1453,7 @@ class eventHub {
                 const filePath = args[0];
                 filePath && this.publishEvent(this.utils.eventType.fileOpened, filePath);
                 this.filepath !== filePath && this.publishEvent(this.utils.eventType.otherFileOpened, filePath);
+                observe();
             }
         )
 
@@ -1487,14 +1499,6 @@ class eventHub {
                 }
             }
         }).observe(document.body, {attributes: true});
-
-        const debouncePublish = this.utils.debounce(() => this.utils.publishEvent(this.utils.eventType.fileEdited), 500);
-        new MutationObserver(mutationList => {
-            if (mutationList.some(m => m.type === "characterData")
-                || mutationList.length && mutationList.some(m => m.addedNodes.length) && mutationList.some(m => m.removedNodes.length)) {
-                debouncePublish();
-            }
-        }).observe(document.querySelector("#write"), {characterData: true, childList: true, subtree: true});
     }
 }
 

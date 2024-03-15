@@ -50,7 +50,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         })
 
         if (this.config.REFOUCE_WHEN_OPEN_FILE) {
-            this.utils.addEventListener(this.utils.eventType.fileOpened, () => {
+            this.utils.addEventListener(this.utils.eventType.otherFileOpened, () => {
                 if (this.entities.modal.style.display === "block") {
                     setTimeout(() => this.entities.input.select(), 300);
                 }
