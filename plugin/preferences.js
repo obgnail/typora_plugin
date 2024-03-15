@@ -6,13 +6,21 @@ class preferencesPlugin extends BasePlugin {
         return [settings, customSettings]
     }
 
-    togglePlugin = async (enablePlugins, enableCustomPlugins) => {
+    checkNeedUpdateFile = (settings, customSettings, pluginState, customPluginState) => {
+        const update1 = Object.entries(settings).some(([name, plugin]) => plugin.ENABLE !== pluginState[name].ENABLE);
+        const update2 = Object.entries(customSettings).some(([name, plugin]) => plugin.enable !== customPluginState[name].enable);
+        return update1 || update2
+    }
+
+    togglePlugin = async (enablePlugins, enableCustomPlugins, showModal = false) => {
         const [settings, customSettings] = await this.getSettings();
 
         const pluginState = {};
         const customPluginState = {};
         Object.keys(settings).forEach(fixedName => (pluginState[fixedName] = {ENABLE: enablePlugins.includes(fixedName)}))
         Object.keys(customSettings).forEach(fixedName => (customPluginState[fixedName] = {enable: enableCustomPlugins.includes(fixedName)}))
+
+        if (!this.checkNeedUpdateFile(settings, customSettings, pluginState, customPluginState)) return;
 
         for (const file of ["settings.user.toml", "custom_plugin.user.toml"]) {
             const settingPath = await this.utils.getActualSettingPath(file);
@@ -21,6 +29,10 @@ class preferencesPlugin extends BasePlugin {
             const newSetting = this.utils.merge(tomlObj, mergeObj);
             const newContent = this.utils.stringifyToml(newSetting);
             await this.utils.Package.Fs.promises.writeFile(settingPath, newContent);
+        }
+
+        if (showModal) {
+            this.utils.modal({title: "设置成功", components: [{label: "请重启 Typora", type: "p"}]}, console.debug);
         }
     }
 
@@ -39,8 +51,7 @@ class preferencesPlugin extends BasePlugin {
         ];
         const modal = {title: "启停插件", components};
         this.utils.modal(modal, async ([{submit: enablePlugins}, {submit: enableCustomPlugins}]) => {
-            await this.togglePlugin(enablePlugins, enableCustomPlugins);
-            this.utils.modal({title: "设置成功", components: [{label: "请重启 Typora", type: "p"}]}, console.debug);
+            await this.togglePlugin(enablePlugins, enableCustomPlugins, true);
         });
     }
 }

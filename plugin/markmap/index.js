@@ -202,7 +202,7 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图表重新适配窗口"></div>
-                    <div class="plugin-markmap-icon ion-merge" action="setExpandLevel" ty-hint="展开分支等级"></div>
+                    <div class="plugin-markmap-icon ion-network" action="setExpandLevel" ty-hint="展开分支等级"></div>
                     <div class="plugin-markmap-icon ion-android-hand" action="penetrateMouse" ty-hint="鼠标穿透"></div>
                     <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="下载"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
@@ -461,7 +461,7 @@ class tocMarkmap {
         }
     }
 
-    cleanTransition = (run = true) => run ? this.entities.modal.style.transition = "0s" : undefined
+    cleanTransition = (run = true) => run ? this.entities.modal.style.transition = "none" : undefined
     rollbackTransition = (run = true) => run ? this.entities.modal.style.transition = "" : undefined
 
     hideToolbar = () => {
