@@ -284,7 +284,7 @@ class windowTabBarPlugin extends BasePlugin {
             const exist = await this.utils.existPath(tab.path);
             return !exist ? idx : undefined
         }));
-        const waitToClose = result.filter(idx => typeof idx !== "undefined");
+        const waitToClose = result.filter(idx => idx !== undefined);
         if (waitToClose.length === 0) return;
 
         const closeActive = waitToClose.includes(this.tabUtil.activeIdx);
@@ -426,25 +426,24 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     openTab = wantOpenPath => {
-        const pathIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
-        // 原地打开并且不存在tab时，修改当前tab的文件路径
-        if (this.config.LOCAL_OPEN && pathIdx === -1) {
-            this.tabUtil.tabs[this.tabUtil.activeIdx].path = wantOpenPath;
-        } else if (pathIdx === -1) {
-            const newTab = {path: wantOpenPath, scrollTop: 0};
-            if (this.config.NEW_TAB_AT === "end") {
-                this.tabUtil.tabs.push(newTab);
-                this.tabUtil.activeIdx = this.tabUtil.tabs.length - 1;
-            } else if (this.config.NEW_TAB_AT === "right") {
-                this.tabUtil.tabs.splice(this.tabUtil.activeIdx + 1, 0, newTab);
-                this.tabUtil.activeIdx++;
+        const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath);
+        if (!include) {
+            // 原地打开并且不存在tab时，修改当前tab的文件路径
+            if (this.config.LOCAL_OPEN) {
+                this.tabUtil.tabs[this.tabUtil.activeIdx].path = wantOpenPath;
+            } else {
+                const newTab = {path: wantOpenPath, scrollTop: 0};
+                if (this.config.NEW_TAB_AT === "end") {
+                    this.tabUtil.tabs.push(newTab);
+                } else if (this.config.NEW_TAB_AT === "right") {
+                    this.tabUtil.tabs.splice(this.tabUtil.activeIdx + 1, 0, newTab);
+                }
             }
-        } else if (pathIdx !== -1) {
-            this.tabUtil.activeIdx = pathIdx;
         }
         if (0 < this.config.TAB_MAX_NUM && this.config.TAB_MAX_NUM < this.tabUtil.tabs.length) {
             this.tabUtil.tabs = this.tabUtil.tabs.slice(-this.config.TAB_MAX_NUM);
         }
+        this.tabUtil.activeIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
         this.showTabBar();
         this.startCheckTabsInterval();
         this.renderDOM(wantOpenPath);
