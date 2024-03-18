@@ -286,7 +286,7 @@ class tocMarkmap {
         const options = this.markmap.options;
         options.zoom = !options.zoom;
         options.pan = !options.pan;
-        await this.redraw(options);
+        await this.redrawToc(options);
         this.entities.modal.classList.toggle("penetrateMouse", !options.zoom && !options.pan);
     }
 
@@ -294,7 +294,7 @@ class tocMarkmap {
         level = parseInt(level);
         const options = this.markmap.options;
         options.initialExpandLevel = isNaN(level) ? 1 : level;
-        await this.redraw(options);
+        await this.redrawToc(options);
     }
 
     setExpandLevel = async () => {
@@ -700,11 +700,17 @@ class tocMarkmap {
         });
     }
 
-    drawToc = async (fit = true) => {
+    drawToc = async (fit = true, options = null) => {
         const md = this.controller.getToc();
         if (md !== undefined) {
-            await this.draw(md, fit);
+            await this.draw(md, fit, options);
         }
+    }
+
+    redrawToc = async options => {
+        this.markmap.destroy();
+        const md = this.controller.getToc();
+        await this.create(md, options);
     }
 
     _initModalRect = () => {
@@ -717,14 +723,14 @@ class tocMarkmap {
         });
     }
 
-    draw = async (md, fit = true) => {
+    draw = async (md, fit = true, options = null) => {
         this.entities.modal.classList.remove("plugin-common-hidden");
         if (this.markmap) {
             await this.update(md, fit);
         } else {
             this._initModalRect();
             await this.controller.lazyLoad();
-            await this.create(md);
+            await this.create(md, options);
         }
     }
 
@@ -740,12 +746,6 @@ class tocMarkmap {
         if (fit) {
             await this.markmap.fit();
         }
-    }
-
-    redraw = async options => {
-        this.markmap.destroy();
-        const md = this.controller.getToc();
-        await this.create(md, options);
     }
 }
 
