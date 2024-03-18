@@ -1,9 +1,7 @@
 class tocPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
-    htmlTemplate = () => {
-        const children = [{class_: "grip-right"}, {class_: "toc-ul"}];
-        return [{id: "plugin-toc", class_: "plugin-common-modal plugin-toc", style: {display: "none"}, children}]
-    }
+    html = () => `<div id="plugin-toc" class="plugin-common-modal plugin-toc" style="display: none"><div class="grip-right"></div><div class="toc-ul"></div></div>`
+
     hotkey = () => [this.config.hotkey]
 
     process = () => {

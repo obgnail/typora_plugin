@@ -1,7 +1,7 @@
 class scrollBookmarkerPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
-    htmlTemplate = () => [{id: "plugin-scroll-bookmarker", class_: "plugin-common-modal", style: {display: "none"}}]
+    html = () => `<div id="plugin-scroll-bookmarker" class="plugin-common-modal" style="display: none"></div>`
 
     hotkey = () => [this.config.hotkey]
 

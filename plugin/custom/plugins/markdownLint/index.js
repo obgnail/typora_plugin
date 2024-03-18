@@ -2,14 +2,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
     styleTemplate = () => ({modal_width: (this.config.modal_width === "auto" ? "fit-content" : this.config.modal_width)})
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
     hotkey = () => [this.config.hotkey]
-    htmlTemplate = () => {
-        const pre = [{ele: "pre", tabindex: "0"}];
-        const el = [{id: "plugin-markdownlint", class_: "plugin-common-modal", style: {display: "none"}, children: pre}]
-        if (this.config.use_button) {
-            el.push({id: "plugin-markdownlint-button", "ty-hint": "markdown格式规范检测"});
-        }
-        return el
-    }
+    html = () => `
+        <div id="plugin-markdownlint" class="plugin-common-modal" style="display: none"><pre tabindex="0"></pre></div>
+        ${this.config.use_button ? '<div id="plugin-markdownlint-button" ty-hint="markdown格式规范检测"></div>' : ""}
+    `
 
     process = () => {
         this.entities = {
