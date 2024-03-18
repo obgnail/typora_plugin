@@ -190,11 +190,8 @@ class tocMarkmap {
         this.config = this.controller.config;
     }
 
-    html = () => {
-        const modal = document.createElement("div");
-        modal.id = "plugin-markmap";
-        modal.classList.add("plugin-common-modal", "plugin-common-hidden");
-        modal.innerHTML = `
+    html = () => `
+        <div id="plugin-markmap" class="plugin-common-modal plugin-common-hidden">
             <div class="plugin-markmap-wrap">
                 <div class="plugin-markmap-grip grip-right"></div>
                 <div class="plugin-markmap-header">
@@ -211,9 +208,9 @@ class tocMarkmap {
                 <svg id="plugin-markmap-svg"></svg>
                 <div class="plugin-markmap-icon ion-android-arrow-down-right" action="resize" ty-hint="拖动调整大小"></div>
             </div>
-            <div class="plugin-markmap-grip grip-up"></div>`;
-        return modal
-    }
+            <div class="plugin-markmap-grip grip-up"></div>
+        </div>
+    `
 
     hotkey = () => [{hotkey: this.config.TOC_HOTKEY, callback: this.callback}]
 

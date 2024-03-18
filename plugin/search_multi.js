@@ -1,12 +1,8 @@
 class searchMultiKeywordPlugin extends BasePlugin {
     styleTemplate = () => true
 
-    html = () => {
-        const modal = document.createElement("div");
-        modal.id = 'plugin-search-multi';
-        modal.classList.add("plugin-common-modal");
-        modal.style.display = "none";
-        modal.innerHTML = `
+    html = () => `
+        <div id="plugin-search-multi" class="plugin-common-modal" style="display: none">
             <div id="plugin-search-multi-input">
                 <input type="text" placeholder="多关键字查找 空格分隔" title="空格分隔 引号包裹视为词组">
                 <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
@@ -27,9 +23,9 @@ class searchMultiKeywordPlugin extends BasePlugin {
                 <div class="typora-search-spinner">
                     <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
                 </div>
-            </div>`;
-        return modal
-    }
+            </div>
+        </div>
+    `
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
