@@ -272,6 +272,8 @@ class tocMarkmap {
     close = () => {
         this.entities.modal.style.display = "";
         this.entities.modal.style.top = "";
+        this.entities.modal.classList.remove("fullScreen");
+        this.entities.fullScreen.setAttribute("action", "expand");
         this.initModalRect();
         this.markmap.destroy();
         this.markmap = null;
@@ -284,7 +286,7 @@ class tocMarkmap {
         options.zoom = !options.zoom;
         options.pan = !options.pan;
         await this.redraw(options);
-        this.entities.modal.style.pointerEvents = (options.zoom || options.pan) ? "auto" : "none";
+        this.entities.modal.classList.toggle("penetrateMouse", !options.zoom && !options.pan);
     }
 
     _setExpandLevel = async level => {
@@ -569,7 +571,7 @@ class tocMarkmap {
                 this.entities.resize.setAttribute(attr, hint);
                 this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
                 await this.waitUnpin();
-                await this.setFullScreenIcon(this.entities.fullScreen, false);
+                this.setFullScreenIcon(false);
             }
             this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, true, true, onMouseDown, onMouseMove, onMouseUp);
         }
@@ -669,24 +671,21 @@ class tocMarkmap {
         })
     }
 
-    expand = async button => {
+    expand = () => {
         this.modalOriginRect = this.entities.modal.getBoundingClientRect();
         this.setModalRect(this.entities.content.getBoundingClientRect());
-        await this.setFullScreenIcon(button, true);
+        this.setFullScreenIcon(true);
     }
 
-    shrink = async button => {
+    shrink = () => {
         this.setModalRect(this.modalOriginRect);
-        await this.setFullScreenIcon(button, false)
+        this.setFullScreenIcon(false);
     }
 
-    setFullScreenIcon = async (button, fullScreen) => {
-        button = button || this.entities.fullScreen;
-        const boxShadow = fullScreen ? "initial" : "";
-        const action = fullScreen ? "shrink" : "expand";
-        this.entities.modal.style.boxShadow = boxShadow;
-        button.setAttribute("action", action);
-        await this.drawToc();
+    setFullScreenIcon = fullScreen => {
+        this.entities.modal.classList.toggle("fullScreen", fullScreen);
+        this.entities.fullScreen.setAttribute("action", fullScreen ? "shrink" : "expand");
+        this.fit();
     }
 
     setModalRect = rect => {
