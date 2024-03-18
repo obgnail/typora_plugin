@@ -875,6 +875,18 @@ NUM_PER_LINE = 13
 DEFAULT_COLORS = { FOREGROUND = "#330000", BACKGROUND = "#FFFFFF", BORDER = "#330000" }
 
 
+############### cipher ###############
+[cipher]
+# 是否启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "加密文件"
+# 是否在右键菜单中可点击
+CLICKABLE = true
+# 使用弹出提示弹窗
+SHOW_HINT_MODAL = true
+
+
 ############### custom ###############
 [custom]
 # 是否启用插件
@@ -941,6 +953,7 @@ LIST = [
     "resize_table",
     "truncate_text",
     "export_enhance",
+    "cipher",
     "right_click_menu",
     "help",
     "---",

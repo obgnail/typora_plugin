@@ -441,6 +441,7 @@ class utils {
     }
 
     static isPromise = obj => obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function'
+    static isBase64 = str => /^[A-Za-z0-9+/=]+$/.test(str) && str.length % 4 === 0;
 
     static windowsPathToUnix = filepath => {
         if (!File.isWin) return filepath;
@@ -516,7 +517,7 @@ class utils {
     static editCurrentFile = async (editFileFunc, reloadTypora = true) => {
         const filepath = this.getFilePath();
         const content = await this.Package.Fs.promises.readFile(filepath, "utf-8");
-        const replacedContent = editFileFunc(content);
+        const replacedContent = await editFileFunc(content);
         await this.Package.Fs.promises.writeFile(filepath, replacedContent);
         reloadTypora && File.reloadContent(replacedContent, {fromDiskChange: false});
     }

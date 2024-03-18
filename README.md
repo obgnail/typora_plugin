@@ -58,13 +58,14 @@
 | 48   | scrollBookmarker        | 书签管理器                             |
 | 49   | openInTotalCommander    | 在 total commander 打开                |
 | 50   | bingSpeech              | 必应朗读                               |
-| 51   | mermaid_replace         | 替换 mermaid 组件                      |
-| 52   | help                    | 用户帮助                               |
-| 53   | custom                  | 开放平台，用户自定义插件（高级）       |
-| 54   | hotkeyHub               | 快捷键注册中心（高级）                 |
-| 55   | quickButton             | 于右下角添加功能按钮（高级）           |
-| 56   | json_rpc                | 外部操纵 Typora（高级）                |
-| 57   | old_window_tab          | 标签页管理（已废弃）                   |
+| 51   | cipher                  | 加密文件                               |
+| 52   | mermaid_replace         | 替换 mermaid 组件                      |
+| 53   | help                    | 用户帮助                               |
+| 54   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 55   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 56   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 57   | json_rpc                | 外部操纵 Typora（高级）                |
+| 58   | old_window_tab          | 标签页管理（已废弃）                   |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -897,6 +898,12 @@ filter_regexp = ""
 ### help：  用户帮助
 
 使用方式：右键菜单 -> 非常用插件 -> 帮助。
+
+
+
+### cipher：加密文件
+
+使用方式：右键菜单 -> 非常用插件 -> 加密文件。
 
 
 
