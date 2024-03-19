@@ -31,7 +31,7 @@ class commanderPlugin extends BasePlugin {
             {id: "plugin-commander-form", children: formChildren},
             {class_: "plugin-commander-output", children: [{ele: "pre", tabindex: "0"}]}
         ]
-        return [{id: "plugin-commander", class_: "plugin-common-modal", style: {display: "none"}, children}]
+        return [{id: "plugin-commander", class_: "plugin-common-modal plugin-common-hidden", children}]
     }
 
     hotkey = () => {
@@ -109,7 +109,7 @@ class commanderPlugin extends BasePlugin {
                     if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.modal.input.value) {
                         ev.stopPropagation();
                         ev.preventDefault();
-                        this.modal.modal.style.display = "none";
+                        this.utils.hide(this.modal.modal);
                     }
                     break
                 case "Tab":
@@ -195,7 +195,7 @@ class commanderPlugin extends BasePlugin {
     }
 
     showStdout = stdout => {
-        this.modal.modal.style.display = "block";
+        this.utils.show(this.modal.modal);
         this.modal.output.style.display = "block";
         this.modal.pre.classList.remove("error");
         this.modal.pre.textContent = stdout;
@@ -288,10 +288,11 @@ class commanderPlugin extends BasePlugin {
     }
 
     toggleModal = () => {
-        if (this.modal.modal.style.display === "block") {
-            this.modal.modal.style.display = "none";
+        const {modal} = this.modal;
+        if (this.utils.isShow(modal)) {
+            this.utils.hide(modal);
         } else {
-            this.modal.modal.style.display = "block";
+            this.utils.show(modal);
             this.modal.input.select();
         }
     }

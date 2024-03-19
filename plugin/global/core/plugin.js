@@ -738,6 +738,11 @@ class utils {
     static removeElement = ele => ele && ele.parentElement && ele.parentElement.removeChild(ele)
     static removeElementByID = id => this.removeElement(document.getElementById(id))
 
+    static isShow = ele => !ele.classList.contains("plugin-common-hidden");
+    static isHidden = ele => ele.classList.contains("plugin-common-hidden");
+    static hide = ele => ele.classList.add("plugin-common-hidden");
+    static show = ele => ele.classList.remove("plugin-common-hidden");
+
     static isInViewBox = el => {
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
         const totalWidth = window.innerWidth || document.documentElement.clientWidth;
