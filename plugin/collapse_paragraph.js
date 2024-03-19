@@ -15,7 +15,8 @@ class collapseParagraphPlugin extends BasePlugin {
     process = () => {
         this.init();
         this.recordCollapseState(false);
-        document.getElementById("write").addEventListener("click", ev => {
+        const write = document.getElementById("write");
+        write.addEventListener("click", ev => {
             const paragraph = this.getTargetHeader(ev.target);
             if (!paragraph) return;
             const obj = this.funcList.find(({filter}) => filter(ev));
@@ -26,6 +27,27 @@ class collapseParagraphPlugin extends BasePlugin {
             const list = obj.callback(paragraph);
             list.forEach(ele => this.trigger(ele, collapsed));
             this.callbackOtherPlugin();
+        })
+
+        document.querySelector(".sidebar-menu").addEventListener("click", ev => {
+            const item = ev.target.closest(".outline-item");
+            if (!item) return;
+            const target = item.querySelector(".outline-label");
+            if (!target) return;
+            let ele = write.querySelector(`[cid=${target.dataset.ref}]`);
+            if (!ele || ele.style.display !== "none") return;
+
+            let currentLevel = this.paragraphList.indexOf(ele.tagName);
+            while (ele) {
+                if (ele.getAttribute("mdtype") === "heading" && ele.classList.contains(this.className)) {
+                    const level = this.paragraphList.indexOf(ele.tagName);
+                    if (level < currentLevel) {
+                        this.trigger(ele, true);
+                        currentLevel = level;
+                    }
+                }
+                ele = ele.previousElementSibling;
+            }
         })
     }
 
@@ -59,9 +81,7 @@ class collapseParagraphPlugin extends BasePlugin {
         return result
     }
 
-    callbackOtherPlugin = () => {
-        this.utils.callPluginFunction("outline", "refresh");
-    }
+    callbackOtherPlugin = () => this.utils.callPluginFunction("outline", "refresh");
 
     toggle = (paragraph, display) => {
         const idx = this.paragraphList.indexOf(paragraph.tagName);
