@@ -2,7 +2,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     styleTemplate = () => true
 
     html = () => `
-        <div id="plugin-search-multi" class="plugin-common-modal" style="display: none">
+        <div id="plugin-search-multi" class="plugin-common-modal plugin-common-hidden">
             <div id="plugin-search-multi-input">
                 <input type="text" placeholder="多关键字查找 空格分隔" title="空格分隔 引号包裹视为词组">
                 <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
@@ -47,7 +47,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
         if (this.config.REFOUCE_WHEN_OPEN_FILE) {
             this.utils.addEventListener(this.utils.eventType.otherFileOpened, () => {
-                if (this.entities.modal.style.display === "block") {
+                if (!this.isModalHidden()) {
                     setTimeout(() => this.entities.input.select(), 300);
                 }
             })
@@ -195,8 +195,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
     }
 
-    hideIfNeed = () => this.config.AUTO_HIDE && (this.entities.modal.style.display = "none")
-
     verifyExt = filename => {
         if (filename[0] === ".") {
             return false
@@ -227,16 +225,19 @@ class searchMultiKeywordPlugin extends BasePlugin {
         this.traverseDir(rootPath, allowRead, appendItem, then);
     }
 
+    toggleModal = show => this.entities.modal.classList.toggle("plugin-common-hidden", !show);
+    hideIfNeed = () => this.config.AUTO_HIDE && this.toggleModal(false)
+    isModalHidden = () => this.entities.modal.classList.contains("plugin-common-hidden")
     hide = () => {
-        this.entities.modal.style.display = "none";
+        this.toggleModal(false);
         this.entities.info.style.display = "none";
     }
     show = () => {
-        this.entities.modal.style.display = "block";
+        this.toggleModal(true);
         this.entities.input.select();
     }
     call = () => {
-        if (this.entities.modal.style.display === "block") {
+        if (!this.isModalHidden()) {
             this.hide();
         } else {
             this.show();
@@ -259,7 +260,7 @@ class LinkHelper {
     }
 
     process = () => {
-        const isLinking = () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.entities.modal.style.display === "block";
+        const isLinking = () => this.searcher.config.LINK_OTHER_PLUGIN && !this.searcher.isModalHidden();
 
         // 当处于联动状态，在search_multi搜索前先设置highlighter的inputValue和caseSensitive
         this.utils.decorate(() => this.highlighter, "highlight", () => isLinking() && this.syncOption());
