@@ -72,7 +72,7 @@ class textStylizePlugin extends BasePlugin {
             const showPalette = action === "foregroundColor" || action === "backgroundColor" || action === "borderColor";
             that.entities.toolbar.querySelectorAll(":scope > [action]").forEach(ele => ele.classList.remove("select"));
             this.classList.add("select");
-            that.utils.toggleVisible(that.entities.palette, !showPalette);
+            that.entities.palette.style.display = showPalette ? "block" : "none";
         })
 
         this.entities.toolbar.addEventListener("mousedown", ev => {
