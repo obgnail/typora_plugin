@@ -1,7 +1,7 @@
 class scrollBookmarkerPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
-    html = () => `<div id="plugin-scroll-bookmarker" class="plugin-common-modal" style="display: none"></div>`
+    html = () => `<div id="plugin-scroll-bookmarker" class="plugin-common-modal plugin-common-hidden"></div>`
 
     hotkey = () => [this.config.hotkey]
 
@@ -58,7 +58,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             ev.preventDefault();
             paragraph.classList.add(this.className);
             if (this.config.auto_popup_modal) {
-                this.entities.modal.style.display = "";
+                this.entities.modal.classList.remove("plugin-common-hidden");
             }
             this.refresh();
         })
@@ -88,13 +88,13 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
     }
 
     callback = () => {
-        this.entities.modal.style.display = this.entities.modal.style.display === "none" ? "" : "none";
+        this.entities.modal.classList.toggle("plugin-common-hidden");
         this.refresh();
     }
 
     refresh = () => {
         this.utils.collectState(this.recordName);
-        if (this.entities.modal.style.display !== "none") {
+        if (!this.entities.modal.classList.contains("plugin-common-hidden")) {
             this.updateModal();
         }
     }
