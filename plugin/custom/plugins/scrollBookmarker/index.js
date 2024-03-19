@@ -58,7 +58,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             ev.preventDefault();
             paragraph.classList.add(this.className);
             if (this.config.auto_popup_modal) {
-                this.entities.modal.classList.remove("plugin-common-hidden");
+                this.utils.show(this.entities.modal);
             }
             this.refresh();
         })
@@ -88,13 +88,13 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
     }
 
     callback = () => {
-        this.entities.modal.classList.toggle("plugin-common-hidden");
+        this.utils.toggleVisible(this.entities.modal);
         this.refresh();
     }
 
     refresh = () => {
         this.utils.collectState(this.recordName);
-        if (!this.entities.modal.classList.contains("plugin-common-hidden")) {
+        if (this.utils.isShow(this.entities.modal)) {
             this.updateModal();
         }
     }

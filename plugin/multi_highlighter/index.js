@@ -64,7 +64,7 @@ class multiHighlighterPlugin extends BasePlugin {
         this.processAddCodeBlock();
 
         this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.utils.debounce(() => {
-            this.config.RESEARCH_WHILE_OPEN_FILE && !this.isModalHidden() && this.highlight();
+            this.config.RESEARCH_WHILE_OPEN_FILE && this.utils.isShow(this.entities.modal) && this.highlight();
         }, 1000));
 
         this.entities.input.addEventListener("keydown", ev => {
@@ -252,7 +252,7 @@ class multiHighlighterPlugin extends BasePlugin {
             })
             this.entities.result.innerHTML = itemList.join("");
         }
-        this.entities.result.classList.remove("plugin-common-hidden");
+        this.utils.show(this.entities.result);
     }
 
     setInputValue = value => this.entities.input.value = value;
@@ -277,8 +277,6 @@ class multiHighlighterPlugin extends BasePlugin {
             this.utils.callPluginFunction("fence_enhance", "expandFence", fence);
         }
     }
-
-    isModalHidden = () => this.entities.modal.classList.contains("plugin-common-hidden")
 
     showIfNeed = marker => {
         if (this.config.SHOW_KEYWORD_OUTLINE) {
@@ -319,14 +317,14 @@ class multiHighlighterPlugin extends BasePlugin {
 
     hide = () => {
         this.clearHighlight();
-        this.entities.modal.classList.add("plugin-common-hidden");
+        this.utils.hide(this.entities.modal);
     }
     show = () => {
-        this.entities.modal.classList.remove("plugin-common-hidden");
+        this.utils.show(this.entities.modal);
         this.entities.input.select();
     }
     toggleModal = () => {
-        if (!this.isModalHidden()) {
+        if (this.utils.isShow(this.entities.modal)) {
             this.hide();
         } else {
             this.show();

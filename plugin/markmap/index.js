@@ -249,7 +249,7 @@ class tocMarkmap {
     process = async () => {
         this.init();
 
-        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.isModalShow() && this.drawToc(this.config.AUTO_FIT_WHEN_UPDATE));
+        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.utils.isShow(this.entities.modal) && this.drawToc(this.config.AUTO_FIT_WHEN_UPDATE));
         this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => hide && this.markmap && this.onButtonClick("close"));
         this.entities.content.addEventListener("transitionend", this.fit);
         this.entities.modal.addEventListener("transitionend", this.fit);
@@ -262,15 +262,13 @@ class tocMarkmap {
         this.onContextMenu();
     }
 
-    callback = () => this.isModalShow() ? this.onButtonClick("close") : this.drawToc()
+    callback = () => this.utils.isShow(this.entities.modal) ? this.onButtonClick("close") : this.drawToc()
 
     call = async type => type === "draw_toc" && await this.drawToc()
 
-    isModalShow = () => !this.entities.modal.classList.contains("plugin-common-hidden")
-
     close = () => {
         this.entities.modal.style = "";
-        this.entities.modal.classList.add("plugin-common-hidden");
+        this.utils.hide(this.entities.modal);
         this.entities.modal.classList.remove("noBoxShadow");
         this.entities.fullScreen.setAttribute("action", "expand");
         this.markmap.destroy();
@@ -468,7 +466,7 @@ class tocMarkmap {
     rollbackTransition = (run = true) => run ? this.entities.modal.style.transition = "" : undefined
 
     toggleToolbar = show => {
-        this.entities.header.classList.toggle("plugin-common-hidden", !show);
+        this.utils.toggleVisible(this.entities.header, !show);
         this.fit();
     }
     hideToolbar = () => this.toggleToolbar(false)
@@ -500,7 +498,7 @@ class tocMarkmap {
         };
         const showMenu = () => {
             const fullScreen = this.entities.fullScreen.getAttribute("action");
-            const toolbarVisibility = this.entities.header.classList.contains("plugin-common-hidden") ? "showToolbar" : "hideToolbar";
+            const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar";
             return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "setExpandLevel", "download", "close"])
         }
         const callback = ({key}) => this.onButtonClick(key);
@@ -721,7 +719,7 @@ class tocMarkmap {
     }
 
     draw = async (md, fit = true, options = null) => {
-        this.entities.modal.classList.remove("plugin-common-hidden");
+        this.utils.show(this.entities.modal);
         if (this.markmap) {
             await this.update(md, fit);
         } else {

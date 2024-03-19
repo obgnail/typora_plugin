@@ -154,7 +154,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     appendItemFunc = keyArr => {
         let index = 0;
         const rootPath = File.getMountFolder();
-        const showResult = this.utils.once(() => this.entities.result.classList.remove("plugin-common-hidden"));
+        const showResult = this.utils.once(() => this.utils.show(this.entities.result));
 
         return (filePath, stats, buffer) => {
             let data = buffer.toString();
@@ -214,26 +214,25 @@ class searchMultiKeywordPlugin extends BasePlugin {
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }
 
-        this.entities.result.classList.add("plugin-common-hidden");
-        this.entities.info.classList.remove("plugin-common-hidden");
+        this.utils.hide(this.entities.result);
+        this.utils.show(this.entities.info);
         this.entities.resultList.innerHTML = "";
 
         rootPath = rootPath || File.getMountFolder();
         const allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
         const appendItem = this.appendItemFunc(keyArr);
-        const then = () => this.entities.info.classList.add("plugin-common-hidden");
+        const then = () => this.utils.hide(this.entities.info);
         this.traverseDir(rootPath, allowRead, appendItem, then);
     }
 
-    toggleModal = show => this.entities.modal.classList.toggle("plugin-common-hidden", !show);
-    hideIfNeed = () => this.config.AUTO_HIDE && this.toggleModal(false)
-    isModalHidden = () => this.entities.modal.classList.contains("plugin-common-hidden")
+    hideIfNeed = () => this.config.AUTO_HIDE && this.utils.hide(this.entities.modal);
+    isModalHidden = () => this.utils.isHidden(this.entities.modal);
     hide = () => {
-        this.toggleModal(false);
-        this.entities.info.classList.add("plugin-common-hidden");
+        this.utils.hide(this.entities.modal);
+        this.utils.hide(this.entities.info);
     }
     show = () => {
-        this.toggleModal(true);
+        this.utils.show(this.entities.modal)
         this.entities.input.select();
     }
     call = () => {
@@ -319,8 +318,8 @@ class LinkHelper {
         this.utils.removeElement(this.highlighterModal);
         this.searcherInput.parentNode.insertBefore(this.highlighterModal, this.searcherInput.nextSibling);
 
-        this.highlighterModal.classList.remove("plugin-common-hidden");
-        this.highlighterInput.classList.add("plugin-common-hidden");
+        this.utils.show(this.highlighterModal);
+        this.utils.hide(this.highlighterInput);
         this.styleList.forEach(style => this.highlighterModal.style[style] = "initial");
         this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = true;
     }
@@ -329,8 +328,8 @@ class LinkHelper {
         this.utils.removeElement(this.highlighterModal);
         this.utils.insertElement(this.highlighterModal);
 
-        this.highlighterModal.classList.toggle("plugin-common-hidden", forceHide);
-        this.highlighterInput.classList.remove("plugin-common-hidden");
+        this.utils.toggleVisible(this.highlighterModal, forceHide);
+        this.utils.show(this.highlighterInput);
         this.styleList.forEach(style => this.highlighterModal.style[style] = "");
         this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = this.originValue;
     }

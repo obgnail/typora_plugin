@@ -25,7 +25,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             if (this.entities.button) {
                 this.entities.button.style.backgroundColor = content.length ? this.config.error_color : this.config.pass_color;
             }
-            if (!this.entities.modal.classList.contains("plugin-common-hidden")) {
+            if (this.utils.isShow(this.entities.modal)) {
                 this.entities.pre.innerHTML = content.length ? this.genMarkdownlint(content) : this.config.pass_text
             }
         }
@@ -87,7 +87,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     callback = async anchorNode => {
-        this.entities.modal.classList.toggle("plugin-common-hidden");
+        this.utils.toggleVisible(this.entities.modal);
         await this.updateLinter();
     }
 

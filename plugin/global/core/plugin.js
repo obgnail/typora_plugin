@@ -742,6 +742,7 @@ class utils {
     static isHidden = ele => ele.classList.contains("plugin-common-hidden");
     static hide = ele => ele.classList.add("plugin-common-hidden");
     static show = ele => ele.classList.remove("plugin-common-hidden");
+    static toggleVisible = (ele, force) => ele.classList.toggle("plugin-common-hidden", force);
 
     static isInViewBox = el => {
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
