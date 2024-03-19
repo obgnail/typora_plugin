@@ -18,7 +18,7 @@ class commanderPlugin extends BasePlugin {
         const hint = "提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录";
         const formChildren = [
             {ele: "input", type: "text", placeholder: "Typora commander", title: hint},
-            {ele: "i", class_: "ion-ios7-play plugin-commander-commit", "ty-hint": "执行命令"},
+            {ele: "i", class_: "ion-ios7-play plugin-commander-commit plugin-common-hidden", "ty-hint": "执行命令"},
             {ele: "select", class_: "plugin-commander-shell", children: shellChildren}
         ]
 
@@ -29,7 +29,7 @@ class commanderPlugin extends BasePlugin {
 
         const children = [
             {id: "plugin-commander-form", children: formChildren},
-            {class_: "plugin-commander-output", children: [{ele: "pre", tabindex: "0"}]}
+            {class_: "plugin-commander-output plugin-common-hidden", children: [{ele: "pre", tabindex: "0"}]}
         ]
         return [{id: "plugin-commander", class_: "plugin-common-modal plugin-common-hidden", children}]
     }
@@ -85,9 +85,9 @@ class commanderPlugin extends BasePlugin {
         this.modal.input.addEventListener("input", () => {
             const cmd = this.modal.input.value.trim();
             if (cmd) {
-                this.modal.commit.style.display = "block";
+                this.utils.show(this.modal.commit);
             } else {
-                this.modal.commit.style.display = "none";
+                this.utils.hide(this.modal.commit);
                 this.modal.builtinSelect.value = "";
             }
         })
@@ -184,7 +184,7 @@ class commanderPlugin extends BasePlugin {
     normalizeModal = (cmd, shell, hint) => {
         this.modal.input.value = cmd;
         this.modal.shellSelect.value = shell;
-        this.modal.commit.style.display = "block";
+        this.utils.show(this.modal.commit);
         typeof hint === "string" && this.showStdout(hint);
     }
 
@@ -196,7 +196,7 @@ class commanderPlugin extends BasePlugin {
 
     showStdout = stdout => {
         this.utils.show(this.modal.modal);
-        this.modal.output.style.display = "block";
+        this.utils.show(this.modal.output);
         this.modal.pre.classList.remove("error");
         this.modal.pre.textContent = stdout;
     }

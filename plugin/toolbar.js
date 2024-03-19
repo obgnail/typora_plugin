@@ -14,7 +14,7 @@ class toolbarPlugin extends BasePlugin {
         const title = "支持：\n" + tools.join("\n");
         const input = [{ele: "input", placeholder: "ops explorer", title}];
         const children = [{id: "plugin-toolbar-input", children: input}, {class_: "plugin-toolbar-result"}];
-        return [{id: "plugin-toolbar", class_: "plugin-common-modal", style: {display: "none"}, children}]
+        return [{id: "plugin-toolbar", class_: "plugin-common-modal plugin-common-hidden", children}]
     }
 
     process = () => {
@@ -76,7 +76,7 @@ class toolbarPlugin extends BasePlugin {
     }
 
     call = async () => {
-        if (this.entities.toolbar.style.display === "block") {
+        if (this.utils.isShow(this.entities.toolbar)) {
             this.hide();
         } else {
             await this.show();
@@ -132,13 +132,13 @@ class toolbarPlugin extends BasePlugin {
         const {width, left} = this.entities.content.getBoundingClientRect();
         this.entities.toolbar.style.width = width * widthRatio + "px";
         this.entities.toolbar.style.left = left + width * (1 - widthRatio) / 2 + "px";
-        this.entities.toolbar.style.display = "block";
+        this.utils.show(this.entities.toolbar);
         this.entities.input.select();
         await this.search();
     }
 
     hide = () => {
-        this.entities.toolbar.style.display = "none";
+        this.utils.hide(this.entities.toolbar);
         this.entities.input.value = "";
         this.entities.result.innerHTML = "";
     }
