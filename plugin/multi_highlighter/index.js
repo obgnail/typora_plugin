@@ -36,7 +36,7 @@ class multiHighlighterPlugin extends BasePlugin {
                 </span>
                 <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
             </div>
-            <div id="plugin-multi-highlighter-result" style="display: none"></div>
+            <div id="plugin-multi-highlighter-result" class="plugin-common-hidden"></div>
         </div>
     `
 
@@ -252,7 +252,7 @@ class multiHighlighterPlugin extends BasePlugin {
             })
             this.entities.result.innerHTML = itemList.join("");
         }
-        this.entities.result.style.display = "";
+        this.entities.result.classList.remove("plugin-common-hidden");
     }
 
     setInputValue = value => this.entities.input.value = value;

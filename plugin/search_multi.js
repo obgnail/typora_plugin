@@ -320,7 +320,7 @@ class LinkHelper {
         this.searcherInput.parentNode.insertBefore(this.highlighterModal, this.searcherInput.nextSibling);
 
         this.highlighterModal.classList.remove("plugin-common-hidden");
-        this.highlighterInput.style.display = "none";
+        this.highlighterInput.classList.add("plugin-common-hidden");
         this.styleList.forEach(style => this.highlighterModal.style[style] = "initial");
         this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = true;
     }
@@ -330,7 +330,7 @@ class LinkHelper {
         this.utils.insertElement(this.highlighterModal);
 
         this.highlighterModal.classList.toggle("plugin-common-hidden", forceHide);
-        this.highlighterInput.style.display = "";
+        this.highlighterInput.classList.remove("plugin-common-hidden");
         this.styleList.forEach(style => this.highlighterModal.style[style] = "");
         this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = this.originValue;
     }
