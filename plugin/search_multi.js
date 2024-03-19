@@ -255,6 +255,7 @@ class LinkHelper {
         this.styleList = ["position", "padding", "backgroundColor", "boxShadow", "border"];
 
         this.highlighterModal = document.querySelector("#plugin-multi-highlighter");
+        this.highlighterInput = document.querySelector("#plugin-multi-highlighter-input");
         this.searcherInput = this.searcher.entities.inputBar;
         this.button = this.genButton();
     }
@@ -318,8 +319,8 @@ class LinkHelper {
         this.utils.removeElement(this.highlighterModal);
         this.searcherInput.parentNode.insertBefore(this.highlighterModal, this.searcherInput.nextSibling);
 
-        this.highlighterModal.style.display = "block";
-        this.highlighterModal.querySelector("#plugin-multi-highlighter-input").style.display = "none";
+        this.highlighterModal.classList.remove("plugin-common-hidden");
+        this.highlighterInput.style.display = "none";
         this.styleList.forEach(style => this.highlighterModal.style[style] = "initial");
         this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = true;
     }
@@ -328,8 +329,8 @@ class LinkHelper {
         this.utils.removeElement(this.highlighterModal);
         this.utils.insertElement(this.highlighterModal);
 
-        this.highlighterModal.style.display = forceHide ? "none" : "block";
-        this.highlighterModal.querySelector("#plugin-multi-highlighter-input").style.display = "";
+        this.highlighterModal.classList.toggle("plugin-common-hidden", forceHide);
+        this.highlighterInput.style.display = "";
         this.styleList.forEach(style => this.highlighterModal.style[style] = "");
         this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = this.originValue;
     }

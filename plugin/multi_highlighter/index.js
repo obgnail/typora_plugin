@@ -28,7 +28,7 @@ class multiHighlighterPlugin extends BasePlugin {
     })
 
     html = () => `
-        <div id="plugin-multi-highlighter" class="plugin-common-modal" style="display: none">
+        <div id="plugin-multi-highlighter" class="plugin-common-modal plugin-common-hidden">
             <div id="plugin-multi-highlighter-input">
                 <input type="text" placeholder="多关键字高亮 空格分隔" title="空格分隔 引号包裹视为词组">
                 <span ty-hint="区分大小写" class="plugin-multi-highlighter-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}">
@@ -64,7 +64,7 @@ class multiHighlighterPlugin extends BasePlugin {
         this.processAddCodeBlock();
 
         this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.utils.debounce(() => {
-            this.config.RESEARCH_WHILE_OPEN_FILE && this.entities.modal.style.display === "block" && this.highlight();
+            this.config.RESEARCH_WHILE_OPEN_FILE && !this.isModalHidden() && this.highlight();
         }, 1000));
 
         this.entities.input.addEventListener("keydown", ev => {
@@ -278,6 +278,8 @@ class multiHighlighterPlugin extends BasePlugin {
         }
     }
 
+    isModalHidden = () => this.entities.modal.classList.contains("plugin-common-hidden")
+
     showIfNeed = marker => {
         if (this.config.SHOW_KEYWORD_OUTLINE) {
             document.querySelectorAll(".plugin-multi-highlighter-move").forEach(ele => ele.classList.remove("plugin-multi-highlighter-move"));
@@ -317,14 +319,14 @@ class multiHighlighterPlugin extends BasePlugin {
 
     hide = () => {
         this.clearHighlight();
-        this.entities.modal.style.display = "none";
+        this.entities.modal.classList.add("plugin-common-hidden");
     }
     show = () => {
-        this.entities.modal.style.display = "block";
+        this.entities.modal.classList.remove("plugin-common-hidden");
         this.entities.input.select();
     }
     toggleModal = () => {
-        if (this.entities.modal.style.display === "block") {
+        if (!this.isModalHidden()) {
             this.hide();
         } else {
             this.show();
