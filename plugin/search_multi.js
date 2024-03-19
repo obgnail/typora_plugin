@@ -13,12 +13,12 @@ class searchMultiKeywordPlugin extends BasePlugin {
                 </span>
             </div>
 
-            <div class="plugin-search-multi-result">
+            <div class="plugin-search-multi-result plugin-common-hidden">
                 <div class="search-result-title" data-lg="Menu">匹配的文件</div>
                 <div class="search-result-list"></div>
             </div>
 
-            <div class="plugin-search-multi-info-item">
+            <div class="plugin-search-multi-info-item plugin-common-hidden">
                 <div class="plugin-search-multi-info" data-lg="Front">Searching</div>
                 <div class="typora-search-spinner">
                     <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
@@ -154,7 +154,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     appendItemFunc = keyArr => {
         let index = 0;
         const rootPath = File.getMountFolder();
-        const showResult = this.utils.once(() => this.entities.result.style.display = "block");
+        const showResult = this.utils.once(() => this.entities.result.classList.remove("plugin-common-hidden"));
 
         return (filePath, stats, buffer) => {
             let data = buffer.toString();
@@ -214,14 +214,14 @@ class searchMultiKeywordPlugin extends BasePlugin {
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }
 
-        this.entities.result.style.display = "none";
-        this.entities.info.style.display = "block";
+        this.entities.result.classList.add("plugin-common-hidden");
+        this.entities.info.classList.remove("plugin-common-hidden");
         this.entities.resultList.innerHTML = "";
 
         rootPath = rootPath || File.getMountFolder();
         const allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
         const appendItem = this.appendItemFunc(keyArr);
-        const then = () => this.entities.info.style.display = "none";
+        const then = () => this.entities.info.classList.add("plugin-common-hidden");
         this.traverseDir(rootPath, allowRead, appendItem, then);
     }
 
@@ -230,7 +230,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     isModalHidden = () => this.entities.modal.classList.contains("plugin-common-hidden")
     hide = () => {
         this.toggleModal(false);
-        this.entities.info.style.display = "none";
+        this.entities.info.classList.add("plugin-common-hidden");
     }
     show = () => {
         this.toggleModal(true);

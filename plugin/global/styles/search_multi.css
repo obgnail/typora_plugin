@@ -100,7 +100,6 @@
     max-height: 340px;
     overflow-x: hidden;
     overflow-y: auto;
-    display: none;
 }
 
 .plugin-search-multi-result .search-result-list {
@@ -126,5 +125,4 @@
     line-height: 40px;
     position: relative;
     padding-left: 20px;
-    display: none;
 }
