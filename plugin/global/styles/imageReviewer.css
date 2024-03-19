@@ -8,10 +8,6 @@
     z-index: 99998;
 }
 
-#plugin-image-reviewer {
-    display: none;
-}
-
 #plugin-image-reviewer .mask {
     background-color: rgba(0, 0, 0, ${this.config.mask_background_opacity});
 }

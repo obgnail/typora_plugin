@@ -3,9 +3,17 @@
 }
 
 #plugin-markmap {
-    display: none;
     transition: all 0.5s ease 0s;
     user-select: none;
+    pointer-events: auto;
+}
+
+#plugin-markmap.noBoxShadow {
+    box-shadow: none;
+}
+
+#plugin-markmap.penetrateMouse {
+    pointer-events: none;
 }
 
 .plugin-markmap-wrap {
@@ -16,7 +24,6 @@
 }
 
 .plugin-markmap-grip {
-    display: none;
     background-color: var(--active-file-border-color, black);
     pointer-events: auto;
 }
@@ -53,7 +60,6 @@
 ${icon_wrap}
 ${node_hover}
 ${show_outline}
-
 .plugin-markmap-header {
     display: flex;
     flex-direction: column;

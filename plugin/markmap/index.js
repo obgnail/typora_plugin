@@ -190,13 +190,10 @@ class tocMarkmap {
         this.config = this.controller.config;
     }
 
-    html = () => {
-        const modal = document.createElement("div");
-        modal.id = 'plugin-markmap';
-        modal.classList.add("plugin-common-modal");
-        modal.innerHTML = `
+    html = () => `
+        <div id="plugin-markmap" class="plugin-common-modal plugin-common-hidden">
             <div class="plugin-markmap-wrap">
-                <div class="plugin-markmap-grip grip-right"></div>
+                <div class="plugin-markmap-grip grip-right plugin-common-hidden"></div>
                 <div class="plugin-markmap-header">
                     <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
@@ -211,9 +208,9 @@ class tocMarkmap {
                 <svg id="plugin-markmap-svg"></svg>
                 <div class="plugin-markmap-icon ion-android-arrow-down-right" action="resize" ty-hint="拖动调整大小"></div>
             </div>
-            <div class="plugin-markmap-grip grip-up"></div>`;
-        return modal
-    }
+            <div class="plugin-markmap-grip grip-up plugin-common-hidden"></div>
+        </div>
+    `
 
     hotkey = () => [{hotkey: this.config.TOC_HOTKEY, callback: this.callback}]
 
@@ -252,7 +249,7 @@ class tocMarkmap {
     process = async () => {
         this.init();
 
-        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.entities.modal.style.display === "block" && this.drawToc(this.config.AUTO_FIT_WHEN_UPDATE));
+        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.utils.isShow(this.entities.modal) && this.drawToc(this.config.AUTO_FIT_WHEN_UPDATE));
         this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => hide && this.markmap && this.onButtonClick("close"));
         this.entities.content.addEventListener("transitionend", this.fit);
         this.entities.modal.addEventListener("transitionend", this.fit);
@@ -265,14 +262,15 @@ class tocMarkmap {
         this.onContextMenu();
     }
 
-    callback = () => (this.entities.modal.style.display === "") ? this.drawToc() : this.onButtonClick("close")
+    callback = () => this.utils.isShow(this.entities.modal) ? this.onButtonClick("close") : this.drawToc()
 
     call = async type => type === "draw_toc" && await this.drawToc()
 
     close = () => {
-        this.entities.modal.style.display = "";
-        this.entities.modal.style.top = "";
-        this.initModalRect();
+        this.entities.modal.style = "";
+        this.utils.hide(this.entities.modal);
+        this.entities.modal.classList.remove("noBoxShadow");
+        this.entities.fullScreen.setAttribute("action", "expand");
         this.markmap.destroy();
         this.markmap = null;
     };
@@ -283,15 +281,15 @@ class tocMarkmap {
         const options = this.markmap.options;
         options.zoom = !options.zoom;
         options.pan = !options.pan;
-        await this.redraw(options);
-        this.entities.modal.style.pointerEvents = (options.zoom || options.pan) ? "auto" : "none";
+        await this.redrawToc(options);
+        this.entities.modal.classList.toggle("penetrateMouse", !options.zoom && !options.pan);
     }
 
     _setExpandLevel = async level => {
         level = parseInt(level);
         const options = this.markmap.options;
         options.initialExpandLevel = isNaN(level) ? 1 : level;
-        await this.redraw(options);
+        await this.redrawToc(options);
     }
 
     setExpandLevel = async () => {
@@ -299,77 +297,79 @@ class tocMarkmap {
         this.utils.modal({title: "展开等级", components}, async ([{submit: level}]) => this._setExpandLevel(level));
     }
 
-    getSvgBounding = cloneSvg => {
-        cloneSvg = cloneSvg || this.entities.svg.cloneNode(true);
-        const {width, height} = this.entities.svg.querySelector("g").getBoundingClientRect();
-        const match = cloneSvg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/);
-        if (!match || !match.groups || !match.groups.scale) return {};
-        const scale = parseFloat(match.groups.scale);
-        const realWidth = parseInt(width / scale);
-        const realHeight = parseInt(height / scale);
-
-        let minY = 0, maxY = 0;
-        cloneSvg.querySelectorAll("g.markmap-node").forEach(node => {
-            const match = node.getAttribute("transform").match(/translate\((?<x>.+?),\s(?<y>.+?)\)/);
-            if (!match || !match.groups || !match.groups.x || !match.groups.y) return;
-            const y = parseInt(match.groups.y);
-            minY = Math.min(minY, y);
-            maxY = Math.max(maxY, y);
-        })
-
-        return {minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight}
-    }
-
-    removeUselessStyleInSVG = svg => {
-        const style = svg.querySelector("style");
-        if (style) {
-            style.textContent = style.textContent.replace(".markmap-node>circle{cursor:pointer}", "");
-        }
-    }
-
-    removeForeignObjectInSVG = svg => {
-        svg.querySelectorAll("foreignObject").forEach(foreign => {
-            const {textContent, previousSibling} = foreign;
-            const text = document.createElement("text");
-            const [xAttr, yAttr] = (previousSibling.tagName === "line") ? ["x2", "y2"] : ["cx", "cy"];
-            const x = parseInt(previousSibling.getAttribute(xAttr)) - 12;
-            const y = parseInt(previousSibling.getAttribute(yAttr)) - 5;
-            text.setAttribute("x", x);
-            text.setAttribute("y", y);
-            text.setAttribute("text-anchor", "end");
-            text.textContent = textContent;
-            foreign.parentNode.replaceChild(text, foreign);
-        })
-    }
-
-    getDownloadSvgElement = () => {
-        const cloneSvg = this.entities.svg.cloneNode(true);
-        const {width = 100, height = 100, minY = 0} = this.getSvgBounding(cloneSvg);
-        const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
-        const svgWidth = width + borderX;
-        const svgHeight = height + borderY;
-        cloneSvg.removeAttribute("id");
-        cloneSvg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-        cloneSvg.setAttribute("class", "markmap");
-        cloneSvg.setAttribute("width", svgWidth + "");
-        cloneSvg.setAttribute("height", svgHeight + "");
-        cloneSvg.setAttribute("viewBox", `0 ${minY} ${svgWidth} ${svgHeight}`);
-        cloneSvg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
-        this.removeUselessStyleInSVG(cloneSvg);
-        if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
-            this.removeForeignObjectInSVG(cloneSvg);
-        }
-        return cloneSvg
-    }
-
     download = () => {
-        const svg = this.getDownloadSvgElement();
-        const svgHTML = svg.outerHTML.replace(/<br>/g, "<br/>");
-        const a = document.createElement("a");
-        const fileName = this.utils.getFileName() || "markmap";
-        a.download = fileName + ".svg";
-        a.href = "data:image/svg;utf8," + encodeURIComponent(svgHTML);
-        a.click();
+        const removeSvgForeignObject = svg => {
+            svg.querySelectorAll("foreignObject").forEach(foreign => {
+                const {textContent, previousSibling} = foreign;
+                const text = document.createElement("text");
+                const [xAttr, yAttr] = (previousSibling.tagName === "line") ? ["x2", "y2"] : ["cx", "cy"];
+                const x = parseInt(previousSibling.getAttribute(xAttr)) - 12;
+                const y = parseInt(previousSibling.getAttribute(yAttr)) - 5;
+                text.setAttribute("x", x);
+                text.setAttribute("y", y);
+                text.setAttribute("text-anchor", "end");
+                text.textContent = textContent;
+                foreign.parentNode.replaceChild(text, foreign);
+            })
+        }
+
+        const removeSvgUselessStyle = svg => {
+            const style = svg.querySelector("style");
+            if (style) {
+                style.textContent = style.textContent.replace(".markmap-node>circle{cursor:pointer}", "");
+            }
+        }
+
+        const getSvgBounding = svg => {
+            const {width, height} = this.entities.svg.querySelector("g").getBoundingClientRect();
+            const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/);
+            if (!match || !match.groups || !match.groups.scale) return {};
+            const scale = parseFloat(match.groups.scale);
+            const realWidth = parseInt(width / scale);
+            const realHeight = parseInt(height / scale);
+
+            let minY = 0, maxY = 0;
+            svg.querySelectorAll("g.markmap-node").forEach(node => {
+                const match = node.getAttribute("transform").match(/translate\((?<x>.+?),\s(?<y>.+?)\)/);
+                if (!match || !match.groups || !match.groups.x || !match.groups.y) return;
+                const y = parseInt(match.groups.y);
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);
+            })
+
+            return {minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight}
+        }
+
+        const setSvgSize = svg => {
+            const {width = 100, height = 100, minY = 0} = getSvgBounding(svg);
+            const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
+            const svgWidth = width + borderX;
+            const svgHeight = height + borderY;
+            svg.removeAttribute("id");
+            svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+            svg.setAttribute("class", "markmap");
+            svg.setAttribute("width", svgWidth + "");
+            svg.setAttribute("height", svgHeight + "");
+            svg.setAttribute("viewBox", `0 ${minY} ${svgWidth} ${svgHeight}`);
+            svg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
+        }
+
+        const download = svg => {
+            const svgHTML = svg.outerHTML.replace(/<br>/g, "<br/>");
+            const a = document.createElement("a");
+            const fileName = this.utils.getFileName() || "markmap";
+            a.download = fileName + ".svg";
+            a.href = "data:image/svg;utf8," + encodeURIComponent(svgHTML);
+            a.click();
+        }
+
+        const svg = this.entities.svg.cloneNode(true);
+        setSvgSize(svg);
+        removeSvgUselessStyle(svg);
+        if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
+            removeSvgForeignObject(svg);
+        }
+        download(svg);
     }
 
     pinUp = async (draw = true) => {
@@ -384,22 +384,22 @@ class tocMarkmap {
             await this.pinUtils.init();
             const {top, height, width, left} = this.contentOriginRect;
             const newHeight = height * this.config.HEIGHT_PRECENT_WHEN_PIN_UP / 100;
+            this.entities.modal.classList.add("noBoxShadow");
             Object.assign(this.entities.modal.style, {
                 left: `${left}px`,
                 width: `${width}px`,
                 top: `${top}px`,
                 height: `${newHeight}px`,
-                boxShadow: "initial"
             });
             this.entities.content.style.top = `${top + newHeight}px`;
-            this.entities.gripUp.style.display = "block";
+            this.utils.show(this.entities.gripUp);
             button.classList.replace("ion-chevron-up", "ion-ios7-undo");
             button.setAttribute("ty-hint", "还原窗口");
         } else {
             this.setModalRect(this.modalOriginRect);
-            this.entities.modal.style.boxShadow = "";
+            this.entities.modal.classList.remove("noBoxShadow");
             this.entities.content.style.top = `${this.contentOriginRect.top}px`;
-            this.entities.gripUp.style.display = "";
+            this.utils.hide(this.entities.gripUp);
             button.classList.replace("ion-ios7-undo", "ion-chevron-up");
             button.setAttribute("ty-hint", "固定到顶部");
         }
@@ -421,29 +421,29 @@ class tocMarkmap {
             await this.pinUtils.init();
             const {top, width, height, right} = this.contentOriginRect;
             const newWidth = width * this.config.WIDTH_PRECENT_WHEN_PIN_RIGHT / 100;
+            this.entities.modal.classList.add("noBoxShadow");
             Object.assign(this.entities.modal.style, {
                 top: `${top}px`,
                 right: `${right}px`,
                 left: `${right - newWidth}px`,
                 height: `${height}px`,
                 width: `${newWidth}px`,
-                boxShadow: "initial"
             });
             Object.assign(this.entities.content.style, {
                 right: `${right - newWidth}px`,
                 width: `${width - newWidth}px`
             });
             write.style.width = "initial";
-            this.entities.gripRight.style.display = "block";
+            this.utils.show(this.entities.gripRight);
             button.classList.replace("ion-chevron-right", "ion-ios7-undo");
             button.setAttribute("ty-hint", "还原窗口");
         } else {
             this.setModalRect(this.modalOriginRect);
-            this.entities.modal.style.boxShadow = "";
+            this.entities.modal.classList.remove("noBoxShadow");
             this.entities.content.style.width = "";
             this.entities.content.style.right = "";
             write.style.width = "";
-            this.entities.gripRight.style.display = "";
+            this.utils.hide(this.entities.gripRight);
 
             button.classList.replace("ion-ios7-undo", "ion-chevron-right");
             button.setAttribute("ty-hint", "固定到右侧");
@@ -453,7 +453,7 @@ class tocMarkmap {
         }
     }
 
-    waitUnpin = async () => {
+    _waitUnpin = async () => {
         if (this.pinUtils.isPinUp) {
             await this.pinUp();
         }
@@ -465,18 +465,16 @@ class tocMarkmap {
     cleanTransition = (run = true) => run ? this.entities.modal.style.transition = "none" : undefined
     rollbackTransition = (run = true) => run ? this.entities.modal.style.transition = "" : undefined
 
-    hideToolbar = () => {
-        this.entities.header.style.display = "none";
+    toggleToolbar = show => {
+        this.utils.toggleVisible(this.entities.header, !show);
         this.fit();
     }
-    showToolbar = () => {
-        this.entities.header.style.removeProperty("display");
-        this.fit();
-    }
+    hideToolbar = () => this.toggleToolbar(false)
+    showToolbar = () => this.toggleToolbar(true)
 
     onButtonClick = async (action, button) => {
         if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setExpandLevel"].includes(action)) {
-            await this.waitUnpin();
+            await this._waitUnpin();
         }
         await this[action](button);
     }
@@ -500,7 +498,7 @@ class tocMarkmap {
         };
         const showMenu = () => {
             const fullScreen = this.entities.fullScreen.getAttribute("action");
-            const toolbarVisibility = (this.entities.header.style.display === "none") ? "showToolbar" : "hideToolbar";
+            const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar";
             return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "setExpandLevel", "download", "close"])
         }
         const callback = ({key}) => this.onButtonClick(key);
@@ -514,7 +512,7 @@ class tocMarkmap {
         const onMouseDown = () => {
             moveElement.removeAttribute(hint);
             this.cleanTransition(!this.config.USE_ANIMATION_WHEN_DRAG);
-            this.waitUnpin();
+            this._waitUnpin();
         }
         const onMouseUp = () => {
             moveElement.setAttribute(hint, value);
@@ -568,8 +566,8 @@ class tocMarkmap {
             const onMouseUp = async () => {
                 this.entities.resize.setAttribute(attr, hint);
                 this.rollbackTransition(!this.config.USE_ANIMATION_WHEN_RESIZE);
-                await this.waitUnpin();
-                await this.setFullScreenIcon(this.entities.fullScreen, false);
+                await this._waitUnpin();
+                this.setFullScreenIcon(false);
             }
             this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, true, true, onMouseDown, onMouseMove, onMouseUp);
         }
@@ -669,24 +667,21 @@ class tocMarkmap {
         })
     }
 
-    expand = async button => {
+    expand = () => {
         this.modalOriginRect = this.entities.modal.getBoundingClientRect();
         this.setModalRect(this.entities.content.getBoundingClientRect());
-        await this.setFullScreenIcon(button, true);
+        this.setFullScreenIcon(true);
     }
 
-    shrink = async button => {
+    shrink = () => {
         this.setModalRect(this.modalOriginRect);
-        await this.setFullScreenIcon(button, false)
+        this.setFullScreenIcon(false);
     }
 
-    setFullScreenIcon = async (button, fullScreen) => {
-        button = button || this.entities.fullScreen;
-        const boxShadow = fullScreen ? "initial" : "";
-        const action = fullScreen ? "shrink" : "expand";
-        this.entities.modal.style.boxShadow = boxShadow;
-        button.setAttribute("action", action);
-        await this.drawToc();
+    setFullScreenIcon = fullScreen => {
+        this.entities.modal.classList.toggle("noBoxShadow", fullScreen);
+        this.entities.fullScreen.setAttribute("action", fullScreen ? "shrink" : "expand");
+        this.fit();
     }
 
     setModalRect = rect => {
@@ -700,7 +695,20 @@ class tocMarkmap {
         });
     }
 
-    initModalRect = () => {
+    drawToc = async (fit = true, options = null) => {
+        const md = this.controller.getToc();
+        if (md !== undefined) {
+            await this.draw(md, fit, options);
+        }
+    }
+
+    redrawToc = async options => {
+        this.markmap.destroy();
+        const md = this.controller.getToc();
+        await this.create(md, options);
+    }
+
+    _initModalRect = () => {
         const {left, width, height} = this.entities.content.getBoundingClientRect();
         const {LEFT_PERCENT_WHEN_INIT, WIDTH_PERCENT_WHEN_INIT, HEIGHT_PERCENT_WHEN_INIT} = this.config;
         Object.assign(this.entities.modal.style, {
@@ -710,21 +718,14 @@ class tocMarkmap {
         });
     }
 
-    drawToc = async (fit = true) => {
-        const md = this.controller.getToc();
-        if (typeof md !== "undefined") {
-            await this.draw(md, fit);
-        }
-    }
-
-    draw = async (md, fit = true) => {
-        this.entities.modal.style.display = "block";
+    draw = async (md, fit = true, options = null) => {
+        this.utils.show(this.entities.modal);
         if (this.markmap) {
             await this.update(md, fit);
         } else {
-            this.initModalRect();
+            this._initModalRect();
             await this.controller.lazyLoad();
-            await this.create(md);
+            await this.create(md, options);
         }
     }
 
@@ -740,12 +741,6 @@ class tocMarkmap {
         if (fit) {
             await this.markmap.fit();
         }
-    }
-
-    redraw = async options => {
-        this.markmap.destroy();
-        const md = this.controller.getToc();
-        await this.create(md, options);
     }
 }
 

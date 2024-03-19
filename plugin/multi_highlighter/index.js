@@ -27,22 +27,18 @@ class multiHighlighterPlugin extends BasePlugin {
         colors_style: this.config.STYLE_COLOR.map((color, idx) => `.plugin-search-hit${idx} { background-color: ${color}; }`).join("\n")
     })
 
-    html = () => {
-        const modal = document.createElement("div");
-        modal.id = 'plugin-multi-highlighter';
-        modal.classList.add("plugin-common-modal");
-        modal.style.display = "none";
-        modal.innerHTML = `
+    html = () => `
+        <div id="plugin-multi-highlighter" class="plugin-common-modal plugin-common-hidden">
             <div id="plugin-multi-highlighter-input">
                 <input type="text" placeholder="多关键字高亮 空格分隔" title="空格分隔 引号包裹视为词组">
-                <span ty-hint="区分大小写" class="plugin-multi-highlighter-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" aria-label="区分大小写">
+                <span ty-hint="区分大小写" class="plugin-multi-highlighter-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}">
                     <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                 </span>
                 <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
             </div>
-            <div id="plugin-multi-highlighter-result" style="display: none"></div>`;
-        return modal
-    }
+            <div id="plugin-multi-highlighter-result" class="plugin-common-hidden"></div>
+        </div>
+    `
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
@@ -68,7 +64,7 @@ class multiHighlighterPlugin extends BasePlugin {
         this.processAddCodeBlock();
 
         this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.utils.debounce(() => {
-            this.config.RESEARCH_WHILE_OPEN_FILE && this.entities.modal.style.display === "block" && this.highlight();
+            this.config.RESEARCH_WHILE_OPEN_FILE && this.utils.isShow(this.entities.modal) && this.highlight();
         }, 1000));
 
         this.entities.input.addEventListener("keydown", ev => {
@@ -256,7 +252,7 @@ class multiHighlighterPlugin extends BasePlugin {
             })
             this.entities.result.innerHTML = itemList.join("");
         }
-        this.entities.result.style.display = "";
+        this.utils.show(this.entities.result);
     }
 
     setInputValue = value => this.entities.input.value = value;
@@ -321,14 +317,14 @@ class multiHighlighterPlugin extends BasePlugin {
 
     hide = () => {
         this.clearHighlight();
-        this.entities.modal.style.display = "none";
+        this.utils.hide(this.entities.modal);
     }
     show = () => {
-        this.entities.modal.style.display = "block";
+        this.utils.show(this.entities.modal);
         this.entities.input.select();
     }
     toggleModal = () => {
-        if (this.entities.modal.style.display === "block") {
+        if (this.utils.isShow(this.entities.modal)) {
             this.hide();
         } else {
             this.show();

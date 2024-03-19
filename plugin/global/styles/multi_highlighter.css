@@ -75,6 +75,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
+    user-select: none;
 }
 
 .plugin-multi-highlighter-result-item:hover {

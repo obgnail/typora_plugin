@@ -9,7 +9,7 @@ class windowTabBarPlugin extends BasePlugin {
         }
     }
     styleTemplate = () => true
-    htmlTemplate = () => [{id: "plugin-window-tab", children: [{class_: "tab-bar"}]}]
+    html = () => `<div id="plugin-window-tab"><div class="tab-bar"></div></div>`
     hotkey = () => [
         {hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: this.nextTab},
         {hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY, callback: this.previousTab},

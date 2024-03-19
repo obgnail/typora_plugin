@@ -8,3 +8,7 @@
     color: var(--text-color);
     border-radius: 4px;
 }
+
+.plugin-common-hidden {
+    display: none !important;
+}

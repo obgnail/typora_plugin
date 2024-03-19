@@ -40,7 +40,7 @@ class textStylizePlugin extends BasePlugin {
 
     htmlTemplate = () => {
         const children = [{class_: "stylize-tool", children: this.genToolbarHTML()}, this.genTableHTML()];
-        return [{id: "plugin-text-stylize", class_: "plugin-common-modal", style: {display: "none"}, children}]
+        return [{id: "plugin-text-stylize", class_: "plugin-common-modal plugin-common-hidden", children}]
     }
 
     hotkey = () => {
@@ -72,7 +72,7 @@ class textStylizePlugin extends BasePlugin {
             const showPalette = action === "foregroundColor" || action === "backgroundColor" || action === "borderColor";
             that.entities.toolbar.querySelectorAll(":scope > [action]").forEach(ele => ele.classList.remove("select"));
             this.classList.add("select");
-            that.entities.palette.style.display = showPalette ? "block" : "none";
+            that.utils.toggleVisible(that.entities.palette, !showPalette);
         })
 
         this.entities.toolbar.addEventListener("mousedown", ev => {
@@ -101,7 +101,7 @@ class textStylizePlugin extends BasePlugin {
         }, true)
     }
 
-    call = () => this.entities.modal.style.display = (this.entities.modal.style.display === "block") ? "none" : "block";
+    call = () => this.utils.toggleVisible(this.entities.modal);
 
     genToolbarHTML = () => {
         const toolMap = {

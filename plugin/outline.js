@@ -3,27 +3,24 @@ class outlinePlugin extends BasePlugin {
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
-    htmlTemplate = () => {
-        const footerChildren = [
-            {class_: "plugin-outline-icon ion-code", type: "fence", "ty-hint": "代码块"},
-            {class_: "plugin-outline-icon ion-image", type: "image", "ty-hint": "图片"},
-            {class_: "plugin-outline-icon ion-grid", type: "table", "ty-hint": "表格"},
-        ]
-        if (this.config.USE_ALL) {
-            footerChildren.push({class_: "plugin-outline-icon ion-android-data", type: "all", "ty-hint": "混合"})
-        }
+    html = () => {
         const [className, hint] = this.config.SHOW_HIDDEN ? ["ion-eye", "显示被其他插件隐藏的元素"] : ["ion-eye-disabled", "不显示被其他插件隐藏的元素"];
-        const headerChildren = [
-            {class_: `plugin-outline-icon ${className}`, type: "eye", "ty-hint": hint},
-            {class_: "plugin-outline-icon ion-arrow-move", type: "move", "ty-hint": "移动"},
-            {class_: "plugin-outline-icon ion-close", type: "close", "ty-hint": "关闭"},
-        ]
-        const children = [
-            {class_: "plugin-outline-header", children: headerChildren},
-            {class_: "plugin-outline-list"},
-            {class_: "plugin-outline-footer", children: footerChildren},
-        ]
-        return [{id: "plugin-outline", class_: "plugin-common-modal", children}]
+        return `
+            <div id="plugin-outline" class="plugin-common-modal plugin-common-hidden">
+                <div class="plugin-outline-header">
+                    <div class="plugin-outline-icon ${className}" type="eye" ty-hint="${hint}"></div>
+                    <div class="plugin-outline-icon ion-arrow-move" type="move" ty-hint="移动"></div>
+                    <div class="plugin-outline-icon ion-close" type="close" ty-hint="关闭"></div>
+                </div>
+                <div class="plugin-outline-list"></div>
+                <div class="plugin-outline-footer">
+                    <div class="plugin-outline-icon ion-code" type="fence" ty-hint="代码块"></div>
+                    <div class="plugin-outline-icon ion-image" type="image" ty-hint="图片"></div>
+                    <div class="plugin-outline-icon ion-grid" type="table" ty-hint="表格"></div>
+                    ${this.config.USE_ALL ? '<div class="plugin-outline-icon ion-android-data" type="all" ty-hint="混合"></div>': ""}
+                </div>
+            </div>
+        `
     }
 
     init = () => {
@@ -77,13 +74,13 @@ class outlinePlugin extends BasePlugin {
         })
     }
 
-    update = () => this.entities.modal.style.display === "block" && this.refresh()
+    update = () => this.utils.isShow(this.entities.modal) && this.refresh()
 
     collectAndShow = Type => {
         this.setFooterActive(Type);
         this.collectUtil.collect();
         this.collectUtil.bindDOM(Type);
-        this.entities.modal.style.display = "block";
+        this.utils.show(this.entities.modal);
     }
 
     setFooterActive = Type => {
@@ -94,7 +91,7 @@ class outlinePlugin extends BasePlugin {
     }
 
     refresh = () => {
-        if (this.entities.modal.style.display === "block") {
+        if (this.utils.isShow(this.entities.modal)) {
             const search = this.entities.footer.querySelector(".plugin-outline-icon.select");
             this.collectAndShow(search.getAttribute("Type"));
         }
@@ -110,14 +107,14 @@ class outlinePlugin extends BasePlugin {
     }
 
     call = () => {
-        if (this.entities.modal.style.display === "block") {
+        if (this.utils.isShow(this.entities.modal)) {
             this.hide();
         } else {
             this.collectAndShow(this.config.DEFAULT_TYPE);
         }
     };
 
-    hide = () => this.entities.modal.style.display = "none";
+    hide = () => this.utils.hide(this.entities.modal);
 }
 
 class _collectUtil {

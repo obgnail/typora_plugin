@@ -1,9 +1,7 @@
 class tocPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
-    htmlTemplate = () => {
-        const children = [{class_: "grip-right"}, {class_: "toc-ul"}];
-        return [{id: "plugin-toc", class_: "plugin-common-modal plugin-toc", style: {display: "none"}, children}]
-    }
+    html = () => `<div id="plugin-toc" class="plugin-common-modal plugin-common-hidden plugin-toc"><div class="grip-right"></div><div class="toc-ul"></div></div>`
+
     hotkey = () => [this.config.hotkey]
 
     process = () => {
@@ -32,13 +30,13 @@ class tocPlugin extends BaseCustomPlugin {
 
     callback = () => this.toggle()
 
-    isModalShow = () => this.entities.modal.style.display !== "none"
+    isModalShow = () => this.utils.isShow(this.entities.modal)
 
     toggle = () => {
         const write = document.querySelector("#write");
         if (this.isModalShow()) {
             write.style.width = "";
-            this.entities.modal.style.display = "none";
+            this.utils.hide(this.entities.modal);
             this.entities.modal.style.removeProperty("left");
             this.entities.modal.style.removeProperty("width");
             this.entities.content.style.removeProperty("right");
@@ -46,7 +44,7 @@ class tocPlugin extends BaseCustomPlugin {
             return
         }
 
-        this.entities.modal.style.removeProperty("display");
+        this.utils.show(this.entities.modal);
         const {width, right} = this.entities.content.getBoundingClientRect();
         const modalWidth = width * this.config.width_percent_when_pin_right / 100;
         this.entities.modal.style.width = modalWidth + "px";

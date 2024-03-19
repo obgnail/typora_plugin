@@ -1,12 +1,8 @@
 class searchMultiKeywordPlugin extends BasePlugin {
     styleTemplate = () => true
 
-    html = () => {
-        const modal = document.createElement("div");
-        modal.id = 'plugin-search-multi';
-        modal.classList.add("plugin-common-modal");
-        modal.style.display = "none";
-        modal.innerHTML = `
+    html = () => `
+        <div id="plugin-search-multi" class="plugin-common-modal plugin-common-hidden">
             <div id="plugin-search-multi-input">
                 <input type="text" placeholder="多关键字查找 空格分隔" title="空格分隔 引号包裹视为词组">
                 <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
@@ -17,19 +13,19 @@ class searchMultiKeywordPlugin extends BasePlugin {
                 </span>
             </div>
 
-            <div class="plugin-search-multi-result">
+            <div class="plugin-search-multi-result plugin-common-hidden">
                 <div class="search-result-title" data-lg="Menu">匹配的文件</div>
                 <div class="search-result-list"></div>
             </div>
 
-            <div class="plugin-search-multi-info-item">
+            <div class="plugin-search-multi-info-item plugin-common-hidden">
                 <div class="plugin-search-multi-info" data-lg="Front">Searching</div>
                 <div class="typora-search-spinner">
                     <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
                 </div>
-            </div>`;
-        return modal
-    }
+            </div>
+        </div>
+    `
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
@@ -51,7 +47,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
         if (this.config.REFOUCE_WHEN_OPEN_FILE) {
             this.utils.addEventListener(this.utils.eventType.otherFileOpened, () => {
-                if (this.entities.modal.style.display === "block") {
+                if (!this.isModalHidden()) {
                     setTimeout(() => this.entities.input.select(), 300);
                 }
             })
@@ -158,7 +154,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     appendItemFunc = keyArr => {
         let index = 0;
         const rootPath = File.getMountFolder();
-        const showResult = this.utils.once(() => this.entities.result.style.display = "block");
+        const showResult = this.utils.once(() => this.utils.show(this.entities.result));
 
         return (filePath, stats, buffer) => {
             let data = buffer.toString();
@@ -199,8 +195,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
     }
 
-    hideIfNeed = () => this.config.AUTO_HIDE && (this.entities.modal.style.display = "none")
-
     verifyExt = filename => {
         if (filename[0] === ".") {
             return false
@@ -220,27 +214,29 @@ class searchMultiKeywordPlugin extends BasePlugin {
             keyArr = keyArr.map(ele => ele.toLowerCase());
         }
 
-        this.entities.result.style.display = "none";
-        this.entities.info.style.display = "block";
+        this.utils.hide(this.entities.result);
+        this.utils.show(this.entities.info);
         this.entities.resultList.innerHTML = "";
 
         rootPath = rootPath || File.getMountFolder();
         const allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
         const appendItem = this.appendItemFunc(keyArr);
-        const then = () => this.entities.info.style.display = "none";
+        const then = () => this.utils.hide(this.entities.info);
         this.traverseDir(rootPath, allowRead, appendItem, then);
     }
 
+    hideIfNeed = () => this.config.AUTO_HIDE && this.utils.hide(this.entities.modal);
+    isModalHidden = () => this.utils.isHidden(this.entities.modal);
     hide = () => {
-        this.entities.modal.style.display = "none";
-        this.entities.info.style.display = "none";
+        this.utils.hide(this.entities.modal);
+        this.utils.hide(this.entities.info);
     }
     show = () => {
-        this.entities.modal.style.display = "block";
+        this.utils.show(this.entities.modal)
         this.entities.input.select();
     }
     call = () => {
-        if (this.entities.modal.style.display === "block") {
+        if (!this.isModalHidden()) {
             this.hide();
         } else {
             this.show();
@@ -258,12 +254,13 @@ class LinkHelper {
         this.styleList = ["position", "padding", "backgroundColor", "boxShadow", "border"];
 
         this.highlighterModal = document.querySelector("#plugin-multi-highlighter");
+        this.highlighterInput = document.querySelector("#plugin-multi-highlighter-input");
         this.searcherInput = this.searcher.entities.inputBar;
         this.button = this.genButton();
     }
 
     process = () => {
-        const isLinking = () => this.searcher.config.LINK_OTHER_PLUGIN && this.searcher.entities.modal.style.display === "block";
+        const isLinking = () => this.searcher.config.LINK_OTHER_PLUGIN && !this.searcher.isModalHidden();
 
         // 当处于联动状态，在search_multi搜索前先设置highlighter的inputValue和caseSensitive
         this.utils.decorate(() => this.highlighter, "highlight", () => isLinking() && this.syncOption());
@@ -321,8 +318,8 @@ class LinkHelper {
         this.utils.removeElement(this.highlighterModal);
         this.searcherInput.parentNode.insertBefore(this.highlighterModal, this.searcherInput.nextSibling);
 
-        this.highlighterModal.style.display = "block";
-        this.highlighterModal.querySelector("#plugin-multi-highlighter-input").style.display = "none";
+        this.utils.show(this.highlighterModal);
+        this.utils.hide(this.highlighterInput);
         this.styleList.forEach(style => this.highlighterModal.style[style] = "initial");
         this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = true;
     }
@@ -331,8 +328,8 @@ class LinkHelper {
         this.utils.removeElement(this.highlighterModal);
         this.utils.insertElement(this.highlighterModal);
 
-        this.highlighterModal.style.display = forceHide ? "none" : "block";
-        this.highlighterModal.querySelector("#plugin-multi-highlighter-input").style.display = "";
+        this.utils.toggleVisible(this.highlighterModal, forceHide);
+        this.utils.show(this.highlighterInput);
         this.styleList.forEach(style => this.highlighterModal.style[style] = "");
         this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = this.originValue;
     }

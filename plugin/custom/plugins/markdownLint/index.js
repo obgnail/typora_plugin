@@ -2,14 +2,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
     styleTemplate = () => ({modal_width: (this.config.modal_width === "auto" ? "fit-content" : this.config.modal_width)})
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
     hotkey = () => [this.config.hotkey]
-    htmlTemplate = () => {
-        const pre = [{ele: "pre", tabindex: "0"}];
-        const el = [{id: "plugin-markdownlint", class_: "plugin-common-modal", style: {display: "none"}, children: pre}]
-        if (this.config.use_button) {
-            el.push({id: "plugin-markdownlint-button", "ty-hint": "markdown格式规范检测"});
-        }
-        return el
-    }
+    html = () => `
+        <div id="plugin-markdownlint" class="plugin-common-modal plugin-common-hidden"><pre tabindex="0"></pre></div>
+        ${this.config.use_button ? '<div id="plugin-markdownlint-button" ty-hint="markdown格式规范检测"></div>' : ""}
+    `
 
     process = () => {
         this.entities = {
@@ -29,7 +25,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             if (this.entities.button) {
                 this.entities.button.style.backgroundColor = content.length ? this.config.error_color : this.config.pass_color;
             }
-            if (this.entities.modal.style.display !== "none") {
+            if (this.utils.isShow(this.entities.modal)) {
                 this.entities.pre.innerHTML = content.length ? this.genMarkdownlint(content) : this.config.pass_text
             }
         }
@@ -91,7 +87,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     callback = async anchorNode => {
-        this.entities.modal.style.display = this.entities.modal.style.display === "none" ? "" : "none";
+        this.utils.toggleVisible(this.entities.modal);
         await this.updateLinter();
     }
 

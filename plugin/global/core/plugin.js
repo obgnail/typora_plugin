@@ -738,6 +738,12 @@ class utils {
     static removeElement = ele => ele && ele.parentElement && ele.parentElement.removeChild(ele)
     static removeElementByID = id => this.removeElement(document.getElementById(id))
 
+    static isShow = ele => !ele.classList.contains("plugin-common-hidden");
+    static isHidden = ele => ele.classList.contains("plugin-common-hidden");
+    static hide = ele => ele.classList.add("plugin-common-hidden");
+    static show = ele => ele.classList.remove("plugin-common-hidden");
+    static toggleVisible = (ele, force) => ele.classList.toggle("plugin-common-hidden", force);
+
     static isInViewBox = el => {
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
         const totalWidth = window.innerWidth || document.documentElement.clientWidth;
@@ -813,8 +819,13 @@ class utils {
     static insertElement = elements => {
         if (!elements) return;
 
+        if (typeof elements === "string") {
+            const doc = new DOMParser().parseFromString(elements, "text/html");
+            elements = doc.body.childNodes;
+        }
+
         let target = elements;
-        if (elements instanceof Array) {
+        if (elements instanceof Array || elements instanceof NodeList) {
             target = document.createDocumentFragment();
             elements.forEach(ele => target.appendChild(ele));
         }
@@ -1580,18 +1591,18 @@ class dialog {
     }
 
     html = () => {
-        const modal = document.createElement("div");
-        modal.id = "plugin-custom-modal";
-        modal.classList.add("modal-dialog");
-        modal.innerHTML = `
+        const modal = `
+        <div id="plugin-custom-modal" class="modal-dialog">
             <div class="modal-content">
-              <div class="modal-header"><div class="modal-title" data-lg="Front">自定义插件弹窗</div></div>
-              <div class="modal-body"></div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-default plugin-modal-cancel" data-dismiss="modal" data-lg="Front">取消</button>
-                <button type="button" class="btn btn-primary plugin-modal-submit" data-lg="Front">确定</button>
-              </div>
-            </div>`;
+                <div class="modal-header"><div class="modal-title" data-lg="Front">自定义插件弹窗</div></div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default plugin-modal-cancel" data-dismiss="modal" data-lg="Front">取消</button>
+                    <button type="button" class="btn btn-primary plugin-modal-submit" data-lg="Front">确定</button>
+                </div>
+            </div>
+        </div>
+        `
         this.utils.insertElement(modal);
     }
 
