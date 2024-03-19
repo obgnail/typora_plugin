@@ -24,7 +24,6 @@
 }
 
 .plugin-markmap-grip {
-    display: none;
     background-color: var(--active-file-border-color, black);
     pointer-events: auto;
 }

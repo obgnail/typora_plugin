@@ -56,13 +56,13 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
             {class_: "review-tool", children: toolbar}
         ]
-        return [{id: "plugin-image-reviewer", class_: "plugin-cover-content", children}]
+        return [{id: "plugin-image-reviewer", class_: "plugin-cover-content plugin-common-hidden", children}]
     }
 
     hotkey = () => [this.config.hotkey]
 
     callback = () => {
-        if (this.entities.reviewer.style.display === "") {
+        if (this.utils.isHidden(this.entities.reviewer)) {
             this.show();
         } else {
             this.close();
@@ -310,7 +310,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         const autoSize = this.entities.ops.querySelector(`[option="autoSize"]`);
         const download = this.entities.ops.querySelector(`[option="download"]`);
         autoSize && (autoSize.className = "fa fa-search-plus");
-        download && (download.style.display = this.utils.isNetworkImage(src) ? "block" : "none");
+        download && this.utils.toggleVisible(download, !this.utils.isNetworkImage(src));
     }
 
     optionHint = () => {
@@ -404,14 +404,14 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         document.activeElement.blur();
         this.handleBlurBackground(false);
         this.handleHotkey(false);
-        this.entities.reviewer.style.display = "block";
+        this.utils.show(this.entities.reviewer);
         this.showImage();
     }
     close = () => {
         this.handleBlurBackground(true);
         this.handleHotkey(true);
         this.handlePlayTimer(true);
-        this.entities.reviewer.style.display = "";
+        this.utils.hide(this.entities.reviewer);
         this.imageGetter = null;
     }
     dummy = () => null

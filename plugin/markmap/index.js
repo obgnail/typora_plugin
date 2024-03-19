@@ -193,7 +193,7 @@ class tocMarkmap {
     html = () => `
         <div id="plugin-markmap" class="plugin-common-modal plugin-common-hidden">
             <div class="plugin-markmap-wrap">
-                <div class="plugin-markmap-grip grip-right"></div>
+                <div class="plugin-markmap-grip grip-right plugin-common-hidden"></div>
                 <div class="plugin-markmap-header">
                     <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
                     <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
@@ -208,7 +208,7 @@ class tocMarkmap {
                 <svg id="plugin-markmap-svg"></svg>
                 <div class="plugin-markmap-icon ion-android-arrow-down-right" action="resize" ty-hint="拖动调整大小"></div>
             </div>
-            <div class="plugin-markmap-grip grip-up"></div>
+            <div class="plugin-markmap-grip grip-up plugin-common-hidden"></div>
         </div>
     `
 
@@ -392,14 +392,14 @@ class tocMarkmap {
                 height: `${newHeight}px`,
             });
             this.entities.content.style.top = `${top + newHeight}px`;
-            this.entities.gripUp.style.display = "block";
+            this.utils.show(this.entities.gripUp);
             button.classList.replace("ion-chevron-up", "ion-ios7-undo");
             button.setAttribute("ty-hint", "还原窗口");
         } else {
             this.setModalRect(this.modalOriginRect);
             this.entities.modal.classList.remove("noBoxShadow");
             this.entities.content.style.top = `${this.contentOriginRect.top}px`;
-            this.entities.gripUp.style.display = "";
+            this.utils.hide(this.entities.gripUp);
             button.classList.replace("ion-ios7-undo", "ion-chevron-up");
             button.setAttribute("ty-hint", "固定到顶部");
         }
@@ -434,7 +434,7 @@ class tocMarkmap {
                 width: `${width - newWidth}px`
             });
             write.style.width = "initial";
-            this.entities.gripRight.style.display = "block";
+            this.utils.show(this.entities.gripRight);
             button.classList.replace("ion-chevron-right", "ion-ios7-undo");
             button.setAttribute("ty-hint", "还原窗口");
         } else {
@@ -443,7 +443,7 @@ class tocMarkmap {
             this.entities.content.style.width = "";
             this.entities.content.style.right = "";
             write.style.width = "";
-            this.entities.gripRight.style.display = "";
+            this.utils.hide(this.entities.gripRight);
 
             button.classList.replace("ion-ios7-undo", "ion-chevron-right");
             button.setAttribute("ty-hint", "固定到右侧");
