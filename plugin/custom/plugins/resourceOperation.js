@@ -15,8 +15,8 @@
 *    2. 递归处理新的内容
 */
 class resourceOperation extends BaseCustomPlugin {
-    selector = () => this.utils.getFilePath() ? undefined : this.utils.nonExistSelector
-    hint = isDisable => isDisable && "空白页不可使用此插件"
+    styleTemplate = () => true
+    html = () => '<div id="plugin-resource-operation" class="plugin-common-modal plugin-common-hidden"></div>'
 
     init = () => {
         const {ignore_image_div, resource_suffix, markdown_suffix, append_empty_suffix_file} = this.config;
@@ -40,51 +40,53 @@ class resourceOperation extends BaseCustomPlugin {
     run = () => this.traverseDir(File.getMountFolder(), this.collect, this.operate)
 
     operate = () => {
-        const {use_md_syntax_in_report, auto_open, auto_use_datetable, operation} = this.config;
-        const {getCurrentDirPath, openFile, getPlugin, getFilePath, Package: {Path, Fs}} = this.utils;
-        const {dirname, join, basename} = Path;
-        const {mkdir, rename, unlink, writeFileSync} = Fs;
+        const getResult = () => {
+            const nonExistInFile = new Set([...this.resources].filter(x => !this.resourcesInFile.has(x)));
+            const nonExistInFolder = new Set([...this.resourcesInFile].filter(x => !this.resources.has(x)));
+            this.resources.clear();
+            this.resourcesInFile.clear();
+            return {nonExistInFile, nonExistInFolder}
+        }
 
-        const _report = (nonExistInFile, nonExistInFolder) => {
-            const template = (file, idx) => use_md_syntax_in_report ? `| ![resource${idx}](${file}) |` : `| \`${file}\` |`
-            const _nonExistInFile = Array.from(nonExistInFile, template);
-            const _nonExistInFolder = Array.from(nonExistInFolder, template);
-            const fileContent = `## 存在于文件夹，但是不存在于 md 文件的资源(共${_nonExistInFile.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n
-## 存在于 md 文件，但是不存在于文件夹的资源(共${_nonExistInFolder.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFolder.join("\n")}`;
-
-            const filepath = join(getCurrentDirPath(), "resource-report.md");
-            writeFileSync(filepath, fileContent, "utf8");
-            if (auto_open) {
-                openFile(filepath);
-                const datatablePlugin = getPlugin("datatables");
-                if (datatablePlugin && auto_use_datetable) {
-                    setTimeout(() => {
-                        if (getFilePath() === filepath) {
-                            document.querySelectorAll("#write table").forEach(table => datatablePlugin.newDataTable(table));
-                        }
-                    }, 500)
-                }
+        const genTable = (nonExistInFile, nonExistInFolder) => {
+            const genButtonGroup = buttons => {
+                const btn = buttons.map(({action, name}) => `<button type="button" class="btn btn-default" action="${action}">${name}</button>`)
+                return `<div class="btn-group">${btn.join("")}</div>`
             }
-        }
-        const _delete = (nonExistInFile, nonExistInFolder) => nonExistInFile.forEach(file => unlink(file, console.error))
-        const _move = (nonExistInFile, nonExistInFolder) => {
-            const dir = join(dirname(getFilePath()), "resources-dest");
-            mkdir(dir, err => {
-                if (err) {
-                    console.error(err);
-                } else {
-                    nonExistInFile.forEach(file => rename(file, join(dir, basename(file)), console.error));
-                }
-            });
+            const genTable = (caption, ths, rows) => `
+               <table class="table">
+                  <caption>${caption}</caption>
+                  <thead><tr>${ths.map(th => `<th>${th}</th>`).join("")}</tr></thead>
+                  <tbody>${Array.from(rows, row => `<tr><td>${row}</td></tr>`).join("")}</tbody>
+               </table>
+            `
+
+            const btnList = [
+                {action: "download", name: "下载"},
+                {action: "close", name: "关闭"},
+            ];
+            const button = genButtonGroup(btnList);
+            const _nonExistInFile = genTable(`存在于文件夹但不存在于md文件的资源(共${nonExistInFile.size}项)`, ["资源名"], nonExistInFile);
+            const _nonExistInFolder = genTable(`存在于md文件但不存在于文件夹的资源(共${nonExistInFolder.size}项)`, ["资源名"], nonExistInFolder)
+            return _nonExistInFile + _nonExistInFolder + button;
         }
 
-        const nonExistInFile = new Set([...this.resources].filter(x => !this.resourcesInFile.has(x)));
-        const nonExistInFolder = new Set([...this.resourcesInFile].filter(x => !this.resources.has(x)));
-        this.resources.clear();
-        this.resourcesInFile.clear();
+        const {nonExistInFile, nonExistInFolder} = getResult();
+        const tables = genTable(nonExistInFile, nonExistInFolder);
+        const modal = document.querySelector("#plugin-resource-operation");
+        modal.innerHTML = tables;
+        this.utils.show(modal);
+    }
 
-        const op = {"report": _report, "delete": _delete, "move": _move}[operation];
-        op && op(nonExistInFile, nonExistInFolder);
+    download = (nonExistInFile, nonExistInFolder) => {
+        const template = (file, idx) => this.config.use_md_syntax_in_report ? `| ![resource${idx}](${file}) |` : `| \`${file}\` |`
+        const _nonExistInFile = Array.from(nonExistInFile, template);
+        const _nonExistInFolder = Array.from(nonExistInFolder, template);
+        const fileContent = `## 存在于文件夹但不存在于 md 文件的资源(共${_nonExistInFile.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n
+## 存在于 md 文件但不存在于文件夹的资源(共${_nonExistInFolder.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFolder.join("\n")}`;
+
+        const filepath = this.utils.Package.Path.join(this.utils.getCurrentDirPath(), "resource-report.md");
+        this.utils.Package.Fs.writeFileSync(filepath, fileContent, "utf8");
     }
 
     collect = async (filePath, dir) => {

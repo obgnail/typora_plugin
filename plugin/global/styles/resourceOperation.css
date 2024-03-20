@@ -1,0 +1,9 @@
+#plugin-resource-operation {
+    max-width: 1000px;
+    max-height: 600px;
+    overflow: scroll;
+}
+
+#plugin-resource-operation td {
+    font-size: 0.7em;
+}
