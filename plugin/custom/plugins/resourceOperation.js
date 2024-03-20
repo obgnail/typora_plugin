@@ -19,16 +19,15 @@ class resourceOperation extends BaseCustomPlugin {
     hint = isDisable => isDisable && "空白页不可使用此插件"
 
     init = () => {
-        this.regexp = this.config.ignore_image_div
+        const {ignore_image_div, resource_suffix, markdown_suffix, append_empty_suffix_file} = this.config;
+        this.regexp = ignore_image_div
             ? new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)", "g")
             : new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)|<img.*?src=\"(?<src2>.*?)\"", "g")
-
-        this.resourceSuffix = new Set(this.config.resource_suffix);
-        this.fileSuffix = new Set(this.config.markdown_suffix);
+        this.resourceSuffix = new Set(resource_suffix);
+        this.fileSuffix = new Set(markdown_suffix);
         this.resources = new Set();
         this.resourcesInFile = new Set();
-
-        if (this.config.append_empty_suffix_file) {
+        if (append_empty_suffix_file) {
             this.resourceSuffix.add("");
         }
     }
@@ -41,38 +40,40 @@ class resourceOperation extends BaseCustomPlugin {
     run = () => this.traverseDir(File.getMountFolder(), this.collect, this.operate)
 
     operate = () => {
+        const {use_md_syntax_in_report, auto_open, auto_use_datetable, operation} = this.config;
+        const {getCurrentDirPath, openFile, getPlugin, getFilePath, Package: {Path, Fs}} = this.utils;
+        const {dirname, join, basename} = Path;
+        const {mkdir, rename, unlink, writeFileSync} = Fs;
+
         const _report = (nonExistInFile, nonExistInFolder) => {
-            const template = (file, idx) => this.config.use_md_syntax_in_report ? `| ![resource${idx}](${file}) |` : `| \`${file}\` |`
+            const template = (file, idx) => use_md_syntax_in_report ? `| ![resource${idx}](${file}) |` : `| \`${file}\` |`
             const _nonExistInFile = Array.from(nonExistInFile, template);
             const _nonExistInFolder = Array.from(nonExistInFolder, template);
             const fileContent = `## 存在于文件夹，但是不存在于 md 文件的资源(共${_nonExistInFile.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n
 ## 存在于 md 文件，但是不存在于文件夹的资源(共${_nonExistInFolder.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFolder.join("\n")}`;
 
-            const filepath = this.utils.Package.Path.join(this.utils.getCurrentDirPath(), "resource-report.md");
-            this.utils.Package.Fs.writeFileSync(filepath, fileContent, "utf8");
-            if (this.config.auto_open) {
-                this.utils.openFile(filepath);
-                const datatablePlugin = this.utils.getPlugin("datatables");
-                if (datatablePlugin && this.config.auto_use_datetable) {
+            const filepath = join(getCurrentDirPath(), "resource-report.md");
+            writeFileSync(filepath, fileContent, "utf8");
+            if (auto_open) {
+                openFile(filepath);
+                const datatablePlugin = getPlugin("datatables");
+                if (datatablePlugin && auto_use_datetable) {
                     setTimeout(() => {
-                        if (this.utils.getFilePath() === filepath) {
+                        if (getFilePath() === filepath) {
                             document.querySelectorAll("#write table").forEach(table => datatablePlugin.newDataTable(table));
                         }
                     }, 500)
                 }
             }
         }
-        const _delete = (nonExistInFile, nonExistInFolder) => [...nonExistInFile].forEach(file => this.utils.Package.Fs.unlink(file, console.error))
+        const _delete = (nonExistInFile, nonExistInFolder) => nonExistInFile.forEach(file => unlink(file, console.error))
         const _move = (nonExistInFile, nonExistInFolder) => {
-            const {dirname, join, basename} = this.utils.Package.Path;
-            const {mkdir, rename} = this.utils.Package.Fs;
-
-            const dir = join(dirname(this.utils.getFilePath()), "resources-dest");
+            const dir = join(dirname(getFilePath()), "resources-dest");
             mkdir(dir, err => {
                 if (err) {
                     console.error(err);
                 } else {
-                    [...nonExistInFile].forEach(file => rename(file, join(dir, basename(file)), console.error));
+                    nonExistInFile.forEach(file => rename(file, join(dir, basename(file)), console.error));
                 }
             });
         }
@@ -82,18 +83,19 @@ class resourceOperation extends BaseCustomPlugin {
         this.resources.clear();
         this.resourcesInFile.clear();
 
-        const operation = {"report": _report, "delete": _delete, "move": _move}[this.config.operation];
-        operation && operation(nonExistInFile, nonExistInFolder);
+        const op = {"report": _report, "delete": _delete, "move": _move}[operation];
+        op && op(nonExistInFile, nonExistInFolder);
     }
 
     collect = async (filePath, dir) => {
-        const {readFile} = this.utils.Package.Fs.promises;
-        const {resolve, extname} = this.utils.Package.Path;
+        const {existPath, isNetworkImage, isSpecialImage, Package: {Path, Fs}} = this.utils;
+        const {promises: {readFile}} = Fs;
+        const {resolve, extname} = Path;
 
         const getRealPath = async imagePath => {
             let idx = imagePath.lastIndexOf(")");
             while (idx !== -1) {
-                const exist = await this.utils.existPath(imagePath);
+                const exist = await existPath(imagePath);
                 if (exist) {
                     return imagePath;
                 } else {
@@ -107,7 +109,7 @@ class resourceOperation extends BaseCustomPlugin {
         const collectMatch = async content => {
             for (const match of content.matchAll(this.regexp)) {
                 let src = match.groups.src1 || match.groups.src2;
-                if (!src || this.utils.isNetworkImage(src) || this.utils.isSpecialImage(src)) continue;
+                if (!src || isNetworkImage(src) || isSpecialImage(src)) continue;
 
                 try {
                     src = decodeURI(src).split("?")[0];
