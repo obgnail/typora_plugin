@@ -119,7 +119,7 @@ class resourceOperation extends BaseCustomPlugin {
                 }
 
                 src = resolve(dir, src);
-                if (this.resourcesInFile.has(src)) return;
+                if (this.resourcesInFile.has(src)) continue;
 
                 const resourcePath = await getRealPath(src);
                 this.resourcesInFile.add(resourcePath);
