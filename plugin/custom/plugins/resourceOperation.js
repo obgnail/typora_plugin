@@ -22,10 +22,15 @@ class resourceOperation extends BaseCustomPlugin {
         }
     }
 
-    callback = anchorNode => this.traverseDir(File.getMountFolder(), this.traverseCallback, this.traverseThen)
+    callback = anchorNode => {
+        const modal = {title: "提示", components: [{label: "此插件运行需要数秒到数十秒，请稍等。", type: "p"}]};
+        this.utils.modal(modal, this.run);
+    }
+
+    run = () => this.traverseDir(File.getMountFolder(), this.traverseCallback, this.traverseThen)
 
     report = (nonExistInFile, nonExistInFolder) => {
-        const template = (file, idx) => this.config.use_md_syntax_in_report ? `| ![resource${idx}](${file}) |` : `| ${file} |`
+        const template = (file, idx) => this.config.use_md_syntax_in_report ? `| ![resource${idx}](${file}) |` : `| \`${file}\` |`
         const _nonExistInFile = Array.from(nonExistInFile, template);
         const _nonExistInFolder = Array.from(nonExistInFolder, template);
         const fileContent = `## 存在于文件夹，但是不存在于 md 文件的资源(共${_nonExistInFile.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n
