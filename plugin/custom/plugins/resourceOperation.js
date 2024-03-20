@@ -4,38 +4,30 @@
 * 此时需要使用贪婪匹配，然后逐个匹配
 */
 class resourceOperation extends BaseCustomPlugin {
-    selector = () => {
-        if (!this.utils.getFilePath()) {
-            return this.utils.nonExistSelector
-        }
-    }
-
+    selector = () => this.utils.getFilePath() ? undefined : this.utils.nonExistSelector
     hint = isDisable => isDisable && "空白页不可使用此插件"
 
     init = () => {
-        if (this.config.ignore_image_div) {
-            this.regexp = new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)", "g");
-        } else {
-            this.regexp = new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)|<img.*?src=\"(?<src2>.*?)\"", "g");
-        }
+        this.regexp = this.config.ignore_image_div
+            ? new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)", "g")
+            : new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)|<img.*?src=\"(?<src2>.*?)\"", "g")
 
         this.resourceSuffix = new Set(this.config.resource_suffix);
         this.fileSuffix = new Set(this.config.markdown_suffix);
+        this.resources = new Set();
+        this.resourcesInFile = new Set();
 
         if (this.config.append_empty_suffix_file) {
             this.resourceSuffix.add("");
         }
     }
 
-    callback = anchorNode => {
-        this.resources = new Set();
-        this.resourcesInFile = new Set();
-        this.traverseDir(File.getMountFolder(), this.traverseCallback, this.traverseThen);
-    }
+    callback = anchorNode => this.traverseDir(File.getMountFolder(), this.traverseCallback, this.traverseThen)
 
     report = (nonExistInFile, nonExistInFolder) => {
-        const _nonExistInFile = [...nonExistInFile].map(this.template);
-        const _nonExistInFolder = [...nonExistInFolder].map(this.template);
+        const template = (file, idx) => this.config.use_md_syntax_in_report ? `| ![resource${idx}](${file}) |` : `| ${file} |`
+        const _nonExistInFile = Array.from(nonExistInFile, template);
+        const _nonExistInFolder = Array.from(nonExistInFolder, template);
         const fileContent = `## 存在于文件夹，但是不存在于 md 文件的资源(共${_nonExistInFile.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n
 ## 存在于 md 文件，但是不存在于文件夹的资源(共${_nonExistInFolder.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFolder.join("\n")}`;
 
@@ -43,7 +35,6 @@ class resourceOperation extends BaseCustomPlugin {
         this.utils.Package.Fs.writeFileSync(filepath, fileContent, "utf8");
         if (this.config.auto_open) {
             this.utils.openFile(filepath);
-
             const datatablePlugin = this.utils.getPlugin("datatables");
             if (datatablePlugin && this.config.auto_use_datetable) {
                 setTimeout(() => {
@@ -55,24 +46,18 @@ class resourceOperation extends BaseCustomPlugin {
         }
     }
 
-    delete = (nonExistInFile, nonExistInFolder) => {
-        [...nonExistInFile].forEach(file => this.utils.Package.Fs.unlink(file, err => err && console.error(err)))
-    }
+    delete = (nonExistInFile, nonExistInFolder) => [...nonExistInFile].forEach(file => this.utils.Package.Fs.unlink(file, console.error))
 
     move = (nonExistInFile, nonExistInFolder) => {
-        const path = this.utils.Package.Path;
-        const fs = this.utils.Package.Fs;
+        const {dirname, join, basename} = this.utils.Package.Path;
+        const {mkdir, rename} = this.utils.Package.Fs;
 
-        let dir = path.dirname(this.utils.getFilePath());
-        dir = path.join(dir, "resources-dest");
-        fs.mkdir(dir, err => {
+        const dir = join(dirname(this.utils.getFilePath()), "resources-dest");
+        mkdir(dir, err => {
             if (err) {
                 console.error(err);
             } else {
-                [...nonExistInFile].forEach(file => {
-                    const dest = path.join(dir, path.basename(file));
-                    fs.rename(file, dest, err => err && console.error(err));
-                })
+                [...nonExistInFile].forEach(file => rename(file, join(dir, basename(file)), console.error));
             }
         });
     }
@@ -84,9 +69,8 @@ class resourceOperation extends BaseCustomPlugin {
         const operation = {"report": this.report, "delete": this.delete, "move": this.move}[this.config.operation];
         operation && operation(nonExistInFile, nonExistInFolder);
 
-        // 避免占用内存
-        this.resources = new Set();
-        this.resourcesInFile = new Set();
+        this.resources.clear();
+        this.resourcesInFile.clear();
     }
 
     traverseCallback = async (filePath, dir) => {
@@ -95,38 +79,52 @@ class resourceOperation extends BaseCustomPlugin {
             this.resources.add(filePath);
             return
         }
+        if (!this.fileSuffix.has(extname)) return;
 
-        if (this.fileSuffix.has(extname)) {
-            const buffer = await this.utils.Package.Fs.promises.readFile(filePath);
-            const content = buffer.toString();
-            for (const result of content.matchAll(this.regexp)) {
-                let src = result.groups.src1 || result.groups.src2;
-                if (!src || this.utils.isNetworkImage(src)) continue;
-
+        const {access, readFile, constants: {R_OK, W_OK}} = this.utils.Package.Fs.promises;
+        const getRealPath = async imagePath => {
+            let idx = imagePath.lastIndexOf(")");
+            while (idx !== -1) {
                 try {
-                    src = decodeURI(src).split("?")[0];
-                } catch (e) {
-                    console.error("error path:", src);
-                    continue
+                    await access(imagePath, R_OK | W_OK);
+                    return imagePath;
+                } catch {
+                    imagePath = imagePath.slice(0, idx);
+                    idx = imagePath.lastIndexOf(")");
                 }
+            }
+            return imagePath;
+        }
 
-                src = this.utils.Package.Path.resolve(dir, src);
-                if (!this.resourcesInFile.has(src)) {
-                    const resourcePath = await this.getRealPath(src);
-                    this.resourcesInFile.add(resourcePath);
-                }
+        const buffer = await readFile(filePath);
+        const content = buffer.toString();
+        for (const result of content.matchAll(this.regexp)) {
+            let src = result.groups.src1 || result.groups.src2;
+            if (!src || this.utils.isNetworkImage(src)) continue;
+
+            try {
+                src = decodeURI(src).split("?")[0];
+            } catch (e) {
+                console.error("error path:", src);
+                continue
+            }
+
+            src = this.utils.Package.Path.resolve(dir, src);
+            if (!this.resourcesInFile.has(src)) {
+                const resourcePath = await getRealPath(src);
+                this.resourcesInFile.add(resourcePath);
             }
         }
     }
 
     traverseDir = (dir, callback, then) => {
-        const pkg = this.utils.Package;
+        const {Fs: {promises: {readdir, stat}}, Path: {join}} = this.utils.Package;
 
         async function traverse(dir) {
-            const files = await pkg.Fs.promises.readdir(dir);
+            const files = await readdir(dir);
             for (const file of files) {
-                const filePath = pkg.Path.join(dir, file);
-                const stats = await pkg.Fs.promises.stat(filePath);
+                const filePath = join(dir, file);
+                const stats = await stat(filePath);
                 if (stats.isFile()) {
                     await callback(filePath, dir)
                 } else if (stats.isDirectory()) {
@@ -135,30 +133,7 @@ class resourceOperation extends BaseCustomPlugin {
             }
         }
 
-        traverse(dir).then(then).catch(err => console.error(err));
-    }
-
-    template = (file, idx) => {
-        if (this.config.use_md_syntax_in_report) {
-            return `| ![resource${idx}](${file}) |`
-        } else {
-            return `| ${file} |`
-        }
-    }
-
-    getRealPath = async imagePath => {
-        const {access, constants} = this.utils.Package.Fs.promises;
-        let idx = imagePath.lastIndexOf(")");
-        while (idx !== -1) {
-            try {
-                await access(imagePath, constants.R_OK | constants.W_OK);
-                return imagePath;
-            } catch {
-                imagePath = imagePath.slice(0, idx);
-                idx = imagePath.lastIndexOf(")");
-            }
-        }
-        return imagePath;
+        traverse(dir).then(then).catch(console.error);
     }
 }
 

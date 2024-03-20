@@ -261,7 +261,7 @@ class utils {
 
     static downloadImage = async (src, folder, filename) => {
         folder = folder || this.tempFolder;
-        filename = filename || (this.randomString() + "_" + this.Package.Path.basename(src));
+        filename = filename || (this.randomString() + "_" + this.Package.Path.extname(src))
         const {state} = await JSBridge.invoke("app.download", src, folder, filename);
         return {ok: state === "completed", filepath: this.Package.Path.join(folder, filename)}
     }
