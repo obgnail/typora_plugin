@@ -196,7 +196,7 @@ class tocMarkmap {
                 <div class="plugin-markmap-grip grip-right plugin-common-hidden"></div>
                 <div class="plugin-markmap-header">
                     <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
-                    <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
+                    <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图表重新适配窗口"></div>
                     <div class="plugin-markmap-icon ion-network" action="setExpandLevel" ty-hint="展开分支等级"></div>

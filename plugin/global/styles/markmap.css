@@ -76,7 +76,8 @@ ${show_outline}
 
 .plugin-markmap-icon:hover {
     opacity: 1;
-    transform: scale(1.2);
+    transform: translateY(-2px) scale(1.2);
+    transition: transform 0.1s ease-in 0s;
 }
 
 .plugin-markmap-icon[action="resize"] {
