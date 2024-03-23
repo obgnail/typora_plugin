@@ -1,20 +1,26 @@
 // 本插件没有处理fence下的中文输入，如果需要，可以通过监听afterAddCodeBlock事件，修改File.editor.fences.queue.n90.state.keyMaps[1]，可以参考fence_enhance插件的editorHotkey
 class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
-    beforeProcess = () => {
-        // 旧版本的Typora是延迟设置noPairingMatch的，导致beforeProcess失效
-        // 所以，为了兼容旧版本，后续还有再次判断此配置
-        if (File.option.noPairingMatch) {
-            return this.utils.stopLoadPluginError
-        }
-    }
+    // 旧版本的Typora是延迟设置noPairingMatch的，导致beforeProcess失效
+    // 所以，为了兼容旧版本，后续还有再次判断此配置
+    beforeProcess = () => File.option.noPairingMatch ? this.utils.stopLoadPluginError : undefined
 
     selector = () => this.utils.disableForeverSelector
 
     init = () => {
+        const getCodeSet = () => new Set([
+            "Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0",
+            "Backquote", "BracketLeft", "BracketRight", "Backslash", "Semicolon", "Quote", "Comma", "Period", "Slash",
+        ])
+        const reverseMap = map => {
+            const result = new Map();
+            map.forEach((v, k) => result.set(v, k));
+            return result
+        }
+
         this.rangyText = "";
         this.pairMap = new Map(this.config.auto_pair_symbols);
-        this.reversePairMap = this.reverseMap(this.pairMap);
-        this.codeSet = this.getCodeSet();
+        this.reversePairMap = reverseMap(this.pairMap);
+        this.codeSet = getCodeSet();
         // 旧版本Typora是延迟加载SnapFlag的
         const until = () => File && File.editor && File.editor.undo && File.editor.undo.UndoManager && File.editor.undo.UndoManager.SnapFlag
         const after = () => this.undoSnapType = File.editor.undo.UndoManager.SnapFlag
@@ -49,11 +55,6 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
             }, true);
         }
     }
-
-    getCodeSet = () => new Set([
-        "Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0",
-        "Backquote", "BracketLeft", "BracketRight", "Backslash", "Semicolon", "Quote", "Comma", "Period", "Slash",
-    ])
 
     selectText = () => {
         if (this.config.auto_select_after_surround || this.rangyText) {
@@ -113,12 +114,6 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         const newRange = File.editor.selection.rangy.createRange();
         newRange.moveToBookmark(bookmark);
         newRange.deleteContents();
-    }
-
-    reverseMap = map => {
-        const result = new Map();
-        map.forEach((v, k) => result.set(v, k));
-        return result
     }
 }
 

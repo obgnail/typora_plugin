@@ -5,9 +5,10 @@ class darkModePlugin extends BaseCustomPlugin {
 
     hotkey = () => [this.config.hotkey]
 
-    createDarkFilter = () => {
-        const div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
-        div.innerHTML = `
+    enableDarkMode = async () => {
+        const createDarkFilter = () => {
+            const div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+            div.innerHTML = `
             <svg id="plugin-dark-mode-svg" style="height: 0; width: 0; position: absolute;">
                 <filter id="plugin-dark-mode-filter" x="0" y="0" width="99999" height="99999">
                     <feColorMatrix type="matrix" values="0.283 -0.567 -0.567 0 0.925 -0.567 0.283 -0.567 0 0.925 -0.567 -0.567 0.283 0 0.925 0 0 0 1 0"/>
@@ -16,16 +17,15 @@ class darkModePlugin extends BaseCustomPlugin {
                     <feColorMatrix type="matrix" values="0.333 -0.667 -0.667 0 1 -0.667 0.333 -0.667 0 1 -0.667 -0.667 0.333 0 1 0 0 0 1 0"/>
                 </filter>
             </svg>`
-        const frag = document.createDocumentFragment();
-        while (div.firstChild) {
-            frag.appendChild(div.firstChild);
+            const frag = document.createDocumentFragment();
+            while (div.firstChild) {
+                frag.appendChild(div.firstChild);
+            }
+            this.utils.insertElement(frag);
         }
-        this.utils.insertElement(frag);
-    }
 
-    enableDarkMode = async () => {
         await this.utils.registerStyleTemplate(this.fixedName);
-        this.createDarkFilter();
+        createDarkFilter();
         this.isDarkMode = true;
     }
 
