@@ -131,20 +131,20 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     show = ($after, $before) => {
-        const next = $after.addClass("show");
-
+        const margin = 6;
         const {left, top, width, height} = $before[0].getBoundingClientRect();
-        let nextTop = top - height;
-        let nextLeft = left + width + 6;
+        let afterTop = top - height;
+        let afterLeft = left + width + margin;
 
         const footer = document.querySelector("footer");
         const footerHeight = footer ? footer.getBoundingClientRect().height : 0;
 
-        const {height: nextHeight, width: nextWidth} = next[0].getBoundingClientRect();
-        nextTop = Math.min(nextTop, window.innerHeight - nextHeight - footerHeight);
-        nextLeft = Math.min(nextLeft, window.innerWidth - nextWidth);
+        $after.addClass("show");
+        const {height: afterHeight, width: afterWidth} = $after[0].getBoundingClientRect();
+        afterTop = Math.min(afterTop, window.innerHeight - afterHeight - footerHeight);
+        afterLeft = afterLeft + afterWidth < window.innerWidth ? afterLeft : Math.max(0, left - afterWidth - margin);
 
-        next.css({top: nextTop + "px", left: nextLeft + "px"});
+        $after.css({top: afterTop + "px", left: afterLeft + "px"});
     }
 
     appendThirdLi = ($menu, dynamicCallArgs) => {
