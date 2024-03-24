@@ -49,9 +49,48 @@ class resourceOperation extends BaseCustomPlugin {
             const template = (file, idx) => use_md_syntax_in_report ? `| ![resource${idx}](${file}) |` : `| \`${file}\` |`
             const _nonExistInFile = Array.from(nonExistInFile, template);
             const _nonExistInFolder = Array.from(nonExistInFolder, template);
-            const fileContent = `## 存在于文件夹，但是不存在于 md 文件的资源(共${_nonExistInFile.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n
-## 存在于 md 文件，但是不存在于文件夹的资源(共${_nonExistInFolder.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFolder.join("\n")}`;
+            const output = {
+                search_folder: File.getMountFolder(),
+                resource_suffix: Array.from(this.resourceSuffix),
+                markdown_suffix: Array.from(this.fileSuffix),
+                ignore_image_div: this.config.ignore_image_div,
+                resource_non_exist_in_file: Array.from(nonExistInFile),
+                resource_non_exist_in_folder: Array.from(nonExistInFolder),
+            }
+            const json = JSON.stringify(output, null, "\t");
+            const fileContent = `
+## 存在于文件夹，但是不存在于 md 文件的资源(共${_nonExistInFile.length}项)
 
+| 资源名 |
+| ----- |
+${_nonExistInFile.join("\n")}
+
+## 存在于 md 文件，但是不存在于文件夹的资源(共${_nonExistInFolder.length}项)
+
+| 资源名 |
+| ----- |
+${_nonExistInFolder.join("\n")}
+
+## JSON
+
+以下为插件相关配置及输出，以供开发者使用
+
+- \`search_folder\`：搜索的根目录
+- \`resource_suffix\`：判定为资源的文件后缀
+- \`markdown_suffix\`：判定为 markdown 的文件后缀
+- \`ignore_image_div\`：是否忽略 html 格式的 img 标签
+- \`resource_non_exist_in_file\`：存在于文件夹，但是不存在于 md 文件的资源
+- \`resource_non_exist_in_folder\`：存在于 md 文件，但是不存在于文件夹的资源
+
+\`\`\`json
+${json}
+\`\`\`
+
+## footer
+
+Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
+
+`;
             const filepath = join(getCurrentDirPath(), "resource-report.md");
             writeFileSync(filepath, fileContent, "utf8");
             if (auto_open) {
