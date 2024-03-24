@@ -1692,7 +1692,8 @@ class dialog {
                 break
             case "select":
                 const selected = option => (option === component.selected) ? "selected" : "";
-                const options = component.list.map(option => `<option ${selected(option)}>${option}</option>`);
+                const map = component.map || Object.fromEntries(component.list.map(item => [item, item]));
+                const options = Object.entries(map).map(([value, option]) => `<option value="${value}" ${selected(option)}>${option}</option>`);
                 inner = `<select class="form-control" ${disabled(component)}>${options.join("")}</select>`;
                 break
             case "textarea":
