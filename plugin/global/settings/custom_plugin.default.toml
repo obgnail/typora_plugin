@@ -783,6 +783,8 @@ pitch = "0%"
 from_language = "zh-Hans"
 # 翻译语言
 to_language = "en"
+# 将3行文本作为一组数据发送给bing
+group_lines = 3
 
 
 ############### imageReviewer ###############
