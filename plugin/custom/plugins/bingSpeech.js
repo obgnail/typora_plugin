@@ -17,16 +17,33 @@ class bingSpeech extends BaseCustomPlugin {
 
     hotkey = () => [this.config.hotkey]
 
-    callback = () => this.speech();
+    callback = () => {
+        const voiceList = [
+            "zh-CN-YunxiNeural", "zh-CN-XiaoxiaoNeural", "zh-CN-XiaoyiNeural", "zh-CN-YunjianNeural", "zh-CN-YunxiaNeural",
+            "zh-CN-YunyangNeural", "zh-CN-liaoning-XiaobeiNeural", "zh-CN-shaanxi-XiaoniNeural", "zh-HK-HiuMaanNeural", "zh-HK-WanLungNeural",
+            "zh-HK-HiuGaaiNeural", "zh-TW-HsiaoChenNeural", "zh-TW-YunJheNeural", "zh-TW-HsiaoYuNeural",
+        ]
+        const {from_language, voice, rate, pitch} = this.config;
+        const components = [
+            {label: "语言", type: "input", value: from_language},
+            {label: "语音", type: "select", selected: voice, list: voiceList},
+            {label: "语速（如: 20%、-50%、0%）", type: "input", value: rate},
+            {label: "语调（如: 20%、-50%、0%）", type: "input", value: pitch},
+        ]
+        this.utils.modal({title: "必应朗读", components}, async components => {
+            const [c1, c2, c3, c4] = components.map(c => c.submit);
+            await this.speech(null, {from_language: c1, voice: c2, rate: c3, pitch: c4});
+        })
+    }
 
-    speech = async text => {
+    speech = async (text, config) => {
         text = this.getText(text);
         if (!text) {
             console.debug("has not text");
             return
         }
         const audioContext = new window.AudioContext();
-        await this.crawl(text, async binary => {
+        await this.crawl(text, config, async binary => {
             const audioBuffer = await audioContext.decodeAudioData(binary.buffer);
             const source = audioContext.createBufferSource();
             source.buffer = audioBuffer;
@@ -39,14 +56,14 @@ class bingSpeech extends BaseCustomPlugin {
 
     // 生成的文件是mp3格式
     // 为了防止有人干坏事，此方法并不暴露到产品中
-    download = async (filepath, text) => {
+    download = async (filepath, text, config) => {
         text = this.getText(text);
         if (!text) {
             console.debug("has not text");
             return
         }
         const chunks = [];
-        await this.crawl(text, binary => chunks.push(binary));
+        await this.crawl(text, config, binary => chunks.push(binary));
         await this.utils.Package.Fs.promises.writeFile(filepath, Buffer.concat(chunks));
         console.debug("done");
     }
@@ -65,16 +82,17 @@ class bingSpeech extends BaseCustomPlugin {
     translate = async (text, fromLang, toLang) => {
         console.debug("start translate");
         const config = (fromLang && toLang)
-            ? this.utils.merge(this.config, {from_language: fromLang, to_language: toLang})
+            ? Object.assign({...this.config}, {from_language: fromLang, to_language: toLang})
             : this.config
         const spider = new bingSpeechSpider(this);
         return await spider.translate(config, text)
     }
 
-    crawl = async (text, iter) => {
+    crawl = async (text, config, iter) => {
         console.debug("start crawl");
+        config = Object.assign({...this.config}, config);
         const spider = new bingSpeechSpider(this);
-        for await (const binary of spider.crawl(this.config, text)) {
+        for await (const binary of spider.crawl(config, text)) {
             await iter(binary);
         }
     }
