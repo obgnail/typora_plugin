@@ -106,8 +106,9 @@ class bingSpeechSpider {
     async* crawl(config, text) {
         try {
             const options = await this._genOptions(config);
-            for await (const buffer of this._textToAudio(options, text)) {
-                yield buffer
+            const groups = this._groupText(options, text);
+            for (const g of groups) {
+                yield this._genAudio(options, g);
             }
         } catch (e) {
             alert("speech Error:", e.toString());
@@ -165,18 +166,20 @@ class bingSpeechSpider {
         if (tokenArr.length < 3) {
             throw Error("get options error: tokenArr.length < 3");
         }
-        const {voice, rate, pitch, from_language, to_language} = config;
+        const {voice, rate, pitch, from_language, to_language, group_lines} = config;
         return {
             // token
             IG: ig, IID: "translator.5024", Key: tokenArr[0], Token: tokenArr[1].replace(/"/g, ""),
             // 文本转语音参数
             VoiceName: voice, ProsodyPitch: pitch, ProsodyRate: rate,
             // 翻译
-            FromLang: from_language, ToLang: to_language
+            FromLang: from_language, ToLang: to_language,
+            // 将x行文本作为一组数据发送给bing，减少请求次数
+            groupLines: group_lines || 3
         }
     }
 
-    async* _textToAudio(options, text) {
+    _groupText = (options, text) => {
         const lines = text
             .replace(/\r\n/g, "\n")
             .replace(/\n+/g, "\n")
@@ -184,9 +187,14 @@ class bingSpeechSpider {
             .map(line => this.utils.escape(line.trim()))
             .filter(Boolean)
 
-        for (const line of lines) {
-            yield await this._genAudio(options, line);
-        }
+        return lines.reduce((acc, current, idx) => {
+            if (idx % options.groupLines === 0) {
+                acc.push([current]);
+            } else {
+                acc[acc.length - 1].push(current);
+            }
+            return acc;
+        }, []).map(ele => ele.join("\n"))
     }
 
     _genAudio = async (options, line) => {
