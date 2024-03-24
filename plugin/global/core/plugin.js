@@ -1671,13 +1671,13 @@ class dialog {
 
         let inner = "";
         const type = component.type.toLowerCase();
-        const disabled = c => c.disabled ? "disabled" : ""
+        const disabled = c => c.disabled ? "disabled" : "";
         switch (type) {
             case "input":
             case "password":
             case "file":
                 const t = type === "input" ? "text" : type;
-                inner = `<input type="${t}" class="form-control" value="${component.value}" placeholder="${component.placeholder}" ${disabled(component)}>`;
+                inner = `<input type="${t}" class="form-control" value="${component.value}" placeholder="${component.placeholder || ""}" ${disabled(component)}>`;
                 break
             case "checkbox":
             case "radio":
@@ -1698,7 +1698,7 @@ class dialog {
                 break
             case "textarea":
                 const rows = component.rows || 3;
-                inner = `<textarea class="form-control" rows="${rows}" placeholder="${component.placeholder}" ${disabled(component)}></textarea>`;
+                inner = `<textarea class="form-control" rows="${rows}" placeholder="${component.placeholder || ""}" ${disabled(component)}></textarea>`;
                 break
             case "p":
                 break
