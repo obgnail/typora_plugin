@@ -700,7 +700,7 @@ order = 1
 [resourceOperation.config]
 # 本插件是通过后缀名来判断是否是资源的
 # 什么后缀判定为资源
-resource_suffix = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".bmp", ".mp3", ".mp4", ".image", ".jfif", ".gif!large"]
+resource_suffix = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".webm", ".bmp", ".mp3", ".mp4", ".ogg", ".image", ".jfif", ".gif!large"]
 # 什么后缀判定为md文件
 markdown_suffix = [".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]
 # 是否忽略html标签<img src="example.jpg">里的资源（markdown是支持插入html的，此选项问是否要忽略img标签）
