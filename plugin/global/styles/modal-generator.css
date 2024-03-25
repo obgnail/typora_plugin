@@ -29,3 +29,13 @@
     transform: translateY(-50%);
     box-shadow: none;
 }
+
+#plugin-custom-modal .plugin-custom-modal-range {
+    display: inline-flex;
+    width: 100%;
+}
+
+.plugin-custom-modal-range .modal-range-value {
+    margin-left: 0.5em;
+    font-size: 1.2em;
+}

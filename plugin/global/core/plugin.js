@@ -1661,6 +1661,8 @@ class dialog {
                 return widget.querySelector("input").files
             case "checkbox":
                 return Array.from(widget.querySelectorAll("input:checked"), box => box.value)
+            case "range":
+                return widget.querySelector('input[type="range"]').value
             default:
                 return ""
         }
@@ -1679,6 +1681,13 @@ class dialog {
                 const t = type === "input" ? "text" : type;
                 inner = `<input type="${t}" class="form-control" value="${component.value}" placeholder="${component.placeholder || ""}" ${disabled(component)}>`;
                 break
+            case "range":
+                const {min = 0, max = 100, step = 1, value = 1} = component;
+                inner = `<div class="plugin-custom-modal-range">
+                            <input type="range" min="${min}" max="${max}" step="${step}" value="${value}" oninput="this.nextElementSibling.innerText = this.value;">
+                            <div class="modal-range-value">${value}</div>
+                         </div>`
+                break
             case "checkbox":
             case "radio":
                 const checked = c => c.checked ? "checked" : "";
@@ -1693,7 +1702,7 @@ class dialog {
             case "select":
                 const selected = option => (option === component.selected) ? "selected" : "";
                 const map = component.map || Object.fromEntries(component.list.map(item => [item, item]));
-                const options = Object.entries(map).map(([value, option]) => `<option value="${value}" ${selected(option)}>${option}</option>`);
+                const options = Object.entries(map).map(([value, option]) => `<option value="${value}" ${selected(value)}>${option}</option>`);
                 inner = `<select class="form-control" ${disabled(component)}>${options.join("")}</select>`;
                 break
             case "textarea":

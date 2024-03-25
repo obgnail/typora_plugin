@@ -19,20 +19,71 @@ class bingSpeech extends BaseCustomPlugin {
 
     callback = () => {
         const voiceList = [
-            "zh-CN-YunxiNeural", "zh-CN-XiaoxiaoNeural", "zh-CN-XiaoyiNeural", "zh-CN-YunjianNeural", "zh-CN-YunxiaNeural",
-            "zh-CN-YunyangNeural", "zh-CN-liaoning-XiaobeiNeural", "zh-CN-shaanxi-XiaoniNeural", "zh-HK-HiuMaanNeural", "zh-HK-WanLungNeural",
-            "zh-HK-HiuGaaiNeural", "zh-TW-HsiaoChenNeural", "zh-TW-YunJheNeural", "zh-TW-HsiaoYuNeural",
+            "zh-CN-YunxiNeural",
+            "zh-CN-XiaoxiaoNeural",
+            "zh-CN-XiaoyiNeural",
+            "zh-CN-YunjianNeural",
+            "zh-CN-YunxiaNeural",
+            "zh-CN-YunyangNeural",
+            "zh-CN-liaoning-XiaobeiNeural",
+            "zh-CN-shaanxi-XiaoniNeural",
+            "zh-HK-HiuMaanNeural",
+            "zh-HK-WanLungNeural",
+            "zh-HK-HiuGaaiNeural",
+            "zh-TW-HsiaoChenNeural",
+            "zh-TW-YunJheNeural",
+            "zh-TW-HsiaoYuNeural",
         ]
-        const {from_language, voice, rate, pitch} = this.config;
+        const styleMap = {
+            neutral: "中性",
+            advertisement_upbeat: "兴奋和精力充沛",
+            affectionate: "温暖而亲切",
+            angry: "生气和厌恶",
+            assistant: "热情而轻松",
+            calm: "沉着冷静",
+            chat: "轻松随意",
+            cheerful: "积极愉快",
+            customerservice: "友好热情",
+            depressed: "忧郁、沮丧",
+            disgruntled: "轻蔑和抱怨",
+            "documentary-narration": "轻松、感兴趣",
+            embarrassed: "不确定、犹豫",
+            empathetic: "关心和理解",
+            envious: "钦佩",
+            excited: "乐观和充满希望",
+            fearful: "恐惧、紧张",
+            friendly: "愉快、怡人且温暖",
+            gentle: "温和、礼貌和愉快",
+            hopeful: "温暖且渴望",
+            lyrical: "优美又带感伤",
+            "narration-professional": "专业、客观",
+            "narration-relaxed": "舒缓而悦耳",
+            newscast: "正式专业",
+            "newscast-casual": "通用、随意",
+            "newscast-formal": "正式、自信和权威",
+            "poetry-reading": "带情感和节奏",
+            sad: "悲伤",
+            serious: "严肃和命令",
+            shouting: "听起来好像声音在远处",
+            sports_commentary: "既轻松又感兴趣",
+            sports_commentary_excited: "快速且充满活力",
+            terrified: "害怕",
+            unfriendly: "冷淡无情",
+            whispering: "柔和",
+        }
+        const styleDegreeMap = {"0": "最低", "1": "中等", "2": "最高"};
+        const {from_language, voice, rate, pitch, style, style_degree} = this.config;
         const components = [
             {label: "语言", type: "input", value: from_language},
             {label: "语音", type: "select", selected: voice, list: voiceList},
+            {label: "语气", type: "select", selected: style, map: styleMap},
+            {label: "语气强度", type: "select", selected: style_degree + "", map: styleDegreeMap},
             {label: "语速（如: 20%、-50%、0%）", type: "input", value: rate},
             {label: "语调（如: 20%、-50%、0%）", type: "input", value: pitch},
         ]
         this.utils.modal({title: "必应朗读", components}, async components => {
-            const [c1, c2, c3, c4] = components.map(c => c.submit);
-            await this.speech(null, {from_language: c1, voice: c2, rate: c3, pitch: c4});
+            const [c1, c2, c3, c4, c5, c6] = components.map(c => c.submit);
+            await this.speech(null, {from_language: c1, voice: c2, style: c3, style_degree: c4, rate: c5, pitch: c6});
         })
     }
 
@@ -166,16 +217,16 @@ class bingSpeechSpider {
         if (tokenArr.length < 3) {
             throw Error("get options error: tokenArr.length < 3");
         }
-        const {voice, rate, pitch, from_language, to_language, group_lines} = config;
+        const {voice, rate, pitch, style = "neutral", style_degree = 1, from_language, to_language, group_lines = 3} = config;
         return {
             // token
             IG: ig, IID: "translator.5024", Key: tokenArr[0], Token: tokenArr[1].replace(/"/g, ""),
             // 文本转语音参数
-            VoiceName: voice, ProsodyPitch: pitch, ProsodyRate: rate,
+            VoiceName: voice, ProsodyPitch: pitch, ProsodyRate: rate, Style: style, StyleDegree: style_degree,
             // 翻译
             FromLang: from_language, ToLang: to_language,
             // 将x行文本作为一组数据发送给bing，减少请求次数
-            groupLines: group_lines || 3
+            groupLines: group_lines
         }
     }
 
@@ -205,7 +256,7 @@ class bingSpeechSpider {
         const path = "/tfettts?" + pathParams.toString()   // 转语音API
 
         const bodyParams = new URLSearchParams();
-        const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="zh-CN"><voice name="${options.VoiceName}"><prosody pitch="${options.ProsodyPitch}" rate="${options.ProsodyRate}">${line}</prosody></voice></speak>`
+        const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="zh-CN"><voice name="${options.VoiceName}"><prosody pitch="${options.ProsodyPitch}" rate="${options.ProsodyRate}"><mstts:express-as style="${options.Style}" styledegree="${options.StyleDegree}">${line}</mstts:express-as></prosody></voice></speak>`
         bodyParams.append("key", options.Key);
         bodyParams.append("ssml", ssml);
         bodyParams.append("token", options.Token);

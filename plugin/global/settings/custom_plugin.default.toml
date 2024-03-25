@@ -779,6 +779,13 @@ voice = "zh-CN-YunXiNeural"
 rate = "+20%"
 # 语调（如: 20%、-50%、0%）
 pitch = "0%"
+# 语气。可选项请参考：https://learn.microsoft.com/zh-cn/azure/ai-services/speech-service/speech-synthesis-markup-voice#use-speaking-styles-and-roles
+style = "neutral"
+# 语气强度
+#   0：最低程度的表达方式
+#   1：中等程度的表达方式
+#   2：最高程度的表达方式
+style_degree = 1
 # 源语言
 from_language = "zh-Hans"
 # 翻译语言
