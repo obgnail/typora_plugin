@@ -293,7 +293,8 @@ class tocMarkmap {
     }
 
     setExpandLevel = async () => {
-        const components = [{label: "展开几级分支（-1则全部展开）", type: "input", value: "1", placeholder: "1"}];
+        const value = (this.markmap && this.markmap.options.initialExpandLevel) || 1;
+        const components = [{label: "", type: "range", value: value, min: -1, max: 6, step: 1}];
         this.utils.modal({title: "展开等级", components}, async ([{submit: level}]) => this._setExpandLevel(level));
     }
 
