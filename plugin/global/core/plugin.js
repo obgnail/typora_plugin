@@ -1671,6 +1671,7 @@ class dialog {
     newWidget = component => {
         if (!component || component.label === undefined || !component.type) return;
 
+        let label = "label";
         let inner = "";
         const type = component.type.toLowerCase();
         const disabled = c => c.disabled ? "disabled" : "";
@@ -1710,9 +1711,10 @@ class dialog {
                 inner = `<textarea class="form-control" rows="${rows}" placeholder="${component.placeholder || ""}" ${disabled(component)}></textarea>`;
                 break
             case "p":
+                label = "p";
                 break
         }
-        return `<div class="col-lg-12 form-group" component-id="${component.id}"><label>${component.label}</label>${inner}</div>`;
+        return `<div class="col-lg-12 form-group" component-id="${component.id}"><${label}>${component.label}</${label}>${inner}</div>`;
     }
 
     // modal: {title: "", components: [{label: "", type: "", value: ""}]}
