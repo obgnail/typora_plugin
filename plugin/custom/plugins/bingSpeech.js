@@ -73,17 +73,20 @@ class bingSpeech extends BaseCustomPlugin {
         }
         const styleDegreeMap = {"0": "最低", "1": "中等", "2": "最高"};
         const {from_language, voice, rate, pitch, style, style_degree} = this.config;
+        const num2Str = num => (parseInt(num) / 100).toFixed(1);
+        const str2Num = str => (str.startsWith("-") ? "" : "+") + Math.floor(parseFloat(str) * 100) + "%";
         const components = [
             {label: "语言", type: "input", value: from_language},
             {label: "语音", type: "select", selected: voice, list: voiceList},
             {label: "语气", type: "select", selected: style, map: styleMap},
             {label: "语气强度", type: "select", selected: style_degree + "", map: styleDegreeMap},
-            {label: "语速（如: 20%、-50%、0%）", type: "input", value: rate},
-            {label: "语调（如: 20%、-50%、0%）", type: "input", value: pitch},
+            {label: "语速", type: "range", min: -3.0, max: 3.0, step: 0.1, value: num2Str(rate)},
+            {label: "语调", type: "range", min: -1.0, max: 1.0, step: 0.1, value: num2Str(pitch)},
         ]
         this.utils.modal({title: "必应朗读", components}, async components => {
-            const [c1, c2, c3, c4, c5, c6] = components.map(c => c.submit);
-            await this.speech(null, {from_language: c1, voice: c2, style: c3, style_degree: c4, rate: c5, pitch: c6});
+            const [l, v, s, d, r, p] = components.map(c => c.submit);
+            const cfg = {from_language: l, voice: v, style: s, style_degree: d, rate: str2Num(r), pitch: str2Num(p)};
+            await this.speech(null, cfg);
         })
     }
 
