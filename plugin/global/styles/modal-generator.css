@@ -10,6 +10,8 @@
 #plugin-custom-modal .modal-body {
     max-height: calc(80vh - 150px);
     overflow: auto;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 #plugin-custom-modal label {
