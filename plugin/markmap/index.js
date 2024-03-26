@@ -293,9 +293,15 @@ class tocMarkmap {
     }
 
     setExpandLevel = async () => {
-        const value = (this.markmap && this.markmap.options.initialExpandLevel) || 1;
-        const components = [{label: "", type: "range", value: value, min: -1, max: 6, step: 1}];
-        this.utils.modal({title: "展开等级", components}, async ([{submit: level}]) => this._setExpandLevel(level));
+        const maxLevel = 6;
+        let level = this.markmap && this.markmap.options.initialExpandLevel;
+        if (level === undefined) {
+            level = 1;
+        } else if (level < 0) {
+            level = maxLevel;
+        }
+        const components = [{label: "", type: "range", value: level, min: 0, max: maxLevel, step: 1}];
+        this.utils.modal({title: "展开分支", components}, async ([{submit: level}]) => this._setExpandLevel(level));
     }
 
     download = () => {

@@ -38,4 +38,6 @@
 .plugin-custom-modal-range .modal-range-value {
     margin-left: 0.5em;
     font-size: 1.2em;
+    min-width: 1.6em;
+    text-align: right;
 }
