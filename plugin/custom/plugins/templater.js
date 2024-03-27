@@ -31,18 +31,18 @@ class templater extends BaseCustomPlugin {
         ]
         const modal = {title: "新文件", components};
 
-        this.modal(modal, ([{submit: filepath}, {submit: template}]) => {
+        this.modal(modal, async ([{submit: filepath}, {submit: template}]) => {
             const tpl = templates.find(tpl => tpl.name === template);
             if (!tpl) return;
 
             if (filepath && !filepath.endsWith(".md")) {
                 filepath += ".md";
             }
-            filepath = this.utils.newFilePath(filepath);
+            filepath = await this.utils.newFilePath(filepath);
             const filename = this.utils.Package.Path.basename(filepath);
             const helper = new templateHelper(filename, this);
             const content = helper.convert(tpl.text);
-            this.utils.Package.Fs.writeFileSync(filepath, content, "utf8");
+            await this.utils.Package.Fs.promises.writeFile(filepath, content);
             this.rangeText = "";
             if (this.config.auto_open) {
                 this.utils.openFile(filepath);

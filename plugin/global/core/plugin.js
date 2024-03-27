@@ -233,9 +233,7 @@ class utils {
     static withAnchorNode = (selector, func) => () => {
         const anchorNode = this.getAnchorNode();
         const target = anchorNode.closest(selector);
-        if (target && target[0]) {
-            func(target[0]);
-        }
+        target && target[0] && func(target[0]);
     }
     static generateDynamicCallArgs = (fixedName, anchorNode, notInContextMenu = false) => {
         if (!fixedName) return;
@@ -381,11 +379,6 @@ class utils {
             index += size;
         }
         return result;
-    }
-
-    static zip = (...arrays) => {
-        const length = Math.min(...arrays.map(arr => arr.length));
-        return Array.from({length}, (_, index) => arrays.map(arr => arr[index]));
     }
 
     static splitKeyword = str => {
@@ -542,9 +535,10 @@ class utils {
     static insertScript = filepath => $.getScript(`file:///${this.joinPath(filepath)}`)
     static removeStyle = id => this.removeElementByID(id)
 
-    static newFilePath = filename => {
+    static newFilePath = async filename => {
         let filepath = !filename ? this.getFilePath() : this.Package.Path.join(this.getCurrentDirPath(), filename);
-        if (this.existPathSync(filepath)) {
+        const exist = await this.existPath(filepath);
+        if (exist) {
             const ext = this.Package.Path.extname(filepath);
             filepath = ext
                 ? filepath.replace(new RegExp(`${ext}$`), `-copy${ext}`)
