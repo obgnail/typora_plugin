@@ -87,6 +87,7 @@ class bingSpeech extends BaseCustomPlugin {
         this.utils.modal({title: "必应朗读", components}, async components => {
             const [_, l, v, s, d, r, p] = components.map(c => c.submit);
             const cfg = {from_language: l, voice: v, style: s, style_degree: d, rate: str2Num(r), pitch: str2Num(p)};
+            await this.utils.showProcessingHint();
             await this.speech(null, cfg);
         })
     }
@@ -97,8 +98,10 @@ class bingSpeech extends BaseCustomPlugin {
             console.debug("has not text");
             return
         }
+        const hideHint = this.utils.once(this.utils.hideProcessingHint);
         const audioContext = new window.AudioContext();
         await this.crawl(text, config, async binary => {
+            hideHint();
             const audioBuffer = await audioContext.decodeAudioData(binary.buffer);
             const source = audioContext.createBufferSource();
             source.buffer = audioBuffer;
