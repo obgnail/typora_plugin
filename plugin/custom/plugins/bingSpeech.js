@@ -36,37 +36,37 @@ class bingSpeech extends BaseCustomPlugin {
         ]
         const styleMap = {
             neutral: "中性",
-            advertisement_upbeat: "兴奋和精力充沛",
-            affectionate: "温暖而亲切",
-            angry: "生气和厌恶",
-            assistant: "热情而轻松",
+            advertisement_upbeat: "兴奋、精力充沛",
+            affectionate: "温暖、亲切",
+            angry: "生气、厌恶",
+            assistant: "热情、轻松",
             calm: "沉着冷静",
             chat: "轻松随意",
             cheerful: "积极愉快",
             customerservice: "友好热情",
             depressed: "忧郁、沮丧",
-            disgruntled: "轻蔑和抱怨",
+            disgruntled: "轻蔑、抱怨",
             "documentary-narration": "轻松、感兴趣",
             embarrassed: "不确定、犹豫",
-            empathetic: "关心和理解",
+            empathetic: "关心、理解",
             envious: "钦佩",
-            excited: "乐观和充满希望",
+            excited: "乐观、充满希望",
             fearful: "恐惧、紧张",
-            friendly: "愉快、怡人且温暖",
-            gentle: "温和、礼貌和愉快",
-            hopeful: "温暖且渴望",
-            lyrical: "优美又带感伤",
+            friendly: "愉快、怡人、温暖",
+            gentle: "温和、礼貌、愉快",
+            hopeful: "温暖、渴望",
+            lyrical: "优美、感伤",
             "narration-professional": "专业、客观",
-            "narration-relaxed": "舒缓而悦耳",
+            "narration-relaxed": "舒缓、悦耳",
             newscast: "正式专业",
             "newscast-casual": "通用、随意",
-            "newscast-formal": "正式、自信和权威",
-            "poetry-reading": "带情感和节奏",
+            "newscast-formal": "正式、自信、权威",
+            "poetry-reading": "带情感、节奏",
             sad: "悲伤",
-            serious: "严肃和命令",
+            serious: "严肃、命令",
             shouting: "听起来好像声音在远处",
-            sports_commentary: "既轻松又感兴趣",
-            sports_commentary_excited: "快速且充满活力",
+            sports_commentary: "轻松、感兴趣",
+            sports_commentary_excited: "快速、充满活力",
             terrified: "害怕",
             unfriendly: "冷淡无情",
             whispering: "柔和",
@@ -76,6 +76,7 @@ class bingSpeech extends BaseCustomPlugin {
         const num2Str = num => (parseInt(num) / 100).toFixed(1);
         const str2Num = str => (str.startsWith("-") ? "" : "+") + Math.floor(parseFloat(str) * 100) + "%";
         const components = [
+            {label: "⚠️ 本插件的功能完全依赖于外部环境，因此不能保证成功", type: "p"},
             {label: "语言", type: "input", value: from_language},
             {label: "语音", type: "select", selected: voice, list: voiceList},
             {label: "语气", type: "select", selected: style, map: styleMap},
@@ -84,7 +85,7 @@ class bingSpeech extends BaseCustomPlugin {
             {label: "语调", type: "range", min: -1.0, max: 1.0, step: 0.1, value: num2Str(pitch)},
         ]
         this.utils.modal({title: "必应朗读", components}, async components => {
-            const [l, v, s, d, r, p] = components.map(c => c.submit);
+            const [_, l, v, s, d, r, p] = components.map(c => c.submit);
             const cfg = {from_language: l, voice: v, style: s, style_degree: d, rate: str2Num(r), pitch: str2Num(p)};
             await this.speech(null, cfg);
         })

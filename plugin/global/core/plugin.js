@@ -233,9 +233,7 @@ class utils {
     static withAnchorNode = (selector, func) => () => {
         const anchorNode = this.getAnchorNode();
         const target = anchorNode.closest(selector);
-        if (target && target[0]) {
-            func(target[0]);
-        }
+        target && target[0] && func(target[0]);
     }
     static generateDynamicCallArgs = (fixedName, anchorNode, notInContextMenu = false) => {
         if (!fixedName) return;
@@ -381,11 +379,6 @@ class utils {
             index += size;
         }
         return result;
-    }
-
-    static zip = (...arrays) => {
-        const length = Math.min(...arrays.map(arr => arr.length));
-        return Array.from({length}, (_, index) => arrays.map(arr => arr[index]));
     }
 
     static splitKeyword = str => {
@@ -542,9 +535,10 @@ class utils {
     static insertScript = filepath => $.getScript(`file:///${this.joinPath(filepath)}`)
     static removeStyle = id => this.removeElementByID(id)
 
-    static newFilePath = filename => {
+    static newFilePath = async filename => {
         let filepath = !filename ? this.getFilePath() : this.Package.Path.join(this.getCurrentDirPath(), filename);
-        if (this.existPathSync(filepath)) {
+        const exist = await this.existPath(filepath);
+        if (exist) {
             const ext = this.Package.Path.extname(filepath);
             filepath = ext
                 ? filepath.replace(new RegExp(`${ext}$`), `-copy${ext}`)
@@ -2162,26 +2156,12 @@ class baseCustomPlugin {
     htmlTemplate = () => undefined
     hotkey = () => undefined
     process = () => undefined
+    afterProcess = () => undefined
     selector = () => undefined
     hint = isDisable => undefined
     callback = anchorNode => undefined
 }
 
-/*
-* 整个插件系统，一共暴露了7个全局变量(见下面的prepare函数)，实际有用的全局变量只有2个：
-*   1. global.BasePlugin:       插件的父类
-*   2. global.BaseCustomPlugin: 自定义插件的父类
-* 其他5个皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是上面两个父类的实例属性，所以utils自己也不需要暴露
-* 既然永远不会被外部文件引用，为什么还要将它们设置为什么全局变量？答：方便调试
-*
-* 整个插件系统的基本框架：
-*   1. BasePlugin、BaseCustomPlugin的内置生命周期函数负责执行环境和执行流程
-*   2. utils类似于library，负责辅助功能实现(这里有个技术债：utils没有做分层处理，导致utils巨大无比)
-*
-* 插件的基本实现流程：
-*   1. 创建插件类继承上述任意一个父类
-*   2. 在父类的内置生命周期函数内调用utils实现功能
-*/
 class process {
     constructor() {
         this.utils = utils;
@@ -2189,18 +2169,16 @@ class process {
 
     insertStyle = (fixedName, style) => {
         if (!style) return;
-
-        if (typeof style === "string") {
-            const name = fixedName.replace(/_/g, "-");
-            this.utils.insertStyle(`plugin-${name}-style`, style);
-        } else if (typeof style === "object") {
-            const {textID = null, text = null, fileID = null, file = null} = style;
-            if (fileID && file) {
-                this.utils.insertStyleFile(fileID, file);
-            }
-            if (textID && text) {
-                this.utils.insertStyle(textID, text);
-            }
+        switch (typeof style) {
+            case "string":
+                const name = fixedName.replace(/_/g, "-");
+                this.utils.insertStyle(`plugin-${name}-style`, style);
+                break
+            case "object":
+                const {textID = null, text = null, fileID = null, file = null} = style;
+                fileID && file && this.utils.insertStyleFile(fileID, file);
+                textID && text && this.utils.insertStyle(textID, text);
+                break
         }
     }
 
@@ -2213,8 +2191,8 @@ class process {
         try {
             const {plugin} = this.utils.requireFilePath("./plugin", fixedName);
             if (!plugin) return;
-            const instance = new plugin(fixedName, setting);
 
+            const instance = new plugin(fixedName, setting);
             if (!(instance instanceof BasePlugin)) {
                 console.error("instance is not instanceof BasePlugin:", fixedName);
                 return
@@ -2246,6 +2224,9 @@ class process {
 
     loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
 
+    // 整个插件系统一共暴露了7个全局变量，实际有用的只有2个：BasePlugin, BaseCustomPlugin
+    // 其余5个皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是上面两个父类的实例属性，所以utils自己也不需要暴露
+    // 既然永远不会被外部文件引用，为什么还要将它们设置为什么全局变量？答：方便调试
     prepare = settings => {
         global.BasePlugin = basePlugin;             // 插件的父类
         global.BaseCustomPlugin = baseCustomPlugin; // 自定义插件的父类
@@ -2259,9 +2240,7 @@ class process {
         delete settings.global;
     }
 
-    existEnablePlugin = () => Object.entries(global._plugin_settings).some(
-        ([fixedName, plugin]) => plugin.ENABLE && !global._plugin_global_settings.DISABLE_PLUGINS.includes(fixedName)
-    )
+    existEnablePlugin = () => Object.entries(global._plugin_settings).some(([name, plugin]) => plugin.ENABLE && !global._plugin_global_settings.DISABLE_PLUGINS.includes(name))
 
     run = async () => {
         const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
@@ -2270,7 +2249,7 @@ class process {
         // 初始化全局变量
         this.prepare(settings);
 
-        if (!this.existEnablePlugin(settings)) return;
+        if (!this.existEnablePlugin()) return;
 
         const {
             contextMenu, dialog, styleTemplater, stateRecorder, eventHub,

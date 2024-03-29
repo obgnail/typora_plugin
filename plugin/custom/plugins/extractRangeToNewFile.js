@@ -13,12 +13,12 @@ class extractRangeToNewFile extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     callback = async anchorNode => {
-        const extract = filepath => {
+        const extract = async filepath => {
             if (filepath && !filepath.endsWith(".md")) {
                 filepath += ".md";
             }
-            filepath = this.utils.newFilePath(filepath);
-            this.utils.Package.Fs.writeFileSync(filepath, this.text, "utf8");
+            filepath = await this.utils.newFilePath(filepath);
+            await this.utils.Package.Fs.promises.writeFile(filepath, this.text);
             this.config.auto_open && this.utils.openFile(filepath);
             this.text = null;
         }
@@ -36,7 +36,7 @@ class extractRangeToNewFile extends BaseCustomPlugin {
         this.savedSelection = null;
 
         if (!this.config.show_modal) {
-            extract("");
+            await extract("");
         } else {
             const components = [{label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本"}];
             this.modal({title: "提取选区文字到新文件", components}, ([{submit}]) => extract(submit));
