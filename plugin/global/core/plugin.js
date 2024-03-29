@@ -919,16 +919,17 @@ class utils {
                 });
             }
 
-            document.addEventListener("mouseup", ev => {
-                    if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
-                    _onMouseUp && _onMouseUp();
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    document.removeEventListener('mousemove', onMouseMove);
-                    moveElement.onmouseup = null;
-                }
-            )
+            const onMouseUp = ev => {
+                if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
+                _onMouseUp && _onMouseUp();
+                ev.stopPropagation();
+                ev.preventDefault();
+                document.removeEventListener("mousemove", onMouseMove);
+                moveElement.onmouseup = null;
+                document.removeEventListener("mouseup", onMouseUp);
+            }
 
+            document.addEventListener("mouseup", onMouseUp);
             document.addEventListener('mousemove', onMouseMove);
         })
         handleElement.ondragstart = () => false
