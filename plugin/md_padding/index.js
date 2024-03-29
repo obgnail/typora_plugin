@@ -33,9 +33,9 @@ class mdPaddingPlugin extends BasePlugin {
         await File.saveUseNode();
         const rangy = File.editor.selection.getRangy();
         if (this.config.FORMAT_IN_SELECTION_ONLY && rangy && !rangy.collapsed) {
-            await this.formatSelection();
+            await this.utils.withProcessingHint(this.formatSelection);
         } else {
-            await this.formatFile()
+            await this.utils.withProcessingHint(this.formatFile)
         }
     }
 }

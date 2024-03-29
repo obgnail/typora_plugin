@@ -15,78 +15,225 @@
 *    2. 递归处理新的内容
 */
 class resourceOperation extends BaseCustomPlugin {
-    selector = () => this.utils.getFilePath() ? undefined : this.utils.nonExistSelector
-    hint = isDisable => isDisable && "空白页不可使用此插件"
+    styleTemplate = () => true
+    html = () => `
+        <div id="plugin-resource-operation" class="plugin-common-modal plugin-common-hidden">
+            <div class="plugin-resource-operation-icon-group">
+                <div class="plugin-resource-operation-icon ion-close" action="close" ty-hint="关闭"></div>
+                <div class="plugin-resource-operation-icon ion-arrow-move" action="move" ty-hint="移动"></div>
+                <div class="plugin-resource-operation-icon ion-eye-disabled" action="togglePreview" ty-hint="预览图片"></div>
+                <div class="plugin-resource-operation-icon ion-archive" action="download" ty-hint="下载"></div>
+            </div>
+            <img class="plugin-resource-operation-popup plugin-common-hidden">
+            <div class="plugin-resource-operation-wrap"></div>
+        </div>
+    `
 
     init = () => {
-        const {ignore_image_div, resource_suffix, markdown_suffix, append_empty_suffix_file} = this.config;
-        this.regexp = ignore_image_div
+        const {ignore_img_html_element, resource_suffix, markdown_suffix, collect_file_without_suffix} = this.config;
+        this.regexp = ignore_img_html_element
             ? new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)", "g")
             : new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)|<img.*?src=\"(?<src2>.*?)\"", "g")
         this.resourceSuffix = new Set(resource_suffix);
         this.fileSuffix = new Set(markdown_suffix);
         this.resources = new Set();
         this.resourcesInFile = new Set();
-        if (append_empty_suffix_file) {
+        if (collect_file_without_suffix) {
             this.resourceSuffix.add("");
         }
+        this.nonExistInFile = null;
+        this.nonExistInFolder = null;
+    }
+
+    process = () => {
+        this.entities = {
+            modal: document.querySelector("#plugin-resource-operation"),
+            wrap: document.querySelector(".plugin-resource-operation-wrap"),
+            popup: document.querySelector(".plugin-resource-operation-popup"),
+            iconGroup: document.querySelector(".plugin-resource-operation-icon-group"),
+            move: document.querySelector('.plugin-resource-operation-icon-group [action="move"]'),
+            $wrap: $(".plugin-resource-operation-wrap"),
+        }
+        this.utils.dragFixedModal(this.entities.move, this.entities.modal, false);
+        this.onClick();
     }
 
     callback = anchorNode => {
-        const modal = {title: "提示", components: [{label: "此插件运行需要数秒到数十秒。", type: "p"}]};
-        this.utils.modal(modal, this.run);
+        this.utils.withProcessingHint(async () => {
+            await this.traverseDir(File.getMountFolder(), this.collect);
+            this.showModal();
+        })
     }
 
-    run = () => this.traverseDir(File.getMountFolder(), this.collect, this.operate)
+    onClick = () => {
+        this.entities.iconGroup.addEventListener("click", ev => {
+            const target = ev.target.closest("[action]");
+            if (!target) return;
 
-    operate = () => {
-        const getResult = () => {
-            const nonExistInFile = new Set([...this.resources].filter(x => !this.resourcesInFile.has(x)));
-            const nonExistInFolder = new Set([...this.resourcesInFile].filter(x => !this.resources.has(x)));
+            const action = target.getAttribute("action");
+            this[action] && this[action](ev);
+        })
+
+        this.entities.wrap.addEventListener("click", async ev => {
+            const target = ev.target.closest("button[action]");
+            if (!target) return;
+            const tr = target.closest("tr");
+            if (!tr) return;
+            const p = tr.querySelector(".plugin-resource-operation-src");
+            if (!p) return;
+
+            const src = p.dataset.path;
+            const action = target.getAttribute("action");
+            if (action === "delete") {
+                await this.utils.Package.Fs.promises.unlink(src);
+                this.utils.removeElement(tr);
+                this.nonExistInFile.delete(src);
+            } else if (action === "locate") {
+                this.utils.showInFinder(src);
+            }
+        })
+    }
+
+    showModal = () => {
+        const initModalRect = () => {
+            const {left, width, height} = document.querySelector("content").getBoundingClientRect();
+            Object.assign(this.entities.modal.style, {
+                left: `${left + width * 0.1}px`,
+                width: `${width * 0.8}px`,
+                height: `${height * 0.7}px`
+            });
+        }
+
+        const fulfil = () => {
+            this.nonExistInFile = new Set([...this.resources].filter(x => !this.resourcesInFile.has(x)));
+            this.nonExistInFolder = new Set([...this.resourcesInFile].filter(x => !this.resources.has(x)));
             this.resources.clear();
             this.resourcesInFile.clear();
-            return {nonExistInFile, nonExistInFolder}
         }
 
-        const genTable = (nonExistInFile, nonExistInFolder) => {
-            const genButtonGroup = buttons => {
-                const btn = buttons.map(({action, name}) => `<button type="button" class="btn btn-default" action="${action}">${name}</button>`)
-                return `<div class="btn-group">${btn.join("")}</div>`
-            }
-            const genTable = (caption, ths, rows) => `
-               <table class="table">
-                  <caption>${caption}</caption>
-                  <thead><tr>${ths.map(th => `<th>${th}</th>`).join("")}</tr></thead>
-                  <tbody>${Array.from(rows, row => `<tr><td>${row}</td></tr>`).join("")}</tbody>
-               </table>
+        const initTable = () => {
+            const output = this.getOutput();
+            delete output["resource_non_exist_in_file"];
+            delete output["resource_non_exist_in_folder"];
+            const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
+            const btnGroup = `<td><div class="btn-group"><button type="button" class="btn btn-default" action="locate">打开</button><button type="button" class="btn btn-default" action="delete">删除</button></div></td>`
+            const rows = Array.from(this.nonExistInFile, (row, idx) => `<tr><td>${idx + 1}</td><td class="plugin-resource-operation-src" data-path="${row}">${row}</td>${btnGroup}</tr>`)
+            this.entities.wrap.innerHTML = `
+                <table class="table">
+                     <caption>存在于文件夹但不存在于md文件的资源(共${this.nonExistInFile.size}项)</caption>
+                     <thead><tr><th>#</th><th>resource</th><th style="min-width: 130px">operation</th></tr></thead>
+                     <tbody>${rows.join("")}</tbody>
+                </table>
+                
+                <table class="table">
+                     <caption>存在于md文件但不存在于文件夹的资源(共${this.nonExistInFolder.size}项)</caption>
+                     <thead><tr><th>#</th><th>resource</th></tr></thead>
+                     <tbody>${Array.from(this.nonExistInFolder, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td></tr>`).join("")}</tbody>
+                </table>
+                
+                <div class="plugin-resource-operation-message">插件配置</div>
+                <textarea rows="10" readonly>${JSON.stringify(output, replacer, "\t")}</textarea>
             `
-
-            const btnList = [
-                {action: "download", name: "下载"},
-                {action: "close", name: "关闭"},
-            ];
-            const button = genButtonGroup(btnList);
-            const _nonExistInFile = genTable(`存在于文件夹但不存在于md文件的资源(共${nonExistInFile.size}项)`, ["资源名"], nonExistInFile);
-            const _nonExistInFolder = genTable(`存在于md文件但不存在于文件夹的资源(共${nonExistInFolder.size}项)`, ["资源名"], nonExistInFolder)
-            return _nonExistInFile + _nonExistInFolder + button;
         }
 
-        const {nonExistInFile, nonExistInFolder} = getResult();
-        const tables = genTable(nonExistInFile, nonExistInFolder);
-        const modal = document.querySelector("#plugin-resource-operation");
-        modal.innerHTML = tables;
-        this.utils.show(modal);
+        initModalRect();
+        fulfil();
+        initTable();
+        this.utils.show(this.entities.modal);
     }
 
-    download = (nonExistInFile, nonExistInFolder) => {
-        const template = (file, idx) => this.config.use_md_syntax_in_report ? `| ![resource${idx}](${file}) |` : `| \`${file}\` |`
-        const _nonExistInFile = Array.from(nonExistInFile, template);
-        const _nonExistInFolder = Array.from(nonExistInFolder, template);
-        const fileContent = `## 存在于文件夹但不存在于 md 文件的资源(共${_nonExistInFile.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFile.join("\n")}\n\n
-## 存在于 md 文件但不存在于文件夹的资源(共${_nonExistInFolder.length}项)\n\n| 资源名 |\n| ------ |\n${_nonExistInFolder.join("\n")}`;
+    close = () => {
+        this.nonExistInFile = null;
+        this.nonExistInFolder = null;
+        this.entities.wrap.innerHTML = "";
+        this.utils.hide(this.entities.modal);
+        this.togglePreview(false);
+    }
 
-        const filepath = this.utils.Package.Path.join(this.utils.getCurrentDirPath(), "resource-report.md");
-        this.utils.Package.Fs.writeFileSync(filepath, fileContent, "utf8");
+    togglePreview = force => {
+        const p = document.querySelector('.plugin-resource-operation-icon-group [action="togglePreview"]');
+        const close = force === false || p.classList.contains("plugin-preview");
+        const func = close ? "off" : "on";
+        this.entities.$wrap
+            [func]("mouseover", ".plugin-resource-operation-src", this._show)
+            [func]("mouseout", ".plugin-resource-operation-src", this._hide)
+            [func]("mousemove", ".plugin-resource-operation-src", this._show);
+        p.classList.toggle("plugin-preview", !close);
+        p.classList.toggle("ion-eye-disabled", close);
+        p.classList.toggle("ion-eye", !close);
+    }
+    _hide = ev => this.utils.hide(this.entities.popup)
+    _show = ev => {
+        const popup = this.entities.popup;
+        if (!popup) return;
+
+        popup.src = ev.target.dataset.path;
+        const left = Math.min(window.innerWidth - 10 - popup.offsetWidth, ev.clientX + 10);
+        const top = Math.min(window.innerHeight - 50 - popup.offsetHeight, ev.clientY + 20);
+        popup.style.left = `${left}px`;
+        popup.style.top = `${top}px`;
+
+        this.utils.show(popup);
+    }
+
+    getOutput = () => ({
+        search_folder: File.getMountFolder(),
+        resource_suffix: Array.from(this.resourceSuffix),
+        markdown_suffix: Array.from(this.fileSuffix),
+        ignore_img_html_element: this.config.ignore_img_html_element,
+        collect_file_without_suffix: this.config.collect_file_without_suffix,
+        ignore_folders: this.config.ignore_folders,
+        resource_non_exist_in_file: Array.from(this.nonExistInFile),
+        resource_non_exist_in_folder: Array.from(this.nonExistInFolder),
+    })
+
+    download = () => {
+        const {getCurrentDirPath, openFile, Package: {Path: {join}, Fs: {writeFileSync}}} = this.utils;
+        const template = (file, idx) => this.config.use_md_syntax_in_report ? `| ![resource${idx}](${file}) |` : `| \`${file}\` |`
+        const _nonExistInFile = Array.from(this.nonExistInFile, template);
+        const _nonExistInFolder = Array.from(this.nonExistInFolder, template);
+        const json = JSON.stringify(this.getOutput(), null, "\t");
+        const fileContent = `
+## 存在于文件夹，但是不存在于 md 文件的资源(共${_nonExistInFile.length}项)
+
+| 资源名 |
+| ----- |
+${_nonExistInFile.join("\n")}
+
+## 存在于 md 文件，但是不存在于文件夹的资源(共${_nonExistInFolder.length}项)
+
+| 资源名 |
+| ----- |
+${_nonExistInFolder.join("\n")}
+
+## JSON
+
+以下为插件相关配置及输出，以供开发者使用
+
+- \`search_folder\`：搜索的根目录
+- \`resource_suffix\`：判定为资源的文件后缀
+- \`markdown_suffix\`：判定为 markdown 的文件后缀
+- \`ignore_img_html_element\`：是否忽略 html 格式的 img 标签
+- \`ignore_folders\`：忽略的目录
+- \`resource_non_exist_in_file\`：存在于文件夹，但是不存在于 md 文件的资源
+- \`resource_non_exist_in_folder\`：存在于 md 文件，但是不存在于文件夹的资源
+
+\`\`\`json
+${json}
+\`\`\`
+
+## footer
+
+Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
+
+`;
+        let dir = getCurrentDirPath();
+        if (dir === ".") {
+            dir = File.getMountFolder();
+        }
+        const filepath = join(dir, "resource-report.md");
+        writeFileSync(filepath, fileContent, "utf8");
+        this.config.auto_open && setTimeout(openFile(filepath), 500);
     }
 
     collect = async (filePath, dir) => {
@@ -144,7 +291,8 @@ class resourceOperation extends BaseCustomPlugin {
         await collectMatch(buffer.toString());
     }
 
-    traverseDir = (dir, callback, then) => {
+    traverseDir = async (dir, callback) => {
+        const {ignore_folders} = this.config;
         const {Fs: {promises: {readdir, stat}}, Path: {join}} = this.utils.Package;
 
         async function traverse(dir) {
@@ -154,13 +302,13 @@ class resourceOperation extends BaseCustomPlugin {
                 const stats = await stat(filePath);
                 if (stats.isFile()) {
                     await callback(filePath, dir)
-                } else if (stats.isDirectory()) {
+                } else if (stats.isDirectory() && !ignore_folders.includes(file)) {
                     await traverse(filePath);
                 }
             }
         }
 
-        traverse(dir).then(then).catch(console.error);
+        await traverse(dir);
     }
 }
 

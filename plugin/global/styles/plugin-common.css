@@ -12,3 +12,52 @@
 .plugin-common-hidden {
     display: none !important;
 }
+
+.plugin-wait-mask-wrapper {
+    z-index: 9999;
+    position: fixed;
+    width: 100px;
+    height: 100px;
+    border-radius: 2px;
+    top: calc(50% - 50px);
+    left: calc(50% - 50px);
+    background-color: rgba(51,51,51,.62);
+}
+
+.plugin-wait-mask {
+    width: 100px;
+    height: 100px;
+    text-align: center;
+    background-color: transparent;
+    display: block;
+    border-radius: 4px;
+}
+
+.plugin-wait-mask .plugin-wait-label {
+    display: block;
+    color: #ddd;
+    font-size: 14px;
+    margin-top: 16px;
+    margin-bottom: 12px;
+}
+
+.plugin-wait-mask .truncate-line {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-left: 2px;
+    margin-right: 2px;
+    background-color: #ccc;
+}
+
+.plugin-wait-mask .truncate-line:nth-last-child(1) {
+    animation: loadingC .6s .1s linear infinite
+}
+
+.plugin-wait-mask .truncate-line:nth-last-child(2) {
+    animation: loadingC .6s .2s linear infinite
+}
+
+.plugin-wait-mask .truncate-line:nth-last-child(3) {
+    animation: loadingC .6s .3s linear infinite
+}

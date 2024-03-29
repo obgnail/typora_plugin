@@ -738,6 +738,15 @@ class utils {
     static show = ele => ele.classList.remove("plugin-common-hidden");
     static toggleVisible = (ele, force) => ele.classList.toggle("plugin-common-hidden", force);
 
+    static showProcessingHint = () => this.show(document.querySelector(".plugin-wait-mask-wrapper"));
+    static hideProcessingHint = () => this.hide(document.querySelector(".plugin-wait-mask-wrapper"));
+    static withProcessingHint = async func => {
+        const wrapper = document.querySelector(".plugin-wait-mask-wrapper");
+        this.show(wrapper);
+        await func();
+        this.hide(wrapper);
+    }
+
     static isInViewBox = el => {
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
         const totalWidth = window.innerWidth || document.documentElement.clientWidth;
@@ -1907,6 +1916,17 @@ class htmlTemplater {
         this.createList(templates).forEach(ele => target.appendChild(ele));
         parent.appendChild(target);
     }
+
+    process = () => {
+        this.utils.insertElement(`
+            <span class="plugin-wait-mask-wrapper plugin-common-hidden">
+                <span class="plugin-wait-mask">
+                    <span class="plugin-wait-label">processing</span>
+                    <span class="truncate-line"></span><span class="truncate-line"></span><span class="truncate-line"></span>
+                </span>
+            </span>
+        `);
+    }
 }
 
 class contextMenu {
@@ -2253,14 +2273,14 @@ class process {
         if (!this.existEnablePlugin()) return;
 
         const {
-            contextMenu, dialog, styleTemplater, stateRecorder, eventHub,
+            contextMenu, dialog, styleTemplater, htmlTemplater, stateRecorder, eventHub,
             diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser,
         } = helper;
 
         // 以下高级工具必须先加载
         // 1.插件可能会在加载阶段用到dialog、contextMenu和styleTemplater
         // 2.必须先让stateRecorder恢复状态，才能执行后续流程
-        await this.loadHelpers(contextMenu, dialog, styleTemplater, stateRecorder);
+        await this.loadHelpers(contextMenu, dialog, styleTemplater, htmlTemplater, stateRecorder);
 
         // 加载插件
         await this.loadPlugins();
