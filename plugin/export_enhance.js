@@ -10,7 +10,7 @@ class exportEnhancePlugin extends BasePlugin {
         const imageMap = this.config.DOWNLOAD_NETWORK_IMAGE ? await this.downloadAllImage(html, writeIdx) : {};
         const dirname = this.utils.getCurrentDirPath();
 
-        return html.replace(this.regexp, (origin, src, srcIdx) => {
+        return this.utils.asyncReplaceAll(html, this.regexp, async (origin, src, srcIdx) => {
             if (srcIdx < writeIdx) return origin;
 
             try {
@@ -24,7 +24,7 @@ class exportEnhancePlugin extends BasePlugin {
                     imagePath = this.utils.Package.Path.resolve(dirname, src);
                 }
 
-                const base64Data = this.toBase64(imagePath);
+                const base64Data = await this.toBase64(imagePath);
                 return origin.replace(src, base64Data);
             } catch (e) {
                 console.error("toBase64 error:", e);
@@ -55,8 +55,8 @@ class exportEnhancePlugin extends BasePlugin {
         return imageMap;
     }
 
-    toBase64 = imagePath => {
-        const bitmap = this.utils.Package.Fs.readFileSync(imagePath);
+    toBase64 = async imagePath => {
+        const bitmap = await this.utils.Package.Fs.promises.readFile(imagePath);
         const data = Buffer.from(bitmap).toString('base64');
         return `data:image;base64,${data}`;
     }

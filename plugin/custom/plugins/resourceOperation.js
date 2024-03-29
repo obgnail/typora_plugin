@@ -15,8 +15,8 @@
 *    2. 递归处理新的内容
 */
 class resourceOperation extends BaseCustomPlugin {
-    styleTemplate = () => true
-    html = () => '<div id="plugin-resource-operation" class="plugin-common-modal plugin-common-hidden"></div>'
+    selector = () => this.utils.getFilePath() ? undefined : this.utils.nonExistSelector
+    hint = isDisable => isDisable && "空白页不可使用此插件"
 
     init = () => {
         const {ignore_image_div, resource_suffix, markdown_suffix, append_empty_suffix_file} = this.config;

@@ -25,8 +25,9 @@
 }
 
 #plugin-quick-button .action-item:hover {
-    background-color: var(--item-hover-bg-color);
-    transform: scale(1.2);
+    box-shadow: 0 2px 10px 3px rgba(0,0,0,.15);
+    transform: translateY(-3px);
+    transition: all 50ms ease-in 0s;
 }
 
 #plugin-quick-button .action-item i {

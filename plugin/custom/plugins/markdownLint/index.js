@@ -163,7 +163,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             const lineNum = `<a>${lineNo}</a>` + " ".repeat(6 - lineNo.length);
             const desc = this.config.translate ? map[ruleName] : line.ruleDescription;
             return "\n" + lineNum + ruleName.padEnd(7) + desc;
-        })
+        }).join("")
         return header + result
     }
 

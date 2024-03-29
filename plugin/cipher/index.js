@@ -9,27 +9,27 @@ class cipherPlugin extends BasePlugin {
 
     encrypt = async raw => {
         this.lazyLoad();
-        if (!this.config.SHOW_HINT_MODAL) {
+        const isCiphered = this.utils.isBase64(raw);
+        if (!this.config.SHOW_HINT_MODAL && !isCiphered) {
             return this.AES_ECB.AES_ECB_ENCRYPT(raw, this.key)
         }
         return new Promise(resolve => {
-            this.utils.modal(
-                {title: "提示", components: [{label: `仅作娱乐使用，加密后 <b>严禁修改文件</b>`, type: "p"}]},
-                () => resolve(this.AES_ECB.AES_ECB_ENCRYPT(raw, this.key)),
-                () => resolve(raw)
-            );
+            const label = isCiphered ? "文件已是加密格式，重复加密并不会更安全" : `仅作娱乐使用，加密后 <b>严禁修改文件</b>`
+            const callback = isCiphered ? () => resolve(raw) : () => resolve(this.AES_ECB.AES_ECB_ENCRYPT(raw, this.key))
+            this.utils.modal({title: "加密文件", components: [{label, type: "p"}]}, callback, () => resolve(raw));
         })
     }
 
     decrypt = async ciphered => {
         this.lazyLoad();
-        if (this.utils.isBase64(ciphered)) {
+        const isCiphered = this.utils.isBase64(ciphered);
+        if (isCiphered) {
             return this.AES_ECB.AES_ECB_DECRYPT(ciphered, this.key)
         }
         return new Promise(resolve => {
-            const label = "文件非加密格式";
+            const label = "文件为非加密格式";
             const callback = () => resolve(ciphered);
-            this.utils.modal({title: "提示", components: [{label, type: "p"}]}, callback, callback);
+            this.utils.modal({title: "解密文件", components: [{label, type: "p"}]}, callback, callback);
         })
     }
 

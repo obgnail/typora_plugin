@@ -46,8 +46,17 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     })
 
     htmlTemplate = () => {
+        const getTools = () => {
+            this.funcTranslate.info[0] = this.optionHint();
+            const tools = Object.entries(this.funcTranslate).map(([option, [title, icon]]) => {
+                return [option, {ele: "i", class_: icon, option, title}]
+            })
+            const map = new Map(tools);
+            return this.config.tool_function.map(item => map.get(item)).filter(Boolean)
+        }
+
         const msg = this.config.show_message.map(msg => ({class_: "review-" + msg}));
-        const options = this.getTools();
+        const options = getTools();
         const toolbar = [{class_: "review-message", children: msg}, {class_: "review-options", children: options}];
         const children = [
             {class_: "mask plugin-cover-content"},
@@ -284,15 +293,6 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                 total: imageList.length || 0,
             };
         }
-    }
-
-    getTools = () => {
-        this.funcTranslate.info[0] = this.optionHint();
-        const tools = Object.entries(this.funcTranslate).map(([option, [title, icon]]) => {
-            return [option, {ele: "i", class_: icon, option, title}]
-        })
-        const map = new Map(tools);
-        return this.config.tool_function.map(item => map.get(item)).filter(Boolean)
     }
 
     handleMessage = imgInfo => {

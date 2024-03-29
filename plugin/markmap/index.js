@@ -196,7 +196,7 @@ class tocMarkmap {
                 <div class="plugin-markmap-grip grip-right plugin-common-hidden"></div>
                 <div class="plugin-markmap-header">
                     <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
-                    <div class="plugin-markmap-icon ion-arrow-expand" action="expand" ty-hint="全屏"></div>
+                    <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图表重新适配窗口"></div>
                     <div class="plugin-markmap-icon ion-network" action="setExpandLevel" ty-hint="展开分支等级"></div>
@@ -293,8 +293,15 @@ class tocMarkmap {
     }
 
     setExpandLevel = async () => {
-        const components = [{label: "展开几级分支（-1则全部展开）", type: "input", value: "1", placeholder: "1"}];
-        this.utils.modal({title: "展开等级", components}, async ([{submit: level}]) => this._setExpandLevel(level));
+        const maxLevel = 6;
+        let level = this.markmap && this.markmap.options.initialExpandLevel;
+        if (level === undefined) {
+            level = 1;
+        } else if (level < 0) {
+            level = maxLevel;
+        }
+        const components = [{label: "", type: "range", value: level, min: 0, max: maxLevel, step: 1}];
+        this.utils.modal({title: "展开分支", components}, async ([{submit: level}]) => this._setExpandLevel(level));
     }
 
     download = () => {

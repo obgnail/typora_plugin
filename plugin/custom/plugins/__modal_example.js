@@ -9,10 +9,11 @@
               2. password
               3. p
               4. textarea
-              5. checkbox
-              6. radio
-              7. select
-              8. file
+              5. range
+              6. checkbox
+              7. radio
+              8. select
+              9. file
       2. onSubmitCallback: 当用户点击【确认】后的回调函数
       3. onCancelCallback: 当用户点击【取消】后的回调函数
 */
@@ -43,6 +44,14 @@ class modalExample extends BaseCustomPlugin {
                     type: "textarea",  // 多行文本框
                     rows: 5,
                     placeholder: "请输入新文件路径",
+                },
+                {
+                    label: "test range",
+                    type: "range",     // 拖动条
+                    value: 1,
+                    min: -1,
+                    max: 6,
+                    step: 1
                 },
                 {
                     label: "test checkbox",

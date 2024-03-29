@@ -126,6 +126,7 @@ class loadPluginHelper {
                 this.utils.insertHtmlTemplate(elements);
             }
             instance.process();
+            instance.afterProcess();
             this.controller.custom[instance.fixedName] = instance;
             console.debug(`custom plugin had been injected: [ ${instance.fixedName} ]`);
         } catch (e) {

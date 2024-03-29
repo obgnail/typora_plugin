@@ -11,7 +11,8 @@
     line-height: 25px;
 }
 
-#plugin-commander-form select, input {
+#plugin-commander-form select,
+#plugin-commander-form input {
     border: 1px solid #ddd;
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
     border-radius: 2px;
