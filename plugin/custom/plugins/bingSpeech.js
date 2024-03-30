@@ -71,7 +71,7 @@ class bingSpeech extends BaseCustomPlugin {
             unfriendly: "冷淡无情",
             whispering: "柔和",
         }
-        const styleDegreeMap = {"0": "最低", "1": "中等", "2": "最高"};
+        const styleDegreeMap = {"0": "低", "1": "中", "2": "高"};
         const {from_language, voice, rate, pitch, style, style_degree} = this.config;
         const num2Str = num => (parseInt(num) / 100).toFixed(1);
         const str2Num = str => (str.startsWith("-") ? "" : "+") + Math.floor(parseFloat(str) * 100) + "%";

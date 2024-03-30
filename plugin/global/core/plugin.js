@@ -2273,14 +2273,14 @@ class process {
         if (!this.existEnablePlugin()) return;
 
         const {
-            contextMenu, dialog, styleTemplater, htmlTemplater, stateRecorder, eventHub,
-            diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser,
+            contextMenu, dialog, styleTemplater, stateRecorder, eventHub,
+            htmlTemplater, diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser,
         } = helper;
 
         // 以下高级工具必须先加载
         // 1.插件可能会在加载阶段用到dialog、contextMenu和styleTemplater
         // 2.必须先让stateRecorder恢复状态，才能执行后续流程
-        await this.loadHelpers(contextMenu, dialog, styleTemplater, htmlTemplater, stateRecorder);
+        await this.loadHelpers(contextMenu, dialog, styleTemplater, stateRecorder);
 
         // 加载插件
         await this.loadPlugins();
@@ -2292,7 +2292,7 @@ class process {
         this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
 
         // 加载剩余的高级工具
-        await this.loadHelpers(diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser);
+        await this.loadHelpers(htmlTemplater, diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser);
 
         // 一切准备就绪
         this.utils.publishEvent(this.utils.eventType.everythingReady);
