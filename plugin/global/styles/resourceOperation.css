@@ -1,6 +1,7 @@
 #plugin-resource-operation {
     display: flex;
     flex-direction: column;
+    transition: height 0.5s ease-in-out;
 }
 
 #plugin-resource-operation .plugin-resource-operation-wrap {
