@@ -360,15 +360,6 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 资源管理
 
-> NOTE：由于删除文件是危险操作，默认只会生成报告，不会删除。如果需要删除文件，请手动修改配置文件的 `operation` 选项
-
-```toml
-# report: 生成报告
-# delete: 直接删除
-# move  : 移动到当前文件夹
-operation = "report"
-```
-
 
 
 ### fence_enhance：一键复制代码，折叠代码

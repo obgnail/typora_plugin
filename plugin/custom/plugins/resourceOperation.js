@@ -21,6 +21,7 @@ class resourceOperation extends BaseCustomPlugin {
             <div class="plugin-resource-operation-icon-group">
                 <div class="plugin-resource-operation-icon ion-close" action="close" ty-hint="关闭"></div>
                 <div class="plugin-resource-operation-icon ion-arrow-move" action="move" ty-hint="移动"></div>
+                <div class="plugin-resource-operation-icon ion-minus-round" action="toggleZoom" ty-hint="缩放"></div>
                 <div class="plugin-resource-operation-icon ion-eye-disabled" action="togglePreview" ty-hint="预览图片"></div>
                 <div class="plugin-resource-operation-icon ion-archive" action="download" ty-hint="下载"></div>
             </div>
@@ -55,17 +56,6 @@ class resourceOperation extends BaseCustomPlugin {
             $wrap: $(".plugin-resource-operation-wrap"),
         }
         this.utils.dragFixedModal(this.entities.move, this.entities.modal, false);
-        this.onClick();
-    }
-
-    callback = anchorNode => {
-        this.utils.withProcessingHint(async () => {
-            await this.traverseDir(File.getMountFolder(), this.collect);
-            this.showModal();
-        })
-    }
-
-    onClick = () => {
         this.entities.iconGroup.addEventListener("click", ev => {
             const target = ev.target.closest("[action]");
             if (!target) return;
@@ -73,7 +63,6 @@ class resourceOperation extends BaseCustomPlugin {
             const action = target.getAttribute("action");
             this[action] && this[action](ev);
         })
-
         this.entities.wrap.addEventListener("click", async ev => {
             const target = ev.target.closest("button[action]");
             if (!target) return;
@@ -94,16 +83,23 @@ class resourceOperation extends BaseCustomPlugin {
         })
     }
 
-    showModal = () => {
-        const initModalRect = () => {
-            const {left, width, height} = document.querySelector("content").getBoundingClientRect();
-            Object.assign(this.entities.modal.style, {
-                left: `${left + width * 0.1}px`,
-                width: `${width * 0.8}px`,
-                height: `${height * 0.7}px`
-            });
-        }
+    callback = async anchorNode => await this.utils.withProcessingHint(this.run)
 
+    run = async () => {
+        await this.traverseDir(File.getMountFolder(), this.collect);
+        this.showModal();
+    }
+
+    initModalRect = () => {
+        const {left, width, height} = document.querySelector("content").getBoundingClientRect();
+        Object.assign(this.entities.modal.style, {
+            left: `${left + width * 0.1}px`,
+            width: `${width * 0.8}px`,
+            height: `${height * 0.7}px`
+        });
+    }
+
+    showModal = () => {
         const fulfil = () => {
             this.nonExistInFile = new Set([...this.resources].filter(x => !this.resourcesInFile.has(x)));
             this.nonExistInFolder = new Set([...this.resourcesInFile].filter(x => !this.resources.has(x)));
@@ -136,7 +132,7 @@ class resourceOperation extends BaseCustomPlugin {
             `
         }
 
-        initModalRect();
+        this.initModalRect();
         fulfil();
         initTable();
         this.utils.show(this.entities.modal);
@@ -148,19 +144,32 @@ class resourceOperation extends BaseCustomPlugin {
         this.entities.wrap.innerHTML = "";
         this.utils.hide(this.entities.modal);
         this.togglePreview(false);
+        this.toggleZoom(false)
+    }
+
+    toggleZoom = force => {
+        const icon = document.querySelector('.plugin-resource-operation-icon-group [action="toggleZoom"]');
+        const needExpand = force === false || icon.classList.contains("ion-plus-round");
+        if (needExpand) {
+            this.initModalRect();
+        } else {
+            const {height} = this.entities.iconGroup.getBoundingClientRect();
+            this.entities.modal.style.height = height + 4 + "px";
+        }
+        icon.classList.toggle("ion-minus-round", needExpand);
+        icon.classList.toggle("ion-plus-round", !needExpand);
     }
 
     togglePreview = force => {
-        const p = document.querySelector('.plugin-resource-operation-icon-group [action="togglePreview"]');
-        const close = force === false || p.classList.contains("plugin-preview");
-        const func = close ? "off" : "on";
+        const icon = document.querySelector('.plugin-resource-operation-icon-group [action="togglePreview"]');
+        const wantClose = force === false || icon.classList.contains("ion-eye");
+        const func = wantClose ? "off" : "on";
         this.entities.$wrap
             [func]("mouseover", ".plugin-resource-operation-src", this._show)
             [func]("mouseout", ".plugin-resource-operation-src", this._hide)
             [func]("mousemove", ".plugin-resource-operation-src", this._show);
-        p.classList.toggle("plugin-preview", !close);
-        p.classList.toggle("ion-eye-disabled", close);
-        p.classList.toggle("ion-eye", !close);
+        icon.classList.toggle("ion-eye-disabled", wantClose);
+        icon.classList.toggle("ion-eye", !wantClose);
     }
     _hide = ev => this.utils.hide(this.entities.popup)
     _show = ev => {
