@@ -12,7 +12,7 @@ class resizeImagePlugin extends BasePlugin {
 
             const zoomOut = ev.deltaY > 0;
             this.zoom(target, zoomOut, this.config.SCALE);
-        }, true);
+        }, {passive: true, capture: true});
     }
 
     recordResizeState = (needChange = true) => {

@@ -103,7 +103,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             ev.preventDefault();
             const list = this.getFuncList(ev, "wheel");
             list[ev.deltaY > 0 ? 1 : 0]();
-        });
+        }, {passive: false});
 
         this.entities.image.addEventListener("mousedown", ev => {
             const list = this.getFuncList(ev, "mousedown");

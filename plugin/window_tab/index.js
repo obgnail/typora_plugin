@@ -157,7 +157,7 @@ class windowTabBarPlugin extends BasePlugin {
             } else {
                 target.scrollLeft += ev.deltaY * 0.5;
             }
-        })
+        }, {passive: true})
     }
 
     handleMiddleClick = () => {

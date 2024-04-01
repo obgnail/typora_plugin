@@ -24,7 +24,7 @@ class fileCounterPlugin extends BasePlugin {
                     ev.stopPropagation();
                     ev.preventDefault();
                 }
-            }, true)
+            }, {passive: false, capture: true})
         }
 
         new MutationObserver(mutationList => {
