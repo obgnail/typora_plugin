@@ -26,6 +26,9 @@ class tocPlugin extends BaseCustomPlugin {
         if (this.config.right_click_outline_button_to_toggle) {
             document.querySelector("#info-panel-tab-outline .info-panel-tab-title").addEventListener("mousedown", ev => ev.button === 2 && this.toggle());
         }
+        if (this.config.default_show_toc) {
+            this.utils.addEventListener(this.utils.eventType.everythingReady, this.toggle);
+        }
     }
 
     callback = () => this.toggle()
