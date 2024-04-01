@@ -67,8 +67,6 @@ class commanderPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.init();
-
         if (!this.config.USE_BUILTIN) {
             this.modal.modal.style.width = "500px";
             this.modal.input.style.width = "80%";

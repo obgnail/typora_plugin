@@ -7,12 +7,15 @@ class markdownLintPlugin extends BaseCustomPlugin {
         ${this.config.use_button ? '<div id="plugin-markdownlint-button" ty-hint="markdown格式规范检测"></div>' : ""}
     `
 
-    process = () => {
+    init = () => {
         this.entities = {
             modal: document.querySelector("#plugin-markdownlint"),
             pre: document.querySelector("#plugin-markdownlint pre"),
             button: document.querySelector("#plugin-markdownlint-button"),
         }
+    }
+
+    process = () => {
         this.initWorker();
         this.initEventHandler();
         this.onLineClick();

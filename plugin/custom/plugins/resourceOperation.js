@@ -44,9 +44,7 @@ class resourceOperation extends BaseCustomPlugin {
         }
         this.nonExistInFile = null;
         this.nonExistInFolder = null;
-    }
 
-    process = () => {
         this.entities = {
             modal: document.querySelector("#plugin-resource-operation"),
             wrap: document.querySelector(".plugin-resource-operation-wrap"),
@@ -55,6 +53,9 @@ class resourceOperation extends BaseCustomPlugin {
             move: document.querySelector('.plugin-resource-operation-icon-group [action="move"]'),
             $wrap: $(".plugin-resource-operation-wrap"),
         }
+    }
+
+    process = () => {
         this.utils.dragFixedModal(this.entities.move, this.entities.modal, false);
         this.entities.iconGroup.addEventListener("click", ev => {
             const target = ev.target.closest("[action]");

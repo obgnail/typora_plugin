@@ -192,7 +192,6 @@ class autoNumberPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.init();
         if (this.config.ENABLE_WHEN_EXPORT) {
             new exportHelper(this).process();
         }

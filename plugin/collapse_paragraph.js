@@ -13,7 +13,6 @@ class collapseParagraphPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.init();
         this.recordCollapseState(false);
         const write = document.getElementById("write");
         write.addEventListener("click", ev => {

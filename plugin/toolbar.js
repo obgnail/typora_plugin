@@ -17,7 +17,7 @@ class toolbarPlugin extends BasePlugin {
         return [{id: "plugin-toolbar", class_: "plugin-common-modal plugin-common-hidden", children}]
     }
 
-    process = () => {
+    init = () => {
         this.canInput = true;
         this.hideWhenEnter = true;
         this.entities = {
@@ -28,7 +28,9 @@ class toolbarPlugin extends BasePlugin {
         }
         this.handleInput = this.utils.debouncePromise(this.toolController.handleInput, this.config.DEBOUNCE_INTERVAL);
         this.selectItem = this.utils.selectItemFromList(this.entities.result, ".plugin-toolbar-item.active");
+    }
 
+    process = () => {
         this.entities.input.addEventListener("keydown", async ev => {
             switch (ev.key) {
                 case "Enter":

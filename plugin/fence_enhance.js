@@ -5,23 +5,6 @@ class fenceEnhancePlugin extends BasePlugin {
 
     styleTemplate = () => ({bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial"})
 
-    init = () => {
-        this.builders = [];
-        this.lastClickTime = 0;
-        this.dangerousHint = "警告：消耗巨量资源并导致Typora长时间失去响应";
-        this.callArgs = [
-            {arg_name: "自动隐藏/显示按钮", arg_value: "set_auto_hide"},
-            {arg_name: "禁用/启用折叠按钮", arg_value: "disable_or_enable_fold"},
-            {arg_name: "禁用/启用复制按钮", arg_value: "disable_or_enable_copy"},
-            {arg_name: "总是折叠代码块", arg_value: "fold_all"},
-            {arg_name: "总是展开代码块", arg_value: "expand_all"},
-        ];
-
-        if (this.enableIndent) {
-            this.callArgs.splice(2, 0, {arg_name: "禁用/启用缩进调整按钮", arg_value: "disable_or_enable_indent"});
-        }
-    }
-
     process = () => {
         if (this.config.ENABLE_HOTKEY) {
             new editorHotkey(this).process();
@@ -52,8 +35,25 @@ class fenceEnhancePlugin extends BasePlugin {
         })
     }
 
+    initVar = () => {
+        this.builders = [];
+        this.lastClickTime = 0;
+        this.dangerousHint = "警告：消耗巨量资源并导致Typora长时间失去响应";
+        this.callArgs = [
+            {arg_name: "自动隐藏/显示按钮", arg_value: "set_auto_hide"},
+            {arg_name: "禁用/启用折叠按钮", arg_value: "disable_or_enable_fold"},
+            {arg_name: "禁用/启用复制按钮", arg_value: "disable_or_enable_copy"},
+            {arg_name: "总是折叠代码块", arg_value: "fold_all"},
+            {arg_name: "总是展开代码块", arg_value: "expand_all"},
+        ];
+
+        if (this.enableIndent) {
+            this.callArgs.splice(2, 0, {arg_name: "禁用/启用缩进调整按钮", arg_value: "disable_or_enable_indent"});
+        }
+    }
+
     processButton = () => {
-        this.init();
+        this.initVar();
 
         [
             ["copy-code", "copyCode", "复制", "fa fa-clipboard", this.config.ENABLE_COPY, this.copyCode],

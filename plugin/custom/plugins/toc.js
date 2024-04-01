@@ -1,17 +1,17 @@
 class tocPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
     html = () => `<div id="plugin-toc" class="plugin-common-modal plugin-common-hidden plugin-toc"><div class="grip-right"></div><div class="toc-ul"></div></div>`
-
     hotkey = () => [this.config.hotkey]
-
-    process = () => {
+    init = () => {
         this.entities = {
             content: document.querySelector("content"),
             modal: document.querySelector("#plugin-toc"),
             grip: document.querySelector("#plugin-toc .grip-right"),
             ul: document.querySelector("#plugin-toc .toc-ul"),
         };
+    }
 
+    process = () => {
         this.onResize();
         this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.isModalShow() && this.renewModal());
         this.utils.decorate(() => File && File.editor && File.editor.library && File.editor.library.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader);

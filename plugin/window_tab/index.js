@@ -28,7 +28,6 @@ class windowTabBarPlugin extends BasePlugin {
         this.loopDetectInterval = 35;
     }
     process = () => {
-        this.init();
         this.handleLifeCycle();
         this.handleClick();
         this.handleScroll();

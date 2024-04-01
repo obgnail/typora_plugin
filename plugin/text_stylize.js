@@ -56,7 +56,7 @@ class textStylizePlugin extends BasePlugin {
         return [{hotkey: this.config.SHOW_MODAL_HOTKEY, callback: this.call}, ...hotkeys];
     }
 
-    process = () => {
+    init = () => {
         this.formatBrushObj = {};
         this.entities = {
             modal: document.querySelector("#plugin-text-stylize"),
@@ -64,6 +64,9 @@ class textStylizePlugin extends BasePlugin {
             palette: document.querySelector("#plugin-text-stylize .stylize-palette"),
         }
 
+    }
+
+    process = () => {
         this.utils.dragFixedModal(this.entities.toolbar.querySelector(`[action="move"]`), this.entities.modal, false);
 
         const that = this;

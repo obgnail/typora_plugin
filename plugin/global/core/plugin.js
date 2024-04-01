@@ -2168,6 +2168,8 @@ class IPlugin {
     htmlTemplate = () => undefined
     // 注册快捷键
     hotkey = () => undefined
+    // 初始化数据
+    init = () => undefined
     // 主要的处理流程
     process = () => undefined
     // 收尾，一般用于回收内存，用的比较少
@@ -2203,7 +2205,6 @@ class baseCustomPlugin extends IPlugin {
         this.controller = controller;
     }
 
-    init = () => undefined
     selector = () => undefined
     hint = isDisable => undefined
     callback = anchorNode => undefined
@@ -2242,6 +2243,7 @@ class process {
                 this.utils.insertHtmlTemplate(elements);
             }
             this.utils.registerHotkey(instance.hotkey());
+            instance.init();
             instance.process();
             instance.afterProcess();
             global._plugins[instance.fixedName] = instance;

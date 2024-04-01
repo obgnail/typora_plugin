@@ -26,7 +26,6 @@ class markmapPlugin extends BasePlugin {
     }
 
     process = async () => {
-        this.init();
         this.tocMarkmap && await this.tocMarkmap.process();
         this.fenceMarkmap && this.fenceMarkmap.process();
     }
