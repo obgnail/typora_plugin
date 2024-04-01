@@ -495,7 +495,7 @@ class utils {
         const exist = await this.existPath(homeSetting);
         return exist ? homeSetting : this.getOriginSettingPath(settingFile);
     }
-    static updateSetting = async (fixedName, updateObj) => {
+    static saveConfig = async (fixedName, updateObj) => {
         let isCustom = false;
         let plugin = this.getPlugin(fixedName);
         if (!plugin) {
@@ -2174,6 +2174,12 @@ const helper = Object.freeze({
 })
 
 class IPlugin {
+    constructor(fixedName, setting) {
+        this.fixedName = fixedName;
+        this.config = setting;
+        this.utils = utils;
+    }
+
     // 最先执行的函数，唯一一个asyncFunction，在这里初始化插件需要的数据。若返回stopLoadPluginError，则停止加载插件
     beforeProcess = async () => undefined
     // 以字符串形式导入样式
@@ -2195,36 +2201,20 @@ class IPlugin {
 }
 
 class basePlugin extends IPlugin {
-    constructor(fixedName, setting) {
-        super();
-        if (new.target === basePlugin) {
-            throw new Error("basePlugin cannot be directly instantiated");
-        }
-        this.fixedName = fixedName;
-        this.config = setting;
-        this.utils = utils;
-    }
-
     call = (type, meta) => undefined
 }
 
 class baseCustomPlugin extends IPlugin {
     constructor(fixedName, setting, controller) {
-        super();
-        if (new.target === baseCustomPlugin) {
-            throw new Error("baseCustomPlugin cannot be directly instantiated");
-        }
-        this.fixedName = fixedName;
+        super(fixedName, setting.config);
+        this.controller = controller;
         this.info = setting;
         this.showName = setting.name;
-        this.config = setting.config;
-        this.utils = utils;
         this.modal = utils.modal;
-        this.controller = controller;
     }
 
-    selector = () => undefined
     hint = isDisable => undefined
+    selector = () => undefined
     callback = anchorNode => undefined
 }
 
