@@ -670,6 +670,17 @@ WAIT_RECOVER_INTERVAL = 1000
 # 节流时间（单位：ms）
 # 300毫秒内多次点击【复制代码】按钮，只会执行一次（此选项其实没啥意义，添加此选项只是出于强迫症）
 CLICK_CHECK_INTERVAL = 300
+# 自定义按钮，目前此插件有三个按钮：复制，缩进，折叠。此选项可以新增按钮
+# 此配置是【风险】配置，如果您没有javascript基础，请不要修改此配置
+#   DISABLE:   是否禁用此按钮
+#   ICON:      按钮图标。填入css class。支持font-awesome-4.1.0。所有的图标及其对应的css class请参考：https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
+#   HINT:      提示信息
+#   ON_INIT:   初始化函数的字符串，此函数只会最开始时被调用一次。传入的参数为：plugin，即：插件实例。例如：plu => console.log('custom fence button has init')。如果不需要，请置为空。
+#   ON_RENDER: 渲染后的回调函数的字符串，页面每渲染一个代码块，都会自动调用此函数。传入的参数为：buttonElement，即：按钮标签。例如: btn => console.log('btn has render')。如果不需要，请置为空。
+#   ON_CLICK:  鼠标点击时的回调函数的字符串，传入的参数为：{ev, btn, cont, plu}，即：click事件，按钮标签，代码块文本，插件实例。例如：({ev, btn, cont, plu}) => console.log(cont)。不可为空。
+CUSTOM_BUTTONS = [
+    { DISABLE = true, ICON = "fa fa-bomb", HINT = "demo", ON_INIT = "", ON_RENDER = "", ON_CLICK = "({ev, btn, cont, plu}) => console.log(cont)" },
+]
 
 # fence_enhance插件包含三个功能：button、hotkey、other。此为hotkey，功能：为代码块添加快捷键
 # 若置为false，以下配置全部失效
