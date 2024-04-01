@@ -205,6 +205,24 @@ class utils {
         return _func
     }
 
+    static loadPluginLifeCycle = async (instance, isCustom) => {
+        const error = await instance.beforeProcess();
+        if (error === this.stopLoadPluginError) return false;
+        this.registerStyle(instance.fixedName, instance.style());
+        const renderArgs = instance.styleTemplate();
+        if (renderArgs) {
+            await this.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
+        }
+        this.insertElement(instance.html());
+        const elements = instance.htmlTemplate();
+        elements && this.insertHtmlTemplate(elements);
+        !isCustom && this.registerHotkey(instance.hotkey());
+        instance.init();
+        instance.process();
+        instance.afterProcess();
+        return true;
+    }
+
     // 路径是否在挂载文件夹下
     static isUnderMountFolder = path => {
         const mountFolder = File.getMountFolder();
@@ -2230,22 +2248,8 @@ class process {
                 console.error("instance is not instanceof BasePlugin:", fixedName);
                 return
             }
-            const error = await instance.beforeProcess();
-            if (error === this.utils.stopLoadPluginError) return
-            this.utils.registerStyle(instance.fixedName, instance.style());
-            const renderArgs = instance.styleTemplate();
-            if (renderArgs) {
-                await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
-            }
-            this.utils.insertElement(instance.html());
-            const elements = instance.htmlTemplate();
-            if (elements) {
-                this.utils.insertHtmlTemplate(elements);
-            }
-            this.utils.registerHotkey(instance.hotkey());
-            instance.init();
-            instance.process();
-            instance.afterProcess();
+            const ok = await this.utils.loadPluginLifeCycle(instance);
+            if (!ok) return;
             global._plugins[instance.fixedName] = instance;
             console.debug(`plugin had been injected: [ ${instance.fixedName} ] `);
         } catch (e) {

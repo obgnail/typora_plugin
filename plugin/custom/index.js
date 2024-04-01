@@ -103,21 +103,8 @@ class loadPluginHelper {
                 console.error("instance is not instanceof BaseCustomPlugin:", fixedName);
                 return
             }
-            const error = await instance.beforeProcess();
-            if (error === this.utils.stopLoadPluginError) return
-            this.utils.registerStyle(instance.fixedName, instance.style());
-            const renderArgs = instance.styleTemplate();
-            if (renderArgs) {
-                await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
-            }
-            this.utils.insertElement(instance.html());
-            const elements = instance.htmlTemplate();
-            if (elements) {
-                this.utils.insertHtmlTemplate(elements);
-            }
-            instance.init();
-            instance.process();
-            instance.afterProcess();
+            const ok = await this.utils.loadPluginLifeCycle(instance, true);
+            if (!ok) return;
             this.controller.custom[instance.fixedName] = instance;
             console.debug(`custom plugin had been injected: [ ${instance.fixedName} ]`);
         } catch (e) {
