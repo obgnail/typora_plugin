@@ -8,7 +8,7 @@ class helpPlugin extends BasePlugin {
         }
     }
 
-    process = () => {
+    init = () => {
         const arg_hint = "此功能仅对开发者开放";
         this.callArgs = [
             {arg_name: "修改配置", arg_value: "open_setting_folder"},
@@ -21,7 +21,9 @@ class helpPlugin extends BasePlugin {
             {arg_name: "反馈 - Email", arg_value: "send_email"},
             {arg_name: "关于", arg_value: "about", arg_hint: "Designed with ♥ by obgnail"},
         ]
+    }
 
+    process = () => {
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
             this.updater = this.utils.getCustomPlugin("pluginUpdater");
             if (!this.updater) return;

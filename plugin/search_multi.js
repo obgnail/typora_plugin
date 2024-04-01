@@ -29,7 +29,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
-    process = () => {
+    init = () => {
         this.entities = {
             modal: document.getElementById('plugin-search-multi'),
             inputBar: document.querySelector("#plugin-search-multi-input"),
@@ -39,7 +39,9 @@ class searchMultiKeywordPlugin extends BasePlugin {
             resultList: document.querySelector(".plugin-search-multi-result .search-result-list"),
             info: document.querySelector(".plugin-search-multi-info-item"),
         }
+    }
 
+    process = () => {
         this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
             const highlighter = this.utils.getPlugin("multi_highlighter");
             highlighter && new LinkHelper(this, highlighter).process();

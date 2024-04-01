@@ -5,8 +5,6 @@ class datatablesPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.init();
-
         this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.destroyAllDataTable);
         this.utils.addEventListener(this.utils.eventType.beforeToggleSourceMode, this.destroyAllDataTable);
 

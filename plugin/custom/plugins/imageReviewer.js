@@ -78,7 +78,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
     }
 
-    process = () => {
+    init = () => {
         this.playTimer = null;
         this.entities = {
             reviewer: document.getElementById("plugin-image-reviewer"),
@@ -88,7 +88,9 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             ops: document.querySelector("#plugin-image-reviewer .review-options"),
             close: document.querySelector("#plugin-image-reviewer .close-review")
         }
+    }
 
+    process = () => {
         if (this.config.click_mask_to_exit) {
             this.entities.mask.addEventListener("click", this.callback);
         }
@@ -103,7 +105,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             ev.preventDefault();
             const list = this.getFuncList(ev, "wheel");
             list[ev.deltaY > 0 ? 1 : 0]();
-        });
+        }, {passive: false});
 
         this.entities.image.addEventListener("mousedown", ev => {
             const list = this.getFuncList(ev, "mousedown");

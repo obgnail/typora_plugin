@@ -88,15 +88,6 @@ class loadPluginHelper {
         this.config = controller.config;
     }
 
-    insertStyle = (fixedName, style) => {
-        if (style) {
-            const {textID, text} = typeof style !== "string"
-                ? style
-                : {textID: `custom-plugin-${fixedName.replace(/_/g, "-")}-style`, text: style}
-            this.utils.insertStyle(textID, text);
-        }
-    }
-
     loadCustomPlugin = async fixedName => {
         const customSetting = this.controller.customSettings[fixedName];
         if (!customSetting || !customSetting.enable || this.config.DISABLE_CUSTOM_PLUGINS.indexOf(fixedName) !== -1) {
@@ -112,21 +103,8 @@ class loadPluginHelper {
                 console.error("instance is not instanceof BaseCustomPlugin:", fixedName);
                 return
             }
-            const error = await instance.beforeProcess();
-            if (error === this.utils.stopLoadPluginError) return
-            instance.init();
-            this.insertStyle(instance.fixedName, instance.style());
-            const renderArgs = instance.styleTemplate();
-            if (renderArgs) {
-                await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
-            }
-            this.utils.insertElement(instance.html());
-            const elements = instance.htmlTemplate();
-            if (elements) {
-                this.utils.insertHtmlTemplate(elements);
-            }
-            instance.process();
-            instance.afterProcess();
+            const ok = await this.utils.loadPluginLifeCycle(instance, true);
+            if (!ok) return;
             this.controller.custom[instance.fixedName] = instance;
             console.debug(`custom plugin had been injected: [ ${instance.fixedName} ]`);
         } catch (e) {

@@ -26,7 +26,6 @@ class markmapPlugin extends BasePlugin {
     }
 
     process = async () => {
-        this.init();
         this.tocMarkmap && await this.tocMarkmap.process();
         this.fenceMarkmap && this.fenceMarkmap.process();
     }
@@ -367,7 +366,9 @@ class tocMarkmap {
             const fileName = this.utils.getFileName() || "markmap";
             a.download = fileName + ".svg";
             a.href = "data:image/svg;utf8," + encodeURIComponent(svgHTML);
+            document.body.appendChild(a);
             a.click();
+            setTimeout(() => document.body.removeChild(a), 100);
         }
 
         const svg = this.entities.svg.cloneNode(true);

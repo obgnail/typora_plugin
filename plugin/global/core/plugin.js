@@ -205,6 +205,24 @@ class utils {
         return _func
     }
 
+    static loadPluginLifeCycle = async (instance, isCustom) => {
+        const error = await instance.beforeProcess();
+        if (error === this.stopLoadPluginError) return false;
+        this.registerStyle(instance.fixedName, instance.style());
+        const renderArgs = instance.styleTemplate();
+        if (renderArgs) {
+            await this.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
+        }
+        this.insertElement(instance.html());
+        const elements = instance.htmlTemplate();
+        elements && this.insertHtmlTemplate(elements);
+        !isCustom && this.registerHotkey(instance.hotkey());
+        instance.init();
+        instance.process();
+        instance.afterProcess();
+        return true;
+    }
+
     // 路径是否在挂载文件夹下
     static isUnderMountFolder = path => {
         const mountFolder = File.getMountFolder();
@@ -477,6 +495,23 @@ class utils {
         const exist = await this.existPath(homeSetting);
         return exist ? homeSetting : this.getOriginSettingPath(settingFile);
     }
+    static saveConfig = async (fixedName, updateObj) => {
+        let isCustom = false;
+        let plugin = this.getPlugin(fixedName);
+        if (!plugin) {
+            plugin = this.getCustomPlugin(fixedName);
+            isCustom = true;
+        }
+        if (!plugin) return;
+
+        const mergeObj = isCustom ? {[fixedName]: {config: updateObj}} : {[fixedName]: updateObj};
+        const file = isCustom ? "custom_plugin.user.toml" : "settings.user.toml";
+        const settingPath = await this.getActualSettingPath(file);
+        const tomlObj = await this.readToml(settingPath);
+        const newSetting = this.merge(tomlObj, mergeObj);
+        const newContent = this.stringifyToml(newSetting);
+        await this.Package.Fs.promises.writeFile(settingPath, newContent);
+    }
 
     static readSetting = async (defaultSetting, userSetting) => {
         const toml = this.requireFilePath("./plugin/global/utils/toml");
@@ -521,7 +556,6 @@ class utils {
         style.appendChild(document.createTextNode(css));
         document.head.appendChild(style);
     }
-
     static insertStyleFile = (id, filepath) => {
         const cssFilePath = this.joinPath(filepath);
         const link = document.createElement('link');
@@ -530,6 +564,20 @@ class utils {
         link.rel = 'stylesheet'
         link.href = cssFilePath;
         document.head.appendChild(link);
+    }
+    static registerStyle = (fixedName, style) => {
+        if (!style) return;
+        switch (typeof style) {
+            case "string":
+                const name = fixedName.replace(/_/g, "-");
+                this.insertStyle(`plugin-${name}-style`, style);
+                break
+            case "object":
+                const {textID = null, text = null, fileID = null, file = null} = style;
+                fileID && file && this.insertStyleFile(fileID, file);
+                textID && text && this.insertStyle(textID, text);
+                break
+        }
     }
 
     static insertScript = filepath => $.getScript(`file:///${this.joinPath(filepath)}`)
@@ -2125,11 +2173,8 @@ const helper = Object.freeze({
     markdownParser: new markdownParser(),
 })
 
-class basePlugin {
+class IPlugin {
     constructor(fixedName, setting) {
-        if (new.target === basePlugin) {
-            throw new Error("basePlugin cannot be directly instantiated");
-        }
         this.fixedName = fixedName;
         this.config = setting;
         this.utils = utils;
@@ -2147,60 +2192,35 @@ class basePlugin {
     htmlTemplate = () => undefined
     // 注册快捷键
     hotkey = () => undefined
+    // 初始化数据
+    init = () => undefined
     // 主要的处理流程
     process = () => undefined
     // 收尾，一般用于回收内存，用的比较少
     afterProcess = () => undefined
 }
 
-// 各个函数功能见./plugin/custom/请读我.md
-// 因为是用户自定义的插件，比起basePlugin，提供了更多的快捷对象
-class baseCustomPlugin {
+class basePlugin extends IPlugin {
+    call = (type, meta) => undefined
+}
+
+class baseCustomPlugin extends IPlugin {
     constructor(fixedName, setting, controller) {
-        if (new.target === baseCustomPlugin) {
-            throw new Error("baseCustomPlugin cannot be directly instantiated");
-        }
-        this.fixedName = fixedName;
+        super(fixedName, setting.config);
+        this.controller = controller;
         this.info = setting;
         this.showName = setting.name;
-        this.config = setting.config;
-        this.utils = utils;
         this.modal = utils.modal;
-        this.controller = controller;
     }
 
-    beforeProcess = async () => undefined
-    init = () => undefined
-    style = () => undefined
-    styleTemplate = () => undefined
-    html = () => undefined
-    htmlTemplate = () => undefined
-    hotkey = () => undefined
-    process = () => undefined
-    afterProcess = () => undefined
-    selector = () => undefined
     hint = isDisable => undefined
+    selector = () => undefined
     callback = anchorNode => undefined
 }
 
 class process {
     constructor() {
         this.utils = utils;
-    }
-
-    insertStyle = (fixedName, style) => {
-        if (!style) return;
-        switch (typeof style) {
-            case "string":
-                const name = fixedName.replace(/_/g, "-");
-                this.utils.insertStyle(`plugin-${name}-style`, style);
-                break
-            case "object":
-                const {textID = null, text = null, fileID = null, file = null} = style;
-                fileID && file && this.utils.insertStyleFile(fileID, file);
-                textID && text && this.utils.insertStyle(textID, text);
-                break
-        }
     }
 
     loadPlugin = async fixedName => {
@@ -2218,22 +2238,8 @@ class process {
                 console.error("instance is not instanceof BasePlugin:", fixedName);
                 return
             }
-            const error = await instance.beforeProcess();
-            if (error === this.utils.stopLoadPluginError) return
-            this.insertStyle(instance.fixedName, instance.style());
-            const renderArgs = instance.styleTemplate();
-            if (renderArgs) {
-                await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
-            }
-            this.utils.insertElement(instance.html());
-            const elements = instance.htmlTemplate();
-            if (elements) {
-                this.utils.insertHtmlTemplate(elements);
-            }
-            this.utils.registerHotkey(instance.hotkey());
-            instance.process();
-            instance.afterProcess();
-
+            const ok = await this.utils.loadPluginLifeCycle(instance);
+            if (!ok) return;
             global._plugins[instance.fixedName] = instance;
             console.debug(`plugin had been injected: [ ${instance.fixedName} ] `);
         } catch (e) {

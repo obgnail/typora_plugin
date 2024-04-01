@@ -684,7 +684,8 @@ hotkey = ""
 right_click_outline_button_to_toggle = true
 # 当pin到页面右侧时，占据页面的20%宽度
 width_percent_when_pin_right = 20
-
+# 每次打开 Typora 时，默认弹出右侧菜单栏
+default_show_toc = false
 
 ############### resourceOperation ###############
 [resourceOperation]

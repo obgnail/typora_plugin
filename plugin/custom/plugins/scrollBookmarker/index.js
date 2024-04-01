@@ -10,6 +10,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         this.recordSelector = "#write [cid]";
         this.className = "plu-bookmark";
         this.locateUtils = {file: "", idx: -1, time: new Date().getTime()};
+        this.entities = {modal: document.querySelector("#plugin-scroll-bookmarker")}
     }
 
     beforeProcess = async () => {
@@ -24,10 +25,6 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        this.entities = {
-            modal: document.querySelector("#plugin-scroll-bookmarker")
-        }
-
         if (this.config.allow_drag) {
             this.utils.dragFixedModal(this.entities.modal, this.entities.modal);
         }

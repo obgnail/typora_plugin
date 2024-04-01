@@ -192,7 +192,6 @@ class autoNumberPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.init();
         if (this.config.ENABLE_WHEN_EXPORT) {
             new exportHelper(this).process();
         }
@@ -222,27 +221,19 @@ class autoNumberPlugin extends BasePlugin {
         return this.getStyleString()
     }
 
-    insertStyle = toggle => {
+    toggleSetting = toggle => {
         const css = this.getResultStyle(toggle);
         this.utils.insertStyle(this.css_id, css);
     }
 
-    dynamicCallArgsGenerator = () => {
-        const disable = document.getElementById(this.css_id);
-        const [arg_name, arg_value] = disable ? ["临时禁用", "disable"] : ["临时启用", "enable"];
-        return [{arg_name, arg_value}]
-    }
-
     call = type => {
         const callMap = {
-            disable: this.removeStyle,
-            enable: this.insertStyle,
-            set_outline: () => this.insertStyle("ENABLE_SIDE_BAR"),
-            set_content: () => this.insertStyle("ENABLE_CONTENT"),
-            set_toc: () => this.insertStyle("ENABLE_TOC"),
-            set_table: () => this.insertStyle("ENABLE_TABLE"),
-            set_image: () => this.insertStyle("ENABLE_IMAGE"),
-            set_fence: () => this.insertStyle("ENABLE_FENCE"),
+            set_outline: () => this.toggleSetting("ENABLE_SIDE_BAR"),
+            set_content: () => this.toggleSetting("ENABLE_CONTENT"),
+            set_toc: () => this.toggleSetting("ENABLE_TOC"),
+            set_table: () => this.toggleSetting("ENABLE_TABLE"),
+            set_image: () => this.toggleSetting("ENABLE_IMAGE"),
+            set_fence: () => this.toggleSetting("ENABLE_FENCE"),
         }
         const func = callMap[type];
         func && func();

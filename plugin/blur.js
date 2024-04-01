@@ -3,13 +3,14 @@ class blurPlugin extends BasePlugin {
         if (!this.utils.supportHasSelector) {
             return this.utils.stopLoadPluginError
         }
+    }
+
+    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+
+    init = () => {
         this.css_id = "plugin-blur-style";
         this.inBlur = this.config.BLUR_DEFAULT;
     }
-
-    style = () => ({textID: this.css_id, text: this.getStyleText()})
-
-    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     process = () => this.run();
 

@@ -59,8 +59,6 @@ class multiHighlighterPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.init();
-
         this.processAddCodeBlock();
 
         this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.utils.debounce(() => {

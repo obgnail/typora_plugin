@@ -35,8 +35,6 @@ class outlinePlugin extends BasePlugin {
     }
 
     process = () => {
-        this.init();
-
         this.utils.dragFixedModal(this.entities.move, this.entities.modal, false);
 
         this.utils.addEventListener(this.utils.eventType.outlineUpdated, this.update);

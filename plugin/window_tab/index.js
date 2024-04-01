@@ -28,7 +28,6 @@ class windowTabBarPlugin extends BasePlugin {
         this.loopDetectInterval = 35;
     }
     process = () => {
-        this.init();
         this.handleLifeCycle();
         this.handleClick();
         this.handleScroll();
@@ -157,7 +156,7 @@ class windowTabBarPlugin extends BasePlugin {
             } else {
                 target.scrollLeft += ev.deltaY * 0.5;
             }
-        })
+        }, {passive: true})
     }
 
     handleMiddleClick = () => {
