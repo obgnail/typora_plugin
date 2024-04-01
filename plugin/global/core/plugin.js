@@ -477,6 +477,23 @@ class utils {
         const exist = await this.existPath(homeSetting);
         return exist ? homeSetting : this.getOriginSettingPath(settingFile);
     }
+    static updateSetting = async (fixedName, updateObj) => {
+        let isCustom = false;
+        let plugin = this.getPlugin(fixedName);
+        if (!plugin) {
+            plugin = this.getCustomPlugin(fixedName);
+            isCustom = true;
+        }
+        if (!plugin) return;
+
+        const mergeObj = isCustom ? {[fixedName]: {config: updateObj}} : {[fixedName]: updateObj};
+        const file = isCustom ? "custom_plugin.user.toml" : "settings.user.toml";
+        const settingPath = await this.getActualSettingPath(file);
+        const tomlObj = await this.readToml(settingPath);
+        const newSetting = this.merge(tomlObj, mergeObj);
+        const newContent = this.stringifyToml(newSetting);
+        await this.Package.Fs.promises.writeFile(settingPath, newContent);
+    }
 
     static readSetting = async (defaultSetting, userSetting) => {
         const toml = this.requireFilePath("./plugin/global/utils/toml");
