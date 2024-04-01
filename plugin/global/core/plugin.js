@@ -538,7 +538,6 @@ class utils {
         style.appendChild(document.createTextNode(css));
         document.head.appendChild(style);
     }
-
     static insertStyleFile = (id, filepath) => {
         const cssFilePath = this.joinPath(filepath);
         const link = document.createElement('link');
@@ -547,6 +546,20 @@ class utils {
         link.rel = 'stylesheet'
         link.href = cssFilePath;
         document.head.appendChild(link);
+    }
+    static registerStyle = (fixedName, style) => {
+        if (!style) return;
+        switch (typeof style) {
+            case "string":
+                const name = fixedName.replace(/_/g, "-");
+                this.insertStyle(`plugin-${name}-style`, style);
+                break
+            case "object":
+                const {textID = null, text = null, fileID = null, file = null} = style;
+                fileID && file && this.insertStyleFile(fileID, file);
+                textID && text && this.insertStyle(textID, text);
+                break
+        }
     }
 
     static insertScript = filepath => $.getScript(`file:///${this.joinPath(filepath)}`)
@@ -2142,16 +2155,7 @@ const helper = Object.freeze({
     markdownParser: new markdownParser(),
 })
 
-class basePlugin {
-    constructor(fixedName, setting) {
-        if (new.target === basePlugin) {
-            throw new Error("basePlugin cannot be directly instantiated");
-        }
-        this.fixedName = fixedName;
-        this.config = setting;
-        this.utils = utils;
-    }
-
+class IPlugin {
     // 最先执行的函数，唯一一个asyncFunction，在这里初始化插件需要的数据。若返回stopLoadPluginError，则停止加载插件
     beforeProcess = async () => undefined
     // 以字符串形式导入样式
@@ -2170,10 +2174,23 @@ class basePlugin {
     afterProcess = () => undefined
 }
 
-// 各个函数功能见./plugin/custom/请读我.md
-// 因为是用户自定义的插件，比起basePlugin，提供了更多的快捷对象
-class baseCustomPlugin {
+class basePlugin extends IPlugin {
+    constructor(fixedName, setting) {
+        super();
+        if (new.target === basePlugin) {
+            throw new Error("basePlugin cannot be directly instantiated");
+        }
+        this.fixedName = fixedName;
+        this.config = setting;
+        this.utils = utils;
+    }
+
+    call = (type, meta) => undefined
+}
+
+class baseCustomPlugin extends IPlugin {
     constructor(fixedName, setting, controller) {
+        super();
         if (new.target === baseCustomPlugin) {
             throw new Error("baseCustomPlugin cannot be directly instantiated");
         }
@@ -2186,15 +2203,7 @@ class baseCustomPlugin {
         this.controller = controller;
     }
 
-    beforeProcess = async () => undefined
     init = () => undefined
-    style = () => undefined
-    styleTemplate = () => undefined
-    html = () => undefined
-    htmlTemplate = () => undefined
-    hotkey = () => undefined
-    process = () => undefined
-    afterProcess = () => undefined
     selector = () => undefined
     hint = isDisable => undefined
     callback = anchorNode => undefined
@@ -2203,21 +2212,6 @@ class baseCustomPlugin {
 class process {
     constructor() {
         this.utils = utils;
-    }
-
-    insertStyle = (fixedName, style) => {
-        if (!style) return;
-        switch (typeof style) {
-            case "string":
-                const name = fixedName.replace(/_/g, "-");
-                this.utils.insertStyle(`plugin-${name}-style`, style);
-                break
-            case "object":
-                const {textID = null, text = null, fileID = null, file = null} = style;
-                fileID && file && this.utils.insertStyleFile(fileID, file);
-                textID && text && this.utils.insertStyle(textID, text);
-                break
-        }
     }
 
     loadPlugin = async fixedName => {
@@ -2237,7 +2231,7 @@ class process {
             }
             const error = await instance.beforeProcess();
             if (error === this.utils.stopLoadPluginError) return
-            this.insertStyle(instance.fixedName, instance.style());
+            this.utils.registerStyle(instance.fixedName, instance.style());
             const renderArgs = instance.styleTemplate();
             if (renderArgs) {
                 await this.utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
@@ -2250,7 +2244,6 @@ class process {
             this.utils.registerHotkey(instance.hotkey());
             instance.process();
             instance.afterProcess();
-
             global._plugins[instance.fixedName] = instance;
             console.debug(`plugin had been injected: [ ${instance.fixedName} ] `);
         } catch (e) {
