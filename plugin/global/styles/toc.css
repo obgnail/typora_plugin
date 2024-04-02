@@ -3,7 +3,6 @@
     height: 100%;
     right: 0;
     box-shadow: initial;
-    transition: all 0.5s ease 0s;
 }
 
 #plugin-toc .grip-right {

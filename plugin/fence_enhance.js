@@ -61,6 +61,8 @@ class fenceEnhancePlugin extends BasePlugin {
             ["fold-code", "foldCode", "折叠", "fa fa-minus", this.config.ENABLE_FOLD, this.foldCode, this.defaultFold],
         ].forEach(button => this.registerBuilder(...button));
 
+        this.registerCustomButtons();
+
         this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, cid => {
             const ele = document.querySelector(`#write .md-fences[cid=${cid}]`);
             this.addEnhanceElement(ele);
@@ -93,6 +95,32 @@ class fenceEnhancePlugin extends BasePlugin {
 
     registerBuilder = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
         this.builders.push(new builder(className, action, hint, iconClassName, enable, listener, extraFunc));
+    }
+
+    registerCustomButtons = () => {
+        const evalFunc = arg => {
+            const func = eval(arg);
+            if (!(func instanceof Function)) {
+                throw Error(`custom button arg is not function: ${arg}`)
+            }
+            return func
+        }
+        this.config.CUSTOM_BUTTONS.forEach(btn => {
+            const {DISABLE, ICON, HINT, ON_INIT, ON_CLICK, ON_RENDER} = btn;
+            if (ON_INIT) {
+                const initFunc = evalFunc(ON_INIT);
+                initFunc(this);
+            }
+            const renderFunc = ON_RENDER ? evalFunc(ON_RENDER) : undefined;
+            if (!ON_CLICK) return;
+            const callbackFunc = evalFunc(ON_CLICK);
+            const callback = (ev, button) => {
+                const cont = this.utils.getFenceContent(button.closest(".md-fences"));
+                return callbackFunc({ev, button, cont, plu: this});
+            }
+            const action = this.utils.randomString();
+            this.registerBuilder(action, action, HINT, ICON, !DISABLE, callback, renderFunc);
+        })
     }
 
     removeBuilder = action => this.builders = this.builders.filter(builder => builder.action !== action);

@@ -202,14 +202,15 @@ class autoNumberPlugin extends BasePlugin {
     getStyleString = (inExport = false) => {
         // beta版本不支持:has语法
         const image_css = (inExport && this.utils.supportHasSelector) ? this.image_export_css : this.image_css;
+        const {ENABLE_CONTENT, ENABLE_SIDE_BAR, ENABLE_TOC, ENABLE_IMAGE, ENABLE_TABLE, ENABLE_FENCE} = this.config;
         return [
             this.base_css,
-            (this.config.ENABLE_CONTENT) ? this.content_css : "",
-            (this.config.ENABLE_SIDE_BAR) ? this.side_bar_css : "",
-            (this.config.ENABLE_TOC) ? this.toc_css : "",
-            (this.config.ENABLE_IMAGE) ? image_css : "",
-            (this.config.ENABLE_TABLE) ? this.table_css : "",
-            (this.config.ENABLE_FENCE) ? this.fence_css : "",
+            ENABLE_CONTENT ? this.content_css : "",
+            ENABLE_SIDE_BAR ? this.side_bar_css : "",
+            ENABLE_TOC ? this.toc_css : "",
+            ENABLE_IMAGE ? image_css : "",
+            ENABLE_TABLE ? this.table_css : "",
+            ENABLE_FENCE ? this.fence_css : "",
         ].join("\n")
     }
 
