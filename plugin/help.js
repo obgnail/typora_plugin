@@ -71,7 +71,7 @@ class helpPlugin extends BasePlugin {
                     for (let colIdx = 0; colIdx < table.length; colIdx++) {
                         for (let rowIdx = 0; rowIdx < table[0].length; rowIdx++) {
                             ctx.fillStyle = (table[colIdx][rowIdx] === "1") ? color : backgroundColor;
-                            ctx.fillRect(colIdx * cubeSize, rowIdx * cubeSize, cubeSize, cubeSize);
+                            ctx.fillRect(colIdx * cubeSize, rowIdx * cubeSize, cubeSize + 0.3, cubeSize + 0.3);
                         }
                     }
                     ctx.translate(qrSize + qrMargin, 0);
