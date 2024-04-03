@@ -4,6 +4,7 @@
     this.modal args:
       1. modal:
           - title（必须）: 模态框的标题
+          - onload: 模态框加载完毕后的回调函数
           - components: 模态框里的组件，支持类型：
               1，input
               2. password
