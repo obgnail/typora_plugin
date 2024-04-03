@@ -1637,6 +1637,7 @@ class stateRecorder {
 class dialog {
     constructor() {
         this.utils = utils;
+        this.entities = null;
         this.clean();
     }
 
@@ -1656,7 +1657,7 @@ class dialog {
     clean = () => {
         this.pluginModal = null;
         this.callback = null;
-        this.entities = null;
+        this.cancelCallback = null;
     }
 
     process = async () => {
