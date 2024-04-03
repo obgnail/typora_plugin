@@ -1637,14 +1637,11 @@ class stateRecorder {
 class dialog {
     constructor() {
         this.utils = utils;
-        this.pluginModal = null;
-        this.callback = null;
-        this.entities = null;
+        this.clean();
     }
 
-    html = () => {
-        const modal = `
-        <div id="plugin-custom-modal" class="modal-dialog">
+    html = () => `
+        <div id="plugin-custom-modal" class="modal-dialog plugin-common-hidden">
             <div class="modal-content">
                 <div class="modal-header"><div class="modal-title" data-lg="Front">自定义插件弹窗</div></div>
                 <div class="modal-body"></div>
@@ -1654,15 +1651,17 @@ class dialog {
                 </div>
             </div>
         </div>
-        `
-        this.utils.insertElement(modal);
+    `
+
+    clean = () => {
+        this.pluginModal = null;
+        this.callback = null;
+        this.entities = null;
     }
 
-    registerStyleTemplate = async () => await this.utils.registerStyleTemplate("modal-generator");
-
     process = async () => {
-        await this.registerStyleTemplate();
-        this.html();
+        await this.utils.registerStyleTemplate("modal-generator");
+        this.utils.insertElement(this.html());
 
         this.entities = {
             modal: document.getElementById("plugin-custom-modal"),
@@ -1694,14 +1693,13 @@ class dialog {
             const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
             component.submit = widget ? this.getWidgetValue(component.type, widget) : undefined;
         })
-        this.entities.modal.style.display = "none";
+        this.utils.hide(this.entities.modal);
         callback && callback(this.pluginModal.components);
-        this.callback = null;
-        this.cancelCallback = null;
+        this.clean();
     }
 
     getWidgetValue = (type, widget) => {
-        type = type.toLowerCase()
+        type = type.toLowerCase();
         switch (type) {
             case "input":
             case "textarea":
@@ -1780,7 +1778,8 @@ class dialog {
             modal.components.forEach(component => component.id = this.utils.randomString());
             const widgetList = modal.components.map(this.newWidget);
             this.entities.body.innerHTML = `<form role="form">${widgetList.join("")}</form>`;
-            this.entities.modal.style.display = "block";
+            this.utils.show(this.entities.modal);
+            modal.onload && modal.onload(this.entities.modal);
         }
     }
 }
