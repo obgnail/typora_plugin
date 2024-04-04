@@ -91,6 +91,138 @@ class pluginUpdater extends BaseCustomPlugin {
         const cmd = `updater.exe --action=update --proxy=${proxy}`;
         this.commanderPlugin.execute(exec, cmd, "cmd/bash", after, hint, {cwd: dir});
     }
+
+    test = () => {
+        const proxyURL = "http://127.0.0.1:7890";
+        const latestReleaseUrl = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest"
+        const u = new updater(this, proxyURL, latestReleaseUrl);
+        u.process();
+    }
+}
+
+class updater {
+    constructor(controller, proxyURL, latestReleaseUrl) {
+        this.utils = controller.utils;
+        this.proxyUrl = proxyURL;
+        this.latestReleaseUrl = latestReleaseUrl;
+
+        this.pkgFsExtra = this.utils.Package.FsExtra;
+        this.pkgFs = this.utils.Package.Fs.promises;
+        this.pkgPath = this.utils.Package.Path;
+        this.pkgNodeFetch = this.utils.requireFilePath("./plugin/global/utils/node-fetch/node-fetch.js");
+        this.pkgProxy = this.utils.requireFilePath("./plugin/global/utils/node-fetch/https-proxy-agent.js");
+
+        this.root = this.utils.getDirname();
+        this.versionFile = this.utils.joinPath("./plugin/updater/version.json");
+        this.tempDir = this.pkgPath.join(this.utils.tempFolder, "unzip-");
+        this.downloadFile = this.pkgPath.join(this.tempDir, "download.zip");
+
+        this.latestVersionInfo = null;
+        this.currentVersionInfo = null;
+
+        this.pkgFsExtra.ensureDir(this.tempDir);
+    }
+
+    process = async () => {
+        // this.newUpdater()
+        this.temp();
+        // await this.checkNeedUpdate();
+        await this.downloadLatestVersion();
+    }
+
+    newUpdater = (proxy, timeout) => {
+        console.log("[1/9] new updater")
+        console.log("---", this.root)
+    }
+
+
+    checkNeedUpdate = async () => {
+        const _getLatestVersion = async () => {
+            const resp = await this._fetch(this.latestReleaseUrl);
+            return resp.json()
+        }
+        const _getCurrentVersion = async () => {
+            try {
+                return this.pkgFsExtra.readJson(this.versionFile);
+            } catch (e) {
+                console.warn("has no version file");
+            }
+        }
+
+        this.latestVersionInfo = await _getLatestVersion();
+        this.currentVersionInfo = await _getCurrentVersion();
+        if (!this.currentVersionInfo) return true;
+
+        const result = this.utils.compareVersion(this.latestVersionInfo.tag_name, this.currentVersionInfo.tag_name)
+        return result !== 0
+    }
+
+    downloadLatestVersion = async () => {
+        const resp = await this._fetch(this.latestVersionInfo.zipball_url)
+        const buffer = await resp.buffer();
+        await this.pkgFs.writeFile(this.downloadFile, buffer); // 整个插件也就10M+，就不用 stream response 了
+    }
+
+    _fetch = async url => {
+        let error;
+        try {
+            const proxy = new this.pkgProxy.HttpsProxyAgent(this.proxyUrl);
+            const resp = await this.pkgNodeFetch.nodeFetch(url, {agent: proxy});
+            if (resp.ok) return resp
+            error = `response state: ${resp.status}`
+        } catch (e) {
+            error = e;
+        }
+        throw new Error(`[error] fetch url ${url}: ${error}`)
+    }
+
+    temp = () => {
+        this.latestVersionInfo = {
+            "url": "https://api.github.com/repos/obgnail/typora_plugin/releases/149404712",
+            "assets_url": "https://api.github.com/repos/obgnail/typora_plugin/releases/149404712/assets",
+            "upload_url": "https://uploads.github.com/repos/obgnail/typora_plugin/releases/149404712/assets{?name,label}",
+            "html_url": "https://github.com/obgnail/typora_plugin/releases/tag/1.8.16",
+            "id": 149404712,
+            "author": {
+                "login": "obgnail",
+                "id": 48992887,
+                "node_id": "MDQ6VXNlcjQ4OTkyODg3",
+                "avatar_url": "https://avatars.githubusercontent.com/u/48992887?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/obgnail",
+                "html_url": "https://github.com/obgnail",
+                "followers_url": "https://api.github.com/users/obgnail/followers",
+                "following_url": "https://api.github.com/users/obgnail/following{/other_user}",
+                "gists_url": "https://api.github.com/users/obgnail/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/obgnail/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/obgnail/subscriptions",
+                "organizations_url": "https://api.github.com/users/obgnail/orgs",
+                "repos_url": "https://api.github.com/users/obgnail/repos",
+                "events_url": "https://api.github.com/users/obgnail/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/obgnail/received_events",
+                "type": "User",
+                "site_admin": false
+            },
+            "node_id": "RE_kwDOJzwCYc4I57wo",
+            "tag_name": "1.8.16",
+            "target_commitish": "master",
+            "name": "1.8.16",
+            "draft": false,
+            "prerelease": false,
+            "created_at": "2024-04-02T09:44:55Z",
+            "published_at": "2024-04-02T14:07:47Z",
+            "assets": [],
+            "tarball_url": "https://api.github.com/repos/obgnail/typora_plugin/tarball/1.8.16",
+            "zipball_url": "https://api.github.com/repos/obgnail/typora_plugin/zipball/1.8.16",
+            "body": "1. feat：【fence_enhance】：新增配置选项 CUSTOM_BUTTONS，将所有选择权交还用户，支持用户自定义代码块右上角的按钮，不限功能和数量\\r\\n2. feat：【help】：新增选项【请开发者喝咖啡】"
+        }
+        this.currentVersionInfo = {
+            "tag_name": "1.8.16",
+            "name": "1.8.16",
+            "body": "1. feat：【fence_enhance】：新增配置选项 CUSTOM_BUTTONS，将所有选择权交还用户，支持用户自定义代码块右上角的按钮，不限功能和数量\\r\\n2. feat：【help】：新增选项【请开发者喝咖啡】",
+            "zipball_url": "https://api.github.com/repos/obgnail/typora_plugin/zipball/1.8.16"
+        }
+    }
 }
 
 class binFileUpdater {
