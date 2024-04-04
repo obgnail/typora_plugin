@@ -230,11 +230,13 @@ class utils {
     }
     static openFile = filepath => {
         File.editor.focusAndRestorePos();
-        if (this.getPlugin("window_tab") && this.isUnderMountFolder(filepath)) {
-            File.editor.library.openFile(filepath);
-        } else {
-            File.editor.library.openFileInNewWindow(filepath, false);
-        }
+        setTimeout(() => {
+            if (this.getPlugin("window_tab") && this.isUnderMountFolder(filepath)) {
+                File.editor.library.openFile(filepath);
+            } else {
+                File.editor.library.openFileInNewWindow(filepath, false);
+            }
+        }, 50)
     }
     static openFolder = folder => File.editor.library.openFileInNewWindow(folder, true);
     static reload = async () => {
