@@ -229,6 +229,7 @@ class utils {
         return path && mountFolder && path.startsWith(mountFolder);
     }
     static openFile = filepath => {
+        File.editor.focusAndRestorePos();
         if (this.getPlugin("window_tab") && this.isUnderMountFolder(filepath)) {
             File.editor.library.openFile(filepath);
         } else {
