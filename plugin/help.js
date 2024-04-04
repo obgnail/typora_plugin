@@ -63,6 +63,7 @@ class helpPlugin extends BasePlugin {
             for (const {hex, color} of QRcode) {
                 ctx.fillStyle = backgroundColor;
                 ctx.fillRect(0, 0, qrSize, qrSize);
+                ctx.fillStyle = color;
                 const cubeList = hex.split("-");
                 const cubeCount = cubeList.length;
                 const cubeSize = qrSize / cubeCount;
@@ -70,8 +71,9 @@ class helpPlugin extends BasePlugin {
                 const table = bin.match(new RegExp(`(.{1,${cubeCount}})`, "g"));
                 for (let colIdx = 0; colIdx < table.length; colIdx++) {
                     for (let rowIdx = 0; rowIdx < table[0].length; rowIdx++) {
-                        ctx.fillStyle = (table[colIdx][rowIdx] === "1") ? color : backgroundColor;
-                        ctx.fillRect(colIdx * cubeSize, rowIdx * cubeSize, cubeSize + 0.3, cubeSize + 0.3);
+                        if (table[colIdx][rowIdx] === "1") {
+                            ctx.fillRect(rowIdx * cubeSize, colIdx * cubeSize, cubeSize + 0.3, cubeSize + 0.3);
+                        }
                     }
                 }
                 ctx.translate(qrSize + qrMargin, 0);
@@ -79,7 +81,7 @@ class helpPlugin extends BasePlugin {
         }
 
         const canvas = `<canvas id="${id}" width="${canvasWidth}" height="${qrSize}" style="margin: auto;display: block;"></canvas>`
-        const components = [{label: "你能访问这里我已经很开心啦 :)", type: "p"}, {label: canvas, type: "p"}];
+        const components = [{label: "感谢，你能访问这里我已经很开心啦 :)", type: "p"}, {label: canvas, type: "p"}];
         this.utils.modal({title: "请开发者喝咖啡", components, onload}, console.debug);
     }
 
