@@ -229,11 +229,14 @@ class utils {
         return path && mountFolder && path.startsWith(mountFolder);
     }
     static openFile = filepath => {
-        if (this.getPlugin("window_tab") && this.isUnderMountFolder(filepath)) {
-            File.editor.library.openFile(filepath);
-        } else {
-            File.editor.library.openFileInNewWindow(filepath, false);
-        }
+        File.editor.focusAndRestorePos();
+        setTimeout(() => {
+            if (this.getPlugin("window_tab") && this.isUnderMountFolder(filepath)) {
+                File.editor.library.openFile(filepath);
+            } else {
+                File.editor.library.openFileInNewWindow(filepath, false);
+            }
+        }, 50)
     }
     static openFolder = folder => File.editor.library.openFileInNewWindow(folder, true);
     static reload = async () => {
@@ -1540,7 +1543,7 @@ class eventHub {
             }
         })
 
-        window.addEventListener("beforeunload", () => this.utils.publishEvent(this.utils.eventType.beforeUnload), true)
+        this.utils.decorate(() => window, "onbeforeunload", () => this.utils.publishEvent(this.utils.eventType.beforeUnload))
 
         new MutationObserver(mutationList => {
             for (const mutation of mutationList) {

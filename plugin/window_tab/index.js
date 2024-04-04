@@ -188,7 +188,7 @@ class windowTabBarPlugin extends BasePlugin {
             const filePath = args[1];
             _linkUtils.file = filePath;
             _linkUtils.anchor = anchor;
-            this.openFile(filePath);
+            this.utils.openFile(filePath);
             return this.utils.stopCallError
         })
     }
@@ -301,8 +301,6 @@ class windowTabBarPlugin extends BasePlugin {
     }
     // 新窗口打开
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
-    // 新标签页打开
-    openFile = filePath => File.editor.library.openFile(filePath);
     // 当前标签页打开
     OpenFileLocal = filePath => {
         this.config.LOCAL_OPEN = true;
@@ -452,7 +450,7 @@ class windowTabBarPlugin extends BasePlugin {
         idx = Math.max(0, idx);
         idx = Math.min(idx, this.tabUtil.tabs.length - 1);
         this.tabUtil.activeIdx = idx;
-        this.openFile(this.tabUtil.tabs[this.tabUtil.activeIdx].path);
+        this.utils.openFile(this.tabUtil.tabs[this.tabUtil.activeIdx].path);
     }
 
     switchTabByPath = path => {
