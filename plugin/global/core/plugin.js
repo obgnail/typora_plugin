@@ -1540,7 +1540,7 @@ class eventHub {
             }
         })
 
-        window.addEventListener("beforeunload", () => this.utils.publishEvent(this.utils.eventType.beforeUnload), true)
+        this.utils.decorate(() => window, "onbeforeunload", () => this.utils.publishEvent(this.utils.eventType.beforeUnload))
 
         new MutationObserver(mutationList => {
             for (const mutation of mutationList) {
