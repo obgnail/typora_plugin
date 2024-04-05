@@ -81,7 +81,7 @@ class helpPlugin extends BasePlugin {
         }
 
         const canvas = `<canvas id="${id}" width="${canvasWidth}" height="${qrSize}" style="margin: auto;display: block;"></canvas>`
-        const components = [{label: "感谢，你能访问这里我已经很开心啦 :)", type: "p"}, {label: canvas, type: "p"}];
+        const components = [{label: "感谢你，你能访问这里我已经很开心啦 :)", type: "p"}, {label: canvas, type: "p"}];
         this.utils.modal({title: "请开发者喝咖啡", components, onload}, console.debug);
     }
 

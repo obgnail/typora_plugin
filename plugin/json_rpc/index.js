@@ -24,12 +24,18 @@ class jsonRPC extends BasePlugin {
         server.addMethod("callPluginFunction", (para, callback) => {
             let error, result;
 
-            const [plugin, func, ...arg] = para;
+            const [plugin, func, ...args] = para;
             if (!plugin || !func) {
-                error = {code: 404, message: "has not plugin or function"};
+                error = {code: 404, message: "param has not plugin or function"};
             }
 
-            result = this.utils.callPluginFunction(plugin, func, ...arg);
+            const p = this.utils.tryGetPlugin(plugin);
+            const _func = p && p[func];
+            if (!_func) {
+                error = {code: 404, message: "has not the plugin function"};
+            } else {
+                result = _func.apply(plugin, args) || {};
+            }
             callback(error, result);
         });
 
@@ -38,7 +44,7 @@ class jsonRPC extends BasePlugin {
 
             try {
                 const code = para[0];
-                result = eval(code);
+                result = eval(code) || {};
             } catch (e) {
                 error = {code: 500, message: e.toString()};
             }
