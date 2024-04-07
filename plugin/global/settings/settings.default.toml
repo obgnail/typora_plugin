@@ -771,6 +771,20 @@ COLLAPSE_ALL_SIBLINGS = "ctrl+shift+alt"
 COLLAPSE_RECURSIVE = ""
 
 
+############### collapse_list ###############
+[collapse_list]
+# 是否启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "列表折叠"
+# 是否在右键菜单中可点击
+CLICKABLE = true
+# 缩放标志的颜色，若为空，则跟随系统配色
+TRIANGLE_COLOR = ""
+# 记住章节是否折叠（直到关闭typora）
+RECORD_COLLAPSE = true
+
+
 ############### truncate_text ###############
 [truncate_text]
 # 是否启用插件
@@ -962,6 +976,7 @@ LIST = [
     "datatables",
     "resize_image",
     "resize_table",
+    "collapse_list",
     "truncate_text",
     "export_enhance",
     "cipher",

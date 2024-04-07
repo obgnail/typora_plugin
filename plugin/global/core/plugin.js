@@ -248,6 +248,7 @@ class utils {
     static showHiddenElementByPlugin = target => {
         if (!target) return;
         this.callPluginFunction("collapse_paragraph", "rollback", target);
+        this.callPluginFunction("collapse_list", "rollback", target);
         this.callPluginFunction("truncate_text", "rollback", target);
     }
     static getAnchorNode = () => File.editor.getJQueryElem(window.getSelection().anchorNode);

@@ -1,0 +1,21 @@
+#write > .ul-list,
+#write > .ol-list {
+    position: relative !important;
+}
+
+#write > ul.ul-list:before,
+#write > ol.ol-list:before {
+    position: absolute;
+    content: "";
+    top: ${this.triangelStyle.top}px;
+    left: ${this.triangelStyle.left}px;
+    border-left: ${this.triangelStyle.halfWidth}px solid transparent;
+    border-right: ${this.triangelStyle.halfWidth}px solid transparent;
+    border-top: ${this.triangelStyle.height}px solid ${this.triangelStyle.color};
+    cursor: pointer;
+    transform: var(--collapse-list-transform);
+}
+
+#write .${this.className} > li:nth-child(n+2) {
+    display: none;
+}
