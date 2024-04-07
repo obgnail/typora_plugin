@@ -6,19 +6,17 @@
 class collapseListPlugin extends BasePlugin {
     beforeProcess = () => {
         this.className = "plugin-collapsed-list";
-        this.selector = '#write > [mdtype="list"]';
+        this.selector = '#write [mdtype="list"]';
         const color = this.config.TRIANGLE_COLOR || "var(--meta-content-color)";
-        this.triangelStyle = {left: -16, top: 0, height: 8, halfWidth: 6, color: color};
+        this.triangelStyle = {left: -18, top: 0, height: 9, halfWidth: 7, color: color};
     }
     styleTemplate = () => true
 
     process = () => {
-        this._recordCollapseState(false);
+        this.recordCollapseState(false);
         document.querySelector("#write").addEventListener("click", ev => {
             const parent = ev.target.closest(this.selector);
             if (!parent) return;
-            const li = ev.target.closest("li");
-            if (li) return;
 
             const {left, top} = parent.getBoundingClientRect();
             const l = left + this.triangelStyle.left;
@@ -26,10 +24,7 @@ class collapseListPlugin extends BasePlugin {
             const height = this.triangelStyle.height;
             const width = 2 * this.triangelStyle.halfWidth;
             const {clientX, clientY} = ev;
-            if (
-                l - width <= clientX && clientX <= l + width
-                && t - height <= clientY && clientY <= t + height
-            ) {
+            if (l - width <= clientX && clientX <= l + width && t - height <= clientY && clientY <= t + height) {
                 ev.stopPropagation();
                 ev.preventDefault();
                 if (this.checkCollapse(parent)) {
@@ -42,16 +37,10 @@ class collapseListPlugin extends BasePlugin {
     }
 
     checkCollapse = ele => ele.classList.contains(this.className);
-    setCollapse = ele => {
-        ele.classList.add("plugin-collapsed-list");
-        ele.style.setProperty("--collapse-list-transform", "rotate(-90deg)");
-    }
-    cancelCollapse = ele => {
-        ele.classList.remove(this.className);
-        ele.style.removeProperty("--collapse-list-transform");
-    }
+    setCollapse = ele => ele.classList.add("plugin-collapsed-list");
+    cancelCollapse = ele => ele.classList.remove(this.className);
 
-    _recordCollapseState = (needChange = true) => {
+    recordCollapseState = (needChange = true) => {
         const name = "recordCollapseList";
         if (needChange) {
             this.config.RECORD_COLLAPSE = !this.config.RECORD_COLLAPSE;
@@ -80,7 +69,7 @@ class collapseListPlugin extends BasePlugin {
 
     call = type => {
         if (type === "record_collapse_state") {
-            this._recordCollapseState(true);
+            this.recordCollapseState(true);
         }
     }
 }
