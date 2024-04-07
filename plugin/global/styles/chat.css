@@ -79,9 +79,32 @@
     padding: 0.5em 0.8em;
     white-space: break-spaces;
     word-wrap: break-word;
+    position: relative;
 }
 
 .plugin-chat-send .plugin-chat-text {
     border-color: #95ec69;
     background: #95ec69;
+}
+
+.plugin-chat-text::after {
+    content: "";
+    top: 0.8em;
+    position: absolute;
+    border-top-width: 7px;
+    border-top-style: solid;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+}
+
+.plugin-chat-receive .plugin-chat-text::after {
+    left: -0.45em;
+    border-top-color: #fff;
+    transform: rotate(90deg) translateX(50%);
+}
+
+.plugin-chat-send .plugin-chat-text::after {
+    right: -0.45em;
+    border-top-color: #95ec69;
+    transform: rotate(-90deg) translateX(-50%);
 }
