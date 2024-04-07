@@ -1051,6 +1051,8 @@ button_gap = "10px"
 position_right = "30px"
 # 按钮距离底边框的距离
 position_bottom = "50px"
+# 是否隐藏按钮的hint，若为true，则下面buttons配置的hint选项都将失效
+hide_button_hint = false
 # 如果您没有javascript基础，请不要修改以下配置
 # 添加的按钮：
 #   disable:      禁用此按钮
