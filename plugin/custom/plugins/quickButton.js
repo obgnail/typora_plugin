@@ -83,10 +83,12 @@ class quickButtonPlugin extends BaseCustomPlugin {
                     : {
                         class_: "action-item",
                         action: button.action,
-                        "ty-hint": button.hint,
                         style: button.style || {},
                         children: [{ele: "i", class_: button.iconClass}]
                     }
+                if (button && !this.config.hide_button_hint) {
+                    ele["ty-hint"] = button.hint;
+                }
                 children.push(ele);
             }
         }
