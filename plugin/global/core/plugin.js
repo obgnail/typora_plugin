@@ -55,8 +55,8 @@ class utils {
     static publishEvent = (eventType, payload) => helper.eventHub.publishEvent(eventType, payload);
 
     // 动态注册、动态注销元素状态记录器（仅当window_tab插件启用时有效）
-    // 功能是：在用户切换标签页前记录元素的状态，等用户切换回来时恢复元素的状态
-    // 比如说：【章节折叠】功能：需要在用户切换标签页前记录有哪些章节被折叠了，等用户切换回来后需要把章节自动折叠回去，保持前后一致。
+    // 功能：在用户切换标签页前记录元素的状态，等用户切换回来时恢复元素的状态
+    // 比如：【章节折叠】功能：需要在用户切换标签页前记录有哪些章节被折叠了，等用户切换回来后需要把章节自动折叠回去，保持前后一致。
     //   1. name(string): 取个名字
     //   2. selector(string): 通过选择器找到要你想记录状态的元素们
     //   3. stateGetter(Element) => {...}: 记录目标元素的状态。Element就是selector找到的元素，返回你想记录的标签的状态，返回值可以是任何类型
@@ -109,8 +109,8 @@ class utils {
 
     // 动态注册导出时的额外操作
     //   1. name: 取个名字
-    //   2. beforeExport() => cssString || null  如果返回string，将加入到extraCSS
-    //   3. async afterExport() => html || null  如果返回string，将替换HTML
+    //   2. beforeExport() => cssString || nullLike  如果返回string，将加入到extraCSS
+    //   3. async afterExport() => html || nullLike  如果返回string，将替换HTML
     static registerExportHelper = (name, beforeExport, afterExport) => helper.exportHelper.register(name, beforeExport, afterExport)
     static unregisterExportHelper = name => helper.exportHelper.unregister(name)
 
@@ -223,7 +223,6 @@ class utils {
         return true;
     }
 
-    // 路径是否在挂载文件夹下
     static isUnderMountFolder = path => {
         const mountFolder = File.getMountFolder();
         return path && mountFolder && path.startsWith(mountFolder);
@@ -272,10 +271,7 @@ class utils {
 
     // Repo: https://github.com/jimp-dev/jimp
     // after loadJimp(), you can use globalThis.Jimp
-    static loadJimp = async () => {
-        const lib = (File.isNode ? "./lib.asar" : "./lib");
-        await $.getScript(lib + "/jimp/browser/lib/jimp.min.js")
-    }
+    static loadJimp = async () => await $.getScript((File.isNode ? "./lib.asar" : "./lib") + "/jimp/browser/lib/jimp.min.js")
 
     static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
 
@@ -1879,55 +1875,22 @@ class styleTemplater {
     process = async () => await this.register("plugin-common");
 }
 
-// faster then innerHTML, less memory usage, more secure, but poor readable
-// don't use htmlTemplater unless element is simple enough or there are secure issues
+// 3x faster then innerHTML, less memory usage, more secure, but poor readable
+// don't use it unless element is simple enough or there are secure issues
 class htmlTemplater {
     constructor() {
         this.utils = utils
         this.defaultElement = "div"
     }
 
-    // 2x faster then innerHTML
-    // creator:
-    //     const creator = this.creator();
-    //     const wrap = creator.div(
-    //         {id: "plugin-go-top"},
-    //         creator.div({"class": "action-item", "action": "go-top"}, creator.i({"class": "fa fa-angle-up"})),
-    //         creator.div({"class": "action-item", "action": "go-bottom"}, creator.i({"class": "fa fa-angle-down"})),
-    //     )
-    // innerHTML:
-    //     const wrap = document.createElement("div");
-    //     wrap.id = "plugin-go-top";
-    //     wrap.innerHTML = `
-    //          <div class="action-item" action="go-top"><i class="fa fa-angle-up"></i></div>
-    //          <div class="action-item" action="go-bottom"><i class="fa fa-angle-down"></i></div>`;
-    creator = () => new Proxy({}, {
-        get(target, propertyKey) {
-            return function (attrs = {}, ...children) {
-                const el = document.createElement(propertyKey);
-                for (const [prop, attr] of Object.entries(attrs)) {
-                    el.setAttribute(prop, attr);
-                }
-                for (let child of children) {
-                    if (typeof child === 'string') {
-                        child = document.createTextNode(child);
-                    }
-                    el.appendChild(child);
-                }
-                return el;
-            }
-        }
-    })
-
-    // 3x faster then innerHTML
-    //     const element = {
-    //         id: "plugin-go-top",
-    //         children: [
-    //             {class_: "action-item", action: "go-top", children: [{ele: "i", class_: "fa fa-angle-up"}]},
-    //             {class_: "action-item", action: "go-bottom", children: [{ele: "i", class_: "fa fa-angle-down"}]},
-    //         ]
-    //     }
-    //     const ele = this.create(element);
+    // const element = {
+    //     id: "plugin-go-top",
+    //     children: [
+    //         {class_: "action-item", action: "go-top", children: [{ele: "i", class_: "fa fa-angle-up"}]},
+    //         {class_: "action-item", action: "go-bottom", children: [{ele: "i", class_: "fa fa-angle-down"}]},
+    //     ]
+    // }
+    // const ele = this.create(element);
     create = element => {
         if (!element) return;
         if (element instanceof Element) return element
@@ -2255,6 +2218,8 @@ class process {
 
     loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
 
+    existEnablePlugin = () => Object.entries(global._plugin_settings).some(([name, plugin]) => plugin.ENABLE && !global._plugin_global_settings.DISABLE_PLUGINS.includes(name))
+
     // 整个插件系统一共暴露了7个全局变量，实际有用的只有2个：BasePlugin, BaseCustomPlugin
     // 其余5个皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是上面两个父类的实例属性，所以utils自己也不需要暴露
     // 既然永远不会被外部文件引用，为什么还要将它们设置为什么全局变量？答：方便调试
@@ -2270,8 +2235,6 @@ class process {
 
         delete settings.global;
     }
-
-    existEnablePlugin = () => Object.entries(global._plugin_settings).some(([name, plugin]) => plugin.ENABLE && !global._plugin_global_settings.DISABLE_PLUGINS.includes(name))
 
     run = async () => {
         const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
