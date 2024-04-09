@@ -107,6 +107,7 @@ class fenceEnhancePlugin extends BasePlugin {
         }
         this.config.CUSTOM_BUTTONS.forEach(btn => {
             const {DISABLE, ICON, HINT, ON_INIT, ON_CLICK, ON_RENDER} = btn;
+            if (DISABLE) return;
             if (ON_INIT) {
                 const initFunc = evalFunc(ON_INIT);
                 initFunc(this);

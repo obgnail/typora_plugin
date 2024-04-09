@@ -291,8 +291,18 @@ class tocMarkmap {
         await this.redrawToc(options);
     }
 
+    getMaxLevel = () => {
+        let maxDepth = 0;
+        const getDepth = data => {
+            maxDepth = Math.max(maxDepth, data.depth);
+            data.children && data.children.forEach(getDepth);
+        }
+        getDepth(this.markmap.state.data);
+        return maxDepth
+    }
+
     setExpandLevel = async () => {
-        const maxLevel = 6;
+        const maxLevel = this.getMaxLevel() || 6;
         let level = this.markmap && this.markmap.options.initialExpandLevel;
         if (level === undefined) {
             level = 1;

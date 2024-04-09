@@ -3,8 +3,8 @@
     position: relative !important;
 }
 
-#write ul.ul-list:before,
-#write ol.ol-list:before {
+#write .ul-list:before,
+#write .ol-list:before {
     position: absolute;
     content: "";
     top: ${this.triangelStyle.top}px;
@@ -12,6 +12,7 @@
     border-left: ${this.triangelStyle.halfWidth}px solid transparent;
     border-right: ${this.triangelStyle.halfWidth}px solid transparent;
     border-top: ${this.triangelStyle.height}px solid ${this.triangelStyle.color};
+    transition: transform .1s ease-in-out;
     cursor: pointer;
 }
 
