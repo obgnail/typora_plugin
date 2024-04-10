@@ -228,14 +228,12 @@ class utils {
         return path && mountFolder && path.startsWith(mountFolder);
     }
     static openFile = filepath => {
-        File.editor.focusAndRestorePos();
-        setTimeout(() => {
-            if (this.getPlugin("window_tab") && this.isUnderMountFolder(filepath)) {
-                File.editor.library.openFile(filepath);
-            } else {
-                File.editor.library.openFileInNewWindow(filepath, false);
-            }
-        }, 50)
+        if (this.isUnderMountFolder(filepath)) {
+            File.editor.focusAndRestorePos();
+            File.editor.library.openFile(filepath);
+        } else {
+            File.editor.library.openFileInNewWindow(filepath, false);
+        }
     }
     static openFolder = folder => File.editor.library.openFileInNewWindow(folder, true);
     static reload = async () => {
@@ -1127,11 +1125,11 @@ class diagramParser {
 
     getErrorMessage = error => {
         let msg = "";
-        if (error["errorLine"]) {
-            msg += `第 ${error["errorLine"]} 行发生错误。`;
+        if (error.errorLine) {
+            msg += `第 ${error.errorLine} 行发生错误。`;
         }
-        if (error["reason"]) {
-            msg += `错误原因：${error["reason"]}`;
+        if (error.reason) {
+            msg += `错误原因：${error.reason}`;
         }
         if (!msg) {
             msg = error.toString();
@@ -1323,12 +1321,12 @@ class diagramParser {
 
             $("#write").on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
                 showEditButtonOnly(this);
+            }).on("mouseleave", ".md-fences-interactive.md-focus", function () {
+                showEditButtonOnly(this);
             }).on("mouseleave", ".md-fences-interactive:not(.md-focus)", function () {
                 hideAllButton(this);
             }).on("mouseenter", ".md-fences-interactive.md-focus", function () {
                 showAllTButton(this);
-            }).on("mouseleave", ".md-fences-interactive.md-focus", function () {
-                showEditButtonOnly(this);
             })
         }
 
@@ -1468,6 +1466,7 @@ class eventHub {
     constructor() {
         this.utils = utils
         this.filepath = ""
+        this.observer = null
         this.eventMap = {}  // { eventType: [listenerFunc] }
     }
 
@@ -1547,12 +1546,27 @@ class eventHub {
         }).observe(document.body, {attributes: true});
 
         const debouncePublish = this.utils.debounce(() => this.utils.publishEvent(this.utils.eventType.fileEdited), 500);
-        new MutationObserver(mutationList => {
+        this.observer = new MutationObserver(mutationList => {
             if (mutationList.some(m => m.type === "characterData")
                 || mutationList.length && mutationList.some(m => m.addedNodes.length) && mutationList.some(m => m.removedNodes.length)) {
                 debouncePublish();
             }
-        }).observe(document.querySelector("#write"), {characterData: true, childList: true, subtree: true});
+        });
+        this.observer.observe(document.querySelector("#write"), {characterData: true, childList: true, subtree: true})
+    }
+
+    afterProcess = () => {
+        delete this.eventMap[this.utils.eventType.allCustomPluginsHadInjected];
+        delete this.eventMap[this.utils.eventType.allPluginsHadInjected];
+        delete this.eventMap[this.utils.eventType.everythingReady];
+        setTimeout(() => delete this.eventMap[this.utils.eventType.firstFileInit], 1000);
+
+        const funcList = this.eventMap[this.utils.eventType.fileEdited];
+        if (!funcList || funcList.length === 0) {
+            delete this.eventMap[this.utils.eventType.fileEdited];
+            this.observer.disconnect();
+            this.observer = null;
+        }
     }
 }
 
@@ -2180,18 +2194,19 @@ class baseCustomPlugin extends IPlugin {
 }
 
 class process {
-    constructor() {
-        this.utils = utils;
+    static optimize = async () => {
+        if (!global._plugin_global_settings.PERFORMANCE_MODE) return;
+        helper.eventHub.afterProcess();
     }
 
-    loadPlugin = async fixedName => {
+    static loadPlugin = async fixedName => {
         const setting = global._plugin_settings[fixedName];
         if (!setting || !setting.ENABLE || global._plugin_global_settings.DISABLE_PLUGINS.indexOf(fixedName) !== -1) {
             console.debug(`disable plugin: [ ${fixedName} ] `);
             return
         }
         try {
-            const {plugin} = this.utils.requireFilePath("./plugin", fixedName);
+            const {plugin} = utils.requireFilePath("./plugin", fixedName);
             if (!plugin) return;
 
             const instance = new plugin(fixedName, setting);
@@ -2199,7 +2214,7 @@ class process {
                 console.error("instance is not instanceof BasePlugin:", fixedName);
                 return
             }
-            const ok = await this.utils.loadPluginLifeCycle(instance);
+            const ok = await utils.loadPluginLifeCycle(instance);
             if (!ok) return;
             global._plugins[instance.fixedName] = instance;
             console.debug(`plugin had been injected: [ ${instance.fixedName} ] `);
@@ -2208,16 +2223,16 @@ class process {
         }
     }
 
-    loadPlugins = () => Promise.all(Object.keys(global._plugin_settings).map(this.loadPlugin));
+    static loadPlugins = () => Promise.all(Object.keys(global._plugin_settings).map(this.loadPlugin));
 
-    loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
+    static loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
 
-    existEnablePlugin = () => Object.entries(global._plugin_settings).some(([name, plugin]) => plugin.ENABLE && !global._plugin_global_settings.DISABLE_PLUGINS.includes(name))
+    static existEnablePlugin = () => Object.entries(global._plugin_settings).some(([name, plugin]) => plugin.ENABLE && !global._plugin_global_settings.DISABLE_PLUGINS.includes(name))
 
     // 整个插件系统一共暴露了7个全局变量，实际有用的只有2个：BasePlugin, BaseCustomPlugin
     // 其余5个皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是上面两个父类的实例属性，所以utils自己也不需要暴露
     // 既然永远不会被外部文件引用，为什么还要将它们设置为什么全局变量？答：方便调试
-    prepare = settings => {
+    static prepare = settings => {
         global.BasePlugin = basePlugin;             // 插件的父类
         global.BaseCustomPlugin = baseCustomPlugin; // 自定义插件的父类
 
@@ -2230,8 +2245,8 @@ class process {
         delete settings.global;
     }
 
-    run = async () => {
-        const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
+    static run = async () => {
+        const settings = await utils.readSetting("settings.default.toml", "settings.user.toml");
         if (!settings || !settings.global || !settings.global.ENABLE) return;
 
         // 初始化全局变量
@@ -2256,19 +2271,22 @@ class process {
         await this.loadHelpers(eventHub);
 
         // 发布【所有插件加载完毕】事件。有些插件会监听此事件，在其回调函数中注册高级工具，所以必须先于高级工具执行
-        this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
+        utils.publishEvent(utils.eventType.allPluginsHadInjected);
 
         // 加载剩余的高级工具
         await this.loadHelpers(htmlTemplater, diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser);
 
         // 一切准备就绪
-        this.utils.publishEvent(this.utils.eventType.everythingReady);
+        utils.publishEvent(utils.eventType.everythingReady);
+
+        // 尽力优化
+        await this.optimize();
 
         // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
-        setTimeout(this.utils.reload, 50);
+        setTimeout(utils.reload, 50);
     }
 }
 
 module.exports = {
-    entry: () => new process().run()
+    entry: process.run
 };

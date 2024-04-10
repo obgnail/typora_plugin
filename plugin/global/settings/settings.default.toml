@@ -13,6 +13,8 @@
 [global]
 # 总开关，若为false，则禁用全部插件
 ENABLE = true
+# 性能模式，若为true，插件系统会舍弃拓展接口，功能静态化，尽力提升性能
+PERFORMANCE_MODE = true
 # 禁用的插件。优先级高于业务插件的ENABLE选项
 # 填入业务插件的fixedName。举例：["window_tab", "search_multi"]
 DISABLE_PLUGINS = []
