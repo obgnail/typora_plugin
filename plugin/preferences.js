@@ -29,7 +29,7 @@ class preferencesPlugin extends BasePlugin {
         }
 
         if (showModal) {
-            this.utils.modal({title: "设置成功", components: [{label: "配置于重启后生效，请重启 Typora", type: "p"}]}, console.debug);
+            this.utils.modal({title: "设置成功", components: [{label: "配置于重启 Typora 后生效", type: "p"}]}, console.debug);
         }
     }
 

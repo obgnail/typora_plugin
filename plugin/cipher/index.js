@@ -15,7 +15,7 @@ class cipherPlugin extends BasePlugin {
         }
         return new Promise(resolve => {
             const label = isCiphered ? "文件已是加密格式，重复加密并不会更安全" : `仅作娱乐使用，加密后 <b>严禁修改文件</b>`
-            const callback = isCiphered ? () => resolve(raw) : () => resolve(this.AES_ECB.AES_ECB_ENCRYPT(raw, this.key))
+            const callback = () => resolve(isCiphered ? raw : this.AES_ECB.AES_ECB_ENCRYPT(raw, this.key))
             this.utils.modal({title: "加密文件", components: [{label, type: "p"}]}, callback, () => resolve(raw));
         })
     }
