@@ -712,11 +712,7 @@ class utils {
         if (pre) {
             const lines = pre.querySelectorAll(".CodeMirror-code .CodeMirror-line");
             if (lines.length) {
-                const badChars = [
-                    "%E2%80%8B", // ZERO WIDTH SPACE \u200b
-                    "%C2%A0", // NO-BREAK SPACE \u00A0
-                    "%0A" // NO-BREAK SPACE \u0A
-                ];
+                const badChars = ["%E2%80%8B", "%C2%A0", "%0A"]; // 1)zeroWidthSpace:\u200b  2)noBreakSpace:\u00A0  3)noBreakSpace:\u0A
                 const replaceChars = ["", "%20", ""];
                 const contentList = Array.from(lines, line => {
                     let encodeText = encodeURI(line.textContent);
@@ -727,9 +723,7 @@ class utils {
                     }
                     return decodeURI(encodeText);
                 });
-                if (contentList && contentList.length) {
-                    return contentList.join("\n")
-                }
+                return contentList.join("\n")
             }
         }
 
@@ -2276,5 +2270,5 @@ class process {
 }
 
 module.exports = {
-    process
+    entry: () => new process().run()
 };

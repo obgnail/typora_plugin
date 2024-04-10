@@ -116,8 +116,10 @@ class fenceEnhancePlugin extends BasePlugin {
             if (!ON_CLICK) return;
             const callbackFunc = evalFunc(ON_CLICK);
             const callback = (ev, button) => {
-                const cont = this.utils.getFenceContent(button.closest(".md-fences"));
-                return callbackFunc({ev, button, cont, plu: this});
+                const fence = button.closest(".md-fences");
+                const cid = fence.getAttribute("cid");
+                const cont = this.utils.getFenceContent(fence);
+                return callbackFunc({ev, button, cont, fence, cid, plu: this});
             }
             const action = this.utils.randomString();
             this.registerBuilder(action, action, HINT, ICON, !DISABLE, callback, renderFunc);
