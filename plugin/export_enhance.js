@@ -1,4 +1,9 @@
 class exportEnhancePlugin extends BasePlugin {
+    beforeProcess = async () => new Promise(resolve => {
+        const until = () => File && File.editor && File.editor.export && File.editor.export.exportToHTML;
+        const after = () => resolve(File.editor.export.exportToHTML.constructor.name === "AsyncFunction" ? undefined : this.utils.stopLoadPluginError);
+        this.utils.loopDetector(until, after)
+    })
     process = () => {
         this.regexp = new RegExp(`<img.*?src="(.*?)".*?>`, "gs");
         this.utils.registerExportHelper("export_enhance", null, this.afterExport);
