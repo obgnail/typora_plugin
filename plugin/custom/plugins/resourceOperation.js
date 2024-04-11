@@ -110,8 +110,8 @@ class resourceOperation extends BaseCustomPlugin {
 
         const initTable = () => {
             const output = this.getOutput();
-            delete output["resource_non_exist_in_file"];
-            delete output["resource_non_exist_in_folder"];
+            delete output.resource_non_exist_in_file;
+            delete output.resource_non_exist_in_folder;
             const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
             const btnGroup = `<td><div class="btn-group"><button type="button" class="btn btn-default" action="locate">打开</button><button type="button" class="btn btn-default" action="delete">删除</button></div></td>`
             const rows = Array.from(this.nonExistInFile, (row, idx) => `<tr><td>${idx + 1}</td><td class="plugin-resource-operation-src" data-path="${row}">${row}</td>${btnGroup}</tr>`)
@@ -199,28 +199,27 @@ class resourceOperation extends BaseCustomPlugin {
 
     download = () => {
         const {getCurrentDirPath, openFile, Package: {Path: {join}, Fs: {writeFileSync}}} = this.utils;
-        const _nonExistInFile = Array.from(this.nonExistInFile);
-        const _nonExistInFolder = Array.from(this.nonExistInFolder);
-        const json = JSON.stringify(this.getOutput(), null, "\t");
+        const output = this.getOutput();
+        const json = JSON.stringify(output, null, "\t");
         const fileContent = `
-## 存在于文件夹，但是不存在于 md 文件的资源(共${_nonExistInFile.length}项)
+## 存在于文件夹，但是不存在于 md 文件的资源(共${output.resource_non_exist_in_file.length}项)
 
 \`\`\`plain
-${_nonExistInFile.join("\n")}
+${output.resource_non_exist_in_file.join("\n")}
 \`\`\`
 
-## 存在于 md 文件，但是不存在于文件夹的资源(共${_nonExistInFolder.length}项)
+## 存在于 md 文件，但是不存在于文件夹的资源(共${output.resource_non_exist_in_folder.length}项)
 
 \`\`\`plain
-${_nonExistInFolder.join("\n")}
+${output.resource_non_exist_in_folder.join("\n")}
 \`\`\`
 
 ## JSON
 
 以下为插件相关配置及输出，以供开发者使用
 
-- \`search_folder\`：搜索的根目录
-- \`resource_suffix\`：判定为资源的文件后缀
+- \`search_folder\`：递归搜索的根目录
+- \`resource_suffix\`：判定为 resource 的文件后缀
 - \`markdown_suffix\`：判定为 markdown 的文件后缀
 - \`ignore_img_html_element\`：是否忽略 html 格式的 img 标签
 - \`ignore_folders\`：忽略的目录
