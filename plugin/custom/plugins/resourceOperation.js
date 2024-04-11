@@ -23,7 +23,7 @@ class resourceOperation extends BaseCustomPlugin {
                 <div class="plugin-resource-operation-icon ion-arrow-move" action="move" ty-hint="移动"></div>
                 <div class="plugin-resource-operation-icon ion-minus-round" action="toggleZoom" ty-hint="缩放"></div>
                 <div class="plugin-resource-operation-icon ion-eye-disabled" action="togglePreview" ty-hint="预览图片"></div>
-                <div class="plugin-resource-operation-icon ion-archive" action="download" ty-hint="下载"></div>
+                <div class="plugin-resource-operation-icon ion-archive" action="download" ty-hint="下载报告"></div>
             </div>
             <img class="plugin-resource-operation-popup plugin-common-hidden">
             <div class="plugin-resource-operation-wrap"></div>
@@ -199,22 +199,21 @@ class resourceOperation extends BaseCustomPlugin {
 
     download = () => {
         const {getCurrentDirPath, openFile, Package: {Path: {join}, Fs: {writeFileSync}}} = this.utils;
-        const template = (file, idx) => this.config.use_md_syntax_in_report ? `| ![resource${idx}](${file}) |` : `| \`${file}\` |`
-        const _nonExistInFile = Array.from(this.nonExistInFile, template);
-        const _nonExistInFolder = Array.from(this.nonExistInFolder, template);
+        const _nonExistInFile = Array.from(this.nonExistInFile);
+        const _nonExistInFolder = Array.from(this.nonExistInFolder);
         const json = JSON.stringify(this.getOutput(), null, "\t");
         const fileContent = `
 ## 存在于文件夹，但是不存在于 md 文件的资源(共${_nonExistInFile.length}项)
 
-| 资源名 |
-| ----- |
+\`\`\`plain
 ${_nonExistInFile.join("\n")}
+\`\`\`
 
 ## 存在于 md 文件，但是不存在于文件夹的资源(共${_nonExistInFolder.length}项)
 
-| 资源名 |
-| ----- |
+\`\`\`plain
 ${_nonExistInFolder.join("\n")}
+\`\`\`
 
 ## JSON
 
