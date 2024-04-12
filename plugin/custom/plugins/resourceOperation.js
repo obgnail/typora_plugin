@@ -44,6 +44,7 @@ class resourceOperation extends BaseCustomPlugin {
         }
         this.nonExistInFile = null;
         this.nonExistInFolder = null;
+        this.showWarnDialog = true;
 
         this.entities = {
             modal: document.querySelector("#plugin-resource-operation"),
@@ -75,6 +76,19 @@ class resourceOperation extends BaseCustomPlugin {
             const src = p.dataset.path;
             const action = target.getAttribute("action");
             if (action === "delete") {
+                if (this.showWarnDialog) {
+                    const filename = this.utils.getFileName(src, false);
+                    const {response, checkboxChecked} = await this.utils.showMessageBox({
+                        type: "warning",
+                        buttons: ["确定", "取消"],
+                        message: `是否删除文件 ${filename}`,
+                        checkboxLabel: "不再提示（直到关闭Typora）"
+                    });
+                    if (response === 1) return;
+                    if (checkboxChecked) {
+                        this.showWarnDialog = false;
+                    }
+                }
                 await this.utils.Package.Fs.promises.unlink(src);
                 this.utils.removeElement(tr);
                 this.nonExistInFile.delete(src);
