@@ -29,13 +29,16 @@ class preferencesPlugin extends BasePlugin {
         }
 
         if (showModal) {
-            await this.utils.showMessageBox({
+            const {response} = await this.utils.showMessageBox({
                 type: "info",
+                buttons: ["确定", "取消"],
                 title: "preferences",
-                detail: "配置将于重启 Typora 后生效",
+                detail: "配置将于重启 Typora 后生效，确认重启？",
                 message: "设置成功",
-                buttons: ["确定"]
             });
+            if (response === 0) {
+                this.utils.restartTypora();
+            }
         }
     }
 

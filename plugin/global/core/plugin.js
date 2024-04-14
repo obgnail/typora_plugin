@@ -659,6 +659,11 @@ class utils {
 
     ////////////////////////////// 业务操作 //////////////////////////////
     static exitTypora = () => JSBridge.invoke("window.close");
+    static restartTypora = () => {
+        this.callPluginFunction("reopenClosedFiles", "save");
+        this.openFolder(File.getMountFolder());
+        setTimeout(this.exitTypora, 50);
+    }
     static showInFinder = filepath => JSBridge.showInFinder(filepath || this.getFilePath())
     static isDiscardableUntitled = () => File && File.changeCounter && File.changeCounter.isDiscardableUntitled();
 
@@ -667,7 +672,7 @@ class utils {
         openUrl(url, 1);
     }
 
-    static showMessageBox = async ({type = "info", title = "typora", message, detail, buttons = ["取消", "确定"], defaultId = 0, cancelId = 1, normalizeAccessKeys = true, checkboxLabel}) => {
+    static showMessageBox = async ({type = "info", title = "typora", message, detail, buttons = ["确定", "取消"], defaultId = 0, cancelId = 1, normalizeAccessKeys = true, checkboxLabel}) => {
         const op = {type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel};
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
