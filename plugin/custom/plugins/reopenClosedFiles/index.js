@@ -15,8 +15,10 @@ class reopenClosedFilesPlugin extends BaseCustomPlugin {
                 this.utils.loopDetector(this.utils.isDiscardableUntitled, this.callback, 40, 2000, false);
             }
         })
-        this.utils.addEventListener(this.utils.eventType.beforeUnload, () => this.windowTabBarPlugin && this.windowTabBarPlugin.saveTabs(this.saveFile));
+        this.utils.addEventListener(this.utils.eventType.beforeUnload, this.save);
     }
+
+    save = () => this.windowTabBarPlugin && this.windowTabBarPlugin.saveTabs(this.saveFile)
 
     ensureFile = async () => await this.utils.Package.FsExtra.ensureFile(this.saveFile);
 

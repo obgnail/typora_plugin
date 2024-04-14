@@ -659,6 +659,11 @@ class utils {
 
     ////////////////////////////// 业务操作 //////////////////////////////
     static exitTypora = () => JSBridge.invoke("window.close");
+    static restartTypora = () => {
+        this.callPluginFunction("reopenClosedFiles", "save");
+        this.openFolder(File.getMountFolder());
+        setTimeout(this.exitTypora, 50);
+    }
     static showInFinder = filepath => JSBridge.showInFinder(filepath || this.getFilePath())
     static isDiscardableUntitled = () => File && File.changeCounter && File.changeCounter.isDiscardableUntitled();
 
