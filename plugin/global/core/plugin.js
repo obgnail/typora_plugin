@@ -1711,15 +1711,29 @@ class dialog {
         }, true)
     }
 
-    onButtonClick = callback => {
+    onButtonClick = async callback => {
         this.pluginModal.components.forEach(component => {
             if (component.label === undefined || !component.type || !component.id) return;
             const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
             component.submit = widget ? this.getWidgetValue(component.type, widget) : undefined;
         })
         this.utils.hide(this.entities.modal);
-        callback && callback(this.pluginModal.components);
+        if (callback) {
+            await callback(this.pluginModal.components);
+        }
         this.clean();
+        this.entities.body.innerHTML = "";
+    }
+
+    addEvent = () => {
+        if (!this.pluginModal || !this.pluginModal.components) return;
+        this.pluginModal.components.forEach(component => {
+            Object.entries(component).forEach(([key, func]) => {
+                if (!key.startsWith("on")) return;
+                const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
+                widget[key] = func;
+            })
+        })
     }
 
     getWidgetValue = (type, widget) => {
@@ -1782,7 +1796,9 @@ class dialog {
                 break
             case "textarea":
                 const rows = component.rows || 3;
-                inner = `<textarea class="form-control" rows="${rows}" placeholder="${component.placeholder || ""}" ${disabled(component)}></textarea>`;
+                const cnt = component.content || "";
+                const readonly = component.readonly || "";
+                inner = `<textarea class="form-control" rows="${rows}" ${readonly} placeholder="${component.placeholder || ""}" ${disabled(component)}>${cnt}</textarea>`;
                 break
             case "p":
                 label = "p";
@@ -1802,6 +1818,7 @@ class dialog {
             modal.components.forEach(component => component.id = this.utils.randomString());
             const widgetList = modal.components.map(this.newWidget);
             this.entities.body.innerHTML = `<form role="form">${widgetList.join("")}</form>`;
+            this.addEvent();
             this.utils.show(this.entities.modal);
             modal.onload && modal.onload(this.entities.modal);
         }

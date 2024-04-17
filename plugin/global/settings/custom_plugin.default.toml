@@ -613,7 +613,7 @@ template_variables = [
     #   {{ sum2([1,2]) }}        =>  3
     #   {{ contact("a", "b") }}  =>  a-b
     { enable = false, name = "sum", callback = "(v1 = 100, v2 = 200) => v1 + v2" },
-    { enable = false, name = "sum2", callback = "args => args => args.reduce((x, y) => x + y, 0)" },
+    { enable = false, name = "sum2", callback = "args => args.reduce((x, y) => x + y, 0)" },
     { enable = false, name = "contact", callback = "(...args) => args.join('-')" },
 ]
 # 模板
@@ -630,6 +630,7 @@ template_variables = [
 #   {{randomInt(2, 100)}} 范围为2-100的随机整数
 #   {{title}}             新建文件的标题
 #   {{folder}}            当前文件的目录
+#   {{mountFolder}}       当前文件的挂载目录
 #   {{filepath}}          新建文件的路径
 #   {{range}}             当前选取的文字
 #   {{uuid}}              uuid

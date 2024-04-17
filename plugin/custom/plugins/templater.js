@@ -9,9 +9,18 @@ class templater extends BaseCustomPlugin {
             window.parent.navigator.clipboard.readText().then(text => this.rangeText = text);
         }
 
+        const onchange = ev => {
+            const value = ev.target.value;
+            const tpl = this.config.template.find(tpl => tpl.name === value);
+            if (tpl) {
+                ev.target.closest(".modal-body").querySelector("textarea").value = tpl.text;
+            }
+        }
+
         const components = [
             {label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本"},
-            {label: "模板", type: "select", list: this.config.template.map(template => template.name)}
+            {label: "模板", type: "select", list: this.config.template.map(template => template.name), onchange},
+            {label: "预览", type: "textarea", rows: 10, readonly: "readonly", content: this.config.template[0].text},
         ]
         const modal = {title: "新文件", components};
 
@@ -84,6 +93,7 @@ class templateHelper {
     range = () => this.rangeText;
     title = () => this._title;
     folder = () => this.utils.getCurrentDirPath();
+    mountFolder = () => File.getMountFolder();
     filepath = () => this.utils.Package.Path.join(this.folder(), this.title());
     weekday = () => "周" + '日一二三四五六'.charAt(this.today.getDay());
     datetime = () => this.today.toLocaleString('chinese', {hour12: false});
