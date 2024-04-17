@@ -448,6 +448,11 @@ class utils {
             return v.toString(16);
         });
     }
+    static getRandomInt = (min, max) => {
+        const ceil = Math.ceil(min);
+        const floor = Math.floor(max);
+        return Math.floor(Math.random() * (floor - ceil) + ceil);
+    }
 
     static isPromise = obj => obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function'
     static isBase64 = str => /^[A-Za-z0-9+/=]+$/.test(str) && str.length % 4 === 0;

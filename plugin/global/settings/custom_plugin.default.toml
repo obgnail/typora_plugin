@@ -599,20 +599,34 @@ order = 1
 hotkey = ""
 # 自动打开新文件
 auto_open = true
+# 除了默认的模板变量，还可以自定义模板变量
+#   - enable   是否启用
+#   - name     模板变量名
+#   - callback 回调函数
+template_args = [
+    # 模板变量的使用方式形如：{{myFunc(arg1, arg2)}}。若myFunc无需传入参数，可去除括号：{{myFunc}}。即: {{myFunc()}} 等同于 {{myFunc}}
+    # {{sum(1, 2)}}  =>  3
+    # {{sum(10)}}    =>  210
+    # {{sum}}        =>  300
+    { enable = true, name = "sum", callback= "(v1=100, v2=200) => parseInt(v1) + parseInt(v2)" },
+]
 # 模板
-# 当前支持的模板变量：
-#   {{date}}：当前日期
-#   {{time}}：当前时间
-#   {{weekday}}：当前周几
-#   {{datetime}}：当前日期时间
-#   {{yesterday}}：昨天日期
-#   {{tomorrow}}：明天日期
-#   {{random}}：随机数
-#   {{title}}：新建文件的标题
-#   {{folder}}：当前文件的目录
-#   {{filepath}}：新建文件的路径
-#   {{range}}：当前选取的文字
-#   {{uuid}}：uuid
+# 默认的模板变量：
+#   {{date}}              当前日期
+#   {{time}}              当前时间
+#   {{datetime}}          当前日期时间
+#   {{timestamp}}         当前时间戳
+#   {{weekday}}           当前周几
+#   {{yesterday}}         昨天日期
+#   {{tomorrow}}          明天日期
+#   {{dateOffset(2)}}     2天后的日期（-2表示2天前的日期）
+#   {{random}}            范围为0-1的随机浮点数
+#   {{randomInt(2, 100)}} 范围为2-100的随机整数
+#   {{title}}             新建文件的标题
+#   {{folder}}            当前文件的目录
+#   {{filepath}}          新建文件的路径
+#   {{range}}             当前选取的文字
+#   {{uuid}}              uuid
 [[templater.config.template]]
 name = "标准模板"
 text = """---
@@ -1074,10 +1088,8 @@ buttons = [
     { disable = false, coordinate = [1, 1], hint = "图片管理", size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
     { disable = false, coordinate = [2, 1], hint = "书签管理", size = "17px", icon = "fa fa-bookmark", callback = "scrollBookmarker.callback" },
     { disable = false, coordinate = [3, 1], hint = "高亮搜索", size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
-
     # 根据try_fix_lint_error配置进行语法优化
     { disable = true, coordinate = [4, 1], hint = "语法优化", size = "17px", icon = "fa fa-book", callback = "markdownLint.fixLintError" },
-
     # evil使用示例（更多示例请参考hotkey.default.toml）：
     #   弹窗提示
     { disable = true, coordinate = [4, 0], hint = "危险操作", size = "17px", icon = "ion-asterisk", color = "#f0f8ff", bgColor = "#ff4500", evil = "() => window.confirm('this is message')" },
