@@ -59,7 +59,8 @@ class readOnlyPlugin extends BasePlugin {
     setLabel = value => document.getElementById("footer-word-count-label").setAttribute("data-value", value);
     toggleMenu = () => {
         if (this.config.DISABLE_CONTEXT_MENU_WHEN_READ_ONLY) {
-            const selector = '#context-menu > li:not([data-key="typora-plugin"]):not([data-key="dev-tool"])';
+            const exclude = "li" + this.config.REMAIN_AVAILABLE_MENU_KEY.map(key => `:not([data-key="${key}"])`).join("");
+            const selector = `#context-menu > ${exclude}`;
             document.querySelectorAll(selector).forEach(ele => ele.classList.toggle("plu-disable-menu"));
         }
     }
