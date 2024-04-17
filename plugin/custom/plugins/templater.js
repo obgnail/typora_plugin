@@ -44,7 +44,7 @@ class templateHelper {
 
     _getTemplateVars = () => {
         const map = {};
-        this.config.template_args.forEach(({enable, name, callback}) => {
+        this.config.template_variables.forEach(({enable, name, callback}) => {
             if (!enable) return;
             const func = eval(callback);
             if (func instanceof Function) {
@@ -59,16 +59,17 @@ class templateHelper {
         return map
     }
     _convert = text => {
-        const templateVars = this._getTemplateVars();
-        const parentheses = `\\((.*?)\\)`;
+        const vm = reqnode("vm");
+        const context = this._getTemplateVars();
+        const parentheses = `\\(.*?\\)`;
         const LBrace = `\\{\\{`;
         const RBrace = `\\}\\}`;
         const space = `\\s`;
-        for (const [varName, callback] of Object.entries(templateVars)) {
+        for (const varName of Object.keys(context)) {
             const regExp = `${LBrace}${space}*${varName}(${parentheses})?${space}*${RBrace}`;
-            text = text.replace(new RegExp(regExp, "g"), (origin, templateArgs, realArgs) => {
-                const args = templateArgs ? realArgs.trim().split(",").map(s => s.trim()) : [];
-                return callback.apply(this, args);
+            text = text.replace(new RegExp(regExp, "g"), (origin, templateArgs) => {
+                const callFunc = varName + (templateArgs || "()");
+                return vm.runInNewContext(callFunc, context);
             });
         }
         return text
@@ -79,7 +80,7 @@ class templateHelper {
 
     uuid = () => this.utils.getUUID();
     random = () => Math.random();
-    randomInt = (floor, ceil) => this.utils.getRandomInt(parseInt(floor), parseInt(ceil));
+    randomInt = (floor, ceil) => this.utils.getRandomInt(floor, ceil);
     range = () => this.rangeText;
     title = () => this._title;
     folder = () => this.utils.getCurrentDirPath();
@@ -93,7 +94,6 @@ class templateHelper {
     yesterday = () => this.dateOffset(-1);
     tomorrow = () => this.dateOffset(1);
 }
-
 
 module.exports = {
     plugin: templater,
