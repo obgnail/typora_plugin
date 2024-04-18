@@ -43,7 +43,7 @@ class templater extends BaseCustomPlugin {
 
 class templateHelper {
     constructor(title, controller) {
-        this._title = title;
+        this._title = title.substring(0, title.lastIndexOf("."));
         this.rangeText = controller.rangeText || "";
         this.utils = controller.utils;
         this.config = controller.config;
@@ -88,8 +88,10 @@ class templateHelper {
     _formatTime = day => `${this._padStart(day.getHours())}:${this._padStart(day.getMinutes())}:${this._padStart(day.getSeconds())}`;
 
     uuid = () => this.utils.getUUID();
+    username = () => process.env.username || this.utils.Package.OS.userInfo().username
     random = () => Math.random();
-    randomInt = (floor, ceil) => this.utils.getRandomInt(floor, ceil);
+    randomInt = (floor, ceil) => this.utils.randomInt(floor, ceil);
+    randomStr = () => this.utils.randomString();
     range = () => this.rangeText;
     title = () => this._title;
     folder = () => this.utils.getCurrentDirPath();

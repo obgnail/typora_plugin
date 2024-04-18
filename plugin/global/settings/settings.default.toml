@@ -325,6 +325,8 @@ HOTKEY = "ctrl+shift+r"
 READ_ONLY_DEFAULT = false
 # 只读时禁用右键菜单
 DISABLE_CONTEXT_MENU_WHEN_READ_ONLY = true
+# 只读状态下禁用右键菜单的时候，哪些菜单选项保持可用（可选值需要您开打调试工具，查找其中data-key）
+REMAIN_AVAILABLE_MENU_KEY = ["typora-plugin", "dev-tool", "copy-img"]
 # 开启只读模式后，右下角数字统计区域出现的提示文字
 SHOW_TEXT = "ReadOnly"
 
