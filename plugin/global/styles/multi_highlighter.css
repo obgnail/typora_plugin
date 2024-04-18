@@ -33,28 +33,23 @@
     position: absolute;
     padding: 1px;
     right: ${run_style.case_button_right};
-    top: 8px;
-    opacity: .5;
     line-height: 10px;
     border-radius: 3px;
     cursor: pointer;
+    top: 53%;
+    transform: translateY(-50%);
 }
 
-#plugin-multi-highlighter-input .plugin-multi-highlighter-option-btn.select, .plugin-multi-highlighter-option-btn:hover {
+#plugin-multi-highlighter-input .plugin-multi-highlighter-option-btn.select,
+#plugin-multi-highlighter-input .plugin-multi-highlighter-option-btn:hover {
     background: var(--active-file-bg-color);
     color: var(--active-file-text-color);
-    opacity: 1
 }
 
 #plugin-multi-highlighter-input .run-highlight {
     margin-left: 4px;
-    opacity: .5;
     cursor: pointer;
     display: ${run_style.run_button_display};
-}
-
-#plugin-multi-highlighter-input .run-highlight:hover {
-    opacity: 1 !important;
 }
 
 #plugin-multi-highlighter-result {
@@ -91,15 +86,19 @@
     display: inline;
     position: absolute;
     left: 0;
-    background: rgba(29,163,63,.3);
+    background: rgba(29, 163, 63, .3);
     z-index: 99999;
     animation-name: fadeit;
     animation-duration: 3s;
 }
 
 @keyframes fadeit {
-    from {opacity:1;}
-    to {opacity:0;}
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }
 
 ${colors_style}
