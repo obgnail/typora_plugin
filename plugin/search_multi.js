@@ -5,12 +5,14 @@ class searchMultiKeywordPlugin extends BasePlugin {
         <div id="plugin-search-multi" class="plugin-common-modal plugin-common-hidden">
             <div id="plugin-search-multi-input">
                 <input type="text" placeholder="多关键字查找 空格分隔" title="空格分隔 引号包裹视为词组">
-                <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
-                    <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
-                </span>
-                <span class="option-btn path-option-btn ${(this.config.INCLUDE_FILE_PATH) ? "select" : ""}" ty-hint="将文件路径加入搜索内容">
-                    <div class="ion-ionic"></div>
-                </span>
+                <div class="plugin-search-multi-btn-group">
+                    <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
+                        <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
+                    </span>
+                    <span class="option-btn path-option-btn ${(this.config.INCLUDE_FILE_PATH) ? "select" : ""}" ty-hint="将文件路径加入搜索内容">
+                        <div class="fa fa-folder-open-o"></div>
+                    </span>
+                </div>
             </div>
 
             <div class="plugin-search-multi-result plugin-common-hidden">
@@ -32,8 +34,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
     init = () => {
         this.entities = {
             modal: document.getElementById('plugin-search-multi'),
-            inputBar: document.querySelector("#plugin-search-multi-input"),
             input: document.querySelector("#plugin-search-multi-input input"),
+            buttonGroup: document.querySelector(".plugin-search-multi-btn-group"),
             result: document.querySelector(".plugin-search-multi-result"),
             resultTitle: document.querySelector(".plugin-search-multi-result .search-result-title"),
             resultList: document.querySelector(".plugin-search-multi-result .search-result-list"),
@@ -112,7 +114,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             this.hideIfNeed();
         });
 
-        this.entities.inputBar.addEventListener("click", ev => {
+        this.entities.buttonGroup.addEventListener("click", ev => {
             const caseButton = ev.target.closest(".case-option-btn");
             const pathButton = ev.target.closest(".path-option-btn");
 
@@ -257,7 +259,6 @@ class LinkHelper {
 
         this.highlighterModal = document.querySelector("#plugin-multi-highlighter");
         this.highlighterInput = document.querySelector("#plugin-multi-highlighter-input");
-        this.searcherInput = this.searcher.entities.inputBar;
         this.button = this.genButton();
     }
 
@@ -275,7 +276,7 @@ class LinkHelper {
         // 当处于联动状态，在search_multi开启前开启highlighter
         this.utils.decorate(() => this.searcher, "show", () => !this.searcher.config.LINK_OTHER_PLUGIN && this.toggle());
 
-        this.searcherInput.addEventListener("click", ev => {
+        this.searcher.entities.buttonGroup.addEventListener("click", ev => {
             if (ev.target.closest(".link-option-btn")) {
                 this.toggle(true);
                 ev.preventDefault();
@@ -292,7 +293,7 @@ class LinkHelper {
         const div = document.createElement("div");
         div.className = "fa fa-link";
         span.appendChild(div);
-        this.searcherInput.appendChild(span);
+        this.searcher.entities.buttonGroup.appendChild(span);
         wantLink && this.moveElement();
         return span
     }
@@ -318,7 +319,8 @@ class LinkHelper {
 
     moveElement = () => {
         this.utils.removeElement(this.highlighterModal);
-        this.searcherInput.parentNode.insertBefore(this.highlighterModal, this.searcherInput.nextSibling);
+        const input = document.querySelector("#plugin-search-multi-input");
+        input.parentNode.insertBefore(this.highlighterModal, input.nextSibling);
 
         this.utils.show(this.highlighterModal);
         this.utils.hide(this.highlighterInput);

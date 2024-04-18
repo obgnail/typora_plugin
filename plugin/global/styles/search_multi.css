@@ -41,34 +41,35 @@
     fill: currentColor
 }
 
-#plugin-search-multi-input .option-btn {
+#plugin-search-multi-input .plugin-search-multi-btn-group {
     position: absolute;
-    top: 7px;
-    opacity: .5;
-    line-height: 10px;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    top: 53%;
+    transform: translateY(-50%);
+    right: 6px;
+    padding: 2px 1px;
+    line-height: 80%;
+}
+
+#plugin-search-multi-input .option-btn {
     border-radius: 3px;
+    margin-left: 3px;
     cursor: pointer;
 }
 
 #plugin-search-multi-input .case-option-btn {
-    right: 6px;
     padding: 2px 1px;
 }
 
-#plugin-search-multi-input .path-option-btn {
-    right: 30px;
-    padding: 1px 3px;
-}
-
+#plugin-search-multi-input .path-option-btn,
 #plugin-search-multi-input .link-option-btn {
-    right: 51px;
     padding: 1px 3px;
 }
 
 #plugin-search-multi-input .option-btn.select, .option-btn:hover {
     background: var(--active-file-bg-color);
     color: var(--active-file-text-color);
-    opacity: 1
 }
 
 .plugin-search-multi-item {
