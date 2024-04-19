@@ -1560,7 +1560,7 @@ class eventHub {
             }
         }).observe(document.body, {attributes: true});
 
-        const debouncePublish = this.utils.debounce(() => this.utils.publishEvent(this.utils.eventType.fileEdited), 500);
+        const debouncePublish = this.utils.debounce(() => this.utils.publishEvent(this.utils.eventType.fileEdited), 400);
         this.observer = new MutationObserver(mutationList => {
             if (mutationList.some(m => m.type === "characterData")
                 || mutationList.length && mutationList.some(m => m.addedNodes.length) && mutationList.some(m => m.removedNodes.length)) {
