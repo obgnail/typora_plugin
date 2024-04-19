@@ -149,6 +149,8 @@ MAX_SIZE = 2000000
 # 查找文件的后缀名，此外的文件在搜索时将被忽略
 # 注意：默认值为Typora允许打开的文件的后缀名列表。所以不建议新增后缀名，毕竟找到了也不能在typora里打开
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
+# 忽略的目录名
+IGNORE_FOLDERS = [".git", "node_modules"]
 
 
 ############### multi_highlighter ###############
@@ -943,6 +945,65 @@ DISABLE_CUSTOM_PLUGINS = []
 ALLOW_SET_CONFIG_IN_SETTINGS_TOML = true
 
 
+############### slash_commands ###############
+[slash_commands]
+# 是否启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "斜杠命令"
+# 是否在右键菜单中可点击
+CLICKABLE = true
+# 触发显示命令列表的输入 对应的正则表达式（若您不了解正则表达式，请勿修改此配置）
+#  默认值：匹配一个字符串，该字符串以 /或\或、 开头，后面紧跟任意数量的非 /或\或、字符，最后以字符串结束。
+TRIGGER_REGEXP = "(?<!<)[\\/、\\\\]([^\\/、\\\\]*)$"
+# 命令列表
+#  - enable:    是否启用
+#  - type:      snippet/command。前者表示在调用时插入文字片段，后者表示在调用时执行逻辑命令
+#  - icon(可选): 使用emoji作为图标
+#  - hint(可选): 提示信息
+#  - keyword:   关键词
+#  - callback:  若type=snippet，则填入需要插入的文字片段，若type=command，则填入回调函数的字符串
+COMMANDS = [
+    { enable = true, type = "command", icon = "🧾", hint = "一级标题", keyword = "h1", callback = "() => File.editor.stylize.changeBlock('header1', undefined, true)" },
+    { enable = true, type = "command", icon = "🧾", hint = "二级标题", keyword = "h2", callback = "() => File.editor.stylize.changeBlock('header2', undefined, true)" },
+    { enable = true, type = "command", icon = "🧾", hint = "三级标题", keyword = "h3", callback = "() => File.editor.stylize.changeBlock('header3', undefined, true)" },
+    { enable = true, type = "command", icon = "🧾", hint = "四级标题", keyword = "h4", callback = "() => File.editor.stylize.changeBlock('header4', undefined, true)" },
+    { enable = true, type = "command", icon = "🧾", hint = "五级标题", keyword = "h5", callback = "() => File.editor.stylize.changeBlock('header5', undefined, true)" },
+    { enable = true, type = "command", icon = "🧾", hint = "六级标题", keyword = "h6", callback = "() => File.editor.stylize.changeBlock('header6', undefined, true)" },
+    { enable = true, type = "command", icon = "🧾", hint = "斜体", keyword = "em", callback = "() => File.editor.stylize.toggleStyle('em')" },
+    { enable = true, type = "command", icon = "🧾", hint = "粗体", keyword = "strong", callback = "() => File.editor.stylize.toggleStyle('strong')" },
+    { enable = true, type = "command", icon = "🧾", hint = "下划线", keyword = "underline", callback = "() => File.editor.stylize.toggleStyle('underline')" },
+    { enable = true, type = "command", icon = "🧾", hint = "删除线", keyword = "del", callback = "() =>File.editor.stylize.toggleStyle('del')" },
+    { enable = true, type = "command", icon = "🧾", hint = "链接", keyword = "link", callback = "() => File.editor.stylize.toggleStyle('link')" },
+    { enable = true, type = "command", icon = "🧾", hint = "图片", keyword = "image", callback = "() => File.editor.stylize.toggleStyle('image')" },
+    { enable = true, type = "command", icon = "🧾", hint = "行内代码", keyword = "code", callback = "() => File.editor.stylize.toggleStyle('code')" },
+    { enable = true, type = "command", icon = "🧾", hint = "代码块", keyword = "fence", callback = "() => File.editor.stylize.toggleFences()" },
+    { enable = true, type = "command", icon = "🧾", hint = "行内公式", keyword = "inlineMath", callback = "() => File.editor.stylize.toggleStyle('inline_math')" },
+    { enable = true, type = "command", icon = "🧾", hint = "公式块", keyword = "blockMath", callback = "() => File.editor.stylize.toggleMathBlock()" },
+    { enable = true, type = "command", icon = "🧾", hint = "引用", keyword = "blockquote", callback = "() => File.editor.stylize.toggleIndent('blockquote')" },
+    { enable = true, type = "command", icon = "🧾", hint = "有序列表", keyword = "ol", callback = "() => File.editor.stylize.toggleIndent('ol')" },
+    { enable = true, type = "command", icon = "🧾", hint = "无序列表", keyword = "ul", callback = "() => File.editor.stylize.toggleIndent('ul')" },
+    { enable = true, type = "command", icon = "🧾", hint = "任务列表", keyword = "tasklist", callback = "() => File.editor.stylize.toggleIndent('tasklist')" },
+    { enable = true, type = "command", icon = "🧾", hint = "元信息", keyword = "metaBlock", callback = "() => File.editor.stylize.insertMetaBlock()" },
+    { enable = true, type = "command", icon = "🧾", hint = "内容目录", keyword = "toc", callback = "() => File.editor.stylize.insertBlock('toc')" },
+    { enable = true, type = "command", icon = "🧾", hint = "链接引用", keyword = "defLink", callback = "() => File.editor.stylize.insertBlock('def_link')" },
+    { enable = true, type = "command", icon = "🧾", hint = "脚注", keyword = "defFootnote", callback = "() => File.editor.stylize.insertBlock('def_footnote')" },
+    { enable = true, type = "command", icon = "🧾", hint = "水平分割线", keyword = "hr", callback = "() => File.editor.stylize.insertBlock('hr')" },
+    { enable = true, type = "command", icon = "🧾", hint = "注释", keyword = "comment", callback = "() => File.editor.stylize.toggleStyle('comment')" },
+    { enable = true, type = "command", icon = "🧾", hint = "提升标题等级", keyword = "increaseHeaderLevel", callback = "() => File.editor.stylize.increaseHeaderLevel()" },
+    { enable = true, type = "command", icon = "🧾", hint = "降低标题等级", keyword = "decreaseHeaderLevel", callback = "() => File.editor.stylize.decreaseHeaderLevel()" },
+    { enable = true, type = "command", icon = "🧾", hint = "增加列表缩进", keyword = "listMoreIndent", callback = "() => File.editor.UserOp.moreIndent(File.editor)" },
+    { enable = true, type = "command", icon = "🧾", hint = "减少列表缩进", keyword = "listLessIndent", callback = "() => File.editor.UserOp.lessIndent(File.editor)" },
+    { enable = true, type = "command", icon = "🧾", hint = "在上方插入段落", keyword = "insertParagraphAbove", callback = "() => File.editor.UserOp.insertParagraph(true)" },
+    { enable = true, type = "command", icon = "🧾", hint = "在下方插入段落", keyword = "insertParagraphBelow", callback = "() => File.editor.UserOp.insertParagraph(false)" },
+    { enable = true, type = "command", icon = "🧰", hint = "全选", keyword = "selectAll", callback = "() => ClientCommand.selectAll()" },
+    { enable = true, type = "command", icon = "🧰", hint = "置顶部", keyword = "jumpTop", callback = "() => File.editor.selection.jumpTop()" },
+    { enable = true, type = "command", icon = "🧰", hint = "置底部", keyword = "jumpBottom", callback = "() => File.editor.selection.jumpBottom()" },
+    { enable = true, type = "command", icon = "🧰", hint = "帮助", keyword = "help", callback = "() => this.call()" },
+    { enable = true, type = "snippet", icon = "🧰", hint = "", keyword = "snippet", callback = "thisIsTestSnippet" },
+]
+
+
 ############### right_click_menu ###############
 [right_click_menu]
 # 是否启用插件
@@ -991,6 +1052,7 @@ LIST = [
     "go_top",
     "text_stylize",
     "toolbar",
+    "slash_commands",
     "preferences",
     "---",
     "file_counter",

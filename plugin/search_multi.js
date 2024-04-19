@@ -136,7 +136,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     openFileInThisWindow = filePath => File.editor.library.openFile(filePath);
     openFileInNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder);
 
-    traverseDir = (dir, filter, callback, then) => {
+    traverseDir = (dir, fileFilter, dirFilter, callback, then) => {
         const {Fs: {promises: {readdir, stat, readFile}}, Path} = this.utils.Package;
 
         async function traverse(dir) {
@@ -144,9 +144,9 @@ class searchMultiKeywordPlugin extends BasePlugin {
             for (const file of files) {
                 const filePath = Path.join(dir, file);
                 const stats = await stat(filePath);
-                if (stats.isFile() && (!filter || filter(filePath, stats))) {
+                if (stats.isFile() && (!fileFilter || fileFilter(filePath, stats))) {
                     readFile(filePath).then(buffer => callback(filePath, stats, buffer)).catch(console.error);
-                } else if (stats.isDirectory()) {
+                } else if (stats.isDirectory() && dirFilter(file)) {
                     await traverse(filePath);
                 }
             }
@@ -224,9 +224,10 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
         rootPath = rootPath || File.getMountFolder();
         const allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
+        const allowTraverse = path => !this.config.IGNORE_FOLDERS.includes(path)
         const appendItem = this.appendItemFunc(keyArr);
         const then = () => this.utils.hide(this.entities.info);
-        this.traverseDir(rootPath, allowRead, appendItem, then);
+        this.traverseDir(rootPath, allowRead, allowTraverse, appendItem, then);
     }
 
     hideIfNeed = () => this.config.AUTO_HIDE && this.utils.hide(this.entities.modal);
