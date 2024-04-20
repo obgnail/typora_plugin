@@ -953,15 +953,16 @@ ENABLE = true
 NAME = "斜杠命令"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 触发显示命令列表的输入 对应的正则表达式（若您不了解正则表达式，请勿修改此配置）
+# 触发显示命令列表的输入 对应的正则表达式。（若您不了解正则表达式，请勿修改此配置）
+#  注意：keyword需要使用命名捕获组kw
 #  默认值：匹配一个字符串，该字符串以 /或\或、 开头，后面紧跟任意数量的非 /或\或、字符，最后以字符串结束。
-TRIGGER_REGEXP = "(?<!<)[\\/、\\\\]([^\\/、\\\\]*)$"
+TRIGGER_REGEXP = "(?<!<)[\\/、\\\\](?<kw>[^\\/、\\\\]*)$"
 # 命令列表
 #  - enable:    是否启用
 #  - type:      snippet/command。前者表示在调用时插入文字片段，后者表示在调用时执行逻辑命令
 #  - icon(可选): 使用emoji作为图标
 #  - hint(可选): 提示信息
-#  - keyword:   关键词
+#  - keyword:   关键词，必须唯一
 #  - callback:  若type=snippet，则填入需要插入的文字片段，若type=command，则填入回调函数的字符串
 COMMANDS = [
     { enable = true, type = "command", icon = "🧾", hint = "一级标题", keyword = "h1", callback = "() => File.editor.stylize.changeBlock('header1', undefined, true)" },
@@ -970,6 +971,7 @@ COMMANDS = [
     { enable = true, type = "command", icon = "🧾", hint = "四级标题", keyword = "h4", callback = "() => File.editor.stylize.changeBlock('header4', undefined, true)" },
     { enable = true, type = "command", icon = "🧾", hint = "五级标题", keyword = "h5", callback = "() => File.editor.stylize.changeBlock('header5', undefined, true)" },
     { enable = true, type = "command", icon = "🧾", hint = "六级标题", keyword = "h6", callback = "() => File.editor.stylize.changeBlock('header6', undefined, true)" },
+    { enable = true, type = "command", icon = "🧾", hint = "段落", keyword = "paragraph", callback = "() => File.editor.stylize.changeBlock('paragraph')" },
     { enable = true, type = "command", icon = "🧾", hint = "斜体", keyword = "em", callback = "() => File.editor.stylize.toggleStyle('em')" },
     { enable = true, type = "command", icon = "🧾", hint = "粗体", keyword = "strong", callback = "() => File.editor.stylize.toggleStyle('strong')" },
     { enable = true, type = "command", icon = "🧾", hint = "下划线", keyword = "underline", callback = "() => File.editor.stylize.toggleStyle('underline')" },

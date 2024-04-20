@@ -1,7 +1,7 @@
 class slashCommandsPlugin extends BasePlugin {
     beforeProcess = () => {
         this.matched = new Map();
-        this.commands = new Map(this.config.COMMANDS.filter(cmd => cmd.enable).map(cmd => [cmd.keyword.toLowerCase(), cmd]));
+        this.commands = new Map(this.config.COMMANDS.filter(cmd => cmd.enable && cmd.keyword).map(cmd => [cmd.keyword.toLowerCase(), cmd]));
         this.handler = {search: this._search, render: this._render, beforeApply: this._beforeApply};
 
         return this.commands.size ? undefined : this.utils.stopLoadPluginError
@@ -21,10 +21,10 @@ class slashCommandsPlugin extends BasePlugin {
 
         const [textBefore, textAfter, range] = File.editor.selection.getTextAround();
         if (!textBefore) return;
-        let [isMatched, keyword] = textBefore.match(new RegExp(this.config.TRIGGER_REGEXP)) || [];
-        if (!isMatched) return;
+        const match = textBefore.match(new RegExp(this.config.TRIGGER_REGEXP));
+        if (!match || !match.groups || match.groups.kw === undefined) return;
 
-        keyword = keyword.toLowerCase();
+        const keyword = match.groups.kw.toLowerCase();
         this._match(keyword);
         if (this.matched.size === 0) return;
         range.start -= (keyword.length + 1);
@@ -49,7 +49,8 @@ class slashCommandsPlugin extends BasePlugin {
 
         const {token} = File.editor.autoComplete.state;
         const icon = cmd.icon || ((cmd.type === "snippet") ? "🧾" : "🧰");
-        const innerText = icon + " " + suggest.replace(token, `<b>${token}</b>`) + (cmd.hint ? ` - ${cmd.hint}` : "");
+        const text = cmd.keyword.replace(new RegExp(`(${token})`, "i"), "<b>$1</b>");
+        const innerText = icon + " " + text + (cmd.hint ? ` - ${cmd.hint}` : "");
         const className = `plugin-slash-command ${isActive ? "active" : ""}`;
         return `<li class="${className}" data-content="${suggest}">${innerText}</li>`
     }
