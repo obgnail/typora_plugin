@@ -990,17 +990,17 @@ COMMANDS = [
     { enable = true, type = "command", icon = "🧾", hint = "脚注", keyword = "defFootnote", callback = "() => File.editor.stylize.insertBlock('def_footnote')" },
     { enable = true, type = "command", icon = "🧾", hint = "水平分割线", keyword = "hr", callback = "() => File.editor.stylize.insertBlock('hr')" },
     { enable = true, type = "command", icon = "🧾", hint = "注释", keyword = "comment", callback = "() => File.editor.stylize.toggleStyle('comment')" },
+    { enable = true, type = "command", icon = "🧾", hint = "清除样式", keyword = "clearStyle", callback = "() => File.editor.stylize.clearStyle()" },
     { enable = true, type = "command", icon = "🧾", hint = "提升标题等级", keyword = "increaseHeaderLevel", callback = "() => File.editor.stylize.increaseHeaderLevel()" },
     { enable = true, type = "command", icon = "🧾", hint = "降低标题等级", keyword = "decreaseHeaderLevel", callback = "() => File.editor.stylize.decreaseHeaderLevel()" },
     { enable = true, type = "command", icon = "🧾", hint = "增加列表缩进", keyword = "listMoreIndent", callback = "() => File.editor.UserOp.moreIndent(File.editor)" },
     { enable = true, type = "command", icon = "🧾", hint = "减少列表缩进", keyword = "listLessIndent", callback = "() => File.editor.UserOp.lessIndent(File.editor)" },
     { enable = true, type = "command", icon = "🧾", hint = "在上方插入段落", keyword = "insertParagraphAbove", callback = "() => File.editor.UserOp.insertParagraph(true)" },
     { enable = true, type = "command", icon = "🧾", hint = "在下方插入段落", keyword = "insertParagraphBelow", callback = "() => File.editor.UserOp.insertParagraph(false)" },
-    { enable = true, type = "command", icon = "🧰", hint = "全选", keyword = "selectAll", callback = "() => ClientCommand.selectAll()" },
-    { enable = true, type = "command", icon = "🧰", hint = "置顶部", keyword = "jumpTop", callback = "() => File.editor.selection.jumpTop()" },
-    { enable = true, type = "command", icon = "🧰", hint = "置底部", keyword = "jumpBottom", callback = "() => File.editor.selection.jumpBottom()" },
+    { enable = true, type = "command", icon = "🧰", hint = "至顶部", keyword = "jumpTop", callback = "() => File.editor.selection.jumpTop()" },
+    { enable = true, type = "command", icon = "🧰", hint = "至底部", keyword = "jumpBottom", callback = "() => File.editor.selection.jumpBottom()" },
     { enable = true, type = "command", icon = "🧰", hint = "帮助", keyword = "help", callback = "() => this.call()" },
-    { enable = true, type = "snippet", icon = "🧰", hint = "", keyword = "snippet", callback = "thisIsTestSnippet" },
+    { enable = true, type = "snippet", icon = "🧰", hint = "", keyword = "snippet", callback = "this is snippet" },
 ]
 
 
