@@ -3,7 +3,7 @@ class slashCommandsPlugin extends BasePlugin {
         this.matched = new Map();
         this.commands = new Map(this.config.COMMANDS.filter(cmd => cmd.enable && cmd.keyword).map(cmd => [cmd.keyword.toLowerCase(), cmd]));
         this.handler = {search: this._search, render: this._render, beforeApply: this._beforeApply};
-
+        this.strategy = this._getStrategy();
         return this.commands.size ? undefined : this.utils.stopLoadPluginError
     }
 
@@ -31,11 +31,53 @@ class slashCommandsPlugin extends BasePlugin {
         File.editor.autoComplete.show([], range, keyword, this.handler);
     }
 
-    _match = keyword => {
+    _getStrategy = () => {
+        const prefix = {
+            match: (keyword, token) => keyword.startsWith(token),
+            highlight: (keyword, token) => `<b>${keyword.slice(0, token.length)}</b>` + keyword.slice(token.length),
+        }
+        const substr = {
+            match: (keyword, token) => keyword.includes(token),
+            highlight: (keyword, token) => keyword.replace(new RegExp(`(${token})`, "i"), "<b>$1</b>"),
+        }
+        const abbr = {
+            match: (keyword, token) => token.split("").every(char => {
+                const idx = keyword.indexOf(char);
+                if (idx === -1) return false;
+                keyword = keyword.slice(idx + 1, keyword.length);
+                return true
+            }),
+            highlight: (keyword, token) => {
+                const result = [];
+                let highlight = [];
+                let tokenIdx = 0;
+                for (let i = 0; i <= keyword.length - 1; i++) {
+                    const char = keyword[i];
+                    if (char.toLowerCase() === token[tokenIdx]) {
+                        highlight.push(char);
+                        tokenIdx++;
+                    } else {
+                        if (highlight.length) {
+                            result.push(`<b>${highlight.join("")}</b>`);
+                            highlight = [];
+                        }
+                        result.push(char);
+                    }
+                }
+                if (highlight.length) {
+                    result.push(`<b>${highlight.join("")}</b>`);
+                }
+                return result.join("");
+            }
+        }
+        return {prefix, substr, abbr}[this.config.MATCH_STRATEGY] || abbr;
+    }
+
+    _match = token => {
         const map = new Map();
-        for (const [k, v] of this.commands.entries()) {
-            if (k.includes(keyword)) {
-                map.set(k, v);
+        for (const [kw, cmd] of this.commands.entries()) {
+            if (this.strategy.match(kw, token)) {
+                map.set(kw, cmd);
             }
         }
         this.matched = map;
@@ -48,8 +90,8 @@ class slashCommandsPlugin extends BasePlugin {
         if (!cmd) return ""
 
         const {token} = File.editor.autoComplete.state;
-        const icon = cmd.icon || ((cmd.type === "snippet") ? "🧾" : "🧰");
-        const text = cmd.keyword.replace(new RegExp(`(${token})`, "i"), "<b>$1</b>");
+        const icon = cmd.icon || ((cmd.type === "snippet") ? "🧩" : "🧰");
+        const text = this.strategy.highlight(cmd.keyword, token);
         const innerText = icon + " " + text + (cmd.hint ? ` - ${cmd.hint}` : "");
         const className = `plugin-slash-command ${isActive ? "active" : ""}`;
         return `<li class="${className}" data-content="${suggest}">${innerText}</li>`
