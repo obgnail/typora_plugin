@@ -68,17 +68,16 @@ class templateHelper {
         return map
     }
     _convert = text => {
-        const vm = reqnode("vm");
         const context = this._getTemplateVars();
-        const parentheses = `\\(.*?\\)`;
+        const parentheses = `\\((.*?)\\)`;
         const LBrace = `\\{\\{`;
         const RBrace = `\\}\\}`;
         const space = `\\s`;
-        for (const varName of Object.keys(context)) {
-            const regExp = `${LBrace}${space}*${varName}(${parentheses})?${space}*${RBrace}`;
-            text = text.replace(new RegExp(regExp, "g"), (origin, templateArgs) => {
-                const callFunc = varName + (templateArgs || "()");
-                return vm.runInNewContext(callFunc, context);
+        for (const [symbol, func] of Object.entries(context)) {
+            const regExp = `${LBrace}${space}*${symbol}(${parentheses})?${space}*${RBrace}`;
+            text = text.replace(new RegExp(regExp, "g"), (origin, _, templateArgs) => {
+                const args = !templateArgs ? [] : eval(`[${templateArgs}]`);
+                return func.apply(this, args);
             });
         }
         return text
