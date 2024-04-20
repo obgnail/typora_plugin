@@ -20,8 +20,8 @@ class slashCommandsPlugin extends BasePlugin {
         if (!isMatched) return;
 
         keyword = keyword.toLowerCase();
-        this.state.matched = this._filter(keyword);
-        if (!this.state.matched || !this.state.matched.length) return;
+        this.matched = this._filter(keyword);
+        if (!this.matched || !this.matched.length) return;
         range.start -= (keyword.length + 1);
         File.editor.autoComplete.show([], range, keyword, this._handler);
     }
@@ -31,10 +31,10 @@ class slashCommandsPlugin extends BasePlugin {
         this.commands.forEach(cmd => cmd.keyword = cmd.keyword.toLowerCase());
     };
     _filter = keyword => this.commands.filter(cmd => cmd.keyword.includes(keyword))
-    _initState = () => this.state = {matched: []};
-    _search = keyword => this.state.matched.map(cmd => cmd.keyword)
+    _initState = () => this.matched = [];
+    _search = keyword => this.matched.map(cmd => cmd.keyword)
     _render = (suggest, isActive) => {
-        const cmd = this.state.matched.find(cmd => cmd.keyword === suggest);
+        const cmd = this.matched.find(cmd => cmd.keyword === suggest);
         if (!cmd) return ""
         const token = File.editor.autoComplete.state.token;
         const icon = cmd.icon || ((cmd.type === "snippet") ? "🧾" : "🧰");
@@ -43,7 +43,7 @@ class slashCommandsPlugin extends BasePlugin {
         return `<li class="${className}" data-content="${suggest}">${innerText}</li>`
     }
     _beforeApply = suggest => {
-        const cmd = this.state.matched.find(cmd => cmd.keyword === suggest);
+        const cmd = this.matched.find(cmd => cmd.keyword === suggest);
         if (!cmd) return ""
 
         const {anchor} = File.editor.autoComplete.state;
