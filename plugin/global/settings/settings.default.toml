@@ -1006,6 +1006,8 @@ COMMANDS = [
     { enable = true, type = "command", icon = "👕", hint = "清除样式", keyword = "ClearStyle", callback = "() => File.editor.stylize.clearStyle()" },
     { enable = true, type = "command", icon = "🧰", hint = "至顶部", keyword = "JumpTop", callback = "() => File.editor.selection.jumpTop()" },
     { enable = true, type = "command", icon = "🧰", hint = "至底部", keyword = "JumpBottom", callback = "() => File.editor.selection.jumpBottom()" },
+    { enable = true, type = "command", icon = "🧰", hint = "至行首", keyword = "JumpToLineStart", callback = "() => File.editor.selection.jumpToLineStart()" },
+    { enable = true, type = "command", icon = "🧰", hint = "至行尾", keyword = "JumpToLineEnd", callback = "() => File.editor.selection.jumpToLineEnd()" },
     { enable = true, type = "command", icon = "🧰", hint = "帮助", keyword = "Help", callback = "() => this.call()" },
     { enable = true, type = "snippet", icon = "🧩", hint = "", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
 ]

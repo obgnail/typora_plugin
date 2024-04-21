@@ -22,7 +22,8 @@
     user-select: none;
 }
 
-#plugin-custom-modal input[type="checkbox"], input[type="radio"] {
+#plugin-custom-modal input[type="checkbox"],
+#plugin-custom-modal input[type="radio"] {
     position: absolute;
     margin-left: 0 !important;
     margin-top: 0 !important;

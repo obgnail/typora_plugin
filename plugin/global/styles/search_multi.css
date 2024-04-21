@@ -67,7 +67,8 @@
     padding: 1px 3px;
 }
 
-#plugin-search-multi-input .option-btn.select, .option-btn:hover {
+#plugin-search-multi-input .option-btn.select,
+#plugin-search-multi-input .option-btn:hover {
     background: var(--active-file-bg-color);
     color: var(--active-file-text-color);
 }

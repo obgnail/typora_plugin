@@ -64,6 +64,7 @@
     color: red;
 }
 
-#plugin-commander-form input:focus, pre:focus {
+#plugin-commander-form input:focus,
+#plugin-commander-form pre:focus {
     outline: 0
 }

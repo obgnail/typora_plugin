@@ -24,11 +24,11 @@ class slashCommandsPlugin extends BasePlugin {
         const match = textBefore.match(new RegExp(this.config.TRIGGER_REGEXP));
         if (!match || !match.groups || match.groups.kw === undefined) return;
 
-        const keyword = match.groups.kw.toLowerCase();
-        this._match(keyword);
+        const token = match.groups.kw.toLowerCase();
+        this._match(token);
         if (this.matched.size === 0) return;
-        range.start -= (keyword.length + 1);
-        File.editor.autoComplete.show([], range, keyword, this.handler);
+        range.start -= (token.length + 1);
+        File.editor.autoComplete.show([], range, token, this.handler);
     }
 
     _getStrategy = () => {
@@ -83,7 +83,7 @@ class slashCommandsPlugin extends BasePlugin {
         this.matched = map;
     }
 
-    _search = keyword => Array.from(this.matched.keys())
+    _search = token => Array.from(this.matched.keys())
 
     _render = (suggest, isActive) => {
         const cmd = this.matched.get(suggest);
