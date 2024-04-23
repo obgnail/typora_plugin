@@ -271,27 +271,13 @@ USE_BUILTIN = true
 #   1. $f: 当前文件路径
 #   2. $d: 当前文件所属目录
 #   3. $m: 当前挂载目录（侧边栏的根目录）
-[[commander.BUILTIN]] # dummy
-name = ""
-shell = "cmd/bash"
-cmd = ""
-[[commander.BUILTIN]]
-name = "Explorer"
-shell = "powershell"
-hotkey = "ctrl+alt+e"
-cmd = "explorer $d"
-[[commander.BUILTIN]]
-name = "Vscode"
-shell = "cmd/bash"
-cmd = "code $f"
-[[commander.BUILTIN]]
-name = "WT"
-shell = "cmd/bash"
-cmd = "cd $d && wt"
-[[commander.BUILTIN]]
-name = "GitCommit"
-shell = "cmd/bash"
-cmd = 'cd $m && git add . && git commit -m "message"'
+BUILTIN = [
+    { name = "", shell = "cmd/bash", cmd = "" }, # dummy
+    { name = "Explorer", shell = "powershell", hotkey = "ctrl+alt+e", cmd = "explorer $d" },
+    { name = "Vscode", shell = "cmd/bash",  cmd = "code $f" },
+    { name = "WT", shell = "cmd/bash",  cmd = "cd $d && wt" },
+    { name = "GitCommit", shell = "cmd/bash",  cmd = 'cd $m && git add . && git commit -m "update"' },
+]
 
 
 ############### md_padding ###############
@@ -953,9 +939,9 @@ ENABLE = true
 NAME = "斜杠命令"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 触发显示命令列表的输入 对应的正则表达式。（若您不了解正则表达式，请勿修改此配置）
+# 什么样的用户输入触发显示命令列表（若您不了解正则表达式，请勿修改此配置）
 #  注意：keyword需要使用命名捕获组kw
-#  默认值：匹配一个字符串，该字符串以 /或\或、 开头，后面紧跟任意数量的非 /或\或、字符，最后以字符串结束。
+#  默认值：匹配一个字符串，该字符串以/或\或、开头，后面紧跟任意数量的非/或\或、字符，且该字符串前面不可有<
 TRIGGER_REGEXP = "(?<!<)[\\/、\\\\](?<kw>[^\\/、\\\\]*)$"
 # 匹配策略：
 #  - prefix: 前缀。即：用户输入的字符串必须是keyword的前缀。比如：用户输入para即可找到paragraph
@@ -1006,6 +992,8 @@ COMMANDS = [
     { enable = true, type = "command", icon = "👕", hint = "清除样式", keyword = "ClearStyle", callback = "() => File.editor.stylize.clearStyle()" },
     { enable = true, type = "command", icon = "🧰", hint = "至顶部", keyword = "JumpTop", callback = "() => File.editor.selection.jumpTop()" },
     { enable = true, type = "command", icon = "🧰", hint = "至底部", keyword = "JumpBottom", callback = "() => File.editor.selection.jumpBottom()" },
+    { enable = true, type = "command", icon = "🧰", hint = "至行首", keyword = "JumpToLineStart", callback = "() => File.editor.selection.jumpToLineStart()" },
+    { enable = true, type = "command", icon = "🧰", hint = "至行尾", keyword = "JumpToLineEnd", callback = "() => File.editor.selection.jumpToLineEnd()" },
     { enable = true, type = "command", icon = "🧰", hint = "帮助", keyword = "Help", callback = "() => this.call()" },
     { enable = true, type = "snippet", icon = "🧩", hint = "", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
 ]

@@ -916,7 +916,6 @@ class utils {
         resizeWidth = true, resizeHeight = true,
         onMouseDown = null, onMouseMove = null, onMouseUp = null
     ) => {
-        // 鼠标按下时记录当前鼠标位置和 div 的宽高
         let startX, startY, startWidth, startHeight;
         handleElement.addEventListener("mousedown", ev => {
             const {width, height} = document.defaultView.getComputedStyle(resizeElement);
@@ -931,7 +930,6 @@ class utils {
             ev.preventDefault();
         }, true);
 
-        // 鼠标移动时计算宽高差值并设置 div 的新宽高
         function mousemove(e) {
             requestAnimationFrame(() => {
                 let deltaX = e.clientX - startX;
@@ -952,7 +950,6 @@ class utils {
             })
         }
 
-        // 鼠标松开时取消事件监听
         function mouseup() {
             document.removeEventListener("mousemove", mousemove);
             document.removeEventListener("mouseup", mouseup);
@@ -1655,6 +1652,12 @@ class stateRecorder {
         this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.collect);
         this.utils.addEventListener(this.utils.eventType.fileContentLoaded, this.restore);
     }
+
+    afterProcess = () => {
+        if (this.recorders.size) return;
+        this.utils.removeEventListener(this.utils.eventType.beforeFileOpen, this.collect);
+        this.utils.removeEventListener(this.utils.eventType.fileContentLoaded, this.restore);
+    }
 }
 
 class dialog {
@@ -1809,7 +1812,7 @@ class dialog {
 
     // modal: {title: "", components: [{label: "", type: "", value: ""}]}
     modal = (modal, callback, cancelCallback) => {
-        if (modal && callback instanceof Function) {
+        if (modal) {
             this.pluginModal = modal;
             this.callback = callback;
             this.cancelCallback = cancelCallback;
@@ -2228,7 +2231,7 @@ class baseCustomPlugin extends IPlugin {
 class process {
     static optimize = async () => {
         if (!global._plugin_global_settings.PERFORMANCE_MODE) return;
-        helper.eventHub.afterProcess();
+        await Promise.all(Object.values(helper).map(async h => h.afterProcess && h.afterProcess()));
     }
 
     static loadPlugin = async fixedName => {

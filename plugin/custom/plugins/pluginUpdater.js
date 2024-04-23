@@ -47,14 +47,14 @@ class pluginUpdater extends BaseCustomPlugin {
             const openGithub = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
             let components = [{type: "p", label: "出于未知原因，更新失败，建议您稍后重试或手动更新"}];
             let callback = openGithub;
-            let cancelCallback = console.debug;
+            let cancelCallback;
 
             if (this.updaterEXE.includes("Program Files")) {
                 const disk = this.updaterEXE.split(this.utils.Package.Path.win32.sep)[0];
                 const label = "Typora 安装路径包含 Program Files，由于 Windows 的权限限制，需要您手动操作。以管理员身份打开 CMD，如下运行命令";
                 const value = `${disk} && "${this.updaterEXE}" --action=update --proxy=${this.cleanProxy(proxy)}`;
                 components = [{label, type: "input", value}];
-                callback = console.debug;
+                callback = undefined;
                 cancelCallback = openGithub;
             }
             this.modal({title: "更新失败", components}, callback, cancelCallback);
