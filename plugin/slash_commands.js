@@ -14,7 +14,16 @@ class slashCommandsPlugin extends BasePlugin {
         this.utils.addEventListener(this.utils.eventType.fileEdited, this._onEdit);
     }
 
-    call = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin?tab=readme-ov-file#slash_commands斜杠命令");
+    call = () => this._showAllCommands();
+
+    _showAllCommands = () => {
+        const getType = type => type === "command" ? "命令" : "文段";
+        const list = Array.from(this.commands.values());
+        const th = `<tr><th>关键字</th><th>类型</th><th>功能</th></tr>`;
+        const trs = list.map(({type, keyword, hint, callback}) => `<tr><td>${keyword}</td><td>${getType(type)}</td><td title="${callback}">${hint}</td></tr>`);
+        const table = `<table>${th}${trs.join("")}</table>`;
+        this.utils.modal({title: "斜杠命令", components: [{label: table, type: "p"}]});
+    }
 
     _onEdit = () => {
         if (document.activeElement.tagName === "TEXTAREA") return;
