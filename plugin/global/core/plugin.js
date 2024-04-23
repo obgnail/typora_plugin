@@ -1652,6 +1652,12 @@ class stateRecorder {
         this.utils.addEventListener(this.utils.eventType.beforeFileOpen, this.collect);
         this.utils.addEventListener(this.utils.eventType.fileContentLoaded, this.restore);
     }
+
+    afterProcess = () => {
+        if (this.recorders.size) return;
+        this.utils.removeEventListener(this.utils.eventType.beforeFileOpen, this.collect);
+        this.utils.removeEventListener(this.utils.eventType.fileContentLoaded, this.restore);
+    }
 }
 
 class dialog {
@@ -2225,7 +2231,7 @@ class baseCustomPlugin extends IPlugin {
 class process {
     static optimize = async () => {
         if (!global._plugin_global_settings.PERFORMANCE_MODE) return;
-        helper.eventHub.afterProcess();
+        await Promise.all(Object.values(helper).map(async h => h.afterProcess && h.afterProcess()));
     }
 
     static loadPlugin = async fixedName => {
