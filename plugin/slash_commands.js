@@ -99,11 +99,19 @@ class slashCommandsPlugin extends BasePlugin {
         if (!cmd) return ""
 
         const {token} = File.editor.autoComplete.state;
-        const icon = cmd.icon || ((cmd.type === "snippet") ? "🧩" : "🧰");
+        const icon = cmd.icon || ((cmd.type === "command") ? "🧰" : "🧩");
         const text = this.strategy.highlight(cmd.keyword, token);
         const innerText = icon + " " + text + (cmd.hint ? ` - ${cmd.hint}` : "");
         const className = `plugin-slash-command ${isActive ? "active" : ""}`;
         return `<li class="${className}" data-content="${suggest}">${innerText}</li>`
+    }
+
+    _evalFunction = str => {
+        const ret = eval(str);
+        if (ret instanceof Function) {
+            return (ret() || "").toString()
+        }
+        return str
     }
 
     _beforeApply = suggest => {
@@ -111,22 +119,21 @@ class slashCommandsPlugin extends BasePlugin {
         if (!cmd) return ""
 
         const {anchor} = File.editor.autoComplete.state;
-        if (cmd.type === "snippet") {
-            setTimeout(() => anchor.containerNode.normalize(), 100);
-            return cmd.callback;
-        }
-        if (cmd.type === "command") {
-            anchor.containerNode.normalize();
-            const range = File.editor.selection.getRangy();
-            const textNode = anchor.containerNode.firstChild;
-            range.setStart(textNode, anchor.start);
-            range.setEnd(textNode, anchor.end);
-            File.editor.selection.setRange(range, true);
-            File.editor.UserOp.pasteHandler(File.editor, "", true);
-            setTimeout(() => {
-                const func = eval(cmd.callback);
-                (func instanceof Function) && func();
-            }, 50);
+        switch (cmd.type) {
+            case "snippet":
+            case "gen-snp":
+                setTimeout(() => anchor.containerNode.normalize(), 100);
+                return cmd.type === "snippet" ? cmd.callback : this._evalFunction(cmd.callback);
+            case "command":
+                anchor.containerNode.normalize();
+                const range = File.editor.selection.getRangy();
+                const textNode = anchor.containerNode.firstChild;
+                range.setStart(textNode, anchor.start);
+                range.setEnd(textNode, anchor.end);
+                File.editor.selection.setRange(range, true);
+                File.editor.UserOp.pasteHandler(File.editor, "", true);
+                setTimeout(() => this._evalFunction(cmd.callback), 50);
+                break;
         }
         return ""
     }

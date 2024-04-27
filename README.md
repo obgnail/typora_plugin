@@ -16,7 +16,7 @@
 | 6    | md_padding              | 中英文混排优化                         |
 | 7    | slash_commands          | 斜杠命令                               |
 | 8    | templater               | 文件模板                               |
-| 9    | resourceOperation       | 一键清除无用图片，生成报告             |
+| 9    | resourceOperation       | 一键清除无用图片                       |
 | 10   | fence_enhance           | 一键复制代码，折叠代码                 |
 | 11   | toc                     | 在右侧生成大纲目录                     |
 | 12   | commander               | 命令行环境                             |
@@ -105,19 +105,23 @@
 
 > 此方法支持 Windows、Linux 平台。
 
-1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压。
+1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压
 
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`，推荐使用 everything 找一下）
 
-3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下。
+3. 根据文件夹 A 下是否有 `appsrc` 目录判断是否为新版本，有则新版本，无则旧版本
 
-4. 打开文件 `A/window.html`。搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>` 或者 `<script src="./appsrc/window/frame.js" defer="defer"></script>`，并在 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
+4. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下
 
-5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利。
+5. 打开文件 `A/window.html`
 
+   - 若是新版本：搜索文件内容 `<script src="./appsrc/window/frame.js" defer="defer"></script>`
 
+   - 若是旧版本：搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`
 
-> 根据文件夹 A 下是否有 `appsrc` 目录判断是否为新版本，有则新版本，无则旧版本。
+   在上述搜索内容的 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
+
+6. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
 
 |        | 新版本操作                                           | 旧版本操作                                             |
@@ -153,8 +157,8 @@ yay -S typora-plugin
 
 ### 后端
 
-1. 因为 Typora 暴露了 `reqnode` 函数（require 的别名），所以可以使用 `reqnode('path')` 导入 Node.js 的 path 库，其他内置库同理。
-2. 因为 Typora 使用了不太安全的 `executeJavaScript` 功能，所以可以用此注入 JS 代码，从而劫持后端关键对象，进而实现 electron 的后端功能注入。理论上劫持了 electron 对象，你甚至可以在 Typora 里斗地主。
+1. 因为 Typora 暴露了 `reqnode` 函数（require 的别名），所以可以使用 CommonJS 的 `reqnode('path')` 导入 Node.js 的 path 库，其他库同理。
+2. 因为 Typora 使用了 electron 不太安全的 `executeJavaScript` 功能，所以可以用此注入 JS 代码，从而劫持后端关键对象，进而实现 electron 的后端功能注入。理论上劫持了 electron 对象，你甚至可以在 Typora 里斗地主。
 
 ```javascript
 // 控制台输入下面命令:
@@ -199,7 +203,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### 如何修改插件配置？
 
-请看 [./plugin/global/settings/请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)
+目前整个项目包含 500+ 项配置，可以完整的定义各个插件的行为。这些配置全部位于 [./plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings) 目录中。修改配置的方法请阅读该目录下的 [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
 
 
 
@@ -231,8 +235,6 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
----
-
 ## 插件使用说明
 
 所有的插件都提供了四种使用方法：
@@ -244,21 +246,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
   - 在正文区域右键，在弹出的右键菜单中直接调用（详见 `right_click_menu` 插件）
   - 快捷按钮（详见 `quickButton` 插件）
 
----
 
-简单介绍一下 `右键菜单`  的注意事项：**不同光标位置调出来的菜单有所不同**。
-
-比如 `章节折叠` 功能需要光标定位到标题上，才会出现 `折叠/展开当前章节` 的功能选项。
-
-同理 `代码块增强` 功能需要光标定位到代码块中才会出现更多的功能选项。其他功能需要您自己去探索发现。
-
-| 光标位于标题中                                     | 光标位于非标题中                                   |
-| -------------------------------------------------- | -------------------------------------------------- |
-| ![right_click_menu1](assets/right_click_menu1.png) | ![right_click_menu2](assets/right_click_menu2.png) |
-
-
-
----
 
 ### window_tab：标签页管理
 
@@ -274,7 +262,9 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### search_multi：全局多关键字搜索
 
-比如搜索同时包含 `golang` 和 `install` 和 `生命周期` 三个关键字的文件。
+功能：比如搜索同时包含 `golang` 和 `install` 和 `生命周期` 三个关键字的文件。
+
+> 搜索关键字使用空格分隔，双引号包裹视为词组。eg：`golang install` 搜索同时包含 golang 和 install 的文件；`"golang install"` 搜索包含 `golang install` 的文件
 
 - `ctrl+shift+P`：打开搜索框
 - `esc`：关闭搜索框
@@ -290,7 +280,9 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### multi_highlighter：多关键字高亮
 
-搜索并高亮关键字，并提供一键定位功能（左键下一个，右键上一个）
+功能：搜索并高亮关键字，并提供一键定位功能（左键下一个，右键上一个）
+
+> 关键字使用空格分隔，双引号包裹视为词组。
 
 - `ctrl+shift+H`：打开搜索框
 - `esc`：关闭搜索框
@@ -307,9 +299,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### collapse_paragraph：章节折叠
 
-折叠 / 展开 章节下所有文本。
-
-支持折叠的标签：h1~h6。
+功能：折叠 / 展开 章节下所有文本。支持折叠的标签：h1~h6。
 
 - `ctrl+click`：折叠 / 展开【单个章节】
 - `ctrl+alt+click`：折叠 / 展开【父章节下所有同级的章节】
@@ -327,19 +317,17 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### md_padding：中英文混排优化
 
-中英文混排时，中文与英文之间、中文与数字之间添加空格。
+功能：中英文混排时，中文与英文之间、中文与数字之间添加空格。
 
-快捷键：ctrl+shift+B
+快捷键：ctrl+shift+B（原本的快捷键是 ctrl+shift+K，但是此快捷键已经被新版本 Typora 的其他功能占用了，目前已经改成 ctrl+shift+B，下面的动图懒得改了）
 
 ![md_padding](assets/md_padding.gif)
-
-> 插件本来快捷键是 ctrl+shift+K，但是已经被新版本 Typora 占用了，目前此插件的快捷键已经改成 ctrl+shift+B，上面的动图懒得改了。
 
 
 
 ### slash_commands：斜杠命令
 
-类似于 notion 的 slash command。
+功能：类似于 notion 的 slash command。
 
 支持两种类型：
 
@@ -364,7 +352,7 @@ COMMANDS = [
 
 ### templater：文件模板功能
 
-类似于 obsidian 的文件模板功能，根据模板快速创建文件。
+功能：类似于 obsidian 的文件模板功能，根据模板快速创建文件。
 
 使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 文件模板。
 
@@ -374,7 +362,9 @@ COMMANDS = [
 
 
 
-### resourceOperation：一键清除无用图片，生成报告
+### resourceOperation：一键清除无用图片
+
+功能：资源管理，清除无用图片
 
 使用方式：右键菜单 -> 常用插件 -> 自定义插件 -> 资源管理
 
@@ -388,7 +378,7 @@ COMMANDS = [
 
 ### toc：在右侧生成大纲目录
 
-Typora 侧边栏的【文件】和【大纲】不能同时显示，为了解决此问题，此插件会在右侧新增一个【大纲】。
+功能：Typora 侧边栏的【文件】和【大纲】不能同时显示，为了解决此问题，此插件会在右侧新增一个【大纲】。
 
 使用方式：
 
@@ -401,7 +391,7 @@ Typora 侧边栏的【文件】和【大纲】不能同时显示，为了解决�
 
 > 有些插件依赖于此插件，不建议禁用。
 
-功能和 total commander 的命令行一样（快捷键也一样），一个快速执行命令的工具，并提供少量交互。
+功能：和 total commander 的命令行一样（快捷键也一样），一个快速执行命令的工具，并提供少量交互。
 
 - `ctrl+G`：弹出执行框
 - `esc`：隐藏执行框
@@ -424,27 +414,18 @@ Typora 侧边栏的【文件】和【大纲】不能同时显示，为了解决�
 
 ```toml
 # 默认的内建命令
-[[commander.BUILTIN]] # dummy
-name = ""
-shell = "cmd/bash"
-cmd = ""
-[[commander.BUILTIN]]
-name = "Explorer"
-shell = "powershell"
-hotkey = "ctrl+alt+e"
-cmd = "explorer $d"
-[[commander.BUILTIN]]
-name = "Vscode"
-shell = "cmd/bash"
-cmd = "code $f"
-[[commander.BUILTIN]]
-name = "WT"
-shell = "cmd/bash"
-cmd = "cd $d && wt"
-[[commander.BUILTIN]]
-name = "GitCommit"
-shell = "cmd/bash"
-cmd = "cd $m && git add . && git commit -m \"message\""
+# 目前支持4个参数:
+#   1. name:   展示的名称（不可重复）
+#   2. shell:  cmd/bash、powershell、gitbash、wsl
+#   3. hotkey: 快捷键（可选）
+#   4. cmd:    执行的命令
+BUILTIN = [
+    { name = "", shell = "cmd/bash", cmd = "" },
+    { name = "Explorer", shell = "powershell", hotkey = "ctrl+alt+e", cmd = "explorer $d" },
+    { name = "Vscode", shell = "cmd/bash",  cmd = "code $f" },
+    { name = "WT", shell = "cmd/bash",  cmd = "cd $d && wt" },
+    { name = "GitCommit", shell = "cmd/bash",  cmd = 'cd $m && git add . && git commit -m "update"' },
+]
 ```
 
 ![commander](assets/commander.gif)
@@ -452,6 +433,8 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 
 ### mindmap：  根据文档大纲一键生成思维导图
+
+功能：根据文档大纲一键生成 mermaid 思维导图
 
 使用方式：右键菜单 -> 常用插件 ->  思维导图
 
@@ -472,7 +455,7 @@ cmd = "cd $m && git add . && git commit -m \"message\""
 
 ### toolbar：多功能搜索栏
 
-> 类似于 vscode 的 ctrl+shift+p 功能
+功能：类似于 vscode 的 ctrl+shift+p 功能
 
 使用方式：
 
@@ -550,8 +533,6 @@ LIST = [
 
 ![echats](assets/echarts.png)
 
-> 使用 eval() 解析代码块内容，请注意安全问题。
-
 
 
 ### chart：提供 chartjs 支持
@@ -628,7 +609,7 @@ icon = "\\f040"
 
 ### text_stylize：文字风格化
 
-将文字转为 html 格式，改变文字样式。
+功能：将文字转为 html 格式，改变文字样式。
 
 使用方式：右键菜单 -> 非常用插件 -> 文字风格化。
 
@@ -638,21 +619,19 @@ icon = "\\f040"
 
 ### read_only：只读模式
 
-只读模式下文档不可编辑。
+功能：只读模式下文档不可编辑。（开启后，右下角数字统计区域会出现 `ReadOnly` 字样）
 
 快捷键：ctrl+shift+R
-
-> 开启后，右下角数字统计区域会出现 `ReadOnly` 字样
 
 
 
 ### blur：模糊模式
 
-开启后，只有当前聚焦的组件可见，其余模糊。可以用于防偷窥。
+功能：开启后，只有当前聚焦的组件可见，其余模糊。可以用于防偷窥。
 
 使用方式：右键菜单 -> 非常用插件 -> 模糊模式
 
-> 此插件只能高版本 Typora 使用，暂时没有兼容低版本。
+> 注意：此插件只能高版本 Typora 使用，暂时没有兼容低版本。
 
 
 
@@ -693,7 +672,7 @@ icon = "\\f040"
 
 ### imageReviewer：图片查看器
 
-一站式图片查看，并且提供简单图片编辑。
+功能：一站式图片查看，并且提供简单图片编辑。
 
 使用方式：
 
@@ -706,7 +685,7 @@ icon = "\\f040"
 
 ### chineseSymbolAutoPairer：中文符号自动补全
 
-输入 `《 【 （ ‘ “ 「` 符号时自动补全。
+功能：输入 `《 【 （ ‘ “ 「` 符号时自动补全。
 
 自动补全的符号支持自定义：
 
@@ -726,7 +705,7 @@ auto_pair_symbols = [
 
 ### datatables：表格增强
 
-增强表格。提供搜索、过滤、分页、排序等功能。
+功能：增强表格。提供搜索、过滤、分页、排序等功能。
 
 > 使用方式：将光标定位在表格 -> 右键菜单 -> 非常用插件 ->  表格增强。
 
@@ -742,7 +721,7 @@ auto_pair_symbols = [
 
 ### resize_table：拖动调整表格大小
 
-`ctrl+鼠标拖动`：修改表格的行高列宽。
+功能：`ctrl+鼠标拖动`：修改表格的行高列宽。
 
 ![resize_table](assets/resize_table.gif)
 
@@ -750,7 +729,7 @@ auto_pair_symbols = [
 
 ### resize_image：调整图片大小
 
-`ctrl+鼠标滚轮滚动`：调整图片大小。
+功能：`ctrl+鼠标滚轮滚动`：调整图片大小。
 
 ![resize-image](assets/resize-image.gif)
 
@@ -758,21 +737,19 @@ auto_pair_symbols = [
 
 ### export_enhance：导出增强
 
-导出 html 时，将图片转为 base64，避免图片丢失。
-
-> 此插件有个配置为 `DOWNLOAD_NETWORK_IMAGE`，功能是下载网络图片并转为 base64，默认为 false。若置为 true，有可能因为网络问题导致导出超时。
+功能：导出 html 时，将图片转为 base64，避免图片丢失。
 
 
 
 ### go_top： 一键到顶
 
-在右下角添加一个一键到顶的按钮。
+功能：在右下角添加一个一键到顶的按钮。
 
 
 
 ### reopenClosedFiles：打开上次退出 Typora 时尚未关闭的标签页
 
-自动 或者 通过快捷键打开上一次退出 Typora 时尚未关闭的标签页
+功能：自动 或者 通过快捷键打开上一次退出 Typora 时尚未关闭的标签页
 
 > 此插件仅在 window_tab 启用时生效
 
@@ -780,7 +757,7 @@ auto_pair_symbols = [
 
 ### truncate_text：暂时隐藏内容，提高大文件渲染性能
 
-大文件在 Typora 的渲染性能很糟糕，用此插件暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。也可以用于防偷窥。
+功能：大文件在 Typora 的渲染性能很糟糕，用此插件暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。也可以用于防偷窥。
 
 使用方式：右键菜单 -> 非常用插件 -> 文本截断。
 
@@ -855,7 +832,7 @@ README.md\Typora Plugin 一级标题\插件使用说明 二级标题\fullPathCop
 
 ### redirectLocalRootUrl：重定向本地资源根目录
 
-如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 typora 打开文件。就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中（vault），这导致在 typora 打开后文件由于路径错误，无法访问本地资源。此插件就是为了解决此问题，重定向本地资源根目录。
+功能：如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 typora 打开文件。就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中（vault），这导致在 typora 打开后文件由于路径错误，无法访问本地资源。此插件就是为了解决此问题，重定向本地资源根目录。
 
 > 此插件默认关闭，需手动开启。
 

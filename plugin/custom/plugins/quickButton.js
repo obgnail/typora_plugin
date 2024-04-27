@@ -30,7 +30,9 @@ class quickButtonPlugin extends BaseCustomPlugin {
                     this.flashScaleButton(target);
                     const action = target.getAttribute("action");
                     const button = this.buttons.get(action);
-                    action && button && button.callback(ev, target);
+                    if (action && button) {
+                        button.callback(ev, target);
+                    }
                 }
             })
             this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.toggle);
@@ -112,7 +114,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
         }
     }
 
-    flashScaleButton = (button, scale = 0.9, timeout = 200) => {
+    flashScaleButton = (button, scale = 0.9, timeout = 80) => {
         button.style.transform = `scale(${scale})`;
         setTimeout(() => button.style.removeProperty("transform"), timeout);
     }
