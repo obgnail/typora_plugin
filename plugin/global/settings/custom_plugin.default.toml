@@ -747,6 +747,12 @@ hide = false
 order = 1
 # 插件配置
 [resourceOperation.config]
+# 弹窗位于页面从左往右的5%位置
+modal_left_percent = 5
+# 弹窗占据页面的90%宽度
+modal_width_percent = 90
+# 弹窗占据页面的70%高度
+modal_height_percent = 70
 # 本插件是通过后缀名来判断是否是资源的
 # 什么后缀判定为资源
 resource_suffix = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".webm", ".bmp", ".mp3", ".mp4", ".ogg", ".image", ".jfif", ".gif!large"]

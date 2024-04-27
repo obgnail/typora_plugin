@@ -484,12 +484,12 @@ LOCALE_HIGHT_RATIO = 0.2
 ALLOW_ICON_WRAP = true
 # 当用户编辑文档，导致markmap更新图形时，新markmap的图形大小是否重新适配窗口
 AUTO_FIT_WHEN_UPDATE = true
-# 初始化时，位于页面从左往右的17%位置
-LEFT_PERCENT_WHEN_INIT = 17
-# 初始化时，占据页面的66%宽度
-WIDTH_PERCENT_WHEN_INIT = 66
-# 初始化时，占据页面的33%高度
-HEIGHT_PERCENT_WHEN_INIT = 33
+# 初始化时，弹窗位于页面从左往右的5%位置
+LEFT_PERCENT_WHEN_INIT = 5
+# 初始化时，弹窗占据页面的90%宽度
+WIDTH_PERCENT_WHEN_INIT = 90
+# 初始化时，弹窗占据页面的35%高度
+HEIGHT_PERCENT_WHEN_INIT = 35
 # 当pin到页面顶部时，占据页面的30%高度
 HEIGHT_PRECENT_WHEN_PIN_UP = 30
 # 当pin到页面右侧时，占据页面的50%宽度

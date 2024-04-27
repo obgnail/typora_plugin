@@ -105,13 +105,14 @@ class resourceOperation extends BaseCustomPlugin {
         this.showModal();
     }
 
-    initModalRect = () => {
+    initModalRect = (resetLeft = true) => {
         const {left, width, height} = document.querySelector("content").getBoundingClientRect();
-        Object.assign(this.entities.modal.style, {
-            left: `${left + width * 0.1}px`,
-            width: `${width * 0.8}px`,
-            height: `${height * 0.7}px`
-        });
+        const {modal_left_percent: l, modal_width_percent: w, modal_height_percent: h} = this.config;
+        const style = {width: `${width * w / 100}px`, height: `${height * h / 100}px`};
+        if (resetLeft) {
+            style.left = `${left + width * l / 100}px`;
+        }
+        Object.assign(this.entities.modal.style, style);
     }
 
     showModal = () => {
@@ -142,7 +143,7 @@ class resourceOperation extends BaseCustomPlugin {
                      <tbody>${Array.from(this.nonExistInFolder, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td></tr>`).join("")}</tbody>
                 </table>
                 
-                <div class="plugin-resource-operation-message">插件配置</div>
+                <div class="plugin-resource-operation-message">配置</div>
                 <textarea rows="10" readonly>${JSON.stringify(output, replacer, "\t")}</textarea>
             `
         }
@@ -166,7 +167,7 @@ class resourceOperation extends BaseCustomPlugin {
         const icon = document.querySelector('.plugin-resource-operation-icon-group [action="toggleZoom"]');
         const needExpand = force === false || icon.classList.contains("ion-plus-round");
         if (needExpand) {
-            this.initModalRect();
+            this.initModalRect(false);
         } else {
             const {height} = this.entities.iconGroup.getBoundingClientRect();
             this.entities.modal.style.height = height + 4 + "px";
@@ -179,10 +180,11 @@ class resourceOperation extends BaseCustomPlugin {
         const icon = document.querySelector('.plugin-resource-operation-icon-group [action="togglePreview"]');
         const wantClose = force === false || icon.classList.contains("ion-eye");
         const func = wantClose ? "off" : "on";
+        const className = ".plugin-resource-operation-src";
         this.entities.$wrap
-            [func]("mouseover", ".plugin-resource-operation-src", this._show)
-            [func]("mouseout", ".plugin-resource-operation-src", this._hide)
-            [func]("mousemove", ".plugin-resource-operation-src", this._show);
+            [func]("mouseover", className, this._show)
+            [func]("mouseout", className, this._hide)
+            [func]("mousemove", className, this._show);
         icon.classList.toggle("ion-eye-disabled", wantClose);
         icon.classList.toggle("ion-eye", !wantClose);
     }
