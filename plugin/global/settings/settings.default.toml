@@ -274,9 +274,9 @@ USE_BUILTIN = true
 BUILTIN = [
     { name = "", shell = "cmd/bash", cmd = "" }, # dummy
     { name = "Explorer", shell = "powershell", hotkey = "ctrl+alt+e", cmd = "explorer $d" },
-    { name = "Vscode", shell = "cmd/bash",  cmd = "code $f" },
-    { name = "WT", shell = "cmd/bash",  cmd = "cd $d && wt" },
-    { name = "GitCommit", shell = "cmd/bash",  cmd = 'cd $m && git add . && git commit -m "update"' },
+    { name = "Vscode", shell = "cmd/bash", cmd = "code $f" },
+    { name = "WT", shell = "cmd/bash", cmd = "cd $d && wt" },
+    { name = "GitCommit", shell = "cmd/bash", cmd = 'cd $m && git add . && git commit -m "update"' },
 ]
 
 
@@ -950,11 +950,11 @@ TRIGGER_REGEXP = "(?<!<)[\\/、\\\\](?<kw>[^\\/、\\\\]*)$"
 MATCH_STRATEGY = "abbr"
 # 命令列表
 #  - enable:    是否启用
-#  - type:      snippet/command。前者表示在调用时插入文字片段，后者表示在调用时执行逻辑命令
+#  - type:      snippet/command/gen-snp（snippet: 在调用时插入文字片段；command: 在调用时执行逻辑命令；gen-snp: 在调用时执行函数，返回待插入的文字片段）
 #  - icon(可选): 使用emoji作为图标
 #  - hint(可选): 提示信息
 #  - keyword:   关键词，必须唯一
-#  - callback:  若type=snippet，则填入需要插入的文字片段，若type=command，则填入回调函数的字符串
+#  - callback:  若type=snippet，则填入需要插入的文字片段；若type=command，则填入回调函数；若type=gen-snp，则填入返回字符串的函数
 COMMANDS = [
     { enable = true, type = "command", icon = "📝", hint = "一级标题", keyword = "H1", callback = "() => File.editor.stylize.changeBlock('header1', undefined, true)" },
     { enable = true, type = "command", icon = "📝", hint = "二级标题", keyword = "H2", callback = "() => File.editor.stylize.changeBlock('header2', undefined, true)" },
@@ -995,6 +995,11 @@ COMMANDS = [
     { enable = true, type = "command", icon = "🧰", hint = "至行首", keyword = "JumpToLineStart", callback = "() => File.editor.selection.jumpToLineStart()" },
     { enable = true, type = "command", icon = "🧰", hint = "至行尾", keyword = "JumpToLineEnd", callback = "() => File.editor.selection.jumpToLineEnd()" },
     { enable = true, type = "command", icon = "🧰", hint = "帮助", keyword = "Help", callback = "() => this.call()" },
+    { enable = true, type = "gen-snp", icon = "🧩", hint = "日期时间", keyword = "Datetime", callback = "() => (new Date()).toLocaleString('chinese', {hour12: false})" },
+    { enable = true, type = "gen-snp", icon = "🧩", hint = "日期", keyword = "Date", callback = "() => {let day = new Date(); return `${day.getFullYear()}/${day.getMonth() + 1}/${day.getDate()}`}" },
+    { enable = true, type = "gen-snp", icon = "🧩", hint = "时间", keyword = "Time", callback = "() => {let day = new Date(); return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`}" },
+    { enable = true, type = "gen-snp", icon = "🧩", hint = "时间戳", keyword = "Timestamp", callback = "() => (new Date()).getTime().toString()" },
+    { enable = true, type = "gen-snp", icon = "🧩", hint = "星期", keyword = "Week", callback = "() => '星期' + '日一二三四五六'.charAt((new Date()).getDay())" },
     { enable = true, type = "snippet", icon = "🧩", hint = "", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
 ]
 
