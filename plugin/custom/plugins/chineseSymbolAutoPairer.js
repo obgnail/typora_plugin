@@ -76,8 +76,9 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         File.editor.undo.addSnap(node.cid, this.undoSnapType.REPLACE);
     }
 
-    skipSymbol = inputSymbol => {
+    _getRange = () => {
         const {node, bookmark} = this.utils.getRangy();
+        if (!node) return;
 
         File.editor.undo.endSnap();
         File.editor.undo.addSnap(node.cid, this.undoSnapType.NONE);
@@ -85,6 +86,12 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         if (ele.hasClass("md-fences")) return;
 
         const rawText = ele.rawText();
+        return {rawText, bookmark};
+    }
+
+    skipSymbol = inputSymbol => {
+        const {rawText, bookmark} = this._getRange();
+        if (!rawText || !bookmark) return;
         if (inputSymbol === rawText.substring(bookmark.start, bookmark.start + 1)) {
             bookmark.end += 1;
             this.deleteContent(bookmark);
@@ -92,14 +99,8 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     }
 
     deletePair = () => {
-        const {node, bookmark} = this.utils.getRangy();
-
-        File.editor.undo.endSnap();
-        File.editor.undo.addSnap(node.cid, this.undoSnapType.NONE);
-        const ele = File.editor.findElemById(node.cid);
-        if (ele.hasClass("md-fences")) return;
-
-        const rawText = ele.rawText();
+        const {rawText, bookmark} = this._getRange();
+        if (!rawText || !bookmark) return;
         const pair = rawText.substring(bookmark.start - 1, bookmark.start + 1);
         if (pair.length === 2) {
             const [left, right] = pair;
