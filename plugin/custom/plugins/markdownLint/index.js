@@ -68,12 +68,12 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.initWorker();
         this.initEventHandler();
         this.onLineClick();
-        this.registerHotkey();
+        this.registerFixLintHotkey();
     }
 
     initWorker = () => {
         this.worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linterWorker.js"));
-        this.worker.onmessage = ({data: content}) => {
+        this.worker.onmessage = ({data: content = ""}) => {
             if (this.entities.button) {
                 this.entities.button.style.backgroundColor = content.length ? this.config.error_color : this.config.pass_color;
             }
@@ -133,10 +133,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     updateLinter = () => this.worker.postMessage({action: "lint", payload: this.utils.getFilePath()});
-
-    registerHotkey = () => {
-        this.utils.registerSingleHotkey(this.config.hotkey_fix_lint_error, this.fixLintError);
-    }
+    registerFixLintHotkey = () => this.utils.registerSingleHotkey(this.config.hotkey_fix_lint_error, this.fixLintError);
 
     callback = async anchorNode => {
         this.utils.toggleVisible(this.entities.modal);
