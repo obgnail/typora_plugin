@@ -48,6 +48,10 @@
     margin-left: 1.5em;
 }
 
+.plugin-toc .toc-node {
+    user-select: none;
+}
+
 .plugin-toc .toc-node:hover {
     cursor: pointer;
     background-color: var(--item-hover-bg-color);
