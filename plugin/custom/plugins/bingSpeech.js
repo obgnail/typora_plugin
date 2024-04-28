@@ -71,12 +71,14 @@ class bingSpeech extends BaseCustomPlugin {
             unfriendly: "冷淡无情",
             whispering: "柔和",
         }
+        const operationMap = {speech: "朗读", download: "下载"};
         const styleDegreeMap = {"0": "低", "1": "中", "2": "高"};
         const {from_language, voice, rate, pitch, style, style_degree} = this.config;
         const num2Str = num => (parseInt(num) / 100).toFixed(1);
         const str2Num = str => (str.startsWith("-") ? "" : "+") + Math.floor(parseFloat(str) * 100) + "%";
         const components = [
             {label: "⚠️ 本插件的功能完全依赖于外部环境，因此不能保证成功", type: "p"},
+            {label: "操作", type: "select", selected: "speech", map: operationMap},
             {label: "语言", type: "input", value: from_language},
             {label: "语音", type: "select", selected: voice, list: voiceList},
             {label: "语气", type: "select", selected: style, map: styleMap},
@@ -85,10 +87,20 @@ class bingSpeech extends BaseCustomPlugin {
             {label: "语调", type: "range", min: -1.0, max: 1.0, step: 0.1, value: num2Str(pitch)},
         ]
         this.utils.modal({title: "必应朗读", components}, async components => {
-            const [_, l, v, s, d, r, p] = components.map(c => c.submit);
+            const [_, o, l, v, s, d, r, p] = components.map(c => c.submit);
             const cfg = {from_language: l, voice: v, style: s, style_degree: d, rate: str2Num(r), pitch: str2Num(p)};
             await this.utils.showProcessingHint();
-            await this.speech(null, cfg);
+            try {
+                if (o === "speech") {
+                    await this.speech(null, cfg);
+                } else if (o === "download") {
+                    const filepath = await this.download(null, null, cfg);
+                    this.utils.showInFinder(filepath);
+                }
+            } catch (e) {
+                alert(e.toString());
+            }
+            this.utils.hideProcessingHint();
         })
     }
 
@@ -113,17 +125,20 @@ class bingSpeech extends BaseCustomPlugin {
     }
 
     // 生成的文件是mp3格式
-    // 为了防止有人干坏事，此方法并不暴露到产品中
     download = async (filepath, text, config) => {
         text = this.getText(text);
         if (!text) {
             console.debug("has not text");
             return
         }
+        if (!filepath) {
+            filepath = this.utils.Package.Path.join(this.utils.tempFolder, this.utils.randomString() + ".mp3");
+        }
         const chunks = [];
         await this.crawl(text, config, binary => chunks.push(binary));
         await this.utils.Package.Fs.promises.writeFile(filepath, Buffer.concat(chunks));
         console.debug("done");
+        return filepath
     }
 
     getText = text => {
@@ -138,12 +153,18 @@ class bingSpeech extends BaseCustomPlugin {
     }
 
     translate = async (text, fromLang, toLang) => {
+        text = this.getText(text);
+        if (!text) {
+            console.debug("has not text");
+            return
+        }
         console.debug("start translate");
         const config = (fromLang && toLang)
             ? Object.assign({...this.config}, {from_language: fromLang, to_language: toLang})
             : this.config
         const spider = new bingSpeechSpider(this);
-        return await spider.translate(config, text)
+        const resp = await spider.translate(config, text);
+        return resp[0].translations.map(t => t.text).join("\n")
     }
 
     crawl = async (text, config, iter) => {
