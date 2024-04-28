@@ -199,7 +199,7 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图表重新适配窗口"></div>
                     <div class="plugin-markmap-icon ion-network" action="setExpandLevel" ty-hint="展开分支等级"></div>
-                    <div class="plugin-markmap-icon ion-android-hand" action="penetrateMouse" ty-hint="鼠标穿透"></div>
+                    <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="鼠标穿透"></div>
                     <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="下载"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
@@ -280,7 +280,7 @@ class tocMarkmap {
         const options = this.markmap.options;
         options.zoom = !options.zoom;
         options.pan = !options.pan;
-        await this.redrawToc(options);
+        // await this.redrawToc(options);
         this.entities.modal.classList.toggle("penetrateMouse", !options.zoom && !options.pan);
     }
 
