@@ -196,7 +196,7 @@ class tocMarkmap {
                 <div class="plugin-markmap-header">
                     <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
                     <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="全屏"></div>
-                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+drag也可以移动）"></div>
+                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+鼠标拖拽也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图表重新适配窗口"></div>
                     <div class="plugin-markmap-icon ion-network" action="setExpandLevel" ty-hint="展开分支等级"></div>
                     <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="鼠标穿透"></div>
@@ -498,12 +498,12 @@ class tocMarkmap {
     }
 
     onToggleSidebar = () => {
-        this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, this.utils.debounce(() => {
+        const resetPosition = () => {
             if (!this.markmap) return;
-            if (this.entities.fullScreen.getAttribute("action") === "shrink") {
+            const needResetFullscreen = this.entities.fullScreen.getAttribute("action") === "shrink";
+            if (needResetFullscreen) {
                 this.shrink();
                 this.expand();
-                return;
             }
             const func = ["pinUp", "pinRight"].find(func => this.entities.modal.classList.contains(func));
             if (!func) return
@@ -511,7 +511,12 @@ class tocMarkmap {
                 await this[func]();
                 await this[func]();
             })()
-        }, 400))
+        }
+        const hasTransition = window.getComputedStyle(this.entities.content).transition !== "all 0s ease 0s";
+        const callback = hasTransition
+            ? () => this.entities.content.addEventListener("transitionend", resetPosition, {once: true})
+            : this.utils.debounce(resetPosition, 400)
+        this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, callback);
     }
 
     onContextMenu = () => {
