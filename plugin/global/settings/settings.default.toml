@@ -1036,7 +1036,7 @@ NAME = "非常用插件"
 LIST = [
     "window_tab",
     "fence_enhance",
-    "markmap",
+    "mindmap",
     "auto_number",
     "datatables",
     "resize_image",
@@ -1048,7 +1048,6 @@ LIST = [
     "right_click_menu",
     "help",
     "---",
-    "blur",
     "go_top",
     "text_stylize",
     "toolbar",
@@ -1064,7 +1063,7 @@ LIST = [
 NAME = "常用插件"
 LIST = [
     "commander",
-    "mindmap",
+    "markmap",
     "collapse_paragraph",
     "custom",
     "---",
@@ -1072,6 +1071,7 @@ LIST = [
     "multi_highlighter",
     "outline",
     "md_padding",
+    "blur",
     "read_only",
 ]
 

@@ -71,7 +71,7 @@
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
-> 如果各位有其他的需求，或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果能给我颗 star ⭐ 就更好了  : )
+> 如果各位有其他的需求，或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果能给我颗 star ⭐ 就更好了 :)
 
 
 
@@ -109,7 +109,7 @@
 
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`，推荐使用 everything 找一下）
 
-3. 根据文件夹 A 下是否有 `appsrc` 目录判断是否为新版本，有则新版本，无则旧版本
+3. 根据文件夹 A 下是否含有 `appsrc` 目录判断 Typora 是否为新版本，有则新版本，无则旧版本
 
 4. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下
 
@@ -119,15 +119,15 @@
 
    - 若是旧版本：搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`
 
-   在上述搜索内容的 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存。
+   在上述搜索内容的 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`。保存文件。
 
 6. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
 
-|        | 新版本操作                                           | 旧版本操作                                             |
+|        | 新版本                                               | 旧版本                                                 |
 | ------ | ---------------------------------------------------- | ------------------------------------------------------ |
-| 步骤 3 | ![new_typora_dir](assets/new_typora_dir.png)         | ![where_is_windowhtml](assets/where_is_windowhtml.png) |
-| 步骤 4 | ![new_typora_framejs](assets/new_typora_framejs.png) | ![where_is_framejs](assets/where_is_framejs.png)       |
+| 步骤 4 | ![new_typora_dir](assets/new_typora_dir.png)         | ![where_is_windowhtml](assets/where_is_windowhtml.png) |
+| 步骤 5 | ![new_typora_framejs](assets/new_typora_framejs.png) | ![where_is_framejs](assets/where_is_framejs.png)       |
 
 > 虽然操作简单，还请务必对照上图谨慎操作。如果修改完 Typora 白屏了，很可能是你修改的时候疏忽了。
 
@@ -329,11 +329,6 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 功能：类似于 notion 的 slash command。
 
-支持两种类型：
-
-- snippet：插入文字片段（如下图的 `\snippet`）
-- command：执行逻辑命令（如下图的 `\jumpbottom`，`\h2`）
-
 支持用户自定义命令，请前往配置文件修改：
 
 ```toml
@@ -432,7 +427,7 @@ BUILTIN = [
 
 
 
-### mindmap：  根据文档大纲一键生成思维导图
+### mindmap：根据文档大纲一键生成思维导图
 
 功能：根据文档大纲一键生成 mermaid 思维导图
 
