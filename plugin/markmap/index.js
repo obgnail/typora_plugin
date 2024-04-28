@@ -498,15 +498,20 @@ class tocMarkmap {
     }
 
     onToggleSidebar = () => {
-        this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, () => {
-            if (!this.markmap) return
+        this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, this.utils.debounce(() => {
+            if (!this.markmap) return;
+            if (this.entities.fullScreen.getAttribute("action") === "shrink") {
+                this.shrink();
+                this.expand();
+                return;
+            }
             const func = ["pinUp", "pinRight"].find(func => this.entities.modal.classList.contains(func));
             if (!func) return
-            setTimeout(async () => {
+            (async () => {
                 await this[func]();
                 await this[func]();
-            }, 300)
-        })
+            })()
+        }, 400))
     }
 
     onContextMenu = () => {

@@ -11,8 +11,8 @@
 ############### kanban ###############
 [kanban]
 # 右键菜单中展示的名称
-name = "插入kanban"
-# 是否启用此自定义插件
+name = "Kanban"
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -72,8 +72,8 @@ use strict
 ############### chat ###############
 [chat]
 # 右键菜单中展示的名称
-name = "插入chat"
-# 是否启用此自定义插件
+name = "Chat"
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -126,8 +126,8 @@ nickname1: 支持使用 yaml 格式的 front matter 修改配置（就和 markdo
 ############### timeline ###############
 [timeline]
 # 右键菜单中展示的名称
-name = "插入timeline"
-# 是否启用此自定义插件
+name = "Timeline"
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -188,8 +188,8 @@ TEMPLATE = """```timeline
 ############### echarts ###############
 [echarts]
 # 右键菜单中展示的名称
-name = "插入echarts"
-# 是否启用此自定义插件
+name = "Echarts"
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -245,8 +245,8 @@ option = {
 ############### chart ###############
 [chart]
 # 右键菜单中展示的名称
-name = "插入chart"
-# 是否启用此自定义插件
+name = "Chart"
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -308,8 +308,8 @@ config = {
 ############### calendar ###############
 [calendar]
 # 右键菜单中展示的名称
-name = "插入calendar"
-# 是否启用此自定义插件
+name = "Calendar"
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -354,8 +354,8 @@ option = {
 ############### abc ###############
 [abc]
 # 右键菜单中展示的名称
-name = "插入abc"
-# 是否启用此自定义插件
+name = "ABC"
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -393,8 +393,8 @@ G2 G2|A2 A2|B2 B2|c3 z|G2 G2|A2 A2|B2 G2|c3 z||
 ############### callouts ###############
 [callouts]
 # 右键菜单中展示的名称
-name = "插入callouts"
-# 是否启用此自定义插件
+name = "Callouts"
+# 是否启用此二级插件
 # typora1.8版本已经原生支持callouts，但是：
 #   1. 其仅支持五种类型的callouts，
 #   2. 其不支持fold callouts（如： > [!NOTE]-）。
@@ -455,8 +455,8 @@ list = [
 ############### marp ###############
 [marp]
 # 右键菜单中展示的名称
-name = "插入marp"
-# 是否启用此自定义插件
+name = "Marp"
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -499,7 +499,7 @@ Split pages by horizontal ruler (`---`). It's very simple! :satisfied:
 [darkMode]
 # 右键菜单中展示的名称
 name = "夜间模式"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -517,7 +517,7 @@ default_dark_mode = false
 [noImageMode]
 # 右键菜单中展示的名称
 name = "无图模式"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -541,7 +541,7 @@ transition_delay = 0
 [fullPathCopy]
 # 右键菜单中展示的名称
 name = "复制标题路径"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -565,7 +565,7 @@ full_file_path = false
 [extractRangeToNewFile]
 # 右键菜单中展示的名称
 name = "提取选区文字到新文件"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -587,7 +587,7 @@ delete_content = false
 [templater]
 # 右键菜单中展示的名称
 name = "文件模板"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -683,7 +683,7 @@ tags:
 [chineseSymbolAutoPairer]
 # 右键菜单中展示的名称
 name = "中文符号自动补全"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 # 注意：此插件受Typora本身配置【匹配括号和引号】的影响，如果此配置为false，那么此插件自动禁用
 enable = true
 # 是否在右键菜单中隐藏
@@ -717,7 +717,7 @@ auto_pair_symbols = [
 [toc]
 # 右键菜单中展示的名称
 name = "大纲目录"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -739,7 +739,7 @@ default_show_toc = false
 [resourceOperation]
 # 右键菜单中展示的名称
 name = "资源管理"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -747,6 +747,12 @@ hide = false
 order = 1
 # 插件配置
 [resourceOperation.config]
+# 弹窗位于页面从左往右的5%位置
+modal_left_percent = 5
+# 弹窗占据页面的90%宽度
+modal_width_percent = 90
+# 弹窗占据页面的70%高度
+modal_height_percent = 70
 # 本插件是通过后缀名来判断是否是资源的
 # 什么后缀判定为资源
 resource_suffix = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".webm", ".bmp", ".mp3", ".mp4", ".ogg", ".image", ".jfif", ".gif!large"]
@@ -766,7 +772,7 @@ auto_open = true
 [scrollBookmarker]
 # 右键菜单中展示的名称
 name = "书签管理器"
-# 是否启用此自定义插件（此插件仅在window_tab插件启用时生效）
+# 是否启用此二级插件（此插件仅在window_tab插件启用时生效）
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -788,7 +794,7 @@ auto_popup_modal = true
 [bingSpeech]
 # 右键菜单中展示的名称
 name = "必应朗读"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 #  1.实现原理：采用爬虫技术，盗取必应翻译的播放语音功能
 #  2.功能完全依赖于外部环境，因此不能保证成功
 #  3.开发者一时兴起做的，仅作娱乐使用
@@ -840,7 +846,7 @@ group_lines = 3
 [imageReviewer]
 # 右键菜单中展示的名称
 name = "图片查看器"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -988,7 +994,7 @@ hotkey_function = [
 [markdownLint]
 # 右键菜单中展示的名称
 name = "md格式规范检测"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -1043,7 +1049,7 @@ try_fix_lint_error = ["MD031", "MD047"]
 [reopenClosedFiles]
 # 右键菜单中展示的名称
 name = "打开上次退出时尚未关闭的标签页"
-# 是否启用此自定义插件（此插件仅在window_tab插件启用时生效）
+# 是否启用此二级插件（此插件仅在window_tab插件启用时生效）
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -1062,7 +1068,7 @@ auto_reopen_when_init = false
 [hotkeyHub]
 # 右键菜单中展示的名称
 name = "快捷键中心"
-# 是否启用此自定义插件（此插件仅对有javascript基础的用户开放）
+# 是否启用此二级插件（此插件仅对有javascript基础的用户开放）
 # 若要修改hotkeyHub的配置请前往同目录下的hoteykey.user.toml
 # 注意：若置为false，那么hoteykey.toml的配置将失效
 enable = true
@@ -1076,7 +1082,7 @@ order = 1
 [quickButton]
 # 右键菜单中展示的名称
 name = "快速按钮"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -1110,7 +1116,7 @@ hide_button_hint = false
 #   bgColor(可选): 图标背景色。默认跟随当前主题的配色方案
 #   hint:         提示信息
 #   callback:     回调函数。采用pluginName.MethodName的形式（功能就像hotkey.default.toml中的plugin参数和function参数的合体）
-#                     MethodName请通过阅读源码查找。如果您不懂代码，但还是想添加按钮，有个碰运气技巧：在【右键菜单->常用插件->自定义插件下的插件】基本都是XXX.callback，其余插件基本都是XXX.call
+#                     MethodName请通过阅读源码查找。如果您不懂代码，但还是想添加按钮，有个碰运气技巧：在【右键菜单->常用插件->二级插件】的插件基本都是XXX.callback，其余插件基本都是XXX.call
 #   evil(危险):    自定义回调函数。功能同hotkey.default.toml中的evil参数（它能用的，这里也能用）。这里的文本内容会被eval()。如果设置此参数，callback参数会失效
 buttons = [
     { disable = false, coordinate = [0, 0], hint = "直达底部", size = "28px", icon = "fa fa-angle-down", callback = "go_top.goBottom" },
@@ -1142,7 +1148,7 @@ buttons = [
 [autoTrailingWhiteSpace]
 # 右键菜单中展示的名称
 name = "为文档添加结尾空格"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 enable = false
 # 是否在右键菜单中隐藏
 hide = false
@@ -1163,7 +1169,7 @@ hotkey = ""
 [redirectLocalRootUrl]
 # 右键菜单中展示的名称
 name = "重定向本地资源根目录"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 # 注意：【文件的front matter的typora-root-url参数】的优先级大于【此插件】。也就是说：若文件的front matter显式设置了typora-root-url，那么此插件在该文件失效
 enable = false
 # 是否在右键菜单中隐藏
@@ -1182,7 +1188,7 @@ filter_regexp = ""
 [openInTotalCommander]
 # 右键菜单中展示的名称
 name = "TC打开"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 # 若要使用此插件，请先修改tc_path选项
 enable = false
 # 是否在右键菜单中隐藏
@@ -1207,7 +1213,7 @@ tc_args = '/O /T /P=L  /L="$f"'
 [pluginUpdater]
 # 右键菜单中展示的名称
 name = "升级插件"
-# 是否启用此自定义插件
+# 是否启用此二级插件
 # 注意：此插件目前仅支持windows系统，若为其他系统，则此插件失效
 # 注意：此插件依赖于commander插件，若禁用了commander，则此插件失效
 enable = true

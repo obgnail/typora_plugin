@@ -1,5 +1,6 @@
 .md-diagram-panel .plugin-fence-markmap-svg {
     line-height: initial !important;
+    user-select: none;
 }
 
 #plugin-markmap {

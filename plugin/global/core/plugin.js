@@ -1136,17 +1136,9 @@ class diagramParser {
     }
 
     getErrorMessage = error => {
-        let msg = "";
-        if (error.errorLine) {
-            msg += `第 ${error.errorLine} 行发生错误。`;
-        }
-        if (error.reason) {
-            msg += `错误原因：${error.reason}`;
-        }
-        if (!msg) {
-            msg = error.toString();
-        }
-        return msg
+        let msg = error.errorLine ? `第 ${error.errorLine} 行发生错误。` : '';
+        msg += error.reason ? `错误原因：${error.reason}` : '';
+        return msg || error.toString();
     }
 
     whenCantDraw = async (cid, lang, $pre, content, error) => {
@@ -1162,14 +1154,12 @@ class diagramParser {
     }
 
     noticeRollback = async cid => {
-        for (const lang of this.parsers.keys()) {
-            const parser = this.parsers.get(lang);
-            if (parser.cancelFunc) {
-                try {
-                    parser.cancelFunc(cid, lang);
-                } catch (e) {
-                    console.error("call cancel func error:", e);
-                }
+        for (const [lang, parser] of this.parsers.entries()) {
+            if (!parser.cancelFunc) continue;
+            try {
+                parser.cancelFunc(cid, lang);
+            } catch (e) {
+                console.error("call cancel func error:", e);
             }
         }
     }
@@ -1214,7 +1204,7 @@ class diagramParser {
             $pre.removeClass("md-fences-advanced md-fences-interactive");
             await this.noticeRollback(cid);
         } else {
-            // 是Diagram类型，但是不是自定义类型，不展示增强按钮，直接返回即可
+            // 是Diagram类型，但不是自定义类型，不展示增强按钮，直接返回即可
             $pre.children(".fence-enhance").hide();
             // 是Diagram类型，也是自定义类型，调用其回调函数
             const parser = this.parsers.get(lang);
@@ -1914,7 +1904,6 @@ class styleTemplater {
         return style ? style.innerHTML : undefined;
     }
 
-    // 注册公共样式
     process = async () => await this.register("plugin-common");
 }
 
@@ -1926,14 +1915,6 @@ class htmlTemplater {
         this.defaultElement = "div"
     }
 
-    // const element = {
-    //     id: "plugin-go-top",
-    //     children: [
-    //         {class_: "action-item", action: "go-top", children: [{ele: "i", class_: "fa fa-angle-up"}]},
-    //         {class_: "action-item", action: "go-bottom", children: [{ele: "i", class_: "fa fa-angle-down"}]},
-    //     ]
-    // }
-    // const ele = this.create(element);
     create = element => {
         if (!element) return;
         if (element instanceof Element) return element
@@ -1979,7 +1960,7 @@ class htmlTemplater {
         this.utils.insertElement(`
             <span class="plugin-wait-mask-wrapper plugin-common-hidden">
                 <span class="plugin-wait-mask">
-                    <span class="plugin-wait-label">processing</span>
+                    <span class="plugin-wait-label">Processing</span>
                     <span class="truncate-line"></span><span class="truncate-line"></span><span class="truncate-line"></span>
                 </span>
             </span>
