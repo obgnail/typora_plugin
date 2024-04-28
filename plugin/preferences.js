@@ -53,13 +53,12 @@ class preferencesPlugin extends BasePlugin {
         const plugins = Object.entries(settings).map(displayFunc);
         const customPlugins = Object.entries(customSettings).map(displayFunc);
         const components = [
-            {label: "🛡️ 为保护用户，此处不允许启停部分插件，如需请前往配置文件", type: "p"},
+            {label: "🛡️ 为保护用户，部分插件无法在此处启停，如需请修改配置文件", type: "p"},
             {label: "", legend: "一级插件", type: "checkbox", list: plugins},
-            {label: "❌ 若停用一级插件「自定义插件」，所有二级插件都将停用", type: "p"},
             {label: "", legend: "二级插件", type: "checkbox", list: customPlugins},
         ];
         const modal = {title: "启停插件", components};
-        this.utils.modal(modal, async ([_1, {submit: enablePlugins}, _2, {submit: enableCustomPlugins}]) => {
+        this.utils.modal(modal, async ([_, {submit: enablePlugins}, {submit: enableCustomPlugins}]) => {
             await this.togglePlugin(enablePlugins, enableCustomPlugins, true);
         });
     }

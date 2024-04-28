@@ -1,6 +1,6 @@
 ## 开放平台
 
-> 约定：基础插件的 fixedName 统一使用蛇形，如 `window_tab`。自定义插件的 fixedName 统一使用小驼峰，如 `fullPathCopy`。
+> 约定：基础插件的 fixedName 统一使用蛇形，如 `window_tab`。二级插件的 fixedName 统一使用小驼峰，如 `fullPathCopy`。
 
 
 
@@ -538,7 +538,7 @@ class fileCounterPlugin extends BasePlugin {
 
 
 
-### 自定义插件
+### 二级插件
 
 本小节下的所有插件可以使用 `this.utils.getPlugin(XXX)` 获取到插件实例，之后就可以调用其 API。
 
