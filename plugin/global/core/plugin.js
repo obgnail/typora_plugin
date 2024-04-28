@@ -546,11 +546,14 @@ class utils {
     }
 
     static editCurrentFile = async (editFileFunc, reloadTypora = true) => {
+        const bak = File.presentedItemChanged;
+        File.presentedItemChanged = () => undefined;
         const filepath = this.getFilePath();
         const content = await this.Package.Fs.promises.readFile(filepath, "utf-8");
         const replacedContent = await editFileFunc(content);
         await this.Package.Fs.promises.writeFile(filepath, replacedContent);
         reloadTypora && File.reloadContent(replacedContent, {fromDiskChange: false});
+        setTimeout(() => File.presentedItemChanged = bak, 1500);
     }
 
     static insertStyle = (id, css) => {
