@@ -216,8 +216,10 @@ class tocMarkmap {
 
     init = () => {
         this.markmap = null;
-        this.colorGenerator = null;
-        this.colorScheme = "schemeCategory10";
+        this.defaultScheme = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+        const {colorScheme} = this.config.DEFAULT_TOC_OPTIONS;
+        this.currentScheme = (colorScheme && colorScheme.length) ? colorScheme : this.defaultScheme;
+        this._setColorScheme(this.currentScheme);
 
         this.modalOriginRect = null;
         this.contentOriginRect = null;
@@ -316,40 +318,47 @@ class tocMarkmap {
     }
 
     setColorScheme = () => {
-        if (!d3) {
-            alert("has not load d3");
-            return;
+        const toString = colorList => colorList.join("-");
+        const toDIV = (colorList) => {
+            const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`).join("");
+            return `<div class="plugin-markmap-color-scheme">${inner}</div>`;
         }
-        const colorSchemes = ["schemeCategory10", "schemeAccent", "schemeDark2", "schemePaired", "schemePastel1", "schemePastel2", "schemeSet1", "schemeSet2", "schemeSet3", "schemeTableau10"];
-        const list = colorSchemes.map(cs => {
-            const inner = d3[cs].map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`).join("");
-            const label = `<div class="plugin-markmap-color-scheme">${inner}</div>`
-            return {value: cs, label: label, checked: cs === this.colorScheme};
+        const d3ColorSchemes = ["schemeCategory10", "schemeAccent", "schemeDark2", "schemePaired", "schemePastel1", "schemePastel2", "schemeSet1", "schemeSet2", "schemeSet3", "schemeTableau10"];
+        const currentColorSchemeStr = toString(this.currentScheme);
+        const list = d3ColorSchemes.map(cs => {
+            const colorList = d3[cs];
+            const value = toString(colorList);
+            const label = toDIV(colorList);
+            return {value, label, checked: value === currentColorSchemeStr};
         })
-        const components = [{label: "", type: "radio", list: list}];
+        if (!list.some(e => e.checked)) {
+            list.push({value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true});
+        }
+        const components = [{label: "", type: "radio", list}];
         this.utils.modal({title: "配色方案", components}, async ([{submit}]) => {
-            const colorScheme = d3[submit];
-            if (colorScheme) {
-                this.colorScheme = submit;
-                await this._setColorScheme(colorScheme);
-            }
-        });
+            const colorList = submit.split("-");
+            this.currentScheme = colorList;
+            this._setColorScheme(colorList);
+            await this.redrawToc();
+        })
     }
 
-    _setColorScheme = async colorList => {
-        this.colorGenerator = () => {
-            const cache = {};
-            let idx = -1;
-            return node => {
-                const path = node.state.path;
-                if (cache[path]) return cache[path]
-                idx++;
-                idx = idx % colorList.length;
-                cache[path] = colorList[idx]
-                return cache[path]
-            }
-        }
-        await this.redrawToc();
+    _setColorScheme = colorList => {
+        const useDefault = colorList.toString() === this.defaultScheme.toString();
+        this.colorGenerator = useDefault
+            ? null
+            : () => {
+                const cache = {};
+                let idx = -1;
+                return node => {
+                    const path = node.state.path;
+                    if (cache[path]) return cache[path]
+                    idx++;
+                    idx = idx % colorList.length;
+                    cache[path] = colorList[idx]
+                    return cache[path]
+                }
+            };
     }
 
     download = () => {
@@ -799,15 +808,15 @@ class tocMarkmap {
     create = async (md, options) => {
         const {root} = this.controller.transformer.transform(md);
         options = options || this.config.DEFAULT_TOC_OPTIONS || {};
-        if (this.colorGenerator) {
-            options.color = this.colorGenerator();
-        }
+        options.color = this.colorGenerator ? this.colorGenerator() : this.controller.Markmap.defaultOptions.color;
         this.markmap = this.controller.Markmap.create(this.entities.svg, options, root);
     }
 
     update = async (md, fit = true) => {
         const {root} = this.controller.transformer.transform(md);
         this.markmap.setData(root);
+        const color = this.colorGenerator ? this.colorGenerator() : this.controller.Markmap.defaultOptions.color;
+        this.markmap.setOptions({color});
         if (fit) {
             await this.markmap.fit();
         }

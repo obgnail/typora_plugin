@@ -503,7 +503,8 @@ BORDER_STYLE_WHEN_NODE_HOVER = "4px solid #FF7B00"
 #   - initialExpandLevel: 首次渲染时要展开多少级分支（-1则展开全部）
 #   - zoom              : 是否允许缩放
 #   - pan               : 是否允许平移
-DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, zoom = true, pan = true }
+#   - colorScheme       : 配色方案（填入颜色数组，如['#1f77b4', '#17becf']，若为[]则使用默认配色方案）
+DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, zoom = true, pan = true, colorScheme = [] }
 # 在拖拽窗口的时候是否使用动画（使用动画视觉效果比较好，但是不跟手）
 USE_ANIMATION_WHEN_DRAG = false
 # 在调整窗口大小的时候是否使用动画
