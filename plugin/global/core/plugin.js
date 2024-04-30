@@ -2,7 +2,7 @@ class utils {
     static isBetaVersion = window._options.appVersion[0] === "0"
     static supportHasSelector = CSS.supports("selector(:has(*))")
     static separator = File.isWin ? "\\" : "/"
-    static tempFolder = File.option.tempPath
+    static tempFolder = window._options.tempPath
     static nonExistSelector = "#__nonExist__"                 // 插件临时不可点击，返回此
     static disableForeverSelector = "#__disableForever__"     // 插件永远不可点击，返回此
     static stopLoadPluginError = new Error("stopLoadPlugin")  // 用于插件的beforeProcess方法，若希望停止加载插件，返回此
