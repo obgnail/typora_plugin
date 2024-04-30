@@ -1776,10 +1776,11 @@ class dialog {
             case "checkbox":
             case "radio":
                 const checked = c => c.checked ? "checked" : "";
-                const prefix = this.utils.randomString() + "-";
+                const name = this.utils.randomString();
+                const prefix = name + "-";
                 const elements = component.list.map(el => {
                     const id = prefix + el.value;
-                    return `<div class="${type}"><input type="${type}" id="${id}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}</label></div>`
+                    return `<div class="${type}"><input type="${type}" id="${id}" name="${name}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}</label></div>`
                 });
                 const content = elements.join("");
                 inner = (component.legend === undefined) ? content : `<fieldset><legend>${component.legend}</legend>${content}</fieldset>`;

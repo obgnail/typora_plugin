@@ -94,3 +94,13 @@ ${show_outline}
     line-height: initial;
     user-select: none;
 }
+
+.plugin-markmap-color-scheme {
+    display: inline-flex;
+    position: absolute;
+    height: 20px;
+}
+
+.plugin-markmap-color {
+    width: 28px;
+}

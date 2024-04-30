@@ -199,6 +199,7 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+鼠标拖拽也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图表重新适配窗口"></div>
                     <div class="plugin-markmap-icon ion-network" action="setExpandLevel" ty-hint="展开分支等级"></div>
+                    <div class="plugin-markmap-icon ion-contrast" action="setColorScheme" ty-hint="配色方案"></div>
                     <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="鼠标穿透"></div>
                     <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="下载"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
@@ -215,7 +216,8 @@ class tocMarkmap {
 
     init = () => {
         this.markmap = null;
-        this.editor = null;
+        this.colorGenerator = null;
+        this.colorScheme = "schemeCategory10";
 
         this.modalOriginRect = null;
         this.contentOriginRect = null;
@@ -311,6 +313,43 @@ class tocMarkmap {
         }
         const components = [{label: "", type: "range", value: level, min: 0, max: maxLevel, step: 1}];
         this.utils.modal({title: "展开分支", components}, async ([{submit: level}]) => this._setExpandLevel(level));
+    }
+
+    setColorScheme = () => {
+        if (!d3) {
+            alert("has not load d3");
+            return;
+        }
+        const colorSchemes = ["schemeCategory10", "schemeAccent", "schemeDark2", "schemePaired", "schemePastel1", "schemePastel2", "schemeSet1", "schemeSet2", "schemeSet3", "schemeTableau10"];
+        const list = colorSchemes.map(cs => {
+            const inner = d3[cs].map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`).join("");
+            const label = `<div class="plugin-markmap-color-scheme">${inner}</div>`
+            return {value: cs, label: label, checked: cs === this.colorScheme};
+        })
+        const components = [{label: "", type: "radio", list: list}];
+        this.utils.modal({title: "配色方案", components}, async ([{submit}]) => {
+            const colorScheme = d3[submit];
+            if (colorScheme) {
+                this.colorScheme = submit;
+                await this._setColorScheme(colorScheme);
+            }
+        });
+    }
+
+    _setColorScheme = async colorList => {
+        this.colorGenerator = () => {
+            const cache = {};
+            let idx = -1;
+            return node => {
+                const path = node.state.path;
+                if (cache[path]) return cache[path]
+                idx++;
+                idx = idx % colorList.length;
+                cache[path] = colorList[idx]
+                return cache[path]
+            }
+        }
+        await this.redrawToc();
     }
 
     download = () => {
@@ -759,7 +798,10 @@ class tocMarkmap {
 
     create = async (md, options) => {
         const {root} = this.controller.transformer.transform(md);
-        options = options || this.config.DEFAULT_TOC_OPTIONS || null;
+        options = options || this.config.DEFAULT_TOC_OPTIONS || {};
+        if (this.colorGenerator) {
+            options.color = this.colorGenerator();
+        }
         this.markmap = this.controller.Markmap.create(this.entities.svg, options, root);
     }
 
