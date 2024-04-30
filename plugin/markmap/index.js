@@ -198,8 +198,7 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+鼠标拖拽也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图表重新适配窗口"></div>
-                    <div class="plugin-markmap-icon ion-network" action="setExpandLevel" ty-hint="展开分支等级"></div>
-                    <div class="plugin-markmap-icon ion-contrast" action="setColorScheme" ty-hint="配色方案"></div>
+                    <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="图表配置"></div>
                     <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="鼠标穿透"></div>
                     <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="下载"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
@@ -288,59 +287,65 @@ class tocMarkmap {
         this.entities.modal.classList.toggle("penetrateMouse", !options.zoom && !options.pan);
     }
 
-    _setExpandLevel = async level => {
+    setting = () => {
+        const expandLevel = () => {
+            const getMaxLevel = () => {
+                let maxDepth = 0;
+                const getDepth = data => {
+                    maxDepth = Math.max(maxDepth, data.depth);
+                    data.children && data.children.forEach(getDepth);
+                }
+                getDepth(this.markmap.state.data);
+                return maxDepth
+            }
+
+            const maxLevel = getMaxLevel() || 6;
+            let level = this.markmap && this.markmap.options.initialExpandLevel;
+            if (level === undefined) {
+                level = 1;
+            } else if (level < 0) {
+                level = maxLevel;
+            }
+            const callback = this._setExpandLevel;
+            return {label: "展开等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
+        }
+
+        const colorScheme = () => {
+            const toString = colorList => colorList.join("-");
+            const toDIV = (colorList) => {
+                const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`).join("");
+                return `<div class="plugin-markmap-color-scheme">${inner}</div>`;
+            }
+            const d3ColorSchemes = ["schemeCategory10", "schemeAccent", "schemeDark2", "schemePaired", "schemePastel1", "schemePastel2", "schemeSet1", "schemeSet2", "schemeSet3", "schemeTableau10"];
+            const currentColorSchemeStr = toString(this.currentScheme);
+            const list = d3ColorSchemes.map(cs => {
+                const colorList = d3[cs];
+                const value = toString(colorList);
+                const label = toDIV(colorList);
+                return {value, label, checked: value === currentColorSchemeStr};
+            })
+            if (!list.some(e => e.checked)) {
+                list.push({value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true});
+            }
+            const callback = colorScheme => {
+                const colorList = colorScheme.split("-");
+                this.currentScheme = colorList;
+                this._setColorScheme(colorList);
+            }
+            return {label: "配色方案", type: "radio", list, callback};
+        }
+
+        const components = [colorScheme, expandLevel].map(f => f());
+        this.utils.modal({title: "图表配置", components}, async components => {
+            components.forEach(c => c.callback(c.submit));
+            await this.redrawToc(this.markmap.options);
+        });
+    }
+
+    _setExpandLevel = level => {
         level = parseInt(level);
         const options = this.markmap.options;
         options.initialExpandLevel = isNaN(level) ? 1 : level;
-        await this.redrawToc(options);
-    }
-
-    getMaxLevel = () => {
-        let maxDepth = 0;
-        const getDepth = data => {
-            maxDepth = Math.max(maxDepth, data.depth);
-            data.children && data.children.forEach(getDepth);
-        }
-        getDepth(this.markmap.state.data);
-        return maxDepth
-    }
-
-    setExpandLevel = async () => {
-        const maxLevel = this.getMaxLevel() || 6;
-        let level = this.markmap && this.markmap.options.initialExpandLevel;
-        if (level === undefined) {
-            level = 1;
-        } else if (level < 0) {
-            level = maxLevel;
-        }
-        const components = [{label: "", type: "range", value: level, min: 0, max: maxLevel, step: 1}];
-        this.utils.modal({title: "展开分支", components}, async ([{submit: level}]) => this._setExpandLevel(level));
-    }
-
-    setColorScheme = () => {
-        const toString = colorList => colorList.join("-");
-        const toDIV = (colorList) => {
-            const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`).join("");
-            return `<div class="plugin-markmap-color-scheme">${inner}</div>`;
-        }
-        const d3ColorSchemes = ["schemeCategory10", "schemeAccent", "schemeDark2", "schemePaired", "schemePastel1", "schemePastel2", "schemeSet1", "schemeSet2", "schemeSet3", "schemeTableau10"];
-        const currentColorSchemeStr = toString(this.currentScheme);
-        const list = d3ColorSchemes.map(cs => {
-            const colorList = d3[cs];
-            const value = toString(colorList);
-            const label = toDIV(colorList);
-            return {value, label, checked: value === currentColorSchemeStr};
-        })
-        if (!list.some(e => e.checked)) {
-            list.push({value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true});
-        }
-        const components = [{label: "", type: "radio", list}];
-        this.utils.modal({title: "配色方案", components}, async ([{submit}]) => {
-            const colorList = submit.split("-");
-            this.currentScheme = colorList;
-            this._setColorScheme(colorList);
-            await this.redrawToc();
-        })
     }
 
     _setColorScheme = colorList => {
@@ -539,7 +544,7 @@ class tocMarkmap {
     showToolbar = () => this.toggleToolbar(true)
 
     onButtonClick = async (action, button) => {
-        if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setExpandLevel"].includes(action)) {
+        if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setting"].includes(action)) {
             await this._waitUnpin();
         }
         await this[action](button);
@@ -569,13 +574,13 @@ class tocMarkmap {
 
     onContextMenu = () => {
         const menuMap = {
-            expand: "全屏", shrink: "取消全屏", fit: "图形适配窗口", download: "下载", setExpandLevel: "设置展开等级",
+            expand: "全屏", shrink: "取消全屏", fit: "图形适配窗口", download: "下载", setting: "设置",
             close: "关闭", pinUp: "固定到顶部", pinRight: "固定到右侧", hideToolbar: "隐藏工具栏", showToolbar: "显示工具栏",
         };
         const showMenu = () => {
             const fullScreen = this.entities.fullScreen.getAttribute("action");
             const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar";
-            return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "setExpandLevel", "download", "close"])
+            return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "setting", "download", "close"])
         }
         const callback = ({key}) => this.onButtonClick(key);
         this.utils.registerMenu("markmap", "#plugin-markmap-svg", showMenu, callback);
