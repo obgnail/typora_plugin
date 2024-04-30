@@ -215,9 +215,8 @@ class tocMarkmap {
 
     init = () => {
         this.markmap = null;
-        this.defaultScheme = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
-        const {colorScheme} = this.config.DEFAULT_TOC_OPTIONS;
-        this.currentScheme = (colorScheme && colorScheme.length) ? colorScheme : this.defaultScheme;
+        this.currentScheme = this.config.DEFAULT_TOC_OPTIONS.colorScheme || ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+        this.colorFreezeLevel = this.config.DEFAULT_TOC_OPTIONS.colorFreezeLevel || 6;
         this._setColorScheme(this.currentScheme);
 
         this.modalOriginRect = null;
@@ -288,27 +287,16 @@ class tocMarkmap {
     }
 
     setting = () => {
-        const expandLevel = () => {
-            const getMaxLevel = () => {
-                let maxDepth = 0;
-                const getDepth = data => {
-                    maxDepth = Math.max(maxDepth, data.depth);
-                    data.children && data.children.forEach(getDepth);
-                }
-                getDepth(this.markmap.state.data);
-                return maxDepth
+        const _getMaxLevel = () => {
+            let maxDepth = 0;
+            const getDepth = data => {
+                maxDepth = Math.max(maxDepth, data.depth);
+                data.children && data.children.forEach(getDepth);
             }
-
-            const maxLevel = getMaxLevel() || 6;
-            let level = this.markmap && this.markmap.options.initialExpandLevel;
-            if (level === undefined) {
-                level = 1;
-            } else if (level < 0) {
-                level = maxLevel;
-            }
-            const callback = this._setExpandLevel;
-            return {label: "展开等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
+            getDepth(this.markmap.state.data);
+            return maxDepth
         }
+        const maxLevel = _getMaxLevel() || 6;
 
         const colorScheme = () => {
             const toString = colorList => colorList.join("-");
@@ -335,7 +323,24 @@ class tocMarkmap {
             return {label: "配色方案", type: "radio", list, callback};
         }
 
-        const components = [colorScheme, expandLevel].map(f => f());
+        const expandLevel = () => {
+            let level = this.markmap && this.markmap.options.initialExpandLevel;
+            if (level === undefined) {
+                level = 1;
+            } else if (level < 0) {
+                level = maxLevel;
+            }
+            const callback = this._setExpandLevel;
+            return {label: "展开的分支等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
+        }
+
+        const colorFreezeLevel = () => {
+            const level = Math.min(this.colorFreezeLevel, maxLevel);
+            const callback = this._setColorFreezeLevel;
+            return {label: "开始固定颜色的分支等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback}
+        }
+
+        const components = [colorScheme, expandLevel, colorFreezeLevel].map(f => f());
         this.utils.modal({title: "图表配置", components}, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
@@ -348,22 +353,24 @@ class tocMarkmap {
         options.initialExpandLevel = isNaN(level) ? 1 : level;
     }
 
+    _setColorFreezeLevel = level => {
+        level = parseInt(level);
+        this.colorFreezeLevel = isNaN(level) ? 6 : level;
+    }
+
     _setColorScheme = colorList => {
-        const useDefault = colorList.toString() === this.defaultScheme.toString();
-        this.colorGenerator = useDefault
-            ? null
-            : () => {
-                const cache = {};
-                let idx = -1;
-                return node => {
-                    const path = node.state.path;
-                    if (cache[path]) return cache[path]
-                    idx++;
-                    idx = idx % colorList.length;
-                    cache[path] = colorList[idx]
-                    return cache[path]
-                }
-            };
+        this.colorGenerator = () => {
+            const cache = {};
+            let idx = -1;
+            return node => {
+                const path = node.state.path.split(".").slice(0, this.colorFreezeLevel + 1).join(".");
+                if (cache[path]) return cache[path]
+                idx++;
+                idx = idx % colorList.length;
+                cache[path] = colorList[idx]
+                return cache[path]
+            }
+        }
     }
 
     download = () => {
