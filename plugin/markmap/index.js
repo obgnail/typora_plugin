@@ -198,8 +198,8 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+鼠标拖拽也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图表重新适配窗口"></div>
-                    <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="图表配置"></div>
                     <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="鼠标穿透"></div>
+                    <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="图表配置"></div>
                     <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="下载"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
@@ -287,16 +287,8 @@ class tocMarkmap {
     }
 
     setting = () => {
-        const _getMaxLevel = () => {
-            let maxDepth = 0;
-            const getDepth = data => {
-                maxDepth = Math.max(maxDepth, data.depth);
-                data.children && data.children.forEach(getDepth);
-            }
-            getDepth(this.markmap.state.data);
-            return maxDepth
-        }
-        const maxLevel = _getMaxLevel() || 6;
+        const _getInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7; margin-left: 7px;"></span>`
+        const maxLevel = 6;
 
         const colorScheme = () => {
             const toString = colorList => colorList.join("-");
@@ -320,7 +312,9 @@ class tocMarkmap {
                 this.currentScheme = colorList;
                 this._setColorScheme(colorList);
             }
-            return {label: "配色方案", type: "radio", list, callback};
+
+            const info = _getInfo("如需自定义配色方案请前往配置文件");
+            return {label: "配色方案" + info, type: "radio", list, callback};
         }
 
         const expandLevel = () => {
@@ -330,17 +324,19 @@ class tocMarkmap {
             } else if (level < 0) {
                 level = maxLevel;
             }
+            const info = _getInfo("从x级开始，以后的子分支都将收起");
             const callback = this._setExpandLevel;
-            return {label: "展开的分支等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
+            return {label: "展开的分支等级" + info, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
         }
 
         const colorFreezeLevel = () => {
             const level = Math.min(this.colorFreezeLevel, maxLevel);
+            const info = _getInfo("从x级开始，以后的子分支都将和父分支的配色保持一致");
             const callback = this._setColorFreezeLevel;
-            return {label: "开始固定颜色的分支等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback}
+            return {label: "固定配色的分支等级" + info, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback}
         }
 
-        const components = [colorScheme, expandLevel, colorFreezeLevel].map(f => f());
+        const components = [colorScheme, colorFreezeLevel, expandLevel].map(f => f());
         this.utils.modal({title: "图表配置", components}, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
@@ -359,16 +355,11 @@ class tocMarkmap {
     }
 
     _setColorScheme = colorList => {
-        this.colorGenerator = () => {
-            const cache = {};
-            let idx = -1;
+        this.colorSchemeGenerator = () => {
+            const func = d3.scaleOrdinal(colorList);
             return node => {
                 const path = node.state.path.split(".").slice(0, this.colorFreezeLevel + 1).join(".");
-                if (cache[path]) return cache[path]
-                idx++;
-                idx = idx % colorList.length;
-                cache[path] = colorList[idx]
-                return cache[path]
+                return func(path)
             }
         }
     }
@@ -820,15 +811,15 @@ class tocMarkmap {
     create = async (md, options) => {
         const {root} = this.controller.transformer.transform(md);
         options = options || this.config.DEFAULT_TOC_OPTIONS || {};
-        options.color = this.colorGenerator ? this.colorGenerator() : this.controller.Markmap.defaultOptions.color;
+        options.color = this.colorSchemeGenerator ? this.colorSchemeGenerator() : this.controller.Markmap.defaultOptions.color;
         this.markmap = this.controller.Markmap.create(this.entities.svg, options, root);
     }
 
     update = async (md, fit = true) => {
         const {root} = this.controller.transformer.transform(md);
-        this.markmap.setData(root);
-        const color = this.colorGenerator ? this.colorGenerator() : this.controller.Markmap.defaultOptions.color;
+        const color = this.colorSchemeGenerator ? this.colorSchemeGenerator() : this.controller.Markmap.defaultOptions.color;
         this.markmap.setOptions({color});
+        this.markmap.setData(root);
         if (fit) {
             await this.markmap.fit();
         }
