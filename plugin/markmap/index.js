@@ -217,7 +217,7 @@ class tocMarkmap {
         this.markmap = null;
         this.currentScheme = this.config.DEFAULT_TOC_OPTIONS.colorScheme || ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
         this.colorFreezeLevel = this.config.DEFAULT_TOC_OPTIONS.colorFreezeLevel || 6;
-        this._setColorScheme(this.currentScheme);
+        this.setColorScheme(this.currentScheme);
 
         this.modalOriginRect = null;
         this.contentOriginRect = null;
@@ -287,13 +287,13 @@ class tocMarkmap {
     }
 
     setting = () => {
-        const _getInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7; margin-left: 7px;"></span>`
         const maxLevel = 6;
+        const _genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7; margin-left: 7px;"></span>`
 
         const colorScheme = () => {
             const toString = colorList => colorList.join("_");
             const toDIV = (colorList) => {
-                const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`).join("");
+                const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}" title="${color.toUpperCase()}"></div>`).join("");
                 return `<div class="plugin-markmap-color-scheme">${inner}</div>`;
             }
             const d3ColorSchemes = ["schemeCategory10", "schemeAccent", "schemeDark2", "schemePaired", "schemePastel1", "schemePastel2", "schemeSet1", "schemeSet2", "schemeSet3", "schemeTableau10"];
@@ -302,7 +302,8 @@ class tocMarkmap {
                 const colorList = d3[cs];
                 const value = toString(colorList);
                 const label = toDIV(colorList);
-                return {value, label, checked: value === currentColorSchemeStr};
+                const checked = value === currentColorSchemeStr;
+                return {value, label, checked};
             })
             if (!list.some(e => e.checked)) {
                 list.push({value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true});
@@ -310,11 +311,11 @@ class tocMarkmap {
             const callback = colorScheme => {
                 const colorList = colorScheme.split("_");
                 this.currentScheme = colorList;
-                this._setColorScheme(colorList);
+                this.setColorScheme(colorList);
             }
 
-            const info = _getInfo("如需自定义配色方案请前往配置文件");
-            return {label: "配色方案" + info, type: "radio", list, callback};
+            const label = "配色方案" + _genInfo("如需自定义配色方案请前往配置文件");
+            return {label: label, type: "radio", list, callback};
         }
 
         const expandLevel = () => {
@@ -324,44 +325,55 @@ class tocMarkmap {
             } else if (level < 0) {
                 level = maxLevel;
             }
-            const info = _getInfo("从x级开始，其后子分支都将收起");
-            const callback = this._setExpandLevel;
-            return {label: "展开的分支等级" + info, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
+            const callback = level => {
+                level = parseInt(level);
+                this.markmap.options.initialExpandLevel = isNaN(level) ? 1 : level;
+            };
+            const label = "展开的分支等级" + _genInfo("从x级开始，其后子分支都将收起");
+            return {label: label, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
         }
 
         const colorFreezeLevel = () => {
             const level = Math.min(this.colorFreezeLevel, maxLevel);
-            const info = _getInfo("从x级开始，其后子分支的配色都将和父分支保持一致");
-            const callback = this._setColorFreezeLevel;
-            return {label: "固定配色的分支等级" + info, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback}
+            const callback = level => {
+                level = parseInt(level);
+                this.colorFreezeLevel = isNaN(level) ? 6 : level;
+            };
+            const label = "固定配色的分支等级" + _genInfo("从x级开始，其后子分支的配色都将和父分支保持一致");
+            return {label: label, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback}
         }
 
         const localeHeightRatio = () => {
             const value = this.config.LOCALE_HIGHT_RATIO || 0.2;
-            const info = _getInfo("定位到目标章节时，目标章节滚动到当前视口的高度位置（百分比）\n即：0为当前视口的第一行，100为最后一行");
-            const callback = ratio => this._setLocaleHeightRatio(ratio / 100);
-            return {label: "跳转目标章节的视口位置" + info, type: "range", value: value * 100, min: 0, max: 100, step: 1, callback}
+            const callback = ratio => {
+                ratio = parseFloat(ratio / 100);
+                this.config.LOCALE_HIGHT_RATIO = isNaN(ratio) ? 0.2 : ratio;
+            };
+            const label = "跳转目标章节的视口位置" + _genInfo("定位到目标章节时，目标章节滚动到当前视口的高度位置（百分比）\n即：0为当前视口的第一行，100为最后一行");
+            return {label: label, type: "range", value: value * 100, min: 0, max: 100, step: 1, callback}
         }
 
         const duration = () => {
             const value = (this.markmap && this.markmap.options.duration) || 500;
-            const callback = duration => this._setDuration(duration * 1000);
+            const callback = duration => {
+                duration = parseInt(duration * 1000);
+                this.markmap.options.duration = isNaN(duration) ? 500 : duration;
+            };
             return {label: "动画持续时间", type: "range", value: value / 1000, min: 0.1, max: 1, step: 0.1, callback}
         }
 
         const ability = () => {
             const {zoom = true, pan = true} = (this.markmap && this.markmap.options) || {};
-            const autoFitInfo = _getInfo("图形更新时重新适配窗口大小");
+            const autoFitLabel = "自动适配窗口" + _genInfo("图形更新时重新适配窗口大小");
             const list = [
                 {label: "鼠标滚轮缩放", value: "zoom", checked: zoom},
                 {label: "鼠标滚轮平移", value: "pan", checked: pan},
-                {label: "自动适配窗口" + autoFitInfo, value: "autoFit", checked: this.config.AUTO_FIT_WHEN_UPDATE},
+                {label: autoFitLabel, value: "autoFit", checked: this.config.AUTO_FIT_WHEN_UPDATE},
             ];
             const callback = submit => {
-                const zoom = submit.includes("zoom");
-                const pan = submit.includes("pan");
-                const autoFit = submit.includes("autoFit");
-                this._setAbility(zoom, pan, autoFit);
+                this.markmap.options.zoom = submit.includes("zoom");
+                this.markmap.options.pan = submit.includes("pan");
+                this.config.AUTO_FIT_WHEN_UPDATE = submit.includes("autoFit");
             };
             return {label: "", legend: "图形能力", type: "checkbox", list, callback}
         }
@@ -373,41 +385,11 @@ class tocMarkmap {
         });
     }
 
-    _setExpandLevel = level => {
-        level = parseInt(level);
-        const options = this.markmap.options;
-        options.initialExpandLevel = isNaN(level) ? 1 : level;
-    }
-
-    _setColorFreezeLevel = level => {
-        level = parseInt(level);
-        this.colorFreezeLevel = isNaN(level) ? 6 : level;
-    }
-
-    _setColorScheme = colorList => {
+    setColorScheme = colorList => {
         this.colorSchemeGenerator = () => {
             const func = d3.scaleOrdinal(colorList);
-            return node => {
-                const path = node.state.path.split(".").slice(0, this.colorFreezeLevel + 1).join(".");
-                return func(path)
-            }
+            return node => func(node.state.path.split(".").slice(0, this.colorFreezeLevel + 1).join("."))
         }
-    }
-
-    _setAbility = (zoom, pan, autoFit) => {
-        this.markmap.options.zoom = zoom;
-        this.markmap.options.pan = pan;
-        this.config.AUTO_FIT_WHEN_UPDATE = autoFit;
-    }
-
-    _setDuration = duration => {
-        duration = parseInt(duration);
-        this.markmap.options.duration = isNaN(duration) ? 500 : duration;
-    }
-
-    _setLocaleHeightRatio = radio => {
-        radio = parseFloat(radio);
-        this.config.LOCALE_HIGHT_RATIO = isNaN(radio) ? 0.2 : radio;
     }
 
     download = () => {
@@ -588,7 +570,7 @@ class tocMarkmap {
     showToolbar = () => this.toggleToolbar(true)
 
     onButtonClick = async (action, button) => {
-        if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setting"].includes(action)) {
+        if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"].includes(action)) {
             await this._waitUnpin();
         }
         await this[action](button);
