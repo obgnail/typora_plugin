@@ -296,7 +296,7 @@ class tocMarkmap {
                 const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}" title="${color.toUpperCase()}"></div>`).join("");
                 return `<div class="plugin-markmap-color-scheme">${inner}</div>`;
             }
-            const d3ColorSchemes = ["schemeCategory10", "schemeAccent", "schemeDark2", "schemePaired", "schemePastel1", "schemePastel2", "schemeSet1", "schemeSet2", "schemeSet3", "schemeTableau10"];
+            const d3ColorSchemes = ["schemePastel2", "schemeSet2", "schemeDark2", "schemeAccent", "schemePastel1", "schemeSet1", "schemeTableau10", "schemeCategory10", "schemePaired", "schemeSet3"];
             const currentColorSchemeStr = toString(this.currentScheme);
             const list = d3ColorSchemes.map(cs => {
                 const colorList = d3[cs];
