@@ -1087,7 +1087,7 @@ NAME = "启停插件"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 # 不允许通过此插件修改启停的插件
-IGNORE_PLUGINS = ["preferences", "right_click_menu", "custom", "mermaid_replace", "openInTotalCommander", "redirectLocalRootUrl", "redirectLocalRootUrl"]
+IGNORE_PLUGINS = ["preferences", "right_click_menu", "custom", "json_rpc", "mermaid_replace", "openInTotalCommander", "redirectLocalRootUrl"]
 
 
 ############### file_counter ###############

@@ -197,9 +197,9 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
                     <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+鼠标拖拽也可以移动）"></div>
-                    <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图表重新适配窗口"></div>
+                    <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图形重新适配窗口"></div>
                     <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="鼠标穿透"></div>
-                    <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="图表配置"></div>
+                    <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="图形配置"></div>
                     <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="下载"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
@@ -291,7 +291,7 @@ class tocMarkmap {
         const maxLevel = 6;
 
         const colorScheme = () => {
-            const toString = colorList => colorList.join("-");
+            const toString = colorList => colorList.join("_");
             const toDIV = (colorList) => {
                 const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`).join("");
                 return `<div class="plugin-markmap-color-scheme">${inner}</div>`;
@@ -308,7 +308,7 @@ class tocMarkmap {
                 list.push({value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true});
             }
             const callback = colorScheme => {
-                const colorList = colorScheme.split("-");
+                const colorList = colorScheme.split("_");
                 this.currentScheme = colorList;
                 this._setColorScheme(colorList);
             }
@@ -324,20 +324,50 @@ class tocMarkmap {
             } else if (level < 0) {
                 level = maxLevel;
             }
-            const info = _getInfo("从x级开始，以后的子分支都将收起");
+            const info = _getInfo("从x级开始，其后子分支都将收起");
             const callback = this._setExpandLevel;
             return {label: "展开的分支等级" + info, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
         }
 
         const colorFreezeLevel = () => {
             const level = Math.min(this.colorFreezeLevel, maxLevel);
-            const info = _getInfo("从x级开始，以后的子分支都将和父分支的配色保持一致");
+            const info = _getInfo("从x级开始，其后子分支的配色都将和父分支保持一致");
             const callback = this._setColorFreezeLevel;
             return {label: "固定配色的分支等级" + info, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback}
         }
 
-        const components = [colorScheme, colorFreezeLevel, expandLevel].map(f => f());
-        this.utils.modal({title: "图表配置", components}, async components => {
+        const localeHeightRatio = () => {
+            const value = this.config.LOCALE_HIGHT_RATIO || 0.2;
+            const info = _getInfo("定位到目标章节时，目标章节滚动到当前视口的高度位置（百分比）\n即：0为当前视口的第一行，100为最后一行");
+            const callback = ratio => this._setLocaleHeightRatio(ratio / 100);
+            return {label: "跳转目标章节的视口位置" + info, type: "range", value: value * 100, min: 0, max: 100, step: 1, callback}
+        }
+
+        const duration = () => {
+            const value = (this.markmap && this.markmap.options.duration) || 500;
+            const callback = duration => this._setDuration(duration * 1000);
+            return {label: "动画持续时间", type: "range", value: value / 1000, min: 0.1, max: 1, step: 0.1, callback}
+        }
+
+        const ability = () => {
+            const {zoom = true, pan = true} = (this.markmap && this.markmap.options) || {};
+            const autoFitInfo = _getInfo("图形更新时重新适配窗口大小");
+            const list = [
+                {label: "鼠标滚轮缩放", value: "zoom", checked: zoom},
+                {label: "鼠标滚轮平移", value: "pan", checked: pan},
+                {label: "自动适配窗口" + autoFitInfo, value: "autoFit", checked: this.config.AUTO_FIT_WHEN_UPDATE},
+            ];
+            const callback = submit => {
+                const zoom = submit.includes("zoom");
+                const pan = submit.includes("pan");
+                const autoFit = submit.includes("autoFit");
+                this._setAbility(zoom, pan, autoFit);
+            };
+            return {label: "", legend: "图形能力", type: "checkbox", list, callback}
+        }
+
+        const components = [colorScheme, colorFreezeLevel, expandLevel, localeHeightRatio, duration, ability].map(f => f());
+        this.utils.modal({title: "图形配置", components}, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
         });
@@ -362,6 +392,22 @@ class tocMarkmap {
                 return func(path)
             }
         }
+    }
+
+    _setAbility = (zoom, pan, autoFit) => {
+        this.markmap.options.zoom = zoom;
+        this.markmap.options.pan = pan;
+        this.config.AUTO_FIT_WHEN_UPDATE = autoFit;
+    }
+
+    _setDuration = duration => {
+        duration = parseInt(duration);
+        this.markmap.options.duration = isNaN(duration) ? 500 : duration;
+    }
+
+    _setLocaleHeightRatio = radio => {
+        radio = parseFloat(radio);
+        this.config.LOCALE_HIGHT_RATIO = isNaN(radio) ? 0.2 : radio;
     }
 
     download = () => {

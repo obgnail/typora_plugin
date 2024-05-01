@@ -43,12 +43,31 @@ class preferencesPlugin extends BasePlugin {
     }
 
     call = async () => {
-        const displayFunc = ([fixedName, plugin]) => ({
-            label: `${plugin.NAME || plugin.name}（${fixedName}）`,
-            value: fixedName,
-            checked: plugin.ENABLE || plugin.enable,
-            disabled: this.config.IGNORE_PLUGINS.includes(fixedName),
-        })
+        const genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7; float: right;"></span>`
+        const infoMap = {
+            blur: "此插件不兼容 beta 版本的 Typora",
+            export_enhance: "此插件不兼容 beta 版本的 Typora",
+            commander: "二级插件「升级插件」依赖于此插件，不建议停用",
+            preferences: "「启停插件」自身也是一个插件，停用则无法弹出此窗口",
+            right_click_menu: "此插件是普通用户调用其他插件的入口",
+            custom: "所有的二级插件都挂载在此插件上，停用会导致所有的二级插件失效",
+            json_rpc: "此插件面向开发者，普通用户无需启用",
+            mermaid_replace: "此插件已停止维护",
+            test: "开发者专用，不建议普通用户启用",
+            openInTotalCommander: "此插件需要手动修改配置后方可运行",
+            redirectLocalRootUrl: "此插件需要手动修改配置后方可运行",
+            autoTrailingWhiteSpace: "此插件面向特殊人群（如网站站长），不建议普通用户启用",
+        }
+        const displayFunc = ([fixedName, plugin]) => {
+            const info = infoMap[fixedName];
+            const msg = info ? genInfo(info) : "";
+            return {
+                label: `${plugin.NAME || plugin.name}（${fixedName}）${msg}`,
+                value: fixedName,
+                checked: plugin.ENABLE || plugin.enable,
+                disabled: this.config.IGNORE_PLUGINS.includes(fixedName),
+            }
+        }
         const [settings, customSettings] = await this.getSettings();
         const plugins = Object.entries(settings).map(displayFunc);
         const customPlugins = Object.entries(customSettings).map(displayFunc);
