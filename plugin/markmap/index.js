@@ -198,8 +198,8 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+鼠标拖拽也可以移动）"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图表重新适配窗口"></div>
-                    <div class="plugin-markmap-icon ion-network" action="setExpandLevel" ty-hint="展开分支等级"></div>
                     <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="鼠标穿透"></div>
+                    <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="图表配置"></div>
                     <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="下载"></div>
                     <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
@@ -215,7 +215,9 @@ class tocMarkmap {
 
     init = () => {
         this.markmap = null;
-        this.editor = null;
+        this.currentScheme = this.config.DEFAULT_TOC_OPTIONS.colorScheme || ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+        this.colorFreezeLevel = this.config.DEFAULT_TOC_OPTIONS.colorFreezeLevel || 6;
+        this._setColorScheme(this.currentScheme);
 
         this.modalOriginRect = null;
         this.contentOriginRect = null;
@@ -284,33 +286,82 @@ class tocMarkmap {
         this.entities.modal.classList.toggle("penetrateMouse", !options.zoom && !options.pan);
     }
 
-    _setExpandLevel = async level => {
+    setting = () => {
+        const _getInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7; margin-left: 7px;"></span>`
+        const maxLevel = 6;
+
+        const colorScheme = () => {
+            const toString = colorList => colorList.join("-");
+            const toDIV = (colorList) => {
+                const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`).join("");
+                return `<div class="plugin-markmap-color-scheme">${inner}</div>`;
+            }
+            const d3ColorSchemes = ["schemeCategory10", "schemeAccent", "schemeDark2", "schemePaired", "schemePastel1", "schemePastel2", "schemeSet1", "schemeSet2", "schemeSet3", "schemeTableau10"];
+            const currentColorSchemeStr = toString(this.currentScheme);
+            const list = d3ColorSchemes.map(cs => {
+                const colorList = d3[cs];
+                const value = toString(colorList);
+                const label = toDIV(colorList);
+                return {value, label, checked: value === currentColorSchemeStr};
+            })
+            if (!list.some(e => e.checked)) {
+                list.push({value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true});
+            }
+            const callback = colorScheme => {
+                const colorList = colorScheme.split("-");
+                this.currentScheme = colorList;
+                this._setColorScheme(colorList);
+            }
+
+            const info = _getInfo("如需自定义配色方案请前往配置文件");
+            return {label: "配色方案" + info, type: "radio", list, callback};
+        }
+
+        const expandLevel = () => {
+            let level = this.markmap && this.markmap.options.initialExpandLevel;
+            if (level === undefined) {
+                level = 1;
+            } else if (level < 0) {
+                level = maxLevel;
+            }
+            const info = _getInfo("从x级开始，以后的子分支都将收起");
+            const callback = this._setExpandLevel;
+            return {label: "展开的分支等级" + info, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
+        }
+
+        const colorFreezeLevel = () => {
+            const level = Math.min(this.colorFreezeLevel, maxLevel);
+            const info = _getInfo("从x级开始，以后的子分支都将和父分支的配色保持一致");
+            const callback = this._setColorFreezeLevel;
+            return {label: "固定配色的分支等级" + info, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback}
+        }
+
+        const components = [colorScheme, colorFreezeLevel, expandLevel].map(f => f());
+        this.utils.modal({title: "图表配置", components}, async components => {
+            components.forEach(c => c.callback(c.submit));
+            await this.redrawToc(this.markmap.options);
+        });
+    }
+
+    _setExpandLevel = level => {
         level = parseInt(level);
         const options = this.markmap.options;
         options.initialExpandLevel = isNaN(level) ? 1 : level;
-        await this.redrawToc(options);
     }
 
-    getMaxLevel = () => {
-        let maxDepth = 0;
-        const getDepth = data => {
-            maxDepth = Math.max(maxDepth, data.depth);
-            data.children && data.children.forEach(getDepth);
-        }
-        getDepth(this.markmap.state.data);
-        return maxDepth
+    _setColorFreezeLevel = level => {
+        level = parseInt(level);
+        this.colorFreezeLevel = isNaN(level) ? 6 : level;
     }
 
-    setExpandLevel = async () => {
-        const maxLevel = this.getMaxLevel() || 6;
-        let level = this.markmap && this.markmap.options.initialExpandLevel;
-        if (level === undefined) {
-            level = 1;
-        } else if (level < 0) {
-            level = maxLevel;
+    _setColorScheme = colorList => {
+        this.colorSchemeGenerator = () => {
+            const func = d3.scaleOrdinal(colorList);
+            return node => {
+                const path = node.state.path.split(".").slice(0, this.colorFreezeLevel + 1).join(".");
+                return func(path)
+            }
         }
-        const components = [{label: "", type: "range", value: level, min: 0, max: maxLevel, step: 1}];
-        this.utils.modal({title: "展开分支", components}, async ([{submit: level}]) => this._setExpandLevel(level));
     }
 
     download = () => {
@@ -491,7 +542,7 @@ class tocMarkmap {
     showToolbar = () => this.toggleToolbar(true)
 
     onButtonClick = async (action, button) => {
-        if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setExpandLevel"].includes(action)) {
+        if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setting"].includes(action)) {
             await this._waitUnpin();
         }
         await this[action](button);
@@ -521,13 +572,13 @@ class tocMarkmap {
 
     onContextMenu = () => {
         const menuMap = {
-            expand: "全屏", shrink: "取消全屏", fit: "图形适配窗口", download: "下载", setExpandLevel: "设置展开等级",
+            expand: "全屏", shrink: "取消全屏", fit: "图形适配窗口", download: "下载", setting: "设置",
             close: "关闭", pinUp: "固定到顶部", pinRight: "固定到右侧", hideToolbar: "隐藏工具栏", showToolbar: "显示工具栏",
         };
         const showMenu = () => {
             const fullScreen = this.entities.fullScreen.getAttribute("action");
             const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar";
-            return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "setExpandLevel", "download", "close"])
+            return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "setting", "download", "close"])
         }
         const callback = ({key}) => this.onButtonClick(key);
         this.utils.registerMenu("markmap", "#plugin-markmap-svg", showMenu, callback);
@@ -759,12 +810,15 @@ class tocMarkmap {
 
     create = async (md, options) => {
         const {root} = this.controller.transformer.transform(md);
-        options = options || this.config.DEFAULT_TOC_OPTIONS || null;
+        options = options || this.config.DEFAULT_TOC_OPTIONS || {};
+        options.color = this.colorSchemeGenerator ? this.colorSchemeGenerator() : this.controller.Markmap.defaultOptions.color;
         this.markmap = this.controller.Markmap.create(this.entities.svg, options, root);
     }
 
     update = async (md, fit = true) => {
         const {root} = this.controller.transformer.transform(md);
+        const color = this.colorSchemeGenerator ? this.colorSchemeGenerator() : this.controller.Markmap.defaultOptions.color;
+        this.markmap.setOptions({color});
         this.markmap.setData(root);
         if (fit) {
             await this.markmap.fit();

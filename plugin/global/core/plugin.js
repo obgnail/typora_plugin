@@ -2,7 +2,7 @@ class utils {
     static isBetaVersion = window._options.appVersion[0] === "0"
     static supportHasSelector = CSS.supports("selector(:has(*))")
     static separator = File.isWin ? "\\" : "/"
-    static tempFolder = File.option.tempPath
+    static tempFolder = window._options.tempPath
     static nonExistSelector = "#__nonExist__"                 // 插件临时不可点击，返回此
     static disableForeverSelector = "#__disableForever__"     // 插件永远不可点击，返回此
     static stopLoadPluginError = new Error("stopLoadPlugin")  // 用于插件的beforeProcess方法，若希望停止加载插件，返回此
@@ -1776,10 +1776,11 @@ class dialog {
             case "checkbox":
             case "radio":
                 const checked = c => c.checked ? "checked" : "";
-                const prefix = this.utils.randomString() + "-";
+                const name = this.utils.randomString();
+                const prefix = name + "-";
                 const elements = component.list.map(el => {
                     const id = prefix + el.value;
-                    return `<div class="${type}"><input type="${type}" id="${id}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}</label></div>`
+                    return `<div class="${type}"><input type="${type}" id="${id}" name="${name}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}</label></div>`
                 });
                 const content = elements.join("");
                 inner = (component.legend === undefined) ? content : `<fieldset><legend>${component.legend}</legend>${content}</fieldset>`;

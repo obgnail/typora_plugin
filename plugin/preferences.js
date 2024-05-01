@@ -53,7 +53,7 @@ class preferencesPlugin extends BasePlugin {
         const plugins = Object.entries(settings).map(displayFunc);
         const customPlugins = Object.entries(customSettings).map(displayFunc);
         const components = [
-            {label: "🛡️ 为保护用户，部分插件无法在此处启停，如需请修改配置文件", type: "p"},
+            {label: "🛡️ 为保护用户，此处禁止启停部分插件，如需请修改配置文件", type: "p"},
             {label: "", legend: "一级插件", type: "checkbox", list: plugins},
             {label: "", legend: "二级插件", type: "checkbox", list: customPlugins},
         ];

@@ -21,5 +21,5 @@
 }
 
 #write .${this.className} > li:nth-child(n+2) {
-    display: none;
+    display: none !important;
 }
