@@ -19,6 +19,7 @@ class helpPlugin extends BasePlugin {
             {arg_name: "Github图床", arg_value: "github_picture_bed"},
             {arg_name: "反馈 - Github", arg_value: "new_issue"},
             {arg_name: "反馈 - Email", arg_value: "send_email"},
+            {arg_name: "卸载插件", arg_value: "uninstall_plugin"},
             {arg_name: "请开发者喝咖啡", arg_value: "donate"},
             {arg_name: "关于", arg_value: "about", arg_hint: "Designed with ♥ by obgnail"},
         ]
@@ -30,6 +31,32 @@ class helpPlugin extends BasePlugin {
             if (!this.updater) return;
             const arg_name = "升级插件" + (this.version ? `（当前版本：${this.version}）` : "");
             this.callArgs.unshift({arg_name: arg_name, arg_value: "update_plugin"});
+        })
+    }
+
+    uninstall = () => {
+        const _uninstall = async () => {
+            const {Fs, FsExtra} = this.utils.Package;
+            const remove = '<script src="./plugin/index.js" defer="defer"></script>';
+            const windowHTML = this.utils.joinPath("./window.html");
+            const pluginFolder = this.utils.joinPath("./plugin");
+            const content = await Fs.promises.readFile(windowHTML, "utf-8");
+            const newContent = content.replace(remove, "");
+            await Fs.promises.writeFile(windowHTML, newContent);
+            await FsExtra.remove(pluginFolder);
+            const msg = {type: "info", title: "卸载成功", buttons: ["确定"], message: "插件系统已经卸载，请重启 Typora"};
+            await this.utils.showMessageBox(msg);
+        }
+
+        const reconfirm = "卸载插件系统";
+        const label = `⚠️ 自毁程序启动后不可撤销。请输入「${reconfirm}」继续`;
+        const components = [{label: label, type: "input", placeholder: reconfirm}];
+        this.utils.modal({title: "卸载插件系统", components}, async ([{submit}]) => {
+            if (submit !== reconfirm) {
+                alert("请输入正确的内容以卸载插件系统");
+                return;
+            }
+            await _uninstall();
         })
     }
 
@@ -96,6 +123,7 @@ class helpPlugin extends BasePlugin {
             new_issue: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/issues/new"),
             send_email: () => this.utils.sendEmail("he1251698542@gmail.com", "插件反馈"),
             update_plugin: () => this.updater && this.updater.callback(),
+            uninstall_plugin: () => this.uninstall(),
             donate: () => this.donate(),
             about: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
         }

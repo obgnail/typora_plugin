@@ -1764,7 +1764,7 @@ class dialog {
             case "password":
             case "file":
                 const t = type === "input" ? "text" : type;
-                inner = `<input type="${t}" class="form-control" value="${component.value}" placeholder="${component.placeholder || ""}" ${disabled(component)}>`;
+                inner = `<input type="${t}" class="form-control" value="${component.value || ""}" placeholder="${component.placeholder || ""}" ${disabled(component)}>`;
                 break
             case "range":
                 const {min = 0, max = 100, step = 1, value = 1} = component;

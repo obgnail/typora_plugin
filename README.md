@@ -225,7 +225,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### 我不想用了，如何恢复原状？
 
-[安装方法二](#如何使用：方法二（手动）) 逆序操作即可。
+右键菜单 -> 不常用插件 -> 卸载插件。
 
 
 
