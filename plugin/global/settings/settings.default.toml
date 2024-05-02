@@ -506,10 +506,6 @@ BORDER_STYLE_WHEN_NODE_HOVER = "4px solid #FF7B00"
 #   - pan               : 是否允许平移
 #   - colorScheme       : 配色方案（填入颜色数组，如['#1f77b4', '#17becf']）
 DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, colorFreezeLevel = 6, zoom = true, pan = true, colorScheme = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'] }
-# 在拖拽窗口的时候是否使用动画（使用动画视觉效果比较好，但是不跟手）
-USE_ANIMATION_WHEN_DRAG = false
-# 在调整窗口大小的时候是否使用动画
-USE_ANIMATION_WHEN_RESIZE = false
 # 导出svg时，是否删除foreignObject，并替换成<text>（若您不了解SVG，请不要修改此选项）
 # - false: 操作含有foreignObject的svg标签处处受限（比如说转为jpg），但是有好看的样式
 # - true:  操作不受限，但是丢失了样式
