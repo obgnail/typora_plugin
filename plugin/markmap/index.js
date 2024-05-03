@@ -215,7 +215,8 @@ class tocMarkmap {
 
     init = () => {
         this.markmap = null;
-        this.currentScheme = this.config.DEFAULT_TOC_OPTIONS.colorScheme || ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+        this.defaultScheme = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+        this.currentScheme = this.config.DEFAULT_TOC_OPTIONS.colorScheme || this.defaultScheme;
         this.colorFreezeLevel = this.config.DEFAULT_TOC_OPTIONS.colorFreezeLevel || 6;
         this.setColorScheme(this.currentScheme);
 
@@ -389,11 +390,17 @@ class tocMarkmap {
         const further = () => {
             const {REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: removeForeign} = this.config;
             const removeForeignLabel = "导出时替换 foreignObject 标签" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
+            const initColorFuncLabel = "恢复默认配色方案" + _genInfo("若勾选则使用系统默认配色方案，上述配色方案失效");
             const list = [
                 {label: removeForeignLabel, value: "removeForeignObject", checked: removeForeign},
+                {label: initColorFuncLabel, value: "initColorFunction", checked: false},
             ];
             const callback = submit => {
                 this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = submit.includes("removeForeignObject");
+                if (submit.includes("initColorFunction")) {
+                    this.colorSchemeGenerator = null;
+                    this.currentScheme = this.defaultScheme;
+                }
             }
             return {label: "", legend: "高级", type: "checkbox", list, callback}
         }
