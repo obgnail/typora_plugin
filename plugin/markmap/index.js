@@ -215,7 +215,8 @@ class tocMarkmap {
 
     init = () => {
         this.markmap = null;
-        this.currentScheme = this.config.DEFAULT_TOC_OPTIONS.colorScheme || ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+        this.defaultScheme = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+        this.currentScheme = this.config.DEFAULT_TOC_OPTIONS.colorScheme || this.defaultScheme;
         this.colorFreezeLevel = this.config.DEFAULT_TOC_OPTIONS.colorFreezeLevel || 6;
         this.setColorScheme(this.currentScheme);
 
@@ -330,6 +331,16 @@ class tocMarkmap {
             return {label: "展开的分支等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
         }
 
+        const maxWidth = () => {
+            const value = (this.markmap && this.markmap.options.maxWidth) || 0;
+            const callback = maxWidth => {
+                maxWidth = parseInt(maxWidth);
+                this.markmap.options.maxWidth = isNaN(maxWidth) ? 0 : maxWidth;
+            };
+            const label = "节点最大长度" + _genInfo("0 表示无长度限制");
+            return {label: label, type: "range", value: value, min: 0, max: 1000, step: 50, callback}
+        }
+
         const colorFreezeLevel = () => {
             const level = Math.min(this.colorFreezeLevel, maxLevel);
             const callback = level => {
@@ -342,13 +353,13 @@ class tocMarkmap {
 
         const localeHeightRatio = () => {
             const defaultValue = 0.2;
-            const value = this.config.LOCALE_HIGHT_RATIO || defaultValue;
+            const value = parseInt((this.config.LOCALE_HIGHT_RATIO || defaultValue) * 100);
             const callback = ratio => {
-                ratio = parseFloat(ratio / 100).toFixed(2);
+                ratio = Number(parseFloat(ratio / 100).toFixed(2));
                 this.config.LOCALE_HIGHT_RATIO = isNaN(ratio) ? defaultValue : ratio;
             };
             const label = "定位时目标章节所处的视口位置" + _genInfo("定位到目标章节时，目标章节滚动到当前视口的高度位置（百分比）\n即：0 为当前视口的第一行，100 为最后一行");
-            return {label: label, type: "range", value: value * 100, min: 0, max: 100, step: 1, callback}
+            return {label: label, type: "range", value: value, min: 0, max: 100, step: 1, callback}
         }
 
         const duration = () => {
@@ -362,12 +373,12 @@ class tocMarkmap {
 
         const fitRatio = () => {
             const defaultValue = 0.95;
-            const value = (this.markmap && this.markmap.options.fitRatio) || defaultValue;
+            const value = parseInt(((this.markmap && this.markmap.options.fitRatio) || defaultValue) * 100);
             const callback = fitRatio => {
-                fitRatio = parseFloat(fitRatio / 100).toFixed(2);
+                fitRatio = Number(parseFloat(fitRatio / 100).toFixed(2));
                 this.markmap.options.fitRatio = isNaN(fitRatio) ? defaultValue : fitRatio;
             };
-            return {label: "图形适配窗口的面积占比", type: "range", value: value * 100, min: 50, max: 100, step: 1, callback}
+            return {label: "图形适配窗口的面积占比", type: "range", value: value, min: 50, max: 100, step: 1, callback}
         }
 
         const ability = () => {
@@ -389,16 +400,22 @@ class tocMarkmap {
         const further = () => {
             const {REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: removeForeign} = this.config;
             const removeForeignLabel = "导出时替换 foreignObject 标签" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
+            const initColorFuncLabel = "恢复默认配色方案" + _genInfo("使用系统默认配色方案，使得上述配色方案失效");
             const list = [
                 {label: removeForeignLabel, value: "removeForeignObject", checked: removeForeign},
+                {label: initColorFuncLabel, value: "initColorFunction", checked: false},
             ];
             const callback = submit => {
                 this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = submit.includes("removeForeignObject");
+                if (submit.includes("initColorFunction")) {
+                    this.colorSchemeGenerator = null;
+                    this.currentScheme = this.defaultScheme;
+                }
             }
             return {label: "", legend: "高级", type: "checkbox", list, callback}
         }
 
-        const components = [colorScheme, colorFreezeLevel, expandLevel, fitRatio, duration, localeHeightRatio, ability, further].map(f => f());
+        const components = [colorScheme, colorFreezeLevel, expandLevel, fitRatio, duration, localeHeightRatio, maxWidth, ability, further].map(f => f());
         this.utils.modal({title: "设置", components}, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);

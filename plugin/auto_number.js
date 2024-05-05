@@ -222,9 +222,11 @@ class autoNumberPlugin extends BasePlugin {
         return this.getStyleString()
     }
 
-    toggleSetting = toggle => {
+    toggleSetting = async toggle => {
         const css = this.getResultStyle(toggle);
         this.utils.insertStyle(this.css_id, css);
+        const obj = {[toggle]: this.config[toggle]};
+        await this.utils.saveConfig(this.fixedName, obj);
     }
 
     call = type => {

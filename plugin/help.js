@@ -12,14 +12,14 @@ class helpPlugin extends BasePlugin {
         const arg_hint = "此功能仅对开发者开放";
         this.callArgs = [
             {arg_name: "修改配置", arg_value: "open_setting_folder"},
-            {arg_name: "备份配置文件", arg_value: "backup_setting_file"},
+            {arg_name: "备份配置", arg_value: "backup_setting_file"},
+            {arg_name: "卸载插件", arg_value: "uninstall_plugin"},
             {arg_name: "修改插件样式", arg_value: "set_user_styles", arg_hint},
             {arg_name: "我要写插件", arg_value: "new_custom_plugin", arg_hint},
-            {arg_name: "Typora自动化", arg_value: "json_rpc", arg_hint},
-            {arg_name: "Github图床", arg_value: "github_picture_bed"},
+            {arg_name: "Typora 自动化", arg_value: "json_rpc", arg_hint},
+            {arg_name: "Github 图床", arg_value: "github_picture_bed"},
             {arg_name: "反馈 - Github", arg_value: "new_issue"},
             {arg_name: "反馈 - Email", arg_value: "send_email"},
-            {arg_name: "卸载插件", arg_value: "uninstall_plugin"},
             {arg_name: "请开发者喝咖啡", arg_value: "donate"},
             {arg_name: "关于", arg_value: "about", arg_hint: "Designed with ♥ by obgnail"},
         ]
@@ -40,20 +40,25 @@ class helpPlugin extends BasePlugin {
             const remove = '<script src="./plugin/index.js" defer="defer"></script>';
             const windowHTML = this.utils.joinPath("./window.html");
             const pluginFolder = this.utils.joinPath("./plugin");
-            const content = await Fs.promises.readFile(windowHTML, "utf-8");
-            const newContent = content.replace(remove, "");
-            await Fs.promises.writeFile(windowHTML, newContent);
-            await FsExtra.remove(pluginFolder);
+            try {
+                const content = await Fs.promises.readFile(windowHTML, "utf-8");
+                const newContent = content.replace(remove, "");
+                await Fs.promises.writeFile(windowHTML, newContent);
+                await FsExtra.remove(pluginFolder);
+            } catch (e) {
+                alert(e.toString());
+                return;
+            }
             const msg = {type: "info", title: "卸载成功", buttons: ["确定"], message: "插件系统已经卸载，请重启 Typora"};
             await this.utils.showMessageBox(msg);
         }
 
         const reconfirm = "卸载插件系统";
-        const label = `⚠️ 自毁程序启动后不可撤销。请输入「${reconfirm}」继续`;
+        const label = `⚠️ <b>此操作不可撤销</b>。请输入「${reconfirm}」启动自毁程序`;
         const components = [{label: label, type: "input", placeholder: reconfirm}];
         this.utils.modal({title: "卸载插件系统", components}, async ([{submit}]) => {
             if (submit !== reconfirm) {
-                alert("请输入正确的内容以卸载插件系统");
+                alert("请输入正确的内容");
                 return;
             }
             await _uninstall();

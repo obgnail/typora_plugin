@@ -27,37 +27,31 @@
 }
 
 .plugin-markmap-grip {
-    background-color: var(--active-file-border-color, black);
+    background-color: var(--active-file-border-color, rgba(150, 122, 116, 0.5));
     pointer-events: auto;
+    position: absolute;
+    border-radius: 4px;
+    opacity: 0.7;
 }
 
-.plugin-markmap-grip::before {
-    content: "";
-    display: block;
-    margin: auto;
+.plugin-markmap-grip:hover {
+    opacity: 1;
 }
 
 .plugin-markmap-grip.grip-up {
     padding: 4px 0;
-    cursor: row-resize;
-}
-
-.plugin-markmap-grip.grip-up::before {
-    width: 24px;
-    border-top: 3px double var(--active-file-bg-color);
+    cursor: ns-resize;
+    width: 100px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .plugin-markmap-grip.grip-right {
     padding: 0 4px;
-    cursor: col-resize;
-}
-
-.plugin-markmap-grip.grip-right::before {
-    position: absolute;
+    cursor: ew-resize;
+    height: 100px;
     top: 50%;
-    transform: translate(-50%, -50%);
-    height: 24px;
-    border-left: 3px double var(--active-file-bg-color);
+    transform: translateY(-50%);
 }
 
 ${icon_wrap}
@@ -91,8 +85,11 @@ ${show_outline}
 
 #plugin-markmap-svg {
     flex: 1;
-    line-height: initial;
     user-select: none;
+}
+
+#plugin-markmap-svg .markmap-foreign {
+    line-height: 20px;
 }
 
 .plugin-markmap-color-scheme {

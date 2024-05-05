@@ -219,25 +219,31 @@ TEMPLATE = """```echarts
 //   2. echarts: echarts模块
 //   3. option:  echarts的option
 //   4. this:    echarts插件实例
-// 示例：https://echarts.apache.org/examples/zh/index.html#chart-type-line
+// 更多示例：https://echarts.apache.org/examples/zh/index.html#chart-type-line
 // 代码块里的所有内容都会被eval，请注意安全问题
 // 可以使用如下注释设置图表宽高（否则使用默认）：
 // {height: "300px", width: ""}
 
 option = {
-    xAxis: {
-        data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"]
-    },
-    yAxis: {},
+    tooltip: { trigger: 'item' },
+    legend: { top: '5%', left: 'center' },
     series: [{
-        name: '销量',
-        type: 'bar',
-        data: [5, 20, 36, 10, 10, 20]
+        name: 'Access From',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
+        label: { show: false, position: 'center' },
+        emphasis: { label: { show: true,  fontSize: 40,  fontWeight: 'bold' } },
+        labelLine: { show: false },
+        data: [
+            {value: 1548, name: 'Search Engine'},
+            {value: 735, name: 'Direct'},
+            {value: 580, name: 'Email'},
+            {value: 484, name: 'Union Ads'},
+            {value: 310, name: 'Video Ads'}
+        ]
     }]
-};
-
-// 添加事件
-// myChart.on('click', params => confirm("你点击了："+params.name));
+}
 ```
 """
 
