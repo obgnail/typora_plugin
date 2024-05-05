@@ -345,11 +345,11 @@ class tocMarkmap {
             const defaultValue = 0.2;
             const value = this.config.LOCALE_HIGHT_RATIO || defaultValue;
             const callback = ratio => {
-                ratio = parseFloat(ratio / 100).toFixed(2);
+                ratio = Number(parseFloat(ratio / 100).toFixed(2));
                 this.config.LOCALE_HIGHT_RATIO = isNaN(ratio) ? defaultValue : ratio;
             };
             const label = "定位时目标章节所处的视口位置" + _genInfo("定位到目标章节时，目标章节滚动到当前视口的高度位置（百分比）\n即：0 为当前视口的第一行，100 为最后一行");
-            return {label: label, type: "range", value: value * 100, min: 0, max: 100, step: 1, callback}
+            return {label: label, type: "range", value: parseInt(value * 100), min: 0, max: 100, step: 1, callback}
         }
 
         const duration = () => {
@@ -365,10 +365,10 @@ class tocMarkmap {
             const defaultValue = 0.95;
             const value = (this.markmap && this.markmap.options.fitRatio) || defaultValue;
             const callback = fitRatio => {
-                fitRatio = parseFloat(fitRatio / 100).toFixed(2);
+                fitRatio = Number(parseFloat(fitRatio / 100).toFixed(2));
                 this.markmap.options.fitRatio = isNaN(fitRatio) ? defaultValue : fitRatio;
             };
-            return {label: "图形适配窗口的面积占比", type: "range", value: value * 100, min: 50, max: 100, step: 1, callback}
+            return {label: "图形适配窗口的面积占比", type: "range", value: parseInt(value * 100), min: 50, max: 100, step: 1, callback}
         }
 
         const ability = () => {
