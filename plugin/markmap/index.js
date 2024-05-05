@@ -328,7 +328,7 @@ class tocMarkmap {
                 level = parseInt(level);
                 this.markmap.options.initialExpandLevel = isNaN(level) ? 1 : level;
             };
-            return {label: "展开的分支等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
+            return {label: "展开节点的分支等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
         }
 
         const maxWidth = () => {
@@ -358,7 +358,7 @@ class tocMarkmap {
                 ratio = Number(parseFloat(ratio / 100).toFixed(2));
                 this.config.LOCALE_HIGHT_RATIO = isNaN(ratio) ? defaultValue : ratio;
             };
-            const label = "定位时目标章节所处的视口位置" + _genInfo("定位到目标章节时，目标章节滚动到当前视口的高度位置（百分比）\n即：0 为当前视口的第一行，100 为最后一行");
+            const label = "章节的定位视口高度" + _genInfo("鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）\n即：0 为当前视口的第一行，100 为最后一行");
             return {label: label, type: "range", value: value, min: 0, max: 100, step: 1, callback}
         }
 
@@ -378,12 +378,12 @@ class tocMarkmap {
                 fitRatio = Number(parseFloat(fitRatio / 100).toFixed(2));
                 this.markmap.options.fitRatio = isNaN(fitRatio) ? defaultValue : fitRatio;
             };
-            return {label: "图形适配窗口的面积占比", type: "range", value: value, min: 50, max: 100, step: 1, callback}
+            return {label: "图形在窗口中的默认面积比例", type: "range", value: value, min: 50, max: 100, step: 1, callback}
         }
 
         const ability = () => {
             const {zoom = true, pan = true} = (this.markmap && this.markmap.options) || {};
-            const autoFitLabel = "自动适配窗口" + _genInfo("图形更新时重新适配窗口大小");
+            const autoFitLabel = "自动适配窗口" + _genInfo("图形更新时自动重新适配窗口大小");
             const list = [
                 {label: "鼠标滚轮缩放", value: "zoom", checked: zoom},
                 {label: "鼠标滚轮平移", value: "pan", checked: pan},
