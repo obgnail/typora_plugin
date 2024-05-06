@@ -10,7 +10,7 @@
     top: 50%;
     transform: translateY(-50%);
     height: 100px;
-    padding: 0 4px;
+    padding: 0 3px;
     cursor: ew-resize;
     border-radius: 4px;
     opacity: 0.7;

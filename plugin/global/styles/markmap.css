@@ -39,7 +39,7 @@
 }
 
 .plugin-markmap-grip.grip-up {
-    padding: 4px 0;
+    padding: 3px 0;
     cursor: ns-resize;
     width: 100px;
     left: 50%;
@@ -47,7 +47,7 @@
 }
 
 .plugin-markmap-grip.grip-right {
-    padding: 0 4px;
+    padding: 0 3px;
     cursor: ew-resize;
     height: 100px;
     top: 50%;
@@ -78,9 +78,15 @@ ${show_outline}
 
 .plugin-markmap-icon[action="resize"] {
     position: absolute;
-    bottom: 0.1em;
-    right: 0.4em;
+    display: flex;
+    bottom: 0.2em;
+    right: 0.2em;
     margin: 0;
+}
+
+.plugin-markmap-icon[action="resize"] svg {
+    height: 1.1em;
+    width: 1.1em;
 }
 
 #plugin-markmap-svg {
