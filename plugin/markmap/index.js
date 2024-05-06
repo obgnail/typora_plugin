@@ -205,7 +205,11 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
                 </div>
                 <svg id="plugin-markmap-svg"></svg>
-                <div class="plugin-markmap-icon ion-android-arrow-down-right" action="resize" ty-hint="拖动调整大小"></div>
+                <div class="plugin-markmap-icon" action="resize" ty-hint="拖动调整大小">
+                    <svg width="800px" height="800px" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path>
+                    </svg>
+                </div>
             </div>
             <div class="plugin-markmap-grip grip-up plugin-common-hidden"></div>
         </div>
@@ -328,14 +332,35 @@ class tocMarkmap {
                 level = parseInt(level);
                 this.markmap.options.initialExpandLevel = isNaN(level) ? 1 : level;
             };
-            return {label: "展开的分支等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
+            return {label: "展开节点的分支等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
+        }
+
+        const spacingHorizontal = () => {
+            const defaultSpacing = 80;
+            const value = (this.markmap && this.markmap.options.spacingHorizontal) || defaultSpacing;
+            const callback = spacingHorizontal => {
+                spacingHorizontal = parseInt(spacingHorizontal);
+                this.markmap.options.spacingHorizontal = isNaN(spacingHorizontal) ? defaultSpacing : spacingHorizontal;
+            };
+            return {label: "节点水平间距", type: "range", value: value, min: 1, max: 100, step: 1, callback}
+        }
+
+        const spacingVertical = () => {
+            const defaultSpacing = 5;
+            const value = (this.markmap && this.markmap.options.spacingVertical) || defaultSpacing;
+            const callback = spacingVertical => {
+                spacingVertical = parseInt(spacingVertical);
+                this.markmap.options.spacingVertical = isNaN(spacingVertical) ? defaultSpacing : spacingVertical;
+            };
+            return {label: "节点垂直间距", type: "range", value: value, min: 1, max: 100, step: 1, callback}
         }
 
         const maxWidth = () => {
-            const value = (this.markmap && this.markmap.options.maxWidth) || 0;
+            const defaultMaxWidth = 0;
+            const value = (this.markmap && this.markmap.options.maxWidth) || defaultMaxWidth;
             const callback = maxWidth => {
                 maxWidth = parseInt(maxWidth);
-                this.markmap.options.maxWidth = isNaN(maxWidth) ? 0 : maxWidth;
+                this.markmap.options.maxWidth = isNaN(maxWidth) ? defaultMaxWidth : maxWidth;
             };
             const label = "节点最大长度" + _genInfo("0 表示无长度限制");
             return {label: label, type: "range", value: value, min: 0, max: 1000, step: 50, callback}
@@ -358,15 +383,16 @@ class tocMarkmap {
                 ratio = Number(parseFloat(ratio / 100).toFixed(2));
                 this.config.LOCALE_HIGHT_RATIO = isNaN(ratio) ? defaultValue : ratio;
             };
-            const label = "定位时目标章节所处的视口位置" + _genInfo("定位到目标章节时，目标章节滚动到当前视口的高度位置（百分比）\n即：0 为当前视口的第一行，100 为最后一行");
+            const label = "章节的定位视口高度" + _genInfo("鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）\n即：0 为当前视口的第一行，100 为最后一行");
             return {label: label, type: "range", value: value, min: 0, max: 100, step: 1, callback}
         }
 
         const duration = () => {
-            const value = (this.markmap && this.markmap.options.duration) || 500;
+            const defaultDuration = 500;
+            const value = (this.markmap && this.markmap.options.duration) || defaultDuration;
             const callback = duration => {
                 duration = parseInt(duration * 1000);
-                this.markmap.options.duration = isNaN(duration) ? 500 : duration;
+                this.markmap.options.duration = isNaN(duration) ? defaultDuration : duration;
             };
             return {label: "动画持续时间", type: "range", value: value / 1000, min: 0.1, max: 1, step: 0.1, callback}
         }
@@ -378,12 +404,12 @@ class tocMarkmap {
                 fitRatio = Number(parseFloat(fitRatio / 100).toFixed(2));
                 this.markmap.options.fitRatio = isNaN(fitRatio) ? defaultValue : fitRatio;
             };
-            return {label: "图形适配窗口的面积占比", type: "range", value: value, min: 50, max: 100, step: 1, callback}
+            return {label: "图形在窗口中的默认面积比例", type: "range", value: value, min: 50, max: 100, step: 1, callback}
         }
 
         const ability = () => {
             const {zoom = true, pan = true} = (this.markmap && this.markmap.options) || {};
-            const autoFitLabel = "自动适配窗口" + _genInfo("图形更新时重新适配窗口大小");
+            const autoFitLabel = "自动适配窗口" + _genInfo("图形更新时自动重新适配窗口大小");
             const list = [
                 {label: "鼠标滚轮缩放", value: "zoom", checked: zoom},
                 {label: "鼠标滚轮平移", value: "pan", checked: pan},
@@ -415,7 +441,7 @@ class tocMarkmap {
             return {label: "", legend: "高级", type: "checkbox", list, callback}
         }
 
-        const components = [colorScheme, colorFreezeLevel, expandLevel, fitRatio, duration, localeHeightRatio, maxWidth, ability, further].map(f => f());
+        const components = [colorScheme, colorFreezeLevel, expandLevel, fitRatio, spacingHorizontal, spacingVertical, maxWidth, duration, localeHeightRatio, ability, further].map(f => f());
         this.utils.modal({title: "设置", components}, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
@@ -621,18 +647,25 @@ class tocMarkmap {
                 this.shrink();
                 this.expand();
             }
-            const func = ["pinUp", "pinRight"].find(func => this.entities.modal.classList.contains(func));
-            if (!func) return
-            (async () => {
-                await this[func]();
-                await this[func]();
-            })()
+            const className = ["pinUp", "pinRight"].find(func => this.entities.modal.classList.contains(func));
+            if (!className) return
+
+            const {width, left, right} = this.entities.content.getBoundingClientRect();
+            let source;
+            if (className === "pinUp") {
+                source = {left: `${left}px`, width: `${width}px`};
+            } else {
+                const {right: modalRight} = this.entities.modal.getBoundingClientRect();
+                source = {left: `${right}px`, width: `${modalRight - right}px`};
+            }
+            Object.assign(this.entities.modal.style, source);
         }
         const hasTransition = window.getComputedStyle(this.entities.content).transition !== "all 0s ease 0s";
-        const callback = hasTransition
-            ? () => this.entities.content.addEventListener("transitionend", resetPosition, {once: true})
-            : this.utils.debounce(resetPosition, 400)
+        const debounceFunc = this.utils.debounce(resetPosition, 400);
+        const listenFunc = () => this.entities.content.addEventListener("transitionend", resetPosition, {once: true});
+        const callback = hasTransition ? listenFunc : debounceFunc;
         this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, callback);
+        this.utils.decorate(() => File && File.editor && File.editor.library, "setSidebarWidth", null, debounceFunc);
     }
 
     onContextMenu = () => {
