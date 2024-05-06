@@ -647,11 +647,19 @@ class tocMarkmap {
                 this.shrink();
                 this.expand();
             }
-            const func = ["pinUp", "pinRight"].find(func => this.entities.modal.classList.contains(func));
-            if (!func) return
+            const className = ["pinUp", "pinRight"].find(func => this.entities.modal.classList.contains(func));
+            if (!className) return
+
             (async () => {
-                await this[func]();
-                await this[func]();
+                const {width, left, right} = this.entities.content.getBoundingClientRect();
+                let source;
+                if (className === "pinUp") {
+                    source = {left: `${left}px`, width: `${width}px`};
+                } else {
+                    const {right: modalRight} = this.entities.modal.getBoundingClientRect();
+                    source = {left: `${right}px`, width: `${modalRight - right}px`};
+                }
+                Object.assign(this.entities.modal.style, source);
             })()
         }
         const hasTransition = window.getComputedStyle(this.entities.content).transition !== "all 0s ease 0s";
