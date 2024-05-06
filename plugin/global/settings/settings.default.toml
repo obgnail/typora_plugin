@@ -498,14 +498,18 @@ WIDTH_PRECENT_WHEN_PIN_RIGHT = 50
 SHOW_BORDER_WHEN_NODE_HOVER = true
 # 当鼠标悬停于节点时，显示边框的样式（当SHOW_BORDER_WHEN_NODE_HOVER为false时，此选项失效）
 BORDER_STYLE_WHEN_NODE_HOVER = "4px solid #FF7B00"
-# 默认的toc markmap options（参考：https://markmap.js.org/docs/json-options）
+# 默认的toc图形选项
 #   - duration          : 折叠/展开节点时的动画持续时间
 #   - initialExpandLevel: 首次渲染时要展开多少级分支（-1则展开全部）
 #   - colorFreezeLevel  : 多少级开始固定分支颜色
 #   - zoom              : 是否允许缩放
 #   - pan               : 是否允许平移
 #   - colorScheme       : 配色方案（填入颜色数组，如['#1f77b4', '#17becf']）
-DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, colorFreezeLevel = 6, zoom = true, pan = true, colorScheme = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'] }
+#   - maxWidth          : 节点最大长度（0则无长度限制）
+#   - spacingHorizontal : 节点水平间距
+#   - spacingVertical   : 节点垂直间距
+#   - fitRatio          : 图形在窗口中的默认面积比例
+DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, colorFreezeLevel = 6, zoom = true, pan = true, colorScheme = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'] }
 # 导出svg时，是否删除foreignObject，并替换成<text>（若您不了解SVG，请不要修改此选项）
 # - false: 操作含有foreignObject的svg标签处处受限（比如说转为jpg），但是有好看的样式
 # - true:  操作不受限，但是丢失了样式
@@ -528,14 +532,17 @@ INTERACTIVE_MODE = true
 DEFAULT_FENCE_HEIGHT = "300px"
 # 代码块背景颜色
 DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
-# 默认的fence markmap options（参考：https://markmap.js.org/docs/json-options）
+# 默认的fence图形选项
 #   - duration          : 折叠/展开节点时的动画持续时间
 #   - initialExpandLevel: 初始渲染时要展开的最大节点级别（-1则展开全部）
 #   - zoom              : 是否允许缩放
 #   - pan               : 是否允许平移
 #   - height            : 高度
 #   - backgroundColor   : 背景色
-DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, zoom = false, pan = false, height = "300px", backgroundColor = "#f8f8f8" }
+#   - spacingHorizontal : 节点水平间距
+#   - spacingVertical   : 节点垂直间距
+#   - fitRatio          : 图形在窗口中的默认面积比例
+DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, zoom = false, pan = false, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, height = "300px", backgroundColor = "#f8f8f8" }
 # 插入的模板
 FENCE_TEMPLATE = """```markmap
 ---
@@ -545,6 +552,12 @@ markmap:
   zoom: false
   # 是否允许平移
   pan: false
+  # 节点水平间距
+  spacingHorizontal: 80
+  # 节点垂直间距
+  spacingVertical: 5
+  # 图形在窗口中的默认面积比例
+  fitRatio: 0.95
   # 初始渲染时要展开的最大节点级别（-1则展开全部）
   initialExpandLevel: -1
   # 高度

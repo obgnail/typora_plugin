@@ -335,11 +335,32 @@ class tocMarkmap {
             return {label: "展开节点的分支等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
         }
 
+        const spacingHorizontal = () => {
+            const defaultSpacing = 80;
+            const value = (this.markmap && this.markmap.options.spacingHorizontal) || defaultSpacing;
+            const callback = spacingHorizontal => {
+                spacingHorizontal = parseInt(spacingHorizontal);
+                this.markmap.options.spacingHorizontal = isNaN(spacingHorizontal) ? defaultSpacing : spacingHorizontal;
+            };
+            return {label: "节点水平间距", type: "range", value: value, min: 1, max: 100, step: 1, callback}
+        }
+
+        const spacingVertical = () => {
+            const defaultSpacing = 5;
+            const value = (this.markmap && this.markmap.options.spacingVertical) || defaultSpacing;
+            const callback = spacingVertical => {
+                spacingVertical = parseInt(spacingVertical);
+                this.markmap.options.spacingVertical = isNaN(spacingVertical) ? defaultSpacing : spacingVertical;
+            };
+            return {label: "节点垂直间距", type: "range", value: value, min: 1, max: 100, step: 1, callback}
+        }
+
         const maxWidth = () => {
-            const value = (this.markmap && this.markmap.options.maxWidth) || 0;
+            const defaultMaxWidth = 0;
+            const value = (this.markmap && this.markmap.options.maxWidth) || defaultMaxWidth;
             const callback = maxWidth => {
                 maxWidth = parseInt(maxWidth);
-                this.markmap.options.maxWidth = isNaN(maxWidth) ? 0 : maxWidth;
+                this.markmap.options.maxWidth = isNaN(maxWidth) ? defaultMaxWidth : maxWidth;
             };
             const label = "节点最大长度" + _genInfo("0 表示无长度限制");
             return {label: label, type: "range", value: value, min: 0, max: 1000, step: 50, callback}
@@ -367,10 +388,11 @@ class tocMarkmap {
         }
 
         const duration = () => {
-            const value = (this.markmap && this.markmap.options.duration) || 500;
+            const defaultDuration = 500;
+            const value = (this.markmap && this.markmap.options.duration) || defaultDuration;
             const callback = duration => {
                 duration = parseInt(duration * 1000);
-                this.markmap.options.duration = isNaN(duration) ? 500 : duration;
+                this.markmap.options.duration = isNaN(duration) ? defaultDuration : duration;
             };
             return {label: "动画持续时间", type: "range", value: value / 1000, min: 0.1, max: 1, step: 0.1, callback}
         }
@@ -419,7 +441,7 @@ class tocMarkmap {
             return {label: "", legend: "高级", type: "checkbox", list, callback}
         }
 
-        const components = [colorScheme, colorFreezeLevel, expandLevel, fitRatio, duration, localeHeightRatio, maxWidth, ability, further].map(f => f());
+        const components = [colorScheme, colorFreezeLevel, expandLevel, fitRatio, spacingHorizontal, spacingVertical, maxWidth, duration, localeHeightRatio, ability, further].map(f => f());
         this.utils.modal({title: "设置", components}, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
