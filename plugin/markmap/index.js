@@ -650,17 +650,15 @@ class tocMarkmap {
             const className = ["pinUp", "pinRight"].find(func => this.entities.modal.classList.contains(func));
             if (!className) return
 
-            (async () => {
-                const {width, left, right} = this.entities.content.getBoundingClientRect();
-                let source;
-                if (className === "pinUp") {
-                    source = {left: `${left}px`, width: `${width}px`};
-                } else {
-                    const {right: modalRight} = this.entities.modal.getBoundingClientRect();
-                    source = {left: `${right}px`, width: `${modalRight - right}px`};
-                }
-                Object.assign(this.entities.modal.style, source);
-            })()
+            const {width, left, right} = this.entities.content.getBoundingClientRect();
+            let source;
+            if (className === "pinUp") {
+                source = {left: `${left}px`, width: `${width}px`};
+            } else {
+                const {right: modalRight} = this.entities.modal.getBoundingClientRect();
+                source = {left: `${right}px`, width: `${modalRight - right}px`};
+            }
+            Object.assign(this.entities.modal.style, source);
         }
         const hasTransition = window.getComputedStyle(this.entities.content).transition !== "all 0s ease 0s";
         const debounceFunc = this.utils.debounce(resetPosition, 400);
