@@ -197,7 +197,7 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
                     <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="全屏"></div>
                     <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+鼠标拖拽也可以移动）"></div>
-                    <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图形重新适配窗口"></div>
+                    <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图形适配窗口"></div>
                     <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="鼠标穿透"></div>
                     <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="配置"></div>
                     <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="导出"></div>
@@ -205,7 +205,7 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
                 </div>
                 <svg id="plugin-markmap-svg"></svg>
-                <div class="plugin-markmap-icon" action="resize" ty-hint="拖动调整大小">
+                <div class="plugin-markmap-icon" action="resize">
                     <svg width="800px" height="800px" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
                         <path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path>
                     </svg>
@@ -563,6 +563,7 @@ class tocMarkmap {
             button.classList.replace("ion-ios7-undo", "ion-chevron-up");
             button.setAttribute("ty-hint", "固定到顶部");
         }
+        this.utils.toggleVisible(this.entities.resize, this.pinUtils.isPinUp);
         if (draw) {
             await this.drawToc();
         }
@@ -608,6 +609,7 @@ class tocMarkmap {
             button.classList.replace("ion-ios7-undo", "ion-chevron-right");
             button.setAttribute("ty-hint", "固定到右侧");
         }
+        this.utils.toggleVisible(this.entities.resize, this.pinUtils.isPinRight);
         if (draw) {
             await this.drawToc();
         }
@@ -707,14 +709,14 @@ class tocMarkmap {
     onResize = () => {
         const getModalMinHeight = () => {
             const one = this.entities.header.firstElementChild.getBoundingClientRect().height;
-            const count = (this.config.ALLOW_ICON_WRAP) ? 1 : this.entities.header.childElementCount;
+            const count = this.config.ALLOW_ICON_WRAP ? 1 : this.entities.header.childElementCount;
             return one * count
         }
 
         const getModalMinWidth = () => {
             const {marginLeft, paddingRight} = document.defaultView.getComputedStyle(this.entities.header);
             const headerWidth = this.entities.header.getBoundingClientRect().width;
-            const _marginRight = (this.config.ALLOW_ICON_WRAP) ? 0 : parseFloat(paddingRight);
+            const _marginRight = this.config.ALLOW_ICON_WRAP ? 0 : parseFloat(paddingRight);
             return parseFloat(marginLeft) + headerWidth + _marginRight
         }
 
@@ -725,12 +727,9 @@ class tocMarkmap {
 
         // 自由移动时调整大小
         {
-            const attr = "ty-hint";
             let deltaHeight = 0;
             let deltaWidth = 0;
-            let hint = this.entities.resize.getAttribute(attr);
             const onMouseDown = (startX, startY, startWidth, startHeight) => {
-                this.entities.resize.removeAttribute(attr);
                 this.cleanTransition();
                 deltaHeight = getModalMinHeight() - startHeight;
                 deltaWidth = getModalMinWidth() - startWidth;
@@ -741,7 +740,6 @@ class tocMarkmap {
                 return {deltaX, deltaY}
             }
             const onMouseUp = async () => {
-                this.entities.resize.setAttribute(attr, hint);
                 this.rollbackTransition();
                 await this._waitUnpin();
                 this.setFullScreenIcon(false);
@@ -857,6 +855,7 @@ class tocMarkmap {
     setFullScreenIcon = fullScreen => {
         this.entities.modal.classList.toggle("noBoxShadow", fullScreen);
         this.entities.fullScreen.setAttribute("action", fullScreen ? "shrink" : "expand");
+        this.utils.toggleVisible(this.entities.resize, fullScreen);
         this.fit();
     }
 
