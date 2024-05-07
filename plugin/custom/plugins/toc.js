@@ -150,9 +150,13 @@ class tocPlugin extends BaseCustomPlugin {
     _getTocRootNode = () => {
         const root = {depth: 0, cid: "n0", text: "root", children: []};
         const {headers = []} = File.editor.nodeMap.toc;
-        if (!headers) return root;
+        if (headers.length === 0) return root;
 
-        const toc = headers.map(({attributes: {depth, text}, cid}) => ({depth, text, cid, children: []}));
+        const {outline} = File.editor.library;
+        const toc = this.config.escape_header
+            ? outline.getHeaderMatrix(true).map(([depth, text, cid]) => ({depth, text, cid, children: []}))
+            : headers.map(({attributes: {depth, text}, cid}) => ({depth, text, cid, children: []}))
+
         toc.forEach((node, idx) => {
             const parent = this._findParent(toc, idx - 1, node.depth) || root;
             parent.children.push(node);

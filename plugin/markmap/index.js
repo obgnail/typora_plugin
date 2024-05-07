@@ -271,6 +271,7 @@ class tocMarkmap {
     close = () => {
         this.entities.modal.style = "";
         this.utils.hide(this.entities.modal);
+        this.utils.show(this.entities.resize);
         this.entities.modal.classList.remove("noBoxShadow");
         this.entities.fullScreen.setAttribute("action", "expand");
         this.markmap.destroy();

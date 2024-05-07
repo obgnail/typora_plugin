@@ -733,6 +733,8 @@ order = 1
 [toc.config]
 # 快捷键
 hotkey = ""
+# 是否转义标题内容
+escape_header = true
 # 右键侧边栏的【大纲】按钮触发
 right_click_outline_button_to_toggle = true
 # 当pin到页面右侧时，占据页面的20%宽度
