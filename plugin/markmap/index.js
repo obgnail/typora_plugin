@@ -206,9 +206,7 @@ class tocMarkmap {
                 </div>
                 <svg id="plugin-markmap-svg"></svg>
                 <div class="plugin-markmap-icon" action="resize">
-                    <svg width="800px" height="800px" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path>
-                    </svg>
+                    <svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M14.228 16.227a1 1 0 0 1-.707-1.707l1-1a1 1 0 0 1 1.416 1.414l-1 1a1 1 0 0 1-.707.293zm-5.638 0a1 1 0 0 1-.707-1.707l6.638-6.638a1 1 0 0 1 1.416 1.414l-6.638 6.638a1 1 0 0 1-.707.293zm-5.84 0a1 1 0 0 1-.707-1.707L14.52 2.043a1 1 0 1 1 1.415 1.414L3.457 15.934a1 1 0 0 1-.707.293z"></path></svg>
                 </div>
             </div>
             <div class="plugin-markmap-grip grip-up plugin-common-hidden"></div>
@@ -363,7 +361,7 @@ class tocMarkmap {
                 this.markmap.options.maxWidth = isNaN(maxWidth) ? defaultMaxWidth : maxWidth;
             };
             const label = "节点最大长度" + _genInfo("0 表示无长度限制");
-            return {label: label, type: "range", value: value, min: 0, max: 1000, step: 50, callback}
+            return {label: label, type: "range", value: value, min: 0, max: 1000, step: 10, callback}
         }
 
         const colorFreezeLevel = () => {
@@ -383,8 +381,8 @@ class tocMarkmap {
                 ratio = Number(parseFloat(ratio / 100).toFixed(2));
                 this.config.LOCALE_HIGHT_RATIO = isNaN(ratio) ? defaultValue : ratio;
             };
-            const label = "章节的定位视口高度" + _genInfo("鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）\n即：0 为当前视口的第一行，100 为最后一行");
-            return {label: label, type: "range", value: value, min: 0, max: 100, step: 1, callback}
+            const label = "章节的定位视口高度" + _genInfo("鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）");
+            return {label: label, type: "range", value: value, min: 1, max: 100, step: 1, callback}
         }
 
         const duration = () => {

@@ -522,8 +522,19 @@ class utils {
         const user_ = this.getOriginSettingPath(userSetting);
         const home_ = this.getHomeSettingPath(userSetting);
         const contentList = await this.readFiles([default_, user_, home_]);
-        const configList = contentList.map(c => c ? toml.parse(c) : {});
-        return configList.reduce(this.merge)
+        try {
+            const configList = contentList.map(c => c ? toml.parse(c) : {});
+            return configList.reduce(this.merge)
+        } catch (e) {
+            const message = "配置文件格式错误，是否前往校验网站";
+            const detail = `您手动修改过配置文件，由于写入的内容有问题，导致配置文件无法正确读取，报错如下：\n${e.toString()}`;
+            const op = {type: "error", title: "Typora Plugin", buttons: ["确定", "取消"], message, detail};
+            const {response} = await this.showMessageBox(op);
+            if (response === 0) {
+                this.openUrl("https://www.bejson.com/validators/toml_editor/");
+            }
+            return {}
+        }
     }
 
     static openSettingFolder = async () => this.showInFinder(await this.getActualSettingPath("settings.user.toml"))
