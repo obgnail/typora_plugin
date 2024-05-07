@@ -6,19 +6,11 @@
 }
 
 #plugin-toc .grip-right {
-    position: relative;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 100px;
-    padding: 0 3px;
+    position: absolute;
+    left: -5px;
+    width: 10px;
+    height: 100%;
     cursor: ew-resize;
-    border-radius: 4px;
-    opacity: 0.7;
-    background-color: var(--active-file-border-color, rgba(150, 122, 116, 0.5));
-}
-
-#plugin-toc .grip-right:hover {
-    opacity: 1;
 }
 
 .plugin-toc .toc-ul {
