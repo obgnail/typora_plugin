@@ -203,7 +203,9 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### 如何修改插件配置？
 
-目前整个项目包含 500+ 项配置，可以完整的定义各个插件的行为。这些配置全部位于 [./plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings) 目录中。修改配置的方法请阅读该目录下的 [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
+目前整个项目包含 500+ 项配置，可以比较完整的定义各个插件的行为。
+
+这些配置全部位于 [./plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings) 目录中。修改配置的方法请阅读该目录下的 [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
 
 
 
@@ -223,9 +225,9 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
-### 我不想用了，如何恢复原状？
+### 我不想用了，如何卸载插件系统？
 
-右键菜单 -> 不常用插件 -> 卸载插件。
+右键菜单 -> 不常用插件 -> 帮助 -> 卸载插件。
 
 
 
