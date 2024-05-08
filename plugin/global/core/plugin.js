@@ -2141,7 +2141,7 @@ class markdownParser {
             OrderedListItem: 1 << 10, Quoted: 1 << 11, SquareQuoted: 1 << 12, Strikethrough: 1 << 13, Strong: 1 << 14,
             Emphasis: 1 << 15, InlineCode: 1 << 16, UnorderedListItem: 1 << 17, InlineImage: 1 << 18,
             ReferenceImage: 1 << 19, Raw: 1 << 20, Math: 1 << 21, BlockquoteItem: 1 << 22,
-            CalloutItem: 1 << 23, Highlight: 1 << 24,
+            CalloutItem: 1 << 23, Highlight: 1 << 24, CJK: 1 << 25,
         }
         this.nodeKind = new Map(Object.entries(nodeKind).map(([key, value]) => [value, key]));
     }

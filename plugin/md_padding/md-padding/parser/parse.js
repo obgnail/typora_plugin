@@ -35,6 +35,7 @@ const mask_1 = require("./mask");
 const state_masks_1 = require("./state-masks");
 const parse_code_1 = require("./parse-code");
 const string_1 = require("../utils/string");
+const cjk_1 = require("../nodes/cjk");
 function parse(str, options) {
     const stack = new stack_1.Stack();
     const mask = new mask_1.Mask();
@@ -59,12 +60,14 @@ function parse(str, options) {
         const c = str[i];
         const c2 = str.substr(i, 2);
         const c3 = str.substr(i, 3);
-        if (c === '\n') {
-            while (forceCloseInlineNodes() !== false)
-                ; // expand all inline nodes
+        if (c === '\n' && forceCloseAllInlineNodes() === 1 /* ReParse */)
+            continue;
+        if (c === '\\' && char_1.markdownSpecial.has(str[i + 1])) {
+            resolve(punctuation_1.Punctuation.create(str[i + 1], str.slice(i, i + 2)));
+            i += 2;
         }
         // Inline Code
-        if (state === state_1.State.InlineCode && (0, string_1.matchSubstring)(str, i, inlineCodeDelimiter)) {
+        else if (state === state_1.State.InlineCode && (0, string_1.matchSubstring)(str, i, inlineCodeDelimiter)) {
             resolve(new inline_code_1.InlineCode(popMarkdown(), inlineCodeDelimiter));
             i += inlineCodeDelimiter.length;
         }
@@ -327,6 +330,10 @@ function parse(str, options) {
             resolve(punctuation_1.Punctuation.create(c));
             i++;
         }
+        else if (cjk_1.CJK.is(c)) {
+            resolve(cjk_1.CJK.create(c));
+            i++;
+        }
         else {
             resolve(new unicode_string_1.UnicodeString(c));
             i++;
@@ -337,13 +344,11 @@ function parse(str, options) {
         if (blankLine && !(0, char_1.isBlank)(c)) {
             blankLine = false;
         }
-    }
-    while (stack.size() > 1) {
-        // close block nodes if all inline nodes are closed
-        if (forceCloseInlineNodes() === false) {
-            if (forceCloseBlockNodes() === false) {
-                throw new Error(`closing ${stack.top().state} is not implemented`);
-            }
+        if (i >= str.length) {
+            if (forceCloseAllInlineNodes() === 1 /* ReParse */)
+                continue;
+            while (stack.size() > 1)
+                forceCloseBlockNodes();
         }
     }
     return (0, compact_1.compactTree)(new document_1.Document(popNodes()));
@@ -356,6 +361,18 @@ function parse(str, options) {
             }
         }
         return false;
+    }
+    function forceCloseAllInlineNodes() {
+        while (true) {
+            const ret = forceCloseInlineNodes();
+            if (ret === false)
+                break;
+            else if (typeof ret === 'number') {
+                i = ret;
+                return 1 /* ReParse */;
+            }
+        }
+        return 0 /* Clean */;
     }
     function forceCloseInlineNodes() {
         switch (stack.top().state) {
@@ -399,8 +416,10 @@ function parse(str, options) {
                 resolve(punctuation_1.Punctuation.create('!'), new square_quoted_1.SquareQuoted(imageText), punctuation_1.Punctuation.create('['), ...popNodes());
                 break;
             case state_1.State.HTMLTag:
-                resolve(punctuation_1.Punctuation.create('<'), ...popNodes());
-                break;
+                const next = stack.top().begin + 1;
+                popNodes(); // discard HTML content
+                resolve(punctuation_1.Punctuation.create('<'));
+                return next; // re-parse
             default:
                 return false;
         }
@@ -431,7 +450,7 @@ function parse(str, options) {
                 resolve(new callout_1.Callout(calloutType));
                 break;
             default:
-                return false;
+                throw new Error(`closing ${stack.top().state} is not implemented`);
         }
     }
     function push(state) {
