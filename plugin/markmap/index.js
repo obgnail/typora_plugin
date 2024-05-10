@@ -215,7 +215,7 @@ class tocMarkmap {
 
     hotkey = () => [{hotkey: this.config.TOC_HOTKEY, callback: this.callback}]
 
-    init = () => {
+    prepare = () => {
         this.markmap = null;
         this.defaultScheme = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
         this.currentScheme = this.config.DEFAULT_TOC_OPTIONS.colorScheme || this.defaultScheme;
@@ -227,7 +227,7 @@ class tocMarkmap {
         this.pinUtils = {
             isPinUp: false,
             isPinRight: false,
-            init: async () => new Promise(resolve => {
+            recordRect: async () => new Promise(resolve => {
                 setTimeout(() => {
                     this.modalOriginRect = this.entities.modal.getBoundingClientRect();
                     this.contentOriginRect = this.entities.content.getBoundingClientRect();
@@ -249,7 +249,7 @@ class tocMarkmap {
     }
 
     process = async () => {
-        this.init();
+        this.prepare();
 
         this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.utils.isShow(this.entities.modal) && this.drawToc(this.config.AUTO_FIT_WHEN_UPDATE));
         this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => hide && this.markmap && this.onButtonClick("close"));
@@ -537,7 +537,7 @@ class tocMarkmap {
             if (this.pinUtils.isPinRight) {
                 await this.pinRight(false);
             }
-            await this.pinUtils.init();
+            await this.pinUtils.recordRect();
         }
 
         let showFunc, hint, contentTop, modalRect, toggleFunc;
@@ -578,7 +578,7 @@ class tocMarkmap {
             if (this.pinUtils.isPinUp) {
                 await this.pinUp(false);
             }
-            await this.pinUtils.init();
+            await this.pinUtils.recordRect();
         }
 
         let showFunc, hint, writeWidth, modalRect, contentRight, contentWidth, toggleFunc;
