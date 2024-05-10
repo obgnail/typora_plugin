@@ -221,16 +221,15 @@ DEFAULT_TYPE = "fence"
 USE_ALL = true
 # 给混合标签上色
 SET_COLOR_IN_ALL = true
+# 混合标签的颜色（SET_COLOR_IN_ALL为false时，本选项失效）
+COLOR = { fence = "#B3E2CD", image = "#FDCDAC", table = "#CBD5E8" }
 # 当显示窗口时，打开新文件后自动检测并重新生成大纲
 AUTO_REFRESH_WHEN_OPEN_FILE = true
 # 统计并显示被其他插件隐藏的元素(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
 # 比如使用了【章节折叠】插件隐藏文件内容，如果你希望outline能统计被隐藏内容，就置为true，不过这样就会导致统计的编号不对（因为你把隐藏的也算进去了）
 SHOW_HIDDEN = false
 # 在窗口里展示的名字
-[outline.SHOW_NAME]
-fence = "Fence"
-image = "Figure"
-table = "Table"
+SHOW_NAME = { fence = "Fence", image = "Figure", table = "Table" }
 
 
 ############### commander ###############
@@ -621,10 +620,7 @@ FONT_FAMILY = "monospace"
 # 编号的下标的位置：left/right/center
 ALIGN = "center"
 # 编号的下标名称
-[auto_number.NAMES]
-table = "Table"
-image = "Figure"
-fence = "Fence"
+NAMES = { table = "Table", image = "Figure", fence = "Fence" }
 
 
 ############### fence_enhance ###############
@@ -763,15 +759,12 @@ RECORD_COLLAPSE = true
 #   2. 但是不能为"alt"（因为alt+click已经被【scrollBookmarker】插件占用），也不能为"shift"（因为shift+click被系统自带的【框选】功能占用）
 #   3. 若为""，表示不启用此功能
 #   4. 例如【COLLAPSE_SIBLINGS = "ctrl+alt"】：当用户同时按住键盘ctrl和alt，并且鼠标click标题时，会折叠/展开父章节下所有同级的章节
-[collapse_paragraph.MODIFIER_KEY]
-# 折叠/展开 单个章节
-COLLAPSE_SINGLE = "ctrl"
-# 折叠/展开 父章节下所有同级的章节
-COLLAPSE_SIBLINGS = "ctrl+alt"
-# 折叠/展开 当前文件所有同级的章节
-COLLAPSE_ALL_SIBLINGS = "ctrl+shift+alt"
-# 递归折叠/展开 当前章节
-COLLAPSE_RECURSIVE = ""
+# 功能：
+#   - COLLAPSE_SINGLE       ：折叠/展开 单个章节
+#   - COLLAPSE_SIBLINGS     ：折叠/展开 父章节下所有同级的章节
+#   - COLLAPSE_ALL_SIBLINGS ：折叠/展开 当前文件所有同级的章节
+#   - COLLAPSE_RECURSIVE    ：递归折叠/展开 当前章节
+MODIFIER_KEY = { COLLAPSE_SINGLE = "ctrl", COLLAPSE_SIBLINGS = "ctrl+alt", COLLAPSE_ALL_SIBLINGS = "ctrl+shift+alt", COLLAPSE_RECURSIVE = "" }
 
 
 ############### collapse_list ###############

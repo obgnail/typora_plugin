@@ -42,8 +42,7 @@ WRAP = false
 CTRL_WHEEL_TO_SCROLL = true
 # 允许在描述框使用markdown内联样式（code、strong、em、del、link、img）
 ALLOW_MARKDOWN_INLINE_STYLE = true
-# 看板框的颜色
-# 请保持 KANBAN_COLOR 和 TASK_COLOR 数量一致，否则颜色会乱套，就不好看了
+# 看板框的颜色（请保持 KANBAN_COLOR 和 TASK_COLOR 数量一致，否则颜色会乱套，就不好看了）
 KANBAN_COLOR = ["#FFE0B2", "#DAE9F4", "#FEDCCC", "#C6E5D9", "#FFF1B9"]
 # 任务框的颜色
 TASK_COLOR = ["#FFFDE7", "#F8FAFF", "#FFFFF2", "#FFFCF0", "#FFFFF5"]
@@ -404,8 +403,7 @@ name = "Callouts"
 # typora1.8版本已经原生支持callouts，但是：
 #   1. 其仅支持五种类型的callouts，
 #   2. 其不支持fold callouts（如： > [!NOTE]-）。
-#   3. 此插件并不影响原生callouts
-# 请考虑以上信息确定是否开启此插件
+#   3. 此插件兼容原生callouts
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -500,6 +498,7 @@ https://marp.app/
 Split pages by horizontal ruler (`---`). It's very simple! :satisfied:
 
 """
+
 
 ############### darkMode ###############
 [darkMode]
@@ -1127,15 +1126,14 @@ hide_button_hint = false
 #                     MethodName请通过阅读源码查找。如果您不懂代码，但还是想添加按钮，有个碰运气技巧：在【右键菜单->常用插件->二级插件】的插件基本都是XXX.callback，其余插件基本都是XXX.call
 #   evil(危险):    自定义回调函数。功能同hotkey.default.toml中的evil参数（它能用的，这里也能用）。这里的文本内容会被eval()。如果设置此参数，callback参数会失效
 buttons = [
-    { disable = false, coordinate = [0, 0], hint = "直达底部", size = "28px", icon = "fa fa-angle-down", callback = "go_top.goBottom" },
-    { disable = false, coordinate = [1, 0], hint = "直达顶部", size = "28px", icon = "fa fa-angle-up", callback = "go_top.goTop" },
+    { disable = false, coordinate = [0, 0], hint = "直达底部", size = "24px", icon = "fa fa-caret-down", callback = "go_top.goBottom" },
+    { disable = false, coordinate = [1, 0], hint = "直达顶部", size = "24px", icon = "fa fa-caret-up", callback = "go_top.goTop" },
     { disable = false, coordinate = [2, 0], hint = "文字风格", size = "17px", icon = "fa fa-font", callback = "text_stylize.call" },
     { disable = false, coordinate = [3, 0], hint = "混排优化", size = "17px", icon = "fa fa-align-justify", callback = "md_padding.call" },
     { disable = false, coordinate = [0, 1], hint = "思维导图", size = "18px", icon = "fa fa-sitemap", callback = "markmap.onButtonClick" },
     { disable = false, coordinate = [1, 1], hint = "图片管理", size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
     { disable = false, coordinate = [2, 1], hint = "书签管理", size = "17px", icon = "fa fa-bookmark", callback = "scrollBookmarker.callback" },
     { disable = false, coordinate = [3, 1], hint = "高亮搜索", size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
-    # 根据try_fix_lint_error配置进行语法优化
     { disable = true, coordinate = [4, 1], hint = "语法优化", size = "17px", icon = "fa fa-book", callback = "markdownLint.fixLintError" },
     # evil使用示例（更多示例请参考hotkey.default.toml）：
     #   弹窗提示
@@ -1207,7 +1205,7 @@ order = 1
 [openInTotalCommander.config]
 # 快捷键
 hotkey = ""
-# tc路径
+# tc路径（请修改为你电脑上的路径）
 tc_path = "D:\\software\\TotalCMD_64bit_10.52\\TOTALCMD64.EXE"
 # tc命令参数（参考：https://www.ghisler.ch/wiki/index.php/Command_line_parameters）
 # 提供内置环境变量:
@@ -1224,6 +1222,7 @@ name = "升级插件"
 # 是否启用此二级插件
 # 注意：此插件目前仅支持windows系统，若为其他系统，则此插件失效
 # 注意：此插件依赖于commander插件，若禁用了commander，则此插件失效
+# 注意：若您删除了文件./plugin/updater/updater.exe，则此插件失效
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -1232,22 +1231,22 @@ order = 1
 # 插件配置
 [pluginUpdater.config]
 # 众所周知，有些地区无法裸连github，需要使用代理（如：http://127.0.0.1:7890）
-# 若值为空，则将弹出窗口，让用户填入代理；若有值，则将直接使用此代理，不再弹出窗口
+# 若值为空，则将弹出窗口，让用户填入代理；若值不为空，则将直接使用此代理，不再弹出窗口
 # 除非你固定使用某代理，否则不建议使用此配置
 proxy = ""
-# 升级时是否弹窗
-#   1.always: 总是弹出（等待程序执行完毕后一次性弹出）
-#   2.error:  只在异常时弹出
-#   3.silent: 总是静默
-#   4.echo:   立即回显
+# 手动升级时是否弹窗
+#   - always : 总是弹出（等待程序执行完毕后一次性弹出）
+#   - error  : 只在异常时弹出
+#   - silent : 总是静默
+#   - echo   : 立即回显
 exec_show = "echo"
 # 是否启用自动静默升级（若为false，则以下配置全部失效）
 # 自动升级有两个策略：
-#   1.策略一：打开Typora一段时间后，开始执行升级流程
-#   2.策略二：每隔一段时间，执行一次升级流程
+#   - 策略一：打开Typora一段时间后，执行一次升级流程
+#   - 策略二：每隔一段时间，执行一次升级流程
 auto_update = true
 # 策略一（单位：ms，若<0，则不使用此策略）
-start_update_interval = 300000   # (1000 * 60 * 5)
+start_update_interval = 300000   # 1000 * 60 * 5
 # 策略二（单位：ms，若<0，则不使用此策略）
 update_loop_interval = -1
 # 自动升级时使用的回显方式（可选项和exec_show相同）

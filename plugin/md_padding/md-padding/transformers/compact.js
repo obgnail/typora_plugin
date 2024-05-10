@@ -5,6 +5,7 @@ const unicode_string_1 = require("../nodes/unicode-string");
 const alphabet_numeric_1 = require("../nodes/alphabet-numeric");
 const type_guards_1 = require("../nodes/type-guards");
 const dfs_1 = require("../utils/dfs");
+const cjk_1 = require("../nodes/cjk");
 function compactTree(root) {
     (0, dfs_1.preOrder)(root, node => compactArray(node.children));
     return root;
@@ -22,6 +23,10 @@ function compactArray(tokens) {
             }
             if ((0, type_guards_1.isAlphabetNumeric)(curr) && (0, type_guards_1.isAlphabetNumeric)(prev)) {
                 tokens[i - 1] = alphabet_numeric_1.AlphabetNumeric.create(prev.text + curr.text);
+                continue;
+            }
+            if ((0, type_guards_1.isCJK)(curr) && (0, type_guards_1.isCJK)(prev)) {
+                tokens[i - 1] = cjk_1.CJK.create(prev.text + curr.text);
                 continue;
             }
         }

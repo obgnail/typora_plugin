@@ -45,15 +45,16 @@ class preferencesPlugin extends BasePlugin {
     call = async () => {
         const genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7; float: right;"></span>`
         const infoMap = {
-            blur: "此插件不兼容 beta 版本的 Typora",
-            export_enhance: "此插件不兼容 beta 版本的 Typora",
+            blur: "此插件不兼容 Beta 版本的 Typora",
+            export_enhance: "此插件不兼容 Beta 版本的 Typora",
             commander: "二级插件「升级插件」依赖于此插件，不建议停用",
+            auto_number: "此插件可能与用户使用的主题冲突，导致小范围的样式异常",
             preferences: "「启停插件」自身也是一个插件，停用则无法弹出此窗口",
             right_click_menu: "此插件是普通用户调用其他插件的入口",
             custom: "所有的二级插件都挂载在此插件上，停用会导致所有的二级插件失效",
             json_rpc: "此插件面向开发者，普通用户无需启用",
             mermaid_replace: "此插件已停止维护",
-            test: "开发者专用，不建议普通用户启用",
+            test: "插件开发者专用，仅建议在开发插件期间启用",
             openInTotalCommander: "此插件需要手动修改配置后方可运行",
             redirectLocalRootUrl: "此插件需要手动修改配置后方可运行",
             autoTrailingWhiteSpace: "此插件面向特殊人群（如网站站长），不建议普通用户启用",
