@@ -17,7 +17,7 @@ class outlinePlugin extends BasePlugin {
                     <div class="plugin-outline-icon ion-code" type="fence" ty-hint="代码块"></div>
                     <div class="plugin-outline-icon ion-image" type="image" ty-hint="图片"></div>
                     <div class="plugin-outline-icon ion-grid" type="table" ty-hint="表格"></div>
-                    ${this.config.USE_ALL ? '<div class="plugin-outline-icon ion-android-data" type="all" ty-hint="混合"></div>': ""}
+                    ${this.config.USE_ALL ? '<div class="plugin-outline-icon ion-android-data" type="all" ty-hint="混合"></div>' : ""}
                 </div>
             </div>
         `
@@ -191,12 +191,13 @@ class _collectUtil {
 
     setColor = (ele, item, type) => {
         if (type === "all") {
+            const {fence, image, table} = this.config.COLOR;
             if (item.type === "table") {
-                ele.style.backgroundColor = "aliceblue";
+                ele.style.backgroundColor = table;
             } else if (item.type === "fence") {
-                ele.style.backgroundColor = "antiquewhite";
+                ele.style.backgroundColor = fence;
             } else if (item.type === "image") {
-                ele.style.backgroundColor = "beige";
+                ele.style.backgroundColor = image;
             }
         } else {
             ele.style.backgroundColor = "";

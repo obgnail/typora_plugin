@@ -41,14 +41,14 @@ class fenceEnhancePlugin extends BasePlugin {
         this.dangerousHint = "警告：消耗巨量资源并导致Typora长时间失去响应";
         this.callArgs = [
             {arg_name: "自动隐藏/显示按钮", arg_value: "set_auto_hide"},
-            {arg_name: "禁用/启用折叠按钮", arg_value: "disable_or_enable_fold"},
-            {arg_name: "禁用/启用复制按钮", arg_value: "disable_or_enable_copy"},
+            {arg_name: "禁用/启用按钮：折叠", arg_value: "disable_or_enable_fold"},
+            {arg_name: "禁用/启用按钮：复制", arg_value: "disable_or_enable_copy"},
             {arg_name: "总是折叠代码块", arg_value: "fold_all"},
             {arg_name: "总是展开代码块", arg_value: "expand_all"},
         ];
 
         if (this.enableIndent) {
-            this.callArgs.splice(2, 0, {arg_name: "禁用/启用缩进调整按钮", arg_value: "disable_or_enable_indent"});
+            this.callArgs.splice(2, 0, {arg_name: "禁用/启用按钮：缩进调整", arg_value: "disable_or_enable_indent"});
         }
     }
 
@@ -335,7 +335,6 @@ class fenceEnhancePlugin extends BasePlugin {
     }
 }
 
-// 模拟抽象类
 class builder {
     constructor(className, action, hint, iconClassName, enable, listener, extraFunc) {
         this.className = className;

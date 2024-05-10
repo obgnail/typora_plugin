@@ -182,12 +182,12 @@ class autoNumberPlugin extends BasePlugin {
 
     init = () => {
         this.callArgs = [
-            {arg_name: "禁用/启用大纲自动编号", arg_value: "set_outline"},
-            {arg_name: "禁用/启用正文自动编号", arg_value: "set_content"},
-            {arg_name: "禁用/启用TOC自动编号", arg_value: "set_toc"},
-            {arg_name: "禁用/启用表格自动编号", arg_value: "set_table"},
-            {arg_name: "禁用/启用图片自动编号", arg_value: "set_image"},
-            {arg_name: "禁用/启用代码块自动编号", arg_value: "set_fence"},
+            {arg_name: "禁用/启用自动编号：大纲", arg_value: "set_outline"},
+            {arg_name: "禁用/启用自动编号：正文", arg_value: "set_content"},
+            {arg_name: "禁用/启用自动编号：TOC", arg_value: "set_toc"},
+            {arg_name: "禁用/启用自动编号：表格", arg_value: "set_table"},
+            {arg_name: "禁用/启用自动编号：图片", arg_value: "set_image"},
+            {arg_name: "禁用/启用自动编号：代码块", arg_value: "set_fence"},
         ];
     }
 

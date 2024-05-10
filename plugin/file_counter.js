@@ -1,20 +1,19 @@
 class fileCounterPlugin extends BasePlugin {
-    beforeProcess = () => {
-        this.loopDetectInterval = 300;
-        this.className = "plugin-file-counter";
-    }
-
     styleTemplate = () => ({
         font_weight: this.config.FONT_WEIGHT || "initial",
         color: this.config.COLOR || "var(--active-file-text-color)",
         background_color: this.config.BACKGROUND_COLOR || "var(--active-file-bg-color)",
     })
 
+    init = () => {
+        this.className = "plugin-file-counter";
+    }
+
     process = () => {
-        // typora有bug，有一定概率无法完整加载，强制刷一下
+        // typora有bug，有一定概率无法完整加载，强刷一下
         setTimeout(() => File.editor.library.refreshPanelCommand(), 1200);
 
-        this.utils.loopDetector(this.setAllDirCount, null, this.loopDetectInterval);
+        this.utils.loopDetector(this.setAllDirCount, null, 300);
 
         if (this.config.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU) {
             document.querySelector("#file-library").addEventListener("wheel", ev => {
@@ -61,6 +60,7 @@ class fileCounterPlugin extends BasePlugin {
     countFiles = (dir, fileFilter, dirFilter, then) => {
         const {Fs: {promises}, Path} = this.utils.Package;
         let fileCount = 0;
+
         async function traverse(dir) {
             const stats = await promises.stat(dir);
             if (!stats.isDirectory()) {
@@ -78,6 +78,7 @@ class fileCounterPlugin extends BasePlugin {
                 }
             }
         }
+
         traverse(dir).then(() => then(fileCount)).catch(err => console.error(err));
     }
 

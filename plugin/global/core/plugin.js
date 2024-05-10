@@ -21,11 +21,8 @@ class utils {
     ////////////////////////////// 高级工具 //////////////////////////////
     // 动态注册、动态注销hotkey
     // 注意: 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
-    //   hotkeyList: [
-    //     { hotkey: "ctrl+shift+c", callback: () => console.log("ctrl+shift+c pressed") },
-    //     { hotkey: "ctrl+shift+e", callback: () => console.log("ctrl+shift+e pressed") },
-    //   ]
-    //   hotkeyString(string): eg: "ctrl+shift+c"
+    //   hotkeyList: [ { hotkey: "ctrl+shift+c", callback: () => console.log("ctrl+shift+c pressed") }, ]
+    //   hotkeyString(string): "ctrl+shift+c"
     static registerHotkey = hotkeyList => helper.hotkeyHub.register(hotkeyList);
     static registerSingleHotkey = (hotkeyString, callback) => helper.hotkeyHub.registerSingle(hotkeyString, callback);
     static unregisterHotkey = hotkeyString => helper.hotkeyHub.unregister(hotkeyString);
@@ -171,11 +168,11 @@ class utils {
     //   4. iconClass(string): icon的class
     //   5. style(Object): button 额外的样式
     //   6. callback(ev, target, action) => null: 点击按钮后的回调函数
+    static registerQuickButton = (action, coordinate, hint, iconClass, style, callback
+    ) => this.callPluginFunction("quickButton", "register", action, coordinate, hint, iconClass, style, callback)
     // 动态注销快捷按钮
     //   一旦process后，标签就被渲染到HTML了，以后就不会再变了，再调用此函数也没有用了，因此此函数只能在插件初始化的时候调用
     //   因此，unregisterQuickButton的唯一意义是：当两个插件在初始化阶段打架时（都想注册同一坐标的按钮），用此函数去注销掉别人
-    static registerQuickButton = (action, coordinate, hint, iconClass, style, callback
-    ) => this.callPluginFunction("quickButton", "register", action, coordinate, hint, iconClass, style, callback)
     static unregisterQuickButton = action => this.callPluginFunction("quickButton", "unregister", action)
     static toggleQuickButton = hide => this.callPluginFunction("quickButton", "toggle", hide)
 
@@ -686,30 +683,25 @@ class utils {
     static showInFinder = filepath => JSBridge.showInFinder(filepath || this.getFilePath())
     static isDiscardableUntitled = () => File && File.changeCounter && File.changeCounter.isDiscardableUntitled();
 
-    static openUrl = url => {
-        const openUrl = File.editor.tryOpenUrl_ || File.editor.tryOpenUrl;
-        openUrl(url, 1);
-    }
+    static openUrl = url => (File.editor.tryOpenUrl_ || File.editor.tryOpenUrl)(url, 1);
 
     static showMessageBox = async ({type = "info", title = "typora", message, detail, buttons = ["确定", "取消"], defaultId = 0, cancelId = 1, normalizeAccessKeys = true, checkboxLabel}) => {
         const op = {type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel};
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
 
-    static request = (options, data) => {
-        return new Promise((resolve, reject) => {
-            const req = this.Package.HTTPS.request(options, resp => {
-                const chunks = [];
-                resp.on("data", chunk => chunks.push(chunk));
-                resp.on("end", () => resolve(Buffer.concat(chunks)));
-            });
-            req.on("error", err => reject(err));
-            if (data) {
-                req.write(data);
-            }
-            req.end();
+    static request = (options, data) => new Promise((resolve, reject) => {
+        const req = this.Package.HTTPS.request(options, resp => {
+            const chunks = [];
+            resp.on("data", chunk => chunks.push(chunk));
+            resp.on("end", () => resolve(Buffer.concat(chunks)));
         });
-    }
+        req.on("error", err => reject(err));
+        if (data) {
+            req.write(data);
+        }
+        req.end();
+    });
 
     static splitFrontMatter = content => {
         const result = {yamlObject: null, remainContent: content, yamlLineCount: 0};
@@ -731,8 +723,7 @@ class utils {
     }
 
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
-    // data:image;base64、data:image\svg+xml 等等
-    static isSpecialImage = src => src.startsWith("data:image");
+    static isSpecialImage = src => src.startsWith("data:image");  // data:image;base64、data:image\svg+xml 等等
 
     static getFenceContent = (pre, cid) => {
         // from element
@@ -1012,7 +1003,7 @@ class utils {
 
     static selectItemFromList = (resultList, activeItemSelector) => {
         let floor;
-        return (ev) => {
+        return ev => {
             if (!resultList.childElementCount) return;
 
             const activeItem = resultList.querySelector(activeItemSelector);
@@ -1815,7 +1806,6 @@ class dialog {
         return `<div class="col-lg-12 form-group" component-id="${component.id}"><${label}>${component.label}</${label}>${inner}</div>`;
     }
 
-    // modal: {title: "", components: [{label: "", type: "", value: ""}]}
     modal = (modal, callback, cancelCallback) => {
         if (modal) {
             this.pluginModal = modal;
@@ -1923,7 +1913,7 @@ class styleTemplater {
 }
 
 // 3x faster then innerHTML, less memory usage, more secure, but poor readable
-// don't use it unless element is simple enough or there are secure issues
+// don't use unless element is simple enough or there are secure issues
 class htmlTemplater {
     constructor() {
         this.utils = utils
@@ -2186,7 +2176,7 @@ class IPlugin {
         this.utils = utils;
     }
 
-    // 最先执行的函数，唯一一个asyncFunction，在这里初始化插件需要的数据。若返回stopLoadPluginError，则停止加载插件
+    // 最先执行的函数，唯一的asyncFunction，在这里初始化插件需要的数据。若返回stopLoadPluginError，则停止加载插件
     beforeProcess = async () => undefined
     // 以字符串形式导入样式
     style = () => undefined
@@ -2261,8 +2251,8 @@ class process {
     static existEnablePlugin = () => Object.entries(global._plugin_settings).some(([name, plugin]) => plugin.ENABLE && !global._plugin_global_settings.DISABLE_PLUGINS.includes(name))
 
     // 整个插件系统一共暴露了7个全局变量，实际有用的只有2个：BasePlugin, BaseCustomPlugin
-    // 其余5个皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是上面两个父类的实例属性，所以utils自己也不需要暴露
-    // 既然永远不会被外部文件引用，为什么还要将它们设置为什么全局变量？答：方便调试
+    // 其余5个皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是BasePlugin, BaseCustomPlugin的实例属性，所以utils自己也不需要暴露
+    // 既然永远不会被外部文件引用，为何要将它们设置为全局变量？答：方便调试
     static prepare = settings => {
         global.BasePlugin = basePlugin;             // 插件的父类
         global.BaseCustomPlugin = baseCustomPlugin; // 自定义插件的父类

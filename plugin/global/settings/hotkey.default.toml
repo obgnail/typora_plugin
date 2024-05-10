@@ -26,7 +26,7 @@
 
 # 简单使用
 [fastInput]
-desc = "快读插入javascript代码块"
+desc = "快速插入javascript代码块"
 enable = false
 hotkey = "ctrl+shift+e"
 evil = '() => this.utils.insertText(null, "```javascript\n```", false);'
@@ -71,7 +71,7 @@ evil = """
                 list: [{label: "好", value: "good", checked: true}, {label: "很好", value: "very_good"}]
             }]
         }
-        this.modal(modal, components => {
+        this.utils.modal(modal, components => {
             const mood = components[0].submit;
             window.confirm(`Your mood today： ${mood}`);
         })
