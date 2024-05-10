@@ -970,7 +970,7 @@ COMMANDS = [
     { enable = true, type = "command", icon = "📝", hint = "提升标题等级", keyword = "IncreaseHeaderLevel", callback = "() => File.editor.stylize.increaseHeaderLevel()" },
     { enable = true, type = "command", icon = "📝", hint = "降低标题等级", keyword = "DecreaseHeaderLevel", callback = "() => File.editor.stylize.decreaseHeaderLevel()" },
     { enable = true, type = "command", icon = "📝", hint = "公式块", keyword = "BlockMath", callback = "() => File.editor.stylize.toggleMathBlock()" },
-    { enable = true, type = "command", icon = "📝", hint = "代码块", keyword = "Fence", callback = "() => File.editor.stylize.toggleFences()" },
+    { enable = true, type = "command", icon = "📝", hint = "代码块", keyword = "BlockCode", callback = "() => File.editor.stylize.toggleFences()" },
     { enable = true, type = "command", icon = "📝", hint = "引用", keyword = "Blockquote", callback = "() => File.editor.stylize.toggleIndent('blockquote')" },
     { enable = true, type = "command", icon = "📝", hint = "有序列表", keyword = "OrderedList", callback = "() => File.editor.stylize.toggleIndent('ol')" },
     { enable = true, type = "command", icon = "📝", hint = "无序列表", keyword = "UnorderedList", callback = "() => File.editor.stylize.toggleIndent('ul')" },
@@ -989,7 +989,7 @@ COMMANDS = [
     { enable = true, type = "command", icon = "👕", hint = "下划线", keyword = "Underline", callback = "() => File.editor.stylize.toggleStyle('underline')" },
     { enable = true, type = "command", icon = "👕", hint = "代码", keyword = "Code", callback = "() => File.editor.stylize.toggleStyle('code')" },
     { enable = true, type = "command", icon = "👕", hint = "内联公式", keyword = "InlineMath", callback = "() => File.editor.stylize.toggleStyle('inline_math')" },
-    { enable = true, type = "command", icon = "👕", hint = "删除线", keyword = "Del", callback = "() =>File.editor.stylize.toggleStyle('del')" },
+    { enable = true, type = "command", icon = "👕", hint = "删除线", keyword = "Delete", callback = "() =>File.editor.stylize.toggleStyle('del')" },
     { enable = true, type = "command", icon = "👕", hint = "注释", keyword = "Comment", callback = "() => File.editor.stylize.toggleStyle('comment')" },
     { enable = true, type = "command", icon = "👕", hint = "超链接", keyword = "Link", callback = "() => File.editor.stylize.toggleStyle('link')" },
     { enable = true, type = "command", icon = "👕", hint = "图像", keyword = "Image", callback = "() => File.editor.stylize.toggleStyle('image')" },
@@ -1004,7 +1004,7 @@ COMMANDS = [
     { enable = true, type = "gen-snp", icon = "🧩", hint = "时间", keyword = "Time", callback = "() => {let day = new Date(); return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`}" },
     { enable = true, type = "gen-snp", icon = "🧩", hint = "时间戳", keyword = "Timestamp", callback = "() => (new Date()).getTime().toString()" },
     { enable = true, type = "gen-snp", icon = "🧩", hint = "星期", keyword = "Week", callback = "() => '星期' + '日一二三四五六'.charAt((new Date()).getDay())" },
-    { enable = true, type = "snippet", icon = "🧩", hint = "", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
+    { enable = true, type = "snippet", icon = "🧩", hint = "示例片段", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
 ]
 
 

@@ -22,7 +22,8 @@ class slashCommandsPlugin extends BasePlugin {
         const th = `<tr><th>关键字</th><th>类型</th><th>功能</th></tr>`;
         const trs = list.map(({type, keyword, hint, callback}) => `<tr><td>${keyword}</td><td>${getType(type)}</td><td title="${callback}">${hint}</td></tr>`);
         const table = `<table>${th}${trs.join("")}</table>`;
-        this.utils.modal({title: "斜杠命令", components: [{label: table, type: "p"}]});
+        const components = [{label: "如需自定义斜杠命令，请前往配置文件 🙌", type: "p"}, {label: table, type: "p"}];
+        this.utils.modal({title: "斜杠命令", components});
     }
 
     _onEdit = () => {

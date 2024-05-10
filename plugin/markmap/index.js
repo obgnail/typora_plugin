@@ -533,35 +533,38 @@ class tocMarkmap {
 
     pinUp = async (draw = true) => {
         this.entities.modal.classList.toggle("pinUp");
-        const button = document.querySelector('.plugin-markmap-icon[action="pinUp"]');
+        this.entities.fullScreen.setAttribute("action", "expand");
         this.pinUtils.isPinUp = !this.pinUtils.isPinUp;
+
+        let showFunc, hint, contentTop, modalRect, modalClassFunc;
         if (this.pinUtils.isPinUp) {
             if (this.pinUtils.isPinRight) {
                 await this.pinRight(false);
             }
-
             await this.pinUtils.init();
+
+            modalClassFunc = "add";
             const {top, height, width, left} = this.contentOriginRect;
             const newHeight = height * this.config.HEIGHT_PRECENT_WHEN_PIN_UP / 100;
-            this.entities.modal.classList.add("noBoxShadow");
-            Object.assign(this.entities.modal.style, {
-                left: `${left}px`,
-                width: `${width}px`,
-                top: `${top}px`,
-                height: `${newHeight}px`,
-            });
-            this.entities.content.style.top = `${top + newHeight}px`;
-            this.utils.show(this.entities.gripUp);
-            button.classList.replace("ion-chevron-up", "ion-ios7-undo");
-            button.setAttribute("ty-hint", "还原窗口");
+            modalRect = {left, top, width, height: newHeight};
+            contentTop = top + newHeight;
+            showFunc = "show";
+            hint = "还原窗口";
         } else {
-            this.setModalRect(this.modalOriginRect);
-            this.entities.modal.classList.remove("noBoxShadow");
-            this.entities.content.style.top = `${this.contentOriginRect.top}px`;
-            this.utils.hide(this.entities.gripUp);
-            button.classList.replace("ion-ios7-undo", "ion-chevron-up");
-            button.setAttribute("ty-hint", "固定到顶部");
+            modalClassFunc = "remove";
+            modalRect = this.modalOriginRect;
+            contentTop = this.contentOriginRect.top;
+            showFunc = "hide";
+            hint = "固定到顶部";
         }
+        this.setModalRect(modalRect);
+        this.entities.modal.classList[modalClassFunc]("noBoxShadow");
+        this.entities.content.style.top = contentTop + "px";
+        this.utils[showFunc](this.entities.gripUp);
+        const button = document.querySelector('.plugin-markmap-icon[action="pinUp"]');
+        button.classList.toggle('ion-chevron-up', !this.pinUtils.isPinUp);
+        button.classList.toggle('ion-ios7-undo', this.pinUtils.isPinUp);
+        button.setAttribute("ty-hint", hint);
         this.utils.toggleVisible(this.entities.resize, this.pinUtils.isPinUp);
         if (draw) {
             await this.drawToc();
@@ -570,44 +573,44 @@ class tocMarkmap {
 
     pinRight = async (draw = true) => {
         this.entities.modal.classList.toggle("pinRight");
-        const button = document.querySelector('.plugin-markmap-icon[action="pinRight"]');
-        const write = document.querySelector("#write");
+        this.entities.fullScreen.setAttribute("action", "expand");
         this.pinUtils.isPinRight = !this.pinUtils.isPinRight;
+
+        let showFunc, hint, writeWidth, modalRect, contentRight, contentWidth, modalClassFunc;
         if (this.pinUtils.isPinRight) {
             if (this.pinUtils.isPinUp) {
                 await this.pinUp(false);
             }
-
             await this.pinUtils.init();
+
+            modalClassFunc = "add";
             const {top, width, height, right} = this.contentOriginRect;
             const newWidth = width * this.config.WIDTH_PRECENT_WHEN_PIN_RIGHT / 100;
-            this.entities.modal.classList.add("noBoxShadow");
-            Object.assign(this.entities.modal.style, {
-                top: `${top}px`,
-                right: `${right}px`,
-                left: `${right - newWidth}px`,
-                height: `${height}px`,
-                width: `${newWidth}px`,
-            });
-            Object.assign(this.entities.content.style, {
-                right: `${right - newWidth}px`,
-                width: `${width - newWidth}px`
-            });
-            write.style.width = "initial";
-            this.utils.show(this.entities.gripRight);
-            button.classList.replace("ion-chevron-right", "ion-ios7-undo");
-            button.setAttribute("ty-hint", "还原窗口");
+            modalRect = {top, height, width: newWidth, left: right - newWidth};
+            contentRight = `${right - newWidth}px`;
+            contentWidth = `${width - newWidth}px`;
+            writeWidth = "initial";
+            showFunc = "show";
+            hint = "还原窗口";
         } else {
-            this.setModalRect(this.modalOriginRect);
-            this.entities.modal.classList.remove("noBoxShadow");
-            this.entities.content.style.width = "";
-            this.entities.content.style.right = "";
-            write.style.width = "";
-            this.utils.hide(this.entities.gripRight);
-
-            button.classList.replace("ion-ios7-undo", "ion-chevron-right");
-            button.setAttribute("ty-hint", "固定到右侧");
+            modalClassFunc = "remove";
+            modalRect = this.modalOriginRect;
+            contentRight = "";
+            contentWidth = "";
+            writeWidth = "";
+            showFunc = "hide";
+            hint = "固定到右侧";
         }
+        this.setModalRect(modalRect);
+        this.entities.content.style.right = contentRight;
+        this.entities.content.style.width = contentWidth;
+        this.entities.modal.classList[modalClassFunc]("noBoxShadow");
+        document.querySelector("#write").style.width = writeWidth;
+        this.utils[showFunc](this.entities.gripRight);
+        const button = document.querySelector('.plugin-markmap-icon[action="pinRight"]');
+        button.classList.toggle('ion-chevron-right', !this.pinUtils.isPinRight);
+        button.classList.toggle('ion-ios7-undo', this.pinUtils.isPinRight);
+        button.setAttribute("ty-hint", hint);
         this.utils.toggleVisible(this.entities.resize, this.pinUtils.isPinRight);
         if (draw) {
             await this.drawToc();
