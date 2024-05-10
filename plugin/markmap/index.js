@@ -532,18 +532,17 @@ class tocMarkmap {
     }
 
     pinUp = async (draw = true) => {
-        this.entities.modal.classList.toggle("pinUp");
-        this.entities.fullScreen.setAttribute("action", "expand");
         this.pinUtils.isPinUp = !this.pinUtils.isPinUp;
-
-        let showFunc, hint, contentTop, modalRect, modalClassFunc;
         if (this.pinUtils.isPinUp) {
             if (this.pinUtils.isPinRight) {
                 await this.pinRight(false);
             }
             await this.pinUtils.init();
+        }
 
-            modalClassFunc = "add";
+        let showFunc, hint, contentTop, modalRect, toggleFunc;
+        if (this.pinUtils.isPinUp) {
+            toggleFunc = "add";
             const {top, height, width, left} = this.contentOriginRect;
             const newHeight = height * this.config.HEIGHT_PRECENT_WHEN_PIN_UP / 100;
             modalRect = {left, top, width, height: newHeight};
@@ -551,20 +550,22 @@ class tocMarkmap {
             showFunc = "show";
             hint = "还原窗口";
         } else {
-            modalClassFunc = "remove";
+            toggleFunc = "remove";
             modalRect = this.modalOriginRect;
             contentTop = this.contentOriginRect.top;
             showFunc = "hide";
             hint = "固定到顶部";
         }
         this.setModalRect(modalRect);
-        this.entities.modal.classList[modalClassFunc]("noBoxShadow");
+        this.entities.modal.classList.toggle("pinUp");
+        this.entities.modal.classList[toggleFunc]("noBoxShadow");
         this.entities.content.style.top = contentTop + "px";
+        this.entities.fullScreen.setAttribute("action", "expand");
         this.utils[showFunc](this.entities.gripUp);
         const button = document.querySelector('.plugin-markmap-icon[action="pinUp"]');
-        button.classList.toggle('ion-chevron-up', !this.pinUtils.isPinUp);
-        button.classList.toggle('ion-ios7-undo', this.pinUtils.isPinUp);
         button.setAttribute("ty-hint", hint);
+        button.classList.toggle("ion-chevron-up", !this.pinUtils.isPinUp);
+        button.classList.toggle("ion-ios7-undo", this.pinUtils.isPinUp);
         this.utils.toggleVisible(this.entities.resize, this.pinUtils.isPinUp);
         if (draw) {
             await this.drawToc();
@@ -572,18 +573,17 @@ class tocMarkmap {
     }
 
     pinRight = async (draw = true) => {
-        this.entities.modal.classList.toggle("pinRight");
-        this.entities.fullScreen.setAttribute("action", "expand");
         this.pinUtils.isPinRight = !this.pinUtils.isPinRight;
-
-        let showFunc, hint, writeWidth, modalRect, contentRight, contentWidth, modalClassFunc;
         if (this.pinUtils.isPinRight) {
             if (this.pinUtils.isPinUp) {
                 await this.pinUp(false);
             }
             await this.pinUtils.init();
+        }
 
-            modalClassFunc = "add";
+        let showFunc, hint, writeWidth, modalRect, contentRight, contentWidth, toggleFunc;
+        if (this.pinUtils.isPinRight) {
+            toggleFunc = "add";
             const {top, width, height, right} = this.contentOriginRect;
             const newWidth = width * this.config.WIDTH_PRECENT_WHEN_PIN_RIGHT / 100;
             modalRect = {top, height, width: newWidth, left: right - newWidth};
@@ -593,7 +593,7 @@ class tocMarkmap {
             showFunc = "show";
             hint = "还原窗口";
         } else {
-            modalClassFunc = "remove";
+            toggleFunc = "remove";
             modalRect = this.modalOriginRect;
             contentRight = "";
             contentWidth = "";
@@ -601,16 +601,19 @@ class tocMarkmap {
             showFunc = "hide";
             hint = "固定到右侧";
         }
+
         this.setModalRect(modalRect);
+        this.entities.modal.classList.toggle("pinRight");
+        this.entities.modal.classList[toggleFunc]("noBoxShadow");
         this.entities.content.style.right = contentRight;
         this.entities.content.style.width = contentWidth;
-        this.entities.modal.classList[modalClassFunc]("noBoxShadow");
+        this.entities.fullScreen.setAttribute("action", "expand");
         document.querySelector("#write").style.width = writeWidth;
         this.utils[showFunc](this.entities.gripRight);
         const button = document.querySelector('.plugin-markmap-icon[action="pinRight"]');
-        button.classList.toggle('ion-chevron-right', !this.pinUtils.isPinRight);
-        button.classList.toggle('ion-ios7-undo', this.pinUtils.isPinRight);
         button.setAttribute("ty-hint", hint);
+        button.classList.toggle("ion-chevron-right", !this.pinUtils.isPinRight);
+        button.classList.toggle("ion-ios7-undo", this.pinUtils.isPinRight);
         this.utils.toggleVisible(this.entities.resize, this.pinUtils.isPinRight);
         if (draw) {
             await this.drawToc();
