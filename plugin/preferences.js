@@ -42,6 +42,8 @@ class preferencesPlugin extends BasePlugin {
         }
     }
 
+    openSettingFile = async () => this.utils.showInFinder(await this.utils.getActualSettingPath("settings.user.toml"));
+
     call = async () => {
         const genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7; float: right;"></span>`
         const infoMap = {
@@ -73,7 +75,7 @@ class preferencesPlugin extends BasePlugin {
         const plugins = Object.entries(settings).map(displayFunc);
         const customPlugins = Object.entries(customSettings).map(displayFunc);
         const components = [
-            {label: "🛡️ 为保护用户，此处禁止启停部分插件，如需请修改配置文件", type: "p"},
+            {label: "🛡️ 为保护用户，此处禁止启停部分插件，如需请 <a>修改配置文件</a>", type: "p", onclick: this.openSettingFile},
             {label: "", legend: "一级插件", type: "checkbox", list: plugins},
             {label: "", legend: "二级插件", type: "checkbox", list: customPlugins},
         ];

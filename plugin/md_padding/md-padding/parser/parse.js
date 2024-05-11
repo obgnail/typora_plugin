@@ -36,6 +36,8 @@ const state_masks_1 = require("./state-masks");
 const parse_code_1 = require("./parse-code");
 const string_1 = require("../utils/string");
 const cjk_1 = require("../nodes/cjk");
+const RAW_BEGIN = '<!--md-padding-ignore-begin-->';
+const RAW_END = '<!--md-padding-ignore-end-->';
 function parse(str, options) {
     const stack = new stack_1.Stack();
     const mask = new mask_1.Mask();
@@ -231,6 +233,13 @@ function parse(str, options) {
             push(state_1.State.ImageText);
             i += 2;
         }
+        else if (c === '<' && (0, string_1.matchSubstring)(str, i, RAW_BEGIN)) {
+            const j = str.indexOf(RAW_END, i + RAW_BEGIN.length);
+            if (j === -1)
+                throw new Error(`unmatched ${RAW_BEGIN} at ${i}`);
+            resolve(new raw_1.Raw(str.slice(i, j + RAW_END.length)));
+            i = j + RAW_END.length;
+        }
         else if (c === '<' && allow(64 /* HTMLTag */)) {
             push(state_1.State.HTMLTag);
             i++;
@@ -309,35 +318,14 @@ function parse(str, options) {
             push(state_1.State.Quoted);
             i++;
         }
-        else if (blank_1.Blank.is(c)) {
-            resolve(new blank_1.Blank(c));
-            i++;
-        }
-        else if (handleIgnores()) {
-            // do nothing, already handled
-        }
-        else if (alphabet_numeric_1.AlphabetNumeric.is(c)) {
-            resolve(alphabet_numeric_1.AlphabetNumeric.create(c));
-            i++;
-        }
         else if ((0, string_1.matchSubstring)(str, i, '@import') && allow(16 /* BlockCode */)) {
             const j = str.indexOf('\n', i);
             const end = j === -1 ? str.length : j;
             resolve(new raw_1.Raw(str.slice(i, end)));
             i = end;
         }
-        else if (punctuation_1.Punctuation.is(c)) {
-            resolve(punctuation_1.Punctuation.create(c));
-            i++;
-        }
-        else if (cjk_1.CJK.is(c)) {
-            resolve(cjk_1.CJK.create(c));
-            i++;
-        }
-        else {
-            resolve(new unicode_string_1.UnicodeString(c));
-            i++;
-        }
+        else
+            handleText(c);
         if (c === '\n') {
             blankLine = true;
         }
@@ -352,6 +340,31 @@ function parse(str, options) {
         }
     }
     return (0, compact_1.compactTree)(new document_1.Document(popNodes()));
+    function handleText(c) {
+        if (handleIgnores()) {
+            // do nothing, already handled
+        }
+        else if (punctuation_1.Punctuation.is(c)) {
+            resolve(punctuation_1.Punctuation.create(c));
+            i++;
+        }
+        else if (blank_1.Blank.is(c)) {
+            resolve(new blank_1.Blank(c));
+            i++;
+        }
+        else if (alphabet_numeric_1.AlphabetNumeric.is(c)) {
+            resolve(alphabet_numeric_1.AlphabetNumeric.create(c));
+            i++;
+        }
+        else if (cjk_1.CJK.is(c)) {
+            resolve(cjk_1.CJK.create(c));
+            i++;
+        }
+        else {
+            resolve(new unicode_string_1.UnicodeString(c));
+            i++;
+        }
+    }
     function handleIgnores() {
         for (const ignore of options.ignoreWords) {
             if ((0, string_1.matchSubstring)(str, i, ignore)) {
@@ -365,14 +378,12 @@ function parse(str, options) {
     function forceCloseAllInlineNodes() {
         while (true) {
             const ret = forceCloseInlineNodes();
-            if (ret === false)
-                break;
-            else if (typeof ret === 'number') {
-                i = ret;
+            if (ret === 0 /* Clean */)
+                return ret;
+            else if (ret === 1 /* ReParse */) {
                 return 1 /* ReParse */;
             }
         }
-        return 0 /* Clean */;
     }
     function forceCloseInlineNodes() {
         switch (stack.top().state) {
@@ -416,12 +427,13 @@ function parse(str, options) {
                 resolve(punctuation_1.Punctuation.create('!'), new square_quoted_1.SquareQuoted(imageText), punctuation_1.Punctuation.create('['), ...popNodes());
                 break;
             case state_1.State.HTMLTag:
-                const next = stack.top().begin + 1;
+                const next = stack.top().begin;
                 popNodes(); // discard HTML content
-                resolve(punctuation_1.Punctuation.create('<'));
-                return next; // re-parse
+                i = next;
+                handleText('<');
+                return 1 /* ReParse */;
             default:
-                return false;
+                return 0 /* Clean */;
         }
     }
     function forceCloseBlockNodes() {

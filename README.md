@@ -325,6 +325,16 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ![md_padding](assets/md_padding.gif)
 
+有些片段希望保持原状，这时可以用 `md-padding-ignore` 来包裹起来。
+
+```markdown
+下面是一段不需要格式化的文本
+<!--md-padding-ignore-begin-->
+a*b=c, b>1 => a<c
+<!--md-padding-ignore-end-->
+现在开始又可以格式化了。
+```
+
 
 
 ### slash_commands：斜杠命令
