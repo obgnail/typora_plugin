@@ -26,6 +26,7 @@ class utils {
     static registerHotkey = hotkeyList => helper.hotkeyHub.register(hotkeyList);
     static registerSingleHotkey = (hotkeyString, callback) => helper.hotkeyHub.registerSingle(hotkeyString, callback);
     static unregisterHotkey = hotkeyString => helper.hotkeyHub.unregister(hotkeyString);
+    static getHotkeyHub = () => helper.hotkeyHub
 
     // 动态注册、动态注销、动态发布生命周期事件
     static eventType = Object.freeze({

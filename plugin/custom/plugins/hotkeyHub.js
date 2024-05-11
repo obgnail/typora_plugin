@@ -34,7 +34,19 @@ class hotkeyHub extends BaseCustomPlugin {
         }
     }
 
-    callback = async anchorNode => this.utils.showInFinder(await this.utils.getActualSettingPath("hotkey.user.toml"));
+    openSettingFile = async () => this.utils.showInFinder(await this.utils.getActualSettingPath("hotkey.user.toml"));
+
+    callback = anchorNode => {
+        const {map} = this.utils.getHotkeyHub();
+        const th = `<tr><th>插件系统已注册快捷键</th>`;
+        const trs = Array.from(map.keys(), hotkey => `<tr><td>${hotkey.toUpperCase().split("+").map(ele => `<kbd>${ele}</kbd>`).join("+")}</td></tr>`);
+        const table = `<table>${th}${trs.join("")}</table>`;
+        const components = [
+            {label: "如需自定义快捷键，请 <a>修改配置文件 🙌</a>", type: "p", onclick: this.openSettingFile},
+            {label: table, type: "p"},
+        ];
+        this.utils.modal({title: "hotkeyHub", components});
+    }
 }
 
 module.exports = {
