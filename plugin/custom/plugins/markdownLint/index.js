@@ -113,7 +113,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
                     return;
                 }
                 const target = ev.target.closest("a");
-                if (!target) return;
+                if (!target) {
+                    File.editor.restoreLastCursor(ev);
+                    return;
+                }
                 const lineToGo = parseInt(target.textContent);
                 if (!lineToGo) return;
                 ev.preventDefault();

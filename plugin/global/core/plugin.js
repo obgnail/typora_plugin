@@ -227,7 +227,8 @@ class utils {
     }
     static openFile = filepath => {
         if (this.isUnderMountFolder(filepath)) {
-            File.editor.focusAndRestorePos();
+            File.editor.restoreLastCursor();
+            // File.editor.focusAndRestorePos();
             File.editor.library.openFile(filepath);
         } else {
             File.editor.library.openFileInNewWindow(filepath, false);

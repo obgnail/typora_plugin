@@ -16,7 +16,7 @@ class slashCommandsPlugin extends BasePlugin {
 
     call = () => this._showAllCommands();
 
-    openSettingFile = async () => this.utils.showInFinder(await this.utils.getActualSettingPath("custom_plugin.user.toml"));
+    openSettingFile = async () => this.utils.showInFinder(await this.utils.getActualSettingPath("settings.user.toml"));
 
     _showAllCommands = () => {
         const getType = type => type === "command" ? "命令" : "文段";

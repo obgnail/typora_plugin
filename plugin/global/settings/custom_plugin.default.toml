@@ -216,7 +216,7 @@ TEMPLATE = """```echarts
 // 提供内置变量:
 //   1. myChart: echarts实例
 //   2. echarts: echarts模块
-//   3. option:  echarts的option
+//   3. option:  echarts实例的option
 //   4. this:    echarts插件实例
 // 更多示例：https://echarts.apache.org/examples/zh/index.html#chart-type-line
 // 代码块里的所有内容都会被eval，请注意安全问题
