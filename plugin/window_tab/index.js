@@ -70,6 +70,16 @@ class windowTabBarPlugin extends BasePlugin {
             }
         }, 200);
         this.utils.loopDetector(isHeaderReady, adjustTop, this.loopDetectInterval, 1000);
+
+        reqnode("electron").ipcRenderer.on("didRename", (sender, {oldPath, newPath}) => {
+            const renameTab = this.tabUtil.tabs.find(tab => tab.path === oldPath);
+            if (!renameTab) return;
+            renameTab.path = newPath;
+            const current = this.tabUtil.tabs[this.tabUtil.activeIdx];
+            if (current && current.path) {
+                this.openTab(current.path);
+            }
+        })
     }
 
     handleClick = () => {

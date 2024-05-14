@@ -969,6 +969,7 @@ COMMANDS = [
     { enable = true, type = "command", icon = "📝", hint = "段落", keyword = "Paragraph", callback = "() => File.editor.stylize.changeBlock('paragraph')" },
     { enable = true, type = "command", icon = "📝", hint = "提升标题等级", keyword = "IncreaseHeaderLevel", callback = "() => File.editor.stylize.increaseHeaderLevel()" },
     { enable = true, type = "command", icon = "📝", hint = "降低标题等级", keyword = "DecreaseHeaderLevel", callback = "() => File.editor.stylize.decreaseHeaderLevel()" },
+    { enable = true, type = "command", icon = "📝", hint = "表格", keyword = "Table", callback = "() => File.editor.tableEdit.insertTable()" },
     { enable = true, type = "command", icon = "📝", hint = "公式块", keyword = "BlockMath", callback = "() => File.editor.stylize.toggleMathBlock()" },
     { enable = true, type = "command", icon = "📝", hint = "代码块", keyword = "BlockCode", callback = "() => File.editor.stylize.toggleFences()" },
     { enable = true, type = "command", icon = "📝", hint = "引用", keyword = "Blockquote", callback = "() => File.editor.stylize.toggleIndent('blockquote')" },

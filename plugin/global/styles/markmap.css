@@ -16,7 +16,7 @@
 #plugin-markmap.penetrateMouse {
     pointer-events: none;
     background: none;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
 }
 
 .plugin-markmap-wrap {
