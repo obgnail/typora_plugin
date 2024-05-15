@@ -1142,6 +1142,18 @@ buttons = [
 ]
 
 
+############### blockSideBySide ###############
+[blockSideBySide]
+# 右键菜单中展示的名称
+name = "并列显示活动块"
+# 是否启用此二级插件
+enable = false
+# 是否在右键菜单中隐藏
+hide = true
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
+order = 1
+
+
 ############### autoTrailingWhiteSpace ###############
 # 此插件是为了满足Markdown换行语法，除非有特殊需求，否则不建议开启此插件
 # 参考：https://markdown.com.cn/basic-syntax/line-breaks.html

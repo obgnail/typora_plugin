@@ -1,0 +1,78 @@
+/* Math display side-by-side */
+div.mathjax-block.md-rawblock-on-edit .md-rawblock-tooltip {
+    right: -10%;
+}
+
+div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel {
+    display: grid;
+    grid-template-columns:  55% 45%; /* edit for proportions between code and rendering*/
+    grid-template-rows: auto auto auto;
+    margin: 0 -10%; /* edit this value to enlarge the math edition width */
+    background-color: var(--rawblock-edit-panel-bd); /* edition panel background color */
+}
+
+div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .md-rawblock-before {
+    grid-row-start: 1;
+    overflow-x: scroll;
+}
+
+div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .md-rawblock-input {
+    grid-column-start: 1;
+    grid-row-start: 2;
+    border-right: 1px solid var(--text-color); /* vertical separation bar color */
+}
+
+div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .md-rawblock-after {
+    grid-row-start: 3;
+    overflow-x: scroll;
+}
+
+div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .code-tooltip {
+    grid-column-start: 2;
+    grid-row-start: 2;
+    display: grid;
+    box-shadow: none;
+    align-items: center;
+    margin: 0 10px;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    border: none;
+    background-color: var(--rawblock-edit-panel-bd); /* edition panel background color */
+}
+
+div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .code-tooltip .mathjax-candidate {
+    overflow: unset;
+}
+
+
+/* Mermaid display side-by-side */
+
+/*pre.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) {*/
+/*    display: flex;*/
+/*    background-color: var(--bg-color-1);*/
+/*    box-shadow: none;*/
+/*    border-radius: unset;*/
+/*    margin: 0 -10%;*/
+/*    padding: unset !important;*/
+/*}*/
+
+/*pre.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) .CodeMirror {*/
+/*    width: 45%;*/
+/*    background-color: var(--rawblock-edit-panel-bd);*/
+/*}*/
+
+/*pre.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) .CodeMirror div.CodeMirror-scroll {*/
+/*    !* padding-top: 6px; *!*/
+/*    !* margin-top: 6px; need to fix padding around text edition *!*/
+/*}*/
+
+/*pre.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) .md-diagram-panel {*/
+/*    position: unset;*/
+/*    width: 55%;*/
+/*}*/
+
+/*pre.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) .code-tooltip {*/
+/*    right: 55%; !* edit to match proportions between code and rendering*!*/
+/*}*/
+
+/* TODO side by side only when sufficient width @media */
