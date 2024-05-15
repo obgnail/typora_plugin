@@ -161,25 +161,19 @@ CIRCLE_TOP = "0.6em"
 TIME_COLOR = "#555"
 # 自动插入的模板
 TEMPLATE = """```timeline
-# 使用一级标题表示timeline的标题
+# 使用一级标题表示 timeline 的标题
 
 ## 2022-10-1
 ### 使用二级标题表示时间，三到六级标题表示内容
-支持简单的markdown语法
-- 这是列表1
-- 这是列表2
+支持简单的 markdown 语法
+- 这是无序列表项 1
+- 这是无序列表项 2
 ---
-1. 这是有序列表1
-2. 这是有效列表2
-
-支持**加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，![图片](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
+支持 **加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，![图片](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
 不支持代码块，因为开发者不希望代码块发生嵌套
 
 ## 2023-10-1
-> 支持样式的简单嵌套：这是测试文本**这是测试文本*这是`测试文本`这是测试文本*这是测试文本**这是测试文本
-
-## timeline的语法是开发者自定义的，谨慎使用
-本timeline代码块支持导出成HTML、PDF等格式
+语法是开发者自定义的，谨慎使用。
 
 """
 
@@ -344,14 +338,15 @@ TEMPLATE = """```calendar
 // 可以使用如下注释设置图表宽高（否则使用默认）：
 // {height: "800px", width: ""}
 
-option = {
-    defaultView: 'week',
-    calendars: [
-        { id: 'cal1', name: 'Personal', backgroundColor: '#03bd9e' },
-        { id: 'cal2', name: 'Work', backgroundColor: '#00a9ff' },
-    ],
-};
+const today = new Date();
+const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
 
+option = {defaultView: 'week'};
+calendar.createEvents([
+    {id: 'event1', calendarId: 'cal2', title: 'meeting', start: yesterday, end: today},
+    {id: 'event2', calendarId: 'cal1', title: 'appointment', start: yesterday, end: nextMonth},
+]);
 ```
 """
 
@@ -1145,6 +1140,18 @@ buttons = [
     #   打开网址
     { disable = true, coordinate = [5, 1], hint = "危险操作", size = "17px", icon = "ion-alert", evil = "() => this.utils.openUrl('https://github.com/obgnail/typora_plugin')" },
 ]
+
+
+############### blockSideBySide ###############
+[blockSideBySide]
+# 右键菜单中展示的名称
+name = "并列显示活动块"
+# 是否启用此二级插件
+enable = false
+# 是否在右键菜单中隐藏
+hide = true
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
+order = 1
 
 
 ############### autoTrailingWhiteSpace ###############

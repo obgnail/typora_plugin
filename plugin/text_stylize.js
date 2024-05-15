@@ -63,11 +63,11 @@ class textStylizePlugin extends BasePlugin {
             toolbar: document.querySelector("#plugin-text-stylize .stylize-tool"),
             palette: document.querySelector("#plugin-text-stylize .stylize-palette"),
         }
-
     }
 
     process = () => {
         this.utils.dragFixedModal(this.entities.toolbar.querySelector(`[action="move"]`), this.entities.modal, false);
+        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => hide && this.utils.hide(this.entities.modal));
 
         const that = this;
         $(this.entities.toolbar).on("mouseenter", "[action]", function () {
