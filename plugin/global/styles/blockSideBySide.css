@@ -47,32 +47,32 @@
 
 /* Mermaid display side-by-side */
 
-/*.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) {*/
-/*    display: flex;*/
-/*    background-color: var(--bg-color-1);*/
-/*    box-shadow: none;*/
-/*    border-radius: unset;*/
-/*    margin: 0 -10%;*/
-/*    padding: unset !important;*/
-/*}*/
+.md-fences.md-diagram.md-focus:not(.plugin-custom-diagram):not([mermaid-type="gantt"]) {
+    display: flex;
+    background-color: var(--bg-color-1);
+    box-shadow: none;
+    border-radius: unset;
+    margin: 0 -10%;
+    padding: unset !important;
+}
 
-/*.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) .CodeMirror {*/
-/*    width: 45%;*/
-/*    background-color: var(--rawblock-edit-panel-bd);*/
-/*}*/
+.md-fences.md-diagram.md-focus:not(.plugin-custom-diagram):not([mermaid-type="gantt"]) .CodeMirror {
+    width: 45%;
+    background-color: var(--rawblock-edit-panel-bd);
+}
 
-/*.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) .CodeMirror div.CodeMirror-scroll {*/
-/*    !* padding-top: 6px; *!*/
-/*    !* margin-top: 6px; need to fix padding around text edition *!*/
-/*}*/
+.md-fences.md-diagram.md-focus:not(.plugin-custom-diagram):not([mermaid-type="gantt"]) .CodeMirror .CodeMirror-scroll {
+    /* padding-top: 6px; */
+    /* margin-top: 6px; need to fix padding around text edition */
+}
 
-/*.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) .md-diagram-panel {*/
-/*    position: unset;*/
-/*    width: 55%;*/
-/*}*/
+.md-fences.md-diagram.md-focus:not(.plugin-custom-diagram):not([mermaid-type="gantt"]) .md-diagram-panel {
+    position: unset;
+    width: 55%;
+}
 
-/*.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) .code-tooltip {*/
-/*    right: 55%; !* edit to match proportions between code and rendering*!*/
-/*}*/
+.md-fences.md-diagram.md-focus:not(.plugin-custom-diagram):not([mermaid-type="gantt"]) .code-tooltip {
+    right: 55%; /* edit to match proportions between code and rendering*/
+}
 
 /* TODO side by side only when sufficient width @media */
