@@ -823,9 +823,12 @@ class tocMarkmap {
     }
 
     onSvgClick = () => {
-        if (!this.config.CLICK_TO_LOCALE || !this.config.AUTO_FIT_WHEN_FOLD) return;
         this.entities.svg.addEventListener("click", ev => {
-            if (ev.target.closest("circle")) {
+            ev.stopPropagation();
+            ev.preventDefault();
+
+            const circle = ev.target.closest("circle");
+            if (circle) {
                 if (this.config.AUTO_FIT_WHEN_FOLD) {
                     const timeout = (this.markmap && this.markmap.options.duration) || 500;
                     setTimeout(this.fit, timeout);
@@ -833,25 +836,24 @@ class tocMarkmap {
                 return;
             }
 
-            const target = ev.target.closest(".markmap-node");
-            if (!target) return;
-            ev.stopPropagation();
-            ev.preventDefault();
-            const headers = File.editor.nodeMap.toc.headers;
-            if (!headers || headers.length === 0) return;
-            const list = target.getAttribute("data-path").split(".");
-            if (!list) return;
-            const nodeIdx = list[list.length - 1];
-            let tocIdx = parseInt(nodeIdx - 1); // markmap节点的索引从1开始，要-1
-            if (!this.markmap.state.data.content) {
-                tocIdx--; // 若markmap第一个节点是空节点，再-1
-            }
-            const header = headers[tocIdx];
-            if (header) {
-                const cid = header.attributes.id;
-                const {height: contentHeight, top: contentTop} = this.entities.content.getBoundingClientRect();
-                const height = contentHeight * this.config.LOCALE_HIGHT_RATIO + contentTop;
-                this.utils.scrollByCid(cid, height);
+            const node = ev.target.closest(".markmap-node");
+            if (node && this.config.CLICK_TO_LOCALE) {
+                const headers = File.editor.nodeMap.toc.headers;
+                if (!headers || headers.length === 0) return;
+                const list = node.getAttribute("data-path").split(".");
+                if (!list) return;
+                const nodeIdx = list[list.length - 1];
+                let tocIdx = parseInt(nodeIdx - 1); // markmap节点的索引从1开始，要-1
+                if (!this.markmap.state.data.content) {
+                    tocIdx--; // 若markmap第一个节点是空节点，再-1
+                }
+                const header = headers[tocIdx];
+                if (header) {
+                    const cid = header.attributes.id;
+                    const {height: contentHeight, top: contentTop} = this.entities.content.getBoundingClientRect();
+                    const height = contentHeight * this.config.LOCALE_HIGHT_RATIO + contentTop;
+                    this.utils.scrollByCid(cid, height);
+                }
             }
         })
     }
