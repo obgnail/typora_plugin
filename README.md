@@ -21,7 +21,7 @@
 | 11   | toc                     | 在右侧生成大纲目录                     |
 | 12   | commander               | 命令行环境                             |
 | 13   | mindmap                 | 根据文档大纲一键生成思维导图           |
-| 14   | toolbar                 | 多功能搜索                           |
+| 14   | toolbar                 | 多功能搜索                             |
 | 15   | right_click_menu        | 右键菜单统一管理、调用插件             |
 | 16   | preferences             | 启停插件                               |
 | 17   | markmap                 | 提供 markmap 组件支持                  |
@@ -57,18 +57,18 @@
 | 47   | fullPathCopy            | 复制标题路径                           |
 | 48   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
 | 49   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
-| 50 | blockSideBySide | 并列显示活动块 |
-| 51  | scrollBookmarker        | 书签管理器                             |
-| 52  | openInTotalCommander    | 在 total commander 打开                |
-| 53  | bingSpeech              | 必应朗读                               |
-| 54  | cipher                  | 加密文件                               |
-| 55  | mermaid_replace         | 替换 mermaid 组件                      |
-| 56  | help                    | 用户帮助                               |
-| 57  | custom                  | 开放平台，用户自定义插件（高级）       |
-| 58  | hotkeyHub               | 快捷键注册中心（高级）                 |
-| 59  | quickButton             | 于右下角添加功能按钮（高级）           |
-| 60 | json_rpc                | 外部操纵 Typora（高级）                |
-| 61  | old_window_tab          | 标签页管理（已废弃）                   |
+| 50   | blockSideBySide         | 并列显示活动块                         |
+| 51   | scrollBookmarker        | 书签管理器                             |
+| 52   | openInTotalCommander    | 在 total commander 打开                |
+| 53   | bingSpeech              | 必应朗读                               |
+| 54   | cipher                  | 加密文件                               |
+| 55   | mermaid_replace         | 替换 mermaid 组件                      |
+| 56   | help                    | 用户帮助                               |
+| 57   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 58   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 59   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 60   | json_rpc                | 外部操纵 Typora（高级）                |
+| 61   | old_window_tab          | 标签页管理（已废弃）                   |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -973,9 +973,9 @@ filter_regexp = ""
 
 ## 致谢
 
-- Apache：[echarts](https://echarts.apache.org/zh/index.html)
-- MIT：[markmap](https://markmap.js.org/) | [chartjs](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
-- without-licence：[typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/harttle/md-padding)
+- Apache：[ECharts](https://echarts.apache.org/zh/index.html)
+- MIT：[markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
+- no-licence：[typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/harttle/md-padding)
 
 
 
