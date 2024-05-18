@@ -42,8 +42,9 @@ class utils {
         beforeUnload: "beforeUnload",                               // 退出Typora之前
         beforeToggleSourceMode: "beforeToggleSourceMode",           // 进入源码模式之前
         afterToggleSidebar: "afterToggleSidebar",                   // 切换侧边栏状态之后
+        afterSetSidebarWidth: "afterSetSidebarWidth",               // 调整侧边栏宽度之后
         beforeAddCodeBlock: "beforeAddCodeBlock",                   // 添加代码块之前
-        afterAddCodeBlock: "afterAddCodeBlock",                     //  添加代码块之后
+        afterAddCodeBlock: "afterAddCodeBlock",                     // 添加代码块之后
         outlineUpdated: "outlineUpdated",                           // 大纲更新之时
         toggleSettingPage: "toggleSettingPage",                     // 切换到/回配置页面
     })
@@ -1535,13 +1536,19 @@ class eventHub {
             null, () => this.publishEvent(this.utils.eventType.outlineUpdated)
         )
 
-        this.utils.decorate(() => File && File.editor && File.editor.library, "toggleSidebar", null, () => {
+        const _afterToggleSidebar = () => {
             const sidebar = document.querySelector("#typora-sidebar");
-            if (sidebar) {
-                const open = sidebar.classList.contains("open");
-                this.publishEvent(this.utils.eventType.afterToggleSidebar, open);
-            }
-        })
+            sidebar && this.publishEvent(this.utils.eventType.afterToggleSidebar, sidebar.classList.contains("open"));
+        }
+        const content = document.querySelector("content");
+        const hasTransition = window.getComputedStyle(content).transition !== "all 0s ease 0s";
+        const afterToggleSidebar = hasTransition
+            ? () => content.addEventListener("transitionend", _afterToggleSidebar, {once: true})
+            : this.utils.debounce(_afterToggleSidebar, 400);
+        this.utils.decorate(() => File && File.editor && File.editor.library, "toggleSidebar", null, afterToggleSidebar);
+
+        const afterSetSidebarWidth = this.utils.debounce(() => this.publishEvent(this.utils.eventType.afterSetSidebarWidth), 400);
+        this.utils.decorate(() => File && File.editor && File.editor.library, "setSidebarWidth", null, afterSetSidebarWidth);
 
         this.utils.decorate(() => window, "onbeforeunload", () => this.utils.publishEvent(this.utils.eventType.beforeUnload))
 
