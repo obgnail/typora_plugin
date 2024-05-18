@@ -13,7 +13,7 @@
 | 3    | multi_highlighter       | 多关键字高亮                           |
 | 4    | collapse_paragraph      | 章节折叠                               |
 | 5    | collapse_list           | 列表折叠                               |
-| 6    | collapse_table          | 列表折叠                               |
+| 6    | collapse_table          | 表格折叠                               |
 | 7    | md_padding              | 中英文混排优化                         |
 | 8    | slash_commands          | 斜杠命令                               |
 | 9    | templater               | 文件模板                               |
