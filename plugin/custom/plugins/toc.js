@@ -13,7 +13,9 @@ class tocPlugin extends BaseCustomPlugin {
 
     process = () => {
         this.onResize();
+        this.onToggleSidebar();
         this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.isModalShow() && this.renewModal());
+        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.toggle());
         this.utils.decorate(() => File && File.editor && File.editor.library && File.editor.library.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader);
         this.entities.modal.addEventListener("click", ev => {
             const target = ev.target.closest(".toc-node");
@@ -32,6 +34,21 @@ class tocPlugin extends BaseCustomPlugin {
     }
 
     callback = () => this.toggle()
+
+    onToggleSidebar = () => {
+        const resetPosition = () => {
+            const {right} = this.entities.content.getBoundingClientRect();
+            const {right: modalRight} = this.entities.modal.getBoundingClientRect();
+            const source = {left: `${right}px`, width: `${modalRight - right}px`};
+            Object.assign(this.entities.modal.style, source);
+        }
+        const hasTransition = window.getComputedStyle(this.entities.content).transition !== "all 0s ease 0s";
+        const debounceFunc = this.utils.debounce(resetPosition, 400);
+        const listenFunc = () => this.entities.content.addEventListener("transitionend", resetPosition, {once: true});
+        const callback = hasTransition ? listenFunc : debounceFunc;
+        this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, callback);
+        this.utils.decorate(() => File && File.editor && File.editor.library, "setSidebarWidth", null, debounceFunc);
+    }
 
     isModalShow = () => this.utils.isShow(this.entities.modal)
 
