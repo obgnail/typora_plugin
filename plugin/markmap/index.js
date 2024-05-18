@@ -670,12 +670,8 @@ class tocMarkmap {
             }
             Object.assign(this.entities.modal.style, source);
         }
-        const hasTransition = window.getComputedStyle(this.entities.content).transition !== "all 0s ease 0s";
-        const debounceFunc = this.utils.debounce(resetPosition, 400);
-        const listenFunc = () => this.entities.content.addEventListener("transitionend", resetPosition, {once: true});
-        const callback = hasTransition ? listenFunc : debounceFunc;
-        this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, callback);
-        this.utils.decorate(() => File && File.editor && File.editor.library, "setSidebarWidth", null, debounceFunc);
+        this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, resetPosition);
+        this.utils.addEventListener(this.utils.eventType.afterSetSidebarWidth, resetPosition);
     }
 
     onContextMenu = () => {

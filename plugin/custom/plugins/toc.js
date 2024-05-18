@@ -39,15 +39,10 @@ class tocPlugin extends BaseCustomPlugin {
         const resetPosition = () => {
             const {right} = this.entities.content.getBoundingClientRect();
             const {right: modalRight} = this.entities.modal.getBoundingClientRect();
-            const source = {left: `${right}px`, width: `${modalRight - right}px`};
-            Object.assign(this.entities.modal.style, source);
+            Object.assign(this.entities.modal.style, {left: `${right}px`, width: `${modalRight - right}px`});
         }
-        const hasTransition = window.getComputedStyle(this.entities.content).transition !== "all 0s ease 0s";
-        const debounceFunc = this.utils.debounce(resetPosition, 400);
-        const listenFunc = () => this.entities.content.addEventListener("transitionend", resetPosition, {once: true});
-        const callback = hasTransition ? listenFunc : debounceFunc;
-        this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, callback);
-        this.utils.decorate(() => File && File.editor && File.editor.library, "setSidebarWidth", null, debounceFunc);
+        this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, resetPosition);
+        this.utils.addEventListener(this.utils.eventType.afterSetSidebarWidth, resetPosition);
     }
 
     isModalShow = () => this.utils.isShow(this.entities.modal)
