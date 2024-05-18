@@ -1,0 +1,90 @@
+class collapseTablePlugin extends BasePlugin {
+    styleTemplate = () => true
+
+    init = () => {
+        this.className = "plugin-collapse-table";
+    }
+
+    process = () => {
+        this.recordCollapseState(false);
+
+        this.utils.decorate(() => File && File.editor && File.editor.tableEdit, "showTableEdit", null, (result, ...args) => {
+                const $figure = args[0];
+                if (!$figure || $figure.length === 0 || !$figure.find) return;
+                const $edit = $figure.find(".md-table-edit");
+                if (!$edit || $edit.length === 0) return;
+
+                const collapsed = $figure.hasClass(this.className);
+                const iconClass = collapsed ? "fa fa-plus" : "fa fa-minus";
+                $edit.append($(`
+                    <span class="md-th-button right-th-button">
+                        <button type="button" class="btn btn-default plugin-collapse-table-btn" ty-hint="表格折叠"><span class="${iconClass}"></span></button>
+                    </span>
+                `))
+            }
+        )
+
+        document.querySelector("#write").addEventListener("click", ev => {
+            const btn = ev.target.closest(".plugin-collapse-table-btn");
+            if (!btn) return;
+            const figure = btn.closest("figure");
+            if (!figure) return;
+            this.toggleTable(figure);
+        })
+    }
+
+    call = (type, meta) => {
+        if (type === "convert_current") {
+            this.toggleTable(meta.target);
+        } else if (type === "record_collapse_state") {
+            this.recordCollapseState(true);
+        }
+    }
+
+    dynamicCallArgsGenerator = (anchorNode, meta) => {
+        meta.target = anchorNode.closest("#write .table-figure");
+        const arg_disabled = !meta.target;
+        const arg_hint = !meta.target ? "请将光标定位到表格后点击鼠标右键" : "";
+        const arg_value = "convert_current";
+        const arg_name = !meta.target
+            ? "表格折叠"
+            : meta.target.classList.contains(this.className) ? "展开表格" : "折叠表格";
+
+        const record = `${this.config.RECORD_COLLAPSE ? "不" : ""}记住表格折叠状态`;
+        return [
+            {arg_name, arg_value, arg_hint, arg_disabled},
+            {arg_name: record, arg_value: "record_collapse_state"}
+        ]
+    }
+
+    toggleTable = figure => {
+        const table = figure.querySelector("table");
+        if (!table) return;
+        figure.classList.toggle(this.className);
+        const btn = figure.querySelector(".plugin-collapse-table-btn");
+        if (btn) {
+            const span = btn.querySelector("span");
+            span.classList.toggle("fa-plus");
+            span.classList.toggle("fa-minus");
+        }
+    }
+
+    checkCollapse = figure => figure.classList.contains(this.className);
+
+    recordCollapseState = (needChange = true) => {
+        const name = "recordCollapseTable";
+        const selector = "#write .table-figure";
+        if (needChange) {
+            this.config.RECORD_COLLAPSE = !this.config.RECORD_COLLAPSE;
+        }
+        if (this.config.RECORD_COLLAPSE) {
+            this.utils.registerStateRecorder(name, selector, this.checkCollapse, this.toggleTable);
+        } else {
+            this.utils.unregisterStateRecorder(name);
+        }
+    }
+}
+
+module.exports = {
+    plugin: collapseTablePlugin
+};

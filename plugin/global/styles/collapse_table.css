@@ -1,0 +1,7 @@
+.plugin-collapse-table tbody {
+    display: none !important;
+}
+
+.plugin-collapse-table thead {
+    border: 1px solid #f22f27 !important;
+}
