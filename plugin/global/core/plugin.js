@@ -1208,7 +1208,7 @@ class diagramParser {
         // 不是Diagram类型，需要展示增强按钮
         if (!this.isDiagramType(lang)) {
             $pre.children(".fence-enhance").show();
-            $pre.removeClass("md-fences-advanced md-fences-interactive");
+            $pre.removeClass("md-fences-advanced md-fences-interactive plugin-custom-diagram");
             await this.noticeRollback(cid);
         } else {
             // 是Diagram类型，但不是自定义类型，不展示增强按钮，直接返回即可
@@ -1216,10 +1216,11 @@ class diagramParser {
             // 是Diagram类型，也是自定义类型，调用其回调函数
             const parser = this.parsers.get(lang);
             if (parser) {
+                $pre.addClass("plugin-custom-diagram");
                 parser.interactiveMode && $pre.addClass("md-fences-interactive");
                 await this.renderCustomDiagram(cid, lang, $pre);
             } else {
-                $pre.removeClass("md-fences-interactive");
+                $pre.removeClass("md-fences-interactive plugin-custom-diagram");
                 await this.noticeRollback(cid);
             }
         }

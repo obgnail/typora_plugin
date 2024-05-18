@@ -1,9 +1,9 @@
 /* Math display side-by-side */
-div.mathjax-block.md-rawblock-on-edit .md-rawblock-tooltip {
+.mathjax-block.md-rawblock-on-edit .md-rawblock-tooltip {
     right: -10%;
 }
 
-div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel {
+.mathjax-block.md-rawblock-on-edit .md-rawblock-panel {
     display: grid;
     grid-template-columns:  55% 45%; /* edit for proportions between code and rendering*/
     grid-template-rows: auto auto auto;
@@ -11,23 +11,23 @@ div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel {
     background-color: var(--rawblock-edit-panel-bd); /* edition panel background color */
 }
 
-div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .md-rawblock-before {
+.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .md-rawblock-before {
     grid-row-start: 1;
     overflow-x: scroll;
 }
 
-div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .md-rawblock-input {
+.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .md-rawblock-input {
     grid-column-start: 1;
     grid-row-start: 2;
     border-right: 1px solid var(--text-color); /* vertical separation bar color */
 }
 
-div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .md-rawblock-after {
+.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .md-rawblock-after {
     grid-row-start: 3;
     overflow-x: scroll;
 }
 
-div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .code-tooltip {
+.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .code-tooltip {
     grid-column-start: 2;
     grid-row-start: 2;
     display: grid;
@@ -40,14 +40,14 @@ div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .code-tooltip {
     background-color: var(--rawblock-edit-panel-bd); /* edition panel background color */
 }
 
-div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .code-tooltip .mathjax-candidate {
+.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .code-tooltip .mathjax-candidate {
     overflow: unset;
 }
 
 
 /* Mermaid display side-by-side */
 
-/*pre.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) {*/
+/*.md-fences.md-diagram.md-focus:not(.plugin-custom-diagram) {*/
 /*    display: flex;*/
 /*    background-color: var(--bg-color-1);*/
 /*    box-shadow: none;*/
@@ -56,22 +56,22 @@ div.mathjax-block.md-rawblock-on-edit .md-rawblock-panel .code-tooltip .mathjax-
 /*    padding: unset !important;*/
 /*}*/
 
-/*pre.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) .CodeMirror {*/
+/*.md-fences.md-diagram.md-focus:not(.plugin-custom-diagram) .CodeMirror {*/
 /*    width: 45%;*/
 /*    background-color: var(--rawblock-edit-panel-bd);*/
 /*}*/
 
-/*pre.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) .CodeMirror div.CodeMirror-scroll {*/
-/*    !* padding-top: 6px; *!*/
-/*    !* margin-top: 6px; need to fix padding around text edition *!*/
-/*}*/
-
-/*pre.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) .md-diagram-panel {*/
+/*.md-fences.md-diagram.md-focus:not(.plugin-custom-diagram) .md-diagram-panel {*/
 /*    position: unset;*/
 /*    width: 55%;*/
 /*}*/
 
-/*pre.md-fences.md-diagram.ty-contain-cm.modeLoaded.md-focus:not([mermaid-type="gantt"]) .code-tooltip {*/
+/*.md-fences.md-diagram.md-focus:not(.plugin-custom-diagram) .CodeMirror .CodeMirror-scroll {*/
+/*    !* padding-top: 6px; *!*/
+/*    !* margin-top: 6px; need to fix padding around text edition *!*/
+/*}*/
+
+/*.md-fences.md-diagram.md-focus:not(.plugin-custom-diagram) .code-tooltip {*/
 /*    right: 55%; !* edit to match proportions between code and rendering*!*/
 /*}*/
 

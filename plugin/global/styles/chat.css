@@ -73,6 +73,8 @@
 
 
 .plugin-chat-text {
+    width: fit-content;
+    max-width: 100%;
     font-size: 1.2em;
     background: #fff;
     border-radius: 5px;
@@ -83,7 +85,6 @@
 }
 
 .plugin-chat-send .plugin-chat-text {
-    border-color: #95ec69;
     background: #95ec69;
 }
 

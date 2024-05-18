@@ -408,16 +408,19 @@ class tocMarkmap {
 
         const ability = () => {
             const {zoom = true, pan = true} = (this.markmap && this.markmap.options) || {};
-            const autoFitLabel = "自动适配窗口" + _genInfo("图形更新时自动重新适配窗口大小");
+            const fitWhenUpdateLabel = "更新时自动适配窗口" + _genInfo("图形更新时自动重新适配窗口大小");
+            const fitWhenFoldLabel = "折叠时自动适配窗口" + _genInfo("折叠图形节点时自动重新适配窗口大小");
             const list = [
                 {label: "鼠标滚轮缩放", value: "zoom", checked: zoom},
                 {label: "鼠标滚轮平移", value: "pan", checked: pan},
-                {label: autoFitLabel, value: "autoFit", checked: this.config.AUTO_FIT_WHEN_UPDATE},
+                {label: fitWhenUpdateLabel, value: "fitWhenUpdate", checked: this.config.AUTO_FIT_WHEN_UPDATE},
+                {label: fitWhenFoldLabel, value: "fitWhenFold", checked: this.config.AUTO_FIT_WHEN_FOLD},
             ];
             const callback = submit => {
                 this.markmap.options.zoom = submit.includes("zoom");
                 this.markmap.options.pan = submit.includes("pan");
-                this.config.AUTO_FIT_WHEN_UPDATE = submit.includes("autoFit");
+                this.config.AUTO_FIT_WHEN_UPDATE = submit.includes("fitWhenUpdate");
+                this.config.AUTO_FIT_WHEN_FOLD = submit.includes("fitWhenFold");
             };
             return {label: "", legend: "能力", type: "checkbox", list, callback}
         }
@@ -820,28 +823,37 @@ class tocMarkmap {
     }
 
     onSvgClick = () => {
-        if (!this.config.CLICK_TO_LOCALE) return;
         this.entities.svg.addEventListener("click", ev => {
-            if (ev.target.closest("circle")) return;
-            const target = ev.target.closest(".markmap-node");
-            if (!target) return;
             ev.stopPropagation();
             ev.preventDefault();
-            const headers = File.editor.nodeMap.toc.headers;
-            if (!headers || headers.length === 0) return;
-            const list = target.getAttribute("data-path").split(".");
-            if (!list) return;
-            const nodeIdx = list[list.length - 1];
-            let tocIdx = parseInt(nodeIdx - 1); // markmap节点的索引从1开始，要-1
-            if (!this.markmap.state.data.content) {
-                tocIdx--; // 若markmap第一个节点是空节点，再-1
+
+            const circle = ev.target.closest("circle");
+            if (circle) {
+                if (this.config.AUTO_FIT_WHEN_FOLD) {
+                    const timeout = (this.markmap && this.markmap.options.duration) || 500;
+                    setTimeout(this.fit, timeout);
+                }
+                return;
             }
-            const header = headers[tocIdx];
-            if (header) {
-                const cid = header.attributes.id;
-                const {height: contentHeight, top: contentTop} = this.entities.content.getBoundingClientRect();
-                const height = contentHeight * this.config.LOCALE_HIGHT_RATIO + contentTop;
-                this.utils.scrollByCid(cid, height);
+
+            const node = ev.target.closest(".markmap-node");
+            if (node && this.config.CLICK_TO_LOCALE) {
+                const headers = File.editor.nodeMap.toc.headers;
+                if (!headers || headers.length === 0) return;
+                const list = node.getAttribute("data-path").split(".");
+                if (!list) return;
+                const nodeIdx = list[list.length - 1];
+                let tocIdx = parseInt(nodeIdx - 1); // markmap节点的索引从1开始，要-1
+                if (!this.markmap.state.data.content) {
+                    tocIdx--; // 若markmap第一个节点是空节点，再-1
+                }
+                const header = headers[tocIdx];
+                if (header) {
+                    const cid = header.attributes.id;
+                    const {height: contentHeight, top: contentTop} = this.entities.content.getBoundingClientRect();
+                    const height = contentHeight * this.config.LOCALE_HIGHT_RATIO + contentTop;
+                    this.utils.scrollByCid(cid, height);
+                }
             }
         })
     }
