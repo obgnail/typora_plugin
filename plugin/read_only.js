@@ -47,11 +47,20 @@ class readOnlyPlugin extends BasePlugin {
     }
     _stopEvent = ev => File.isLocked && this.stop(ev)
     _stopKeydown = ev => File.isLocked && this.forbiddenKeys.includes(ev.key) && this.stop(ev)
+    _recoverExpand = ev => {
+        const hasInline = ev.target.closest('#write span[md-inline="image"], #write span[md-inline="link"], #write span[md-inline="inline_math"]');
+        if (!hasInline) {
+            $(".md-expand").removeClass("md-expand");
+        }
+    }
 
     extraOperation = lock => {
         const write = document.getElementById("write");
         const func = lock ? "addEventListener" : "removeEventListener";
         const map = {keydown: this._stopKeydown, compositionstart: this._stopEvent, paste: this._stopEvent};
+        if (this.config.REMOVE_EXPAND_WHEN_READ_ONLY) {
+            map.mousedown = this._recoverExpand;
+        }
         for (const [ev, callback] of Object.entries(map)) {
             write[func](ev, callback, true);
         }
@@ -72,8 +81,8 @@ class readOnlyPlugin extends BasePlugin {
         this.extraOperation(true);
         this.setLabel(this.config.SHOW_TEXT + String.fromCharCode(160).repeat(3));
         this.toggleMenu();
-
     }
+
     unlock = () => {
         this.inReadOnlyMode = false;
         File.unlock();

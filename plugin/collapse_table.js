@@ -14,13 +14,9 @@ class collapseTablePlugin extends BasePlugin {
                 const $edit = $figure.find(".md-table-edit");
                 if (!$edit || $edit.length === 0) return;
 
-                const collapsed = $figure.hasClass(this.className);
-                const iconClass = collapsed ? "fa fa-plus" : "fa fa-minus";
-                $edit.append($(`
-                    <span class="md-th-button right-th-button">
-                        <button type="button" class="btn btn-default plugin-collapse-table-btn" ty-hint="表格折叠"><span class="${iconClass}"></span></button>
-                    </span>
-                `))
+                const icon = $figure.hasClass(this.className) ? "fa fa-plus" : "fa fa-minus";
+                const span = `<span class="md-th-button right-th-button"><button type="button" class="btn btn-default plugin-collapse-table-btn" ty-hint="表格折叠"><span class="${icon}"></span></button></span>`;
+                $edit.append($(span));
             }
         )
 
@@ -42,17 +38,15 @@ class collapseTablePlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
-        meta.target = anchorNode.closest("#write .table-figure");
-        const arg_disabled = !meta.target;
-        const arg_hint = !meta.target ? "请将光标定位到表格后点击鼠标右键" : "";
-        const arg_value = "convert_current";
-        const arg_name = !meta.target
-            ? "表格折叠"
-            : meta.target.classList.contains(this.className) ? "展开表格" : "折叠表格";
-
+        const figure = anchorNode.closest("#write .table-figure");
+        const arg_disabled = !figure;
+        const arg_hint = !figure ? "请将光标定位到表格后点击鼠标右键" : "";
+        const arg_name = !figure ? "表格折叠" : (figure.classList.contains(this.className) ? "展开表格" : "折叠表格");
         const record = `${this.config.RECORD_COLLAPSE ? "不" : ""}记住表格折叠状态`;
+        meta.target = figure;
+
         return [
-            {arg_name, arg_value, arg_hint, arg_disabled},
+            {arg_name, arg_hint, arg_disabled, arg_value: "convert_current"},
             {arg_name: record, arg_value: "record_collapse_state"}
         ]
     }

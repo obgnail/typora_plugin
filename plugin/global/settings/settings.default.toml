@@ -310,6 +310,8 @@ CLICKABLE = true
 HOTKEY = "ctrl+shift+r"
 # 默认使用只读模式（打开Typora就进入只读模式）
 READ_ONLY_DEFAULT = false
+# 只读时自动收缩展开的模块
+REMOVE_EXPAND_WHEN_READ_ONLY = true
 # 只读时禁用右键菜单
 DISABLE_CONTEXT_MENU_WHEN_READ_ONLY = true
 # 只读状态下禁用右键菜单的时候，哪些菜单选项保持可用（可选值需要您开打调试工具，查找其中data-key）
