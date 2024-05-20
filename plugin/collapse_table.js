@@ -63,6 +63,16 @@ class collapseTablePlugin extends BasePlugin {
         }
     }
 
+    rollback = start => {
+        let cur = start;
+        while (true) {
+            cur = cur.closest(`.${this.className}`);
+            if (!cur) return;
+            this.toggleTable(cur);
+            cur = cur.parentElement;
+        }
+    }
+
     checkCollapse = figure => figure.classList.contains(this.className);
 
     recordCollapseState = (needChange = true) => {
