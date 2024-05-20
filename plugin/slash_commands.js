@@ -24,8 +24,9 @@ class slashCommandsPlugin extends BasePlugin {
         const list = Array.from(this.commands.values());
         const trs = list.map(({type, keyword, hint, callback}) => `<tr><td>${keyword}</td><td>${getType(type)}</td><td title="${callback}">${hint}</td></tr>`);
         const table = `<table>${th}${trs.join("")}</table>`;
+        const onclick = ev => ev.target.closest("a") && this.openSettingFile();
         const components = [
-            {label: "如需自定义斜杠命令，请 <a>修改配置文件 🙌</a>", type: "p", onclick: this.openSettingFile},
+            {label: "如需自定义斜杠命令，请 <a>修改配置文件</a>", type: "p", onclick},
             {label: table, type: "p"}
         ];
         this.utils.modal({title: "斜杠命令", components});

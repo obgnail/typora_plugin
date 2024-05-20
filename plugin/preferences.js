@@ -71,11 +71,12 @@ class preferencesPlugin extends BasePlugin {
                 disabled: this.config.IGNORE_PLUGINS.includes(fixedName),
             }
         }
+        const onclick = ev => ev.target.closest("a") && this.openSettingFile();
         const [settings, customSettings] = await this.getSettings();
         const plugins = Object.entries(settings).map(displayFunc);
         const customPlugins = Object.entries(customSettings).map(displayFunc);
         const components = [
-            {label: "🛡️ 为保护用户，此处禁止启停部分插件，如需请 <a>修改配置文件</a>", type: "p", onclick: this.openSettingFile},
+            {label: "🛡️ 为保护用户，此处禁止启停部分插件，如需请 <a>修改配置文件</a>", type: "p", onclick},
             {label: "", legend: "一级插件", type: "checkbox", list: plugins},
             {label: "", legend: "二级插件", type: "checkbox", list: customPlugins},
         ];
