@@ -1,8 +1,4 @@
-/* 本插件:
-*    1.实现原理：采用爬虫技术，盗取必应翻译的播放语音功能
-*    2.功能完全依赖于外部环境，因此不能保证成功
-*    3.开发者一时兴起做的，仅作娱乐使用
-*/
+// 实现原理：采用爬虫技术，盗取必应翻译的播放语音功能。功能完全依赖于外部环境，因此不能保证成功。
 class bingSpeech extends BaseCustomPlugin {
     selector = onClick => {
         if (onClick) return;
@@ -76,8 +72,11 @@ class bingSpeech extends BaseCustomPlugin {
         const {from_language, voice, rate, pitch, style, style_degree} = this.config;
         const num2Str = num => (parseInt(num) / 100).toFixed(1);
         const str2Num = str => (str.startsWith("-") ? "" : "+") + Math.floor(parseFloat(str) * 100) + "%";
+
+        const genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7;"></span>`;
+        const warn = "⚠️ 本插件的功能完全依赖于外部环境，因此不能保证成功" + " " + genInfo("采用爬虫技术盗取必应翻译的语音，因此成功与否完全取决于微软");
         const components = [
-            {label: "⚠️ 本插件的功能完全依赖于外部环境，因此不能保证成功", type: "p"},
+            {label: warn, type: "p"},
             {label: "操作", type: "select", selected: "speech", map: operationMap},
             {label: "语言", type: "input", value: from_language},
             {label: "语音", type: "select", selected: voice, list: voiceList},

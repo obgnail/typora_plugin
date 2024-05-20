@@ -111,9 +111,9 @@
 
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（一般是 `Typora/resources/window.html` 或者  `Typora/resources/app/window.html`，推荐使用 everything 找一下）
 
-3. 根据文件夹 A 下是否含有 `appsrc` 目录判断 Typora 是否为新版本，有则新版本，无则旧版本
+3. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下
 
-4. 打开文件夹 A，将源码的 plugin 文件夹粘贴进该文件夹下
+4. 根据文件夹 A 下是否含有 `appsrc` 目录判断 Typora 是否为新版本，有则新版本，无则旧版本
 
 5. 打开文件 `A/window.html`
 
@@ -333,7 +333,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ![md_padding](assets/md_padding.gif)
 
-有些片段希望保持原状，这时可以用 `md-padding-ignore` 来包裹起来。
+有些片段希望保持原状，这时可以用 `md-padding-ignore` 包裹起来。
 
 ```markdown
 下面是一段不需要格式化的文本
