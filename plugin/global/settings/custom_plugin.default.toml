@@ -749,6 +749,8 @@ hide = false
 order = 1
 # 插件配置
 [resourceOperation.config]
+# 快捷键
+hotkey = ""
 # 弹窗位于页面从左往右的5%位置
 modal_left_percent = 5
 # 弹窗占据页面的90%宽度
@@ -1078,6 +1080,10 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
+# 插件配置
+[hotkeyHub.config]
+# 查看注册的快捷键列表的快捷键
+hotkey = ""
 
 
 ############### quickButton ###############
@@ -1092,6 +1098,8 @@ hide = false
 order = 1
 # 插件配置
 [quickButton.config]
+# 切换按钮显示状态的快捷键
+hotkey = ""
 # 是否支持右键（右键点击按钮后，其他按钮将被隐藏）
 support_right_click = true
 # 按钮的尺寸
@@ -1152,6 +1160,9 @@ enable = false
 hide = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
+[blockSideBySide.config]
+# 切换的快捷键
+hotkey = ""
 
 
 ############### autoTrailingWhiteSpace ###############
@@ -1201,8 +1212,7 @@ filter_regexp = ""
 [openInTotalCommander]
 # 右键菜单中展示的名称
 name = "TC打开"
-# 是否启用此二级插件
-# 若要使用此插件，请先修改tc_path选项
+# 是否启用此二级插件（若要使用此插件，请先修改tc_path选项）
 enable = false
 # 是否在右键菜单中隐藏
 hide = false
@@ -1237,6 +1247,8 @@ hide = false
 order = 1
 # 插件配置
 [pluginUpdater.config]
+# 快捷键
+hotkey = ""
 # 众所周知，有些地区无法裸连github，需要使用代理（如：http://127.0.0.1:7890）
 # 若值为空，则将弹出窗口，让用户填入代理；若值不为空，则将直接使用此代理，不再弹出窗口
 # 除非你固定使用某代理，否则不建议使用此配置

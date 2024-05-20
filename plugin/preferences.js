@@ -1,4 +1,6 @@
 class preferencesPlugin extends BasePlugin {
+    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+
     getSettings = async () => {
         const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
         const customSettings = await this.utils.readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");

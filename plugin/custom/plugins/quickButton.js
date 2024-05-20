@@ -1,4 +1,6 @@
 class quickButtonPlugin extends BaseCustomPlugin {
+    hotkey = () => [this.config.hotkey]
+
     beforeProcess = () => {
         this.buttons = new Map();
         this.isHidden = false;
