@@ -125,10 +125,10 @@ class timelinePlugin extends BaseCustomPlugin {
             });
 
             return $(`
-                <div class="line"><div class="circle"></div></div>
-                <div class="wrapper">
-                    <div class="time">${bucket.time}</div>
-                    <div class="content">${items.join("")}</div>
+                <div class="timeline-line"><div class="timeline-circle"></div></div>
+                <div class="timeline-wrapper">
+                    <div class="timeline-time">${bucket.time}</div>
+                    <div class="timeline-event">${items.join("")}</div>
                 </div>
             `)
         })
