@@ -142,7 +142,6 @@ class utils {
     //   1. modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
     //   2. callback(components) => {}: 当用户点击【确认】后的回调函数
     //   3. onCancelCallback(components) => {}: 当用户点击【取消】后的回调函数
-    // 具体使用请参考__modal_example.js，不再赘述
     static modal = (modal, callback, cancelCallback) => helper.dialog.modal(modal, callback, cancelCallback);
 
     // 动态注册、动态注销代码块增强按钮(仅当fence_enhance插件启用时有效，通过返回值确定是否成功)
@@ -244,9 +243,8 @@ class utils {
 
     static showHiddenElementByPlugin = target => {
         if (!target) return;
-        this.callPluginFunction("collapse_paragraph", "rollback", target);
-        this.callPluginFunction("collapse_list", "rollback", target);
-        this.callPluginFunction("truncate_text", "rollback", target);
+        const plugins = ["collapse_paragraph", "collapse_table", "collapse_list", "truncate_text"];
+        plugins.forEach(plu => this.callPluginFunction(plu, "rollback", target));
     }
     static getAnchorNode = () => File.editor.getJQueryElem(window.getSelection().anchorNode);
     static withAnchorNode = (selector, func) => () => {
