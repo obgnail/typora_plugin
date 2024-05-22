@@ -1,4 +1,9 @@
 class cipherPlugin extends BasePlugin {
+    hotkey = () => [
+        {hotkey: this.config.ENCRYPT_HOTKEY, callback: () => this.call("encrypt")},
+        {hotkey: this.config.DECRYPT_HOTKEY, callback: () => this.call("decrypt")},
+    ]
+
     init = () => {
         this.AES_ECB = null;
         this.key = "n0hLis5FjgQxa3f31sSa2wm37J81g3upTlq9it9WlfK";

@@ -1,4 +1,6 @@
 class pluginUpdater extends BaseCustomPlugin {
+    hotkey = () => [this.config.hotkey]
+
     beforeProcess = async () => {
         // 当前升级插件仅支持windows平台
         if (!File.isWin) return this.utils.stopLoadPluginError

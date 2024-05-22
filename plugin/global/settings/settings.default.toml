@@ -17,6 +17,7 @@ ENABLE = true
 PERFORMANCE_MODE = true
 # 禁用的插件。优先级高于业务插件的ENABLE选项
 # 填入业务插件的fixedName。举例：["window_tab", "search_multi"]
+# 此选项是用于临时排查异常插件的，所以只建议临时使用。如果希望长期禁用某插件，请将其ENABLE选项置为false
 DISABLE_PLUGINS = []
 # 如果你使用了图表插件（kanban、markmap、echarts等等）并且默认开启交互模式（INTERACTIVE_MODE置为true），那么下面两个配置请至少一个置为true，否则你将无法退出交互模式
 # 为图表添加一个【编辑】按钮（当点击【编辑】按钮时退出交互模式）
@@ -47,7 +48,7 @@ LIMIT_TAB_Y_AXIS_WHEN_DRAG = true
 # 禁止垂直拖拽（仅当DRAG_STYLE=1时生效。若为true，则HEIGHT_SCALE失效）
 LIMIT_TAB_ROI = false
 # 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的x倍高度时，视为新建窗口打开此文件（若为-1，则不启用此功能）
-HEIGHT_SCALE = 5
+HEIGHT_SCALE = -1
 # tab最小宽度（填入css长度，如200px、12em）
 TAB_MIN_WIDTH = "100px"
 # tab最大宽度（填入css长度，如200px、12em，最长不超过400px）
@@ -774,7 +775,7 @@ MODIFIER_KEY = { COLLAPSE_SINGLE = "ctrl", COLLAPSE_SIBLINGS = "ctrl+alt", COLLA
 ############### collapse_list ###############
 [collapse_list]
 # 是否启用插件
-ENABLE = true
+ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "列表折叠"
 # 是否在右键菜单中可点击
@@ -920,6 +921,10 @@ ENABLE = true
 NAME = "加密文件"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# 加密快捷键
+ENCRYPT_HOTKEY = ""
+# 解密快捷键
+DECRYPT_HOTKEY = ""
 # 使用弹出提示弹窗
 SHOW_HINT_MODAL = true
 
@@ -1106,6 +1111,8 @@ ENABLE = true
 NAME = "启停插件"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# 快捷键
+HOTKEY = ""
 # 不允许通过此插件修改启停的插件
 IGNORE_PLUGINS = ["preferences", "right_click_menu", "custom", "json_rpc", "mermaid_replace", "openInTotalCommander", "redirectLocalRootUrl"]
 

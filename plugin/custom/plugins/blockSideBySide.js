@@ -1,4 +1,6 @@
 class blockSideBySide extends BaseCustomPlugin {
+    hotkey = () => [this.config.hotkey]
+
     styleTemplate = () => true
 
     callback = async () => {

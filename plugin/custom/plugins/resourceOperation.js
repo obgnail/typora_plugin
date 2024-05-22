@@ -16,6 +16,9 @@
 */
 class resourceOperation extends BaseCustomPlugin {
     styleTemplate = () => true
+
+    hotkey = () => [this.config.hotkey]
+
     html = () => `
         <div id="plugin-resource-operation" class="plugin-common-modal plugin-common-hidden">
             <div class="plugin-resource-operation-icon-group">
