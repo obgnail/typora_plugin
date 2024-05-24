@@ -44,9 +44,11 @@ class markmapPlugin extends BasePlugin {
 
         const result = [];
         for (const header of headers) {
-            const {pattern, text = ""} = (header && header.attributes) || {};
+            const {pattern, depth, text = ""} = (header && header.attributes) || {};
             if (pattern) {
                 result.push(pattern.replace("{0}", text));
+            } else if (typeof depth === "number") {
+                result.push("#".repeat(depth) + " " + text);
             }
         }
         return result.join("\n")
