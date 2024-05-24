@@ -47,8 +47,8 @@ class markmapPlugin extends BasePlugin {
             const {pattern, depth, text = ""} = (header && header.attributes) || {};
             if (pattern) {
                 result.push(pattern.replace("{0}", text));
-            } else if (typeof depth === "number") {
-                result.push("#".repeat(depth) + " " + text);
+            } else if (depth) {
+                result.push("#".repeat(parseInt(depth)) + " " + text);
             }
         }
         return result.join("\n")
