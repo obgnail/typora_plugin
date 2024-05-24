@@ -116,7 +116,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
         }
     }
 
-    flashScaleButton = (button, scale = 0.9, timeout = 80) => {
+    flashScaleButton = (button, scale = 0.95, timeout = 80) => {
         button.style.transform = `scale(${scale})`;
         setTimeout(() => button.style.removeProperty("transform"), timeout);
     }
