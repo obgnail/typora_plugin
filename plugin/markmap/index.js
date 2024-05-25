@@ -964,9 +964,9 @@ class tocMarkmap {
 
     update = async (md, fit = true) => {
         const {root} = this.controller.transformer.transform(md);
+        this.setFold(root);
         const color = this.colorSchemeGenerator ? this.colorSchemeGenerator() : this.controller.Markmap.defaultOptions.color;
         this.markmap.setOptions({color});
-        this.setFold(root);
         this.markmap.setData(root);
         if (fit) {
             await this.markmap.fit();
