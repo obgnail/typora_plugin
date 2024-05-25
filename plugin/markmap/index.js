@@ -651,7 +651,8 @@ class tocMarkmap {
         if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"].includes(action)) {
             await this._waitUnpin();
         }
-        await this[action](button);
+        const arg = (action === "pinUp" || action === "pinRight") ? false : undefined;
+        await this[action](arg);
     }
 
     onToggleSidebar = () => {
