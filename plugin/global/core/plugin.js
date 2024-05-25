@@ -227,7 +227,7 @@ class utils {
     }
     static openFile = filepath => {
         if (this.isUnderMountFolder(filepath)) {
-            File.editor.restoreLastCursor();
+            // File.editor.restoreLastCursor();
             File.editor.focusAndRestorePos();
             File.editor.library.openFile(filepath);
         } else {
@@ -2259,7 +2259,7 @@ class process {
     static existEnablePlugin = () => Object.entries(global._plugin_settings).some(([name, plugin]) => plugin.ENABLE && !global._plugin_global_settings.DISABLE_PLUGINS.includes(name))
 
     // 整个插件系统一共暴露了7个全局变量，实际有用的只有2个：BasePlugin, BaseCustomPlugin
-    // 其余5个皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是BasePlugin, BaseCustomPlugin的实例属性，所以utils自己也不需要暴露
+    // 其余5个全局变量皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是BasePlugin, BaseCustomPlugin的实例属性，所以utils自己也不需要暴露
     // 既然永远不会被外部文件引用，为何要将它们设置为全局变量？答：方便调试
     static prepare = settings => {
         global.BasePlugin = basePlugin;             // 插件的父类

@@ -486,6 +486,8 @@ LOCALE_HIGHT_RATIO = 0.2
 ALLOW_ICON_WRAP = true
 # 当用户编辑文档，导致markmap更新图形时，新markmap的图形大小是否重新适配窗口
 AUTO_FIT_WHEN_UPDATE = true
+# 当用户编辑文档，导致markmap更新图形时，已折叠的节点是否不再重新展开
+REMEMBER_FOLD_WHEN_UPDATE = true
 # 折叠markmap节点时，图形是否重新适配窗口
 AUTO_FIT_WHEN_FOLD = true
 # 初始化时，弹窗位于页面从左往右的5%位置
@@ -1058,7 +1060,7 @@ FIND_LOST_PLUGIN = true
 #   NAME: 一级菜单的名称
 #   LIST: 二级菜单的插件列表（"---"：代表在页面上插入一个分隔横线）
 [[right_click_menu.MENUS]]
-NAME = "不常用插件"
+NAME = "少用插件"
 LIST = [
     "window_tab",
     "fence_enhance",

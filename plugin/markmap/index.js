@@ -44,9 +44,11 @@ class markmapPlugin extends BasePlugin {
 
         const result = [];
         for (const header of headers) {
-            const {pattern, text = ""} = (header && header.attributes) || {};
+            const {pattern, depth, text = ""} = (header && header.attributes) || {};
             if (pattern) {
                 result.push(pattern.replace("{0}", text));
+            } else if (depth) {
+                result.push("#".repeat(parseInt(depth)) + " " + text);
             }
         }
         return result.join("\n")
@@ -410,17 +412,20 @@ class tocMarkmap {
             const {zoom = true, pan = true} = (this.markmap && this.markmap.options) || {};
             const fitWhenUpdateLabel = "更新时自动适配窗口" + _genInfo("图形更新时自动重新适配窗口大小");
             const fitWhenFoldLabel = "折叠时自动适配窗口" + _genInfo("折叠图形节点时自动重新适配窗口大小");
+            const foldWhenUpdateLabel = "记住已折叠节点" + _genInfo("图形更新时不再重新展开已折叠节点");
             const list = [
                 {label: "鼠标滚轮缩放", value: "zoom", checked: zoom},
                 {label: "鼠标滚轮平移", value: "pan", checked: pan},
                 {label: fitWhenUpdateLabel, value: "fitWhenUpdate", checked: this.config.AUTO_FIT_WHEN_UPDATE},
                 {label: fitWhenFoldLabel, value: "fitWhenFold", checked: this.config.AUTO_FIT_WHEN_FOLD},
+                {label: foldWhenUpdateLabel, value: "foldWhenUpdate", checked: this.config.REMEMBER_FOLD_WHEN_UPDATE},
             ];
             const callback = submit => {
                 this.markmap.options.zoom = submit.includes("zoom");
                 this.markmap.options.pan = submit.includes("pan");
                 this.config.AUTO_FIT_WHEN_UPDATE = submit.includes("fitWhenUpdate");
                 this.config.AUTO_FIT_WHEN_FOLD = submit.includes("fitWhenFold");
+                this.config.REMEMBER_FOLD_WHEN_UPDATE = submit.includes("foldWhenUpdate");
             };
             return {label: "", legend: "能力", type: "checkbox", list, callback}
         }
@@ -646,7 +651,8 @@ class tocMarkmap {
         if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"].includes(action)) {
             await this._waitUnpin();
         }
-        await this[action](button);
+        const arg = (action === "pinUp" || action === "pinRight") ? false : undefined;
+        await this[action](arg);
     }
 
     onToggleSidebar = () => {
@@ -902,6 +908,42 @@ class tocMarkmap {
         });
     }
 
+    setFold = newRoot => {
+        if (!this.config.REMEMBER_FOLD_WHEN_UPDATE) return;
+
+        const _walk = (fn, node, parent) => {
+            fn(node, parent);
+            for (const child of node.children) {
+                _walk(fn, child, node);
+            }
+        }
+
+        const _setPath = (node, parent) => {
+            const parentPath = (parent && parent.__path) || "";
+            node.__path = parentPath + "@" + node.content;
+        }
+
+        const fold = new Set();
+        const _collect = node => {
+            const {payload, __path} = node;
+            if (payload && payload.fold && __path) {
+                fold.add(__path);
+            }
+        }
+        const _reset = node => {
+            const {payload, __path} = node;
+            if (fold.has(__path)) {
+                node.payload = {...payload, fold: 1};
+            }
+        }
+
+        const {data: oldRoot} = this.markmap.state || {};
+        _walk(_setPath, oldRoot);
+        _walk(_setPath, newRoot);
+        _walk(_collect, oldRoot);
+        _walk(_reset, newRoot);
+    }
+
     draw = async (md, fit = true, options = null) => {
         this.utils.show(this.entities.modal);
         if (this.markmap) {
@@ -924,6 +966,7 @@ class tocMarkmap {
         const {root} = this.controller.transformer.transform(md);
         const color = this.colorSchemeGenerator ? this.colorSchemeGenerator() : this.controller.Markmap.defaultOptions.color;
         this.markmap.setOptions({color});
+        this.setFold(root);
         this.markmap.setData(root);
         if (fit) {
             await this.markmap.fit();

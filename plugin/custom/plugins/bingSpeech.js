@@ -73,8 +73,8 @@ class bingSpeech extends BaseCustomPlugin {
         const num2Str = num => (parseInt(num) / 100).toFixed(1);
         const str2Num = str => (str.startsWith("-") ? "" : "+") + Math.floor(parseFloat(str) * 100) + "%";
 
-        const genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7;"></span>`;
-        const warn = "⚠️ 本插件的功能完全依赖于外部环境，因此不能保证成功" + " " + genInfo("采用爬虫技术盗取必应翻译的语音，因此成功与否完全取决于微软");
+        const genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7; margin-left: 7px;"></span>`;
+        const warn = "⚠️ 本插件的功能完全依赖于外部环境，因此不能保证成功" + genInfo("采用爬虫技术盗取必应翻译的语音，因此成功与否完全取决于微软");
         const components = [
             {label: warn, type: "p"},
             {label: "操作", type: "select", selected: "speech", map: operationMap},

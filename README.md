@@ -199,7 +199,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### 如何永久禁用/启用某些插件？
 
-右键菜单 -> 不常用插件 -> 启停插件。
+右键菜单 -> 少用插件 -> 启停插件。
 
 
 
@@ -229,7 +229,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### 我不想用了，如何卸载插件系统？
 
-右键菜单 -> 不常用插件 -> 帮助 -> 卸载插件。
+右键菜单 -> 少用插件 -> 帮助 -> 卸载插件。
 
 
 
@@ -461,7 +461,7 @@ BUILTIN = [
 
 使用方式：
 
-- 方式一：右键菜单 -> 不常用插件 -> markmap
+- 方式一：右键菜单 -> 少用插件 -> markmap
 - 方式二：直接点击右下角的 markmap 按钮
 
 ![markmap](assets/markmap.gif)
@@ -474,7 +474,7 @@ BUILTIN = [
 
 使用方式：
 
-- 方式一：右键菜单 -> 不常用插件 -> 多功能搜索
+- 方式一：右键菜单 -> 少用插件 -> 多功能搜索
 - 方式二：快捷键 `ctrl+j`
 
 支持搜索：
@@ -516,7 +516,7 @@ BUILTIN = [
 #  NAME: 一级菜单的名称
 #  LIST: 二级菜单的插件列表（使用"---"代表在页面上插入一个divider，以作分隔）
 [[right_click_menu.MENUS]]
-NAME = "不常用插件"
+NAME = "少用插件"
 LIST = [
     "window_tab", "resize_image", "resize_table", "fence_enhance", "export_enhance",
     "datatables", "markmap", "auto_number", "truncate_text", "right_click_menu",
@@ -538,7 +538,7 @@ LIST = [
 
 ### preferences：启停插件
 
-使用方式：右键菜单 -> 不常用插件 -> 启停插件
+使用方式：右键菜单 -> 少用插件 -> 启停插件
 
 
 
@@ -626,7 +626,7 @@ icon = "\\f040"
 
 功能：将文字转为 html 格式，改变文字样式。
 
-使用方式：右键菜单 -> 不常用插件 -> 文字风格化。
+使用方式：右键菜单 -> 少用插件 -> 文字风格化。
 
 ![text_stylize](./assets/text_stylize.gif)
 
@@ -644,7 +644,7 @@ icon = "\\f040"
 
 功能：开启后，只有当前聚焦的组件可见，其余模糊。可以用于防偷窥。
 
-使用方式：右键菜单 -> 不常用插件 -> 模糊模式
+使用方式：右键菜单 -> 少用插件 -> 模糊模式
 
 > 注意：此插件只能高版本 Typora 使用，暂时没有兼容低版本。
 
@@ -722,7 +722,7 @@ auto_pair_symbols = [
 
 功能：增强表格。提供搜索、过滤、分页、排序等功能。
 
-> 使用方式：将光标定位在表格 -> 右键菜单 -> 不常用插件 ->  表格增强。
+> 使用方式：将光标定位在表格 -> 右键菜单 -> 少用插件 ->  表格增强。
 
 ![datatables](assets/datatables.png)
 
@@ -774,7 +774,7 @@ auto_pair_symbols = [
 
 功能：大文件在 Typora 的渲染性能很糟糕，用此插件暂时隐藏内容（只是隐藏显示，不修改文件），提高渲染性能。也可以用于防偷窥。
 
-使用方式：右键菜单 -> 不常用插件 -> 文本截断。
+使用方式：右键菜单 -> 少用插件 -> 文本截断。
 
 包含的功能如下：
 
@@ -910,13 +910,13 @@ filter_regexp = ""
 
 ### help：  用户帮助
 
-使用方式：右键菜单 -> 不常用插件 -> 帮助。
+使用方式：右键菜单 -> 少用插件 -> 帮助。
 
 
 
 ### cipher：加密文件
 
-使用方式：右键菜单 -> 不常用插件 -> 加密文件。
+使用方式：右键菜单 -> 少用插件 -> 加密文件。
 
 
 
