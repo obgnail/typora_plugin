@@ -1002,46 +1002,15 @@ class utils {
         handleElement.ondragstart = () => false
     }
 
-    static selectItemFromList = (resultList, activeItemSelector) => {
-        let floor;
-        return ev => {
-            if (!resultList.childElementCount) return;
-
-            const activeItem = resultList.querySelector(activeItemSelector);
-            let nextItem;
-            if (ev.key === "ArrowDown") {
-                if (floor !== 7) floor++;
-
-                if (activeItem && activeItem.nextElementSibling) {
-                    nextItem = activeItem.nextElementSibling;
-                } else {
-                    nextItem = resultList.firstElementChild;
-                    floor = 1
-                }
-            } else {
-                if (floor !== 1) floor--;
-
-                if (activeItem && activeItem.previousElementSibling) {
-                    nextItem = activeItem.previousElementSibling;
-                } else {
-                    nextItem = resultList.lastElementChild;
-                    floor = 7
-                }
-            }
-
-            activeItem && activeItem.classList.toggle("active");
-            nextItem.classList.toggle("active");
-
-            let top;
-            if (floor === 1) {
-                top = nextItem.offsetTop - nextItem.offsetHeight;
-            } else if (floor === 7) {
-                top = nextItem.offsetTop - 6 * nextItem.offsetHeight;
-            } else if (Math.abs(resultList.scrollTop - activeItem.offsetTop) > 7 * nextItem.offsetHeight) {
-                top = nextItem.offsetTop - 3 * nextItem.offsetHeight;
-            }
-            top && resultList.scrollTo({top: top, behavior: "smooth"});
-        }
+    static scrollActiveItem = (list, activeSelector, isNext) => {
+        if (list.childElementCount === 0) return;
+        const origin = list.querySelector(activeSelector);
+        const active = isNext
+            ? (origin && origin.nextElementSibling) || list.firstElementChild
+            : (origin && origin.previousElementSibling) || list.lastElementChild
+        origin && origin.classList.toggle("active");
+        active.classList.toggle("active");
+        active.scrollIntoView({block: "nearest"});
     }
 
     ////////////////////////////// 黑魔法 //////////////////////////////

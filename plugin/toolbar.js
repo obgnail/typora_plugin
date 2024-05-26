@@ -27,7 +27,6 @@ class toolbarPlugin extends BasePlugin {
             result: document.querySelector("#plugin-toolbar .plugin-toolbar-result")
         }
         this.handleInput = this.utils.debouncePromise(this.toolController.handleInput, this.config.DEBOUNCE_INTERVAL);
-        this.selectItem = this.utils.selectItemFromList(this.entities.result, ".plugin-toolbar-item.active");
     }
 
     process = () => {
@@ -47,7 +46,7 @@ class toolbarPlugin extends BasePlugin {
                 case "ArrowDown":
                     ev.stopPropagation();
                     ev.preventDefault();
-                    this.selectItem(ev);
+                    this.utils.scrollActiveItem(this.entities.result, ".plugin-toolbar-item.active", ev.key === "ArrowDown");
                     break
                 case "Escape":
                 case "Backspace":

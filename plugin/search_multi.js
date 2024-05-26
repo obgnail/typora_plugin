@@ -61,7 +61,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
             this.utils.dragFixedModal(this.entities.input, this.entities.modal);
         }
 
-        const selectItem = this.utils.selectItemFromList(this.entities.resultList, ".plugin-search-multi-item.active");
         this.entities.input.addEventListener("keydown", ev => {
             switch (ev.key) {
                 case "Enter":
@@ -94,7 +93,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
                 case "ArrowDown":
                     ev.stopPropagation();
                     ev.preventDefault();
-                    selectItem(ev);
+                    this.utils.scrollActiveItem(this.entities.resultList, ".plugin-search-multi-item.active", ev.key === "ArrowDown");
             }
         });
 
