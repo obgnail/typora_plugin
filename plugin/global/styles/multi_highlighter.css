@@ -57,6 +57,7 @@
     flex-wrap: wrap;
     align-content: flex-start;
     max-width: 100%;
+    margin: 2px 0;
 }
 
 .plugin-multi-highlighter-result-item {
