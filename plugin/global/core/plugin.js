@@ -332,10 +332,10 @@ class utils {
         }, Array.isArray(source) ? [] : {})
     }
 
-    static fromObject = (object, attrs) => {
-        const newObject = {};
-        attrs.forEach(attr => object[attr] !== undefined && (newObject[attr] = object[attr]));
-        return newObject;
+    static fromObject = (obj, attrs) => {
+        const newObj = {};
+        attrs.forEach(attr => obj[attr] !== undefined && (newObj[attr] = obj[attr]));
+        return newObj;
     }
 
     static throttle = (fn, delay = 100) => {
@@ -1661,7 +1661,6 @@ class dialog {
     process = async () => {
         await this.utils.registerStyleTemplate("modal-generator");
         this.utils.insertElement(this.html());
-
         this.entities = {
             modal: document.getElementById("plugin-custom-modal"),
             content: document.querySelector("#plugin-custom-modal .modal-content"),
@@ -1670,27 +1669,15 @@ class dialog {
             submit: document.querySelector("#plugin-custom-modal button.plugin-modal-submit"),
             cancel: document.querySelector("#plugin-custom-modal button.plugin-modal-cancel"),
         }
-
         this.entities.cancel.addEventListener("click", () => this.onButtonClick(this.cancelCallback))
         this.entities.submit.addEventListener("click", () => this.onButtonClick(this.callback))
-        this.entities.modal.addEventListener("keydown", ev => {
-            if (ev.key === "Enter") {
-                this.entities.submit.click();
-                ev.stopPropagation();
-                ev.preventDefault();
-            } else if (ev.key === "Escape") {
-                this.entities.cancel.click();
-                ev.stopPropagation();
-                ev.preventDefault();
-            }
-        }, true)
     }
 
     onButtonClick = async callback => {
-        this.pluginModal.components.forEach(component => {
-            if (component.label === undefined || !component.type || !component.id) return;
-            const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
-            component.submit = widget ? this.getWidgetValue(component.type, widget) : undefined;
+        this.pluginModal.components.forEach(c => {
+            if (c.label === undefined || !c.type || !c.id) return;
+            const widget = this.entities.body.querySelector(`.form-group[component-id="${c.id}"]`);
+            c.submit = widget ? this.getWidgetValue(c.type, widget) : undefined;
         })
         this.utils.hide(this.entities.modal);
         if (callback) {
@@ -1703,10 +1690,10 @@ class dialog {
     addEvent = () => {
         if (!this.pluginModal || !this.pluginModal.components) return;
         this.pluginModal.components.forEach(component => {
-            Object.entries(component).forEach(([key, func]) => {
-                if (!key.startsWith("on")) return;
+            Object.entries(component).forEach(([event, func]) => {
+                if (!event.startsWith("on")) return;
                 const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
-                widget[key] = func;
+                widget[event] = func;
             })
         })
     }
