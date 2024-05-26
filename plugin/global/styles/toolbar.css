@@ -17,6 +17,7 @@
     max-height: 400px;
     overflow-x: hidden;
     overflow-y: auto;
+    scroll-padding: 2.5em;
 }
 
 .plugin-toolbar-item {

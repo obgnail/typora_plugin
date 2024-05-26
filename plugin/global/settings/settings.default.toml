@@ -137,7 +137,7 @@ RELATIVE_PATH = true
 SHOW_MTIME = false
 # 打开文件后，自动聚焦输入框
 # 此选项是为了键盘党可以通过键盘上下键、ctrl+enter进行快速操作，如果你是鼠标党，可以置为false
-REFOUCE_WHEN_OPEN_FILE = true
+REFOUCE_WHEN_OPEN_FILE = false
 # 搜索内容时大小写敏感(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
 CASE_SENSITIVE = false
 # 将文件路径加入搜索内容(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
