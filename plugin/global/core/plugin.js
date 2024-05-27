@@ -2184,20 +2184,20 @@ class process {
         await Promise.all(Object.values(helper).map(async h => h.afterProcess && h.afterProcess()));
     }
 
-    static loadPlugin = async fixedName => {
+    static loadPlugin = async (fixedName, entry) => {
         const setting = global._plugin_settings[fixedName];
         if (!setting || !setting.ENABLE || global._plugin_global_settings.DISABLE_PLUGINS.indexOf(fixedName) !== -1) {
             console.debug(`disable plugin: [ ${fixedName} ] `);
             return
         }
         try {
-            const {plugin} = utils.requireFilePath("./plugin", fixedName);
+            const {plugin} = utils.requireFilePath(entry || `./plugin/${fixedName}`);
             if (!plugin) return;
 
             const instance = new plugin(fixedName, setting);
             if (!(instance instanceof BasePlugin)) {
                 console.error("instance is not instanceof BasePlugin:", fixedName);
-                return
+                return;
             }
             const ok = await utils.loadPluginLifeCycle(instance);
             if (!ok) return;
@@ -2208,7 +2208,14 @@ class process {
         }
     }
 
-    static loadPlugins = () => Promise.all(Object.keys(global._plugin_settings).map(this.loadPlugin));
+    static loadPlugins = () => {
+        const {PLUGIN_ENTRY} = utils.requireFilePath("./plugin/global/core/plugin_entry.js");
+        const promise = Object.keys(global._plugin_settings).map(async fixedName => {
+            const entry = PLUGIN_ENTRY[fixedName] || `./plugin/${fixedName}`;
+            return this.loadPlugin(fixedName, entry);
+        });
+        return Promise.all(promise);
+    };
 
     static loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
 
