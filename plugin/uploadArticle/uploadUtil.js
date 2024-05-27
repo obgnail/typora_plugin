@@ -51,11 +51,10 @@ options.addArguments(
     '--no-sandbox', // 以非沙盒模式运行
     '--disable-dev-shm-usage', // 防止共享内存使用过高
     '--disable-javascript',  // 禁用js
-    '--headless' // 启用无头模式
 );
 
-SELENIUM_WAIT_FIX_TIME_LEVEL1 = 2000; // 设置一级固定等待时间2s
-SELENIUM_WAIT_FIX_TIME_LEVEL2 = 5000; // 设置二级固定等待时间5s
+SELENIUM_WAIT_FIX_TIME_LEVEL1 = 2000; // 设置一级固定等待时间3s
+SELENIUM_WAIT_FIX_TIME_LEVEL2 = 4000; // 设置二级固定等待时间4s
 SELENIUM_EXPLICIT_WAIT_TIME = 10000; // 设置显式等待时间为10秒
 
 const notification = new Notification();    // 实例化弹窗对象
@@ -80,6 +79,11 @@ class uploadUtil extends BasePlugin {
             this.csdnEnabled = data.upload.csdn.enabled;
             this.cnblogEnabled = data.upload.cnblog.enabled;
             this.wordpressEnabled = data.upload.wordpress.enabled;
+            this.headless = data.upload.selenium.headless
+            if (this.headless) {
+                options.addArguments("--headless");
+            }
+
 
         } catch (e) {
             console.log(e);
@@ -547,6 +551,10 @@ class uploadUtil extends BasePlugin {
 
             // 点击发布按钮
             await publishButton.click();
+
+
+            // 等待固定时间，等待发布完成
+            await driver.sleep(SELENIUM_WAIT_FIX_TIME_LEVEL2);
 
             notification.showNotification("博客园博客发布流程已完毕", "success");
             console.log("博客园博客发布流程已完毕")
