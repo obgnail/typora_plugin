@@ -26,6 +26,52 @@ CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE = true
 CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE = false
 
 
+############### uploadToAllPlatForm ###############
+# 这个插件是一级插件且无List，因此指定NAME无效，可以全局搜索【上传】去看右键菜单的配置
+[upload_to_all_platform]
+# 是否启用插件
+ENABLE = true
+# 快捷键(这个还能用)
+HOTKEY = "ctrl+m"   
+
+
+############### uploadToCSDN ###############
+[upload_to_csdn]
+# 是否启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "CSDN"
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）      
+order = 1
+# 快捷键
+# HOTKEY = "ctrl+shift+1"        
+     
+
+
+############### uploadToCNBlog ###############
+[upload_to_cn_blog]
+# 是否启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "博客园"
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）      
+order = 2      
+# 快捷键
+# HOTKEY = "ctrl+shift+2"   
+
+
+############### uploadToWordPress ###############
+[upload_to_wordpress]
+# 是否启用插件
+ENABLE = true
+# 在右键菜单中展示的名称
+NAME = "WordPress"
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）      
+order = 3    
+# 快捷键
+# HOTKEY = "ctrl+shift+3"
+
+
 ############### window_tab ###############
 [window_tab]
 # 是否启用插件
@@ -1059,6 +1105,17 @@ FIND_LOST_PLUGIN = true
 # 每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
 #   NAME: 一级菜单的名称
 #   LIST: 二级菜单的插件列表（"---"：代表在页面上插入一个分隔横线）
+
+# 此处为上传文章相关配置
+[[right_click_menu.MENUS]]
+NAME = "上传到所有平台"
+[[right_click_menu.MENUS]]
+NAME = "上传到单个平台"
+LIST = [
+    "upload_to_csdn",
+    "upload_to_wordpress",
+    "upload_to_cn_blog",
+]
 [[right_click_menu.MENUS]]
 NAME = "少用插件"
 LIST = [

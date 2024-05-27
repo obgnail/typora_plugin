@@ -1,0 +1,19 @@
+# 用户名和密码只会在本地用于操作selenium，没有泄露风险，请放心使用
+# csdn未来会支持用户名和密码登录，目前只支持cookie登录
+# 本配置仅需要yml入门即可，填入字符串时注意属性名与属性值需要空格。
+# yml菜鸟教程：https://www.runoob.com/w3cnote/yaml-intro.html  yml格式校验：https://www.json.cn/yaml-editor/
+upload:
+  wordpress:
+    enabled: true     # 配置为false则在上传所有平台中不会上传到该平台
+    hostname: https://blog.bugdesigner.cn     # wordpress域名或ip：如137.2.3.1
+    loginUrl: https://blog.bugdesigner.cn/superman/   # wordpress后台登录地址
+    username: demo    # 用户名
+    password: demo1  # 密码
+  cnblog:
+    enabled: true
+    username: demo2
+    password: demo2
+  csdn:
+    enabled: true
+    cookie: log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s; log_Id_click=37......
+# cookie可能需要定期更新，目前两天安全下车，预计两周——一个月失效
