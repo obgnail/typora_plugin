@@ -12,6 +12,7 @@ class rightClickMenuPlugin extends BasePlugin {
 
     init = () => {
         this.groupName = "typora-plugin";
+        this.dividerArg = "---";
         this.unavailableArg = "__not_available__";
         this.callArgs = [{arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"}];
     }
@@ -43,13 +44,13 @@ class rightClickMenuPlugin extends BasePlugin {
 
         const elements = this.config.MENUS.map((menu, idx) => {
             const children = menu.LIST.map(item => {
-                if (item === "---") {
+                if (item === this.dividerArg) {
                     return this.divider();
                 }
                 const plugin = this.utils.getPlugin(item);
                 return plugin ? this.secondLiTemplate(plugin) : {};
             })
-            return this.ulTemplate({class_: "plugin-menu-second", idx, children});
+            return this.ulTemplate({class_: ["plugin-menu-second"], idx, children});
         })
         const content = document.querySelector("content");
         this.utils.appendElements(content, elements);
@@ -59,13 +60,13 @@ class rightClickMenuPlugin extends BasePlugin {
         const content = document.querySelector("content");
         this.config.MENUS.forEach((menu, idx) => {
             const elements = menu.LIST.map(item => {
-                if (item === "---") return {};
+                if (item === this.dividerArg) return {};
 
                 const plugin = this.utils.getPlugin(item);
                 if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return {};
 
                 const children = (plugin.callArgs || []).map(arg => this.thirdLiTemplate(arg));
-                return this.ulTemplate({class_: "plugin-menu-third", "data-plugin": plugin.fixedName, idx, children});
+                return this.ulTemplate({class_: ["plugin-menu-third"], "data-plugin": plugin.fixedName, idx, children});
             })
             this.utils.appendElements(content, elements);
         })
@@ -74,9 +75,9 @@ class rightClickMenuPlugin extends BasePlugin {
     secondLiTemplate = plugin => {
         const hasNotArgs = !plugin.callArgs && !plugin.dynamicCallArgsGenerator;
 
-        const extra = {class_: "plugin-menu-item"};
+        const extra = {class_: ["plugin-menu-item"]};
         if (!hasNotArgs) {
-            extra.class_ += " has-extra-menu";
+            extra.class_.push("has-extra-menu");
         }
         if (!plugin.config.CLICKABLE) {
             extra.style = {color: "#c4c6cc", pointerEvents: "none"};
@@ -103,9 +104,8 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     ulTemplate = extra => {
-        const class_ = `dropdown-menu context-menu ext-context-menu ${extra.class_ || ""}`;
-        delete extra.class_;
-        return {ele: "ul", class_, role: "menu", ...extra}
+        extra.class_.push("dropdown-menu", "context-menu", "ext-context-menu");
+        return {ele: "ul", role: "menu", ...extra}
     }
 
     divider = () => ({ele: "li", class_: "divider"})
@@ -141,7 +141,6 @@ class rightClickMenuPlugin extends BasePlugin {
     appendThirdLi = ($menu, dynamicCallArgs) => {
         dynamicCallArgs.forEach(arg => $menu.append(this.utils.createElement(this.thirdLiTemplate(arg, true))))
     }
-
     appendDummyThirdLi = $menu => this.appendThirdLi($menu, [{arg_name: this.unavailableArg, arg_disabled: true}])
 
     hideMenuIfNeed = () => !this.config.DO_NOT_HIDE && File.editor.contextMenu.hide();
