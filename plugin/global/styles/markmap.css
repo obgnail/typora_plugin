@@ -64,6 +64,11 @@ ${show_outline}
     transform: translateY(-2px) scale(1.2);
 }
 
+#plugin-markmap.penetrateMouse .plugin-markmap-icon[action="penetrateMouse"] {
+    opacity: 1;
+    color: rgb(194, 24, 91);
+}
+
 .plugin-markmap-icon[action="resize"] {
     position: absolute;
     display: flex;
