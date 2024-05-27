@@ -1,5 +1,14 @@
 // 插件名称是通过配置文件引入的，为了避免XSS注入，不可使用innerHTML
+const uploadUtil = require("./uploadArticle/uploadUtil");
+
 class rightClickMenuPlugin extends BasePlugin {
+    // 兼容无子级的右键一级菜单
+    getOriginMenus = (menus) => {
+        return menus.filter(item => {
+            return item?.LIST !== undefined
+        })
+    }
+
     styleTemplate = () => {
         const {MENU_MIN_WIDTH, HIDE_OTHER_OPTIONS} = this.config;
         const map = {"default": "", "auto": "inherit"};
@@ -21,11 +30,42 @@ class rightClickMenuPlugin extends BasePlugin {
 
     appendMenu = () => {
         setTimeout(() => {
+            this.appendFirstWithNoChildren();   // 一级菜单不汇总插件，单独展示
             this.appendFirst();  // 一级菜单汇总所有插件
             this.appendSecond(); // 二级菜单展示所有插件
             this.appendThird();  // 三级菜单展示插件的参数
             this.listen();
         }, 500)
+    }
+
+    appendFirstWithNoChildren = () => {
+        const menus = this.config.MENUS;
+        const elements = []
+        for (const menu of menus) {
+            if (menu?.LIST === undefined) {
+                elements.push({
+                    ele: "li",
+                    class_: "has-extra-menu",
+                    "data-key": "upload_to_all_platform", // 修改自定义属性避免鼠标滑入时调用事件
+                    children: [
+                        {
+                            ele: "a",
+                            role: "menuitem",
+                            children: [
+                                {
+                                    ele: "span",
+                                    "data-lg": "Menu",
+                                    text: menu.NAME
+                                }
+                            ]
+                        }
+                    ]
+                });
+            }
+        }
+
+        const menu = document.querySelector(`#context-menu`);
+        this.utils.appendElements(menu, elements);
     }
 
     appendFirst = () => {
@@ -157,6 +197,22 @@ class rightClickMenuPlugin extends BasePlugin {
         const that = this;
         const removeShow = ele => ele.classList.remove("show");
         const removeActive = ele => ele.classList.remove("active");
+
+
+        // 点击一级菜单
+        $(`#context-menu`).on("click", "[data-key]", function () {
+            if (!that.config.DO_NOT_HIDE) {
+                File.editor.contextMenu.hide();
+            }
+            const first = $(this);
+            if (first.attr("data-key") === "upload_to_all_platform") {
+                const fixedName = this.getAttribute("data-key");
+                const plugin = that.utils.getPlugin(fixedName);
+                if (plugin.call) {
+                    plugin.call();
+                }
+            }
+        })
 
         // 展示二级菜单
         $("#context-menu").on("mouseenter", "[data-key]", function () {
