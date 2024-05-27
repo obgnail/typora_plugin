@@ -12,8 +12,7 @@ class rightClickMenuPlugin extends BasePlugin {
 
     init = () => {
         this.groupName = "typora-plugin";
-        this.unavailableName = "光标于此位置不可用";
-        this.unavailableValue = "__not_available__";
+        this.unavailableArg = "__not_available__";
         this.callArgs = [{arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"}];
     }
 
@@ -61,6 +60,7 @@ class rightClickMenuPlugin extends BasePlugin {
         this.config.MENUS.forEach((menu, idx) => {
             const elements = menu.LIST.map(item => {
                 if (item === "---") return {};
+
                 const plugin = this.utils.getPlugin(item);
                 if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return {};
 
@@ -99,7 +99,7 @@ class rightClickMenuPlugin extends BasePlugin {
             extra.class_ = `plugin-dynamic-arg ${(arg.arg_disabled) ? "disabled" : ""}`;
         }
         const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", text: arg.arg_name}];
-        return {ele: "li", "data-key": arg.arg_name, "data-arg-value": arg.arg_value, ...extra, children}
+        return {ele: "li", "data-key": arg.arg_value, ...extra, children}
     }
 
     ulTemplate = extra => {
@@ -142,16 +142,13 @@ class rightClickMenuPlugin extends BasePlugin {
         dynamicCallArgs.forEach(arg => $menu.append(this.utils.createElement(this.thirdLiTemplate(arg, true))))
     }
 
-    appendDummyThirdLi = $menu => {
-        const args = [{arg_name: this.unavailableName, "data-arg-value": this.unavailableValue, arg_disabled: true}];
-        this.appendThirdLi($menu, args)
-    }
+    appendDummyThirdLi = $menu => this.appendThirdLi($menu, [{arg_name: this.unavailableArg, arg_disabled: true}])
 
     hideMenuIfNeed = () => !this.config.DO_NOT_HIDE && File.editor.contextMenu.hide();
 
     callPlugin = plugin => plugin.call && plugin.call();
     dynamicCallPlugin = (plugin, arg) => {
-        if (arg !== this.unavailableValue && plugin && plugin.call) {
+        if (arg !== this.unavailableArg && plugin && plugin.call) {
             this.utils.withMeta(meta => plugin.call(arg, meta));
         }
     }
@@ -217,9 +214,9 @@ class rightClickMenuPlugin extends BasePlugin {
             if (this.classList.contains("disabled")) return false;
 
             const fixedName = this.parentElement.getAttribute("data-plugin");
-            const argValue = this.getAttribute("data-arg-value");
+            const callArg = this.getAttribute("data-key");
             const plugin = that.utils.getPlugin(fixedName);
-            that.dynamicCallPlugin(plugin, argValue);
+            that.dynamicCallPlugin(plugin, callArg);
             that.hideMenuIfNeed();
         })
     }
