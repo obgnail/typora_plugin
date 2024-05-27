@@ -41,6 +41,8 @@ HOTKEY = "ctrl+m"
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "CSDN"
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）      
 order = 1
 # 快捷键
@@ -52,6 +54,8 @@ order = 1
 [upload_to_cn_blog]
 # 是否启用插件
 ENABLE = true
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 在右键菜单中展示的名称
 NAME = "博客园"
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）      
@@ -64,6 +68,8 @@ order = 2
 [upload_to_wordpress]
 # 是否启用插件
 ENABLE = true
+# 是否在右键菜单中可点击
+CLICKABLE = true
 # 在右键菜单中展示的名称
 NAME = "WordPress"
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）      

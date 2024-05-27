@@ -184,6 +184,7 @@ class rightClickMenuPlugin extends BasePlugin {
         $after.css({top: afterTop + "px", left: afterLeft + "px"});
     }
 
+
     appendThirdLi = ($menu, dynamicCallArgs) => {
         dynamicCallArgs.forEach(arg => $menu.append(this.utils.createElement(this.thirdLiTemplate(arg, true))))
     }
