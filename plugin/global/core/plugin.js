@@ -1,3 +1,5 @@
+const {PLUGIN_PATHS} = require('../../pluginPaths.js');
+
 class utils {
     static isBetaVersion = window._options.appVersion[0] === "0"
     static supportHasSelector = CSS.supports("selector(:has(*))")
@@ -686,7 +688,17 @@ class utils {
 
     static openUrl = url => (File.editor.tryOpenUrl_ || File.editor.tryOpenUrl)(url, 1);
 
-    static showMessageBox = async ({type = "info", title = "typora", message, detail, buttons = ["确定", "取消"], defaultId = 0, cancelId = 1, normalizeAccessKeys = true, checkboxLabel}) => {
+    static showMessageBox = async ({
+                                       type = "info",
+                                       title = "typora",
+                                       message,
+                                       detail,
+                                       buttons = ["确定", "取消"],
+                                       defaultId = 0,
+                                       cancelId = 1,
+                                       normalizeAccessKeys = true,
+                                       checkboxLabel
+                                   }) => {
         const op = {type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel};
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
@@ -2184,20 +2196,20 @@ class process {
         await Promise.all(Object.values(helper).map(async h => h.afterProcess && h.afterProcess()));
     }
 
-    static loadPlugin = async fixedName => {
+    static loadPlugin = async (fixedName, pluginPath = "./plugin") => {
         const setting = global._plugin_settings[fixedName];
         if (!setting || !setting.ENABLE || global._plugin_global_settings.DISABLE_PLUGINS.indexOf(fixedName) !== -1) {
             console.debug(`disable plugin: [ ${fixedName} ] `);
-            return
+            return;
         }
         try {
-            const {plugin} = utils.requireFilePath("./plugin", fixedName);
+            const {plugin} = utils.requireFilePath(pluginPath, fixedName);
             if (!plugin) return;
 
             const instance = new plugin(fixedName, setting);
             if (!(instance instanceof BasePlugin)) {
                 console.error("instance is not instanceof BasePlugin:", fixedName);
-                return
+                return;
             }
             const ok = await utils.loadPluginLifeCycle(instance);
             if (!ok) return;
@@ -2206,10 +2218,15 @@ class process {
         } catch (e) {
             console.error("load plugin err:", e);
         }
-    }
+    };
 
-    static loadPlugins = () => Promise.all(Object.keys(global._plugin_settings).map(this.loadPlugin));
-
+    static loadPlugins = () => {
+        const pluginLoadPromises = Object.keys(global._plugin_settings).map(fixedName => {
+            const pluginPath = PLUGIN_PATHS[fixedName] || './plugin';
+            return this.loadPlugin(fixedName, pluginPath);
+        });
+        return Promise.all(pluginLoadPromises);
+    };
     static loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
 
     static existEnablePlugin = () => Object.entries(global._plugin_settings).some(([name, plugin]) => plugin.ENABLE && !global._plugin_global_settings.DISABLE_PLUGINS.includes(name))
