@@ -29,8 +29,8 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     appendFirst = () => {
-        const items = this.config.MENUS.map((menu, idx) => {
-            const item = [{ele: "span", "data-lg": "Menu", text: menu.NAME}, this.caret()];
+        const items = this.config.MENUS.map(({NAME, LIST = []}, idx) => {
+            const item = [{ele: "span", "data-lg": "Menu", text: NAME}, this.caret()];
             const children = [{ele: "a", role: "menuitem", children: item}];
             return {ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children}
         })
@@ -42,8 +42,8 @@ class rightClickMenuPlugin extends BasePlugin {
     appendSecond = () => {
         this.findLostPluginIfNeed();
 
-        const elements = this.config.MENUS.map((menu, idx) => {
-            const children = menu.LIST.map(item => {
+        const elements = this.config.MENUS.map(({LIST = []}, idx) => {
+            const children = LIST.map(item => {
                 if (item === this.dividerArg) {
                     return this.divider();
                 }
