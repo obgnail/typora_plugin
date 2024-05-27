@@ -69,7 +69,7 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     appendFirst = () => {
-        const items = this.config.MENUS.map((menu, idx) => {
+        const items = this.getOriginMenus(this.config.MENUS).map((menu, idx) => {
             const item = [{ele: "span", "data-lg": "Menu", text: menu.NAME}, {ele: "i", class_: "fa fa-caret-right"}];
             const children = [{ele: "a", role: "menuitem", children: item}];
             return {ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children}
@@ -82,7 +82,7 @@ class rightClickMenuPlugin extends BasePlugin {
     appendSecond = () => {
         this.findLostPluginIfNeed();
 
-        const elements = this.config.MENUS.map((menu, idx) => {
+        const elements = this.getOriginMenus(this.config.MENUS).map((menu, idx) => {
             const children = menu.LIST.map(item => {
                 if (item === "---") {
                     return this.divider();
@@ -101,7 +101,7 @@ class rightClickMenuPlugin extends BasePlugin {
 
     appendThird = () => {
         const content = document.querySelector("content");
-        this.config.MENUS.forEach((menu, idx) => {
+        this.getOriginMenus(this.config.MENUS).forEach((menu, idx) => {
             const elements = menu.LIST.map(item => {
                 if (item === "---") return {};
                 const plugin = this.utils.getPlugin(item);
@@ -161,9 +161,9 @@ class rightClickMenuPlugin extends BasePlugin {
         if (!this.config.FIND_LOST_PLUGIN) return;
 
         const allPlugins = new Map(Object.entries(this.utils.getAllPlugins()));
-        this.config.MENUS.forEach(menu => menu.LIST.forEach(plugin => allPlugins.delete(plugin)));
+        this.getOriginMenus(this.config.MENUS).forEach(menu => menu.LIST.forEach(plugin => allPlugins.delete(plugin)));
         for (const plugin of allPlugins.values()) {
-            this.config.MENUS[this.config.MENUS.length - 1].LIST.push(plugin.fixedName);
+            this.getOriginMenus(this.config.MENUS)[this.getOriginMenus(this.config.MENUS).length - 1].LIST.push(plugin.fixedName);
         }
     }
 
