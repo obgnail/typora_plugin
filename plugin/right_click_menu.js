@@ -30,7 +30,7 @@ class rightClickMenuPlugin extends BasePlugin {
 
     appendFirst = () => {
         const items = this.config.MENUS.map((menu, idx) => {
-            const item = [{ele: "span", "data-lg": "Menu", text: menu.NAME}, {ele: "i", class_: "fa fa-caret-right"}];
+            const item = [{ele: "span", "data-lg": "Menu", text: menu.NAME}, this.caret()];
             const children = [{ele: "a", role: "menuitem", children: item}];
             return {ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children}
         })
@@ -48,10 +48,7 @@ class rightClickMenuPlugin extends BasePlugin {
                     return this.divider();
                 }
                 const plugin = this.utils.getPlugin(item);
-                if (plugin) {
-                    return this.secondLiTemplate(plugin);
-                }
-                return {}
+                return plugin ? this.secondLiTemplate(plugin) : {};
             })
             return this.ulTemplate({class_: "plugin-menu-second", idx, children});
         })
@@ -85,16 +82,12 @@ class rightClickMenuPlugin extends BasePlugin {
             extra.style = {color: "#c4c6cc", pointerEvents: "none"};
         }
 
-        const childExtra = {};
-        if (hasNotArgs) {
-            childExtra.text = plugin.config.NAME;
-        } else {
-            const i = [{ele: "i", class_: "fa fa-caret-right"}];
-            childExtra.children = [{ele: "span", "data-lg": "Menu", text: plugin.config.NAME, children: i}];
-        }
+        const childrenExtra = hasNotArgs
+            ? {text: plugin.config.NAME}
+            : {children: [{ele: "span", "data-lg": "Menu", text: plugin.config.NAME, children: [this.caret()]}]};
 
-        const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", ...childExtra}];
-        return {ele: "li", "data-key": plugin.fixedName, children: children, ...extra}
+        const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", ...childrenExtra}];
+        return {ele: "li", "data-key": plugin.fixedName, children, ...extra}
     }
 
     thirdLiTemplate = (arg, dynamic) => {
@@ -116,6 +109,7 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     divider = () => ({ele: "li", class_: "divider"})
+    caret = () => ({ele: "i", class_: "fa fa-caret-right"})
 
     findLostPluginIfNeed = () => {
         if (!this.config.FIND_LOST_PLUGIN) return;
@@ -151,6 +145,15 @@ class rightClickMenuPlugin extends BasePlugin {
     appendDummyThirdLi = $menu => {
         const args = [{arg_name: this.unavailableName, "data-arg-value": this.unavailableValue, arg_disabled: true}];
         this.appendThirdLi($menu, args)
+    }
+
+    hideMenuIfNeed = () => !this.config.DO_NOT_HIDE && File.editor.contextMenu.hide();
+
+    callPlugin = plugin => plugin.call && plugin.call();
+    dynamicCallPlugin = (plugin, arg) => {
+        if (arg !== this.unavailableValue && plugin && plugin.call) {
+            this.utils.withMeta(meta => plugin.call(arg, meta));
+        }
     }
 
     listen = () => {
@@ -202,15 +205,10 @@ class rightClickMenuPlugin extends BasePlugin {
             const fixedName = this.getAttribute("data-key");
             const plugin = that.utils.getPlugin(fixedName);
             // 拥有三级菜单的，不允许点击二级菜单
-            if (!plugin || plugin.callArgs || plugin.dynamicCallArgsGenerator) {
-                return false
-            }
-            if (plugin.call) {
-                plugin.call();
-            }
-            if (!that.config.DO_NOT_HIDE) {
-                File.editor.contextMenu.hide();
-            }
+            if (!plugin || plugin.callArgs || plugin.dynamicCallArgsGenerator) return false;
+
+            that.callPlugin(plugin);
+            that.hideMenuIfNeed();
         })
 
         // 在三级菜单中调用插件
@@ -221,12 +219,8 @@ class rightClickMenuPlugin extends BasePlugin {
             const fixedName = this.parentElement.getAttribute("data-plugin");
             const argValue = this.getAttribute("data-arg-value");
             const plugin = that.utils.getPlugin(fixedName);
-            if (argValue !== that.unavailableValue && plugin && plugin.call) {
-                that.utils.withMeta(meta => plugin.call(argValue, meta));
-            }
-            if (!that.config.DO_NOT_HIDE) {
-                File.editor.contextMenu.hide();
-            }
+            that.dynamicCallPlugin(plugin, argValue);
+            that.hideMenuIfNeed();
         })
     }
 
