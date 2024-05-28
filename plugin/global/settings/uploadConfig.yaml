@@ -3,9 +3,9 @@
 # 本配置仅需要yml入门即可，填入字符串时注意属性名与属性值需要空格。
 # yml菜鸟教程：https://www.runoob.com/w3cnote/yaml-intro.html  yml格式校验：https://www.json.cn/yaml-editor/
 upload:
-  upload:
-    selenium:
-      headless: true  # 改为false你可以看到selenium是怎么在浏览器中操作发表文章的
+  selenium:
+    headless: true  # 改为false你可以看到selenium是怎么在浏览器中操作发表文章的
+  reconfirm: true   # 是否需要确认，为true在上传之前会弹出确认框
   wordpress:
     enabled: true     # 配置为false则在上传所有平台中不会上传到该平台
     hostname: https://blog.bugdesigner.cn     # wordpress域名或ip：如137.2.3.1
