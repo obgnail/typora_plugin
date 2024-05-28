@@ -1055,11 +1055,24 @@ HIDE_OTHER_OPTIONS = false
 #   1. 那些插件依旧处于启用状态，但是就不能通过右键菜单调用了
 #   2. 如果插件系统后续新增了插件，那么你就根本无法感知到新增插件的存在
 FIND_LOST_PLUGIN = true
-# 把插件的一个选项作为右键菜单的第一级按钮（此选项需要阅读源码才可使用，普通用户请勿设置）
-# 比如，【帮助】插件的【请开发者喝咖啡】选项原先的路径为：【少用插件 -> 帮助 -> 请开发者喝咖啡】，现在可以直接将此选项作为右键菜单的第一级按钮
-# 每个元素形如： {NAME: "", CALLBACK: fixedName.callArg}
-# 如：QUICK_MENUS = [{ NAME = "请开发者喝咖啡", CALLBACK = "help.donate" }]
-QUICK_MENUS = []
+# 把插件的选项作为右键菜单（此选项需要阅读源码才可使用，普通用户请勿设置）
+# 比如，【帮助】插件的【请开发者喝咖啡】选项原先的路径为：【少用插件 -> 帮助 -> 请开发者喝咖啡】，现在可以直接将此选项作为右键菜单的按钮
+# 每个元素形如： {NAME: "", LIST: [fixedName.callArg]}
+#   NAME: 一级菜单的名称
+#   LIST: 二级菜单的插件选项列表（"---"：代表在页面上插入一个分隔横线）
+[[right_click_menu.COMPOSE_MENUS]]
+NAME = "Test1"
+LIST = [
+    "help.donate"
+]
+[[right_click_menu.COMPOSE_MENUS]]
+NAME = "Test2"
+LIST = [
+    "help.donate",
+    "---",
+    "cipher.decrypt",
+]
+
 # 自定义右键菜单
 # 每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
 #   NAME: 一级菜单的名称

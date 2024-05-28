@@ -11,8 +11,9 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     init = () => {
-        this.quickGroupName = "typora-quick-menu";
         this.groupName = "typora-plugin";
+        this.composeGroupName = "typora-compose-menu";
+        this.singleComposeGroupName = "type-single-compose-menu";
         this.dividerArg = "---";
         this.unavailableArg = "__not_available__";
         this.callArgs = [{arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"}];
@@ -30,18 +31,24 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     appendFirst = () => {
-        const quick = this.config.QUICK_MENUS.map(({NAME, CALLBACK: c}) => {
+        const {COMPOSE_MENUS, MENUS} = this.config;
+
+        COMPOSE_MENUS.forEach(menu => {
+            menu.isCompose = true;
+            menu.isSingleCompose = menu.LIST && menu.LIST.length === 1;
+        });
+        const items = [...COMPOSE_MENUS, ...MENUS].map(({NAME, LIST = [], isCompose, isSingleCompose}, idx) => {
             const item = [{ele: "span", "data-lg": "Menu", text: NAME}];
             const children = [{ele: "a", role: "menuitem", children: item}];
-            return {ele: "li", class_: "has-extra-menu", "data-key": this.quickGroupName, "data-value": c, children}
-        })
+            if (isSingleCompose) {
+                return {ele: "li", "data-key": this.singleComposeGroupName, "data-value": LIST[0], children};
+            }
 
-        const items = this.config.MENUS.map(({NAME, LIST = []}, idx) => {
-            const item = [{ele: "span", "data-lg": "Menu", text: NAME}, this.caret()];
-            const children = [{ele: "a", role: "menuitem", children: item}];
-            return {ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children}
+            item.push(this.caret());
+            const key = isCompose ? this.composeGroupName : this.groupName;
+            return {ele: "li", class_: "has-extra-menu", "data-key": key, idx, children};
         })
-        const elements = [this.divider(), ...quick, ...items];
+        const elements = [this.divider(), ...items];
         const menu = document.querySelector("#context-menu");
         this.utils.appendElements(menu, elements);
     }
@@ -49,13 +56,19 @@ class rightClickMenuPlugin extends BasePlugin {
     appendSecond = () => {
         this.findLostPluginIfNeed();
 
-        const elements = this.config.MENUS.map(({LIST = []}, idx) => {
+        const {COMPOSE_MENUS, MENUS} = this.config;
+        const elements = [...COMPOSE_MENUS, ...MENUS].map(({LIST = [], isCompose}, idx) => {
             const children = LIST.map(item => {
-                if (item === this.dividerArg) {
-                    return this.divider();
+                if (item === this.dividerArg) return this.divider();
+
+                if (isCompose) {
+                    const [fixedName, callArg] = item.split(".");
+                    const plugin = this.utils.getPlugin(fixedName);
+                    return (fixedName && callArg && plugin) ? this.secondComposeLiTemplate(plugin, callArg) : {};
+                } else {
+                    const plugin = this.utils.getPlugin(item);
+                    return plugin ? this.secondLiTemplate(plugin) : {};
                 }
-                const plugin = this.utils.getPlugin(item);
-                return plugin ? this.secondLiTemplate(plugin) : {};
             })
             return this.ulTemplate({class_: ["plugin-menu-second"], idx, children});
         })
@@ -77,6 +90,12 @@ class rightClickMenuPlugin extends BasePlugin {
             })
             this.utils.appendElements(content, elements);
         })
+    }
+
+    secondComposeLiTemplate = (plugin, callArg) => {
+        const name = plugin.callArgs.find(arg => arg.arg_value === callArg).arg_name;
+        const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", text: name}];
+        return {ele: "li", class_: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": callArg, children}
     }
 
     secondLiTemplate = plugin => {
@@ -165,8 +184,9 @@ class rightClickMenuPlugin extends BasePlugin {
         const removeActive = ele => ele.classList.remove("active");
 
         // 点击一级菜单
-        $("#context-menu").on("click", `[data-key="${this.quickGroupName}"]`, function () {
+        $("#context-menu").on("click", `[data-key="${this.singleComposeGroupName}"]`, function () {
             const value = this.getAttribute("data-value");
+            if (!value) return false;
             const [fixedName, callArg] = value.split(".");
             if (!fixedName || !callArg) return false;
             const plugin = that.utils.getPlugin(fixedName);
@@ -175,7 +195,8 @@ class rightClickMenuPlugin extends BasePlugin {
             // 展示二级菜单
         }).on("mouseenter", "[data-key]", function () {
             const first = $(this);
-            if (that.groupName === first.attr("data-key")) {
+            const key = first.attr("data-key");
+            if (that.groupName === key || that.composeGroupName === key) {
                 const idx = this.getAttribute("idx");
                 if (document.querySelector(".plugin-menu-second.show")) {
                     document.querySelectorAll(`.plugin-menu-third:not([idx="${idx}"])`).forEach(removeShow);
@@ -214,11 +235,15 @@ class rightClickMenuPlugin extends BasePlugin {
             // 在二级菜单中调用插件
         }).on("click", "[data-key]", function () {
             const fixedName = this.getAttribute("data-key");
+            const callArg = this.getAttribute("data-value");
             const plugin = that.utils.getPlugin(fixedName);
-            // 拥有三级菜单的，不允许点击二级菜单
-            if (!plugin || plugin.callArgs || plugin.dynamicCallArgsGenerator) return false;
-
-            that.callPlugin(plugin);
+            if (callArg) {
+                that.dynamicCallPlugin(plugin, callArg);
+            } else {
+                // 拥有三级菜单的，不允许点击二级菜单
+                if (!plugin || plugin.callArgs || plugin.dynamicCallArgsGenerator) return false;
+                that.callPlugin(plugin);
+            }
             that.hideMenuIfNeed();
         })
 
