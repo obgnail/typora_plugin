@@ -70,10 +70,7 @@
 | 60   | quickButton             | 于右下角添加功能按钮（高级）                                 |
 | 61   | json_rpc                | 外部操纵 Typora（高级）                                      |
 | 62   | old_window_tab          | 标签页管理（已废弃）                                         |
-| 63   | upload_to_all_platform  | [一键上传博客到支持的所有平台](https://github.com/obgnail/typora_plugin?tab=readme-ov-file#upload_blog_file上传博客文章) |
-| 64   | upload_to_cn_blog       | [上传博客到博客园](https://github.com/obgnail/typora_plugin?tab=readme-ov-file#upload_blog_file上传博客文章) |
-| 65   | upload_to_csdn          | [上传博客到csdn](https://github.com/obgnail/typora_plugin?tab=readme-ov-file#upload_blog_file上传博客文章) |
-| 66   | upload_to_wordpress     | [上传博客到wordpress](https://github.com/obgnail/typora_plugin?tab=readme-ov-file#upload_blog_file上传博客文章) |
+| 63   | article_uploader        | [一键上传博客到支持的所有平台](https://github.com/obgnail/typora_plugin?tab=readme-ov-file#article_uploader上传博客文章) |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -968,7 +965,7 @@ filter_regexp = ""
 >
 > 开启此插件后，外部将拥有 node、browser 两套环境，能完全控制电脑，因此如果您不是开发人员，请勿开启此插件。
 
-### upload_blog_file：上传博客文章
+### article_uploader：上传博客文章
 
 功能：用户点击或者使用快捷键触发当前文章的自动发布功能，程序根据用户配置自动发布博客文章到各大平台
 
