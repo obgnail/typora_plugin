@@ -31,8 +31,11 @@ CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE = false
 [upload_to_all_platform]
 # 是否启用插件
 ENABLE = true
-# 快捷键(这个还能用)
+# 在右键菜单中展示的名称
+NAME = "上传到所有平台"
+# 快捷键
 HOTKEY = "ctrl+m"   
+MENUS_WITHOUT_CHILDREN=true
 
 
 ############### uploadToCSDN ###############
@@ -1112,9 +1115,7 @@ FIND_LOST_PLUGIN = true
 #   NAME: 一级菜单的名称
 #   LIST: 二级菜单的插件列表（"---"：代表在页面上插入一个分隔横线）
 
-# 此处为上传文章相关配置
-[[right_click_menu.MENUS]]
-NAME = "上传到所有平台"
+# 此处为上传到单个平台相关配置
 [[right_click_menu.MENUS]]
 NAME = "上传到单个平台"
 LIST = [

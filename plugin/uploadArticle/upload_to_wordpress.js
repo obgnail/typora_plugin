@@ -7,7 +7,7 @@ class uploadToWordPress extends upload {
 
     call = () => {
         let filePath = this.utils.getFilePath();
-        this.upload(filePath, "wordpress");
+        this.uploadProxy(filePath, "wordpress");
     }
 }
 

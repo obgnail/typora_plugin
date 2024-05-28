@@ -7,7 +7,7 @@ class uploadToCNBlogPlugin extends upload {
 
     call = () => {
         let filePath = this.utils.getFilePath();
-        this.upload(filePath, "cnblog");
+        this.uploadProxy(filePath, "cnblog");
     }
 
 }

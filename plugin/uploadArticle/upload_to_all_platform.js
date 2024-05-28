@@ -7,7 +7,7 @@ class uploadToAllPlatform extends upload {
 
     call = () => {
         let filePath = this.utils.getFilePath();
-        this.uploadAll(filePath);
+        this.uploadProxy(filePath);
     }
 
 }

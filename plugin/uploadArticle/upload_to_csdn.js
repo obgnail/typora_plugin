@@ -6,7 +6,7 @@ class uploadToCSDN extends upload {
 
     call = () => {
         let filePath = this.utils.getFilePath();
-        this.upload(filePath, "csdn");
+        this.uploadProxy(filePath, "csdn");
     }
 }
 

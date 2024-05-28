@@ -2,12 +2,6 @@
 const uploadUtil = require("./uploadArticle/uploadUtil");
 
 class rightClickMenuPlugin extends BasePlugin {
-    // 兼容无子级的右键一级菜单
-    getOriginMenus = (menus) => {
-        return menus.filter(item => {
-            return item?.LIST !== undefined
-        })
-    }
 
     styleTemplate = () => {
         const {MENU_MIN_WIDTH, HIDE_OTHER_OPTIONS} = this.config;
@@ -40,13 +34,14 @@ class rightClickMenuPlugin extends BasePlugin {
 
     appendFirstWithNoChildren = () => {
         const menus = this.config.MENUS;
-        const elements = []
-        for (const menu of menus) {
-            if (menu?.LIST === undefined) {
+        const allPlugins = new Map(Object.entries(this.utils.getAllPlugins()));
+        const elements = [];
+        for (const [key, plugin] of allPlugins) {
+            if (plugin?.MENUS_WITHOUT_CHILDREN === true) {
                 elements.push({
                     ele: "li",
                     class_: "has-extra-menu",
-                    "data-key": "upload_to_all_platform", // 修改自定义属性避免鼠标滑入时调用事件
+                    "data-key": plugin?.fixedName, // 修改自定义属性避免鼠标滑入时调用事件
                     children: [
                         {
                             ele: "a",
@@ -55,7 +50,7 @@ class rightClickMenuPlugin extends BasePlugin {
                                 {
                                     ele: "span",
                                     "data-lg": "Menu",
-                                    text: menu.NAME
+                                    text: plugin?.NAME
                                 }
                             ]
                         }
@@ -69,7 +64,7 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     appendFirst = () => {
-        const items = this.getOriginMenus(this.config.MENUS).map((menu, idx) => {
+        const items = this.config.MENUS.map((menu, idx) => {
             const item = [{ele: "span", "data-lg": "Menu", text: menu.NAME}, {ele: "i", class_: "fa fa-caret-right"}];
             const children = [{ele: "a", role: "menuitem", children: item}];
             return {ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children}
@@ -82,7 +77,7 @@ class rightClickMenuPlugin extends BasePlugin {
     appendSecond = () => {
         this.findLostPluginIfNeed();
 
-        const elements = this.getOriginMenus(this.config.MENUS).map((menu, idx) => {
+        const elements = this.config.MENUS.map((menu, idx) => {
             const children = menu.LIST.map(item => {
                 if (item === "---") {
                     return this.divider();
@@ -101,7 +96,7 @@ class rightClickMenuPlugin extends BasePlugin {
 
     appendThird = () => {
         const content = document.querySelector("content");
-        this.getOriginMenus(this.config.MENUS).forEach((menu, idx) => {
+        this.config.MENUS.forEach((menu, idx) => {
             const elements = menu.LIST.map(item => {
                 if (item === "---") return {};
                 const plugin = this.utils.getPlugin(item);
@@ -161,9 +156,9 @@ class rightClickMenuPlugin extends BasePlugin {
         if (!this.config.FIND_LOST_PLUGIN) return;
 
         const allPlugins = new Map(Object.entries(this.utils.getAllPlugins()));
-        this.getOriginMenus(this.config.MENUS).forEach(menu => menu.LIST.forEach(plugin => allPlugins.delete(plugin)));
+        this.config.MENUS.forEach(menu => menu.LIST.forEach(plugin => allPlugins.delete(plugin)));
         for (const plugin of allPlugins.values()) {
-            this.getOriginMenus(this.config.MENUS)[this.getOriginMenus(this.config.MENUS).length - 1].LIST.push(plugin.fixedName);
+            this.config.MENUS[this.config.MENUS.length - 1].LIST.push(plugin.fixedName);
         }
     }
 
