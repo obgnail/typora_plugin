@@ -12,8 +12,7 @@ class rightClickMenuPlugin extends BasePlugin {
 
     init = () => {
         this.groupName = "typora-plugin";
-        this.composeGroupName = "typora-compose-menu";
-        this.singleComposeGroupName = "type-single-compose-menu";
+        this.noExtraMenuGroupName = "typora-plugin-no-extra";
         this.dividerArg = "---";
         this.unavailableArg = "__not_available__";
         this.callArgs = [{arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"}];
@@ -31,22 +30,15 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     appendFirst = () => {
-        const {COMPOSE_MENUS, MENUS} = this.config;
-
-        COMPOSE_MENUS.forEach(menu => {
-            menu.isCompose = true;
-            menu.isSingleCompose = menu.LIST && menu.LIST.length === 1;
-        });
-        const items = [...COMPOSE_MENUS, ...MENUS].map(({NAME, LIST = [], isCompose, isSingleCompose}, idx) => {
+        const items = this.config.MENUS.map(({NAME, LIST = []}, idx) => {
             const item = [{ele: "span", "data-lg": "Menu", text: NAME}];
             const children = [{ele: "a", role: "menuitem", children: item}];
-            if (isSingleCompose) {
-                return {ele: "li", "data-key": this.singleComposeGroupName, "data-value": LIST[0], children};
+            const noExtraMenu = LIST && LIST.length === 1;
+            if (noExtraMenu) {
+                return {ele: "li", "data-key": this.noExtraMenuGroupName, "data-value": LIST[0], idx, children};
             }
-
             item.push(this.caret());
-            const key = isCompose ? this.composeGroupName : this.groupName;
-            return {ele: "li", class_: "has-extra-menu", "data-key": key, idx, children};
+            return {ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children};
         })
         const elements = [this.divider(), ...items];
         const menu = document.querySelector("#context-menu");
@@ -56,18 +48,18 @@ class rightClickMenuPlugin extends BasePlugin {
     appendSecond = () => {
         this.findLostPluginIfNeed();
 
-        const {COMPOSE_MENUS, MENUS} = this.config;
-        const elements = [...COMPOSE_MENUS, ...MENUS].map(({LIST = [], isCompose}, idx) => {
+        const elements = this.config.MENUS.map(({LIST = []}, idx) => {
             const children = LIST.map(item => {
                 if (item === this.dividerArg) return this.divider();
 
-                if (isCompose) {
-                    const [fixedName, callArg] = item.split(".");
-                    const plugin = this.utils.getPlugin(fixedName);
-                    return (fixedName && callArg && plugin) ? this.secondComposeLiTemplate(plugin, callArg) : {};
+                const [fixedName, callArg] = item.split(".");
+                const plugin = this.utils.getPlugin(fixedName);
+                if (!plugin) return {}
+
+                if (callArg) {
+                    return this.secondComposeLiTemplate(plugin, callArg)
                 } else {
-                    const plugin = this.utils.getPlugin(item);
-                    return plugin ? this.secondLiTemplate(plugin) : {};
+                    return this.secondLiTemplate(plugin)
                 }
             })
             return this.ulTemplate({class_: ["plugin-menu-second"], idx, children});
@@ -93,7 +85,8 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     secondComposeLiTemplate = (plugin, callArg) => {
-        const name = plugin.callArgs.find(arg => arg.arg_value === callArg).arg_name;
+        const target = plugin.callArgs.find(arg => arg.arg_value === callArg);
+        const name = target ? target.arg_name : plugin.config.NAME;
         const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", text: name}];
         return {ele: "li", class_: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": callArg, children}
     }
@@ -184,7 +177,7 @@ class rightClickMenuPlugin extends BasePlugin {
         const removeActive = ele => ele.classList.remove("active");
 
         // 点击一级菜单
-        $("#context-menu").on("click", `[data-key="${this.singleComposeGroupName}"]`, function () {
+        $("#context-menu").on("click", `[data-key="${this.noExtraMenuGroupName}"]`, function () {
             const value = this.getAttribute("data-value");
             if (!value) return false;
             const [fixedName, callArg] = value.split(".");
@@ -195,8 +188,7 @@ class rightClickMenuPlugin extends BasePlugin {
             // 展示二级菜单
         }).on("mouseenter", "[data-key]", function () {
             const first = $(this);
-            const key = first.attr("data-key");
-            if (that.groupName === key || that.composeGroupName === key) {
+            if (that.groupName === first.attr("data-key")) {
                 const idx = this.getAttribute("idx");
                 if (document.querySelector(".plugin-menu-second.show")) {
                     document.querySelectorAll(`.plugin-menu-third:not([idx="${idx}"])`).forEach(removeShow);
