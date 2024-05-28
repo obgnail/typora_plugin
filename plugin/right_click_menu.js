@@ -201,7 +201,8 @@ class rightClickMenuPlugin extends BasePlugin {
                 File.editor.contextMenu.hide();
             }
             const first = $(this);
-            if (first.attr("data-key") === "upload_to_all_platform") {
+            let allPlugins = that.utils.getAllPlugins();
+            if (allPlugins.hasOwnProperty(first.attr("data-key"))) {
                 const fixedName = this.getAttribute("data-key");
                 const plugin = that.utils.getPlugin(fixedName);
                 if (plugin.call) {
