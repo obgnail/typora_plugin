@@ -1075,19 +1075,6 @@ FIND_LOST_PLUGIN = true
 # 每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
 #   NAME: 一级菜单的名称
 #   LIST: 二级菜单的插件列表（"---"：代表在页面上插入一个分隔横线）
-
-# [[right_click_menu.MENUS]]
-# NAME = "上传到所有平台"
-# LIST = [
-#     "ArticleUploader.upload_to_all_site"
-# ]
-# [[right_click_menu.MENUS]]
-# NAME = "上传到单个平台"
-# LIST = [
-#     "ArticleUploader.upload_to_csdn",
-#     "ArticleUploader.upload_to_wordpress",
-#     "ArticleUploader.upload_to_cn_blog"
-# ]
 [[right_click_menu.MENUS]]
 NAME = "少用插件"
 LIST = [

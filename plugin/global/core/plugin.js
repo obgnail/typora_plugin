@@ -1,4 +1,4 @@
-const {PLUGIN_PATHS} = require('../../pluginPaths.js');
+const {PLUGIN_PATHS} = require('./pluginPaths.js');
 
 class utils {
     static isBetaVersion = window._options.appVersion[0] === "0"
