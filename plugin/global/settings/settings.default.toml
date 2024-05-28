@@ -49,8 +49,6 @@ ENABLE = false
 NAME = "CSDN"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）      
-order = 1
 # 快捷键
 # HOTKEY = "ctrl+shift+1"        
      
@@ -63,9 +61,7 @@ ENABLE = false
 # 是否在右键菜单中可点击
 CLICKABLE = true
 # 在右键菜单中展示的名称
-NAME = "博客园"
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）      
-order = 2      
+NAME = "博客园"    
 # 快捷键
 # HOTKEY = "ctrl+shift+2"   
 
@@ -78,8 +74,6 @@ ENABLE = false
 CLICKABLE = true
 # 在右键菜单中展示的名称
 NAME = "WordPress"
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）      
-order = 3    
 # 快捷键
 # HOTKEY = "ctrl+shift+3"
 
