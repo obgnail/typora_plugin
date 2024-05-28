@@ -2,9 +2,9 @@
  * 上传到各大平台的接口基类
  */
 class BaseUploaderInterface {
-    constructor(utils, config) {
-        this.utils = utils;
-        this.config = config;
+    constructor(controller) {
+        this.utils = controller.utils;
+        this.config = controller.config;
     }
 
     getName() {

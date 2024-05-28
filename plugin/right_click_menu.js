@@ -182,7 +182,6 @@ class rightClickMenuPlugin extends BasePlugin {
             if (!value) return false;
             const [fixedName, callArg] = value.split(".");
             if (!fixedName || !callArg) return false;
-            console.log(that.config)
             const plugin = that.utils.getPlugin(fixedName);
             that.dynamicCallPlugin(plugin, callArg);
             that.hideMenuIfNeed();

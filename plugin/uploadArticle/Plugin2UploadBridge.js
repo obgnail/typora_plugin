@@ -24,7 +24,7 @@ class Plugin2UploadBridge {
 
     lazyLoadUtils = () => {
         if (!this.utils) {
-            const Utils = require('./utils/Utils');
+            const Utils = require('./utils/uploadUtils');
             this.utils = new Utils(this.plugin);
         }
 

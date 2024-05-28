@@ -16,7 +16,7 @@ class UploadController {
 
     lazyLoadUtils = () => {
         if (!this.utils) {
-            const Utils = require('../utils/Utils');
+            const Utils = require('../utils/uploadUtils');
             this.utils = new Utils(this.plugin);
         }
 
@@ -49,9 +49,9 @@ class UploadController {
         const CsdnUploader = require('../uploader/CsdnUploader');
         const WordpressUploader = require('../uploader/WordpressUploader');
 
-        this.register(new CnBlogUploader(this.utils, this.config, this.options));
-        this.register(new CsdnUploader(this.utils, this.config, this.options));
-        this.register(new WordpressUploader(this.utils, this.config, this.options));
+        this.register(new CnBlogUploader(this));
+        this.register(new CsdnUploader(this));
+        this.register(new WordpressUploader(this));
     }
 
     register = (uploader) => {

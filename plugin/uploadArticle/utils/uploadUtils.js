@@ -1,4 +1,4 @@
-class Utils {
+class UploadUtils {
     constructor(plugin) {
         this.plugin = plugin;
         this.CryptoJS = null;
@@ -8,10 +8,10 @@ class Utils {
     // 懒加载 CryptoJS 模块
     lazyLoadCryptoJS = () => {
         if (!this.CryptoJS) {
-            this.CryptoJS = require('../crypto-js/core');
-            require('../crypto-js/hmac');
-            require('../crypto-js/sha256');
-            require('../crypto-js/enc-base64');
+            this.CryptoJS = require('./crypto-js/core');
+            require('./crypto-js/hmac');
+            require('./crypto-js/sha256');
+            require('./crypto-js/enc-base64');
         }
     }
 
@@ -44,6 +44,7 @@ class Utils {
             const extraData = "";  // TODO: 取出标签，分类，封面图等
             return {title, content, extraData};
         } catch (error) {
+            notification.showNotification('文件格式读取失败', "error");
             console.error('Error reading file:', error);
             return null;
         }
@@ -76,4 +77,4 @@ class Utils {
     }
 }
 
-module.exports = Utils;
+module.exports = UploadUtils;
