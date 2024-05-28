@@ -25,58 +25,28 @@ CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE = true
 # ctrl+click图表退出交互模式
 CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE = false
 
-
-############### uploadToAllPlatForm ###############
-# 本插件不需修改右键菜单相关配置，默认为一级菜单
-[upload_to_all_platform]
+############### ArticleUploader ###############
+[ArticleUploader]
 # 是否启用插件
-ENABLE = false
-# 在右键菜单中展示的名称
-NAME = "上传到所有平台"
+ENABLE = true
+# 插件名称
+NAME= "上传到所有平台"
+# 在右键菜单隐藏
+HIDE=true
 # 是否在右键菜单中可点击
-CLICKABLE = "true"
-# 快捷键
-HOTKEY = "ctrl+m"   
-# 标明该插件没有子级，其他插件也可配置，但需注意兼容性
-MENUS_WITHOUT_CHILDREN=true
+CLICKABLE = true  
 
 
-############### uploadToCSDN ###############
-[upload_to_csdn]
+############### ArticleUploader ###############
+[ArticleUploader]
 # 是否启用插件
-ENABLE = false
-# 在右键菜单中展示的名称
-NAME = "CSDN"
-# 是否在右键菜单中可点击
-CLICKABLE = true
-# 快捷键
-# HOTKEY = "ctrl+shift+1"        
-     
-
-
-############### uploadToCNBlog ###############
-[upload_to_cn_blog]
-# 是否启用插件
-ENABLE = false
-# 是否在右键菜单中可点击
-CLICKABLE = true
-# 在右键菜单中展示的名称
-NAME = "博客园"    
-# 快捷键
-# HOTKEY = "ctrl+shift+2"   
-
-
-############### uploadToWordPress ###############
-[upload_to_wordpress]
-# 是否启用插件
-ENABLE = false
-# 是否在右键菜单中可点击
-CLICKABLE = true
-# 在右键菜单中展示的名称
-NAME = "WordPress"
-# 快捷键
-# HOTKEY = "ctrl+shift+3"
-
+ENABLE = true
+# 快捷键配置
+UPLOAD_ALL_HOTKEY="ctrl+shift+1"
+UPLOAD_WORDPRESS_HOTKEY="ctrl+shift+2"
+UPLOAD_CNBLOG_HOTKEY="ctrl+shift+3"
+UPLOAD_CSDN_HOTKEY="ctrl+shift+4"
+  
 
 ############### window_tab ###############
 [window_tab]
@@ -1112,14 +1082,18 @@ FIND_LOST_PLUGIN = true
 #   NAME: 一级菜单的名称
 #   LIST: 二级菜单的插件列表（"---"：代表在页面上插入一个分隔横线）
 
-# 此处为上传到单个平台相关配置
-# [[right_click_menu.MENUS]]
-# NAME = "上传到单个平台"
-# LIST = [
-#     "upload_to_csdn",
-#     "upload_to_wordpress",
-#     "upload_to_cn_blog",
-# ]
+[[right_click_menu.MENUS]]
+NAME = "上传到所有平台"
+LIST = [
+    "ArticleUploader.upload_to_all_site"
+]
+[[right_click_menu.MENUS]]
+NAME = "上传到单个平台"
+LIST = [
+    "ArticleUploader.upload_to_csdn",
+    "ArticleUploader.upload_to_wordpress",
+    "ArticleUploader.upload_to_cn_blog"
+]
 [[right_click_menu.MENUS]]
 NAME = "少用插件"
 LIST = [

@@ -1,8 +1,5 @@
 // 插件名称是通过配置文件引入的，为了避免XSS注入，不可使用innerHTML
-const uploadUtil = require("./uploadArticle/uploadUtil");
-
 class rightClickMenuPlugin extends BasePlugin {
-
     styleTemplate = () => {
         const {MENU_MIN_WIDTH, HIDE_OTHER_OPTIONS} = this.config;
         const map = {"default": "", "auto": "inherit"};
@@ -15,8 +12,9 @@ class rightClickMenuPlugin extends BasePlugin {
 
     init = () => {
         this.groupName = "typora-plugin";
-        this.unavailableName = "光标于此位置不可用";
-        this.unavailableValue = "__not_available__";
+        this.noExtraMenuGroupName = "typora-plugin-no-extra";
+        this.dividerArg = "---";
+        this.unavailableArg = "__not_available__";
         this.callArgs = [{arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"}];
     }
 
@@ -24,7 +22,6 @@ class rightClickMenuPlugin extends BasePlugin {
 
     appendMenu = () => {
         setTimeout(() => {
-            this.appendFirstWithNoChildren();   // 一级菜单不汇总插件，单独展示
             this.appendFirst();  // 一级菜单汇总所有插件
             this.appendSecond(); // 二级菜单展示所有插件
             this.appendThird();  // 三级菜单展示插件的参数
@@ -32,64 +29,40 @@ class rightClickMenuPlugin extends BasePlugin {
         }, 500)
     }
 
-    appendFirstWithNoChildren = () => {
-        const menus = this.config.MENUS;
-        const allPlugins = new Map(Object.entries(this.utils.getAllPlugins()));
-        const elements = [];
-        for (const [key, plugin] of allPlugins) {
-            if (plugin?.MENUS_WITHOUT_CHILDREN === true) {
-                elements.push({
-                    ele: "li",
-                    class_: "has-extra-menu",
-                    "data-key": plugin?.fixedName, // 修改自定义属性避免鼠标滑入时调用事件
-                    children: [
-                        {
-                            ele: "a",
-                            role: "menuitem",
-                            children: [
-                                {
-                                    ele: "span",
-                                    "data-lg": "Menu",
-                                    text: plugin?.NAME
-                                }
-                            ]
-                        }
-                    ]
-                });
-            }
-        }
-
-        const menu = document.querySelector(`#context-menu`);
-        this.utils.appendElements(menu, elements);
-    }
-
     appendFirst = () => {
-        const items = this.config.MENUS.map((menu, idx) => {
-            const item = [{ele: "span", "data-lg": "Menu", text: menu.NAME}, {ele: "i", class_: "fa fa-caret-right"}];
+        const items = this.config.MENUS.map(({NAME, LIST = []}, idx) => {
+            const item = [{ele: "span", "data-lg": "Menu", text: NAME}];
             const children = [{ele: "a", role: "menuitem", children: item}];
-            return {ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children}
+            const noExtraMenu = LIST && LIST.length === 1;
+            if (noExtraMenu) {
+                return {ele: "li", "data-key": this.noExtraMenuGroupName, "data-value": LIST[0], idx, children};
+            }
+            item.push(this.caret());
+            return {ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children};
         })
         const elements = [this.divider(), ...items];
-        const menu = document.querySelector(`#context-menu`);
+        const menu = document.querySelector("#context-menu");
         this.utils.appendElements(menu, elements);
     }
 
     appendSecond = () => {
         this.findLostPluginIfNeed();
 
-        const elements = this.config.MENUS.map((menu, idx) => {
-            const children = menu.LIST.map(item => {
-                if (item === "---") {
-                    return this.divider();
+        const elements = this.config.MENUS.map(({LIST = []}, idx) => {
+            const children = LIST.map(item => {
+                if (item === this.dividerArg) return this.divider();
+
+                const [fixedName, callArg] = item.split(".");
+                const plugin = this.utils.getPlugin(fixedName);
+                if (!plugin) return {}
+
+                if (callArg) {
+                    return this.secondComposeLiTemplate(plugin, callArg)
+                } else {
+                    return this.secondLiTemplate(plugin)
                 }
-                const plugin = this.utils.getPlugin(item);
-                // 过滤一级可点击插件
-                if (plugin && plugin?.config?.MENUS_WITHOUT_CHILDREN !== true) {
-                    return this.secondLiTemplate(plugin);
-                }
-                return {}
             })
-            return this.ulTemplate({class_: "plugin-menu-second", idx, children});
+            return this.ulTemplate({class_: ["plugin-menu-second"], idx, children});
         })
         const content = document.querySelector("content");
         this.utils.appendElements(content, elements);
@@ -99,38 +72,42 @@ class rightClickMenuPlugin extends BasePlugin {
         const content = document.querySelector("content");
         this.config.MENUS.forEach((menu, idx) => {
             const elements = menu.LIST.map(item => {
-                if (item === "---") return {};
+                if (item === this.dividerArg) return {};
+
                 const plugin = this.utils.getPlugin(item);
                 if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return {};
 
                 const children = (plugin.callArgs || []).map(arg => this.thirdLiTemplate(arg));
-                return this.ulTemplate({class_: "plugin-menu-third", "data-plugin": plugin.fixedName, idx, children});
+                return this.ulTemplate({class_: ["plugin-menu-third"], "data-plugin": plugin.fixedName, idx, children});
             })
             this.utils.appendElements(content, elements);
         })
     }
 
+    secondComposeLiTemplate = (plugin, callArg) => {
+        const target = plugin.callArgs.find(arg => arg.arg_value === callArg);
+        const name = target ? target.arg_name : plugin.config.NAME;
+        const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", text: name}];
+        return {ele: "li", class_: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": callArg, children}
+    }
+
     secondLiTemplate = plugin => {
         const hasNotArgs = !plugin.callArgs && !plugin.dynamicCallArgsGenerator;
 
-        const extra = {class_: "plugin-menu-item"};
+        const extra = {class_: ["plugin-menu-item"]};
         if (!hasNotArgs) {
-            extra.class_ += " has-extra-menu";
+            extra.class_.push("has-extra-menu");
         }
         if (!plugin.config.CLICKABLE) {
             extra.style = {color: "#c4c6cc", pointerEvents: "none"};
         }
 
-        const childExtra = {};
-        if (hasNotArgs) {
-            childExtra.text = plugin.config.NAME;
-        } else {
-            const i = [{ele: "i", class_: "fa fa-caret-right"}];
-            childExtra.children = [{ele: "span", "data-lg": "Menu", text: plugin.config.NAME, children: i}];
-        }
+        const childrenExtra = hasNotArgs
+            ? {text: plugin.config.NAME}
+            : {children: [{ele: "span", "data-lg": "Menu", text: plugin.config.NAME, children: [this.caret()]}]};
 
-        const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", ...childExtra}];
-        return {ele: "li", "data-key": plugin.fixedName, children: children, ...extra}
+        const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", ...childrenExtra}];
+        return {ele: "li", "data-key": plugin.fixedName, children, ...extra}
     }
 
     thirdLiTemplate = (arg, dynamic) => {
@@ -142,16 +119,16 @@ class rightClickMenuPlugin extends BasePlugin {
             extra.class_ = `plugin-dynamic-arg ${(arg.arg_disabled) ? "disabled" : ""}`;
         }
         const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", text: arg.arg_name}];
-        return {ele: "li", "data-key": arg.arg_name, "data-arg-value": arg.arg_value, ...extra, children}
+        return {ele: "li", "data-key": arg.arg_value, ...extra, children}
     }
 
     ulTemplate = extra => {
-        const class_ = `dropdown-menu context-menu ext-context-menu ${extra.class_ || ""}`;
-        delete extra.class_;
-        return {ele: "ul", class_, role: "menu", ...extra}
+        extra.class_.push("dropdown-menu", "context-menu", "ext-context-menu");
+        return {ele: "ul", role: "menu", ...extra}
     }
 
     divider = () => ({ele: "li", class_: "divider"})
+    caret = () => ({ele: "i", class_: "fa fa-caret-right"})
 
     findLostPluginIfNeed = () => {
         if (!this.config.FIND_LOST_PLUGIN) return;
@@ -180,14 +157,18 @@ class rightClickMenuPlugin extends BasePlugin {
         $after.css({top: afterTop + "px", left: afterLeft + "px"});
     }
 
-
     appendThirdLi = ($menu, dynamicCallArgs) => {
         dynamicCallArgs.forEach(arg => $menu.append(this.utils.createElement(this.thirdLiTemplate(arg, true))))
     }
+    appendDummyThirdLi = $menu => this.appendThirdLi($menu, [{arg_name: this.unavailableArg, arg_disabled: true}])
 
-    appendDummyThirdLi = $menu => {
-        const args = [{arg_name: this.unavailableName, "data-arg-value": this.unavailableValue, arg_disabled: true}];
-        this.appendThirdLi($menu, args)
+    hideMenuIfNeed = () => !this.config.DO_NOT_HIDE && File.editor.contextMenu.hide();
+
+    callPlugin = plugin => plugin.call && plugin.call();
+    dynamicCallPlugin = (plugin, arg) => {
+        if (arg !== this.unavailableArg && plugin && plugin.call) {
+            this.utils.withMeta(meta => plugin.call(arg, meta));
+        }
     }
 
     listen = () => {
@@ -195,25 +176,18 @@ class rightClickMenuPlugin extends BasePlugin {
         const removeShow = ele => ele.classList.remove("show");
         const removeActive = ele => ele.classList.remove("active");
 
-
         // 点击一级菜单
-        $(`#context-menu`).on("click", "[data-key]", function () {
-            if (!that.config.DO_NOT_HIDE) {
-                File.editor.contextMenu.hide();
-            }
-            const first = $(this);
-            let allPlugins = that.utils.getAllPlugins();
-            if (allPlugins.hasOwnProperty(first.attr("data-key"))) {
-                const fixedName = this.getAttribute("data-key");
-                const plugin = that.utils.getPlugin(fixedName);
-                if (plugin.call) {
-                    plugin.call();
-                }
-            }
-        })
-
-        // 展示二级菜单
-        $("#context-menu").on("mouseenter", "[data-key]", function () {
+        $("#context-menu").on("click", `[data-key="${this.noExtraMenuGroupName}"]`, function () {
+            const value = this.getAttribute("data-value");
+            if (!value) return false;
+            const [fixedName, callArg] = value.split(".");
+            if (!fixedName || !callArg) return false;
+            console.log(that.config)
+            const plugin = that.utils.getPlugin(fixedName);
+            that.dynamicCallPlugin(plugin, callArg);
+            that.hideMenuIfNeed();
+            // 展示二级菜单
+        }).on("mouseenter", "[data-key]", function () {
             const first = $(this);
             if (that.groupName === first.attr("data-key")) {
                 const idx = this.getAttribute("idx");
@@ -254,17 +228,16 @@ class rightClickMenuPlugin extends BasePlugin {
             // 在二级菜单中调用插件
         }).on("click", "[data-key]", function () {
             const fixedName = this.getAttribute("data-key");
+            const callArg = this.getAttribute("data-value");
             const plugin = that.utils.getPlugin(fixedName);
-            // 拥有三级菜单的，不允许点击二级菜单
-            if (!plugin || plugin.callArgs || plugin.dynamicCallArgsGenerator) {
-                return false
+            if (callArg) {
+                that.dynamicCallPlugin(plugin, callArg);
+            } else {
+                // 拥有三级菜单的，不允许点击二级菜单
+                if (!plugin || plugin.callArgs || plugin.dynamicCallArgsGenerator) return false;
+                that.callPlugin(plugin);
             }
-            if (plugin.call) {
-                plugin.call();
-            }
-            if (!that.config.DO_NOT_HIDE) {
-                File.editor.contextMenu.hide();
-            }
+            that.hideMenuIfNeed();
         })
 
         // 在三级菜单中调用插件
@@ -273,14 +246,10 @@ class rightClickMenuPlugin extends BasePlugin {
             if (this.classList.contains("disabled")) return false;
 
             const fixedName = this.parentElement.getAttribute("data-plugin");
-            const argValue = this.getAttribute("data-arg-value");
+            const callArg = this.getAttribute("data-key");
             const plugin = that.utils.getPlugin(fixedName);
-            if (argValue !== that.unavailableValue && plugin && plugin.call) {
-                that.utils.withMeta(meta => plugin.call(argValue, meta));
-            }
-            if (!that.config.DO_NOT_HIDE) {
-                File.editor.contextMenu.hide();
-            }
+            that.dynamicCallPlugin(plugin, callArg);
+            that.hideMenuIfNeed();
         })
     }
 
