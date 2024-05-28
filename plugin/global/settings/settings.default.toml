@@ -27,14 +27,17 @@ CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE = false
 
 
 ############### uploadToAllPlatForm ###############
-# 这个插件是一级插件且无List，因此指定NAME无效，可以全局搜索【上传】去看右键菜单的配置
+# 本插件不需修改右键菜单相关配置，默认为一级菜单
 [upload_to_all_platform]
 # 是否启用插件
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "上传到所有平台"
+# 是否在右键菜单中可点击
+CLICKABLE = "true"
 # 快捷键
 HOTKEY = "ctrl+m"   
+# 标明该插件没有子级，其他插件也可配置，但需注意兼容性
 MENUS_WITHOUT_CHILDREN=true
 
 
