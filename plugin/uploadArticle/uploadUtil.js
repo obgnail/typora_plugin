@@ -124,11 +124,11 @@ class uploadUtil extends BasePlugin {
 
     /**
      * 代理方法，实现消息提示、安全性检查、时间记录
-     * @param filePath
-     * @param type
+     * @param filePath  当前文档绝对路径
+     * @param type  上传平台，不传上传所有平台
      * @returns {Promise<void>}
      */
-    uploadProxy = async (filePath, type) => {
+    uploadProxy = async (filePath, type = "all") => {
         // 1: 上传确认
         if (this.reconfirm) {
             const message = "你确定要上传文章吗";
@@ -138,11 +138,12 @@ class uploadUtil extends BasePlugin {
                 return;
             }
         }
-        // 开始上传的提示
+        // 2：开始上传的准备工作
         notification.showNotification('开始上传，请不要关闭软件', 'info');
         // 记录上传开始时间
         const startTime = new Date();
-        if (type === undefined) {
+        //  3：上传
+        if (type === "all") {
             await this._uploadAll(filePath)
         } else {
             await this._upload(filePath, type)
@@ -151,7 +152,7 @@ class uploadUtil extends BasePlugin {
         const endTime = new Date();
         const duration = ((endTime - startTime) / 1000).toFixed(1); // 计算花费的秒数
 
-        // 3：上传成功的提示
+        // 4：上传成功的提示
         notification.showNotification(`上传成功，耗时${duration}秒`, 'success');
     }
 
