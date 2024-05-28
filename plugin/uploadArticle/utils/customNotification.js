@@ -1,3 +1,6 @@
+/**
+ * 自定义通知组件，支持4种状态：info、success、warning、error
+ */
 class CustomNotification {
     constructor() {
         this.createNotificationElement();
