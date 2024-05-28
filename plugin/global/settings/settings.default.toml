@@ -28,7 +28,7 @@ CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE = false
 ############### article_uploader ###############
 [article_uploader]
 # 是否启用插件
-ENABLE = true
+ENABLE = false
 # 插件名称
 NAME = "文章上传"
 # 在右键菜单隐藏
@@ -41,16 +41,6 @@ UPLOAD_WORDPRESS_HOTKEY = "ctrl+shift+2"
 UPLOAD_CNBLOG_HOTKEY = "ctrl+shift+3"
 UPLOAD_CSDN_HOTKEY = "ctrl+shift+4"
 
-############### ArticleUploader ###############
-[ArticleUploader]
-# 是否启用插件
-ENABLE = true
-# 快捷键配置
-UPLOAD_ALL_HOTKEY="ctrl+shift+1"
-UPLOAD_WORDPRESS_HOTKEY="ctrl+shift+2"
-UPLOAD_CNBLOG_HOTKEY="ctrl+shift+3"
-UPLOAD_CSDN_HOTKEY="ctrl+shift+4"
-  
 
 ############### window_tab ###############
 [window_tab]
@@ -1086,18 +1076,18 @@ FIND_LOST_PLUGIN = true
 #   NAME: 一级菜单的名称
 #   LIST: 二级菜单的插件列表（"---"：代表在页面上插入一个分隔横线）
 
-[[right_click_menu.MENUS]]
-NAME = "上传到所有平台"
-LIST = [
-    "ArticleUploader.upload_to_all_site"
-]
-[[right_click_menu.MENUS]]
-NAME = "上传到单个平台"
-LIST = [
-    "ArticleUploader.upload_to_csdn",
-    "ArticleUploader.upload_to_wordpress",
-    "ArticleUploader.upload_to_cn_blog"
-]
+# [[right_click_menu.MENUS]]
+# NAME = "上传到所有平台"
+# LIST = [
+#     "ArticleUploader.upload_to_all_site"
+# ]
+# [[right_click_menu.MENUS]]
+# NAME = "上传到单个平台"
+# LIST = [
+#     "ArticleUploader.upload_to_csdn",
+#     "ArticleUploader.upload_to_wordpress",
+#     "ArticleUploader.upload_to_cn_blog"
+# ]
 [[right_click_menu.MENUS]]
 NAME = "少用插件"
 LIST = [
