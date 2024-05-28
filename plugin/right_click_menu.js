@@ -83,7 +83,8 @@ class rightClickMenuPlugin extends BasePlugin {
                     return this.divider();
                 }
                 const plugin = this.utils.getPlugin(item);
-                if (plugin) {
+                // 过滤一级可点击插件
+                if (plugin && plugin?.config?.MENUS_WITHOUT_CHILDREN !== true) {
                     return this.secondLiTemplate(plugin);
                 }
                 return {}
