@@ -32,6 +32,8 @@ class UploadUtils {
 
     // 处理文件
     readAndSplitFile = (filePath) => {
+        const Notification = require('../utils/customNotification.js').plugin;
+        const notification = new Notification();
         try {
             const fs = this.plugin.utils.Package.Fs;
             const data = fs.readFileSync(filePath, 'utf-8');

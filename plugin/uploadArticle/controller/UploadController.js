@@ -74,9 +74,9 @@ class UploadController {
         const {title, content, extraData} = this.utils.readAndSplitFile(filePath);
         for (let [name, uploader] of this.uploaders) {
             // 上传全部的时候不上传哪些平台，属于脱裤子放屁的需求
-            if ((name === "csdn" && this.config.csdn.enabled) ||
-                (name === "wordpress" && this.config.wordpress.enabled) ||
-                (name === "cnblog" && this.config.cnblog.enabled)) {
+            if ((name === "csdn" && this.config.upload.csdn.enabled) ||
+                (name === "wordpress" && this.config.upload.wordpress.enabled) ||
+                (name === "cnblog" && this.config.upload.cnblog.enabled)) {
                 await uploader.upload(title, content, extraData, this.options);
             }
         }
