@@ -30,7 +30,7 @@ CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE = false
 # 本插件不需修改右键菜单相关配置，默认为一级菜单
 [upload_to_all_platform]
 # 是否启用插件
-ENABLE = true
+ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "上传到所有平台"
 # 是否在右键菜单中可点击
@@ -44,7 +44,7 @@ MENUS_WITHOUT_CHILDREN=true
 ############### uploadToCSDN ###############
 [upload_to_csdn]
 # 是否启用插件
-ENABLE = true
+ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "CSDN"
 # 是否在右键菜单中可点击
@@ -59,7 +59,7 @@ order = 1
 ############### uploadToCNBlog ###############
 [upload_to_cn_blog]
 # 是否启用插件
-ENABLE = true
+ENABLE = false
 # 是否在右键菜单中可点击
 CLICKABLE = true
 # 在右键菜单中展示的名称
@@ -73,7 +73,7 @@ order = 2
 ############### uploadToWordPress ###############
 [upload_to_wordpress]
 # 是否启用插件
-ENABLE = true
+ENABLE = false
 # 是否在右键菜单中可点击
 CLICKABLE = true
 # 在右键菜单中展示的名称
@@ -1119,13 +1119,13 @@ FIND_LOST_PLUGIN = true
 #   LIST: 二级菜单的插件列表（"---"：代表在页面上插入一个分隔横线）
 
 # 此处为上传到单个平台相关配置
-[[right_click_menu.MENUS]]
-NAME = "上传到单个平台"
-LIST = [
-    "upload_to_csdn",
-    "upload_to_wordpress",
-    "upload_to_cn_blog",
-]
+# [[right_click_menu.MENUS]]
+# NAME = "上传到单个平台"
+# LIST = [
+#     "upload_to_csdn",
+#     "upload_to_wordpress",
+#     "upload_to_cn_blog",
+# ]
 [[right_click_menu.MENUS]]
 NAME = "少用插件"
 LIST = [
