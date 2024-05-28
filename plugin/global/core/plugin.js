@@ -1,5 +1,3 @@
-const {PLUGIN_PATHS} = require('./pluginPaths.js');
-
 class utils {
     static isBetaVersion = window._options.appVersion[0] === "0"
     static supportHasSelector = CSS.supports("selector(:has(*))")
@@ -2196,14 +2194,14 @@ class process {
         await Promise.all(Object.values(helper).map(async h => h.afterProcess && h.afterProcess()));
     }
 
-    static loadPlugin = async (fixedName, pluginPath = "./plugin") => {
+    static loadPlugin = async (fixedName, entry) => {
         const setting = global._plugin_settings[fixedName];
         if (!setting || !setting.ENABLE || global._plugin_global_settings.DISABLE_PLUGINS.indexOf(fixedName) !== -1) {
             console.debug(`disable plugin: [ ${fixedName} ] `);
             return;
         }
         try {
-            const {plugin} = utils.requireFilePath(pluginPath, fixedName);
+            const {plugin} = utils.requireFilePath(entry || `./plugin/${fixedName}`);
             if (!plugin) return;
 
             const instance = new plugin(fixedName, setting);
@@ -2221,9 +2219,10 @@ class process {
     };
 
     static loadPlugins = () => {
+        const {PLUGIN_PATHS} = utils.requireFilePath("./plugin/global/core/pluginPaths.js");
         const pluginLoadPromises = Object.keys(global._plugin_settings).map(fixedName => {
-            const pluginPath = PLUGIN_PATHS[fixedName] || './plugin';
-            return this.loadPlugin(fixedName, pluginPath);
+            const entry = PLUGIN_PATHS[fixedName] || `./plugin/${fixedName}`;
+            return this.loadPlugin(fixedName, entry);
         });
         return Promise.all(pluginLoadPromises);
     };
