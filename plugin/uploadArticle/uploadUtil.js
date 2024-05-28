@@ -80,8 +80,14 @@ class uploadUtil extends BasePlugin {
             this.cnblogEnabled = data.upload.cnblog.enabled;
             this.wordpressEnabled = data.upload.wordpress.enabled;
             this.headless = data.upload.selenium.headless
+            this.reconfirm = data.upload.reconfirm
+            // 无头选项
             if (this.headless) {
                 options.addArguments("--headless");
+            }
+            // 确认框展示
+            if (this.reconfirm) {
+                this.showMessageBox = this.config.SHOW_HINT_MODAL;
             }
 
 
@@ -117,14 +123,44 @@ class uploadUtil extends BasePlugin {
     }
 
     /**
+     * 代理方法，实现消息提示、安全性检查、时间记录
+     * @param filePath
+     * @param type
+     * @returns {Promise<void>}
+     */
+    uploadProxy = async (filePath, type) => {
+        // 1: 上传确认
+        if (this.reconfirm) {
+            const message = "你确定要上传文章吗";
+            const op = {type: "info", title: "上传提示", buttons: ["确定", "取消"], message};
+            const {response} = await this.utils.showMessageBox(op);
+            if (response === 1) {
+                return;
+            }
+        }
+        // 开始上传的提示
+        notification.showNotification('开始上传，请不要关闭软件', 'info');
+        // 记录上传开始时间
+        const startTime = new Date();
+        if (type === undefined) {
+            await this._uploadAll(filePath)
+        } else {
+            await this._upload(filePath, type)
+        }
+        // 记录上传结束时间
+        const endTime = new Date();
+        const duration = ((endTime - startTime) / 1000).toFixed(1); // 计算花费的秒数
+
+        // 3：上传成功的提示
+        notification.showNotification(`上传成功，耗时${duration}秒`, 'success');
+    }
+
+    /**
      * 上传到所有平台
      * @param filePath  当前文档绝对路径
      * @returns {Promise<void>}
      */
-    uploadAll = async (filePath) => {
-        notification.showNotification('开始上传，请不要关闭软件', 'info');
-        // 记录上传开始时间
-        const startTime = new Date();
+    _uploadAll = async (filePath) => {
         // 1：读取数据
         let {title, content, extraData} = this.readAndSplitFile(filePath);
         // 2：开始上传
@@ -137,12 +173,6 @@ class uploadUtil extends BasePlugin {
         if (this.csdnEnabled) {
             await this._uploadToCSDN(title, content, extraData);
         }
-        // 记录上传结束时间
-        const endTime = new Date();
-        const duration = ((endTime - startTime) / 1000).toFixed(1); // 计算花费的秒数
-
-        // 3：上传成功的提示
-        notification.showNotification(`所有平台上传成功，耗时${duration}秒`, 'success');
     }
 
     /**
@@ -150,11 +180,7 @@ class uploadUtil extends BasePlugin {
      * @param filePath  当前文档绝对路径
      * @param type  平台类型
      */
-    upload = async (filePath, type) => {
-        notification.showNotification('开始上传，请不要关闭软件', 'info');
-        // 记录上传开始时间
-        const startTime = new Date();
-
+    _upload = async (filePath, type) => {
         // 1：读取数据
         let {title, content, extraData} = this.readAndSplitFile(filePath);
         // 2：开始上传
@@ -168,11 +194,6 @@ class uploadUtil extends BasePlugin {
             throw new Error("不支持的类型")
         }
 
-        // 记录上传结束时间
-        const endTime = new Date();
-        const duration = ((endTime - startTime) / 1000).toFixed(1); // 计算花费的秒数
-        // 上传成功的提示
-        notification.showNotification(`${type}上传成功，花费时间: ${duration} 秒`, 'success');
     }
 
     /**
