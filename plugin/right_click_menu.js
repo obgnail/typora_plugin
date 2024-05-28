@@ -11,6 +11,7 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     init = () => {
+        this.quickGroupName = "typora-quick-menu";
         this.groupName = "typora-plugin";
         this.dividerArg = "---";
         this.unavailableArg = "__not_available__";
@@ -29,13 +30,19 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     appendFirst = () => {
+        const quick = this.config.QUICK_MENUS.map(({NAME, CALLBACK: c}) => {
+            const item = [{ele: "span", "data-lg": "Menu", text: NAME}];
+            const children = [{ele: "a", role: "menuitem", children: item}];
+            return {ele: "li", class_: "has-extra-menu", "data-key": this.quickGroupName, "data-value": c, children}
+        })
+
         const items = this.config.MENUS.map(({NAME, LIST = []}, idx) => {
             const item = [{ele: "span", "data-lg": "Menu", text: NAME}, this.caret()];
             const children = [{ele: "a", role: "menuitem", children: item}];
             return {ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children}
         })
-        const elements = [this.divider(), ...items];
-        const menu = document.querySelector(`#context-menu`);
+        const elements = [this.divider(), ...quick, ...items];
+        const menu = document.querySelector("#context-menu");
         this.utils.appendElements(menu, elements);
     }
 
@@ -157,8 +164,16 @@ class rightClickMenuPlugin extends BasePlugin {
         const removeShow = ele => ele.classList.remove("show");
         const removeActive = ele => ele.classList.remove("active");
 
-        // 展示二级菜单
-        $("#context-menu").on("mouseenter", "[data-key]", function () {
+        // 点击一级菜单
+        $("#context-menu").on("click", `[data-key="${this.quickGroupName}"]`, function () {
+            const value = this.getAttribute("data-value");
+            const [fixedName, callArg] = value.split(".");
+            if (!fixedName || !callArg) return false;
+            const plugin = that.utils.getPlugin(fixedName);
+            that.dynamicCallPlugin(plugin, callArg);
+            that.hideMenuIfNeed();
+            // 展示二级菜单
+        }).on("mouseenter", "[data-key]", function () {
             const first = $(this);
             if (that.groupName === first.attr("data-key")) {
                 const idx = this.getAttribute("idx");
