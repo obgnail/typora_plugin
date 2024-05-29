@@ -686,17 +686,7 @@ class utils {
 
     static openUrl = url => (File.editor.tryOpenUrl_ || File.editor.tryOpenUrl)(url, 1);
 
-    static showMessageBox = async ({
-                                       type = "info",
-                                       title = "typora",
-                                       message,
-                                       detail,
-                                       buttons = ["确定", "取消"],
-                                       defaultId = 0,
-                                       cancelId = 1,
-                                       normalizeAccessKeys = true,
-                                       checkboxLabel
-                                   }) => {
+    static showMessageBox = async ({type = "info", title = "typora", message, detail, buttons = ["确定", "取消"], defaultId = 0, cancelId = 1, normalizeAccessKeys = true, checkboxLabel}) => {
         const op = {type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel};
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
@@ -2198,7 +2188,7 @@ class process {
         const setting = global._plugin_settings[fixedName];
         if (!setting || !setting.ENABLE || global._plugin_global_settings.DISABLE_PLUGINS.indexOf(fixedName) !== -1) {
             console.debug(`disable plugin: [ ${fixedName} ] `);
-            return;
+            return
         }
         try {
             const {plugin} = utils.requireFilePath(entry || `./plugin/${fixedName}`);
@@ -2216,7 +2206,7 @@ class process {
         } catch (e) {
             console.error("load plugin err:", e);
         }
-    };
+    }
 
     static loadPlugins = () => {
         const {PLUGIN_PATHS} = utils.requireFilePath("./plugin/global/core/pluginPaths.js");

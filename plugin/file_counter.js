@@ -37,7 +37,9 @@ class fileCounterPlugin extends BasePlugin {
             const need = mutationList.some(mutation => {
                 const {target} = mutation;
                 const add = mutation.addedNodes[0];
-                return !(target && target.classList && target.classList.contains(this.className) || add && add.classList.contains(this.className))
+                const t = target && target.classList && target.classList.contains(this.className);
+                const a = add && add.classList && add.classList.contains(this.className);
+                return !(t || a)
             })
             need && this.setAllDirCount();
         }).observe(document.getElementById("file-library-tree"), {subtree: true, childList: true});
