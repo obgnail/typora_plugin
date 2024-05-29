@@ -62,6 +62,7 @@ class preferencesPlugin extends BasePlugin {
             openInTotalCommander: "此插件需要手动修改配置后方可运行",
             redirectLocalRootUrl: "此插件需要手动修改配置后方可运行",
             autoTrailingWhiteSpace: "此插件面向特殊人群（如网站站长），不建议普通用户启用",
+            article_uploader: "此插件面向特殊人群（如网站站长），且需要手动修改配置后方可运行",
         }
         const displayFunc = ([fixedName, plugin]) => {
             const info = infoMap[fixedName];

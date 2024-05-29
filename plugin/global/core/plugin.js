@@ -2209,14 +2209,13 @@ class process {
     }
 
     static loadPlugins = () => {
-        const {PLUGIN_ENTRY} = utils.requireFilePath("./plugin/global/core/plugin_entry.js");
-        const promise = Object.keys(global._plugin_settings).map(async fixedName => {
-            const entry = PLUGIN_ENTRY[fixedName] || `./plugin/${fixedName}`;
+        const {PLUGIN_PATHS} = utils.requireFilePath("./plugin/global/core/pluginPaths.js");
+        const pluginLoadPromises = Object.keys(global._plugin_settings).map(fixedName => {
+            const entry = PLUGIN_PATHS[fixedName] || `./plugin/${fixedName}`;
             return this.loadPlugin(fixedName, entry);
         });
-        return Promise.all(promise);
+        return Promise.all(pluginLoadPromises);
     };
-
     static loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
 
     static existEnablePlugin = () => Object.entries(global._plugin_settings).some(([name, plugin]) => plugin.ENABLE && !global._plugin_global_settings.DISABLE_PLUGINS.includes(name))

@@ -1082,6 +1082,7 @@ LIST = [
     "text_stylize",
     "toolbar",
     "slash_commands",
+    "article_uploader",
     "preferences",
     "---",
     "file_counter",
@@ -1117,7 +1118,7 @@ CLICKABLE = true
 # 快捷键
 HOTKEY = ""
 # 不允许通过此插件修改启停的插件
-IGNORE_PLUGINS = ["preferences", "right_click_menu", "custom", "json_rpc", "mermaid_replace", "openInTotalCommander", "redirectLocalRootUrl"]
+IGNORE_PLUGINS = ["preferences", "right_click_menu", "custom", "json_rpc", "mermaid_replace", "openInTotalCommander", "redirectLocalRootUrl", "article_uploader"]
 
 
 ############### file_counter ###############
@@ -1156,6 +1157,23 @@ ENABLE = true
 NAME = "帮助"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+
+
+############### article_uploader ###############
+[article_uploader]
+# 是否启用插件
+ENABLE = false
+# 插件名称
+NAME = "文章上传"
+# 在右键菜单隐藏
+HIDE = false
+# 是否在右键菜单中可点击
+CLICKABLE = true
+# 快捷键配置
+UPLOAD_ALL_HOTKEY = "ctrl+shift+1"
+UPLOAD_WORDPRESS_HOTKEY = "ctrl+shift+2"
+UPLOAD_CNBLOG_HOTKEY = "ctrl+shift+3"
+UPLOAD_CSDN_HOTKEY = "ctrl+shift+4"
 
 
 ############### json_rpc ###############
