@@ -1174,6 +1174,19 @@ UPLOAD_ALL_HOTKEY = "ctrl+shift+1"
 UPLOAD_WORDPRESS_HOTKEY = "ctrl+shift+2"
 UPLOAD_CNBLOG_HOTKEY = "ctrl+shift+3"
 UPLOAD_CSDN_HOTKEY = "ctrl+shift+4"
+# 上传相关配置
+[article_uploader.upload]
+# 是否在上传之前弹出确认框（防误触）
+reconfirm = true
+# 改为false你可以看到selenium是怎么在浏览器中操作发表文章的
+selenium = { headless = true }
+# enabled: 置为false则在上传所有平台中不会上传到该平台
+# hostname: 域名或ip：如137.2.3.1
+# loginUrl: wordpress后台登录地址
+wordpress = { enabled = true, hostname = "https://blog.bugdesigner.cn", loginUrl = "https://blog.bugdesigner.cn/superman/", username = "demo", password = "demo1" }
+cnblog = { enabled = true, username = "demo2", password = "demo2" }
+# # cookie可能需要定期更新，f12随便找一个异步请求的，把cookie值粘过来就行，目前两天安全下车，预计两周——一个月失效
+csdn = { enabled = true, cookie = "log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s; log_Id_click=37......" }
 
 
 ############### json_rpc ###############

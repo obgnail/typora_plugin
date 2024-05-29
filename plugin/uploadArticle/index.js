@@ -15,7 +15,7 @@ class ArticleUploader extends BasePlugin {
         {hotkey: this.config.UPLOAD_ALL_HOTKEY, callback: () => this.call("upload_to_all_site")},
     ]
 
-    call = type => {
+    call = async type => {
         const map = {
             upload_to_csdn: "csdn",
             upload_to_wordpress: "wordpress",
@@ -23,12 +23,16 @@ class ArticleUploader extends BasePlugin {
             upload_to_all_site: "all"
         }
         const _type = map[type];
-        if (!_type) return;
+        if (_type) {
+            await this.upload(_type);
+        }
+    }
 
-        const UploadUtil = require("./Plugin2UploadBridge");
-        this.baseUploader = new UploadUtil(this);
-        let filePath = this.utils.getFilePath();
-        this.baseUploader.uploadProxy(filePath, _type);
+    upload = async type => {
+        const uploader = require("./Plugin2UploadBridge");
+        this.uploader = new uploader(this);
+        const filePath = this.utils.getFilePath();
+        await this.uploader.uploadProxy(filePath, type);
     }
 }
 
