@@ -2,24 +2,22 @@
  * 控制器，转发请求，注册插件，设置配置
  */
 class UploadController {
-    constructor(plugin) {
-        this.plugin = plugin;
-        this.utils = null;
+    constructor(bridge) {
+        this.bridge = bridge;
+        this.config = bridge.config;
+        this.utils = bridge.utils;
         this.uploaders = new Map();
-        this.config = null;
         this.options = null;
-
-        this.lazyLoadUtils();
-        this.init();
-        this.registerUploaders();
-    }
-
-    lazyLoadUtils = () => {
-        if (!this.utils) {
-            const Utils = require('../utils/uploadUtils');
-            this.utils = new Utils(this.plugin);
+        this.pathMap = {
+            cnblog: "../uploader/CnBlogUploader",
+            csdn: "../uploader/CsdnUploader",
+            wordpress: "../uploader/WordpressUploader",
         }
 
+        this.init();
+    }
+
+    init = () => {
         if (!this.options) {
             const chrome = require('selenium-webdriver/chrome');
             this.options = new chrome.Options();
@@ -33,30 +31,20 @@ class UploadController {
                 '--disable-javascript'
             );
         }
-    }
-
-    init = () => {
-        const configPath = this.plugin.utils.joinPath('./plugin/global/settings/uploadConfig.yaml');
-        this.config = this.utils.loadConfig(configPath);
 
         if (this.config.upload.selenium.headless) {
             this.options.addArguments("--headless");
         }
     }
 
-    registerUploaders = () => {
-        const CnBlogUploader = require('../uploader/CnBlogUploader');
-        const CsdnUploader = require('../uploader/CsdnUploader');
-        const WordpressUploader = require('../uploader/WordpressUploader');
-
-        this.register(new CnBlogUploader(this));
-        this.register(new CsdnUploader(this));
-        this.register(new WordpressUploader(this));
-    }
-
-    register = (uploader) => {
-        const name = uploader.getName();
-        this.uploaders.set(name, uploader);
+    register = (site) => {
+        const path = this.pathMap[site];
+        if (path) {
+            const uploader = require(path);
+            const instance = new uploader(this);
+            const name = instance.getName();
+            this.uploaders.set(name, instance);
+        }
     }
 
     unregister = (name) => this.uploaders.delete(name);
@@ -74,9 +62,8 @@ class UploadController {
         const {title, content, extraData} = this.utils.readAndSplitFile(filePath);
         for (let [name, uploader] of this.uploaders) {
             // 上传全部的时候不上传哪些平台，属于脱裤子放屁的需求
-            if ((name === "csdn" && this.config.upload.csdn.enabled) ||
-                (name === "wordpress" && this.config.upload.wordpress.enabled) ||
-                (name === "cnblog" && this.config.upload.cnblog.enabled)) {
+            const c = this.config.upload[name];
+            if (c && c.enabled) {
                 await uploader.upload(title, content, extraData, this.options);
             }
         }

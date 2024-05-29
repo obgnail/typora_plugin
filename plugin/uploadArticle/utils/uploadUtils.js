@@ -15,13 +15,6 @@ class UploadUtils {
         }
     }
 
-    // 懒加载 yaml 模块
-    lazyLoadYaml = () => {
-        if (!this.yaml) {
-            this.yaml = require('../../global/utils/yaml');
-        }
-    }
-
     // 生成UUID
     generateUUID() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -63,19 +56,6 @@ class UploadUtils {
         const toEnc = `POST\napplication/json, text/plain, */*\n\napplication/json;\n\nx-ca-key:${xCaKey}\nx-ca-nonce:${uuid}\n${_url}`;
         const hmac = this.CryptoJS.HmacSHA256(toEnc, ekey);
         return this.CryptoJS.enc.Base64.stringify(hmac);
-    }
-
-    // 加载配置文件
-    loadConfig = (filePath) => {
-        this.lazyLoadYaml();
-        try {
-            const fs = this.plugin.utils.Package.Fs;
-            const fileContents = fs.readFileSync(filePath, 'utf8');
-            return this.yaml.load(fileContents);
-        } catch (e) {
-            console.log(e);
-            return null;
-        }
     }
 }
 

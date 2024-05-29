@@ -4,25 +4,14 @@
 class Plugin2UploadBridge {
     constructor(plugin) {
         this.plugin = plugin;
+        this.config = plugin.config;
+        this.sites = ["cnblog", "csdn", "wordpress"];
         this.utils = null;
         this.uploadController = null;
         this.notification = null;
-        this.config = null;
-        this.showMessageBox = null;
-        this.init();
     }
 
-    init = () => {
-        this.lazyLoadUtils();
-        const configPath = this.plugin.utils.joinPath('./plugin/global/settings/uploadConfig.yaml');
-        this.config = this.utils.loadConfig(configPath);
-
-        if (this.config.upload.reconfirm) {
-            this.showMessageBox = this.plugin.config.SHOW_HINT_MODAL;
-        }
-    }
-
-    lazyLoadUtils = () => {
+    lazyLoad = () => {
         if (!this.utils) {
             const Utils = require('./utils/uploadUtils');
             this.utils = new Utils(this.plugin);
@@ -30,7 +19,8 @@ class Plugin2UploadBridge {
 
         if (!this.uploadController) {
             const UploadController = require('./controller/UploadController');
-            this.uploadController = new UploadController(this.plugin);
+            this.uploadController = new UploadController(this);
+            this.sites.forEach(site => this.uploadController.register(site));
         }
 
         if (!this.notification) {
@@ -40,8 +30,6 @@ class Plugin2UploadBridge {
     }
 
     uploadProxy = async (filePath, type = "all") => {
-        this.lazyLoadUtils();
-
         if (this.config.upload.reconfirm) {
             const message = "你确定要上传文章吗";
             const op = {type: "info", title: "上传提示", buttons: ["确定", "取消"], message};
@@ -51,6 +39,7 @@ class Plugin2UploadBridge {
             }
         }
 
+        this.lazyLoad();
         this.notification.showNotification('开始上传，请不要关闭软件', 'info');
         const startTime = new Date();
 
