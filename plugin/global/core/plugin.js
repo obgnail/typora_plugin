@@ -222,8 +222,10 @@ class utils {
     }
 
     static isUnderMountFolder = path => {
-        const mountFolder = File.getMountFolder();
-        return path && mountFolder && path.startsWith(mountFolder);
+        const {resolve} = this.Package.Path;
+        const mountFolder = resolve(File.getMountFolder());
+        const _path = resolve(path);
+        return _path && mountFolder && _path.startsWith(mountFolder);
     }
     static openFile = filepath => {
         if (this.isUnderMountFolder(filepath)) {
