@@ -740,7 +740,7 @@ class windowTabBarPlugin extends BasePlugin {
         return this.utils.existPathSync(filepath)
     }
 
-    saveTabs = filepath => {
+    saveTabs = async filepath => {
         const dataset = this.tabUtil.tabs.map((tab, idx) => ({
             idx: idx,
             path: tab.path,
@@ -749,7 +749,7 @@ class windowTabBarPlugin extends BasePlugin {
         }))
         filepath = filepath || this.getTabFile();
         const str = JSON.stringify({"save_tabs": dataset}, null, "\t");
-        this.utils.Package.Fs.writeFileSync(filepath, str);
+        await this.utils.Package.Fs.promises.writeFile(filepath, str);
     }
 
     openSaveTabs = filepath => {
