@@ -16,7 +16,7 @@ class reopenClosedFilesPlugin extends BaseCustomPlugin {
             }
         })
 
-        this.utils.addEventListener(this.utils.eventType.fileOpened, this.utils.debounce(this.save, 200))
+        this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.utils.debounce(this.save, 200))
     }
 
     save = async () => this.windowTabBarPlugin && this.windowTabBarPlugin.saveTabs(this.saveFile)

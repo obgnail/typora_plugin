@@ -19,8 +19,7 @@
 }
 
 .plugin-toc .toc-root {
-    margin-left: 1em;
-    margin-bottom: 4em;
+    margin: 0 0.5em 4em 0.5em;
 }
 
 .plugin-toc ul {
@@ -39,6 +38,8 @@
 }
 
 .plugin-toc .toc-node {
+    padding: 1px 5px;
+    border-radius: 4px;
     user-select: none;
 }
 
