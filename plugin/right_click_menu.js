@@ -70,8 +70,8 @@ class rightClickMenuPlugin extends BasePlugin {
 
     appendThird = () => {
         const content = document.querySelector("content");
-        this.config.MENUS.forEach((menu, idx) => {
-            const elements = menu.LIST.map(item => {
+        this.config.MENUS.forEach(({LIST = []}, idx) => {
+            const elements = LIST.map(item => {
                 if (item === this.dividerArg) return {};
 
                 const plugin = this.utils.getPlugin(item);
