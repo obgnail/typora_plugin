@@ -2248,14 +2248,15 @@ class process {
         if (!this.existEnablePlugin()) return;
 
         const {
-            contextMenu, dialog, styleTemplater, stateRecorder, eventHub,
+            styleTemplater, contextMenu, dialog, stateRecorder, eventHub,
             htmlTemplater, diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser,
         } = helper;
 
         // 以下高级工具必须先加载
         // 1.插件可能会在加载阶段用到dialog、contextMenu和styleTemplater
         // 2.必须先让stateRecorder恢复状态，才能执行后续流程
-        await this.loadHelpers(contextMenu, dialog, styleTemplater, stateRecorder);
+        await this.loadHelpers(styleTemplater);
+        await this.loadHelpers(contextMenu, dialog, stateRecorder);
 
         // 加载插件
         await this.loadPlugins();

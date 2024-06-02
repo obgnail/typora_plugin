@@ -803,36 +803,31 @@ class windowTabBarPlugin extends BasePlugin {
         await this.utils.Package.Fs.promises.writeFile(filepath, str);
     }
 
-    openSaveTabs = filepath => {
+    openSaveTabs = async filepath => {
         filepath = filepath || this._getTabFilePath();
-        this.utils.Package.Fs.readFile(filepath, 'utf8', (error, data) => {
-            if (error) {
-                window.alert(error);
-                return;
+        const data = await this.utils.Package.Fs.promises.readFile(filepath, 'utf8');
+        const dataset = JSON.parse(data || "{}");
+        const tabs = dataset["save_tabs"];
+        if (!tabs || tabs.length === 0) return;
+
+        let activePath;
+        const existTabs = new Map(this.tabUtil.tabs.map(tab => [tab.path, tab]));
+        tabs.forEach(tab => {
+            const existTab = existTabs.get(tab.path);
+            if (!existTab) {
+                this.tabUtil.tabs.push({path: tab.path, scrollTop: tab.scrollTop});
+            } else {
+                existTab.scrollTop = tab.scrollTop;
             }
-            const dataset = JSON.parse(data || "{}");
-            const tabs = dataset["save_tabs"];
-            if (!tabs || tabs.length === 0) return;
-
-            let activePath;
-            tabs.forEach(tab => {
-                const existTab = this.tabUtil.tabs.filter(t => t.path === tab.path)[0];
-                if (!existTab) {
-                    this.tabUtil.tabs.push({path: tab.path, scrollTop: tab.scrollTop});
-                } else {
-                    existTab.scrollTop = tab.scrollTop;
-                }
-
-                if (tab.active) {
-                    activePath = tab.path;
-                }
-            })
-            if (activePath) {
-                this.switchTabByPath(activePath);
-            } else if (this.tabUtil.tabs.length) {
-                this.switchTab(this.tabUtil.activeIdx);
+            if (tab.active) {
+                activePath = tab.path;
             }
         })
+        if (activePath) {
+            this.switchTabByPath(activePath);
+        } else if (this.tabUtil.tabs.length) {
+            this.switchTab(this.tabUtil.activeIdx);
+        }
     }
 }
 
