@@ -132,6 +132,8 @@
 
 > 虽然操作简单，还请务必对照上图谨慎操作。如果修改完 Typora 白屏了，很可能是你修改的时候疏忽了。
 
+> 如果您是 Linux 平台且安装失败，大概率是权限问题导致的。请给上述的 plugin 文件夹权限。执行命令 `chmod 777 your_typora_path/resources/plugin`。
+
 
 
 ---
