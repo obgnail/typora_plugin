@@ -810,8 +810,9 @@ class windowTabBarPlugin extends BasePlugin {
                 window.alert(error);
                 return;
             }
-            const dataset = JSON.parse(data);
+            const dataset = JSON.parse(data || "{}");
             const tabs = dataset["save_tabs"];
+            if (!tabs || tabs.length === 0) return;
 
             let activePath;
             tabs.forEach(tab => {
