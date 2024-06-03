@@ -21,7 +21,7 @@
     width: var(--menu-circle-size);
     height: var(--menu-circle-size);
     border-radius: 50%;
-    background: var(--primary-color);
+    background: var(--active-file-bg-color);
     position: relative;
     box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.4);
     z-index: 10;
@@ -30,6 +30,10 @@
 
 .plugin-pie-menu-label:hover {
     transform: scale(1.1);
+}
+
+.plugin-pie-menu.pin-menu .plugin-pie-menu-label {
+    background: var(--active-file-border-color);
 }
 
 .plugin-pie-menu-menu {

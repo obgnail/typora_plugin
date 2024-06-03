@@ -15,8 +15,6 @@ class pieMenu extends BasePlugin {
         this.entities = {
             content: document.querySelector("content"),
             menu: document.querySelector(".plugin-pie-menu"),
-            items: document.querySelector(".plugin-pie-menu-menu"),
-            // label: document.querySelector(".plugin-pie-menu-label"),
         }
     }
 
@@ -32,8 +30,10 @@ class pieMenu extends BasePlugin {
     }
 
     isMenuShown = () => this.utils.isShow(this.entities.menu)
-    hideMenu = () => this.utils.hide(this.entities.menu);
+    hideMenu = () => this.utils.hide(this.entities.menu)
     toggleMenu = () => this.utils.toggleVisible(this.entities.menu)
+    isMenuPinned = () => this.entities.menu.classList.contains("pin-menu")
+    pinMenu = () => this.entities.menu.classList.toggle("pin-menu")
 
     process = () => {
         this.entities.content.addEventListener("contextmenu", ev => {
@@ -45,12 +45,17 @@ class pieMenu extends BasePlugin {
         }, true)
 
         this.entities.content.addEventListener("click", ev => {
-            if (this.isMenuShown() && !ev.target.closest(".plugin-pie-menu")) {
+            if (this.isMenuShown() && !this.isMenuPinned() && !ev.target.closest(".plugin-pie-menu")) {
                 this.hideMenu();
             }
         })
 
-        this.entities.items.addEventListener("click", ev => {
+        this.entities.menu.addEventListener("click", ev => {
+            if (ev.target.closest(".plugin-pie-menu-label")) {
+                this.pinMenu();
+                return;
+            }
+
             const target = ev.target.closest(".plugin-pie-menu-menu-item[data-callback]");
             const callback = target && target.dataset.callback;
             if (callback) {
@@ -58,7 +63,7 @@ class pieMenu extends BasePlugin {
                 this.utils.generateDynamicCallArgs(fixedName);
                 const plugin = this.utils.getPlugin(fixedName);
                 plugin && plugin.call && this.utils.withMeta(meta => plugin.call(callArg, meta));
-                this.hideMenu();
+                !this.isMenuPinned() && this.hideMenu();
             }
         })
     }

@@ -1119,8 +1119,8 @@ NAME = "圆盘菜单"
 # 是否在右键菜单中可点击
 CLICKABLE = false
 # 按钮（强制六个）
-#  - ICON    ：图标的 css class
-#  - CALLABCK：填入 pluginName.callArg（插件的其中一个选项，如：help.donate。如果插件只有一个选项，那么无需callArg。二级插件前面要加【custom.】）
+#  - ICON    : 图标的css class
+#  - CALLABCK: 填入pluginName.callArg（插件的其中一个选项，如：help.donate。如果插件只有一个选项，那么无需callArg。二级插件前面要加【custom.】）
 BUTTONS = [
     { ICON = "fa fa-book", CALLBACK = "read_only" },
     { ICON = "fa fa-asterisk", CALLBACK = "blur" },
