@@ -1,0 +1,101 @@
+.plugin-pie-menu {
+    position: fixed;
+    width: var(--menu-circle-size);
+    height: var(--menu-circle-size);
+    color: var(--text-color);
+    z-index: 10;
+    cursor: pointer;
+    user-select: none;
+    --menu-circle-size: 60px;
+}
+
+.plugin-pie-menu:hover .plugin-pie-menu-menu {
+    background-color: var(--side-bar-bg-color);
+    width: 300px;
+    height: 300px;
+}
+
+.plugin-pie-menu-label {
+    width: var(--menu-circle-size);
+    height: var(--menu-circle-size);
+    border-radius: 50%;
+    background: var(--primary-color);
+    position: relative;
+    box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.4);
+    z-index: 10;
+}
+
+.plugin-pie-menu-menu {
+    position: absolute;
+    width: var(--menu-circle-size);
+    height: var(--menu-circle-size);
+    border-radius: 50%;
+    border: 1px solid #eaeaea;
+    box-shadow: 2px 2px 8px rgba(128, 128, 128, 0.2);
+    transition: all 0.2s;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+}
+
+.plugin-pie-menu-menu-item {
+    width: 200px;
+    height: 200px;
+    border: 1px solid #eaeaea;
+    display: flex;
+    justify-content: flex-end;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform-origin: bottom right;
+    transform: translate(-100%, -100%) rotate(45deg) skew(15deg, 15deg);
+}
+
+.plugin-pie-menu-menu-item:hover {
+    background: #87ceeb;
+}
+
+.plugin-pie-menu-menu-item:nth-child(1) {
+    transform: translate(-100%, -100%) rotate(45deg) skew(15deg, 15deg);
+}
+
+.plugin-pie-menu-menu-item:nth-child(2) {
+    transform: translate(-100%, -100%) rotate(105deg) skew(15deg, 15deg);
+}
+
+.plugin-pie-menu-menu-item:nth-child(3) {
+    transform: translate(-100%, -100%) rotate(165deg) skew(15deg, 15deg);
+}
+
+.plugin-pie-menu-menu-item:nth-child(4) {
+    transform: translate(-100%, -100%) rotate(225deg) skew(15deg, 15deg);
+}
+
+.plugin-pie-menu-menu-item:nth-child(5) {
+    transform: translate(-100%, -100%) rotate(285deg) skew(15deg, 15deg);
+}
+
+.plugin-pie-menu-menu-item:nth-child(6) {
+    transform: translate(-100%, -100%) rotate(345deg) skew(15deg, 15deg);
+}
+
+.plugin-pie-menu-menu-item:nth-child(7) {
+    transform: translate(-100%, -100%) rotate(345deg) skew(15deg, 15deg);
+}
+
+.plugin-pie-menu-menu-item:nth-child(8) {
+    transform: translate(-100%, -100%) rotate(345deg) skew(15deg, 15deg);
+}
+
+.plugin-pie-menu-menu-item-text {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 26px;
+    height: 175px;
+    font-size: 50px;
+    transform-origin: bottom right;
+    transform: skew(-15deg, -15deg) rotate(-45deg);
+}
