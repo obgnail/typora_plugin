@@ -1,9 +1,11 @@
 .plugin-pie-menu {
     position: fixed;
+    left: 50vw;
+    top: 50vh;
     width: var(--menu-circle-size);
     height: var(--menu-circle-size);
     color: var(--text-color);
-    z-index: 10;
+    z-index: 999;
     cursor: pointer;
     user-select: none;
     --menu-circle-size: 60px;
@@ -23,6 +25,11 @@
     position: relative;
     box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.4);
     z-index: 10;
+    transition: transform 0.2s;
+}
+
+.plugin-pie-menu-label:hover {
+    transform: scale(1.1);
 }
 
 .plugin-pie-menu-menu {
@@ -95,7 +102,7 @@
     align-items: center;
     width: 26px;
     height: 175px;
-    font-size: 50px;
+    font-size: 45px;
     transform-origin: bottom right;
     transform: skew(-15deg, -15deg) rotate(-45deg);
 }

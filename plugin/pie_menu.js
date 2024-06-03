@@ -14,6 +14,7 @@ class pieMenu extends BasePlugin {
     init = () => {
         this.entities = {
             menu: document.querySelector(".plugin-pie-menu"),
+            label: document.querySelector(".plugin-pie-menu-label"),
         }
     }
 
@@ -29,30 +30,28 @@ class pieMenu extends BasePlugin {
         this.utils.hide(this.entities.menu);
     }
 
-    process = () => {
-        const that = this;
-
-        function onClick(ev) {
-            ev.stopPropagation();
-            ev.preventDefault();
-            const target = ev.target.closest(".plugin-pie-menu-menu-item[data-callback]");
-            const callback = target && target.dataset.callback;
-            if (callback) {
-                const [fixedName, callArg] = callback.split(".");
-                that.utils.generateDynamicCallArgs(fixedName);
-                const plugin = that.utils.getPlugin(fixedName);
-                plugin && plugin.call && that.utils.withMeta(meta => plugin.call(callArg, meta));
-            }
-            that.hideMenu();
-            document.removeEventListener("click", onClick, true);
+    _onClick = ev => {
+        ev.stopPropagation();
+        ev.preventDefault();
+        const target = ev.target.closest(".plugin-pie-menu-menu-item[data-callback]");
+        const callback = target && target.dataset.callback;
+        if (callback) {
+            const [fixedName, callArg] = callback.split(".");
+            this.utils.generateDynamicCallArgs(fixedName);
+            const plugin = this.utils.getPlugin(fixedName);
+            plugin && plugin.call && this.utils.withMeta(meta => plugin.call(callArg, meta));
         }
+        this.hideMenu();
+        document.removeEventListener("click", this._onClick, true);
+    }
 
-        document.querySelector("#write").addEventListener("contextmenu", ev => {
+    process = () => {
+        document.querySelector("content").addEventListener("contextmenu", ev => {
             if (!this.utils.metaKeyPressed(ev)) return;
             ev.stopPropagation();
             ev.preventDefault();
             this.showMenu(ev);
-            document.addEventListener("click", onClick, true);
+            document.addEventListener("click", this._onClick, true);
         }, true)
     }
 }
