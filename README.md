@@ -63,14 +63,15 @@
 | 53   | openInTotalCommander    | 在 total commander 打开                                      |
 | 54   | bingSpeech              | 必应朗读                                                     |
 | 55   | cipher                  | 加密文件                                                     |
-| 56   | mermaid_replace         | 替换 mermaid 组件                                            |
-| 57   | help                    | 用户帮助                                                     |
-| 58   | custom                  | 开放平台，用户自定义插件（高级）                             |
-| 59   | hotkeyHub               | 快捷键注册中心（高级）                                       |
-| 60   | quickButton             | 于右下角添加功能按钮（高级）                                 |
-| 61   | json_rpc                | 外部操纵 Typora（高级）                                      |
-| 62   | old_window_tab          | 标签页管理（已废弃）                                         |
-| 63   | article_uploader        | [一键上传博客到支持的所有平台](https://github.com/obgnail/typora_plugin?tab=readme-ov-file#article_uploader上传博客文章) |
+| 56   | pie_menu                | 圆盘菜单                                                     |
+| 57   | mermaid_replace         | 替换 mermaid 组件                                            |
+| 58   | help                    | 用户帮助                                                     |
+| 59   | custom                  | 开放平台，用户自定义插件（高级）                             |
+| 60   | hotkeyHub               | 快捷键注册中心（高级）                                       |
+| 61   | quickButton             | 于右下角添加功能按钮（高级）                                 |
+| 62   | json_rpc                | 外部操纵 Typora（高级）                                      |
+| 63   | old_window_tab          | 标签页管理（已废弃）                                         |
+| 64   | article_uploader        | [一键上传博客到支持的所有平台](https://github.com/obgnail/typora_plugin?tab=readme-ov-file#article_uploader上传博客文章) |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -918,6 +919,14 @@ filter_regexp = ""
 ### cipher：加密文件
 
 使用方式：右键菜单 -> 少用插件 -> 加密文件。
+
+
+
+### pie_menu：圆盘菜单
+
+使用方式：`ctrl+鼠标右键`。
+
+> 此插件默认关闭，需手动开启。
 
 
 

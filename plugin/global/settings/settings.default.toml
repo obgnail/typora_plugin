@@ -1088,6 +1088,7 @@ LIST = [
     "preferences",
     "---",
     "file_counter",
+    "pie_menu",
     "json_rpc",
     "mermaid_replace",
     "test",
@@ -1106,6 +1107,27 @@ LIST = [
     "md_padding",
     "blur",
     "read_only",
+]
+
+
+############### pie_menu ###############
+[pie_menu]
+# 是否启用插件
+ENABLE = false
+# 在右键菜单中展示的名称
+NAME = "圆盘菜单"
+# 是否在右键菜单中可点击
+CLICKABLE = false
+# 按钮（强制六个）
+#  - ICON    : 图标的css class
+#  - CALLABCK: 填入pluginName.callArg（插件的其中一个选项，如：help.donate。如果插件只有一个选项，那么无需callArg。二级插件前面要加【custom.】）
+BUTTONS = [
+    { ICON = "fa fa-book", CALLBACK = "read_only" },
+    { ICON = "fa fa-asterisk", CALLBACK = "blur" },
+    { ICON = "fa fa-eye", CALLBACK = "custom.noImageMode" },
+    { ICON = "fa fa-adjust", CALLBACK = "custom.darkMode" },
+    { ICON = "fa fa-file-text", CALLBACK = "custom.templater" },
+    { ICON = "fa fa-align-justify", CALLBACK = "md_padding" }
 ]
 
 
