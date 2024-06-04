@@ -24,46 +24,46 @@
 | 14   | mindmap                 | 根据文档大纲一键生成思维导图                                 |
 | 15   | toolbar                 | 多功能搜索                                                   |
 | 16   | right_click_menu        | 右键菜单统一管理、调用插件                                   |
-| 17   | preferences             | 启停插件                                                     |
-| 18   | markmap                 | 提供 markmap 组件支持                                        |
-| 19   | echarts                 | 提供 echarts 组件支持                                        |
-| 20   | chart                   | 提供 chartjs 组件支持                                        |
-| 21   | abc                     | 提供 abcjs 组件支持                                          |
-| 22   | calendar                | 提供 tui.calendar 组件支持                                   |
-| 23   | marp                    | 提供 marp 组件支持                                           |
-| 24   | callouts                | 提供 callouts 支持                                           |
-| 25   | text_stylize            | 文字风格化                                                   |
-| 26   | read_only               | 只读模式                                                     |
-| 27   | blur                    | 模糊模式                                                     |
-| 28   | kanban                  | 看板                                                         |
-| 29   | timeline                | 时间线                                                       |
-| 30   | chat                    | 聊天                                                         |
-| 31   | file_counter            | 显示目录下的文件数                                           |
-| 32   | outline                 | 以表格、图片、代码块形式的大纲                               |
-| 33   | auto_number             | 章节、表格、图片、代码块等自动编号                           |
-| 34   | imageReviewer           | 图片查看器                                                   |
-| 35   | chineseSymbolAutoPairer | 中文符号自动补全                                             |
-| 36   | datatables              | 表格增强（搜索、过滤、分页、排序等）                         |
-| 37   | resize_table            | 调整表格行高列宽                                             |
-| 38   | resize_image            | 调整图片显示大小                                             |
-| 39   | export_enhance          | 导出 html 时避免图片丢失                                     |
-| 40   | go_top                  | 一键到文章顶部、底部                                         |
-| 41   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页                       |
-| 42   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能                             |
-| 43   | markdownLint            | markdown 格式规范检测                                        |
-| 44   | darkMode                | 夜间模式                                                     |
-| 45   | noImageMode             | 无图模式                                                     |
-| 46   | pluginUpdater           | 一键升级插件                                                 |
-| 47   | extractRangeToNewFile   | 提取选区文字到新文件                                         |
-| 48   | fullPathCopy            | 复制标题路径                                                 |
-| 49   | autoTrailingWhiteSpace  | 为文档添加结尾空格                                           |
-| 50   | redirectLocalRootUrl    | 重定向本地资源根目录                                         |
-| 51   | blockSideBySide         | 并列显示活动块                                               |
-| 52   | scrollBookmarker        | 书签管理器                                                   |
-| 53   | openInTotalCommander    | 在 total commander 打开                                      |
-| 54   | bingSpeech              | 必应朗读                                                     |
-| 55   | cipher                  | 加密文件                                                     |
-| 56   | pie_menu                | 圆盘菜单                                                     |
+| 17   | pie_menu                | 圆盘菜单                                                     |
+| 18   | preferences             | 启停插件                                                     |
+| 19   | markmap                 | 提供 markmap 组件支持                                        |
+| 20   | echarts                 | 提供 echarts 组件支持                                        |
+| 21   | chart                   | 提供 chartjs 组件支持                                        |
+| 22   | abc                     | 提供 abcjs 组件支持                                          |
+| 23   | calendar                | 提供 tui.calendar 组件支持                                   |
+| 24   | marp                    | 提供 marp 组件支持                                           |
+| 25   | callouts                | 提供 callouts 支持                                           |
+| 26   | text_stylize            | 文字风格化                                                   |
+| 27   | read_only               | 只读模式                                                     |
+| 28   | blur                    | 模糊模式                                                     |
+| 29   | kanban                  | 看板                                                         |
+| 30   | timeline                | 时间线                                                       |
+| 31   | chat                    | 聊天                                                         |
+| 32   | file_counter            | 显示目录下的文件数                                           |
+| 33   | outline                 | 以表格、图片、代码块形式的大纲                               |
+| 34   | auto_number             | 章节、表格、图片、代码块等自动编号                           |
+| 35   | imageReviewer           | 图片查看器                                                   |
+| 36   | chineseSymbolAutoPairer | 中文符号自动补全                                             |
+| 37   | datatables              | 表格增强（搜索、过滤、分页、排序等）                         |
+| 38   | resize_table            | 调整表格行高列宽                                             |
+| 39   | resize_image            | 调整图片显示大小                                             |
+| 40   | export_enhance          | 导出 html 时避免图片丢失                                     |
+| 41   | go_top                  | 一键到文章顶部、底部                                         |
+| 42   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页                       |
+| 43   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能                             |
+| 44   | markdownLint            | markdown 格式规范检测                                        |
+| 45   | darkMode                | 夜间模式                                                     |
+| 46   | noImageMode             | 无图模式                                                     |
+| 47   | pluginUpdater           | 一键升级插件                                                 |
+| 48   | extractRangeToNewFile   | 提取选区文字到新文件                                         |
+| 49   | fullPathCopy            | 复制标题路径                                                 |
+| 50   | autoTrailingWhiteSpace  | 为文档添加结尾空格                                           |
+| 51   | redirectLocalRootUrl    | 重定向本地资源根目录                                         |
+| 52   | blockSideBySide         | 并列显示活动块                                               |
+| 53   | scrollBookmarker        | 书签管理器                                                   |
+| 54   | openInTotalCommander    | 在 total commander 打开                                      |
+| 55   | bingSpeech              | 必应朗读                                                     |
+| 56   | cipher                  | 加密文件                                                     |
 | 57   | mermaid_replace         | 替换 mermaid 组件                                            |
 | 58   | help                    | 用户帮助                                                     |
 | 59   | custom                  | 开放平台，用户自定义插件（高级）                             |
@@ -538,6 +538,17 @@ LIST = [
 
 
 
+### pie_menu：圆盘菜单
+
+使用方式：
+
+- Ctrl+鼠标右键：弹出圆盘菜单
+- 鼠标中键：旋转圆盘菜单
+- 鼠标左键圆心：固定圆盘菜单，圆盘不再自动消失
+- 鼠标右键圆心：展开圆盘菜单，圆盘不再收缩
+
+
+
 ### preferences：启停插件
 
 使用方式：右键菜单 -> 少用插件 -> 启停插件
@@ -919,14 +930,6 @@ filter_regexp = ""
 ### cipher：加密文件
 
 使用方式：右键菜单 -> 少用插件 -> 加密文件。
-
-
-
-### pie_menu：圆盘菜单
-
-使用方式：`ctrl+鼠标右键`。
-
-> 此插件默认关闭，需手动开启。
 
 
 

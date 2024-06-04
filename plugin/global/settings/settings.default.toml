@@ -1080,6 +1080,7 @@ LIST = [
     "right_click_menu",
     "help",
     "---",
+    "pie_menu",
     "go_top",
     "text_stylize",
     "toolbar",
@@ -1088,7 +1089,6 @@ LIST = [
     "preferences",
     "---",
     "file_counter",
-    "pie_menu",
     "json_rpc",
     "mermaid_replace",
     "test",
@@ -1113,11 +1113,11 @@ LIST = [
 ############### pie_menu ###############
 [pie_menu]
 # 是否启用插件
-ENABLE = false
+ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "圆盘菜单"
 # 是否在右键菜单中可点击
-CLICKABLE = false
+CLICKABLE = true
 # 快捷键
 HOTKEY = ""
 # 修饰键。支持ctrl/alt/shift的随意组合（如"shift+alt"，"ctrl+shift"）。举例：若为ctrl，则 ctrl+鼠标右击 调出圆盘菜单

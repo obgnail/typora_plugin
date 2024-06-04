@@ -97,7 +97,7 @@ class pieMenu extends BasePlugin {
         }, {passive: false});
     }
 
-    call = () => this.toggleMenu();
+    call = () => setTimeout(this.toggleMenu);
 }
 
 module.exports = {
