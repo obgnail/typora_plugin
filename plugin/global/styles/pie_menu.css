@@ -5,108 +5,130 @@
     width: var(--menu-circle-size);
     height: var(--menu-circle-size);
     color: var(--text-color);
+    transform: rotate(var(--menu-rotate));
     z-index: 9998;
     cursor: pointer;
-    user-select: none;
-    --menu-circle-size: 50px;
-}
-
-.plugin-pie-menu:hover .plugin-pie-menu-menu {
-    background-color: var(--side-bar-bg-color);
-    width: 250px;
-    height: 250px;
-}
-
-.plugin-pie-menu-label {
-    width: var(--menu-circle-size);
-    height: var(--menu-circle-size);
-    border-radius: 50%;
-    background: var(--active-file-bg-color);
-    position: relative;
-    box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.4);
-    z-index: 10;
     transition: all 0.15s;
+    user-select: none;
+
+    --menu-rotate: 0deg;
+    --menu-circle-size: 56px;
+    --menu-inner-size: 205px;
+    --menu-outer-size: 310px;
+    --menu-icon-size: 35px;
+    --menu-item-radius: 165px;
+    --menu-background-color: #fafafa;
+    --menu-border-color: #0DCAF3;
+    --menu-hover-color: #eaeaea;
+    --menu-icon-color: #7DCEEA;
 }
 
-.plugin-pie-menu-label:hover {
-    transform: scale(1.2);
-}
-
-.plugin-pie-menu.pin-menu .plugin-pie-menu-label {
-    background: var(--active-file-border-color);
-}
-
-.plugin-pie-menu-menu {
+.plugin-pie-menu-circle {
     position: absolute;
     width: var(--menu-circle-size);
     height: var(--menu-circle-size);
+    border: 3px solid var(--menu-border-color);
+    background-color: var(--menu-background-color);
     border-radius: 50%;
-    border: 1px solid #eaeaea;
-    box-shadow: 2px 2px 8px rgba(128, 128, 128, 0.2);
-    transition: all 0.2s;
+    transition: all 0.15s;
+}
+
+.plugin-pie-menu-inner {
+    z-index: 1;
+}
+
+.plugin-pie-menu-solid {
+    z-index: 2;
+}
+
+.plugin-pie-menu-inner,
+.plugin-pie-menu-outer {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     overflow: hidden;
 }
 
-.plugin-pie-menu-menu-item {
-    width: 180px;
-    height: 180px;
-    border: 1px solid #eaeaea;
+.plugin-pie-menu.pin-menu .plugin-pie-menu-solid {
+    background: var(--menu-border-color);
+}
+
+.plugin-pie-menu.expand-menu > .plugin-pie-menu-circle {
+    border: 3px dashed var(--menu-border-color);
+}
+
+.plugin-pie-menu.expand-menu .plugin-pie-menu-inner,
+.plugin-pie-menu:hover .plugin-pie-menu-inner {
+    width: var(--menu-inner-size);
+    height: var(--menu-inner-size);
+}
+
+.plugin-pie-menu.expand-menu .plugin-pie-menu-outer,
+.plugin-pie-menu:hover .plugin-pie-menu-outer {
+    width: var(--menu-outer-size);
+    height: var(--menu-outer-size);
+}
+
+.plugin-pie-menu-item {
+    width: var(--menu-item-radius);
+    height: var(--menu-item-radius);
+    border: 1px solid var(--menu-border-color);
     display: flex;
     justify-content: flex-end;
     position: absolute;
     left: 50%;
     top: 50%;
     transform-origin: bottom right;
-    transform: translate(-100%, -100%) rotate(45deg) skew(15deg, 15deg);
+    transform: translate(-100%, -100%) rotate(var(--menu-item-rotate)) skew(30deg, 15deg);
 }
 
-.plugin-pie-menu-menu-item:hover {
-    background: ${hoverOptionBgColor};
+.plugin-pie-menu-item:hover {
+    background: var(--menu-hover-color);
 }
 
-.plugin-pie-menu-menu-item:nth-child(1) {
-    transform: translate(-100%, -100%) rotate(75deg) skew(30deg, 15deg);
+.plugin-pie-menu-item:nth-child(1) {
+    --menu-item-rotate: 75deg;
 }
 
-.plugin-pie-menu-menu-item:nth-child(2) {
-    transform: translate(-100%, -100%) rotate(120deg) skew(30deg, 15deg);
+.plugin-pie-menu-item:nth-child(2) {
+    --menu-item-rotate: 120deg;
 }
 
-.plugin-pie-menu-menu-item:nth-child(3) {
-    transform: translate(-100%, -100%) rotate(165deg) skew(30deg, 15deg);
+.plugin-pie-menu-item:nth-child(3) {
+    --menu-item-rotate: 165deg;
 }
 
-.plugin-pie-menu-menu-item:nth-child(4) {
-    transform: translate(-100%, -100%) rotate(210deg) skew(30deg, 15deg);
+.plugin-pie-menu-item:nth-child(4) {
+    --menu-item-rotate: 210deg;
 }
 
-.plugin-pie-menu-menu-item:nth-child(5) {
-    transform: translate(-100%, -100%) rotate(255deg) skew(30deg, 15deg);
+.plugin-pie-menu-item:nth-child(5) {
+    --menu-item-rotate: 255deg;
 }
 
-.plugin-pie-menu-menu-item:nth-child(6) {
-    transform: translate(-100%, -100%) rotate(300deg) skew(30deg, 15deg);
+.plugin-pie-menu-item:nth-child(6) {
+    --menu-item-rotate: 300deg;
 }
 
-.plugin-pie-menu-menu-item:nth-child(7) {
-    transform: translate(-100%, -100%) rotate(345deg) skew(30deg, 15deg);
+.plugin-pie-menu-item:nth-child(7) {
+    --menu-item-rotate: 345deg;
 }
 
-.plugin-pie-menu-menu-item:nth-child(8) {
-    transform: translate(-100%, -100%) rotate(390deg) skew(30deg, 15deg);
+.plugin-pie-menu-item:nth-child(8) {
+    --menu-item-rotate: 390deg;
 }
 
-.plugin-pie-menu-menu-item-text {
-    position: absolute;
+.plugin-pie-menu-item-text-inner,
+.plugin-pie-menu-item-text-outer {
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 165px;
-    font-size: 38px;
+    width: 0;
+    font-size: var(--menu-icon-size);
     transform-origin: bottom right;
-    transform: skew(-30deg, -15deg) rotate(-45deg);
-    opacity: 0.8;
+    transform: skew(-30deg, -15deg) rotate(-50deg);
+    color: var(--menu-icon-color);
+}
+
+.plugin-pie-menu-item-text-inner {
+    align-items: center;
 }

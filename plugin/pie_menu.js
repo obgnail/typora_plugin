@@ -1,15 +1,23 @@
 class pieMenu extends BasePlugin {
-    styleTemplate = () => ({
-        hoverOptionBgColor: this.config.HOVER_OPTION_BGCOLOR,
-    })
+    styleTemplate = () => true
 
     htmlTemplate = () => {
-        const items = this.config.BUTTONS.slice(0, 8).map(({ICON, CALLBACK}) => ({
-            class_: "plugin-pie-menu-menu-item",
-            "data-callback": CALLBACK,
-            children: [{class_: `plugin-pie-menu-menu-item-text ${ICON}`}]
-        }))
-        const children = [{class_: "plugin-pie-menu-label"}, {class_: "plugin-pie-menu-menu", children: items}];
+        const genCircle = (type, items = []) => {
+            const children = items.map(({ICON, CALLBACK}) => ({
+                class_: "plugin-pie-menu-item",
+                "data-callback": CALLBACK,
+                children: [{class_: `plugin-pie-menu-item-text-${type} ${ICON}`}]
+            }))
+            return {class_: `plugin-pie-menu-circle plugin-pie-menu-${type}`, children}
+        }
+
+        const {BUTTONS} = this.config;
+        const [_inner, _outer] = [BUTTONS.slice(0, 8), BUTTONS.slice(8, 16)];
+        const children = [genCircle("solid"), genCircle("inner", _inner)];
+        if (_outer && _outer.length) {
+            children.push(genCircle("outer", _outer));
+        }
+
         return [{class_: "plugin-pie-menu plugin-common-hidden", children}]
     }
 
@@ -38,7 +46,9 @@ class pieMenu extends BasePlugin {
     hideMenu = () => this.utils.hide(this.entities.menu)
     toggleMenu = () => this.utils.toggleVisible(this.entities.menu)
     isMenuPinned = () => this.entities.menu.classList.contains("pin-menu")
-    pinMenu = () => this.entities.menu.classList.toggle("pin-menu")
+    togglePinMenu = () => this.entities.menu.classList.toggle("pin-menu")
+    toggleExpandMenu = () => this.entities.menu.classList.toggle("expand-menu")
+    isMenuExpanded = () => this.entities.menu.classList.toggle("expand-menu")
 
     process = () => {
         this.entities.content.addEventListener("contextmenu", ev => {
@@ -55,22 +65,35 @@ class pieMenu extends BasePlugin {
             }
         })
 
-        this.entities.menu.addEventListener("click", ev => {
-            if (ev.target.closest(".plugin-pie-menu-label")) {
-                this.pinMenu();
+        this.entities.menu.addEventListener("mousedown", ev => {
+            if (ev.target.closest(".plugin-pie-menu-solid")) {
+                if (ev.button === 0) {
+                    this.togglePinMenu();
+                } else if (ev.button === 2) {
+                    this.toggleExpandMenu();
+                }
                 return;
             }
 
-            const target = ev.target.closest(".plugin-pie-menu-menu-item[data-callback]");
-            const callback = target && target.dataset.callback;
-            if (callback) {
-                const [fixedName, callArg] = callback.split(".");
-                this.utils.generateDynamicCallArgs(fixedName);
-                const plugin = this.utils.getPlugin(fixedName);
-                plugin && plugin.call && this.utils.withMeta(meta => plugin.call(callArg, meta));
-                !this.isMenuPinned() && this.hideMenu();
+            if (ev.button === 0) {
+                const target = ev.target.closest(".plugin-pie-menu-item[data-callback]");
+                const callback = target && target.dataset.callback;
+                if (callback) {
+                    const [fixedName, callArg] = callback.split(".");
+                    this.utils.generateDynamicCallArgs(fixedName);
+                    const plugin = this.utils.getPlugin(fixedName);
+                    plugin && plugin.call && this.utils.withMeta(meta => plugin.call(callArg, meta));
+                    !this.isMenuPinned() && this.hideMenu();
+                }
             }
         })
+
+        this.entities.menu.addEventListener("wheel", ev => {
+            ev.preventDefault();
+            const rotate = window.getComputedStyle(this.entities.menu).getPropertyValue('--menu-rotate');
+            const rotateValue = parseInt(rotate) + (ev.deltaY > 0 ? 45 : -45);
+            this.entities.menu.style.setProperty('--menu-rotate', `${rotateValue}deg`);
+        }, {passive: false});
     }
 
     call = () => this.toggleMenu();
