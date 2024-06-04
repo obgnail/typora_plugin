@@ -1118,7 +1118,9 @@ ENABLE = false
 NAME = "圆盘菜单"
 # 是否在右键菜单中可点击
 CLICKABLE = false
-# 按钮（强制六个）
+# hover时选项的背景颜色
+HOVER_OPTION_BGCOLOR = "#87ceeb"
+# 按钮（强制少于8个）
 #  - ICON    : 图标的css class
 #  - CALLABCK: 填入pluginName.callArg（插件的其中一个选项，如：help.donate。如果插件只有一个选项，那么无需callArg。二级插件前面要加【custom.】）
 BUTTONS = [
@@ -1127,7 +1129,9 @@ BUTTONS = [
     { ICON = "fa fa-eye", CALLBACK = "custom.noImageMode" },
     { ICON = "fa fa-adjust", CALLBACK = "custom.darkMode" },
     { ICON = "fa fa-file-text", CALLBACK = "custom.templater" },
-    { ICON = "fa fa-align-justify", CALLBACK = "md_padding" }
+    { ICON = "fa fa-align-justify", CALLBACK = "md_padding" },
+    { ICON = "fa fa-paste", CALLBACK = "custom.fullPathCopy" },
+    { ICON = "fa fa-th-list", CALLBACK = "custom.toc" }
 ]
 
 

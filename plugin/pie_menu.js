@@ -1,8 +1,10 @@
 class pieMenu extends BasePlugin {
-    styleTemplate = () => true
+    styleTemplate = () => ({
+        hoverOptionBgColor: this.config.HOVER_OPTION_BGCOLOR,
+    })
 
     htmlTemplate = () => {
-        const items = this.config.BUTTONS.map(({ICON, CALLBACK}) => ({
+        const items = this.config.BUTTONS.slice(0, 8).map(({ICON, CALLBACK}) => ({
             class_: "plugin-pie-menu-menu-item",
             "data-callback": CALLBACK,
             children: [{class_: `plugin-pie-menu-menu-item-text ${ICON}`}]
