@@ -5,7 +5,7 @@
     width: var(--menu-circle-size);
     height: var(--menu-circle-size);
     color: var(--text-color);
-    z-index: 999;
+    z-index: 9998;
     cursor: pointer;
     user-select: none;
     --menu-circle-size: 50px;
@@ -25,7 +25,7 @@
     position: relative;
     box-shadow: 2px 2px 12px rgba(128, 128, 128, 0.4);
     z-index: 10;
-    transition: all 0.2s;
+    transition: all 0.15s;
 }
 
 .plugin-pie-menu-label:hover {

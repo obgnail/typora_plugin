@@ -13,7 +13,10 @@ class pieMenu extends BasePlugin {
         return [{class_: "plugin-pie-menu plugin-common-hidden", children}]
     }
 
+    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+
     init = () => {
+        this.modifierKey = this.utils.modifierKey(this.config.MODIFIER_KEY);
         this.entities = {
             content: document.querySelector("content"),
             menu: document.querySelector(".plugin-pie-menu"),
@@ -39,7 +42,7 @@ class pieMenu extends BasePlugin {
 
     process = () => {
         this.entities.content.addEventListener("contextmenu", ev => {
-            if (this.utils.metaKeyPressed(ev)) {
+            if (this.modifierKey(ev)) {
                 ev.stopPropagation();
                 ev.preventDefault();
                 this.showMenu(ev.clientX, ev.clientY);

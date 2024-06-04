@@ -1118,6 +1118,10 @@ ENABLE = false
 NAME = "圆盘菜单"
 # 是否在右键菜单中可点击
 CLICKABLE = false
+# 快捷键
+HOTKEY = ""
+# 修饰键。支持ctrl/alt/shift的随意组合（如"shift+alt"，"ctrl+shift"）。举例：若为ctrl，则 ctrl+鼠标右击 调出圆盘菜单
+MODIFIER_KEY = "ctrl"
 # hover时选项的背景颜色
 HOVER_OPTION_BGCOLOR = "#87ceeb"
 # 按钮（强制少于8个）
