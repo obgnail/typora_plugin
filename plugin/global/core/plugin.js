@@ -1891,30 +1891,33 @@ class htmlTemplater {
         if (template instanceof Element) return template
 
         const el = document.createElement(template.ele || this.defaultElement);
-        for (const [prop, value] of Object.entries(template)) {
+        this.setAttributes(el, template);
+        return el
+    }
+
+    setAttributes(el, obj) {
+        for (const [prop, value] of Object.entries(obj)) {
             switch (prop) {
                 case "ele":
-                    break
+                    break;
                 case "class":
                 case "className":
                 case "class_":
-                    const li = Array.isArray(value) ? value : value.trim().split(" ");
-                    el.classList.add(...li);
-                    break
+                    el.classList.add(...(Array.isArray(value) ? value : value.trim().split(" ")));
+                    break;
                 case "text":
                     el.innerText = value;
-                    break
+                    break;
                 case "style":
                     Object.assign(el.style, value);
-                    break
+                    break;
                 case "children":
                     this.appendElements(el, value);
-                    break
+                    break;
                 default:
                     el.setAttribute(prop, value);
             }
         }
-        return el
     }
 
     createList = templates => templates.map(this.create).filter(Boolean)
