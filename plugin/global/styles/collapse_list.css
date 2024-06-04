@@ -7,11 +7,11 @@
 #write .ol-list:before {
     position: absolute;
     content: "";
-    top: ${this.triangelStyle.top}px;
-    left: ${this.triangelStyle.left}px;
-    border-left: ${this.triangelStyle.halfWidth}px solid transparent;
-    border-right: ${this.triangelStyle.halfWidth}px solid transparent;
-    border-top: ${this.triangelStyle.height}px solid ${this.triangelStyle.color};
+    top: ${this.triangleStyle.top}px;
+    left: ${this.triangleStyle.left}px;
+    border-left: ${this.triangleStyle.halfWidth}px solid transparent;
+    border-right: ${this.triangleStyle.halfWidth}px solid transparent;
+    border-top: ${this.triangleStyle.height}px solid ${this.triangleStyle.color};
     transition: transform .1s ease-in-out;
     cursor: pointer;
 }
