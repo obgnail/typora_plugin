@@ -4,7 +4,6 @@
     top: 50vh;
     width: var(--menu-circle-size);
     height: var(--menu-circle-size);
-    color: var(--text-color);
     transform: rotate(var(--menu-rotate));
     z-index: 9998;
     cursor: pointer;
