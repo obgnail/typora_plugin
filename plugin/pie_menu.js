@@ -90,8 +90,9 @@ class pieMenu extends BasePlugin {
 
         this.entities.menu.addEventListener("wheel", ev => {
             ev.preventDefault();
-            const rotate = window.getComputedStyle(this.entities.menu).getPropertyValue('--menu-rotate');
-            const rotateValue = parseInt(rotate) + (ev.deltaY > 0 ? 45 : -45);
+            const step = 22.5;
+            const rotate = window.getComputedStyle(this.entities.menu).getPropertyValue('--menu-rotate') || 0;
+            const rotateValue = parseFloat(rotate) + (ev.deltaY > 0 ? step : -step);
             this.entities.menu.style.setProperty('--menu-rotate', `${rotateValue}deg`);
         }, {passive: false});
     }

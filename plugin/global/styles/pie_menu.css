@@ -15,21 +15,24 @@
     --menu-circle-size: 56px;
     --menu-inner-size: 205px;
     --menu-outer-size: 310px;
-    --menu-icon-size: 35px;
+    --menu-icon-size: 34px;
     --menu-item-radius: 165px;
     --menu-background-color: #fafafa;
-    --menu-border-color: #0DCAF3;
-    --menu-hover-color: #eaeaea;
-    --menu-icon-color: #7DCEEA;
+    --menu-background-zebra-color: #f3f2ee;
+    --menu-border-color: #ccc;
+    --menu-hover-color: #ccc;
+    --menu-icon-color: #999;
 }
 
 .plugin-pie-menu-circle {
     position: absolute;
     width: var(--menu-circle-size);
     height: var(--menu-circle-size);
-    border: 3px solid var(--menu-border-color);
-    background-color: var(--menu-background-color);
+    border-width: 2px;
+    border-style: dashed;
+    border-color: var(--menu-border-color);
     border-radius: 50%;
+    background-color: var(--menu-background-color);
     transition: all 0.15s;
 }
 
@@ -54,7 +57,7 @@
 }
 
 .plugin-pie-menu.expand-menu > .plugin-pie-menu-circle {
-    border: 3px dashed var(--menu-border-color);
+    border-style: solid;
 }
 
 .plugin-pie-menu.expand-menu .plugin-pie-menu-inner,
@@ -82,8 +85,12 @@
     transform: translate(-100%, -100%) rotate(var(--menu-item-rotate)) skew(30deg, 15deg);
 }
 
-.plugin-pie-menu-item:hover {
+.plugin-pie-menu .plugin-pie-menu-item:hover {
     background: var(--menu-hover-color);
+}
+
+.plugin-pie-menu-item:nth-child(even) {
+    background-color: var(--menu-background-zebra-color);
 }
 
 .plugin-pie-menu-item:nth-child(1) {
