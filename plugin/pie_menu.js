@@ -2,28 +2,31 @@ class pieMenu extends BasePlugin {
     styleTemplate = () => true
 
     htmlTemplate = () => {
-        const genCircle = (type, items = []) => {
-            const children = items.map(({ICON, CALLBACK}) => ({
+        const genCircle = (type, items = []) => ({
+            class_: `plugin-pie-menu-circle plugin-pie-menu-${type}`,
+            children: items.map(({ICON, CALLBACK}) => ({
                 class_: "plugin-pie-menu-item",
                 "data-callback": CALLBACK,
                 children: [{class_: `plugin-pie-menu-item-text-${type} ${ICON}`}]
             }))
-            return {class_: `plugin-pie-menu-circle plugin-pie-menu-${type}`, children}
+        });
+
+        const innerItems = this.config.BUTTONS.slice(0, 8);
+        const outerItems = this.config.BUTTONS.slice(8, 16);
+
+        const circles = [genCircle("solid", []), genCircle("inner", innerItems)];
+        if (outerItems.length) {
+            circles.push(genCircle("outer", outerItems));
         }
 
-        const {BUTTONS} = this.config;
-        const [_inner, _outer] = [BUTTONS.slice(0, 8), BUTTONS.slice(8, 16)];
-        const children = [genCircle("solid"), genCircle("inner", _inner)];
-        if (_outer && _outer.length) {
-            children.push(genCircle("outer", _outer));
-        }
-
-        return [{class_: "plugin-pie-menu plugin-common-hidden", children}]
-    }
+        return [{class_: "plugin-pie-menu plugin-common-hidden", children: circles}];
+    };
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     init = () => {
+        this.pinMenuClass = "pin-menu";
+        this.expandMenuClass = "expand-menu";
         this.modifierKey = this.utils.modifierKey(this.config.MODIFIER_KEY);
         this.entities = {
             content: document.querySelector("content"),
@@ -45,10 +48,10 @@ class pieMenu extends BasePlugin {
     isMenuShown = () => this.utils.isShow(this.entities.menu)
     hideMenu = () => this.utils.hide(this.entities.menu)
     toggleMenu = () => this.utils.toggleVisible(this.entities.menu)
-    isMenuPinned = () => this.entities.menu.classList.contains("pin-menu")
-    togglePinMenu = () => this.entities.menu.classList.toggle("pin-menu")
-    toggleExpandMenu = () => this.entities.menu.classList.toggle("expand-menu")
-    isMenuExpanded = () => this.entities.menu.classList.contains("expand-menu")
+    isMenuPinned = () => this.entities.menu.classList.contains(this.pinMenuClass)
+    togglePinMenu = () => this.entities.menu.classList.toggle(this.pinMenuClass)
+    toggleExpandMenu = () => this.entities.menu.classList.toggle(this.expandMenuClass)
+    isMenuExpanded = () => this.entities.menu.classList.contains(this.expandMenuClass)
 
     process = () => {
         this.entities.content.addEventListener("contextmenu", ev => {

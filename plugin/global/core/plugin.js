@@ -1882,16 +1882,16 @@ class styleTemplater {
 // don't use unless element is simple enough or there are secure issues
 class htmlTemplater {
     constructor() {
-        this.utils = utils
-        this.defaultElement = "div"
+        this.utils = utils;
+        this.defaultElement = "div";
     }
 
-    create = element => {
-        if (!element) return;
-        if (element instanceof Element) return element
+    create = template => {
+        if (!template) return;
+        if (template instanceof Element) return template
 
-        const el = document.createElement(element.ele || this.defaultElement);
-        for (const [prop, value] of Object.entries(element)) {
+        const el = document.createElement(template.ele || this.defaultElement);
+        for (const [prop, value] of Object.entries(template)) {
             switch (prop) {
                 case "ele":
                     break
@@ -1908,9 +1908,7 @@ class htmlTemplater {
                     Object.assign(el.style, value);
                     break
                 case "children":
-                    for (const child of value) {
-                        el.appendChild(this.create(child));
-                    }
+                    this.appendElements(el, value);
                     break
                 default:
                     el.setAttribute(prop, value);
@@ -1919,12 +1917,17 @@ class htmlTemplater {
         return el
     }
 
-    createList = elements => elements.map(this.create)
-    insert = elements => this.utils.insertElement(this.createList(elements))
+    createList = templates => templates.map(this.create).filter(Boolean)
+    insert = templates => this.utils.insertElement(this.createList(templates))
     appendElements = (parent, templates) => {
-        const target = document.createDocumentFragment();
-        this.createList(templates).forEach(ele => target.appendChild(ele));
-        parent.appendChild(target);
+        if (templates.length === 1) {
+            const child = this.create(templates[0]);
+            child && parent.appendChild(child);
+        } else {
+            const fragment = document.createDocumentFragment();
+            this.createList(templates).forEach(ele => fragment.appendChild(ele));
+            parent.appendChild(fragment);
+        }
     }
 
     process = () => {
