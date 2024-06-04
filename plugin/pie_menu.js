@@ -1,26 +1,23 @@
 class pieMenu extends BasePlugin {
     styleTemplate = () => true
 
-    htmlTemplate = () => {
-        const genCircle = (type, items = []) => ({
-            class_: `plugin-pie-menu-circle plugin-pie-menu-${type}`,
-            children: items.map(({ICON, CALLBACK}) => ({
-                class_: "plugin-pie-menu-item",
-                "data-callback": CALLBACK,
-                children: [{class_: `plugin-pie-menu-item-text-${type} ${ICON}`}]
-            }))
-        });
+    html = () => {
+        const {BUTTONS} = this.config;
+        const innerItems = BUTTONS.slice(0, 8);
+        const outerItems = BUTTONS.slice(8, 16);
 
-        const innerItems = this.config.BUTTONS.slice(0, 8);
-        const outerItems = this.config.BUTTONS.slice(8, 16);
+        const genCircle = (type, items = []) => {
+            const item = items.map(({ICON, CALLBACK}) => `<div class="plugin-pie-menu-item" data-callback="${CALLBACK}"><div class="plugin-pie-menu-item-text-${type} ${ICON}"></div></div>`)
+            return `<div class="plugin-pie-menu-circle plugin-pie-menu-${type}">${item}</div>`
+        };
 
-        const circles = [genCircle("solid", []), genCircle("inner", innerItems)];
-        if (outerItems.length) {
-            circles.push(genCircle("outer", outerItems));
-        }
-
-        return [{class_: "plugin-pie-menu plugin-common-hidden", children: circles}];
-    };
+        const circles = [
+            genCircle("solid", []),
+            genCircle("inner", innerItems),
+            outerItems.length ? genCircle("outer", outerItems) : ""
+        ];
+        return `<div class="plugin-pie-menu plugin-common-hidden">${circles.join("")}</div>`
+    }
 
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 

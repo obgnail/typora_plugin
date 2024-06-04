@@ -1947,16 +1947,17 @@ class htmlTemplater {
 
 class contextMenu {
     constructor() {
+        this.className = "plugin-common-menu";
         this.utils = utils;
         this.menus = new Map();
         this.callback = null;
     }
 
     process = async () => {
-        await this.utils.registerStyleTemplate("plugin-common-menu");
-        this.utils.insertHtmlTemplate([{class_: "plugin-common-menu"}]);
+        await this.utils.registerStyleTemplate(this.className);
+        this.utils.insertElement(`<div class="${this.className}"></div>`);
 
-        this.menu = document.querySelector(".plugin-common-menu");
+        this.menu = document.querySelector("." + this.className);
         this.menu.addEventListener("click", ev => {
             if (!this.callback) return;
             const target = ev.target.closest(".menu-item");

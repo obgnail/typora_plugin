@@ -45,27 +45,57 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         toolPosition: this.config.tool_position === "top" ? "initial" : 0,
     })
 
-    htmlTemplate = () => {
-        const getTools = () => {
-            this.funcTranslate.info[0] = this.optionHint();
-            const tools = Object.entries(this.funcTranslate).map(([option, [title, icon]]) => {
-                return [option, {ele: "i", class_: icon, option, title}]
+    html = () => {
+        const {tool_function, show_message, hotkey_function} = this.config;
+
+        const setHint = () => {
+            const result = ["当前配置如下："];
+            const button = ["mousedown_function", "wheel_function"];
+            const extra = ["", "ctrl", "shift", "alt"];
+            button.forEach(btn => extra.forEach(ex => {
+                const cfg = !ex ? btn : ex + "_" + btn;
+                const config = this.config[cfg];
+                const funcList = (btn === "mousedown_function") ? ["鼠标左键", "鼠标中键", "鼠标右键"] : ["滚轮上滚", "滚轮下滚"];
+                funcList.forEach((ele, idx) => {
+                    const [info, _] = this.funcTranslate[config[idx]];
+                    if (info && info !== "无功能") {
+                        const ex_ = !ex ? "" : ex + "+";
+                        result.push(ex_ + ele + "\t" + info);
+                    }
+                })
+            }))
+            hotkey_function.forEach(item => {
+                const [key, func] = item;
+                const [info, _] = this.funcTranslate[func];
+                if (info && info !== "无功能") {
+                    const translateKey = this.keyTranslate[key.toLowerCase()] || key;
+                    result.push(translateKey + "\t" + info);
+                }
             })
-            const map = new Map(tools);
-            return this.config.tool_function.map(item => map.get(item)).filter(Boolean)
+            this.funcTranslate.info[0] = result.join("\n")
         }
 
-        const msg = this.config.show_message.map(msg => ({class_: "review-" + msg}));
-        const options = getTools();
-        const toolbar = [{class_: "review-message", children: msg}, {class_: "review-options", children: options}];
-        const children = [
-            {class_: "mask plugin-cover-content"},
-            {ele: "img", class_: "review-image"},
-            {class_: "review-item", action: "get-previous", children: [{ele: "i", class_: "fa fa-angle-left"}]},
-            {class_: "review-item", action: "get-next", children: [{ele: "i", class_: "fa fa-angle-right"}]},
-            {class_: "review-tool", children: toolbar}
-        ]
-        return [{id: "plugin-image-reviewer", class_: "plugin-cover-content plugin-common-hidden", children}]
+        setHint();
+
+        const messageList = show_message.map(m => `<div class="review-${m}"></div>`);
+        const operationList = tool_function
+            .filter(option => this.funcTranslate.hasOwnProperty(option))
+            .map(option => {
+                const [title, icon] = this.funcTranslate[option];
+                return `<i class="${icon}" option="${option}" title="${title}"></i>`
+            })
+        return `
+            <div id="plugin-image-reviewer" class="plugin-cover-content plugin-common-hidden">
+                <div class="plugin-cover-content mask"></div>
+                <img class="review-image"/>
+                <div class="review-item" action="get-previous"><i class="fa fa-angle-left"></i></div>
+                <div class="review-item" action="get-next"><i class="fa fa-angle-right"></i></div>
+                <div class="review-tool">
+                    <div class="review-message">${messageList.join("")}</div>
+                    <div class="review-options">${operationList.join("")}</div>
+                </div>
+            </div>
+        `
     }
 
     hotkey = () => [this.config.hotkey]
@@ -315,32 +345,6 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         download && this.utils.toggleVisible(download, !this.utils.isNetworkImage(src));
     }
 
-    optionHint = () => {
-        const result = ["当前配置如下："];
-        const button = ["mousedown_function", "wheel_function"];
-        const extra = ["", "ctrl", "shift", "alt"];
-        button.forEach(btn => extra.forEach(ex => {
-            const cfg = !ex ? btn : ex + "_" + btn;
-            const config = this.config[cfg];
-            const funcList = (btn === "mousedown_function") ? ["鼠标左键", "鼠标中键", "鼠标右键"] : ["滚轮上滚", "滚轮下滚"];
-            funcList.forEach((ele, idx) => {
-                const [info, _] = this.funcTranslate[config[idx]];
-                if (info && info !== "无功能") {
-                    const ex_ = !ex ? "" : ex + "+";
-                    result.push(ex_ + ele + "\t" + info);
-                }
-            })
-        }))
-        this.config.hotkey_function.forEach(item => {
-            const [key, func] = item;
-            const [info, _] = this.funcTranslate[func];
-            if (info && info !== "无功能") {
-                const translateKey = this.keyTranslate[key.toLowerCase()] || key;
-                result.push(translateKey + "\t" + info);
-            }
-        })
-        return result.join("\n")
-    }
 
     handleBlurBackground = (remove = false) => {
         if (this.config.blur_level === 0) return;

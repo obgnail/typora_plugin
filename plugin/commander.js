@@ -5,33 +5,33 @@ class commanderPlugin extends BasePlugin {
 
     styleTemplate = () => true
 
-    htmlTemplate = () => {
-        const shellChildren = [{ele: "option", value: this.SHELL.CMD_BASH, text: "cmd/bash"}];
+    html = () => {
+        const {USE_BUILTIN, BUILTIN} = this.config;
+        const {CMD_BASH, POWER_SHELL, GIT_BASH, WSL} = this.SHELL;
+        const genShell = (shell, text) => `<option value="${shell}">${text}</option>`;
+
+        const shells = [genShell(CMD_BASH, "cmd/bash")];
         if (File.isWin) {
-            shellChildren.push(
-                {ele: "option", value: this.SHELL.POWER_SHELL, text: "PowerShell"},
-                {ele: "option", value: this.SHELL.GIT_BASH, text: "Git Bash"},
-                {ele: "option", value: this.SHELL.WSL, text: "WSL"},
-            )
+            shells.push(genShell(POWER_SHELL, "PowerShell"), genShell(GIT_BASH, "Git Bash"), genShell(WSL, "WSL"))
         }
 
-        const hint = "提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录";
-        const formChildren = [
-            {ele: "input", type: "text", placeholder: "Typora commander", title: hint},
-            {ele: "i", class_: "ion-ios7-play plugin-commander-commit plugin-common-hidden", "ty-hint": "执行命令"},
-            {ele: "select", class_: "plugin-commander-shell", children: shellChildren}
-        ]
-
-        if (this.config.USE_BUILTIN) {
-            const builtin = this.config.BUILTIN.map(e => ({ele: "option", shell: e.shell, value: e.cmd, text: e.name}));
-            formChildren.push({ele: "select", class_: "plugin-commander-builtin", children: builtin});
+        let builtinSelect = "";
+        if (USE_BUILTIN) {
+            const builtin = BUILTIN.map(e => `<option shell="${e.shell}" value="${this.utils.escape(e.cmd)}">${e.name}</option>`);
+            builtinSelect = `<select class="plugin-commander-builtin">${builtin.join("")}</select>`;
         }
 
-        const children = [
-            {id: "plugin-commander-form", children: formChildren},
-            {class_: "plugin-commander-output plugin-common-hidden", children: [{ele: "pre", tabindex: "0"}]}
-        ]
-        return [{id: "plugin-commander", class_: "plugin-common-modal plugin-common-hidden", children}]
+        return `
+            <div id="plugin-commander" class="plugin-common-modal plugin-common-hidden"> 
+                <div id="plugin-commander-form">
+                    <input type="text" placeholder="Typora commander" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录"/>
+                    <i class="ion-ios7-play plugin-commander-commit plugin-common-hidden" ty-hint="执行命令"></i>
+                    <select class="plugin-commander-shell">${shells.join("")}</select>
+                    ${builtinSelect}
+                </div>
+                <div class="plugin-commander-output plugin-common-hidden"><pre tabindex="0"></pre></div>
+            </div>
+        `
     }
 
     hotkey = () => {
