@@ -1080,6 +1080,7 @@ LIST = [
     "right_click_menu",
     "help",
     "---",
+    "pie_menu",
     "go_top",
     "text_stylize",
     "toolbar",
@@ -1088,7 +1089,6 @@ LIST = [
     "preferences",
     "---",
     "file_counter",
-    "pie_menu",
     "json_rpc",
     "mermaid_replace",
     "test",
@@ -1113,12 +1113,16 @@ LIST = [
 ############### pie_menu ###############
 [pie_menu]
 # 是否启用插件
-ENABLE = false
+ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "圆盘菜单"
 # 是否在右键菜单中可点击
-CLICKABLE = false
-# 按钮（强制六个）
+CLICKABLE = true
+# 快捷键
+HOTKEY = ""
+# 修饰键。支持ctrl/alt/shift的随意组合（如"shift+alt"，"ctrl+shift"）。举例：若为ctrl，则 ctrl+鼠标右击 调出圆盘菜单
+MODIFIER_KEY = "ctrl"
+# 按钮（强制少于16个，前8个在内圈，后8个在外圈）
 #  - ICON    : 图标的css class
 #  - CALLABCK: 填入pluginName.callArg（插件的其中一个选项，如：help.donate。如果插件只有一个选项，那么无需callArg。二级插件前面要加【custom.】）
 BUTTONS = [
@@ -1127,7 +1131,17 @@ BUTTONS = [
     { ICON = "fa fa-eye", CALLBACK = "custom.noImageMode" },
     { ICON = "fa fa-adjust", CALLBACK = "custom.darkMode" },
     { ICON = "fa fa-file-text", CALLBACK = "custom.templater" },
-    { ICON = "fa fa-align-justify", CALLBACK = "md_padding" }
+    { ICON = "fa fa-align-justify", CALLBACK = "md_padding" },
+    { ICON = "fa fa-paste", CALLBACK = "custom.fullPathCopy" },
+    { ICON = "fa fa-th-list", CALLBACK = "custom.toc" },
+    { ICON = "fa fa-sitemap", CALLBACK = "markmap.toggle_toc" },
+    { ICON = "fa fa-font", CALLBACK = "text_stylize" },
+    { ICON = "fa fa-search", CALLBACK = "search_multi" },
+    { ICON = "fa fa-image", CALLBACK = "custom.imageReviewer" },
+    { ICON = "fa fa-filter", CALLBACK = "custom.resourceOperation" },
+    { ICON = "fa fa-wrench", CALLBACK = "preferences" },
+    { ICON = "fa fa-calendar", CALLBACK = "outline" },
+    { ICON = "fa fa-code", CALLBACK = "commander" }
 ]
 
 
