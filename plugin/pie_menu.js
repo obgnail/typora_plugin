@@ -48,7 +48,7 @@ class pieMenu extends BasePlugin {
     isMenuPinned = () => this.entities.menu.classList.contains("pin-menu")
     togglePinMenu = () => this.entities.menu.classList.toggle("pin-menu")
     toggleExpandMenu = () => this.entities.menu.classList.toggle("expand-menu")
-    isMenuExpanded = () => this.entities.menu.classList.toggle("expand-menu")
+    isMenuExpanded = () => this.entities.menu.classList.contains("expand-menu")
 
     process = () => {
         this.entities.content.addEventListener("contextmenu", ev => {
