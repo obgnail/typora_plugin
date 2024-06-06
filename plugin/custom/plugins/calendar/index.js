@@ -6,20 +6,23 @@ class calendarPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        this.utils.registerThirdPartyDiagramParser(
-            this.config.LANGUAGE,
-            false,
-            this.config.INTERACTIVE_MODE,
-            ".plugin-calender-content",
-            '<div class="plugin-calender-content"></div>',
-            {
+        this.utils.registerThirdPartyDiagramParser({
+            lang: this.config.LANGUAGE,
+            mappingLang: "javascript",
+            destroyWhenUpdate: false,
+            interactiveMode: this.config.INTERACTIVE_MODE,
+            checkSelector: ".plugin-calender-content",
+            wrapElement: '<div class="plugin-calender-content"></div>',
+            extraCss: {
                 defaultHeight: this.config.DEFAULT_FENCE_HEIGHT,
                 backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR
             },
-            this.lazyLoad,
-            this.create,
-            this.destroy,
-        );
+            lazyLoadFunc: this.lazyLoad,
+            createFunc: this.create,
+            destroyFunc: this.destroy,
+            beforeExport: null,
+            extraStyleGetter: null,
+        })
     }
 
     create = ($wrap, content) => {

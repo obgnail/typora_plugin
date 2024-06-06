@@ -74,36 +74,43 @@ class utils {
 
     // 动态注册、动态注销新的代码块图表语法
     //   1. lang(string): language
-    //   2. destroyWhenUpdate(boolean): 更新前是否清空preview里的html
-    //   3. async renderFunc(cid, content, $pre) => null: 渲染函数，根据内容渲染所需的图像
+    //   2. mappingLang(string): 映射到哪个语言
+    //   3. destroyWhenUpdate(boolean): 更新前是否清空preview里的html
+    //   4. async renderFunc(cid, content, $pre) => null: 渲染函数，根据内容渲染所需的图像
     //        1. cid: 当前代码块的cid
     //        2. content: 代码块的内容
     //        3. $pre: 代码块的jquery element
-    //   4. cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
-    //   5. destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
-    //   6. extraStyleGetter() => string: 用于导出时，新增css
-    //   7. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
-    static registerDiagramParser = (lang, destroyWhenUpdate, renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true
-    ) => helper.diagramParser.register(lang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode)
+    //   5. cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
+    //   6. destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
+    //   7. extraStyleGetter() => string: 用于导出时，新增css
+    //   8. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
+    static registerDiagramParser = ({lang, mappingLang, destroyWhenUpdate, renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true}
+    ) => helper.diagramParser.register({
+        lang, mappingLang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode
+    })
     static unregisterDiagramParser = lang => helper.diagramParser.unregister(lang);
     // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
     static throwParseError = (errorLine, reason) => helper.diagramParser.throwParseError(errorLine, reason)
 
     // 动态注册、动态注销第三方代码块图表语法(派生自DiagramParser)
-    // f**k，js不支持interface，只能将接口函数作为参数传入，整整11个参数，一坨狗屎
+    // f**k，js不支持interface，只能将接口函数作为参数传入，整整12个参数，一坨狗屎
     //   1. lang(string): language
-    //   2. destroyWhenUpdate(boolean): 更新前是否清空preview里的html
-    //   3. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
-    //   4. checkSelector(string): 检测当前fence下是否含有目标标签
-    //   5. wrapElement(string): 如果不含目标标签，需要创建
-    //   6. extraCss({defaultHeight, backgroundColor}): 控制fence的高度和背景颜色
-    //   7. async lazyLoadFunc() => null: 加载第三方资源
-    //   8. createFunc($Element, string) => Object: 传入目标标签和fence的内容，生成图形实例
-    //   9. destroyFunc(Object) => null: 传入图形实例，destroy图形实例
-    //  10. beforeExport(element, instance) => null: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
-    //  11. extraStyleGetter() => string: 用于导出时，新增css
-    static registerThirdPartyDiagramParser = (lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter,
-    ) => helper.thirdPartyDiagramParser.register(lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter);
+    //   2. mappingLang(string): 映射到哪个语言
+    //   3. destroyWhenUpdate(boolean): 更新前是否清空preview里的html
+    //   4. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
+    //   5. checkSelector(string): 检测当前fence下是否含有目标标签
+    //   6. wrapElement(string): 如果不含目标标签，需要创建
+    //   7. extraCss({defaultHeight, backgroundColor}): 控制fence的高度和背景颜色
+    //   8. async lazyLoadFunc() => null: 加载第三方资源
+    //   9. createFunc($Element, string) => Object: 传入目标标签和fence的内容，生成图形实例
+    //  10. destroyFunc(Object) => null: 传入图形实例，destroy图形实例
+    //  11. beforeExport(element, instance) => null: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
+    //  12. extraStyleGetter() => string: 用于导出时，新增css
+    static registerThirdPartyDiagramParser = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter},
+    ) => helper.thirdPartyDiagramParser.register({
+        lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement,
+        extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter
+    });
     static unregisterThirdPartyDiagramParser = lang => helper.thirdPartyDiagramParser.unregister(lang);
 
     // 动态注册导出时的额外操作
@@ -1072,17 +1079,20 @@ class utils {
 class diagramParser {
     constructor() {
         this.utils = utils;
-        this.parsers = new Map(); // {lang: parser}
+        this.diagramModeFlag = "custom_diagram";  // can be any value, just a flag
+        this.parsers = new Map();     // {lang: parser}
+        this.langMapping = new Map(); // {lang: mappingLang}
     }
 
-    register = (
-        lang, destroyWhenUpdate = false,
-        renderFunc, cancelFunc = null, destroyAllFunc = null,
-        extraStyleGetter = null, interactiveMode = true,
-    ) => {
+    register = ({lang, mappingLang, destroyWhenUpdate = false, renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true}) => {
         lang = lang.toLowerCase();
-        const obj = {lang, destroyWhenUpdate, renderFunc, cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode}
-        this.parsers.set(lang, obj);
+        mappingLang = mappingLang ? mappingLang.toLowerCase() : lang;
+        this.langMapping[lang] = {name: mappingLang, mappingType: this.diagramModeFlag};
+        const parser = {
+            lang, mappingLang, destroyWhenUpdate, renderFunc,
+            cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode
+        }
+        this.parsers.set(lang, parser);
         console.debug(`register diagram parser: [ ${lang} ]`);
     }
 
@@ -1097,13 +1107,14 @@ class diagramParser {
     process = async () => {
         if (this.parsers.size === 0) return;
         await this.registerStyleTemplate();
-        this.onAddCodeBlock();       // 添加代码块时
-        this.onTryAddLangUndo();     // 修改语言时
-        this.onUpdateDiagram();      // 更新时
-        this.onExportToHTML();       // 导出时
-        this.onFocus();              // 聚焦时
-        this.onChangeFile();         // 切换文件时
-        this.onCheckIsDiagramType(); // 判断是否为Diagram时
+        this.registerLangModeMapping();  // A语言映射为B语言
+        this.onAddCodeBlock();           // 添加代码块时
+        this.onTryAddLangUndo();         // 修改语言时
+        this.onUpdateDiagram();          // 更新时
+        this.onExportToHTML();           // 导出时
+        this.onFocus();                  // 聚焦时
+        this.onChangeFile();             // 切换文件时
+        this.onCheckIsDiagramType();     // 判断是否为Diagram时
     }
 
     isDiagramType = lang => File.editor.diagrams.constructor.isDiagramType(lang)
@@ -1194,6 +1205,15 @@ class diagramParser {
                 await this.noticeRollback(cid);
             }
         }
+    }
+
+    registerLangModeMapping = () => {
+        const after = mode => {
+            if (!mode) return mode;
+            const name = typeof mode === "object" ? mode.name : mode;
+            return this.langMapping[name] || mode
+        }
+        this.utils.decorate(() => window, "getCodeMirrorMode", null, after, true)
     }
 
     onAddCodeBlock = () => this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, this.renderDiagram)
@@ -1329,7 +1349,9 @@ class diagramParser {
 
             let lang = args[0];
             if (!lang) return false;
+
             const type = typeof lang;
+            if (type === "object" && lang.mappingType === this.diagramModeFlag) return true;
             if (type === "object" && lang.name) {
                 lang = lang.name;
             }
@@ -1349,13 +1371,19 @@ class thirdPartyDiagramParser {
     }
 
     // extraCss: {defaultHeight, backgroundColor}
-    register = (
-        lang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss,
-        lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter,
-    ) => {
+    register = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter}) => {
         const p = {checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {}};
         this.parsers.set(lang.toLowerCase(), p);
-        this.utils.registerDiagramParser(lang, destroyWhenUpdate, this.render, this.cancel, this.destroyAll, extraStyleGetter, interactiveMode)
+        this.utils.registerDiagramParser({
+            lang,
+            mappingLang,
+            destroyWhenUpdate,
+            renderFunc: this.render,
+            cancelFunc: this.cancel,
+            destroyAllFunc: this.destroyAll,
+            extraStyleGetter: extraStyleGetter,
+            interactiveMode: interactiveMode
+        })
     }
 
     unregister = lang => {
@@ -1450,20 +1478,20 @@ class eventHub {
         this.eventMap = {}  // { eventType: [listenerFunc] }
     }
 
-    addEventListener = (eventType, listener) => {
-        if (!this.eventMap[eventType]) {
-            this.eventMap[eventType] = [];
+    addEventListener = (type, listener) => {
+        if (!this.eventMap[type]) {
+            this.eventMap[type] = [];
         }
-        this.eventMap[eventType].push(listener);
+        this.eventMap[type].push(listener);
     }
-    removeEventListener = (eventType, listener) => {
-        if (this.eventMap[eventType]) {
-            this.eventMap[eventType] = this.eventMap[eventType].filter(lis => lis !== listener);
+    removeEventListener = (type, listener) => {
+        if (this.eventMap[type]) {
+            this.eventMap[type] = this.eventMap[type].filter(lis => lis !== listener);
         }
     }
-    publishEvent = (eventType, payload) => {
-        if (this.eventMap[eventType]) {
-            for (const listener of this.eventMap[eventType]) {
+    publishEvent = (type, payload) => {
+        if (this.eventMap[type]) {
+            for (const listener of this.eventMap[type]) {
                 listener.call(this, payload);
             }
         }

@@ -104,15 +104,16 @@ class fenceMarkmap {
     }
 
     process = () => {
-        this.utils.registerDiagramParser(
-            this.config.LANGUAGE,
-            false,
-            this.render,
-            this.cancel,
-            this.destroyAll,
-            null,
-            this.config.INTERACTIVE_MODE
-        );
+        this.utils.registerDiagramParser({
+            lang: this.config.LANGUAGE,
+            mappingLang: "markdown",
+            destroyWhenUpdate: false,
+            renderFunc: this.render,
+            cancelFunc: this.cancel,
+            destroyAllFunc: this.destroyAll,
+            extraStyleGetter: null,
+            interactiveMode: this.config.INTERACTIVE_MODE
+        });
     }
 
     call = async type => this.callback(type)

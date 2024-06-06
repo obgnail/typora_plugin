@@ -4,15 +4,16 @@ class chatPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        this.utils.registerDiagramParser(
-            this.config.LANGUAGE,
-            false,
-            this.render,
-            null,
-            null,
-            this.getStyleContent,
-            this.config.INTERACTIVE_MODE
-        );
+        this.utils.registerDiagramParser({
+            lang: this.config.LANGUAGE,
+            mappingLang: "markdown",
+            destroyWhenUpdate: false,
+            renderFunc: this.render,
+            cancelFunc: null,
+            destroyAllFunc: null,
+            extraStyleGetter: this.getStyleContent,
+            interactiveMode: this.config.INTERACTIVE_MODE
+        });
     }
 
     render = (cid, content, $pre) => {
