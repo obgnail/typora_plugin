@@ -8,7 +8,7 @@ class pieMenu extends BasePlugin {
 
         const genCircle = (type, items = []) => {
             const item = items.map(({ICON, CALLBACK}) => `<div class="plugin-pie-menu-item" data-callback="${CALLBACK}"><div class="plugin-pie-menu-item-text-${type} ${ICON}"></div></div>`)
-            return `<div class="plugin-pie-menu-circle plugin-pie-menu-${type}">${item}</div>`
+            return `<div class="plugin-pie-menu-circle plugin-pie-menu-${type}">${item.join("")}</div>`
         };
 
         const circles = [

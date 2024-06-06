@@ -52,7 +52,7 @@
 }
 
 .plugin-pie-menu.pin-menu .plugin-pie-menu-solid {
-    background: var(--menu-border-color);
+    background-color: var(--menu-border-color);
 }
 
 .plugin-pie-menu.expand-menu > .plugin-pie-menu-circle {
@@ -85,7 +85,7 @@
 }
 
 .plugin-pie-menu .plugin-pie-menu-item:hover {
-    background: var(--menu-hover-color);
+    background-color: var(--menu-hover-color);
 }
 
 .plugin-pie-menu-item:nth-child(even) {
