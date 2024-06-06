@@ -1107,6 +1107,7 @@ class diagramParser {
     process = async () => {
         if (this.parsers.size === 0) return;
         await this.registerStyleTemplate();
+        this.registerLangTooltip();      // 语言提示
         this.registerLangModeMapping();  // A语言映射为B语言
         this.onAddCodeBlock();           // 添加代码块时
         this.onTryAddLangUndo();         // 修改语言时
@@ -1206,6 +1207,8 @@ class diagramParser {
             }
         }
     }
+
+    registerLangTooltip = () => File.editor.fences.ALL.push(...this.parsers.keys())
 
     registerLangModeMapping = () => {
         const after = mode => {
