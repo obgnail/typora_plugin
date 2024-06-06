@@ -78,12 +78,12 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
 
     _getRange = () => {
         const {node, bookmark} = this.utils.getRangy();
-        if (!node) return;
+        if (!node) return {};
 
         File.editor.undo.endSnap();
         File.editor.undo.addSnap(node.cid, this.undoSnapType.NONE);
         const ele = File.editor.findElemById(node.cid);
-        if (ele.hasClass("md-fences")) return;
+        if (ele.hasClass("md-fences")) return {};
 
         const rawText = ele.rawText();
         return {rawText, bookmark};
