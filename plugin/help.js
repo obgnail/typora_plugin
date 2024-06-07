@@ -72,8 +72,8 @@ class helpPlugin extends BasePlugin {
         const id = this.utils.randomString();
         const wechat = "1fd416ab37f-10469ad7641-1743ea6e25d-1752cd0db5d-1745636e65d-1048e79a641-1fd5555557f-4afbea00-5d90d43d89-1d84bc65502-15d6320850b-1393fb1d8e0-1c49ee7e1e9-191474eed40-1be02668487-63b7d72a63-7d3d48d14f-32cb78f3e3-74f7db4903-944e5b1b1-1fff8e700cb-1e0f6ddf909-13e321614cb-12bff684ad0-1044872c8e7-14968b230ee-17f0e35d5c7-d162229db2-18d685fd8eb-3345e73442-15c2297b583-d2f9675a70-134618b73f8-6c415d1b-1fcf595c75b-105db2a9d10-175164a05fc-174d8579e15-175e81d4e1d-1046843dc22-1fc4d2e5b53"
         const ali = "1fdbe28ec17f-104a6fb0da41-17473386125d-175578895b5d-1747f7f2cf5d-10454d1c5041-1fd55555557f-313125700-5d331f6da89-195ee8d0aab-47257da13b3-193b1bf337b9-184f3702ba7b-2bd3064802d-137ea00e8185-1fb50bc9b8d0-b63cf66f4d9-92d4573b0af-10507780f21f-138016677612-ffa9df819fa-1f1a49197113-1d5fb3515957-b1d2b172b18-3f197fe51fa-1a92a24a0805-18d667eddaf5-b31b47f5460-4c94f6ed8a1-1f18d52c81c9-5d600726855-1e869ff3144b-dcdf7207d69-189c2e252ae1-152946bf165-f08b8a37962-1351b7ff31f8-7191f511b-1fc8735ba157-1052fd12d310-1759edf675f1-174fbd658b99-17545eed9b99-104ee27a93ba-1fcc49aa96bb"
-        const QRcode = [{color: "#1AAD19", hex: wechat}, {color: "#027AFF", hex: ali}];
-        const canvasWidth = (qrSize + qrMargin) * QRcode.length - qrMargin;
+        const qrcodeList = [{color: "#1AAD19", hex: wechat}, {color: "#027AFF", hex: ali}];
+        const canvasWidth = (qrSize + qrMargin) * qrcodeList.length - qrMargin;
 
         const _adaptDPR = (canvas, ctx) => {
             const dpr = window.devicePixelRatio;
@@ -88,23 +88,25 @@ class helpPlugin extends BasePlugin {
         const onload = () => {
             const canvas = document.getElementById(id);
             if (!canvas) return;
+
             const ctx = canvas.getContext("2d");
             _adaptDPR(canvas, ctx);
             ctx.lineWidth = 0;
             ctx.strokeStyle = "transparent";
-            for (const {hex, color} of QRcode) {
+            for (const {hex, color} of qrcodeList) {
                 ctx.fillStyle = backgroundColor;
                 ctx.fillRect(0, 0, qrSize, qrSize);
                 ctx.fillStyle = color;
-                const cubeList = hex.split("-");
-                const cubeCount = cubeList.length;
-                const cubeSize = qrSize / cubeCount;
-                const bin = cubeList.map(e => parseInt(e, 16).toString(2).padStart(cubeCount, "0")).join("");
-                const table = bin.match(new RegExp(`(.{1,${cubeCount}})`, "g"));
+                const squareList = hex.split("-");
+                const squareCount = squareList.length;
+                const squareSize = qrSize / squareCount;
+                const sideLength = squareSize + 0.3;  // 除法和canvas的像素放大问题导致精度丢失，小加0.3使之更好看
+                const bin = squareList.map(e => parseInt(e, 16).toString(2).padStart(squareCount, "0")).join("");
+                const table = bin.match(new RegExp(`(.{1,${squareCount}})`, "g"));
                 for (let colIdx = 0; colIdx < table.length; colIdx++) {
                     for (let rowIdx = 0; rowIdx < table[0].length; rowIdx++) {
                         if (table[colIdx][rowIdx] === "1") {
-                            ctx.fillRect(rowIdx * cubeSize, colIdx * cubeSize, cubeSize + 0.3, cubeSize + 0.3);
+                            ctx.fillRect(rowIdx * squareSize, colIdx * squareSize, sideLength, sideLength);
                         }
                     }
                 }

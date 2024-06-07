@@ -158,42 +158,44 @@ class searchMultiKeywordPlugin extends BasePlugin {
         let index = 0;
         const rootPath = File.getMountFolder();
         const showResult = this.utils.once(() => this.utils.show(this.entities.result));
+        const {INCLUDE_FILE_PATH, CASE_SENSITIVE, RELATIVE_PATH, SHOW_MTIME} = this.config;
 
         return (filePath, stats, buffer) => {
             let data = buffer.toString();
-            if (this.config.INCLUDE_FILE_PATH) {
-                data = data + filePath;
+            if (INCLUDE_FILE_PATH) {
+                data += "\n" + filePath;
             }
-            if (!this.config.CASE_SENSITIVE) {
+            if (!CASE_SENSITIVE) {
                 data = data.toLowerCase();
             }
-            for (const keyword of keyArr) {
-                if (data.indexOf(keyword) === -1) return false;
-            }
+
+            if (!keyArr.every(keyword => data.includes(keyword))) return false;
 
             index++;
-            const parseUrl = this.utils.Package.Path.parse(filePath);
-            const dirPath = !this.config.RELATIVE_PATH ? parseUrl.dir : parseUrl.dir.replace(rootPath, ".");
+            const {dir, base} = this.utils.Package.Path.parse(filePath);
+            const dirPath = RELATIVE_PATH ? dir.replace(rootPath, ".") : dir;
 
             const item = document.createElement("div");
             item.classList.add("plugin-search-multi-item");
             item.setAttribute("data-is-dir", "false");
             item.setAttribute("data-path", filePath);
             item.setAttribute("data-index", index + "");
-            if (this.config.SHOW_MTIME) {
+            if (SHOW_MTIME) {
                 item.setAttribute("ty-hint", stats.mtime.toLocaleString('chinese', {hour12: false}));
             }
+
             const title = document.createElement("div");
             title.classList.add("plugin-search-multi-item-title");
-            title.innerText = parseUrl.base;
+            title.textContent = base;
+
             const path = document.createElement("div");
             path.classList.add("plugin-search-multi-item-path");
-            path.innerText = dirPath + this.utils.separator;
-            item.appendChild(title);
-            item.appendChild(path);
-            this.entities.resultList.appendChild(item);
+            path.textContent = dirPath + this.utils.separator;
 
+            item.append(title, path);
+            this.entities.resultList.appendChild(item);
             this.entities.resultTitle.textContent = `匹配的文件：${index}`;
+
             showResult();
         }
     }

@@ -6,21 +6,23 @@ class chartPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        this.utils.registerThirdPartyDiagramParser(
-            this.config.LANGUAGE,
-            false,
-            this.config.INTERACTIVE_MODE,
-            ".plugin-chart-content",
-            '<div class="plugin-chart-content"><canvas></canvas></div>',
-            {
+        this.utils.registerThirdPartyDiagramParser({
+            lang: this.config.LANGUAGE,
+            mappingLang: "javascript",
+            destroyWhenUpdate: false,
+            interactiveMode: this.config.INTERACTIVE_MODE,
+            checkSelector: ".plugin-chart-content",
+            wrapElement: '<div class="plugin-chart-content"><canvas></canvas></div>',
+            extraCss: {
                 defaultHeight: this.config.DEFAULT_FENCE_HEIGHT,
                 backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR
             },
-            this.lazyLoad,
-            this.create,
-            this.destroy,
-            this.beforeExport,
-        );
+            lazyLoadFunc: this.lazyLoad,
+            createFunc: this.create,
+            destroyFunc: this.destroy,
+            beforeExport: this.beforeExport,
+            extraStyleGetter: null,
+        })
     }
 
     create = ($wrap, content) => {

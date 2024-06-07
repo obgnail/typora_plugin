@@ -6,17 +6,20 @@ class marpPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE);
 
     process = () => {
-        this.utils.registerThirdPartyDiagramParser(
-            this.config.LANGUAGE,
-            false,
-            this.config.INTERACTIVE_MODE,
-            ".plugin-marp-content",
-            '<div class="plugin-marp-content"></div>',
-            {},
-            this.lazyLoad,
-            this.create,
-            this.destroy,
-        );
+        this.utils.registerThirdPartyDiagramParser({
+            lang: this.config.LANGUAGE,
+            mappingLang: "markdown",
+            destroyWhenUpdate: false,
+            interactiveMode: this.config.INTERACTIVE_MODE,
+            checkSelector: ".plugin-marp-content",
+            wrapElement: '<div class="plugin-marp-content"></div>',
+            extraCss: {},
+            lazyLoadFunc: this.lazyLoad,
+            createFunc: this.create,
+            destroyFunc: this.destroy,
+            beforeExport: null,
+            extraStyleGetter: null,
+        })
     }
 
     create = ($wrap, content) => {

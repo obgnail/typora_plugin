@@ -4,7 +4,6 @@
     top: 50vh;
     width: var(--menu-circle-size);
     height: var(--menu-circle-size);
-    color: var(--text-color);
     transform: rotate(var(--menu-rotate));
     z-index: 9998;
     cursor: pointer;
@@ -53,7 +52,7 @@
 }
 
 .plugin-pie-menu.pin-menu .plugin-pie-menu-solid {
-    background: var(--menu-border-color);
+    background-color: var(--menu-border-color);
 }
 
 .plugin-pie-menu.expand-menu > .plugin-pie-menu-circle {
@@ -86,7 +85,7 @@
 }
 
 .plugin-pie-menu .plugin-pie-menu-item:hover {
-    background: var(--menu-hover-color);
+    background-color: var(--menu-hover-color);
 }
 
 .plugin-pie-menu-item:nth-child(even) {

@@ -6,7 +6,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
         this.isHidden = false;
     }
 
-    callback = anchorNode => this.toggle(document.querySelector("#plugin-quick-button").style.visibility !== "hidden")
+    callback = anchorNode => this.toggle()
 
     process = () => {
         this.utils.addEventListener(this.utils.eventType.everythingReady, async () => {
@@ -14,22 +14,22 @@ class quickButtonPlugin extends BaseCustomPlugin {
 
             if (this.buttons.size === 0) return;
 
-            const [maxX, maxY] = this.getMax();
+            const {maxX, maxY} = this.getMax();
             await this.utils.registerStyleTemplate("quickButton", {rowCount: maxX + 1, colCount: maxY + 1, this: this});
             this.utils.insertHtmlTemplate(this.genHTML(maxX, maxY));
 
-            const buttonGroup = document.querySelector("#plugin-quick-button");
-            buttonGroup.addEventListener("mousedown", ev => {
+            const group = document.querySelector("#plugin-quick-button");
+            group.addEventListener("mousedown", ev => {
                 const target = ev.target.closest(".action-item");
                 if (!target) return;
                 ev.stopPropagation();
                 ev.preventDefault();
                 if (ev.button === 2 && this.config.support_right_click) {
-                    const buttons = Array.from(buttonGroup.children);
+                    const buttons = Array.from(group.children);
                     this.isHidden = !buttons.some(ele => ele.classList.contains("plu-hidden"));
                     buttons.forEach(ele => (ele !== target) && ele.classList.toggle("plu-hidden"));
                 } else if (ev.button === 0) {
-                    this.flashScaleButton(target);
+                    this.flashScale(target);
                     const action = target.getAttribute("action");
                     const button = this.buttons.get(action);
                     if (action && button) {
@@ -37,6 +37,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
                     }
                 }
             })
+
             this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.toggle);
         })
     }
@@ -83,7 +84,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
             for (let y = 0; y <= maxY; y++) {
                 const button = mapCoordToBtn.get(`${maxX - x}-${maxY - y}`);
                 const ele = !button
-                    ? {class_: "action-item unused"}
+                    ? {class_: "action-item plu-unused"}
                     : {
                         class_: "action-item",
                         action: button.action,
@@ -100,25 +101,17 @@ class quickButtonPlugin extends BaseCustomPlugin {
     }
 
     getMax = () => {
-        let maxX = -1;
-        let maxY = -1;
-        for (const {coordinate: [x, y]} of this.buttons.values()) {
-            maxX = Math.max(maxX, x);
-            maxY = Math.max(maxY, y);
-        }
-        return [maxX, maxY]
+        const coords = Array.from(this.buttons.values(), e => e.coordinate);
+        const maxX = Math.max(-1, ...coords.map(e => e[0]));
+        const maxY = Math.max(-1, ...coords.map(e => e[1]));
+        return {maxX, maxY};
     }
 
-    toggle = hide => {
-        const buttonGroup = document.querySelector("#plugin-quick-button");
-        if (buttonGroup) {
-            buttonGroup.style.visibility = hide ? "hidden" : "initial";
-        }
-    }
+    toggle = force => document.querySelector("#plugin-quick-button").classList.toggle("plu-hidden", force);
 
-    flashScaleButton = (button, scale = 0.95, timeout = 80) => {
-        button.style.transform = `scale(${scale})`;
-        setTimeout(() => button.style.removeProperty("transform"), timeout);
+    flashScale = (ele, scale = 0.95, timeout = 80) => {
+        ele.style.transform = `scale(${scale})`;
+        setTimeout(() => ele.style.removeProperty("transform"), timeout);
     }
 }
 

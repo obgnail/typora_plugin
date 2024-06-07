@@ -8,8 +8,9 @@ class collapseListPlugin extends BasePlugin {
         this.className = "plugin-collapsed-list";
         this.selector = '#write [mdtype="list"]';
         const color = this.config.TRIANGLE_COLOR || "var(--meta-content-color)";
-        this.triangelStyle = {left: -18, top: 0, height: 9, halfWidth: 7, color: color};
+        this.triangleStyle = {left: -18, top: 0, height: 9, halfWidth: 7, color: color};
     }
+
     styleTemplate = () => true
 
     process = () => {
@@ -18,27 +19,31 @@ class collapseListPlugin extends BasePlugin {
             const parent = ev.target.closest(this.selector);
             if (!parent) return;
 
-            const {left, top} = parent.getBoundingClientRect();
-            const l = left + this.triangelStyle.left;
-            const t = top + this.triangelStyle.top;
-            const height = this.triangelStyle.height;
-            const width = 2 * this.triangelStyle.halfWidth;
             const {clientX, clientY} = ev;
-            if (l - width <= clientX && clientX <= l + width && t - height <= clientY && clientY <= t + height) {
+            const {left: PLeft, top: PTop} = parent.getBoundingClientRect();
+            const {left: TLeft, top: TTop, height: THeight, halfWidth: THalfWidth} = this.triangleStyle;
+
+            const left = PLeft + TLeft;
+            const top = PTop + TTop;
+            const height = THeight;
+            const width = 2 * THalfWidth;
+            if (
+                left - width <= clientX
+                && clientX <= left + width
+                && top - height <= clientY
+                && clientY <= top + height
+            ) {
                 ev.stopPropagation();
                 ev.preventDefault();
-                if (this.checkCollapse(parent)) {
-                    this.cancelCollapse(parent);
-                } else {
-                    this.setCollapse(parent);
-                }
+                this.toggleCollapse(parent);
             }
         })
     }
 
     checkCollapse = ele => ele.classList.contains(this.className);
-    setCollapse = ele => ele.classList.add("plugin-collapsed-list");
+    setCollapse = ele => ele.classList.add(this.className);
     cancelCollapse = ele => ele.classList.remove(this.className);
+    toggleCollapse = ele => ele.classList.toggle(this.className);
 
     recordCollapseState = (needChange = true) => {
         const name = "recordCollapseList";
@@ -77,4 +82,3 @@ class collapseListPlugin extends BasePlugin {
 module.exports = {
     plugin: collapseListPlugin
 };
-

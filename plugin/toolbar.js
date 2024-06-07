@@ -9,12 +9,15 @@ class toolbarPlugin extends BasePlugin {
 
     styleTemplate = () => ({topPercent: parseInt(this.config.TOOLBAR_TOP_PERCENT) + "%"})
 
-    htmlTemplate = () => {
+    html = () => {
         const tools = Array.from(this.toolController.tools.values(), t => t.name() + "：" + t.translate());
         const title = "支持：\n" + tools.join("\n");
-        const input = [{ele: "input", placeholder: "ops explorer", title}];
-        const children = [{id: "plugin-toolbar-input", children: input}, {class_: "plugin-toolbar-result"}];
-        return [{id: "plugin-toolbar", class_: "plugin-common-modal plugin-common-hidden", children}]
+        return `
+            <div id="plugin-toolbar" class="plugin-common-modal plugin-common-hidden">
+                <div id="plugin-toolbar-input"><input placeholder="ops explorer" title="${title}"></div>
+                <div class="plugin-toolbar-result"></div>
+            </div>
+        `
     }
 
     init = () => {
