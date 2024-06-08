@@ -11,9 +11,9 @@ class abcPlugin extends BaseCustomPlugin {
             interactiveMode: this.config.INTERACTIVE_MODE,
             checkSelector: ".plugin-notation-content",
             wrapElement: '<div class="plugin-notation-content"></div>',
-            extraCss: {
-                defaultHeight: this.config.DEFAULT_FENCE_HEIGHT,
-                backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR
+            css: {
+                height: this.config.DEFAULT_FENCE_HEIGHT,
+                "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR
             },
             lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,

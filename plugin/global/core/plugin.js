@@ -100,16 +100,16 @@ class utils {
     //   4. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
     //   5. checkSelector(string): 检测当前fence下是否含有目标标签
     //   6. wrapElement(string): 如果不含目标标签，需要创建
-    //   7. extraCss({defaultHeight, backgroundColor}): 控制fence的高度和背景颜色
+    //   7. css({height, "background-color", ...other}): 控制fence的样式，要求必须要有高度和背景颜色。这里的obj最终会被执行为$div.css(obj)
     //   8. async lazyLoadFunc() => null: 加载第三方资源
     //   9. createFunc($Element, string) => Object: 传入目标标签和fence的内容，生成图形实例
     //  10. destroyFunc(Object) => null: 传入图形实例，destroy图形实例
     //  11. beforeExport(element, instance) => null: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
     //  12. extraStyleGetter() => string: 用于导出时，新增css
-    static registerThirdPartyDiagramParser = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter},
+    static registerThirdPartyDiagramParser = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter},
     ) => helper.thirdPartyDiagramParser.register({
         lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement,
-        extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter
+        css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter
     });
     static unregisterThirdPartyDiagramParser = lang => helper.thirdPartyDiagramParser.unregister(lang);
 
@@ -1104,6 +1104,17 @@ class diagramParser {
         }
     }
 
+    registerLangTooltip = () => File.editor.fences.ALL.push(...this.parsers.keys())
+
+    registerLangModeMapping = () => {
+        const after = mode => {
+            if (!mode) return mode;
+            const name = typeof mode === "object" ? mode.name : mode;
+            return this.langMapping[name] || mode
+        }
+        this.utils.decorate(() => window, "getCodeMirrorMode", null, after, true)
+    }
+
     process = async () => {
         if (this.parsers.size === 0) return;
         await this.registerStyleTemplate();
@@ -1170,8 +1181,7 @@ class diagramParser {
 
         $pre.addClass("md-fences-advanced");
         if ($pre.find(".md-diagram-panel").length === 0) {
-            $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div>
-                    <div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
+            $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div><div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
         }
 
         const render = this.parsers.get(lang).renderFunc;
@@ -1206,17 +1216,6 @@ class diagramParser {
                 await this.noticeRollback(cid);
             }
         }
-    }
-
-    registerLangTooltip = () => File.editor.fences.ALL.push(...this.parsers.keys())
-
-    registerLangModeMapping = () => {
-        const after = mode => {
-            if (!mode) return mode;
-            const name = typeof mode === "object" ? mode.name : mode;
-            return this.langMapping[name] || mode
-        }
-        this.utils.decorate(() => window, "getCodeMirrorMode", null, after, true)
     }
 
     onAddCodeBlock = () => this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, this.renderDiagram)
@@ -1371,22 +1370,19 @@ class thirdPartyDiagramParser {
     constructor() {
         this.utils = utils;
         this.parsers = new Map();
+        this.defaultHeight = "230px";
+        this.defaultBackgroundColor = "#F8F8F8";
     }
 
-    // extraCss: {defaultHeight, backgroundColor}
-    register = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter}) => {
-        const p = {checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {}};
+    register = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter}) => {
+        const p = {checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {}};
         this.parsers.set(lang.toLowerCase(), p);
-        this.utils.registerDiagramParser({
-            lang,
-            mappingLang,
-            destroyWhenUpdate,
-            renderFunc: this.render,
-            cancelFunc: this.cancel,
-            destroyAllFunc: this.destroyAll,
-            extraStyleGetter: extraStyleGetter,
-            interactiveMode: interactiveMode
-        })
+        const dp = {
+            lang, mappingLang, destroyWhenUpdate,
+            renderFunc: this.render, cancelFunc: this.cancel, destroyAllFunc: this.destroyAll,
+            extraStyleGetter: extraStyleGetter, interactiveMode: interactiveMode
+        }
+        this.utils.registerDiagramParser(dp);
     }
 
     unregister = lang => {
@@ -1425,10 +1421,12 @@ class thirdPartyDiagramParser {
 
     setStyle = (parser, $pre, $wrap, content) => {
         const {height, width} = this.utils.getFenceUserSize(content);
+        const {height: defaultHeight, "background-color": backgroundColor, ...other} = parser.css || {};
         $wrap.css({
-            "width": width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-            "height": height || parser.extraCss["defaultHeight"] || "",
-            "background-color": parser.extraCss["backgroundColor"] || "",
+            width: width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
+            height: height || defaultHeight || this.defaultHeight,
+            "background-color": backgroundColor || this.defaultBackgroundColor,
+            other,
         });
     }
 
