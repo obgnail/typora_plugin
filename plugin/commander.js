@@ -206,9 +206,10 @@ class commanderPlugin extends BasePlugin {
 
     // 为什么不使用shell options? 答：不能支持wsl
     // 为什么不使用env options?   答：为了兼容。cmd使用变量的方式为%VAR%，bash为$VAR。而且命令可能会跨越多层shell
-    exec = (cmd, shell, resolve, reject, callback, hint, options = {}) => {
+    exec = (cmd, shell, resolve, reject, callback, hint, options) => {
         resolve = resolve || console.log;
         reject = reject || console.error;
+        options = options || {};
         const cb = (err, stdout, stderr) => callback && callback(err, stdout, stderr);
 
         const prefix = File.isWin ? `chcp 65001 |` : "";
@@ -228,9 +229,10 @@ class commanderPlugin extends BasePlugin {
         this.utils.Package.ChildProcess.exec(command_, option_, callback_);
     }
 
-    spawn = (cmd, shell, resolve, reject, callback, hint, options = {}) => {
+    spawn = (cmd, shell, resolve, reject, callback, hint, options) => {
         resolve = resolve || console.log;
         reject = reject || console.error;
+        options = options || {};
         const cb = code => callback && callback(code);
 
         const prefix = File.isWin ? "chcp 65001 |" : "";

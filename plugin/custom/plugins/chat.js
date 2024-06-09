@@ -28,12 +28,12 @@ class chatPlugin extends BaseCustomPlugin {
     }
 
     genChatContent = (content, options, yamlLineCount) => {
-        options = this.utils.merge(this.config.DEFAULT_OPIONS, options || {});
-        const {useStrict, showNickname, showAvatar, notAllowShowTime, allowMarkdown, avatars = {}} = options;
+        options = Object.assign(this.config.DEFAULT_OPIONS, options || {});
+        const {useStrict, showNickname, showAvatar, notAllowShowTime, allowMarkdown, avatars} = options;
 
         const avatarPaths = {};
         const dir = this.utils.getCurrentDirPath();
-        Object.entries(avatars).map(([name, src]) => {
+        Object.entries(avatars || {}).map(([name, src]) => {
             if (!this.utils.isNetworkImage(src) && !this.utils.isSpecialImage(src)) {
                 src = this.utils.Package.Path.resolve(dir, src);
             }
