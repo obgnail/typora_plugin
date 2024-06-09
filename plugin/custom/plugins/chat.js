@@ -28,8 +28,8 @@ class chatPlugin extends BaseCustomPlugin {
     }
 
     genChatContent = (content, options, yamlLineCount) => {
-        options = Object.assign(this.config.DEFAULT_OPIONS, options || {});
-        const {useStrict, showNickname, showAvatar, notAllowShowTime, allowMarkdown, avatars} = options;
+        options = Object.assign({}, this.config.DEFAULT_OPIONS, options || {});
+        const {useStrict, showNickname, showAvatar, notAllowShowTime, allowMarkdown, avatars, senderNickname, timeNickname} = options;
 
         const avatarPaths = {};
         const dir = this.utils.getCurrentDirPath();
@@ -62,13 +62,10 @@ class chatPlugin extends BaseCustomPlugin {
             }
 
             const lowerName = name.toLowerCase();
-            const isTime = lowerName === "time";
-            const isSender = lowerName === "me";
-            if (isTime) {
-                if (notAllowShowTime) {
-                    this.utils.throwParseError(idx, "notAllowShowTime 为 true 时不允许添加时间");
-                    return;
-                }
+            const isTime = lowerName === timeNickname;
+            const isSender = lowerName === senderNickname;
+
+            if (isTime && !notAllowShowTime) {
                 return `<div class="plugin-chat-time">${text}</div>`;
             }
 

@@ -80,18 +80,6 @@ class markmapPlugin extends BasePlugin {
             await this.utils.insertScript("./plugin/markmap/resource/webfontloader.js");
         }
     }
-
-    getFrontMatter = content => {
-        const {yamlObject} = this.utils.splitFrontMatter(content);
-        if (!yamlObject) return;
-        const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap");
-        const options = attr ? yamlObject[attr] : yamlObject;
-        const defaultOptions = {
-            colorFreezeLevel: 0, duration: 500, initialExpandLevel: -1, zoom: true, pan: true,
-            height: "300px", backgroundColor: "#f8f8f8",
-        };
-        return Object.assign(defaultOptions, options);
-    }
 }
 
 class fenceMarkmap {
@@ -127,6 +115,16 @@ class fenceMarkmap {
 
     wrapFenceCode = content => "```" + this.config.LANGUAGE + "\n" + this.defaultFrontMatter + content + "\n" + "```"
     getToc = () => this.wrapFenceCode(this.controller.getToc() || "# empty")
+
+    getFrontMatter = content => {
+        const defaultOptions = this.config.DEFAULT_FENCE_OPTIONS || {};
+        const {yamlObject} = this.utils.splitFrontMatter(content);
+        if (!yamlObject) return defaultOptions;
+
+        const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap");
+        const options = attr ? yamlObject[attr] : yamlObject;
+        return Object.assign({}, defaultOptions, options);
+    }
 
     render = async (cid, content, $pre) => {
         if (!this.controller.transformer || !this.controller.Markmap) {
@@ -167,8 +165,6 @@ class fenceMarkmap {
         $pre.find(".md-diagram-panel-preview").html(svg);
         return svg
     }
-
-    getFrontMatter = content => this.controller.getFrontMatter(content) || this.config.DEFAULT_FENCE_OPTIONS || {};
 
     create = async (cid, svg, md, options) => {
         const {root} = this.controller.transformer.transform(md);
@@ -945,7 +941,9 @@ class tocMarkmap {
         _walk(_reset, newRoot);
     }
 
-    draw = async (md, fit = true, options = null) => {
+    getColorOption = () => this.colorSchemeGenerator ? this.colorSchemeGenerator() : this.controller.Markmap.defaultOptions.color;
+
+    draw = async (md, fit = true, options) => {
         this.utils.show(this.entities.modal);
         if (this.markmap) {
             await this.update(md, fit);
@@ -957,17 +955,15 @@ class tocMarkmap {
     }
 
     create = async (md, options) => {
+        options = Object.assign({}, this.config.DEFAULT_TOC_OPTIONS, options, {color: this.getColorOption()});
         const {root} = this.controller.transformer.transform(md);
-        options = options || this.config.DEFAULT_TOC_OPTIONS || {};
-        options.color = this.colorSchemeGenerator ? this.colorSchemeGenerator() : this.controller.Markmap.defaultOptions.color;
         this.markmap = this.controller.Markmap.create(this.entities.svg, options, root);
     }
 
     update = async (md, fit = true) => {
         const {root} = this.controller.transformer.transform(md);
         this.setFold(root);
-        const color = this.colorSchemeGenerator ? this.colorSchemeGenerator() : this.controller.Markmap.defaultOptions.color;
-        this.markmap.setOptions({color});
+        this.markmap.setOptions({color: this.getColorOption()});
         this.markmap.setData(root);
         if (fit) {
             await this.markmap.fit();

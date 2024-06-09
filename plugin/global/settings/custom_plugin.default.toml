@@ -86,7 +86,7 @@ LANGUAGE = "chat"
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 默认的选项
-DEFAULT_OPIONS = { useStrict = true, showNickname = true, showAvatar = true, notAllowShowTime = false, allowMarkdown = true }
+DEFAULT_OPIONS = { useStrict = true, showNickname = true, showAvatar = true, notAllowShowTime = false, allowMarkdown = true, senderNickname = "me", timeNickname = "time" }
 # 自动插入的模板
 TEMPLATE = """```chat
 ---
@@ -101,6 +101,10 @@ showAvatar: true
 notAllowShowTime: false
 # 允许使用markdown语法
 allowMarkdown: true
+# 右侧发送者的用户名
+senderNickname: me
+# 时间的用户名
+timeNickname: time
 # 用户头像
 avatars:
   me: https://avatars.githubusercontent.com/u/48992887?s=96&v=4
@@ -111,7 +115,7 @@ time: 昨天 18:21
 
 testUser1: 使用冒号分割用户名和消息
 
-me: 右边的用户名强制为 me，时间强制为 time
+me: 右侧的用户名为 me，时间为 time。
 
 me: 支持部分 markdown 语法。比如 **加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，\\n![图片](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
 
