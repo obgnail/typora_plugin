@@ -126,13 +126,15 @@ class slashCommandsPlugin extends BasePlugin {
         if (!cmd) return ""
 
         const {anchor} = File.editor.autoComplete.state;
+        const normalizeAnchor = () => anchor.containerNode.normalize();
+
         switch (cmd.type) {
             case "snippet":
             case "gen-snp":
-                setTimeout(() => anchor.containerNode.normalize(), 100);
+                setTimeout(normalizeAnchor, 100);
                 return cmd.type === "snippet" ? cmd.callback : this._evalFunction(cmd.callback);
             case "command":
-                anchor.containerNode.normalize();
+                normalizeAnchor();
                 const range = File.editor.selection.getRangy();
                 const textNode = anchor.containerNode.firstChild;
                 range.setStart(textNode, anchor.start);
