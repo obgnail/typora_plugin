@@ -767,19 +767,16 @@ class utils {
     }
 
     static getFenceUserSize = content => {
-        let height = "";
-        let width = "";
+        const regexp = /^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/;
         const lines = content.split("\n").map(line => line.trim()).filter(line => line.startsWith("//"));
         for (let line of lines) {
-            line = line.replace(/\s/g, "").replace(`'`, `"`).replace("`", '"');
-            const result = line.match(/^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/);
-            if (result && result.groups) {
-                height = height || result.groups["height"];
-                width = width || result.groups["width"];
+            line = line.replace(/\s/g, "").replace(/['`]/g, `"`);
+            const {groups} = line.match(regexp) || {};
+            if (groups) {
+                return {height: groups.height, width: groups.width};
             }
-            if (height && width) break
         }
-        return {height, width}
+        return {height: "", width: ""};
     }
 
     static renderAllLangFence = lang => {
@@ -837,24 +834,18 @@ class utils {
     }
 
     static markdownInlineStyleToHTML = (content, dir) => {
-        dir = dir || this.getCurrentDirPath();
-        // code
+        const imageReplacement = (_, alt, src) => {
+            if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
+                src = this.Package.Path.resolve(dir || this.getCurrentDirPath(), src);
+            }
+            return `<img alt="${alt}" src="${src}">`
+        }
         return content.replace(/(?<!\\)`(.+?)(?<!\\)`/gs, `<code>$1</code>`)
-            // strong
             .replace(/(?<!\\)[*_]{2}(.+?)(?<!\\)[*_]{2}/gs, `<strong>$1</strong>`)
-            // em
             .replace(/(?<![*\\])\*(?![\\*])(.+?)(?<![*\\])\*(?![\\*])/gs, `<em>$1</em>`)
-            // del
             .replace(/(?<!\\)~~(.+?)(?<!\\)~~/gs, "<del>$1</del>")
-            // link
             .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
-            // img
-            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => {
-                if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
-                    src = this.Package.Path.resolve(dir, src);
-                }
-                return `<img alt="${alt}" src="${src}">`
-            })
+            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, imageReplacement)
     }
 
     static scroll = ($target, height = -1, moveCursor = false, showHiddenElement = true) => {
@@ -950,11 +941,9 @@ class utils {
                 let deltaX = e.clientX - startX;
                 let deltaY = e.clientY - startY;
                 if (onMouseMove) {
-                    const result = onMouseMove(deltaX, deltaY);
-                    if (result) {
-                        deltaX = result.deltaX;
-                        deltaY = result.deltaY;
-                    }
+                    const {deltaX: newDeltaX, deltaY: newDeltaY} = onMouseMove(deltaX, deltaY) || {};
+                    deltaX = newDeltaX || deltaX;
+                    deltaY = newDeltaY || deltaY;
                 }
                 if (resizeWidth) {
                     resizeElement.style.width = startWidth + deltaX + "px";
