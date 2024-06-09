@@ -29,7 +29,7 @@ class chatPlugin extends BaseCustomPlugin {
 
     genChatContent = (content, options, yamlLineCount) => {
         options = Object.assign({}, this.config.DEFAULT_OPIONS, options);
-        const {useStrict, showNickname, showAvatar, notAllowShowTime, allowMarkdown, avatars, senderNickname, timeNickname} = options;
+        const {useStrict, showNickname, showAvatar, notAllowShowTime, allowMarkdown, avatars, senderNickname = "me", timeNickname = "time"} = options;
 
         const avatarPaths = {};
         const dir = this.utils.getCurrentDirPath();
