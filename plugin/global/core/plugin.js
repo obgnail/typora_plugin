@@ -1153,30 +1153,41 @@ class diagramParser {
         }
     }
 
-    cleanErrorMsg = ($pre, lang) => {
+    cleanErrorMsg = $pre => {
         $pre.find(".md-diagram-panel-header").html("");
         $pre.find(".md-diagram-panel-error").html("");
-        this.parsers.get(lang).destroyWhenUpdate && $pre.find(".md-diagram-panel-preview").html("");
+    }
+
+    destroyIfNeed = (parser, cid, lang, $pre) => {
+        if (!parser.destroyWhenUpdate) return;
+        parser.cancelFunc && parser.cancelFunc(cid, lang);
+        $pre.find(".md-diagram-panel-preview").html("");
+    }
+
+    appendPanelIfNeed = $pre => {
+        if ($pre.find(".md-diagram-panel").length === 0) {
+            $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div><div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
+        }
     }
 
     renderCustomDiagram = async (cid, lang, $pre) => {
-        this.cleanErrorMsg($pre, lang);
+        const parser = this.parsers.get(lang);
+
+        this.cleanErrorMsg($pre);
+        this.destroyIfNeed(parser, cid, lang, $pre);
 
         const content = this.utils.getFenceContent($pre[0], cid);
         if (!content) {
-            await this.whenCantDraw(cid, lang, $pre); // empty content
+            await this.whenCantDraw(cid, lang, $pre);
             return;
         }
 
         $pre.addClass("md-fences-advanced");
-        if ($pre.find(".md-diagram-panel").length === 0) {
-            $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div><div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
-        }
+        this.appendPanelIfNeed($pre);
 
-        const render = this.parsers.get(lang).renderFunc;
-        if (!render) return;
+        if (!parser.renderFunc) return;
         try {
-            await render(cid, content, $pre, lang);
+            await parser.renderFunc(cid, content, $pre, lang);
         } catch (error) {
             await this.whenCantDraw(cid, lang, $pre, content, error);
         }
