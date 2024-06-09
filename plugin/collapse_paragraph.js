@@ -13,6 +13,7 @@ class collapseParagraphPlugin extends BasePlugin {
     }
 
     process = () => {
+        this.disableExpandSimpleBlock();  // 选项【显示当前块元素的Markdown源码】会影响本插件，将其禁用
         this.recordCollapseState(false);
         const write = document.getElementById("write");
         write.addEventListener("click", ev => {
@@ -49,6 +50,8 @@ class collapseParagraphPlugin extends BasePlugin {
             }
         })
     }
+
+    disableExpandSimpleBlock = () => File.option.expandSimpleBlock = false;
 
     getTargetHeader = (target, forceLoose = false) => {
         if (this.config.STRICT_MODE && !forceLoose) {
