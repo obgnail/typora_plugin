@@ -154,7 +154,7 @@ class commanderPlugin extends BasePlugin {
 
     getFile = shell => this.convertPath(this.utils.getFilePath(), shell);
     getFolder = shell => this.convertPath(this.utils.getCurrentDirPath(), shell);
-    getMountFolder = shell => this.convertPath(File.getMountFolder(), shell);
+    getMountFolder = shell => this.convertPath(this.utils.getMountFolder(), shell);
 
     replaceArgs = (cmd, shell) => {
         const file = this.getFile(shell);

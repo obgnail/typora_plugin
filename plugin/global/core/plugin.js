@@ -609,7 +609,7 @@ class utils {
 
     static newFilePath = async filename => {
         filename = filename || File.getFileName() || (new Date()).getTime().toString() + ".md";
-        const dirPath = this.getFilePath() ? this.getCurrentDirPath() : File.getMountFolder();
+        const dirPath = this.getFilePath() ? this.getCurrentDirPath() : this.getMountFolder();
         if (!dirPath) {
             alert("空白页不可使用此功能");
             return;
@@ -638,6 +638,7 @@ class utils {
     static getDirname = () => global.dirname || global.__dirname
     static getHomeDir = () => this.Package.OS.homedir() || File.option.userPath
     static getFilePath = () => File.filePath || (File.bundle && File.bundle.filePath) || ""
+    static getMountFolder = () => File.getMountFolder() || ""
     static getCurrentDirPath = () => this.Package.Path.dirname(this.getFilePath())
     static joinPath = (...paths) => this.Package.Path.join(this.getDirname(), ...paths)
     static requireFilePath = (...paths) => reqnode(this.joinPath(...paths))
@@ -691,7 +692,7 @@ class utils {
     static exitTypora = () => JSBridge.invoke("window.close");
     static restartTypora = () => {
         this.callPluginFunction("reopenClosedFiles", "save");
-        this.openFolder(File.getMountFolder());
+        this.openFolder(this.getMountFolder());
         setTimeout(this.exitTypora, 50);
     }
     static showInFinder = filepath => JSBridge.showInFinder(filepath || this.getFilePath())

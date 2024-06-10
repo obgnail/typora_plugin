@@ -15,6 +15,10 @@
 *    2. 递归处理新的内容
 */
 class resourceOperation extends BaseCustomPlugin {
+    selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
+
+    hint = isDisable => isDisable && "空白页不可使用此插件"
+
     styleTemplate = () => true
 
     hotkey = () => [this.config.hotkey]
@@ -104,7 +108,7 @@ class resourceOperation extends BaseCustomPlugin {
     callback = async anchorNode => await this.utils.withProcessingHint(this.run)
 
     run = async () => {
-        await this.traverseDir(File.getMountFolder(), this.collect);
+        await this.traverseDir(this.utils.getMountFolder(), this.collect);
         this.showModal();
     }
 
@@ -206,7 +210,7 @@ class resourceOperation extends BaseCustomPlugin {
     }
 
     getOutput = () => ({
-        search_folder: File.getMountFolder(),
+        search_folder: this.utils.getMountFolder(),
         resource_suffix: Array.from(this.resourceSuffix),
         markdown_suffix: Array.from(this.fileSuffix),
         ignore_img_html_element: this.config.ignore_img_html_element,
@@ -256,7 +260,7 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
 `;
         let dir = getCurrentDirPath();
         if (dir === ".") {
-            dir = File.getMountFolder();
+            dir = this.utils.getMountFolder();
         }
         const filepath = join(dir, "resource-report.md");
         writeFileSync(filepath, fileContent, "utf8");

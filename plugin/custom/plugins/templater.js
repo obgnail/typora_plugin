@@ -1,4 +1,7 @@
 class templater extends BaseCustomPlugin {
+    selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
+    hint = isDisable => isDisable && "空白页不可使用此插件"
+
     hotkey = () => [this.config.hotkey]
 
     callback = anchorNode => {
@@ -92,7 +95,7 @@ class templateHelper {
     range = () => this.rangeText;
     title = () => this._title;
     folder = () => this.utils.getCurrentDirPath();
-    mountFolder = () => File.getMountFolder();
+    mountFolder = () => this.utils.getMountFolder();
     filepath = () => this.utils.Package.Path.join(this.folder(), this.title());
     weekday = () => "周" + '日一二三四五六'.charAt(this.today.getDay());
     datetime = () => this.today.toLocaleString('chinese', {hour12: false});
