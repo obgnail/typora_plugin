@@ -156,7 +156,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
     appendItemFunc = keyArr => {
         let index = 0;
-        const rootPath = File.getMountFolder();
+        const rootPath = this.utils.getMountFolder();
         const showResult = this.utils.once(() => this.utils.show(this.entities.result));
         const {INCLUDE_FILE_PATH, CASE_SENSITIVE, RELATIVE_PATH, SHOW_MTIME} = this.config;
 
@@ -223,7 +223,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         this.utils.show(this.entities.info);
         this.entities.resultList.innerHTML = "";
 
-        rootPath = rootPath || File.getMountFolder();
+        rootPath = rootPath || this.utils.getMountFolder();
         const allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
         const allowTraverse = path => !this.config.IGNORE_FOLDERS.includes(path)
         const appendItem = this.appendItemFunc(keyArr);

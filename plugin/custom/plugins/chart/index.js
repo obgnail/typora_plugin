@@ -13,9 +13,9 @@ class chartPlugin extends BaseCustomPlugin {
             interactiveMode: this.config.INTERACTIVE_MODE,
             checkSelector: ".plugin-chart-content",
             wrapElement: '<div class="plugin-chart-content"><canvas></canvas></div>',
-            extraCss: {
-                defaultHeight: this.config.DEFAULT_FENCE_HEIGHT,
-                backgroundColor: this.config.DEFAULT_FENCE_BACKGROUND_COLOR
+            css: {
+                height: this.config.DEFAULT_FENCE_HEIGHT,
+                "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR
             },
             lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,

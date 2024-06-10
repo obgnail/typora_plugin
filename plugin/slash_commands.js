@@ -126,13 +126,35 @@ class slashCommandsPlugin extends BasePlugin {
         if (!cmd) return ""
 
         const {anchor} = File.editor.autoComplete.state;
+        const normalizeAnchor = () => anchor.containerNode.normalize();
+        const flash = () => {
+            const node = this.utils.findActiveNode();
+            if (!node) return;
+
+            const parsedNode = File.editor.simpleParse(node, true);
+            if (!parsedNode) return;
+
+            parsedNode[0].undo[0] = File.editor.lastCursor;
+            setTimeout(() => {
+                parsedNode[0].redo.push(File.editor.selection.buildUndo());
+                File.editor.findElemById(parsedNode[2]).replaceWith(parsedNode[1]);
+                File.editor.undo.register(parsedNode[0], true);
+                File.editor.quickRefresh();
+                File.editor.selection.scrollAdjust();
+                File.editor.undo.exeCommand(parsedNode[0].redo.last());
+            }, 50);
+        }
+
         switch (cmd.type) {
             case "snippet":
             case "gen-snp":
-                setTimeout(() => anchor.containerNode.normalize(), 100);
+                setTimeout(() => {
+                    normalizeAnchor();
+                    flash();
+                }, 100);
                 return cmd.type === "snippet" ? cmd.callback : this._evalFunction(cmd.callback);
             case "command":
-                anchor.containerNode.normalize();
+                normalizeAnchor();
                 const range = File.editor.selection.getRangy();
                 const textNode = anchor.containerNode.firstChild;
                 range.setStart(textNode, anchor.start);

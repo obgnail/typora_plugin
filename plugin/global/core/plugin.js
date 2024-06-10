@@ -100,16 +100,16 @@ class utils {
     //   4. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
     //   5. checkSelector(string): 检测当前fence下是否含有目标标签
     //   6. wrapElement(string): 如果不含目标标签，需要创建
-    //   7. extraCss({defaultHeight, backgroundColor}): 控制fence的高度和背景颜色
+    //   7. css({height, "background-color", ...other}): 控制fence的样式，要求必须要有高度和背景颜色。这里的obj最终会被执行为$div.css(obj)
     //   8. async lazyLoadFunc() => null: 加载第三方资源
     //   9. createFunc($Element, string) => Object: 传入目标标签和fence的内容，生成图形实例
     //  10. destroyFunc(Object) => null: 传入图形实例，destroy图形实例
     //  11. beforeExport(element, instance) => null: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
     //  12. extraStyleGetter() => string: 用于导出时，新增css
-    static registerThirdPartyDiagramParser = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter},
+    static registerThirdPartyDiagramParser = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter},
     ) => helper.thirdPartyDiagramParser.register({
         lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement,
-        extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter
+        css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter
     });
     static unregisterThirdPartyDiagramParser = lang => helper.thirdPartyDiagramParser.unregister(lang);
 
@@ -608,13 +608,17 @@ class utils {
     static removeStyle = id => this.removeElementByID(id)
 
     static newFilePath = async filename => {
-        let filepath = !filename ? this.getFilePath() : this.Package.Path.join(this.getCurrentDirPath(), filename);
+        filename = filename || File.getFileName() || (new Date()).getTime().toString() + ".md";
+        const dirPath = this.getFilePath() ? this.getCurrentDirPath() : this.getMountFolder();
+        if (!dirPath) {
+            alert("空白页不可使用此功能");
+            return;
+        }
+        let filepath = this.Package.Path.resolve(dirPath, filename);
         const exist = await this.existPath(filepath);
         if (exist) {
             const ext = this.Package.Path.extname(filepath);
-            filepath = ext
-                ? filepath.replace(new RegExp(`${ext}$`), `-copy${ext}`)
-                : filepath + "-copy.md"
+            filepath = ext ? filepath.replace(new RegExp(`${ext}$`), `-copy${ext}`) : filepath + "-copy.md";
         }
         return filepath
     }
@@ -634,6 +638,7 @@ class utils {
     static getDirname = () => global.dirname || global.__dirname
     static getHomeDir = () => this.Package.OS.homedir() || File.option.userPath
     static getFilePath = () => File.filePath || (File.bundle && File.bundle.filePath) || ""
+    static getMountFolder = () => File.getMountFolder() || ""
     static getCurrentDirPath = () => this.Package.Path.dirname(this.getFilePath())
     static joinPath = (...paths) => this.Package.Path.join(this.getDirname(), ...paths)
     static requireFilePath = (...paths) => reqnode(this.joinPath(...paths))
@@ -687,7 +692,7 @@ class utils {
     static exitTypora = () => JSBridge.invoke("window.close");
     static restartTypora = () => {
         this.callPluginFunction("reopenClosedFiles", "save");
-        this.openFolder(File.getMountFolder());
+        this.openFolder(this.getMountFolder());
         setTimeout(this.exitTypora, 50);
     }
     static showInFinder = filepath => JSBridge.showInFinder(filepath || this.getFilePath())
@@ -767,19 +772,16 @@ class utils {
     }
 
     static getFenceUserSize = content => {
-        let height = "";
-        let width = "";
+        const regexp = /^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/;
         const lines = content.split("\n").map(line => line.trim()).filter(line => line.startsWith("//"));
         for (let line of lines) {
-            line = line.replace(/\s/g, "").replace(`'`, `"`).replace("`", '"');
-            const result = line.match(/^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/);
-            if (result && result.groups) {
-                height = height || result.groups["height"];
-                width = width || result.groups["width"];
+            line = line.replace(/\s/g, "").replace(/['`]/g, `"`);
+            const {groups} = line.match(regexp) || {};
+            if (groups) {
+                return {height: groups.height, width: groups.width};
             }
-            if (height && width) break
         }
-        return {height, width}
+        return {height: "", width: ""};
     }
 
     static renderAllLangFence = lang => {
@@ -837,24 +839,18 @@ class utils {
     }
 
     static markdownInlineStyleToHTML = (content, dir) => {
-        dir = dir || this.getCurrentDirPath();
-        // code
+        const imageReplacement = (_, alt, src) => {
+            if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
+                src = this.Package.Path.resolve(dir || this.getCurrentDirPath(), src);
+            }
+            return `<img alt="${alt}" src="${src}">`
+        }
         return content.replace(/(?<!\\)`(.+?)(?<!\\)`/gs, `<code>$1</code>`)
-            // strong
             .replace(/(?<!\\)[*_]{2}(.+?)(?<!\\)[*_]{2}/gs, `<strong>$1</strong>`)
-            // em
             .replace(/(?<![*\\])\*(?![\\*])(.+?)(?<![*\\])\*(?![\\*])/gs, `<em>$1</em>`)
-            // del
             .replace(/(?<!\\)~~(.+?)(?<!\\)~~/gs, "<del>$1</del>")
-            // link
             .replace(/(?<![\\!])\[(.+?)\]\((.+?)\)/gs, `<a href="$2">$1</a>`)
-            // img
-            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, (_, alt, src) => {
-                if (!this.isNetworkImage(src) && !this.isSpecialImage(src)) {
-                    src = this.Package.Path.resolve(dir, src);
-                }
-                return `<img alt="${alt}" src="${src}">`
-            })
+            .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, imageReplacement)
     }
 
     static scroll = ($target, height = -1, moveCursor = false, showHiddenElement = true) => {
@@ -950,11 +946,9 @@ class utils {
                 let deltaX = e.clientX - startX;
                 let deltaY = e.clientY - startY;
                 if (onMouseMove) {
-                    const result = onMouseMove(deltaX, deltaY);
-                    if (result) {
-                        deltaX = result.deltaX;
-                        deltaY = result.deltaY;
-                    }
+                    const {deltaX: newDeltaX, deltaY: newDeltaY} = onMouseMove(deltaX, deltaY) || {};
+                    deltaX = newDeltaX || deltaX;
+                    deltaY = newDeltaY || deltaY;
                 }
                 if (resizeWidth) {
                     resizeElement.style.width = startWidth + deltaX + "px";
@@ -1104,6 +1098,17 @@ class diagramParser {
         }
     }
 
+    registerLangTooltip = () => File.editor.fences.ALL.push(...this.parsers.keys())
+
+    registerLangModeMapping = () => {
+        const after = mode => {
+            if (!mode) return mode;
+            const name = typeof mode === "object" ? mode.name : mode;
+            return this.langMapping[name] || mode
+        }
+        this.utils.decorate(() => window, "getCodeMirrorMode", null, after, true)
+    }
+
     process = async () => {
         if (this.parsers.size === 0) return;
         await this.registerStyleTemplate();
@@ -1153,31 +1158,41 @@ class diagramParser {
         }
     }
 
-    cleanErrorMsg = ($pre, lang) => {
+    cleanErrorMsg = $pre => {
         $pre.find(".md-diagram-panel-header").html("");
         $pre.find(".md-diagram-panel-error").html("");
-        this.parsers.get(lang).destroyWhenUpdate && $pre.find(".md-diagram-panel-preview").html("");
+    }
+
+    destroyIfNeed = (parser, cid, lang, $pre) => {
+        if (!parser.destroyWhenUpdate) return;
+        parser.cancelFunc && parser.cancelFunc(cid, lang);
+        $pre.find(".md-diagram-panel-preview").html("");
+    }
+
+    appendPanelIfNeed = $pre => {
+        if ($pre.find(".md-diagram-panel").length === 0) {
+            $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div><div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
+        }
     }
 
     renderCustomDiagram = async (cid, lang, $pre) => {
-        this.cleanErrorMsg($pre, lang);
+        const parser = this.parsers.get(lang);
+
+        this.cleanErrorMsg($pre);
+        this.destroyIfNeed(parser, cid, lang, $pre);
 
         const content = this.utils.getFenceContent($pre[0], cid);
         if (!content) {
-            await this.whenCantDraw(cid, lang, $pre); // empty content
+            await this.whenCantDraw(cid, lang, $pre);
             return;
         }
 
         $pre.addClass("md-fences-advanced");
-        if ($pre.find(".md-diagram-panel").length === 0) {
-            $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div>
-                    <div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
-        }
+        this.appendPanelIfNeed($pre);
 
-        const render = this.parsers.get(lang).renderFunc;
-        if (!render) return;
+        if (!parser.renderFunc) return;
         try {
-            await render(cid, content, $pre, lang);
+            await parser.renderFunc(cid, content, $pre, lang);
         } catch (error) {
             await this.whenCantDraw(cid, lang, $pre, content, error);
         }
@@ -1206,17 +1221,6 @@ class diagramParser {
                 await this.noticeRollback(cid);
             }
         }
-    }
-
-    registerLangTooltip = () => File.editor.fences.ALL.push(...this.parsers.keys())
-
-    registerLangModeMapping = () => {
-        const after = mode => {
-            if (!mode) return mode;
-            const name = typeof mode === "object" ? mode.name : mode;
-            return this.langMapping[name] || mode
-        }
-        this.utils.decorate(() => window, "getCodeMirrorMode", null, after, true)
     }
 
     onAddCodeBlock = () => this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, this.renderDiagram)
@@ -1371,22 +1375,19 @@ class thirdPartyDiagramParser {
     constructor() {
         this.utils = utils;
         this.parsers = new Map();
+        this.defaultHeight = "230px";
+        this.defaultBackgroundColor = "#F8F8F8";
     }
 
-    // extraCss: {defaultHeight, backgroundColor}
-    register = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter}) => {
-        const p = {checkSelector, wrapElement, extraCss, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {}};
+    register = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter}) => {
+        const p = {checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {}};
         this.parsers.set(lang.toLowerCase(), p);
-        this.utils.registerDiagramParser({
-            lang,
-            mappingLang,
-            destroyWhenUpdate,
-            renderFunc: this.render,
-            cancelFunc: this.cancel,
-            destroyAllFunc: this.destroyAll,
-            extraStyleGetter: extraStyleGetter,
-            interactiveMode: interactiveMode
-        })
+        const dp = {
+            lang, mappingLang, destroyWhenUpdate,
+            renderFunc: this.render, cancelFunc: this.cancel, destroyAllFunc: this.destroyAll,
+            extraStyleGetter: extraStyleGetter, interactiveMode: interactiveMode
+        }
+        this.utils.registerDiagramParser(dp);
     }
 
     unregister = lang => {
@@ -1425,10 +1426,12 @@ class thirdPartyDiagramParser {
 
     setStyle = (parser, $pre, $wrap, content) => {
         const {height, width} = this.utils.getFenceUserSize(content);
+        const {height: defaultHeight, "background-color": backgroundColor, ...other} = parser.css || {};
         $wrap.css({
-            "width": width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-            "height": height || parser.extraCss["defaultHeight"] || "",
-            "background-color": parser.extraCss["backgroundColor"] || "",
+            width: width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
+            height: height || defaultHeight || this.defaultHeight,
+            "background-color": backgroundColor || this.defaultBackgroundColor,
+            other,
         });
     }
 

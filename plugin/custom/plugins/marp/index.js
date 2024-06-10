@@ -13,7 +13,7 @@ class marpPlugin extends BaseCustomPlugin {
             interactiveMode: this.config.INTERACTIVE_MODE,
             checkSelector: ".plugin-marp-content",
             wrapElement: '<div class="plugin-marp-content"></div>',
-            extraCss: {},
+            css: {},
             lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,
             destroyFunc: this.destroy,
