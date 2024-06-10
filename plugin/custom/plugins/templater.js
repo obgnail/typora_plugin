@@ -1,6 +1,4 @@
 class templater extends BaseCustomPlugin {
-    selector = () => this.utils.getFilePath() ? undefined : this.utils.nonExistSelector
-    hint = isDisable => isDisable && "空白页不可使用此插件"
     hotkey = () => [this.config.hotkey]
 
     callback = anchorNode => {

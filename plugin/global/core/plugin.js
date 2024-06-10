@@ -608,13 +608,17 @@ class utils {
     static removeStyle = id => this.removeElementByID(id)
 
     static newFilePath = async filename => {
-        let filepath = !filename ? this.getFilePath() : this.Package.Path.join(this.getCurrentDirPath(), filename);
+        filename = filename || File.getFileName() || (new Date()).getTime().toString() + ".md";
+        const dirPath = this.getFilePath() ? this.getCurrentDirPath() : File.getMountFolder();
+        if (!dirPath) {
+            alert("空白页不可使用此功能");
+            return;
+        }
+        let filepath = this.Package.Path.resolve(dirPath, filename);
         const exist = await this.existPath(filepath);
         if (exist) {
             const ext = this.Package.Path.extname(filepath);
-            filepath = ext
-                ? filepath.replace(new RegExp(`${ext}$`), `-copy${ext}`)
-                : filepath + "-copy.md"
+            filepath = ext ? filepath.replace(new RegExp(`${ext}$`), `-copy${ext}`) : filepath + "-copy.md";
         }
         return filepath
     }
