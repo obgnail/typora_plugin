@@ -235,7 +235,7 @@ class utils {
         return _path && mountFolder && _path.startsWith(mountFolder);
     }
     static openFile = filepath => {
-        if (this.isUnderMountFolder(filepath)) {
+        if (!this.getMountFolder() || this.isUnderMountFolder(filepath)) {
             // File.editor.restoreLastCursor();
             File.editor.focusAndRestorePos();
             File.editor.library.openFile(filepath);
