@@ -63,6 +63,7 @@ class preferencesPlugin extends BasePlugin {
             redirectLocalRootUrl: "此插件需要手动修改配置后方可运行",
             autoTrailingWhiteSpace: "此插件面向特殊人群（如网站站长），不建议普通用户启用",
             article_uploader: "此插件面向特殊人群（如网站站长），且需要手动修改配置后方可运行",
+            pluginUpdater: "此插件目前仅限 Windows 系统",
         }
         const displayFunc = ([fixedName, plugin]) => {
             const info = infoMap[fixedName];
