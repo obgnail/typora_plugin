@@ -18,7 +18,8 @@ class extractRangeToNewFile extends BaseCustomPlugin {
                 filepath += ".md";
             }
             filepath = await this.utils.newFilePath(filepath);
-            await this.utils.Package.Fs.promises.writeFile(filepath, this.text);
+            const ok = await this.utils.writeFile(filepath, this.text);
+            if (!ok) return;
             this.config.auto_open && this.utils.openFile(filepath);
             this.text = null;
         }

@@ -35,7 +35,8 @@ class templater extends BaseCustomPlugin {
             filepath = await this.utils.newFilePath(filepath);
             const filename = this.utils.Package.Path.basename(filepath);
             const content = (new templateHelper(filename, this))._convert(tpl.text);
-            await this.utils.Package.Fs.promises.writeFile(filepath, content);
+            const ok = await this.utils.writeFile(filepath, content);
+            if (!ok) return;
             this.rangeText = "";
             this.config.auto_open && this.utils.openFile(filepath);
         })
