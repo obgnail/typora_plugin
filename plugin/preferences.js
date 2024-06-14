@@ -27,7 +27,8 @@ class preferencesPlugin extends BasePlugin {
             const mergeObj = file === "settings.user.toml" ? pluginState : customPluginState;
             const newSetting = this.utils.merge(tomlObj, mergeObj);
             const newContent = this.utils.stringifyToml(newSetting);
-            await this.utils.Package.Fs.promises.writeFile(settingPath, newContent);
+            const ok = await this.utils.writeFile(settingPath, newContent);
+            if (!ok) return;
         }
 
         if (showModal) {

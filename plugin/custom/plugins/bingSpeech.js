@@ -135,7 +135,8 @@ class bingSpeech extends BaseCustomPlugin {
         }
         const chunks = [];
         await this.crawl(text, config, binary => chunks.push(binary));
-        await this.utils.Package.Fs.promises.writeFile(filepath, Buffer.concat(chunks));
+        const ok = await this.utils.writeFile(filepath, Buffer.concat(chunks));
+        if (!ok) return;
         console.debug("done");
         return filepath
     }

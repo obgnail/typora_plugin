@@ -520,7 +520,7 @@ class utils {
         const tomlObj = await this.readToml(settingPath);
         const newSetting = this.merge(tomlObj, mergeObj);
         const newContent = this.stringifyToml(newSetting);
-        await this.Package.Fs.promises.writeFile(settingPath, newContent);
+        return this.writeFile(settingPath, newContent);
     }
 
     static readSetting = async (defaultSetting, userSetting) => {
@@ -569,7 +569,8 @@ class utils {
         const filepath = this.getFilePath();
         const content = await this.Package.Fs.promises.readFile(filepath, "utf-8");
         const replacedContent = await editFileFunc(content);
-        await this.Package.Fs.promises.writeFile(filepath, replacedContent);
+        const ok = await this.writeFile(filepath, replacedContent);
+        if (!ok) return;
         reloadTypora && File.reloadContent(replacedContent, {fromDiskChange: false});
         setTimeout(() => File.presentedItemChanged = bak, 1500);
     }
@@ -664,6 +665,17 @@ class utils {
             await this.Package.Fs.promises.access(filepath);
             return true
         } catch (err) {
+        }
+    }
+
+    static writeFile = async (filepath, content) => {
+        try {
+            await this.Package.Fs.promises.writeFile(filepath, content);
+            return true
+        } catch (e) {
+            const detail = e.toString();
+            const op = {type: "error", title: "Typora Plugin", buttons: ["确定"], message: "写入文件失败", detail};
+            await this.showMessageBox(op);
         }
     }
 
