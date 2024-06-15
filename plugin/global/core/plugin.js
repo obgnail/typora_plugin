@@ -1110,7 +1110,7 @@ class diagramParser {
         }
     }
 
-    registerLangTooltip = () => File.editor.fences.ALL.push(...this.parsers.keys())
+    registerLangTooltip = () => File.editor.fences.ALL && File.editor.fences.ALL.push(...this.parsers.keys())
 
     registerLangModeMapping = () => {
         const after = mode => {
