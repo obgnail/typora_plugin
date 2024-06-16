@@ -91,7 +91,7 @@ class loadPluginHelper {
     loadCustomPlugin = async fixedName => {
         const customSetting = this.controller.customSettings[fixedName];
         if (!customSetting || !customSetting.enable || this.config.DISABLE_CUSTOM_PLUGINS.indexOf(fixedName) !== -1) {
-            console.debug(`disable custom plugin: [ ${fixedName} ]`);
+            console.debug(`disable custom plugin: [ \x1b[31m${fixedName}\x1b[0m ]`);
             return;
         }
         try {
@@ -106,7 +106,7 @@ class loadPluginHelper {
             const ok = await this.utils.loadPluginLifeCycle(instance, true);
             if (!ok) return;
             this.controller.custom[instance.fixedName] = instance;
-            console.debug(`custom plugin had been injected: [ ${instance.fixedName} ]`);
+            console.debug(`enable custom plugin: [ \x1b[36m${instance.fixedName}\x1b[0m ]`);
         } catch (e) {
             console.error("load custom plugin error:", e);
         }
