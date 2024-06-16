@@ -459,7 +459,7 @@ class tocMarkmap {
         }
     }
 
-    download = () => {
+    download = async () => {
         const removeSvgForeignObject = svg => {
             svg.querySelectorAll("foreignObject").forEach(foreign => {
                 const {textContent, previousSibling} = foreign;
@@ -502,38 +502,40 @@ class tocMarkmap {
             return {minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight}
         }
 
+        const changeSvgAttr = svg => {
+            svg.removeAttribute("id");
+            svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+            svg.setAttribute("class", "markmap");
+        }
+
         const setSvgSize = svg => {
             const {width = 100, height = 100, minY = 0} = getSvgBounding(svg);
             const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
             const svgWidth = width + borderX;
             const svgHeight = height + borderY;
-            svg.removeAttribute("id");
-            svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-            svg.setAttribute("class", "markmap");
             svg.setAttribute("width", svgWidth + "");
             svg.setAttribute("height", svgHeight + "");
             svg.setAttribute("viewBox", `0 ${minY} ${svgWidth} ${svgHeight}`);
             svg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
         }
 
-        const download = svg => {
-            const svgHTML = svg.outerHTML.replace(/<br>/g, "<br/>");
-            const a = document.createElement("a");
-            const fileName = this.utils.getFileName() || "markmap";
-            a.download = fileName + ".svg";
-            a.href = "data:image/svg;utf8," + encodeURIComponent(svgHTML);
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => document.body.removeChild(a), 100);
+        const download = async svg => {
+            const content = new XMLSerializer().serializeToString(svg).replace(/<br>/g, "<br/>");
+            const name = (this.utils.getFileName() || "markmap") + ".svg";
+            const path = this.utils.Package.Path.join(this.utils.tempFolder, name);
+            const ok = await this.utils.writeFile(path, content);
+            if (!ok) return;
+            this.utils.showInFinder(path);
         }
 
         const svg = this.entities.svg.cloneNode(true);
+        changeSvgAttr(svg);
         setSvgSize(svg);
         removeSvgUselessStyle(svg);
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
             removeSvgForeignObject(svg);
         }
-        download(svg);
+        await download(svg);
     }
 
     pinUp = async (draw = true) => {
