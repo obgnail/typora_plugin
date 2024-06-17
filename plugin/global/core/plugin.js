@@ -447,7 +447,7 @@ class utils {
         return Promise.all(promises).then(results => results.join(""))
     }
 
-    static randomString = () => Math.random().toString(36).slice(2)
+    static randomString = (len = 8) => Math.random().toString(36).substring(2, 2 + len).padEnd(len, "0")
     static randomInt = (min, max) => {
         const ceil = Math.ceil(min);
         const floor = Math.floor(max);

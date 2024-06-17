@@ -520,7 +520,9 @@ class tocMarkmap {
         }
 
         const download = async svg => {
-            const content = new XMLSerializer().serializeToString(svg).replace(/<br>/g, "<br/>");
+            const div = document.createElement("div");
+            div.appendChild(svg);
+            const content = div.innerHTML.replace(/<br>/g, "<br/>");
             const name = (this.utils.getFileName() || "markmap") + ".svg";
             const path = this.utils.Package.Path.join(this.utils.tempFolder, name);
             const ok = await this.utils.writeFile(path, content);
