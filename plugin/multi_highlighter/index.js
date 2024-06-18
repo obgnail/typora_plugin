@@ -17,6 +17,8 @@
 5. 解决方式：我本来想使用类似于Golang的channel。channel非常适合这种逻辑代码各种跳跃的情况，且十分优雅。想来想去，去他妈，直接硬撸算了，全局变量直接上，没有遵循任何设计原则，代码非常难懂。
 6. 下面代码就是本着【又不是不能用】的心态码的，只追求实现速度。若你有心重构，我帮你抽象出了multiHighlighter类，可以方便的搜索并添加高亮标签，接下来你需要的就是和Typora各自特性作斗争。
 */
+const {InstantSearch} = require("./highlighter");
+
 class multiHighlighterPlugin extends BasePlugin {
     styleTemplate = () => ({
         run_style: {
@@ -52,7 +54,7 @@ class multiHighlighterPlugin extends BasePlugin {
             result: document.getElementById("plugin-multi-highlighter-result"),
         }
 
-        this.multiHighlighter = new multiHighlighter(this);
+        this.multiHighlighter = new multiHighlighter();
         this.fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
         this.lastHighlightFilePath = "";
         this.showMarkerInfo = {idxOfFence: -1, idxOfWrite: -1};
@@ -343,9 +345,9 @@ class multiHighlighterPlugin extends BasePlugin {
 }
 
 class multiHighlighter {
-    constructor(controller) {
+    constructor() {
         this.highlighterList = [];
-        this.InstantSearch = controller.utils.requireFilePath("./plugin/multi_highlighter/highlighter.js").InstantSearch;
+        this.InstantSearch = InstantSearch;
     }
 
     _newHighlighter(root, key, caseSensitive, className) {

@@ -1,4 +1,4 @@
-class templater extends BaseCustomPlugin {
+class templaterPlugin extends BaseCustomPlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
     hint = isDisable => isDisable && "空白页不可使用此插件"
 
@@ -109,5 +109,5 @@ class templateHelper {
 }
 
 module.exports = {
-    plugin: templater,
+    plugin: templaterPlugin,
 };

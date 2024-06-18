@@ -1,4 +1,4 @@
-class extractRangeToNewFile extends BaseCustomPlugin {
+class extractRangeToNewFilePlugin extends BaseCustomPlugin {
     selector = onClick => {
         if (onClick) return;
         this.savedSelection = window.getSelection().getRangeAt(0);
@@ -46,5 +46,5 @@ class extractRangeToNewFile extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: extractRangeToNewFile,
+    plugin: extractRangeToNewFilePlugin,
 };

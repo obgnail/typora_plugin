@@ -53,7 +53,7 @@ class chartPlugin extends BaseCustomPlugin {
         $(preview).html(img);
     }
 
-    lazyLoad = () => this.ChartPkg = this.ChartPkg || this.utils.requireFilePath("./plugin/custom/plugins/chart/chart.min.js");
+    lazyLoad = () => this.ChartPkg = this.ChartPkg || require("./chart.min");
 }
 
 module.exports = {

@@ -949,9 +949,6 @@ CLICKABLE = true
 #   1. 处于不可用状态的插件会在鼠标悬停时提示不可用的原因
 #   2. 一直隐藏处于不可用状态的插件，可能导致你忘记该插件的存在
 HIDE_DISABLE_PLUGINS = false
-# 禁用的二级插件。优先级高于业务插件的ENABLE选项
-# 填入业务插件的fixedName。举例：["kanban", "echarts"]
-DISABLE_CUSTOM_PLUGINS = []
 # 允许在settings.user.toml中设置custom_plugin.user.toml中的选项。若在两处皆有定义，settings.user.toml的优先级高于custom_plugin.user.toml
 # 本来【二级插件】的选项应该在custom_plugin.user.toml中设置的，但是一直有收到反馈，总是有用户错误地写在了settings.user.toml。无奈只能作此兼容
 # 1.如果你不理解我在说什么，并且不想弄懂，请将此选项置为true

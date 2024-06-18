@@ -60,7 +60,7 @@ class markmapPlugin extends BasePlugin {
         if (this.transformer && this.Markmap) return;
 
         // markmap-lib太大了，我把他打包了
-        const {markmapLib} = this.utils.requireFilePath("./plugin/markmap/resource/markmap-lib.js");
+        const {markmapLib} = require("./resource/markmap-lib");
         await this.utils.insertScript("./plugin/markmap/resource/d3_6.js");
         await this.utils.insertScript("./plugin/markmap/resource/markmap-view.js");
 

@@ -1,4 +1,4 @@
-class hotkeyHub extends BaseCustomPlugin {
+class hotkeyHubPlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     beforeProcess = async () => {
@@ -54,5 +54,5 @@ class hotkeyHub extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: hotkeyHub,
+    plugin: hotkeyHubPlugin,
 };

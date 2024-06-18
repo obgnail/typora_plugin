@@ -14,7 +14,7 @@
 *    1. 当匹配到![test](./assets/test.png)后，将最开始的匹配内容截断为 )![test2](./assets/test2.png)
 *    2. 递归处理新的内容
 */
-class resourceOperation extends BaseCustomPlugin {
+class resourceOperationPlugin extends BaseCustomPlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
 
     hint = isDisable => isDisable && "空白页不可使用此插件"
@@ -344,5 +344,5 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
 }
 
 module.exports = {
-    plugin: resourceOperation,
+    plugin: resourceOperationPlugin,
 };

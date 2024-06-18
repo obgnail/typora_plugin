@@ -1,4 +1,4 @@
-class pluginUpdater extends BaseCustomPlugin {
+class pluginUpdaterPlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     beforeProcess = async () => {
@@ -208,5 +208,5 @@ class ProxyGetter {
 }
 
 module.exports = {
-    plugin: pluginUpdater
+    plugin: pluginUpdaterPlugin
 };

@@ -1,5 +1,5 @@
 // 实现原理：采用爬虫技术，盗取必应翻译的播放语音功能。功能完全依赖于外部环境，因此不能保证成功。
-class bingSpeech extends BaseCustomPlugin {
+class bingSpeechPlugin extends BaseCustomPlugin {
     selector = onClick => {
         if (onClick) return;
         this.savedSelection = window.getSelection().getRangeAt(0);
@@ -296,5 +296,5 @@ class bingSpeechSpider {
 }
 
 module.exports = {
-    plugin: bingSpeech,
+    plugin: bingSpeechPlugin,
 };

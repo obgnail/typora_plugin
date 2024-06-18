@@ -62,7 +62,7 @@ class echartsPlugin extends BaseCustomPlugin {
         }
     }
 
-    lazyLoad = () => this.echartsPkg = this.echartsPkg || this.utils.requireFilePath("./plugin/custom/plugins/echarts/echarts.min.js");
+    lazyLoad = () => this.echartsPkg = this.echartsPkg || require("./echarts.min");
 }
 
 module.exports = {

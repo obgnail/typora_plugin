@@ -1,4 +1,4 @@
-class openInTotalCommander extends BaseCustomPlugin {
+class openInTotalCommanderPlugin extends BaseCustomPlugin {
     selector = () => {
         if (!this.utils.getFilePath()) {
             return this.utils.nonExistSelector
@@ -17,5 +17,5 @@ class openInTotalCommander extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: openInTotalCommander,
+    plugin: openInTotalCommanderPlugin,
 };

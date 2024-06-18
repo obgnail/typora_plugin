@@ -28,7 +28,7 @@ class abcPlugin extends BaseCustomPlugin {
         this.ABCJS.renderAbc($wrap[0], content, visualOptions);
     }
 
-    lazyLoad = () => this.ABCJS = this.ABCJS || this.utils.requireFilePath("./plugin/custom/plugins/abc/abcjs-basic-min.js");
+    lazyLoad = () => this.ABCJS = this.ABCJS || require("./abcjs-basic-min");
 }
 
 module.exports = {
