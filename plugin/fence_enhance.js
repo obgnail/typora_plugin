@@ -15,6 +15,9 @@ class fenceEnhancePlugin extends BasePlugin {
         if (this.config.ENABLE_BUTTON) {
             this.processButton();
         }
+        if (this.config.HIGHLIGHT_BY_LANGUAGE) {
+            this.processHighlightByLanguage();
+        }
     }
 
     processIndentedWrappedLine = () => {
@@ -33,6 +36,74 @@ class fenceEnhancePlugin extends BasePlugin {
                 setTimeout(() => fence && fence.refresh(), 100);
             }
         })
+    }
+
+    processHighlightByLanguage = () => {
+        const regex = /^([^\(\)]+)\(([^}]+)\)$/;
+        const extract = lang => {
+            const match = lang.match(regex);
+            if (!match) return {origin: lang}
+
+            const [origin, prefix, line] = match;
+            return {origin, prefix, line};
+        }
+
+        const parseRange = line => {
+            const result = [];
+            const parts = line.split(',');
+            for (const part of parts) {
+                if (part.includes('-')) {
+                    const [start, end] = part.split('-').map(Number);
+                    for (let i = start; i <= end; i++) {
+                        result.push(i);
+                    }
+                } else {
+                    result.push(Number(part));
+                }
+            }
+            return result.map(e => Math.max(e - 1, 0));
+        }
+
+        const getEntities = cid => {
+            const fence = File.editor.fences.queue[cid];
+            const obj = (fence.options && fence.options.mode && fence.options.mode._highlightObj) || undefined;
+            return {fence, obj}
+        }
+
+        const highlightLines = cid => {
+            const {fence, obj} = getEntities(cid);
+            if (!obj) return;
+            const {line} = obj;
+            if (!line) return;
+
+            const last = fence.lastLine();
+            for (let i = 0; i <= last; i++) {
+                fence.removeLineClass(i, "background", "plugin-fence-enhance-highlight");
+            }
+
+            const needHighlight = parseRange(line);
+            needHighlight.forEach(e => fence.addLineClass(e, "background", "plugin-fence-enhance-highlight"));
+        }
+
+        this.utils.decorate(() => window, "getCodeMirrorMode", null, mode => {
+            if (!mode) return mode;
+
+            const lang = typeof mode === "object" ? mode.name : mode;
+            const obj = extract(lang);
+            if (!obj) return mode;
+
+            mode = typeof mode === "string" ? {} : mode;
+            mode.name = obj.prefix;
+            mode._highlightObj = obj;
+            return mode;
+        }, true)
+
+        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, highlightLines);
+        this.utils.decorate(() => File && File.editor && File.editor.fences, "tryAddLangUndo", null, (result, ...args) => {
+            const cid = args[0].cid;
+            const {obj} = getEntities(cid);
+            obj && highlightLines(cid);
+        });
     }
 
     initVar = () => {
