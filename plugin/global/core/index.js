@@ -19,8 +19,7 @@ class Launcher {
         delete settings.global;
     }
 
-    static loadPlugins = () => Promise.all(Object.keys(global._plugin_settings).map(async fixedName => {
-        const setting = global._plugin_settings[fixedName];
+    static loadPlugins = () => Promise.all(Object.entries(global._plugin_settings).map(async ([fixedName, setting]) => {
         if (!setting || !setting.ENABLE) {
             console.debug(`disable plugin: [ \x1b[31m${fixedName}\x1b[0m ] `);
             return;
@@ -31,7 +30,7 @@ class Launcher {
             global._plugins[instance.fixedName] = instance;
             console.debug(`enable plugin: [ \x1b[32m${instance.fixedName}\x1b[0m ] `);
         } catch (e) {
-            console.error("load plugin err:", e);
+            console.error("load plugin error:", e);
         }
     }))
 
