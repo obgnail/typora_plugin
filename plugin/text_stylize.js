@@ -209,6 +209,19 @@ class textStylizePlugin extends BasePlugin {
         const isSoftBreakElement = node => isElement(node) && node.classList.contains("md-softbreak")
         const isHardBreakElement = node => isElement(node) && node.getAttribute("cid")
         const isBreakElement = node => isSoftBreakElement(node) || isHardBreakElement(node)
+        const splitArray = (array, separatorFunc) => {
+            return array.reduce((acc, current) => {
+                if (separatorFunc(current)) {
+                    acc.push([]);
+                } else {
+                    if (acc.length === 0) {
+                        acc.push([]);
+                    }
+                    acc[acc.length - 1].push(current);
+                }
+                return acc;
+            }, []);
+        }
 
         const isRangeCollapsed = range => range.startContainer === range.endContainer && range.startOffset === range.endOffset
         const isEqualRange = (a, b) => (
@@ -224,9 +237,7 @@ class textStylizePlugin extends BasePlugin {
         }
 
         let filterEmptyText = nodeList.filter((node, idx) => !(isText(node) && isSoftBreakElement(nodeList[idx - 1])));
-        const selectLines = this.utils.splitArray(filterEmptyText, isBreakElement)
-            .map(line => line.filter(isText))
-            .filter(ele => ele.length)
+        const selectLines = splitArray(filterEmptyText, isBreakElement).map(line => line.filter(isText)).filter(ele => ele.length);
 
         const startLineTexts = selectLines.shift();
         const endLineTexts = selectLines.pop() || startLineTexts;

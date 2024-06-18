@@ -414,20 +414,6 @@ class utils {
         return result;
     }
 
-    static splitArray = (array, separatorFunc) => {
-        return array.reduce((acc, current) => {
-            if (separatorFunc(current)) {
-                acc.push([]);
-            } else {
-                if (acc.length === 0) {
-                    acc.push([]);
-                }
-                acc[acc.length - 1].push(current);
-            }
-            return acc;
-        }, []);
-    }
-
     static asyncReplaceAll = (content, regexp, replaceFunc) => {
         if (!regexp.global) {
             throw Error("regexp must be global");
@@ -2190,73 +2176,31 @@ const helper = Object.freeze({
     markdownParser: new markdownParser(),
 })
 
-class IPlugin {
-    constructor(fixedName, setting) {
-        this.fixedName = fixedName;
-        this.config = setting;
+class Launcher {
+    constructor() {
         this.utils = utils;
     }
 
-    // 最先执行的函数，唯一的asyncFunction，在这里初始化插件需要的数据。若返回stopLoadPluginError，则停止加载插件
-    beforeProcess = async () => undefined
-    // 以字符串形式导入样式
-    style = () => undefined
-    // 以文件形式导入样式
-    styleTemplate = () => undefined
-    // 原生插入html标签
-    html = () => undefined
-    // 使用htmlTemplater插入html标签，详见htmlTemplater
-    htmlTemplate = () => undefined
-    // 注册快捷键
-    hotkey = () => undefined
-    // 初始化数据
-    init = () => undefined
-    // 主要的处理流程
-    process = () => undefined
-    // 收尾，一般用于回收内存，用的比较少
-    afterProcess = () => undefined
-}
-
-class basePlugin extends IPlugin {
-    call = (type, meta) => undefined
-}
-
-class baseCustomPlugin extends IPlugin {
-    constructor(fixedName, setting, controller) {
-        super(fixedName, setting.config);
-        this.controller = controller;
-        this.info = setting;
-        this.showName = setting.name;
-        this.modal = utils.modal;
-    }
-
-    hint = isDisable => undefined
-    selector = () => undefined
-    callback = anchorNode => undefined
-}
-
-class process {
-    static optimize = async () => {
+    optimize = async () => {
         if (!global._plugin_global_settings.PERFORMANCE_MODE) return;
         await Promise.all(Object.values(helper).map(async h => h.afterProcess && h.afterProcess()));
     }
 
-    static loadPlugin = async (fixedName, entry) => {
+    loadPlugin = async (fixedName, entry) => {
         const setting = global._plugin_settings[fixedName];
-        if (!setting || !setting.ENABLE || global._plugin_global_settings.DISABLE_PLUGINS.indexOf(fixedName) !== -1) {
+        if (!setting || !setting.ENABLE) {
             console.debug(`disable plugin: [ \x1b[31m${fixedName}\x1b[0m ] `);
-            return
+            return;
         }
         try {
-            const {plugin} = utils.requireFilePath(entry || `./plugin/${fixedName}`);
+            const {plugin} = this.utils.requireFilePath(entry);
             if (!plugin) return;
-
-            const instance = new plugin(fixedName, setting);
+            const instance = new plugin(fixedName, setting, this.utils);
             if (!(instance instanceof BasePlugin)) {
                 console.error("instance is not instanceof BasePlugin:", fixedName);
                 return;
             }
-            const ok = await utils.loadPluginLifeCycle(instance);
+            const ok = await this.utils.loadPluginLifeCycle(instance);
             if (!ok) return;
             global._plugins[instance.fixedName] = instance;
             console.debug(`enable plugin: [ \x1b[32m${instance.fixedName}\x1b[0m ] `);
@@ -2265,22 +2209,20 @@ class process {
         }
     }
 
-    static loadPlugins = () => {
-        const {PLUGIN_PATHS} = utils.requireFilePath("./plugin/global/core/pluginPaths.js");
-        const pluginLoadPromises = Object.keys(global._plugin_settings).map(fixedName => {
-            const entry = PLUGIN_PATHS[fixedName] || `./plugin/${fixedName}`;
-            return this.loadPlugin(fixedName, entry);
-        });
-        return Promise.all(pluginLoadPromises);
+    loadPlugins = () => {
+        const {PLUGIN_PATHS} = this.utils.requireFilePath("./plugin/global/core/plugin_load_path.js");
+        const promises = Object.keys(global._plugin_settings).map(fixedName => this.loadPlugin(fixedName, PLUGIN_PATHS[fixedName] || `./plugin/${fixedName}`));
+        return Promise.all(promises);
     };
-    static loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
 
-    static existEnablePlugin = () => Object.entries(global._plugin_settings).some(([name, plugin]) => plugin.ENABLE && !global._plugin_global_settings.DISABLE_PLUGINS.includes(name))
+    loadHelpers = (...helpers) => Promise.all(helpers.map(async e => e.process()));
 
     // 整个插件系统一共暴露了7个全局变量，实际有用的只有2个：BasePlugin, BaseCustomPlugin
     // 其余5个全局变量皆由静态类utils暴露，永远不会被外部文件引用；而utils同时又是BasePlugin, BaseCustomPlugin的实例属性，所以utils自己也不需要暴露
     // 既然永远不会被外部文件引用，为何要将它们设置为全局变量？答：方便调试
-    static prepare = settings => {
+    prepare = settings => {
+        const {basePlugin, baseCustomPlugin} = this.utils.requireFilePath("./plugin/global/core/interface.js");
+
         global.BasePlugin = basePlugin;             // 插件的父类
         global.BaseCustomPlugin = baseCustomPlugin; // 自定义插件的父类
 
@@ -2293,14 +2235,12 @@ class process {
         delete settings.global;
     }
 
-    static run = async () => {
-        const settings = await utils.readSetting("settings.default.toml", "settings.user.toml");
+    run = async () => {
+        const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
         if (!settings || !settings.global || !settings.global.ENABLE) return;
 
         // 初始化全局变量
         this.prepare(settings);
-
-        if (!this.existEnablePlugin()) return;
 
         const {
             styleTemplater, contextMenu, dialog, stateRecorder, eventHub,
@@ -2320,19 +2260,19 @@ class process {
         await this.loadHelpers(eventHub);
 
         // 发布【所有插件加载完毕】事件。有些插件会监听此事件，在其回调函数中注册高级工具，所以必须先于高级工具执行
-        utils.publishEvent(utils.eventType.allPluginsHadInjected);
+        this.utils.publishEvent(this.utils.eventType.allPluginsHadInjected);
 
         // 加载剩余的高级工具
         await this.loadHelpers(htmlTemplater, diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser);
 
         // 一切准备就绪
-        utils.publishEvent(utils.eventType.everythingReady);
+        this.utils.publishEvent(this.utils.eventType.everythingReady);
 
         // 尽力优化
         await this.optimize();
 
         // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
-        setTimeout(utils.reload, 50);
+        setTimeout(this.utils.reload, 50);
     }
 }
 
@@ -2351,5 +2291,5 @@ ____________________________________________________________________
 `)
 
 module.exports = {
-    entry: process.run
+    entry: () => new Launcher().run()
 };

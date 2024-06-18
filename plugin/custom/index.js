@@ -98,7 +98,7 @@ class loadPluginHelper {
             const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins`, fixedName);
             if (!plugin) return;
 
-            const instance = new plugin(fixedName, customSetting, this.controller);
+            const instance = new plugin(fixedName, customSetting, this.controller, this.utils);
             if (!(instance instanceof BaseCustomPlugin)) {
                 console.error("instance is not instanceof BaseCustomPlugin:", fixedName);
                 return

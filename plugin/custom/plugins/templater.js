@@ -25,7 +25,7 @@ class templater extends BaseCustomPlugin {
         ]
         const modal = {title: "新文件", components};
 
-        this.modal(modal, async ([{submit: filepath}, {submit: template}]) => {
+        this.utils.modal(modal, async ([{submit: filepath}, {submit: template}]) => {
             const tpl = this.config.template.find(tpl => tpl.name === template);
             if (!tpl) return;
 

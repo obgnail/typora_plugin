@@ -15,10 +15,6 @@
 ENABLE = true
 # 性能模式，若为true，插件系统会舍弃拓展接口，功能静态化，尽力提升性能
 PERFORMANCE_MODE = true
-# 禁用的插件。优先级高于业务插件的ENABLE选项
-# 填入业务插件的fixedName。举例：["window_tab", "search_multi"]
-# 此选项是用于临时排查异常插件的，所以只建议临时使用。如果希望长期禁用某插件，请将其ENABLE选项置为false
-DISABLE_PLUGINS = []
 # 如果你使用了图表插件（kanban、markmap、echarts等等）并且开启交互模式（INTERACTIVE_MODE置为true），那么下面两个配置请至少一个置为true，否则你将无法退出交互模式
 # 为图表添加一个【编辑】按钮（当点击【编辑】按钮时退出交互模式）
 CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE = true
