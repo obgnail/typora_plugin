@@ -25,3 +25,7 @@
 .CodeMirror-line:hover {
     background-color: ${bgColorWhenHover};
 }
+
+.plugin-fence-enhance-highlight {
+    background-color: ${this.config.HIGHLIGHT_LINE_COLOR}
+}

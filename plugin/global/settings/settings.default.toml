@@ -739,9 +739,12 @@ ENABLE_DANGEROUS_FEATURES = false
 #   1. 详见：https://github.com/codemirror/codemirror5/issues/2085
 #   2. 不建议开启此功能，有较大的性能损失，会消耗大量时间去计算缩进
 INDENTED_WRAPPED_LINE = false
-# 高亮鼠标悬停的代码行，若置为false，则HIGHLIGHT_LINE_COLOR失效
-# 我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启
+# 高亮鼠标悬停的代码行（我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启）
 HIGHLIGHT_WHEN_HOVER = false
+# 通过代码块的语言设置高亮行
+# 使用方法：在语言后面添加小括号，小括号注明需要高亮的行
+# 举例：```js(2, 5-8, 10-12)```  表示：高亮js代码块的第2行，第5-8，10-12行
+HIGHLIGHT_BY_LANGUAGE = false
 # 代码行高亮时的颜色
 HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 

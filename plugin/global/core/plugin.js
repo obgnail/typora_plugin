@@ -447,7 +447,7 @@ class utils {
         return Promise.all(promises).then(results => results.join(""))
     }
 
-    static randomString = () => Math.random().toString(36).slice(2)
+    static randomString = (len = 8) => Math.random().toString(36).substring(2, 2 + len).padEnd(len, "0")
     static randomInt = (min, max) => {
         const ceil = Math.ceil(min);
         const floor = Math.floor(max);
@@ -1099,7 +1099,7 @@ class diagramParser {
             cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode
         }
         this.parsers.set(lang, parser);
-        console.debug(`register diagram parser: [ ${lang} ]`);
+        console.debug(`enable diagram parser: [ \x1b[94m${lang}\x1b[0m ]`);
     }
 
     unregister = lang => this.parsers.delete(lang)
@@ -2244,7 +2244,7 @@ class process {
     static loadPlugin = async (fixedName, entry) => {
         const setting = global._plugin_settings[fixedName];
         if (!setting || !setting.ENABLE || global._plugin_global_settings.DISABLE_PLUGINS.indexOf(fixedName) !== -1) {
-            console.debug(`disable plugin: [ ${fixedName} ] `);
+            console.debug(`disable plugin: [ \x1b[31m${fixedName}\x1b[0m ] `);
             return
         }
         try {
@@ -2259,7 +2259,7 @@ class process {
             const ok = await utils.loadPluginLifeCycle(instance);
             if (!ok) return;
             global._plugins[instance.fixedName] = instance;
-            console.debug(`plugin had been injected: [ ${instance.fixedName} ] `);
+            console.debug(`enable plugin: [ \x1b[32m${instance.fixedName}\x1b[0m ] `);
         } catch (e) {
             console.error("load plugin err:", e);
         }
@@ -2335,6 +2335,20 @@ class process {
         setTimeout(utils.reload, 50);
     }
 }
+
+console.debug(`
+____________________________________________________________________
+   ______                                      __            _     
+  /_  __/_  ______  ____  _________ _   ____  / /_  ______ _(_)___ 
+   / / / / / / __ \\/ __ \\/ ___/ __ \`/  / __ \\/ / / / / __ \`/ / __ \\
+  / / / /_/ / /_/ / /_/ / /  / /_/ /  / /_/ / / /_/ / /_/ / / / / /
+ /_/  \\__, / .___/\\____/_/   \\__,_/  / .___/_/\\__,_/\\__, /_/_/ /_/ 
+     /____/_/                       /_/            /____/          
+
+                      Typora Plugin by obgnail                     
+              https://github.com/obgnail/typora_plugin             
+____________________________________________________________________
+`)
 
 module.exports = {
     entry: process.run
