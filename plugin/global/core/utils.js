@@ -376,14 +376,6 @@ class utils {
         }
     }
 
-    static measureTime = async func => {
-        const start = performance.now();
-        await func();
-        const end = performance.now();
-        const execute = parseInt(end - start);
-        console.debug(`It took ${execute} ms to execute`);
-    }
-
     static chunk = (array, size = 10) => {
         let index = 0;
         let result = [];

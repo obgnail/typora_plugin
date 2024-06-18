@@ -41,7 +41,7 @@ class Launcher {
         }
     }
 
-    static process = async () => {
+    static run = async () => {
         const settings = await utils.readSetting("settings.default.toml", "settings.user.toml");
         if (!settings || !settings.global || !settings.global.ENABLE) return;
 
@@ -80,8 +80,6 @@ class Launcher {
         // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
         setTimeout(utils.reload, 50);
     }
-
-    static run = () => utils.measureTime(this.process);
 }
 
 console.debug(`
@@ -99,5 +97,5 @@ ____________________________________________________________________
 `)
 
 module.exports = {
-    entry: () => Launcher.run()
+    entry: async () => Launcher.run()
 };
