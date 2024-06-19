@@ -1284,7 +1284,7 @@ class diagramParser {
         }
 
         const handleCtrlClick = () => {
-            const ctrlClick = this.utils.getGlobalSetting("CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE");
+            const ctrlClick = this.utils.getGlobalSetting("EXIT_INTERACTIVE_MODE").includes("ctrl_click_fence");
             if (!ctrlClick) return;
             document.querySelector("#write").addEventListener("mouseup", ev => {
                 if (this.utils.metaKeyPressed(ev) && ev.target.closest(".md-fences-interactive .md-diagram-panel-preview")) {
@@ -1295,7 +1295,7 @@ class diagramParser {
         }
 
         const handleEditButton = () => {
-            const editBtn = this.utils.getGlobalSetting("CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE");
+            const editBtn = this.utils.getGlobalSetting("EXIT_INTERACTIVE_MODE").includes("click_exit_button");
             const hasInteractive = Array.from(this.parsers.values()).some(parser => parser.interactiveMode);
             if (!editBtn || !hasInteractive) return;
 

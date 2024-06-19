@@ -1,6 +1,5 @@
+#  开发者鼓励您修改配置，以符合自身需求
 #  如果您对 toml 格式不太了解，可以花三分钟时间学习一下：https://toml.io/cn/v1.0.0
-#  插件使用说明：https://github.com/obgnail/typora_plugin
-#  所有插件都允许单独开启/关闭，开发者鼓励您修改配置，以符合自身需求
 #-------------------------------------------------------------------------
 #  请勿修改【settings.default.toml】文件，请阅读本目录下的【请读我.md】文件
 #  请勿修改【settings.default.toml】文件，请阅读本目录下的【请读我.md】文件
@@ -15,11 +14,11 @@
 ENABLE = true
 # 性能模式，若为true，插件系统会舍弃拓展接口，功能静态化，尽力提升性能
 PERFORMANCE_MODE = true
-# 如果你使用了图表插件（kanban、markmap、echarts等等）并且开启交互模式（INTERACTIVE_MODE置为true），那么下面两个配置请至少一个置为true，否则你将无法退出交互模式
-# 为图表添加一个【编辑】按钮（当点击【编辑】按钮时退出交互模式）
-CLICK_EDIT_BUTTON_TO_EXIT_INTERACTIVE_MODE = true
-# ctrl+click图表退出交互模式
-CTRL_CLICK_TO_EXIST_INTERACTIVE_MODE = false
+# 如何退出交互状态的代码块
+# - click_exit_button:  为图表添加一个【编辑】按钮，当点击【编辑】按钮时退出交互模式
+# - ctrl_click_fence:   ctrl+click图表退出交互模式
+# 如果你使用了图表插件（kanban、markmap、echarts等等）并且开启交互模式（INTERACTIVE_MODE置为true），那么列表至少填入一个，否则你将无法退出交互模式
+EXIT_INTERACTIVE_MODE = ["click_exit_button"]
 
 
 ############### window_tab ###############
@@ -171,8 +170,7 @@ STYLE_COLOR = [
     '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
 ]
 # 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
-# 20个关键字肯定够用了，此选项没太大意义
-# 就算20个真的不够用，那我也是建议你给STYLE_COLOR选项新增一些颜色，而不是修改此选项
+# 20个关键字肯定够用了，此选项没太大意义。就算20个真的不够用，那我也是建议你给STYLE_COLOR选项新增一些颜色，而不是修改此选项
 DEFAULT_COLOR = "#dd6699"
 # 大小写敏感(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
 CASE_SENSITIVE = false
@@ -186,11 +184,6 @@ SHOW_CURRENT_INDEX = true
 SHOW_KEYWORD_OUTLINE = true
 # 定位时高亮关键字提示所在行
 SHOW_KEYWORD_BAR = true
-# DO NOT edit this field unless you know what you are doing
-# Typora本身有限制: ctrl+F搜索后，点击任意地方原先高亮的地方就会消失
-# 这是由于高亮都是通过添加标签实现的，但是#write标签不允许添加非默认标签，所以需要在编辑的时候remove掉添加的标签
-# 若置为false，有可能导致你无法编辑页面，直到你重新打开此文件
-REMOVE_WHEN_EDIT = true
 # DO NOT edit this field unless you know what you are doing
 # 性能选项：关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0，则总是使用
 # 此选项用在当搜索了很多关键字时，保证有较快的响应速度
@@ -211,7 +204,7 @@ NAME = "类别大纲"
 CLICKABLE = true
 # 快捷键
 HOTKEY = ""
-# 打开窗口后默认使用的大纲类型 fence/image/table/all
+# 打开窗口后默认使用的大纲类型。可选项：fence/image/table/all
 DEFAULT_TYPE = "fence"
 # 是否使用混合标签
 USE_ALL = true
@@ -245,14 +238,14 @@ ALLOW_DRAG = true
 BACKSPACE_TO_HIDE = true
 # 【快捷键】和【在右键菜单中】调用内建命令，是否弹出窗口
 # 注意: 123使用的是child_process.exec，因此如果程序的输出超出200K，会引发Error：maxBuffer exceeded。此时必须使用echo
-#   1.always: 总是弹出
-#   2.error:  只在异常时弹出
-#   3.silent: 总是静默
-#   4.echo:   弹窗并回显程序输出、适合需要不断打印日志的耗时任务
+#   1. always  总是弹出
+#   2. error   只在异常时弹出
+#   3. silent  总是静默
+#   4. echo    弹窗并回显程序输出、适合需要不断打印日志的耗时任务
 QUICK_EXEC_SHOW = "error"
 # 【在命令输入框里回车】和【点击执行按钮】执行命令时，使用的回显类型
-#   1. always: 等待程序执行完毕后一次性输出
-#   2. echo:   立即回显程序输出
+#   1. always  等待程序执行完毕后一次性输出
+#   2. echo    立即回显程序输出
 COMMIT_EXEC_SHOW = "echo"
 # 启用内建的命令列表（若为false，则BUILTIN选项失效）
 USE_BUILTIN = true
@@ -344,16 +337,16 @@ DEBOUNCE_INTERVAL = 70
 # eg：【ops 资源管理器打开】
 
 # 如果没有匹配到搜索工具，使用默认工具
-#   0. ""：     不使用默认
-#   1. "plu"：  插件
-#   2. "tab"：  当前标签页
-#   3. "his"：  最近文件
-#   4. "ops"：  常用操作
-#   5. "mode"： 切换文件模式
-#   6. "theme"：临时切换主题
-#   7. "out":   文档大纲
-#   8. "func"： 功能列表
-#   9. "all":   混合查找（所有项目都混在一起查找）
+#   0. ""       不使用默认
+#   1. "plu"    插件
+#   2. "tab"    当前标签页
+#   3. "his"    最近文件
+#   4. "ops"    常用操作
+#   5. "mode"   切换文件模式
+#   6. "theme"  临时切换主题
+#   7. "out"    文档大纲
+#   8. "func"   功能列表
+#   9. "all"    混合查找（所有项目都混在一起查找）
 DEFAULT_TOOL = "func"
 # 是否使用负向查询（类似于google）
 # 举例1：【plu multi -search】

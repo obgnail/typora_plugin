@@ -87,6 +87,12 @@ class multiHighlighterPlugin extends BasePlugin {
             ev.stopPropagation();
         })
 
+        document.querySelector("content").addEventListener("mousedown", ev => {
+            if (this.multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
+                this.clearHighlight(true);
+            }
+        }, true)
+
         this.entities.result.addEventListener("mousedown", ev => {
             const target = ev.target.closest(".plugin-multi-highlighter-result-item");
             if (!target) return;
@@ -153,14 +159,6 @@ class multiHighlighterPlugin extends BasePlugin {
                 ev.preventDefault();
                 ev.stopPropagation();
             })
-        }
-
-        if (this.config.REMOVE_WHEN_EDIT) {
-            document.querySelector("content").addEventListener("mousedown", ev => {
-                if (this.multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
-                    this.clearHighlight(true);
-                }
-            }, true)
         }
 
         if (this.config.ALLOW_DRAG) {
