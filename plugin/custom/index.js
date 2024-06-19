@@ -90,21 +90,13 @@ class loadPluginHelper {
 
     loadCustomPlugin = async fixedName => {
         const customSetting = this.controller.customSettings[fixedName];
-        if (!customSetting || !customSetting.enable || this.config.DISABLE_CUSTOM_PLUGINS.indexOf(fixedName) !== -1) {
+        if (!customSetting || !customSetting.enable) {
             console.debug(`disable custom plugin: [ \x1b[31m${fixedName}\x1b[0m ]`);
             return;
         }
         try {
-            const {plugin} = this.utils.requireFilePath(`./plugin/custom/plugins`, fixedName);
-            if (!plugin) return;
-
-            const instance = new plugin(fixedName, customSetting, this.controller);
-            if (!(instance instanceof BaseCustomPlugin)) {
-                console.error("instance is not instanceof BaseCustomPlugin:", fixedName);
-                return
-            }
-            const ok = await this.utils.loadPluginLifeCycle(instance, true);
-            if (!ok) return;
+            const instance = await global.LoadPlugin(fixedName, customSetting, true);
+            if (!instance) return;
             this.controller.custom[instance.fixedName] = instance;
             console.debug(`enable custom plugin: [ \x1b[36m${instance.fixedName}\x1b[0m ]`);
         } catch (e) {

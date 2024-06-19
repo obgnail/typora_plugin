@@ -1,4 +1,4 @@
-class templater extends BaseCustomPlugin {
+class templaterPlugin extends BaseCustomPlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
     hint = isDisable => isDisable && "空白页不可使用此插件"
 
@@ -25,7 +25,7 @@ class templater extends BaseCustomPlugin {
         ]
         const modal = {title: "新文件", components};
 
-        this.modal(modal, async ([{submit: filepath}, {submit: template}]) => {
+        this.utils.modal(modal, async ([{submit: filepath}, {submit: template}]) => {
             const tpl = this.config.template.find(tpl => tpl.name === template);
             if (!tpl) return;
 
@@ -109,5 +109,5 @@ class templateHelper {
 }
 
 module.exports = {
-    plugin: templater,
+    plugin: templaterPlugin,
 };

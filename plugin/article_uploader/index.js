@@ -1,4 +1,4 @@
-class ArticleUploader extends BasePlugin {
+class ArticleUploaderPlugin extends BasePlugin {
     init = () => {
         this.callArgs = [
             {arg_name: "CSDN", arg_value: "upload_to_csdn"},
@@ -37,5 +37,5 @@ class ArticleUploader extends BasePlugin {
 }
 
 module.exports = {
-    plugin: ArticleUploader
+    plugin: ArticleUploaderPlugin
 };

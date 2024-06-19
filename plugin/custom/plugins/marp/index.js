@@ -32,7 +32,7 @@ class marpPlugin extends BaseCustomPlugin {
 
     destroy = shadowRoot => shadowRoot.innerHTML = "";
 
-    lazyLoad = () => this.marpPkg = this.marpPkg || this.utils.requireFilePath("./plugin/custom/plugins/marp/marp.min.js");
+    lazyLoad = () => this.marpPkg = this.marpPkg || require("./marp.min");
 }
 
 module.exports = {

@@ -1,4 +1,4 @@
-class callouts extends BaseCustomPlugin {
+class calloutsPlugin extends BaseCustomPlugin {
     styleTemplate = () => {
         const calloutList = this.config.list.map(callout => (
             `.plugin-callout[callout-type="${callout.type}"] {
@@ -73,5 +73,5 @@ class callouts extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: callouts,
+    plugin: calloutsPlugin,
 };

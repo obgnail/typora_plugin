@@ -1,4 +1,4 @@
-class extractRangeToNewFile extends BaseCustomPlugin {
+class extractRangeToNewFilePlugin extends BaseCustomPlugin {
     selector = onClick => {
         if (onClick) return;
         this.savedSelection = window.getSelection().getRangeAt(0);
@@ -40,11 +40,11 @@ class extractRangeToNewFile extends BaseCustomPlugin {
             await extract("");
         } else {
             const components = [{label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本"}];
-            this.modal({title: "提取选区文字到新文件", components}, ([{submit}]) => extract(submit));
+            this.utils.modal({title: "提取选区文字到新文件", components}, ([{submit}]) => extract(submit));
         }
     }
 }
 
 module.exports = {
-    plugin: extractRangeToNewFile,
+    plugin: extractRangeToNewFilePlugin,
 };

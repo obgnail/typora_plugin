@@ -1,7 +1,7 @@
-class jsonRPC extends BasePlugin {
+class jsonRpcPlugin extends BasePlugin {
     process = () => {
         try {
-            const {Server} = this.utils.requireFilePath("./plugin/json_rpc/node-json-rpc.js");
+            const {Server} = require("./node-json-rpc");
             if (!Server) return;
 
             const server = new Server(this.config.SERVER_OPTIONS);
@@ -55,5 +55,5 @@ class jsonRPC extends BasePlugin {
 }
 
 module.exports = {
-    plugin: jsonRPC,
+    plugin: jsonRpcPlugin,
 };

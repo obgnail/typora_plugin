@@ -102,10 +102,10 @@ class modalExample extends BaseCustomPlugin {
                 },
             ]
         }
-        this.modal(modal, components => {
+        this.utils.modal(modal, components => {
             console.log(components);
 
-            this.modal({
+            this.utils.modal({
                 title: "otherFile",
                 component: [
                     {

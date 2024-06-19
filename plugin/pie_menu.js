@@ -1,4 +1,4 @@
-class pieMenu extends BasePlugin {
+class pieMenuPlugin extends BasePlugin {
     styleTemplate = () => true
 
     html = () => {
@@ -101,5 +101,5 @@ class pieMenu extends BasePlugin {
 }
 
 module.exports = {
-    plugin: pieMenu
+    plugin: pieMenuPlugin
 };

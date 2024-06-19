@@ -1,4 +1,4 @@
-class pluginUpdater extends BaseCustomPlugin {
+class pluginUpdaterPlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     beforeProcess = async () => {
@@ -39,7 +39,7 @@ class pluginUpdater extends BaseCustomPlugin {
         const proxy = await this.getProxy();
         const label = "代理（填入URL，默认使用系统代理，为空则不使用代理）";
         const components = [{label, type: "input", value: proxy, placeholder: "http://127.0.0.1:7890"}];
-        this.modal({title: "设置代理", components}, async ([{submit: proxy_}]) => await this.modalUpdate(proxy_))
+        this.utils.modal({title: "设置代理", components}, async ([{submit: proxy_}]) => await this.modalUpdate(proxy_))
     }
 
     modalUpdate = async proxy => {
@@ -59,7 +59,7 @@ class pluginUpdater extends BaseCustomPlugin {
                 callback = undefined;
                 cancelCallback = openGithub;
             }
-            this.modal({title: "更新失败", components}, callback, cancelCallback);
+            this.utils.modal({title: "更新失败", components}, callback, cancelCallback);
         })
     }
 
@@ -208,5 +208,5 @@ class ProxyGetter {
 }
 
 module.exports = {
-    plugin: pluginUpdater
+    plugin: pluginUpdaterPlugin
 };

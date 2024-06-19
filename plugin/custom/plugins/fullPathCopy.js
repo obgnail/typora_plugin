@@ -1,4 +1,4 @@
-class fullPathCopy extends BaseCustomPlugin {
+class fullPathCopyPlugin extends BaseCustomPlugin {
     selector = () => "#write > [cid]"
     hint = () => "将当前标题的路径复制到剪切板"
     hotkey = () => [this.config.hotkey]
@@ -48,5 +48,5 @@ class fullPathCopy extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: fullPathCopy,
+    plugin: fullPathCopyPlugin,
 };
