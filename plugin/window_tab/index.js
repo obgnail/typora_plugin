@@ -23,6 +23,7 @@ class windowTabBarPlugin extends BasePlugin {
             tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
             windowTab: document.querySelector("#plugin-window-tab"),
         }
+        this.localOpen = false;
         this.checkTabsInterval = null;
         this.tabUtil = {tabs: [], activeIdx: 0};
         this.loopDetectInterval = 35;
@@ -226,7 +227,7 @@ class windowTabBarPlugin extends BasePlugin {
                 {arg_name: "打开保存的标签页", rg_value: "open_save_tabs"},
             );
         }
-        if (this.config.LOCAL_OPEN) {
+        if (this.localOpen) {
             args.push({arg_name: "在新标签打开文件", arg_value: "new_tab_open"});
         } else if (this.utils.getFilePath()) {
             args.push({arg_name: "在当前标签打开文件", arg_value: "local_open"});
@@ -238,8 +239,8 @@ class windowTabBarPlugin extends BasePlugin {
     }
     call = type => {
         const callMap = {
-            new_tab_open: () => this.config.LOCAL_OPEN = false,
-            local_open: () => this.config.LOCAL_OPEN = true,
+            new_tab_open: () => this.localOpen = false,
+            local_open: () => this.localOpen = true,
             save_tabs: this.saveTabs,
             open_save_tabs: this.openSaveTabs,
             sort_tabs: this.sortTabs,
@@ -483,16 +484,16 @@ class windowTabBarPlugin extends BasePlugin {
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
     // 当前标签页打开
     OpenFileLocal = filePath => {
-        this.config.LOCAL_OPEN = true;
+        this.localOpen = true;
         this.utils.openFile(filePath);
-        this.config.LOCAL_OPEN = false;  // 自动还原
+        this.localOpen = false;  // 自动还原
     }
 
     openTab = wantOpenPath => {
         const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath);
         if (!include) {
             // 原地打开并且不存在tab时，修改当前tab的文件路径
-            if (this.config.LOCAL_OPEN) {
+            if (this.localOpen) {
                 this.tabUtil.tabs[this.tabUtil.activeIdx].path = wantOpenPath;
             } else {
                 const newTab = {path: wantOpenPath, scrollTop: 0};

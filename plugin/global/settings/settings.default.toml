@@ -99,10 +99,6 @@ HIDE_WINDOW_TITLE_BAR = false
 CHANGE_CONTENT_TOP = true
 # 调整notification组件的图层顺序，以免被tab遮挡
 CHANGE_NOTIFICATION_Z_INDEX = true
-# 总是在当前标签页打开（若置为false，类似于<a>标签的target="_blank"）
-# 强烈不建议置为true，因为【总是】在当前标签页打开，而当你重启Typora时只有一个标签页，所以你永远就只会有一个标签，如此就失去了此插件的意义了
-# 这个配置的使用方法是：当你打开多个标签后，通过右键菜单激活【在当前标签打开文件】选项，将其临时设置为true，实现在当前标签页打开文件，每次重启后就会自动恢复为false
-LOCAL_OPEN = false
 # typora1.1版本以后，支持使用锚点跳转到本地文件，是否拦截处理（从新建窗口改成新建标签页）
 # 参考1：https://support.typora.io/zh/What's-New-1.1/#文件链接
 # 参考2：https://support.typora.io/Links/#internal-links
