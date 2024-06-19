@@ -14,6 +14,8 @@
 ENABLE = true
 # 性能模式，若为true，插件系统会舍弃拓展接口，功能静态化，尽力提升性能
 PERFORMANCE_MODE = true
+# 低于0.9.98版本的Typora运行此插件系统时，提出不兼容警告
+SHOW_INCOMPATIBLE_WARNING = true
 # 如何退出交互状态的代码块
 # - click_exit_button:  为图表添加一个【编辑】按钮，当点击【编辑】按钮时退出交互模式
 # - ctrl_click_fence:   ctrl+click图表退出交互模式
