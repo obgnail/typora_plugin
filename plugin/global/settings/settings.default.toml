@@ -95,10 +95,6 @@ COPY_PATH_HOTKEY = [""]
 CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "sortTabs", "copyPath", "showInFinder", "openInNewWindow"]
 # 当Typora使用【一体化】窗口样式时，是否隐藏标题栏
 HIDE_WINDOW_TITLE_BAR = false
-# 调整正文区域的顶部位置，以免被tab遮挡
-CHANGE_CONTENT_TOP = true
-# 调整notification组件的图层顺序，以免被tab遮挡
-CHANGE_NOTIFICATION_Z_INDEX = true
 # typora1.1版本以后，支持使用锚点跳转到本地文件，是否拦截处理（从新建窗口改成新建标签页）
 # 参考1：https://support.typora.io/zh/What's-New-1.1/#文件链接
 # 参考2：https://support.typora.io/Links/#internal-links
