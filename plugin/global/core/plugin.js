@@ -28,12 +28,12 @@ class IPlugin {
 }
 
 // 一级插件
-class basePlugin extends IPlugin {
+class BasePlugin extends IPlugin {
     call(type, meta) {}
 }
 
 // 二级插件
-class baseCustomPlugin extends IPlugin {
+class BaseCustomPlugin extends IPlugin {
     constructor(fixedName, setting) {
         super(fixedName, setting.config);
         this.info = setting;
@@ -45,9 +45,9 @@ class baseCustomPlugin extends IPlugin {
     callback(anchorNode) {}
 }
 
-const loadPlugin = async (fixedName, setting, isCustom) => {
+const LoadPlugin = async (fixedName, setting, isCustom) => {
     const path = isCustom ? "./plugin/custom/plugins" : "./plugin";
-    const superPlugin = isCustom ? baseCustomPlugin : basePlugin;
+    const superPlugin = isCustom ? BaseCustomPlugin : BasePlugin;
 
     const {plugin} = utils.requireFilePath(path, fixedName);
     if (!plugin) return;
@@ -76,7 +76,7 @@ const loadPlugin = async (fixedName, setting, isCustom) => {
 }
 
 module.exports = {
-    basePlugin,
-    baseCustomPlugin,
-    loadPlugin,
+    BasePlugin,
+    BaseCustomPlugin,
+    LoadPlugin,
 };
