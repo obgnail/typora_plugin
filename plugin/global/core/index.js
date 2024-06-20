@@ -19,6 +19,14 @@ class Launcher {
         delete settings.global;
     }
 
+    static showWarningIfNeed = () => {
+        const need = global._plugin_global_settings.SHOW_INCOMPATIBLE_WARNING;
+        const incompatible = utils.compareVersion(window._options.appVersion, "0.9.98") < 0;
+        if (need && incompatible) {
+            utils.showNotification("Typora 版本过低，部分插件可能失效。\n建议升级到 0.9.98 (最后一个免费版本)", "warning", 5000);
+        }
+    }
+
     static loadPlugins = () => Promise.all(Object.entries(global._plugin_settings).map(async ([fixedName, setting]) => {
         if (!setting || !setting.ENABLE) {
             console.debug(`disable plugin: [ \x1b[31m${fixedName}\x1b[0m ] `);
@@ -48,7 +56,7 @@ class Launcher {
         this.prepare(settings);
 
         const {
-            styleTemplater, contextMenu, dialog, stateRecorder, eventHub,
+            styleTemplater, contextMenu, notification, dialog, stateRecorder, eventHub,
             htmlTemplater, diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser,
         } = helper;
 
@@ -56,7 +64,7 @@ class Launcher {
         // 1.插件可能会在加载阶段用到dialog、contextMenu和styleTemplater
         // 2.必须先让stateRecorder恢复状态，才能执行后续流程
         await loadHelpers(styleTemplater);
-        await loadHelpers(contextMenu, dialog, stateRecorder);
+        await loadHelpers(contextMenu, notification, dialog, stateRecorder);
 
         // 加载插件
         await this.loadPlugins();
@@ -78,6 +86,9 @@ class Launcher {
 
         // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
         setTimeout(utils.reload, 50);
+
+        // 低于0.9.98版本的Typora运行插件系统时，提出不兼容警告
+        this.showWarningIfNeed();
     }
 }
 
@@ -90,7 +101,7 @@ ____________________________________________________________________
  /_/  \\__, / .___/\\____/_/   \\__,_/  / .___/_/\\__,_/\\__, /_/_/ /_/ 
      /____/_/                       /_/            /____/          
 
-                      Typora Plugin by obgnail                     
+                        Designed by obgnail                         
               https://github.com/obgnail/typora_plugin             
 ____________________________________________________________________
 `)

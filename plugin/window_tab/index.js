@@ -8,14 +8,18 @@ class windowTabBarPlugin extends BasePlugin {
             this.config.WHEN_CLOSE_LAST_TAB = "reconfirm";
         }
     }
+
     styleTemplate = () => true
+
     html = () => `<div id="plugin-window-tab"><div class="tab-bar"></div></div>`
+
     hotkey = () => [
         {hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: this.nextTab},
         {hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY, callback: this.previousTab},
         {hotkey: this.config.CLOSE_HOTKEY, callback: this.closeActiveTab},
         {hotkey: this.config.COPY_PATH_HOTKEY, callback: this.copyActiveTabPath}
     ]
+
     init = () => {
         this.entities = {
             content: document.querySelector("content"),
@@ -27,7 +31,9 @@ class windowTabBarPlugin extends BasePlugin {
         this.checkTabsInterval = null;
         this.tabUtil = {tabs: [], activeIdx: 0};
         this.loopDetectInterval = 35;
+        this.saveTabFilePath = this.utils.joinPath("./plugin/window_tab/save_tabs.json");
     }
+
     process = () => {
         const handleLifeCycle = () => {
             this._hideTabBar();
@@ -36,19 +42,19 @@ class windowTabBarPlugin extends BasePlugin {
             this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial");
             const isHeaderReady = () => this.utils.isBetaVersion ? document.querySelector("header").getBoundingClientRect().height : true
             const adjustTop = () => setTimeout(() => {
-                if (this.config.CHANGE_NOTIFICATION_Z_INDEX) {
-                    const container = document.querySelector(".md-notification-container");
-                    if (container) {
-                        container.style.zIndex = "99999";
-                    }
+                // 调整notification组件的图层顺序，以免被tab遮挡
+                const container = document.querySelector(".md-notification-container");
+                if (container) {
+                    container.style.zIndex = "99999";
                 }
+
                 if (!this.config.HIDE_WINDOW_TITLE_BAR) {
                     const {height, top} = document.querySelector("header").getBoundingClientRect();
                     this.entities.windowTab.style.top = height + top + "px";
                 }
-                if (this.config.CHANGE_CONTENT_TOP) {
-                    this._adjustContentTop();
-                }
+
+                // 调整正文区域的顶部位置，以免被tab遮挡
+                this._adjustContentTop();
             }, 200);
             this.utils.loopDetector(isHeaderReady, adjustTop, this.loopDetectInterval, 1000);
         }
@@ -79,10 +85,178 @@ class windowTabBarPlugin extends BasePlugin {
             })
         }
         const handleDrag = () => {
+            const newWindowIfNeed = (offsetY, tab) => {
+                if (this.config.HEIGHT_SCALE < 0) return;
+                offsetY = Math.abs(offsetY);
+                const {height} = this.entities.tabBar.getBoundingClientRect();
+                if (offsetY > height * this.config.HEIGHT_SCALE) {
+                    const idx = parseInt(tab.getAttribute("idx"));
+                    const _path = this.tabUtil.tabs[idx].path;
+                    this.openFileNewWindow(_path, false);
+                }
+            }
+
+            const sortIDEA = () => {
+                const that = this;
+
+                const resetTabBar = () => {
+                    const tabs = document.querySelectorAll("#plugin-window-tab .tab-container");
+                    const activeIdx = parseInt(that.entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
+                    const activePath = that.tabUtil.tabs[activeIdx].path;
+                    that.tabUtil.tabs = Array.from(tabs, tab => that.tabUtil.tabs[parseInt(tab.getAttribute("idx"))]);
+                    that.openTab(activePath);
+                }
+
+                const tabBar = $("#plugin-window-tab .tab-bar");
+                let currentDragItem = null;
+                let _offsetX = 0;
+
+                tabBar.on("dragstart", ".tab-container", function (ev) {
+                    _offsetX = ev.offsetX;
+                    currentDragItem = this;
+                }).on("dragend", ".tab-container", function () {
+                    currentDragItem = null;
+                }).on("dragover", ".tab-container", function (ev) {
+                    ev.preventDefault();
+                    if (currentDragItem) {
+                        const func = ev.offsetX > _offsetX ? 'after' : 'before';
+                        this[func](currentDragItem);
+                    }
+                }).on("dragenter", function () {
+                    return false
+                })
+
+                let dragBox = null;
+                let cloneObj = null;
+                let offsetX = 0;
+                let offsetY = 0;
+                let startX = 0;
+                let startY = 0;
+                let axis, _axis;
+                let dragROI;
+                const previewImage = new Image();
+
+                tabBar.on("dragstart", ".tab-container", function (ev) {
+                    dragBox = this;
+                    axis = dragBox.getAttribute('axis');
+                    _axis = axis;
+                    ev.originalEvent.dataTransfer.setDragImage(previewImage, 0, 0);
+                    ev.originalEvent.dataTransfer.effectAllowed = "move";
+                    ev.originalEvent.dataTransfer.dropEffect = "move";
+                    let {left, top, height} = dragBox.getBoundingClientRect();
+                    startX = ev.clientX;
+                    startY = ev.clientY;
+                    offsetX = startX - left;
+                    offsetY = startY - top;
+                    dragROI = height / 2;
+
+                    const fakeObj = dragBox.cloneNode(true);
+                    fakeObj.style.height = dragBox.offsetHeight + 'px'; // dragBox使用了height: 100%，需要重新设置一下
+                    fakeObj.style.transform = 'translate3d(0,0,0)';
+                    fakeObj.setAttribute('dragging', '');
+                    cloneObj = document.createElement('div');
+                    cloneObj.appendChild(fakeObj);
+                    cloneObj.className = 'drag-obj';
+                    cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+                    that.entities.tabBar.appendChild(cloneObj);
+                }).on("dragend", ".tab-container", function (ev) {
+                    newWindowIfNeed(ev.offsetY, this);
+
+                    if (!cloneObj) return;
+                    const {left, top} = this.getBoundingClientRect();
+                    const reset = cloneObj.animate(
+                        [{transform: cloneObj.style.transform}, {transform: `translate3d(${left}px, ${top}px, 0)`}],
+                        {duration: 70, easing: "ease-in-out"}
+                    )
+
+                    reset.onfinish = function () {
+                        if (cloneObj && cloneObj.parentNode === that.entities.tabBar) {
+                            that.entities.tabBar.removeChild(cloneObj);
+                        }
+                        cloneObj = null;
+                        dragBox.style.visibility = 'visible';
+                        resetTabBar();
+                    }
+                })
+
+                document.addEventListener('dragover', function (ev) {
+                    if (!cloneObj) return;
+
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    ev.dataTransfer.dropEffect = 'move';
+                    dragBox.style.visibility = 'hidden';
+                    let left = ev.clientX - offsetX;
+                    let top = ev.clientY - offsetY;
+                    if (axis) {
+                        if (_axis === 'X') {
+                            top = startY - offsetY;
+                        } else if (_axis === 'Y') {
+                            left = startX - offsetX;
+                        } else {
+                            const x = Math.abs(ev.clientX - startX);
+                            const y = Math.abs(ev.clientY - startY);
+                            _axis = ((x > y && 'X') || (x < y && 'Y') || '');
+                        }
+                    } else {
+                        _axis = '';
+                    }
+                    startX = left + offsetX;
+                    startY = top + offsetY;
+
+                    if (that.config.LIMIT_TAB_ROI || (that.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG && top < dragROI)) {
+                        top = 0;
+                    }
+                    cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+                })
+            }
+
+            const sortVscode = () => {
+                const that = this;
+
+                const toggleOver = (target, f) => {
+                    if (f === "add") {
+                        target.classList.add("over");
+                        lastOver = target;
+                    } else {
+                        target.classList.remove("over");
+                    }
+                }
+
+                let lastOver = null;
+                $("#plugin-window-tab .tab-bar").on("dragstart", ".tab-container", function (ev) {
+                    ev.originalEvent.dataTransfer.effectAllowed = "move";
+                    ev.originalEvent.dataTransfer.dropEffect = 'move';
+                    this.style.opacity = 0.5;
+                    lastOver = null;
+                }).on("dragend", ".tab-container", function (ev) {
+                    this.style.opacity = "";
+                    newWindowIfNeed(ev.offsetY, this);
+                    if (lastOver) {
+                        lastOver.classList.remove("over");
+                        const activeIdx = parseInt(that.entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
+                        const activePath = that.tabUtil.tabs[activeIdx].path;
+                        const toIdx = parseInt(lastOver.getAttribute("idx"));
+                        const fromIdx = parseInt(this.getAttribute("idx"));
+                        const ele = that.tabUtil.tabs.splice(fromIdx, 1)[0];
+                        that.tabUtil.tabs.splice(toIdx, 0, ele);
+                        that.openTab(activePath);
+                    }
+                }).on("dragover", ".tab-container", function () {
+                    toggleOver(this, "add");
+                    return false
+                }).on("dragenter", ".tab-container", function () {
+                    toggleOver(this, "add");
+                    return false
+                }).on("dragleave", ".tab-container", function () {
+                    toggleOver(this, "remove");
+                })
+            }
+
             if (this.config.DRAG_STYLE === 1) {
-                this.sortIDEA();
+                sortIDEA();
             } else {
-                this.sortVscode();
+                sortVscode();
             }
         }
         const handleRename = () => {
@@ -217,15 +391,15 @@ class windowTabBarPlugin extends BasePlugin {
             handleContextMenu();
         }
     }
+
     dynamicCallArgsGenerator = () => {
         const args = [];
-        if (!this.exitTabFile()) {
-            args.push({arg_name: "保存所有的标签页", arg_value: "save_tabs"});
+        if (this.utils.existPathSync(this.saveTabFilePath)) {
+            const save_tabs = {arg_name: "覆盖保存的标签页", arg_value: "save_tabs"};
+            const open_save_tabs = {arg_name: "打开保存的标签页", arg_value: "open_save_tabs"};
+            args.push(save_tabs, open_save_tabs);
         } else {
-            args.push(
-                {arg_name: "覆盖保存的标签页", arg_value: "save_tabs"},
-                {arg_name: "打开保存的标签页", rg_value: "open_save_tabs"},
-            );
+            args.push({arg_name: "保存所有的标签页", arg_value: "save_tabs"});
         }
         if (this.localOpen) {
             args.push({arg_name: "在新标签打开文件", arg_value: "new_tab_open"});
@@ -237,6 +411,7 @@ class windowTabBarPlugin extends BasePlugin {
         }
         return args
     }
+
     call = type => {
         const callMap = {
             new_tab_open: () => this.localOpen = false,
@@ -249,7 +424,19 @@ class windowTabBarPlugin extends BasePlugin {
         func && func();
     }
 
-    _isShowTabBar = () => this.entities.windowTab.style.display !== "none";
+    _hideTabBar = () => {
+        if (this.utils.isShow(this.entities.windowTab) && this.tabUtil.tabs.length === 0) {
+            this.utils.hide(this.entities.windowTab);
+            this._resetContentTop();
+        }
+    }
+
+    _showTabBar = () => {
+        if (this.utils.isHidden(this.entities.windowTab)) {
+            this.utils.show(this.entities.windowTab);
+            this._adjustContentTop();
+        }
+    }
 
     _adjustContentTop = () => {
         const {height, top} = this.entities.windowTab.getBoundingClientRect();
@@ -466,22 +653,9 @@ class windowTabBarPlugin extends BasePlugin {
         }
     }
 
-    _hideTabBar = () => {
-        if (this._isShowTabBar() && this.tabUtil.tabs.length === 0) {
-            this.entities.windowTab.style.display = "none";
-            this._resetContentTop();
-        }
-    }
-
-    _showTabBar = () => {
-        if (!this._isShowTabBar()) {
-            this.entities.windowTab.style.display = "initial";
-            this._adjustContentTop();
-        }
-    }
-
     // 新窗口打开
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
+
     // 当前标签页打开
     OpenFileLocal = filePath => {
         this.localOpen = true;
@@ -490,6 +664,7 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     openTab = wantOpenPath => {
+        const {NEW_TAB_AT, TAB_MAX_NUM} = this.config;
         const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath);
         if (!include) {
             // 原地打开并且不存在tab时，修改当前tab的文件路径
@@ -497,15 +672,15 @@ class windowTabBarPlugin extends BasePlugin {
                 this.tabUtil.tabs[this.tabUtil.activeIdx].path = wantOpenPath;
             } else {
                 const newTab = {path: wantOpenPath, scrollTop: 0};
-                if (this.config.NEW_TAB_AT === "end") {
+                if (NEW_TAB_AT === "end") {
                     this.tabUtil.tabs.push(newTab);
-                } else if (this.config.NEW_TAB_AT === "right") {
+                } else if (NEW_TAB_AT === "right") {
                     this.tabUtil.tabs.splice(this.tabUtil.activeIdx + 1, 0, newTab);
                 }
             }
         }
-        if (0 < this.config.TAB_MAX_NUM && this.config.TAB_MAX_NUM < this.tabUtil.tabs.length) {
-            this.tabUtil.tabs = this.tabUtil.tabs.slice(-this.config.TAB_MAX_NUM);
+        if (0 < TAB_MAX_NUM && TAB_MAX_NUM < this.tabUtil.tabs.length) {
+            this.tabUtil.tabs = this.tabUtil.tabs.slice(-TAB_MAX_NUM);
         }
         this.tabUtil.activeIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
         this._showTabBar();
@@ -609,6 +784,7 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     copyPath = idx => navigator.clipboard.writeText(this.tabUtil.tabs[idx].path)
+
     copyActiveTabPath = () => this.copyPath(this.tabUtil.activeIdx)
 
     toggleSuffix = () => {
@@ -620,192 +796,20 @@ class windowTabBarPlugin extends BasePlugin {
 
     openInNewWindow = idx => this.openFileNewWindow(this.tabUtil.tabs[idx].path, false)
 
-    _newWindowIfNeed = (offsetY, tab) => {
-        if (this.config.HEIGHT_SCALE < 0) return;
-        offsetY = Math.abs(offsetY);
-        const {height} = this.entities.tabBar.getBoundingClientRect();
-        if (offsetY > height * this.config.HEIGHT_SCALE) {
-            const idx = parseInt(tab.getAttribute("idx"));
-            const _path = this.tabUtil.tabs[idx].path;
-            this.openFileNewWindow(_path, false);
-        }
-    }
-
-    sortIDEA = () => {
-        const that = this;
-
-        const resetTabBar = () => {
-            const tabs = document.querySelectorAll("#plugin-window-tab .tab-container");
-            const activeIdx = parseInt(that.entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
-            const activePath = that.tabUtil.tabs[activeIdx].path;
-            that.tabUtil.tabs = Array.from(tabs, tab => that.tabUtil.tabs[parseInt(tab.getAttribute("idx"))]);
-            that.openTab(activePath);
-        }
-
-        const tabBar = $("#plugin-window-tab .tab-bar");
-        let currentDragItem = null;
-        let _offsetX = 0;
-
-        tabBar.on("dragstart", ".tab-container", function (ev) {
-            _offsetX = ev.offsetX;
-            currentDragItem = this;
-        }).on("dragend", ".tab-container", function () {
-            currentDragItem = null;
-        }).on("dragover", ".tab-container", function (ev) {
-            ev.preventDefault();
-            if (currentDragItem) {
-                const func = ev.offsetX > _offsetX ? 'after' : 'before';
-                this[func](currentDragItem);
-            }
-        }).on("dragenter", function () {
-            return false
-        })
-
-        let dragBox = null;
-        let cloneObj = null;
-        let offsetX = 0;
-        let offsetY = 0;
-        let startX = 0;
-        let startY = 0;
-        let axis, _axis;
-        let dragROI;
-        const previewImage = new Image();
-
-        tabBar.on("dragstart", ".tab-container", function (ev) {
-            dragBox = this;
-            axis = dragBox.getAttribute('axis');
-            _axis = axis;
-            ev.originalEvent.dataTransfer.setDragImage(previewImage, 0, 0);
-            ev.originalEvent.dataTransfer.effectAllowed = "move";
-            ev.originalEvent.dataTransfer.dropEffect = "move";
-            let {left, top, height} = dragBox.getBoundingClientRect();
-            startX = ev.clientX;
-            startY = ev.clientY;
-            offsetX = startX - left;
-            offsetY = startY - top;
-            dragROI = height / 2;
-
-            const fakeObj = dragBox.cloneNode(true);
-            fakeObj.style.height = dragBox.offsetHeight + 'px'; // dragBox使用了height: 100%，需要重新设置一下
-            fakeObj.style.transform = 'translate3d(0,0,0)';
-            fakeObj.setAttribute('dragging', '');
-            cloneObj = document.createElement('div');
-            cloneObj.appendChild(fakeObj);
-            cloneObj.className = 'drag-obj';
-            cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-            that.entities.tabBar.appendChild(cloneObj);
-        }).on("dragend", ".tab-container", function (ev) {
-            that._newWindowIfNeed(ev.offsetY, this);
-
-            if (!cloneObj) return;
-            const {left, top} = this.getBoundingClientRect();
-            const reset = cloneObj.animate(
-                [{transform: cloneObj.style.transform}, {transform: `translate3d(${left}px, ${top}px, 0)`}],
-                {duration: 70, easing: "ease-in-out"}
-            )
-
-            reset.onfinish = function () {
-                if (cloneObj && cloneObj.parentNode === that.entities.tabBar) {
-                    that.entities.tabBar.removeChild(cloneObj);
-                }
-                cloneObj = null;
-                dragBox.style.visibility = 'visible';
-                resetTabBar();
-            }
-        })
-
-        document.addEventListener('dragover', function (ev) {
-            if (!cloneObj) return;
-
-            ev.preventDefault();
-            ev.stopPropagation();
-            ev.dataTransfer.dropEffect = 'move';
-            dragBox.style.visibility = 'hidden';
-            let left = ev.clientX - offsetX;
-            let top = ev.clientY - offsetY;
-            if (axis) {
-                if (_axis === 'X') {
-                    top = startY - offsetY;
-                } else if (_axis === 'Y') {
-                    left = startX - offsetX;
-                } else {
-                    const x = Math.abs(ev.clientX - startX);
-                    const y = Math.abs(ev.clientY - startY);
-                    _axis = ((x > y && 'X') || (x < y && 'Y') || '');
-                }
-            } else {
-                _axis = '';
-            }
-            startX = left + offsetX;
-            startY = top + offsetY;
-
-            if (that.config.LIMIT_TAB_ROI || (that.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG && top < dragROI)) {
-                top = 0;
-            }
-            cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
-        })
-    }
-
-    sortVscode = () => {
-        const that = this;
-
-        const toggleOver = (target, f) => {
-            if (f === "add") {
-                target.classList.add("over");
-                lastOver = target;
-            } else {
-                target.classList.remove("over");
-            }
-        }
-
-        let lastOver = null;
-        $("#plugin-window-tab .tab-bar").on("dragstart", ".tab-container", function (ev) {
-            ev.originalEvent.dataTransfer.effectAllowed = "move";
-            ev.originalEvent.dataTransfer.dropEffect = 'move';
-            this.style.opacity = 0.5;
-            lastOver = null;
-        }).on("dragend", ".tab-container", function (ev) {
-            this.style.opacity = "";
-            that._newWindowIfNeed(ev.offsetY, this);
-            if (lastOver) {
-                lastOver.classList.remove("over");
-                const activeIdx = parseInt(that.entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
-                const activePath = that.tabUtil.tabs[activeIdx].path;
-                const toIdx = parseInt(lastOver.getAttribute("idx"));
-                const fromIdx = parseInt(this.getAttribute("idx"));
-                const ele = that.tabUtil.tabs.splice(fromIdx, 1)[0];
-                that.tabUtil.tabs.splice(toIdx, 0, ele);
-                that.openTab(activePath);
-            }
-        }).on("dragover", ".tab-container", function () {
-            toggleOver(this, "add");
-            return false
-        }).on("dragenter", ".tab-container", function () {
-            toggleOver(this, "add");
-            return false
-        }).on("dragleave", ".tab-container", function () {
-            toggleOver(this, "remove");
-        })
-    }
-
-    _getTabFilePath = () => this.utils.joinPath("./plugin/window_tab/save_tabs.json");
-
-    exitTabFile = () => this.utils.existPathSync(this._getTabFilePath())
-
     saveTabs = async filepath => {
+        filepath = filepath || this.saveTabFilePath;
         const dataset = this.tabUtil.tabs.map((tab, idx) => ({
             idx: idx,
             path: tab.path,
             active: idx === this.tabUtil.activeIdx,
             scrollTop: tab.scrollTop,
         }))
-        filepath = filepath || this._getTabFilePath();
         const str = JSON.stringify({"save_tabs": dataset}, null, "\t");
         await this.utils.Package.Fs.promises.writeFile(filepath, str);
     }
 
     openSaveTabs = async filepath => {
-        filepath = filepath || this._getTabFilePath();
+        filepath = filepath || this.saveTabFilePath;
         const data = await this.utils.Package.Fs.promises.readFile(filepath, 'utf8');
         const dataset = JSON.parse(data || "{}");
         const tabs = dataset["save_tabs"];

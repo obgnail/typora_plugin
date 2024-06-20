@@ -68,8 +68,8 @@ class exportEnhancePlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = () => [
         this.config.DOWNLOAD_NETWORK_IMAGE
-            ? {arg_name: "导出时忽略网络图片", arg_value: "dont_download_network_image"}
-            : {arg_name: "导出时转化网络图片", arg_value: "download_network_image"},
+            ? {arg_name: "忽略网络图片", arg_value: "dont_download_network_image"}
+            : {arg_name: "转化网络图片", arg_value: "download_network_image"},
         this.config.ENABLE
             ? {arg_name: "临时禁用", arg_value: "disable"}
             : {arg_name: "临时启用", arg_value: "enable"}

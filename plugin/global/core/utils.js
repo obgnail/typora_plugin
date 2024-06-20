@@ -145,6 +145,9 @@ class utils {
     static registerMenu = (name, selector, generator, callback) => helper.contextMenu.registerMenu(name, selector, generator, callback)
     static unregisterMenu = name => helper.contextMenu.unregisterMenu(name)
 
+    // 弹出notification
+    static showNotification = (message, type = "success", last = 3000) => helper.notification.show(message, type, last)
+
     // 动态弹出自定义模态框（即刻弹出，因此无需注册）
     //   1. modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
     //   2. callback(components) => {}: 当用户点击【确认】后的回调函数
@@ -2041,6 +2044,51 @@ class contextMenu {
     }
 }
 
+class notification {
+    constructor() {
+        this.utils = utils;
+        this.timer = null;
+        this.types = {
+            success: {bgColor: "#e6ffed", icon: "fa fa-check"},
+            info: {bgColor: "#e6f7ff", icon: "fa fa-info-circle"},
+            warning: {bgColor: "#fffbe6", icon: "fa fa-warning"},
+            error: {bgColor: "#ffe6e6", icon: "fa fa-times"},
+        }
+    }
+
+    process = async () => {
+        await this.utils.registerStyleTemplate("plugin-common-notification");
+        this.utils.insertElement(`
+            <div class="plugin-common-notification plugin-common-hidden">
+                <span class="notification-icon fa fa-check"></span>
+                <p class="notification-message"></p>
+                <button class="notification-close-btn">✕</button>
+            </div>
+        `);
+        document.querySelector(".plugin-common-notification .notification-close-btn").addEventListener("click", () => this.hide());
+    }
+
+    getNotification = () => document.querySelector(".plugin-common-notification")
+
+    hide = () => this.utils.hide(this.getNotification())
+
+    show = (message, type = "success", last = 3000) => {
+        clearTimeout(this.timer);
+        if (!this.types.hasOwnProperty(type)) {
+            type = "info";
+        }
+        const {bgColor, icon} = this.types[type];
+        const notification = this.getNotification();
+        notification.querySelector(".notification-message").textContent = message;
+        notification.querySelector(".notification-icon").className = `notification-icon ${icon}`;
+        notification.style.setProperty("--notification-bg-color", bgColor);
+        this.utils.show(notification);
+        if (last > 0) {
+            this.timer = setTimeout(() => this.hide(), last);
+        }
+    }
+}
+
 class exportHelper {
     constructor() {
         this.utils = utils;
@@ -2138,6 +2186,8 @@ const helper = Object.freeze({
     eventHub: new eventHub(),
     // 公共菜单
     contextMenu: new contextMenu(),
+    // 公共通知栏
+    notification: new notification(),
     // 自定义代码块语法
     diagramParser: new diagramParser(),
     // 第三方图形代码块语法
