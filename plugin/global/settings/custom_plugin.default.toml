@@ -1232,7 +1232,7 @@ tc_path = "D:\\software\\TotalCMD_64bit_10.52\\TOTALCMD64.EXE"
 #   1. $f: 当前文件路径
 #   2. $d: 当前文件所属目录
 #   3. $m: 当前挂载目录（侧边栏的根目录）
-tc_args = '/O /T /P=L  /L="$f"'
+tc_args = '/O /T /P=L  /L=$f'
 
 
 ############### pluginUpdater ###############
