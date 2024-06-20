@@ -7,29 +7,29 @@ class IPlugin {
         this.utils = utils;
     }
 
-    // 最先执行的函数，唯一的asyncFunction，在这里初始化插件需要的数据。若返回stopLoadPluginError，则停止加载插件
-    beforeProcess = async () => undefined
+    // 最先执行的函数，在这里准备插件需要的数据。若返回utils.stopLoadPluginError，则停止加载插件
+    async beforeProcess() {}
     // 以字符串形式导入样式
-    style = () => undefined
+    style() {}
     // 以文件形式导入样式
-    styleTemplate = () => undefined
+    styleTemplate() {}
     // 原生插入html标签
-    html = () => undefined
+    html() {}
     // 使用htmlTemplater插入html标签，详见htmlTemplater
-    htmlTemplate = () => undefined
+    htmlTemplate() {}
     // 注册快捷键
-    hotkey = () => undefined
+    hotkey() {}
     // 初始化数据
-    init = () => undefined
+    init() {}
     // 主要的处理流程
-    process = () => undefined
+    process() {}
     // 收尾，一般用于回收内存，用的比较少
-    afterProcess = () => undefined
+    afterProcess() {}
 }
 
 // 一级插件
 class basePlugin extends IPlugin {
-    call = (type, meta) => undefined
+    call(type, meta) {}
 }
 
 // 二级插件
@@ -40,9 +40,9 @@ class baseCustomPlugin extends IPlugin {
         this.showName = setting.name;
     }
 
-    hint = isDisable => undefined
-    selector = () => undefined
-    callback = anchorNode => undefined
+    hint(isDisable) {}
+    selector() {}
+    callback(anchorNode) {}
 }
 
 const loadPlugin = async (fixedName, setting, isCustom) => {
