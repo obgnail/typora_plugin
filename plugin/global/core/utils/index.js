@@ -912,14 +912,6 @@ class utils {
     }
 }
 
-// combinations should be used to layer various functions, but utils is too old and has become a legacy, so functions can only be mixin
-const {getDelegate} = require("./delegate")
-const {helper, delegate, loadHelpers, optimizeHelpers} = getDelegate(utils)
-Object.assign(utils, delegate)
-
 module.exports = {
-    utils,
-    helper,
-    loadHelpers,
-    optimizeHelpers,
+    utils
 }

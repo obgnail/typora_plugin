@@ -9,7 +9,6 @@ class eventHub {
         this.eventType = Object.freeze({
             allCustomPluginsHadInjected: "allCustomPluginsHadInjected", // 自定义插件加载完毕
             allPluginsHadInjected: "allPluginsHadInjected",             // 所有插件加载完毕
-            everythingReady: "everythingReady",                         // 一切准备就绪
             firstFileInit: "firstFileInit",                             // 打开Typora后文件被加载
             beforeFileOpen: "beforeFileOpen",                           // 打开文件之前
             fileOpened: "fileOpened",                                   // 打开文件之后
@@ -121,7 +120,6 @@ class eventHub {
     afterProcess = () => {
         delete this.eventMap[this.utils.eventType.allCustomPluginsHadInjected];
         delete this.eventMap[this.utils.eventType.allPluginsHadInjected];
-        delete this.eventMap[this.utils.eventType.everythingReady];
         setTimeout(() => delete this.eventMap[this.utils.eventType.firstFileInit], 1000);
 
         const funcList = this.eventMap[this.utils.eventType.fileEdited];

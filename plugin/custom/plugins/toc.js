@@ -29,7 +29,7 @@ class tocPlugin extends BaseCustomPlugin {
             document.querySelector("#info-panel-tab-outline .info-panel-tab-title").addEventListener("mousedown", ev => ev.button === 2 && this.toggle());
         }
         if (this.config.default_show_toc) {
-            this.utils.addEventListener(this.utils.eventType.everythingReady, this.toggle);
+            this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, this.toggle);
         }
     }
 

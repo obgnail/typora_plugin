@@ -9,7 +9,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.toggle()
 
     process = () => {
-        this.utils.addEventListener(this.utils.eventType.everythingReady, async () => {
+        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, async () => {
             this.registerConfigButtons();
 
             if (this.buttons.size === 0) return;

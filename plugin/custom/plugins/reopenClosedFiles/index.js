@@ -7,7 +7,7 @@ class reopenClosedFilesPlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     process = () => {
-        this.utils.addEventListener(this.utils.eventType.everythingReady, async () => {
+        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, async () => {
             this.windowTabBarPlugin = this.utils.getPlugin("window_tab");
             if (!this.windowTabBarPlugin) return;
             await this.ensureFile();
