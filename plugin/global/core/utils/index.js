@@ -1,22 +1,9 @@
 const HTTPS = require("https")
 const OS = require("os")
 const PATH = require("path")
-const FS = require("fs");
-const FS_EXTRA = require("fs-extra")
+const FS = require("fs")
 const CHILD_PROCESS = require('child_process')
-
-const {hotkeyHub} = require("./hotkey")
-const {eventHub} = require("./eventHub")
-const {stateRecorder} = require("./stateRecorder")
-const {exportHelper} = require("./exportHelper")
-const {styleTemplater} = require("./styleTemplater")
-const {htmlTemplater} = require("./htmlTemplater")
-const {markdownParser} = require("./markdownParser")
-const {contextMenu} = require("./contextMenu")
-const {notification} = require("./notification")
-const {dialog} = require("./dialog")
-const {diagramParser} = require("./diagramParser")
-const {thirdPartyDiagramParser} = require("./thirdPartyDiagramParser")
+const FS_EXTRA = require("fs-extra")
 
 class utils {
     static isBetaVersion = window._options.appVersion[0] === "0"
@@ -26,8 +13,6 @@ class utils {
     static nonExistSelector = "#__nonExist__"                 // 插件临时不可点击，返回此
     static disableForeverSelector = "#__disableForever__"     // 插件永远不可点击，返回此
     static stopLoadPluginError = new Error("stopLoadPlugin")  // 用于插件的beforeProcess方法，若希望停止加载插件，返回此
-    static stopCallError = new Error("stopCall")              // 用于decorate方法，若希望停止执行原生函数，返回此
-    static meta = {}                                          // 用于在右键菜单功能中传递数据，不可手动调用此变量
     static Package = Object.freeze({
         HTTPS: HTTPS,
         OS: OS,
@@ -128,6 +113,7 @@ class utils {
         const target = anchorNode.closest(selector);
         target && target[0] && func(target[0]);
     }
+    static meta = {} // 用于在右键菜单功能中传递数据，不可手动调用此变量
     static generateDynamicCallArgs = (fixedName, anchorNode, notInContextMenu = false) => {
         if (!fixedName) return;
         const plugin = this.getPlugin(fixedName);
@@ -865,7 +851,7 @@ class utils {
             }
 
             document.addEventListener("mouseup", onMouseUp);
-            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener("mousemove", onMouseMove);
         })
         handleElement.ondragstart = () => false
     }
@@ -881,7 +867,7 @@ class utils {
         active.scrollIntoView({block: "nearest"});
     }
 
-    ////////////////////////////// 黑魔法 //////////////////////////////
+    static stopCallError = new Error("stopCall") // 用于decorate方法，若希望停止执行原生函数，返回此
     static decorate = (objGetter, attr, before, after, changeResult = false) => {
         function decorator(original, before, after) {
             return function () {
@@ -914,7 +900,6 @@ class utils {
             }
         }, 20);
     }
-
     static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
         let run = false;
         const start = new Date().getTime();
@@ -935,87 +920,11 @@ class utils {
     }
 }
 
-const helper = {
-    eventHub: new eventHub(utils),
-    contextMenu: new contextMenu(utils),
-    notification: new notification(utils),
-    diagramParser: new diagramParser(utils),
-    thirdPartyDiagramParser: new thirdPartyDiagramParser(utils),
-    stateRecorder: new stateRecorder(utils),
-    dialog: new dialog(utils),
-    hotkeyHub: new hotkeyHub(utils),
-    styleTemplater: new styleTemplater(utils),
-    htmlTemplater: new htmlTemplater(utils),
-    exportHelper: new exportHelper(utils),
-    markdownParser: new markdownParser(utils),
-}
-
-const delegate = {
-    // 动态注册、动态注销hotkey
-    registerHotkey: helper.hotkeyHub.register,
-    registerSingleHotkey: helper.hotkeyHub.registerSingle,
-    unregisterHotkey: helper.hotkeyHub.unregister,
-    getHotkeyHub: helper.hotkeyHub,
-
-    // 动态注册、动态注销、动态发布生命周期事件
-    eventType: helper.eventHub.eventType,
-    addEventListener: helper.eventHub.addEventListener,
-    removeEventListener: helper.eventHub.removeEventListener,
-    // 理论上不应该暴露publishEvent的，但我希望给予最大自由度，充分信任插件，允许所有插件发布事件。所以需要调用者自觉维护，一旦错误发布事件，会影响整个插件系统
-    publishEvent: helper.eventHub.publishEvent,
-
-    // 动态注册、动态注销元素状态记录器（仅当window_tab插件启用时有效）
-    // 功能：在用户切换标签页前记录元素的状态，等用户切换回来时恢复元素的状态
-    // 比如：【章节折叠】功能：需要在用户切换标签页前记录有哪些章节被折叠了，等用户切换回来后需要把章节自动折叠回去，保持前后一致。
-    registerStateRecorder: helper.stateRecorder.register,
-    unregisterStateRecorder: helper.stateRecorder.unregister,
-    collectState: helper.stateRecorder.collect,
-    getState: helper.stateRecorder.getState,
-    deleteState: helper.stateRecorder.deleteState,
-    setState: helper.stateRecorder.setState,
-
-    // 动态注册、动态注销新的代码块图表语法
-    registerDiagramParser: helper.diagramParser.register,
-    unregisterDiagramParser: helper.diagramParser.unregister,
-    throwParseError: helper.diagramParser.throwParseError,
-
-    // 动态注册、动态注销第三方代码块图表语法(派生自DiagramParser)
-    registerThirdPartyDiagramParser: helper.thirdPartyDiagramParser.register,
-    unregisterThirdPartyDiagramParser: helper.thirdPartyDiagramParser.unregister,
-
-    // 动态注册导出时的额外操作
-    registerExportHelper: helper.exportHelper.register,
-    unregisterExportHelper: helper.exportHelper.unregister,
-
-    // 动态注册css模板文件
-    registerStyleTemplate: helper.styleTemplater.register,
-    unregisterStyleTemplate: helper.styleTemplater.unregister,
-    getStyleContent: helper.styleTemplater.getStyleContent,
-
-    // 插入html
-    insertHtmlTemplate: helper.htmlTemplater.insert,
-    createElement: helper.htmlTemplater.create,
-    createElements: helper.htmlTemplater.createList,
-    appendElements: helper.htmlTemplater.appendElements,
-
-    // 解析markdown语法
-    parseMarkdown: helper.markdownParser.parse,
-    getNodeKindByNode: helper.markdownParser.getNodeKindByNode,
-    getNodeKindByNum: helper.markdownParser.getNodeKindByNum,
-
-    // 动态注册右键菜单
-    registerMenu: helper.contextMenu.registerMenu,
-    unregisterMenu: helper.contextMenu.unregisterMenu,
-
-    // 弹出notification
-    showNotification: helper.notification.show,
-
-    // 动态弹出自定义模态框（即刻弹出，因此无需注册）
-    modal: helper.dialog.modal,
-}
-
 // combinations should be used to layer various functions, but utils is too old and has become a legacy, so functions can only be mixin
+const {getDelegate} = require("./delegate")
+const {helper, delegate} = getDelegate(utils)
 Object.assign(utils, delegate)
+
 const loadHelpers = (...helpers) => Promise.all(helpers.map(async h => h.process()));
 const optimizeHelpers = () => Promise.all(Object.values(helper).map(async h => h.afterProcess && h.afterProcess()));
 
@@ -1025,4 +934,3 @@ module.exports = {
     loadHelpers,
     optimizeHelpers,
 }
-
