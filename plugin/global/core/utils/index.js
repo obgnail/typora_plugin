@@ -4,6 +4,7 @@ const PATH = require("path")
 const FS = require("fs")
 const CHILD_PROCESS = require('child_process')
 const FS_EXTRA = require("fs-extra")
+const TOML = require("./common/toml")
 
 class utils {
     static isBetaVersion = window._options.appVersion[0] === "0"
@@ -368,8 +369,7 @@ class utils {
         const home_ = this.getHomeSettingPath(userSetting);
         const contentList = await this.readFiles([default_, user_, home_]);
         try {
-            const toml = require("../../utils/toml");
-            const configList = contentList.map(c => c ? toml.parse(c) : {});
+            const configList = contentList.map(c => c ? TOML.parse(c) : {});
             return configList.reduce(this.merge)
         } catch (e) {
             const message = "配置文件格式错误，是否前往校验网站";
@@ -519,7 +519,7 @@ class utils {
     }
 
     static readYaml = content => {
-        const yaml = require("../../utils/yaml");
+        const yaml = require("./common/yaml");
         try {
             return yaml.safeLoad(content);
         } catch (e) {
@@ -527,16 +527,8 @@ class utils {
         }
     }
 
-    static readToml = async filepath => {
-        const file = await FS.promises.readFile(filepath, "utf-8");
-        const toml = require("../../utils/toml");
-        return toml.parse(file);
-    }
-
-    static stringifyToml = obj => {
-        const toml = require("../../utils/toml");
-        return toml.stringify(obj)
-    }
+    static readToml = async filepath => TOML.parse(await FS.promises.readFile(filepath, "utf-8"))
+    static stringifyToml = obj => TOML.stringify(obj)
 
 
     ////////////////////////////// 业务操作 //////////////////////////////
