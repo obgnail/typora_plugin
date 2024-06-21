@@ -32,7 +32,7 @@ const getDelegate = utils => {
         registerHotkey: helper.hotkeyHub.register,
         registerSingleHotkey: helper.hotkeyHub.registerSingle,
         unregisterHotkey: helper.hotkeyHub.unregister,
-        getHotkeyHub: helper.hotkeyHub,
+        getHotkeyHub: () => helper.hotkeyHub,
 
         // 动态注册、动态注销、动态发布生命周期事件
         eventType: helper.eventHub.eventType,

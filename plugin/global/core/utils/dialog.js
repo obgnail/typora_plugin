@@ -6,16 +6,14 @@ class dialog {
     }
 
     html = () => `
-        <div id="plugin-custom-modal" class="modal-dialog plugin-common-hidden">
-            <div class="modal-content">
-                <div class="modal-header"><div class="modal-title" data-lg="Front">自定义插件弹窗</div></div>
-                <div class="modal-body"></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default plugin-modal-cancel" data-dismiss="modal" data-lg="Front">取消</button>
-                    <button type="button" class="btn btn-primary plugin-modal-submit" data-lg="Front">确定</button>
-                </div>
+        <dialog id="plugin-custom-modal">
+            <div class="plugin-custom-modal-header"><div class="plugin-custom-modal-title" data-lg="Front">自定义插件弹窗</div></div>
+            <div class="plugin-custom-modal-body"></div>
+            <div class="plugin-custom-modal-footer">
+                <button type="button" class="btn btn-default plugin-modal-cancel">取消</button>
+                <button type="button" class="btn btn-primary plugin-modal-submit">确定</button>
             </div>
-        </div>
+        </dialog>
     `
 
     clean = () => {
@@ -29,9 +27,8 @@ class dialog {
         this.utils.insertElement(this.html());
         this.entities = {
             modal: document.getElementById("plugin-custom-modal"),
-            content: document.querySelector("#plugin-custom-modal .modal-content"),
-            body: document.querySelector("#plugin-custom-modal .modal-body"),
-            title: document.querySelector("#plugin-custom-modal .modal-title"),
+            body: document.querySelector("#plugin-custom-modal .plugin-custom-modal-body"),
+            title: document.querySelector("#plugin-custom-modal .plugin-custom-modal-title"),
             submit: document.querySelector("#plugin-custom-modal button.plugin-modal-submit"),
             cancel: document.querySelector("#plugin-custom-modal button.plugin-modal-cancel"),
         }
@@ -45,7 +42,7 @@ class dialog {
             const widget = this.entities.body.querySelector(`.form-group[component-id="${c.id}"]`);
             c.submit = widget ? this.getWidgetValue(c.type, widget) : undefined;
         })
-        this.utils.hide(this.entities.modal);
+        this.entities.modal.close();
         if (callback) {
             await callback(this.pluginModal.components);
         }
@@ -150,7 +147,7 @@ class dialog {
             const widgetList = modal.components.map(this.newWidget);
             this.entities.body.innerHTML = `<form role="form">${widgetList.join("")}</form>`;
             this.addEvent();
-            this.utils.show(this.entities.modal);
+            this.entities.modal.showModal();
             modal.onload && modal.onload(this.entities.modal);
         }
     }

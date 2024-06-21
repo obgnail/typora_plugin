@@ -1,17 +1,59 @@
 #plugin-custom-modal {
-    position: fixed;
-    z-index: 99999;
-    margin: 50px auto;
-    left: 0;
-    right: 0;
-    top: 50px;
+    padding: 0;
+    width: 400px;
+    border: none;
+    font-size: 0.8em;
+    box-shadow: rgba(0, 0, 40, 0.2) 0 15px 30px 0;
 }
 
-#plugin-custom-modal .modal-body {
+#plugin-custom-modal::backdrop {
+    background-color: rgba(0, 0, 0, .1);
+}
+
+.plugin-custom-modal-header {
+    padding: 15px;
+    user-select: none;
+}
+
+.plugin-custom-modal-title {
+    margin: 0;
+    font-size: 1.25em;
+    line-height: 1.4;
+}
+
+.plugin-custom-modal-body {
     max-height: calc(80vh - 150px);
     overflow: auto;
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 0 15px;
+}
+
+.plugin-custom-modal-footer {
+    border-top: 0;
+    padding: 15px;
+    text-align: right;
+    user-select: none;
+}
+
+.plugin-custom-modal-footer .btn {
+    min-width: 5.14em;
+    border-radius: 0;
+    cursor: pointer;
+    outline-width: 0;
+}
+
+.plugin-custom-modal-footer .btn + .btn {
+    margin-left: 5px;
+    margin-bottom: 0;
+}
+
+.plugin-custom-modal-footer .plugin-modal-cancel {
+    color: #000;
+    background-color: #e6e6e6;
+}
+
+.plugin-custom-modal-footer .plugin-modal-submit {
+    color: #fff;
+    background-color: #428bca;
 }
 
 #plugin-custom-modal label {
