@@ -18,7 +18,7 @@ class rightClickMenuPlugin extends BasePlugin {
         this.callArgs = [{arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"}];
     }
 
-    process = () => this.utils.addEventListener(this.utils.eventType.everythingReady, this.appendMenu)
+    process = () => this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, this.appendMenu)
 
     appendMenu = () => {
         setTimeout(() => {

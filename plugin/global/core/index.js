@@ -1,5 +1,7 @@
 const {BasePlugin, BaseCustomPlugin, LoadPlugin} = require("./plugin");
-const {utils, helper, loadHelpers, optimizeHelpers} = require("./utils");
+const {utils} = require("./utils");
+const {getHelper} = require("./utils/delegate");
+const {helper, loadHelpersBefore, loadHelpersAfter, optimizeHelpers} = getHelper(utils);
 
 class Launcher {
     // 整个插件系统一共暴露了8个全局变量，实际有用的只有3个：BasePlugin, BaseCustomPlugin, LoadPlugin
@@ -42,7 +44,7 @@ class Launcher {
         }
     }))
 
-    static optimize = async () => {
+    static optimizeHelpers = async () => {
         if (global._plugin_global_settings.PERFORMANCE_MODE) {
             await optimizeHelpers();
         }
@@ -55,34 +57,20 @@ class Launcher {
         // 初始化全局变量
         this.prepare(settings);
 
-        const {
-            styleTemplater, contextMenu, notification, dialog, stateRecorder, eventHub,
-            htmlTemplater, diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser,
-        } = helper;
-
-        // 以下高级工具必须先加载
-        // 1.插件可能会在加载阶段用到dialog、contextMenu和styleTemplater
-        // 2.必须先让stateRecorder恢复状态，才能执行后续流程
-        await loadHelpers(styleTemplater);
-        await loadHelpers(contextMenu, notification, dialog, stateRecorder);
+        // 加载组件(先于插件)
+        await loadHelpersBefore();
 
         // 加载插件
         await this.loadPlugins();
 
-        // 其他高级工具可能会用到eventHub，所以必须先于高级工具加载；必须先等待插件注册事件后才能触发事件，所以必须后于插件加载
-        await loadHelpers(eventHub);
+        // 加载组件(后于插件)
+        await loadHelpersAfter();
 
-        // 发布【所有插件加载完毕】事件。有些插件会监听此事件，在其回调函数中注册高级工具，所以必须先于高级工具执行
+        // 发布[已完成]事件
         utils.publishEvent(utils.eventType.allPluginsHadInjected);
 
-        // 加载剩余的高级工具
-        await loadHelpers(htmlTemplater, diagramParser, hotkeyHub, exportHelper, thirdPartyDiagramParser);
-
-        // 一切准备就绪
-        utils.publishEvent(utils.eventType.everythingReady);
-
-        // 尽力优化
-        await this.optimize();
+        // 优化组件
+        await this.optimizeHelpers();
 
         // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
         setTimeout(utils.reload, 50);
