@@ -417,7 +417,7 @@ class builder {
         this.extraFunc = extraFunc;
     }
 
-    createButton = (removeHint = false) => {
+    createButton(removeHint = false) {
         const button = document.createElement("div");
         button.classList.add("enhance-btn", this.className);
         button.setAttribute("action", this.action);

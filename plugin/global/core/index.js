@@ -1,14 +1,14 @@
-const {basePlugin, baseCustomPlugin, loadPlugin} = require("./plugin");
+const {BasePlugin, BaseCustomPlugin, LoadPlugin} = require("./plugin");
 const {utils, helper, loadHelpers, optimizeHelpers} = require("./utils");
 
 class Launcher {
-    // 整个插件系统一共暴露了8个全局变量，实际有用的只有3个：BasePlugin, BaseCustomPlugin, loadPlugin
+    // 整个插件系统一共暴露了8个全局变量，实际有用的只有3个：BasePlugin, BaseCustomPlugin, LoadPlugin
     // 其余5个全局变量皆由静态类utils暴露，永远不会被业务插件引用；而utils同时又是BasePlugin, BaseCustomPlugin的实例属性，所以utils自己也不需要暴露
     // 既然永远不会被业务插件引用，为何要将它们设置为全局变量？答：方便调试
     static prepare = settings => {
-        global.BasePlugin = basePlugin;             // 插件的父类
-        global.BaseCustomPlugin = baseCustomPlugin; // 自定义插件的父类
-        global.LoadPlugin = loadPlugin;             // 加载插件函数
+        global.BasePlugin = BasePlugin;             // 插件的父类
+        global.BaseCustomPlugin = BaseCustomPlugin; // 自定义插件的父类
+        global.LoadPlugin = LoadPlugin;             // 加载插件函数
 
         global._plugins = {};                              // 启用的插件
         global._plugin_utils = utils;                      // 通用工具

@@ -189,7 +189,7 @@ class _collectUtil {
         return list
     }
 
-    setColor = (ele, item, type) => {
+    setColor(ele, item, type) {
         if (type === "all") {
             const {fence, image, table} = this.config.COLOR;
             if (item.type === "table") {
