@@ -90,7 +90,10 @@ const getDelegate = utils => {
         modal: helper.dialog.modal,
     }
 
-    return {helper, delegate}
+    const loadHelpers = (...helpers) => Promise.all(helpers.map(async h => h.process()));
+    const optimizeHelpers = () => Promise.all(Object.values(helper).map(async h => h.afterProcess && h.afterProcess()));
+
+    return {helper, loadHelpers, optimizeHelpers, delegate}
 }
 
 module.exports = {

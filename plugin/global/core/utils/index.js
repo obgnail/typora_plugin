@@ -914,11 +914,8 @@ class utils {
 
 // combinations should be used to layer various functions, but utils is too old and has become a legacy, so functions can only be mixin
 const {getDelegate} = require("./delegate")
-const {helper, delegate} = getDelegate(utils)
+const {helper, delegate, loadHelpers, optimizeHelpers} = getDelegate(utils)
 Object.assign(utils, delegate)
-
-const loadHelpers = (...helpers) => Promise.all(helpers.map(async h => h.process()));
-const optimizeHelpers = () => Promise.all(Object.values(helper).map(async h => h.afterProcess && h.afterProcess()));
 
 module.exports = {
     utils,
