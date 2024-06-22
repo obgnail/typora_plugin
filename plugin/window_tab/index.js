@@ -529,7 +529,7 @@ class windowTabBarPlugin extends BasePlugin {
         waitToClose.reverse().forEach(idx => this.tabUtil.tabs.splice(idx, 1));
         const leftCount = waitToClose.filter(idx => idx <= this.tabUtil.activeIdx).length;  // 删除了左侧X个tab
         this.tabUtil.activeIdx -= leftCount;
-        if (closeActive && this.config.ACTIVETE_TAB_WHEN_CLOSE !== "left") {
+        if (closeActive && this.config.ACTIVE_TAB_WHEN_CLOSE !== "left") {
             this.tabUtil.activeIdx++;
         }
         if (this.tabUtil.tabs.length === 0) {
@@ -683,6 +683,7 @@ class windowTabBarPlugin extends BasePlugin {
             this.tabUtil.tabs = this.tabUtil.tabs.slice(-TAB_MAX_NUM);
         }
         this.tabUtil.activeIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
+        this.tabUtil.tabs[this.tabUtil.activeIdx].timestamp = new Date().getTime();
         this._showTabBar();
         this._startCheckTabsInterval();
         this._renderDOM(wantOpenPath);
@@ -714,33 +715,38 @@ class windowTabBarPlugin extends BasePlugin {
 
     closeTab = idx => {
         const tabUtil = this.tabUtil;
+        const {WHEN_CLOSE_LAST_TAB, ACTIVE_TAB_WHEN_CLOSE} = this.config;
 
-        if (tabUtil.tabs.length === 1) {
+        const getLatestTabIdx = () => tabUtil.tabs.reduce((maxIdx, tab, idx, tabs) => (tab.timestamp || 0) > (tabs[maxIdx].timestamp || 0) ? idx : maxIdx, 0);
+        const handleLastTab = () => {
             const exit = () => {
                 tabUtil.tabs.splice(idx, 1); // 删除全部的tab，保证【reopenClosedFiles】插件能正常工作
                 this.utils.exitTypora();
             }
-            switch (this.config.WHEN_CLOSE_LAST_TAB) {
-                case "reconfirm":
-                    this.utils.modal({title: "退出 Typora", components: [{label: "是否退出？", type: "p"}]}, exit);
-                    return;
+            switch (WHEN_CLOSE_LAST_TAB) {
                 case "exit":
                     exit();
-                    return;
+                    break;
                 case "blankPage":
                     tabUtil.tabs.splice(idx, 1);
                     this._onEmptyTabs();
-                    return;
+                    break;
+                case "reconfirm":
                 default:
-                    alert(`error arg WHEN_CLOSE_LAST_TAB: ${this.config.WHEN_CLOSE_LAST_TAB}`);
-                    return;
+                    this.utils.modal({title: "退出 Typora", components: [{label: "是否退出？", type: "p"}]}, exit);
             }
         }
 
+        if (tabUtil.tabs.length === 1) {
+            handleLastTab();
+            return;
+        }
+
         tabUtil.tabs.splice(idx, 1);
-        if (tabUtil.activeIdx !== 0) {
-            const isLeft = this.config.ACTIVETE_TAB_WHEN_CLOSE === "left";
-            if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && isLeft)) {
+        if (ACTIVE_TAB_WHEN_CLOSE === "latest") {
+            tabUtil.activeIdx = getLatestTabIdx();
+        } else if (tabUtil.activeIdx !== 0) {
+            if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && ACTIVE_TAB_WHEN_CLOSE === "left")) {
                 tabUtil.activeIdx--;
             } else {
                 tabUtil.activeIdx = Math.min(tabUtil.activeIdx, tabUtil.tabs.length - 1);

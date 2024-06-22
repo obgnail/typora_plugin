@@ -64,9 +64,10 @@ WHEN_CLOSE_LAST_TAB = "blankPage"
 #   right: 在当前tab右侧
 NEW_TAB_AT = "right"
 # 关闭当前的tab的时候，激活哪个tab
-#   left:  当前tab的左侧
-#   right: 当前tab的右侧
-ACTIVETE_TAB_WHEN_CLOSE = "right"
+#   left:   当前tab的左侧
+#   right:  当前tab的右侧
+#   latest: 上一个浏览的tab
+ACTIVE_TAB_WHEN_CLOSE = "right"
 # 显示tab的关闭按钮
 SHOW_TAB_CLOSE_BUTTON = true
 # ctrl+鼠标左键点击标签，新建窗口
@@ -1009,10 +1010,10 @@ COMMANDS = [
     { enable = true, type = "command", icon = "🧰", hint = "至行首", keyword = "JumpToLineStart", callback = "() => File.editor.selection.jumpToLineStart()" },
     { enable = true, type = "command", icon = "🧰", hint = "至行尾", keyword = "JumpToLineEnd", callback = "() => File.editor.selection.jumpToLineEnd()" },
     { enable = true, type = "command", icon = "🧰", hint = "帮助", keyword = "Help", callback = "() => this.call()" },
-    { enable = true, type = "gen-snp", icon = "🧩", hint = "日期时间", keyword = "Datetime", callback = "() => (new Date()).toLocaleString('chinese', {hour12: false})" },
+    { enable = true, type = "gen-snp", icon = "🧩", hint = "日期时间", keyword = "Datetime", callback = "() => new Date().toLocaleString('chinese', {hour12: false})" },
     { enable = true, type = "gen-snp", icon = "🧩", hint = "日期", keyword = "Date", callback = "() => {let day = new Date(); return `${day.getFullYear()}/${day.getMonth() + 1}/${day.getDate()}`}" },
     { enable = true, type = "gen-snp", icon = "🧩", hint = "时间", keyword = "Time", callback = "() => {let day = new Date(); return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`}" },
-    { enable = true, type = "gen-snp", icon = "🧩", hint = "时间戳", keyword = "Timestamp", callback = "() => (new Date()).getTime().toString()" },
+    { enable = true, type = "gen-snp", icon = "🧩", hint = "时间戳", keyword = "Timestamp", callback = "() => new Date().getTime().toString()" },
     { enable = true, type = "gen-snp", icon = "🧩", hint = "星期", keyword = "Week", callback = "() => '星期' + '日一二三四五六'.charAt((new Date()).getDay())" },
     { enable = true, type = "snippet", icon = "🧩", hint = "示例片段", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
 ]
