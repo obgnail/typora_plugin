@@ -40,7 +40,7 @@ class hotkeyHubPlugin extends BaseCustomPlugin {
 
     callback = anchorNode => {
         const {map} = this.utils.getHotkeyHub();
-        const th = `<tr><th>插件系统已注册快捷键</th>`;
+        const th = `<tr><th>已注册快捷键</th>`;
         const trs = Array.from(map.keys(), hotkey => `<tr><td>${hotkey.toUpperCase().split("+").map(ele => `<kbd>${ele}</kbd>`).join("+")}</td></tr>`);
         trs.sort();
         const table = `<table>${th}${trs.join("")}</table>`;
@@ -49,7 +49,7 @@ class hotkeyHubPlugin extends BaseCustomPlugin {
             {label: "如需自定义快捷键，请 <a>修改配置文件</a>", type: "p", onclick},
             {label: table, type: "p"},
         ];
-        this.utils.modal({title: "hotkeyHub", components});
+        this.utils.modal({title: "快捷键中心", components});
     }
 }
 
