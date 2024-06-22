@@ -14,7 +14,8 @@ class rightClickMenuPlugin extends BasePlugin {
         this.groupName = "typora-plugin";
         this.noExtraMenuGroupName = "typora-plugin-no-extra";
         this.dividerArg = "---";
-        this.unavailableArg = "__not_available__";
+        this.unavailableArgName = "不可点击";
+        this.unavailableArgValue = "__not_available__";
         this.callArgs = [{arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"}];
     }
 
@@ -160,13 +161,17 @@ class rightClickMenuPlugin extends BasePlugin {
     appendThirdLi = ($menu, dynamicCallArgs) => {
         dynamicCallArgs.forEach(arg => $menu.append(this.utils.createElement(this.thirdLiTemplate(arg, true))))
     }
-    appendDummyThirdLi = $menu => this.appendThirdLi($menu, [{arg_name: this.unavailableArg, arg_disabled: true}])
+    appendDummyThirdLi = $menu => this.appendThirdLi($menu, [{
+        arg_name: this.unavailableArgName,
+        arg_value: this.unavailableArgValue,
+        arg_disabled: true,
+    }])
 
     hideMenuIfNeed = () => !this.config.DO_NOT_HIDE && File.editor.contextMenu.hide();
 
     callPlugin = plugin => plugin.call && plugin.call();
     dynamicCallPlugin = (plugin, arg) => {
-        if (arg !== this.unavailableArg && plugin && plugin.call) {
+        if (arg !== this.unavailableArgValue && plugin && plugin.call) {
             this.utils.withMeta(meta => plugin.call(arg, meta));
         }
     }
