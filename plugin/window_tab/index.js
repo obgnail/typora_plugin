@@ -29,9 +29,28 @@ class windowTabBarPlugin extends BasePlugin {
         }
         this.localOpen = false;
         this.checkTabsInterval = null;
-        this.tabUtil = {tabs: [], activeIdx: 0};
         this.loopDetectInterval = 35;
         this.saveTabFilePath = this.utils.joinPath("./plugin/window_tab/save_tabs.json");
+        this.tabUtil = {
+            tabs: [],
+            activeIdx: 0,
+            get currentTab() {
+                return this.tabs[this.activeIdx]
+            },
+            get tabCount() {
+                return this.tabs.length
+            },
+            get maxTabIdx() {
+                return this.tabs.length - 1
+            },
+            reset() {
+                this.tabs = [];
+                this.activeIdx = 0;
+            },
+            getTabPathByIdx(idx) {
+                return this.tabs[idx].path
+            }
+        };
     }
 
     process = () => {
@@ -68,7 +87,7 @@ class windowTabBarPlugin extends BasePlugin {
                 const tab = closeButton ? closeButton.closest(".tab-container") : tabContainer;
                 const idx = parseInt(tab.getAttribute("idx"));
                 if (this.config.CTRL_CLICK_TO_NEW_WINDOW && this.utils.metaKeyPressed(ev)) {
-                    this.openFileNewWindow(this.tabUtil.tabs[idx].path, false);
+                    this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false);
                 } else if (closeButton) {
                     this.closeTab(idx);
                 } else {
@@ -78,9 +97,9 @@ class windowTabBarPlugin extends BasePlugin {
         }
         const handleScroll = () => {
             this.entities.content.addEventListener("scroll", () => {
-                const activeTab = this.tabUtil.tabs[this.tabUtil.activeIdx];
-                if (activeTab) {
-                    activeTab.scrollTop = this.entities.content.scrollTop;
+                const current = this.tabUtil.currentTab;
+                if (current) {
+                    current.scrollTop = this.entities.content.scrollTop;
                 }
             })
         }
@@ -91,8 +110,7 @@ class windowTabBarPlugin extends BasePlugin {
                 const {height} = this.entities.tabBar.getBoundingClientRect();
                 if (offsetY > height * this.config.HEIGHT_SCALE) {
                     const idx = parseInt(tab.getAttribute("idx"));
-                    const _path = this.tabUtil.tabs[idx].path;
-                    this.openFileNewWindow(_path, false);
+                    this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false);
                 }
             }
 
@@ -102,7 +120,7 @@ class windowTabBarPlugin extends BasePlugin {
                 const resetTabBar = () => {
                     const tabs = document.querySelectorAll("#plugin-window-tab .tab-container");
                     const activeIdx = parseInt(that.entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
-                    const activePath = that.tabUtil.tabs[activeIdx].path;
+                    const activePath = that.tabUtil.getTabPathByIdx(activeIdx);
                     that.tabUtil.tabs = Array.from(tabs, tab => that.tabUtil.tabs[parseInt(tab.getAttribute("idx"))]);
                     that.openTab(activePath);
                 }
@@ -235,7 +253,7 @@ class windowTabBarPlugin extends BasePlugin {
                     if (lastOver) {
                         lastOver.classList.remove("over");
                         const activeIdx = parseInt(that.entities.tabBar.querySelector(".tab-container.active").getAttribute("idx"));
-                        const activePath = that.tabUtil.tabs[activeIdx].path;
+                        const activePath = that.tabUtil.getTabPathByIdx(activeIdx);
                         const toIdx = parseInt(lastOver.getAttribute("idx"));
                         const fromIdx = parseInt(this.getAttribute("idx"));
                         const ele = that.tabUtil.tabs.splice(fromIdx, 1)[0];
@@ -264,7 +282,7 @@ class windowTabBarPlugin extends BasePlugin {
                 const renameTab = this.tabUtil.tabs.find(tab => tab.path === oldPath);
                 if (!renameTab) return;
                 renameTab.path = newPath;
-                const current = this.tabUtil.tabs[this.tabUtil.activeIdx];
+                const current = this.tabUtil.currentTab;
                 if (current && current.path) {
                     this.openTab(current.path);
                 }
@@ -272,7 +290,7 @@ class windowTabBarPlugin extends BasePlugin {
         }
         const handleFocusChange = () => {
             window.addEventListener("focus", async () => {
-                if (this.tabUtil.tabs.length > 0) {
+                if (this.tabUtil.tabCount > 0) {
                     await this._checkTabsExist();
                     this._startCheckTabsInterval();
                 }
@@ -406,7 +424,7 @@ class windowTabBarPlugin extends BasePlugin {
         } else if (this.utils.getFilePath()) {
             args.push({arg_name: "在当前标签打开文件", arg_value: "local_open"});
         }
-        if (this.tabUtil.tabs.length > 1) {
+        if (this.tabUtil.tabCount > 1) {
             args.push({arg_name: "排序标签", arg_value: "sort_tabs"});
         }
         return args
@@ -425,7 +443,7 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     _hideTabBar = () => {
-        if (this.utils.isShow(this.entities.windowTab) && this.tabUtil.tabs.length === 0) {
+        if (this.utils.isShow(this.entities.windowTab) && this.tabUtil.tabCount === 0) {
             this.utils.hide(this.entities.windowTab);
             this._resetContentTop();
         }
@@ -459,7 +477,7 @@ class windowTabBarPlugin extends BasePlugin {
     _startCheckTabsInterval = () => {
         if (this.checkTabsInterval) return;
         const getDynamicInterval = () => {
-            const tabCount = this.tabUtil.tabs.length;
+            const tabCount = this.tabUtil.tabCount;
             let interval = 1000;
             if (tabCount > 10 && tabCount <= 20) {
                 interval = 2000;
@@ -481,8 +499,7 @@ class windowTabBarPlugin extends BasePlugin {
 
     _onEmptyTabs = async () => {
         const _resetAndSetTitle = async () => {
-            this.tabUtil.tabs = [];
-            this.tabUtil.activeIdx = 0;
+            this.tabUtil.reset();
             File.bundle = {
                 filePath: '',
                 originalPath: null,
@@ -514,7 +531,7 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     _checkTabsExist = async () => {
-        if (this.tabUtil.tabs.length === 0) {
+        if (this.tabUtil.tabCount === 0) {
             await this._onEmptyTabs();
             return;
         }
@@ -532,7 +549,7 @@ class windowTabBarPlugin extends BasePlugin {
         if (closeActive && this.config.ACTIVE_TAB_WHEN_CLOSE !== "left") {
             this.tabUtil.activeIdx++;
         }
-        if (this.tabUtil.tabs.length === 0) {
+        if (this.tabUtil.tabCount === 0) {
             await this._onEmptyTabs();
         } else {
             this.switchTab(this.tabUtil.activeIdx);
@@ -669,7 +686,7 @@ class windowTabBarPlugin extends BasePlugin {
         if (!include) {
             // 原地打开并且不存在tab时，修改当前tab的文件路径
             if (this.localOpen) {
-                this.tabUtil.tabs[this.tabUtil.activeIdx].path = wantOpenPath;
+                this.tabUtil.currentTab.path = wantOpenPath;
             } else {
                 const newTab = {path: wantOpenPath, scrollTop: 0};
                 if (NEW_TAB_AT === "end") {
@@ -679,11 +696,11 @@ class windowTabBarPlugin extends BasePlugin {
                 }
             }
         }
-        if (0 < TAB_MAX_NUM && TAB_MAX_NUM < this.tabUtil.tabs.length) {
+        if (0 < TAB_MAX_NUM && TAB_MAX_NUM < this.tabUtil.tabCount) {
             this.tabUtil.tabs = this.tabUtil.tabs.slice(-TAB_MAX_NUM);
         }
         this.tabUtil.activeIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
-        this.tabUtil.tabs[this.tabUtil.activeIdx].timestamp = new Date().getTime();
+        this.tabUtil.currentTab.timestamp = new Date().getTime();
         this._showTabBar();
         this._startCheckTabsInterval();
         this._renderDOM(wantOpenPath);
@@ -691,9 +708,9 @@ class windowTabBarPlugin extends BasePlugin {
 
     switchTab = idx => {
         idx = Math.max(0, idx);
-        idx = Math.min(idx, this.tabUtil.tabs.length - 1);
+        idx = Math.min(idx, this.tabUtil.maxTabIdx);
         this.tabUtil.activeIdx = idx;
-        this.utils.openFile(this.tabUtil.tabs[this.tabUtil.activeIdx].path);
+        this.utils.openFile(this.tabUtil.currentTab.path);
     }
 
     switchTabByPath = path => {
@@ -704,12 +721,12 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     previousTab = () => {
-        const idx = (this.tabUtil.activeIdx === 0) ? this.tabUtil.tabs.length - 1 : this.tabUtil.activeIdx - 1;
+        const idx = (this.tabUtil.activeIdx === 0) ? this.tabUtil.maxTabIdx : this.tabUtil.activeIdx - 1;
         this.switchTab(idx);
     }
 
     nextTab = () => {
-        const idx = (this.tabUtil.activeIdx === this.tabUtil.tabs.length - 1) ? 0 : this.tabUtil.activeIdx + 1;
+        const idx = (this.tabUtil.activeIdx === this.tabUtil.maxTabIdx) ? 0 : this.tabUtil.activeIdx + 1;
         this.switchTab(idx);
     }
 
@@ -737,7 +754,7 @@ class windowTabBarPlugin extends BasePlugin {
             }
         }
 
-        if (tabUtil.tabs.length === 1) {
+        if (tabUtil.tabCount === 1) {
             handleLastTab();
             return;
         }
@@ -749,7 +766,7 @@ class windowTabBarPlugin extends BasePlugin {
             if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && ACTIVE_TAB_WHEN_CLOSE === "left")) {
                 tabUtil.activeIdx--;
             } else {
-                tabUtil.activeIdx = Math.min(tabUtil.activeIdx, tabUtil.tabs.length - 1);
+                tabUtil.activeIdx = Math.min(tabUtil.activeIdx, tabUtil.maxTabIdx);
             }
         }
         this.switchTab(tabUtil.activeIdx);
@@ -763,33 +780,33 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     closeLeftTabs = idx => {
-        const originFile = this.tabUtil.tabs[this.tabUtil.activeIdx].path;
+        const origin = this.tabUtil.currentTab.path;
         this.tabUtil.tabs = this.tabUtil.tabs.slice(idx);
         if (this.tabUtil.activeIdx < idx) {
             this.switchTab(0);
         } else {
-            this.switchTabByPath(originFile);
+            this.switchTabByPath(origin);
         }
     }
 
     closeRightTabs = idx => {
-        const originFile = this.tabUtil.tabs[this.tabUtil.activeIdx].path;
+        const origin = this.tabUtil.currentTab.path;
         this.tabUtil.tabs = this.tabUtil.tabs.slice(0, idx + 1);
         if (this.tabUtil.activeIdx > idx) {
-            this.switchTab(this.tabUtil.tabs.length - 1);
+            this.switchTab(this.tabUtil.tabCount - 1);
         } else {
-            this.switchTabByPath(originFile);
+            this.switchTabByPath(origin);
         }
     }
 
     sortTabs = () => {
-        if (this.tabUtil.tabs.length === 1) return;
-        const current = this.tabUtil.tabs[this.tabUtil.activeIdx];
+        if (this.tabUtil.tabCount === 1) return;
+        const current = this.tabUtil.currentTab;
         this.tabUtil.tabs.sort(({showName: n1}, {showName: n2}) => n1.localeCompare(n2));
         this.switchTab(this.tabUtil.tabs.indexOf(current));
     }
 
-    copyPath = idx => navigator.clipboard.writeText(this.tabUtil.tabs[idx].path)
+    copyPath = idx => navigator.clipboard.writeText(this.tabUtil.getTabPathByIdx(idx))
 
     copyActiveTabPath = () => this.copyPath(this.tabUtil.activeIdx)
 
@@ -798,9 +815,9 @@ class windowTabBarPlugin extends BasePlugin {
         this.switchTab(this.tabUtil.activeIdx);
     }
 
-    showInFinder = idx => this.utils.showInFinder(this.tabUtil.tabs[idx].path);
+    showInFinder = idx => this.utils.showInFinder(this.tabUtil.getTabPathByIdx(idx));
 
-    openInNewWindow = idx => this.openFileNewWindow(this.tabUtil.tabs[idx].path, false)
+    openInNewWindow = idx => this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false)
 
     saveTabs = async filepath => {
         filepath = filepath || this.saveTabFilePath;
@@ -836,7 +853,7 @@ class windowTabBarPlugin extends BasePlugin {
         })
         if (activePath) {
             this.switchTabByPath(activePath);
-        } else if (this.tabUtil.tabs.length) {
+        } else if (this.tabUtil.tabCount) {
             this.switchTab(this.tabUtil.activeIdx);
         }
     }
