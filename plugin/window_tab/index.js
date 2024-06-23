@@ -279,9 +279,17 @@ class windowTabBarPlugin extends BasePlugin {
         }
         const handleRename = () => {
             reqnode("electron").ipcRenderer.on("didRename", (sender, {oldPath, newPath}) => {
-                const renameTab = this.tabUtil.tabs.find(tab => tab.path === oldPath);
-                if (!renameTab) return;
-                renameTab.path = newPath;
+                const isDir = this.utils.Package.Fs.statSync(newPath).isDirectory();
+                if (isDir) {
+                    this.tabUtil.tabs
+                        .filter(tab => tab.path.startsWith(oldPath))
+                        .forEach(tab => tab.path = newPath + tab.path.slice(oldPath.length))
+                } else {
+                    const renameTab = this.tabUtil.tabs.find(tab => tab.path === oldPath);
+                    if (renameTab) {
+                        renameTab.path = newPath;
+                    }
+                }
                 const current = this.tabUtil.currentTab;
                 if (current && current.path) {
                     this.openTab(current.path);
