@@ -11,15 +11,13 @@ class helpPlugin extends BasePlugin {
     init = () => {
         const arg_hint = "此功能仅对开发者开放";
         this.callArgs = [
+            {arg_name: "卸载插件", arg_value: "uninstall_plugin"},
             {arg_name: "修改配置", arg_value: "open_setting_folder"},
             {arg_name: "备份配置", arg_value: "backup_setting_file"},
-            {arg_name: "卸载插件", arg_value: "uninstall_plugin"},
-            {arg_name: "修改插件样式", arg_value: "set_user_styles", arg_hint},
+            {arg_name: "修改样式", arg_value: "set_user_styles", arg_hint},
             {arg_name: "我要写插件", arg_value: "new_custom_plugin", arg_hint},
             {arg_name: "Typora 自动化", arg_value: "json_rpc", arg_hint},
             {arg_name: "Github 图床", arg_value: "github_picture_bed"},
-            {arg_name: "反馈 - Github", arg_value: "new_issue"},
-            {arg_name: "反馈 - Email", arg_value: "send_email"},
             {arg_name: "请开发者喝咖啡", arg_value: "donate"},
             {arg_name: "关于", arg_value: "about", arg_hint: "Designed with ♥ by obgnail"},
         ]
@@ -32,6 +30,29 @@ class helpPlugin extends BasePlugin {
             const arg_name = "升级插件" + (this.version ? `（当前版本：${this.version}）` : "");
             this.callArgs.unshift({arg_name: arg_name, arg_value: "update_plugin"});
         })
+    }
+
+    about = () => {
+        const style = "background: linear-gradient(to right, rgba(79, 192, 141, 0.5), rgba(79, 192, 141, 0.5)) no-repeat bottom; background-size: 100% 40%; padding: 2px;"
+        const p = [
+            `<span style="${style}">醉后不知天在水，满船清梦压星河。</span>`,
+            "感谢您使用 Typora Plugin。我在有限的时间里设计了这款插件，虽然它并不那么美好，但正努力前行。",
+            "本项目遵循 MIT 协议，请自由地享受和参与开源。如果您有任何反馈或建议，可以在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。",
+        ]
+        const label = p.map(e => `<p style="font-size: 1.1em">${e}</p>`).join("");
+        const onclick = ev => {
+            const a = ev.target.closest("a");
+            if (!a) return;
+
+            if (a.className === "plu-github") {
+                this.utils.openUrl("https://github.com/obgnail/typora_plugin");
+            } else if (a.className === "plu-appinn") {
+                this.utils.openUrl("https://meta.appinn.net/t/topic/44934");
+            } else if (a.className === "plu-email") {
+                this.utils.sendEmail("he1251698542@gmail.com", "插件反馈");
+            }
+        }
+        this.utils.modal({title: "关于", components: [{label, type: "p", onclick}]});
     }
 
     uninstall = () => {
@@ -127,12 +148,10 @@ class helpPlugin extends BasePlugin {
             new_custom_plugin: () => this.utils.openFile(this.utils.joinPath("./plugin/custom/请读我.md")),
             json_rpc: () => this.utils.openFile(this.utils.joinPath("./plugin/json_rpc/请读我.md")),
             github_picture_bed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
-            new_issue: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/issues/new"),
-            send_email: () => this.utils.sendEmail("he1251698542@gmail.com", "插件反馈"),
             update_plugin: () => this.updater && this.updater.callback(),
             uninstall_plugin: () => this.uninstall(),
             donate: () => this.donate(),
-            about: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
+            about: () => this.about(),
         }
         const func = map[type];
         func && func();

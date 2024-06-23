@@ -127,7 +127,8 @@ class dialog {
                 inner = `<textarea class="form-control" rows="${rows}" ${readonly} placeholder="${component.placeholder || ""}" ${disabled(component)}>${cnt}</textarea>`;
                 break
             case "p":
-                label = "p";
+            case "span":
+                label = "span";
                 break
         }
         return `<div class="col-lg-12 form-group" component-id="${component.id}"><${label}>${component.label}</${label}>${inner}</div>`;
