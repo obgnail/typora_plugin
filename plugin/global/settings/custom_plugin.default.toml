@@ -623,24 +623,27 @@ template_variables = [
 ]
 # 模板
 # 默认的模板变量：
-#   {{ date }}               当前日期
-#   {{ time }}               当前时间
-#   {{ datetime }}           当前日期时间
-#   {{ timestamp }}          当前时间戳
-#   {{ weekday }}            当前周几
-#   {{ yesterday }}          昨天日期
-#   {{ tomorrow }}           明天日期
-#   {{ dateOffset(2) }}      2天后的日期（-2表示2天前的日期）
-#   {{ random }}             范围为0-1的随机浮点数
-#   {{ randomInt(2, 100) }}  范围为2-100的随机整数
-#   {{ randomStr }}          由字母和数字组成的随机字符串
-#   {{ title }}              新建文件的标题
-#   {{ filepath }}           新建文件的路径
-#   {{ folder }}             当前文件的目录
-#   {{ mountFolder }}        当前文件的挂载目录
-#   {{ username }}           当前电脑的用户名
-#   {{ range }}              当前选取的文字
-#   {{ uuid }}               uuid
+#   {{ formatDate('yyyy-MM-dd', 'en') }}     当前格式化的日期时间。
+#                                               参数1：时间格式化字符串（默认yyyy-MM-dd HH:mm:ss）：yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a
+#                                               参数2：locale：支持 cn、en（默认en）
+#   {{ datetime }}                           当前日期时间。等同于{{ formatDate('yyyy-MM-dd HH:mm:ss') }}
+#   {{ date }}                               当前日期。等同于{{ formatDate('yyyy-MM-dd') }}
+#   {{ time }}                               当前时间。等同于{{ formatDate('HH:mm:ss') }}
+#   {{ weekday }}                            当前周几。等同于{{ formatDate('ddd') }}
+#   {{ timestamp }}                          当前时间戳
+#   {{ dateOffset(2, 'yyyy-MM-dd', 'en') }}  2天后的日期（-2表示2天前的日期）
+#   {{ yesterday }}                          昨天日期。等同于{{ dateOffset(-1) }}
+#   {{ tomorrow }}                           明天日期。等同于{{ dateOffset(1) }}
+#   {{ random }}                             范围为0-1的随机浮点数
+#   {{ randomInt(2, 100) }}                  范围为2-100的随机整数
+#   {{ randomStr(8) }}                       由字母和数字组成的8位随机字符串
+#   {{ title }}                              新建文件的标题
+#   {{ filepath }}                           新建文件的路径
+#   {{ folder }}                             当前文件的目录
+#   {{ mountFolder }}                        当前文件的挂载目录
+#   {{ username }}                           当前电脑的用户名
+#   {{ range }}                              当前选取的文字
+#   {{ uuid }}                               uuid
 [[templater.config.template]]
 name = "标准模板"
 text = """---

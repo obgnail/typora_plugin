@@ -14,7 +14,7 @@ class templaterPlugin extends BaseCustomPlugin {
             const value = ev.target.value;
             const tpl = this.config.template.find(tpl => tpl.name === value);
             if (tpl) {
-                ev.target.closest(".modal-body").querySelector("textarea").value = tpl.text;
+                ev.target.closest(".plugin-custom-modal-body").querySelector("textarea").value = tpl.text;
             }
         }
 
@@ -43,14 +43,109 @@ class templaterPlugin extends BaseCustomPlugin {
     }
 }
 
+class dateFormatter {
+    constructor(date) {
+        this.date = date;
+        this.year = date.getFullYear();
+        this.month = date.getMonth() + 1;
+        this.day = date.getDate();
+        this.hour = date.getHours();
+        this.minute = date.getMinutes();
+        this.second = date.getSeconds();
+        this.millisecond = date.getMilliseconds();
+    }
+
+    _getMonthName(date, locale) {
+        const months = locale === "en"
+            ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+            : ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+        return months[date.getMonth()];
+    }
+
+    _getMonthAbbrName(date, locale) {
+        const months = locale === "en"
+            ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            : ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
+        return months[date.getMonth()];
+    }
+
+    _getDayName(date, locale) {
+        const days = locale === "en"
+            ? ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+            : ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+        return days[date.getDay()];
+    }
+
+    _getDayAbbrName(date, locale) {
+        const days = locale === "en"
+            ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+            : ['日', '一', '二', '三', '四', '五', '六'];
+        return days[date.getDay()];
+    }
+
+    _getAmPm(hour, locale) {
+        const [am, pm] = locale === "en" ? ["AM", "PM"] : ["上午", "下午"];
+        return hour < 12 ? am : pm
+    }
+
+    _padStart(str, len = 2, symbol = "0") {
+        return (str + "").padStart(len, symbol)
+    }
+
+    _getReplacement(locale) {
+        return {
+            yyyy: this.year,
+            yyy: this.year.toString().substr(1),
+            yy: this.year.toString().substr(2),
+            MMMM: this._getMonthName(this.date, locale),
+            MMM: this._getMonthAbbrName(this.date, locale),
+            MM: this._padStart(this.month),
+            M: this.month,
+            dddd: this._getDayName(this.date, locale),
+            ddd: this._getDayAbbrName(this.date, locale),
+            dd: this._padStart(this.day),
+            d: this.day,
+            HH: this._padStart(this.hour),
+            H: this.hour,
+            hh: this._padStart(this.hour % 12),
+            h: this.hour % 12,
+            mm: this._padStart(this.minute),
+            m: this.minute,
+            ss: this._padStart(this.second),
+            s: this.second,
+            SSS: this._padStart(this.millisecond, 3),
+            S: this.millisecond,
+            a: this._getAmPm(this.hour),
+        }
+    }
+
+    getTime(format = "yyyy-MM-dd HH:mm:ss", locale = "en") {
+        const matches = format.matchAll(/yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a/g);
+        const replacement = this._getReplacement(locale);
+        for (const match of matches) {
+            const f = match[0];
+            if (!f) continue;
+
+            const r = replacement[f];
+            if (!r) continue;
+
+            format = format.replace(f, r);
+        }
+        return format;
+    }
+
+    getTimestamp() {
+        return this.date.getTime()
+    }
+}
+
 class templateHelper {
     constructor(title, controller) {
         this._title = title.substring(0, title.lastIndexOf("."));
         this.rangeText = controller.rangeText || "";
         this.utils = controller.utils;
         this.config = controller.config;
-        this.today = new Date();
-        this.oneDay = 24 * 60 * 60 * 1000;
+        this.formatter = new dateFormatter(new Date());
     }
 
     _getTemplateVars = () => {
@@ -63,7 +158,7 @@ class templateHelper {
             }
         });
         Object.entries(this).forEach(([key, value]) => {
-            if (value instanceof Function) {
+            if (!key.startsWith("_") && value instanceof Function) {
                 map[key] = value;
             }
         });
@@ -84,28 +179,26 @@ class templateHelper {
         }
         return text
     }
-    _padStart = (str, len = 2, symbol = "0") => (str + "").padStart(len, symbol);
-    _formatDate = day => `${day.getFullYear()}/${day.getMonth() + 1}/${this._padStart(day.getDate())}`;
-    _formatTime = day => `${this._padStart(day.getHours())}:${this._padStart(day.getMinutes())}:${this._padStart(day.getSeconds())}`;
 
     uuid = () => this.utils.getUUID();
     username = () => process.env.username || this.utils.Package.OS.userInfo().username
     random = () => Math.random();
     randomInt = (floor, ceil) => this.utils.randomInt(floor, ceil);
-    randomStr = () => this.utils.randomString();
+    randomStr = len => this.utils.randomString(len);
     range = () => this.rangeText;
     title = () => this._title;
     folder = () => this.utils.getCurrentDirPath();
     mountFolder = () => this.utils.getMountFolder();
     filepath = () => this.utils.Package.Path.join(this.folder(), this.title());
-    weekday = () => "周" + '日一二三四五六'.charAt(this.today.getDay());
-    datetime = () => this.today.toLocaleString('chinese', {hour12: false});
-    date = () => this._formatDate(this.today);
-    time = () => this._formatTime(this.today);
-    timestamp = () => this.today.getTime();
-    dateOffset = offset => this._formatDate(new Date(this.timestamp() + parseInt(offset) * this.oneDay));
-    yesterday = () => this.dateOffset(-1);
-    tomorrow = () => this.dateOffset(1);
+    formatDate = (format, locale) => this.formatter.getTime(format, locale);
+    timestamp = () => this.formatter.getTimestamp();
+    datetime = locale => this.formatDate("yyyy-MM-dd HH:mm:ss", locale);
+    date = locale => this.formatDate("yyyy-MM-dd", locale);
+    time = locale => this.formatDate("HH:mm:ss", locale);
+    weekday = locale => this.formatDate("ddd", locale);
+    dateOffset = (offset = 0, format = "yyyy-MM-dd", locale) => new dateFormatter(new Date(this.timestamp() + parseInt(offset) * (24 * 60 * 60 * 1000))).getTime(format, locale);
+    yesterday = (format, locale) => this.dateOffset(-1, format, locale);
+    tomorrow = (format, locale) => this.dateOffset(1, format, locale);
 }
 
 module.exports = {
