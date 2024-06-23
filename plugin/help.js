@@ -33,11 +33,13 @@ class helpPlugin extends BasePlugin {
     }
 
     about = () => {
+        const style = "background: linear-gradient(to right, rgba(79, 192, 141, 0.5), rgba(79, 192, 141, 0.5)) no-repeat bottom; background-size: 100% 40%; padding: 2px;"
         const p = [
+            `<span style="${style}">醉后不知天在水，满船清梦压星河。</span>`,
             "感谢您使用 Typora Plugin。我在有限的时间里设计了这款插件，虽然它并不那么美好，但正努力前行。",
-            "本项目遵循 MIT 协议，请自由地享受和参与开源。如果您有任何想说或抱怨的话，可以在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。",
+            "本项目遵循 MIT 协议，请自由地享受和参与开源。如果您有任何反馈或建议，可以在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。",
         ]
-        const label = p.map(e => `<p>${e}</p>`).join("");
+        const label = p.map(e => `<p style="font-size: 1.1em">${e}</p>`).join("");
         const onclick = ev => {
             const a = ev.target.closest("a");
             if (!a) return;
