@@ -20,7 +20,7 @@ class templaterPlugin extends BaseCustomPlugin {
 
         const components = [
             {label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本"},
-            {label: "模板", type: "select", list: this.config.template.map(template => template.name), onchange},
+            {label: "模板", type: "select", list: this.config.template.map(tpl => tpl.name), onchange},
             {label: "预览", type: "textarea", rows: 10, readonly: "readonly", content: this.config.template[0].text},
         ]
         const modal = {title: "新文件", components};
@@ -62,7 +62,7 @@ class dateFormatter {
         return months[date.getMonth()];
     }
 
-    _getMonthAbbrName(date, locale) {
+    _getMonthNameAbbr(date, locale) {
         const months = locale === "en"
             ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
             : ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
@@ -76,7 +76,7 @@ class dateFormatter {
         return days[date.getDay()];
     }
 
-    _getDayAbbrName(date, locale) {
+    _getDayNameAbbr(date, locale) {
         const days = locale === "en"
             ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
             : ['日', '一', '二', '三', '四', '五', '六'];
@@ -94,15 +94,15 @@ class dateFormatter {
 
     _getReplacement(locale) {
         return {
-            yyyy: this.year,
+            yyyy: this.year.toString(),
             yyy: this.year.toString().substr(1),
             yy: this.year.toString().substr(2),
             MMMM: this._getMonthName(this.date, locale),
-            MMM: this._getMonthAbbrName(this.date, locale),
+            MMM: this._getMonthNameAbbr(this.date, locale),
             MM: this._padStart(this.month),
             M: this.month,
             dddd: this._getDayName(this.date, locale),
-            ddd: this._getDayAbbrName(this.date, locale),
+            ddd: this._getDayNameAbbr(this.date, locale),
             dd: this._padStart(this.day),
             d: this.day,
             HH: this._padStart(this.hour),
@@ -120,18 +120,9 @@ class dateFormatter {
     }
 
     getTime(format = "yyyy-MM-dd HH:mm:ss", locale = "en") {
-        const matches = format.matchAll(/yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a/g);
+        const regexp = /(yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a)/g;
         const replacement = this._getReplacement(locale);
-        for (const match of matches) {
-            const f = match[0];
-            if (!f) continue;
-
-            const r = replacement[f];
-            if (!r) continue;
-
-            format = format.replace(f, r);
-        }
-        return format;
+        return format.replace(regexp, (match) => replacement[match] || match);
     }
 
     getTimestamp() {
