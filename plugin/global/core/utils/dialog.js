@@ -2,7 +2,7 @@ class dialog {
     constructor(utils) {
         this.utils = utils;
         this.entities = null;
-        this.clean();
+        this.reset();
     }
 
     html = () => `
@@ -16,7 +16,7 @@ class dialog {
         </dialog>
     `
 
-    clean = () => {
+    reset = () => {
         this.pluginModal = null;
         this.callback = null;
         this.cancelCallback = null;
@@ -37,22 +37,31 @@ class dialog {
     }
 
     onButtonClick = async callback => {
-        this.pluginModal.components.forEach(c => {
-            if (c.label === undefined || !c.type || !c.id) return;
-            const widget = this.entities.body.querySelector(`.form-group[component-id="${c.id}"]`);
-            c.submit = widget ? this.getWidgetValue(c.type, widget) : undefined;
+        this.entities.body.querySelectorAll(".form-group[component-id]").forEach(el => {
+            const id = el.getAttribute("component-id");
+            const c = this.pluginModal.components.find(c => c.id === id);
+            if (c) {
+                c.submit = this.getWidgetValue(c.type, el);
+            }
         })
         this.entities.modal.close();
         if (callback) {
             await callback(this.pluginModal.components);
         }
-        this.clean();
+        this.reset();
         this.entities.body.innerHTML = "";
     }
 
-    addEvent = () => {
-        if (!this.pluginModal || !this.pluginModal.components) return;
-        this.pluginModal.components.forEach(component => {
+    checkComponents = components => {
+        const e = components.some(c => c.label === undefined || !c.type);
+        if (e) {
+            throw new Error("c.label === undefined || !component.type");
+        }
+    }
+
+    attachEvent = modal => {
+        if (!modal || !modal.components) return;
+        modal.components.forEach(component => {
             Object.entries(component).forEach(([event, func]) => {
                 if (!event.startsWith("on")) return;
                 const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
@@ -138,19 +147,22 @@ class dialog {
     // 2. callback(components) => {}: 当用户点击【确认】后的回调函数
     // 3. onCancelCallback(components) => {}: 当用户点击【取消】后的回调函数
     modal = (modal, callback, cancelCallback) => {
-        if (modal) {
-            this.pluginModal = modal;
-            this.callback = callback;
-            this.cancelCallback = cancelCallback;
+        if (!modal) return;
 
-            this.entities.title.innerText = modal.title;
-            modal.components.forEach(component => component.id = this.utils.randomString());
-            const widgetList = modal.components.map(this.newWidget);
-            this.entities.body.innerHTML = `<form role="form">${widgetList.join("")}</form>`;
-            this.addEvent();
-            this.entities.modal.showModal();
-            modal.onload && modal.onload(this.entities.modal);
-        }
+        this.pluginModal = modal;
+        this.callback = callback;
+        this.cancelCallback = cancelCallback;
+
+        const {title, width, components, onload} = modal;
+        this.checkComponents(components);
+        this.entities.title.innerText = title;
+        this.entities.modal.style.setProperty("--plugin-custom-modal-width", width || "400px");
+        components.forEach(component => component.id = this.utils.randomString());
+        const widgetList = components.map(this.newWidget);
+        this.entities.body.innerHTML = `<form role="form">${widgetList.join("")}</form>`;
+        this.attachEvent(modal);
+        this.entities.modal.showModal();
+        onload && onload(this.entities.modal);
     }
 }
 
