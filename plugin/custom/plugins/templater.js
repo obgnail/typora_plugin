@@ -14,7 +14,7 @@ class templaterPlugin extends BaseCustomPlugin {
             const value = ev.target.value;
             const tpl = this.config.template.find(tpl => tpl.name === value);
             if (tpl) {
-                ev.target.closest(".modal-body").querySelector("textarea").value = tpl.text;
+                ev.target.closest(".plugin-custom-modal-body").querySelector("textarea").value = tpl.text;
             }
         }
 
