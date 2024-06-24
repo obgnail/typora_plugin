@@ -91,12 +91,12 @@ class dialog {
     }
 
     newWidget = component => {
-        if (!component || component.label === undefined || !component.type) return;
+        if (!component) return;
 
         let label = "label";
         let inner = "";
         const type = component.type.toLowerCase();
-        const disabled = c => c.disabled ? "disabled" : "";
+        const disabled = el => el.disabled ? "disabled" : "";
         switch (type) {
             case "input":
             case "password":
