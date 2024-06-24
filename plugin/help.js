@@ -52,7 +52,7 @@ class helpPlugin extends BasePlugin {
                 this.utils.sendEmail("he1251698542@gmail.com", "插件反馈");
             }
         }
-        this.utils.modal({title: "关于", components: [{label, type: "p", onclick}]});
+        this.utils.modal({title: "关于", width: "500px", components: [{label, type: "span", onclick}]});
     }
 
     uninstall = () => {
