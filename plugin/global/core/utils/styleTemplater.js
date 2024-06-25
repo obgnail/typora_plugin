@@ -9,9 +9,10 @@ class styleTemplater {
         const files = ["user_styles", "styles"].map(dir => this.utils.joinPath("./plugin/global", dir, `${name}.css`));
         const [userStyles, defaultStyles] = await this.utils.readFiles(files);
         const data = userStyles || defaultStyles;
-        if (!data) {
+        if (data === "") return;
+        if (data === undefined) {
             console.error(`there is not such style file: ${name}`);
-            return
+            return;
         }
         try {
             const css = data.replace(/\${(.+?)}/g, (_, $arg) => $arg.split(".").reduce((obj, attr) => obj[attr], args));
@@ -28,7 +29,10 @@ class styleTemplater {
         return style ? style.innerHTML : undefined;
     }
 
-    process = async () => await this.register("plugin-common");
+    process = async () => {
+        const files = ["plugin-common", "customize"];
+        return Promise.all(files.map(f => this.register(f)));
+    }
 }
 
 module.exports = {
