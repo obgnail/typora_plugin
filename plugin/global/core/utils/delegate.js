@@ -1,4 +1,4 @@
-const {hotkeyHub} = require("./hotkey")
+const {hotkeyHub} = require("./hotkeyHub")
 const {eventHub} = require("./eventHub")
 const {stateRecorder} = require("./stateRecorder")
 const {exportHelper} = require("./exportHelper")
