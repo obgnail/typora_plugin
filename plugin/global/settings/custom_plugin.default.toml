@@ -416,7 +416,7 @@ set_title_color = true
 # 鼠标悬停在fold callout时展示其内容
 hover_to_show_fold_callout = true
 # 自动插入的模板
-template = "> [!NOTE]\n> this is note"
+template = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
 # 使用的字体。一旦修改此选项，就需要修改下面所有的icon
 # 具体的icon值请参考：
 #   旧版本Typora：Typora/resources/app/style/font-awesome-4.1.0/css/font-awesome.css

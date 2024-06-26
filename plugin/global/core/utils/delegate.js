@@ -1,15 +1,15 @@
-const {hotkeyHub} = require("./hotkey")
-const {eventHub} = require("./eventHub")
-const {stateRecorder} = require("./stateRecorder")
-const {exportHelper} = require("./exportHelper")
-const {styleTemplater} = require("./styleTemplater")
-const {htmlTemplater} = require("./htmlTemplater")
-const {markdownParser} = require("./markdownParser")
-const {contextMenu} = require("./contextMenu")
-const {notification} = require("./notification")
-const {dialog} = require("./dialog")
-const {diagramParser} = require("./diagramParser")
-const {thirdPartyDiagramParser} = require("./thirdPartyDiagramParser")
+const {hotkeyHub} = require("./mixin/hotkeyHub")
+const {eventHub} = require("./mixin/eventHub")
+const {stateRecorder} = require("./mixin/stateRecorder")
+const {exportHelper} = require("./mixin/exportHelper")
+const {styleTemplater} = require("./mixin/styleTemplater")
+const {htmlTemplater} = require("./mixin/htmlTemplater")
+const {markdownParser} = require("./mixin/markdownParser")
+const {contextMenu} = require("./mixin/contextMenu")
+const {notification} = require("./mixin/notification")
+const {dialog} = require("./mixin/dialog")
+const {diagramParser} = require("./mixin/diagramParser")
+const {thirdPartyDiagramParser} = require("./mixin/thirdPartyDiagramParser")
 
 const getHelper = utils => {
     const _eventHub = new eventHub(utils);
@@ -103,19 +103,19 @@ const getHelper = utils => {
         modal: _dialog.modal,
     }
 
-    // combinations should be used to layer various functions, but utils is too old and has become a legacy, so functions can only be mixin
+    // combination should be used to layer various functions, but utils is too old and has become a legacy, so functions can only be mixin. i am so so sorry
     Object.assign(utils, delegate);
 
-    const load = (...ele) => Promise.all(ele.map(h => h.process()));
+    const _load = (...ele) => Promise.all(ele.map(h => h.process()));
 
     const loadHelpersBefore = async () => {
-        await load(_styleTemplater);
-        await load(_htmlTemplater, _contextMenu, _notification, _dialog, _stateRecorder, _hotkeyHub, _exportHelper);
+        await _load(_styleTemplater);
+        await _load(_htmlTemplater, _contextMenu, _notification, _dialog, _stateRecorder, _hotkeyHub, _exportHelper);
     }
 
     const loadHelpersAfter = async () => {
-        await load(_eventHub);
-        await load(_diagramParser, _thirdPartyDiagramParser);
+        await _load(_eventHub);
+        await _load(_diagramParser, _thirdPartyDiagramParser);
     };
 
     const optimizeHelpers = () => Promise.all(Object.values(helper).map(h => h.afterProcess && h.afterProcess()));
