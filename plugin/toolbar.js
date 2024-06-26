@@ -61,8 +61,6 @@ class toolbarPlugin extends BasePlugin {
                         await this.search(ev);
                     }
                     break
-                default:
-                    setTimeout(() => this.canInput && this.search(ev));
             }
         })
 
@@ -544,7 +542,7 @@ class functionTool extends baseToolInterface {
         const {plugin} = this.controller;
         plugin.entities.input.value = fixedName + " ";
         plugin.hideWhenEnter = false;
-        plugin.entities.input.dispatchEvent(new Event('keydown'));
+        plugin.entities.input.dispatchEvent(new Event('input'));
         setTimeout(() => plugin.hideWhenEnter = true, 100);
     }
 }
