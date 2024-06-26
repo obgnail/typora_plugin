@@ -12,7 +12,7 @@ class blurPlugin extends BasePlugin {
         this.inBlur = this.config.BLUR_DEFAULT;
     }
 
-    process = () => this.run();
+    process = () => this.run(false);
 
     call = () => {
         this.inBlur = !this.inBlur;
@@ -32,11 +32,14 @@ class blurPlugin extends BasePlugin {
         return css
     }
 
-    run = () => {
+    run = (showNotification = true) => {
         if (this.inBlur) {
             this.utils.insertStyle(this.css_id, this.getStyleText());
         } else {
-            this.utils.removeStyle(this.css_id)
+            this.utils.removeStyle(this.css_id);
+        }
+        if (showNotification) {
+            this.utils.showNotification(this.inBlur ? "模糊模式已启用" : "模糊模式已关闭");
         }
     }
 }

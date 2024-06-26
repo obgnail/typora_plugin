@@ -1,6 +1,6 @@
 class darkModePlugin extends BaseCustomPlugin {
     init = () => {
-        this.isDarkMode = false;
+        this.isDarkMode = this.config.default_dark_mode;
     }
 
     hotkey = () => [this.config.hotkey]
@@ -35,16 +35,15 @@ class darkModePlugin extends BaseCustomPlugin {
         this.isDarkMode = false;
     }
 
-    process = () => {
-        if (this.config.default_dark_mode) {
-            this.enableDarkMode();
-        }
+    toggleDarkMode = async () => {
+        const func = this.isDarkMode ? this.disableDarkMode : this.enableDarkMode;
+        await func();
+        this.utils.showNotification(this.isDarkMode ? "夜间模式已启用" : "夜间模式已关闭");
     }
 
-    callback = async () => {
-        const func = this.isDarkMode ? this.disableDarkMode : this.enableDarkMode
-        await func();
-    }
+    process = () => this.isDarkMode && this.enableDarkMode();
+
+    callback = () => this.toggleDarkMode()
 }
 
 module.exports = {
