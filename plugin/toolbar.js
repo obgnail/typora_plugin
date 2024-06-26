@@ -1,7 +1,7 @@
 class toolbarPlugin extends BasePlugin {
     beforeProcess = () => {
         this.toolController = new toolController(this);
-        const tools = [tabTool, pluginTool, recentFileTool, operationTool, modeTool, tempThemeTool, outlineTool, functionTool, mixTool];
+        const tools = [tabTool, pluginTool, recentFileTool, operationTool, modeTool, themeTool, outlineTool, functionTool, mixTool];
         tools.forEach(tool => this.registerBarTool(new tool()));
     }
 
@@ -14,7 +14,7 @@ class toolbarPlugin extends BasePlugin {
         const title = "支持：\n" + tools.join("\n");
         return `
             <div id="plugin-toolbar" class="plugin-common-modal plugin-common-hidden">
-                <div id="plugin-toolbar-input"><input placeholder="ops explorer" title="${title}"></div>
+                <div id="plugin-toolbar-input"><input placeholder="plu multi" title="${title}"></div>
                 <div class="plugin-toolbar-result"></div>
             </div>
         `
@@ -22,27 +22,33 @@ class toolbarPlugin extends BasePlugin {
 
     init = () => {
         this.canInput = true;
-        this.hideWhenEnter = true;
+
         this.entities = {
             content: document.querySelector("content"),
             toolbar: document.querySelector("#plugin-toolbar"),
             input: document.querySelector("#plugin-toolbar-input input"),
             result: document.querySelector("#plugin-toolbar .plugin-toolbar-result")
         }
-        this.handleInput = this.utils.debouncePromise(this.toolController.handleInput, this.config.DEBOUNCE_INTERVAL);
+
+        this.search = this.utils.debouncePromise(async ev => {
+            const result = await this.toolController.handleInput();
+            const ok = result && result.matches && result.tool;
+            this.entities.result.innerHTML = ok ? this._newItems(result).join("") : "";
+            if (ev) {
+                ev.preventDefault();
+                ev.stopPropagation();
+            }
+        }, this.config.DEBOUNCE_INTERVAL)
     }
 
     process = () => {
-        this.entities.input.addEventListener("keydown", async ev => {
+        this.entities.input.addEventListener("keydown", ev => {
             switch (ev.key) {
                 case "Enter":
-                    let select = this.entities.result.querySelector(".plugin-toolbar-item.active");
-                    if (!select && this.entities.result.childElementCount === 1) {
-                        select = this.entities.result.firstChild;
-                    }
+                    const select = this.entities.result.querySelector(".plugin-toolbar-item.active")
+                        || (this.entities.result.childElementCount === 1 && this.entities.result.firstChild);
                     if (select) {
-                        this.run(select, ev);
-                        this.hideWhenEnter && this.hide();
+                        this._callTool(select, ev);
                     }
                     break
                 case "ArrowUp":
@@ -53,31 +59,29 @@ class toolbarPlugin extends BasePlugin {
                     break
                 case "Escape":
                 case "Backspace":
-                    if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
+                    if (ev.key === "Escape" || (ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value)) {
                         ev.stopPropagation();
                         ev.preventDefault();
                         this.hide();
-                    } else {
-                        await this.search(ev);
                     }
                     break
             }
         })
 
-        this.entities.input.addEventListener("input", ev => {
-            setTimeout(() => this.canInput && this.search(ev));
-        })
+        this.entities.input.addEventListener("input", ev => this.canInput && this.search(ev))
 
         this.entities.result.addEventListener("click", ev => {
             const target = ev.target.closest(".plugin-toolbar-item");
-            target && this.run(target, ev);
+            target && this._callTool(target, ev);
         });
 
-        // this.entities.content.addEventListener("click", ev => {
-        //     if (this.utils.isShow(this.entities.toolbar) && !ev.target.closest("#plugin-toolbar")) {
-        //         this.hide();
-        //     }
-        // })
+        if (this.config.AUTO_HIDE) {
+            this.entities.content.addEventListener("click", ev => {
+                if (this.utils.isShow(this.entities.toolbar) && !ev.target.closest("#plugin-toolbar")) {
+                    this.hide();
+                }
+            })
+        }
 
         if (this.config.IGNORE_WHEN_COMPOSITION) {
             this.entities.input.addEventListener("compositionstart", () => this.canInput = false, true);
@@ -99,7 +103,7 @@ class toolbarPlugin extends BasePlugin {
     registerBarTool = tool => this.toolController.register(tool);
     unregisterBarTool = name => this.toolController.unregister(name);
 
-    run = (target, ev) => {
+    _callTool = (target, ev) => {
         if (ev) {
             ev.preventDefault();
             ev.stopPropagation();
@@ -113,18 +117,7 @@ class toolbarPlugin extends BasePlugin {
         }
     }
 
-    search = async ev => {
-        const result = await this.handleInput();
-        const ok = result && result.matches && result.tool;
-        this.entities.result.innerHTML = ok ? this.newItems(result).join("") : "";
-        if (ev) {
-            ev.preventDefault();
-            ev.stopPropagation();
-        }
-    }
-
-    newItems = result => {
-        const {tool, matches, input} = result;
+    _newItems = ({tool, matches, input}) => {
         const toolName = tool.name();
         return matches.map(match => {
             const showName = match.showName || match;
@@ -492,9 +485,9 @@ class modeTool extends baseToolInterface {
     }
 }
 
-class tempThemeTool extends baseToolInterface {
+class themeTool extends baseToolInterface {
     name = () => "theme"
-    translate = () => "临时更换主题"
+    translate = () => "更换主题"
     icon = () => "🎨"
     setThemeForever = theme => ClientCommand.setTheme(theme);
     setThemeTemp = theme => File.setTheme(theme);
@@ -503,7 +496,7 @@ class tempThemeTool extends baseToolInterface {
         const list = all.map(theme => ({showName: theme.replace(/\.css/gi, ""), fixedName: theme}));
         return this.baseSearch(input, list, ["showName"]);
     }
-    callback = fixedName => this.setThemeTemp(fixedName);
+    callback = fixedName => this.setThemeForever(fixedName);
 }
 
 class outlineTool extends baseToolInterface {
@@ -539,11 +532,9 @@ class functionTool extends baseToolInterface {
         return this.baseSearch(input, all, ["showName"]);
     }
     callback = fixedName => {
-        const {plugin} = this.controller;
-        plugin.entities.input.value = fixedName + " ";
-        plugin.hideWhenEnter = false;
-        plugin.entities.input.dispatchEvent(new Event('input'));
-        setTimeout(() => plugin.hideWhenEnter = true, 100);
+        const {input} = this.controller.plugin.entities;
+        input.value = fixedName + " ";
+        input.dispatchEvent(new Event("input"));
     }
 }
 

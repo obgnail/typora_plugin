@@ -318,6 +318,8 @@ CLICKABLE = true
 HOTKEY = "ctrl+j"
 # 当输入框为空，且键入backspace时，隐藏窗口
 BACKSPACE_TO_HIDE = true
+# 当点击其他地方时，隐藏窗口
+AUTO_HIDE = true
 # 等待输入法输入完毕后才执行搜索
 IGNORE_WHEN_COMPOSITION = true
 # toolbar的在页面的20%位置出现
@@ -338,7 +340,7 @@ DEBOUNCE_INTERVAL = 70
 #   3. "his"    最近文件
 #   4. "ops"    常用操作
 #   5. "mode"   切换文件模式
-#   6. "theme"  临时切换主题
+#   6. "theme"  切换主题
 #   7. "out"    文档大纲
 #   8. "func"   功能列表
 #   9. "all"    混合查找（所有项目都混在一起查找）
