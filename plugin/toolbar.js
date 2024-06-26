@@ -65,10 +65,21 @@ class toolbarPlugin extends BasePlugin {
                     setTimeout(() => this.canInput && this.search(ev));
             }
         })
+
+        this.entities.input.addEventListener("input", ev => {
+            setTimeout(() => this.canInput && this.search(ev));
+        })
+
         this.entities.result.addEventListener("click", ev => {
             const target = ev.target.closest(".plugin-toolbar-item");
             target && this.run(target, ev);
         });
+
+        // this.entities.content.addEventListener("click", ev => {
+        //     if (this.utils.isShow(this.entities.toolbar) && !ev.target.closest("#plugin-toolbar")) {
+        //         this.hide();
+        //     }
+        // })
 
         if (this.config.IGNORE_WHEN_COMPOSITION) {
             this.entities.input.addEventListener("compositionstart", () => this.canInput = false, true);
