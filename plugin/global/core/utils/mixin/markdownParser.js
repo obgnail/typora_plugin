@@ -13,7 +13,7 @@ class markdownParser {
     }
 
     parse = markdown => {
-        this.parser = this.parser || require("../../../md_padding/md-padding/parser/parse");
+        this.parser = this.parser || require("../../../../md_padding/md-padding/parser/parse");
         return this.parser.parse(markdown, {ignoreWords: []});
     }
     getNodeKindByNode = node => this.nodeKind.get(node.kind)
