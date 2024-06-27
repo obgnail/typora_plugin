@@ -22,12 +22,10 @@ class thirdPartyDiagramParser {
     register = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter}) => {
         const p = {checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {}};
         this.parsers.set(lang.toLowerCase(), p);
-        const dp = {
-            lang, mappingLang, destroyWhenUpdate,
+        this.utils.registerDiagramParser({
+            lang, mappingLang, destroyWhenUpdate, extraStyleGetter, interactiveMode,
             renderFunc: this.render, cancelFunc: this.cancel, destroyAllFunc: this.destroyAll,
-            extraStyleGetter: extraStyleGetter, interactiveMode: interactiveMode
-        }
-        this.utils.registerDiagramParser(dp);
+        });
     }
 
     unregister = lang => {

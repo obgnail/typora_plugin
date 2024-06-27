@@ -31,7 +31,7 @@ class diagramParser {
 
     unregister = lang => this.parsers.delete(lang)
 
-    registerStyleTemplate = async () => {
+    polyfillStyle = async () => {
         if (this.utils.isBetaVersion) {
             await this.utils.registerStyleTemplate("diagram-parser");
         }
@@ -50,7 +50,7 @@ class diagramParser {
 
     process = async () => {
         if (this.parsers.size === 0) return;
-        await this.registerStyleTemplate();
+        await this.polyfillStyle();
         this.registerLangTooltip();      // 语言提示
         this.registerLangModeMapping();  // A语言映射为B语言
         this.onAddCodeBlock();           // 添加代码块时
