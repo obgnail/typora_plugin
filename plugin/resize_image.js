@@ -31,7 +31,7 @@ class resizeImagePlugin extends BasePlugin {
         this.config.ALLOW_OVERSIZE = !this.config.ALLOW_OVERSIZE;
 
         if (!this.config.ALLOW_OVERSIZE) {
-            document.querySelectorAll("#write img").forEach(image => {
+            this.utils.querySelectorAllInWrite("img").forEach(image => {
                 if (image.style.maxWidth) {
                     const maxSize = image.parentElement.offsetWidth;
                     if (this.getWidth(image) > maxSize) {

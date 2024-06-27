@@ -97,7 +97,7 @@ class thirdPartyDiagramParser {
             if (!parser.beforeExport) continue;
             this.utils.renderAllLangFence(lang);
             for (const [cid, instance] of Object.entries(parser.map)) {
-                const preview = document.querySelector(`#write .md-fences[cid=${cid}] .md-diagram-panel-preview`);
+                const preview = this.utils.querySelectorInWrite(`.md-fences[cid=${cid}] .md-diagram-panel-preview`);
                 preview && parser.beforeExport(preview, instance);
             }
         }

@@ -15,7 +15,7 @@ class readOnlyPlugin extends BasePlugin {
     }
 
     afterFreshLock = () => {
-        const setCheckbox = disabled => document.querySelectorAll('#write input[type="checkbox"]').forEach(box => box.toggleAttribute("disabled", disabled))
+        const setCheckbox = disabled => this.utils.querySelectorAllInWrite('input[type="checkbox"]').forEach(box => box.toggleAttribute("disabled", disabled))
         const setInput = disabled => {
             if (!disabled) return;
             [

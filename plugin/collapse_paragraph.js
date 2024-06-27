@@ -111,7 +111,7 @@ class collapseParagraphPlugin extends BasePlugin {
     }
 
     rollback = start => {
-        if (!document.querySelector(`#write > .${this.className}`)) return;
+        if (!this.utils.querySelectorInWrite(`:scope > .${this.className}`)) return;
 
         let ele = start.closest("#write > [cid]");
 
@@ -165,7 +165,7 @@ class collapseParagraphPlugin extends BasePlugin {
         return result;
     }
 
-    findAllSiblings = paragraph => document.querySelectorAll(`#write > ${paragraph.tagName}`);
+    findAllSiblings = paragraph => this.utils.querySelectorAllInWrite(`:scope > ${paragraph.tagName}`);
 
     recordCollapseState = (needChange = true) => {
         if (needChange) {

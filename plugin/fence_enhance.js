@@ -135,7 +135,7 @@ class fenceEnhancePlugin extends BasePlugin {
         this.registerCustomButtons();
 
         this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, cid => {
-            const ele = document.querySelector(`#write .md-fences[cid=${cid}]`);
+            const ele = this.utils.querySelectorInWrite(`.md-fences[cid=${cid}]`);
             this.addEnhanceElement(ele);
         })
 
@@ -218,7 +218,7 @@ class fenceEnhancePlugin extends BasePlugin {
         }
     }
 
-    beforeExport = () => document.querySelectorAll("#write .fold-code.folded").forEach(ele => ele.click())
+    beforeExport = () => this.utils.querySelectorAllInWrite(".fold-code.folded").forEach(ele => ele.click())
 
     defaultFold = foldButton => this.config.FOLD_DEFAULT && foldButton.click();
 
@@ -292,7 +292,7 @@ class fenceEnhancePlugin extends BasePlugin {
     }
 
     rangeAllFences = rangeFunc => {
-        document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
+        this.utils.querySelectorAllInWrite(".md-fences[cid]").forEach(fence => {
             const codeMirror = fence.querySelector(":scope > .CodeMirror");
             if (!codeMirror) {
                 const cid = fence.getAttribute("cid");

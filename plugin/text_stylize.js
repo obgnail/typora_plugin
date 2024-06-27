@@ -304,7 +304,7 @@ class textStylizePlugin extends BasePlugin {
 
     renewRange = range => {
         const {beforeContent, afterContent, cid} = range;
-        const target = document.querySelector(`#write [cid="${cid}"]`);
+        const target = this.utils.querySelectorInWrite(`[cid="${cid}"]`);
         const TEXTs = this.getAllTEXT(target);
 
         let textContent = "";

@@ -182,7 +182,7 @@ class diagramParser {
             const extraCssList = [];
             this.parsers.forEach((parser, lang) => {
                 const getter = parser.extraStyleGetter;
-                const exist = document.querySelector(`#write .md-fences[lang="${lang}"]`);
+                const exist = this.utils.querySelectorInWrite(`.md-fences[lang="${lang}"]`);
                 if (getter && exist) {
                     const extraCss = getter();
                     extraCssList.push(extraCss);
