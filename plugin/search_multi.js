@@ -145,7 +145,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
                 const stats = await stat(filePath);
                 if (stats.isFile() && (!fileFilter || fileFilter(filePath, stats))) {
                     readFile(filePath).then(buffer => callback(filePath, stats, buffer)).catch(console.error);
-                } else if (stats.isDirectory() && dirFilter(file)) {
+                } else if (stats.isDirectory() && (!dirFilter || dirFilter(file))) {
                     await traverse(filePath);
                 }
             }
@@ -154,9 +154,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
         traverse(dir).then(then).catch(console.error);
     }
 
-    appendItemFunc = keyArr => {
+    appendItemFunc = (rootPath, keyArr) => {
         let index = 0;
-        const rootPath = this.utils.getMountFolder();
         const showResult = this.utils.once(() => this.utils.show(this.entities.result));
         const {INCLUDE_FILE_PATH, CASE_SENSITIVE, RELATIVE_PATH, SHOW_MTIME} = this.config;
 
@@ -176,20 +175,19 @@ class searchMultiKeywordPlugin extends BasePlugin {
             const dirPath = RELATIVE_PATH ? dir.replace(rootPath, ".") : dir;
 
             const item = document.createElement("div");
-            item.classList.add("plugin-search-multi-item");
-            item.setAttribute("data-is-dir", "false");
+            item.className = "plugin-search-multi-item";
             item.setAttribute("data-path", filePath);
-            item.setAttribute("data-index", index + "");
             if (SHOW_MTIME) {
-                item.setAttribute("ty-hint", stats.mtime.toLocaleString('chinese', {hour12: false}));
+                const time = stats.mtime.toLocaleString('chinese', {hour12: false});
+                item.setAttribute("ty-hint", time);
             }
 
             const title = document.createElement("div");
-            title.classList.add("plugin-search-multi-item-title");
+            title.className = "plugin-search-multi-item-title";
             title.textContent = base;
 
             const path = document.createElement("div");
-            path.classList.add("plugin-search-multi-item-path");
+            path.className = "plugin-search-multi-item-path";
             path.textContent = dirPath + this.utils.separator;
 
             item.append(title, path);
@@ -226,7 +224,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         rootPath = rootPath || this.utils.getMountFolder();
         const allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
         const allowTraverse = path => !this.config.IGNORE_FOLDERS.includes(path)
-        const appendItem = this.appendItemFunc(keyArr);
+        const appendItem = this.appendItemFunc(rootPath, keyArr);
         const then = () => this.utils.hide(this.entities.info);
         this.traverseDir(rootPath, allowRead, allowTraverse, appendItem, then);
     }
