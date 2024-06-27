@@ -113,7 +113,7 @@ class resourceOperationPlugin extends BaseCustomPlugin {
     }
 
     initModalRect = (resetLeft = true) => {
-        const {left, width, height} = document.querySelector("content").getBoundingClientRect();
+        const {left, width, height} = this.utils.entities.eContent.getBoundingClientRect();
         const {modal_left_percent: l, modal_width_percent: w, modal_height_percent: h} = this.config;
         const style = {width: `${width * w / 100}px`, height: `${height * h / 100}px`};
         if (resetLeft) {

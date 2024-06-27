@@ -2,7 +2,7 @@ class resizeImagePlugin extends BasePlugin {
     process = () => {
         this.recordResizeState(false);
 
-        document.getElementById("write").addEventListener("wheel", ev => {
+        this.utils.entities.eWrite.addEventListener("wheel", ev => {
             if (!this.utils.metaKeyPressed(ev)) return;
 
             const target = ev.target.closest("img");

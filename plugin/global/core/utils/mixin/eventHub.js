@@ -85,7 +85,7 @@ class eventHub {
             const sidebar = document.querySelector("#typora-sidebar");
             sidebar && this.publishEvent(this.eventType.afterToggleSidebar, sidebar.classList.contains("open"));
         }
-        const content = document.querySelector("content");
+        const content = this.utils.entities.eContent;
         const hasTransition = window.getComputedStyle(content).transition !== "all 0s ease 0s";
         const afterToggleSidebar = hasTransition
             ? () => content.addEventListener("transitionend", _afterToggleSidebar, {once: true})
@@ -114,7 +114,7 @@ class eventHub {
                 debouncePublish();
             }
         });
-        this.observer.observe(document.querySelector("#write"), {characterData: true, childList: true, subtree: true})
+        this.observer.observe(this.utils.entities.eWrite, {characterData: true, childList: true, subtree: true})
     }
 
     afterProcess = () => {

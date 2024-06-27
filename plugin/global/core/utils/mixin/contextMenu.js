@@ -22,7 +22,7 @@ class contextMenu {
             this.menu.classList.remove("show");
         })
         // 仅限content内部
-        document.querySelector("content").addEventListener("mousedown", ev => {
+        this.utils.entities.eContent.addEventListener("mousedown", ev => {
             !ev.target.closest(".menu-item") && this.menu.classList.remove("show");
             if (ev.button !== 2) return;
             for (const menu of this.menus.values()) {

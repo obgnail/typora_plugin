@@ -246,7 +246,7 @@ class diagramParser {
         const handleCtrlClick = () => {
             const ctrlClick = this.utils.getGlobalSetting("EXIT_INTERACTIVE_MODE").includes("ctrl_click_fence");
             if (!ctrlClick) return;
-            document.querySelector("#write").addEventListener("mouseup", ev => {
+            this.utils.entities.eWrite.addEventListener("mouseup", ev => {
                 if (this.utils.metaKeyPressed(ev) && ev.target.closest(".md-fences-interactive .md-diagram-panel-preview")) {
                     showAllTButton(ev.target.closest(".md-fences-interactive"));
                     enableFocus();
@@ -266,7 +266,7 @@ class diagramParser {
             const ok = this.utils.registerFenceEnhanceButton("edit-custom-diagram", "editDiagram", "编辑", "fa fa-edit", false, listener);
             if (!ok) return;
 
-            $("#write").on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
+            this.utils.entities.$eWrite.on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
                 showEditButtonOnly(this);
             }).on("mouseleave", ".md-fences-interactive.md-focus", function () {
                 showEditButtonOnly(this);

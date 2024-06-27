@@ -24,7 +24,7 @@ class toolbarPlugin extends BasePlugin {
         this.canInput = true;
 
         this.entities = {
-            content: document.querySelector("content"),
+            content: this.utils.entities.eContent,
             toolbar: document.querySelector("#plugin-toolbar"),
             input: document.querySelector("#plugin-toolbar-input input"),
             result: document.querySelector("#plugin-toolbar .plugin-toolbar-result")

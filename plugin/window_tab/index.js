@@ -22,7 +22,7 @@ class windowTabBarPlugin extends BasePlugin {
 
     init = () => {
         this.entities = {
-            content: document.querySelector("content"),
+            content: this.utils.entities.eContent,
             source: document.querySelector("#typora-source"),
             tabBar: document.querySelector("#plugin-window-tab .tab-bar"),
             windowTab: document.querySelector("#plugin-window-tab"),

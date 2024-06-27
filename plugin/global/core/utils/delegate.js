@@ -10,6 +10,7 @@ const {notification} = require("./mixin/notification")
 const {dialog} = require("./mixin/dialog")
 const {diagramParser} = require("./mixin/diagramParser")
 const {thirdPartyDiagramParser} = require("./mixin/thirdPartyDiagramParser")
+const {entities} = require("./mixin/entities")
 
 const getHelper = utils => {
     const _eventHub = new eventHub(utils);
@@ -24,6 +25,7 @@ const getHelper = utils => {
     const _htmlTemplater = new htmlTemplater(utils);
     const _exportHelper = new exportHelper(utils);
     const _markdownParser = new markdownParser(utils);
+    const _entities = new entities(utils);
 
     const helper = {
         eventHub: _eventHub,
@@ -101,6 +103,8 @@ const getHelper = utils => {
 
         // 动态弹出自定义模态框（即刻弹出，因此无需注册）
         modal: _dialog.modal,
+
+        entities: _entities,
     }
 
     // combination should be used to layer various functions, but utils is too old and has become a legacy, so functions can only be mixin. i am so so sorry

@@ -15,7 +15,7 @@ class collapseParagraphPlugin extends BasePlugin {
     process = () => {
         this.disableExpandSimpleBlock();  // 选项【显示当前块元素的Markdown源码】会影响本插件，将其禁用
         this.recordCollapseState(false);
-        const write = document.getElementById("write");
+        const write = this.utils.entities.eWrite;
         write.addEventListener("click", ev => {
             const paragraph = this.getTargetHeader(ev.target);
             if (!paragraph) return;

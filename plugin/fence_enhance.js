@@ -139,7 +139,7 @@ class fenceEnhancePlugin extends BasePlugin {
             this.addEnhanceElement(ele);
         })
 
-        document.getElementById("write").addEventListener("click", ev => {
+        this.utils.entities.eWrite.addEventListener("click", ev => {
             const target = ev.target.closest(".fence-enhance .enhance-btn");
             if (!target) return;
             ev.preventDefault();
@@ -153,7 +153,7 @@ class fenceEnhancePlugin extends BasePlugin {
         this.utils.registerExportHelper("fence_enhance", this.beforeExport);
 
         const config = this.config;
-        $("#write").on("mouseenter", ".md-fences", function () {
+        this.utils.entities.$eWrite.on("mouseenter", ".md-fences", function () {
             if (config.AUTO_HIDE) {
                 this.querySelector(".fence-enhance").style.visibility = "";
             }

@@ -4,7 +4,7 @@ class tocPlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
     init = () => {
         this.entities = {
-            content: document.querySelector("content"),
+            content: this.utils.entities.eContent,
             modal: document.querySelector("#plugin-toc"),
             grip: document.querySelector("#plugin-toc .grip-right"),
             ul: document.querySelector("#plugin-toc .toc-ul"),
@@ -48,9 +48,8 @@ class tocPlugin extends BaseCustomPlugin {
     isModalShow = () => this.utils.isShow(this.entities.modal)
 
     toggle = () => {
-        const write = document.querySelector("#write");
         if (this.isModalShow()) {
-            write.style.width = "";
+            this.utils.entities.eWrite.style.width = "";
             this.utils.hide(this.entities.modal);
             this.entities.modal.style.removeProperty("left");
             this.entities.modal.style.removeProperty("width");
@@ -67,7 +66,7 @@ class tocPlugin extends BaseCustomPlugin {
             right: `${right - modalWidth}px`,
             width: `${width - modalWidth}px`,
         });
-        write.style.width = "initial";
+        this.utils.entities.eWrite.style.width = "initial";
         this.renewModal();
     }
 
@@ -115,7 +114,7 @@ class tocPlugin extends BaseCustomPlugin {
         const headers = $header || $(File.editor.writingArea).children(File.editor.library.outline.headerStr);
         if (!headers.length) return;
 
-        const contentScrollTop = $("content").scrollTop();
+        const contentScrollTop = this.utils.entities.$eContent.scrollTop();
         const isBelowViewBox = 1 === this.utils.compareScrollPosition(headers[headers.length - 1], contentScrollTop);
         const findActiveIndex = index => {
             for (index--; headers[index] && this.utils.compareScrollPosition(headers[index], contentScrollTop) === 0;) {

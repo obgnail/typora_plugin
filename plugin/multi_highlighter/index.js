@@ -46,7 +46,7 @@ class multiHighlighterPlugin extends BasePlugin {
 
     init = () => {
         this.entities = {
-            write: document.getElementById("write"),
+            write: this.utils.entities.eWrite,
             modal: document.getElementById('plugin-multi-highlighter'),
             input: document.querySelector("#plugin-multi-highlighter-input input"),
             runButton: document.querySelector("#plugin-multi-highlighter-input .run-highlight"),
@@ -87,7 +87,7 @@ class multiHighlighterPlugin extends BasePlugin {
             ev.stopPropagation();
         })
 
-        document.querySelector("content").addEventListener("mousedown", ev => {
+        this.utils.entities.eContent.addEventListener("mousedown", ev => {
             if (this.multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
                 this.clearHighlight(true);
             }

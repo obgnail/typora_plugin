@@ -26,7 +26,7 @@ class pieMenuPlugin extends BasePlugin {
         this.expandMenuClass = "expand-menu";
         this.modifierKey = this.utils.modifierKey(this.config.MODIFIER_KEY);
         this.entities = {
-            content: document.querySelector("content"),
+            content: this.utils.entities.eContent,
             menu: document.querySelector(".plugin-pie-menu"),
         }
     }
