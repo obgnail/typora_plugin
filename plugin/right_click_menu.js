@@ -55,7 +55,7 @@ class rightClickMenuPlugin extends BasePlugin {
 
                 const [fixedName, callArg] = item.split(".");
                 const plugin = this.utils.getPlugin(fixedName);
-                if (!plugin) return {}
+                if (!plugin) return;
 
                 if (callArg) {
                     return this.secondComposeLiTemplate(plugin, callArg)
@@ -71,10 +71,10 @@ class rightClickMenuPlugin extends BasePlugin {
     appendThird = () => {
         this.config.MENUS.forEach(({LIST = []}, idx) => {
             const elements = LIST.map(item => {
-                if (item === this.dividerArg) return {};
+                if (item === this.dividerArg) return;
 
                 const plugin = this.utils.getPlugin(item);
-                if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return {};
+                if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return;
 
                 const children = (plugin.callArgs || []).map(arg => this.thirdLiTemplate(arg));
                 return this.ulTemplate({class_: ["plugin-menu-third"], "data-plugin": plugin.fixedName, idx, children});
