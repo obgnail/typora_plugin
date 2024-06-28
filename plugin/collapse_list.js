@@ -15,7 +15,7 @@ class collapseListPlugin extends BasePlugin {
 
     process = () => {
         this.recordCollapseState(false);
-        document.querySelector("#write").addEventListener("click", ev => {
+        this.utils.entities.eWrite.addEventListener("click", ev => {
             const parent = ev.target.closest(this.selector);
             if (!parent) return;
 

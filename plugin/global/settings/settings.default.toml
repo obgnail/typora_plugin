@@ -1195,10 +1195,10 @@ HIDE = false
 # 是否在右键菜单中可点击
 CLICKABLE = true
 # 快捷键配置
-UPLOAD_ALL_HOTKEY = "ctrl+shift+1"
-UPLOAD_WORDPRESS_HOTKEY = "ctrl+shift+2"
-UPLOAD_CNBLOG_HOTKEY = "ctrl+shift+3"
-UPLOAD_CSDN_HOTKEY = "ctrl+shift+4"
+UPLOAD_ALL_HOTKEY = ""
+UPLOAD_WORDPRESS_HOTKEY = ""
+UPLOAD_CNBLOG_HOTKEY = ""
+UPLOAD_CSDN_HOTKEY = ""
 # 上传相关配置
 [article_uploader.upload]
 # 是否在上传之前弹出确认框（防误触）

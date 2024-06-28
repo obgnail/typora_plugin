@@ -97,12 +97,3 @@ hotkey = "ctrl+["
 plugin = "fence_enhance"
 function = "foldFence"
 closestSelector = "#write .md-fences"
-
-
-[indentFence]
-desc = "当光标置于代码块中，按下此快捷键可以调整缩进代码块"
-enable = true
-hotkey = "ctrl+alt+l"
-plugin = "fence_enhance"
-function = "indentFence"
-closestSelector = "#write .md-fences"

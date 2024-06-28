@@ -135,11 +135,11 @@ class fenceEnhancePlugin extends BasePlugin {
         this.registerCustomButtons();
 
         this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, cid => {
-            const ele = document.querySelector(`#write .md-fences[cid=${cid}]`);
+            const ele = this.utils.querySelectorInWrite(`.md-fences[cid=${cid}]`);
             this.addEnhanceElement(ele);
         })
 
-        document.getElementById("write").addEventListener("click", ev => {
+        this.utils.entities.eWrite.addEventListener("click", ev => {
             const target = ev.target.closest(".fence-enhance .enhance-btn");
             if (!target) return;
             ev.preventDefault();
@@ -153,7 +153,7 @@ class fenceEnhancePlugin extends BasePlugin {
         this.utils.registerExportHelper("fence_enhance", this.beforeExport);
 
         const config = this.config;
-        $("#write").on("mouseenter", ".md-fences", function () {
+        this.utils.entities.$eWrite.on("mouseenter", ".md-fences", function () {
             if (config.AUTO_HIDE) {
                 this.querySelector(".fence-enhance").style.visibility = "";
             }
@@ -218,7 +218,7 @@ class fenceEnhancePlugin extends BasePlugin {
         }
     }
 
-    beforeExport = () => document.querySelectorAll("#write .fold-code.folded").forEach(ele => ele.click())
+    beforeExport = () => this.utils.querySelectorAllInWrite(".fold-code.folded").forEach(ele => ele.click())
 
     defaultFold = foldButton => this.config.FOLD_DEFAULT && foldButton.click();
 
@@ -292,7 +292,7 @@ class fenceEnhancePlugin extends BasePlugin {
     }
 
     rangeAllFences = rangeFunc => {
-        document.querySelectorAll("#write .md-fences[cid]").forEach(fence => {
+        this.utils.querySelectorAllInWrite(".md-fences[cid]").forEach(fence => {
             const codeMirror = fence.querySelector(":scope > .CodeMirror");
             if (!codeMirror) {
                 const cid = fence.getAttribute("cid");

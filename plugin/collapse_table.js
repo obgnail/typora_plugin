@@ -20,7 +20,7 @@ class collapseTablePlugin extends BasePlugin {
             }
         )
 
-        document.querySelector("#write").addEventListener("click", ev => {
+        this.utils.entities.eWrite.addEventListener("click", ev => {
             const btn = ev.target.closest(".plugin-collapse-table-btn");
             if (!btn) return;
             const figure = btn.closest("figure");

@@ -31,7 +31,7 @@ class diagramParser {
 
     unregister = lang => this.parsers.delete(lang)
 
-    registerStyleTemplate = async () => {
+    polyfillStyle = async () => {
         if (this.utils.isBetaVersion) {
             await this.utils.registerStyleTemplate("diagram-parser");
         }
@@ -50,7 +50,7 @@ class diagramParser {
 
     process = async () => {
         if (this.parsers.size === 0) return;
-        await this.registerStyleTemplate();
+        await this.polyfillStyle();
         this.registerLangTooltip();      // 语言提示
         this.registerLangModeMapping();  // A语言映射为B语言
         this.onAddCodeBlock();           // 添加代码块时
@@ -182,7 +182,7 @@ class diagramParser {
             const extraCssList = [];
             this.parsers.forEach((parser, lang) => {
                 const getter = parser.extraStyleGetter;
-                const exist = document.querySelector(`#write .md-fences[lang="${lang}"]`);
+                const exist = this.utils.querySelectorInWrite(`.md-fences[lang="${lang}"]`);
                 if (getter && exist) {
                     const extraCss = getter();
                     extraCssList.push(extraCss);
@@ -246,7 +246,7 @@ class diagramParser {
         const handleCtrlClick = () => {
             const ctrlClick = this.utils.getGlobalSetting("EXIT_INTERACTIVE_MODE").includes("ctrl_click_fence");
             if (!ctrlClick) return;
-            document.querySelector("#write").addEventListener("mouseup", ev => {
+            this.utils.entities.eWrite.addEventListener("mouseup", ev => {
                 if (this.utils.metaKeyPressed(ev) && ev.target.closest(".md-fences-interactive .md-diagram-panel-preview")) {
                     showAllTButton(ev.target.closest(".md-fences-interactive"));
                     enableFocus();
@@ -266,7 +266,7 @@ class diagramParser {
             const ok = this.utils.registerFenceEnhanceButton("edit-custom-diagram", "editDiagram", "编辑", "fa fa-edit", false, listener);
             if (!ok) return;
 
-            $("#write").on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
+            this.utils.entities.$eWrite.on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
                 showEditButtonOnly(this);
             }).on("mouseleave", ".md-fences-interactive.md-focus", function () {
                 showEditButtonOnly(this);

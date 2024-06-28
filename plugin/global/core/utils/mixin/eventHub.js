@@ -49,82 +49,82 @@ class eventHub {
         this.utils.decorate(() => File && File.editor && File.editor.library, "openFile",
             () => {
                 this.filepath = this.utils.getFilePath();
-                this.publishEvent(this.utils.eventType.beforeFileOpen);
+                this.publishEvent(this.eventType.beforeFileOpen);
             },
             (result, ...args) => {
                 const filePath = args[0];
-                filePath && this.publishEvent(this.utils.eventType.fileOpened, filePath);
-                this.filepath !== filePath && this.publishEvent(this.utils.eventType.otherFileOpened, filePath);
+                filePath && this.publishEvent(this.eventType.fileOpened, filePath);
+                this.filepath !== filePath && this.publishEvent(this.eventType.otherFileOpened, filePath);
             }
         )
 
         this.utils.loopDetector(() => File && this.utils.getFilePath(), () => {
             const filePath = this.utils.getFilePath();
-            filePath && this.utils.publishEvent(this.utils.eventType.firstFileInit, filePath);
+            filePath && this.publishEvent(this.eventType.firstFileInit, filePath);
         });
 
         this.utils.decorate(() => File && File.editor && File.editor.fences, "addCodeBlock",
             (...args) => {
                 const cid = args[0];
-                cid && this.publishEvent(this.utils.eventType.beforeAddCodeBlock, cid)
+                cid && this.publishEvent(this.eventType.beforeAddCodeBlock, cid)
             },
             (result, ...args) => {
                 const cid = args[0];
-                cid && this.publishEvent(this.utils.eventType.afterAddCodeBlock, cid)
+                cid && this.publishEvent(this.eventType.afterAddCodeBlock, cid)
             },
         )
 
-        this.utils.decorate(() => File, "toggleSourceMode", () => this.publishEvent(this.utils.eventType.beforeToggleSourceMode))
+        this.utils.decorate(() => File, "toggleSourceMode", () => this.publishEvent(this.eventType.beforeToggleSourceMode))
 
         this.utils.decorate(
             () => File && File.editor && File.editor.library && File.editor.library.outline, "updateOutlineHtml",
-            null, () => this.publishEvent(this.utils.eventType.outlineUpdated)
+            null, () => this.publishEvent(this.eventType.outlineUpdated)
         )
 
         const _afterToggleSidebar = () => {
             const sidebar = document.querySelector("#typora-sidebar");
-            sidebar && this.publishEvent(this.utils.eventType.afterToggleSidebar, sidebar.classList.contains("open"));
+            sidebar && this.publishEvent(this.eventType.afterToggleSidebar, sidebar.classList.contains("open"));
         }
-        const content = document.querySelector("content");
+        const content = this.utils.entities.eContent;
         const hasTransition = window.getComputedStyle(content).transition !== "all 0s ease 0s";
         const afterToggleSidebar = hasTransition
             ? () => content.addEventListener("transitionend", _afterToggleSidebar, {once: true})
             : this.utils.debounce(_afterToggleSidebar, 400);
         this.utils.decorate(() => File && File.editor && File.editor.library, "toggleSidebar", null, afterToggleSidebar);
 
-        const afterSetSidebarWidth = this.utils.debounce(() => this.publishEvent(this.utils.eventType.afterSetSidebarWidth), 400);
+        const afterSetSidebarWidth = this.utils.debounce(() => this.publishEvent(this.eventType.afterSetSidebarWidth), 400);
         this.utils.decorate(() => File && File.editor && File.editor.library, "setSidebarWidth", null, afterSetSidebarWidth);
 
-        this.utils.decorate(() => window, "onbeforeunload", () => this.utils.publishEvent(this.utils.eventType.beforeUnload))
+        this.utils.decorate(() => window, "onbeforeunload", () => this.publishEvent(this.eventType.beforeUnload))
 
         new MutationObserver(mutationList => {
             for (const mutation of mutationList) {
                 if (mutation.type === 'attributes' && mutation.attributeName === "class") {
                     const value = document.body.getAttribute(mutation.attributeName);
                     const openPage = value.indexOf("megamenu-opened") !== -1 || value.indexOf("show-preference-panel") !== -1;
-                    this.utils.publishEvent(this.utils.eventType.toggleSettingPage, openPage);
+                    this.publishEvent(this.eventType.toggleSettingPage, openPage);
                 }
             }
         }).observe(document.body, {attributes: true});
 
-        const debouncePublish = this.utils.debounce(() => this.utils.publishEvent(this.utils.eventType.fileEdited), 400);
+        const debouncePublish = this.utils.debounce(() => this.publishEvent(this.eventType.fileEdited), 400);
         this.observer = new MutationObserver(mutationList => {
             if (mutationList.some(m => m.type === "characterData")
                 || mutationList.length && mutationList.some(m => m.addedNodes.length) && mutationList.some(m => m.removedNodes.length)) {
                 debouncePublish();
             }
         });
-        this.observer.observe(document.querySelector("#write"), {characterData: true, childList: true, subtree: true})
+        this.observer.observe(this.utils.entities.eWrite, {characterData: true, childList: true, subtree: true})
     }
 
     afterProcess = () => {
-        delete this.eventMap[this.utils.eventType.allCustomPluginsHadInjected];
-        delete this.eventMap[this.utils.eventType.allPluginsHadInjected];
-        setTimeout(() => delete this.eventMap[this.utils.eventType.firstFileInit], 1000);
+        delete this.eventMap[this.eventType.allCustomPluginsHadInjected];
+        delete this.eventMap[this.eventType.allPluginsHadInjected];
+        setTimeout(() => delete this.eventMap[this.eventType.firstFileInit], 1000);
 
-        const funcList = this.eventMap[this.utils.eventType.fileEdited];
+        const funcList = this.eventMap[this.eventType.fileEdited];
         if (!funcList || funcList.length === 0) {
-            delete this.eventMap[this.utils.eventType.fileEdited];
+            delete this.eventMap[this.eventType.fileEdited];
             this.observer.disconnect();
             this.observer = null;
         }

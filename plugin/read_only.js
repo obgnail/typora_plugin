@@ -15,7 +15,7 @@ class readOnlyPlugin extends BasePlugin {
     }
 
     afterFreshLock = () => {
-        const setCheckbox = disabled => document.querySelectorAll('#write input[type="checkbox"]').forEach(box => box.toggleAttribute("disabled", disabled))
+        const setCheckbox = disabled => this.utils.querySelectorAllInWrite('input[type="checkbox"]').forEach(box => box.toggleAttribute("disabled", disabled))
         const setInput = disabled => {
             if (!disabled) return;
             [
@@ -62,7 +62,7 @@ class readOnlyPlugin extends BasePlugin {
     }
 
     extraOperation = lock => {
-        const write = document.getElementById("write");
+        const write = this.utils.entities.eWrite;
         const func = lock ? "addEventListener" : "removeEventListener";
         const map = {keydown: this._stopKeydown, compositionstart: this._stopEvent, paste: this._stopEvent};
         if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY) {

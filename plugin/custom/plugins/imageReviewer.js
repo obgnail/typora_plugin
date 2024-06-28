@@ -282,7 +282,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         if (this.imageGetter) return;
 
         this.imageGetter = this.imageMsgGetter();
-        const imageList = Array.from(document.querySelectorAll("#write img"));
+        const imageList = Array.from(this.utils.querySelectorAllInWrite("img"));
         if (imageList.length === 0) return;
 
         let target = this.getImage(imageList);
@@ -305,7 +305,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     imageMsgGetter = () => {
         let idx = -1;
-        const imageList = Array.from(document.querySelectorAll("#write img"));
+        const imageList = Array.from(this.utils.querySelectorAllInWrite("img"));
         return (next = true) => {
             (next) ? idx++ : idx--;
             if (idx > imageList.length - 1) {
@@ -402,7 +402,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     scroll = () => {
         const text = this.entities.msg.querySelector(".review-index").textContent;
         const idx = parseInt(text.substring(1, text.indexOf("/")));
-        const image = Array.from(document.querySelectorAll("#write img"))[idx - 1];
+        const image = Array.from(this.utils.querySelectorAllInWrite("img"))[idx - 1];
         this.close();
         image && this.utils.scroll(image, 30);
     }

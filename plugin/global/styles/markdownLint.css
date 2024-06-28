@@ -23,4 +23,6 @@
     height: ${this.config.button_height};
     background-color: ${this.config.pass_color};
     cursor: pointer;
+    transition: background-color 0.1s ease 0s;
+    z-index: 1;
 }

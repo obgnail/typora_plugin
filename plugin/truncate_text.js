@@ -19,7 +19,7 @@ class truncateTextPlugin extends BasePlugin {
     }
 
     hideFront = () => {
-        const write = document.getElementById("write");
+        const write = this.utils.entities.eWrite;
         const length = write.children.length;
         if (length > this.config.REMAIN_LENGTH) {
             for (let i = 0; i <= length - this.config.REMAIN_LENGTH; i++) {
@@ -31,13 +31,13 @@ class truncateTextPlugin extends BasePlugin {
     }
 
     showAll = () => {
-        const write = document.getElementById("write");
+        const write = this.utils.entities.eWrite;
         write.getElementsByClassName(this.className).forEach(el => el.classList.remove(this.className));
         write.children.forEach(el => el.style.display = "");
     };
 
     hideBaseView = () => {
-        const write = document.getElementById("write");
+        const write = this.utils.entities.eWrite;
         let start = 0, end = 0;
         write.children.forEach((ele, idx) => {
             if (this.utils.isInViewBox(ele)) {
@@ -63,7 +63,7 @@ class truncateTextPlugin extends BasePlugin {
     }
 
     rollback = () => {
-        if (document.querySelector(`#write > .${this.className}`)) {
+        if (this.utils.querySelectorInWrite(`:scope > .${this.className}`)) {
             this.showAll();
         }
     };

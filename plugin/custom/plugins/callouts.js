@@ -20,7 +20,7 @@ class calloutsPlugin extends BaseCustomPlugin {
     process = () => {
         this.utils.addEventListener(this.utils.eventType.firstFileInit, this.range);
         this.utils.addEventListener(this.utils.eventType.fileEdited, this.range);
-        const getExportStyle = () => document.querySelector("#write .plugin-callout") ? this.getStyleContent(true) : ""
+        const getExportStyle = () => this.utils.querySelectorInWrite(".plugin-callout") ? this.getStyleContent(true) : ""
         this.utils.registerExportHelper("callouts", getExportStyle, this.exportToHtml);
     }
 
@@ -34,7 +34,7 @@ class calloutsPlugin extends BaseCustomPlugin {
     }
 
     range = () => {
-        const pList = document.querySelectorAll("#write blockquote > p:first-child");
+        const pList = this.utils.querySelectorAllInWrite("blockquote > p:first-child");
         pList.forEach(p => {
             const blockquote = p.parentElement;
             const result = p.textContent.match(/^\[!(?<type>\w+)\](?<fold>[+-]?)/);
@@ -53,7 +53,7 @@ class calloutsPlugin extends BaseCustomPlugin {
     exportToHtml = (html, writeIdx) => {
         const regex = new RegExp("<blockquote>", "g");
         const count = (html.match(regex) || []).length;
-        const quotes = Array.from(document.querySelectorAll("#write blockquote"));
+        const quotes = Array.from(this.utils.querySelectorAllInWrite("blockquote"));
         if (count !== quotes.length) return html;
 
         let idx = -1;

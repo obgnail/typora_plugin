@@ -15,7 +15,7 @@ class collapseParagraphPlugin extends BasePlugin {
     process = () => {
         this.disableExpandSimpleBlock();  // 选项【显示当前块元素的Markdown源码】会影响本插件，将其禁用
         this.recordCollapseState(false);
-        const write = document.getElementById("write");
+        const write = this.utils.entities.eWrite;
         write.addEventListener("click", ev => {
             const paragraph = this.getTargetHeader(ev.target);
             if (!paragraph) return;
@@ -111,7 +111,7 @@ class collapseParagraphPlugin extends BasePlugin {
     }
 
     rollback = start => {
-        if (!document.querySelector(`#write > .${this.className}`)) return;
+        if (!this.utils.querySelectorInWrite(`:scope > .${this.className}`)) return;
 
         let ele = start.closest("#write > [cid]");
 
@@ -165,7 +165,7 @@ class collapseParagraphPlugin extends BasePlugin {
         return result;
     }
 
-    findAllSiblings = paragraph => document.querySelectorAll(`#write > ${paragraph.tagName}`);
+    findAllSiblings = paragraph => this.utils.querySelectorAllInWrite(`:scope > ${paragraph.tagName}`);
 
     recordCollapseState = (needChange = true) => {
         if (needChange) {

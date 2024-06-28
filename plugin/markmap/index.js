@@ -236,7 +236,7 @@ class tocMarkmap {
         }
 
         this.entities = {
-            content: document.querySelector("content"),
+            content: this.utils.entities.eContent,
             modal: document.querySelector("#plugin-markmap"),
             header: document.querySelector("#plugin-markmap .plugin-markmap-header"),
             gripUp: document.querySelector("#plugin-markmap .plugin-markmap-grip.grip-up"),
@@ -617,7 +617,7 @@ class tocMarkmap {
         this.entities.content.style.right = contentRight;
         this.entities.content.style.width = contentWidth;
         this.entities.fullScreen.setAttribute("action", "expand");
-        document.querySelector("#write").style.width = writeWidth;
+        this.utils.entities.eWrite.style.width = writeWidth;
         this.utils[showFunc](this.entities.gripRight);
         const button = document.querySelector('.plugin-markmap-icon[action="pinRight"]');
         button.setAttribute("ty-hint", hint);

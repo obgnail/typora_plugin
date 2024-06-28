@@ -65,12 +65,10 @@ class rightClickMenuPlugin extends BasePlugin {
             })
             return this.ulTemplate({class_: ["plugin-menu-second"], idx, children});
         })
-        const content = document.querySelector("content");
-        this.utils.appendElements(content, elements);
+        this.utils.appendElements(this.utils.entities.eContent, elements);
     }
 
     appendThird = () => {
-        const content = document.querySelector("content");
         this.config.MENUS.forEach(({LIST = []}, idx) => {
             const elements = LIST.map(item => {
                 if (item === this.dividerArg) return {};
@@ -81,7 +79,7 @@ class rightClickMenuPlugin extends BasePlugin {
                 const children = (plugin.callArgs || []).map(arg => this.thirdLiTemplate(arg));
                 return this.ulTemplate({class_: ["plugin-menu-third"], "data-plugin": plugin.fixedName, idx, children});
             })
-            this.utils.appendElements(content, elements);
+            this.utils.appendElements(this.utils.entities.eContent, elements);
         })
     }
 
