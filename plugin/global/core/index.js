@@ -23,7 +23,7 @@ class Launcher {
 
     static showWarningIfNeed = () => {
         const need = global._plugin_global_settings.SHOW_INCOMPATIBLE_WARNING;
-        const incompatible = utils.compareVersion(window._options.appVersion, "0.9.98") < 0;
+        const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0;
         if (need && incompatible) {
             utils.showNotification("Typora 版本过低，部分插件可能失效。\n建议升级到 0.9.98 (最后一个免费版本)", "warning", 5000);
         }

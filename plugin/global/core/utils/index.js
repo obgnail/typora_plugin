@@ -7,7 +7,11 @@ const FS_EXTRA = require("fs-extra")
 const TOML = require("./common/toml")
 
 class utils {
-    static isBetaVersion = window._options.appVersion[0] === "0"
+    static nodeVersion = process && process.versions && process.versions.node
+    static electronVersion = process && process.versions && process.versions.electron
+    static chromeVersion = process && process.versions && process.versions.chrome
+    static typoraVersion = window._options.appVersion
+    static isBetaVersion = this.typoraVersion[0] === "0"
     static supportHasSelector = CSS.supports("selector(:has(*))")
     static separator = File.isWin ? "\\" : "/"
     static tempFolder = window._options.tempPath

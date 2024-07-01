@@ -13,6 +13,7 @@ class helpPlugin extends BasePlugin {
         this.callArgs = [
             {arg_name: "卸载插件", arg_value: "uninstall_plugin"},
             {arg_name: "修改配置", arg_value: "open_setting_folder"},
+            {arg_name: "用户反馈", arg_value: "new_issue"},
             {arg_name: "备份配置", arg_value: "backup_setting_file"},
             {arg_name: "修改样式", arg_value: "set_user_styles", arg_hint},
             {arg_name: "我要写插件", arg_value: "new_custom_plugin", arg_hint},
@@ -30,6 +31,30 @@ class helpPlugin extends BasePlugin {
             const arg_name = "升级插件" + (this.version ? `（当前版本：${this.version}）` : "");
             this.callArgs.unshift({arg_name: arg_name, arg_value: "update_plugin"});
         })
+    }
+
+    getInfo = async () => {
+        const {current: theme} = await JSBridge.invoke("setting.getThemes");
+        const getPluginList = plugins => Object.values(plugins).map(e => e.fixedName).join("|");
+        const msg = {
+            typoraVersion: this.utils.typoraVersion,
+            nodeVersion: this.utils.nodeVersion,
+            electronVersion: this.utils.electronVersion,
+            chromeVersion: this.utils.chromeVersion,
+            pluginVersion: this.version || null,
+            isWin: Boolean(File.isWin),
+            isLinux: Boolean(File.isLinux),
+            isMac: Boolean(File.isMac),
+            enableBasePlugin: getPluginList(this.utils.getAllPlugins()),
+            enableCustomPlugin: getPluginList(this.utils.getAllCustomPlugins()),
+            theme: theme,
+        }
+        return JSON.stringify(msg)
+    }
+
+    newIssue = async () => {
+        const msg = await this.getInfo();
+        this.utils.openUrl("https://github.com/obgnail/typora_plugin/issues/new?body=" + encodeURIComponent(msg));
     }
 
     about = () => {
@@ -150,6 +175,7 @@ class helpPlugin extends BasePlugin {
             github_picture_bed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
             update_plugin: () => this.updater && this.updater.callback(),
             uninstall_plugin: () => this.uninstall(),
+            new_issue: () => this.newIssue(),
             donate: () => this.donate(),
             about: () => this.about(),
         }
