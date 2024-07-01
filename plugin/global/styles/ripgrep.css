@@ -1,0 +1,42 @@
+#plugin-ripgrep {
+    top: ${topPercent};
+}
+
+.plugin-ripgrep-prefix {
+    font-size: 1.4em;
+    margin: 2px 6px;
+}
+
+#plugin-ripgrep-form {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    line-height: 25px;
+}
+
+#plugin-ripgrep-form input {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 2px;
+    padding-left: 5px;
+    padding-right: 24px;
+}
+
+.plugin-ripgrep-output {
+    margin-top: 0;
+    cursor: default;
+    max-height: 25em;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+.plugin-ripgrep-output pre {
+    display: inline-block;
+    font-size: 13px;
+    line-height: 1.1;
+    margin: 10px 10px 5px 5px;
+}
+
+.plugin-ripgrep-output pre.error {
+    color: red;
+}

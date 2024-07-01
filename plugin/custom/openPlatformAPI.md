@@ -531,13 +531,6 @@ class fileCounterPlugin extends BasePlugin {
 无
 
 
-
-#### mermaid_replace
-
-无
-
-
-
 ### 二级插件
 
 本小节下的所有插件可以使用 `this.utils.getPlugin(XXX)` 获取到插件实例，之后就可以调用其 API。

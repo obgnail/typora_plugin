@@ -58,7 +58,7 @@ class preferencesPlugin extends BasePlugin {
             right_click_menu: "此插件是普通用户调用其他插件的入口",
             custom: "所有的二级插件都挂载在此插件上，停用会导致所有的二级插件失效",
             json_rpc: "此插件面向开发者，普通用户无需启用",
-            mermaid_replace: "此插件已停止维护",
+            ripgrep: "此插件需要您了解 ripgrep 工具",
             test: "插件开发者专用，仅建议在开发插件期间启用",
             openInTotalCommander: "此插件需要手动修改配置后方可运行",
             redirectLocalRootUrl: "此插件需要手动修改配置后方可运行",
