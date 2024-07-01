@@ -46,107 +46,132 @@ const getHelper = utils => {
     const delegate = {
         /**
          * 动态注册、动态注销hotkey
-         * @deprecated 请使用新的方法 this.utils.hotkeyHub[register,registerSingle,unregister] 代替
          */
+        /** @deprecated new API: utils.hotkeyHub.register */
         registerHotkey: _hotkeyHub.register,
+        /** @deprecated new API: utils.hotkeyHub.registerSingle */
         registerSingleHotkey: _hotkeyHub.registerSingle,
+        /** @deprecated new API: utils.hotkeyHub.unregister */
         unregisterHotkey: _hotkeyHub.unregister,
+        /** @deprecated new API: utils.hotkeyHub */
         getHotkeyHub: () => _hotkeyHub,
 
         /**
          * 动态注册、动态注销、动态发布生命周期事件
-         * @deprecated 请使用新的方法 this.utils.eventHub[eventType,addEventListener,removeEventListener,publishEvent] 代替
          */
+        /** @deprecated new API: utils.eventHub.eventType */
         eventType: _eventHub.eventType,
+        /** @deprecated new API: utils.eventHub.addEventListener */
         addEventListener: _eventHub.addEventListener,
+        /** @deprecated new API: utils.eventHub.removeEventListener */
         removeEventListener: _eventHub.removeEventListener,
+        /** @deprecated new API: utils.eventHub.publishEvent */
         publishEvent: _eventHub.publishEvent,
 
         /**
          * 动态注册、动态注销元素状态记录器（仅当window_tab插件启用时有效）
          * 功能：在用户切换标签页前记录元素的状态，等用户切换回来时恢复元素的状态
          * 比如：【章节折叠】功能：需要在用户切换标签页前记录有哪些章节被折叠了，等用户切换回来后需要把章节自动折叠回去，保持前后一致。
-         * @deprecated 请使用新的方法 this.utils.stateRecorder[register,unregister,collect,getState,deleteState,setState] 代替
          */
+        /** @deprecated new API: utils.stateRecorder.register */
         registerStateRecorder: _stateRecorder.register,
+        /** @deprecated new API: utils.stateRecorder.unregister */
         unregisterStateRecorder: _stateRecorder.unregister,
+        /** @deprecated new API: utils.stateRecorder.collect */
         collectState: _stateRecorder.collect,
+        /** @deprecated new API: utils.stateRecorder.getState */
         getState: _stateRecorder.getState,
+        /** @deprecated new API: utils.stateRecorder.deleteState */
         deleteState: _stateRecorder.deleteState,
+        /** @deprecated new API: utils.stateRecorder.setState */
         setState: _stateRecorder.setState,
 
         /**
          * 动态注册、动态注销新的代码块图表语法
-         * @deprecated 请使用新的方法 this.utils.diagramParser[register,unregister,throwParseError] 代替
          */
+        /** @deprecated new API: utils.diagramParser.register */
         registerDiagramParser: _diagramParser.register,
+        /** @deprecated new API: utils.diagramParser.unregister */
         unregisterDiagramParser: _diagramParser.unregister,
+        /** @deprecated new API: utils.diagramParser.throwParseError */
         throwParseError: _diagramParser.throwParseError,
 
         /**
          * 动态注册、动态注销第三方代码块图表语法(派生自DiagramParser)
-         * @deprecated 请使用新的方法 this.utils.thirdPartyDiagramParser[register,unregister] 代替
          */
+        /** @deprecated new API: utils.thirdPartyDiagramParser.register */
         registerThirdPartyDiagramParser: _thirdPartyDiagramParser.register,
+        /** @deprecated new API: utils.thirdPartyDiagramParser.unregister */
         unregisterThirdPartyDiagramParser: _thirdPartyDiagramParser.unregister,
 
         /**
          * 动态注册导出时的额外操作
-         * @deprecated 请使用新的方法 this.utils.exportHelper[register,unregister] 代替
          */
+        /** @deprecated new API: utils.exportHelper.register */
         registerExportHelper: _exportHelper.register,
+        /** @deprecated new API: utils.exportHelper.unregister */
         unregisterExportHelper: _exportHelper.unregister,
 
         /**
          * 动态注册css模板文件
-         * @deprecated 请使用新的方法 this.utils.styleTemplater[register,unregister,getStyleContent] 代替
          */
+        /** @deprecated new API: utils.styleTemplater.register */
         registerStyleTemplate: _styleTemplater.register,
+        /** @deprecated new API: utils.styleTemplater.unregister */
         unregisterStyleTemplate: _styleTemplater.unregister,
+        /** @deprecated new API: utils.styleTemplater.getStyleContent */
         getStyleContent: _styleTemplater.getStyleContent,
 
         /**
          * 插入html
-         * @deprecated 请使用新的方法 this.utils.htmlTemplater[insert,create,createList,appendElements] 代替
          */
+        /** @deprecated new API: utils.htmlTemplater.insert */
         insertHtmlTemplate: _htmlTemplater.insert,
+        /** @deprecated new API: utils.htmlTemplater.create */
         createElement: _htmlTemplater.create,
+        /** @deprecated new API: utils.htmlTemplater.createList */
         createElements: _htmlTemplater.createList,
+        /** @deprecated new API: utils.htmlTemplater.appendElements */
         appendElements: _htmlTemplater.appendElements,
 
         /**
          * 解析markdown语法
-         * @deprecated 请使用新的方法 this.utils.markdownParser[parse,getNodeKindByNode,getNodeKindByNum] 代替
          */
+        /** @deprecated new API: utils.markdownParser.parse */
         parseMarkdown: _markdownParser.parse,
+        /** @deprecated new API: utils.markdownParser.getNodeKindByNode */
         getNodeKindByNode: _markdownParser.getNodeKindByNode,
+        /** @deprecated new API: utils.markdownParser.getNodeKindByNum */
         getNodeKindByNum: _markdownParser.getNodeKindByNum,
 
         /**
          * 动态注册右键菜单
-         * @deprecated 请使用新的方法 this.utils.contextMenu[register,unregister] 代替
          */
+        /** @deprecated new API: utils.contextMenu.register */
         registerMenu: _contextMenu.register,
+        /** @deprecated new API: utils.contextMenu.unregister */
         unregisterMenu: _contextMenu.unregister,
 
         /**
          * 弹出notification
-         * @deprecated 请使用新的方法 this.utils.notification.show 代替
          */
+        /** @deprecated new API: utils.notification.show */
         showNotification: _notification.show,
 
         /**
          * 动态弹出自定义模态框（即刻弹出，因此无需注册）
-         * @deprecated 请使用新的方法 this.utils.dialog.modal 代替
          */
+        /** @deprecated new API: utils.dialog.modal */
         modal: _dialog.modal,
 
         /**
          * 常用Element对象
-         * @deprecated 请使用新的方法 this.utils.entities[querySelectorAllInWrite,querySelectorInWrite] 代替
          */
+        /** @deprecated new API: utils.entities */
         entities: _entities,
+        /** @deprecated new API: utils.entities.querySelectorAllInWrite */
         querySelectorAllInWrite: _entities.querySelectorAllInWrite,
+        /** @deprecated new API: utils.entities.querySelectorInWrite */
         querySelectorInWrite: _entities.querySelectorInWrite,
     }
 

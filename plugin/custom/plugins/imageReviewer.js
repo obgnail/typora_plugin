@@ -1,7 +1,15 @@
 class imageReviewerPlugin extends BaseCustomPlugin {
-    beforeProcess = () => {
-        this.keyTranslate = {arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space"};
-        this.funcTranslate = {
+    styleTemplate = () => ({
+        imageMaxWidth: this.config.image_max_width + "%",
+        imageMaxHeight: this.config.image_max_height + "%",
+        toolPosition: this.config.tool_position === "top" ? "initial" : 0,
+    })
+
+    html = () => {
+        const {tool_function, show_message, hotkey_function} = this.config;
+        const keyTranslate = {arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space"};
+        // {operation: [hint, iconClass]}
+        const funcTranslate = {
             dummy: ['无功能', ''],
             info: ['', 'fa fa-question-circle'],
             close: ['关闭', 'fa fa-times'],
@@ -32,57 +40,44 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             autoSize: ['图片大小切换', 'fa fa-search-plus'],
             restore: ['图片恢复为最初状态', 'fa fa-history'],
         }
-    }
 
-    afterProcess = () => {
-        this.keyTranslate = null;
-        this.funcTranslate = null;
-    }
-
-    styleTemplate = () => ({
-        imageMaxWidth: this.config.image_max_width + "%",
-        imageMaxHeight: this.config.image_max_height + "%",
-        toolPosition: this.config.tool_position === "top" ? "initial" : 0,
-    })
-
-    html = () => {
-        const {tool_function, show_message, hotkey_function} = this.config;
-
-        const setHint = () => {
+        const getInfoHint = () => {
             const result = ["当前配置如下："];
-            const button = ["mousedown_function", "wheel_function"];
-            const extra = ["", "ctrl", "shift", "alt"];
-            button.forEach(btn => extra.forEach(ex => {
-                const cfg = !ex ? btn : ex + "_" + btn;
+
+            const modifierKey = ["", "ctrl", "shift", "alt"];
+            const mouseEvent = ["mousedown_function", "wheel_function"];
+            mouseEvent.forEach(event => modifierKey.forEach(modifier => {
+                const cfg = modifier ? `${modifier}_${event}` : event;
                 const config = this.config[cfg];
-                const funcList = (btn === "mousedown_function") ? ["鼠标左键", "鼠标中键", "鼠标右键"] : ["滚轮上滚", "滚轮下滚"];
-                funcList.forEach((ele, idx) => {
-                    const [info, _] = this.funcTranslate[config[idx]];
-                    if (info && info !== "无功能") {
-                        const ex_ = !ex ? "" : ex + "+";
-                        result.push(ex_ + ele + "\t" + info);
+                const events = (event === "mousedown_function") ? ["鼠标左键", "鼠标中键", "鼠标右键"] : ["滚轮上滚", "滚轮下滚"];
+                events.forEach((ev, idx) => {
+                    const [hint, _] = funcTranslate[config[idx]];
+                    if (hint && hint !== "无功能") {
+                        const m = modifier ? `${modifier}+` : "";
+                        result.push(m + ev + "\t" + hint);
                     }
                 })
             }))
             hotkey_function.forEach(item => {
                 const [key, func] = item;
-                const [info, _] = this.funcTranslate[func];
-                if (info && info !== "无功能") {
-                    const translateKey = this.keyTranslate[key.toLowerCase()] || key;
-                    result.push(translateKey + "\t" + info);
+                const [hint, _] = funcTranslate[func];
+                if (hint && hint !== "无功能") {
+                    const translateKey = keyTranslate[key.toLowerCase()] || key;
+                    result.push(translateKey + "\t" + hint);
                 }
             })
-            this.funcTranslate.info[0] = result.join("\n")
+
+            return result.join("\n")
         }
 
-        setHint();
+        funcTranslate.info[0] = getInfoHint();
 
         const messageList = show_message.map(m => `<div class="review-${m}"></div>`);
         const operationList = tool_function
-            .filter(option => this.funcTranslate.hasOwnProperty(option))
+            .filter(option => funcTranslate.hasOwnProperty(option))
             .map(option => {
-                const [title, icon] = this.funcTranslate[option];
-                return `<i class="${icon}" option="${option}" title="${title}"></i>`
+                const [hint, icon] = funcTranslate[option];
+                return `<i class="${icon}" option="${option}" title="${hint}"></i>`
             })
         return `
             <div id="plugin-image-reviewer" class="plugin-cover-content plugin-common-hidden">
@@ -109,6 +104,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     }
 
     init = () => {
+        this.imageGetter = null;
         this.playTimer = null;
         this.entities = {
             reviewer: document.getElementById("plugin-image-reviewer"),
@@ -246,46 +242,38 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     }
 
     _showImage = imgInfo => {
-        this.handleMessage(imgInfo);
-        this.handleToolIcon(imgInfo.src);
-        this.restore();
-    }
+        const handleMessage = imgInfo => {
+            const {src, alt, naturalWidth, naturalHeight, showIdx, total} = imgInfo;
+            this.entities.image.setAttribute("src", src);
+            const index = this.entities.msg.querySelector(".review-index");
+            const title = this.entities.msg.querySelector(".review-title");
+            const size = this.entities.msg.querySelector(".review-size");
+            index && (index.textContent = `[ ${showIdx} / ${total} ]`);
+            title && (title.textContent = alt);
+            size && (size.textContent = `${naturalWidth} × ${naturalHeight}`);
+        }
 
-    getImage = imageList => {
-        const strategyFuncList = {
-            firstImage: imageList => imageList[0],
-            inViewBoxImage: imageList => imageList.find(img => this.utils.isInViewBox(img)),
-            closestViewBoxImage: imageList => {
-                let closestImg = null;
-                let minDistance = Number.MAX_VALUE;
-                imageList.forEach(img => {
-                    const distance = Math.abs(img.getBoundingClientRect().top - window.innerHeight / 2);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closestImg = img;
-                    }
-                });
-                return closestImg
-            }
+        const handleToolIcon = src => {
+            const autoSize = this.entities.ops.querySelector(`[option="autoSize"]`);
+            const download = this.entities.ops.querySelector(`[option="download"]`);
+            autoSize && (autoSize.className = "fa fa-search-plus");
+            download && this.utils.toggleVisible(download, !this.utils.isNetworkImage(src));
         }
-        const strategies = [...this.config.first_image_strategies, "firstImage"];
-        for (const strategy of strategies) {
-            const func = strategyFuncList[strategy] || strategyFuncList.firstImage;
-            const image = func(imageList);
-            if (image) {
-                return image
-            }
-        }
+
+        handleMessage(imgInfo);
+        handleToolIcon(imgInfo.src);
+        this.restore();
     }
 
     initImageMsgGetter = () => {
         if (this.imageGetter) return;
 
-        this.imageGetter = this.imageMsgGetter();
-        const imageList = Array.from(this.utils.querySelectorAllInWrite("img"));
-        if (imageList.length === 0) return;
+        const images = Array.from(this.utils.querySelectorAllInWrite("img"));
+        this.imageGetter = this._imageMsgGetter(images);
 
-        let target = this.getImage(imageList);
+        if (images.length === 0) return;
+
+        let target = this._getTargetImage(images);
         if (!target) return;
 
         while (true) {
@@ -297,54 +285,55 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                 return
             }
             // 防御代码，防止死循环
-            if (showIdx === total) {
-                return img;
-            }
+            if (showIdx === total) return;
         }
     }
 
-    imageMsgGetter = () => {
+    _imageMsgGetter = images => {
         let idx = -1;
-        const imageList = Array.from(this.utils.querySelectorAllInWrite("img"));
         return (next = true) => {
-            (next) ? idx++ : idx--;
-            if (idx > imageList.length - 1) {
+            next ? idx++ : idx--;
+            const maxIdx = images.length - 1;
+            if (idx > maxIdx) {
                 idx = 0;
             } else if (idx < 0) {
-                idx = imageList.length - 1;
+                idx = maxIdx;
             }
-            const showIdx = (imageList.length === 0) ? 0 : idx + 1;
-            const img = imageList[idx];
+            const showIdx = (images.length === 0) ? 0 : idx + 1;
+            const img = images[idx];
             return {
                 img,
+                showIdx,
                 src: img && img.getAttribute("src") || "",
                 alt: img && img.getAttribute("alt") || "",
                 naturalWidth: img && img.naturalWidth || 0,
                 naturalHeight: img && img.naturalHeight || 0,
-                showIdx,
-                total: imageList.length || 0,
+                total: images.length || 0,
             };
         }
     }
 
-    handleMessage = imgInfo => {
-        const {src, alt, naturalWidth, naturalHeight, showIdx, total} = imgInfo;
-        this.entities.image.setAttribute("src", src);
-        const index = this.entities.msg.querySelector(".review-index");
-        const title = this.entities.msg.querySelector(".review-title");
-        const size = this.entities.msg.querySelector(".review-size");
-        index && (index.textContent = `[ ${showIdx} / ${total} ]`);
-        title && (title.textContent = alt);
-        size && (size.textContent = `${naturalWidth} × ${naturalHeight}`);
+    _getTargetImage = images => {
+        const strategies = {
+            firstImage: images => images[0],
+            inViewBoxImage: images => images.find(img => this.utils.isInViewBox(img)),
+            closestViewBoxImage: images => {
+                let closestImg = null;
+                let minDistance = Number.MAX_VALUE;
+                images.forEach(img => {
+                    const distance = Math.abs(img.getBoundingClientRect().top - window.innerHeight / 2);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestImg = img;
+                    }
+                });
+                return closestImg
+            },
+        }
+        // firstImage作为兜底策略
+        const funcList = [...this.config.first_image_strategies, "firstImage"].map(s => strategies[s]).filter(Boolean);
+        return funcList.find(func => func(images));
     }
-
-    handleToolIcon = src => {
-        const autoSize = this.entities.ops.querySelector(`[option="autoSize"]`);
-        const download = this.entities.ops.querySelector(`[option="download"]`);
-        autoSize && (autoSize.className = "fa fa-search-plus");
-        download && this.utils.toggleVisible(download, !this.utils.isNetworkImage(src));
-    }
-
 
     handleBlurBackground = (remove = false) => {
         if (this.config.blur_level === 0) return;
