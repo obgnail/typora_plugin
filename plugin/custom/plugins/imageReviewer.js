@@ -1,7 +1,15 @@
 class imageReviewerPlugin extends BaseCustomPlugin {
-    beforeProcess = () => {
-        this.keyTranslate = {arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space"};
-        this.funcTranslate = {
+    styleTemplate = () => ({
+        imageMaxWidth: this.config.image_max_width + "%",
+        imageMaxHeight: this.config.image_max_height + "%",
+        toolPosition: this.config.tool_position === "top" ? "initial" : 0,
+    })
+
+    html = () => {
+        const {tool_function, show_message, hotkey_function} = this.config;
+        const keyTranslate = {arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space"};
+        // {operation: [hint, iconClass]}
+        const funcTranslate = {
             dummy: ['无功能', ''],
             info: ['', 'fa fa-question-circle'],
             close: ['关闭', 'fa fa-times'],
@@ -32,57 +40,44 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             autoSize: ['图片大小切换', 'fa fa-search-plus'],
             restore: ['图片恢复为最初状态', 'fa fa-history'],
         }
-    }
 
-    afterProcess = () => {
-        this.keyTranslate = null;
-        this.funcTranslate = null;
-    }
-
-    styleTemplate = () => ({
-        imageMaxWidth: this.config.image_max_width + "%",
-        imageMaxHeight: this.config.image_max_height + "%",
-        toolPosition: this.config.tool_position === "top" ? "initial" : 0,
-    })
-
-    html = () => {
-        const {tool_function, show_message, hotkey_function} = this.config;
-
-        const setHint = () => {
+        const getInfoHint = () => {
             const result = ["当前配置如下："];
-            const button = ["mousedown_function", "wheel_function"];
-            const extra = ["", "ctrl", "shift", "alt"];
-            button.forEach(btn => extra.forEach(ex => {
-                const cfg = !ex ? btn : ex + "_" + btn;
+
+            const modifierKey = ["", "ctrl", "shift", "alt"];
+            const mouseEvent = ["mousedown_function", "wheel_function"];
+            mouseEvent.forEach(event => modifierKey.forEach(modifier => {
+                const cfg = modifier ? `${modifier}_${event}` : event;
                 const config = this.config[cfg];
-                const funcList = (btn === "mousedown_function") ? ["鼠标左键", "鼠标中键", "鼠标右键"] : ["滚轮上滚", "滚轮下滚"];
-                funcList.forEach((ele, idx) => {
-                    const [info, _] = this.funcTranslate[config[idx]];
-                    if (info && info !== "无功能") {
-                        const ex_ = !ex ? "" : ex + "+";
-                        result.push(ex_ + ele + "\t" + info);
+                const events = (event === "mousedown_function") ? ["鼠标左键", "鼠标中键", "鼠标右键"] : ["滚轮上滚", "滚轮下滚"];
+                events.forEach((ev, idx) => {
+                    const [hint, _] = funcTranslate[config[idx]];
+                    if (hint && hint !== "无功能") {
+                        const m = modifier ? `${modifier}+` : "";
+                        result.push(m + ev + "\t" + hint);
                     }
                 })
             }))
             hotkey_function.forEach(item => {
                 const [key, func] = item;
-                const [info, _] = this.funcTranslate[func];
-                if (info && info !== "无功能") {
-                    const translateKey = this.keyTranslate[key.toLowerCase()] || key;
-                    result.push(translateKey + "\t" + info);
+                const [hint, _] = funcTranslate[func];
+                if (hint && hint !== "无功能") {
+                    const translateKey = keyTranslate[key.toLowerCase()] || key;
+                    result.push(translateKey + "\t" + hint);
                 }
             })
-            this.funcTranslate.info[0] = result.join("\n")
+
+            return result.join("\n")
         }
 
-        setHint();
+        funcTranslate.info[0] = getInfoHint();
 
         const messageList = show_message.map(m => `<div class="review-${m}"></div>`);
         const operationList = tool_function
-            .filter(option => this.funcTranslate.hasOwnProperty(option))
+            .filter(option => funcTranslate.hasOwnProperty(option))
             .map(option => {
-                const [title, icon] = this.funcTranslate[option];
-                return `<i class="${icon}" option="${option}" title="${title}"></i>`
+                const [hint, icon] = funcTranslate[option];
+                return `<i class="${icon}" option="${option}" title="${hint}"></i>`
             })
         return `
             <div id="plugin-image-reviewer" class="plugin-cover-content plugin-common-hidden">
