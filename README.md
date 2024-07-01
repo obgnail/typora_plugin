@@ -6,72 +6,72 @@
 
 目前支持的功能：
 
-| 序号 | 插件                    | 功能                                                         |
-| ---- | ----------------------- | ------------------------------------------------------------ |
-| 1    | window_tab              | 标签页管理                                                   |
-| 2    | search_multi            | 全局多关键字搜索                                             |
-| 3    | multi_highlighter       | 多关键字高亮                                                 |
-| 4    | collapse_paragraph      | 章节折叠                                                     |
-| 5    | collapse_list           | 列表折叠                                                     |
-| 6    | collapse_table          | 表格折叠                                                     |
-| 7    | md_padding              | 中英文混排优化                                               |
-| 8    | slash_commands          | 斜杠命令                                                     |
-| 9    | templater               | 文件模板                                                     |
-| 10   | resourceOperation       | 一键清除无用图片                                             |
-| 11   | fence_enhance           | 一键复制代码，折叠代码                                       |
-| 12   | toc                     | 在右侧生成大纲目录                                           |
-| 13   | commander               | 命令行环境                                                   |
-| 14   | mindmap                 | 根据文档大纲一键生成思维导图                                 |
-| 15   | toolbar                 | 多功能搜索                                                   |
-| 16   | right_click_menu        | 右键菜单统一管理、调用插件                                   |
-| 17   | pie_menu                | 圆盘菜单                                                     |
-| 18   | preferences             | 启停插件                                                     |
-| 19   | markmap                 | 提供 markmap 组件支持                                        |
-| 20   | echarts                 | 提供 echarts 组件支持                                        |
-| 21   | chart                   | 提供 chartjs 组件支持                                        |
-| 22   | abc                     | 提供 abcjs 组件支持                                          |
-| 23   | calendar                | 提供 tui.calendar 组件支持                                   |
-| 24   | marp                    | 提供 marp 组件支持                                           |
-| 25   | callouts                | 提供 callouts 支持                                           |
-| 26   | text_stylize            | 文字风格化                                                   |
-| 27   | read_only               | 只读模式                                                     |
-| 28   | blur                    | 模糊模式                                                     |
-| 29   | kanban                  | 看板                                                         |
-| 30   | timeline                | 时间线                                                       |
-| 31   | chat                    | 聊天                                                         |
-| 32   | file_counter            | 显示目录下的文件数                                           |
-| 33   | outline                 | 以表格、图片、代码块形式的大纲                               |
-| 34   | auto_number             | 章节、表格、图片、代码块等自动编号                           |
-| 35   | imageReviewer           | 图片查看器                                                   |
-| 36   | chineseSymbolAutoPairer | 中文符号自动补全                                             |
-| 37   | datatables              | 表格增强（搜索、过滤、分页、排序等）                         |
-| 38   | resize_table            | 调整表格行高列宽                                             |
-| 39   | resize_image            | 调整图片显示大小                                             |
-| 40   | export_enhance          | 导出 html 时避免图片丢失                                     |
-| 41   | go_top                  | 一键到文章顶部、底部                                         |
-| 42   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页                       |
-| 43   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能                             |
-| 44   | markdownLint            | markdown 格式规范检测                                        |
-| 45   | darkMode                | 夜间模式                                                     |
-| 46   | noImageMode             | 无图模式                                                     |
-| 47   | pluginUpdater           | 一键升级插件                                                 |
-| 48   | extractRangeToNewFile   | 提取选区文字到新文件                                         |
-| 49   | fullPathCopy            | 复制标题路径                                                 |
-| 50   | autoTrailingWhiteSpace  | 为文档添加结尾空格                                           |
-| 51   | redirectLocalRootUrl    | 重定向本地资源根目录                                         |
-| 52   | blockSideBySide         | 并列显示活动块                                               |
-| 53   | scrollBookmarker        | 书签管理器                                                   |
-| 54   | openInTotalCommander    | 在 total commander 打开                                      |
-| 55   | bingSpeech              | 必应朗读                                                     |
-| 56   | cipher                  | 加密文件                                                     |
-| 57   | mermaid_replace         | 替换 mermaid 组件                                            |
-| 58   | help                    | 用户帮助                                                     |
-| 59   | custom                  | 开放平台，用户自定义插件（高级）                             |
-| 60   | hotkeyHub               | 快捷键注册中心（高级）                                       |
-| 61   | quickButton             | 于右下角添加功能按钮（高级）                                 |
-| 62   | json_rpc                | 外部操纵 Typora（高级）                                      |
-| 63   | old_window_tab          | 标签页管理（已废弃）                                         |
-| 64   | article_uploader        | [一键上传博客到支持的所有平台](https://github.com/obgnail/typora_plugin?tab=readme-ov-file#article_uploader上传博客文章) |
+| 序号 | 插件                    | 功能                                   |
+| ---- | ----------------------- | -------------------------------------- |
+| 1    | window_tab              | 标签页管理                             |
+| 2    | search_multi            | 全局多关键字搜索                       |
+| 3    | multi_highlighter       | 多关键字高亮                           |
+| 4    | collapse_paragraph      | 章节折叠                               |
+| 5    | collapse_list           | 列表折叠                               |
+| 6    | collapse_table          | 表格折叠                               |
+| 7    | md_padding              | 中英文混排优化                         |
+| 8    | slash_commands          | 斜杠命令                               |
+| 9    | templater               | 文件模板                               |
+| 10   | resourceOperation       | 一键清除无用图片                       |
+| 11   | fence_enhance           | 一键复制代码，折叠代码                 |
+| 12   | toc                     | 在右侧生成大纲目录                     |
+| 13   | commander               | 命令行环境                             |
+| 14   | mindmap                 | 根据文档大纲一键生成思维导图           |
+| 15   | toolbar                 | 多功能搜索                             |
+| 16   | right_click_menu        | 右键菜单统一管理、调用插件             |
+| 17   | pie_menu                | 圆盘菜单                               |
+| 18   | preferences             | 启停插件                               |
+| 19   | markmap                 | 提供 markmap 组件支持                  |
+| 20   | echarts                 | 提供 echarts 组件支持                  |
+| 21   | chart                   | 提供 chartjs 组件支持                  |
+| 22   | abc                     | 提供 abcjs 组件支持                    |
+| 23   | calendar                | 提供 tui.calendar 组件支持             |
+| 24   | marp                    | 提供 marp 组件支持                     |
+| 25   | callouts                | 提供 callouts 支持                     |
+| 26   | text_stylize            | 文字风格化                             |
+| 27   | read_only               | 只读模式                               |
+| 28   | blur                    | 模糊模式                               |
+| 29   | kanban                  | 看板                                   |
+| 30   | timeline                | 时间线                                 |
+| 31   | chat                    | 聊天                                   |
+| 32   | file_counter            | 显示目录下的文件数                     |
+| 33   | outline                 | 以表格、图片、代码块形式的大纲         |
+| 34   | auto_number             | 章节、表格、图片、代码块等自动编号     |
+| 35   | imageReviewer           | 图片查看器                             |
+| 36   | chineseSymbolAutoPairer | 中文符号自动补全                       |
+| 37   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
+| 38   | resize_table            | 调整表格行高列宽                       |
+| 39   | resize_image            | 调整图片显示大小                       |
+| 40   | export_enhance          | 导出 html 时避免图片丢失               |
+| 41   | go_top                  | 一键到文章顶部、底部                   |
+| 42   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
+| 43   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
+| 44   | markdownLint            | markdown 格式规范检测                  |
+| 45   | darkMode                | 夜间模式                               |
+| 46   | noImageMode             | 无图模式                               |
+| 47   | pluginUpdater           | 一键升级插件                           |
+| 48   | extractRangeToNewFile   | 提取选区文字到新文件                   |
+| 49   | fullPathCopy            | 复制标题路径                           |
+| 50   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
+| 51   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
+| 52   | blockSideBySide         | 并列显示活动块                         |
+| 53   | scrollBookmarker        | 书签管理器                             |
+| 54   | openInTotalCommander    | 在 total commander 打开                |
+| 55   | bingSpeech              | 必应朗读                               |
+| 56   | cipher                  | 加密文件                               |
+| 57   | ripgrep                 | 使用 ripgrep 搜索文件                  |
+| 58   | help                    | 用户帮助                               |
+| 59   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 60   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 61   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 62   | json_rpc                | 外部操纵 Typora（高级）                |
+| 63   | article_uploader        | 一键上传博客到支持的所有平台           |
+| 64   | old_window_tab          | 标签页管理（已废弃）                   |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -527,7 +527,7 @@ LIST = [
     "---",
     "blur", "go_top", "text_stylize", "toolbar",
     "---",
-    "file_counter", "mermaid_replace", "test",
+    "file_counter", "test",
 ]
 [[right_click_menu.MENUS]]
 NAME = "常用插件"
@@ -935,12 +935,11 @@ filter_regexp = ""
 
 
 
-### mermaid_replace：替换 mermaid
+### ripgrep：使用 ripgrep 搜索文件
 
-如果你不愿意更新 Typora 版本，同时又想使用新版本的 mermaid，或者想自定义 mermaid 样式，可以使用此插件。
+Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜索。
 
-> 此插件默认关闭，需手动开启。
-
+> 使用此插件需要您熟悉 ripgrep 工具。此插件默认关闭，需手动开启。
 
 
 ### hotkeyHub：快捷键注册中心（高级）
