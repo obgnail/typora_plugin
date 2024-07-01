@@ -153,10 +153,11 @@ class dialog {
         this.callback = callback;
         this.cancelCallback = cancelCallback;
 
-        const {title, width, components, onload} = modal;
+        const {title, width = "", height = "", components, onload} = modal;
         this.checkComponents(components);
         this.entities.title.innerText = title;
-        this.entities.modal.style.setProperty("--plugin-custom-modal-width", width || "400px");
+        this.entities.modal.style.setProperty("--plugin-custom-modal-width", width);
+        this.entities.body.style.setProperty("--plugin-custom-modal-body-height", height);
         components.forEach(component => component.id = this.utils.randomString());
         const widgetList = components.map(this.newWidget);
         this.entities.body.innerHTML = `<form role="form">${widgetList.join("")}</form>`;
