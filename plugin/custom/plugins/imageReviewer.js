@@ -332,7 +332,12 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
         // firstImage作为兜底策略
         const funcList = [...this.config.first_image_strategies, "firstImage"].map(s => strategies[s]).filter(Boolean);
-        return funcList.find(func => func(images));
+        for (const func of funcList) {
+            const image = func(images);
+            if (image) {
+                return image
+            }
+        }
     }
 
     handleBlurBackground = (remove = false) => {
