@@ -35,8 +35,12 @@ class helpPlugin extends BasePlugin {
 
     getInfo = async () => {
         const {current: theme} = await JSBridge.invoke("setting.getThemes");
-        const getPluginList = plugins => Object.values(plugins).map(e => e.fixedName).join("|");
-        const msg = {
+        const list = plugins => Object.values(plugins).map(e => e.fixedName);
+        const plugins = [
+            ...list(this.utils.getAllPlugins()),
+            ...list(this.utils.getAllCustomPlugins()),
+        ];
+        return {
             typoraVersion: this.utils.typoraVersion,
             nodeVersion: this.utils.nodeVersion,
             electronVersion: this.utils.electronVersion,
@@ -45,16 +49,15 @@ class helpPlugin extends BasePlugin {
             isWin: Boolean(File.isWin),
             isLinux: Boolean(File.isLinux),
             isMac: Boolean(File.isMac),
-            enableBasePlugin: getPluginList(this.utils.getAllPlugins()),
-            enableCustomPlugin: getPluginList(this.utils.getAllCustomPlugins()),
+            enablePlugin: plugins.join("|"),
             theme: theme,
         }
-        return JSON.stringify(msg)
     }
 
     newIssue = async () => {
-        const msg = await this.getInfo();
-        this.utils.openUrl("https://github.com/obgnail/typora_plugin/issues/new?body=" + encodeURIComponent(msg));
+        const info = await this.getInfo();
+        const url = "https://github.com/obgnail/typora_plugin/issues/new?body=" + encodeURIComponent(JSON.stringify(info));
+        this.utils.openUrl(url);
     }
 
     about = () => {
