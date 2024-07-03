@@ -67,9 +67,9 @@ class utils {
     static getPlugin = fixedName => global._plugins[fixedName]
     static getCustomPlugin = fixedName => global._plugins.custom && global._plugins.custom.custom[fixedName]
     static getAllPluginSettings = () => global._plugin_settings
-    static getAllGlobalSettings = () => global._plugin_global_settings
+    static getAllGlobalSettings = () => global._global_settings
     static getAllCustomPluginSettings = () => (global._plugins.custom && global._plugins.custom.customSettings) || {}
-    static getGlobalSetting = name => global._plugin_global_settings[name]
+    static getGlobalSetting = name => global._global_settings[name]
     static getPluginSetting = fixedName => global._plugin_settings[fixedName]
     static getCustomPluginSetting = fixedName => this.getAllCustomPluginSettings()[fixedName]
     static tryGetPlugin = fixedName => this.getPlugin(fixedName) || this.getCustomPlugin(fixedName)
