@@ -1,7 +1,7 @@
 class testPlugin extends BasePlugin {
     process = () => {
-        console.log("-------- test.js")
-
+        global.require = require;
+        global.module = module;
         global._findObject = (target, from = File, level = 0, maxLevel = 7) => {
             let hadFound = false;
             const core = (target, from, level = 0, maxLevel) => {

@@ -191,7 +191,7 @@ const getHelper = utils => {
 
     const optimizeHelpers = () => Promise.all(Object.values(helper).map(h => h.afterProcess && h.afterProcess()));
 
-    return {helper, loadHelpersBefore, loadHelpersAfter, optimizeHelpers}
+    return {loadHelpersBefore, loadHelpersAfter, optimizeHelpers}
 }
 
 module.exports = {

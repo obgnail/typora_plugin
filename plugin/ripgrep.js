@@ -68,7 +68,7 @@ class ripgrepPlugin extends BasePlugin {
 
     ripgrep = (args, callback) => {
         const argsList = this._parseCommandLineArgs(args);
-        const onData = data => this.entities.pre.textContent += data.toString();
+        const onData = data => data && (this.entities.pre.textContent += data.toString());
         const addErrorClass = this.utils.once(() => this.entities.pre.classList.add("error"));
         const onError = data => {
             this.entities.pre.textContent += data.toString();

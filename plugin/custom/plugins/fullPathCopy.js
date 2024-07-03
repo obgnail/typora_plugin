@@ -3,7 +3,8 @@ class fullPathCopyPlugin extends BaseCustomPlugin {
     hint = () => "将当前标题的路径复制到剪切板"
     hotkey = () => [this.config.hotkey]
     callback = anchorNode => {
-        const getHeaderName = (title, name) => title + (this.config.add_space ? " " : "") + name
+        const {add_space, full_file_path, untitled_file_name, ignore_empty_header} = this.config;
+        const getHeaderName = (title, name) => title + (add_space ? " " : "") + name
         const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
         const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"];
         const pList = [];
@@ -22,22 +23,19 @@ class fullPathCopyPlugin extends BaseCustomPlugin {
 
         pList.reverse();
 
-        let filePath = this.config.full_file_path ? this.utils.getFilePath() : File.getFileName();
-        filePath = filePath || this.config.untitled_file_name;
-        const result = [filePath];
+        const filePath = full_file_path ? this.utils.getFilePath() : File.getFileName();
+        const result = [filePath || untitled_file_name];
         let headerIdx = 0;
         for (const p of pList) {
             while (headerIdx < 6 && p.ele.tagName !== paragraphList[headerIdx]) {
-                if (!this.config.ignore_empty_header) {
-                    const name = getHeaderName("无", nameList[headerIdx]);
-                    result.push(name);
+                if (!ignore_empty_header) {
+                    result.push(getHeaderName("无", nameList[headerIdx]));
                 }
                 headerIdx++;
             }
 
             if (p.ele.tagName === paragraphList[headerIdx]) {
-                const name = getHeaderName(p.ele.querySelector("span").textContent, nameList[headerIdx]);
-                result.push(name);
+                result.push(getHeaderName(p.ele.querySelector("span").textContent, nameList[headerIdx]));
                 headerIdx++;
             }
         }

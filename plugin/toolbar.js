@@ -92,12 +92,14 @@ class toolbarPlugin extends BasePlugin {
         }
     }
 
-    call = async () => {
-        if (this.utils.isShow(this.entities.toolbar)) {
-            this.hide();
-        } else {
-            await this.show();
-        }
+    call =  () => {
+        setTimeout(async() => {
+            if (this.utils.isShow(this.entities.toolbar)) {
+                this.hide();
+            } else {
+                await this.show();
+            }
+        })
     }
 
     registerBarTool = tool => this.toolController.register(tool);

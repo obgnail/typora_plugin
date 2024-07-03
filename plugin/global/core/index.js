@@ -1,10 +1,10 @@
 const {BasePlugin, BaseCustomPlugin, LoadPlugin} = require("./plugin");
 const {utils} = require("./utils");
 const {getHelper} = require("./utils/delegate");
-const {helper, loadHelpersBefore, loadHelpersAfter, optimizeHelpers} = getHelper(utils);
+const {loadHelpersBefore, loadHelpersAfter, optimizeHelpers} = getHelper(utils);
 
 class Launcher {
-    // 整个插件系统一共暴露了8个全局变量，实际有用的只有3个：BasePlugin, BaseCustomPlugin, LoadPlugin
+    // 整个插件系统一共暴露了7个全局变量，实际有用的只有3个：BasePlugin, BaseCustomPlugin, LoadPlugin
     // 其余5个全局变量皆由静态类utils暴露，永远不会被业务插件引用；而utils同时又是BasePlugin, BaseCustomPlugin的实例属性，所以utils自己也不需要暴露
     // 既然永远不会被业务插件引用，为何要将它们设置为全局变量？答：方便调试
     static prepare = settings => {
@@ -14,7 +14,6 @@ class Launcher {
 
         global._plugins = {};                              // 启用的插件
         global._plugin_utils = utils;                      // 通用工具
-        global._plugin_helper = helper;                    // 高级工具
         global._plugin_settings = settings;                // 插件配置
         global._plugin_global_settings = settings.global;  // 通用配置
 
@@ -23,7 +22,7 @@ class Launcher {
 
     static showWarningIfNeed = () => {
         const need = global._plugin_global_settings.SHOW_INCOMPATIBLE_WARNING;
-        const incompatible = utils.compareVersion(window._options.appVersion, "0.9.98") < 0;
+        const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0;
         if (need && incompatible) {
             utils.showNotification("Typora 版本过低，部分插件可能失效。\n建议升级到 0.9.98 (最后一个免费版本)", "warning", 5000);
         }
