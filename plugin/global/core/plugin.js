@@ -40,8 +40,8 @@ class BaseCustomPlugin extends IPlugin {
         this.showName = setting.name;
     }
 
+    selector(isClick) {}
     hint(isDisable) {}
-    selector() {}
     callback(anchorNode) {}
 }
 

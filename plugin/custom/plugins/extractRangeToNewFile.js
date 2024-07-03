@@ -1,6 +1,6 @@
 class extractRangeToNewFilePlugin extends BaseCustomPlugin {
-    selector = onClick => {
-        if (onClick) return;
+    selector = isClick => {
+        if (isClick) return;
         this.savedSelection = window.getSelection().getRangeAt(0);
         if (this.savedSelection.collapsed) {
             this.savedSelection = null;
