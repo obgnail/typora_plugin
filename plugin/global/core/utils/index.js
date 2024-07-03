@@ -27,49 +27,15 @@ class utils {
         ChildProcess: CHILD_PROCESS,
     })
 
-    // 动态注册、动态注销代码块增强按钮(仅当fence_enhance插件启用时有效，通过返回值确定是否成功)
-    // 需要注意的是：注册、注销只会影响新增的代码块，已经渲染到html的代码块不会改变，所以一般此函数的执行时机是在初始化的时候
-    //   action: 取个名字
-    //   className: button的className
-    //   hint: 提示
-    //   iconClassName: 通过className设置icon
-    //   enable: 是否使用
-    //   listener(ev, button)=>{}: 点击按钮的回调函数(ev: 时间，button: 按钮本身element)
-    //   extraFunc(button)=>{}: 插入html后的额外操作
-    static registerFenceEnhanceButton = (className, action, hint, iconClassName, enable, listener, extraFunc,
-    ) => this.callPluginFunction("fence_enhance", "registerBuilder", className, action, hint, iconClassName, enable, listener, extraFunc)
-    static unregisterFenceEnhanceButton = action => this.callPluginFunction("fence_enhance", "removeBuilder", action)
-
-    // 动态注册barTool里的tool(仅当toolbar插件启用时有效，通过返回值确定是否成功)
-    // tool: baseToolInterface的子类
-    static registerBarTool = tool => this.callPluginFunction("toolbar", "registerBarTool", tool)
-    static unregisterBarTool = name => this.callPluginFunction("toolbar", "unregisterBarTool", name)
-
-    // 动态注册右下角的快捷按钮(仅当quickButton插件启用时有效，通过返回值确定是否成功)
-    //   1. action(string): 取个名字
-    //   2. coordinate[int, int]: 按钮的坐标(x, y)。注意：往上为x正方向，往左为y正方向。起始值为0。为何如此设计？答：新增的button不影响旧button的坐标
-    //   3. hint(string): 提示信息
-    //   4. iconClass(string): icon的class
-    //   5. style(Object): button 额外的样式
-    //   6. callback(ev, target, action) => null: 点击按钮后的回调函数
-    static registerQuickButton = (action, coordinate, hint, iconClass, style, callback
-    ) => this.callPluginFunction("quickButton", "register", action, coordinate, hint, iconClass, style, callback)
-    // 动态注销快捷按钮
-    //   一旦process后，标签就被渲染到HTML了，以后就不会再变了，再调用此函数也没有用了，因此此函数只能在插件初始化的时候调用
-    //   因此，unregisterQuickButton的唯一意义是：当两个插件在初始化阶段打架时（都想注册同一坐标的按钮），用此函数去注销掉别人
-    static unregisterQuickButton = action => this.callPluginFunction("quickButton", "unregister", action)
-    static toggleQuickButton = hide => this.callPluginFunction("quickButton", "toggle", hide)
-
-
     ////////////////////////////// 插件相关 //////////////////////////////
     static getAllPlugins = () => global._plugins
-    static getAllCustomPlugins = () => global._plugins.custom && global._plugins.custom.custom
+    static getAllCustomPlugins = () => global._plugins.custom && global._plugins.custom.plugins
     static getPlugin = fixedName => global._plugins[fixedName]
-    static getCustomPlugin = fixedName => global._plugins.custom && global._plugins.custom.custom[fixedName]
+    static getCustomPlugin = fixedName => global._plugins.custom && global._plugins.custom.plugins[fixedName]
     static getAllPluginSettings = () => global._plugin_settings
-    static getAllGlobalSettings = () => global._plugin_global_settings
-    static getAllCustomPluginSettings = () => (global._plugins.custom && global._plugins.custom.customSettings) || {}
-    static getGlobalSetting = name => global._plugin_global_settings[name]
+    static getAllGlobalSettings = () => global._global_settings
+    static getAllCustomPluginSettings = () => (global._plugins.custom && global._plugins.custom.pluginsSettings) || {}
+    static getGlobalSetting = name => global._global_settings[name]
     static getPluginSetting = fixedName => global._plugin_settings[fixedName]
     static getCustomPluginSetting = fixedName => this.getAllCustomPluginSettings()[fixedName]
     static tryGetPlugin = fixedName => this.getPlugin(fixedName) || this.getCustomPlugin(fixedName)

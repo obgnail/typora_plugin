@@ -398,7 +398,7 @@ RECORD_RESIZE = true
 ############### datatables ###############
 [datatables]
 # 是否启用插件
-ENABLE = true
+ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "表格增强"
 # 是否在右键菜单中可点击
@@ -783,7 +783,7 @@ RECORD_COLLAPSE = true
 ############### collapse_table ###############
 [collapse_table]
 # 是否启用插件
-ENABLE = true
+ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "表格折叠"
 # 是否在右键菜单中可点击
@@ -795,7 +795,7 @@ RECORD_COLLAPSE = true
 ############### truncate_text ###############
 [truncate_text]
 # 是否启用插件
-ENABLE = true
+ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "文段截断"
 # 是否在右键菜单中可点击

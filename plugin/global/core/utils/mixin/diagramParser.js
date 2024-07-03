@@ -2,6 +2,7 @@ class diagramParser {
     constructor(utils) {
         this.utils = utils;
         this.diagramModeFlag = "custom_diagram";  // can be any value, just a flag
+        this.exitInteractiveStrategies = ["click_exit_button"];
         this.parsers = new Map();     // {lang: parser}
         this.langMapping = new Map(); // {lang: mappingLang}
     }
@@ -31,9 +32,43 @@ class diagramParser {
 
     unregister = lang => this.parsers.delete(lang)
 
+    process = async () => {
+        if (this.parsers.size === 0) return;
+        await this.polyfillStyle();
+        this.fixInteractiveMode();
+        this.registerLangTooltip();      // 语言提示
+        this.registerLangModeMapping();  // A语言映射为B语言
+        this.onAddCodeBlock();           // 添加代码块时
+        this.onTryAddLangUndo();         // 修改语言时
+        this.onUpdateDiagram();          // 更新时
+        this.onExportToHTML();           // 导出时
+        this.onFocus();                  // 聚焦时
+        this.onChangeFile();             // 切换文件时
+        this.onCheckIsDiagramType();     // 判断是否为Diagram时
+    }
+
     polyfillStyle = async () => {
         if (this.utils.isBetaVersion) {
             await this.utils.registerStyleTemplate("diagram-parser");
+        }
+    }
+
+    // 如果没有开启fenceEnhance插件，并且EXIT_INTERACTIVE_MODE为click_exit_button，那么强制所有的图形都关闭交互模式
+    fixInteractiveMode = () => {
+        const cfg = this.utils.getGlobalSetting("EXIT_INTERACTIVE_MODE");
+        if (Array.isArray(cfg)) {
+            const arr = cfg.filter(e => e === "ctrl_click_fence" || e === "click_exit_button");
+            if (arr.length) {
+                this.exitInteractiveStrategies = arr;
+            }
+        }
+
+        const isClickBtn = this.exitInteractiveStrategies.length === 1 && this.exitInteractiveStrategies[0] === "click_exit_button";
+        const hasPlugin = this.utils.getPlugin("fence_enhance");
+        if (!hasPlugin && isClickBtn) {
+            for (const p of this.parsers.values()) {
+                p.interactiveMode = false;
+            }
         }
     }
 
@@ -46,20 +81,6 @@ class diagramParser {
             return this.langMapping[name] || mode
         }
         this.utils.decorate(() => window, "getCodeMirrorMode", null, after, true)
-    }
-
-    process = async () => {
-        if (this.parsers.size === 0) return;
-        await this.polyfillStyle();
-        this.registerLangTooltip();      // 语言提示
-        this.registerLangModeMapping();  // A语言映射为B语言
-        this.onAddCodeBlock();           // 添加代码块时
-        this.onTryAddLangUndo();         // 修改语言时
-        this.onUpdateDiagram();          // 更新时
-        this.onExportToHTML();           // 导出时
-        this.onFocus();                  // 聚焦时
-        this.onChangeFile();             // 切换文件时
-        this.onCheckIsDiagramType();     // 判断是否为Diagram时
     }
 
     isDiagramType = lang => File.editor.diagrams.constructor.isDiagramType(lang)
@@ -230,21 +251,24 @@ class diagramParser {
             if (!enhance) return;
             enhance.style.display = "";
             enhance.querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "none");
-            enhance.querySelector(".edit-custom-diagram").style.display = "";
+            enhance.querySelector(".edit-diagram").style.display = "";
         }
 
         const hideAllButton = fence => {
             const enhance = showAllTButton(fence);
             if (!enhance) return;
-            const editButton = enhance.querySelector(".edit-custom-diagram");
+            const editButton = enhance.querySelector(".edit-diagram");
             if (editButton) {
                 editButton.style.display = "none";
             }
             enhance.style.display = "none";
         }
 
+        const registerFenceEnhanceButton = (className, action, hint, iconClassName, enable, listener, extraFunc,
+        ) => this.utils.callPluginFunction("fence_enhance", "registerBuilder", className, action, hint, iconClassName, enable, listener, extraFunc)
+
         const handleCtrlClick = () => {
-            const ctrlClick = this.utils.getGlobalSetting("EXIT_INTERACTIVE_MODE").includes("ctrl_click_fence");
+            const ctrlClick = this.exitInteractiveStrategies.includes("ctrl_click_fence");
             if (!ctrlClick) return;
             this.utils.entities.eWrite.addEventListener("mouseup", ev => {
                 if (this.utils.metaKeyPressed(ev) && ev.target.closest(".md-fences-interactive .md-diagram-panel-preview")) {
@@ -255,7 +279,7 @@ class diagramParser {
         }
 
         const handleEditButton = () => {
-            const editBtn = this.utils.getGlobalSetting("EXIT_INTERACTIVE_MODE").includes("click_exit_button");
+            const editBtn = this.exitInteractiveStrategies.includes("click_exit_button");
             const hasInteractive = Array.from(this.parsers.values()).some(parser => parser.interactiveMode);
             if (!editBtn || !hasInteractive) return;
 
@@ -263,7 +287,7 @@ class diagramParser {
                 button.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
                 enableFocus();
             }
-            const ok = this.utils.registerFenceEnhanceButton("edit-custom-diagram", "editDiagram", "编辑", "fa fa-edit", false, listener);
+            const ok = registerFenceEnhanceButton("edit-diagram", "editDiagram", "编辑", "fa fa-edit", false, listener);
             if (!ok) return;
 
             this.utils.entities.$eWrite.on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
