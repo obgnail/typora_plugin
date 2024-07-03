@@ -1,13 +1,13 @@
 class CustomPlugin extends BasePlugin {
     beforeProcess = async () => {
-        this.custom = {};          // 启用的插件
-        this.customSettings = {};  // 全部的插件配置
-        await new loadPluginHelper(this).process();
+        this.plugins = {};          // 启用的插件
+        this.pluginsSettings = {};  // 全部的插件配置
+        await new customPluginLoader(this).process();
     }
 
     hotkey = () => {
         const hotkeys = [];
-        for (const [fixedName, plugin] of Object.entries(this.custom)) {
+        for (const [fixedName, plugin] of Object.entries(this.plugins)) {
             if (!plugin) continue;
             try {
                 const hotkey = plugin.hotkey();
@@ -29,7 +29,7 @@ class CustomPlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => {
-        const settings = Object.entries(this.customSettings);
+        const settings = Object.entries(this.pluginsSettings);
         settings.sort(([, {order: o1 = 1}], [, {order: o2 = 1}]) => o1 - o2);
 
         meta.target = anchorNode;
@@ -37,7 +37,7 @@ class CustomPlugin extends BasePlugin {
         for (const [fixedName, setting] of settings) {
             if (!notInContextMenu && setting.hide) continue;
 
-            const plugin = this.custom[fixedName];
+            const plugin = this.plugins[fixedName];
             if (!plugin) continue;
 
             const arg = {
@@ -69,7 +69,7 @@ class CustomPlugin extends BasePlugin {
     }
 
     call = (fixedName, meta) => {
-        const plugin = this.custom[fixedName];
+        const plugin = this.plugins[fixedName];
         if (!plugin) return;
         try {
             const selector = plugin.selector(true);
@@ -81,15 +81,15 @@ class CustomPlugin extends BasePlugin {
     }
 }
 
-class loadPluginHelper {
-    constructor(controller) {
-        this.controller = controller;
-        this.utils = controller.utils;
-        this.config = controller.config;
+class customPluginLoader {
+    constructor(plugin) {
+        this.controller = plugin;
+        this.utils = plugin.utils;
+        this.config = plugin.config;
     }
 
     loadCustomPlugin = async fixedName => {
-        const customSetting = this.controller.customSettings[fixedName];
+        const customSetting = this.controller.pluginsSettings[fixedName];
         if (!customSetting || !customSetting.enable) {
             console.debug(`disable custom plugin: [ \x1b[31m${fixedName}\x1b[0m ]`);
             return;
@@ -97,7 +97,7 @@ class loadPluginHelper {
         try {
             const instance = await global.LoadPlugin(fixedName, customSetting, true);
             if (!instance) return;
-            this.controller.custom[instance.fixedName] = instance;
+            this.controller.plugins[instance.fixedName] = instance;
             console.debug(`enable custom plugin: [ \x1b[36m${instance.fixedName}\x1b[0m ]`);
         } catch (e) {
             console.error("load custom plugin error:", e);
@@ -133,7 +133,7 @@ class loadPluginHelper {
         const settings = await this.utils.readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
         this.mergeSettings(settings);
         this.errorSettingDetector(settings);
-        this.controller.customSettings = settings;
+        this.controller.pluginsSettings = settings;
         await Promise.all(Object.keys(settings).map(this.loadCustomPlugin));
         this.utils.publishEvent(this.utils.eventType.allCustomPluginsHadInjected);
     }

@@ -29,12 +29,12 @@ class utils {
 
     ////////////////////////////// 插件相关 //////////////////////////////
     static getAllPlugins = () => global._plugins
-    static getAllCustomPlugins = () => global._plugins.custom && global._plugins.custom.custom
+    static getAllCustomPlugins = () => global._plugins.custom && global._plugins.custom.plugins
     static getPlugin = fixedName => global._plugins[fixedName]
-    static getCustomPlugin = fixedName => global._plugins.custom && global._plugins.custom.custom[fixedName]
+    static getCustomPlugin = fixedName => global._plugins.custom && global._plugins.custom.plugins[fixedName]
     static getAllPluginSettings = () => global._plugin_settings
     static getAllGlobalSettings = () => global._global_settings
-    static getAllCustomPluginSettings = () => (global._plugins.custom && global._plugins.custom.customSettings) || {}
+    static getAllCustomPluginSettings = () => (global._plugins.custom && global._plugins.custom.pluginsSettings) || {}
     static getGlobalSetting = name => global._global_settings[name]
     static getPluginSetting = fixedName => global._plugin_settings[fixedName]
     static getCustomPluginSetting = fixedName => this.getAllCustomPluginSettings()[fixedName]
