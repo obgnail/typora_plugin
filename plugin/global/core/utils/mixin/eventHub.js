@@ -3,9 +3,9 @@
 class eventHub {
     constructor(utils) {
         this.utils = utils;
-        this.filepath = ""
-        this.observer = null
-        this.eventMap = {}  // { eventType: [listenerFunc] }
+        this.filepath = "";
+        this.observer = null;
+        this.eventMap = Object.create(null);  // { eventType: [listenerFunc] }
         this.eventType = Object.freeze({
             allCustomPluginsHadInjected: "allCustomPluginsHadInjected", // 自定义插件加载完毕
             allPluginsHadInjected: "allPluginsHadInjected",             // 所有插件加载完毕
@@ -27,21 +27,36 @@ class eventHub {
     }
 
     addEventListener = (type, listener) => {
+        this._checkType(type);
+        this._checkListener(listener);
         if (!this.eventMap[type]) {
             this.eventMap[type] = [];
         }
         this.eventMap[type].push(listener);
     }
+
     removeEventListener = (type, listener) => {
-        if (this.eventMap[type]) {
-            this.eventMap[type] = this.eventMap[type].filter(lis => lis !== listener);
+        this._checkType(type);
+        this._checkListener(listener);
+        this.eventMap[type] = this.eventMap[type].filter(lis => lis !== listener);
+    }
+
+    publishEvent = (type, payload) => {
+        this._checkType(type);
+        for (const listener of (this.eventMap[type] || [])) {
+            listener.call(this, payload);
         }
     }
-    publishEvent = (type, payload) => {
-        if (this.eventMap[type]) {
-            for (const listener of this.eventMap[type]) {
-                listener.call(this, payload);
-            }
+
+    _checkType = type => {
+        if (!this.eventType.hasOwnProperty(type)) {
+            throw new Error(`do not support event type: ${type}`);
+        }
+    }
+
+    _checkListener = listener => {
+        if (typeof listener !== "function") {
+            throw new Error(`listener is not function: ${listener}`);
         }
     }
 
