@@ -101,7 +101,7 @@ class CustomNotification {
 
 module.exports = {plugin: CustomNotification};
 
-/*
+/**
 外部引入的包显示通知 —— 后续可以拓展，让用户自己选择使用什么显示通知
 const notifier = require('node-notifier');
 // https://github.com/mikaelbr/node-notifier
