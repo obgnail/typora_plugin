@@ -45,7 +45,7 @@ class cipherPlugin extends BasePlugin {
     }
 
     lazyLoad = () => {
-        this.AES_ECB = this.AES_ECB || require("./aes_ecb");
+        this.AES_ECB = this.AES_ECB || require("./aes_ecb.min");
         return {encrypt: this.AES_ECB.AES_ECB_ENCRYPT, decrypt: this.AES_ECB.AES_ECB_DECRYPT}
     }
 }

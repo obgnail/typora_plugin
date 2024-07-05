@@ -5,7 +5,7 @@ let markdownlinter = null;
 let disableRules = null;
 
 const init = rules => {
-    markdownlinter = require("./markdownlint.js").markdownlint;
+    markdownlinter = require("./markdownlint.min").markdownlint;
     const result = {"default": true};
     for (const rule of rules) {
         result[rule] = false;
