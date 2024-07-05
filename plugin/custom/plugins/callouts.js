@@ -18,14 +18,15 @@ class calloutsPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        this.utils.addEventListener(this.utils.eventType.firstFileInit, this.range);
-        this.utils.addEventListener(this.utils.eventType.fileEdited, this.range);
-        const getExportStyle = () => this.utils.querySelectorInWrite(".plugin-callout") ? this.getStyleContent(true) : ""
-        this.utils.registerExportHelper("callouts", getExportStyle, this.exportToHtml);
+        const {eventHub, entities, exportHelper} = this.utils;
+        eventHub.addEventListener(eventHub.eventType.firstFileInit, this.range);
+        eventHub.addEventListener(eventHub.eventType.fileEdited, this.range);
+        const getExportStyle = () => entities.querySelectorInWrite(".plugin-callout") ? this.getStyleContent(true) : ""
+        exportHelper.register("callouts", getExportStyle, this.exportToHtml);
     }
 
     getStyleContent = (removeIcon = false) => {
-        let result = this.utils.getStyleContent(this.fixedName);
+        let result = this.utils.styleTemplater.getStyleContent(this.fixedName);
         // icon需要用到font，但是导出时又没有font，因此只能移除
         if (removeIcon) {
             result = result.replace(/--callout-icon: ".*?";/g, "");
@@ -34,7 +35,7 @@ class calloutsPlugin extends BaseCustomPlugin {
     }
 
     range = () => {
-        const pList = this.utils.querySelectorAllInWrite("blockquote > p:first-child");
+        const pList = this.utils.entities.querySelectorAllInWrite("blockquote > p:first-child");
         pList.forEach(p => {
             const blockquote = p.parentElement;
             const result = p.textContent.match(/^\[!(?<type>\w+)\](?<fold>[+-]?)/);
@@ -53,7 +54,7 @@ class calloutsPlugin extends BaseCustomPlugin {
     exportToHtml = (html, writeIdx) => {
         const regex = new RegExp("<blockquote>", "g");
         const count = (html.match(regex) || []).length;
-        const quotes = Array.from(this.utils.querySelectorAllInWrite("blockquote"));
+        const quotes = Array.from(this.utils.entities.querySelectorAllInWrite("blockquote"));
         if (count !== quotes.length) return html;
 
         let idx = -1;

@@ -4,9 +4,9 @@ class blockSideBySidePlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
     callback = async () => {
-        const enable = this.utils.getStyleContent(this.fixedName);
-        const func = enable ? "unregisterStyleTemplate" : "registerStyleTemplate";
-        await this.utils[func](this.fixedName);
+        const enable = this.utils.styleTemplater.getStyleContent(this.fixedName);
+        const func = enable ? "unregister" : "register";
+        await this.utils.styleTemplater[func](this.fixedName);
     }
 }
 

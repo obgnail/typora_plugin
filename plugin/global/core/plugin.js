@@ -63,12 +63,12 @@ const LoadPlugin = async (fixedName, setting, isCustom) => {
     utils.registerStyle(instance.fixedName, instance.style());
     const renderArgs = instance.styleTemplate();
     if (renderArgs) {
-        await utils.registerStyleTemplate(instance.fixedName, {...renderArgs, this: instance});
+        await utils.styleTemplater.register(instance.fixedName, {...renderArgs, this: instance});
     }
     utils.insertElement(instance.html());
     const elements = instance.htmlTemplate();
-    elements && utils.insertHtmlTemplate(elements);
-    !isCustom && utils.registerHotkey(instance.hotkey());
+    elements && utils.htmlTemplater.insert(elements);
+    !isCustom && utils.hotkeyHub.register(instance.hotkey());
     instance.init();
     instance.process();
     instance.afterProcess();

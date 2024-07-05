@@ -21,9 +21,9 @@ class resizeImagePlugin extends BasePlugin {
         }
         const name = "recordResizeImage";
         if (this.config.RECORD_RESIZE) {
-            this.utils.registerStateRecorder(name, "#write img", ele => ele.style.cssText, (ele, state) => ele.style = state);
+            this.utils.stateRecorder.register(name, "#write img", ele => ele.style.cssText, (ele, state) => ele.style = state);
         } else {
-            this.utils.unregisterStateRecorder(name);
+            this.utils.stateRecorder.unregister(name);
         }
     }
 
@@ -31,7 +31,7 @@ class resizeImagePlugin extends BasePlugin {
         this.config.ALLOW_OVERSIZE = !this.config.ALLOW_OVERSIZE;
 
         if (!this.config.ALLOW_OVERSIZE) {
-            this.utils.querySelectorAllInWrite("img").forEach(image => {
+            this.utils.entities.querySelectorAllInWrite("img").forEach(image => {
                 if (image.style.maxWidth) {
                     const maxSize = image.parentElement.offsetWidth;
                     if (this.getWidth(image) > maxSize) {

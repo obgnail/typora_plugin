@@ -17,14 +17,15 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
     hint = isDisable => isDisable ? "updater.exe不存在或者commander插件被禁用" : "当你发现BUG，可以尝试更新，说不定就解决了"
 
     process = () => {
-        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+        const {auto_update, start_update_interval, update_loop_interval} = this.config;
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             this.commanderPlugin = this.utils.getPlugin("commander");
-            if (this.updaterEXE && this.commanderPlugin && this.config.auto_update) {
-                if (this.config.start_update_interval > 0) {
-                    setTimeout(this.silentUpdate, this.config.start_update_interval);
+            if (this.updaterEXE && this.commanderPlugin && auto_update) {
+                if (start_update_interval > 0) {
+                    setTimeout(this.silentUpdate, start_update_interval);
                 }
-                if (this.config.update_loop_interval > 0) {
-                    setInterval(this.silentUpdate, this.config.update_loop_interval);
+                if (update_loop_interval > 0) {
+                    setInterval(this.silentUpdate, update_loop_interval);
                 }
             }
         })
@@ -39,7 +40,9 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         const proxy = await this.getProxy();
         const label = "代理（填入URL，默认使用系统代理，为空则不使用代理）";
         const components = [{label, type: "input", value: proxy, placeholder: "http://127.0.0.1:7890"}];
-        this.utils.modal({title: "设置代理", components}, async ([{submit: proxy_}]) => await this.modalUpdate(proxy_))
+        const m = {title: "设置代理", components};
+        const cb = async ([{submit: proxy_}]) => await this.modalUpdate(proxy_);
+        this.utils.dialog.modal(m, cb);
     }
 
     modalUpdate = async proxy => {
@@ -59,7 +62,7 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
                 callback = undefined;
                 cancelCallback = openGithub;
             }
-            this.utils.modal({title: "更新失败", components}, callback, cancelCallback);
+            this.utils.dialog.modal({title: "更新失败", components}, callback, cancelCallback);
         })
     }
 

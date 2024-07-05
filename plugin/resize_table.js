@@ -78,9 +78,9 @@ class resizeTablePlugin extends BasePlugin {
         const stateGetter = ele => ele.style.cssText
         const stateRestorer = (ele, state) => ele.style = state
         if (this.config.RECORD_RESIZE) {
-            this.utils.registerStateRecorder(name, selector, stateGetter, stateRestorer);
+            this.utils.stateRecorder.register(name, selector, stateGetter, stateRestorer);
         } else {
-            this.utils.unregisterStateRecorder(name);
+            this.utils.stateRecorder.unregister(name);
         }
     }
 

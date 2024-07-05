@@ -85,7 +85,7 @@ class bingSpeechPlugin extends BaseCustomPlugin {
             {label: "语速", type: "range", min: -3.0, max: 3.0, step: 0.1, value: num2Str(rate)},
             {label: "语调", type: "range", min: -1.0, max: 1.0, step: 0.1, value: num2Str(pitch)},
         ]
-        this.utils.modal({title: "必应朗读", components}, async components => {
+        this.utils.dialog.modal({title: "必应朗读", components}, async components => {
             const [_, o, l, v, s, d, r, p] = components.map(c => c.submit);
             const cfg = {from_language: l, voice: v, style: s, style_degree: d, rate: str2Num(r), pitch: str2Num(p)};
             await this.utils.showProcessingHint();

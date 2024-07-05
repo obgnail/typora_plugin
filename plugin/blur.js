@@ -39,7 +39,7 @@ class blurPlugin extends BasePlugin {
             this.utils.removeStyle(this.css_id);
         }
         if (showNotification) {
-            this.utils.showNotification(this.inBlur ? "模糊模式已启用" : "模糊模式已关闭");
+            this.utils.notification.show(this.inBlur ? "模糊模式已启用" : "模糊模式已关闭");
         }
     }
 }

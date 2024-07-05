@@ -49,7 +49,7 @@ class diagramParser {
 
     polyfillStyle = async () => {
         if (this.utils.isBetaVersion) {
-            await this.utils.registerStyleTemplate("diagram-parser");
+            await this.utils.styleTemplater.register("diagram-parser");
         }
     }
 
@@ -184,7 +184,7 @@ class diagramParser {
         }
     }
 
-    onAddCodeBlock = () => this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, this.renderDiagram)
+    onAddCodeBlock = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this.renderDiagram)
 
     onTryAddLangUndo = () => {
         const objGetter = () => File && File.editor && File.editor.fences;
@@ -199,11 +199,11 @@ class diagramParser {
     }
 
     onExportToHTML = () => {
-        this.utils.registerExportHelper("diagramParser", () => {
+        this.utils.exportHelper.register("diagramParser", () => {
             const extraCssList = [];
             this.parsers.forEach((parser, lang) => {
                 const getter = parser.extraStyleGetter;
-                const exist = this.utils.querySelectorInWrite(`.md-fences[lang="${lang}"]`);
+                const exist = this.utils.entities.querySelectorInWrite(`.md-fences[lang="${lang}"]`);
                 if (getter && exist) {
                     const extraCss = getter();
                     extraCssList.push(extraCss);
@@ -306,7 +306,7 @@ class diagramParser {
     }
 
     onChangeFile = () => {
-        this.utils.addEventListener(this.utils.eventType.otherFileOpened, () => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, () => {
             for (const {destroyAllFunc} of this.parsers.values()) {
                 destroyAllFunc && destroyAllFunc();
             }

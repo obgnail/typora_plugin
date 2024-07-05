@@ -2,7 +2,7 @@ class timelinePlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
     process = () => {
-        this.utils.registerDiagramParser({
+        this.utils.diagramParser.register({
             lang: this.config.LANGUAGE,
             mappingLang: "markdown",
             destroyWhenUpdate: false,
@@ -16,7 +16,7 @@ class timelinePlugin extends BaseCustomPlugin {
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
-    getStyleContent = () => this.utils.getStyleContent(this.fixedName)
+    getStyleContent = () => this.utils.styleTemplater.getStyleContent(this.fixedName)
 
     render = (cid, content, $pre) => {
         let timeline = $pre.find(".plugin-timeline");
@@ -30,7 +30,7 @@ class timelinePlugin extends BaseCustomPlugin {
             $pre.find(".md-diagram-panel-preview").html(timeline);
         } else {
             // accident occurred
-            this.utils.throwParseError(null, "未知错误！请联系开发者");
+            this.utils.diagramParser.throwParseError(null, "未知错误！请联系开发者");
         }
     }
 
@@ -39,6 +39,7 @@ class timelinePlugin extends BaseCustomPlugin {
         const timeline = {title: "", bucket: []};
         const lines = content.split("\n");
         const dir = this.utils.getCurrentDirPath();
+        const {throwParseError} = this.utils.diagramParser;
         lines.forEach((line, idx) => {
             if (!line.trim()) return;
             idx += 1;
@@ -46,10 +47,10 @@ class timelinePlugin extends BaseCustomPlugin {
             if (line.startsWith("# ")) {
                 if (!timeline.title) {
                     if (timeline.bucket.length !== 0) {
-                        this.utils.throwParseError(idx, "【时间线标题】必须先于【内容】");
+                        throwParseError(idx, "【时间线标题】必须先于【内容】");
                     }
                 } else {
-                    this.utils.throwParseError(idx, "存在两个【时间线标题】");
+                    throwParseError(idx, "存在两个【时间线标题】");
                 }
                 timeline.title = line.replace("# ", "");
                 return;
@@ -61,7 +62,7 @@ class timelinePlugin extends BaseCustomPlugin {
             }
 
             if (timeline.bucket.length === 0) {
-                this.utils.throwParseError(idx, "【时间线标题】和【时间】必须先于【内容】");
+                throwParseError(idx, "【时间线标题】和【时间】必须先于【内容】");
             }
 
             const lastBucket = timeline.bucket[timeline.bucket.length - 1].itemList;

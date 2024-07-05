@@ -25,7 +25,7 @@ class helpPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             this.updater = this.utils.getCustomPlugin("pluginUpdater");
             if (!this.updater) return;
             const arg_name = "升级插件" + (this.version ? `（当前版本：${this.version}）` : "");
@@ -80,7 +80,7 @@ class helpPlugin extends BasePlugin {
                 this.utils.sendEmail("he1251698542@gmail.com", "插件反馈");
             }
         }
-        this.utils.modal({title: "关于", width: "500px", components: [{label, type: "span", onclick}]});
+        this.utils.dialog.modal({title: "关于", width: "500px", components: [{label, type: "span", onclick}]});
     }
 
     uninstall = () => {
@@ -105,7 +105,7 @@ class helpPlugin extends BasePlugin {
         const reconfirm = "卸载插件系统";
         const label = `⚠️ <b>此操作不可撤销</b>。请输入「${reconfirm}」启动自毁程序`;
         const components = [{label: label, type: "input", placeholder: reconfirm}];
-        this.utils.modal({title: "卸载插件系统", components}, async ([{submit}]) => {
+        this.utils.dialog.modal({title: "卸载插件系统", components}, async ([{submit}]) => {
             if (submit !== reconfirm) {
                 alert("请输入正确的内容");
                 return;
@@ -165,7 +165,7 @@ class helpPlugin extends BasePlugin {
 
         const canvas = `<canvas id="${id}" width="${canvasWidth}" height="${qrSize}" style="margin: auto;display: block;" title="祝你工作生活顺利"></canvas>`
         const components = [{label: "感谢你，你能访问这里我已经很开心啦 :)", type: "p"}, {label: canvas, type: "p"}];
-        this.utils.modal({title: "请开发者喝咖啡", components, onload});
+        this.utils.dialog.modal({title: "请开发者喝咖啡", components, onload});
     }
 
     call = type => {

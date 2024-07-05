@@ -53,7 +53,7 @@ evil = "() => this.utils.getPlugin('window_tab').switchTab(0)"
 desc = "每当打开文件时都弹出提示窗口"
 enable = false
 hotkey = "-"
-evil = "this.utils.addEventListener(this.utils.eventType.fileOpened, filepath => window.confirm(`你打开了文件: ${filepath}`))"
+evil = "this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, filepath => window.confirm(`你打开了文件: ${filepath}`))"
 
 
 # 支持但是不正常不推荐且有病的使用方法
@@ -62,7 +62,7 @@ desc = "打开Typora时弹出问好提示框"
 enable = false
 hotkey = "-"
 evil = """
-    this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+    this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
         const modal = {
             title: "今天心情好吗",
             components: [{
@@ -71,7 +71,7 @@ evil = """
                 list: [{label: "好", value: "good", checked: true}, {label: "很好", value: "very_good"}]
             }]
         }
-        this.utils.modal(modal, components => {
+        this.utils.dialog.modal(modal, components => {
             const mood = components[0].submit;
             window.confirm(`Your mood today： ${mood}`);
         })

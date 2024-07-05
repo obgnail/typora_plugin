@@ -82,9 +82,9 @@ class collapseTablePlugin extends BasePlugin {
             this.config.RECORD_COLLAPSE = !this.config.RECORD_COLLAPSE;
         }
         if (this.config.RECORD_COLLAPSE) {
-            this.utils.registerStateRecorder(name, selector, this.checkCollapse, this.toggleTable);
+            this.utils.stateRecorder.register(name, selector, this.checkCollapse, this.toggleTable);
         } else {
-            this.utils.unregisterStateRecorder(name);
+            this.utils.stateRecorder.unregister(name);
         }
     }
 }

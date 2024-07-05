@@ -63,7 +63,7 @@ class truncateTextPlugin extends BasePlugin {
     }
 
     rollback = () => {
-        if (this.utils.querySelectorInWrite(`:scope > .${this.className}`)) {
+        if (this.utils.entities.querySelectorInWrite(`:scope > .${this.className}`)) {
             this.showAll();
         }
     };

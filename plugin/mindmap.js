@@ -69,7 +69,7 @@ class mindmapPlugin extends BasePlugin {
     }
 
     getContent = func => {
-        const headers = Array.from(this.utils.querySelectorAllInWrite(":scope > .md-heading"), ele => ({
+        const headers = Array.from(this.utils.entities.querySelectorAllInWrite(":scope > .md-heading"), ele => ({
             tagName: ele.tagName,
             levelIdx: this.headerList.indexOf(ele.tagName),
             title: ele.firstElementChild.textContent,

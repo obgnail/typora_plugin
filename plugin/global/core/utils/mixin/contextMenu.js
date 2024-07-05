@@ -7,7 +7,7 @@ class contextMenu {
     }
 
     process = async () => {
-        await this.utils.registerStyleTemplate(this.className);
+        await this.utils.styleTemplater.register(this.className);
         this.utils.insertElement(`<div class="${this.className}"></div>`);
 
         this.menu = document.querySelector("." + this.className);
@@ -55,7 +55,7 @@ class contextMenu {
                 child.innerText = text;
             } else {
                 const menuList = entries.slice(idx).map(([key, text]) => ({class_: "menu-item", key, text}));
-                this.utils.appendElements(this.menu, menuList);
+                this.utils.htmlTemplater.appendElements(this.menu, menuList);
                 break;
             }
             child = child.nextElementSibling;

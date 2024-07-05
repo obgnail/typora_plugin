@@ -4,7 +4,7 @@ class autoTrailingWhiteSpacePlugin extends BaseCustomPlugin {
     callback = () => {
         const replaceFlag = 2;
         const tailSpace = "  ";
-        this.utils.querySelectorAllInWrite("p[cid]").forEach(ele => {
+        this.utils.entities.querySelectorAllInWrite("p[cid]").forEach(ele => {
             const textContent = ele.textContent;
             if (!textContent.trim() || textContent.endsWith(tailSpace)) return
             const span = ele.querySelector(":scope > span:last-child");

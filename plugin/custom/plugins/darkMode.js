@@ -24,13 +24,13 @@ class darkModePlugin extends BaseCustomPlugin {
             this.utils.insertElement(frag);
         }
 
-        await this.utils.registerStyleTemplate(this.fixedName);
+        await this.utils.styleTemplater.register(this.fixedName);
         createDarkFilter();
         this.isDarkMode = true;
     }
 
     disableDarkMode = () => {
-        this.utils.unregisterStyleTemplate(this.fixedName);
+        this.utils.styleTemplater.unregister(this.fixedName);
         this.utils.removeElementByID("plugin-dark-mode-svg");
         this.isDarkMode = false;
     }
@@ -38,7 +38,7 @@ class darkModePlugin extends BaseCustomPlugin {
     toggleDarkMode = async () => {
         const func = this.isDarkMode ? this.disableDarkMode : this.enableDarkMode;
         await func();
-        this.utils.showNotification(this.isDarkMode ? "夜间模式已启用" : "夜间模式已关闭");
+        this.utils.notification.show(this.isDarkMode ? "夜间模式已启用" : "夜间模式已关闭");
     }
 
     process = () => this.isDarkMode && this.enableDarkMode();

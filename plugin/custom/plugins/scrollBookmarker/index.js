@@ -39,11 +39,11 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
                 this.locateUtils.idx = -1;
             }
         }
-        this.utils.registerStateRecorder(this.recordName, this.recordSelector, stateGetter, stateRestorer, finalFunc);
+        this.utils.stateRecorder.register(this.recordName, this.recordSelector, stateGetter, stateRestorer, finalFunc);
 
         if (this.config.persistence) {
             this.initState();
-            this.utils.addEventListener(this.utils.eventType.beforeUnload, () => this.saveBookmarks());
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeUnload, () => this.saveBookmarks());
         }
 
         const altKeyPressed = this.utils.modifierKey("alt");
@@ -77,7 +77,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             }
         })
 
-        this.utils.addEventListener(this.utils.eventType.fileEdited, () => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
             if (new Date().getTime() > this.locateUtils.time + 2000) {
                 this.refreshIfNeed();
             }
@@ -90,14 +90,14 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
     }
 
     refresh = () => {
-        this.utils.collectState(this.recordName);
+        this.utils.stateRecorder.collect(this.recordName);
         if (this.utils.isShow(this.entities.modal)) {
             this.updateModal();
         }
     }
 
     refreshIfNeed = () => {
-        const map = this.utils.getState(this.recordName, this.utils.getFilePath());
+        const map = this.utils.stateRecorder.getState(this.recordName, this.utils.getFilePath());
         if (map && map.size) {
             this.refresh();
         }
@@ -109,7 +109,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         }
 
         let item = this.entities.modal.firstElementChild;
-        const map = this.utils.getState(this.recordName);
+        const map = this.utils.stateRecorder.getState(this.recordName);
         for (const [filepath, indexList] of map.entries()) {
             for (const index of indexList.keys()) {
                 if (!item) {
@@ -148,7 +148,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             {class_: "bookmark-btn fa fa-trash-o"}
         ]
         const marker = [{class_: "bookmark-item", children}];
-        this.utils.appendElements(this.entities.modal, marker);
+        this.utils.htmlTemplater.appendElements(this.entities.modal, marker);
     }
 
     removeMarker = (idx, filepath) => {
@@ -157,7 +157,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             const ele = Array.from(document.querySelectorAll(this.recordSelector))[idx];
             ele && ele.classList.remove(this.className);
         } else {
-            this.utils.deleteState(this.recordName, filepath, parseInt(idx));
+            this.utils.stateRecorder.deleteState(this.recordName, filepath, parseInt(idx));
         }
         this.refresh();
     }
@@ -192,7 +192,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
     saveBookmarks = filepath => {
         filepath = filepath || this.saveFile;
         const obj = {};
-        const map = this.utils.getState(this.recordName);
+        const map = this.utils.stateRecorder.getState(this.recordName);
         for (const [filepath, indexList] of map.entries()) {
             obj[filepath] = Array.from(indexList.keys());
         }
@@ -204,7 +204,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         for (const [filepath, idxList] of Object.entries(this.bookmarks)) {
             map.set(filepath, new Map(idxList.map(ele => [ele, true])));
         }
-        map.size && this.utils.setState(this.recordName, map);
+        map.size && this.utils.stateRecorder.setState(this.recordName, map);
     }
 }
 

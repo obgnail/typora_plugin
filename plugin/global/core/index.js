@@ -24,7 +24,7 @@ class Launcher {
         const need = global._global_settings.SHOW_INCOMPATIBLE_WARNING;
         const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0;
         if (need && incompatible) {
-            utils.showNotification("Typora 版本过低，部分插件可能失效。\n建议升级到 0.9.98 (最后一个免费版本)", "warning", 5000);
+            utils.notification.show("Typora 版本过低，部分插件可能失效。\n建议升级到 0.9.98 (最后一个免费版本)", "warning", 5000);
         }
     }
 
@@ -66,7 +66,7 @@ class Launcher {
         await loadHelpersAfter();
 
         // 发布[已完成]事件
-        utils.publishEvent(utils.eventType.allPluginsHadInjected);
+        utils.eventHub.publishEvent(utils.eventHub.eventType.allPluginsHadInjected);
 
         // 优化组件
         await this.optimizeHelpers();

@@ -22,7 +22,7 @@ class thirdPartyDiagramParser {
     register = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter}) => {
         const p = {checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {}};
         this.parsers.set(lang.toLowerCase(), p);
-        this.utils.registerDiagramParser({
+        this.utils.diagramParser.register({
             lang, mappingLang, destroyWhenUpdate, extraStyleGetter, interactiveMode,
             renderFunc: this.render, cancelFunc: this.cancel, destroyAllFunc: this.destroyAll,
         });
@@ -30,7 +30,7 @@ class thirdPartyDiagramParser {
 
     unregister = lang => {
         this.parsers.delete(lang);
-        this.utils.unregisterDiagramParser(lang);
+        this.utils.diagramParser.unregister(lang);
     }
 
     render = async (cid, content, $pre, lang) => {
@@ -49,7 +49,7 @@ class thirdPartyDiagramParser {
                 parser.map[cid] = instance;
             }
         } catch (e) {
-            this.utils.throwParseError(null, e.toString());
+            this.utils.diagramParser.throwParseError(null, e.toString());
         }
     }
 
@@ -97,7 +97,7 @@ class thirdPartyDiagramParser {
             if (!parser.beforeExport) continue;
             this.utils.renderAllLangFence(lang);
             for (const [cid, instance] of Object.entries(parser.map)) {
-                const preview = this.utils.querySelectorInWrite(`.md-fences[cid=${cid}] .md-diagram-panel-preview`);
+                const preview = this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}] .md-diagram-panel-preview`);
                 preview && parser.beforeExport(preview, instance);
             }
         }
@@ -111,7 +111,7 @@ class thirdPartyDiagramParser {
         }, 300)
     }
 
-    process = () => this.utils.registerExportHelper("third-party-diagram-parser", this.beforeExport, this.afterExport);
+    process = () => this.utils.exportHelper.register("third-party-diagram-parser", this.beforeExport, this.afterExport);
 }
 
 module.exports = {

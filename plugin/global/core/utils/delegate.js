@@ -42,7 +42,7 @@ const getHelper = utils => {
         markdownParser: _markdownParser,
     }
 
-    // combination should be used to layer various functions, but utils is too old and has become a legacy, so functions can only be mixin. i am so sorry
+    // combination should be used to layer various functions, but utils is too old and has become a legacy. i am so sorry
     const delegate = {
         /**
          * 动态注册、动态注销hotkey
@@ -177,19 +177,20 @@ const getHelper = utils => {
 
     Object.assign(utils, helper, delegate);
 
-    const _load = (...ele) => Promise.all(ele.map(h => h.process()));
+    const loadHelpers = (...ele) => Promise.all(ele.map(h => h.process && h.process()));
+    const optimizeHelpers = () => Promise.all(Object.values(helper).map(h => h.afterProcess && h.afterProcess()));
 
+    // Before loading plugins
     const loadHelpersBefore = async () => {
-        await _load(_styleTemplater);
-        await _load(_htmlTemplater, _contextMenu, _notification, _dialog, _stateRecorder, _hotkeyHub, _exportHelper);
+        await loadHelpers(_styleTemplater);
+        await loadHelpers(_htmlTemplater, _contextMenu, _notification, _dialog, _stateRecorder, _hotkeyHub, _exportHelper);
     }
 
+    // After loading plugins
     const loadHelpersAfter = async () => {
-        await _load(_eventHub);
-        await _load(_diagramParser, _thirdPartyDiagramParser);
-    };
-
-    const optimizeHelpers = () => Promise.all(Object.values(helper).map(h => h.afterProcess && h.afterProcess()));
+        await loadHelpers(_eventHub);
+        await loadHelpers(_diagramParser, _thirdPartyDiagramParser);
+    }
 
     return {loadHelpersBefore, loadHelpersAfter, optimizeHelpers}
 }

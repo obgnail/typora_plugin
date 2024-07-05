@@ -4,7 +4,7 @@ class chatPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        this.utils.registerDiagramParser({
+        this.utils.diagramParser.register({
             lang: this.config.LANGUAGE,
             mappingLang: "markdown",
             destroyWhenUpdate: false,
@@ -41,7 +41,7 @@ class chatPlugin extends BaseCustomPlugin {
         });
 
         const lines = content.split("\n").map(line => line.trim());
-        const throwErrorIfNeed = (errorLine, reason) => useStrict && this.utils.throwParseError(errorLine, reason)
+        const throwErrorIfNeed = (errorLine, reason) => useStrict && this.utils.diagramParser.throwParseError(errorLine, reason)
         const results = lines.map((line, idx) => {
             if (!line) return;
             idx += (1 + yamlLineCount);
@@ -82,7 +82,7 @@ class chatPlugin extends BaseCustomPlugin {
         return results.join("")
     }
 
-    getStyleContent = () => this.utils.getStyleContent(this.fixedName)
+    getStyleContent = () => this.utils.styleTemplater.getStyleContent(this.fixedName)
 }
 
 module.exports = {

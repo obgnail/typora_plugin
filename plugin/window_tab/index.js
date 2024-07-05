@@ -56,9 +56,9 @@ class windowTabBarPlugin extends BasePlugin {
     process = () => {
         const handleLifeCycle = () => {
             this._hideTabBar();
-            this.utils.addEventListener(this.utils.eventType.fileOpened, this.openTab);
-            this.utils.addEventListener(this.utils.eventType.firstFileInit, this.openTab);
-            this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial");
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, this.openTab);
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.firstFileInit, this.openTab);
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial");
             const isHeaderReady = () => this.utils.isBetaVersion ? document.querySelector("header").getBoundingClientRect().height : true
             const adjustTop = () => setTimeout(() => {
                 // 调整notification组件的图层顺序，以免被tab遮挡
@@ -342,7 +342,7 @@ class windowTabBarPlugin extends BasePlugin {
                 return map
             }
             const callback = ({key: func}) => idx !== -1 && func && this[func] && this[func](idx);
-            this.utils.registerMenu("window-tab", "#plugin-window-tab .tab-container", showMenu, callback);
+            this.utils.contextMenu.register("window-tab", "#plugin-window-tab .tab-container", showMenu, callback);
         }
         const adjustQuickOpen = () => {
             const open = (item, ev) => {
@@ -374,7 +374,7 @@ class windowTabBarPlugin extends BasePlugin {
         }
         const interceptLink = () => {
             const _linkUtils = {file: "", anchor: ""};
-            this.utils.addEventListener(this.utils.eventType.fileContentLoaded, () => {
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
                 const {file, anchor} = _linkUtils;
                 if (!file) return;
 
@@ -643,7 +643,7 @@ class windowTabBarPlugin extends BasePlugin {
             }
             if (count === stopCount || new Date().getTime() > end) {
                 clearInterval(_timer);
-                this.utils.publishEvent(this.utils.eventType.fileContentLoaded, filePath);
+                this.utils.eventHub.publishEvent(this.utils.eventHub.eventType.fileContentLoaded, filePath);
             }
         }, this.loopDetectInterval);
     }
@@ -758,7 +758,7 @@ class windowTabBarPlugin extends BasePlugin {
                     break;
                 case "reconfirm":
                 default:
-                    this.utils.modal({title: "退出 Typora", components: [{label: "是否退出？", type: "p"}]}, exit);
+                    this.utils.dialog.modal({title: "退出 Typora", components: [{label: "是否退出？", type: "p"}]}, exit);
             }
         }
 

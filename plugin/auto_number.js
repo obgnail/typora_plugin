@@ -245,14 +245,14 @@ class autoNumberPlugin extends BasePlugin {
 
 // 导出时添加CSS，并解决导出pdf时目录没有编号的问题
 class exportHelper {
-    constructor(controller) {
+    constructor(plugin) {
         this.inExport = false;
-        this.controller = controller;
+        this.plugin = plugin;
     }
 
     beforeExport = () => {
         this.inExport = true;
-        return `body {font-variant-ligatures: no-common-ligatures;} ` + this.controller.getStyleString(true);
+        return `body {font-variant-ligatures: no-common-ligatures;} ` + this.plugin.getStyleString(true);
     }
 
     afterGetHeaderMatrix = headers => {
@@ -299,8 +299,8 @@ class exportHelper {
     }
 
     process = () => {
-        this.controller.utils.registerExportHelper("auto_number", this.beforeExport);
-        this.controller.utils.decorate(
+        this.plugin.utils.exportHelper.register("auto_number", this.beforeExport);
+        this.plugin.utils.decorate(
             () => File && File.editor && File.editor.library && File.editor.library.outline,
             "getHeaderMatrix", null, this.afterGetHeaderMatrix
         );

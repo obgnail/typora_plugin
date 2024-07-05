@@ -37,11 +37,11 @@ class outlinePlugin extends BasePlugin {
     process = () => {
         this.utils.dragFixedModal(this.entities.move, this.entities.modal, false);
 
-        this.utils.addEventListener(this.utils.eventType.outlineUpdated, this.update);
-        this.utils.addEventListener(this.utils.eventType.otherFileOpened, () => this.config.AUTO_REFRESH_WHEN_OPEN_FILE && setTimeout(this.update, 300));
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, this.update);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, () => this.config.AUTO_REFRESH_WHEN_OPEN_FILE && setTimeout(this.update, 300));
         // 旧版本的Typora的outlineUpdated事件很难触发
         if (this.utils.isBetaVersion) {
-            this.utils.addEventListener(this.utils.eventType.fileEdited, this.utils.throttle(this.update, 300));
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.utils.throttle(this.update, 300));
         }
 
         this.entities.modal.addEventListener("click", ev => {
