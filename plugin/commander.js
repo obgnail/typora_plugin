@@ -24,8 +24,8 @@ class commanderPlugin extends BasePlugin {
         return `
             <div id="plugin-commander" class="plugin-common-modal plugin-common-hidden"> 
                 <div id="plugin-commander-form">
-                    <input type="text" class="plugin-commander-input" placeholder="Typora commander" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录"/>
                     <i class="ion-ios7-play plugin-commander-commit plugin-common-hidden" ty-hint="执行命令"></i>
+                    <input type="text" class="plugin-commander-input" placeholder="Typora commander" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录"/>
                     <select class="plugin-commander-shell">${shells.join("")}</select>
                     ${builtinSelect}
                 </div>
@@ -80,9 +80,9 @@ class commanderPlugin extends BasePlugin {
             }
         })
 
-        this.entities.input.addEventListener("keydown", ev => {
+        this.entities.modal.addEventListener("keydown", ev => {
             const { key, target } = ev;
-            const isEnter = key === "Enter";
+            const isEnter = key === "Enter" && target.closest("input");
             const isEscape = key === "Escape" || (key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value);
             const isTab = key === "Tab" && target.closest(".plugin-commander-builtin");
 
