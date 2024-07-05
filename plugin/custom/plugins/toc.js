@@ -14,8 +14,8 @@ class tocPlugin extends BaseCustomPlugin {
     process = () => {
         this.onResize();
         this.onToggleSidebar();
-        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.isModalShow() && this.renewModal());
-        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.toggle());
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, () => this.isModalShow() && this.renewModal());
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.toggle());
         this.utils.decorate(() => File && File.editor && File.editor.library && File.editor.library.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader);
         this.entities.modal.addEventListener("click", ev => {
             const target = ev.target.closest(".toc-node");
@@ -29,7 +29,7 @@ class tocPlugin extends BaseCustomPlugin {
             document.querySelector("#info-panel-tab-outline .info-panel-tab-title").addEventListener("mousedown", ev => ev.button === 2 && this.toggle());
         }
         if (this.config.default_show_toc) {
-            this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, this.toggle);
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.toggle);
         }
     }
 
@@ -41,8 +41,8 @@ class tocPlugin extends BaseCustomPlugin {
             const {right: modalRight} = this.entities.modal.getBoundingClientRect();
             Object.assign(this.entities.modal.style, {left: `${right}px`, width: `${modalRight - right}px`});
         }
-        this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, resetPosition);
-        this.utils.addEventListener(this.utils.eventType.afterSetSidebarWidth, resetPosition);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterToggleSidebar, resetPosition);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterSetSidebarWidth, resetPosition);
     }
 
     isModalShow = () => this.utils.isShow(this.entities.modal)
@@ -72,7 +72,7 @@ class tocPlugin extends BaseCustomPlugin {
 
     renewModal = () => {
         const ul = this._getTocTemplate();
-        const toc = this.utils.createElement(ul);
+        const toc = this.utils.htmlTemplater.create(ul);
         this.entities.ul.firstElementChild && this.entities.ul.removeChild(this.entities.ul.firstElementChild);
         this.entities.ul.appendChild(toc);
         this.highlightVisibleHeader();

@@ -9,14 +9,14 @@ class quickButtonPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.toggle()
 
     process = () => {
-        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, async () => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, async () => {
             this.registerConfigButtons();
 
             if (this.buttons.size === 0) return;
 
             const {maxX, maxY} = this.getMax();
-            await this.utils.registerStyleTemplate("quickButton", {rowCount: maxX + 1, colCount: maxY + 1, this: this});
-            this.utils.insertHtmlTemplate(this.genHTML(maxX, maxY));
+            await this.utils.styleTemplater.register("quickButton", {rowCount: maxX + 1, colCount: maxY + 1, this: this});
+            this.utils.htmlTemplater.insert(this.genHTML(maxX, maxY));
 
             const group = document.querySelector("#plugin-quick-button");
             group.addEventListener("mousedown", ev => {
@@ -38,7 +38,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
                 }
             })
 
-            this.utils.addEventListener(this.utils.eventType.toggleSettingPage, this.toggle);
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, this.toggle);
         })
     }
 

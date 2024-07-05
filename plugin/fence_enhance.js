@@ -28,7 +28,7 @@ class fenceEnhancePlugin extends BasePlugin {
             elt.style.textIndent = "-" + off + "px";
             elt.style.paddingLeft = (codeIndentSize + off) + "px";
         }
-        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, cid => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => {
             const fence = File.editor.fences.queue[cid];
             if (fence) {
                 charWidth = charWidth || fence.defaultCharWidth();
@@ -98,7 +98,7 @@ class fenceEnhancePlugin extends BasePlugin {
             return mode;
         }, true)
 
-        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, highlightLines);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, highlightLines);
         this.utils.decorate(() => File && File.editor && File.editor.fences, "tryAddLangUndo", null, (result, ...args) => {
             const cid = args[0].cid;
             const {obj} = getEntities(cid);
@@ -134,8 +134,8 @@ class fenceEnhancePlugin extends BasePlugin {
 
         this.registerCustomButtons();
 
-        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, cid => {
-            const ele = this.utils.querySelectorInWrite(`.md-fences[cid=${cid}]`);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => {
+            const ele = this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}]`);
             this.addEnhanceElement(ele);
         })
 
@@ -150,7 +150,7 @@ class fenceEnhancePlugin extends BasePlugin {
             builder && builder.listener(ev, target);
         })
 
-        this.utils.registerExportHelper("fence_enhance", this.beforeExport);
+        this.utils.exportHelper.register("fence_enhance", this.beforeExport);
 
         const config = this.config;
         this.utils.entities.$eWrite.on("mouseenter", ".md-fences", function () {
@@ -218,7 +218,7 @@ class fenceEnhancePlugin extends BasePlugin {
         }
     }
 
-    beforeExport = () => this.utils.querySelectorAllInWrite(".fold-code.folded").forEach(ele => ele.click())
+    beforeExport = () => this.utils.entities.querySelectorAllInWrite(".fold-code.folded").forEach(ele => ele.click())
 
     defaultFold = foldButton => this.config.FOLD_DEFAULT && foldButton.click();
 
@@ -292,7 +292,7 @@ class fenceEnhancePlugin extends BasePlugin {
     }
 
     rangeAllFences = rangeFunc => {
-        this.utils.querySelectorAllInWrite(".md-fences[cid]").forEach(fence => {
+        this.utils.entities.querySelectorAllInWrite(".md-fences[cid]").forEach(fence => {
             const codeMirror = fence.querySelector(":scope > .CodeMirror");
             if (!codeMirror) {
                 const cid = fence.getAttribute("cid");
@@ -315,7 +315,7 @@ class fenceEnhancePlugin extends BasePlugin {
             {label: "被替换语言", type: "input", value: "js"},
             {label: "替换语言", type: "input", value: "javascript"}
         ];
-        this.utils.modal({title: "替换语言", components}, ([{submit: waitToReplaceLang}, {submit: replaceLang}]) => {
+        this.utils.dialog.modal({title: "替换语言", components}, ([{submit: waitToReplaceLang}, {submit: replaceLang}]) => {
             if (!waitToReplaceLang || !replaceLang) return;
 
             this.rangeAllFences(fence => {
@@ -332,9 +332,8 @@ class fenceEnhancePlugin extends BasePlugin {
     }
     addFencesLang = () => {
         const components = [{label: "语言", type: "input", value: "javascript"}];
-        this.utils.modal({title: "添加语言", components}, ([{submit: targetLang}]) => {
+        this.utils.dialog.modal({title: "添加语言", components}, ([{submit: targetLang}]) => {
             if (!targetLang) return;
-
             this.rangeAllFences(fence => {
                 const lang = fence.getAttribute("lang");
                 if (lang) return;
@@ -352,17 +351,17 @@ class fenceEnhancePlugin extends BasePlugin {
         if (!this.config.ENABLE_FOLD) {
             document.querySelectorAll(".fold-code.folded").forEach(ele => ele.click());
         }
-        const display = (this.config.ENABLE_FOLD) ? "block" : "none";
+        const display = this.config.ENABLE_FOLD ? "block" : "none";
         document.querySelectorAll(".fence-enhance .fold-code").forEach(ele => ele.style.display = display);
     }
     disableOrEnableCopy = () => {
         this.config.ENABLE_COPY = !this.config.ENABLE_COPY;
-        const display = (this.config.ENABLE_COPY) ? "block" : "none";
+        const display = this.config.ENABLE_COPY ? "block" : "none";
         document.querySelectorAll(".fence-enhance .copy-code").forEach(ele => ele.style.display = display);
     }
     disableOrEnableIndent = () => {
         this.enableIndent = !this.enableIndent;
-        const display = (this.enableIndent) ? "block" : "none";
+        const display = this.enableIndent ? "block" : "none";
         document.querySelectorAll(".fence-enhance .indent-code").forEach(ele => ele.style.display = display);
     }
     foldAll = () => {
@@ -375,15 +374,15 @@ class fenceEnhancePlugin extends BasePlugin {
     }
     setAutoHide = () => {
         this.config.AUTO_HIDE = !this.config.AUTO_HIDE;
-        const visibility = (this.config.AUTO_HIDE) ? "hidden" : "";
-        document.querySelectorAll(".fence-enhance").forEach(ele => {
-            // 处于折叠状态的代码块不可隐藏
-            ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility;
-        });
+        const v = this.config.AUTO_HIDE ? "hidden" : "";
+        // 处于折叠状态的代码块不可隐藏
+        document.querySelectorAll(".fold-code.folded").forEach(ele => ele.style.visibility = "");
+        document.querySelectorAll(".fold-code:not(.folded)").forEach(ele => ele.style.visibility = v);
     }
+
     showIndentAllFencesModal = () => {
         const label = "调整缩进功能的能力有限，对于 Python 这种游标卡尺语言甚至会出现误判，你确定吗？";
-        this.utils.modal({title: "为所有代码块调整缩进", components: [{label, type: "p"}]}, this.indentAllFences)
+        this.utils.dialog.modal({title: "为所有代码块调整缩进", components: [{label, type: "p"}]}, this.indentAllFences)
     }
 
     call = (type, meta) => {
@@ -456,7 +455,7 @@ class editorHotkey {
                 hotkeyDict[hk] = callback;
             }
         }
-        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, cid => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => {
             const fence = File.editor.fences.queue[cid];
             fence && fence.addKeyMap(hotkeyDict);
         })

@@ -23,7 +23,7 @@ class dialog {
     }
 
     process = async () => {
-        await this.utils.registerStyleTemplate("modal-generator");
+        await this.utils.styleTemplater.register("modal-generator");
         this.utils.insertElement(this.html());
         this.entities = {
             modal: document.getElementById("plugin-custom-modal"),
@@ -115,9 +115,8 @@ class dialog {
             case "radio":
                 const checked = c => c.checked ? "checked" : "";
                 const name = this.utils.randomString();
-                const prefix = name + "-";
                 const elements = component.list.map(el => {
-                    const id = prefix + el.value;
+                    const id = name + "-" + this.utils.randomString();
                     return `<div class="${type}"><input type="${type}" id="${id}" name="${name}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}</label></div>`
                 });
                 const content = elements.join("");
@@ -140,7 +139,8 @@ class dialog {
                 label = "span";
                 break
         }
-        return `<div class="col-lg-12 form-group" component-id="${component.id}"><${label}>${component.label}</${label}>${inner}</div>`;
+        const label_ = component.label ? `<${label}>${component.label}</${label}>` : "";
+        return `<div class="form-group" component-id="${component.id}">${label_}${inner}</div>`;
     }
 
     // 1. modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}

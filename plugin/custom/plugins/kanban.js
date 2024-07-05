@@ -11,7 +11,7 @@ class kanbanPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        this.utils.registerDiagramParser({
+        this.utils.diagramParser.register({
             lang: this.config.LANGUAGE,
             mappingLang: "markdown",
             destroyWhenUpdate: false,
@@ -32,7 +32,7 @@ class kanbanPlugin extends BaseCustomPlugin {
         }
     }
 
-    getStyleContent = () => this.utils.getStyleContent(this.fixedName)
+    getStyleContent = () => this.utils.styleTemplater.getStyleContent(this.fixedName)
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
@@ -48,11 +48,11 @@ class kanbanPlugin extends BaseCustomPlugin {
             $pre.find(".md-diagram-panel-preview").html(kanban);
         } else {
             // accident occurred
-            this.utils.throwParseError(null, "未知错误！请联系开发者");
+            this.throwParseError(null, "未知错误！请联系开发者");
         }
     }
 
-    throwParseError = (errorLine, reason) => (this.config.STRICT_MODE || this.fenceStrictMode) && this.utils.throwParseError(errorLine, reason)
+    throwParseError = (errorLine, reason) => (this.config.STRICT_MODE || this.fenceStrictMode) && this.utils.diagramParser.throwParseError(errorLine, reason)
 
     // type: TASK_COLOR/KANBAN_COLOR
     getColor = (type, idx) => {
@@ -95,7 +95,7 @@ class kanbanPlugin extends BaseCustomPlugin {
                         this.throwParseError(idx, `${useStrict} 必须位于首行`);
                     }
                 } else {
-                    this.utils.throwParseError(idx, "未知错误！请联系开发者");
+                    this.throwParseError(idx, "未知错误！请联系开发者");
                 }
             } else {
                 const match = line.match(/^[\-*]\s(?<title>.*?)(\((?<desc>.*?)\))?$/);

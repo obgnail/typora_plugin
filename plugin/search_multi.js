@@ -44,13 +44,13 @@ class searchMultiKeywordPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             const highlighter = this.utils.getPlugin("multi_highlighter");
             highlighter && new LinkHelper(this, highlighter).process();
         })
 
         if (this.config.REFOUCE_WHEN_OPEN_FILE) {
-            this.utils.addEventListener(this.utils.eventType.otherFileOpened, () => {
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, () => {
                 if (!this.isModalHidden()) {
                     setTimeout(() => this.entities.input.select(), 300);
                 }

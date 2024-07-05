@@ -6,7 +6,7 @@ class calendarPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        this.utils.registerThirdPartyDiagramParser({
+        this.utils.thirdPartyDiagramParser.register({
             lang: this.config.LANGUAGE,
             mappingLang: "javascript",
             destroyWhenUpdate: false,

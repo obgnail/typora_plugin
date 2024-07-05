@@ -29,9 +29,9 @@ class hotkeyHubPlugin extends BaseCustomPlugin {
         }
 
         if (this.settings) {
-            this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
                 const hotkeys = Object.values(this.settings).map(toHotkey).filter(Boolean);
-                hotkeys.length && this.utils.registerHotkey(hotkeys);
+                hotkeys.length && this.utils.hotkeyHub.register(hotkeys);
             })
         }
     }
@@ -39,9 +39,8 @@ class hotkeyHubPlugin extends BaseCustomPlugin {
     openSettingFile = async () => this.utils.showInFinder(await this.utils.getActualSettingPath("hotkey.user.toml"));
 
     callback = anchorNode => {
-        const {map} = this.utils.getHotkeyHub();
         const th = `<tr><th>已注册快捷键</th>`;
-        const trs = Array.from(map.keys(), hotkey => `<tr><td>${hotkey.toUpperCase().split("+").map(ele => `<kbd>${ele}</kbd>`).join("+")}</td></tr>`);
+        const trs = Array.from(this.utils.hotkeyHub.map.keys(), hotkey => `<tr><td>${hotkey.toUpperCase().split("+").map(ele => `<kbd>${ele}</kbd>`).join("+")}</td></tr>`);
         trs.sort();
         const table = `<table>${th}${trs.join("")}</table>`;
         const onclick = ev => ev.target.closest("a") && this.openSettingFile();
@@ -49,7 +48,7 @@ class hotkeyHubPlugin extends BaseCustomPlugin {
             {label: "如需自定义快捷键，请 <a>修改配置文件</a>", type: "p", onclick},
             {label: table, type: "p"},
         ];
-        this.utils.modal({title: "快捷键中心", components});
+        this.utils.dialog.modal({title: "快捷键中心", components});
     }
 }
 

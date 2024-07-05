@@ -501,7 +501,7 @@ BORDER_STYLE_WHEN_NODE_HOVER = "4px solid #FF7B00"
 #   - maxWidth          : 节点最大长度（0则无长度限制）
 #   - spacingHorizontal : 节点水平间距
 #   - spacingVertical   : 节点垂直间距
-#   - fitRatio          : 图形在窗口中的默认面积比例
+#   - fitRatio          : 图形的窗口填充率
 DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, colorFreezeLevel = 6, zoom = true, pan = true, colorScheme = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'] }
 # 导出svg时，是否删除foreignObject，并替换成<text>（若您不了解SVG，请不要修改此选项）
 # - false: 操作含有foreignObject的svg标签处处受限（比如说转为jpg），但是有好看的样式
@@ -534,7 +534,7 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 #   - backgroundColor   : 背景色
 #   - spacingHorizontal : 节点水平间距
 #   - spacingVertical   : 节点垂直间距
-#   - fitRatio          : 图形在窗口中的默认面积比例
+#   - fitRatio          : 图形的窗口填充率
 DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, zoom = false, pan = false, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, height = "300px", backgroundColor = "#f8f8f8" }
 # 插入的模板
 FENCE_TEMPLATE = """```markmap
@@ -549,7 +549,7 @@ markmap:
   spacingHorizontal: 80
   # 节点垂直间距
   spacingVertical: 5
-  # 图形在窗口中的默认面积比例
+  # 图形的窗口填充率
   fitRatio: 0.95
   # 初始渲染时要展开的最大节点级别（-1则展开全部）
   initialExpandLevel: -1

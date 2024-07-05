@@ -1,4 +1,4 @@
-/* modalExample 类展示了如何使用 this.utils.modal 函数:
+/* modalExample 类展示了如何使用 this.utils.dialog.modal 函数:
     直接使用this.utils.modal即可弹出自定义的模态框，待用户点击【确定】后会调用回调函数
 
     this.modal args:
@@ -102,10 +102,10 @@ class modalExample extends BaseCustomPlugin {
                 },
             ]
         }
-        this.utils.modal(modal, components => {
+        this.utils.dialog.modal(modal, components => {
             console.log(components);
 
-            this.utils.modal({
+            this.utils.dialog.modal({
                 title: "otherFile",
                 component: [
                     {

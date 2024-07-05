@@ -311,7 +311,7 @@ class tabTool extends baseToolInterface {
     translate = () => "切换标签页"
     icon = () => "📖"
     init = () => {
-        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             this.windowTabBarPlugin = this.utils.getPlugin("window_tab");
         })
     }
@@ -453,7 +453,7 @@ class modeTool extends baseToolInterface {
             {showName: "专注模式", fixedName: "focusMode", callback: () => File.editor.toggleFocusMode()},
             {showName: "打字机模式", fixedName: "typewriterMode", callback: () => File.editor.toggleTypeWriterMode()},
         ]
-        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             const readonly = this.utils.getPlugin("read_only");
             const blur = this.utils.getPlugin("blur");
             const dark = this.utils.getCustomPlugin("darkMode");

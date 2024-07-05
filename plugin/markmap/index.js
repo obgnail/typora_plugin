@@ -92,7 +92,7 @@ class fenceMarkmap {
     }
 
     process = () => {
-        this.utils.registerDiagramParser({
+        this.utils.diagramParser.register({
             lang: this.config.LANGUAGE,
             mappingLang: "markdown",
             destroyWhenUpdate: false,
@@ -250,8 +250,8 @@ class tocMarkmap {
     process = async () => {
         this.prepare();
 
-        this.utils.addEventListener(this.utils.eventType.outlineUpdated, () => this.utils.isShow(this.entities.modal) && this.drawToc(this.config.AUTO_FIT_WHEN_UPDATE));
-        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => hide && this.markmap && this.onButtonClick("close"));
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, () => this.utils.isShow(this.entities.modal) && this.drawToc(this.config.AUTO_FIT_WHEN_UPDATE));
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.markmap && this.onButtonClick("close"));
         this.entities.content.addEventListener("transitionend", this.fit);
         this.entities.modal.addEventListener("transitionend", this.fit);
 
@@ -293,7 +293,7 @@ class tocMarkmap {
 
         const colorScheme = () => {
             const toString = colorList => colorList.join("_");
-            const toDIV = (colorList) => {
+            const toDIV = colorList => {
                 const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}" title="${color.toUpperCase()}"></div>`).join("");
                 return `<div class="plugin-markmap-color-scheme">${inner}</div>`;
             }
@@ -314,7 +314,6 @@ class tocMarkmap {
                 this.currentScheme = colorList;
                 this.setColorScheme(colorList);
             }
-
             const label = "配色方案" + _genInfo("如需自定义配色方案请前往配置文件");
             return {label: label, type: "radio", list, callback};
         }
@@ -330,7 +329,7 @@ class tocMarkmap {
                 level = parseInt(level);
                 this.markmap.options.initialExpandLevel = isNaN(level) ? 1 : level;
             };
-            return {label: "展开节点的分支等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
+            return {label: "分支展开等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
         }
 
         const spacingHorizontal = () => {
@@ -350,7 +349,7 @@ class tocMarkmap {
                 spacingVertical = parseInt(spacingVertical);
                 this.markmap.options.spacingVertical = isNaN(spacingVertical) ? defaultSpacing : spacingVertical;
             };
-            return {label: "节点垂直间距", type: "range", value: value, min: 1, max: 100, step: 1, callback}
+            return {label: "节点垂直间距", type: "range", value: value, min: 1, max: 50, step: 1, callback}
         }
 
         const maxWidth = () => {
@@ -370,7 +369,7 @@ class tocMarkmap {
                 level = parseInt(level);
                 this.colorFreezeLevel = isNaN(level) ? 6 : level;
             };
-            const label = "固定配色的分支等级" + _genInfo("从x级开始，其后子分支的配色都将和父分支保持一致");
+            const label = "固定配色的分支等级" + _genInfo("从某一等级开始，所有子分支将继承父分支的配色");
             return {label: label, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback}
         }
 
@@ -381,7 +380,7 @@ class tocMarkmap {
                 ratio = Number(parseFloat(ratio / 100).toFixed(2));
                 this.config.LOCALE_HIGHT_RATIO = isNaN(ratio) ? defaultValue : ratio;
             };
-            const label = "章节的定位视口高度" + _genInfo("鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）");
+            const label = "定位的视口高度" + _genInfo("鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）");
             return {label: label, type: "range", value: value, min: 1, max: 100, step: 1, callback}
         }
 
@@ -402,7 +401,7 @@ class tocMarkmap {
                 fitRatio = Number(parseFloat(fitRatio / 100).toFixed(2));
                 this.markmap.options.fitRatio = isNaN(fitRatio) ? defaultValue : fitRatio;
             };
-            return {label: "图形在窗口中的默认面积比例", type: "range", value: value, min: 50, max: 100, step: 1, callback}
+            return {label: "图形的窗口填充率", type: "range", value: value, min: 50, max: 100, step: 1, callback}
         }
 
         const ability = () => {
@@ -446,7 +445,7 @@ class tocMarkmap {
         }
 
         const components = [colorScheme, colorFreezeLevel, expandLevel, fitRatio, spacingHorizontal, spacingVertical, maxWidth, duration, localeHeightRatio, ability, further].map(f => f());
-        this.utils.modal({title: "设置", components}, async components => {
+        this.utils.dialog.modal({title: "设置", components}, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
         });
@@ -677,8 +676,8 @@ class tocMarkmap {
             }
             Object.assign(this.entities.modal.style, source);
         }
-        this.utils.addEventListener(this.utils.eventType.afterToggleSidebar, resetPosition);
-        this.utils.addEventListener(this.utils.eventType.afterSetSidebarWidth, resetPosition);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterToggleSidebar, resetPosition);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterSetSidebarWidth, resetPosition);
     }
 
     onContextMenu = () => {
@@ -692,7 +691,7 @@ class tocMarkmap {
             return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "setting", "download", "close"])
         }
         const callback = ({key}) => this.onButtonClick(key);
-        this.utils.registerMenu("markmap", "#plugin-markmap-svg", showMenu, callback);
+        this.utils.contextMenu.register("markmap", "#plugin-markmap-svg", showMenu, callback);
     }
 
     onDrag = () => {

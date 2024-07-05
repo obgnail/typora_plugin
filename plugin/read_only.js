@@ -6,7 +6,7 @@ class readOnlyPlugin extends BasePlugin {
     process = () => {
         this.inReadOnlyMode = false;
         this.forbiddenKeys = ["Enter", "Backspace", "Delete", " "];
-        this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, () => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             this.utils.decorate(() => File, "freshLock", null, this.afterFreshLock);
             if (this.config.READ_ONLY_DEFAULT) {
                 this.utils.loopDetector(() => File && File.lock, this.toggleLock);
@@ -15,7 +15,7 @@ class readOnlyPlugin extends BasePlugin {
     }
 
     afterFreshLock = () => {
-        const setCheckbox = disabled => this.utils.querySelectorAllInWrite('input[type="checkbox"]').forEach(box => box.toggleAttribute("disabled", disabled))
+        const setCheckbox = disabled => this.utils.entities.querySelectorAllInWrite('input[type="checkbox"]').forEach(box => box.toggleAttribute("disabled", disabled))
         const setInput = disabled => {
             if (!disabled) return;
             [
@@ -105,7 +105,7 @@ class readOnlyPlugin extends BasePlugin {
 
     call = () => {
         this.toggleLock();
-        this.utils.showNotification(this.inReadOnlyMode ? "只读模式已启用" : "只读模式已关闭");
+        this.utils.notification.show(this.inReadOnlyMode ? "只读模式已启用" : "只读模式已关闭");
     }
 }
 

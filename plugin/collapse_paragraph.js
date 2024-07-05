@@ -111,7 +111,7 @@ class collapseParagraphPlugin extends BasePlugin {
     }
 
     rollback = start => {
-        if (!this.utils.querySelectorInWrite(`:scope > .${this.className}`)) return;
+        if (!this.utils.entities.querySelectorInWrite(`:scope > .${this.className}`)) return;
 
         let ele = start.closest("#write > [cid]");
 
@@ -165,7 +165,7 @@ class collapseParagraphPlugin extends BasePlugin {
         return result;
     }
 
-    findAllSiblings = paragraph => this.utils.querySelectorAllInWrite(`:scope > ${paragraph.tagName}`);
+    findAllSiblings = paragraph => this.utils.entities.querySelectorAllInWrite(`:scope > ${paragraph.tagName}`);
 
     recordCollapseState = (needChange = true) => {
         if (needChange) {
@@ -176,9 +176,9 @@ class collapseParagraphPlugin extends BasePlugin {
         const stateGetter = ele => ele.classList.contains(this.className);
         const stateRestorer = ele => this.trigger(ele, false);
         if (this.config.RECORD_COLLAPSE) {
-            this.utils.registerStateRecorder(name, selector, stateGetter, stateRestorer)
+            this.utils.stateRecorder.register(name, selector, stateGetter, stateRestorer)
         } else {
-            this.utils.unregisterStateRecorder(name);
+            this.utils.stateRecorder.unregister(name);
         }
     }
 

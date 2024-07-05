@@ -11,7 +11,7 @@ class slashCommandsPlugin extends BasePlugin {
 
     process = () => {
         this.utils.decorate(() => this.handler, "beforeApply", null, () => this.matched.clear());
-        this.utils.addEventListener(this.utils.eventType.fileEdited, this._onEdit);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this._onEdit);
     }
 
     call = () => this._showAllCommands();
@@ -29,7 +29,7 @@ class slashCommandsPlugin extends BasePlugin {
             {label: "如需自定义斜杠命令，请 <a>修改配置文件</a>", type: "p", onclick},
             {label: table, type: "p"}
         ];
-        this.utils.modal({title: "斜杠命令", components});
+        this.utils.dialog.modal({title: "斜杠命令", components});
     }
 
     _onEdit = () => {

@@ -51,9 +51,9 @@ class collapseListPlugin extends BasePlugin {
             this.config.RECORD_COLLAPSE = !this.config.RECORD_COLLAPSE;
         }
         if (this.config.RECORD_COLLAPSE) {
-            this.utils.registerStateRecorder(name, this.selector, this.checkCollapse, this.setCollapse)
+            this.utils.stateRecorder.register(name, this.selector, this.checkCollapse, this.setCollapse)
         } else {
-            this.utils.unregisterStateRecorder(name);
+            this.utils.stateRecorder.unregister(name);
         }
     }
 

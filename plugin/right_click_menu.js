@@ -19,7 +19,7 @@ class rightClickMenuPlugin extends BasePlugin {
         this.callArgs = [{arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"}];
     }
 
-    process = () => this.utils.addEventListener(this.utils.eventType.allPluginsHadInjected, this.appendMenu)
+    process = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.appendMenu)
 
     appendMenu = () => {
         setTimeout(() => {
@@ -43,7 +43,7 @@ class rightClickMenuPlugin extends BasePlugin {
         })
         const elements = [this.divider(), ...items];
         const menu = document.querySelector("#context-menu");
-        this.utils.appendElements(menu, elements);
+        this.utils.htmlTemplater.appendElements(menu, elements);
     }
 
     appendSecond = () => {
@@ -65,7 +65,7 @@ class rightClickMenuPlugin extends BasePlugin {
             })
             return this.ulTemplate({class_: ["plugin-menu-second"], idx, children});
         })
-        this.utils.appendElements(this.utils.entities.eContent, elements);
+        this.utils.htmlTemplater.appendElements(this.utils.entities.eContent, elements);
     }
 
     appendThird = () => {
@@ -82,7 +82,7 @@ class rightClickMenuPlugin extends BasePlugin {
                 elements.push(this.ulTemplate(extra));
             })
         })
-        this.utils.appendElements(this.utils.entities.eContent, elements);
+        this.utils.htmlTemplater.appendElements(this.utils.entities.eContent, elements);
     }
 
     secondComposeLiTemplate = (plugin, callArg) => {
@@ -159,7 +159,7 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     appendThirdLi = ($menu, dynamicCallArgs) => {
-        dynamicCallArgs.forEach(arg => $menu.append(this.utils.createElement(this.thirdLiTemplate(arg, true))))
+        dynamicCallArgs.forEach(arg => $menu.append(this.utils.htmlTemplater.create(this.thirdLiTemplate(arg, true))))
     }
     appendDummyThirdLi = $menu => this.appendThirdLi($menu, [{
         arg_name: this.unavailableArgName,

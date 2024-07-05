@@ -11,7 +11,7 @@ class notification {
     }
 
     process = async () => {
-        await this.utils.registerStyleTemplate("plugin-common-notification");
+        await this.utils.styleTemplater.register("plugin-common-notification");
         this.utils.insertElement(`
             <div class="plugin-common-notification plugin-common-hidden">
                 <span class="notification-icon fa fa-check"></span>

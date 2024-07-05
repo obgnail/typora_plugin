@@ -11,19 +11,19 @@ class noImageModePlugin extends BaseCustomPlugin {
             transition_delay: this.config.transition_delay,
             opacity_on_hover: this.config.reshow_when_hover ? "100%" : "0",
         }
-        await this.utils.registerStyleTemplate(this.fixedName, renderArg);
+        await this.utils.styleTemplater.register(this.fixedName, renderArg);
         this.isNoImageMode = true;
     }
 
     disableNoImageMode = () => {
-        this.utils.unregisterStyleTemplate(this.fixedName);
+        this.utils.styleTemplater.unregister(this.fixedName);
         this.isNoImageMode = false;
     }
 
     toggleNoImageMode = async () => {
         const func = this.isNoImageMode ? this.disableNoImageMode : this.enableNoImageMode
         await func();
-        this.utils.showNotification(this.isNoImageMode ? "无图模式已启用" : "无图模式已关闭");
+        this.utils.notification.show(this.isNoImageMode ? "无图模式已启用" : "无图模式已关闭");
     }
 
     process = () => this.isNoImageMode && this.enableNoImageMode();

@@ -110,7 +110,7 @@ class textStylizePlugin extends BasePlugin {
 
     process = () => {
         this.utils.dragFixedModal(this.entities.toolbar.querySelector(`[action="move"]`), this.entities.modal, false);
-        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => hide && this.utils.hide(this.entities.modal));
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.utils.hide(this.entities.modal));
 
         const that = this;
         $(this.entities.toolbar).on("mouseenter", "[action]", function () {
@@ -304,7 +304,7 @@ class textStylizePlugin extends BasePlugin {
 
     renewRange = range => {
         const {beforeContent, afterContent, cid} = range;
-        const target = this.utils.querySelectorInWrite(`[cid="${cid}"]`);
+        const target = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`);
         const TEXTs = this.getAllTEXT(target);
 
         let textContent = "";

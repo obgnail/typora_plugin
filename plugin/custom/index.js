@@ -112,7 +112,7 @@ class customPluginLoader {
             const msg = "以下插件的配置写错文件了，一级插件应该写在 settings.user.toml 中，二级插件应该写在 custom_plugin.user.toml 中";
             const components = [msg, ...errorPluginSetting].map(label => ({label, type: "p"}));
             const openSettingFile = () => this.utils.showInFinder(this.utils.getOriginSettingPath("settings.user.toml"));
-            this.utils.modal({title: "配置错误", components}, openSettingFile, openSettingFile);
+            this.utils.dialog.modal({title: "配置错误", components}, openSettingFile, openSettingFile);
         }
     }
 
@@ -135,7 +135,7 @@ class customPluginLoader {
         this.errorSettingDetector(settings);
         this.controller.pluginsSettings = settings;
         await Promise.all(Object.keys(settings).map(this.loadCustomPlugin));
-        this.utils.publishEvent(this.utils.eventType.allCustomPluginsHadInjected);
+        this.utils.eventHub.publishEvent(this.utils.eventHub.eventType.allCustomPluginsHadInjected);
     }
 }
 

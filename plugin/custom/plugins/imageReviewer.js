@@ -120,7 +120,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         if (this.config.click_mask_to_exit) {
             this.entities.mask.addEventListener("click", this.callback);
         }
-        this.utils.addEventListener(this.utils.eventType.toggleSettingPage, hide => hide && this.close());
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.close());
 
         const that = this;
         $("#plugin-image-reviewer .review-item").on("click", function () {
@@ -268,7 +268,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     initImageMsgGetter = () => {
         if (this.imageGetter) return;
 
-        const images = Array.from(this.utils.querySelectorAllInWrite("img"));
+        const images = Array.from(this.utils.entities.querySelectorAllInWrite("img"));
         this.imageGetter = this._imageMsgGetter(images);
 
         if (images.length === 0) return;
@@ -346,8 +346,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     }
 
     handleHotkey = (remove = false) => {
-        const unregister = item => this.utils.unregisterHotkey(item[0]);
-        const register = item => this.utils.registerSingleHotkey(item[0], this[item[1]] || this.dummy);
+        const unregister = item => this.utils.hotkeyHub.unregister(item[0]);
+        const register = item => this.utils.hotkeyHub.registerSingle(item[0], this[item[1]] || this.dummy);
         this.config.hotkey_function.forEach(remove ? unregister : register);
     }
 
@@ -396,7 +396,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     scroll = () => {
         const text = this.entities.msg.querySelector(".review-index").textContent;
         const idx = parseInt(text.substring(1, text.indexOf("/")));
-        const image = Array.from(this.utils.querySelectorAllInWrite("img"))[idx - 1];
+        const image = Array.from(this.utils.entities.querySelectorAllInWrite("img"))[idx - 1];
         this.close();
         image && this.utils.scroll(image, 30);
     }

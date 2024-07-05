@@ -5,8 +5,8 @@ class datatablesPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.destroyAllDataTable);
-        this.utils.addEventListener(this.utils.eventType.beforeToggleSourceMode, this.destroyAllDataTable);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.destroyAllDataTable);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeToggleSourceMode, this.destroyAllDataTable);
 
         this.utils.decorate(() => File && File.editor && File.editor.tableEdit, "showTableEdit", (...args) => {
                 if (!args[0] || !args[0].find) return;
@@ -54,7 +54,7 @@ class datatablesPlugin extends BasePlugin {
             this.initDataTablesConfig();
             await this.utils.insertScript("./plugin/datatables/resource/datatables.min.js");
             this.utils.insertStyleFile("plugin-datatables-common-style", "./plugin/datatables/resource/datatables.min.css");
-            await this.utils.registerStyleTemplate(this.fixedName);
+            await this.utils.styleTemplater.register(this.fixedName);
         }
     }
 

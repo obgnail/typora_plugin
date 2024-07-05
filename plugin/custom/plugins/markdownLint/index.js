@@ -93,50 +93,47 @@ class markdownLintPlugin extends BaseCustomPlugin {
         }
         const defaultTime = 500;
         const debounce = this.utils.debounce(this.updateLinter, Math.max(defaultTime, this.config.debounce_interval - defaultTime));
-        this.utils.addEventListener(this.utils.eventType.fileEdited, debounce);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, debounce);
     }
 
     onLineClick = () => {
         this.entities.pre.addEventListener("mousedown", ev => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            if (ev.button === 2) {
+                File.toggleSourceMode();
+                return;
+            }
             if (ev.button === 0) {
-                if (ev.target.closest(".markdown-lint-doc")) {
-                    this.utils.openUrl("https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md");
-                    return;
-                }
-                if (ev.target.closest(".markdown-lint-translate")) {
-                    this.config.translate = !this.config.translate;
-                    this.utils.getFilePath() && File.saveUseNode().then(this.updateLinter());
-                    return;
-                }
-                if (ev.target.closest(".markdown-lint-close")) {
-                    this.callback();
-                    return;
-                }
-                const target = ev.target.closest("a");
-                if (!target) {
+                const a = ev.target.closest("a");
+                if (!a) {
                     File.editor.restoreLastCursor(ev);
                     return;
                 }
-                const lineToGo = parseInt(target.textContent);
-                if (!lineToGo) return;
-                ev.preventDefault();
-                ev.stopPropagation();
-                if (!File.editor.sourceView.inSourceMode) {
-                    File.toggleSourceMode();
+                if (a.className === "markdown-lint-doc") {
+                    this.utils.openUrl("https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md");
+                } else if (a.className === "markdown-lint-translate") {
+                    this.config.translate = !this.config.translate;
+                    this.utils.getFilePath() && File.saveUseNode().then(this.updateLinter());
+                } else if (a.className === "markdown-lint-close") {
+                    this.callback();
+                } else if (a.className === "markdown-lint-error-line") {
+                    const lineToGo = parseInt(a.textContent);
+                    if (!lineToGo) return;
+                    if (!File.editor.sourceView.inSourceMode) {
+                        File.toggleSourceMode();
+                    }
+                    const cm = File.editor.sourceView.cm;
+                    cm.scrollIntoView({line: lineToGo - 1, ch: 0});
+                    cm.setCursor({line: lineToGo - 1, ch: 0});
                 }
-                const cm = File.editor.sourceView.cm;
-                cm.scrollIntoView({line: lineToGo - 1, ch: 0});
-                cm.setCursor({line: lineToGo - 1, ch: 0});
-            } else if (ev.button === 2) {
-                File.toggleSourceMode();
-                ev.preventDefault();
-                ev.stopPropagation();
             }
         })
     }
 
     updateLinter = () => this.worker.postMessage({action: "lint", payload: this.utils.getFilePath()});
-    registerFixLintHotkey = () => this.utils.registerSingleHotkey(this.config.hotkey_fix_lint_error, this.fixLintError);
+
+    registerFixLintHotkey = () => this.utils.hotkeyHub.registerSingle(this.config.hotkey_fix_lint_error, this.fixLintError);
 
     callback = async anchorNode => {
         this.utils.toggleVisible(this.entities.modal);
@@ -159,7 +156,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const result = content.map(line => {
             const lineNo = line.lineNumber + "";
             const [ruleName, _] = line.ruleNames;
-            const lineNum = `<a>${lineNo}</a>` + " ".repeat(6 - lineNo.length);
+            const lineNum = `<a class="markdown-lint-error-line">${lineNo}</a>` + " ".repeat(6 - lineNo.length);
             const desc = this.config.translate ? this.translateMap[ruleName] : line.ruleDescription;
             return "\n" + lineNum + ruleName.padEnd(7) + desc;
         }).join("")

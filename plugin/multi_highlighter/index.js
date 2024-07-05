@@ -63,7 +63,7 @@ class multiHighlighterPlugin extends BasePlugin {
     process = () => {
         this.processAddCodeBlock();
 
-        this.utils.addEventListener(this.utils.eventType.otherFileOpened, this.utils.debounce(() => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.utils.debounce(() => {
             this.config.RESEARCH_WHILE_OPEN_FILE && this.utils.isShow(this.entities.modal) && this.highlight();
         }, 1000));
 
@@ -206,8 +206,8 @@ class multiHighlighterPlugin extends BasePlugin {
             }
         }
 
-        this.utils.addEventListener(this.utils.eventType.beforeAddCodeBlock, before);
-        this.utils.addEventListener(this.utils.eventType.afterAddCodeBlock, after);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeAddCodeBlock, before);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, after);
     }
 
     clearFenceMultiHighlighterList = () => {
