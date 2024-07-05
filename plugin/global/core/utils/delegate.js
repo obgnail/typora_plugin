@@ -1,15 +1,15 @@
-const {hotkeyHub} = require("./mixin/hotkeyHub")
-const {eventHub} = require("./mixin/eventHub")
-const {stateRecorder} = require("./mixin/stateRecorder")
-const {exportHelper} = require("./mixin/exportHelper")
-const {styleTemplater} = require("./mixin/styleTemplater")
-const {htmlTemplater} = require("./mixin/htmlTemplater")
-const {contextMenu} = require("./mixin/contextMenu")
-const {notification} = require("./mixin/notification")
-const {dialog} = require("./mixin/dialog")
-const {diagramParser} = require("./mixin/diagramParser")
-const {thirdPartyDiagramParser} = require("./mixin/thirdPartyDiagramParser")
-const {entities} = require("./mixin/entities")
+const { hotkeyHub } = require("./mixin/hotkeyHub")
+const { eventHub } = require("./mixin/eventHub")
+const { stateRecorder } = require("./mixin/stateRecorder")
+const { exportHelper } = require("./mixin/exportHelper")
+const { styleTemplater } = require("./mixin/styleTemplater")
+const { htmlTemplater } = require("./mixin/htmlTemplater")
+const { contextMenu } = require("./mixin/contextMenu")
+const { notification } = require("./mixin/notification")
+const { dialog } = require("./mixin/dialog")
+const { diagramParser } = require("./mixin/diagramParser")
+const { thirdPartyDiagramParser } = require("./mixin/thirdPartyDiagramParser")
+const { entities } = require("./mixin/entities")
 
 const getHelper = utils => {
     const _eventHub = new eventHub(utils);
@@ -179,7 +179,7 @@ const getHelper = utils => {
         await loadHelpers(_diagramParser, _thirdPartyDiagramParser);
     }
 
-    return {loadHelpersBefore, loadHelpersAfter, optimizeHelpers}
+    return { loadHelpersBefore, loadHelpersAfter, optimizeHelpers }
 }
 
 module.exports = {

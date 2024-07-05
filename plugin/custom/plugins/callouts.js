@@ -14,11 +14,11 @@ class calloutsPlugin extends BaseCustomPlugin {
         const callouts = calloutList.join("\n");
         const hover = this.config.hover_to_show_fold_callout ? hoverCss : ""
         const color = this.config.set_title_color ? colorCss : ""
-        return {callouts, hover, color}
+        return { callouts, hover, color }
     }
 
     process = () => {
-        const {eventHub, entities, exportHelper} = this.utils;
+        const { eventHub, entities, exportHelper } = this.utils;
         eventHub.addEventListener(eventHub.eventType.firstFileInit, this.range);
         eventHub.addEventListener(eventHub.eventType.fileEdited, this.range);
         const getExportStyle = () => entities.querySelectorInWrite(".plugin-callout") ? this.getStyleContent(true) : ""
@@ -42,7 +42,7 @@ class calloutsPlugin extends BaseCustomPlugin {
             const ok = result && result.groups;
             blockquote.classList.toggle("plugin-callout", ok);
             if (ok) {
-                const {type, fold} = result.groups;
+                const { type, fold } = result.groups;
                 blockquote.setAttribute("callout-type", type.toLowerCase());
                 blockquote.classList.toggle("callout-folded", fold === "-");
             }

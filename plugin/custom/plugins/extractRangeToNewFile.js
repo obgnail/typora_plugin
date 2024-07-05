@@ -39,8 +39,8 @@ class extractRangeToNewFilePlugin extends BaseCustomPlugin {
         if (!this.config.show_modal) {
             await extract("");
         } else {
-            const components = [{label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本"}];
-            this.utils.dialog.modal({title: "提取选区文字到新文件", components}, ([{submit}]) => extract(submit));
+            const components = [{ label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本" }];
+            this.utils.dialog.modal({ title: "提取选区文字到新文件", components }, ([{ submit }]) => extract(submit));
         }
     }
 }

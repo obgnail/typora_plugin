@@ -5,7 +5,7 @@ class blurPlugin extends BasePlugin {
         }
     }
 
-    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
         this.css_id = "plugin-blur-style";

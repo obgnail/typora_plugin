@@ -23,11 +23,11 @@ class resizeTablePlugin extends BasePlugin {
             if (!ele) return;
             const tag = ele.tagName;
             const closestElement = tag === "TD" ? "tbody" : "thead";
-            const {target, direction} = this.findTarget(ele, ev);
+            const { target, direction } = this.findTarget(ele, ev);
             if (!target || !direction) return;
 
-            const {width: startWidth, height: startHeight} = target.getBoundingClientRect();
-            const {clientX: startX, clientY: startY} = ev;
+            const { width: startWidth, height: startHeight } = target.getBoundingClientRect();
+            const { clientX: startX, clientY: startY } = ev;
             target.style.width = startWidth + "px";
             target.style.height = startHeight + "px";
 
@@ -86,9 +86,9 @@ class resizeTablePlugin extends BasePlugin {
 
     getDirection = (target, ev) => {
         if (!target) return ""
-        const {right, bottom} = target.getBoundingClientRect();
-        const {clientX, clientY} = ev;
-        const {THRESHOLD} = this.config;
+        const { right, bottom } = target.getBoundingClientRect();
+        const { clientX, clientY } = ev;
+        const { THRESHOLD } = this.config;
         if (right - THRESHOLD < clientX && clientX < right + THRESHOLD) {
             return "right"
         } else if (bottom - THRESHOLD < clientY && clientY < bottom + THRESHOLD) {
@@ -109,7 +109,7 @@ class resizeTablePlugin extends BasePlugin {
     }
 
     findTarget = (ele, ev) => {
-        const {whichChildOfParent} = this;
+        const { whichChildOfParent } = this;
 
         function* find(ele) {
             // 自己
@@ -129,10 +129,10 @@ class resizeTablePlugin extends BasePlugin {
         for (const target of find(ele)) {
             const direction = this.getDirection(target, ev);
             if (target && direction) {
-                return {target, direction}
+                return { target, direction }
             }
         }
-        return {target: null, direction: ""}
+        return { target: null, direction: "" }
     }
 
     cleanStyle = (eleList, exclude, cleanStyle) => {

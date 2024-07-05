@@ -38,7 +38,7 @@ class resourceOperationPlugin extends BaseCustomPlugin {
     `
 
     init = () => {
-        const {ignore_img_html_element, resource_suffix, markdown_suffix, collect_file_without_suffix} = this.config;
+        const { ignore_img_html_element, resource_suffix, markdown_suffix, collect_file_without_suffix } = this.config;
         this.regexp = ignore_img_html_element
             ? new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)", "g")
             : new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)|<img.*?src=\"(?<src2>.*?)\"", "g")
@@ -85,7 +85,7 @@ class resourceOperationPlugin extends BaseCustomPlugin {
             if (action === "delete") {
                 if (this.showWarnDialog) {
                     const filename = this.utils.getFileName(src, false);
-                    const {response, checkboxChecked} = await this.utils.showMessageBox({
+                    const { response, checkboxChecked } = await this.utils.showMessageBox({
                         type: "warning",
                         buttons: ["确定", "取消"],
                         message: `是否删除文件 ${filename}`,
@@ -113,9 +113,9 @@ class resourceOperationPlugin extends BaseCustomPlugin {
     }
 
     initModalRect = (resetLeft = true) => {
-        const {left, width, height} = this.utils.entities.eContent.getBoundingClientRect();
-        const {modal_left_percent: l, modal_width_percent: w, modal_height_percent: h} = this.config;
-        const style = {width: `${width * w / 100}px`, height: `${height * h / 100}px`};
+        const { left, width, height } = this.utils.entities.eContent.getBoundingClientRect();
+        const { modal_left_percent: l, modal_width_percent: w, modal_height_percent: h } = this.config;
+        const style = { width: `${width * w / 100}px`, height: `${height * h / 100}px` };
         if (resetLeft) {
             style.left = `${left + width * l / 100}px`;
         }
@@ -176,7 +176,7 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         if (needExpand) {
             this.initModalRect(false);
         } else {
-            const {height} = this.entities.iconGroup.getBoundingClientRect();
+            const { height } = this.entities.iconGroup.getBoundingClientRect();
             this.entities.modal.style.height = height + 4 + "px";
         }
         icon.classList.toggle("ion-minus-round", needExpand);
@@ -221,7 +221,7 @@ class resourceOperationPlugin extends BaseCustomPlugin {
     })
 
     download = () => {
-        const {getCurrentDirPath, openFile, Package: {Path: {join}, Fs: {writeFileSync}}} = this.utils;
+        const { getCurrentDirPath, openFile, Package: { Path: { join }, Fs: { writeFileSync } } } = this.utils;
         const output = this.getOutput();
         const json = JSON.stringify(output, null, "\t");
         const fileContent = `
@@ -268,9 +268,9 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
     }
 
     collect = async (filePath, dir) => {
-        const {existPath, isNetworkImage, isSpecialImage, Package: {Path, Fs}} = this.utils;
-        const {promises: {readFile}} = Fs;
-        const {resolve, extname} = Path;
+        const { existPath, isNetworkImage, isSpecialImage, Package: { Path, Fs } } = this.utils;
+        const { promises: { readFile } } = Fs;
+        const { resolve, extname } = Path;
 
         const getRealPath = async imagePath => {
             let idx = imagePath.lastIndexOf(")");
@@ -323,8 +323,8 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
     }
 
     traverseDir = async (dir, callback) => {
-        const {ignore_folders} = this.config;
-        const {Fs: {promises: {readdir, stat}}, Path: {join}} = this.utils.Package;
+        const { ignore_folders } = this.config;
+        const { Fs: { promises: { readdir, stat } }, Path: { join } } = this.utils.Package;
 
         async function traverse(dir) {
             const files = await readdir(dir);

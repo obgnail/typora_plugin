@@ -23,7 +23,7 @@ class fileCounterPlugin extends BasePlugin {
                     ev.stopPropagation();
                     ev.preventDefault();
                 }
-            }, {passive: false, capture: true})
+            }, { passive: false, capture: true })
         }
 
         new MutationObserver(mutationList => {
@@ -35,14 +35,14 @@ class fileCounterPlugin extends BasePlugin {
                 }
             }
             const need = mutationList.some(mutation => {
-                const {target} = mutation;
+                const { target } = mutation;
                 const add = mutation.addedNodes[0];
                 const t = target && target.classList && target.classList.contains(this.className);
                 const a = add && add.classList && add.classList.contains(this.className);
                 return !(t || a)
             })
             need && this.setAllDirCount();
-        }).observe(document.getElementById("file-library-tree"), {subtree: true, childList: true});
+        }).observe(document.getElementById("file-library-tree"), { subtree: true, childList: true });
     }
 
     verifyExt = filename => {
@@ -60,7 +60,7 @@ class fileCounterPlugin extends BasePlugin {
     allowTraverse = path => !this.config.IGNORE_FOLDERS.includes(path)
 
     countFiles = (dir, fileFilter, dirFilter, then) => {
-        const {Fs: {promises}, Path} = this.utils.Package;
+        const { Fs: { promises }, Path } = this.utils.Package;
         let fileCount = 0;
 
         async function traverse(dir) {

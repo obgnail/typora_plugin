@@ -68,7 +68,7 @@ class kanbanPlugin extends BaseCustomPlugin {
         const setFirstLine = this.utils.once(idx => firstLine = idx);
         this.fenceStrictMode = false;
 
-        const kanban = {title: "", list: []};
+        const kanban = { title: "", list: [] };
         const lines = content.split("\n").map(line => line.trim());
         lines.forEach((line, idx) => {
             if (!line) return;
@@ -86,7 +86,7 @@ class kanbanPlugin extends BaseCustomPlugin {
                 kanban.title = line.replace("# ", "");
             } else if (line.startsWith("## ")) {
                 const name = line.replace("## ", "");
-                kanban.list.push({name: name, item: []});
+                kanban.list.push({ name: name, item: [] });
             } else if (line === useStrict) {
                 const strictLine = lines.indexOf(useStrict);
                 if (strictLine !== -1) {
@@ -115,7 +115,7 @@ class kanbanPlugin extends BaseCustomPlugin {
                             if (this.config.ALLOW_MARKDOWN_INLINE_STYLE) {
                                 desc = this.utils.markdownInlineStyleToHTML(desc, dir);
                             }
-                            last && last.item.push({title, desc});
+                            last && last.item.push({ title, desc });
                         }
                     } else {
                         this.throwParseError(idx, "【任务】标题不存在");
@@ -127,7 +127,7 @@ class kanbanPlugin extends BaseCustomPlugin {
         kanban.list = kanban.list.map((col, listIdx) => {
             const taskColor = this.getColor("TASK_COLOR", listIdx);
             const kanbanColor = this.getColor("KANBAN_COLOR", listIdx);
-            const items = col.item.map(({title, desc}) => `
+            const items = col.item.map(({ title, desc }) => `
                 <div class="plugin-kanban-col-item kanban-item-box" style="background-color: ${taskColor}">
                     <div class="plugin-kanban-col-item-title no-wrap-title"><b>${title}</b></div>
                     <div class="plugin-kanban-col-item-desc" ${(!desc && this.config.HIDE_DESC_WHEN_EMPTY) ? 'style="display: none;"' : ""}>${desc}</div>

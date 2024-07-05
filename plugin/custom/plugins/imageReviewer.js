@@ -6,8 +6,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     })
 
     html = () => {
-        const {tool_function, show_message, hotkey_function} = this.config;
-        const keyTranslate = {arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space"};
+        const { tool_function, show_message, hotkey_function } = this.config;
+        const keyTranslate = { arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space" };
         // {operation: [hint, iconClass]}
         const funcTranslate = {
             dummy: ['无功能', ''],
@@ -131,7 +131,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             ev.preventDefault();
             const list = this.getFuncList(ev, "wheel");
             list[ev.deltaY > 0 ? 1 : 0]();
-        }, {passive: false});
+        }, { passive: false });
 
         this.entities.image.addEventListener("mousedown", ev => {
             const list = this.getFuncList(ev, "mousedown");
@@ -214,8 +214,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     }
 
     moveImageCenter = () => {
-        const {width, height} = this.entities.mask.getBoundingClientRect();
-        const {width: imageWidth, height: imageHeight} = this.entities.image;
+        const { width, height } = this.entities.mask.getBoundingClientRect();
+        const { width: imageWidth, height: imageHeight } = this.entities.image;
         this.entities.image.style.left = (width - imageWidth) / 2 + "px";
         this.entities.image.style.top = (height - imageHeight) / 2 + "px";
     }
@@ -243,7 +243,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     _showImage = imgInfo => {
         const handleMessage = imgInfo => {
-            const {src, alt, naturalWidth, naturalHeight, showIdx, total} = imgInfo;
+            const { src, alt, naturalWidth, naturalHeight, showIdx, total } = imgInfo;
             this.entities.image.setAttribute("src", src);
             const index = this.entities.msg.querySelector(".review-index");
             const title = this.entities.msg.querySelector(".review-title");
@@ -277,7 +277,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         if (!target) return;
 
         while (true) {
-            const {img, showIdx, total} = this.imageGetter(true);
+            const { img, showIdx, total } = this.imageGetter(true);
             if (!img) return;
 
             if (img === target) {
@@ -386,7 +386,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     download = async () => {
         const src = this.entities.image.getAttribute("src");
         if (!this.utils.isNetworkImage(src)) return;
-        const {ok, filepath} = await this.utils.downloadImage(src);
+        const { ok, filepath } = await this.utils.downloadImage(src);
         if (ok) {
             this.utils.showInFinder(filepath);
         } else {

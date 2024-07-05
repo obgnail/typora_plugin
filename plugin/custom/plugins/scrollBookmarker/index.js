@@ -9,8 +9,8 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         this.recordName = "recordScrollBookmark";
         this.recordSelector = "#write [cid]";
         this.className = "plu-bookmark";
-        this.locateUtils = {file: "", idx: -1, time: new Date().getTime()};
-        this.entities = {modal: document.querySelector("#plugin-scroll-bookmarker")}
+        this.locateUtils = { file: "", idx: -1, time: new Date().getTime() };
+        this.entities = { modal: document.querySelector("#plugin-scroll-bookmarker") }
     }
 
     beforeProcess = async () => {
@@ -32,7 +32,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         const stateGetter = ele => ele.classList.contains(this.className);
         const stateRestorer = ele => ele.classList.add(this.className);
         const finalFunc = () => {
-            const {file, idx} = this.locateUtils;
+            const { file, idx } = this.locateUtils;
             if (file && idx !== -1) {
                 this._locate(idx);
                 this.locateUtils.file = "";
@@ -144,10 +144,10 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
     appendMarker = (filepath, idx) => {
         const _filepath = this.utils.getFileName(filepath);
         const children = [
-            {class_: "bookmark-item-content", text: `${_filepath} - ${idx}`, file: filepath, idx},
-            {class_: "bookmark-btn fa fa-trash-o"}
+            { class_: "bookmark-item-content", text: `${_filepath} - ${idx}`, file: filepath, idx },
+            { class_: "bookmark-btn fa fa-trash-o" }
         ]
-        const marker = [{class_: "bookmark-item", children}];
+        const marker = [{ class_: "bookmark-item", children }];
         this.utils.htmlTemplater.appendElements(this.entities.modal, marker);
     }
 

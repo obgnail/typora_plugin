@@ -26,7 +26,7 @@ class testPlugin extends BasePlugin {
     openDevTools = () => {
         const objGetter = () => File && File.editor && File.editor.library;
         const callback = () => setTimeout(() => ClientCommand.close(), 3000);
-        this.utils.decorate(objGetter, "openFileInNewWindow", null,callback);
+        this.utils.decorate(objGetter, "openFileInNewWindow", null, callback);
         JSBridge.invoke("window.toggleDevTools");
     }
 

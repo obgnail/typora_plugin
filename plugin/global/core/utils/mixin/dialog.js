@@ -105,7 +105,7 @@ class dialog {
                 inner = `<input type="${t}" class="form-control" value="${component.value || ""}" placeholder="${component.placeholder || ""}" ${disabled(component)}>`;
                 break
             case "range":
-                const {min = 0, max = 100, step = 1, value = 1} = component;
+                const { min = 0, max = 100, step = 1, value = 1 } = component;
                 inner = `<div class="plugin-custom-modal-range">
                             <input type="range" min="${min}" max="${max}" step="${step}" value="${value}" oninput="this.nextElementSibling.innerText = this.value;">
                             <div class="modal-range-value">${value}</div>
@@ -153,7 +153,7 @@ class dialog {
         this.callback = callback;
         this.cancelCallback = cancelCallback;
 
-        const {title, width = "", height = "", components, onload} = modal;
+        const { title, width = "", height = "", components, onload } = modal;
         this.checkComponents(components);
         this.entities.title.innerText = title;
         this.entities.modal.style.setProperty("--plugin-custom-modal-width", width);

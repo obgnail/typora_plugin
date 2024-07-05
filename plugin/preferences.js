@@ -1,5 +1,5 @@
 class preferencesPlugin extends BasePlugin {
-    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     getSettings = async () => {
         const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
@@ -13,8 +13,8 @@ class preferencesPlugin extends BasePlugin {
 
         const pluginState = {};
         const customPluginState = {};
-        Object.keys(settings).forEach(fixedName => (pluginState[fixedName] = {ENABLE: enablePlugins.includes(fixedName)}))
-        Object.keys(customSettings).forEach(fixedName => (customPluginState[fixedName] = {enable: enableCustomPlugins.includes(fixedName)}))
+        Object.keys(settings).forEach(fixedName => (pluginState[fixedName] = { ENABLE: enablePlugins.includes(fixedName) }))
+        Object.keys(customSettings).forEach(fixedName => (customPluginState[fixedName] = { enable: enableCustomPlugins.includes(fixedName) }))
 
         // check need update file
         const settingsHasUpdate = Object.entries(settings).some(([name, plugin]) => plugin.ENABLE !== pluginState[name].ENABLE);
@@ -32,7 +32,7 @@ class preferencesPlugin extends BasePlugin {
         }
 
         if (showModal) {
-            const {response} = await this.utils.showMessageBox({
+            const { response } = await this.utils.showMessageBox({
                 type: "info",
                 buttons: ["确定", "取消"],
                 title: "preferences",
@@ -82,12 +82,12 @@ class preferencesPlugin extends BasePlugin {
         const plugins = Object.entries(settings).map(displayFunc);
         const customPlugins = Object.entries(customSettings).map(displayFunc);
         const components = [
-            {label: "🛡️ 为保护用户，此处禁止启停部分插件，如需请 <a>修改配置文件</a>", type: "p", onclick},
-            {label: "", legend: "一级插件", type: "checkbox", list: plugins},
-            {label: "", legend: "二级插件", type: "checkbox", list: customPlugins},
+            { label: "🛡️ 为保护用户，此处禁止启停部分插件，如需请 <a>修改配置文件</a>", type: "p", onclick },
+            { label: "", legend: "一级插件", type: "checkbox", list: plugins },
+            { label: "", legend: "二级插件", type: "checkbox", list: customPlugins },
         ];
-        const modal = {title: "启停插件", components};
-        const cb = async ([_, {submit: enablePlugins}, {submit: enableCustomPlugins}]) => {
+        const modal = { title: "启停插件", components };
+        const cb = async ([_, { submit: enablePlugins }, { submit: enableCustomPlugins }]) => {
             await this.togglePlugin(enablePlugins, enableCustomPlugins, true);
         }
         this.utils.dialog.modal(modal, cb);

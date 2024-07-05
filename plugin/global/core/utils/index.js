@@ -69,7 +69,7 @@ class utils {
     static openFolder = folder => File.editor.library.openFileInNewWindow(folder, true);
     static reload = async () => {
         const content = await File.getContent();
-        const arg = {fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true};
+        const arg = { fromDiskChange: false, skipChangeCount: true, skipUndo: true, skipStore: true };
         File.reloadContent(content, arg);
     }
 
@@ -107,8 +107,8 @@ class utils {
     static downloadImage = async (src, folder, filename) => {
         folder = folder || this.tempFolder;
         filename = filename || (this.randomString() + "_" + PATH.extname(src))
-        const {state} = await JSBridge.invoke("app.download", src, folder, filename);
-        return {ok: state === "completed", filepath: PATH.join(folder, filename)}
+        const { state } = await JSBridge.invoke("app.download", src, folder, filename);
+        return { ok: state === "completed", filepath: PATH.join(folder, filename) }
     }
 
 
@@ -158,7 +158,7 @@ class utils {
         if (!isObject(source) || !isObject(other)) {
             return other === undefined ? source : other
         }
-        return Object.keys({...source, ...other}).reduce((obj, key) => {
+        return Object.keys({ ...source, ...other }).reduce((obj, key) => {
             const isArray = Array.isArray(source[key]) && Array.isArray(other[key])
             obj[key] = isArray ? other[key] : this.merge(source[key], other[key])
             return obj
@@ -304,7 +304,7 @@ class utils {
         }
         if (!plugin) return;
 
-        const mergeObj = isCustom ? {[fixedName]: {config: updateObj}} : {[fixedName]: updateObj};
+        const mergeObj = isCustom ? { [fixedName]: { config: updateObj } } : { [fixedName]: updateObj };
         const file = isCustom ? "custom_plugin.user.toml" : "settings.user.toml";
         const settingPath = await this.getActualSettingPath(file);
         const tomlObj = await this.readToml(settingPath);
@@ -324,8 +324,8 @@ class utils {
         } catch (e) {
             const message = "配置文件格式错误，是否前往校验网站";
             const detail = `您手动修改过配置文件，由于写入的内容有问题，导致配置文件无法正确读取，报错如下：\n${e.toString()}`;
-            const op = {type: "error", title: "Typora Plugin", buttons: ["确定", "取消"], message, detail};
-            const {response} = await this.showMessageBox(op);
+            const op = { type: "error", title: "Typora Plugin", buttons: ["确定", "取消"], message, detail };
+            const { response } = await this.showMessageBox(op);
             if (response === 0) {
                 this.openUrl("https://www.bejson.com/validators/toml_editor/");
             }
@@ -336,7 +336,7 @@ class utils {
     static openSettingFolder = async () => this.showInFinder(await this.getActualSettingPath("settings.user.toml"))
 
     static backupSettingFile = async (showInFinder = true) => {
-        const {FsExtra, Path} = this.Package;
+        const { FsExtra, Path } = this.Package;
         const backupDir = Path.join(this.tempFolder, "typora_plugin_config");
         await FsExtra.emptyDir(backupDir);
         const settingFiles = ["settings.user.toml", "custom_plugin.user.toml", "hotkey.user.toml"];
@@ -360,7 +360,7 @@ class utils {
         const replacedContent = await editFileFunc(content);
         const ok = await this.writeFile(filepath, replacedContent);
         if (!ok) return;
-        reloadTypora && File.reloadContent(replacedContent, {fromDiskChange: false});
+        reloadTypora && File.reloadContent(replacedContent, { fromDiskChange: false });
         setTimeout(() => File.presentedItemChanged = bak, 1500);
     }
 
@@ -387,7 +387,7 @@ class utils {
                 this.insertStyle(`plugin-${name}-style`, style);
                 break
             case "object":
-                const {textID = null, text = null, fileID = null, file = null} = style;
+                const { textID = null, text = null, fileID = null, file = null } = style;
                 fileID && file && this.insertStyleFile(fileID, file);
                 textID && text && this.insertStyle(textID, text);
                 break
@@ -463,7 +463,7 @@ class utils {
             return true
         } catch (e) {
             const detail = e.toString();
-            const op = {type: "error", title: "Typora Plugin", buttons: ["确定"], message: "写入文件失败", detail};
+            const op = { type: "error", title: "Typora Plugin", buttons: ["确定"], message: "写入文件失败", detail };
             await this.showMessageBox(op);
         }
     }
@@ -493,8 +493,8 @@ class utils {
 
     static openUrl = url => (File.editor.tryOpenUrl_ || File.editor.tryOpenUrl)(url, 1);
 
-    static showMessageBox = async ({type = "info", title = "typora", message, detail, buttons = ["确定", "取消"], defaultId = 0, cancelId = 1, normalizeAccessKeys = true, checkboxLabel}) => {
-        const op = {type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel};
+    static showMessageBox = async ({ type = "info", title = "typora", message, detail, buttons = ["确定", "取消"], defaultId = 0, cancelId = 1, normalizeAccessKeys = true, checkboxLabel }) => {
+        const op = { type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel };
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
 
@@ -512,7 +512,7 @@ class utils {
     });
 
     static splitFrontMatter = content => {
-        const result = {yamlObject: null, remainContent: content, yamlLineCount: 0};
+        const result = { yamlObject: null, remainContent: content, yamlLineCount: 0 };
         content = content.trimLeft();
         if (!/^---\r?\n/.test(content)) return result;
         const matchResult = /\n---\r?\n/.exec(content);
@@ -521,13 +521,13 @@ class utils {
         const remainContent = content.slice(matchResult.index + matchResult[0].length);
         const yamlLineCount = (yamlContent.match(/\n/g) || []).length + 3;
         const yamlObject = this.readYaml(yamlContent);
-        return {yamlObject, remainContent, yamlLineCount}
+        return { yamlObject, remainContent, yamlLineCount }
     }
 
     static getRecentFiles = async () => {
         const recent = await JSBridge.invoke("setting.getRecentFiles");
-        const {files = [], folders = []} = (typeof recent === "string") ? JSON.parse(recent || "{}") : (recent || {});
-        return {files, folders}
+        const { files = [], folders = [] } = (typeof recent === "string") ? JSON.parse(recent || "{}") : (recent || {});
+        return { files, folders }
     }
 
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
@@ -569,12 +569,12 @@ class utils {
         const lines = content.split("\n").map(line => line.trim()).filter(line => line.startsWith("//"));
         for (let line of lines) {
             line = line.replace(/\s/g, "").replace(/['`]/g, `"`);
-            const {groups} = line.match(regexp) || {};
+            const { groups } = line.match(regexp) || {};
             if (groups) {
-                return {height: groups.height, width: groups.width};
+                return { height: groups.height, width: groups.width };
             }
         }
-        return {height: "", width: ""};
+        return { height: "", width: "" };
     }
 
     static renderAllLangFence = lang => {
@@ -615,7 +615,7 @@ class utils {
     static isInViewBox = el => {
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
         const totalWidth = window.innerWidth || document.documentElement.clientWidth;
-        const {top, right, bottom, left} = el.getBoundingClientRect();
+        const { top, right, bottom, left } = el.getBoundingClientRect();
         return top >= 0 && left >= 0 && right <= totalWidth && bottom <= totalHeight;
     }
 
@@ -706,11 +706,11 @@ class utils {
         const markElem = File.editor.getMarkElem(range.anchorNode);
         const node = File.editor.findNodeByElem(markElem);
         const bookmark = range.getBookmark(markElem[0]);
-        return {range, markElem, node, bookmark}
+        return { range, markElem, node, bookmark }
     }
 
     static getRangyText = () => {
-        const {node, bookmark} = this.getRangy();
+        const { node, bookmark } = this.getRangy();
         const ele = File.editor.findElemById(node.cid);
         return ele.rawText().substring(bookmark.start, bookmark.end);
     }
@@ -722,7 +722,7 @@ class utils {
     ) => {
         let startX, startY, startWidth, startHeight;
         handleElement.addEventListener("mousedown", ev => {
-            const {width, height} = document.defaultView.getComputedStyle(resizeElement);
+            const { width, height } = document.defaultView.getComputedStyle(resizeElement);
             startX = ev.clientX;
             startY = ev.clientY;
             startWidth = parseFloat(width);
@@ -739,7 +739,7 @@ class utils {
                 let deltaX = e.clientX - startX;
                 let deltaY = e.clientY - startY;
                 if (onMouseMove) {
-                    const {deltaX: newDeltaX, deltaY: newDeltaY} = onMouseMove(deltaX, deltaY) || {};
+                    const { deltaX: newDeltaX, deltaY: newDeltaY } = onMouseMove(deltaX, deltaY) || {};
                     deltaX = newDeltaX || deltaX;
                     deltaY = newDeltaY || deltaY;
                 }
@@ -766,7 +766,7 @@ class utils {
         handleElement.addEventListener("mousedown", ev => {
             if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
             ev.stopPropagation();
-            const {left, top} = moveElement.getBoundingClientRect();
+            const { left, top } = moveElement.getBoundingClientRect();
             const shiftX = ev.clientX - left;
             const shiftY = ev.clientY - top;
             _onMouseDown && _onMouseDown();
@@ -806,7 +806,7 @@ class utils {
             : (origin && origin.previousElementSibling) || list.lastElementChild
         origin && origin.classList.toggle("active");
         active.classList.toggle("active");
-        active.scrollIntoView({block: "nearest"});
+        active.scrollIntoView({ block: "nearest" });
     }
 
     static stopCallError = new Error("stopCall") // 用于decorate方法，若希望停止执行原生函数，返回此

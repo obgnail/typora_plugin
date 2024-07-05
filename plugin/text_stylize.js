@@ -1,5 +1,5 @@
 class textStylizePlugin extends BasePlugin {
-    styleTemplate = () => ({backgroundColor: this.config.MODAL_BACKGROUND_COLOR || "var(--side-bar-bg-color)"})
+    styleTemplate = () => ({ backgroundColor: this.config.MODAL_BACKGROUND_COLOR || "var(--side-bar-bg-color)" })
 
     html = () => {
         const toolMap = {
@@ -28,7 +28,7 @@ class textStylizePlugin extends BasePlugin {
             close: ["关闭", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>`],
         }
 
-        const {TOOLBAR, COLORS, NUM_PER_LINE} = this.config;
+        const { TOOLBAR, COLORS, NUM_PER_LINE } = this.config;
         const tools = TOOLBAR
             .filter(name => toolMap.hasOwnProperty(name))
             .map(name => {
@@ -50,16 +50,16 @@ class textStylizePlugin extends BasePlugin {
     }
 
     hotkey = () => {
-        const hotkeys = this.config.ACTION_HOTKEYS.map(({hotkey, action}) => {
+        const hotkeys = this.config.ACTION_HOTKEYS.map(({ hotkey, action }) => {
             const callback = () => {
                 const color = (action === "foregroundColor" || action === "backgroundColor" || action === "borderColor")
                     ? this.entities.toolbar.querySelector(`[action=${action}]`).getAttribute("last-color")
                     : undefined;
                 this.onAction(action, color);
             }
-            return {hotkey, callback}
+            return { hotkey, callback }
         })
-        return [{hotkey: this.config.SHOW_MODAL_HOTKEY, callback: this.call}, ...hotkeys];
+        return [{ hotkey: this.config.SHOW_MODAL_HOTKEY, callback: this.call }, ...hotkeys];
     }
 
     init = () => {
@@ -143,22 +143,22 @@ class textStylizePlugin extends BasePlugin {
         borderColor: () => this.toggleBorder(`1px solid ${color || this.config.DEFAULT_COLORS.BORDER}`),
     })
 
-    toggleForegroundColor = color => this.setStyle({toggleMap: {color: color}});
-    toggleBackgroundColor = color => this.setStyle({toggleMap: {background: color}});
-    toggleSize = size => this.setStyle({toggleMap: {"font-size": size}});
-    toggleWeight = weight => this.setStyle({toggleMap: {"font-weight": weight}});
-    toggleFamily = family => this.setStyle({toggleMap: {"font-family": family}});
-    toggleBorder = border => this.setStyle({toggleMap: {border}});
-    toggleEmphasis = emphasis => this.setStyle({toggleMap: {"text-emphasis": emphasis}})
-    toggleItalic = () => this.setStyle({toggleMap: {"font-style": "italic"}});
-    toggleUnderline = () => this.setStyle({mergeMap: {"text-decoration": "underline"}});
-    toggleThroughline = () => this.setStyle({mergeMap: {"text-decoration": "line-through"}});
-    toggleOverline = () => this.setStyle({mergeMap: {"text-decoration": "overline"}});
-    toggleSuperScript = () => this.setStyle({toggleMap: {"vertical-align": "super"}});
-    toggleSubScript = () => this.setStyle({toggleMap: {"vertical-align": "sub"}});
+    toggleForegroundColor = color => this.setStyle({ toggleMap: { color: color } });
+    toggleBackgroundColor = color => this.setStyle({ toggleMap: { background: color } });
+    toggleSize = size => this.setStyle({ toggleMap: { "font-size": size } });
+    toggleWeight = weight => this.setStyle({ toggleMap: { "font-weight": weight } });
+    toggleFamily = family => this.setStyle({ toggleMap: { "font-family": family } });
+    toggleBorder = border => this.setStyle({ toggleMap: { border } });
+    toggleEmphasis = emphasis => this.setStyle({ toggleMap: { "text-emphasis": emphasis } })
+    toggleItalic = () => this.setStyle({ toggleMap: { "font-style": "italic" } });
+    toggleUnderline = () => this.setStyle({ mergeMap: { "text-decoration": "underline" } });
+    toggleThroughline = () => this.setStyle({ mergeMap: { "text-decoration": "line-through" } });
+    toggleOverline = () => this.setStyle({ mergeMap: { "text-decoration": "overline" } });
+    toggleSuperScript = () => this.setStyle({ toggleMap: { "vertical-align": "super" } });
+    toggleSubScript = () => this.setStyle({ toggleMap: { "vertical-align": "sub" } });
     setBrush = () => this.styleSetter.setBrush();
     useBrush = () => this.styleSetter.useBrush();
-    clearAll = () => this.setStyle({replaceMap: {}});
+    clearAll = () => this.setStyle({ replaceMap: {} });
     increaseSize = (num = 0.1) => this.setStyle({
         hook: styleMap => {
             styleMap["font-size"] = styleMap["font-size"] || "1.0em";
@@ -232,8 +232,8 @@ class styleSetter {
         this.formatBrushObj = {};
     }
 
-    setStyle = ({toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark = true, rememberFormat = false}) => {
-        const args = {toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark, rememberFormat};
+    setStyle = ({ toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark = true, rememberFormat = false }) => {
+        const args = { toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark, rememberFormat };
         const ranges = this.genRanges();
         if (!ranges || ranges.length === 0) {
             console.debug("has not ranges");
@@ -244,9 +244,9 @@ class styleSetter {
         }
     }
 
-    setBrush = () => this.setStyle({upsertMap: {}, rememberFormat: true});
+    setBrush = () => this.setStyle({ upsertMap: {}, rememberFormat: true });
 
-    useBrush = () => this.setStyle({replaceMap: this.formatBrushObj});
+    useBrush = () => this.setStyle({ replaceMap: this.formatBrushObj });
 
     /**
      *  有四种用户选中情况，比如：123<span style="color:#FF0000;">abc</span>defg
@@ -255,12 +255,12 @@ class styleSetter {
      *    3. 选中了内部文字（abc）：需要修改outerText
      *    4. 选中了外部文字（<span style="color:#FF0000;">abc</span>）：需要修改innerText
      */
-    setInlineStyle = ({toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark, rememberFormat}) => {
+    setInlineStyle = ({ toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark, rememberFormat }) => {
         const selection = window.getSelection();
         const activeElement = document.activeElement.tagName;
         if (File.isLocked || "INPUT" === activeElement || "TEXTAREA" === activeElement || !selection.rangeCount) return
 
-        const {range, node, bookmark} = this.utils.getRangy();
+        const { range, node, bookmark } = this.utils.getRangy();
         if (!node) return;
         const ele = File.editor.findElemById(node.cid);
         const line = ele.rawText();
@@ -385,7 +385,7 @@ class styleSetter {
                     start = beforeText.length;
                 }
 
-                const {range, bookmark: bk} = this.utils.getRangy();
+                const { range, bookmark: bk } = this.utils.getRangy();
                 bk.start = start + prefix.length;
                 bk.end = bk.start + innerText.length;
                 range.moveToBookmark(bk);
@@ -405,7 +405,7 @@ class styleSetter {
         let startBeforeContent, endBeforeContent;
         if (originMoveBookmark) {
             const bookMark = this.recodeBookmark(selection);
-            ({startBeforeContent, endBeforeContent} = bookMark);
+            ({ startBeforeContent, endBeforeContent } = bookMark);
         }
 
         args.moveBookmark = false;
@@ -446,7 +446,7 @@ class styleSetter {
 
     recodeBookmark = selection => {
         const range = selection.getRangeAt(0);
-        const {endContainer, endOffset, startContainer, startOffset} = range;
+        const { endContainer, endOffset, startContainer, startOffset } = range;
 
         range.setStart(startContainer, 0);
         range.setEnd(startContainer, startOffset);
@@ -459,11 +459,11 @@ class styleSetter {
         selection.removeAllRanges();
         selection.addRange(range);
         const endBeforeContent = range.toString();
-        return {startBeforeContent, endBeforeContent}
+        return { startBeforeContent, endBeforeContent }
     }
 
     renewRange = range => {
-        const {beforeContent, afterContent, cid} = range;
+        const { beforeContent, afterContent, cid } = range;
         const target = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`);
         const TEXTs = this.getAllTEXT(target);
 
@@ -503,13 +503,13 @@ class styleSetter {
     }
 
     collectNodeInSelection = range => {
-        const {startContainer, endContainer, commonAncestorContainer} = range;
+        const { startContainer, endContainer, commonAncestorContainer } = range;
 
         const nodeList = [];
         const treeWalker = document.createTreeWalker(
             commonAncestorContainer,
             NodeFilter.SHOW_ELEMENT + NodeFilter.SHOW_TEXT,
-            {acceptNode: node => NodeFilter.FILTER_ACCEPT},
+            { acceptNode: node => NodeFilter.FILTER_ACCEPT },
         );
         while (treeWalker.currentNode !== startContainer) {
             treeWalker.nextNode();

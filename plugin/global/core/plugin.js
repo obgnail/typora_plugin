@@ -1,4 +1,4 @@
-const {utils} = require("./utils");
+const { utils } = require("./utils");
 
 class IPlugin {
     constructor(fixedName, setting) {
@@ -49,7 +49,7 @@ const LoadPlugin = async (fixedName, setting, isCustom) => {
     const path = isCustom ? "./plugin/custom/plugins" : "./plugin";
     const superPlugin = isCustom ? BaseCustomPlugin : BasePlugin;
 
-    const {plugin} = utils.requireFilePath(path, fixedName);
+    const { plugin } = utils.requireFilePath(path, fixedName);
     if (!plugin) return;
 
     const instance = new plugin(fixedName, setting);
@@ -63,7 +63,7 @@ const LoadPlugin = async (fixedName, setting, isCustom) => {
     utils.registerStyle(instance.fixedName, instance.style());
     const renderArgs = instance.styleTemplate();
     if (renderArgs) {
-        await utils.styleTemplater.register(instance.fixedName, {...renderArgs, this: instance});
+        await utils.styleTemplater.register(instance.fixedName, { ...renderArgs, this: instance });
     }
     utils.insertElement(instance.html());
     const elements = instance.htmlTemplate();

@@ -57,7 +57,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
 
     selectText = () => {
         if (this.config.auto_select_after_surround || this.rangyText) {
-            const {range, bookmark} = this.utils.getRangy();
+            const { range, bookmark } = this.utils.getRangy();
             bookmark.end += this.rangyText.length;
             range.moveToBookmark(bookmark);
             range.select();
@@ -66,7 +66,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     }
 
     insertText = (symbol, pairSymbol) => {
-        const {range, node} = this.utils.getRangy();
+        const { range, node } = this.utils.getRangy();
         const textNode = document.createTextNode(pairSymbol);
         range.insertNode(textNode);
         // range.setStart(textNode, symbol.length);
@@ -76,7 +76,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     }
 
     _getRange = () => {
-        const {node, bookmark} = this.utils.getRangy();
+        const { node, bookmark } = this.utils.getRangy();
         if (!node) return {};
 
         File.editor.undo.endSnap();
@@ -85,11 +85,11 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         if (ele.hasClass("md-fences")) return {};
 
         const rawText = ele.rawText();
-        return {rawText, bookmark};
+        return { rawText, bookmark };
     }
 
     skipSymbol = inputSymbol => {
-        const {rawText, bookmark} = this._getRange();
+        const { rawText, bookmark } = this._getRange();
         if (!rawText || !bookmark) return;
         if (inputSymbol === rawText.substring(bookmark.start, bookmark.start + 1)) {
             bookmark.end += 1;
@@ -98,7 +98,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     }
 
     deletePair = () => {
-        const {rawText, bookmark} = this._getRange();
+        const { rawText, bookmark } = this._getRange();
         if (!rawText || !bookmark) return;
         const pair = rawText.substring(bookmark.start - 1, bookmark.start + 1);
         if (pair.length === 2) {

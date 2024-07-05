@@ -17,7 +17,7 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
     hint = isDisable => isDisable ? "updater.exe不存在或者commander插件被禁用" : "当你发现BUG，可以尝试更新，说不定就解决了"
 
     process = () => {
-        const {auto_update, start_update_interval, update_loop_interval} = this.config;
+        const { auto_update, start_update_interval, update_loop_interval } = this.config;
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             this.commanderPlugin = this.utils.getPlugin("commander");
             if (this.updaterEXE && this.commanderPlugin && auto_update) {
@@ -39,9 +39,9 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
 
         const proxy = await this.getProxy();
         const label = "代理（填入URL，默认使用系统代理，为空则不使用代理）";
-        const components = [{label, type: "input", value: proxy, placeholder: "http://127.0.0.1:7890"}];
-        const m = {title: "设置代理", components};
-        const cb = async ([{submit: proxy_}]) => await this.modalUpdate(proxy_);
+        const components = [{ label, type: "input", value: proxy, placeholder: "http://127.0.0.1:7890" }];
+        const m = { title: "设置代理", components };
+        const cb = async ([{ submit: proxy_ }]) => await this.modalUpdate(proxy_);
         this.utils.dialog.modal(m, cb);
     }
 
@@ -50,7 +50,7 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
             if (code === 0) return;
 
             const openGithub = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
-            let components = [{type: "p", label: "出于未知原因，更新失败，建议您稍后重试或手动更新"}];
+            let components = [{ type: "p", label: "出于未知原因，更新失败，建议您稍后重试或手动更新" }];
             let callback = openGithub;
             let cancelCallback;
 
@@ -58,11 +58,11 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
                 const disk = this.updaterEXE.split(this.utils.Package.Path.win32.sep)[0];
                 const label = "Typora 安装路径包含 Program Files，由于 Windows 的权限限制，需要您手动操作。以管理员身份打开 CMD，如下运行命令";
                 const value = `${disk} && "${this.updaterEXE}" --action=update --proxy=${this.cleanProxy(proxy)}`;
-                components = [{label, type: "input", value}];
+                components = [{ label, type: "input", value }];
                 callback = undefined;
                 cancelCallback = openGithub;
             }
-            this.utils.dialog.modal({title: "更新失败", components}, callback, cancelCallback);
+            this.utils.dialog.modal({ title: "更新失败", components }, callback, cancelCallback);
         })
     }
 
@@ -94,7 +94,7 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         await this.adjustFile();
         const dir = this.utils.joinPath("./plugin/updater");
         const cmd = `updater.exe --action=update --proxy=${proxy}`;
-        this.commanderPlugin.execute(exec, cmd, "cmd/bash", after, hint, {cwd: dir});
+        this.commanderPlugin.execute(exec, cmd, "cmd/bash", after, hint, { cwd: dir });
     }
 }
 
@@ -129,7 +129,7 @@ class binFileUpdater {
             if (result) {
                 const path = this.utils.Package.Path.join(dir, file);
                 const version = result.groups.version || "";
-                fileList.push({file, path, version});
+                fileList.push({ file, path, version });
             }
         })
 
@@ -144,17 +144,17 @@ class binFileUpdater {
                     maxMtime = mtimeMs;
                     maxMtimePath = file.path;
                 }
-                return {path: file.path, mtimeMs}
+                return { path: file.path, mtimeMs }
             }))
             if (!maxMtimePath) return
             const deleteFile = all.filter(file => file.path !== maxMtimePath).map(file => file.path);
-            return {delete: deleteFile, remain: maxMtimePath}
+            return { delete: deleteFile, remain: maxMtimePath }
         }
 
         const [f0, f1] = fileList;
         const compare = this.utils.compareVersion(f0.version, f1.version);
         const [deleteFile, remainFile] = compare > 0 ? [f1.path, f0.path] : [f0.path, f1.path];
-        return {delete: [deleteFile], remain: remainFile}
+        return { delete: [deleteFile], remain: remainFile }
     }
 }
 

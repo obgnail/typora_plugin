@@ -32,8 +32,8 @@ class Plugin2UploadBridge {
     uploadProxy = async (filePath, type = "all") => {
         if (this.config.upload.reconfirm) {
             const message = "你确定要上传文章吗";
-            const op = {type: "info", title: "上传提示", buttons: ["确定", "取消"], message};
-            const {response} = await this.plugin.utils.showMessageBox(op);
+            const op = { type: "info", title: "上传提示", buttons: ["确定", "取消"], message };
+            const { response } = await this.plugin.utils.showMessageBox(op);
             if (response === 1) {
                 return;
             }

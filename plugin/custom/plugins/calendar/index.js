@@ -42,7 +42,7 @@ class calendarPlugin extends BaseCustomPlugin {
     lazyLoad = () => {
         if (!this.Calendar) {
             this.utils.insertStyleFile("plugin-calendar-style", "./plugin/custom/plugins/calendar/toastui-calendar.min.css");
-            const {Calendar} = require("./toastui-calendar.min.js");
+            const { Calendar } = require("./toastui-calendar.min.js");
             this.Calendar = Calendar;
         }
     }

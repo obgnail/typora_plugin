@@ -18,10 +18,10 @@ class markmapPlugin extends BasePlugin {
 
     init = () => {
         this.callArgs = [];
-        this.tocMarkmap && this.callArgs.push({arg_name: "思维导图", arg_value: "toggle_toc"});
+        this.tocMarkmap && this.callArgs.push({ arg_name: "思维导图", arg_value: "toggle_toc" });
         this.fenceMarkmap && this.callArgs.push(
-            {arg_name: "插入markmap：大纲", arg_value: "draw_fence_outline"},
-            {arg_name: "插入markmap：模板", arg_value: "draw_fence_template"},
+            { arg_name: "插入markmap：大纲", arg_value: "draw_fence_outline" },
+            { arg_name: "插入markmap：模板", arg_value: "draw_fence_template" },
         );
     }
 
@@ -39,12 +39,12 @@ class markmapPlugin extends BasePlugin {
     }
 
     getToc = () => {
-        const {headers} = File.editor.nodeMap.toc || {};
+        const { headers } = File.editor.nodeMap.toc || {};
         if (!headers) return;
 
         const result = [];
         for (const header of headers) {
-            const {pattern, depth, text = ""} = (header && header.attributes) || {};
+            const { pattern, depth, text = "" } = (header && header.attributes) || {};
             if (pattern) {
                 result.push(pattern.replace("{0}", text));
             } else if (depth) {
@@ -59,23 +59,23 @@ class markmapPlugin extends BasePlugin {
     lazyLoad = async () => {
         if (this.transformer && this.Markmap) return;
 
-        const {markmapLib} = require("./resource/markmap-lib");
+        const { markmapLib } = require("./resource/markmap-lib");
         await this.utils.insertScript("./plugin/markmap/resource/d3@6.js");
         await this.utils.insertScript("./plugin/markmap/resource/markmap-view.js");
 
         this.transformer = new markmapLib.Transformer();
-        const {Markmap, loadCSS, loadJS} = markmap;
+        const { Markmap, loadCSS, loadJS } = markmap;
         this.Markmap = Markmap;
-        const {styles, scripts} = this.transformer.getAssets();
+        const { styles, scripts } = this.transformer.getAssets();
         if (this.config.RESOURCE_FROM === "network") {
             if (styles) loadCSS(styles);
-            if (scripts) loadJS(scripts, {getMarkmap: () => markmap});
+            if (scripts) loadJS(scripts, { getMarkmap: () => markmap });
         } else {
             this.utils.insertStyleFile("markmap-default-style", "./plugin/markmap/resource/default.min.css");
             this.utils.insertStyleFile("markmap-katex-style", "./plugin/markmap/resource/katex.min.css");
 
             const loadScript = scripts.filter(script => script["type"] !== "script");
-            if (scripts) loadJS(loadScript, {getMarkmap: () => markmap});
+            if (scripts) loadJS(loadScript, { getMarkmap: () => markmap });
             await this.utils.insertScript("./plugin/markmap/resource/webfontloader.js");
         }
     }
@@ -110,14 +110,14 @@ class fenceMarkmap {
         this.utils.insertText(null, md);
     }
 
-    hotkey = () => [{hotkey: this.config.FENCE_HOTKEY, callback: this.callback}]
+    hotkey = () => [{ hotkey: this.config.FENCE_HOTKEY, callback: this.callback }]
 
     wrapFenceCode = content => "```" + this.config.LANGUAGE + "\n" + this.defaultFrontMatter + content + "\n" + "```"
     getToc = () => this.wrapFenceCode(this.controller.getToc() || "# empty")
 
     getFrontMatter = content => {
         const defaultOptions = this.config.DEFAULT_FENCE_OPTIONS || {};
-        const {yamlObject} = this.utils.splitFrontMatter(content);
+        const { yamlObject } = this.utils.splitFrontMatter(content);
         if (!yamlObject) return defaultOptions;
 
         const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap");
@@ -166,14 +166,14 @@ class fenceMarkmap {
     }
 
     create = async (cid, svg, md, options) => {
-        const {root} = this.controller.transformer.transform(md);
+        const { root } = this.controller.transformer.transform(md);
         this.map[cid] = this.controller.Markmap.create(svg[0], options, root);
         setTimeout(() => this.map[cid] && this.map[cid].fit(), 200);
     }
 
     update = async (cid, md, options) => {
         const instance = this.map[cid];
-        const {root} = this.controller.transformer.transform(md);
+        const { root } = this.controller.transformer.transform(md);
         instance.setData(root);
         instance.setOptions(options);
         await instance.fit();
@@ -211,7 +211,7 @@ class tocMarkmap {
         </div>
     `
 
-    hotkey = () => [{hotkey: this.config.TOC_HOTKEY, callback: this.callback}]
+    hotkey = () => [{ hotkey: this.config.TOC_HOTKEY, callback: this.callback }]
 
     prepare = () => {
         this.markmap = null;
@@ -303,10 +303,10 @@ class tocMarkmap {
                 const value = toString(colorList);
                 const label = toDIV(colorList);
                 const checked = value === currentColorSchemeStr;
-                return {value, label, checked};
+                return { value, label, checked };
             })
             if (!list.some(e => e.checked)) {
-                list.push({value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true});
+                list.push({ value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true });
             }
             const callback = colorScheme => {
                 const colorList = colorScheme.split("_");
@@ -314,7 +314,7 @@ class tocMarkmap {
                 this.setColorScheme(colorList);
             }
             const label = "配色方案" + _genInfo("如需自定义配色方案请前往配置文件");
-            return {label: label, type: "radio", list, callback};
+            return { label: label, type: "radio", list, callback };
         }
 
         const expandLevel = () => {
@@ -328,7 +328,7 @@ class tocMarkmap {
                 level = parseInt(level);
                 this.markmap.options.initialExpandLevel = isNaN(level) ? 1 : level;
             };
-            return {label: "分支展开等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback};
+            return { label: "分支展开等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback };
         }
 
         const spacingHorizontal = () => {
@@ -338,7 +338,7 @@ class tocMarkmap {
                 spacingHorizontal = parseInt(spacingHorizontal);
                 this.markmap.options.spacingHorizontal = isNaN(spacingHorizontal) ? defaultSpacing : spacingHorizontal;
             };
-            return {label: "节点水平间距", type: "range", value: value, min: 1, max: 100, step: 1, callback}
+            return { label: "节点水平间距", type: "range", value: value, min: 1, max: 100, step: 1, callback }
         }
 
         const spacingVertical = () => {
@@ -348,7 +348,7 @@ class tocMarkmap {
                 spacingVertical = parseInt(spacingVertical);
                 this.markmap.options.spacingVertical = isNaN(spacingVertical) ? defaultSpacing : spacingVertical;
             };
-            return {label: "节点垂直间距", type: "range", value: value, min: 1, max: 50, step: 1, callback}
+            return { label: "节点垂直间距", type: "range", value: value, min: 1, max: 50, step: 1, callback }
         }
 
         const maxWidth = () => {
@@ -359,7 +359,7 @@ class tocMarkmap {
                 this.markmap.options.maxWidth = isNaN(maxWidth) ? defaultMaxWidth : maxWidth;
             };
             const label = "节点最大长度" + _genInfo("0 表示无长度限制");
-            return {label: label, type: "range", value: value, min: 0, max: 1000, step: 10, callback}
+            return { label: label, type: "range", value: value, min: 0, max: 1000, step: 10, callback }
         }
 
         const colorFreezeLevel = () => {
@@ -369,7 +369,7 @@ class tocMarkmap {
                 this.colorFreezeLevel = isNaN(level) ? 6 : level;
             };
             const label = "固定配色的分支等级" + _genInfo("从某一等级开始，所有子分支将继承父分支的配色");
-            return {label: label, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback}
+            return { label: label, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback }
         }
 
         const localeHeightRatio = () => {
@@ -380,7 +380,7 @@ class tocMarkmap {
                 this.config.LOCALE_HIGHT_RATIO = isNaN(ratio) ? defaultValue : ratio;
             };
             const label = "定位的视口高度" + _genInfo("鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）");
-            return {label: label, type: "range", value: value, min: 1, max: 100, step: 1, callback}
+            return { label: label, type: "range", value: value, min: 1, max: 100, step: 1, callback }
         }
 
         const duration = () => {
@@ -390,7 +390,7 @@ class tocMarkmap {
                 duration = parseInt(duration * 1000);
                 this.markmap.options.duration = isNaN(duration) ? defaultDuration : duration;
             };
-            return {label: "动画持续时间", type: "range", value: value / 1000, min: 0.1, max: 1, step: 0.1, callback}
+            return { label: "动画持续时间", type: "range", value: value / 1000, min: 0.1, max: 1, step: 0.1, callback }
         }
 
         const fitRatio = () => {
@@ -400,20 +400,20 @@ class tocMarkmap {
                 fitRatio = Number(parseFloat(fitRatio / 100).toFixed(2));
                 this.markmap.options.fitRatio = isNaN(fitRatio) ? defaultValue : fitRatio;
             };
-            return {label: "图形的窗口填充率", type: "range", value: value, min: 50, max: 100, step: 1, callback}
+            return { label: "图形的窗口填充率", type: "range", value: value, min: 50, max: 100, step: 1, callback }
         }
 
         const ability = () => {
-            const {zoom = true, pan = true} = (this.markmap && this.markmap.options) || {};
+            const { zoom = true, pan = true } = (this.markmap && this.markmap.options) || {};
             const fitWhenUpdateLabel = "更新时自动适配窗口" + _genInfo("图形更新时自动重新适配窗口大小");
             const fitWhenFoldLabel = "折叠时自动适配窗口" + _genInfo("折叠图形节点时自动重新适配窗口大小");
             const foldWhenUpdateLabel = "记住已折叠节点" + _genInfo("图形更新时不再重新展开已折叠节点");
             const list = [
-                {label: "鼠标滚轮缩放", value: "zoom", checked: zoom},
-                {label: "鼠标滚轮平移", value: "pan", checked: pan},
-                {label: fitWhenUpdateLabel, value: "fitWhenUpdate", checked: this.config.AUTO_FIT_WHEN_UPDATE},
-                {label: fitWhenFoldLabel, value: "fitWhenFold", checked: this.config.AUTO_FIT_WHEN_FOLD},
-                {label: foldWhenUpdateLabel, value: "foldWhenUpdate", checked: this.config.REMEMBER_FOLD_WHEN_UPDATE},
+                { label: "鼠标滚轮缩放", value: "zoom", checked: zoom },
+                { label: "鼠标滚轮平移", value: "pan", checked: pan },
+                { label: fitWhenUpdateLabel, value: "fitWhenUpdate", checked: this.config.AUTO_FIT_WHEN_UPDATE },
+                { label: fitWhenFoldLabel, value: "fitWhenFold", checked: this.config.AUTO_FIT_WHEN_FOLD },
+                { label: foldWhenUpdateLabel, value: "foldWhenUpdate", checked: this.config.REMEMBER_FOLD_WHEN_UPDATE },
             ];
             const callback = submit => {
                 this.markmap.options.zoom = submit.includes("zoom");
@@ -422,16 +422,16 @@ class tocMarkmap {
                 this.config.AUTO_FIT_WHEN_FOLD = submit.includes("fitWhenFold");
                 this.config.REMEMBER_FOLD_WHEN_UPDATE = submit.includes("foldWhenUpdate");
             };
-            return {label: "", legend: "能力", type: "checkbox", list, callback}
+            return { label: "", legend: "能力", type: "checkbox", list, callback }
         }
 
         const further = () => {
-            const {REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: removeForeign} = this.config;
+            const { REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: removeForeign } = this.config;
             const removeForeignLabel = "导出时替换 foreignObject 标签" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
             const initColorFuncLabel = "恢复默认配色方案" + _genInfo("使用系统默认配色方案，使得上述配色方案失效");
             const list = [
-                {label: removeForeignLabel, value: "removeForeignObject", checked: removeForeign},
-                {label: initColorFuncLabel, value: "initColorFunction", checked: false},
+                { label: removeForeignLabel, value: "removeForeignObject", checked: removeForeign },
+                { label: initColorFuncLabel, value: "initColorFunction", checked: false },
             ];
             const callback = submit => {
                 this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = submit.includes("removeForeignObject");
@@ -440,11 +440,11 @@ class tocMarkmap {
                     this.currentScheme = this.defaultScheme;
                 }
             }
-            return {label: "", legend: "高级", type: "checkbox", list, callback}
+            return { label: "", legend: "高级", type: "checkbox", list, callback }
         }
 
         const components = [colorScheme, colorFreezeLevel, expandLevel, fitRatio, spacingHorizontal, spacingVertical, maxWidth, duration, localeHeightRatio, ability, further].map(f => f());
-        this.utils.dialog.modal({title: "设置", components}, async components => {
+        this.utils.dialog.modal({ title: "设置", components }, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
         });
@@ -460,7 +460,7 @@ class tocMarkmap {
     download = async () => {
         const removeSvgForeignObject = svg => {
             svg.querySelectorAll("foreignObject").forEach(foreign => {
-                const {textContent, previousSibling} = foreign;
+                const { textContent, previousSibling } = foreign;
                 const text = document.createElement("text");
                 const [xAttr, yAttr] = (previousSibling.tagName === "line") ? ["x2", "y2"] : ["cx", "cy"];
                 const x = parseInt(previousSibling.getAttribute(xAttr)) - 12;
@@ -481,7 +481,7 @@ class tocMarkmap {
         }
 
         const getSvgBounding = svg => {
-            const {width, height} = this.entities.svg.querySelector("g").getBoundingClientRect();
+            const { width, height } = this.entities.svg.querySelector("g").getBoundingClientRect();
             const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/);
             if (!match || !match.groups || !match.groups.scale) return {};
             const scale = parseFloat(match.groups.scale);
@@ -497,7 +497,7 @@ class tocMarkmap {
                 maxY = Math.max(maxY, y);
             })
 
-            return {minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight}
+            return { minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight }
         }
 
         const changeSvgAttr = svg => {
@@ -507,7 +507,7 @@ class tocMarkmap {
         }
 
         const setSvgSize = svg => {
-            const {width = 100, height = 100, minY = 0} = getSvgBounding(svg);
+            const { width = 100, height = 100, minY = 0 } = getSvgBounding(svg);
             const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
             const svgWidth = width + borderX;
             const svgHeight = height + borderY;
@@ -550,9 +550,9 @@ class tocMarkmap {
         let showFunc, hint, contentTop, modalRect, toggleFunc;
         if (this.pinUtils.isPinUp) {
             toggleFunc = "add";
-            const {top, height, width, left} = this.contentOriginRect;
+            const { top, height, width, left } = this.contentOriginRect;
             const newHeight = height * this.config.HEIGHT_PRECENT_WHEN_PIN_UP / 100;
-            modalRect = {left, top, width, height: newHeight};
+            modalRect = { left, top, width, height: newHeight };
             contentTop = top + newHeight;
             showFunc = "show";
             hint = "还原窗口";
@@ -591,9 +591,9 @@ class tocMarkmap {
         let showFunc, hint, writeWidth, modalRect, contentRight, contentWidth, toggleFunc;
         if (this.pinUtils.isPinRight) {
             toggleFunc = "add";
-            const {top, width, height, right} = this.contentOriginRect;
+            const { top, width, height, right } = this.contentOriginRect;
             const newWidth = width * this.config.WIDTH_PRECENT_WHEN_PIN_RIGHT / 100;
-            modalRect = {top, height, width: newWidth, left: right - newWidth};
+            modalRect = { top, height, width: newWidth, left: right - newWidth };
             contentRight = `${right - newWidth}px`;
             contentWidth = `${width - newWidth}px`;
             writeWidth = "initial";
@@ -665,13 +665,13 @@ class tocMarkmap {
             const className = ["pinUp", "pinRight"].find(func => this.entities.modal.classList.contains(func));
             if (!className) return
 
-            const {width, left, right} = this.entities.content.getBoundingClientRect();
+            const { width, left, right } = this.entities.content.getBoundingClientRect();
             let source;
             if (className === "pinUp") {
-                source = {left: `${left}px`, width: `${width}px`};
+                source = { left: `${left}px`, width: `${width}px` };
             } else {
-                const {right: modalRight} = this.entities.modal.getBoundingClientRect();
-                source = {left: `${right}px`, width: `${modalRight - right}px`};
+                const { right: modalRight } = this.entities.modal.getBoundingClientRect();
+                source = { left: `${right}px`, width: `${modalRight - right}px` };
             }
             Object.assign(this.entities.modal.style, source);
         }
@@ -689,7 +689,7 @@ class tocMarkmap {
             const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar";
             return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "setting", "download", "close"])
         }
-        const callback = ({key}) => this.onButtonClick(key);
+        const callback = ({ key }) => this.onButtonClick(key);
         this.utils.contextMenu.register("markmap", "#plugin-markmap-svg", showMenu, callback);
     }
 
@@ -723,7 +723,7 @@ class tocMarkmap {
         }
 
         const getModalMinWidth = () => {
-            const {marginLeft, paddingRight} = document.defaultView.getComputedStyle(this.entities.header);
+            const { marginLeft, paddingRight } = document.defaultView.getComputedStyle(this.entities.header);
             const headerWidth = this.entities.header.getBoundingClientRect().width;
             const _marginRight = this.config.ALLOW_ICON_WRAP ? 0 : parseFloat(paddingRight);
             return parseFloat(marginLeft) + headerWidth + _marginRight
@@ -746,7 +746,7 @@ class tocMarkmap {
             const onMouseMove = (deltaX, deltaY) => {
                 deltaY = Math.max(deltaY, deltaHeight);
                 deltaX = Math.max(deltaX, deltaWidth);
-                return {deltaX, deltaY}
+                return { deltaX, deltaY }
             }
             const onMouseUp = async () => {
                 this.rollbackTransition();
@@ -772,7 +772,7 @@ class tocMarkmap {
                     deltaY = contentMinTop - contentStartTop;
                 }
                 this.entities.content.style.top = newContentTop + "px";
-                return {deltaX, deltaY}
+                return { deltaX, deltaY }
             }
             this.utils.resizeFixedModal(this.entities.gripUp, this.entities.modal, false, true, onMouseDown, onMouseMove, onMouseUp);
         }
@@ -804,7 +804,7 @@ class tocMarkmap {
                 this.entities.content.style.right = newContentRight + "px";
                 this.entities.content.style.width = contentStartWidth - deltaX + "px";
                 this.entities.modal.style.left = modalStartLeft - deltaX + "px";
-                return {deltaX, deltaY}
+                return { deltaX, deltaY }
             }
             this.utils.resizeFixedModal(this.entities.gripRight, this.entities.modal, true, false, onMouseDown, onMouseMove, onMouseUp);
         }
@@ -851,7 +851,7 @@ class tocMarkmap {
                 const header = headers[tocIdx];
                 if (header) {
                     const cid = header.attributes.id;
-                    const {height: contentHeight, top: contentTop} = this.entities.content.getBoundingClientRect();
+                    const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect();
                     const height = contentHeight * this.config.LOCALE_HIGHT_RATIO + contentTop;
                     this.utils.scrollByCid(cid, height);
                 }
@@ -879,8 +879,8 @@ class tocMarkmap {
 
     setModalRect = rect => {
         if (!rect) return;
-        const {left, top, height, width} = rect;
-        const s = {left: `${left}px`, top: `${top}px`, height: `${height}px`, width: `${width}px`};
+        const { left, top, height, width } = rect;
+        const s = { left: `${left}px`, top: `${top}px`, height: `${height}px`, width: `${width}px` };
         Object.assign(this.entities.modal.style, s);
     }
 
@@ -898,8 +898,8 @@ class tocMarkmap {
     }
 
     _initModalRect = () => {
-        const {left, width, height} = this.entities.content.getBoundingClientRect();
-        const {LEFT_PERCENT_WHEN_INIT, WIDTH_PERCENT_WHEN_INIT, HEIGHT_PERCENT_WHEN_INIT} = this.config;
+        const { left, width, height } = this.entities.content.getBoundingClientRect();
+        const { LEFT_PERCENT_WHEN_INIT, WIDTH_PERCENT_WHEN_INIT, HEIGHT_PERCENT_WHEN_INIT } = this.config;
         Object.assign(this.entities.modal.style, {
             left: `${left + width * LEFT_PERCENT_WHEN_INIT / 100}px`,
             width: `${width * WIDTH_PERCENT_WHEN_INIT / 100}px`,
@@ -924,19 +924,19 @@ class tocMarkmap {
 
         const fold = new Set();
         const _collect = node => {
-            const {payload, __path} = node;
+            const { payload, __path } = node;
             if (payload && payload.fold && __path) {
                 fold.add(__path);
             }
         }
         const _reset = node => {
-            const {payload, __path} = node;
+            const { payload, __path } = node;
             if (fold.has(__path)) {
-                node.payload = {...payload, fold: 1};
+                node.payload = { ...payload, fold: 1 };
             }
         }
 
-        const {data: oldRoot} = this.markmap.state || {};
+        const { data: oldRoot } = this.markmap.state || {};
         _walk(_setPath, oldRoot);
         _walk(_setPath, newRoot);
         _walk(_collect, oldRoot);
@@ -957,15 +957,15 @@ class tocMarkmap {
     }
 
     create = async (md, options) => {
-        options = Object.assign({}, this.config.DEFAULT_TOC_OPTIONS, options, {color: this.getColorOption()});
-        const {root} = this.controller.transformer.transform(md);
+        options = Object.assign({}, this.config.DEFAULT_TOC_OPTIONS, options, { color: this.getColorOption() });
+        const { root } = this.controller.transformer.transform(md);
         this.markmap = this.controller.Markmap.create(this.entities.svg, options, root);
     }
 
     update = async (md, fit = true) => {
-        const {root} = this.controller.transformer.transform(md);
+        const { root } = this.controller.transformer.transform(md);
         this.setFold(root);
-        this.markmap.setOptions({color: this.getColorOption()});
+        this.markmap.setOptions({ color: this.getColorOption() });
         this.markmap.setData(root);
         if (fit) {
             await this.markmap.fit();

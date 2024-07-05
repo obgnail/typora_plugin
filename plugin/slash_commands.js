@@ -2,7 +2,7 @@ class slashCommandsPlugin extends BasePlugin {
     beforeProcess = () => {
         this.matched = new Map();
         this.commands = new Map(this.config.COMMANDS.filter(cmd => cmd.enable && cmd.keyword).map(cmd => [cmd.keyword.toLowerCase(), cmd]));
-        this.handler = {search: this._search, render: this._render, beforeApply: this._beforeApply};
+        this.handler = { search: this._search, render: this._render, beforeApply: this._beforeApply };
         this.strategy = this._getStrategy();
         return this.commands.size ? undefined : this.utils.stopLoadPluginError
     }
@@ -22,14 +22,14 @@ class slashCommandsPlugin extends BasePlugin {
         const getType = type => type === "command" ? "命令" : "文段";
         const th = `<tr><th>关键字</th><th>类型</th><th>功能</th></tr>`;
         const list = Array.from(this.commands.values());
-        const trs = list.map(({type, keyword, hint, callback}) => `<tr><td>${keyword}</td><td>${getType(type)}</td><td title="${callback}">${hint}</td></tr>`);
+        const trs = list.map(({ type, keyword, hint, callback }) => `<tr><td>${keyword}</td><td>${getType(type)}</td><td title="${callback}">${hint}</td></tr>`);
         const table = `<table>${th}${trs.join("")}</table>`;
         const onclick = ev => ev.target.closest("a") && this.openSettingFile();
         const components = [
-            {label: "如需自定义斜杠命令，请 <a>修改配置文件</a>", type: "p", onclick},
-            {label: table, type: "p"}
+            { label: "如需自定义斜杠命令，请 <a>修改配置文件</a>", type: "p", onclick },
+            { label: table, type: "p" }
         ];
-        this.utils.dialog.modal({title: "斜杠命令", components});
+        this.utils.dialog.modal({ title: "斜杠命令", components });
     }
 
     _onEdit = () => {
@@ -86,7 +86,7 @@ class slashCommandsPlugin extends BasePlugin {
                 return result.join("");
             }
         }
-        return {prefix, substr, abbr}[this.config.MATCH_STRATEGY] || abbr;
+        return { prefix, substr, abbr }[this.config.MATCH_STRATEGY] || abbr;
     }
 
     _match = token => {
@@ -105,7 +105,7 @@ class slashCommandsPlugin extends BasePlugin {
         const cmd = this.matched.get(suggest);
         if (!cmd) return ""
 
-        const {token} = File.editor.autoComplete.state;
+        const { token } = File.editor.autoComplete.state;
         const icon = cmd.icon || ((cmd.type === "command") ? "🧰" : "🧩");
         const text = this.strategy.highlight(cmd.keyword, token);
         const innerText = icon + " " + text + (cmd.hint ? ` - ${cmd.hint}` : "");
@@ -125,7 +125,7 @@ class slashCommandsPlugin extends BasePlugin {
         const cmd = this.matched.get(suggest);
         if (!cmd) return ""
 
-        const {anchor} = File.editor.autoComplete.state;
+        const { anchor } = File.editor.autoComplete.state;
         const normalizeAnchor = () => anchor.containerNode.normalize();
         const flash = () => {
             const node = this.utils.findActiveNode();

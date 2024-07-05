@@ -10,7 +10,7 @@ class stateRecorder {
     //   4. stateRestorer(Element, state) => {}: 为元素恢复状态。state就是stateGetter的返回值
     //   5. finalFunc() => {}: 最后执行的函数
     register = (name, selector, stateGetter, stateRestorer, finalFunc) => {
-        const obj = {selector, stateGetter, stateRestorer, finalFunc, collections: new Map()};
+        const obj = { selector, stateGetter, stateRestorer, finalFunc, collections: new Map() };
         this.recorders.set(name, obj);
     }
     unregister = recorderName => this.recorders.delete(recorderName);

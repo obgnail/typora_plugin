@@ -178,16 +178,16 @@ class autoNumberPlugin extends BasePlugin {
         `
     }
 
-    style = () => ({textID: this.css_id, text: this.getResultStyle()})
+    style = () => ({ textID: this.css_id, text: this.getResultStyle() })
 
     init = () => {
         this.callArgs = [
-            {arg_name: "禁用/启用自动编号：大纲", arg_value: "set_outline"},
-            {arg_name: "禁用/启用自动编号：正文", arg_value: "set_content"},
-            {arg_name: "禁用/启用自动编号：TOC", arg_value: "set_toc"},
-            {arg_name: "禁用/启用自动编号：表格", arg_value: "set_table"},
-            {arg_name: "禁用/启用自动编号：图片", arg_value: "set_image"},
-            {arg_name: "禁用/启用自动编号：代码块", arg_value: "set_fence"},
+            { arg_name: "禁用/启用自动编号：大纲", arg_value: "set_outline" },
+            { arg_name: "禁用/启用自动编号：正文", arg_value: "set_content" },
+            { arg_name: "禁用/启用自动编号：TOC", arg_value: "set_toc" },
+            { arg_name: "禁用/启用自动编号：表格", arg_value: "set_table" },
+            { arg_name: "禁用/启用自动编号：图片", arg_value: "set_image" },
+            { arg_name: "禁用/启用自动编号：代码块", arg_value: "set_fence" },
         ];
     }
 
@@ -202,7 +202,7 @@ class autoNumberPlugin extends BasePlugin {
     getStyleString = (inExport = false) => {
         // beta版本不支持:has语法
         const image_css = (inExport && this.utils.supportHasSelector) ? this.image_export_css : this.image_css;
-        const {ENABLE_CONTENT, ENABLE_SIDE_BAR, ENABLE_TOC, ENABLE_IMAGE, ENABLE_TABLE, ENABLE_FENCE} = this.config;
+        const { ENABLE_CONTENT, ENABLE_SIDE_BAR, ENABLE_TOC, ENABLE_IMAGE, ENABLE_TABLE, ENABLE_FENCE } = this.config;
         return [
             this.base_css,
             ENABLE_CONTENT ? this.content_css : "",
@@ -225,7 +225,7 @@ class autoNumberPlugin extends BasePlugin {
     toggleSetting = async toggle => {
         const css = this.getResultStyle(toggle);
         this.utils.insertStyle(this.css_id, css);
-        const obj = {[toggle]: this.config[toggle]};
+        const obj = { [toggle]: this.config[toggle] };
         await this.utils.saveConfig(this.fixedName, obj);
     }
 
@@ -259,7 +259,7 @@ class exportHelper {
         if (!this.inExport) return;
         this.inExport = false;
 
-        const numbering = {H2: 0, H3: 0, H4: 0, H5: 0, H6: 0};
+        const numbering = { H2: 0, H3: 0, H4: 0, H5: 0, H6: 0 };
         headers.forEach(header => {
             const tagName = "H" + header[0];
             if (!numbering.hasOwnProperty(tagName)) return;

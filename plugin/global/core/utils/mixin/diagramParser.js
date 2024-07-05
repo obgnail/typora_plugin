@@ -18,10 +18,10 @@ class diagramParser {
     // 6. destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
     // 7. extraStyleGetter() => string: 用于导出时，新增css
     // 8. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
-    register = ({lang, mappingLang, destroyWhenUpdate = false, renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true}) => {
+    register = ({ lang, mappingLang, destroyWhenUpdate = false, renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true }) => {
         lang = lang.toLowerCase();
         mappingLang = mappingLang ? mappingLang.toLowerCase() : lang;
-        this.langMapping[lang] = {name: mappingLang, mappingType: this.diagramModeFlag};
+        this.langMapping[lang] = { name: mappingLang, mappingType: this.diagramModeFlag };
         const parser = {
             lang, mappingLang, destroyWhenUpdate, renderFunc,
             cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode
@@ -87,7 +87,7 @@ class diagramParser {
 
     // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
     throwParseError = (errorLine, reason) => {
-        throw {errorLine, reason}
+        throw { errorLine, reason }
     }
 
     getErrorMessage = error => {
@@ -307,7 +307,7 @@ class diagramParser {
 
     onChangeFile = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, () => {
-            for (const {destroyAllFunc} of this.parsers.values()) {
+            for (const { destroyAllFunc } of this.parsers.values()) {
                 destroyAllFunc && destroyAllFunc();
             }
         });

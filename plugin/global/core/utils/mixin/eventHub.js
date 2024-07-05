@@ -103,7 +103,7 @@ class eventHub {
         const content = this.utils.entities.eContent;
         const hasTransition = window.getComputedStyle(content).transition !== "all 0s ease 0s";
         const afterToggleSidebar = hasTransition
-            ? () => content.addEventListener("transitionend", _afterToggleSidebar, {once: true})
+            ? () => content.addEventListener("transitionend", _afterToggleSidebar, { once: true })
             : this.utils.debounce(_afterToggleSidebar, 400);
         this.utils.decorate(() => File && File.editor && File.editor.library, "toggleSidebar", null, afterToggleSidebar);
 
@@ -120,7 +120,7 @@ class eventHub {
                     this.publishEvent(this.eventType.toggleSettingPage, openPage);
                 }
             }
-        }).observe(document.body, {attributes: true});
+        }).observe(document.body, { attributes: true });
 
         const debouncePublish = this.utils.debounce(() => this.publishEvent(this.eventType.fileEdited), 400);
         this.observer = new MutationObserver(mutationList => {
@@ -129,7 +129,7 @@ class eventHub {
                 debouncePublish();
             }
         });
-        this.observer.observe(this.utils.entities.eWrite, {characterData: true, childList: true, subtree: true})
+        this.observer.observe(this.utils.entities.eWrite, { characterData: true, childList: true, subtree: true })
     }
 
     afterProcess = () => {

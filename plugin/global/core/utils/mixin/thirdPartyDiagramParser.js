@@ -19,8 +19,8 @@ class thirdPartyDiagramParser {
     //  10. destroyFunc(Object) => null: 传入图形实例，destroy图形实例
     //  11. beforeExport(element, instance) => null: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
     //  12. extraStyleGetter() => string: 用于导出时，新增css
-    register = ({lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter}) => {
-        const p = {checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {}};
+    register = ({ lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter }) => {
+        const p = { checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {} };
         this.parsers.set(lang.toLowerCase(), p);
         this.utils.diagramParser.register({
             lang, mappingLang, destroyWhenUpdate, extraStyleGetter, interactiveMode,
@@ -63,8 +63,8 @@ class thirdPartyDiagramParser {
     }
 
     setStyle = (parser, $pre, $wrap, content) => {
-        const {height, width} = this.utils.getFenceUserSize(content);
-        const {height: defaultHeight, "background-color": backgroundColor, ...other} = parser.css || {};
+        const { height, width } = this.utils.getFenceUserSize(content);
+        const { height: defaultHeight, "background-color": backgroundColor, ...other } = parser.css || {};
         $wrap.css({
             width: width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
             height: height || defaultHeight || this.defaultHeight,

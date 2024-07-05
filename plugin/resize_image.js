@@ -12,7 +12,7 @@ class resizeImagePlugin extends BasePlugin {
 
             const zoomOut = ev.deltaY > 0;
             this.zoom(target, zoomOut, this.config.SCALE);
-        }, {passive: true, capture: true});
+        }, { passive: true, capture: true });
     }
 
     recordResizeState = (needChange = true) => {
@@ -81,8 +81,8 @@ class resizeImagePlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
         const args = [
-            {arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记住图片放缩状态`, arg_value: "record_resize_state"},
-            {arg_name: `${this.config.ALLOW_OVERSIZE ? "禁止" : "允许"}图片超出范围`, arg_value: "allow_oversize"},
+            { arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记住图片放缩状态`, arg_value: "record_resize_state" },
+            { arg_name: `${this.config.ALLOW_OVERSIZE ? "禁止" : "允许"}图片超出范围`, arg_value: "allow_oversize" },
         ];
 
         const images = anchorNode.closest("#write .md-image");
@@ -93,14 +93,14 @@ class resizeImagePlugin extends BasePlugin {
 
         meta.target = image;
 
-        args.push({arg_name: "缩小20%", arg_value: "zoom_out_20_percent"})
+        args.push({ arg_name: "缩小20%", arg_value: "zoom_out_20_percent" })
         if (this.getWidth(image) < image.parentElement.offsetWidth) {
-            args.push({arg_name: "放大20%", arg_value: "zoom_in_20_percent"})
+            args.push({ arg_name: "放大20%", arg_value: "zoom_in_20_percent" })
         }
         args.push(
-            {arg_name: "靠左", arg_value: "set_align_left"},
-            {arg_name: "居中", arg_value: "set_align_center"},
-            {arg_name: "靠右", arg_value: "set_align_right"},
+            { arg_name: "靠左", arg_value: "set_align_left" },
+            { arg_name: "居中", arg_value: "set_align_center" },
+            { arg_name: "靠右", arg_value: "set_align_right" },
         )
         return args
     }

@@ -1,14 +1,14 @@
 /** 为了提高性能，把逻辑移到CSS，所以此插件采用非常绿皮的实现思路，请注意生产安全
-*  1. 使用伪类::before作为点击按钮
-*  2. ::before使用left样式飘出父元素的BoundingClientRect
-*  3. 当父元素检测到click时，检测鼠标位置，如果鼠标位置超出父元素的Rect，则判定伪类被点击
-*/
+ *  1. 使用伪类::before作为点击按钮
+ *  2. ::before使用left样式飘出父元素的BoundingClientRect
+ *  3. 当父元素检测到click时，检测鼠标位置，如果鼠标位置超出父元素的Rect，则判定伪类被点击
+ */
 class collapseListPlugin extends BasePlugin {
     beforeProcess = () => {
         this.className = "plugin-collapsed-list";
         this.selector = '#write [mdtype="list"]';
         const color = this.config.TRIANGLE_COLOR || "var(--meta-content-color)";
-        this.triangleStyle = {left: -18, top: 0, height: 9, halfWidth: 7, color: color};
+        this.triangleStyle = { left: -18, top: 0, height: 9, halfWidth: 7, color: color };
     }
 
     styleTemplate = () => true
@@ -19,9 +19,9 @@ class collapseListPlugin extends BasePlugin {
             const parent = ev.target.closest(this.selector);
             if (!parent) return;
 
-            const {clientX, clientY} = ev;
-            const {left: PLeft, top: PTop} = parent.getBoundingClientRect();
-            const {left: TLeft, top: TTop, height: THeight, halfWidth: THalfWidth} = this.triangleStyle;
+            const { clientX, clientY } = ev;
+            const { left: PLeft, top: PTop } = parent.getBoundingClientRect();
+            const { left: TLeft, top: TTop, height: THeight, halfWidth: THalfWidth } = this.triangleStyle;
 
             const left = PLeft + TLeft;
             const top = PTop + TTop;
@@ -69,7 +69,7 @@ class collapseListPlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = () => {
         const arg_name = `${this.config.RECORD_COLLAPSE ? "不" : ""}记住列表折叠状态`;
-        return [{arg_name: arg_name, arg_value: "record_collapse_state"}];
+        return [{ arg_name: arg_name, arg_value: "record_collapse_state" }];
     }
 
     call = type => {

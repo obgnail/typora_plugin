@@ -37,9 +37,9 @@ class tocPlugin extends BaseCustomPlugin {
 
     onToggleSidebar = () => {
         const resetPosition = () => {
-            const {right} = this.entities.content.getBoundingClientRect();
-            const {right: modalRight} = this.entities.modal.getBoundingClientRect();
-            Object.assign(this.entities.modal.style, {left: `${right}px`, width: `${modalRight - right}px`});
+            const { right } = this.entities.content.getBoundingClientRect();
+            const { right: modalRight } = this.entities.modal.getBoundingClientRect();
+            Object.assign(this.entities.modal.style, { left: `${right}px`, width: `${modalRight - right}px` });
         }
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterToggleSidebar, resetPosition);
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterSetSidebarWidth, resetPosition);
@@ -59,7 +59,7 @@ class tocPlugin extends BaseCustomPlugin {
         }
 
         this.utils.show(this.entities.modal);
-        const {width, right} = this.entities.content.getBoundingClientRect();
+        const { width, right } = this.entities.content.getBoundingClientRect();
         const modalWidth = width * this.config.width_percent_when_pin_right / 100;
         this.entities.modal.style.width = modalWidth + "px";
         Object.assign(this.entities.content.style, {
@@ -103,7 +103,7 @@ class tocPlugin extends BaseCustomPlugin {
             this.entities.content.style.right = newContentRight + "px";
             this.entities.content.style.width = contentStartWidth - deltaX + "px";
             this.entities.modal.style.left = modalStartLeft - deltaX + "px";
-            return {deltaX, deltaY}
+            return { deltaX, deltaY }
         }
         this.utils.resizeFixedModal(this.entities.grip, this.entities.modal, true, false, onMouseDown, onMouseMove);
     }
@@ -155,18 +155,18 @@ class tocPlugin extends BaseCustomPlugin {
     _getTocTemplate = () => {
         const rootNode = this._getTocRootNode();
         const li = rootNode.children.map(this._tocTemplate);
-        return {ele: "ul", class_: "toc-root", children: li}
+        return { ele: "ul", class_: "toc-root", children: li }
     }
 
     _getTocRootNode = () => {
-        const root = {depth: 0, cid: "n0", text: "root", children: []};
-        const {headers = []} = File.editor.nodeMap.toc;
+        const root = { depth: 0, cid: "n0", text: "root", children: [] };
+        const { headers = [] } = File.editor.nodeMap.toc;
         if (headers.length === 0) return root;
 
-        const {outline} = File.editor.library;
+        const { outline } = File.editor.library;
         const toc = this.config.escape_header
-            ? outline.getHeaderMatrix(true).map(([depth, text, cid]) => ({depth, text, cid, children: []}))
-            : headers.map(({attributes: {depth, text}, cid}) => ({depth, text, cid, children: []}))
+            ? outline.getHeaderMatrix(true).map(([depth, text, cid]) => ({ depth, text, cid, children: [] }))
+            : headers.map(({ attributes: { depth, text }, cid }) => ({ depth, text, cid, children: [] }))
 
         toc.forEach((node, idx) => {
             const parent = this._findParent(toc, idx - 1, node.depth) || root;
@@ -176,13 +176,13 @@ class tocPlugin extends BaseCustomPlugin {
     }
 
     _tocTemplate = rootNode => {
-        const {text, cid, depth, children = []} = rootNode;
-        const content = [{class_: "toc-node", ref: cid, children: [{ele: "span", class_: "toc-text", text}]}];
+        const { text, cid, depth, children = [] } = rootNode;
+        const content = [{ class_: "toc-node", ref: cid, children: [{ ele: "span", class_: "toc-text", text }] }];
         const list = children.map(this._tocTemplate);
         if (list.length) {
-            content.push({ele: "ul", children: list});
+            content.push({ ele: "ul", children: list });
         }
-        return {ele: "li", class_: "plugin-toc-depth-" + depth, children: content}
+        return { ele: "li", class_: "plugin-toc-depth-" + depth, children: content }
     }
 
     _findParent = (toc, idx, depth) => {

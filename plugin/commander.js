@@ -1,13 +1,13 @@
 class commanderPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.SHELL = {CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl"};
+        this.SHELL = { CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl" };
     }
 
     styleTemplate = () => true
 
     html = () => {
-        const {USE_BUILTIN, BUILTIN} = this.config;
-        const {CMD_BASH, POWER_SHELL, GIT_BASH, WSL} = this.SHELL;
+        const { USE_BUILTIN, BUILTIN } = this.config;
+        const { CMD_BASH, POWER_SHELL, GIT_BASH, WSL } = this.SHELL;
         const genShell = (shell, text) => `<option value="${shell}">${text}</option>`;
 
         const shells = [genShell(CMD_BASH, "cmd/bash")];
@@ -35,11 +35,11 @@ class commanderPlugin extends BasePlugin {
     }
 
     hotkey = () => {
-        const hotkeys = [{hotkey: this.config.HOTKEY, callback: this.call}];
+        const hotkeys = [{ hotkey: this.config.HOTKEY, callback: this.call }];
         if (this.config.USE_BUILTIN) {
             this.config.BUILTIN.forEach(ele => {
                 if (ele.hotkey && ele.cmd && ele.shell) {
-                    hotkeys.push({hotkey: ele.hotkey, callback: () => this.quickExecute(ele.cmd, ele.shell)});
+                    hotkeys.push({ hotkey: ele.hotkey, callback: () => this.quickExecute(ele.cmd, ele.shell) });
                 }
             })
         }
@@ -58,10 +58,10 @@ class commanderPlugin extends BasePlugin {
         }
 
         this.arg_value_prefix = "call_builtin@";
-        this.callArgs = [{arg_name: "显示/隐藏", arg_value: "show"}];
+        this.callArgs = [{ arg_name: "显示/隐藏", arg_value: "show" }];
         this.config.BUILTIN.forEach(builtin => {
             if (builtin.name) {
-                this.callArgs.push({arg_name: builtin.name, arg_value: this.arg_value_prefix + builtin.name});
+                this.callArgs.push({ arg_name: builtin.name, arg_value: this.arg_value_prefix + builtin.name });
             }
         });
     }
@@ -216,8 +216,8 @@ class commanderPlugin extends BasePlugin {
         this.normalizeModal(cmd, shell, hint);
         const [cmd_, shell_] = this.normalizeCommand(cmd, shell)
         const command_ = `${prefix} ${shell_} "${cmd_}"`;
-        const defaultOptions = {encoding: 'utf8', cwd: this.getFolder()};
-        const option_ = {...defaultOptions, ...options};
+        const defaultOptions = { encoding: 'utf8', cwd: this.getFolder() };
+        const option_ = { ...defaultOptions, ...options };
         const callback_ = (err, stdout, stderr) => {
             if (err || stderr.length) {
                 reject(err || stderr.toString());
@@ -239,8 +239,8 @@ class commanderPlugin extends BasePlugin {
         this.normalizeModal(cmd, shell, hint || ""); // 执行前清空输出
         const [cmd_, shell_] = this.normalizeCommand(cmd, shell)
         const command_ = `${prefix} ${shell_} "${cmd_}"`;
-        const defaultOptions = {encoding: 'utf8', cwd: this.getFolder(), shell: true};
-        const option_ = {...defaultOptions, ...options};
+        const defaultOptions = { encoding: 'utf8', cwd: this.getFolder(), shell: true };
+        const option_ = { ...defaultOptions, ...options };
         const child = this.utils.Package.ChildProcess.spawn(command_, option_);
         child.stdout.on('data', resolve);
         child.stderr.on("data", reject);
@@ -288,7 +288,7 @@ class commanderPlugin extends BasePlugin {
     }
 
     toggleModal = () => {
-        const {modal} = this.modal;
+        const { modal } = this.modal;
         if (this.utils.isShow(modal)) {
             this.utils.hide(modal);
         } else {

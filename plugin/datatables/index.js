@@ -66,7 +66,7 @@ class datatablesPlugin extends BasePlugin {
             pageLength: this.config.PAGE_LENGTH,
             scrollCollapse: this.config.SROLL_COLLAPSE,
             processing: true,
-            search: {caseInsensitive: this.config.CASE_INSENSITIVE, regex: this.config.REGEX},
+            search: { caseInsensitive: this.config.CASE_INSENSITIVE, regex: this.config.REGEX },
             language: {
                 processing: "处理中...",
                 lengthMenu: "每页 _MENU_ 项",
@@ -82,7 +82,7 @@ class datatablesPlugin extends BasePlugin {
                 loadingRecords: "载入中...",
                 infoThousands: ",",
                 thousands: ".",
-                paginate: {first: "<<", previous: "<", next: ">", last: ">>"},
+                paginate: { first: "<<", previous: "<", next: ">", last: ">>" },
             }
         };
         if (this.config.SCROLLY > 0) {
@@ -103,7 +103,7 @@ class datatablesPlugin extends BasePlugin {
         // addTfoot($table);
         const table = $table.dataTable(this.dataTablesConfig);
         this.appendFilter(table.api());
-        this.tableList.push({uuid, table});
+        this.tableList.push({ uuid, table });
         edit && edit.parentNode.removeChild(edit);
         return uuid
     }

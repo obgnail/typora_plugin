@@ -1,5 +1,5 @@
 class ripgrepPlugin extends BasePlugin {
-    styleTemplate = () => ({topPercent: parseInt(this.config.TOP_PERCENT) + "%"})
+    styleTemplate = () => ({ topPercent: parseInt(this.config.TOP_PERCENT) + "%" })
 
     html = () => `
         <div id="plugin-ripgrep" class="plugin-common-modal plugin-common-hidden"> 
@@ -11,7 +11,7 @@ class ripgrepPlugin extends BasePlugin {
         </div>
     `
 
-    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
         this.entities = {
@@ -47,12 +47,12 @@ class ripgrepPlugin extends BasePlugin {
     }
 
     call = () => {
-        const {modal, input} = this.entities;
+        const { modal, input } = this.entities;
         if (this.utils.isShow(modal)) {
             this.utils.hide(modal);
         } else {
             const widthRatio = this.config.WIDTH_PERCENT / 100;
-            const {width, left} = this.entities.content.getBoundingClientRect();
+            const { width, left } = this.entities.content.getBoundingClientRect();
             this.entities.modal.style.width = width * widthRatio + "px";
             this.entities.modal.style.left = left + width * (1 - widthRatio) / 2 + "px";
             this.utils.show(modal);
@@ -92,7 +92,7 @@ class ripgrepPlugin extends BasePlugin {
      */
     _ripgrep = (args, onData, onErr, onClose) => {
         const rgPath = reqnode("vscode-ripgrep").rgPath.replace("node_modules.asar", "node_modules");
-        const options = {cwd: File.getMountFolder(), stdio: ["ignore", "pipe", "pipe"], env: {rg: rgPath}};
+        const options = { cwd: File.getMountFolder(), stdio: ["ignore", "pipe", "pipe"], env: { rg: rgPath } };
         const child = this.utils.Package.ChildProcess.spawn(rgPath, args, options);
         child.stdout.setEncoding("utf8");
         child.stderr.setEncoding("utf8");

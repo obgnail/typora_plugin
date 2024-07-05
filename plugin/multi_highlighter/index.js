@@ -42,7 +42,7 @@ class multiHighlighterPlugin extends BasePlugin {
         </div>
     `
 
-    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
         this.entities = {
@@ -57,7 +57,7 @@ class multiHighlighterPlugin extends BasePlugin {
         this.multiHighlighter = new multiHighlighter();
         this.fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
         this.lastHighlightFilePath = "";
-        this.showMarkerInfo = {idxOfFence: -1, idxOfWrite: -1};
+        this.showMarkerInfo = { idxOfFence: -1, idxOfWrite: -1 };
     }
 
     process = () => {
@@ -351,7 +351,7 @@ class multiHighlighter {
     _newHighlighter(root, key, caseSensitive, className) {
         return new this.InstantSearch(
             root, // root
-            {text: key, caseSensitive: caseSensitive, className: className}, //token
+            { text: key, caseSensitive: caseSensitive, className: className }, //token
             true, // scrollToResult
             className, // defaultClassName
             caseSensitive, // defaultCaseSensitive

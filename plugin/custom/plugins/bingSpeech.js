@@ -67,27 +67,27 @@ class bingSpeechPlugin extends BaseCustomPlugin {
             "newscast-formal": "正式、自信、权威",
             shouting: "听起来好像声音在远处",
         }
-        const operationMap = {speech: "朗读", download: "下载"};
-        const styleDegreeMap = {"0": "低", "1": "中", "2": "高"};
-        const {from_language, voice, rate, pitch, style, style_degree} = this.config;
+        const operationMap = { speech: "朗读", download: "下载" };
+        const styleDegreeMap = { "0": "低", "1": "中", "2": "高" };
+        const { from_language, voice, rate, pitch, style, style_degree } = this.config;
         const num2Str = num => (parseInt(num) / 100).toFixed(1);
         const str2Num = str => (str.startsWith("-") ? "" : "+") + Math.floor(parseFloat(str) * 100) + "%";
 
         const genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7; margin-left: 7px;"></span>`;
         const warn = "⚠️ 本插件的功能完全依赖于外部环境，因此不能保证成功" + genInfo("采用爬虫技术盗取必应翻译的语音，因此成功与否完全取决于微软");
         const components = [
-            {label: warn, type: "p"},
-            {label: "操作", type: "select", selected: "speech", map: operationMap},
-            {label: "语言", type: "input", value: from_language},
-            {label: "语音", type: "select", selected: voice, list: voiceList},
-            {label: "语气", type: "select", selected: style, map: styleMap},
-            {label: "语气强度", type: "select", selected: style_degree + "", map: styleDegreeMap},
-            {label: "语速", type: "range", min: -3.0, max: 3.0, step: 0.1, value: num2Str(rate)},
-            {label: "语调", type: "range", min: -1.0, max: 1.0, step: 0.1, value: num2Str(pitch)},
+            { label: warn, type: "p" },
+            { label: "操作", type: "select", selected: "speech", map: operationMap },
+            { label: "语言", type: "input", value: from_language },
+            { label: "语音", type: "select", selected: voice, list: voiceList },
+            { label: "语气", type: "select", selected: style, map: styleMap },
+            { label: "语气强度", type: "select", selected: style_degree + "", map: styleDegreeMap },
+            { label: "语速", type: "range", min: -3.0, max: 3.0, step: 0.1, value: num2Str(rate) },
+            { label: "语调", type: "range", min: -1.0, max: 1.0, step: 0.1, value: num2Str(pitch) },
         ]
-        this.utils.dialog.modal({title: "必应朗读", components}, async components => {
+        this.utils.dialog.modal({ title: "必应朗读", components }, async components => {
             const [_, o, l, v, s, d, r, p] = components.map(c => c.submit);
-            const cfg = {from_language: l, voice: v, style: s, style_degree: d, rate: str2Num(r), pitch: str2Num(p)};
+            const cfg = { from_language: l, voice: v, style: s, style_degree: d, rate: str2Num(r), pitch: str2Num(p) };
             await this.utils.showProcessingHint();
             try {
                 if (o === "speech") {
@@ -160,7 +160,7 @@ class bingSpeechPlugin extends BaseCustomPlugin {
         }
         console.debug("start translate");
         const config = (fromLang && toLang)
-            ? Object.assign({...this.config}, {from_language: fromLang, to_language: toLang})
+            ? Object.assign({ ...this.config }, { from_language: fromLang, to_language: toLang })
             : this.config
         const spider = new bingSpeechSpider(this);
         const resp = await spider.translate(config, text);
@@ -169,7 +169,7 @@ class bingSpeechPlugin extends BaseCustomPlugin {
 
     crawl = async (text, config, iter) => {
         console.debug("start crawl");
-        config = Object.assign({...this.config}, config);
+        config = Object.assign({ ...this.config }, config);
         const spider = new bingSpeechSpider(this);
         for await (const binary of spider.crawl(config, text)) {
             await iter(binary);
@@ -203,7 +203,7 @@ class bingSpeechSpider {
         pathParams.append("isVertical", "1");
         const path = "/ttranslatev3?" + pathParams.toString()   // 翻译API
 
-        const {from_language: from, to_language: to} = config;
+        const { from_language: from, to_language: to } = config;
         const bodyParams = new URLSearchParams();
         bodyParams.append("key", options.Key);
         bodyParams.append("token", options.Token);
@@ -245,7 +245,7 @@ class bingSpeechSpider {
         if (tokenArr.length < 3) {
             throw Error("get options error: tokenArr.length < 3");
         }
-        const {voice, rate, pitch, style = "neutral", style_degree = 1, from_language, to_language, group_lines = 3} = config;
+        const { voice, rate, pitch, style = "neutral", style_degree = 1, from_language, to_language, group_lines = 3 } = config;
         return {
             // token
             IG: ig, IID: "translator.5024", Key: tokenArr[0], Token: tokenArr[1].replace(/"/g, ""),

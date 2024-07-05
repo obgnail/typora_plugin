@@ -9,12 +9,12 @@ class WordpressUploader extends BaseUploaderInterface {
     }
 
     async upload(title, content, extraData, options) {
-        const {Builder, By, Key, until} = require('selenium-webdriver');
+        const { Builder, By, Key, until } = require('selenium-webdriver');
         const chrome = require('selenium-webdriver/chrome');
         require('chromedriver');
         const Notification = require('../utils/customNotification.js').plugin;
         const notification = new Notification();
-        const {marked} = require('marked');
+        const { marked } = require('marked');
 
         const SELENIUM_WAIT_FIX_TIME_LEVEL1 = 2000;
         const SELENIUM_EXPLICIT_WAIT_TIME = 10000;

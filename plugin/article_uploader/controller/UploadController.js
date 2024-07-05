@@ -52,14 +52,14 @@ class UploadController {
     // 这里对结果不做捕捉，后续根据需求优化
     upload = async (platform, filePath) => {
         const uploader = this.uploaders.get(platform);
-        const {title, content, extraData} = this.utils.readAndSplitFile(filePath);
+        const { title, content, extraData } = this.utils.readAndSplitFile(filePath);
         if (uploader) {
             await uploader.upload(title, content, extraData, this.options);
         }
     }
 
     uploadToAllPlatforms = async (filePath) => {
-        const {title, content, extraData} = this.utils.readAndSplitFile(filePath);
+        const { title, content, extraData } = this.utils.readAndSplitFile(filePath);
         for (let [name, uploader] of this.uploaders) {
             // 上传全部的时候不上传哪些平台，属于脱裤子放屁的需求
             const c = this.config.upload[name];
