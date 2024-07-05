@@ -2,7 +2,7 @@ class mdPaddingPlugin extends BasePlugin {
     hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
 
     formatContent = content => {
-        const {padMarkdown} = require("./md-padding");
+        const {padMarkdown} = require("./md-padding.min");
         return padMarkdown(content, {ignoreWords: this.config.IGNORE_WORDS})
     }
 
