@@ -374,12 +374,12 @@ class fenceEnhancePlugin extends BasePlugin {
     }
     setAutoHide = () => {
         this.config.AUTO_HIDE = !this.config.AUTO_HIDE;
-        const v = this.config.AUTO_HIDE ? "hidden" : "";
-        // 处于折叠状态的代码块不可隐藏
-        document.querySelectorAll(".fold-code.folded").forEach(ele => ele.style.visibility = "");
-        document.querySelectorAll(".fold-code:not(.folded)").forEach(ele => ele.style.visibility = v);
+        const visibility = (this.config.AUTO_HIDE) ? "hidden" : "";
+        document.querySelectorAll(".fence-enhance").forEach(ele => {
+            // 处于折叠状态的代码块不可隐藏
+            ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility;
+        });
     }
-
     showIndentAllFencesModal = () => {
         const label = "调整缩进功能的能力有限，对于 Python 这种游标卡尺语言甚至会出现误判，你确定吗？";
         this.utils.dialog.modal({title: "为所有代码块调整缩进", components: [{label, type: "p"}]}, this.indentAllFences)
