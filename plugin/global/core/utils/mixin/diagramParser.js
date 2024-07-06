@@ -7,21 +7,20 @@ class diagramParser {
         this.langMapping = new Map(); // {lang: mappingLang}
     }
 
-    // 1. lang(string): language
-    // 2. mappingLang(string): 映射到哪个语言
-    // 3. destroyWhenUpdate(boolean): 更新前是否清空preview里的html
-    // 4. async renderFunc(cid, content, $pre) => null: 渲染函数，根据内容渲染所需的图像
-    //     1. cid: 当前代码块的cid
-    //     2. content: 代码块的内容
-    //     3. $pre: 代码块的jquery element
-    // 5. cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
-    // 6. destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
-    // 7. extraStyleGetter() => string: 用于导出时，新增css
-    // 8. interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
-    register = ({lang, mappingLang, destroyWhenUpdate = false, renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true}) => {
+    /**
+     * @param lang(string): language
+     * @param mappingLang(string): 映射到哪个语言
+     * @param destroyWhenUpdate(boolean): 更新前是否清空preview里的html
+     * @param async renderFunc(cid, content, $pre) => null: 渲染函数，根据内容渲染所需的图像. 1)cid: 当前代码块的cid 2)content: 代码块的内容 3) $pre: 代码块的jquery element
+     * @param cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
+     * @param destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
+     * @param extraStyleGetter() => string: 用于导出时，新增css
+     * @param interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
+     */
+    register = ({ lang, mappingLang, destroyWhenUpdate = false, renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true }) => {
         lang = lang.toLowerCase();
         mappingLang = mappingLang ? mappingLang.toLowerCase() : lang;
-        this.langMapping[lang] = {name: mappingLang, mappingType: this.diagramModeFlag};
+        this.langMapping[lang] = { name: mappingLang, mappingType: this.diagramModeFlag };
         const parser = {
             lang, mappingLang, destroyWhenUpdate, renderFunc,
             cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode
@@ -87,7 +86,7 @@ class diagramParser {
 
     // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
     throwParseError = (errorLine, reason) => {
-        throw {errorLine, reason}
+        throw { errorLine, reason }
     }
 
     getErrorMessage = error => {
@@ -307,7 +306,7 @@ class diagramParser {
 
     onChangeFile = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, () => {
-            for (const {destroyAllFunc} of this.parsers.values()) {
+            for (const { destroyAllFunc } of this.parsers.values()) {
                 destroyAllFunc && destroyAllFunc();
             }
         });

@@ -46,8 +46,8 @@ class collapseTablePlugin extends BasePlugin {
         meta.target = figure;
 
         return [
-            {arg_name, arg_hint, arg_disabled, arg_value: "convert_current"},
-            {arg_name: record, arg_value: "record_collapse_state"}
+            { arg_name, arg_hint, arg_disabled, arg_value: "convert_current" },
+            { arg_name: record, arg_value: "record_collapse_state" }
         ]
     }
 

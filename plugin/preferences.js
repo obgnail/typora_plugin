@@ -1,5 +1,5 @@
 class preferencesPlugin extends BasePlugin {
-    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     getSettings = async () => {
         const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
@@ -13,32 +13,36 @@ class preferencesPlugin extends BasePlugin {
 
         const pluginState = {};
         const customPluginState = {};
-        Object.keys(settings).forEach(fixedName => (pluginState[fixedName] = {ENABLE: enablePlugins.includes(fixedName)}))
-        Object.keys(customSettings).forEach(fixedName => (customPluginState[fixedName] = {enable: enableCustomPlugins.includes(fixedName)}))
+        Object.keys(settings).forEach(fixedName => (pluginState[fixedName] = { ENABLE: enablePlugins.includes(fixedName) }))
+        Object.keys(customSettings).forEach(fixedName => (customPluginState[fixedName] = { enable: enableCustomPlugins.includes(fixedName) }))
 
         // check need update file
         const settingsHasUpdate = Object.entries(settings).some(([name, plugin]) => plugin.ENABLE !== pluginState[name].ENABLE);
         const customSettingsHasUpdate = Object.entries(customSettings).some(([name, plugin]) => plugin.enable !== customPluginState[name].enable);
         if (!settingsHasUpdate && !customSettingsHasUpdate) return;
 
-        for (const file of ["settings.user.toml", "custom_plugin.user.toml"]) {
+        const files = [
+            {file: "settings.user.toml", mergeObj: pluginState},
+            {file: "custom_plugin.user.toml", mergeObj: customPluginState},
+        ]
+        for (const {file, mergeObj} of files) {
             const settingPath = await this.utils.getActualSettingPath(file);
-            const tomlObj = await this.utils.readToml(settingPath);
-            const mergeObj = file === "settings.user.toml" ? pluginState : customPluginState;
-            const newSetting = this.utils.merge(tomlObj, mergeObj);
+            const settingObj = await this.utils.readToml(settingPath);
+            const newSetting = this.utils.merge(settingObj, mergeObj);
             const newContent = this.utils.stringifyToml(newSetting);
             const ok = await this.utils.writeFile(settingPath, newContent);
             if (!ok) return;
         }
 
         if (showModal) {
-            const {response} = await this.utils.showMessageBox({
+            const option = {
                 type: "info",
                 buttons: ["确定", "取消"],
                 title: "preferences",
                 detail: "配置将于重启 Typora 后生效，确认重启？",
                 message: "设置成功",
-            });
+            }
+            const { response } = await this.utils.showMessageBox(option);
             if (response === 0) {
                 this.utils.restartTypora();
             }
@@ -82,18 +86,17 @@ class preferencesPlugin extends BasePlugin {
         const plugins = Object.entries(settings).map(displayFunc);
         const customPlugins = Object.entries(customSettings).map(displayFunc);
         const components = [
-            {label: "🛡️ 为保护用户，此处禁止启停部分插件，如需请 <a>修改配置文件</a>", type: "p", onclick},
-            {label: "", legend: "一级插件", type: "checkbox", list: plugins},
-            {label: "", legend: "二级插件", type: "checkbox", list: customPlugins},
+            { label: "🛡️ 为保护用户，此处禁止启停部分插件，如需请 <a>修改配置文件</a>", type: "p", onclick },
+            { label: "", legend: "一级插件", type: "checkbox", list: plugins },
+            { label: "", legend: "二级插件", type: "checkbox", list: customPlugins },
         ];
-        const modal = {title: "启停插件", components};
-        const cb = async ([_, {submit: enablePlugins}, {submit: enableCustomPlugins}]) => {
+        const modal = { title: "启停插件", components };
+        const cb = async ([_, { submit: enablePlugins }, { submit: enableCustomPlugins }]) => {
             await this.togglePlugin(enablePlugins, enableCustomPlugins, true);
         }
         this.utils.dialog.modal(modal, cb);
     }
 }
-
 
 module.exports = {
     plugin: preferencesPlugin

@@ -37,7 +37,7 @@ class UploadUtils {
                 throw new Error("内容为空");
             }
             const extraData = "";  // TODO: 取出标签，分类，封面图等
-            return {title, content, extraData};
+            return { title, content, extraData };
         } catch (error) {
             notification.showNotification('文件格式读取失败', "error");
             console.error('Error reading file:', error);

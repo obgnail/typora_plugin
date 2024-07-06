@@ -2,12 +2,12 @@ class toolbarPlugin extends BasePlugin {
     beforeProcess = () => {
         this.toolController = new toolController(this);
         const tools = [tabTool, pluginTool, recentFileTool, operationTool, modeTool, themeTool, outlineTool, functionTool, mixTool];
-        tools.forEach(tool => this.registerBarTool(new tool()));
+        tools.forEach(tool => this.toolController.register(new tool()));
     }
 
-    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
-    styleTemplate = () => ({topPercent: parseInt(this.config.TOOLBAR_TOP_PERCENT) + "%"})
+    styleTemplate = () => ({ topPercent: parseInt(this.config.TOOLBAR_TOP_PERCENT) + "%" })
 
     html = () => {
         const tools = Array.from(this.toolController.tools.values(), t => t.name() + "：" + t.translate());
@@ -92,8 +92,8 @@ class toolbarPlugin extends BasePlugin {
         }
     }
 
-    call =  () => {
-        setTimeout(async() => {
+    call = () => {
+        setTimeout(async () => {
             if (this.utils.isShow(this.entities.toolbar)) {
                 this.hide();
             } else {
@@ -101,9 +101,6 @@ class toolbarPlugin extends BasePlugin {
             }
         })
     }
-
-    registerBarTool = tool => this.toolController.register(tool);
-    unregisterBarTool = name => this.toolController.unregister(name);
 
     _callTool = (target, ev) => {
         if (ev) {
@@ -119,7 +116,7 @@ class toolbarPlugin extends BasePlugin {
         }
     }
 
-    _newItems = ({tool, matches, input}) => {
+    _newItems = ({ tool, matches, input }) => {
         const toolName = tool.name();
         return matches.map(match => {
             const showName = match.showName || match;
@@ -137,7 +134,7 @@ class toolbarPlugin extends BasePlugin {
     show = async () => {
         this.toolController.setAnchorNode();
         const widthRatio = this.config.TOOLBAR_WIDTH_PERCENT / 100;
-        const {width, left} = this.entities.content.getBoundingClientRect();
+        const { width, left } = this.entities.content.getBoundingClientRect();
         this.entities.toolbar.style.width = width * widthRatio + "px";
         this.entities.toolbar.style.left = left + width * (1 - widthRatio) / 2 + "px";
         this.utils.show(this.entities.toolbar);
@@ -252,7 +249,7 @@ class toolController {
         })
         positive.length === 0 && positive.push("");
         all.length === 0 && all.push("");
-        return {all, positive, negative}
+        return { all, positive, negative }
     }
 
     searchWithNeg = async (tool, positive, negative) => {
@@ -263,17 +260,17 @@ class toolController {
         const posResult = this.intersect(posList);
         const negResult = this.union(negList);
         const matches = this.difference(posResult, negResult);
-        return {inputList: positive, matches}
+        return { inputList: positive, matches }
     }
 
     searchWithoutNeg = async (tool, all) => {
         const resultList = await Promise.all(all.map(tool.search));
         const matches = this.intersect(resultList);
-        return {inputList: all, matches}
+        return { inputList: all, matches }
     }
 
     search = async (tool, input) => {
-        const {all, positive, negative} = this.kind(input);
+        const { all, positive, negative } = this.kind(input);
         if (this.plugin.config.USE_NEGATIVE_SEARCH) {
             return this.searchWithNeg(tool, positive, negative);
         } else {
@@ -285,23 +282,23 @@ class toolController {
         raw = raw.trimLeft();
         for (const short of this.tools.keys()) {
             if (raw.startsWith(short + " ")) {
-                return {tool: this.tools.get(short), input: raw.slice(short.length + 1).trim()}
+                return { tool: this.tools.get(short), input: raw.slice(short.length + 1).trim() }
             }
         }
         if (this.plugin.config.DEFAULT_TOOL) {
-            return {tool: this.tools.get(this.plugin.config.DEFAULT_TOOL), input: raw.trim()}
+            return { tool: this.tools.get(this.plugin.config.DEFAULT_TOOL), input: raw.trim() }
         }
-        return {tool: null, input: ""}
+        return { tool: null, input: "" }
     }
 
     handleInput = async () => {
         const raw = this.plugin.entities.input.value;
-        let {tool, input} = this.dispatch(raw);
+        let { tool, input } = this.dispatch(raw);
         if (!tool) return
 
-        const {inputList, matches} = await this.search(tool, input);
+        const { inputList, matches } = await this.search(tool, input);
         if (matches && matches.length) {
-            return {tool, input: inputList, matches}
+            return { tool, input: inputList, matches }
         }
     }
 }
@@ -337,20 +334,20 @@ class pluginTool extends baseToolInterface {
             const chineseName = plugin.config.NAME;
             const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode, true);
             if ((!dynamicCallArgs || dynamicCallArgs.length === 0) && (!plugin.callArgs || plugin.callArgs === 0)) {
-                pluginsList.push({showName: chineseName, fixedName: fixedName});
+                pluginsList.push({ showName: chineseName, fixedName: fixedName });
                 continue
             }
             if (plugin.callArgs) {
                 for (const arg of plugin.callArgs) {
                     const show = chineseName + " - " + arg.arg_name;
-                    pluginsList.push({showName: show, fixedName: fixedName, meta: arg.arg_value});
+                    pluginsList.push({ showName: show, fixedName: fixedName, meta: arg.arg_value });
                 }
             }
             if (dynamicCallArgs) {
                 for (const arg of dynamicCallArgs) {
                     if (!arg.arg_disabled) {
                         const show = chineseName + " - " + arg.arg_name;
-                        pluginsList.push({showName: show, fixedName: fixedName, meta: arg.arg_value});
+                        pluginsList.push({ showName: show, fixedName: fixedName, meta: arg.arg_value });
                     }
                 }
             }
@@ -377,12 +374,12 @@ class recentFileTool extends baseToolInterface {
 
         const result = [];
         const blank = String.fromCharCode(160).repeat(3);
-        const {files, folders} = await this.utils.getRecentFiles();
+        const { files, folders } = await this.utils.getRecentFiles();
         const add = (list, meta) => {
             for (const file of list) {
                 if (file.path) {
                     const prefix = (meta === "file") ? "📄" : "📁";
-                    result.push({showName: prefix + blank + file.path, fixedName: file.path, meta: meta});
+                    result.push({ showName: prefix + blank + file.path, fixedName: file.path, meta: meta });
                 }
             }
         }
@@ -422,12 +419,12 @@ class operationTool extends baseToolInterface {
         }
         const openFileInNewWindow = () => File.editor.library.openFileInNewWindow(this.utils.getFilePath(), false)
         this.ops = [
-            {showName: "在资源管理器中打开", fixedName: "explorer", callback: explorer},
-            {showName: "复制文件路径", fixedName: "copyPath", callback: copyPath},
-            {showName: "偏好设置", fixedName: "togglePreferencePanel", callback: togglePreferencePanel},
-            {showName: "窗口置顶", fixedName: "togglePinWindow", callback: togglePinWindow},
-            {showName: "在新窗口中打开", fixedName: "openFileInNewWindow", callback: openFileInNewWindow},
-            {showName: "修改插件配置", fixedName: "openSettingFolder", callback: this.utils.openSettingFolder},
+            { showName: "在资源管理器中打开", fixedName: "explorer", callback: explorer },
+            { showName: "复制文件路径", fixedName: "copyPath", callback: copyPath },
+            { showName: "偏好设置", fixedName: "togglePreferencePanel", callback: togglePreferencePanel },
+            { showName: "窗口置顶", fixedName: "togglePinWindow", callback: togglePinWindow },
+            { showName: "在新窗口中打开", fixedName: "openFileInNewWindow", callback: openFileInNewWindow },
+            { showName: "修改插件配置", fixedName: "openSettingFolder", callback: this.utils.openSettingFolder },
         ]
         this.ops.forEach(op => op.showName += ` - ${op.fixedName}`);
     }
@@ -448,10 +445,10 @@ class modeTool extends baseToolInterface {
             File.isNode && ClientCommand.refreshViewMenu();
         }
         this.modes = [
-            {showName: "大纲视图", fixedName: "outlineView", callback: outlineView},
-            {showName: "源代码模式", fixedName: "sourceMode", callback: () => File.toggleSourceMode()},
-            {showName: "专注模式", fixedName: "focusMode", callback: () => File.editor.toggleFocusMode()},
-            {showName: "打字机模式", fixedName: "typewriterMode", callback: () => File.editor.toggleTypeWriterMode()},
+            { showName: "大纲视图", fixedName: "outlineView", callback: outlineView },
+            { showName: "源代码模式", fixedName: "sourceMode", callback: () => File.toggleSourceMode() },
+            { showName: "专注模式", fixedName: "focusMode", callback: () => File.editor.toggleFocusMode() },
+            { showName: "打字机模式", fixedName: "typewriterMode", callback: () => File.editor.toggleTypeWriterMode() },
         ]
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             const readonly = this.utils.getPlugin("read_only");
@@ -459,24 +456,14 @@ class modeTool extends baseToolInterface {
             const dark = this.utils.getCustomPlugin("darkMode");
             const image = this.utils.getCustomPlugin("imageReviewer");
             const noImage = this.utils.getCustomPlugin("noImageMode");
-            if (readonly) {
-                this.modes.push({showName: "只读模式", fixedName: "readOnlyMode", callback: () => readonly.call()});
-            }
-            if (blur) {
-                this.modes.push({showName: "模糊模式", fixedName: "blurMode", callback: () => blur.call()});
-            }
-            if (dark) {
-                this.modes.push({showName: "夜间模式", fixedName: "darkMode", callback: () => dark.callback()});
-            }
-            if (image) {
-                this.modes.push({showName: "看图模式", fixedName: "imageReviewer", callback: () => image.callback()});
-            }
-            if (noImage) {
-                this.modes.push({showName: "无图模式", fixedName: "noImageMode", callback: () => noImage.callback()});
-            }
-            this.modes.push({
-                showName: "调试模式", fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools")
-            });
+
+            readonly && this.modes.push({ showName: "只读模式", fixedName: "readOnlyMode", callback: () => readonly.call() });
+            blur && this.modes.push({ showName: "模糊模式", fixedName: "blurMode", callback: () => blur.call() });
+            dark && this.modes.push({ showName: "夜间模式", fixedName: "darkMode", callback: () => dark.callback() });
+            image && this.modes.push({ showName: "看图模式", fixedName: "imageReviewer", callback: () => image.callback() });
+            noImage && this.modes.push({ showName: "无图模式", fixedName: "noImageMode", callback: () => noImage.callback() });
+            this.modes.push({ showName: "调试模式", fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools") });
+
             this.modes.forEach(mode => mode.showName += ` - ${mode.fixedName}`);
         })
     }
@@ -494,8 +481,8 @@ class themeTool extends baseToolInterface {
     setThemeForever = theme => ClientCommand.setTheme(theme);
     setThemeTemp = theme => File.setTheme(theme);
     search = async input => {
-        const {all, current} = await JSBridge.invoke("setting.getThemes");
-        const list = all.map(theme => ({showName: theme.replace(/\.css/gi, ""), fixedName: theme}));
+        const { all, current } = await JSBridge.invoke("setting.getThemes");
+        const list = all.map(theme => ({ showName: theme.replace(/\.css/gi, ""), fixedName: theme }));
         return this.baseSearch(input, list, ["showName"]);
     }
     callback = fixedName => this.setThemeForever(fixedName);
@@ -510,9 +497,9 @@ class outlineTool extends baseToolInterface {
         if (!headers) return
         const result = [];
         headers.forEach(header => {
-            const {attributes, cid} = header || {};
+            const { attributes, cid } = header || {};
             if (attributes && cid) {
-                result.push({showName: attributes.pattern.replace("{0}", attributes.text), fixedName: cid});
+                result.push({ showName: attributes.pattern.replace("{0}", attributes.text), fixedName: cid });
             }
         })
         return result
@@ -534,7 +521,7 @@ class functionTool extends baseToolInterface {
         return this.baseSearch(input, all, ["showName"]);
     }
     callback = fixedName => {
-        const {input} = this.controller.plugin.entities;
+        const { input } = this.controller.plugin.entities;
         input.value = fixedName + " ";
         input.dispatchEvent(new Event("input"));
     }
@@ -554,7 +541,7 @@ class mixTool extends baseToolInterface {
                 if (result) {
                     return result.map(ele => {
                         const meta = name + "@" + (ele.meta || "");
-                        const item = typeof ele === "string" ? {showName: ele, fixedName: ele, meta} : {...ele, meta};
+                        const item = typeof ele === "string" ? { showName: ele, fixedName: ele, meta } : { ...ele, meta };
                         item.showName = tool.icon() + blank + item.showName;
                         return item
                     });

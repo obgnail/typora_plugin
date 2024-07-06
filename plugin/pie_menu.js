@@ -2,12 +2,12 @@ class pieMenuPlugin extends BasePlugin {
     styleTemplate = () => true
 
     html = () => {
-        const {BUTTONS} = this.config;
+        const { BUTTONS } = this.config;
         const innerItems = BUTTONS.slice(0, 8);
         const outerItems = BUTTONS.slice(8, 16);
 
         const genCircle = (type, items = []) => {
-            const item = items.map(({ICON, CALLBACK}) => `<div class="plugin-pie-menu-item" data-callback="${CALLBACK}"><div class="plugin-pie-menu-item-text-${type} ${ICON}"></div></div>`)
+            const item = items.map(({ ICON, CALLBACK }) => `<div class="plugin-pie-menu-item" data-callback="${CALLBACK}"><div class="plugin-pie-menu-item-text-${type} ${ICON}"></div></div>`)
             return `<div class="plugin-pie-menu-circle plugin-pie-menu-${type}">${item.join("")}</div>`
         };
 
@@ -19,7 +19,7 @@ class pieMenuPlugin extends BasePlugin {
         return `<div class="plugin-pie-menu plugin-common-hidden">${circles.join("")}</div>`
     }
 
-    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
         this.pinMenuClass = "pin-menu";
@@ -37,8 +37,8 @@ class pieMenuPlugin extends BasePlugin {
             y = (window.innerHeight || document.documentElement.clientHeight) / 2;
         }
         this.utils.show(this.entities.menu);
-        const {width, height} = this.entities.menu.getBoundingClientRect();
-        const position = {left: x - width / 2 + "px", top: y - height / 2 + "px"};
+        const { width, height } = this.entities.menu.getBoundingClientRect();
+        const position = { left: x - width / 2 + "px", top: y - height / 2 + "px" };
         Object.assign(this.entities.menu.style, position);
     }
 
@@ -94,7 +94,7 @@ class pieMenuPlugin extends BasePlugin {
             const rotate = window.getComputedStyle(this.entities.menu).getPropertyValue('--menu-rotate') || 0;
             const rotateValue = parseFloat(rotate) + (ev.deltaY > 0 ? step : -step);
             this.entities.menu.style.setProperty('--menu-rotate', `${rotateValue}deg`);
-        }, {passive: false});
+        }, { passive: false });
     }
 
     call = () => setTimeout(this.toggleMenu);

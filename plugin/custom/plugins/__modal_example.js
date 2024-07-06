@@ -1,4 +1,4 @@
-/* modalExample 类展示了如何使用 this.utils.dialog.modal 函数:
+/** modalExample 类展示了如何使用 this.utils.dialog.modal 函数:
     直接使用this.utils.modal即可弹出自定义的模态框，待用户点击【确定】后会调用回调函数
 
     this.modal args:

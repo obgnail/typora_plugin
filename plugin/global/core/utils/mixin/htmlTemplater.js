@@ -1,5 +1,7 @@
-// 3x faster then innerHTML, less memory usage, more secure, but poor readable
-// don't use unless element is simple enough or there are secure issues
+/**
+ * 3x faster then innerHTML, less memory usage, more secure, but poor readable
+ * don't use unless element is simple enough or there are secure issues
+ */
 class htmlTemplater {
     constructor(utils) {
         this.utils = utils;

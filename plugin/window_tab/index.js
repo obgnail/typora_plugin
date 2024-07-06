@@ -14,10 +14,10 @@ class windowTabBarPlugin extends BasePlugin {
     html = () => `<div id="plugin-window-tab"><div class="tab-bar"></div></div>`
 
     hotkey = () => [
-        {hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: this.nextTab},
-        {hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY, callback: this.previousTab},
-        {hotkey: this.config.CLOSE_HOTKEY, callback: this.closeActiveTab},
-        {hotkey: this.config.COPY_PATH_HOTKEY, callback: this.copyActiveTabPath}
+        { hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: this.nextTab },
+        { hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY, callback: this.previousTab },
+        { hotkey: this.config.CLOSE_HOTKEY, callback: this.closeActiveTab },
+        { hotkey: this.config.COPY_PATH_HOTKEY, callback: this.copyActiveTabPath }
     ]
 
     init = () => {
@@ -68,7 +68,7 @@ class windowTabBarPlugin extends BasePlugin {
                 }
 
                 if (!this.config.HIDE_WINDOW_TITLE_BAR) {
-                    const {height, top} = document.querySelector("header").getBoundingClientRect();
+                    const { height, top } = document.querySelector("header").getBoundingClientRect();
                     this.entities.windowTab.style.top = height + top + "px";
                 }
 
@@ -107,7 +107,7 @@ class windowTabBarPlugin extends BasePlugin {
             const newWindowIfNeed = (offsetY, tab) => {
                 if (this.config.HEIGHT_SCALE < 0) return;
                 offsetY = Math.abs(offsetY);
-                const {height} = this.entities.tabBar.getBoundingClientRect();
+                const { height } = this.entities.tabBar.getBoundingClientRect();
                 if (offsetY > height * this.config.HEIGHT_SCALE) {
                     const idx = parseInt(tab.getAttribute("idx"));
                     this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false);
@@ -161,7 +161,7 @@ class windowTabBarPlugin extends BasePlugin {
                     ev.originalEvent.dataTransfer.setDragImage(previewImage, 0, 0);
                     ev.originalEvent.dataTransfer.effectAllowed = "move";
                     ev.originalEvent.dataTransfer.dropEffect = "move";
-                    let {left, top, height} = dragBox.getBoundingClientRect();
+                    let { left, top, height } = dragBox.getBoundingClientRect();
                     startX = ev.clientX;
                     startY = ev.clientY;
                     offsetX = startX - left;
@@ -181,10 +181,10 @@ class windowTabBarPlugin extends BasePlugin {
                     newWindowIfNeed(ev.offsetY, this);
 
                     if (!cloneObj) return;
-                    const {left, top} = this.getBoundingClientRect();
+                    const { left, top } = this.getBoundingClientRect();
                     const reset = cloneObj.animate(
-                        [{transform: cloneObj.style.transform}, {transform: `translate3d(${left}px, ${top}px, 0)`}],
-                        {duration: 70, easing: "ease-in-out"}
+                        [{ transform: cloneObj.style.transform }, { transform: `translate3d(${left}px, ${top}px, 0)` }],
+                        { duration: 70, easing: "ease-in-out" }
                     )
 
                     reset.onfinish = function () {
@@ -278,7 +278,7 @@ class windowTabBarPlugin extends BasePlugin {
             }
         }
         const handleRename = () => {
-            reqnode("electron").ipcRenderer.on("didRename", (sender, {oldPath, newPath}) => {
+            reqnode("electron").ipcRenderer.on("didRename", (sender, { oldPath, newPath }) => {
                 const isDir = this.utils.Package.Fs.statSync(newPath).isDirectory();
                 if (isDir) {
                     this.tabUtil.tabs
@@ -314,7 +314,7 @@ class windowTabBarPlugin extends BasePlugin {
                 } else {
                     target.scrollLeft += ev.deltaY * 0.5;
                 }
-            }, {passive: true})
+            }, { passive: true })
         }
         const handleMiddleClick = () => {
             this.entities.tabBar.addEventListener("mousedown", ev => {
@@ -337,11 +337,11 @@ class windowTabBarPlugin extends BasePlugin {
                 sortTabs: "排序标签",
                 toggleSuffix: "显示/隐藏文件名后缀",
             }, this.config.CONTEXT_MENU);
-            const showMenu = ({target}) => {
+            const showMenu = ({ target }) => {
                 idx = parseInt(target.getAttribute("idx"));
                 return map
             }
-            const callback = ({key: func}) => idx !== -1 && func && this[func] && this[func](idx);
+            const callback = ({ key: func }) => idx !== -1 && func && this[func] && this[func](idx);
             this.utils.contextMenu.register("window-tab", "#plugin-window-tab .tab-container", showMenu, callback);
         }
         const adjustQuickOpen = () => {
@@ -373,9 +373,9 @@ class windowTabBarPlugin extends BasePlugin {
             }, true)
         }
         const interceptLink = () => {
-            const _linkUtils = {file: "", anchor: ""};
+            const _linkUtils = { file: "", anchor: "" };
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
-                const {file, anchor} = _linkUtils;
+                const { file, anchor } = _linkUtils;
                 if (!file) return;
 
                 _linkUtils.file = "";
@@ -421,19 +421,19 @@ class windowTabBarPlugin extends BasePlugin {
     dynamicCallArgsGenerator = () => {
         const args = [];
         if (this.utils.existPathSync(this.saveTabFilePath)) {
-            const save_tabs = {arg_name: "覆盖保存的标签页", arg_value: "save_tabs"};
-            const open_save_tabs = {arg_name: "打开保存的标签页", arg_value: "open_save_tabs"};
+            const save_tabs = { arg_name: "覆盖保存的标签页", arg_value: "save_tabs" };
+            const open_save_tabs = { arg_name: "打开保存的标签页", arg_value: "open_save_tabs" };
             args.push(save_tabs, open_save_tabs);
         } else {
-            args.push({arg_name: "保存所有的标签页", arg_value: "save_tabs"});
+            args.push({ arg_name: "保存所有的标签页", arg_value: "save_tabs" });
         }
         if (this.localOpen) {
-            args.push({arg_name: "在新标签打开文件", arg_value: "new_tab_open"});
+            args.push({ arg_name: "在新标签打开文件", arg_value: "new_tab_open" });
         } else if (this.utils.getFilePath()) {
-            args.push({arg_name: "在当前标签打开文件", arg_value: "local_open"});
+            args.push({ arg_name: "在当前标签打开文件", arg_value: "local_open" });
         }
         if (this.tabUtil.tabCount > 1) {
-            args.push({arg_name: "排序标签", arg_value: "sort_tabs"});
+            args.push({ arg_name: "排序标签", arg_value: "sort_tabs" });
         }
         return args
     }
@@ -465,11 +465,11 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     _adjustContentTop = () => {
-        const {height, top} = this.entities.windowTab.getBoundingClientRect();
+        const { height, top } = this.entities.windowTab.getBoundingClientRect();
         if (height + top === 0) {  // 等于0，说明没有任何一个tab
             this._resetContentTop();
         } else {
-            const {height: headerHeight, top: headerTop} = document.querySelector("header").getBoundingClientRect();
+            const { height: headerHeight, top: headerTop } = document.querySelector("header").getBoundingClientRect();
             const _top = Math.max(top + height + this.config.GAP_BETWEEN_TAB_AND_CONTENT, headerHeight + headerTop);
             const t = _top + "px";
             this.entities.content.style.top = t;
@@ -689,14 +689,14 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     openTab = wantOpenPath => {
-        const {NEW_TAB_AT, TAB_MAX_NUM} = this.config;
+        const { NEW_TAB_AT, TAB_MAX_NUM } = this.config;
         const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath);
         if (!include) {
             // 原地打开并且不存在tab时，修改当前tab的文件路径
             if (this.localOpen) {
                 this.tabUtil.currentTab.path = wantOpenPath;
             } else {
-                const newTab = {path: wantOpenPath, scrollTop: 0};
+                const newTab = { path: wantOpenPath, scrollTop: 0 };
                 if (NEW_TAB_AT === "end") {
                     this.tabUtil.tabs.push(newTab);
                 } else if (NEW_TAB_AT === "right") {
@@ -740,7 +740,7 @@ class windowTabBarPlugin extends BasePlugin {
 
     closeTab = idx => {
         const tabUtil = this.tabUtil;
-        const {WHEN_CLOSE_LAST_TAB, ACTIVE_TAB_WHEN_CLOSE} = this.config;
+        const { WHEN_CLOSE_LAST_TAB, ACTIVE_TAB_WHEN_CLOSE } = this.config;
 
         const getLatestTabIdx = () => tabUtil.tabs.reduce((maxIdx, tab, idx, tabs) => (tab.timestamp || 0) > (tabs[maxIdx].timestamp || 0) ? idx : maxIdx, 0);
         const handleLastTab = () => {
@@ -758,7 +758,7 @@ class windowTabBarPlugin extends BasePlugin {
                     break;
                 case "reconfirm":
                 default:
-                    this.utils.dialog.modal({title: "退出 Typora", components: [{label: "是否退出？", type: "p"}]}, exit);
+                    this.utils.dialog.modal({ title: "退出 Typora", components: [{ label: "是否退出？", type: "p" }] }, exit);
             }
         }
 
@@ -810,7 +810,7 @@ class windowTabBarPlugin extends BasePlugin {
     sortTabs = () => {
         if (this.tabUtil.tabCount === 1) return;
         const current = this.tabUtil.currentTab;
-        this.tabUtil.tabs.sort(({showName: n1}, {showName: n2}) => n1.localeCompare(n2));
+        this.tabUtil.tabs.sort(({ showName: n1 }, { showName: n2 }) => n1.localeCompare(n2));
         this.switchTab(this.tabUtil.tabs.indexOf(current));
     }
 
@@ -835,7 +835,7 @@ class windowTabBarPlugin extends BasePlugin {
             active: idx === this.tabUtil.activeIdx,
             scrollTop: tab.scrollTop,
         }))
-        const str = JSON.stringify({"save_tabs": dataset}, null, "\t");
+        const str = JSON.stringify({ "save_tabs": dataset }, null, "\t");
         await this.utils.Package.Fs.promises.writeFile(filepath, str);
     }
 
@@ -851,7 +851,7 @@ class windowTabBarPlugin extends BasePlugin {
         tabs.forEach(tab => {
             const existTab = existTabs.get(tab.path);
             if (!existTab) {
-                this.tabUtil.tabs.push({path: tab.path, scrollTop: tab.scrollTop});
+                this.tabUtil.tabs.push({ path: tab.path, scrollTop: tab.scrollTop });
             } else {
                 existTab.scrollTop = tab.scrollTop;
             }

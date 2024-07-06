@@ -23,9 +23,9 @@ class marpPlugin extends BaseCustomPlugin {
     }
 
     create = ($wrap, content) => {
-        const {Marp, marp} = this.marpPkg;  // more detail: https://github.com/marp-team/marp-core
-        const shadowRoot = $wrap[0].shadowRoot || $wrap[0].attachShadow({mode: "open"}); // use shadowDOM to isolate styles
-        const {html, css} = marp.render(content);
+        const { Marp, marp } = this.marpPkg;  // more detail: https://github.com/marp-team/marp-core
+        const shadowRoot = $wrap[0].shadowRoot || $wrap[0].attachShadow({ mode: "open" }); // use shadowDOM to isolate styles
+        const { html, css } = marp.render(content);
         shadowRoot.innerHTML = `<style>${css}</style>` + html;
         return shadowRoot;
     }

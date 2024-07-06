@@ -9,9 +9,9 @@
   note: 尽量不要使用ES2015(ES6)以后的特性，因为低版本Typora不兼容
 */
 window.addEventListener("load", () => {
-    const {dirname, __dirname, reqnode} = global;
+    const { dirname, __dirname, reqnode } = global;
     const dir = dirname || __dirname;
     const core = reqnode("path").join(dir, "./plugin/global/core");
-    const {entry} = reqnode(core);
+    const { entry } = reqnode(core);
     entry();
 });

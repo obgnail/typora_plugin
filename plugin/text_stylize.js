@@ -1,42 +1,5 @@
-/* warning: 不要试图搞懂下面代码，理由：为了绕过Typora的很多特性，使用了大量的瓜皮代码
-*  为了方便以后修改，在此写入实现的思路：
-*    1. 先把问题简单化，假设用户的Selection只有一行，那么
-*       1. 此时有四种用户选中情况，比如：123<span style="color:#FF0000;">abc</span>defg
-*            1. 什么都没选中
-*            2. 普通选中（非情况3和4的都为普通选中，如：efg）
-*            3. 选中了内部文字（abc）
-*            4. 选中了外部文字（<span style="color:#FF0000;">abc</span>）
-*       2. 为了方便后续操作，将123<span style="color:#FF0000;">abc</span>defg拆成：
-*            1. beforeText: 123
-*            2. innerText: abc
-*            3. outerText: <span style="color:#FF0000;">abc</span>
-*            4. styleObject: style对象化
-*          其中情况1-3比较简单，好处理：
-*            1. 情况1: 在光标处插入: <span style="XXX"></span>
-*            2. 情况2: 读取选区内容（efg），使用span标签包裹，得到<span style="XXX">efg</span>，将内容插入回去
-*            3. 情况3稍作修改就可以变成情况4，即：修改选区为<span style="color:#FF0000;">abc</span>
-*       3. 下面重点解释情况4：
-*            1. 上面已经获取到styleObject，接下来按需操作styleObject
-*            2. 将上面的innerText、styleObject重新组合成新的outerText，重新插回去
-*            3. 因为有beforeText和styleObject，可以得知innerText的最终位置，然后moveBookmark，重新框选innerText
-*       4. 上面的所有流程都在方法setInlineStyle中
-*    2. 当用户框选跨越多个标签，有多行文本时，需要将多行全部拆分成单行，然后为每一行调用setInlineStyle
-*       1. 使用TreeWalker，配合range的commonAncestorContainer、startContainer、endContainer获取到选中的全部标签数组nodeList
-*       2. 考虑到用户使用shift+enter会生成：<span md-inline="softbreak" class="md-softbreak"> </span>，这个标签里的TEXT_NODE是无用的，将其从nodeList过滤掉
-*       3. 对nodeList进行分割，其中分割标志是node.classList.contains("md-softbreak")和!!node.getAttribute("cid")，前者为软回车，后者为硬回车
-*          并且，将多行全部拆分成单行，需要用到range.setStart(startContainer, startOffset)和range.setEnd(endContainer, endOffset);
-*          这里的startContainer、endContainer都是TEXT_NODE，所以将所有的ELEMENT_NODE过滤掉，得到selectLines
-*       4. selectLines是一个二维数组，每个元素是某一行所包含的全部TEXT_NODE组成的一维数组，很明显，startContainer对应某一行的第一个TEXT，endContainer对应一行中最后一个TEXT
-*          注意：第一行和最后一行要特殊处理（因为第一行和最后一行有可能不是全部选中的）
-*       5. 如此，将多行全部拆分成单行，得到每一行的startContainer, startOffset、endContainer, endOffset
-*       6. 上面的所有流程都在方法genRanges中
-*    3. 获取到每一行的Range就可以批量操作了吗？不。因为Typora在给某个paragraph插入一段文本后，会修改paragraph标签的innerHTML，导致上面获取的ranges中的TEXT_NODE失效，如何解决？
-*       1. 注意到插入span标签后，paragraph的textContent没有发生改变，于是我们可以记录旧的TEXT_NODE在文档中的位置，在生成新的TEXT_NODE后，我们可以根据此位置获取到新的TEXT_NODE
-*          接着将新的TEXT_NODE替换掉旧的TEXT_NODE，接着就可以调用setInlineStyle了
-*       2. 上面的所有流程都在方法setMultilineStyle中。记录逻辑在方法recordTEXTPosition中，替换逻辑在方法renewRange中
-* */
 class textStylizePlugin extends BasePlugin {
-    styleTemplate = () => ({backgroundColor: this.config.MODAL_BACKGROUND_COLOR || "var(--side-bar-bg-color)"})
+    styleTemplate = () => ({ backgroundColor: this.config.MODAL_BACKGROUND_COLOR || "var(--side-bar-bg-color)" })
 
     html = () => {
         const toolMap = {
@@ -65,7 +28,7 @@ class textStylizePlugin extends BasePlugin {
             close: ["关闭", `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>`],
         }
 
-        const {TOOLBAR, COLORS, NUM_PER_LINE} = this.config;
+        const { TOOLBAR, COLORS, NUM_PER_LINE } = this.config;
         const tools = TOOLBAR
             .filter(name => toolMap.hasOwnProperty(name))
             .map(name => {
@@ -87,25 +50,26 @@ class textStylizePlugin extends BasePlugin {
     }
 
     hotkey = () => {
-        const hotkeys = this.config.ACTION_HOTKEYS.map(({hotkey, action}) => {
+        const hotkeys = this.config.ACTION_HOTKEYS.map(({ hotkey, action }) => {
             const callback = () => {
                 const color = (action === "foregroundColor" || action === "backgroundColor" || action === "borderColor")
                     ? this.entities.toolbar.querySelector(`[action=${action}]`).getAttribute("last-color")
                     : undefined;
                 this.onAction(action, color);
             }
-            return {hotkey, callback}
+            return { hotkey, callback }
         })
-        return [{hotkey: this.config.SHOW_MODAL_HOTKEY, callback: this.call}, ...hotkeys];
+        return [{ hotkey: this.config.SHOW_MODAL_HOTKEY, callback: this.call }, ...hotkeys];
     }
 
     init = () => {
-        this.formatBrushObj = {};
         this.entities = {
             modal: document.querySelector("#plugin-text-stylize"),
             toolbar: document.querySelector("#plugin-text-stylize .stylize-tool"),
             palette: document.querySelector("#plugin-text-stylize .stylize-palette"),
         }
+        this.styleSetter = new styleSetter(this);
+        this.setStyle = this.styleSetter.setStyle;
     }
 
     process = () => {
@@ -179,150 +143,97 @@ class textStylizePlugin extends BasePlugin {
         borderColor: () => this.toggleBorder(`1px solid ${color || this.config.DEFAULT_COLORS.BORDER}`),
     })
 
-    collectNodeInSelection = range => {
-        const {startContainer, endContainer, commonAncestorContainer} = range;
-
-        const nodeList = [];
-        const treeWalker = document.createTreeWalker(
-            commonAncestorContainer,
-            NodeFilter.SHOW_ELEMENT + NodeFilter.SHOW_TEXT,
-            {acceptNode: node => NodeFilter.FILTER_ACCEPT},
-            false
-        );
-        while (treeWalker.currentNode !== startContainer) {
-            treeWalker.nextNode();
-        }
-        while (true) {
-            const currentNode = treeWalker.currentNode;
-            nodeList.push(currentNode);
-            if (currentNode === endContainer) {
-                break;
-            }
-            treeWalker.nextNode();
-        }
-        return nodeList
-    }
-
-    splitRanges = (nodeList, range) => {
-        const isText = node => node && node.nodeType === document.TEXT_NODE
-        const isElement = node => node && node.nodeType === document.ELEMENT_NODE
-        const isSoftBreakElement = node => isElement(node) && node.classList.contains("md-softbreak")
-        const isHardBreakElement = node => isElement(node) && node.getAttribute("cid")
-        const isBreakElement = node => isSoftBreakElement(node) || isHardBreakElement(node)
-        const splitArray = (array, separatorFunc) => {
-            return array.reduce((acc, current) => {
-                if (separatorFunc(current)) {
-                    acc.push([]);
-                } else {
-                    if (acc.length === 0) {
-                        acc.push([]);
-                    }
-                    acc[acc.length - 1].push(current);
-                }
-                return acc;
-            }, []);
-        }
-
-        const isRangeCollapsed = range => range.startContainer === range.endContainer && range.startOffset === range.endOffset
-        const isEqualRange = (a, b) => (
-            a && b && a.startContainer === b.startContainer && a.startOffset === b.startOffset
-            && a.endContainer === b.endContainer && a.endOffset === b.endOffset
-        )
-        const newRange = (startContainer, startOffset, endContainer, endOffset) => ({
-            startContainer, startOffset, endContainer, endOffset
-        })
-
-        if (nodeList.length <= 1 || !nodeList.some(isBreakElement)) {
-            return [range]
-        }
-
-        let filterEmptyText = nodeList.filter((node, idx) => !(isText(node) && isSoftBreakElement(nodeList[idx - 1])));
-        const selectLines = splitArray(filterEmptyText, isBreakElement).map(line => line.filter(isText)).filter(ele => ele.length);
-
-        const startLineTexts = selectLines.shift();
-        const endLineTexts = selectLines.pop() || startLineTexts;
-        const startLineLastText = startLineTexts[startLineTexts.length - 1];
-        const endLineFirstText = endLineTexts[0];
-
-        const firstRange = newRange(range.startContainer, range.startOffset, startLineLastText, startLineLastText.length);
-        const middleRanges = selectLines.map(line => newRange(line[0], 0, line[line.length - 1], line[line.length - 1].length));
-        const ranges = [firstRange, ...middleRanges];
-        const isEndWithBreakSymbol = isText(nodeList[nodeList.length - 1]) && isSoftBreakElement(nodeList[nodeList.length - 2]);
-        if (!isEndWithBreakSymbol) {
-            ranges.push(newRange(endLineFirstText, 0, range.endContainer, range.endOffset));
-        }
-        return ranges.filter((node, idx) => !isRangeCollapsed(node) && !isEqualRange(ranges[idx - 1], node));
-    }
-
-    genRanges = () => {
-        const range = window.getSelection().getRangeAt(0);
-        const nodeList = this.collectNodeInSelection(range);
-        return this.splitRanges(nodeList, range)
-    }
-
-    getAllTEXT = element => {
-        const textNodes = [];
-
-        const getTextNodes = node => {
-            if (node.nodeType === document.TEXT_NODE) {
-                textNodes.push(node);
-            } else if (node.nodeType === document.ELEMENT_NODE && (node.classList.contains("md-raw-inline") || node.classList.contains("md-softbreak"))) {
+    toggleForegroundColor = color => this.setStyle({ toggleMap: { color: color } });
+    toggleBackgroundColor = color => this.setStyle({ toggleMap: { background: color } });
+    toggleSize = size => this.setStyle({ toggleMap: { "font-size": size } });
+    toggleWeight = weight => this.setStyle({ toggleMap: { "font-weight": weight } });
+    toggleFamily = family => this.setStyle({ toggleMap: { "font-family": family } });
+    toggleBorder = border => this.setStyle({ toggleMap: { border } });
+    toggleEmphasis = emphasis => this.setStyle({ toggleMap: { "text-emphasis": emphasis } })
+    toggleItalic = () => this.setStyle({ toggleMap: { "font-style": "italic" } });
+    toggleUnderline = () => this.setStyle({ mergeMap: { "text-decoration": "underline" } });
+    toggleThroughline = () => this.setStyle({ mergeMap: { "text-decoration": "line-through" } });
+    toggleOverline = () => this.setStyle({ mergeMap: { "text-decoration": "overline" } });
+    toggleSuperScript = () => this.setStyle({ toggleMap: { "vertical-align": "super" } });
+    toggleSubScript = () => this.setStyle({ toggleMap: { "vertical-align": "sub" } });
+    setBrush = () => this.styleSetter.setBrush();
+    useBrush = () => this.styleSetter.useBrush();
+    clearAll = () => this.setStyle({ replaceMap: {} });
+    increaseSize = (num = 0.1) => this.setStyle({
+        hook: styleMap => {
+            styleMap["font-size"] = styleMap["font-size"] || "1.0em";
+            const origin = parseFloat(styleMap["font-size"]);
+            const size = Math.max(0.1, (origin + num).toFixed(1));
+            if (size !== 1) {
+                styleMap["font-size"] = size + "em";
             } else {
-                for (let i = 0; i < node.childNodes.length; i++) {
-                    getTextNodes(node.childNodes[i]);
-                }
+                delete styleMap["font-size"]
             }
         }
-
-        if (element) {
-            getTextNodes(element);
+    });
+    decreaseSize = (num = 0.1) => this.increaseSize(-num);
+    increaseLetterSpacing = (num = 1) => this.setStyle({
+        hook: styleMap => {
+            styleMap["letter-spacing"] = styleMap["letter-spacing"] || "1pt";
+            const origin = parseInt(styleMap["letter-spacing"]);
+            const spacing = Math.max(0, origin + num);
+            if (spacing !== 0) {
+                styleMap["letter-spacing"] = spacing + "pt";
+            } else {
+                delete styleMap["letter-spacing"];
+            }
         }
+    });
+    decreaseLetterSpacing = (num = 1) => this.increaseLetterSpacing(-num);
+}
 
-        return textNodes
+/**
+ *  不要试图搞懂下面代码，理由：为了处理和绕过Typora的特性，使用了大量的瓜皮代码
+ *  为了方便以后修改，在此写入实现的思路：
+ *    1. 先把问题简单化，假设用户的Selection只有一行，那么
+ *       1. 此时有四种用户选中情况，举例：123<span style="color:#FF0000;">abc</span>defg
+ *           1. 什么都没选中
+ *           2. 普通选中（非情况3和4的都为情况2，如：efg）
+ *           3. 选中了内部文字（如：abc）
+ *           4. 选中了外部文字（如：<span style="color:#FF0000;">abc</span>）
+ *       2. 其中情况1-3比较好处理：
+ *           1. 情况1: 直接在光标处插入: <span style="XXX"></span>
+ *           2. 情况2: 读取选区内容（efg），然后使用span标签包裹，得到<span style="XXX">efg</span>，最后将内容插入回去
+ *           3. 情况3：修改选区就可以变成情况4，即：abc编程<span style="color:#FF0000;">abc</span>
+ *       3. 下面重点解释怎么处理情况4：
+ *           1. 为了方便后续操作，将123<span style="color:#FF0000;">abc</span>defg拆成：
+ *              - beforeText: 123
+ *              - innerText: abc
+ *              - outerText: <span style="color:#FF0000;">abc</span>
+ *              - styleObject: style对象化
+ *           2. 获取到styleObject，然后按需修改styleObject
+ *           3. 将上面的innerText、styleObject重新组合成新的outerText，重新插回去
+ *           4. 因为有beforeText和styleObject，可以得知innerText的最终位置，然后moveBookmark，重新框选innerText
+ *       4. 上面的所有流程都在方法setInlineStyle中
+ *    2. 当用户框选跨越多个标签，有多行文本时，需要将多行全部拆分成单行，然后为每一行调用setInlineStyle
+ *       1. 使用TreeWalker，配合range的commonAncestorContainer、startContainer、endContainer获取到选中的全部标签数组nodeList
+ *       2. 考虑到用户使用shift+enter会生成标签<span md-inline="softbreak" class="md-softbreak"> </span>，这个标签里的TEXT_NODE是无用的，所以将其从nodeList过滤掉
+ *       3. 对nodeList进行分割，其中分割标志是node.classList.contains("md-softbreak")和!!node.getAttribute("cid")，前者为软回车，后者为硬回车
+ *          并且，将多行全部拆分成单行，需要用到range.setStart(startContainer, startOffset)和range.setEnd(endContainer, endOffset);
+ *          这里的startContainer、endContainer都是TEXT_NODE，所以将所有的ELEMENT_NODE过滤掉，得到selectLines
+ *       4. selectLines是一个二维数组，每个元素是某一行所包含的全部TEXT_NODE组成的一维数组，很明显，startContainer对应某一行的第一个TEXT，endContainer对应一行中最后一个TEXT
+ *          注意：第一行和最后一行要特殊处理（因为第一行和最后一行有可能不是全部选中的）
+ *       5. 如此，将多行全部拆分成单行，得到每一行的startContainer, startOffset、endContainer, endOffset
+ *       6. 上面的所有流程都在方法genRanges中
+ *    3. 获取到每一行的Range就可以批量操作了吗？不。因为Typora在给某个paragraph插入一段文本后，会修改paragraph标签的innerHTML，导致上面获取的ranges中的TEXT_NODE失效，如何解决？
+ *       1. 注意到插入span标签后，paragraph的textContent没有发生改变，于是我们可以记录旧的TEXT_NODE在文档中的位置，在生成新的TEXT_NODE后，我们可以根据此位置获取到新的TEXT_NODE
+ *          接着将新的TEXT_NODE替换掉旧的TEXT_NODE，接着就可以调用setInlineStyle了
+ *       2. 上面的所有流程都在方法setMultilineStyle中。记录逻辑在方法recordTEXTPosition中，替换逻辑在方法renewRange中
+ *    4. 上面的所有流程都在方法setStyle中
+ * */
+class styleSetter {
+    constructor(plugin) {
+        this.utils = plugin.utils;
+        this.formatBrushObj = {};
     }
 
-    recordTEXTPosition = ranges => {
-        for (const range of ranges) {
-            const startTEXT = range.startContainer;
-            const endTEXT = range.endContainer;
-            const ele = startTEXT.parentElement;
-            const target = ele.closest("[cid]");
-            const TEXTs = this.getAllTEXT(target);
-
-            for (let i = 0; i < TEXTs.length; i++) {
-                const TEXT = TEXTs[i];
-                if (TEXT === startTEXT) {
-                    range.beforeContent = TEXTs.slice(0, i).map(e => e.textContent).join("");
-                    range.cid = target.getAttribute("cid");
-                }
-                if (TEXT === endTEXT) {
-                    range.afterContent = TEXTs.slice(0, i).map(e => e.textContent).join("");
-                }
-            }
-        }
-    }
-
-    renewRange = range => {
-        const {beforeContent, afterContent, cid} = range;
-        const target = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`);
-        const TEXTs = this.getAllTEXT(target);
-
-        let textContent = "";
-        for (let i = 0; i < TEXTs.length; i++) {
-            let TEXT = TEXTs[i];
-            textContent += TEXT.textContent;
-            if (textContent === beforeContent) {
-                range.startContainer = TEXTs[i + 1];
-            }
-            if (textContent === afterContent) {
-                range.endContainer = TEXTs[i + 1] || TEXT;
-                break;
-            }
-        }
-    }
-
-    setStyle = ({toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark = true, rememberFormat = false}) => {
-        const args = {toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark, rememberFormat};
+    setStyle = ({ toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark = true, rememberFormat = false }) => {
+        const args = { toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark, rememberFormat };
         const ranges = this.genRanges();
         if (!ranges || ranges.length === 0) {
             console.debug("has not ranges");
@@ -333,79 +244,23 @@ class textStylizePlugin extends BasePlugin {
         }
     }
 
-    setMultilineStyle = (ranges, args) => {
-        // todo: html element needs add class "md-expand"
-        const originMoveBookmark = false
-        // const originMoveBookmark = args.moveBookmark;
+    setBrush = () => this.setStyle({ upsertMap: {}, rememberFormat: true });
 
-        this.recordTEXTPosition(ranges);
-        const selection = window.getSelection();
+    useBrush = () => this.setStyle({ replaceMap: this.formatBrushObj });
 
-        let startBeforeContent, endBeforeContent;
-        if (originMoveBookmark) {
-            const bookMark = this.recodeBookmark(selection);
-            ({startBeforeContent, endBeforeContent} = bookMark);
-        }
-
-        args.moveBookmark = false;
-        for (const rangeObj of ranges) {
-            this.renewRange(rangeObj);
-            const range = document.createRange();
-            range.setStart(rangeObj.startContainer, rangeObj.startOffset);
-            range.setEnd(rangeObj.endContainer, rangeObj.endOffset);
-            selection.removeAllRanges();
-            selection.addRange(range);
-            this.setInlineStyle(args);
-        }
-
-        if (originMoveBookmark) {
-            setTimeout(() => {
-                const startRange = ranges[0];
-                const endRange = ranges[ranges.length - 1];
-
-                startRange.beforeContent = startBeforeContent;
-                endRange.beforeContent = endBeforeContent;
-                this.renewRange(startRange);
-                this.renewRange(endRange);
-
-                const range = document.createRange();
-                range.setStartBefore(startRange.startContainer);
-                range.setEndBefore(endRange.startContainer);
-                selection.removeAllRanges();
-                selection.addRange(range);
-            }, 100)
-        }
-    }
-
-    recodeBookmark = selection => {
-        const range = selection.getRangeAt(0);
-        const {endContainer, endOffset, startContainer, startOffset} = range;
-
-        range.setStart(startContainer, 0);
-        range.setEnd(startContainer, startOffset);
-        selection.removeAllRanges();
-        selection.addRange(range);
-        const startBeforeContent = range.toString();
-
-        range.setStart(endContainer, 0);
-        range.setEnd(endContainer, endOffset);
-        selection.removeAllRanges();
-        selection.addRange(range);
-        const endBeforeContent = range.toString();
-        return {startBeforeContent, endBeforeContent}
-    }
-
-    // 有四种用户选中情况，比如：123<span style="color:#FF0000;">abc</span>defg
-    //   1. 什么都没选中
-    //   2. 普通选中（efg）
-    //   3. 选中了内部文字（abc）：需要修改outerText
-    //   4. 选中了外部文字（<span style="color:#FF0000;">abc</span>）：需要修改innerText
-    setInlineStyle = ({toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark, rememberFormat}) => {
+    /**
+     *  有四种用户选中情况，比如：123<span style="color:#FF0000;">abc</span>defg
+     *    1. 什么都没选中
+     *    2. 普通选中（efg）
+     *    3. 选中了内部文字（abc）：需要修改outerText
+     *    4. 选中了外部文字（<span style="color:#FF0000;">abc</span>）：需要修改innerText
+     */
+    setInlineStyle = ({ toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark, rememberFormat }) => {
         const selection = window.getSelection();
         const activeElement = document.activeElement.tagName;
         if (File.isLocked || "INPUT" === activeElement || "TEXTAREA" === activeElement || !selection.rangeCount) return
 
-        const {range, node, bookmark} = this.utils.getRangy();
+        const { range, node, bookmark } = this.utils.getRangy();
         if (!node) return;
         const ele = File.editor.findElemById(node.cid);
         const line = ele.rawText();
@@ -530,7 +385,7 @@ class textStylizePlugin extends BasePlugin {
                     start = beforeText.length;
                 }
 
-                const {range, bookmark: bk} = this.utils.getRangy();
+                const { range, bookmark: bk } = this.utils.getRangy();
                 bk.start = start + prefix.length;
                 bk.end = bk.start + innerText.length;
                 range.moveToBookmark(bk);
@@ -539,48 +394,208 @@ class textStylizePlugin extends BasePlugin {
         }
     }
 
-    toggleForegroundColor = color => this.setStyle({toggleMap: {color: color}});
-    toggleBackgroundColor = color => this.setStyle({toggleMap: {background: color}});
-    toggleSize = size => this.setStyle({toggleMap: {"font-size": size}});
-    toggleWeight = weight => this.setStyle({toggleMap: {"font-weight": weight}});
-    toggleFamily = family => this.setStyle({toggleMap: {"font-family": family}});
-    toggleBorder = border => this.setStyle({toggleMap: {border}});
-    toggleEmphasis = emphasis => this.setStyle({toggleMap: {"text-emphasis": emphasis}})
-    toggleItalic = () => this.setStyle({toggleMap: {"font-style": "italic"}});
-    toggleUnderline = () => this.setStyle({mergeMap: {"text-decoration": "underline"}});
-    toggleThroughline = () => this.setStyle({mergeMap: {"text-decoration": "line-through"}});
-    toggleOverline = () => this.setStyle({mergeMap: {"text-decoration": "overline"}});
-    toggleSuperScript = () => this.setStyle({toggleMap: {"vertical-align": "super"}});
-    toggleSubScript = () => this.setStyle({toggleMap: {"vertical-align": "sub"}});
-    setBrush = () => this.setStyle({upsertMap: {}, rememberFormat: true});
-    useBrush = () => this.setStyle({replaceMap: this.formatBrushObj});
-    clearAll = () => this.setStyle({replaceMap: {}});
-    increaseSize = (num = 0.1) => this.setStyle({
-        hook: styleMap => {
-            styleMap["font-size"] = styleMap["font-size"] || "1.0em";
-            const origin = parseFloat(styleMap["font-size"]);
-            const size = Math.max(0.1, (origin + num).toFixed(1));
-            if (size !== 1) {
-                styleMap["font-size"] = size + "em";
-            } else {
-                delete styleMap["font-size"]
+    setMultilineStyle = (ranges, args) => {
+        // todo: html element needs add class "md-expand"
+        const originMoveBookmark = false
+        // const originMoveBookmark = args.moveBookmark;
+
+        this.recordTEXTPosition(ranges);
+        const selection = window.getSelection();
+
+        let startBeforeContent, endBeforeContent;
+        if (originMoveBookmark) {
+            const bookMark = this.recodeBookmark(selection);
+            ({ startBeforeContent, endBeforeContent } = bookMark);
+        }
+
+        args.moveBookmark = false;
+        for (const rangeObj of ranges) {
+            this.renewRange(rangeObj);
+            const range = document.createRange();
+            range.setStart(rangeObj.startContainer, rangeObj.startOffset);
+            range.setEnd(rangeObj.endContainer, rangeObj.endOffset);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            this.setInlineStyle(args);
+        }
+
+        if (originMoveBookmark) {
+            setTimeout(() => {
+                const startRange = ranges[0];
+                const endRange = ranges[ranges.length - 1];
+
+                startRange.beforeContent = startBeforeContent;
+                endRange.beforeContent = endBeforeContent;
+                this.renewRange(startRange);
+                this.renewRange(endRange);
+
+                const range = document.createRange();
+                range.setStartBefore(startRange.startContainer);
+                range.setEndBefore(endRange.startContainer);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }, 100)
+        }
+    }
+
+    genRanges = () => {
+        const range = window.getSelection().getRangeAt(0);
+        const nodeList = this.collectNodeInSelection(range);
+        return this.splitRanges(nodeList, range)
+    }
+
+    recodeBookmark = selection => {
+        const range = selection.getRangeAt(0);
+        const { endContainer, endOffset, startContainer, startOffset } = range;
+
+        range.setStart(startContainer, 0);
+        range.setEnd(startContainer, startOffset);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        const startBeforeContent = range.toString();
+
+        range.setStart(endContainer, 0);
+        range.setEnd(endContainer, endOffset);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        const endBeforeContent = range.toString();
+        return { startBeforeContent, endBeforeContent }
+    }
+
+    renewRange = range => {
+        const { beforeContent, afterContent, cid } = range;
+        const target = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`);
+        const TEXTs = this.getAllTEXT(target);
+
+        let textContent = "";
+        for (let i = 0; i < TEXTs.length; i++) {
+            let TEXT = TEXTs[i];
+            textContent += TEXT.textContent;
+            if (textContent === beforeContent) {
+                range.startContainer = TEXTs[i + 1];
+            }
+            if (textContent === afterContent) {
+                range.endContainer = TEXTs[i + 1] || TEXT;
+                break;
             }
         }
-    });
-    decreaseSize = (num = 0.1) => this.increaseSize(-num);
-    increaseLetterSpacing = (num = 1) => this.setStyle({
-        hook: styleMap => {
-            styleMap["letter-spacing"] = styleMap["letter-spacing"] || "1pt";
-            const origin = parseInt(styleMap["letter-spacing"]);
-            const spacing = Math.max(0, origin + num);
-            if (spacing !== 0) {
-                styleMap["letter-spacing"] = spacing + "pt";
-            } else {
-                delete styleMap["letter-spacing"];
+    }
+
+    recordTEXTPosition = ranges => {
+        for (const range of ranges) {
+            const startTEXT = range.startContainer;
+            const endTEXT = range.endContainer;
+            const ele = startTEXT.parentElement;
+            const target = ele.closest("[cid]");
+            const TEXTs = this.getAllTEXT(target);
+
+            for (let i = 0; i < TEXTs.length; i++) {
+                const TEXT = TEXTs[i];
+                if (TEXT === startTEXT) {
+                    range.beforeContent = TEXTs.slice(0, i).map(e => e.textContent).join("");
+                    range.cid = target.getAttribute("cid");
+                }
+                if (TEXT === endTEXT) {
+                    range.afterContent = TEXTs.slice(0, i).map(e => e.textContent).join("");
+                }
             }
         }
-    });
-    decreaseLetterSpacing = (num = 1) => this.increaseLetterSpacing(-num);
+    }
+
+    collectNodeInSelection = range => {
+        const { startContainer, endContainer, commonAncestorContainer } = range;
+
+        const nodeList = [];
+        const treeWalker = document.createTreeWalker(
+            commonAncestorContainer,
+            NodeFilter.SHOW_ELEMENT + NodeFilter.SHOW_TEXT,
+            { acceptNode: node => NodeFilter.FILTER_ACCEPT },
+        );
+        while (treeWalker.currentNode !== startContainer) {
+            treeWalker.nextNode();
+        }
+        while (true) {
+            const currentNode = treeWalker.currentNode;
+            nodeList.push(currentNode);
+            if (currentNode === endContainer) {
+                break;
+            }
+            treeWalker.nextNode();
+        }
+        return nodeList
+    }
+
+    splitRanges = (nodeList, range) => {
+        const isText = node => node && node.nodeType === document.TEXT_NODE
+        const isElement = node => node && node.nodeType === document.ELEMENT_NODE
+        const isSoftBreakElement = node => isElement(node) && node.classList.contains("md-softbreak")
+        const isHardBreakElement = node => isElement(node) && node.getAttribute("cid")
+        const isBreakElement = node => isSoftBreakElement(node) || isHardBreakElement(node)
+        const splitArray = (array, separatorFunc) => {
+            return array.reduce((acc, current) => {
+                if (separatorFunc(current)) {
+                    acc.push([]);
+                } else {
+                    if (acc.length === 0) {
+                        acc.push([]);
+                    }
+                    acc[acc.length - 1].push(current);
+                }
+                return acc;
+            }, []);
+        }
+
+        const isRangeCollapsed = range => range.startContainer === range.endContainer && range.startOffset === range.endOffset
+        const isEqualRange = (a, b) => (
+            a && b && a.startContainer === b.startContainer && a.startOffset === b.startOffset
+            && a.endContainer === b.endContainer && a.endOffset === b.endOffset
+        )
+        const newRange = (startContainer, startOffset, endContainer, endOffset) => ({
+            startContainer, startOffset, endContainer, endOffset
+        })
+
+        if (nodeList.length <= 1 || !nodeList.some(isBreakElement)) {
+            return [range]
+        }
+
+        let filterEmptyText = nodeList.filter((node, idx) => !(isText(node) && isSoftBreakElement(nodeList[idx - 1])));
+        const selectLines = splitArray(filterEmptyText, isBreakElement).map(line => line.filter(isText)).filter(ele => ele.length);
+
+        const startLineTexts = selectLines.shift();
+        const endLineTexts = selectLines.pop() || startLineTexts;
+        const startLineLastText = startLineTexts[startLineTexts.length - 1];
+        const endLineFirstText = endLineTexts[0];
+
+        const firstRange = newRange(range.startContainer, range.startOffset, startLineLastText, startLineLastText.length);
+        const middleRanges = selectLines.map(line => newRange(line[0], 0, line[line.length - 1], line[line.length - 1].length));
+        const ranges = [firstRange, ...middleRanges];
+        const isEndWithBreakSymbol = isText(nodeList[nodeList.length - 1]) && isSoftBreakElement(nodeList[nodeList.length - 2]);
+        if (!isEndWithBreakSymbol) {
+            ranges.push(newRange(endLineFirstText, 0, range.endContainer, range.endOffset));
+        }
+        return ranges.filter((node, idx) => !isRangeCollapsed(node) && !isEqualRange(ranges[idx - 1], node));
+    }
+
+    getAllTEXT = element => {
+        const textNodes = [];
+
+        const getTextNodes = node => {
+            if (node.nodeType === document.TEXT_NODE) {
+                textNodes.push(node);
+            } else if (node.nodeType === document.ELEMENT_NODE && (node.classList.contains("md-raw-inline") || node.classList.contains("md-softbreak"))) {
+            } else {
+                for (let i = 0; i < node.childNodes.length; i++) {
+                    getTextNodes(node.childNodes[i]);
+                }
+            }
+        }
+
+        if (element) {
+            getTextNodes(element);
+        }
+
+        return textNodes
+    }
 }
 
 module.exports = {

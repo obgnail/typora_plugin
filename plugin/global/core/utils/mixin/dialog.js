@@ -105,7 +105,7 @@ class dialog {
                 inner = `<input type="${t}" class="form-control" value="${component.value || ""}" placeholder="${component.placeholder || ""}" ${disabled(component)}>`;
                 break
             case "range":
-                const {min = 0, max = 100, step = 1, value = 1} = component;
+                const { min = 0, max = 100, step = 1, value = 1 } = component;
                 inner = `<div class="plugin-custom-modal-range">
                             <input type="range" min="${min}" max="${max}" step="${step}" value="${value}" oninput="this.nextElementSibling.innerText = this.value;">
                             <div class="modal-range-value">${value}</div>
@@ -143,9 +143,11 @@ class dialog {
         return `<div class="form-group" component-id="${component.id}">${label_}${inner}</div>`;
     }
 
-    // 1. modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
-    // 2. callback(components) => {}: 当用户点击【确认】后的回调函数
-    // 3. onCancelCallback(components) => {}: 当用户点击【取消】后的回调函数
+    /**
+     * @param modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
+     * @param callback(components) => {}: 当用户点击【确认】后的回调函数
+     * @param cancelCallback(components) => {}: 当用户点击【取消】后的回调函数
+     */
     modal = (modal, callback, cancelCallback) => {
         if (!modal) return;
 
@@ -153,7 +155,7 @@ class dialog {
         this.callback = callback;
         this.cancelCallback = cancelCallback;
 
-        const {title, width = "", height = "", components, onload} = modal;
+        const { title, width = "", height = "", components, onload } = modal;
         this.checkComponents(components);
         this.entities.title.innerText = title;
         this.entities.modal.style.setProperty("--plugin-custom-modal-width", width);

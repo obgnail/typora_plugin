@@ -21,7 +21,7 @@ class chatPlugin extends BaseCustomPlugin {
         if (chat.length === 0) {
             chat = $(`<div class="plugin-chat"></div>`);
         }
-        const {yamlObject, remainContent, yamlLineCount} = this.utils.splitFrontMatter(content);
+        const { yamlObject, remainContent, yamlLineCount } = this.utils.splitFrontMatter(content);
         const contentElement = this.genChatContent(remainContent, yamlObject, yamlLineCount);
         chat.html(`<div class="plugin-chat-content">${contentElement}</div>`);
         $pre.find(".md-diagram-panel-preview").html(chat);
@@ -29,7 +29,7 @@ class chatPlugin extends BaseCustomPlugin {
 
     genChatContent = (content, options, yamlLineCount) => {
         options = Object.assign({}, this.config.DEFAULT_OPIONS, options);
-        const {useStrict, showNickname, showAvatar, notAllowShowTime, allowMarkdown, avatars, senderNickname = "me", timeNickname = "time"} = options;
+        const { useStrict, showNickname, showAvatar, notAllowShowTime, allowMarkdown, avatars, senderNickname = "me", timeNickname = "time" } = options;
 
         const avatarPaths = {};
         const dir = this.utils.getCurrentDirPath();

@@ -1,12 +1,12 @@
 // 插件名称是通过配置文件引入的，为了避免XSS注入，不可使用innerHTML
 class rightClickMenuPlugin extends BasePlugin {
     styleTemplate = () => {
-        const {MENU_MIN_WIDTH, HIDE_OTHER_OPTIONS} = this.config;
-        const map = {"default": "", "auto": "inherit"};
+        const { MENU_MIN_WIDTH, HIDE_OTHER_OPTIONS } = this.config;
+        const map = { "default": "", "auto": "inherit" };
         const width = map[MENU_MIN_WIDTH] || MENU_MIN_WIDTH;
         const display = HIDE_OTHER_OPTIONS ? "none" : "";
         if (width || display) {
-            return {menu_min_width: width, menu_option_display: display}
+            return { menu_min_width: width, menu_option_display: display }
         }
     }
 
@@ -16,7 +16,7 @@ class rightClickMenuPlugin extends BasePlugin {
         this.dividerArg = "---";
         this.unavailableArgName = "不可点击";
         this.unavailableArgValue = "__not_available__";
-        this.callArgs = [{arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide"}];
+        this.callArgs = [{ arg_name: "右键菜单点击后保持显示/隐藏", arg_value: "do_not_hide" }];
     }
 
     process = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.appendMenu)
@@ -31,15 +31,15 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     appendFirst = () => {
-        const items = this.config.MENUS.map(({NAME, LIST = []}, idx) => {
-            const item = [{ele: "span", "data-lg": "Menu", text: NAME}];
-            const children = [{ele: "a", role: "menuitem", children: item}];
+        const items = this.config.MENUS.map(({ NAME, LIST = [] }, idx) => {
+            const item = [{ ele: "span", "data-lg": "Menu", text: NAME }];
+            const children = [{ ele: "a", role: "menuitem", children: item }];
             const noExtraMenu = LIST && LIST.length === 1;
             if (noExtraMenu) {
-                return {ele: "li", "data-key": this.noExtraMenuGroupName, "data-value": LIST[0], idx, children};
+                return { ele: "li", "data-key": this.noExtraMenuGroupName, "data-value": LIST[0], idx, children };
             }
             item.push(this.caret());
-            return {ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children};
+            return { ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children };
         })
         const elements = [this.divider(), ...items];
         const menu = document.querySelector("#context-menu");
@@ -49,7 +49,7 @@ class rightClickMenuPlugin extends BasePlugin {
     appendSecond = () => {
         this.findLostPluginIfNeed();
 
-        const elements = this.config.MENUS.map(({LIST = []}, idx) => {
+        const elements = this.config.MENUS.map(({ LIST = [] }, idx) => {
             const children = LIST.map(item => {
                 if (item === this.dividerArg) return this.divider();
 
@@ -63,14 +63,14 @@ class rightClickMenuPlugin extends BasePlugin {
                     return this.secondLiTemplate(plugin)
                 }
             })
-            return this.ulTemplate({class_: ["plugin-menu-second"], idx, children});
+            return this.ulTemplate({ class_: ["plugin-menu-second"], idx, children });
         })
         this.utils.htmlTemplater.appendElements(this.utils.entities.eContent, elements);
     }
 
     appendThird = () => {
         const elements = [];
-        this.config.MENUS.forEach(({LIST = []}, idx) => {
+        this.config.MENUS.forEach(({ LIST = [] }, idx) => {
             LIST.forEach(item => {
                 if (item === this.dividerArg) return;
 
@@ -78,7 +78,7 @@ class rightClickMenuPlugin extends BasePlugin {
                 if (!plugin || !plugin.callArgs && !plugin.dynamicCallArgsGenerator) return;
 
                 const children = (plugin.callArgs || []).map(arg => this.thirdLiTemplate(arg));
-                const extra = {class_: ["plugin-menu-third"], "data-plugin": plugin.fixedName, idx, children};
+                const extra = { class_: ["plugin-menu-third"], "data-plugin": plugin.fixedName, idx, children };
                 elements.push(this.ulTemplate(extra));
             })
         })
@@ -88,27 +88,27 @@ class rightClickMenuPlugin extends BasePlugin {
     secondComposeLiTemplate = (plugin, callArg) => {
         const target = plugin.callArgs.find(arg => arg.arg_value === callArg);
         const name = target ? target.arg_name : plugin.config.NAME;
-        const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", text: name}];
-        return {ele: "li", class_: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": callArg, children}
+        const children = [{ ele: "a", role: "menuitem", "data-lg": "Menu", text: name }];
+        return { ele: "li", class_: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": callArg, children }
     }
 
     secondLiTemplate = plugin => {
         const hasNotArgs = !plugin.callArgs && !plugin.dynamicCallArgsGenerator;
 
-        const extra = {class_: ["plugin-menu-item"]};
+        const extra = { class_: ["plugin-menu-item"] };
         if (!hasNotArgs) {
             extra.class_.push("has-extra-menu");
         }
         if (!plugin.config.CLICKABLE) {
-            extra.style = {color: "#c4c6cc", pointerEvents: "none"};
+            extra.style = { color: "#c4c6cc", pointerEvents: "none" };
         }
 
         const childrenExtra = hasNotArgs
-            ? {text: plugin.config.NAME}
-            : {children: [{ele: "span", "data-lg": "Menu", text: plugin.config.NAME, children: [this.caret()]}]};
+            ? { text: plugin.config.NAME }
+            : { children: [{ ele: "span", "data-lg": "Menu", text: plugin.config.NAME, children: [this.caret()] }] };
 
-        const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", ...childrenExtra}];
-        return {ele: "li", "data-key": plugin.fixedName, children, ...extra}
+        const children = [{ ele: "a", role: "menuitem", "data-lg": "Menu", ...childrenExtra }];
+        return { ele: "li", "data-key": plugin.fixedName, children, ...extra }
     }
 
     thirdLiTemplate = (arg, dynamic) => {
@@ -119,17 +119,17 @@ class rightClickMenuPlugin extends BasePlugin {
         if (dynamic) {
             extra.class_ = `plugin-dynamic-arg ${(arg.arg_disabled) ? "disabled" : ""}`;
         }
-        const children = [{ele: "a", role: "menuitem", "data-lg": "Menu", text: arg.arg_name}];
-        return {ele: "li", "data-key": arg.arg_value, ...extra, children}
+        const children = [{ ele: "a", role: "menuitem", "data-lg": "Menu", text: arg.arg_name }];
+        return { ele: "li", "data-key": arg.arg_value, ...extra, children }
     }
 
     ulTemplate = extra => {
         extra.class_.push("dropdown-menu", "context-menu", "ext-context-menu");
-        return {ele: "ul", role: "menu", ...extra}
+        return { ele: "ul", role: "menu", ...extra }
     }
 
-    divider = () => ({ele: "li", class_: "divider"})
-    caret = () => ({ele: "i", class_: "fa fa-caret-right"})
+    divider = () => ({ ele: "li", class_: "divider" })
+    caret = () => ({ ele: "i", class_: "fa fa-caret-right" })
 
     findLostPluginIfNeed = () => {
         if (!this.config.FIND_LOST_PLUGIN) return;
@@ -143,7 +143,7 @@ class rightClickMenuPlugin extends BasePlugin {
 
     show = ($after, $before) => {
         const margin = 6;
-        const {left, top, width, height} = $before[0].getBoundingClientRect();
+        const { left, top, width, height } = $before[0].getBoundingClientRect();
         let afterTop = top - height;
         let afterLeft = left + width + margin;
 
@@ -151,11 +151,11 @@ class rightClickMenuPlugin extends BasePlugin {
         const footerHeight = footer ? footer.getBoundingClientRect().height : 0;
 
         $after.addClass("show");
-        const {height: afterHeight, width: afterWidth} = $after[0].getBoundingClientRect();
+        const { height: afterHeight, width: afterWidth } = $after[0].getBoundingClientRect();
         afterTop = Math.min(afterTop, window.innerHeight - afterHeight - footerHeight);
         afterLeft = afterLeft + afterWidth < window.innerWidth ? afterLeft : Math.max(0, left - afterWidth - margin);
 
-        $after.css({top: afterTop + "px", left: afterLeft + "px"});
+        $after.css({ top: afterTop + "px", left: afterLeft + "px" });
     }
 
     appendThirdLi = ($menu, dynamicCallArgs) => {

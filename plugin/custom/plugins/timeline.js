@@ -36,10 +36,10 @@ class timelinePlugin extends BaseCustomPlugin {
 
     newTimelineElement = (pre, cid, content) => {
         // timeline: {title, bucket: [{time, itemList: [{ type, value }]}]}
-        const timeline = {title: "", bucket: []};
+        const timeline = { title: "", bucket: [] };
         const lines = content.split("\n");
         const dir = this.utils.getCurrentDirPath();
-        const {throwParseError} = this.utils.diagramParser;
+        const { throwParseError } = this.utils.diagramParser;
         lines.forEach((line, idx) => {
             if (!line.trim()) return;
             idx += 1;
@@ -56,7 +56,7 @@ class timelinePlugin extends BaseCustomPlugin {
                 return;
             } else if (line.startsWith("## ")) {
                 const time = line.replace("## ", "");
-                const newContent = {time: time, itemList: []};
+                const newContent = { time: time, itemList: [] };
                 timeline.bucket.push(newContent);
                 return;
             }
@@ -69,36 +69,36 @@ class timelinePlugin extends BaseCustomPlugin {
 
             // is hr
             if (line === "---" || line === "***") {
-                lastBucket.push({type: "hr"});
+                lastBucket.push({ type: "hr" });
                 return
             }
             // is heading
             const matchHead = line.match(/^(?<heading>#{3,6})\s(?<lineContent>.+?)$/);
             if (matchHead && matchHead["groups"] && matchHead["groups"]["heading"]) {
-                lastBucket.push({type: "h" + matchHead.groups.heading.length, value: matchHead.groups.lineContent});
+                lastBucket.push({ type: "h" + matchHead.groups.heading.length, value: matchHead.groups.lineContent });
                 return
             }
             // is ul
             const matchUl = line.match(/^[\-*]\s(?<lineContent>.*?)$/);
             if (matchUl && matchUl["groups"]) {
-                lastBucket.push({type: "ul", value: matchUl.groups.lineContent});
+                lastBucket.push({ type: "ul", value: matchUl.groups.lineContent });
                 return
             }
             // is ol
             const matchOl = line.match(/^\d\.\s(?<lineContent>.*?)$/);
             if (matchOl && matchOl["groups"]) {
-                lastBucket.push({type: "ol", value: matchOl.groups.lineContent});
+                lastBucket.push({ type: "ol", value: matchOl.groups.lineContent });
                 return
             }
             // is blockquote
             const matchQuote = line.match(/^>\s(?<lineContent>.+?)$/);
             if (matchQuote && matchQuote["groups"]) {
-                lastBucket.push({type: "blockquote", value: matchQuote.groups.lineContent});
+                lastBucket.push({ type: "blockquote", value: matchQuote.groups.lineContent });
                 return
             }
 
             // is paragraph
-            lastBucket.push({type: "p", value: line});
+            lastBucket.push({ type: "p", value: line });
         });
 
         timeline.bucket = timeline.bucket.map(bucket => {

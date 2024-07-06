@@ -7,7 +7,7 @@ class hotkeyHubPlugin extends BaseCustomPlugin {
 
     process = () => {
         const toHotkey = setting => {
-            const {hotkey, enable, closestSelector, evil, plugin: fixedName, function: func} = setting;
+            const { hotkey, enable, closestSelector, evil, plugin: fixedName, function: func } = setting;
             if (!hotkey || !enable) return;
 
             let callback = null;
@@ -24,7 +24,7 @@ class hotkeyHubPlugin extends BaseCustomPlugin {
                 }
             }
             if (hotkey !== "-") {
-                return {hotkey, callback}
+                return { hotkey, callback }
             }
         }
 
@@ -45,10 +45,10 @@ class hotkeyHubPlugin extends BaseCustomPlugin {
         const table = `<table>${th}${trs.join("")}</table>`;
         const onclick = ev => ev.target.closest("a") && this.openSettingFile();
         const components = [
-            {label: "如需自定义快捷键，请 <a>修改配置文件</a>", type: "p", onclick},
-            {label: table, type: "p"},
+            { label: "如需自定义快捷键，请 <a>修改配置文件</a>", type: "p", onclick },
+            { label: table, type: "p" },
         ];
-        this.utils.dialog.modal({title: "快捷键中心", components});
+        this.utils.dialog.modal({ title: "快捷键中心", components });
     }
 }
 

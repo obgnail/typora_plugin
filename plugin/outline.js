@@ -1,7 +1,7 @@
 class outlinePlugin extends BasePlugin {
     styleTemplate = () => true
 
-    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     html = () => {
         const [className, hint] = this.config.SHOW_HIDDEN ? ["ion-eye", "显示被其他插件隐藏的元素"] : ["ion-eye-disabled", "不显示被其他插件隐藏的元素"];
@@ -124,12 +124,12 @@ class _collectUtil {
         this.tableIdx = 0;
         this.imageIdx = 0;
         this.fenceIdx = 0;
-        this.collection = {table: [], image: [], fence: []};
+        this.collection = { table: [], image: [], fence: [] };
     }
 
     clear() {
         this.paragraphIdx = this.tableIdx = this.imageIdx = this.fenceIdx = 0;
-        this.collection = {table: [], image: [], fence: []};
+        this.collection = { table: [], image: [], fence: [] };
     }
 
     collect() {
@@ -153,17 +153,17 @@ class _collectUtil {
             // table
             if (ele.classList.contains("md-table")) {
                 this.tableIdx++;
-                const collection = {cid: cid, type: "table", paragraphIdx: this.paragraphIdx, idx: this.tableIdx};
+                const collection = { cid: cid, type: "table", paragraphIdx: this.paragraphIdx, idx: this.tableIdx };
                 this.collection.table.push(collection);
                 // fence
             } else if (ele.classList.contains("md-fences")) {
                 this.fenceIdx++;
-                const collection = {cid: cid, type: "fence", paragraphIdx: this.paragraphIdx, idx: this.fenceIdx};
+                const collection = { cid: cid, type: "fence", paragraphIdx: this.paragraphIdx, idx: this.fenceIdx };
                 this.collection.fence.push(collection);
                 // image
             } else if (ele.classList.contains("md-image")) {
                 this.imageIdx++;
-                const collection = {cid: cid, type: "image", paragraphIdx: this.paragraphIdx, idx: this.imageIdx};
+                const collection = { cid: cid, type: "image", paragraphIdx: this.paragraphIdx, idx: this.imageIdx };
                 this.collection.image.push(collection);
             }
         })
@@ -191,7 +191,7 @@ class _collectUtil {
 
     setColor(ele, item, type) {
         if (type === "all") {
-            const {fence, image, table} = this.config.COLOR;
+            const { fence, image, table } = this.config.COLOR;
             if (item.type === "table") {
                 ele.style.backgroundColor = table;
             } else if (item.type === "fence") {

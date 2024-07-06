@@ -242,8 +242,6 @@ QUICK_EXEC_SHOW = "error"
 #   1. always  等待程序执行完毕后一次性输出
 #   2. echo    立即回显程序输出
 COMMIT_EXEC_SHOW = "echo"
-# 启用内建的命令列表（若为false，则BUILTIN选项失效）
-USE_BUILTIN = true
 # 内建命令列表。支持无限添加。
 # 目前支持4个参数:
 #   1. name:   展示的名称（不可重复）
@@ -1070,7 +1068,6 @@ LIST = [
     "pie_menu",
     "go_top",
     "text_stylize",
-    "toolbar",
     "slash_commands",
     "ripgrep",
     "article_uploader",
@@ -1090,6 +1087,7 @@ LIST = [
     "---",
     "search_multi",
     "multi_highlighter",
+    "toolbar",
     "outline",
     "md_padding",
     "blur",

@@ -5,8 +5,8 @@ let markdownlinter = null;
 let disableRules = null;
 
 const init = rules => {
-    markdownlinter = require("./markdownlint.js").markdownlint;
-    const result = {"default": true};
+    markdownlinter = require("./markdownlint.min").markdownlint;
+    const result = { "default": true };
     for (const rule of rules) {
         result[rule] = false;
     }
@@ -17,12 +17,12 @@ const init = rules => {
 const lint = async filepath => {
     if (!markdownlinter || !disableRules) return;
     const fileContent = await fs.promises.readFile(filepath, 'utf-8');
-    const {content} = markdownlinter.sync({strings: {content: fileContent}, config: disableRules});
+    const { content } = markdownlinter.sync({ strings: { content: fileContent }, config: disableRules });
     content.sort((a, b) => a.lineNumber - b.lineNumber);
     return content
 }
 
-self.onmessage = async ({data: {action, payload}}) => {
+self.onmessage = async ({ data: { action, payload } }) => {
     if (!payload) return;
 
     if (action === "init") {

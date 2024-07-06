@@ -4,13 +4,15 @@ class stateRecorder {
         this.recorders = new Map(); // map[name]recorder
     }
 
-    //   1. name(string): 取个名字
-    //   2. selector(string): 通过选择器找到要你想记录状态的元素们
-    //   3. stateGetter(Element) => {...}: 记录目标元素的状态。Element就是selector找到的元素，返回你想记录的标签的状态，返回值可以是任何类型
-    //   4. stateRestorer(Element, state) => {}: 为元素恢复状态。state就是stateGetter的返回值
-    //   5. finalFunc() => {}: 最后执行的函数
+    /**
+     * @param name(string): 取个名字
+     * @param selector(string): 通过选择器找到要你想记录状态的元素们
+     * @param stateGetter(Element) => {...}: 记录目标元素的状态。Element就是selector找到的元素，返回你想记录的标签的状态，返回值可以是任何类型
+     * @param stateRestorer(Element, state) => {}: 为元素恢复状态。state就是stateGetter的返回值
+     * @param finalFunc() => {}: 最后执行的函数
+     */
     register = (name, selector, stateGetter, stateRestorer, finalFunc) => {
-        const obj = {selector, stateGetter, stateRestorer, finalFunc, collections: new Map()};
+        const obj = { selector, stateGetter, stateRestorer, finalFunc, collections: new Map() };
         this.recorders.set(name, obj);
     }
     unregister = recorderName => this.recorders.delete(recorderName);

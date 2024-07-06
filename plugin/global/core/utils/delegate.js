@@ -1,16 +1,15 @@
-const {hotkeyHub} = require("./mixin/hotkeyHub")
-const {eventHub} = require("./mixin/eventHub")
-const {stateRecorder} = require("./mixin/stateRecorder")
-const {exportHelper} = require("./mixin/exportHelper")
-const {styleTemplater} = require("./mixin/styleTemplater")
-const {htmlTemplater} = require("./mixin/htmlTemplater")
-const {markdownParser} = require("./mixin/markdownParser")
-const {contextMenu} = require("./mixin/contextMenu")
-const {notification} = require("./mixin/notification")
-const {dialog} = require("./mixin/dialog")
-const {diagramParser} = require("./mixin/diagramParser")
-const {thirdPartyDiagramParser} = require("./mixin/thirdPartyDiagramParser")
-const {entities} = require("./mixin/entities")
+const { hotkeyHub } = require("./mixin/hotkeyHub")
+const { eventHub } = require("./mixin/eventHub")
+const { stateRecorder } = require("./mixin/stateRecorder")
+const { exportHelper } = require("./mixin/exportHelper")
+const { styleTemplater } = require("./mixin/styleTemplater")
+const { htmlTemplater } = require("./mixin/htmlTemplater")
+const { contextMenu } = require("./mixin/contextMenu")
+const { notification } = require("./mixin/notification")
+const { dialog } = require("./mixin/dialog")
+const { diagramParser } = require("./mixin/diagramParser")
+const { thirdPartyDiagramParser } = require("./mixin/thirdPartyDiagramParser")
+const { entities } = require("./mixin/entities")
 
 const getHelper = utils => {
     const _eventHub = new eventHub(utils);
@@ -24,7 +23,6 @@ const getHelper = utils => {
     const _styleTemplater = new styleTemplater(utils);
     const _htmlTemplater = new htmlTemplater(utils);
     const _exportHelper = new exportHelper(utils);
-    const _markdownParser = new markdownParser(utils);
     const _entities = new entities(utils);
 
     const helper = {
@@ -39,7 +37,6 @@ const getHelper = utils => {
         styleTemplater: _styleTemplater,
         htmlTemplater: _htmlTemplater,
         exportHelper: _exportHelper,
-        markdownParser: _markdownParser,
     }
 
     // combination should be used to layer various functions, but utils is too old and has become a legacy. i am so sorry
@@ -135,16 +132,6 @@ const getHelper = utils => {
         appendElements: _htmlTemplater.appendElements,
 
         /**
-         * 解析markdown语法
-         */
-        /** @deprecated new API: utils.markdownParser.parse */
-        parseMarkdown: _markdownParser.parse,
-        /** @deprecated new API: utils.markdownParser.getNodeKindByNode */
-        getNodeKindByNode: _markdownParser.getNodeKindByNode,
-        /** @deprecated new API: utils.markdownParser.getNodeKindByNum */
-        getNodeKindByNum: _markdownParser.getNodeKindByNum,
-
-        /**
          * 动态注册右键菜单
          */
         /** @deprecated new API: utils.contextMenu.register */
@@ -192,7 +179,7 @@ const getHelper = utils => {
         await loadHelpers(_diagramParser, _thirdPartyDiagramParser);
     }
 
-    return {loadHelpersBefore, loadHelpersAfter, optimizeHelpers}
+    return { loadHelpersBefore, loadHelpersAfter, optimizeHelpers }
 }
 
 module.exports = {

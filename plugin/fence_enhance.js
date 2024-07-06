@@ -3,7 +3,7 @@ class fenceEnhancePlugin extends BasePlugin {
         this.enableIndent = this.config.ENABLE_INDENT && !this.utils.isBetaVersion;
     }
 
-    styleTemplate = () => ({bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial"})
+    styleTemplate = () => ({ bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial" })
 
     process = () => {
         if (this.config.ENABLE_HOTKEY) {
@@ -42,10 +42,10 @@ class fenceEnhancePlugin extends BasePlugin {
         const regex = /^([^\(\)]+)\(([^}]+)\)$/;
         const extract = lang => {
             const match = lang.match(regex);
-            if (!match) return {origin: lang}
+            if (!match) return { origin: lang }
 
             const [origin, prefix, line] = match;
-            return {origin, prefix, line};
+            return { origin, prefix, line };
         }
 
         const parseRange = line => {
@@ -67,13 +67,13 @@ class fenceEnhancePlugin extends BasePlugin {
         const getEntities = cid => {
             const fence = File.editor.fences.queue[cid];
             const obj = (fence.options && fence.options.mode && fence.options.mode._highlightObj) || undefined;
-            return {fence, obj}
+            return { fence, obj }
         }
 
         const highlightLines = cid => {
-            const {fence, obj} = getEntities(cid);
+            const { fence, obj } = getEntities(cid);
             if (!obj) return;
-            const {line} = obj;
+            const { line } = obj;
             if (!line) return;
 
             const last = fence.lastLine();
@@ -101,7 +101,7 @@ class fenceEnhancePlugin extends BasePlugin {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, highlightLines);
         this.utils.decorate(() => File && File.editor && File.editor.fences, "tryAddLangUndo", null, (result, ...args) => {
             const cid = args[0].cid;
-            const {obj} = getEntities(cid);
+            const { obj } = getEntities(cid);
             obj && highlightLines(cid);
         });
     }
@@ -111,15 +111,15 @@ class fenceEnhancePlugin extends BasePlugin {
         this.lastClickTime = 0;
         this.dangerousHint = "警告：消耗巨量资源并导致Typora长时间失去响应";
         this.callArgs = [
-            {arg_name: "自动隐藏/显示按钮", arg_value: "set_auto_hide"},
-            {arg_name: "禁用/启用按钮：折叠", arg_value: "disable_or_enable_fold"},
-            {arg_name: "禁用/启用按钮：复制", arg_value: "disable_or_enable_copy"},
-            {arg_name: "总是折叠代码块", arg_value: "fold_all"},
-            {arg_name: "总是展开代码块", arg_value: "expand_all"},
+            { arg_name: "自动隐藏/显示按钮", arg_value: "set_auto_hide" },
+            { arg_name: "禁用/启用按钮：折叠", arg_value: "disable_or_enable_fold" },
+            { arg_name: "禁用/启用按钮：复制", arg_value: "disable_or_enable_copy" },
+            { arg_name: "总是折叠代码块", arg_value: "fold_all" },
+            { arg_name: "总是展开代码块", arg_value: "expand_all" },
         ];
 
         if (this.enableIndent) {
-            this.callArgs.splice(2, 0, {arg_name: "禁用/启用按钮：缩进调整", arg_value: "disable_or_enable_indent"});
+            this.callArgs.splice(2, 0, { arg_name: "禁用/启用按钮：缩进调整", arg_value: "disable_or_enable_indent" });
         }
     }
 
@@ -177,7 +177,7 @@ class fenceEnhancePlugin extends BasePlugin {
             return func
         }
         this.config.CUSTOM_BUTTONS.forEach(btn => {
-            const {DISABLE, ICON, HINT, ON_INIT, ON_CLICK, ON_RENDER} = btn;
+            const { DISABLE, ICON, HINT, ON_INIT, ON_CLICK, ON_RENDER } = btn;
             if (DISABLE) return;
             if (ON_INIT) {
                 const initFunc = evalFunc(ON_INIT);
@@ -190,7 +190,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 const fence = button.closest(".md-fences");
                 const cid = fence.getAttribute("cid");
                 const cont = this.utils.getFenceContent(fence);
-                return callbackFunc({ev, button, cont, fence, cid, plu: this});
+                return callbackFunc({ ev, button, cont, fence, cid, plu: this });
             }
             const action = this.utils.randomString();
             this.registerBuilder(action, action, HINT, ICON, !DISABLE, callback, renderFunc);
@@ -275,18 +275,18 @@ class fenceEnhancePlugin extends BasePlugin {
 
         const arr = [];
         if (this.enableIndent) {
-            arr.push({arg_name: "调整缩进", arg_value: "indent_current"});
+            arr.push({ arg_name: "调整缩进", arg_value: "indent_current" });
             if (this.config.ENABLE_DANGEROUS_FEATURES) {
                 arr.push(
-                    {arg_name: "(危)调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint},
-                    {arg_name: "(危)为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint},
-                    {arg_name: "(危)批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: this.dangerousHint},
+                    { arg_name: "(危)调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint },
+                    { arg_name: "(危)为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint },
+                    { arg_name: "(危)批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: this.dangerousHint },
                 );
             }
         }
         arr.push(
-            {arg_name: "折叠/展开代码块", arg_value: "fold_current", arg_disabled: !target},
-            {arg_name: "复制代码", arg_value: "copy_current", arg_disabled: !target}
+            { arg_name: "折叠/展开代码块", arg_value: "fold_current", arg_disabled: !target },
+            { arg_name: "复制代码", arg_value: "copy_current", arg_disabled: !target }
         );
         return arr
     }
@@ -312,10 +312,10 @@ class fenceEnhancePlugin extends BasePlugin {
     indentAllFences = () => this.rangeAllFences(this.indentFence)
     replaceFencesLang = () => {
         const components = [
-            {label: "被替换语言", type: "input", value: "js"},
-            {label: "替换语言", type: "input", value: "javascript"}
+            { label: "被替换语言", type: "input", value: "js" },
+            { label: "替换语言", type: "input", value: "javascript" }
         ];
-        this.utils.dialog.modal({title: "替换语言", components}, ([{submit: waitToReplaceLang}, {submit: replaceLang}]) => {
+        this.utils.dialog.modal({ title: "替换语言", components }, ([{ submit: waitToReplaceLang }, { submit: replaceLang }]) => {
             if (!waitToReplaceLang || !replaceLang) return;
 
             this.rangeAllFences(fence => {
@@ -331,8 +331,8 @@ class fenceEnhancePlugin extends BasePlugin {
         })
     }
     addFencesLang = () => {
-        const components = [{label: "语言", type: "input", value: "javascript"}];
-        this.utils.dialog.modal({title: "添加语言", components}, ([{submit: targetLang}]) => {
+        const components = [{ label: "语言", type: "input", value: "javascript" }];
+        this.utils.dialog.modal({ title: "添加语言", components }, ([{ submit: targetLang }]) => {
             if (!targetLang) return;
             this.rangeAllFences(fence => {
                 const lang = fence.getAttribute("lang");
@@ -382,7 +382,7 @@ class fenceEnhancePlugin extends BasePlugin {
     }
     showIndentAllFencesModal = () => {
         const label = "调整缩进功能的能力有限，对于 Python 这种游标卡尺语言甚至会出现误判，你确定吗？";
-        this.utils.dialog.modal({title: "为所有代码块调整缩进", components: [{label, type: "p"}]}, this.indentAllFences)
+        this.utils.dialog.modal({ title: "为所有代码块调整缩进", components: [{ label, type: "p" }] }, this.indentAllFences)
     }
 
     call = (type, meta) => {
@@ -476,24 +476,24 @@ class editorHotkey {
         const cursor = fence.getCursor();
         const lineNum = cursor.line + 1;
         const lastNum = fence.lastLine() + 1;
-        return {pre, cid, fence, cursor, lineNum, lastNum, separator}
+        return { pre, cid, fence, cursor, lineNum, lastNum, separator }
     }
 
     keydown = keyObj => {
-        const dict = {shiftKey: false, ctrlKey: false, altKey: false, ...keyObj};
+        const dict = { shiftKey: false, ctrlKey: false, altKey: false, ...keyObj };
         document.activeElement.dispatchEvent(new KeyboardEvent('keydown', dict));
     }
     // 不可使用fence.execCommand("goLineUp")：因为它会检测shift键是否被pressed
-    goLineUp = () => this.keydown({key: 'ArrowUp', keyCode: 38, code: 'ArrowUp', which: 38});
-    goLineDown = () => this.keydown({key: 'ArrowDown', keyCode: 40, code: 'ArrowDown', which: 40});
+    goLineUp = () => this.keydown({ key: 'ArrowUp', keyCode: 38, code: 'ArrowUp', which: 38 });
+    goLineDown = () => this.keydown({ key: 'ArrowDown', keyCode: 40, code: 'ArrowDown', which: 40 });
 
     swapLine = (previous = true) => {
-        const {fence, separator, lineNum, lastNum} = this.getFence();
+        const { fence, separator, lineNum, lastNum } = this.getFence();
         if (!fence || (previous && lineNum === 1) || (!previous && lineNum === lastNum)) return
 
         const lines = previous
-            ? [{line: lineNum - 2, ch: 0}, {line: lineNum - 1, ch: null}]
-            : [{line: lineNum - 1, ch: 0}, {line: lineNum, ch: null}];
+            ? [{ line: lineNum - 2, ch: 0 }, { line: lineNum - 1, ch: null }]
+            : [{ line: lineNum - 1, ch: 0 }, { line: lineNum, ch: null }];
         const lineCount = fence.getRange(...lines);
         const lineList = lineCount.split(separator);
         if (lines.length !== 2) return
@@ -504,15 +504,15 @@ class editorHotkey {
     }
 
     copyLine = (previous = true) => {
-        const {fence, separator, lineNum} = this.getFence();
+        const { fence, separator, lineNum } = this.getFence();
         if (!fence) return
         const lineContent = fence.getLine(lineNum - 1);
         const newContent = separator + lineContent;
-        fence.replaceRange(newContent, {line: lineNum - 1, ch: null});
+        fence.replaceRange(newContent, { line: lineNum - 1, ch: null });
     }
 
     newlineAndIndent = (previous = true) => {
-        const {fence} = this.getFence();
+        const { fence } = this.getFence();
         if (!fence) return
         previous && this.goLineUp();
         fence.execCommand("goLineEnd");

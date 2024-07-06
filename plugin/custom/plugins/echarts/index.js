@@ -27,7 +27,7 @@ class echartsPlugin extends BaseCustomPlugin {
     }
 
     create = ($wrap, content) => {
-        const chart = this.echartsPkg.init($wrap[0], null, {renderer: this.config.RENDERER});
+        const chart = this.echartsPkg.init($wrap[0], null, { renderer: this.config.RENDERER });
         this.drawChart(chart, content);
         return chart;
     }
@@ -51,10 +51,10 @@ class echartsPlugin extends BaseCustomPlugin {
     }
 
     beforeExport = (preview, instance) => {
-        instance.setOption({animation: false});
+        instance.setOption({ animation: false });
         if (this.exportType === "png" || this.exportType === "jpg") {
             const img = new Image();
-            img.src = instance.getDataURL({type: this.exportType});
+            img.src = instance.getDataURL({ type: this.exportType });
             $(preview).html(img);
         } else if (this.exportType === "svg") {
             const svg = instance.renderToSVGString();

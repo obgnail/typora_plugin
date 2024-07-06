@@ -16,30 +16,27 @@
     border: 1px solid #ddd;
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
     border-radius: 2px;
-    height: 27px;
-    margin-top: 1px;
-    margin-bottom: 1px;
+    height: 28px;
+    margin: 1px 0;
 }
 
 #plugin-commander-form input {
-    width: 60%;
-    margin-left: 0;
+    flex-basis: 60%;
     margin-right: 2px;
     padding-left: 5px;
     padding-right: 24px;
 }
 
 #plugin-commander-form select {
-    width: 20%;
+    flex-basis: 20%;
     margin-left: 2px;
-    margin-right: 0;
     padding: 1px 2px;
 }
 
 #plugin-commander-form .plugin-commander-commit {
     position: absolute;
     padding: 1px;
-    left: 335px;
+    left: 336px;
     opacity: 0.7;
     cursor: pointer;
 }

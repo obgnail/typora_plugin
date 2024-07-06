@@ -6,8 +6,8 @@ class collapseParagraphPlugin extends BasePlugin {
         this.selector = `#write > [mdtype="heading"]`;
         this.paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
         this.callArgs = [
-            {arg_name: "折叠全部章节", arg_value: "collapse_all"},
-            {arg_name: "展开全部章节", arg_value: "expand_all"},
+            { arg_name: "折叠全部章节", arg_value: "collapse_all" },
+            { arg_name: "展开全部章节", arg_value: "expand_all" },
         ];
         this.funcList = this.getFuncList();
     }
@@ -19,7 +19,7 @@ class collapseParagraphPlugin extends BasePlugin {
         write.addEventListener("click", ev => {
             const paragraph = this.getTargetHeader(ev.target);
             if (!paragraph) return;
-            const obj = this.funcList.find(({filter}) => filter(ev));
+            const obj = this.funcList.find(({ filter }) => filter(ev));
             if (!obj) return;
             if (ev.target.closest('.md-link')) return; // 特殊处理
             document.activeElement.blur();
@@ -77,7 +77,7 @@ class collapseParagraphPlugin extends BasePlugin {
         for (const [key, callback] of Object.entries(funcMap)) {
             const modifier = this.config.MODIFIER_KEY[key];
             if (modifier) {
-                result.push({filter: this.utils.modifierKey(modifier), callback});
+                result.push({ filter: this.utils.modifierKey(modifier), callback });
             }
         }
         return result
@@ -120,7 +120,7 @@ class collapseParagraphPlugin extends BasePlugin {
             const idx = this.paragraphList.indexOf(ele.tagName);
             if (idx !== -1) {
                 if (pList.length === 0 || (pList[pList.length - 1].idx > idx && ele.classList.contains(this.className))) {
-                    pList.push({ele, idx})
+                    pList.push({ ele, idx })
                     if (pList[pList.length - 1].idx === 0) break;
                 }
             }
@@ -193,15 +193,15 @@ class collapseParagraphPlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
         const arg_name = `${this.config.RECORD_COLLAPSE ? "不" : ""}记住章节折叠状态`;
-        const result = [{arg_name: arg_name, arg_value: "record_collapse_state"}];
+        const result = [{ arg_name: arg_name, arg_value: "record_collapse_state" }];
         const target = this.getTargetHeader(anchorNode, !this.config.STRICT_MODE_IN_CONTEXT_MENU);
         if (target) {
             meta.target = target;
             result.push(
-                {arg_name: "折叠/展开当前章节", arg_value: "call_current", arg_disabled: !target},
-                {arg_name: "折叠/展开当前章节（递归）", arg_value: "call_recursive", arg_disabled: !target},
-                {arg_name: "折叠/展开全部兄弟章节", arg_value: "call_siblings", arg_disabled: !target},
-                {arg_name: "折叠/展开全局同级章节", arg_value: "call_all_siblings", arg_disabled: !target},
+                { arg_name: "折叠/展开当前章节", arg_value: "call_current", arg_disabled: !target },
+                { arg_name: "折叠/展开当前章节（递归）", arg_value: "call_recursive", arg_disabled: !target },
+                { arg_name: "折叠/展开全部兄弟章节", arg_value: "call_siblings", arg_disabled: !target },
+                { arg_name: "折叠/展开全局同级章节", arg_value: "call_all_siblings", arg_disabled: !target },
             )
         }
         return result

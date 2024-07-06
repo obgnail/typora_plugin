@@ -1,7 +1,7 @@
-const {BasePlugin, BaseCustomPlugin, LoadPlugin} = require("./plugin");
-const {utils} = require("./utils");
-const {getHelper} = require("./utils/delegate");
-const {loadHelpersBefore, loadHelpersAfter, optimizeHelpers} = getHelper(utils);
+const { BasePlugin, BaseCustomPlugin, LoadPlugin } = require("./plugin");
+const { utils } = require("./utils");
+const { getHelper } = require("./utils/delegate");
+const { loadHelpersBefore, loadHelpersAfter, optimizeHelpers } = getHelper(utils);
 
 class Launcher {
     // 整个插件系统一共暴露了7个全局变量，实际有用的只有3个：BasePlugin, BaseCustomPlugin, LoadPlugin

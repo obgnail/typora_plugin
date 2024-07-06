@@ -1,31 +1,37 @@
+/**
+ * 实现此插件需要三种兼容:
+ * 1. 抹平操作系统差异，支持windows和linux
+ * 2. 抹平shell差异，支持cmd、wsl和bash，支持嵌套调用shell
+ * 3. 抹平参数差异，cmd使用%VAR%，而bash使用$VAR
+ */
 class commanderPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.SHELL = {CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl"};
+        this.SHELL = { CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl" };
     }
 
     styleTemplate = () => true
 
     html = () => {
-        const {USE_BUILTIN, BUILTIN} = this.config;
-        const {CMD_BASH, POWER_SHELL, GIT_BASH, WSL} = this.SHELL;
+        const { CMD_BASH, POWER_SHELL, GIT_BASH, WSL } = this.SHELL;
         const genShell = (shell, text) => `<option value="${shell}">${text}</option>`;
-
         const shells = [genShell(CMD_BASH, "cmd/bash")];
         if (File.isWin) {
-            shells.push(genShell(POWER_SHELL, "PowerShell"), genShell(GIT_BASH, "Git Bash"), genShell(WSL, "WSL"))
+            shells.push(
+                genShell(POWER_SHELL, "PowerShell"),
+                genShell(GIT_BASH, "Git Bash"),
+                genShell(WSL, "WSL"),
+            )
         }
 
         let builtinSelect = "";
-        if (USE_BUILTIN) {
-            const builtin = BUILTIN.map(e => `<option shell="${e.shell}" value="${this.utils.escape(e.cmd)}">${e.name}</option>`);
-            builtinSelect = `<select class="plugin-commander-builtin">${builtin.join("")}</select>`;
-        }
+        const builtin = this.config.BUILTIN.map(e => `<option shell="${e.shell}" value="${this.utils.escape(e.cmd)}">${e.name}</option>`).join("");
+        builtinSelect = `<select class="plugin-commander-builtin">${builtin}</select>`;
 
         return `
             <div id="plugin-commander" class="plugin-common-modal plugin-common-hidden"> 
                 <div id="plugin-commander-form">
-                    <input type="text" placeholder="Typora commander" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录"/>
                     <i class="ion-ios7-play plugin-commander-commit plugin-common-hidden" ty-hint="执行命令"></i>
+                    <input type="text" class="plugin-commander-input" placeholder="Typora commander" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录"/>
                     <select class="plugin-commander-shell">${shells.join("")}</select>
                     ${builtinSelect}
                 </div>
@@ -35,21 +41,18 @@ class commanderPlugin extends BasePlugin {
     }
 
     hotkey = () => {
-        const hotkeys = [{hotkey: this.config.HOTKEY, callback: this.call}];
-        if (this.config.USE_BUILTIN) {
-            this.config.BUILTIN.forEach(ele => {
-                if (ele.hotkey && ele.cmd && ele.shell) {
-                    hotkeys.push({hotkey: ele.hotkey, callback: () => this.quickExecute(ele.cmd, ele.shell)});
-                }
-            })
-        }
-        return hotkeys
+        const { HOTKEY, BUILTIN = [] } = this.config;
+        const defaultHotkey = { hotkey: HOTKEY, callback: this.call };
+        const customHotkeys = BUILTIN
+            .filter(({ hotkey, cmd, shell }) => hotkey && cmd && shell)
+            .map(({ hotkey, cmd, shell }) => ({ hotkey, callback: () => this.quickExecute(cmd, shell) }));
+        return [defaultHotkey, ...customHotkeys];
     }
 
     init = () => {
-        this.modal = {
-            modal: document.getElementById('plugin-commander'),
-            input: document.querySelector("#plugin-commander-form input"),
+        this.entities = {
+            modal: document.getElementById("plugin-commander"),
+            input: document.querySelector("#plugin-commander-form .plugin-commander-input"),
             shellSelect: document.querySelector("#plugin-commander-form .plugin-commander-shell"),
             builtinSelect: document.querySelector("#plugin-commander-form .plugin-commander-builtin"),
             commit: document.querySelector("#plugin-commander-form .plugin-commander-commit"),
@@ -58,98 +61,76 @@ class commanderPlugin extends BasePlugin {
         }
 
         this.arg_value_prefix = "call_builtin@";
-        this.callArgs = [{arg_name: "显示/隐藏", arg_value: "show"}];
-        this.config.BUILTIN.forEach(builtin => {
-            if (builtin.name) {
-                this.callArgs.push({arg_name: builtin.name, arg_value: this.arg_value_prefix + builtin.name});
-            }
-        });
+        const defaultArg = { arg_name: "显示/隐藏", arg_value: "show" };
+        const customArgs = this.config.BUILTIN
+            .filter(builtin => builtin.name)
+            .map(builtin => ({ arg_name: builtin.name, arg_value: this.arg_value_prefix + builtin.name }))
+        this.callArgs = [defaultArg, ...customArgs];
     }
 
     process = () => {
-        if (!this.config.USE_BUILTIN) {
-            this.modal.modal.style.width = "500px";
-            this.modal.input.style.width = "80%";
-            this.modal.commit.style.left = "375px";
-        }
-
         // 提供不同入口，让鼠标操作的用户不必切换回键盘操作
-        this.modal.commit.addEventListener("click", ev => {
+        this.entities.commit.addEventListener("click", ev => {
             this.commitExecute();
             ev.stopPropagation();
             ev.preventDefault();
         }, true);
 
-        this.modal.input.addEventListener("input", () => {
-            const cmd = this.modal.input.value.trim();
+        this.entities.input.addEventListener("input", () => {
+            const cmd = this.entities.input.value.trim();
             if (cmd) {
-                this.utils.show(this.modal.commit);
+                this.utils.show(this.entities.commit);
             } else {
-                this.utils.hide(this.modal.commit);
-                this.modal.builtinSelect.value = "";
+                this.utils.hide(this.entities.commit);
+                this.entities.builtinSelect.value = "";
             }
         })
 
-        this.modal.shellSelect.addEventListener("change", () => this.modal.input.focus());
+        this.entities.modal.addEventListener("keydown", ev => {
+            const { key, target } = ev;
+            const isEnter = key === "Enter" && target.closest("input");
+            const isEscape = key === "Escape" || (key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value);
+            const isTab = key === "Tab" && target.closest(".plugin-commander-builtin");
 
-        this.modal.modal.addEventListener("keydown", ev => {
-            switch (ev.key) {
-                case "Enter":
-                    const input = ev.target.closest("input")
-                    if (input) {
-                        this.commitExecute();
-                        ev.stopPropagation();
-                        ev.preventDefault();
-                    }
-                    break
-                case "Escape":
-                case "Backspace":
-                    if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.modal.input.value) {
-                        ev.stopPropagation();
-                        ev.preventDefault();
-                        this.utils.hide(this.modal.modal);
-                    }
-                    break
-                case "Tab":
-                    const targetClass = this.config.USE_BUILTIN ? ".plugin-commander-builtin" : ".plugin-commander-shell";
-                    const target = ev.target.closest(targetClass);
-                    if (target) {
-                        ev.stopPropagation();
-                        ev.preventDefault();
-                        this.modal.input.focus();
-                    }
-                    break
+            if (isEnter) {
+                this.commitExecute();
+            } else if (isEscape) {
+                this.utils.hide(this.entities.modal);
+            } else if (isTab) {
+                this.entities.input.focus();
             }
-        })
 
-        if (this.config.USE_BUILTIN) {
-            this.modal.builtinSelect.addEventListener("change", () => {
-                const option = this.modal.builtinSelect.options[this.modal.builtinSelect.selectedIndex];
-                this.modal.shellSelect.value = option.getAttribute("shell");
-                this.modal.input.value = option.value;
-                this.modal.input.dispatchEvent(new CustomEvent('input'));
-                this.modal.input.focus();
-            })
-        }
+            if (isEnter || isEscape || isTab) {
+                ev.stopPropagation();
+                ev.preventDefault();
+            }
+        });
+
+        this.entities.shellSelect.addEventListener("change", () => this.entities.input.focus());
+
+        this.entities.builtinSelect.addEventListener("change", () => {
+            const option = this.entities.builtinSelect.options[this.entities.builtinSelect.selectedIndex];
+            this.entities.shellSelect.value = option.getAttribute("shell");
+            this.entities.input.value = option.value;
+            this.entities.input.dispatchEvent(new CustomEvent('input'));
+            this.entities.input.focus();
+        })
 
         if (this.config.ALLOW_DRAG) {
-            this.utils.dragFixedModal(this.modal.input, this.modal.modal);
+            this.utils.dragFixedModal(this.entities.input, this.entities.modal);
         }
     }
 
     convertPath = (path, shell) => {
-        if (File.isMac || File.isLinux) return path
+        if (!File.isWin) return path;
 
-        switch (shell) {
-            case this.SHELL.WSL:
-                return '/mnt' + this.utils.windowsPathToUnix(path)
-            case this.SHELL.GIT_BASH:
-                return this.utils.windowsPathToUnix(path)
-            case this.SHELL.CMD_BASH:
-            case this.SHELL.POWER_SHELL:
-            default:
-                return path
+        if (shell === this.SHELL.WSL) {
+            return '/mnt' + this.utils.windowsPathToUnix(path);
+        } else if (shell === this.SHELL.GIT_BASH) {
+            return this.utils.windowsPathToUnix(path);
         }
+
+        return path;
     }
 
     getFile = shell => this.convertPath(this.utils.getFilePath(), shell);
@@ -160,12 +141,10 @@ class commanderPlugin extends BasePlugin {
         const file = this.getFile(shell);
         const folder = this.getFolder(shell);
         const mount = this.getMountFolder(shell);
-        cmd = cmd.replace(/\$f/g, `"${file}"`)
-            .replace(/\$d/g, `"${folder}"`)
-            .replace(/\$m/g, `"${mount}"`);
-        return cmd
+        return cmd.replace(/\$f/g, `"${file}"`).replace(/\$d/g, `"${folder}"`).replace(/\$m/g, `"${mount}"`);
     }
 
+    // TODO: 这种做法路子太野，应该采用【反弹shell】
     getShellCommand = env => {
         switch (env) {
             case this.SHELL.GIT_BASH:
@@ -175,14 +154,14 @@ class commanderPlugin extends BasePlugin {
             case this.SHELL.WSL:
                 return `wsl.exe -e bash -c`
             default:
-                return (File.isMac || File.isLinux) ? `bash -c` : `cmd /C`;
+                return File.isWin ? "cmd /C" : "bash -c"
         }
     }
 
     normalizeModal = (cmd, shell, hint) => {
-        this.modal.input.value = cmd;
-        this.modal.shellSelect.value = shell;
-        this.utils.show(this.modal.commit);
+        this.entities.input.value = cmd;
+        this.entities.shellSelect.value = shell;
+        this.utils.show(this.entities.commit);
         typeof hint === "string" && this.showStdout(hint);
     }
 
@@ -193,15 +172,15 @@ class commanderPlugin extends BasePlugin {
     }
 
     showStdout = stdout => {
-        this.utils.show(this.modal.modal);
-        this.utils.show(this.modal.output);
-        this.modal.pre.classList.remove("error");
-        this.modal.pre.textContent = stdout;
+        this.utils.show(this.entities.modal);
+        this.utils.show(this.entities.output);
+        this.entities.pre.classList.remove("error");
+        this.entities.pre.textContent = stdout;
     }
 
     showStdErr = stderr => {
         this.showStdout(stderr);
-        this.modal.pre.classList.add("error");
+        this.entities.pre.classList.add("error");
     }
 
     // 为什么不使用shell options? 答：不能支持wsl
@@ -216,8 +195,8 @@ class commanderPlugin extends BasePlugin {
         this.normalizeModal(cmd, shell, hint);
         const [cmd_, shell_] = this.normalizeCommand(cmd, shell)
         const command_ = `${prefix} ${shell_} "${cmd_}"`;
-        const defaultOptions = {encoding: 'utf8', cwd: this.getFolder()};
-        const option_ = {...defaultOptions, ...options};
+        const defaultOptions = { encoding: 'utf8', cwd: this.getFolder() };
+        const option_ = { ...defaultOptions, ...options };
         const callback_ = (err, stdout, stderr) => {
             if (err || stderr.length) {
                 reject(err || stderr.toString());
@@ -239,8 +218,8 @@ class commanderPlugin extends BasePlugin {
         this.normalizeModal(cmd, shell, hint || ""); // 执行前清空输出
         const [cmd_, shell_] = this.normalizeCommand(cmd, shell)
         const command_ = `${prefix} ${shell_} "${cmd_}"`;
-        const defaultOptions = {encoding: 'utf8', cwd: this.getFolder(), shell: true};
-        const option_ = {...defaultOptions, ...options};
+        const defaultOptions = { encoding: 'utf8', cwd: this.getFolder(), shell: true };
+        const option_ = { ...defaultOptions, ...options };
         const child = this.utils.Package.ChildProcess.spawn(command_, option_);
         child.stdout.on('data', resolve);
         child.stderr.on("data", reject);
@@ -251,10 +230,10 @@ class commanderPlugin extends BasePlugin {
     errorExec = (cmd, shell, callback, hint, options) => this.exec(cmd, shell, null, this.showStdErr, callback, hint, options);
     alwaysExec = (cmd, shell, callback, hint, options) => this.exec(cmd, shell, this.showStdout, this.showStdErr, callback, hint, options);
     echoExec = (cmd, shell, callback, hint, options) => {
-        const resolve = data => this.modal.pre.textContent += data.toString();
-        const addErrorClass = this.utils.once(() => this.modal.pre.classList.add("error"));
+        const resolve = data => this.entities.pre.textContent += data.toString();
+        const addErrorClass = this.utils.once(() => this.entities.pre.classList.add("error"));
         const reject = data => {
-            this.modal.pre.textContent += data.toString();
+            this.entities.pre.textContent += data.toString();
             addErrorClass();
         }
         this.spawn(cmd, shell, resolve, reject, callback, hint, options);
@@ -276,24 +255,22 @@ class commanderPlugin extends BasePlugin {
 
     quickExecute = (cmd, shell) => this.execute(this.config.QUICK_EXEC_SHOW, cmd, shell);
     commitExecute = () => {
-        const cmd = this.modal.input.value;
+        const cmd = this.entities.input.value;
         if (!cmd) {
             this.showStdErr("command is empty");
             return
         }
-        const option = this.modal.shellSelect.options[this.modal.shellSelect.selectedIndex];
+        const option = this.entities.shellSelect.options[this.entities.shellSelect.selectedIndex];
         const shell = option.value;
         this.showStdout("running...");
         this.execute(this.config.COMMIT_EXEC_SHOW, cmd, shell, null);
     }
 
     toggleModal = () => {
-        const {modal} = this.modal;
+        const { modal, input } = this.entities;
+        this.utils.toggleVisible(modal);
         if (this.utils.isShow(modal)) {
-            this.utils.hide(modal);
-        } else {
-            this.utils.show(modal);
-            this.modal.input.select();
+            input.select();
         }
     }
 

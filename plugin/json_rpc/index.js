@@ -1,7 +1,7 @@
 class jsonRpcPlugin extends BasePlugin {
     process = () => {
         try {
-            const {Server} = require("./node-json-rpc");
+            const { Server } = require("./node-json-rpc");
             if (!Server) return;
 
             const server = new Server(this.config.SERVER_OPTIONS);
@@ -26,13 +26,13 @@ class jsonRpcPlugin extends BasePlugin {
 
             const [plugin, func, ...args] = para;
             if (!plugin || !func) {
-                error = {code: 404, message: "param has not plugin or function"};
+                error = { code: 404, message: "param has not plugin or function" };
             }
 
             const p = this.utils.tryGetPlugin(plugin);
             const _func = p && p[func];
             if (!_func) {
-                error = {code: 404, message: "has not the plugin function"};
+                error = { code: 404, message: "has not the plugin function" };
             } else {
                 result = _func.apply(plugin, args) || {};
             }
@@ -46,7 +46,7 @@ class jsonRpcPlugin extends BasePlugin {
                 const code = para[0];
                 result = eval(code) || {};
             } catch (e) {
-                error = {code: 500, message: e.toString()};
+                error = { code: 500, message: e.toString() };
             }
 
             callback(error, result);

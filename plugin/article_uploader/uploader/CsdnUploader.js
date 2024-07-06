@@ -11,7 +11,7 @@ class CsdnUploader extends BaseUploaderInterface {
     async upload(title, content, extraData) {
         return new Promise((resolve, reject) => {
             const https = require('https');
-            const {marked} = require('marked');
+            const { marked } = require('marked');
             const Notification = require('../utils/customNotification.js').plugin;
             const notification = new Notification();
 

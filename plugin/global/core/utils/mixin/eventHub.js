@@ -1,5 +1,7 @@
-// 为什么要自己写事件监听发布机制，而不用node自带的EventEmitter？
-// 答：为了立刻回调。此项目并不是官方的，我希望系统的设计能尽量减少BUG隐患。生命周期事件是通过hook对应的函数实现的，而emitter.emit却是异步的，这意味着回调函数执行时机是不确定的，显然立刻回调更加安全。
+/**
+ * 为什么要自己写事件监听发布机制，而不用node自带的EventEmitter？
+ * 答：为了立刻回调。此项目并不是官方的，我希望系统的设计能尽量减少BUG隐患。生命周期事件是通过hook对应的函数实现的，而emitter.emit却是异步的，这意味着回调函数执行时机是不确定的，显然立刻回调更加安全。
+ */
 class eventHub {
     constructor(utils) {
         this.utils = utils;
@@ -103,7 +105,7 @@ class eventHub {
         const content = this.utils.entities.eContent;
         const hasTransition = window.getComputedStyle(content).transition !== "all 0s ease 0s";
         const afterToggleSidebar = hasTransition
-            ? () => content.addEventListener("transitionend", _afterToggleSidebar, {once: true})
+            ? () => content.addEventListener("transitionend", _afterToggleSidebar, { once: true })
             : this.utils.debounce(_afterToggleSidebar, 400);
         this.utils.decorate(() => File && File.editor && File.editor.library, "toggleSidebar", null, afterToggleSidebar);
 
@@ -120,7 +122,7 @@ class eventHub {
                     this.publishEvent(this.eventType.toggleSettingPage, openPage);
                 }
             }
-        }).observe(document.body, {attributes: true});
+        }).observe(document.body, { attributes: true });
 
         const debouncePublish = this.utils.debounce(() => this.publishEvent(this.eventType.fileEdited), 400);
         this.observer = new MutationObserver(mutationList => {
@@ -129,7 +131,7 @@ class eventHub {
                 debouncePublish();
             }
         });
-        this.observer.observe(this.utils.entities.eWrite, {characterData: true, childList: true, subtree: true})
+        this.observer.observe(this.utils.entities.eWrite, { characterData: true, childList: true, subtree: true })
     }
 
     afterProcess = () => {

@@ -19,13 +19,13 @@ class templaterPlugin extends BaseCustomPlugin {
         }
 
         const components = [
-            {label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本"},
-            {label: "模板", type: "select", list: this.config.template.map(tpl => tpl.name), onchange},
-            {label: "预览", type: "textarea", rows: 10, readonly: "readonly", content: this.config.template[0].text},
+            { label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本" },
+            { label: "模板", type: "select", list: this.config.template.map(tpl => tpl.name), onchange },
+            { label: "预览", type: "textarea", rows: 10, readonly: "readonly", content: this.config.template[0].text },
         ]
-        const modal = {title: "新文件", components};
+        const modal = { title: "新文件", components };
 
-        this.utils.dialog.modal(modal, async ([{submit: filepath}, {submit: template}]) => {
+        this.utils.dialog.modal(modal, async ([{ submit: filepath }, { submit: template }]) => {
             const tpl = this.config.template.find(tpl => tpl.name === template);
             if (!tpl) return;
 
@@ -141,7 +141,7 @@ class templateHelper {
 
     _getTemplateVars = () => {
         const map = {};
-        this.config.template_variables.forEach(({enable, name, callback}) => {
+        this.config.template_variables.forEach(({ enable, name, callback }) => {
             if (!enable) return;
             const func = eval(callback);
             if (func instanceof Function) {

@@ -20,7 +20,7 @@ class CustomPlugin extends BasePlugin {
                     const target = (selector && anchorNode) ? anchorNode.closest(selector) : anchorNode;
                     plugin.callback(target);
                 }
-                hotkeys.push({hotkey, callback});
+                hotkeys.push({ hotkey, callback });
             } catch (e) {
                 console.error("register hotkey error:", fixedName, e);
             }
@@ -30,7 +30,7 @@ class CustomPlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => {
         const settings = Object.entries(this.pluginsSettings);
-        settings.sort(([, {order: o1 = 1}], [, {order: o2 = 1}]) => o1 - o2);
+        settings.sort(([, { order: o1 = 1 }], [, { order: o2 = 1 }]) => o1 - o2);
 
         meta.target = anchorNode;
         const dynamicCallArgs = [];
@@ -110,9 +110,9 @@ class customPluginLoader {
         const errorPluginSetting = Object.keys(customSettings).filter(fixedName => allSettings.hasOwnProperty(fixedName));
         if (errorPluginSetting && errorPluginSetting.length) {
             const msg = "以下插件的配置写错文件了，一级插件应该写在 settings.user.toml 中，二级插件应该写在 custom_plugin.user.toml 中";
-            const components = [msg, ...errorPluginSetting].map(label => ({label, type: "p"}));
+            const components = [msg, ...errorPluginSetting].map(label => ({ label, type: "p" }));
             const openSettingFile = () => this.utils.showInFinder(this.utils.getOriginSettingPath("settings.user.toml"));
-            this.utils.dialog.modal({title: "配置错误", components}, openSettingFile, openSettingFile);
+            this.utils.dialog.modal({ title: "配置错误", components }, openSettingFile, openSettingFile);
         }
     }
 

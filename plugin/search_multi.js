@@ -29,7 +29,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         </div>
     `
 
-    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
         this.entities = {
@@ -136,7 +136,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     openFileInNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder);
 
     traverseDir = (dir, fileFilter, dirFilter, callback, then) => {
-        const {Fs: {promises: {readdir, stat, readFile}}, Path} = this.utils.Package;
+        const { Fs: { promises: { readdir, stat, readFile } }, Path } = this.utils.Package;
 
         async function traverse(dir) {
             const files = await readdir(dir);
@@ -157,7 +157,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     appendItemFunc = (rootPath, keyArr) => {
         let index = 0;
         const showResult = this.utils.once(() => this.utils.show(this.entities.result));
-        const {INCLUDE_FILE_PATH, CASE_SENSITIVE, RELATIVE_PATH, SHOW_MTIME} = this.config;
+        const { INCLUDE_FILE_PATH, CASE_SENSITIVE, RELATIVE_PATH, SHOW_MTIME } = this.config;
 
         return (filePath, stats, buffer) => {
             let data = buffer.toString();
@@ -171,14 +171,14 @@ class searchMultiKeywordPlugin extends BasePlugin {
             if (!keyArr.every(keyword => data.includes(keyword))) return false;
 
             index++;
-            const {dir, base} = this.utils.Package.Path.parse(filePath);
+            const { dir, base } = this.utils.Package.Path.parse(filePath);
             const dirPath = RELATIVE_PATH ? dir.replace(rootPath, ".") : dir;
 
             const item = document.createElement("div");
             item.className = "plugin-search-multi-item";
             item.setAttribute("data-path", filePath);
             if (SHOW_MTIME) {
-                const time = stats.mtime.toLocaleString('chinese', {hour12: false});
+                const time = stats.mtime.toLocaleString('chinese', { hour12: false });
                 item.setAttribute("ty-hint", time);
             }
 

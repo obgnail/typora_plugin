@@ -2,16 +2,16 @@ class truncateTextPlugin extends BasePlugin {
     beforeProcess = () => {
         this.className = "plugin-truncate-text";
         this.callArgs = [
-            {arg_name: `只保留最后${this.config.REMAIN_LENGTH}段`, arg_value: "hide_front"},
-            {arg_name: "重新显示所有内容", arg_value: "show_all"},
-            {arg_name: "根据当前可视范围显示", arg_value: "hide_base_view"}
+            { arg_name: `只保留最后${this.config.REMAIN_LENGTH}段`, arg_value: "hide_front" },
+            { arg_name: "重新显示所有内容", arg_value: "show_all" },
+            { arg_name: "根据当前可视范围显示", arg_value: "hide_base_view" }
         ];
     }
 
     hotkey = () => [
-        {hotkey: this.config.HIDE_FRONT_HOTKEY, callback: () => this.call("hide_front")},
-        {hotkey: this.config.SHOW_ALL_HOTKEY, callback: () => this.call("show_all")},
-        {hotkey: this.config.HIDE_BASE_VIEW_HOTKEY, callback: () => this.call("hide_base_view")},
+        { hotkey: this.config.HIDE_FRONT_HOTKEY, callback: () => this.call("hide_front") },
+        { hotkey: this.config.SHOW_ALL_HOTKEY, callback: () => this.call("show_all") },
+        { hotkey: this.config.HIDE_BASE_VIEW_HOTKEY, callback: () => this.call("hide_base_view") },
     ]
 
     callbackOtherPlugin = () => {

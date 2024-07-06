@@ -1,5 +1,5 @@
 class markdownLintPlugin extends BaseCustomPlugin {
-    styleTemplate = () => ({modal_width: (this.config.modal_width === "auto" ? "fit-content" : this.config.modal_width)})
+    styleTemplate = () => ({ modal_width: (this.config.modal_width === "auto" ? "fit-content" : this.config.modal_width) })
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
     hotkey = () => [this.config.hotkey]
     html = () => `
@@ -73,7 +73,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
     initWorker = () => {
         this.worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linterWorker.js"));
-        this.worker.onmessage = ({data: content = ""}) => {
+        this.worker.onmessage = ({ data: content = "" }) => {
             if (this.entities.button) {
                 this.entities.button.style.backgroundColor = content.length ? this.config.error_color : this.config.pass_color;
             }
@@ -81,7 +81,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 this.entities.pre.innerHTML = content.length ? this.genMarkdownlint(content) : this.config.pass_text
             }
         }
-        setTimeout(() => this.worker.postMessage({action: "init", payload: this.config.disable_rules}), 1000);
+        setTimeout(() => this.worker.postMessage({ action: "init", payload: this.config.disable_rules }), 1000);
     }
 
     initEventHandler = () => {
@@ -124,14 +124,14 @@ class markdownLintPlugin extends BaseCustomPlugin {
                         File.toggleSourceMode();
                     }
                     const cm = File.editor.sourceView.cm;
-                    cm.scrollIntoView({line: lineToGo - 1, ch: 0});
-                    cm.setCursor({line: lineToGo - 1, ch: 0});
+                    cm.scrollIntoView({ line: lineToGo - 1, ch: 0 });
+                    cm.setCursor({ line: lineToGo - 1, ch: 0 });
                 }
             }
         })
     }
 
-    updateLinter = () => this.worker.postMessage({action: "lint", payload: this.utils.getFilePath()});
+    updateLinter = () => this.worker.postMessage({ action: "lint", payload: this.utils.getFilePath() });
 
     registerFixLintHotkey = () => this.utils.hotkeyHub.registerSingle(this.config.hotkey_fix_lint_error, this.fixLintError);
 

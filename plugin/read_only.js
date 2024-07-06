@@ -1,7 +1,7 @@
 class readOnlyPlugin extends BasePlugin {
     styleTemplate = () => true
 
-    hotkey = () => [{hotkey: this.config.HOTKEY, callback: this.call}]
+    hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     process = () => {
         this.inReadOnlyMode = false;
@@ -56,7 +56,7 @@ class readOnlyPlugin extends BasePlugin {
         if (link && !this.utils.metaKeyPressed(ev)) {
             ev.stopPropagation();
             ev.preventDefault();
-            const dict = {ctrlKey: true, metaKey: true, bubbles: true, cancelable: true};
+            const dict = { ctrlKey: true, metaKey: true, bubbles: true, cancelable: true };
             ev.target.dispatchEvent(new MouseEvent("click", dict));
         }
     }
@@ -64,7 +64,7 @@ class readOnlyPlugin extends BasePlugin {
     extraOperation = lock => {
         const write = this.utils.entities.eWrite;
         const func = lock ? "addEventListener" : "removeEventListener";
-        const map = {keydown: this._stopKeydown, compositionstart: this._stopEvent, paste: this._stopEvent};
+        const map = { keydown: this._stopKeydown, compositionstart: this._stopEvent, paste: this._stopEvent };
         if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY) {
             map.click = this._openHyperlink;
         }

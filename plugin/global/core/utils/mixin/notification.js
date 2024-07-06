@@ -3,10 +3,10 @@ class notification {
         this.utils = utils;
         this.timer = null;
         this.types = {
-            success: {bgColor: "#e6ffed", icon: "fa fa-check"},
-            info: {bgColor: "#e6f7ff", icon: "fa fa-info-circle"},
-            warning: {bgColor: "#fffbe6", icon: "fa fa-warning"},
-            error: {bgColor: "#ffe6e6", icon: "fa fa-times"},
+            success: { bgColor: "#e6ffed", icon: "fa fa-check" },
+            info: { bgColor: "#e6f7ff", icon: "fa fa-info-circle" },
+            warning: { bgColor: "#fffbe6", icon: "fa fa-warning" },
+            error: { bgColor: "#ffe6e6", icon: "fa fa-times" },
         }
     }
 
@@ -31,7 +31,7 @@ class notification {
         if (!this.types.hasOwnProperty(type)) {
             type = "info";
         }
-        const {bgColor, icon} = this.types[type];
+        const { bgColor, icon } = this.types[type];
         const notification = this.getNotification();
         notification.querySelector(".notification-message").textContent = message;
         notification.querySelector(".notification-icon").className = `notification-icon ${icon}`;
