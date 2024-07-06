@@ -8,6 +8,7 @@ class blurPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
+        this.blurType = { BLUR: "blur", HIDE: "hide" };
         this.css_id = "plugin-blur-style";
         this.inBlur = this.config.BLUR_DEFAULT;
     }
@@ -21,7 +22,7 @@ class blurPlugin extends BasePlugin {
 
     getStyleText = () => {
         const selector = "#write > [cid]:not(.md-focus):not(:has(.md-focus)):not(:has(.md-focus-container))";
-        const [effect, restore] = (this.config.BLUR_TYPE === "hide")
+        const [effect, restore] = (this.config.BLUR_TYPE === this.blurType.HIDE)
             ? ["visibility: hidden;", "visibility: visible;"]
             : [`filter: blur(${this.config.BLUR_LEVEL}px);`, "filter: initial;"]
 
