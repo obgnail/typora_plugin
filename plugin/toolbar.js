@@ -2,7 +2,7 @@ class toolbarPlugin extends BasePlugin {
     beforeProcess = () => {
         this.toolController = new toolController(this);
         const tools = [tabTool, pluginTool, recentFileTool, operationTool, modeTool, themeTool, outlineTool, functionTool, mixTool];
-        tools.forEach(tool => this.registerBarTool(new tool()));
+        tools.forEach(tool => this.toolController.register(new tool()));
     }
 
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
@@ -101,9 +101,6 @@ class toolbarPlugin extends BasePlugin {
             }
         })
     }
-
-    registerBarTool = tool => this.toolController.register(tool);
-    unregisterBarTool = name => this.toolController.unregister(name);
 
     _callTool = (target, ev) => {
         if (ev) {
@@ -459,24 +456,14 @@ class modeTool extends baseToolInterface {
             const dark = this.utils.getCustomPlugin("darkMode");
             const image = this.utils.getCustomPlugin("imageReviewer");
             const noImage = this.utils.getCustomPlugin("noImageMode");
-            if (readonly) {
-                this.modes.push({ showName: "只读模式", fixedName: "readOnlyMode", callback: () => readonly.call() });
-            }
-            if (blur) {
-                this.modes.push({ showName: "模糊模式", fixedName: "blurMode", callback: () => blur.call() });
-            }
-            if (dark) {
-                this.modes.push({ showName: "夜间模式", fixedName: "darkMode", callback: () => dark.callback() });
-            }
-            if (image) {
-                this.modes.push({ showName: "看图模式", fixedName: "imageReviewer", callback: () => image.callback() });
-            }
-            if (noImage) {
-                this.modes.push({ showName: "无图模式", fixedName: "noImageMode", callback: () => noImage.callback() });
-            }
-            this.modes.push({
-                showName: "调试模式", fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools")
-            });
+
+            readonly && this.modes.push({ showName: "只读模式", fixedName: "readOnlyMode", callback: () => readonly.call() });
+            blur && this.modes.push({ showName: "模糊模式", fixedName: "blurMode", callback: () => blur.call() });
+            dark && this.modes.push({ showName: "夜间模式", fixedName: "darkMode", callback: () => dark.callback() });
+            image && this.modes.push({ showName: "看图模式", fixedName: "imageReviewer", callback: () => image.callback() });
+            noImage && this.modes.push({ showName: "无图模式", fixedName: "noImageMode", callback: () => noImage.callback() });
+            this.modes.push({ showName: "调试模式", fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools") });
+
             this.modes.forEach(mode => mode.showName += ` - ${mode.fixedName}`);
         })
     }

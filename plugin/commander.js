@@ -1,3 +1,9 @@
+/**
+ * 实现此插件需要三种兼容:
+ * 1. 抹平操作系统差异，支持windows和linux
+ * 2. 抹平shell差异，支持cmd、wsl和bash，支持嵌套调用shell
+ * 3. 抹平参数差异，cmd使用%VAR%，而bash使用$VAR
+ */
 class commanderPlugin extends BasePlugin {
     beforeProcess = () => {
         this.SHELL = { CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl" };

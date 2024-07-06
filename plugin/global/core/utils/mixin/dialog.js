@@ -143,9 +143,11 @@ class dialog {
         return `<div class="form-group" component-id="${component.id}">${label_}${inner}</div>`;
     }
 
-    // 1. modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
-    // 2. callback(components) => {}: 当用户点击【确认】后的回调函数
-    // 3. onCancelCallback(components) => {}: 当用户点击【取消】后的回调函数
+    /**
+     * @param modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
+     * @param callback(components) => {}: 当用户点击【确认】后的回调函数
+     * @param cancelCallback(components) => {}: 当用户点击【取消】后的回调函数
+     */
     modal = (modal, callback, cancelCallback) => {
         if (!modal) return;
 

@@ -4,9 +4,11 @@ class exportHelper {
         this.helpers = new Map();
     }
 
-    // 1. name: 取个名字
-    // 2. beforeExport() => cssString || nullLike  如果返回string，将加入到extraCSS
-    // 3. async afterExport() => html || nullLike  如果返回string，将替换HTML
+    /**
+     * @param name: 取个名字
+     * @param beforeExport() => cssString || nullLike  如果返回string，将加入到extraCSS
+     * @param afterExport() => html || nullLike  如果返回string，将替换HTML
+     */
     register = (name, beforeExport, afterExport) => this.helpers.set(name, { beforeExport, afterExport });
     unregister = name => this.helpers.delete(name);
 

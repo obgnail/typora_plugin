@@ -38,10 +38,12 @@ class contextMenu {
         }, true)
     }
 
-    // 1. name: 取个名字
-    // 2. selector: 在哪个位置右键将弹出菜单
-    // 3. generator({ev, target}) => {key1: showName1}: 生成右键菜单选项组成的object，参数target是上面的selector对应的元素
-    // 4. callback({ev, key}) => null: 点击的回调，参数key是点击的选项
+    /**
+     * @param name: 取个名字
+     * @param selector: 在哪个位置右键将弹出菜单
+     * @param generator({ev, target}) => {key1: showName1}: 生成右键菜单选项组成的object，参数target是上面的selector对应的元素
+     * @param callback({ev, key}) => null: 点击的回调，参数key是点击的选项
+     */
     register = (name, selector, generator, callback) => this.menus.set(name, { selector, generator, callback })
     unregister = name => this.menus.delete(name)
 
