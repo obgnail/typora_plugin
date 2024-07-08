@@ -646,13 +646,15 @@ class utils {
             .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, imageReplacement)
     }
 
+    static moveCursor = $target => File.editor.selection.jumpIntoElemEnd($target);
+
     static scroll = ($target, height = -1, moveCursor = false, showHiddenElement = true) => {
         if ($target instanceof Element) {
             $target = $($target);
         }
         File.editor.focusAndRestorePos();
         if (moveCursor) {
-            File.editor.selection.jumpIntoElemEnd($target);
+            this.moveCursor($target);
         }
         if (showHiddenElement) {
             this.showHiddenElementByPlugin($target[0]);

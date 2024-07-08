@@ -1,6 +1,7 @@
 class slashCommandsPlugin extends BasePlugin {
     beforeProcess = () => {
         this.matched = new Map();
+        this.type = { COMMAND: "command", SNIPPET: "snippet", GENERATE_SNIPPET: "gen-snp" };
         this.commands = new Map(this.config.COMMANDS.filter(cmd => cmd.enable && cmd.keyword).map(cmd => [cmd.keyword.toLowerCase(), cmd]));
         this.handler = { search: this._search, render: this._render, beforeApply: this._beforeApply };
         this.strategy = this._getStrategy();
@@ -19,7 +20,7 @@ class slashCommandsPlugin extends BasePlugin {
     openSettingFile = async () => this.utils.showInFinder(await this.utils.getActualSettingPath("settings.user.toml"));
 
     _showAllCommands = () => {
-        const getType = type => type === "command" ? "命令" : "文段";
+        const getType = type => type === this.type.COMMAND ? "命令" : "文段";
         const th = `<tr><th>关键字</th><th>类型</th><th>功能</th></tr>`;
         const list = Array.from(this.commands.values());
         const trs = list.map(({ type, keyword, hint, callback }) => `<tr><td>${keyword}</td><td>${getType(type)}</td><td title="${callback}">${hint}</td></tr>`);
@@ -106,7 +107,7 @@ class slashCommandsPlugin extends BasePlugin {
         if (!cmd) return ""
 
         const { token } = File.editor.autoComplete.state;
-        const icon = cmd.icon || ((cmd.type === "command") ? "🧰" : "🧩");
+        const icon = cmd.icon || ((cmd.type === this.type.COMMAND) ? "🧰" : "🧩");
         const text = this.strategy.highlight(cmd.keyword, token);
         const innerText = icon + " " + text + (cmd.hint ? ` - ${cmd.hint}` : "");
         const className = `plugin-slash-command ${isActive ? "active" : ""}`;
@@ -146,14 +147,14 @@ class slashCommandsPlugin extends BasePlugin {
         }
 
         switch (cmd.type) {
-            case "snippet":
-            case "gen-snp":
+            case this.type.SNIPPET:
+            case this.type.GENERATE_SNIPPET:
                 setTimeout(() => {
                     normalizeAnchor();
                     flash();
                 }, 100);
-                return cmd.type === "snippet" ? cmd.callback : this._evalFunction(cmd.callback);
-            case "command":
+                return cmd.type === this.type.SNIPPET ? cmd.callback : this._evalFunction(cmd.callback);
+            case this.type.COMMAND:
                 normalizeAnchor();
                 const range = File.editor.selection.getRangy();
                 const textNode = anchor.containerNode.firstChild;

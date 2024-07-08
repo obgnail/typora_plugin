@@ -85,29 +85,28 @@ class collapseParagraphPlugin extends BasePlugin {
 
     callbackOtherPlugin = () => this.utils.callPluginFunction("outline", "refresh");
 
-    toggle = (paragraph, display) => {
-        const idx = this.paragraphList.indexOf(paragraph.tagName);
-        const stop = this.paragraphList.slice(0, idx + 1);
-
-        let ele = paragraph.nextElementSibling;
-        while (ele && stop.indexOf(ele.tagName) === -1) {
-            if (this.paragraphList.indexOf(ele.tagName) !== -1
-                && ele.classList.contains(this.className)
-                && display === "") {
-                ele.style.display = "";
-                ele = this.toggle(ele, "none");
-                continue
-            }
-
-            ele.style.display = display;
-            ele = ele.nextElementSibling;
-        }
-        return ele;
-    }
-
     trigger = (paragraph, collapsed) => {
+        const _trigger = (paragraph, display) => {
+            const idx = this.paragraphList.indexOf(paragraph.tagName);
+            const stop = this.paragraphList.slice(0, idx + 1);
+
+            let ele = paragraph.nextElementSibling;
+            while (ele && stop.indexOf(ele.tagName) === -1) {
+                const need = this.paragraphList.indexOf(ele.tagName) !== -1 && ele.classList.contains(this.className) && display === ""
+                if (need) {
+                    ele.style.display = "";
+                    ele = _trigger(ele, "none");
+                    continue
+                }
+
+                ele.style.display = display;
+                ele = ele.nextElementSibling;
+            }
+            return ele;
+        }
+
         paragraph.classList.toggle(this.className, !collapsed);
-        this.toggle(paragraph, collapsed ? "" : "none");
+        _trigger(paragraph, collapsed ? "" : "none");
     }
 
     rollback = start => {
