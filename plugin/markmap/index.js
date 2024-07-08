@@ -407,19 +407,22 @@ class tocMarkmap {
             const { zoom = true, pan = true } = (this.markmap && this.markmap.options) || {};
             const fitWhenUpdateLabel = "更新时自动适配窗口" + _genInfo("图形更新时自动重新适配窗口大小");
             const fitWhenFoldLabel = "折叠时自动适配窗口" + _genInfo("折叠图形节点时自动重新适配窗口大小");
+            const collapseWhenFoldLabel = "折叠时自动折叠章节" + _genInfo("此功能为实验性特性，依赖「章节折叠」插件，目前不推荐开启");
             const foldWhenUpdateLabel = "记住已折叠节点" + _genInfo("图形更新时不再重新展开已折叠节点");
             const list = [
                 { label: "鼠标滚轮缩放", value: "zoom", checked: zoom },
                 { label: "鼠标滚轮平移", value: "pan", checked: pan },
+                { label: foldWhenUpdateLabel, value: "foldWhenUpdate", checked: this.config.REMEMBER_FOLD_WHEN_UPDATE },
                 { label: fitWhenUpdateLabel, value: "fitWhenUpdate", checked: this.config.AUTO_FIT_WHEN_UPDATE },
                 { label: fitWhenFoldLabel, value: "fitWhenFold", checked: this.config.AUTO_FIT_WHEN_FOLD },
-                { label: foldWhenUpdateLabel, value: "foldWhenUpdate", checked: this.config.REMEMBER_FOLD_WHEN_UPDATE },
+                { label: collapseWhenFoldLabel, value: "collapseWhenFold", checked: this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD },
             ];
             const callback = submit => {
                 this.markmap.options.zoom = submit.includes("zoom");
                 this.markmap.options.pan = submit.includes("pan");
                 this.config.AUTO_FIT_WHEN_UPDATE = submit.includes("fitWhenUpdate");
                 this.config.AUTO_FIT_WHEN_FOLD = submit.includes("fitWhenFold");
+                this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD = submit.includes("collapseWhenFold");
                 this.config.REMEMBER_FOLD_WHEN_UPDATE = submit.includes("foldWhenUpdate");
             };
             return { label: "", legend: "能力", type: "checkbox", list, callback }
@@ -824,36 +827,50 @@ class tocMarkmap {
     }
 
     onSvgClick = () => {
+        const getCidFromNode = node => {
+            if (!node) return;
+            const headers = File.editor.nodeMap.toc.headers;
+            if (!headers || headers.length === 0) return;
+            const list = node.getAttribute("data-path").split(".");
+            if (!list) return;
+            const nodeIdx = list[list.length - 1];
+            let tocIdx = parseInt(nodeIdx - 1); // markmap节点的索引从1开始，要-1
+            if (!this.markmap.state.data.content) {
+                tocIdx--; // 若markmap第一个节点是空节点，再-1
+            }
+            const header = headers[tocIdx];
+            return header && header.attributes.id
+        }
+
         this.entities.svg.addEventListener("click", ev => {
             ev.stopPropagation();
             ev.preventDefault();
 
             const circle = ev.target.closest("circle");
+            const node = ev.target.closest(".markmap-node");
             if (circle) {
                 if (this.config.AUTO_FIT_WHEN_FOLD) {
                     const timeout = (this.markmap && this.markmap.options.duration) || 500;
                     setTimeout(this.fit, timeout);
                 }
+                if (this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD) {
+                    const cid = getCidFromNode(node);
+                    if (cid) {
+                        const paragraph = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`);
+                        const fold = node.classList.contains("markmap-fold");
+                        this.utils.callPluginFunction("collapse_paragraph", "trigger", paragraph, !fold);
+                    }
+                }
                 return;
             }
 
-            const node = ev.target.closest(".markmap-node");
-            if (node && this.config.CLICK_TO_LOCALE) {
-                const headers = File.editor.nodeMap.toc.headers;
-                if (!headers || headers.length === 0) return;
-                const list = node.getAttribute("data-path").split(".");
-                if (!list) return;
-                const nodeIdx = list[list.length - 1];
-                let tocIdx = parseInt(nodeIdx - 1); // markmap节点的索引从1开始，要-1
-                if (!this.markmap.state.data.content) {
-                    tocIdx--; // 若markmap第一个节点是空节点，再-1
-                }
-                const header = headers[tocIdx];
-                if (header) {
-                    const cid = header.attributes.id;
+            if (this.config.CLICK_TO_LOCALE) {
+                const cid = getCidFromNode(node);
+                if (cid) {
                     const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect();
                     const height = contentHeight * this.config.LOCALE_HIGHT_RATIO + contentTop;
-                    this.utils.scrollByCid(cid, height);
+                    const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD;
+                    this.utils.scrollByCid(cid, height, true, showHiddenElement);
                 }
             }
         })
