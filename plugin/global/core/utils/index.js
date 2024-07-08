@@ -531,7 +531,7 @@ class utils {
     }
 
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
-    static isSpecialImage = src => src.startsWith("data:image");  // data:image;base64、data:image\svg+xml 等等
+    static isSpecialImage = src => /^(blob|chrome-blob|moz-blob|data):[^\/]/.test(src);
 
     static getFenceContent = (pre, cid) => {
         // from element
