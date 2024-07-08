@@ -51,16 +51,15 @@ class calloutsPlugin extends BaseCustomPlugin {
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.template)
 
-    exportToHtml = (html, writeIdx) => {
+    exportToHtml = html => {
         const regex = new RegExp("<blockquote>", "g");
         const count = (html.match(regex) || []).length;
         const quotes = Array.from(this.utils.entities.querySelectorAllInWrite("blockquote"));
         if (count !== quotes.length) return html;
 
         let idx = -1;
-        return html.replace(regex, (origin, src, srcIdx) => {
+        return html.replace(regex, origin => {
             idx++;
-            if (srcIdx < writeIdx) return origin;
             let result = origin;
 
             const quote = quotes[idx];
