@@ -194,7 +194,7 @@ class tocMarkmap {
                 <div class="plugin-markmap-header">
                     <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
                     <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="全屏"></div>
-                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动（ctrl+鼠标拖拽也可以移动）"></div>
+                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动"></div>
                     <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图形适配窗口"></div>
                     <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="鼠标穿透"></div>
                     <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="配置"></div>
@@ -709,13 +709,7 @@ class tocMarkmap {
             moveElement.setAttribute(hint, value);
             this.rollbackTransition();
         }
-        const dragModal = (handleElement, withMetaKey) => {
-            this.utils.dragFixedModal(handleElement, this.entities.modal, withMetaKey, onMouseDown, null, onMouseUp);
-        }
-
-        // 提供两种拖拽的方式
-        dragModal(moveElement, false);
-        dragModal(this.entities.modal, true);
+        this.utils.dragFixedModal(moveElement, this.entities.modal, false, onMouseDown, null, onMouseUp);
     }
 
     onResize = () => {
