@@ -24,6 +24,7 @@
 }
 
 .plugin-toc ul {
+    position: relative;
     list-style: none;
     padding: 0;
     text-align: left;
@@ -32,6 +33,7 @@
 .plugin-toc li {
     margin-bottom: 0.1em;
     overflow-wrap: break-word;
+    list-style: none;
 }
 
 .plugin-toc ul ul {
@@ -56,3 +58,51 @@
 .plugin-toc .toc-text:hover {
     text-decoration: underline;
 }
+
+/*!*preview-threading*!*/
+/*.plugin-toc .toc-ul {*/
+/*    padding-left: 0.8rem;*/
+/*}*/
+
+/*.toc-root .toc-node:before {*/
+/*    content: "";*/
+/*    display: inline-block;*/
+/*    width: .8rem;*/
+/*    height: .07rem;*/
+/*    position: absolute;*/
+/*    z-index: 10;*/
+/*    left: -0.72rem;*/
+/*    margin-right: .2rem;*/
+/*    top: 1rem;*/
+/*    background: rgba(0, 0, 0, 0.1);*/
+/*}*/
+
+/*!*.plugin-toc ul:has(.toc-node.active):after, *!*/
+/*.plugin-toc ul:before {*/
+/*    content: "";*/
+/*    display: inline-block;*/
+/*    width: .1rem;*/
+/*    position: absolute;*/
+/*    top: -0.1rem;*/
+/*    left: -0.8rem;*/
+/*    z-index: 15;*/
+/*    margin-bottom: .8rem;*/
+/*}*/
+
+/*.plugin-toc ul:before {*/
+/*    height: calc(100% - 0.5rem);*/
+/*    background: rgba(0, 0, 0, 0.1);*/
+/*}*/
+
+/*!*.plugin-toc ul:has(.toc-node.active):after {*!*/
+/*!*    height: calc(100% - 0.5rem);*!*/
+/*!*    background: red;*!*/
+/*!*}*!*/
+
+/*.toc-root .toc-node:has(+ ul .toc-node.active):before {*/
+/*    background: red;*/
+/*}*/
+
+/*.toc-root .toc-node.active:before {*/
+/*    background: red;*/
+/*}*/

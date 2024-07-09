@@ -9,15 +9,13 @@ class exportEnhancePlugin extends BasePlugin {
         this.utils.exportHelper.register("export_enhance", null, this.afterExport);
     }
 
-    afterExport = async (html, writeIdx) => {
+    afterExport = async html => {
         if (!this.config.ENABLE) return html;
 
-        const imageMap = this.config.DOWNLOAD_NETWORK_IMAGE ? await this.downloadAllImage(html, writeIdx) : {};
+        const imageMap = this.config.DOWNLOAD_NETWORK_IMAGE ? await this.downloadAllImage(html) : {};
         const dirname = this.utils.getCurrentDirPath();
 
-        return this.utils.asyncReplaceAll(html, this.regexp, async (origin, src, srcIdx) => {
-            if (srcIdx < writeIdx) return origin;
-
+        return this.utils.asyncReplaceAll(html, this.regexp, async (origin, src) => {
             try {
                 if (this.utils.isSpecialImage(src)) return origin;
 
@@ -38,13 +36,13 @@ class exportEnhancePlugin extends BasePlugin {
         })
     }
 
-    downloadAllImage = async (html, writeIdx) => {
+    downloadAllImage = async html => {
         const imageMap = {}; // map src to localFilePath, use for network image only
         const matches = Array.from(html.matchAll(this.regexp));
         const chunkList = this.utils.chunk(matches, this.config.DOWNLOAD_THREADS);
         for (const list of chunkList) {
             await Promise.all(list.map(async match => {
-                if (match.length !== 2 || match.index < writeIdx || !this.utils.isNetworkImage(match[1]) || imageMap.hasOwnProperty(match[1])) return;
+                if (match.length !== 2 || !this.utils.isNetworkImage(match[1]) || imageMap.hasOwnProperty(match[1])) return;
 
                 const src = match[1];
                 try {

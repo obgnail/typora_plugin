@@ -30,12 +30,9 @@ class exportHelper {
         if (!this.check(args)) return exportResult
 
         let html = await exportResult;
-        const writeIdx = html.indexOf(`id='write'`);
-        if (writeIdx === -1) return html;
-
         for (const h of this.helpers.values()) {
             if (h.afterExport) {
-                const newHtml = await h.afterExport(html, writeIdx);
+                const newHtml = await h.afterExport(html);
                 if (newHtml) {
                     html = newHtml;
                 }
@@ -48,12 +45,9 @@ class exportHelper {
         if (!this.check(args)) return exportResult
 
         let html = exportResult;
-        const writeIdx = html.indexOf(`id='write'`);
-        if (writeIdx === -1) return html;
-
         for (const h of this.helpers.values()) {
             if (h.afterExport) {
-                const newHtml = h.afterExport(html, writeIdx);
+                const newHtml = h.afterExport(html);
                 if (newHtml && !this.utils.isPromise(newHtml)) {
                     html = newHtml;
                 }
