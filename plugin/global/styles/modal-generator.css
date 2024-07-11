@@ -60,6 +60,7 @@
 #plugin-custom-modal label {
     display: block;
     margin-bottom: 5px;
+    font-size: 1.03em;
 }
 
 #plugin-custom-modal fieldset label {

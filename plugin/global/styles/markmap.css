@@ -49,6 +49,7 @@ ${show_outline}
     display: flex;
     flex-direction: column;
     align-items: center;
+    max-width: 2em;
 }
 
 .plugin-markmap-icon {
