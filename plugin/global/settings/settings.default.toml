@@ -466,7 +466,7 @@ TOC_HOTKEY = ""
 # 点击markmap节点，定位到文档位置（跳转到对应章节）
 CLICK_TO_LOCALE = true
 # 定位时，目标章节滚动到当前视口的高度位置百分比（即：0为当前视口的第一行，1为最后一行）（若CLICK_TO_LOCALE为false，此选项失效）
-LOCALE_HIGHT_RATIO = 0.2
+LOCALE_HEIGHT_RATIO = 0.2
 # 当窗口太小时，是否允许icon换行显示
 ALLOW_ICON_WRAP = true
 # 当用户编辑文档，导致markmap更新图形时，新markmap的图形大小是否重新适配窗口
