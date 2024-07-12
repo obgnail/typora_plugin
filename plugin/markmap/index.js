@@ -374,10 +374,10 @@ class tocMarkmap {
 
         const localeHeightRatio = () => {
             const defaultValue = 0.2;
-            const value = parseInt((this.config.LOCALE_HIGHT_RATIO || defaultValue) * 100);
+            const value = parseInt((this.config.LOCALE_HEIGHT_RATIO || defaultValue) * 100);
             const callback = ratio => {
                 ratio = Number(parseFloat(ratio / 100).toFixed(2));
-                this.config.LOCALE_HIGHT_RATIO = isNaN(ratio) ? defaultValue : ratio;
+                this.config.LOCALE_HEIGHT_RATIO = isNaN(ratio) ? defaultValue : ratio;
             };
             const label = "定位的视口高度" + _genInfo("鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）");
             return { label: label, type: "range", value: value, min: 1, max: 100, step: 1, callback }
@@ -862,7 +862,7 @@ class tocMarkmap {
                 const cid = getCidFromNode(node);
                 if (cid) {
                     const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect();
-                    const height = contentHeight * this.config.LOCALE_HIGHT_RATIO + contentTop;
+                    const height = contentHeight * this.config.LOCALE_HEIGHT_RATIO + contentTop;
                     const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD;
                     this.utils.scrollByCid(cid, height, true, showHiddenElement);
                 }

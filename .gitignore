@@ -1,13 +1,13 @@
-/.idea
-
+/plugin/global/user_styles/*.css
 /plugin/window_tab/save_tabs.json
 /plugin/custom/plugins/reopenClosedFiles/remain.json
 /plugin/custom/plugins/scrollBookmarker/bookmark.json
 /version.json
 
+/.idea
 /temp
-/plugin/sync.ffs_db
 /plugin/.idea/
+/plugin/sync.ffs_db
 /node_modules/
 /package-lock.json
 /package.json
