@@ -1,19 +1,20 @@
 /**
-* 难点在于如何才能匹配到正确的 markdown 图片
-* 1. 不可使用非贪婪匹配，否则 ![image](assets/image(1).png) 会匹配成 ![image](assets/image(1
-* 2. 要使用贪婪匹配，然后使用)从后往前截断，逐个测试。
-*    1. 比如内容为：![image](assets/image(1).png)123)456
-*    2. 首先匹配成 ![image](assets/image(1).png)123)，检测文件assets/image(1).png)123是否存在
-*    3. 若不存在，继续匹配成 ![image](assets/image(1).png)，检测文件assets/image(1).png是否存在，以此类推
-* 3. 使用贪婪匹配会引入一个问题：一行最多只会匹配一个图片，之后的所有图片都会漏掉
-*    1. 比如有两个图片放在同一行： ![test](./assets/test.png)![test2](./assets/test2.png)123
-*    2. 匹配到：![test](./assets/test.png)![test2](./assets/test2.png)，检测文件 ./assets/test.png)![test2](./assets/test2.png 是否存在，发现不存在
-*    3. 接着匹配到：![test](./assets/test.png)，检测文件./assets/test.png 是否存在，发现存在，返回。
-*    4. 上述流程就导致遗漏了./assets/test2.png图片。
-* 4. 解决方案：递归处理。
-*    1. 当匹配到![test](./assets/test.png)后，将最开始的匹配内容截断为 )![test2](./assets/test2.png)
-*    2. 递归处理新的内容
-*/
+ * 难点在于如何才能匹配到正确的 markdown 图片
+ * 1. 不可使用非贪婪匹配，否则 ![image](assets/image(1).png) 会匹配成 ![image](assets/image(1)
+ * 2. 要使用贪婪匹配，然后使用)从后往前截断，逐个测试。
+ *    1. 比如内容为：![image](assets/image(1).png)123)456
+ *    2. 首先匹配成 ![image](assets/image(1).png)123)，检测文件assets/image(1).png)123是否存在
+ *    3. 若不存在，继续匹配成 ![image](assets/image(1).png)，检测文件assets/image(1).png是否存在，以此类推
+ * 3. 使用贪婪匹配会引入一个问题：一行最多只会匹配一个图片，之后的所有图片都会漏掉
+ *    1. 比如有两个图片放在同一行： ![test](./assets/test.png)![test2](./assets/test2.png)123
+ *    2. 匹配到：![test](./assets/test.png)![test2](./assets/test2.png)，检测文件 ./assets/test.png)![test2](./assets/test2.png 是否存在，发现不存在
+ *    3. 接着匹配到：![test](./assets/test.png)，检测文件./assets/test.png 是否存在，发现存在，返回。
+ *    4. 上述流程就导致遗漏了./assets/test2.png图片。
+ * 4. 解决方案：递归处理。
+ *    1. 当匹配到![test](./assets/test.png)后，将最开始的匹配内容截断为 )![test2](./assets/test2.png)
+ *    2. 递归处理新的内容
+ * 5. 其实最好的方法应该是使用LR parser，但是我很怀疑JS的性能顶得住逐字符迭代的设计，尤其是要分析上千文件的情况（若单个文件5000字符，1000个文件就是五百万次循环），所以还是交给regexp处理，C++万岁
+ */
 class resourceOperationPlugin extends BaseCustomPlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
 
@@ -67,10 +68,10 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         this.utils.dragFixedModal(this.entities.move, this.entities.modal, false);
         this.entities.iconGroup.addEventListener("click", ev => {
             const target = ev.target.closest("[action]");
-            if (!target) return;
-
-            const action = target.getAttribute("action");
-            this[action] && this[action](ev);
+            if (target) {
+                const action = target.getAttribute("action");
+                this[action] && this[action](ev);
+            }
         })
         this.entities.wrap.addEventListener("click", async ev => {
             const target = ev.target.closest("button[action]");
@@ -85,12 +86,9 @@ class resourceOperationPlugin extends BaseCustomPlugin {
             if (action === "delete") {
                 if (this.showWarnDialog) {
                     const filename = this.utils.getFileName(src, false);
-                    const { response, checkboxChecked } = await this.utils.showMessageBox({
-                        type: "warning",
-                        buttons: ["确定", "取消"],
-                        message: `是否删除文件 ${filename}`,
-                        checkboxLabel: "不再提示（直到关闭Typora）"
-                    });
+                    const checkboxLabel = "不再提示（直到关闭Typora）";
+                    const option = { type: "warning", buttons: ["确定", "取消"], message: `是否删除文件 ${filename}`, checkboxLabel };
+                    const { response, checkboxChecked } = await this.utils.showMessageBox(option);
                     if (response === 1) return;
                     if (checkboxChecked) {
                         this.showWarnDialog = false;
@@ -108,8 +106,10 @@ class resourceOperationPlugin extends BaseCustomPlugin {
     callback = async anchorNode => await this.utils.withProcessingHint(this.run)
 
     run = async () => {
-        await this.traverseDir(this.utils.getMountFolder(), this.collect);
-        this.showModal();
+        await this.collectImage();
+        this.initModalRect();
+        this.initModalTable();
+        this.utils.show(this.entities.modal);
     }
 
     initModalRect = (resetLeft = true) => {
@@ -122,43 +122,29 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         Object.assign(this.entities.modal.style, style);
     }
 
-    showModal = () => {
-        const fulfil = () => {
-            this.nonExistInFile = new Set([...this.resources].filter(x => !this.resourcesInFile.has(x)));
-            this.nonExistInFolder = new Set([...this.resourcesInFile].filter(x => !this.resources.has(x)));
-            this.resources.clear();
-            this.resourcesInFile.clear();
-        }
-
-        const initTable = () => {
-            const output = this.getOutput();
-            delete output.resource_non_exist_in_file;
-            delete output.resource_non_exist_in_folder;
-            const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
-            const btnGroup = `<td><div class="btn-group"><button type="button" class="btn btn-default" action="locate">打开</button><button type="button" class="btn btn-default" action="delete">删除</button></div></td>`
-            const rows = Array.from(this.nonExistInFile, (row, idx) => `<tr><td>${idx + 1}</td><td class="plugin-resource-operation-src" data-path="${row}">${row}</td>${btnGroup}</tr>`)
-            this.entities.wrap.innerHTML = `
-                <table class="table">
-                     <caption>存在于文件夹但不存在于md文件的资源(共${this.nonExistInFile.size}项)</caption>
-                     <thead><tr><th>#</th><th>resource</th><th style="min-width: 130px">operation</th></tr></thead>
-                     <tbody>${rows.join("")}</tbody>
-                </table>
-                
-                <table class="table">
-                     <caption>存在于md文件但不存在于文件夹的资源(共${this.nonExistInFolder.size}项)</caption>
-                     <thead><tr><th>#</th><th>resource</th></tr></thead>
-                     <tbody>${Array.from(this.nonExistInFolder, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td></tr>`).join("")}</tbody>
-                </table>
-                
-                <div class="plugin-resource-operation-message">配置</div>
-                <textarea rows="10" readonly>${JSON.stringify(output, replacer, "\t")}</textarea>
-            `
-        }
-
-        this.initModalRect();
-        fulfil();
-        initTable();
-        this.utils.show(this.entities.modal);
+    initModalTable = () => {
+        const output = this.getOutput();
+        delete output.resource_non_exist_in_file;
+        delete output.resource_non_exist_in_folder;
+        const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
+        const btnGroup = `<td><div class="btn-group"><button type="button" class="btn btn-default" action="locate">打开</button><button type="button" class="btn btn-default" action="delete">删除</button></div></td>`
+        const rows = Array.from(this.nonExistInFile, (row, idx) => `<tr><td>${idx + 1}</td><td class="plugin-resource-operation-src" data-path="${row}">${row}</td>${btnGroup}</tr>`)
+        this.entities.wrap.innerHTML = `
+            <table class="table">
+                 <caption>存在于文件夹但不存在于md文件的资源(共${this.nonExistInFile.size}项)</caption>
+                 <thead><tr><th>#</th><th>resource</th><th style="min-width: 130px">operation</th></tr></thead>
+                 <tbody>${rows.join("")}</tbody>
+            </table>
+            
+            <table class="table">
+                 <caption>存在于md文件但不存在于文件夹的资源(共${this.nonExistInFolder.size}项)</caption>
+                 <thead><tr><th>#</th><th>resource</th></tr></thead>
+                 <tbody>${Array.from(this.nonExistInFolder, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td></tr>`).join("")}</tbody>
+            </table>
+            
+            <div class="plugin-resource-operation-message">配置</div>
+            <textarea rows="10" readonly>${JSON.stringify(output, replacer, "\t")}</textarea>
+        `
     }
 
     close = () => {
@@ -189,14 +175,14 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         const func = wantClose ? "off" : "on";
         const className = ".plugin-resource-operation-src";
         this.entities.$wrap
-            [func]("mouseover", className, this._show)
-            [func]("mouseout", className, this._hide)
-            [func]("mousemove", className, this._show);
+            [func]("mouseover", className, this._showPopup)
+            [func]("mouseout", className, this._hidePopup)
+            [func]("mousemove", className, this._showPopup);
         icon.classList.toggle("ion-eye-disabled", wantClose);
         icon.classList.toggle("ion-eye", !wantClose);
     }
-    _hide = ev => this.utils.hide(this.entities.popup)
-    _show = ev => {
+    _hidePopup = ev => this.utils.hide(this.entities.popup)
+    _showPopup = ev => {
         const popup = this.entities.popup;
         if (!popup) return;
 
@@ -265,6 +251,14 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
         const filepath = join(dir, "resource-report.md");
         writeFileSync(filepath, fileContent, "utf8");
         this.config.auto_open && setTimeout(openFile(filepath), 500);
+    }
+
+    collectImage = async () => {
+        await this.traverseDir(this.utils.getMountFolder(), this.collect);
+        this.nonExistInFile = new Set([...this.resources].filter(x => !this.resourcesInFile.has(x)));
+        this.nonExistInFolder = new Set([...this.resourcesInFile].filter(x => !this.resources.has(x)));
+        this.resources.clear();
+        this.resourcesInFile.clear();
     }
 
     collect = async (filePath, dir) => {
