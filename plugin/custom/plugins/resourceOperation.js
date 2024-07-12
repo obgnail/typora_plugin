@@ -157,7 +157,7 @@ class resourceOperationPlugin extends BaseCustomPlugin {
     }
 
     toggleZoom = force => {
-        const icon = document.querySelector('.plugin-resource-operation-icon-group [action="toggleZoom"]');
+        const icon = this.entities.iconGroup.querySelector('[action="toggleZoom"]');
         const needExpand = force === false || icon.classList.contains("ion-plus-round");
         if (needExpand) {
             this.initModalRect(false);
@@ -170,7 +170,7 @@ class resourceOperationPlugin extends BaseCustomPlugin {
     }
 
     togglePreview = force => {
-        const icon = document.querySelector('.plugin-resource-operation-icon-group [action="togglePreview"]');
+        const icon = this.entities.iconGroup.querySelector('[action="togglePreview"]');
         const wantClose = force === false || icon.classList.contains("ion-eye");
         const func = wantClose ? "off" : "on";
         const className = ".plugin-resource-operation-src";
