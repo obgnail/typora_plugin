@@ -78,6 +78,11 @@ class timelinePlugin extends BaseCustomPlugin {
                 lastBucket.push({ type: "h" + matchHead.groups.heading.length, value: matchHead.groups.lineContent });
                 return
             }
+            const matchTaskLIst = line.match(/^(\s*)(([-+*])\s*)\[(?<checked>(x|X)| )\]\s+(?<lineContent>.*)/);
+            if (matchTaskLIst && matchTaskLIst["groups"]) {
+                lastBucket.push({ type: "taskList", checked: matchTaskLIst.groups.checked, value: matchTaskLIst.groups.lineContent });
+                return
+            }
             // is ul
             const matchUl = line.match(/^[\-*]\s(?<lineContent>.*?)$/);
             if (matchUl && matchUl["groups"]) {
@@ -113,13 +118,21 @@ class timelinePlugin extends BaseCustomPlugin {
                         return `<${item.type}>${this.utils.markdownInlineStyleToHTML(item.value, dir)}</${item.type}>`
                     case "hr":
                         return `<hr>`
+                    case "taskList":
+                        const checked = item.checked.trim() ? "checked" : "";
+                        const content = this.utils.markdownInlineStyleToHTML(item.value, dir);
+                        return `<span class="timeline-task-list"><input type="checkbox" disabled ${checked}"><span>${content}</span></span>`;
                     case "ul":
                     case "ol":
                         const value = `<li>${this.utils.markdownInlineStyleToHTML(item.value, dir)}</li>`;
-                        if (idx === 0 || bucket.itemList[idx - 1].type !== item.type) {
-                            return `<${item.type}>` + value
-                        } else if (idx === bucket.itemList.length - 1 || bucket.itemList[idx + 1].type !== item.type) {
-                            return value + `</${item.type}>`
+                        const isListStart = idx === 0 || bucket.itemList[idx - 1].type !== item.type;
+                        const isListEnd = idx === bucket.itemList.length - 1 || bucket.itemList[idx + 1].type !== item.type;
+                        if (isListStart && isListEnd) {
+                            return `<${item.type}>${value}</${item.type}>`
+                        } else if (isListStart) {
+                            return `<${item.type}>${value}`
+                        } else if (isListEnd) {
+                            return `${value}</${item.type}>`
                         } else {
                             return value
                         }

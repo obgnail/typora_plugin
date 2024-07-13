@@ -55,3 +55,11 @@
 .plugin-timeline .timeline-wrapper:last-child .timeline-event {
     margin-bottom: 0;
 }
+
+.plugin-timeline .timeline-task-list {
+    padding-left: 10px;
+}
+
+.plugin-timeline .timeline-task-list input {
+    margin-right: .5em;
+}
