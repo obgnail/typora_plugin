@@ -862,6 +862,7 @@ SHOW_MODAL_HOTKEY = ""
 #   - superScript:           上标
 #   - subScript:             下标
 #   - emphasis:              强调符号
+#   - blur:                  模糊
 #   - title:                 标题尺寸
 #   - increaseSize:          增大尺寸
 #   - decreaseSize:          减小尺寸
@@ -879,7 +880,7 @@ SHOW_MODAL_HOTKEY = ""
 #   - close:                 关闭工具栏
 TOOLBAR = [
     "weight", "italic", "underline", "throughline", "overline", "title", "superScript", "subScript",
-    "emphasis", "increaseLetterSpacing", "decreaseLetterSpacing", "increaseSize", "decreaseSize", "family",
+    "emphasis", "blur", "increaseLetterSpacing", "decreaseLetterSpacing", "increaseSize", "decreaseSize", "family",
     "foregroundColor", "backgroundColor", "borderColor", "setBrush", "useBrush", "erase", "blank", "move", "close"
 ]
 # 设置样式的快捷键
