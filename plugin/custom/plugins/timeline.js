@@ -121,7 +121,7 @@ class timelinePlugin extends BaseCustomPlugin {
                     case "taskList":
                         const checked = item.checked.trim() ? "checked" : "";
                         const content = this.utils.markdownInlineStyleToHTML(item.value, dir);
-                        return `<span class="timeline-task-list"><input type="checkbox" disabled ${checked}"><span>${content}</span></span>`;
+                        return `<p class="timeline-task-list"><input type="checkbox" ${checked} disabled><span>${content}</span></p>`;
                     case "ul":
                     case "ol":
                         const value = `<li>${this.utils.markdownInlineStyleToHTML(item.value, dir)}</li>`;
