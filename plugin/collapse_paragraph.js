@@ -36,18 +36,7 @@ class collapseParagraphPlugin extends BasePlugin {
             if (!target) return;
             let ele = write.querySelector(`[cid=${target.dataset.ref}]`);
             if (!ele || ele.style.display !== "none") return;
-
-            let currentLevel = this.paragraphList.indexOf(ele.tagName);
-            while (ele) {
-                if (ele.getAttribute("mdtype") === "heading" && ele.classList.contains(this.className)) {
-                    const level = this.paragraphList.indexOf(ele.tagName);
-                    if (level < currentLevel) {
-                        this.trigger(ele, true);
-                        currentLevel = level;
-                    }
-                }
-                ele = ele.previousElementSibling;
-            }
+            this.triggerCollapsedParent(ele);
         })
     }
 
@@ -107,6 +96,20 @@ class collapseParagraphPlugin extends BasePlugin {
 
         paragraph.classList.toggle(this.className, !collapsed);
         _trigger(paragraph, collapsed ? "" : "none");
+    }
+
+    triggerCollapsedParent = paragraph => {
+        let currentLevel = this.paragraphList.indexOf(paragraph.tagName);
+        while (paragraph) {
+            if (paragraph.getAttribute("mdtype") === "heading" && paragraph.classList.contains(this.className)) {
+                const level = this.paragraphList.indexOf(paragraph.tagName);
+                if (level < currentLevel) {
+                    this.trigger(paragraph, true);
+                    currentLevel = level;
+                }
+            }
+            paragraph = paragraph.previousElementSibling;
+        }
     }
 
     rollback = start => {
