@@ -9,17 +9,17 @@ class collapseParagraphPlugin extends BasePlugin {
             { arg_name: "折叠全部章节", arg_value: "collapse_all" },
             { arg_name: "展开全部章节", arg_value: "expand_all" },
         ];
-        this.funcList = this.getFuncList();
     }
 
     process = () => {
         this.disableExpandSimpleBlock();  // 选项【显示当前块元素的Markdown源码】会影响本插件，将其禁用
         this.recordCollapseState(false);
+        const funcList = this.getFuncList();
         const write = this.utils.entities.eWrite;
         write.addEventListener("click", ev => {
             const paragraph = this.getTargetHeader(ev.target);
             if (!paragraph) return;
-            const obj = this.funcList.find(({ filter }) => filter(ev));
+            const obj = funcList.find(({ filter }) => filter(ev));
             if (!obj) return;
             if (ev.target.closest('.md-link')) return; // 特殊处理
             document.activeElement.blur();
@@ -36,18 +36,7 @@ class collapseParagraphPlugin extends BasePlugin {
             if (!target) return;
             let ele = write.querySelector(`[cid=${target.dataset.ref}]`);
             if (!ele || ele.style.display !== "none") return;
-
-            let currentLevel = this.paragraphList.indexOf(ele.tagName);
-            while (ele) {
-                if (ele.getAttribute("mdtype") === "heading" && ele.classList.contains(this.className)) {
-                    const level = this.paragraphList.indexOf(ele.tagName);
-                    if (level < currentLevel) {
-                        this.trigger(ele, true);
-                        currentLevel = level;
-                    }
-                }
-                ele = ele.previousElementSibling;
-            }
+            this.expandCollapsedParent(ele);
         })
     }
 
@@ -107,6 +96,35 @@ class collapseParagraphPlugin extends BasePlugin {
 
         paragraph.classList.toggle(this.className, !collapsed);
         _trigger(paragraph, collapsed ? "" : "none");
+    }
+
+    expandCollapsedParent = paragraph => {
+        let currentLevel = this.paragraphList.indexOf(paragraph.tagName);
+        while (paragraph) {
+            if (paragraph.getAttribute("mdtype") === "heading" && paragraph.classList.contains(this.className)) {
+                const level = this.paragraphList.indexOf(paragraph.tagName);
+                if (level < currentLevel) {
+                    this.trigger(paragraph, true);
+                    currentLevel = level;
+                }
+            }
+            paragraph = paragraph.previousElementSibling;
+        }
+    }
+
+    collapseOther = paragraph => {
+        let currentLevel = this.paragraphList.indexOf(paragraph.tagName);
+        if (currentLevel === -1) return;
+        this.rangeSiblings(paragraph, ele => {
+            const level = this.paragraphList.indexOf(ele.tagName);
+            if (level === -1) return;
+            if (level < currentLevel) {
+                this.trigger(ele, true);
+                currentLevel = level;
+            } else {
+                this.trigger(ele, false);
+            }
+        })
     }
 
     rollback = start => {
@@ -197,6 +215,7 @@ class collapseParagraphPlugin extends BasePlugin {
         if (target) {
             meta.target = target;
             result.push(
+                { arg_name: "折叠其他章节", arg_value: "collapse_other", arg_disabled: !target },
                 { arg_name: "折叠/展开当前章节", arg_value: "call_current", arg_disabled: !target },
                 { arg_name: "折叠/展开当前章节（递归）", arg_value: "call_recursive", arg_disabled: !target },
                 { arg_name: "折叠/展开全部兄弟章节", arg_value: "call_siblings", arg_disabled: !target },
@@ -207,7 +226,13 @@ class collapseParagraphPlugin extends BasePlugin {
     }
 
     dynamicCall = (type, meta) => {
-        if (!meta.target) return;
+        const { target } = meta;
+        if (!target) return;
+        if (type === "collapse_other") {
+            this.collapseOther(target);
+            return;
+        }
+
         const map = {
             call_current: el => [el],
             call_siblings: this.findSiblings,
@@ -216,8 +241,8 @@ class collapseParagraphPlugin extends BasePlugin {
         }
         const func = map[type];
         if (!func) return;
-        const collapsed = meta.target.classList.contains(this.className);
-        const list = func(meta.target);
+        const collapsed = target.classList.contains(this.className);
+        const list = func(target);
         if (list) {
             list.forEach(ele => this.trigger(ele, collapsed));
         }
