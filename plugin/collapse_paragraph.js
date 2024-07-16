@@ -112,6 +112,21 @@ class collapseParagraphPlugin extends BasePlugin {
         }
     }
 
+    collapseOther = paragraph => {
+        let currentLevel = this.paragraphList.indexOf(paragraph.tagName);
+        if (currentLevel === -1) return;
+        this.rangeSiblings(paragraph, ele => {
+            const level = this.paragraphList.indexOf(ele.tagName);
+            if (level === -1) return;
+            if (level < currentLevel) {
+                this.trigger(ele, true);
+                currentLevel = level;
+            } else {
+                this.trigger(ele, false);
+            }
+        })
+    }
+
     rollback = start => {
         if (!this.utils.entities.querySelectorInWrite(`:scope > .${this.className}`)) return;
 
@@ -200,6 +215,7 @@ class collapseParagraphPlugin extends BasePlugin {
         if (target) {
             meta.target = target;
             result.push(
+                { arg_name: "折叠其他章节", arg_value: "collapse_other", arg_disabled: !target },
                 { arg_name: "折叠/展开当前章节", arg_value: "call_current", arg_disabled: !target },
                 { arg_name: "折叠/展开当前章节（递归）", arg_value: "call_recursive", arg_disabled: !target },
                 { arg_name: "折叠/展开全部兄弟章节", arg_value: "call_siblings", arg_disabled: !target },
@@ -210,7 +226,13 @@ class collapseParagraphPlugin extends BasePlugin {
     }
 
     dynamicCall = (type, meta) => {
-        if (!meta.target) return;
+        const { target } = meta;
+        if (!target) return;
+        if (type === "collapse_other") {
+            this.collapseOther(target);
+            return;
+        }
+
         const map = {
             call_current: el => [el],
             call_siblings: this.findSiblings,
@@ -219,8 +241,8 @@ class collapseParagraphPlugin extends BasePlugin {
         }
         const func = map[type];
         if (!func) return;
-        const collapsed = meta.target.classList.contains(this.className);
-        const list = func(meta.target);
+        const collapsed = target.classList.contains(this.className);
+        const list = func(target);
         if (list) {
             list.forEach(ele => this.trigger(ele, collapsed));
         }

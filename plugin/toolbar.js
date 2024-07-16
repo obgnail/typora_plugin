@@ -360,8 +360,12 @@ class pluginTool extends baseToolInterface {
         const pluginsList = this.collectAll();
         return this.baseSearch(input, pluginsList, ["showName"])
     }
-    callback = (fixedName, meta) => {
-        this.utils.callPluginFunction(fixedName, "call", meta || undefined, this.controller.anchorNode);
+    callback = (fixedName, type) => {
+        this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode);
+        const { call } = this.utils.getPlugin(fixedName);
+        if (call instanceof Function) {
+            this.utils.withMeta(meta => call(type, meta));
+        }
     }
 }
 
