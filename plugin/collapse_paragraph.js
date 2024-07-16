@@ -9,17 +9,17 @@ class collapseParagraphPlugin extends BasePlugin {
             { arg_name: "折叠全部章节", arg_value: "collapse_all" },
             { arg_name: "展开全部章节", arg_value: "expand_all" },
         ];
-        this.funcList = this.getFuncList();
     }
 
     process = () => {
         this.disableExpandSimpleBlock();  // 选项【显示当前块元素的Markdown源码】会影响本插件，将其禁用
         this.recordCollapseState(false);
+        const funcList = this.getFuncList();
         const write = this.utils.entities.eWrite;
         write.addEventListener("click", ev => {
             const paragraph = this.getTargetHeader(ev.target);
             if (!paragraph) return;
-            const obj = this.funcList.find(({ filter }) => filter(ev));
+            const obj = funcList.find(({ filter }) => filter(ev));
             if (!obj) return;
             if (ev.target.closest('.md-link')) return; // 特殊处理
             document.activeElement.blur();
