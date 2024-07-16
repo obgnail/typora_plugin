@@ -36,7 +36,7 @@ class collapseParagraphPlugin extends BasePlugin {
             if (!target) return;
             let ele = write.querySelector(`[cid=${target.dataset.ref}]`);
             if (!ele || ele.style.display !== "none") return;
-            this.triggerCollapsedParent(ele);
+            this.expandCollapsedParent(ele);
         })
     }
 
@@ -98,7 +98,7 @@ class collapseParagraphPlugin extends BasePlugin {
         _trigger(paragraph, collapsed ? "" : "none");
     }
 
-    triggerCollapsedParent = paragraph => {
+    expandCollapsedParent = paragraph => {
         let currentLevel = this.paragraphList.indexOf(paragraph.tagName);
         while (paragraph) {
             if (paragraph.getAttribute("mdtype") === "heading" && paragraph.classList.contains(this.className)) {
