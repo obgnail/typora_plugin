@@ -286,7 +286,7 @@ class diagramParser {
                 button.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
                 enableFocus();
             }
-            const ok = registerFenceEnhanceButton("edit-diagram", "editDiagram", "编辑", "fa fa-edit", false, listener);
+            const ok = registerFenceEnhanceButton("edit-diagram", "editDiagram", "编辑", "fa fa-pencil", false, listener);
             if (!ok) return;
 
             this.utils.entities.$eWrite.on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {
