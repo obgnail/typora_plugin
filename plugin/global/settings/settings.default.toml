@@ -503,6 +503,15 @@ BORDER_STYLE_WHEN_NODE_HOVER = "4px solid #FF7B00"
 #   - spacingVertical   : 节点垂直间距
 #   - fitRatio          : 图形的窗口填充率
 DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, colorFreezeLevel = 6, zoom = true, pan = true, colorScheme = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'] }
+# 导出svg时的文件名
+#   - {{ filename }}  : 当前文件名
+#   - {{ timestamp }} : 时间戳
+#   - {{ uuid }}      : uuid
+FILENAME_WHEN_DOWNLOAD_SVG = "{{filename}}.svg"
+# 导出svg时的目录路径(如D:\\tmp\\img)，为空时使用 temp 目录
+FOLDER_WHEN_DOWNLOAD_SVG = ""
+# 导出svg时，是否删除无用的className以减小文件体积
+REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = false
 # 导出svg时，是否删除foreignObject，并替换成<text>（若您不了解SVG，请不要修改此选项）
 # - false: 操作含有foreignObject的svg标签处处受限（比如说转为jpg），但是有好看的样式
 # - true:  操作不受限，但是丢失了样式

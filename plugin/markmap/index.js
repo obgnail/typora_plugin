@@ -383,6 +383,19 @@ class tocMarkmap {
             return { label: label, type: "range", value: value, min: 1, max: 100, step: 1, callback }
         }
 
+        const downloadFolder = () => {
+            const label = "导出文件目录" + _genInfo("为空则使用 temp 目录");
+            const value = this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder;
+            const callback = value => this.config.FOLDER_WHEN_DOWNLOAD_SVG = value;
+            return { label, type: "input", value, callback }
+        }
+
+        const downloadFileName = () => {
+            const value = this.config.FILENAME_WHEN_DOWNLOAD_SVG;
+            const callback = value => this.config.FILENAME_WHEN_DOWNLOAD_SVG = value;
+            return { label: "导出文件名", type: "input", value, callback }
+        }
+
         const duration = () => {
             const defaultDuration = 500;
             const value = (this.markmap && this.markmap.options.duration) || defaultDuration;
@@ -429,15 +442,18 @@ class tocMarkmap {
         }
 
         const further = () => {
-            const { REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: removeForeign } = this.config;
+            const { REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: removeForeign, REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: removeUselessClass } = this.config;
             const removeForeignLabel = "导出时替换 foreignObject 标签" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
+            const removeUselessClassLabel = "导出时删除无用的类名" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
             const initColorFuncLabel = "恢复默认配色方案" + _genInfo("使用系统默认配色方案，使得上述配色方案失效");
             const list = [
                 { label: removeForeignLabel, value: "removeForeignObject", checked: removeForeign },
+                { label: removeUselessClassLabel, value: "removeUselessClass", checked: removeUselessClass },
                 { label: initColorFuncLabel, value: "initColorFunction", checked: false },
             ];
             const callback = submit => {
                 this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = submit.includes("removeForeignObject");
+                this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = submit.includes("removeUselessClass");
                 if (submit.includes("initColorFunction")) {
                     this.colorSchemeGenerator = null;
                     this.currentScheme = this.defaultScheme;
@@ -446,7 +462,11 @@ class tocMarkmap {
             return { label: "", legend: "高级", type: "checkbox", list, callback }
         }
 
-        const components = [colorScheme, colorFreezeLevel, expandLevel, fitRatio, spacingHorizontal, spacingVertical, maxWidth, duration, localeHeightRatio, ability, further].map(f => f());
+        const components = [
+            colorScheme, colorFreezeLevel, expandLevel, fitRatio, spacingHorizontal,
+            spacingVertical, maxWidth, duration, localeHeightRatio, downloadFolder, downloadFileName,
+            ability, further
+        ].map(f => f());
         this.utils.dialog.modal({ title: "设置", components }, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
@@ -475,6 +495,12 @@ class tocMarkmap {
                 foreign.parentNode.replaceChild(text, foreign);
             })
         }
+
+        const removeClassName = svg => svg.querySelectorAll("*").forEach(ele => {
+            if (ele.classList.contains("markmap-node")) {
+                ele.removeAttribute("class");
+            }
+        })
 
         const removeSvgUselessStyle = svg => {
             const style = svg.querySelector("style");
@@ -520,12 +546,23 @@ class tocMarkmap {
             svg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
         }
 
+        const getFileFolder = () => this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder
+
+        const getFileName = () => {
+            const tpl = {
+                filename: this.utils.getFileName() || "markmap",
+                timestamp: new Date().getTime().toString(),
+                uuid: this.utils.getUUID(),
+            }
+            const filename = this.config.FILENAME_WHEN_DOWNLOAD_SVG || "{{filename}}.svg";
+            return filename.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
+        }
+
         const download = async svg => {
             const div = document.createElement("div");
             div.appendChild(svg);
             const content = div.innerHTML.replace(/<br>/g, "<br/>");
-            const name = (this.utils.getFileName() || "markmap") + ".svg";
-            const path = this.utils.Package.Path.join(this.utils.tempFolder, name);
+            const path = this.utils.Package.Path.join(getFileFolder(), getFileName());
             const ok = await this.utils.writeFile(path, content);
             if (!ok) return;
             this.utils.showInFinder(path);
@@ -537,6 +574,9 @@ class tocMarkmap {
         removeSvgUselessStyle(svg);
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
             removeSvgForeignObject(svg);
+        }
+        if (this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
+            removeClassName(svg);
         }
         await download(svg);
     }
