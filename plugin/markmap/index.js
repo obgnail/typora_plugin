@@ -383,6 +383,19 @@ class tocMarkmap {
             return { label: label, type: "range", value: value, min: 1, max: 100, step: 1, callback }
         }
 
+        const downloadFolder = () => {
+            const label = "导出文件目录" + _genInfo("为空则使用 temp 目录");
+            const value = this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder;
+            const callback = value => this.config.FOLDER_WHEN_DOWNLOAD_SVG = value;
+            return { label, type: "input", value, callback }
+        }
+
+        const downloadFileName = () => {
+            const value = this.config.FILENAME_WHEN_DOWNLOAD_SVG;
+            const callback = value => this.config.FILENAME_WHEN_DOWNLOAD_SVG = value;
+            return { label: "导出文件名", type: "input", value, callback }
+        }
+
         const duration = () => {
             const defaultDuration = 500;
             const value = (this.markmap && this.markmap.options.duration) || defaultDuration;
@@ -449,7 +462,11 @@ class tocMarkmap {
             return { label: "", legend: "高级", type: "checkbox", list, callback }
         }
 
-        const components = [colorScheme, colorFreezeLevel, expandLevel, fitRatio, spacingHorizontal, spacingVertical, maxWidth, duration, localeHeightRatio, ability, further].map(f => f());
+        const components = [
+            colorScheme, colorFreezeLevel, expandLevel, fitRatio, spacingHorizontal,
+            spacingVertical, maxWidth, duration, localeHeightRatio, downloadFolder, downloadFileName,
+            ability, further
+        ].map(f => f());
         this.utils.dialog.modal({ title: "设置", components }, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
@@ -537,7 +554,8 @@ class tocMarkmap {
                 timestamp: new Date().getTime().toString(),
                 uuid: this.utils.getUUID(),
             }
-            return this.config.FILENAME_WHEN_DOWNLOAD_SVG.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim()] || origin)
+            const filename = this.config.FILENAME_WHEN_DOWNLOAD_SVG || "{{filename}}.svg";
+            return filename.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
         }
 
         const download = async svg => {
