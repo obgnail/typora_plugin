@@ -429,15 +429,18 @@ class tocMarkmap {
         }
 
         const further = () => {
-            const { REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: removeForeign } = this.config;
+            const { REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: removeForeign, REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: removeUselessClass } = this.config;
             const removeForeignLabel = "导出时替换 foreignObject 标签" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
+            const removeUselessClassLabel = "导出时删除无用的类名" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
             const initColorFuncLabel = "恢复默认配色方案" + _genInfo("使用系统默认配色方案，使得上述配色方案失效");
             const list = [
                 { label: removeForeignLabel, value: "removeForeignObject", checked: removeForeign },
+                { label: removeUselessClassLabel, value: "removeUselessClass", checked: removeUselessClass },
                 { label: initColorFuncLabel, value: "initColorFunction", checked: false },
             ];
             const callback = submit => {
                 this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = submit.includes("removeForeignObject");
+                this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = submit.includes("removeUselessClass");
                 if (submit.includes("initColorFunction")) {
                     this.colorSchemeGenerator = null;
                     this.currentScheme = this.defaultScheme;
@@ -475,6 +478,12 @@ class tocMarkmap {
                 foreign.parentNode.replaceChild(text, foreign);
             })
         }
+
+        const removeClassName = svg => svg.querySelectorAll("*").forEach(ele => {
+            if (ele.classList.contains("markmap-node")) {
+                ele.removeAttribute("class");
+            }
+        })
 
         const removeSvgUselessStyle = svg => {
             const style = svg.querySelector("style");
@@ -537,6 +546,9 @@ class tocMarkmap {
         removeSvgUselessStyle(svg);
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
             removeSvgForeignObject(svg);
+        }
+        if (this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
+            removeClassName(svg);
         }
         await download(svg);
     }
