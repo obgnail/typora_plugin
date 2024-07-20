@@ -529,12 +529,22 @@ class tocMarkmap {
             svg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
         }
 
+        const getFileFolder = () => this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder
+
+        const getFileName = () => {
+            const tpl = {
+                filename: this.utils.getFileName() || "markmap",
+                timestamp: new Date().getTime().toString(),
+                uuid: this.utils.getUUID(),
+            }
+            return this.config.FILENAME_WHEN_DOWNLOAD_SVG.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim()] || origin)
+        }
+
         const download = async svg => {
             const div = document.createElement("div");
             div.appendChild(svg);
             const content = div.innerHTML.replace(/<br>/g, "<br/>");
-            const name = (this.utils.getFileName() || "markmap") + ".svg";
-            const path = this.utils.Package.Path.join(this.utils.tempFolder, name);
+            const path = this.utils.Package.Path.join(getFileFolder(), getFileName());
             const ok = await this.utils.writeFile(path, content);
             if (!ok) return;
             this.utils.showInFinder(path);
