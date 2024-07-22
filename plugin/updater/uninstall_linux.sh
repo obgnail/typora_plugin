@@ -19,7 +19,7 @@ escape() {
 }
 
 echo "[1/8] check command"
-for cmd in echo cp cat chmod sed; do
+for cmd in echo cp cat sed; do
     command -v "$cmd" &>/dev/null || panic "cannot find command $cmd, please install it."
 done
 
