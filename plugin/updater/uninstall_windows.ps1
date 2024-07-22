@@ -40,20 +40,20 @@ if (Test-Path -Path $appsrcPath) {
 }
 
 $fileContent = Get-Content -Path $windowHTMLPath -Encoding UTF8 -Raw
-$replacement = -Join($frameScript, $pluginScript)
+$replacement = ""
 
 Write-Host "[3/5] check window.html content"
 if (!$fileContent.Contains($frameScript)) {
     panic "window.html does not contains $frameScript"
 }
-if ($fileContent.Contains($pluginScript)) {
-    finish "plugin has already been installed"
+if (!$fileContent.Contains($pluginScript)) {
+    finish "plugin has already been uninstalled"
 }
 
-Write-Host "[4/5] backup window.html"
-Copy-Item -Path $windowHTMLPath -Destination $windowHTMLBakPath
+Write-Host "[4/5] delete window.html.bak"
+Remove-Item -Path $windowHTMLBakPath
 
 Write-Host "[5/5] update window.html"
-$newFileContent = $fileContent -Replace [Regex]::Escape($frameScript), $replacement
+$newFileContent = $fileContent -Replace [Regex]::Escape($pluginScript), $replacement
 Set-Content -Path $windowHTMLPath -Value $newFileContent -Encoding UTF8
-finish "plugin installed successfully"
+finish "plugin uninstalled successfully"
