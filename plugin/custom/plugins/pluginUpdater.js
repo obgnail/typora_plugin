@@ -203,18 +203,17 @@ class updater {
         const buffer = await this.downloadLatestVersion();
         await this.unzip(buffer);
         await this.excludeFiles();
-        await this.removeOldDir();
         await this.syncDir();
-        console.log("updated");
+        console.log(`updated! current plugin version: ${this.versionFile.tag_name}`);
     }
 
     prepare = () => {
-        console.log("[1/7] prepare: ensure work dir");
+        console.log("[1/6] prepare: ensure work dir");
         this.pkgFsExtra.ensureDir(this.workDir);
     }
 
     checkNeedUpdate = async () => {
-        console.log("[2/7] check if update is needed");
+        console.log("[2/6] check if update is needed");
         const _getLatestVersion = async () => {
             const resp = await this._fetch(this.latestReleaseUrl, this.timeout);
             return resp.json()
@@ -238,13 +237,13 @@ class updater {
     }
 
     downloadLatestVersion = async () => {
-        console.log("[3/7] download latest version plugin");
+        console.log("[3/6] download latest version plugin");
         const resp = await this._fetch(this.latestVersionInfo.zipball_url, this.timeout);
         return resp.buffer()
     }
 
     unzip = async buffer => {
-        console.log("[4/7] unzip files")
+        console.log("[4/6] unzip files")
         const zipData = await this.pkgJszip.loadAsync(buffer);
         const zipFiles = zipData.files;
         this.unzipDir = this.pkgPath.join(this.workDir, Object.keys(zipFiles)[0]);
@@ -260,7 +259,7 @@ class updater {
     }
 
     excludeFiles = async () => {
-        console.log("[5/7] exclude files");
+        console.log("[5/6] exclude files");
         const oldDir = this.utils.joinPath(this.customPluginDir);
         const newDir = this.pkgPath.join(this.unzipDir, this.customPluginDir);
 
@@ -287,18 +286,14 @@ class updater {
         }
     }
 
-    removeOldDir = async () => {
-        console.log("[6/7] remove old dir");
-        await this.pkgFsExtra.emptyDir(this.utils.joinPath(this.pluginDir))
-    }
-
     syncDir = async () => {
-        console.log("[7/7] sync dir");
+        console.log("[6/6] sync dir");
         const src = this.pkgPath.join(this.unzipDir, this.pluginDir);
         const dst = this.utils.joinPath(this.pluginDir);
+        await this.pkgFsExtra.emptyDir(dst);
         await this.pkgFsExtra.copy(src, dst);
-        await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
         await this.pkgFsExtra.emptyDir(this.workDir);
+        await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
     }
 
     _fetch = async (url, timeout = 60 * 1000) => {
