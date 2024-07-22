@@ -97,8 +97,9 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         this.commanderPlugin.execute(exec, cmd, "cmd/bash", after, hint, { cwd: dir });
     }
 
-    // 新的update，还不稳定，但是隐藏入口
+    // 新的update，还不稳定，暂时隐藏
     update2 = async (proxy = "http://127.0.0.1:7890") => {
+        proxy = this.cleanProxy(proxy);
         const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest";
         await new updater(this, proxy, url).process();
     }
