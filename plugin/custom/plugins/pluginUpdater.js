@@ -96,7 +96,216 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         const cmd = `updater.exe --action=update --proxy=${proxy}`;
         this.commanderPlugin.execute(exec, cmd, "cmd/bash", after, hint, { cwd: dir });
     }
+
+    test = () => {
+        const proxyURL = "http://127.0.0.1:7890";
+        const latestReleaseUrl = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest"
+        const u = new updater(this, proxyURL, latestReleaseUrl);
+        u.process();
+    }
 }
+
+
+class updater {
+    constructor(plugin, proxyURL, latestReleaseUrl, timeout = 600 * 1000) {
+        this.proxyUrl = proxyURL;
+        this.latestReleaseUrl = latestReleaseUrl;
+        this.timeout = timeout;
+        this.utils = plugin.utils;
+
+        this.pkgFsExtra = this.utils.Package.FsExtra;
+        this.pkgFs = this.utils.Package.Fs;
+        this.pkgPath = this.utils.Package.Path;
+        this.pkgNodeFetch = require("../../global/core/utils/common/node-fetch/node-fetch.js");
+        this.pkgProxy = require("../../global/core/utils/common/node-fetch/https-proxy-agent");
+        this.pkgJszip = require("../../global/core/utils/common/jszip/jszip.min.js");
+
+        this.unzipDir = null;
+        this.workDir = this.pkgPath.join(this.utils.tempFolder, "typora-plugin-updater");
+        this.versionFile = this.utils.joinPath("./plugin/updater/version.json");
+        this.customPluginDir = "./plugin/custom/plugins";
+        this.dontNeedUpdate = [
+            "./plugin/global/settings/custom_plugin.user.toml",
+            "./plugin/global/settings/settings.user.toml",
+            "./plugin/global/settings/hotkey.user.toml",
+            "./plugin/global/user_styles",
+            "./plugin/window_tab/save_tabs.json",
+            "./plugin/custom/plugins/reopenClosedFiles/remain.json",
+            "./plugin/custom/plugins/scrollBookmarker/bookmark.json",
+        ]
+
+        this.latestVersionInfo = null;
+        this.currentVersionInfo = null;
+    }
+
+    process = async () => {
+        this.prepare();
+        // await this.checkNeedUpdate();
+        this.temp();
+        const buffer = await this.downloadLatestVersion();
+        await this.unzip(buffer);
+        await this.adjustFiles();
+        await this.removeOldDir();
+        await this.syncDir();
+    }
+
+    prepare = () => {
+        this.pkgFsExtra.ensureDir(this.workDir);
+    }
+
+    checkNeedUpdate = async () => {
+        const _getLatestVersion = async () => {
+            const resp = await this._fetch(this.latestReleaseUrl);
+            return resp.json()
+        }
+        const _getCurrentVersion = () => {
+            try {
+                return this.pkgFsExtra.readJson(this.versionFile);
+            } catch (e) {
+                console.warn("has no version file");
+            }
+        }
+
+        this.latestVersionInfo = await _getLatestVersion();
+        this.currentVersionInfo = _getCurrentVersion();
+        if (!this.currentVersionInfo) return true;
+
+        const result = this.utils.compareVersion(this.latestVersionInfo.tag_name, this.currentVersionInfo.tag_name)
+        return result !== 0
+    }
+
+    downloadLatestVersion = async () => {
+        const resp = await this._fetch(this.latestVersionInfo.zipball_url)
+        return resp.buffer()
+    }
+
+    unzip = async buffer => {
+        const isDirSync = curPath => {
+            try {
+                const stat = this.pkgFs.statSync(curPath);
+                return stat.isDirectory()
+            } catch (err) {
+                return false
+            }
+        }
+
+        const zipData = await this.pkgJszip.loadAsync(buffer);
+        const files = zipData.files;
+        const fileList = Object.keys(files);
+        this.unzipDir = this.pkgPath.join(this.workDir, fileList[0]);
+        try {
+            for (const filename of fileList) {
+                const dest = this.pkgPath.join(this.workDir, filename);
+                if (files[filename].dir && !isDirSync(dest)) {
+                    this.pkgFs.mkdirSync(dest, { recursive: true });
+                } else {
+                    const content = await files[filename].async("nodebuffer")
+                    this.pkgFs.writeFileSync(dest, content);
+                }
+            }
+        } catch (error) {
+            console.error('save zip files encountered error!', error.message);
+            return error;
+        }
+    }
+
+    adjustFiles = async () => {
+        const oldDir = this.utils.joinPath(this.customPluginDir);
+        const newDir = this.pkgPath.join(this.unzipDir, this.customPluginDir);
+
+        const oldFds = this.pkgFs.readdirSync(oldDir);
+        const newFds = this.pkgFs.readdirSync(newDir);
+
+        const excludeFds = new Set();
+        newFds.forEach(file => excludeFds.add(file));
+
+        oldFds.forEach(name => {
+            if (excludeFds.has(name)) return;
+            if ((this.pkgPath.extname(name) === ".js") && excludeFds.has(name.substring(0, name.lastIndexOf(". ")))) return;
+            const path = this.pkgPath.join(this.customPluginDir, name)
+            this.dontNeedUpdate.push(path);
+        })
+
+        for (const file of this.dontNeedUpdate) {
+            const oldPath = this.utils.joinPath(file);
+            const newPath = this.pkgPath.join(this.unzipDir, file);
+            if (!this.utils.existPathSync(oldPath)) continue;
+            await this.pkgFsExtra.copy(oldPath, newPath);
+        }
+    }
+
+    removeOldDir = async () => {
+        await this.pkgFsExtra.emptyDir(this.utils.joinPath("./plugin"))
+    }
+
+    syncDir = async () => {
+        const src = this.pkgPath.join(this.unzipDir, "./plugin");
+        const dst = this.utils.joinPath("./plugin")
+        await this.pkgFsExtra.copy(src, dst)
+    }
+
+    _fetch = async url => {
+        let error;
+        try {
+            const proxy = new this.pkgProxy.HttpsProxyAgent(this.proxyUrl);
+            const resp = await this.pkgNodeFetch.nodeFetch(url, { agent: proxy, signal: AbortSignal.timeout(this.timeout) });
+            if (resp.ok) return resp
+            error = `response state: ${resp.status}`
+        } catch (e) {
+            error = e;
+        }
+        throw new Error(`[error] fetch url ${url}: ${error}`)
+    }
+
+    temp = () => {
+        this.latestVersionInfo = {
+            "url": "https://api.github.com/repos/obgnail/typora_plugin/releases/149404712",
+            "assets_url": "https://api.github.com/repos/obgnail/typora_plugin/releases/149404712/assets",
+            "upload_url": "https://uploads.github.com/repos/obgnail/typora_plugin/releases/149404712/assets{?name,label}",
+            "html_url": "https://github.com/obgnail/typora_plugin/releases/tag/1.8.16",
+            "id": 149404712,
+            "author": {
+                "login": "obgnail",
+                "id": 48992887,
+                "node_id": "MDQ6VXNlcjQ4OTkyODg3",
+                "avatar_url": "https://avatars.githubusercontent.com/u/48992887?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/obgnail",
+                "html_url": "https://github.com/obgnail",
+                "followers_url": "https://api.github.com/users/obgnail/followers",
+                "following_url": "https://api.github.com/users/obgnail/following{/other_user}",
+                "gists_url": "https://api.github.com/users/obgnail/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/obgnail/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/obgnail/subscriptions",
+                "organizations_url": "https://api.github.com/users/obgnail/orgs",
+                "repos_url": "https://api.github.com/users/obgnail/repos",
+                "events_url": "https://api.github.com/users/obgnail/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/obgnail/received_events",
+                "type": "User",
+                "site_admin": false
+            },
+            "node_id": "RE_kwDOJzwCYc4I57wo",
+            "tag_name": "1.8.16",
+            "target_commitish": "master",
+            "name": "1.8.16",
+            "draft": false,
+            "prerelease": false,
+            "created_at": "2024-04-02T09:44:55Z",
+            "published_at": "2024-04-02T14:07:47Z",
+            "assets": [],
+            "tarball_url": "https://api.github.com/repos/obgnail/typora_plugin/tarball/1.8.16",
+            "zipball_url": "https://api.github.com/repos/obgnail/typora_plugin/zipball/1.8.16",
+            "body": "1. feat：【fence_enhance】：新增配置选项 CUSTOM_BUTTONS，将所有选择权交还用户，支持用户自定义代码块右上角的按钮，不限功能和数量\\r\\n2. feat：【help】：新增选项【请开发者喝咖啡】"
+        }
+        this.currentVersionInfo = {
+            "tag_name": "1.8.16",
+            "name": "1.8.16",
+            "body": "1. feat：【fence_enhance】：新增配置选项 CUSTOM_BUTTONS，将所有选择权交还用户，支持用户自定义代码块右上角的按钮，不限功能和数量\\r\\n2. feat：【help】：新增选项【请开发者喝咖啡】",
+            "zipball_url": "https://api.github.com/repos/obgnail/typora_plugin/zipball/1.8.16"
+        }
+    }
+}
+
 
 class binFileUpdater {
     constructor(controller) {
