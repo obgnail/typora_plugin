@@ -96,6 +96,13 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         const cmd = `updater.exe --action=update --proxy=${proxy}`;
         this.commanderPlugin.execute(exec, cmd, "cmd/bash", after, hint, { cwd: dir });
     }
+
+    // 新的update，还不稳定，暂时隐藏
+    update2 = async (proxy = "http://127.0.0.1:7890") => {
+        proxy = this.cleanProxy(proxy);
+        const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest";
+        await new updater(this, proxy, url).process();
+    }
 }
 
 class binFileUpdater {
@@ -155,6 +162,144 @@ class binFileUpdater {
         const compare = this.utils.compareVersion(f0.version, f1.version);
         const [deleteFile, remainFile] = compare > 0 ? [f1.path, f0.path] : [f0.path, f1.path];
         return { delete: [deleteFile], remain: remainFile }
+    }
+}
+
+class updater {
+    constructor(plugin, proxyURL, latestReleaseUrl, timeout = 600 * 1000) {
+        this.proxyUrl = proxyURL;
+        this.latestReleaseUrl = latestReleaseUrl;
+        this.timeout = timeout;
+        this.utils = plugin.utils;
+
+        this.pkgFsExtra = this.utils.Package.FsExtra;
+        this.pkgFs = this.utils.Package.Fs.promises;
+        this.pkgPath = this.utils.Package.Path;
+        this.pkgNodeFetch = require("../../global/core/utils/common/node-fetch/node-fetch.js");
+        this.pkgProxy = require("../../global/core/utils/common/node-fetch/https-proxy-agent");
+        this.pkgJszip = require("../../global/core/utils/common/jszip/jszip.min.js");
+
+        this.unzipDir = "";
+        this.pluginDir = "./plugin";
+        this.customPluginDir = "./plugin/custom/plugins";
+        this.versionFile = this.utils.joinPath("./plugin/updater/version.json");
+        this.workDir = this.pkgPath.join(this.utils.tempFolder, "typora-plugin-updater");
+        this.exclude = [
+            "./plugin/global/user_styles",
+            "./plugin/window_tab/save_tabs.json",
+            "./plugin/global/settings/hotkey.user.toml",
+            "./plugin/global/settings/settings.user.toml",
+            "./plugin/global/settings/custom_plugin.user.toml",
+            "./plugin/custom/plugins/reopenClosedFiles/remain.json",
+            "./plugin/custom/plugins/scrollBookmarker/bookmark.json",
+        ]
+
+        this.latestVersionInfo = null;
+        this.currentVersionInfo = null;
+    }
+
+    process = async () => {
+        this.prepare();
+        await this.checkNeedUpdate();
+        const buffer = await this.downloadLatestVersion();
+        await this.unzip(buffer);
+        await this.excludeFiles();
+        await this.syncDir();
+        console.log(`updated! current plugin version: ${this.versionFile.tag_name}`);
+    }
+
+    prepare = () => {
+        console.log("[1/6] prepare: ensure work dir");
+        this.pkgFsExtra.ensureDir(this.workDir);
+    }
+
+    checkNeedUpdate = async () => {
+        console.log("[2/6] check if update is needed");
+        const _getLatestVersion = async () => {
+            const resp = await this._fetch(this.latestReleaseUrl, this.timeout);
+            return resp.json()
+        }
+        const _getCurrentVersion = async () => {
+            try {
+                if (await this.utils.existPath(this.versionFile)) {
+                    return this.pkgFsExtra.readJson(this.versionFile);
+                }
+            } catch (e) {
+                console.debug("not exist version.json");
+            }
+        }
+
+        this.latestVersionInfo = await _getLatestVersion();
+        this.currentVersionInfo = await _getCurrentVersion();
+        if (!this.currentVersionInfo) return true;
+
+        const result = this.utils.compareVersion(this.latestVersionInfo.tag_name, this.currentVersionInfo.tag_name);
+        return result !== 0
+    }
+
+    downloadLatestVersion = async () => {
+        console.log("[3/6] download latest version plugin");
+        const resp = await this._fetch(this.latestVersionInfo.zipball_url, this.timeout);
+        return resp.buffer()
+    }
+
+    unzip = async buffer => {
+        console.log("[4/6] unzip files")
+        const zipData = await this.pkgJszip.loadAsync(buffer);
+        const zipFiles = zipData.files;
+        this.unzipDir = this.pkgPath.join(this.workDir, Object.keys(zipFiles)[0]);
+        for (const [name, file] of Object.entries(zipFiles)) {
+            const dest = this.pkgPath.join(this.workDir, name);
+            if (file.dir) {
+                await this.pkgFsExtra.ensureDir(dest);
+            } else {
+                const content = await file.async("nodebuffer");
+                await this.pkgFs.writeFile(dest, content);
+            }
+        }
+    }
+
+    excludeFiles = async () => {
+        console.log("[5/6] exclude files");
+        const oldDir = this.utils.joinPath(this.customPluginDir);
+        const newDir = this.pkgPath.join(this.unzipDir, this.customPluginDir);
+
+        const oldFds = await this.pkgFs.readdir(oldDir);
+        const newFds = await this.pkgFs.readdir(newDir);
+
+        const excludeFds = new Set();
+        newFds.forEach(file => excludeFds.add(file));
+
+        oldFds.forEach(name => {
+            if (excludeFds.has(name)) return;
+            if ((this.pkgPath.extname(name) === ".js") && excludeFds.has(name.substring(0, name.lastIndexOf(".")))) return;
+            const path = this.pkgPath.join(this.customPluginDir, name)
+            this.exclude.push(path);
+        })
+
+        for (const file of this.exclude) {
+            const oldPath = this.utils.joinPath(file);
+            const newPath = this.pkgPath.join(this.unzipDir, file);
+            const exists = await this.utils.existPath(oldPath);
+            if (exists) {
+                await this.pkgFsExtra.copy(oldPath, newPath);
+            }
+        }
+    }
+
+    syncDir = async () => {
+        console.log("[6/6] sync dir");
+        const src = this.pkgPath.join(this.unzipDir, this.pluginDir);
+        const dst = this.utils.joinPath(this.pluginDir);
+        await this.pkgFsExtra.emptyDir(dst);
+        await this.pkgFsExtra.copy(src, dst);
+        await this.pkgFsExtra.emptyDir(this.workDir);
+        await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
+    }
+
+    _fetch = async (url, timeout = 60 * 1000) => {
+        const proxy = new this.pkgProxy.HttpsProxyAgent(this.proxyUrl);
+        return this.pkgNodeFetch.nodeFetch(url, { agent: proxy, signal: AbortSignal.timeout(timeout) })
     }
 }
 
