@@ -85,21 +85,26 @@
 
 1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并将其解压
 
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（正式版的路径为 `Typora/resources/window.html`，免费版的路径为 `Typora/resources/app/window.html`）
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（正式版为 `Typora/resources/window.html`，免费版为 `Typora/resources/app/window.html`）
 
 3. 打开文件夹 A，将解压后的 plugin 文件夹粘贴进该文件夹下（参考方法二的图片）
 
-4. 进入文件夹 `A/plugin/updater/`
+4. 进入文件夹 `A/plugin/bin/`
 
-   - 如果你是 Windows 系统，双击运行 `updater.exe`。如果看到下图，说明安装成功
+   - 如果你是 Windows 系统，双击运行 `install_windows.exe`，如果看到下图，说明安装成功
    
-   ![installer](assets/installer.png)
-   
-   - 如果你是 Linux 系统，以管理员运行 `install_linux.sh`，若输出 `plugin installed successfully`，说明安装成功
+   - 如果你是 Linux 系统，以管理员运行 `install_linux.sh`，如果看到下图，说明安装成功
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
-> 每个插件皆有配置选项。开发者鼓励您修改配置，以符合自身需求。配置文件夹位于 [A/plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings)
+|        | Windows                                        | Linux                                      |
+| ------ | ---------------------------------------------- | ------------------------------------------ |
+| 步骤 4 | ![install_windows](assets/install_windows.png) | ![install_linux](assets/install_linux.png) |
+
+附加说明：
+
+- `install_windows.exe` 是提供给非技术用户用的。您也可以通过执行同目录下的 `install_windows.ps1` 安装插件。
+- 每个插件皆有配置选项。开发者鼓励您修改配置，以符合自身需求。配置文件夹位于 [A/plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings)
 
 
 

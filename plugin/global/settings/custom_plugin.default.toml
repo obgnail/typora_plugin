@@ -1242,9 +1242,6 @@ tc_args = '/O /T /P=L  /L=$f'
 # 右键菜单中展示的名称
 name = "升级插件"
 # 是否启用此二级插件
-# 注意：此插件目前仅支持windows系统，若为其他系统，则此插件失效
-# 注意：此插件依赖于commander插件，若禁用了commander，则此插件失效
-# 注意：若您删除了文件./plugin/updater/updater.exe，则此插件失效
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
