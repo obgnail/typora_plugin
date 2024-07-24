@@ -129,14 +129,13 @@ class updater {
 
     prepare = () => {
         console.log("[1/6] prepare: ensure work dir");
-        this._polyfill();
         this.pkgFsExtra.ensureDir(this.workDir);
     }
 
     checkNeedUpdate = async () => {
         console.log("[2/6] check if update is needed");
         const _getLatestVersion = async () => {
-            const resp = await this._fetch(this.latestReleaseUrl, this.timeout);
+            const resp = await this._fetch(this.latestReleaseUrl, this.proxyUrl, this.timeout);
             return resp.json()
         }
         const _getCurrentVersion = async () => {
@@ -159,7 +158,7 @@ class updater {
 
     downloadLatestVersion = async () => {
         console.log("[3/6] download latest version plugin");
-        const resp = await this._fetch(this.latestVersionInfo.zipball_url, this.timeout);
+        const resp = await this._fetch(this.latestVersionInfo.zipball_url, this.proxyUrl, this.timeout);
         return resp.buffer()
     }
 
@@ -217,21 +216,17 @@ class updater {
         await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
     }
 
-    _polyfill = () => {
-        if (!AbortSignal.timeout) {
-            AbortSignal.timeout = function(timeout) {
-                const controller = new AbortController();
-                setTimeout(() => controller.abort(), timeout);
-                return controller.signal;
-            };
+    _fetch = async (url, proxy, timeout = 60 * 1000) => {
+        let signal = undefined;
+        if (AbortSignal && AbortSignal.timeout) {
+            signal = AbortSignal.timeout(timeout);
+        } else if (AbortController) {
+            const controller = new AbortController();
+            setTimeout(() => controller.abort(), timeout);
+            signal = controller.signal; // polyfill
         }
-    }
-
-    _fetch = async (url, timeout = 60 * 1000) => {
-        const proxy = this.proxyUrl
-            ? new this.pkgProxy.HttpsProxyAgent(this.proxyUrl)
-            : undefined;
-        return this.pkgNodeFetch.nodeFetch(url, { agent: proxy, signal: AbortSignal.timeout(timeout) })
+        const agent = proxy ? new this.pkgProxy.HttpsProxyAgent(proxy) : undefined;
+        return this.pkgNodeFetch.nodeFetch(url, { agent, signal })
     }
 }
 
