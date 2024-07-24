@@ -101,7 +101,18 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
     update2 = async (proxy = "http://127.0.0.1:7890") => {
         proxy = this.cleanProxy(proxy);
         const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest";
-        await new updater(this, proxy, url).process();
+        const updater = new updater(this, proxy, url);
+
+        const getState = updater.processWithState();
+        const isDone = () => getState()["done"]
+        await this.utils.progressBar.fake({ timeout: 3 * 60 * 1000, isDone });
+        const { done, error } = getState();
+        if (!done) {
+            console.log("timeout")
+        }
+        if (error) {
+            console.log(error.toString())
+        }
     }
 }
 
@@ -166,7 +177,7 @@ class binFileUpdater {
 }
 
 class updater {
-    constructor(plugin, proxyURL, latestReleaseUrl, timeout = 600 * 1000) {
+    constructor(plugin, proxyURL, latestReleaseUrl, timeout = 3 * 60 * 1000) {
         this.proxyUrl = proxyURL;
         this.latestReleaseUrl = latestReleaseUrl;
         this.timeout = timeout;
@@ -206,6 +217,21 @@ class updater {
         await this.excludeFiles();
         await this.syncDir();
         console.log(`updated! current plugin version: ${this.versionFile.tag_name}`);
+    }
+
+    processWithState = () => {
+        let error = null;
+        let done = false;
+        setTimeout(async () => {
+            try {
+                await this.process();
+            } catch (e) {
+                error = e;
+            } finally {
+                done = true;
+            }
+        })
+        return () => ({ done, error })
     }
 
     prepare = () => {
