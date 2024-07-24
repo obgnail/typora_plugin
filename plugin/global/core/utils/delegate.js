@@ -6,6 +6,7 @@ const { styleTemplater } = require("./mixin/styleTemplater")
 const { htmlTemplater } = require("./mixin/htmlTemplater")
 const { contextMenu } = require("./mixin/contextMenu")
 const { notification } = require("./mixin/notification")
+const { progressBar } = require("./mixin/progressBar")
 const { dialog } = require("./mixin/dialog")
 const { diagramParser } = require("./mixin/diagramParser")
 const { thirdPartyDiagramParser } = require("./mixin/thirdPartyDiagramParser")
@@ -15,6 +16,7 @@ const getHelper = utils => {
     const _eventHub = new eventHub(utils);
     const _contextMenu = new contextMenu(utils);
     const _notification = new notification(utils);
+    const _progressBar = new progressBar(utils)
     const _diagramParser = new diagramParser(utils);
     const _thirdPartyDiagramParser = new thirdPartyDiagramParser(utils);
     const _stateRecorder = new stateRecorder(utils);
@@ -29,6 +31,7 @@ const getHelper = utils => {
         eventHub: _eventHub,
         contextMenu: _contextMenu,
         notification: _notification,
+        progressBar: _progressBar,
         diagramParser: _diagramParser,
         thirdPartyDiagramParser: _thirdPartyDiagramParser,
         stateRecorder: _stateRecorder,
@@ -170,7 +173,7 @@ const getHelper = utils => {
     // Before loading plugins
     const loadHelpersBefore = async () => {
         await loadHelpers(_styleTemplater);
-        await loadHelpers(_htmlTemplater, _contextMenu, _notification, _dialog, _stateRecorder, _hotkeyHub, _exportHelper);
+        await loadHelpers(_htmlTemplater, _contextMenu, _notification, _progressBar, _dialog, _stateRecorder, _hotkeyHub, _exportHelper);
     }
 
     // After loading plugins

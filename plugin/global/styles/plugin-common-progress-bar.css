@@ -1,0 +1,19 @@
+.plugin-common-progress-bar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    height: 3px;
+    border: none;
+    background-color: transparent;
+    color: #35a935;
+}
+
+.plugin-common-progress-bar::-webkit-progress-bar {
+    background-color: transparent;
+}
+
+.plugin-common-progress-bar::-webkit-progress-value {
+    background-color: #35a935;
+}
