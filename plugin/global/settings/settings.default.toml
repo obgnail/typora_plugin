@@ -219,7 +219,6 @@ SHOW_NAME = { fence = "Fence", image = "Figure", table = "Table" }
 ############### commander ###############
 [commander]
 # 是否启用插件
-# 强烈不建议置为false。有一些插件（如pluginUpdater）依赖于此插件，若置为false，那些插件都将失效
 ENABLE = true
 # 在右键菜单中展示的名称
 NAME = "命令行环境"

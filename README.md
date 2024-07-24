@@ -205,17 +205,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### 如何升级插件？
 
-- 方法一（全自动，仅限 Windows）：右键菜单 -> 常用插件 -> 二级插件 -> 升级插件
-
-- 方法二（半自动，仅限 Windows）：有些用户将 Typora 装在 C 盘或者 Typora 的安装路径包含 `Program Files` 目录，经常会因为权限问题导致升级失败。此时可以通过以管理员身份打开终端，执行下面命令升级：
-
-  ```bash
-  # 注意updater.exe改成你的路径
-  # proxy参数：你的代理URL。如果你所在地区能直连GitHub，可以删除此参数
-  D:/software/typora/resources/plugin/updater/updater.exe --action=update --proxy=http://127.0.0.1:7890
-  ```
-
-- 方法三（手动，支持 Windows、Linux）：[安装方法二](#如何使用：方法二（手动）) 重新走一遍。
+右键菜单 -> 常用插件 -> 二级插件 -> 升级插件
 
 
 
