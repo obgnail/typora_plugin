@@ -43,9 +43,9 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         if (!done) {
             error = new Error("timeout!");
         }
-        let title = "成功更新";
+        let title = "更新成功，请重启 Typora";
         let callback = null;
-        let components = [{ type: "textarea", label: "版本信息如下", rows: 15, content: JSON.stringify(info, null, "\t") }];
+        let components = [{ type: "textarea", label: "版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
         if (error) {
             title = "更新失败";
             callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
@@ -255,10 +255,12 @@ class ProxyGetter {
     })
 
     getWindowsProxy = () => this._getProxy(
-        `reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" | find /i "proxyserver"`,
+        `reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" | findstr /i "ProxyEnable proxyserver"`,
         stdout => {
-            const match = stdout.match(/ProxyServer\s+REG_SZ\s+(.*)/i);
-            return (match && match[1]) ? match[1] : null
+            const match = stdout.match(/ProxyEnable.+?0x(?<enable>\d)\r\n.+?ProxyServer\s+REG_SZ\s+(?<proxy>.*)/i)
+            return (match && match.groups && match.groups.enable === "1")
+                ? match.groups.proxy
+                : null
         }
     )
 
