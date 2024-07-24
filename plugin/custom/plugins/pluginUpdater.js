@@ -49,7 +49,7 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         if (error) {
             title = "更新失败";
             callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
-            components = [{ type: "p", label: "更新失败，建议您稍后重试或手动更新" }, { type: "p", label: `报错信息：${error.toString()}` }];
+            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新" }, { type: "span", label: `报错信息：${error.stack}` }];
         }
         setTimeout(() => this.utils.dialog.modal({ title, components, width: "600px" }, callback), 50);
     }
@@ -119,6 +119,7 @@ class updater {
                 await this.run();
             } catch (e) {
                 error = e;
+                console.error(e);
             } finally {
                 done = true;
             }
@@ -128,6 +129,7 @@ class updater {
 
     prepare = () => {
         console.log("[1/6] prepare: ensure work dir");
+        this._polyfill();
         this.pkgFsExtra.ensureDir(this.workDir);
     }
 
@@ -213,6 +215,16 @@ class updater {
         await this.pkgFsExtra.copy(src, dst);
         await this.pkgFsExtra.emptyDir(this.workDir);
         await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
+    }
+
+    _polyfill = () => {
+        if (!AbortSignal.timeout) {
+            AbortSignal.timeout = function(timeout) {
+                const controller = new AbortController();
+                setTimeout(() => controller.abort(), timeout);
+                return controller.signal;
+            };
+        }
     }
 
     _fetch = async (url, timeout = 60 * 1000) => {
