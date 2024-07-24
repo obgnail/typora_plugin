@@ -81,7 +81,7 @@
 
 ## 如何使用：方法一（自动）
 
-> 目前此方法仅限 Windows 平台。
+> 此方法支持 Windows、Linux 平台。
 
 1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并将其解压
 
@@ -89,9 +89,13 @@
 
 3. 打开文件夹 A，将解压后的 plugin 文件夹粘贴进该文件夹下（参考方法二的图片）
 
-4. 进入文件夹 `A/plugin/updater/`，双击运行 `updater.exe`。如果看到下图，说明安装成功
+4. 进入文件夹 `A/plugin/updater/`
 
+   - 如果你是 Windows 系统，双击运行 `updater.exe`。如果看到下图，说明安装成功
+   
    ![installer](assets/installer.png)
+   
+   - 如果你是 Linux 系统，以管理员运行 `install_linux.sh`，若输出 `plugin installed successfully`，说明安装成功
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
@@ -385,8 +389,6 @@ COMMANDS = [
 
 
 ### commander：命令行环境
-
-> 有些插件依赖于此插件，不建议禁用。
 
 功能：和 total commander 的命令行一样（快捷键也一样），一个快速执行命令的工具，并提供少量交互。
 
