@@ -39,19 +39,19 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         const updater = await this.getUpdater(proxy);
         const getState = updater.runWithState();
         await this.utils.progressBar.fake({ timeout: 3 * 60 * 1000, isDone: () => getState()["done"] });
-        let { done, error } = getState();
+        let { done, error, info } = getState();
         if (!done) {
             error = new Error("timeout!");
         }
         let title = "成功更新";
         let callback = null;
-        let components = [{ type: "p", label: `当前版本：${updater.latestVersionInfo.tag_name}` }];
+        let components = [{ type: "textarea", label: "版本信息如下", rows: 15, content: JSON.stringify(info, null, "\t") }];
         if (error) {
             title = "更新失败";
             callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
             components = [{ type: "p", label: "更新失败，建议您稍后重试或手动更新" }, { type: "p", label: `报错信息：${error.toString()}` }];
         }
-        setTimeout(() => this.utils.dialog.modal({ title, components }, callback), 50);
+        setTimeout(() => this.utils.dialog.modal({ title, components, width: "600px" }, callback), 50);
     }
 
     getProxy = async () => (this.config.proxy || (await new ProxyGetter(this).getProxy()) || "").trim()
@@ -123,7 +123,7 @@ class updater {
                 done = true;
             }
         })
-        return () => ({ done, error })
+        return () => ({ done, error, info: this.latestVersionInfo })
     }
 
     prepare = () => {
