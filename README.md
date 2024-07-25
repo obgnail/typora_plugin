@@ -91,7 +91,7 @@
 
 4. 进入文件夹 `A/plugin/bin/`
 
-   - 如果你是 Windows 系统，双击运行 `install_windows.exe`，如果看到下图，说明安装成功
+   - 如果你是 Windows 系统，双击运行 `install_windows_amd_x64.exe`，如果看到下图，说明安装成功
    
    - 如果你是 Linux 系统，以管理员运行 `install_linux.sh`，如果看到下图，说明安装成功
 
