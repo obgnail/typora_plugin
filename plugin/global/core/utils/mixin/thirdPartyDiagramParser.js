@@ -51,7 +51,7 @@ class thirdPartyDiagramParser {
                 parser.map[cid] = instance;
             }
         } catch (e) {
-            this.utils.diagramParser.throwParseError(null, e.toString());
+            this.utils.diagramParser.throwParseError(null, e.stack);
         }
     }
 

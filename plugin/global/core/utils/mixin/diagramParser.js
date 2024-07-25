@@ -90,6 +90,8 @@ class diagramParser {
     }
 
     getErrorMessage = error => {
+        if (error instanceof Error) return error.stack;
+
         let msg = error.errorLine ? `第 ${error.errorLine} 行发生错误。` : '';
         msg += error.reason ? `错误原因：${error.reason}` : '';
         return msg || error.toString();
