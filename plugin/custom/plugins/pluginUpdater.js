@@ -1,172 +1,75 @@
 class pluginUpdaterPlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
-    beforeProcess = async () => {
-        // 当前升级插件仅支持windows平台
-        if (!File.isWin) return this.utils.stopLoadPluginError
-        const file = this.utils.joinPath("./plugin/updater/updater.exe");
-        const exist = await this.utils.existPath(file);
-        if (!exist) return this.utils.stopLoadPluginError
-        this.updaterEXE = file;
-
-        await this.adjustFile();
-    }
-
-    selector = () => (this.updaterEXE && this.commanderPlugin) ? "" : this.utils.nonExistSelector
-
-    hint = isDisable => isDisable ? "updater.exe不存在或者commander插件被禁用" : "当你发现BUG，可以尝试更新，说不定就解决了"
+    hint = () => "当你发现BUG，可以尝试更新，说不定就解决了"
 
     process = () => {
         const { auto_update, start_update_interval, update_loop_interval } = this.config;
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            this.commanderPlugin = this.utils.getPlugin("commander");
-            if (this.updaterEXE && this.commanderPlugin && auto_update) {
-                if (start_update_interval > 0) {
-                    setTimeout(this.silentUpdate, start_update_interval);
-                }
-                if (update_loop_interval > 0) {
-                    setInterval(this.silentUpdate, update_loop_interval);
-                }
-            }
-        })
+        if (!auto_update) return;
+        if (start_update_interval > 0) {
+            setTimeout(this.silentUpdate, start_update_interval);
+        }
+        if (update_loop_interval > 0) {
+            setInterval(this.silentUpdate, update_loop_interval);
+        }
     }
 
     callback = async anchorNode => {
         if (this.config.proxy) {
-            await this.modalUpdate(this.config.proxy);
-            return
+            await this.manualUpdate();
+            return;
         }
 
         const proxy = await this.getProxy();
         const label = "代理（填入URL，默认使用系统代理，为空则不使用代理）";
         const components = [{ label, type: "input", value: proxy, placeholder: "http://127.0.0.1:7890" }];
         const m = { title: "设置代理", components };
-        const cb = async ([{ submit: proxy_ }]) => await this.modalUpdate(proxy_);
+        const cb = async ([{ submit: proxy_ }]) => await this.manualUpdate(proxy_);
         this.utils.dialog.modal(m, cb);
     }
 
-    modalUpdate = async proxy => {
-        await this.update(proxy, this.config.exec_show, "升级中，请稍等\n\n", code => {
-            if (code === 0) return;
-
-            const openGithub = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
-            let components = [{ type: "p", label: "出于未知原因，更新失败，建议您稍后重试或手动更新" }];
-            let callback = openGithub;
-            let cancelCallback;
-
-            if (this.updaterEXE.includes("Program Files")) {
-                const disk = this.updaterEXE.split(this.utils.Package.Path.win32.sep)[0];
-                const label = "Typora 安装路径包含 Program Files，由于 Windows 的权限限制，需要您手动操作。以管理员身份打开 CMD，如下运行命令";
-                const value = `${disk} && "${this.updaterEXE}" --action=update --proxy=${this.cleanProxy(proxy)}`;
-                components = [{ label, type: "input", value }];
-                callback = undefined;
-                cancelCallback = openGithub;
-            }
-            this.utils.dialog.modal({ title: "更新失败", components }, callback, cancelCallback);
-        })
+    silentUpdate = async proxy => {
+        console.log("start silent update...");
+        const updater = await this.getUpdater(proxy);
+        await updater.run();
     }
 
-    silentUpdate = async () => {
-        console.log("start update...");
-        const proxy = await this.getProxy();
-        await this.update(proxy, this.config.auto_exec_show);
+    manualUpdate = async proxy => {
+        this.utils.notification.show("自动升级中，请稍等");
+        const updater = await this.getUpdater(proxy);
+        const getState = updater.runWithState();
+        await this.utils.progressBar.fake({ timeout: 3 * 60 * 1000, isDone: () => getState()["done"] });
+        let { done, error, info } = getState();
+        if (!done) {
+            error = new Error("timeout!");
+        }
+        let title = "更新成功，请重启 Typora";
+        let callback = null;
+        let components = [{ type: "textarea", label: "版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
+        if (error) {
+            title = "更新失败";
+            callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
+            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新" }, { type: "span", label: `报错信息：${error.stack}` }];
+        }
+        setTimeout(() => this.utils.dialog.modal({ title, components, width: "600px" }, callback), 50);
     }
 
-    getProxy = async () => this.config.proxy || (await new ProxyGetter(this).getProxy()) || ""
+    getProxy = async () => (this.config.proxy || (await new ProxyGetter(this).getProxy()) || "").trim()
 
-    cleanProxy = proxy => {
-        proxy = (proxy || "").trim();
+    getUpdater = async proxy => {
+        if (proxy === undefined) {
+            proxy = await this.getProxy();
+        }
         if (proxy && !/^https?:\/\//.test(proxy)) {
             proxy = "http://" + proxy;
         }
-        return proxy
-    }
-
-    // 保不齐有些用户就是不守规矩，升级前和升级后都执行一次
-    adjustFile = async () => await new binFileUpdater(this).run();
-
-    update = async (proxy, exec, hint, callback) => {
-        proxy = this.cleanProxy(proxy);
-        const after = async (...args) => {
-            await this.adjustFile();
-            callback && callback.apply(this, args);
-        }
-        await this.adjustFile();
-        const dir = this.utils.joinPath("./plugin/updater");
-        const cmd = `updater.exe --action=update --proxy=${proxy}`;
-        this.commanderPlugin.execute(exec, cmd, "cmd/bash", after, hint, { cwd: dir });
-    }
-
-    // 新的update，还不稳定，暂时隐藏
-    update2 = async (proxy = "http://127.0.0.1:7890") => {
-        proxy = this.cleanProxy(proxy);
         const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest";
-        await new updater(this, proxy, url).process();
-    }
-}
-
-class binFileUpdater {
-    constructor(controller) {
-        this.utils = controller.utils
-    }
-
-    run = async () => {
-        const binFile = await this.getBinFile();
-        if (binFile) {
-            if (binFile.delete && binFile.delete.length) {
-                for (const file of binFile.delete) {
-                    await this.utils.Package.Fs.promises.unlink(file);
-                }
-            }
-            if (binFile.remain) {
-                const filepath = this.utils.Package.Path.join(this.utils.Package.Path.dirname(binFile.remain), "updater.exe");
-                await this.utils.Package.Fs.promises.rename(binFile.remain, filepath);
-            }
-        }
-    }
-
-    getBinFile = async () => {
-        const fileList = []
-        const regexp = new RegExp(/updater(?<version>\d+\.\d+\.\d+)?\.exe/);
-        const dir = this.utils.joinPath("./plugin/updater");
-
-        const filenames = await this.utils.Package.Fs.promises.readdir(dir);
-        filenames.forEach(file => {
-            const result = file.match(regexp);
-            if (result) {
-                const path = this.utils.Package.Path.join(dir, file);
-                const version = result.groups.version || "";
-                fileList.push({ file, path, version });
-            }
-        })
-
-        // 异常情况：不等于两个的情况，保留修改时间最晚的（除非用户作妖，否则不会触发此逻辑，作最大程度兼容）
-        if (fileList.length !== 2) {
-            let maxMtime = 0;
-            let maxMtimePath = "";
-            const all = await Promise.all(fileList.map(async file => {
-                const stat = await this.utils.Package.Fs.promises.stat(file.path);
-                const mtimeMs = stat.mtimeMs;
-                if (maxMtime < mtimeMs) {
-                    maxMtime = mtimeMs;
-                    maxMtimePath = file.path;
-                }
-                return { path: file.path, mtimeMs }
-            }))
-            if (!maxMtimePath) return
-            const deleteFile = all.filter(file => file.path !== maxMtimePath).map(file => file.path);
-            return { delete: deleteFile, remain: maxMtimePath }
-        }
-
-        const [f0, f1] = fileList;
-        const compare = this.utils.compareVersion(f0.version, f1.version);
-        const [deleteFile, remainFile] = compare > 0 ? [f1.path, f0.path] : [f0.path, f1.path];
-        return { delete: [deleteFile], remain: remainFile }
+        return new updater(this, proxy, url);
     }
 }
 
 class updater {
-    constructor(plugin, proxyURL, latestReleaseUrl, timeout = 600 * 1000) {
+    constructor(plugin, proxyURL, latestReleaseUrl, timeout = 3 * 60 * 1000) {
         this.proxyUrl = proxyURL;
         this.latestReleaseUrl = latestReleaseUrl;
         this.timeout = timeout;
@@ -182,7 +85,7 @@ class updater {
         this.unzipDir = "";
         this.pluginDir = "./plugin";
         this.customPluginDir = "./plugin/custom/plugins";
-        this.versionFile = this.utils.joinPath("./plugin/updater/version.json");
+        this.versionFile = this.utils.joinPath("./plugin/bin/version.json");
         this.workDir = this.pkgPath.join(this.utils.tempFolder, "typora-plugin-updater");
         this.exclude = [
             "./plugin/global/user_styles",
@@ -198,14 +101,30 @@ class updater {
         this.currentVersionInfo = null;
     }
 
-    process = async () => {
+    run = async () => {
         this.prepare();
         await this.checkNeedUpdate();
         const buffer = await this.downloadLatestVersion();
         await this.unzip(buffer);
         await this.excludeFiles();
         await this.syncDir();
-        console.log(`updated! current plugin version: ${this.versionFile.tag_name}`);
+        console.log(`updated! current plugin version: ${this.latestVersionInfo.tag_name}`);
+    }
+
+    runWithState = () => {
+        let error = null;
+        let done = false;
+        setTimeout(async () => {
+            try {
+                await this.run();
+            } catch (e) {
+                error = e;
+                console.error(e);
+            } finally {
+                done = true;
+            }
+        })
+        return () => ({ done, error, info: this.latestVersionInfo })
     }
 
     prepare = () => {
@@ -216,7 +135,7 @@ class updater {
     checkNeedUpdate = async () => {
         console.log("[2/6] check if update is needed");
         const _getLatestVersion = async () => {
-            const resp = await this._fetch(this.latestReleaseUrl, this.timeout);
+            const resp = await this._fetch(this.latestReleaseUrl, this.proxyUrl, this.timeout);
             return resp.json()
         }
         const _getCurrentVersion = async () => {
@@ -239,7 +158,7 @@ class updater {
 
     downloadLatestVersion = async () => {
         console.log("[3/6] download latest version plugin");
-        const resp = await this._fetch(this.latestVersionInfo.zipball_url, this.timeout);
+        const resp = await this._fetch(this.latestVersionInfo.zipball_url, this.proxyUrl, this.timeout);
         return resp.buffer()
     }
 
@@ -297,9 +216,17 @@ class updater {
         await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
     }
 
-    _fetch = async (url, timeout = 60 * 1000) => {
-        const proxy = new this.pkgProxy.HttpsProxyAgent(this.proxyUrl);
-        return this.pkgNodeFetch.nodeFetch(url, { agent: proxy, signal: AbortSignal.timeout(timeout) })
+    _fetch = async (url, proxy, timeout = 60 * 1000) => {
+        let signal = undefined;
+        if (AbortSignal && AbortSignal.timeout) {
+            signal = AbortSignal.timeout(timeout);
+        } else if (AbortController) {
+            const controller = new AbortController();
+            setTimeout(() => controller.abort(), timeout);
+            signal = controller.signal; // polyfill
+        }
+        const agent = proxy ? new this.pkgProxy.HttpsProxyAgent(proxy) : undefined;
+        return this.pkgNodeFetch.nodeFetch(url, { agent, signal })
     }
 }
 
@@ -328,10 +255,12 @@ class ProxyGetter {
     })
 
     getWindowsProxy = () => this._getProxy(
-        `reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" | find /i "proxyserver"`,
+        `reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" | findstr /i "ProxyEnable proxyserver"`,
         stdout => {
-            const match = stdout.match(/ProxyServer\s+REG_SZ\s+(.*)/i);
-            return (match && match[1]) ? match[1] : null
+            const match = stdout.match(/ProxyEnable.+?0x(?<enable>\d)\r\n.+?ProxyServer\s+REG_SZ\s+(?<proxy>.*)/i)
+            return (match && match.groups && match.groups.enable === "1")
+                ? match.groups.proxy
+                : null
         }
     )
 

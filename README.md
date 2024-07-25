@@ -81,21 +81,30 @@
 
 ## 如何使用：方法一（自动）
 
-> 目前此方法仅限 Windows 平台。
+> 此方法支持 Windows、Linux 平台。
 
 1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并将其解压
 
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（正式版的路径为 `Typora/resources/window.html`，免费版的路径为 `Typora/resources/app/window.html`）
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（正式版为 `Typora/resources/window.html`，免费版为 `Typora/resources/app/window.html`）
 
 3. 打开文件夹 A，将解压后的 plugin 文件夹粘贴进该文件夹下（参考方法二的图片）
 
-4. 进入文件夹 `A/plugin/updater/`，双击运行 `updater.exe`。如果看到下图，说明安装成功
+4. 进入文件夹 `A/plugin/bin/`
 
-   ![installer](assets/installer.png)
+   - 如果你是 Windows 系统，双击运行 `install_windows_amd_x64.exe`，如果看到下图，说明安装成功
+   
+   - 如果你是 Linux 系统，以管理员运行 `install_linux.sh`，如果看到下图，说明安装成功
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
-> 每个插件皆有配置选项。开发者鼓励您修改配置，以符合自身需求。配置文件夹位于 [A/plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings)
+|        | Windows                                        | Linux                                      |
+| ------ | ---------------------------------------------- | ------------------------------------------ |
+| 步骤 4 | ![install_windows](assets/install_windows.png) | ![install_linux](assets/install_linux.png) |
+
+附加说明：
+
+- `install_windows.exe` 是提供给非技术用户用的。您也可以通过执行同目录下的 `install_windows.ps1` 安装插件。
+- 每个插件皆有配置选项。开发者鼓励您修改配置，以符合自身需求。配置文件夹位于 [A/plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings)
 
 
 
@@ -205,17 +214,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 ### 如何升级插件？
 
-- 方法一（全自动，仅限 Windows）：右键菜单 -> 常用插件 -> 二级插件 -> 升级插件
-
-- 方法二（半自动，仅限 Windows）：有些用户将 Typora 装在 C 盘或者 Typora 的安装路径包含 `Program Files` 目录，经常会因为权限问题导致升级失败。此时可以通过以管理员身份打开终端，执行下面命令升级：
-
-  ```bash
-  # 注意updater.exe改成你的路径
-  # proxy参数：你的代理URL。如果你所在地区能直连GitHub，可以删除此参数
-  D:/software/typora/resources/plugin/updater/updater.exe --action=update --proxy=http://127.0.0.1:7890
-  ```
-
-- 方法三（手动，支持 Windows、Linux）：[安装方法二](#如何使用：方法二（手动）) 重新走一遍。
+右键菜单 -> 常用插件 -> 二级插件 -> 升级插件
 
 
 
@@ -395,8 +394,6 @@ COMMANDS = [
 
 
 ### commander：命令行环境
-
-> 有些插件依赖于此插件，不建议禁用。
 
 功能：和 total commander 的命令行一样（快捷键也一样），一个快速执行命令的工具，并提供少量交互。
 

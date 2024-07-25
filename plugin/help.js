@@ -1,6 +1,6 @@
 class helpPlugin extends BasePlugin {
     beforeProcess = async () => {
-        const filepath = this.utils.joinPath("./plugin/updater/version.json");
+        const filepath = this.utils.joinPath("./plugin/bin/version.json");
         try {
             const versionMsg = await this.utils.Package.FsExtra.readJson(filepath);
             this.version = versionMsg.tag_name;

@@ -56,7 +56,6 @@ class preferencesPlugin extends BasePlugin {
         const infoMap = {
             blur: "此插件不兼容 Beta 版本的 Typora",
             export_enhance: "此插件不兼容 Beta 版本的 Typora",
-            commander: "二级插件「升级插件」依赖于此插件，不建议停用",
             auto_number: "此插件可能与用户使用的主题冲突，导致小范围的样式异常",
             preferences: "「启停插件」自身也是一个插件，停用则无法弹出此窗口",
             right_click_menu: "此插件是普通用户调用其他插件的入口",
@@ -69,7 +68,6 @@ class preferencesPlugin extends BasePlugin {
             redirectLocalRootUrl: "此插件需要手动修改配置后方可运行",
             autoTrailingWhiteSpace: "此插件面向特殊人群（如网站站长），不建议普通用户启用",
             article_uploader: "此插件面向特殊人群（如网站站长），且需要手动修改配置后方可运行",
-            pluginUpdater: "此插件目前仅限 Windows 系统",
         }
         const displayFunc = ([fixedName, plugin]) => {
             const info = infoMap[fixedName];
