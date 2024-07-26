@@ -310,7 +310,7 @@ config = {
 ############### wavedrom ###############
 [wavedrom]
 # 右键菜单中展示的名称
-name = "Wavedrom"
+name = "WaveDrom"
 # 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏

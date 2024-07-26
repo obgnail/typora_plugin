@@ -67,11 +67,11 @@
 | 57   | cipher                  | 加密文件                               |
 | 58   | ripgrep                 | 使用 ripgrep 搜索文件                  |
 | 59   | help                    | 用户帮助                               |
-| 60   | custom                  | 开放平台，用户自定义插件（高级）       |
-| 61   | hotkeyHub               | 快捷键注册中心（高级）                 |
-| 62   | quickButton             | 于右下角添加功能按钮（高级）           |
-| 63   | json_rpc                | 外部操纵 Typora（高级）                |
-| 64   | article_uploader        | 一键上传博客到支持的所有平台           |
+| 60   | article_uploader        | 一键上传博客到支持的所有平台           |
+| 61   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 62   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 63   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 64   | json_rpc                | 外部操纵 Typora（高级）                |
 | 65   | old_window_tab          | 标签页管理（已废弃）                   |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
@@ -989,7 +989,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 ## 致谢
 
 - Apache：[ECharts](https://echarts.apache.org/zh/index.html)
-- MIT：[markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
+- MIT：[markmap](https://markmap.js.org/) | [Chart.js](https://www.chartjs.org/) | [abcjs](https://github.com/paulrosen/abcjs) | [tui.calendar](https://github.com/nhn/tui.calendar) | [Marp](https://marp.app/) | [WaveDrom](https://wavedrom.com/) | [DataTables](https://github.com/DataTables/DataTables) | [markdownlint](https://github.com/DavidAnson/markdownlint)
 - no-licence：[typora-tabbar-plugin](https://github.com/gatziourasd/typora-tabbar-plugin) | [typora-side-by-side](https://github.com/gruvw/typora-side-by-side) | [md-padding](https://github.com/harttle/md-padding)
 
 
