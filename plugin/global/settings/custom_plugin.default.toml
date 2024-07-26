@@ -307,6 +307,52 @@ config = {
 """
 
 
+############### wavedrom ###############
+[wavedrom]
+# 右键菜单中展示的名称
+name = "Wavedrom"
+# 是否启用此二级插件
+enable = true
+# 是否在右键菜单中隐藏
+hide = false
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
+order = 1
+# 插件配置
+[wavedrom.config]
+# 代码块语言
+# 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
+LANGUAGE = "wavedrom"
+# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
+INTERACTIVE_MODE = true
+# 图表默认高度
+DEFAULT_FENCE_HEIGHT = "300px"
+# 图表背景颜色
+DEFAULT_FENCE_BACKGROUND_COLOR = "#fff"
+# 自动插入的模板
+TEMPLATE = """```wavedrom
+// 教程: https://wavedrom.com/tutorial.html
+// 代码块里的所有内容都会被eval，请注意安全问题
+// 可以使用如下注释设置图表宽高（否则使用默认）：
+// {height: "300px", width: ""}
+{
+    signal: [
+        { name: "pclk", wave: 'p.......' },
+        { name: "Pclk", wave: 'P.......' },
+        { name: "nclk", wave: 'n.......' },
+        { name: "Nclk", wave: 'N.......' },
+        { name: 'clk0', wave: 'phnlPHNL' },
+        {},
+        { name: 'clk1', wave: 'xhlhLHl.' },
+        { name: 'clk2', wave: 'hpHplnLn' },
+        { name: 'clk3', wave: 'nhNhplPl' },
+        { name: 'clk4', wave: 'xlh.L.Hx' },
+    ],
+    config : { "hscale" : 1.4 }
+}
+```
+"""
+
+
 ############### calendar ###############
 [calendar]
 # 右键菜单中展示的名称

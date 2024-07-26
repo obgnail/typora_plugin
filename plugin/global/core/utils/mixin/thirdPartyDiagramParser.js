@@ -11,7 +11,7 @@ class thirdPartyDiagramParser {
      * @param lang(string): language
      * @param mappingLang(string): 映射到哪个语言
      * @param destroyWhenUpdate(boolean): 更新前是否清空preview里的html
-     * @param interactiveMode(boolean): 交互模式下，只有ctrl+click才能展开代码块
+     * @param interactiveMode(boolean): 交互模式下，不会自动展开代码块
      * @param checkSelector(string): 检测当前fence下是否含有目标标签
      * @param wrapElement(string): 如果不含目标标签，需要创建
      * @param css({height, "background-color", ...other}): 控制fence的样式，要求必须要有高度和背景颜色。这里的obj最终会被执行为$div.css(obj)
@@ -58,7 +58,8 @@ class thirdPartyDiagramParser {
     getWrap = (parser, $pre) => {
         let $wrap = $pre.find(parser.checkSelector);
         if ($wrap.length === 0) {
-            $wrap = $(parser.wrapElement);
+            const wrap = (parser.wrapElement instanceof Function) ? parser.wrapElement($pre) : parser.wrapElement
+            $wrap = $(wrap);
         }
         $pre.find(".md-diagram-panel-preview").html($wrap);
         return $wrap
