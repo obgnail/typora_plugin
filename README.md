@@ -31,47 +31,48 @@
 | 21   | chart                   | 提供 chartjs 组件支持                  |
 | 22   | abc                     | 提供 abcjs 组件支持                    |
 | 23   | calendar                | 提供 tui.calendar 组件支持             |
-| 24   | marp                    | 提供 marp 组件支持                     |
-| 25   | callouts                | 提供 callouts 支持                     |
-| 26   | text_stylize            | 文字风格化                             |
-| 27   | read_only               | 只读模式                               |
-| 28   | blur                    | 模糊模式                               |
-| 29   | kanban                  | 看板                                   |
-| 30   | timeline                | 时间线                                 |
-| 31   | chat                    | 聊天                                   |
-| 32   | file_counter            | 显示目录下的文件数                     |
-| 33   | outline                 | 以表格、图片、代码块形式的大纲         |
-| 34   | auto_number             | 章节、表格、图片、代码块等自动编号     |
-| 35   | imageReviewer           | 图片查看器                             |
-| 36   | chineseSymbolAutoPairer | 中文符号自动补全                       |
-| 37   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
-| 38   | resize_table            | 调整表格行高列宽                       |
-| 39   | resize_image            | 调整图片显示大小                       |
-| 40   | export_enhance          | 导出 html 时避免图片丢失               |
-| 41   | go_top                  | 一键到文章顶部、底部                   |
-| 42   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
-| 43   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
-| 44   | markdownLint            | markdown 格式规范检测                  |
-| 45   | darkMode                | 夜间模式                               |
-| 46   | noImageMode             | 无图模式                               |
-| 47   | pluginUpdater           | 一键升级插件                           |
-| 48   | extractRangeToNewFile   | 提取选区文字到新文件                   |
-| 49   | fullPathCopy            | 复制标题路径                           |
-| 50   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
-| 51   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
-| 52   | blockSideBySide         | 并列显示活动块                         |
-| 53   | scrollBookmarker        | 书签管理器                             |
-| 54   | openInTotalCommander    | 在 total commander 打开                |
-| 55   | bingSpeech              | 必应朗读                               |
-| 56   | cipher                  | 加密文件                               |
-| 57   | ripgrep                 | 使用 ripgrep 搜索文件                  |
-| 58   | help                    | 用户帮助                               |
-| 59   | custom                  | 开放平台，用户自定义插件（高级）       |
-| 60   | hotkeyHub               | 快捷键注册中心（高级）                 |
-| 61   | quickButton             | 于右下角添加功能按钮（高级）           |
-| 62   | json_rpc                | 外部操纵 Typora（高级）                |
-| 63   | article_uploader        | 一键上传博客到支持的所有平台           |
-| 64   | old_window_tab          | 标签页管理（已废弃）                   |
+| 24   | wavedrom                | 提供 wavedrom 组件支持                 |
+| 25   | marp                    | 提供 marp 组件支持                     |
+| 26   | callouts                | 提供 callouts 支持                     |
+| 27   | text_stylize            | 文字风格化                             |
+| 28   | read_only               | 只读模式                               |
+| 29   | blur                    | 模糊模式                               |
+| 30   | kanban                  | 看板                                   |
+| 31   | timeline                | 时间线                                 |
+| 32   | chat                    | 聊天                                   |
+| 33   | file_counter            | 显示目录下的文件数                     |
+| 34   | outline                 | 以表格、图片、代码块形式的大纲         |
+| 35   | auto_number             | 章节、表格、图片、代码块等自动编号     |
+| 36   | imageReviewer           | 图片查看器                             |
+| 37   | chineseSymbolAutoPairer | 中文符号自动补全                       |
+| 38   | datatables              | 表格增强（搜索、过滤、分页、排序等）   |
+| 39   | resize_table            | 调整表格行高列宽                       |
+| 40   | resize_image            | 调整图片显示大小                       |
+| 41   | export_enhance          | 导出 html 时避免图片丢失               |
+| 42   | go_top                  | 一键到文章顶部、底部                   |
+| 43   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 |
+| 44   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       |
+| 45   | markdownLint            | markdown 格式规范检测                  |
+| 46   | darkMode                | 夜间模式                               |
+| 47   | noImageMode             | 无图模式                               |
+| 48   | pluginUpdater           | 一键升级插件                           |
+| 49   | extractRangeToNewFile   | 提取选区文字到新文件                   |
+| 50   | fullPathCopy            | 复制标题路径                           |
+| 51   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     |
+| 52   | redirectLocalRootUrl    | 重定向本地资源根目录                   |
+| 53   | blockSideBySide         | 并列显示活动块                         |
+| 54   | scrollBookmarker        | 书签管理器                             |
+| 55   | openInTotalCommander    | 在 total commander 打开                |
+| 56   | bingSpeech              | 必应朗读                               |
+| 57   | cipher                  | 加密文件                               |
+| 58   | ripgrep                 | 使用 ripgrep 搜索文件                  |
+| 59   | help                    | 用户帮助                               |
+| 60   | custom                  | 开放平台，用户自定义插件（高级）       |
+| 61   | hotkeyHub               | 快捷键注册中心（高级）                 |
+| 62   | quickButton             | 于右下角添加功能按钮（高级）           |
+| 63   | json_rpc                | 外部操纵 Typora（高级）                |
+| 64   | article_uploader        | 一键上传博客到支持的所有平台           |
+| 65   | old_window_tab          | 标签页管理（已废弃）                   |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -544,7 +545,7 @@ LIST = [
 
 ### echarts：提供 echarts 支持
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> 插入 echarts
+使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Echarts
 
 ![echats](assets/echarts.png)
 
@@ -552,7 +553,7 @@ LIST = [
 
 ### chart：提供 chartjs 支持
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> 插入 chart
+使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Chart
 
 ![chart](./assets/chart.png)
 
@@ -560,15 +561,25 @@ LIST = [
 
 ### abc：提供 abc 组件支持
 
+使用方式：右键菜单 -> 常用插件 -> 二级插件 -> ABC
+
 ![abcjs](./assets/abcjs.png)
 
 
 
 ### calendar：  提供 tui.calendar 组件支持
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> 插入 calendar
+使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Calendar
 
 ![calendar](./assets/calendar.png)
+
+
+
+### wavedrom：提供 wavedrom 组件支持
+
+使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Wavedrom
+
+![wavedrom](./assets/wavedrom.png)
 
 
 
@@ -576,13 +587,13 @@ LIST = [
 
 功能：使用 markdown 做 PPT。
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> 插入 marp
+使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Marp
 
 
 
 ### callouts：  提供 callouts 支持
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> 插入 callouts
+使用方式：右键菜单 -> 常用插件 -> 二级插件 -> Callouts
 
 ![callouts](./assets/callouts.png)
 
