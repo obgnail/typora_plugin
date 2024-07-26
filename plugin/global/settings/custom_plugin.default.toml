@@ -324,6 +324,8 @@ order = 1
 LANGUAGE = "wavedrom"
 # 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
 INTERACTIVE_MODE = true
+# 是否启用安全模式（处于安全模式下，无法获取外部数据源）
+SAFE_MODE = true
 # 图表默认高度
 DEFAULT_FENCE_HEIGHT = "300px"
 # 图表背景颜色
