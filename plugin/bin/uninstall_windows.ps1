@@ -20,8 +20,8 @@ ____________________________________________________________________
 ____________________________________________________________________
 "@
 
-function finish {[CmdletBinding()]param ($msg) Write-Host $msg; CMD /c PAUSE; Exit}
-function panic {[CmdletBinding()]param ($msg) Write-Error $msg; CMD /c PAUSE; Exit}
+function finish {[CmdletBinding()]param ($msg) Write-Host $msg; PAUSE; Exit}
+function panic {[CmdletBinding()]param ($msg) Write-Error $msg; PAUSE; Exit}
 
 Write-Host $banner
 Write-Host ""
