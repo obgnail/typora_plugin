@@ -36,9 +36,10 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
 
     manualUpdate = async proxy => {
         this.utils.notification.show("自动升级中，请稍等");
-        const updater = await this.getUpdater(proxy);
+        const timeout = 3 * 60 * 1000;
+        const updater = await this.getUpdater(proxy, timeout);
         const getState = updater.runWithState();
-        await this.utils.progressBar.fake({ timeout: 3 * 60 * 1000, isDone: () => getState()["done"] });
+        await this.utils.progressBar.fake({ timeout, isDone: () => getState()["done"] });
         let { done, result, info } = getState();
         if (!done || !result) {
             result = new Error("timeout!");
@@ -55,13 +56,16 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
             title = "更新失败";
             callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
             components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新" }, { type: "span", label: `报错信息：${result.stack}` }];
+        } else {
+            title = "未知错误";
+            components = [{ type: "span", label: "更新失败，发生未知错误，请向开发者反馈" }];
         }
         setTimeout(() => this.utils.dialog.modal({ title, components, width: "600px" }, callback), 50);
     }
 
     getProxy = async () => (this.config.proxy || (await new ProxyGetter(this).getProxy()) || "").trim()
 
-    getUpdater = async proxy => {
+    getUpdater = async (proxy, timeout) => {
         if (proxy === undefined) {
             proxy = await this.getProxy();
         }
@@ -69,7 +73,7 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
             proxy = "http://" + proxy;
         }
         const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest";
-        return new updater(this, proxy, url);
+        return new updater(this, proxy, url, timeout);
     }
 }
 
