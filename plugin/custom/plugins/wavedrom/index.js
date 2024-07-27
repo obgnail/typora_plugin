@@ -23,8 +23,9 @@
  */
 class wavedromPlugin extends BaseCustomPlugin {
     init = () => {
-        this.prefix = "WaveDrom_Display_"
         this.wavedromPkg = null;
+        this.prefix = "WaveDrom_Display_";
+        this.evalFunc = this.config.SAFE_MODE ? this._safeEval : this._dangerousEval
     }
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
@@ -58,7 +59,7 @@ class wavedromPlugin extends BaseCustomPlugin {
     create = ($wrap, content) => {
         const id = $wrap.attr("id");
         const index = parseInt(id.slice(this.prefix.length));
-        const waveJson = eval('(' + content + ')');
+        const waveJson = this.evalFunc(content);
         const notFirstSignal = false;
         this.wavedromPkg.renderWaveForm(index, waveJson, this.prefix, notFirstSignal);
     }
@@ -69,6 +70,9 @@ class wavedromPlugin extends BaseCustomPlugin {
             window.WaveSkin = this.wavedromPkg.waveSkin;  // renderWaveForm() will use window.WaveSkin
         }
     }
+
+    _safeEval = content => new Function(`return (${content})`)();
+    _dangerousEval = content => eval(`(${content})`);
 }
 
 module.exports = {
