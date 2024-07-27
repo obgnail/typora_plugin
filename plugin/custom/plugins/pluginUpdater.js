@@ -39,17 +39,22 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         const updater = await this.getUpdater(proxy);
         const getState = updater.runWithState();
         await this.utils.progressBar.fake({ timeout: 3 * 60 * 1000, isDone: () => getState()["done"] });
-        let { done, error, info } = getState();
-        if (!done) {
-            error = new Error("timeout!");
+        let { done, result, info } = getState();
+        if (!done || !result) {
+            result = new Error("timeout!");
         }
-        let title = "更新成功，请重启 Typora";
-        let callback = null;
-        let components = [{ type: "textarea", label: "版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
-        if (error) {
+
+        let title, callback, components;
+        if (result === "UPDATED") {
+            title = "更新成功，请重启 Typora";
+            components = [{ type: "textarea", label: "当前版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
+        } else if (result === "NO_NEED") {
+            title = "已是最新版，无需更新";
+            components = [{ type: "textarea", label: "当前版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
+        } else if (result instanceof Error) {
             title = "更新失败";
             callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
-            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新" }, { type: "span", label: `报错信息：${error.stack}` }];
+            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新" }, { type: "span", label: `报错信息：${result.stack}` }];
         }
         setTimeout(() => this.utils.dialog.modal({ title, components, width: "600px" }, callback), 50);
     }
@@ -104,28 +109,29 @@ class updater {
     run = async () => {
         this.prepare();
         const need = await this.checkNeedUpdate();
-        if (!need) return;
+        if (!need) return "NO_NEED";
         const buffer = await this.downloadLatestVersion();
         await this.unzip(buffer);
         await this.excludeFiles();
         await this.syncDir();
         console.log(`updated! current plugin version: ${this.latestVersionInfo.tag_name}`);
+        return "UPDATED";
     }
 
     runWithState = () => {
-        let error = null;
+        let result; // NO_NEED/UPDATED/error
         let done = false;
         setTimeout(async () => {
             try {
-                await this.run();
+                result = await this.run();
             } catch (e) {
-                error = e;
+                result = e;
                 console.error(e);
             } finally {
                 done = true;
             }
         })
-        return () => ({ done, error, info: this.latestVersionInfo })
+        return () => ({ done, result, info: this.latestVersionInfo })
     }
 
     prepare = () => {
