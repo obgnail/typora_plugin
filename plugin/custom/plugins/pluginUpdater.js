@@ -39,10 +39,11 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         const timeout = 3 * 60 * 1000;
         const updater = await this.getUpdater(proxy, timeout);
         const getState = updater.runWithState();
-        await this.utils.progressBar.fake({ timeout, isDone: () => getState()["done"] });
+        const isDone = () => getState()["done"];
+        const notTimeout = await this.utils.progressBar.fake({ timeout, isDone });
         let { done, result, info } = getState();
-        if (!done || !result) {
-            result = new Error("timeout!");
+        if (!notTimeout || !done || !result) {
+            result = new Error("timeout");
         }
 
         let title, callback, components;
@@ -57,8 +58,8 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
             callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
             components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新" }, { type: "span", label: `报错信息：${result.stack}` }];
         } else {
-            title = "未知错误";
-            components = [{ type: "span", label: "更新失败，发生未知错误，请向开发者反馈" }];
+            title = "更新失败";
+            components = [{ type: "span", label: "发生未知错误，请向开发者反馈" }];
         }
         setTimeout(() => this.utils.dialog.modal({ title, components, width: "600px" }, callback), 50);
     }
