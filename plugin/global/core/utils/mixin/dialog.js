@@ -144,9 +144,9 @@ class dialog {
     }
 
     /**
-     * @param modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
-     * @param callback(components) => {}: 当用户点击【确认】后的回调函数
-     * @param cancelCallback(components) => {}: 当用户点击【取消】后的回调函数
+     * @param {Object} modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
+     * @param {function(components): null} callback: 当用户点击【确认】后的回调函数
+     * @param {function(components): null} cancelCallback: 当用户点击【取消】后的回调函数
      */
     modal = (modal, callback, cancelCallback) => {
         if (!modal) return;

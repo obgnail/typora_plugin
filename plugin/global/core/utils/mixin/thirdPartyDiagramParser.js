@@ -8,18 +8,18 @@ class thirdPartyDiagramParser {
 
     /**
      * f**k，js不支持interface，只能将接口函数作为参数传入，整整12个参数，一坨狗屎
-     * @param lang(string): language
-     * @param mappingLang(string): 映射到哪个语言
-     * @param destroyWhenUpdate(boolean): 更新前是否清空preview里的html
-     * @param interactiveMode(boolean): 交互模式下，不会自动展开代码块
-     * @param checkSelector(string): 检测当前fence下是否含有目标标签
-     * @param wrapElement(string): 如果不含目标标签，需要创建
-     * @param css({height, "background-color", ...other}): 控制fence的样式，要求必须要有高度和背景颜色。这里的obj最终会被执行为$div.css(obj)
-     * @param lazyLoadFunc() => null: 加载第三方资源
-     * @param createFunc($Element, string) => Object: 传入目标标签和fence的内容，生成图形实例
-     * @param destroyFunc(Object) => null: 传入图形实例，destroy图形实例
-     * @param beforeExport(element, instance) => null: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
-     * @param extraStyleGetter() => string: 用于导出时，新增css
+     * @param {string} lang: 语言
+     * @param {string} mappingLang: 映射到哪个语言
+     * @param {boolean} destroyWhenUpdate: 更新前是否清空preview里的html
+     * @param {boolean} interactiveMode: 交互模式下，不会自动展开代码块
+     * @param {string} checkSelector: 检测当前fence下是否含有目标标签
+     * @param {string|function($pre):string} wrapElement: 如果不含目标标签，需要创建
+     * @param {{height, "background-color", ...other}} css: 控制fence的样式，要求必须要有高度和背景颜色。这里的obj最终会被执行为$div.css(obj)
+     * @param {function(): Promise<null>} lazyLoadFunc: 加载第三方资源
+     * @param {function($Element, string): instance} createFunc: 传入目标标签和fence的内容，生成图形实例
+     * @param {function(Object): null} destroyFunc: 传入图形实例，destroy图形实例
+     * @param {function(Element, instance): null} beforeExport: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
+     * @param {function(): string} extraStyleGetter 用于导出时，新增css
      */
     register = ({ lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter }) => {
         const p = { checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {} };
