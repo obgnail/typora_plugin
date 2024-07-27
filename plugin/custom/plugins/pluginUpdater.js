@@ -103,7 +103,8 @@ class updater {
 
     run = async () => {
         this.prepare();
-        await this.checkNeedUpdate();
+        const need = await this.checkNeedUpdate();
+        if (!need) return;
         const buffer = await this.downloadLatestVersion();
         await this.unzip(buffer);
         await this.excludeFiles();
