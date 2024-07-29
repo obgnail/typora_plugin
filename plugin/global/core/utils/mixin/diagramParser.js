@@ -8,14 +8,14 @@ class diagramParser {
     }
 
     /**
-     * @param lang(string): language
-     * @param mappingLang(string): 映射到哪个语言
-     * @param destroyWhenUpdate(boolean): 更新前是否清空preview里的html
-     * @param async renderFunc(cid, content, $pre) => null: 渲染函数，根据内容渲染所需的图像. 1)cid: 当前代码块的cid 2)content: 代码块的内容 3) $pre: 代码块的jquery element
-     * @param cancelFunc(cid) => null: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
-     * @param destroyAllFunc() => null: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
-     * @param extraStyleGetter() => string: 用于导出时，新增css
-     * @param interactiveMode(boolean): 交互模式下，不会自动展开代码块
+     * @param {string} lang: language
+     * @param {string} mappingLang: 映射到哪个语言
+     * @param {boolean} destroyWhenUpdate: 更新前是否清空preview里的html
+     * @param {function(cid, content, $pre): Promise<null>} renderFunc: 渲染函数，根据内容渲染所需的图像. 1)cid: 当前代码块的cid 2)content: 代码块的内容 3) $pre: 代码块的jquery element
+     * @param {function(cid): null} cancelFunc: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
+     * @param {function(): null} destroyAllFunc: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
+     * @param {function(): string} extraStyleGetter: 用于导出时，新增css
+     * @param {boolean} interactiveMode: 交互模式下，不会自动展开代码块
      */
     register = ({ lang, mappingLang, destroyWhenUpdate = false, renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true }) => {
         lang = lang.toLowerCase();

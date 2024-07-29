@@ -5,11 +5,11 @@ class stateRecorder {
     }
 
     /**
-     * @param name(string): 取个名字
-     * @param selector(string): 通过选择器找到要你想记录状态的元素们
-     * @param stateGetter(Element) => {...}: 记录目标元素的状态。Element就是selector找到的元素，返回你想记录的标签的状态，返回值可以是任何类型
-     * @param stateRestorer(Element, state) => {}: 为元素恢复状态。state就是stateGetter的返回值
-     * @param finalFunc() => {}: 最后执行的函数
+     * @param {string} name: 取个名字
+     * @param {string} selector: 通过选择器找到要你想记录状态的元素们
+     * @param {function(Element): Object} stateGetter: 记录目标元素的状态。Element就是selector找到的元素，返回你想记录的标签的状态，返回值可以是任何类型
+     * @param {function(Element, state): Object} stateRestorer: 为元素恢复状态。state就是stateGetter的返回值
+     * @param {function(): Object} finalFunc: 最后执行的函数
      */
     register = (name, selector, stateGetter, stateRestorer, finalFunc) => {
         const obj = { selector, stateGetter, stateRestorer, finalFunc, collections: new Map() };

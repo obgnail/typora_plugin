@@ -24,7 +24,7 @@ class hotkeyHub {
 
     /**
      * 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
-     * @param hotkeyList: [ { hotkey: "ctrl+shift+c", callback: () => console.log("ctrl+shift+c pressed") }, ]
+     * @param {[{string, function}]} hotkeyList: [ { hotkey: "ctrl+shift+c", callback: () => console.log("ctrl+shift+c pressed") }, ]
      */
     register = hotkeyList => {
         if (!hotkeyList) return;
@@ -38,7 +38,7 @@ class hotkeyHub {
     }
 
     /**
-     * @param hotkeyString(string): "ctrl+shift+c"
+     * @param {string} hotkeyString: "ctrl+shift+c"
      */
     unregister = hotkeyString => this.map.delete(this.normalize(hotkeyString))
 

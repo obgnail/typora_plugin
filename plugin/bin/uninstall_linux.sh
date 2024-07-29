@@ -63,6 +63,6 @@ rm -f "$windowHTMLBakPath"
 echo "[8/8] update window.html"
 escapedPluginScript=$(escape "$pluginScript")
 replacement=""
-newContent=$(echo "$content" | sed "s|$escapedPluginScript|$replacement|")
+newContent=$(echo -n "$content" | sed "s|$escapedPluginScript|$replacement|")
 echo "$newContent" >"$windowHTMLPath"
 echo "plugin uninstall successfully"

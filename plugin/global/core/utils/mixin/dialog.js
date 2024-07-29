@@ -17,8 +17,8 @@ class dialog {
     `
 
     reset = () => {
-        this.pluginModal = null;
-        this.callback = null;
+        this.modalOption = null;
+        this.submitCallback = null;
         this.cancelCallback = null;
     }
 
@@ -33,20 +33,20 @@ class dialog {
             cancel: document.querySelector("#plugin-custom-modal button.plugin-modal-cancel"),
         }
         this.entities.cancel.addEventListener("click", () => this.onButtonClick(this.cancelCallback))
-        this.entities.submit.addEventListener("click", () => this.onButtonClick(this.callback))
+        this.entities.submit.addEventListener("click", () => this.onButtonClick(this.submitCallback))
     }
 
-    onButtonClick = async callback => {
+    onButtonClick = async cb => {
         this.entities.body.querySelectorAll(".form-group[component-id]").forEach(el => {
             const id = el.getAttribute("component-id");
-            const c = this.pluginModal.components.find(c => c.id === id);
+            const c = this.modalOption.components.find(c => c.id === id);
             if (c) {
                 c.submit = this.getWidgetValue(c.type, el);
             }
         })
         this.entities.modal.close();
-        if (callback) {
-            await callback(this.pluginModal.components);
+        if (cb) {
+            await cb(this.modalOption.components);
         }
         this.reset();
         this.entities.body.innerHTML = "";
@@ -144,15 +144,15 @@ class dialog {
     }
 
     /**
-     * @param modal: {title: "", components: [{label: "...", type: "input", value: "...", placeholder: "..."}]}
-     * @param callback(components) => {}: 当用户点击【确认】后的回调函数
-     * @param cancelCallback(components) => {}: 当用户点击【取消】后的回调函数
+     * @param {{title, width, height, onload, components: [{label, type, value, ...}]}} modal: 组件配置
+     * @param {null | function(components): null} submitCallback: 当用户点击【确认】后的回调函数
+     * @param {null | function(components): null} cancelCallback: 当用户点击【取消】后的回调函数
      */
-    modal = (modal, callback, cancelCallback) => {
+    modal = (modal, submitCallback, cancelCallback) => {
         if (!modal) return;
 
-        this.pluginModal = modal;
-        this.callback = callback;
+        this.modalOption = modal;
+        this.submitCallback = submitCallback;
         this.cancelCallback = cancelCallback;
 
         const { title, width = "", height = "", components, onload } = modal;
@@ -161,8 +161,7 @@ class dialog {
         this.entities.modal.style.setProperty("--plugin-custom-modal-width", width);
         this.entities.body.style.setProperty("--plugin-custom-modal-body-height", height);
         components.forEach(component => component.id = this.utils.randomString());
-        const widgetList = components.map(this.newWidget);
-        this.entities.body.innerHTML = `<form role="form">${widgetList.join("")}</form>`;
+        this.entities.body.innerHTML = `<form role="form">${components.map(this.newWidget).join("")}</form>`;
         this.attachEvent(modal);
         this.entities.modal.showModal();
         onload && onload(this.entities.modal);
