@@ -67,6 +67,6 @@ echo "[9/9] update window.html"
 escapedFrameScript=$(escape "$frameScript")
 escapedPluginScript=$(escape "$pluginScript")
 replacement="$escapedFrameScript$escapedPluginScript"
-newContent=$(echo "$content" | sed "s|$escapedFrameScript|$replacement|")
+newContent=$(echo -n "$content" | sed "s|$escapedFrameScript|$replacement|")
 echo "$newContent" >"$windowHTMLPath"
 echo "plugin install successfully"
