@@ -527,7 +527,7 @@ class utils {
         req.end();
     });
 
-    static fetch = async (url, { proxy, timeout = 3 * 60 * 1000 }) => {
+    static fetch = async (url, { proxy, timeout = 3 * 60 * 1000, ...args }) => {
         let signal, agent;
         if (timeout) {
             if (AbortSignal && AbortSignal.timeout) {
@@ -543,7 +543,7 @@ class utils {
             agent = new proxyAgent.HttpsProxyAgent(proxy);
         }
         const nodeFetch = require("./common/node-fetch/node-fetch");
-        return nodeFetch.nodeFetch(url, { agent, signal })
+        return nodeFetch.nodeFetch(url, { agent, signal, ...args })
     }
 
     static splitFrontMatter = content => {
