@@ -480,6 +480,22 @@ class utils {
     static readToml = async filepath => TOML.parse(await FS.promises.readFile(filepath, "utf-8"))
     static stringifyToml = obj => TOML.stringify(obj)
 
+    static unzip = async (buffer, workDir) => {
+        const output = [];
+        const jsZip = require("./common/jszip/jszip.min.js");
+        const zipData = await jsZip.loadAsync(buffer);
+        for (const [name, file] of Object.entries(zipData.files)) {
+            const dest = PATH.join(workDir, name);
+            if (file.dir) {
+                await FS_EXTRA.ensureDir(dest);
+            } else {
+                const content = await file.async("nodebuffer");
+                await FS.promises.writeFile(dest, content);
+            }
+            output.push(dest);
+        }
+        return output
+    }
 
     ////////////////////////////// 业务操作 //////////////////////////////
     static exitTypora = () => JSBridge.invoke("window.close");
@@ -510,6 +526,25 @@ class utils {
         }
         req.end();
     });
+
+    static fetch = async (url, { proxy, timeout = 3 * 60 * 1000 }) => {
+        let signal, agent;
+        if (timeout) {
+            if (AbortSignal && AbortSignal.timeout) {
+                signal = AbortSignal.timeout(timeout);
+            } else if (AbortController) {
+                const controller = new AbortController();
+                setTimeout(() => controller.abort(), timeout);
+                signal = controller.signal; // polyfill
+            }
+        }
+        if (proxy) {
+            const proxyAgent = require("./common/node-fetch/https-proxy-agent");
+            agent = new proxyAgent.HttpsProxyAgent(proxy);
+        }
+        const nodeFetch = require("./common/node-fetch/node-fetch");
+        return nodeFetch.nodeFetch(url, { agent, signal })
+    }
 
     static splitFrontMatter = content => {
         const result = { yamlObject: null, remainContent: content, yamlLineCount: 0 };

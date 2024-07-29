@@ -88,9 +88,6 @@ class updater {
         this.pkgFsExtra = this.utils.Package.FsExtra;
         this.pkgFs = this.utils.Package.Fs.promises;
         this.pkgPath = this.utils.Package.Path;
-        this.pkgNodeFetch = require("../../global/core/utils/common/node-fetch/node-fetch.js");
-        this.pkgProxy = require("../../global/core/utils/common/node-fetch/https-proxy-agent");
-        this.pkgJszip = require("../../global/core/utils/common/jszip/jszip.min.js");
 
         this.unzipDir = "";
         this.pluginDir = "./plugin";
@@ -147,7 +144,7 @@ class updater {
     checkNeedUpdate = async () => {
         console.log("[2/6] check if update is needed");
         const _getLatestVersion = async () => {
-            const resp = await this._fetch(this.latestReleaseUrl, this.proxyUrl, this.timeout);
+            const resp = await this.utils.fetch(this.latestReleaseUrl, { proxy: this.proxyUrl, timeout: this.timeout });
             return resp.json()
         }
         const _getCurrentVersion = async () => {
@@ -170,24 +167,14 @@ class updater {
 
     downloadLatestVersion = async () => {
         console.log("[3/6] download latest version plugin");
-        const resp = await this._fetch(this.latestVersionInfo.zipball_url, this.proxyUrl, this.timeout);
+        const resp = await this.utils.fetch(this.latestVersionInfo.zipball_url, { proxy: this.proxyUrl, timeout: this.timeout });
         return resp.buffer()
     }
 
     unzip = async buffer => {
-        console.log("[4/6] unzip files")
-        const zipData = await this.pkgJszip.loadAsync(buffer);
-        const zipFiles = zipData.files;
-        this.unzipDir = this.pkgPath.join(this.workDir, Object.keys(zipFiles)[0]);
-        for (const [name, file] of Object.entries(zipFiles)) {
-            const dest = this.pkgPath.join(this.workDir, name);
-            if (file.dir) {
-                await this.pkgFsExtra.ensureDir(dest);
-            } else {
-                const content = await file.async("nodebuffer");
-                await this.pkgFs.writeFile(dest, content);
-            }
-        }
+        console.log("[4/6] unzip files");
+        const zipFiles = await this.utils.unzip(buffer, this.workDir);
+        this.unzipDir = zipFiles[0];
     }
 
     excludeFiles = async () => {
@@ -226,19 +213,6 @@ class updater {
         await this.pkgFsExtra.copy(src, dst);
         await this.pkgFsExtra.emptyDir(this.workDir);
         await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
-    }
-
-    _fetch = async (url, proxy, timeout = 60 * 1000) => {
-        let signal = undefined;
-        if (AbortSignal && AbortSignal.timeout) {
-            signal = AbortSignal.timeout(timeout);
-        } else if (AbortController) {
-            const controller = new AbortController();
-            setTimeout(() => controller.abort(), timeout);
-            signal = controller.signal; // polyfill
-        }
-        const agent = proxy ? new this.pkgProxy.HttpsProxyAgent(proxy) : undefined;
-        return this.pkgNodeFetch.nodeFetch(url, { agent, signal })
     }
 }
 
