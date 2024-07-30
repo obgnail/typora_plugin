@@ -63,15 +63,15 @@ class helpPlugin extends BasePlugin {
     about = () => {
         const style = "background: linear-gradient(to right, rgba(79, 192, 141, 0.5), rgba(79, 192, 141, 0.5)) no-repeat bottom; background-size: 100% 40%; padding: 2px;"
         const share = {
-            Weibo: "https://service.weibo.com/share/share.php?language=zh_cn&searchPic=true&title=",
-            Twitter: "http://twitter.com/intent/tweet?text=",
             Telegram: "https://telegram.me/share/url?url=https://github.com/obgnail/typora_plugin&title=",
+            Twitter: "http://twitter.com/intent/tweet?text=",
+            Weibo: "https://service.weibo.com/share/share.php?language=zh_cn&searchPic=true&title=",
         }
         const p = [
-            `<span style="${style}">醉后不知天在水，满船清梦压星河。</span>`,
+            `<span style="${style}">醉后不知天在水，满船清梦压星河</span>`,
             "感谢您使用 Typora Plugin。我在有限的时间里设计了这款插件，虽然它并不那么美好，但正努力前行。",
-            "本项目遵循 MIT 协议，请自由地享受和参与开源。如果您有任何反馈或建议，可以在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。",
-            `欢迎通过 ${Object.keys(share).map(site => `<a class="plu-share" data-site="${site}">${site}</a>`).join("、")} 推荐给你志同道合的朋友使用。`
+            "本项目遵循 MIT 协议，请自由地享受和参与开源。如果您有任何反馈或建议，请在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。若本项目对您有用，欢迎 ⭐",
+            `欢迎通过 ${Object.keys(share).map(site => `<a class="plu-share" data-site="${site}">${site}</a>`).join("、")} 推荐给志同道合的朋友使用。`
         ]
         const label = p.map(e => `<p style="font-size: 1.1em">${e}</p>`).join("");
         const onclick = ev => {

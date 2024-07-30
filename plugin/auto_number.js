@@ -4,8 +4,8 @@ class autoNumberPlugin extends BasePlugin {
 
         this.base_css = `
         #write { counter-reset: write-h2 Figures Tables Fences; }
-        #write > h1 { counter-reset: write-h2 Figures Tables Fences; }
-        #write > h2 { counter-reset: write-h3 Figures Tables Fences; }
+        #write > h1 { counter-reset: write-h2; }
+        #write > h2 { counter-reset: write-h3; }
         #write > h3 { counter-reset: write-h4; }
         #write > h4 { counter-reset: write-h5; }
         #write > h5 { counter-reset: write-h6; }
@@ -138,7 +138,7 @@ class autoNumberPlugin extends BasePlugin {
 
         const image_content = `
             counter-increment: Figures;
-            content: "${this.config.NAMES.image} " counter(write-h2) "-" counter(Figures);
+            content: "${this.config.NAMES.image} " counter(Figures) " " attr(data-alt);
             font-family: ${this.config.FONT_FAMILY};
             display: block;
             text-align: ${this.config.ALIGN};
@@ -150,7 +150,7 @@ class autoNumberPlugin extends BasePlugin {
         this.table_css = `
         #write .table-figure::after {
             counter-increment: Tables;
-            content: "${this.config.NAMES.table} " counter(write-h2) "-" counter(Tables);
+            content: "${this.config.NAMES.table} " counter(Tables);
             font-family: ${this.config.FONT_FAMILY};
             display: block;
             text-align: ${this.config.ALIGN};
@@ -163,7 +163,7 @@ class autoNumberPlugin extends BasePlugin {
         }
         #write .md-fences::after {
             counter-increment: Fences;
-            content: "${this.config.NAMES.fence} " counter(write-h2) "-" counter(Fences);
+            content: "${this.config.NAMES.fence} " counter(Fences);
             position: absolute;
             width: 100%;
             text-align: ${this.config.ALIGN};
@@ -194,6 +194,14 @@ class autoNumberPlugin extends BasePlugin {
     process = () => {
         if (this.config.ENABLE_WHEN_EXPORT) {
             new exportHelper(this).process();
+        }
+        if (this.config.ENABLE_IMAGE && this.config.SHOW_IMAGE_NAME) {
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
+                const images = this.utils.entities.querySelectorAllInWrite(".md-image:not([data-alt]) > img");
+                for (const image of images) {
+                    image.parentElement.dataset.alt = image.getAttribute("alt");
+                }
+            })
         }
     }
 
