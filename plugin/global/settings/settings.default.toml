@@ -617,6 +617,9 @@ ENABLE_IMAGE = true
 ENABLE_FENCE = true
 # 导出时运用样式
 ENABLE_WHEN_EXPORT = true
+# 展示图片的名称（若ENABLE_IMAGE为false，此选项失效）
+# 注意：不建议开启此选项，会消耗较多资源
+SHOW_IMAGE_NAME = false
 # 编号的下标使用的字体
 FONT_FAMILY = "monospace"
 # 编号的下标的位置：left/right/center

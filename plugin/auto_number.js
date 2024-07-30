@@ -138,7 +138,7 @@ class autoNumberPlugin extends BasePlugin {
 
         const image_content = `
             counter-increment: Figures;
-            content: "${this.config.NAMES.image} " counter(Figures);
+            content: "${this.config.NAMES.image} " counter(Figures) " " attr(data-alt);
             font-family: ${this.config.FONT_FAMILY};
             display: block;
             text-align: ${this.config.ALIGN};
@@ -194,6 +194,14 @@ class autoNumberPlugin extends BasePlugin {
     process = () => {
         if (this.config.ENABLE_WHEN_EXPORT) {
             new exportHelper(this).process();
+        }
+        if (this.config.ENABLE_IMAGE && this.config.SHOW_IMAGE_NAME) {
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
+                const images = this.utils.entities.querySelectorAllInWrite(".md-image:not([data-alt]) > img");
+                for (const image of images) {
+                    image.parentElement.dataset.alt = image.getAttribute("alt");
+                }
+            })
         }
     }
 
