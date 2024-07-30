@@ -1109,7 +1109,7 @@ LIST = [
 ############### pie_menu ###############
 [pie_menu]
 # 是否启用插件
-ENABLE = true
+ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "圆盘菜单"
 # 是否在右键菜单中可点击
