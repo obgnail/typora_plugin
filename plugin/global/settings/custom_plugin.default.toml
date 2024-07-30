@@ -1307,7 +1307,7 @@ proxy = ""
 # 自动升级有两个策略：
 #   - 策略一：打开Typora一段时间后，执行一次升级流程
 #   - 策略二：每隔一段时间，执行一次升级流程
-auto_update = true
+auto_update = false
 # 策略一（单位：ms，若<0，则不使用此策略）
 start_update_interval = 300000   # 1000 * 60 * 5
 # 策略二（单位：ms，若<0，则不使用此策略）
