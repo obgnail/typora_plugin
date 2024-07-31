@@ -17,9 +17,9 @@ PERFORMANCE_MODE = true
 # 低于0.9.98版本的Typora运行此插件系统时，提出不兼容警告
 SHOW_INCOMPATIBLE_WARNING = true
 # 如何退出交互状态的代码块
+# 如果你使用了图表插件（kanban、markmap、echarts等等）并且开启交互模式（INTERACTIVE_MODE置为true），那么列表至少填入一个，否则你将无法退出交互模式
 # - click_exit_button:  为图表添加一个【编辑】按钮，当点击【编辑】按钮时退出交互模式
 # - ctrl_click_fence:   ctrl+click图表退出交互模式
-# 如果你使用了图表插件（kanban、markmap、echarts等等）并且开启交互模式（INTERACTIVE_MODE置为true），那么列表至少填入一个，否则你将无法退出交互模式
 EXIT_INTERACTIVE_MODE = ["click_exit_button"]
 
 
@@ -253,7 +253,7 @@ COMMIT_EXEC_SHOW = "echo"
 #   3. $m: 当前挂载目录（侧边栏的根目录）
 BUILTIN = [
     { name = "", shell = "cmd/bash", cmd = "" }, # dummy
-    { name = "Explorer", shell = "powershell", hotkey = "ctrl+alt+e", cmd = "explorer $d" },
+    { name = "Explorer", shell = "powershell", cmd = "explorer $d" },
     { name = "Vscode", shell = "cmd/bash", cmd = "code $f" },
     { name = "WT", shell = "cmd/bash", cmd = "cd $d && wt" },
     { name = "GitCommit", shell = "cmd/bash", cmd = 'cd $m && git add . && git commit -m "update"' },
