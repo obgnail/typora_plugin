@@ -91,7 +91,7 @@ class dialog {
     }
 
     newWidget = component => {
-        if (!component) return;
+        if (!component) return "";
 
         let label = "label";
         let inner = "";
