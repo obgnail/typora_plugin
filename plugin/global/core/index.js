@@ -1,18 +1,18 @@
-const { BasePlugin, BaseCustomPlugin, LoadPlugin } = require("./plugin");
+const { BasePlugin, BaseCustomPlugin, LoadPlugins } = require("./plugin");
 const { utils } = require("./utils");
 const { getHelper } = require("./utils/delegate");
 const { loadHelpersBefore, loadHelpersAfter, optimizeHelpers } = getHelper(utils);
 
 class Launcher {
-    // 整个插件系统一共暴露了7个全局变量，实际有用的只有3个：BasePlugin, BaseCustomPlugin, LoadPlugin
+    // 整个插件系统一共暴露了7个全局变量，实际有用的只有3个：BasePlugin, BaseCustomPlugin, LoadPlugins
     // 其余4个全局变量皆由静态类utils暴露，永远不会被业务插件引用；而utils同时又是BasePlugin, BaseCustomPlugin的实例属性，所以utils自己也不需要暴露
     // 既然永远不会被业务插件引用，为何要将它们设置为全局变量？答：方便调试
     static prepare = settings => {
         global.BasePlugin = BasePlugin;             // 插件的父类
         global.BaseCustomPlugin = BaseCustomPlugin; // 自定义插件的父类
-        global.LoadPlugin = LoadPlugin;             // 加载插件函数
+        global.LoadPlugins = LoadPlugins;           // 加载插件
 
-        global._plugins = Object.create(null);      // 启用的插件
+        global._plugins = {};                      // 启用的插件
         global._plugin_utils = utils;               // 通用工具
         global._plugin_settings = settings;         // 插件配置
         global._global_settings = settings.global;  // 通用配置
@@ -28,20 +28,10 @@ class Launcher {
         }
     }
 
-    static loadPlugins = () => Promise.all(Object.entries(global._plugin_settings).map(async ([fixedName, setting]) => {
-        if (!setting || !setting.ENABLE) {
-            console.debug(`disable plugin: [ \x1b[31m${fixedName}\x1b[0m ] `);
-            return;
-        }
-        try {
-            const instance = await global.LoadPlugin(fixedName, setting, false);
-            if (!instance) return;
-            global._plugins[instance.fixedName] = instance;
-            console.debug(`enable plugin: [ \x1b[32m${instance.fixedName}\x1b[0m ] `);
-        } catch (e) {
-            console.error("load plugin error:", e);
-        }
-    }))
+    static loadPlugins = async () => {
+        const { enable, disable, error, notfound } = await LoadPlugins(global._plugin_settings, false);
+        global._plugins = enable;
+    }
 
     static optimizeHelpers = async () => {
         if (global._global_settings.PERFORMANCE_MODE) {

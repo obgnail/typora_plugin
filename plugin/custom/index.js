@@ -88,20 +88,9 @@ class customPluginLoader {
         this.config = plugin.config;
     }
 
-    loadCustomPlugin = async fixedName => {
-        const customSetting = this.controller.pluginsSettings[fixedName];
-        if (!customSetting || !customSetting.enable) {
-            console.debug(`disable custom plugin: [ \x1b[31m${fixedName}\x1b[0m ]`);
-            return;
-        }
-        try {
-            const instance = await global.LoadPlugin(fixedName, customSetting, true);
-            if (!instance) return;
-            this.controller.plugins[instance.fixedName] = instance;
-            console.debug(`enable custom plugin: [ \x1b[36m${instance.fixedName}\x1b[0m ]`);
-        } catch (e) {
-            console.error("load custom plugin error:", e);
-        }
+    loadCustomPlugins = async settings => {
+        const { enable, disable, error, notfound } = await global.LoadPlugins(settings, true);
+        this.controller.plugins = enable;
     }
 
     // 检测用户错误的配置
@@ -134,7 +123,7 @@ class customPluginLoader {
         this.mergeSettings(settings);
         this.errorSettingDetector(settings);
         this.controller.pluginsSettings = settings;
-        await Promise.all(Object.keys(settings).map(this.loadCustomPlugin));
+        await this.loadCustomPlugins(settings);
         this.utils.eventHub.publishEvent(this.utils.eventHub.eventType.allCustomPluginsHadInjected);
     }
 }

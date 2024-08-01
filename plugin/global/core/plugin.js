@@ -45,7 +45,7 @@ class BaseCustomPlugin extends IPlugin {
     callback(anchorNode) {}
 }
 
-const LoadPlugin = async (fixedName, setting, isCustom) => {
+const loadPlugin = async (fixedName, setting, isCustom) => {
     const path = isCustom ? "./plugin/custom/plugins" : "./plugin";
     const superPlugin = isCustom ? BaseCustomPlugin : BasePlugin;
 
@@ -75,8 +75,35 @@ const LoadPlugin = async (fixedName, setting, isCustom) => {
     return instance;
 }
 
+const LoadPlugins = async (settings, isCustom) => {
+    const result = { enable: {}, disable: {}, error: {}, notfound: {} };
+    for (const [fixedName, setting] of Object.entries(settings)) {
+        if (!setting) {
+            result.notfound[fixedName] = fixedName;
+        } else if (!setting.ENABLE && !setting.enable) {
+            result.disable[fixedName] = fixedName;
+        } else {
+            try {
+                result.enable[fixedName] = await loadPlugin(fixedName, setting, isCustom);
+            } catch (error) {
+                console.error(error);
+                result.error[fixedName] = error;
+            }
+        }
+    }
+
+    // report
+    for (const [type, plugins] of Object.entries(result)) {
+        const t = isCustom ? "custom" : "base";
+        const p = Array.from(Object.keys(plugins)).join(", ");
+        console.debug(`${type} ${t} plugin: [ ${p} ]`);
+    }
+
+    return result;
+}
+
 module.exports = {
     BasePlugin,
     BaseCustomPlugin,
-    LoadPlugin,
+    LoadPlugins,
 };
