@@ -36,20 +36,21 @@ class dialog {
         this.entities.submit.addEventListener("click", () => this.onButtonClick(this.submitCallback))
     }
 
-    onButtonClick = async cb => {
+    onButtonClick = async callback => {
+        const { components } = this.modalOption || {};  // 先取出来，接下来this.modalOption会被置为空
         this.entities.body.querySelectorAll(".form-group[component-id]").forEach(el => {
             const id = el.getAttribute("component-id");
-            const c = this.modalOption.components.find(c => c.id === id);
-            if (c) {
-                c.submit = this.getWidgetValue(c.type, el);
+            const component = components.find(c => c.id === id);
+            if (component) {
+                component.submit = this.getWidgetValue(component.type, el);
             }
         })
-        this.entities.modal.close();
-        if (cb) {
-            await cb(this.modalOption.components);
-        }
         this.set();
+        this.entities.modal.close();
         this.entities.body.innerHTML = "";
+        if (callback) {
+            await callback(components);
+        }
     }
 
     checkComponents = components => {
