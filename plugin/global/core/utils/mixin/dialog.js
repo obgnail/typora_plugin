@@ -2,7 +2,7 @@ class dialog {
     constructor(utils) {
         this.utils = utils;
         this.entities = null;
-        this.reset();
+        this.set();
     }
 
     html = () => `
@@ -16,10 +16,10 @@ class dialog {
         </dialog>
     `
 
-    reset = () => {
-        this.modalOption = null;
-        this.submitCallback = null;
-        this.cancelCallback = null;
+    set = (modal, submit, cancel) => {
+        this.modalOption = modal;
+        this.submitCallback = submit;
+        this.cancelCallback = cancel;
     }
 
     process = async () => {
@@ -48,7 +48,7 @@ class dialog {
         if (cb) {
             await cb(this.modalOption.components);
         }
-        this.reset();
+        this.set();
         this.entities.body.innerHTML = "";
     }
 
@@ -184,11 +184,7 @@ class dialog {
      */
     modal = (modal, submitCallback, cancelCallback) => {
         if (!modal) return;
-
-        this.modalOption = modal;
-        this.submitCallback = submitCallback;
-        this.cancelCallback = cancelCallback;
-
+        this.set(modal, submitCallback, cancelCallback);
         const { title, width = "", height = "", components, onload } = modal;
         this.checkComponents(components);
         this.setComponentsId(components);
