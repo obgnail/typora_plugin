@@ -61,7 +61,7 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
             title = "更新失败";
             components = [{ type: "span", label: "发生未知错误，请向开发者反馈" }];
         }
-        setTimeout(() => this.utils.dialog.modal({ title, components, width: "600px" }, callback), 50);
+        this.utils.dialog.modal({ title, components, width: "600px" }, callback);
     }
 
     getProxy = async () => (this.config.proxy || (await new ProxyGetter(this).getProxy()) || "").trim()

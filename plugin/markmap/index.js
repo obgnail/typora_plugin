@@ -383,6 +383,26 @@ class tocMarkmap {
             return { label: label, type: "range", value: value, min: 1, max: 100, step: 1, callback }
         }
 
+        const svgBorderH = () => {
+            const { BORDER_WHEN_DOWNLOAD_SVG: border } = this.config;
+            const callback = width => {
+                const defaultValue = 50;
+                width = parseInt(width);
+                border[0] = isNaN(width) ? defaultValue : width;
+            };
+            return { label: "导出图形的左右边框宽度", type: "range", value: border[0], min: 1, max: 200, step: 1, callback }
+        }
+
+        const svgBorderV = () => {
+            const { BORDER_WHEN_DOWNLOAD_SVG: border } = this.config;
+            const callback = width => {
+                const defaultValue = 50;
+                width = parseInt(width);
+                border[1] = isNaN(width) ? defaultValue : width;
+            };
+            return { label: "导出图形的上下边框宽度", type: "range", value: border[1], min: 1, max: 200, step: 1, callback }
+        }
+
         const downloadFolder = () => {
             const label = "导出文件目录" + _genInfo("为空则使用 temp 目录");
             const value = this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder;
@@ -464,8 +484,8 @@ class tocMarkmap {
 
         const components = [
             colorScheme, colorFreezeLevel, expandLevel, fitRatio, spacingHorizontal,
-            spacingVertical, maxWidth, duration, localeHeightRatio, downloadFolder, downloadFileName,
-            ability, further
+            spacingVertical, maxWidth, duration, localeHeightRatio, svgBorderH, svgBorderV,
+            downloadFolder, downloadFileName, ability, further,
         ].map(f => f());
         this.utils.dialog.modal({ title: "设置", components }, async components => {
             components.forEach(c => c.callback(c.submit));

@@ -2,7 +2,7 @@ class dialog {
     constructor(utils) {
         this.utils = utils;
         this.entities = null;
-        this.reset();
+        this.set();
     }
 
     html = () => `
@@ -16,10 +16,10 @@ class dialog {
         </dialog>
     `
 
-    reset = () => {
-        this.modalOption = null;
-        this.submitCallback = null;
-        this.cancelCallback = null;
+    set = (modal, submit, cancel) => {
+        this.modalOption = modal;
+        this.submitCallback = submit;
+        this.cancelCallback = cancel;
     }
 
     process = async () => {
@@ -36,20 +36,21 @@ class dialog {
         this.entities.submit.addEventListener("click", () => this.onButtonClick(this.submitCallback))
     }
 
-    onButtonClick = async cb => {
+    onButtonClick = async callback => {
+        const { components } = this.modalOption || {};  // 先取出来，接下来this.modalOption会被置为空
         this.entities.body.querySelectorAll(".form-group[component-id]").forEach(el => {
             const id = el.getAttribute("component-id");
-            const c = this.modalOption.components.find(c => c.id === id);
-            if (c) {
-                c.submit = this.getWidgetValue(c.type, el);
+            const component = components.find(c => c.id === id);
+            if (component) {
+                component.submit = this.getWidgetValue(component.type, el);
             }
         })
+        this.set();
         this.entities.modal.close();
-        if (cb) {
-            await cb(this.modalOption.components);
-        }
-        this.reset();
         this.entities.body.innerHTML = "";
+        if (callback) {
+            await callback(components);
+        }
     }
 
     checkComponents = components => {
@@ -59,7 +60,7 @@ class dialog {
         }
     }
 
-    attachEvent = modal => {
+    attachEvent = (modal, onload) => {
         if (!modal || !modal.components) return;
         modal.components.forEach(component => {
             Object.entries(component).forEach(([event, func]) => {
@@ -68,6 +69,7 @@ class dialog {
                 widget[event] = func;
             })
         })
+        onload && onload(this.entities.modal);
     }
 
     getWidgetValue = (type, widget) => {
@@ -90,8 +92,8 @@ class dialog {
         }
     }
 
-    newWidget = component => {
-        if (!component) return;
+    newSingleWidget = component => {
+        if (!component) return "";
 
         let label = "label";
         let inner = "";
@@ -143,28 +145,53 @@ class dialog {
         return `<div class="form-group" component-id="${component.id}">${label_}${inner}</div>`;
     }
 
+    newGroupWidget = components => {
+        const fieldset = components[0].fieldset;
+        const group = components.map(this.newSingleWidget);
+        return `<fieldset><legend>${fieldset}</legend>${group.join("")}</fieldset>`
+    }
+
+    newWidget = components => {
+        const nested = [];
+        const fieldsetMap = {};
+        components.forEach(c => {
+            if (!c.fieldset) {
+                nested.push(c);
+                return;
+            }
+            if (fieldsetMap[c.fieldset]) {
+                fieldsetMap[c.fieldset].push(c);
+                return;
+            }
+            fieldsetMap[c.fieldset] = [c];
+            nested.push(fieldsetMap[c.fieldset]);
+        })
+        return nested.map(ele => Array.isArray(ele) ? this.newGroupWidget(ele) : this.newSingleWidget(ele))
+    }
+
+    setComponentsId = components => components.forEach(component => component.id = this.utils.randomString());
+
+    assemblyForm = (title, components, width, height) => {
+        this.entities.title.innerText = title;
+        this.entities.modal.style.setProperty("--plugin-custom-modal-width", width);
+        this.entities.body.style.setProperty("--plugin-custom-modal-body-height", height);
+        this.entities.body.innerHTML = `<form role="form">${this.newWidget(components).join("")}</form>`;
+    }
+
     /**
-     * @param {{title, width, height, onload, components: [{label, type, value, ...}]}} modal: 组件配置
+     * @param {{title, width, height, onload, components: [{label, type, value, fieldset, ...arg}]}} modal: 组件配置
      * @param {null | function(components): null} submitCallback: 当用户点击【确认】后的回调函数
      * @param {null | function(components): null} cancelCallback: 当用户点击【取消】后的回调函数
      */
     modal = (modal, submitCallback, cancelCallback) => {
         if (!modal) return;
-
-        this.modalOption = modal;
-        this.submitCallback = submitCallback;
-        this.cancelCallback = cancelCallback;
-
+        this.set(modal, submitCallback, cancelCallback);
         const { title, width = "", height = "", components, onload } = modal;
         this.checkComponents(components);
-        this.entities.title.innerText = title;
-        this.entities.modal.style.setProperty("--plugin-custom-modal-width", width);
-        this.entities.body.style.setProperty("--plugin-custom-modal-body-height", height);
-        components.forEach(component => component.id = this.utils.randomString());
-        this.entities.body.innerHTML = `<form role="form">${components.map(this.newWidget).join("")}</form>`;
-        this.attachEvent(modal);
+        this.setComponentsId(components);
+        this.assemblyForm(title, components, width, height);
+        this.attachEvent(modal, onload);
         this.entities.modal.showModal();
-        onload && onload(this.entities.modal);
     }
 }
 

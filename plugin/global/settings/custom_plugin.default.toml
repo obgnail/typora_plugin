@@ -783,11 +783,11 @@ order = 1
 hotkey = ""
 # 是否转义标题内容
 escape_header = true
-# 右键侧边栏的【大纲】按钮触发
+# 右键点击侧边栏的【大纲】按钮触发
 right_click_outline_button_to_toggle = true
 # 当pin到页面右侧时，占据页面的20%宽度
 width_percent_when_pin_right = 20
-# 每次打开 Typora 时，默认弹出右侧菜单栏
+# 每次打开Typora时，默认弹出右侧菜单栏
 default_show_toc = false
 
 
@@ -813,16 +813,16 @@ modal_width_percent = 90
 modal_height_percent = 70
 # 本插件是通过后缀名来判断是否是资源的
 # 什么后缀判定为资源
-resource_suffix = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp", ".webm", ".bmp", ".mp3", ".mp4", ".ogg", ".image", ".jfif", ".gif!large"]
+resource_suffix = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".tiff", ".ico", ".webp", ".webm", ".bmp", ".mp3", ".mp4", ".ogg", ".image", ".jfif", ".gif!large", ".gif!small"]
+# 对于无后缀名的文件视为资源
+collect_file_without_suffix = true
 # 忽略的目录
 ignore_folders = [".git", "node_modules"]
-# 对于无后缀名的文件是否加入资源列表
-collect_file_without_suffix = true
 # 是否忽略html标签<img src="example.jpg">里的资源（markdown是支持插入html的，此选项问是否要忽略img标签）
 ignore_img_html_element = false
 # 什么后缀判定为md文件
 markdown_suffix = [".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]
-# 自动打开报告文件
+# 下载报告时，自动打开报告文件
 auto_open = true
 
 

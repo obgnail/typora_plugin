@@ -8,6 +8,7 @@
 }
 
 #plugin-text-stylize .stylize-tool > [action] {
+    fill: currentColor;
     cursor: pointer;
     width: 25px;
     height: 25px;
