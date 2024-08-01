@@ -80,6 +80,7 @@ ${show_outline}
 }
 
 .plugin-markmap-icon[action="resize"] svg {
+    fill: currentColor;
     height: 1.1em;
     width: 1.1em;
 }
