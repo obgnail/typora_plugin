@@ -81,7 +81,7 @@ const LoadPlugins = async (settings, isCustom) => {
         if (!setting) {
             result.notfound[fixedName] = fixedName;
         } else if (!setting.ENABLE && !setting.enable) {
-            result.disable[fixedName] = fixedName;
+            result.disable[fixedName] = setting;
         } else {
             try {
                 result.enable[fixedName] = await loadPlugin(fixedName, setting, isCustom);
@@ -93,11 +93,7 @@ const LoadPlugins = async (settings, isCustom) => {
     }
 
     // report
-    for (const [type, plugins] of Object.entries(result)) {
-        const t = isCustom ? "custom" : "base";
-        const p = Array.from(Object.keys(plugins)).join(", ");
-        console.debug(`${type} ${t} plugin: [ ${p} ]`);
-    }
+    Object.entries(result).forEach(([t, p]) => console.debug(`${t} ${isCustom ? "custom" : "base"} plugin:`, p))
 
     return result;
 }

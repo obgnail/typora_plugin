@@ -46,10 +46,7 @@ class diagramParser {
         this.report();
     }
 
-    report = () => {
-        const parsers = Array.from(this.parsers.keys()).join(", ");
-        console.debug(`enable diagram parser: [ ${parsers} ]`);
-    }
+    report = () => console.debug(`enable diagram parser:`, this.parsers);
 
     polyfillStyle = async () => {
         if (this.utils.isBetaVersion) {
