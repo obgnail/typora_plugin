@@ -29,7 +29,7 @@ class Launcher {
     }
 
     static loadPlugins = async () => {
-        const { enable, disable, error, notfound } = await LoadPlugins(global._plugin_settings, false);
+        const { enable, disable, stop, error, notfound } = await LoadPlugins(global._plugin_settings, false);
         global._plugins = enable;
     }
 

@@ -76,7 +76,7 @@ const loadPlugin = async (fixedName, setting, isCustom) => {
 }
 
 const LoadPlugins = async (settings, isCustom) => {
-    const result = { enable: {}, disable: {}, error: {}, notfound: {} };
+    const result = { enable: {}, disable: {}, stop: {}, error: {}, notfound: {} };
     for (const [fixedName, setting] of Object.entries(settings)) {
         if (!setting) {
             result.notfound[fixedName] = fixedName;
@@ -84,7 +84,9 @@ const LoadPlugins = async (settings, isCustom) => {
             result.disable[fixedName] = setting;
         } else {
             try {
-                result.enable[fixedName] = await loadPlugin(fixedName, setting, isCustom);
+                const instance = await loadPlugin(fixedName, setting, isCustom);
+                const type = instance ? "enable" : "stop";
+                result[type][fixedName] = instance ? instance : setting;
             } catch (error) {
                 console.error(error);
                 result.error[fixedName] = error;
@@ -93,7 +95,8 @@ const LoadPlugins = async (settings, isCustom) => {
     }
 
     // report
-    Object.entries(result).forEach(([t, p]) => console.debug(`${t} ${isCustom ? "custom" : "base"} plugin:`, p))
+    const color = {enable: "\x1B[36m", disable: "\x1B[33m", stop: "\x1B[34m", error: "\x1B[31m", notfound: "\x1B[35m"};
+    Object.entries(result).forEach(([t, p]) => console.debug(`[ ${isCustom ? "custom" : "base"} ] [ ${color[t]}${t}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p))
 
     return result;
 }
