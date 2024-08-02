@@ -50,7 +50,7 @@ class diagramParser {
 
     polyfillStyle = async () => {
         if (this.utils.isBetaVersion) {
-            await this.utils.styleTemplater.register("diagram-parser");
+            await this.utils.styleTemplater.register("plugin-diagram-parser");
         }
     }
 
