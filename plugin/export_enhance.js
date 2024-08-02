@@ -1,7 +1,7 @@
 class exportEnhancePlugin extends BasePlugin {
     beforeProcess = async () => new Promise(resolve => {
-        const until = () => File && File.editor && File.editor.export && File.editor.export.exportToHTML;
-        const after = () => resolve(File.editor.export.exportToHTML.constructor.name === "AsyncFunction" ? undefined : this.utils.stopLoadPluginError);
+        const until = () => this.utils.exportHelper.isAsync !== undefined;
+        const after = () => resolve(this.utils.exportHelper.isAsync ? undefined : this.utils.stopLoadPluginError);
         this.utils.loopDetector(until, after)
     })
     process = () => {
