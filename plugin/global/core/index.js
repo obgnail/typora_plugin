@@ -12,7 +12,7 @@ class Launcher {
         global.BaseCustomPlugin = BaseCustomPlugin; // 自定义插件的父类
         global.LoadPlugins = LoadPlugins;           // 加载插件
 
-        global._plugins = {};                      // 启用的插件
+        global._plugins = null;                     // 启用的插件
         global._plugin_utils = utils;               // 通用工具
         global._plugin_settings = settings;         // 插件配置
         global._global_settings = settings.global;  // 通用配置
@@ -29,7 +29,7 @@ class Launcher {
     }
 
     static loadPlugins = async () => {
-        const { enable, disable, stop, error, notfound } = await LoadPlugins(global._plugin_settings, false);
+        const { enable, disable, stop, error, nosetting } = await LoadPlugins(global._plugin_settings, false);
         global._plugins = enable;
     }
 
