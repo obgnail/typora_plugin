@@ -23,7 +23,7 @@ class dialog {
     }
 
     process = async () => {
-        await this.utils.styleTemplater.register("modal-generator");
+        await this.utils.styleTemplater.register("plugin-common-modal");
         this.utils.insertElement(this.html());
         this.entities = {
             modal: document.getElementById("plugin-custom-modal"),
@@ -151,7 +151,7 @@ class dialog {
         return `<fieldset><legend>${fieldset}</legend>${group.join("")}</fieldset>`
     }
 
-    newWidget = components => {
+    newWidgets = components => {
         const nested = [];
         const fieldsetMap = {};
         components.forEach(c => {
@@ -173,9 +173,9 @@ class dialog {
 
     assemblyForm = (title, components, width, height) => {
         this.entities.title.innerText = title;
-        this.entities.modal.style.setProperty("--plugin-custom-modal-width", width);
-        this.entities.body.style.setProperty("--plugin-custom-modal-body-height", height);
-        this.entities.body.innerHTML = `<form role="form">${this.newWidget(components).join("")}</form>`;
+        this.entities.modal.style.setProperty("--plugin-common-modal-width", width);
+        this.entities.body.style.setProperty("--plugin-common-modal-body-height", height);
+        this.entities.body.innerHTML = `<form role="form">${this.newWidgets(components).join("")}</form>`;
     }
 
     /**

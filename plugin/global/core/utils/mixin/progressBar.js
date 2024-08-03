@@ -14,11 +14,26 @@ class progressBar {
 
     done = () => this.progressBar.value = 0;
 
-    fake = ({ timeout, isDone = () => false, strategy = this._fade, interval = 50 }) => new Promise(resolve => {
+    animateTo100 = (interval = 50) => new Promise(resolve => {
+        let val = this.progressBar.value;
+        const timer = setInterval(() => {
+            val += 10;
+            this.progress(val);
+            if (val >= 100) {
+                clearInterval(timer);
+                resolve();
+            }
+        }, interval);
+    })
+
+    fake = ({ timeout, isDone = this._timeout(), strategy = this._fade, animateTo100 = true, interval = 50 }) => new Promise(resolve => {
         let timer;
         const start = new Date().getTime();
         const end = start + timeout;
-        const _stop = ok => {
+        const _stop = async ok => {
+            if (ok && animateTo100) {
+                await this.animateTo100();
+            }
             this.done();
             clearInterval(timer);
             resolve(ok);
@@ -27,16 +42,19 @@ class progressBar {
             const now = new Date().getTime();
             if (isDone() === true) {
                 _stop(true);
-                return;
-            }
-            if (now > end) {
+            } else if (now > end) {
                 _stop(false);
-                return;
+            } else {
+                const percent = strategy(start, end, now, timeout);
+                this.progress(percent);
             }
-            const percent = strategy(start, end, now, timeout);
-            this.progress(percent);
         }, interval)
     })
+
+    _timeout = (timeout = 30 * 1000) => {
+        const start = new Date().getTime();
+        return () => new Date().getTime() - start > timeout;
+    }
 
     _linear = (start, end, now, timeout) => Math.min((now - start) * 100 / timeout, 99)
     _fade = (start, end, now, timeout) => {

@@ -26,7 +26,6 @@ class diagramParser {
             cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode
         }
         this.parsers.set(lang, parser);
-        console.debug(`enable diagram parser: [ \x1b[94m${lang}\x1b[0m ]`);
     }
 
     unregister = lang => this.parsers.delete(lang)
@@ -44,11 +43,14 @@ class diagramParser {
         this.onFocus();                  // 聚焦时
         this.onChangeFile();             // 切换文件时
         this.onCheckIsDiagramType();     // 判断是否为Diagram时
+        this.report();
     }
+
+    report = () => console.debug(`enable diagram parser:`, this.parsers);
 
     polyfillStyle = async () => {
         if (this.utils.isBetaVersion) {
-            await this.utils.styleTemplater.register("diagram-parser");
+            await this.utils.styleTemplater.register("plugin-diagram-parser");
         }
     }
 

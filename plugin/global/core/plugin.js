@@ -45,7 +45,7 @@ class BaseCustomPlugin extends IPlugin {
     callback(anchorNode) {}
 }
 
-const LoadPlugin = async (fixedName, setting, isCustom) => {
+const loadPlugin = async (fixedName, setting, isCustom) => {
     const path = isCustom ? "./plugin/custom/plugins" : "./plugin";
     const superPlugin = isCustom ? BaseCustomPlugin : BasePlugin;
 
@@ -75,8 +75,34 @@ const LoadPlugin = async (fixedName, setting, isCustom) => {
     return instance;
 }
 
+const LoadPlugins = async (settings, isCustom) => {
+    const result = { enable: {}, disable: {}, stop: {}, error: {}, nosetting: {} };
+    for (const [fixedName, setting] of Object.entries(settings)) {
+        if (!setting) {
+            result.nosetting[fixedName] = fixedName;
+        } else if (!setting.ENABLE && !setting.enable) {
+            result.disable[fixedName] = setting;
+        } else {
+            try {
+                const instance = await loadPlugin(fixedName, setting, isCustom);
+                const type = instance ? "enable" : "stop";
+                result[type][fixedName] = instance ? instance : setting;
+            } catch (error) {
+                console.error(error);
+                result.error[fixedName] = error;
+            }
+        }
+    }
+
+    // log
+    const color = {enable: "32", disable: "33", stop: "34", error: "31", nosetting: "35"};
+    Object.entries(result).forEach(([t, p]) => console.debug(`[ ${isCustom ? "custom" : "base"} ] [ \x1B[${color[t]}m${t}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p))
+
+    return result;
+}
+
 module.exports = {
     BasePlugin,
     BaseCustomPlugin,
-    LoadPlugin,
+    LoadPlugins,
 };
