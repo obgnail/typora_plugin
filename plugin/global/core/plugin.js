@@ -83,29 +83,34 @@ const loadPlugin = async (fixedName, setting, isCustom) => {
 }
 
 const LoadPlugins = async (settings, isCustom) => {
-    const result = { enable: {}, disable: {}, stop: {}, error: {}, nosetting: {} };
+    const plugins = { enable: {}, disable: {}, stop: {}, error: {}, nosetting: {} };
     for (const [fixedName, setting] of Object.entries(settings)) {
         if (!setting) {
-            result.nosetting[fixedName] = fixedName;
+            plugins.nosetting[fixedName] = fixedName;
         } else if (!setting.ENABLE && !setting.enable) {
-            result.disable[fixedName] = setting;
+            plugins.disable[fixedName] = setting;
         } else {
             try {
                 const instance = await loadPlugin(fixedName, setting, isCustom);
-                const type = instance ? "enable" : "stop";
-                result[type][fixedName] = instance ? instance : setting;
+                if (instance) {
+                    plugins.enable[fixedName] = instance;
+                } else {
+                    plugins.stop[fixedName] = setting;
+                }
             } catch (error) {
                 console.error(error);
-                result.error[fixedName] = error;
+                plugins.error[fixedName] = error;
             }
         }
     }
 
     // log
     const color = { enable: "32", disable: "33", stop: "34", error: "31", nosetting: "35" };
-    Object.entries(result).forEach(([t, p]) => console.debug(`[ ${isCustom ? "custom" : "base"} ] [ \x1B[${color[t]}m${t}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p))
+    for (const [t, p] of Object.entries(plugins)) {
+        console.debug(`[ ${isCustom ? "custom" : "base"} ] [ \x1B[${color[t]}m${t}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p);
+    }
 
-    return result;
+    return plugins;
 }
 
 module.exports = {
