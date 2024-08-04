@@ -171,9 +171,10 @@ class dialog {
 
     setComponentsId = components => components.forEach(component => component.id = this.utils.randomString());
 
-    assemblyForm = (title, components, width, height) => {
+    assemblyForm = (title, components, width, height, background) => {
         this.entities.title.innerText = title;
         this.entities.modal.style.setProperty("--plugin-common-modal-width", width);
+        this.entities.modal.style.setProperty("--plugin-common-modal-background", background);
         this.entities.body.style.setProperty("--plugin-common-modal-body-height", height);
         this.entities.body.innerHTML = `<form role="form">${this.newWidgets(components).join("")}</form>`;
     }
@@ -186,10 +187,10 @@ class dialog {
     modal = (modal, submitCallback, cancelCallback) => {
         if (!modal) return;
         this.set(modal, submitCallback, cancelCallback);
-        const { title, width = "", height = "", components, onload } = modal;
+        const { title, width = "", height = "", background = "", components, onload } = modal;
         this.checkComponents(components);
         this.setComponentsId(components);
-        this.assemblyForm(title, components, width, height);
+        this.assemblyForm(title, components, width, height, background);
         this.attachEvent(modal, onload);
         this.entities.modal.showModal();
     }

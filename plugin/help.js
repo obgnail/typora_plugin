@@ -61,7 +61,7 @@ class helpPlugin extends BasePlugin {
     }
 
     about = () => {
-        const style = "background: linear-gradient(to right, rgba(79, 192, 141, 0.5), rgba(79, 192, 141, 0.5)) no-repeat bottom; background-size: 100% 40%; padding: 2px;"
+        const style = "background: linear-gradient(to right, rgba(79, 192, 141, 0.5), rgba(79, 192, 141, 0.5)) no-repeat bottom; background-size: 100% 40%; padding: 0 5px;;"
         const share = {
             Telegram: "https://telegram.me/share/url?url=https://github.com/obgnail/typora_plugin&title=",
             Twitter: "http://twitter.com/intent/tweet?text=",
@@ -69,11 +69,10 @@ class helpPlugin extends BasePlugin {
         }
         const p = [
             `<span style="${style}">Ashen one, hearest thou my voice still?</span>`,
-            "感谢您使用 Typora Plugin。我在有限的时间里设计了这款插件，虽然它并不那么美好，但正努力前行。",
-            "本项目遵循 MIT 协议，请自由地享受和参与开源。如果您有任何反馈或建议，请在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。若本项目对您有用，欢迎 ⭐",
-            `欢迎通过 ${Object.keys(share).map(site => `<a class="plu-share" data-site="${site}">${site}</a>`).join("、")} 推荐给志同道合的朋友使用。`
+            "感谢您使用 Typora Plugin。本项目遵循 MIT 协议，请自由地享受和参与开源。若有任何反馈或建议，可以在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。",
+            `欢迎 <a class='plu-github'>star 本项目</a>，欢迎通过 ${Object.keys(share).map(site => `<a class="plu-share" data-site="${site}">${site}</a>`).join("、")} 推荐给您的朋友。`
         ]
-        const label = p.map(e => `<p style="font-size: 1.1em">${e}</p>`).join("");
+        const label = p.map(e => `<p style="font-size: 1.2em">${e}</p>`).join("");
         const onclick = ev => {
             const a = ev.target.closest("a");
             if (!a) return;
@@ -174,7 +173,7 @@ class helpPlugin extends BasePlugin {
             }
         }
 
-        const message = "So, it was thee, who would become my lord. Perhaps I needn't have warned thee. I am pleased, however. Thou'rt a fitting choice.";
+        const message = `<p style="font-size: 1.2em">So, it was thee, who would become my lord. Perhaps I needn't have warned thee. I am pleased, however. Thou'rt a fitting choice.</p>`;
         const canvas = `<canvas id="${id}" width="${canvasWidth}" height="${size}" style="margin: auto;display: block;" title="祝你工作生活顺利"></canvas>`
         const components = [{ label: message, type: "span" }, { label: canvas, type: "span" }];
         this.utils.dialog.modal({ title: "请开发者喝咖啡", width: "550px", components, onload });
