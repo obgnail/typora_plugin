@@ -527,7 +527,7 @@ FENCE_HOTKEY = ""
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改FENCE_TEMPLATE选项里的语言
 LANGUAGE = "markmap"
-# 默认处于交互模式（处于交互模式下，鼠标click图表并不会展开代码块）
+# 默认处于交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 代码块默认高度
 DEFAULT_FENCE_HEIGHT = "300px"
