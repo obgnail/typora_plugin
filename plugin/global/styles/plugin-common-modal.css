@@ -3,7 +3,9 @@
     border: none;
     font-size: 0.8em;
     box-shadow: rgba(0, 0, 40, 0.2) 0 15px 30px 0;
+    /*font-family: "PT Serif", "Times New Roman", Times, serif;*/
     width: var(--plugin-common-modal-width, 400px);
+    background: var(--plugin-common-modal-background, rgb(243, 242, 238));
 }
 
 #plugin-custom-modal::backdrop {

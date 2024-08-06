@@ -50,16 +50,19 @@ const loadPlugin = async (fixedName, setting, isCustom) => {
     const superPlugin = isCustom ? BaseCustomPlugin : BasePlugin;
 
     const { plugin } = utils.requireFilePath(path, fixedName);
-    if (!plugin) return;
+    if (!plugin) {
+        return new Error(`there is not ${fixedName} in ${path}`);
+    }
 
     const instance = new plugin(fixedName, setting);
     if (!(instance instanceof superPlugin)) {
-        console.error(`instance is not instanceof ${superPlugin.name}:`, fixedName);
-        return;
+        return new Error(`instance is not instanceof ${superPlugin.name}: ${fixedName}`);
     }
 
     const error = await instance.beforeProcess();
-    if (error === utils.stopLoadPluginError) return;
+    if (error === utils.stopLoadPluginError) {
+        return;
+    }
     utils.registerStyle(instance.fixedName, instance.style());
     const renderArgs = instance.styleTemplate();
     if (renderArgs) {
@@ -67,8 +70,12 @@ const loadPlugin = async (fixedName, setting, isCustom) => {
     }
     utils.insertElement(instance.html());
     const elements = instance.htmlTemplate();
-    elements && utils.htmlTemplater.insert(elements);
-    !isCustom && utils.hotkeyHub.register(instance.hotkey());
+    if (elements) {
+        utils.htmlTemplater.insert(elements);
+    }
+    if (!isCustom) {
+        utils.hotkeyHub.register(instance.hotkey());
+    }
     instance.init();
     instance.process();
     instance.afterProcess();
@@ -76,29 +83,34 @@ const loadPlugin = async (fixedName, setting, isCustom) => {
 }
 
 const LoadPlugins = async (settings, isCustom) => {
-    const result = { enable: {}, disable: {}, stop: {}, error: {}, nosetting: {} };
+    const plugins = { enable: {}, disable: {}, stop: {}, error: {}, nosetting: {} };
     for (const [fixedName, setting] of Object.entries(settings)) {
         if (!setting) {
-            result.nosetting[fixedName] = fixedName;
+            plugins.nosetting[fixedName] = fixedName;
         } else if (!setting.ENABLE && !setting.enable) {
-            result.disable[fixedName] = setting;
+            plugins.disable[fixedName] = setting;
         } else {
             try {
                 const instance = await loadPlugin(fixedName, setting, isCustom);
-                const type = instance ? "enable" : "stop";
-                result[type][fixedName] = instance ? instance : setting;
+                if (instance) {
+                    plugins.enable[fixedName] = instance;
+                } else {
+                    plugins.stop[fixedName] = setting;
+                }
             } catch (error) {
                 console.error(error);
-                result.error[fixedName] = error;
+                plugins.error[fixedName] = error;
             }
         }
     }
 
     // log
-    const color = {enable: "32", disable: "33", stop: "34", error: "31", nosetting: "35"};
-    Object.entries(result).forEach(([t, p]) => console.debug(`[ ${isCustom ? "custom" : "base"} ] [ \x1B[${color[t]}m${t}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p))
+    const color = { enable: "32", disable: "33", stop: "34", error: "31", nosetting: "35" };
+    for (const [t, p] of Object.entries(plugins)) {
+        console.debug(`[ ${isCustom ? "custom" : "base"} ] [ \x1B[${color[t]}m${t}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p);
+    }
 
-    return result;
+    return plugins;
 }
 
 module.exports = {
