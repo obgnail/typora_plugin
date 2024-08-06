@@ -56,7 +56,7 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         } else if (result instanceof Error) {
             title = "更新失败";
             callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
-            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新" }, { type: "span", label: `报错信息：${result.stack}` }];
+            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新。报错信息如下：" }, { type: "span", label: this.utils.escape(result.stack) }];
         } else {
             title = "更新失败";
             components = [{ type: "span", label: "发生未知错误，请向开发者反馈" }];
