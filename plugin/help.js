@@ -61,14 +61,13 @@ class helpPlugin extends BasePlugin {
     }
 
     about = () => {
-        const style = "background: linear-gradient(to right, rgba(79, 192, 141, 0.5), rgba(79, 192, 141, 0.5)) no-repeat bottom; background-size: 100% 40%; padding: 0 5px;;"
         const share = {
             Telegram: "https://telegram.me/share/url?url=https://github.com/obgnail/typora_plugin&title=",
             Twitter: "http://twitter.com/intent/tweet?text=",
             Weibo: "https://service.weibo.com/share/share.php?language=zh_cn&searchPic=true&title=",
         }
         const p = [
-            `<span style="${style}">Ashen one, hearest thou my voice still?</span>`,
+            `<i>Ashen one, hearest thou my voice still?</i>`,
             "感谢您使用 Typora Plugin。本项目遵循 MIT 协议，请自由地享受和参与开源。若有任何反馈或建议，可以在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。",
             `欢迎 <a class='plu-github'>star 本项目</a>，欢迎通过 ${Object.keys(share).map(site => `<a class="plu-share" data-site="${site}">${site}</a>`).join("、")} 推荐给您的朋友。`
         ]
@@ -173,8 +172,8 @@ class helpPlugin extends BasePlugin {
             }
         }
 
-        const message = `<p style="font-size: 1.2em">So, it was thee, who would become my lord. Perhaps I needn't have warned thee. I am pleased, however. Thou'rt a fitting choice.</p>`;
-        const canvas = `<canvas id="${id}" width="${canvasWidth}" height="${size}" style="margin: auto;display: block;" title="祝你工作生活顺利"></canvas>`
+        const message = `<i style="font-size: 1.2em">So, it was thee, who would become my lord. Perhaps I needn't have warned thee. I am pleased, however. Thou'rt a fitting choice.</i><div style="text-align:right; font-size:small">&nbsp;—&nbsp;Ranni the Witch</div>`;
+        const canvas = `<canvas id="${id}" width="${canvasWidth}" height="${size}" style="margin: auto; display: block;"></canvas>`
         const components = [{ label: message, type: "span" }, { label: canvas, type: "span" }];
         this.utils.dialog.modal({ title: "请开发者喝咖啡", width: "550px", components, onload });
     }
