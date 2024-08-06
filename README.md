@@ -1,6 +1,13 @@
 <div align="center">
     <h1> Typora Plugin </h1>
     <img src="assets/typora_plugin.png" alt="typora_plugin" width="400" />
+    <p align="center">
+        <img src="https://img.shields.io/github/v/release/obgnail/typora_plugin">
+        <img src="https://img.shields.io/github/last-commit/obgnail/typora_plugin">
+        <img src="https://img.shields.io/github/forks/obgnail/typora_plugin?style=flat">
+        <img src="https://img.shields.io/github/stars/obgnail/typora_plugin?style=flat">
+        <img src="https://img.shields.io/github/license/obgnail/typora_plugin">
+    </p>
 </div>
 
 
