@@ -56,7 +56,7 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         } else if (result instanceof Error) {
             title = "更新失败";
             callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
-            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新" }, { type: "span", label: `报错信息：${result.stack}` }];
+            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新。报错信息如下：" }, { type: "span", label: this.utils.escape(result.stack) }];
         } else {
             title = "更新失败";
             components = [{ type: "span", label: "发生未知错误，请向开发者反馈" }];
@@ -109,7 +109,7 @@ class updater {
     }
 
     run = async () => {
-        this.prepare();
+        await this.prepare();
         const need = await this.checkNeedUpdate();
         if (!need) return "NO_NEED";
         const buffer = await this.downloadLatestVersion();
@@ -136,9 +136,19 @@ class updater {
         return () => ({ done, result, info: this.latestVersionInfo })
     }
 
-    prepare = () => {
+    prepare = async () => {
         console.log("[1/6] prepare: ensure work dir");
         this.pkgFsExtra.ensureDir(this.workDir);
+        await this.chmod();
+    }
+
+    chmod = async () => {
+        const dir = this.utils.joinPath(this.pluginDir);
+        try {
+            await this.pkgFs.chmod(dir, 0o777);
+        } catch (e) {
+            console.debug(`cant chmod ${dir}`);
+        }
     }
 
     checkNeedUpdate = async () => {

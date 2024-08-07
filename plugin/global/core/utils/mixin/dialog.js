@@ -86,7 +86,8 @@ class dialog {
             case "checkbox":
                 return Array.from(widget.querySelectorAll("input:checked"), box => box.value)
             case "range":
-                return widget.querySelector('input[type="range"]').value
+            case "number":
+                return Number(widget.querySelector(`input[type="${type}"]`).value)
             default:
                 return ""
         }
@@ -96,7 +97,7 @@ class dialog {
         if (!component) return "";
 
         let label = "label";
-        let inner = "";
+        let control = "";
         const type = component.type.toLowerCase();
         const disabled = el => el.disabled ? "disabled" : "";
         switch (type) {
@@ -104,12 +105,15 @@ class dialog {
             case "password":
             case "file":
                 const t = type === "input" ? "text" : type;
-                inner = `<input type="${t}" class="form-control" value="${component.value || ""}" placeholder="${component.placeholder || ""}" ${disabled(component)}>`;
+                control = `<input type="${t}" class="form-control" value="${component.value || ""}" placeholder="${component.placeholder || ""}" ${disabled(component)}>`;
+                break
+            case "number":
+                control = `<input type="number" class="form-control" min="${component.min}" max="${component.max}" step="${component.step}" value="${component.value}" placeholder="${component.placeholder || ""}" ${disabled(component)}/>`
                 break
             case "range":
                 const { min = 0, max = 100, step = 1, value = 1 } = component;
-                inner = `<div class="plugin-custom-modal-range">
-                            <input type="range" min="${min}" max="${max}" step="${step}" value="${value}" oninput="this.nextElementSibling.innerText = this.value;">
+                control = `<div class="plugin-custom-modal-range">
+                            <input type="range" min="${min}" max="${max}" step="${step}" value="${value}" ${disabled(component)} oninput="this.nextElementSibling.innerText = this.value;">
                             <div class="modal-range-value">${value}</div>
                          </div>`
                 break
@@ -122,33 +126,37 @@ class dialog {
                     return `<div class="${type}"><input type="${type}" id="${id}" name="${name}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}</label></div>`
                 });
                 const content = elements.join("");
-                inner = (component.legend === undefined) ? content : `<fieldset><legend>${component.legend}</legend>${content}</fieldset>`;
+                control = (component.legend === undefined) ? content : `<fieldset><legend>${component.legend}</legend>${content}</fieldset>`;
                 break
             case "select":
                 const selected = option => (option === component.selected) ? "selected" : "";
                 const map = component.map || Object.fromEntries(component.list.map(item => [item, item]));
                 const options = Object.entries(map).map(([value, option]) => `<option value="${value}" ${selected(value)}>${option}</option>`);
-                inner = `<select class="form-control" ${disabled(component)}>${options.join("")}</select>`;
+                control = `<select class="form-control" ${disabled(component)}>${options.join("")}</select>`;
                 break
             case "textarea":
                 const rows = component.rows || 3;
                 const cnt = component.content || "";
                 const readonly = component.readonly || "";
-                inner = `<textarea class="form-control" rows="${rows}" ${readonly} placeholder="${component.placeholder || ""}" ${disabled(component)}>${cnt}</textarea>`;
+                control = `<textarea class="form-control" rows="${rows}" ${readonly} placeholder="${component.placeholder || ""}" ${disabled(component)}>${cnt}</textarea>`;
+                break
+            case "pre":
+                label = "pre";
                 break
             case "p":
             case "span":
                 label = "span";
                 break
         }
+        const class_ = component.inline ? "form-inline-group" : "form-block-group";
         const label_ = component.label ? `<${label}>${component.label}</${label}>` : "";
-        return `<div class="form-group" component-id="${component.id}">${label_}${inner}</div>`;
+        return `<div class="form-group ${class_}" component-id="${component.id}">${label_}${control}</div>`;
     }
 
     newGroupWidget = components => {
         const fieldset = components[0].fieldset;
         const group = components.map(this.newSingleWidget);
-        return `<fieldset><legend>${fieldset}</legend>${group.join("")}</fieldset>`
+        return `<fieldset class="form-group form-fieldset-group"><legend>${fieldset}</legend>${group.join("")}</fieldset>`
     }
 
     newWidgets = components => {
@@ -180,7 +188,7 @@ class dialog {
     }
 
     /**
-     * @param {{title, width, height, onload, components: [{label, type, value, fieldset, ...arg}]}} modal: 组件配置
+     * @param {{title, width, height, onload, components: [{label, type, value, fieldset, inline, ...arg}]}} modal: 组件配置
      * @param {null | function(components): null} submitCallback: 当用户点击【确认】后的回调函数
      * @param {null | function(components): null} cancelCallback: 当用户点击【取消】后的回调函数
      */

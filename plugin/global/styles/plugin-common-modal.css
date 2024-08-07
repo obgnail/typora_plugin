@@ -59,14 +59,36 @@
     background-color: #428bca;
 }
 
+.plugin-custom-modal-body .form-group {
+    margin-bottom: 15px;
+}
+
+.plugin-custom-modal-body .form-inline-group {
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.plugin-custom-modal-body .form-inline-group label {
+    flex-basis: 50%;
+}
+
+.plugin-custom-modal-body .form-block-group label {
+    margin-bottom: 5px;
+}
+
 #plugin-custom-modal label {
     display: block;
-    margin-bottom: 5px;
     font-size: 1.03em;
 }
 
 #plugin-custom-modal fieldset label {
     user-select: none;
+}
+
+#plugin-custom-modal input[type="number"] {
+    max-width: 100px;
 }
 
 #plugin-custom-modal input[type="checkbox"],

@@ -92,10 +92,16 @@ class diagramParser {
     }
 
     getErrorMessage = error => {
-        if (error instanceof Error) return error.stack;
-
-        let msg = error.errorLine ? `第 ${error.errorLine} 行发生错误。` : '';
-        msg += error.reason ? `错误原因：${error.reason}` : '';
+        if (error instanceof Error) {
+            return this.utils.escape(error.stack);
+        }
+        const { errorLine, reason } = error;
+        let msg = errorLine ? `第 ${errorLine} 行发生错误。` : '';
+        if (reason instanceof Error) {
+            msg += this.utils.escape(reason.stack);
+        } else if (reason) {
+            msg += `错误原因：${reason}`;
+        }
         return msg || error.toString();
     }
 
