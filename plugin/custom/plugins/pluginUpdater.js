@@ -109,7 +109,7 @@ class updater {
     }
 
     run = async () => {
-        this.prepare();
+        await this.prepare();
         const need = await this.checkNeedUpdate();
         if (!need) return "NO_NEED";
         const buffer = await this.downloadLatestVersion();
@@ -136,9 +136,19 @@ class updater {
         return () => ({ done, result, info: this.latestVersionInfo })
     }
 
-    prepare = () => {
+    prepare = async () => {
         console.log("[1/6] prepare: ensure work dir");
         this.pkgFsExtra.ensureDir(this.workDir);
+        await this.chmod();
+    }
+
+    chmod = async () => {
+        const dir = this.utils.joinPath(this.pluginDir);
+        try {
+            await this.pkgFs.chmod(dir, 0o777);
+        } catch (e) {
+            console.debug(`cant chmod ${dir}`);
+        }
     }
 
     checkNeedUpdate = async () => {
