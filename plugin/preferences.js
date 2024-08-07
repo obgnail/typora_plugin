@@ -52,7 +52,7 @@ class preferencesPlugin extends BasePlugin {
     openSettingFile = async () => this.utils.showInFinder(await this.utils.getActualSettingPath("settings.user.toml"));
 
     call = async () => {
-        const genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7; float: right;"></span>`
+        const genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7;"></span>`
         const infoMap = {
             blur: "此插件不兼容 Beta 版本的 Typora",
             export_enhance: "此插件不兼容 Beta 版本的 Typora",
@@ -84,11 +84,11 @@ class preferencesPlugin extends BasePlugin {
         const plugins = Object.entries(settings).map(displayFunc);
         const customPlugins = Object.entries(customSettings).map(displayFunc);
         const components = [
-            { label: "🛡️ 为保护用户，此处禁止启停部分插件，如需请 <a>修改配置文件</a>", type: "p", onclick },
+            { label: "为保护用户，此处禁止启停部分插件，如需请 <a>修改配置文件</a>", type: "p", onclick },
             { label: "", legend: "一级插件", type: "checkbox", list: plugins },
             { label: "", legend: "二级插件", type: "checkbox", list: customPlugins },
         ];
-        const modal = { title: "启停插件", components };
+        const modal = { title: "启停插件", width: "450px", components };
         const cb = async ([_, { submit: enablePlugins }, { submit: enableCustomPlugins }]) => {
             await this.togglePlugin(enablePlugins, enableCustomPlugins, true);
         }

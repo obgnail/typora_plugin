@@ -70,6 +70,10 @@
     width: 100%;
 }
 
+.plugin-custom-modal-body a {
+    color: #4183C4;
+}
+
 .plugin-custom-modal-body .form-inline-group label {
     flex-basis: 50%;
 }
@@ -81,6 +85,7 @@
 #plugin-custom-modal label {
     display: block;
     font-size: 1.03em;
+    width: fit-content;
 }
 
 #plugin-custom-modal fieldset label {
