@@ -398,8 +398,8 @@ class tocMarkmap {
             const removeForeignLabel = "替换 foreignObject 标签" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
             const removeUselessClassLabel = "删除无用的类名" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
             const list = [
-                { label: removeForeignLabel, value: "removeForeignObject", checked: removeForeign },
                 { label: removeUselessClassLabel, value: "removeUselessClass", checked: removeUselessClass },
+                { label: removeForeignLabel, value: "removeForeignObject", checked: removeForeign },
             ];
             const callback = submit => {
                 this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = submit.includes("removeForeignObject");
@@ -451,7 +451,7 @@ class tocMarkmap {
             colorScheme, colorFreezeLevel, expandLevel, spacingH, spacingV, maxWidth, fitRatio, duration, localeHeightRatio, ability,
             downloadSvgBorderH, downloadSvgBorderV, downloadFolder, downloadFileName, downloadOption,
         ].map(f => f());
-        this.utils.dialog.modal({ title: "设置", width: "550px", components }, async components => {
+        this.utils.dialog.modal({ title: "设置", width: "500px", components }, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
         });

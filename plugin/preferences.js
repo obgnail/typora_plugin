@@ -22,10 +22,10 @@ class preferencesPlugin extends BasePlugin {
         if (!settingsHasUpdate && !customSettingsHasUpdate) return;
 
         const files = [
-            {file: "settings.user.toml", mergeObj: pluginState},
-            {file: "custom_plugin.user.toml", mergeObj: customPluginState},
+            { file: "settings.user.toml", mergeObj: pluginState },
+            { file: "custom_plugin.user.toml", mergeObj: customPluginState },
         ]
-        for (const {file, mergeObj} of files) {
+        for (const { file, mergeObj } of files) {
             const settingPath = await this.utils.getActualSettingPath(file);
             const settingObj = await this.utils.readToml(settingPath);
             const newSetting = this.utils.merge(settingObj, mergeObj);
