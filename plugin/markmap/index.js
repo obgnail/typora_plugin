@@ -298,7 +298,6 @@ class tocMarkmap {
             }
             const d3ColorSchemes = ["schemePastel2", "schemeSet2", "schemeDark2", "schemeAccent", "schemePastel1", "schemeSet1", "schemeTableau10", "schemeCategory10", "schemePaired", "schemeSet3"];
             const currentColorSchemeStr = toString(this.currentScheme);
-            const defaultColorScheme = toString(this.defaultScheme);
             const list = d3ColorSchemes.map(cs => {
                 const colorList = d3[cs];
                 const value = toString(colorList);
@@ -309,11 +308,15 @@ class tocMarkmap {
             if (!list.some(e => e.checked)) {
                 list.push({ value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true });
             }
-            list.push({ value: defaultColorScheme, label: "恢复默认" });
+            list.push({ value: "recover", label: "恢复默认" });
             const callback = colorScheme => {
-                this.currentScheme = colorScheme.split("_");
-                const cs = colorScheme === defaultColorScheme ? null : this.currentScheme;
-                this.setColorScheme(cs);
+                if (colorScheme === "recover") {
+                    this.currentScheme = this.defaultScheme;
+                    this.setColorScheme(null);
+                } else {
+                    this.currentScheme = colorScheme.split("_");
+                    this.setColorScheme(this.currentScheme);
+                }
             }
             const label = "配色方案" + _genInfo("如需自定义配色方案请前往配置文件");
             return { label: label, type: "radio", list, callback };
