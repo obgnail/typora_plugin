@@ -156,7 +156,7 @@ class dialog {
     newGroupWidget = components => {
         const fieldset = components[0].fieldset;
         const group = components.map(this.newSingleWidget);
-        return `<fieldset><legend>${fieldset}</legend>${group.join("")}</fieldset>`
+        return `<fieldset class="form-group form-fieldset-group"><legend>${fieldset}</legend>${group.join("")}</fieldset>`
     }
 
     newWidgets = components => {

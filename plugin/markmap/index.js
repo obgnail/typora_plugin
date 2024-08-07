@@ -298,6 +298,7 @@ class tocMarkmap {
             }
             const d3ColorSchemes = ["schemePastel2", "schemeSet2", "schemeDark2", "schemeAccent", "schemePastel1", "schemeSet1", "schemeTableau10", "schemeCategory10", "schemePaired", "schemeSet3"];
             const currentColorSchemeStr = toString(this.currentScheme);
+            const defaultColorScheme = toString(this.defaultScheme);
             const list = d3ColorSchemes.map(cs => {
                 const colorList = d3[cs];
                 const value = toString(colorList);
@@ -308,10 +309,11 @@ class tocMarkmap {
             if (!list.some(e => e.checked)) {
                 list.push({ value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true });
             }
+            list.push({ value: defaultColorScheme, label: "恢复默认" });
             const callback = colorScheme => {
-                const colorList = colorScheme.split("_");
-                this.currentScheme = colorList;
-                this.setColorScheme(colorList);
+                this.currentScheme = colorScheme.split("_");
+                const cs = colorScheme === defaultColorScheme ? null : this.currentScheme;
+                this.setColorScheme(cs);
             }
             const label = "配色方案" + _genInfo("如需自定义配色方案请前往配置文件");
             return { label: label, type: "radio", list, callback };
@@ -328,14 +330,14 @@ class tocMarkmap {
             return { label: "分支展开等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, inline: true, callback };
         }
 
-        const spacingHorizontal = () => {
+        const spacingH = () => {
             const defaultSpacing = 80;
             const value = (this.markmap && this.markmap.options.spacingHorizontal) || defaultSpacing;
             const callback = spacingHorizontal => this.markmap.options.spacingHorizontal = spacingHorizontal;
             return { label: "节点水平间距", type: "range", value: value, min: 1, max: 100, step: 1, inline: true, callback }
         }
 
-        const spacingVertical = () => {
+        const spacingV = () => {
             const defaultSpacing = 5;
             const value = (this.markmap && this.markmap.options.spacingVertical) || defaultSpacing;
             const callback = spacingVertical => this.markmap.options.spacingVertical = spacingVertical;
@@ -365,29 +367,42 @@ class tocMarkmap {
             return { label: label, type: "range", value: value, min: 1, max: 100, step: 1, inline: true, callback }
         }
 
-        const svgBorderH = () => {
+        const fieldset = "导出";
+        const downloadSvgBorderH = () => {
             const { BORDER_WHEN_DOWNLOAD_SVG: border } = this.config;
             const callback = width => border[0] = width;
-            return { label: "导出图形的左右边框宽度", type: "range", value: border[0], min: 1, max: 200, step: 1, inline: true, callback }
+            return { fieldset, label: "图形左右边框宽度", type: "number", value: border[0], min: 1, max: 1000, step: 1, inline: true, callback }
         }
-
-        const svgBorderV = () => {
+        const downloadSvgBorderV = () => {
             const { BORDER_WHEN_DOWNLOAD_SVG: border } = this.config;
             const callback = width => border[1] = width;
-            return { label: "导出图形的上下边框宽度", type: "range", value: border[1], min: 1, max: 200, step: 1, inline: true, callback }
+            return { fieldset, label: "图形上下边框宽度", type: "number", value: border[1], min: 1, max: 1000, step: 1, inline: true, callback }
         }
-
         const downloadFolder = () => {
-            const label = "导出文件目录" + _genInfo("为空则使用 temp 目录");
+            const label = "保存目录名" + _genInfo("为空则使用 temp 目录");
             const value = this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder;
             const callback = value => this.config.FOLDER_WHEN_DOWNLOAD_SVG = value;
-            return { label, type: "input", value, inline: true, callback }
+            return { fieldset, label, type: "input", value, inline: true, callback }
         }
-
         const downloadFileName = () => {
+            const label = "保存文件名" + _genInfo("支持变量：filename、timestamp、uuid");
             const value = this.config.FILENAME_WHEN_DOWNLOAD_SVG;
             const callback = value => this.config.FILENAME_WHEN_DOWNLOAD_SVG = value;
-            return { label: "导出文件名", type: "input", value, inline: true, callback }
+            return { fieldset, label, type: "input", value, inline: true, callback }
+        }
+        const downloadOption = () => {
+            const { REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: removeForeign, REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: removeUselessClass } = this.config;
+            const removeForeignLabel = "替换 foreignObject 标签" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
+            const removeUselessClassLabel = "删除无用的类名" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
+            const list = [
+                { label: removeForeignLabel, value: "removeForeignObject", checked: removeForeign },
+                { label: removeUselessClassLabel, value: "removeUselessClass", checked: removeUselessClass },
+            ];
+            const callback = submit => {
+                this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = submit.includes("removeForeignObject");
+                this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = submit.includes("removeUselessClass");
+            }
+            return { fieldset: "导出", label: "", type: "checkbox", list, callback }
         }
 
         const duration = () => {
@@ -429,31 +444,9 @@ class tocMarkmap {
             return { label: "", legend: "能力", type: "checkbox", list, callback }
         }
 
-        const further = () => {
-            const { REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: removeForeign, REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: removeUselessClass } = this.config;
-            const removeForeignLabel = "导出时替换 foreignObject 标签" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
-            const removeUselessClassLabel = "导出时删除无用的类名" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
-            const initColorFuncLabel = "恢复默认配色方案" + _genInfo("使用系统默认配色方案，使得上述配色方案失效");
-            const list = [
-                { label: removeForeignLabel, value: "removeForeignObject", checked: removeForeign },
-                { label: removeUselessClassLabel, value: "removeUselessClass", checked: removeUselessClass },
-                { label: initColorFuncLabel, value: "initColorFunction", checked: false },
-            ];
-            const callback = submit => {
-                this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = submit.includes("removeForeignObject");
-                this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = submit.includes("removeUselessClass");
-                if (submit.includes("initColorFunction")) {
-                    this.colorSchemeGenerator = null;
-                    this.currentScheme = this.defaultScheme;
-                }
-            }
-            return { label: "", legend: "高级", type: "checkbox", list, callback }
-        }
-
         const components = [
-            colorScheme, colorFreezeLevel, expandLevel, fitRatio, spacingHorizontal,
-            spacingVertical, maxWidth, duration, localeHeightRatio, svgBorderH, svgBorderV,
-            downloadFolder, downloadFileName, ability, further,
+            colorScheme, colorFreezeLevel, expandLevel, spacingH, spacingV, maxWidth, fitRatio, duration, localeHeightRatio, ability,
+            downloadSvgBorderH, downloadSvgBorderV, downloadFolder, downloadFileName, downloadOption,
         ].map(f => f());
         this.utils.dialog.modal({ title: "设置", width: "550px", components }, async components => {
             components.forEach(c => c.callback(c.submit));
@@ -462,10 +455,12 @@ class tocMarkmap {
     }
 
     setColorScheme = colorList => {
-        this.colorSchemeGenerator = () => {
-            const func = d3.scaleOrdinal(colorList);
-            return node => func(node.state.path.split(".").slice(0, this.colorFreezeLevel + 1).join("."))
-        }
+        this.colorSchemeGenerator = !colorList
+            ? null
+            : () => {
+                const func = d3.scaleOrdinal(colorList);
+                return node => func(node.state.path.split(".").slice(0, this.colorFreezeLevel + 1).join("."))
+            }
     }
 
     download = async () => {
