@@ -374,12 +374,12 @@ class tocMarkmap {
         const downloadSvgBorderH = () => {
             const { BORDER_WHEN_DOWNLOAD_SVG: border } = this.config;
             const callback = width => border[0] = width;
-            return { fieldset, label: "图形左右边框宽度", type: "number", value: border[0], min: 1, max: 1000, step: 1, inline: true, callback }
+            return { fieldset, label: "左右边框宽度", type: "number", value: border[0], min: 1, max: 1000, step: 1, inline: true, callback }
         }
         const downloadSvgBorderV = () => {
             const { BORDER_WHEN_DOWNLOAD_SVG: border } = this.config;
             const callback = width => border[1] = width;
-            return { fieldset, label: "图形上下边框宽度", type: "number", value: border[1], min: 1, max: 1000, step: 1, inline: true, callback }
+            return { fieldset, label: "上下边框宽度", type: "number", value: border[1], min: 1, max: 1000, step: 1, inline: true, callback }
         }
         const downloadFolder = () => {
             const label = "保存目录名" + _genInfo("为空则使用 temp 目录");
@@ -405,7 +405,7 @@ class tocMarkmap {
                 this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = submit.includes("removeForeignObject");
                 this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = submit.includes("removeUselessClass");
             }
-            return { fieldset: "导出", label: "", type: "checkbox", list, callback }
+            return { fieldset, label: "", type: "checkbox", list, callback }
         }
 
         const duration = () => {
