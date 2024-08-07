@@ -328,7 +328,7 @@ class tocMarkmap {
                 level = parseInt(level);
                 this.markmap.options.initialExpandLevel = isNaN(level) ? 1 : level;
             };
-            return { label: "分支展开等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, callback };
+            return { label: "分支展开等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, inline: true, callback };
         }
 
         const spacingHorizontal = () => {
@@ -338,7 +338,7 @@ class tocMarkmap {
                 spacingHorizontal = parseInt(spacingHorizontal);
                 this.markmap.options.spacingHorizontal = isNaN(spacingHorizontal) ? defaultSpacing : spacingHorizontal;
             };
-            return { label: "节点水平间距", type: "range", value: value, min: 1, max: 100, step: 1, callback }
+            return { label: "节点水平间距", type: "range", value: value, min: 1, max: 100, step: 1, inline: true, callback }
         }
 
         const spacingVertical = () => {
@@ -348,7 +348,7 @@ class tocMarkmap {
                 spacingVertical = parseInt(spacingVertical);
                 this.markmap.options.spacingVertical = isNaN(spacingVertical) ? defaultSpacing : spacingVertical;
             };
-            return { label: "节点垂直间距", type: "range", value: value, min: 1, max: 50, step: 1, callback }
+            return { label: "节点垂直间距", type: "range", value: value, min: 1, max: 50, step: 1, inline: true, callback }
         }
 
         const maxWidth = () => {
@@ -359,7 +359,7 @@ class tocMarkmap {
                 this.markmap.options.maxWidth = isNaN(maxWidth) ? defaultMaxWidth : maxWidth;
             };
             const label = "节点最大长度" + _genInfo("0 表示无长度限制");
-            return { label: label, type: "range", value: value, min: 0, max: 1000, step: 10, callback }
+            return { label: label, type: "range", value: value, min: 0, max: 1000, step: 10, inline: true, callback }
         }
 
         const colorFreezeLevel = () => {
@@ -369,7 +369,7 @@ class tocMarkmap {
                 this.colorFreezeLevel = isNaN(level) ? 6 : level;
             };
             const label = "固定配色的分支等级" + _genInfo("从某一等级开始，所有子分支将继承父分支的配色");
-            return { label: label, type: "range", value: level, min: 0, max: maxLevel, step: 1, callback }
+            return { label: label, type: "range", value: level, min: 0, max: maxLevel, step: 1, inline: true, callback }
         }
 
         const localeHeightRatio = () => {
@@ -380,7 +380,7 @@ class tocMarkmap {
                 this.config.LOCALE_HEIGHT_RATIO = isNaN(ratio) ? defaultValue : ratio;
             };
             const label = "定位的视口高度" + _genInfo("鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）");
-            return { label: label, type: "range", value: value, min: 1, max: 100, step: 1, callback }
+            return { label: label, type: "range", value: value, min: 1, max: 100, step: 1, inline: true, callback }
         }
 
         const svgBorderH = () => {
@@ -390,7 +390,7 @@ class tocMarkmap {
                 width = parseInt(width);
                 border[0] = isNaN(width) ? defaultValue : width;
             };
-            return { label: "导出图形的左右边框宽度", type: "range", value: border[0], min: 1, max: 200, step: 1, callback }
+            return { label: "导出图形的左右边框宽度", type: "range", value: border[0], min: 1, max: 200, step: 1, inline: true, callback }
         }
 
         const svgBorderV = () => {
@@ -400,20 +400,20 @@ class tocMarkmap {
                 width = parseInt(width);
                 border[1] = isNaN(width) ? defaultValue : width;
             };
-            return { label: "导出图形的上下边框宽度", type: "range", value: border[1], min: 1, max: 200, step: 1, callback }
+            return { label: "导出图形的上下边框宽度", type: "range", value: border[1], min: 1, max: 200, step: 1, inline: true, callback }
         }
 
         const downloadFolder = () => {
             const label = "导出文件目录" + _genInfo("为空则使用 temp 目录");
             const value = this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder;
             const callback = value => this.config.FOLDER_WHEN_DOWNLOAD_SVG = value;
-            return { label, type: "input", value, callback }
+            return { label, type: "input", value, inline: true, callback }
         }
 
         const downloadFileName = () => {
             const value = this.config.FILENAME_WHEN_DOWNLOAD_SVG;
             const callback = value => this.config.FILENAME_WHEN_DOWNLOAD_SVG = value;
-            return { label: "导出文件名", type: "input", value, callback }
+            return { label: "导出文件名", type: "input", value, inline: true, callback }
         }
 
         const duration = () => {
@@ -423,7 +423,7 @@ class tocMarkmap {
                 duration = parseInt(duration * 1000);
                 this.markmap.options.duration = isNaN(duration) ? defaultDuration : duration;
             };
-            return { label: "动画持续时间", type: "range", value: value / 1000, min: 0.1, max: 1, step: 0.1, callback }
+            return { label: "动画持续时间", type: "range", value: value / 1000, min: 0.1, max: 1, step: 0.1, inline: true, callback }
         }
 
         const fitRatio = () => {
@@ -433,7 +433,7 @@ class tocMarkmap {
                 fitRatio = Number(parseFloat(fitRatio / 100).toFixed(2));
                 this.markmap.options.fitRatio = isNaN(fitRatio) ? defaultValue : fitRatio;
             };
-            return { label: "图形的窗口填充率", type: "range", value: value, min: 50, max: 100, step: 1, callback }
+            return { label: "图形的窗口填充率", type: "range", value: value, min: 50, max: 100, step: 1, inline: true, callback }
         }
 
         const ability = () => {
@@ -487,7 +487,7 @@ class tocMarkmap {
             spacingVertical, maxWidth, duration, localeHeightRatio, svgBorderH, svgBorderV,
             downloadFolder, downloadFileName, ability, further,
         ].map(f => f());
-        this.utils.dialog.modal({ title: "设置", components }, async components => {
+        this.utils.dialog.modal({ title: "设置", width: "550px", components }, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
         });

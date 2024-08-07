@@ -506,7 +506,7 @@ DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, maxWidth = 0, s
 #   - {{ filename }}  : 当前文件名
 #   - {{ timestamp }} : 时间戳
 #   - {{ uuid }}      : uuid
-FILENAME_WHEN_DOWNLOAD_SVG = "{{filename}}.svg"
+FILENAME_WHEN_DOWNLOAD_SVG = "{{filename}}_{{timestamp}}.svg"
 # 导出svg时的目录路径(如D:\\tmp\\img)，为空时使用 temp 目录
 FOLDER_WHEN_DOWNLOAD_SVG = ""
 # 导出svg时，是否删除无用的className以减小文件体积

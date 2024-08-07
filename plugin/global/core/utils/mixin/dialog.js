@@ -142,7 +142,8 @@ class dialog {
                 break
         }
         const label_ = component.label ? `<${label}>${component.label}</${label}>` : "";
-        return `<div class="form-group" component-id="${component.id}">${label_}${inner}</div>`;
+        const inline = component.inline ? "form-inline-group" : "form-group";
+        return `<div class="${inline}" component-id="${component.id}">${label_}${inner}</div>`;
     }
 
     newGroupWidget = components => {
@@ -180,7 +181,7 @@ class dialog {
     }
 
     /**
-     * @param {{title, width, height, onload, components: [{label, type, value, fieldset, ...arg}]}} modal: 组件配置
+     * @param {{title, width, height, onload, components: [{label, type, value, fieldset, inline, ...arg}]}} modal: 组件配置
      * @param {null | function(components): null} submitCallback: 当用户点击【确认】后的回调函数
      * @param {null | function(components): null} cancelCallback: 当用户点击【取消】后的回调函数
      */
