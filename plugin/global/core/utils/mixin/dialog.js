@@ -86,7 +86,8 @@ class dialog {
             case "checkbox":
                 return Array.from(widget.querySelectorAll("input:checked"), box => box.value)
             case "range":
-                return widget.querySelector('input[type="range"]').value
+            case "number":
+                return Number(widget.querySelector(`input[type="${type}"]`).value)
             default:
                 return ""
         }
@@ -106,10 +107,13 @@ class dialog {
                 const t = type === "input" ? "text" : type;
                 control = `<input type="${t}" class="form-control" value="${component.value || ""}" placeholder="${component.placeholder || ""}" ${disabled(component)}>`;
                 break
+            case "number":
+                control = `<input type="number" class="form-control" min="${component.min}" max="${component.max}" step="${component.step}" value="${component.value}" placeholder="${component.placeholder || ""}" ${disabled(component)}/>`
+                break
             case "range":
                 const { min = 0, max = 100, step = 1, value = 1 } = component;
                 control = `<div class="plugin-custom-modal-range">
-                            <input type="range" min="${min}" max="${max}" step="${step}" value="${value}" oninput="this.nextElementSibling.innerText = this.value;">
+                            <input type="range" min="${min}" max="${max}" step="${step}" value="${value}" ${disabled(component)} oninput="this.nextElementSibling.innerText = this.value;">
                             <div class="modal-range-value">${value}</div>
                          </div>`
                 break
@@ -144,9 +148,9 @@ class dialog {
                 label = "span";
                 break
         }
-        const class_ = component.inline ? "form-inline-group" : "form-group";
+        const class_ = component.inline ? "form-inline-group" : "form-block-group";
         const label_ = component.label ? `<${label}>${component.label}</${label}>` : "";
-        return `<div class="${class_}" component-id="${component.id}">${label_}${control}</div>`;
+        return `<div class="form-group ${class_}" component-id="${component.id}">${label_}${control}</div>`;
     }
 
     newGroupWidget = components => {

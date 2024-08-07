@@ -59,8 +59,7 @@
     background-color: #428bca;
 }
 
-.plugin-custom-modal-body .form-group,
-.plugin-custom-modal-body .form-inline-group {
+.plugin-custom-modal-body .form-group {
     margin-bottom: 15px;
 }
 
@@ -75,7 +74,7 @@
     flex-basis: 50%;
 }
 
-.plugin-custom-modal-body .form-group label {
+.plugin-custom-modal-body .form-block-group label {
     margin-bottom: 5px;
 }
 

@@ -324,50 +324,35 @@ class tocMarkmap {
             } else if (level < 0) {
                 level = maxLevel;
             }
-            const callback = level => {
-                level = parseInt(level);
-                this.markmap.options.initialExpandLevel = isNaN(level) ? 1 : level;
-            };
+            const callback = level => this.markmap.options.initialExpandLevel = level;
             return { label: "分支展开等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, inline: true, callback };
         }
 
         const spacingHorizontal = () => {
             const defaultSpacing = 80;
             const value = (this.markmap && this.markmap.options.spacingHorizontal) || defaultSpacing;
-            const callback = spacingHorizontal => {
-                spacingHorizontal = parseInt(spacingHorizontal);
-                this.markmap.options.spacingHorizontal = isNaN(spacingHorizontal) ? defaultSpacing : spacingHorizontal;
-            };
+            const callback = spacingHorizontal => this.markmap.options.spacingHorizontal = spacingHorizontal;
             return { label: "节点水平间距", type: "range", value: value, min: 1, max: 100, step: 1, inline: true, callback }
         }
 
         const spacingVertical = () => {
             const defaultSpacing = 5;
             const value = (this.markmap && this.markmap.options.spacingVertical) || defaultSpacing;
-            const callback = spacingVertical => {
-                spacingVertical = parseInt(spacingVertical);
-                this.markmap.options.spacingVertical = isNaN(spacingVertical) ? defaultSpacing : spacingVertical;
-            };
+            const callback = spacingVertical => this.markmap.options.spacingVertical = spacingVertical;
             return { label: "节点垂直间距", type: "range", value: value, min: 1, max: 50, step: 1, inline: true, callback }
         }
 
         const maxWidth = () => {
             const defaultMaxWidth = 0;
             const value = (this.markmap && this.markmap.options.maxWidth) || defaultMaxWidth;
-            const callback = maxWidth => {
-                maxWidth = parseInt(maxWidth);
-                this.markmap.options.maxWidth = isNaN(maxWidth) ? defaultMaxWidth : maxWidth;
-            };
+            const callback = maxWidth => this.markmap.options.maxWidth = maxWidth;
             const label = "节点最大长度" + _genInfo("0 表示无长度限制");
             return { label: label, type: "range", value: value, min: 0, max: 1000, step: 10, inline: true, callback }
         }
 
         const colorFreezeLevel = () => {
             const level = Math.min(this.colorFreezeLevel, maxLevel);
-            const callback = level => {
-                level = parseInt(level);
-                this.colorFreezeLevel = isNaN(level) ? 6 : level;
-            };
+            const callback = level => this.colorFreezeLevel = level;
             const label = "固定配色的分支等级" + _genInfo("从某一等级开始，所有子分支将继承父分支的配色");
             return { label: label, type: "range", value: level, min: 0, max: maxLevel, step: 1, inline: true, callback }
         }
@@ -375,31 +360,20 @@ class tocMarkmap {
         const localeHeightRatio = () => {
             const defaultValue = 0.2;
             const value = parseInt((this.config.LOCALE_HEIGHT_RATIO || defaultValue) * 100);
-            const callback = ratio => {
-                ratio = Number(parseFloat(ratio / 100).toFixed(2));
-                this.config.LOCALE_HEIGHT_RATIO = isNaN(ratio) ? defaultValue : ratio;
-            };
+            const callback = ratio => this.config.LOCALE_HEIGHT_RATIO = parseFloat(ratio / 100);
             const label = "定位的视口高度" + _genInfo("鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）");
             return { label: label, type: "range", value: value, min: 1, max: 100, step: 1, inline: true, callback }
         }
 
         const svgBorderH = () => {
             const { BORDER_WHEN_DOWNLOAD_SVG: border } = this.config;
-            const callback = width => {
-                const defaultValue = 50;
-                width = parseInt(width);
-                border[0] = isNaN(width) ? defaultValue : width;
-            };
+            const callback = width => border[0] = width;
             return { label: "导出图形的左右边框宽度", type: "range", value: border[0], min: 1, max: 200, step: 1, inline: true, callback }
         }
 
         const svgBorderV = () => {
             const { BORDER_WHEN_DOWNLOAD_SVG: border } = this.config;
-            const callback = width => {
-                const defaultValue = 50;
-                width = parseInt(width);
-                border[1] = isNaN(width) ? defaultValue : width;
-            };
+            const callback = width => border[1] = width;
             return { label: "导出图形的上下边框宽度", type: "range", value: border[1], min: 1, max: 200, step: 1, inline: true, callback }
         }
 
@@ -419,20 +393,14 @@ class tocMarkmap {
         const duration = () => {
             const defaultDuration = 500;
             const value = (this.markmap && this.markmap.options.duration) || defaultDuration;
-            const callback = duration => {
-                duration = parseInt(duration * 1000);
-                this.markmap.options.duration = isNaN(duration) ? defaultDuration : duration;
-            };
+            const callback = duration => this.markmap.options.duration = duration * 1000;
             return { label: "动画持续时间", type: "range", value: value / 1000, min: 0.1, max: 1, step: 0.1, inline: true, callback }
         }
 
         const fitRatio = () => {
             const defaultValue = 0.95;
             const value = parseInt(((this.markmap && this.markmap.options.fitRatio) || defaultValue) * 100);
-            const callback = fitRatio => {
-                fitRatio = Number(parseFloat(fitRatio / 100).toFixed(2));
-                this.markmap.options.fitRatio = isNaN(fitRatio) ? defaultValue : fitRatio;
-            };
+            const callback = fitRatio => this.markmap.options.fitRatio = fitRatio / 100;
             return { label: "图形的窗口填充率", type: "range", value: value, min: 50, max: 100, step: 1, inline: true, callback }
         }
 
