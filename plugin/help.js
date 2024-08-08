@@ -69,7 +69,7 @@ class helpPlugin extends BasePlugin {
         const p = [
             `<i>Ashen One, hearest thou my voice still?</i>`,
             "感谢您使用 Typora Plugin。本项目遵循 MIT 协议，请自由地享受和参与开源。若有任何反馈或建议，可以在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。",
-            `欢迎 <a class='plu-github'>star 本项目</a>，欢迎通过 ${Object.keys(share).map(site => `<a class="plu-share" data-site="${site}">${site}</a>`).join("、")} 推荐给您的朋友。`
+            `如果本项目帮助到您，欢迎 <a class='plu-github'>STAR</a>，欢迎通过 ${Object.keys(share).map(site => `<a class="plu-share" data-site="${site}">${site}</a>`).join("、")} 推荐给您的朋友。`
         ]
         const label = p.map(e => `<p style="font-size: 1.2em">${e}</p>`).join("");
         const onclick = ev => {
@@ -125,7 +125,7 @@ class helpPlugin extends BasePlugin {
     donate = () => {
         const size = 140;
         const margin = 60;
-        const backgroundColor = "#fff";
+        const backgroundColor = "#F3F2EE";
 
         const id = this.utils.randomString();
         const wechat = "1fd416ab37f-10469ad7641-1743ea6e25d-1752cd0db5d-1745636e65d-1048e79a641-1fd5555557f-4afbea00-5d90d43d89-1d84bc65502-15d6320850b-1393fb1d8e0-1c49ee7e1e9-191474eed40-1be02668487-63b7d72a63-7d3d48d14f-32cb78f3e3-74f7db4903-944e5b1b1-1fff8e700cb-1e0f6ddf909-13e321614cb-12bff684ad0-1044872c8e7-14968b230ee-17f0e35d5c7-d162229db2-18d685fd8eb-3345e73442-15c2297b583-d2f9675a70-134618b73f8-6c415d1b-1fcf595c75b-105db2a9d10-175164a05fc-174d8579e15-175e81d4e1d-1046843dc22-1fc4d2e5b53"
