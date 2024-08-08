@@ -1,7 +1,10 @@
 class markdownLintPlugin extends BaseCustomPlugin {
     styleTemplate = () => ({ modal_width: (this.config.modal_width === "auto" ? "fit-content" : this.config.modal_width) })
+
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
+
     hotkey = () => [this.config.hotkey]
+
     html = () => `
         <div id="plugin-markdownlint" class="plugin-common-modal plugin-common-hidden"><pre tabindex="0"></pre></div>
         ${this.config.use_button ? '<div id="plugin-markdownlint-button" ty-hint="格式规范检测"></div>' : ""}
@@ -13,6 +16,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             pre: document.querySelector("#plugin-markdownlint pre"),
             button: document.querySelector("#plugin-markdownlint-button"),
         }
+        this.updateLinter = this.getLinter(this.onMessage);
         this.translateMap = {
             MD001: "标题层级一次只应增加一个级别",
             MD002: "第一个标题必须是最高级的标题",
@@ -65,23 +69,36 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        this.initWorker();
         this.initEventHandler();
         this.onLineClick();
         this.registerFixLintHotkey();
     }
 
-    initWorker = () => {
-        this.worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linterWorker.js"));
-        this.worker.onmessage = ({ data: content = "" }) => {
-            if (this.entities.button) {
-                this.entities.button.style.backgroundColor = content.length ? this.config.error_color : this.config.pass_color;
+    getLinter = onMessage => {
+        const worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linterWorker.js"));
+        worker.onmessage = event => onMessage(event.data || "");
+        setTimeout(() => worker.postMessage({ action: "init", payload: this.config.disable_rules }), 1000);
+        return async (filepath = this.utils.getFilePath()) => {
+            let message;
+            if (filepath) {
+                await File.saveUseNode();
+                message = { action: "lint-path", payload: filepath };
+            } else {
+                const content = await File.getContent();
+                message = { action: "lint-content", payload: content };
             }
-            if (this.utils.isShow(this.entities.modal)) {
-                this.entities.pre.innerHTML = content.length ? this.genMarkdownlint(content) : this.config.pass_text
-            }
+            worker.postMessage(message);
         }
-        setTimeout(() => this.worker.postMessage({ action: "init", payload: this.config.disable_rules }), 1000);
+    }
+
+    onMessage = data => {
+        const { error_color, pass_color } = this.config;
+        if (this.entities.button) {
+            this.entities.button.style.backgroundColor = data.length ? error_color : pass_color;
+        }
+        if (this.utils.isShow(this.entities.modal)) {
+            this.entities.pre.innerHTML = this.genMarkdownlint(data);
+        }
     }
 
     initEventHandler = () => {
@@ -91,9 +108,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         if (this.config.allow_drag) {
             this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true);
         }
-        const defaultTime = 500;
-        const debounce = this.utils.debounce(this.updateLinter, Math.max(defaultTime, this.config.debounce_interval - defaultTime));
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, debounce);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.updateLinter);
     }
 
     onLineClick = () => {
@@ -110,28 +125,32 @@ class markdownLintPlugin extends BaseCustomPlugin {
                     File.editor.restoreLastCursor(ev);
                     return;
                 }
-                if (a.className === "markdown-lint-doc") {
-                    this.utils.openUrl("https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md");
-                } else if (a.className === "markdown-lint-translate") {
-                    this.config.translate = !this.config.translate;
-                    this.utils.getFilePath() && File.saveUseNode().then(this.updateLinter());
-                } else if (a.className === "markdown-lint-close") {
-                    this.callback();
-                } else if (a.className === "markdown-lint-error-line") {
-                    const lineToGo = parseInt(a.textContent);
-                    if (!lineToGo) return;
-                    if (!File.editor.sourceView.inSourceMode) {
-                        File.toggleSourceMode();
-                    }
-                    const cm = File.editor.sourceView.cm;
-                    cm.scrollIntoView({ line: lineToGo - 1, ch: 0 });
-                    cm.setCursor({ line: lineToGo - 1, ch: 0 });
+                switch (a.className) {
+                    case "markdown-lint-doc":
+                        this.utils.openUrl("https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md");
+                        break;
+                    case "markdown-lint-translate":
+                        this.config.translate = !this.config.translate;
+                        this.updateLinter();
+                        break;
+                    case "markdown-lint-refresh":
+                        this.updateLinter();
+                        break;
+                    case "markdown-lint-close":
+                        this.callback();
+                        break;
+                    case "markdown-lint-error-line":
+                        const lineToGo = parseInt(a.textContent);
+                        if (!lineToGo) return;
+                        if (!File.editor.sourceView.inSourceMode) {
+                            File.toggleSourceMode();
+                        }
+                        this.scrollSourceView(lineToGo)
+                        break;
                 }
             }
         })
     }
-
-    updateLinter = () => this.worker.postMessage({ action: "lint", payload: this.utils.getFilePath() });
 
     registerFixLintHotkey = () => this.utils.hotkeyHub.registerSingle(this.config.hotkey_fix_lint_error, this.fixLintError);
 
@@ -140,27 +159,35 @@ class markdownLintPlugin extends BaseCustomPlugin {
         await this.updateLinter();
     }
 
-    genMarkdownlint = content => {
-        const translate = `<a class="markdown-lint-translate" title="翻译">🌏</a>`;
-        const doc = `<a class="markdown-lint-doc" title="具体规则文档">📖</a>`;
-        const close = `<a class="markdown-lint-close" title="关闭窗口">❌</a>`;
+    scrollSourceView = lineToGo => {
+        const cm = File.editor.sourceView.cm;
+        cm.scrollIntoView({ line: lineToGo - 1, ch: 0 });
+        cm.setCursor({ line: lineToGo - 1, ch: 0 });
+    }
 
+    genMarkdownlint = content => {
+        const { allow_drag, disable_rules, translate } = this.config;
         const hintList = ["鼠标右键：切换源码模式"];
-        this.config.allow_drag && hintList.push("ctrl+鼠标拖动：移动窗口");
+        allow_drag && hintList.push("ctrl+鼠标拖动：移动窗口");
         const operateInfo = `<span title="${hintList.join('\n')}">ℹ️</span>`;
 
-        const disableRule = '当前禁用的检测规则：\n' + this.config.disable_rules.join('\n');
-        const ruleInfo = `<span title="${disableRule}">⚠️</span>`
+        const disableRule = '当前禁用的检测规则：\n' + disable_rules.join('\n');
+        const ruleInfo = `<span title="${disableRule}">🚫</span>`
 
-        const header = `Line  Rule   Error | ${operateInfo} ${ruleInfo} | ${translate} ${doc} ${close}\n`;
+        const tran = `<a class="markdown-lint-translate" title="翻译">🌏</a>`;
+        const doc = `<a class="markdown-lint-doc" title="具体规则文档">📖</a>`;
+        const refresh = `<a class="markdown-lint-refresh" title="强制刷新">🔄</a>`
+        const close = `<a class="markdown-lint-close" title="关闭窗口">❌</a>`;
+
+        const header = `Line  Rule   Error | ${operateInfo} ${ruleInfo} | ${tran} ${doc} ${refresh} ${close}\n`;
         const result = content.map(line => {
             const lineNo = line.lineNumber + "";
-            const [ruleName, _] = line.ruleNames;
+            const [rule, _] = line.ruleNames;
             const lineNum = `<a class="markdown-lint-error-line">${lineNo}</a>` + " ".repeat(6 - lineNo.length);
-            const desc = this.config.translate ? this.translateMap[ruleName] : line.ruleDescription;
-            return "\n" + lineNum + ruleName.padEnd(7) + desc;
-        }).join("")
-        return header + result
+            const desc = translate ? this.translateMap[rule] : line.ruleDescription;
+            return "\n" + lineNum + rule.padEnd(7) + desc;
+        })
+        return header + result.join("")
     }
 
     // 修复逻辑的入口函数

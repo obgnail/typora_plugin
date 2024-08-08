@@ -979,6 +979,7 @@ MATCH_STRATEGY = "abbr"
 # 命令列表
 #  - enable:    是否启用
 #  - type:      snippet/command/gen-snp（snippet: 在调用时插入文字片段；command: 在调用时执行逻辑命令；gen-snp: 在调用时执行函数，返回待插入的文字片段，适用于插入动态内容）
+#  - scope:     当光标处在哪个位置可用。可选：plain/inline_math（默认为plain）
 #  - icon(可选): 使用emoji作为图标
 #  - hint(可选): 提示信息
 #  - keyword:   关键词，必须唯一
@@ -1030,6 +1031,10 @@ COMMANDS = [
     { enable = true, type = "gen-snp", icon = "🧩", hint = "时间戳", keyword = "Timestamp", callback = "() => new Date().getTime().toString()" },
     { enable = true, type = "gen-snp", icon = "🧩", hint = "星期", keyword = "Week", callback = "() => '星期' + '日一二三四五六'.charAt((new Date()).getDay())" },
     { enable = true, type = "snippet", icon = "🧩", hint = "示例片段", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
+    { enable = true, type = "snippet", scope = "inline_math", icon = "🧩", keyword = "alpha", callback = "\\alpha " },
+    { enable = true, type = "snippet", scope = "inline_math", icon = "🧩", keyword = "beta", callback = "\\beta " },
+    { enable = true, type = "snippet", scope = "inline_math", icon = "🧩", keyword = "epsilon", callback = "\\epsilon " },
+    { enable = true, type = "snippet", scope = "inline_math", icon = "🧩", keyword = "rightarrow", callback = "\\rightarrow " },
 ]
 
 

@@ -2,6 +2,8 @@ class slashCommandsPlugin extends BasePlugin {
     beforeProcess = () => {
         this.matched = new Map();
         this.type = { COMMAND: "command", SNIPPET: "snippet", GENERATE_SNIPPET: "gen-snp" };
+        this.scope = { INLINE_MATH: "inline_math", PLAIN: "plain" }
+        this.config.COMMANDS.forEach(cmd => cmd.scope = cmd.scope || this.scope.PLAIN);
         this.commands = new Map(this.config.COMMANDS.filter(cmd => cmd.enable && cmd.keyword).map(cmd => [cmd.keyword.toLowerCase(), cmd]));
         this.handler = { search: this._search, render: this._render, beforeApply: this._beforeApply };
         this.strategy = this._getStrategy();
@@ -33,16 +35,37 @@ class slashCommandsPlugin extends BasePlugin {
         this.utils.dialog.modal({ title: "斜杠命令", components });
     }
 
+    _getTextAround = () => {
+        const selectionRange = File.editor.selection.getRangy();
+        if (selectionRange && selectionRange.collapsed) {
+            const container = $(selectionRange.startContainer).closest(`[md-inline="plain"], [type="math/tex"]`)[0];
+            if (container) {
+                const scope = this._getScope(container);
+                const bookmark = selectionRange.getBookmark(container);
+                selectionRange.setStartBefore(container);
+                const textBefore = selectionRange.toString();
+                selectionRange.collapse(false);
+                selectionRange.setEndAfter(container);
+                const textAfter = selectionRange.toString();
+                selectionRange.setStart(container, 0);
+                return [textBefore, textAfter, bookmark, scope];
+            }
+        }
+        return [];
+    }
+
+    _getScope = container => container.tagName === "SCRIPT" ? this.scope.INLINE_MATH : this.scope.PLAIN
+
     _onEdit = () => {
         if (document.activeElement.tagName === "TEXTAREA") return;
 
-        const [textBefore, textAfter, range] = File.editor.selection.getTextAround();
+        const [textBefore, textAfter, range, scope] = this._getTextAround();
         if (!textBefore) return;
         const match = textBefore.match(new RegExp(this.config.TRIGGER_REGEXP));
         if (!match || !match.groups || match.groups.kw === undefined) return;
 
         const token = match.groups.kw.toLowerCase();
-        this._match(token);
+        this._match(token, scope);
         if (this.matched.size === 0) return;
         range.start -= (token.length + 1);
         File.editor.autoComplete.show([], range, token, this.handler);
@@ -90,10 +113,10 @@ class slashCommandsPlugin extends BasePlugin {
         return { prefix, substr, abbr }[this.config.MATCH_STRATEGY] || abbr;
     }
 
-    _match = token => {
+    _match = (token, scope) => {
         const map = new Map();
         for (const [kw, cmd] of this.commands.entries()) {
-            if (this.strategy.match(kw, token)) {
+            if (cmd.scope === scope && this.strategy.match(kw, token)) {
                 map.set(kw, cmd);
             }
         }
@@ -128,7 +151,7 @@ class slashCommandsPlugin extends BasePlugin {
 
         const { anchor } = File.editor.autoComplete.state;
         const normalizeAnchor = () => anchor.containerNode.normalize();
-        const flash = () => {
+        const refresh = () => {
             const node = this.utils.findActiveNode();
             if (!node) return;
 
@@ -151,7 +174,7 @@ class slashCommandsPlugin extends BasePlugin {
             case this.type.GENERATE_SNIPPET:
                 setTimeout(() => {
                     normalizeAnchor();
-                    flash();
+                    refresh();
                 }, 100);
                 return cmd.type === this.type.SNIPPET ? cmd.callback : this._evalFunction(cmd.callback);
             case this.type.COMMAND:

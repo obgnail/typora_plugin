@@ -1066,13 +1066,8 @@ hotkey = ""
 disable_rules = ["MD009", "MD010", "MD012", "MD013", "MD033", "MD041"]
 # 将检测规则的案文翻译为中文
 translate = true
-# 防抖时间，在编辑后多长时间重新检测一次（单位：ms）
-# 最低为1000，若<1000，则自动置为1000
-debounce_interval = 1000
 # 允许【ctrl+鼠标拖拽】拖动窗口
 allow_drag = true
-# lint通过时的提示文本
-pass_text = "该文件符合规范要求"
 # 弹窗的宽度
 #   1. auto:  根据文字自适应
 #   2. 500px: 500像素（不一定是500，可以任何正整数）
@@ -1083,6 +1078,13 @@ modal_max_height = "500px"
 modal_font_size = "14px"
 # 弹窗的文字行高
 modal_line_height = 1.4
+# 快捷键：尽力修复规范
+hotkey_fix_lint_error = ""
+# 你希望修复的规范
+# 目前支持修复的规范：
+#   - MD031: 单独的代码块前后需要用空行隔开
+#   - MD047: 文档末尾需要一个空行结尾
+try_fix_lint_error = ["MD031", "MD047"]
 # 在右上角添加一个方块，用以提示lint状态（类似于idea）
 # 若置为false，以下配置全部失效
 use_button = true
@@ -1094,13 +1096,6 @@ button_height = "15px"
 pass_color = "#499c54"
 # lint未通过时方块的颜色
 error_color = "#be9117"
-# 快捷键：尽力修复规范
-# 目前支持修复的规范：
-#   - MD031: 单独的代码块前后需要用空行隔开
-#   - MD047: 文档末尾需要一个空行结尾
-hotkey_fix_lint_error = ""
-# 在列表中填入你希望修复的规范
-try_fix_lint_error = ["MD031", "MD047"]
 
 
 ############### reopenClosedFiles ###############
