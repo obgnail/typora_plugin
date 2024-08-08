@@ -2,22 +2,23 @@ const require = self.require;
 const fs = require("fs");
 
 let markdownlinter = null;
-let disableRules = null;
+const rules = {
+    default: true,
+    MD024: { siblings_only: true },
+};
 
-const init = rules => {
+const init = disabled => {
     markdownlinter = require("./markdownlint.min").markdownlint;
-    const result = { "default": true };
-    for (const rule of rules) {
-        result[rule] = false;
+    for (const rule of disabled) {
+        rules[rule] = false;
     }
-    disableRules = result;
-    console.debug("markdown linter worker is initialized");
+    console.debug(`markdown linter worker is initialized with rules`, rules);
 }
 
 const lint = async filepath => {
-    if (!markdownlinter || !disableRules) return;
+    if (!markdownlinter || !rules) return;
     const fileContent = await fs.promises.readFile(filepath, 'utf-8');
-    const { content } = markdownlinter.sync({ strings: { content: fileContent }, config: disableRules });
+    const { content } = markdownlinter.sync({ strings: { content: fileContent }, config: rules });
     content.sort((a, b) => a.lineNumber - b.lineNumber);
     return content
 }
