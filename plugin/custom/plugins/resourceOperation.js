@@ -29,7 +29,6 @@ class resourceOperationPlugin extends BaseCustomPlugin {
             <div class="plugin-resource-operation-icon-group">
                 <div class="plugin-resource-operation-icon ion-close" action="close" ty-hint="关闭"></div>
                 <div class="plugin-resource-operation-icon ion-arrow-move" action="move" ty-hint="移动"></div>
-                <div class="plugin-resource-operation-icon ion-minus-round" action="toggleZoom" ty-hint="缩放"></div>
                 <div class="plugin-resource-operation-icon ion-eye-disabled" action="togglePreview" ty-hint="预览图片"></div>
                 <div class="plugin-resource-operation-icon ion-archive" action="download" ty-hint="下载报告"></div>
             </div>
@@ -153,20 +152,6 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         this.entities.wrap.innerHTML = "";
         this.utils.hide(this.entities.modal);
         this.togglePreview(false);
-        this.toggleZoom(false)
-    }
-
-    toggleZoom = force => {
-        const icon = this.entities.iconGroup.querySelector('[action="toggleZoom"]');
-        const needExpand = force === false || icon.classList.contains("ion-plus-round");
-        if (needExpand) {
-            this.initModalRect(false);
-        } else {
-            const { height } = this.entities.iconGroup.getBoundingClientRect();
-            this.entities.modal.style.height = height + 4 + "px";
-        }
-        icon.classList.toggle("ion-minus-round", needExpand);
-        icon.classList.toggle("ion-plus-round", !needExpand);
     }
 
     togglePreview = force => {
