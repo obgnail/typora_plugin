@@ -108,9 +108,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         if (this.config.allow_drag) {
             this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true);
         }
-        const defaultTime = 500;
-        const debounce = this.utils.debounce(this.updateLinter, Math.max(defaultTime, this.config.debounce_interval - defaultTime));
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, debounce);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.updateLinter);
     }
 
     onLineClick = () => {

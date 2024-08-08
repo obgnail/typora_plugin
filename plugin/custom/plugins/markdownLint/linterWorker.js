@@ -16,12 +16,14 @@ const init = disabled => {
 }
 
 const lintContent = fileContent => {
+    if (!linter) return;
     const { content } = linter.sync({ strings: { content: fileContent }, config });
     content.sort((a, b) => a.lineNumber - b.lineNumber);
     return content
 }
 
 const lintPath = async filepath => {
+    if (!linter) return;
     const fileContent = await fs.readFile(filepath, "utf-8");
     return lintContent(fileContent)
 }
