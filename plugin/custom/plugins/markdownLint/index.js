@@ -78,22 +78,26 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linterWorker.js"));
         worker.onmessage = event => onMessage(event.data || "");
         setTimeout(() => worker.postMessage({ action: "init", payload: this.config.disable_rules }), 1000);
-        return async () => {
-            const filepath = this.utils.getFilePath();
+        return async (filepath = this.utils.getFilePath()) => {
+            let message;
             if (filepath) {
                 await File.saveUseNode();
-                worker.postMessage({ action: "lint", payload: filepath });
+                message = { action: "lint-path", payload: filepath };
+            } else {
+                const content = await File.getContent();
+                message = { action: "lint-content", payload: content };
             }
+            worker.postMessage(message);
         }
     }
 
     onMessage = data => {
-        const { error_color, pass_color, pass_text } = this.config;
+        const { error_color, pass_color } = this.config;
         if (this.entities.button) {
             this.entities.button.style.backgroundColor = data.length ? error_color : pass_color;
         }
         if (this.utils.isShow(this.entities.modal)) {
-            this.entities.pre.innerHTML = data.length ? this.genMarkdownlint(data) : pass_text
+            this.entities.pre.innerHTML = this.genMarkdownlint(data);
         }
     }
 
@@ -131,9 +135,12 @@ class markdownLintPlugin extends BaseCustomPlugin {
                         this.config.translate = !this.config.translate;
                         this.updateLinter();
                         break;
+                    case "markdown-lint-refresh":
+                        this.updateLinter();
+                        break;
                     case "markdown-lint-close":
                         this.callback();
-                        break
+                        break;
                     case "markdown-lint-error-line":
                         const lineToGo = parseInt(a.textContent);
                         if (!lineToGo) return;
@@ -141,6 +148,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                             File.toggleSourceMode();
                         }
                         this.scrollSourceView(lineToGo)
+                        break;
                 }
             }
         })
@@ -166,21 +174,22 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const operateInfo = `<span title="${hintList.join('\n')}">ℹ️</span>`;
 
         const disableRule = '当前禁用的检测规则：\n' + disable_rules.join('\n');
-        const ruleInfo = `<span title="${disableRule}">⚠️</span>`
+        const ruleInfo = `<span title="${disableRule}">🚫</span>`
 
         const tran = `<a class="markdown-lint-translate" title="翻译">🌏</a>`;
         const doc = `<a class="markdown-lint-doc" title="具体规则文档">📖</a>`;
+        const refresh = `<a class="markdown-lint-refresh" title="强制刷新">🔄</a>`
         const close = `<a class="markdown-lint-close" title="关闭窗口">❌</a>`;
 
-        const header = `Line  Rule   Error | ${operateInfo} ${ruleInfo} | ${tran} ${doc} ${close}\n`;
+        const header = `Line  Rule   Error | ${operateInfo} ${ruleInfo} | ${tran} ${doc} ${refresh} ${close}\n`;
         const result = content.map(line => {
             const lineNo = line.lineNumber + "";
-            const [ruleName, _] = line.ruleNames;
+            const [rule, _] = line.ruleNames;
             const lineNum = `<a class="markdown-lint-error-line">${lineNo}</a>` + " ".repeat(6 - lineNo.length);
-            const desc = translate ? this.translateMap[ruleName] : line.ruleDescription;
-            return "\n" + lineNum + ruleName.padEnd(7) + desc;
-        }).join("")
-        return header + result
+            const desc = translate ? this.translateMap[rule] : line.ruleDescription;
+            return "\n" + lineNum + rule.padEnd(7) + desc;
+        })
+        return header + result.join("")
     }
 
     // 修复逻辑的入口函数

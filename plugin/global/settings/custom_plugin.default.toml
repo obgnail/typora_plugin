@@ -1071,8 +1071,6 @@ translate = true
 debounce_interval = 1000
 # 允许【ctrl+鼠标拖拽】拖动窗口
 allow_drag = true
-# lint通过时的提示文本
-pass_text = "该文件符合规范要求"
 # 弹窗的宽度
 #   1. auto:  根据文字自适应
 #   2. 500px: 500像素（不一定是500，可以任何正整数）
