@@ -5,7 +5,7 @@
     box-shadow: rgba(0, 0, 40, 0.2) 0 15px 30px 0;
     /*font-family: "PT Serif", "Times New Roman", Times, serif;*/
     width: var(--plugin-common-modal-width, 400px);
-    background: var(--plugin-common-modal-background, rgb(243, 242, 238));
+    background: var(--plugin-common-modal-background, #F3F2EE);
 }
 
 #plugin-custom-modal::backdrop {
@@ -70,6 +70,10 @@
     width: 100%;
 }
 
+.plugin-custom-modal-body a {
+    color: #4183C4;
+}
+
 .plugin-custom-modal-body .form-inline-group label {
     flex-basis: 50%;
 }
@@ -81,6 +85,7 @@
 #plugin-custom-modal label {
     display: block;
     font-size: 1.03em;
+    width: fit-content;
 }
 
 #plugin-custom-modal fieldset label {
