@@ -13,12 +13,12 @@ class helpPlugin extends BasePlugin {
         this.callArgs = [
             { arg_name: "卸载插件", arg_value: "uninstall_plugin" },
             { arg_name: "修改配置", arg_value: "open_setting_folder" },
-            { arg_name: "用户反馈", arg_value: "new_issue" },
             { arg_name: "备份配置", arg_value: "backup_setting_file" },
             { arg_name: "修改样式", arg_value: "set_user_styles", arg_hint },
             { arg_name: "我要写插件", arg_value: "new_custom_plugin", arg_hint },
             { arg_name: "Typora 自动化", arg_value: "json_rpc", arg_hint },
             { arg_name: "Github 图床", arg_value: "github_picture_bed" },
+            { arg_name: "用户反馈", arg_value: "new_issue" },
             { arg_name: "请开发者喝咖啡", arg_value: "donate" },
             { arg_name: "关于", arg_value: "about", arg_hint: "Designed with ♥ by obgnail" },
         ]
