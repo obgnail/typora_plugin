@@ -127,21 +127,20 @@ class utils {
 
 
     ////////////////////////////// 纯函数 //////////////////////////////
-    static compareVersion = (v1, v2) => {
-        if (v1 === "" && v2 !== "") {
+    static compareVersion = (ver1, ver2) => {
+        if (ver1 === "" && ver2 !== "") {
             return -1
-        } else if (v2 === "" && v1 !== "") {
+        } else if (ver2 === "" && ver1 !== "") {
             return 1
         }
-        const v1Arr = v1.split(".");
-        const v2Arr = v2.split(".");
-        for (let i = 0; i < v1Arr.length || i < v2Arr.length; i++) {
-            const n1 = (i < v1Arr.length) ? parseInt(v1Arr[i]) : 0;
-            const n2 = (i < v2Arr.length) ? parseInt(v2Arr[i]) : 0;
-            if (n1 > n2) {
-                return 1
-            } else if (n1 < n2) {
-                return -1
+        const arr1 = ver1.split(".");
+        const arr2 = ver2.split(".");
+        const maxLength = Math.max(arr1.length, arr2.length);
+        for (let i = 0; i < maxLength; i++) {
+            const num1 = parseInt(arr1[i] || 0);
+            const num2 = parseInt(arr2[i] || 0);
+            if (num1 !== num2) {
+                return num1 - num2;
             }
         }
         return 0
@@ -194,7 +193,7 @@ class utils {
 
     static debouncePromise = (fn, delay) => {
         let timeout;
-        return function debounce() {
+        return function () {
             return new Promise((resolve, reject) => {
                 clearTimeout(timeout);
                 timeout = setTimeout(() => {
