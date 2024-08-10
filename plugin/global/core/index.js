@@ -1,5 +1,5 @@
 const { utils } = require("./utils");
-const { runWithEnvironment } = require("./utils/delegate");
+const { runWithEnvironment } = require("./env");
 const { BasePlugin, BaseCustomPlugin, LoadPlugins } = require("./plugin");
 
 async function entry() {
@@ -32,7 +32,7 @@ async function entry() {
     }
 
     /** 低于0.9.98版本的Typora运行插件系统时，提出不兼容警告 */
-    const warn = () => {
+    const showWarn = () => {
         const need = global._global_settings.SHOW_INCOMPATIBLE_WARNING;
         const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0;
         if (need && incompatible) {
@@ -40,19 +40,20 @@ async function entry() {
         }
     }
 
-    const run = async () => {
+    const launch = async () => {
         const settings = await readSetting();
         const enable = settings && settings.global && settings.global.ENABLE;
-        if (enable) {
-            initVariable(settings);
-            await runWithEnvironment(loadPlugins);
-            warn();
-        } else {
+        if (!enable) {
             console.warn("disable typora plugin");
+            return;
         }
+
+        initVariable(settings);
+        await runWithEnvironment(loadPlugins);
+        showWarn();
     }
 
-    await run();
+    await launch();
 }
 
 console.debug(`
