@@ -1,13 +1,18 @@
-const { BasePlugin, BaseCustomPlugin, LoadPlugins } = require("./plugin");
 const { utils } = require("./utils");
-const { getHelper } = require("./utils/delegate");
-const { loadHelpersBefore, loadHelpersAfter, optimizeHelpers } = getHelper(utils);
+const { runWithEnvironment } = require("./env");
+const { BasePlugin, BaseCustomPlugin, LoadPlugins } = require("./plugin");
 
-class Launcher {
-    // 整个插件系统一共暴露了7个全局变量，实际有用的只有3个：BasePlugin, BaseCustomPlugin, LoadPlugins
-    // 其余4个全局变量皆由静态类utils暴露，永远不会被业务插件引用；而utils同时又是BasePlugin, BaseCustomPlugin的实例属性，所以utils自己也不需要暴露
-    // 既然永远不会被业务插件引用，为何要将它们设置为全局变量？答：方便调试
-    static prepare = settings => {
+async function entry() {
+    /** 读取配置 */
+    const readSetting = () => utils.readSetting("settings.default.toml", "settings.user.toml");
+
+    /**
+     * 初始化全局变量
+     * 整个插件系统一共暴露了7个全局变量，实际有用的只有3个：BasePlugin, BaseCustomPlugin, LoadPlugins
+     * 其余4个全局变量皆由静态类utils暴露，永远不会被业务插件引用；而utils同时又是BasePlugin, BaseCustomPlugin的实例属性，所以utils自己也不需要暴露
+     * 既然永远不会被业务插件引用，为何要将它们设置为全局变量？答：方便调试
+     **/
+    const initVariable = settings => {
         global.BasePlugin = BasePlugin;             // 插件的父类
         global.BaseCustomPlugin = BaseCustomPlugin; // 自定义插件的父类
         global.LoadPlugins = LoadPlugins;           // 加载插件
@@ -20,7 +25,14 @@ class Launcher {
         delete settings.global;
     }
 
-    static showWarningIfNeed = () => {
+    /** 加载插件 */
+    const loadPlugins = async () => {
+        const { enable, disable, stop, error, nosetting } = await LoadPlugins(global._plugin_settings, false);
+        global._plugins = enable;
+    }
+
+    /** 低于0.9.98版本的Typora运行插件系统时，提出不兼容警告 */
+    const showWarn = () => {
         const need = global._global_settings.SHOW_INCOMPATIBLE_WARNING;
         const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0;
         if (need && incompatible) {
@@ -28,45 +40,20 @@ class Launcher {
         }
     }
 
-    static loadPlugins = async () => {
-        const { enable, disable, stop, error, nosetting } = await LoadPlugins(global._plugin_settings, false);
-        global._plugins = enable;
-    }
-
-    static optimizeHelpers = async () => {
-        if (global._global_settings.PERFORMANCE_MODE) {
-            await optimizeHelpers();
+    const launch = async () => {
+        const settings = await readSetting();
+        const enable = settings && settings.global && settings.global.ENABLE;
+        if (!enable) {
+            console.warn("disable typora plugin");
+            return;
         }
+
+        initVariable(settings);
+        await runWithEnvironment(loadPlugins);
+        showWarn();
     }
 
-    static run = async () => {
-        const settings = await utils.readSetting("settings.default.toml", "settings.user.toml");
-        if (!settings || !settings.global || !settings.global.ENABLE) return;
-
-        // 初始化全局变量
-        this.prepare(settings);
-
-        // 加载组件(先于插件)
-        await loadHelpersBefore();
-
-        // 加载插件
-        await this.loadPlugins();
-
-        // 加载组件(后于插件)
-        await loadHelpersAfter();
-
-        // 发布[已完成]事件
-        utils.eventHub.publishEvent(utils.eventHub.eventType.allPluginsHadInjected);
-
-        // 优化组件
-        await this.optimizeHelpers();
-
-        // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
-        setTimeout(utils.reload, 50);
-
-        // 低于0.9.98版本的Typora运行插件系统时，提出不兼容警告
-        this.showWarningIfNeed();
-    }
+    await launch();
 }
 
 console.debug(`
@@ -78,11 +65,11 @@ ____________________________________________________________________
  /_/  \\__, / .___/\\____/_/   \\__,_/  / .___/_/\\__,_/\\__, /_/_/ /_/ 
      /____/_/                       /_/            /____/          
 
-                        Designed by obgnail                         
+                        Designed by obgnail                        
               https://github.com/obgnail/typora_plugin             
 ____________________________________________________________________
 `)
 
 module.exports = {
-    entry: async () => Launcher.run()
+    entry
 };

@@ -3,6 +3,8 @@
     flex-direction: column;
     resize: both;
     overflow: auto;
+    min-width: 120px;
+    min-height: 120px;
 }
 
 #plugin-resource-operation .plugin-resource-operation-wrap {
