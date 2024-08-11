@@ -24,7 +24,7 @@
 }
 
 .plugin-custom-modal-body {
-    max-height: calc(80vh - 150px);
+    max-height: calc(80vh - 100px);
     overflow: auto;
     padding: 0 15px;
     height: var(--plugin-common-modal-body-height, auto);
