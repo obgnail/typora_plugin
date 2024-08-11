@@ -77,7 +77,6 @@
 .plugin-custom-modal-body .form-inline-group label {
     flex-basis: 50%;
 }
-
 .plugin-custom-modal-body .form-block-group label {
     margin-bottom: 5px;
 }
@@ -86,14 +85,6 @@
     display: block;
     font-size: 1.03em;
     width: fit-content;
-}
-
-#plugin-custom-modal fieldset label {
-    user-select: none;
-}
-
-#plugin-custom-modal input[type="number"] {
-    max-width: 100px;
 }
 
 #plugin-custom-modal input[type="checkbox"],
@@ -105,12 +96,14 @@
     transform: translateY(-50%);
     box-shadow: none;
 }
+#plugin-custom-modal input[type="number"] {
+    max-width: 100px;
+}
 
 #plugin-custom-modal .plugin-custom-modal-range {
     display: inline-flex;
     width: 100%;
 }
-
 .plugin-custom-modal-range .modal-range-value {
     margin-left: 0.5em;
     font-size: 1.2em;
