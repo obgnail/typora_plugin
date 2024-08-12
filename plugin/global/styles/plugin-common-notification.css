@@ -3,11 +3,12 @@
     top: 8%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 400px;
+    min-width: 400px;
+    max-width: 700px;
     padding: 15px 20px;
     color: rgb(51, 51, 51);
     box-shadow: rgba(0, 0, 0, 0.1) 0 2px 10px;
-    border-radius: 10px;
+    border-radius: 2px;
     z-index: 9999;
     text-align: left;
     display: flex;
@@ -35,4 +36,5 @@
     font-size: 16px;
     color: rgb(136, 136, 136);
     cursor: pointer;
+    margin-left: 10px;
 }
