@@ -1,10 +1,11 @@
 <div align="center">
     <h1>Typora Plugin</h1>
-    <img src="assets/typora_plugin.png" alt="typora_plugin" width="400" />
+    <img src="assets/typora_plugin.png" alt="typora_plugin" width="400">
     <p align="center">
         <a href="https://github.com/obgnail/typora_plugin/releases/latest"><img src="https://img.shields.io/github/v/release/obgnail/typora_plugin"></a>
-        <a href="https://github.com/obgnail/typora_plugin/forks"><img src="https://img.shields.io/github/forks/obgnail/typora_plugin?style=flat"></a>
         <a href="https://github.com/obgnail/typora_plugin/stargazers"><img src="https://img.shields.io/github/stars/obgnail/typora_plugin?style=flat"></a>
+        <a href="https://github.com/obgnail/typora_plugin/issues"><img src="https://img.shields.io/github/issues-closed/obgnail/typora_plugin.svg"></a>
+        <a href="https://github.com/obgnail/typora_plugin/tree/master/plugin"><img src="https://img.shields.io/badge/implementation-native-greenbule"></a>
         <a href="https://github.com/obgnail/typora_plugin/blob/master/LICENSE"><img src="https://img.shields.io/github/license/obgnail/typora_plugin"></a>
     </p>
 </div>
