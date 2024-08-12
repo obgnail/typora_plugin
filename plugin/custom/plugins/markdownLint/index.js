@@ -66,7 +66,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             MD046: "代码块要用三个反引号包裹",
             MD047: "文档末尾需要一个空行结尾",
             MD048: "代码块应采用一致的分隔符",
-            MD049: "要求采用一致的倾斜格式",
+            MD049: "要求采用一致的斜体格式",
             MD050: "要求采用一致的加粗格式",
             MD051: "文内链接必须有效，不能指向一个不存在的标题",
             MD052: "引用链接和图片应该使用已经定义的标签",
@@ -84,7 +84,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     getLinter = onMessage => {
-        const worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linterWorker.js"));
+        const worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linter-worker.js"));
         worker.onmessage = event => onMessage(event.data || "");
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             setTimeout(() => worker.postMessage({ action: "init", payload: this.config.rule_config }), 1000);
@@ -189,7 +189,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
         const config = `<a class="markdown-lint-config" title="当前配置">⚙️</a>`
         const tran = `<a class="markdown-lint-translate" title="翻译">🌐</a>`;
-        const doc = `<a class="markdown-lint-doc" title="具体规则文档">📃</a>`;
+        const doc = `<a class="markdown-lint-doc" title="规则文档">📃</a>`;
         const refresh = `<a class="markdown-lint-refresh" title="强制刷新">🔄</a>`
         const close = `<a class="markdown-lint-close" title="关闭窗口">❌</a>`;
 
