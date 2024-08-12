@@ -132,7 +132,7 @@ class textStylizePlugin extends BasePlugin {
         superScript: this.toggleSuperScript,
         subScript: this.toggleSubScript,
         emphasis: () => this.toggleEmphasis("filled red"),
-        blur: () => this.toggleBlur(5),
+        blur: () => this.toggleBlur(0.5),
         weight: () => this.toggleWeight("bold"),
         title: () => this.toggleSize("2em"),
         increaseSize: () => this.increaseSize(0.1),
@@ -152,7 +152,7 @@ class textStylizePlugin extends BasePlugin {
     toggleFamily = family => this.setStyle({ toggleMap: { "font-family": family } });
     toggleBorder = border => this.setStyle({ toggleMap: { border } });
     toggleEmphasis = emphasis => this.setStyle({ toggleMap: { "text-emphasis": emphasis } })
-    toggleBlur = (num = 5) => this.setStyle({ mergeMap: { "filter": `blur(${num}px)` } })
+    toggleBlur = (num = 0.5) => this.setStyle({ mergeMap: { "filter": `blur(${num}em)` } })
     toggleItalic = () => this.setStyle({ toggleMap: { "font-style": "italic" } });
     toggleUnderline = () => this.setStyle({ mergeMap: { "text-decoration": "underline" } });
     toggleThroughline = () => this.setStyle({ mergeMap: { "text-decoration": "line-through" } });

@@ -101,8 +101,10 @@ ${show_outline}
     display: inline-flex;
     position: absolute;
     height: 20px;
+    max-width: calc(var(--markmap-color-width) * 14);
+    --markmap-color-width: 32px;
 }
 
 .plugin-markmap-color {
-    width: 28px;
+    width: var(--markmap-color-width);
 }
