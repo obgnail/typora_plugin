@@ -5,8 +5,10 @@ let linter = null;
 const config = { default: true, MD024: { siblings_only: true } };
 
 const init = disabled => {
-    const { markdownlint } = require("./markdownlint.min");
-    linter = markdownlint;
+    if (!linter) {
+        const { markdownlint } = require("./markdownlint.min");
+        linter = markdownlint;
+    }
 
     for (const rule of disabled) {
         config[rule] = false;
