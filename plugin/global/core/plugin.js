@@ -8,28 +8,46 @@ class IPlugin {
     }
 
     // 最先执行的函数，在这里准备插件需要的数据。若返回utils.stopLoadPluginError，则停止加载插件
-    async beforeProcess() {}
+    async beforeProcess() {
+    }
+
     // 以字符串形式导入样式
-    style() {}
+    style() {
+    }
+
     // 以文件形式导入样式
-    styleTemplate() {}
+    styleTemplate() {
+    }
+
     // 原生插入html标签
-    html() {}
+    html() {
+    }
+
     // 使用htmlTemplater插入html标签，详见htmlTemplater
-    htmlTemplate() {}
+    htmlTemplate() {
+    }
+
     // 注册快捷键
-    hotkey() {}
+    hotkey() {
+    }
+
     // 初始化数据
-    init() {}
+    init() {
+    }
+
     // 主要的处理流程
-    process() {}
+    process() {
+    }
+
     // 收尾，一般用于回收内存，用的比较少
-    afterProcess() {}
+    afterProcess() {
+    }
 }
 
 // 一级插件
 class BasePlugin extends IPlugin {
-    call(type, meta) {}
+    call(type, meta) {
+    }
 }
 
 // 二级插件
@@ -40,9 +58,14 @@ class BaseCustomPlugin extends IPlugin {
         this.showName = setting.name;
     }
 
-    selector(isClick) {}
-    hint(isDisable) {}
-    callback(anchorNode) {}
+    selector(isClick) {
+    }
+
+    hint(isDisable) {
+    }
+
+    callback(anchorNode) {
+    }
 }
 
 const loadPlugin = async (fixedName, setting, isCustom) => {
@@ -84,7 +107,7 @@ const loadPlugin = async (fixedName, setting, isCustom) => {
 
 const LoadPlugins = async (settings, isCustom) => {
     const plugins = { enable: {}, disable: {}, stop: {}, error: {}, nosetting: {} };
-    for (const [fixedName, setting] of Object.entries(settings)) {
+    await Promise.all(Object.entries(settings).map(async ([fixedName, setting]) => {
         if (!setting) {
             plugins.nosetting[fixedName] = fixedName;
         } else if (!setting.ENABLE && !setting.enable) {
@@ -102,7 +125,7 @@ const LoadPlugins = async (settings, isCustom) => {
                 plugins.error[fixedName] = error;
             }
         }
-    }
+    }))
 
     // log
     const color = { enable: "32", disable: "33", stop: "34", error: "31", nosetting: "35" };
