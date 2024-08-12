@@ -1062,8 +1062,8 @@ order = 1
 [markdownLint.config]
 # 快捷键
 hotkey = ""
-# 禁用的检测规则（参考：https://github.com/markdownlint/markdownlint/blob/main/docs/RULES.md）
-disable_rules = ["MD009", "MD010", "MD012", "MD013", "MD033", "MD041"]
+# 规则（参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md）
+rule_config = { default = true, MD009 = false, MD010 = false, MD012 = false, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false }
 # 将检测规则的案文翻译为中文
 translate = true
 # 允许【ctrl+鼠标拖拽】拖动窗口

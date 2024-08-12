@@ -87,6 +87,11 @@
     width: fit-content;
 }
 
+#plugin-custom-modal input,
+#plugin-custom-modal textarea {
+    font-family: initial;
+}
+
 #plugin-custom-modal input[type="checkbox"],
 #plugin-custom-modal input[type="radio"] {
     position: absolute;
