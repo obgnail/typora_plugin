@@ -15,7 +15,7 @@ class notification {
         this.utils.insertElement(`
             <div class="plugin-common-notification plugin-common-hidden">
                 <span class="notification-icon fa fa-check"></span>
-                <p class="notification-message"></p>
+                <span class="notification-message"></span>
                 <button class="notification-close-btn">✕</button>
             </div>
         `);

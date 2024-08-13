@@ -16,13 +16,14 @@ class markdownLintPlugin extends BaseCustomPlugin {
             pre: document.querySelector("#plugin-markdownlint pre"),
             button: document.querySelector("#plugin-markdownlint-button"),
         }
+        this.detail = null;
         this.updateLinter = this.getLinter(this.onMessage);
         this.translateMap = {
             MD001: "标题级别应该逐级递增，不允许跳级",
             MD002: "第一个标题应该是顶级标题",
             MD003: "在标题前加#号来表示标题级别",
-            MD004: "无序列表的格式要求是一致的",
-            MD005: "同级列表项的缩进要求是一致的",
+            MD004: "要求采用一致的无序列表的格式",
+            MD005: "要求同级列表项的缩进是一致的",
             MD006: "最高级标题不能缩进",
             MD007: "无序列表嵌套时，使用两个空格缩进",
             MD008: "MD008",
@@ -39,14 +40,14 @@ class markdownLintPlugin extends BaseCustomPlugin {
             MD019: "atx标题格式下，#号和文字之间的空格不能多于一个",
             MD020: "closed_atx标题格式下，文字和前后#号之间需用一个空格隔开",
             MD021: "closed_atx标题格式下，文字和前后#号之间的空格不能多于一个",
-            MD022: "标题行的上下行必须都是空行",
+            MD022: "标题行的上下行应该都是空行",
             MD023: "标题行不能缩进",
             MD024: "不能连续出现内容重复的标题",
             MD025: "只能有一个一级标题",
             MD026: "标题不应以标点符号结尾",
             MD027: "引用区块的引用符号和文字之间有且只有一个空格",
             MD028: "两个引用区块间不能用空行隔开。引用区块中的空行要用>开头",
-            MD029: "有序列表的序号必须从1开始，按顺序递增",
+            MD029: "要求有序列表的序号从1开始，按顺序递增",
             MD030: "列表的每一列表项的标识符后只能空一格，后接列表内容",
             MD031: "单独的代码块前后需要用空行隔开",
             MD032: "列表前后需要用空行隔开，列表的缩进必须一致",
@@ -65,14 +66,14 @@ class markdownLintPlugin extends BaseCustomPlugin {
             MD045: "图片链接必须包含描述文本",
             MD046: "代码块要用三个反引号包裹",
             MD047: "文档末尾需要一个空行结尾",
-            MD048: "代码块应采用一致的分隔符",
+            MD048: "要求采用一致的代码块分隔符",
             MD049: "要求采用一致的斜体格式",
             MD050: "要求采用一致的加粗格式",
             MD051: "文内链接必须有效，不能指向一个不存在的标题",
             MD052: "引用链接和图片应该使用已经定义的标签",
             MD053: "链接和图片引用定义不可省略",
-            MD054: "链接和图片格式要求是一致的，不能混用",
-            MD055: "表格的分隔符格式要求是一致的，不能混用",
+            MD054: "要求采用一致的链接和图片格式",
+            MD055: "要求采用一致的表格分隔符格式",
             MD056: "表格列数要求是一致的，不能省略或多余",
         }
     }
@@ -87,7 +88,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linter-worker.js"));
         worker.onmessage = event => onMessage(event.data || "");
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            setTimeout(() => worker.postMessage({ action: "init", payload: this.config.rule_config }), 1000);
+            setTimeout(() => {
+                worker.postMessage({ action: "init", payload: this.config.rule_config });
+                this.updateLinter();
+            }, 1000);
         })
         return async (filepath = this.utils.getFilePath()) => {
             let message;
@@ -103,6 +107,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     onMessage = data => {
+        this.detail = data;
         const { error_color, pass_color } = this.config;
         if (this.entities.button) {
             this.entities.button.style.backgroundColor = data.length ? error_color : pass_color;
@@ -119,7 +124,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         if (this.config.allow_drag) {
             this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true);
         }
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.updateLinter);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.utils.debounce(this.updateLinter, 500));
     }
 
     onLineClick = () => {
@@ -158,10 +163,14 @@ class markdownLintPlugin extends BaseCustomPlugin {
                         }
                         this.scrollSourceView(lineToGo)
                         break;
+                    case "markdown-lint-detail":
                     case "markdown-lint-config":
-                        const content = JSON.stringify(this.config.rule_config, null, "\t");
-                        const components = [{ label: "当前配置", type: "textarea", rows: 15, readonly: "readonly", content }];
-                        this.utils.modal({ title: "格式规范检测", components });
+                        const [obj, label] = a.className === "markdown-lint-detail"
+                            ? [this.detail.map(i => this.utils.fromObject(i, ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"])), "详细信息"]
+                            : [this.config.rule_config, "当前配置"]
+                        const content = JSON.stringify(obj, null, "\t");
+                        const components = [{ label, type: "textarea", rows: 15, readonly: "readonly", content }];
+                        this.utils.modal({ title: "格式规范检测", width: "550px", components });
                         break;
                 }
             }
@@ -187,13 +196,16 @@ class markdownLintPlugin extends BaseCustomPlugin {
         allow_drag && hintList.push("ctrl+鼠标拖动：移动窗口");
         const operateInfo = `<span title="${hintList.join('\n')}">💡</span>`;
 
-        const config = `<a class="markdown-lint-config" title="当前配置">⚙️</a>`
-        const tran = `<a class="markdown-lint-translate" title="翻译">🌐</a>`;
-        const doc = `<a class="markdown-lint-doc" title="规则文档">📃</a>`;
-        const refresh = `<a class="markdown-lint-refresh" title="强制刷新">🔄</a>`
-        const close = `<a class="markdown-lint-close" title="关闭窗口">❌</a>`;
+        const aList = [
+            ["markdown-lint-detail", "详细信息", "🔍"],
+            ["markdown-lint-config", "当前配置", "⚙️"],
+            ["markdown-lint-translate", "翻译", "🌐"],
+            ["markdown-lint-doc", "规则文档", "📃"],
+            ["markdown-lint-refresh", "强制刷新", "🔄"],
+            ["markdown-lint-close", "关闭窗口", "❌"],
+        ].map(([cls, title, icon]) => `<a class="${cls}" title="${title}">${icon}</a>`)
 
-        const header = `Line  Rule   Error | ${operateInfo} ${doc} ${config} ${tran} ${refresh} ${close}\n`;
+        const header = `Line  Rule   Error | ${operateInfo} ${aList.join(" ")}\n`;
         const result = content.map(line => {
             const lineNo = line.lineNumber + "";
             const [rule, _] = line.ruleNames;
