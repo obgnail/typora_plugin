@@ -88,7 +88,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linter-worker.js"));
         worker.onmessage = event => onMessage(event.data || "");
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            setTimeout(() => worker.postMessage({ action: "init", payload: this.config.rule_config }), 1000);
+            setTimeout(() => {
+                worker.postMessage({ action: "init", payload: this.config.rule_config });
+                this.updateLinter();
+            }, 1000);
         })
         return async (filepath = this.utils.getFilePath()) => {
             let message;

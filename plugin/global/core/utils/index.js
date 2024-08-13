@@ -227,6 +227,8 @@ class utils {
         return result;
     }
 
+    static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
     static splitKeyword = str => {
         const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
         let result = [];
