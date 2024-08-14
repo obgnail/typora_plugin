@@ -96,7 +96,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         return async (filepath = this.utils.getFilePath()) => {
             let message;
             if (filepath) {
-                await File.saveUseNode();
+                // await File.saveUseNode();
                 message = { action: "lint-path", payload: filepath };
             } else {
                 const content = await File.getContent();
