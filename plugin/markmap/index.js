@@ -308,7 +308,7 @@ class tocMarkmap {
             if (!list.some(e => e.checked)) {
                 list.push({ value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true });
             }
-            list.push({ value: "recover", label: "恢复默认" });
+            list.push({ value: "recover", label: "恢复默认" + _genInfo("其他的配色相关配置将失效") });
             const callback = colorScheme => {
                 if (colorScheme === "recover") {
                     this.currentScheme = this.defaultScheme;
@@ -358,7 +358,7 @@ class tocMarkmap {
         const colorFreezeLevel = () => {
             const level = Math.min(this.colorFreezeLevel, maxLevel);
             const callback = level => this.colorFreezeLevel = level;
-            const label = "固定配色的分支等级" + _genInfo("从某一等级开始，所有子分支将继承父分支的配色");
+            const label = "固定配色的分支等级" + _genInfo("从某一等级开始，所有子分支继承父分支的配色");
             return { label: label, type: "range", value: level, min: 0, max: maxLevel, step: 1, inline: true, callback }
         }
 
@@ -424,10 +424,10 @@ class tocMarkmap {
 
         const ability = () => {
             const { zoom = true, pan = true } = (this.markmap && this.markmap.options) || {};
-            const fitWhenUpdateLabel = "更新时自动适配窗口" + _genInfo("图形更新时自动重新适配窗口大小");
-            const fitWhenFoldLabel = "折叠时自动适配窗口" + _genInfo("折叠图形节点时自动重新适配窗口大小");
-            const collapseWhenFoldLabel = "折叠时自动折叠章节" + _genInfo("此功能为实验性特性，依赖「章节折叠」插件，目前不推荐开启");
-            const foldWhenUpdateLabel = "记住已折叠节点" + _genInfo("图形更新时不再重新展开已折叠节点");
+            const fitWhenUpdateLabel = "更新时自动适配窗口" + _genInfo("图形更新时自动重新适配窗口");
+            const fitWhenFoldLabel = "折叠时自动适配窗口" + _genInfo("折叠图形节点时自动重新适配窗口");
+            const collapseWhenFoldLabel = "折叠时自动折叠章节" + _genInfo("实验性特性，依赖「章节折叠」插件，不推荐开启");
+            const foldWhenUpdateLabel = "记住已折叠节点" + _genInfo("图形更新时不会展开已折叠节点");
             const list = [
                 { label: "鼠标滚轮缩放", value: "zoom", checked: zoom },
                 { label: "鼠标滚轮平移", value: "pan", checked: pan },

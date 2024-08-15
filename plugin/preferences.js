@@ -63,7 +63,7 @@ class preferencesPlugin extends BasePlugin {
             json_rpc: "此插件面向开发者，普通用户无需启用",
             ripgrep: "此插件需要您了解 ripgrep 工具",
             test: "插件开发者专用，仅建议在开发插件期间启用",
-            reopenClosedFiles: "此插件依赖于「标签页管理」插件",
+            reopenClosedFiles: "此插件依赖「标签页管理」插件",
             openInTotalCommander: "此插件需要手动修改配置后方可运行",
             redirectLocalRootUrl: "此插件需要手动修改配置后方可运行",
             autoTrailingWhiteSpace: "此插件面向特殊人群（如网站站长），不建议普通用户启用",
