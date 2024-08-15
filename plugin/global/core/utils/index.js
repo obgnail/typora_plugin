@@ -149,12 +149,7 @@ class utils {
     // merge({ a: [{ b: 2 }] }, { a: [{ c: 2 }] }) -> { a: [{ c: 2 }] }
     // merge({ o: { a: 3 } }, { o: { b: 4 } }) -> { o: { a: 3, b: 4 } }
     static merge = (source, other) => {
-        const isObject = value => {
-            const type = typeof value
-            return value !== null && (type === 'object' || type === 'function')
-        }
-
-        if (!isObject(source) || !isObject(other)) {
+        if (!this.isObject(source) || !this.isObject(other)) {
             return other === undefined ? source : other
         }
         return Object.keys({ ...source, ...other }).reduce((obj, key) => {
@@ -272,8 +267,12 @@ class utils {
         });
     }
 
-    static isPromise = obj => obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function'
-    static isBase64 = str => /^[A-Za-z0-9+/=]+$/.test(str) && str.length % 4 === 0;
+    static isBase64 = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str);
+    static isPromise = obj => this.isObject(obj) && typeof obj.then === 'function'
+    static isObject = value => {
+        const type = typeof value
+        return value !== null && (type === 'object' || type === 'function')
+    }
 
     static windowsPathToUnix = filepath => {
         if (!File.isWin) return filepath;

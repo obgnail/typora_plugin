@@ -225,13 +225,11 @@ class tocMarkmap {
         this.pinUtils = {
             isPinUp: false,
             isPinRight: false,
-            recordRect: async () => new Promise(resolve => {
-                setTimeout(() => {
-                    this.modalOriginRect = this.entities.modal.getBoundingClientRect();
-                    this.contentOriginRect = this.entities.content.getBoundingClientRect();
-                    resolve();
-                }, 200)
-            })
+            recordRect: async () => {
+                await this.utils.sleep(200);
+                this.modalOriginRect = this.entities.modal.getBoundingClientRect();
+                this.contentOriginRect = this.entities.content.getBoundingClientRect();
+            }
         }
 
         this.entities = {
