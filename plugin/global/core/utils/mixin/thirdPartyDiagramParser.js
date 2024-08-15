@@ -7,7 +7,7 @@ class thirdPartyDiagramParser {
     }
 
     /**
-     * f**k，js不支持interface，只能将接口函数作为参数传入，整整12个参数，一坨狗屎
+     * f**k，js不支持interface，只能将接口函数作为参数传入，整整13个参数，一坨狗屎
      * @param {string} lang: 语言
      * @param {string} mappingLang: 映射到哪个语言
      * @param {boolean} destroyWhenUpdate: 更新前是否清空preview里的html
@@ -20,9 +20,10 @@ class thirdPartyDiagramParser {
      * @param {function(Object): null} destroyFunc: 传入图形实例，destroy图形实例
      * @param {function(Element, instance): null} beforeExport: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
      * @param {function(): string} extraStyleGetter 用于导出时，新增css
+     * @param {function(): string} versionGetter 第三方资源版本
      */
-    register = ({ lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter }) => {
-        const p = { checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, map: {} };
+    register = ({ lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter, versionGetter }) => {
+        const p = { checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, versionGetter, map: {} };
         this.parsers.set(lang.toLowerCase(), p);
         this.utils.diagramParser.register({
             lang, mappingLang, destroyWhenUpdate, extraStyleGetter, interactiveMode,

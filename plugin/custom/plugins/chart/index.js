@@ -22,6 +22,7 @@ class chartPlugin extends BaseCustomPlugin {
             destroyFunc: this.destroy,
             beforeExport: this.beforeExport,
             extraStyleGetter: null,
+            versionGetter: this.versionGetter,
         })
     }
 
@@ -52,6 +53,8 @@ class chartPlugin extends BaseCustomPlugin {
         img.src = instance.toBase64Image();
         $(preview).html(img);
     }
+
+    versionGetter = () => this.ChartPkg && this.ChartPkg.version
 
     lazyLoad = () => this.ChartPkg = this.ChartPkg || require("./chart.min");
 }

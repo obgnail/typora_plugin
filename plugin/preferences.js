@@ -35,13 +35,7 @@ class preferencesPlugin extends BasePlugin {
         }
 
         if (showModal) {
-            const option = {
-                type: "info",
-                buttons: ["确定", "取消"],
-                title: "preferences",
-                detail: "配置将于重启 Typora 后生效，确认重启？",
-                message: "设置成功",
-            }
+            const option = { type: "info", buttons: ["确定", "取消"], title: "preferences", detail: "配置将于重启 Typora 后生效，确认重启？", message: "设置成功" }
             const { response } = await this.utils.showMessageBox(option);
             if (response === 0) {
                 this.utils.restartTypora();

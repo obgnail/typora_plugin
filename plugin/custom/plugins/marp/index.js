@@ -19,6 +19,7 @@ class marpPlugin extends BaseCustomPlugin {
             destroyFunc: this.destroy,
             beforeExport: null,
             extraStyleGetter: null,
+            versionGetter: this.versionGetter,
         })
     }
 
@@ -31,6 +32,8 @@ class marpPlugin extends BaseCustomPlugin {
     }
 
     destroy = shadowRoot => shadowRoot.innerHTML = "";
+
+    versionGetter = () => "marp-core@3.9.0"
 
     lazyLoad = () => this.marpPkg = this.marpPkg || require("./marp.min");
 }

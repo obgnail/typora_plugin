@@ -23,6 +23,7 @@ class echartsPlugin extends BaseCustomPlugin {
             destroyFunc: this.destroy,
             beforeExport: this.beforeExport,
             extraStyleGetter: null,
+            versionGetter: this.versionGetter,
         })
     }
 
@@ -61,6 +62,8 @@ class echartsPlugin extends BaseCustomPlugin {
             $(preview).html(svg);
         }
     }
+
+    versionGetter = () => this.echartsPkg && this.echartsPkg.version
 
     lazyLoad = () => this.echartsPkg = this.echartsPkg || require("./echarts.min");
 }

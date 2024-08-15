@@ -22,6 +22,7 @@ class calendarPlugin extends BaseCustomPlugin {
             destroyFunc: this.destroy,
             beforeExport: null,
             extraStyleGetter: null,
+            versionGetter: this.versionGetter,
         })
     }
 
@@ -38,6 +39,8 @@ class calendarPlugin extends BaseCustomPlugin {
         instance.clear();
         instance.destroy();
     }
+
+    versionGetter = () => "2.1.3"
 
     lazyLoad = () => {
         if (!this.Calendar) {

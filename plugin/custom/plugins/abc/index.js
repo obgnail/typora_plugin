@@ -20,6 +20,7 @@ class abcPlugin extends BaseCustomPlugin {
             destroyFunc: null,
             beforeExport: null,
             extraStyleGetter: null,
+            versionGetter: this.versionGetter,
         })
     }
 
@@ -27,6 +28,8 @@ class abcPlugin extends BaseCustomPlugin {
         const visualOptions = Object.assign({}, this.config.VISUAL_OPTIONS); // set prototype
         this.ABCJS.renderAbc($wrap[0], content, visualOptions);
     }
+
+    versionGetter = () => this.ABCJS && this.ABCJS.signature
 
     lazyLoad = () => this.ABCJS = this.ABCJS || require("./abcjs-basic-min");
 }
