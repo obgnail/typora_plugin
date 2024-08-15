@@ -7,7 +7,7 @@ class dialog {
 
     html = () => `
         <dialog id="plugin-custom-modal">
-            <div class="plugin-custom-modal-header"><div class="plugin-custom-modal-title" data-lg="Front">自定义插件弹窗</div></div>
+            <div class="plugin-custom-modal-header"><div class="plugin-custom-modal-title" data-lg="Front"></div></div>
             <div class="plugin-custom-modal-body"></div>
             <div class="plugin-custom-modal-footer">
                 <button type="button" class="btn btn-default plugin-modal-cancel">取消</button>
@@ -26,18 +26,18 @@ class dialog {
         await this.utils.styleTemplater.register("plugin-common-modal");
         this.utils.insertElement(this.html());
         this.entities = {
-            modal: document.getElementById("plugin-custom-modal"),
+            modal: document.querySelector("#plugin-custom-modal"),
             body: document.querySelector("#plugin-custom-modal .plugin-custom-modal-body"),
             title: document.querySelector("#plugin-custom-modal .plugin-custom-modal-title"),
-            submit: document.querySelector("#plugin-custom-modal button.plugin-modal-submit"),
-            cancel: document.querySelector("#plugin-custom-modal button.plugin-modal-cancel"),
+            submit: document.querySelector("#plugin-custom-modal .plugin-modal-submit"),
+            cancel: document.querySelector("#plugin-custom-modal .plugin-modal-cancel"),
         }
         this.entities.cancel.addEventListener("click", () => this.onButtonClick(this.cancelCallback))
         this.entities.submit.addEventListener("click", () => this.onButtonClick(this.submitCallback))
     }
 
     onButtonClick = async callback => {
-        const { components } = this.modalOption || {};  // 先取出来，接下来this.modalOption会被置为空
+        const { components = [] } = this.modalOption || {};  // 先取出来，接下来this.modalOption会被置为空
         this.entities.body.querySelectorAll(".form-group[component-id]").forEach(el => {
             const id = el.getAttribute("component-id");
             const component = components.find(c => c.id === id);
@@ -54,9 +54,9 @@ class dialog {
     }
 
     checkComponents = components => {
-        const e = components.some(c => c.label === undefined || !c.type);
-        if (e) {
-            throw new Error("c.label === undefined || !component.type");
+        const existError = components.some(c => c.label === undefined || !c.type);
+        if (existError) {
+            throw new Error("component.label === undefined || !component.type");
         }
     }
 
@@ -64,9 +64,10 @@ class dialog {
         if (!modal || !modal.components) return;
         modal.components.forEach(component => {
             Object.entries(component).forEach(([event, func]) => {
-                if (!event.startsWith("on")) return;
-                const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
-                widget[event] = func;
+                if (event.startsWith("on")) {
+                    const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
+                    widget[event] = func;
+                }
             })
         })
         onload && onload(this.entities.modal);
@@ -100,7 +101,7 @@ class dialog {
         let control = "";
         const type = component.type.toLowerCase();
         const disabled = el => el.disabled ? "disabled" : "";
-        const info = el => el.info ? `<span class="modal-label-info ion-information-circled" title="${el.info}"></span>` : "";
+        const genInfo = el => el.info ? `<span class="modal-label-info ion-information-circled" title="${el.info}"></span>` : "";
         switch (type) {
             case "input":
             case "password":
@@ -124,7 +125,7 @@ class dialog {
                 const name = this.utils.randomString();
                 const elements = component.list.map(el => {
                     const id = name + "-" + this.utils.randomString();
-                    return `<div class="${type}"><input type="${type}" id="${id}" name="${name}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}${info(el)}</label></div>`
+                    return `<div class="${type}"><input type="${type}" id="${id}" name="${name}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}${genInfo(el)}</label></div>`
                 });
                 const content = elements.join("");
                 control = (component.legend === undefined) ? content : `<fieldset><legend>${component.legend}</legend>${content}</fieldset>`;
@@ -150,7 +151,7 @@ class dialog {
                 break
         }
         const class_ = component.inline ? "form-inline-group" : "form-block-group";
-        const label_ = component.label ? `<${label}>${component.label}${info(component)}</${label}>` : "";
+        const label_ = component.label ? `<${label}>${component.label}${genInfo(component)}</${label}>` : "";
         return `<div class="form-group ${class_}" component-id="${component.id}">${label_}${control}</div>`;
     }
 
