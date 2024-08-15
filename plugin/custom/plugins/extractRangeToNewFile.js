@@ -13,17 +13,6 @@ class extractRangeToNewFilePlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     callback = async anchorNode => {
-        const extract = async filepath => {
-            if (filepath && !filepath.endsWith(".md")) {
-                filepath += ".md";
-            }
-            filepath = await this.utils.newFilePath(filepath);
-            const ok = await this.utils.writeFile(filepath, this.text);
-            if (!ok) return;
-            this.config.auto_open && this.utils.openFile(filepath);
-            this.text = null;
-        }
-
         if (this.savedSelection) {
             const selection = window.getSelection();
             selection.removeAllRanges();
@@ -37,11 +26,25 @@ class extractRangeToNewFilePlugin extends BaseCustomPlugin {
         this.savedSelection = null;
 
         if (!this.config.show_modal) {
-            await extract("");
+            await this.extract("");
         } else {
             const components = [{ label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本" }];
-            this.utils.dialog.modal({ title: "提取选区文字到新文件", components }, ([{ submit }]) => extract(submit));
+            const { response, submit: [sub] } = await this.utils.dialog.modalAsync({ title: "提取选区文字到新文件", components });
+            if (response === 1) {
+                await this.extract(sub);
+            }
         }
+    }
+
+    extract = async filepath => {
+        if (filepath && !filepath.endsWith(".md")) {
+            filepath += ".md";
+        }
+        filepath = await this.utils.newFilePath(filepath);
+        const ok = await this.utils.writeFile(filepath, this.text);
+        if (!ok) return;
+        this.config.auto_open && this.utils.openFile(filepath);
+        this.text = null;
     }
 }
 

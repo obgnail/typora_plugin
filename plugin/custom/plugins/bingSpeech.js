@@ -13,7 +13,7 @@ class bingSpeechPlugin extends BaseCustomPlugin {
 
     hotkey = () => [this.config.hotkey]
 
-    callback = () => {
+    callback = async () => {
         const voiceList = [
             "zh-CN-YunxiNeural",
             "zh-CN-XiaoxiaoNeural",
@@ -85,22 +85,21 @@ class bingSpeechPlugin extends BaseCustomPlugin {
             { label: "语速", type: "range", min: -3.0, max: 3.0, step: 0.1, value: num2Str(rate) },
             { label: "语调", type: "range", min: -1.0, max: 1.0, step: 0.1, value: num2Str(pitch) },
         ]
-        this.utils.dialog.modal({ title: "必应朗读", components }, async components => {
-            const [_, o, l, v, s, d, r, p] = components.map(c => c.submit);
-            const cfg = { from_language: l, voice: v, style: s, style_degree: d, rate: str2Num(r), pitch: str2Num(p) };
-            await this.utils.showProcessingHint();
-            try {
-                if (o === "speech") {
-                    await this.speech(null, cfg);
-                } else if (o === "download") {
-                    const filepath = await this.download(null, null, cfg);
-                    this.utils.showInFinder(filepath);
-                }
-            } catch (e) {
-                alert(e.toString());
+        const { response, submit: [_, o, l, v, s, d, r, p] } = await this.utils.dialog.modalAsync({ title: "必应朗读", components });
+        if (response === 0) return;
+        const cfg = { from_language: l, voice: v, style: s, style_degree: d, rate: str2Num(r), pitch: str2Num(p) };
+        await this.utils.showProcessingHint();
+        try {
+            if (o === "speech") {
+                await this.speech(null, cfg);
+            } else if (o === "download") {
+                const filepath = await this.download(null, null, cfg);
+                this.utils.showInFinder(filepath);
             }
-            this.utils.hideProcessingHint();
-        })
+        } catch (e) {
+            alert(e.toString());
+        }
+        this.utils.hideProcessingHint();
     }
 
     speech = async (text, config) => {

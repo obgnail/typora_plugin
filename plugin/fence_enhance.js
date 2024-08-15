@@ -310,40 +310,37 @@ class fenceEnhancePlugin extends BasePlugin {
         button && button.click();
     }
     indentAllFences = () => this.rangeAllFences(this.indentFence)
-    replaceFencesLang = () => {
+    replaceFencesLang = async () => {
         const components = [
             { label: "被替换语言", type: "input", value: "js" },
             { label: "替换语言", type: "input", value: "javascript" }
         ];
-        this.utils.dialog.modal({ title: "替换语言", components }, ([{ submit: waitToReplaceLang }, { submit: replaceLang }]) => {
-            if (!waitToReplaceLang || !replaceLang) return;
-
-            this.rangeAllFences(fence => {
-                const lang = fence.getAttribute("lang");
-                if (lang && lang !== waitToReplaceLang) return;
-                const cid = fence.getAttribute("cid");
-                File.editor.fences.focus(cid);
-                const input = fence.querySelector(".ty-cm-lang-input");
-                if (!input) return;
-                input.textContent = replaceLang;
-                File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input);
-            })
+        const { response, submit: [waitToReplaceLang, replaceLang] } = await this.utils.dialog.modalAsync({ title: "替换语言", components });
+        if (response === 0 || !waitToReplaceLang || !replaceLang) return;
+        this.rangeAllFences(fence => {
+            const lang = fence.getAttribute("lang");
+            if (lang && lang !== waitToReplaceLang) return;
+            const cid = fence.getAttribute("cid");
+            File.editor.fences.focus(cid);
+            const input = fence.querySelector(".ty-cm-lang-input");
+            if (!input) return;
+            input.textContent = replaceLang;
+            File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input);
         })
     }
-    addFencesLang = () => {
+    addFencesLang = async () => {
         const components = [{ label: "语言", type: "input", value: "javascript" }];
-        this.utils.dialog.modal({ title: "添加语言", components }, ([{ submit: targetLang }]) => {
-            if (!targetLang) return;
-            this.rangeAllFences(fence => {
-                const lang = fence.getAttribute("lang");
-                if (lang) return;
-                const cid = fence.getAttribute("cid");
-                File.editor.fences.focus(cid);
-                const input = fence.querySelector(".ty-cm-lang-input");
-                if (!input) return;
-                input.textContent = targetLang;
-                File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input);
-            })
+        const { response, submit: [targetLang] } = await this.utils.dialog.modalAsync({ title: "添加语言", components });
+        if (response === 0 || !targetLang) return;
+        this.rangeAllFences(fence => {
+            const lang = fence.getAttribute("lang");
+            if (lang) return;
+            const cid = fence.getAttribute("cid");
+            File.editor.fences.focus(cid);
+            const input = fence.querySelector(".ty-cm-lang-input");
+            if (!input) return;
+            input.textContent = targetLang;
+            File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input);
         })
     }
     disableOrEnableFold = () => {
@@ -380,9 +377,12 @@ class fenceEnhancePlugin extends BasePlugin {
             ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility;
         });
     }
-    showIndentAllFencesModal = () => {
+    showIndentAllFencesModal = async () => {
         const label = "调整缩进功能的能力有限，对于 Python 这种游标卡尺语言甚至会出现误判，你确定吗？";
-        this.utils.dialog.modal({ title: "为所有代码块调整缩进", components: [{ label, type: "p" }] }, this.indentAllFences)
+        const { response } = await this.utils.dialog.modalAsync({ title: "为所有代码块调整缩进", components: [{ label, type: "p" }] });
+        if (response === 1) {
+            this.indentAllFences();
+        }
     }
 
     call = (type, meta) => {

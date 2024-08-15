@@ -50,7 +50,8 @@ class dialog {
         this.entities.modal.close();
         this.entities.body.innerHTML = "";
         if (callback) {
-            await callback(components);
+            const submit = components.map(c => c.submit);
+            await callback(components, submit);
         }
     }
 
@@ -191,12 +192,15 @@ class dialog {
     }
 
     /**
+     * @function 弹出模态框
      * @param {{title, width, height, onload, components: [{label, info, type, value, fieldset, inline, ...arg}]}} modal: 组件配置
-     * @param {null | function(components): null} submitCallback: 当用户点击【确认】后的回调函数
-     * @param {null | function(components): null} cancelCallback: 当用户点击【取消】后的回调函数
+     * @param {null | function(components, submit): null} submitCallback: 当用户点击【确认】后的回调函数
+     * @param {null | function(components, submit): null} cancelCallback: 当用户点击【取消】后的回调函数
      */
     modal = (modal, submitCallback, cancelCallback) => {
-        if (!modal) return;
+        if (!modal) {
+            return new Error("has not modal");
+        }
         this.set(modal, submitCallback, cancelCallback);
         const { title, width = "", height = "", background = "", components, onload } = modal;
         this.checkComponents(components);
@@ -205,6 +209,17 @@ class dialog {
         this.attachEvent(modal, onload);
         this.entities.modal.showModal();
     }
+
+    /**
+     * @function 异步版本的modal
+     * @return {{response, components, submit}}
+     * @example const { response, components, submit } = await modalAsync({ title: "XXX", components });
+     */
+    modalAsync = modal => new Promise(resolve => {
+        const submitCallback = (components, submit) => resolve({ response: 1, components, submit });
+        const cancelCallback = (components, submit) => resolve({ response: 0, components, submit });
+        this.modal(modal, submitCallback, cancelCallback);
+    })
 }
 
 module.exports = {

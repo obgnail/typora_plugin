@@ -78,11 +78,10 @@ class preferencesPlugin extends BasePlugin {
             { label: "", legend: "一级插件", type: "checkbox", list: plugins },
             { label: "", legend: "二级插件", type: "checkbox", list: customPlugins },
         ];
-        const modal = { title: "启停插件", width: "450px", components };
-        const cb = async ([_, { submit: enablePlugins }, { submit: enableCustomPlugins }]) => {
-            await this.togglePlugin(enablePlugins, enableCustomPlugins, true);
+        const { response, submit: [_, p1, p2] } = await this.utils.dialog.modalAsync({ title: "启停插件", width: "450px", components });
+        if (response === 1) {
+            await this.togglePlugin(p1, p2, true);
         }
-        this.utils.dialog.modal(modal, cb);
     }
 }
 
