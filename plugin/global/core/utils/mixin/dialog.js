@@ -100,6 +100,7 @@ class dialog {
         let control = "";
         const type = component.type.toLowerCase();
         const disabled = el => el.disabled ? "disabled" : "";
+        const info = el => el.info ? `<span class="modal-label-info ion-information-circled" title="${el.info}"></span>` : "";
         switch (type) {
             case "input":
             case "password":
@@ -123,7 +124,7 @@ class dialog {
                 const name = this.utils.randomString();
                 const elements = component.list.map(el => {
                     const id = name + "-" + this.utils.randomString();
-                    return `<div class="${type}"><input type="${type}" id="${id}" name="${name}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}</label></div>`
+                    return `<div class="${type}"><input type="${type}" id="${id}" name="${name}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}${info(el)}</label></div>`
                 });
                 const content = elements.join("");
                 control = (component.legend === undefined) ? content : `<fieldset><legend>${component.legend}</legend>${content}</fieldset>`;
@@ -149,7 +150,7 @@ class dialog {
                 break
         }
         const class_ = component.inline ? "form-inline-group" : "form-block-group";
-        const label_ = component.label ? `<${label}>${component.label}</${label}>` : "";
+        const label_ = component.label ? `<${label}>${component.label}${info(component)}</${label}>` : "";
         return `<div class="form-group ${class_}" component-id="${component.id}">${label_}${control}</div>`;
     }
 
@@ -188,7 +189,7 @@ class dialog {
     }
 
     /**
-     * @param {{title, width, height, onload, components: [{label, type, value, fieldset, inline, ...arg}]}} modal: 组件配置
+     * @param {{title, width, height, onload, components: [{label, info, type, value, fieldset, inline, ...arg}]}} modal: 组件配置
      * @param {null | function(components): null} submitCallback: 当用户点击【确认】后的回调函数
      * @param {null | function(components): null} cancelCallback: 当用户点击【取消】后的回调函数
      */

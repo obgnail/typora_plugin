@@ -52,7 +52,6 @@ class preferencesPlugin extends BasePlugin {
     openSettingFile = async () => this.utils.showInFinder(await this.utils.getActualSettingPath("settings.user.toml"));
 
     call = async () => {
-        const genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7;"></span>`
         const infoMap = {
             blur: "此插件不兼容 Beta 版本的 Typora",
             export_enhance: "此插件不兼容 Beta 版本的 Typora",
@@ -69,16 +68,13 @@ class preferencesPlugin extends BasePlugin {
             autoTrailingWhiteSpace: "此插件面向特殊人群（如网站站长），不建议普通用户启用",
             article_uploader: "此插件面向特殊人群（如网站站长），且需要手动修改配置后方可运行",
         }
-        const displayFunc = ([fixedName, plugin]) => {
-            const info = infoMap[fixedName];
-            const msg = info ? genInfo(info) : "";
-            return {
-                label: `${plugin.NAME || plugin.name}（${fixedName}）${msg}`,
-                value: fixedName,
-                checked: plugin.ENABLE || plugin.enable,
-                disabled: this.config.IGNORE_PLUGINS.includes(fixedName),
-            }
-        }
+        const displayFunc = ([fixedName, plugin]) => ({
+            label: `${plugin.NAME || plugin.name}（${fixedName}）`,
+            info: infoMap[fixedName],
+            value: fixedName,
+            checked: plugin.ENABLE || plugin.enable,
+            disabled: this.config.IGNORE_PLUGINS.includes(fixedName),
+        })
         const onclick = ev => ev.target.closest("a") && this.openSettingFile();
         const [settings, customSettings] = await this.getSettings();
         const plugins = Object.entries(settings).map(displayFunc);

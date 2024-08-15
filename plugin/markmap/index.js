@@ -288,7 +288,6 @@ class tocMarkmap {
 
     setting = () => {
         const maxLevel = 6;
-        const _genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7; margin-left: 7px;"></span>`
 
         const colorScheme = () => {
             const toString = colorList => colorList.join("_");
@@ -296,8 +295,8 @@ class tocMarkmap {
                 const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}" title="${color.toUpperCase()}"></div>`).join("");
                 return `<div class="plugin-markmap-color-scheme">${inner}</div>`;
             }
-            const d3ColorSchemes = ["schemePastel2", "schemeSet2", "schemeDark2", "schemeAccent", "schemePastel1", "schemeSet1", "schemeTableau10", "schemeCategory10", "schemePaired", "schemeSet3"];
             const currentColorSchemeStr = toString(this.currentScheme);
+            const d3ColorSchemes = ["schemePastel2", "schemeSet2", "schemeDark2", "schemeAccent", "schemePastel1", "schemeSet1", "schemeTableau10", "schemeCategory10", "schemePaired", "schemeSet3"];
             const list = d3ColorSchemes.map(cs => {
                 const colorList = d3[cs];
                 const value = toString(colorList);
@@ -308,7 +307,7 @@ class tocMarkmap {
             if (!list.some(e => e.checked)) {
                 list.push({ value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true });
             }
-            list.push({ value: "recover", label: "恢复默认" + _genInfo("其他的配色相关配置将失效") });
+            list.push({ value: "recover", label: "恢复默认", info: "其他的配色相关配置将失效" });
             const callback = colorScheme => {
                 if (colorScheme === "recover") {
                     this.currentScheme = this.defaultScheme;
@@ -318,8 +317,7 @@ class tocMarkmap {
                     this.setColorScheme(this.currentScheme);
                 }
             }
-            const label = "配色方案" + _genInfo("如需自定义配色方案请前往配置文件");
-            return { label: label, type: "radio", list, callback };
+            return { label: "配色方案", info: "如需自定义配色方案请前往配置文件", type: "radio", list, callback };
         }
 
         const expandLevel = () => {
@@ -337,7 +335,7 @@ class tocMarkmap {
             const defaultSpacing = 80;
             const value = (this.markmap && this.markmap.options.spacingHorizontal) || defaultSpacing;
             const callback = spacingHorizontal => this.markmap.options.spacingHorizontal = spacingHorizontal;
-            return { label: "节点水平间距", type: "range", value: value, min: 1, max: 100, step: 1, inline: true, callback }
+            return { label: "节点水平间距", type: "range", value, min: 1, max: 100, step: 1, inline: true, callback }
         }
 
         const spacingV = () => {
@@ -351,23 +349,22 @@ class tocMarkmap {
             const defaultMaxWidth = 0;
             const value = (this.markmap && this.markmap.options.maxWidth) || defaultMaxWidth;
             const callback = maxWidth => this.markmap.options.maxWidth = maxWidth;
-            const label = "节点最大长度" + _genInfo("0 表示无长度限制");
-            return { label: label, type: "range", value: value, min: 0, max: 1000, step: 10, inline: true, callback }
+            return { label: "节点最大长度", info: "0 表示无长度限制", type: "range", value: value, min: 0, max: 1000, step: 10, inline: true, callback }
         }
 
         const colorFreezeLevel = () => {
+            const info = "从某一等级开始，所有子分支继承父分支的配色";
             const level = Math.min(this.colorFreezeLevel, maxLevel);
             const callback = level => this.colorFreezeLevel = level;
-            const label = "固定配色的分支等级" + _genInfo("从某一等级开始，所有子分支继承父分支的配色");
-            return { label: label, type: "range", value: level, min: 0, max: maxLevel, step: 1, inline: true, callback }
+            return { label: "固定配色的分支等级", info, type: "range", value: level, min: 0, max: maxLevel, step: 1, inline: true, callback }
         }
 
         const localeHeightRatio = () => {
             const defaultValue = 0.2;
+            const info = "鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）";
             const value = parseInt((this.config.LOCALE_HEIGHT_RATIO || defaultValue) * 100);
             const callback = ratio => this.config.LOCALE_HEIGHT_RATIO = parseFloat(ratio / 100);
-            const label = "定位的视口高度" + _genInfo("鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）");
-            return { label: label, type: "range", value: value, min: 1, max: 100, step: 1, inline: true, callback }
+            return { label: "定位的视口高度", info, type: "range", value: value, min: 1, max: 100, step: 1, inline: true, callback }
         }
 
         const fieldset = "导出";
@@ -382,24 +379,20 @@ class tocMarkmap {
             return { fieldset, label: "上下边框宽度", type: "number", value: border[1], min: 1, max: 1000, step: 1, inline: true, callback }
         }
         const downloadFolder = () => {
-            const label = "保存目录名" + _genInfo("为空则使用 temp 目录");
             const value = this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder;
             const callback = value => this.config.FOLDER_WHEN_DOWNLOAD_SVG = value;
-            return { fieldset, label, type: "input", value, inline: true, callback }
+            return { fieldset, label: "保存目录名", info: "为空则使用 temp 目录", type: "input", value, inline: true, callback }
         }
         const downloadFileName = () => {
-            const label = "保存文件名" + _genInfo("支持变量：filename、timestamp、uuid");
             const value = this.config.FILENAME_WHEN_DOWNLOAD_SVG;
             const callback = value => this.config.FILENAME_WHEN_DOWNLOAD_SVG = value;
-            return { fieldset, label, type: "input", value, inline: true, callback }
+            return { fieldset, label: "保存文件名", info: "支持变量：filename、timestamp、uuid", type: "input", value, inline: true, callback }
         }
         const downloadOption = () => {
             const { REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: removeForeign, REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: removeUselessClass } = this.config;
-            const removeForeignLabel = "替换 foreignObject 标签" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
-            const removeUselessClassLabel = "删除无用的类名" + _genInfo("若非需要手动修改导出的图形文件，请勿勾选此选项");
             const list = [
-                { label: removeUselessClassLabel, value: "removeUselessClass", checked: removeUselessClass },
-                { label: removeForeignLabel, value: "removeForeignObject", checked: removeForeign },
+                { label: "删除无用的类名", info: "若非需要手动修改导出的图形文件，请勿勾选此选项", value: "removeUselessClass", checked: removeUselessClass },
+                { label: "替换 foreignObject 标签", info: "若非需要手动修改导出的图形文件，请勿勾选此选项", value: "removeForeignObject", checked: removeForeign },
             ];
             const callback = submit => {
                 this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = submit.includes("removeForeignObject");
@@ -424,17 +417,14 @@ class tocMarkmap {
 
         const ability = () => {
             const { zoom = true, pan = true } = (this.markmap && this.markmap.options) || {};
-            const fitWhenUpdateLabel = "更新时自动适配窗口" + _genInfo("图形更新时自动重新适配窗口");
-            const fitWhenFoldLabel = "折叠时自动适配窗口" + _genInfo("折叠图形节点时自动重新适配窗口");
-            const collapseWhenFoldLabel = "折叠时自动折叠章节" + _genInfo("实验性特性，依赖「章节折叠」插件，不推荐开启");
-            const foldWhenUpdateLabel = "记住已折叠节点" + _genInfo("图形更新时不会展开已折叠节点");
+            const { REMEMBER_FOLD_WHEN_UPDATE: remember, AUTO_FIT_WHEN_UPDATE: fit1, AUTO_FIT_WHEN_FOLD: fit2, AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: collapse } = this.config;
             const list = [
                 { label: "鼠标滚轮缩放", value: "zoom", checked: zoom },
                 { label: "鼠标滚轮平移", value: "pan", checked: pan },
-                { label: foldWhenUpdateLabel, value: "foldWhenUpdate", checked: this.config.REMEMBER_FOLD_WHEN_UPDATE },
-                { label: fitWhenUpdateLabel, value: "fitWhenUpdate", checked: this.config.AUTO_FIT_WHEN_UPDATE },
-                { label: fitWhenFoldLabel, value: "fitWhenFold", checked: this.config.AUTO_FIT_WHEN_FOLD },
-                { label: collapseWhenFoldLabel, value: "collapseWhenFold", checked: this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD },
+                { label: "记住已折叠节点", info: "图形更新时不会展开已折叠节点", value: "foldWhenUpdate", checked: remember },
+                { label: "更新时自动适配窗口", info: "图形更新时自动重新适配窗口", value: "fitWhenUpdate", checked: fit1 },
+                { label: "折叠时自动适配窗口", info: "折叠图形节点时自动重新适配窗口", value: "fitWhenFold", checked: fit2 },
+                { label: "折叠时自动折叠章节", info: "实验性特性，依赖「章节折叠」插件，不推荐开启", value: "collapseWhenFold", checked: collapse },
             ];
             const callback = submit => {
                 this.markmap.options.zoom = submit.includes("zoom");
