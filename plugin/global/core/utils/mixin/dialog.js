@@ -32,6 +32,7 @@ class dialog {
             submit: document.querySelector("#plugin-custom-modal .plugin-modal-submit"),
             cancel: document.querySelector("#plugin-custom-modal .plugin-modal-cancel"),
         }
+        this.entities.modal.addEventListener("cancel", () => this.onButtonClick(this.cancelCallback))
         this.entities.cancel.addEventListener("click", () => this.onButtonClick(this.cancelCallback))
         this.entities.submit.addEventListener("click", () => this.onButtonClick(this.submitCallback))
     }
