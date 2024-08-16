@@ -149,12 +149,7 @@ class utils {
     // merge({ a: [{ b: 2 }] }, { a: [{ c: 2 }] }) -> { a: [{ c: 2 }] }
     // merge({ o: { a: 3 } }, { o: { b: 4 } }) -> { o: { a: 3, b: 4 } }
     static merge = (source, other) => {
-        const isObject = value => {
-            const type = typeof value
-            return value !== null && (type === 'object' || type === 'function')
-        }
-
-        if (!isObject(source) || !isObject(other)) {
+        if (!this.isObject(source) || !this.isObject(other)) {
             return other === undefined ? source : other
         }
         return Object.keys({ ...source, ...other }).reduce((obj, key) => {
@@ -229,16 +224,6 @@ class utils {
 
     static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-    static splitKeyword = str => {
-        const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
-        let result = [];
-        let match;
-        while ((match = regex.exec(str))) {
-            result.push(match[1] || match[2] || match[0]);
-        }
-        return result;
-    }
-
     static asyncReplaceAll = (content, regexp, replaceFunc) => {
         if (!regexp.global) {
             throw Error("regexp must be global");
@@ -272,8 +257,12 @@ class utils {
         });
     }
 
-    static isPromise = obj => obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function'
-    static isBase64 = str => /^[A-Za-z0-9+/=]+$/.test(str) && str.length % 4 === 0;
+    static isBase64 = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str);
+    static isPromise = obj => this.isObject(obj) && typeof obj.then === 'function'
+    static isObject = value => {
+        const type = typeof value
+        return value !== null && (type === 'object' || type === 'function')
+    }
 
     static windowsPathToUnix = filepath => {
         if (!File.isWin) return filepath;
@@ -433,7 +422,6 @@ class utils {
     static getCurrentDirPath = () => PATH.dirname(this.getFilePath())
     static joinPath = (...paths) => PATH.join(this.getDirname(), ...paths)
     static requireFilePath = (...paths) => require(this.joinPath(...paths))
-    static readFileSync = filepath => FS.readFileSync(this.joinPath(filepath), 'utf8')
 
     static readFiles = async files => Promise.all(files.map(async file => {
         try {
@@ -558,6 +546,16 @@ class utils {
         const yamlLineCount = (yamlContent.match(/\n/g) || []).length + 3;
         const yamlObject = this.readYaml(yamlContent);
         return { yamlObject, remainContent, yamlLineCount }
+    }
+
+    static splitKeyword = str => {
+        const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
+        let result = [];
+        let match;
+        while ((match = regex.exec(str))) {
+            result.push(match[1] || match[2] || match[0]);
+        }
+        return result;
     }
 
     static getRecentFiles = async () => {

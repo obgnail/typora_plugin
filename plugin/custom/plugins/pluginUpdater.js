@@ -23,9 +23,10 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         const proxy = await this.getProxy();
         const label = "代理 URL（为空则不使用代理）";
         const components = [{ label, type: "input", value: proxy, placeholder: "http://127.0.0.1:7890" }];
-        const m = { title: "设置代理", components };
-        const cb = async ([{ submit: proxy_ }]) => await this.manualUpdate(proxy_);
-        this.utils.dialog.modal(m, cb);
+        const { response, submit: [proxy_] } = await this.utils.dialog.modalAsync({ title: "设置代理", components });
+        if (response === 1) {
+            await this.manualUpdate(proxy_);
+        }
     }
 
     silentUpdate = async proxy => {

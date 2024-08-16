@@ -53,6 +53,7 @@ class wavedromPlugin extends BaseCustomPlugin {
             destroyFunc: null,
             beforeExport: null,
             extraStyleGetter: null,
+            versionGetter: this.versionGetter,
         })
     }
 
@@ -63,6 +64,8 @@ class wavedromPlugin extends BaseCustomPlugin {
         const notFirstSignal = false;
         this.wavedromPkg.renderWaveForm(index, waveJson, this.prefix, notFirstSignal);
     }
+
+    versionGetter = () => this.wavedromPkg && this.wavedromPkg.version
 
     lazyLoad = () => {
         if (!this.wavedromPkg) {

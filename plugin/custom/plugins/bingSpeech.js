@@ -1,4 +1,4 @@
-// 实现原理：采用爬虫技术，盗取必应翻译的播放语音功能。功能完全依赖于外部环境，因此不能保证成功。
+// 实现原理：采用爬虫技术，盗取必应翻译的播放语音功能。功能完全依赖外部环境，因此不能保证成功。
 class bingSpeechPlugin extends BaseCustomPlugin {
     selector = isClick => {
         if (isClick) return;
@@ -13,7 +13,7 @@ class bingSpeechPlugin extends BaseCustomPlugin {
 
     hotkey = () => [this.config.hotkey]
 
-    callback = () => {
+    callback = async () => {
         const voiceList = [
             "zh-CN-YunxiNeural",
             "zh-CN-XiaoxiaoNeural",
@@ -73,10 +73,10 @@ class bingSpeechPlugin extends BaseCustomPlugin {
         const num2Str = num => (parseInt(num) / 100).toFixed(1);
         const str2Num = str => (str.startsWith("-") ? "" : "+") + Math.floor(parseFloat(str) * 100) + "%";
 
-        const genInfo = msg => `<span class="ion-information-circled" title="${msg}" style="opacity: 0.7; margin-left: 7px;"></span>`;
-        const warn = "⚠️ 本插件的功能完全依赖于外部环境，因此不能保证成功" + genInfo("采用爬虫技术盗取必应翻译的语音，因此成功与否完全取决于微软");
+        const label = "⚠️ 本插件的功能完全依赖外部环境，因此不能保证成功";
+        const info = "采用爬虫技术盗取必应翻译的语音，因此成功与否完全取决于微软"
         const components = [
-            { label: warn, type: "p" },
+            { label: label, info, type: "p" },
             { label: "操作", type: "select", selected: "speech", map: operationMap },
             { label: "语言", type: "input", value: from_language },
             { label: "语音", type: "select", selected: voice, list: voiceList },
@@ -85,22 +85,21 @@ class bingSpeechPlugin extends BaseCustomPlugin {
             { label: "语速", type: "range", min: -3.0, max: 3.0, step: 0.1, value: num2Str(rate) },
             { label: "语调", type: "range", min: -1.0, max: 1.0, step: 0.1, value: num2Str(pitch) },
         ]
-        this.utils.dialog.modal({ title: "必应朗读", components }, async components => {
-            const [_, o, l, v, s, d, r, p] = components.map(c => c.submit);
-            const cfg = { from_language: l, voice: v, style: s, style_degree: d, rate: str2Num(r), pitch: str2Num(p) };
-            await this.utils.showProcessingHint();
-            try {
-                if (o === "speech") {
-                    await this.speech(null, cfg);
-                } else if (o === "download") {
-                    const filepath = await this.download(null, null, cfg);
-                    this.utils.showInFinder(filepath);
-                }
-            } catch (e) {
-                alert(e.toString());
+        const { response, submit: [_, o, l, v, s, d, r, p] } = await this.utils.dialog.modalAsync({ title: "必应朗读", components });
+        if (response === 0) return;
+        const cfg = { from_language: l, voice: v, style: s, style_degree: d, rate: str2Num(r), pitch: str2Num(p) };
+        await this.utils.showProcessingHint();
+        try {
+            if (o === "speech") {
+                await this.speech(null, cfg);
+            } else if (o === "download") {
+                const filepath = await this.download(null, null, cfg);
+                this.utils.showInFinder(filepath);
             }
-            this.utils.hideProcessingHint();
-        })
+        } catch (e) {
+            alert(e.toString());
+        }
+        this.utils.hideProcessingHint();
     }
 
     speech = async (text, config) => {

@@ -15,7 +15,7 @@ class eventHub {
             beforeFileOpen: "beforeFileOpen",                           // 打开文件之前
             fileOpened: "fileOpened",                                   // 打开文件之后
             otherFileOpened: "otherFileOpened",                         // 和fileOpened的区别：重新打开当前标签不会触发otherFileOpened，但是fileOpened会
-            fileContentLoaded: "fileContentLoaded",                     // 文件内容加载完毕之后(依赖于window_tab)
+            fileContentLoaded: "fileContentLoaded",                     // 文件内容加载完毕之后(依赖window_tab)
             fileEdited: "fileEdited",                                   // 文件编辑后
             beforeUnload: "beforeUnload",                               // 退出Typora之前
             beforeToggleSourceMode: "beforeToggleSourceMode",           // 进入源码模式之前

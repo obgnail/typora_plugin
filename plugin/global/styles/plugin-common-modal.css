@@ -74,6 +74,15 @@
     color: #4183C4;
 }
 
+.plugin-custom-modal-body .modal-label-info {
+    opacity: 0.65;
+    margin-left: 0.3em;
+}
+
+.plugin-custom-modal-body .modal-label-info:hover {
+    opacity: 1;
+}
+
 .plugin-custom-modal-body .form-inline-group label {
     flex-basis: 50%;
 }

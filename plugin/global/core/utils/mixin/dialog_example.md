@@ -1,3 +1,4 @@
+```javascript
 /** modalExample 类展示了如何使用 this.utils.dialog.modal 函数:
     直接使用this.utils.modal即可弹出自定义的模态框，待用户点击【确定】后会调用回调函数
 
@@ -17,10 +18,11 @@
               9. file
       2. onSubmitCallback: 当用户点击【确认】后的回调函数
       3. onCancelCallback: 当用户点击【取消】后的回调函数
+   也可以使用新的 modalAsync 函数
 */
 class modalExample extends BaseCustomPlugin {
-    callback = anchorNode => {
-        const modal = {
+    callback = async anchorNode => {
+        const modal1 = {
             title: "新文件路径",
             // 所有的component都有disabled属性，表示是否禁用
             components: [
@@ -102,26 +104,30 @@ class modalExample extends BaseCustomPlugin {
                 },
             ]
         }
-        this.utils.dialog.modal(modal, components => {
-            console.log(components);
+        const { response, submit, components } = await this.utils.dialog.modalAsync(modal1);
+        if (response === 0) return;
 
-            this.utils.dialog.modal({
-                title: "otherFile",
-                component: [
-                    {
-                        label: "test textarea",
-                        type: "textarea",
-                        rows: 5,
-                        placeholder: "请输入新文件路径",
-                    },
-                ]
-            }, newComponents => {
-                console.log("newComponents", newComponents);
-            })
-        })
+        console.log(components);
+
+        const modal2 = {
+            title: "otherFile",
+            component: [
+                {
+                    label: "test textarea",
+                    type: "textarea",
+                    rows: 5,
+                    placeholder: "请输入新文件路径",
+                },
+            ]
+        }
+        const { response: r, submit: s, components: c } = await this.utils.dialog.modalAsync(modal2);
+        if (r === 0) return;
+
+        console.log("newComponents", c);
     }
 }
 
 module.exports = {
     plugin: modalExample,
 };
+```

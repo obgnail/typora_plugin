@@ -1,10 +1,11 @@
 class templaterPlugin extends BaseCustomPlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
+
     hint = isDisable => isDisable && "空白页不可使用此插件"
 
     hotkey = () => [this.config.hotkey]
 
-    callback = anchorNode => {
+    callback = async anchorNode => {
         if (!File.editor.selection.getRangy().collapsed) {
             ClientCommand.copyAsMarkdown();
             window.parent.navigator.clipboard.readText().then(text => this.rangeText = text);
@@ -17,29 +18,30 @@ class templaterPlugin extends BaseCustomPlugin {
                 ev.target.closest(".plugin-custom-modal-body").querySelector("textarea").value = tpl.text;
             }
         }
-
         const components = [
             { label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本" },
             { label: "模板", type: "select", list: this.config.template.map(tpl => tpl.name), onchange },
             { label: "预览", type: "textarea", rows: 10, readonly: "readonly", content: this.config.template[0].text },
         ]
-        const modal = { title: "新文件", components };
+        const { response, submit: [filepath, template] } = await this.utils.dialog.modalAsync({ title: "新文件", components });
+        if (response === 1) {
+            await this.writeTemplateFile(filepath, template);
+        }
+    }
 
-        this.utils.dialog.modal(modal, async ([{ submit: filepath }, { submit: template }]) => {
-            const tpl = this.config.template.find(tpl => tpl.name === template);
-            if (!tpl) return;
-
-            if (filepath && !filepath.endsWith(".md")) {
-                filepath += ".md";
-            }
-            filepath = await this.utils.newFilePath(filepath);
-            const filename = this.utils.Package.Path.basename(filepath);
-            const content = (new templateHelper(filename, this))._convert(tpl.text);
-            const ok = await this.utils.writeFile(filepath, content);
-            if (!ok) return;
-            this.rangeText = "";
-            this.config.auto_open && this.utils.openFile(filepath);
-        })
+    writeTemplateFile = async (filepath, template) => {
+        const tpl = this.config.template.find(tpl => tpl.name === template);
+        if (!tpl) return;
+        if (filepath && !filepath.endsWith(".md")) {
+            filepath += ".md";
+        }
+        filepath = await this.utils.newFilePath(filepath);
+        const filename = this.utils.Package.Path.basename(filepath);
+        const content = (new templateHelper(filename, this))._convert(tpl.text);
+        const ok = await this.utils.writeFile(filepath, content);
+        if (!ok) return;
+        this.rangeText = "";
+        this.config.auto_open && this.utils.openFile(filepath);
     }
 }
 

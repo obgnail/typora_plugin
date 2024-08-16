@@ -91,7 +91,7 @@ class helpPlugin extends BasePlugin {
         this.utils.dialog.modal({ title: "关于", width: "550px", components: [{ label, type: "span", onclick }] });
     }
 
-    uninstall = () => {
+    uninstall = async () => {
         const _uninstall = async () => {
             const { Fs, FsExtra } = this.utils.Package;
             const remove = '<script src="./plugin/index.js" defer="defer"></script>';
@@ -113,13 +113,13 @@ class helpPlugin extends BasePlugin {
         const reconfirm = "卸载插件系统";
         const label = `⚠️ <b>此操作不可撤销</b>。请输入「${reconfirm}」启动自毁程序`;
         const components = [{ label: label, type: "input", placeholder: reconfirm }];
-        this.utils.dialog.modal({ title: "卸载插件系统", components }, async ([{ submit }]) => {
-            if (submit !== reconfirm) {
-                alert("请输入正确的内容");
-                return;
-            }
-            await _uninstall();
-        })
+        const { response, submit: [sub] } = await this.utils.dialog.modalAsync({ title: "卸载插件系统", components });
+        if (response === 0) return;
+        if (sub !== reconfirm) {
+            alert("请输入正确的内容");
+            return;
+        }
+        await _uninstall();
     }
 
     donate = () => {
