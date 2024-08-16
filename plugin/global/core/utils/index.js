@@ -224,16 +224,6 @@ class utils {
 
     static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-    static splitKeyword = str => {
-        const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
-        let result = [];
-        let match;
-        while ((match = regex.exec(str))) {
-            result.push(match[1] || match[2] || match[0]);
-        }
-        return result;
-    }
-
     static asyncReplaceAll = (content, regexp, replaceFunc) => {
         if (!regexp.global) {
             throw Error("regexp must be global");
@@ -432,7 +422,6 @@ class utils {
     static getCurrentDirPath = () => PATH.dirname(this.getFilePath())
     static joinPath = (...paths) => PATH.join(this.getDirname(), ...paths)
     static requireFilePath = (...paths) => require(this.joinPath(...paths))
-    static readFileSync = filepath => FS.readFileSync(this.joinPath(filepath), 'utf8')
 
     static readFiles = async files => Promise.all(files.map(async file => {
         try {
@@ -557,6 +546,16 @@ class utils {
         const yamlLineCount = (yamlContent.match(/\n/g) || []).length + 3;
         const yamlObject = this.readYaml(yamlContent);
         return { yamlObject, remainContent, yamlLineCount }
+    }
+
+    static splitKeyword = str => {
+        const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
+        let result = [];
+        let match;
+        while ((match = regex.exec(str))) {
+            result.push(match[1] || match[2] || match[0]);
+        }
+        return result;
     }
 
     static getRecentFiles = async () => {

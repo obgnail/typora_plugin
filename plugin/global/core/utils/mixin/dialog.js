@@ -2,7 +2,7 @@ class dialog {
     constructor(utils) {
         this.utils = utils;
         this.entities = null;
-        this.set();
+        this.reset();
     }
 
     html = () => `
@@ -16,7 +16,7 @@ class dialog {
         </dialog>
     `
 
-    set = (modal, submit, cancel) => {
+    reset = (modal, submit, cancel) => {
         this.modalOption = modal;
         this.submitCallback = submit;
         this.cancelCallback = cancel;
@@ -46,7 +46,7 @@ class dialog {
                 component.submit = this.getWidgetValue(component.type, el);
             }
         })
-        this.set();
+        this.reset();
         this.entities.modal.close();
         this.entities.body.innerHTML = "";
         if (callback) {
@@ -201,7 +201,7 @@ class dialog {
         if (!modal) {
             return new Error("has not modal");
         }
-        this.set(modal, submitCallback, cancelCallback);
+        this.reset(modal, submitCallback, cancelCallback);
         const { title, width = "", height = "", background = "", components, onload } = modal;
         this.checkComponents(components);
         this.setComponentsId(components);
