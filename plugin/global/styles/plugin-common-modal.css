@@ -59,6 +59,14 @@
     background-color: #428bca;
 }
 
+.plugin-custom-modal-footer .plugin-modal-cancel:hover {
+    background-color: rgba(229, 229, 229, 0.59);
+}
+
+.plugin-custom-modal-footer .plugin-modal-submit:hover {
+    background-color: #3071a9;
+}
+
 .plugin-custom-modal-body .form-group {
     margin-bottom: 15px;
 }
@@ -74,6 +82,10 @@
     border: 1px solid #ccc;
     box-shadow: none;
     border-radius: 2px;
+}
+
+.plugin-custom-modal-body .form-control:hover {
+    border-color: #aaa;
 }
 
 .plugin-custom-modal-body a {
@@ -92,13 +104,14 @@
 .plugin-custom-modal-body .form-inline-group label {
     flex-basis: 50%;
 }
+
 .plugin-custom-modal-body .form-block-group label {
     margin-bottom: 5px;
 }
 
 #plugin-custom-modal label {
     display: block;
-    font-size: 1.03em;
+    font-size: 1.05em;
     width: fit-content;
 }
 
@@ -116,6 +129,7 @@
     transform: translateY(-50%);
     box-shadow: none;
 }
+
 #plugin-custom-modal input[type="number"] {
     max-width: 100px;
 }
@@ -124,6 +138,7 @@
     display: inline-flex;
     width: 100%;
 }
+
 .plugin-custom-modal-range .modal-range-value {
     margin-left: 0.5em;
     font-size: 1.2em;
