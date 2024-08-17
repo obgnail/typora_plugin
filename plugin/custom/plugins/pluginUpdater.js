@@ -42,22 +42,22 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         const getState = updater.runWithState();
         const isDone = () => getState()["done"];
         const notTimeout = await this.utils.progressBar.fake({ timeout, isDone });
-        let { done, result, info } = getState();
-        if (!notTimeout || !done || !result) {
-            result = new Error("timeout");
+        let { done, state, info } = getState();
+        if (!notTimeout || !done || !state) {
+            state = new Error("timeout");
         }
 
         let title, callback, components;
-        if (result === "UPDATED") {
+        if (state === "UPDATED") {
             title = "更新成功，请重启 Typora";
             components = [{ type: "textarea", label: "当前版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
-        } else if (result === "NO_NEED") {
+        } else if (state === "NO_NEED") {
             title = "已是最新版，无需更新";
             components = [{ type: "textarea", label: "当前版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
-        } else if (result instanceof Error) {
+        } else if (state instanceof Error) {
             title = "更新失败";
             callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
-            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新。报错信息如下：" }, { type: "span", label: this.utils.escape(result.stack) }];
+            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新。报错信息如下：" }, { type: "span", label: this.utils.escape(state.stack) }];
         } else {
             title = "更新失败";
             components = [{ type: "span", label: "发生未知错误，请向开发者反馈" }];
@@ -132,19 +132,12 @@ class updater {
     }
 
     runWithState = () => {
-        let result; // NO_NEED/UPDATED/error
-        let done = false;
-        setTimeout(async () => {
-            try {
-                result = await this.run();
-            } catch (e) {
-                result = e;
-                console.error(e);
-            } finally {
-                done = true;
-            }
-        })
-        return () => ({ done, result, info: this.latestVersionInfo })
+        const v = { done: false, state: null, info: null }; // state: NO_NEED/UPDATED/Error
+        this.run()
+            .then(res => v.state = res)
+            .catch(err => console.error(v.state = err))
+            .finally(() => Object.assign(v, { done: true, info: this.latestVersionInfo }));
+        return () => v
     }
 
     prepare = async () => {
@@ -235,6 +228,8 @@ class updater {
         await this.pkgFsExtra.emptyDir(this.workDir);
         if (this.latestVersionInfo) {
             await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
+        } else {
+            await this.pkgFs.unlink(this.versionFile);
         }
     }
 }
