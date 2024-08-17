@@ -848,7 +848,7 @@ class utils {
     static stopCallError = new Error("stopCall") // 用于decorate方法，若希望停止执行原生函数，返回此
     static decorate = (objGetter, attr, before, after, changeResult = false) => {
         function decorator(original, before, after) {
-            return function () {
+            return Object.defineProperty(function () {
                 if (before) {
                     const error = before.call(this, ...arguments);
                     if (error === utils.stopCallError) return;
@@ -861,7 +861,7 @@ class utils {
                     }
                 }
                 return result;
-            };
+            }, "name", { value: original.name })
         }
 
         const start = new Date().getTime();
@@ -878,6 +878,7 @@ class utils {
             }
         }, 20);
     }
+
     static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
         let run = false;
         const start = new Date().getTime();
