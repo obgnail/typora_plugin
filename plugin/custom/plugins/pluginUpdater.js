@@ -86,7 +86,6 @@ class updater {
         this.requestOption = { proxy, timeout };
 
         this.pkgFsExtra = this.utils.Package.FsExtra;
-        this.pkgFs = this.utils.Package.Fs.promises;
         this.pkgPath = this.utils.Package.Path;
 
         this.unzipDir = "";
@@ -149,7 +148,7 @@ class updater {
     chmod = async () => {
         const dir = this.utils.joinPath(this.pluginDir);
         try {
-            await this.pkgFs.chmod(dir, 0o777);
+            await this.pkgFsExtra.chmod(dir, 0o777);
         } catch (e) {
             console.debug(`cant chmod ${dir}`);
         }
@@ -196,8 +195,8 @@ class updater {
         const oldDir = this.utils.joinPath(this.customPluginDir);
         const newDir = this.pkgPath.join(this.unzipDir, this.customPluginDir);
 
-        const oldFds = await this.pkgFs.readdir(oldDir);
-        const newFds = await this.pkgFs.readdir(newDir);
+        const oldFds = await this.pkgFsExtra.readdir(oldDir);
+        const newFds = await this.pkgFsExtra.readdir(newDir);
 
         const excludeFds = new Set();
         newFds.forEach(file => excludeFds.add(file));
@@ -229,7 +228,7 @@ class updater {
         if (this.latestVersionInfo) {
             await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
         } else {
-            await this.pkgFs.unlink(this.versionFile);
+            await this.pkgFsExtra.remove(this.versionFile);
         }
     }
 }
