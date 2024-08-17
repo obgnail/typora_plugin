@@ -75,16 +75,15 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
             proxy = "http://" + proxy;
         }
         const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest";
-        return new updater(this, proxy, url, timeout);
+        return new updater(this, url, proxy, timeout);
     }
 }
 
 class updater {
-    constructor(plugin, proxyURL, latestReleaseUrl, timeout = 3 * 60 * 1000) {
-        this.proxyUrl = proxyURL;
-        this.latestReleaseUrl = latestReleaseUrl;
-        this.timeout = timeout;
+    constructor(plugin, latestReleaseUrl, proxy, timeout = 3 * 60 * 1000) {
         this.utils = plugin.utils;
+        this.latestReleaseUrl = latestReleaseUrl;
+        this.requestOption = { proxy, timeout };
 
         this.pkgFsExtra = this.utils.Package.FsExtra;
         this.pkgFs = this.utils.Package.Fs.promises;
@@ -121,6 +120,17 @@ class updater {
         return "UPDATED";
     }
 
+    /** 强制更新：跳过检查，直接使用url更新 */
+    force = async url => {
+        await this.prepare();
+        const buffer = await this.downloadLatestVersion(url);
+        await this.unzip(buffer);
+        await this.excludeFiles();
+        await this.syncDir();
+        console.log(`force updated!`);
+        return "UPDATED";
+    }
+
     runWithState = () => {
         let result; // NO_NEED/UPDATED/error
         let done = false;
@@ -152,10 +162,10 @@ class updater {
         }
     }
 
-    checkNeedUpdate = async () => {
+    checkNeedUpdate = async (url = this.latestReleaseUrl) => {
         console.log("[2/6] check if update is needed");
         const _getLatestVersion = async () => {
-            const resp = await this.utils.fetch(this.latestReleaseUrl, { proxy: this.proxyUrl, timeout: this.timeout });
+            const resp = await this.utils.fetch(url, this.requestOption);
             return resp.json()
         }
         const _getCurrentVersion = async () => {
@@ -176,9 +186,9 @@ class updater {
         return result !== 0
     }
 
-    downloadLatestVersion = async () => {
+    downloadLatestVersion = async (url = this.latestVersionInfo.zipball_url) => {
         console.log("[3/6] download latest version plugin");
-        const resp = await this.utils.fetch(this.latestVersionInfo.zipball_url, { proxy: this.proxyUrl, timeout: this.timeout });
+        const resp = await this.utils.fetch(url, this.requestOption);
         return resp.buffer()
     }
 
@@ -223,7 +233,9 @@ class updater {
         await this.pkgFsExtra.emptyDir(dst);
         await this.pkgFsExtra.copy(src, dst);
         await this.pkgFsExtra.emptyDir(this.workDir);
-        await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
+        if (this.latestVersionInfo) {
+            await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
+        }
     }
 }
 
