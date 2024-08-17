@@ -70,6 +70,12 @@
     width: 100%;
 }
 
+.plugin-custom-modal-body .form-control {
+    border: 1px solid #ccc;
+    box-shadow: none;
+    border-radius: 2px;
+}
+
 .plugin-custom-modal-body a {
     color: #4183C4;
 }
