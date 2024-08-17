@@ -42,22 +42,22 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         const getState = updater.runWithState();
         const isDone = () => getState()["done"];
         const notTimeout = await this.utils.progressBar.fake({ timeout, isDone });
-        let { done, result, info } = getState();
-        if (!notTimeout || !done || !result) {
-            result = new Error("timeout");
+        let { done, state, info } = getState();
+        if (!notTimeout || !done || !state) {
+            state = new Error("timeout");
         }
 
         let title, callback, components;
-        if (result === "UPDATED") {
+        if (state === "UPDATED") {
             title = "更新成功，请重启 Typora";
             components = [{ type: "textarea", label: "当前版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
-        } else if (result === "NO_NEED") {
+        } else if (state === "NO_NEED") {
             title = "已是最新版，无需更新";
             components = [{ type: "textarea", label: "当前版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
-        } else if (result instanceof Error) {
+        } else if (state instanceof Error) {
             title = "更新失败";
             callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
-            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新。报错信息如下：" }, { type: "span", label: this.utils.escape(result.stack) }];
+            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新。报错信息如下：" }, { type: "span", label: this.utils.escape(state.stack) }];
         } else {
             title = "更新失败";
             components = [{ type: "span", label: "发生未知错误，请向开发者反馈" }];
@@ -75,19 +75,17 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
             proxy = "http://" + proxy;
         }
         const url = "https://api.github.com/repos/obgnail/typora_plugin/releases/latest";
-        return new updater(this, proxy, url, timeout);
+        return new updater(this, url, proxy, timeout);
     }
 }
 
 class updater {
-    constructor(plugin, proxyURL, latestReleaseUrl, timeout = 3 * 60 * 1000) {
-        this.proxyUrl = proxyURL;
-        this.latestReleaseUrl = latestReleaseUrl;
-        this.timeout = timeout;
+    constructor(plugin, latestReleaseUrl, proxy, timeout = 3 * 60 * 1000) {
         this.utils = plugin.utils;
+        this.latestReleaseUrl = latestReleaseUrl;
+        this.requestOption = { proxy, timeout };
 
         this.pkgFsExtra = this.utils.Package.FsExtra;
-        this.pkgFs = this.utils.Package.Fs.promises;
         this.pkgPath = this.utils.Package.Path;
 
         this.unzipDir = "";
@@ -121,20 +119,24 @@ class updater {
         return "UPDATED";
     }
 
+    /** 强制更新：跳过检查，直接使用url更新 */
+    force = async url => {
+        await this.prepare();
+        const buffer = await this.downloadLatestVersion(url);
+        await this.unzip(buffer);
+        await this.excludeFiles();
+        await this.syncDir();
+        console.log(`force updated!`);
+        return "UPDATED";
+    }
+
     runWithState = () => {
-        let result; // NO_NEED/UPDATED/error
-        let done = false;
-        setTimeout(async () => {
-            try {
-                result = await this.run();
-            } catch (e) {
-                result = e;
-                console.error(e);
-            } finally {
-                done = true;
-            }
-        })
-        return () => ({ done, result, info: this.latestVersionInfo })
+        const v = { done: false, state: null, info: null }; // state: NO_NEED/UPDATED/Error
+        this.run()
+            .then(res => v.state = res)
+            .catch(err => console.error(v.state = err))
+            .finally(() => Object.assign(v, { done: true, info: this.latestVersionInfo }));
+        return () => v
     }
 
     prepare = async () => {
@@ -146,16 +148,16 @@ class updater {
     chmod = async () => {
         const dir = this.utils.joinPath(this.pluginDir);
         try {
-            await this.pkgFs.chmod(dir, 0o777);
+            await this.pkgFsExtra.chmod(dir, 0o777);
         } catch (e) {
             console.debug(`cant chmod ${dir}`);
         }
     }
 
-    checkNeedUpdate = async () => {
+    checkNeedUpdate = async (url = this.latestReleaseUrl) => {
         console.log("[2/6] check if update is needed");
         const _getLatestVersion = async () => {
-            const resp = await this.utils.fetch(this.latestReleaseUrl, { proxy: this.proxyUrl, timeout: this.timeout });
+            const resp = await this.utils.fetch(url, this.requestOption);
             return resp.json()
         }
         const _getCurrentVersion = async () => {
@@ -176,9 +178,9 @@ class updater {
         return result !== 0
     }
 
-    downloadLatestVersion = async () => {
+    downloadLatestVersion = async (url = this.latestVersionInfo.zipball_url) => {
         console.log("[3/6] download latest version plugin");
-        const resp = await this.utils.fetch(this.latestVersionInfo.zipball_url, { proxy: this.proxyUrl, timeout: this.timeout });
+        const resp = await this.utils.fetch(url, this.requestOption);
         return resp.buffer()
     }
 
@@ -193,8 +195,8 @@ class updater {
         const oldDir = this.utils.joinPath(this.customPluginDir);
         const newDir = this.pkgPath.join(this.unzipDir, this.customPluginDir);
 
-        const oldFds = await this.pkgFs.readdir(oldDir);
-        const newFds = await this.pkgFs.readdir(newDir);
+        const oldFds = await this.pkgFsExtra.readdir(oldDir);
+        const newFds = await this.pkgFsExtra.readdir(newDir);
 
         const excludeFds = new Set();
         newFds.forEach(file => excludeFds.add(file));
@@ -223,7 +225,11 @@ class updater {
         await this.pkgFsExtra.emptyDir(dst);
         await this.pkgFsExtra.copy(src, dst);
         await this.pkgFsExtra.emptyDir(this.workDir);
-        await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
+        if (this.latestVersionInfo) {
+            await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
+        } else {
+            await this.pkgFsExtra.remove(this.versionFile);
+        }
     }
 }
 

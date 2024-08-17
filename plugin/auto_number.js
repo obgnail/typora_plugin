@@ -68,6 +68,7 @@ class autoNumberPlugin extends BasePlugin {
             vertical-align: inherit;
             font-weight: inherit;
             line-height: inherit;
+            visibility: inherit;
         }`
 
         this.side_bar_css = `
