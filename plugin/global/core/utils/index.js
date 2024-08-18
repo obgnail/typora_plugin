@@ -24,6 +24,7 @@ class utils {
         Path: PATH,
         Fs: FS,
         FsExtra: FS_EXTRA,
+        Toml: TOML,
         ChildProcess: CHILD_PROCESS,
     })
 
@@ -377,7 +378,7 @@ class utils {
                 this.insertStyle(`plugin-${name}-style`, style);
                 break
             case "object":
-                const { textID = null, text = null, fileID = null, file = null } = style;
+                const { textID, text, fileID, file } = style;
                 fileID && file && this.insertStyleFile(fileID, file);
                 textID && text && this.insertStyle(textID, text);
                 break
