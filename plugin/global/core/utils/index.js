@@ -24,6 +24,7 @@ class utils {
         Path: PATH,
         Fs: FS,
         FsExtra: FS_EXTRA,
+        Toml: TOML,
         ChildProcess: CHILD_PROCESS,
     })
 
@@ -377,7 +378,7 @@ class utils {
                 this.insertStyle(`plugin-${name}-style`, style);
                 break
             case "object":
-                const { textID = null, text = null, fileID = null, file = null } = style;
+                const { textID, text, fileID, file } = style;
                 fileID && file && this.insertStyleFile(fileID, file);
                 textID && text && this.insertStyle(textID, text);
                 break
@@ -598,35 +599,6 @@ class utils {
         }
     }
 
-    static getFenceUserSize = content => {
-        const regexp = /^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/;
-        const lines = content.split("\n").map(line => line.trim()).filter(line => line.startsWith("//"));
-        for (let line of lines) {
-            line = line.replace(/\s/g, "").replace(/['`]/g, `"`);
-            const { groups } = line.match(regexp) || {};
-            if (groups) {
-                return { height: groups.height, width: groups.width };
-            }
-        }
-        return { height: "", width: "" };
-    }
-
-    static renderAllLangFence = lang => {
-        document.querySelectorAll(`#write .md-fences[lang=${lang}]`).forEach(fence => {
-            const codeMirror = fence.querySelector(":scope > .CodeMirror");
-            if (!codeMirror) {
-                const cid = fence.getAttribute("cid");
-                cid && File.editor.fences.addCodeBlock(cid);
-            }
-        })
-    }
-    static refreshAllLangFence = lang => {
-        document.querySelectorAll(`#write .md-fences[lang="${lang}"]`).forEach(fence => {
-            const cid = fence.getAttribute("cid");
-            cid && File.editor.diagrams.updateDiagram(cid);
-        })
-    }
-
     ////////////////////////////// 业务DOM操作 //////////////////////////////
     static removeElement = ele => ele && ele.parentElement && ele.parentElement.removeChild(ele)
     static removeElementByID = id => this.removeElement(document.getElementById(id))
@@ -714,21 +686,26 @@ class utils {
         File.editor.insertText(content);
     }
 
-    static insertElement = elements => {
+    static createDocumentFragment = elements => {
         if (!elements) return;
 
         if (typeof elements === "string") {
-            const doc = new DOMParser().parseFromString(elements, "text/html");
-            elements = doc.body.childNodes;
+            elements = [...new DOMParser().parseFromString(elements, "text/html").body.childNodes];
         }
-
-        let target = elements;
+        let fragment = elements;
         if (elements instanceof Array || elements instanceof NodeList) {
-            target = document.createDocumentFragment();
-            elements.forEach(ele => target.appendChild(ele));
+            fragment = document.createDocumentFragment();
+            elements.forEach(ele => fragment.appendChild(ele));
         }
-        const quickOpenNode = document.getElementById("typora-quick-open");
-        quickOpenNode.parentNode.insertBefore(target, quickOpenNode.nextSibling);
+        return fragment;
+    }
+
+    static insertElement = elements => {
+        const fragment = this.createDocumentFragment(elements);
+        if (fragment) {
+            const quickOpenNode = document.getElementById("typora-quick-open");
+            quickOpenNode.parentNode.insertBefore(fragment, quickOpenNode.nextSibling);
+        }
     }
 
     static findActiveNode = range => {
