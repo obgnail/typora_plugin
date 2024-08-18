@@ -27,11 +27,18 @@
     padding-bottom: 3px;
     cursor: pointer;
 }
-
+#plugin-outline .plugin-outline-item[item-type="image"] {
+    background-color: ${this.config.COLOR.image};
+}
+#plugin-outline .plugin-outline-item[item-type="fence"] {
+    background-color: ${this.config.COLOR.fence};
+}
+#plugin-outline .plugin-outline-item[item-type="table"] {
+    background-color: ${this.config.COLOR.table};
+}
 #plugin-outline .plugin-outline-item.active,
 #plugin-outline .plugin-outline-item:hover {
-    border-color: #f5f5f5;
-    background-color: var(--item-hover-bg-color) !important;
+    color: #dd4a68;
 }
 
 #plugin-outline .plugin-outline-icon {

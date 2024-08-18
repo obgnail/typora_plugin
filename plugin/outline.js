@@ -1,5 +1,5 @@
 class outlinePlugin extends BasePlugin {
-    styleTemplate = () => true
+    styleTemplate = () => this
 
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
@@ -175,11 +175,11 @@ class collectUtil {
             }
         }
 
-        const { SET_COLOR_IN_ALL, SHOW_NAME, COLOR } = this.config;
+        const { SET_COLOR_IN_ALL, SHOW_NAME } = this.config;
         let ele = listEl.firstElementChild;
         collection.forEach(item => {
             if (SET_COLOR_IN_ALL) {
-                ele.style.backgroundColor = type === "all" ? COLOR[item.type] : "";
+                ele.setAttribute("item-type", type === "all" ? item.type : "");
             }
             const span = ele.firstElementChild;
             span.dataset.ref = item.cid;
@@ -192,4 +192,3 @@ class collectUtil {
 module.exports = {
     plugin: outlinePlugin
 };
-
