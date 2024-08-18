@@ -31,7 +31,7 @@ class outlinePlugin extends BasePlugin {
             footer: document.querySelector("#plugin-outline .plugin-outline-footer"),
             move: document.querySelector(`#plugin-outline .plugin-outline-icon[Type="move"]`),
         }
-        this.collectUtil = new _collectUtil(this.config, this.entities);
+        this.collectUtil = new collectUtil(this);
     }
 
     process = () => {
@@ -50,9 +50,6 @@ class outlinePlugin extends BasePlugin {
             const footerIcon = ev.target.closest(".plugin-outline-footer .plugin-outline-icon");
 
             if (!item && !headerIcon && !footerIcon) return;
-
-            ev.stopPropagation();
-            ev.preventDefault();
 
             if (item) {
                 const cid = item.querySelector("span").getAttribute("data-ref");
@@ -115,131 +112,78 @@ class outlinePlugin extends BasePlugin {
     hide = () => this.utils.hide(this.entities.modal);
 }
 
-class _collectUtil {
-    constructor(config, entities) {
-        this.config = config;
-        this.entities = entities;
-
-        this.paragraphIdx = 0;
-        this.tableIdx = 0;
-        this.imageIdx = 0;
-        this.fenceIdx = 0;
-        this.collection = { table: [], image: [], fence: [] };
-    }
-
-    clear() {
-        this.paragraphIdx = this.tableIdx = this.imageIdx = this.fenceIdx = 0;
-        this.collection = { table: [], image: [], fence: [] };
+class collectUtil {
+    constructor(plugin) {
+        this.config = plugin.config;
+        this.utils = plugin.utils;
+        this.listElement = plugin.entities.list;
+        this.collection = null;
     }
 
     collect() {
-        this.clear();
-        const elements = document.querySelectorAll("#write>h1, #write>h2, .md-table, .md-fences, .md-image");
-        elements.forEach(ele => {
-            if (!this.config.SHOW_HIDDEN && ele.style.display === "none") return;
+        const { SHOW_HIDDEN } = this.config;
+        const idxMap = { paragraph: 0, table: 0, image: 0, fence: 0 };
+        this.collection = { table: [], image: [], fence: [], all: [] };
+
+        document.querySelectorAll("#write>h1, #write>h2, .md-table, .md-fences, .md-image").forEach(ele => {
+            if (!SHOW_HIDDEN && ele.style.display === "none") return;
 
             const tagName = ele.tagName;
-            if (tagName === "H1") {
-                this.paragraphIdx = 0;
-                this.tableIdx = this.imageIdx = this.fenceIdx = 0;
-                return;
-            } else if (tagName === "H2") {
-                this.paragraphIdx++;
-                this.tableIdx = this.imageIdx = this.fenceIdx = 0;
+            if (tagName === "H1" || tagName === "H2") {
+                idxMap.paragraph = tagName === "H1" ? 0 : idxMap.paragraph + 1;
+                idxMap.table = idxMap.image = idxMap.fence = 0;
                 return;
             }
 
-            const cid = ele.closest("[cid]").getAttribute("cid");
-            // table
-            if (ele.classList.contains("md-table")) {
-                this.tableIdx++;
-                const collection = { cid: cid, type: "table", paragraphIdx: this.paragraphIdx, idx: this.tableIdx };
-                this.collection.table.push(collection);
-                // fence
-            } else if (ele.classList.contains("md-fences")) {
-                this.fenceIdx++;
-                const collection = { cid: cid, type: "fence", paragraphIdx: this.paragraphIdx, idx: this.fenceIdx };
-                this.collection.fence.push(collection);
-                // image
-            } else if (ele.classList.contains("md-image")) {
-                this.imageIdx++;
-                const collection = { cid: cid, type: "image", paragraphIdx: this.paragraphIdx, idx: this.imageIdx };
-                this.collection.image.push(collection);
+            const type = ele.classList.contains("md-table") ? "table"
+                : ele.classList.contains("md-fences") ? "fence"
+                    : ele.classList.contains("md-image") ? "image"
+                        : null;
+
+            if (type) {
+                idxMap[type]++;
+                const cid = ele.closest("[cid]").getAttribute("cid");
+                const collection = { cid, type, paragraphIdx: idxMap.paragraph, idx: idxMap[type] };
+                this.collection[type].push(collection);
+                this.collection.all.push(collection);
             }
-        })
-    }
-
-    compare(p) {
-        return function (m, n) {
-            const cid1 = parseInt(m[p].replace("n", ""));
-            const cid2 = parseInt(n[p].replace("n", ""));
-            return cid1 - cid2;
-        }
-    }
-
-    getCollection(Type) {
-        if (Type !== "all") {
-            return this.collection[Type]
-        }
-        let list = [];
-        for (const collect of Object.values(this.collection)) {
-            list.push(...collect);
-        }
-        list.sort(this.compare("cid"));
-        return list
-    }
-
-    setColor(ele, item, type) {
-        if (type === "all") {
-            const { fence, image, table } = this.config.COLOR;
-            if (item.type === "table") {
-                ele.style.backgroundColor = table;
-            } else if (item.type === "fence") {
-                ele.style.backgroundColor = fence;
-            } else if (item.type === "image") {
-                ele.style.backgroundColor = image;
-            }
-        } else {
-            ele.style.backgroundColor = "";
-        }
+        });
     }
 
     // 简易数据单向绑定
-    bindDOM(Type) {
-        const typeCollection = this.getCollection(Type);
+    bindDOM(type) {
+        const collection = this.collection[type];
+        const listEl = this.listElement;
 
-        const first = this.entities.list.firstElementChild;
-        if (first && !first.classList.contains("plugin-outline-item")) {
-            this.entities.list.removeChild(first);
+        if (collection.length === 0) {
+            listEl.innerHTML = `<div class="plugin-outline-empty">Empty</div>`;
+            return;
         }
 
-        while (typeCollection.length !== this.entities.list.childElementCount) {
-            if (typeCollection.length > this.entities.list.childElementCount) {
-                const div = document.createElement("div");
-                div.classList.add("plugin-outline-item");
-                div.appendChild(document.createElement("span"));
-                this.entities.list.appendChild(div);
-            } else {
-                this.entities.list.removeChild(this.entities.list.firstElementChild);
+        const first = listEl.firstElementChild;
+        if (first && first.classList.contains("plugin-outline-empty")) {
+            listEl.removeChild(first);
+        }
+
+        const diff = collection.length - listEl.childElementCount;
+        if (diff > 0) {
+            const fragment = `<div class="plugin-outline-item"><span></span></div>`.repeat(diff);
+            listEl.appendChild(this.utils.createDocumentFragment(fragment));
+        } else if (diff < 0) {
+            for (let i = diff; i < 0; i++) {
+                listEl.removeChild(listEl.firstElementChild);
             }
         }
 
-        if (this.entities.list.childElementCount === 0) {
-            const div = document.createElement("div");
-            div.classList.add("plugin-outline-empty");
-            div.innerText = "Empty";
-            this.entities.list.appendChild(div);
-            return
-        }
-
-        let ele = this.entities.list.firstElementChild;
-        typeCollection.forEach(item => {
-            if (this.config.SET_COLOR_IN_ALL) {
-                this.setColor(ele, item, Type);
+        const { SET_COLOR_IN_ALL, SHOW_NAME, COLOR } = this.config;
+        let ele = listEl.firstElementChild;
+        collection.forEach(item => {
+            if (SET_COLOR_IN_ALL) {
+                ele.style.backgroundColor = type === "all" ? COLOR[item.type] : "";
             }
             const span = ele.firstElementChild;
-            span.setAttribute("data-ref", item.cid);
-            span.innerText = `${this.config.SHOW_NAME[item.type]} ${item.paragraphIdx}-${item.idx}`;
+            span.dataset.ref = item.cid;
+            span.innerText = `${SHOW_NAME[item.type]} ${item.paragraphIdx}-${item.idx}`;
             ele = ele.nextElementSibling;
         })
     }

@@ -686,21 +686,26 @@ class utils {
         File.editor.insertText(content);
     }
 
-    static insertElement = elements => {
+    static createDocumentFragment = elements => {
         if (!elements) return;
 
         if (typeof elements === "string") {
-            const doc = new DOMParser().parseFromString(elements, "text/html");
-            elements = doc.body.childNodes;
+            elements = [...new DOMParser().parseFromString(elements, "text/html").body.childNodes];
         }
-
-        let target = elements;
+        let fragment = elements;
         if (elements instanceof Array || elements instanceof NodeList) {
-            target = document.createDocumentFragment();
-            elements.forEach(ele => target.appendChild(ele));
+            fragment = document.createDocumentFragment();
+            elements.forEach(ele => fragment.appendChild(ele));
         }
-        const quickOpenNode = document.getElementById("typora-quick-open");
-        quickOpenNode.parentNode.insertBefore(target, quickOpenNode.nextSibling);
+        return fragment;
+    }
+
+    static insertElement = elements => {
+        const fragment = this.createDocumentFragment(elements);
+        if (fragment) {
+            const quickOpenNode = document.getElementById("typora-quick-open");
+            quickOpenNode.parentNode.insertBefore(fragment, quickOpenNode.nextSibling);
+        }
     }
 
     static findActiveNode = range => {
