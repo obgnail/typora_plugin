@@ -4,6 +4,7 @@ class thirdPartyDiagramParser {
         this.parsers = new Map();
         this.defaultHeight = "230px";
         this.defaultBackgroundColor = "#F8F8F8";
+        this.regexp = /^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/;
     }
 
     /**
@@ -66,8 +67,37 @@ class thirdPartyDiagramParser {
         return $wrap
     }
 
+    getFenceUserSize = content => {
+        const lines = content.split("\n").map(line => line.trim()).filter(line => line.startsWith("//"));
+        for (let line of lines) {
+            line = line.replace(/\s/g, "").replace(/['`]/g, `"`);
+            const { groups } = line.match(this.regexp) || {};
+            if (groups) {
+                return { height: groups.height, width: groups.width };
+            }
+        }
+        return { height: "", width: "" };
+    }
+
+    renderAllLangFence = lang => {
+        document.querySelectorAll(`#write .md-fences[lang=${lang}]`).forEach(fence => {
+            const codeMirror = fence.querySelector(":scope > .CodeMirror");
+            if (!codeMirror) {
+                const cid = fence.getAttribute("cid");
+                cid && File.editor.fences.addCodeBlock(cid);
+            }
+        })
+    }
+
+    refreshAllLangFence = lang => {
+        document.querySelectorAll(`#write .md-fences[lang="${lang}"]`).forEach(fence => {
+            const cid = fence.getAttribute("cid");
+            cid && File.editor.diagrams.updateDiagram(cid);
+        })
+    }
+
     setStyle = (parser, $pre, $wrap, content) => {
-        const { height, width } = this.utils.getFenceUserSize(content);
+        const { height, width } = this.getFenceUserSize(content);
         const { height: defaultHeight, "background-color": backgroundColor, ...other } = parser.css || {};
         $wrap.css({
             width: width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
@@ -99,7 +129,7 @@ class thirdPartyDiagramParser {
     beforeExport = () => {
         for (const [lang, parser] of this.parsers.entries()) {
             if (!parser.beforeExport) continue;
-            this.utils.renderAllLangFence(lang);
+            this.renderAllLangFence(lang);
             for (const [cid, instance] of Object.entries(parser.map)) {
                 const preview = this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}] .md-diagram-panel-preview`);
                 preview && parser.beforeExport(preview, instance);
@@ -110,7 +140,7 @@ class thirdPartyDiagramParser {
     afterExport = () => {
         setTimeout(() => {
             for (const lang of this.parsers.keys()) {
-                this.utils.refreshAllLangFence(lang);
+                this.refreshAllLangFence(lang);
             }
         }, 300)
     }

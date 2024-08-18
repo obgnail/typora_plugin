@@ -598,35 +598,6 @@ class utils {
         }
     }
 
-    static getFenceUserSize = content => {
-        const regexp = /^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/;
-        const lines = content.split("\n").map(line => line.trim()).filter(line => line.startsWith("//"));
-        for (let line of lines) {
-            line = line.replace(/\s/g, "").replace(/['`]/g, `"`);
-            const { groups } = line.match(regexp) || {};
-            if (groups) {
-                return { height: groups.height, width: groups.width };
-            }
-        }
-        return { height: "", width: "" };
-    }
-
-    static renderAllLangFence = lang => {
-        document.querySelectorAll(`#write .md-fences[lang=${lang}]`).forEach(fence => {
-            const codeMirror = fence.querySelector(":scope > .CodeMirror");
-            if (!codeMirror) {
-                const cid = fence.getAttribute("cid");
-                cid && File.editor.fences.addCodeBlock(cid);
-            }
-        })
-    }
-    static refreshAllLangFence = lang => {
-        document.querySelectorAll(`#write .md-fences[lang="${lang}"]`).forEach(fence => {
-            const cid = fence.getAttribute("cid");
-            cid && File.editor.diagrams.updateDiagram(cid);
-        })
-    }
-
     ////////////////////////////// 业务DOM操作 //////////////////////////////
     static removeElement = ele => ele && ele.parentElement && ele.parentElement.removeChild(ele)
     static removeElementByID = id => this.removeElement(document.getElementById(id))
