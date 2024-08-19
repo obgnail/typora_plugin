@@ -1,3 +1,6 @@
+/**
+ * 动态注册右键菜单
+ */
 class contextMenu {
     constructor(utils) {
         this.utils = utils;

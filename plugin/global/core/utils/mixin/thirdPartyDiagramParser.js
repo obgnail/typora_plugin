@@ -1,3 +1,6 @@
+/**
+ * 动态注册、动态注销第三方代码块图表语法(派生自DiagramParser)
+ */
 class thirdPartyDiagramParser {
     constructor(utils) {
         this.utils = utils;

@@ -141,7 +141,7 @@ class rightClickMenuPlugin extends BasePlugin {
         }
     }
 
-    show = ($after, $before) => {
+    showMenuItem = ($after, $before) => {
         const margin = 6;
         const { left, top, width, height } = $before[0].getBoundingClientRect();
         let afterTop = top - height;
@@ -193,8 +193,8 @@ class rightClickMenuPlugin extends BasePlugin {
             that.hideMenuIfNeed();
             // 展示二级菜单
         }).on("mouseenter", "[data-key]", function () {
-            const first = $(this);
-            if (that.groupName === first.attr("data-key")) {
+            const $first = $(this);
+            if (that.groupName === $first.attr("data-key")) {
                 const idx = this.getAttribute("idx");
                 if (document.querySelector(".plugin-menu-second.show")) {
                     document.querySelectorAll(`.plugin-menu-third:not([idx="${idx}"])`).forEach(removeShow);
@@ -202,10 +202,10 @@ class rightClickMenuPlugin extends BasePlugin {
                 const otherSecond = document.querySelectorAll(`.plugin-menu-second:not([idx="${idx}"])`);
                 otherSecond.forEach(ele => ele.querySelectorAll(".plugin-menu-item.active").forEach(removeActive));
                 otherSecond.forEach(removeShow);
-                that.show($(`.plugin-menu-second[idx="${idx}"]`), first);
-                first.addClass("active");
+                that.showMenuItem($(`.plugin-menu-second[idx="${idx}"]`), $first);
+                $first.addClass("active");
             } else {
-                document.querySelectorAll(`[data-key='${that.groupName}']`).forEach(removeActive);
+                document.querySelectorAll(`[data-key="${that.groupName}"]`).forEach(removeActive);
                 document.querySelectorAll(".plugin-menu-second").forEach(removeShow);
                 document.querySelectorAll(".plugin-menu-third").forEach(removeShow);
             }
@@ -213,10 +213,10 @@ class rightClickMenuPlugin extends BasePlugin {
 
         // 展示三级菜单
         $(".plugin-menu-second").on("mouseenter", "[data-key]", function () {
-            const second = $(this);
-            document.querySelectorAll(`.plugin-menu-third`).forEach(removeShow);
+            const $second = $(this);
+            document.querySelectorAll(".plugin-menu-third").forEach(removeShow);
             document.querySelectorAll(".plugin-dynamic-arg").forEach(ele => ele.parentElement.removeChild(ele));
-            const fixedName = second.attr("data-key");
+            const fixedName = $second.attr("data-key");
             const $third = $(`.plugin-menu-third[data-plugin="${fixedName}"]`);
             const dynamicCallArgs = that.utils.generateDynamicCallArgs(fixedName);
             if (dynamicCallArgs) {
@@ -225,8 +225,8 @@ class rightClickMenuPlugin extends BasePlugin {
             if ($third.children().length === 0) {
                 that.appendDummyThirdLi($third);
             }
-            if (second.find(`span[data-lg="Menu"]`).length) {
-                that.show($third, second);
+            if ($second.find(`span[data-lg="Menu"]`).length) {
+                that.showMenuItem($third, $second);
             } else {
                 removeActive(document.querySelector(".plugin-menu-second .has-extra-menu"));
             }
