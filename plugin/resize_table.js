@@ -43,10 +43,7 @@ class resizeTablePlugin extends BasePlugin {
             }
 
             const onMouseMove = ev => {
-                ev.stopPropagation();
-                ev.preventDefault();
                 if (!this.utils.metaKeyPressed(ev)) return;
-
                 requestAnimationFrame(() => {
                     if (direction === "right") {
                         target.style.width = startWidth + ev.clientX - startX + "px";
@@ -55,17 +52,15 @@ class resizeTablePlugin extends BasePlugin {
                     }
                 });
             }
+            const onMouseUp = ev => {
+                target.style.cursor = "default";
+                target.onmouseup = null;
+                document.removeEventListener("mousemove", onMouseMove);
+                document.removeEventListener("mouseup", onMouseUp);
+            }
 
-            document.addEventListener("mouseup", ev => {
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    target.style.cursor = "default";
-                    document.removeEventListener('mousemove', onMouseMove);
-                    target.onmouseup = null;
-                }
-            )
-
-            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+            document.addEventListener("mousemove", onMouseMove);
         })
     }
 
@@ -119,7 +114,7 @@ class resizeTablePlugin extends BasePlugin {
             // 上边
             const num = whichChildOfParent(ele);
             const uncle = ele.parentElement.previousElementSibling;
-            yield (uncle)
+            yield uncle
                 // td
                 ? uncle.querySelector(`td:nth-child(${num})`)
                 // tr
