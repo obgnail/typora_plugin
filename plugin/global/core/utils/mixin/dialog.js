@@ -1,3 +1,6 @@
+/**
+ * 动态弹出自定义模态框（即刻弹出，因此无需注册）
+ */
 class dialog {
     constructor(utils) {
         this.utils = utils;

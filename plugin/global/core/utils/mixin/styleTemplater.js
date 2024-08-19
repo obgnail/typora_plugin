@@ -1,3 +1,6 @@
+/**
+ * 动态注册css模板文件
+ */
 class styleTemplater {
     constructor(utils) {
         this.utils = utils;

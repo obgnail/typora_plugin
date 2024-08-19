@@ -1,3 +1,6 @@
+/**
+ * 动态注册、动态注销新的代码块图表语法
+ */
 class diagramParser {
     constructor(utils) {
         this.utils = utils;

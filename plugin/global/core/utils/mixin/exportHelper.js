@@ -1,3 +1,6 @@
+/**
+ * 动态注册导出时的额外操作
+ */
 class exportHelper {
     constructor(utils) {
         this.utils = utils;

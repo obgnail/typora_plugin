@@ -1,3 +1,6 @@
+/**
+ * 动态注册、动态注销hotkey
+ */
 class hotkeyHub {
     constructor(utils) {
         this.utils = utils;
