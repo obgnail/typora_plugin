@@ -4,7 +4,6 @@ class resizeImagePlugin extends BasePlugin {
 
         this.utils.entities.eWrite.addEventListener("wheel", ev => {
             if (!this.utils.metaKeyPressed(ev)) return;
-
             const target = ev.target.closest("img");
             if (!target) return;
 
@@ -29,7 +28,6 @@ class resizeImagePlugin extends BasePlugin {
 
     resetImageSize = () => {
         this.config.ALLOW_OVERSIZE = !this.config.ALLOW_OVERSIZE;
-
         if (!this.config.ALLOW_OVERSIZE) {
             this.utils.entities.querySelectorAllInWrite("img").forEach(image => {
                 if (image.style.maxWidth) {
@@ -72,10 +70,12 @@ class resizeImagePlugin extends BasePlugin {
             image.style.width = width + "px";
             this.setAlign(this.config.IMAGE_ALIGN, image, maxWidth);
         } else {
-            image.style.width = width + "px";
-            image.style.maxWidth = width + "px";
-            image.style.left = (maxWidth - width) / 2 + "px";
-            image.style.position = "relative";
+            Object.assign(image.style, {
+                position: "relative",
+                width: width + "px",
+                maxWidth: width + "px",
+                left: (maxWidth - width) / 2 + "px",
+            })
         }
     }
 
@@ -87,7 +87,6 @@ class resizeImagePlugin extends BasePlugin {
 
         const images = anchorNode.closest("#write .md-image");
         if (!images) return args;
-
         const image = images.querySelector("img");
         if (!image) return args;
 
