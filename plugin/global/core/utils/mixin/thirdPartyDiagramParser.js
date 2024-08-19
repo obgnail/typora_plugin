@@ -56,6 +56,9 @@ class thirdPartyDiagramParser {
                 parser.map[cid] = instance;
             }
         } catch (e) {
+            if (parser.versionGetter) {
+                e.stack = `${lang} version: ${parser.versionGetter()}\n\n` + e.stack;
+            }
             this.utils.diagramParser.throwParseError(null, e);
         }
     }
