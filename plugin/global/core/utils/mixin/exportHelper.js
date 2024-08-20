@@ -64,7 +64,7 @@ class exportHelper {
         // 旧版本的Typora的export函数不是AsyncFunction，尽最大努力兼容旧版本
         const until = () => File && File.editor && File.editor.export && File.editor.export.exportToHTML
         const callback = () => {
-            this.isAsync = File.editor.export.exportToHTML.constructor.name === 'AsyncFunction';
+            this.isAsync = this.utils.isAsyncFunction(File.editor.export.exportToHTML);
             const after = this.isAsync ? this.afterExport : this.afterExportSync
             this.utils.decorate(() => File && File.editor && File.editor.export, "exportToHTML", this.beforeExport, after, true)
         }

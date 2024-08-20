@@ -30,7 +30,7 @@ class toolbarPlugin extends BasePlugin {
             result: document.querySelector("#plugin-toolbar .plugin-toolbar-result")
         }
 
-        this.search = this.utils.debouncePromise(async ev => {
+        this.search = this.utils.debounce(async ev => {
             const result = await this.toolController.handleInput();
             const ok = result && result.matches && result.tool;
             this.entities.result.innerHTML = ok ? this._newItems(result).join("") : "";

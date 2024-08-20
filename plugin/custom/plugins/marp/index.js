@@ -35,7 +35,7 @@ class marpPlugin extends BaseCustomPlugin {
 
     versionGetter = () => "marp-core@3.9.0"
 
-    lazyLoad = () => this.marpPkg = this.marpPkg || require("./marp.min");
+    lazyLoad = () => this.marpPkg = require("./marp.min");
 }
 
 module.exports = {

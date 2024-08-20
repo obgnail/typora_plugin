@@ -31,7 +31,7 @@ class abcPlugin extends BaseCustomPlugin {
 
     versionGetter = () => this.ABCJS && this.ABCJS.signature
 
-    lazyLoad = () => this.ABCJS = this.ABCJS || require("./abcjs-basic-min");
+    lazyLoad = () => this.ABCJS = require("./abcjs-basic-min");
 }
 
 module.exports = {

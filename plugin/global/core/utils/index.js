@@ -147,8 +147,10 @@ class utils {
         return 0
     }
 
-    // merge({ a: [{ b: 2 }] }, { a: [{ c: 2 }] }) -> { a: [{ c: 2 }] }
-    // merge({ o: { a: 3 } }, { o: { b: 4 } }) -> { o: { a: 3, b: 4 } }
+    /**
+     * @example merge({ a: [{ b: 2 }] }, { a: [{ c: 2 }] }) -> { a: [{ c: 2 }] }
+     * @example merge({ o: { a: 3 } }, { o: { b: 4 } }) -> { o: { a: 3, b: 4 } }
+     */
     static merge = (source, other) => {
         if (!this.isObject(source) || !this.isObject(other)) {
             return other === undefined ? source : other
@@ -166,50 +168,47 @@ class utils {
         return newObj;
     }
 
-    static throttle = (fn, delay = 100) => {
+    /** @description param fn cannot be an async function that returns promiseLike object */
+    static throttle = (fn, delay) => {
         let timer;
-        return function () {
-            if (!timer) {
-                fn.apply(this, arguments);
-                timer = setTimeout(() => {
-                    clearTimeout(timer);
-                    timer = null;
-                }, delay)
-            }
+        const isAsync = this.isAsyncFunction(fn);
+        return function (...args) {
+            if (timer) return;
+            const result = isAsync
+                ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
+                : fn(...args)
+            timer = setTimeout(() => {
+                clearTimeout(timer);
+                timer = null;
+            }, delay)
+            return result
         }
     }
 
+    /** @description param fn cannot be an async function that returns promiseLike object */
     static debounce = (fn, delay) => {
-        let timeout;
-        return function () {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => fn.apply(this, arguments), delay);
-        }
-    }
-
-    static debouncePromise = (fn, delay) => {
-        let timeout;
-        return function () {
-            return new Promise((resolve, reject) => {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    try {
-                        resolve(fn.apply(this, arguments))
-                    } catch (e) {
-                        reject(e)
-                    }
-                }, delay);
-            })
-        }
-    }
-
-    static once = func => {
-        let flag = true;
-        return function () {
-            if (flag) {
-                func.apply(this, arguments);
-                flag = false;
+        let timer;
+        const isAsync = this.isAsyncFunction(fn);
+        return function (...args) {
+            clearTimeout(timer);
+            if (isAsync) {
+                return new Promise(resolve => timer = setTimeout(() => resolve(fn(...args)), delay)).catch(e => Promise.reject(e))
+            } else {
+                timer = setTimeout(() => fn(...args), delay);
             }
+        };
+    }
+
+    /** @description param fn cannot be an async function that returns promiseLike object */
+    static once = fn => {
+        let called = false;
+        const isAsync = this.isAsyncFunction(fn);
+        return function (...args) {
+            if (called) return;
+            called = true;
+            return isAsync
+                ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
+                : fn(...args);
         }
     }
 
@@ -223,6 +222,7 @@ class utils {
         return result;
     }
 
+    /** @description try not to use it */
     static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
     static asyncReplaceAll = (content, regexp, replaceFunc) => {
@@ -258,11 +258,16 @@ class utils {
         });
     }
 
+    /** @description NOT a foolproof solution. */
     static isBase64 = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str);
-    static isPromise = obj => this.isObject(obj) && typeof obj.then === 'function'
+    /** @description NOT a foolproof solution. In fact, the Promises/A+ specification is not a part of Node.js, so there is no foolproof solution at all */
+    static isPromise = obj => this.isObject(obj) && typeof obj.then === "function"
+    /** @description NOT a foolproof solution. Can only be used to determine the "true" asynchronous functions */
+    static isAsyncFunction = fn => fn.constructor.name === "AsyncFunction"
+    /** @description NOT a foolproof solution. */
     static isObject = value => {
         const type = typeof value
-        return value !== null && (type === 'object' || type === 'function')
+        return value !== null && (type === "object" || type === "function")
     }
 
     static windowsPathToUnix = filepath => {

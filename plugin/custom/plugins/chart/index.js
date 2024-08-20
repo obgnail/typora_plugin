@@ -1,7 +1,5 @@
 class chartPlugin extends BaseCustomPlugin {
-    init = () => {
-        this.ChartPkg = null;
-    }
+    init = () => this.ChartPkg = null;
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
@@ -56,7 +54,7 @@ class chartPlugin extends BaseCustomPlugin {
 
     versionGetter = () => this.ChartPkg && this.ChartPkg.version
 
-    lazyLoad = () => this.ChartPkg = this.ChartPkg || require("./chart.min");
+    lazyLoad = () => this.ChartPkg = require("./chart.min");
 }
 
 module.exports = {
