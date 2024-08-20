@@ -26,9 +26,16 @@ class thirdPartyDiagramParser {
      * @param {function(): string} extraStyleGetter 用于导出时，新增css
      * @param {function(): string} versionGetter 第三方资源版本
      */
-    register = ({ lang, mappingLang, destroyWhenUpdate, interactiveMode, checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, extraStyleGetter, versionGetter }) => {
-        const p = { checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, versionGetter, map: {} };
-        this.parsers.set(lang.toLowerCase(), p);
+    register = ({
+                    lang, mappingLang = "", destroyWhenUpdate, interactiveMode = true, checkSelector,
+                    wrapElement, css = {}, lazyLoadFunc, createFunc, destroyFunc,
+                    beforeExport, extraStyleGetter, versionGetter
+                }) => {
+        lang = lang.toLowerCase();
+        this.parsers.set(lang, {
+            lang, mappingLang, destroyWhenUpdate, interactiveMode,
+            checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, versionGetter, map: {}
+        });
         this.utils.diagramParser.register({
             lang, mappingLang, destroyWhenUpdate, extraStyleGetter, interactiveMode,
             renderFunc: this.render, cancelFunc: this.cancel, destroyAllFunc: this.destroyAll,
@@ -56,11 +63,25 @@ class thirdPartyDiagramParser {
                 parser.map[cid] = instance;
             }
         } catch (e) {
-            if (parser.versionGetter) {
-                e.stack = `${lang} version: ${parser.versionGetter()}\n\n` + e.stack;
-            }
+            e.stack += this.getSettingMsg(parser);
             this.utils.diagramParser.throwParseError(null, e);
         }
+    }
+
+    getSettingMsg = parser => {
+        if (!parser.settingMsg) {
+            const settings = {
+                "diagram version": (parser.versionGetter && parser.versionGetter()) || "unknown",
+                "mapping language": parser.mappingLang,
+                "interactive mode": parser.interactiveMode,
+                "destroy when update": parser.destroyWhenUpdate,
+                "preview panel css": JSON.stringify(parser.css),
+                "render element": parser.wrapElement,
+            }
+            const list = Object.entries(settings).map(([k, v]) => `    ${k}: ${v}`);
+            parser.settingMsg = `\n\ndiagram parser settings:\n${list.join("\n")}`;
+        }
+        return parser.settingMsg;
     }
 
     getWrap = (parser, $pre) => {
