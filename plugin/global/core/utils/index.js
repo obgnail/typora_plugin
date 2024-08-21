@@ -213,12 +213,16 @@ class utils {
     }
 
     /** @description param fn cannot be an async function that returns promiseLike object */
-    static cache(fn, timeout = 1000) {
+    static cache = (fn, timeout = 1000) => {
         let timer, result;
         const isAsync = this.isAsyncFunction(fn);
         return function (...args) {
             if (!timer) {
-                timer = setTimeout(() => timer = null, timeout);
+                timer = setTimeout(() => {
+                    clearTimeout(timer);
+                    timer = null;
+                }, timeout);
+
                 result = isAsync
                     ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
                     : fn(...args);

@@ -22,7 +22,7 @@ class thirdPartyDiagramParser {
      * @param {object|function($pre, $wrap, content): object} css: fence的样式object
      * @param {function(): Promise<null>} lazyLoadFunc: 加载第三方资源
      * @param {function($wrap, string): instance} createFunc: 传入目标标签和fence的内容，生成图形实例
-     * @param {function(instance, $Element, string): instance} updateFunc: 当内容更新时，更新图形实例。此选项为空时会直接调用createFunc
+     * @param {function(instance, $wrap, string): instance} updateFunc: 当内容更新时，更新图形实例。此选项为空时会直接调用createFunc
      * @param {function(Object): null} destroyFunc: 传入图形实例，destroy图形实例
      * @param {function(Element, instance): null} beforeExport: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
      * @param {function(): string} extraStyleGetter 用于导出时，新增css
