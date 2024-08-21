@@ -18,20 +18,10 @@ class calloutsPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        const { eventHub, entities, exportHelper } = this.utils;
+        const { eventHub, exportHelper } = this.utils;
         eventHub.addEventListener(eventHub.eventType.firstFileInit, this.range);
         eventHub.addEventListener(eventHub.eventType.fileEdited, this.range);
-        const getExportStyle = () => entities.querySelectorInWrite(".plugin-callout") ? this.getStyleContent(true) : ""
-        exportHelper.register("callouts", getExportStyle, this.exportToHtml);
-    }
-
-    getStyleContent = (removeIcon = false) => {
-        let result = this.utils.styleTemplater.getStyleContent(this.fixedName);
-        // icon需要用到font，但是导出时又没有font，因此只能移除
-        if (removeIcon) {
-            result = result.replace(/--callout-icon: ".*?";/g, "");
-        }
-        return result
+        exportHelper.register("callouts", this.beforeExport, this.AfterExport);
     }
 
     range = () => {
@@ -51,7 +41,18 @@ class calloutsPlugin extends BaseCustomPlugin {
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.template)
 
-    exportToHtml = html => {
+    isIgnoreType = args => args && args[0] && args[0].type === "html-plain"
+
+    beforeExport = (...args) => {
+        if (!this.isIgnoreType(args) && this.utils.entities.querySelectorInWrite(".plugin-callout")) {
+            // icon需要用到font，但是导出时又没有font，因此只能移除
+            return this.utils.styleTemplater.getStyleContent(this.fixedName).replace(/--callout-icon: ".*?";/g, "");
+        }
+    }
+
+    AfterExport = (html, ...args) => {
+        if (this.isIgnoreType(args)) return;
+
         const regex = new RegExp("<blockquote>", "g");
         const count = (html.match(regex) || []).length;
         const quotes = Array.from(this.utils.entities.querySelectorAllInWrite("blockquote"));

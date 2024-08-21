@@ -17,10 +17,17 @@ class exportHelper {
     unregister = name => this.helpers.delete(name);
 
     beforeExport = (...args) => {
+        if (!this.utils.isObject(args[0])) return;
+
         for (const h of this.helpers.values()) {
-            if (h.beforeExport) {
-                const css = h.beforeExport(...args) || "";
-                args[0].extraCss = (args[0].extraCss || "") + css;
+            if (!h.beforeExport) continue;
+            try {
+                const css = h.beforeExport(...args);
+                if (css && typeof css === "string") {
+                    args[0].extraCss = (args[0].extraCss || "") + css;
+                }
+            } catch (e) {
+                console.error("BeforeExport Error:", e);
             }
         }
     }
@@ -35,11 +42,14 @@ class exportHelper {
 
         let html = await exportResult;
         for (const h of this.helpers.values()) {
-            if (h.afterExport) {
+            if (!h.afterExport) continue;
+            try {
                 const newHtml = await h.afterExport(html, ...args);
-                if (newHtml) {
+                if (newHtml && typeof newHtml === "string") {
                     html = newHtml;
                 }
+            } catch (e) {
+                console.error("AfterExport Error:", e);
             }
         }
         return html;
@@ -50,11 +60,14 @@ class exportHelper {
 
         let html = exportResult;
         for (const h of this.helpers.values()) {
-            if (h.afterExport) {
+            if (!h.afterExport) continue;
+            try {
                 const newHtml = h.afterExport(html, ...args);
                 if (newHtml && !this.utils.isPromise(newHtml)) {
                     html = newHtml;
                 }
+            } catch (e) {
+                console.error("afterExportSync Error:", e);
             }
         }
         return html
