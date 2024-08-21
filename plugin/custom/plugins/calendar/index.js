@@ -17,6 +17,7 @@ class calendarPlugin extends BaseCustomPlugin {
             },
             lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,
+            updateFunc: null,
             destroyFunc: this.destroy,
             beforeExport: null,
             extraStyleGetter: null,

@@ -11,7 +11,7 @@ class thirdPartyDiagramParser {
     }
 
     /**
-     * f**k，js不支持interface，只能将接口函数作为参数传入，整整13个参数，一坨狗屎
+     * f**k，js不支持interface，只能将接口函数作为参数传入，整整14个参数，一坨狗屎
      * @param {string} lang: 语言
      * @param {string} mappingLang: 映射到哪个语言
      * @param {boolean} destroyWhenUpdate: 更新前是否清空preview里的html
@@ -21,6 +21,7 @@ class thirdPartyDiagramParser {
      * @param {{height, "background-color", ...other}} css: 控制fence的样式，要求必须要有高度和背景颜色。这里的obj最终会被执行为$div.css(obj)
      * @param {function(): Promise<null>} lazyLoadFunc: 加载第三方资源
      * @param {function($Element, string): instance} createFunc: 传入目标标签和fence的内容，生成图形实例
+     * @param {function(instance, $Element, string): instance} updateFunc: 当内容更新时，更新图形实例。此选项为空时会直接调用createFunc
      * @param {function(Object): null} destroyFunc: 传入图形实例，destroy图形实例
      * @param {function(Element, instance): null} beforeExport: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
      * @param {function(): string} extraStyleGetter 用于导出时，新增css
@@ -28,7 +29,7 @@ class thirdPartyDiagramParser {
      */
     register = ({
                     lang, mappingLang = "", destroyWhenUpdate, interactiveMode = true, checkSelector,
-                    wrapElement, css = {}, lazyLoadFunc, createFunc, destroyFunc,
+                    wrapElement, css = {}, lazyLoadFunc, createFunc, updateFunc, destroyFunc,
                     beforeExport, extraStyleGetter, versionGetter
                 }) => {
         lang = lang.toLowerCase();
@@ -36,7 +37,8 @@ class thirdPartyDiagramParser {
         const settingMsg = null;
         this.parsers.set(lang, {
             lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg,
-            checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, versionGetter, instanceMap: new Map(),
+            checkSelector, wrapElement, css, lazyLoadFunc, createFunc, updateFunc, destroyFunc,
+            beforeExport, versionGetter, instanceMap: new Map(),
         });
         this.utils.diagramParser.register({
             lang, mappingLang, destroyWhenUpdate, extraStyleGetter, interactiveMode,
@@ -57,16 +59,22 @@ class thirdPartyDiagramParser {
         const $wrap = this.getWrap(parser, $pre);
         try {
             this.setStyle(parser, $pre, $wrap, content);
-            if (parser.instanceMap.has(cid)) {
-                this.cancel(cid, lang);
-            }
-            const instance = parser.createFunc($wrap, content);
-            if (instance) {
-                parser.instanceMap.set(cid, instance);
-            }
+            const instance = this.createOrUpdate(parser, cid, content, $wrap, lang);
+            instance && parser.instanceMap.set(cid, instance);
         } catch (e) {
             e.stack += this.getSettingMsg(parser);
             this.utils.diagramParser.throwParseError(null, e);
+        }
+    }
+
+    createOrUpdate = (parser, cid, content, $wrap, lang) => {
+        const oldInstance = parser.instanceMap.get(cid);
+        if (oldInstance && parser.updateFunc) {
+            const newInstance = parser.updateFunc(oldInstance, $wrap, content);
+            return newInstance || oldInstance
+        } else {
+            oldInstance && this.cancel(cid, lang);
+            return parser.createFunc($wrap, content);
         }
     }
 
