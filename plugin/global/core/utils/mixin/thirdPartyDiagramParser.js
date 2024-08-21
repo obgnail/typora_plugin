@@ -36,7 +36,7 @@ class thirdPartyDiagramParser {
         const settingMsg = null;
         this.parsers.set(lang, {
             lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg,
-            checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, versionGetter, map: {}
+            checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, versionGetter, instanceMap: new Map(),
         });
         this.utils.diagramParser.register({
             lang, mappingLang, destroyWhenUpdate, extraStyleGetter, interactiveMode,
@@ -57,12 +57,12 @@ class thirdPartyDiagramParser {
         const $wrap = this.getWrap(parser, $pre);
         try {
             this.setStyle(parser, $pre, $wrap, content);
-            if (parser.map.hasOwnProperty(cid)) {
+            if (parser.instanceMap.has(cid)) {
                 this.cancel(cid, lang);
             }
             const instance = parser.createFunc($wrap, content);
             if (instance) {
-                parser.map[cid] = instance;
+                parser.instanceMap.set(cid, instance);
             }
         } catch (e) {
             e.stack += this.getSettingMsg(parser);
@@ -138,20 +138,19 @@ class thirdPartyDiagramParser {
 
     cancel = (cid, lang) => {
         const parser = this.parsers.get(lang);
-        if (!parser) return
-        const instance = parser.map[cid];
-        if (instance) {
-            parser.destroyFunc && parser.destroyFunc(instance);
-            delete parser.map[cid];
-        }
+        if (!parser) return;
+        const instance = parser.instanceMap.get(cid);
+        if (!instance) return;
+        parser.destroyFunc && parser.destroyFunc(instance);
+        parser.instanceMap.delete(cid);
     }
 
     destroyAll = () => {
         for (const parser of this.parsers.values()) {
-            for (const instance of Object.values(parser.map)) {
+            for (const instance of parser.instanceMap.values()) {
                 parser.destroyFunc && parser.destroyFunc(instance);
             }
-            parser.map = {};
+            parser.instanceMap.clear();
         }
     }
 
@@ -159,10 +158,10 @@ class thirdPartyDiagramParser {
         for (const [lang, parser] of this.parsers.entries()) {
             if (!parser.beforeExport) continue;
             this.renderAllLangFence(lang);
-            for (const [cid, instance] of Object.entries(parser.map)) {
+            parser.instanceMap.forEach((instance, cid) => {
                 const preview = this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}] .md-diagram-panel-preview`);
                 preview && parser.beforeExport(preview, instance);
-            }
+            })
         }
     }
 
