@@ -5,10 +5,10 @@ class diagramParser {
     constructor(utils) {
         this.utils = utils;
         this.diagramModeFlag = "custom_diagram";  // can be any value, just a flag
+        this.panel = `<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div><div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`;
         this.exitInteractiveStrategies = ["click_exit_button"];
         this.parsers = new Map();     // {lang: parser}
         this.langMapping = new Map(); // {lang: mappingLang}
-        this.panel = `<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div><div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`;
     }
 
     /**
@@ -27,7 +27,7 @@ class diagramParser {
                 }) => {
         lang = lang.toLowerCase();
         mappingLang = mappingLang ? mappingLang.toLowerCase() : lang;
-        this.langMapping[lang] = { name: mappingLang, mappingType: this.diagramModeFlag };
+        this.langMapping.set(lang, { name: mappingLang, mappingType: this.diagramModeFlag });
         this.parsers.set(lang, {
             lang, mappingLang, destroyWhenUpdate, renderFunc,
             cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode
@@ -52,7 +52,7 @@ class diagramParser {
         this.log();
     }
 
-    log = () => console.debug(`enable diagram parser:`, this.parsers);
+    log = () => console.debug(`[ diagram parser ] [ ${this.parsers.size} ]:`, this.parsers);
 
     polyfillStyle = async () => {
         if (this.utils.isBetaVersion) {
@@ -85,7 +85,7 @@ class diagramParser {
         const after = mode => {
             if (!mode) return mode;
             const name = typeof mode === "object" ? mode.name : mode;
-            return this.langMapping[name] || mode
+            return this.langMapping.get(name) || mode
         }
         this.utils.decorate(() => window, "getCodeMirrorMode", null, after, true)
     }
