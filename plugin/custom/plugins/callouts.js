@@ -1,19 +1,18 @@
 class calloutsPlugin extends BaseCustomPlugin {
     styleTemplate = () => {
-        const calloutList = this.config.list.map(callout => (
-            `.plugin-callout[callout-type="${callout.type}"] {
-                --callout-bg-color: ${callout.background_color};
-                --callout-left-line-color: ${callout.left_line_color};
-                --callout-icon: "${callout.icon}";
+        const { list, hover_to_show_fold_callout, set_title_color } = this.config;
+        const callouts = list.map(c => (
+            `.plugin-callout[callout-type="${c.type}"] {
+                --callout-bg-color: ${c.background_color};
+                --callout-left-line-color: ${c.left_line_color};
+                --callout-icon: "${c.icon}";
             }`
-        ))
+        )).join("\n");
         const hoverCss = `.callout-folded:hover :not(:first-child):not(.md-softbreak) { display: inherit !important; }`
         const colorCss = `.plugin-callout > p:first-child span:first-child { color: var(--callout-left-line-color); }
                .plugin-callout > p:first-child::before { color: var(--callout-left-line-color); }`;
-
-        const callouts = calloutList.join("\n");
-        const hover = this.config.hover_to_show_fold_callout ? hoverCss : ""
-        const color = this.config.set_title_color ? colorCss : ""
+        const hover = hover_to_show_fold_callout ? hoverCss : ""
+        const color = set_title_color ? colorCss : ""
         return { callouts, hover, color }
     }
 
@@ -41,17 +40,21 @@ class calloutsPlugin extends BaseCustomPlugin {
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.template)
 
-    isIgnoreType = args => args && args[0] && args[0].type === "html-plain"
+    check = args => {
+        const isIgnoreType = args && args[0] && args[0].type === "html-plain";
+        const hasCallout = this.utils.entities.querySelectorInWrite(".plugin-callout");
+        return !isIgnoreType && hasCallout
+    }
 
     beforeExport = (...args) => {
-        if (!this.isIgnoreType(args) && this.utils.entities.querySelectorInWrite(".plugin-callout")) {
+        if (this.check(args)) {
             // icon需要用到font，但是导出时又没有font，因此只能移除
             return this.utils.styleTemplater.getStyleContent(this.fixedName).replace(/--callout-icon: ".*?";/g, "");
         }
     }
 
     AfterExport = (html, ...args) => {
-        if (this.isIgnoreType(args)) return;
+        if (!this.check(args)) return;
 
         const regex = new RegExp("<blockquote>", "g");
         const count = (html.match(regex) || []).length;
