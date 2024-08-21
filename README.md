@@ -972,7 +972,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 功能：用户点击或者使用快捷键触发当前文章的自动发布功能，程序根据用户配置自动发布博客文章到各大平台
 
-具体使用参考： [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/uploadArticle/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。以上传到 CSDN 为例，Gif 图如下：
+具体使用参考： [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/article_uploader/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。以上传到 CSDN 为例，Gif 图如下：
 
 ![CSDN 成功演示](https://my-picture-bed1-1321100201.cos.ap-beijing.myqcloud.com/mypictures/CSDN%E6%88%90%E5%8A%9F%E6%BC%94%E7%A4%BA.gif)
 

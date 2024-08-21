@@ -32,8 +32,10 @@ class thirdPartyDiagramParser {
                     beforeExport, extraStyleGetter, versionGetter
                 }) => {
         lang = lang.toLowerCase();
+        lazyLoadFunc = this.utils.once(lazyLoadFunc);
+        const settingMsg = null;
         this.parsers.set(lang, {
-            lang, mappingLang, destroyWhenUpdate, interactiveMode,
+            lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg,
             checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, versionGetter, map: {}
         });
         this.utils.diagramParser.register({
@@ -75,7 +77,7 @@ class thirdPartyDiagramParser {
                 "mapping language": parser.mappingLang,
                 "interactive mode": parser.interactiveMode,
                 "destroy when update": parser.destroyWhenUpdate,
-                "preview panel css": JSON.stringify(parser.css),
+                "preview panel default css": JSON.stringify(parser.css),
                 "render element": parser.wrapElement,
             }
             const list = Object.entries(settings).map(([k, v]) => `    ${k}: ${v}`);

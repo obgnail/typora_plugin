@@ -65,7 +65,7 @@ class echartsPlugin extends BaseCustomPlugin {
 
     versionGetter = () => this.echartsPkg && this.echartsPkg.version
 
-    lazyLoad = () => this.echartsPkg = this.echartsPkg || require("./echarts.min");
+    lazyLoad = () => this.echartsPkg = require("./echarts.min");
 }
 
 module.exports = {

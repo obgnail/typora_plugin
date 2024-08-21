@@ -68,10 +68,8 @@ class wavedromPlugin extends BaseCustomPlugin {
     versionGetter = () => this.wavedromPkg && this.wavedromPkg.version
 
     lazyLoad = () => {
-        if (!this.wavedromPkg) {
-            this.wavedromPkg = require("./wavedrom.min");
-            window.WaveSkin = this.wavedromPkg.waveSkin;  // renderWaveForm() will use window.WaveSkin
-        }
+        this.wavedromPkg = require("./wavedrom.min");
+        window.WaveSkin = this.wavedromPkg.waveSkin;  // renderWaveForm() will use window.WaveSkin
     }
 
     _safeEval = content => new Function(`return (${content})`)();

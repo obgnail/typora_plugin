@@ -1,7 +1,5 @@
 class calendarPlugin extends BaseCustomPlugin {
-    init = () => {
-        this.Calendar = null;
-    }
+    init = () => this.Calendar = null;
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
@@ -43,11 +41,9 @@ class calendarPlugin extends BaseCustomPlugin {
     versionGetter = () => "2.1.3"
 
     lazyLoad = () => {
-        if (!this.Calendar) {
-            this.utils.insertStyleFile("plugin-calendar-style", "./plugin/custom/plugins/calendar/toastui-calendar.min.css");
-            const { Calendar } = require("./toastui-calendar.min.js");
-            this.Calendar = Calendar;
-        }
+        this.utils.insertStyleFile("plugin-calendar-style", "./plugin/custom/plugins/calendar/toastui-calendar.min.css");
+        const { Calendar } = require("./toastui-calendar.min.js");
+        this.Calendar = Calendar;
     }
 }
 
