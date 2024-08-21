@@ -18,9 +18,9 @@ class thirdPartyDiagramParser {
      * @param {boolean} interactiveMode: 交互模式下，不会自动展开代码块
      * @param {string} checkSelector: 检测当前fence下是否含有目标标签
      * @param {string|function($pre):string} wrapElement: 如果不含目标标签，需要创建
-     * @param {{height, "background-color", ...other}} css: 控制fence的样式，要求必须要有高度和背景颜色。这里的obj最终会被执行为$div.css(obj)
+     * @param {object|function($pre, $wrap, content): object} css: fence的样式object
      * @param {function(): Promise<null>} lazyLoadFunc: 加载第三方资源
-     * @param {function($Element, string): instance} createFunc: 传入目标标签和fence的内容，生成图形实例
+     * @param {function($wrap, string): instance} createFunc: 传入目标标签和fence的内容，生成图形实例
      * @param {function(instance, $Element, string): instance} updateFunc: 当内容更新时，更新图形实例。此选项为空时会直接调用createFunc
      * @param {function(Object): null} destroyFunc: 传入图形实例，destroy图形实例
      * @param {function(Element, instance): null} beforeExport: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
@@ -85,7 +85,6 @@ class thirdPartyDiagramParser {
                 "mapping language": parser.mappingLang,
                 "interactive mode": parser.interactiveMode,
                 "destroy when update": parser.destroyWhenUpdate,
-                "preview panel default css": JSON.stringify(parser.css),
                 "render element": parser.wrapElement,
             }
             const list = Object.entries(settings).map(([k, v]) => `    ${k}: ${v}`);
@@ -135,12 +134,12 @@ class thirdPartyDiagramParser {
 
     setStyle = (parser, $pre, $wrap, content) => {
         const { height, width } = this.getFenceUserSize(content);
-        const { height: defaultHeight, "background-color": backgroundColor, ...other } = parser.css || {};
+        const customCss = parser.css instanceof Function ? parser.css($pre, $wrap, content) : parser.css;
         $wrap.css({
             width: width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-            height: height || defaultHeight || this.defaultHeight,
-            "background-color": backgroundColor || this.defaultBackgroundColor,
-            other,
+            height: height || this.defaultHeight,
+            "background-color": this.defaultBackgroundColor,
+            ...customCss,
         });
     }
 
