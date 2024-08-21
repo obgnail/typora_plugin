@@ -200,6 +200,7 @@ class fenceEnhancePlugin extends BasePlugin {
     removeBuilder = action => this.builders = this.builders.filter(builder => builder.action !== action);
 
     addEnhanceElement = fence => {
+        if (!fence) return;
         let enhance = fence.querySelector(".fence-enhance");
         if (!enhance && this.builders.length) {
             enhance = document.createElement("div");
