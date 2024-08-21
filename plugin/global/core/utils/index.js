@@ -212,6 +212,21 @@ class utils {
         }
     }
 
+    /** @description param fn cannot be an async function that returns promiseLike object */
+    static cache(fn, timeout = 1000) {
+        let timer, result;
+        const isAsync = this.isAsyncFunction(fn);
+        return function (...args) {
+            if (!timer) {
+                timer = setTimeout(() => timer = null, timeout);
+                result = isAsync
+                    ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
+                    : fn(...args);
+            }
+            return result;
+        };
+    }
+
     static chunk = (array, size = 10) => {
         let index = 0;
         let result = [];

@@ -8,6 +8,7 @@ class thirdPartyDiagramParser {
         this.defaultHeight = "230px";
         this.defaultBackgroundColor = "#F8F8F8";
         this.regexp = /^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/;
+        this.getPanelWidth = this.utils.cache($pre => parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px");
     }
 
     /**
@@ -136,7 +137,7 @@ class thirdPartyDiagramParser {
         const { height, width } = this.getFenceUserSize(content);
         const customCss = parser.css instanceof Function ? parser.css($pre, $wrap, content) : parser.css;
         $wrap.css({
-            width: width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
+            width: width || this.getPanelWidth($pre),
             height: height || this.defaultHeight,
             "background-color": this.defaultBackgroundColor,
             ...customCss,
