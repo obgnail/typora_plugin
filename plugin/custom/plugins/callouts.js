@@ -20,7 +20,7 @@ class calloutsPlugin extends BaseCustomPlugin {
         const { eventHub, exportHelper } = this.utils;
         eventHub.addEventListener(eventHub.eventType.firstFileInit, this.range);
         eventHub.addEventListener(eventHub.eventType.fileEdited, this.range);
-        exportHelper.register("callouts", this.beforeExport, this.AfterExport);
+        exportHelper.register("callouts", this.beforeExport, this.afterExport);
     }
 
     range = () => {
@@ -46,14 +46,14 @@ class calloutsPlugin extends BaseCustomPlugin {
         return !isIgnoreType && hasCallout
     }
 
+    // icon需要用到font，但是导出时又没有font，因此只能移除
     beforeExport = (...args) => {
         if (this.check(args)) {
-            // icon需要用到font，但是导出时又没有font，因此只能移除
             return this.utils.styleTemplater.getStyleContent(this.fixedName).replace(/--callout-icon: ".*?";/g, "");
         }
     }
 
-    AfterExport = (html, ...args) => {
+    afterExport = (html, ...args) => {
         if (!this.check(args)) return;
 
         const regex = new RegExp("<blockquote>", "g");
