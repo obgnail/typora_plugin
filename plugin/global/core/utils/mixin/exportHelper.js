@@ -27,7 +27,7 @@ class exportHelper {
 
     check = args => {
         const { type } = args[0] || {};
-        return type === "html" || type === "html-plain" || type === "pdf"
+        return type === "html" || type === "html-plain" || type === "pdf" || type === "image"
     }
 
     afterExport = async (exportResult, ...args) => {
