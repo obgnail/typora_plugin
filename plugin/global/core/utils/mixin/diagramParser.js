@@ -8,6 +8,7 @@ class diagramParser {
         this.exitInteractiveStrategies = ["click_exit_button"];
         this.parsers = new Map();     // {lang: parser}
         this.langMapping = new Map(); // {lang: mappingLang}
+        this.panel = `<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div><div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`;
     }
 
     /**
@@ -20,15 +21,17 @@ class diagramParser {
      * @param {function(): string} extraStyleGetter: 用于导出时，新增css
      * @param {boolean} interactiveMode: 交互模式下，不会自动展开代码块
      */
-    register = ({ lang, mappingLang, destroyWhenUpdate = false, renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true }) => {
+    register = ({
+                    lang, mappingLang, destroyWhenUpdate = false,
+                    renderFunc, cancelFunc = null, destroyAllFunc = null, extraStyleGetter = null, interactiveMode = true
+                }) => {
         lang = lang.toLowerCase();
         mappingLang = mappingLang ? mappingLang.toLowerCase() : lang;
         this.langMapping[lang] = { name: mappingLang, mappingType: this.diagramModeFlag };
-        const parser = {
+        this.parsers.set(lang, {
             lang, mappingLang, destroyWhenUpdate, renderFunc,
             cancelFunc, destroyAllFunc, extraStyleGetter, interactiveMode
-        }
-        this.parsers.set(lang, parser);
+        });
     }
 
     unregister = lang => this.parsers.delete(lang)
@@ -46,10 +49,10 @@ class diagramParser {
         this.onFocus();                  // 聚焦时
         this.onChangeFile();             // 切换文件时
         this.onCheckIsDiagramType();     // 判断是否为Diagram时
-        this.report();
+        this.log();
     }
 
-    report = () => console.debug(`enable diagram parser:`, this.parsers);
+    log = () => console.debug(`enable diagram parser:`, this.parsers);
 
     polyfillStyle = async () => {
         if (this.utils.isBetaVersion) {
@@ -137,14 +140,15 @@ class diagramParser {
     }
 
     destroyIfNeed = (parser, cid, lang, $pre) => {
-        if (!parser.destroyWhenUpdate) return;
-        parser.cancelFunc && parser.cancelFunc(cid, lang);
-        $pre.find(".md-diagram-panel-preview").html("");
+        if (parser.destroyWhenUpdate) {
+            parser.cancelFunc && parser.cancelFunc(cid, lang);
+            $pre.find(".md-diagram-panel-preview").html("");
+        }
     }
 
     appendPanelIfNeed = $pre => {
         if ($pre.find(".md-diagram-panel").length === 0) {
-            $pre.append(`<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div><div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`);
+            $pre.append(this.panel);
         }
     }
 
