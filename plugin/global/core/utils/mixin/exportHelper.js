@@ -10,8 +10,8 @@ class exportHelper {
 
     /**
      * @param {string} name: 取个名字
-     * @param {function(): string | null} beforeExport: 如果返回string，将加入到extraCSS
-     * @param {function(): html | null} afterExport: 如果返回string，将替换HTML
+     * @param {function(exportOptions): string | null} beforeExport: 如果返回string，将加入到extraCSS
+     * @param {function(html, exportOptions): html | null} afterExport: 如果返回string，将替换HTML
      */
     register = (name, beforeExport, afterExport) => this.helpers.set(name, { beforeExport, afterExport });
     unregister = name => this.helpers.delete(name);
@@ -19,7 +19,7 @@ class exportHelper {
     beforeExport = (...args) => {
         for (const h of this.helpers.values()) {
             if (h.beforeExport) {
-                const css = h.beforeExport() || "";
+                const css = h.beforeExport(...args) || "";
                 args[0].extraCss = (args[0].extraCss || "") + css;
             }
         }
@@ -27,7 +27,7 @@ class exportHelper {
 
     check = args => {
         const { type } = args[0] || {};
-        return type === "html" || type === "html-plain"
+        return type === "html" || type === "html-plain" || type === "pdf"
     }
 
     afterExport = async (exportResult, ...args) => {
@@ -36,7 +36,7 @@ class exportHelper {
         let html = await exportResult;
         for (const h of this.helpers.values()) {
             if (h.afterExport) {
-                const newHtml = await h.afterExport(html);
+                const newHtml = await h.afterExport(html, ...args);
                 if (newHtml) {
                     html = newHtml;
                 }
@@ -51,7 +51,7 @@ class exportHelper {
         let html = exportResult;
         for (const h of this.helpers.values()) {
             if (h.afterExport) {
-                const newHtml = h.afterExport(html);
+                const newHtml = h.afterExport(html, ...args);
                 if (newHtml && !this.utils.isPromise(newHtml)) {
                     html = newHtml;
                 }
