@@ -35,7 +35,7 @@ class fullPathCopyPlugin extends BaseCustomPlugin {
             }
 
             if (p.ele.tagName === paragraphList[headerIdx]) {
-                result.push(getHeaderName(p.ele.querySelector("span").textContent, nameList[headerIdx]));
+                result.push(getHeaderName(p.ele.textContent, nameList[headerIdx]));
                 headerIdx++;
             }
         }
