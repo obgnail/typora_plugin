@@ -86,7 +86,7 @@ class fenceMarkmap {
         this.controller = controller
         this.utils = this.controller.utils;
         this.config = this.controller.config;
-        this.map = {}; // {cid: instance}
+        this.instanceMap = new Map(); // {cid: instance}
         this.defaultFrontMatter = `---\nmarkmap:\n  zoom: false\n  pan: false\n  height: 300px\n  backgroundColor: "#f8f8f8"\n---\n\n`;
     }
 
@@ -131,24 +131,24 @@ class fenceMarkmap {
         }
         const options = this.getFrontMatter(content);
         const svg = this.createSvg($pre, options);
-        if (this.map.hasOwnProperty(cid)) {
+        if (this.instanceMap.has(cid)) {
             await this.update(cid, content, options);
         } else {
             await this.create(cid, svg, content, options);
         }
     }
     cancel = cid => {
-        const instance = this.map[cid];
+        const instance = this.instanceMap.get(cid);
         if (instance) {
             instance.destroy();
-            delete this.map[cid];
+            this.instanceMap.delete(cid);
         }
     };
     destroyAll = () => {
-        for (const instance of Object.values(this.map)) {
+        for (const instance of this.instanceMap.values()) {
             instance.destroy();
         }
-        this.map = {};
+        this.instanceMap.clear();
     };
 
     createSvg = ($pre, options) => {
@@ -167,12 +167,16 @@ class fenceMarkmap {
 
     create = async (cid, svg, md, options) => {
         const { root } = this.controller.transformer.transform(md);
-        this.map[cid] = this.controller.Markmap.create(svg[0], options, root);
-        setTimeout(() => this.map[cid] && this.map[cid].fit(), 200);
+        const instance = this.controller.Markmap.create(svg[0], options, root);
+        this.instanceMap.set(cid, instance);
+        setTimeout(() => {
+            const instance = this.instanceMap.get(cid);
+            instance && instance.fit();
+        }, 200);
     }
 
     update = async (cid, md, options) => {
-        const instance = this.map[cid];
+        const instance = this.instanceMap.get(cid);
         const { root } = this.controller.transformer.transform(md);
         instance.setData(root);
         instance.setOptions(options);
