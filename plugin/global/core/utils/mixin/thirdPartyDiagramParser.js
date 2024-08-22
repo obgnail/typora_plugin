@@ -136,11 +136,12 @@ class thirdPartyDiagramParser {
     setStyle = (parser, $pre, $wrap, content) => {
         const { height, width } = this.getFenceUserSize(content);
         const customCss = parser.css instanceof Function ? parser.css($pre, $wrap, content) : parser.css;
+        const { height: h, width: w, "background-color": bgc, ...args } = customCss || {};
         $wrap.css({
-            width: width || this.getPanelWidth($pre),
-            height: height || this.defaultHeight,
-            "background-color": this.defaultBackgroundColor,
-            ...customCss,
+            width: width || w || this.getPanelWidth($pre),
+            height: height || h || this.defaultHeight,
+            "background-color": bgc || this.defaultBackgroundColor,
+            ...args,
         });
     }
 

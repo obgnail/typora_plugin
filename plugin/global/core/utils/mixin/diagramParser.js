@@ -9,6 +9,8 @@ class diagramParser {
         this.exitInteractiveStrategies = ["click_exit_button"];
         this.parsers = new Map();     // {lang: parser}
         this.langMapping = new Map(); // {lang: mappingLang}
+        this.singleflight = new Set();
+        this.singleflightTimeout = 150;
     }
 
     /**
@@ -175,7 +177,7 @@ class diagramParser {
         }
     }
 
-    renderDiagram = async cid => {
+    _renderDiagram = async cid => {
         const $pre = File.editor.findElemById(cid);
         const lang = $pre.attr("lang").trim().toLowerCase();
 
@@ -197,6 +199,14 @@ class diagramParser {
                 $pre.removeClass("md-fences-interactive plugin-custom-diagram");
                 await this.noticeRollback(cid);
             }
+        }
+    }
+
+    renderDiagram = async cid => {
+        if (!this.singleflight.has(cid)) {
+            this.singleflight.add(cid);
+            await this._renderDiagram(cid);
+            setTimeout(() => this.singleflight.delete(cid), this.singleflightTimeout);
         }
     }
 
