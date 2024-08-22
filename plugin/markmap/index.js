@@ -60,14 +60,14 @@ class markmapPlugin extends BasePlugin {
     lazyLoad = async () => {
         if (this.transformer && this.Markmap) return;
 
-        global.d3 = require("./resource/d3@6.js");
-        const { markmapLib } = require("./resource/markmap-lib");
-        const { markmap } = require("./resource/markmap-view.js"); // need use global.d3
+        global.d3 = require("./resource/d3@7.js");
+        const { Transformer, builtInPlugins, transformerVersions } = require("./resource/markmap-lib");
+        const { markmap } = require("./resource/markmap-view"); // need use global.d3
         const { Markmap, loadCSS, loadJS } = markmap;
 
         this.Markmap = Markmap;
-        this.transformer = new markmapLib.Transformer();
-        this.transformerVersions = markmapLib.transformerVersions;
+        this.transformer = new Transformer(builtInPlugins);
+        this.transformerVersions = transformerVersions;
 
         const { styles, scripts } = this.transformer.getAssets();
         if (this.config.RESOURCE_FROM === "network") {

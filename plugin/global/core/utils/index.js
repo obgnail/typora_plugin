@@ -14,7 +14,7 @@ class utils {
     static isBetaVersion = this.typoraVersion[0] === "0"
     static supportHasSelector = CSS.supports("selector(:has(*))")
     static separator = File.isWin ? "\\" : "/"
-    static tempFolder = window._options.tempPath
+    static tempFolder = window._options.tempPath || OS.tmpdir()
     static nonExistSelector = "#__nonExist__"                 // 插件临时不可点击，返回此
     static disableForeverSelector = "#__disableForever__"     // 插件永远不可点击，返回此
     static stopLoadPluginError = new Error("stopLoadPlugin")  // 用于插件的beforeProcess方法，若希望停止加载插件，返回此
@@ -243,6 +243,15 @@ class utils {
 
     /** @description try not to use it */
     static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+    static defer = () => {
+        const obj = {};
+        obj.promise = new Promise((resolve, reject) => {
+            obj.resolve = resolve;
+            obj.reject = reject;
+        });
+        return obj;
+    }
 
     static asyncReplaceAll = (content, regexp, replaceFunc) => {
         if (!regexp.global) {
