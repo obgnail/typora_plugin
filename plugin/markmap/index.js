@@ -2,8 +2,9 @@ class markmapPlugin extends BasePlugin {
     beforeProcess = () => {
         this.tocMarkmap = this.config.ENABLE_TOC_MARKMAP ? new tocMarkmap(this) : null;
         this.fenceMarkmap = this.config.ENABLE_FENCE_MARKMAP ? new fenceMarkmap(this) : null;
-        this.transformer = null;
         this.Markmap = null;
+        this.transformer = null;
+        this.transformerVersions = null;
     }
 
     styleTemplate = () => ({
@@ -59,24 +60,31 @@ class markmapPlugin extends BasePlugin {
     lazyLoad = async () => {
         if (this.transformer && this.Markmap) return;
 
+        global.d3 = require("./resource/d3@6.js");
         const { markmapLib } = require("./resource/markmap-lib");
-        await this.utils.insertScript("./plugin/markmap/resource/d3@6.js");
-        await this.utils.insertScript("./plugin/markmap/resource/markmap-view.js");
-
-        this.transformer = new markmapLib.Transformer();
+        const { markmap } = require("./resource/markmap-view.js"); // need use global.d3
         const { Markmap, loadCSS, loadJS } = markmap;
+
         this.Markmap = Markmap;
+        this.transformer = new markmapLib.Transformer();
+        this.transformerVersions = markmapLib.transformerVersions;
+
         const { styles, scripts } = this.transformer.getAssets();
         if (this.config.RESOURCE_FROM === "network") {
-            if (styles) loadCSS(styles);
-            if (scripts) loadJS(scripts, { getMarkmap: () => markmap });
+            if (styles) {
+                await loadCSS(styles);
+            }
+            if (scripts) {
+                await loadJS(scripts, { getMarkmap: () => markmap });
+            }
         } else {
             this.utils.insertStyleFile("markmap-default-style", "./plugin/markmap/resource/default.min.css");
             this.utils.insertStyleFile("markmap-katex-style", "./plugin/markmap/resource/katex.min.css");
-
-            const loadScript = scripts.filter(script => script["type"] !== "script");
-            if (scripts) loadJS(loadScript, { getMarkmap: () => markmap });
-            await this.utils.insertScript("./plugin/markmap/resource/webfontloader.js");
+            const iifeScript = scripts.filter(script => script["type"] !== "script");
+            if (scripts) {
+                await loadJS(iifeScript, { getMarkmap: () => markmap }); // set window.WebFontConfig
+            }
+            await this.utils.insertScript("./plugin/markmap/resource/webfontloader.js"); // WebFont.load(window.WebFontConfig)
         }
     }
 }
@@ -302,7 +310,7 @@ class tocMarkmap {
             const currentColorSchemeStr = toString(this.currentScheme);
             const d3ColorSchemes = ["schemePastel2", "schemeSet2", "schemeDark2", "schemeAccent", "schemePastel1", "schemeSet1", "schemeTableau10", "schemeCategory10", "schemePaired", "schemeSet3"];
             const list = d3ColorSchemes.map(cs => {
-                const colorList = d3[cs];
+                const colorList = global.d3[cs];
                 const value = toString(colorList);
                 const label = toDIV(colorList);
                 const checked = value === currentColorSchemeStr;
@@ -455,7 +463,7 @@ class tocMarkmap {
         this.colorSchemeGenerator = !colorList
             ? null
             : () => {
-                const func = d3.scaleOrdinal(colorList);
+                const func = global.d3.scaleOrdinal(colorList);
                 return node => func(node.state.path.split(".").slice(0, this.colorFreezeLevel + 1).join("."))
             }
     }
