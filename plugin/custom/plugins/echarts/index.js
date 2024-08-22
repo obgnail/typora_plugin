@@ -20,6 +20,7 @@ class echartsPlugin extends BaseCustomPlugin {
             },
             lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,
+            updateFunc: null,
             destroyFunc: this.destroy,
             beforeExport: this.beforeExport,
             extraStyleGetter: null,

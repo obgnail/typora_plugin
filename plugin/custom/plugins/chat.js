@@ -74,7 +74,7 @@ class chatPlugin extends BaseCustomPlugin {
             let avatar = "";
             if (showAvatar) {
                 avatar = avatarPaths[name]
-                    ? `<img class="plugin-chat-avatar" src="${avatarPaths[name]}">`
+                    ? `<img class="plugin-chat-avatar" src="${avatarPaths[name]}" alt="${name}">`
                     : `<div class="plugin-chat-avatar"><div class="avatar-font">${name[0].toUpperCase()}</div></div>`
             }
             return `<div class="${class_}">${avatar}<div class="plugin-chat-quote">${nickname}<div class="plugin-chat-text">${text}</div></div></div>`

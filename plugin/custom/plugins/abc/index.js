@@ -17,6 +17,7 @@ class abcPlugin extends BaseCustomPlugin {
             },
             lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,
+            updateFunc: null,
             destroyFunc: null,
             beforeExport: null,
             extraStyleGetter: null,

@@ -8,19 +8,21 @@ class thirdPartyDiagramParser {
         this.defaultHeight = "230px";
         this.defaultBackgroundColor = "#F8F8F8";
         this.regexp = /^\/\/{height:"(?<height>.*?)",width:"(?<width>.*?)"}/;
+        this.getPanelWidth = this.utils.cache($pre => parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px");
     }
 
     /**
-     * f**k，js不支持interface，只能将接口函数作为参数传入，整整13个参数，一坨狗屎
+     * f**k，js不支持interface，只能将接口函数作为参数传入，整整14个参数，一坨狗屎
      * @param {string} lang: 语言
      * @param {string} mappingLang: 映射到哪个语言
      * @param {boolean} destroyWhenUpdate: 更新前是否清空preview里的html
      * @param {boolean} interactiveMode: 交互模式下，不会自动展开代码块
      * @param {string} checkSelector: 检测当前fence下是否含有目标标签
      * @param {string|function($pre):string} wrapElement: 如果不含目标标签，需要创建
-     * @param {{height, "background-color", ...other}} css: 控制fence的样式，要求必须要有高度和背景颜色。这里的obj最终会被执行为$div.css(obj)
+     * @param {object|function($pre, $wrap, content): object} css: fence的样式object
      * @param {function(): Promise<null>} lazyLoadFunc: 加载第三方资源
-     * @param {function($Element, string): instance} createFunc: 传入目标标签和fence的内容，生成图形实例
+     * @param {function($wrap, string): instance} createFunc: 传入目标标签和fence的内容，生成图形实例
+     * @param {function(instance, $wrap, string): instance} updateFunc: 当内容更新时，更新图形实例。此选项为空时会直接调用createFunc
      * @param {function(Object): null} destroyFunc: 传入图形实例，destroy图形实例
      * @param {function(Element, instance): null} beforeExport: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
      * @param {function(): string} extraStyleGetter 用于导出时，新增css
@@ -28,7 +30,7 @@ class thirdPartyDiagramParser {
      */
     register = ({
                     lang, mappingLang = "", destroyWhenUpdate, interactiveMode = true, checkSelector,
-                    wrapElement, css = {}, lazyLoadFunc, createFunc, destroyFunc,
+                    wrapElement, css = {}, lazyLoadFunc, createFunc, updateFunc, destroyFunc,
                     beforeExport, extraStyleGetter, versionGetter
                 }) => {
         lang = lang.toLowerCase();
@@ -36,7 +38,8 @@ class thirdPartyDiagramParser {
         const settingMsg = null;
         this.parsers.set(lang, {
             lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg,
-            checkSelector, wrapElement, css, lazyLoadFunc, createFunc, destroyFunc, beforeExport, versionGetter, map: {}
+            checkSelector, wrapElement, css, lazyLoadFunc, createFunc, updateFunc, destroyFunc,
+            beforeExport, versionGetter, instanceMap: new Map(),
         });
         this.utils.diagramParser.register({
             lang, mappingLang, destroyWhenUpdate, extraStyleGetter, interactiveMode,
@@ -57,16 +60,22 @@ class thirdPartyDiagramParser {
         const $wrap = this.getWrap(parser, $pre);
         try {
             this.setStyle(parser, $pre, $wrap, content);
-            if (parser.map.hasOwnProperty(cid)) {
-                this.cancel(cid, lang);
-            }
-            const instance = parser.createFunc($wrap, content);
-            if (instance) {
-                parser.map[cid] = instance;
-            }
+            const instance = this.createOrUpdate(parser, cid, content, $wrap, lang);
+            instance && parser.instanceMap.set(cid, instance);
         } catch (e) {
             e.stack += this.getSettingMsg(parser);
             this.utils.diagramParser.throwParseError(null, e);
+        }
+    }
+
+    createOrUpdate = (parser, cid, content, $wrap, lang) => {
+        const oldInstance = parser.instanceMap.get(cid);
+        if (oldInstance && parser.updateFunc) {
+            const newInstance = parser.updateFunc(oldInstance, $wrap, content);
+            return newInstance || oldInstance
+        } else {
+            oldInstance && this.cancel(cid, lang);
+            return parser.createFunc($wrap, content);
         }
     }
 
@@ -77,7 +86,6 @@ class thirdPartyDiagramParser {
                 "mapping language": parser.mappingLang,
                 "interactive mode": parser.interactiveMode,
                 "destroy when update": parser.destroyWhenUpdate,
-                "preview panel default css": JSON.stringify(parser.css),
                 "render element": parser.wrapElement,
             }
             const list = Object.entries(settings).map(([k, v]) => `    ${k}: ${v}`);
@@ -127,31 +135,31 @@ class thirdPartyDiagramParser {
 
     setStyle = (parser, $pre, $wrap, content) => {
         const { height, width } = this.getFenceUserSize(content);
-        const { height: defaultHeight, "background-color": backgroundColor, ...other } = parser.css || {};
+        const customCss = parser.css instanceof Function ? parser.css($pre, $wrap, content) : parser.css;
+        const { height: h, width: w, "background-color": bgc, ...args } = customCss || {};
         $wrap.css({
-            width: width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-            height: height || defaultHeight || this.defaultHeight,
-            "background-color": backgroundColor || this.defaultBackgroundColor,
-            other,
+            width: width || w || this.getPanelWidth($pre),
+            height: height || h || this.defaultHeight,
+            "background-color": bgc || this.defaultBackgroundColor,
+            ...args,
         });
     }
 
     cancel = (cid, lang) => {
         const parser = this.parsers.get(lang);
-        if (!parser) return
-        const instance = parser.map[cid];
-        if (instance) {
-            parser.destroyFunc && parser.destroyFunc(instance);
-            delete parser.map[cid];
-        }
+        if (!parser) return;
+        const instance = parser.instanceMap.get(cid);
+        if (!instance) return;
+        parser.destroyFunc && parser.destroyFunc(instance);
+        parser.instanceMap.delete(cid);
     }
 
     destroyAll = () => {
         for (const parser of this.parsers.values()) {
-            for (const instance of Object.values(parser.map)) {
+            for (const instance of parser.instanceMap.values()) {
                 parser.destroyFunc && parser.destroyFunc(instance);
             }
-            parser.map = {};
+            parser.instanceMap.clear();
         }
     }
 
@@ -159,10 +167,10 @@ class thirdPartyDiagramParser {
         for (const [lang, parser] of this.parsers.entries()) {
             if (!parser.beforeExport) continue;
             this.renderAllLangFence(lang);
-            for (const [cid, instance] of Object.entries(parser.map)) {
+            parser.instanceMap.forEach((instance, cid) => {
                 const preview = this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}] .md-diagram-panel-preview`);
                 preview && parser.beforeExport(preview, instance);
-            }
+            })
         }
     }
 

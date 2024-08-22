@@ -86,8 +86,7 @@ class fenceMarkmap {
         this.controller = controller
         this.utils = this.controller.utils;
         this.config = this.controller.config;
-        this.map = {}; // {cid: instance}
-        this.defaultFrontMatter = `---\nmarkmap:\n  zoom: false\n  pan: false\n  height: 300px\n  backgroundColor: "#f8f8f8"\n---\n\n`;
+        this.instanceMap = new Map(); // {cid: instance}
     }
 
     process = () => {
@@ -106,14 +105,15 @@ class fenceMarkmap {
     call = async type => this.callback(type)
 
     callback = type => {
-        const md = type === "draw_fence_template" ? this.config.FENCE_TEMPLATE : this.getToc();
+        const backQuote = "```"
+        const defaultFrontMatter = `---\nmarkmap:\n  zoom: false\n  pan: false\n  height: 300px\n  backgroundColor: "#f8f8f8"\n---\n\n`;
+        const md = type === "draw_fence_template"
+            ? this.config.FENCE_TEMPLATE
+            : `${backQuote}${this.config.LANGUAGE}\n${defaultFrontMatter}${this.controller.getToc() || "# empty"}\n${backQuote}`;
         this.utils.insertText(null, md);
     }
 
     hotkey = () => [{ hotkey: this.config.FENCE_HOTKEY, callback: this.callback }]
-
-    wrapFenceCode = content => "```" + this.config.LANGUAGE + "\n" + this.defaultFrontMatter + content + "\n" + "```"
-    getToc = () => this.wrapFenceCode(this.controller.getToc() || "# empty")
 
     getFrontMatter = content => {
         const defaultOptions = this.config.DEFAULT_FENCE_OPTIONS || {};
@@ -125,54 +125,60 @@ class fenceMarkmap {
         return Object.assign({}, defaultOptions, options);
     }
 
-    render = async (cid, content, $pre) => {
-        if (!this.controller.transformer || !this.controller.Markmap) {
-            await this.controller.lazyLoad();
-        }
-        const options = this.getFrontMatter(content);
-        const svg = this.createSvg($pre, options);
-        if (this.map.hasOwnProperty(cid)) {
-            await this.update(cid, content, options);
-        } else {
-            await this.create(cid, svg, content, options);
-        }
-    }
-    cancel = cid => {
-        const instance = this.map[cid];
-        if (instance) {
-            instance.destroy();
-            delete this.map[cid];
-        }
-    };
-    destroyAll = () => {
-        for (const instance of Object.values(this.map)) {
-            instance.destroy();
-        }
-        this.map = {};
-    };
-
     createSvg = ($pre, options) => {
         let svg = $pre.find(".plugin-fence-markmap-svg");
         if (svg.length === 0) {
-            svg = $(`<svg class="plugin-fence-markmap-svg"></svg>`);
+            svg = $('<svg class="plugin-fence-markmap-svg"></svg>');
         }
         svg.css({
-            "width": parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-            "height": options.height || this.config.DEFAULT_FENCE_HEIGHT,
+            width: parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
+            height: options.height || this.config.DEFAULT_FENCE_HEIGHT,
             "background-color": options.backgroundColor || this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
         });
         $pre.find(".md-diagram-panel-preview").html(svg);
         return svg
     }
 
+    render = async (cid, content, $pre) => {
+        if (!this.controller.transformer || !this.controller.Markmap) {
+            await this.controller.lazyLoad();
+        }
+        const options = this.getFrontMatter(content);
+        const svg = this.createSvg($pre, options);
+        if (this.instanceMap.has(cid)) {
+            await this.update(cid, content, options);
+        } else {
+            await this.create(cid, svg, content, options);
+        }
+    }
+
+    cancel = cid => {
+        const instance = this.instanceMap.get(cid);
+        if (instance) {
+            instance.destroy();
+            this.instanceMap.delete(cid);
+        }
+    };
+
+    destroyAll = () => {
+        for (const instance of this.instanceMap.values()) {
+            instance.destroy();
+        }
+        this.instanceMap.clear();
+    };
+
     create = async (cid, svg, md, options) => {
         const { root } = this.controller.transformer.transform(md);
-        this.map[cid] = this.controller.Markmap.create(svg[0], options, root);
-        setTimeout(() => this.map[cid] && this.map[cid].fit(), 200);
+        const instance = this.controller.Markmap.create(svg[0], options, root);
+        this.instanceMap.set(cid, instance);
+        setTimeout(() => {
+            const instance = this.instanceMap.get(cid);
+            instance && instance.fit();
+        }, 200);
     }
 
     update = async (cid, md, options) => {
-        const instance = this.map[cid];
+        const instance = this.instanceMap.get(cid);
         const { root } = this.controller.transformer.transform(md);
         instance.setData(root);
         instance.setOptions(options);
