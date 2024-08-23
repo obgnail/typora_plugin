@@ -534,14 +534,16 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 # 默认的fence图形选项
 #   - duration          : 折叠/展开节点时的动画持续时间（单位：ms）
 #   - initialExpandLevel: 初始渲染时要展开的最大节点级别（-1则展开全部）
+#   - colorFreezeLevel  : 多少级开始固定分支颜色
 #   - zoom              : 是否允许缩放
 #   - pan               : 是否允许平移
 #   - height            : 高度
+#   - color             : 配色方案（填入颜色数组，如['#1f77b4', '#17becf']）
 #   - backgroundColor   : 背景色
 #   - spacingHorizontal : 节点水平间距
 #   - spacingVertical   : 节点垂直间距
 #   - fitRatio          : 图形的窗口填充率
-DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, zoom = false, pan = false, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, height = "300px", backgroundColor = "#f8f8f8" }
+DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, colorFreezeLevel = 6, zoom = false, pan = false, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, height = "300px", backgroundColor = "#f8f8f8", color = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'] }
 # 插入的模板
 FENCE_TEMPLATE = """```markmap
 ---
@@ -559,6 +561,8 @@ markmap:
   fitRatio: 0.95
   # 初始渲染时要展开的最大节点级别（-1则展开全部）
   initialExpandLevel: -1
+  # 多少级开始固定分支颜色
+  colorFreezeLevel: 6
   # 高度
   height: 300px
   # 背景色

@@ -162,8 +162,15 @@ class fenceMarkmap {
         this.instanceMap.clear();
     };
 
+    setOptions = options => {
+        const update = this.utils.fromObject(options, ["spacingHorizontal", "spacingVertical", "fitRatio"]);
+        options = this.MarkmapLib.deriveOptions(options);
+        return Object.assign(options, update)
+    }
+
     create = async (cid, svg, md, options) => {
         const { root } = this.MarkmapLib.transformer.transform(md);
+        options = this.setOptions(options);
         const instance = this.MarkmapLib.Markmap.create(svg[0], options, root);
         this.instanceMap.set(cid, instance);
         setTimeout(() => {
@@ -176,6 +183,7 @@ class fenceMarkmap {
         const instance = this.instanceMap.get(cid);
         const { root } = this.MarkmapLib.transformer.transform(md);
         instance.setData(root);
+        options = this.setOptions(options);
         instance.setOptions(options);
         await instance.fit();
     }
@@ -312,7 +320,7 @@ class tocMarkmap {
         this.entities.modal.classList.toggle("penetrateMouse", !options.zoom && !options.pan);
     }
 
-    setting = () => {
+    setting = async () => {
         const maxLevel = 6;
         const {
             DEFAULT_TOC_OPTIONS: _ops,
@@ -343,7 +351,7 @@ class tocMarkmap {
             saveFile: "支持变量：filename、timestamp、uuid",
         }
         const setCfg = (key, value) => this.config[key] = value;
-        const setCfg2 = key => value => this.config[key] = value;
+        const setWrapCfg = key => value => this.config[key] = value;
         const KV = key => ({ value: _ops[key], callback: value => _ops[key] = value });
 
         const colorScheme = () => {
@@ -375,7 +383,7 @@ class tocMarkmap {
             { label: "节点最大长度", type: "range", min: 0, max: 1000, step: 10, inline: true, info: infoMap.maxWidth, ...KV("maxWidth") },
             { label: "图形的窗口填充率", type: "range", min: 0.5, max: 1, step: 0.01, inline: true, ...KV("fitRatio") },
             { label: "动画持续时间", type: "range", min: 100, max: 1000, step: 100, inline: true, ...KV("duration") },
-            { label: "定位的视口高度", type: "range", value: _locale, min: 0.1, max: 1, step: 0.01, inline: true, info: infoMap.locale, callback: setCfg2("LOCALE_HEIGHT_RATIO") }
+            { label: "定位的视口高度", type: "range", value: _locale, min: 0.1, max: 1, step: 0.01, inline: true, info: infoMap.locale, callback: setWrapCfg("LOCALE_HEIGHT_RATIO") }
         ]
 
         const ability = () => {
@@ -414,14 +422,15 @@ class tocMarkmap {
             return [
                 { fieldset, label: "左右边框宽度", type: "number", min: 1, max: 1000, step: 1, inline: true, ...borderKV(0) },
                 { fieldset, label: "上下边框宽度", type: "number", min: 1, max: 1000, step: 1, inline: true, ...borderKV(1) },
-                { fieldset, label: "保存目录名", type: "input", value: saveFolder, inline: true, info: infoMap.saveFolder, callback: setCfg2("FOLDER_WHEN_DOWNLOAD_SVG") },
-                { fieldset, label: "保存文件名", type: "input", value: _filename, inline: true, info: infoMap.saveFile, callback: setCfg2("FILENAME_WHEN_DOWNLOAD_SVG") },
+                { fieldset, label: "保存目录名", type: "input", value: saveFolder, inline: true, info: infoMap.saveFolder, callback: setWrapCfg("FOLDER_WHEN_DOWNLOAD_SVG") },
+                { fieldset, label: "保存文件名", type: "input", value: _filename, inline: true, info: infoMap.saveFile, callback: setWrapCfg("FILENAME_WHEN_DOWNLOAD_SVG") },
                 { fieldset, label: "", type: "checkbox", list: checkboxList, callback: checkboxCB },
             ]
         }
 
         const components = [colorScheme(), ...builtin(), ability(), ...download()];
-        this.utils.dialog.modal({ title: "设置", width: "500px", components }, async components => {
+        const { response } = await this.utils.dialog.modalAsync({ title: "设置", width: "500px", components });
+        if (response === 1) {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
             const update = this.utils.fromObject(this.config, [
@@ -429,7 +438,7 @@ class tocMarkmap {
                 "BORDER_WHEN_DOWNLOAD_SVG", "FOLDER_WHEN_DOWNLOAD_SVG", "FILENAME_WHEN_DOWNLOAD_SVG", "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG", "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG",
             ]);
             await this.utils.saveConfig(this.controller.fixedName, update);
-        });
+        }
     }
 
     download = async () => {
@@ -949,7 +958,7 @@ class tocMarkmap {
     setOptions = options => {
         const { DEFAULT_TOC_OPTIONS: ops } = this.config;
         options = this.MarkmapLib.deriveOptions({ ...options, ...ops });
-        const update = { spacingHorizontal: ops.spacingHorizontal, spacingVertical: ops.spacingVertical, fitRatio: ops.fitRatio };
+        const update = this.utils.fromObject(ops, ["spacingHorizontal", "spacingVertical", "fitRatio"]);
         return Object.assign(options, update)
     }
 
