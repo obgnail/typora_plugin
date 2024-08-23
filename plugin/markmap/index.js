@@ -60,11 +60,13 @@ class markmapPlugin extends BasePlugin {
     lazyLoad = async () => {
         if (this.transformer && this.Markmap) return;
 
-        global.d3 = require("./resource/d3@7");
+        // d3太大了，由于此项目不是工程化环境，没有摇树优化，只能手动摇树了
+        global.d3 = require("./resource/d3-lite@7");
         const { Transformer, builtInPlugins, transformerVersions } = require("./resource/markmap-lib");
+        // npm版本的markmap-view将部分d3函数封装进去了。因为后续需要使用d3.scaleOrdinal修改配色，故使用browser版本
         const { markmap } = require("./resource/markmap-view"); // need use global.d3
 
-        const { Markmap, loadCSS, loadJS } = markmap;
+        const { Markmap, loadCSS, loadJS, deriveOptions } = markmap;
 
         this.Markmap = Markmap;
         this.transformer = new Transformer(builtInPlugins);
@@ -455,8 +457,8 @@ class tocMarkmap {
         this.colorSchemeGenerator = !colorList
             ? null
             : () => {
-                const func = global.d3.scaleOrdinal(colorList);
-                return node => func(node.state.path.split(".").slice(0, this.colorFreezeLevel + 1).join("."))
+                const colorFunc = global.d3.scaleOrdinal(colorList);
+                return node => colorFunc(node.state.path.split(".").slice(0, this.colorFreezeLevel + 1).join("."))
             }
     }
 
