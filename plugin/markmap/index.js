@@ -24,8 +24,8 @@ class markmapPlugin extends BasePlugin {
         );
     }
 
-    process = async () => {
-        this.tocMarkmap && await this.tocMarkmap.process();
+    process = () => {
+        this.tocMarkmap && this.tocMarkmap.process();
         this.fenceMarkmap && this.fenceMarkmap.process();
     }
 
@@ -75,11 +75,11 @@ class markmapPlugin extends BasePlugin {
 }
 
 class fenceMarkmap {
-    constructor(controller) {
-        this.controller = controller
-        this.utils = controller.utils;
-        this.config = controller.config;
-        this.MarkmapLib = controller.MarkmapLib;
+    constructor(plugin) {
+        this.controller = plugin
+        this.utils = plugin.utils;
+        this.config = plugin.config;
+        this.MarkmapLib = plugin.MarkmapLib;
         this.instanceMap = new Map(); // {cid: instance}
     }
 
@@ -189,11 +189,11 @@ class fenceMarkmap {
 }
 
 class tocMarkmap {
-    constructor(controller) {
-        this.controller = controller;
-        this.utils = controller.utils;
-        this.config = controller.config;
-        this.MarkmapLib = controller.MarkmapLib;
+    constructor(plugin) {
+        this.controller = plugin;
+        this.utils = plugin.utils;
+        this.config = plugin.config;
+        this.MarkmapLib = plugin.MarkmapLib;
     }
 
     html = () => `
@@ -222,15 +222,6 @@ class tocMarkmap {
 
     hotkey = () => [{ hotkey: this.config.TOC_HOTKEY, callback: this.callback }]
 
-    fixOptions = () => {
-        const { DEFAULT_TOC_OPTIONS: op } = this.config;
-        if (op.initialExpandLevel < 0) {
-            op.initialExpandLevel = 6;
-        } else if (op.initialExpandLevel === 0) {
-            op.initialExpandLevel = 1;
-        }
-    }
-
     prepare = () => {
         this.markmap = null;
         this.candidateColorSchemes = {
@@ -245,7 +236,7 @@ class tocMarkmap {
             PAIRED: ['#A6CEE3', '#1F78B4', '#B2DF8A', '#33A02C', '#FB9A99', '#E31A1C', '#FDBF6F', '#FF7F00', '#CAB2D6', '#6A3D9A', '#FFFF99', '#B15928'],
             SET3: ['#8DD3C7', '#FFFFB3', '#BEBADA', '#FB8072', '#80B1D3', '#FDB462', '#B3DE69', '#FCCDE5', '#D9D9D9', '#BC80BD', '#CCEBC5', '#FFED6F'],
         }
-        this.fixOptions();
+        this._fixConfig();
 
         this.modalOriginRect = null;
         this.contentOriginRect = null;
@@ -271,25 +262,234 @@ class tocMarkmap {
         }
     }
 
-    process = async () => {
+    process = () => {
+        const onEvent = () => {
+            const { eventHub, isShow } = this.utils;
+            eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => isShow(this.entities.modal) && this.draw(this.config.AUTO_FIT_WHEN_UPDATE));
+            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.markmap && this._onButtonClick("close"));
+            this.entities.content.addEventListener("transitionend", this.fit);
+            this.entities.modal.addEventListener("transitionend", this.fit);
+        }
+        const onDrag = () => {
+            const moveElement = this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`);
+            const hint = "ty-hint";
+            const value = moveElement.getAttribute(hint);
+            const onMouseDown = () => {
+                moveElement.removeAttribute(hint);
+                this._cleanTransition();
+                this._waitUnpin();
+            }
+            const onMouseUp = () => {
+                moveElement.setAttribute(hint, value);
+                this._rollbackTransition();
+            }
+            this.utils.dragFixedModal(moveElement, this.entities.modal, false, onMouseDown, null, onMouseUp);
+        }
+        const onResize = () => {
+            const getModalMinHeight = () => {
+                const one = this.entities.header.firstElementChild.getBoundingClientRect().height;
+                const count = this.config.ALLOW_ICON_WRAP ? 1 : this.entities.header.childElementCount;
+                return one * count
+            }
+            const getModalMinWidth = () => {
+                const { marginLeft, paddingRight } = document.defaultView.getComputedStyle(this.entities.header);
+                const headerWidth = this.entities.header.getBoundingClientRect().width;
+                const _marginRight = this.config.ALLOW_ICON_WRAP ? 0 : parseFloat(paddingRight);
+                return parseFloat(marginLeft) + headerWidth + _marginRight
+            }
+            const onMouseUp = () => {
+                this._rollbackTransition();
+                this.fit();
+            }
+
+            const resizeWhenFree = () => {
+                let deltaHeight = 0;
+                let deltaWidth = 0;
+                const onMouseDown = (startX, startY, startWidth, startHeight) => {
+                    this._cleanTransition();
+                    deltaHeight = getModalMinHeight() - startHeight;
+                    deltaWidth = getModalMinWidth() - startWidth;
+                }
+                const onMouseMove = (deltaX, deltaY) => {
+                    deltaY = Math.max(deltaY, deltaHeight);
+                    deltaX = Math.max(deltaX, deltaWidth);
+                    return { deltaX, deltaY }
+                }
+                const onMouseUp = async () => {
+                    this._rollbackTransition();
+                    await this._waitUnpin();
+                    this._setFullScreenIcon(false);
+                }
+                this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, true, true, onMouseDown, onMouseMove, onMouseUp);
+            }
+
+            const resizeWhenPinUp = () => {
+                let contentStartTop = 0;
+                let contentMinTop = 0;
+                const onMouseDown = () => {
+                    this._cleanTransition();
+                    contentStartTop = this.entities.content.getBoundingClientRect().top;
+                    contentMinTop = getModalMinHeight() + this.entities.header.getBoundingClientRect().top;
+                }
+                const onMouseMove = (deltaX, deltaY) => {
+                    let newContentTop = contentStartTop + deltaY;
+                    if (newContentTop < contentMinTop) {
+                        newContentTop = contentMinTop;
+                        deltaY = contentMinTop - contentStartTop;
+                    }
+                    this.entities.content.style.top = newContentTop + "px";
+                    return { deltaX, deltaY }
+                }
+                this.utils.resizeFixedModal(this.entities.gripUp, this.entities.modal, false, true, onMouseDown, onMouseMove, onMouseUp);
+            }
+
+            const resizeWhenPinRight = () => {
+                let contentStartRight = 0;
+                let contentStartWidth = 0;
+                let modalStartLeft = 0;
+                let contentMaxRight = 0;
+                const onMouseDown = () => {
+                    this._cleanTransition();
+                    const contentRect = this.entities.content.getBoundingClientRect();
+                    contentStartRight = contentRect.right;
+                    contentStartWidth = contentRect.width;
+
+                    const modalRect = this.entities.modal.getBoundingClientRect();
+                    modalStartLeft = modalRect.left;
+                    contentMaxRight = modalRect.right - getModalMinWidth();
+                }
+                const onMouseMove = (deltaX, deltaY) => {
+                    deltaX = -deltaX;
+                    deltaY = -deltaY;
+                    let newContentRight = contentStartRight - deltaX;
+                    if (newContentRight > contentMaxRight) {
+                        newContentRight = contentMaxRight;
+                        deltaX = contentStartRight - contentMaxRight;
+                    }
+                    this.entities.content.style.right = newContentRight + "px";
+                    this.entities.content.style.width = contentStartWidth - deltaX + "px";
+                    this.entities.modal.style.left = modalStartLeft - deltaX + "px";
+                    return { deltaX, deltaY }
+                }
+                this.utils.resizeFixedModal(this.entities.gripRight, this.entities.modal, true, false, onMouseDown, onMouseMove, onMouseUp);
+            }
+
+            resizeWhenFree();      // 自由移动时调整大小
+            resizeWhenPinUp();     // 固定到顶部时调整大小
+            resizeWhenPinRight();  // 固定到右侧时调整大小
+        }
+        const onToggleSidebar = () => {
+            const resetPosition = () => {
+                if (!this.markmap) return;
+                const needResetFullscreen = this.entities.fullScreen.getAttribute("action") === "shrink";
+                if (needResetFullscreen) {
+                    this.shrink();
+                    this.expand();
+                }
+                const className = ["pinUp", "pinRight"].find(func => this.entities.modal.classList.contains(func));
+                if (!className) return
+
+                const { width, left, right } = this.entities.content.getBoundingClientRect();
+                let source;
+                if (className === "pinUp") {
+                    source = { left: `${left}px`, width: `${width}px` };
+                } else {
+                    const { right: modalRight } = this.entities.modal.getBoundingClientRect();
+                    source = { left: `${right}px`, width: `${modalRight - right}px` };
+                }
+                Object.assign(this.entities.modal.style, source);
+            }
+            const { eventHub } = this.utils;
+            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, resetPosition);
+            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, resetPosition);
+        }
+        const onHeaderClick = () => {
+            this.entities.header.addEventListener("click", ev => {
+                const button = ev.target.closest(".plugin-markmap-icon");
+                if (!button) return
+                ev.stopPropagation();
+                ev.preventDefault();
+                const action = button.getAttribute("action");
+                if (action !== "move" && this[action]) {
+                    this._onButtonClick(action, button);
+                }
+            })
+        }
+        const onSvgClick = () => {
+            const getCidFromNode = node => {
+                if (!node) return;
+                const headers = File.editor.nodeMap.toc.headers;
+                if (!headers || headers.length === 0) return;
+                const list = node.getAttribute("data-path").split(".");
+                if (!list) return;
+                const nodeIdx = list[list.length - 1];
+                let tocIdx = parseInt(nodeIdx - 1); // markmap节点的索引从1开始，要-1
+                if (!this.markmap.state.data.content) {
+                    tocIdx--; // 若markmap第一个节点是空节点，再-1
+                }
+                const header = headers[tocIdx];
+                return header && header.attributes.id
+            }
+            this.entities.svg.addEventListener("click", ev => {
+                ev.stopPropagation();
+                ev.preventDefault();
+
+                const circle = ev.target.closest("circle");
+                const node = ev.target.closest(".markmap-node");
+                if (circle) {
+                    if (this.config.AUTO_FIT_WHEN_FOLD) {
+                        const timeout = (this.markmap && this.markmap.options.duration) || 500;
+                        setTimeout(this.fit, timeout);
+                    }
+                    if (this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD) {
+                        const cid = getCidFromNode(node);
+                        if (cid) {
+                            const paragraph = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`);
+                            const fold = node.classList.contains("markmap-fold");
+                            this.utils.callPluginFunction("collapse_paragraph", "trigger", paragraph, !fold);
+                        }
+                    }
+                    return;
+                }
+
+                if (this.config.CLICK_TO_LOCALE) {
+                    const cid = getCidFromNode(node);
+                    if (cid) {
+                        const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect();
+                        const height = contentHeight * this.config.LOCALE_HEIGHT_RATIO + contentTop;
+                        const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD;
+                        this.utils.scrollByCid(cid, height, true, showHiddenElement);
+                    }
+                }
+            })
+        }
+        const onContextMenu = () => {
+            const menuMap = {
+                expand: "全屏", shrink: "取消全屏", fit: "图形适配窗口", download: "下载", setting: "设置",
+                close: "关闭", pinUp: "固定到顶部", pinRight: "固定到右侧", hideToolbar: "隐藏工具栏", showToolbar: "显示工具栏",
+            };
+            const showMenu = () => {
+                const fullScreen = this.entities.fullScreen.getAttribute("action");
+                const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar";
+                return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "setting", "download", "close"])
+            }
+            const callback = ({ key }) => this._onButtonClick(key);
+            this.utils.contextMenu.register("markmap", "#plugin-markmap-svg", showMenu, callback);
+        }
+
         this.prepare();
-
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, () => this.utils.isShow(this.entities.modal) && this.drawToc(this.config.AUTO_FIT_WHEN_UPDATE));
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.markmap && this.onButtonClick("close"));
-        this.entities.content.addEventListener("transitionend", this.fit);
-        this.entities.modal.addEventListener("transitionend", this.fit);
-
-        this.onDrag();
-        this.onResize();
-        this.onToggleSidebar();
-        this.onHeaderClick();
-        this.onSvgClick();
-        this.onContextMenu();
+        onEvent();
+        onDrag();
+        onResize();
+        onToggleSidebar();
+        onHeaderClick();
+        onSvgClick();
+        onContextMenu();
     }
 
-    callback = () => this.utils.isShow(this.entities.modal) ? this.onButtonClick("close") : this.drawToc()
+    callback = () => this.utils.isShow(this.entities.modal) ? this._onButtonClick("close") : this.draw()
 
-    call = async type => type === "draw_toc" && await this.drawToc()
+    call = async type => type === "draw_toc" && await this.draw()
 
     close = () => {
         this.entities.modal.style = "";
@@ -307,7 +507,7 @@ class tocMarkmap {
         const options = this.markmap.options;
         options.zoom = !options.zoom;
         options.pan = !options.pan;
-        // await this.redrawToc(options);
+        // await this.redraw(options);
         this.entities.modal.classList.toggle("penetrateMouse", !options.zoom && !options.pan);
     }
 
@@ -424,7 +624,7 @@ class tocMarkmap {
         const { response } = await this.utils.dialog.modalAsync({ title: "设置", width: "500px", components });
         if (response === 1) {
             components.forEach(c => c.callback(c.submit));
-            await this.redrawToc(this.markmap.options);
+            await this.redraw(this.markmap.options);
             const update = this.utils.fromObject(this.config, [
                 "DEFAULT_TOC_OPTIONS", "LOCALE_HEIGHT_RATIO", "REMEMBER_FOLD_WHEN_UPDATE", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_FOLD", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
                 "BORDER_WHEN_DOWNLOAD_SVG", "FOLDER_WHEN_DOWNLOAD_SVG", "FILENAME_WHEN_DOWNLOAD_SVG", "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG", "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG",
@@ -559,7 +759,7 @@ class tocMarkmap {
             showFunc = "hide";
             hint = "固定到顶部";
         }
-        this.setModalRect(modalRect);
+        this._setModalRect(modalRect);
         this.entities.modal.classList.toggle("pinUp");
         this.entities.modal.classList[toggleFunc]("noBoxShadow");
         this.entities.content.style.top = contentTop + "px";
@@ -571,7 +771,7 @@ class tocMarkmap {
         button.classList.toggle("ion-ios7-undo", this.pinUtils.isPinUp);
         this.utils.toggleVisible(this.entities.resize, this.pinUtils.isPinUp);
         if (draw) {
-            await this.drawToc();
+            await this.draw();
         }
     }
 
@@ -605,7 +805,7 @@ class tocMarkmap {
             hint = "固定到右侧";
         }
 
-        this.setModalRect(modalRect);
+        this._setModalRect(modalRect);
         this.entities.modal.classList.toggle("pinRight");
         this.entities.modal.classList[toggleFunc]("noBoxShadow");
         this.entities.content.style.right = contentRight;
@@ -619,299 +819,80 @@ class tocMarkmap {
         button.classList.toggle("ion-ios7-undo", this.pinUtils.isPinRight);
         this.utils.toggleVisible(this.entities.resize, this.pinUtils.isPinRight);
         if (draw) {
-            await this.drawToc();
+            await this.draw();
         }
     }
-
-    _waitUnpin = async () => {
-        if (this.pinUtils.isPinUp) {
-            await this.pinUp();
-        }
-        if (this.pinUtils.isPinRight) {
-            await this.pinRight();
-        }
-    }
-
-    cleanTransition = () => this.entities.modal.style.transition = "none"
-    rollbackTransition = () => this.entities.modal.style.transition = ""
 
     toggleToolbar = show => {
         this.utils.toggleVisible(this.entities.header, !show);
         this.fit();
     }
+
     hideToolbar = () => this.toggleToolbar(false)
+
     showToolbar = () => this.toggleToolbar(true)
-
-    onButtonClick = async (action, button) => {
-        if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"].includes(action)) {
-            await this._waitUnpin();
-        }
-        const arg = (action === "pinUp" || action === "pinRight") ? false : undefined;
-        await this[action](arg);
-    }
-
-    onToggleSidebar = () => {
-        const resetPosition = () => {
-            if (!this.markmap) return;
-            const needResetFullscreen = this.entities.fullScreen.getAttribute("action") === "shrink";
-            if (needResetFullscreen) {
-                this.shrink();
-                this.expand();
-            }
-            const className = ["pinUp", "pinRight"].find(func => this.entities.modal.classList.contains(func));
-            if (!className) return
-
-            const { width, left, right } = this.entities.content.getBoundingClientRect();
-            let source;
-            if (className === "pinUp") {
-                source = { left: `${left}px`, width: `${width}px` };
-            } else {
-                const { right: modalRight } = this.entities.modal.getBoundingClientRect();
-                source = { left: `${right}px`, width: `${modalRight - right}px` };
-            }
-            Object.assign(this.entities.modal.style, source);
-        }
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterToggleSidebar, resetPosition);
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterSetSidebarWidth, resetPosition);
-    }
-
-    onContextMenu = () => {
-        const menuMap = {
-            expand: "全屏", shrink: "取消全屏", fit: "图形适配窗口", download: "下载", setting: "设置",
-            close: "关闭", pinUp: "固定到顶部", pinRight: "固定到右侧", hideToolbar: "隐藏工具栏", showToolbar: "显示工具栏",
-        };
-        const showMenu = () => {
-            const fullScreen = this.entities.fullScreen.getAttribute("action");
-            const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar";
-            return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "setting", "download", "close"])
-        }
-        const callback = ({ key }) => this.onButtonClick(key);
-        this.utils.contextMenu.register("markmap", "#plugin-markmap-svg", showMenu, callback);
-    }
-
-    onDrag = () => {
-        const moveElement = this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`);
-        const hint = "ty-hint";
-        const value = moveElement.getAttribute(hint);
-        const onMouseDown = () => {
-            moveElement.removeAttribute(hint);
-            this.cleanTransition();
-            this._waitUnpin();
-        }
-        const onMouseUp = () => {
-            moveElement.setAttribute(hint, value);
-            this.rollbackTransition();
-        }
-        this.utils.dragFixedModal(moveElement, this.entities.modal, false, onMouseDown, null, onMouseUp);
-    }
-
-    onResize = () => {
-        const getModalMinHeight = () => {
-            const one = this.entities.header.firstElementChild.getBoundingClientRect().height;
-            const count = this.config.ALLOW_ICON_WRAP ? 1 : this.entities.header.childElementCount;
-            return one * count
-        }
-
-        const getModalMinWidth = () => {
-            const { marginLeft, paddingRight } = document.defaultView.getComputedStyle(this.entities.header);
-            const headerWidth = this.entities.header.getBoundingClientRect().width;
-            const _marginRight = this.config.ALLOW_ICON_WRAP ? 0 : parseFloat(paddingRight);
-            return parseFloat(marginLeft) + headerWidth + _marginRight
-        }
-
-        const onMouseUp = () => {
-            this.rollbackTransition();
-            this.fit();
-        }
-
-        // 自由移动时调整大小
-        {
-            let deltaHeight = 0;
-            let deltaWidth = 0;
-            const onMouseDown = (startX, startY, startWidth, startHeight) => {
-                this.cleanTransition();
-                deltaHeight = getModalMinHeight() - startHeight;
-                deltaWidth = getModalMinWidth() - startWidth;
-            }
-            const onMouseMove = (deltaX, deltaY) => {
-                deltaY = Math.max(deltaY, deltaHeight);
-                deltaX = Math.max(deltaX, deltaWidth);
-                return { deltaX, deltaY }
-            }
-            const onMouseUp = async () => {
-                this.rollbackTransition();
-                await this._waitUnpin();
-                this.setFullScreenIcon(false);
-            }
-            this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, true, true, onMouseDown, onMouseMove, onMouseUp);
-        }
-
-        // 固定到顶部时调整大小
-        {
-            let contentStartTop = 0;
-            let contentMinTop = 0;
-            const onMouseDown = () => {
-                this.cleanTransition();
-                contentStartTop = this.entities.content.getBoundingClientRect().top;
-                contentMinTop = getModalMinHeight() + this.entities.header.getBoundingClientRect().top;
-            }
-            const onMouseMove = (deltaX, deltaY) => {
-                let newContentTop = contentStartTop + deltaY;
-                if (newContentTop < contentMinTop) {
-                    newContentTop = contentMinTop;
-                    deltaY = contentMinTop - contentStartTop;
-                }
-                this.entities.content.style.top = newContentTop + "px";
-                return { deltaX, deltaY }
-            }
-            this.utils.resizeFixedModal(this.entities.gripUp, this.entities.modal, false, true, onMouseDown, onMouseMove, onMouseUp);
-        }
-
-        // 固定到右侧时调整大小
-        {
-            let contentStartRight = 0;
-            let contentStartWidth = 0;
-            let modalStartLeft = 0;
-            let contentMaxRight = 0;
-            const onMouseDown = () => {
-                this.cleanTransition();
-                const contentRect = this.entities.content.getBoundingClientRect();
-                contentStartRight = contentRect.right;
-                contentStartWidth = contentRect.width;
-
-                const modalRect = this.entities.modal.getBoundingClientRect();
-                modalStartLeft = modalRect.left;
-                contentMaxRight = modalRect.right - getModalMinWidth();
-            }
-            const onMouseMove = (deltaX, deltaY) => {
-                deltaX = -deltaX;
-                deltaY = -deltaY;
-                let newContentRight = contentStartRight - deltaX;
-                if (newContentRight > contentMaxRight) {
-                    newContentRight = contentMaxRight;
-                    deltaX = contentStartRight - contentMaxRight;
-                }
-                this.entities.content.style.right = newContentRight + "px";
-                this.entities.content.style.width = contentStartWidth - deltaX + "px";
-                this.entities.modal.style.left = modalStartLeft - deltaX + "px";
-                return { deltaX, deltaY }
-            }
-            this.utils.resizeFixedModal(this.entities.gripRight, this.entities.modal, true, false, onMouseDown, onMouseMove, onMouseUp);
-        }
-    }
-
-    onHeaderClick = () => {
-        this.entities.header.addEventListener("click", ev => {
-            const button = ev.target.closest(".plugin-markmap-icon");
-            if (!button) return
-            ev.stopPropagation();
-            ev.preventDefault();
-            const action = button.getAttribute("action");
-            if (action !== "move" && this[action]) {
-                this.onButtonClick(action, button);
-            }
-        })
-    }
-
-    onSvgClick = () => {
-        const getCidFromNode = node => {
-            if (!node) return;
-            const headers = File.editor.nodeMap.toc.headers;
-            if (!headers || headers.length === 0) return;
-            const list = node.getAttribute("data-path").split(".");
-            if (!list) return;
-            const nodeIdx = list[list.length - 1];
-            let tocIdx = parseInt(nodeIdx - 1); // markmap节点的索引从1开始，要-1
-            if (!this.markmap.state.data.content) {
-                tocIdx--; // 若markmap第一个节点是空节点，再-1
-            }
-            const header = headers[tocIdx];
-            return header && header.attributes.id
-        }
-
-        this.entities.svg.addEventListener("click", ev => {
-            ev.stopPropagation();
-            ev.preventDefault();
-
-            const circle = ev.target.closest("circle");
-            const node = ev.target.closest(".markmap-node");
-            if (circle) {
-                if (this.config.AUTO_FIT_WHEN_FOLD) {
-                    const timeout = (this.markmap && this.markmap.options.duration) || 500;
-                    setTimeout(this.fit, timeout);
-                }
-                if (this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD) {
-                    const cid = getCidFromNode(node);
-                    if (cid) {
-                        const paragraph = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`);
-                        const fold = node.classList.contains("markmap-fold");
-                        this.utils.callPluginFunction("collapse_paragraph", "trigger", paragraph, !fold);
-                    }
-                }
-                return;
-            }
-
-            if (this.config.CLICK_TO_LOCALE) {
-                const cid = getCidFromNode(node);
-                if (cid) {
-                    const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect();
-                    const height = contentHeight * this.config.LOCALE_HEIGHT_RATIO + contentTop;
-                    const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD;
-                    this.utils.scrollByCid(cid, height, true, showHiddenElement);
-                }
-            }
-        })
-    }
 
     expand = () => {
         this.modalOriginRect = this.entities.modal.getBoundingClientRect();
-        this.setModalRect(this.entities.content.getBoundingClientRect());
-        this.setFullScreenIcon(true);
+        this._setModalRect(this.entities.content.getBoundingClientRect());
+        this._setFullScreenIcon(true);
     }
 
     shrink = () => {
-        this.setModalRect(this.modalOriginRect);
-        this.setFullScreenIcon(false);
+        this._setModalRect(this.modalOriginRect);
+        this._setFullScreenIcon(false);
     }
 
-    setFullScreenIcon = fullScreen => {
-        this.entities.modal.classList.toggle("noBoxShadow", fullScreen);
-        this.entities.fullScreen.setAttribute("action", fullScreen ? "shrink" : "expand");
-        this.utils.toggleVisible(this.entities.resize, fullScreen);
-        this.fit();
+    redraw = async options => {
+        this.markmap.destroy();
+        const md = this.controller.getToc();
+        await this._create(md, options);
     }
 
-    setModalRect = rect => {
-        if (!rect) return;
-        const { left, top, height, width } = rect;
-        const s = { left: `${left}px`, top: `${top}px`, height: `${height}px`, width: `${width}px` };
-        Object.assign(this.entities.modal.style, s);
-    }
-
-    drawToc = async (fit = true, options = null) => {
+    draw = async (fit = true, options = null) => {
         const md = this.controller.getToc();
         if (md !== undefined) {
-            await this.draw(md, fit, options);
+            await this._draw(md, fit, options);
         }
     }
 
-    redrawToc = async options => {
-        this.markmap.destroy();
-        const md = this.controller.getToc();
-        await this.create(md, options);
+    _draw = async (md, fit = true, options) => {
+        this.utils.show(this.entities.modal);
+        if (this.markmap) {
+            await this._update(md, fit);
+        } else {
+            this._initModalRect();
+            await this.controller.lazyLoad();
+            await this._create(md, options);
+        }
+    }
+
+    _create = async (md, options) => {
+        options = this._assignOptions(options);
+        const { root } = this.MarkmapLib.transformer.transform(md);
+        this.markmap = this.MarkmapLib.Markmap.create(this.entities.svg, options, root);
+    }
+
+    _update = async (md, fit = true) => {
+        const { root } = this.MarkmapLib.transformer.transform(md);
+        this._setFold(root);
+        this.markmap.setData(root);
+        if (fit) {
+            await this.markmap.fit();
+        }
     }
 
     _initModalRect = () => {
         const { left, width, height } = this.entities.content.getBoundingClientRect();
-        const { LEFT_PERCENT_WHEN_INIT, WIDTH_PERCENT_WHEN_INIT, HEIGHT_PERCENT_WHEN_INIT } = this.config;
+        const { LEFT_PERCENT_WHEN_INIT: l, WIDTH_PERCENT_WHEN_INIT: w, HEIGHT_PERCENT_WHEN_INIT: h } = this.config;
         Object.assign(this.entities.modal.style, {
-            left: `${left + width * LEFT_PERCENT_WHEN_INIT / 100}px`,
-            width: `${width * WIDTH_PERCENT_WHEN_INIT / 100}px`,
-            height: `${height * HEIGHT_PERCENT_WHEN_INIT / 100}px`
+            left: `${left + width * l / 100}px`,
+            width: `${width * w / 100}px`,
+            height: `${height * h / 100}px`
         });
     }
 
-    setFold = newRoot => {
+    _setFold = newRoot => {
         if (!this.config.REMEMBER_FOLD_WHEN_UPDATE) return;
 
         const _walk = (fn, node, parent) => {
@@ -947,38 +928,56 @@ class tocMarkmap {
         _walk(_reset, newRoot);
     }
 
-    assignOptions = options => {
+    _assignOptions = options => {
         const { DEFAULT_TOC_OPTIONS: ops } = this.config;
         options = this.MarkmapLib.deriveOptions({ ...options, ...ops });
         const update = this.utils.fromObject(ops, ["spacingHorizontal", "spacingVertical", "fitRatio"]);
         return Object.assign(options, update)
     }
 
-    draw = async (md, fit = true, options) => {
-        this.utils.show(this.entities.modal);
-        if (this.markmap) {
-            await this.update(md, fit);
-        } else {
-            this._initModalRect();
-            await this.controller.lazyLoad();
-            await this.create(md, options);
+    _fixConfig = () => {
+        const { DEFAULT_TOC_OPTIONS: op } = this.config;
+        if (op.initialExpandLevel < 0) {
+            op.initialExpandLevel = 6;
+        } else if (op.initialExpandLevel === 0) {
+            op.initialExpandLevel = 1;
         }
     }
 
-    create = async (md, options) => {
-        options = this.assignOptions(options);
-        const { root } = this.MarkmapLib.transformer.transform(md);
-        this.markmap = this.MarkmapLib.Markmap.create(this.entities.svg, options, root);
+    _onButtonClick = async (action, button) => {
+        if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"].includes(action)) {
+            await this._waitUnpin();
+        }
+        const arg = (action === "pinUp" || action === "pinRight") ? false : undefined;
+        await this[action](arg);
     }
 
-    update = async (md, fit = true) => {
-        const { root } = this.MarkmapLib.transformer.transform(md);
-        this.setFold(root);
-        this.markmap.setData(root);
-        if (fit) {
-            await this.markmap.fit();
+    _setModalRect = rect => {
+        if (!rect) return;
+        const { left, top, height, width } = rect;
+        const s = { left: `${left}px`, top: `${top}px`, height: `${height}px`, width: `${width}px` };
+        Object.assign(this.entities.modal.style, s);
+    }
+
+    _setFullScreenIcon = fullScreen => {
+        this.entities.modal.classList.toggle("noBoxShadow", fullScreen);
+        this.entities.fullScreen.setAttribute("action", fullScreen ? "shrink" : "expand");
+        this.utils.toggleVisible(this.entities.resize, fullScreen);
+        this.fit();
+    }
+
+    _waitUnpin = async () => {
+        if (this.pinUtils.isPinUp) {
+            await this.pinUp();
+        }
+        if (this.pinUtils.isPinRight) {
+            await this.pinRight();
         }
     }
+
+    _cleanTransition = () => this.entities.modal.style.transition = "none"
+
+    _rollbackTransition = () => this.entities.modal.style.transition = ""
 }
 
 module.exports = {
