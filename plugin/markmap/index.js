@@ -1,9 +1,8 @@
 class markmapPlugin extends BasePlugin {
     beforeProcess = () => {
+        this.MarkmapLib = {};
         this.tocMarkmap = this.config.ENABLE_TOC_MARKMAP ? new tocMarkmap(this) : null;
         this.fenceMarkmap = this.config.ENABLE_FENCE_MARKMAP ? new fenceMarkmap(this) : null;
-        this.transformer = null;
-        this.Markmap = null;
     }
 
     styleTemplate = () => ({
@@ -57,35 +56,31 @@ class markmapPlugin extends BasePlugin {
     onButtonClick = () => this.tocMarkmap && this.tocMarkmap.callback()
 
     lazyLoad = async () => {
-        if (this.transformer && this.Markmap) return;
+        if (this.MarkmapLib.Markmap) return;
 
-        const { markmapLib } = require("./resource/markmap-lib");
-        await this.utils.insertScript("./plugin/markmap/resource/d3@6.js");
-        await this.utils.insertScript("./plugin/markmap/resource/markmap-view.js");
+        const { Transformer, builtInPlugins, transformerVersions } = require("./resource/markmap-lib");
+        const markmap = require("./resource/markmap-view");
 
-        this.transformer = new markmapLib.Transformer();
-        const { Markmap, loadCSS, loadJS } = markmap;
-        this.Markmap = Markmap;
-        const { styles, scripts } = this.transformer.getAssets();
-        if (this.config.RESOURCE_FROM === "network") {
-            if (styles) loadCSS(styles);
-            if (scripts) loadJS(scripts, { getMarkmap: () => markmap });
-        } else {
-            this.utils.insertStyleFile("markmap-default-style", "./plugin/markmap/resource/default.min.css");
-            this.utils.insertStyleFile("markmap-katex-style", "./plugin/markmap/resource/katex.min.css");
+        const { Markmap, loadCSS, loadJS, deriveOptions, defaultOptions } = markmap;
+        Object.assign(this.MarkmapLib, { Markmap, deriveOptions, defaultOptions, transformerVersions, transformer: new Transformer(builtInPlugins) });
 
-            const loadScript = scripts.filter(script => script["type"] !== "script");
-            if (scripts) loadJS(loadScript, { getMarkmap: () => markmap });
-            await this.utils.insertScript("./plugin/markmap/resource/webfontloader.js");
+        const { styles, scripts } = this.MarkmapLib.transformer.getAssets();
+        if (this.config.RESOURCE_FROM !== "network") {
+            styles[0].data.href = this.utils.joinPath("./plugin/markmap/resource/katex.min.css");
+            styles[1].data.href = this.utils.joinPath("./plugin/markmap/resource/default.min.css");
+            scripts[1].data.src = this.utils.joinPath("./plugin/markmap/resource/webfontloader.js");
         }
+        await loadCSS(styles);
+        await loadJS(scripts, { getMarkmap: () => markmap });
     }
 }
 
 class fenceMarkmap {
     constructor(controller) {
         this.controller = controller
-        this.utils = this.controller.utils;
-        this.config = this.controller.config;
+        this.utils = controller.utils;
+        this.config = controller.config;
+        this.MarkmapLib = controller.MarkmapLib;
         this.instanceMap = new Map(); // {cid: instance}
     }
 
@@ -116,13 +111,13 @@ class fenceMarkmap {
     hotkey = () => [{ hotkey: this.config.FENCE_HOTKEY, callback: this.callback }]
 
     getFrontMatter = content => {
-        const defaultOptions = this.config.DEFAULT_FENCE_OPTIONS || {};
+        const fenceOptions = this.config.DEFAULT_FENCE_OPTIONS || {};
         const { yamlObject } = this.utils.splitFrontMatter(content);
-        if (!yamlObject) return defaultOptions;
+        if (!yamlObject) return fenceOptions;
 
         const attr = Object.keys(yamlObject).find(attr => attr.toLowerCase() === "markmap");
         const options = attr ? yamlObject[attr] : yamlObject;
-        return Object.assign({}, defaultOptions, options);
+        return Object.assign({}, fenceOptions, options);
     }
 
     createSvg = ($pre, options) => {
@@ -140,7 +135,7 @@ class fenceMarkmap {
     }
 
     render = async (cid, content, $pre) => {
-        if (!this.controller.transformer || !this.controller.Markmap) {
+        if (!this.MarkmapLib.Markmap) {
             await this.controller.lazyLoad();
         }
         const options = this.getFrontMatter(content);
@@ -168,8 +163,8 @@ class fenceMarkmap {
     };
 
     create = async (cid, svg, md, options) => {
-        const { root } = this.controller.transformer.transform(md);
-        const instance = this.controller.Markmap.create(svg[0], options, root);
+        const { root } = this.MarkmapLib.transformer.transform(md);
+        const instance = this.MarkmapLib.Markmap.create(svg[0], options, root);
         this.instanceMap.set(cid, instance);
         setTimeout(() => {
             const instance = this.instanceMap.get(cid);
@@ -179,7 +174,7 @@ class fenceMarkmap {
 
     update = async (cid, md, options) => {
         const instance = this.instanceMap.get(cid);
-        const { root } = this.controller.transformer.transform(md);
+        const { root } = this.MarkmapLib.transformer.transform(md);
         instance.setData(root);
         instance.setOptions(options);
         await instance.fit();
@@ -188,9 +183,10 @@ class fenceMarkmap {
 
 class tocMarkmap {
     constructor(controller) {
-        this.controller = controller
-        this.utils = this.controller.utils;
-        this.config = this.controller.config;
+        this.controller = controller;
+        this.utils = controller.utils;
+        this.config = controller.config;
+        this.MarkmapLib = controller.MarkmapLib;
     }
 
     html = () => `
@@ -219,12 +215,38 @@ class tocMarkmap {
 
     hotkey = () => [{ hotkey: this.config.TOC_HOTKEY, callback: this.callback }]
 
+    fixOptions = () => {
+        const { DEFAULT_TOC_OPTIONS: op } = this.config;
+        op.color = op.color || this.defaultScheme;
+        op.colorFreezeLevel = op.colorFreezeLevel || 6;
+        op.spacingHorizontal = op.spacingHorizontal || 80;
+        op.spacingVertical = op.spacingVertical || 5;
+        op.fitRatio = op.fitRatio || 0.95;
+        op.maxWidth = op.maxWidth || 0;
+        op.duration = op.duration || 500;
+        if (op.initialExpandLevel < 0) {
+            op.initialExpandLevel = 6;
+        } else if (op.initialExpandLevel === 0) {
+            op.initialExpandLevel = 1;
+        }
+    }
+
     prepare = () => {
         this.markmap = null;
-        this.defaultScheme = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
-        this.currentScheme = this.config.DEFAULT_TOC_OPTIONS.colorScheme || this.defaultScheme;
-        this.colorFreezeLevel = this.config.DEFAULT_TOC_OPTIONS.colorFreezeLevel || 6;
-        this.setColorScheme(this.currentScheme);
+        this.candidateColorSchemes = {
+            schemePastel2: ['#b3e2cd', '#fdcdac', '#cbd5e8', '#f4cae4', '#e6f5c9', '#fff2ae', '#f1e2cc', '#cccccc'],
+            schemeSet2: ['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f', '#e5c494', '#b3b3b3'],
+            schemeDark2: ['#1b9e77', '#d95f02', '#7570b3', '#e7298a', '#66a61e', '#e6ab02', '#a6761d', '#666666'],
+            schemeAccent: ['#7fc97f', '#beaed4', '#fdc086', '#ffff99', '#386cb0', '#f0027f', '#bf5b17', '#666666'],
+            schemePastel1: ['#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec', '#f2f2f2'],
+            schemeSet1: ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33', '#a65628', '#f781bf', '#999999'],
+            schemeTableau10: ['#4e79a7', '#f28e2c', '#e15759', '#76b7b2', '#59a14f', '#edc949', '#af7aa1', '#ff9da7', '#9c755f', '#bab0ab'],
+            schemeCategory10: ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'],
+            schemePaired: ['#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', '#e31a1c', '#fdbf6f', '#ff7f00', '#cab2d6', '#6a3d9a', '#ffff99', '#b15928'],
+            schemeSet3: ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462', '#b3de69', '#fccde5', '#d9d9d9', '#bc80bd', '#ccebc5', '#ffed6f'],
+        }
+        this.defaultScheme = this.candidateColorSchemes.schemeCategory10;
+        this.fixOptions();
 
         this.modalOriginRect = null;
         this.contentOriginRect = null;
@@ -292,172 +314,122 @@ class tocMarkmap {
 
     setting = () => {
         const maxLevel = 6;
+        const {
+            DEFAULT_TOC_OPTIONS: _ops,
+            FILENAME_WHEN_DOWNLOAD_SVG: _filename,
+            FOLDER_WHEN_DOWNLOAD_SVG: _folder,
+            BORDER_WHEN_DOWNLOAD_SVG: _border,
+            REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: _removeForeign,
+            REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: _removeUselessClass,
+            REMEMBER_FOLD_WHEN_UPDATE: _remember,
+            AUTO_FIT_WHEN_UPDATE: _fit1,
+            AUTO_FIT_WHEN_FOLD: _fit2,
+            AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: _collapse,
+            LOCALE_HEIGHT_RATIO: _locale,
+        } = this.config;
+        const infoMap = {
+            color: "如需自定义配色方案请前往配置文件",
+            recoverColor: "其他的配色相关配置将失效",
+            freezeColor: "从某一等级开始，所有子分支继承父分支的配色",
+            locale: "鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）",
+            maxWidth: "0 表示无长度限制",
+            foldWhenUpdate: "图形更新时不会展开已折叠节点",
+            fitWhenUpdate: "图形更新时自动重新适配窗口",
+            fitWhenFold: "折叠图形节点时自动重新适配窗口",
+            collapseWhenFold: "实验性特性，依赖「章节折叠」插件，不推荐开启",
+            removeUselessClass: "若非需要手动修改导出的图形文件，请勿勾选此选项",
+            removeForeignObject: "若非需要手动修改导出的图形文件，请勿勾选此选项",
+            saveFolder: "为空则使用 temp 目录",
+            saveFile: "支持变量：filename、timestamp、uuid",
+        }
+        const setCfg = (key, value) => this.config[key] = value;
+        const setCfg2 = key => value => this.config[key] = value;
+        const KV = key => ({ value: _ops[key], callback: value => _ops[key] = value });
 
         const colorScheme = () => {
             const toString = colorList => colorList.join("_");
             const toDIV = colorList => {
-                const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}" title="${color.toUpperCase()}"></div>`).join("");
-                return `<div class="plugin-markmap-color-scheme">${inner}</div>`;
+                const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}" title="${color.toUpperCase()}"></div>`);
+                return `<div class="plugin-markmap-color-scheme">${inner.join("")}</div>`;
             }
-            const currentColorSchemeStr = toString(this.currentScheme);
-            const d3ColorSchemes = ["schemePastel2", "schemeSet2", "schemeDark2", "schemeAccent", "schemePastel1", "schemeSet1", "schemeTableau10", "schemeCategory10", "schemePaired", "schemeSet3"];
-            const list = d3ColorSchemes.map(cs => {
-                const colorList = d3[cs];
+            const currentColorSchemeStr = toString(_ops.color);
+            const list = Object.values(this.candidateColorSchemes).map(colorList => {
                 const value = toString(colorList);
                 const label = toDIV(colorList);
                 const checked = value === currentColorSchemeStr;
                 return { value, label, checked };
             })
             if (!list.some(e => e.checked)) {
-                list.push({ value: currentColorSchemeStr, label: toDIV(this.currentScheme), checked: true });
+                list.push({ value: currentColorSchemeStr, label: toDIV(_ops.color), checked: true });
             }
-            list.push({ value: "recover", label: "恢复默认", info: "其他的配色相关配置将失效" });
-            const callback = colorScheme => {
-                if (colorScheme === "recover") {
-                    this.currentScheme = this.defaultScheme;
-                    this.setColorScheme(null);
-                } else {
-                    this.currentScheme = colorScheme.split("_");
-                    this.setColorScheme(this.currentScheme);
-                }
-            }
-            return { label: "配色方案", info: "如需自定义配色方案请前往配置文件", type: "radio", list, callback };
+            list.push({ value: "recover", label: "恢复默认", info: infoMap.recoverColor });
+            const callback = colorScheme => _ops.color = colorScheme === "recover" ? this.defaultScheme : colorScheme.split("_");
+            return { label: "配色方案", type: "radio", list, info: infoMap.color, callback };
         }
 
-        const expandLevel = () => {
-            let level = this.markmap && this.markmap.options.initialExpandLevel;
-            if (level === undefined) {
-                level = 1;
-            } else if (level < 0) {
-                level = maxLevel;
-            }
-            const callback = level => this.markmap.options.initialExpandLevel = level;
-            return { label: "分支展开等级", type: "range", value: level, min: 0, max: maxLevel, step: 1, inline: true, callback };
-        }
-
-        const spacingH = () => {
-            const defaultSpacing = 80;
-            const value = (this.markmap && this.markmap.options.spacingHorizontal) || defaultSpacing;
-            const callback = spacingHorizontal => this.markmap.options.spacingHorizontal = spacingHorizontal;
-            return { label: "节点水平间距", type: "range", value, min: 1, max: 100, step: 1, inline: true, callback }
-        }
-
-        const spacingV = () => {
-            const defaultSpacing = 5;
-            const value = (this.markmap && this.markmap.options.spacingVertical) || defaultSpacing;
-            const callback = spacingVertical => this.markmap.options.spacingVertical = spacingVertical;
-            return { label: "节点垂直间距", type: "range", value: value, min: 1, max: 50, step: 1, inline: true, callback }
-        }
-
-        const maxWidth = () => {
-            const defaultMaxWidth = 0;
-            const value = (this.markmap && this.markmap.options.maxWidth) || defaultMaxWidth;
-            const callback = maxWidth => this.markmap.options.maxWidth = maxWidth;
-            return { label: "节点最大长度", info: "0 表示无长度限制", type: "range", value: value, min: 0, max: 1000, step: 10, inline: true, callback }
-        }
-
-        const colorFreezeLevel = () => {
-            const info = "从某一等级开始，所有子分支继承父分支的配色";
-            const level = Math.min(this.colorFreezeLevel, maxLevel);
-            const callback = level => this.colorFreezeLevel = level;
-            return { label: "固定配色的分支等级", info, type: "range", value: level, min: 0, max: maxLevel, step: 1, inline: true, callback }
-        }
-
-        const localeHeightRatio = () => {
-            const defaultValue = 0.2;
-            const info = "鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）";
-            const value = parseInt((this.config.LOCALE_HEIGHT_RATIO || defaultValue) * 100);
-            const callback = ratio => this.config.LOCALE_HEIGHT_RATIO = parseFloat(ratio / 100);
-            return { label: "定位的视口高度", info, type: "range", value: value, min: 1, max: 100, step: 1, inline: true, callback }
-        }
-
-        const fieldset = "导出";
-        const downloadSvgBorderH = () => {
-            const { BORDER_WHEN_DOWNLOAD_SVG: border } = this.config;
-            const callback = width => border[0] = width;
-            return { fieldset, label: "左右边框宽度", type: "number", value: border[0], min: 1, max: 1000, step: 1, inline: true, callback }
-        }
-        const downloadSvgBorderV = () => {
-            const { BORDER_WHEN_DOWNLOAD_SVG: border } = this.config;
-            const callback = width => border[1] = width;
-            return { fieldset, label: "上下边框宽度", type: "number", value: border[1], min: 1, max: 1000, step: 1, inline: true, callback }
-        }
-        const downloadFolder = () => {
-            const value = this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder;
-            const callback = value => this.config.FOLDER_WHEN_DOWNLOAD_SVG = value;
-            return { fieldset, label: "保存目录名", info: "为空则使用 temp 目录", type: "input", value, inline: true, callback }
-        }
-        const downloadFileName = () => {
-            const value = this.config.FILENAME_WHEN_DOWNLOAD_SVG;
-            const callback = value => this.config.FILENAME_WHEN_DOWNLOAD_SVG = value;
-            return { fieldset, label: "保存文件名", info: "支持变量：filename、timestamp、uuid", type: "input", value, inline: true, callback }
-        }
-        const downloadOption = () => {
-            const { REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: removeForeign, REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: removeUselessClass } = this.config;
-            const list = [
-                { label: "删除无用的类名", info: "若非需要手动修改导出的图形文件，请勿勾选此选项", value: "removeUselessClass", checked: removeUselessClass },
-                { label: "替换 foreignObject 标签", info: "若非需要手动修改导出的图形文件，请勿勾选此选项", value: "removeForeignObject", checked: removeForeign },
-            ];
-            const callback = submit => {
-                this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = submit.includes("removeForeignObject");
-                this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = submit.includes("removeUselessClass");
-            }
-            return { fieldset, label: "", type: "checkbox", list, callback }
-        }
-
-        const duration = () => {
-            const defaultDuration = 500;
-            const value = (this.markmap && this.markmap.options.duration) || defaultDuration;
-            const callback = duration => this.markmap.options.duration = duration * 1000;
-            return { label: "动画持续时间", type: "range", value: value / 1000, min: 0.1, max: 1, step: 0.1, inline: true, callback }
-        }
-
-        const fitRatio = () => {
-            const defaultValue = 0.95;
-            const value = parseInt(((this.markmap && this.markmap.options.fitRatio) || defaultValue) * 100);
-            const callback = fitRatio => this.markmap.options.fitRatio = fitRatio / 100;
-            return { label: "图形的窗口填充率", type: "range", value: value, min: 50, max: 100, step: 1, inline: true, callback }
-        }
+        const builtin = () => [
+            { label: "固定配色的分支等级", type: "range", min: 1, max: maxLevel, step: 1, inline: true, info: infoMap.freezeColor, ...KV("colorFreezeLevel") },
+            { label: "分支展开等级", type: "range", min: 1, max: maxLevel, step: 1, inline: true, ...KV("initialExpandLevel") },
+            { label: "节点水平间距", type: "range", min: 1, max: 100, step: 1, inline: true, ...KV("spacingHorizontal") },
+            { label: "节点垂直间距", type: "range", min: 1, max: 50, step: 1, inline: true, ...KV("spacingVertical") },
+            { label: "节点最大长度", type: "range", min: 0, max: 1000, step: 10, inline: true, info: infoMap.maxWidth, ...KV("maxWidth") },
+            { label: "图形的窗口填充率", type: "range", min: 0.5, max: 1, step: 0.01, inline: true, ...KV("fitRatio") },
+            { label: "动画持续时间", type: "range", min: 100, max: 1000, step: 100, inline: true, ...KV("duration") },
+            { label: "定位的视口高度", type: "range", value: _locale, min: 0.1, max: 1, step: 0.01, inline: true, info: infoMap.locale, callback: setCfg2("LOCALE_HEIGHT_RATIO") }
+        ]
 
         const ability = () => {
-            const { zoom = true, pan = true } = (this.markmap && this.markmap.options) || {};
-            const { REMEMBER_FOLD_WHEN_UPDATE: remember, AUTO_FIT_WHEN_UPDATE: fit1, AUTO_FIT_WHEN_FOLD: fit2, AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: collapse } = this.config;
+            const { zoom = true, pan = true } = _ops;
             const list = [
                 { label: "鼠标滚轮缩放", value: "zoom", checked: zoom },
                 { label: "鼠标滚轮平移", value: "pan", checked: pan },
-                { label: "记住已折叠节点", info: "图形更新时不会展开已折叠节点", value: "foldWhenUpdate", checked: remember },
-                { label: "更新时自动适配窗口", info: "图形更新时自动重新适配窗口", value: "fitWhenUpdate", checked: fit1 },
-                { label: "折叠时自动适配窗口", info: "折叠图形节点时自动重新适配窗口", value: "fitWhenFold", checked: fit2 },
-                { label: "折叠时自动折叠章节", info: "实验性特性，依赖「章节折叠」插件，不推荐开启", value: "collapseWhenFold", checked: collapse },
+                { label: "记住已折叠节点", value: "foldWhenUpdate", checked: _remember, info: infoMap.foldWhenUpdate },
+                { label: "更新时自动适配窗口", value: "fitWhenUpdate", checked: _fit1, info: infoMap.fitWhenUpdate },
+                { label: "折叠时自动适配窗口", value: "fitWhenFold", checked: _fit2, info: infoMap.fitWhenFold },
+                { label: "折叠时自动折叠章节", value: "collapseWhenFold", checked: _collapse, info: infoMap.collapseWhenFold },
             ];
             const callback = submit => {
-                this.markmap.options.zoom = submit.includes("zoom");
-                this.markmap.options.pan = submit.includes("pan");
-                this.config.AUTO_FIT_WHEN_UPDATE = submit.includes("fitWhenUpdate");
-                this.config.AUTO_FIT_WHEN_FOLD = submit.includes("fitWhenFold");
-                this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD = submit.includes("collapseWhenFold");
-                this.config.REMEMBER_FOLD_WHEN_UPDATE = submit.includes("foldWhenUpdate");
+                _ops.zoom = submit.includes("zoom");
+                _ops.pan = submit.includes("pan");
+                setCfg("REMEMBER_FOLD_WHEN_UPDATE", submit.includes("foldWhenUpdate"));
+                setCfg("AUTO_FIT_WHEN_UPDATE", submit.includes("fitWhenUpdate"));
+                setCfg("AUTO_FIT_WHEN_FOLD", submit.includes("fitWhenFold"));
+                setCfg("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", submit.includes("collapseWhenFold"));
             };
             return { label: "", legend: "能力", type: "checkbox", list, callback }
         }
 
-        const components = [
-            colorScheme, colorFreezeLevel, expandLevel, spacingH, spacingV, maxWidth, fitRatio, duration, localeHeightRatio, ability,
-            downloadSvgBorderH, downloadSvgBorderV, downloadFolder, downloadFileName, downloadOption,
-        ].map(f => f());
+        const download = () => {
+            const fieldset = "导出";
+            const saveFolder = _folder || this.utils.tempFolder;
+            const borderKV = idx => ({ value: _border[idx], callback: w => _border[idx] = w });
+            const checkboxList = [
+                { label: "删除无用的类名", value: "removeUselessClass", checked: _removeUselessClass, info: infoMap.removeUselessClass },
+                { label: "替换 foreignObject 标签", value: "removeForeignObject", checked: _removeForeign, info: infoMap.removeForeignObject },
+            ];
+            const checkboxCB = submit => {
+                setCfg("REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG", submit.includes("removeForeignObject"));
+                setCfg("REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG", submit.includes("removeUselessClass"));
+            }
+            return [
+                { fieldset, label: "左右边框宽度", type: "number", min: 1, max: 1000, step: 1, inline: true, ...borderKV(0) },
+                { fieldset, label: "上下边框宽度", type: "number", min: 1, max: 1000, step: 1, inline: true, ...borderKV(1) },
+                { fieldset, label: "保存目录名", type: "input", value: saveFolder, inline: true, info: infoMap.saveFolder, callback: setCfg2("FOLDER_WHEN_DOWNLOAD_SVG") },
+                { fieldset, label: "保存文件名", type: "input", value: _filename, inline: true, info: infoMap.saveFile, callback: setCfg2("FILENAME_WHEN_DOWNLOAD_SVG") },
+                { fieldset, label: "", type: "checkbox", list: checkboxList, callback: checkboxCB },
+            ]
+        }
+
+        const components = [colorScheme(), ...builtin(), ability(), ...download()];
         this.utils.dialog.modal({ title: "设置", width: "500px", components }, async components => {
             components.forEach(c => c.callback(c.submit));
             await this.redrawToc(this.markmap.options);
+            const update = this.utils.fromObject(this.config, [
+                "DEFAULT_TOC_OPTIONS", "LOCALE_HEIGHT_RATIO", "REMEMBER_FOLD_WHEN_UPDATE", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_FOLD", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
+                "BORDER_WHEN_DOWNLOAD_SVG", "FOLDER_WHEN_DOWNLOAD_SVG", "FILENAME_WHEN_DOWNLOAD_SVG", "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG", "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG",
+            ]);
+            await this.utils.saveConfig(this.controller.fixedName, update);
         });
-    }
-
-    setColorScheme = colorList => {
-        this.colorSchemeGenerator = !colorList
-            ? null
-            : () => {
-                const func = d3.scaleOrdinal(colorList);
-                return node => func(node.state.path.split(".").slice(0, this.colorFreezeLevel + 1).join("."))
-            }
     }
 
     download = async () => {
@@ -974,7 +946,12 @@ class tocMarkmap {
         _walk(_reset, newRoot);
     }
 
-    getColorOption = () => this.colorSchemeGenerator ? this.colorSchemeGenerator() : this.controller.Markmap.defaultOptions.color;
+    setOptions = options => {
+        const { DEFAULT_TOC_OPTIONS: ops } = this.config;
+        options = this.MarkmapLib.deriveOptions({ ...options, ...ops });
+        const update = { spacingHorizontal: ops.spacingHorizontal, spacingVertical: ops.spacingVertical, fitRatio: ops.fitRatio };
+        return Object.assign(options, update)
+    }
 
     draw = async (md, fit = true, options) => {
         this.utils.show(this.entities.modal);
@@ -988,15 +965,14 @@ class tocMarkmap {
     }
 
     create = async (md, options) => {
-        options = Object.assign({}, this.config.DEFAULT_TOC_OPTIONS, options, { color: this.getColorOption() });
-        const { root } = this.controller.transformer.transform(md);
-        this.markmap = this.controller.Markmap.create(this.entities.svg, options, root);
+        options = this.setOptions(options);
+        const { root } = this.MarkmapLib.transformer.transform(md);
+        this.markmap = this.MarkmapLib.Markmap.create(this.entities.svg, options, root);
     }
 
     update = async (md, fit = true) => {
-        const { root } = this.controller.transformer.transform(md);
+        const { root } = this.MarkmapLib.transformer.transform(md);
         this.setFold(root);
-        this.markmap.setOptions({ color: this.getColorOption() });
         this.markmap.setData(root);
         if (fit) {
             await this.markmap.fit();

@@ -3,6 +3,11 @@
     user-select: none;
 }
 
+.plugin-fence-markmap-svg table {
+    margin: 0;
+    padding: 0;
+}
+
 #plugin-markmap {
     transition: all 0.8s ease 0s;
     user-select: none;
