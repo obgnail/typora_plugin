@@ -60,9 +60,10 @@ class markmapPlugin extends BasePlugin {
     lazyLoad = async () => {
         if (this.transformer && this.Markmap) return;
 
-        global.d3 = require("./resource/d3@7.js");
+        global.d3 = require("./resource/d3@7");
         const { Transformer, builtInPlugins, transformerVersions } = require("./resource/markmap-lib");
         const { markmap } = require("./resource/markmap-view"); // need use global.d3
+
         const { Markmap, loadCSS, loadJS } = markmap;
 
         this.Markmap = Markmap;
@@ -84,7 +85,8 @@ class markmapPlugin extends BasePlugin {
             if (scripts) {
                 await loadJS(iifeScript, { getMarkmap: () => markmap }); // set window.WebFontConfig
             }
-            await this.utils.insertScript("./plugin/markmap/resource/webfontloader.js"); // WebFont.load(window.WebFontConfig)
+            const webFont = require("./resource/webfontloader");
+            webFont.load(window.WebFontConfig);
         }
     }
 }
