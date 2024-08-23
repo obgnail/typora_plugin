@@ -71,23 +71,13 @@ class markmapPlugin extends BasePlugin {
         this.transformerVersions = transformerVersions;
 
         const { styles, scripts } = this.transformer.getAssets();
-        if (this.config.RESOURCE_FROM === "network") {
-            if (styles) {
-                await loadCSS(styles);
-            }
-            if (scripts) {
-                await loadJS(scripts, { getMarkmap: () => markmap });
-            }
-        } else {
-            this.utils.insertStyleFile("markmap-default-style", "./plugin/markmap/resource/default.min.css");
-            this.utils.insertStyleFile("markmap-katex-style", "./plugin/markmap/resource/katex.min.css");
-            const iifeScript = scripts.filter(script => script["type"] !== "script");
-            if (scripts) {
-                await loadJS(iifeScript, { getMarkmap: () => markmap }); // set window.WebFontConfig
-            }
-            const webFont = require("./resource/webfontloader");
-            webFont.load(window.WebFontConfig);
+        if (this.config.RESOURCE_FROM !== "network") {
+            styles[0].data.href = this.utils.joinPath("./plugin/markmap/resource/katex.min.css");
+            styles[1].data.href = this.utils.joinPath("./plugin/markmap/resource/default.min.css");
+            scripts[1].data.src = this.utils.joinPath("./plugin/markmap/resource/webfontloader.js");
         }
+        await loadCSS(styles);
+        await loadJS(scripts, { getMarkmap: () => markmap });
     }
 }
 
