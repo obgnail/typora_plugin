@@ -47,7 +47,7 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
             state = new Error("timeout");
         }
 
-        let title, callback, components;
+        let title, components, needRedirect;
         if (state === "UPDATED") {
             title = "更新成功，请重启 Typora";
             components = [{ type: "textarea", label: "当前版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
@@ -56,13 +56,17 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
             components = [{ type: "textarea", label: "当前版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
         } else if (state instanceof Error) {
             title = "更新失败";
-            callback = () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
             components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新。报错信息如下：" }, { type: "span", label: this.utils.escape(state.stack) }];
+            needRedirect = true;
         } else {
             title = "更新失败";
             components = [{ type: "span", label: "发生未知错误，请向开发者反馈" }];
+            needRedirect = true;
         }
-        this.utils.dialog.modal({ title, components, width: "600px" }, callback);
+        const { response } = await this.utils.dialog.modalAsync({ title, components, width: "600px" });
+        if (response === 1 && needRedirect) {
+            this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
+        }
     }
 
     getProxy = async () => (this.config.proxy || (await new ProxyGetter(this).getProxy()) || "").trim()
