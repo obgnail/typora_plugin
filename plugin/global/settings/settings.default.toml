@@ -537,13 +537,14 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 #   - colorFreezeLevel  : 多少级开始固定分支颜色
 #   - zoom              : 是否允许缩放
 #   - pan               : 是否允许平移
-#   - height            : 高度
+#   - height            : 图形高度
 #   - color             : 配色方案（填入颜色数组，如['#1f77b4', '#17becf']）
 #   - backgroundColor   : 背景色
+#   - maxWidth          : 节点最大长度（0则无长度限制）
 #   - spacingHorizontal : 节点水平间距
 #   - spacingVertical   : 节点垂直间距
 #   - fitRatio          : 图形的窗口填充率
-DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, colorFreezeLevel = 6, zoom = false, pan = false, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, height = "300px", backgroundColor = "#f8f8f8", color = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'] }
+DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, colorFreezeLevel = 6, zoom = false, pan = false, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, height = "300px", backgroundColor = "#f8f8f8", color = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'] }
 # 插入的模板
 FENCE_TEMPLATE = """```markmap
 ---
@@ -553,6 +554,8 @@ markmap:
   zoom: false
   # 是否允许平移
   pan: false
+  # 节点最大长度（0则无长度限制）
+  maxWidth: 0
   # 节点水平间距
   spacingHorizontal: 80
   # 节点垂直间距
@@ -563,7 +566,7 @@ markmap:
   initialExpandLevel: -1
   # 多少级开始固定分支颜色
   colorFreezeLevel: 6
-  # 高度
+  # 图形高度
   height: 300px
   # 背景色
   backgroundColor: "#f8f8f8"
@@ -573,27 +576,28 @@ markmap:
 
 ## Links
 
-- <https://markmap.js.org/>
+- [Website](https://markmap.js.org/)
 - [GitHub](https://github.com/gera2ld/markmap)
-
-## Related Projects
-
-- [coc-markmap](https://github.com/gera2ld/coc-markmap)
-- [gatsby-remark-markmap](https://github.com/gera2ld/gatsby-remark-markmap)
 
 ## Features
 
-- links
-- **strong** ~~del~~ *italic* ==highlight==
-- multiline
-  text
-- `inline code`
+Note that if blocks and lists appear at the same level, the lists will be ignored.
 
-- Katex
-  - $x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}$
+### Lists
+
+- **strong** ~~del~~ *italic* ==highlight==
+- `inline code`
+- [x] checkbox
+- Katex: $x = {-b \\pm \\sqrt{b^2-4ac} \\over 2a}$ <!-- markmap: fold -->
   - [More Katex Examples](#?d=gist:af76a4c245b302206b16aec503dbe07b:katex.md)
 - Now we can wrap very very very very long text based on `maxWidth` option
-```
+
+### Blocks
+
+| Products | Price |
+|-|-|
+| Apple | 4 |
+| Banana | 2 |
 """
 
 
