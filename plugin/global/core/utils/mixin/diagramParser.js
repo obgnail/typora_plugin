@@ -179,8 +179,10 @@ class diagramParser {
 
     _renderDiagram = async cid => {
         const $pre = File.editor.findElemById(cid);
-        const lang = $pre.attr("lang").trim().toLowerCase();
+        const lang_ = $pre.attr("lang");
+        if (lang_ === undefined) return;
 
+        const lang = lang_.trim().toLowerCase();
         // 不是Diagram类型，需要展示增强按钮
         if (!this.isDiagramType(lang)) {
             $pre.children(".fence-enhance").show();
@@ -209,8 +211,8 @@ class diagramParser {
         this.pending.add(cid);
         await this._renderDiagram(cid);
         await this.utils.sleep(this.timeout);
-        await this._renderDiagram(cid);
         this.pending.delete(cid);
+        await this._renderDiagram(cid);
     }
 
     onAddCodeBlock = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this.renderDiagram)

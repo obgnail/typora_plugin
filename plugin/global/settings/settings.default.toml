@@ -470,8 +470,6 @@ ALLOW_ICON_WRAP = true
 AUTO_FIT_WHEN_UPDATE = true
 # 当用户编辑文档，导致markmap更新图形时，已折叠的节点是否不再重新展开
 REMEMBER_FOLD_WHEN_UPDATE = true
-# 折叠markmap节点时，图形是否重新适配窗口
-AUTO_FIT_WHEN_FOLD = true
 # 折叠markmap节点时，自动折叠章节（此功能为实验性特性，依赖collapse_paragraph插件，目前不推荐开启）
 AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD = false
 # 初始化时，弹窗位于页面从左往右的5%位置
@@ -489,7 +487,8 @@ SHOW_BORDER_WHEN_NODE_HOVER = true
 # 当鼠标悬停于节点时，显示边框的样式（当SHOW_BORDER_WHEN_NODE_HOVER为false时，此选项失效）
 BORDER_STYLE_WHEN_NODE_HOVER = "4px solid #FF7B00"
 # 默认的toc图形选项
-#   - duration          : 折叠/展开节点时的动画持续时间（单位：ms）
+#   - autoFit           : 折叠/展开节点时，图形是否重新适配窗口
+#   - duration          : 折叠/展开节点时，图形变换动画的持续时间（单位：ms）
 #   - initialExpandLevel: 首次渲染时要展开多少级分支（-1则展开全部）
 #   - colorFreezeLevel  : 多少级开始固定分支颜色
 #   - zoom              : 是否允许缩放
@@ -498,8 +497,9 @@ BORDER_STYLE_WHEN_NODE_HOVER = "4px solid #FF7B00"
 #   - maxWidth          : 节点最大长度（0则无长度限制）
 #   - spacingHorizontal : 节点水平间距
 #   - spacingVertical   : 节点垂直间距
+#   - paddingX          : 节点内部边距
 #   - fitRatio          : 图形的窗口填充率
-DEFAULT_TOC_OPTIONS = { duration = 500, initialExpandLevel = -1, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, colorFreezeLevel = 6, zoom = true, pan = true, color = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'] }
+DEFAULT_TOC_OPTIONS = { autoFit = true, duration = 500, initialExpandLevel = -1, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, paddingX = 8, colorFreezeLevel = 6, zoom = true, pan = true, color = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#E377C2', '#7F7F7F', '#BCBD22', '#17BECF'] }
 # 导出svg时的文件名
 #   - {{ filename }}  : 当前文件名
 #   - {{ timestamp }} : 时间戳
@@ -543,8 +543,9 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 #   - maxWidth          : 节点最大长度（0则无长度限制）
 #   - spacingHorizontal : 节点水平间距
 #   - spacingVertical   : 节点垂直间距
+#   - paddingX          : 节点内部边距
 #   - fitRatio          : 图形的窗口填充率
-DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, colorFreezeLevel = 6, zoom = false, pan = false, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, height = "300px", backgroundColor = "#f8f8f8", color = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'] }
+DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, colorFreezeLevel = 6, zoom = false, pan = false, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, paddingX = 8, fitRatio = 0.95, height = "300px", backgroundColor = "#f8f8f8", color = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#E377C2', '#7F7F7F', '#BCBD22', '#17BECF'] }
 # 插入的模板
 FENCE_TEMPLATE = """```markmap
 ---
@@ -560,6 +561,8 @@ markmap:
   spacingHorizontal: 80
   # 节点垂直间距
   spacingVertical: 5
+  # 节点内部边距
+  paddingX: 8
   # 图形的窗口填充率
   fitRatio: 0.95
   # 初始渲染时要展开的最大节点级别（-1则展开全部）

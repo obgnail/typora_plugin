@@ -55,6 +55,12 @@ class markmapPlugin extends BasePlugin {
 
     onButtonClick = () => this.tocMarkmap && this.tocMarkmap.callback()
 
+    assignOptions = (update, old) => {
+        const update_ = this.utils.fromObject(update, ["spacingHorizontal", "spacingVertical", "fitRatio", "paddingX"]);
+        const options = this.MarkmapLib.deriveOptions({ ...old, ...update });
+        return Object.assign(options, update_)
+    }
+
     lazyLoad = async () => {
         if (this.MarkmapLib.Markmap) return;
 
@@ -161,15 +167,9 @@ class fenceMarkmap {
         this.instanceMap.clear();
     };
 
-    assignOptions = options => {
-        const update = this.utils.fromObject(options, ["spacingHorizontal", "spacingVertical", "fitRatio"]);
-        options = this.MarkmapLib.deriveOptions(options);
-        return Object.assign(options, update)
-    }
-
     create = async (cid, svg, md, options) => {
         const { root } = this.MarkmapLib.transformer.transform(md);
-        options = this.assignOptions(options);
+        options = this.controller.assignOptions(options);
         const instance = this.MarkmapLib.Markmap.create(svg[0], options, root);
         this.instanceMap.set(cid, instance);
         setTimeout(() => {
@@ -182,7 +182,7 @@ class fenceMarkmap {
         const instance = this.instanceMap.get(cid);
         const { root } = this.MarkmapLib.transformer.transform(md);
         instance.setData(root);
-        options = this.assignOptions(options);
+        options = this.controller.assignOptions(options);
         instance.setOptions(options);
         await instance.fit();
     }
@@ -437,10 +437,6 @@ class tocMarkmap {
                 const circle = ev.target.closest("circle");
                 const node = ev.target.closest(".markmap-node");
                 if (circle) {
-                    if (this.config.AUTO_FIT_WHEN_FOLD) {
-                        const timeout = (this.markmap && this.markmap.options.duration) || 500;
-                        setTimeout(this.fit, timeout);
-                    }
                     if (this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD) {
                         const cid = getCidFromNode(node);
                         if (cid) {
@@ -521,7 +517,6 @@ class tocMarkmap {
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: _removeUselessClass,
             REMEMBER_FOLD_WHEN_UPDATE: _rememberFold,
             AUTO_FIT_WHEN_UPDATE: _fitWhenUpdate,
-            AUTO_FIT_WHEN_FOLD: _fitWhenFold,
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: _collapseWhenFold,
             LOCALE_HEIGHT_RATIO: _localeRatio,
         } = this.config;
@@ -548,22 +543,23 @@ class tocMarkmap {
             const RECOVER = "recover";
             const DEFAULT_SCHEME = this.candidateColorSchemes.CATEGORY10;
             const toString = colorList => colorList.join("_");
+            const toList = str => str.split("_");
             const toDIV = colorList => {
                 const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}" title="${color.toUpperCase()}"></div>`);
                 return `<div class="plugin-markmap-color-scheme">${inner.join("")}</div>`;
             }
-            const currentColorSchemeStr = toString(_ops.color);
+            const currentSchemeStr = toString(_ops.color.map(e => e.toUpperCase()));
             const list = Object.values(this.candidateColorSchemes).map(colorList => {
                 const value = toString(colorList);
                 const label = toDIV(colorList);
-                const checked = value === currentColorSchemeStr;
+                const checked = value === currentSchemeStr;
                 return { value, label, checked };
             })
             if (!list.some(e => e.checked)) {
-                list.push({ value: currentColorSchemeStr, label: toDIV(_ops.color), checked: true });
+                list.push({ value: currentSchemeStr, label: toDIV(_ops.color), checked: true });
             }
             list.push({ value: RECOVER, label: "恢复默认", info: INFO.RECOVER_COLOR });
-            const callback = scheme => _ops.color = scheme === RECOVER ? DEFAULT_SCHEME : scheme.split("_");
+            const callback = scheme => _ops.color = (scheme === RECOVER) ? DEFAULT_SCHEME : toList(scheme);
             return { label: "配色方案", type: "radio", list, info: INFO.COLOR, callback };
         }
 
@@ -572,6 +568,7 @@ class tocMarkmap {
             { label: "分支展开等级", type: "range", min: 1, max: 6, step: 1, inline: true, ...KV("initialExpandLevel") },
             { label: "节点水平间距", type: "range", min: 1, max: 100, step: 1, inline: true, ...KV("spacingHorizontal") },
             { label: "节点垂直间距", type: "range", min: 1, max: 50, step: 1, inline: true, ...KV("spacingVertical") },
+            { label: "节点内部边距", type: "range", min: 1, max: 50, step: 1, inline: true, ...KV("paddingX") },
             { label: "节点最大长度", type: "range", min: 0, max: 1000, step: 10, inline: true, info: INFO.MAX_WIDTH, ...KV("maxWidth") },
             { label: "图形的窗口填充率", type: "range", min: 0.5, max: 1, step: 0.01, inline: true, ...KV("fitRatio") },
             { label: "动画持续时间", type: "range", min: 100, max: 1000, step: 100, inline: true, ...KV("duration") },
@@ -579,21 +576,21 @@ class tocMarkmap {
         ]
 
         const ability = () => {
-            const { zoom = true, pan = true } = _ops;
+            const { zoom = true, pan = true, autoFit = true } = _ops;
             const list = [
                 { label: "鼠标滚轮缩放", value: "zoom", checked: zoom },
                 { label: "鼠标滚轮平移", value: "pan", checked: pan },
                 { label: "记住已折叠节点", value: "foldWhenUpdate", checked: _rememberFold, info: INFO.FOLD_WHEN_UPDATE },
                 { label: "更新时自动适配窗口", value: "fitWhenUpdate", checked: _fitWhenUpdate, info: INFO.FIT_WHEN_UPDATE },
-                { label: "折叠时自动适配窗口", value: "fitWhenFold", checked: _fitWhenFold, info: INFO.FIT_WHEN_FOLD },
+                { label: "折叠时自动适配窗口", value: "fitWhenFold", checked: autoFit, info: INFO.FIT_WHEN_FOLD },
                 { label: "折叠时自动折叠章节", value: "collapseWhenFold", checked: _collapseWhenFold, info: INFO.COLLAPSE_WHEN_FOLD },
             ];
             const callback = submit => {
                 _ops.zoom = submit.includes("zoom");
                 _ops.pan = submit.includes("pan");
+                _ops.autoFit = submit.includes("fitWhenFold");
                 setCfg("REMEMBER_FOLD_WHEN_UPDATE", submit.includes("foldWhenUpdate"));
                 setCfg("AUTO_FIT_WHEN_UPDATE", submit.includes("fitWhenUpdate"));
-                setCfg("AUTO_FIT_WHEN_FOLD", submit.includes("fitWhenFold"));
                 setCfg("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", submit.includes("collapseWhenFold"));
             };
             return { label: "", legend: "能力", type: "checkbox", list, callback }
@@ -626,7 +623,7 @@ class tocMarkmap {
             components.forEach(c => c.callback(c.submit));
             await this.redraw(this.markmap.options);
             const update = this.utils.fromObject(this.config, [
-                "DEFAULT_TOC_OPTIONS", "LOCALE_HEIGHT_RATIO", "REMEMBER_FOLD_WHEN_UPDATE", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_FOLD", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
+                "DEFAULT_TOC_OPTIONS", "LOCALE_HEIGHT_RATIO", "REMEMBER_FOLD_WHEN_UPDATE", "AUTO_FIT_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
                 "BORDER_WHEN_DOWNLOAD_SVG", "FOLDER_WHEN_DOWNLOAD_SVG", "FILENAME_WHEN_DOWNLOAD_SVG", "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG", "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG",
             ]);
             await this.utils.saveConfig(this.controller.fixedName, update);
@@ -868,7 +865,7 @@ class tocMarkmap {
     }
 
     _create = async (md, options) => {
-        options = this._assignOptions(options);
+        options = this.controller.assignOptions(this.config.DEFAULT_TOC_OPTIONS, options);
         const { root } = this.MarkmapLib.transformer.transform(md);
         this.markmap = this.MarkmapLib.Markmap.create(this.entities.svg, options, root);
     }
@@ -926,13 +923,6 @@ class tocMarkmap {
         _walk(_setPath, newRoot);
         _walk(_collect, oldRoot);
         _walk(_reset, newRoot);
-    }
-
-    _assignOptions = options => {
-        const { DEFAULT_TOC_OPTIONS: ops } = this.config;
-        options = this.MarkmapLib.deriveOptions({ ...options, ...ops });
-        const update = this.utils.fromObject(ops, ["spacingHorizontal", "spacingVertical", "fitRatio"]);
-        return Object.assign(options, update)
     }
 
     _fixConfig = () => {
