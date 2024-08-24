@@ -9,8 +9,8 @@ class diagramParser {
         this.exitInteractiveStrategies = ["click_exit_button"];
         this.parsers = new Map();     // {lang: parser}
         this.langMapping = new Map(); // {lang: mappingLang}
-        this.singleflight = new Set();
-        this.singleflightTimeout = 150;
+        this.pending = new Set();     // cid
+        this.timeout = 300;
     }
 
     /**
@@ -202,12 +202,15 @@ class diagramParser {
         }
     }
 
+    // 当用户不断键入的时候，如何在保证交互体验的前提下减少渲染次数？答：用户第一次键入时马上渲染，接着每X毫秒渲染一次，最后根据最终输入串再渲染一次
     renderDiagram = async cid => {
-        if (!this.singleflight.has(cid)) {
-            this.singleflight.add(cid);
-            await this._renderDiagram(cid);
-            setTimeout(() => this.singleflight.delete(cid), this.singleflightTimeout);
-        }
+        if (this.pending.has(cid)) return;
+
+        this.pending.add(cid);
+        await this._renderDiagram(cid);
+        await this.utils.sleep(this.timeout);
+        await this._renderDiagram(cid);
+        this.pending.delete(cid);
     }
 
     onAddCodeBlock = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this.renderDiagram)
