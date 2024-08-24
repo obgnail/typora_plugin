@@ -542,24 +542,24 @@ class tocMarkmap {
         const color = () => {
             const RECOVER = "recover";
             const DEFAULT_SCHEME = this.candidateColorSchemes.CATEGORY10;
-            const toString = colorList => colorList.join("_");
-            const toList = str => str.split("_");
-            const toDIV = colorList => {
-                const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}" title="${color.toUpperCase()}"></div>`);
+            const toValue = colorList => colorList.join("_");
+            const fromValue = str => str.split("_");
+            const toDisplay = colorList => {
+                const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`);
                 return `<div class="plugin-markmap-color-scheme">${inner.join("")}</div>`;
             }
-            const currentSchemeStr = toString(_ops.color.map(e => e.toUpperCase()));
+            const curValue = toValue(_ops.color);
             const list = Object.values(this.candidateColorSchemes).map(colorList => {
-                const value = toString(colorList);
-                const label = toDIV(colorList);
-                const checked = value === currentSchemeStr;
+                const value = toValue(colorList);
+                const label = toDisplay(colorList);
+                const checked = value === curValue;
                 return { value, label, checked };
             })
             if (!list.some(e => e.checked)) {
-                list.push({ value: currentSchemeStr, label: toDIV(_ops.color), checked: true });
+                list.push({ value: curValue, label: toDisplay(_ops.color), checked: true });
             }
             list.push({ value: RECOVER, label: "恢复默认", info: INFO.RECOVER_COLOR });
-            const callback = scheme => _ops.color = (scheme === RECOVER) ? DEFAULT_SCHEME : toList(scheme);
+            const callback = scheme => _ops.color = (scheme === RECOVER) ? DEFAULT_SCHEME : fromValue(scheme);
             return { label: "配色方案", type: "radio", list, info: INFO.COLOR, callback };
         }
 
@@ -927,6 +927,7 @@ class tocMarkmap {
 
     _fixConfig = () => {
         const { DEFAULT_TOC_OPTIONS: op } = this.config;
+        op.color = op.color.map(e => e.toUpperCase());
         if (op.initialExpandLevel < 0) {
             op.initialExpandLevel = 6;
         } else if (op.initialExpandLevel === 0) {
