@@ -56,7 +56,7 @@ class markmapPlugin extends BasePlugin {
     onButtonClick = () => this.tocMarkmap && this.tocMarkmap.callback()
 
     assignOptions = (update, old) => {
-        const update_ = this.utils.fromObject(update, ["spacingHorizontal", "spacingVertical", "fitRatio", "paddingX"]);
+        const update_ = this.utils.fromObject(update, ["spacingHorizontal", "spacingVertical", "fitRatio", "paddingX", "autoFit"]);
         const options = this.MarkmapLib.deriveOptions({ ...old, ...update });
         return Object.assign(options, update_)
     }
@@ -570,7 +570,7 @@ class tocMarkmap {
             { label: "节点垂直间距", type: "range", min: 1, max: 50, step: 1, inline: true, ...KV("spacingVertical") },
             { label: "节点内部边距", type: "range", min: 1, max: 50, step: 1, inline: true, ...KV("paddingX") },
             { label: "节点最大长度", type: "range", min: 0, max: 1000, step: 10, inline: true, info: INFO.MAX_WIDTH, ...KV("maxWidth") },
-            { label: "图形的窗口填充率", type: "range", min: 0.5, max: 1, step: 0.01, inline: true, ...KV("fitRatio") },
+            { label: "窗口填充率", type: "range", min: 0.5, max: 1, step: 0.01, inline: true, ...KV("fitRatio") },
             { label: "动画持续时间", type: "range", min: 100, max: 1000, step: 100, inline: true, ...KV("duration") },
             { label: "定位的视口高度", type: "range", value: _localeRatio, min: 0.1, max: 1, step: 0.01, inline: true, info: INFO.LOCALE, callback: setWrapCfg("LOCALE_HEIGHT_RATIO") }
         ]
