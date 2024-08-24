@@ -24,7 +24,7 @@ class exportEnhancePlugin extends BasePlugin {
                     if (!this.config.DOWNLOAD_NETWORK_IMAGE || !imageMap.hasOwnProperty(src)) return origin;
                     imagePath = imageMap[src];
                 } else {
-                    imagePath = this.utils.Package.Path.resolve(dirname, src);
+                    imagePath = this.utils.Package.Path.resolve(dirname, decodeURIComponent(src));
                 }
 
                 const base64Data = await this.toBase64(imagePath);
