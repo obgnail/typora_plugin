@@ -1,5 +1,5 @@
 class exportEnhancePlugin extends BasePlugin {
-    beforeProcess = async () => new Promise(resolve => {
+    beforeProcess = () => new Promise(resolve => {
         const until = () => this.utils.exportHelper.isAsync !== undefined;
         const after = () => resolve(this.utils.exportHelper.isAsync ? undefined : this.utils.stopLoadPluginError);
         this.utils.loopDetector(until, after)
