@@ -66,11 +66,11 @@ NEW_TAB_AT = "right"
 #   right:  当前tab的右侧
 #   latest: 上一个浏览的tab
 ACTIVE_TAB_WHEN_CLOSE = "right"
-# 显示tab的关闭按钮
+# 显示标签页的关闭按钮
 SHOW_TAB_CLOSE_BUTTON = true
 # ctrl+鼠标左键点击标签，新建窗口
 CTRL_CLICK_TO_NEW_WINDOW = true
-# 当鼠标位于标签页时，允许【ctrl+鼠标滚轮】切换标签页
+# 当鼠标位于标签页时，允许使用【ctrl+鼠标滚轮】切换标签页
 CTRL_WHEEL_TO_SCROLL = true
 # 鼠标中键点击标签页关闭标签页
 MIDDLE_CLICK_TO_CLOSE = true
@@ -162,10 +162,10 @@ STYLE_COLOR = [
     '#bbeeff', '#ffbbcc', '#88ee88', '#ccbbff', '#ffee88', '#FFFFa0', '#88cccc', '#ffbb88', '#cccccc', '#ffaabb',
     '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
 ]
-# 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色（页面中无颜色）
+# 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色
 # 20个关键字肯定够用了，此选项没太大意义。就算20个真的不够用，那我也是建议你给STYLE_COLOR选项新增一些颜色，而不是修改此选项
 DEFAULT_COLOR = "#dd6699"
-# 大小写敏感(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
+# 大小写敏感（此处配置的是默认值，使用时可以在页面通过点击按钮重新设置）
 CASE_SENSITIVE = false
 # 显示【执行】按钮（我嫌弃它丑就没开启，如果你是鼠标党，可以置为true）
 SHOW_RUN_BUTTON = false
@@ -207,7 +207,7 @@ SET_COLOR_IN_ALL = true
 COLOR = { fence = "#f7eff2", image = "#eff2f6", table = "#eaf7f7" }
 # 当显示窗口时，打开新文件后自动检测并重新生成大纲
 AUTO_REFRESH_WHEN_OPEN_FILE = true
-# 统计并显示被其他插件隐藏的元素(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
+# 统计并显示被其他插件隐藏的元素（此处配置的是默认值，使用时可以在页面通过点击按钮重新设置）
 # 比如使用了【章节折叠】插件隐藏文件内容，如果你希望outline能统计被隐藏内容，就置为true，不过这样就会导致统计的编号不对（因为你把隐藏的也算进去了）
 SHOW_HIDDEN = false
 # 在窗口里展示的名字
@@ -329,16 +329,16 @@ DEBOUNCE_INTERVAL = 70
 # eg：【ops 资源管理器打开】
 
 # 如果没有匹配到搜索工具，使用默认工具
-#   0. ""       不使用默认
-#   1. "plu"    插件
-#   2. "tab"    当前标签页
-#   3. "his"    最近文件
-#   4. "ops"    常用操作
-#   5. "mode"   切换文件模式
-#   6. "theme"  切换主题
-#   7. "out"    文档大纲
-#   8. "func"   功能列表
-#   9. "all"    混合查找（所有项目都混在一起查找）
+#   - ""     不使用默认
+#   - plu    插件
+#   - tab    当前标签页
+#   - his    最近文件
+#   - ops    常用操作
+#   - mode   切换文件模式
+#   - theme  切换主题
+#   - out    文档大纲
+#   - func   功能列表
+#   - all    混合查找（所有项目都混在一起查找）
 DEFAULT_TOOL = "func"
 # 是否使用负向查询（类似于google）
 # 举例1：【plu multi -search】
@@ -501,9 +501,9 @@ BORDER_STYLE_WHEN_NODE_HOVER = "4px solid #FF7B00"
 #   - fitRatio          : 图形的窗口填充率
 DEFAULT_TOC_OPTIONS = { autoFit = true, duration = 500, initialExpandLevel = -1, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, paddingX = 8, colorFreezeLevel = 6, zoom = true, pan = true, color = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#E377C2', '#7F7F7F', '#BCBD22', '#17BECF'] }
 # 导出svg时的文件名
-#   - {{ filename }}  : 当前文件名
-#   - {{ timestamp }} : 时间戳
-#   - {{ uuid }}      : uuid
+#   - {{filename}}  : 当前文件名
+#   - {{timestamp}} : 时间戳
+#   - {{uuid}}      : uuid
 FILENAME_WHEN_DOWNLOAD_SVG = "{{filename}}_{{timestamp}}.svg"
 # 导出svg时的目录路径(如D:\\tmp\\img)，为空时使用 temp 目录
 FOLDER_WHEN_DOWNLOAD_SVG = ""

@@ -446,10 +446,10 @@ G2 G2|A2 A2|B2 B2|c3 z|G2 G2|A2 A2|B2 G2|c3 z||
 # 右键菜单中展示的名称
 name = "Callouts"
 # 是否启用此二级插件
-# typora1.8版本已经原生支持callouts，但是：
-#   1. 其仅支持五种类型的callouts，
-#   2. 其不支持fold callouts（如： > [!NOTE]-）。
-#   3. 此插件兼容原生callouts
+# 此插件诞生得很早，当时Typora还不支持callouts功能。然后typora在1.8版本原生支持了callouts，功能有一定程度的重叠。但是：
+#   1. 原生功能仅支持五种类型的callouts，
+#   2. 原生功能不支持fold callouts（如： > [!NOTE]-）。
+#   3. 此插件兼容原生功能
 enable = true
 # 是否在右键菜单中隐藏
 hide = false
@@ -465,11 +465,12 @@ set_title_color = true
 hover_to_show_fold_callout = true
 # 自动插入的模板
 template = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
-# 使用的字体。一旦修改此选项，就需要修改下面所有的icon
+
+# icon对应的字体。一旦修改此选项，就需要修改下面所有的icon
 # 具体的icon值请参考：
-#   旧版本Typora：Typora/resources/app/style/font-awesome-4.1.0/css/font-awesome.css
-#   新版本Typora：Typora/resources/style/font-awesome-4.1.0/css/font-awesome.css
-#   所有的icon及其对应的值：https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
+#   - 旧版本Typora: Typora/resources/app/style/font-awesome-4.1.0/css/font-awesome.css
+#   - 新版本Typora: Typora/resources/style/font-awesome-4.1.0/css/font-awesome.css
+#   - 网络下载: https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 font_family = "FontAwesome"
 
 # 所有【类型不属于list选项的callouts】都会使用默认的样式
