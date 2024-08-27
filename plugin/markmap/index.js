@@ -523,7 +523,7 @@ class tocMarkmap {
         const INFO = {
             COLOR: "如需自定义配色方案请前往配置文件",
             RECOVER_COLOR: "其他的配色相关配置将失效",
-            FREEZE_COLOR: "从某一等级开始，所有子分支继承父分支的配色",
+            FREEZE_COLOR: "从某一等级开始，所有后代分支的配色保持不变",
             LOCALE: "鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）",
             MAX_WIDTH: "0 表示无长度限制",
             FOLD_WHEN_UPDATE: "图形更新时不会展开已折叠节点",
@@ -578,9 +578,9 @@ class tocMarkmap {
         const ability = () => {
             const { zoom = true, pan = true, autoFit = true } = _ops;
             const list = [
-                { label: "鼠标滚轮缩放", value: "zoom", checked: zoom },
-                { label: "鼠标滚轮平移", value: "pan", checked: pan },
-                { label: "记住已折叠节点", value: "foldWhenUpdate", checked: _rememberFold, info: INFO.FOLD_WHEN_UPDATE },
+                { label: "鼠标滚轮进行缩放", value: "zoom", checked: zoom },
+                { label: "鼠标滚轮进行平移", value: "pan", checked: pan },
+                { label: "记住已折叠的节点", value: "foldWhenUpdate", checked: _rememberFold, info: INFO.FOLD_WHEN_UPDATE },
                 { label: "更新时自动适配窗口", value: "fitWhenUpdate", checked: _fitWhenUpdate, info: INFO.FIT_WHEN_UPDATE },
                 { label: "折叠时自动适配窗口", value: "fitWhenFold", checked: autoFit, info: INFO.FIT_WHEN_FOLD },
                 { label: "折叠时自动折叠章节", value: "collapseWhenFold", checked: _collapseWhenFold, info: INFO.COLLAPSE_WHEN_FOLD },
@@ -598,22 +598,22 @@ class tocMarkmap {
 
         const download = () => {
             const fieldset = "导出";
-            const saveFolder = _folder || this.utils.tempFolder;
+            const placeholder = this.utils.tempFolder;
             const borderKV = idx => ({ value: _border[idx], callback: w => _border[idx] = w });
             const checkboxList = [
                 { label: "删除无用的类名", value: "removeUselessClass", checked: _removeUselessClass, info: INFO.REMOVE_USELESS_CLASS },
                 { label: "替换 foreignObject 标签", value: "removeForeignObject", checked: _removeForeign, info: INFO.REMOVE_FOREIGN_OBJECT },
             ];
-            const checkboxCB = submit => {
+            const checkboxCallback = submit => {
                 setCfg("REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG", submit.includes("removeUselessClass"));
                 setCfg("REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG", submit.includes("removeForeignObject"));
             }
             return [
                 { fieldset, label: "左右边框宽度", type: "number", min: 1, max: 1000, step: 1, inline: true, ...borderKV(0) },
                 { fieldset, label: "上下边框宽度", type: "number", min: 1, max: 1000, step: 1, inline: true, ...borderKV(1) },
-                { fieldset, label: "保存目录名", type: "input", value: saveFolder, inline: true, info: INFO.SAVE_FOLDER, callback: setWrapCfg("FOLDER_WHEN_DOWNLOAD_SVG") },
+                { fieldset, label: "保存目录名", type: "input", value: _folder, inline: true, info: INFO.SAVE_FOLDER, placeholder, callback: setWrapCfg("FOLDER_WHEN_DOWNLOAD_SVG") },
                 { fieldset, label: "保存文件名", type: "input", value: _filename, inline: true, info: INFO.SAVE_FILE, callback: setWrapCfg("FILENAME_WHEN_DOWNLOAD_SVG") },
-                { fieldset, label: "", type: "checkbox", list: checkboxList, callback: checkboxCB },
+                { fieldset, label: "", type: "checkbox", list: checkboxList, callback: checkboxCallback },
             ]
         }
 

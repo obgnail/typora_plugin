@@ -12,8 +12,14 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    width: calc(100vw - var(--sidebar-width, 0));
     overflow-x: scroll
+}
+
+body.pin-outline #plugin-window-tab .tab-bar {
+    width: calc(100vw - var(--sidebar-width, 0));
+}
+body:not(.pin-outline) #plugin-window-tab .tab-bar {
+    width: 100%;
 }
 
 #plugin-window-tab .tab-bar::after {
