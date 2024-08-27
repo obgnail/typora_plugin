@@ -598,6 +598,7 @@ class tocMarkmap {
 
         const download = () => {
             const fieldset = "导出";
+            const placeholder = this.utils.tempFolder;
             const borderKV = idx => ({ value: _border[idx], callback: w => _border[idx] = w });
             const checkboxList = [
                 { label: "删除无用的类名", value: "removeUselessClass", checked: _removeUselessClass, info: INFO.REMOVE_USELESS_CLASS },
@@ -610,7 +611,7 @@ class tocMarkmap {
             return [
                 { fieldset, label: "左右边框宽度", type: "number", min: 1, max: 1000, step: 1, inline: true, ...borderKV(0) },
                 { fieldset, label: "上下边框宽度", type: "number", min: 1, max: 1000, step: 1, inline: true, ...borderKV(1) },
-                { fieldset, label: "保存目录名", type: "input", value: _folder, inline: true, info: INFO.SAVE_FOLDER, callback: setWrapCfg("FOLDER_WHEN_DOWNLOAD_SVG") },
+                { fieldset, label: "保存目录名", type: "input", value: _folder, inline: true, info: INFO.SAVE_FOLDER, placeholder, callback: setWrapCfg("FOLDER_WHEN_DOWNLOAD_SVG") },
                 { fieldset, label: "保存文件名", type: "input", value: _filename, inline: true, info: INFO.SAVE_FILE, callback: setWrapCfg("FILENAME_WHEN_DOWNLOAD_SVG") },
                 { fieldset, label: "", type: "checkbox", list: checkboxList, callback: checkboxCallback },
             ]
