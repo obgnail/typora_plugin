@@ -1069,8 +1069,6 @@ hotkey_fix_lint_error = ""
 rule_config = { default = true, MD009 = false, MD010 = false, MD012 = false, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false }
 # 将检测规则的案文翻译为中文
 translate = true
-# 允许【ctrl+鼠标拖拽】拖动窗口
-allow_drag = true
 # 弹窗的宽度
 #   1. auto:  根据文字自适应
 #   2. 500px: 500像素（不一定是500，可以任何正整数）
@@ -1080,7 +1078,7 @@ modal_max_height = "500px"
 # 弹窗的字体大小
 modal_font_size = "14px"
 # 弹窗的文字行高
-modal_line_height = 1.4
+modal_line_height = 1.2
 # 在右上角添加一个方块，用以提示lint状态（类似于idea）
 # 若置为false，以下配置全部失效
 use_button = true
