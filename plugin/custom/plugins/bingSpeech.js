@@ -13,7 +13,7 @@ class bingSpeechPlugin extends BaseCustomPlugin {
 
     hotkey = () => [this.config.hotkey]
 
-    callback = async () => {
+    callback = async anchorNode => {
         const voiceList = [
             "zh-CN-YunxiNeural",
             "zh-CN-XiaoxiaoNeural",

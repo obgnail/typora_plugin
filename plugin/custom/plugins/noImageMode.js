@@ -28,7 +28,7 @@ class noImageModePlugin extends BaseCustomPlugin {
 
     process = () => this.isNoImageMode && this.enableNoImageMode();
 
-    callback = () => this.toggleNoImageMode()
+    callback = anchorNode => this.toggleNoImageMode()
 }
 
 module.exports = {

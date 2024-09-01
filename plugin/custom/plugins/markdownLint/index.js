@@ -3,251 +3,188 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
     hint = () => "点击出现弹窗，再次点击隐藏弹窗"
 
-    hotkey = () => [this.config.hotkey]
+    hotkey = () => [
+        { hotkey: this.config.hotkey, callback: this.callback },
+        { hotkey: this.config.hotkey_fix_lint_error, callback: this.fixLintError },
+    ]
 
     html = () => `
-        <div id="plugin-markdownlint" class="plugin-common-modal plugin-common-hidden"><pre tabindex="0"></pre></div>
+        <div id="plugin-markdownlint" class="plugin-common-modal plugin-common-hidden">
+            <div class="plugin-markdownlint-icon-group">
+                <div class="plugin-markdownlint-icon ion-close" action="close" ty-hint="关闭"></div>
+                <div class="plugin-markdownlint-icon ion-arrow-move" action="move" ty-hint="移动"></div>
+                <div class="plugin-markdownlint-icon ion-refresh" action="refresh" ty-hint="强制刷新"></div>
+                <div class="plugin-markdownlint-icon ion-code" action="toggleSourceMode" ty-hint="切换源码模式(也可以在表格中右键)"></div>
+                <div class="plugin-markdownlint-icon ion-wrench" action="fixAll" ty-hint="尽力修复规范错误"></div>
+                <div class="plugin-markdownlint-icon ion-information-circled" action="detailAll" ty-hint="详细信息"></div>
+                <div class="plugin-markdownlint-icon ion-earth" action="translate" ty-hint="翻译"></div>
+                <div class="plugin-markdownlint-icon ion-gear-b" action="settings" ty-hint="当前配置"></div>
+                <div class="plugin-markdownlint-icon ion-document-text" action="doc" ty-hint="规则文档"></div>
+            </div>
+            <div class="plugin-markdownlint-table">
+                <table class="table"><thead><tr><th>LINE</th><th>RULE</th><th>ERROR</th><th>OP</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
         ${this.config.use_button ? '<div id="plugin-markdownlint-button" ty-hint="格式规范检测"></div>' : ""}
     `
 
     init = () => {
+        this.errors = [];
+        this.checkLintError = () => undefined;
+        this.fixLintError = () => undefined;
         this.entities = {
             modal: document.querySelector("#plugin-markdownlint"),
-            pre: document.querySelector("#plugin-markdownlint pre"),
+            iconGroup: document.querySelector("#plugin-markdownlint .plugin-markdownlint-icon-group"),
+            moveIcon: document.querySelector('#plugin-markdownlint .plugin-markdownlint-icon[action="move"]'),
+            tbody: document.querySelector("#plugin-markdownlint tbody"),
             button: document.querySelector("#plugin-markdownlint-button"),
         }
-        this.detail = null;
-        this.updateLinter = this.getLinter(this.onMessage);
-        this.translateMap = {
-            MD001: "标题级别应该逐级递增，不允许跳级",
-            MD002: "第一个标题应该是顶级标题",
-            MD003: "在标题前加#号来表示标题级别",
-            MD004: "要求采用一致的无序列表的格式",
-            MD005: "要求同级列表项的缩进是一致的",
-            MD006: "最高级标题不能缩进",
-            MD007: "无序列表嵌套时，使用两个空格缩进",
-            MD008: "MD008",
-            MD009: "行尾最多可以添加两个空格，用于表示换行",
-            MD010: "不能使用tab缩进，要使用空格",
-            MD011: "内联形式的链接的中括号和圆括号使用错误",
-            MD012: "不能有连续的空行",
-            MD013: "行的长度应该在一定范围内",
-            MD014: "代码块中，终端命令除非后接其输出，否则前面不能有$符号",
-            MD015: "MD015",
-            MD016: "MD016",
-            MD017: "MD017",
-            MD018: "atx标题格式下，#号和文字之间需要一个空格隔开",
-            MD019: "atx标题格式下，#号和文字之间的空格不能多于一个",
-            MD020: "closed_atx标题格式下，文字和前后#号之间需用一个空格隔开",
-            MD021: "closed_atx标题格式下，文字和前后#号之间的空格不能多于一个",
-            MD022: "标题行的上下行应该都是空行",
-            MD023: "标题行不能缩进",
-            MD024: "不能连续出现内容重复的标题",
-            MD025: "只能有一个一级标题",
-            MD026: "标题不应以标点符号结尾",
-            MD027: "引用区块的引用符号和文字之间有且只有一个空格",
-            MD028: "两个引用区块间不能用空行隔开。引用区块中的空行要用>开头",
-            MD029: "要求有序列表的序号从1开始，按顺序递增",
-            MD030: "列表的每一列表项的标识符后只能空一格，后接列表内容",
-            MD031: "单独的代码块前后需要用空行隔开",
-            MD032: "列表前后需要用空行隔开，列表的缩进必须一致",
-            MD033: "不建议使用HTML语句",
-            MD034: "单纯的链接地址需要用尖括号包裹",
-            MD035: "要求采用一致的水平线格式",
-            MD036: "不应为整行文字加粗或斜体",
-            MD037: "强调标记的内侧不应紧邻空格",
-            MD038: "反引号的内侧不应紧邻空格",
-            MD039: "链接中，中括号的内侧不应紧邻空格",
-            MD040: "代码块应该指定编程语言",
-            MD041: "文档正文一开始必须是一级标题",
-            MD042: "链接的地址不能为空",
-            MD043: "要求标题遵循一定的结构",
-            MD044: "大小写错误",
-            MD045: "图片链接必须包含描述文本",
-            MD046: "代码块要用三个反引号包裹",
-            MD047: "文档末尾需要一个空行结尾",
-            MD048: "要求采用一致的代码块分隔符",
-            MD049: "要求采用一致的斜体格式",
-            MD050: "要求采用一致的加粗格式",
-            MD051: "文内链接必须有效，不能指向一个不存在的标题",
-            MD052: "引用链接和图片应该使用已经定义的标签",
-            MD053: "链接和图片引用定义不可省略",
-            MD054: "要求采用一致的链接和图片格式",
-            MD055: "要求采用一致的表格分隔符格式",
-            MD056: "表格列数要求是一致的，不能省略或多余",
-        }
+        this.l10n = require("./l10n.js");
     }
 
     process = () => {
-        this.initEventHandler();
-        this.onLineClick();
-        this.registerFixLintHotkey();
-    }
-
-    getLinter = onMessage => {
-        const worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linter-worker.js"));
-        worker.onmessage = event => onMessage(event.data || "");
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            setTimeout(() => {
-                worker.postMessage({ action: "init", payload: this.config.rule_config });
-                this.updateLinter();
-            }, 1000);
-        })
-        return async (filepath = this.utils.getFilePath()) => {
-            let message;
-            if (filepath) {
-                // await File.saveUseNode();
-                message = { action: "lint-path", payload: filepath };
-            } else {
-                const content = await File.getContent();
-                message = { action: "lint-content", payload: content };
-            }
-            worker.postMessage(message);
+        const _scrollSourceView = lineToGo => {
+            const cm = File.editor.sourceView.cm;
+            cm.scrollIntoView({ line: lineToGo - 1, ch: 0 });
+            cm.setCursor({ line: lineToGo - 1, ch: 0 });
         }
+        const _getDetail = (infos = this.errors) => {
+            const label = "详细信息";
+            const obj = infos.map(i => this.utils.fromObject(i, ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]));
+            const content = JSON.stringify(obj.length === 1 ? obj[0] : obj, null, "\t");
+            const components = [{ label, type: "textarea", rows: 15, readonly: "readonly", content }];
+            this.utils.modal({ title: "格式规范检测", width: "550px", components });
+        }
+        const _funcMap = {
+            close: () => this.callback(),
+            refresh: () => this.checkLintError(),
+            doc: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
+            toggleSourceMode: () => File.toggleSourceMode(),
+            translate: () => {
+                this.config.translate = !this.config.translate;
+                this.checkLintError();
+            },
+            settings: () => {
+                const obj = this.config.rule_config;
+                const label = "当前配置";
+                const content = JSON.stringify(obj, null, "\t");
+                const components = [{ label, type: "textarea", rows: 15, readonly: "readonly", content }];
+                this.utils.modal({ title: "格式规范检测", width: "550px", components });
+            },
+            detailAll: () => _getDetail(this.errors),
+            detailSingle: infoIdx => _getDetail([this.errors[infoIdx]]),
+            fixAll: () => this.fixLintError(),
+            fixSingle: infoIdx => {
+                const errors = [this.errors[infoIdx]];
+                this.fixLintError(errors);
+            },
+            jumpToLine: lineToGo => {
+                if (!lineToGo) return;
+                if (!File.editor.sourceView.inSourceMode) {
+                    File.toggleSourceMode();
+                }
+                _scrollSourceView(lineToGo)
+            },
+        }
+        const initEventHandler = () => {
+            if (this.entities.button) {
+                this.entities.button.addEventListener("click", this.callback);
+            }
+            this.utils.dragFixedModal(this.entities.moveIcon, this.entities.modal, false);
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.utils.debounce(this.checkLintError, 500));
+        }
+        const onIconClick = () => {
+            this.entities.iconGroup.addEventListener("click", ev => {
+                const target = ev.target.closest("[action]");
+                if (target) {
+                    const action = target.getAttribute("action");
+                    _funcMap[action] && _funcMap[action]();
+                }
+            })
+        }
+        const onTableClick = () => {
+            this.entities.tbody.addEventListener("mousedown", ev => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                switch (ev.button) {
+                    case 2:
+                        _funcMap.toggleSourceMode();
+                        break;
+                    case 0:
+                        const a = ev.target.closest("[action]");
+                        if (!a) {
+                            File.editor.restoreLastCursor(ev);
+                            break;
+                        }
+                        const action = a.getAttribute("action");
+                        const value = parseInt(a.dataset.value);
+                        _funcMap[action] && _funcMap[action](value);
+                        break;
+                }
+            })
+        }
+        const registerWorker = (onCheckMessage = this.onCheckMessage, onLintMessage = this.onLintMessage) => {
+            const worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linter-worker.js"));
+            worker.onmessage = event => {
+                const { action, result } = event.data || {};
+                const func = action.startsWith("check") ? onCheckMessage : onLintMessage;
+                func(result);
+            }
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+                setTimeout(() => {
+                    worker.postMessage({ action: "init", payload: { config: this.config.rule_config } });
+                    this.checkLintError();
+                }, 1000);
+            })
+            const send = async (type, customPayload) => {
+                const payload = { ...customPayload };
+                const filePath = this.utils.getFilePath();
+                const action = type + (filePath ? "Path" : "Content");
+                if (filePath) {
+                    payload.filePath = filePath;
+                } else {
+                    payload.fileContent = await File.getContent();
+                }
+                worker.postMessage({ action, payload });
+            }
+            this.checkLintError = () => send("check");
+            this.fixLintError = (fixInfo = this.errors) => send("lint", { fixInfo });
+        }
+
+        registerWorker();
+        initEventHandler();
+        onIconClick();
+        onTableClick();
     }
 
-    onMessage = data => {
-        this.detail = data;
+    onCheckMessage = data => {
+        this.errors = data;
         const { error_color, pass_color } = this.config;
         if (this.entities.button) {
             this.entities.button.style.backgroundColor = data.length ? error_color : pass_color;
         }
         if (this.utils.isShow(this.entities.modal)) {
-            this.entities.pre.innerHTML = this.genMarkdownlint(data);
+            const tbody = data.map((item, idx) => {
+                const [rule, _] = item.ruleNames;
+                const desc = (this.config.translate && this.l10n[rule]) || item.ruleDescription;
+                const info = `<a class="ion-information-circled" action="detailSingle" data-value="${idx}"></a>`;
+                const locate = `<a class="ion-android-locate" action="jumpToLine" data-value="${item.lineNumber}"></a>`;
+                const fixInfo = item.fixInfo ? `<a class="ion-wrench" action="fixSingle" data-value="${idx}"></a>` : '';
+                return `<tr><td>${item.lineNumber}</td><td>${rule}</td><td>${desc}</td><td>${info}${locate}${fixInfo}</td></tr>`
+            })
+            this.entities.tbody.innerHTML = tbody.length ? tbody.join("") : `<tr><td colspan="4">Empty</td></tr>`;
         }
     }
 
-    initEventHandler = () => {
-        if (this.entities.button) {
-            this.entities.button.addEventListener("click", this.callback);
-        }
-        if (this.config.allow_drag) {
-            this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true);
-        }
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.utils.debounce(this.updateLinter, 500));
+    onLintMessage = async data => {
+        await this.utils.editCurrentFile(data);
+        this.utils.notification.show("已部分修复规范错误");
+        this.checkLintError();
     }
-
-    onLineClick = () => {
-        this.entities.pre.addEventListener("mousedown", ev => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            if (ev.button === 2) {
-                File.toggleSourceMode();
-                return;
-            }
-            if (ev.button === 0) {
-                const a = ev.target.closest("a");
-                if (!a) {
-                    File.editor.restoreLastCursor(ev);
-                    return;
-                }
-                switch (a.className) {
-                    case "markdown-lint-doc":
-                        this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md");
-                        break;
-                    case "markdown-lint-translate":
-                        this.config.translate = !this.config.translate;
-                        this.updateLinter();
-                        break;
-                    case "markdown-lint-refresh":
-                        this.updateLinter();
-                        break;
-                    case "markdown-lint-close":
-                        this.callback();
-                        break;
-                    case "markdown-lint-error-line":
-                        const lineToGo = parseInt(a.textContent);
-                        if (!lineToGo) return;
-                        if (!File.editor.sourceView.inSourceMode) {
-                            File.toggleSourceMode();
-                        }
-                        this.scrollSourceView(lineToGo)
-                        break;
-                    case "markdown-lint-detail":
-                    case "markdown-lint-config":
-                        const [obj, label] = a.className === "markdown-lint-detail"
-                            ? [this.detail.map(i => this.utils.fromObject(i, ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"])), "详细信息"]
-                            : [this.config.rule_config, "当前配置"]
-                        const content = JSON.stringify(obj, null, "\t");
-                        const components = [{ label, type: "textarea", rows: 15, readonly: "readonly", content }];
-                        this.utils.modal({ title: "格式规范检测", width: "550px", components });
-                        break;
-                }
-            }
-        })
-    }
-
-    registerFixLintHotkey = () => this.utils.hotkeyHub.registerSingle(this.config.hotkey_fix_lint_error, this.fixLintError);
 
     callback = async anchorNode => {
         this.utils.toggleVisible(this.entities.modal);
-        await this.updateLinter();
-    }
-
-    scrollSourceView = lineToGo => {
-        const cm = File.editor.sourceView.cm;
-        cm.scrollIntoView({ line: lineToGo - 1, ch: 0 });
-        cm.setCursor({ line: lineToGo - 1, ch: 0 });
-    }
-
-    genMarkdownlint = content => {
-        const { allow_drag, translate } = this.config;
-        const hintList = ["鼠标右键：切换源码模式"];
-        allow_drag && hintList.push("ctrl+鼠标拖动：移动窗口");
-        const operateInfo = `<span title="${hintList.join('\n')}">💡</span>`;
-
-        const aList = [
-            ["markdown-lint-detail", "详细信息", "🔍"],
-            ["markdown-lint-config", "当前配置", "⚙️"],
-            ["markdown-lint-translate", "翻译", "🌐"],
-            ["markdown-lint-doc", "规则文档", "📃"],
-            ["markdown-lint-refresh", "强制刷新", "🔄"],
-            ["markdown-lint-close", "关闭窗口", "❌"],
-        ].map(([cls, title, icon]) => `<a class="${cls}" title="${title}">${icon}</a>`)
-
-        const header = `Line  Rule   Error | ${operateInfo} ${aList.join(" ")}\n`;
-        const result = content.map(line => {
-            const lineNo = line.lineNumber + "";
-            const [rule, _] = line.ruleNames;
-            const lineNum = `<a class="markdown-lint-error-line">${lineNo}</a>` + " ".repeat(6 - lineNo.length);
-            const desc = translate ? this.translateMap[rule] : line.ruleDescription;
-            return "\n" + lineNum + rule.padEnd(7) + desc;
-        })
-        return header + result.join("")
-    }
-
-    // 修复逻辑的入口函数
-    fixLintError = async () => await this.utils.editCurrentFile(content => new lintFixer(content).prepare().format(this.config.try_fix_lint_error))
-}
-
-class lintFixer {
-    constructor(content) {
-        this.content = content;
-    }
-
-    prepare = () => {
-        this.lineBreak = this.content.indexOf("\r\n") !== -1 ? "\r\n" : "\n";
-        return this
-    }
-
-    format = lintTypeList => {
-        lintTypeList.forEach(lintType => {
-            const func = this[lintType.toUpperCase()];
-            func && func();
-        })
-        return this.content
-    }
-
-    MD031 = () => {
-        this.content = this.content
-            .replace(/(\s*)(\r?\n)*\s*```[\s\S]*?```/g, (match, leadingSpaces) => this.lineBreak + leadingSpaces + match.trim() + this.lineBreak)
-            .replace(/\r?\n(\s*)\r?\n/g, this.lineBreak.repeat(2));
-    }
-
-    MD047 = () => {
-        if (!this.content.endsWith(this.lineBreak)) {
-            this.content += this.lineBreak;
-        }
+        await this.checkLintError();
     }
 }
 

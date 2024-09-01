@@ -22,7 +22,7 @@ class reopenClosedFilesPlugin extends BaseCustomPlugin {
 
     ensureFile = async () => await this.utils.Package.FsExtra.ensureFile(this.saveFile);
 
-    callback = () => this.windowTabBarPlugin && this.windowTabBarPlugin.openSaveTabs(this.saveFile);
+    callback = anchorNode => this.windowTabBarPlugin && this.windowTabBarPlugin.openSaveTabs(this.saveFile);
 }
 
 module.exports = {

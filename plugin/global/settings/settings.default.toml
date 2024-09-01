@@ -47,7 +47,7 @@ HEIGHT_SCALE = -1
 # tab最小宽度（填入css长度，如200px、12em，不可超过400px）
 TAB_MIN_WIDTH = "100px"
 # tab最大宽度（填入css长度，如200px、12em，不可超过400px）
-TAB_MAX_WIDTH = ""
+TAB_MAX_WIDTH = "none"
 # tab和正文内容之间的间隙高度（单位：px）
 GAP_BETWEEN_TAB_AND_CONTENT = 0
 # 当鼠标悬停于标签页时，显示文件的完整路径

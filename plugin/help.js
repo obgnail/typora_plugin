@@ -69,7 +69,7 @@ class helpPlugin extends BasePlugin {
         const p = [
             `<i>Ashen One, hearest thou my voice still?</i>`,
             "感谢您使用 Typora Plugin。本项目遵循 MIT 协议，请自由地享受和参与开源。若有任何反馈或建议，可以在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。",
-            `如果本项目帮助到您，欢迎 <a class='plu-github'>STAR</a>，欢迎通过 ${Object.keys(share).map(site => `<a class="plu-share" data-site="${site}">${site}</a>`).join("、")} 推荐给您的朋友。`
+            `如果本项目帮助到您，欢迎 <a class='plu-github'>Star</a>，欢迎通过 ${Object.keys(share).map(site => `<a class="plu-share" data-site="${site}">${site}</a>`).join("、")} 推荐给您的朋友。`
         ]
         const label = p.map(e => `<p style="font-size: 1.2em">${e}</p>`).join("");
         const onclick = ev => {
@@ -111,7 +111,7 @@ class helpPlugin extends BasePlugin {
         }
 
         const reconfirm = "卸载插件系统";
-        const label = `⚠️ <b>此操作不可撤销</b>。请输入「${reconfirm}」启动自毁程序`;
+        const label = `请输入「${reconfirm}」启动自毁程序`;
         const components = [{ label: label, type: "input", placeholder: reconfirm }];
         const { response, submit: [sub] } = await this.utils.dialog.modalAsync({ title: "卸载插件系统", components });
         if (response === 0) return;

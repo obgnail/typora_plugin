@@ -376,15 +376,17 @@ class utils {
         showInFinder && this.showInFinder(backupDir);
     }
 
-    static editCurrentFile = async (editFileFunc, reloadTypora = true) => {
+    static editCurrentFile = async (replacement, reloadContent = true) => {
         const bak = File.presentedItemChanged;
         File.presentedItemChanged = () => undefined;
         const filepath = this.getFilePath();
-        const content = await FS.promises.readFile(filepath, "utf-8");
-        const replacedContent = await editFileFunc(content);
-        const ok = await this.writeFile(filepath, replacedContent);
-        if (!ok) return;
-        reloadTypora && File.reloadContent(replacedContent, { fromDiskChange: false });
+        const content = filepath ? await FS.promises.readFile(filepath, "utf-8") : await File.getContent();
+        const replaced = typeof replacement === "string" ? replacement : await replacement(content);
+        if (filepath) {
+            const ok = await this.writeFile(filepath, replaced);
+            if (!ok) return;
+        }
+        reloadContent && File.reloadContent(replaced, { fromDiskChange: false });
         setTimeout(() => File.presentedItemChanged = bak, 1500);
     }
 

@@ -84,7 +84,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         })
     }
 
-    callback = () => {
+    callback = anchorNode => {
         this.utils.toggleVisible(this.entities.modal);
         this.refresh();
     }

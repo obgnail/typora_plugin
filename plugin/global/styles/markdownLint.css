@@ -1,19 +1,51 @@
 #plugin-markdownlint {
     top: 10%;
     right: 25px;
+    margin: 5px;
+    overflow: auto;
+    resize: vertical;
     width: ${modal_width};
+    line-height: ${this.config.modal_line_height};
+    max-height: ${this.config.modal_max_height};
+    min-height: 150px;
+    min-width: 380px;
+}
+
+.plugin-markdownlint-icon-group {
+    display: flex;
+    flex-direction: row-reverse;
+    font-size: 1.2em;
+    margin: 0.3em;
+    user-select: none;
+}
+
+.plugin-markdownlint-icon-group .plugin-markdownlint-icon {
+    cursor: pointer;
+    margin-left: 0.6em;
+    opacity: 0.6;
+}
+
+.plugin-markdownlint-icon:hover {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.2);
+}
+
+#plugin-markdownlint table {
+    font-size: ${this.config.modal_font_size};
+}
+
+#plugin-markdownlint table th,
+#plugin-markdownlint table td[colspan],
+#plugin-markdownlint table td:nth-child(4) {
+    text-align: center;
+}
+
+#plugin-markdownlint a + a {
+    margin-left: 0.7em;
 }
 
 #plugin-markdownlint a:hover {
     text-decoration: underline;
-}
-
-#plugin-markdownlint pre {
-    font-size: ${this.config.modal_font_size};
-    line-height: ${this.config.modal_line_height};
-    margin: 5px;
-    max-height: ${this.config.modal_max_height};
-    width: 100%;
 }
 
 #plugin-markdownlint-button {

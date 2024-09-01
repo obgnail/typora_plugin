@@ -43,7 +43,7 @@ class darkModePlugin extends BaseCustomPlugin {
 
     process = () => this.isDarkMode && this.enableDarkMode();
 
-    callback = () => this.toggleDarkMode()
+    callback = anchorNode => this.toggleDarkMode()
 }
 
 module.exports = {

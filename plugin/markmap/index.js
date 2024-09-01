@@ -64,12 +64,13 @@ class markmapPlugin extends BasePlugin {
     lazyLoad = async () => {
         if (this.MarkmapLib.Markmap) return;
 
-        const { Transformer, builtInPlugins, transformerVersions } = require("./resource/markmap-lib");
+        const { Transformer, builtInPlugins } = require("./resource/markmap-lib");
         const markmap = require("./resource/markmap-view");
-        const { Markmap, loadCSS, loadJS, deriveOptions, defaultOptions } = markmap;
-        Object.assign(this.MarkmapLib, { Markmap, deriveOptions, defaultOptions, transformerVersions, transformer: new Transformer(builtInPlugins) });
+        const transformer = new Transformer(builtInPlugins);
+        Object.assign(this.MarkmapLib, markmap, { transformer });
 
-        const { styles, scripts } = this.MarkmapLib.transformer.getAssets();
+        const { loadCSS, loadJS } = markmap;
+        const { styles, scripts } = transformer.getAssets();
         if (this.config.RESOURCE_FROM !== "network") {
             styles[0].data.href = this.utils.joinPath("./plugin/markmap/resource/katex.min.css");
             styles[1].data.href = this.utils.joinPath("./plugin/markmap/resource/default.min.css");
@@ -570,8 +571,8 @@ class tocMarkmap {
             { label: "节点垂直间距", type: "range", min: 1, max: 50, step: 1, inline: true, ...KV("spacingVertical") },
             { label: "节点内部边距", type: "range", min: 1, max: 50, step: 1, inline: true, ...KV("paddingX") },
             { label: "节点最大长度", type: "range", min: 0, max: 1000, step: 10, inline: true, info: INFO.MAX_WIDTH, ...KV("maxWidth") },
-            { label: "窗口填充率", type: "range", min: 0.5, max: 1, step: 0.01, inline: true, ...KV("fitRatio") },
             { label: "动画持续时间", type: "range", min: 100, max: 1000, step: 100, inline: true, ...KV("duration") },
+            { label: "窗口填充率", type: "range", min: 0.5, max: 1, step: 0.01, inline: true, ...KV("fitRatio") },
             { label: "定位的视口高度", type: "range", value: _localeRatio, min: 0.1, max: 1, step: 0.01, inline: true, info: INFO.LOCALE, callback: setWrapCfg("LOCALE_HEIGHT_RATIO") }
         ]
 
@@ -714,8 +715,9 @@ class tocMarkmap {
             const content = div.innerHTML.replace(/<br>/g, "<br/>");
             const path = this.utils.Package.Path.join(getFileFolder(), getFileName());
             const ok = await this.utils.writeFile(path, content);
-            if (!ok) return;
-            this.utils.showInFinder(path);
+            if (ok) {
+                this.utils.showInFinder(path);
+            }
         }
 
         const svg = this.entities.svg.cloneNode(true);

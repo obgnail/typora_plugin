@@ -95,7 +95,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     hotkey = () => [this.config.hotkey]
 
-    callback = () => {
+    callback = anchorNode => {
         if (this.utils.isHidden(this.entities.reviewer)) {
             this.show();
         } else {

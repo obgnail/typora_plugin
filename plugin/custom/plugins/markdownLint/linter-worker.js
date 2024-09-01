@@ -1,43 +1,66 @@
 const require = self.require;
 const fs = require("fs").promises;
 
-let linter, config;
+let markdownlint, lint, helpers;
+let config = { default: true };
 
-const init = cfg => {
-    if (!linter) {
-        const { markdownlint } = require("./markdownlint.min");
-        linter = markdownlint;
-    }
-    config = cfg;
-
-    console.debug(`markdown linter worker is initialized with rules`, config);
+function init({ config }) {
+    initLibrary();
+    assignConfig({ config });
+    console.debug(`markdownLint@${markdownlint.getVersion()} worker is initialized with rules`, config);
 }
 
-const lintContent = fileContent => {
-    if (!linter || !config) return;
-    const { content } = linter.sync({ strings: { content: fileContent }, config });
+function assignConfig({ config: cfg }) {
+    Object.assign(config, cfg);
+}
+
+function initLibrary() {
+    if (!markdownlint) {
+        ({ markdownlint, helpers } = require("./markdownlint.min.js"));
+        lint = markdownlint.promises.markdownlint;
+    }
+}
+
+async function checkContent({ fileContent }) {
+    if (!markdownlint) {
+        initLibrary();
+    }
+    const { content } = await lint({ strings: { content: fileContent }, config });
     content.sort((a, b) => a.lineNumber - b.lineNumber);
     return content
 }
 
-const lintPath = async filepath => {
-    if (!linter || !config) return;
-    const fileContent = await fs.readFile(filepath, "utf-8");
-    return lintContent(fileContent)
+async function checkPath({ filePath }) {
+    if (!markdownlint) {
+        initLibrary();
+    }
+    const fileContent = await fs.readFile(filePath, "utf-8");
+    return checkContent({ fileContent })
 }
+
+async function lintContent({ fileContent, fixInfo }) {
+    const info = fixInfo || await checkContent({ fileContent });
+    if (info && info.length) {
+        return helpers.applyFixes(fileContent, info);
+    }
+}
+
+async function lintPath({ filePath, fixInfo }) {
+    const fileContent = await fs.readFile(filePath, "utf-8");
+    return lintContent({ fileContent, fixInfo });
+}
+
+const linter = { init, assignConfig, checkContent, checkPath, lintContent, lintPath };
 
 self.onmessage = async ({ data: { action, payload } }) => {
     if (!payload) return;
 
-    if (action === "init") {
-        init(payload);
-    } else if (action === "lint-path") {
-        const result = await lintPath(payload);
-        self.postMessage(result);
-    } else if (action === "lint-content") {
-        const result = await lintContent(payload);
-        self.postMessage(result);
-    } else {
-        console.error("get error action:", action);
+    const func = linter[action];
+    if (func) {
+        const result = await func(payload);
+        result && self.postMessage({ action, result });
+        return;
     }
-};
+
+    console.error("get error action:", action);
+}
