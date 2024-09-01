@@ -11,13 +11,15 @@ class markdownLintPlugin extends BaseCustomPlugin {
     `
 
     init = () => {
+        this.errors = [];
+        this.checkLintError = () => undefined;
+        this.fixLintError = () => undefined;
         this.entities = {
             modal: document.querySelector("#plugin-markdownlint"),
             pre: document.querySelector("#plugin-markdownlint pre"),
             button: document.querySelector("#plugin-markdownlint-button"),
         }
-        this.detail = null;
-        this.updateLinter = this.getLinter(this.onMessage);
+        this.registerWorker();
         this.translateMap = {
             MD001: "标题级别应该逐级递增，不允许跳级",
             MD002: "第一个标题应该是顶级标题",
@@ -84,30 +86,31 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.registerFixLintHotkey();
     }
 
-    getLinter = onMessage => {
+    registerWorker = (onCheckMessage = this.onCheckMessage, onLintMessage = this.onLintMessage) => {
         const worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linter-worker.js"));
-        worker.onmessage = event => onMessage(event.data || "");
+        worker.onmessage = event => {
+            const { action, result } = event.data || {};
+            const func = action.startsWith("check") ? onCheckMessage : onLintMessage;
+            func(result);
+        }
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             setTimeout(() => {
                 worker.postMessage({ action: "init", payload: this.config.rule_config });
-                this.updateLinter();
+                this.checkLintError();
             }, 1000);
         })
-        return async (filepath = this.utils.getFilePath()) => {
-            let message;
-            if (filepath) {
-                // await File.saveUseNode();
-                message = { action: "lint-path", payload: filepath };
-            } else {
-                const content = await File.getContent();
-                message = { action: "lint-content", payload: content };
-            }
-            worker.postMessage(message);
+        const send = async type => {
+            const filepath = this.utils.getFilePath();
+            const payload = filepath ? filepath : await File.getContent();
+            const action = type + (filepath ? "Path" : "Content");
+            worker.postMessage({ action, payload });
         }
+        this.checkLintError = () => send("check");
+        this.fixLintError = () => send("lint");
     }
 
-    onMessage = data => {
-        this.detail = data;
+    onCheckMessage = data => {
+        this.errors = data;
         const { error_color, pass_color } = this.config;
         if (this.entities.button) {
             this.entities.button.style.backgroundColor = data.length ? error_color : pass_color;
@@ -117,6 +120,11 @@ class markdownLintPlugin extends BaseCustomPlugin {
         }
     }
 
+    onLintMessage = async data => {
+        await this.utils.editCurrentFile(data);
+        this.utils.notification.show("已部分修复规范错误");
+    }
+
     initEventHandler = () => {
         if (this.entities.button) {
             this.entities.button.addEventListener("click", this.callback);
@@ -124,7 +132,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         if (this.config.allow_drag) {
             this.utils.dragFixedModal(this.entities.modal, this.entities.modal, true);
         }
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.utils.debounce(this.updateLinter, 500));
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this.utils.debounce(this.checkLintError, 500));
     }
 
     onLineClick = () => {
@@ -147,10 +155,13 @@ class markdownLintPlugin extends BaseCustomPlugin {
                         break;
                     case "markdown-lint-translate":
                         this.config.translate = !this.config.translate;
-                        this.updateLinter();
+                        this.checkLintError();
                         break;
                     case "markdown-lint-refresh":
-                        this.updateLinter();
+                        this.checkLintError();
+                        break;
+                    case "markdown-lint-fix":
+                        this.fixLintError();
                         break;
                     case "markdown-lint-close":
                         this.callback();
@@ -163,10 +174,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
                         }
                         this.scrollSourceView(lineToGo)
                         break;
-                    case "markdown-lint-detail":
+                    case "markdown-lint-errors":
                     case "markdown-lint-config":
-                        const [obj, label] = a.className === "markdown-lint-detail"
-                            ? [this.detail.map(i => this.utils.fromObject(i, ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"])), "详细信息"]
+                        const [obj, label] = a.className === "markdown-lint-errors"
+                            ? [this.errors.map(i => this.utils.fromObject(i, ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"])), "详细信息"]
                             : [this.config.rule_config, "当前配置"]
                         const content = JSON.stringify(obj, null, "\t");
                         const components = [{ label, type: "textarea", rows: 15, readonly: "readonly", content }];
@@ -181,7 +192,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
     callback = async anchorNode => {
         this.utils.toggleVisible(this.entities.modal);
-        await this.updateLinter();
+        await this.checkLintError();
     }
 
     scrollSourceView = lineToGo => {
@@ -197,10 +208,11 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const operateInfo = `<span title="${hintList.join('\n')}">💡</span>`;
 
         const aList = [
-            ["markdown-lint-detail", "详细信息", "🔍"],
+            ["markdown-lint-errors", "详细信息", "🔍"],
             ["markdown-lint-config", "当前配置", "⚙️"],
             ["markdown-lint-translate", "翻译", "🌐"],
             ["markdown-lint-doc", "规则文档", "📃"],
+            ["markdown-lint-fix", "尽力修复规范错误", "🛠️"],
             ["markdown-lint-refresh", "强制刷新", "🔄"],
             ["markdown-lint-close", "关闭窗口", "❌"],
         ].map(([cls, title, icon]) => `<a class="${cls}" title="${title}">${icon}</a>`)
@@ -214,40 +226,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
             return "\n" + lineNum + rule.padEnd(7) + desc;
         })
         return header + result.join("")
-    }
-
-    // 修复逻辑的入口函数
-    fixLintError = async () => await this.utils.editCurrentFile(content => new lintFixer(content).prepare().format(this.config.try_fix_lint_error))
-}
-
-class lintFixer {
-    constructor(content) {
-        this.content = content;
-    }
-
-    prepare = () => {
-        this.lineBreak = this.content.indexOf("\r\n") !== -1 ? "\r\n" : "\n";
-        return this
-    }
-
-    format = lintTypeList => {
-        lintTypeList.forEach(lintType => {
-            const func = this[lintType.toUpperCase()];
-            func && func();
-        })
-        return this.content
-    }
-
-    MD031 = () => {
-        this.content = this.content
-            .replace(/(\s*)(\r?\n)*\s*```[\s\S]*?```/g, (match, leadingSpaces) => this.lineBreak + leadingSpaces + match.trim() + this.lineBreak)
-            .replace(/\r?\n(\s*)\r?\n/g, this.lineBreak.repeat(2));
-    }
-
-    MD047 = () => {
-        if (!this.content.endsWith(this.lineBreak)) {
-            this.content += this.lineBreak;
-        }
     }
 }
 

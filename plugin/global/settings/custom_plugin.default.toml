@@ -1063,6 +1063,8 @@ order = 1
 [markdownLint.config]
 # 快捷键
 hotkey = ""
+# 快捷键：尽力修复规范
+hotkey_fix_lint_error = ""
 # 规则（参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md）
 rule_config = { default = true, MD009 = false, MD010 = false, MD012 = false, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false }
 # 将检测规则的案文翻译为中文
@@ -1079,13 +1081,6 @@ modal_max_height = "500px"
 modal_font_size = "14px"
 # 弹窗的文字行高
 modal_line_height = 1.4
-# 快捷键：尽力修复规范
-hotkey_fix_lint_error = ""
-# 你希望修复的规范
-# 目前支持修复的规范：
-#   - MD031: 单独的代码块前后需要用空行隔开
-#   - MD047: 文档末尾需要一个空行结尾
-try_fix_lint_error = ["MD031", "MD047"]
 # 在右上角添加一个方块，用以提示lint状态（类似于idea）
 # 若置为false，以下配置全部失效
 use_button = true

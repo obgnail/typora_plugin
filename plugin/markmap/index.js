@@ -715,8 +715,9 @@ class tocMarkmap {
             const content = div.innerHTML.replace(/<br>/g, "<br/>");
             const path = this.utils.Package.Path.join(getFileFolder(), getFileName());
             const ok = await this.utils.writeFile(path, content);
-            if (!ok) return;
-            this.utils.showInFinder(path);
+            if (ok) {
+                this.utils.showInFinder(path);
+            }
         }
 
         const svg = this.entities.svg.cloneNode(true);
