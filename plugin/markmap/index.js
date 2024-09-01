@@ -64,12 +64,13 @@ class markmapPlugin extends BasePlugin {
     lazyLoad = async () => {
         if (this.MarkmapLib.Markmap) return;
 
-        const { Transformer, builtInPlugins, transformerVersions } = require("./resource/markmap-lib");
+        const { Transformer, builtInPlugins } = require("./resource/markmap-lib");
         const markmap = require("./resource/markmap-view");
-        const { Markmap, loadCSS, loadJS, deriveOptions, defaultOptions } = markmap;
-        Object.assign(this.MarkmapLib, { Markmap, deriveOptions, defaultOptions, transformerVersions, transformer: new Transformer(builtInPlugins) });
+        const transformer = new Transformer(builtInPlugins);
+        Object.assign(this.MarkmapLib, markmap, { transformer });
 
-        const { styles, scripts } = this.MarkmapLib.transformer.getAssets();
+        const { loadCSS, loadJS } = markmap;
+        const { styles, scripts } = transformer.getAssets();
         if (this.config.RESOURCE_FROM !== "network") {
             styles[0].data.href = this.utils.joinPath("./plugin/markmap/resource/katex.min.css");
             styles[1].data.href = this.utils.joinPath("./plugin/markmap/resource/default.min.css");
