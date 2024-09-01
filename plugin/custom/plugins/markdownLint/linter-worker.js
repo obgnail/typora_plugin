@@ -4,22 +4,24 @@ const fs = require("fs").promises;
 let markdownlint, lint, helpers;
 let config = { default: true };
 
-const assignConfig = cfg => Object.assign(config, cfg);
+function init({ config }) {
+    initLibrary();
+    assignConfig({ config });
+    console.debug(`markdownLint@${markdownlint.getVersion()} worker is initialized with rules`, config);
+}
 
-const initLibrary = () => {
+function assignConfig({ config: cfg }) {
+    Object.assign(config, cfg);
+}
+
+function initLibrary() {
     if (!markdownlint) {
         ({ markdownlint, helpers } = require("./markdownlint.min.js"));
         lint = markdownlint.promises.markdownlint;
     }
 }
 
-const init = cfg => {
-    initLibrary();
-    assignConfig(cfg);
-    console.debug(`markdownLint@${markdownlint.getVersion()} worker is initialized with rules`, config);
-}
-
-const checkContent = async fileContent => {
+async function checkContent({ fileContent }) {
     if (!markdownlint) {
         initLibrary();
     }
@@ -27,22 +29,25 @@ const checkContent = async fileContent => {
     content.sort((a, b) => a.lineNumber - b.lineNumber);
     return content
 }
-const checkPath = async filepath => {
+
+async function checkPath({ filePath }) {
     if (!markdownlint) {
         initLibrary();
     }
-    const fileContent = await fs.readFile(filepath, "utf-8");
-    return checkContent(fileContent)
+    const fileContent = await fs.readFile(filePath, "utf-8");
+    return checkContent({ fileContent })
 }
-const lintContent = async fileContent => {
-    const info = await checkContent(fileContent);
+
+async function lintContent({ fileContent, fixInfo }) {
+    const info = fixInfo || await checkContent({ fileContent });
     if (info && info.length) {
         return helpers.applyFixes(fileContent, info);
     }
 }
-const lintPath = async filepath => {
-    const fileContent = await fs.readFile(filepath, "utf-8");
-    return lintContent(fileContent)
+
+async function lintPath({ filePath, fixInfo }) {
+    const fileContent = await fs.readFile(filePath, "utf-8");
+    return lintContent({ fileContent, fixInfo });
 }
 
 const linter = { init, assignConfig, checkContent, checkPath, lintContent, lintPath };

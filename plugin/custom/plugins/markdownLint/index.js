@@ -31,6 +31,43 @@ class markdownLintPlugin extends BaseCustomPlugin {
             cm.scrollIntoView({ line: lineToGo - 1, ch: 0 });
             cm.setCursor({ line: lineToGo - 1, ch: 0 });
         }
+        const _funcMap = {
+            "markdown-lint-doc": a => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
+            "markdown-lint-translate": a => {
+                this.config.translate = !this.config.translate;
+                this.checkLintError();
+            },
+            "markdown-lint-refresh": a => this.checkLintError(),
+            "markdown-lint-fix-all": a => this.fixLintError(),
+            "markdown-lint-fix-single": a => {
+                const idx = parseInt(a.dataset.idx);
+                const errors = [this.errors[idx]];
+                this.fixLintError(errors);
+            },
+            "markdown-lint-close": a => this.callback(),
+            "markdown-lint-error-line": a => {
+                const lineToGo = parseInt(a.textContent);
+                if (!lineToGo) return;
+                if (!File.editor.sourceView.inSourceMode) {
+                    File.toggleSourceMode();
+                }
+                _scrollSourceView(lineToGo)
+            },
+            "markdown-lint-errors": a => {
+                const obj = this.errors.map(i => this.utils.fromObject(i, ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]));
+                const label = "详细信息";
+                const content = JSON.stringify(obj, null, "\t");
+                const components = [{ label, type: "textarea", rows: 15, readonly: "readonly", content }];
+                this.utils.modal({ title: "格式规范检测", width: "550px", components });
+            },
+            "markdown-lint-config": a => {
+                const obj = this.config.rule_config;
+                const label = "当前配置";
+                const content = JSON.stringify(obj, null, "\t");
+                const components = [{ label, type: "textarea", rows: 15, readonly: "readonly", content }];
+                this.utils.modal({ title: "格式规范检测", width: "550px", components });
+            }
+        }
         const initEventHandler = () => {
             if (this.entities.button) {
                 this.entities.button.addEventListener("click", this.callback);
@@ -54,40 +91,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
                         File.editor.restoreLastCursor(ev);
                         return;
                     }
-                    switch (a.className) {
-                        case "markdown-lint-doc":
-                            this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md");
-                            break;
-                        case "markdown-lint-translate":
-                            this.config.translate = !this.config.translate;
-                            this.checkLintError();
-                            break;
-                        case "markdown-lint-refresh":
-                            this.checkLintError();
-                            break;
-                        case "markdown-lint-fix":
-                            this.fixLintError();
-                            break;
-                        case "markdown-lint-close":
-                            this.callback();
-                            break;
-                        case "markdown-lint-error-line":
-                            const lineToGo = parseInt(a.textContent);
-                            if (!lineToGo) return;
-                            if (!File.editor.sourceView.inSourceMode) {
-                                File.toggleSourceMode();
-                            }
-                            _scrollSourceView(lineToGo)
-                            break;
-                        case "markdown-lint-errors":
-                        case "markdown-lint-config":
-                            const [obj, label] = a.className === "markdown-lint-errors"
-                                ? [this.errors.map(i => this.utils.fromObject(i, ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"])), "详细信息"]
-                                : [this.config.rule_config, "当前配置"]
-                            const content = JSON.stringify(obj, null, "\t");
-                            const components = [{ label, type: "textarea", rows: 15, readonly: "readonly", content }];
-                            this.utils.modal({ title: "格式规范检测", width: "550px", components });
-                            break;
+                    if (_funcMap[a.className]) {
+                        _funcMap[a.className](a);
                     }
                 }
             })
@@ -101,18 +106,23 @@ class markdownLintPlugin extends BaseCustomPlugin {
             }
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
                 setTimeout(() => {
-                    worker.postMessage({ action: "init", payload: this.config.rule_config });
+                    worker.postMessage({ action: "init", payload: { config: this.config.rule_config } });
                     this.checkLintError();
                 }, 1000);
             })
-            const send = async type => {
-                const filepath = this.utils.getFilePath();
-                const payload = filepath ? filepath : await File.getContent();
-                const action = type + (filepath ? "Path" : "Content");
+            const send = async (type, customPayload) => {
+                const payload = { ...customPayload };
+                const filePath = this.utils.getFilePath();
+                const action = type + (filePath ? "Path" : "Content");
+                if (filePath) {
+                    payload.filePath = filePath;
+                } else {
+                    payload.fileContent = await File.getContent();
+                }
                 worker.postMessage({ action, payload });
             }
             this.checkLintError = () => send("check");
-            this.fixLintError = () => send("lint");
+            this.fixLintError = (fixInfo = this.errors) => send("lint", { fixInfo });
         }
 
         registerWorker();
@@ -145,27 +155,28 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const { allow_drag, translate } = this.config;
         const hintList = ["鼠标右键：切换源码模式"];
         allow_drag && hintList.push("ctrl+鼠标拖动：移动窗口");
-        const operateInfo = `<span title="${hintList.join('\n')}">💡</span>`;
+        const info = `<span title="${hintList.join('\n')}">💡</span>`;
 
         const aList = [
-            ["markdown-lint-errors", "详细信息", "🔍"],
+            ["markdown-lint-doc", "规则文档", "📃"],
             ["markdown-lint-config", "当前配置", "⚙️"],
             ["markdown-lint-translate", "翻译", "🌐"],
-            ["markdown-lint-doc", "规则文档", "📃"],
-            ["markdown-lint-fix", "尽力修复规范错误", "🛠️"],
+            ["markdown-lint-errors", "详细信息", "🔍"],
+            ["markdown-lint-fix-all", "尽力修复规范错误", "🛠️"],
             ["markdown-lint-refresh", "强制刷新", "🔄"],
             ["markdown-lint-close", "关闭窗口", "❌"],
         ].map(([cls, title, icon]) => `<a class="${cls}" title="${title}">${icon}</a>`)
 
-        const header = `Line  Rule   Error | ${operateInfo} ${aList.join(" ")}\n`;
-        const result = content.map(line => {
-            const lineNo = line.lineNumber + "";
-            const [rule, _] = line.ruleNames;
+        const tool = `<span style="display: flex; justify-content: space-around;">${info}${aList.join(" ")}</span>`;
+        const result = content.map((item, idx) => {
+            const lineNo = item.lineNumber + "";
+            const [rule, _] = item.ruleNames;
             const lineNum = `<a class="markdown-lint-error-line">${lineNo}</a>` + " ".repeat(6 - lineNo.length);
-            const desc = (translate && this.l10n[rule]) || line.ruleDescription;
-            return "\n" + lineNum + rule.padEnd(7) + desc;
+            const desc = (translate && this.l10n[rule]) || item.ruleDescription;
+            const fixInfo = item.fixInfo ? ` [<a class="markdown-lint-fix-single" data-idx="${idx}">Fix</a>]` : '';
+            return "\n" + lineNum + rule.padEnd(7) + desc + fixInfo;
         })
-        return header + result.join("")
+        return tool + result.join("")
     }
 }
 
