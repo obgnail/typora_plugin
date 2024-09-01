@@ -6,21 +6,17 @@ class CustomPlugin extends BasePlugin {
     }
 
     hotkey = () => {
+        const isString = s => typeof s === "string"
         const hotkeys = [];
         for (const [fixedName, plugin] of Object.entries(this.plugins)) {
-            if (!plugin) continue;
+            if (!plugin || !plugin.hasOwnProperty("hotkey")) continue;
             try {
                 const hotkey = plugin.hotkey();
-                if (!hotkey) continue;
-
-                const callback = () => {
-                    const $anchorNode = this.utils.getAnchorNode();
-                    const anchorNode = $anchorNode && $anchorNode[0];
-                    const selector = plugin.selector();
-                    const target = (selector && anchorNode) ? anchorNode.closest(selector) : anchorNode;
-                    plugin.callback(target);
+                if (isString(hotkey) || (Array.isArray(hotkey) && hotkey.every(isString))) {
+                    hotkeys.push({ hotkey, callback: plugin.callback });
+                } else if (Array.isArray(hotkey) && hotkey.every(this.utils.isObject)) {
+                    hotkeys.push(...hotkey);
                 }
-                hotkeys.push({ hotkey, callback });
             } catch (e) {
                 console.error("register hotkey error:", fixedName, e);
             }
@@ -118,12 +114,29 @@ class customPluginLoader {
         }
     }
 
+    decorateCallback = async () => {
+        for (const plugin of Object.values(this.controller.plugins)) {
+            if (!plugin || !plugin.hasOwnProperty("callback") || !plugin.hasOwnProperty("selector")) continue;
+            const { callback: originCallback } = plugin;
+            plugin.callback = anchorNode => {
+                if (!anchorNode) {
+                    const $anchor = this.utils.getAnchorNode();
+                    const anchor = $anchor && $anchor[0];
+                    const selector = plugin.selector(true);
+                    anchorNode = (selector && anchor) ? anchor.closest(selector) : anchor;
+                }
+                originCallback(anchorNode);
+            }
+        }
+    }
+
     process = async () => {
         const settings = await this.utils.readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
         this.mergeSettings(settings);
         this.errorSettingDetector(settings);
         this.controller.pluginsSettings = settings;
         await this.loadCustomPlugins(settings);
+        await this.decorateCallback();
         this.utils.eventHub.publishEvent(this.utils.eventHub.eventType.allCustomPluginsHadInjected);
     }
 }

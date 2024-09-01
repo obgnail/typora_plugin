@@ -1,7 +1,7 @@
 class autoTrailingWhiteSpacePlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
-    callback = () => {
+    callback = anchorNode => {
         const replaceFlag = 2;
         const tailSpace = "  ";
         this.utils.entities.querySelectorAllInWrite("p[cid]").forEach(ele => {

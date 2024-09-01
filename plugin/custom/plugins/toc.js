@@ -33,7 +33,7 @@ class tocPlugin extends BaseCustomPlugin {
         }
     }
 
-    callback = () => this.toggle()
+    callback = anchorNode => this.toggle()
 
     onToggleSidebar = () => {
         const resetPosition = () => {
