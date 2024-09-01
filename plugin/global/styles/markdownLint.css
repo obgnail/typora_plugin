@@ -40,12 +40,13 @@
     text-align: center;
 }
 
-#plugin-markdownlint a + a {
-    margin-left: 0.7em;
+#plugin-markdownlint i:hover {
+    color: var(--active-file-border-color, darkred);
+    cursor: pointer;
 }
 
-#plugin-markdownlint a:hover {
-    text-decoration: underline;
+#plugin-markdownlint i + i {
+    margin-left: 0.7em;
 }
 
 #plugin-markdownlint-button {

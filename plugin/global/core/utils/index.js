@@ -711,6 +711,12 @@ class utils {
 
     static scrollByCid = (cid, height = -1, moveCursor = false, showHiddenElement = true) => this.scroll(File.editor.findElemById(cid), height, moveCursor, showHiddenElement);
 
+    static scrollSourceView = lineToGo => {
+        const cm = File.editor.sourceView.cm;
+        cm.scrollIntoView({ line: lineToGo - 1, ch: 0 });
+        cm.setCursor({ line: lineToGo - 1, ch: 0 });
+    }
+
     // content: 字符串中，\n表示软换行；\n\n表示硬换行
     static insertText = (anchorNode, content, restoreLastCursor = true) => {
         if (restoreLastCursor) {
