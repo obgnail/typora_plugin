@@ -1,14 +1,16 @@
 #plugin-markdownlint {
+    display: flex;
+    flex-direction: column;
     top: 10%;
     right: 25px;
     margin: 5px;
     overflow: auto;
     resize: vertical;
-    width: ${modal_width};
     line-height: ${this.config.modal_line_height};
+    width: ${modal_width};
+    min-width: 380px;
     max-height: ${this.config.modal_max_height};
     min-height: 150px;
-    min-width: 380px;
 }
 
 .plugin-markdownlint-icon-group {
@@ -30,7 +32,12 @@
     transform: translateY(-2px) scale(1.2);
 }
 
+.plugin-markdownlint-table {
+    overflow: auto;
+}
+
 #plugin-markdownlint table {
+    cursor: default;
     font-size: ${this.config.modal_font_size};
 }
 
