@@ -49,15 +49,23 @@ class helpPlugin extends BasePlugin {
             isWin: Boolean(File.isWin),
             isLinux: Boolean(File.isLinux),
             isMac: Boolean(File.isMac),
-            enablePlugin: plugins.join("|"),
+            isFocusMode: File.isFocusMode,
+            isTypeWriterMode: File.isTypeWriterMode,
+            inSourceMode: File.editor.sourceView.inSourceMode,
+            isSidebarShown: File.editor.library.isSidebarShown(),
             theme: theme,
+            enablePlugin: plugins.join("|"),
         }
     }
 
     newIssue = async () => {
         const info = await this.getInfo();
-        const url = "https://github.com/obgnail/typora_plugin/issues/new?body=" + encodeURIComponent(JSON.stringify(info));
-        this.utils.openUrl(url);
+        const components = [{ label: "环境信息", type: "textarea", rows: 10, readonly: "readonly", content: JSON.stringify(info, null, "\t") }];
+        const { response } = await this.utils.dialog.modalAsync({ title: "用户反馈", width: "500px", components });
+        if (response === 1) {
+            const url = "https://github.com/obgnail/typora_plugin/issues/new?body=" + encodeURIComponent(JSON.stringify(info));
+            this.utils.openUrl(url);
+        }
     }
 
     about = () => {
