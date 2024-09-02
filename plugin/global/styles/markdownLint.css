@@ -16,7 +16,7 @@
 .plugin-markdownlint-icon-group {
     display: flex;
     flex-direction: row-reverse;
-    font-size: 1.2em;
+    font-size: 1.3em;
     margin: 0.3em;
     user-select: none;
 }
@@ -38,6 +38,7 @@
 
 #plugin-markdownlint table {
     cursor: default;
+    margin-top: 0;
     font-size: ${this.config.modal_font_size};
 }
 
