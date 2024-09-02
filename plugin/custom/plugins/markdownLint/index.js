@@ -32,6 +32,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.errors = [];
         this.checkLintError = () => undefined;
         this.fixLintError = () => undefined;
+        this.resetConfig = () => undefined;
         this.l10n = require("./l10n.js");
         this.entities = {
             modal: document.querySelector("#plugin-markdownlint"),
@@ -141,6 +142,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             }
             this.checkLintError = () => send("check");
             this.fixLintError = (fixInfo = this.errors) => send("lint", { fixInfo });
+            this.resetConfig = () => worker.postMessage({ action: "assignConfig", payload: { config: this.config.rule_config } });
         }
 
         registerWorker();
