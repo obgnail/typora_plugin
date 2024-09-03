@@ -533,7 +533,7 @@ class tocMarkmap {
             FIT_WHEN_FOLD: "折叠图形节点时自动重新适配窗口",
             COLLAPSE_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
             REMOVE_USELESS_CLASS: "若非需要手动修改导出的图形文件，请勿勾选此选项",
-            REMOVE_FOREIGN_OBJECT: "样式好看但兼容性较差。若图片显示异常，请勾选此选项",
+            REMOVE_FOREIGN_OBJECT: "保留样式但兼容性较差。若图片显示异常，请勾选此选项",
             SAVE_FOLDER: "为空则使用 tmp 目录",
             SAVE_FILE: "支持变量：filename、timestamp、uuid",
         }
@@ -635,7 +635,7 @@ class tocMarkmap {
     }
 
     download = async () => {
-        const removeSvgForeignObject = svg => {
+        const removeForeignObject = svg => {
             svg.querySelectorAll("foreignObject").forEach(foreign => {
                 const x = parseInt(foreign.getAttribute("width")) + parseInt(foreign.getAttribute("x")) - 2;
                 const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4;
@@ -651,20 +651,16 @@ class tocMarkmap {
             })
         }
 
-        const removeClassName = svg => svg.querySelectorAll("*").forEach(ele => {
-            if (ele.classList.contains("markmap-node")) {
-                ele.removeAttribute("class");
-            }
-        })
+        const removeClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
 
-        const removeSvgUselessStyle = svg => {
+        const removeUselessStyle = svg => {
             const style = svg.querySelector("style");
             if (style) {
                 style.textContent = style.textContent.replace(".markmap-node>circle{cursor:pointer}", "");
             }
         }
 
-        const getSvgBounding = svg => {
+        const getBounding = svg => {
             const { width, height } = this.entities.svg.querySelector("g").getBoundingClientRect();
             const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/);
             if (!match || !match.groups || !match.groups.scale) return {};
@@ -684,14 +680,14 @@ class tocMarkmap {
             return { minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight }
         }
 
-        const changeSvgAttr = svg => {
+        const setAttribute = svg => {
             svg.removeAttribute("id");
             svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
             svg.setAttribute("class", "markmap");
         }
 
-        const setSvgSize = svg => {
-            const { width = 100, height = 100, minY = 0 } = getSvgBounding(svg);
+        const setSize = svg => {
+            const { width = 100, height = 100, minY = 0 } = getBounding(svg);
             const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
             const svgWidth = width + borderX;
             const svgHeight = height + borderY;
@@ -728,11 +724,11 @@ class tocMarkmap {
         }
 
         const svg = this.entities.svg.cloneNode(true);
-        changeSvgAttr(svg);
-        setSvgSize(svg);
-        removeSvgUselessStyle(svg);
+        setAttribute(svg);
+        setSize(svg);
+        removeUselessStyle(svg);
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
-            removeSvgForeignObject(svg);
+            removeForeignObject(svg);
         }
         if (this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
             removeClassName(svg);
