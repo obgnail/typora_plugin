@@ -1,20 +1,22 @@
 #plugin-markdownlint {
+    display: flex;
+    flex-direction: column;
     top: 10%;
     right: 25px;
     margin: 5px;
     overflow: auto;
     resize: vertical;
-    width: ${modal_width};
     line-height: ${this.config.modal_line_height};
+    width: ${modal_width};
+    min-width: 380px;
     max-height: ${this.config.modal_max_height};
     min-height: 150px;
-    min-width: 380px;
 }
 
 .plugin-markdownlint-icon-group {
     display: flex;
     flex-direction: row-reverse;
-    font-size: 1.2em;
+    font-size: 1.3em;
     margin: 0.3em;
     user-select: none;
 }
@@ -30,7 +32,13 @@
     transform: translateY(-2px) scale(1.2);
 }
 
+.plugin-markdownlint-table {
+    overflow: auto;
+}
+
 #plugin-markdownlint table {
+    cursor: default;
+    margin-top: 0;
     font-size: ${this.config.modal_font_size};
 }
 
@@ -40,12 +48,13 @@
     text-align: center;
 }
 
-#plugin-markdownlint a + a {
-    margin-left: 0.7em;
+#plugin-markdownlint i:hover {
+    color: var(--active-file-border-color, darkred);
+    cursor: pointer;
 }
 
-#plugin-markdownlint a:hover {
-    text-decoration: underline;
+#plugin-markdownlint i + i {
+    margin-left: 0.7em;
 }
 
 #plugin-markdownlint-button {

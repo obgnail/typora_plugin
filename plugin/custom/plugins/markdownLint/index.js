@@ -32,6 +32,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.errors = [];
         this.checkLintError = () => undefined;
         this.fixLintError = () => undefined;
+        this.resetConfig = () => undefined;
+        this.l10n = require("./l10n.js");
         this.entities = {
             modal: document.querySelector("#plugin-markdownlint"),
             iconGroup: document.querySelector("#plugin-markdownlint .plugin-markdownlint-icon-group"),
@@ -39,20 +41,13 @@ class markdownLintPlugin extends BaseCustomPlugin {
             tbody: document.querySelector("#plugin-markdownlint tbody"),
             button: document.querySelector("#plugin-markdownlint-button"),
         }
-        this.l10n = require("./l10n.js");
     }
 
     process = () => {
-        const _scrollSourceView = lineToGo => {
-            const cm = File.editor.sourceView.cm;
-            cm.scrollIntoView({ line: lineToGo - 1, ch: 0 });
-            cm.setCursor({ line: lineToGo - 1, ch: 0 });
-        }
         const _getDetail = (infos = this.errors) => {
-            const label = "详细信息";
             const obj = infos.map(i => this.utils.fromObject(i, ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]));
             const content = JSON.stringify(obj.length === 1 ? obj[0] : obj, null, "\t");
-            const components = [{ label, type: "textarea", rows: 15, readonly: "readonly", content }];
+            const components = [{ label: "详细信息", type: "textarea", rows: 15, readonly: "readonly", content }];
             this.utils.modal({ title: "格式规范检测", width: "550px", components });
         }
         const _funcMap = {
@@ -65,10 +60,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 this.checkLintError();
             },
             settings: () => {
-                const obj = this.config.rule_config;
-                const label = "当前配置";
-                const content = JSON.stringify(obj, null, "\t");
-                const components = [{ label, type: "textarea", rows: 15, readonly: "readonly", content }];
+                const content = JSON.stringify(this.config.rule_config, null, "\t");
+                const components = [{ label: "当前配置", type: "textarea", rows: 15, readonly: "readonly", content }];
                 this.utils.modal({ title: "格式规范检测", width: "550px", components });
             },
             detailAll: () => _getDetail(this.errors),
@@ -83,7 +76,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 if (!File.editor.sourceView.inSourceMode) {
                     File.toggleSourceMode();
                 }
-                _scrollSourceView(lineToGo)
+                this.utils.scrollSourceView(lineToGo)
             },
         }
         const initEventHandler = () => {
@@ -111,13 +104,13 @@ class markdownLintPlugin extends BaseCustomPlugin {
                         _funcMap.toggleSourceMode();
                         break;
                     case 0:
-                        const a = ev.target.closest("[action]");
-                        if (!a) {
+                        const i = ev.target.closest("[action]");
+                        if (!i) {
                             File.editor.restoreLastCursor(ev);
                             break;
                         }
-                        const action = a.getAttribute("action");
-                        const value = parseInt(a.dataset.value);
+                        const action = i.getAttribute("action");
+                        const value = parseInt(i.dataset.value);
                         _funcMap[action] && _funcMap[action](value);
                         break;
                 }
@@ -149,6 +142,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             }
             this.checkLintError = () => send("check");
             this.fixLintError = (fixInfo = this.errors) => send("lint", { fixInfo });
+            this.resetConfig = () => worker.postMessage({ action: "assignConfig", payload: { config: this.config.rule_config } });
         }
 
         registerWorker();
@@ -167,9 +161,9 @@ class markdownLintPlugin extends BaseCustomPlugin {
             const tbody = data.map((item, idx) => {
                 const [rule, _] = item.ruleNames;
                 const desc = (this.config.translate && this.l10n[rule]) || item.ruleDescription;
-                const info = `<a class="ion-information-circled" action="detailSingle" data-value="${idx}"></a>`;
-                const locate = `<a class="ion-android-locate" action="jumpToLine" data-value="${item.lineNumber}"></a>`;
-                const fixInfo = item.fixInfo ? `<a class="ion-wrench" action="fixSingle" data-value="${idx}"></a>` : '';
+                const info = `<i class="ion-information-circled" action="detailSingle" data-value="${idx}"></i>`;
+                const locate = `<i class="ion-android-locate" action="jumpToLine" data-value="${item.lineNumber}"></i>`;
+                const fixInfo = item.fixInfo ? `<i class="ion-wrench" action="fixSingle" data-value="${idx}"></i>` : '';
                 return `<tr><td>${item.lineNumber}</td><td>${rule}</td><td>${desc}</td><td>${info}${locate}${fixInfo}</td></tr>`
             })
             this.entities.tbody.innerHTML = tbody.length ? tbody.join("") : `<tr><td colspan="4">Empty</td></tr>`;
@@ -178,13 +172,13 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
     onLintMessage = async data => {
         await this.utils.editCurrentFile(data);
-        this.utils.notification.show("已部分修复规范错误");
+        this.utils.notification.show("已修复规范错误");
         this.checkLintError();
     }
 
     callback = async anchorNode => {
         this.utils.toggleVisible(this.entities.modal);
-        await this.checkLintError();
+        this.checkLintError();
     }
 }
 

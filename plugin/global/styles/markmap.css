@@ -96,6 +96,7 @@ ${show_outline}
 #plugin-markmap-svg {
     flex: 1;
     user-select: none;
+    color: currentColor;
 }
 
 #plugin-markmap-svg .markmap-foreign {
