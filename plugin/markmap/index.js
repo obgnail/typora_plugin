@@ -637,15 +637,16 @@ class tocMarkmap {
     download = async () => {
         const removeSvgForeignObject = svg => {
             svg.querySelectorAll("foreignObject").forEach(foreign => {
-                const { textContent, previousSibling } = foreign;
+                const x = parseInt(foreign.getAttribute("width")) + parseInt(foreign.getAttribute("x")) - 2;
+                const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4;
+                // const y = 16;
+
                 const text = document.createElement("text");
-                const [xAttr, yAttr] = (previousSibling.tagName === "line") ? ["x2", "y2"] : ["cx", "cy"];
-                const x = parseInt(previousSibling.getAttribute(xAttr)) - 12;
-                const y = parseInt(previousSibling.getAttribute(yAttr)) - 5;
                 text.setAttribute("x", x);
                 text.setAttribute("y", y);
                 text.setAttribute("text-anchor", "end");
-                text.textContent = textContent;
+                const katex = foreign.querySelector(".katex-html");
+                text.textContent = katex ? katex.textContent : foreign.textContent;
                 foreign.parentNode.replaceChild(text, foreign);
             })
         }
