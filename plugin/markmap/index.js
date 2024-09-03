@@ -514,6 +514,7 @@ class tocMarkmap {
             FILENAME_WHEN_DOWNLOAD_SVG: _filename,
             FOLDER_WHEN_DOWNLOAD_SVG: _folder,
             BORDER_WHEN_DOWNLOAD_SVG: _border,
+            SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG: _showInFinder,
             REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: _removeForeign,
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: _removeUselessClass,
             REMEMBER_FOLD_WHEN_UPDATE: _rememberFold,
@@ -532,7 +533,7 @@ class tocMarkmap {
             FIT_WHEN_FOLD: "折叠图形节点时自动重新适配窗口",
             COLLAPSE_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
             REMOVE_USELESS_CLASS: "若非需要手动修改导出的图形文件，请勿勾选此选项",
-            REMOVE_FOREIGN_OBJECT: "若非需要手动修改导出的图形文件，请勿勾选此选项",
+            REMOVE_FOREIGN_OBJECT: "样式好看但兼容性较差。若图片显示异常，请勾选此选项",
             SAVE_FOLDER: "为空则使用 tmp 目录",
             SAVE_FILE: "支持变量：filename、timestamp、uuid",
         }
@@ -603,9 +604,11 @@ class tocMarkmap {
             const borderKV = idx => ({ value: _border[idx], callback: w => _border[idx] = w });
             const checkboxList = [
                 { label: "删除无用的类名", value: "removeUselessClass", checked: _removeUselessClass, info: INFO.REMOVE_USELESS_CLASS },
-                { label: "替换 foreignObject 标签", value: "removeForeignObject", checked: _removeForeign, info: INFO.REMOVE_FOREIGN_OBJECT },
+                { label: "替换 &lt;foreignObject&gt; 标签", value: "removeForeignObject", checked: _removeForeign, info: INFO.REMOVE_FOREIGN_OBJECT },
+                { label: "导出后自动打开文件所在目录", value: "showInFinder", checked: _showInFinder },
             ];
             const checkboxCallback = submit => {
+                setCfg("SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG", submit.includes("showInFinder"));
                 setCfg("REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG", submit.includes("removeUselessClass"));
                 setCfg("REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG", submit.includes("removeForeignObject"));
             }
@@ -715,8 +718,11 @@ class tocMarkmap {
             const content = div.innerHTML.replace(/<br>/g, "<br/>");
             const path = this.utils.Package.Path.join(getFileFolder(), getFileName());
             const ok = await this.utils.writeFile(path, content);
-            if (ok) {
+            if (!ok) return;
+            if (this.config.SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG) {
                 this.utils.showInFinder(path);
+            } else {
+                this.utils.notification.show("已导出到指定目录");
             }
         }
 

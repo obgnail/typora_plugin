@@ -513,6 +513,8 @@ REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = false
 # - false: 操作含有foreignObject的svg标签处处受限（比如说转为jpg），但是有好看的样式
 # - true:  操作不受限，但是丢失了样式
 REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = false
+# 自动在资源管理器打开svg所在目录
+SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG = true
 # 导出svg时，边框留白的宽度
 # 第一项为左右宽度之和，第二项为上下宽度之和
 BORDER_WHEN_DOWNLOAD_SVG = [50, 50]
