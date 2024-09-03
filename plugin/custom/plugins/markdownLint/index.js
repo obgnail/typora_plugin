@@ -16,8 +16,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 <div class="plugin-markdownlint-icon ion-refresh" action="refresh" ty-hint="强制刷新"></div>
                 <div class="plugin-markdownlint-icon ion-code" action="toggleSourceMode" ty-hint="切换源码模式(也可以在表格中右键)"></div>
                 <div class="plugin-markdownlint-icon ion-wrench" action="fixAll" ty-hint="尽力修复规范错误"></div>
-                <div class="plugin-markdownlint-icon ion-information-circled" action="detailAll" ty-hint="详细信息"></div>
                 <div class="plugin-markdownlint-icon ion-earth" action="translate" ty-hint="翻译"></div>
+                <div class="plugin-markdownlint-icon ion-information-circled" action="detailAll" ty-hint="详细信息"></div>
                 <div class="plugin-markdownlint-icon ion-gear-b" action="settings" ty-hint="当前配置"></div>
                 <div class="plugin-markdownlint-icon ion-document-text" action="doc" ty-hint="规则文档"></div>
             </div>
@@ -47,13 +47,24 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const _getDetail = (infos = this.errors) => {
             const obj = infos.map(i => this.utils.fromObject(i, ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]));
             const content = JSON.stringify(obj.length === 1 ? obj[0] : obj, null, "\t");
-            const components = [{ label: "详细信息", type: "textarea", rows: 15, readonly: "readonly", content }];
-            this.utils.modal({ title: "格式规范检测", width: "550px", components });
+            const components = [{ label: "", type: "textarea", rows: 15, readonly: "readonly", content }];
+            this.utils.modal({ title: "详细信息", width: "550px", components });
         }
+        const _showDoc = () => {
+            const url = "https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md";
+            const onclick = ev => ev.target.closest("a") && this.utils.openUrl(url);
+            const content = JSON.stringify(this.l10n, null, "\t");
+            const components = [
+                { label: "以下为简单说明，如需查看完整文档请 <a>前往网站</a>", type: "p", onclick },
+                { label: "", type: "textarea", rows: 15, readonly: "readonly", content },
+            ];
+            this.utils.dialog.modal({ title: "格式规范", width: "600px", components });
+        }
+
         const _funcMap = {
             close: () => this.callback(),
             refresh: () => this.checkLintError(),
-            doc: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
+            doc: () => _showDoc(),
             toggleSourceMode: () => File.toggleSourceMode(),
             translate: () => {
                 this.config.translate = !this.config.translate;
@@ -61,8 +72,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
             },
             settings: () => {
                 const content = JSON.stringify(this.config.rule_config, null, "\t");
-                const components = [{ label: "当前配置", type: "textarea", rows: 15, readonly: "readonly", content }];
-                this.utils.modal({ title: "格式规范检测", width: "550px", components });
+                const components = [{ label: "", type: "textarea", rows: 15, readonly: "readonly", content }];
+                this.utils.modal({ title: "当前配置", width: "550px", components });
             },
             detailAll: () => _getDetail(this.errors),
             detailSingle: infoIdx => _getDetail([this.errors[infoIdx]]),
