@@ -77,10 +77,10 @@ class resourceOperationPlugin extends BaseCustomPlugin {
             if (!target) return;
             const tr = target.closest("tr");
             if (!tr) return;
-            const p = tr.querySelector(".plugin-resource-operation-src");
-            if (!p) return;
+            const img = tr.querySelector("img");
+            if (!img) return;
 
-            const src = p.dataset.path;
+            const src = img.getAttribute("src");
             const action = target.getAttribute("action");
             if (action === "delete") {
                 if (this.showWarnDialog) {
@@ -126,19 +126,21 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         delete output.resource_non_exist_in_file;
         delete output.resource_non_exist_in_folder;
         const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
+
         const btnGroup = `<td><div class="btn-group"><button type="button" class="btn btn-default" action="locate">打开</button><button type="button" class="btn btn-default" action="delete">删除</button></div></td>`
-        const nonExistInFile = Array.from(this.nonExistInFile, (row, idx) => `<tr><td>${idx + 1}</td><td class="plugin-resource-operation-src" data-path="${row}">${row}</td>${btnGroup}</tr>`).join("")
-        const nonExistInFolder = Array.from(this.nonExistInFolder, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td></tr>`).join("")
+        const nonExistInFile = Array.from(this.nonExistInFile, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td><td><img src="${row}"/></td>${btnGroup}</tr>`)
+        const nonExistInFolder = Array.from(this.nonExistInFolder, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td></tr>`)
+
         this.entities.wrap.innerHTML = `
-            <table class="table">
+            <table class="table non-exist-in-file-table">
                  <caption>存在于文件夹但不存在于md文件的资源(共${this.nonExistInFile.size}项)</caption>
-                 <thead><tr><th>#</th><th>resource</th><th style="min-width: 130px">operation</th></tr></thead>
-                 <tbody>${nonExistInFile || '<tr><td colspan="3" style="text-align: center;">Empty</td></tr>'}</tbody>
+                 <thead><tr><th>#</th><th>resource</th><th>Preview</th><th>operation</th></tr></thead>
+                 <tbody>${nonExistInFile.join("") || '<tr><td colspan="4" style="text-align: center;">Empty</td></tr>'}</tbody>
             </table>
             <table class="table">
                  <caption>存在于md文件但不存在于文件夹的资源(共${this.nonExistInFolder.size}项)</caption>
                  <thead><tr><th>#</th><th>resource</th></tr></thead>
-                 <tbody>${nonExistInFolder || '<tr><td colspan="2" style="text-align: center;">Empty</td></tr>'}</tbody>
+                 <tbody>${nonExistInFolder.join("") || '<tr><td colspan="2" style="text-align: center;">Empty</td></tr>'}</tbody>
             </table>
             <div class="plugin-resource-operation-message">配置</div>
             <textarea rows="10" readonly>${JSON.stringify(output, replacer, "\t")}</textarea>
@@ -157,7 +159,7 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         const icon = this.entities.iconGroup.querySelector('[action="togglePreview"]');
         const wantClose = force === false || icon.classList.contains("ion-eye");
         const func = wantClose ? "off" : "on";
-        const className = ".plugin-resource-operation-src";
+        const className = "img";
         this.entities.$wrap
             [func]("mouseover", className, this._showPopup)
             [func]("mouseout", className, this._hidePopup)
@@ -170,7 +172,7 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         const popup = this.entities.popup;
         if (!popup) return;
 
-        popup.src = ev.target.dataset.path;
+        popup.src = ev.target.getAttribute("src");
         const left = Math.min(window.innerWidth - 10 - popup.offsetWidth, ev.clientX + 10);
         const top = Math.min(window.innerHeight - 50 - popup.offsetHeight, ev.clientY + 20);
         popup.style.left = `${left}px`;
