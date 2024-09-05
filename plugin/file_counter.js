@@ -65,11 +65,10 @@ class fileCounterPlugin extends BasePlugin {
 
         async function traverse(dir) {
             const stats = await promises.stat(dir);
-            if (!stats.isDirectory()) {
-                return;
-            }
+            if (!stats.isDirectory()) return;
+
             const files = await promises.readdir(dir);
-            for (const file of files) {
+            await Promise.all(files.map(async file => {
                 const filePath = Path.join(dir, file);
                 const fileStats = await promises.stat(filePath);
                 if (fileStats.isFile() && fileFilter(filePath, fileStats)) {
@@ -78,7 +77,7 @@ class fileCounterPlugin extends BasePlugin {
                 if (fileStats.isDirectory() && dirFilter(file)) {
                     await traverse(filePath);
                 }
-            }
+            }))
         }
 
         traverse(dir).then(() => then(fileCount)).catch(err => console.error(err));

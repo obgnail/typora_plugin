@@ -264,20 +264,20 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
             return imagePath;
         }
 
-        const collectMatch = async content => {
-            for (const match of content.matchAll(this.regexp)) {
+        const collectMatch = content => {
+            return Promise.all(content.matchAll(this.regexp).map(async match => {
                 let src = match.groups.src1 || match.groups.src2;
-                if (!src || isNetworkImage(src) || isSpecialImage(src)) continue;
+                if (!src || isNetworkImage(src) || isSpecialImage(src)) return;
 
                 try {
                     src = decodeURIComponent(src).split("?")[0];
                 } catch (e) {
                     console.warn("error path:", src);
-                    continue
+                    return;
                 }
 
                 src = resolve(dir, src);
-                if (this.resourcesInFile.has(src)) continue;
+                if (this.resourcesInFile.has(src)) return;
 
                 const resourcePath = await getRealPath(src);
                 if (this.resourceSuffixs.has(extname(resourcePath))) {
@@ -287,7 +287,7 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
                 if (remain) {
                     await collectMatch(remain + ")");
                 }
-            }
+            }))
         }
 
         const ext = extname(filePath).toLowerCase();
@@ -305,7 +305,7 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
 
         async function traverse(dir) {
             const files = await readdir(dir);
-            for (const file of files) {
+            await Promise.all(files.map(async file => {
                 const filePath = join(dir, file);
                 const stats = await stat(filePath);
                 if (stats.isFile()) {
@@ -313,7 +313,7 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
                 } else if (stats.isDirectory() && !ignore_folders.includes(file)) {
                     await traverse(filePath);
                 }
-            }
+            }))
         }
 
         await traverse(dir);

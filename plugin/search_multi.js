@@ -140,15 +140,16 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
         async function traverse(dir) {
             const files = await readdir(dir);
-            for (const file of files) {
+            await Promise.all(files.map(async file => {
                 const filePath = Path.join(dir, file);
                 const stats = await stat(filePath);
                 if (stats.isFile() && (!fileFilter || fileFilter(filePath, stats))) {
-                    readFile(filePath).then(buffer => callback(filePath, stats, buffer)).catch(console.error);
+                    const buffer = await readFile(filePath);
+                    callback(filePath, stats, buffer);
                 } else if (stats.isDirectory() && (!dirFilter || dirFilter(file))) {
                     await traverse(filePath);
                 }
-            }
+            }))
         }
 
         traverse(dir).then(then).catch(console.error);
