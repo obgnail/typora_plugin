@@ -134,7 +134,7 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         this.entities.wrap.innerHTML = `
             <table class="table non-exist-in-file-table">
                  <caption>存在于文件夹但不存在于md文件的资源(共${this.nonExistInFile.size}项)</caption>
-                 <thead><tr><th>#</th><th>resource</th><th class="plugin-common-hidden">Preview</th><th>operation</th></tr></thead>
+                 <thead><tr><th>#</th><th>resource</th><th class="plugin-common-hidden">preview</th><th>operation</th></tr></thead>
                  <tbody>${nonExistInFile.join("")}</tbody>
             </table>
             <table class="table">
@@ -284,7 +284,7 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
                 if (this.resourcesInFile.has(src)) return;
 
                 const resourcePath = await getRealPath(src);
-                if (this.resourceSuffixs.has(extname(resourcePath))) {
+                if (this.resourceSuffixs.has(extname(resourcePath).toLowerCase())) {
                     this.resourcesInFile.add(resourcePath);
                 }
                 const remain = src.slice(resourcePath.length);
