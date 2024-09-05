@@ -17,6 +17,8 @@ class outlinePlugin extends BasePlugin {
                     <div class="plugin-outline-icon ion-code" type="fence" ty-hint="代码块"></div>
                     <div class="plugin-outline-icon ion-image" type="image" ty-hint="图片"></div>
                     <div class="plugin-outline-icon ion-grid" type="table" ty-hint="表格"></div>
+                    <div class="plugin-outline-icon ion-link" type="link" ty-hint="链接"></div>
+                    <div class="plugin-outline-icon ion-pound" type="math" ty-hint="公式"></div>
                     ${this.config.USE_ALL ? '<div class="plugin-outline-icon ion-android-data" type="all" ty-hint="混合"></div>' : ""}
                 </div>
             </div>
@@ -53,7 +55,7 @@ class outlinePlugin extends BasePlugin {
 
             if (item) {
                 const cid = item.querySelector("span").getAttribute("data-ref");
-                this.utils.scrollByCid(cid);
+                this.utils.scrollByCid(cid, -1, true);
             } else if (footerIcon) {
                 const Type = footerIcon.getAttribute("type");
                 this.collectAndShow(Type);
@@ -122,10 +124,11 @@ class collectUtil {
 
     collect() {
         const { SHOW_HIDDEN } = this.config;
-        const idxMap = { paragraph: 0, table: 0, image: 0, fence: 0 };
-        this.collection = { table: [], image: [], fence: [], all: [] };
+        const idxMap = { paragraph: 0, table: 0, image: 0, fence: 0, link: 0, math: 0 };
+        this.collection = { table: [], image: [], fence: [], link: [], math: [], all: [] };
 
-        document.querySelectorAll("#write>h1, #write>h2, .md-table, .md-fences, .md-image").forEach(ele => {
+        const selector = ":scope>h1, :scope>h2, .md-table, .md-fences, .md-image, .md-link, .md-math-block, .md-inline-math-container";
+        this.utils.entities.eWrite.querySelectorAll(selector).forEach(ele => {
             if (!SHOW_HIDDEN && ele.style.display === "none") return;
 
             const tagName = ele.tagName;
@@ -138,7 +141,9 @@ class collectUtil {
             const type = ele.classList.contains("md-table") ? "table"
                 : ele.classList.contains("md-fences") ? "fence"
                     : ele.classList.contains("md-image") ? "image"
-                        : null;
+                        : ele.classList.contains("md-link") ? "link"
+                            : (ele.classList.contains("md-math-block") || ele.classList.contains("md-inline-math-container")) ? "math"
+                                : null;
 
             if (type) {
                 idxMap[type]++;
@@ -183,7 +188,7 @@ class collectUtil {
             }
             const span = ele.firstElementChild;
             span.dataset.ref = item.cid;
-            span.innerText = `${SHOW_NAME[item.type]} ${item.paragraphIdx}-${item.idx}`;
+            span.innerText = `${SHOW_NAME[item.type] || item.type} ${item.paragraphIdx}-${item.idx}`;
             ele = ele.nextElementSibling;
         })
     }
