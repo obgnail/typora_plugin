@@ -42,12 +42,12 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         this.regexp = ignore_img_html_element
             ? new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)", "g")
             : new RegExp("!\\[.*?\\]\\((?<src1>.*)\\)|<img.*?src=\"(?<src2>.*?)\"", "g")
-        this.resourceSuffix = new Set(resource_suffix);
-        this.fileSuffix = new Set(markdown_suffix);
+        this.resourceSuffixs = new Set(resource_suffix);
+        this.fileSuffixs = new Set(markdown_suffix);
         this.resources = new Set();
         this.resourcesInFile = new Set();
         if (collect_file_without_suffix) {
-            this.resourceSuffix.add("");
+            this.resourceSuffixs.add("");
         }
         this.nonExistInFile = null;
         this.nonExistInFolder = null;
@@ -77,10 +77,10 @@ class resourceOperationPlugin extends BaseCustomPlugin {
             if (!target) return;
             const tr = target.closest("tr");
             if (!tr) return;
-            const p = tr.querySelector(".plugin-resource-operation-src");
-            if (!p) return;
+            const img = tr.querySelector("img");
+            if (!img) return;
 
-            const src = p.dataset.path;
+            const src = img.getAttribute("src");
             const action = target.getAttribute("action");
             if (action === "delete") {
                 if (this.showWarnDialog) {
@@ -126,21 +126,22 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         delete output.resource_non_exist_in_file;
         delete output.resource_non_exist_in_folder;
         const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
+
         const btnGroup = `<td><div class="btn-group"><button type="button" class="btn btn-default" action="locate">打开</button><button type="button" class="btn btn-default" action="delete">删除</button></div></td>`
-        const rows = Array.from(this.nonExistInFile, (row, idx) => `<tr><td>${idx + 1}</td><td class="plugin-resource-operation-src" data-path="${row}">${row}</td>${btnGroup}</tr>`)
+        const nonExistInFile = Array.from(this.nonExistInFile, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td><td class="plugin-common-hidden"><img src="${row}"/></td>${btnGroup}</tr>`)
+        const nonExistInFolder = Array.from(this.nonExistInFolder, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td></tr>`)
+
         this.entities.wrap.innerHTML = `
-            <table class="table">
+            <table class="table non-exist-in-file-table">
                  <caption>存在于文件夹但不存在于md文件的资源(共${this.nonExistInFile.size}项)</caption>
-                 <thead><tr><th>#</th><th>resource</th><th style="min-width: 130px">operation</th></tr></thead>
-                 <tbody>${rows.join("")}</tbody>
+                 <thead><tr><th>#</th><th>resource</th><th class="plugin-common-hidden">preview</th><th>operation</th></tr></thead>
+                 <tbody>${nonExistInFile.join("")}</tbody>
             </table>
-            
             <table class="table">
                  <caption>存在于md文件但不存在于文件夹的资源(共${this.nonExistInFolder.size}项)</caption>
                  <thead><tr><th>#</th><th>resource</th></tr></thead>
-                 <tbody>${Array.from(this.nonExistInFolder, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td></tr>`).join("")}</tbody>
+                 <tbody>${nonExistInFolder.join("")}</tbody>
             </table>
-            
             <div class="plugin-resource-operation-message">配置</div>
             <textarea rows="10" readonly>${JSON.stringify(output, replacer, "\t")}</textarea>
         `
@@ -157,8 +158,10 @@ class resourceOperationPlugin extends BaseCustomPlugin {
     togglePreview = force => {
         const icon = this.entities.iconGroup.querySelector('[action="togglePreview"]');
         const wantClose = force === false || icon.classList.contains("ion-eye");
+        this.entities.wrap.querySelectorAll(".non-exist-in-file-table td:nth-of-type(3), .non-exist-in-file-table th:nth-of-type(3)")
+            .forEach(e => e.classList.toggle("plugin-common-hidden", wantClose));
         const func = wantClose ? "off" : "on";
-        const className = ".plugin-resource-operation-src";
+        const className = "img";
         this.entities.$wrap
             [func]("mouseover", className, this._showPopup)
             [func]("mouseout", className, this._hidePopup)
@@ -171,7 +174,7 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         const popup = this.entities.popup;
         if (!popup) return;
 
-        popup.src = ev.target.dataset.path;
+        popup.src = ev.target.getAttribute("src");
         const left = Math.min(window.innerWidth - 10 - popup.offsetWidth, ev.clientX + 10);
         const top = Math.min(window.innerHeight - 50 - popup.offsetHeight, ev.clientY + 20);
         popup.style.left = `${left}px`;
@@ -182,8 +185,8 @@ class resourceOperationPlugin extends BaseCustomPlugin {
 
     getOutput = () => ({
         search_folder: this.utils.getMountFolder(),
-        resource_suffix: Array.from(this.resourceSuffix),
-        markdown_suffix: Array.from(this.fileSuffix),
+        resource_suffix: Array.from(this.resourceSuffixs),
+        markdown_suffix: Array.from(this.fileSuffixs),
         ignore_img_html_element: this.config.ignore_img_html_element,
         collect_file_without_suffix: this.config.collect_file_without_suffix,
         ignore_folders: this.config.ignore_folders,
@@ -265,40 +268,39 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
             return imagePath;
         }
 
-        const collectMatch = async content => {
-            for (const match of content.matchAll(this.regexp)) {
+        const collectMatch = content => {
+            return Promise.all(content.matchAll(this.regexp).map(async match => {
                 let src = match.groups.src1 || match.groups.src2;
-                if (!src || isNetworkImage(src) || isSpecialImage(src)) continue;
+                if (!src || isNetworkImage(src) || isSpecialImage(src)) return;
 
                 try {
-                    src = decodeURI(src).split("?")[0];
+                    src = decodeURIComponent(src).split("?")[0];
                 } catch (e) {
                     console.warn("error path:", src);
-                    continue
+                    return;
                 }
 
                 src = resolve(dir, src);
-                if (this.resourcesInFile.has(src)) continue;
+                if (this.resourcesInFile.has(src)) return;
 
                 const resourcePath = await getRealPath(src);
-                this.resourcesInFile.add(resourcePath);
-
+                if (this.resourceSuffixs.has(extname(resourcePath).toLowerCase())) {
+                    this.resourcesInFile.add(resourcePath);
+                }
                 const remain = src.slice(resourcePath.length);
                 if (remain) {
                     await collectMatch(remain + ")");
                 }
-            }
+            }))
         }
 
         const ext = extname(filePath).toLowerCase();
-        if (this.resourceSuffix.has(ext)) {
+        if (this.resourceSuffixs.has(ext)) {
             this.resources.add(filePath);
-            return
+        } else if (this.fileSuffixs.has(ext)) {
+            const buffer = await readFile(filePath);
+            await collectMatch(buffer.toString());
         }
-        if (!this.fileSuffix.has(ext)) return;
-
-        const buffer = await readFile(filePath);
-        await collectMatch(buffer.toString());
     }
 
     traverseDir = async (dir, callback) => {
@@ -307,15 +309,15 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
 
         async function traverse(dir) {
             const files = await readdir(dir);
-            for (const file of files) {
+            await Promise.all(files.map(async file => {
                 const filePath = join(dir, file);
                 const stats = await stat(filePath);
                 if (stats.isFile()) {
-                    await callback(filePath, dir)
+                    await callback(filePath, dir);
                 } else if (stats.isDirectory() && !ignore_folders.includes(file)) {
                     await traverse(filePath);
                 }
-            }
+            }))
         }
 
         await traverse(dir);
