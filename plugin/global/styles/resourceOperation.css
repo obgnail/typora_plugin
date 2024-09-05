@@ -24,20 +24,20 @@
 .non-exist-in-file-table th:first-child {
     width: 10px;
 }
-
 .non-exist-in-file-table th:last-child {
-    width: 140px;
+    width: 150px;
 }
-
 .non-exist-in-file-table td:nth-of-type(2) {
     max-width: 200px;
     white-space: break-spaces;
     word-break: break-word;
 }
-
 .non-exist-in-file-table td:nth-of-type(3) {
     max-width: 100px;
     max-height: 100px;
+}
+.non-exist-in-file-table td:last-of-type {
+    text-align: center;
 }
 
 #plugin-resource-operation tbody {

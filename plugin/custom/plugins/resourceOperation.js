@@ -128,19 +128,19 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
 
         const btnGroup = `<td><div class="btn-group"><button type="button" class="btn btn-default" action="locate">打开</button><button type="button" class="btn btn-default" action="delete">删除</button></div></td>`
-        const nonExistInFile = Array.from(this.nonExistInFile, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td><td><img src="${row}"/></td>${btnGroup}</tr>`)
+        const nonExistInFile = Array.from(this.nonExistInFile, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td><td class="plugin-common-hidden"><img src="${row}"/></td>${btnGroup}</tr>`)
         const nonExistInFolder = Array.from(this.nonExistInFolder, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td></tr>`)
 
         this.entities.wrap.innerHTML = `
             <table class="table non-exist-in-file-table">
                  <caption>存在于文件夹但不存在于md文件的资源(共${this.nonExistInFile.size}项)</caption>
-                 <thead><tr><th>#</th><th>resource</th><th>Preview</th><th>operation</th></tr></thead>
-                 <tbody>${nonExistInFile.join("") || '<tr><td colspan="4" style="text-align: center;">Empty</td></tr>'}</tbody>
+                 <thead><tr><th>#</th><th>resource</th><th class="plugin-common-hidden">Preview</th><th>operation</th></tr></thead>
+                 <tbody>${nonExistInFile.join("")}</tbody>
             </table>
             <table class="table">
                  <caption>存在于md文件但不存在于文件夹的资源(共${this.nonExistInFolder.size}项)</caption>
                  <thead><tr><th>#</th><th>resource</th></tr></thead>
-                 <tbody>${nonExistInFolder.join("") || '<tr><td colspan="2" style="text-align: center;">Empty</td></tr>'}</tbody>
+                 <tbody>${nonExistInFolder.join("")}</tbody>
             </table>
             <div class="plugin-resource-operation-message">配置</div>
             <textarea rows="10" readonly>${JSON.stringify(output, replacer, "\t")}</textarea>
@@ -158,6 +158,8 @@ class resourceOperationPlugin extends BaseCustomPlugin {
     togglePreview = force => {
         const icon = this.entities.iconGroup.querySelector('[action="togglePreview"]');
         const wantClose = force === false || icon.classList.contains("ion-eye");
+        this.entities.wrap.querySelectorAll(".non-exist-in-file-table td:nth-of-type(3), .non-exist-in-file-table th:nth-of-type(3)")
+            .forEach(e => e.classList.toggle("plugin-common-hidden", wantClose));
         const func = wantClose ? "off" : "on";
         const className = "img";
         this.entities.$wrap
