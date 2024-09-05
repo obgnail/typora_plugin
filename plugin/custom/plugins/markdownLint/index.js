@@ -78,10 +78,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             detailAll: () => _getDetail(this.errors),
             detailSingle: infoIdx => _getDetail([this.errors[infoIdx]]),
             fixAll: () => this.fixLintError(),
-            fixSingle: infoIdx => {
-                const errors = [this.errors[infoIdx]];
-                this.fixLintError(errors);
-            },
+            fixSingle: infoIdx => this.fixLintError([this.errors[infoIdx]]),
             jumpToLine: lineToGo => {
                 if (!lineToGo) return;
                 if (!File.editor.sourceView.inSourceMode) {
