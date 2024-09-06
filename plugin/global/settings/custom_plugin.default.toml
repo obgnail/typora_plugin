@@ -268,11 +268,10 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 # 自动插入的模板
 TEMPLATE = """```chart
 // 提供内置变量:
-//   1. myChart: chart实例
-//   2. Chart:   chart类
-//   3. config:  chart的config
-//   4. this:    chart插件实例
-// API：https://chart.nodejs.cn/docs/latest/developers/api.html
+//   1. Chart:   chart类
+//   2. config:  chart的config
+//   3. this:    chart插件实例
+// API：https://chart.nodejs.cn/docs/latest/configuration/
 // 代码块里的所有内容都会被eval，请注意安全问题
 // 可以使用如下注释设置图表宽高（否则使用默认）：
 // {height: "300px", width: ""}
@@ -294,14 +293,7 @@ config = {
       ],
       borderWidth: 1
     }]
-  },
-  // 添加事件
-  // options: {
-  //   onClick: e => {
-  //     const canvasPosition = Chart.helpers.getRelativePosition(e, myChart);
-  //     confirm(`你点击了位置： (${canvasPosition.x},${canvasPosition.y})`);
-  //   }
-  // }
+  }
 }
 ```
 """
