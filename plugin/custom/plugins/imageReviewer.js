@@ -8,7 +8,6 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     html = () => {
         const { tool_function, show_message, hotkey_function } = this.config;
         const keyTranslate = { arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space" };
-        // {operation: [hint, iconClass]}
         const funcTranslate = {
             dummy: ['无功能', ''],
             info: ['', 'fa fa-question-circle'],
@@ -81,14 +80,14 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             })
         return `
             <div id="plugin-image-reviewer" class="plugin-cover-content plugin-common-hidden">
-                <div class="plugin-cover-content mask"></div>
-                <img class="review-image"/>
-                <div class="review-item" action="get-previous"><i class="fa fa-angle-left"></i></div>
-                <div class="review-item" action="get-next"><i class="fa fa-angle-right"></i></div>
                 <div class="review-tool">
                     <div class="review-message">${messageList.join("")}</div>
                     <div class="review-options">${operationList.join("")}</div>
                 </div>
+                <img class="review-image"/>
+                <div class="review-item" action="get-previous"><i class="fa fa-angle-left"></i></div>
+                <div class="review-item" action="get-next"><i class="fa fa-angle-right"></i></div>
+                <div class="plugin-cover-content mask"></div>
             </div>
         `
     }
@@ -344,11 +343,6 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
     }
 
-    handleBlurBackground = (remove = false) => {
-        if (this.config.blur_level === 0) return;
-        this.entities.mask.style["backdrop-filter"] = remove ? "" : `blur(${this.config.blur_level}px)`;
-    }
-
     handleHotkey = (remove = false) => {
         const unregister = item => this.utils.hotkeyHub.unregister(item[0]);
         const register = item => this.utils.hotkeyHub.registerSingle(item[0], this[item[1]] || this.dummy);
@@ -406,13 +400,11 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     }
     show = () => {
         document.activeElement.blur();
-        this.handleBlurBackground(false);
         this.handleHotkey(false);
         this.utils.show(this.entities.reviewer);
         this.showImage();
     }
     close = () => {
-        this.handleBlurBackground(true);
         this.handleHotkey(true);
         this.handlePlayTimer(true);
         this.utils.hide(this.entities.reviewer);
