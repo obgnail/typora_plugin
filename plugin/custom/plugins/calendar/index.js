@@ -28,7 +28,7 @@ class calendarPlugin extends BaseCustomPlugin {
     create = ($wrap, content) => {
         const Calendar = this.Calendar;
         const calendar = new this.Calendar($wrap[0]);
-        let option = "";
+        let option = {};
         eval(content);
         calendar.setOptions(option);
         return calendar;
