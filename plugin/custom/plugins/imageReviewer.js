@@ -270,7 +270,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
         let images = Array.from(this.utils.entities.querySelectorAllInWrite("img"));
         if (this.config.filter_error_image) {
-            images = images.filter(this.utils.isImgLoaded);
+            images = images.filter(this.utils.isImgEmbed);
         }
 
         this.imageGetter = this._imageMsgGetter(images);
