@@ -507,6 +507,8 @@ DEFAULT_TOC_OPTIONS = { autoFit = true, duration = 500, initialExpandLevel = -1,
 FILENAME_WHEN_DOWNLOAD_SVG = "{{filename}}_{{timestamp}}.svg"
 # 导出svg时的目录路径(如D:\\tmp\\img)，为空时使用 temp 目录
 FOLDER_WHEN_DOWNLOAD_SVG = ""
+# 导出svg时，尽力兼容样式问题(有些SVG解析器无法解析CSS变量，此选项会自动替换CSS变量)
+COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG = true
 # 导出svg时，是否删除无用的className以减小文件体积
 REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = false
 # 导出svg时，是否删除foreignObject，并替换成<text>（若您不了解SVG，请不要修改此选项）

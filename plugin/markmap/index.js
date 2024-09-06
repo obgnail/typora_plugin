@@ -517,6 +517,7 @@ class tocMarkmap {
             SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG: _showInFinder,
             REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: _removeForeign,
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: _removeUselessClass,
+            COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: _compatibleStyle,
             REMEMBER_FOLD_WHEN_UPDATE: _rememberFold,
             AUTO_FIT_WHEN_UPDATE: _fitWhenUpdate,
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: _collapseWhenFold,
@@ -532,6 +533,7 @@ class tocMarkmap {
             FIT_WHEN_UPDATE: "图形更新时自动重新适配窗口",
             FIT_WHEN_FOLD: "折叠图形节点时自动重新适配窗口",
             COLLAPSE_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
+            COMPATIBLE_STYLE: "有些SVG解析器无法解析CSS变量，勾选此选项会自动替换CSS变量",
             REMOVE_USELESS_CLASS: "若非需要手动修改导出的图形文件，请勿勾选此选项",
             REMOVE_FOREIGN_OBJECT: "保留样式但兼容性较差。若图片显示异常，请勾选此选项",
             SAVE_FOLDER: "为空则使用 tmp 目录",
@@ -605,10 +607,12 @@ class tocMarkmap {
             const checkboxList = [
                 { label: "删除无用的类名", value: "removeUselessClass", checked: _removeUselessClass, info: INFO.REMOVE_USELESS_CLASS },
                 { label: "替换 &lt;foreignObject&gt; 标签", value: "removeForeignObject", checked: _removeForeign, info: INFO.REMOVE_FOREIGN_OBJECT },
+                { label: "尽力兼容样式问题", value: "compatibleStyle", checked: _compatibleStyle, info: INFO.COMPATIBLE_STYLE },
                 { label: "导出后自动打开文件所在目录", value: "showInFinder", checked: _showInFinder },
             ];
             const checkboxCallback = submit => {
                 setCfg("SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG", submit.includes("showInFinder"));
+                setCfg("COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG", submit.includes("compatibleStyle"));
                 setCfg("REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG", submit.includes("removeUselessClass"));
                 setCfg("REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG", submit.includes("removeForeignObject"));
             }
@@ -628,7 +632,8 @@ class tocMarkmap {
             await this.redraw(this.markmap.options);
             const update = this.utils.fromObject(this.config, [
                 "DEFAULT_TOC_OPTIONS", "LOCALE_HEIGHT_RATIO", "REMEMBER_FOLD_WHEN_UPDATE", "AUTO_FIT_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
-                "BORDER_WHEN_DOWNLOAD_SVG", "FOLDER_WHEN_DOWNLOAD_SVG", "FILENAME_WHEN_DOWNLOAD_SVG", "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG", "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG",
+                "BORDER_WHEN_DOWNLOAD_SVG", "FOLDER_WHEN_DOWNLOAD_SVG", "FILENAME_WHEN_DOWNLOAD_SVG", "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG",
+                "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG", "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG", "COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG",
             ]);
             await this.utils.saveConfig(this.controller.fixedName, update);
         }
@@ -653,11 +658,22 @@ class tocMarkmap {
 
         const removeClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
 
+        // 有些SVG解析器无法解析CSS变量，尽力兼容他们
+        const compatibleStyle = svg => {
+            svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", "#fff"));
+            let globalCSS = this.controller.MarkmapLib.globalCSS;
+            const styleEle = new DOMParser().parseFromString(`<style>${globalCSS}</style>`, "text/html").querySelector("style");
+            styleEle.sheet.cssRules[0].styleMap.forEach((value, key) => {
+                if (key.startsWith("--")) {
+                    globalCSS = globalCSS.replace(new RegExp(`var\\(${key}\\);?`, "g"), value[0][0] + ";");
+                }
+            })
+            svg.querySelector("style").textContent = globalCSS;
+        }
+
         const removeUselessStyle = svg => {
             const style = svg.querySelector("style");
-            if (style) {
-                style.textContent = style.textContent.replace(".markmap-node>circle{cursor:pointer}", "");
-            }
+            style.textContent = style.textContent.replace(".markmap-node>circle{cursor:pointer}", "");
         }
 
         const getBounding = svg => {
@@ -726,6 +742,9 @@ class tocMarkmap {
         const svg = this.entities.svg.cloneNode(true);
         setAttribute(svg);
         setSize(svg);
+        if (this.config.COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG) {
+            compatibleStyle(svg);
+        }
         removeUselessStyle(svg);
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
             removeForeignObject(svg);
