@@ -120,29 +120,26 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             this.entities.mask.addEventListener("click", this.callback);
         }
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.close());
-
-        const that = this;
-        $("#plugin-image-reviewer .review-item").on("click", function () {
-            that.showImage(this.getAttribute("action") === "get-next");
+        this.entities.reviewer.querySelectorAll(".review-item").forEach(ele => {
+            ele.addEventListener("click", ev => this.showImage(ev.target.getAttribute("action") === "get-next"));
         })
-
         this.entities.reviewer.addEventListener("wheel", ev => {
             ev.preventDefault();
             const list = this.getFuncList(ev, "wheel");
-            list[ev.deltaY > 0 ? 1 : 0]();
+            const func = list[ev.deltaY > 0 ? 1 : 0];
+            (func instanceof Function) && func();
         }, { passive: false });
-
         this.entities.image.addEventListener("mousedown", ev => {
             const list = this.getFuncList(ev, "mousedown");
-            list[ev.button]();
+            const func = list[ev.button];
+            (func instanceof Function) && func();
         })
-
         this.entities.ops.addEventListener("click", ev => {
             const target = ev.target.closest("[option]");
             if (!target) return
             const option = target.getAttribute("option");
             const arg = option.indexOf("rotate") !== -1 ? 90 : undefined;
-            this[option] && this[option](arg);
+            (this[option] instanceof Function) && this[option](arg);
         })
     }
 
