@@ -268,7 +268,11 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     initImageMsgGetter = () => {
         if (this.imageGetter) return;
 
-        const images = Array.from(this.utils.entities.querySelectorAllInWrite("img"));
+        let images = Array.from(this.utils.entities.querySelectorAllInWrite("img"));
+        if (this.config.filter_error_image) {
+            images = images.filter(this.utils.isImgLoaded);
+        }
+
         this.imageGetter = this._imageMsgGetter(images);
 
         if (images.length === 0) return;

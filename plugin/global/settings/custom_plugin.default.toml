@@ -909,6 +909,8 @@ order = 1
 hotkey = "ctrl+alt+i"
 # 点击遮罩空白处退出
 click_mask_to_exit = true
+# 跳过加载失败的图片
+filter_error_image = true
 # 工具栏的位置：bottom/top
 tool_position = "top"
 # 进入查看器后，第一张图片是？
