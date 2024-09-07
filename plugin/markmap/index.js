@@ -607,7 +607,7 @@ class tocMarkmap {
             const checkboxList = [
                 { label: "删除无用的类名", value: "removeUselessClass", checked: _removeUselessClass, info: INFO.REMOVE_USELESS_CLASS },
                 { label: "替换 &lt;foreignObject&gt; 标签", value: "removeForeignObject", checked: _removeForeign, info: INFO.REMOVE_FOREIGN_OBJECT },
-                { label: "尽力兼容样式问题", value: "compatibleStyle", checked: _compatibleStyle, info: INFO.COMPATIBLE_STYLE },
+                { label: "尽力解决样式兼容性问题", value: "compatibleStyle", checked: _compatibleStyle, info: INFO.COMPATIBLE_STYLE },
                 { label: "导出后自动打开文件所在目录", value: "showInFinder", checked: _showInFinder },
             ];
             const checkboxCallback = submit => {
@@ -640,6 +640,12 @@ class tocMarkmap {
     }
 
     download = async () => {
+        const _parseCSS = css => new DOMParser().parseFromString(`<style>${css}</style>`, "text/html").querySelector("style");
+        const _replaceStyleContent = (el, cssText) => {
+            el.innerHTML = "";
+            el.appendChild(document.createTextNode(cssText));
+        }
+
         const removeForeignObject = svg => {
             svg.querySelectorAll("foreignObject").forEach(foreign => {
                 const x = parseInt(foreign.getAttribute("width")) + parseInt(foreign.getAttribute("x")) - 2;
@@ -658,27 +664,40 @@ class tocMarkmap {
 
         const removeClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
 
-        // 有些SVG解析器无法解析CSS变量，尽力兼容他们
+        // 有些SVG解析器无法解析CSS变量
         const compatibleStyle = svg => {
             svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", "#fff"));
-            let globalCSS = this.controller.MarkmapLib.globalCSS;
-            const styleEle = new DOMParser().parseFromString(`<style>${globalCSS}</style>`, "text/html").querySelector("style");
-            styleEle.sheet.cssRules[0].styleMap.forEach((value, key) => {
+            const style = svg.querySelector("style");
+            let css = style.textContent;
+            _parseCSS(css).sheet.cssRules[0].styleMap.forEach((value, key) => {
                 if (key.startsWith("--")) {
-                    globalCSS = globalCSS.replace(new RegExp(`var\\(${key}\\);?`, "g"), value[0][0] + ";");
+                    css = css.replace(new RegExp(`var\\(${key}\\);?`, "g"), value[0][0] + ";");
                 }
             })
-            const css = globalCSS.replace(/--[a-zA-z\-]+?\s*?:\s*?.+?;/g, "");
-            const style = svg.querySelector("style");
-            style.innerHTML = "";
-            style.appendChild(document.createTextNode(css));
+            css = css.replace(/--[a-zA-Z\-]+?\s*?:\s*?.+?;/g, "").replace(/\s+/g, " ");
+            _replaceStyleContent(style, css);
         }
 
         const removeUselessStyle = svg => {
-            const style = svg.querySelector("style");
-            const css = style.textContent.replace(".markmap-node>circle{cursor:pointer}", "");
-            style.innerHTML = "";
-            style.appendChild(document.createTextNode(css));
+            const sheet = [];
+            const filter = new Set([
+                ".markmap-dark .markmap",
+                ".markmap-node > circle",
+                ".markmap-foreign svg",
+                ".markmap-foreign img",
+                ".markmap-foreign pre",
+                ".markmap-foreign pre > code",
+                ".markmap-foreign-testing-max",
+                ".markmap-foreign-testing-max img",
+                ".markmap-foreign table, .markmap-foreign th, .markmap-foreign td",
+            ])
+            const rules = _parseCSS(this.controller.MarkmapLib.globalCSS).sheet.cssRules;
+            for (const rule of rules) {
+                if (!filter.has(rule.selectorText)) {
+                    sheet.push(rule.cssText);
+                }
+            }
+            _replaceStyleContent(svg.querySelector("style"), sheet.join(" "));
         }
 
         const getBounding = svg => {
@@ -701,7 +720,7 @@ class tocMarkmap {
             return { minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight }
         }
 
-        const setAttribute = svg => {
+        const settAttr = svg => {
             svg.removeAttribute("id");
             svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
             svg.setAttribute("class", "markmap");
@@ -743,15 +762,15 @@ class tocMarkmap {
         }
 
         const svg = this.entities.svg.cloneNode(true);
-        setAttribute(svg);
+        settAttr(svg);
         setSize(svg);
+        removeUselessStyle(svg);
         if (this.config.COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG) {
             compatibleStyle(svg);
         }
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
             removeForeignObject(svg);
         }
-        removeUselessStyle(svg);
         if (this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
             removeClassName(svg);
         }
