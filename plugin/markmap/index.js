@@ -572,16 +572,18 @@ class tocMarkmap {
             { type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("节点最大长度", "maxWidth", _ops) },
             { type: "range", inline: true, min: 100, max: 1000, step: 100, ...inputKV("动画持续时间", "duration", _ops) },
             { type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...inputKV("窗口填充率", "fitRatio", _ops) },
+            { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("窗口初始化宽度", "WIDTH_PERCENT_WHEN_INIT") },
+            { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("窗口初始化高度", "HEIGHT_PERCENT_WHEN_INIT") },
             { type: "range", inline: true, min: 0.1, max: 1, step: 0.01, ...inputKV("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
-            { type: "range", inline: true, min: 10, max: 90, step: 1, ...inputKV("固定顶部的视口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
-            { type: "range", inline: true, min: 10, max: 90, step: 1, ...inputKV("固定右侧的视口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
+            { type: "range", inline: true, min: 10, max: 95, step: 1, ...inputKV("固定顶部的视口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
+            { type: "range", inline: true, min: 10, max: 95, step: 1, ...inputKV("固定右侧的视口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
         ]
 
         const ability = () => {
             const components = [
-                { label: "鼠标滚轮进行缩放", config: _ops, key: "zoom" },
-                { label: "鼠标滚轮进行平移", config: _ops, key: "pan" },
-                { label: "折叠时自动适配窗口", config: _ops, key: "autoFit" },
+                { label: "鼠标滚轮进行缩放", key: "zoom", config: _ops },
+                { label: "鼠标滚轮进行平移", key: "pan", config: _ops },
+                { label: "折叠时自动适配窗口", key: "autoFit", config: _ops },
                 { label: "记住已折叠的节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
                 { label: "更新时自动适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
                 { label: "折叠时自动折叠章节", key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD" },
@@ -613,7 +615,7 @@ class tocMarkmap {
             components.forEach(c => c.callback(c.submit));
             await this.redraw(this.markmap.options);
             const update = this.utils.fromObject(this.config, [
-                "FOLDER_WHEN_DOWNLOAD_SVG", "WIDTH_PERCENT_WHEN_PIN_RIGHT",
+                "HEIGHT_PERCENT_WHEN_PIN_UP", "WIDTH_PERCENT_WHEN_PIN_RIGHT", "HEIGHT_PERCENT_WHEN_INIT", "WIDTH_PERCENT_WHEN_INIT",
                 "DEFAULT_TOC_OPTIONS", "LOCALE_HEIGHT_RATIO", "REMEMBER_FOLD_WHEN_UPDATE", "AUTO_FIT_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
                 "BORDER_WHEN_DOWNLOAD_SVG", "FOLDER_WHEN_DOWNLOAD_SVG", "FILENAME_WHEN_DOWNLOAD_SVG", "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG",
                 "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG", "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG", "COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG",
@@ -910,7 +912,8 @@ class tocMarkmap {
 
     _initModalRect = () => {
         const { left, width, height } = this.entities.content.getBoundingClientRect();
-        const { LEFT_PERCENT_WHEN_INIT: l, WIDTH_PERCENT_WHEN_INIT: w, HEIGHT_PERCENT_WHEN_INIT: h } = this.config;
+        const { WIDTH_PERCENT_WHEN_INIT: w, HEIGHT_PERCENT_WHEN_INIT: h } = this.config;
+        const l = (100 - w) / 2;
         Object.assign(this.entities.modal.style, {
             left: `${left + width * l / 100}px`,
             width: `${width * w / 100}px`,

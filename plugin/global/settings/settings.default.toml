@@ -472,8 +472,6 @@ AUTO_FIT_WHEN_UPDATE = true
 REMEMBER_FOLD_WHEN_UPDATE = true
 # 折叠markmap节点时，自动折叠章节（此功能为实验性特性，依赖collapse_paragraph插件，目前不推荐开启）
 AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD = false
-# 初始化时，弹窗位于页面从左往右的5%位置
-LEFT_PERCENT_WHEN_INIT = 5
 # 初始化时，弹窗占据页面的90%宽度
 WIDTH_PERCENT_WHEN_INIT = 90
 # 初始化时，弹窗占据页面的35%高度
