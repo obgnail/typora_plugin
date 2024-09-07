@@ -83,7 +83,7 @@ class markmapPlugin extends BasePlugin {
 
 class fenceMarkmap {
     constructor(plugin) {
-        this.controller = plugin
+        this.controller = plugin;
         this.utils = plugin.utils;
         this.config = plugin.config;
         this.MarkmapLib = plugin.MarkmapLib;
@@ -239,6 +239,7 @@ class tocMarkmap {
         }
         this._fixConfig();
 
+        this.recoverColorScheme = this.candidateColorSchemes.CATEGORY10;
         this.modalOriginRect = null;
         this.contentOriginRect = null;
         this.pinUtils = {
@@ -537,31 +538,29 @@ class tocMarkmap {
         const checkboxKV = components => ({
             type: "checkbox",
             list: components.map(({ label, key, config = this.config }) => ({ label, info: INFO[key], value: key, checked: Boolean(config[key]) })),
-            callback: submit => components.forEach(({ key, config = this.config }) => config[key] = submit.includes(key))
+            callback: submit => components.forEach(({ key, config = this.config }) => config[key] = submit.includes(key)),
         })
 
         const color = () => {
-            const RECOVER_COLOR = "RECOVER_COLOR";
-            const DEFAULT_SCHEME = this.candidateColorSchemes.CATEGORY10;
             const toValue = colorList => colorList.join("_");
             const fromValue = str => str.split("_");
-            const toDisplay = colorList => {
+            const toLabel = colorList => {
                 const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`);
                 return `<div class="plugin-markmap-color-scheme">${inner.join("")}</div>`;
             }
             const curValue = toValue(_ops.color);
             const list = Object.values(this.candidateColorSchemes).map(colorList => {
                 const value = toValue(colorList);
-                const label = toDisplay(colorList);
+                const label = toLabel(colorList);
                 const checked = value === curValue;
                 return { value, label, checked };
             })
             if (!list.some(e => e.checked)) {
-                list.push({ value: curValue, label: toDisplay(_ops.color), checked: true });
+                list.push({ value: curValue, label: toLabel(_ops.color), checked: true });
             }
-            list.push({ value: RECOVER_COLOR, label: "恢复默认", info: INFO.RECOVER_COLOR });
-            const callback = scheme => _ops.color = (scheme === RECOVER_COLOR) ? DEFAULT_SCHEME : fromValue(scheme);
-            return { label: "配色方案", type: "radio", list, info: INFO.color, callback };
+            list.push({ value: toValue(this.recoverColorScheme), label: "恢复默认", info: INFO.RECOVER_COLOR });
+            const callback = scheme => _ops.color = fromValue(scheme);
+            return { label: "配色方案", info: INFO.color, type: "radio", list, callback };
         }
 
         const ranges = () => [
@@ -574,8 +573,8 @@ class tocMarkmap {
             { type: "range", inline: true, min: 100, max: 1000, step: 100, ...inputKV("动画持续时间", "duration", _ops) },
             { type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...inputKV("窗口填充率", "fitRatio", _ops) },
             { type: "range", inline: true, min: 0.1, max: 1, step: 0.01, ...inputKV("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
-            { type: "range", inline: true, min: 10, max: 80, step: 1, ...inputKV("固定顶部的视口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
-            { type: "range", inline: true, min: 10, max: 80, step: 1, ...inputKV("固定右侧的视口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
+            { type: "range", inline: true, min: 10, max: 90, step: 1, ...inputKV("固定顶部的视口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
+            { type: "range", inline: true, min: 10, max: 90, step: 1, ...inputKV("固定右侧的视口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
         ]
 
         const ability = () => {
