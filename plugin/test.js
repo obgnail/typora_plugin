@@ -25,21 +25,14 @@ class testPlugin extends BasePlugin {
 
     openDevTools = () => {
         const objGetter = () => File && File.editor && File.editor.library;
-        const callback = () => setTimeout(() => ClientCommand.close(), 3000);
+        const callback = () => setTimeout(() => ClientCommand.close(), 2000);
         this.utils.decorate(objGetter, "openFileInNewWindow", null, callback);
         JSBridge.invoke("window.toggleDevTools");
-    }
-
-    extra = () => {
-        process.on("uncaughtException", error => {
-            console.log("uncaughtException", error)
-        })
     }
 
     process = () => {
         this.exportVar()
         this.openDevTools()
-        this.extra()
     }
 }
 

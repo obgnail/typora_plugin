@@ -570,9 +570,9 @@ class tocMarkmap {
         const ranges = () => [
             { label: "固定配色的分支等级", type: "range", min: 1, max: 6, step: 1, inline: true, info: INFO.FREEZE_COLOR, ...KV("colorFreezeLevel") },
             { label: "分支展开等级", type: "range", min: 1, max: 6, step: 1, inline: true, ...KV("initialExpandLevel") },
-            { label: "节点水平间距", type: "range", min: 1, max: 100, step: 1, inline: true, ...KV("spacingHorizontal") },
-            { label: "节点垂直间距", type: "range", min: 1, max: 50, step: 1, inline: true, ...KV("spacingVertical") },
-            { label: "节点内部边距", type: "range", min: 1, max: 50, step: 1, inline: true, ...KV("paddingX") },
+            { label: "节点水平间距", type: "range", min: 0, max: 100, step: 1, inline: true, ...KV("spacingHorizontal") },
+            { label: "节点垂直间距", type: "range", min: 0, max: 50, step: 1, inline: true, ...KV("spacingVertical") },
+            { label: "节点内部边距", type: "range", min: 0, max: 50, step: 1, inline: true, ...KV("paddingX") },
             { label: "节点最大长度", type: "range", min: 0, max: 1000, step: 10, inline: true, info: INFO.MAX_WIDTH, ...KV("maxWidth") },
             { label: "动画持续时间", type: "range", min: 100, max: 1000, step: 100, inline: true, ...KV("duration") },
             { label: "窗口填充率", type: "range", min: 0.5, max: 1, step: 0.01, inline: true, ...KV("fitRatio") },
@@ -790,7 +790,7 @@ class tocMarkmap {
         if (this.pinUtils.isPinUp) {
             toggleFunc = "add";
             const { top, height, width, left } = this.contentOriginRect;
-            const newHeight = height * this.config.HEIGHT_PRECENT_WHEN_PIN_UP / 100;
+            const newHeight = height * this.config.HEIGHT_PERCENT_WHEN_PIN_UP / 100;
             modalRect = { left, top, width, height: newHeight };
             contentTop = top + newHeight;
             showFunc = "show";
@@ -831,7 +831,7 @@ class tocMarkmap {
         if (this.pinUtils.isPinRight) {
             toggleFunc = "add";
             const { top, width, height, right } = this.contentOriginRect;
-            const newWidth = width * this.config.WIDTH_PRECENT_WHEN_PIN_RIGHT / 100;
+            const newWidth = width * this.config.WIDTH_PERCENT_WHEN_PIN_RIGHT / 100;
             modalRect = { top, height, width: newWidth, left: right - newWidth };
             contentRight = `${right - newWidth}px`;
             contentWidth = `${width - newWidth}px`;
