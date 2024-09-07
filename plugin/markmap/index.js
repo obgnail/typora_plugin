@@ -668,12 +668,17 @@ class tocMarkmap {
                     globalCSS = globalCSS.replace(new RegExp(`var\\(${key}\\);?`, "g"), value[0][0] + ";");
                 }
             })
-            svg.querySelector("style").textContent = globalCSS;
+            const css = globalCSS.replace(/--[a-zA-z\-]+?\s*?:\s*?.+?;/g, "");
+            const style = svg.querySelector("style");
+            style.innerHTML = "";
+            style.appendChild(document.createTextNode(css));
         }
 
         const removeUselessStyle = svg => {
             const style = svg.querySelector("style");
-            style.textContent = style.textContent.replace(".markmap-node>circle{cursor:pointer}", "");
+            const css = style.textContent.replace(".markmap-node>circle{cursor:pointer}", "");
+            style.innerHTML = "";
+            style.appendChild(document.createTextNode(css));
         }
 
         const getBounding = svg => {
@@ -726,9 +731,7 @@ class tocMarkmap {
         }
 
         const download = async svg => {
-            const div = document.createElement("div");
-            div.appendChild(svg);
-            const content = div.innerHTML.replace(/<br>/g, "<br/>");
+            const content = svg.outerHTML.replace(/&gt;/g, ">");
             const path = this.utils.Package.Path.join(getFileFolder(), getFileName());
             const ok = await this.utils.writeFile(path, content);
             if (!ok) return;
@@ -745,10 +748,10 @@ class tocMarkmap {
         if (this.config.COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG) {
             compatibleStyle(svg);
         }
-        removeUselessStyle(svg);
         if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
             removeForeignObject(svg);
         }
+        removeUselessStyle(svg);
         if (this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
             removeClassName(svg);
         }
