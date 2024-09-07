@@ -528,9 +528,12 @@ class tocMarkmap {
             FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid",
         }
         const { DEFAULT_TOC_OPTIONS: _ops, BORDER_WHEN_DOWNLOAD_SVG: _border } = this.config;
-        const _KV = (label, key, config) => ({ label, info: INFO[key], value: config[key], callback: value => config[key] = value });
-        const opsKV = (label, key) => _KV(label, key, _ops);
-        const cfgKV = (label, key) => _KV(label, key, this.config);
+        const inputKV = (label, key, config = this.config) => ({
+            label,
+            info: INFO[key],
+            value: config[key],
+            callback: value => config[key] = value
+        });
         const checkboxKV = components => ({
             type: "checkbox",
             list: components.map(({ label, key, config = this.config }) => ({ label, info: INFO[key], value: key, checked: Boolean(config[key]) })),
@@ -562,46 +565,46 @@ class tocMarkmap {
         }
 
         const ranges = () => [
-            { type: "range", inline: true, min: 1, max: 6, step: 1, ...opsKV("固定配色的分支等级", "colorFreezeLevel") },
-            { type: "range", inline: true, min: 1, max: 6, step: 1, ...opsKV("分支展开等级", "initialExpandLevel") },
-            { type: "range", inline: true, min: 0, max: 100, step: 1, ...opsKV("节点水平间距", "spacingHorizontal") },
-            { type: "range", inline: true, min: 0, max: 50, step: 1, ...opsKV("节点垂直间距", "spacingVertical") },
-            { type: "range", inline: true, min: 0, max: 50, step: 1, ...opsKV("节点内部边距", "paddingX") },
-            { type: "range", inline: true, min: 0, max: 1000, step: 10, ...opsKV("节点最大长度", "maxWidth") },
-            { type: "range", inline: true, min: 100, max: 1000, step: 100, ...opsKV("动画持续时间", "duration") },
-            { type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...opsKV("窗口填充率", "fitRatio") },
-            { type: "range", inline: true, min: 0.1, max: 1, step: 0.01, ...cfgKV("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
-            { type: "range", inline: true, min: 10, max: 80, step: 1, ...cfgKV("固定顶部的视口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
-            { type: "range", inline: true, min: 10, max: 80, step: 1, ...cfgKV("固定右侧的视口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
+            { type: "range", inline: true, min: 1, max: 6, step: 1, ...inputKV("固定配色的分支等级", "colorFreezeLevel", _ops) },
+            { type: "range", inline: true, min: 1, max: 6, step: 1, ...inputKV("分支展开等级", "initialExpandLevel", _ops) },
+            { type: "range", inline: true, min: 0, max: 100, step: 1, ...inputKV("节点水平间距", "spacingHorizontal", _ops) },
+            { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点垂直间距", "spacingVertical", _ops) },
+            { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点内部边距", "paddingX", _ops) },
+            { type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("节点最大长度", "maxWidth", _ops) },
+            { type: "range", inline: true, min: 100, max: 1000, step: 100, ...inputKV("动画持续时间", "duration", _ops) },
+            { type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...inputKV("窗口填充率", "fitRatio", _ops) },
+            { type: "range", inline: true, min: 0.1, max: 1, step: 0.01, ...inputKV("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
+            { type: "range", inline: true, min: 10, max: 80, step: 1, ...inputKV("固定顶部的视口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
+            { type: "range", inline: true, min: 10, max: 80, step: 1, ...inputKV("固定右侧的视口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
         ]
 
         const ability = () => {
-            const { type, list, callback } = checkboxKV([
+            const components = [
                 { label: "鼠标滚轮进行缩放", config: _ops, key: "zoom" },
                 { label: "鼠标滚轮进行平移", config: _ops, key: "pan" },
                 { label: "折叠时自动适配窗口", config: _ops, key: "autoFit" },
                 { label: "记住已折叠的节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
                 { label: "更新时自动适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
                 { label: "折叠时自动折叠章节", key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD" },
-            ])
-            return { label: "", legend: "能力", type, list, callback }
+            ]
+            return { label: "", legend: "能力", ...checkboxKV(components) }
         }
 
         const download = () => {
             const fieldset = "导出";
-            const borderKV = (label, idx) => ({ label, value: _border[idx], callback: value => _border[idx] = value });
-            const { type, list, callback } = checkboxKV([
+            const components = [
                 { label: "删除无用的类名", key: "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG" },
                 { label: "替换 &lt;foreignObject&gt; 标签", key: "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG" },
                 { label: "尽力解决样式兼容性问题", key: "COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG" },
                 { label: "导出后自动打开文件所在目录", key: "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG" },
-            ])
+            ]
+            const borderKV = (label, idx) => ({ label, value: _border[idx], callback: value => _border[idx] = value });
             return [
                 { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("左右边框宽度", 0) },
                 { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("上下边框宽度", 1) },
-                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...cfgKV("保存目录名", "FOLDER_WHEN_DOWNLOAD_SVG") },
-                { fieldset, type: "input", inline: true, ...cfgKV("保存文件名", "FILENAME_WHEN_DOWNLOAD_SVG") },
-                { fieldset, label: "", type, list, callback },
+                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...inputKV("保存目录名", "FOLDER_WHEN_DOWNLOAD_SVG") },
+                { fieldset, type: "input", inline: true, ...inputKV("保存文件名", "FILENAME_WHEN_DOWNLOAD_SVG") },
+                { fieldset, label: "", ...checkboxKV(components) },
             ]
         }
 
