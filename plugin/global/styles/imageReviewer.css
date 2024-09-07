@@ -5,16 +5,17 @@
     left: 0;
     bottom: 0;
     height: 100vh;
-    z-index: 99998;
+    z-index: 99997;
 }
 
 #plugin-image-reviewer .mask {
     background-color: rgba(0, 0, 0, ${this.config.mask_background_opacity});
+    backdrop-filter: blur(${this.config.blur_level} px);
 }
 
 #plugin-image-reviewer .review-image {
     position: fixed;
-    z-index: 99999;
+    z-index: 99998;
     height: auto;
     max-width: ${imageMaxWidth};
     max-height: ${imageMaxHeight};
@@ -48,18 +49,6 @@
 
 #plugin-image-reviewer .review-item[action="get-next"] {
     right: 24px;
-}
-
-#plugin-image-reviewer .review-button {
-    position: absolute;
-    z-index: 99999;
-    transform: translate3d(-50%, 0, 0);
-    padding: 6px 16px;
-    border-radius: 20px;
-    border: 1px solid #fff;
-    background-color: rgba(0, 0, 0, .4);
-    font-size: 14px;
-    color: #fff;
 }
 
 #plugin-image-reviewer .review-tool {

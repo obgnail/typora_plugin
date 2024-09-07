@@ -653,6 +653,8 @@ class utils {
         this.hide(wrapper);
     }
 
+    static isImgEmbed = img => img.complete && img.naturalWidth !== 0 && img.naturalHeight !== 0
+
     static isInViewBox = el => {
         const totalHeight = window.innerHeight || document.documentElement.clientHeight;
         const totalWidth = window.innerWidth || document.documentElement.clientWidth;

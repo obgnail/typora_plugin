@@ -1,19 +1,16 @@
 /**
  * 难点在于如何才能匹配到正确的 markdown 图片
- * 1. 不可使用非贪婪匹配，否则 ![image](assets/image(1).png) 会匹配成 ![image](assets/image(1)
- * 2. 要使用贪婪匹配，然后使用)从后往前截断，逐个测试。
- *    1. 比如内容为：![image](assets/image(1).png)123)456
- *    2. 首先匹配成 ![image](assets/image(1).png)123)，检测文件assets/image(1).png)123是否存在
- *    3. 若不存在，继续匹配成 ![image](assets/image(1).png)，检测文件assets/image(1).png是否存在，以此类推
- * 3. 使用贪婪匹配会引入一个问题：一行最多只会匹配一个图片，之后的所有图片都会漏掉
- *    1. 比如有两个图片放在同一行： ![test](./assets/test.png)![test2](./assets/test2.png)123
- *    2. 匹配到：![test](./assets/test.png)![test2](./assets/test2.png)，检测文件 ./assets/test.png)![test2](./assets/test2.png 是否存在，发现不存在
- *    3. 接着匹配到：![test](./assets/test.png)，检测文件./assets/test.png 是否存在，发现存在，返回。
- *    4. 上述流程就导致遗漏了./assets/test2.png图片。
- * 4. 解决方案：递归处理。
- *    1. 当匹配到![test](./assets/test.png)后，将最开始的匹配内容截断为 )![test2](./assets/test2.png)
- *    2. 递归处理新的内容
- * 5. 其实最好的方法应该是使用LR parser，但是我很怀疑JS的性能顶得住逐字符迭代的设计，尤其是要分析上千文件的情况（若单个文件5000字符，1000个文件就是五百万次循环），所以还是交给regexp处理，C++万岁
+ * 1. 不可使用惰性匹配，否则 ![name](assets/image(1).png) 会匹配成 ![name](assets/image(1)  要使用贪婪匹配，然后使用)从后往前截断，逐个测试
+ *    1. 比如内容为：![name](assets/image(1).png)123)456
+ *    2. 首先贪婪匹配成 ![name](assets/image(1).png)123)，检测文件 assets/image(1).png)123 是否存在
+ *    3. 若不存在，往前截断，得到 ![name](assets/image(1).png)，检测文件 assets/image(1).png 是否存在，以此类推
+ * 2. 使用贪婪匹配会引入一个问题：一行最多只会匹配一个图片，之后的所有图片都会漏掉
+ *    1. 比如有两个图片放在同一行，输入串为： ![name1](./assets/test.png)![name2](./assets/test2.png)123
+ *    2. 贪婪匹配到：![name1](./assets/test.png)![name2](./assets/test2.png)，检测文件 ./assets/test.png)![name2](./assets/test2.png 是否存在，发现不存在
+ *    3. 接着匹配到：![name1](./assets/test.png)，检测文件./assets/test.png 是否存在，发现存在，返回
+ *    4. 上述流程就导致遗漏了 ./assets/test2.png
+ *    5. 解决方案：当匹配到![name1](./assets/test.png)后，将后续的内容 )![name2](./assets/test2.png) 作为输入串回到第一步递归处理
+ * 3. 最好的方法应该是使用LR parser，但是我怀疑JS的性能能否顶得住逐字符迭代，尤其是要分析上千文件的情况（若单个文件5000字符，1000个文件就是五百万次循环），所以交给regexp处理，C++万岁
  */
 class resourceOperationPlugin extends BaseCustomPlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
@@ -130,17 +127,19 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         const btnGroup = `<td><div class="btn-group"><button type="button" class="btn btn-default" action="locate">打开</button><button type="button" class="btn btn-default" action="delete">删除</button></div></td>`
         const nonExistInFile = Array.from(this.nonExistInFile, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td><td class="plugin-common-hidden"><img src="${row}"/></td>${btnGroup}</tr>`)
         const nonExistInFolder = Array.from(this.nonExistInFolder, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td></tr>`)
+        const tbody1 = nonExistInFile.join("") || '<tr><td colspan="4" style="text-align: center">Empty</td></tr>';
+        const tbody2 = nonExistInFolder.join("") || '<tr><td colspan="2" style="text-align: center">Empty</td></tr>';
 
         this.entities.wrap.innerHTML = `
             <table class="table non-exist-in-file-table">
                  <caption>存在于文件夹但不存在于md文件的资源(共${this.nonExistInFile.size}项)</caption>
                  <thead><tr><th>#</th><th>resource</th><th class="plugin-common-hidden">preview</th><th>operation</th></tr></thead>
-                 <tbody>${nonExistInFile.join("")}</tbody>
+                 <tbody>${tbody1}</tbody>
             </table>
             <table class="table">
                  <caption>存在于md文件但不存在于文件夹的资源(共${this.nonExistInFolder.size}项)</caption>
                  <thead><tr><th>#</th><th>resource</th></tr></thead>
-                 <tbody>${nonExistInFolder.join("")}</tbody>
+                 <tbody>${tbody2}</tbody>
             </table>
             <div class="plugin-resource-operation-message">配置</div>
             <textarea rows="10" readonly>${JSON.stringify(output, replacer, "\t")}</textarea>

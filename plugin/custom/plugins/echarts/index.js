@@ -29,15 +29,15 @@ class echartsPlugin extends BaseCustomPlugin {
     }
 
     create = ($wrap, content) => {
-        const chart = this.echartsPkg.init($wrap[0], null, { renderer: this.config.RENDERER });
-        this.drawChart(chart, content);
-        return chart;
+        const myChart = this.echartsPkg.init($wrap[0], null, { renderer: this.config.RENDERER });
+        this.drawChart(myChart, content);
+        return myChart;
     }
 
     drawChart = (myChart, content, resize = false) => {
         // chart.showLoading();
         let echarts = this.echartsPkg;
-        let option = "";
+        let option = {};
         eval(content);
         myChart.clear();
         myChart.setOption(option);

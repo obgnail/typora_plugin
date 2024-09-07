@@ -33,18 +33,16 @@ class chartPlugin extends BaseCustomPlugin {
         }
     }
 
-    drawChart = (ctx, content) => {
-        let Chart = this.ChartPkg.Chart;
-        let myChart = null;
-        let config = "";
-        eval(content);
-        myChart = new this.ChartPkg.Chart(ctx, config);
-        return myChart;
-    }
-
     destroy = instance => {
         instance.clear();
         instance.destroy();
+    }
+
+    drawChart = (ctx, content) => {
+        let config = {};
+        const Chart = this.ChartPkg.Chart;
+        eval(content);
+        return new Chart(ctx, config);
     }
 
     beforeExport = (preview, instance) => {
@@ -55,7 +53,7 @@ class chartPlugin extends BaseCustomPlugin {
 
     versionGetter = () => this.ChartPkg && this.ChartPkg.version
 
-    lazyLoad = () => this.ChartPkg = require("./chart.min");
+    lazyLoad = () => this.ChartPkg = require("./chart.min.js");
 }
 
 module.exports = {

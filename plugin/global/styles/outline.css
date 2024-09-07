@@ -1,7 +1,7 @@
 #plugin-outline {
     left: 80%;
-    top: 25%;
-    width: 150px;
+    top: 15%;
+    width: 170px;
 }
 
 #plugin-outline .plugin-outline-header,
@@ -36,6 +36,12 @@
 #plugin-outline .plugin-outline-item[item-type="table"] {
     background-color: ${this.config.COLOR.table};
 }
+#plugin-outline .plugin-outline-item[item-type="link"] {
+    background-color: ${this.config.COLOR.link};
+}
+#plugin-outline .plugin-outline-item[item-type="math"] {
+    background-color: ${this.config.COLOR.math};
+}
 #plugin-outline .plugin-outline-item.active,
 #plugin-outline .plugin-outline-item:hover {
     color: #dd4a68;
@@ -57,7 +63,7 @@
 }
 
 #plugin-outline .plugin-outline-list {
-    height: 400px;
+    height: 450px;
     padding: 1px 0;
     overflow-x: hidden;
     overflow-y: auto;

@@ -8,7 +8,6 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     html = () => {
         const { tool_function, show_message, hotkey_function } = this.config;
         const keyTranslate = { arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space" };
-        // {operation: [hint, iconClass]}
         const funcTranslate = {
             dummy: ['无功能', ''],
             info: ['', 'fa fa-question-circle'],
@@ -81,14 +80,14 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             })
         return `
             <div id="plugin-image-reviewer" class="plugin-cover-content plugin-common-hidden">
-                <div class="plugin-cover-content mask"></div>
-                <img class="review-image"/>
-                <div class="review-item" action="get-previous"><i class="fa fa-angle-left"></i></div>
-                <div class="review-item" action="get-next"><i class="fa fa-angle-right"></i></div>
                 <div class="review-tool">
                     <div class="review-message">${messageList.join("")}</div>
                     <div class="review-options">${operationList.join("")}</div>
                 </div>
+                <img class="review-image"/>
+                <div class="review-item" action="get-previous"><i class="fa fa-angle-left"></i></div>
+                <div class="review-item" action="get-next"><i class="fa fa-angle-right"></i></div>
+                <div class="plugin-cover-content mask"></div>
             </div>
         `
     }
@@ -121,29 +120,26 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             this.entities.mask.addEventListener("click", this.callback);
         }
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.close());
-
-        const that = this;
-        $("#plugin-image-reviewer .review-item").on("click", function () {
-            that.showImage(this.getAttribute("action") === "get-next");
+        this.entities.reviewer.querySelectorAll(".review-item").forEach(ele => {
+            ele.addEventListener("click", ev => this.showImage(ev.target.getAttribute("action") === "get-next"));
         })
-
         this.entities.reviewer.addEventListener("wheel", ev => {
             ev.preventDefault();
             const list = this.getFuncList(ev, "wheel");
-            list[ev.deltaY > 0 ? 1 : 0]();
+            const func = list[ev.deltaY > 0 ? 1 : 0];
+            (func instanceof Function) && func();
         }, { passive: false });
-
         this.entities.image.addEventListener("mousedown", ev => {
             const list = this.getFuncList(ev, "mousedown");
-            list[ev.button]();
+            const func = list[ev.button];
+            (func instanceof Function) && func();
         })
-
         this.entities.ops.addEventListener("click", ev => {
             const target = ev.target.closest("[option]");
             if (!target) return
             const option = target.getAttribute("option");
             const arg = option.indexOf("rotate") !== -1 ? 90 : undefined;
-            this[option] && this[option](arg);
+            (this[option] instanceof Function) && this[option](arg);
         })
     }
 
@@ -268,7 +264,11 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     initImageMsgGetter = () => {
         if (this.imageGetter) return;
 
-        const images = Array.from(this.utils.entities.querySelectorAllInWrite("img"));
+        let images = Array.from(this.utils.entities.querySelectorAllInWrite("img"));
+        if (this.config.filter_error_image) {
+            images = images.filter(this.utils.isImgEmbed);
+        }
+
         this.imageGetter = this._imageMsgGetter(images);
 
         if (images.length === 0) return;
@@ -340,11 +340,6 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
     }
 
-    handleBlurBackground = (remove = false) => {
-        if (this.config.blur_level === 0) return;
-        this.entities.mask.style["backdrop-filter"] = remove ? "" : `blur(${this.config.blur_level}px)`;
-    }
-
     handleHotkey = (remove = false) => {
         const unregister = item => this.utils.hotkeyHub.unregister(item[0]);
         const register = item => this.utils.hotkeyHub.registerSingle(item[0], this[item[1]] || this.dummy);
@@ -402,13 +397,11 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     }
     show = () => {
         document.activeElement.blur();
-        this.handleBlurBackground(false);
         this.handleHotkey(false);
         this.utils.show(this.entities.reviewer);
         this.showImage();
     }
     close = () => {
-        this.handleBlurBackground(true);
         this.handleHotkey(true);
         this.handlePlayTimer(true);
         this.utils.hide(this.entities.reviewer);
