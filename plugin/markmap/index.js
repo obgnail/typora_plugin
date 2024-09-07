@@ -529,17 +529,23 @@ class tocMarkmap {
             FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid",
         }
         const { DEFAULT_TOC_OPTIONS: _ops, BORDER_WHEN_DOWNLOAD_SVG: _border } = this.config;
+        const needUpdateKey = ["DEFAULT_TOC_OPTIONS", "BORDER_WHEN_DOWNLOAD_SVG"];
+        const _setConfig = (config, key, value) => {
+            config[key] = value;
+            config === this.config && needUpdateKey.push(key);
+        }
         const inputKV = (label, key, config = this.config) => ({
             label,
             info: INFO[key],
             value: config[key],
-            callback: value => config[key] = value
+            callback: value => _setConfig(config, key, value)
         });
         const checkboxKV = components => ({
             type: "checkbox",
             list: components.map(({ label, key, config = this.config }) => ({ label, info: INFO[key], value: key, checked: Boolean(config[key]) })),
-            callback: submit => components.forEach(({ key, config = this.config }) => config[key] = submit.includes(key)),
+            callback: submit => components.forEach(({ key, config = this.config }) => _setConfig(config, key, submit.includes(key))),
         })
+        const borderKV = (label, idx) => ({ label, value: _border[idx], callback: value => _border[idx] = value });
 
         const color = () => {
             const toValue = colorList => colorList.join("_");
@@ -599,7 +605,6 @@ class tocMarkmap {
                 { label: "尽力解决样式兼容性问题", key: "COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG" },
                 { label: "导出后自动打开文件所在目录", key: "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG" },
             ]
-            const borderKV = (label, idx) => ({ label, value: _border[idx], callback: value => _border[idx] = value });
             return [
                 { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("左右边框宽度", 0) },
                 { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("上下边框宽度", 1) },
@@ -614,12 +619,7 @@ class tocMarkmap {
         if (response === 1) {
             components.forEach(c => c.callback(c.submit));
             await this.redraw(this.markmap.options);
-            const update = this.utils.fromObject(this.config, [
-                "HEIGHT_PERCENT_WHEN_PIN_UP", "WIDTH_PERCENT_WHEN_PIN_RIGHT", "HEIGHT_PERCENT_WHEN_INIT", "WIDTH_PERCENT_WHEN_INIT",
-                "DEFAULT_TOC_OPTIONS", "LOCALE_HEIGHT_RATIO", "REMEMBER_FOLD_WHEN_UPDATE", "AUTO_FIT_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
-                "BORDER_WHEN_DOWNLOAD_SVG", "FOLDER_WHEN_DOWNLOAD_SVG", "FILENAME_WHEN_DOWNLOAD_SVG", "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG",
-                "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG", "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG", "COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG",
-            ]);
+            const update = this.utils.fromObject(this.config, needUpdateKey);
             await this.utils.saveConfig(this.controller.fixedName, update);
         }
     }
