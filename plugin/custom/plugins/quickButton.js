@@ -82,17 +82,12 @@ class quickButtonPlugin extends BaseCustomPlugin {
         const children = [];
         for (let x = 0; x <= maxX; x++) {
             for (let y = 0; y <= maxY; y++) {
-                const button = mapCoordToBtn.get(`${maxX - x}-${maxY - y}`);
-                const ele = !button
+                const btn = mapCoordToBtn.get(`${maxX - x}-${maxY - y}`);
+                const ele = !btn
                     ? { class_: "action-item plu-unused" }
-                    : {
-                        class_: "action-item",
-                        action: button.action,
-                        style: button.style || {},
-                        children: [{ ele: "i", class_: button.iconClass }]
-                    }
-                if (button && !this.config.hide_button_hint) {
-                    ele["ty-hint"] = button.hint;
+                    : { class_: "action-item", action: btn.action, style: btn.style || {}, children: [{ ele: "i", class_: btn.iconClass }] }
+                if (btn && !this.config.hide_button_hint) {
+                    ele["ty-hint"] = btn.hint;
                 }
                 children.push(ele);
             }
@@ -107,7 +102,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
         return { maxX, maxY };
     }
 
-    toggle = force => document.querySelector("#plugin-quick-button").classList.toggle("plu-hidden", force);
+    toggle = force => this.utils.toggleVisible(document.querySelector("#plugin-quick-button"), force);
 
     flashScale = (ele, scale = 0.95, timeout = 80) => {
         ele.style.transform = `scale(${scale})`;

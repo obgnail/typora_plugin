@@ -35,7 +35,6 @@
     line-height: ${this.config.button_size};
 }
 
-#plugin-quick-button.plu-hidden,
 #plugin-quick-button .plu-hidden,
 #plugin-quick-button .plu-unused {
     visibility: hidden;
