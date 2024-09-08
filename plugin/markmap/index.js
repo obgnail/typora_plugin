@@ -530,20 +530,22 @@ class tocMarkmap {
         }
         const { DEFAULT_TOC_OPTIONS: _ops, BORDER_WHEN_DOWNLOAD_SVG: _border } = this.config;
         const needUpdateKey = ["DEFAULT_TOC_OPTIONS", "BORDER_WHEN_DOWNLOAD_SVG"];
-        const _setConfig = (config, key, value) => {
-            config[key] = value;
-            config === this.config && needUpdateKey.push(key);
+        const _getConfig = key => (key in _ops) ? _ops[key] : this.config[key];
+        const _setConfig = (key, value) => {
+            const isOPS = key in _ops;
+            (isOPS ? _ops : this.config)[key] = value;
+            !isOPS && needUpdateKey.push(key);
         }
-        const inputKV = (label, key, config = this.config) => ({
+        const inputKV = (label, key) => ({
             label,
             info: INFO[key],
-            value: config[key],
-            callback: value => _setConfig(config, key, value)
+            value: _getConfig(key),
+            callback: value => _setConfig(key, value),
         });
         const checkboxKV = components => ({
             type: "checkbox",
-            list: components.map(({ label, key, config = this.config }) => ({ label, info: INFO[key], value: key, checked: Boolean(config[key]) })),
-            callback: submit => components.forEach(({ key, config = this.config }) => _setConfig(config, key, submit.includes(key))),
+            list: components.map(({ label, key }) => ({ label, info: INFO[key], value: key, checked: Boolean(_getConfig(key)) })),
+            callback: submit => components.forEach(({ key }) => _setConfig(key, submit.includes(key))),
         })
         const borderKV = (label, idx) => ({ label, value: _border[idx], callback: value => _border[idx] = value });
 
@@ -570,14 +572,14 @@ class tocMarkmap {
         }
 
         const ranges = () => [
-            { type: "range", inline: true, min: 1, max: 6, step: 1, ...inputKV("固定配色的分支等级", "colorFreezeLevel", _ops) },
-            { type: "range", inline: true, min: 1, max: 6, step: 1, ...inputKV("分支展开等级", "initialExpandLevel", _ops) },
-            { type: "range", inline: true, min: 0, max: 100, step: 1, ...inputKV("节点水平间距", "spacingHorizontal", _ops) },
-            { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点垂直间距", "spacingVertical", _ops) },
-            { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点内部边距", "paddingX", _ops) },
-            { type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("节点最大长度", "maxWidth", _ops) },
-            { type: "range", inline: true, min: 100, max: 1000, step: 100, ...inputKV("动画持续时间", "duration", _ops) },
-            { type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...inputKV("窗口填充率", "fitRatio", _ops) },
+            { type: "range", inline: true, min: 1, max: 6, step: 1, ...inputKV("固定配色的分支等级", "colorFreezeLevel") },
+            { type: "range", inline: true, min: 1, max: 6, step: 1, ...inputKV("分支展开等级", "initialExpandLevel") },
+            { type: "range", inline: true, min: 0, max: 100, step: 1, ...inputKV("节点水平间距", "spacingHorizontal") },
+            { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点垂直间距", "spacingVertical") },
+            { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点内部边距", "paddingX") },
+            { type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("节点最大长度", "maxWidth") },
+            { type: "range", inline: true, min: 100, max: 1000, step: 100, ...inputKV("动画持续时间", "duration") },
+            { type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...inputKV("窗口填充率", "fitRatio") },
             { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("窗口初始化宽度", "WIDTH_PERCENT_WHEN_INIT") },
             { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("窗口初始化高度", "HEIGHT_PERCENT_WHEN_INIT") },
             { type: "range", inline: true, min: 0.1, max: 1, step: 0.01, ...inputKV("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
@@ -587,9 +589,9 @@ class tocMarkmap {
 
         const ability = () => {
             const components = [
-                { label: "鼠标滚轮进行缩放", key: "zoom", config: _ops },
-                { label: "鼠标滚轮进行平移", key: "pan", config: _ops },
-                { label: "折叠时自动适配窗口", key: "autoFit", config: _ops },
+                { label: "鼠标滚轮进行缩放", key: "zoom" },
+                { label: "鼠标滚轮进行平移", key: "pan" },
+                { label: "折叠时自动适配窗口", key: "autoFit" },
                 { label: "记住已折叠的节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
                 { label: "更新时自动适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
                 { label: "折叠时自动折叠章节", key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD" },
