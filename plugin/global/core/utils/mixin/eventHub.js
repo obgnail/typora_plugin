@@ -115,15 +115,8 @@ class eventHub {
 
         this.utils.decorate(() => window, "onbeforeunload", () => this.publishEvent(this.eventType.beforeUnload))
 
-        new MutationObserver(mutationList => {
-            for (const mutation of mutationList) {
-                if (mutation.type === 'attributes' && mutation.attributeName === "class") {
-                    const value = document.body.getAttribute(mutation.attributeName);
-                    const openPage = value.indexOf("megamenu-opened") !== -1 || value.indexOf("show-preference-panel") !== -1;
-                    this.publishEvent(this.eventType.toggleSettingPage, openPage);
-                }
-            }
-        }).observe(document.body, { attributes: true });
+        this.utils.decorate(() => File && File.megaMenu, "showPreferencePanel", () => this.publishEvent(this.eventType.toggleSettingPage, true));
+        this.utils.decorate(() => File && File.megaMenu, "closePreferencePanel", () => this.publishEvent(this.eventType.toggleSettingPage, false));
 
         const debouncePublish = this.utils.debounce(() => this.publishEvent(this.eventType.fileEdited), 400);
         this.observer = new MutationObserver(mutationList => {
