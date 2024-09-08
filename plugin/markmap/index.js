@@ -83,7 +83,7 @@ class markmapPlugin extends BasePlugin {
 
 class fenceMarkmap {
     constructor(plugin) {
-        this.controller = plugin
+        this.controller = plugin;
         this.utils = plugin.utils;
         this.config = plugin.config;
         this.MarkmapLib = plugin.MarkmapLib;
@@ -239,6 +239,7 @@ class tocMarkmap {
         }
         this._fixConfig();
 
+        this.recoverColorScheme = this.candidateColorSchemes.CATEGORY10;
         this.modalOriginRect = null;
         this.contentOriginRect = null;
         this.pinUtils = {
@@ -509,119 +510,109 @@ class tocMarkmap {
     }
 
     setting = async () => {
-        const {
-            DEFAULT_TOC_OPTIONS: _ops,
-            FILENAME_WHEN_DOWNLOAD_SVG: _filename,
-            FOLDER_WHEN_DOWNLOAD_SVG: _folder,
-            BORDER_WHEN_DOWNLOAD_SVG: _border,
-            SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG: _showInFinder,
-            REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: _removeForeign,
-            REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: _removeUselessClass,
-            COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: _compatibleStyle,
-            REMEMBER_FOLD_WHEN_UPDATE: _rememberFold,
-            AUTO_FIT_WHEN_UPDATE: _fitWhenUpdate,
-            AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: _collapseWhenFold,
-            LOCALE_HEIGHT_RATIO: _localeRatio,
-        } = this.config;
         const INFO = {
-            COLOR: "如需自定义配色方案请前往配置文件",
+            color: "如需自定义配色方案请前往配置文件",
+            maxWidth: "0 表示无长度限制",
+            autoFit: "折叠图形节点时自动重新适配窗口",
+            colorFreezeLevel: "从某一等级开始，所有后代分支的配色保持不变",
             RECOVER_COLOR: "其他的配色相关配置将失效",
-            FREEZE_COLOR: "从某一等级开始，所有后代分支的配色保持不变",
-            LOCALE: "鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）",
-            MAX_WIDTH: "0 表示无长度限制",
-            FOLD_WHEN_UPDATE: "图形更新时不会展开已折叠节点",
-            FIT_WHEN_UPDATE: "图形更新时自动重新适配窗口",
-            FIT_WHEN_FOLD: "折叠图形节点时自动重新适配窗口",
-            COLLAPSE_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
-            COMPATIBLE_STYLE: "有些SVG解析器无法解析CSS变量，勾选此选项会自动替换CSS变量",
-            REMOVE_USELESS_CLASS: "若非需要手动修改导出的图形文件，请勿勾选此选项",
-            REMOVE_FOREIGN_OBJECT: "保留样式但兼容性较差。若图片显示异常，请勾选此选项",
-            SAVE_FOLDER: "为空则使用 tmp 目录",
-            SAVE_FILE: "支持变量：filename、timestamp、uuid",
+            LOCALE_HEIGHT_RATIO: "鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）",
+            HEIGHT_PERCENT_WHEN_PIN_UP: "弹窗固定到顶部时，窗口占当前视口的高度百分比",
+            WIDTH_PERCENT_WHEN_PIN_RIGHT: "弹窗固定到右侧时，窗口占当前视口的宽度百分比",
+            REMEMBER_FOLD_WHEN_UPDATE: "图形更新时不会展开已折叠节点",
+            AUTO_FIT_WHEN_UPDATE: "图形更新时自动重新适配窗口",
+            AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
+            COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: "有些SVG解析器无法解析CSS变量，勾选此选项会自动替换CSS变量",
+            REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若非需要手动修改导出的图形文件，请勿勾选此选项",
+            REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "保留样式但兼容性较差。若图片显示异常，请勾选此选项",
+            FOLDER_WHEN_DOWNLOAD_SVG: "为空则使用 tmp 目录",
+            FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid",
         }
-        const setCfg = (key, value) => this.config[key] = value;
-        const setWrapCfg = key => value => this.config[key] = value;
-        const KV = key => ({ value: _ops[key], callback: value => _ops[key] = value });
+        const { DEFAULT_TOC_OPTIONS: _ops, BORDER_WHEN_DOWNLOAD_SVG: _border } = this.config;
+        const needUpdateKey = ["DEFAULT_TOC_OPTIONS", "BORDER_WHEN_DOWNLOAD_SVG"];
+        const _getConfig = key => (key in _ops) ? _ops[key] : this.config[key];
+        const _setConfig = (key, value) => {
+            const isOPS = key in _ops;
+            (isOPS ? _ops : this.config)[key] = value;
+            !isOPS && needUpdateKey.push(key);
+        }
+        const inputKV = (label, key) => ({
+            label,
+            info: INFO[key],
+            value: _getConfig(key),
+            callback: value => _setConfig(key, value),
+        });
+        const checkboxKV = components => ({
+            type: "checkbox",
+            list: components.map(({ label, key }) => ({ label, info: INFO[key], value: key, checked: Boolean(_getConfig(key)) })),
+            callback: submit => components.forEach(({ key }) => _setConfig(key, submit.includes(key))),
+        })
+        const borderKV = (label, idx) => ({ label, value: _border[idx], callback: value => _border[idx] = value });
 
         const color = () => {
-            const RECOVER = "recover";
-            const DEFAULT_SCHEME = this.candidateColorSchemes.CATEGORY10;
             const toValue = colorList => colorList.join("_");
             const fromValue = str => str.split("_");
-            const toDisplay = colorList => {
+            const toLabel = colorList => {
                 const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`);
                 return `<div class="plugin-markmap-color-scheme">${inner.join("")}</div>`;
             }
             const curValue = toValue(_ops.color);
             const list = Object.values(this.candidateColorSchemes).map(colorList => {
                 const value = toValue(colorList);
-                const label = toDisplay(colorList);
+                const label = toLabel(colorList);
                 const checked = value === curValue;
                 return { value, label, checked };
             })
             if (!list.some(e => e.checked)) {
-                list.push({ value: curValue, label: toDisplay(_ops.color), checked: true });
+                list.push({ value: curValue, label: toLabel(_ops.color), checked: true });
             }
-            list.push({ value: RECOVER, label: "恢复默认", info: INFO.RECOVER_COLOR });
-            const callback = scheme => _ops.color = (scheme === RECOVER) ? DEFAULT_SCHEME : fromValue(scheme);
-            return { label: "配色方案", type: "radio", list, info: INFO.COLOR, callback };
+            list.push({ value: toValue(this.recoverColorScheme), label: "恢复默认", info: INFO.RECOVER_COLOR });
+            const callback = scheme => _ops.color = fromValue(scheme);
+            return { label: "配色方案", info: INFO.color, type: "radio", list, callback };
         }
 
         const ranges = () => [
-            { label: "固定配色的分支等级", type: "range", min: 1, max: 6, step: 1, inline: true, info: INFO.FREEZE_COLOR, ...KV("colorFreezeLevel") },
-            { label: "分支展开等级", type: "range", min: 1, max: 6, step: 1, inline: true, ...KV("initialExpandLevel") },
-            { label: "节点水平间距", type: "range", min: 1, max: 100, step: 1, inline: true, ...KV("spacingHorizontal") },
-            { label: "节点垂直间距", type: "range", min: 1, max: 50, step: 1, inline: true, ...KV("spacingVertical") },
-            { label: "节点内部边距", type: "range", min: 1, max: 50, step: 1, inline: true, ...KV("paddingX") },
-            { label: "节点最大长度", type: "range", min: 0, max: 1000, step: 10, inline: true, info: INFO.MAX_WIDTH, ...KV("maxWidth") },
-            { label: "动画持续时间", type: "range", min: 100, max: 1000, step: 100, inline: true, ...KV("duration") },
-            { label: "窗口填充率", type: "range", min: 0.5, max: 1, step: 0.01, inline: true, ...KV("fitRatio") },
-            { label: "定位的视口高度", type: "range", value: _localeRatio, min: 0.1, max: 1, step: 0.01, inline: true, info: INFO.LOCALE, callback: setWrapCfg("LOCALE_HEIGHT_RATIO") }
+            { type: "range", inline: true, min: 1, max: 6, step: 1, ...inputKV("固定配色的分支等级", "colorFreezeLevel") },
+            { type: "range", inline: true, min: 1, max: 6, step: 1, ...inputKV("分支展开等级", "initialExpandLevel") },
+            { type: "range", inline: true, min: 0, max: 100, step: 1, ...inputKV("节点水平间距", "spacingHorizontal") },
+            { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点垂直间距", "spacingVertical") },
+            { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点内部边距", "paddingX") },
+            { type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("节点最大长度", "maxWidth") },
+            { type: "range", inline: true, min: 100, max: 1000, step: 100, ...inputKV("动画持续时间", "duration") },
+            { type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...inputKV("窗口填充率", "fitRatio") },
+            { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("窗口初始化宽度", "WIDTH_PERCENT_WHEN_INIT") },
+            { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("窗口初始化高度", "HEIGHT_PERCENT_WHEN_INIT") },
+            { type: "range", inline: true, min: 0.1, max: 1, step: 0.01, ...inputKV("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
+            { type: "range", inline: true, min: 10, max: 95, step: 1, ...inputKV("固定顶部的视口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
+            { type: "range", inline: true, min: 10, max: 95, step: 1, ...inputKV("固定右侧的视口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
         ]
 
         const ability = () => {
-            const { zoom = true, pan = true, autoFit = true } = _ops;
-            const list = [
-                { label: "鼠标滚轮进行缩放", value: "zoom", checked: zoom },
-                { label: "鼠标滚轮进行平移", value: "pan", checked: pan },
-                { label: "记住已折叠的节点", value: "foldWhenUpdate", checked: _rememberFold, info: INFO.FOLD_WHEN_UPDATE },
-                { label: "更新时自动适配窗口", value: "fitWhenUpdate", checked: _fitWhenUpdate, info: INFO.FIT_WHEN_UPDATE },
-                { label: "折叠时自动适配窗口", value: "fitWhenFold", checked: autoFit, info: INFO.FIT_WHEN_FOLD },
-                { label: "折叠时自动折叠章节", value: "collapseWhenFold", checked: _collapseWhenFold, info: INFO.COLLAPSE_WHEN_FOLD },
-            ];
-            const callback = submit => {
-                _ops.zoom = submit.includes("zoom");
-                _ops.pan = submit.includes("pan");
-                _ops.autoFit = submit.includes("fitWhenFold");
-                setCfg("REMEMBER_FOLD_WHEN_UPDATE", submit.includes("foldWhenUpdate"));
-                setCfg("AUTO_FIT_WHEN_UPDATE", submit.includes("fitWhenUpdate"));
-                setCfg("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", submit.includes("collapseWhenFold"));
-            };
-            return { label: "", legend: "能力", type: "checkbox", list, callback }
+            const components = [
+                { label: "鼠标滚轮进行缩放", key: "zoom" },
+                { label: "鼠标滚轮进行平移", key: "pan" },
+                { label: "折叠时自动适配窗口", key: "autoFit" },
+                { label: "记住已折叠的节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
+                { label: "更新时自动适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
+                { label: "折叠时自动折叠章节", key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD" },
+            ]
+            return { label: "", legend: "能力", ...checkboxKV(components) }
         }
 
         const download = () => {
             const fieldset = "导出";
-            const placeholder = this.utils.tempFolder;
-            const borderKV = idx => ({ value: _border[idx], callback: w => _border[idx] = w });
-            const checkboxList = [
-                { label: "删除无用的类名", value: "removeUselessClass", checked: _removeUselessClass, info: INFO.REMOVE_USELESS_CLASS },
-                { label: "替换 &lt;foreignObject&gt; 标签", value: "removeForeignObject", checked: _removeForeign, info: INFO.REMOVE_FOREIGN_OBJECT },
-                { label: "尽力解决样式兼容性问题", value: "compatibleStyle", checked: _compatibleStyle, info: INFO.COMPATIBLE_STYLE },
-                { label: "导出后自动打开文件所在目录", value: "showInFinder", checked: _showInFinder },
-            ];
-            const checkboxCallback = submit => {
-                setCfg("SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG", submit.includes("showInFinder"));
-                setCfg("COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG", submit.includes("compatibleStyle"));
-                setCfg("REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG", submit.includes("removeUselessClass"));
-                setCfg("REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG", submit.includes("removeForeignObject"));
-            }
+            const components = [
+                { label: "删除无用的类名", key: "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG" },
+                { label: "替换 &lt;foreignObject&gt; 标签", key: "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG" },
+                { label: "尽力解决样式兼容性问题", key: "COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG" },
+                { label: "导出后自动打开文件所在目录", key: "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG" },
+            ]
             return [
-                { fieldset, label: "左右边框宽度", type: "number", min: 1, max: 1000, step: 1, inline: true, ...borderKV(0) },
-                { fieldset, label: "上下边框宽度", type: "number", min: 1, max: 1000, step: 1, inline: true, ...borderKV(1) },
-                { fieldset, label: "保存目录名", type: "input", value: _folder, inline: true, info: INFO.SAVE_FOLDER, placeholder, callback: setWrapCfg("FOLDER_WHEN_DOWNLOAD_SVG") },
-                { fieldset, label: "保存文件名", type: "input", value: _filename, inline: true, info: INFO.SAVE_FILE, callback: setWrapCfg("FILENAME_WHEN_DOWNLOAD_SVG") },
-                { fieldset, label: "", type: "checkbox", list: checkboxList, callback: checkboxCallback },
+                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("左右边框宽度", 0) },
+                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("上下边框宽度", 1) },
+                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...inputKV("保存目录名", "FOLDER_WHEN_DOWNLOAD_SVG") },
+                { fieldset, type: "input", inline: true, ...inputKV("保存文件名", "FILENAME_WHEN_DOWNLOAD_SVG") },
+                { fieldset, label: "", ...checkboxKV(components) },
             ]
         }
 
@@ -630,11 +621,7 @@ class tocMarkmap {
         if (response === 1) {
             components.forEach(c => c.callback(c.submit));
             await this.redraw(this.markmap.options);
-            const update = this.utils.fromObject(this.config, [
-                "DEFAULT_TOC_OPTIONS", "LOCALE_HEIGHT_RATIO", "REMEMBER_FOLD_WHEN_UPDATE", "AUTO_FIT_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
-                "BORDER_WHEN_DOWNLOAD_SVG", "FOLDER_WHEN_DOWNLOAD_SVG", "FILENAME_WHEN_DOWNLOAD_SVG", "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG",
-                "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG", "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG", "COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG",
-            ]);
+            const update = this.utils.fromObject(this.config, needUpdateKey);
             await this.utils.saveConfig(this.controller.fixedName, update);
         }
     }
@@ -790,7 +777,7 @@ class tocMarkmap {
         if (this.pinUtils.isPinUp) {
             toggleFunc = "add";
             const { top, height, width, left } = this.contentOriginRect;
-            const newHeight = height * this.config.HEIGHT_PRECENT_WHEN_PIN_UP / 100;
+            const newHeight = height * this.config.HEIGHT_PERCENT_WHEN_PIN_UP / 100;
             modalRect = { left, top, width, height: newHeight };
             contentTop = top + newHeight;
             showFunc = "show";
@@ -831,7 +818,7 @@ class tocMarkmap {
         if (this.pinUtils.isPinRight) {
             toggleFunc = "add";
             const { top, width, height, right } = this.contentOriginRect;
-            const newWidth = width * this.config.WIDTH_PRECENT_WHEN_PIN_RIGHT / 100;
+            const newWidth = width * this.config.WIDTH_PERCENT_WHEN_PIN_RIGHT / 100;
             modalRect = { top, height, width: newWidth, left: right - newWidth };
             contentRight = `${right - newWidth}px`;
             contentWidth = `${width - newWidth}px`;
@@ -927,7 +914,8 @@ class tocMarkmap {
 
     _initModalRect = () => {
         const { left, width, height } = this.entities.content.getBoundingClientRect();
-        const { LEFT_PERCENT_WHEN_INIT: l, WIDTH_PERCENT_WHEN_INIT: w, HEIGHT_PERCENT_WHEN_INIT: h } = this.config;
+        const { WIDTH_PERCENT_WHEN_INIT: w, HEIGHT_PERCENT_WHEN_INIT: h } = this.config;
+        const l = (100 - w) / 2;
         Object.assign(this.entities.modal.style, {
             left: `${left + width * l / 100}px`,
             width: `${width * w / 100}px`,

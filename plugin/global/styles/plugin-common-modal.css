@@ -71,6 +71,10 @@
     margin-bottom: 15px;
 }
 
+.plugin-custom-modal-body .form-fieldset-group .form-group:first-of-type {
+    margin-top: 15px;
+}
+
 .plugin-custom-modal-body .form-inline-group {
     display: inline-flex;
     justify-content: space-between;

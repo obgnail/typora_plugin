@@ -31,19 +31,14 @@ class wavedromPlugin extends BaseCustomPlugin {
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        const yieldNumber = (() => {
-            let num = 0;
-            return () => ++num
-        })();
-        const getWrapElement = () => `<div class="plugin-wavedrom-content" id="${this.prefix + yieldNumber()}"></div>`
-
+        let idx = 0;
         this.utils.thirdPartyDiagramParser.register({
             lang: this.config.LANGUAGE,
             mappingLang: "javascript",
             destroyWhenUpdate: false,
             interactiveMode: this.config.INTERACTIVE_MODE,
             checkSelector: ".plugin-wavedrom-content",
-            wrapElement: getWrapElement,
+            wrapElement: () => `<div class="plugin-wavedrom-content" id="${this.prefix + ++idx}"></div>`,
             css: {
                 height: this.config.DEFAULT_FENCE_HEIGHT,
                 "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR
@@ -69,7 +64,7 @@ class wavedromPlugin extends BaseCustomPlugin {
     versionGetter = () => this.wavedromPkg && this.wavedromPkg.version
 
     lazyLoad = () => {
-        this.wavedromPkg = require("./wavedrom.min");
+        this.wavedromPkg = require("./wavedrom.min.js");
         window.WaveSkin = this.wavedromPkg.waveSkin;  // renderWaveForm() will use window.WaveSkin
     }
 

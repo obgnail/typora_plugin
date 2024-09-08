@@ -99,53 +99,57 @@ class dialog {
         }
     }
 
-    newSingleWidget = component => {
-        if (!component) return "";
+    newSingleWidget = comp => {
+        if (!comp) return "";
 
         let label = "label";
         let control = "";
-        const type = component.type.toLowerCase();
+        const type = comp.type.toLowerCase();
         const disabled = el => el.disabled ? "disabled" : "";
+        const checked = el => el.checked ? "checked" : "";
+        const placeholder = el => el.placeholder ? `placeholder="${el.placeholder}"` : "";
+        const range = el => `min="${el.min || 0}" max="${el.max || 100}" step="${el.step || 1}" value="${el.value || 1}"`;
         const genInfo = el => el.info ? `<span class="modal-label-info ion-information-circled" title="${el.info}"></span>` : "";
         switch (type) {
             case "input":
             case "password":
             case "file":
                 const t = type === "input" ? "text" : type;
-                control = `<input type="${t}" class="form-control" value="${component.value || ""}" placeholder="${component.placeholder || ""}" ${disabled(component)}>`;
+                control = `<input type="${t}" class="form-control" value="${comp.value || ""}" ${placeholder(comp)} ${disabled(comp)}>`;
                 break
             case "number":
-                control = `<input type="number" class="form-control" min="${component.min}" max="${component.max}" step="${component.step}" value="${component.value}" placeholder="${component.placeholder || ""}" ${disabled(component)}/>`
+                control = `<input type="number" class="form-control" ${range(comp)} ${placeholder(comp)} ${disabled(comp)}>`
                 break
             case "range":
-                const { min = 0, max = 100, step = 1, value = 1 } = component;
                 control = `<div class="plugin-custom-modal-range">
-                            <input type="range" min="${min}" max="${max}" step="${step}" value="${value}" ${disabled(component)} oninput="this.nextElementSibling.innerText = this.value;">
-                            <div class="modal-range-value">${value}</div>
+                            <input type="range" ${range(comp)} ${disabled(comp)} oninput="this.nextElementSibling.innerText = this.value;">
+                            <div class="modal-range-value">${comp.value}</div>
                          </div>`
                 break
             case "checkbox":
             case "radio":
-                const checked = c => c.checked ? "checked" : "";
                 const name = this.utils.randomString();
-                const elements = component.list.map(el => {
+                const elements = comp.list.map(el => {
                     const id = name + "-" + this.utils.randomString();
-                    return `<div class="${type}"><input type="${type}" id="${id}" name="${name}" value="${el.value}" ${disabled(el)} ${checked(el)}><label for="${id}">${el.label}${genInfo(el)}</label></div>`
+                    return `<div class="${type}">
+                                <input type="${type}" id="${id}" name="${name}" value="${el.value}" ${disabled(el)} ${checked(el)}>
+                                <label for="${id}">${el.label}${genInfo(el)}</label>
+                            </div>`
                 });
                 const content = elements.join("");
-                control = (component.legend === undefined) ? content : `<fieldset><legend>${component.legend}</legend>${content}</fieldset>`;
+                control = (comp.legend === undefined) ? content : `<fieldset><legend>${comp.legend}</legend>${content}</fieldset>`;
                 break
             case "select":
-                const selected = option => (option === component.selected) ? "selected" : "";
-                const map = component.map || Object.fromEntries(component.list.map(item => [item, item]));
+                const selected = option => (option === comp.selected) ? "selected" : "";
+                const map = comp.map || Object.fromEntries(comp.list.map(item => [item, item]));
                 const options = Object.entries(map).map(([value, option]) => `<option value="${value}" ${selected(value)}>${option}</option>`);
-                control = `<select class="form-control" ${disabled(component)}>${options.join("")}</select>`;
+                control = `<select class="form-control" ${disabled(comp)}>${options.join("")}</select>`;
                 break
             case "textarea":
-                const rows = component.rows || 3;
-                const cnt = component.content || "";
-                const readonly = component.readonly || "";
-                control = `<textarea class="form-control" rows="${rows}" ${readonly} placeholder="${component.placeholder || ""}" ${disabled(component)}>${cnt}</textarea>`;
+                const rows = comp.rows || 3;
+                const cnt = comp.content || "";
+                const readonly = comp.readonly || "";
+                control = `<textarea class="form-control" rows="${rows}" ${readonly} ${placeholder(comp)} ${disabled(comp)}>${cnt}</textarea>`;
                 break
             case "pre":
                 label = "pre";
@@ -155,9 +159,9 @@ class dialog {
                 label = "span";
                 break
         }
-        const class_ = component.inline ? "form-inline-group" : "form-block-group";
-        const label_ = component.label ? `<${label}>${component.label}${genInfo(component)}</${label}>` : "";
-        return `<div class="form-group ${class_}" component-id="${component.id}">${label_}${control}</div>`;
+        const class_ = comp.inline ? "form-inline-group" : "form-block-group";
+        const label_ = comp.label ? `<${label}>${comp.label}${genInfo(comp)}</${label}>` : "";
+        return `<div class="form-group ${class_}" component-id="${comp.id}">${label_}${control}</div>`;
     }
 
     newGroupWidget = components => {
