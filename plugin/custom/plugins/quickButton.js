@@ -22,8 +22,6 @@ class quickButtonPlugin extends BaseCustomPlugin {
             group.addEventListener("mousedown", ev => {
                 const target = ev.target.closest(".action-item");
                 if (!target) return;
-                ev.stopPropagation();
-                ev.preventDefault();
                 if (ev.button === 2 && this.config.support_right_click) {
                     const buttons = Array.from(group.children);
                     this.isHidden = !buttons.some(ele => ele.classList.contains("plu-hidden"));
@@ -58,9 +56,9 @@ class quickButtonPlugin extends BaseCustomPlugin {
             }
             if (cb instanceof Function) {
                 const style = {};
-                size && (style["fontSize"] = size);
-                color && (style["color"] = color);
-                bgColor && (style["backgroundColor"] = bgColor);
+                if (size) style.fontSize = size;
+                if (color) style.color = color;
+                if (bgColor) style.backgroundColor = bgColor;
                 const action = this.utils.randomString();
                 this.register(action, coordinate, hint, icon, style, cb);
             }
@@ -82,22 +80,17 @@ class quickButtonPlugin extends BaseCustomPlugin {
         const children = [];
         for (let x = 0; x <= maxX; x++) {
             for (let y = 0; y <= maxY; y++) {
-                const button = mapCoordToBtn.get(`${maxX - x}-${maxY - y}`);
-                const ele = !button
+                const btn = mapCoordToBtn.get(`${maxX - x}-${maxY - y}`);
+                const ele = !btn
                     ? { class_: "action-item plu-unused" }
-                    : {
-                        class_: "action-item",
-                        action: button.action,
-                        style: button.style || {},
-                        children: [{ ele: "i", class_: button.iconClass }]
-                    }
-                if (button && !this.config.hide_button_hint) {
-                    ele["ty-hint"] = button.hint;
+                    : { class_: `action-item ${btn.iconClass}`, action: btn.action, style: btn.style }
+                if (btn && !this.config.hide_button_hint) {
+                    ele["ty-hint"] = btn.hint;
                 }
                 children.push(ele);
             }
         }
-        return [{ id: "plugin-quick-button", children: children }]
+        return [{ id: "plugin-quick-button", children }]
     }
 
     getMax = () => {
@@ -107,7 +100,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
         return { maxX, maxY };
     }
 
-    toggle = force => document.querySelector("#plugin-quick-button").classList.toggle("plu-hidden", force);
+    toggle = force => this.utils.toggleVisible(document.querySelector("#plugin-quick-button"), force);
 
     flashScale = (ele, scale = 0.95, timeout = 80) => {
         ele.style.transform = `scale(${scale})`;

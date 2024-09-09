@@ -5,37 +5,32 @@
 #plugin-quick-button {
     position: fixed;
     display: grid;
+    z-index: 9998;
+    font-size: 17px;
+    text-align: center;
     grid-template-columns: repeat(${colCount}, 1fr);
     grid-template-rows: repeat(${rowCount}, 1fr);
     gap: ${this.config.button_gap};
     right: ${this.config.position_right};
     bottom: ${this.config.position_bottom};
-    z-index: 9998;
-    font-size: 17px;
-    text-align: center;
     color: var(--active-file-border-color);
 }
 
 #plugin-quick-button .action-item {
+    cursor: pointer;
+    transition: all 50ms ease-in 0s;
     width: ${this.config.button_size};
     height: ${this.config.button_size};
-    cursor: pointer;
+    line-height: ${this.config.button_size};
     box-shadow: ${this.config.button_box_shadow};
     border-radius: ${this.config.button_border_radius};
-    transition: all 50ms ease-in 0s;
 }
 
 #plugin-quick-button .action-item:hover {
-    box-shadow: 0 2px 10px 3px rgba(0, 0, 0, .15);
     transform: translateY(-2px);
+    box-shadow: 0 2px 10px 3px rgba(0, 0, 0, .15);
 }
 
-#plugin-quick-button .action-item i {
-    display: block;
-    line-height: ${this.config.button_size};
-}
-
-#plugin-quick-button.plu-hidden,
 #plugin-quick-button .plu-hidden,
 #plugin-quick-button .plu-unused {
     visibility: hidden;
