@@ -16,7 +16,7 @@ class eventHub {
             beforeFileOpen: "beforeFileOpen",                           // 打开文件之前
             fileOpened: "fileOpened",                                   // 打开文件之后
             otherFileOpened: "otherFileOpened",                         // 和fileOpened的区别：重新打开当前标签不会触发otherFileOpened，但是fileOpened会
-            fileContentLoaded: "fileContentLoaded",                     // 文件内容加载完毕之后(依赖window_tab)
+            fileContentLoaded: "fileContentLoaded",                     // 文件内容加载完毕之后
             fileEdited: "fileEdited",                                   // 文件编辑后
             beforeUnload: "beforeUnload",                               // 退出Typora之前
             beforeToggleSourceMode: "beforeToggleSourceMode",           // 进入源码模式之前
@@ -75,6 +75,18 @@ class eventHub {
                 this.filepath !== filePath && this.publishEvent(this.eventType.otherFileOpened, filePath);
             }
         )
+
+        this.utils.loopDetector(() => File, () => {
+            const attr = File.loadInitData ? "loadInitData" : "loadFile";
+            const onContentLoaded = () => this.publishEvent(this.eventType.fileContentLoaded, this.utils.getFilePath());
+            this.utils.decorate(() => File, attr, null, result => {
+                if (attr === "loadFile") {
+                    result.then(onContentLoaded);
+                } else {
+                    onContentLoaded();
+                }
+            })
+        })
 
         this.utils.loopDetector(() => File && this.utils.getFilePath(), () => {
             const filePath = this.utils.getFilePath();

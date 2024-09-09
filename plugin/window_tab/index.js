@@ -29,7 +29,6 @@ class windowTabBarPlugin extends BasePlugin {
         }
         this.localOpen = false;
         this.checkTabsInterval = null;
-        this.loopDetectInterval = 35;
         this.saveTabFilePath = this.utils.joinPath("./plugin/window_tab/save_tabs.json");
         this.tabUtil = {
             tabs: [],
@@ -58,6 +57,7 @@ class windowTabBarPlugin extends BasePlugin {
             this._hideTabBar();
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, this.openTab);
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.firstFileInit, this.openTab);
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, this._scrollContent);
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial");
             const isHeaderReady = () => this.utils.isBetaVersion ? document.querySelector("header").getBoundingClientRect().height : true
             const adjustTop = () => setTimeout(() => {
@@ -75,7 +75,7 @@ class windowTabBarPlugin extends BasePlugin {
                 // 调整正文区域的顶部位置，以免被tab遮挡
                 this._adjustContentTop();
             }, 200);
-            this.utils.loopDetector(isHeaderReady, adjustTop, this.loopDetectInterval, 1000);
+            this.utils.loopDetector(isHeaderReady, adjustTop, 35, 1000);
         }
         const handleClick = () => {
             this.entities.tabBar.addEventListener("click", ev => {
@@ -625,7 +625,8 @@ class windowTabBarPlugin extends BasePlugin {
     // 问题是我压根不知道content什么时候加载好
     // 解决方法: 轮询设置scrollTop，当连续3次scrollTop不再改变，就判断content加载好了
     // 这种方法很不环保，很ugly。但是我确实也想不到在不修改frame.js的前提下该怎么做了
-    _scrollContent = activeTab => {
+    _scrollContent = filepath => {
+        const activeTab = this.tabUtil.tabs.find(e => e.path === filepath);
         if (!activeTab) return;
 
         let count = 0;
@@ -643,9 +644,8 @@ class windowTabBarPlugin extends BasePlugin {
             }
             if (count === stopCount || new Date().getTime() > end) {
                 clearInterval(_timer);
-                this.utils.eventHub.publishEvent(this.utils.eventHub.eventType.fileContentLoaded, filePath);
             }
-        }, this.loopDetectInterval);
+        }, 70);
     }
 
     // tabs->DOM的简易数据单向绑定
@@ -665,7 +665,6 @@ class windowTabBarPlugin extends BasePlugin {
             tabDiv.classList.toggle("active", active);
             if (active) {
                 tabDiv.scrollIntoView();
-                this._scrollContent(tab);
             }
 
             tabDiv = tabDiv.nextElementSibling;
