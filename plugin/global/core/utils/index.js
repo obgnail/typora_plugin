@@ -128,45 +128,7 @@ class utils {
 
 
     ////////////////////////////// 纯函数 //////////////////////////////
-    static compareVersion = (ver1, ver2) => {
-        if (ver1 === "" && ver2 !== "") {
-            return -1
-        } else if (ver2 === "" && ver1 !== "") {
-            return 1
-        }
-        const arr1 = ver1.split(".");
-        const arr2 = ver2.split(".");
-        const maxLength = Math.max(arr1.length, arr2.length);
-        for (let i = 0; i < maxLength; i++) {
-            const num1 = parseInt(arr1[i] || 0);
-            const num2 = parseInt(arr2[i] || 0);
-            if (num1 !== num2) {
-                return num1 - num2;
-            }
-        }
-        return 0
-    }
-
-    /**
-     * @example merge({ a: [{ b: 2 }] }, { a: [{ c: 2 }] }) -> { a: [{ c: 2 }] }
-     * @example merge({ o: { a: 3 } }, { o: { b: 4 } }) -> { o: { a: 3, b: 4 } }
-     */
-    static merge = (source, other) => {
-        if (!this.isObject(source) || !this.isObject(other)) {
-            return other === undefined ? source : other
-        }
-        return Object.keys({ ...source, ...other }).reduce((obj, key) => {
-            const isArray = Array.isArray(source[key]) && Array.isArray(other[key])
-            obj[key] = isArray ? other[key] : this.merge(source[key], other[key])
-            return obj
-        }, Array.isArray(source) ? [] : {})
-    }
-
-    static fromObject = (obj, attrs) => {
-        const newObj = {};
-        attrs.forEach(attr => obj[attr] !== undefined && (newObj[attr] = obj[attr]));
-        return newObj;
-    }
+    static noop = () => undefined
 
     /** @description param fn cannot be an async function that returns promiseLike object */
     static throttle = (fn, delay) => {
@@ -231,6 +193,23 @@ class utils {
         };
     }
 
+    /** @description param fn cannot be an async function that returns promiseLike object */
+    static memorize = fn => {
+        const cache = {};
+        const isAsync = this.isAsyncFunction(fn);
+        return function (...args) {
+            const key = JSON.stringify(args);
+            if (cache[key]) {
+                return cache[key]
+            }
+            const result = isAsync
+                ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
+                : fn(...args)
+            cache[key] = result
+            return result
+        }
+    }
+
     static chunk = (array, size = 10) => {
         let index = 0;
         let result = [];
@@ -251,6 +230,27 @@ class utils {
             obj.reject = reject;
         });
         return obj;
+    }
+
+    /**
+     * @example merge({ a: [{ b: 2 }] }, { a: [{ c: 2 }] }) -> { a: [{ c: 2 }] }
+     * @example merge({ o: { a: 3 } }, { o: { b: 4 } }) -> { o: { a: 3, b: 4 } }
+     */
+    static merge = (source, other) => {
+        if (!this.isObject(source) || !this.isObject(other)) {
+            return other === undefined ? source : other
+        }
+        return Object.keys({ ...source, ...other }).reduce((obj, key) => {
+            const isArray = Array.isArray(source[key]) && Array.isArray(other[key])
+            obj[key] = isArray ? other[key] : this.merge(source[key], other[key])
+            return obj
+        }, Array.isArray(source) ? [] : {})
+    }
+
+    static fromObject = (obj, attrs) => {
+        const newObj = {};
+        attrs.forEach(attr => obj[attr] !== undefined && (newObj[attr] = obj[attr]));
+        return newObj;
     }
 
     static asyncReplaceAll = (content, regexp, replaceFunc) => {
@@ -310,6 +310,25 @@ class utils {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;");
+
+    static compareVersion = (ver1, ver2) => {
+        if (ver1 === "" && ver2 !== "") {
+            return -1
+        } else if (ver2 === "" && ver1 !== "") {
+            return 1
+        }
+        const arr1 = ver1.split(".");
+        const arr2 = ver2.split(".");
+        const maxLength = Math.max(arr1.length, arr2.length);
+        for (let i = 0; i < maxLength; i++) {
+            const num1 = parseInt(arr1[i] || 0);
+            const num2 = parseInt(arr2[i] || 0);
+            if (num1 !== num2) {
+                return num1 - num2;
+            }
+        }
+        return 0
+    }
 
     ////////////////////////////// 业务文件操作 //////////////////////////////
     static getOriginSettingPath = settingFile => this.joinPath("./plugin/global/settings", settingFile)
@@ -378,7 +397,7 @@ class utils {
 
     static editCurrentFile = async (replacement, reloadContent = true) => {
         const bak = File.presentedItemChanged;
-        File.presentedItemChanged = () => undefined;
+        File.presentedItemChanged = this.noop;
         const filepath = this.getFilePath();
         const content = filepath ? await FS.promises.readFile(filepath, "utf-8") : await File.getContent();
         const replaced = typeof replacement === "string" ? replacement : await replacement(content);

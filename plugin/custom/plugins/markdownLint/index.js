@@ -30,9 +30,9 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
     init = () => {
         this.errors = [];
-        this.checkLintError = () => undefined;
-        this.fixLintError = () => undefined;
-        this.resetConfig = () => undefined;
+        this.checkLintError = this.utils.noop;
+        this.fixLintError = this.utils.noop;
+        this.resetConfig = this.utils.noop;
         this.l10n = require("./l10n.js");
         this.entities = {
             modal: document.querySelector("#plugin-markdownlint"),

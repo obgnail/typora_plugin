@@ -96,12 +96,12 @@ class windowTabBarPlugin extends BasePlugin {
             })
         }
         const handleScroll = () => {
-            this.entities.content.addEventListener("scroll", () => {
+            this.entities.content.addEventListener("scroll", this.utils.debounce(() => {
                 const current = this.tabUtil.currentTab;
                 if (current) {
                     current.scrollTop = this.entities.content.scrollTop;
                 }
-            })
+            }), 100)
         }
         const handleDrag = () => {
             const newWindowIfNeed = (offsetY, tab) => {
