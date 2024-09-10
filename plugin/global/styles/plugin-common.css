@@ -61,3 +61,7 @@
 .plugin-wait-mask .truncate-line:nth-last-child(3) {
     animation: loadingC .6s .3s linear infinite
 }
+
+.dropdown-menu {
+    z-index: 9998;
+}

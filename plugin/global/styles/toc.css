@@ -4,9 +4,10 @@
     right: 0;
     box-shadow: initial;
     border-left: dashed 1px rgba(0, 0, 0, 0.2);
+    z-index: 9990;
 }
 
-#plugin-toc .grip-right {
+.plugin-toc .grip-right {
     position: absolute;
     left: -5px;
     width: 10px;

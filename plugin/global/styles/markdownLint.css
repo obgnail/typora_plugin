@@ -11,6 +11,7 @@
     min-width: 380px;
     max-height: ${this.config.modal_max_height};
     min-height: 150px;
+    z-index: 9993;
 }
 
 .plugin-markdownlint-icon-group {
@@ -65,5 +66,5 @@
     background-color: ${this.config.pass_color};
     cursor: pointer;
     transition: background-color 0.1s ease 0s;
-    z-index: 1;
+    z-index: 9992;
 }

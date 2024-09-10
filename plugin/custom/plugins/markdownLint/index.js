@@ -47,19 +47,20 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const _getDetail = (infos = this.errors) => {
             const obj = infos.map(i => this.utils.fromObject(i, ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]));
             const content = JSON.stringify(obj.length === 1 ? obj[0] : obj, null, "\t");
-            const components = [{ label: "", type: "textarea", rows: 15, readonly: "readonly", content }];
+            const components = [{ label: "", type: "textarea", rows: 15, content }];
             this.utils.modal({ title: "详细信息", width: "550px", components });
         }
         const _showDoc = () => {
             const url = "https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md";
             const onclick = ev => ev.target.closest("a") && this.utils.openUrl(url);
-            const content = JSON.stringify(this.l10n, null, "\t");
+            const content = Object.entries(this.l10n).map(([key, value]) => `${key}\t${value}`).join("\n");
             const components = [
-                { label: "以下为简单说明，如需查看完整文档请 <a>前往网站</a>", type: "p", onclick },
-                { label: "", type: "textarea", rows: 15, readonly: "readonly", content },
+                { label: "以下为格式规范的简单说明，完整文档请 <a>前往网站</a>", type: "p", onclick },
+                { label: "", type: "textarea", rows: 15, content },
             ];
             this.utils.dialog.modal({ title: "格式规范", width: "600px", components });
         }
+        const _toggleVisible = force => this.utils.toggleVisible(this.entities.button, force);
 
         const _funcMap = {
             close: () => this.callback(),
@@ -72,7 +73,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             },
             settings: () => {
                 const content = JSON.stringify(this.config.rule_config, null, "\t");
-                const components = [{ label: "", type: "textarea", rows: 15, readonly: "readonly", content }];
+                const components = [{ label: "", type: "textarea", rows: 15, content }];
                 this.utils.modal({ title: "当前配置", width: "550px", components });
             },
             detailAll: () => _getDetail(this.errors),
@@ -153,10 +154,13 @@ class markdownLintPlugin extends BaseCustomPlugin {
             this.resetConfig = () => worker.postMessage({ action: "assignConfig", payload: { config: this.config.rule_config } });
         }
 
+        const onToggleSettingPage = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, _toggleVisible);
+
         registerWorker();
         initEventHandler();
         onIconClick();
         onTableClick();
+        onToggleSettingPage();
     }
 
     onCheckMessage = data => {

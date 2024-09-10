@@ -524,7 +524,7 @@ class tocMarkmap {
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
             COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: "有些SVG解析器无法解析CSS变量，勾选此选项会自动替换CSS变量",
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若非需要手动修改导出的图形文件，请勿勾选此选项",
-            REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "保留样式但兼容性较差。若图片显示异常，请勾选此选项",
+            REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式提高兼容性。若图片显示异常，请勾选此选项",
             FOLDER_WHEN_DOWNLOAD_SVG: "为空则使用 tmp 目录",
             FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid",
         }
@@ -578,13 +578,13 @@ class tocMarkmap {
             { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点垂直间距", "spacingVertical") },
             { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点内部边距", "paddingX") },
             { type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("节点最大长度", "maxWidth") },
-            { type: "range", inline: true, min: 100, max: 1000, step: 100, ...inputKV("动画持续时间", "duration") },
+            { type: "range", inline: true, min: 100, max: 1000, step: 50, ...inputKV("动画持续时间", "duration") },
             { type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...inputKV("窗口填充率", "fitRatio") },
-            { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("窗口初始化宽度", "WIDTH_PERCENT_WHEN_INIT") },
-            { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("窗口初始化高度", "HEIGHT_PERCENT_WHEN_INIT") },
             { type: "range", inline: true, min: 0.1, max: 1, step: 0.01, ...inputKV("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
-            { type: "range", inline: true, min: 10, max: 95, step: 1, ...inputKV("固定顶部的视口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
-            { type: "range", inline: true, min: 10, max: 95, step: 1, ...inputKV("固定右侧的视口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
+            { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("初始的窗口宽度", "WIDTH_PERCENT_WHEN_INIT") },
+            { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("初始的窗口高度", "HEIGHT_PERCENT_WHEN_INIT") },
+            { type: "range", inline: true, min: 10, max: 95, step: 1, ...inputKV("固定顶部的窗口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
+            { type: "range", inline: true, min: 10, max: 95, step: 1, ...inputKV("固定右侧的窗口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
         ]
 
         const ability = () => {
