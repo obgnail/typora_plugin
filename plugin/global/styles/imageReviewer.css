@@ -10,7 +10,7 @@
 
 #plugin-image-reviewer .review-mask {
     background-color: rgba(0, 0, 0, ${this.config.mask_background_opacity});
-    backdrop-filter: blur(${this.config.blur_level}px);
+    backdrop-filter: blur(${blurLevel});
 }
 
 #plugin-image-reviewer .review-image {
@@ -19,6 +19,7 @@
     height: auto;
     max-width: ${imageMaxWidth};
     max-height: ${imageMaxHeight};
+    transition: transform 0.2s ease 0s;
 }
 
 #plugin-image-reviewer .review-item {
@@ -43,12 +44,42 @@
     background-color: rgba(64, 64, 64, .7);
 }
 
-#plugin-image-reviewer .review-item[action="get-previous"] {
+#plugin-image-reviewer .review-item[action="previousImage"] {
     left: 24px;
 }
 
-#plugin-image-reviewer .review-item[action="get-next"] {
+#plugin-image-reviewer .review-item[action="nextImage"] {
     right: 24px;
+}
+
+#plugin-image-reviewer .review-nav {
+    --review-thumbnail-width: 80px;
+    --review-thumbnail-padding-count: 2;
+
+    position: fixed;
+    display: inline-flex;
+    z-index: 99999;
+    width: 100%;
+    bottom: 0;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 0 5px;
+    height: var(--review-thumbnail-width);
+    scroll-padding: calc(var(--review-thumbnail-width) * var(--review-thumbnail-padding-count));
+}
+
+#plugin-image-reviewer .review-nav .review-thumbnail {
+    width: var(--review-thumbnail-width);
+    height: var(--review-thumbnail-width);
+    object-fit: scale-down;
+    padding: 4px 2px;
+    cursor: pointer;
+    opacity: 0.35;
+}
+
+#plugin-image-reviewer .review-nav .review-thumbnail:hover,
+#plugin-image-reviewer .review-nav .review-thumbnail.select {
+    opacity: 1;
 }
 
 #plugin-image-reviewer .review-tool {

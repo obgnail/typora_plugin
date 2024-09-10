@@ -3,6 +3,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         imageMaxWidth: this.config.image_max_width + "%",
         imageMaxHeight: this.config.image_max_height + "%",
         toolPosition: this.config.tool_position === "top" ? "initial" : 0,
+        blurLevel: this.config.blur_level + "px",
     })
 
     html = () => {
@@ -84,9 +85,10 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                     <div class="review-message">${messageList.join("")}</div>
                     <div class="review-options">${operationList.join("")}</div>
                 </div>
-                <img class="review-image"/>
-                <div class="review-item" action="get-previous"><i class="fa fa-angle-left"></i></div>
-                <div class="review-item" action="get-next"><i class="fa fa-angle-right"></i></div>
+                <div class="review-nav"></div>
+                <img class="review-image" alt=""/>
+                <div class="review-item" action="previousImage"><i class="fa fa-angle-left"></i></div>
+                <div class="review-item" action="nextImage"><i class="fa fa-angle-right"></i></div>
                 <div class="plugin-cover-content review-mask"></div>
             </div>
         `
@@ -108,6 +110,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         this.entities = {
             reviewer: document.getElementById("plugin-image-reviewer"),
             mask: document.querySelector("#plugin-image-reviewer .review-mask"),
+            nav: document.querySelector("#plugin-image-reviewer .review-nav"),
             image: document.querySelector("#plugin-image-reviewer .review-image"),
             msg: document.querySelector("#plugin-image-reviewer .review-message"),
             ops: document.querySelector("#plugin-image-reviewer .review-options"),
@@ -121,7 +124,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.close());
         this.entities.reviewer.querySelectorAll(".review-item").forEach(ele => {
-            ele.addEventListener("click", ev => (ev.target.getAttribute("action") === "get-next" ? this.nextImage : this.previousImage)());
+            ele.addEventListener("click", ev => this[ev.target.closest(".review-item").getAttribute("action")]());
         })
         this.entities.reviewer.addEventListener("wheel", ev => {
             ev.preventDefault();
@@ -136,11 +139,22 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         })
         this.entities.ops.addEventListener("click", ev => {
             const target = ev.target.closest("[option]");
-            if (!target) return
+            if (!target) return;
             const option = target.getAttribute("option");
             const arg = option.indexOf("rotate") !== -1 ? 90 : undefined;
             (this[option] instanceof Function) && this[option](arg);
         })
+        this.entities.nav.addEventListener("click", ev => {
+            const target = ev.target.closest(".review-thumbnail");
+            if (!target) return;
+            const idx = parseInt(target.dataset.idx);
+            this.dumpIndex(idx);
+        })
+        this.entities.nav.addEventListener("wheel", ev => {
+            const target = ev.target.closest("#plugin-image-reviewer .review-nav");
+            target.scrollLeft += ev.deltaY * 0.5;
+            ev.stopPropagation();
+        }, { passive: true })
     }
 
     getFuncList = (ev, method) => {
@@ -222,14 +236,14 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             const curImg = this.imageGetter(next);
             if (condition(curImg)) {
                 this._showImage(curImg);
-                break;
+                return curImg;
             }
         }
     }
 
     dumpIndex = targetIdx => {
         targetIdx = Math.max(targetIdx, 0);
-        this.dumpImage("next", img => img.idx === Math.min(targetIdx, img.total - 1))
+        return this.dumpImage("next", img => img.idx === Math.min(targetIdx, img.total - 1))
     }
 
     _showImage = imgInfo => {
@@ -251,8 +265,19 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             download && this.utils.toggleVisible(download, !this.utils.isNetworkImage(src));
         }
 
+        const handleThumbnail = showIdx => {
+            const s = this.entities.nav.querySelector(".select");
+            s && s.classList.remove("select");
+            const active = this.entities.nav.querySelector(`.review-thumbnail[data-idx="${showIdx - 1}"]`);
+            if (active) {
+                active.classList.add("select");
+                active.scrollIntoView({ inline: "nearest", behavior: "smooth" });
+            }
+        }
+
         handleMessage(imgInfo);
         handleToolIcon(imgInfo.src);
+        handleThumbnail(imgInfo.showIdx);
         this.restore();
     }
 
@@ -276,8 +301,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             if (!img) return;
 
             if (img === target) {
-                this.imageGetter(false);
-                return;
+                return this.imageGetter(false);
             }
             // 防御代码，防止死循环
             if (showIdx === total) return;
@@ -305,6 +329,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                 naturalWidth: img && img.naturalWidth || 0,
                 naturalHeight: img && img.naturalHeight || 0,
                 total: images.length || 0,
+                all: images,
             };
         }
     }
@@ -336,6 +361,15 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
     }
 
+    initThumbnailNav = current => {
+        const { idx: targetIdx, all = [] } = current || {};
+        const thumbnails = all.map((img, idx) => {
+            const select = idx === targetIdx ? "select" : "";
+            return `<img class="review-thumbnail ${select}" src="${img.src}" alt="${img.alt}" data-idx="${idx}">`
+        })
+        this.entities.nav.innerHTML = thumbnails.join("");
+    }
+
     handleHotkey = (remove = false) => {
         const unregister = item => this.utils.hotkeyHub.unregister(item[0]);
         const register = item => this.utils.hotkeyHub.registerSingle(item[0], this[item[1]] || this.dummy);
@@ -357,9 +391,11 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     play = () => this.handlePlayTimer(!!this.playTimer)
     restore = () => {
-        this.entities.image.style.maxWidth = "";
-        this.entities.image.style.maxHeight = "";
-        this.entities.image.style.transform = "scale(1) rotate(0deg) scaleX(1) scaleY(1) skewX(0deg) skewY(0deg) translateX(0px) translateY(0px)";
+        Object.assign(this.entities.image.style, {
+            maxWidth: "",
+            maxHeight: "",
+            transform: "scale(1) rotate(0deg) scaleX(1) scaleY(1) skewX(0deg) skewY(0deg) translateX(0px) translateY(0px)",
+        })
         this.moveImageCenter();
     }
     location = () => {
@@ -395,7 +431,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         document.activeElement.blur();
         this.handleHotkey(false);
         this.utils.show(this.entities.reviewer);
-        this.initImageMsgGetter();
+        const cur = this.initImageMsgGetter();
+        this.initThumbnailNav(cur);
         this.dumpImage();
     }
     close = () => {

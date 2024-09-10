@@ -939,8 +939,8 @@ play_second = 3
 mask_background_opacity = 0.6
 # 图片最多占据80%的页面宽度
 image_max_width = 80
-# 图片最多占据80%的页面高度度
-image_max_height = 80
+# 图片最多占据70%的页面高度
+image_max_height = 70
 # 背景模糊等级: 数值越大越模糊（为0则不模糊）
 blur_level = 6
 
