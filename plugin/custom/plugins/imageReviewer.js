@@ -87,7 +87,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                 <img class="review-image"/>
                 <div class="review-item" action="get-previous"><i class="fa fa-angle-left"></i></div>
                 <div class="review-item" action="get-next"><i class="fa fa-angle-right"></i></div>
-                <div class="plugin-cover-content mask"></div>
+                <div class="plugin-cover-content review-mask"></div>
             </div>
         `
     }
@@ -107,7 +107,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         this.playTimer = null;
         this.entities = {
             reviewer: document.getElementById("plugin-image-reviewer"),
-            mask: document.querySelector("#plugin-image-reviewer .mask"),
+            mask: document.querySelector("#plugin-image-reviewer .review-mask"),
             image: document.querySelector("#plugin-image-reviewer .review-image"),
             msg: document.querySelector("#plugin-image-reviewer .review-message"),
             ops: document.querySelector("#plugin-image-reviewer .review-options"),
@@ -121,7 +121,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.close());
         this.entities.reviewer.querySelectorAll(".review-item").forEach(ele => {
-            ele.addEventListener("click", ev => this.showImage(ev.target.getAttribute("action") === "get-next"));
+            ele.addEventListener("click", ev => (ev.target.getAttribute("action") === "get-next" ? this.nextImage : this.previousImage)());
         })
         this.entities.reviewer.addEventListener("wheel", ev => {
             ev.preventDefault();

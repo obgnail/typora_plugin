@@ -8,9 +8,9 @@
     z-index: 99997;
 }
 
-#plugin-image-reviewer .mask {
+#plugin-image-reviewer .review-mask {
     background-color: rgba(0, 0, 0, ${this.config.mask_background_opacity});
-    backdrop-filter: blur(${this.config.blur_level} px);
+    backdrop-filter: blur(${this.config.blur_level}px);
 }
 
 #plugin-image-reviewer .review-image {
