@@ -216,25 +216,20 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         this.entities.image.style.top = (height - imageHeight) / 2 + "px";
     }
 
-    showImage = (next = true) => {
-        this.initImageMsgGetter();
-        const imgInfo = this.imageGetter(next);
-        this._showImage(imgInfo);
+    dumpImage = (direction = "next", condition = () => true) => {
+        const next = direction === "next";
+        while (true) {
+            const curImg = this.imageGetter(next);
+            if (condition(curImg)) {
+                this._showImage(curImg);
+                break;
+            }
+        }
     }
 
     dumpIndex = targetIdx => {
-        this.initImageMsgGetter();
-        let imgInfo = this.imageGetter(true);
-        if (!Number.isInteger(targetIdx)) {
-            targetIdx = 0;
-        }
-        targetIdx++;
-        targetIdx = Math.max(targetIdx, 1);
-        targetIdx = Math.min(targetIdx, imgInfo.total);
-        while (imgInfo.showIdx !== targetIdx) {
-            imgInfo = this.imageGetter(true);
-        }
-        this._showImage(imgInfo);
+        targetIdx = Math.max(targetIdx, 0);
+        this.dumpImage("next", img => img.idx === Math.min(targetIdx, img.total - 1))
     }
 
     _showImage = imgInfo => {
@@ -282,7 +277,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
             if (img === target) {
                 this.imageGetter(false);
-                return
+                return;
             }
             // 防御代码，防止死循环
             if (showIdx === total) return;
@@ -303,6 +298,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             const img = images[idx];
             return {
                 img,
+                idx,
                 showIdx,
                 src: img && img.getAttribute("src") || "",
                 alt: img && img.getAttribute("alt") || "",
@@ -350,7 +346,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         const btn = this.entities.ops.querySelector(`[option="play"]`);
         if (!btn) return;
         if (!stop && !this.playTimer) {
-            this.playTimer = setInterval(this.showImage, this.config.play_second * 1000);
+            this.playTimer = setInterval(this.nextImage, this.config.play_second * 1000);
             btn.classList.add("active");
         } else {
             btn.classList.remove("active");
@@ -399,7 +395,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         document.activeElement.blur();
         this.handleHotkey(false);
         this.utils.show(this.entities.reviewer);
-        this.showImage();
+        this.initImageMsgGetter();
+        this.dumpImage();
     }
     close = () => {
         this.handleHotkey(true);
@@ -407,9 +404,9 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         this.utils.hide(this.entities.reviewer);
         this.imageGetter = null;
     }
-    dummy = () => null
-    nextImage = () => this.showImage(true)
-    previousImage = () => this.showImage(false)
+    dummy = this.utils.noop
+    nextImage = () => this.dumpImage("next")
+    previousImage = () => this.dumpImage("previous")
     firstImage = () => this.dumpIndex(-1)
     lastImage = () => this.dumpIndex(Number.MAX_VALUE)
     rotateLeft = rotateScale => this.rotate(false, null, rotateScale)
