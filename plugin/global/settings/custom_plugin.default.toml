@@ -943,6 +943,16 @@ image_max_width = 80
 image_max_height = 70
 # 背景模糊等级: 数值越大越模糊（为0则不模糊）
 blur_level = 6
+# 预览图列表的高度
+thumbnail_height = "80px"
+# 预览图额外预览几个图片
+thumbnail_scroll_padding_count = 3
+# 预览图如何适应容器尺寸
+#   - fill: 拉伸
+#   - contain:    保持尺寸比例缩放
+#   - cover:      保持原有尺寸比例，但是内容可能被剪切
+#   - scale-down: 类似于contain，但是当图片尺寸小于容器尺寸时，不会放大
+thumbnail_object_fit = "scale-down"
 
 # 图片支持以下操作：
 #   - dummy:          无功能
@@ -983,7 +993,7 @@ blur_level = 6
 # 有两点需要注意：
 #   1. 可选项比上面的功能多了一个info，用于提示
 #   2. 若是本地图片，download按钮会自动隐藏
-tool_function = ["info", "download", "play", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close"]
+tool_function = ["info", "download", "play", "firstImage", "lastImage", "restore", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close"]
 
 # 鼠标点击图片绑定的功能
 # 三项分别为左键、中键、右键

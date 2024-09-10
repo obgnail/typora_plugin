@@ -3,6 +3,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         imageMaxWidth: this.config.image_max_width + "%",
         imageMaxHeight: this.config.image_max_height + "%",
         toolPosition: this.config.tool_position === "top" ? "initial" : 0,
+        thumbnailPosition: this.config.tool_position === "top" ? "bottom": "top",
         blurLevel: this.config.blur_level + "px",
     })
 
@@ -19,8 +20,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             location: ['打开图片路径', 'fa fa-location-arrow'],
             nextImage: ['下张图', 'fa fa-angle-right'],
             previousImage: ['上张图', 'fa fa-angle-left'],
-            firstImage: ['第一张图', 'fa fa-angle-double-left'],
-            lastImage: ['最后一张图', 'fa fa-angle-double-right'],
+            firstImage: ['第一张图', 'fa fa-backward'],
+            lastImage: ['最后一张图', 'fa fa-forward'],
             zoomOut: ['缩小图片', 'fa fa fa-search-minus'],
             zoomIn: ['放大图片', 'fa fa fa-search-plus'],
             rotateLeft: ['图片向左旋转', 'fa fa-rotate-left'],

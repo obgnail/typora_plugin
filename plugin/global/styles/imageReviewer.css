@@ -53,14 +53,14 @@
 }
 
 #plugin-image-reviewer .review-nav {
-    --review-thumbnail-width: 80px;
-    --review-thumbnail-padding-count: 2;
+    --review-thumbnail-width: ${this.config.thumbnail_height};
+    --review-thumbnail-padding-count: ${this.config.thumbnail_scroll_padding_count};
 
     position: fixed;
     display: inline-flex;
     z-index: 99999;
     width: 100%;
-    bottom: 0;
+    ${thumbnailPosition}: 0;
     overflow: hidden;
     background-color: rgba(0, 0, 0, 0.5);
     padding: 0 5px;
@@ -71,7 +71,7 @@
 #plugin-image-reviewer .review-nav .review-thumbnail {
     width: var(--review-thumbnail-width);
     height: var(--review-thumbnail-width);
-    object-fit: scale-down;
+    object-fit: ${this.config.thumbnail_object_fit};
     padding: 4px 2px;
     cursor: pointer;
     opacity: 0.35;
@@ -80,6 +80,10 @@
 #plugin-image-reviewer .review-nav .review-thumbnail:hover,
 #plugin-image-reviewer .review-nav .review-thumbnail.select {
     opacity: 1;
+}
+
+#plugin-image-reviewer .review-nav .review-thumbnail.select {
+    box-shadow: inset 0 0 0 2px #FF7B00;
 }
 
 #plugin-image-reviewer .review-tool {
