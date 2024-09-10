@@ -248,8 +248,9 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     _showImage = imgInfo => {
         const handleMessage = imgInfo => {
-            const { src, alt, naturalWidth, naturalHeight, showIdx, total } = imgInfo;
+            const { src, alt, naturalWidth, naturalHeight, showIdx, idx, total } = imgInfo;
             this.entities.image.setAttribute("src", src);
+            this.entities.image.setAttribute("data-idx", idx);
             const index = this.entities.msg.querySelector(".review-index");
             const title = this.entities.msg.querySelector(".review-title");
             const size = this.entities.msg.querySelector(".review-size");
@@ -425,9 +426,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
     }
     scroll = () => {
-        const text = this.entities.msg.querySelector(".review-index").textContent;
-        const idx = parseInt(text.substring(1, text.indexOf("/")));
-        const image = this._collectImage()[idx - 1];
+        const idx = parseInt(this.entities.image.dataset.idx);
+        const image = this._collectImage()[idx];
         this.close();
         image && this.utils.scroll(image, 30);
     }
