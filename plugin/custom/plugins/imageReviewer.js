@@ -281,14 +281,18 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         this.restore();
     }
 
-    initImageMsgGetter = () => {
-        if (this.imageGetter) return;
-
+    _collectImage = () => {
         let images = Array.from(this.utils.entities.querySelectorAllInWrite("img"));
         if (this.config.filter_error_image) {
             images = images.filter(this.utils.isImgEmbed);
         }
+        return images
+    }
 
+    initImageMsgGetter = () => {
+        if (this.imageGetter) return;
+
+        let images = this._collectImage();
         this.imageGetter = this._imageMsgGetter(images);
 
         if (images.length === 0) return;
@@ -423,7 +427,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     scroll = () => {
         const text = this.entities.msg.querySelector(".review-index").textContent;
         const idx = parseInt(text.substring(1, text.indexOf("/")));
-        const image = Array.from(this.utils.entities.querySelectorAllInWrite("img"))[idx - 1];
+        const image = this._collectImage()[idx - 1];
         this.close();
         image && this.utils.scroll(image, 30);
     }
