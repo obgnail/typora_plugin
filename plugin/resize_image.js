@@ -81,8 +81,8 @@ class resizeImagePlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
         const args = [
-            { arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记住图片放缩状态`, arg_value: "record_resize_state" },
-            { arg_name: `${this.config.ALLOW_OVERSIZE ? "禁止" : "允许"}图片超出范围`, arg_value: "allow_oversize" },
+            { arg_name: "记住图片放缩状态", arg_value: "record_resize_state", arg_state: this.config.RECORD_RESIZE },
+            { arg_name: "允许图片超出范围", arg_value: "allow_oversize", arg_state: this.config.ALLOW_OVERSIZE },
         ];
 
         const images = anchorNode.closest("#write .md-image");

@@ -42,12 +42,10 @@ class collapseTablePlugin extends BasePlugin {
         const arg_disabled = !figure;
         const arg_hint = !figure ? "请将光标定位到表格后点击鼠标右键" : "";
         const arg_name = !figure ? "表格折叠" : (figure.classList.contains(this.className) ? "展开表格" : "折叠表格");
-        const record = `${this.config.RECORD_COLLAPSE ? "不" : ""}记住表格折叠状态`;
         meta.target = figure;
-
         return [
             { arg_name, arg_hint, arg_disabled, arg_value: "convert_current" },
-            { arg_name: record, arg_value: "record_collapse_state" }
+            { arg_name: "记住表格折叠状态", arg_value: "record_collapse_state", arg_state: this.config.RECORD_COLLAPSE }
         ]
     }
 

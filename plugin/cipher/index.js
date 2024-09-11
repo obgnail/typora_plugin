@@ -8,7 +8,10 @@ class cipherPlugin extends BasePlugin {
         this.AES_ECB = null;
         this.key = "n0hLis5FjgQxa3f31sSa2wm37J81g3upTlq9it9WlfK";
         this.showMessageBox = this.config.SHOW_HINT_MODAL;
-        this.callArgs = [{ arg_name: "加密", arg_value: "encrypt" }, { arg_name: "解密", arg_value: "decrypt" }];
+        this.callArgs = [
+            { arg_name: "加密", arg_value: "encrypt", arg_hotkey: this.config.ENCRYPT_HOTKEY },
+            { arg_name: "解密", arg_value: "decrypt", arg_hotkey: this.config.DECRYPT_HOTKEY },
+        ];
     }
 
     call = async type => await this.utils.editCurrentFile(this[type])

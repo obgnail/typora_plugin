@@ -67,10 +67,9 @@ class collapseListPlugin extends BasePlugin {
         }
     }
 
-    dynamicCallArgsGenerator = () => {
-        const arg_name = `${this.config.RECORD_COLLAPSE ? "不" : ""}记住列表折叠状态`;
-        return [{ arg_name: arg_name, arg_value: "record_collapse_state" }];
-    }
+    dynamicCallArgsGenerator = () => [
+        { arg_name: "记住列表折叠状态", arg_value: "record_collapse_state", arg_state: this.config.RECORD_COLLAPSE }
+    ]
 
     call = type => {
         if (type === "record_collapse_state") {

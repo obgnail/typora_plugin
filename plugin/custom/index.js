@@ -41,6 +41,7 @@ class CustomPlugin extends BasePlugin {
                 arg_value: plugin.fixedName,
                 arg_disabled: true,
                 arg_hint: "未知错误！请向开发者反馈",
+                arg_hotkey: plugin.config.hotkey,
             };
             try {
                 const selector = plugin.selector(false);

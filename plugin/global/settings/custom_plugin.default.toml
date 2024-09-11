@@ -948,9 +948,9 @@ thumbnail_height = "80px"
 # 预览图额外预览几个图片
 thumbnail_scroll_padding_count = 3
 # 预览图如何适应容器尺寸
-#   - fill: 拉伸
-#   - contain:    保持尺寸比例缩放
-#   - cover:      保持原有尺寸比例，但是内容可能被剪切
+#   - fill:       拉伸以适配容器
+#   - contain:    保持比例缩放图片
+#   - cover:      保持图片原有尺寸，超出的内容被剪切
 #   - scale-down: 类似于contain，但是当图片尺寸小于容器尺寸时，不会放大
 thumbnail_object_fit = "scale-down"
 

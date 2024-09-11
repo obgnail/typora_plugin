@@ -1,6 +1,6 @@
 class tocPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
-    html = () => `<div id="plugin-toc" class="plugin-common-modal plugin-common-hidden plugin-toc"><div class="grip-right"></div><div class="toc-ul"></div></div>`
+    html = () => `<div id="plugin-toc" class="plugin-common-modal plugin-common-hidden"><div class="grip-right"></div><div class="toc-ul"></div></div>`
     hotkey = () => [this.config.hotkey]
     init = () => {
         this.entities = {

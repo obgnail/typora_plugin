@@ -61,10 +61,10 @@ class commanderPlugin extends BasePlugin {
         }
 
         this.arg_value_prefix = "call_builtin@";
-        const defaultArg = { arg_name: "显示/隐藏", arg_value: "show" };
+        const defaultArg = { arg_name: "显示/隐藏", arg_value: "show", arg_hotkey: this.config.HOTKEY };
         const customArgs = this.config.BUILTIN
             .filter(builtin => builtin.name)
-            .map(builtin => ({ arg_name: builtin.name, arg_value: this.arg_value_prefix + builtin.name }))
+            .map(builtin => ({ arg_name: builtin.name, arg_value: this.arg_value_prefix + builtin.name, arg_hotkey: builtin.hotkey }))
         this.callArgs = [defaultArg, ...customArgs];
     }
 
