@@ -5,7 +5,7 @@
 #plugin-quick-button {
     position: fixed;
     display: grid;
-    z-index: 9998;
+    z-index: 9991;
     font-size: 17px;
     text-align: center;
     grid-template-columns: repeat(${colCount}, 1fr);

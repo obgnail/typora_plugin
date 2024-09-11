@@ -3,6 +3,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         imageMaxWidth: this.config.image_max_width + "%",
         imageMaxHeight: this.config.image_max_height + "%",
         toolPosition: this.config.tool_position === "top" ? "initial" : 0,
+        thumbnailPosition: this.config.tool_position === "top" ? "bottom": "top",
         blurLevel: this.config.blur_level + "px",
     })
 
@@ -19,8 +20,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             location: ['打开图片路径', 'fa fa-location-arrow'],
             nextImage: ['下张图', 'fa fa-angle-right'],
             previousImage: ['上张图', 'fa fa-angle-left'],
-            firstImage: ['第一张图', 'fa fa-angle-double-left'],
-            lastImage: ['最后一张图', 'fa fa-angle-double-right'],
+            firstImage: ['第一张图', 'fa fa-backward'],
+            lastImage: ['最后一张图', 'fa fa-forward'],
             zoomOut: ['缩小图片', 'fa fa fa-search-minus'],
             zoomIn: ['放大图片', 'fa fa fa-search-plus'],
             rotateLeft: ['图片向左旋转', 'fa fa-rotate-left'],
@@ -248,8 +249,9 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     _showImage = imgInfo => {
         const handleMessage = imgInfo => {
-            const { src, alt, naturalWidth, naturalHeight, showIdx, total } = imgInfo;
+            const { src, alt, naturalWidth, naturalHeight, showIdx, idx, total } = imgInfo;
             this.entities.image.setAttribute("src", src);
+            this.entities.image.setAttribute("data-idx", idx);
             const index = this.entities.msg.querySelector(".review-index");
             const title = this.entities.msg.querySelector(".review-title");
             const size = this.entities.msg.querySelector(".review-size");
@@ -281,14 +283,18 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         this.restore();
     }
 
-    initImageMsgGetter = () => {
-        if (this.imageGetter) return;
-
+    _collectImage = () => {
         let images = Array.from(this.utils.entities.querySelectorAllInWrite("img"));
         if (this.config.filter_error_image) {
             images = images.filter(this.utils.isImgEmbed);
         }
+        return images
+    }
 
+    initImageMsgGetter = () => {
+        if (this.imageGetter) return;
+
+        let images = this._collectImage();
         this.imageGetter = this._imageMsgGetter(images);
 
         if (images.length === 0) return;
@@ -421,9 +427,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
     }
     scroll = () => {
-        const text = this.entities.msg.querySelector(".review-index").textContent;
-        const idx = parseInt(text.substring(1, text.indexOf("/")));
-        const image = Array.from(this.utils.entities.querySelectorAllInWrite("img"))[idx - 1];
+        const idx = parseInt(this.entities.image.dataset.idx);
+        const image = this._collectImage()[idx];
         this.close();
         image && this.utils.scroll(image, 30);
     }
