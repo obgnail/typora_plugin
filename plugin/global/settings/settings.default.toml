@@ -760,7 +760,8 @@ HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 ############### collapse_paragraph ###############
 [collapse_paragraph]
 # 是否启用插件
-ENABLE = true
+# 此插件与Typora的原生配置【显示当前块元素的Markdown源码】冲突，如果开启此插件，那么原生配置会被关闭
+ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "章节折叠"
 # 是否在右键菜单中可点击
