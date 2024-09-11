@@ -1,5 +1,4 @@
-const { utils } = require("./utils");
-const { runWithEnvironment } = require("./env");
+const { utils, hook } = require("./utils");
 const { BasePlugin, BaseCustomPlugin, LoadPlugins } = require("./plugin");
 
 async function entry() {
@@ -17,23 +16,23 @@ async function entry() {
         global.BaseCustomPlugin = BaseCustomPlugin; // 自定义插件的父类
         global.LoadPlugins = LoadPlugins;           // 加载插件
 
-        global._plugins = null;                     // 启用的插件
-        global._plugin_utils = utils;               // 通用工具
-        global._plugin_settings = settings;         // 插件配置
-        global._global_settings = settings.global;  // 通用配置
+        global.__plugins__ = null;                     // 启用的插件
+        global.__plugin_utils__ = utils;               // 通用工具
+        global.__plugin_settings__ = settings;         // 插件配置
+        global.__global_settings__ = settings.global;  // 通用配置
 
         delete settings.global;
     }
 
     /** 加载插件 */
     const loadPlugins = async () => {
-        const { enable, disable, stop, error, nosetting } = await LoadPlugins(global._plugin_settings, false);
-        global._plugins = enable;
+        const { enable, disable, stop, error, nosetting } = await LoadPlugins(global.__plugin_settings__, false);
+        global.__plugins__ = enable;
     }
 
     /** 低于0.9.98版本的Typora运行插件系统时，提出不兼容警告 */
     const showWarn = () => {
-        const need = global._global_settings.SHOW_INCOMPATIBLE_WARNING;
+        const need = global.__global_settings__.SHOW_INCOMPATIBLE_WARNING;
         const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0;
         if (need && incompatible) {
             utils.notification.show("Typora 版本过低，部分插件可能失效。\n建议升级到 0.9.98 (最后一个免费版本)", "warning", 5000);
@@ -49,7 +48,7 @@ async function entry() {
         }
 
         initVariable(settings);
-        await runWithEnvironment(loadPlugins);
+        await hook(loadPlugins);
         showWarn();
     }
 

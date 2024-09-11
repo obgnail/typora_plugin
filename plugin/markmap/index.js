@@ -67,7 +67,7 @@ class markmapPlugin extends BasePlugin {
         const { Transformer, builtInPlugins } = require("./resource/markmap-lib");
         const markmap = require("./resource/markmap-view");
         const transformer = new Transformer(builtInPlugins);
-        Object.assign(this.MarkmapLib, markmap, { transformer });
+        Object.assign(this.MarkmapLib, markmap, { transformer, Transformer, builtInPlugins });
 
         const { loadCSS, loadJS } = markmap;
         const { styles, scripts } = transformer.getAssets();

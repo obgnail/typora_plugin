@@ -5,6 +5,7 @@ const FS = require("fs")
 const CHILD_PROCESS = require('child_process')
 const FS_EXTRA = require("fs-extra")
 const TOML = require("./common/toml")
+const { getHook } = require("./env")
 
 class utils {
     static nodeVersion = process && process.versions && process.versions.node
@@ -29,15 +30,15 @@ class utils {
     })
 
     ////////////////////////////// 插件相关 //////////////////////////////
-    static getAllPlugins = () => global._plugins
-    static getAllCustomPlugins = () => global._plugins.custom && global._plugins.custom.plugins
-    static getPlugin = fixedName => global._plugins[fixedName]
-    static getCustomPlugin = fixedName => global._plugins.custom && global._plugins.custom.plugins[fixedName]
-    static getAllPluginSettings = () => global._plugin_settings
-    static getAllGlobalSettings = () => global._global_settings
-    static getAllCustomPluginSettings = () => (global._plugins.custom && global._plugins.custom.pluginsSettings) || {}
-    static getGlobalSetting = name => global._global_settings[name]
-    static getPluginSetting = fixedName => global._plugin_settings[fixedName]
+    static getAllPlugins = () => global.__plugins__
+    static getAllCustomPlugins = () => global.__plugins__.custom && global.__plugins__.custom.plugins
+    static getPlugin = fixedName => global.__plugins__[fixedName]
+    static getCustomPlugin = fixedName => global.__plugins__.custom && global.__plugins__.custom.plugins[fixedName]
+    static getAllPluginSettings = () => global.__plugin_settings__
+    static getAllGlobalSettings = () => global.__global_settings__
+    static getAllCustomPluginSettings = () => (global.__plugins__.custom && global.__plugins__.custom.pluginsSettings) || {}
+    static getGlobalSetting = name => global.__global_settings__[name]
+    static getPluginSetting = fixedName => global.__plugin_settings__[fixedName]
     static getCustomPluginSetting = fixedName => this.getAllCustomPluginSettings()[fixedName]
     static tryGetPlugin = fixedName => this.getPlugin(fixedName) || this.getCustomPlugin(fixedName)
     static tryGetPluginSetting = fixedName => this.getAllPluginSettings()[fixedName] || this.getAllCustomPluginSettings()[fixedName]
@@ -939,5 +940,6 @@ class utils {
 }
 
 module.exports = {
-    utils
+    utils,
+    hook: getHook(utils),
 }
