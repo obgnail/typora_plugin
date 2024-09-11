@@ -17,7 +17,7 @@ class markmapPlugin extends BasePlugin {
 
     init = () => {
         this.callArgs = this.fenceMarkmap
-            ? [{ arg_name: "插入markmap：大纲", arg_value: "draw_fence_outline" }, { arg_name: "插入markmap：模板", arg_value: "draw_fence_template" }]
+            ? [{ arg_name: "插入markmap：大纲", arg_value: "draw_fence_outline", arg_hotkey: this.config.FENCE_HOTKEY }, { arg_name: "插入markmap：模板", arg_value: "draw_fence_template" }]
             : []
     }
 
@@ -60,7 +60,7 @@ class markmapPlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = () => {
         return this.tocMarkmap
-            ? [{ arg_name: "思维导图弹窗", arg_value: "toggle_toc", arg_state: this.tocMarkmap.isShow() }]
+            ? [{ arg_name: "思维导图弹窗", arg_value: "toggle_toc", arg_state: this.tocMarkmap.isShow(), arg_hotkey: this.config.TOC_HOTKEY }]
             : []
     }
 

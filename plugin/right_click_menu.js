@@ -32,7 +32,7 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     prepare = () => {
-        this.supportShortcut = Boolean(document.querySelector(".context-menu .ty-menu-shortcut"));
+        this.supportShortcut = Boolean(document.querySelector(".context-menu .ty-menu-shortcut")) && this.config.SHOW_PLUGIN_HOTKEY;
     }
 
     appendFirst = () => {
@@ -97,6 +97,11 @@ class rightClickMenuPlugin extends BasePlugin {
         return { ele: "li", class_: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": callArg, children }
     }
 
+    capitalize = hotkey => {
+        hotkey = Array.isArray(hotkey) ? hotkey[0] : hotkey;
+        return hotkey.split("+").map(e => e[0].toUpperCase() + e.slice(1).toLowerCase()).join("+")
+    }
+
     secondLiTemplate = plugin => {
         const hasNotArgs = !plugin.callArgs && !plugin.dynamicCallArgsGenerator;
 
@@ -107,10 +112,15 @@ class rightClickMenuPlugin extends BasePlugin {
         if (!plugin.config.CLICKABLE) {
             extra.style = { color: "#c4c6cc", pointerEvents: "none" };
         }
-
-        const childrenExtra = hasNotArgs
-            ? { text: plugin.config.NAME }
-            : { children: [{ ele: "span", "data-lg": "Menu", text: plugin.config.NAME, children: [this.caret()] }] };
+        let childrenExtra;
+        if (hasNotArgs) {
+            const hotkey = plugin.config.HOTKEY;
+            childrenExtra = this.supportShortcut && hotkey
+                ? { children: [{ ele: "span", text: plugin.config.NAME }, { ele: "span", class_: "ty-menu-shortcut", text: this.capitalize(hotkey) }] }
+                : { text: plugin.config.NAME }
+        } else {
+            childrenExtra = { children: [{ ele: "span", "data-lg": "Menu", text: plugin.config.NAME, children: [this.caret()] }] };
+        }
 
         const children = [{ ele: "a", role: "menuitem", "data-lg": "Menu", ...childrenExtra }];
         return { ele: "li", "data-key": plugin.fixedName, children, ...extra }
@@ -125,7 +135,10 @@ class rightClickMenuPlugin extends BasePlugin {
             extra.class_ = `plugin-dynamic-arg ${(arg.arg_disabled) ? "disabled" : ""}`;
         }
         const class_ = arg.arg_state ? "state-on" : "state-off";
-        const children = [{ ele: "a", class_, role: "menuitem", "data-lg": "Menu", text: arg.arg_name }];
+        const childrenExtra = this.supportShortcut && arg.arg_hotkey
+            ? { children: [{ ele: "span", text: arg.arg_name }, { ele: "span", class_: "ty-menu-shortcut", text: this.capitalize(arg.arg_hotkey) }] }
+            : { text: arg.arg_name }
+        const children = [{ ele: "a", class_, role: "menuitem", "data-lg": "Menu", ...childrenExtra }];
         return { ele: "li", "data-key": arg.arg_value, ...extra, children }
     }
 
