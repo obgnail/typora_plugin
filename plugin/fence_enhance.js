@@ -1,6 +1,7 @@
 class fenceEnhancePlugin extends BasePlugin {
     beforeProcess = () => {
-        this.enableIndent = this.config.ENABLE_INDENT && !this.utils.isBetaVersion;
+        this.supportIndent = this.config.ENABLE_INDENT && !this.utils.isBetaVersion;
+        this.enableIndent = this.supportIndent;
     }
 
     styleTemplate = () => ({ bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial" })
@@ -110,17 +111,6 @@ class fenceEnhancePlugin extends BasePlugin {
         this.builders = [];
         this.lastClickTime = 0;
         this.dangerousHint = "警告：消耗巨量资源并导致Typora长时间失去响应";
-        this.callArgs = [
-            { arg_name: "自动隐藏/显示按钮", arg_value: "set_auto_hide" },
-            { arg_name: "禁用/启用按钮：折叠", arg_value: "disable_or_enable_fold" },
-            { arg_name: "禁用/启用按钮：复制", arg_value: "disable_or_enable_copy" },
-            { arg_name: "总是折叠代码块", arg_value: "fold_all" },
-            { arg_name: "总是展开代码块", arg_value: "expand_all" },
-        ];
-
-        if (this.enableIndent) {
-            this.callArgs.splice(2, 0, { arg_name: "禁用/启用按钮：缩进调整", arg_value: "disable_or_enable_indent" });
-        }
     }
 
     processButton = () => {
@@ -270,28 +260,6 @@ class fenceEnhancePlugin extends BasePlugin {
         this.changeIcon(indentButton, "fa fa-check", "fa fa-indent");
     }
 
-    dynamicCallArgsGenerator = (anchorNode, meta) => {
-        const target = anchorNode.closest("#write .md-fences");
-        meta.target = target;
-
-        const arr = [];
-        if (this.enableIndent) {
-            arr.push({ arg_name: "调整缩进", arg_value: "indent_current" });
-            if (this.config.ENABLE_DANGEROUS_FEATURES) {
-                arr.push(
-                    { arg_name: "(危)调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint },
-                    { arg_name: "(危)为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint },
-                    { arg_name: "(危)批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: this.dangerousHint },
-                );
-            }
-        }
-        arr.push(
-            { arg_name: "折叠/展开代码块", arg_value: "fold_current", arg_disabled: !target },
-            { arg_name: "复制代码", arg_value: "copy_current", arg_disabled: !target }
-        );
-        return arr
-    }
-
     rangeAllFences = rangeFunc => {
         this.utils.entities.querySelectorAllInWrite(".md-fences[cid]").forEach(fence => {
             const codeMirror = fence.querySelector(":scope > .CodeMirror");
@@ -362,13 +330,10 @@ class fenceEnhancePlugin extends BasePlugin {
         const display = this.enableIndent ? "block" : "none";
         document.querySelectorAll(".fence-enhance .indent-code").forEach(ele => ele.style.display = display);
     }
-    foldAll = () => {
-        document.querySelectorAll(".fold-code:not(.folded)").forEach(ele => ele.click());
-        this.config.FOLD_DEFAULT = true;
-    }
-    expandAll = () => {
-        document.querySelectorAll(".fold-code.folded").forEach(ele => ele.click());
-        this.config.FOLD_DEFAULT = false;
+    toggleFoldDefault = () => {
+        this.config.FOLD_DEFAULT = !this.config.FOLD_DEFAULT;
+        const selector = this.config.FOLD_DEFAULT ? ".fold-code:not(.folded)" : ".fold-code.folded";
+        document.querySelectorAll(selector).forEach(ele => ele.click());
     }
     setAutoHide = () => {
         this.config.AUTO_HIDE = !this.config.AUTO_HIDE;
@@ -386,23 +351,39 @@ class fenceEnhancePlugin extends BasePlugin {
         }
     }
 
+    dynamicCallArgsGenerator = (anchorNode, meta) => {
+        const arr = [
+            { arg_name: "隐藏按钮", arg_value: "set_auto_hide", arg_state: this.config.AUTO_HIDE },
+            { arg_name: "启用按钮：折叠", arg_value: "disable_or_enable_fold", arg_state: this.config.ENABLE_FOLD },
+            { arg_name: "启用按钮：复制", arg_value: "disable_or_enable_copy", arg_state: this.config.ENABLE_COPY },
+            { arg_name: "总是折叠代码块", arg_value: "disable_or_enable_fold_default", arg_state: this.config.FOLD_DEFAULT },
+        ];
+        if (this.supportIndent) {
+            arr.splice(2, 0, { arg_name: "启用按钮：缩进", arg_value: "disable_or_enable_indent", arg_state: this.enableIndent });
+            if (this.config.ENABLE_DANGEROUS_FEATURES) {
+                arr.push(
+                    { arg_name: "(危)调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint },
+                    { arg_name: "(危)为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint },
+                    { arg_name: "(危)批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: this.dangerousHint },
+                );
+            }
+        }
+        return arr
+    }
+
     call = (type, meta) => {
         const callMap = {
             disable_or_enable_fold: this.disableOrEnableFold,
             disable_or_enable_copy: this.disableOrEnableCopy,
             disable_or_enable_indent: this.disableOrEnableIndent,
-            fold_all: this.foldAll,
-            expand_all: this.expandAll,
+            disable_or_enable_fold_default: this.toggleFoldDefault,
             set_auto_hide: this.setAutoHide,
-            fold_current: meta => this.foldFence(meta.target),
-            copy_current: meta => this.copyFence(meta.target),
-            indent_current: meta => this.indentFence(meta.target),
             indent_all_fences: this.showIndentAllFencesModal,
             add_fences_lang: this.addFencesLang,
             replace_fences_lang: this.replaceFencesLang,
         }
         const func = callMap[type];
-        func && func(meta);
+        func && func();
     }
 }
 

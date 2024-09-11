@@ -181,17 +181,6 @@ class autoNumberPlugin extends BasePlugin {
 
     style = () => ({ textID: this.css_id, text: this.getResultStyle() })
 
-    init = () => {
-        this.callArgs = [
-            { arg_name: "禁用/启用自动编号：大纲", arg_value: "set_outline" },
-            { arg_name: "禁用/启用自动编号：正文", arg_value: "set_content" },
-            { arg_name: "禁用/启用自动编号：TOC", arg_value: "set_toc" },
-            { arg_name: "禁用/启用自动编号：表格", arg_value: "set_table" },
-            { arg_name: "禁用/启用自动编号：图片", arg_value: "set_image" },
-            { arg_name: "禁用/启用自动编号：代码块", arg_value: "set_fence" },
-        ];
-    }
-
     process = () => {
         if (this.config.ENABLE_WHEN_EXPORT) {
             new exportHelper(this).process();
@@ -237,6 +226,15 @@ class autoNumberPlugin extends BasePlugin {
         const obj = { [toggle]: this.config[toggle] };
         await this.utils.saveConfig(this.fixedName, obj);
     }
+
+    dynamicCallArgsGenerator = () => [
+        { arg_name: "大纲", arg_value: "set_outline", arg_state: this.config.ENABLE_SIDE_BAR },
+        { arg_name: "正文", arg_value: "set_content", arg_state: this.config.ENABLE_CONTENT },
+        { arg_name: "TOC", arg_value: "set_toc", arg_state: this.config.ENABLE_TOC },
+        { arg_name: "表格", arg_value: "set_table", arg_state: this.config.ENABLE_TABLE },
+        { arg_name: "图片", arg_value: "set_image", arg_state: this.config.ENABLE_IMAGE },
+        { arg_name: "代码块", arg_value: "set_fence", arg_state: this.config.ENABLE_FENCE },
+    ]
 
     call = type => {
         const callMap = {

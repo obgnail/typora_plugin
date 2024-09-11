@@ -16,12 +16,9 @@ class markmapPlugin extends BasePlugin {
     hotkey = () => [this.tocMarkmap, this.fenceMarkmap].map(p => p && p.hotkey()).filter(Boolean).flat()
 
     init = () => {
-        this.callArgs = [];
-        this.tocMarkmap && this.callArgs.push({ arg_name: "思维导图", arg_value: "toggle_toc" });
-        this.fenceMarkmap && this.callArgs.push(
-            { arg_name: "插入markmap：大纲", arg_value: "draw_fence_outline" },
-            { arg_name: "插入markmap：模板", arg_value: "draw_fence_template" },
-        );
+        this.callArgs = this.fenceMarkmap
+            ? [{ arg_name: "插入markmap：大纲", arg_value: "draw_fence_outline" }, { arg_name: "插入markmap：模板", arg_value: "draw_fence_template" }]
+            : []
     }
 
     process = () => {
@@ -59,6 +56,12 @@ class markmapPlugin extends BasePlugin {
         const update_ = this.utils.fromObject(update, ["spacingHorizontal", "spacingVertical", "fitRatio", "paddingX", "autoFit"]);
         const options = this.MarkmapLib.deriveOptions({ ...old, ...update });
         return Object.assign(options, update_)
+    }
+
+    dynamicCallArgsGenerator = () => {
+        return this.tocMarkmap
+            ? [{ arg_name: "思维导图弹窗", arg_value: "toggle_toc", arg_state: this.tocMarkmap.isShow() }]
+            : []
     }
 
     lazyLoad = async () => {
@@ -266,8 +269,8 @@ class tocMarkmap {
 
     process = () => {
         const onEvent = () => {
-            const { eventHub, isShow } = this.utils;
-            eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => isShow(this.entities.modal) && this.draw(this.config.AUTO_FIT_WHEN_UPDATE));
+            const { eventHub } = this.utils;
+            eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.isShow() && this.draw(this.config.AUTO_FIT_WHEN_UPDATE));
             eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.markmap && this._onButtonClick("close"));
             this.entities.content.addEventListener("transitionend", this.fit);
             this.entities.modal.addEventListener("transitionend", this.fit);
@@ -885,6 +888,8 @@ class tocMarkmap {
             await this._draw(md, fit, options);
         }
     }
+
+    isShow = () => this.utils.isShow(this.entities.modal)
 
     _draw = async (md, fit = true, options) => {
         this.utils.show(this.entities.modal);

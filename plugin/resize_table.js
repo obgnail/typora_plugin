@@ -7,8 +7,9 @@ class resizeTablePlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = anchorNode => [{
-        arg_name: `${this.config.RECORD_RESIZE ? "不" : ""}记住表格放缩状态`,
-        arg_value: "record_resize_state"
+        arg_name: "记住表格放缩状态",
+        arg_value: "record_resize_state",
+        arg_state: this.config.RECORD_RESIZE
     }]
 
     call = type => type === "record_resize_state" && this.toggleRecorder();
