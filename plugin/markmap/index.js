@@ -611,10 +611,10 @@ class tocMarkmap {
                 { label: "导出后自动打开文件所在目录", key: "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG" },
             ]
             return [
-                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("左右边框宽度", 0) },
-                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("上下边框宽度", 1) },
-                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...inputKV("保存目录名", "FOLDER_WHEN_DOWNLOAD_SVG") },
-                { fieldset, type: "input", inline: true, ...inputKV("保存文件名", "FILENAME_WHEN_DOWNLOAD_SVG") },
+                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("水平内边距", 0) },
+                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("垂直内边距", 1) },
+                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...inputKV("保存目录", "FOLDER_WHEN_DOWNLOAD_SVG") },
+                { fieldset, type: "input", inline: true, ...inputKV("保存文件", "FILENAME_WHEN_DOWNLOAD_SVG") },
                 { fieldset, label: "", ...checkboxKV(components) },
             ]
         }
