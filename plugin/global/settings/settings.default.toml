@@ -1060,7 +1060,7 @@ NAME = "右键菜单"
 CLICKABLE = true
 # 点击后是否隐藏菜单（此选项不必在此调整，可以在UI中设置）
 DO_NOT_HIDE = false
-# 展示插件的快捷键
+# 展示插件的快捷键（此选项仅在正式版Typora可用）
 SHOW_PLUGIN_HOTKEY = true
 # 右键二~三级菜单的最小宽度
 # 很多用户使用小屏幕，三个等级的右键菜单可能占据了大量的空间。此选项用于设置二~三级菜单的最小宽度，减少占据空间（为什么不包括一级？答：那是theme该做的事）
@@ -1118,13 +1118,13 @@ LIST = [
     "collapse_paragraph",
     "custom",
     "---",
+    "toolbar",
     "search_multi",
     "multi_highlighter",
-    "toolbar",
-    "outline",
     "md_padding",
-    "blur",
     "read_only",
+    "blur",
+    "outline",
 ]
 
 

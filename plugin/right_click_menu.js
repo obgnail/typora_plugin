@@ -11,28 +11,23 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     init = () => {
-        this.supportShortcut = false;
         this.groupName = "typora-plugin";
         this.noExtraMenuGroupName = "typora-plugin-no-extra";
         this.dividerArg = "---";
         this.unavailableArgName = "不可点击";
         this.unavailableArgValue = "__not_available__";
+        this.supportShortcut = Boolean(document.querySelector(".context-menu .ty-menu-shortcut")) && this.config.SHOW_PLUGIN_HOTKEY;
     }
 
     process = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.appendMenu)
 
     appendMenu = () => {
         setTimeout(() => {
-            this.prepare();
             this.appendFirst();  // 一级菜单汇总所有插件
             this.appendSecond(); // 二级菜单展示所有插件
             this.appendThird();  // 三级菜单展示插件的参数
             this.listen();
         }, 500)
-    }
-
-    prepare = () => {
-        this.supportShortcut = Boolean(document.querySelector(".context-menu .ty-menu-shortcut")) && this.config.SHOW_PLUGIN_HOTKEY;
     }
 
     appendFirst = () => {
@@ -277,7 +272,7 @@ class rightClickMenuPlugin extends BasePlugin {
         })
     }
 
-    dynamicCallArgsGenerator = () => [{ arg_name: "右键菜单点击后保持显示", arg_value: "do_not_hide", arg_state: this.config.DO_NOT_HIDE }]
+    dynamicCallArgsGenerator = () => [{ arg_name: "点击后保持显示", arg_value: "do_not_hide", arg_state: this.config.DO_NOT_HIDE }]
 
     call = type => {
         if (type === "do_not_hide") {
