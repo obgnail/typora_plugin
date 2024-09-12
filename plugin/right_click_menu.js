@@ -16,7 +16,8 @@ class rightClickMenuPlugin extends BasePlugin {
         this.dividerArg = "---";
         this.unavailableArgName = "不可点击";
         this.unavailableArgValue = "__not_available__";
-        this.supportShortcut = Boolean(document.querySelector(".context-menu .ty-menu-shortcut"));
+        this.defaultDisableHint = "功能于此时不可用";
+        this.supportShortcut = Boolean(document.querySelector(".ty-menu-shortcut"));
     }
 
     process = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.appendMenu)
@@ -55,14 +56,10 @@ class rightClickMenuPlugin extends BasePlugin {
 
                 const [fixedName, callArg] = item.split(".");
                 const plugin = this.utils.getPlugin(fixedName);
-                if (!plugin) return;
-
-                if (callArg) {
-                    return this.secondComposeLiTemplate(plugin, callArg)
-                } else {
-                    return this.secondLiTemplate(plugin)
+                if (plugin) {
+                    return callArg ? this.secondComposeLiTemplate(plugin, callArg) : this.secondLiTemplate(plugin)
                 }
-            })
+            }).filter(Boolean)
             return this.ulTemplate({ class_: ["plugin-menu-second"], idx, children });
         })
         this.utils.htmlTemplater.appendElements(this.utils.entities.eContent, elements);
@@ -93,25 +90,22 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     secondLiTemplate = plugin => {
-        const hasNotArgs = !plugin.callArgs && !plugin.dynamicCallArgsGenerator;
-        const extra = { class_: ["plugin-menu-item"] };
-        if (!hasNotArgs) {
-            extra.class_.push("has-extra-menu");
+        const hasArgs = plugin.callArgs || plugin.dynamicCallArgsGenerator;
+        const extra = {
+            class_: `plugin-menu-item ${hasArgs ? "has-extra-menu" : ""}`,
+            style: plugin.config.CLICKABLE ? undefined : { color: "#c4c6cc", pointerEvents: "none" },
         }
-        if (!plugin.config.CLICKABLE) {
-            extra.style = { color: "#c4c6cc", pointerEvents: "none" };
-        }
-        return this._liTemplate(plugin.fixedName, plugin.config.NAME, plugin.config.HOTKEY, !hasNotArgs, null, extra);
+        return this._liTemplate(plugin.fixedName, plugin.config.NAME, plugin.config.HOTKEY, hasArgs, null, extra);
     }
 
     thirdLiTemplate = (arg, dynamic) => {
-        const extra = {};
-        if (arg.arg_hint) {
-            extra["ty-hint"] = arg.arg_hint;
+        if (arg.arg_disabled && !arg.arg_hint) {
+            arg.arg_hint = this.defaultDisableHint;
         }
-        if (dynamic) {
-            extra.class_ = `plugin-dynamic-arg ${(arg.arg_disabled) ? "disabled" : ""}`;
-        }
+        const extra = {
+            "ty-hint": arg.arg_hint || undefined,
+            class_: dynamic ? `plugin-dynamic-arg ${arg.arg_disabled ? "disabled" : ""}` : undefined,
+        };
         const state = arg.arg_state ? "state-on" : "state-off";
         return this._liTemplate(arg.arg_value, arg.arg_name, arg.arg_hotkey, false, state, extra);
     }
@@ -127,11 +121,8 @@ class rightClickMenuPlugin extends BasePlugin {
             : hasShortcut
                 ? { children: [{ ele: "span", text: showName }, { ele: "span", class_: "ty-menu-shortcut", text: shortcut }] }
                 : { text: showName }
-        const ele = { ele: "a", role: "menuitem", "data-lg": "Menu", ...attr };
-        if (class_) {
-            ele.class_ = class_;
-        }
-        return { ele: "li", "data-key": key, children: [ele], ...extra }
+        const children = [{ ele: "a", role: "menuitem", class_, "data-lg": "Menu", ...attr }];
+        return { ele: "li", "data-key": key, children, ...extra }
     }
 
     ulTemplate = extra => {
