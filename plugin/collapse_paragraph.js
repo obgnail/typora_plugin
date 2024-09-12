@@ -213,20 +213,16 @@ class collapseParagraphPlugin extends BasePlugin {
             const value = this.config.MODIFIER_KEY[key];
             return value ? `${value}+click` : undefined
         }
-        const result = [];
         const target = this.getTargetHeader(anchorNode, !this.config.STRICT_MODE_IN_CONTEXT_MENU);
-        if (target) {
-            meta.target = target;
-            result.push(
-                { arg_name: "折叠其他章节", arg_value: "collapse_other", arg_disabled: !target },
-                { arg_name: "折叠/展开当前章节", arg_value: "call_current", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_SINGLE") },
-                { arg_name: "折叠/展开当前章节（递归）", arg_value: "call_recursive", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_RECURSIVE") },
-                { arg_name: "折叠/展开同级章节", arg_value: "call_siblings", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_SIBLINGS") },
-                { arg_name: "折叠/展开全局同级章节", arg_value: "call_all_siblings", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_ALL_SIBLINGS") },
-            )
-        }
-        result.push({ arg_name: "记住章节折叠状态", arg_value: "record_collapse_state", arg_state: this.config.RECORD_COLLAPSE });
-        return result
+        meta.target = target;
+        return [
+            { arg_name: "折叠其他章节", arg_value: "collapse_other", arg_disabled: !target },
+            { arg_name: "折叠/展开当前章节", arg_value: "call_current", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_SINGLE") },
+            { arg_name: "折叠/展开当前章节（递归）", arg_value: "call_recursive", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_RECURSIVE") },
+            { arg_name: "折叠/展开同级章节", arg_value: "call_siblings", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_SIBLINGS") },
+            { arg_name: "折叠/展开全局同级章节", arg_value: "call_all_siblings", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_ALL_SIBLINGS") },
+            { arg_name: "记住章节折叠状态", arg_value: "record_collapse_state", arg_state: this.config.RECORD_COLLAPSE },
+        ]
     }
 
     dynamicCall = (type, meta) => {

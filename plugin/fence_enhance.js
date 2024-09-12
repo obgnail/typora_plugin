@@ -359,15 +359,16 @@ class fenceEnhancePlugin extends BasePlugin {
             { arg_name: "启用按钮：复制", arg_value: "disable_or_enable_copy", arg_state: this.config.ENABLE_COPY },
             { arg_name: "总是折叠代码块", arg_value: "disable_or_enable_fold_default", arg_state: this.config.FOLD_DEFAULT },
         ];
+        const enable = this.config.ENABLE_DANGEROUS_FEATURES;
         if (this.supportIndent) {
             arr.splice(2, 0, { arg_name: "启用按钮：缩进", arg_value: "disable_or_enable_indent", arg_state: this.enableIndent });
-            if (this.config.ENABLE_DANGEROUS_FEATURES) {
-                arr.push(
-                    { arg_name: "(危)调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint },
-                    { arg_name: "(危)为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint },
-                    { arg_name: "(危)批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: this.dangerousHint },
-                );
-            }
+            enable && arr.push({ arg_name: "(危)调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint });
+        }
+        if (enable) {
+            arr.push(
+                { arg_name: "(危)为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint },
+                { arg_name: "(危)批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: this.dangerousHint },
+            );
         }
         return arr
     }

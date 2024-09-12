@@ -16,7 +16,7 @@ class rightClickMenuPlugin extends BasePlugin {
         this.dividerArg = "---";
         this.unavailableArgName = "不可点击";
         this.unavailableArgValue = "__not_available__";
-        this.supportShortcut = Boolean(document.querySelector(".context-menu .ty-menu-shortcut")) && this.config.SHOW_PLUGIN_HOTKEY;
+        this.supportShortcut = Boolean(document.querySelector(".context-menu .ty-menu-shortcut"));
     }
 
     process = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.appendMenu)
@@ -92,14 +92,8 @@ class rightClickMenuPlugin extends BasePlugin {
         return { ele: "li", class_: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": callArg, children }
     }
 
-    capitalize = hotkey => {
-        hotkey = Array.isArray(hotkey) ? hotkey[0] : hotkey;
-        return hotkey.split("+").map(e => e[0].toUpperCase() + e.slice(1).toLowerCase()).join("+")
-    }
-
     secondLiTemplate = plugin => {
         const hasNotArgs = !plugin.callArgs && !plugin.dynamicCallArgsGenerator;
-
         const extra = { class_: ["plugin-menu-item"] };
         if (!hasNotArgs) {
             extra.class_.push("has-extra-menu");
@@ -107,18 +101,7 @@ class rightClickMenuPlugin extends BasePlugin {
         if (!plugin.config.CLICKABLE) {
             extra.style = { color: "#c4c6cc", pointerEvents: "none" };
         }
-        let childrenExtra;
-        if (hasNotArgs) {
-            const hotkey = plugin.config.HOTKEY;
-            childrenExtra = this.supportShortcut && hotkey
-                ? { children: [{ ele: "span", text: plugin.config.NAME }, { ele: "span", class_: "ty-menu-shortcut", text: this.capitalize(hotkey) }] }
-                : { text: plugin.config.NAME }
-        } else {
-            childrenExtra = { children: [{ ele: "span", "data-lg": "Menu", text: plugin.config.NAME, children: [this.caret()] }] };
-        }
-
-        const children = [{ ele: "a", role: "menuitem", "data-lg": "Menu", ...childrenExtra }];
-        return { ele: "li", "data-key": plugin.fixedName, children, ...extra }
+        return this._liTemplate(plugin.fixedName, plugin.config.NAME, plugin.config.HOTKEY, !hasNotArgs, null, extra);
     }
 
     thirdLiTemplate = (arg, dynamic) => {
@@ -129,12 +112,26 @@ class rightClickMenuPlugin extends BasePlugin {
         if (dynamic) {
             extra.class_ = `plugin-dynamic-arg ${(arg.arg_disabled) ? "disabled" : ""}`;
         }
-        const class_ = arg.arg_state ? "state-on" : "state-off";
-        const childrenExtra = this.supportShortcut && arg.arg_hotkey
-            ? { children: [{ ele: "span", text: arg.arg_name }, { ele: "span", class_: "ty-menu-shortcut", text: this.capitalize(arg.arg_hotkey) }] }
-            : { text: arg.arg_name }
-        const children = [{ ele: "a", class_, role: "menuitem", "data-lg": "Menu", ...childrenExtra }];
-        return { ele: "li", "data-key": arg.arg_value, ...extra, children }
+        const state = arg.arg_state ? "state-on" : "state-off";
+        return this._liTemplate(arg.arg_value, arg.arg_name, arg.arg_hotkey, false, state, extra);
+    }
+
+    _liTemplate = (key, showName, shortcut, hasExtraMenu, class_, extra) => {
+        if (shortcut) {
+            shortcut = Array.isArray(shortcut) ? shortcut[0] : shortcut;
+            shortcut = shortcut.split("+").map(e => e[0].toUpperCase() + e.slice(1).toLowerCase()).join("+");
+        }
+        const hasShortcut = this.supportShortcut && this.config.SHOW_PLUGIN_HOTKEY && shortcut;
+        const attr = hasExtraMenu
+            ? { children: [{ ele: "span", "data-lg": "Menu", text: showName, children: [this.caret()] }] }
+            : hasShortcut
+                ? { children: [{ ele: "span", text: showName }, { ele: "span", class_: "ty-menu-shortcut", text: shortcut }] }
+                : { text: showName }
+        const ele = { ele: "a", role: "menuitem", "data-lg": "Menu", ...attr };
+        if (class_) {
+            ele.class_ = class_;
+        }
+        return { ele: "li", "data-key": key, children: [ele], ...extra }
     }
 
     ulTemplate = extra => {
@@ -181,15 +178,6 @@ class rightClickMenuPlugin extends BasePlugin {
         arg_disabled: true,
     }])
 
-    hideMenuIfNeed = () => !this.config.DO_NOT_HIDE && File.editor.contextMenu.hide();
-
-    callPlugin = plugin => plugin.call && plugin.call();
-    dynamicCallPlugin = (plugin, arg) => {
-        if (arg !== this.unavailableArgValue && plugin && plugin.call) {
-            this.utils.withMeta(meta => plugin.call(arg, meta));
-        }
-    }
-
     listen = () => {
         const that = this;
         const removeShow = ele => ele.classList.remove("show");
@@ -219,9 +207,8 @@ class rightClickMenuPlugin extends BasePlugin {
                 that.showMenuItem($(`.plugin-menu-second[idx="${idx}"]`), $first);
                 $first.addClass("active");
             } else {
-                document.querySelectorAll(`[data-key="${that.groupName}"]`).forEach(removeActive);
-                document.querySelectorAll(".plugin-menu-second").forEach(removeShow);
-                document.querySelectorAll(".plugin-menu-third").forEach(removeShow);
+                document.querySelectorAll(`#context-menu li[data-key="${that.groupName}"]`).forEach(removeActive);
+                document.querySelectorAll(".plugin-menu-second, .plugin-menu-third").forEach(removeShow);
             }
         })
 
@@ -239,7 +226,7 @@ class rightClickMenuPlugin extends BasePlugin {
             if ($third.children().length === 0) {
                 that.appendDummyThirdLi($third);
             }
-            if ($second.find(`span[data-lg="Menu"]`).length) {
+            if ($second.find('span[data-lg="Menu"]').length) {
                 that.showMenuItem($third, $second);
             } else {
                 removeActive(document.querySelector(".plugin-menu-second .has-extra-menu"));
@@ -268,15 +255,51 @@ class rightClickMenuPlugin extends BasePlugin {
             const callArg = this.getAttribute("data-key");
             const plugin = that.utils.getPlugin(fixedName);
             that.dynamicCallPlugin(plugin, callArg);
-            that.hideMenuIfNeed();
+            that.hideMenuIfNeed(fixedName);
         })
     }
 
-    dynamicCallArgsGenerator = () => [{ arg_name: "点击后保持显示", arg_value: "do_not_hide", arg_state: this.config.DO_NOT_HIDE }]
+    callPlugin = plugin => plugin.call && plugin.call();
+
+    dynamicCallPlugin = (plugin, arg) => {
+        if (arg !== this.unavailableArgValue && plugin && plugin.call) {
+            this.utils.withMeta(meta => plugin.call(arg, meta));
+        }
+    }
+
+    hideMenuIfNeed = key => {
+        if (!this.config.DO_NOT_HIDE) {
+            File.editor.contextMenu.hide();
+            return;
+        }
+        if (key) {
+            $(`.plugin-menu-item[data-key="${key}"]`).trigger("mouseenter");  // refresh third menu
+        }
+    }
+
+    toggleHotkey = () => {
+        this.config.SHOW_PLUGIN_HOTKEY = !this.config.SHOW_PLUGIN_HOTKEY;
+        const toggle = func => {
+            const fn = menu => menu.querySelectorAll(".ty-menu-shortcut").forEach(e => e.classList[func]("plugin-common-hidden"));
+            document.querySelectorAll(".plugin-menu-second, .plugin-menu-third").forEach(fn);
+        }
+        const fn = this.config.SHOW_PLUGIN_HOTKEY ? "remove" : "add";
+        toggle(fn);
+    }
+
+    dynamicCallArgsGenerator = () => {
+        const result = [{ arg_name: "保持显示", arg_value: "do_not_hide", arg_state: this.config.DO_NOT_HIDE, arg_hint: "右键菜单点击后不会自动消失" }];
+        if (this.supportShortcut) {
+            result.push({ arg_name: "显示快捷键", arg_value: "toggle_hotkey", arg_state: this.config.SHOW_PLUGIN_HOTKEY })
+        }
+        return result
+    }
 
     call = type => {
         if (type === "do_not_hide") {
             this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE;
+        } else if (type === "toggle_hotkey") {
+            this.toggleHotkey();
         }
     }
 }

@@ -60,15 +60,15 @@ class markmapPlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = () => {
         return this.tocMarkmap
-            ? [{ arg_name: "思维导图弹窗", arg_value: "toggle_toc", arg_state: this.tocMarkmap.isShow(), arg_hotkey: this.config.TOC_HOTKEY }]
+            ? [{ arg_name: "思维导图弹窗", arg_value: "toggle_toc", arg_hotkey: this.config.TOC_HOTKEY }]
             : []
     }
 
     lazyLoad = async () => {
         if (this.MarkmapLib.Markmap) return;
 
-        const { Transformer, builtInPlugins } = require("./resource/markmap-lib");
-        const markmap = require("./resource/markmap-view");
+        const { Transformer, builtInPlugins } = require("./resource/markmap-lib.js");
+        const markmap = require("./resource/markmap-view.js");
         const transformer = new Transformer(builtInPlugins);
         Object.assign(this.MarkmapLib, markmap, { transformer, Transformer, builtInPlugins });
 
