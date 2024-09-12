@@ -1,6 +1,7 @@
 class fenceEnhancePlugin extends BasePlugin {
     beforeProcess = () => {
-        this.supportIndent = this.config.ENABLE_INDENT && !this.utils.isBetaVersion;
+        const hasFunc = File && File.editor && File.editor.fences && File.editor.fences.formatContent;
+        this.supportIndent = this.config.ENABLE_INDENT && hasFunc;
         this.enableIndent = this.supportIndent;
     }
 
