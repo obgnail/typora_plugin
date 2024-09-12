@@ -60,15 +60,15 @@ class markmapPlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = () => {
         return this.tocMarkmap
-            ? [{ arg_name: "思维导图弹窗", arg_value: "toggle_toc", arg_state: this.tocMarkmap.isShow(), arg_hotkey: this.config.TOC_HOTKEY }]
+            ? [{ arg_name: "思维导图弹窗", arg_value: "toggle_toc", arg_hotkey: this.config.TOC_HOTKEY }]
             : []
     }
 
     lazyLoad = async () => {
         if (this.MarkmapLib.Markmap) return;
 
-        const { Transformer, builtInPlugins } = require("./resource/markmap-lib");
-        const markmap = require("./resource/markmap-view");
+        const { Transformer, builtInPlugins } = require("./resource/markmap-lib.js");
+        const markmap = require("./resource/markmap-view.js");
         const transformer = new Transformer(builtInPlugins);
         Object.assign(this.MarkmapLib, markmap, { transformer, Transformer, builtInPlugins });
 
@@ -611,10 +611,10 @@ class tocMarkmap {
                 { label: "导出后自动打开文件所在目录", key: "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG" },
             ]
             return [
-                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("左右边框宽度", 0) },
-                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("上下边框宽度", 1) },
-                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...inputKV("保存目录名", "FOLDER_WHEN_DOWNLOAD_SVG") },
-                { fieldset, type: "input", inline: true, ...inputKV("保存文件名", "FILENAME_WHEN_DOWNLOAD_SVG") },
+                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("水平内边距", 0) },
+                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("垂直内边距", 1) },
+                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...inputKV("保存目录", "FOLDER_WHEN_DOWNLOAD_SVG") },
+                { fieldset, type: "input", inline: true, ...inputKV("保存文件", "FILENAME_WHEN_DOWNLOAD_SVG") },
                 { fieldset, label: "", ...checkboxKV(components) },
             ]
         }

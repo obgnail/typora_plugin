@@ -419,29 +419,20 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = () => {
-        const args = [];
+        const args = [{ arg_name: "保存当前标签页列表", arg_value: "save_tabs" }];
         if (this.utils.existPathSync(this.saveTabFilePath)) {
-            const save_tabs = { arg_name: "覆盖保存的标签页", arg_value: "save_tabs" };
-            const open_save_tabs = { arg_name: "打开保存的标签页", arg_value: "open_save_tabs" };
-            args.push(save_tabs, open_save_tabs);
-        } else {
-            args.push({ arg_name: "保存所有的标签页", arg_value: "save_tabs" });
+            args.push({ arg_name: "打开保存的标签页列表", arg_value: "open_save_tabs" });
         }
-        if (this.localOpen) {
-            args.push({ arg_name: "在新标签打开文件", arg_value: "new_tab_open" });
-        } else if (this.utils.getFilePath()) {
-            args.push({ arg_name: "在当前标签打开文件", arg_value: "local_open" });
-        }
-        if (this.tabUtil.tabCount > 1) {
-            args.push({ arg_name: "排序标签", arg_value: "sort_tabs" });
-        }
+        args.push(
+            { arg_name: "在新标签打开", arg_value: "toggle_local", arg_state: !this.localOpen },
+            { arg_name: "排序标签", arg_value: "sort_tabs", arg_disabled: this.tabUtil.tabCount <= 1 }
+        );
         return args
     }
 
     call = type => {
         const callMap = {
-            new_tab_open: () => this.localOpen = false,
-            local_open: () => this.localOpen = true,
+            toggle_local: () => this.localOpen = !this.localOpen,
             save_tabs: this.saveTabs,
             open_save_tabs: this.openSaveTabs,
             sort_tabs: this.sortTabs,

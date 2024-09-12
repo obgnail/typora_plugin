@@ -15,7 +15,7 @@
 | 序号 | 插件                    | 功能                                   | 默认启用 |
 | ---- | ----------------------- | -------------------------------------- | -------- |
 | 1    | window_tab              | 标签页管理                             |          |
-| 2    | search_multi            | 全局多关键字搜索                       |          |
+| 2    | search_multi            | 多关键字搜索                           |          |
 | 3    | multi_highlighter       | 多关键字高亮                           |          |
 | 4    | collapse_paragraph      | 章节折叠                               | ×        |
 | 5    | collapse_list           | 列表折叠                               | ×        |
@@ -262,7 +262,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 
 
-### search_multi：全局多关键字搜索
+### search_multi：多关键字搜索
 
 功能：比如搜索同时包含 `golang` 和 `install` 和 `生命周期` 三个关键字的文件。
 

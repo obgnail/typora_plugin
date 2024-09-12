@@ -20,6 +20,7 @@ class htmlTemplater {
 
     setAttributes(el, obj) {
         for (const [prop, value] of Object.entries(obj)) {
+            if (value == null) continue;
             switch (prop) {
                 case "ele":
                     break;
