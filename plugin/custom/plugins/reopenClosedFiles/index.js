@@ -14,8 +14,8 @@ class reopenClosedFilesPlugin extends BaseCustomPlugin {
             if (this.config.auto_reopen_when_init) {
                 this.utils.loopDetector(this.utils.isDiscardableUntitled, this.callback, 40, 2000, false);
             }
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, this.save);
         })
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeUnload, this.save);
     }
 
     save = async () => this.windowTabBarPlugin && this.windowTabBarPlugin.saveTabs(this.saveFile)
