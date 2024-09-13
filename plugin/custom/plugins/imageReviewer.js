@@ -3,7 +3,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         imageMaxWidth: this.config.image_max_width + "%",
         imageMaxHeight: this.config.image_max_height + "%",
         toolPosition: this.config.tool_position === "top" ? "initial" : 0,
-        thumbnailPosition: this.config.tool_position === "top" ? "bottom": "top",
+        thumbnailPosition: this.config.tool_position === "top" ? "bottom" : "top",
         blurLevel: this.config.blur_level + "px",
     })
 
@@ -12,7 +12,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         const keyTranslate = { arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space" };
         const funcTranslate = {
             dummy: ['无功能', ''],
-            info: ['', 'fa fa-question-circle'],
+            info: ['', 'fa fa-info-circle'],
+            thumbnailNav: ['缩略图列表', 'fa fa-caret-square-o-down'],
             close: ['关闭', 'fa fa-times'],
             download: ['下载网络图片', 'fa fa-download'],
             scroll: ['定位到文档', 'fa fa-crosshairs'],
@@ -20,8 +21,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             location: ['打开图片路径', 'fa fa-location-arrow'],
             nextImage: ['下张图', 'fa fa-angle-right'],
             previousImage: ['上张图', 'fa fa-angle-left'],
-            firstImage: ['第一张图', 'fa fa-backward'],
-            lastImage: ['最后一张图', 'fa fa-forward'],
+            firstImage: ['第一张图', 'fa fa-fast-backward'],
+            lastImage: ['最后一张图', 'fa fa-fast-forward'],
             zoomOut: ['缩小图片', 'fa fa fa-search-minus'],
             zoomIn: ['放大图片', 'fa fa fa-search-plus'],
             rotateLeft: ['图片向左旋转', 'fa fa-rotate-left'],
@@ -80,13 +81,14 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                 const [hint, icon] = funcTranslate[option];
                 return `<i class="${icon}" option="${option}" title="${hint}"></i>`
             })
+        const class_ = this.config.show_thumbnail_nav ? "" : "plugin-common-hidden";
         return `
             <div id="plugin-image-reviewer" class="plugin-cover-content plugin-common-hidden">
                 <div class="review-tool">
                     <div class="review-message">${messageList.join("")}</div>
                     <div class="review-options">${operationList.join("")}</div>
                 </div>
-                <div class="review-nav"></div>
+                <div class="review-nav ${class_}"></div>
                 <img class="review-image" alt=""/>
                 <div class="review-item" action="previousImage"><i class="fa fa-angle-left"></i></div>
                 <div class="review-item" action="nextImage"><i class="fa fa-angle-right"></i></div>
@@ -395,6 +397,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
     }
 
+    thumbnailNav = force => this.utils.toggleVisible(this.entities.nav, force)
     play = () => this.handlePlayTimer(!!this.playTimer)
     restore = () => {
         Object.assign(this.entities.image.style, {
