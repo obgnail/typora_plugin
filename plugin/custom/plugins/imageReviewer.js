@@ -397,7 +397,10 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
     }
 
-    thumbnailNav = force => this.utils.toggleVisible(this.entities.nav, force)
+    thumbnailNav = force => {
+        this.config.show_thumbnail_nav = !this.config.show_thumbnail_nav;
+        this.utils.toggleVisible(this.entities.nav, force)
+    }
     play = () => this.handlePlayTimer(!!this.playTimer)
     restore = () => {
         Object.assign(this.entities.image.style, {

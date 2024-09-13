@@ -123,13 +123,12 @@ class collectUtil {
     }
 
     collect() {
-        const { SHOW_HIDDEN } = this.config;
         const idxMap = { paragraph: 0, table: 0, image: 0, fence: 0, link: 0, math: 0 };
         this.collection = { table: [], image: [], fence: [], link: [], math: [], all: [] };
 
         const selector = ":scope>h1, :scope>h2, .md-table, .md-fences, .md-image, .md-link, .md-math-block, .md-inline-math-container";
         this.utils.entities.eWrite.querySelectorAll(selector).forEach(ele => {
-            if (!SHOW_HIDDEN && ele.style.display === "none") return;
+            if (!this.config.SHOW_HIDDEN && ele.style.display === "none") return;
 
             const tagName = ele.tagName;
             if (tagName === "H1" || tagName === "H2") {
