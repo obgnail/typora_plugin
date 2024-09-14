@@ -526,7 +526,7 @@ class tocMarkmap {
             AUTO_FIT_WHEN_UPDATE: "图形更新时自动重新适配窗口",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
             COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: "有些SVG解析器无法解析CSS变量，勾选此选项会自动替换CSS变量",
-            REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若非需要手动修改导出的图形文件，请勿勾选此选项",
+            REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若非需要手动修改导出的SVG文件，请勿勾选此选项",
             REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式提高兼容性。若图片显示异常，请勾选此选项",
             FOLDER_WHEN_DOWNLOAD_SVG: "为空则使用 tmp 目录",
             FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid",
@@ -581,7 +581,7 @@ class tocMarkmap {
             { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点垂直间距", "spacingVertical") },
             { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点内部边距", "paddingX") },
             { type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("节点最大长度", "maxWidth") },
-            { type: "range", inline: true, min: 100, max: 1000, step: 50, ...inputKV("动画持续时间", "duration") },
+            { type: "range", inline: true, min: 100, max: 1000, step: 25, ...inputKV("动画持续时间", "duration") },
             { type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...inputKV("窗口填充率", "fitRatio") },
             { type: "range", inline: true, min: 0.1, max: 1, step: 0.01, ...inputKV("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
             { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("初始的窗口宽度", "WIDTH_PERCENT_WHEN_INIT") },
@@ -613,8 +613,8 @@ class tocMarkmap {
             return [
                 { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("水平内边距", 0) },
                 { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("垂直内边距", 1) },
-                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...inputKV("保存目录", "FOLDER_WHEN_DOWNLOAD_SVG") },
-                { fieldset, type: "input", inline: true, ...inputKV("保存文件", "FILENAME_WHEN_DOWNLOAD_SVG") },
+                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...inputKV("导出目录", "FOLDER_WHEN_DOWNLOAD_SVG") },
+                { fieldset, type: "input", inline: true, ...inputKV("导出文件", "FILENAME_WHEN_DOWNLOAD_SVG") },
                 { fieldset, label: "", ...checkboxKV(components) },
             ]
         }

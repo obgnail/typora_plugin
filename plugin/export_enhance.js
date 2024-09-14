@@ -6,12 +6,13 @@ class exportEnhancePlugin extends BasePlugin {
     })
 
     process = () => {
+        this.enable = this.config.ENABLE;
         this.regexp = new RegExp(`<img.*?src="(.*?)".*?>`, "gs");
         this.utils.exportHelper.register("export_enhance", null, this.afterExport);
     }
 
     afterExport = async html => {
-        if (!this.config.ENABLE) return html;
+        if (!this.enable) return html;
 
         const imageMap = this.config.DOWNLOAD_NETWORK_IMAGE ? await this.downloadAllImage(html) : {};
         const dirname = this.utils.getCurrentDirPath();
@@ -66,15 +67,15 @@ class exportEnhancePlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = () => [
-        { arg_name: "启用导出增强", arg_value: "toggle_enable", arg_state: this.config.ENABLE },
-        { arg_name: "下载网络图片", arg_value: "toggle_download", arg_state: this.config.DOWNLOAD_NETWORK_IMAGE },
+        { arg_name: "启用", arg_value: "toggle_enable", arg_state: this.enable },
+        { arg_name: "自动下载网络图片", arg_value: "toggle_download", arg_state: this.config.DOWNLOAD_NETWORK_IMAGE },
     ]
 
     call = type => {
         if (type === "toggle_download") {
-            this.config.DOWNLOAD_NETWORK_IMAGE = !this.config.DOWNLOAD_NETWORK_IMAGE
+            this.config.DOWNLOAD_NETWORK_IMAGE = !this.config.DOWNLOAD_NETWORK_IMAGE;
         } else if (type === "toggle_enable") {
-            this.config.ENABLE = !this.config.ENABLE
+            this.enable = !this.enable;
         }
     }
 }

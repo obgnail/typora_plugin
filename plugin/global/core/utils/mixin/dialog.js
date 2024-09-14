@@ -35,10 +35,13 @@ class dialog {
             submit: document.querySelector("#plugin-custom-modal .plugin-modal-submit"),
             cancel: document.querySelector("#plugin-custom-modal .plugin-modal-cancel"),
         }
-        this.entities.modal.addEventListener("cancel", () => this.onButtonClick(this.cancelCallback))
-        this.entities.cancel.addEventListener("click", () => this.onButtonClick(this.cancelCallback))
-        this.entities.submit.addEventListener("click", () => this.onButtonClick(this.submitCallback))
+        this.entities.modal.addEventListener("cancel", this.cancel)
+        this.entities.cancel.addEventListener("click", this.cancel)
+        this.entities.submit.addEventListener("click", this.submit)
     }
+
+    submit = () => this.onButtonClick(this.submitCallback)
+    cancel = () => this.onButtonClick(this.cancelCallback)
 
     onButtonClick = async callback => {
         const { components = [] } = this.modalOption || {};  // 先取出来，接下来this.modalOption会被置为空
@@ -65,6 +68,11 @@ class dialog {
         }
     }
 
+    onsubmitEvent = ev => {
+        ev.preventDefault();
+        this.submit();
+    }
+
     attachEvent = (modal, onload) => {
         if (!modal || !modal.components) return;
         modal.components.forEach(component => {
@@ -76,6 +84,8 @@ class dialog {
             })
         })
         onload && onload(this.entities.modal);
+        const form = this.entities.body.querySelector("form");
+        form && (form.onsubmit = this.onsubmitEvent);
     }
 
     getWidgetValue = (type, widget) => {

@@ -911,6 +911,8 @@ hotkey = "ctrl+alt+i"
 click_mask_to_exit = true
 # 跳过加载失败的图片
 filter_error_image = true
+# 是否显示缩略图列表
+show_thumbnail_nav = true
 # 工具栏的位置：bottom/top
 tool_position = "top"
 # 进入查看器后，第一张图片是？
@@ -965,6 +967,7 @@ thumbnail_object_fit = "scale-down"
 #   - previousImage:  上张图
 #   - firstImage:     第一张图
 #   - lastImage:      最后一张图
+#   - thumbnailNav:   显示/隐藏缩略图列表
 #   - zoomIn:         放大图片
 #   - zoomOut:        缩小图片
 #   - rotateLeft:     图片向左旋转
@@ -993,7 +996,7 @@ thumbnail_object_fit = "scale-down"
 # 有两点需要注意：
 #   1. 可选项比上面的功能多了一个info，用于提示
 #   2. 若是本地图片，download按钮会自动隐藏
-tool_function = ["info", "download", "play", "firstImage", "lastImage", "restore", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close"]
+tool_function = ["info", "thumbnailNav", "download", "play", "firstImage", "lastImage", "restore", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close"]
 
 # 鼠标点击图片绑定的功能
 # 三项分别为左键、中键、右键
