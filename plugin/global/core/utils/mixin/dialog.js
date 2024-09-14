@@ -11,7 +11,7 @@ class dialog {
     html = () => `
         <dialog id="plugin-custom-modal">
             <div class="plugin-custom-modal-header"><div class="plugin-custom-modal-title" data-lg="Front"></div></div>
-            <div class="plugin-custom-modal-body"></div>
+            <div class="plugin-custom-modal-body"><form role="form"></form></div>
             <div class="plugin-custom-modal-footer">
                 <button type="button" class="btn btn-default plugin-modal-cancel">取消</button>
                 <button type="button" class="btn btn-primary plugin-modal-submit">确定</button>
@@ -32,12 +32,17 @@ class dialog {
             modal: document.querySelector("#plugin-custom-modal"),
             body: document.querySelector("#plugin-custom-modal .plugin-custom-modal-body"),
             title: document.querySelector("#plugin-custom-modal .plugin-custom-modal-title"),
+            form: document.querySelector("#plugin-custom-modal form"),
             submit: document.querySelector("#plugin-custom-modal .plugin-modal-submit"),
             cancel: document.querySelector("#plugin-custom-modal .plugin-modal-cancel"),
         }
-        this.entities.modal.addEventListener("cancel", this.cancel)
-        this.entities.cancel.addEventListener("click", this.cancel)
-        this.entities.submit.addEventListener("click", this.submit)
+        this.entities.modal.addEventListener("cancel", this.cancel);
+        this.entities.cancel.addEventListener("click", this.cancel);
+        this.entities.submit.addEventListener("click", this.submit);
+        this.entities.form.onsubmit = ev => {
+            ev.preventDefault();
+            this.submit();
+        }
     }
 
     submit = () => this.onButtonClick(this.submitCallback)
@@ -68,11 +73,6 @@ class dialog {
         }
     }
 
-    onsubmitEvent = ev => {
-        ev.preventDefault();
-        this.submit();
-    }
-
     attachEvent = (modal, onload) => {
         if (!modal || !modal.components) return;
         modal.components.forEach(component => {
@@ -84,8 +84,6 @@ class dialog {
             })
         })
         onload && onload(this.entities.modal);
-        const form = this.entities.body.querySelector("form");
-        form && (form.onsubmit = this.onsubmitEvent);
     }
 
     getWidgetValue = (type, widget) => {
@@ -205,7 +203,7 @@ class dialog {
         this.entities.modal.style.setProperty("--plugin-common-modal-width", width);
         this.entities.modal.style.setProperty("--plugin-common-modal-background", background);
         this.entities.body.style.setProperty("--plugin-common-modal-body-height", height);
-        this.entities.body.innerHTML = `<form role="form">${this.newWidgets(components).join("")}</form>`;
+        this.entities.form.innerHTML = this.newWidgets(components).join("");
     }
 
     /**
