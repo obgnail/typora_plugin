@@ -934,7 +934,7 @@ class tocMarkmap {
 
         const _setPath = (node, parent) => {
             const parentPath = (parent && parent.__path) || "";
-            node.__path = parentPath + "@" + node.content;
+            node.__path = parentPath + "\n" + node.content;
         }
 
         const fold = new Set();
@@ -945,9 +945,8 @@ class tocMarkmap {
             }
         }
         const _reset = node => {
-            const { payload, __path } = node;
-            if (fold.has(__path)) {
-                node.payload = { ...payload, fold: 1 };
+            if (fold.has(node.__path)) {
+                node.payload.fold = 1;
             }
         }
 
