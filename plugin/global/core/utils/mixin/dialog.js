@@ -39,10 +39,10 @@ class dialog {
         this.entities.modal.addEventListener("cancel", this.cancel);
         this.entities.cancel.addEventListener("click", this.cancel);
         this.entities.submit.addEventListener("click", this.submit);
-        this.entities.form.onsubmit = ev => {
+        this.entities.form.addEventListener("submit", ev => {
             ev.preventDefault();
             this.submit();
-        }
+        })
     }
 
     submit = () => this.onButtonClick(this.submitCallback)
@@ -50,16 +50,16 @@ class dialog {
 
     onButtonClick = async callback => {
         const { components = [] } = this.modalOption || {};  // 先取出来，接下来this.modalOption会被置为空
-        this.entities.body.querySelectorAll(".form-group[component-id]").forEach(el => {
-            const id = el.getAttribute("component-id");
+        this.entities.form.querySelectorAll(".form-group[component-id]").forEach(cpn => {
+            const id = cpn.getAttribute("component-id");
             const component = components.find(c => c.id === id);
             if (component) {
-                component.submit = this.getWidgetValue(component.type, el);
+                component.submit = this.getWidgetValue(component.type, cpn);
             }
         })
         this.reset();
         this.entities.modal.close();
-        this.entities.body.innerHTML = "";
+        this.entities.form.innerHTML = "";
         if (callback) {
             const submit = components.map(c => c.submit);
             await callback(components, submit);
@@ -75,10 +75,10 @@ class dialog {
 
     attachEvent = (modal, onload) => {
         if (!modal || !modal.components) return;
-        modal.components.forEach(component => {
-            Object.entries(component).forEach(([event, func]) => {
+        modal.components.forEach(cpn => {
+            Object.entries(cpn).forEach(([event, func]) => {
                 if (event.startsWith("on")) {
-                    const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
+                    const widget = this.entities.form.querySelector(`.form-group[component-id="${cpn.id}"]`);
                     widget[event] = func;
                 }
             })
