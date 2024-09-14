@@ -516,20 +516,14 @@ class tocMarkmap {
         const INFO = {
             color: "如需自定义配色方案请前往配置文件",
             maxWidth: "0 表示无长度限制",
-            autoFit: "折叠图形节点时自动重新适配窗口",
-            colorFreezeLevel: "从某一等级开始，所有后代分支的配色保持不变",
-            RECOVER_COLOR: "其他的配色相关配置将失效",
-            LOCALE_HEIGHT_RATIO: "鼠标左击节点时，目标章节滚动到当前视口的高度位置（百分比）",
-            HEIGHT_PERCENT_WHEN_PIN_UP: "弹窗固定到顶部时，窗口占当前视口的高度百分比",
-            WIDTH_PERCENT_WHEN_PIN_RIGHT: "弹窗固定到右侧时，窗口占当前视口的宽度百分比",
+            LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
             REMEMBER_FOLD_WHEN_UPDATE: "图形更新时不会展开已折叠节点",
-            AUTO_FIT_WHEN_UPDATE: "图形更新时自动重新适配窗口",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
+            FOLDER_WHEN_DOWNLOAD_SVG: "为空则使用 TAMP 目录",
+            FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid",
             COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: "有些SVG解析器无法解析CSS变量，勾选此选项会自动替换CSS变量",
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若非需要手动修改导出的SVG文件，请勿勾选此选项",
             REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式提高兼容性。若图片显示异常，请勾选此选项",
-            FOLDER_WHEN_DOWNLOAD_SVG: "为空则使用 tmp 目录",
-            FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid",
         }
         const { DEFAULT_TOC_OPTIONS: _ops, BORDER_WHEN_DOWNLOAD_SVG: _border } = this.config;
         const needUpdateKey = ["DEFAULT_TOC_OPTIONS", "BORDER_WHEN_DOWNLOAD_SVG"];
@@ -577,17 +571,17 @@ class tocMarkmap {
         const ranges = () => [
             { type: "range", inline: true, min: 1, max: 6, step: 1, ...inputKV("固定配色的分支等级", "colorFreezeLevel") },
             { type: "range", inline: true, min: 1, max: 6, step: 1, ...inputKV("分支展开等级", "initialExpandLevel") },
-            { type: "range", inline: true, min: 0, max: 100, step: 1, ...inputKV("节点水平间距", "spacingHorizontal") },
-            { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点垂直间距", "spacingVertical") },
-            { type: "range", inline: true, min: 0, max: 50, step: 1, ...inputKV("节点内部边距", "paddingX") },
+            { type: "range", inline: true, min: 0, max: 100, step: 1, ...inputKV("节点内边距", "paddingX") },
+            { type: "range", inline: true, min: 0, max: 200, step: 1, ...inputKV("节点水平间距", "spacingHorizontal") },
+            { type: "range", inline: true, min: 0, max: 100, step: 1, ...inputKV("节点垂直间距", "spacingVertical") },
             { type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("节点最大长度", "maxWidth") },
-            { type: "range", inline: true, min: 100, max: 1000, step: 25, ...inputKV("动画持续时间", "duration") },
+            { type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("动画持续时间", "duration") },
             { type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...inputKV("窗口填充率", "fitRatio") },
             { type: "range", inline: true, min: 0.1, max: 1, step: 0.01, ...inputKV("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
             { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("初始的窗口宽度", "WIDTH_PERCENT_WHEN_INIT") },
             { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("初始的窗口高度", "HEIGHT_PERCENT_WHEN_INIT") },
-            { type: "range", inline: true, min: 10, max: 95, step: 1, ...inputKV("固定顶部的窗口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
-            { type: "range", inline: true, min: 10, max: 95, step: 1, ...inputKV("固定右侧的窗口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
+            { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("固定顶部的窗口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
+            { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("固定右侧的窗口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
         ]
 
         const ability = () => {
@@ -595,8 +589,8 @@ class tocMarkmap {
                 { label: "鼠标滚轮进行缩放", key: "zoom" },
                 { label: "鼠标滚轮进行平移", key: "pan" },
                 { label: "折叠时自动适配窗口", key: "autoFit" },
-                { label: "记住已折叠的节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
                 { label: "更新时自动适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
+                { label: "记住已折叠的节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
                 { label: "折叠时自动折叠章节", key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD" },
             ]
             return { label: "", legend: "能力", ...checkboxKV(components) }
