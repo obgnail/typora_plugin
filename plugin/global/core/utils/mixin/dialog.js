@@ -5,6 +5,7 @@ class dialog {
     constructor(utils) {
         this.utils = utils;
         this.entities = null;
+        this.prefix = this.utils.randomString();
         this.reset();
     }
 
@@ -52,7 +53,7 @@ class dialog {
         const { components = [] } = this.modalOption || {};  // 先取出来，接下来this.modalOption会被置为空
         this.entities.form.querySelectorAll(".form-group[component-id]").forEach(cpn => {
             const id = cpn.getAttribute("component-id");
-            const component = components.find(c => c.id === id);
+            const component = components.find(c => c._id === id);
             if (component) {
                 component.submit = this.getWidgetValue(component.type, cpn);
             }
@@ -78,7 +79,7 @@ class dialog {
         modal.components.forEach(cpn => {
             Object.entries(cpn).forEach(([event, func]) => {
                 if (event.startsWith("on")) {
-                    const widget = this.entities.form.querySelector(`.form-group[component-id="${cpn.id}"]`);
+                    const widget = this.entities.form.querySelector(`.form-group[component-id="${cpn._id}"]`);
                     widget[event] = func;
                 }
             })
@@ -136,9 +137,9 @@ class dialog {
                 break
             case "checkbox":
             case "radio":
-                const name = this.utils.randomString();
-                const elements = comp.list.map(el => {
-                    const id = name + "-" + this.utils.randomString();
+                const name = comp._id;
+                const elements = comp.list.map((el, idx) => {
+                    const id = `${name}__${idx}`;
                     return `<div class="${type}">
                                 <input type="${type}" id="${id}" name="${name}" value="${el.value}" ${disabled(el)} ${checked(el)}>
                                 <label for="${id}">${el.label}${genInfo(el)}</label>
@@ -169,7 +170,7 @@ class dialog {
         }
         const class_ = comp.inline ? "form-inline-group" : "form-block-group";
         const label_ = comp.label ? `<${label}>${comp.label}${genInfo(comp)}</${label}>` : "";
-        return `<div class="form-group ${class_}" component-id="${comp.id}">${label_}${control}</div>`;
+        return `<div class="form-group ${class_}" component-id="${comp._id}">${label_}${control}</div>`;
     }
 
     newGroupWidget = components => {
@@ -196,7 +197,7 @@ class dialog {
         return nested.map(ele => Array.isArray(ele) ? this.newGroupWidget(ele) : this.newSingleWidget(ele))
     }
 
-    setComponentsId = components => components.forEach(component => component.id = this.utils.randomString());
+    setComponentsId = components => components.forEach((component, idx) => component._id = `${this.prefix}__${idx}`);
 
     assemblyForm = (title, components, width, height, background) => {
         this.entities.title.innerText = title;
