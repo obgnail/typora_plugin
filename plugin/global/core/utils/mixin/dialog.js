@@ -37,6 +37,13 @@ class dialog {
             submit: document.querySelector("#plugin-custom-modal .plugin-modal-submit"),
             cancel: document.querySelector("#plugin-custom-modal .plugin-modal-cancel"),
         }
+        this.entities.form.addEventListener("input", ev => {
+            const target = ev.target;
+            const type = target.getAttribute("type");
+            if (type === "range") {
+                target.nextElementSibling.innerText = target.value;
+            }
+        });
         this.entities.modal.addEventListener("cancel", this.cancel);
         this.entities.cancel.addEventListener("click", this.cancel);
         this.entities.submit.addEventListener("click", this.submit);
@@ -130,10 +137,7 @@ class dialog {
                 control = `<input type="number" class="form-control" ${range(comp)} ${placeholder(comp)} ${disabled(comp)}>`
                 break
             case "range":
-                control = `<div class="plugin-custom-modal-range">
-                            <input type="range" ${range(comp)} ${disabled(comp)} oninput="this.nextElementSibling.innerText = this.value;">
-                            <div class="modal-range-value">${comp.value}</div>
-                         </div>`
+                control = `<div class="plugin-custom-modal-range"><input type="range" ${range(comp)} ${disabled(comp)}><div class="modal-range-value">${comp.value}</div></div>`;
                 break
             case "checkbox":
             case "radio":
