@@ -3,7 +3,7 @@ class mdPaddingPlugin extends BasePlugin {
 
     formatContent = content => {
         const { padMarkdown } = require("./md-padding.min");
-        return padMarkdown(content, { ignoreWords: this.config.IGNORE_WORDS })
+        return padMarkdown(content, { ignoreWords: this.config.IGNORE_WORDS, ignorePatterns: this.config.IGNORE_PATTERNS })
     }
 
     removeMultiLineBreak = content => {

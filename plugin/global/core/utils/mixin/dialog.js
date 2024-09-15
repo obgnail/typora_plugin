@@ -5,13 +5,14 @@ class dialog {
     constructor(utils) {
         this.utils = utils;
         this.entities = null;
+        this.prefix = this.utils.randomString();
         this.reset();
     }
 
     html = () => `
         <dialog id="plugin-custom-modal">
             <div class="plugin-custom-modal-header"><div class="plugin-custom-modal-title" data-lg="Front"></div></div>
-            <div class="plugin-custom-modal-body"></div>
+            <div class="plugin-custom-modal-body"><form role="form"></form></div>
             <div class="plugin-custom-modal-footer">
                 <button type="button" class="btn btn-default plugin-modal-cancel">取消</button>
                 <button type="button" class="btn btn-primary plugin-modal-submit">确定</button>
@@ -32,12 +33,24 @@ class dialog {
             modal: document.querySelector("#plugin-custom-modal"),
             body: document.querySelector("#plugin-custom-modal .plugin-custom-modal-body"),
             title: document.querySelector("#plugin-custom-modal .plugin-custom-modal-title"),
+            form: document.querySelector("#plugin-custom-modal form"),
             submit: document.querySelector("#plugin-custom-modal .plugin-modal-submit"),
             cancel: document.querySelector("#plugin-custom-modal .plugin-modal-cancel"),
         }
-        this.entities.modal.addEventListener("cancel", this.cancel)
-        this.entities.cancel.addEventListener("click", this.cancel)
-        this.entities.submit.addEventListener("click", this.submit)
+        this.entities.form.addEventListener("input", ev => {
+            const target = ev.target;
+            const type = target.getAttribute("type");
+            if (type === "range") {
+                target.nextElementSibling.innerText = target.value;
+            }
+        });
+        this.entities.modal.addEventListener("cancel", this.cancel);
+        this.entities.cancel.addEventListener("click", this.cancel);
+        this.entities.submit.addEventListener("click", this.submit);
+        this.entities.form.addEventListener("submit", ev => {
+            ev.preventDefault();
+            this.submit();
+        })
     }
 
     submit = () => this.onButtonClick(this.submitCallback)
@@ -45,16 +58,16 @@ class dialog {
 
     onButtonClick = async callback => {
         const { components = [] } = this.modalOption || {};  // 先取出来，接下来this.modalOption会被置为空
-        this.entities.body.querySelectorAll(".form-group[component-id]").forEach(el => {
-            const id = el.getAttribute("component-id");
-            const component = components.find(c => c.id === id);
+        this.entities.form.querySelectorAll(".form-group[component-id]").forEach(cpn => {
+            const id = cpn.getAttribute("component-id");
+            const component = components.find(c => c._id === id);
             if (component) {
-                component.submit = this.getWidgetValue(component.type, el);
+                component.submit = this.getWidgetValue(component.type, cpn);
             }
         })
         this.reset();
         this.entities.modal.close();
-        this.entities.body.innerHTML = "";
+        this.entities.form.innerHTML = "";
         if (callback) {
             const submit = components.map(c => c.submit);
             await callback(components, submit);
@@ -68,24 +81,17 @@ class dialog {
         }
     }
 
-    onsubmitEvent = ev => {
-        ev.preventDefault();
-        this.submit();
-    }
-
     attachEvent = (modal, onload) => {
         if (!modal || !modal.components) return;
-        modal.components.forEach(component => {
-            Object.entries(component).forEach(([event, func]) => {
+        modal.components.forEach(cpn => {
+            Object.entries(cpn).forEach(([event, func]) => {
                 if (event.startsWith("on")) {
-                    const widget = this.entities.body.querySelector(`.form-group[component-id="${component.id}"]`);
+                    const widget = this.entities.form.querySelector(`.form-group[component-id="${cpn._id}"]`);
                     widget[event] = func;
                 }
             })
         })
         onload && onload(this.entities.modal);
-        const form = this.entities.body.querySelector("form");
-        form && (form.onsubmit = this.onsubmitEvent);
     }
 
     getWidgetValue = (type, widget) => {
@@ -131,16 +137,13 @@ class dialog {
                 control = `<input type="number" class="form-control" ${range(comp)} ${placeholder(comp)} ${disabled(comp)}>`
                 break
             case "range":
-                control = `<div class="plugin-custom-modal-range">
-                            <input type="range" ${range(comp)} ${disabled(comp)} oninput="this.nextElementSibling.innerText = this.value;">
-                            <div class="modal-range-value">${comp.value}</div>
-                         </div>`
+                control = `<div class="plugin-custom-modal-range"><input type="range" ${range(comp)} ${disabled(comp)}><div class="modal-range-value">${comp.value}</div></div>`;
                 break
             case "checkbox":
             case "radio":
-                const name = this.utils.randomString();
-                const elements = comp.list.map(el => {
-                    const id = name + "-" + this.utils.randomString();
+                const name = comp._id;
+                const elements = comp.list.map((el, idx) => {
+                    const id = `${name}__${idx}`;
                     return `<div class="${type}">
                                 <input type="${type}" id="${id}" name="${name}" value="${el.value}" ${disabled(el)} ${checked(el)}>
                                 <label for="${id}">${el.label}${genInfo(el)}</label>
@@ -171,7 +174,7 @@ class dialog {
         }
         const class_ = comp.inline ? "form-inline-group" : "form-block-group";
         const label_ = comp.label ? `<${label}>${comp.label}${genInfo(comp)}</${label}>` : "";
-        return `<div class="form-group ${class_}" component-id="${comp.id}">${label_}${control}</div>`;
+        return `<div class="form-group ${class_}" component-id="${comp._id}">${label_}${control}</div>`;
     }
 
     newGroupWidget = components => {
@@ -198,14 +201,14 @@ class dialog {
         return nested.map(ele => Array.isArray(ele) ? this.newGroupWidget(ele) : this.newSingleWidget(ele))
     }
 
-    setComponentsId = components => components.forEach(component => component.id = this.utils.randomString());
+    setComponentsId = components => components.forEach((component, idx) => component._id = `${this.prefix}__${idx}`);
 
     assemblyForm = (title, components, width, height, background) => {
         this.entities.title.innerText = title;
         this.entities.modal.style.setProperty("--plugin-common-modal-width", width);
         this.entities.modal.style.setProperty("--plugin-common-modal-background", background);
         this.entities.body.style.setProperty("--plugin-common-modal-body-height", height);
-        this.entities.body.innerHTML = `<form role="form">${this.newWidgets(components).join("")}</form>`;
+        this.entities.form.innerHTML = this.newWidgets(components).join("");
     }
 
     /**
