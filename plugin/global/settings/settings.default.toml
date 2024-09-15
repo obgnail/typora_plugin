@@ -270,8 +270,10 @@ CLICKABLE = true
 HOTKEY = "ctrl+shift+b"
 # 仅在选区中生效：当框选文字时，调用此功能只会对当前框选的文字生效
 FORMAT_IN_SELECTION_ONLY = false
-# 不希望拆分的词组：
+# 不希望拆分的词组（这些字词内部和前后禁止加空格）
 IGNORE_WORDS = []
+# 不希望拆分的正则词组（这些正则内部和前后禁止加空格）
+IGNORE_PATTERNS = ["<br />"]
 # 最多连续X个换行符，多余的删除（若为-1，则不使用此功能，推荐为2）
 # 举例，为2时：\n\n\n\n【a】\n\n\n\n\n【b】 -> \n\n【a】\n\n【b】
 LINE_BREAK_MAX_NUM = -1
