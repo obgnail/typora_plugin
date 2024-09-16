@@ -75,9 +75,9 @@ class dialog {
     }
 
     checkComponents = components => {
-        const existError = components.some(c => c.label === undefined || !c.type);
+        const existError = components.some(c => c.label == null || !c.type);
         if (existError) {
-            throw new Error("component.label === undefined || !component.type");
+            throw new Error("component.label == null || !component.type");
         }
     }
 
@@ -127,6 +127,7 @@ class dialog {
         const range = el => `min="${el.min || 0}" max="${el.max || 100}" step="${el.step || 1}" value="${el.value || 1}"`;
         const genInfo = el => el.info ? `<span class="modal-label-info ion-information-circled" title="${el.info}"></span>` : "";
         switch (type) {
+            case "text":
             case "input":
             case "password":
             case "file":
@@ -150,7 +151,7 @@ class dialog {
                             </div>`
                 });
                 const content = elements.join("");
-                control = (comp.legend === undefined) ? content : `<fieldset><legend>${comp.legend}</legend>${content}</fieldset>`;
+                control = (comp.legend == null) ? content : `<fieldset><legend>${comp.legend}</legend>${content}</fieldset>`;
                 break
             case "select":
                 const selected = option => (option === comp.selected) ? "selected" : "";
