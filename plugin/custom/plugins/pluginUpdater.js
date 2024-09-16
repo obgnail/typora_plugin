@@ -7,10 +7,10 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         const { auto_update, start_update_interval, update_loop_interval } = this.config;
         if (!auto_update) return;
         if (start_update_interval > 0) {
-            setTimeout(this.silentUpdate, start_update_interval);
+            setTimeout(this.silentUpdate, Math.min(start_update_interval, 1000 * 60));
         }
         if (update_loop_interval > 0) {
-            setInterval(this.silentUpdate, update_loop_interval);
+            setInterval(this.silentUpdate, Math.min(update_loop_interval, 1000 * 60 * 60));
         }
     }
 
