@@ -92,8 +92,8 @@ const getHook = utils => {
 
     // Before loading plugins
     const registerMixinBefore = async () => {
-        await registerMixin(styleTemplater, extra);
-        await registerMixin(htmlTemplater, contextMenu, notification, progressBar, dialog, stateRecorder, hotkeyHub, exportHelper);
+        await registerMixin(extra);
+        await registerMixin(contextMenu, notification, progressBar, dialog, stateRecorder, hotkeyHub, exportHelper);
     }
 
     // After loading plugins
