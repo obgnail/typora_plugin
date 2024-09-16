@@ -12,4 +12,5 @@ module.exports = {
     ...require("./diagramParser"),
     ...require("./thirdPartyDiagramParser"),
     ...require("./entities"),
+    ...require("./extra")
 }

@@ -97,6 +97,7 @@ class dialog {
     getWidgetValue = (type, widget) => {
         type = type.toLowerCase();
         switch (type) {
+            case "text":
             case "input":
             case "textarea":
             case "select":
