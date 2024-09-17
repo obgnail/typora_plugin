@@ -56,17 +56,6 @@ class htmlTemplater {
             parent.appendChild(fragment);
         }
     }
-
-    process = () => {
-        this.utils.insertElement(`
-            <span class="plugin-wait-mask-wrapper plugin-common-hidden">
-                <span class="plugin-wait-mask">
-                    <span class="plugin-wait-label">Processing</span>
-                    <span class="truncate-line"></span><span class="truncate-line"></span><span class="truncate-line"></span>
-                </span>
-            </span>
-        `);
-    }
 }
 
 module.exports = {

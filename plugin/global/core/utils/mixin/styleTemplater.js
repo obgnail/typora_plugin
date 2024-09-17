@@ -31,11 +31,6 @@ class styleTemplater {
         const style = document.getElementById(this.getID(name));
         return style ? style.innerHTML : undefined;
     }
-
-    process = async () => {
-        const files = ["plugin-common", "customize"];
-        return Promise.all(files.map(f => this.register(f)));
-    }
 }
 
 module.exports = {

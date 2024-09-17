@@ -8,7 +8,7 @@ const getHook = utils => {
 
     const {
         hotkeyHub, eventHub, stateRecorder, exportHelper, styleTemplater, htmlTemplater,
-        contextMenu, notification, progressBar, dialog, diagramParser, thirdPartyDiagramParser, entities
+        contextMenu, notification, progressBar, dialog, diagramParser, thirdPartyDiagramParser, extra, entities
     } = mixin;
 
     // monkey patch
@@ -92,8 +92,8 @@ const getHook = utils => {
 
     // Before loading plugins
     const registerMixinBefore = async () => {
-        await registerMixin(styleTemplater);
-        await registerMixin(htmlTemplater, contextMenu, notification, progressBar, dialog, stateRecorder, hotkeyHub, exportHelper);
+        await registerMixin(extra);
+        await registerMixin(contextMenu, notification, progressBar, dialog, stateRecorder, hotkeyHub, exportHelper);
     }
 
     // After loading plugins

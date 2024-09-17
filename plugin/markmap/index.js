@@ -212,7 +212,7 @@ class tocMarkmap {
                     <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="鼠标穿透"></div>
                     <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="配置"></div>
                     <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="导出"></div>
-                    <div class="plugin-markmap-icon ion-chevron-up" action="pinUp" ty-hint="固定到顶部"></div>
+                    <div class="plugin-markmap-icon ion-chevron-up" action="pinTop" ty-hint="固定到顶部"></div>
                     <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
                 </div>
                 <svg id="plugin-markmap-svg"></svg>
@@ -246,7 +246,7 @@ class tocMarkmap {
         this.modalOriginRect = null;
         this.contentOriginRect = null;
         this.pinUtils = {
-            isPinUp: false,
+            isPinTop: false,
             isPinRight: false,
             recordRect: async () => {
                 await this.utils.sleep(200);
@@ -328,7 +328,7 @@ class tocMarkmap {
                 this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, true, true, onMouseDown, onMouseMove, onMouseUp);
             }
 
-            const resizeWhenPinUp = () => {
+            const resizeWhenPinTop = () => {
                 let contentStartTop = 0;
                 let contentMinTop = 0;
                 const onMouseDown = () => {
@@ -380,7 +380,7 @@ class tocMarkmap {
             }
 
             resizeWhenFree();      // 自由移动时调整大小
-            resizeWhenPinUp();     // 固定到顶部时调整大小
+            resizeWhenPinTop();    // 固定到顶部时调整大小
             resizeWhenPinRight();  // 固定到右侧时调整大小
         }
         const onToggleSidebar = () => {
@@ -391,12 +391,12 @@ class tocMarkmap {
                     this.shrink();
                     this.expand();
                 }
-                const className = ["pinUp", "pinRight"].find(func => this.entities.modal.classList.contains(func));
+                const className = ["pinTop", "pinRight"].find(func => this.entities.modal.classList.contains(func));
                 if (!className) return
 
                 const { width, left, right } = this.entities.content.getBoundingClientRect();
                 let source;
-                if (className === "pinUp") {
+                if (className === "pinTop") {
                     source = { left: `${left}px`, width: `${width}px` };
                 } else {
                     const { right: modalRight } = this.entities.modal.getBoundingClientRect();
@@ -467,12 +467,12 @@ class tocMarkmap {
         const onContextMenu = () => {
             const menuMap = {
                 expand: "全屏", shrink: "取消全屏", fit: "图形适配窗口", download: "下载", setting: "设置",
-                close: "关闭", pinUp: "固定到顶部", pinRight: "固定到右侧", hideToolbar: "隐藏工具栏", showToolbar: "显示工具栏",
+                close: "关闭", pinTop: "固定到顶部", pinRight: "固定到右侧", hideToolbar: "隐藏工具栏", showToolbar: "显示工具栏",
             };
             const showMenu = () => {
                 const fullScreen = this.entities.fullScreen.getAttribute("action");
                 const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar";
-                return this.utils.fromObject(menuMap, [toolbarVisibility, "fit", fullScreen, "pinUp", "pinRight", "setting", "download", "close"])
+                return this.utils.fromObject(menuMap, [toolbarVisibility, fullScreen, "fit", "pinTop", "pinRight", "setting", "download", "close"])
             }
             const callback = ({ key }) => this._onButtonClick(key);
             this.utils.contextMenu.register("markmap", "#plugin-markmap-svg", showMenu, callback);
@@ -761,9 +761,9 @@ class tocMarkmap {
         await download(svg);
     }
 
-    pinUp = async (draw = true) => {
-        this.pinUtils.isPinUp = !this.pinUtils.isPinUp;
-        if (this.pinUtils.isPinUp) {
+    pinTop = async (draw = true) => {
+        this.pinUtils.isPinTop = !this.pinUtils.isPinTop;
+        if (this.pinUtils.isPinTop) {
             if (this.pinUtils.isPinRight) {
                 await this.pinRight(false);
             }
@@ -771,7 +771,7 @@ class tocMarkmap {
         }
 
         let showFunc, hint, contentTop, modalRect, toggleFunc;
-        if (this.pinUtils.isPinUp) {
+        if (this.pinUtils.isPinTop) {
             toggleFunc = "add";
             const { top, height, width, left } = this.contentOriginRect;
             const newHeight = height * this.config.HEIGHT_PERCENT_WHEN_PIN_UP / 100;
@@ -787,16 +787,16 @@ class tocMarkmap {
             hint = "固定到顶部";
         }
         this._setModalRect(modalRect);
-        this.entities.modal.classList.toggle("pinUp");
+        this.entities.modal.classList.toggle("pinTop");
         this.entities.modal.classList[toggleFunc]("noBoxShadow");
         this.entities.content.style.top = contentTop + "px";
         this.entities.fullScreen.setAttribute("action", "expand");
         this.utils[showFunc](this.entities.gripUp);
-        const button = document.querySelector('.plugin-markmap-icon[action="pinUp"]');
+        const button = document.querySelector('.plugin-markmap-icon[action="pinTop"]');
         button.setAttribute("ty-hint", hint);
-        button.classList.toggle("ion-chevron-up", !this.pinUtils.isPinUp);
-        button.classList.toggle("ion-ios7-undo", this.pinUtils.isPinUp);
-        this.utils.toggleVisible(this.entities.resize, this.pinUtils.isPinUp);
+        button.classList.toggle("ion-chevron-up", !this.pinUtils.isPinTop);
+        button.classList.toggle("ion-ios7-undo", this.pinUtils.isPinTop);
+        this.utils.toggleVisible(this.entities.resize, this.pinUtils.isPinTop);
         if (draw) {
             await this.draw();
         }
@@ -805,8 +805,8 @@ class tocMarkmap {
     pinRight = async (draw = true) => {
         this.pinUtils.isPinRight = !this.pinUtils.isPinRight;
         if (this.pinUtils.isPinRight) {
-            if (this.pinUtils.isPinUp) {
-                await this.pinUp(false);
+            if (this.pinUtils.isPinTop) {
+                await this.pinTop(false);
             }
             await this.pinUtils.recordRect();
         }
@@ -968,10 +968,10 @@ class tocMarkmap {
     }
 
     _onButtonClick = async (action, button) => {
-        if (!["pinUp", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"].includes(action)) {
+        if (!["pinTop", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"].includes(action)) {
             await this._waitUnpin();
         }
-        const arg = (action === "pinUp" || action === "pinRight") ? false : undefined;
+        const arg = (action === "pinTop" || action === "pinRight") ? false : undefined;
         await this[action](arg);
     }
 
@@ -990,8 +990,8 @@ class tocMarkmap {
     }
 
     _waitUnpin = async () => {
-        if (this.pinUtils.isPinUp) {
-            await this.pinUp();
+        if (this.pinUtils.isPinTop) {
+            await this.pinTop();
         }
         if (this.pinUtils.isPinRight) {
             await this.pinRight();
