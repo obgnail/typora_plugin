@@ -270,10 +270,11 @@ class tocMarkmap {
     process = () => {
         const onEvent = () => {
             const { eventHub } = this.utils;
+            const { content, modal } = this.entities;
             eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.isShow() && this.draw(this.config.AUTO_FIT_WHEN_UPDATE));
             eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.markmap && this._onButtonClick("close"));
-            this.entities.content.addEventListener("transitionend", this.fit);
-            this.entities.modal.addEventListener("transitionend", this.fit);
+            content.addEventListener("transitionend", ev => (ev.target === content) && this.isInSpecialState() && this.fit());
+            modal.addEventListener("transitionend", ev => (ev.target === modal) && this.fit());
         }
         const onDrag = () => {
             const moveElement = this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`);
@@ -847,6 +848,8 @@ class tocMarkmap {
             await this.draw();
         }
     }
+
+    isInSpecialState = () => ["pinTop", "pinRight", "noBoxShadow"].some(c => this.entities.modal.classList.contains(c))
 
     toggleToolbar = show => {
         this.utils.toggleVisible(this.entities.header, !show);
