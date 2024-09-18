@@ -368,10 +368,8 @@ class tocMarkmap {
                     deltaY = -deltaY;
                     let newContentRight = contentStartRight - deltaX;
                     if (newContentRight > contentMaxRight) {
-                        newContentRight = contentMaxRight;
                         deltaX = contentStartRight - contentMaxRight;
                     }
-                    this.entities.content.style.right = newContentRight + "px";
                     this.entities.content.style.width = contentStartWidth - deltaX + "px";
                     this.entities.modal.style.left = modalStartLeft - deltaX + "px";
                     return { deltaX, deltaY }

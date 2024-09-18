@@ -53,19 +53,15 @@ class tocPlugin extends BaseCustomPlugin {
         this.utils.hide(modal);
         modal.style.removeProperty("left");
         modal.style.removeProperty("width");
-        content.style.removeProperty("right");
         content.style.removeProperty("width");
     }
 
     showModal = (renewOutline = true) => {
         this.utils.show(this.entities.modal);
-        const { width, right } = this.entities.content.getBoundingClientRect();
+        const { width } = this.entities.content.getBoundingClientRect();
         const modalWidth = width * this.config.width_percent_when_pin_right / 100;
         this.entities.modal.style.width = modalWidth + "px";
-        Object.assign(this.entities.content.style, {
-            right: `${right - modalWidth}px`,
-            width: `${width - modalWidth}px`,
-        });
+        this.entities.content.style.width = `${width - modalWidth}px`;
         this.utils.entities.eWrite.style.width = "initial";
         renewOutline && this.renewOutline();
     }
@@ -105,10 +101,8 @@ class tocPlugin extends BaseCustomPlugin {
             deltaY = -deltaY;
             let newContentRight = contentStartRight - deltaX;
             if (newContentRight > contentMaxRight) {
-                newContentRight = contentMaxRight;
                 deltaX = contentStartRight - contentMaxRight;
             }
-            this.entities.content.style.right = newContentRight + "px";
             this.entities.content.style.width = contentStartWidth - deltaX + "px";
             this.entities.modal.style.left = modalStartLeft - deltaX + "px";
             return { deltaX, deltaY }
