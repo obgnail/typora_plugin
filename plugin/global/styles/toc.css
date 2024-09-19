@@ -60,50 +60,53 @@
     text-decoration: underline;
 }
 
-/*!*preview-threading*!*/
-/*#plugin-toc .toc-ul {*/
-/*    padding-left: 0.8rem;*/
-/*}*/
 
-/*.toc-root .toc-node:before {*/
-/*    content: "";*/
-/*    display: inline-block;*/
-/*    width: .8rem;*/
-/*    height: .07rem;*/
-/*    position: absolute;*/
-/*    z-index: 10;*/
-/*    left: -0.72rem;*/
-/*    margin-right: .2rem;*/
-/*    top: 1rem;*/
-/*    background: rgba(0, 0, 0, 0.1);*/
-/*}*/
+/*preview-threading*/
+#plugin-toc .toc-ul {
+    padding-left: 0.8rem;
+    --line-width: 0.07rem;
+    --line-color: rgba(0, 0, 0, 0.1);
+    --line-width-select: 0.1rem;
+    --line-color-select: red;
+}
 
-/*!*#plugin-toc ul:has(.toc-node.active):after, *!*/
-/*#plugin-toc ul:before {*/
-/*    content: "";*/
-/*    display: inline-block;*/
-/*    width: .1rem;*/
-/*    position: absolute;*/
-/*    top: -0.1rem;*/
-/*    left: -0.8rem;*/
-/*    z-index: 15;*/
-/*    margin-bottom: .8rem;*/
-/*}*/
+.toc-root .toc-node:before {
+    content: "";
+    display: inline-block;
+    width: .8rem;
+    height: var(--line-width);
+    position: absolute;
+    z-index: 10;
+    left: -0.72rem;
+    margin-right: .2rem;
+    top: 1rem;
+    background: var(--line-color);
+}
 
-/*#plugin-toc ul:before {*/
+/*#plugin-toc ul:has(.toc-node.active):after,*/
+#plugin-toc ul:before {
+    content: "";
+    display: inline-block;
+    width: var(--line-width);
+    position: absolute;
+    top: -0.1rem;
+    left: -0.8rem;
+    z-index: 15;
+    margin-bottom: .8rem;
+}
+
+#plugin-toc ul:before {
+    height: calc(100% - 0.5rem);
+    background: var(--line-color);
+}
+
+/*#plugin-toc ul:has(.toc-node.active):after {*/
 /*    height: calc(100% - 0.5rem);*/
-/*    background: rgba(0, 0, 0, 0.1);*/
+/*    background: var(--line-color-select);*/
 /*}*/
 
-/*!*#plugin-toc ul:has(.toc-node.active):after {*!*/
-/*!*    height: calc(100% - 0.5rem);*!*/
-/*!*    background: red;*!*/
-/*!*}*!*/
-
-/*.toc-root .toc-node:has(+ ul .toc-node.active):before {*/
-/*    background: red;*/
-/*}*/
-
-/*.toc-root .toc-node.active:before {*/
-/*    background: red;*/
-/*}*/
+.toc-root .toc-node.active:before,
+.toc-root .toc-node:has(+ ul .toc-node.active):before {
+    background: var(--line-color-select);
+    height: var(--line-width-select);
+}
