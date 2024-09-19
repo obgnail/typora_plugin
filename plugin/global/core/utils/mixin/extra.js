@@ -23,8 +23,8 @@ class extra {
     }
 
     process = async () => {
-        this.registerHTML();
         await this.registerCSS();
+        this.registerHTML();
     }
 }
 

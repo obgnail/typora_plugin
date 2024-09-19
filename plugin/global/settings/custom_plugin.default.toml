@@ -823,10 +823,10 @@ auto_open = true
 [scrollBookmarker]
 # 右键菜单中展示的名称
 name = "书签管理"
-# 是否启用此二级插件（此插件仅在window_tab插件启用时生效）
+# 是否启用此二级插件
 enable = true
 # 是否在右键菜单中隐藏
-hide = true
+hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 插件配置

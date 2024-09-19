@@ -14,7 +14,7 @@ class tocPlugin extends BaseCustomPlugin {
     process = () => {
         this.onResize();
         this.onToggleSidebar();
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, () => this.isModalShow() && this.renewModal());
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, () => this.isModalShow() && this.renewOutline());
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.toggle());
         this.utils.decorate(() => File && File.editor && File.editor.library && File.editor.library.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader);
         this.entities.modal.addEventListener("click", ev => {
@@ -23,7 +23,7 @@ class tocPlugin extends BaseCustomPlugin {
             ev.stopPropagation();
             ev.preventDefault();
             const cid = target.getAttribute("ref");
-            this.utils.scrollByCid(cid);
+            this.utils.scrollByCid(cid, -1, true);
         })
         if (this.config.right_click_outline_button_to_toggle) {
             document.querySelector("#info-panel-tab-outline .info-panel-tab-title").addEventListener("mousedown", ev => ev.button === 2 && this.toggle());
@@ -47,30 +47,34 @@ class tocPlugin extends BaseCustomPlugin {
 
     isModalShow = () => this.utils.isShow(this.entities.modal)
 
-    toggle = () => {
-        if (this.isModalShow()) {
-            this.utils.entities.eWrite.style.width = "";
-            this.utils.hide(this.entities.modal);
-            this.entities.modal.style.removeProperty("left");
-            this.entities.modal.style.removeProperty("width");
-            this.entities.content.style.removeProperty("right");
-            this.entities.content.style.removeProperty("width");
-            return
-        }
-
-        this.utils.show(this.entities.modal);
-        const { width, right } = this.entities.content.getBoundingClientRect();
-        const modalWidth = width * this.config.width_percent_when_pin_right / 100;
-        this.entities.modal.style.width = modalWidth + "px";
-        Object.assign(this.entities.content.style, {
-            right: `${right - modalWidth}px`,
-            width: `${width - modalWidth}px`,
-        });
-        this.utils.entities.eWrite.style.width = "initial";
-        this.renewModal();
+    hideModal = () => {
+        const { modal, content } = this.entities;
+        this.utils.entities.eWrite.style.width = "";
+        this.utils.hide(modal);
+        modal.style.removeProperty("left");
+        modal.style.removeProperty("width");
+        content.style.removeProperty("width");
     }
 
-    renewModal = () => {
+    showModal = (renewOutline = true) => {
+        this.utils.show(this.entities.modal);
+        const { width } = this.entities.content.getBoundingClientRect();
+        const modalWidth = width * this.config.width_percent_when_pin_right / 100;
+        this.entities.modal.style.width = modalWidth + "px";
+        this.entities.content.style.width = `${width - modalWidth}px`;
+        this.utils.entities.eWrite.style.width = "initial";
+        renewOutline && this.renewOutline();
+    }
+
+    toggle = () => {
+        if (this.isModalShow()) {
+            this.hideModal();
+        } else {
+            this.showModal();
+        }
+    }
+
+    renewOutline = () => {
         const ul = this._getTocTemplate();
         const toc = this.utils.htmlTemplater.create(ul);
         this.entities.ul.firstElementChild && this.entities.ul.removeChild(this.entities.ul.firstElementChild);
@@ -97,10 +101,8 @@ class tocPlugin extends BaseCustomPlugin {
             deltaY = -deltaY;
             let newContentRight = contentStartRight - deltaX;
             if (newContentRight > contentMaxRight) {
-                newContentRight = contentMaxRight;
                 deltaX = contentStartRight - contentMaxRight;
             }
-            this.entities.content.style.right = newContentRight + "px";
             this.entities.content.style.width = contentStartWidth - deltaX + "px";
             this.entities.modal.style.left = modalStartLeft - deltaX + "px";
             return { deltaX, deltaY }
