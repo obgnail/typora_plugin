@@ -23,7 +23,7 @@ class tocPlugin extends BaseCustomPlugin {
             ev.stopPropagation();
             ev.preventDefault();
             const cid = target.getAttribute("ref");
-            this.utils.scrollByCid(cid);
+            this.utils.scrollByCid(cid, -1, true);
         })
         if (this.config.right_click_outline_button_to_toggle) {
             document.querySelector("#info-panel-tab-outline .info-panel-tab-title").addEventListener("mousedown", ev => ev.button === 2 && this.toggle());
