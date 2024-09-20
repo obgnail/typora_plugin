@@ -187,33 +187,6 @@ USE_LIST_THRESHOLD = -1
 CLEAR_LIST_THRESHOLD = 12
 
 
-############### outline ###############
-[outline]
-# 是否启用插件
-ENABLE = true
-# 在右键菜单中展示的名称
-NAME = "类别大纲"
-# 是否在右键菜单中可点击
-CLICKABLE = true
-# 快捷键
-HOTKEY = ""
-# 打开窗口后默认使用的大纲类型。可选项：fence/image/table/all
-DEFAULT_TYPE = "fence"
-# 是否使用混合标签
-USE_ALL = true
-# 给混合标签上色
-SET_COLOR_IN_ALL = true
-# 混合标签的颜色（SET_COLOR_IN_ALL为false时，本选项失效）
-COLOR = { fence = "#f7eff2", image = "#eff2f6", table = "#eaf7f7", link = "#f2f7ef", math = "#f2ede7" }
-# 当显示窗口时，打开新文件后自动检测并重新生成大纲
-AUTO_REFRESH_WHEN_OPEN_FILE = true
-# 统计并显示被其他插件隐藏的元素（此处配置的是默认值，使用时可以在页面通过点击按钮重新设置）
-# 比如使用了【章节折叠】插件隐藏文件内容，如果你希望outline能统计被隐藏内容，就置为true，不过这样就会导致统计的编号不对（因为你把隐藏的也算进去了）
-SHOW_HIDDEN = false
-# 在窗口里展示的名字
-SHOW_NAME = { fence = "Fence", image = "Figure", table = "Table", link = "Link", math = "Math" }
-
-
 ############### commander ###############
 [commander]
 # 是否启用插件
@@ -1126,7 +1099,6 @@ LIST = [
     "md_padding",
     "read_only",
     "blur",
-    "outline",
 ]
 
 
@@ -1153,14 +1125,14 @@ BUTTONS = [
     { ICON = "fa fa-file-text", CALLBACK = "custom.templater" },
     { ICON = "fa fa-align-justify", CALLBACK = "md_padding" },
     { ICON = "fa fa-paste", CALLBACK = "custom.fullPathCopy" },
-    { ICON = "fa fa-th-list", CALLBACK = "custom.toc" },
+    { ICON = "fa fa-list", CALLBACK = "custom.toc" },
     { ICON = "fa fa-sitemap", CALLBACK = "markmap.toggle_toc" },
     { ICON = "fa fa-font", CALLBACK = "text_stylize" },
     { ICON = "fa fa-search", CALLBACK = "search_multi" },
     { ICON = "fa fa-image", CALLBACK = "custom.imageReviewer" },
     { ICON = "fa fa-filter", CALLBACK = "custom.resourceOperation" },
     { ICON = "fa fa-wrench", CALLBACK = "preferences" },
-    { ICON = "fa fa-calendar", CALLBACK = "outline" },
+    { ICON = "fa fa-bookmark", CALLBACK = "custom.scrollBookmarker" },
     { ICON = "fa fa-code", CALLBACK = "commander" }
 ]
 

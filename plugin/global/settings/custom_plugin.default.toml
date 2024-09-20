@@ -782,6 +782,8 @@ right_click_outline_button_to_toggle = true
 width_percent_when_pin_right = 20
 # 每次打开Typora时，默认弹出右侧菜单栏
 default_show_toc = false
+# 在窗口里展示的名字
+show_name = { fence = "Fence", image = "Figure", table = "Table", link = "Link", math = "Math" }
 
 
 ############### resourceOperation ###############
@@ -1185,7 +1187,7 @@ buttons = [
     { disable = false, coordinate = [3, 0], hint = "混排优化", size = "17px", icon = "fa fa-align-justify", callback = "md_padding.call" },
     { disable = false, coordinate = [0, 1], hint = "思维导图", size = "18px", icon = "fa fa-sitemap", callback = "markmap.onButtonClick" },
     { disable = false, coordinate = [1, 1], hint = "图片管理", size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
-    { disable = false, coordinate = [2, 1], hint = "书签管理", size = "17px", icon = "fa fa-bookmark", callback = "scrollBookmarker.callback" },
+    { disable = false, coordinate = [2, 1], hint = "文档大纲", size = "17px", icon = "fa fa-list", callback = "toc.callback" },
     { disable = false, coordinate = [3, 1], hint = "高亮搜索", size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
     # evil使用示例（更多示例请参考hotkey.default.toml）：
     #   弹窗提示

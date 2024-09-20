@@ -1,5 +1,4 @@
 #plugin-toc {
-    display: flex;
     height: 95%;
     right: 0;
     box-shadow: initial;
@@ -15,9 +14,38 @@
     cursor: ew-resize;
 }
 
-#plugin-toc .toc-wrap {
-    flex-grow: 1;
-    overflow-y: scroll;
+#plugin-toc .plugin-toc-wrap {
+    width: 100%;
+    height: 100%;
+}
+
+#plugin-toc .plugin-toc-header {
+    display: inline-flex;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 0.5em;
+    border-bottom: dashed 1px rgba(0, 0, 0, 0.1);
+}
+
+#plugin-toc .plugin-toc-icon {
+    opacity: .7;
+    padding: 1px 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 1.1em;
+}
+
+#plugin-toc .plugin-toc-icon.select,
+#plugin-toc .plugin-toc-icon:hover {
+    background: var(--active-file-bg-color);
+    color: var(--active-file-text-color);
+    opacity: 1;
+}
+
+#plugin-toc .plugin-toc-list {
+    height: 100%;
+    overflow: scroll;
 }
 
 #plugin-toc .toc-root {
@@ -60,9 +88,8 @@
     text-decoration: underline;
 }
 
-
 /*preview-threading*/
-#plugin-toc .toc-wrap {
+#plugin-toc .plugin-toc-list {
     padding-left: 0.8rem;
     --line-width: 0.07rem;
     --line-color: rgba(0, 0, 0, 0.1);

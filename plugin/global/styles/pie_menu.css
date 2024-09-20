@@ -7,7 +7,7 @@
     transform: rotate(var(--menu-rotate));
     z-index: 9998;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: transform 0.15s;
     user-select: none;
 
     --menu-rotate: 0deg;
