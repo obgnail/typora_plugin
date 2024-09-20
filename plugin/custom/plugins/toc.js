@@ -12,38 +12,70 @@ class tocPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        this.onResize();
-        this.onToggleSidebar();
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, () => this.isModalShow() && this.renewOutline());
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.toggle());
-        this.utils.decorate(() => File && File.editor && File.editor.library && File.editor.library.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader);
-        this.entities.modal.addEventListener("click", ev => {
-            const target = ev.target.closest(".toc-node");
-            if (!target) return;
-            ev.stopPropagation();
-            ev.preventDefault();
-            const cid = target.getAttribute("ref");
-            this.utils.scrollByCid(cid, -1, true);
-        })
-        if (this.config.right_click_outline_button_to_toggle) {
-            document.querySelector("#info-panel-tab-outline .info-panel-tab-title").addEventListener("mousedown", ev => ev.button === 2 && this.toggle());
+        const onEvent = () => {
+            const { eventHub } = this.utils;
+            eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.isModalShow() && this.renewOutline());
+            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.toggle());
+            this.utils.decorate(() => File && File.editor && File.editor.library && File.editor.library.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader);
+            const resetPosition = () => {
+                const { right } = this.entities.content.getBoundingClientRect();
+                const { right: modalRight } = this.entities.modal.getBoundingClientRect();
+                Object.assign(this.entities.modal.style, { left: `${right}px`, width: `${modalRight - right}px` });
+            }
+            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, resetPosition);
+            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, resetPosition);
+            if (this.config.default_show_toc) {
+                eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, this.toggle);
+            }
         }
-        if (this.config.default_show_toc) {
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.toggle);
+        const onClick = () => {
+            this.entities.modal.addEventListener("click", ev => {
+                const target = ev.target.closest(".toc-node");
+                if (!target) return;
+                ev.stopPropagation();
+                ev.preventDefault();
+                const cid = target.getAttribute("ref");
+                this.utils.scrollByCid(cid, -1, true);
+            })
+            if (this.config.right_click_outline_button_to_toggle) {
+                const e = document.querySelector("#info-panel-tab-outline .info-panel-tab-title");
+                e && e.addEventListener("mousedown", ev => ev.button === 2 && this.toggle());
+            }
         }
+        const onResize = () => {
+            let contentStartRight = 0;
+            let contentStartWidth = 0;
+            let modalStartLeft = 0;
+            let contentMaxRight = 0;
+            const onMouseDown = () => {
+                const contentRect = this.entities.content.getBoundingClientRect();
+                contentStartRight = contentRect.right;
+                contentStartWidth = contentRect.width;
+
+                const modalRect = this.entities.modal.getBoundingClientRect();
+                modalStartLeft = modalRect.left;
+                contentMaxRight = modalRect.right - 100;
+            }
+            const onMouseMove = (deltaX, deltaY) => {
+                deltaX = -deltaX;
+                deltaY = -deltaY;
+                let newContentRight = contentStartRight - deltaX;
+                if (newContentRight > contentMaxRight) {
+                    deltaX = contentStartRight - contentMaxRight;
+                }
+                this.entities.content.style.width = contentStartWidth - deltaX + "px";
+                this.entities.modal.style.left = modalStartLeft - deltaX + "px";
+                return { deltaX, deltaY }
+            }
+            this.utils.resizeFixedModal(this.entities.grip, this.entities.modal, true, false, onMouseDown, onMouseMove);
+        }
+
+        onEvent();
+        onClick();
+        onResize();
     }
 
     callback = anchorNode => this.toggle()
-
-    onToggleSidebar = () => {
-        const resetPosition = () => {
-            const { right } = this.entities.content.getBoundingClientRect();
-            const { right: modalRight } = this.entities.modal.getBoundingClientRect();
-            Object.assign(this.entities.modal.style, { left: `${right}px`, width: `${modalRight - right}px` });
-        }
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterToggleSidebar, resetPosition);
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterSetSidebarWidth, resetPosition);
-    }
 
     isModalShow = () => this.utils.isShow(this.entities.modal)
 
@@ -80,34 +112,6 @@ class tocPlugin extends BaseCustomPlugin {
         this.entities.wrap.firstElementChild && this.entities.wrap.removeChild(this.entities.wrap.firstElementChild);
         this.entities.wrap.appendChild(toc);
         this.highlightVisibleHeader();
-    }
-
-    onResize = () => {
-        let contentStartRight = 0;
-        let contentStartWidth = 0;
-        let modalStartLeft = 0;
-        let contentMaxRight = 0;
-        const onMouseDown = () => {
-            const contentRect = this.entities.content.getBoundingClientRect();
-            contentStartRight = contentRect.right;
-            contentStartWidth = contentRect.width;
-
-            const modalRect = this.entities.modal.getBoundingClientRect();
-            modalStartLeft = modalRect.left;
-            contentMaxRight = modalRect.right - 100;
-        }
-        const onMouseMove = (deltaX, deltaY) => {
-            deltaX = -deltaX;
-            deltaY = -deltaY;
-            let newContentRight = contentStartRight - deltaX;
-            if (newContentRight > contentMaxRight) {
-                deltaX = contentStartRight - contentMaxRight;
-            }
-            this.entities.content.style.width = contentStartWidth - deltaX + "px";
-            this.entities.modal.style.left = modalStartLeft - deltaX + "px";
-            return { deltaX, deltaY }
-        }
-        this.utils.resizeFixedModal(this.entities.grip, this.entities.modal, true, false, onMouseDown, onMouseMove);
     }
 
     highlightVisibleHeader = (_, $header, targetIdx) => {
