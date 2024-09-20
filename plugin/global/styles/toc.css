@@ -15,7 +15,7 @@
     cursor: ew-resize;
 }
 
-#plugin-toc .toc-ul {
+#plugin-toc .toc-wrap {
     flex-grow: 1;
     overflow-y: scroll;
 }
@@ -62,7 +62,7 @@
 
 
 /*preview-threading*/
-#plugin-toc .toc-ul {
+#plugin-toc .toc-wrap {
     padding-left: 0.8rem;
     --line-width: 0.07rem;
     --line-color: rgba(0, 0, 0, 0.1);

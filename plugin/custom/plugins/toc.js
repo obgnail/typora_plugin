@@ -1,13 +1,13 @@
 class tocPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
-    html = () => `<div id="plugin-toc" class="plugin-common-modal plugin-common-hidden"><div class="grip-right"></div><div class="toc-ul"></div></div>`
+    html = () => `<div id="plugin-toc" class="plugin-common-modal plugin-common-hidden"><div class="grip-right"></div><div class="toc-wrap"></div></div>`
     hotkey = () => [this.config.hotkey]
     init = () => {
         this.entities = {
             content: this.utils.entities.eContent,
             modal: document.querySelector("#plugin-toc"),
             grip: document.querySelector("#plugin-toc .grip-right"),
-            ul: document.querySelector("#plugin-toc .toc-ul"),
+            wrap: document.querySelector("#plugin-toc .toc-wrap"),
         };
     }
 
@@ -77,8 +77,8 @@ class tocPlugin extends BaseCustomPlugin {
     renewOutline = () => {
         const ul = this._getTocTemplate();
         const toc = this.utils.htmlTemplater.create(ul);
-        this.entities.ul.firstElementChild && this.entities.ul.removeChild(this.entities.ul.firstElementChild);
-        this.entities.ul.appendChild(toc);
+        this.entities.wrap.firstElementChild && this.entities.wrap.removeChild(this.entities.wrap.firstElementChild);
+        this.entities.wrap.appendChild(toc);
         this.highlightVisibleHeader();
     }
 
@@ -147,8 +147,8 @@ class tocPlugin extends BaseCustomPlugin {
         if (activeIndex >= headers.length) return;
 
         const targetCid = headers[activeIndex].getAttribute("cid");
-        this.entities.ul.querySelectorAll(".toc-node.active").forEach(ele => ele.classList.remove("active"));
-        const targetNode = this.entities.ul.querySelector(`.toc-node[ref=${targetCid}]`);
+        this.entities.wrap.querySelectorAll(".toc-node.active").forEach(ele => ele.classList.remove("active"));
+        const targetNode = this.entities.wrap.querySelector(`.toc-node[ref=${targetCid}]`);
         if (!targetNode) return;
 
         targetNode.classList.add("active");
@@ -184,7 +184,7 @@ class tocPlugin extends BaseCustomPlugin {
         if (list.length) {
             content.push({ ele: "ul", children: list });
         }
-        return { ele: "li", class_: "plugin-toc-depth-" + depth, children: content }
+        return { ele: "li", class_: "plugin-header-depth-" + depth, children: content }
     }
 
     _findParent = (toc, idx, depth) => {
