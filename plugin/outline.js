@@ -133,7 +133,7 @@ class collectUtil {
             const tagName = ele.tagName;
             if (tagName === "H1" || tagName === "H2") {
                 idxMap.paragraph = tagName === "H1" ? 0 : idxMap.paragraph + 1;
-                idxMap.table = idxMap.image = idxMap.fence = 0;
+                idxMap.table = idxMap.image = idxMap.fence = idxMap.link = idxMap.math = 0;
                 return;
             }
 
