@@ -47,38 +47,37 @@
 | 31   | timeline                | 时间线                                 |          |
 | 32   | chat                    | 聊天                                   |          |
 | 33   | file_counter            | 显示目录下的文件数                     |          |
-| 34   | outline                 | 以表格、图片、代码块形式的大纲         |          |
-| 35   | auto_number             | 章节、表格、图片、代码块等自动编号     |          |
-| 36   | imageReviewer           | 图片查看器                             |          |
-| 37   | chineseSymbolAutoPairer | 中文符号自动补全                       |          |
-| 38   | datatables              | 表格增强（搜索、过滤、分页、排序等）   | ×        |
-| 39   | resize_table            | 调整表格行高列宽                       |          |
-| 40   | resize_image            | 调整图片显示大小                       |          |
-| 41   | export_enhance          | 导出 html 时避免图片丢失               |          |
-| 42   | go_top                  | 一键到文章顶部、底部                   |          |
-| 43   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 | ×        |
-| 44   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       | ×        |
-| 45   | markdownLint            | markdown 格式规范检测                  |          |
-| 46   | darkMode                | 夜间模式                               |          |
-| 47   | noImageMode             | 无图模式                               |          |
-| 48   | pluginUpdater           | 一键升级插件                           |          |
-| 49   | extractRangeToNewFile   | 提取选区文字到新文件                   |          |
-| 50   | fullPathCopy            | 复制标题路径                           |          |
-| 51   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     | ×        |
-| 52   | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
-| 53   | blockSideBySide         | 并列显示活动块                         | ×        |
-| 54   | scrollBookmarker        | 书签管理器                             |          |
-| 55   | openInTotalCommander    | 在 total commander 打开                | ×        |
-| 56   | bingSpeech              | 必应朗读                               | ×        |
-| 57   | cipher                  | 加密文件                               |          |
-| 58   | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
-| 59   | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
-| 60   | help                    | 用户帮助                               |          |
-| 61   | custom                  | 开放平台，用户自定义插件（高级）       |          |
-| 62   | hotkeyHub               | 快捷键注册中心（高级）                 |          |
-| 63   | quickButton             | 于右下角添加功能按钮（高级）           |          |
-| 64   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
-| 65   | old_window_tab          | 标签页管理（已废弃）                   | ×        |
+| 34   | auto_number             | 章节、表格、图片、代码块等自动编号     |          |
+| 35   | imageReviewer           | 图片查看器                             |          |
+| 36   | chineseSymbolAutoPairer | 中文符号自动补全                       |          |
+| 37   | datatables              | 表格增强（搜索、过滤、分页、排序等）   | ×        |
+| 38   | resize_table            | 调整表格行高列宽                       |          |
+| 49   | resize_image            | 调整图片显示大小                       |          |
+| 40   | export_enhance          | 导出 html 时避免图片丢失               |          |
+| 41   | go_top                  | 一键到文章顶部、底部                   |          |
+| 42   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 | ×        |
+| 43   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       | ×        |
+| 44   | markdownLint            | markdown 格式规范检测                  |          |
+| 45   | darkMode                | 夜间模式                               |          |
+| 46   | noImageMode             | 无图模式                               |          |
+| 47   | pluginUpdater           | 一键升级插件                           |          |
+| 48   | extractRangeToNewFile   | 提取选区文字到新文件                   |          |
+| 49   | fullPathCopy            | 复制标题路径                           |          |
+| 50   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     | ×        |
+| 51   | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
+| 52   | blockSideBySide         | 并列显示活动块                         | ×        |
+| 53   | scrollBookmarker        | 书签管理器                             |          |
+| 54   | openInTotalCommander    | 在 total commander 打开                | ×        |
+| 55   | bingSpeech              | 必应朗读                               | ×        |
+| 56   | cipher                  | 加密文件                               |          |
+| 57   | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
+| 58   | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
+| 59   | help                    | 用户帮助                               |          |
+| 60   | custom                  | 开放平台，用户自定义插件（高级）       |          |
+| 61   | hotkeyHub               | 快捷键注册中心（高级）                 |          |
+| 62   | quickButton             | 于右下角添加功能按钮（高级）           |          |
+| 63   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
+| 64   | old_window_tab          | 标签页管理（已废弃）                   | ×        |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -526,7 +525,7 @@ NAME = "常用插件"
 LIST = [
     "commander", "mindmap", "collapse_paragraph", "custom",
     "---",
-    "search_multi", "multi_highlighter", "outline", "md_padding", "read_only",
+    "search_multi", "multi_highlighter", "md_padding", "read_only",
 ]
 ```
 
@@ -670,14 +669,6 @@ icon = "\\f040"
 ### file_counter：显示文件数
 
 ![file_count](assets/file_count.png)
-
-
-
-### outline：以表格、图片、代码块形式的大纲
-
-使用方式：右键菜单 -> 常用插件 ->  类别大纲
-
-![outline](assets/outline.gif)
 
 
 

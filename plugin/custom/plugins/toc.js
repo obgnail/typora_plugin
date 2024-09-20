@@ -1,49 +1,106 @@
 class tocPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
-    html = () => `<div id="plugin-toc" class="plugin-common-modal plugin-common-hidden"><div class="grip-right"></div><div class="toc-ul"></div></div>`
+
+    html = () => `
+        <div id="plugin-toc" class="plugin-common-modal plugin-common-hidden">
+            <div class="grip-right"></div>
+            <div class="plugin-toc-wrap">
+                <div class="plugin-toc-header">
+                    <div class="plugin-toc-icon fa fa-header" type="header" ty-hint="标题"></div>
+                    <div class="plugin-toc-icon fa fa-image" type="image" ty-hint="图片"></div>
+                    <div class="plugin-toc-icon fa fa-table" type="table" ty-hint="表格"></div>
+                    <div class="plugin-toc-icon fa fa-code" type="fence" ty-hint="代码块"></div>
+                    <div class="plugin-toc-icon fa fa-link" type="link" ty-hint="链接"></div>
+                    <div class="plugin-toc-icon fa fa-dollar" type="math" ty-hint="公式"></div>
+                </div>
+                <div class="plugin-toc-list"></div>
+            </div>
+        </div>
+    `
+
     hotkey = () => [this.config.hotkey]
+
     init = () => {
         this.entities = {
             content: this.utils.entities.eContent,
             modal: document.querySelector("#plugin-toc"),
             grip: document.querySelector("#plugin-toc .grip-right"),
-            ul: document.querySelector("#plugin-toc .toc-ul"),
+            list: document.querySelector("#plugin-toc .plugin-toc-list"),
+            header: document.querySelector("#plugin-toc .plugin-toc-header"),
         };
     }
 
     process = () => {
-        this.onResize();
-        this.onToggleSidebar();
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, () => this.isModalShow() && this.renewOutline());
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.toggle());
-        this.utils.decorate(() => File && File.editor && File.editor.library && File.editor.library.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader);
-        this.entities.modal.addEventListener("click", ev => {
-            const target = ev.target.closest(".toc-node");
-            if (!target) return;
-            ev.stopPropagation();
-            ev.preventDefault();
-            const cid = target.getAttribute("ref");
-            this.utils.scrollByCid(cid, -1, true);
-        })
-        if (this.config.right_click_outline_button_to_toggle) {
-            document.querySelector("#info-panel-tab-outline .info-panel-tab-title").addEventListener("mousedown", ev => ev.button === 2 && this.toggle());
+        const onEvent = () => {
+            const { eventHub } = this.utils;
+            eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.refresh());
+            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.toggle());
+            eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.refresh, 300));
+            this.utils.decorate(() => File && File.editor && File.editor.library && File.editor.library.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader);
+            const resetPosition = () => {
+                const { right } = this.entities.content.getBoundingClientRect();
+                const { right: modalRight } = this.entities.modal.getBoundingClientRect();
+                Object.assign(this.entities.modal.style, { left: `${right}px`, width: `${modalRight - right}px` });
+            }
+            eventHub.addEventListener(eventHub.eventType.afterToggleSidebar, resetPosition);
+            eventHub.addEventListener(eventHub.eventType.afterSetSidebarWidth, resetPosition);
+            if (this.config.default_show_toc) {
+                eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, this.toggle);
+            }
         }
-        if (this.config.default_show_toc) {
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.toggle);
+        const onClick = () => {
+            this.entities.modal.addEventListener("click", ev => {
+                const node = ev.target.closest(".toc-node");
+                const icon = ev.target.closest(".plugin-toc-icon");
+
+                if (!node && !icon) return;
+                if (node) {
+                    const cid = node.getAttribute("ref");
+                    this.utils.scrollByCid(cid, -1, true);
+                } else if (icon) {
+                    const type = icon.getAttribute("type");
+                    this.refresh(type);
+                }
+            })
+            if (this.config.right_click_outline_button_to_toggle) {
+                const e = document.querySelector("#info-panel-tab-outline .info-panel-tab-title");
+                e && e.addEventListener("mousedown", ev => ev.button === 2 && this.toggle());
+            }
         }
+        const onResize = () => {
+            let contentStartRight = 0;
+            let contentStartWidth = 0;
+            let modalStartLeft = 0;
+            let contentMaxRight = 0;
+            const onMouseDown = () => {
+                const contentRect = this.entities.content.getBoundingClientRect();
+                contentStartRight = contentRect.right;
+                contentStartWidth = contentRect.width;
+
+                const modalRect = this.entities.modal.getBoundingClientRect();
+                modalStartLeft = modalRect.left;
+                contentMaxRight = modalRect.right - 100;
+            }
+            const onMouseMove = (deltaX, deltaY) => {
+                deltaX = -deltaX;
+                deltaY = -deltaY;
+                let newContentRight = contentStartRight - deltaX;
+                if (newContentRight > contentMaxRight) {
+                    deltaX = contentStartRight - contentMaxRight;
+                }
+                this.entities.content.style.width = contentStartWidth - deltaX + "px";
+                this.entities.modal.style.left = modalStartLeft - deltaX + "px";
+                return { deltaX, deltaY }
+            }
+            this.utils.resizeFixedModal(this.entities.grip, this.entities.modal, true, false, onMouseDown, onMouseMove);
+        }
+
+        onEvent();
+        onClick();
+        onResize();
     }
 
     callback = anchorNode => this.toggle()
-
-    onToggleSidebar = () => {
-        const resetPosition = () => {
-            const { right } = this.entities.content.getBoundingClientRect();
-            const { right: modalRight } = this.entities.modal.getBoundingClientRect();
-            Object.assign(this.entities.modal.style, { left: `${right}px`, width: `${modalRight - right}px` });
-        }
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterToggleSidebar, resetPosition);
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterSetSidebarWidth, resetPosition);
-    }
 
     isModalShow = () => this.utils.isShow(this.entities.modal)
 
@@ -56,14 +113,14 @@ class tocPlugin extends BaseCustomPlugin {
         content.style.removeProperty("width");
     }
 
-    showModal = (renewOutline = true) => {
+    showModal = (refresh = true) => {
         this.utils.show(this.entities.modal);
         const { width } = this.entities.content.getBoundingClientRect();
         const modalWidth = width * this.config.width_percent_when_pin_right / 100;
         this.entities.modal.style.width = modalWidth + "px";
         this.entities.content.style.width = `${width - modalWidth}px`;
         this.utils.entities.eWrite.style.width = "initial";
-        renewOutline && this.renewOutline();
+        refresh && this.refresh();
     }
 
     toggle = () => {
@@ -74,44 +131,27 @@ class tocPlugin extends BaseCustomPlugin {
         }
     }
 
-    renewOutline = () => {
-        const ul = this._getTocTemplate();
-        const toc = this.utils.htmlTemplater.create(ul);
-        this.entities.ul.firstElementChild && this.entities.ul.removeChild(this.entities.ul.firstElementChild);
-        this.entities.ul.appendChild(toc);
+    getCurrentType = () => {
+        const select = this.entities.header.querySelector(".select");
+        return select ? select.getAttribute("type") : "header";
+    }
+
+    refresh = type => {
+        if (!this.isModalShow()) return;
+        type = type || this.getCurrentType();
+        this._setIconActive(type);
+        const root = this._getRoot(type);
+        const headers = this._getRootTemplate(root);
+        const list = this.utils.htmlTemplater.create(headers);
+        this.entities.list.firstElementChild && this.entities.list.removeChild(this.entities.list.firstElementChild);
+        this.entities.list.appendChild(list);
         this.highlightVisibleHeader();
     }
 
-    onResize = () => {
-        let contentStartRight = 0;
-        let contentStartWidth = 0;
-        let modalStartLeft = 0;
-        let contentMaxRight = 0;
-        const onMouseDown = () => {
-            const contentRect = this.entities.content.getBoundingClientRect();
-            contentStartRight = contentRect.right;
-            contentStartWidth = contentRect.width;
-
-            const modalRect = this.entities.modal.getBoundingClientRect();
-            modalStartLeft = modalRect.left;
-            contentMaxRight = modalRect.right - 100;
-        }
-        const onMouseMove = (deltaX, deltaY) => {
-            deltaX = -deltaX;
-            deltaY = -deltaY;
-            let newContentRight = contentStartRight - deltaX;
-            if (newContentRight > contentMaxRight) {
-                deltaX = contentStartRight - contentMaxRight;
-            }
-            this.entities.content.style.width = contentStartWidth - deltaX + "px";
-            this.entities.modal.style.left = modalStartLeft - deltaX + "px";
-            return { deltaX, deltaY }
-        }
-        this.utils.resizeFixedModal(this.entities.grip, this.entities.modal, true, false, onMouseDown, onMouseMove);
-    }
+    _setIconActive = type => this.entities.header.children.forEach(ele => ele.classList.toggle("select", ele.getAttribute("type") === type))
 
     highlightVisibleHeader = (_, $header, targetIdx) => {
-        if (!this.isModalShow()) return;
+        if (!this.isModalShow() || this.getCurrentType() !== "header") return;
 
         const headers = $header || $(File.editor.writingArea).children(File.editor.library.outline.headerStr);
         if (!headers.length) return;
@@ -147,20 +187,23 @@ class tocPlugin extends BaseCustomPlugin {
         if (activeIndex >= headers.length) return;
 
         const targetCid = headers[activeIndex].getAttribute("cid");
-        this.entities.ul.querySelectorAll(".toc-node.active").forEach(ele => ele.classList.remove("active"));
-        const targetNode = this.entities.ul.querySelector(`.toc-node[ref=${targetCid}]`);
+        this.entities.list.querySelectorAll(".toc-node.active").forEach(ele => ele.classList.remove("active"));
+        const targetNode = this.entities.list.querySelector(`.toc-node[ref=${targetCid}]`);
         if (!targetNode) return;
 
         targetNode.classList.add("active");
     }
 
-    _getTocTemplate = () => {
-        const rootNode = this._getTocRootNode();
-        const li = rootNode.children.map(this._tocTemplate);
-        return { ele: "ul", class_: "toc-root", children: li }
-    }
+    _getRoot = type => (type === "header") ? this._getHeaderRoot() : this._getKindRoot([type]);
 
-    _getTocRootNode = () => {
+    _getHeaderRoot = () => {
+        const findParent = (toc, idx, depth) => {
+            while (idx >= 0 && toc[idx].depth >= depth) {
+                idx--;
+            }
+            return toc[idx]
+        }
+
         const root = { depth: 0, cid: "n0", text: "root", children: [] };
         const { headers = [] } = File.editor.nodeMap.toc;
         if (headers.length === 0) return root;
@@ -171,27 +214,70 @@ class tocPlugin extends BaseCustomPlugin {
             : headers.map(({ attributes: { depth, text }, cid }) => ({ depth, text, cid, children: [] }))
 
         toc.forEach((node, idx) => {
-            const parent = this._findParent(toc, idx - 1, node.depth) || root;
+            const parent = findParent(toc, idx - 1, node.depth) || root;
             parent.children.push(node);
         })
         return root
     }
 
-    _tocTemplate = rootNode => {
-        const { text, cid, depth, children = [] } = rootNode;
-        const content = [{ class_: "toc-node", ref: cid, children: [{ ele: "span", class_: "toc-text", text }] }];
-        const list = children.map(this._tocTemplate);
-        if (list.length) {
-            content.push({ ele: "ul", children: list });
+    _getKindRoot = types => {
+        const idxMap = { table: 0, fence: 0, image: 0, link: 0, math: 0 };
+        const typeMap = {
+            table: ".md-table",
+            fence: ".md-fences",
+            image: ".md-image",
+            link: ".md-link",
+            math: ".md-math-block, .md-inline-math-container",
         }
-        return { ele: "li", class_: "plugin-toc-depth-" + depth, children: content }
+        const root = { depth: 0, cid: "n0", text: "root", children: [] };
+        const current = { C: root, H1: root };
+        const selector = ":scope>h1, :scope>h2, " + types.map(t => typeMap[t]).join(" , ");
+        this.utils.entities.eWrite.querySelectorAll(selector).forEach(ele => {
+            if (ele.style.display === "none") return;
+
+            const children = [];
+            const tagName = ele.tagName;
+            if (tagName === "H1" || tagName === "H2") {
+                const header = { cid: ele.getAttribute("cid"), text: ele.textContent, children };
+                if (tagName === "H1") {
+                    root.children.push(header);
+                    current.H1 = header;
+                } else {
+                    current.H1.children.push(header);
+                }
+                current.C = header;
+                return;
+            }
+
+            const classList = ele.classList;
+            const type = classList.contains("md-table") ? "table"
+                : classList.contains("md-fences") ? "fence"
+                    : classList.contains("md-image") ? "image"
+                        : classList.contains("md-link") ? "link"
+                            : (classList.contains("md-math-block") || classList.contains("md-inline-math-container")) ? "math"
+                                : null;
+
+            if (type) {
+                idxMap[type]++;
+                const cid = ele.closest("[cid]").getAttribute("cid");
+                const text = `${this.config.show_name[type]} ${idxMap[type]}`;
+                current.C.children.push({ cid, children, text });
+            }
+        });
+        return root
     }
 
-    _findParent = (toc, idx, depth) => {
-        while (idx >= 0 && toc[idx].depth >= depth) {
-            idx--;
+    _getRootTemplate = rootNode => {
+        const getTemplate = rootNode => {
+            const { text, cid, depth, children = [] } = rootNode;
+            const content = [{ class_: "toc-node", ref: cid, children: [{ ele: "span", class_: "toc-text", text }] }];
+            const list = children.map(getTemplate);
+            if (list.length) {
+                content.push({ ele: "ul", children: list });
+            }
+            return { ele: "li", depth, children: content }
         }
-        return toc[idx]
+        return { ele: "ul", class_: "toc-root", children: rootNode.children.map(getTemplate) }
     }
 }
 
