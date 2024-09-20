@@ -10,10 +10,12 @@ pluginScript='<script src="./plugin/index.js" defer="defer"></script>'
 newFrameScript='<script src="./appsrc/window/frame.js" defer="defer"></script>'
 oldFrameScript='<script src="./app/window/frame.js" defer="defer"></script>'
 frameScript=""
+
 panic() {
     echo -e "\033[0;31m ERROR: $1 \033[0m"
     exit 1
 }
+
 escape() {
     sed -E 's/[]\/$*.^|[]/\\&/g' <<<"$1"
 }
