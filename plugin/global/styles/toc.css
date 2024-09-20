@@ -21,8 +21,6 @@
 
 #plugin-toc .plugin-toc-header {
     display: inline-flex;
-    justify-content: space-evenly;
-    align-items: center;
     width: 100%;
     padding-bottom: 0.5em;
     border-bottom: dashed 1px rgba(0, 0, 0, 0.1);
@@ -30,10 +28,12 @@
 
 #plugin-toc .plugin-toc-icon {
     opacity: .7;
-    padding: 1px 5px;
+    margin: 1px 2px;
     border-radius: 3px;
     cursor: pointer;
     font-size: 1.1em;
+    flex-grow: 1;
+    text-align: center;
 }
 
 #plugin-toc .plugin-toc-icon.select,
