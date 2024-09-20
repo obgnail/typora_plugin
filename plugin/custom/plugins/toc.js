@@ -6,12 +6,12 @@ class tocPlugin extends BaseCustomPlugin {
             <div class="grip-right"></div>
             <div class="plugin-toc-wrap">
                 <div class="plugin-toc-header">
-                    <div class="plugin-toc-icon" type="header" ty-hint="标题"><i class="fa fa-header"></i></div>
-                    <div class="plugin-toc-icon" type="image" ty-hint="图片"><i class="fa fa-image"></i></div>
-                    <div class="plugin-toc-icon" type="table" ty-hint="表格"><i class="fa fa-table"></i></div>
-                    <div class="plugin-toc-icon" type="fence" ty-hint="代码块"><i class="fa fa-code"></i></div>
-                    <div class="plugin-toc-icon" type="link" ty-hint="链接"><i class="fa fa-link"></i></div>
-                    <div class="plugin-toc-icon" type="math" ty-hint="公式"><i class="fa fa-dollar"></i></div>
+                    <div class="plugin-toc-icon" data-type="header" ty-hint="标题"><i class="fa fa-header"></i></div>
+                    <div class="plugin-toc-icon" data-type="image" ty-hint="图片"><i class="fa fa-image"></i></div>
+                    <div class="plugin-toc-icon" data-type="table" ty-hint="表格"><i class="fa fa-table"></i></div>
+                    <div class="plugin-toc-icon" data-type="fence" ty-hint="代码块"><i class="fa fa-code"></i></div>
+                    <div class="plugin-toc-icon" data-type="link" ty-hint="链接"><i class="fa fa-link"></i></div>
+                    <div class="plugin-toc-icon" data-type="math" ty-hint="公式"><i class="fa fa-dollar"></i></div>
                 </div>
                 <div class="plugin-toc-list"></div>
             </div>
@@ -58,8 +58,7 @@ class tocPlugin extends BaseCustomPlugin {
                     const cid = node.getAttribute("ref");
                     this.utils.scrollByCid(cid, -1, true);
                 } else if (icon) {
-                    const type = icon.getAttribute("type");
-                    this.refresh(type);
+                    this.refresh(icon.dataset.type);
                 }
             })
             if (this.config.right_click_outline_button_to_toggle) {
@@ -133,7 +132,7 @@ class tocPlugin extends BaseCustomPlugin {
 
     getCurrentType = () => {
         const select = this.entities.header.querySelector(".select");
-        return select ? select.getAttribute("type") : "header";
+        return select ? select.dataset.type : "header";
     }
 
     refresh = type => {
@@ -148,7 +147,7 @@ class tocPlugin extends BaseCustomPlugin {
         this.highlightVisibleHeader();
     }
 
-    _setIconActive = type => this.entities.header.children.forEach(ele => ele.classList.toggle("select", ele.getAttribute("type") === type))
+    _setIconActive = type => this.entities.header.children.forEach(ele => ele.classList.toggle("select", ele.dataset.type === type))
 
     highlightVisibleHeader = (_, $header, targetIdx) => {
         if (!this.isModalShow() || this.getCurrentType() !== "header") return;
