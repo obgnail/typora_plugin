@@ -965,16 +965,6 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 
 
-## 小众软件推荐
-
-[通过注入 js 代码，为 Typora 额外增加 4 个功能](https://www.appinn.com/typora-4-plugin/)
-
-> 第一次上榜小众软件，心情非常冲动。同时祝小众软件越办越好。
-
-![appinn](assets/appinn.png)
-
-
-
 ## 致谢
 
 - Apache：[ECharts](https://echarts.apache.org/zh/index.html)
