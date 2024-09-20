@@ -668,7 +668,7 @@ icon = "\\f040"
 
 ### file_counter：显示文件数
 
-![file_count](assets/file_count.png)
+![file_count](assets/file_counter.png)
 
 
 
@@ -719,12 +719,6 @@ icon = "\\f040"
 > 使用方式：将光标定位在表格 -> 右键菜单 -> 少用插件 ->  表格增强。
 
 ![datatables](assets/datatables.png)
-
-其实此插件可以是提供开放能力的，实现类似于 obsidian 的 `dataview` 插件的功能。不过暂时不做，原因：
-
-1. 私以为 Typora 的用户并不需要大量用到此功能。
-2. 需要用户熟悉 javascript 以及 dataTables.js 的 API。成本太高。
-3. 需要编写大量的配套代码。
 
 
 
