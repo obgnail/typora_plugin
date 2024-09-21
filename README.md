@@ -91,9 +91,9 @@
 
 1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并将其解压
 
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（正式版为 `Typora/resources/window.html`，免费版为 `Typora/resources/app/window.html`）
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（正式版为 `./resources/window.html`，免费版为 `./resources/app/window.html`）
 
-3. 将解压后的 plugin 文件夹粘贴进文件夹 A 下（参考方法二的图片）
+3. 将解压后的 plugin 文件夹粘贴进文件夹 A 下
 
 4. 进入文件夹 `A/plugin/bin/`
 
@@ -103,13 +103,17 @@
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
+|          | 正式版                                       | 免费版                                       |
+| -------- | -------------------------------------------- | -------------------------------------------- |
+| 步骤 2-3 | ![typora_dir_new](assets/typora_dir_new.png) | ![typora_dir_old](assets/typora_dir_old.png) |
+
 |        | Windows                                        | Linux                                      |
 | ------ | ---------------------------------------------- | ------------------------------------------ |
 | 步骤 4 | ![install_windows](assets/install_windows.png) | ![install_linux](assets/install_linux.png) |
 
 附加说明：
 
-- 除了 `install_windows_amd_x64.exe` ，您也可以通过执行同目录下的 `install_windows.ps1` 安装插件。
+- Windows 系统也可以通过执行 `install_windows.ps1` 安装插件；同理，Linux 系统也可以执行 `install_linux_amd_x64` 文件
 - 每个插件皆有配置选项。开发者鼓励您修改配置，以符合自身需求。配置文件夹位于 [A/plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings)
 
 
@@ -120,9 +124,9 @@
 
 1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并将其解压
 
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（正式版的路径为 `Typora/resources/window.html`，免费版的路径为 `Typora/resources/app/window.html`）
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（正式版的路径为 `./resources/window.html`，免费版的路径为 `./resources/app/window.html`）
 
-3. 将解压后的 plugin 文件夹粘贴进文件夹 A 下
+3. 将解压后的 plugin 文件夹粘贴进文件夹 A 下（参考方法一的图片）
 
 4. 根据文件夹 A 下是否含有 `appsrc` 目录判断 Typora 是否为新版本，有则新版本，无则旧版本
 
@@ -139,10 +143,9 @@
 > 如果您安装失败，大概率是权限问题导致的。请给上述的 plugin 文件夹授权。
 
 
-|        | 新版本                                               | 旧版本                                                 |
-| ------ | ---------------------------------------------------- | ------------------------------------------------------ |
-| 步骤 3 | ![new_typora_dir](assets/new_typora_dir.png)         | ![where_is_windowhtml](assets/where_is_windowhtml.png) |
-| 步骤 5 | ![new_typora_framejs](assets/new_typora_framejs.png) | ![where_is_framejs](assets/where_is_framejs.png)       |
+|        | 新版本                                               | 旧版本                                           |
+| ------ | ---------------------------------------------------- | ------------------------------------------------ |
+| 步骤 5 | ![new_typora_framejs](assets/new_typora_framejs.png) | ![where_is_framejs](assets/where_is_framejs.png) |
 
 
 
