@@ -270,7 +270,10 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
         const collectMatch = content => {
             return Promise.all(content.matchAll(this.regexp).map(async match => {
                 let src = match.groups.src1 || match.groups.src2;
-                if (!src || isNetworkImage(src) || isSpecialImage(src)) return;
+                if (!src) return;
+
+                src = src.trim().replace(/^</, "").replace(/>$/, "").trim();
+                if (isNetworkImage(src) || isSpecialImage(src)) return;
 
                 try {
                     src = decodeURIComponent(src).split("?")[0];
