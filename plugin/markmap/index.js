@@ -631,9 +631,13 @@ class tocMarkmap {
 
         const removeForeignObject = svg => {
             svg.querySelectorAll("foreignObject").forEach(foreign => {
+                const x = this.config.DEFAULT_TOC_OPTIONS.paddingX;
+                const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4;
+                // const y = 16;
+
                 const text = document.createElement("text");
-                text.setAttribute("x", this.config.DEFAULT_TOC_OPTIONS.paddingX);
-                text.setAttribute("y", 16);
+                text.setAttribute("x", x);
+                text.setAttribute("y", y);
                 const katex = foreign.querySelector(".katex-html");
                 text.textContent = katex ? katex.textContent : foreign.textContent;
                 foreign.parentNode.replaceChild(text, foreign);
@@ -652,7 +656,7 @@ class tocMarkmap {
                     css = css.replace(new RegExp(`var\\(${key}\\);?`, "g"), value[0][0] + ";");
                 }
             })
-            css = css.replace(/--[a-zA-Z\-]+?\s*?:\s*?.+?;/g, "").replace(/\s+/g, " ");
+            css = css.replace(/--[\w\-]+?\s*?:\s*?.+?;/g, "").replace(/\s+/g, " ");
             _replaceStyleContent(style, css);
         }
 
