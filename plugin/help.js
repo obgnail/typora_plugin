@@ -61,7 +61,7 @@ class helpPlugin extends BasePlugin {
     newIssue = async () => {
         const info = await this.getInfo();
         const components = [{ label: "环境信息", type: "textarea", rows: 12, content: JSON.stringify(info, null, "\t") }];
-        const { response } = await this.utils.dialog.modalAsync({ title: "用户反馈", width: "500px", components });
+        const { response } = await this.utils.dialog.modalAsync({ title: "用户反馈", width: "550px", components });
         if (response === 1) {
             const url = "https://github.com/obgnail/typora_plugin/issues/new?body=" + encodeURIComponent(JSON.stringify(info));
             this.utils.openUrl(url);

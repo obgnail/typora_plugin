@@ -631,14 +631,9 @@ class tocMarkmap {
 
         const removeForeignObject = svg => {
             svg.querySelectorAll("foreignObject").forEach(foreign => {
-                const x = parseInt(foreign.getAttribute("width")) + parseInt(foreign.getAttribute("x")) - 2;
-                const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4;
-                // const y = 16;
-
                 const text = document.createElement("text");
-                text.setAttribute("x", x);
-                text.setAttribute("y", y);
-                text.setAttribute("text-anchor", "end");
+                text.setAttribute("x", this.config.DEFAULT_TOC_OPTIONS.paddingX);
+                text.setAttribute("y", 16);
                 const katex = foreign.querySelector(".katex-html");
                 text.textContent = katex ? katex.textContent : foreign.textContent;
                 foreign.parentNode.replaceChild(text, foreign);
