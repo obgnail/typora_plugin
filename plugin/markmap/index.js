@@ -601,6 +601,7 @@ class tocMarkmap {
                 { label: "删除无用的类名", key: "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG" },
                 { label: "替换 &lt;foreignObject&gt; 标签", key: "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG" },
                 { label: "尽力解决样式兼容性问题", key: "COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG" },
+                { label: "导出前弹出路径选择对话框", key: "SHOW_DIALOG_WHEN_DOWNLOAD_SVG" },
                 { label: "导出后自动打开文件所在目录", key: "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG" },
             ]
             return [
@@ -628,36 +629,58 @@ class tocMarkmap {
             el.innerHTML = "";
             el.appendChild(document.createTextNode(cssText));
         }
-
-        const removeForeignObject = svg => {
-            svg.querySelectorAll("foreignObject").forEach(foreign => {
-                const x = this.config.DEFAULT_TOC_OPTIONS.paddingX;
-                const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4;
-                // const y = 16;
-
-                const text = document.createElement("text");
-                text.setAttribute("x", x);
-                text.setAttribute("y", y);
-                const katex = foreign.querySelector(".katex-html");
-                text.textContent = katex ? katex.textContent : foreign.textContent;
-                foreign.parentNode.replaceChild(text, foreign);
+        const _getBounding = svg => {
+            const { width, height } = this.entities.svg.querySelector("g").getBoundingClientRect();
+            const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/);
+            if (!match || !match.groups || !match.groups.scale) return {};
+            const scale = parseFloat(match.groups.scale);
+            const realWidth = parseInt(width / scale);
+            const realHeight = parseInt(height / scale);
+            let minY = 0, maxY = 0;
+            svg.querySelectorAll("g.markmap-node").forEach(node => {
+                const match = node.getAttribute("transform").match(/translate\((?<x>.+?),\s(?<y>.+?)\)/);
+                if (!match || !match.groups || !match.groups.x || !match.groups.y) return;
+                const y = parseInt(match.groups.y);
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);
             })
+            return { minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight }
+        }
+        const _getFileFolder = () => this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder
+        const _getFileName = () => {
+            const tpl = {
+                filename: this.utils.getFileName() || "markmap",
+                timestamp: new Date().getTime().toString(),
+                uuid: this.utils.getUUID(),
+            }
+            const filename = this.config.FILENAME_WHEN_DOWNLOAD_SVG || "{{filename}}.svg";
+            return filename.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
         }
 
-        const removeClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
+        let downloadPath = this.utils.Package.Path.join(_getFileFolder(), _getFileName());
 
-        // 有些SVG解析器无法解析CSS变量
-        const compatibleStyle = svg => {
-            svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", "#fff"));
-            const style = svg.querySelector("style");
-            let css = style.textContent;
-            _parseCSS(css).sheet.cssRules[0].styleMap.forEach((value, key) => {
-                if (key.startsWith("--")) {
-                    css = css.replace(new RegExp(`var\\(${key}\\);?`, "g"), value[0][0] + ";");
-                }
-            })
-            css = css.replace(/--[\w\-]+?\s*?:\s*?.+?;/g, "").replace(/\s+/g, " ");
-            _replaceStyleContent(style, css);
+        const dialog = async () => JSBridge.invoke("dialog.showSaveDialog", {
+            properties: ["saveFile", "showOverwriteConfirmation"],
+            title: "导出",
+            defaultPath: downloadPath,
+            filters: [{ name: "SVG", extensions: ["svg"] }]
+        })
+
+        const settAttr = svg => {
+            svg.removeAttribute("id");
+            svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+            svg.setAttribute("class", "markmap");
+        }
+
+        const setSize = svg => {
+            const { width = 100, height = 100, minY = 0 } = _getBounding(svg);
+            const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
+            const svgWidth = width + borderX;
+            const svgHeight = height + borderY;
+            svg.setAttribute("width", svgWidth + "");
+            svg.setAttribute("height", svgHeight + "");
+            svg.setAttribute("viewBox", `0 ${minY} ${svgWidth} ${svgHeight}`);
+            svg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
         }
 
         const removeUselessStyle = svg => {
@@ -682,67 +705,52 @@ class tocMarkmap {
             _replaceStyleContent(svg.querySelector("style"), sheet.join(" "));
         }
 
-        const getBounding = svg => {
-            const { width, height } = this.entities.svg.querySelector("g").getBoundingClientRect();
-            const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/);
-            if (!match || !match.groups || !match.groups.scale) return {};
-            const scale = parseFloat(match.groups.scale);
-            const realWidth = parseInt(width / scale);
-            const realHeight = parseInt(height / scale);
-
-            let minY = 0, maxY = 0;
-            svg.querySelectorAll("g.markmap-node").forEach(node => {
-                const match = node.getAttribute("transform").match(/translate\((?<x>.+?),\s(?<y>.+?)\)/);
-                if (!match || !match.groups || !match.groups.x || !match.groups.y) return;
-                const y = parseInt(match.groups.y);
-                minY = Math.min(minY, y);
-                maxY = Math.max(maxY, y);
+        // 有些SVG解析器无法解析CSS变量
+        const compatibleStyle = svg => {
+            svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", "#fff"));
+            const style = svg.querySelector("style");
+            let css = style.textContent;
+            _parseCSS(css).sheet.cssRules[0].styleMap.forEach((value, key) => {
+                if (key.startsWith("--")) {
+                    css = css.replace(new RegExp(`var\\(${key}\\);?`, "g"), value[0][0] + ";");
+                }
             })
-
-            return { minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight }
+            css = css.replace(/--[\w\-]+?\s*?:\s*?.+?;/g, "").replace(/\s+/g, " ");
+            _replaceStyleContent(style, css);
         }
 
-        const settAttr = svg => {
-            svg.removeAttribute("id");
-            svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-            svg.setAttribute("class", "markmap");
+        const removeForeignObject = svg => {
+            svg.querySelectorAll("foreignObject").forEach(foreign => {
+                const x = this.config.DEFAULT_TOC_OPTIONS.paddingX;
+                const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4;
+                // const y = 16;
+
+                const text = document.createElement("text");
+                text.setAttribute("x", x);
+                text.setAttribute("y", y);
+                const katex = foreign.querySelector(".katex-html");
+                text.textContent = katex ? katex.textContent : foreign.textContent;
+                foreign.parentNode.replaceChild(text, foreign);
+            })
         }
 
-        const setSize = svg => {
-            const { width = 100, height = 100, minY = 0 } = getBounding(svg);
-            const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
-            const svgWidth = width + borderX;
-            const svgHeight = height + borderY;
-            svg.setAttribute("width", svgWidth + "");
-            svg.setAttribute("height", svgHeight + "");
-            svg.setAttribute("viewBox", `0 ${minY} ${svgWidth} ${svgHeight}`);
-            svg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
-        }
+        const removeClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
 
-        const getFileFolder = () => this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder
-
-        const getFileName = () => {
-            const tpl = {
-                filename: this.utils.getFileName() || "markmap",
-                timestamp: new Date().getTime().toString(),
-                uuid: this.utils.getUUID(),
-            }
-            const filename = this.config.FILENAME_WHEN_DOWNLOAD_SVG || "{{filename}}.svg";
-            return filename.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
-        }
-
-        const download = async svg => {
+        const download = async (svg, downloadPath) => {
             const content = svg.outerHTML.replace(/&gt;/g, ">");
-            const path = this.utils.Package.Path.join(getFileFolder(), getFileName());
-            const ok = await this.utils.writeFile(path, content);
+            const ok = await this.utils.writeFile(downloadPath, content);
             if (!ok) return;
             if (this.config.SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG) {
-                this.utils.showInFinder(path);
-            } else {
-                this.utils.notification.show("已导出到指定目录");
+                this.utils.showInFinder(downloadPath);
             }
+            this.utils.notification.show("导出成功");
         }
 
+        if (this.config.SHOW_DIALOG_WHEN_DOWNLOAD_SVG) {
+            const { canceled, filePath } = await dialog();
+            if (canceled) return;
+            downloadPath = filePath;
+        }
         const svg = this.entities.svg.cloneNode(true);
         settAttr(svg);
         setSize(svg);
@@ -756,7 +764,7 @@ class tocMarkmap {
         if (this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
             removeClassName(svg);
         }
-        await download(svg);
+        await download(svg, downloadPath);
     }
 
     pinTop = async (draw = true) => {
