@@ -519,7 +519,7 @@ class tocMarkmap {
             REMEMBER_FOLD_WHEN_UPDATE: "图形更新时不会展开已折叠节点",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
             FOLDER_WHEN_DOWNLOAD_SVG: "为空则使用 TAMP 目录",
-            FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid",
+            FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid\n支持后缀：svg、png",
             COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: "有些SVG解析器无法解析CSS变量，勾选此选项会自动替换CSS变量",
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若非需要手动修改导出的SVG文件，请勿勾选此选项",
             REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式提高兼容性。若图片显示异常，请勾选此选项",
@@ -656,6 +656,7 @@ class tocMarkmap {
             const filename = this.config.FILENAME_WHEN_DOWNLOAD_SVG || "{{filename}}.svg";
             return filename.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
         }
+        const _isImageFormat = downloadPath => this.utils.Package.Path.extname(downloadPath) !== ".svg"
 
         let downloadPath = this.utils.Package.Path.join(_getFileFolder(), _getFileName());
 
@@ -663,7 +664,11 @@ class tocMarkmap {
             properties: ["saveFile", "showOverwriteConfirmation"],
             title: "导出",
             defaultPath: downloadPath,
-            filters: [{ name: "SVG", extensions: ["svg"] }]
+            filters: [
+                { name: "All Image Types", extensions: ["svg", "png"] },
+                { name: "SVG", extensions: ["svg"] },
+                { name: "PNG", extensions: ["png"] },
+            ]
         })
 
         const settAttr = svg => {
@@ -724,7 +729,6 @@ class tocMarkmap {
                 const x = this.config.DEFAULT_TOC_OPTIONS.paddingX;
                 const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4;
                 // const y = 16;
-
                 const text = document.createElement("text");
                 text.setAttribute("x", x);
                 text.setAttribute("y", y);
@@ -737,7 +741,28 @@ class tocMarkmap {
         const removeClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
 
         const download = async (svg, downloadPath) => {
-            const content = svg.outerHTML.replace(/&gt;/g, ">");
+            const getContentSVG = svg => svg.outerHTML.replace(/&gt;/g, ">");
+            const getContentPNG = svg => new Promise(resolve => {
+                const format = "png";
+                const img = new Image();
+                img.src = `data:image/svg+xml;utf8,${encodeURIComponent(getContentSVG(svg))}`;
+                img.onerror = () => resolve("");
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    const ratio = window.devicePixelRatio || 1;
+                    const width = svg.getAttribute("width") * ratio;
+                    const height = svg.getAttribute("height") * ratio;
+                    canvas.width = width;
+                    canvas.height = height;
+                    canvas.style.width = width + "px";
+                    canvas.style.height = height + "px";
+                    canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+                    const base64Data = canvas.toDataURL(`image/${format}`).replace(`data:image/${format};base64,`, "");
+                    const dataBuffer = new Buffer(base64Data, "base64");
+                    resolve(dataBuffer);
+                };
+            })
+            const content = await (_isImageFormat(downloadPath) ? getContentPNG(svg) : getContentSVG(svg));
             const ok = await this.utils.writeFile(downloadPath, content);
             if (!ok) return;
             if (this.config.SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG) {
@@ -758,7 +783,7 @@ class tocMarkmap {
         if (this.config.COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG) {
             compatibleStyle(svg);
         }
-        if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
+        if (_isImageFormat(downloadPath) || this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
             removeForeignObject(svg);
         }
         if (this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
