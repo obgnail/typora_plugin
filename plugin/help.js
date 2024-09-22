@@ -69,15 +69,11 @@ class helpPlugin extends BasePlugin {
     }
 
     about = () => {
-        const share = {
-            Telegram: "https://telegram.me/share/url?url=https://github.com/obgnail/typora_plugin&title=",
-            Twitter: "http://twitter.com/intent/tweet?text=",
-            Weibo: "https://service.weibo.com/share/share.php?language=zh_cn&searchPic=true&title=",
-        }
         const p = [
             `<i>Ashen One, hearest thou my voice still?</i>`,
-            "感谢您使用 Typora Plugin。本项目遵循 MIT 协议，请自由地享受和参与开源。若有任何反馈或建议，可以在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。",
-            `如果本项目帮助到您，欢迎 <a class='plu-github'>Star</a>，欢迎通过 ${Object.keys(share).map(site => `<a class="plu-share" data-site="${site}">${site}</a>`).join("、")} 推荐给您的朋友。`
+            "感谢您使用 Typora Plugin。本项目完全开源、免费，请自由地享受。",
+            "如果发现了 buag 或有任何反馈，可以在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。",
+            `如果本项目帮助到您，欢迎 <a class="plu-github">Star</a>，欢迎推荐给你志同道合的朋友使用。`
         ]
         const label = p.map(e => `<p style="font-size: 1.2em">${e}</p>`).join("");
         const onclick = ev => {
@@ -90,10 +86,6 @@ class helpPlugin extends BasePlugin {
                 this.utils.openUrl("https://meta.appinn.net/t/topic/44934");
             } else if (a.className === "plu-email") {
                 this.utils.sendEmail("he1251698542@gmail.com", "插件反馈");
-            } else if (a.className === "plu-share") {
-                const title = "https://github.com/obgnail/typora_plugin 很好用";
-                const url = share[a.dataset.site] + encodeURIComponent(title);
-                this.utils.openUrl(url);
             }
         }
         this.utils.dialog.modal({ title: "关于", width: "550px", components: [{ label, type: "span", onclick }] });
