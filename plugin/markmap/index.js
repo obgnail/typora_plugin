@@ -625,10 +625,9 @@ class tocMarkmap {
 
     download = async () => {
         const _parseCSS = css => new DOMParser().parseFromString(`<style>${css}</style>`, "text/html").querySelector("style");
-        const _replaceStyleContent = (el, cssText) => {
-            el.innerHTML = "";
-            el.appendChild(document.createTextNode(cssText));
-        }
+
+        const _replaceStyleContent = (el, cssText) => el.replaceChild(document.createTextNode(cssText), el.firstChild)
+
         const _getBounding = svg => {
             const { width, height } = this.entities.svg.querySelector("g").getBoundingClientRect();
             const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/);
@@ -646,24 +645,23 @@ class tocMarkmap {
             })
             return { minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight }
         }
-        const _getFileFolder = () => this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder
-        const _getFileName = () => {
+
+        const getDownloadPath = () => {
+            const folder = this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder;
+            const filename = this.config.FILENAME_WHEN_DOWNLOAD_SVG || "{{filename}}.svg";
             const tpl = {
                 filename: this.utils.getFileName() || "markmap",
                 timestamp: new Date().getTime().toString(),
                 uuid: this.utils.getUUID(),
             }
-            const filename = this.config.FILENAME_WHEN_DOWNLOAD_SVG || "{{filename}}.svg";
-            return filename.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
+            const name = filename.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin);
+            return this.utils.Package.Path.join(folder, name);
         }
-        const _isImageFormat = downloadPath => this.utils.Package.Path.extname(downloadPath) !== ".svg"
 
-        let downloadPath = this.utils.Package.Path.join(_getFileFolder(), _getFileName());
-
-        const dialog = async () => JSBridge.invoke("dialog.showSaveDialog", {
+        const dialog = async defaultPath => JSBridge.invoke("dialog.showSaveDialog", {
             properties: ["saveFile", "showOverwriteConfirmation"],
             title: "导出",
-            defaultPath: downloadPath,
+            defaultPath,
             filters: [
                 { name: "All Image Types", extensions: ["svg", "png"] },
                 { name: "SVG", extensions: ["svg"] },
@@ -671,19 +669,16 @@ class tocMarkmap {
             ]
         })
 
-        const settAttr = svg => {
-            svg.removeAttribute("id");
-            svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-            svg.setAttribute("class", "markmap");
-        }
-
-        const setSize = svg => {
+        const setAttribute = svg => {
             const { width = 100, height = 100, minY = 0 } = _getBounding(svg);
             const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
             const svgWidth = width + borderX;
             const svgHeight = height + borderY;
-            svg.setAttribute("width", svgWidth + "");
-            svg.setAttribute("height", svgHeight + "");
+            svg.removeAttribute("id");
+            svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+            svg.setAttribute("class", "markmap");
+            svg.setAttribute("width", svgWidth);
+            svg.setAttribute("height", svgHeight);
             svg.setAttribute("viewBox", `0 ${minY} ${svgWidth} ${svgHeight}`);
             svg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
         }
@@ -710,7 +705,6 @@ class tocMarkmap {
             _replaceStyleContent(svg.querySelector("style"), sheet.join(" "));
         }
 
-        // 有些SVG解析器无法解析CSS变量
         const compatibleStyle = svg => {
             svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", "#fff"));
             const style = svg.querySelector("style");
@@ -741,29 +735,34 @@ class tocMarkmap {
         const removeClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
 
         const download = async (svg, downloadPath) => {
-            const getContentSVG = svg => svg.outerHTML.replace(/&gt;/g, ">");
-            const getContentPNG = svg => new Promise(resolve => {
-                const format = "png";
-                const img = new Image();
-                img.src = `data:image/svg+xml;utf8,${encodeURIComponent(getContentSVG(svg))}`;
-                img.onerror = () => resolve("");
-                img.onload = () => {
-                    const canvas = document.createElement("canvas");
-                    const ratio = window.devicePixelRatio || 1;
-                    const width = svg.getAttribute("width") * ratio;
-                    const height = svg.getAttribute("height") * ratio;
-                    canvas.width = width;
-                    canvas.height = height;
-                    canvas.style.width = width + "px";
-                    canvas.style.height = height + "px";
-                    canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-                    const base64Data = canvas.toDataURL(`image/${format}`).replace(`data:image/${format};base64,`, "");
-                    const dataBuffer = new Buffer(base64Data, "base64");
-                    resolve(dataBuffer);
-                };
-            })
-            const content = await (_isImageFormat(downloadPath) ? getContentPNG(svg) : getContentSVG(svg));
-            const ok = await this.utils.writeFile(downloadPath, content);
+            const formats = {
+                ".svg": svg => svg.outerHTML,
+                ".png": svg => new Promise(resolve => {
+                    const format = "png";
+                    const img = new Image();
+                    img.src = `data:image/svg+xml;utf8,${encodeURIComponent(svg.outerHTML)}`;
+                    img.onerror = () => resolve("");
+                    img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        const ratio = window.devicePixelRatio || 1;
+                        const width = svg.getAttribute("width") * ratio;
+                        const height = svg.getAttribute("height") * ratio;
+                        canvas.width = width;
+                        canvas.height = height;
+                        canvas.style.width = width + "px";
+                        canvas.style.height = height + "px";
+                        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+                        const base64Data = canvas.toDataURL(`image/${format}`).replace(`data:image/${format};base64,`, "");
+                        const dataBuffer = new Buffer(base64Data, "base64");
+                        resolve(dataBuffer);
+                    };
+                })
+            }
+
+            const ext = this.utils.Package.Path.extname(downloadPath);
+            const func = formats[ext] || formats[".svg"];
+            const fileContent = await func(svg);
+            const ok = await this.utils.writeFile(downloadPath, fileContent);
             if (!ok) return;
             if (this.config.SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG) {
                 this.utils.showInFinder(downloadPath);
@@ -771,25 +770,29 @@ class tocMarkmap {
             this.utils.notification.show("导出成功");
         }
 
-        if (this.config.SHOW_DIALOG_WHEN_DOWNLOAD_SVG) {
-            const { canceled, filePath } = await dialog();
-            if (canceled) return;
-            downloadPath = filePath;
+        const run = async () => {
+            let downloadPath = getDownloadPath();
+            if (this.config.SHOW_DIALOG_WHEN_DOWNLOAD_SVG) {
+                const { canceled, filePath } = await dialog(downloadPath);
+                if (canceled) return;
+                downloadPath = filePath;
+            }
+            const svg = this.entities.svg.cloneNode(true);
+            setAttribute(svg);
+            removeUselessStyle(svg);
+            if (this.config.COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG) {
+                compatibleStyle(svg);  // 有些SVG解析器无法解析CSS变量
+            }
+            if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG || this.utils.Package.Path.extname(downloadPath) !== ".svg") {
+                removeForeignObject(svg);
+            }
+            if (this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
+                removeClassName(svg);
+            }
+            await download(svg, downloadPath);
         }
-        const svg = this.entities.svg.cloneNode(true);
-        settAttr(svg);
-        setSize(svg);
-        removeUselessStyle(svg);
-        if (this.config.COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG) {
-            compatibleStyle(svg);
-        }
-        if (_isImageFormat(downloadPath) || this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
-            removeForeignObject(svg);
-        }
-        if (this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
-            removeClassName(svg);
-        }
-        await download(svg, downloadPath);
+
+        await run();
     }
 
     pinTop = async (draw = true) => {
