@@ -624,6 +624,7 @@ class tocMarkmap {
     }
 
     download = async () => {
+        const _getExt = path => this.utils.Package.Path.extname(path).toLowerCase();
         const _newStyle = cssText => new DOMParser().parseFromString(`<style>${cssText}</style>`, "text/html").querySelector("style");
         const _replaceStyle = (el, cssText) => el.replaceChild(document.createTextNode(cssText), el.firstChild);
 
@@ -758,7 +759,7 @@ class tocMarkmap {
                 })
             }
 
-            const ext = this.utils.Package.Path.extname(downloadPath);
+            const ext = _getExt(downloadPath);
             const func = formats[ext] || formats[".svg"];
             const fileContent = await func(svg);
             const ok = await this.utils.writeFile(downloadPath, fileContent);
@@ -782,7 +783,7 @@ class tocMarkmap {
             if (this.config.COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG) {
                 compatibleStyle(svg);  // 有些SVG解析器无法解析CSS变量
             }
-            if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG || this.utils.Package.Path.extname(downloadPath) !== ".svg") {
+            if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG || _getExt(downloadPath) !== ".svg") {
                 removeForeignObject(svg);
             }
             if (this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
