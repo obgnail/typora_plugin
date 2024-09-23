@@ -624,11 +624,10 @@ class tocMarkmap {
     }
 
     download = async () => {
-        const _parseCSS = css => new DOMParser().parseFromString(`<style>${css}</style>`, "text/html").querySelector("style");
+        const _newStyle = cssText => new DOMParser().parseFromString(`<style>${cssText}</style>`, "text/html").querySelector("style");
+        const _replaceStyle = (el, cssText) => el.replaceChild(document.createTextNode(cssText), el.firstChild);
 
-        const _replaceStyleContent = (el, cssText) => el.replaceChild(document.createTextNode(cssText), el.firstChild)
-
-        const _getBounding = svg => {
+        const _getRect = svg => {
             const { width, height } = this.entities.svg.querySelector("g").getBoundingClientRect();
             const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/);
             if (!match || !match.groups || !match.groups.scale) return {};
@@ -670,7 +669,7 @@ class tocMarkmap {
         })
 
         const setAttribute = svg => {
-            const { width = 100, height = 100, minY = 0 } = _getBounding(svg);
+            const { width = 100, height = 100, minY = 0 } = _getRect(svg);
             const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
             const svgWidth = width + borderX;
             const svgHeight = height + borderY;
@@ -696,26 +695,26 @@ class tocMarkmap {
                 ".markmap-foreign-testing-max img",
                 ".markmap-foreign table, .markmap-foreign th, .markmap-foreign td",
             ])
-            const rules = _parseCSS(this.controller.MarkmapLib.globalCSS).sheet.cssRules;
+            const rules = _newStyle(this.controller.MarkmapLib.globalCSS).sheet.cssRules;
             for (const rule of rules) {
                 if (!filter.has(rule.selectorText)) {
                     sheet.push(rule.cssText);
                 }
             }
-            _replaceStyleContent(svg.querySelector("style"), sheet.join(" "));
+            _replaceStyle(svg.querySelector("style"), sheet.join(" "));
         }
 
         const compatibleStyle = svg => {
             svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", "#fff"));
             const style = svg.querySelector("style");
-            let css = style.textContent;
-            _parseCSS(css).sheet.cssRules[0].styleMap.forEach((value, key) => {
+            let cssText = style.textContent;
+            _newStyle(cssText).sheet.cssRules[0].styleMap.forEach((value, key) => {
                 if (key.startsWith("--")) {
-                    css = css.replace(new RegExp(`var\\(${key}\\);?`, "g"), value[0][0] + ";");
+                    cssText = cssText.replace(new RegExp(`var\\(${key}\\);?`, "g"), value[0][0] + ";");
                 }
             })
-            css = css.replace(/--[\w\-]+?\s*?:\s*?.+?;/g, "").replace(/\s+/g, " ");
-            _replaceStyleContent(style, css);
+            cssText = cssText.replace(/--[\w\-]+?\s*?:\s*?.+?;/g, "").replace(/\s+/g, " ");
+            _replaceStyle(style, cssText);
         }
 
         const removeForeignObject = svg => {
