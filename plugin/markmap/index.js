@@ -519,7 +519,7 @@ class tocMarkmap {
             REMEMBER_FOLD_WHEN_UPDATE: "图形更新时不会展开已折叠节点",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
             FOLDER_WHEN_DOWNLOAD_SVG: "为空则使用 TAMP 目录",
-            FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid",
+            FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid\n支持后缀：svg、png",
             COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: "有些SVG解析器无法解析CSS变量，勾选此选项会自动替换CSS变量",
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若非需要手动修改导出的SVG文件，请勿勾选此选项",
             REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式提高兼容性。若图片显示异常，请勾选此选项",
@@ -601,6 +601,7 @@ class tocMarkmap {
                 { label: "删除无用的类名", key: "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG" },
                 { label: "替换 &lt;foreignObject&gt; 标签", key: "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG" },
                 { label: "尽力解决样式兼容性问题", key: "COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG" },
+                { label: "导出前弹出路径选择对话框", key: "SHOW_DIALOG_WHEN_DOWNLOAD_SVG" },
                 { label: "导出后自动打开文件所在目录", key: "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG" },
             ]
             return [
@@ -623,42 +624,63 @@ class tocMarkmap {
     }
 
     download = async () => {
-        const _parseCSS = css => new DOMParser().parseFromString(`<style>${css}</style>`, "text/html").querySelector("style");
-        const _replaceStyleContent = (el, cssText) => {
-            el.innerHTML = "";
-            el.appendChild(document.createTextNode(cssText));
+        const _getExt = path => this.utils.Package.Path.extname(path).toLowerCase();
+        const _newStyle = cssText => new DOMParser().parseFromString(`<style>${cssText}</style>`, "text/html").querySelector("style");
+        const _replaceStyle = (el, cssText) => el.replaceChild(document.createTextNode(cssText), el.firstChild);
+
+        const _getRect = svg => {
+            const { width, height } = this.entities.svg.querySelector("g").getBoundingClientRect();
+            const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/);
+            if (!match || !match.groups || !match.groups.scale) return {};
+            const scale = parseFloat(match.groups.scale);
+            const realWidth = parseInt(width / scale);
+            const realHeight = parseInt(height / scale);
+            let minY = 0, maxY = 0;
+            svg.querySelectorAll("g.markmap-node").forEach(node => {
+                const match = node.getAttribute("transform").match(/translate\((?<x>.+?),\s(?<y>.+?)\)/);
+                if (!match || !match.groups || !match.groups.x || !match.groups.y) return;
+                const y = parseInt(match.groups.y);
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);
+            })
+            return { minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight }
         }
 
-        const removeForeignObject = svg => {
-            svg.querySelectorAll("foreignObject").forEach(foreign => {
-                const x = parseInt(foreign.getAttribute("width")) + parseInt(foreign.getAttribute("x")) - 2;
-                const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4;
-                // const y = 16;
-
-                const text = document.createElement("text");
-                text.setAttribute("x", x);
-                text.setAttribute("y", y);
-                text.setAttribute("text-anchor", "end");
-                const katex = foreign.querySelector(".katex-html");
-                text.textContent = katex ? katex.textContent : foreign.textContent;
-                foreign.parentNode.replaceChild(text, foreign);
-            })
+        const getDownloadPath = () => {
+            const folder = this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder;
+            const filename = this.config.FILENAME_WHEN_DOWNLOAD_SVG || "{{filename}}.svg";
+            const tpl = {
+                filename: this.utils.getFileName() || "markmap",
+                timestamp: new Date().getTime().toString(),
+                uuid: this.utils.getUUID(),
+            }
+            const name = filename.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin);
+            return this.utils.Package.Path.join(folder, name);
         }
 
-        const removeClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
+        const dialog = async defaultPath => JSBridge.invoke("dialog.showSaveDialog", {
+            properties: ["saveFile", "showOverwriteConfirmation"],
+            title: "导出",
+            defaultPath,
+            filters: [
+                { name: "All Image Types", extensions: ["svg", "png"] },
+                { name: "SVG", extensions: ["svg"] },
+                { name: "PNG", extensions: ["png"] },
+            ]
+        })
 
-        // 有些SVG解析器无法解析CSS变量
-        const compatibleStyle = svg => {
-            svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", "#fff"));
-            const style = svg.querySelector("style");
-            let css = style.textContent;
-            _parseCSS(css).sheet.cssRules[0].styleMap.forEach((value, key) => {
-                if (key.startsWith("--")) {
-                    css = css.replace(new RegExp(`var\\(${key}\\);?`, "g"), value[0][0] + ";");
-                }
-            })
-            css = css.replace(/--[a-zA-Z\-]+?\s*?:\s*?.+?;/g, "").replace(/\s+/g, " ");
-            _replaceStyleContent(style, css);
+        const setAttribute = svg => {
+            const { width = 100, height = 100, minY = 0 } = _getRect(svg);
+            const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
+            const svgWidth = width + borderX;
+            const svgHeight = height + borderY;
+            svg.removeAttribute("id");
+            svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+            svg.setAttribute("class", "markmap");
+            svg.setAttribute("width", svgWidth);
+            svg.setAttribute("height", svgHeight);
+            svg.setAttribute("viewBox", `0 ${minY} ${svgWidth} ${svgHeight}`);
+            svg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
         }
 
         const removeUselessStyle = svg => {
@@ -674,90 +696,103 @@ class tocMarkmap {
                 ".markmap-foreign-testing-max img",
                 ".markmap-foreign table, .markmap-foreign th, .markmap-foreign td",
             ])
-            const rules = _parseCSS(this.controller.MarkmapLib.globalCSS).sheet.cssRules;
+            const rules = _newStyle(this.controller.MarkmapLib.globalCSS).sheet.cssRules;
             for (const rule of rules) {
                 if (!filter.has(rule.selectorText)) {
                     sheet.push(rule.cssText);
                 }
             }
-            _replaceStyleContent(svg.querySelector("style"), sheet.join(" "));
+            _replaceStyle(svg.querySelector("style"), sheet.join(" "));
         }
 
-        const getBounding = svg => {
-            const { width, height } = this.entities.svg.querySelector("g").getBoundingClientRect();
-            const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/);
-            if (!match || !match.groups || !match.groups.scale) return {};
-            const scale = parseFloat(match.groups.scale);
-            const realWidth = parseInt(width / scale);
-            const realHeight = parseInt(height / scale);
-
-            let minY = 0, maxY = 0;
-            svg.querySelectorAll("g.markmap-node").forEach(node => {
-                const match = node.getAttribute("transform").match(/translate\((?<x>.+?),\s(?<y>.+?)\)/);
-                if (!match || !match.groups || !match.groups.x || !match.groups.y) return;
-                const y = parseInt(match.groups.y);
-                minY = Math.min(minY, y);
-                maxY = Math.max(maxY, y);
+        const compatibleStyle = svg => {
+            svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", "#fff"));
+            const style = svg.querySelector("style");
+            let cssText = style.textContent;
+            _newStyle(cssText).sheet.cssRules[0].styleMap.forEach((value, key) => {
+                if (key.startsWith("--")) {
+                    cssText = cssText.replace(new RegExp(`var\\(${key}\\);?`, "g"), value[0][0] + ";");
+                }
             })
-
-            return { minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight }
+            cssText = cssText.replace(/--[\w\-]+?\s*?:\s*?.+?;/g, "").replace(/\s+/g, " ");
+            _replaceStyle(style, cssText);
         }
 
-        const settAttr = svg => {
-            svg.removeAttribute("id");
-            svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-            svg.setAttribute("class", "markmap");
+        const removeForeignObject = svg => {
+            svg.querySelectorAll("foreignObject").forEach(foreign => {
+                const x = this.config.DEFAULT_TOC_OPTIONS.paddingX;
+                const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4;
+                // const y = 16;
+                const text = document.createElement("text");
+                text.setAttribute("x", x);
+                text.setAttribute("y", y);
+                const katex = foreign.querySelector(".katex-html");
+                text.textContent = katex ? katex.textContent : foreign.textContent;
+                foreign.parentNode.replaceChild(text, foreign);
+            })
         }
 
-        const setSize = svg => {
-            const { width = 100, height = 100, minY = 0 } = getBounding(svg);
-            const [borderX, borderY] = this.config.BORDER_WHEN_DOWNLOAD_SVG;
-            const svgWidth = width + borderX;
-            const svgHeight = height + borderY;
-            svg.setAttribute("width", svgWidth + "");
-            svg.setAttribute("height", svgHeight + "");
-            svg.setAttribute("viewBox", `0 ${minY} ${svgWidth} ${svgHeight}`);
-            svg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`);
-        }
+        const removeClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
 
-        const getFileFolder = () => this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder
-
-        const getFileName = () => {
-            const tpl = {
-                filename: this.utils.getFileName() || "markmap",
-                timestamp: new Date().getTime().toString(),
-                uuid: this.utils.getUUID(),
+        const download = async (svg, downloadPath) => {
+            const formats = {
+                ".svg": svg => svg.outerHTML,
+                ".png": svg => new Promise(resolve => {
+                    const format = "png";
+                    const img = new Image();
+                    img.src = `data:image/svg+xml;utf8,${encodeURIComponent(svg.outerHTML)}`;
+                    img.onerror = () => resolve("");
+                    img.onload = () => {
+                        const canvas = document.createElement("canvas");
+                        const ratio = window.devicePixelRatio || 1;
+                        const width = svg.getAttribute("width") * ratio;
+                        const height = svg.getAttribute("height") * ratio;
+                        canvas.width = width;
+                        canvas.height = height;
+                        canvas.style.width = width + "px";
+                        canvas.style.height = height + "px";
+                        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+                        const base64Data = canvas.toDataURL(`image/${format}`).replace(`data:image/${format};base64,`, "");
+                        const dataBuffer = new Buffer(base64Data, "base64");
+                        resolve(dataBuffer);
+                    };
+                })
             }
-            const filename = this.config.FILENAME_WHEN_DOWNLOAD_SVG || "{{filename}}.svg";
-            return filename.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
-        }
 
-        const download = async svg => {
-            const content = svg.outerHTML.replace(/&gt;/g, ">");
-            const path = this.utils.Package.Path.join(getFileFolder(), getFileName());
-            const ok = await this.utils.writeFile(path, content);
+            const ext = _getExt(downloadPath);
+            const func = formats[ext] || formats[".svg"];
+            const fileContent = await func(svg);
+            const ok = await this.utils.writeFile(downloadPath, fileContent);
             if (!ok) return;
             if (this.config.SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG) {
-                this.utils.showInFinder(path);
-            } else {
-                this.utils.notification.show("已导出到指定目录");
+                this.utils.showInFinder(downloadPath);
             }
+            this.utils.notification.show("导出成功");
         }
 
-        const svg = this.entities.svg.cloneNode(true);
-        settAttr(svg);
-        setSize(svg);
-        removeUselessStyle(svg);
-        if (this.config.COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG) {
-            compatibleStyle(svg);
+        const run = async () => {
+            let downloadPath = getDownloadPath();
+            if (this.config.SHOW_DIALOG_WHEN_DOWNLOAD_SVG) {
+                const { canceled, filePath } = await dialog(downloadPath);
+                if (canceled) return;
+                downloadPath = filePath;
+            }
+            const svg = this.entities.svg.cloneNode(true);
+            setAttribute(svg);
+            removeUselessStyle(svg);
+            if (this.config.COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG) {
+                compatibleStyle(svg);  // 有些SVG解析器无法解析CSS变量
+            }
+            if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG || _getExt(downloadPath) !== ".svg") {
+                removeForeignObject(svg);
+            }
+            if (this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
+                removeClassName(svg);
+            }
+            await download(svg, downloadPath);
         }
-        if (this.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG) {
-            removeForeignObject(svg);
-        }
-        if (this.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
-            removeClassName(svg);
-        }
-        await download(svg);
+
+        await run();
     }
 
     pinTop = async (draw = true) => {
