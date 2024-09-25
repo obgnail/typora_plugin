@@ -623,34 +623,12 @@ class utils {
     static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
     static isSpecialImage = src => /^(blob|chrome-blob|moz-blob|data):[^\/]/.test(src);
 
-    static getFenceContent = (pre, cid) => {
-        // from element
-        if (pre) {
-            const lines = pre.querySelectorAll(".CodeMirror-code .CodeMirror-line");
-            if (lines.length) {
-                const badChars = ["%E2%80%8B", "%C2%A0", "%0A"]; // 1)zeroWidthSpace:\u200b  2)noBreakSpace:\u00A0  3)noBreakSpace:\u0A
-                const replaceChars = ["", "%20", ""];
-                const contentList = Array.from(lines, line => {
-                    let encodeText = encodeURI(line.textContent);
-                    for (let i = 0; i < badChars.length; i++) {
-                        if (encodeText.indexOf(badChars[i]) !== -1) {
-                            encodeText = encodeText.replace(new RegExp(badChars[i], "g"), replaceChars[i]);
-                        }
-                    }
-                    return decodeURI(encodeText);
-                });
-                return contentList.join("\n")
-            }
-        }
-
-        // from queue
+    static getFenceContent = ({ pre, cid }) => {
         cid = cid || (pre && pre.getAttribute("cid"));
-        if (cid) {
-            const fence = File.editor.fences.queue[cid];
-            if (fence) {
-                // return fence.getValue()
-                return fence.options.value
-            }
+        if (!cid) return;
+        const fence = File.editor.fences.queue[cid];
+        if (fence) {
+            return fence.getValue()
         }
     }
 

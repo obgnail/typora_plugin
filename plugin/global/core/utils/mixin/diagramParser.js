@@ -160,7 +160,7 @@ class diagramParser {
         this.cleanErrorMsg($pre);
         this.destroyIfNeed(parser, cid, lang, $pre);
 
-        const content = this.utils.getFenceContent($pre[0], cid);
+        const content = this.utils.getFenceContent({ cid });
         if (!content) {
             await this.whenCantDraw(cid, lang, $pre);
             return;
@@ -217,11 +217,7 @@ class diagramParser {
 
     onAddCodeBlock = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this.renderDiagram)
 
-    onTryAddLangUndo = () => {
-        const objGetter = () => File && File.editor && File.editor.fences;
-        const after = (result, ...args) => args && args[0] && this.renderDiagram(args[0].cid);
-        this.utils.decorate(objGetter, "tryAddLangUndo", null, after);
-    }
+    onTryAddLangUndo = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterUpdateCodeBlockLang, args => args && args[0] && this.renderDiagram(args[0].cid))
 
     onUpdateDiagram = () => {
         const objGetter = () => File && File.editor && File.editor.diagrams;

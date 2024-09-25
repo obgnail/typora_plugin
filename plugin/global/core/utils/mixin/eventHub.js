@@ -24,6 +24,7 @@ class eventHub {
             afterSetSidebarWidth: "afterSetSidebarWidth",               // 调整侧边栏宽度之后
             beforeAddCodeBlock: "beforeAddCodeBlock",                   // 添加代码块之前
             afterAddCodeBlock: "afterAddCodeBlock",                     // 添加代码块之后
+            afterUpdateCodeBlockLang: "afterUpdateCodeBlockLang",       // 修改代码块语言之后
             outlineUpdated: "outlineUpdated",                           // 大纲更新之时
             toggleSettingPage: "toggleSettingPage",                     // 切换到/回配置页面
         })
@@ -103,6 +104,11 @@ class eventHub {
                 cid && this.publishEvent(this.eventType.afterAddCodeBlock, cid)
             },
         )
+
+        this.utils.decorate(
+            () => File && File.editor && File.editor.fences, "tryAddLangUndo",
+            null, (result, ...args) => this.publishEvent(this.eventType.afterUpdateCodeBlockLang, args)
+        );
 
         this.utils.decorate(() => File, "toggleSourceMode", () => this.publishEvent(this.eventType.beforeToggleSourceMode))
 

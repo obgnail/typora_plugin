@@ -625,7 +625,7 @@ NAME = "代码块增强"
 # 是否在右键菜单中可点击
 CLICKABLE = true
 
-# fence_enhance插件包含三个功能：button、hotkey、other。此为button，功能：在代码块右上角添加按钮
+# fence_enhance插件包含4个功能：button、hotkey、fold、other。此为button，功能：在代码块右上角添加按钮
 # 若置为false，以下配置全部失效
 ENABLE_BUTTON = true
 # 按钮的大小
@@ -675,7 +675,7 @@ CUSTOM_BUTTONS = [
     { DISABLE = true, ICON = "fa fa-bomb", HINT = "demo", ON_INIT = "", ON_RENDER = "", ON_CLICK = "({cont}) => console.log(cont)" },
 ]
 
-# fence_enhance插件包含三个功能：button、hotkey、other。此为hotkey，功能：为代码块添加快捷键
+# fence_enhance插件包含4个功能：button、hotkey、other。此为hotkey，功能：为代码块添加快捷键
 # 若置为false，以下配置全部失效
 ENABLE_HOTKEY = true
 # 注意：此处的快捷键使用的是codeMirror的方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
@@ -713,7 +713,11 @@ INSERT_LINE_NEXT = "Ctrl-Enter"
 # 直接在上面新建一行
 INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
-# fence_enhance插件包含三个功能：button、hotkey、other。此为other
+# fence_enhance插件包含4个功能：button、hotkey、fold、other。此为fold，功能：针对不同代码语言做行号和折叠
+# 针对不同代码语言做行号和折叠
+ENABLE_LANGUAGE_FOLD = false
+
+# fence_enhance插件包含4个功能：button、hotkey、other。此为other
 # 在右键菜单中启用有风险的功能（此功能会消耗巨量资源并导致Typora长时间（几秒到几十秒）失去响应）
 # 目前支持的风险功能：
 #   1. 调整所有代码块的缩进
