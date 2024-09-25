@@ -714,7 +714,7 @@ INSERT_LINE_NEXT = "Ctrl-Enter"
 INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
 # fence_enhance插件包含4个功能：button、hotkey、fold、other。此为fold，功能：针对不同代码语言做行号和折叠
-# 针对不同代码语言做行号和折叠
+# 支持根据代码语言的语法折叠代码
 ENABLE_LANGUAGE_FOLD = false
 
 # fence_enhance插件包含4个功能：button、hotkey、other。此为other

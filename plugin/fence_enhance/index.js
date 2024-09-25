@@ -512,12 +512,8 @@ class languageFoldHelper {
     }
 
     addFold = cid => {
-        const $pre = File.editor.findElemById(cid);
-        const lang = $pre.attr("lang");
-        if (!lang) return;
         const fence = File.editor.fences.queue[cid];
         if (!fence) return;
-
         if (!fence.options.gutters.includes("CodeMirror-foldgutter")) {
             fence.setOption("gutters", [...fence.options.gutters, "CodeMirror-foldgutter"]);
         }
@@ -530,7 +526,6 @@ class languageFoldHelper {
         const { eventHub } = this.utils;
         await this.requireModules();
         eventHub.addEventListener(eventHub.eventType.afterAddCodeBlock, this.addFold);
-        eventHub.addEventListener(eventHub.eventType.afterUpdateCodeBlockLang, args => args && args[0] && this.addFold(args[0].cid));
     }
 }
 
