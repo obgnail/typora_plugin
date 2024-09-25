@@ -7,9 +7,12 @@ class fenceEnhancePlugin extends BasePlugin {
 
     styleTemplate = () => ({ bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial" })
 
-    process = () => {
+    process = async () => {
+        if (this.config.ENABLE_LANGUAGE_FOLD) {
+            await (new languageFoldHelper(this).process());
+        }
         if (this.config.ENABLE_HOTKEY) {
-            new editorHotkey(this).process();
+            new editorHotkeyHelper(this).process();
         }
         if (this.config.INDENTED_WRAPPED_LINE) {
             this.processIndentedWrappedLine();
@@ -416,7 +419,7 @@ class builder {
 }
 
 // doc: https://codemirror.net/5/doc/manual.html
-class editorHotkey {
+class editorHotkeyHelper {
     constructor(controller) {
         this.controller = controller;
         this.utils = controller.utils;
@@ -501,6 +504,46 @@ class editorHotkey {
         previous && this.goLineUp();
         fence.execCommand("goLineEnd");
         fence.execCommand("newlineAndIndent");
+    }
+}
+
+// doc: https://codemirror.net/5/demo/folding.html
+class languageFoldHelper {
+    constructor(controller) {
+        this.utils = controller.utils;
+    }
+
+    requireModules = async () => {
+        const resourcePath = "./plugin/fence_enhance/resource/";
+        this.utils.insertStyleFile("plugin-fence-enhance-fold-style", resourcePath + "foldgutter.css");
+        require("./resource/foldcode");
+        require("./resource/foldgutter");
+        const files = await this.utils.Package.FsExtra.readdir(this.utils.joinPath(resourcePath));
+        const list = files.filter(f => f.endsWith("-fold.js"));
+        list.forEach(f => require(this.utils.joinPath(resourcePath, f)));
+        console.debug(`[ fence folding module ] [ ${list.length} ]:`, list);
+    }
+
+    addFold = cid => {
+        const $pre = File.editor.findElemById(cid);
+        const lang = $pre.attr("lang");
+        if (!lang) return;
+        const fence = File.editor.fences.queue[cid];
+        if (!fence) return;
+
+        if (!fence.options.gutters.includes("CodeMirror-foldgutter")) {
+            fence.setOption("gutters", [...fence.options.gutters, "CodeMirror-foldgutter"]);
+        }
+        if (!fence.options.foldGutter) {
+            fence.setOption("foldGutter", true);
+        }
+    }
+
+    process = async () => {
+        const { eventHub } = this.utils;
+        await this.requireModules();
+        eventHub.addEventListener(eventHub.eventType.afterAddCodeBlock, this.addFold);
+        eventHub.addEventListener(eventHub.eventType.afterUpdateCodeBlockLang, args => args && args[0] && this.addFold(args[0].cid));
     }
 }
 
