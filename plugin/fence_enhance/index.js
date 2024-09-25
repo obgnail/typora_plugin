@@ -498,6 +498,7 @@ class highlightHelper {
 class languageFoldHelper {
     constructor(controller) {
         this.utils = controller.utils;
+        this.gutter = "CodeMirror-foldgutter";
     }
 
     requireModules = async () => {
@@ -508,14 +509,14 @@ class languageFoldHelper {
         const files = await this.utils.Package.FsExtra.readdir(this.utils.joinPath(resourcePath));
         const modules = files.filter(f => f.endsWith("-fold.js"));
         modules.forEach(f => require(this.utils.joinPath(resourcePath, f)));
-        console.debug(`[ fence folding module ] [ ${modules.length} ]:`, modules);
+        console.debug(`[ CodeMirror folding module ] [ ${modules.length} ]:`, modules);
     }
 
     addFold = cid => {
         const fence = File.editor.fences.queue[cid];
         if (!fence) return;
-        if (!fence.options.gutters.includes("CodeMirror-foldgutter")) {
-            fence.setOption("gutters", [...fence.options.gutters, "CodeMirror-foldgutter"]);
+        if (!fence.options.gutters.includes(this.gutter)) {
+            fence.setOption("gutters", [...fence.options.gutters, this.gutter]);
         }
         if (!fence.options.foldGutter) {
             fence.setOption("foldGutter", true);
@@ -523,9 +524,8 @@ class languageFoldHelper {
     }
 
     process = async () => {
-        const { eventHub } = this.utils;
         await this.requireModules();
-        eventHub.addEventListener(eventHub.eventType.afterAddCodeBlock, this.addFold);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this.addFold);
     }
 }
 
