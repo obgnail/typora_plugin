@@ -50,7 +50,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 const callback = (ev, button) => {
                     const fence = button.closest(".md-fences");
                     const cid = fence.getAttribute("cid");
-                    const cont = this.utils.getFenceContent(fence);
+                    const cont = this.utils.getFenceContent({ cid });
                     return callbackFunc({ ev, button, cont, fence, cid, plu: this });
                 }
                 const action = this.utils.randomString();
@@ -124,7 +124,7 @@ class fenceEnhancePlugin extends BasePlugin {
         if (ev.timeStamp - this.lastClickTime < this.config.CLICK_CHECK_INTERVAL) return;
         this.lastClickTime = ev.timeStamp;
 
-        const result = this.utils.getFenceContent(copyButton.closest(".md-fences"));
+        const result = this.utils.getFenceContent({ pre: copyButton.closest(".md-fences") });
         navigator.clipboard.writeText(result).then(() => this._changeIcon(copyButton, "fa fa-check", "fa fa-clipboard"));
     }
     foldCode = (ev, foldButton) => {

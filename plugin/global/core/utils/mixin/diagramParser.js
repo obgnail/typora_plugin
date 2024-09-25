@@ -160,7 +160,7 @@ class diagramParser {
         this.cleanErrorMsg($pre);
         this.destroyIfNeed(parser, cid, lang, $pre);
 
-        const content = this.utils.getFenceContent($pre[0], cid);
+        const content = this.utils.getFenceContent({ cid });
         if (!content) {
             await this.whenCantDraw(cid, lang, $pre);
             return;
