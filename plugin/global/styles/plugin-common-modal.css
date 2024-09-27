@@ -134,8 +134,12 @@
     box-shadow: none;
 }
 
-#plugin-custom-modal input[type="number"],
+#plugin-custom-modal input[type="number"] {
+    max-width: 100px;
+}
+
 #plugin-custom-modal input[type="color"] {
+    padding: 0.2em;
     max-width: 100px;
 }
 
