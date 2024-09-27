@@ -207,7 +207,7 @@ class multiHighlighterPlugin extends BasePlugin {
         }
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeAddCodeBlock, before);
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, after);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, after, 999);
     }
 
     clearFenceMultiHighlighterList = () => {

@@ -8,7 +8,7 @@ class eventHub {
         this.utils = utils;
         this.filepath = "";
         this.observer = null;
-        this.eventMap = Object.create(null);  // { eventType: [listenerFunc] }
+        this.eventMap = Object.create(null);  // { eventType: {order: [listener]} }
         this.eventType = Object.freeze({
             allCustomPluginsHadInjected: "allCustomPluginsHadInjected", // 自定义插件加载完毕
             allPluginsHadInjected: "allPluginsHadInjected",             // 所有插件加载完毕
@@ -30,25 +30,33 @@ class eventHub {
         })
     }
 
-    addEventListener = (type, listener) => {
+    addEventListener = (type, listener, order = 0) => {
         this._checkType(type);
         this._checkListener(listener);
         if (!this.eventMap[type]) {
-            this.eventMap[type] = [];
+            this.eventMap[type] = { [order]: [listener] };
+        } else if (!this.eventMap[type][order]) {
+            this.eventMap[type][order] = [listener];
+        } else {
+            this.eventMap[type][order].push(listener);
         }
-        this.eventMap[type].push(listener);
     }
 
     removeEventListener = (type, listener) => {
         this._checkType(type);
         this._checkListener(listener);
-        this.eventMap[type] = this.eventMap[type].filter(lis => lis !== listener);
+        for (const [order, funcList] of Object.entries(this.eventMap[type])) {
+            this.eventMap[type][order] = funcList.filter(lis => lis !== listener);
+        }
     }
 
     publishEvent = (type, payload) => {
         this._checkType(type);
-        for (const listener of (this.eventMap[type] || [])) {
-            listener.call(this, payload);
+        if (!this.eventMap[type]) return;
+        for (const funcList of Object.values(this.eventMap[type])) {
+            for (const listener of funcList) {
+                listener.call(this, payload);
+            }
         }
     }
 
@@ -152,7 +160,7 @@ class eventHub {
         setTimeout(() => delete this.eventMap[this.eventType.firstFileInit], 1000);
 
         const funcList = this.eventMap[this.eventType.fileEdited];
-        if (!funcList || funcList.length === 0) {
+        if (!funcList) {
             delete this.eventMap[this.eventType.fileEdited];
             this.observer.disconnect();
             this.observer = null;
