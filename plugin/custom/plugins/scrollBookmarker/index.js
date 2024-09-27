@@ -1,7 +1,15 @@
 class scrollBookmarkerPlugin extends BaseCustomPlugin {
     styleTemplate = () => true
 
-    html = () => `<div id="plugin-scroll-bookmarker" class="plugin-common-modal plugin-common-hidden"></div>`
+    html = () => `
+        <div id="plugin-scroll-bookmarker" class="plugin-common-modal plugin-common-hidden">
+            <div class="plugin-scroll-bookmarker-icon-group">
+                <div class="plugin-scroll-bookmarker-icon ion-close" action="close" ty-hint="关闭"></div>
+                <div class="plugin-scroll-bookmarker-icon ion-arrow-move" action="move" ty-hint="移动"></div>
+            </div>
+            <div class="plugin-scroll-bookmarker-list"></div>
+        </div>
+    `
 
     hotkey = () => [this.config.hotkey]
 
@@ -10,7 +18,12 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         this.recordSelector = "#write [cid]";
         this.className = "plu-bookmark";
         this.locateUtils = { file: "", idx: -1, time: new Date().getTime() };
-        this.entities = { modal: document.querySelector("#plugin-scroll-bookmarker") }
+        this.entities = {
+            modal: document.querySelector("#plugin-scroll-bookmarker"),
+            iconGroup: document.querySelector("#plugin-scroll-bookmarker .plugin-scroll-bookmarker-icon-group"),
+            moveIcon: document.querySelector('#plugin-scroll-bookmarker .plugin-scroll-bookmarker-icon[action="move"]'),
+            list: document.querySelector("#plugin-scroll-bookmarker .plugin-scroll-bookmarker-list"),
+        }
     }
 
     beforeProcess = async () => {
@@ -25,10 +38,6 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
-        if (this.config.allow_drag) {
-            this.utils.dragFixedModal(this.entities.modal, this.entities.modal);
-        }
-
         const stateGetter = ele => ele.classList.contains(this.className);
         const stateRestorer = ele => ele.classList.add(this.className);
         const finalFunc = () => {
@@ -46,13 +55,13 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeUnload, () => this.saveBookmarks());
         }
 
+        this.utils.dragFixedModal(this.entities.moveIcon, this.entities.modal, false);
+
         const altKeyPressed = this.utils.modifierKey("alt");
         this.utils.entities.eWrite.addEventListener("click", ev => {
             if (!altKeyPressed(ev)) return;
             const paragraph = ev.target.closest(this.recordSelector);
             if (!paragraph) return;
-            ev.stopPropagation();
-            ev.preventDefault();
             paragraph.classList.add(this.className);
             if (this.config.auto_popup_modal) {
                 this.utils.show(this.entities.modal);
@@ -60,8 +69,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             this.refresh();
         })
 
-        this.entities.modal.addEventListener("click", ev => {
-            if (this.utils.metaKeyPressed(ev)) return;
+        this.entities.list.addEventListener("click", ev => {
             const item = ev.target.closest(".bookmark-item");
             if (!item) return;
             ev.stopPropagation();
@@ -74,6 +82,15 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
                 this.removeMarker(idx, file);
             } else {
                 this.locate(idx, file);
+            }
+        })
+
+        this.entities.iconGroup.addEventListener("click", ev => {
+            const target = ev.target.closest("[action]");
+            if (!target) return;
+            const action = target.getAttribute("action");
+            if (action === "close") {
+                this.utils.toggleVisible(this.entities.modal);
             }
         })
 
@@ -104,17 +121,17 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
     }
 
     updateModal = () => {
-        if (this.entities.modal.childElementCount === 0) {
-            this.entities.modal.textContent = "";
+        if (this.entities.list.childElementCount === 0) {
+            this.entities.list.textContent = "";
         }
 
-        let item = this.entities.modal.firstElementChild;
+        let item = this.entities.list.firstElementChild;
         const map = this.utils.stateRecorder.getState(this.recordName);
         for (const [filepath, indexList] of map.entries()) {
             for (const index of indexList.keys()) {
                 if (!item) {
                     this.appendMarker(filepath, index);
-                    item = this.entities.modal.lastElementChild;
+                    item = this.entities.list.lastElementChild;
                 } else {
                     this.updateMarker(item, filepath, index);
                 }
@@ -127,8 +144,8 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             item = next
         }
 
-        if (this.entities.modal.childElementCount === 0) {
-            this.entities.modal.textContent = "请尝试 alt+click 正文内容";
+        if (this.entities.list.childElementCount === 0) {
+            this.entities.list.textContent = "请尝试 alt+click 正文内容";
         }
     }
 
@@ -148,7 +165,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             { class_: "bookmark-btn fa fa-trash-o" }
         ]
         const marker = [{ class_: "bookmark-item", children }];
-        this.utils.htmlTemplater.appendElements(this.entities.modal, marker);
+        this.utils.htmlTemplater.appendElements(this.entities.list, marker);
     }
 
     removeMarker = (idx, filepath) => {

@@ -6,6 +6,7 @@ class collapseTablePlugin extends BasePlugin {
     }
 
     process = () => {
+        this.utils.autoSaveConfig(this);
         this.recordCollapseState(false);
 
         this.utils.decorate(() => File && File.editor && File.editor.tableEdit, "showTableEdit", null, (result, ...args) => {

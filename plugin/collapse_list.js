@@ -14,6 +14,7 @@ class collapseListPlugin extends BasePlugin {
     styleTemplate = () => true
 
     process = () => {
+        this.utils.autoSaveConfig(this);
         this.recordCollapseState(false);
         this.utils.entities.eWrite.addEventListener("click", ev => {
             const parent = ev.target.closest(this.selector);

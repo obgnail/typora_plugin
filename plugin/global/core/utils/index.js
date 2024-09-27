@@ -339,6 +339,7 @@ class utils {
         const exist = await this.existPath(homeSetting);
         return exist ? homeSetting : this.getOriginSettingPath(settingFile);
     }
+
     static saveConfig = async (fixedName, updateObj) => {
         let isCustom = false;
         let plugin = this.getPlugin(fixedName);
@@ -355,6 +356,16 @@ class utils {
         const newSetting = this.merge(tomlObj, mergeObj);
         const newContent = this.stringifyToml(newSetting);
         return this.writeFile(settingPath, newContent);
+    }
+
+    static autoSaveConfig = plugin => {
+        const { saveConfig } = this;
+        plugin.config = new Proxy(plugin.config, {
+            set(target, property, value, receiver) {
+                saveConfig(plugin.fixedName, { [property]: value });
+                return Reflect.set(...arguments)
+            }
+        });
     }
 
     static readSetting = async (defaultSetting, userSetting) => {

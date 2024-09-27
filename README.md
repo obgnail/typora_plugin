@@ -66,7 +66,7 @@
 | 50   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     | ×        |
 | 51   | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
 | 52   | blockSideBySide         | 并列显示活动块                         | ×        |
-| 53   | scrollBookmarker        | 书签管理器                             |          |
+| 53   | scrollBookmarker        | 书签管理器                             | ×        |
 | 54   | openInTotalCommander    | 在 total commander 打开                | ×        |
 | 55   | bingSpeech              | 必应朗读                               | ×        |
 | 56   | cipher                  | 加密文件                               |          |
@@ -861,6 +861,8 @@ filter_regexp = ""
 2. 此时会自动调出书签管理器，点击上面的书签，即可跳转到书签。
 
 显示/隐藏书签管理器：右键菜单 -> 常用插件 -> 二级插件 -> 书签管理器
+
+
 
 
 ### bingSpeech：必应朗读

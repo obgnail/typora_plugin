@@ -1,8 +1,27 @@
 #plugin-scroll-bookmarker {
     right: 25px;
-    max-width: 400px;
+    width: 300px;
     max-height: 500px;
     overflow-y: overlay;
+}
+
+.plugin-scroll-bookmarker-icon-group {
+    display: flex;
+    flex-direction: row-reverse;
+    font-size: 1.3em;
+    margin: 0 0.3em;
+    user-select: none;
+}
+
+.plugin-scroll-bookmarker-icon-group .plugin-scroll-bookmarker-icon {
+    cursor: pointer;
+    margin-left: 0.6em;
+    opacity: 0.6;
+}
+
+.plugin-scroll-bookmarker-icon:hover {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.2);
 }
 
 #plugin-scroll-bookmarker .bookmark-item {

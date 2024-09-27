@@ -714,8 +714,8 @@ INSERT_LINE_NEXT = "Ctrl-Enter"
 INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 
 # fence_enhance插件包含4个功能：button、hotkey、fold、other。此为fold，功能：针对不同代码语言做行号和折叠
-# 针对不同代码语言做行号和折叠
-ENABLE_LANGUAGE_FOLD = false
+# 支持根据代码语言的语法折叠代码
+ENABLE_LANGUAGE_FOLD = true
 
 # fence_enhance插件包含4个功能：button、hotkey、other。此为other
 # 在右键菜单中启用有风险的功能（此功能会消耗巨量资源并导致Typora长时间（几秒到几十秒）失去响应）
