@@ -134,7 +134,8 @@
     box-shadow: none;
 }
 
-#plugin-custom-modal input[type="number"] {
+#plugin-custom-modal input[type="number"],
+#plugin-custom-modal input[type="color"] {
     max-width: 100px;
 }
 
