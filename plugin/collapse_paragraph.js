@@ -12,6 +12,7 @@ class collapseParagraphPlugin extends BasePlugin {
     }
 
     process = () => {
+        this.utils.autoSaveConfig(this);
         this.disableExpandSimpleBlock();  // 选项【显示当前块元素的Markdown源码】会影响本插件，将其禁用
         this.recordCollapseState(false);
         const funcList = this.getFuncList();

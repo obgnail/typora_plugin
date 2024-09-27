@@ -2,6 +2,7 @@ class resizeTablePlugin extends BasePlugin {
     styleTemplate = () => this.config.REMOVE_MIX_WIDTH
 
     process = () => {
+        this.utils.autoSaveConfig(this);
         this.toggleRecorder(false);
         this.onResize();
     }

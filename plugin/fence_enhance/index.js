@@ -11,6 +11,8 @@ class fenceEnhancePlugin extends BasePlugin {
     styleTemplate = () => ({ bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial" })
 
     process = async () => {
+        this.utils.autoSaveConfig(this);
+
         if (this.config.ENABLE_HOTKEY) {
             new editorHotkeyHelper(this).process();
         }
@@ -188,6 +190,7 @@ class fenceEnhancePlugin extends BasePlugin {
             { arg_name: "隐藏按钮", arg_value: "set_auto_hide", arg_state: this.config.AUTO_HIDE },
             { arg_name: "启用按钮：折叠", arg_value: "disable_or_enable_fold", arg_state: this.config.ENABLE_FOLD },
             { arg_name: "启用按钮：复制", arg_value: "disable_or_enable_copy", arg_state: this.config.ENABLE_COPY },
+            { arg_name: "启用侧边折叠按钮", arg_value: "disable_or_enable_fold_lang", arg_state: this.config.ENABLE_LANGUAGE_FOLD },
             { arg_name: "总是折叠代码块", arg_value: "disable_or_enable_fold_default", arg_state: this.config.FOLD_DEFAULT },
         ];
         const enable = this.config.ENABLE_DANGEROUS_FEATURES;
@@ -228,6 +231,14 @@ class fenceEnhancePlugin extends BasePlugin {
                 this.config.FOLD_DEFAULT = !this.config.FOLD_DEFAULT;
                 const selector = this.config.FOLD_DEFAULT ? ".fold-code:not(.folded)" : ".fold-code.folded";
                 document.querySelectorAll(selector).forEach(ele => ele.click());
+            },
+            disable_or_enable_fold_lang: async () => {
+                this.config.ENABLE_LANGUAGE_FOLD = !this.config.ENABLE_LANGUAGE_FOLD;
+                const option = { type: "info", buttons: ["确定", "取消"], title: "preferences", detail: "配置将于重启 Typora 后生效，确认重启？", message: "设置成功" }
+                const { response } = await this.utils.showMessageBox(option);
+                if (response === 0) {
+                    this.utils.restartTypora();
+                }
             },
             set_auto_hide: () => {
                 this.config.AUTO_HIDE = !this.config.AUTO_HIDE;

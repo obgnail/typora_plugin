@@ -20,7 +20,10 @@ class rightClickMenuPlugin extends BasePlugin {
         this.supportShortcut = Boolean(document.querySelector(".ty-menu-shortcut"));
     }
 
-    process = () => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.appendMenu)
+    process = () => {
+        this.utils.autoSaveConfig(this);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.appendMenu)
+    }
 
     appendMenu = () => {
         setTimeout(() => {
