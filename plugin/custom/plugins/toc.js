@@ -204,8 +204,8 @@ class tocPlugin extends BaseCustomPlugin {
         }
 
         const root = { depth: 0, cid: "n0", text: "root", children: [] };
-        const { headers = [] } = File.editor.nodeMap.toc;
-        if (headers.length === 0) return root;
+        const { headers } = File.editor.nodeMap.toc || {};
+        if (!headers) return root;
 
         const { outline } = File.editor.library;
         const toc = this.config.escape_header
@@ -237,7 +237,7 @@ class tocPlugin extends BaseCustomPlugin {
             const children = [];
             const tagName = ele.tagName;
             if (tagName === "H1" || tagName === "H2") {
-                const header = { cid: ele.getAttribute("cid"), text: ele.textContent, children };
+                const header = { cid: ele.getAttribute("cid"), text: ele.textContent, class_: "toc-header-node", children };
                 if (tagName === "H1") {
                     root.children.push(header);
                     current.H1 = header;
@@ -268,8 +268,8 @@ class tocPlugin extends BaseCustomPlugin {
 
     _getRootTemplate = rootNode => {
         const getTemplate = rootNode => {
-            const { text, cid, depth, children = [] } = rootNode;
-            const content = [{ class_: "toc-node", ref: cid, children: [{ ele: "span", class_: "toc-text", text }] }];
+            const { text, cid, depth, class_ = "", children = [] } = rootNode;
+            const content = [{ class_: `toc-node ${class_}`, ref: cid, children: [{ ele: "span", class_: "toc-text", text }] }];
             const list = children.map(getTemplate);
             if (list.length) {
                 content.push({ ele: "ul", children: list });
