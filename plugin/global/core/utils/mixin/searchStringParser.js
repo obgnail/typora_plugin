@@ -21,7 +21,7 @@
  *   (a OR b) (c OR d)
  *   aaa "foo bar bbb" -ccc baz -qux OR (a b -c)
  */
-class SearchStringParser {
+class searchStringParser {
     constructor() {
         this.TYPE = {
             OR: "OR",
@@ -78,13 +78,14 @@ class SearchStringParser {
             }
         }
 
-        const result = [tokens[0]];
-        for (let i = 1; i < tokens.length; i++) {
+        const result = [];
+        const l1 = [this.TYPE.MINUS, this.TYPE.OR, this.TYPE.PAREN_OPEN];
+        const l2 = [this.TYPE.MINUS, this.TYPE.OR, this.TYPE.PAREN_CLOSE];
+        for (let i = 0; i < tokens.length; i++) {
             const current = tokens[i];
             const previous = tokens[i - 1];
-            const skip1 = [this.TYPE.MINUS, this.TYPE.OR, this.TYPE.PAREN_OPEN].includes(previous.type);
-            const skip2 = [this.TYPE.MINUS, this.TYPE.OR, this.TYPE.PAREN_CLOSE].includes(current.type);
-            if (!skip1 && !skip2) {
+            const should = previous && !l1.includes(previous.type) && !l2.includes(current.type);
+            if (should) {
                 result.push(this.TOKEN.AND)
             }
             result.push(current);
@@ -136,28 +137,76 @@ class SearchStringParser {
         }
     }
 
-    _parse(query) {
+    parse(query) {
         const tokens = this._tokenize(query);
+        if (tokens.length === 0) {
+            return this.TOKEN.KEYWORD("")
+        }
         const result = this._parseExpression(tokens);
         if (tokens.length !== 0) {
             throw "parse error"
         }
-        return result;
+        return result
     }
 
-    _traverse(node, callback) {
-        if (node == null) return;
-        this._traverse(node.left, callback);
-        this._traverse(node.right, callback);
-        callback(node);
+    traverse(ast, callback) {
+        if (ast == null) return;
+        this.traverse(ast.left, callback);
+        this.traverse(ast.right, callback);
+        callback(ast);
     }
 
-    parse(query, callback) {
-        const ast = this._parse(query);
-        this._traverse(ast, callback);
+    parseAndTraverse(query, callback) {
+        const ast = this.parse(query);
+        this.traverse(ast, callback);
+        return ast
+    }
+
+    checkByAST(ast, content) {
+        const { KEYWORD, QUOTED_PHRASE, OR, AND, MINUS } = this.TYPE;
+        this.traverse(ast, node => {
+            const { type, left, right, value } = node;
+            switch (type) {
+                case KEYWORD:
+                case QUOTED_PHRASE:
+                    node._result = content.includes(value);
+                    break
+                case OR:
+                    node._result = left._result || right._result;
+                    break
+                case AND:
+                    node._result = left._result && right._result;
+                    break
+                case MINUS:
+                    node._result = (left ? left._result : true) && !right._result;
+                    break
+                default:
+                    throw `Error Node: {type: ${node.type}, value: ${node.value}}`
+            }
+        });
+        // console.log(JSON.stringify(ast, null, 2));
+        return ast._result
+    }
+
+    /**
+     * 检查内容是否匹配给定的查询条件。
+     *
+     * @param {string} query 查询条件
+     * @param {string} content 检查内容
+     * @param {object} [option={}] 选项
+     * @param {boolean} [option.caseSensitive=false] 是否区分大小写
+     * @returns {boolean} 是否匹配
+     */
+    check(query, content, option = {}) {
+        if (!option.caseSensitive) {
+            query = query.toLowerCase();
+            content = content.toLowerCase();
+        }
+        const ast = this.parse(query);
+        return this.checkByAST(ast, content);
     }
 }
 
 module.exports = {
-    SearchStringParser
+    searchStringParser
 }
