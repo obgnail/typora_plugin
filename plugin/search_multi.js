@@ -155,7 +155,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         traverse(dir).then(then).catch(console.error);
     }
 
-    appendItemFunc = (rootPath, keyArr) => {
+    appendItemFunc = (rootPath, checker) => {
         let index = 0;
         const showResult = this.utils.once(() => this.utils.show(this.entities.result));
         const { INCLUDE_FILE_PATH, CASE_SENSITIVE, RELATIVE_PATH, SHOW_MTIME } = this.config;
@@ -168,8 +168,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             if (!CASE_SENSITIVE) {
                 data = data.toLowerCase();
             }
-
-            if (!keyArr.every(keyword => data.includes(keyword))) return false;
+            if (!checker(data)) return false;
 
             index++;
             const { dir, base } = this.utils.Package.Path.parse(filePath);
@@ -211,23 +210,35 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
     verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
 
-    searchMulti = (rootPath, keys) => {
-        let keyArr = this.utils.splitKeyword(keys || this.entities.input.value);
-        if (!keyArr || keyArr.length === 0) return;
+    searchMulti = (rootPath, input) => {
+        input = (input || this.entities.input.value).trim();
+        if (!input) return;
         if (!this.config.CASE_SENSITIVE) {
-            keyArr = keyArr.map(ele => ele.toLowerCase());
+            input = input.toLowerCase();
         }
 
+        const ast = this.utils.searchStringParser.parse(input);
+        const checker = content => {
+            if (!this.config.CASE_SENSITIVE) {
+                content = content.toLowerCase();
+            }
+            return this.utils.searchStringParser.checkByAST(ast, content)
+        }
+        this.refreshResult();
+        rootPath = rootPath || this.utils.getMountFolder();
+        this.traverseDir(
+            rootPath,
+            (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath),
+            path => !this.config.IGNORE_FOLDERS.includes(path),
+            this.appendItemFunc(rootPath, checker),
+            () => this.utils.hide(this.entities.info)
+        );
+    }
+
+    refreshResult = () => {
         this.utils.hide(this.entities.result);
         this.utils.show(this.entities.info);
         this.entities.resultList.innerHTML = "";
-
-        rootPath = rootPath || this.utils.getMountFolder();
-        const allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
-        const allowTraverse = path => !this.config.IGNORE_FOLDERS.includes(path)
-        const appendItem = this.appendItemFunc(rootPath, keyArr);
-        const then = () => this.utils.hide(this.entities.info);
-        this.traverseDir(rootPath, allowRead, allowTraverse, appendItem, then);
     }
 
     hideIfNeed = () => this.config.AUTO_HIDE && this.utils.hide(this.entities.modal);
