@@ -61,7 +61,7 @@ class searchStringParser {
             } else if (query[i] === ")") {
                 tokens.push(this.TOKEN.PAREN_CLOSE);
                 i++;
-            } else if (query[i] === "O" && query.substring(i, i + 2) === "OR") {
+            } else if (query[i].toUpperCase() === "O" && query.substring(i, i + 2).toUpperCase() === "OR") {
                 tokens.push(this.TOKEN.OR);
                 i += 2;
             } else if (query[i] === "-") {
@@ -204,6 +204,30 @@ class searchStringParser {
         }
         const ast = this.parse(query);
         return this.checkByAST(ast, content);
+    }
+
+    getQueryTokens(query) {
+        const { KEYWORD, QUOTED_PHRASE, OR, AND, MINUS } = this.TYPE;
+        const ast = this.parseAndTraverse(query, node => {
+            const { type, left, right, value } = node;
+            switch (type) {
+                case KEYWORD:
+                case QUOTED_PHRASE:
+                    node._result = [value];
+                    break
+                case OR:
+                case AND:
+                    node._result = [...left._result, ...right._result];
+                    break
+                case MINUS:
+                    node._result = (left ? left._result : []).filter(e => !right._result.includes(e));
+                    break
+                default:
+                    throw `Error Node: {type: ${node.type}, value: ${node.value}}`
+            }
+        })
+        // console.log(JSON.stringify(ast, null, 2));
+        return ast._result;
     }
 }
 
