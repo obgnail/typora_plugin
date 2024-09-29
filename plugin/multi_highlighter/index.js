@@ -52,16 +52,14 @@ class multiHighlighterPlugin extends BasePlugin {
         this.markerHelper = {
             idxOfFence: -1,
             idxOfWrite: -1,
-            getMarkerIdx(parent, marker) {
-                return Array.prototype.indexOf.call(parent.getElementsByTagName("marker"), marker)
-            },
-            scrollToMarker(parent, idx) {
+            getMarkerIdx: (parent, marker) => Array.prototype.indexOf.call(parent.getElementsByTagName("marker"), marker),
+            scrollToMarker: (parent, idx) => {
                 setTimeout(() => {
                     const markers = parent.getElementsByTagName("marker");
                     const marker = markers && markers[idx];
                     if (marker) {
                         this.utils.scroll(marker);
-                        this.highlightMarker(marker);
+                        this.markerHelper.highlightMarker(marker);
                     }
                 }, 120);
             },
