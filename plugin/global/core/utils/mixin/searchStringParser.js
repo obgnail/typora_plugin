@@ -128,7 +128,7 @@ class searchStringParser {
     showGrammar() {
         const table1 = `
             <table>
-                <tr><th>token</th><th>desc</th></tr>
+                <tr><th>Token</th><th>Desc</th></tr>
                 <tr><td>whitespace</td><td>表示与，即文档应该同时包含全部关键词</td></tr>
                 <tr><td>OR</td><td>表示或，即文档应该包含关键词之一</td></tr>
                 <tr><td>-</td><td>表示非，即文档不能包含关键词</td></tr>
@@ -155,7 +155,7 @@ class searchStringParser {
 <minus_and> ::= '-' | ' '
 <keyword> ::= \\w+`
         const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 8, content }];
-        this.utils.dialog.modal({ title: "搜索语法", width: "600px", components });
+        this.utils.dialog.modal({ title: "搜索语法", width: "550px", components });
     }
 
     withNotification(func) {

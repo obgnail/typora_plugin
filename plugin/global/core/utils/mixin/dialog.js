@@ -166,7 +166,7 @@ class dialog {
             case "textarea":
                 const rows = comp.rows || 3;
                 const cnt = comp.content || "";
-                const readonly = comp.readonly || "";
+                const readonly = comp.readonly ? "readonly" : "";
                 control = `<textarea class="form-control" rows="${rows}" ${readonly} ${placeholder(comp)} ${disabled(comp)}>${cnt}</textarea>`;
                 break
             case "pre":

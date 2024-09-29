@@ -4,12 +4,15 @@ class searchMultiKeywordPlugin extends BasePlugin {
     html = () => `
         <div id="plugin-search-multi" class="plugin-common-modal plugin-common-hidden">
             <div id="plugin-search-multi-input">
-                <input type="text" placeholder="多关键字查找 空格分隔" title="空格分隔 引号包裹视为词组">
+                <input type="text" placeholder="多关键字查找">
                 <div class="plugin-search-multi-btn-group">
-                    <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" ty-hint="区分大小写">
+                    <span class="option-btn info-option-btn" action="searchGrammarModal" ty-hint="查看搜索语法">
+                        <div class="fa fa-info-circle"></div>
+                    </span>
+                    <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" action="toggleCaseSensitive" ty-hint="区分大小写">
                         <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                     </span>
-                    <span class="option-btn path-option-btn ${(this.config.INCLUDE_FILE_PATH) ? "select" : ""}" ty-hint="将文件路径加入搜索内容">
+                    <span class="option-btn path-option-btn ${(this.config.INCLUDE_FILE_PATH) ? "select" : ""}" action="toggleIncludeFilePath" ty-hint="将文件路径加入搜索内容">
                         <div class="fa fa-folder-open-o"></div>
                     </span>
                 </div>
@@ -34,13 +37,24 @@ class searchMultiKeywordPlugin extends BasePlugin {
     init = () => {
         this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => ext.toLowerCase()));
         this.entities = {
-            modal: document.getElementById('plugin-search-multi'),
+            modal: document.querySelector("#plugin-search-multi"),
             input: document.querySelector("#plugin-search-multi-input input"),
             buttonGroup: document.querySelector(".plugin-search-multi-btn-group"),
             result: document.querySelector(".plugin-search-multi-result"),
             resultTitle: document.querySelector(".plugin-search-multi-result .search-result-title"),
             resultList: document.querySelector(".plugin-search-multi-result .search-result-list"),
             info: document.querySelector(".plugin-search-multi-info-item"),
+        }
+        this.actionMap = {
+            searchGrammarModal: () => this.utils.searchStringParser.showGrammar(),
+            toggleCaseSensitive: btn => {
+                btn.classList.toggle("select");
+                this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE;
+            },
+            toggleIncludeFilePath: btn => {
+                btn.classList.toggle("select");
+                this.config.INCLUDE_FILE_PATH = !this.config.INCLUDE_FILE_PATH;
+            }
         }
     }
 
@@ -66,15 +80,9 @@ class searchMultiKeywordPlugin extends BasePlugin {
             this.config.AUTO_HIDE && this.utils.hide(this.entities.modal);
         });
         this.entities.buttonGroup.addEventListener("click", ev => {
-            const caseButton = ev.target.closest(".case-option-btn");
-            const pathButton = ev.target.closest(".path-option-btn");
-            if (caseButton) {
-                caseButton.classList.toggle("select");
-                this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE;
-            } else if (pathButton) {
-                pathButton.classList.toggle("select");
-                this.config.INCLUDE_FILE_PATH = !this.config.INCLUDE_FILE_PATH;
-            }
+            const btn = ev.target.closest(".option-btn");
+            const action = btn.getAttribute("action");
+            this.actionMap[action] && this.actionMap[action](btn);
         })
         this.entities.input.addEventListener("keydown", ev => {
             switch (ev.key) {
@@ -207,8 +215,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
         this.utils.hide(this.entities.info);
     }
     show = () => {
-        this.utils.show(this.entities.modal)
-        this.entities.input.select();
+        this.utils.show(this.entities.modal);
+        setTimeout(() => this.entities.input.select());
     }
     call = () => {
         if (!this.isModalHidden()) {
@@ -247,13 +255,14 @@ class LinkHelper {
         // 当处于联动状态，在search_multi开启前开启highlighter
         this.utils.decorate(() => this.searcher, "show", () => !this.searcher.config.LINK_OTHER_PLUGIN && this.toggle());
 
-        this.searcher.entities.buttonGroup.addEventListener("click", ev => ev.target.closest(".link-option-btn") && this.toggle(true), true)
+        this.searcher.actionMap.toggleLinkPlugin = () => this.toggle(true);
     }
 
     genButton = () => {
         const wantLink = this.searcher.config.LINK_OTHER_PLUGIN;
         const span = document.createElement("span");
         span.className = `option-btn link-option-btn ${wantLink ? "select" : ""}`;
+        span.setAttribute("action", "toggleLinkPlugin");
         span.setAttribute("ty-hint", "插件联动");
         const div = document.createElement("div");
         div.className = "fa fa-link";
