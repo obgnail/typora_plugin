@@ -229,18 +229,13 @@ class multiHighlighterPlugin extends BasePlugin {
     }
 
     highlight = (refreshResult = true) => {
-        let input = this.entities.input.value.trim();
-        if (!input) return;
-        if (!this.config.CASE_SENSITIVE) {
-            input = input.toLowerCase();
-        }
-        const keyArr = this.utils.searchStringParser.getQueryTokens(input);
+        const keyArr = this._splitKeyword(this.entities.input.value);
+        if (!keyArr || keyArr.length === 0) return false;
+
         this.lastHighlightFilePath = this.utils.getFilePath();
         this._doSearch(keyArr, refreshResult);
         return true;
     }
-
-    setInputValue = value => this.entities.input.value = value;
 
     _doSearch = (keyArr, refreshResult = true) => {
         this.clearHighlight();
@@ -269,6 +264,16 @@ class multiHighlighterPlugin extends BasePlugin {
         if (fence) {
             this.utils.callPluginFunction("fence_enhance", "expandFence", fence);
         }
+    }
+
+    _splitKeyword = str => {
+        const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
+        let result = [];
+        let match;
+        while ((match = regex.exec(str))) {
+            result.push(match[1] || match[2] || match[0]);
+        }
+        return result;
     }
 
     hide = () => {
