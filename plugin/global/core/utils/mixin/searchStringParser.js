@@ -1,28 +1,16 @@
 /**
  * grammar:
- *   <query> ::= <expression>
- *   <expression> ::= <term> ( <or> <term> )*
+ *   <query> ::= <expr>
+ *   <expr> ::= <term> ( 'OR' <term> )*
  *   <term> ::= <factor> ( <minus_and> <factor> )*
- *   <factor> ::= <quoted_phrase> | <word> | <l_paren> <expression> <r_paren>
- *   <quoted_phrase> ::= <quote> {word} <quote>
- *   <word> ::= \w+
- *   <minus_and> ::= <minus> | <and>
- *   <minus> ::= '-'
- *   <and> ::= ' '
- *   <or> ::= 'or'
- *   <quote> ::= '"'
- *   <l_paren> ::= '('
- *   <r_paren> ::= ')'
- * example:
- *   foo bar
- *   "foo bar"
- *   foo OR bar
- *   foo -bar
- *   (a OR b) (c OR d)
- *   aaa "foo bar bbb" -ccc baz -qux OR (a b -c)
+ *   <factor> ::= <quoted_phrase> | <keyword> | '(' <expr> ')'
+ *   <quoted_phrase> ::= '"' [<keyword>] '"'
+ *   <minus_and> ::= '-' | ' '
+ *   <keyword> ::= \w+
  */
 class searchStringParser {
-    constructor() {
+    constructor(utils) {
+        this.utils = utils;
         this.TYPE = {
             OR: "OR",
             AND: "AND",
@@ -137,16 +125,59 @@ class searchStringParser {
         }
     }
 
+    showGrammar() {
+        const table1 = `
+            <table>
+                <tr><th>token</th><th>desc</th></tr>
+                <tr><td>whitespace</td><td>表示与，即文档应该同时包含全部关键词</td></tr>
+                <tr><td>OR</td><td>表示或，即文档应该包含关键词之一</td></tr>
+                <tr><td>-</td><td>表示非，即文档不能包含关键词</td></tr>
+                <tr><td>""</td><td>词组</td></tr>
+                <tr><td>()</td><td>调整运算顺序</td></tr>
+            </table>
+        `
+        const table2 = `
+            <table>
+                <tr><th>示例</th><th>说明</th></tr>
+                <tr><td>foo bar</td><td>搜索包含 foo 和 bar 的文档</td></tr>
+                <tr><td>"foo bar"</td><td>搜索包含 foo bar 这一词组的文档</td></tr>
+                <tr><td>foo OR bar</td><td>搜索包含 foo 或包含 bar 的文档</td></tr>
+                <tr><td>foo -bar</td><td>搜索包含 foo 但不包含 bar 的文档</td></tr>
+                <tr><td>(a OR b) (c OR d)</td><td>搜索包含 a 或 b，且包含 c 或 d 的文档</td></tr>
+            </table>
+        `
+        const content = `
+<query> ::= <expr>
+<expr> ::= <term> ( 'OR' <term> )*
+<term> ::= <factor> ( <minus_and> <factor> )*
+<factor> ::= <quoted_phrase> | <keyword> | '(' <expr> ')'
+<quoted_phrase> ::= '"' [<keyword>] '"'
+<minus_and> ::= '-' | ' '
+<keyword> ::= \\w+`
+        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 8, content }];
+        this.utils.dialog.modal({ title: "搜索语法", width: "600px", components });
+    }
+
+    withNotification(func) {
+        try {
+            return func();
+        } catch (e) {
+            this.utils.notification.show("语法解析错误，请检查输入内容", "error");
+        }
+    }
+
     parse(query) {
-        const tokens = this._tokenize(query);
-        if (tokens.length === 0) {
-            return this.TOKEN.KEYWORD("")
-        }
-        const result = this._parseExpression(tokens);
-        if (tokens.length !== 0) {
-            throw "parse error"
-        }
-        return result
+        return this.withNotification(() => {
+            const tokens = this._tokenize(query);
+            if (tokens.length === 0) {
+                return this.TOKEN.KEYWORD("")
+            }
+            const result = this._parseExpression(tokens);
+            if (tokens.length !== 0) {
+                throw new Error(`parse error. remind tokens: ${tokens}`)
+            }
+            return result
+        })
     }
 
     traverse(ast, callback) {
@@ -190,7 +221,7 @@ class searchStringParser {
                     node._result = (left ? left._result : true) && !right._result;
                     break
                 default:
-                    throw `Error Node: {type: ${node.type}, value: ${node.value}}`
+                    throw new Error(`Error Node: {type: ${node.type}, value: ${node.value}}`)
             }
         });
         // console.log(JSON.stringify(ast, null, 2));
@@ -214,7 +245,7 @@ class searchStringParser {
                     node._result = (left ? left._result : []).filter(e => !right._result.includes(e));
                     break
                 default:
-                    throw `Error Node: {type: ${node.type}, value: ${node.value}}`
+                    throw new Error(`Error Node: {type: ${node.type}, value: ${node.value}}`)
             }
         })
         // console.log(JSON.stringify(ast, null, 2));
