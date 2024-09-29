@@ -615,16 +615,6 @@ class utils {
         return { yamlObject, remainContent, yamlLineCount }
     }
 
-    static splitKeyword = str => {
-        const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
-        let result = [];
-        let match;
-        while ((match = regex.exec(str))) {
-            result.push(match[1] || match[2] || match[0]);
-        }
-        return result;
-    }
-
     static getRecentFiles = async () => {
         const recent = await JSBridge.invoke("setting.getRecentFiles");
         const { files = [], folders = [] } = (typeof recent === "string") ? JSON.parse(recent || "{}") : (recent || {});

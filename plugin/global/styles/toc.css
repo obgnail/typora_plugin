@@ -52,6 +52,10 @@
     margin: 0 0.5em 4em 0.5em;
 }
 
+#plugin-toc .toc-header-node {
+    opacity: 0.6;
+}
+
 #plugin-toc ul {
     position: relative;
     list-style: none;

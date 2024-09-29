@@ -256,9 +256,12 @@ class multiHighlighterPlugin extends BasePlugin {
     setInputValue = value => this.entities.input.value = value;
 
     highlight = (refreshResult = true) => {
-        const keyArr = this.utils.splitKeyword(this.entities.input.value);
-        if (!keyArr || keyArr.length === 0) return false;
-
+        let input = this.entities.input.value.trim();
+        if (!input) return;
+        if (!this.config.CASE_SENSITIVE) {
+            input = input.toLowerCase();
+        }
+        const keyArr = this.utils.searchStringParser.getQueryTokens(input);
         this.lastHighlightFilePath = this.utils.getFilePath();
         this.doSearch(keyArr, refreshResult);
         return true;

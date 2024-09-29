@@ -39,7 +39,7 @@ class hotkeyHubPlugin extends BaseCustomPlugin {
     openSettingFile = async () => this.utils.showInFinder(await this.utils.getActualSettingPath("hotkey.user.toml"));
 
     callback = anchorNode => {
-        const th = `<tr><th>已注册快捷键</th>`;
+        const th = `<tr><th>已注册快捷键</th></tr>`;
         const trs = Array.from(this.utils.hotkeyHub.map.keys(), hotkey => `<tr><td>${hotkey.toUpperCase().split("+").map(ele => `<kbd>${ele}</kbd>`).join("+")}</td></tr>`);
         trs.sort();
         const table = `<table>${th}${trs.join("")}</table>`;

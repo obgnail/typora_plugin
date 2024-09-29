@@ -7,6 +7,7 @@ class fileCounterPlugin extends BasePlugin {
 
     init = () => {
         this.className = "plugin-file-counter";
+        this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => ext.toLowerCase()));
     }
 
     process = () => {
@@ -46,15 +47,11 @@ class fileCounterPlugin extends BasePlugin {
     }
 
     verifyExt = filename => {
-        if (filename[0] === ".") {
-            return false
-        }
-        const ext = this.utils.Package.Path.extname(filename).replace(/^\./, '');
-        if (~this.config.ALLOW_EXT.indexOf(ext.toLowerCase())) {
-            return true
-        }
+        if (filename.startsWith(".")) return false;
+        const ext = this.utils.Package.Path.extname(filename).toLowerCase();
+        const extension = ext.startsWith(".") ? ext.substring(1) : ext;
+        return this.allowedExtensions.has(extension);
     }
-
     verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
     allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
     allowTraverse = path => !this.config.IGNORE_FOLDERS.includes(path)
@@ -84,7 +81,7 @@ class fileCounterPlugin extends BasePlugin {
     }
 
     setDirCount = treeNode => {
-        const dir = treeNode.getAttribute("data-path");
+        const dir = treeNode.dataset.path;
         this.countFiles(dir, this.allowRead, this.allowTraverse, fileCount => {
             let countDiv = treeNode.querySelector(`:scope > .${this.className}`);
             if (fileCount <= this.config.IGNORE_MIN_NUM) {

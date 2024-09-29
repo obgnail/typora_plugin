@@ -138,6 +138,11 @@
     max-width: 100px;
 }
 
+#plugin-custom-modal input[type="color"] {
+    padding: 0.2em;
+    max-width: 100px;
+}
+
 #plugin-custom-modal .plugin-custom-modal-range {
     display: inline-flex;
     width: 100%;

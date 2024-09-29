@@ -104,6 +104,8 @@ class dialog {
                 return widget.querySelector(type).value
             case "radio":
                 return widget.querySelector("input:checked").value
+            case "color":
+                return widget.querySelector("input").value
             case "file":
                 return widget.querySelector("input").files
             case "checkbox":
@@ -132,6 +134,7 @@ class dialog {
             case "input":
             case "password":
             case "file":
+            case "color":
                 const t = type === "input" ? "text" : type;
                 control = `<input type="${t}" class="form-control" value="${comp.value || ""}" ${placeholder(comp)} ${disabled(comp)}>`;
                 break
@@ -163,7 +166,7 @@ class dialog {
             case "textarea":
                 const rows = comp.rows || 3;
                 const cnt = comp.content || "";
-                const readonly = comp.readonly || "";
+                const readonly = comp.readonly ? "readonly" : "";
                 control = `<textarea class="form-control" rows="${rows}" ${readonly} ${placeholder(comp)} ${disabled(comp)}>${cnt}</textarea>`;
                 break
             case "pre":

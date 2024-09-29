@@ -52,15 +52,11 @@
     border-radius: 3px;
     margin-left: 3px;
     cursor: pointer;
-}
-
-#plugin-search-multi-input .case-option-btn {
-    padding: 2px 1px;
-}
-
-#plugin-search-multi-input .path-option-btn,
-#plugin-search-multi-input .link-option-btn {
     padding: 1px 3px;
+}
+
+#plugin-search-multi-input .option-btn.case-option-btn {
+    padding: 2px 1px;
 }
 
 #plugin-search-multi-input .option-btn.select,
