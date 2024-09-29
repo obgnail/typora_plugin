@@ -32,6 +32,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
+        this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => ext.toLowerCase()));
         this.entities = {
             modal: document.getElementById('plugin-search-multi'),
             input: document.querySelector("#plugin-search-multi-input input"),
@@ -48,44 +49,48 @@ class searchMultiKeywordPlugin extends BasePlugin {
             const highlighter = this.utils.getPlugin("multi_highlighter");
             highlighter && new LinkHelper(this, highlighter).process();
         })
-
         if (this.config.REFOUCE_WHEN_OPEN_FILE) {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, () => {
-                if (!this.isModalHidden()) {
-                    setTimeout(() => this.entities.input.select(), 300);
-                }
+                !this.isModalHidden() && setTimeout(() => this.entities.input.select(), 300);
             })
         }
-
         if (this.config.ALLOW_DRAG) {
             this.utils.dragFixedModal(this.entities.input, this.entities.modal);
         }
 
+        this.entities.resultList.addEventListener("click", ev => {
+            const target = ev.target.closest(".plugin-search-multi-item");
+            if (!target) return;
+            const filepath = target.dataset.path;
+            this.utils.openFile(filepath);
+            this.config.AUTO_HIDE && this.utils.hide(this.entities.modal);
+        });
+        this.entities.buttonGroup.addEventListener("click", ev => {
+            const caseButton = ev.target.closest(".case-option-btn");
+            const pathButton = ev.target.closest(".path-option-btn");
+            if (caseButton) {
+                caseButton.classList.toggle("select");
+                this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE;
+            } else if (pathButton) {
+                pathButton.classList.toggle("select");
+                this.config.INCLUDE_FILE_PATH = !this.config.INCLUDE_FILE_PATH;
+            }
+        })
         this.entities.input.addEventListener("keydown", ev => {
             switch (ev.key) {
                 case "Enter":
-                    if (this.utils.metaKeyPressed(ev)) {
-                        const select = this.entities.resultList.querySelector(".plugin-search-multi-item.active");
-                        if (select) {
-                            ev.preventDefault();
-                            ev.stopPropagation();
-                            const filepath = select.getAttribute("data-path");
-                            if (ev.shiftKey) {
-                                this.openFileInNewWindow(filepath, false);
-                            } else {
-                                this.openFileInThisWindow(filepath);
-                            }
-                            this.entities.input.focus();
-                            return
-                        }
+                    if (!this.utils.metaKeyPressed(ev)) {
+                        this.searchMulti();
+                        return;
                     }
-                    this.searchMulti();
+                    const select = this.entities.resultList.querySelector(".plugin-search-multi-item.active");
+                    if (!select) return;
+                    this.utils.openFile(select.dataset.path);
+                    this.entities.input.focus();
                     break
                 case "Escape":
                 case "Backspace":
                     if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
-                        ev.stopPropagation();
-                        ev.preventDefault();
                         this.hide();
                     }
                     break
@@ -96,46 +101,9 @@ class searchMultiKeywordPlugin extends BasePlugin {
                     this.utils.scrollActiveItem(this.entities.resultList, ".plugin-search-multi-item.active", ev.key === "ArrowDown");
             }
         });
-
-        this.entities.resultList.addEventListener("click", ev => {
-            const target = ev.target.closest(".plugin-search-multi-item");
-            if (!target) return;
-
-            ev.preventDefault();
-            ev.stopPropagation();
-
-            const filepath = target.getAttribute("data-path");
-            if (this.utils.metaKeyPressed(ev)) {
-                this.openFileInNewWindow(filepath, false);
-            } else {
-                this.openFileInThisWindow(filepath);
-            }
-            this.hideIfNeed();
-        });
-
-        this.entities.buttonGroup.addEventListener("click", ev => {
-            const caseButton = ev.target.closest(".case-option-btn");
-            const pathButton = ev.target.closest(".path-option-btn");
-
-            if (caseButton || pathButton) {
-                ev.preventDefault();
-                ev.stopPropagation();
-            }
-
-            if (caseButton) {
-                caseButton.classList.toggle("select");
-                this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE;
-            } else if (pathButton) {
-                pathButton.classList.toggle("select");
-                this.config.INCLUDE_FILE_PATH = !this.config.INCLUDE_FILE_PATH;
-            }
-        })
     }
 
-    openFileInThisWindow = filePath => File.editor.library.openFile(filePath);
-    openFileInNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder);
-
-    traverseDir = (dir, fileFilter, dirFilter, callback, then) => {
+    traverseDir = async (dir, fileFilter, dirFilter, callback) => {
         const { Fs: { promises: { readdir, stat, readFile } }, Path } = this.utils.Package;
 
         async function traverse(dir) {
@@ -152,25 +120,20 @@ class searchMultiKeywordPlugin extends BasePlugin {
             }))
         }
 
-        traverse(dir).then(then).catch(console.error);
+        await traverse(dir);
+    }
+
+    refreshResult = () => {
+        this.utils.hide(this.entities.result);
+        this.utils.show(this.entities.info);
+        this.entities.resultList.innerHTML = "";
     }
 
     appendItemFunc = (rootPath, checker) => {
         let index = 0;
         const showResult = this.utils.once(() => this.utils.show(this.entities.result));
-        const { INCLUDE_FILE_PATH, CASE_SENSITIVE, RELATIVE_PATH, SHOW_MTIME } = this.config;
-
-        return (filePath, stats, buffer) => {
-            let data = buffer.toString();
-            if (INCLUDE_FILE_PATH) {
-                data += "\n" + filePath;
-            }
-            if (!CASE_SENSITIVE) {
-                data = data.toLowerCase();
-            }
-            if (!checker(data)) return false;
-
-            index++;
+        const { INCLUDE_FILE_PATH, RELATIVE_PATH, SHOW_MTIME } = this.config;
+        const newResultItem = (rootPath, filePath, stats) => {
             const { dir, base } = this.utils.Package.Path.parse(filePath);
             const dirPath = RELATIVE_PATH ? dir.replace(rootPath, ".") : dir;
 
@@ -178,7 +141,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             item.className = "plugin-search-multi-item";
             item.setAttribute("data-path", filePath);
             if (SHOW_MTIME) {
-                const time = stats.mtime.toLocaleString('chinese', { hour12: false });
+                const time = stats.mtime.toLocaleString("chinese", { hour12: false });
                 item.setAttribute("ty-hint", time);
             }
 
@@ -191,57 +154,53 @@ class searchMultiKeywordPlugin extends BasePlugin {
             path.textContent = dirPath + this.utils.separator;
 
             item.append(title, path);
+            return item
+        }
+
+        return (filePath, stats, buffer) => {
+            let content = buffer.toString();
+            if (INCLUDE_FILE_PATH) {
+                content = `${content}\n${filePath}`;
+            }
+            if (!checker(content)) return;
+
+            index++;
+            const item = newResultItem(rootPath, filePath, stats);
             this.entities.resultList.appendChild(item);
             this.entities.resultTitle.textContent = `匹配的文件：${index}`;
-
             showResult();
         }
     }
 
-    verifyExt = filename => {
-        if (filename[0] === ".") {
-            return false
-        }
-        const ext = this.utils.Package.Path.extname(filename).replace(/^\./, '');
-        if (~this.config.ALLOW_EXT.indexOf(ext.toLowerCase())) {
-            return true
-        }
-    }
-
-    verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
-
-    searchMulti = (rootPath, input) => {
-        input = (input || this.entities.input.value).trim();
+    searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
+        input = input.trim();
+        input = this.config.CASE_SENSITIVE ? input : input.toLowerCase();
         if (!input) return;
-        if (!this.config.CASE_SENSITIVE) {
-            input = input.toLowerCase();
-        }
+
+        this.refreshResult();
 
         const ast = this.utils.searchStringParser.parse(input);
         const checker = content => {
-            if (!this.config.CASE_SENSITIVE) {
-                content = content.toLowerCase();
-            }
+            content = this.config.CASE_SENSITIVE ? content : content.toLowerCase();
             return this.utils.searchStringParser.checkByAST(ast, content)
         }
-        this.refreshResult();
-        rootPath = rootPath || this.utils.getMountFolder();
-        this.traverseDir(
+        const verifyExt = filename => {
+            if (filename.startsWith(".")) return false;
+            const ext = this.utils.Package.Path.extname(filename).toLowerCase();
+            const extension = ext.startsWith(".") ? ext.substring(1) : ext;
+            return this.allowedExtensions.has(extension);
+        };
+        const verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
+
+        await this.traverseDir(
             rootPath,
-            (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath),
+            (filepath, stat) => verifySize(stat) && verifyExt(filepath),
             path => !this.config.IGNORE_FOLDERS.includes(path),
             this.appendItemFunc(rootPath, checker),
-            () => this.utils.hide(this.entities.info)
         );
+        this.utils.hide(this.entities.info);
     }
 
-    refreshResult = () => {
-        this.utils.hide(this.entities.result);
-        this.utils.show(this.entities.info);
-        this.entities.resultList.innerHTML = "";
-    }
-
-    hideIfNeed = () => this.config.AUTO_HIDE && this.utils.hide(this.entities.modal);
     isModalHidden = () => this.utils.isHidden(this.entities.modal);
     hide = () => {
         this.utils.hide(this.entities.modal);
@@ -288,13 +247,7 @@ class LinkHelper {
         // 当处于联动状态，在search_multi开启前开启highlighter
         this.utils.decorate(() => this.searcher, "show", () => !this.searcher.config.LINK_OTHER_PLUGIN && this.toggle());
 
-        this.searcher.entities.buttonGroup.addEventListener("click", ev => {
-            if (ev.target.closest(".link-option-btn")) {
-                this.toggle(true);
-                ev.preventDefault();
-                ev.stopPropagation();
-            }
-        }, true)
+        this.searcher.entities.buttonGroup.addEventListener("click", ev => ev.target.closest(".link-option-btn") && this.toggle(true), true)
     }
 
     genButton = () => {

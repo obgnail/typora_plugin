@@ -268,14 +268,11 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 
 功能：比如搜索同时包含 `golang` 和 `install` 和 `生命周期` 三个关键字的文件。
 
-> 搜索关键字使用空格分隔，双引号包裹视为词组。eg：`golang install` 搜索同时包含 golang 和 install 的文件；`"golang install"` 搜索包含 `golang install` 的文件
-
 - `打开搜索框`：ctrl+shift+P
 - `关闭搜索框`：光标定位到输入框，键入 esc
 - `搜索`：enter
 - `选中`：ArrowUp，ArrowDown
-- `当前窗口打开`：click、ctrl+enter
-- `新窗口打开`：ctrl+click、ctrl+shift+enter
+- `打开`：click、ctrl+enter
 - `移动位置`：ctrl+拖动输入框
 
 ![search_mutli](assets/search_mutli.gif)
