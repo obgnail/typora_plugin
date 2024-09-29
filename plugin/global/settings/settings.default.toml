@@ -169,12 +169,6 @@ DEFAULT_COLOR = "#dd6699"
 CASE_SENSITIVE = false
 # 切换到其他文件时自动重新搜索
 RESEARCH_WHILE_OPEN_FILE = true
-# 点击关键字时显示当前的索引数
-SHOW_CURRENT_INDEX = true
-# 定位时高亮关键字出现提示边框
-SHOW_KEYWORD_OUTLINE = true
-# 定位时高亮关键字提示所在行
-SHOW_KEYWORD_BAR = true
 # DO NOT edit this field unless you know what you are doing
 # 性能选项：关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0，则总是使用
 # 此选项用在当搜索了很多关键字时，保证有较快的响应速度

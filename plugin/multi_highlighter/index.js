@@ -49,7 +49,36 @@ class multiHighlighterPlugin extends BasePlugin {
         this.multiHighlighter = new multiHighlighter();
         this.fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
         this.lastHighlightFilePath = "";
-        this.activeMarkerInfo = { idxOfFence: -1, idxOfWrite: -1 };
+        this.markerHelper = {
+            idxOfFence: -1,
+            idxOfWrite: -1,
+            getMarkerIdx(parent, marker) {
+                return Array.prototype.indexOf.call(parent.getElementsByTagName("marker"), marker)
+            },
+            scrollToMarker(parent, idx) {
+                setTimeout(() => {
+                    const markers = parent.getElementsByTagName("marker");
+                    const marker = markers && markers[idx];
+                    if (marker) {
+                        this.utils.scroll(marker);
+                        this.highlightMarker(marker);
+                    }
+                }, 120);
+            },
+            highlightMarker: marker => {
+                document.querySelectorAll(".plugin-multi-highlighter-move").forEach(ele => ele.classList.remove("plugin-multi-highlighter-move"));
+                marker.classList.add("plugin-multi-highlighter-move");
+
+                const writeRect = this.entities.write.getBoundingClientRect();
+                const markerRect = marker.getBoundingClientRect();
+                const bar = document.createElement("div");
+                bar.classList.add("plugin-multi-highlighter-bar");
+                bar.style.height = markerRect.height + "px";
+                bar.style.width = writeRect.width + "px";
+                marker.appendChild(bar);
+                setTimeout(() => this.utils.removeElement(bar), 3000);
+            },
+        }
     }
 
     process = () => {
@@ -113,24 +142,22 @@ class multiHighlighterPlugin extends BasePlugin {
                 return;
             }
 
-            this.activeMarkerInfo.idxOfWrite = this.whichMarker(this.entities.write, next);
+            this.markerHelper.idxOfWrite = this.markerHelper.getMarkerIdx(this.entities.write, next);
 
             const fence = next.closest("#write .md-fences");
             if (fence && !fence.classList.contains("modeLoaded")) {
-                this.activeMarkerInfo.idxOfFence = this.whichMarker(fence, next);
+                this.markerHelper.idxOfFence = this.markerHelper.getMarkerIdx(fence, next);
                 // scroll到Fence，触发intersectionObserver，进而触发File.editor.fences.addCodeBlock函数
                 this.utils.scroll(next);
             } else {
-                this.handleHiddenElement(next);
+                this._handleHiddenElement(next);
                 this.utils.scroll(next);
-                this.showIfNeed(next);
+                this.markerHelper.highlightMarker(next);
             }
             target.setAttribute("cur", nextIdx + "");
-            if (this.config.SHOW_CURRENT_INDEX) {
-                const searcher = this.multiHighlighter.getHighlighter(idx);
-                if (searcher) {
-                    target.innerText = `${searcher.token.text} (${nextIdx + 1}/${searcher.matches.length})`;
-                }
+            const searcher = this.multiHighlighter.getHighlighter(idx);
+            if (searcher) {
+                target.innerText = `${searcher.token.text} (${nextIdx + 1}/${searcher.matches.length})`;
             }
         })
         if (this.config.ALLOW_DRAG) {
@@ -139,15 +166,6 @@ class multiHighlighterPlugin extends BasePlugin {
     }
 
     onAddCodeBlock = () => {
-        const scrollToMarker = (parent, idx) => setTimeout(() => {
-            const markers = parent.querySelectorAll("marker");
-            const nthMarker = markers && markers[idx];
-            if (nthMarker) {
-                this.utils.scroll(nthMarker);
-                this.showIfNeed(nthMarker);
-            }
-        }, 120);
-
         let hasMarker = false;
         const before = cid => {
             if (this.multiHighlighter.length() !== 0) {
@@ -168,18 +186,18 @@ class multiHighlighterPlugin extends BasePlugin {
                 this.clearFenceMultiHighlighterList();
                 this.multiHighlighter.removeHighlight();
                 this.multiHighlighter.highlight();
-                if (this.activeMarkerInfo.idxOfWrite !== -1) {
-                    scrollToMarker(this.entities.write, this.activeMarkerInfo.idxOfWrite);
-                    this.activeMarkerInfo.idxOfWrite = -1;
+                if (this.markerHelper.idxOfWrite !== -1) {
+                    this.markerHelper.scrollToMarker(this.entities.write, this.markerHelper.idxOfWrite);
+                    this.markerHelper.idxOfWrite = -1;
                 }
             } else {
                 const fenceMultiHighlighter = new multiHighlighter(this);
                 fenceMultiHighlighter.new(tokens, fence, this.config.CASE_SENSITIVE, "plugin-search-hit");
                 fenceMultiHighlighter.highlight();
                 this.fenceMultiHighlighterList.push(fenceMultiHighlighter);
-                if (this.activeMarkerInfo.idxOfFence !== -1) {
-                    scrollToMarker(fence, this.activeMarkerInfo.idxOfFence);
-                    this.activeMarkerInfo.idxOfFence = -1;
+                if (this.markerHelper.idxOfFence !== -1) {
+                    this.markerHelper.scrollToMarker(fence, this.markerHelper.idxOfFence);
+                    this.markerHelper.idxOfFence = -1;
                 }
             }
         }
@@ -194,7 +212,15 @@ class multiHighlighterPlugin extends BasePlugin {
     }
 
     clearHighlight = (refreshFences = false) => {
-        const fences = refreshFences ? this.getNeedRefreshFences() : [];
+        const getNeedRefreshFences = () => {
+            const set = new Set();
+            this.entities.write.getElementsByTagName("marker").forEach(el => {
+                const target = el.closest(".md-fences[cid]");
+                target && set.add(target.getAttribute("cid"));
+            })
+            return set
+        }
+        const fences = refreshFences ? getNeedRefreshFences() : [];
         this.multiHighlighter.clear();
         this.clearFenceMultiHighlighterList();
         this.entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(this.utils.removeElement);
@@ -204,16 +230,21 @@ class multiHighlighterPlugin extends BasePlugin {
         });
     }
 
-    getNeedRefreshFences = () => {
-        const set = new Set();
-        this.entities.write.getElementsByTagName("marker").forEach(el => {
-            const target = el.closest(".md-fences[cid]");
-            target && set.add(target.getAttribute("cid"));
-        })
-        return set
+    highlight = (refreshResult = true) => {
+        let input = this.entities.input.value.trim();
+        if (!input) return;
+        if (!this.config.CASE_SENSITIVE) {
+            input = input.toLowerCase();
+        }
+        const keyArr = this.utils.searchStringParser.getQueryTokens(input);
+        this.lastHighlightFilePath = this.utils.getFilePath();
+        this._doSearch(keyArr, refreshResult);
+        return true;
     }
 
-    doSearch = (keyArr, refreshResult = true) => {
+    setInputValue = value => this.entities.input.value = value;
+
+    _doSearch = (keyArr, refreshResult = true) => {
         this.clearHighlight();
 
         this.multiHighlighter.new(keyArr, this.entities.write, this.config.CASE_SENSITIVE, "plugin-search-hit");
@@ -230,21 +261,7 @@ class multiHighlighterPlugin extends BasePlugin {
         this.utils.show(this.entities.result);
     }
 
-    setInputValue = value => this.entities.input.value = value;
-
-    highlight = (refreshResult = true) => {
-        let input = this.entities.input.value.trim();
-        if (!input) return;
-        if (!this.config.CASE_SENSITIVE) {
-            input = input.toLowerCase();
-        }
-        const keyArr = this.utils.searchStringParser.getQueryTokens(input);
-        this.lastHighlightFilePath = this.utils.getFilePath();
-        this.doSearch(keyArr, refreshResult);
-        return true;
-    }
-
-    handleHiddenElement = marker => {
+    _handleHiddenElement = marker => {
         const inline = marker.closest('#write span[md-inline="image"], #write span[md-inline="link"], #write span[md-inline="inline_math"]');
         if (inline) {
             inline.classList.add("md-expand");
@@ -254,36 +271,6 @@ class multiHighlighterPlugin extends BasePlugin {
         if (fence) {
             this.utils.callPluginFunction("fence_enhance", "expandFence", fence);
         }
-    }
-
-    showIfNeed = marker => {
-        if (this.config.SHOW_KEYWORD_OUTLINE) {
-            document.querySelectorAll(".plugin-multi-highlighter-move").forEach(ele => ele.classList.remove("plugin-multi-highlighter-move"));
-            marker.classList.add("plugin-multi-highlighter-move");
-        }
-
-        if (this.config.SHOW_KEYWORD_BAR) {
-            const writeRect = this.entities.write.getBoundingClientRect();
-            const markerRect = marker.getBoundingClientRect();
-
-            const bar = document.createElement("div");
-            bar.classList.add("plugin-multi-highlighter-bar");
-            bar.style.height = markerRect.height + "px";
-            bar.style.width = writeRect.width + "px";
-            marker.appendChild(bar);
-
-            setTimeout(() => this.utils.removeElement(bar), 3000);
-        }
-    }
-
-    whichMarker = (parent, marker) => {
-        const markers = parent.getElementsByTagName("marker");
-        for (let idx = 0; idx < markers.length; idx++) {
-            if (markers[idx] === marker) {
-                return idx
-            }
-        }
-        return -1
     }
 
     hide = () => {
