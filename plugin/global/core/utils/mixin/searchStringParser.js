@@ -3,7 +3,7 @@
  *   <query> ::= <expression>
  *   <expression> ::= <term> ( <or> <term> )*
  *   <term> ::= <factor> ( <minus_and> <factor> )*
- *   <factor> ::= <quoted_phrase> | <word> | <l_parent> <expression> <r_parent>
+ *   <factor> ::= <quoted_phrase> | <word> | <l_paren> <expression> <r_paren>
  *   <quoted_phrase> ::= <quote> {word} <quote>
  *   <word> ::= \w+
  *   <minus_and> ::= <minus> | <and>
@@ -11,8 +11,8 @@
  *   <and> ::= ' '
  *   <or> ::= 'or'
  *   <quote> ::= '"'
- *   <l_parent> ::= '('
- *   <r_parent> ::= ')'
+ *   <l_paren> ::= '('
+ *   <r_paren> ::= ')'
  * example:
  *   foo bar
  *   "foo bar"
@@ -162,6 +162,15 @@ class searchStringParser {
         return ast
     }
 
+    check(query, content, option = {}) {
+        if (!option.caseSensitive) {
+            query = query.toLowerCase();
+            content = content.toLowerCase();
+        }
+        const ast = this.parse(query);
+        return this.checkByAST(ast, content);
+    }
+
     checkByAST(ast, content) {
         const { KEYWORD, QUOTED_PHRASE, OR, AND, MINUS } = this.TYPE;
         this.traverse(ast, node => {
@@ -186,24 +195,6 @@ class searchStringParser {
         });
         // console.log(JSON.stringify(ast, null, 2));
         return ast._result
-    }
-
-    /**
-     * 检查内容是否匹配给定的查询条件。
-     *
-     * @param {string} query 查询条件
-     * @param {string} content 检查内容
-     * @param {object} [option={}] 选项
-     * @param {boolean} [option.caseSensitive=false] 是否区分大小写
-     * @returns {boolean} 是否匹配
-     */
-    check(query, content, option = {}) {
-        if (!option.caseSensitive) {
-            query = query.toLowerCase();
-            content = content.toLowerCase();
-        }
-        const ast = this.parse(query);
-        return this.checkByAST(ast, content);
     }
 
     getQueryTokens(query) {
