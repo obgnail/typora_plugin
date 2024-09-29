@@ -167,8 +167,6 @@ STYLE_COLOR = [
 DEFAULT_COLOR = "#dd6699"
 # 大小写敏感（此处配置的是默认值，使用时可以在页面通过点击按钮重新设置）
 CASE_SENSITIVE = false
-# 显示【执行】按钮（我嫌弃它丑就没开启，如果你是鼠标党，可以置为true）
-SHOW_RUN_BUTTON = false
 # 切换到其他文件时自动重新搜索
 RESEARCH_WHILE_OPEN_FILE = true
 # 点击关键字时显示当前的索引数

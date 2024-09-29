@@ -21,11 +21,6 @@ const { InstantSearch } = require("./highlighter");
 
 class multiHighlighterPlugin extends BasePlugin {
     styleTemplate = () => ({
-        run_style: {
-            input_width: this.config.SHOW_RUN_BUTTON ? "95%" : "100%",
-            case_button_right: this.config.SHOW_RUN_BUTTON ? "32px" : "6px",
-            run_button_display: this.config.SHOW_RUN_BUTTON ? "" : "none",
-        },
         colors_style: this.config.STYLE_COLOR.map((color, idx) => `.plugin-search-hit${idx} { background-color: ${color}; }`).join("\n")
     })
 
@@ -36,7 +31,6 @@ class multiHighlighterPlugin extends BasePlugin {
                 <span ty-hint="区分大小写" class="plugin-multi-highlighter-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}">
                     <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                 </span>
-                <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
             </div>
             <div id="plugin-multi-highlighter-result" class="plugin-common-hidden"></div>
         </div>
@@ -47,21 +41,19 @@ class multiHighlighterPlugin extends BasePlugin {
     init = () => {
         this.entities = {
             write: this.utils.entities.eWrite,
-            modal: document.getElementById('plugin-multi-highlighter'),
+            modal: document.querySelector("#plugin-multi-highlighter"),
             input: document.querySelector("#plugin-multi-highlighter-input input"),
-            runButton: document.querySelector("#plugin-multi-highlighter-input .run-highlight"),
+            result: document.querySelector("#plugin-multi-highlighter-result"),
             caseOption: document.querySelector(".plugin-multi-highlighter-option-btn"),
-            result: document.getElementById("plugin-multi-highlighter-result"),
         }
-
         this.multiHighlighter = new multiHighlighter();
         this.fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
         this.lastHighlightFilePath = "";
-        this.showMarkerInfo = { idxOfFence: -1, idxOfWrite: -1 };
+        this.activeMarkerInfo = { idxOfFence: -1, idxOfWrite: -1 };
     }
 
     process = () => {
-        this.processAddCodeBlock();
+        this.onAddCodeBlock();
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.utils.debounce(() => {
             this.config.RESEARCH_WHILE_OPEN_FILE && this.utils.isShow(this.entities.modal) && this.highlight();
@@ -111,7 +103,7 @@ class multiHighlighterPlugin extends BasePlugin {
             let nextIdx;
             if (ev.button === 0) { // 鼠标左键
                 nextIdx = (targetIdx === resultList.length - 1) ? 0 : targetIdx + 1;
-            } else if (ev.button === 2) { //鼠标右键
+            } else if (ev.button === 2) { // 鼠标右键
                 nextIdx = (targetIdx === 0 || targetIdx === -1) ? resultList.length - 1 : targetIdx - 1;
             }
 
@@ -121,11 +113,11 @@ class multiHighlighterPlugin extends BasePlugin {
                 return;
             }
 
-            this.showMarkerInfo.idxOfWrite = this.whichMarker(this.entities.write, next);
+            this.activeMarkerInfo.idxOfWrite = this.whichMarker(this.entities.write, next);
 
             const fence = next.closest("#write .md-fences");
             if (fence && !fence.classList.contains("modeLoaded")) {
-                this.showMarkerInfo.idxOfFence = this.whichMarker(fence, next);
+                this.activeMarkerInfo.idxOfFence = this.whichMarker(fence, next);
                 // scroll到Fence，触发intersectionObserver，进而触发File.editor.fences.addCodeBlock函数
                 this.utils.scroll(next);
             } else {
@@ -141,16 +133,21 @@ class multiHighlighterPlugin extends BasePlugin {
                 }
             }
         })
-
-        if (this.config.SHOW_RUN_BUTTON) {
-            this.entities.runButton.addEventListener("click", ev => this.highlight())
-        }
         if (this.config.ALLOW_DRAG) {
             this.utils.dragFixedModal(this.entities.input, this.entities.modal);
         }
     }
 
-    processAddCodeBlock = () => {
+    onAddCodeBlock = () => {
+        const scrollToMarker = (parent, idx) => setTimeout(() => {
+            const markers = parent.querySelectorAll("marker");
+            const nthMarker = markers && markers[idx];
+            if (nthMarker) {
+                this.utils.scroll(nthMarker);
+                this.showIfNeed(nthMarker);
+            }
+        }, 120);
+
         let hasMarker = false;
         const before = cid => {
             if (this.multiHighlighter.length() !== 0) {
@@ -159,31 +156,30 @@ class multiHighlighterPlugin extends BasePlugin {
         }
         const after = cid => {
             if (!hasMarker || this.multiHighlighter.length() === 0) return;
-
             hasMarker = false;
-
             const fence = this.entities.write.querySelector(`.md-fences[cid=${cid}]`);
             if (!fence) return;
 
             const tokens = this.multiHighlighter.getTokens();
             const shouldRefresh = this.config.USE_LIST_THRESHOLD > tokens.length
                 || this.config.CLEAR_LIST_THRESHOLD > 0 && this.fenceMultiHighlighterList.length === this.config.CLEAR_LIST_THRESHOLD
+
             if (shouldRefresh) {
                 this.clearFenceMultiHighlighterList();
                 this.multiHighlighter.removeHighlight();
                 this.multiHighlighter.highlight();
-                if (this.showMarkerInfo.idxOfWrite !== -1) {
-                    this.getAndShowMarker(this.entities.write, this.showMarkerInfo.idxOfWrite);
-                    this.showMarkerInfo.idxOfWrite = -1;
+                if (this.activeMarkerInfo.idxOfWrite !== -1) {
+                    scrollToMarker(this.entities.write, this.activeMarkerInfo.idxOfWrite);
+                    this.activeMarkerInfo.idxOfWrite = -1;
                 }
             } else {
                 const fenceMultiHighlighter = new multiHighlighter(this);
                 fenceMultiHighlighter.new(tokens, fence, this.config.CASE_SENSITIVE, "plugin-search-hit");
                 fenceMultiHighlighter.highlight();
                 this.fenceMultiHighlighterList.push(fenceMultiHighlighter);
-                if (this.showMarkerInfo.idxOfFence !== -1) {
-                    this.getAndShowMarker(fence, this.showMarkerInfo.idxOfFence);
-                    this.showMarkerInfo.idxOfFence = -1;
+                if (this.activeMarkerInfo.idxOfFence !== -1) {
+                    scrollToMarker(fence, this.activeMarkerInfo.idxOfFence);
+                    this.activeMarkerInfo.idxOfFence = -1;
                 }
             }
         }
@@ -290,13 +286,6 @@ class multiHighlighterPlugin extends BasePlugin {
         return -1
     }
 
-    getMarker = (parent, idx) => {
-        const markers = parent.querySelectorAll("marker");
-        if (markers) {
-            return markers[idx];
-        }
-    }
-
     hide = () => {
         this.clearHighlight();
         this.utils.hide(this.entities.modal);
@@ -311,16 +300,6 @@ class multiHighlighterPlugin extends BasePlugin {
         } else {
             this.show();
         }
-    }
-
-    getAndShowMarker = (parent, idx) => {
-        setTimeout(() => {
-            const nthMarker = this.getMarker(parent, idx);
-            if (nthMarker) {
-                this.utils.scroll(nthMarker);
-                this.showIfNeed(nthMarker);
-            }
-        }, 120);
     }
 
     call = () => this.toggleModal();
