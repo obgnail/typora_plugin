@@ -1,11 +1,12 @@
 /**
  * grammar:
  *   <query> ::= <expr>
- *   <expr> ::= <term> ( 'OR' <term> )*
+ *   <expr> ::= <term> ( <or> <term> )*
  *   <term> ::= <factor> ( <minus_and> <factor> )*
  *   <factor> ::= <quoted_phrase> | <keyword> | '(' <expr> ')'
  *   <quoted_phrase> ::= '"' [<keyword>] '"'
  *   <minus_and> ::= '-' | ' '
+ *   <or> ::== 'OR' | '|'
  *   <keyword> ::= \w+
  */
 class searchStringParser {
@@ -52,6 +53,9 @@ class searchStringParser {
             } else if (query[i].toUpperCase() === "O" && query.substring(i, i + 2).toUpperCase() === "OR") {
                 tokens.push(this.TOKEN.OR);
                 i += 2;
+            } else if (query[i] === "|") {
+                tokens.push(this.TOKEN.OR);
+                i++;
             } else if (query[i] === "-") {
                 tokens.push(this.TOKEN.MINUS);
                 i++;
