@@ -336,10 +336,11 @@ ENABLE = true
 NAME = "图片调整"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 修饰键
-MODIFIER_KEY = "alt"
-# 每次操作的缩放倍率
-SCALE = 0.1
+# 各个功能对应的修饰键（为空则不使用对应的功能）
+#   - TEMPORARY  : 临时修改图片大小
+#   - PERSISTENT : 将图片转为HTML格式，永久修改图片大小
+# 举例：【TEMPORARY = "alt"】：当鼠标悬停于图片，并且【alt+滚轮】后，就会临时修改图片大小
+MODIFIER_KEY = { TEMPORARY = "alt", PERSISTENT = "" }
 # 允许图片超出范围
 ALLOW_OVERSIZE = true
 # 图片水平位置：center/left/right
