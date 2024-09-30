@@ -285,7 +285,9 @@ class LinkHelper {
     }
 
     syncOption = () => {
-        this.highlighter.setInputValue(this.searcher.entities.input.value);
+        const keyArr = this.utils.searchStringParser.getQueryTokens(this.searcher.entities.input.value);
+        const value = keyArr.map(key => key.includes(" ") ? `"${key}"` : key).join(" ");
+        document.querySelector("#plugin-multi-highlighter-input input").value = value;
         if (this.searcher.config.CASE_SENSITIVE !== this.highlighter.config.CASE_SENSITIVE) {
             document.querySelector(".plugin-multi-highlighter-option-btn").click();
         }

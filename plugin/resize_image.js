@@ -1,18 +1,24 @@
 class resizeImagePlugin extends BasePlugin {
+    init = () => {
+        this.checklist = Object.entries(this.config.MODIFIER_KEY)
+            .filter(([_, modifier]) => Boolean(modifier))
+            .map(([type, modifier]) => ({ type, checker: this.utils.modifierKey(modifier) }))
+    }
+
     process = () => {
         this.utils.autoSaveConfig(this);
         this.recordResizeState(false);
 
         this.utils.entities.eWrite.addEventListener("wheel", ev => {
-            if (!this.utils.metaKeyPressed(ev)) return;
+            const zoom = this.checklist.find(e => e.checker(ev));
+            if (!zoom) return;
             const target = ev.target.closest("img");
             if (!target) return;
-
+            ev.preventDefault();
             ev.stopPropagation();
-
-            const zoomOut = ev.deltaY > 0;
-            this.zoom(target, zoomOut, this.config.SCALE);
-        }, { passive: true, capture: true });
+            const zoomFunc = zoom.type === "TEMPORARY" ? this.zoomTemporary : this.zoomPersistent;
+            zoomFunc(target, ev.deltaY > 0);
+        }, { passive: false, capture: true });
     }
 
     recordResizeState = (needChange = true) => {
@@ -60,9 +66,9 @@ class resizeImagePlugin extends BasePlugin {
         }
     }
 
-    zoom = (image, zoomOut, scale) => {
+    zoomTemporary = (image, zoomOut, scale = 0.1) => {
         let width = this.getWidth(image);
-        width = zoomOut ? width * (1 - scale) : width * (1 + this.config.SCALE);
+        width = zoomOut ? width * (1 - scale) : width * (1 + scale);
         const maxWidth = image.parentElement.offsetWidth;
         image.style.maxWidth = "";
 
@@ -77,6 +83,16 @@ class resizeImagePlugin extends BasePlugin {
                 maxWidth: width + "px",
                 left: (maxWidth - width) / 2 + "px",
             })
+        }
+    }
+
+    zoomPersistent = (image, zoomOut, scale = 5) => {
+        const originZoom = image.style.zoom || "100%";
+        const nextZoom = Math.max(10, Math.min(parseInt(originZoom) + (zoomOut ? -scale : scale), 200)) + "%";
+        Object.assign(image.style, { position: "", width: "", maxWidth: "", left: "" });
+        const $span = $(image.closest(".md-image.md-img-loaded"));
+        if ($span.length === 1) {
+            File.editor.imgEdit.zoomAction($span, nextZoom);
         }
     }
 
@@ -109,8 +125,8 @@ class resizeImagePlugin extends BasePlugin {
         const callMap = {
             record_resize_state: () => this.recordResizeState(),
             allow_oversize: () => this.resetImageSize(),
-            zoom_out_20_percent: meta => this.zoom(meta.target, true, 0.2),
-            zoom_in_20_percent: meta => this.zoom(meta.target, false, 0.2),
+            zoom_out_20_percent: meta => this.zoomTemporary(meta.target, true, 0.2),
+            zoom_in_20_percent: meta => this.zoomTemporary(meta.target, false, 0.2),
             set_align_left: meta => this.setAlign("left", meta.target),
             set_align_center: meta => this.setAlign("center", meta.target),
             set_align_right: meta => this.setAlign("right", meta.target),

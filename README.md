@@ -732,7 +732,7 @@ icon = "\\f040"
 
 ### resize_image：调整图片大小
 
-功能：`ctrl+鼠标滚轮滚动`：调整图片大小。
+功能：`alt+鼠标滚轮滚动`：调整图片大小。
 
 ![resize-image](assets/resize-image.gif)
 

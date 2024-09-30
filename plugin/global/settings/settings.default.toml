@@ -162,29 +162,10 @@ STYLE_COLOR = [
     '#bbeeff', '#ffbbcc', '#88ee88', '#ccbbff', '#ffee88', '#FFFFa0', '#88cccc', '#ffbb88', '#cccccc', '#ffaabb',
     '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
 ]
-# 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色
-# 20个关键字肯定够用了，此选项没太大意义。就算20个真的不够用，那我也是建议你给STYLE_COLOR选项新增一些颜色，而不是修改此选项
-DEFAULT_COLOR = "#dd6699"
 # 大小写敏感（此处配置的是默认值，使用时可以在页面通过点击按钮重新设置）
 CASE_SENSITIVE = false
-# 显示【执行】按钮（我嫌弃它丑就没开启，如果你是鼠标党，可以置为true）
-SHOW_RUN_BUTTON = false
 # 切换到其他文件时自动重新搜索
 RESEARCH_WHILE_OPEN_FILE = true
-# 点击关键字时显示当前的索引数
-SHOW_CURRENT_INDEX = true
-# 定位时高亮关键字出现提示边框
-SHOW_KEYWORD_OUTLINE = true
-# 定位时高亮关键字提示所在行
-SHOW_KEYWORD_BAR = true
-# DO NOT edit this field unless you know what you are doing
-# 性能选项：关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0，则总是使用
-# 此选项用在当搜索了很多关键字时，保证有较快的响应速度
-USE_LIST_THRESHOLD = -1
-# DO NOT edit this field unless you know what you are doing
-# 性能选项：当fenceMultiHighlighterList数量超过X时，clear之（以时间换空间）。若<0，则总不启用
-# 此选项用在当上一个策略使用太多次后，花费时间去回收空间，保证不会占用太大内存
-CLEAR_LIST_THRESHOLD = 12
 
 
 ############### commander ###############
@@ -355,8 +336,11 @@ ENABLE = true
 NAME = "图片调整"
 # 是否在右键菜单中可点击
 CLICKABLE = true
-# 每次操作的缩放倍率
-SCALE = 0.1
+# 各个功能对应的修饰键（为空则不使用对应的功能）
+#   - TEMPORARY  : 临时修改图片大小
+#   - PERSISTENT : 将图片转为HTML格式，永久修改图片大小
+# 举例：【TEMPORARY = "alt"】：当鼠标悬停于图片，并且【alt+滚轮】后，就会临时修改图片大小
+MODIFIER_KEY = { TEMPORARY = "alt", PERSISTENT = "" }
 # 允许图片超出范围
 ALLOW_OVERSIZE = true
 # 图片水平位置：center/left/right

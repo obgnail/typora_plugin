@@ -10,7 +10,7 @@
 }
 
 #plugin-multi-highlighter-input input {
-    width: ${run_style.input_width};
+    width: 100%;
     font-size: 14px;
     line-height: 25px;
     max-height: 27px;
@@ -32,7 +32,7 @@
 #plugin-multi-highlighter-input .plugin-multi-highlighter-option-btn {
     position: absolute;
     padding: 1px;
-    right: ${run_style.case_button_right};
+    right: 6px;
     line-height: 10px;
     border-radius: 3px;
     cursor: pointer;
@@ -44,12 +44,6 @@
 #plugin-multi-highlighter-input .plugin-multi-highlighter-option-btn:hover {
     background: var(--active-file-bg-color);
     color: var(--active-file-text-color);
-}
-
-#plugin-multi-highlighter-input .run-highlight {
-    margin-left: 4px;
-    cursor: pointer;
-    display: ${run_style.run_button_display};
 }
 
 #plugin-multi-highlighter-result {

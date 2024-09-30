@@ -21,11 +21,6 @@ const { InstantSearch } = require("./highlighter");
 
 class multiHighlighterPlugin extends BasePlugin {
     styleTemplate = () => ({
-        run_style: {
-            input_width: this.config.SHOW_RUN_BUTTON ? "95%" : "100%",
-            case_button_right: this.config.SHOW_RUN_BUTTON ? "32px" : "6px",
-            run_button_display: this.config.SHOW_RUN_BUTTON ? "" : "none",
-        },
         colors_style: this.config.STYLE_COLOR.map((color, idx) => `.plugin-search-hit${idx} { background-color: ${color}; }`).join("\n")
     })
 
@@ -36,7 +31,6 @@ class multiHighlighterPlugin extends BasePlugin {
                 <span ty-hint="区分大小写" class="plugin-multi-highlighter-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}">
                     <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                 </span>
-                <span class="run-highlight ion-ios7-play" ty-hint="运行"></span>
             </div>
             <div id="plugin-multi-highlighter-result" class="plugin-common-hidden"></div>
         </div>
@@ -47,21 +41,53 @@ class multiHighlighterPlugin extends BasePlugin {
     init = () => {
         this.entities = {
             write: this.utils.entities.eWrite,
-            modal: document.getElementById('plugin-multi-highlighter'),
+            modal: document.querySelector("#plugin-multi-highlighter"),
             input: document.querySelector("#plugin-multi-highlighter-input input"),
-            runButton: document.querySelector("#plugin-multi-highlighter-input .run-highlight"),
+            result: document.querySelector("#plugin-multi-highlighter-result"),
             caseOption: document.querySelector(".plugin-multi-highlighter-option-btn"),
-            result: document.getElementById("plugin-multi-highlighter-result"),
         }
-
+        // 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色
+        this.defaultColor = "#dd6699";
+        // 关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0，则总是不使用。此选项用在当搜索了很多关键字时，保证有较快的响应速度
+        this.useListThreshold = -1;
+        // 当fenceMultiHighlighterList数量超过X时，clear之（以时间换空间）。若<0，则总不启用。此选项用在当上一个策略使用太多次后，花费时间去回收空间，保证不会占用太大内存
+        this.clearListThresold = 12;
+        // 为了解决fence惰性加载的问题
+        this.fenceMultiHighlighterList = [];
         this.multiHighlighter = new multiHighlighter();
-        this.fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
         this.lastHighlightFilePath = "";
-        this.showMarkerInfo = { idxOfFence: -1, idxOfWrite: -1 };
+        this.markerHelper = {
+            idxOfFence: -1,
+            idxOfWrite: -1,
+            getMarkerIdx: (parent, marker) => Array.prototype.indexOf.call(parent.getElementsByTagName("marker"), marker),
+            scrollToMarker: (parent, idx) => {
+                setTimeout(() => {
+                    const markers = parent.getElementsByTagName("marker");
+                    const marker = markers && markers[idx];
+                    if (marker) {
+                        this.utils.scroll(marker);
+                        this.markerHelper.highlightMarker(marker);
+                    }
+                }, 120);
+            },
+            highlightMarker: marker => {
+                document.querySelectorAll(".plugin-multi-highlighter-move").forEach(ele => ele.classList.remove("plugin-multi-highlighter-move"));
+                marker.classList.add("plugin-multi-highlighter-move");
+
+                const writeRect = this.entities.write.getBoundingClientRect();
+                const markerRect = marker.getBoundingClientRect();
+                const bar = document.createElement("div");
+                bar.classList.add("plugin-multi-highlighter-bar");
+                bar.style.height = markerRect.height + "px";
+                bar.style.width = writeRect.width + "px";
+                marker.appendChild(bar);
+                setTimeout(() => this.utils.removeElement(bar), 3000);
+            },
+        }
     }
 
     process = () => {
-        this.processAddCodeBlock();
+        this.onAddCodeBlock();
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.utils.debounce(() => {
             this.config.RESEARCH_WHILE_OPEN_FILE && this.utils.isShow(this.entities.modal) && this.highlight();
@@ -69,36 +95,24 @@ class multiHighlighterPlugin extends BasePlugin {
 
         this.entities.input.addEventListener("keydown", ev => {
             if (ev.key === "Enter") {
-                ev.stopPropagation();
-                ev.preventDefault();
                 this.highlight();
             } else if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
-                ev.stopPropagation();
-                ev.preventDefault();
                 this.clearHighlight(true);
                 this.hide();
             }
         })
-
         this.entities.caseOption.addEventListener("click", ev => {
             this.entities.caseOption.classList.toggle("select");
             this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE;
-            ev.preventDefault();
-            ev.stopPropagation();
         })
-
         this.utils.entities.eContent.addEventListener("mousedown", ev => {
-            if (this.multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
-                this.clearHighlight(true);
-            }
+            const shouldClear = this.multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter");
+            shouldClear && this.clearHighlight(true);
         }, true)
 
         this.entities.result.addEventListener("mousedown", ev => {
             const target = ev.target.closest(".plugin-multi-highlighter-result-item");
             if (!target) return;
-
-            ev.stopPropagation();
-            ev.preventDefault();
 
             // 当用户切换文档时
             if (this.utils.getFilePath() !== this.lastHighlightFilePath) {
@@ -122,7 +136,7 @@ class multiHighlighterPlugin extends BasePlugin {
             let nextIdx;
             if (ev.button === 0) { // 鼠标左键
                 nextIdx = (targetIdx === resultList.length - 1) ? 0 : targetIdx + 1;
-            } else if (ev.button === 2) { //鼠标右键
+            } else if (ev.button === 2) { // 鼠标右键
                 nextIdx = (targetIdx === 0 || targetIdx === -1) ? resultList.length - 1 : targetIdx - 1;
             }
 
@@ -132,80 +146,63 @@ class multiHighlighterPlugin extends BasePlugin {
                 return;
             }
 
-            this.showMarkerInfo.idxOfWrite = this.whichMarker(this.entities.write, next);
+            this.markerHelper.idxOfWrite = this.markerHelper.getMarkerIdx(this.entities.write, next);
 
             const fence = next.closest("#write .md-fences");
             if (fence && !fence.classList.contains("modeLoaded")) {
-                this.showMarkerInfo.idxOfFence = this.whichMarker(fence, next);
+                this.markerHelper.idxOfFence = this.markerHelper.getMarkerIdx(fence, next);
                 // scroll到Fence，触发intersectionObserver，进而触发File.editor.fences.addCodeBlock函数
                 this.utils.scroll(next);
             } else {
-                this.handleHiddenElement(next);
+                this._handleHiddenElement(next);
                 this.utils.scroll(next);
-                this.showIfNeed(next);
+                this.markerHelper.highlightMarker(next);
             }
             target.setAttribute("cur", nextIdx + "");
-            if (this.config.SHOW_CURRENT_INDEX) {
-                const searcher = this.multiHighlighter.getHighlighter(idx);
-                if (searcher) {
-                    target.innerText = `${searcher.token.text} (${nextIdx + 1}/${searcher.matches.length})`;
-                }
+            const searcher = this.multiHighlighter.getHighlighter(idx);
+            if (searcher) {
+                target.innerText = `${searcher.token.text} (${nextIdx + 1}/${searcher.matches.length})`;
             }
         })
-
-        if (this.config.SHOW_RUN_BUTTON) {
-            this.entities.runButton.addEventListener("click", ev => {
-                this.highlight();
-                ev.preventDefault();
-                ev.stopPropagation();
-            })
-        }
-
         if (this.config.ALLOW_DRAG) {
             this.utils.dragFixedModal(this.entities.input, this.entities.modal);
         }
     }
 
-    processAddCodeBlock = () => {
+    onAddCodeBlock = () => {
         let hasMarker = false;
-
         const before = cid => {
             if (this.multiHighlighter.length() !== 0) {
                 hasMarker = !!this.entities.write.querySelector(`.md-fences[cid=${cid}] marker`);
             }
         }
-
         const after = cid => {
             if (!hasMarker || this.multiHighlighter.length() === 0) return;
-
             hasMarker = false;
-
             const fence = this.entities.write.querySelector(`.md-fences[cid=${cid}]`);
             if (!fence) return;
 
             const tokens = this.multiHighlighter.getTokens();
-            if (this.config.USE_LIST_THRESHOLD > tokens.length
-                || this.config.CLEAR_LIST_THRESHOLD > 0 && this.fenceMultiHighlighterList.length === this.config.CLEAR_LIST_THRESHOLD
-            ) {
+            const shouldRefresh = this.useListThreshold > tokens.length || this.clearListThresold > 0 && this.fenceMultiHighlighterList.length === this.clearListThresold
+            if (shouldRefresh) {
                 this.clearFenceMultiHighlighterList();
                 this.multiHighlighter.removeHighlight();
                 this.multiHighlighter.highlight();
-                if (this.showMarkerInfo.idxOfWrite !== -1) {
-                    this.getAndShowMarker(this.entities.write, this.showMarkerInfo.idxOfWrite);
-                    this.showMarkerInfo.idxOfWrite = -1;
+                if (this.markerHelper.idxOfWrite !== -1) {
+                    this.markerHelper.scrollToMarker(this.entities.write, this.markerHelper.idxOfWrite);
+                    this.markerHelper.idxOfWrite = -1;
                 }
             } else {
                 const fenceMultiHighlighter = new multiHighlighter(this);
                 fenceMultiHighlighter.new(tokens, fence, this.config.CASE_SENSITIVE, "plugin-search-hit");
                 fenceMultiHighlighter.highlight();
                 this.fenceMultiHighlighterList.push(fenceMultiHighlighter);
-                if (this.showMarkerInfo.idxOfFence !== -1) {
-                    this.getAndShowMarker(fence, this.showMarkerInfo.idxOfFence);
-                    this.showMarkerInfo.idxOfFence = -1;
+                if (this.markerHelper.idxOfFence !== -1) {
+                    this.markerHelper.scrollToMarker(fence, this.markerHelper.idxOfFence);
+                    this.markerHelper.idxOfFence = -1;
                 }
             }
         }
-
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeAddCodeBlock, before);
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, after, 999);
     }
@@ -217,7 +214,15 @@ class multiHighlighterPlugin extends BasePlugin {
     }
 
     clearHighlight = (refreshFences = false) => {
-        const fences = refreshFences ? this.getNeedRefreshFences() : [];
+        const getNeedRefreshFences = () => {
+            const set = new Set();
+            this.entities.write.getElementsByTagName("marker").forEach(el => {
+                const target = el.closest(".md-fences[cid]");
+                target && set.add(target.getAttribute("cid"));
+            })
+            return set
+        }
+        const fences = refreshFences ? getNeedRefreshFences() : [];
         this.multiHighlighter.clear();
         this.clearFenceMultiHighlighterList();
         this.entities.write.querySelectorAll(".plugin-multi-highlighter-bar").forEach(this.utils.removeElement);
@@ -227,16 +232,16 @@ class multiHighlighterPlugin extends BasePlugin {
         });
     }
 
-    getNeedRefreshFences = () => {
-        const set = new Set();
-        this.entities.write.getElementsByTagName("marker").forEach(el => {
-            const target = el.closest(".md-fences[cid]");
-            target && set.add(target.getAttribute("cid"));
-        })
-        return set
+    highlight = (refreshResult = true) => {
+        const keyArr = this._splitKeyword(this.entities.input.value);
+        if (!keyArr || keyArr.length === 0) return false;
+
+        this.lastHighlightFilePath = this.utils.getFilePath();
+        this._doSearch(keyArr, refreshResult);
+        return true;
     }
 
-    doSearch = (keyArr, refreshResult = true) => {
+    _doSearch = (keyArr, refreshResult = true) => {
         this.clearHighlight();
 
         this.multiHighlighter.new(keyArr, this.entities.write, this.config.CASE_SENSITIVE, "plugin-search-hit");
@@ -244,7 +249,7 @@ class multiHighlighterPlugin extends BasePlugin {
 
         if (refreshResult) {
             const itemList = this.multiHighlighter.getList().map((searcher, idx) => {
-                const color = (idx < this.config.STYLE_COLOR.length) ? this.config.STYLE_COLOR[idx] : this.config.DEFAULT_COLOR;
+                const color = (idx < this.config.STYLE_COLOR.length) ? this.config.STYLE_COLOR[idx] : this.defaultColor;
                 return `<div class="plugin-multi-highlighter-result-item" style="background-color: ${color}" ty-hint="左键下一个；右键上一个"
                          idx="${idx}" cur="-1">${searcher.token.text} (${searcher.matches.length})</div>`;
             })
@@ -253,21 +258,7 @@ class multiHighlighterPlugin extends BasePlugin {
         this.utils.show(this.entities.result);
     }
 
-    setInputValue = value => this.entities.input.value = value;
-
-    highlight = (refreshResult = true) => {
-        let input = this.entities.input.value.trim();
-        if (!input) return;
-        if (!this.config.CASE_SENSITIVE) {
-            input = input.toLowerCase();
-        }
-        const keyArr = this.utils.searchStringParser.getQueryTokens(input);
-        this.lastHighlightFilePath = this.utils.getFilePath();
-        this.doSearch(keyArr, refreshResult);
-        return true;
-    }
-
-    handleHiddenElement = marker => {
+    _handleHiddenElement = marker => {
         const inline = marker.closest('#write span[md-inline="image"], #write span[md-inline="link"], #write span[md-inline="inline_math"]');
         if (inline) {
             inline.classList.add("md-expand");
@@ -279,41 +270,14 @@ class multiHighlighterPlugin extends BasePlugin {
         }
     }
 
-    showIfNeed = marker => {
-        if (this.config.SHOW_KEYWORD_OUTLINE) {
-            document.querySelectorAll(".plugin-multi-highlighter-move").forEach(ele => ele.classList.remove("plugin-multi-highlighter-move"));
-            marker.classList.add("plugin-multi-highlighter-move");
+    _splitKeyword = str => {
+        const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
+        let result = [];
+        let match;
+        while ((match = regex.exec(str))) {
+            result.push(match[1] || match[2] || match[0]);
         }
-
-        if (this.config.SHOW_KEYWORD_BAR) {
-            const writeRect = this.entities.write.getBoundingClientRect();
-            const markerRect = marker.getBoundingClientRect();
-
-            const bar = document.createElement("div");
-            bar.classList.add("plugin-multi-highlighter-bar");
-            bar.style.height = markerRect.height + "px";
-            bar.style.width = writeRect.width + "px";
-            marker.appendChild(bar);
-
-            setTimeout(() => this.utils.removeElement(bar), 3000);
-        }
-    }
-
-    whichMarker = (parent, marker) => {
-        const markers = parent.getElementsByTagName("marker");
-        for (let idx = 0; idx < markers.length; idx++) {
-            if (markers[idx] === marker) {
-                return idx
-            }
-        }
-        return -1
-    }
-
-    getMarker = (parent, idx) => {
-        const markers = parent.querySelectorAll("marker");
-        if (markers) {
-            return markers[idx];
-        }
+        return result;
     }
 
     hide = () => {
@@ -330,16 +294,6 @@ class multiHighlighterPlugin extends BasePlugin {
         } else {
             this.show();
         }
-    }
-
-    getAndShowMarker = (parent, idx) => {
-        setTimeout(() => {
-            const nthMarker = this.getMarker(parent, idx);
-            if (nthMarker) {
-                this.utils.scroll(nthMarker);
-                this.showIfNeed(nthMarker);
-            }
-        }, 120);
     }
 
     call = () => this.toggleModal();
