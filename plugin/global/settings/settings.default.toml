@@ -336,6 +336,8 @@ ENABLE = true
 NAME = "图片调整"
 # 是否在右键菜单中可点击
 CLICKABLE = true
+# 修饰键
+MODIFIER_KEY = "alt"
 # 每次操作的缩放倍率
 SCALE = 0.1
 # 允许图片超出范围

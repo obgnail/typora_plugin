@@ -3,16 +3,16 @@ class resizeImagePlugin extends BasePlugin {
         this.utils.autoSaveConfig(this);
         this.recordResizeState(false);
 
+        const checker = this.utils.modifierKey(this.config.MODIFIER_KEY);
         this.utils.entities.eWrite.addEventListener("wheel", ev => {
-            if (!this.utils.metaKeyPressed(ev)) return;
+            if (!checker(ev)) return;
             const target = ev.target.closest("img");
             if (!target) return;
-
+            ev.preventDefault();
             ev.stopPropagation();
-
             const zoomOut = ev.deltaY > 0;
             this.zoom(target, zoomOut, this.config.SCALE);
-        }, { passive: true, capture: true });
+        }, { passive: false, capture: true });
     }
 
     recordResizeState = (needChange = true) => {
