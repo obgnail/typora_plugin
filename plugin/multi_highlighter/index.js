@@ -46,8 +46,15 @@ class multiHighlighterPlugin extends BasePlugin {
             result: document.querySelector("#plugin-multi-highlighter-result"),
             caseOption: document.querySelector(".plugin-multi-highlighter-option-btn"),
         }
+        // 当搜索关键字数量超出STYLE_COLOR范围时面板显示的颜色
+        this.defaultColor = "#dd6699";
+        // 关键字数量大于X时使用fenceMultiHighlighterList（以空间换时间）。若<0，则总是不使用。此选项用在当搜索了很多关键字时，保证有较快的响应速度
+        this.useListThreshold = -1;
+        // 当fenceMultiHighlighterList数量超过X时，clear之（以时间换空间）。若<0，则总不启用。此选项用在当上一个策略使用太多次后，花费时间去回收空间，保证不会占用太大内存
+        this.clearListThresold = 12;
+        // 为了解决fence惰性加载的问题
+        this.fenceMultiHighlighterList = [];
         this.multiHighlighter = new multiHighlighter();
-        this.fenceMultiHighlighterList = []; // 为了解决fence惰性加载的问题
         this.lastHighlightFilePath = "";
         this.markerHelper = {
             idxOfFence: -1,
@@ -99,9 +106,8 @@ class multiHighlighterPlugin extends BasePlugin {
             this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE;
         })
         this.utils.entities.eContent.addEventListener("mousedown", ev => {
-            if (this.multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter")) {
-                this.clearHighlight(true);
-            }
+            const shouldClear = this.multiHighlighter.length() !== 0 && !ev.target.closest("#plugin-multi-highlighter");
+            shouldClear && this.clearHighlight(true);
         }, true)
 
         this.entities.result.addEventListener("mousedown", ev => {
@@ -177,9 +183,7 @@ class multiHighlighterPlugin extends BasePlugin {
             if (!fence) return;
 
             const tokens = this.multiHighlighter.getTokens();
-            const shouldRefresh = this.config.USE_LIST_THRESHOLD > tokens.length
-                || this.config.CLEAR_LIST_THRESHOLD > 0 && this.fenceMultiHighlighterList.length === this.config.CLEAR_LIST_THRESHOLD
-
+            const shouldRefresh = this.useListThreshold > tokens.length || this.clearListThresold > 0 && this.fenceMultiHighlighterList.length === this.clearListThresold
             if (shouldRefresh) {
                 this.clearFenceMultiHighlighterList();
                 this.multiHighlighter.removeHighlight();
@@ -245,7 +249,7 @@ class multiHighlighterPlugin extends BasePlugin {
 
         if (refreshResult) {
             const itemList = this.multiHighlighter.getList().map((searcher, idx) => {
-                const color = (idx < this.config.STYLE_COLOR.length) ? this.config.STYLE_COLOR[idx] : this.config.DEFAULT_COLOR;
+                const color = (idx < this.config.STYLE_COLOR.length) ? this.config.STYLE_COLOR[idx] : this.defaultColor;
                 return `<div class="plugin-multi-highlighter-result-item" style="background-color: ${color}" ty-hint="左键下一个；右键上一个"
                          idx="${idx}" cur="-1">${searcher.token.text} (${searcher.matches.length})</div>`;
             })
