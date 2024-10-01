@@ -1115,7 +1115,7 @@ order = 1
 hotkey = ""
 # 打开Typora（打开可丢弃的无标题的标签时）自动恢复上次退出时尚未关闭的标签页
 # 注意：只当双击typora.exe打开Typora时生效（因为打开特定文件时，自动恢复上次退出时尚未关闭的标签页，明显不符合用户预期）
-auto_reopen_when_init = false
+auto_reopen_when_init = true
 
 
 ############### hotkeyHub ###############

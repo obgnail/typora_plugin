@@ -825,16 +825,17 @@ class windowTabBarPlugin extends BasePlugin {
             active: idx === this.tabUtil.activeIdx,
             scrollTop: tab.scrollTop,
         }))
-        const str = JSON.stringify({ "save_tabs": dataset }, null, "\t");
+        const str = JSON.stringify({ mount_folder: this.utils.getMountFolder(), save_tabs: dataset }, null, "\t");
         await this.utils.Package.Fs.promises.writeFile(filepath, str);
     }
 
-    openSaveTabs = async filepath => {
+    openSaveTabs = async (filepath, matchMountFolder = false) => {
         filepath = filepath || this.saveTabFilePath;
         const data = await this.utils.Package.Fs.promises.readFile(filepath, 'utf8');
         const dataset = JSON.parse(data || "{}");
-        const tabs = dataset["save_tabs"];
+        const tabs = dataset.save_tabs;
         if (!tabs || tabs.length === 0) return;
+        if (matchMountFolder && dataset.mount_folder !== this.utils.getMountFolder()) return;
 
         let activePath;
         const existTabs = new Map(this.tabUtil.tabs.map(tab => [tab.path, tab]));
