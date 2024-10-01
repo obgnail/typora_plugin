@@ -12,17 +12,18 @@ class reopenClosedFilesPlugin extends BaseCustomPlugin {
             if (!this.windowTabBarPlugin) return;
             await this.ensureFile();
             if (this.config.auto_reopen_when_init) {
+                // 因为打开特定文件时，不能重定向（isDiscardableUntitled为false）
                 this.utils.loopDetector(this.utils.isDiscardableUntitled, this.callback, 40, 2000, false);
             }
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, this.save);
+            setTimeout(() => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, this.save), 2500);
         })
     }
 
-    save = async () => this.windowTabBarPlugin && this.windowTabBarPlugin.saveTabs(this.saveFile)
+    save = async () => this.windowTabBarPlugin && this.windowTabBarPlugin.saveTabs(this.saveFile);
 
     ensureFile = async () => await this.utils.Package.FsExtra.ensureFile(this.saveFile);
 
-    callback = anchorNode => this.windowTabBarPlugin && this.windowTabBarPlugin.openSaveTabs(this.saveFile);
+    callback = anchorNode => this.windowTabBarPlugin && this.windowTabBarPlugin.openSaveTabs(this.saveFile, true);
 }
 
 module.exports = {

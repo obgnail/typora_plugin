@@ -377,8 +377,8 @@ class utils {
             const configList = contentList.map(c => c ? TOML.parse(c) : {});
             return configList.reduce(this.merge)
         } catch (e) {
-            const message = "配置文件格式错误，是否前往校验网站";
-            const detail = `您手动修改过配置文件，由于写入的内容有问题，导致配置文件无法正确读取，报错如下：\n${e.toString()}`;
+            const message = "配置文件格式错误";
+            const detail = `您修改过配置文件且写入的内容有问题，导致无法正确读取配置文件。\n\n请点击「确定」前往校验网站手动修复（如果您有 GPT 也可以让它帮您修复）\n\n报错信息：${e.toString()}`;
             const op = { type: "error", title: "Typora Plugin", buttons: ["确定", "取消"], message, detail };
             const { response } = await this.showMessageBox(op);
             if (response === 0) {
