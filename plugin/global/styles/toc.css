@@ -96,6 +96,7 @@
 /*preview-threading*/
 #plugin-toc .plugin-toc-list {
     padding-left: 0.8rem;
+    font-size: ${this.config.toc_font_size};
     --line-width: 0.07rem;
     --line-color: rgba(0, 0, 0, 0.1);
     --line-width-select: 0.1rem;
