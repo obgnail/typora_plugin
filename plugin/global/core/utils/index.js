@@ -129,7 +129,7 @@ class utils {
 
 
     ////////////////////////////// 纯函数 //////////////////////////////
-    static noop = () => undefined
+    static noop = args => args
 
     /** @description param fn cannot be an async function that returns promiseLike object */
     static throttle = (fn, delay) => {
@@ -349,11 +349,10 @@ class utils {
         }
         if (!plugin) return;
 
-        const mergeObj = isCustom ? { [fixedName]: { config: updateObj } } : { [fixedName]: updateObj };
         const file = isCustom ? "custom_plugin.user.toml" : "settings.user.toml";
         const settingPath = await this.getActualSettingPath(file);
         const tomlObj = await this.readToml(settingPath);
-        const newSetting = this.merge(tomlObj, mergeObj);
+        const newSetting = this.merge(tomlObj, { [fixedName]: updateObj });
         const newContent = this.stringifyToml(newSetting);
         return this.writeFile(settingPath, newContent);
     }
@@ -368,7 +367,7 @@ class utils {
         });
     }
 
-    static readSetting = async (defaultSetting, userSetting) => {
+    static _readSetting = async (defaultSetting, userSetting) => {
         const default_ = this.getOriginSettingPath(defaultSetting);
         const user_ = this.getOriginSettingPath(userSetting);
         const home_ = this.getHomeSettingPath(userSetting);
@@ -386,6 +385,23 @@ class utils {
             }
             return {}
         }
+    }
+    static readHotkeySetting = async () => this._readSetting("hotkey.default.toml", "hotkey.user.toml");
+    static readBasePluginSetting = async () => this._readSetting("settings.default.toml", "settings.user.toml");
+    static readCustomPluginSetting = async () => {
+        const settings = await this._readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
+        return this.fixCustomPluginSetting(settings);
+    }
+
+    // 兼容历史遗留问题
+    static fixCustomPluginSetting = async settings => {
+        Object.values(settings).map(plugin => {
+            if (plugin.config) {
+                Object.assign(plugin, plugin.config);
+                delete plugin.config;
+            }
+        })
+        return settings
     }
 
     static openSettingFolder = async () => this.showInFinder(await this.getActualSettingPath("settings.user.toml"))

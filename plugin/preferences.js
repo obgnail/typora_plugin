@@ -2,8 +2,8 @@ class preferencesPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     getSettings = async () => {
-        const settings = await this.utils.readSetting("settings.default.toml", "settings.user.toml");
-        const customSettings = await this.utils.readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
+        const settings = await this.utils.readBasePluginSetting();
+        const customSettings = await this.utils.readCustomPluginSetting();
         delete settings.global;
         return [settings, customSettings]
     }
@@ -22,13 +22,14 @@ class preferencesPlugin extends BasePlugin {
         if (!settingsHasUpdate && !customSettingsHasUpdate) return;
 
         const files = [
-            { file: "settings.user.toml", mergeObj: pluginState },
-            { file: "custom_plugin.user.toml", mergeObj: customPluginState },
+            { file: "settings.user.toml", mergeObj: pluginState, clean: this.utils.noop },
+            { file: "custom_plugin.user.toml", mergeObj: customPluginState, clean: this.utils.fixCustomPluginSetting },
         ]
-        for (const { file, mergeObj } of files) {
+        for (const { file, mergeObj, clean } of files) {
             const settingPath = await this.utils.getActualSettingPath(file);
             const settingObj = await this.utils.readToml(settingPath);
-            const newSetting = this.utils.merge(settingObj, mergeObj);
+            const setting = this.utils.merge(settingObj, mergeObj);
+            const newSetting = await clean(setting);
             const newContent = this.utils.stringifyToml(newSetting);
             const ok = await this.utils.writeFile(settingPath, newContent);
             if (!ok) return;

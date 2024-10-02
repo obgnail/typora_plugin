@@ -15,8 +15,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[kanban.config]
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "kanban"
@@ -75,8 +73,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[chat.config]
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "chat"
@@ -133,8 +129,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[timeline.config]
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "timeline"
@@ -189,8 +183,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[echarts.config]
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "echarts"
@@ -252,8 +244,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[chart.config]
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "chart"
@@ -307,8 +297,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[wavedrom.config]
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "wavedrom"
@@ -355,8 +343,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[calendar.config]
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "calendar"
@@ -402,8 +388,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[abc.config]
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "abc"
@@ -445,8 +429,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[callouts.config]
 # callout的阴影
 box_shadow = "0 0.2rem 0.5rem #0000000d, 0 0 0.05rem #0000001a"
 # 为标题设置颜色（和left_line_color一样）
@@ -503,8 +485,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[marp.config]
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "marp"
@@ -547,8 +527,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[darkMode.config]
 # 快捷键
 hotkey = ""
 # 默认进入夜间模式
@@ -565,8 +543,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[noImageMode.config]
 # 快捷键
 hotkey = ""
 # 当处于无图模式时，鼠标悬停时重新显示图片
@@ -589,8 +565,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[fullPathCopy.config]
 # 快捷键
 hotkey = "ctrl+shift+y"
 # 如果在空白页调用此插件，使用的文件名（因为尚不存在该文件，需要用一个默认的文件名代替）
@@ -613,8 +587,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[extractRangeToNewFile.config]
 # 快捷键
 hotkey = ""
 # 展示窗口
@@ -635,8 +607,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[templater.config]
 # 快捷键
 hotkey = ""
 # 自动打开新文件
@@ -683,7 +653,7 @@ template_variables = [
 #   {{ username }}                           当前电脑的用户名
 #   {{ range }}                              当前选取的文字
 #   {{ uuid }}                               uuid
-[[templater.config.template]]
+[[templater.template]]
 name = "标准模板"
 text = """---
 title: {{title}}
@@ -692,7 +662,7 @@ tags:
 ---
 
 """
-[[templater.config.template]]
+[[templater.template]]
 name = "日记"
 text = """---
 title: {{title}}
@@ -700,7 +670,7 @@ date: {{date}} {{weekday}}
 ---
 
 """
-[[templater.config.template]]
+[[templater.template]]
 name = "文章写作"
 text = """---
 author: {{username}}
@@ -735,8 +705,6 @@ enable = true
 hide = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[chineseSymbolAutoPairer.config]
 # 兼容以前的行为：当用户输入【】时，不会变成【】】，而是将光标跳到】的右边
 auto_skip = true
 # 当光标在中间，左右两边都是成对符号，如：【|】；且用户键入Backspace时，同时删除左右两边的符号
@@ -768,8 +736,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[toc.config]
 # 快捷键
 hotkey = ""
 # 是否转义标题内容
@@ -794,8 +760,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[resourceOperation.config]
 # 快捷键
 hotkey = ""
 # 弹窗位于页面从左往右的5%位置
@@ -829,8 +793,6 @@ enable = false
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[scrollBookmarker.config]
 # 快捷键
 hotkey = ""
 # 数据持久化（作为文件保存起来）
@@ -852,8 +814,6 @@ enable = false
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[bingSpeech.config]
 # 快捷键
 hotkey = ""
 # 配音。可选：
@@ -901,8 +861,6 @@ enable = true
 hide = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[imageReviewer.config]
 # 快捷键
 hotkey = "ctrl+alt+i"
 # 点击遮罩空白处退出
@@ -1064,8 +1022,6 @@ enable = true
 hide = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[markdownLint.config]
 # 快捷键
 hotkey = ""
 # 快捷键：尽力修复规范
@@ -1107,8 +1063,6 @@ enable = false
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[reopenClosedFiles.config]
 # 快捷键
 hotkey = ""
 # 打开Typora（打开可丢弃的无标题的标签时）自动恢复上次退出时尚未关闭的标签页
@@ -1128,8 +1082,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[hotkeyHub.config]
 # 查看注册的快捷键列表的快捷键
 hotkey = ""
 
@@ -1144,8 +1096,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[quickButton.config]
 # 切换按钮显示状态的快捷键
 hotkey = ""
 # 是否支持右键（右键点击按钮后，其他按钮将被隐藏）
@@ -1207,7 +1157,6 @@ enable = false
 hide = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-[blockSideBySide.config]
 # 切换的快捷键
 hotkey = ""
 
@@ -1225,8 +1174,6 @@ enable = false
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[autoTrailingWhiteSpace.config]
 # 快捷键
 hotkey = ""
 
@@ -1247,8 +1194,6 @@ enable = false
 hide = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[redirectLocalRootUrl.config]
 # 资源根目录，支持绝对路径(如D:\\tmp\\img)和相对路径(如.\\assets)，填写时请注意转义反斜线（若为空，则此插件失效）
 root = "./"
 # 过滤的正则表达式：只有文件路径命中filter_regexp匹配的文件才使用此插件（若为空，则全部文件都使用此插件）
@@ -1265,8 +1210,6 @@ enable = false
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[openInTotalCommander.config]
 # 快捷键
 hotkey = ""
 # tc路径（请修改为你电脑上的路径）
@@ -1289,8 +1232,6 @@ enable = true
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 插件配置
-[pluginUpdater.config]
 # 快捷键
 hotkey = ""
 # 众所周知，有些地区无法裸连github，需要使用代理（如：http://127.0.0.1:7890）

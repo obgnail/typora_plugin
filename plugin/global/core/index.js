@@ -2,9 +2,6 @@ const { utils, hook } = require("./utils");
 const { BasePlugin, BaseCustomPlugin, LoadPlugins } = require("./plugin");
 
 async function entry() {
-    /** 读取配置 */
-    const readSetting = () => utils.readSetting("settings.default.toml", "settings.user.toml");
-
     /**
      * 初始化全局变量
      * 整个插件系统一共暴露了7个全局变量，实际有用的只有3个：BasePlugin, BaseCustomPlugin, LoadPlugins
@@ -40,7 +37,7 @@ async function entry() {
     }
 
     const launch = async () => {
-        const settings = await readSetting();
+        const settings = await utils.readBasePluginSetting();
         const enable = settings && settings.global && settings.global.ENABLE;
         if (!enable) {
             console.warn("disable typora plugin");
