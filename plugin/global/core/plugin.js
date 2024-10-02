@@ -34,12 +34,6 @@ class BasePlugin extends IPlugin {
 
 /** 二级插件 */
 class BaseCustomPlugin extends IPlugin {
-    constructor(fixedName, setting) {
-        super(fixedName, setting.config);
-        this.info = setting;
-        this.showName = setting.name;
-    }
-
     selector(isClick) {}
     hint(isDisable) {}
     callback(anchorNode) {}

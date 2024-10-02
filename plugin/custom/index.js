@@ -37,7 +37,7 @@ class CustomPlugin extends BasePlugin {
             if (!plugin) continue;
 
             const arg = {
-                arg_name: plugin.showName,
+                arg_name: plugin.config.name,
                 arg_value: plugin.fixedName,
                 arg_disabled: true,
                 arg_hint: "未知错误！请向开发者反馈",
@@ -132,7 +132,7 @@ class customPluginLoader {
     }
 
     process = async () => {
-        const settings = await this.utils.readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
+        const settings = await this.utils.readCustomPluginSetting();
         this.mergeSettings(settings);
         this.errorSettingDetector(settings);
         this.controller.pluginsSettings = settings;
