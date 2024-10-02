@@ -45,16 +45,15 @@
     margin-top: 0;
     cursor: default;
     max-height: 340px;
-    overflow-y: auto;
-    overflow-x: auto;
+    overflow: auto;
 }
 
 .plugin-commander-output pre {
     display: inline-block;
     font-size: 13px;
-    line-height: 1.1;
-    margin: 10px 10px 5px 5px;
-    max-height: 700px;
+    line-height: 1.2;
+    margin: 0;
+    padding: 5px;
 }
 
 .plugin-commander-output pre.error {
