@@ -210,7 +210,11 @@ class tocPlugin extends BaseCustomPlugin {
         const { outline } = File.editor.library;
         const toc = this.config.escape_header
             ? outline.getHeaderMatrix(true).map(([depth, text, cid]) => ({ depth, text, cid, children: [] }))
-            : headers.map(({ attributes: { depth, text }, cid }) => ({ depth, text, cid, children: [] }))
+            : headers.map(({ attributes, cid }) => {
+                let { depth, text } = attributes || {};
+                text = text.replace(/\[\^([^\]]+)\]/g, "");  // 去掉脚注
+                return { depth, text, cid, children: [] }
+            })
 
         toc.forEach((node, idx) => {
             const parent = findParent(toc, idx - 1, node.depth) || root;

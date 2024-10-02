@@ -41,10 +41,11 @@ class markmapPlugin extends BasePlugin {
         const result = [];
         for (const header of headers) {
             const { pattern, depth, text = "" } = (header && header.attributes) || {};
+            const head = text.replace(/\[\^([^\]]+)\]/g, "");  // 去掉脚注
             if (pattern) {
-                result.push(pattern.replace("{0}", text));
+                result.push(pattern.replace("{0}", head));
             } else if (depth) {
-                result.push("#".repeat(parseInt(depth)) + " " + text);
+                result.push("#".repeat(parseInt(depth)) + " " + head);
             }
         }
         return result.join("\n")
