@@ -41,6 +41,7 @@
     position: absolute;
     display: inline-flex;
     flex-direction: row-reverse;
+    align-items: center;
     top: 53%;
     transform: translateY(-50%);
     right: 6px;
@@ -55,7 +56,7 @@
     padding: 1px 3px;
 }
 
-#plugin-search-multi-input .option-btn.case-option-btn {
+#plugin-search-multi-input .option-btn:nth-child(2) {
     padding: 2px 1px;
 }
 

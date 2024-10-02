@@ -129,6 +129,14 @@ class searchStringParser {
         }
     }
 
+    _withNotification(func) {
+        try {
+            return func();
+        } catch (e) {
+            this.utils.notification.show("语法解析错误，请检查输入内容", "error");
+        }
+    }
+
     showGrammar() {
         const table1 = `
             <table>
@@ -152,26 +160,19 @@ class searchStringParser {
         `
         const content = `
 <query> ::= <expr>
-<expr> ::= <term> ( 'OR' <term> )*
+<expr> ::= <term> ( <or> <term> )*
 <term> ::= <factor> ( <minus_and> <factor> )*
 <factor> ::= <quoted_phrase> | <keyword> | '(' <expr> ')'
 <quoted_phrase> ::= '"' [<keyword>] '"'
 <minus_and> ::= '-' | ' '
+<or> ::== 'OR' | '|'
 <keyword> ::= \\w+`
         const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 8, content }];
         this.utils.dialog.modal({ title: "搜索语法", width: "550px", components });
     }
 
-    withNotification(func) {
-        try {
-            return func();
-        } catch (e) {
-            this.utils.notification.show("语法解析错误，请检查输入内容", "error");
-        }
-    }
-
     parse(query) {
-        return this.withNotification(() => {
+        return this._withNotification(() => {
             const tokens = this._tokenize(query);
             if (tokens.length === 0) {
                 return this.TOKEN.KEYWORD("")
