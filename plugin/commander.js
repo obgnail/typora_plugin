@@ -16,24 +16,16 @@ class commanderPlugin extends BasePlugin {
         const genShell = (shell, text) => `<option value="${shell}">${text}</option>`;
         const shells = [genShell(CMD_BASH, "cmd/bash")];
         if (File.isWin) {
-            shells.push(
-                genShell(POWER_SHELL, "PowerShell"),
-                genShell(GIT_BASH, "Git Bash"),
-                genShell(WSL, "WSL"),
-            )
+            shells.push(genShell(POWER_SHELL, "PowerShell"), genShell(GIT_BASH, "Git Bash"), genShell(WSL, "WSL"))
         }
-
-        let builtinSelect = "";
-        const builtin = this.config.BUILTIN.map(e => `<option shell="${e.shell}" value="${this.utils.escape(e.cmd)}">${e.name}</option>`).join("");
-        builtinSelect = `<select class="plugin-commander-builtin">${builtin}</select>`;
-
+        const builtin = this.config.BUILTIN.map(e => `<option data-shell="${e.shell}" value="${this.utils.escape(e.cmd)}">${e.name}</option>`).join("");
         return `
             <div id="plugin-commander" class="plugin-common-modal plugin-common-hidden"> 
                 <div id="plugin-commander-form">
                     <i class="ion-ios7-play plugin-commander-commit plugin-common-hidden" ty-hint="执行命令"></i>
                     <input type="text" class="plugin-commander-input" placeholder="Typora commander" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录"/>
                     <select class="plugin-commander-shell">${shells.join("")}</select>
-                    ${builtinSelect}
+                    <select class="plugin-commander-builtin">${builtin}</select>
                 </div>
                 <div class="plugin-commander-output plugin-common-hidden"><pre tabindex="0"></pre></div>
             </div>
@@ -110,7 +102,7 @@ class commanderPlugin extends BasePlugin {
 
         this.entities.builtinSelect.addEventListener("change", () => {
             const option = this.entities.builtinSelect.options[this.entities.builtinSelect.selectedIndex];
-            this.entities.shellSelect.value = option.getAttribute("shell");
+            this.entities.shellSelect.value = option.dataset.shell;
             this.entities.input.value = option.value;
             this.entities.input.dispatchEvent(new CustomEvent('input'));
             this.entities.input.focus();

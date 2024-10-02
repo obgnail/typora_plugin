@@ -6,13 +6,13 @@ class searchMultiKeywordPlugin extends BasePlugin {
             <div id="plugin-search-multi-input">
                 <input type="text" placeholder="多关键字查找">
                 <div class="plugin-search-multi-btn-group">
-                    <span class="option-btn info-option-btn" action="searchGrammarModal" ty-hint="查看搜索语法">
+                    <span class="option-btn" action="searchGrammarModal" ty-hint="查看搜索语法">
                         <div class="fa fa-info-circle"></div>
                     </span>
-                    <span class="option-btn case-option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" action="toggleCaseSensitive" ty-hint="区分大小写">
+                    <span class="option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" action="toggleCaseSensitive" ty-hint="区分大小写">
                         <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                     </span>
-                    <span class="option-btn path-option-btn ${(this.config.INCLUDE_FILE_PATH) ? "select" : ""}" action="toggleIncludeFilePath" ty-hint="将文件路径加入搜索内容">
+                    <span class="option-btn ${(this.config.INCLUDE_FILE_PATH) ? "select" : ""}" action="toggleIncludeFilePath" ty-hint="将文件路径加入搜索内容">
                         <div class="fa fa-folder-open-o"></div>
                     </span>
                 </div>
@@ -261,7 +261,7 @@ class LinkHelper {
     genButton = () => {
         const wantLink = this.searcher.config.LINK_OTHER_PLUGIN;
         const span = document.createElement("span");
-        span.className = `option-btn link-option-btn ${wantLink ? "select" : ""}`;
+        span.className = `option-btn ${wantLink ? "select" : ""}`;
         span.setAttribute("action", "toggleLinkPlugin");
         span.setAttribute("ty-hint", "插件联动");
         const div = document.createElement("div");

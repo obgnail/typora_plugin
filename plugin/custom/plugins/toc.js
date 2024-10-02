@@ -231,6 +231,7 @@ class tocPlugin extends BaseCustomPlugin {
         const root = { depth: 0, cid: "n0", text: "root", children: [] };
         const current = { C: root, H1: root };
         const selector = ":scope>h1, :scope>h2, " + types.map(t => typeMap[t]).join(" , ");
+        const imageHasAlt = document.querySelector(".md-image[data-alt]");
         this.utils.entities.eWrite.querySelectorAll(selector).forEach(ele => {
             if (ele.style.display === "none") return;
 
@@ -259,7 +260,10 @@ class tocPlugin extends BaseCustomPlugin {
             if (type) {
                 idxMap[type]++;
                 const cid = ele.closest("[cid]").getAttribute("cid");
-                const text = `${this.config.show_name[type]} ${idxMap[type]}`;
+                let text = `${this.config.show_name[type]} ${idxMap[type]}`;
+                if (imageHasAlt && type === "image") {
+                    text += ` ${ele.dataset.alt}`;
+                }
                 current.C.children.push({ cid, children, text });
             }
         });
