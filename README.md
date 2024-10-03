@@ -69,7 +69,7 @@
 | 53   | scrollBookmarker        | 书签管理器                             | ×        |
 | 54   | openInTotalCommander    | 在 total commander 打开                | ×        |
 | 55   | bingSpeech              | 必应朗读                               | ×        |
-| 56   | cipher                  | 加密文件                               |          |
+| 56   | cipher                  | 加密文件                               | ×        |
 | 57   | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
 | 58   | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
 | 59   | help                    | 用户帮助                               |          |
