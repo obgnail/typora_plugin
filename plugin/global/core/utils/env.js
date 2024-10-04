@@ -108,7 +108,7 @@ const getHook = utils => {
         await pluginLoader();
         await registerMixinAfter();
         await optimizeMixin();
-        setTimeout(utils.reload, 50);  // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
+        File.getMountFolder() != null && setTimeout(utils.reload, 50);  // 由于使用了async，有些页面事件可能已经错过了（比如afterAddCodeBlock），重新加载一遍页面
     }
 }
 
