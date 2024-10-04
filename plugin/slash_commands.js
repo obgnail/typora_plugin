@@ -25,7 +25,7 @@ class slashCommandsPlugin extends BasePlugin {
         const getType = type => type === this.type.COMMAND ? "命令" : "文段";
         const th = `<tr><th>关键字</th><th>类型</th><th>功能</th></tr>`;
         const list = Array.from(this.commands.values());
-        const trs = list.map(({ type, keyword, hint, callback }) => `<tr><td>${keyword}</td><td>${getType(type)}</td><td title="${callback}">${hint}</td></tr>`);
+        const trs = list.map(({ type, keyword, hint = "", callback = "" }) => `<tr><td>${keyword}</td><td>${getType(type)}</td><td title="${callback}">${hint}</td></tr>`);
         const table = `<table>${th}${trs.join("")}</table>`;
         const onclick = ev => ev.target.closest("a") && this.openSettingFile();
         const components = [
