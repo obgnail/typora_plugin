@@ -65,3 +65,7 @@
 .dropdown-menu {
     z-index: 9998;
 }
+
+#md-searchpanel.searchpanel-replace-mode {
+    z-index: 99999 !important;
+}

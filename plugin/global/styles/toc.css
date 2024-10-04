@@ -47,6 +47,7 @@
 #plugin-toc .plugin-toc-list {
     height: 100%;
     overflow: scroll;
+    font-size: ${this.config.toc_font_size};
 }
 
 #plugin-toc .toc-root {

@@ -897,7 +897,7 @@ DEFAULT_COLORS = { FOREGROUND = "#330000", BACKGROUND = "#FFFFFF", BORDER = "#33
 ############### cipher ###############
 [cipher]
 # 是否启用插件
-ENABLE = true
+ENABLE = false
 # 在右键菜单中展示的名称
 NAME = "加密文件"
 # 是否在右键菜单中可点击

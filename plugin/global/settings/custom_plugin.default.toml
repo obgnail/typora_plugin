@@ -746,6 +746,8 @@ right_click_outline_button_to_toggle = true
 width_percent_when_pin_right = 20
 # 每次打开Typora时，默认弹出右侧菜单栏
 default_show_toc = false
+# 字体大小
+toc_font_size = "1em"
 # 在窗口里展示的名字
 show_name = { fence = "Fence", image = "Figure", table = "Table", link = "Link", math = "Math" }
 
