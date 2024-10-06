@@ -94,9 +94,10 @@ class rightClickMenuPlugin extends BasePlugin {
 
     secondLiTemplate = plugin => {
         const hasArgs = plugin.callArgs || plugin.dynamicCallArgsGenerator;
+        const clickable = hasArgs || plugin.hasOwnProperty("call");
         const extra = {
             class_: `plugin-menu-item ${hasArgs ? "has-extra-menu" : ""}`,
-            style: plugin.config.CLICKABLE ? undefined : { color: "#c4c6cc", pointerEvents: "none" },
+            style: clickable ? undefined : { color: "#c4c6cc", pointerEvents: "none" },
         }
         return this._liTemplate(plugin.fixedName, plugin.config.NAME, plugin.config.HOTKEY, hasArgs, null, extra);
     }

@@ -6,6 +6,7 @@
     top: ${this.config.BUTTON_TOP};
     right: ${this.config.BUTTON_RIGHT};
     font-size: ${this.config.BUTTON_SIZE};
+    color: ${this.config.BUTTON_COLOR};
 }
 
 .fence-enhance .enhance-btn {

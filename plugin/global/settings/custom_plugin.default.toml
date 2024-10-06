@@ -7,10 +7,10 @@
 
 ############### kanban ###############
 [kanban]
-# 右键菜单中展示的名称
-name = "Kanban"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "Kanban"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -65,10 +65,10 @@ use strict
 
 ############### chat ###############
 [chat]
-# 右键菜单中展示的名称
-name = "Chat"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "Chat"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -121,10 +121,10 @@ nickname1: 支持使用 yaml 格式的 front matter 修改配置（就和 markdo
 
 ############### timeline ###############
 [timeline]
-# 右键菜单中展示的名称
-name = "Timeline"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "Timeline"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -175,10 +175,10 @@ TEMPLATE = """```timeline
 
 ############### echarts ###############
 [echarts]
-# 右键菜单中展示的名称
-name = "Echarts"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "Echarts"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -236,10 +236,10 @@ option = {
 
 ############### chart ###############
 [chart]
-# 右键菜单中展示的名称
-name = "Chart"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "Chart"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -289,10 +289,10 @@ config = {
 
 ############### wavedrom ###############
 [wavedrom]
-# 右键菜单中展示的名称
-name = "WaveDrom"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "WaveDrom"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -335,10 +335,10 @@ TEMPLATE = """```wavedrom
 
 ############### calendar ###############
 [calendar]
-# 右键菜单中展示的名称
-name = "Calendar"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "Calendar"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -380,10 +380,10 @@ calendar.createEvents([
 
 ############### abc ###############
 [abc]
-# 右键菜单中展示的名称
-name = "ABC"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "ABC"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -417,14 +417,14 @@ G2 G2|A2 A2|B2 B2|c3 z|G2 G2|A2 A2|B2 G2|c3 z||
 
 ############### callouts ###############
 [callouts]
-# 右键菜单中展示的名称
-name = "Callouts"
 # 是否启用此二级插件
 # 此插件诞生得很早，当时Typora还不支持callouts功能。然后typora在1.8版本原生支持了callouts，功能有一定程度的重叠。但是：
 #   1. 原生功能仅支持五种类型的callouts，
 #   2. 原生功能不支持fold callouts（如： > [!NOTE]-）。
 #   3. 此插件兼容原生功能
 enable = true
+# 插件名称
+name = "Callouts"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -477,10 +477,10 @@ list = [
 
 ############### marp ###############
 [marp]
-# 右键菜单中展示的名称
-name = "Marp"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "Marp"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -519,10 +519,10 @@ Split pages by horizontal ruler (`---`). It's very simple! :satisfied:
 
 ############### darkMode ###############
 [darkMode]
-# 右键菜单中展示的名称
-name = "夜间模式"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "夜间模式"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -535,10 +535,10 @@ default_dark_mode = false
 
 ############### noImageMode ###############
 [noImageMode]
-# 右键菜单中展示的名称
-name = "无图模式"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "无图模式"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -557,10 +557,10 @@ transition_delay = 0
 
 ############### fullPathCopy ###############
 [fullPathCopy]
-# 右键菜单中展示的名称
-name = "复制标题路径"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "复制标题路径"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -579,10 +579,10 @@ full_file_path = false
 
 ############### extractRangeToNewFile ###############
 [extractRangeToNewFile]
-# 右键菜单中展示的名称
-name = "提取选区文字到新文件"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "提取选区文字到新文件"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -599,10 +599,10 @@ delete_content = false
 
 ############### templater ###############
 [templater]
-# 右键菜单中展示的名称
-name = "文件模板"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "文件模板"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -696,11 +696,11 @@ tags:
 
 ############### chineseSymbolAutoPairer ###############
 [chineseSymbolAutoPairer]
-# 右键菜单中展示的名称
-name = "中文符号自动补全"
 # 是否启用此二级插件
 # 注意：此插件受Typora本身配置【匹配括号和引号】的影响，如果此配置为false，那么此插件自动禁用
 enable = true
+# 插件名称
+name = "中文符号自动补全"
 # 是否在右键菜单中隐藏
 hide = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -728,10 +728,10 @@ auto_pair_symbols = [
 
 ############### toc ###############
 [toc]
-# 右键菜单中展示的名称
-name = "大纲目录"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "大纲目录"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -754,10 +754,10 @@ show_name = { fence = "Fence", image = "Figure", table = "Table", link = "Link",
 
 ############### resourceOperation ###############
 [resourceOperation]
-# 右键菜单中展示的名称
-name = "资源管理"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "资源管理"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -787,10 +787,10 @@ auto_open = true
 
 ############### scrollBookmarker ###############
 [scrollBookmarker]
-# 右键菜单中展示的名称
-name = "书签管理"
 # 是否启用此二级插件
 enable = false
+# 插件名称
+name = "书签管理"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -805,13 +805,13 @@ auto_popup_modal = true
 
 ############### bingSpeech ###############
 [bingSpeech]
-# 右键菜单中展示的名称
-name = "必应朗读"
 # 是否启用此二级插件
 #  1.实现原理：采用爬虫技术，盗取必应翻译的播放语音功能
 #  2.功能完全依赖外部环境，因此不能保证成功
 #  3.开发者一时兴起做的，仅作娱乐使用
 enable = false
+# 插件名称
+name = "必应朗读"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -855,10 +855,10 @@ group_lines = 3
 
 ############### imageReviewer ###############
 [imageReviewer]
-# 右键菜单中展示的名称
-name = "图片查看"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "图片查看"
 # 是否在右键菜单中隐藏
 hide = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -1016,10 +1016,10 @@ hotkey_function = [
 
 ############### markdownLint ###############
 [markdownLint]
-# 右键菜单中展示的名称
-name = "格式规范检测"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "格式规范检测"
 # 是否在右键菜单中隐藏
 hide = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -1057,10 +1057,10 @@ error_color = "#be9117"
 
 ############### reopenClosedFiles ###############
 [reopenClosedFiles]
-# 右键菜单中展示的名称
-name = "打开上次退出时尚未关闭的标签页"
 # 是否启用此二级插件（此插件仅在window_tab插件启用时生效）
 enable = false
+# 插件名称
+name = "打开上次退出时尚未关闭的标签页"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -1074,12 +1074,12 @@ auto_reopen_when_init = true
 
 ############### hotkeyHub ###############
 [hotkeyHub]
-# 右键菜单中展示的名称
-name = "快捷键中心"
 # 是否启用此二级插件（此插件仅对有javascript基础的用户开放）
 # 若要修改hotkeyHub的配置请前往同目录下的hoteykey.user.toml
 # 注意：若置为false，那么hoteykey.toml的配置将失效
 enable = true
+# 插件名称
+name = "快捷键中心"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -1090,10 +1090,10 @@ hotkey = ""
 
 ############### quickButton ###############
 [quickButton]
-# 右键菜单中展示的名称
-name = "快速按钮"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "快速按钮"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -1151,10 +1151,10 @@ buttons = [
 
 ############### blockSideBySide ###############
 [blockSideBySide]
-# 右键菜单中展示的名称
-name = "并列显示活动块"
 # 是否启用此二级插件
 enable = false
+# 插件名称
+name = "并列显示活动块"
 # 是否在右键菜单中隐藏
 hide = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -1168,10 +1168,10 @@ hotkey = ""
 # 参考：https://markdown.com.cn/basic-syntax/line-breaks.html
 # issue：https://github.com/obgnail/typora_plugin/issues/202
 [autoTrailingWhiteSpace]
-# 右键菜单中展示的名称
-name = "为文档添加结尾空格"
 # 是否启用此二级插件
 enable = false
+# 插件名称
+name = "为文档添加结尾空格"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -1187,11 +1187,11 @@ hotkey = ""
 # 除非你有此需求，否则不建议开启此插件
 # issue: https://github.com/obgnail/typora_plugin/issues/259
 [redirectLocalRootUrl]
-# 右键菜单中展示的名称
-name = "重定向本地资源根目录"
 # 是否启用此二级插件
 # 注意：【文件的front matter的typora-root-url参数】的优先级大于【此插件】。也就是说：若文件的front matter显式设置了typora-root-url，那么此插件在该文件失效
 enable = false
+# 插件名称
+name = "重定向本地资源根目录"
 # 是否在右键菜单中隐藏
 hide = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -1204,10 +1204,10 @@ filter_regexp = ""
 
 ############### openInTotalCommander ###############
 [openInTotalCommander]
-# 右键菜单中展示的名称
-name = "TC打开"
 # 是否启用此二级插件（若要使用此插件，请先修改tc_path选项）
 enable = false
+# 插件名称
+name = "TC打开"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
@@ -1226,10 +1226,10 @@ tc_args = '/O /T /P=L  /L=$f'
 
 ############### pluginUpdater ###############
 [pluginUpdater]
-# 右键菜单中展示的名称
-name = "升级插件"
 # 是否启用此二级插件
 enable = true
+# 插件名称
+name = "升级插件"
 # 是否在右键菜单中隐藏
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）

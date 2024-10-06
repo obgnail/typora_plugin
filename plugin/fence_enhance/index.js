@@ -4,7 +4,6 @@ class fenceEnhancePlugin extends BasePlugin {
         this.supportIndent = this.config.ENABLE_INDENT && hasFunc;
         this.enableIndent = this.supportIndent;
         this.builders = [];
-        this.lastClickTime = 0;
         this.dangerousHint = "警告：消耗巨量资源并导致Typora长时间失去响应";
     }
 
@@ -123,9 +122,6 @@ class fenceEnhancePlugin extends BasePlugin {
 
     defaultFold = foldButton => this.config.FOLD_DEFAULT && foldButton.click();
     copyCode = (ev, copyButton) => {
-        if (ev.timeStamp - this.lastClickTime < this.config.CLICK_CHECK_INTERVAL) return;
-        this.lastClickTime = ev.timeStamp;
-
         const result = this.utils.getFenceContent({ pre: copyButton.closest(".md-fences") });
         navigator.clipboard.writeText(result).then(() => this._changeIcon(copyButton, "fa fa-check", "fa fa-clipboard"));
     }
