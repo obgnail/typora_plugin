@@ -125,6 +125,13 @@ class diagramParser {
         await this.noticeRollback(cid);
     }
 
+    whenEmptyContent = async (cid, lang, $pre) => {
+        $pre.find(".md-diagram-panel-header").text("");
+        $pre.find(".md-diagram-panel-preview").text("空");
+        $pre.find(".md-diagram-panel-error").html("");
+        await this.noticeRollback(cid);
+    }
+
     noticeRollback = async cid => {
         for (const [lang, parser] of this.parsers.entries()) {
             if (!parser.cancelFunc) continue;
@@ -161,13 +168,13 @@ class diagramParser {
         this.destroyIfNeed(parser, cid, lang, $pre);
 
         const content = this.utils.getFenceContent({ cid });
-        if (!content) {
-            await this.whenCantDraw(cid, lang, $pre);
-            return;
-        }
-
         $pre.addClass("md-fences-advanced");
         this.appendPanelIfNeed($pre);
+
+        if (!content) {
+            await this.whenEmptyContent(cid, lang, $pre);
+            return;
+        }
 
         if (!parser.renderFunc) return;
         try {
