@@ -612,6 +612,8 @@ CLICKABLE = true
 ENABLE_BUTTON = true
 # 按钮的大小
 BUTTON_SIZE = "1.2em"
+# 按钮的颜色
+BUTTON_COLOR = "currentColor"
 # 按钮的间距
 BUTTON_MARGIN = "0.4em"
 # 按钮的位置: top
@@ -639,11 +641,8 @@ FOLD_OVERFLOW = "hidden"
 # 默认折叠所有代码块
 FOLD_DEFAULT = false
 # 操作成功时，icon提示的保持时间（单位：ms）
-# 比如当你点击【复制代码】按钮后，icon会变成【✔】，并在保持一段时间后自动恢复。此选项就是设置这个保持时间
+# 当你点击【复制代码】按钮后，icon会变成【✔】，并在保持一段时间后自动恢复。此选项就是设置这个保持时间
 WAIT_RECOVER_INTERVAL = 1000
-# 节流时间（单位：ms）
-# 300毫秒内多次点击【复制代码】按钮，只会执行一次（此选项其实没啥意义，添加此选项只是出于强迫症）
-CLICK_CHECK_INTERVAL = 300
 # 自定义按钮
 # 目前此插件有三个按钮：复制，缩进，折叠。此选项可以新增按钮
 # 此配置是【风险】配置，如果您没有javascript基础，请不要修改此配置
@@ -659,9 +658,8 @@ CUSTOM_BUTTONS = [
 
 # fence_enhance插件包含4个功能：button、hotkey、other。此为hotkey，功能：为代码块添加快捷键
 # 若置为false，以下配置全部失效
+# 注意：此处的快捷键使用的是codeMirror的表示方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
 ENABLE_HOTKEY = true
-# 注意：此处的快捷键使用的是codeMirror的方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
-
 # 不建议修改下面的快捷键，原因有二：
 #   1. 和很多ide的快捷键保持一致
 #   2. typora强制绑定了很多快捷键，实际可修改的快捷键并不多
