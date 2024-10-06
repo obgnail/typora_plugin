@@ -23,10 +23,8 @@ EXIT_INTERACTIVE_MODE = ["click_exit_button"]
 [window_tab]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "标签页管理"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 拖拽排序标签页的方式(1 or 2)
 # 1类似于idea，2类似于vscode
 DRAG_STYLE = 1
@@ -104,10 +102,8 @@ INTERCEPT_INTERNAL_AND_LOCAL_LINKS = true
 [search_multi]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "多关键字搜索"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+p"
 # 允许通过【ctrl+鼠标拖拽输入框】拖动窗口
@@ -144,10 +140,8 @@ IGNORE_FOLDERS = [".git", "node_modules"]
 [multi_highlighter]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "多关键字高亮"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+h"
 # 允许通过【ctrl+鼠标拖拽输入框】拖动窗口
@@ -170,10 +164,8 @@ RESEARCH_WHILE_OPEN_FILE = true
 [commander]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "命令行环境"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+g"
 # 允许【ctrl+鼠标拖拽输入框】拖动窗口
@@ -214,10 +206,8 @@ BUILTIN = [
 [md_padding]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "中英文混排优化"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+shift+b"
 # 仅在选区中生效：当框选文字时，调用此功能只会对当前框选的文字生效
@@ -235,10 +225,8 @@ LINE_BREAK_MAX_NUM = -1
 [read_only]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "只读模式"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 进入和脱离只读模式的快捷键
 HOTKEY = "ctrl+shift+r"
 # 默认使用只读模式（打开Typora就进入只读模式）
@@ -259,10 +247,8 @@ SHOW_TEXT = "ReadOnly"
 [toolbar]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "多功能搜索"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 快捷键
 HOTKEY = "ctrl+j"
 # 当输入框为空，且键入backspace时，隐藏窗口
@@ -308,10 +294,8 @@ USE_NEGATIVE_SEARCH = true
 [blur]
 # 是否启用插件（此插件暂时无法在低版本Typora使用）
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "模糊模式"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 快捷键
 HOTKEY = ""
 # 默认使用模糊模式（打开Typora就进入模糊模式）
@@ -330,10 +314,8 @@ BLUR_LEVEL = 10
 [resize_image]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "图片调整"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 各个功能对应的修饰键（为空则不使用对应的功能）
 #   - TEMPORARY  : 临时修改图片大小
 #   - PERSISTENT : 将图片转为HTML格式，永久修改图片大小
@@ -351,10 +333,8 @@ RECORD_RESIZE = true
 [datatables]
 # 是否启用插件
 ENABLE = false
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "表格增强"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 是否分页
 PAGING = true
 # 使用分页时，单页显示的数据条数
@@ -379,10 +359,8 @@ REGEX = false
 [go_top]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "一键到顶"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 到顶的快捷键
 HOTKEY_GO_TOP = ""
 # 到底的快捷键
@@ -393,10 +371,8 @@ HOTKEY_GO_BOTTOM = ""
 [mindmap]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "思维导图"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 若文档存在跨等级标题问题（MD001规范），尽力修复之
 FIX_ERROR_LEVEL_HEADER = true
 
@@ -405,10 +381,8 @@ FIX_ERROR_LEVEL_HEADER = true
 [markmap]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "Markmap"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # js/css从何处加载: local/network
 RESOURCE_FROM = "local"
 
@@ -569,10 +543,8 @@ Note that if blocks and lists appear at the same level, the lists will be ignore
 [auto_number]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "自动编号"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 启用侧边栏自动编号
 ENABLE_SIDE_BAR = true
 # 启用正文自动编号
@@ -602,10 +574,8 @@ NAMES = { table = "Table", image = "Figure", fence = "Fence" }
 [fence_enhance]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "代码块增强"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 
 # fence_enhance插件包含4个功能：button、hotkey、fold、other。此为button，功能：在代码块右上角添加按钮
 # 若置为false，以下配置全部失效
@@ -723,10 +693,8 @@ HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 # 是否启用插件
 # 此插件与Typora的原生配置【显示当前块元素的Markdown源码】冲突，如果开启此插件，那么原生配置会被关闭
 ENABLE = false
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "章节折叠"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 严格模式
 # - true:  只当点击到h1~h6时，才触发折叠/展开
 # - false: 若没有点击到h1~h6，会自动向上寻找最近的h1~h6，并触发折叠/展开。非严格模式可能会出现意想不到的事：ctrl+click在typora是非常常用的，当你不小心点错位置，标题就被折叠起来了
@@ -754,10 +722,8 @@ MODIFIER_KEY = { COLLAPSE_SINGLE = "ctrl", COLLAPSE_SIBLINGS = "ctrl+alt", COLLA
 [collapse_list]
 # 是否启用插件
 ENABLE = false
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "列表折叠"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 缩放标志的颜色，若为空，则跟随系统配色
 TRIANGLE_COLOR = ""
 # 记住章节是否折叠（直到关闭typora）
@@ -768,10 +734,8 @@ RECORD_COLLAPSE = true
 [collapse_table]
 # 是否启用插件
 ENABLE = false
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "表格折叠"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 记住章节是否折叠（直到关闭typora）
 RECORD_COLLAPSE = true
 
@@ -780,10 +744,8 @@ RECORD_COLLAPSE = true
 [truncate_text]
 # 是否启用插件
 ENABLE = false
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "文段截断"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 快捷键：隐藏前面的文本段
 HIDE_FRONT_HOTKEY = ""
 # 快捷键：显示全部的文本段
@@ -798,10 +760,8 @@ REMAIN_LENGTH = 80
 [export_enhance]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "导出增强"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 是否下载网络图片（若为true，有可能因为网络问题导致导出超时）
 # 若置为false，则DOWNLOAD_THREADS选项失效
 DOWNLOAD_NETWORK_IMAGE = false
@@ -813,10 +773,8 @@ DOWNLOAD_THREADS = 10
 [resize_table]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "表格调整"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 是否去除表格单元格最小宽度限制
 REMOVE_MIX_WIDTH = true
 # 单元格边线的拖拽范围（单位：px）
@@ -829,10 +787,8 @@ RECORD_RESIZE = true
 [text_stylize]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "文字风格化"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 面板的背景颜色。若为""，则跟随主题的配色方案
 MODAL_BACKGROUND_COLOR = ""
 # 弹出面板的快捷键
@@ -896,10 +852,8 @@ DEFAULT_COLORS = { FOREGROUND = "#330000", BACKGROUND = "#FFFFFF", BORDER = "#33
 [cipher]
 # 是否启用插件
 ENABLE = false
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "加密文件"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 加密快捷键
 ENCRYPT_HOTKEY = ""
 # 解密快捷键
@@ -914,11 +868,8 @@ SHOW_HINT_MODAL = true
 # 若置为false，那么所有二级插件都会失效
 # 若要修改二级插件的配置请前往同目录下的custom_plugin.user.toml
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "二级插件"
-# 是否在右键菜单中可点击
-# 若置为false，则：不影响所有二级插件的启用状态，但是无法在右键菜单中触及
-CLICKABLE = true
 # 有些插件在当前光标位置下临时处于不可用状态，是否隐藏它
 # 不建议置为true，原因有二：
 #   1. 处于不可用状态的插件会在鼠标悬停时提示不可用的原因
@@ -936,10 +887,8 @@ ALLOW_SET_CONFIG_IN_SETTINGS_TOML = true
 [slash_commands]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "斜杠命令"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 什么样的用户输入触发显示命令列表（若您不了解正则表达式，请勿修改此配置）
 #  注意：keyword需要使用命名捕获组kw
 #  默认值：匹配一个字符串，该字符串以/或\或、开头，后面紧跟任意数量的非/或\或、字符，且该字符串前面不可有<
@@ -1015,10 +964,8 @@ COMMANDS = [
 [right_click_menu]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "右键菜单"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 点击后是否隐藏菜单（此选项不必在此调整，可以在UI中设置）
 DO_NOT_HIDE = false
 # 展示插件的快捷键（此选项仅在正式版Typora可用）
@@ -1092,10 +1039,8 @@ LIST = [
 [pie_menu]
 # 是否启用插件
 ENABLE = false
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "圆盘菜单"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 快捷键
 HOTKEY = ""
 # 修饰键。支持ctrl/alt/shift的随意组合（如"shift+alt"，"ctrl+shift"）。举例：若为ctrl，则 ctrl+鼠标右击 调出圆盘菜单
@@ -1127,10 +1072,8 @@ BUTTONS = [
 [preferences]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "启停插件"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 快捷键
 HOTKEY = ""
 # 不允许通过此插件修改启停的插件
@@ -1141,10 +1084,8 @@ IGNORE_PLUGINS = ["preferences", "right_click_menu", "custom", "json_rpc", "open
 [file_counter]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "文件计数"
-# 是否在右键菜单中可点击
-CLICKABLE = false
 # 当目录下的文件数量少于等于IGNORE_MIN_NUM时，忽略此目录
 IGNORE_MIN_NUM = 0
 # Typora允许打开小于2000000(即MAX_FILE_SIZE)的文件，大于maxSize的文件在搜索时将被忽略。若maxSize<0则不过滤
@@ -1169,10 +1110,8 @@ BEFORE_TEXT = ""
 [help]
 # 是否启用插件
 ENABLE = true
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "帮助"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 
 
 ############### article_uploader ###############
@@ -1183,8 +1122,6 @@ ENABLE = false
 NAME = "文章上传"
 # 在右键菜单隐藏
 HIDE = false
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 快捷键配置
 UPLOAD_ALL_HOTKEY = ""
 UPLOAD_WORDPRESS_HOTKEY = ""
@@ -1209,10 +1146,8 @@ csdn = { enabled = true, cookie = "log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s;
 [ripgrep]
 # 是否启用插件
 ENABLE = false
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "RipGrep"
-# 是否在右键菜单中可点击
-CLICKABLE = true
 # 快捷键
 HOTKEY = ""
 # 当输入框为空，且键入backspace时，隐藏窗口
@@ -1228,10 +1163,8 @@ TOP_PERCENT = 20
 # 是否启用插件
 # 警告：开启此插件后，外部将拥有node、browser两套环境，能完全控制电脑，因此如果您不是开发人员，请勿开启此插件
 ENABLE = false
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "外部操纵Typora"
-# 是否在右键菜单中可点击
-CLICKABLE = false
 # rpc server选项
 SERVER_OPTIONS = { port = 5080, host = "127.0.0.1", path = "/", strict = false }
 
@@ -1241,7 +1174,5 @@ SERVER_OPTIONS = { port = 5080, host = "127.0.0.1", path = "/", strict = false }
 # 是否启用插件
 # 此插件乃开发者于开发阶段使用，请勿开启
 ENABLE = false
-# 在右键菜单中展示的名称
+# 插件名称
 NAME = "测试专用"
-# 是否在右键菜单中可点击
-CLICKABLE = false
