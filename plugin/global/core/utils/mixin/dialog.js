@@ -167,7 +167,8 @@ class dialog {
                 const rows = comp.rows || 3;
                 const cnt = comp.content || "";
                 const readonly = comp.readonly ? "readonly" : "";
-                control = `<textarea class="form-control" rows="${rows}" ${readonly} ${placeholder(comp)} ${disabled(comp)}>${cnt}</textarea>`;
+                const cls = comp.resize ? "" : "no-resize";
+                control = `<textarea class="form-control ${cls}" rows="${rows}" ${readonly} ${placeholder(comp)} ${disabled(comp)}>${cnt}</textarea>`;
                 break
             case "pre":
                 label = "pre";
