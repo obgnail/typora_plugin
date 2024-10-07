@@ -1,7 +1,7 @@
 #-------------------------------------------------------------------------
-#  请勿修改【custom_plugin.default.toml】文件，请阅读本目录下的【请读我.md】文件
-#  请勿修改【custom_plugin.default.toml】文件，请阅读本目录下的【请读我.md】文件
-#  请勿修改【custom_plugin.default.toml】文件，请阅读本目录下的【请读我.md】文件
+#  请勿修改【custom_plugin.default.toml】文件，请阅读本目录下的【请读我.md】
+#  请勿修改【custom_plugin.default.toml】文件，请阅读本目录下的【请读我.md】
+#  请勿修改【custom_plugin.default.toml】文件，请阅读本目录下的【请读我.md】
 #-------------------------------------------------------------------------
 
 
@@ -21,7 +21,7 @@ LANGUAGE = "kanban"
 # 严格模式：不会忽略存在语法错误的代码行，直接在页面上报错（此选项用于控制所有看板，如果设置为true，那么会强制所有看板进入严格模式）
 # 也可以在代码块首行添加use strict，进入严格模式（此操作用于控制单个看板）
 STRICT_MODE = false
-# 默认处于交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
+# 开启交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 当描述为空时隐藏描述框
 HIDE_DESC_WHEN_EMPTY = true
@@ -76,7 +76,7 @@ order = 1
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "chat"
-# 默认处于交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
+# 开启交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 默认的选项
 DEFAULT_OPIONS = { useStrict = true, showNickname = true, showAvatar = true, notAllowShowTime = false, allowMarkdown = true, senderNickname = "me", timeNickname = "time" }
@@ -132,7 +132,7 @@ order = 1
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "timeline"
-# 默认处于交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
+# 开启交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 图表背景颜色
 BACKGROUND_COLOR = "#fafafa"
@@ -186,7 +186,7 @@ order = 1
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "echarts"
-# 默认处于交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
+# 开启交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 渲染器: canvas/svg（参考：https://echarts.apache.org/handbook/zh/best-practices/canvas-vs-svg/）
 RENDERER = "svg"
@@ -247,7 +247,7 @@ order = 1
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "chart"
-# 默认处于交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
+# 开启交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 图表默认高度
 DEFAULT_FENCE_HEIGHT = "300px"
@@ -300,7 +300,7 @@ order = 1
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "wavedrom"
-# 默认处于交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
+# 开启交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 是否启用安全模式（处于安全模式下，无法获取外部数据源）
 SAFE_MODE = true
@@ -346,7 +346,7 @@ order = 1
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "calendar"
-# 默认处于交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
+# 开启交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 图表默认高度
 DEFAULT_FENCE_HEIGHT = "800px"
@@ -391,7 +391,7 @@ order = 1
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "abc"
-# 默认处于交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
+# 开启交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 乐谱的可视化选项，请参考: https://paulrosen.github.io/abcjs/visual/render-abc-options.html
 # 常用的配置：
@@ -488,7 +488,7 @@ order = 1
 # 代码块语言
 # 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
 LANGUAGE = "marp"
-# 默认处于交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
+# 开启交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
 INTERACTIVE_MODE = true
 # 自动插入的模板
 TEMPLATE = """```marp

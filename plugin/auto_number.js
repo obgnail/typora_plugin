@@ -182,7 +182,7 @@ class autoNumberPlugin extends BasePlugin {
     style = () => ({ textID: this.css_id, text: this.getResultStyle() })
 
     process = () => {
-        this.utils.autoSaveConfig(this);
+        this.utils.runtime.autoSaveConfig(this);
         if (this.config.ENABLE_WHEN_EXPORT) {
             new exportHelper(this).process();
         }

@@ -1,4 +1,5 @@
 module.exports = {
+    ...require("./runtime"),
     ...require("./hotkeyHub"),
     ...require("./eventHub"),
     ...require("./stateRecorder"),

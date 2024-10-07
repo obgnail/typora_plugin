@@ -86,19 +86,19 @@ class utils {
         const target = anchorNode.closest(selector);
         target && target[0] && func(target[0]);
     }
-    static meta = {} // 用于在右键菜单功能中传递数据，不可手动调用此变量
+    static _meta = {} // 用于在右键菜单功能中传递数据，不可手动调用此变量
     static generateDynamicCallArgs = (fixedName, anchorNode, notInContextMenu = false) => {
         if (!fixedName) return;
         const plugin = this.getPlugin(fixedName);
         if (plugin && plugin.dynamicCallArgsGenerator) {
             anchorNode = anchorNode || this.getAnchorNode();
             if (anchorNode[0]) {
-                this.meta = {};
-                return plugin.dynamicCallArgsGenerator(anchorNode[0], this.meta, notInContextMenu);
+                this._meta = {};
+                return plugin.dynamicCallArgsGenerator(anchorNode[0], this._meta, notInContextMenu);
             }
         }
     }
-    static withMeta = func => func(this.meta)
+    static withMeta = func => func(this._meta)
 
     // Repo: https://github.com/jimp-dev/jimp
     // after loadJimp(), you can use globalThis.Jimp
@@ -248,6 +248,26 @@ class utils {
         }, Array.isArray(source) ? [] : {})
     }
 
+    /**
+     * only merge keys that exist in source
+     * @example update({ o: { a: [1, 2] } }, { o: { a: [3, 4] }, d: { b: 4 } }) -> { o: { a: [ 3, 4 ] } } }
+     * @example update({ o: { a: 3, c: 1 } }, { o: { a: 2 }, d: { b: 4 } }) -> { o: { a: 2, c: 1 } } }
+     */
+    static update = (source, other) => {
+        if (!this.isObject(source) || !this.isObject(other)) {
+            return other === undefined ? source : other
+        }
+        return Object.keys(source).reduce((obj, key) => {
+            const isArray = Array.isArray(source[key]) && Array.isArray(other[key]);
+            if (other[key]) {
+                obj[key] = isArray ? other[key] : this.update(source[key], other[key]);
+            } else {
+                obj[key] = source[key];
+            }
+            return obj;
+        }, Array.isArray(source) ? [] : {});
+    }
+
     static fromObject = (obj, attrs) => {
         const newObj = {};
         attrs.forEach(attr => obj[attr] !== undefined && (newObj[attr] = obj[attr]));
@@ -332,97 +352,6 @@ class utils {
     }
 
     ////////////////////////////// 业务文件操作 //////////////////////////////
-    static getOriginSettingPath = settingFile => this.joinPath("./plugin/global/settings", settingFile)
-    static getHomeSettingPath = settingFile => PATH.join(this.getHomeDir(), ".config", "typora_plugin", settingFile)
-    static getActualSettingPath = async settingFile => {
-        const homeSetting = this.getHomeSettingPath(settingFile);
-        const exist = await this.existPath(homeSetting);
-        return exist ? homeSetting : this.getOriginSettingPath(settingFile);
-    }
-
-    static saveConfig = async (fixedName, updateObj) => {
-        let isCustom = false;
-        let plugin = this.getPlugin(fixedName);
-        if (!plugin) {
-            plugin = this.getCustomPlugin(fixedName);
-            isCustom = true;
-        }
-        if (!plugin) return;
-
-        const file = isCustom ? "custom_plugin.user.toml" : "settings.user.toml";
-        const settingPath = await this.getActualSettingPath(file);
-        const tomlObj = await this.readToml(settingPath);
-        const newSetting = this.merge(tomlObj, { [fixedName]: updateObj });
-        const newContent = this.stringifyToml(newSetting);
-        return this.writeFile(settingPath, newContent);
-    }
-
-    static autoSaveConfig = plugin => {
-        const { saveConfig } = this;
-        plugin.config = new Proxy(plugin.config, {
-            set(target, property, value, receiver) {
-                saveConfig(plugin.fixedName, { [property]: value });
-                return Reflect.set(...arguments)
-            }
-        });
-    }
-
-    static _readSetting = async (defaultSetting, userSetting) => {
-        const default_ = this.getOriginSettingPath(defaultSetting);
-        const user_ = this.getOriginSettingPath(userSetting);
-        const home_ = this.getHomeSettingPath(userSetting);
-        const contentList = await this.readFiles([default_, user_, home_]);
-        try {
-            const configList = contentList.map(c => c ? TOML.parse(c) : {});
-            return configList.reduce(this.merge)
-        } catch (e) {
-            const message = "配置文件格式错误";
-            const detail = `您修改过配置文件且写入的内容有问题，导致无法正确读取配置文件。\n\n请点击「确定」前往校验网站手动修复（如果您有 GPT 也可以让它帮您修复）\n\n报错信息：${e.toString()}`;
-            const op = { type: "error", title: "Typora Plugin", buttons: ["确定", "取消"], message, detail };
-            const { response } = await this.showMessageBox(op);
-            if (response === 0) {
-                this.openUrl("https://www.bejson.com/validators/toml_editor/");
-            }
-            return {}
-        }
-    }
-    static readHotkeySetting = async () => this._readSetting("hotkey.default.toml", "hotkey.user.toml");
-    static readBasePluginSetting = async () => this._readSetting("settings.default.toml", "settings.user.toml");
-    static readCustomPluginSetting = async () => {
-        const settings = await this._readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
-        return this.fixCustomPluginSetting(settings);
-    }
-
-    // 兼容历史遗留问题
-    static fixCustomPluginSetting = async settings => {
-        Object.values(settings).map(plugin => {
-            if (plugin.config) {
-                Object.assign(plugin, plugin.config);
-                delete plugin.config;
-            }
-        })
-        return settings
-    }
-
-    static openSettingFolder = async () => this.showInFinder(await this.getActualSettingPath("settings.user.toml"))
-
-    static backupSettingFile = async (showInFinder = true) => {
-        const { FsExtra, Path } = this.Package;
-        const backupDir = Path.join(this.tempFolder, "typora_plugin_config");
-        await FsExtra.emptyDir(backupDir);
-        const settingFiles = ["settings.user.toml", "custom_plugin.user.toml", "hotkey.user.toml"];
-        for (const file of settingFiles) {
-            const source = await this.getActualSettingPath(file);
-            const target = Path.join(backupDir, file);
-            try {
-                await FsExtra.copy(source, target);
-            } catch (e) {
-                console.error(e);
-            }
-        }
-        showInFinder && this.showInFinder(backupDir);
-    }
-
     static editCurrentFile = async (replacement, reloadContent = true) => {
         const bak = File.presentedItemChanged;
         File.presentedItemChanged = this.noop;

@@ -97,8 +97,8 @@ class customPluginLoader {
         if (errorPluginSetting && errorPluginSetting.length) {
             const msg = "以下插件的配置写错文件了，一级插件应该写在 settings.user.toml 中，二级插件应该写在 custom_plugin.user.toml 中";
             const components = [msg, ...errorPluginSetting].map(label => ({ label, type: "p" }));
-            const openSettingFile = () => this.utils.showInFinder(this.utils.getOriginSettingPath("settings.user.toml"));
-            this.utils.dialog.modal({ title: "配置错误", components }, openSettingFile, openSettingFile);
+            const openFolder = () => this.utils.runtime.openSettingFolder();
+            this.utils.dialog.modal({ title: "配置错误", components }, openFolder, openFolder);
         }
     }
 
@@ -132,7 +132,7 @@ class customPluginLoader {
     }
 
     process = async () => {
-        const settings = await this.utils.readCustomPluginSetting();
+        const settings = await this.utils.runtime.readCustomPluginSetting();
         this.mergeSettings(settings);
         this.errorSettingDetector(settings);
         this.controller.pluginsSettings = settings;

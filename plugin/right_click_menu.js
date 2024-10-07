@@ -21,7 +21,7 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.autoSaveConfig(this);
+        this.utils.runtime.autoSaveConfig(this);
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.appendMenu)
     }
 
