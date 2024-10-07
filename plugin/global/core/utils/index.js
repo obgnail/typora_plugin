@@ -248,6 +248,26 @@ class utils {
         }, Array.isArray(source) ? [] : {})
     }
 
+    /**
+     * only merge keys that exist in source
+     * @example update({ o: { a: [1, 2] } }, { o: { a: [3, 4] }, d: { b: 4 } }) -> { o: { a: [ 3, 4 ] } } }
+     * @example update({ o: { a: 3, c: 1 } }, { o: { a: 2 }, d: { b: 4 } }) -> { o: { a: 2, c: 1 } } }
+     */
+    static update = (source, other) => {
+        if (!this.isObject(source) || !this.isObject(other)) {
+            return other === undefined ? source : other
+        }
+        return Object.keys(source).reduce((obj, key) => {
+            const isArray = Array.isArray(source[key]) && Array.isArray(other[key]);
+            if (other[key]) {
+                obj[key] = isArray ? other[key] : this.update(source[key], other[key]);
+            } else {
+                obj[key] = source[key];
+            }
+            return obj;
+        }, Array.isArray(source) ? [] : {});
+    }
+
     static fromObject = (obj, attrs) => {
         const newObj = {};
         attrs.forEach(attr => obj[attr] !== undefined && (newObj[attr] = obj[attr]));
@@ -367,14 +387,13 @@ class utils {
         });
     }
 
-    static _readSetting = async (defaultSetting, userSetting) => {
+    static _getSettingObjects = async (defaultSetting, userSetting) => {
         const default_ = this.getOriginSettingPath(defaultSetting);
         const user_ = this.getOriginSettingPath(userSetting);
         const home_ = this.getHomeSettingPath(userSetting);
         const contentList = await this.readFiles([default_, user_, home_]);
         try {
-            const configList = contentList.map(c => c ? TOML.parse(c) : {});
-            return configList.reduce(this.merge)
+            return contentList.map(c => c ? TOML.parse(c) : {});
         } catch (e) {
             const message = "配置文件格式错误";
             const detail = `您修改过配置文件且写入的内容有问题，导致无法正确读取配置文件。\n\n请点击「确定」前往校验网站手动修复（如果您有 GPT 也可以让它帮您修复）\n\n报错信息：${e.toString()}`;
@@ -386,13 +405,18 @@ class utils {
             return {}
         }
     }
+
+    static _readSetting = async (defaultSetting, userSetting) => {
+        const objs = await this._getSettingObjects(defaultSetting, userSetting);
+        return objs.reduce(this.merge)
+    }
+
     static readHotkeySetting = async () => this._readSetting("hotkey.default.toml", "hotkey.user.toml");
     static readBasePluginSetting = async () => this._readSetting("settings.default.toml", "settings.user.toml");
     static readCustomPluginSetting = async () => {
         const settings = await this._readSetting("custom_plugin.default.toml", "custom_plugin.user.toml");
         return this.fixCustomPluginSetting(settings);
     }
-
     // 兼容历史遗留问题
     static fixCustomPluginSetting = async settings => {
         Object.values(settings).map(plugin => {
