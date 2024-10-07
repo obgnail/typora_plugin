@@ -32,14 +32,13 @@ class resizeTablePlugin extends BasePlugin {
             const { clientX: startX, clientY: startY } = ev;
             target.style.width = startWidth + "px";
             target.style.height = startHeight + "px";
+            target.style.cursor = direction === "right" ? "w-resize" : "s-resize";
 
             if (direction === "right") {
-                target.style.cursor = "w-resize";
-                const num = this.whichChildOfParent(target);
+                const num = this.indexOfParent(target);
                 const eleList = target.closest(closestElement).querySelectorAll(`tr ${tag}:nth-child(${num})`);
                 this.cleanStyle(eleList, target, "width");
             } else if (direction === "bottom") {
-                target.style.cursor = "s-resize";
                 const tds = target.parentElement.children;
                 this.cleanStyle(tds, target, "height");
             }
@@ -95,42 +94,27 @@ class resizeTablePlugin extends BasePlugin {
         }
     }
 
-    whichChildOfParent = child => {
-        let i = 1;
-        for (const sibling of child.parentElement.children) {
-            if (sibling && sibling === child) {
-                return i
-            }
-            i++
-        }
-    }
+    indexOfParent = child => Array.prototype.indexOf.call(child.parentElement.children, child) + 1
 
     findTarget = (ele, ev) => {
-        const { whichChildOfParent } = this;
-
-        function* find(ele) {
-            // 自己
-            yield ele
-            // 左边
-            yield ele.previousElementSibling
-            // 上边
-            const num = whichChildOfParent(ele);
-            const uncle = ele.parentElement.previousElementSibling;
-            yield uncle
-                // td
-                ? uncle.querySelector(`td:nth-child(${num})`)
-                // tr
-                : ele.closest("table").querySelector("thead tr").querySelector(`th:nth-child(${num})`)
-        }
-
-        for (const target of find(ele)) {
+        const nth = this.indexOfParent(ele);
+        const uncle = ele.parentElement.previousElementSibling;
+        // [自己, 左边, 上边]
+        const targets = [
+            ele,
+            ele.previousElementSibling,
+            uncle
+                ? uncle.querySelector(`td:nth-child(${nth})`)
+                : ele.closest("table").querySelector("thead tr").querySelector(`th:nth-child(${nth})`)
+        ];
+        for (const target of targets) {
             const direction = this.getDirection(target, ev);
             if (target && direction) {
-                return { target, direction }
+                return { target, direction };
             }
         }
-        return { target: null, direction: "" }
-    }
+        return { target: null, direction: "" };
+    };
 
     cleanStyle = (eleList, exclude, cleanStyle) => {
         for (const td of eleList) {
