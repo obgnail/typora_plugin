@@ -19,15 +19,13 @@ class slashCommandsPlugin extends BasePlugin {
 
     call = () => this._showAllCommands();
 
-    openSettingFile = async () => this.utils.showInFinder(await this.utils.getActualSettingPath("settings.user.toml"));
-
     _showAllCommands = () => {
         const getType = type => type === this.type.COMMAND ? "命令" : "文段";
         const th = `<tr><th>关键字</th><th>类型</th><th>功能</th></tr>`;
         const list = Array.from(this.commands.values());
         const trs = list.map(({ type, keyword, hint = "", callback = "" }) => `<tr><td>${keyword}</td><td>${getType(type)}</td><td title="${callback}">${hint}</td></tr>`);
         const table = `<table>${th}${trs.join("")}</table>`;
-        const onclick = ev => ev.target.closest("a") && this.openSettingFile();
+        const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder();
         const components = [
             { label: "如需自定义斜杠命令，请 <a>修改配置文件</a>", type: "p", onclick },
             { label: table, type: "p" }

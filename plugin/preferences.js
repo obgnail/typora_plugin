@@ -2,8 +2,8 @@ class preferencesPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     getSettings = async () => {
-        const settings = await this.utils.readBasePluginSetting();
-        const customSettings = await this.utils.readCustomPluginSetting();
+        const settings = await this.utils.runtime.readBasePluginSetting();
+        const customSettings = await this.utils.runtime.readCustomPluginSetting();
         delete settings.global;
         return [settings, customSettings]
     }
@@ -23,10 +23,10 @@ class preferencesPlugin extends BasePlugin {
 
         const files = [
             { file: "settings.user.toml", mergeObj: pluginState, clean: this.utils.noop },
-            { file: "custom_plugin.user.toml", mergeObj: customPluginState, clean: this.utils.fixCustomPluginSetting },
+            { file: "custom_plugin.user.toml", mergeObj: customPluginState, clean: this.utils.runtime.fixCustomPluginSetting },
         ]
         for (const { file, mergeObj, clean } of files) {
-            const settingPath = await this.utils.getActualSettingPath(file);
+            const settingPath = await this.utils.runtime.getActualSettingPath(file);
             const settingObj = await this.utils.readToml(settingPath);
             const setting = this.utils.merge(settingObj, mergeObj);
             const newSetting = await clean(setting);
@@ -43,8 +43,6 @@ class preferencesPlugin extends BasePlugin {
             }
         }
     }
-
-    openSettingFile = async () => this.utils.showInFinder(await this.utils.getActualSettingPath("settings.user.toml"));
 
     call = async () => {
         const infoMap = {
@@ -70,7 +68,7 @@ class preferencesPlugin extends BasePlugin {
             checked: plugin.ENABLE || plugin.enable,
             disabled: this.config.IGNORE_PLUGINS.includes(fixedName),
         })
-        const onclick = ev => ev.target.closest("a") && this.openSettingFile();
+        const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder();
         const [settings, customSettings] = await this.getSettings();
         const plugins = Object.entries(settings).map(displayFunc);
         const customPlugins = Object.entries(customSettings).map(displayFunc);

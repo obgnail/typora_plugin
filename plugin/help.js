@@ -179,8 +179,8 @@ class helpPlugin extends BasePlugin {
 
     call = type => {
         const map = {
-            open_setting_folder: () => this.utils.openSettingFolder(),
-            backup_setting_file: () => this.utils.backupSettingFile(),
+            open_setting_folder: () => this.utils.runtime.openSettingFolder(),
+            backup_setting_file: () => this.utils.runtime.backupSettingFile(),
             set_user_styles: () => this.utils.showInFinder(this.utils.joinPath("./plugin/global/user_styles/请读我.md")),
             new_custom_plugin: () => this.utils.showInFinder(this.utils.joinPath("./plugin/custom/请读我.md")),
             json_rpc: () => this.utils.showInFinder(this.utils.joinPath("./plugin/json_rpc/请读我.md")),

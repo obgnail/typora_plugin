@@ -37,7 +37,7 @@ async function entry() {
     }
 
     const launch = async () => {
-        const settings = await utils.readBasePluginSetting();
+        const settings = await utils.runtime.readBasePluginSetting();
         const enable = settings && settings.global && settings.global.ENABLE;
         if (!enable) {
             console.warn("disable typora plugin");
