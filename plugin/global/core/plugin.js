@@ -99,10 +99,10 @@ const LoadPlugins = async (settings, isCustom) => {
     }))
 
     // log
-    const color = { enable: "32", disable: "33", stop: "34", error: "31", nosetting: "35" };
-    for (const [t, p] of Object.entries(plugins)) {
-        console.debug(`[ ${isCustom ? "custom" : "base"} ] [ \x1B[${color[t]}m${t}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p);
-    }
+    const LOG_COLOR = { enable: "32", disable: "33", stop: "34", error: "31", nosetting: "35" };
+    console.group(`${isCustom ? "Custom" : "Base"} Plugin`);
+    Object.entries(plugins).forEach(([t, p]) => console.debug(`[ \x1B[${LOG_COLOR[t]}m${t}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p));
+    console.groupEnd();
 
     return plugins;
 }
