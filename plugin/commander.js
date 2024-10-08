@@ -21,13 +21,13 @@ class commanderPlugin extends BasePlugin {
         const builtin = this.config.BUILTIN.map(e => `<option data-shell="${e.shell}" value="${this.utils.escape(e.cmd)}">${e.name}</option>`).join("");
         return `
             <div id="plugin-commander" class="plugin-common-modal plugin-common-hidden"> 
-                <div id="plugin-commander-form">
-                    <i class="ion-ios7-play plugin-commander-commit plugin-common-hidden" ty-hint="执行命令"></i>
-                    <input type="text" class="plugin-commander-input" placeholder="Typora commander" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录"/>
+                <form id="plugin-commander-form">
+                    <div class="ion-ios7-play plugin-commander-commit plugin-common-hidden" ty-hint="执行命令"></div>
+                    <input type="text" class="plugin-commander-input" placeholder="Typora commander" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
                     <select class="plugin-commander-shell">${shells.join("")}</select>
                     <select class="plugin-commander-builtin">${builtin}</select>
-                </div>
-                <div class="plugin-commander-output plugin-common-hidden"><pre tabindex="0"></pre></div>
+                </form>
+                <div class="plugin-commander-output plugin-common-hidden"><pre></pre></div>
             </div>
         `
     }
@@ -44,6 +44,7 @@ class commanderPlugin extends BasePlugin {
     init = () => {
         this.entities = {
             modal: document.getElementById("plugin-commander"),
+            form: document.querySelector("#plugin-commander-form"),
             input: document.querySelector("#plugin-commander-form .plugin-commander-input"),
             shellSelect: document.querySelector("#plugin-commander-form .plugin-commander-shell"),
             builtinSelect: document.querySelector("#plugin-commander-form .plugin-commander-builtin"),
@@ -61,8 +62,16 @@ class commanderPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.entities.shellSelect.addEventListener("change", () => this.entities.input.focus());
         this.entities.commit.addEventListener("click", () => this.commitExecute());
+        this.entities.shellSelect.addEventListener("change", () => this.entities.input.focus());
+        this.entities.builtinSelect.addEventListener("change", ev => {
+            const option = ev.target.selectedOptions[0];
+            if (!option) return;
+            this.entities.shellSelect.value = option.dataset.shell;
+            this.entities.input.value = option.value;
+            this.entities.input.dispatchEvent(new Event("input"));
+            this.entities.input.focus();
+        })
         this.entities.input.addEventListener("input", () => {
             const hasCMD = this.entities.input.value.trim();
             this.utils.toggleVisible(this.entities.commit, !hasCMD);
@@ -70,30 +79,14 @@ class commanderPlugin extends BasePlugin {
                 this.entities.builtinSelect.value = "";
             }
         })
-        this.entities.modal.addEventListener("keydown", ev => {
-            const { key, target } = ev;
-            const isEnter = key === "Enter" && target.closest("input");
-            const isEscape = key === "Escape" || (key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value);
-            const isTab = key === "Tab" && target.closest(".plugin-commander-builtin");
-            if (isEnter) {
-                this.commitExecute();
-            } else if (isEscape) {
-                this.utils.hide(this.entities.modal);
-            } else if (isTab) {
-                this.entities.input.focus();
-            }
-            if (isEnter || isEscape || isTab) {
-                ev.stopPropagation();
-                ev.preventDefault();
-            }
-        });
-        this.entities.builtinSelect.addEventListener("change", () => {
-            const option = this.entities.builtinSelect.options[this.entities.builtinSelect.selectedIndex];
-            this.entities.shellSelect.value = option.dataset.shell;
-            this.entities.input.value = option.value;
-            this.entities.input.dispatchEvent(new CustomEvent('input'));
-            this.entities.input.focus();
+        this.entities.form.addEventListener("submit", ev => {
+            ev.preventDefault();
+            this.commitExecute();
         })
+        this.entities.form.addEventListener("keydown", ev => {
+            const wantHide = ev.key === "Escape" || (ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value);
+            wantHide && this.utils.hide(this.entities.modal);
+        });
         if (this.config.ALLOW_DRAG) {
             this.utils.dragFixedModal(this.entities.input, this.entities.modal);
         }
@@ -142,17 +135,19 @@ class commanderPlugin extends BasePlugin {
         this.entities.input.value = cmd;
         this.entities.input.dispatchEvent(new Event("input"));
         this.entities.shellSelect.value = shell;
-        this.utils.show(this.entities.output);
+        this._showResult("", false, false);
     }
 
-    _showResult = (result, error = false) => {
-        this.utils.show(this.entities.modal);
+    _showResult = (result, showModal = true, error = false) => {
+        if (showModal) {
+            this.utils.show(this.entities.modal);
+        }
         this.utils.show(this.entities.output);
         this.entities.pre.textContent = result;
         this.entities.pre.classList.toggle("error", error);
     }
-    _showStdout = result => this._showResult(result, false)
-    _showStderr = result => this._showResult(result, true)
+    _showStdout = result => this._showResult(result, true, false)
+    _showStderr = result => this._showResult(result, true, true)
 
     // 为什么不使用shell options? 答：不能支持wsl
     // 为什么不使用env options?   答：为了兼容。cmd使用变量的方式为%VAR%，bash为$VAR。而且命令可能会跨越多层shell
@@ -204,9 +199,8 @@ class commanderPlugin extends BasePlugin {
         if (!cmd) {
             this._showStderr("command is empty");
         } else {
-            const select = this.entities.shellSelect;
-            const shell = select.options[select.selectedIndex].value;
-            this.execute(this.config.COMMIT_EXEC_SHOW, cmd, shell);
+            const option = this.entities.shellSelect.selectedOptions[0];
+            option && this.execute(this.config.COMMIT_EXEC_SHOW, cmd, option.value);
         }
     }
 
