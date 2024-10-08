@@ -99,14 +99,11 @@ class resizeTablePlugin extends BasePlugin {
     findTarget = (ele, ev) => {
         const nth = this.indexOfParent(ele);
         const uncle = ele.parentElement.previousElementSibling;
-        // [自己, 左边, 上边]
-        const targets = [
-            ele,
-            ele.previousElementSibling,
-            uncle
-                ? uncle.querySelector(`td:nth-child(${nth})`)
-                : ele.closest("table").querySelector("thead tr").querySelector(`th:nth-child(${nth})`)
-        ];
+        const above = uncle
+            ? uncle.querySelector(`td:nth-child(${nth})`)
+            : ele.closest("table").querySelector("thead tr").querySelector(`th:nth-child(${nth})`)
+
+        const targets = [ele, ele.previousElementSibling, above];  // [self, left, above]
         for (const target of targets) {
             const direction = this.getDirection(target, ev);
             if (target && direction) {
