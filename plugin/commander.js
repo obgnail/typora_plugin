@@ -21,13 +21,13 @@ class commanderPlugin extends BasePlugin {
         const builtin = this.config.BUILTIN.map(e => `<option data-shell="${e.shell}" value="${this.utils.escape(e.cmd)}">${e.name}</option>`).join("");
         return `
             <div id="plugin-commander" class="plugin-common-modal plugin-common-hidden"> 
-                <div id="plugin-commander-form">
-                    <i class="ion-ios7-play plugin-commander-commit plugin-common-hidden" ty-hint="执行命令"></i>
-                    <input type="text" class="plugin-commander-input" placeholder="Typora commander" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录"/>
+                <form id="plugin-commander-form">
+                    <div class="ion-ios7-play plugin-commander-commit plugin-common-hidden" ty-hint="执行命令"></div>
+                    <input type="text" class="plugin-commander-input" placeholder="Typora commander" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
                     <select class="plugin-commander-shell">${shells.join("")}</select>
                     <select class="plugin-commander-builtin">${builtin}</select>
-                </div>
-                <div class="plugin-commander-output plugin-common-hidden"><pre tabindex="0"></pre></div>
+                </form>
+                <div class="plugin-commander-output plugin-common-hidden"><pre></pre></div>
             </div>
         `
     }
@@ -44,6 +44,7 @@ class commanderPlugin extends BasePlugin {
     init = () => {
         this.entities = {
             modal: document.getElementById("plugin-commander"),
+            form: document.querySelector("#plugin-commander-form"),
             input: document.querySelector("#plugin-commander-form .plugin-commander-input"),
             shellSelect: document.querySelector("#plugin-commander-form .plugin-commander-shell"),
             builtinSelect: document.querySelector("#plugin-commander-form .plugin-commander-builtin"),
@@ -61,59 +62,37 @@ class commanderPlugin extends BasePlugin {
     }
 
     process = () => {
-        // 提供不同入口，让鼠标操作的用户不必切换回键盘操作
-        this.entities.commit.addEventListener("click", ev => {
-            this.commitExecute();
-            ev.stopPropagation();
-            ev.preventDefault();
-        }, true);
-
-        this.entities.input.addEventListener("input", () => {
-            const cmd = this.entities.input.value.trim();
-            if (cmd) {
-                this.utils.show(this.entities.commit);
-            } else {
-                this.utils.hide(this.entities.commit);
+        this.entities.commit.addEventListener("click", () => this.commitExecute());
+        this.entities.shellSelect.addEventListener("change", () => this.entities.input.focus());
+        this.entities.builtinSelect.addEventListener("change", ev => {
+            const option = ev.target.selectedOptions[0];
+            if (!option) return;
+            this.entities.shellSelect.value = option.dataset.shell;
+            this.entities.input.value = option.value;
+            this.entities.input.dispatchEvent(new Event("input"));
+            this.entities.input.focus();
+        })
+        this.entities.input.addEventListener("input", ev => {
+            const hasCMD = ev.target.value.trim();
+            this.utils.toggleVisible(this.entities.commit, !hasCMD);
+            if (!hasCMD) {
                 this.entities.builtinSelect.value = "";
             }
         })
-
-        this.entities.modal.addEventListener("keydown", ev => {
-            const { key, target } = ev;
-            const isEnter = key === "Enter" && target.closest("input");
-            const isEscape = key === "Escape" || (key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value);
-            const isTab = key === "Tab" && target.closest(".plugin-commander-builtin");
-
-            if (isEnter) {
-                this.commitExecute();
-            } else if (isEscape) {
-                this.utils.hide(this.entities.modal);
-            } else if (isTab) {
-                this.entities.input.focus();
-            }
-
-            if (isEnter || isEscape || isTab) {
-                ev.stopPropagation();
-                ev.preventDefault();
-            }
-        });
-
-        this.entities.shellSelect.addEventListener("change", () => this.entities.input.focus());
-
-        this.entities.builtinSelect.addEventListener("change", () => {
-            const option = this.entities.builtinSelect.options[this.entities.builtinSelect.selectedIndex];
-            this.entities.shellSelect.value = option.dataset.shell;
-            this.entities.input.value = option.value;
-            this.entities.input.dispatchEvent(new CustomEvent('input'));
-            this.entities.input.focus();
+        this.entities.form.addEventListener("submit", ev => {
+            ev.preventDefault();
+            this.commitExecute();
         })
-
+        this.entities.form.addEventListener("keydown", ev => {
+            const wantHide = ev.key === "Escape" || (ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value);
+            wantHide && this.utils.hide(this.entities.modal);
+        });
         if (this.config.ALLOW_DRAG) {
             this.utils.dragFixedModal(this.entities.input, this.entities.modal);
         }
     }
 
-    convertPath = (path, shell) => {
+    _convertPath = (path, shell) => {
         if (!File.isWin) return path;
 
         if (shell === this.SHELL.WSL) {
@@ -124,138 +103,105 @@ class commanderPlugin extends BasePlugin {
 
         return path;
     }
+    _getFile = shell => this._convertPath(this.utils.getFilePath(), shell);
+    _getFolder = shell => this._convertPath(this.utils.getCurrentDirPath(), shell);
+    _getMountFolder = shell => this._convertPath(this.utils.getMountFolder(), shell);
 
-    getFile = shell => this.convertPath(this.utils.getFilePath(), shell);
-    getFolder = shell => this.convertPath(this.utils.getCurrentDirPath(), shell);
-    getMountFolder = shell => this.convertPath(this.utils.getMountFolder(), shell);
-
-    replaceArgs = (cmd, shell) => {
-        const file = this.getFile(shell);
-        const folder = this.getFolder(shell);
-        const mount = this.getMountFolder(shell);
-        return cmd.replace(/\$f/g, `"${file}"`).replace(/\$d/g, `"${folder}"`).replace(/\$m/g, `"${mount}"`);
-    }
-
-    // TODO: 这种做法路子太野，应该采用【反弹shell】
-    getShellCommand = env => {
-        switch (env) {
-            case this.SHELL.GIT_BASH:
-                return `bash.exe -c`
-            case this.SHELL.POWER_SHELL:
-                return `powershell /C`
-            case this.SHELL.WSL:
-                return `wsl.exe -e bash -c`
-            default:
-                return File.isWin ? "cmd /C" : "bash -c"
+    // TODO: 这种做法路子太野，正确方式应该是：反弹shell
+    _getCommand = (cmd, shell) => {
+        const replaceArgs = (cmd, shell) => {
+            const replacements = { f: this._getFile(shell), d: this._getFolder(shell), m: this._getMountFolder(shell) };
+            return cmd.replace(/\$([fdm])/g, match => `"${replacements[match.slice(1)]}"`);
+        };
+        const getShellCommand = shell => {
+            switch (shell) {
+                case this.SHELL.GIT_BASH:
+                    return `bash.exe -c`
+                case this.SHELL.POWER_SHELL:
+                    return `powershell /C`
+                case this.SHELL.WSL:
+                    return `wsl.exe -e bash -c`
+                default:
+                    return File.isWin ? "cmd /C" : "bash -c"
+            }
         }
+        const prefix = File.isWin ? "chcp 65001 |" : "";
+        const nestCommand = replaceArgs(cmd, shell);
+        const shellCommand = getShellCommand(shell);
+        return `${prefix} ${shellCommand} "${nestCommand}"`;
     }
 
-    normalizeModal = (cmd, shell, hint) => {
+    _refreshModal = (cmd, shell) => {
         this.entities.input.value = cmd;
+        this.entities.input.dispatchEvent(new Event("input"));
         this.entities.shellSelect.value = shell;
-        this.utils.show(this.entities.commit);
-        typeof hint === "string" && this.showStdout(hint);
+        this._showResult("", false, false);
     }
 
-    normalizeCommand = (cmd, shell) => {
-        cmd = this.replaceArgs(cmd, shell);
-        shell = this.getShellCommand(shell);
-        return [cmd, shell]
-    }
-
-    showStdout = stdout => {
-        this.utils.show(this.entities.modal);
+    _showResult = (result, showModal = true, error = false) => {
+        if (showModal) {
+            this.utils.show(this.entities.modal);
+        }
         this.utils.show(this.entities.output);
-        this.entities.pre.classList.remove("error");
-        this.entities.pre.textContent = stdout;
+        this.entities.pre.textContent = result;
+        this.entities.pre.classList.toggle("error", error);
     }
-
-    showStdErr = stderr => {
-        this.showStdout(stderr);
-        this.entities.pre.classList.add("error");
-    }
+    _showStdout = result => this._showResult(result, true, false)
+    _showStderr = result => this._showResult(result, true, true)
 
     // 为什么不使用shell options? 答：不能支持wsl
     // 为什么不使用env options?   答：为了兼容。cmd使用变量的方式为%VAR%，bash为$VAR。而且命令可能会跨越多层shell
-    exec = (cmd, shell, resolve, reject, callback, hint, options) => {
-        resolve = resolve || console.log;
-        reject = reject || console.error;
-        options = options || {};
-        const cb = (err, stdout, stderr) => callback && callback(err, stdout, stderr);
-
-        const prefix = File.isWin ? `chcp 65001 |` : "";
-        this.normalizeModal(cmd, shell, hint);
-        const [cmd_, shell_] = this.normalizeCommand(cmd, shell)
-        const command_ = `${prefix} ${shell_} "${cmd_}"`;
-        const defaultOptions = { encoding: 'utf8', cwd: this.getFolder() };
-        const option_ = { ...defaultOptions, ...options };
+    _exec = ({ cmd, shell, options = {}, resolve = console.log, reject = console.error, callback = null }) => {
+        const command = this._getCommand(cmd, shell);
+        const options_ = { encoding: "utf8", cwd: this._getFolder(), ...options }
         const callback_ = (err, stdout, stderr) => {
             if (err || stderr.length) {
-                reject(err || stderr.toString());
+                reject && reject(err || stderr.toString());
             } else {
-                resolve(stdout);
+                resolve && resolve(stdout);
             }
-            cb(err, stdout, stderr);
+            callback && callback(err, stdout, stderr);
         }
-        this.utils.Package.ChildProcess.exec(command_, option_, callback_);
+
+        this._refreshModal(cmd, shell);
+        this.utils.Package.ChildProcess.exec(command, options_, callback_);
     }
-
-    spawn = (cmd, shell, resolve, reject, callback, hint, options) => {
-        resolve = resolve || console.log;
-        reject = reject || console.error;
-        options = options || {};
-        const cb = code => callback && callback(code);
-
-        const prefix = File.isWin ? "chcp 65001 |" : "";
-        this.normalizeModal(cmd, shell, hint || ""); // 执行前清空输出
-        const [cmd_, shell_] = this.normalizeCommand(cmd, shell)
-        const command_ = `${prefix} ${shell_} "${cmd_}"`;
-        const defaultOptions = { encoding: 'utf8', cwd: this.getFolder(), shell: true };
-        const option_ = { ...defaultOptions, ...options };
-        const child = this.utils.Package.ChildProcess.spawn(command_, option_);
-        child.stdout.on('data', resolve);
-        child.stderr.on("data", reject);
-        child.on('close', cb);
-    }
-
-    silentExec = (cmd, shell, callback, hint, options) => this.exec(cmd, shell, null, null, callback, hint, options);
-    errorExec = (cmd, shell, callback, hint, options) => this.exec(cmd, shell, null, this.showStdErr, callback, hint, options);
-    alwaysExec = (cmd, shell, callback, hint, options) => this.exec(cmd, shell, this.showStdout, this.showStdErr, callback, hint, options);
-    echoExec = (cmd, shell, callback, hint, options) => {
+    _spawn = ({ cmd, shell, options = {}, callback = null }) => {
+        const command = this._getCommand(cmd, shell);
+        const options_ = { encoding: "utf8", cwd: this._getFolder(), shell: true, ...options };
         const resolve = data => this.entities.pre.textContent += data.toString();
-        const addErrorClass = this.utils.once(() => this.entities.pre.classList.add("error"));
         const reject = data => {
             this.entities.pre.textContent += data.toString();
-            addErrorClass();
+            this.entities.pre.classList.add("error");
         }
-        this.spawn(cmd, shell, resolve, reject, callback, hint, options);
+        const callback_ = code => callback && callback(code);
+
+        this._refreshModal(cmd, shell);
+        const child = this.utils.Package.ChildProcess.spawn(command, options_);
+        child.stdout.on("data", resolve);
+        child.stderr.on("data", reject);
+        child.on("close", callback_);
     }
 
-    execute = (type, cmd, shell, callback, hint, options) => {
-        switch (type) {
-            case "always":
-                return this.alwaysExec(cmd, shell, callback, hint, options)
-            case "error":
-                return this.errorExec(cmd, shell, callback, hint, options)
-            case "silent":
-                return this.silentExec(cmd, shell, callback, hint, options)
-            case "echo":
-            default:
-                return this.echoExec(cmd, shell, callback, hint, options)
-        }
-    }
+    echoExec = (cmd, shell, options = {}, callback = null) => this._spawn({ cmd, shell, options, callback });
+    silentExec = (cmd, shell, options = {}, callback = null) => this._exec({ cmd, shell, options, callback });
+    errorExec = (cmd, shell, options = {}, callback = null) => this._exec({ cmd, shell, options, callback, reject: this._showStderr });
+    alwaysExec = (cmd, shell, options = {}, callback = null) => this._exec({ cmd, shell, options, callback, resolve: this._showStdout, reject: this._showStderr });
 
+    execute = (type, cmd, shell, options = {}, callback = null) => {
+        const execFunctions = { always: this.alwaysExec, error: this.errorExec, silent: this.silentExec, echo: this.echoExec };
+        const execFunction = execFunctions[type] || execFunctions.echo;
+        return execFunction(cmd, shell, options, callback);
+    };
     quickExecute = (cmd, shell) => this.execute(this.config.QUICK_EXEC_SHOW, cmd, shell);
     commitExecute = () => {
         const cmd = this.entities.input.value;
         if (!cmd) {
-            this.showStdErr("command is empty");
-            return
+            this._showStderr("command is empty");
+        } else {
+            const option = this.entities.shellSelect.selectedOptions[0];
+            option && this.execute(this.config.COMMIT_EXEC_SHOW, cmd, option.value);
         }
-        const option = this.entities.shellSelect.options[this.entities.shellSelect.selectedIndex];
-        const shell = option.value;
-        this.showStdout("running...");
-        this.execute(this.config.COMMIT_EXEC_SHOW, cmd, shell, null);
     }
 
     toggleModal = () => {

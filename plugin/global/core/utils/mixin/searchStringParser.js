@@ -3,11 +3,10 @@
  *   <query> ::= <expr>
  *   <expr> ::= <term> ( <or> <term> )*
  *   <term> ::= <factor> ( <minus_and> <factor> )*
- *   <factor> ::= <quoted_phrase> | <keyword> | '(' <expr> ')'
- *   <quoted_phrase> ::= '"' [<keyword>] '"'
+ *   <factor> ::= '"' [<keyword>] '"' | <keyword> | '(' <expr> ')'
  *   <minus_and> ::= '-' | ' '
  *   <or> ::== 'OR' | '|'
- *   <keyword> ::= \w+
+ *   <keyword> ::= [^"]+
  */
 class searchStringParser {
     constructor(utils) {
@@ -162,12 +161,11 @@ class searchStringParser {
 <query> ::= <expr>
 <expr> ::= <term> ( <or> <term> )*
 <term> ::= <factor> ( <minus_and> <factor> )*
-<factor> ::= <quoted_phrase> | <keyword> | '(' <expr> ')'
-<quoted_phrase> ::= '"' [<keyword>] '"'
+<factor> ::= '"' [<keyword>] '"' | <keyword> | '(' <expr> ')'
 <minus_and> ::= '-' | ' '
 <or> ::== 'OR' | '|'
-<keyword> ::= \\w+`
-        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 8, content }];
+<keyword> ::= [^"]+`
+        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 7, content }];
         this.utils.dialog.modal({ title: "搜索语法", width: "550px", components });
     }
 
