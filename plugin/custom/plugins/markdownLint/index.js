@@ -48,7 +48,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             const obj = infos.map(i => this.utils.fromObject(i, ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]));
             const content = JSON.stringify(obj.length === 1 ? obj[0] : obj, null, "\t");
             const components = [{ label: "", type: "textarea", rows: 15, content }];
-            this.utils.modal({ title: "详细信息", width: "550px", components });
+            this.utils.dialog.modal({ title: "详细信息", width: "550px", components });
         }
         const _showDoc = () => {
             const url = "https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md";
@@ -73,8 +73,12 @@ class markdownLintPlugin extends BaseCustomPlugin {
             },
             settings: () => {
                 const content = JSON.stringify(this.config.rule_config, null, "\t");
-                const components = [{ label: "", type: "textarea", rows: 15, content }];
-                this.utils.modal({ title: "当前配置", width: "550px", components });
+                const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder("custom_plugin.user.toml");
+                const components = [
+                    { label: "为保护用户，此处禁止修改检测规则，如需请 <a>修改配置文件</a>", type: "p", onclick },
+                    { label: "", type: "textarea", rows: 15, content },
+                ];
+                this.utils.dialog.modal({ title: "当前配置", width: "550px", components });
             },
             detailAll: () => _getDetail(this.errors),
             detailSingle: infoIdx => _getDetail([this.errors[infoIdx]]),
