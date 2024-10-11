@@ -352,7 +352,7 @@ class utils {
     }
 
     ////////////////////////////// 业务文件操作 //////////////////////////////
-    static editCurrentFile = async (replacement, reloadContent = true) => {
+    static editCurrentFile = async (replacement, reloadContent = true) => await this.fixScrollTop(async () => {
         const bak = File.presentedItemChanged;
         File.presentedItemChanged = this.noop;
         const filepath = this.getFilePath();
@@ -364,6 +364,19 @@ class utils {
         }
         reloadContent && File.reloadContent(replaced, { fromDiskChange: false });
         setTimeout(() => File.presentedItemChanged = bak, 1500);
+    })
+
+    static fixScrollTop = async func => {
+        const inSourceMode = File.editor.sourceView.inSourceMode;
+        const scrollTop = inSourceMode
+            ? File.editor.sourceView.cm.getScrollInfo().top
+            : document.querySelector("content").scrollTop;
+        await func();
+        if (inSourceMode) {
+            File.editor.sourceView.cm.scrollTo(0, scrollTop);
+        } else {
+            document.querySelector("content").scrollTop = scrollTop;
+        }
     }
 
     static insertStyle = (id, css) => {
