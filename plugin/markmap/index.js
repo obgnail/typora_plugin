@@ -229,6 +229,7 @@ class tocMarkmap {
 
     prepare = () => {
         this.markmap = null;
+        this.transformContext = null;
         this.candidateColorSchemes = {
             PASTEL2: ['#B3E2CD', '#FDCDAC', '#CBD5E8', '#F4CAE4', '#E6F5C9', '#FFF2AE', '#F1E2CC', '#CCCCCC'],
             SET2: ['#66C2A5', '#FC8D62', '#8DA0CB', '#E78AC3', '#A6D854', '#FFD92F', '#E5C494', '#B3B3B3'],
@@ -520,7 +521,7 @@ class tocMarkmap {
             REMEMBER_FOLD_WHEN_UPDATE: "图形更新时不会展开已折叠节点",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
             FOLDER_WHEN_DOWNLOAD_SVG: "为空则使用 TAMP 目录",
-            FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid\n支持后缀：svg、png",
+            FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid\n支持后缀：svg、png、html",
             COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: "有些SVG解析器无法解析CSS变量，勾选此选项会自动替换CSS变量",
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若非需要手动修改导出的SVG文件，请勿勾选此选项",
             REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式提高兼容性。若图片显示异常，请勾选此选项",
@@ -664,9 +665,10 @@ class tocMarkmap {
             title: "导出",
             defaultPath,
             filters: [
-                { name: "All Image Types", extensions: ["svg", "png"] },
+                { name: "All", extensions: ["svg", "png", "html"] },
                 { name: "SVG", extensions: ["svg"] },
                 { name: "PNG", extensions: ["png"] },
+                { name: "HTML", extensions: ["html"] },
             ]
         })
 
@@ -736,33 +738,8 @@ class tocMarkmap {
         const removeClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
 
         const download = async (svg, downloadPath) => {
-            const formats = {
-                ".svg": svg => svg.outerHTML,
-                ".png": svg => new Promise(resolve => {
-                    const format = "png";
-                    const img = new Image();
-                    img.src = `data:image/svg+xml;utf8,${encodeURIComponent(svg.outerHTML)}`;
-                    img.onerror = () => resolve("");
-                    img.onload = () => {
-                        const canvas = document.createElement("canvas");
-                        const ratio = window.devicePixelRatio || 1;
-                        const width = svg.getAttribute("width") * ratio;
-                        const height = svg.getAttribute("height") * ratio;
-                        canvas.width = width;
-                        canvas.height = height;
-                        canvas.style.width = width + "px";
-                        canvas.style.height = height + "px";
-                        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-                        const base64Data = canvas.toDataURL(`image/${format}`).replace(`data:image/${format};base64,`, "");
-                        const dataBuffer = new Buffer(base64Data, "base64");
-                        resolve(dataBuffer);
-                    };
-                })
-            }
-
             const ext = _getExt(downloadPath);
-            const func = formats[ext] || formats[".svg"];
-            const fileContent = await func(svg);
+            const fileContent = await new downloadHelper(this).generateContent(svg, ext);
             const ok = await this.utils.writeFile(downloadPath, fileContent);
             if (!ok) return;
             if (this.config.SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG) {
@@ -935,12 +912,13 @@ class tocMarkmap {
 
     _create = async (md, options) => {
         options = this.controller.assignOptions(this.config.DEFAULT_TOC_OPTIONS, options);
-        const { root } = this.MarkmapLib.transformer.transform(md);
-        this.markmap = this.MarkmapLib.Markmap.create(this.entities.svg, options, root);
+        this.transformContext = this.MarkmapLib.transformer.transform(md);
+        this.markmap = this.MarkmapLib.Markmap.create(this.entities.svg, options, this.transformContext.root);
     }
 
     _update = async (md, fit = true) => {
-        const { root } = this.MarkmapLib.transformer.transform(md);
+        this.transformContext = this.MarkmapLib.transformer.transform(md);
+        const { root } = this.transformContext;
         this._setFold(root);
         this.markmap.setData(root);
         if (fit) {
@@ -1038,6 +1016,140 @@ class tocMarkmap {
     _cleanTransition = () => this.entities.modal.style.transition = "none"
 
     _rollbackTransition = () => this.entities.modal.style.transition = ""
+}
+
+class downloadHelper {
+    constructor(plugin) {
+        this.plugin = plugin;
+    }
+
+    svg(svgEle) {
+        return svgEle.outerHTML
+    }
+
+    png(svgEle) {
+        return new Promise(resolve => {
+            const format = "png";
+            const img = new Image();
+            img.src = `data:image/svg+xml;utf8,${encodeURIComponent(svgEle.outerHTML)}`;
+            img.onerror = () => resolve("");
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                const ratio = window.devicePixelRatio || 1;
+                const width = svgEle.getAttribute("width") * ratio;
+                const height = svgEle.getAttribute("height") * ratio;
+                canvas.width = width;
+                canvas.height = height;
+                canvas.style.width = width + "px";
+                canvas.style.height = height + "px";
+                canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+                const base64Data = canvas.toDataURL(`image/${format}`).replace(`data:image/${format};base64,`, "");
+                const dataBuffer = new Buffer(base64Data, "base64");
+                resolve(dataBuffer);
+            };
+        })
+    }
+
+    html() {
+        const escapeHtml = text => text.replace(/[&<"]/g, char => ({ '&': '&amp;', '<': '&lt;', '"': '&quot;' })[char]);
+        const createTag = (tagName, attributes, content) => {
+            const attrList = Object.entries(attributes || {}).map(([key, value]) => {
+                if (value == null || value === false) return ""
+                const escapedKey = ` ${escapeHtml(key)}`;
+                return value === true ? escapedKey : `${escapedKey}="${escapeHtml(value)}"`;
+            })
+            const tag = `<${tagName}${attrList.filter(Boolean).join("")}>`;
+            return content != null ? `${tag}${content}</${tagName}>` : tag;
+        }
+
+        const processStyles = styles => styles.map(style => {
+            const tagName = (style.type === "stylesheet") ? "link" : "style";
+            const attributes = (style.type === "stylesheet") ? { rel: "stylesheet", ...style.data } : style.data;
+            return createTag(tagName, attributes);
+        });
+
+        const processScripts = (scripts, root, urlBuilder) => {
+            const baseScript = ["d3@7.9.0/dist/d3.min.js", "markmap-view@0.17.3-alpha.1/dist/browser/index.js"]
+                .map(asset => ({ type: "script", data: { src: urlBuilder.getFullUrl(asset) } }));
+
+            const processedScript = {
+                type: "iife",
+                data: {
+                    getParams: ({ getMarkmap, root, options }) => [getMarkmap, root, options],
+                    fn: (getMarkmap, root, options) => {
+                        const markmap = getMarkmap();
+                        const markmapOptions = markmap.deriveOptions(options);
+                        window.mm = markmap.Markmap.create("svg#mindmap", markmapOptions, root);
+                    }
+                }
+            }
+
+            const options = { ...this.plugin.markmap.options, ...this.plugin.config.DEFAULT_TOC_OPTIONS };
+            const context = { root, options, getMarkmap: () => window.markmap };
+            const wrapIIFE = (fn, params) => {
+                const args = params.map(arg => {
+                    return typeof arg === "function"
+                        ? arg.toString().replace(/\s+/g, " ")
+                        : JSON.stringify(arg)
+                });
+                const functionCall = `(${fn.toString()})(${args.join(",")})`;
+                return functionCall.replace(/<\s*\/script\s*>/gi, "\\x3c$&");
+            }
+            const handleAsset = script => {
+                switch (script.type) {
+                    case "script":
+                        return createTag("script", { src: script.data.src }, "");
+                    case "iife":
+                        const { fn, getParams } = script.data;
+                        const params = getParams ? getParams(context) : [];
+                        const content = wrapIIFE(fn, params);
+                        return createTag("script", null, content);
+                    default:
+                        return script;
+                }
+            }
+
+            return [...baseScript, ...scripts, processedScript].map(handleAsset);
+        }
+
+        const generateHTML = (styleElementList, scriptElementList) => `
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Markmap</title>
+        <style> 
+            * { margin: 0; padding: 0; }
+            #mindmap { display: block; width: 100vw; height: 100vh; }
+        </style>
+        ${styleElementList.join("\n")}
+    </head>
+    <body>
+        <svg id="mindmap"></svg>
+        ${scriptElementList.join("\n")}
+    </body>
+</html>
+`
+
+        const run = () => {
+            const { transformer } = this.plugin.MarkmapLib;
+            const { root, features } = this.plugin.transformContext;
+            const { styles, scripts } = transformer.getUsedAssets(features);
+            const styleElementList = processStyles(styles);
+            const scriptElementList = processScripts(scripts, root, transformer.urlBuilder);
+            return generateHTML(styleElementList, scriptElementList);
+        }
+
+        return run()
+    }
+
+    async generateContent(svgEle, ext) {
+        const formats = { ".svg": this.svg, ".png": this.png, ".html": this.html };
+        const func = formats[ext] || formats[".svg"];
+        return func.call(this, svgEle);
+    }
 }
 
 module.exports = {
