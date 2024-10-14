@@ -62,7 +62,7 @@ class dialog {
             const id = cpn.getAttribute("component-id");
             const component = components.find(c => c._id === id);
             if (component) {
-                component.submit = this.getWidgetValue(component.type, cpn);
+                component.submit = this.getWidgetValue(component, cpn);
             }
         })
         this.reset();
@@ -94,14 +94,16 @@ class dialog {
         onload && onload(this.entities.modal);
     }
 
-    getWidgetValue = (type, widget) => {
-        type = type.toLowerCase();
+    getWidgetValue = (comp, widget) => {
+        const type = comp.type.toLowerCase();
         switch (type) {
             case "text":
             case "input":
             case "textarea":
-            case "select":
                 return widget.querySelector(type).value
+            case "select":
+                const target = widget.querySelector(type);
+                return comp.multiple ? Array.from(target.selectedOptions, op => op.value) : target.value
             case "radio":
                 return widget.querySelector("input:checked").value
             case "color":
@@ -159,9 +161,10 @@ class dialog {
                 break
             case "select":
                 const selected = option => (option === comp.selected) ? "selected" : "";
+                const multiple = comp.multiple ? "multiple" : "";
                 const map = comp.map || Object.fromEntries(comp.list.map(item => [item, item]));
                 const options = Object.entries(map).map(([value, option]) => `<option value="${value}" ${selected(value)}>${option}</option>`);
-                control = `<select class="form-control" ${disabled(comp)}>${options.join("")}</select>`;
+                control = `<select class="form-control" ${multiple} ${disabled(comp)}>${options.join("")}</select>`;
                 break
             case "textarea":
                 const rows = comp.rows || 3;
