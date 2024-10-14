@@ -231,11 +231,14 @@ NAME = "只读模式"
 HOTKEY = "ctrl+shift+r"
 # 默认使用只读模式（打开Typora就进入只读模式）
 READ_ONLY_DEFAULT = false
-# 只读时自动收缩展开的模块
+# 只读状态下，点击图片和行内公式不会自动展开
+NO_EXPAND_WHEN_READ_ONLY = true
+# 只读状态下，自动收缩展开的图片和行内公式（当NO_EXPAND_WHEN_READ_ONLY为ture时，此选项失效）
+# 此选项的意思是：当图片和行内公式展开后，点击其他地方，展开的图片和行内公式是否自动收回去
 REMOVE_EXPAND_WHEN_READ_ONLY = true
-# 只读时左键单击超链接即可打开网址（普通模式下需要 click+左键）
+# 只读状态下，左键单击超链接即可打开网址（普通模式下需要 click+左键）
 CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY = false
-# 只读时禁用右键菜单
+# 只读状态下，禁用右键菜单
 DISABLE_CONTEXT_MENU_WHEN_READ_ONLY = true
 # 只读状态下禁用右键菜单的时候，哪些菜单选项保持可用（可选值需要您打开调试工具，查找其中data-key）
 REMAIN_AVAILABLE_MENU_KEY = ["typora-plugin", "dev-tool", "copy-img"]

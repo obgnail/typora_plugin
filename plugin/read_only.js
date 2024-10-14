@@ -43,17 +43,22 @@ class readOnlyPlugin extends BasePlugin {
         ev.preventDefault();
         ev.stopPropagation();
     }
+    _isInline = ele => ele.closest('#write span[md-inline="image"], #write span[md-inline="inline_math"]')
+    _isLink = ele => ele.closest('#write span[md-inline="link"], #write .md-link')
     _stopEvent = ev => File.isLocked && this.stop(ev)
     _stopKeydown = ev => File.isLocked && this.forbiddenKeys.includes(ev.key) && this.stop(ev)
     _recoverExpand = ev => {
-        const hasInline = ev.target.closest('#write span[md-inline="image"], #write span[md-inline="inline_math"]');
-        if (!hasInline) {
+        if (!this._isInline(ev.target)) {
             $(".md-expand").removeClass("md-expand");
         }
     }
     _openHyperlink = ev => {
-        const link = ev.target.closest('#write span[md-inline="link"]');
-        if (link && !this.utils.metaKeyPressed(ev)) {
+        if (this.config.NO_EXPAND_WHEN_READ_ONLY && this._isInline(ev.target)) {
+            ev.stopPropagation();
+            ev.preventDefault();
+            return;
+        }
+        if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY && this._isLink(ev.target) && !this.utils.metaKeyPressed(ev)) {
             ev.stopPropagation();
             ev.preventDefault();
             const dict = { ctrlKey: true, metaKey: true, bubbles: true, cancelable: true };
@@ -65,7 +70,7 @@ class readOnlyPlugin extends BasePlugin {
         const write = this.utils.entities.eWrite;
         const func = lock ? "addEventListener" : "removeEventListener";
         const map = { keydown: this._stopKeydown, compositionstart: this._stopEvent, paste: this._stopEvent };
-        if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY) {
+        if (this.config.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY || this.config.NO_EXPAND_WHEN_READ_ONLY) {
             map.click = this._openHyperlink;
         }
         if (this.config.REMOVE_EXPAND_WHEN_READ_ONLY) {
