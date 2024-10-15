@@ -15,7 +15,7 @@ class helpPlugin extends BasePlugin {
             { arg_name: "修改配置", arg_value: "open_setting_folder" },
             { arg_name: "备份配置", arg_value: "backup_setting_file" },
             { arg_name: "修改样式", arg_value: "set_user_styles", arg_hint },
-            { arg_name: "用户反馈", arg_value: "new_issue" },
+            { arg_name: "环境信息", arg_value: "environment" },
             { arg_name: "我要写插件", arg_value: "new_custom_plugin", arg_hint },
             { arg_name: "Typora 自动化", arg_value: "json_rpc", arg_hint },
             { arg_name: "Github 图床", arg_value: "github_picture_bed" },
@@ -55,17 +55,14 @@ class helpPlugin extends BasePlugin {
             isSidebarShown: File.editor.library.isSidebarShown(),
             theme: theme,
             enablePlugin: plugins.join("|"),
+            config: window._options,
         }
     }
 
-    newIssue = async () => {
+    showEnv = async () => {
         const info = await this.getInfo();
-        const components = [{ label: "环境信息", type: "textarea", rows: 12, content: JSON.stringify(info, null, "\t") }];
-        const { response } = await this.utils.dialog.modalAsync({ title: "用户反馈", width: "550px", components });
-        if (response === 1) {
-            const url = "https://github.com/obgnail/typora_plugin/issues/new?body=" + encodeURIComponent(JSON.stringify(info));
-            this.utils.openUrl(url);
-        }
+        const components = [{ label: "", type: "textarea", rows: 15, content: JSON.stringify(info, null, "\t") }];
+        await this.utils.dialog.modalAsync({ title: "环境信息", width: "600px", components });
     }
 
     about = () => {
@@ -187,7 +184,7 @@ class helpPlugin extends BasePlugin {
             github_picture_bed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
             update_plugin: () => this.updater && this.updater.callback(),
             uninstall_plugin: () => this.uninstall(),
-            new_issue: () => this.newIssue(),
+            environment: () => this.showEnv(),
             donate: () => this.donate(),
             about: () => this.about(),
         }
