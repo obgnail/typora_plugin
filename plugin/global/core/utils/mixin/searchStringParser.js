@@ -2,10 +2,10 @@
  * grammar:
  *   <query> ::= <expr>
  *   <expr> ::= <term> ( <or> <term> )*
- *   <term> ::= <factor> ( <minus_and> <factor> )*
+ *   <term> ::= <factor> ( <not_and> <factor> )*
  *   <factor> ::= '"' [<keyword>] '"' | <keyword> | '(' <expr> ')'
- *   <minus_and> ::= '-' | ' '
- *   <or> ::== 'OR' | '|'
+ *   <not_and> ::= '-' | ' '
+ *   <or> ::= 'OR' | '|'
  *   <keyword> ::= [^"]+
  */
 class searchStringParser {
@@ -14,19 +14,19 @@ class searchStringParser {
         this.TYPE = {
             OR: "OR",
             AND: "AND",
-            MINUS: "MINUS",
+            NOT: "NOT",
             PAREN_OPEN: "PAREN_OPEN",
             PAREN_CLOSE: "PAREN_CLOSE",
             KEYWORD: "KEYWORD",
-            QUOTED_PHRASE: "QUOTED_PHRASE",
+            PHRASE: "PHRASE",
         }
         this.TOKEN = {
             OR: { type: this.TYPE.OR, value: "OR" },
             AND: { type: this.TYPE.AND, value: " " },
-            MINUS: { type: this.TYPE.MINUS, value: "-" },
+            NOT: { type: this.TYPE.NOT, value: "-" },
             PAREN_OPEN: { type: this.TYPE.PAREN_OPEN, value: "(" },
             PAREN_CLOSE: { type: this.TYPE.PAREN_CLOSE, value: ")" },
-            QUOTED_PHRASE: value => ({ type: this.TYPE.QUOTED_PHRASE, value }),
+            PHRASE: value => ({ type: this.TYPE.PHRASE, value }),
             KEYWORD: value => ({ type: this.TYPE.KEYWORD, value })
         }
     }
@@ -41,7 +41,7 @@ class searchStringParser {
                 while (i < query.length && query[i] !== '"') {
                     i++;
                 }
-                tokens.push(this.TOKEN.QUOTED_PHRASE(query.substring(start, i)));
+                tokens.push(this.TOKEN.PHRASE(query.substring(start, i)));
                 i++;
             } else if (query[i] === "(") {
                 tokens.push(this.TOKEN.PAREN_OPEN);
@@ -56,7 +56,7 @@ class searchStringParser {
                 tokens.push(this.TOKEN.OR);
                 i++;
             } else if (query[i] === "-") {
-                tokens.push(this.TOKEN.MINUS);
+                tokens.push(this.TOKEN.NOT);
                 i++;
             } else if (/\s/.test(query[i])) {
                 i++; // skip whitespace
@@ -70,8 +70,8 @@ class searchStringParser {
         }
 
         const result = [];
-        const l1 = [this.TYPE.MINUS, this.TYPE.OR, this.TYPE.PAREN_OPEN];
-        const l2 = [this.TYPE.MINUS, this.TYPE.OR, this.TYPE.PAREN_CLOSE];
+        const l1 = [this.TYPE.NOT, this.TYPE.OR, this.TYPE.PAREN_OPEN];
+        const l2 = [this.TYPE.NOT, this.TYPE.OR, this.TYPE.PAREN_CLOSE];
         for (let i = 0; i < tokens.length; i++) {
             const current = tokens[i];
             const previous = tokens[i - 1];
@@ -103,7 +103,7 @@ class searchStringParser {
         let node = this._parseFactor(tokens);
         while (tokens.length > 0) {
             const type = tokens[0].type;
-            if (type === this.TYPE.MINUS || type === this.TYPE.AND) {
+            if (type === this.TYPE.NOT || type === this.TYPE.AND) {
                 tokens.shift();
                 const right = this._parseFactor(tokens);
                 node = { type, left: node, right };
@@ -116,7 +116,7 @@ class searchStringParser {
 
     _parseFactor(tokens) {
         const type = tokens[0].type;
-        if (type === this.TYPE.QUOTED_PHRASE || type === this.TYPE.KEYWORD) {
+        if (type === this.TYPE.PHRASE || type === this.TYPE.KEYWORD) {
             return { type, value: tokens.shift().value };
         } else if (type === this.TYPE.PAREN_OPEN) {
             tokens.shift();
@@ -149,7 +149,7 @@ class searchStringParser {
         `
         const table2 = `
             <table>
-                <tr><th>示例</th><th>说明</th></tr>
+                <tr><th>Example</th><th>Desc</th></tr>
                 <tr><td>foo bar</td><td>搜索包含 foo 和 bar 的文档</td></tr>
                 <tr><td>"foo bar"</td><td>搜索包含 foo bar 这一词组的文档</td></tr>
                 <tr><td>foo OR bar</td><td>搜索包含 foo 或包含 bar 的文档</td></tr>
@@ -160,12 +160,13 @@ class searchStringParser {
         const content = `
 <query> ::= <expr>
 <expr> ::= <term> ( <or> <term> )*
-<term> ::= <factor> ( <minus_and> <factor> )*
+<term> ::= <factor> ( <not_and> <factor> )*
 <factor> ::= '"' [<keyword>] '"' | <keyword> | '(' <expr> ')'
-<minus_and> ::= '-' | ' '
-<or> ::== 'OR' | '|'
+<or> ::= 'OR' | '|'
+<not_and> ::= '-' | ' '
 <keyword> ::= [^"]+`
-        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 7, content }];
+        const title = "你可以将这段内容塞给AI，它会为你解释";
+        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 7, content, title }];
         this.utils.dialog.modal({ title: "搜索语法", width: "550px", components });
     }
 
@@ -206,12 +207,12 @@ class searchStringParser {
     }
 
     checkByAST(ast, content) {
-        const { KEYWORD, QUOTED_PHRASE, OR, AND, MINUS } = this.TYPE;
+        const { KEYWORD, PHRASE, OR, AND, NOT } = this.TYPE;
         this.traverse(ast, node => {
             const { type, left, right, value } = node;
             switch (type) {
                 case KEYWORD:
-                case QUOTED_PHRASE:
+                case PHRASE:
                     node._result = content.includes(value);
                     break
                 case OR:
@@ -220,7 +221,7 @@ class searchStringParser {
                 case AND:
                     node._result = left._result && right._result;
                     break
-                case MINUS:
+                case NOT:
                     node._result = (left ? left._result : true) && !right._result;
                     break
                 default:
@@ -232,19 +233,19 @@ class searchStringParser {
     }
 
     getQueryTokens(query) {
-        const { KEYWORD, QUOTED_PHRASE, OR, AND, MINUS } = this.TYPE;
+        const { KEYWORD, PHRASE, OR, AND, NOT } = this.TYPE;
         const ast = this.parseAndTraverse(query, node => {
             const { type, left, right, value } = node;
             switch (type) {
                 case KEYWORD:
-                case QUOTED_PHRASE:
+                case PHRASE:
                     node._result = [value];
                     break
                 case OR:
                 case AND:
                     node._result = [...left._result, ...right._result];
                     break
-                case MINUS:
+                case NOT:
                     node._result = (left ? left._result : []).filter(e => !right._result.includes(e));
                     break
                 default:
