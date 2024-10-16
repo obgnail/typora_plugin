@@ -128,6 +128,7 @@ class dialog {
         const type = comp.type.toLowerCase();
         const disabled = el => el.disabled ? "disabled" : "";
         const checked = el => el.checked ? "checked" : "";
+        const title = el => el.title ? `title="${el.title}"` : "";
         const placeholder = el => el.placeholder ? `placeholder="${el.placeholder}"` : "";
         const range = el => `min="${el.min || 0}" max="${el.max || 100}" step="${el.step || 1}" value="${el.value || 1}"`;
         const genInfo = el => el.info ? `<span class="modal-label-info ion-information-circled" title="${el.info}"></span>` : "";
@@ -171,7 +172,7 @@ class dialog {
                 const cnt = comp.content || "";
                 const readonly = comp.readonly ? "readonly" : "";
                 const cls = comp.resize ? "" : "no-resize";
-                control = `<textarea class="form-control ${cls}" rows="${rows}" ${readonly} ${placeholder(comp)} ${disabled(comp)}>${cnt}</textarea>`;
+                control = `<textarea class="form-control ${cls}" rows="${rows}" ${readonly} ${placeholder(comp)} ${disabled(comp)} ${title(comp)}>${cnt}</textarea>`;
                 break
             case "pre":
                 label = "pre";
