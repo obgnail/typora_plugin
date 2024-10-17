@@ -3,10 +3,11 @@
  *   <query> ::= <expr>
  *   <expr> ::= <term> ( <or> <term> )*
  *   <term> ::= <factor> ( <not_and> <factor> )*
- *   <factor> ::= '"' [<keyword>] '"' | <keyword> | '(' <expr> ')'
+ *   <factor> ::= '"' <keyword> '"' | <keyword> | '/' <regexp> '/' | '(' <expr> ')'
  *   <not_and> ::= '-' | ' '
  *   <or> ::= 'OR' | '|'
  *   <keyword> ::= [^"]+
+ *   <regexp> ::= [^/]+
  */
 class searchStringParser {
     constructor(utils) {
@@ -19,6 +20,7 @@ class searchStringParser {
             PAREN_CLOSE: "PAREN_CLOSE",
             KEYWORD: "KEYWORD",
             PHRASE: "PHRASE",
+            REGEXP: "REGEXP",
         }
         this.TOKEN = {
             OR: { type: this.TYPE.OR, value: "OR" },
@@ -27,7 +29,8 @@ class searchStringParser {
             PAREN_OPEN: { type: this.TYPE.PAREN_OPEN, value: "(" },
             PAREN_CLOSE: { type: this.TYPE.PAREN_CLOSE, value: ")" },
             PHRASE: value => ({ type: this.TYPE.PHRASE, value }),
-            KEYWORD: value => ({ type: this.TYPE.KEYWORD, value })
+            KEYWORD: value => ({ type: this.TYPE.KEYWORD, value }),
+            REGEXP: value => ({ type: this.TYPE.REGEXP, value }),
         }
     }
 
@@ -60,12 +63,24 @@ class searchStringParser {
                 i++;
             } else if (/\s/.test(query[i])) {
                 i++; // skip whitespace
+            } else if (query[i] === "/") {
+                const regexpStart = i;
+                i++;
+                while (i < query.length && query[i] !== "/") {
+                    if (query[i] === "\\" && query.substring(i, i + 2) === "\\/") {
+                        i += 2;
+                    } else {
+                        i++;
+                    }
+                }
+                tokens.push(this.TOKEN.REGEXP(query.substring(regexpStart + 1, i)));
+                i++;
             } else {
-                const start = i;
+                const keywordStart = i;
                 while (i < query.length && !/\s|"|\(|\)|-/.test(query[i])) {
                     i++;
                 }
-                tokens.push(this.TOKEN.KEYWORD(query.substring(start, i)));
+                tokens.push(this.TOKEN.KEYWORD(query.substring(keywordStart, i)));
             }
         }
 
@@ -77,7 +92,7 @@ class searchStringParser {
             const previous = tokens[i - 1];
             const should = previous && !l1.includes(previous.type) && !l2.includes(current.type);
             if (should) {
-                result.push(this.TOKEN.AND)
+                result.push(this.TOKEN.AND);
             }
             result.push(current);
         }
@@ -116,7 +131,7 @@ class searchStringParser {
 
     _parseFactor(tokens) {
         const type = tokens[0].type;
-        if (type === this.TYPE.PHRASE || type === this.TYPE.KEYWORD) {
+        if (type === this.TYPE.PHRASE || type === this.TYPE.KEYWORD || type === this.TYPE.REGEXP) {
             return { type, value: tokens.shift().value };
         } else if (type === this.TYPE.PAREN_OPEN) {
             tokens.shift();
@@ -139,21 +154,23 @@ class searchStringParser {
     showGrammar() {
         const table1 = `
             <table>
-                <tr><th>Token</th><th>Desc</th></tr>
-                <tr><td>whitespace</td><td>表示与，即文档应该同时包含全部关键词</td></tr>
-                <tr><td>OR</td><td>表示或，即文档应该包含关键词之一</td></tr>
-                <tr><td>-</td><td>表示非，即文档不能包含关键词</td></tr>
+                <tr><th>Token</th><th>Description</th></tr>
+                <tr><td>whitespace</td><td>表示与，文档应该同时包含全部关键词</td></tr>
+                <tr><td>OR</td><td>表示或，文档应该包含关键词之一</td></tr>
+                <tr><td>-</td><td>表示非，文档不能包含关键词</td></tr>
                 <tr><td>""</td><td>词组</td></tr>
+                <tr><td>//</td><td>正则表达式</td></tr>
                 <tr><td>()</td><td>调整运算顺序</td></tr>
             </table>
         `
         const table2 = `
             <table>
-                <tr><th>Example</th><th>Desc</th></tr>
+                <tr><th>Example</th><th>Description</th></tr>
                 <tr><td>foo bar</td><td>搜索包含 foo 和 bar 的文档</td></tr>
-                <tr><td>"foo bar"</td><td>搜索包含 foo bar 这一词组的文档</td></tr>
-                <tr><td>foo OR bar</td><td>搜索包含 foo 或包含 bar 的文档</td></tr>
+                <tr><td>foo OR bar</td><td>搜索包含 foo 或 bar 的文档</td></tr>
                 <tr><td>foo -bar</td><td>搜索包含 foo 但不包含 bar 的文档</td></tr>
+                <tr><td>"foo bar"</td><td>搜索包含 foo bar 这一词组的文档</td></tr>
+                <tr><td>foo /bar\\d/ baz</td><td>搜索包含 foo 和 正则 bar\\d 和 baz 的文档</td></tr>
                 <tr><td>(a OR b) (c OR d)</td><td>搜索包含 a 或 b，且包含 c 或 d 的文档</td></tr>
             </table>
         `
@@ -161,12 +178,13 @@ class searchStringParser {
 <query> ::= <expr>
 <expr> ::= <term> ( <or> <term> )*
 <term> ::= <factor> ( <not_and> <factor> )*
-<factor> ::= '"' [<keyword>] '"' | <keyword> | '(' <expr> ')'
-<or> ::= 'OR' | '|'
+<factor> ::= '"'<keyword>'"' | <keyword> | '/'<regexp>'/' | '('<expr>')'
 <not_and> ::= '-' | ' '
-<keyword> ::= [^"]+`
+<or> ::= 'OR' | '|'
+<keyword> ::= [^"]+
+<regexp> ::= [^/]+`
         const title = "你可以将这段内容塞给AI，它会为你解释";
-        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 7, content, title }];
+        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 8, content, title }];
         this.utils.dialog.modal({ title: "搜索语法", width: "550px", components });
     }
 
@@ -207,13 +225,17 @@ class searchStringParser {
     }
 
     checkByAST(ast, content) {
-        const { KEYWORD, PHRASE, OR, AND, NOT } = this.TYPE;
+        const toRegExp = str => new RegExp(`\\b${str.replace(/^\\b|\\b$/g, "")}\\b`);
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE;
         this.traverse(ast, node => {
             const { type, left, right, value } = node;
             switch (type) {
                 case KEYWORD:
                 case PHRASE:
                     node._result = content.includes(value);
+                    break
+                case REGEXP:
+                    node._result = toRegExp(value).test(content);
                     break
                 case OR:
                     node._result = left._result || right._result;
@@ -233,13 +255,16 @@ class searchStringParser {
     }
 
     getQueryTokens(query) {
-        const { KEYWORD, PHRASE, OR, AND, NOT } = this.TYPE;
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE;
         const ast = this.parseAndTraverse(query, node => {
             const { type, left, right, value } = node;
             switch (type) {
                 case KEYWORD:
                 case PHRASE:
                     node._result = [value];
+                    break
+                case REGEXP:
+                    node._result = [];
                     break
                 case OR:
                 case AND:

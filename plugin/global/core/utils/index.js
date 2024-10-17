@@ -1,4 +1,3 @@
-const HTTPS = require("https")
 const OS = require("os")
 const PATH = require("path")
 const FS = require("fs")
@@ -20,7 +19,6 @@ class utils {
     static disableForeverSelector = "#__disableForever__"     // 插件永远不可点击，返回此
     static stopLoadPluginError = new Error("stopLoadPlugin")  // 用于插件的beforeProcess方法，若希望停止加载插件，返回此
     static Package = Object.freeze({
-        HTTPS: HTTPS,
         OS: OS,
         Path: PATH,
         Fs: FS,
@@ -527,19 +525,6 @@ class utils {
         const op = { type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel };
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
-
-    static request = (options, data) => new Promise((resolve, reject) => {
-        const req = HTTPS.request(options, resp => {
-            const chunks = [];
-            resp.on("data", chunk => chunks.push(chunk));
-            resp.on("end", () => resolve(Buffer.concat(chunks)));
-        });
-        req.on("error", err => reject(err));
-        if (data) {
-            req.write(data);
-        }
-        req.end();
-    });
 
     static fetch = async (url, { proxy, timeout = 3 * 60 * 1000, ...args }) => {
         let signal, agent;
