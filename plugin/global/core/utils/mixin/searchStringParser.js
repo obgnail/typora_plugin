@@ -3,7 +3,7 @@
  *   <query> ::= <expr>
  *   <expr> ::= <term> ( <or> <term> )*
  *   <term> ::= <factor> ( <not_and> <factor> )*
- *   <factor> ::= '"' [<keyword>] '"' | <keyword> | '(' <expr> ')'
+ *   <factor> ::= '"' <keyword> '"' | <keyword> | '(' <expr> ')'
  *   <not_and> ::= '-' | ' '
  *   <or> ::= 'OR' | '|'
  *   <keyword> ::= [^"]+
@@ -77,7 +77,7 @@ class searchStringParser {
             const previous = tokens[i - 1];
             const should = previous && !l1.includes(previous.type) && !l2.includes(current.type);
             if (should) {
-                result.push(this.TOKEN.AND)
+                result.push(this.TOKEN.AND);
             }
             result.push(current);
         }
@@ -139,21 +139,21 @@ class searchStringParser {
     showGrammar() {
         const table1 = `
             <table>
-                <tr><th>Token</th><th>Desc</th></tr>
-                <tr><td>whitespace</td><td>表示与，即文档应该同时包含全部关键词</td></tr>
-                <tr><td>OR</td><td>表示或，即文档应该包含关键词之一</td></tr>
-                <tr><td>-</td><td>表示非，即文档不能包含关键词</td></tr>
+                <tr><th>Token</th><th>Description</th></tr>
+                <tr><td>whitespace</td><td>表示与，文档应该同时包含全部关键词</td></tr>
+                <tr><td>OR</td><td>表示或，文档应该包含关键词之一</td></tr>
+                <tr><td>-</td><td>表示非，文档不能包含关键词</td></tr>
                 <tr><td>""</td><td>词组</td></tr>
                 <tr><td>()</td><td>调整运算顺序</td></tr>
             </table>
         `
         const table2 = `
             <table>
-                <tr><th>Example</th><th>Desc</th></tr>
+                <tr><th>Example</th><th>Description</th></tr>
                 <tr><td>foo bar</td><td>搜索包含 foo 和 bar 的文档</td></tr>
-                <tr><td>"foo bar"</td><td>搜索包含 foo bar 这一词组的文档</td></tr>
-                <tr><td>foo OR bar</td><td>搜索包含 foo 或包含 bar 的文档</td></tr>
+                <tr><td>foo OR bar</td><td>搜索包含 foo 或 bar 的文档</td></tr>
                 <tr><td>foo -bar</td><td>搜索包含 foo 但不包含 bar 的文档</td></tr>
+                <tr><td>"foo bar"</td><td>搜索包含 foo bar 这一词组的文档</td></tr>
                 <tr><td>(a OR b) (c OR d)</td><td>搜索包含 a 或 b，且包含 c 或 d 的文档</td></tr>
             </table>
         `
@@ -161,7 +161,7 @@ class searchStringParser {
 <query> ::= <expr>
 <expr> ::= <term> ( <or> <term> )*
 <term> ::= <factor> ( <not_and> <factor> )*
-<factor> ::= '"' [<keyword>] '"' | <keyword> | '(' <expr> ')'
+<factor> ::= '"' <keyword> '"' | <keyword> | '(' <expr> ')'
 <or> ::= 'OR' | '|'
 <not_and> ::= '-' | ' '
 <keyword> ::= [^"]+`
