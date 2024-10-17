@@ -7,7 +7,7 @@
  *   <not_and> ::= '-' | ' '
  *   <or> ::= 'OR' | '|'
  *   <keyword> ::= [^"]+
- *   <regexp> ::= \w+
+ *   <regexp> ::= [^/]+
  */
 class searchStringParser {
     constructor(utils) {
@@ -66,17 +66,15 @@ class searchStringParser {
             } else if (query[i] === "/") {
                 const regexpStart = i;
                 i++;
-                while (i < query.length) {
-                    if (query[i] === "\\" && query.substring(i, i + 1) === "\\/") {
+                while (i < query.length && query[i] !== "/") {
+                    if (query[i] === "\\" && query.substring(i, i + 2) === "\\/") {
                         i += 2;
-                    }
-                    if (query[i] === "/") {
+                    } else {
                         i++;
-                        break;
                     }
-                    i++;
                 }
-                tokens.push(this.TOKEN.REGEXP(query.substring(regexpStart + 1, i - 1)));
+                tokens.push(this.TOKEN.REGEXP(query.substring(regexpStart + 1, i)));
+                i++;
             } else {
                 const keywordStart = i;
                 while (i < query.length && !/\s|"|\(|\)|-/.test(query[i])) {
@@ -161,6 +159,7 @@ class searchStringParser {
                 <tr><td>OR</td><td>表示或，文档应该包含关键词之一</td></tr>
                 <tr><td>-</td><td>表示非，文档不能包含关键词</td></tr>
                 <tr><td>""</td><td>词组</td></tr>
+                <tr><td>//</td><td>正则表达式</td></tr>
                 <tr><td>()</td><td>调整运算顺序</td></tr>
             </table>
         `
@@ -171,6 +170,7 @@ class searchStringParser {
                 <tr><td>foo OR bar</td><td>搜索包含 foo 或 bar 的文档</td></tr>
                 <tr><td>foo -bar</td><td>搜索包含 foo 但不包含 bar 的文档</td></tr>
                 <tr><td>"foo bar"</td><td>搜索包含 foo bar 这一词组的文档</td></tr>
+                <tr><td>foo /bar\\d/ baz</td><td>搜索包含 foo 和 正则 bar\\d 和 baz 的文档</td></tr>
                 <tr><td>(a OR b) (c OR d)</td><td>搜索包含 a 或 b，且包含 c 或 d 的文档</td></tr>
             </table>
         `
@@ -178,13 +178,13 @@ class searchStringParser {
 <query> ::= <expr>
 <expr> ::= <term> ( <or> <term> )*
 <term> ::= <factor> ( <not_and> <factor> )*
-<factor> ::= '"' <keyword> '"' | <keyword> | '/' <regexp> '/' | '(' <expr> ')'
+<factor> ::= '"'<keyword>'"' | <keyword> | '/'<regexp>'/' | '('<expr>')'
 <not_and> ::= '-' | ' '
 <or> ::= 'OR' | '|'
 <keyword> ::= [^"]+
-<regexp> ::= \\w+`
+<regexp> ::= [^/]+`
         const title = "你可以将这段内容塞给AI，它会为你解释";
-        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 7, content, title }];
+        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 8, content, title }];
         this.utils.dialog.modal({ title: "搜索语法", width: "550px", components });
     }
 
@@ -235,7 +235,7 @@ class searchStringParser {
                     node._result = content.includes(value);
                     break
                 case REGEXP:
-                    node._result = toRegExp(value).exec(content);
+                    node._result = toRegExp(value).test(content);
                     break
                 case OR:
                     node._result = left._result || right._result;

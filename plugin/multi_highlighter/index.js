@@ -234,8 +234,6 @@ class multiHighlighterPlugin extends BasePlugin {
 
     highlight = (refreshResult = true) => {
         const keyArr = this._splitKeyword(this.entities.input.value);
-        if (!keyArr || keyArr.length === 0) return false;
-
         this.lastHighlightFilePath = this.utils.getFilePath();
         this._doSearch(keyArr, refreshResult);
         return true;
@@ -243,6 +241,11 @@ class multiHighlighterPlugin extends BasePlugin {
 
     _doSearch = (keyArr, refreshResult = true) => {
         this.clearHighlight();
+
+        if (!keyArr || keyArr.length === 0) {
+            this.utils.hide(this.entities.result);
+            return;
+        }
 
         this.multiHighlighter.new(keyArr, this.entities.write, this.config.CASE_SENSITIVE, "plugin-search-hit");
         this.multiHighlighter.highlight();
