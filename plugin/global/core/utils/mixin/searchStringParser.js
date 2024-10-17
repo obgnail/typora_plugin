@@ -52,7 +52,7 @@ class searchStringParser {
             } else if (query[i] === ")") {
                 tokens.push(this.TOKEN.PAREN_CLOSE);
                 i++;
-            } else if (query[i].toUpperCase() === "O" && query.substring(i, i + 2).toUpperCase() === "OR") {
+            } else if (/^OR\b/i.test(query.substring(i))) {
                 tokens.push(this.TOKEN.OR);
                 i += 2;
             } else if (query[i] === "|") {
