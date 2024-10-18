@@ -202,17 +202,52 @@ class searchStringParser {
         })
     }
 
-    traverse(ast, callback) {
-        if (ast == null) return;
-        this.traverse(ast.left, callback);
-        this.traverse(ast.right, callback);
-        callback(ast);
+    checkByAST(ast, content) {
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE;
+
+        function evaluate({ type, left, right, value }) {
+            switch (type) {
+                case KEYWORD:
+                case PHRASE:
+                    return content.includes(value);
+                case REGEXP:
+                    return new RegExp(value).test(content);
+                case OR:
+                    return evaluate(left) || evaluate(right);
+                case AND:
+                    return evaluate(left) && evaluate(right);
+                case NOT:
+                    return (left ? evaluate(left) : true) && !evaluate(right);
+                default:
+                    throw new Error(`Unknown AST node type: ${type}`);
+            }
+        }
+
+        return evaluate(ast);
     }
 
-    parseAndTraverse(query, callback) {
-        const ast = this.parse(query);
-        this.traverse(ast, callback);
-        return ast
+    getQueryTokens(query) {
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE;
+
+        function evaluate({ type, left, right, value }) {
+            switch (type) {
+                case KEYWORD:
+                case PHRASE:
+                    return [value];
+                case REGEXP:
+                    return [];
+                case OR:
+                case AND:
+                    return [...evaluate(left), ...evaluate(right)];
+                case NOT:
+                    const wont = evaluate(right);
+                    return (left ? evaluate(left) : []).filter(e => !wont.includes(e));
+                default:
+                    throw new Error(`Unknown AST node type: ${type}`);
+            }
+        }
+
+        return evaluate(this.parse(query));
     }
 
     check(query, content, option = {}) {
@@ -220,65 +255,7 @@ class searchStringParser {
             query = query.toLowerCase();
             content = content.toLowerCase();
         }
-        const ast = this.parse(query);
-        return this.checkByAST(ast, content);
-    }
-
-    checkByAST(ast, content) {
-        const toRegExp = str => new RegExp(`\\b${str.replace(/^\\b|\\b$/g, "")}\\b`);
-        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE;
-        this.traverse(ast, node => {
-            const { type, left, right, value } = node;
-            switch (type) {
-                case KEYWORD:
-                case PHRASE:
-                    node._result = content.includes(value);
-                    break
-                case REGEXP:
-                    node._result = toRegExp(value).test(content);
-                    break
-                case OR:
-                    node._result = left._result || right._result;
-                    break
-                case AND:
-                    node._result = left._result && right._result;
-                    break
-                case NOT:
-                    node._result = (left ? left._result : true) && !right._result;
-                    break
-                default:
-                    throw new Error(`Error Node: {type: ${node.type}, value: ${node.value}}`)
-            }
-        });
-        // console.log(JSON.stringify(ast, null, 2));
-        return ast._result
-    }
-
-    getQueryTokens(query) {
-        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE;
-        const ast = this.parseAndTraverse(query, node => {
-            const { type, left, right, value } = node;
-            switch (type) {
-                case KEYWORD:
-                case PHRASE:
-                    node._result = [value];
-                    break
-                case REGEXP:
-                    node._result = [];
-                    break
-                case OR:
-                case AND:
-                    node._result = [...left._result, ...right._result];
-                    break
-                case NOT:
-                    node._result = (left ? left._result : []).filter(e => !right._result.includes(e));
-                    break
-                default:
-                    throw new Error(`Error Node: {type: ${node.type}, value: ${node.value}}`)
-            }
-        })
-        // console.log(JSON.stringify(ast, null, 2));
-        return ast._result;
+        return this.checkByAST(this.parse(query), content);
     }
 }
 
