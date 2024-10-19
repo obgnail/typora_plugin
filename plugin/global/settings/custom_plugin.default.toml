@@ -555,28 +555,6 @@ transition_duration = 300
 transition_delay = 0
 
 
-############### fullPathCopy ###############
-[fullPathCopy]
-# 是否启用此二级插件
-enable = true
-# 插件名称
-name = "复制标题路径"
-# 是否在右键菜单中隐藏
-hide = false
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
-order = 1
-# 快捷键
-hotkey = "ctrl+shift+y"
-# 如果在空白页调用此插件，使用的文件名（因为尚不存在该文件，需要用一个默认的文件名代替）
-untitled_file_name = "untitled"
-# 跳过空白的标题
-ignore_empty_header = false
-# 标题和提示之前添加空格
-add_space = true
-# 使用绝对路径
-full_file_path = false
-
-
 ############### extractRangeToNewFile ###############
 [extractRangeToNewFile]
 # 是否启用此二级插件

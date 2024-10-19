@@ -62,7 +62,7 @@
 | 46   | noImageMode             | 无图模式                               |          |
 | 47   | pluginUpdater           | 一键升级插件                           |          |
 | 48   | extractRangeToNewFile   | 提取选区文字到新文件                   |          |
-| 49   | fullPathCopy            | 复制标题路径                           |          |
+| 49   | easy_modify             | 文档编辑工具集                         |          |
 | 50   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     | ×        |
 | 51   | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
 | 52   | blockSideBySide         | 并列显示活动块                         | ×        |
@@ -791,15 +791,9 @@ icon = "\\f040"
 
 
 
-### fullPathCopy：复制标题路径
+### easy_modify：文档编辑工具集
 
-使用方式：将光标定位到标题上 -> 右键菜单 -> 常用插件 -> 二级插件 ->  复制标题路径。
-
-就会生成如下文字，并复制到剪切板：
-
-```
-README.md\Typora Plugin 一级标题\插件使用说明 二级标题\fullPathCopy：复制标题路径 三级标题
-```
+使用方式：右键菜单 -> 常用插件 -> 二级插件 -> 文档编辑工具集
 
 
 

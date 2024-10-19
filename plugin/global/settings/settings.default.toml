@@ -865,6 +865,14 @@ DECRYPT_HOTKEY = ""
 SHOW_HINT_MODAL = true
 
 
+############### cipher ###############
+[easy_modify]
+# 启用插件
+ENABLE = true
+# 插件名称
+NAME = "文档编辑工具集"
+
+
 ############### custom ###############
 [custom]
 # 启用插件
@@ -1027,6 +1035,7 @@ LIST = [
     "commander",
     "markmap",
     "collapse_paragraph",
+    "easy_modify",
     "custom",
     "---",
     "toolbar",
@@ -1058,7 +1067,7 @@ BUTTONS = [
     { ICON = "fa fa-adjust", CALLBACK = "custom.darkMode" },
     { ICON = "fa fa-file-text", CALLBACK = "custom.templater" },
     { ICON = "fa fa-align-justify", CALLBACK = "md_padding" },
-    { ICON = "fa fa-paste", CALLBACK = "custom.fullPathCopy" },
+    { ICON = "fa fa-paste", CALLBACK = "easy_modify.copyFullPath" },
     { ICON = "fa fa-list", CALLBACK = "custom.toc" },
     { ICON = "fa fa-sitemap", CALLBACK = "markmap.toggle_toc" },
     { ICON = "fa fa-font", CALLBACK = "text_stylize" },
