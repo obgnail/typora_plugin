@@ -1,26 +1,27 @@
 class easyModifyPlugin extends BasePlugin {
-    init = () => {
-        this.callArgs = [
-            { arg_name: "提升选中文段的标题等级", arg_value: "increaseHeadersLevel", arg_hint: "若无选中文段，则调整整篇文档" },
-            { arg_name: "降低选中文段的标题等级", arg_value: "decreaseHeadersLevel", arg_hint: "若无选中文段，则调整整篇文档" },
-        ];
-    }
+    hotkey = () => [
+        { hotkey: this.config.HOTKEY_COPY_FULL_PATH, callback: () => this.call("copy_full_path") },
+        { hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, callback: () => this.call("increase_headers_level") },
+        { hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, callback: () => this.call("decrease_headers_level") },
+    ]
 
-    dynamicCallArgsGenerator = (anchorNode, meta) => {
-        meta.target = {
-            copyFullPath: anchorNode.closest("#write > [cid]"),
-        };
-        return [{ arg_name: "复制标题路径", arg_value: "copyFullPath" }]
+    init = () => {
+        const arg_hint = "若无选中文段，则调整整篇文档";
+        this.callArgs = [
+            { arg_name: "复制标题路径", arg_value: "copy_full_path", arg_hotkey: this.config.HOTKEY_COPY_FULL_PATH },
+            { arg_name: "提升选中文段的标题等级", arg_value: "increase_headers_level", arg_hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, arg_hint },
+            { arg_name: "降低选中文段的标题等级", arg_value: "decrease_headers_level", arg_hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, arg_hint },
+        ];
     }
 
     changeHeadersLevel = incr => this._getTargetHeaders().forEach(node => this._changeHeaderLevel(node, incr));
 
-    copyFullPath = anchorNode => {
+    copyFullPath = () => {
         const getHeaderName = (title, name) => `${title} ${name}`;
         const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
         const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"];
         const pList = [];
-        let ele = anchorNode;
+        let ele = this.utils.getAnchorNode().closest("#write > [cid]")[0];
 
         while (ele) {
             const idx = paragraphList.indexOf(ele.tagName);
@@ -79,11 +80,11 @@ class easyModifyPlugin extends BasePlugin {
         }
     }
 
-    call = (type, meta) => {
+    call = type => {
         const funcMap = {
-            increaseHeadersLevel: () => this.changeHeadersLevel(true),
-            decreaseHeadersLevel: () => this.changeHeadersLevel(false),
-            copyFullPath: () => this.copyFullPath(meta.target.copyFullPath),
+            increase_headers_level: () => this.changeHeadersLevel(true),
+            decrease_headers_level: () => this.changeHeadersLevel(false),
+            copy_full_path: () => this.copyFullPath(),
         }
         const func = funcMap[type];
         if (func) {
