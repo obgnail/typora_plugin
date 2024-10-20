@@ -555,26 +555,6 @@ transition_duration = 300
 transition_delay = 0
 
 
-############### extractRangeToNewFile ###############
-[extractRangeToNewFile]
-# 是否启用此二级插件
-enable = true
-# 插件名称
-name = "提取选区文字到新文件"
-# 是否在右键菜单中隐藏
-hide = false
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
-order = 1
-# 快捷键
-hotkey = ""
-# 展示窗口
-show_modal = true
-# 自动打开新文件
-auto_open = true
-# 删除原文件中提取的内容
-delete_content = false
-
-
 ############### templater ###############
 [templater]
 # 是否启用此二级插件
@@ -1088,23 +1068,6 @@ hide = true
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 切换的快捷键
-hotkey = ""
-
-
-############### autoTrailingWhiteSpace ###############
-# 此插件是为了满足Markdown换行语法，除非有特殊需求，否则不建议开启此插件
-# 参考：https://markdown.com.cn/basic-syntax/line-breaks.html
-# issue：https://github.com/obgnail/typora_plugin/issues/202
-[autoTrailingWhiteSpace]
-# 是否启用此二级插件
-enable = false
-# 插件名称
-name = "为文档添加结尾空格"
-# 是否在右键菜单中隐藏
-hide = false
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
-order = 1
-# 快捷键
 hotkey = ""
 
 

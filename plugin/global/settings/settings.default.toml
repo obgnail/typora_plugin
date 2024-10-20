@@ -870,13 +870,17 @@ SHOW_HINT_MODAL = true
 # 启用插件
 ENABLE = true
 # 插件名称
-NAME = "文档编辑工具集"
+NAME = "编辑工具"
 # 快捷键：复制标题路径
 HOTKEY_COPY_FULL_PATH = "ctrl+shift+y"
 # 快捷键：提升选中文段的标题等级
 HOTKEY_INCREASE_HEADERS_LEVEL = ""
 # 快捷键：降低选中文段的标题等级
 HOTKEY_DECREASE_HEADERS_LEVEL = ""
+# 快捷键：提取选区文字到新文件
+HOTKEY_EXTRACT_RANGE_TO_NEW_FILE = ""
+# 快捷键：添加结尾空格（根据严格的markdown换行语法，需要在结尾添加两个空格以表示换行）
+HOTKEY_TRAILING_WHITE_SPACE = ""
 
 
 ############### custom ###############

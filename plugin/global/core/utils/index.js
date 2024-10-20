@@ -59,7 +59,7 @@ class utils {
     }
     static openFile = filepath => {
         if (!this.getMountFolder() || this.isUnderMountFolder(filepath)) {
-            // File.editor.restoreLastCursor();
+            File.editor.restoreLastCursor();
             File.editor.focusAndRestorePos();
             File.editor.library.openFile(filepath);
         } else {
