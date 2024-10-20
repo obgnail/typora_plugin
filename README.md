@@ -61,20 +61,19 @@
 | 45   | darkMode                | 夜间模式                               |          |
 | 46   | noImageMode             | 无图模式                               |          |
 | 47   | pluginUpdater           | 一键升级插件                           |          |
-| 48   | easy_modify             | 文档编辑工具集                         |          |
-| 49   | autoTrailingWhiteSpace  | 为文档添加结尾空格                     | ×        |
-| 50   | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
-| 51   | blockSideBySide         | 并列显示活动块                         | ×        |
-| 52   | scrollBookmarker        | 书签管理器                             | ×        |
-| 53   | openInTotalCommander    | 在 total commander 打开                | ×        |
-| 54   | cipher                  | 加密文件                               | ×        |
-| 55   | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
-| 56   | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
-| 57   | help                    | 用户帮助                               |          |
-| 58   | custom                  | 开放平台，用户自定义插件（高级）       |          |
-| 59   | hotkeyHub               | 快捷键注册中心（高级）                 |          |
-| 60   | quickButton             | 于右下角添加功能按钮（高级）           |          |
-| 61   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
+| 48   | easy_modify             | 编辑工具                         |          |
+| 49   | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
+| 50   | blockSideBySide         | 并列显示活动块                         | ×        |
+| 51   | scrollBookmarker        | 书签管理器                             | ×        |
+| 52   | openInTotalCommander    | 在 total commander 打开                | ×        |
+| 53   | cipher                  | 加密文件                               | ×        |
+| 54   | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
+| 55   | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
+| 56   | help                    | 用户帮助                               |          |
+| 57   | custom                  | 开放平台，用户自定义插件（高级）       |          |
+| 58   | hotkeyHub               | 快捷键注册中心（高级）                 |          |
+| 59   | quickButton             | 于右下角添加功能按钮（高级）           |          |
+| 60   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -784,17 +783,9 @@ icon = "\\f040"
 
 
 
-### easy_modify：文档编辑工具集
+### easy_modify：编辑工具
 
-使用方式：右键菜单 -> 常用插件 -> 文档编辑工具集
-
-
-
-### autoTrailingWhiteSpace：为文档添加结尾空格
-
-使用方式：将光标定位到标题上 -> 右键菜单 -> 常用插件 -> 二级插件 ->  为文档添加结尾空格。
-
-> 根据严格的 Markdown 换行语法，需要在结尾添加两个空格以表示换行。此工具能一键添加空格。
+使用方式：右键菜单 -> 常用插件 -> 编辑工具
 
 
 

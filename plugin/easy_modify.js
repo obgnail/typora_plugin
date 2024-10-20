@@ -3,6 +3,7 @@ class easyModifyPlugin extends BasePlugin {
         { hotkey: this.config.HOTKEY_COPY_FULL_PATH, callback: () => this.call("copy_full_path") },
         { hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, callback: () => this.call("increase_headers_level") },
         { hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, callback: () => this.call("decrease_headers_level") },
+        { hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, callback: () => this.call("trailing_white_space") },
         { hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE, callback: () => this.dynamicCall("extract_rang_to_new_file") },
     ]
 
@@ -12,6 +13,7 @@ class easyModifyPlugin extends BasePlugin {
             { arg_name: "复制标题路径", arg_value: "copy_full_path", arg_hotkey: this.config.HOTKEY_COPY_FULL_PATH },
             { arg_name: "提升选中文段的标题等级", arg_value: "increase_headers_level", arg_hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, arg_hint },
             { arg_name: "降低选中文段的标题等级", arg_value: "decrease_headers_level", arg_hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, arg_hint },
+            { arg_name: "添加结尾空格", arg_value: "trailing_white_space", arg_hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, arg_hint: "除非有特殊需求，不建议使用此功能" },
         ];
     }
 
@@ -39,6 +41,7 @@ class easyModifyPlugin extends BasePlugin {
             increase_headers_level: () => this.changeHeadersLevel(true),
             decrease_headers_level: () => this.changeHeadersLevel(false),
             copy_full_path: () => this.copyFullPath(),
+            trailing_white_space: () => this.trailingWhiteSpace(),
             extract_rang_to_new_file: async () => this.extractRangeToNewFile(meta.range),
         }
         const func = funcMap[type];
@@ -142,6 +145,25 @@ class easyModifyPlugin extends BasePlugin {
         const ok = await this.utils.writeFile(filepath, text);
         if (!ok) return;
         this.utils.openFile(filepath);
+    }
+
+    trailingWhiteSpace = () => {
+        const replaceFlag = 2;
+        const tailSpace = "  ";
+        this.utils.entities.querySelectorAllInWrite("p[cid]").forEach(ele => {
+            const textContent = ele.textContent;
+            if (!textContent.trim() || textContent.endsWith(tailSpace)) return
+            const span = ele.querySelector(":scope > span:last-child");
+            if (!span) return
+            if (span) {
+                const textContent = span.textContent;
+                if (!textContent.trim() || textContent.endsWith(tailSpace)) return
+                span.textContent += tailSpace;
+                const cid = ele.getAttribute("cid");
+                File.editor.undo.addSnap(cid, replaceFlag);
+                File.editor.brush.brushNode(cid);
+            }
+        })
     }
 }
 

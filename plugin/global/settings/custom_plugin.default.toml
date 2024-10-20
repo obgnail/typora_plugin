@@ -1071,23 +1071,6 @@ order = 1
 hotkey = ""
 
 
-############### autoTrailingWhiteSpace ###############
-# 此插件是为了满足Markdown换行语法，除非有特殊需求，否则不建议开启此插件
-# 参考：https://markdown.com.cn/basic-syntax/line-breaks.html
-# issue：https://github.com/obgnail/typora_plugin/issues/202
-[autoTrailingWhiteSpace]
-# 是否启用此二级插件
-enable = false
-# 插件名称
-name = "为文档添加结尾空格"
-# 是否在右键菜单中隐藏
-hide = false
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
-order = 1
-# 快捷键
-hotkey = ""
-
-
 ############### redirectLocalRootUrl ###############
 # 如果你主要使用obsidian或joplin来管理文件，偶尔用typora打开文件。
 # 就会遇到一个问题：obsidian或joplin都是将本地资源放在同一个目录中（vault），这导致在typora打开后文件由于路径错误，无法访问本地资源。
