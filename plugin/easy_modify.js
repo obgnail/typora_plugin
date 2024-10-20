@@ -3,6 +3,7 @@ class easyModifyPlugin extends BasePlugin {
         { hotkey: this.config.HOTKEY_COPY_FULL_PATH, callback: () => this.call("copy_full_path") },
         { hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, callback: () => this.call("increase_headers_level") },
         { hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, callback: () => this.call("decrease_headers_level") },
+        { hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE, callback: () => this.dynamicCall("extract_rang_to_new_file") },
     ]
 
     init = () => {
@@ -14,7 +15,68 @@ class easyModifyPlugin extends BasePlugin {
         ];
     }
 
-    changeHeadersLevel = incr => this._getTargetHeaders().forEach(node => this._changeHeaderLevel(node, incr));
+    dynamicCallArgsGenerator = (anchorNode, meta) => {
+        meta.range = window.getSelection().getRangeAt(0);
+        const extract = {
+            arg_name: "提取选区文字到新文件",
+            arg_value: "extract_rang_to_new_file",
+            arg_disabled: meta.range.collapsed,
+            arg_hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE
+        }
+        if (extract.arg_disabled) {
+            extract.arg_hint = "请框选待提取的文段";
+        }
+        return [extract];
+    }
+
+    dynamicCall = type => {
+        this.utils.generateDynamicCallArgs(this.fixedName);
+        this.utils.withMeta(meta => this.call(type, meta));
+    }
+
+    call = async (type, meta = {}) => {
+        const funcMap = {
+            increase_headers_level: () => this.changeHeadersLevel(true),
+            decrease_headers_level: () => this.changeHeadersLevel(false),
+            copy_full_path: () => this.copyFullPath(),
+            extract_rang_to_new_file: async () => this.extractRangeToNewFile(meta.range),
+        }
+        const func = funcMap[type];
+        if (func) {
+            await func();
+            this.utils.notification.show("执行成功");
+        }
+    }
+
+    changeHeadersLevel = incr => {
+        const _getTargetHeaders = () => {
+            const headers = File.editor.nodeMap.toc.headers;
+            const range = window.getSelection().getRangeAt(0);
+            if (range.collapsed) return headers;
+
+            const fragment = range.cloneContents();
+            const cidSet = new Set(Array.from(fragment.querySelectorAll(`[mdtype='heading']`), e => e.getAttribute('cid')));
+            return headers.filter(h => cidSet.has(h.cid))
+        }
+
+        const _changeHeaderLevel = (node, incr) => {
+            const nodeType = node.get('type');
+            if (incr && nodeType === 'paragraph') {
+                File.editor.stylize.changeBlock('header6', node);
+                return;
+            }
+            if (nodeType === 'heading') {
+                const newLevel = +node.get('depth') + (incr ? -1 : 1);
+                if (newLevel === 7) {
+                    File.editor.stylize.changeBlock('paragraph', node);
+                } else if (0 < newLevel && newLevel <= 6) {
+                    File.editor.stylize.changeBlock(`header${newLevel}`, node);
+                }
+            }
+        }
+
+        _getTargetHeaders().forEach(node => _changeHeaderLevel(node, incr));
+    }
 
     copyFullPath = () => {
         const getHeaderName = (title, name) => `${title} ${name}`;
@@ -54,46 +116,34 @@ class easyModifyPlugin extends BasePlugin {
         navigator.clipboard.writeText(text);
     }
 
-    _getTargetHeaders = () => {
-        const headers = File.editor.nodeMap.toc.headers;
-        const range = window.getSelection().getRangeAt(0);
-        if (range.collapsed) return headers;
+    extractRangeToNewFile = async range => {
+        if (!range || range.collapsed) return;
 
-        const fragment = range.cloneContents();
-        const cidSet = new Set(Array.from(fragment.querySelectorAll(`[mdtype='heading']`), e => e.getAttribute('cid')));
-        return headers.filter(h => cidSet.has(h.cid))
-    }
+        // copy content
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        ClientCommand.copyAsMarkdown();
+        const text = await window.parent.navigator.clipboard.readText();
 
-    _changeHeaderLevel = (node, incr) => {
-        const nodeType = node.get('type');
-        if (incr && nodeType === 'paragraph') {
-            File.editor.stylize.changeBlock('header6', node);
-            return;
-        }
-        if (nodeType === 'heading') {
-            const newLevel = +node.get('depth') + (incr ? -1 : 1);
-            if (newLevel === 7) {
-                File.editor.stylize.changeBlock('paragraph', node);
-            } else if (0 < newLevel && newLevel <= 6) {
-                File.editor.stylize.changeBlock(`header${newLevel}`, node);
-            }
-        }
-    }
+        // delete content
+        File.editor.UserOp.backspaceHandler(File.editor, null, "Delete");
 
-    call = type => {
-        const funcMap = {
-            increase_headers_level: () => this.changeHeadersLevel(true),
-            decrease_headers_level: () => this.changeHeadersLevel(false),
-            copy_full_path: () => this.copyFullPath(),
+        // modal
+        const components = [{ label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本" }];
+        let { response, submit: [filepath] } = await this.utils.dialog.modalAsync({ title: "提取选区文字到新文件", components });
+        if (response !== 1) return;
+
+        // extract
+        if (filepath && !filepath.endsWith(".md")) {
+            filepath += ".md";
         }
-        const func = funcMap[type];
-        if (func) {
-            func();
-            this.utils.notification.show("执行成功");
-        }
+        filepath = await this.utils.newFilePath(filepath);
+        const ok = await this.utils.writeFile(filepath, text);
+        if (!ok) return;
+        this.utils.openFile(filepath);
     }
 }
-
 
 module.exports = {
     plugin: easyModifyPlugin,

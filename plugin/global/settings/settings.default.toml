@@ -877,6 +877,8 @@ HOTKEY_COPY_FULL_PATH = "ctrl+shift+y"
 HOTKEY_INCREASE_HEADERS_LEVEL = ""
 # 快捷键：降低选中文段的标题等级
 HOTKEY_DECREASE_HEADERS_LEVEL = ""
+# 快捷键：提取选区文字到新文件
+HOTKEY_EXTRACT_RANGE_TO_NEW_FILE = "ctrl+shift+j"
 
 
 ############### custom ###############
