@@ -193,35 +193,7 @@ class tocPlugin extends BaseCustomPlugin {
         targetNode.classList.add("active");
     }
 
-    _getRoot = type => (type === "header") ? this._getHeaderRoot() : this._getKindRoot([type]);
-
-    _getHeaderRoot = () => {
-        const findParent = (toc, idx, depth) => {
-            while (idx >= 0 && toc[idx].depth >= depth) {
-                idx--;
-            }
-            return toc[idx]
-        }
-
-        const root = { depth: 0, cid: "n0", text: "root", children: [] };
-        const { headers } = File.editor.nodeMap.toc || {};
-        if (!headers) return root;
-
-        const { outline } = File.editor.library;
-        const toc = this.config.escape_header
-            ? outline.getHeaderMatrix(true).map(([depth, text, cid]) => ({ depth, text, cid, children: [] }))
-            : headers.map(({ attributes, cid }) => {
-                let { depth, text } = attributes || {};
-                text = text.replace(/\[\^([^\]]+)\]/g, "");  // 去掉脚注
-                return { depth, text, cid, children: [] }
-            })
-
-        toc.forEach((node, idx) => {
-            const parent = findParent(toc, idx - 1, node.depth) || root;
-            parent.children.push(node);
-        })
-        return root
-    }
+    _getRoot = type => (type === "header") ? this.utils.getTocTree(this.config.escape_header) : this._getKindRoot([type]);
 
     _getKindRoot = types => {
         const idxMap = { table: 0, fence: 0, image: 0, link: 0, math: 0 };
