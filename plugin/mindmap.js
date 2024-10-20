@@ -1,12 +1,4 @@
 class mindmapPlugin extends BasePlugin {
-    process = () => {
-        this.headerList = ["H0", "H1", "H2", "H3", "H4", "H5", "H6"];
-        this.callArgs = [
-            { arg_name: "复制到剪切板：mindmap", arg_value: "set_clipboard_mindmap" },
-            { arg_name: "复制到剪切板：graph", arg_value: "set_clipboard_graph" },
-        ];
-    }
-
     cleanTitle = title => `("${title.replace(/"/g, "")}")`
 
     wrapMermaid = (content, type) => ["```", "mermaid", "\n", this.wrapErrorMsg(type), content, "```"].join("")
@@ -32,63 +24,65 @@ class mindmapPlugin extends BasePlugin {
         }
     }
 
-    mindmap = (headers, root) => {
-        const lines = ["mindmap", "\n", "\t", `root${this.cleanTitle(root)}`, "\n"];
-        headers.forEach(ele => lines.push("\t".repeat(ele.levelIdx + 1), this.cleanTitle(ele.title), "\n"))
-        return this.wrapMermaid(lines.join(""), "mindmap")
-    }
-
-    graph = (headers, root) => {
-        const levelItems = [{ id: "root", title: root, used: false }, null, null, null, null, null, null];
-
-        const getItemTitle = item => {
-            if (!item.used) {
-                item.used = true;
-                return item.id + this.cleanTitle(item.title);
-            }
-            return item.id
-        }
-
-        const getParentItemTitle = item => {
-            for (let i = item.levelIdx - 1; i >= 0; i--) {
-                const item = levelItems[i];
-                if (item) {
-                    return getItemTitle(item)
-                }
-            }
-        }
-
-        const lines = ["graph LR", "\n"];
-        headers.forEach((item, idx) => {
-            item.id = "item" + idx;
-            levelItems[item.levelIdx] = item;
-            lines.push(getParentItemTitle(item), "-->", getItemTitle(item), "\n");
-        })
-
-        return this.wrapMermaid(lines.join(""), "graph")
-    }
-
     getContent = func => {
-        const headers = Array.from(this.utils.entities.querySelectorAllInWrite(":scope > .md-heading"), ele => ({
-            tagName: ele.tagName,
-            levelIdx: this.headerList.indexOf(ele.tagName),
-            title: ele.firstElementChild.textContent,
-        }))
-
+        const headers = (File.editor.nodeMap.toc.headers || []).map(({ attributes, cid }) => {
+            let { depth, text } = attributes || {};
+            text = text.replace(/\[\^([^\]]+)\]/g, "");  // 去掉脚注
+            return { levelIdx: depth, title: text }
+        })
         let root = this.utils.getFileName();
         if (headers.length === 0) {
-            const type = (func === "mindmap" ? "mindmap" : "graph LR");
-            const content = [type, "\n", "\t", `root${this.cleanTitle(root)}`, "\n"];
-            return this.wrapMermaid(content.join(""), func)
+            const type = (func === "mindmap") ? "mindmap" : "graph LR";
+            const content = [type, "\n", "\t", `root${this.cleanTitle(root)}`, "\n"].join("");
+            return this.wrapMermaid(content, func)
         }
-        if (headers.length !== 1 && headers.filter(ele => ele.tagName === headers[0].tagName).length === 1) {
+        // 第一个标签为最高级标签，且仅有一个
+        if (headers.length !== 1 && headers.filter(ele => ele.levelIdx === headers[0].levelIdx).length === 1) {
             root = headers[0].title;
             headers.shift();
         }
         if (this.config.FIX_ERROR_LEVEL_HEADER) {
             this.fixLevelError(headers);
         }
-        return this[func](headers, root);
+
+        const mermaidFunc = {
+            mindmap: (headers, root) => {
+                const lines = ["mindmap", "\n", "\t", `root${this.cleanTitle(root)}`, "\n"];
+                headers.forEach(ele => lines.push("\t".repeat(ele.levelIdx + 1), this.cleanTitle(ele.title), "\n"))
+                return this.wrapMermaid(lines.join(""), "mindmap")
+            },
+            graph: (headers, root) => {
+                const levelItems = [{ title: root, _id: "root", _used: false }, null, null, null, null, null, null];
+
+                const getItemTitle = item => {
+                    if (!item._used) {
+                        item._used = true;
+                        return item._id + this.cleanTitle(item.title);
+                    }
+                    return item._id
+                }
+
+                const getParentItemTitle = item => {
+                    for (let i = item.levelIdx - 1; i >= 0; i--) {
+                        const item = levelItems[i];
+                        if (item) {
+                            return getItemTitle(item)
+                        }
+                    }
+                }
+
+                const lines = ["graph LR", "\n"];
+                headers.forEach((item, idx) => {
+                    item._id = "item" + idx;
+                    levelItems[item.levelIdx] = item;
+                    lines.push(getParentItemTitle(item), "-->", getItemTitle(item), "\n");
+                })
+
+                return this.wrapMermaid(lines.join(""), "graph")
+            }
+        }
+
+        return mermaidFunc[func](headers, root);
     }
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
@@ -96,21 +90,16 @@ class mindmapPlugin extends BasePlugin {
         const arg_disabled = !meta.target || meta.target.querySelector("p > span");
         const arg_hint = arg_disabled ? "请将光标定位到空白行" : "";
         return [
-            { arg_name: "在此处插入：mindmap", arg_value: "insert_mindmap", arg_disabled, arg_hint },
-            { arg_name: "在此处插入：graph", arg_value: "insert_graph", arg_disabled, arg_hint },
+            { arg_name: "插入：mindmap", arg_value: "insert_mindmap", arg_disabled, arg_hint },
+            { arg_name: "插入：graph", arg_value: "insert_graph", arg_disabled, arg_hint },
         ]
     }
 
     call = (type, meta) => {
         const func = type.slice(type.lastIndexOf("_") + 1);
         if (func !== "mindmap" && func !== "graph") return;
-
         const content = this.getContent(func);
-        if (type === "set_clipboard_mindmap" || type === "set_clipboard_graph") {
-            navigator.clipboard.writeText(content);
-        } else if (type === "insert_mindmap" || type === "insert_graph") {
-            meta.target && this.utils.insertText(meta.target, content);
-        }
+        meta.target && this.utils.insertText(meta.target, content);
     }
 }
 
