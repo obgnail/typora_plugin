@@ -576,6 +576,27 @@ class utils {
         }
     }
 
+    static getTocTree = escapeHeader => {
+        const root = { depth: 0, cid: "n0", text: this.getFileName(), children: [] };
+        const findParent = (toc, parentIdx, nodeDepth) => {
+            while (parentIdx >= 0 && toc[parentIdx].depth >= nodeDepth) {
+                parentIdx--;
+            }
+            return parentIdx >= 0 ? toc[parentIdx] : root
+        }
+        const toc = escapeHeader
+            ? File.editor.library.outline.getHeaderMatrix(true).map(([depth, text, cid]) => ({ depth, text, cid, children: [] }))
+            : (File.editor.nodeMap.toc.headers || []).map(({ attributes, cid }) => {
+                const { depth = 1, text = "" } = attributes || {};
+                return { depth, cid, text: text.replace(/\[\^([^\]]+)\]/g, ""), children: [] }
+            })
+        toc.forEach((node, idx) => {
+            const parent = findParent(toc, idx - 1, node.depth);
+            parent.children.push(node);
+        })
+        return root
+    }
+
     ////////////////////////////// 业务DOM操作 //////////////////////////////
     static removeElement = ele => ele && ele.parentElement && ele.parentElement.removeChild(ele)
     static removeElementByID = id => this.removeElement(document.getElementById(id))
