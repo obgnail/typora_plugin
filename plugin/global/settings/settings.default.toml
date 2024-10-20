@@ -370,16 +370,6 @@ HOTKEY_GO_TOP = ""
 HOTKEY_GO_BOTTOM = ""
 
 
-############### mindmap ###############
-[mindmap]
-# 启用插件
-ENABLE = true
-# 插件名称
-NAME = "思维导图"
-# 若文档存在跨等级标题问题（MD001规范），尽力修复之
-FIX_ERROR_LEVEL_HEADER = true
-
-
 ############### markmap ###############
 [markmap]
 # 启用插件
@@ -879,6 +869,10 @@ HOTKEY_INCREASE_HEADERS_LEVEL = ""
 HOTKEY_DECREASE_HEADERS_LEVEL = ""
 # 快捷键：提取选区文字到新文件
 HOTKEY_EXTRACT_RANGE_TO_NEW_FILE = ""
+# 快捷键：插入思维导图（mindmap）
+HOTKEY_INSERT_MERMAID_MINDMAP = ""
+# 快捷键：插入思维导图（graph）
+HOTKEY_INSERT_MERMAID_GRAPH = ""
 # 快捷键：添加结尾空格（根据严格的markdown换行语法，需要在结尾添加两个空格以表示换行）
 HOTKEY_TRAILING_WHITE_SPACE = ""
 
@@ -1014,7 +1008,6 @@ NAME = "少用插件"
 LIST = [
     "window_tab",
     "fence_enhance",
-    "mindmap",
     "auto_number",
     "datatables",
     "resize_image",

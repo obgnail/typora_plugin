@@ -5,6 +5,8 @@ class easyModifyPlugin extends BasePlugin {
         { hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, callback: () => this.call("decrease_headers_level") },
         { hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, callback: () => this.call("trailing_white_space") },
         { hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE, callback: () => this.dynamicCall("extract_rang_to_new_file") },
+        { hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, callback: () => this.dynamicCall("insert_mermaid_mindmap") },
+        { hotkey: this.config.HOTKEY_INSERT_MERMAID_GRAPH, callback: () => this.dynamicCall("insert_mermaid_graph") },
     ]
 
     init = () => {
@@ -28,7 +30,16 @@ class easyModifyPlugin extends BasePlugin {
         if (extract.arg_disabled) {
             extract.arg_hint = "请框选待提取的文段";
         }
-        return [extract];
+
+        meta.insertTarget = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
+        const arg_disabled = !meta.insertTarget || meta.insertTarget.querySelector("p > span");
+        const arg_hint = arg_disabled ? "请将光标定位到空白行" : "";
+        const insert = [
+            { arg_name: "插入思维导图：mindmap", arg_value: "insert_mermaid_mindmap", arg_hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, arg_disabled, arg_hint },
+            { arg_name: "插入思维导图：graph", arg_value: "insert_mermaid_graph", arg_hotkey: this.config.HOTKEY_INSERT_MERMAID_GRAPH, arg_disabled, arg_hint },
+        ]
+
+        return [...insert, extract];
     }
 
     dynamicCall = type => {
@@ -42,6 +53,8 @@ class easyModifyPlugin extends BasePlugin {
             decrease_headers_level: () => this.changeHeadersLevel(false),
             copy_full_path: () => this.copyFullPath(),
             trailing_white_space: () => this.trailingWhiteSpace(),
+            insert_mermaid_mindmap: () => this.insertMindmap("mindmap", meta.insertTarget),
+            insert_mermaid_graph: () => this.insertMindmap("graph", meta.insertTarget),
             extract_rang_to_new_file: async () => this.extractRangeToNewFile(meta.range),
         }
         const func = funcMap[type];
@@ -164,6 +177,48 @@ class easyModifyPlugin extends BasePlugin {
                 File.editor.brush.brushNode(cid);
             }
         })
+    }
+
+    insertMindmap = (type, target) => {
+        if (!target) return;
+
+        const cleanTitle = title => `("${title.replace(/"/g, "")}")`
+        const wrapErrorMsg = type => (type === "mindmap" && !window.mermaidAPI.defaultConfig.mindmap)
+            ? "%%你的mermaid组件版本过低，不支持mindmap语法。内容已复制到剪贴板，请粘贴到https://mermaid.live/查看\n"
+            : ""
+        const mermaidFunc = {
+            mindmap: tree => {
+                const lines = ["mindmap", "\n"];
+                const range = (node, indent) => {
+                    lines.push("\t".repeat(indent), cleanTitle(node.text), "\n");
+                    node.children.forEach(child => range(child, indent + 1));
+                }
+                range(tree, 1);
+                return lines
+            },
+            graph: tree => {
+                const lines = ["graph LR", "\n"];
+                let idx = 0;
+                const getName = node => {
+                    if (node._shortName) return node._shortName;
+                    idx++;
+                    node._shortName = "T" + idx;
+                    return node._shortName + cleanTitle(node.text);
+                }
+                const range = node => {
+                    node.children.forEach(child => lines.push(getName(node), "-->", getName(child), "\n"));
+                    node.children.forEach(range);
+                }
+                range(tree);
+                return lines
+            }
+        }
+        const func = mermaidFunc[type];
+        if (!func) return;
+        const tree = this.utils.getTocTree();
+        const lines = func(tree).join("");
+        const content = ["```", "mermaid", "\n", wrapErrorMsg(type), lines, "```"].join("");
+        this.utils.insertText(target, content)
     }
 }
 

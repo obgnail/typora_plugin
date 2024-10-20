@@ -27,53 +27,52 @@
 | 11   | fence_enhance           | 一键复制、折叠、格式化代码             |          |
 | 12   | toc                     | 在右侧生成大纲目录                     |          |
 | 13   | commander               | 命令行环境                             |          |
-| 14   | mindmap                 | 根据文档大纲一键生成思维导图           |          |
-| 15   | toolbar                 | 多功能搜索                             |          |
-| 16   | right_click_menu        | 右键菜单统一管理、调用插件             |          |
-| 17   | pie_menu                | 圆盘菜单                               | ×        |
-| 18   | preferences             | 启停插件                               |          |
-| 19   | markmap                 | 提供 markmap 组件支持                  |          |
-| 20   | echarts                 | 提供 echarts 组件支持                  |          |
-| 21   | chart                   | 提供 chartjs 组件支持                  |          |
-| 22   | abc                     | 提供 abcjs 组件支持                    |          |
-| 23   | calendar                | 提供 tui.calendar 组件支持             |          |
-| 24   | wavedrom                | 提供 wavedrom 组件支持                 |          |
-| 25   | marp                    | 提供 marp 组件支持                     |          |
-| 26   | callouts                | 提供 callouts 支持                     |          |
-| 27   | text_stylize            | 文字风格化                             |          |
-| 28   | read_only               | 只读模式                               |          |
-| 29   | blur                    | 模糊模式                               |          |
-| 30   | kanban                  | 看板                                   |          |
-| 31   | timeline                | 时间线                                 |          |
-| 32   | chat                    | 聊天                                   |          |
-| 33   | file_counter            | 显示目录下的文件数                     |          |
-| 34   | auto_number             | 章节、表格、图片、代码块等自动编号     |          |
-| 35   | imageReviewer           | 图片查看器                             |          |
-| 36   | chineseSymbolAutoPairer | 中文符号自动补全                       |          |
-| 37   | datatables              | 表格增强（搜索、过滤、分页、排序等）   | ×        |
-| 38   | resize_table            | 调整表格行高列宽                       |          |
-| 49   | resize_image            | 调整图片显示大小                       |          |
-| 40   | export_enhance          | 导出 html 时避免图片丢失               |          |
-| 41   | go_top                  | 一键到文章顶部、底部                   |          |
-| 42   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 | ×        |
-| 43   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       | ×        |
-| 44   | markdownLint            | markdown 格式规范检测                  |          |
-| 45   | darkMode                | 夜间模式                               |          |
-| 46   | noImageMode             | 无图模式                               |          |
-| 47   | pluginUpdater           | 一键升级插件                           |          |
-| 48   | easy_modify             | 编辑工具                         |          |
-| 49   | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
-| 50   | blockSideBySide         | 并列显示活动块                         | ×        |
-| 51   | scrollBookmarker        | 书签管理器                             | ×        |
-| 52   | openInTotalCommander    | 在 total commander 打开                | ×        |
-| 53   | cipher                  | 加密文件                               | ×        |
-| 54   | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
-| 55   | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
-| 56   | help                    | 用户帮助                               |          |
-| 57   | custom                  | 开放平台，用户自定义插件（高级）       |          |
-| 58   | hotkeyHub               | 快捷键注册中心（高级）                 |          |
-| 59   | quickButton             | 于右下角添加功能按钮（高级）           |          |
-| 60   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
+| 14  | toolbar                 | 多功能搜索                             |          |
+| 15  | right_click_menu        | 右键菜单统一管理、调用插件             |          |
+| 16  | pie_menu                | 圆盘菜单                               | ×        |
+| 17  | preferences             | 启停插件                               |          |
+| 18  | markmap                 | 提供 markmap 组件支持                  |          |
+| 19  | echarts                 | 提供 echarts 组件支持                  |          |
+| 20  | chart                   | 提供 chartjs 组件支持                  |          |
+| 21  | abc                     | 提供 abcjs 组件支持                    |          |
+| 22  | calendar                | 提供 tui.calendar 组件支持             |          |
+| 23  | wavedrom                | 提供 wavedrom 组件支持                 |          |
+| 24  | marp                    | 提供 marp 组件支持                     |          |
+| 25  | callouts                | 提供 callouts 支持                     |          |
+| 26 | text_stylize            | 文字风格化                             |          |
+| 27  | read_only               | 只读模式                               |          |
+| 28  | blur                    | 模糊模式                               |          |
+| 29 | kanban                  | 看板                                   |          |
+| 30  | timeline                | 时间线                                 |          |
+| 31  | chat                    | 聊天                                   |          |
+| 32  | file_counter            | 显示目录下的文件数                     |          |
+| 33  | auto_number             | 章节、表格、图片、代码块等自动编号     |          |
+| 34  | imageReviewer           | 图片查看器                             |          |
+| 35  | chineseSymbolAutoPairer | 中文符号自动补全                       |          |
+| 36  | datatables              | 表格增强（搜索、过滤、分页、排序等）   | ×        |
+| 37  | resize_table            | 调整表格行高列宽                       |          |
+| 38 | resize_image            | 调整图片显示大小                       |          |
+| 39 | export_enhance          | 导出 html 时避免图片丢失               |          |
+| 40  | go_top                  | 一键到文章顶部、底部                   |          |
+| 41  | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 | ×        |
+| 42  | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       | ×        |
+| 43  | markdownLint            | markdown 格式规范检测                  |          |
+| 44  | darkMode                | 夜间模式                               |          |
+| 45  | noImageMode             | 无图模式                               |          |
+| 46  | pluginUpdater           | 一键升级插件                           |          |
+| 47  | easy_modify             | 编辑工具                         |          |
+| 48  | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
+| 49 | blockSideBySide         | 并列显示活动块                         | ×        |
+| 50  | scrollBookmarker        | 书签管理器                             | ×        |
+| 51  | openInTotalCommander    | 在 total commander 打开                | ×        |
+| 52  | cipher                  | 加密文件                               | ×        |
+| 53  | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
+| 54  | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
+| 55  | help                    | 用户帮助                               |          |
+| 56  | custom                  | 开放平台，用户自定义插件（高级）       |          |
+| 57  | hotkeyHub               | 快捷键注册中心（高级）                 |          |
+| 58  | quickButton             | 于右下角添加功能按钮（高级）           |          |
+| 59  | json_rpc                | 外部操纵 Typora（高级）                | ×        |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -438,16 +437,6 @@ BUILTIN = [
 
 
 
-### mindmap：根据文档大纲一键生成思维导图
-
-功能：根据文档大纲一键生成 mermaid 思维导图
-
-使用方式：右键菜单 -> 常用插件 ->  思维导图
-
-![mindmap](assets/mindmap.gif)
-
-
-
 ### markmap：提供 markmap 支持
 
 使用方式：
@@ -519,7 +508,7 @@ LIST = [
 [[right_click_menu.MENUS]]
 NAME = "常用插件"
 LIST = [
-    "commander", "mindmap", "collapse_paragraph", "custom",
+    "commander", "collapse_paragraph", "custom",
     "---",
     "search_multi", "multi_highlighter", "md_padding", "read_only",
 ]
@@ -790,10 +779,12 @@ icon = "\\f040"
 本插件是常用的编辑工具集合，目前包括：
 
 1. 复制标题路径
-2. 提升选中文段的标题等级
-3. 降低选中文段的标题等级
-4. 提取选区文字到新文件
-5. 添加结尾空格
+2. 根据文档大纲一键生成思维导图：mindmap
+3. 根据文档大纲一键生成思维导图：graph
+4. 提升选中文段的标题等级
+5. 降低选中文段的标题等级
+6. 提取选区文字到新文件
+7. 添加结尾空格
 
 
 
