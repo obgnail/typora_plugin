@@ -34,21 +34,16 @@ class markmapPlugin extends BasePlugin {
         }
     }
 
-    getToc = () => {
-        const { headers } = File.editor.nodeMap.toc || {};
-        if (!headers) return;
-
+    getToc = (fixIndent = true) => {
         const result = [];
-        for (const header of headers) {
-            const { pattern, depth, text = "" } = (header && header.attributes) || {};
-            const head = text.replace(/\[\^([^\]]+)\]/g, "");  // 去掉脚注
-            if (pattern) {
-                result.push(pattern.replace("{0}", head));
-            } else if (depth) {
-                result.push("#".repeat(parseInt(depth)) + " " + head);
-            }
+        const tree = this.utils.getTocTree();
+        const range = (node, indent) => {
+            const _indent = "#".repeat(fixIndent ? indent : node.depth);
+            result.push(_indent + " " + node.text);
+            node.children.forEach(child => range(child, indent + 1));
         }
-        return result.join("\n")
+        range(tree, 0);
+        return result.slice(1).join("\n");
     }
 
     onButtonClick = () => this.tocMarkmap && this.tocMarkmap.callback()
@@ -517,6 +512,7 @@ class tocMarkmap {
         const INFO = {
             color: "如需自定义配色方案请前往配置文件",
             maxWidth: "0 表示无长度限制",
+            FIX_ERROR_LEVEL_HEADER: "禁用此功能后会过滤掉有问题的标题",
             LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
             REMEMBER_FOLD_WHEN_UPDATE: "图形更新时不会展开已折叠节点",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
@@ -587,6 +583,7 @@ class tocMarkmap {
 
         const ability = () => {
             const components = [
+                { label: "修复跨等级的标题", key: "FIX_ERROR_LEVEL_HEADER" },
                 { label: "鼠标滚轮进行缩放", key: "zoom" },
                 { label: "鼠标滚轮进行平移", key: "pan" },
                 { label: "折叠时自动适配窗口", key: "autoFit" },
@@ -886,12 +883,12 @@ class tocMarkmap {
 
     redraw = async options => {
         this.markmap.destroy();
-        const md = this.controller.getToc();
+        const md = this.controller.getToc(this.config.FIX_ERROR_LEVEL_HEADER);
         await this._create(md, options);
     }
 
     draw = async (fit = true, options = null) => {
-        const md = this.controller.getToc();
+        const md = this.controller.getToc(this.config.FIX_ERROR_LEVEL_HEADER);
         if (md !== undefined) {
             await this._draw(md, fit, options);
         }
