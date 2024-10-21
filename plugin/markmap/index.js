@@ -36,13 +36,13 @@ class markmapPlugin extends BasePlugin {
 
     getToc = (fixIndent = true) => {
         const tree = this.utils.getTocTree();
-        const range = (node, list, indent) => {
+        const preOrder = (node, list, indent) => {
             const _indent = "#".repeat(fixIndent ? indent : node.depth);
             list.push(_indent + " " + node.text);
-            node.children.forEach(child => range(child, list, indent + 1));
+            node.children.forEach(child => preOrder(child, list, indent + 1));
             return list
         }
-        return range(tree, [], 0).slice(1).join("\n");
+        return preOrder(tree, [], 0).slice(1).join("\n");
     }
 
     onButtonClick = () => this.tocMarkmap && this.tocMarkmap.callback()

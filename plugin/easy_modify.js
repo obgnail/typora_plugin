@@ -184,16 +184,16 @@ class easyModifyPlugin extends BasePlugin {
 
         const clean = title => `("${title.replace(/"/g, "")}")`
         const getComment = type => (type === "mindmap" && !window.mermaidAPI.defaultConfig.mindmap)
-            ? "%%你的mermaid组件版本过低，不支持mindmap语法。内容已复制到剪贴板，请粘贴到https://mermaid.live/查看\n"
+            ? "%%mermaid版本低，不支持mindmap组件，请前往https://mermaid.live/查看\n"
             : ""
         const mermaidFunc = {
             mindmap: tree => {
-                const range = (node, list, indent) => {
+                const preOrder = (node, list, indent) => {
                     list.push("\t".repeat(indent), clean(node.text), "\n");
-                    node.children.forEach(child => range(child, list, indent + 1));
+                    node.children.forEach(child => preOrder(child, list, indent + 1));
                     return list;
                 }
-                return range(tree, ["mindmap", "\n"], 1);
+                return preOrder(tree, ["mindmap", "\n"], 1);
             },
             graph: tree => {
                 let num = 0;
@@ -202,12 +202,12 @@ class easyModifyPlugin extends BasePlugin {
                     node._shortName = "T" + ++num;
                     return node._shortName + clean(node.text);
                 }
-                const range = (node, list) => {
+                const levelOrder = (node, list) => {
                     node.children.forEach(child => list.push(getName(node), "-->", getName(child), "\n"));
-                    node.children.forEach(child => range(child, list));
+                    node.children.forEach(child => levelOrder(child, list));
                     return list
                 }
-                return range(tree, ["graph LR", "\n"])
+                return levelOrder(tree, ["graph LR", "\n"])
             }
         }
         const func = mermaidFunc[type];
