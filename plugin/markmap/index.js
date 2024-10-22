@@ -511,7 +511,7 @@ class tocMarkmap {
         const INFO = {
             color: "如需自定义配色方案请前往配置文件",
             maxWidth: "0 表示无长度限制",
-            FIX_ERROR_LEVEL_HEADER: "禁用此功能后会过滤掉有问题的标题",
+            FIX_ERROR_LEVEL_HEADER: "禁用后会过滤掉跳级的标题",
             LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
             REMEMBER_FOLD_WHEN_UPDATE: "图形更新时不会展开已折叠节点",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
@@ -520,6 +520,7 @@ class tocMarkmap {
             COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: "有些SVG解析器无法解析CSS变量，勾选此选项会自动替换CSS变量",
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若非需要手动修改导出的SVG文件，请勿勾选此选项",
             REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式提高兼容性。若图片显示异常，请勾选此选项",
+            SHOW_DIALOG_WHEN_DOWNLOAD_SVG: "若勾选，则选项「导出目录」失效",
         }
         const { DEFAULT_TOC_OPTIONS: _ops, BORDER_WHEN_DOWNLOAD_SVG: _border } = this.config;
         const needUpdateKey = ["DEFAULT_TOC_OPTIONS", "BORDER_WHEN_DOWNLOAD_SVG"];
@@ -559,7 +560,7 @@ class tocMarkmap {
             if (!list.some(e => e.checked)) {
                 list.push({ value: curValue, label: toLabel(_ops.color), checked: true });
             }
-            list.push({ value: toValue(this.recoverColorScheme), label: "恢复默认", info: INFO.RECOVER_COLOR });
+            list.push({ value: toValue(this.recoverColorScheme), label: "默认", info: INFO.RECOVER_COLOR });
             const callback = scheme => _ops.color = fromValue(scheme);
             return { label: "配色方案", info: INFO.color, type: "radio", list, callback };
         }
@@ -582,7 +583,7 @@ class tocMarkmap {
 
         const ability = () => {
             const components = [
-                { label: "修复跨等级的标题", key: "FIX_ERROR_LEVEL_HEADER" },
+                { label: "修复跳级标题", key: "FIX_ERROR_LEVEL_HEADER" },
                 { label: "鼠标滚轮进行缩放", key: "zoom" },
                 { label: "鼠标滚轮进行平移", key: "pan" },
                 { label: "折叠时自动适配窗口", key: "autoFit" },
@@ -596,7 +597,7 @@ class tocMarkmap {
         const download = () => {
             const fieldset = "导出";
             const components = [
-                { label: "删除无用的类名", key: "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG" },
+                { label: "删除无用类名", key: "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG" },
                 { label: "替换 &lt;foreignObject&gt; 标签", key: "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG" },
                 { label: "尽力解决样式兼容性问题", key: "COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG" },
                 { label: "导出前弹出路径选择对话框", key: "SHOW_DIALOG_WHEN_DOWNLOAD_SVG" },
