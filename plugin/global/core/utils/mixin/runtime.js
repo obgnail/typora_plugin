@@ -71,7 +71,7 @@ class runtime {
         return this.fixCustomPluginSetting(settings);
     }
     // 兼容历史遗留问题
-    fixCustomPluginSetting = async settings => {
+    fixCustomPluginSetting = settings => {
         Object.values(settings).map(plugin => {
             if (plugin.config) {
                 Object.assign(plugin, plugin.config);
@@ -79,6 +79,54 @@ class runtime {
             }
         })
         return settings
+    }
+
+    cleanPluginSetting = async () => {
+        const cleanInvalidPlugin = async (default_, user_) => {
+            const plugins = new Set([...Object.keys(default_), ...Object.keys(user_)]);
+            plugins.delete("global");
+            await Promise.all(
+                Array.from(plugins).map(async fixedName => {
+                    const promises = [`./plugin/custom/plugins/${fixedName}.js`, `./plugin/custom/plugins/${fixedName}/index.js`, `./plugin/${fixedName}.js`, `./plugin/${fixedName}/index.js`]
+                        .map(path => this.utils.joinPath(path))
+                        .map(path => this.utils.existPath(path))
+                    const candidate = await Promise.all(promises);
+                    if (!candidate.some(Boolean)) {
+                        delete user_[fixedName];
+                    }
+                })
+            );
+        };
+        const cleanInvalidKey = (default_, user_) => {
+            const hasOwnProperty = (obj, attr) => Object.prototype.hasOwnProperty.call(obj, attr);
+            Object.keys(user_)
+                .filter(fixedName => hasOwnProperty(default_, fixedName))
+                .map(fixedName => {
+                    const plugin = user_[fixedName];
+                    const invalidKeys = Object.keys(plugin).filter(key => !hasOwnProperty(default_[fixedName], key));
+                    return [plugin, invalidKeys]
+                })
+                .forEach(([plugin, invalidKeys]) => invalidKeys.forEach(key => delete plugin[key]));
+        };
+        const saveFile = async (file, user_) => {
+            const path = await this.getActualSettingPath(file);
+            const content = this.utils.stringifyToml(user_);
+            return this.utils.writeFile(path, content);
+        };
+
+        const [baseDefault, baseUser_, baseHome_] = await this._getSettingObjects("settings.default.toml", "settings.user.toml");
+        const [customDefault, customUser_, customHome_] = (await this._getSettingObjects("custom_plugin.default.toml", "custom_plugin.user.toml")).map(this.fixCustomPluginSetting);
+        const files = [
+            { file: "settings.user.toml", default_: baseDefault, user_: this.utils.merge(baseUser_, baseHome_) },
+            { file: "custom_plugin.user.toml", default_: customDefault, user_: this.utils.merge(customUser_, customHome_) },
+        ]
+        await Promise.all(
+            files.map(async ({ file, default_, user_ }) => {
+                await cleanInvalidPlugin(default_, user_);
+                cleanInvalidKey(default_, user_);
+                await saveFile(file, user_);
+            })
+        );
     }
 
     openSettingFolder = async (file = "settings.user.toml") => this.utils.showInFinder(await this.getActualSettingPath(file))
