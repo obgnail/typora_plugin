@@ -386,7 +386,7 @@ ENABLE_TOC_MARKMAP = true
 TOC_HOTKEY = ""
 # 点击markmap节点，定位到文档位置（跳转到对应章节）（若为false，则LOCALE_HEIGHT_RATIO选项失效）
 CLICK_TO_LOCALE = true
-# 若文档存在跨等级标题问题（MD001规范），尽力修复之（若为false，那么就会过滤掉有问题的标题）
+# 若文档存在跳级的标题（MD001规范），修复之（若为false，那么就会过滤掉跳级的标题）
 FIX_ERROR_LEVEL_HEADER = true
 # 定位时，目标章节滚动到当前视口的高度位置百分比（即：0为当前视口的第一行，1为最后一行）
 LOCALE_HEIGHT_RATIO = 0.2

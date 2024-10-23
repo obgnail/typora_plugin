@@ -37,9 +37,11 @@ class hotkeyHubPlugin extends BaseCustomPlugin {
     }
 
     callback = anchorNode => {
+        const trs = Array.from(this.utils.hotkeyHub.map.keys()).sort().map(hk => {
+            const hotkey = hk.toUpperCase().split("+").map(h => `<kbd>${h}</kbd>`).join("+");
+            return `<tr><td>${hotkey}</td></tr>`
+        })
         const th = `<tr><th>已注册快捷键</th></tr>`;
-        const trs = Array.from(this.utils.hotkeyHub.map.keys(), hotkey => `<tr><td>${hotkey.toUpperCase().split("+").map(ele => `<kbd>${ele}</kbd>`).join("+")}</td></tr>`);
-        trs.sort();
         const table = `<table>${th}${trs.join("")}</table>`;
         const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder("hotkey.user.toml");
         const components = [

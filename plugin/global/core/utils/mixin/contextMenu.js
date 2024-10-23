@@ -49,6 +49,7 @@ class contextMenu {
      */
     register = (name, selector, generator, callback) => this.menus.set(name, { selector, generator, callback })
     unregister = name => this.menus.delete(name)
+    exist = name => this.menus.has(name)
 
     render = menus => {
         const entries = Object.entries(menus);

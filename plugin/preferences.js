@@ -45,6 +45,8 @@ class preferencesPlugin extends BasePlugin {
     }
 
     call = async () => {
+        await this.utils.runtime.cleanPluginSetting();
+
         const infoMap = {
             blur: "此插件不兼容 Beta 版本的 Typora",
             export_enhance: "此插件不兼容 Beta 版本的 Typora",

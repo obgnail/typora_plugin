@@ -182,42 +182,39 @@ class easyModifyPlugin extends BasePlugin {
     insertMindmap = (type, target) => {
         if (!target) return;
 
-        const cleanTitle = title => `("${title.replace(/"/g, "")}")`
-        const wrapErrorMsg = type => (type === "mindmap" && !window.mermaidAPI.defaultConfig.mindmap)
-            ? "%%你的mermaid组件版本过低，不支持mindmap语法。内容已复制到剪贴板，请粘贴到https://mermaid.live/查看\n"
+        const clean = title => `("${title.replace(/"/g, "")}")`
+        const getComment = type => (type === "mindmap" && !window.mermaidAPI.defaultConfig.mindmap)
+            ? "%%mermaid版本低，不支持mindmap组件，请前往https://mermaid.live/查看\n"
             : ""
         const mermaidFunc = {
             mindmap: tree => {
-                const lines = ["mindmap", "\n"];
-                const range = (node, indent) => {
-                    lines.push("\t".repeat(indent), cleanTitle(node.text), "\n");
-                    node.children.forEach(child => range(child, indent + 1));
+                const preOrder = (node, list, indent) => {
+                    list.push("\t".repeat(indent), clean(node.text), "\n");
+                    node.children.forEach(child => preOrder(child, list, indent + 1));
+                    return list;
                 }
-                range(tree, 1);
-                return lines
+                return preOrder(tree, ["mindmap", "\n"], 1);
             },
             graph: tree => {
-                const lines = ["graph LR", "\n"];
-                let idx = 0;
+                let num = 0;
                 const getName = node => {
                     if (node._shortName) return node._shortName;
-                    idx++;
-                    node._shortName = "T" + idx;
-                    return node._shortName + cleanTitle(node.text);
+                    node._shortName = "T" + ++num;
+                    return node._shortName + clean(node.text);
                 }
-                const range = node => {
-                    node.children.forEach(child => lines.push(getName(node), "-->", getName(child), "\n"));
-                    node.children.forEach(range);
+                const levelOrder = (node, list) => {
+                    node.children.forEach(child => list.push(getName(node), "-->", getName(child), "\n"));
+                    node.children.forEach(child => levelOrder(child, list));
+                    return list
                 }
-                range(tree);
-                return lines
+                return levelOrder(tree, ["graph LR", "\n"])
             }
         }
         const func = mermaidFunc[type];
         if (!func) return;
         const tree = this.utils.getTocTree();
         const lines = func(tree).join("");
-        const content = ["```", "mermaid", "\n", wrapErrorMsg(type), lines, "```"].join("");
+        const content = ["```", "mermaid", "\n", getComment(type), lines, "```"].join("");
         this.utils.insertText(target, content)
     }
 }

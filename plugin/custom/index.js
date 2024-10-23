@@ -25,8 +25,8 @@ class CustomPlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => {
-        const settings = Object.entries(this.pluginsSettings);
-        settings.sort(([, { order: o1 = 1 }], [, { order: o2 = 1 }]) => o1 - o2);
+        const settings = Object.entries(this.pluginsSettings)
+            .sort(([, { order: o1 = 1 }], [, { order: o2 = 1 }]) => o1 - o2);
 
         meta.target = anchorNode;
         const dynamicCallArgs = [];

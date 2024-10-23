@@ -26,8 +26,7 @@ async function checkContent({ fileContent }) {
         initLibrary();
     }
     const { content } = await lint({ strings: { content: fileContent }, config });
-    content.sort((a, b) => a.lineNumber - b.lineNumber);
-    return content
+    return content.sort((a, b) => a.lineNumber - b.lineNumber);
 }
 
 async function checkPath({ filePath }) {

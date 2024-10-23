@@ -442,20 +442,15 @@ class highlightHelper {
     }
 
     parseRange = line => {
-        const result = [];
-        const parts = line.split(',');
-        for (const part of parts) {
-            if (part.includes('-')) {
+        return line
+            .split(',')
+            .flatMap(part => {
+                if (!part.includes('-')) return [Number(part)];
                 const [start, end] = part.split('-').map(Number);
-                for (let i = start; i <= end; i++) {
-                    result.push(i);
-                }
-            } else {
-                result.push(Number(part));
-            }
-        }
-        return result.map(e => Math.max(e - 1, 0));
-    }
+                return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+            })
+            .map(e => Math.max(e - 1, 0))
+    };
 
     getEntities = cid => {
         const fence = File.editor.fences.queue[cid];
