@@ -12,9 +12,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
                     <span class="option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" action="toggleCaseSensitive" ty-hint="区分大小写">
                         <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                     </span>
-                    <span class="option-btn ${(this.config.INCLUDE_FILE_PATH) ? "select" : ""}" action="toggleIncludeFilePath" ty-hint="将文件路径加入搜索内容">
-                        <div class="fa fa-folder-open-o"></div>
-                    </span>
                 </div>
             </div>
 
@@ -51,10 +48,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
                 btn.classList.toggle("select");
                 this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE;
             },
-            toggleIncludeFilePath: btn => {
-                btn.classList.toggle("select");
-                this.config.INCLUDE_FILE_PATH = !this.config.INCLUDE_FILE_PATH;
-            }
         }
     }
 
@@ -121,7 +114,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
                 const stats = await stat(filePath);
                 if (stats.isFile() && (!fileFilter || fileFilter(filePath, stats))) {
                     const buffer = await readFile(filePath);
-                    callback(filePath, stats, buffer);
+                    callback({ filePath, stats, buffer, file });
                 } else if (stats.isDirectory() && (!dirFilter || dirFilter(file))) {
                     await traverse(filePath);
                 }
@@ -140,7 +133,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     appendItemFunc = (rootPath, checker) => {
         let index = 0;
         const showResult = this.utils.once(() => this.utils.show(this.entities.result));
-        const { INCLUDE_FILE_PATH, RELATIVE_PATH, SHOW_MTIME } = this.config;
+        const { RELATIVE_PATH, SHOW_MTIME } = this.config;
         const newResultItem = (rootPath, filePath, stats) => {
             const { dir, base } = this.utils.Package.Path.parse(filePath);
             const dirPath = RELATIVE_PATH ? dir.replace(rootPath, ".") : dir;
@@ -165,12 +158,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
             return item
         }
 
-        return (filePath, stats, buffer) => {
-            let content = buffer.toString();
-            if (INCLUDE_FILE_PATH) {
-                content = `${content}\n${filePath}`;
-            }
-            if (!checker(content)) return;
+        return ({ filePath, file, stats, buffer }) => {
+            if (!checker({ filePath, file, stats, buffer })) return;
 
             index++;
             const item = newResultItem(rootPath, filePath, stats);
@@ -188,9 +177,22 @@ class searchMultiKeywordPlugin extends BasePlugin {
         this.refreshResult();
 
         const ast = this.utils.searchStringParser.parse(input);
-        const checker = content => {
-            content = this.config.CASE_SENSITIVE ? content : content.toLowerCase();
-            return this.utils.searchStringParser.checkByAST(ast, content)
+        const checker = ({ filePath, file, stats, buffer }) => {
+            return this.utils.searchStringParser.checkByAST(ast, scope => {
+                let result = "";
+                if (scope === "all") {
+                    result = `${buffer.toString()}\n${filePath}`;
+                } else if (scope === "file") {
+                    result = file
+                } else if (scope === "path") {
+                    result = filePath
+                } else if (scope === "content") {
+                    result = buffer.toString()
+                } else if (scope === "ext") {
+                    result = this.utils.Package.Path.extname(file)
+                }
+                return this.config.CASE_SENSITIVE ? result : result.toLowerCase();
+            })
         }
         const verifyExt = filename => {
             if (filename.startsWith(".")) return false;

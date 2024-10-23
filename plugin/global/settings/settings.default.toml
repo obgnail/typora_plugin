@@ -122,8 +122,6 @@ SHOW_MTIME = false
 REFOUCE_WHEN_OPEN_FILE = false
 # 搜索内容时大小写敏感(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
 CASE_SENSITIVE = false
-# 将文件路径加入搜索内容(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
-INCLUDE_FILE_PATH = true
 # 搜索时联动其他插件(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
 LINK_OTHER_PLUGIN = true
 # 查找文件的最大尺寸。大于MAX_SIZE的文件在搜索时将被忽略。若<0则不忽略任何文件
