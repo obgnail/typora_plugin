@@ -49,9 +49,10 @@
     cursor: ew-resize;
 }
 
-${icon_wrap}
-${node_hover}
-${show_outline}
+#plugin-markmap-svg .markmap-node .markmap-foreign:hover {
+    outline: ${this.config.BORDER_STYLE_WHEN_NODE_HOVER};
+}
+
 .plugin-markmap-header {
     display: flex;
     flex-direction: column;

@@ -386,12 +386,10 @@ ENABLE_TOC_MARKMAP = true
 TOC_HOTKEY = ""
 # 点击markmap节点，定位到文档位置（跳转到对应章节）（若为false，则LOCALE_HEIGHT_RATIO选项失效）
 CLICK_TO_LOCALE = true
-# 若文档存在跳级的标题（MD001规范），修复之（若为false，那么就会过滤掉跳级的标题）
-FIX_ERROR_LEVEL_HEADER = true
 # 定位时，目标章节滚动到当前视口的高度位置百分比（即：0为当前视口的第一行，1为最后一行）
 LOCALE_HEIGHT_RATIO = 0.2
-# 当窗口太小时，是否允许icon换行显示
-ALLOW_ICON_WRAP = true
+# 若文档存在跳级的标题（MD001规范），修复之（若为false，那么就会过滤掉跳级的标题）
+FIX_ERROR_LEVEL_HEADER = true
 # 当用户编辑文档，导致markmap更新图形时，新markmap的图形大小是否重新适配窗口
 AUTO_FIT_WHEN_UPDATE = true
 # 当用户编辑文档，导致markmap更新图形时，已折叠的节点是否不再重新展开
@@ -406,9 +404,7 @@ HEIGHT_PERCENT_WHEN_INIT = 35
 HEIGHT_PERCENT_WHEN_PIN_UP = 30
 # 当pin到页面右侧时，占据页面的50%宽度
 WIDTH_PERCENT_WHEN_PIN_RIGHT = 50
-# 当鼠标悬停于节点时，显示节点边框
-SHOW_BORDER_WHEN_NODE_HOVER = true
-# 当鼠标悬停于节点时，显示边框的样式（当SHOW_BORDER_WHEN_NODE_HOVER为false时，此选项失效）
+# 当鼠标悬停于节点时，显示边框的样式
 BORDER_STYLE_WHEN_NODE_HOVER = "4px solid #FF7B00"
 # 默认的toc图形选项
 #   - autoFit           : 折叠/展开节点时，图形是否重新适配窗口

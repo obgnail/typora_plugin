@@ -5,11 +5,7 @@ class markmapPlugin extends BasePlugin {
         this.fenceMarkmap = this.config.ENABLE_FENCE_MARKMAP ? new fenceMarkmap(this) : null;
     }
 
-    styleTemplate = () => ({
-        node_hover: !this.config.CLICK_TO_LOCALE ? "" : `#plugin-markmap-svg .markmap-node:hover { cursor: pointer; }`,
-        show_outline: !this.config.SHOW_BORDER_WHEN_NODE_HOVER ? "" : `#plugin-markmap-svg .markmap-node .markmap-foreign:hover { outline: ${this.config.BORDER_STYLE_WHEN_NODE_HOVER}; }`,
-        icon_wrap: !this.config.ALLOW_ICON_WRAP ? "" : `.plugin-markmap-header { flex-wrap: wrap; justify-content: flex-start; }`,
-    })
+    styleTemplate = () => this
 
     html = () => this.tocMarkmap && this.tocMarkmap.html();
 
@@ -290,13 +286,13 @@ class tocMarkmap {
         const onResize = () => {
             const getModalMinHeight = () => {
                 const one = this.entities.header.firstElementChild.getBoundingClientRect().height;
-                const count = this.config.ALLOW_ICON_WRAP ? 1 : this.entities.header.childElementCount;
+                const count = this.entities.header.childElementCount;
                 return one * count
             }
             const getModalMinWidth = () => {
                 const { marginLeft, paddingRight } = document.defaultView.getComputedStyle(this.entities.header);
                 const headerWidth = this.entities.header.getBoundingClientRect().width;
-                const _marginRight = this.config.ALLOW_ICON_WRAP ? 0 : parseFloat(paddingRight);
+                const _marginRight = parseFloat(paddingRight);
                 return parseFloat(marginLeft) + headerWidth + _marginRight
             }
             const onMouseUp = () => {
@@ -511,15 +507,16 @@ class tocMarkmap {
         const INFO = {
             color: "如需自定义配色方案请前往配置文件",
             maxWidth: "0 表示无长度限制",
-            FIX_ERROR_LEVEL_HEADER: "禁用后会过滤掉跳级的标题",
+            FIX_ERROR_LEVEL_HEADER: "若取消勾选，则会过滤掉跳级的标题",
+            CLICK_TO_LOCALE: "若取消勾选，则选项「定位的视口高度」失效",
             LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
             REMEMBER_FOLD_WHEN_UPDATE: "图形更新时不会展开已折叠节点",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不推荐开启",
-            FOLDER_WHEN_DOWNLOAD_SVG: "为空则使用 TAMP 目录",
+            FOLDER_WHEN_DOWNLOAD_SVG: "为空则使用 TEMP 目录",
             FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid\n支持后缀：svg、png、html",
             COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: "有些SVG解析器无法解析CSS变量，勾选此选项会自动替换CSS变量",
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若非需要手动修改导出的SVG文件，请勿勾选此选项",
-            REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式提高兼容性。若图片显示异常，请勾选此选项",
+            REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式，提高兼容性。若导出的图片异常，请勾选此选项",
             SHOW_DIALOG_WHEN_DOWNLOAD_SVG: "若勾选，则选项「导出目录」失效",
         }
         const { DEFAULT_TOC_OPTIONS: _ops, BORDER_WHEN_DOWNLOAD_SVG: _border } = this.config;
@@ -586,6 +583,7 @@ class tocMarkmap {
                 { label: "修复跳级标题", key: "FIX_ERROR_LEVEL_HEADER" },
                 { label: "鼠标滚轮进行缩放", key: "zoom" },
                 { label: "鼠标滚轮进行平移", key: "pan" },
+                { label: "鼠标点击节点跳转", key: "CLICK_TO_LOCALE" },
                 { label: "折叠时自动适配窗口", key: "autoFit" },
                 { label: "更新时自动适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
                 { label: "记住已折叠的节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
