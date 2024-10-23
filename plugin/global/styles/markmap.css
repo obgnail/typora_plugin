@@ -53,9 +53,15 @@
     outline: ${this.config.BORDER_STYLE_WHEN_NODE_HOVER};
 }
 
+#plugin-markmap-svg .markmap-node:hover {
+    cursor: pointer;
+}
+
 .plugin-markmap-header {
     display: flex;
     flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: flex-start;
     align-items: center;
     max-width: 2em;
 }

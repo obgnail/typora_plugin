@@ -220,21 +220,8 @@ class tocMarkmap {
     prepare = () => {
         this.markmap = null;
         this.transformContext = null;
-        this.candidateColorSchemes = {
-            PASTEL2: ['#B3E2CD', '#FDCDAC', '#CBD5E8', '#F4CAE4', '#E6F5C9', '#FFF2AE', '#F1E2CC', '#CCCCCC'],
-            SET2: ['#66C2A5', '#FC8D62', '#8DA0CB', '#E78AC3', '#A6D854', '#FFD92F', '#E5C494', '#B3B3B3'],
-            DARK2: ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#66A61E', '#E6AB02', '#A6761D', '#666666'],
-            ACCENT: ['#7FC97F', '#BEAED4', '#FDC086', '#FFFF99', '#386CB0', '#F0027F', '#BF5B17', '#666666'],
-            PASTEL1: ['#FBB4AE', '#B3CDE3', '#CCEBC5', '#DECBE4', '#FED9A6', '#FFFFCC', '#E5D8BD', '#FDDAEC', '#F2F2F2'],
-            SET1: ['#E41A1C', '#377EB8', '#4DAF4A', '#984EA3', '#FF7F00', '#FFFF33', '#A65628', '#F781BF', '#999999'],
-            TABLEAU10: ['#4E79A7', '#F28E2C', '#E15759', '#76B7B2', '#59A14F', '#EDC949', '#AF7AA1', '#FF9DA7', '#9C755F', '#BAB0AB'],
-            CATEGORY10: ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#E377C2', '#7F7F7F', '#BCBD22', '#17BECF'],
-            PAIRED: ['#A6CEE3', '#1F78B4', '#B2DF8A', '#33A02C', '#FB9A99', '#E31A1C', '#FDBF6F', '#FF7F00', '#CAB2D6', '#6A3D9A', '#FFFF99', '#B15928'],
-            SET3: ['#8DD3C7', '#FFFFB3', '#BEBADA', '#FB8072', '#80B1D3', '#FDB462', '#B3DE69', '#FCCDE5', '#D9D9D9', '#BC80BD', '#CCEBC5', '#FFED6F'],
-        }
         this._fixConfig();
 
-        this.recoverColorScheme = this.candidateColorSchemes.CATEGORY10;
         this.modalOriginRect = null;
         this.contentOriginRect = null;
         this.pinUtils = {
@@ -285,15 +272,12 @@ class tocMarkmap {
         }
         const onResize = () => {
             const getModalMinHeight = () => {
-                const one = this.entities.header.firstElementChild.getBoundingClientRect().height;
-                const count = this.entities.header.childElementCount;
-                return one * count
+                return this.entities.header.firstElementChild.getBoundingClientRect().height
             }
             const getModalMinWidth = () => {
-                const { marginLeft, paddingRight } = document.defaultView.getComputedStyle(this.entities.header);
+                const { marginLeft } = document.defaultView.getComputedStyle(this.entities.header);
                 const headerWidth = this.entities.header.getBoundingClientRect().width;
-                const _marginRight = parseFloat(paddingRight);
-                return parseFloat(marginLeft) + headerWidth + _marginRight
+                return parseFloat(marginLeft) + headerWidth
             }
             const onMouseUp = () => {
                 this._rollbackTransition();
@@ -507,7 +491,7 @@ class tocMarkmap {
         const INFO = {
             color: "如需自定义配色方案请前往配置文件",
             maxWidth: "0 表示无长度限制",
-            FIX_ERROR_LEVEL_HEADER: "若取消勾选，则会过滤掉跳级的标题",
+            FIX_ERROR_LEVEL_HEADER: "若取消勾选，则会过滤跳级标题",
             CLICK_TO_LOCALE: "若取消勾选，则选项「定位的视口高度」失效",
             LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
             REMEMBER_FOLD_WHEN_UPDATE: "图形更新时不会展开已折叠节点",
@@ -548,7 +532,7 @@ class tocMarkmap {
                 return `<div class="plugin-markmap-color-scheme">${inner.join("")}</div>`;
             }
             const curValue = toValue(_ops.color);
-            const list = Object.values(this.candidateColorSchemes).map(colorList => {
+            const list = this.config.CANDIDATE_COLOR_SCHEMES.map(colorList => {
                 const value = toValue(colorList);
                 const label = toLabel(colorList);
                 const checked = value === curValue;
@@ -557,7 +541,6 @@ class tocMarkmap {
             if (!list.some(e => e.checked)) {
                 list.push({ value: curValue, label: toLabel(_ops.color), checked: true });
             }
-            list.push({ value: toValue(this.recoverColorScheme), label: "默认", info: INFO.RECOVER_COLOR });
             const callback = scheme => _ops.color = fromValue(scheme);
             return { label: "配色方案", info: INFO.color, type: "radio", list, callback };
         }
@@ -570,8 +553,8 @@ class tocMarkmap {
             { type: "range", inline: true, min: 0, max: 100, step: 1, ...inputKV("节点垂直间距", "spacingVertical") },
             { type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("节点最大长度", "maxWidth") },
             { type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("动画持续时间", "duration") },
-            { type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...inputKV("窗口填充率", "fitRatio") },
             { type: "range", inline: true, min: 0.1, max: 1, step: 0.01, ...inputKV("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
+            { type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...inputKV("窗口填充率", "fitRatio") },
             { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("初始的窗口宽度", "WIDTH_PERCENT_WHEN_INIT") },
             { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("初始的窗口高度", "HEIGHT_PERCENT_WHEN_INIT") },
             { type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("固定顶部的窗口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
@@ -583,7 +566,7 @@ class tocMarkmap {
                 { label: "修复跳级标题", key: "FIX_ERROR_LEVEL_HEADER" },
                 { label: "鼠标滚轮进行缩放", key: "zoom" },
                 { label: "鼠标滚轮进行平移", key: "pan" },
-                { label: "鼠标点击节点跳转", key: "CLICK_TO_LOCALE" },
+                { label: "鼠标点击节点进行定位", key: "CLICK_TO_LOCALE" },
                 { label: "折叠时自动适配窗口", key: "autoFit" },
                 { label: "更新时自动适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
                 { label: "记住已折叠的节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
