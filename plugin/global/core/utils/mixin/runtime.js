@@ -82,6 +82,18 @@ class runtime {
     }
 
     cleanPluginSetting = async () => {
+        const deleteUselessPlugin = async () => {
+            await Promise.all(
+                ["fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace"]
+                    .map(plugin => this.utils.joinPath("./plugin/custom/plugins", `${plugin}.js`))
+                    .map(async path => {
+                        const exist = await this.utils.existPath(path);
+                        if (exist) {
+                            await this.utils.Package.Fs.promises.unlink(path);
+                        }
+                    })
+            );
+        };
         const cleanInvalidPlugin = async (default_, user_) => {
             const plugins = new Set([...Object.keys(default_), ...Object.keys(user_)]);
             plugins.delete("global");
@@ -120,6 +132,7 @@ class runtime {
             { file: "settings.user.toml", default_: baseDefault, user_: this.utils.merge(baseUser_, baseHome_) },
             { file: "custom_plugin.user.toml", default_: customDefault, user_: this.utils.merge(customUser_, customHome_) },
         ]
+        await deleteUselessPlugin();
         await Promise.all(
             files.map(async ({ file, default_, user_ }) => {
                 await cleanInvalidPlugin(default_, user_);
