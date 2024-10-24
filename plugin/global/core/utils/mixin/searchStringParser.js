@@ -1,16 +1,3 @@
-/**
- * grammar:
- *   <query> ::= <expr>
- *   <expr> ::= <term> ( <or> <term> )*
- *   <term> ::= <factor> ( <not_and> <factor> )*
- *   <factor> ::= <scope>? <match>
- *   <not_and> ::= '-' | ' '
- *   <or> ::= 'OR' | '|'
- *   <scope> ::= 'all:' | 'file:' | 'path:' | 'ext:' | 'content:'
- *   <match> ::= '"' <keyword> '"' | <keyword> | '/' <regexp> '/' | '(' <expr> ')'
- *   <keyword> ::= [^"]+
- *   <regexp> ::= [^/]+
- */
 class searchStringParser {
     constructor(utils) {
         this.utils = utils;
@@ -23,7 +10,7 @@ class searchStringParser {
             KEYWORD: "KEYWORD",
             PHRASE: "PHRASE",
             REGEXP: "REGEXP",
-            SCOPE: "SCOPE",
+            CONDITION: "CONDITION",
         }
         this.TOKEN = {
             OR: { type: this.TYPE.OR, value: "OR" },
@@ -34,8 +21,13 @@ class searchStringParser {
             PHRASE: value => ({ type: this.TYPE.PHRASE, value }),
             KEYWORD: value => ({ type: this.TYPE.KEYWORD, value }),
             REGEXP: value => ({ type: this.TYPE.REGEXP, value }),
-            SCOPE: value => ({ type: this.TYPE.SCOPE, value }),
+            CONDITION: (scope, operator) => ({ type: this.TYPE.CONDITION, scope, operator }),
         }
+        this.setConditionRegExp();
+    }
+
+    setConditionRegExp(scope = ["all", "file", "path", "ext", "content"], operator = [":", "=", ">=", "<=", ">"]) {
+        this.scopeRegExp = new RegExp(`^(?<scope>${scope.join('|')})(?<operator>${operator.join('|')})`, "i");
     }
 
     _tokenize(query) {
@@ -68,10 +60,10 @@ class searchStringParser {
                 i++;
             } else if (/\s/.test(query[i])) {
                 i++; // skip whitespace
-            } else if (match = query.substring(i).match(/^(?<scope>all|file|path|ext|content):/i)) {
-                const scope = match.groups.scope;
-                tokens.push(this.TOKEN.SCOPE(scope));
-                i = i + scope.length + 1;
+            } else if (match = query.substring(i).match(this.scopeRegExp)) {
+                const { scope, operator } = match.groups;
+                tokens.push(this.TOKEN.CONDITION(scope, operator));
+                i += scope.length + operator.length;
             } else if (query[i] === "/") {
                 const regexpStart = i;
                 i++;
@@ -94,7 +86,7 @@ class searchStringParser {
         }
 
         const result = [];
-        const invalidPre = [this.TYPE.NOT, this.TYPE.OR, this.TYPE.PAREN_OPEN, this.TYPE.SCOPE];
+        const invalidPre = [this.TYPE.NOT, this.TYPE.OR, this.TYPE.PAREN_OPEN, this.TYPE.CONDITION];
         const invalidCur = [this.TYPE.NOT, this.TYPE.OR, this.TYPE.PAREN_CLOSE];
         for (let i = 0; i < tokens.length; i++) {
             const current = tokens[i];
@@ -139,11 +131,11 @@ class searchStringParser {
     }
 
     _parseFactor(tokens) {
-        const scope = (tokens[0].type === this.TYPE.SCOPE)
-            ? tokens.shift().value
-            : "all";
+        const condition = (tokens[0].type === this.TYPE.CONDITION)
+            ? tokens.shift()
+            : this.TOKEN.CONDITION("all", ":");
         const node = this._parseMatch(tokens);
-        return this._setScope(node, scope);
+        return this._setCondition(node, condition);
     }
 
     _parseMatch(tokens) {
@@ -160,14 +152,15 @@ class searchStringParser {
         }
     }
 
-    _setScope(node, scope) {
+    _setCondition(node, condition) {
         if (!node) return;
         const isLeaf = [this.TYPE.REGEXP, this.TYPE.KEYWORD, this.TYPE.PHRASE].includes(node.type);
         if (isLeaf && (!node.scope || node.scope === "all")) {
-            node.scope = scope;
+            node.scope = condition.scope;
+            node.operator = condition.operator;
         } else {
-            this._setScope(node.left, scope);
-            this._setScope(node.right, scope);
+            this._setCondition(node.left, condition);
+            this._setCondition(node.right, condition);
         }
         return node
     }
@@ -197,13 +190,13 @@ class searchStringParser {
     checkByAST(ast, getContent) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE;
 
-        function evaluate({ type, left, right, value, scope }) {
+        function evaluate({ type, left, right, value, scope, operator }) {
             switch (type) {
                 case KEYWORD:
                 case PHRASE:
-                    return getContent(scope).includes(value);
+                    return getContent(scope, operator).includes(value);
                 case REGEXP:
-                    return new RegExp(value).test(getContent(scope));
+                    return new RegExp(value).test(getContent(scope, operator));
                 case OR:
                     return evaluate(left) || evaluate(right);
                 case AND:
@@ -247,10 +240,12 @@ class searchStringParser {
 <query> ::= <expr>
 <expr> ::= <term> ( <or> <term> )*
 <term> ::= <factor> ( <not_and> <factor> )*
-<factor> ::= <scope>? <match>
+<factor> ::= <condition>? <match>
 <not_and> ::= '-' | ' '
 <or> ::= 'OR' | '|'
-<scope> ::= 'all:' | 'file:' | 'path:' | 'ext:' | 'content:'
+<condition> ::= <scope> <operator> 
+<scope> ::= 'all' | 'file' | 'path' | 'ext' | 'content'
+<operator> ::= ':' | '=' | '>=' | '<=' | '>'
 <match> ::= <keyword> | '"'<keyword>'"' | '/'<regexp>'/' | '('<expr>')'
 <keyword> ::= [^"]+
 <regexp> ::= [^/]+`
