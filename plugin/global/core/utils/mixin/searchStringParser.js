@@ -1,6 +1,20 @@
+/**
+ * grammar:
+ *   <query> ::= <expr>
+ *   <expr> ::= <term> ( <or> <term> )*
+ *   <term> ::= <factor> ( <not_and> <factor> )*
+ *   <factor> ::= <qualifier>? <match>
+ *   <qualifier> ::= <scope> <operator>
+ *   <match> ::= <keyword> | '"'<keyword>'"' | '/'<regexp>'/' | '('<expr>')'
+ *   <not_and> ::= '-' | ' '
+ *   <or> ::= 'OR' | '|'
+ *   <keyword> ::= [^"]+
+ *   <regexp> ::= [^/]+
+ *   <operator> ::= ':' | '=' | '>=' | '<=' | '>' | '<'
+ *   <scope> ::= 'default' | 'file' | 'path' | 'ext' | 'content' | 'size' | 'time'
+ * */
 class searchStringParser {
-    constructor(utils) {
-        this.utils = utils;
+    constructor() {
         this.TYPE = {
             OR: "OR",
             AND: "AND",
@@ -10,7 +24,7 @@ class searchStringParser {
             KEYWORD: "KEYWORD",
             PHRASE: "PHRASE",
             REGEXP: "REGEXP",
-            CONDITION: "CONDITION",
+            QUALIFIER: "QUALIFIER",
         }
         this.TOKEN = {
             OR: { type: this.TYPE.OR, value: "OR" },
@@ -21,19 +35,22 @@ class searchStringParser {
             PHRASE: value => ({ type: this.TYPE.PHRASE, value }),
             KEYWORD: value => ({ type: this.TYPE.KEYWORD, value }),
             REGEXP: value => ({ type: this.TYPE.REGEXP, value }),
-            CONDITION: (scope, operator) => ({ type: this.TYPE.CONDITION, scope, operator }),
+            QUALIFIER: (scope, operator) => ({ type: this.TYPE.QUALIFIER, scope, operator }),
         }
-        this.setConditionRegExp();
+        this.setQualifier();
     }
 
-    setConditionRegExp(scope = ["all", "file", "path", "ext", "content"], operator = [":", "=", ">=", "<=", ">"]) {
-        this.scopeRegExp = new RegExp(`^(?<scope>${scope.join('|')})(?<operator>${operator.join('|')})`, "i");
+    setQualifier(
+        scope = ["default", "file", "path", "ext", "content", "time", "size"],
+        operator = [">=", "<=", ":", "=", ">", "<"],
+    ) {
+        this.qualifierRegExp = new RegExp(`^(?<scope>${scope.join('|')})(?<operator>${operator.join('|')})`, "i");
     }
 
     _tokenize(query) {
         const tokens = [];
         let i = 0;
-        let match = null;
+        let qualifierMatch = null;
         while (i < query.length) {
             if (query[i] === '"') {
                 const start = i + 1;
@@ -60,9 +77,9 @@ class searchStringParser {
                 i++;
             } else if (/\s/.test(query[i])) {
                 i++; // skip whitespace
-            } else if (match = query.substring(i).match(this.scopeRegExp)) {
-                const { scope, operator } = match.groups;
-                tokens.push(this.TOKEN.CONDITION(scope, operator));
+            } else if (qualifierMatch = query.substring(i).match(this.qualifierRegExp)) {
+                const { scope, operator } = qualifierMatch.groups;
+                tokens.push(this.TOKEN.QUALIFIER(scope, operator));
                 i += scope.length + operator.length;
             } else if (query[i] === "/") {
                 const regexpStart = i;
@@ -86,7 +103,7 @@ class searchStringParser {
         }
 
         const result = [];
-        const invalidPre = [this.TYPE.NOT, this.TYPE.OR, this.TYPE.PAREN_OPEN, this.TYPE.CONDITION];
+        const invalidPre = [this.TYPE.NOT, this.TYPE.OR, this.TYPE.PAREN_OPEN, this.TYPE.QUALIFIER];
         const invalidCur = [this.TYPE.NOT, this.TYPE.OR, this.TYPE.PAREN_CLOSE];
         for (let i = 0; i < tokens.length; i++) {
             const current = tokens[i];
@@ -131,11 +148,11 @@ class searchStringParser {
     }
 
     _parseFactor(tokens) {
-        const condition = (tokens[0].type === this.TYPE.CONDITION)
+        const qualifier = (tokens[0].type === this.TYPE.QUALIFIER)
             ? tokens.shift()
-            : this.TOKEN.CONDITION("all", ":");
+            : this.TOKEN.QUALIFIER("default", ":");
         const node = this._parseMatch(tokens);
-        return this._setCondition(node, condition);
+        return this._setQualifier(node, qualifier);
     }
 
     _parseMatch(tokens) {
@@ -152,106 +169,55 @@ class searchStringParser {
         }
     }
 
-    _setCondition(node, condition) {
+    _setQualifier(node, qualifier) {
         if (!node) return;
-        const isLeaf = [this.TYPE.REGEXP, this.TYPE.KEYWORD, this.TYPE.PHRASE].includes(node.type);
-        if (isLeaf && (!node.scope || node.scope === "all")) {
-            node.scope = condition.scope;
-            node.operator = condition.operator;
+        const type = node.type;
+        const isLeaf = type === this.TYPE.PHRASE || type === this.TYPE.KEYWORD || type === this.TYPE.REGEXP;
+        if (isLeaf && (!node.scope || node.scope === "default")) {
+            node.scope = qualifier.scope;
+            node.operator = qualifier.operator;
         } else {
-            this._setCondition(node.left, condition);
-            this._setCondition(node.right, condition);
+            this._setQualifier(node.left, qualifier);
+            this._setQualifier(node.right, qualifier);
         }
         return node
     }
 
-    _withNotification(func) {
-        try {
-            return func();
-        } catch (e) {
-            this.utils.notification.show("语法解析错误，请检查输入内容", "error");
-        }
-    }
-
     parse(query) {
-        return this._withNotification(() => {
-            const tokens = this._tokenize(query);
-            if (tokens.length === 0) {
-                return this.TOKEN.KEYWORD("")
-            }
-            const result = this._parseExpression(tokens);
-            if (tokens.length !== 0) {
-                throw new Error(`parse error. remind tokens: ${tokens}`)
-            }
-            return result
-        })
+        const tokens = this._tokenize(query);
+        if (tokens.length === 0) {
+            return this.TOKEN.KEYWORD("")
+        }
+        const result = this._parseExpression(tokens);
+        if (tokens.length !== 0) {
+            throw new Error(`parse error. remind tokens: ${tokens}`)
+        }
+        return result
     }
 
-    checkByAST(ast, getContent) {
+    evaluate(ast, { keyword, phrase, regexp }) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE;
 
-        function evaluate({ type, left, right, value, scope, operator }) {
+        function _eval({ type, left, right, scope, operator, value }) {
             switch (type) {
                 case KEYWORD:
+                    return keyword(scope, operator, value);
                 case PHRASE:
-                    return getContent(scope, operator).includes(value);
+                    return phrase(scope, operator, value);
                 case REGEXP:
-                    return new RegExp(value).test(getContent(scope, operator));
+                    return regexp(scope, operator, value);
                 case OR:
-                    return evaluate(left) || evaluate(right);
+                    return _eval(left) || _eval(right);
                 case AND:
-                    return evaluate(left) && evaluate(right);
+                    return _eval(left) && _eval(right);
                 case NOT:
-                    return (left ? evaluate(left) : true) && !evaluate(right);
+                    return (left ? _eval(left) : true) && !_eval(right);
                 default:
                     throw new Error(`Unknown AST node type: ${type}`);
             }
         }
 
-        return evaluate(ast);
-    }
-
-    showGrammar() {
-        const table1 = `
-            <table>
-                <tr><th>关键字</th><th>说明</th></tr>
-                <tr><td>whitespace</td><td>表示与，文档应该同时包含全部关键词</td></tr>
-                <tr><td>|</td><td>表示或，文档应该包含关键词之一，等价于 OR</td></tr>
-                <tr><td>-</td><td>表示非，文档不能包含关键词</td></tr>
-                <tr><td>""</td><td>词组</td></tr>
-                <tr><td>scope:</td><td>限定查找范围（all、file、path、ext、content），默认为 all</td></tr>
-                <tr><td>//</td><td>JavaScript 风格的正则表达式</td></tr>
-                <tr><td>()</td><td>小括号，用于调整运算顺序</td></tr>
-            </table>
-        `
-        const table2 = `
-            <table>
-                <tr><th>示例</th><th>搜索文档</th></tr>
-                <tr><td>foo bar</td><td>包含 foo 和 bar</td></tr>
-                <tr><td>foo OR bar</td><td>包含 foo 或 bar</td></tr>
-                <tr><td>foo bar -zoo</td><td>包含 foo 和 bar 但不包含 zoo</td></tr>
-                <tr><td>"foo bar"</td><td>包含 foo bar 这一词组</td></tr>
-                <tr><td>(a OR b) (c | d)</td><td>包含 a 或 b，且包含 c 或 d</td></tr>
-                <tr><td>path:/[a-z]{3}/ content:bar</td><td>路径匹配 [a-z]{3} 且内容包含 bar</td></tr>
-                <tr><td>file:(info | warn | err) -ext:log</td><td>文件名包含 info 或 warn 或 err，但扩展名不为 log</td></tr>
-            </table>
-        `
-        const content = `
-<query> ::= <expr>
-<expr> ::= <term> ( <or> <term> )*
-<term> ::= <factor> ( <not_and> <factor> )*
-<factor> ::= <condition>? <match>
-<not_and> ::= '-' | ' '
-<or> ::= 'OR' | '|'
-<condition> ::= <scope> <operator> 
-<scope> ::= 'all' | 'file' | 'path' | 'ext' | 'content'
-<operator> ::= ':' | '=' | '>=' | '<=' | '>'
-<match> ::= <keyword> | '"'<keyword>'"' | '/'<regexp>'/' | '('<expr>')'
-<keyword> ::= [^"]+
-<regexp> ::= [^/]+`
-        const title = "你可以将这段内容塞给AI，它会为你解释";
-        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 10, content, title }];
-        this.utils.dialog.modal({ title: "搜索语法", width: "550px", components });
+        return _eval(ast);
     }
 }
 
