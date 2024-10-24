@@ -218,30 +218,6 @@ class searchStringParser {
         return evaluate(ast);
     }
 
-    getQueryTokens(query) {
-        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE;
-
-        function evaluate({ type, left, right, value }) {
-            switch (type) {
-                case KEYWORD:
-                case PHRASE:
-                    return [value];
-                case REGEXP:
-                    return [];
-                case OR:
-                case AND:
-                    return [...evaluate(left), ...evaluate(right)];
-                case NOT:
-                    const wont = evaluate(right);
-                    return (left ? evaluate(left) : []).filter(e => !wont.includes(e));
-                default:
-                    throw new Error(`Unknown AST node type: ${type}`);
-            }
-        }
-
-        return evaluate(this.parse(query));
-    }
-
     showGrammar() {
         const table1 = `
             <table>
@@ -263,7 +239,7 @@ class searchStringParser {
                 <tr><td>foo bar -zoo</td><td>包含 foo 和 bar 但不包含 zoo</td></tr>
                 <tr><td>"foo bar"</td><td>包含 foo bar 这一词组</td></tr>
                 <tr><td>(a OR b) (c | d)</td><td>包含 a 或 b，且包含 c 或 d</td></tr>
-                <tr><td>path:/[a-z]{3}/ | content:bar</td><td>路径匹配 [a-z]{3} 或内容包含 bar</td></tr>
+                <tr><td>path:/[a-z]{3}/ content:bar</td><td>路径匹配 [a-z]{3} 且内容包含 bar</td></tr>
                 <tr><td>file:(info | warn | err) -ext:log</td><td>文件名包含 info 或 warn 或 err，但扩展名不为 log</td></tr>
             </table>
         `

@@ -286,8 +286,34 @@ class LinkHelper {
         this.syncOption();
     }
 
+    getQueryTokens = () => {
+        const parser = this.utils.searchStringParser;
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = parser.TYPE;
+
+        function evaluate({ type, left, right, value, scope }) {
+            switch (type) {
+                case KEYWORD:
+                case PHRASE:
+                    return (scope === "content" || scope === "all") ? [value] : [];
+                case REGEXP:
+                    return [];
+                case OR:
+                case AND:
+                    return [...evaluate(left), ...evaluate(right)];
+                case NOT:
+                    const wont = evaluate(right);
+                    return (left ? evaluate(left) : []).filter(e => !wont.includes(e));
+                default:
+                    throw new Error(`Unknown AST node type: ${type}`);
+            }
+        }
+
+        const query = this.searcher.entities.input.value;
+        return evaluate(parser.parse(query));
+    }
+
     syncOption = () => {
-        const keyArr = this.utils.searchStringParser.getQueryTokens(this.searcher.entities.input.value);
+        const keyArr = this.getQueryTokens(this.searcher.entities.input.value);
         const value = keyArr.map(key => key.includes(" ") ? `"${key}"` : key).join(" ");
         document.querySelector("#plugin-multi-highlighter-input input").value = value;
         if (this.searcher.config.CASE_SENSITIVE !== this.highlighter.config.CASE_SENSITIVE) {
