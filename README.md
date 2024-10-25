@@ -719,8 +719,6 @@ icon = "\\f040"
 
 功能：`alt+鼠标滚轮滚动`：调整图片大小。
 
-![resize-image](assets/resize-image.gif)
-
 
 
 ### export_enhance：导出增强

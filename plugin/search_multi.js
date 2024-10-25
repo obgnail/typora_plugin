@@ -33,6 +33,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
     init = () => {
         this.searchHelper = new SearchHelper(this);
+        this.searchHelper.process();
         this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => ext.toLowerCase()));
         this.entities = {
             modal: document.querySelector("#plugin-search-multi"),
@@ -220,6 +221,7 @@ class SearchHelper {
         this.plugin = plugin;
         this.config = plugin.config;
         this.utils = plugin.utils;
+        this.qualifiers = new Map();
         this.operator = {
             ">": (a, b) => a > b,
             "<": (a, b) => a < b,
@@ -250,79 +252,109 @@ class SearchHelper {
         }, 500)
     }
 
-    toLowerCaseIfNeeded(str) {
-        return this.config.CASE_SENSITIVE ? str : str.toLowerCase()
-    }
-
-    convertToBytes(sizeString) {
-        const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i);
-        if (!match) {
-            throw new Error('Invalid size format');
-        }
-        const value = parseFloat(match[1]);
-        const unit = match[3].toLowerCase();
-        if (!this.units.hasOwnProperty(unit)) {
-            throw new Error('Unsupported unit');
-        }
-        const bytes = value * this.units[unit];
-        return Math.round(bytes);
-    }
-
-    getQueryContent(scope, filePath, file, stats, buffer) {
-        if (scope === "default") {
-            return this.toLowerCaseIfNeeded(`${buffer.toString()}\n${filePath}`);
-        } else if (scope === "file") {
-            return this.toLowerCaseIfNeeded(file);
-        } else if (scope === "path") {
-            return this.toLowerCaseIfNeeded(filePath);
-        } else if (scope === "content") {
-            return this.toLowerCaseIfNeeded(buffer.toString());
-        } else if (scope === "ext") {
-            return this.toLowerCaseIfNeeded(this.utils.Package.Path.extname(file));
-        } else if (scope === "size") {
-            return stats.size;
-        } else if (scope === "time") {
-            return stats.mtime;
-        }
-        return "";
-    }
-
-    buildEvaluateFunc(ast, { filePath, file, stats, buffer }) {
-        const keyword = (scope, operator, query) => {
-            const q = this.getQueryContent(scope, filePath, file, stats, buffer);
-            switch (scope) {
-                case "default":
-                case "file":
-                case "path":
-                case "content":
-                case "ext":
-                    const queryString = this.toLowerCaseIfNeeded(query);
-                    return q.includes(queryString);
-                case "size":
-                    const queryBytes = this.convertToBytes(query);
-                    return this.operator[operator](q, queryBytes);
-                case "time":
-                    const queryMtime = new Date(query);
-                    return this.operator[operator](q, queryMtime);
+    process() {
+        const qualifiers = [
+            {
+                scope: "default",
+                query: ({ filePath, file, stats, buffer }) => `${buffer.toString()}\n${filePath}`,
+                match: this.includes,
+                regexp: this.regexpMatch,
+            },
+            {
+                scope: "file",
+                query: ({ filePath, file, stats, buffer }) => file,
+                match: this.includes,
+                regexp: this.regexpMatch,
+            },
+            {
+                scope: "path",
+                query: ({ filePath, file, stats, buffer }) => filePath,
+                match: this.includes,
+                regexp: this.regexpMatch,
+            },
+            {
+                scope: "content",
+                query: ({ filePath, file, stats, buffer }) => buffer.toString(),
+                match: this.includes,
+                regexp: this.regexpMatch,
+            },
+            {
+                scope: "ext",
+                query: ({ filePath, file, stats, buffer }) => this.utils.Package.Path.extname(file),
+                match: this.includes,
+                regexp: this.regexpMatch,
+            },
+            {
+                scope: "size",
+                query: ({ filePath, file, stats, buffer }) => stats.size,
+                match: (scope, operator, operand, queryResult) => this.compare(scope, operator, this.convertToBytes(operand), queryResult),
+                regexp: this.regexpMatch,
+            },
+            {
+                scope: "time",
+                query: ({ filePath, file, stats, buffer }) => stats.mtime,
+                match: (scope, operator, operand, queryResult) => this.compare(scope, operator, new Date(operand), queryResult),
+                regexp: this.regexpMatch,
             }
+        ];
+        qualifiers.forEach(q => this.registerQualifier(q.scope, q.query, q.match, q.regexp))
+    }
+
+    registerQualifier(scope, query, match, regexp) {
+        this.qualifiers.set(scope, { query, match, regexp });
+    }
+
+    includes(scope, operator, operand, queryResult) {
+        queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase();
+        operand = this.config.CASE_SENSITIVE ? operand : operand.toLowerCase();
+        return queryResult.includes(operand);
+    }
+
+    compare(scope, operator, operand, queryResult) {
+        return this.operator[operator](queryResult, operand);
+    }
+
+    regexpMatch(scope, operator, operand, queryResult) {
+        return new RegExp(operand).test(queryResult.toString());
+    }
+
+    evaluateKeyword(scope, operator, operand, source) {
+        const { query, match } = this.qualifiers.get(scope);
+        const queryResult = query.call(this, source);
+        return match.call(this, scope, operator, operand, queryResult);
+    }
+
+    evaluateRegexp(scope, operator, operand, source) {
+        const { query, regexp } = this.qualifiers.get(scope);
+        const queryResult = query.call(this, source);
+        return regexp.call(this, operator, operand, queryResult);
+    }
+
+    buildEvaluateFunctions(ast, source) {
+        const keyword = (scope, operator, operand) => this.evaluateKeyword(scope, operator, operand, source);
+        const regexp = (scope, operator, operand) => this.evaluateRegexp(scope, operator, operand, source);
+        return { keyword, phrase: keyword, regexp };
+    }
+
+    check(ast, source) {
+        try {
+            return this.utils.searchStringParser.evaluate(ast, this.buildEvaluateFunctions(ast, source));
+        } catch (e) {
+            this.showError(e, "查询错误，请检查输入内容");
         }
-        const regexp = (scope, operator, query) => new RegExp(query).test(this.getQueryContent(scope, filePath, file, stats, buffer).toString())
-        return { keyword: keyword, phrase: keyword, regexp: regexp };
+    }
+
+    mustValid(ast) {
+        this.check(ast, { filePath: "", file: "", stats: { mtime: new Date(), size: 1 }, buffer: "" });
+        return ast
     }
 
     parse(input) {
         try {
-            return this.utils.searchStringParser.parse(input);
+            const ast = this.utils.searchStringParser.parse(input);
+            return this.mustValid(ast);
         } catch (e) {
             this.showError(e, "语法解析错误，请检查输入内容");
-        }
-    }
-
-    check(ast, dataset) {
-        try {
-            return this.utils.searchStringParser.evaluate(ast, this.buildEvaluateFunc(ast, dataset));
-        } catch (e) {
-            this.showError(e, "查询错误，请检查输入内容");
         }
     }
 
@@ -358,6 +390,20 @@ class SearchHelper {
 
         const ast = parser.parse(query);
         return evaluate(ast);
+    }
+
+    convertToBytes(sizeString) {
+        const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i);
+        if (!match) {
+            throw new Error('Invalid size format');
+        }
+        const value = parseFloat(match[1]);
+        const unit = match[3].toLowerCase();
+        if (!this.units.hasOwnProperty(unit)) {
+            throw new Error('Unsupported unit');
+        }
+        const bytes = value * this.units[unit];
+        return Math.round(bytes);
     }
 
     showGrammar() {
