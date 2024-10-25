@@ -33,7 +33,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
     init = () => {
         this.searchHelper = new SearchHelper(this);
-        this.searchHelper.process();
         this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => ext.toLowerCase()));
         this.entities = {
             modal: document.querySelector("#plugin-search-multi"),
@@ -54,6 +53,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
     }
 
     process = () => {
+        this.searchHelper.process();
+
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             const highlighter = this.utils.getPlugin("multi_highlighter");
             highlighter && new LinkHelper(this, highlighter).process();
@@ -182,7 +183,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
     searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
         input = input.trim();
-        input = this.config.CASE_SENSITIVE ? input : input.toLowerCase();
         if (!input) return;
 
         const ast = this._getAST(input);
@@ -276,10 +276,9 @@ class SearchHelper {
 
         const keywordMatch = (scope, operator, operand, queryResult) => {
             queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase();
-            operand = this.config.CASE_SENSITIVE ? operand : operand.toLowerCase();
+            // operand 先前已经做了大小写转化处理，这里不再需要做了
             return queryResult.includes(operand);
         }
-        const phraseMatch = keywordMatch;
         const regexpMatch = (scope, operator, operand, queryResult) => {
             return new RegExp(operand).test(queryResult.toString());
         }
@@ -306,58 +305,36 @@ class SearchHelper {
         /**
          * scope:   关键字
          * query:   从fileData中查询需要的信息
-         * keyword: 当用户输入keyword时，根据查询的信息和input进行匹配
-         * phrase:  当用户输入phrase时，根据查询的信息和input进行匹配
-         * regexp:  当用户输入regexp时，根据查询的信息和input进行匹配
-         * test:    测试用户输入是否合法
+         * keyword: 当用户输入keyword时，根据查询的信息和input进行匹配，默认使用keywordMatch
+         * phrase:  当用户输入phrase时，根据查询的信息和input进行匹配，默认和keyword保持一致
+         * regexp:  当用户输入regexp时，根据查询的信息和input进行匹配，默认使用regexpMatch
+         * test:    测试用户输入是否合法，默认使用stringTest
          */
         const qualifiers = [
             {
                 scope: "default",
                 query: ({ filePath, file, stats, buffer }) => `${buffer.toString()}\n${filePath}`,
-                keyword: keywordMatch,
-                phrase: phraseMatch,
-                regexp: regexpMatch,
-                test: stringTest,
             },
             {
                 scope: "file",
                 query: ({ filePath, file, stats, buffer }) => file,
-                keyword: keywordMatch,
-                phrase: phraseMatch,
-                regexp: regexpMatch,
-                test: stringTest,
             },
             {
                 scope: "path",
                 query: ({ filePath, file, stats, buffer }) => filePath,
-                keyword: keywordMatch,
-                phrase: phraseMatch,
-                regexp: regexpMatch,
-                test: stringTest,
             },
             {
                 scope: "content",
                 query: ({ filePath, file, stats, buffer }) => buffer.toString(),
-                keyword: keywordMatch,
-                phrase: phraseMatch,
-                regexp: regexpMatch,
-                test: stringTest,
             },
             {
                 scope: "ext",
                 query: ({ filePath, file, stats, buffer }) => this.utils.Package.Path.extname(file),
-                keyword: keywordMatch,
-                phrase: phraseMatch,
-                regexp: regexpMatch,
-                test: stringTest,
             },
             {
                 scope: "size",
                 query: ({ filePath, file, stats, buffer }) => stats.size,
                 keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, convertToBytes(operand), queryResult),
-                phrase: phraseMatch,
-                regexp: regexpMatch,
                 test: (scope, operator, operand, type) => {
                     numberTest(scope, operator, operand, type);
                     convertToBytes(operand);
@@ -367,11 +344,15 @@ class SearchHelper {
                 scope: "time",
                 query: ({ filePath, file, stats, buffer }) => stats.mtime,
                 keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, new Date(operand), queryResult),
-                phrase: phraseMatch,
-                regexp: regexpMatch,
                 test: numberTest,
             }
         ];
+        qualifiers.forEach(q => {
+            q.keyword = q.keyword || keywordMatch;
+            q.phrase = q.phrase || q.keyword;
+            q.regexp = q.regexp || regexpMatch;
+            q.test = q.test || stringTest;
+        });
         qualifiers.forEach(q => this.registerQualifier(q.scope, q));
         this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)));
     }
@@ -410,6 +391,7 @@ class SearchHelper {
     }
 
     parse(input) {
+        input = this.config.CASE_SENSITIVE ? input : input.toLowerCase();
         return this.parser.parse(input)
     }
 
