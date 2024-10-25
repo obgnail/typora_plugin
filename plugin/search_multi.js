@@ -171,20 +171,23 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
     }
 
+    _getAST = input => {
+        try {
+            const ast = this.searchHelper.parse(input);
+            return this.searchHelper.test(ast)
+        } catch (e) {
+            this.utils.notification.show(`语法错误，请检测输入内容\n${e.toString()}`, "error", 7000);
+        }
+    }
+
     searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
         input = input.trim();
         input = this.config.CASE_SENSITIVE ? input : input.toLowerCase();
         if (!input) return;
 
-        this.refreshResult();
+        const ast = this._getAST(input);
+        if (!ast) return;
 
-        const callback = () => this.utils.hide(this.entities.info);
-
-        const ast = this.searchHelper.parse(input);
-        if (!this.searchHelper.test(ast)) {
-            callback();
-            return;
-        }
         const checker = dataset => this.searchHelper.check(ast, dataset);
         const appendItem = this.appendItemFunc(rootPath, checker);
         const verifyExt = filename => {
@@ -195,13 +198,14 @@ class searchMultiKeywordPlugin extends BasePlugin {
         };
         const verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
 
+        this.refreshResult();
         await this.traverseDir(
             rootPath,
             (filepath, stat) => verifySize(stat) && verifyExt(filepath),
             path => !this.config.IGNORE_FOLDERS.includes(path),
             appendItem,
         );
-        callback();
+        this.utils.hide(this.entities.info);
     }
 
     isModalHidden = () => this.utils.isHidden(this.entities.modal);
@@ -237,10 +241,6 @@ class SearchHelper {
             "<": (a, b) => a < b,
             "=": (a, b) => a === b,
         }
-        this.showError = this.utils.debounce((err, msg) => {
-            console.error(err);
-            this.utils.notification.show(msg, "error", 7000);
-        }, 500)
     }
 
     process() {
@@ -381,11 +381,7 @@ class SearchHelper {
     }
 
     check(ast, source) {
-        try {
-            return this.parser.evaluate(ast, this._buildSearchFunctions(ast, source));
-        } catch (e) {
-            this.showError(e, "查询错误，请检查输入内容");
-        }
+        return this.parser.evaluate(ast, this._buildSearchFunctions(ast, source));
     }
 
     _buildSearchFunctions(ast, source) {
@@ -402,27 +398,19 @@ class SearchHelper {
     }
 
     test(ast) {
-        try {
-            const buildTestFunction = type => (scope, operator, operand) => {
-                const { test } = this.qualifiers.get(scope);
-                test.call(this, scope, operator, operand, type);
-            }
-            const keyword = buildTestFunction("keyword");
-            const phrase = buildTestFunction("phrase");
-            const regexp = buildTestFunction("regexp");
-            this.parser.traverse(ast, { keyword, phrase, regexp });
-            return ast
-        } catch (e) {
-            this.showError(e, `语法不合法，请检查输入内容\n${e.toString()}`);
+        const buildTestFunction = type => (scope, operator, operand) => {
+            const { test } = this.qualifiers.get(scope);
+            test.call(this, scope, operator, operand, type);
         }
+        const keyword = buildTestFunction("keyword");
+        const phrase = buildTestFunction("phrase");
+        const regexp = buildTestFunction("regexp");
+        this.parser.traverse(ast, { keyword, phrase, regexp });
+        return ast
     }
 
     parse(input) {
-        try {
-            return this.parser.parse(input)
-        } catch (e) {
-            this.showError(e, "语法解析错误，请检查输入内容");
-        }
+        return this.parser.parse(input)
     }
 
     getQueryTokens(query) {
