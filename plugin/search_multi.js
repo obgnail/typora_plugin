@@ -178,6 +178,15 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
         this.refreshResult();
 
+        const callback = () => this.utils.hide(this.entities.info);
+
+        const ast = this.searchHelper.parse(input);
+        if (!this.searchHelper.test(ast)) {
+            callback();
+            return;
+        }
+        const checker = dataset => this.searchHelper.check(ast, dataset);
+        const appendItem = this.appendItemFunc(rootPath, checker);
         const verifyExt = filename => {
             if (filename.startsWith(".")) return false;
             const ext = this.utils.Package.Path.extname(filename).toLowerCase();
@@ -186,16 +195,13 @@ class searchMultiKeywordPlugin extends BasePlugin {
         };
         const verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
 
-        const ast = this.searchHelper.parse(input);
-        const checker = dataset => this.searchHelper.check(ast, dataset);
-
         await this.traverseDir(
             rootPath,
             (filepath, stat) => verifySize(stat) && verifyExt(filepath),
             path => !this.config.IGNORE_FOLDERS.includes(path),
-            this.appendItemFunc(rootPath, checker),
+            appendItem,
         );
-        this.utils.hide(this.entities.info);
+        callback();
     }
 
     isModalHidden = () => this.utils.isHidden(this.entities.modal);
@@ -221,17 +227,25 @@ class SearchHelper {
         this.plugin = plugin;
         this.config = plugin.config;
         this.utils = plugin.utils;
+        this.parser = plugin.utils.searchStringParser;
         this.qualifiers = new Map();
         this.operator = {
+            ":": (a, b) => a.includes(b),
+            ">=": (a, b) => a >= b,
+            "<=": (a, b) => a <= b,
             ">": (a, b) => a > b,
             "<": (a, b) => a < b,
             "=": (a, b) => a === b,
-            ":": (a, b) => a === b,
-            ">=": (a, b) => a >= b,
-            "<=": (a, b) => a <= b,
         }
+        this.showError = this.utils.debounce((err, msg) => {
+            console.error(err);
+            this.utils.notification.show(msg, "error", 7000);
+        }, 500)
+    }
+
+    process() {
         // There is a difference between KB and KiB, but who cares?
-        this.units = {
+        const units = {
             b: 1,
             k: 1024,
             m: 1024 ** 2,
@@ -246,129 +260,173 @@ class SearchHelper {
             gib: 1024 ** 3,
             tib: 1024 ** 4,
         }
-        this.showError = this.utils.debounce((err, msg) => {
-            console.error(err);
-            this.utils.notification.show(msg, "error");
-        }, 500)
-    }
+        const convertToBytes = sizeString => {
+            const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i);
+            if (!match) {
+                throw new Error(`Invalid size format: "${sizeString}"`);
+            }
+            const value = parseFloat(match[1]);
+            const unit = match[3].toLowerCase();
+            if (!units.hasOwnProperty(unit)) {
+                throw new Error(`Unsupported unit: "${unit}"`);
+            }
+            const bytes = value * units[unit];
+            return Math.round(bytes);
+        }
 
-    process() {
+        const keywordMatch = (scope, operator, operand, queryResult) => {
+            queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase();
+            operand = this.config.CASE_SENSITIVE ? operand : operand.toLowerCase();
+            return queryResult.includes(operand);
+        }
+        const phraseMatch = keywordMatch;
+        const regexpMatch = (scope, operator, operand, queryResult) => {
+            return new RegExp(operand).test(queryResult.toString());
+        }
+        const numberCompare = (scope, operator, operand, queryResult) => {
+            return this.operator[operator](queryResult, operand);
+        }
+        const stringTest = (scope, operator, operand, type) => {
+            if (operator !== ":" && operator !== "=") {
+                throw new Error(`${scope}’s operator can only be ":" or "="`);
+            }
+        }
+        const numberTest = (scope, operator, operand, type) => {
+            if (operator === ":") {
+                throw new Error(`${scope}’s operator can not be ":"`);
+            }
+            if (type === "regexp") {
+                throw new Error(`${scope}’s operand type can not be regexp`);
+            }
+            if (/^"?\d/.test(operand)) {
+                return new Error(`${scope}’s operand must start with number`);
+            }
+        }
+
+        /**
+         * scope:   关键字
+         * query:   从fileData中查询需要的信息
+         * keyword: 当用户输入keyword时，根据查询的信息和input进行匹配
+         * phrase:  当用户输入phrase时，根据查询的信息和input进行匹配
+         * regexp:  当用户输入regexp时，根据查询的信息和input进行匹配
+         * test:    测试用户输入是否合法
+         */
         const qualifiers = [
             {
                 scope: "default",
                 query: ({ filePath, file, stats, buffer }) => `${buffer.toString()}\n${filePath}`,
-                match: this.includes,
-                regexp: this.regexpMatch,
+                keyword: keywordMatch,
+                phrase: phraseMatch,
+                regexp: regexpMatch,
+                test: stringTest,
             },
             {
                 scope: "file",
                 query: ({ filePath, file, stats, buffer }) => file,
-                match: this.includes,
-                regexp: this.regexpMatch,
+                keyword: keywordMatch,
+                phrase: phraseMatch,
+                regexp: regexpMatch,
+                test: stringTest,
             },
             {
                 scope: "path",
                 query: ({ filePath, file, stats, buffer }) => filePath,
-                match: this.includes,
-                regexp: this.regexpMatch,
+                keyword: keywordMatch,
+                phrase: phraseMatch,
+                regexp: regexpMatch,
+                test: stringTest,
             },
             {
                 scope: "content",
                 query: ({ filePath, file, stats, buffer }) => buffer.toString(),
-                match: this.includes,
-                regexp: this.regexpMatch,
+                keyword: keywordMatch,
+                phrase: phraseMatch,
+                regexp: regexpMatch,
+                test: stringTest,
             },
             {
                 scope: "ext",
                 query: ({ filePath, file, stats, buffer }) => this.utils.Package.Path.extname(file),
-                match: this.includes,
-                regexp: this.regexpMatch,
+                keyword: keywordMatch,
+                phrase: phraseMatch,
+                regexp: regexpMatch,
+                test: stringTest,
             },
             {
                 scope: "size",
                 query: ({ filePath, file, stats, buffer }) => stats.size,
-                match: (scope, operator, operand, queryResult) => this.compare(scope, operator, this.convertToBytes(operand), queryResult),
-                regexp: this.regexpMatch,
+                keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, convertToBytes(operand), queryResult),
+                phrase: phraseMatch,
+                regexp: regexpMatch,
+                test: (scope, operator, operand, type) => {
+                    numberTest(scope, operator, operand, type);
+                    convertToBytes(operand);
+                },
             },
             {
                 scope: "time",
                 query: ({ filePath, file, stats, buffer }) => stats.mtime,
-                match: (scope, operator, operand, queryResult) => this.compare(scope, operator, new Date(operand), queryResult),
-                regexp: this.regexpMatch,
+                keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, new Date(operand), queryResult),
+                phrase: phraseMatch,
+                regexp: regexpMatch,
+                test: numberTest,
             }
         ];
-        qualifiers.forEach(q => this.registerQualifier(q.scope, q.query, q.match, q.regexp))
+        qualifiers.forEach(q => this.registerQualifier(q.scope, q));
+        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)));
     }
 
-    registerQualifier(scope, query, match, regexp) {
-        this.qualifiers.set(scope, { query, match, regexp });
-    }
-
-    includes(scope, operator, operand, queryResult) {
-        queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase();
-        operand = this.config.CASE_SENSITIVE ? operand : operand.toLowerCase();
-        return queryResult.includes(operand);
-    }
-
-    compare(scope, operator, operand, queryResult) {
-        return this.operator[operator](queryResult, operand);
-    }
-
-    regexpMatch(scope, operator, operand, queryResult) {
-        return new RegExp(operand).test(queryResult.toString());
-    }
-
-    evaluateKeyword(scope, operator, operand, source) {
-        const { query, match } = this.qualifiers.get(scope);
-        const queryResult = query.call(this, source);
-        return match.call(this, scope, operator, operand, queryResult);
-    }
-
-    evaluateRegexp(scope, operator, operand, source) {
-        const { query, regexp } = this.qualifiers.get(scope);
-        const queryResult = query.call(this, source);
-        return regexp.call(this, operator, operand, queryResult);
-    }
-
-    buildEvaluateFunctions(ast, source) {
-        const keyword = (scope, operator, operand) => this.evaluateKeyword(scope, operator, operand, source);
-        const regexp = (scope, operator, operand) => this.evaluateRegexp(scope, operator, operand, source);
-        return { keyword, phrase: keyword, regexp };
+    registerQualifier(scope, qualifier) {
+        this.qualifiers.set(scope, qualifier);
     }
 
     check(ast, source) {
         try {
-            return this.utils.searchStringParser.evaluate(ast, this.buildEvaluateFunctions(ast, source));
+            return this.parser.evaluate(ast, this._buildSearchFunctions(ast, source));
         } catch (e) {
             this.showError(e, "查询错误，请检查输入内容");
         }
     }
 
-    mustValid(ast) {
-        this.check(ast, { filePath: "", file: "", stats: { mtime: new Date(), size: 1 }, buffer: "" });
-        return ast
+    _buildSearchFunctions(ast, source) {
+        const keyword = (scope, operator, operand) => this._getSearchFunc(scope, operator, operand, source, "keyword");
+        const phrase = (scope, operator, operand) => this._getSearchFunc(scope, operator, operand, source, "phrase");
+        const regexp = (scope, operator, operand) => this._getSearchFunc(scope, operator, operand, source, "regexp");
+        return { keyword, phrase, regexp };
+    }
+
+    _getSearchFunc(scope, operator, operand, source, type) {
+        const qualifier = this.qualifiers.get(scope);
+        const queryResult = qualifier.query.call(this, source);
+        return qualifier[type].call(this, scope, operator, operand, queryResult);
+    }
+
+    test(ast) {
+        try {
+            const buildTestFunction = type => (scope, operator, operand) => {
+                const { test } = this.qualifiers.get(scope);
+                test.call(this, scope, operator, operand, type);
+            }
+            const keyword = buildTestFunction("keyword");
+            const phrase = buildTestFunction("phrase");
+            const regexp = buildTestFunction("regexp");
+            this.parser.traverse(ast, { keyword, phrase, regexp });
+            return ast
+        } catch (e) {
+            this.showError(e, `语法不合法，请检查输入内容\n${e.toString()}`);
+        }
     }
 
     parse(input) {
         try {
-            const ast = this.utils.searchStringParser.parse(input);
-            return this.mustValid(ast);
+            return this.parser.parse(input)
         } catch (e) {
             this.showError(e, "语法解析错误，请检查输入内容");
         }
     }
 
     getQueryTokens(query) {
-        try {
-            return this._getQueryTokens(query);
-        } catch (e) {
-            this.showError(e, "语法解析错误，请检查输入内容");
-        }
-    }
-
-    _getQueryTokens(query) {
-        const parser = this.utils.searchStringParser;
-        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = parser.TYPE;
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
 
         function evaluate({ type, left, right, value, scope }) {
             switch (type) {
@@ -388,22 +446,8 @@ class SearchHelper {
             }
         }
 
-        const ast = parser.parse(query);
+        const ast = this.parser.parse(query);
         return evaluate(ast);
-    }
-
-    convertToBytes(sizeString) {
-        const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i);
-        if (!match) {
-            throw new Error('Invalid size format');
-        }
-        const value = parseFloat(match[1]);
-        const unit = match[3].toLowerCase();
-        if (!this.units.hasOwnProperty(unit)) {
-            throw new Error('Unsupported unit');
-        }
-        const bytes = value * this.units[unit];
-        return Math.round(bytes);
     }
 
     showGrammar() {
