@@ -53,6 +53,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
     }
 
     process = () => {
+        this.searchHelper.process();
+
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             const highlighter = this.utils.getPlugin("multi_highlighter");
             highlighter && new LinkHelper(this, highlighter).process();
@@ -170,13 +172,24 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
     }
 
+    _getAST = input => {
+        try {
+            const ast = this.searchHelper.parse(input);
+            return this.searchHelper.test(ast)
+        } catch (e) {
+            this.utils.notification.show(`语法错误，请检测输入内容\n${e.toString()}`, "error", 7000);
+        }
+    }
+
     searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
         input = input.trim();
-        input = this.config.CASE_SENSITIVE ? input : input.toLowerCase();
         if (!input) return;
 
-        this.refreshResult();
+        const ast = this._getAST(input);
+        if (!ast) return;
 
+        const checker = dataset => this.searchHelper.check(ast, dataset);
+        const appendItem = this.appendItemFunc(rootPath, checker);
         const verifyExt = filename => {
             if (filename.startsWith(".")) return false;
             const ext = this.utils.Package.Path.extname(filename).toLowerCase();
@@ -185,14 +198,12 @@ class searchMultiKeywordPlugin extends BasePlugin {
         };
         const verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
 
-        const ast = this.searchHelper.parse(input);
-        const checker = dataset => this.searchHelper.check(ast, dataset);
-
+        this.refreshResult();
         await this.traverseDir(
             rootPath,
             (filepath, stat) => verifySize(stat) && verifyExt(filepath),
             path => !this.config.IGNORE_FOLDERS.includes(path),
-            this.appendItemFunc(rootPath, checker),
+            appendItem,
         );
         this.utils.hide(this.entities.info);
     }
@@ -220,16 +231,21 @@ class SearchHelper {
         this.plugin = plugin;
         this.config = plugin.config;
         this.utils = plugin.utils;
+        this.parser = plugin.utils.searchStringParser;
+        this.qualifiers = new Map();
         this.operator = {
+            ":": (a, b) => a.includes(b),
+            ">=": (a, b) => a >= b,
+            "<=": (a, b) => a <= b,
             ">": (a, b) => a > b,
             "<": (a, b) => a < b,
             "=": (a, b) => a === b,
-            ":": (a, b) => a === b,
-            ">=": (a, b) => a >= b,
-            "<=": (a, b) => a <= b,
         }
+    }
+
+    process() {
         // There is a difference between KB and KiB, but who cares?
-        this.units = {
+        const units = {
             b: 1,
             k: 1024,
             m: 1024 ** 2,
@@ -244,99 +260,148 @@ class SearchHelper {
             gib: 1024 ** 3,
             tib: 1024 ** 4,
         }
-        this.showError = this.utils.debounce((err, msg) => {
-            console.error(err);
-            this.utils.notification.show(msg, "error");
-        }, 500)
-    }
-
-    toLowerCaseIfNeeded(str) {
-        return this.config.CASE_SENSITIVE ? str : str.toLowerCase()
-    }
-
-    convertToBytes(sizeString) {
-        const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i);
-        if (!match) {
-            throw new Error('Invalid size format');
+        const convertToBytes = sizeString => {
+            const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i);
+            if (!match) {
+                throw new Error(`Invalid size format: "${sizeString}"`);
+            }
+            const value = parseFloat(match[1]);
+            const unit = match[3].toLowerCase();
+            if (!units.hasOwnProperty(unit)) {
+                throw new Error(`Unsupported unit: "${unit}"`);
+            }
+            const bytes = value * units[unit];
+            return Math.round(bytes);
         }
-        const value = parseFloat(match[1]);
-        const unit = match[3].toLowerCase();
-        if (!this.units.hasOwnProperty(unit)) {
-            throw new Error('Unsupported unit');
-        }
-        const bytes = value * this.units[unit];
-        return Math.round(bytes);
-    }
 
-    getQueryContent(scope, filePath, file, stats, buffer) {
-        if (scope === "default") {
-            return this.toLowerCaseIfNeeded(`${buffer.toString()}\n${filePath}`);
-        } else if (scope === "file") {
-            return this.toLowerCaseIfNeeded(file);
-        } else if (scope === "path") {
-            return this.toLowerCaseIfNeeded(filePath);
-        } else if (scope === "content") {
-            return this.toLowerCaseIfNeeded(buffer.toString());
-        } else if (scope === "ext") {
-            return this.toLowerCaseIfNeeded(this.utils.Package.Path.extname(file));
-        } else if (scope === "size") {
-            return stats.size;
-        } else if (scope === "time") {
-            return stats.mtime;
+        const keywordMatch = (scope, operator, operand, queryResult) => {
+            queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase();
+            // operand 先前已经做了大小写转化处理，这里不再需要做了
+            return queryResult.includes(operand);
         }
-        return "";
-    }
-
-    buildEvaluateFunc(ast, { filePath, file, stats, buffer }) {
-        const keyword = (scope, operator, query) => {
-            const q = this.getQueryContent(scope, filePath, file, stats, buffer);
-            switch (scope) {
-                case "default":
-                case "file":
-                case "path":
-                case "content":
-                case "ext":
-                    const queryString = this.toLowerCaseIfNeeded(query);
-                    return q.includes(queryString);
-                case "size":
-                    const queryBytes = this.convertToBytes(query);
-                    return this.operator[operator](q, queryBytes);
-                case "time":
-                    const queryMtime = new Date(query);
-                    return this.operator[operator](q, queryMtime);
+        const regexpMatch = (scope, operator, operand, queryResult) => {
+            return new RegExp(operand).test(queryResult.toString());
+        }
+        const numberCompare = (scope, operator, operand, queryResult) => {
+            return this.operator[operator](queryResult, operand);
+        }
+        const stringTest = (scope, operator, operand, type) => {
+            if (operator !== ":" && operator !== "=") {
+                throw new Error(`${scope}’s operator can only be ":" or "="`);
             }
         }
-        const regexp = (scope, operator, query) => new RegExp(query).test(this.getQueryContent(scope, filePath, file, stats, buffer).toString())
-        return { keyword: keyword, phrase: keyword, regexp: regexp };
+        const numberTest = (scope, operator, operand, type) => {
+            if (operator === ":") {
+                throw new Error(`${scope}’s operator can not be ":"`);
+            }
+            if (type === "regexp") {
+                throw new Error(`${scope}’s operand type can not be regexp`);
+            }
+            if (/^"?\d/.test(operand)) {
+                return new Error(`${scope}’s operand must start with number`);
+            }
+        }
+
+        /**
+         * scope:   关键字
+         * query:   从fileData中查询需要的信息
+         * keyword: 当用户输入keyword时，根据查询的信息和input进行匹配，默认使用keywordMatch
+         * phrase:  当用户输入phrase时，根据查询的信息和input进行匹配，默认和keyword保持一致
+         * regexp:  当用户输入regexp时，根据查询的信息和input进行匹配，默认使用regexpMatch
+         * test:    测试用户输入是否合法，默认使用stringTest
+         */
+        const qualifiers = [
+            {
+                scope: "default",
+                query: ({ filePath, file, stats, buffer }) => `${buffer.toString()}\n${filePath}`,
+            },
+            {
+                scope: "file",
+                query: ({ filePath, file, stats, buffer }) => file,
+            },
+            {
+                scope: "path",
+                query: ({ filePath, file, stats, buffer }) => filePath,
+            },
+            {
+                scope: "ext",
+                query: ({ filePath, file, stats, buffer }) => this.utils.Package.Path.extname(file),
+            },
+            {
+                scope: "content",
+                query: ({ filePath, file, stats, buffer }) => buffer.toString(),
+            },
+            {
+                scope: "size",
+                query: ({ filePath, file, stats, buffer }) => stats.size,
+                keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, convertToBytes(operand), queryResult),
+                test: (scope, operator, operand, type) => {
+                    numberTest(scope, operator, operand, type);
+                    convertToBytes(operand);
+                },
+            },
+            {
+                scope: "time",
+                query: ({ filePath, file, stats, buffer }) => stats.mtime,
+                keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, new Date(operand), queryResult),
+                test: numberTest,
+            }
+        ];
+        qualifiers.forEach(q => {
+            q.keyword = q.keyword || keywordMatch;
+            q.phrase = q.phrase || q.keyword;
+            q.regexp = q.regexp || regexpMatch;
+            q.test = q.test || stringTest;
+        });
+        qualifiers.forEach(q => this.registerQualifier(q.scope, q));
+
+        const byLength = (a, b) => b.length - a.length;
+        this.parser.setQualifier(
+            qualifiers.map(q => q.scope).sort(byLength),
+            Array.from(Object.keys(this.operator)).sort(byLength)
+        );
+    }
+
+    registerQualifier(scope, qualifier) {
+        this.qualifiers.set(scope, qualifier);
+    }
+
+    check(ast, source) {
+        return this.parser.evaluate(ast, this._buildSearchFunctions(ast, source));
+    }
+
+    _buildSearchFunctions(ast, source) {
+        const keyword = (scope, operator, operand) => this._getSearchFunc(scope, operator, operand, source, "keyword");
+        const phrase = (scope, operator, operand) => this._getSearchFunc(scope, operator, operand, source, "phrase");
+        const regexp = (scope, operator, operand) => this._getSearchFunc(scope, operator, operand, source, "regexp");
+        return { keyword, phrase, regexp };
+    }
+
+    _getSearchFunc(scope, operator, operand, source, type) {
+        const qualifier = this.qualifiers.get(scope);
+        const queryResult = qualifier.query.call(this, source);
+        return qualifier[type].call(this, scope, operator, operand, queryResult);
+    }
+
+    test(ast) {
+        const buildTestFunction = type => (scope, operator, operand) => {
+            const { test } = this.qualifiers.get(scope);
+            test.call(this, scope, operator, operand, type);
+        }
+        const keyword = buildTestFunction("keyword");
+        const phrase = buildTestFunction("phrase");
+        const regexp = buildTestFunction("regexp");
+        this.parser.traverse(ast, { keyword, phrase, regexp });
+        return ast
     }
 
     parse(input) {
-        try {
-            return this.utils.searchStringParser.parse(input);
-        } catch (e) {
-            this.showError(e, "语法解析错误，请检查输入内容");
-        }
-    }
-
-    check(ast, dataset) {
-        try {
-            return this.utils.searchStringParser.evaluate(ast, this.buildEvaluateFunc(ast, dataset));
-        } catch (e) {
-            this.showError(e, "查询错误，请检查输入内容");
-        }
+        input = this.config.CASE_SENSITIVE ? input : input.toLowerCase();
+        return this.parser.parse(input)
     }
 
     getQueryTokens(query) {
-        try {
-            return this._getQueryTokens(query);
-        } catch (e) {
-            this.showError(e, "语法解析错误，请检查输入内容");
-        }
-    }
-
-    _getQueryTokens(query) {
-        const parser = this.utils.searchStringParser;
-        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = parser.TYPE;
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
 
         function evaluate({ type, left, right, value, scope }) {
             switch (type) {
@@ -356,7 +421,7 @@ class SearchHelper {
             }
         }
 
-        const ast = parser.parse(query);
+        const ast = this.parser.parse(query);
         return evaluate(ast);
     }
 

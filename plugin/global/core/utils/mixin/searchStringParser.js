@@ -219,6 +219,34 @@ class searchStringParser {
 
         return _eval(ast);
     }
+
+    traverse(ast, { keyword, phrase, regexp }) {
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE;
+
+        function _eval({ type, left, right, scope, operator, value }) {
+            switch (type) {
+                case KEYWORD:
+                    keyword(scope, operator, value);
+                    break;
+                case PHRASE:
+                    phrase(scope, operator, value);
+                    break;
+                case REGEXP:
+                    regexp(scope, operator, value);
+                    break;
+                case OR:
+                case AND:
+                case NOT:
+                    left && _eval(left);
+                    right && _eval(right);
+                    break;
+                default:
+                    throw new Error(`Unknown AST node type: ${type}`);
+            }
+        }
+
+        return _eval(ast);
+    }
 }
 
 module.exports = {
