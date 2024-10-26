@@ -44,7 +44,10 @@ class searchStringParser {
         scope = ["default", "file", "path", "ext", "content", "time", "size"],
         operator = [">=", "<=", ":", "=", ">", "<"],
     ) {
-        this.qualifierRegExp = new RegExp(`^(?<scope>${scope.join('|')})(?<operator>${operator.join('|')})`, "i");
+        const byLength = (a, b) => b.length - a.length;
+        const _scope = [...scope].sort(byLength).join('|');
+        const _operator = [...operator].sort(byLength).join('|');
+        this.qualifierRegExp = new RegExp(`^(?<scope>${_scope})(?<operator>${_operator})`, "i");
     }
 
     _tokenize(query) {

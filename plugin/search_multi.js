@@ -357,11 +357,7 @@ class SearchHelper {
         });
         qualifiers.forEach(q => this.registerQualifier(q.scope, q));
 
-        const byLength = (a, b) => b.length - a.length;
-        this.parser.setQualifier(
-            qualifiers.map(q => q.scope).sort(byLength),
-            Array.from(Object.keys(this.operator)).sort(byLength)
-        );
+        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)));
     }
 
     registerQualifier(scope, qualifier) {
