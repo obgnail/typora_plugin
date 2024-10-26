@@ -324,12 +324,12 @@ class SearchHelper {
                 query: ({ filePath, file, stats, buffer }) => filePath,
             },
             {
-                scope: "content",
-                query: ({ filePath, file, stats, buffer }) => buffer.toString(),
-            },
-            {
                 scope: "ext",
                 query: ({ filePath, file, stats, buffer }) => this.utils.Package.Path.extname(file),
+            },
+            {
+                scope: "content",
+                query: ({ filePath, file, stats, buffer }) => buffer.toString(),
             },
             {
                 scope: "size",
@@ -354,7 +354,12 @@ class SearchHelper {
             q.test = q.test || stringTest;
         });
         qualifiers.forEach(q => this.registerQualifier(q.scope, q));
-        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)));
+
+        const byLength = (a, b) => b.length - a.length;
+        this.parser.setQualifier(
+            qualifiers.map(q => q.scope).sort(byLength),
+            Array.from(Object.keys(this.operator)).sort(byLength)
+        );
     }
 
     registerQualifier(scope, qualifier) {
