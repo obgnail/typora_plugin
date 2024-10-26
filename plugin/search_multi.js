@@ -235,6 +235,7 @@ class SearchHelper {
         this.qualifiers = new Map();
         this.operator = {
             ":": (a, b) => a.includes(b),
+            "==": (a, b) => a.includes(b),
             ">=": (a, b) => a >= b,
             "<=": (a, b) => a <= b,
             ">": (a, b) => a > b,
@@ -280,14 +281,15 @@ class SearchHelper {
             return queryResult.includes(operand);
         }
         const regexpMatch = (scope, operator, operand, queryResult) => {
-            return new RegExp(operand).test(queryResult.toString());
+            const flag = this.config.CASE_SENSITIVE ? undefined : "i";
+            return new RegExp(operand, flag).test(queryResult.toString());
         }
         const numberCompare = (scope, operator, operand, queryResult) => {
             return this.operator[operator](queryResult, operand);
         }
         const stringTest = (scope, operator, operand, type) => {
-            if (operator !== ":" && operator !== "=") {
-                throw new Error(`${scope}’s operator can only be ":" or "="`);
+            if (operator !== ":" && operator !== "=" && operator !== "==") {
+                throw new Error(`${scope}’s operator can only be ":" or "=" or "=="`);
             }
         }
         const numberTest = (scope, operator, operand, type) => {
@@ -426,6 +428,8 @@ class SearchHelper {
     }
 
     showGrammar() {
+        const scope = Array.from(this.qualifiers.keys());
+        const operator = Array.from(Object.keys(this.operator));
         const table1 = `
 <table>
     <tr><th>关键字</th><th>说明</th></tr>
@@ -433,7 +437,7 @@ class SearchHelper {
     <tr><td>|</td><td>表示或，文档应该包含关键词之一，等价于 OR</td></tr>
     <tr><td>-</td><td>表示非，文档不能包含关键词</td></tr>
     <tr><td>""</td><td>词组</td></tr>
-    <tr><td>qualifier</td><td>限定查找范围：default | file | path | ext | content | size | time<br/>默认值 default = path + content</td></tr>
+    <tr><td>qualifier</td><td>限定查找范围：${scope.join(" | ")}<br/>默认值 default = path + content</td></tr>
     <tr><td>//</td><td>JavaScript 风格的正则表达式</td></tr>
     <tr><td>()</td><td>小括号，用于调整运算顺序</td></tr>
 </table>`
@@ -447,7 +451,7 @@ class SearchHelper {
     <tr><td>"foo bar"</td><td>包含 foo bar 这一词组</td></tr>
     <tr><td>path:/[a-z]{3}/ content:bar</td><td>路径匹配 [a-z]{3} 且内容包含 bar</td></tr>
     <tr><td>file:(info | warn | err) -ext:log</td><td>文件名包含 info 或 warn 或 err，但扩展名不含 log</td></tr>
-    <tr><td>file:foo size>=100k time>"2024-03-12"</td><td>文件名包含 foo，且体积大等于 100k，且更新时间大于 2024-03-12</td></tr>
+    <tr><td>file:foo size>=100k time>"2024-03-12"</td><td>文件名包含 foo，且体积大于等于 100k，且更新时间大于 2024-03-12</td></tr>
 </table>`
 
         const content = `
@@ -461,8 +465,8 @@ class SearchHelper {
 <or> ::= 'OR' | '|'
 <keyword> ::= [^"]+
 <regexp> ::= [^/]+
-<operator> ::= ':' | '=' | '>=' | '<=' | '>' | '<'
-<scope> ::= 'default' | 'file' | 'path' | 'ext' | 'content' | 'size' | 'time'`
+<operator> ::=  ${operator.map(s => `'${s}'`).join(" | ")}
+<scope> ::= ${scope.map(s => `'${s}'`).join(" | ")}`
 
         const title = "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释";
         const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 12, content, title }];
