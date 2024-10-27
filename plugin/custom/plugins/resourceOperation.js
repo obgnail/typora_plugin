@@ -268,7 +268,7 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
         }
 
         const collectMatch = content => {
-            return Promise.all(content.matchAll(this.regexp).map(async match => {
+            const promises = Array.from(content.matchAll(this.regexp), async match => {
                 let src = match.groups.src1 || match.groups.src2;
                 if (!src) return;
 
@@ -293,7 +293,8 @@ Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
                 if (remain) {
                     await collectMatch(remain + ")");
                 }
-            }))
+            })
+            return Promise.all(promises)
         }
 
         const ext = extname(filePath).toLowerCase();
