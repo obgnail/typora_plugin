@@ -14,13 +14,13 @@ class helpPlugin extends BasePlugin {
             { arg_name: "卸载插件", arg_value: "uninstall_plugin" },
             { arg_name: "修改配置", arg_value: "open_setting_folder" },
             { arg_name: "备份配置", arg_value: "backup_setting_file" },
-            { arg_name: "修改样式", arg_value: "set_user_styles", arg_hint },
             { arg_name: "环境信息", arg_value: "environment" },
+            { arg_name: "修改样式", arg_value: "set_user_styles", arg_hint },
             { arg_name: "我要写插件", arg_value: "new_custom_plugin", arg_hint },
             { arg_name: "Typora 自动化", arg_value: "json_rpc", arg_hint },
             { arg_name: "Github 图床", arg_value: "github_picture_bed" },
             { arg_name: "请开发者喝咖啡", arg_value: "donate" },
-            { arg_name: "关于", arg_value: "about", arg_hint: "Designed with ♥ by obgnail" },
+            { arg_name: "关于", arg_value: "about" },
         ]
     }
 
@@ -67,9 +67,8 @@ class helpPlugin extends BasePlugin {
 
     about = () => {
         const p = [
-            `<i>Ashen One, hearest thou my voice still?</i>`,
-            "感谢您使用 Typora Plugin，本项目完全开源、免费，请自由地享受。如果发现了碧油鸡或有任何反馈，可以在 <a class='plu-github'>Github</a>、<a class='plu-appinn'>Appinn</a>、<a class='plu-email'>Email</a > 找到我。",
-            `如果本项目帮助到您，欢迎 <a class="plu-github">Star</a>，欢迎推荐给你志同道合的朋友使用。`
+            '感谢您使用 Typora Plugin，本项目开源、免费，请自由地享受。如果本项目帮助到您，欢迎 ⭐，欢迎推荐给你志同道合的朋友使用。',
+            `<p style="text-align: center; margin-top: 2em;">© Designed with ♥ by <a class="plu-github-me">obgnail</a> | Open Source on <a class="plu-github">GitHub</a> | <a class="plu-donate">Donate</a></p>`,
         ]
         const label = p.map(e => `<p style="font-size: 1.2em">${e}</p>`).join("");
         const onclick = ev => {
@@ -78,10 +77,10 @@ class helpPlugin extends BasePlugin {
 
             if (a.className === "plu-github") {
                 this.utils.openUrl("https://github.com/obgnail/typora_plugin");
-            } else if (a.className === "plu-appinn") {
-                this.utils.openUrl("https://meta.appinn.net/t/topic/44934");
-            } else if (a.className === "plu-email") {
-                this.utils.sendEmail("he1251698542@gmail.com", "插件反馈");
+            } else if (a.className === "plu-github-me") {
+                this.utils.openUrl("https://github.com/obgnail/");
+            } else if (a.className === "plu-donate") {
+                this.donate();
             }
         }
         this.utils.dialog.modal({ title: "关于", width: "550px", components: [{ label, type: "span", onclick }] });
@@ -102,8 +101,9 @@ class helpPlugin extends BasePlugin {
                 alert(e.toString());
                 return;
             }
-            const msg = { type: "info", title: "卸载成功", buttons: ["确定"], message: "插件系统已经卸载，请重启 Typora" };
+            const msg = { type: "info", title: "卸载成功", buttons: ["确定"], message: "插件系统已经卸载" };
             await this.utils.showMessageBox(msg);
+            this.utils.restartTypora(false);
         }
 
         const reconfirm = "卸载插件系统";

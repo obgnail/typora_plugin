@@ -24,7 +24,7 @@
 | 8    | slash_commands          | 斜杠命令                               |          |
 | 9    | templater               | 文件模板                               |          |
 | 10   | resourceOperation       | 一键清除无用图片                       |          |
-| 11   | fence_enhance           | 一键复制、折叠、格式化代码             |          |
+| 11   | fence_enhance           | 复制、折叠、格式化代码             |          |
 | 12   | toc                     | 在右侧生成大纲目录                     |          |
 | 13   | commander               | 命令行环境                             |          |
 | 14  | toolbar                 | 多功能搜索                             |          |
@@ -154,40 +154,6 @@ yay -S typora-plugin
 
 
 
-## 实现原理
-
-### 前端
-
-`window.html` 是 Typora 的初始文件，可以写入一个 `<script>` 标签实现功能，就和 Tampermonkey 脚本一样。
-
-
-
-### 后端
-
-1. 因为 Typora 暴露了 `reqnode` 函数（require 的别名），所以可以使用 CommonJS 的 `reqnode('path')` 导入 Node.js 的 path 库，其他库同理。
-2. 因为 Typora 使用了 electron 不太安全的 `executeJavaScript` 功能，所以可以用此注入 JS 代码，从而劫持后端关键对象，进而实现 electron 的后端功能注入。理论上劫持了 electron 对象，你甚至可以在 Typora 里斗地主。
-
-```javascript
-// 控制台输入下面命令:
-
-// 让第二个窗口打印消息
-JSBridge.invoke("executeJavaScript", 2, `console.log("i am logging")`);
-
-// 让所有窗口打印消息
-ClientCommand.execForAll(`console.log("i am logging")`);
-
-// 获取到本窗口的BrowserWindow对象
-global.reqnode('electron').remote.require('electron').BrowserWindow;
-
-// 获取到所有窗口的BrowserWindow对象
-ClientCommand.execForAll(`console.log(global.reqnode('electron').remote.require('electron').BrowserWindow)`);
-
-// 让窗口1执行语句_myValue=123，然后将变量_myValue传给窗口2
-JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJavaScript', 2, `console.log(${_myValue})`)");
-```
-
-
-
 ## Q&A
 
 ### 我的 Typora 版本能用吗？
@@ -255,7 +221,7 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 - `排序标签`：拖拽
 - `弹出标签的菜单选项`：右键单击标签页
 
-![new_window_tab](assets/new_window_tab.gif)
+![window_tab](assets/window_tab.gif)
 
 
 
@@ -288,8 +254,6 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 - `定位到上一个关键字`：右键色块
 
 ![multi_highlighter](assets/multi_highlighter.png)
-
-> 注意：当你鼠标点击文档内容时，会自动退出高亮状态。**这是 Typora 本身的限制导致的**。你可以试试 Typora 自身的 ctrl+F 搜索，在搜索关键字后，点击任意地方原先高亮的地方也会消失。
 
 
 
@@ -324,16 +288,6 @@ JSBridge.invoke('executeJavaScript', 1, "_myValue=123; JSBridge.invoke('executeJ
 快捷键：ctrl+shift+B
 
 ![md_padding](assets/md_padding.gif)
-
-有些片段希望保持原状，这时可以用 `md-padding-ignore` 标签包裹起来。
-
-```markdown
-下面是一段不需要格式化的文本
-<!--md-padding-ignore-begin-->
-a*b=c, b>1 => a<c
-<!--md-padding-ignore-end-->
-现在开始又可以格式化了。
-```
 
 
 
@@ -377,7 +331,7 @@ COMMANDS = [
 
 
 
-### fence_enhance：一键复制，折叠，格式化代码
+### fence_enhance：复制，折叠，格式化代码
 
 ![fence_enhance](assets/fence_enhance.png)
 
@@ -498,19 +452,47 @@ BUILTIN = [
 [[right_click_menu.MENUS]]
 NAME = "少用插件"
 LIST = [
-    "window_tab", "resize_image", "resize_table", "fence_enhance", "export_enhance",
-    "datatables", "markmap", "auto_number", "truncate_text", "right_click_menu",
+    "window_tab",
+    "fence_enhance",
+    "auto_number",
+    "datatables",
+    "resize_image",
+    "resize_table",
+    "collapse_list",
+    "collapse_table",
+    "truncate_text",
+    "export_enhance",
+    "cipher",
+    "right_click_menu",
+    "help",
     "---",
-    "blur", "go_top", "text_stylize", "toolbar",
+    "pie_menu",
+    "go_top",
+    "text_stylize",
+    "slash_commands",
+    "ripgrep",
+    "article_uploader",
+    "preferences",
     "---",
-    "file_counter", "test",
+    "file_counter",
+    "json_rpc",
+    "test",
 ]
 [[right_click_menu.MENUS]]
 NAME = "常用插件"
 LIST = [
-    "commander", "collapse_paragraph", "custom",
+    "commander",
+    "markmap",
+    "collapse_paragraph",
+    "easy_modify",
+    "custom",
     "---",
-    "search_multi", "multi_highlighter", "md_padding", "read_only",
+    "toolbar",
+    "search_multi",
+    "multi_highlighter",
+    "md_padding",
+    "read_only",
+    "blur",
 ]
 ```
 
@@ -661,15 +643,6 @@ icon = "\\f040"
 
 ![auto_number](assets/auto_number.png)
 
-支持编号的组件（皆可临时或永久打开/关闭）：
-
-1. 标题
-2. 大纲
-3. TOC
-4. 表格
-5. 图片
-6. 代码块
-
 > 注意：通过注入 CSS 实现此功能，有可能会与你使用的 theme 冲突。
 
 > 和其他使用 Theme CSS 的实现方式不同，此插件通过修改内置函数，完美解决导出 PDF 后侧边栏没有编号的问题 :)
@@ -817,9 +790,7 @@ filter_regexp = ""
 
 使用方式：将光标定位到标题上 -> 右键菜单 -> 常用插件 -> 二级插件 ->  TC 打开。
 
-> 使用此插件前，需要您在配置手动修改 TC 的安装路径。
-
-> 此插件默认关闭，需手动开启。
+> 此插件默认关闭，需手动开启。使用此插件前，需要您在配置手动修改 TC 的安装路径。
 
 
 
@@ -907,9 +878,8 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 具体使用请参考 [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/json_rpc/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
 
-> 此插件是高级插件，仅对开发人员开放。
+> 此插件是高级插件，仅对开发人员开放。开启此插件后，外部将拥有 node、browser 两套环境，能完全控制电脑，因此如果您不是开发人员，请勿开启此插件。
 >
-> 开启此插件后，外部将拥有 node、browser 两套环境，能完全控制电脑，因此如果您不是开发人员，请勿开启此插件。
 
 
 
