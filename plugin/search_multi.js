@@ -172,7 +172,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
     }
 
-    _getAST = input => {
+    getAST = input => {
         try {
             const ast = this.searchHelper.parse(input);
             return this.searchHelper.test(ast)
@@ -185,7 +185,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         input = input.trim();
         if (!input) return;
 
-        const ast = this._getAST(input);
+        const ast = this.getAST(input);
         if (!ast) return;
 
         const checker = dataset => this.searchHelper.check(ast, dataset);
@@ -398,14 +398,15 @@ class SearchHelper {
         return this.parser.parse(input)
     }
 
-    getQueryTokens(query) {
+    getQueryTokens(ast) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
 
         function evaluate({ type, left, right, value, scope }) {
             switch (type) {
                 case KEYWORD:
-                case PHRASE:
                     return (scope === "content" || scope === "default") ? [value] : [];
+                case PHRASE:
+                    return (scope === "content" || scope === "default") ? [`"${value}"`] : [];
                 case REGEXP:
                     return [];
                 case OR:
@@ -419,7 +420,6 @@ class SearchHelper {
             }
         }
 
-        const ast = this.parser.parse(query);
         return evaluate(ast);
     }
 
@@ -528,9 +528,11 @@ class LinkHelper {
     }
 
     syncOption = () => {
-        const keyArr = this.searcher.searchHelper.getQueryTokens(this.searcher.entities.input.value);
-        const value = keyArr.map(key => key.includes(" ") ? `"${key}"` : key).join(" ");
-        document.querySelector("#plugin-multi-highlighter-input input").value = value;
+        const ast = this.searcher.getAST(this.searcher.entities.input.value);
+        if (!ast) return;
+
+        const keyArr = this.searcher.searchHelper.getQueryTokens(ast);
+        document.querySelector("#plugin-multi-highlighter-input input").value = keyArr.join(" ");
         if (this.searcher.config.CASE_SENSITIVE !== this.highlighter.config.CASE_SENSITIVE) {
             document.querySelector(".plugin-multi-highlighter-option-btn").click();
         }

@@ -98,7 +98,7 @@ class searchStringParser {
                 i++;
             } else {
                 const keywordStart = i;
-                while (i < query.length && !/\s|"|\(|\)|-/.test(query[i])) {
+                while (i < query.length && !/\s|"|\(|\)/.test(query[i])) {
                     i++;
                 }
                 tokens.push(this.TOKEN.KEYWORD(query.substring(keywordStart, i)));
