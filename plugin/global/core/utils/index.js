@@ -511,8 +511,8 @@ class utils {
 
     ////////////////////////////// 业务操作 //////////////////////////////
     static exitTypora = () => JSBridge.invoke("window.close");
-    static restartTypora = () => {
-        this.callPluginFunction("reopenClosedFiles", "save");
+    static restartTypora = (reopenClosedFiles = true) => {
+        reopenClosedFiles && this.callPluginFunction("reopenClosedFiles", "save");
         this.openFolder(this.getMountFolder());
         setTimeout(this.exitTypora, 50);
     }
