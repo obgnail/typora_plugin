@@ -172,7 +172,10 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
     }
 
-    _getAST = input => {
+    getAST = input => {
+        input = input.trim();
+        if (!input) return;
+
         try {
             const ast = this.searchHelper.parse(input);
             return this.searchHelper.test(ast)
@@ -182,10 +185,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     }
 
     searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
-        input = input.trim();
-        if (!input) return;
-
-        const ast = this._getAST(input);
+        const ast = this.getAST(input);
         if (!ast) return;
 
         const checker = dataset => this.searchHelper.check(ast, dataset);
@@ -334,6 +334,14 @@ class SearchHelper {
                 query: ({ filePath, file, stats, buffer }) => buffer.toString(),
             },
             {
+                scope: "frontmatter",
+                query: ({ filePath, file, stats, buffer }) => {
+                    const content = buffer.toString();
+                    const { yamlObject } = this.utils.splitFrontMatter(content);
+                    return JSON.stringify(yamlObject);
+                },
+            },
+            {
                 scope: "size",
                 query: ({ filePath, file, stats, buffer }) => stats.size,
                 keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, convertToBytes(operand), queryResult),
@@ -398,14 +406,16 @@ class SearchHelper {
         return this.parser.parse(input)
     }
 
-    getQueryTokens(query) {
+    getQueryTokens(ast) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
+        const collect = new Set(["content", "default", "frontmatter"]);
 
         function evaluate({ type, left, right, value, scope }) {
             switch (type) {
                 case KEYWORD:
+                    return collect.has(scope) ? [value] : [];
                 case PHRASE:
-                    return (scope === "content" || scope === "default") ? [value] : [];
+                    return collect.has(scope) ? [`"${value}"`] : [];
                 case REGEXP:
                     return [];
                 case OR:
@@ -419,7 +429,6 @@ class SearchHelper {
             }
         }
 
-        const ast = this.parser.parse(query);
         return evaluate(ast);
     }
 
@@ -528,9 +537,11 @@ class LinkHelper {
     }
 
     syncOption = () => {
-        const keyArr = this.searcher.searchHelper.getQueryTokens(this.searcher.entities.input.value);
-        const value = keyArr.map(key => key.includes(" ") ? `"${key}"` : key).join(" ");
-        document.querySelector("#plugin-multi-highlighter-input input").value = value;
+        const ast = this.searcher.getAST(this.searcher.entities.input.value);
+        if (!ast) return;
+
+        const keyArr = this.searcher.searchHelper.getQueryTokens(ast);
+        document.querySelector("#plugin-multi-highlighter-input input").value = keyArr.join(" ");
         if (this.searcher.config.CASE_SENSITIVE !== this.highlighter.config.CASE_SENSITIVE) {
             document.querySelector(".plugin-multi-highlighter-option-btn").click();
         }
