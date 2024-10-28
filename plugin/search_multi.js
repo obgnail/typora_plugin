@@ -173,6 +173,9 @@ class searchMultiKeywordPlugin extends BasePlugin {
     }
 
     getAST = input => {
+        input = input.trim();
+        if (!input) return;
+
         try {
             const ast = this.searchHelper.parse(input);
             return this.searchHelper.test(ast)
@@ -182,9 +185,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
     }
 
     searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
-        input = input.trim();
-        if (!input) return;
-
         const ast = this.getAST(input);
         if (!ast) return;
 
@@ -334,6 +334,14 @@ class SearchHelper {
                 query: ({ filePath, file, stats, buffer }) => buffer.toString(),
             },
             {
+                scope: "frontmatter",
+                query: ({ filePath, file, stats, buffer }) => {
+                    const content = buffer.toString();
+                    const { yamlObject } = this.utils.splitFrontMatter(content);
+                    return JSON.stringify(yamlObject);
+                },
+            },
+            {
                 scope: "size",
                 query: ({ filePath, file, stats, buffer }) => stats.size,
                 keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, convertToBytes(operand), queryResult),
@@ -400,13 +408,14 @@ class SearchHelper {
 
     getQueryTokens(ast) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
+        const collect = new Set(["content", "default", "frontmatter"]);
 
         function evaluate({ type, left, right, value, scope }) {
             switch (type) {
                 case KEYWORD:
-                    return (scope === "content" || scope === "default") ? [value] : [];
+                    return collect.has(scope) ? [value] : [];
                 case PHRASE:
-                    return (scope === "content" || scope === "default") ? [`"${value}"`] : [];
+                    return collect.has(scope) ? [`"${value}"`] : [];
                 case REGEXP:
                     return [];
                 case OR:
