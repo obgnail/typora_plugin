@@ -11,6 +11,7 @@ class easyModifyPlugin extends BasePlugin {
 
     init = () => {
         const arg_hint = "若无选中文段，则调整整篇文档";
+        this._showWarnDialog = true;
         this.callArgs = [
             { arg_name: "复制标题路径", arg_value: "copy_full_path", arg_hotkey: this.config.HOTKEY_COPY_FULL_PATH },
             { arg_name: "提升选中文段的标题等级", arg_value: "increase_headers_level", arg_hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, arg_hint },
@@ -52,14 +53,16 @@ class easyModifyPlugin extends BasePlugin {
             increase_headers_level: () => this.changeHeadersLevel(true),
             decrease_headers_level: () => this.changeHeadersLevel(false),
             copy_full_path: () => this.copyFullPath(),
-            trailing_white_space: () => this.trailingWhiteSpace(),
+            trailing_white_space: async () => this.trailingWhiteSpace(),
             insert_mermaid_mindmap: () => this.insertMindmap("mindmap", meta.insertTarget),
             insert_mermaid_graph: () => this.insertMindmap("graph", meta.insertTarget),
             extract_rang_to_new_file: async () => this.extractRangeToNewFile(meta.range),
         }
         const func = funcMap[type];
-        if (func) {
-            await func();
+        if (!func) return;
+
+        const dontShow = await func();
+        if (dontShow !== true) {
             this.utils.notification.show("执行成功");
         }
     }
@@ -160,7 +163,16 @@ class easyModifyPlugin extends BasePlugin {
         this.utils.openFile(filepath);
     }
 
-    trailingWhiteSpace = () => {
+    trailingWhiteSpace = async () => {
+        if (this._showWarnDialog) {
+            const option = { type: "warning", buttons: ["确定", "取消"], message: "为整篇文档添加结尾空格", checkboxLabel: "不再提示（直到关闭Typora）" };
+            const { response, checkboxChecked } = await this.utils.showMessageBox(option);
+            if (response === 1) return true;
+            if (checkboxChecked) {
+                this._showWarnDialog = false;
+            }
+        }
+
         const replaceFlag = 2;
         const tailSpace = "  ";
         this.utils.entities.querySelectorAllInWrite("p[cid]").forEach(ele => {

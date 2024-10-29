@@ -61,18 +61,19 @@
 | 45  | noImageMode             | 无图模式                               |          |
 | 46  | pluginUpdater           | 一键升级插件                           |          |
 | 47  | easy_modify             | 编辑工具                         |          |
-| 48  | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
-| 49 | blockSideBySide         | 并列显示活动块                         | ×        |
-| 50  | scrollBookmarker        | 书签管理器                             | ×        |
-| 51  | openInTotalCommander    | 在 total commander 打开                | ×        |
-| 52  | cipher                  | 加密文件                               | ×        |
-| 53  | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
-| 54  | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
-| 55  | help                    | 用户帮助                               |          |
-| 56  | custom                  | 开放平台，用户自定义插件（高级）       |          |
-| 57  | hotkeyHub               | 快捷键注册中心（高级）                 |          |
-| 58  | quickButton             | 于右下角添加功能按钮（高级）           |          |
-| 59  | json_rpc                | 外部操纵 Typora（高级）                | ×        |
+| 48 | editor_width_slider | 写作区宽度调整 | |
+| 49 | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
+| 50 | blockSideBySide         | 并列显示活动块                         | ×        |
+| 51 | scrollBookmarker        | 书签管理器                             | ×        |
+| 52 | openInTotalCommander    | 在 total commander 打开                | ×        |
+| 53 | cipher                  | 加密文件                               | ×        |
+| 54 | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
+| 55 | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
+| 56 | help                    | 用户帮助                               |          |
+| 57 | custom                  | 开放平台，用户自定义插件（高级）       |          |
+| 58 | hotkeyHub               | 快捷键注册中心（高级）                 |          |
+| 59 | quickButton             | 于右下角添加功能按钮（高级）           |          |
+| 60 | json_rpc                | 外部操纵 Typora（高级）                | ×        |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -756,6 +757,14 @@ icon = "\\f040"
 5. 降低选中文段的标题等级
 6. 提取选区文字到新文件
 7. 添加结尾空格
+
+
+
+### editor_width_slider：写作区宽度调整
+
+使用方式：右键菜单 -> 少用插件 -> 写作区宽度调整
+
+功能：调整写作区的宽度
 
 
 

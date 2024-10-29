@@ -1032,6 +1032,7 @@ LIST = [
     "pie_menu",
     "go_top",
     "text_stylize",
+    "editor_width_slider",
     "slash_commands",
     "ripgrep",
     "article_uploader",
@@ -1136,6 +1137,16 @@ BEFORE_TEXT = ""
 ENABLE = true
 # 插件名称
 NAME = "帮助"
+
+
+############### editor_width_slider ###############
+[editor_width_slider]
+# 启用插件
+ENABLE = true
+# 插件名称
+NAME = "写作区宽度调整"
+# 宽度百分比（小于0视为不启用）
+WIDTH_RATIO = -1
 
 
 ############### article_uploader ###############
