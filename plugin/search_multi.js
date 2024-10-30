@@ -4,7 +4,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     html = () => `
         <div id="plugin-search-multi" class="plugin-common-modal plugin-common-hidden">
             <div id="plugin-search-multi-input">
-                <input type="text" placeholder="多关键字查找">
+                <input type="text">
                 <div class="plugin-search-multi-btn-group">
                     <span class="option-btn" action="searchGrammarModal" ty-hint="查看搜索语法">
                         <div class="fa fa-info-circle"></div>
@@ -438,25 +438,25 @@ class SearchHelper {
         const table1 = `
 <table>
     <tr><th>关键字</th><th>说明</th></tr>
-    <tr><td>whitespace</td><td>表示与，文档应该同时包含全部关键词</td></tr>
-    <tr><td>|</td><td>表示或，文档应该包含关键词之一，等价于 OR</td></tr>
-    <tr><td>-</td><td>表示非，文档不能包含关键词</td></tr>
-    <tr><td>""</td><td>词组</td></tr>
-    <tr><td>qualifier</td><td>限定查找范围：${scope.join(" | ")}<br/>默认值 default = path + content</td></tr>
-    <tr><td>//</td><td>JavaScript 风格的正则表达式</td></tr>
-    <tr><td>()</td><td>小括号，用于调整运算顺序</td></tr>
+    <tr><td>whitespace</td><td>表示与。文档应该同时包含全部关键词</td></tr>
+    <tr><td>|</td><td>表示或。文档应该包含关键词之一，等价于 OR</td></tr>
+    <tr><td>-</td><td>表示非。文档不能包含关键词</td></tr>
+    <tr><td>""</td><td>表示词组。双引号里的空格不再视为与，而是词组的一部分</td></tr>
+    <tr><td>qualifier</td><td>限定查找范围：${scope.join(" | ")}<br/>默认值 default = path + content（将文件内容和文件路径作为查找范围）</td></tr>
+    <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式</td></tr>
+    <tr><td>()</td><td>小括号。用于调整运算顺序</td></tr>
 </table>`
 
         const table2 = `
 <table>
     <tr><th>示例</th><th>搜索文档</th></tr>
-    <tr><td>foo bar</td><td>包含 foo 和 bar</td></tr>
-    <tr><td>foo OR bar</td><td>包含 foo 或 bar</td></tr>
-    <tr><td>foo bar -zoo</td><td>包含 foo 和 bar 但不含 zoo</td></tr>
-    <tr><td>"foo bar"</td><td>包含 foo bar 这一词组</td></tr>
-    <tr><td>path:/[a-z]{3}/ content:bar</td><td>路径匹配 [a-z]{3} 且内容包含 bar</td></tr>
-    <tr><td>file:(info | warn | err) -ext:log</td><td>文件名包含 info 或 warn 或 err，但扩展名不含 log</td></tr>
-    <tr><td>file:foo size>=100k time>"2024-03-12"</td><td>文件名包含 foo，且体积大于等于 100k，且更新时间大于 2024-03-12</td></tr>
+    <tr><td>sour pear</td><td>包含 sour 和 pear。等价于 default:sour default:pear</td></tr>
+    <tr><td>sour OR pear</td><td>包含 sour 或 pear。等价于 default:sour | default:pear</td></tr>
+    <tr><td>"sour pear"</td><td>包含 sour pear 这一词组。等价于 default:"sour pear"</td></tr>
+    <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
+    <tr><td>path:/[a-z]{3}/ content:abc</td><td>路径匹配 [a-z]{3}，且内容包含 abc</td></tr>
+    <tr><td>file:(info | warn | err) -ext:log</td><td>文件名包含 info 或 warn 或 err，且扩展名不含 log</td></tr>
+    <tr><td>frontmatter:日记 size>=100k time>2024-03-12</td><td>YAML Front Matter 包含日记，且文件尺寸大于等于 100k，且文件更新时间大于 2024-03-12</td></tr>
 </table>`
 
         const content = `
