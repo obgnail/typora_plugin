@@ -77,6 +77,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         });
         this.entities.buttonGroup.addEventListener("click", ev => {
             const btn = ev.target.closest(".option-btn");
+            if (!btn) return;
             const action = btn.getAttribute("action");
             this.actionMap[action] && this.actionMap[action](btn);
         })
@@ -172,6 +173,11 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
     }
 
+    showExplain = ast => {
+        const title = this.searchHelper.toExplain(ast);
+        this.entities.input.setAttribute("title", title);
+    }
+
     getAST = input => {
         input = input.trim();
         if (!input) return;
@@ -188,6 +194,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         const ast = this.getAST(input);
         if (!ast) return;
 
+        this.showExplain(ast);
         const checker = dataset => this.searchHelper.check(ast, dataset);
         const appendItem = this.appendItemFunc(rootPath, checker);
         const verifyExt = filename => {
@@ -276,9 +283,8 @@ class SearchHelper {
         }
 
         const keywordMatch = (scope, operator, operand, queryResult) => {
-            queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase();
-            // operand 先前已经做了大小写转化处理，这里不再需要做了
-            return queryResult.includes(operand);
+            queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase();  // operand 先前已经做了大小写转化处理，这里不再需要做了
+            return (operator === "=" || operator === "==") ? queryResult === operand : queryResult.includes(operand);
         }
         const regexpMatch = (scope, operator, operand, queryResult) => {
             const flag = this.config.CASE_SENSITIVE ? undefined : "i";
@@ -290,6 +296,9 @@ class SearchHelper {
         const stringTest = (scope, operator, operand, type) => {
             if (operator !== ":" && operator !== "=" && operator !== "==") {
                 throw new Error(`${scope}’s operator can only be ":" or "=" or "=="`);
+            }
+            if (type === "regexp" && operator !== ":") {
+                throw new Error(`RegExp’s operator can only be ":"`);
             }
         }
         const numberTest = (scope, operator, operand, type) => {
@@ -430,6 +439,119 @@ class SearchHelper {
         }
 
         return evaluate(ast);
+    }
+
+    toMermaid(ast) {
+        let idx = 0;
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
+
+        function getName(node) {
+            if (node._shortName) return node._shortName;
+            node._shortName = "T" + ++idx;
+            const prefix = node.negated ? "-" : "";
+            const value = node.type === REGEXP ? `/${node.value}/` : node.value;
+            return `${node._shortName}("${prefix}${node.scope}${node.operator} ${value}")`;
+        }
+
+        function link(left, right) {
+            return left.tail.flatMap(t => right.head.map(h => `${getName(t)} --> ${getName(h)}`));
+        }
+
+        function _eval(node, negated) {
+            let left, right;
+            switch (node.type) {
+                case AND:
+                    left = _eval(node.left, negated);
+                    right = _eval(node.right, negated);
+                    node.head = left.head;
+                    node.tail = right.tail;
+                    node.result = [...left.result, ...link(left, right), ...right.result];
+                    return node
+                case OR:
+                    left = _eval(node.left, negated);
+                    right = _eval(node.right, negated);
+                    node.head = [...left.head, ...right.head];
+                    node.tail = [...left.tail, ...right.tail];
+                    node.result = [...left.result, ...right.result];
+                    return node
+                case NOT:
+                    left = node.left ? _eval(node.left, negated) : { result: [], head: [], tail: [] };
+                    right = _eval(node.right, !negated);
+                    node.head = node.left ? left.head : right.head;
+                    node.tail = right.tail;
+                    node.result = [...left.result, ...link(left, right), ...right.result];
+                    return node
+                case KEYWORD:
+                case PHRASE:
+                case REGEXP:
+                    node.negated = negated;
+                    node.head = [node];
+                    node.tail = [node];
+                    node.result = [];
+                    return node
+                default:
+                    throw new Error(`Unknown node type: ${node.type}`);
+            }
+        }
+
+        const { head, tail, result } = _eval(ast);
+        const start = head.map(h => `S --> ${getName(h)}`);
+        const end = tail.map(t => `${getName(t)} --> E`);
+        return ["graph LR", "S(Start)", "E(End)", ...result, ...start, ...end].join("\n");
+    }
+
+    toExplain(ast) {
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
+        const scopeMap = { default: "默认范围", file: "文件名", path: "路径", ext: "扩展名", content: "内容", frontmatter: "FrontMatter", size: "体积", time: "修改时间" };
+        const operatorMap = { ":": "包含", "==": "等于", ">=": "大于等于", "<=": "小于等于", ">": "大于", "<": "小于", "=": "等于" };
+
+        function getName(node) {
+            const scope = scopeMap[node.scope];
+            const negated = node.negated ? "不" : "";
+            const operator = node.type === REGEXP ? "匹配正则" : operatorMap[node.operator];
+            const value = node.type === REGEXP ? `/${node.value}/` : node.value;
+            return `「${scope}${negated}${operator}${value}」`;
+        }
+
+        function link(left, right) {
+            return left.result.flatMap(lPath => right.result.map(rPath => [...lPath, ...rPath]));
+        }
+
+        function _eval(node, negated) {
+            let left, right;
+            switch (node.type) {
+                case AND:
+                    left = _eval(node.left, negated);
+                    right = _eval(node.right, negated);
+                    node.result = link(left, right);
+                    return node
+                case OR:
+                    left = _eval(node.left, negated);
+                    right = _eval(node.right, negated);
+                    node.result = [...left.result, ...right.result];
+                    return node
+                case NOT:
+                    left = node.left ? _eval(node.left, negated) : { result: [[]], head: [], tail: [] };
+                    right = _eval(node.right, !negated);
+                    node.result = link(left, right);
+                    return node
+                case KEYWORD:
+                case PHRASE:
+                case REGEXP:
+                    node.negated = negated;
+                    node.result = [[node]];
+                    return node
+                default:
+                    throw new Error(`Unknown node type: ${node.type}`);
+            }
+        }
+
+        const { result } = _eval(ast);
+        const content = result
+            .map(path => path.map(e => getName(e)).join("且"))
+            .map((path, idx) => `${idx + 1}. ${path}`)
+            .join("\n")
+        return "搜索满足如下任意一个要求的文件：\n" + content
     }
 
     showGrammar() {
