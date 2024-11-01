@@ -1,12 +1,12 @@
 class testPlugin extends BasePlugin {
     exportVar = () => {
-        global.require = require;
-        global.module = module;
+        global.__require__ = require;
+        global.__module__ = module;
     }
 
     openDevTools = () => {
         const objGetter = () => File && File.editor && File.editor.library;
-        const callback = () => setTimeout(() => ClientCommand.close(), 1000);
+        const callback = () => setTimeout(() => ClientCommand.close(), 500);
         this.utils.decorate(objGetter, "openFileInNewWindow", null, callback);
         JSBridge.invoke("window.toggleDevTools");
     }
