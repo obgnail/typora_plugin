@@ -285,7 +285,7 @@ class SearchHelper {
 
         const keywordMatch = (scope, operator, operand, queryResult) => {
             queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase();  // operand 先前已经做了大小写转化处理，这里不再需要做了
-            return (operator === "=" || operator === "==") ? queryResult === operand : queryResult.includes(operand);
+            return this.operator[operator](queryResult, operand);
         }
         const regexpMatch = (scope, operator, operand, queryResult) => {
             const flag = this.config.CASE_SENSITIVE ? undefined : "i";
