@@ -14,6 +14,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             dummy: ['无功能', ''],
             info: ['', 'fa fa-info-circle'],
             thumbnailNav: ['缩略图列表', 'fa fa-caret-square-o-down'],
+            waterFall: ['瀑布流', 'fa fa-list'],
             close: ['关闭', 'fa fa-times'],
             download: ['下载网络图片', 'fa fa-download'],
             scroll: ['定位到文档', 'fa fa-crosshairs'],
@@ -74,6 +75,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
         funcTranslate.info[0] = getInfoHint();
 
+        const columns = '<div class="review-water-fall-col"></div>'.repeat(this.config.water_fall_columns);
         const messageList = show_message.map(m => `<div class="review-${m}"></div>`);
         const operationList = tool_function
             .filter(option => funcTranslate.hasOwnProperty(option))
@@ -88,6 +90,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                     <div class="review-message">${messageList.join("")}</div>
                     <div class="review-options">${operationList.join("")}</div>
                 </div>
+                <div class="review-water-fall plugin-common-hidden"><div class="review-water-fall-container">${columns}</div></div>
                 <div class="review-nav ${class_}"></div>
                 <img class="review-image" alt=""/>
                 <div class="review-item" action="previousImage"><i class="fa fa-angle-left"></i></div>
@@ -113,6 +116,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         this.entities = {
             reviewer: document.getElementById("plugin-image-reviewer"),
             mask: document.querySelector("#plugin-image-reviewer .review-mask"),
+            waterFall: document.querySelector("#plugin-image-reviewer .review-water-fall"),
             nav: document.querySelector("#plugin-image-reviewer .review-nav"),
             image: document.querySelector("#plugin-image-reviewer .review-image"),
             msg: document.querySelector("#plugin-image-reviewer .review-message"),
@@ -130,6 +134,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             ele.addEventListener("click", ev => this[ev.target.closest(".review-item").getAttribute("action")]());
         })
         this.entities.reviewer.addEventListener("wheel", ev => {
+            if (this.utils.isShow(this.entities.waterFall)) return;
+
             ev.preventDefault();
             const list = this.getFuncList(ev, "wheel");
             const func = list[ev.deltaY > 0 ? 1 : 0];
@@ -149,6 +155,13 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         })
         this.entities.nav.addEventListener("click", ev => {
             const target = ev.target.closest(".review-thumbnail");
+            if (!target) return;
+            const idx = parseInt(target.dataset.idx);
+            this.dumpIndex(idx);
+        })
+        this.entities.waterFall.addEventListener("click", ev => {
+            const target = ev.target.closest(".review-water-fall-item");
+            this.waterFall();
             if (!target) return;
             const idx = parseInt(target.dataset.idx);
             this.dumpIndex(idx);
@@ -247,6 +260,60 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     dumpIndex = targetIdx => {
         targetIdx = Math.max(targetIdx, 0);
         return this.dumpImage("next", img => img.idx === Math.min(targetIdx, img.total - 1))
+    }
+
+    waterFall = () => {
+        const cols = Array.from(this.entities.waterFall.querySelectorAll(".review-water-fall-col"));
+
+        const toggleComponent = hide => {
+            const isTarget = el => {
+                const list = el.classList;
+                const target = list.contains("review-water-fall") || list.contains("review-mask");
+                return !target;
+            }
+            this.entities.reviewer.children.forEach(el => isTarget(el) && this.utils.toggleVisible(el, hide))
+        }
+
+        const nav2WaterFall = () => {
+            const navChildren = this.entities.nav.children;
+            while (navChildren.length > 0) {
+                const img = navChildren[0];
+                img.classList.remove("review-thumbnail");
+                img.classList.add("review-water-fall-item");
+                const col = getMinHeightColumn();
+                col.appendChild(img);
+            }
+        }
+
+        const waterFall2Nav = () => {
+            const fallChildren = Array.from(this.entities.waterFall.querySelectorAll(".review-water-fall-item"))
+                .sort((a, b) => parseInt(a.dataset.idx) - parseInt(b.dataset.idx));
+            while (fallChildren.length > 0) {
+                const img = fallChildren.shift();
+                img.classList.remove("review-water-fall-item");
+                img.classList.add("review-thumbnail");
+                this.entities.nav.appendChild(img);
+            }
+        }
+
+        const getMinHeightColumn = () => {
+            const minHeight = Math.min(...cols.map(column => column.offsetHeight));
+            return cols.find(column => column.offsetHeight === minHeight);
+        };
+
+        this.utils.toggleVisible(this.entities.waterFall);
+        if (this.utils.isHidden(this.entities.waterFall)) {
+            waterFall2Nav();
+            toggleComponent(false);
+        } else {
+            cols.forEach(e => (e.innerHTML = ""));
+            toggleComponent(true);
+            nav2WaterFall();
+            const select = this.entities.waterFall.querySelector(".review-water-fall-item.select");
+            if (select) {
+                select.scrollIntoView();
+            }
+        }
     }
 
     _showImage = imgInfo => {
