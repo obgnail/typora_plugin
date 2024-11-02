@@ -8,8 +8,8 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     })
 
     html = () => {
-        const { tool_function, show_message, hotkey_function } = this.config;
-        const keyTranslate = { arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space" };
+        const { tool_function, show_message, hotkey_function } = this.config
+        const keyTranslate = { arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space" }
         const funcTranslate = {
             dummy: ['无功能', ''],
             info: ['', 'fa fa-info-circle'],
@@ -45,45 +45,45 @@ class imageReviewerPlugin extends BaseCustomPlugin {
         }
 
         const getInfoHint = () => {
-            const result = ["当前配置如下："];
+            const result = ["当前配置如下："]
 
-            const modifierKey = ["", "ctrl", "shift", "alt"];
-            const mouseEvent = ["mousedown_function", "wheel_function"];
+            const modifierKey = ["", "ctrl", "shift", "alt"]
+            const mouseEvent = ["mousedown_function", "wheel_function"]
             mouseEvent.forEach(event => modifierKey.forEach(modifier => {
-                const cfg = modifier ? `${modifier}_${event}` : event;
-                const config = this.config[cfg];
-                const events = (event === "mousedown_function") ? ["鼠标左键", "鼠标中键", "鼠标右键"] : ["滚轮上滚", "滚轮下滚"];
+                const cfg = modifier ? `${modifier}_${event}` : event
+                const config = this.config[cfg]
+                const events = (event === "mousedown_function") ? ["鼠标左键", "鼠标中键", "鼠标右键"] : ["滚轮上滚", "滚轮下滚"]
                 events.forEach((ev, idx) => {
-                    const [hint, _] = funcTranslate[config[idx]];
+                    const [hint, _] = funcTranslate[config[idx]]
                     if (hint && hint !== "无功能") {
-                        const m = modifier ? `${modifier}+` : "";
-                        result.push(m + ev + "\t" + hint);
+                        const m = modifier ? `${modifier}+` : ""
+                        result.push(m + ev + "\t" + hint)
                     }
                 })
             }))
             hotkey_function.forEach(item => {
-                const [key, func] = item;
-                const [hint, _] = funcTranslate[func];
+                const [key, func] = item
+                const [hint, _] = funcTranslate[func]
                 if (hint && hint !== "无功能") {
-                    const translateKey = keyTranslate[key.toLowerCase()] || key;
-                    result.push(translateKey + "\t" + hint);
+                    const translateKey = keyTranslate[key.toLowerCase()] || key
+                    result.push(translateKey + "\t" + hint)
                 }
             })
 
             return result.join("\n")
         }
 
-        funcTranslate.info[0] = getInfoHint();
+        funcTranslate.info[0] = getInfoHint()
 
-        const columns = '<div class="review-water-fall-col"></div>'.repeat(this.config.water_fall_columns);
-        const messageList = show_message.map(m => `<div class="review-${m}"></div>`);
+        const columns = '<div class="review-water-fall-col"></div>'.repeat(this.config.water_fall_columns)
+        const messageList = show_message.map(m => `<div class="review-${m}"></div>`)
         const operationList = tool_function
             .filter(option => funcTranslate.hasOwnProperty(option))
             .map(option => {
-                const [hint, icon] = funcTranslate[option];
+                const [hint, icon] = funcTranslate[option]
                 return `<i class="${icon}" option="${option}" title="${hint}"></i>`
             })
-        const class_ = this.config.show_thumbnail_nav ? "" : "plugin-common-hidden";
+        const class_ = this.config.show_thumbnail_nav ? "" : "plugin-common-hidden"
         return `
             <div id="plugin-image-reviewer" class="plugin-cover-content plugin-common-hidden">
                 <div class="review-tool">
@@ -104,15 +104,15 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     callback = anchorNode => {
         if (this.utils.isHidden(this.entities.reviewer)) {
-            this.show();
+            this.show()
         } else {
-            this.close();
+            this.close()
         }
     }
 
     init = () => {
-        this.imageGetter = null;
-        this.playTimer = null;
+        this.imageGetter = null
+        this.playTimer = null
         this.entities = {
             reviewer: document.getElementById("plugin-image-reviewer"),
             mask: document.querySelector("#plugin-image-reviewer .review-mask"),
@@ -127,274 +127,277 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     process = () => {
         if (this.config.click_mask_to_exit) {
-            this.entities.mask.addEventListener("click", this.callback);
+            this.entities.mask.addEventListener("click", this.callback)
         }
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.close());
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => hide && this.close())
         this.entities.reviewer.querySelectorAll(".review-item").forEach(ele => {
-            ele.addEventListener("click", ev => this[ev.target.closest(".review-item").getAttribute("action")]());
+            ele.addEventListener("click", ev => this[ev.target.closest(".review-item").getAttribute("action")]())
         })
         this.entities.reviewer.addEventListener("wheel", ev => {
-            if (this.utils.isShow(this.entities.waterFall)) return;
+            if (this.utils.isShow(this.entities.waterFall)) return
 
-            ev.preventDefault();
-            const list = this.getFuncList(ev, "wheel");
-            const func = list[ev.deltaY > 0 ? 1 : 0];
-            (func instanceof Function) && func();
-        }, { passive: false });
+            ev.preventDefault()
+            const list = this.getFuncList(ev, "wheel")
+            const func = list[ev.deltaY > 0 ? 1 : 0]
+            const isFunc = func instanceof Function
+            isFunc && func()
+        }, { passive: false })
         this.entities.image.addEventListener("mousedown", ev => {
-            const list = this.getFuncList(ev, "mousedown");
-            const func = list[ev.button];
-            (func instanceof Function) && func();
+            const list = this.getFuncList(ev, "mousedown")
+            const func = list[ev.button]
+            const isFunc = func instanceof Function
+            isFunc && func()
         })
         this.entities.ops.addEventListener("click", ev => {
-            const target = ev.target.closest("[option]");
-            if (!target) return;
-            const option = target.getAttribute("option");
-            const arg = option.indexOf("rotate") !== -1 ? 90 : undefined;
-            (this[option] instanceof Function) && this[option](arg);
+            const target = ev.target.closest("[option]")
+            if (!target) return
+            const option = target.getAttribute("option")
+            const arg = option.indexOf("rotate") !== -1 ? 90 : undefined
+            const isFunc = this[option] instanceof Function
+            isFunc && this[option](arg)
         })
         this.entities.nav.addEventListener("click", ev => {
-            const target = ev.target.closest(".review-thumbnail");
-            if (!target) return;
-            const idx = parseInt(target.dataset.idx);
-            this.dumpIndex(idx);
+            const target = ev.target.closest(".review-thumbnail")
+            if (!target) return
+            const idx = parseInt(target.dataset.idx)
+            this.dumpIndex(idx)
         })
         this.entities.waterFall.addEventListener("click", ev => {
-            const target = ev.target.closest(".review-water-fall-item");
-            this.waterFall();
-            if (!target) return;
-            const idx = parseInt(target.dataset.idx);
-            this.dumpIndex(idx);
+            const target = ev.target.closest(".review-water-fall-item")
+            this.waterFall()
+            if (!target) return
+            const idx = parseInt(target.dataset.idx)
+            this.dumpIndex(idx)
         })
         this.entities.nav.addEventListener("wheel", ev => {
-            const target = ev.target.closest("#plugin-image-reviewer .review-nav");
-            target.scrollLeft += ev.deltaY * 0.5;
-            ev.stopPropagation();
+            const target = ev.target.closest("#plugin-image-reviewer .review-nav")
+            target.scrollLeft += ev.deltaY * 0.5
+            ev.stopPropagation()
         }, { passive: true })
     }
 
     getFuncList = (ev, method) => {
-        let arg = [];
-        if (this.utils.metaKeyPressed(ev)) arg.push("ctrl");
-        else if (this.utils.shiftKeyPressed(ev)) arg.push("shift");
-        else if (this.utils.altKeyPressed(ev)) arg.push("alt");
-        arg.push(method, "function");
-        const config = this.config[arg.join("_")];
-        return config.map(ele => this[ele]);
+        let arg = []
+        if (this.utils.metaKeyPressed(ev)) arg.push("ctrl")
+        else if (this.utils.shiftKeyPressed(ev)) arg.push("shift")
+        else if (this.utils.altKeyPressed(ev)) arg.push("alt")
+        arg.push(method, "function")
+        const config = this.config[arg.join("_")]
+        return config.map(ele => this[ele])
     }
 
     replaceImageTransform = (regex, func, moveCenter = true) => {
-        this.entities.image.style.transform = this.entities.image.style.transform.replace(regex, func);
-        moveCenter && this.moveImageCenter();
+        this.entities.image.style.transform = this.entities.image.style.transform.replace(regex, func)
+        moveCenter && this.moveImageCenter()
     }
 
     rotate = (dec, newRotate, rotateScale) => this.replaceImageTransform(/rotate\((.*?)deg\)/, (_, curRotate) => {
         if (!newRotate) {
-            const currentRotate = parseFloat(curRotate);
-            rotateScale = rotateScale || this.config.rotate_scale;
-            newRotate = dec ? currentRotate + rotateScale : currentRotate - rotateScale;
+            const currentRotate = parseFloat(curRotate)
+            rotateScale = rotateScale || this.config.rotate_scale
+            newRotate = dec ? currentRotate + rotateScale : currentRotate - rotateScale
         }
         return `rotate(${newRotate}deg)`
     })
 
     zoom = (dec, newScale, zoomScale) => this.replaceImageTransform(/scale\((.*?)\)/, (_, curScale) => {
         if (!newScale) {
-            const currentScale = parseFloat(curScale);
-            zoomScale = zoomScale || this.config.zoom_scale;
-            newScale = dec ? currentScale - zoomScale : currentScale + zoomScale;
+            const currentScale = parseFloat(curScale)
+            zoomScale = zoomScale || this.config.zoom_scale
+            newScale = dec ? currentScale - zoomScale : currentScale + zoomScale
         }
-        newScale = Math.max(0.1, newScale);
+        newScale = Math.max(0.1, newScale)
         return `scale(${newScale})`
     })
 
     skew = (dec, direction, newSkew, skewScale) => this.replaceImageTransform(new RegExp(`skew${direction}\\((.*?)deg\\)`), (_, curSkew) => {
         if (!newSkew) {
-            const currentSkew = parseFloat(curSkew);
-            skewScale = skewScale || this.config.skew_scale;
-            newSkew = dec ? currentSkew - skewScale : currentSkew + skewScale;
+            const currentSkew = parseFloat(curSkew)
+            skewScale = skewScale || this.config.skew_scale
+            newSkew = dec ? currentSkew - skewScale : currentSkew + skewScale
         }
         return `skew${direction}(${newSkew}deg)`
     })
 
     translate = (dec, direction, newTranslate, translateScale) => this.replaceImageTransform(new RegExp(`translate${direction}\\((.*?)px\\)`), (_, curTranslate) => {
         if (!newTranslate) {
-            const currentTranslate = parseFloat(curTranslate);
-            translateScale = translateScale || this.config.translate_scale;
-            newTranslate = dec ? currentTranslate - translateScale : currentTranslate + translateScale;
+            const currentTranslate = parseFloat(curTranslate)
+            translateScale = translateScale || this.config.translate_scale
+            newTranslate = dec ? currentTranslate - translateScale : currentTranslate + translateScale
         }
         return `translate${direction}(${newTranslate}px)`
     }, false)
 
     flip = direction => this.replaceImageTransform(new RegExp(`scale${direction}\\((.*?)\\)`), (_, curScale) => {
-        const currentScale = parseInt(curScale);
+        const currentScale = parseInt(curScale)
         return `scale${direction}(${-currentScale})`
     })
 
     changeSize = (origin = true) => {
-        const value = origin ? "initial" : "";
-        const class_ = origin ? "fa fa-search-minus" : "fa fa-search-plus";
-        this.entities.image.style.maxWidth = value;
-        this.entities.image.style.maxHeight = value;
-        this.entities.ops.querySelector(`[option="autoSize"]`).className = class_;
-        this.zoom(null, 1);
+        const value = origin ? "initial" : ""
+        const class_ = origin ? "fa fa-search-minus" : "fa fa-search-plus"
+        this.entities.image.style.maxWidth = value
+        this.entities.image.style.maxHeight = value
+        this.entities.ops.querySelector(`[option="autoSize"]`).className = class_
+        this.zoom(null, 1)
     }
 
     moveImageCenter = () => {
-        const { width, height } = this.entities.mask.getBoundingClientRect();
-        const { width: imageWidth, height: imageHeight } = this.entities.image;
-        this.entities.image.style.left = (width - imageWidth) / 2 + "px";
-        this.entities.image.style.top = (height - imageHeight) / 2 + "px";
+        const { width, height } = this.entities.mask.getBoundingClientRect()
+        const { width: imageWidth, height: imageHeight } = this.entities.image
+        this.entities.image.style.left = (width - imageWidth) / 2 + "px"
+        this.entities.image.style.top = (height - imageHeight) / 2 + "px"
     }
 
     dumpImage = (direction = "next", condition = () => true) => {
-        const next = direction === "next";
+        const next = direction === "next"
         while (true) {
-            const curImg = this.imageGetter(next);
+            const curImg = this.imageGetter(next)
             if (condition(curImg)) {
-                this._showImage(curImg);
-                return curImg;
+                this._showImage(curImg)
+                return curImg
             }
         }
     }
 
     dumpIndex = targetIdx => {
-        targetIdx = Math.max(targetIdx, 0);
+        targetIdx = Math.max(targetIdx, 0)
         return this.dumpImage("next", img => img.idx === Math.min(targetIdx, img.total - 1))
     }
 
     waterFall = () => {
-        const cols = Array.from(this.entities.waterFall.querySelectorAll(".review-water-fall-col"));
+        const columns = Array.from(this.entities.waterFall.querySelectorAll(".review-water-fall-col"))
 
         const toggleComponent = hide => {
-            const isTarget = el => {
-                const list = el.classList;
-                const target = list.contains("review-water-fall") || list.contains("review-mask");
-                return !target;
-            }
-            this.entities.reviewer.children.forEach(el => isTarget(el) && this.utils.toggleVisible(el, hide))
-        }
-
-        const nav2WaterFall = () => {
-            const navChildren = this.entities.nav.children;
-            while (navChildren.length > 0) {
-                const img = navChildren[0];
-                img.classList.remove("review-thumbnail");
-                img.classList.add("review-water-fall-item");
-                const col = getMinHeightColumn();
-                col.appendChild(img);
-            }
-        }
-
-        const waterFall2Nav = () => {
-            const fallChildren = Array.from(this.entities.waterFall.querySelectorAll(".review-water-fall-item"))
-                .sort((a, b) => parseInt(a.dataset.idx) - parseInt(b.dataset.idx));
-            while (fallChildren.length > 0) {
-                const img = fallChildren.shift();
-                img.classList.remove("review-water-fall-item");
-                img.classList.add("review-thumbnail");
-                this.entities.nav.appendChild(img);
-            }
+            Array.from(this.entities.reviewer.children)
+                .filter(el => !el.classList.contains("review-water-fall") && !el.classList.contains("review-mask"))
+                .forEach(el => this.utils.toggleVisible(el, hide))
         }
 
         const getMinHeightColumn = () => {
-            const minHeight = Math.min(...cols.map(column => column.offsetHeight));
-            return cols.find(column => column.offsetHeight === minHeight);
-        };
+            const minHeight = Math.min(...columns.map(column => column.offsetHeight))
+            return columns.find(column => column.offsetHeight === minHeight)
+        }
 
-        this.utils.toggleVisible(this.entities.waterFall);
+        const nav2WaterFall = () => {
+            Array.from(this.entities.nav.children)
+                .map(img => {
+                    img.classList.remove("review-thumbnail")
+                    img.classList.add("review-water-fall-item")
+                    return img
+                })
+                .forEach(img => {
+                    const col = getMinHeightColumn()
+                    col.appendChild(img)
+                })
+        }
+
+        const waterFall2Nav = () => {
+            const items = this.entities.waterFall.querySelectorAll(".review-water-fall-item")
+            const fallChildren = Array.from(items)
+                .sort((a, b) => parseInt(a.dataset.idx) - parseInt(b.dataset.idx))
+                .map(img => {
+                    img.classList.remove("review-water-fall-item")
+                    img.classList.add("review-thumbnail")
+                    return img
+                })
+            this.entities.nav.append(...fallChildren)
+        }
+
+        this.utils.toggleVisible(this.entities.waterFall)
         if (this.utils.isHidden(this.entities.waterFall)) {
-            waterFall2Nav();
-            toggleComponent(false);
+            waterFall2Nav()
+            toggleComponent(false)
         } else {
-            cols.forEach(e => (e.innerHTML = ""));
-            toggleComponent(true);
-            nav2WaterFall();
-            const select = this.entities.waterFall.querySelector(".review-water-fall-item.select");
+            columns.forEach(e => (e.innerHTML = ""))
+            toggleComponent(true)
+            nav2WaterFall()
+            const select = this.entities.waterFall.querySelector(".review-water-fall-item.select")
             if (select) {
-                select.scrollIntoView();
+                select.scrollIntoView()
             }
         }
     }
 
     _showImage = imgInfo => {
         const handleMessage = imgInfo => {
-            const { src, alt, naturalWidth, naturalHeight, showIdx, idx, total } = imgInfo;
-            this.entities.image.setAttribute("src", src);
-            this.entities.image.setAttribute("data-idx", idx);
-            const index = this.entities.msg.querySelector(".review-index");
-            const title = this.entities.msg.querySelector(".review-title");
-            const size = this.entities.msg.querySelector(".review-size");
-            index && (index.textContent = `[ ${showIdx} / ${total} ]`);
-            title && (title.textContent = alt);
-            size && (size.textContent = `${naturalWidth} × ${naturalHeight}`);
+            const { src, alt, naturalWidth, naturalHeight, showIdx, idx, total } = imgInfo
+            this.entities.image.setAttribute("src", src)
+            this.entities.image.setAttribute("data-idx", idx)
+            const index = this.entities.msg.querySelector(".review-index")
+            const title = this.entities.msg.querySelector(".review-title")
+            const size = this.entities.msg.querySelector(".review-size")
+            index && (index.textContent = `[ ${showIdx} / ${total} ]`)
+            title && (title.textContent = alt)
+            size && (size.textContent = `${naturalWidth} × ${naturalHeight}`)
         }
 
         const handleToolIcon = src => {
-            const autoSize = this.entities.ops.querySelector(`[option="autoSize"]`);
-            const download = this.entities.ops.querySelector(`[option="download"]`);
-            autoSize && (autoSize.className = "fa fa-search-plus");
-            download && this.utils.toggleVisible(download, !this.utils.isNetworkImage(src));
+            const autoSize = this.entities.ops.querySelector(`[option="autoSize"]`)
+            const download = this.entities.ops.querySelector(`[option="download"]`)
+            autoSize && (autoSize.className = "fa fa-search-plus")
+            download && this.utils.toggleVisible(download, !this.utils.isNetworkImage(src))
         }
 
         const handleThumbnail = showIdx => {
-            const s = this.entities.nav.querySelector(".select");
-            s && s.classList.remove("select");
-            const active = this.entities.nav.querySelector(`.review-thumbnail[data-idx="${showIdx - 1}"]`);
+            const s = this.entities.nav.querySelector(".select")
+            s && s.classList.remove("select")
+            const active = this.entities.nav.querySelector(`.review-thumbnail[data-idx="${showIdx - 1}"]`)
             if (active) {
-                active.classList.add("select");
-                active.scrollIntoView({ inline: "nearest", behavior: "smooth" });
+                active.classList.add("select")
+                active.scrollIntoView({ inline: "nearest", behavior: "smooth" })
             }
         }
 
-        handleMessage(imgInfo);
-        handleToolIcon(imgInfo.src);
-        handleThumbnail(imgInfo.showIdx);
-        this.restore();
+        handleMessage(imgInfo)
+        handleToolIcon(imgInfo.src)
+        handleThumbnail(imgInfo.showIdx)
+        this.restore()
     }
 
     _collectImage = () => {
-        let images = Array.from(this.utils.entities.querySelectorAllInWrite("img"));
+        let images = Array.from(this.utils.entities.querySelectorAllInWrite("img"))
         if (this.config.filter_error_image) {
-            images = images.filter(this.utils.isImgEmbed);
+            images = images.filter(this.utils.isImgEmbed)
         }
         return images
     }
 
     initImageMsgGetter = () => {
-        if (this.imageGetter) return;
+        if (this.imageGetter) return
 
-        let images = this._collectImage();
-        this.imageGetter = this._imageMsgGetter(images);
+        let images = this._collectImage()
+        this.imageGetter = this._imageMsgGetter(images)
 
-        if (images.length === 0) return;
+        if (images.length === 0) return
 
-        let target = this._getTargetImage(images);
-        if (!target) return;
+        let target = this._getTargetImage(images)
+        if (!target) return
 
         while (true) {
-            const { img, showIdx, total } = this.imageGetter(true);
-            if (!img) return;
+            const { img, showIdx, total } = this.imageGetter(true)
+            if (!img) return
 
             if (img === target) {
-                return this.imageGetter(false);
+                return this.imageGetter(false)
             }
             // 防御代码，防止死循环
-            if (showIdx === total) return;
+            if (showIdx === total) return
         }
     }
 
     _imageMsgGetter = images => {
-        let idx = -1;
+        let idx = -1
         return (next = true) => {
-            next ? idx++ : idx--;
-            const maxIdx = images.length - 1;
+            next ? idx++ : idx--
+            const maxIdx = images.length - 1
             if (idx > maxIdx) {
-                idx = 0;
+                idx = 0
             } else if (idx < 0) {
-                idx = maxIdx;
+                idx = maxIdx
             }
-            const showIdx = (images.length === 0) ? 0 : idx + 1;
-            const img = images[idx];
+            const showIdx = (images.length === 0) ? 0 : idx + 1
+            const img = images[idx]
             return {
                 img,
                 idx,
@@ -405,7 +408,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                 naturalHeight: img && img.naturalHeight || 0,
                 total: images.length || 0,
                 all: images,
-            };
+            }
         }
     }
 
@@ -414,22 +417,22 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             firstImage: images => images[0],
             inViewBoxImage: images => images.find(img => this.utils.isInViewBox(img)),
             closestViewBoxImage: images => {
-                let closestImg = null;
-                let minDistance = Number.MAX_VALUE;
+                let closestImg = null
+                let minDistance = Number.MAX_VALUE
                 images.forEach(img => {
-                    const distance = Math.abs(img.getBoundingClientRect().top - window.innerHeight / 2);
+                    const distance = Math.abs(img.getBoundingClientRect().top - window.innerHeight / 2)
                     if (distance < minDistance) {
-                        minDistance = distance;
-                        closestImg = img;
+                        minDistance = distance
+                        closestImg = img
                     }
-                });
+                })
                 return closestImg
             },
         }
         // firstImage作为兜底策略
-        const funcList = [...this.config.first_image_strategies, "firstImage"].map(s => strategies[s]).filter(Boolean);
+        const funcList = [...this.config.first_image_strategies, "firstImage"].map(s => strategies[s]).filter(Boolean)
         for (const func of funcList) {
-            const image = func(images);
+            const image = func(images)
             if (image) {
                 return image
             }
@@ -437,35 +440,35 @@ class imageReviewerPlugin extends BaseCustomPlugin {
     }
 
     initThumbnailNav = current => {
-        const { idx: targetIdx, all = [] } = current || {};
+        const { idx: targetIdx, all = [] } = current || {}
         const thumbnails = all.map((img, idx) => {
-            const select = idx === targetIdx ? "select" : "";
+            const select = idx === targetIdx ? "select" : ""
             return `<img class="review-thumbnail ${select}" src="${img.src}" alt="${img.alt}" data-idx="${idx}">`
         })
-        this.entities.nav.innerHTML = thumbnails.join("");
+        this.entities.nav.innerHTML = thumbnails.join("")
     }
 
     handleHotkey = (remove = false) => {
-        const unregister = item => this.utils.hotkeyHub.unregister(item[0]);
-        const register = item => this.utils.hotkeyHub.registerSingle(item[0], this[item[1]] || this.dummy);
-        this.config.hotkey_function.forEach(remove ? unregister : register);
+        const unregister = item => this.utils.hotkeyHub.unregister(item[0])
+        const register = item => this.utils.hotkeyHub.registerSingle(item[0], this[item[1]] || this.dummy)
+        this.config.hotkey_function.forEach(remove ? unregister : register)
     }
 
     handlePlayTimer = (stop = false) => {
-        const btn = this.entities.ops.querySelector(`[option="play"]`);
-        if (!btn) return;
+        const btn = this.entities.ops.querySelector(`[option="play"]`)
+        if (!btn) return
         if (!stop && !this.playTimer) {
-            this.playTimer = setInterval(this.nextImage, this.config.play_second * 1000);
-            btn.classList.add("active");
+            this.playTimer = setInterval(this.nextImage, this.config.play_second * 1000)
+            btn.classList.add("active")
         } else {
-            btn.classList.remove("active");
-            clearInterval(this.playTimer);
-            this.playTimer = null;
+            btn.classList.remove("active")
+            clearInterval(this.playTimer)
+            this.playTimer = null
         }
     }
 
     thumbnailNav = force => {
-        this.config.show_thumbnail_nav = !this.config.show_thumbnail_nav;
+        this.config.show_thumbnail_nav = !this.config.show_thumbnail_nav
         this.utils.toggleVisible(this.entities.nav, force)
     }
     play = () => this.handlePlayTimer(!!this.playTimer)
@@ -475,49 +478,49 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             maxHeight: "",
             transform: "scale(1) rotate(0deg) scaleX(1) scaleY(1) skewX(0deg) skewY(0deg) translateX(0px) translateY(0px)",
         })
-        this.moveImageCenter();
+        this.moveImageCenter()
     }
     location = () => {
-        let src = this.entities.image.getAttribute("src");
+        let src = this.entities.image.getAttribute("src")
         if (this.utils.isNetworkImage(src)) {
-            this.utils.openUrl(src);
+            this.utils.openUrl(src)
         } else if (this.utils.isSpecialImage(src)) {
-            alert("this image cannot locate");
+            alert("this image cannot locate")
         } else {
-            // src = src.replace(/^file:\/[2-3]/, "");
-            src = decodeURI(src).substring(0, src.indexOf("?"));
-            src && this.utils.showInFinder(src);
+            // src = src.replace(/^file:\/[2-3]/, "")
+            src = decodeURI(src).substring(0, src.indexOf("?"))
+            src && this.utils.showInFinder(src)
         }
     }
     download = async () => {
-        const src = this.entities.image.getAttribute("src");
-        if (!this.utils.isNetworkImage(src)) return;
-        const { ok, filepath } = await this.utils.downloadImage(src);
+        const src = this.entities.image.getAttribute("src")
+        if (!this.utils.isNetworkImage(src)) return
+        const { ok, filepath } = await this.utils.downloadImage(src)
         if (ok) {
-            this.utils.showInFinder(filepath);
+            this.utils.showInFinder(filepath)
         } else {
-            alert("download image failed");
+            alert("download image failed")
         }
     }
     scroll = () => {
-        const idx = parseInt(this.entities.image.dataset.idx);
-        const image = this._collectImage()[idx];
-        this.close();
-        image && this.utils.scroll(image, 30);
+        const idx = parseInt(this.entities.image.dataset.idx)
+        const image = this._collectImage()[idx]
+        this.close()
+        image && this.utils.scroll(image, 30)
     }
     show = () => {
-        document.activeElement.blur();
-        this.handleHotkey(false);
-        this.utils.show(this.entities.reviewer);
-        const cur = this.initImageMsgGetter();
-        this.initThumbnailNav(cur);
-        this.dumpImage();
+        document.activeElement.blur()
+        this.handleHotkey(false)
+        this.utils.show(this.entities.reviewer)
+        const cur = this.initImageMsgGetter()
+        this.initThumbnailNav(cur)
+        this.dumpImage()
     }
     close = () => {
-        this.handleHotkey(true);
-        this.handlePlayTimer(true);
-        this.utils.hide(this.entities.reviewer);
-        this.imageGetter = null;
+        this.handleHotkey(true)
+        this.handlePlayTimer(true)
+        this.utils.hide(this.entities.reviewer)
+        this.imageGetter = null
     }
     dummy = this.utils.noop
     nextImage = () => this.dumpImage("next")
@@ -545,4 +548,4 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
 module.exports = {
     plugin: imageReviewerPlugin,
-};
+}
