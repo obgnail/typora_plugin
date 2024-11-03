@@ -135,3 +135,26 @@
 #plugin-image-reviewer .review-options > i:hover {
     color: chartreuse;
 }
+
+#plugin-image-reviewer .review-water-fall {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999;
+    overflow-y: auto;
+}
+
+#plugin-image-reviewer .review-water-fall-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 10px;
+}
+
+#plugin-image-reviewer .review-water-fall-col {
+    margin: 3px
+}
+
+#plugin-image-reviewer .review-water-fall-item {
+    margin-bottom: 12px;
+}

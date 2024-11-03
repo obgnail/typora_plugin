@@ -821,6 +821,8 @@ thumbnail_scroll_padding_count = 3
 #   - cover:      保持图片原有尺寸，超出的内容被剪切
 #   - scale-down: 类似于contain，但是当图片尺寸小于容器尺寸时，不会放大
 thumbnail_object_fit = "scale-down"
+# 瀑布流格式的列数
+water_fall_columns = 5
 
 # 图片支持以下操作：
 #   - dummy:          无功能
@@ -834,6 +836,7 @@ thumbnail_object_fit = "scale-down"
 #   - firstImage:     第一张图
 #   - lastImage:      最后一张图
 #   - thumbnailNav:   显示/隐藏缩略图列表
+#   - waterFall:      显示/隐藏瀑布流
 #   - zoomIn:         放大图片
 #   - zoomOut:        缩小图片
 #   - rotateLeft:     图片向左旋转
@@ -862,7 +865,7 @@ thumbnail_object_fit = "scale-down"
 # 有两点需要注意：
 #   1. 可选项比上面的功能多了一个info，用于提示
 #   2. 若是本地图片，download按钮会自动隐藏
-tool_function = ["info", "thumbnailNav", "download", "play", "firstImage", "lastImage", "restore", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close"]
+tool_function = ["info", "waterFall", "thumbnailNav", "download", "play", "firstImage", "lastImage", "restore", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close"]
 
 # 鼠标点击图片绑定的功能
 # 三项分别为左键、中键、右键

@@ -186,6 +186,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             const ast = this.searchHelper.parse(input);
             return this.searchHelper.test(ast)
         } catch (e) {
+            this.entities.input.removeAttribute("title");
             this.utils.notification.show(`语法错误，请检测输入内容\n${e.toString()}`, "error", 7000);
         }
     }
@@ -242,7 +243,7 @@ class SearchHelper {
         this.qualifiers = new Map();
         this.operator = {
             ":": (a, b) => a.includes(b),
-            "==": (a, b) => a.includes(b),
+            "==": (a, b) => a === b,
             ">=": (a, b) => a >= b,
             "<=": (a, b) => a <= b,
             ">": (a, b) => a > b,
@@ -284,14 +285,14 @@ class SearchHelper {
 
         const keywordMatch = (scope, operator, operand, queryResult) => {
             queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase();  // operand 先前已经做了大小写转化处理，这里不再需要做了
-            return (operator === "=" || operator === "==") ? queryResult === operand : queryResult.includes(operand);
+            return this.operator[operator](queryResult, operand);
         }
         const regexpMatch = (scope, operator, operand, queryResult) => {
             const flag = this.config.CASE_SENSITIVE ? undefined : "i";
             return new RegExp(operand, flag).test(queryResult.toString());
         }
         const numberCompare = (scope, operator, operand, queryResult) => {
-            return this.operator[operator](queryResult, operand);
+            return this.operator[operator](Number(queryResult), Number(operand));
         }
         const stringTest = (scope, operator, operand, type) => {
             if (operator !== ":" && operator !== "=" && operator !== "==") {
@@ -358,6 +359,12 @@ class SearchHelper {
                     numberTest(scope, operator, operand, type);
                     convertToBytes(operand);
                 },
+            },
+            {
+                scope: "len",
+                query: ({ filePath, file, stats, buffer }) => file.length,
+                keyword: numberCompare,
+                test: numberTest,
             },
             {
                 scope: "time",
@@ -441,6 +448,7 @@ class SearchHelper {
         return evaluate(ast);
     }
 
+    // 转为mermaid graph。然而生成的图尺寸太大了，没地方放了，暂时不使用
     toMermaid(ast) {
         let idx = 0;
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
@@ -502,7 +510,7 @@ class SearchHelper {
 
     toExplain(ast) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
-        const scopeMap = { default: "默认范围", file: "文件名", path: "路径", ext: "扩展名", content: "内容", frontmatter: "FrontMatter", size: "体积", time: "修改时间" };
+        const scopeMap = { default: "内容或路径", file: "文件名", path: "路径", ext: "扩展名", content: "内容", frontmatter: "FrontMatter", size: "体积", len: "文件名长度", time: "修改时间" };
         const operatorMap = { ":": "包含", "==": "等于", ">=": "大于等于", "<=": "小于等于", ">": "大于", "<": "小于", "=": "等于" };
 
         function getName(node) {
@@ -596,7 +604,7 @@ class SearchHelper {
 <scope> ::= ${scope.map(s => `'${s}'`).join(" | ")}`
 
         const title = "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释";
-        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 12, content, title }];
+        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 13, content, title }];
         this.utils.dialog.modal({ title: "高级搜索", width: "600px", components });
     }
 }
