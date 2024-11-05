@@ -244,6 +244,36 @@ REMAIN_AVAILABLE_MENU_KEY = ["typora-plugin", "dev-tool", "copy-img"]
 SHOW_TEXT = "ReadOnly"
 
 
+############### dark ###############
+[dark]
+# 启用插件
+ENABLE = true
+# 插件名称
+NAME = "夜间模式"
+# 进入和脱离夜间模式的快捷键
+HOTKEY = ""
+# 默认进入夜间模式
+DARK_DEFAULT = false
+
+
+############### no_image ###############
+[no_image]
+# 启用插件
+ENABLE = true
+# 插件名称
+NAME = "无图模式"
+# 进入和脱离无图模式的快捷键
+HOTKEY = ""
+# 当处于无图模式时，鼠标悬停时重新显示图片
+RESHOW_WHEN_HOVER = true
+# 默认进入无图模式
+DEFAULT_NO_IMAGE_MODE = false
+# 动画持续时间（单位：ms）
+TRANSITION_DURATION = 300
+# 延迟动画时间（单位：ms）
+TRANSITION_DELAY = 0
+
+
 ############### toolbar ###############
 [toolbar]
 # 启用插件
@@ -1051,6 +1081,8 @@ LIST = [
     "md_padding",
     "read_only",
     "blur",
+    "dark",
+    "no_image"
 ]
 
 
@@ -1070,8 +1102,8 @@ MODIFIER_KEY = "ctrl"
 BUTTONS = [
     { ICON = "fa fa-book", CALLBACK = "read_only" },
     { ICON = "fa fa-asterisk", CALLBACK = "blur" },
-    { ICON = "fa fa-eye", CALLBACK = "custom.noImageMode" },
-    { ICON = "fa fa-adjust", CALLBACK = "custom.darkMode" },
+    { ICON = "fa fa-eye", CALLBACK = "no_image" },
+    { ICON = "fa fa-adjust", CALLBACK = "dark" },
     { ICON = "fa fa-file-text", CALLBACK = "custom.templater" },
     { ICON = "fa fa-align-justify", CALLBACK = "md_padding" },
     { ICON = "fa fa-paste", CALLBACK = "easy_modify.copy_full_path" },

@@ -1,9 +1,9 @@
-class darkModePlugin extends BaseCustomPlugin {
+class darkModePlugin extends BasePlugin {
     init = () => {
-        this.isDarkMode = this.config.default_dark_mode;
+        this.isDarkMode = this.config.DARK_DEFAULT;
     }
 
-    hotkey = () => [this.config.hotkey]
+    hotkey = () => [this.config.HOTKEY]
 
     enableDarkMode = async () => {
         const createDarkFilter = () => {
@@ -43,7 +43,7 @@ class darkModePlugin extends BaseCustomPlugin {
 
     process = () => this.isDarkMode && this.enableDarkMode();
 
-    callback = anchorNode => this.toggleDarkMode()
+    call = (type, meta) => this.toggleDarkMode()
 }
 
 module.exports = {

@@ -1,15 +1,15 @@
-class noImageModePlugin extends BaseCustomPlugin {
+class noImageModePlugin extends BasePlugin {
     init = () => {
-        this.isNoImageMode = this.config.default_no_image_mode;
+        this.isNoImageMode = this.config.DEFAULT_NO_IMAGE_MODE;
     }
 
-    hotkey = () => [this.config.hotkey]
+    hotkey = () => [this.config.HOTKEY]
 
     enableNoImageMode = async () => {
         const renderArg = {
-            transition_duration: this.config.transition_duration,
-            transition_delay: this.config.transition_delay,
-            opacity_on_hover: this.config.reshow_when_hover ? "100%" : "0",
+            transition_duration: this.config.TRANSITION_DURATION,
+            transition_delay: this.config.TRANSITION_DELAY,
+            opacity_on_hover: this.config.RESHOW_WHEN_HOVER ? "100%" : "0",
         }
         await this.utils.styleTemplater.register(this.fixedName, renderArg);
         this.isNoImageMode = true;
@@ -28,7 +28,7 @@ class noImageModePlugin extends BaseCustomPlugin {
 
     process = () => this.isNoImageMode && this.enableNoImageMode();
 
-    callback = anchorNode => this.toggleNoImageMode()
+    call = (type, meta) => this.toggleNoImageMode()
 }
 
 module.exports = {

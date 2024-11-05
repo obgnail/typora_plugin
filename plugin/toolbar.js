@@ -457,15 +457,15 @@ class modeTool extends baseToolInterface {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             const readonly = this.utils.getPlugin("read_only");
             const blur = this.utils.getPlugin("blur");
-            const dark = this.utils.getCustomPlugin("darkMode");
+            const dark = this.utils.getPlugin("dark");
+            const noImage = this.utils.getPlugin("no_image");
             const image = this.utils.getCustomPlugin("imageReviewer");
-            const noImage = this.utils.getCustomPlugin("noImageMode");
 
             readonly && this.modes.push({ showName: "只读模式", fixedName: "readOnlyMode", callback: () => readonly.call() });
             blur && this.modes.push({ showName: "模糊模式", fixedName: "blurMode", callback: () => blur.call() });
-            dark && this.modes.push({ showName: "夜间模式", fixedName: "darkMode", callback: () => dark.callback() });
+            dark && this.modes.push({ showName: "夜间模式", fixedName: "dark", callback: () => dark.call() });
             image && this.modes.push({ showName: "看图模式", fixedName: "imageReviewer", callback: () => image.callback() });
-            noImage && this.modes.push({ showName: "无图模式", fixedName: "noImageMode", callback: () => noImage.callback() });
+            noImage && this.modes.push({ showName: "无图模式", fixedName: "no_image", callback: () => noImage.call() });
             this.modes.push({ showName: "调试模式", fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools") });
 
             this.modes.forEach(mode => mode.showName += ` - ${mode.fixedName}`);
