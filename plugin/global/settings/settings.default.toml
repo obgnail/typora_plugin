@@ -656,14 +656,14 @@ ENABLE_HOTKEY = true
 SWAP_PREVIOUS_LINE = "Shift-Alt-Up"
 # 将当前行和下一行互换
 SWAP_NEXT_LINE = "Shift-Alt-Down"
-# 复制当前行到下一行
-COPY_PREVIOUS_LINE = "Ctrl-Alt-Up"
 # 复制当前行到上一行
+COPY_PREVIOUS_LINE = "Ctrl-Alt-Up"
+# 复制当前行到下一行
 COPY_NEXT_LINE = "Ctrl-Alt-Down"
-# 直接在下面新建一行
-INSERT_LINE_NEXT = "Ctrl-Enter"
 # 直接在上面新建一行
 INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
+# 直接在下面新建一行
+INSERT_LINE_NEXT = "Ctrl-Enter"
 
 # fence_enhance插件包含4个功能：button、hotkey、fold、other。此为fold，功能：针对不同代码语言做行号和折叠
 # 支持根据代码语言的语法折叠代码

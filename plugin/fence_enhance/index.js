@@ -188,6 +188,7 @@ class fenceEnhancePlugin extends BasePlugin {
             { arg_name: "启用按钮：复制", arg_value: "disable_or_enable_copy", arg_state: this.config.ENABLE_COPY },
             { arg_name: "启用侧边折叠按钮", arg_value: "disable_or_enable_fold_lang", arg_state: this.config.ENABLE_LANGUAGE_FOLD },
             { arg_name: "总是折叠代码块", arg_value: "disable_or_enable_fold_default", arg_state: this.config.FOLD_DEFAULT },
+            { arg_name: "启用代码块快捷键", arg_value: "disable_or_enable_hotkey", arg_state: this.config.ENABLE_HOTKEY },
         ];
         const enable = this.config.ENABLE_DANGEROUS_FEATURES;
         if (this.supportIndent) {
@@ -281,6 +282,27 @@ class fenceEnhancePlugin extends BasePlugin {
                     File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input);
                 })
             },
+            disable_or_enable_hotkey: async () => {
+                this.config.ENABLE_HOTKEY = !this.config.ENABLE_HOTKEY
+
+                const hotkeys = {
+                    "SWAP_PREVIOUS_LINE": "将当前行和上一行互换",
+                    "SWAP_NEXT_LINE": "将当前行和下一行互换",
+                    "COPY_PREVIOUS_LINE": "复制当前行到上一行",
+                    "COPY_NEXT_LINE": "复制当前行到下一行",
+                    "INSERT_LINE_PREVIOUS": "直接在上面新建一行",
+                    "INSERT_LINE_NEXT": "直接在下面新建一行",
+                }
+                const detail = Object.entries(hotkeys)
+                    .map(([key, name], idx) => `${idx + 1}. ${name}: ${this.config[key]}`)
+                    .join("\n")
+                const title = this.config.ENABLE_HOTKEY ? "新增快捷键" : "取消快捷键"
+                const message = "重启后生效，确认重启？"
+                const { response } = await this.utils.showMessageBox({ type: "info", buttons: ["确定", "取消"], title, detail, message })
+                if (response === 0) {
+                    this.utils.restartTypora()
+                }
+            }
         }
         const func = callMap[type];
         func && func();
