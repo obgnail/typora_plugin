@@ -628,7 +628,7 @@ CUSTOM_BUTTONS = [
     { DISABLE = true, ICON = "fa fa-bomb", HINT = "demo", ON_INIT = "", ON_RENDER = "", ON_CLICK = "({cont}) => console.log(cont)" },
 ]
 
-# fence_enhance插件包含4个功能：button、hotkey、other。此为hotkey，功能：为代码块添加快捷键
+# fence_enhance插件包含4个功能：button、hotkey、fold、other。此为hotkey，功能：为代码块添加快捷键
 # 若置为false，以下配置全部失效
 # 注意：此处的快捷键使用的是codeMirror的表示方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
 ENABLE_HOTKEY = true
@@ -669,13 +669,7 @@ INSERT_LINE_NEXT = "Ctrl-Enter"
 # 支持根据代码语言的语法折叠代码
 ENABLE_LANGUAGE_FOLD = true
 
-# fence_enhance插件包含4个功能：button、hotkey、other。此为other
-# 在右键菜单中启用有风险的功能（此功能会消耗巨量资源并导致Typora长时间（几秒到几十秒）失去响应）
-# 目前支持的风险功能：
-#   1. 调整所有代码块的缩进
-#   2. 为所有无语言代码块添加语言
-#   3. 批量替换代码块语言
-ENABLE_DANGEROUS_FEATURES = false
+# fence_enhance插件包含4个功能：button、hotkey、fold、other。此为other
 # 长文本的换行会保持相同的缩进
 #   1. 详见：https://github.com/codemirror/codemirror5/issues/2085
 #   2. 不建议开启此功能，有较大的性能损失，会消耗大量时间去计算缩进
