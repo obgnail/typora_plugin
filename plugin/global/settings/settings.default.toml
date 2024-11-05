@@ -1098,23 +1098,23 @@ HOTKEY = ""
 MODIFIER_KEY = "ctrl"
 # 按钮（强制少于16个，前8个在内圈，后8个在外圈）
 #  - ICON    : 图标的css class
-#  - CALLABCK: 填入pluginName.callArg（插件的其中一个选项，如：help.donate。如果插件只有一个选项，那么无需callArg。二级插件前面要加【custom.】）
+#  - CALLABCK: 填入pluginName.callArg（插件的其中一个选项，如：help.donate。如果插件只有一个选项，那么无需callArg）
 BUTTONS = [
     { ICON = "fa fa-book", CALLBACK = "read_only" },
     { ICON = "fa fa-asterisk", CALLBACK = "blur" },
     { ICON = "fa fa-eye", CALLBACK = "no_image" },
     { ICON = "fa fa-adjust", CALLBACK = "dark" },
-    { ICON = "fa fa-file-text", CALLBACK = "custom.templater" },
+    { ICON = "fa fa-file-text", CALLBACK = "templater" },
     { ICON = "fa fa-align-justify", CALLBACK = "md_padding" },
     { ICON = "fa fa-paste", CALLBACK = "easy_modify.copy_full_path" },
-    { ICON = "fa fa-list", CALLBACK = "custom.toc" },
+    { ICON = "fa fa-list", CALLBACK = "toc" },
     { ICON = "fa fa-sitemap", CALLBACK = "markmap.toggle_toc" },
     { ICON = "fa fa-font", CALLBACK = "text_stylize" },
     { ICON = "fa fa-search", CALLBACK = "search_multi" },
-    { ICON = "fa fa-image", CALLBACK = "custom.imageReviewer" },
-    { ICON = "fa fa-filter", CALLBACK = "custom.resourceOperation" },
+    { ICON = "fa fa-image", CALLBACK = "imageReviewer" },
+    { ICON = "fa fa-filter", CALLBACK = "resourceOperation" },
     { ICON = "fa fa-wrench", CALLBACK = "preferences" },
-    { ICON = "fa fa-bookmark", CALLBACK = "custom.scrollBookmarker" },
+    { ICON = "fa fa-bookmark", CALLBACK = "scrollBookmarker" },
     { ICON = "fa fa-code", CALLBACK = "commander" }
 ]
 
