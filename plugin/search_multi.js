@@ -173,21 +173,19 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
     }
 
-    showExplain = ast => {
-        const title = this.searchHelper.toExplain(ast);
-        this.entities.input.setAttribute("title", title);
-    }
-
     getAST = input => {
-        input = input.trim();
-        if (!input) return;
+        input = input.trim()
+        if (!input) return
 
         try {
-            const ast = this.searchHelper.parse(input);
-            return this.searchHelper.test(ast)
+            const ast = this.searchHelper.parse(input)
+            this.searchHelper.test(ast)
+            const title = this.searchHelper.toExplain(ast)
+            this.entities.input.setAttribute("title", title)
+            return ast
         } catch (e) {
-            this.entities.input.removeAttribute("title");
-            this.utils.notification.show(`语法错误，请检测输入内容\n${e.toString()}`, "error", 7000);
+            this.entities.input.removeAttribute("title")
+            this.utils.notification.show(`语法错误，请检测输入内容\n${e.toString()}`, "error", 7000)
         }
     }
 
@@ -195,7 +193,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
         const ast = this.getAST(input);
         if (!ast) return;
 
-        this.showExplain(ast);
         const checker = dataset => this.searchHelper.check(ast, dataset);
         const appendItem = this.appendItemFunc(rootPath, checker);
         const verifyExt = filename => {
