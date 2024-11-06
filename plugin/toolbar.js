@@ -327,34 +327,31 @@ class pluginTool extends baseToolInterface {
     translate = () => "使用插件"
     icon = () => "🔌"
     collectAll = () => {
-        const pluginsList = [];
-        for (const [fixedName, plugin] of Object.entries(this.utils.getAllPlugins())) {
-            if (!plugin.call) continue
+        return Object.entries(this.utils.getAllPlugins())
+            .filter(([_, plugin]) => plugin.call)
+            .flatMap(([fixedName, plugin]) => {
+                const chineseName = plugin.config.NAME
+                const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode, true)
 
-            const chineseName = plugin.config.NAME;
-            const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode, true);
-            if ((!dynamicCallArgs || dynamicCallArgs.length === 0) && (!plugin.callArgs || plugin.callArgs === 0)) {
-                pluginsList.push({ showName: chineseName, fixedName: fixedName });
-                continue
-            }
-            if (plugin.callArgs) {
-                for (const arg of plugin.callArgs) {
-                    const show = chineseName + " - " + arg.arg_name;
-                    pluginsList.push({ showName: show, fixedName: fixedName, meta: arg.arg_value });
+                const noDynamicCallArgs = !dynamicCallArgs || dynamicCallArgs.length === 0
+                const noCallArgs = !plugin.callArgs || plugin.callArgs.length === 0
+                if (noDynamicCallArgs && noCallArgs) {
+                    return [{ showName: chineseName, fixedName: fixedName }]
                 }
-            }
-            if (dynamicCallArgs) {
-                for (const arg of dynamicCallArgs) {
-                    if (!arg.arg_disabled) {
-                        const show = chineseName + " - " + arg.arg_name;
-                        pluginsList.push({ showName: show, fixedName: fixedName, meta: arg.arg_value });
-                    }
+                if (!noCallArgs) {
+                    return plugin.callArgs.map(arg => ({ showName: `${chineseName} - ${arg.arg_name}`, fixedName: fixedName, meta: arg.arg_value }))
                 }
-            }
-        }
-
-        pluginsList.forEach(plugin => plugin.showName += (plugin.meta) ? ` （ ${plugin.fixedName} - ${plugin.meta} ）` : ` （ ${plugin.fixedName} ）`)
-        return pluginsList
+                if (!noDynamicCallArgs) {
+                    return dynamicCallArgs
+                        .filter(arg => !arg.arg_disabled)
+                        .map(arg => ({ showName: `${chineseName} - ${arg.arg_name}`, fixedName: fixedName, meta: arg.arg_value }))
+                }
+                return []
+            })
+            .map(plugin => {
+                plugin.showName += (plugin.meta) ? ` （ ${plugin.fixedName} - ${plugin.meta} ）` : ` （ ${plugin.fixedName} ）`
+                return plugin
+            })
     }
     search = async input => {
         const pluginsList = this.collectAll();
@@ -457,15 +454,15 @@ class modeTool extends baseToolInterface {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             const readonly = this.utils.getPlugin("read_only");
             const blur = this.utils.getPlugin("blur");
-            const dark = this.utils.getCustomPlugin("darkMode");
+            const dark = this.utils.getPlugin("dark");
+            const noImage = this.utils.getPlugin("no_image");
             const image = this.utils.getCustomPlugin("imageReviewer");
-            const noImage = this.utils.getCustomPlugin("noImageMode");
 
             readonly && this.modes.push({ showName: "只读模式", fixedName: "readOnlyMode", callback: () => readonly.call() });
             blur && this.modes.push({ showName: "模糊模式", fixedName: "blurMode", callback: () => blur.call() });
-            dark && this.modes.push({ showName: "夜间模式", fixedName: "darkMode", callback: () => dark.callback() });
+            dark && this.modes.push({ showName: "夜间模式", fixedName: "dark", callback: () => dark.call() });
             image && this.modes.push({ showName: "看图模式", fixedName: "imageReviewer", callback: () => image.callback() });
-            noImage && this.modes.push({ showName: "无图模式", fixedName: "noImageMode", callback: () => noImage.callback() });
+            noImage && this.modes.push({ showName: "无图模式", fixedName: "no_image", callback: () => noImage.call() });
             this.modes.push({ showName: "调试模式", fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools") });
 
             this.modes.forEach(mode => mode.showName += ` - ${mode.fixedName}`);
@@ -497,16 +494,14 @@ class outlineTool extends baseToolInterface {
     translate = () => "文档大纲"
     icon = () => "🧷"
     getAll = () => {
-        const headers = File.editor.nodeMap.toc && File.editor.nodeMap.toc.headers;
-        if (!headers) return
-        const result = [];
-        headers.forEach(header => {
-            const { attributes, cid } = header || {};
-            if (attributes && cid) {
-                result.push({ showName: attributes.pattern.replace("{0}", attributes.text), fixedName: cid });
-            }
+        const headers = File.editor.nodeMap.toc && File.editor.nodeMap.toc.headers
+        if (!headers) return []
+        return headers.flatMap(header => {
+            const { attributes, cid } = header || {}
+            return (attributes && cid)
+                ? [{ showName: attributes.pattern.replace("{0}", attributes.text), fixedName: cid }]
+                : []
         })
-        return result
     }
     search = async input => this.baseSearch(input, this.getAll(), ["showName"])
     callback = fixedName => this.utils.scrollByCid(fixedName)
@@ -536,23 +531,22 @@ class mixTool extends baseToolInterface {
     translate = () => "混合查找"
     icon = () => "🔱"
     search = async input => {
-        const toolName = this.name();
-        const blank = String.fromCharCode(160).repeat(3);
+        const toolName = this.name()
+        const blank = String.fromCharCode(160).repeat(3)
         const toolResult = await Promise.all(
-            Array.from(this.controller.tools.entries(), async ([name, tool]) => {
-                if (name === toolName) return;
-                const result = await tool.search(input);
-                if (result) {
-                    return result.map(ele => {
-                        const meta = name + "@" + (ele.meta || "");
-                        const item = typeof ele === "string" ? { showName: ele, fixedName: ele, meta } : { ...ele, meta };
-                        item.showName = tool.icon() + blank + item.showName;
-                        return item
-                    });
-                }
-            })
-        );
-        return toolResult.flat().filter(Boolean);
+            Array.from(this.controller.tools.entries())
+                .filter(([name]) => name !== toolName)
+                .map(async ([name, tool]) => {
+                    const result = await tool.search(input)
+                    return result ? result.map(ele => {
+                        const meta = `${name}@${ele.meta || ""}`
+                        const item = typeof ele === "string" ? { showName: ele, fixedName: ele, meta } : { ...ele, meta }
+                        item.showName = `${tool.icon()}${blank}${item.showName}`
+                        return item;
+                    }) : []
+                })
+        )
+        return toolResult.flat().filter(Boolean)
     }
     callback = (fixedName, meta) => {
         const at = meta.indexOf("@");

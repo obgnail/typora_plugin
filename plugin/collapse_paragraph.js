@@ -63,14 +63,12 @@ class collapseParagraphPlugin extends BasePlugin {
             COLLAPSE_ALL_SIBLINGS: this.findAllSiblings,
             COLLAPSE_RECURSIVE: this.findSubSiblings,
         }
-        const result = [];
-        for (const [key, callback] of Object.entries(funcMap)) {
-            const modifier = this.config.MODIFIER_KEY[key];
-            if (modifier) {
-                result.push({ filter: this.utils.modifierKey(modifier), callback });
-            }
-        }
-        return result
+        return Object.entries(funcMap)
+            .filter(([key]) => this.config.MODIFIER_KEY[key])
+            .flatMap(([key, callback]) => {
+                const modifier = this.config.MODIFIER_KEY[key]
+                return { filter: this.utils.modifierKey(modifier), callback }
+            })
     }
 
     callbackOtherPlugin = () => this.utils.callPluginFunction("toc", "refresh");

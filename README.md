@@ -24,56 +24,56 @@
 | 8    | slash_commands          | 斜杠命令                               |          |
 | 9    | templater               | 文件模板                               |          |
 | 10   | resourceOperation       | 一键清除无用图片                       |          |
-| 11   | fence_enhance           | 复制、折叠、格式化代码             |          |
+| 11   | fence_enhance           | 复制、折叠、格式化代码                 |          |
 | 12   | toc                     | 在右侧生成大纲目录                     |          |
 | 13   | commander               | 命令行环境                             |          |
-| 14  | toolbar                 | 多功能搜索                             |          |
-| 15  | right_click_menu        | 右键菜单统一管理、调用插件             |          |
-| 16  | pie_menu                | 圆盘菜单                               | ×        |
-| 17  | preferences             | 启停插件                               |          |
-| 18  | markmap                 | 提供 markmap 组件支持                  |          |
-| 19  | echarts                 | 提供 echarts 组件支持                  |          |
-| 20  | chart                   | 提供 chartjs 组件支持                  |          |
-| 21  | abc                     | 提供 abcjs 组件支持                    |          |
-| 22  | calendar                | 提供 tui.calendar 组件支持             |          |
-| 23  | wavedrom                | 提供 wavedrom 组件支持                 |          |
-| 24  | marp                    | 提供 marp 组件支持                     |          |
-| 25  | callouts                | 提供 callouts 支持                     |          |
-| 26 | text_stylize            | 文字风格化                             |          |
-| 27  | read_only               | 只读模式                               |          |
-| 28  | blur                    | 模糊模式                               |          |
-| 29 | kanban                  | 看板                                   |          |
-| 30  | timeline                | 时间线                                 |          |
-| 31  | chat                    | 聊天                                   |          |
-| 32  | file_counter            | 显示目录下的文件数                     |          |
-| 33  | auto_number             | 章节、表格、图片、代码块等自动编号     |          |
-| 34  | imageReviewer           | 图片查看器                             |          |
-| 35  | chineseSymbolAutoPairer | 中文符号自动补全                       |          |
-| 36  | datatables              | 表格增强（搜索、过滤、分页、排序等）   | ×        |
-| 37  | resize_table            | 调整表格行高列宽                       |          |
-| 38 | resize_image            | 调整图片显示大小                       |          |
-| 39 | export_enhance          | 导出 html 时避免图片丢失               |          |
-| 40  | go_top                  | 一键到文章顶部、底部                   |          |
-| 41  | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 | ×        |
-| 42  | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       | ×        |
-| 43  | markdownLint            | markdown 格式规范检测                  |          |
-| 44  | darkMode                | 夜间模式                               |          |
-| 45  | noImageMode             | 无图模式                               |          |
-| 46  | pluginUpdater           | 一键升级插件                           |          |
-| 47  | easy_modify             | 编辑工具                         |          |
-| 48 | editor_width_slider | 写作区宽度调整 | |
-| 49 | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
-| 50 | blockSideBySide         | 并列显示活动块                         | ×        |
-| 51 | scrollBookmarker        | 书签管理器                             | ×        |
-| 52 | openInTotalCommander    | 在 total commander 打开                | ×        |
-| 53 | cipher                  | 加密文件                               | ×        |
-| 54 | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
-| 55 | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
-| 56 | help                    | 用户帮助                               |          |
-| 57 | custom                  | 开放平台，用户自定义插件（高级）       |          |
-| 58 | hotkeyHub               | 快捷键注册中心（高级）                 |          |
-| 59 | quickButton             | 于右下角添加功能按钮（高级）           |          |
-| 60 | json_rpc                | 外部操纵 Typora（高级）                | ×        |
+| 14   | toolbar                 | 多功能搜索                             |          |
+| 15   | right_click_menu        | 右键菜单统一管理插件                   |          |
+| 16   | pie_menu                | 圆盘菜单                               | ×        |
+| 17   | preferences             | 启停插件                               |          |
+| 18   | markmap                 | 提供 markmap 组件支持                  |          |
+| 19   | echarts                 | 提供 echarts 组件支持                  |          |
+| 20   | chart                   | 提供 chartjs 组件支持                  |          |
+| 21   | abc                     | 提供 abcjs 组件支持                    |          |
+| 22   | calendar                | 提供 tui.calendar 组件支持             |          |
+| 23   | wavedrom                | 提供 wavedrom 组件支持                 |          |
+| 24   | marp                    | 提供 marp 组件支持                     |          |
+| 25   | callouts                | 提供 callouts 支持                     |          |
+| 26   | text_stylize            | 文字风格化                             |          |
+| 27   | read_only               | 只读模式                               |          |
+| 28   | blur                    | 模糊模式                               |          |
+| 29   | kanban                  | 看板                                   |          |
+| 30   | timeline                | 时间线                                 |          |
+| 31   | chat                    | 聊天                                   |          |
+| 32   | file_counter            | 显示目录下的文件数                     |          |
+| 33   | auto_number             | 章节、表格、图片、代码块等自动编号     |          |
+| 34   | imageReviewer           | 图片查看器                             |          |
+| 35   | chineseSymbolAutoPairer | 中文符号自动补全                       |          |
+| 36   | datatables              | 表格增强（搜索、过滤、分页、排序等）   | ×        |
+| 37   | resize_table            | 调整表格行高列宽                       |          |
+| 38   | resize_image            | 调整图片显示大小                       |          |
+| 39   | export_enhance          | 导出 html 时避免图片丢失               |          |
+| 40   | markdownLint            | markdown 格式规范检测                  |          |
+| 41   | go_top                  | 一键到文章顶部、底部                   |          |
+| 42   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 | ×        |
+| 43   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       | ×        |
+| 44   | dark                    | 夜间模式                               |          |
+| 45   | no_image                | 无图模式                               |          |
+| 46   | updater                 | 一键升级插件                           |          |
+| 47   | easy_modify             | 编辑工具                               |          |
+| 48   | editor_width_slider     | 写作区宽度调整                         |          |
+| 49   | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
+| 50   | blockSideBySide         | 并列显示活动块                         | ×        |
+| 51   | scrollBookmarker        | 书签管理器                             | ×        |
+| 52   | openInTotalCommander    | 在 total commander 打开                | ×        |
+| 53   | cipher                  | 加密文件                               | ×        |
+| 54   | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
+| 55   | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
+| 56   | help                    | 用户帮助                               |          |
+| 57   | custom                  | 开放平台，用户自定义插件（高级）       |          |
+| 58   | hotkeys                 | 快捷键注册中心（高级）                 |          |
+| 59   | quickButton             | 于右下角添加功能按钮（高级）           |          |
+| 60   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -207,7 +207,7 @@ yay -S typora-plugin
 
 - 键盘党：
   - 键入 ctrl+j，在输入框键入 `plu+空格+插件名称` 调出插件列表（详见 `toolbar` 插件）
-  - 快捷键（详见 `hotkeyHub` 插件）
+  - 快捷键（详见 `hotkeys` 插件）
 - 鼠标党：
   - 在正文区域右键，在弹出的右键菜单中直接调用（详见 `right_click_menu` 插件）
   - 快捷按钮（详见 `quickButton` 插件）
@@ -351,9 +351,9 @@ COMMANDS = [
 
 ### commander：命令行环境
 
-功能：和 total commander 的命令行一样（快捷键也一样），一个快速执行命令的工具，并提供少量交互。
+功能：类似于 total commander 的命令行，一个快速执行命令的工具，并提供少量交互。
 
-- `弹出执行框`：ctrl+G
+- `弹出执行框`：右键菜单 -> 常用插件 -> 命令行环境
 - `关闭执行框`：esc
 - `移动位置`：ctrl+拖动输入框
 
@@ -715,30 +715,21 @@ icon = "\\f040"
 
 
 
-### markdownLint：markdown 格式规范检测
+### dark：夜间模式
 
-使用方式：
-
-- 方式一：右键菜单 -> 常用插件 -> 二级插件 -> 格式规范检测
-- 方式二：点击右上角的小方块
+使用方式：右键菜单 -> 常用插件 -> 夜间模式
 
 
 
-### darkMode：夜间模式
+### no_image：无图模式
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> 夜间模式
-
-
-
-### noImageMode：无图模式
-
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> 无图模式
+使用方式：右键菜单 -> 常用插件 -> 无图模式
 
 
 
-### pluginUpdater：一键升级插件
+### updater：一键升级插件
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 ->  升级插件。
+使用方式：右键菜单 -> 少用插件 -> 升级插件
 
 > 众所周知，有些用户并不能裸连 github 下载最新插件，故提供了设置代理功能（默认为系统代理）
 
@@ -853,7 +844,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 
 
-### hotkeyHub：快捷键注册中心（高级）
+### hotkeys：快捷键注册中心（高级）
 
 > 此插件是高级插件，仅对有 javascript 基础的用户开放。
 
@@ -867,7 +858,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 > 此插件是高级插件，仅对有 javascript 基础的用户开放。
 
-功能和 hotkeyHub 类似，以声明的形式，为【任意插件系统函数】设置快捷按钮。
+功能和 hotkeys 类似，以声明的形式，为【任意插件系统函数】设置快捷按钮。
 
 
 

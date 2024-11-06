@@ -1,21 +1,19 @@
-class pluginUpdaterPlugin extends BaseCustomPlugin {
-    hotkey = () => [this.config.hotkey]
-
-    hint = () => "当你发现BUG，可以尝试更新，说不定就解决了"
+class updaterPlugin extends BasePlugin {
+    hotkey = () => [this.config.HOTKEY]
 
     process = () => {
-        const { auto_update, start_update_interval, update_loop_interval } = this.config;
-        if (!auto_update) return;
-        if (start_update_interval > 0) {
-            setTimeout(this.silentUpdate, Math.min(start_update_interval, 1000 * 60));
+        const { AUTO_UPDATE, START_UPDATE_INTERVAL, UPDATE_LOOP_INTERVAL } = this.config
+        if (!AUTO_UPDATE) return
+        if (START_UPDATE_INTERVAL > 0) {
+            setTimeout(this.silentUpdate, Math.min(START_UPDATE_INTERVAL, 1000 * 60))
         }
-        if (update_loop_interval > 0) {
-            setInterval(this.silentUpdate, Math.min(update_loop_interval, 1000 * 60 * 60));
+        if (UPDATE_LOOP_INTERVAL > 0) {
+            setInterval(this.silentUpdate, Math.min(UPDATE_LOOP_INTERVAL, 1000 * 60 * 60))
         }
     }
 
-    callback = async anchorNode => {
-        if (this.config.proxy) {
+    call = async (type, meta) => {
+        if (this.config.PROXY) {
             await this.manualUpdate();
             return;
         }
@@ -69,7 +67,7 @@ class pluginUpdaterPlugin extends BaseCustomPlugin {
         }
     }
 
-    getProxy = async () => (this.config.proxy || (await new ProxyGetter(this).getProxy()) || "").trim()
+    getProxy = async () => (this.config.PROXY || (await new ProxyGetter(this).getProxy()) || "").trim()
 
     getUpdater = async (proxy, timeout) => {
         if (proxy === undefined) {
@@ -294,5 +292,5 @@ class ProxyGetter {
 }
 
 module.exports = {
-    plugin: pluginUpdaterPlugin
+    plugin: updaterPlugin
 };

@@ -517,44 +517,6 @@ Split pages by horizontal ruler (`---`). It's very simple! :satisfied:
 """
 
 
-############### darkMode ###############
-[darkMode]
-# 是否启用此二级插件
-enable = true
-# 插件名称
-name = "夜间模式"
-# 是否在右键菜单中隐藏
-hide = false
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
-order = 1
-# 快捷键
-hotkey = ""
-# 默认进入夜间模式
-default_dark_mode = false
-
-
-############### noImageMode ###############
-[noImageMode]
-# 是否启用此二级插件
-enable = true
-# 插件名称
-name = "无图模式"
-# 是否在右键菜单中隐藏
-hide = false
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
-order = 1
-# 快捷键
-hotkey = ""
-# 当处于无图模式时，鼠标悬停时重新显示图片
-reshow_when_hover = true
-# 默认进入无图模式
-default_no_image_mode = false
-# 动画持续时间（单位：ms）
-transition_duration = 300
-# 延迟动画时间（单位：ms）
-transition_delay = 0
-
-
 ############### templater ###############
 [templater]
 # 是否启用此二级插件
@@ -768,11 +730,11 @@ enable = true
 # 插件名称
 name = "图片查看"
 # 是否在右键菜单中隐藏
-hide = true
+hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 快捷键
-hotkey = "ctrl+alt+i"
+hotkey = ""
 # 点击遮罩空白处退出
 click_mask_to_exit = true
 # 跳过加载失败的图片
@@ -932,7 +894,7 @@ enable = true
 # 插件名称
 name = "格式规范检测"
 # 是否在右键菜单中隐藏
-hide = true
+hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
 # 快捷键
@@ -981,22 +943,6 @@ hotkey = ""
 # 打开Typora（打开可丢弃的无标题的标签时）自动恢复上次退出时尚未关闭的标签页
 # 注意：只当双击typora.exe打开Typora时生效（因为打开特定文件时，自动恢复上次退出时尚未关闭的标签页，明显不符合用户预期）
 auto_reopen_when_init = true
-
-
-############### hotkeyHub ###############
-[hotkeyHub]
-# 是否启用此二级插件（此插件仅对有javascript基础的用户开放）
-# 若要修改hotkeyHub的配置请前往同目录下的hoteykey.user.toml
-# 注意：若置为false，那么hoteykey.toml的配置将失效
-enable = true
-# 插件名称
-name = "快捷键中心"
-# 是否在右键菜单中隐藏
-hide = false
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
-order = 1
-# 查看注册的快捷键列表的快捷键
-hotkey = ""
 
 
 ############### quickButton ###############
@@ -1116,30 +1062,3 @@ tc_path = "D:\\software\\TotalCMD_64bit_10.52\\TOTALCMD64.EXE"
 #   2. $d: 当前文件所属目录
 #   3. $m: 当前挂载目录（侧边栏的根目录）
 tc_args = '/O /T /P=L  /L=$f'
-
-
-############### pluginUpdater ###############
-[pluginUpdater]
-# 是否启用此二级插件
-enable = true
-# 插件名称
-name = "升级插件"
-# 是否在右键菜单中隐藏
-hide = false
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
-order = 1
-# 快捷键
-hotkey = ""
-# 众所周知，有些地区无法裸连github，需要使用代理（如：http://127.0.0.1:7890）
-# 若值为空，则将弹出窗口，让用户填入代理；若值不为空，则将直接使用此代理，不再弹出窗口
-# 除非你固定使用某代理，否则不建议使用此配置
-proxy = ""
-# 是否启用自动静默升级（若为false，则以下配置全部失效）
-# 自动升级有两个策略：
-#   - 策略一：打开Typora一段时间后，执行一次升级流程
-#   - 策略二：每隔一段时间，执行一次升级流程
-auto_update = false
-# 策略一（单位：ms，若<0，则不使用此策略；若<1分钟，则置为1分钟）
-start_update_interval = 300000   # 1000 * 60 * 5
-# 策略二（单位：ms，若<0，则不使用此策略；若<1小时，则置为1小时）
-update_loop_interval = -1

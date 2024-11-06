@@ -10,16 +10,15 @@ class collapseTablePlugin extends BasePlugin {
         this.recordCollapseState(false);
 
         this.utils.decorate(() => File && File.editor && File.editor.tableEdit, "showTableEdit", null, (result, ...args) => {
-                const $figure = args[0];
-                if (!$figure || $figure.length === 0 || !$figure.find) return;
-                const $edit = $figure.find(".md-table-edit");
-                if (!$edit || $edit.length === 0) return;
+            const $figure = args[0]
+            if (!$figure || $figure.length === 0 || !$figure.find) return
+            const $edit = $figure.find(".md-table-edit")
+            if (!$edit || $edit.length === 0) return
 
-                const icon = $figure.hasClass(this.className) ? "fa fa-plus" : "fa fa-minus";
-                const span = `<span class="md-th-button right-th-button"><button type="button" class="btn btn-default plugin-collapse-table-btn" ty-hint="表格折叠"><span class="${icon}"></span></button></span>`;
-                $edit.append($(span));
-            }
-        )
+            const icon = $figure.hasClass(this.className) ? "fa fa-plus" : "fa fa-minus"
+            const span = `<span class="md-th-button right-th-button"><button type="button" class="btn btn-default plugin-collapse-table-btn" ty-hint="表格折叠"><span class="${icon}"></span></button></span>`
+            $edit.append($(span))
+        })
 
         this.utils.entities.eWrite.addEventListener("click", ev => {
             const btn = ev.target.closest(".plugin-collapse-table-btn");

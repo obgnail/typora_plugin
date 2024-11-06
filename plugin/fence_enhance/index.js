@@ -4,7 +4,6 @@ class fenceEnhancePlugin extends BasePlugin {
         this.supportIndent = this.config.ENABLE_INDENT && hasFunc;
         this.enableIndent = this.supportIndent;
         this.builders = [];
-        this.dangerousHint = "警告：消耗巨量资源并导致Typora长时间失去响应";
     }
 
     styleTemplate = () => ({ bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial" })
@@ -182,28 +181,40 @@ class fenceEnhancePlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
+        const HINT = {
+            dangerous: "警告：消耗巨量资源并可能导致Typora长时间失去响应",
+            fold: "根据语言语法在每行的左侧显示折叠按钮",
+            alignment: "不建议开启，需要大量时间去计算缩进，造成性能损失",
+            highlight_by_lang: "例 ```js(2, 5-8)``` 表示：高亮第2，5-8行",
+        }
         const arr = [
-            { arg_name: "隐藏按钮", arg_value: "set_auto_hide", arg_state: this.config.AUTO_HIDE },
             { arg_name: "启用按钮：折叠", arg_value: "disable_or_enable_fold", arg_state: this.config.ENABLE_FOLD },
             { arg_name: "启用按钮：复制", arg_value: "disable_or_enable_copy", arg_state: this.config.ENABLE_COPY },
-            { arg_name: "启用侧边折叠按钮", arg_value: "disable_or_enable_fold_lang", arg_state: this.config.ENABLE_LANGUAGE_FOLD },
-            { arg_name: "总是折叠代码块", arg_value: "disable_or_enable_fold_default", arg_state: this.config.FOLD_DEFAULT },
+            { arg_name: "启用功能：自动隐藏按钮", arg_value: "set_auto_hide", arg_state: this.config.AUTO_HIDE },
+            { arg_name: "启用功能：默认折叠代码块", arg_value: "disable_or_enable_fold_default", arg_state: this.config.FOLD_DEFAULT },
+            { arg_name: "启用功能：快捷键", arg_value: "disable_or_enable_hotkey", arg_state: this.config.ENABLE_HOTKEY },
+            { arg_name: "启用功能：代码折叠", arg_value: "disable_or_enable_fold_lang", arg_state: this.config.ENABLE_LANGUAGE_FOLD, arg_hint: HINT.fold },
+            { arg_name: "启用功能：缩进对齐", arg_value: "disable_or_enable_indent_alignment", arg_state: this.config.INDENTED_WRAPPED_LINE, arg_hint: HINT.alignment },
+            { arg_name: "启用功能：高亮鼠标悬停的代码行", arg_value: "disable_or_enable_highlight", arg_state: this.config.HIGHLIGHT_WHEN_HOVER },
+            { arg_name: "启用功能：通过语言设置高亮行", arg_value: "disable_or_enable_highlight_by_lang", arg_state: this.config.HIGHLIGHT_BY_LANGUAGE, arg_hint: HINT.highlight_by_lang },
+            { arg_name: "(危) 为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: HINT.dangerous },
+            { arg_name: "(危) 批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: HINT.dangerous },
         ];
-        const enable = this.config.ENABLE_DANGEROUS_FEATURES;
         if (this.supportIndent) {
             arr.splice(2, 0, { arg_name: "启用按钮：缩进", arg_value: "disable_or_enable_indent", arg_state: this.enableIndent });
-            enable && arr.push({ arg_name: "(危)调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: this.dangerousHint });
-        }
-        if (enable) {
-            arr.push(
-                { arg_name: "(危)为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: this.dangerousHint },
-                { arg_name: "(危)批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: this.dangerousHint },
-            );
+            arr.push({ arg_name: "(极危) 调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: HINT.dangerous });
         }
         return arr
     }
 
     call = (type, meta) => {
+        const restartTypora = async args => {
+            const { response } = await this.utils.showMessageBox({ type: "info", buttons: ["确定", "取消"], message: "重启后生效，确认重启？", ...args })
+            if (response === 0) {
+                this.utils.restartTypora()
+            }
+        }
+
         const callMap = {
             disable_or_enable_fold: () => {
                 this.config.ENABLE_FOLD = !this.config.ENABLE_FOLD;
@@ -281,6 +292,37 @@ class fenceEnhancePlugin extends BasePlugin {
                     File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input);
                 })
             },
+            disable_or_enable_hotkey: async () => {
+                this.config.ENABLE_HOTKEY = !this.config.ENABLE_HOTKEY
+                const hotkeys = {
+                    "SWAP_PREVIOUS_LINE": "将当前行和上一行互换",
+                    "SWAP_NEXT_LINE": "将当前行和下一行互换",
+                    "COPY_PREVIOUS_LINE": "复制当前行到上一行",
+                    "COPY_NEXT_LINE": "复制当前行到下一行",
+                    "INSERT_LINE_PREVIOUS": "直接在上面新建一行",
+                    "INSERT_LINE_NEXT": "直接在下面新建一行",
+                }
+                const detail = Object.entries(hotkeys)
+                    .map(([key, name], idx) => `${idx + 1}. ${name}: ${this.config[key]}`)
+                    .join("\n")
+                const title = this.config.ENABLE_HOTKEY ? "新增快捷键" : "取消快捷键"
+                await restartTypora({ title, detail })
+            },
+            disable_or_enable_indent_alignment: async () => {
+                this.config.INDENTED_WRAPPED_LINE = !this.config.INDENTED_WRAPPED_LINE
+                const title = this.config.INDENTED_WRAPPED_LINE ? "启动缩进对齐" : "取消缩进对齐"
+                await restartTypora({ title })
+            },
+            disable_or_enable_highlight: async () => {
+                this.config.HIGHLIGHT_WHEN_HOVER = !this.config.HIGHLIGHT_WHEN_HOVER
+                const title = this.config.HIGHLIGHT_WHEN_HOVER ? "启动高亮代码行" : "取消高亮代码行"
+                await restartTypora({ title })
+            },
+            disable_or_enable_highlight_by_lang: async () => {
+                this.config.HIGHLIGHT_BY_LANGUAGE = !this.config.HIGHLIGHT_BY_LANGUAGE
+                const title = this.config.HIGHLIGHT_WHEN_HOVER ? "启动高亮代码行" : "取消高亮代码行"
+                await restartTypora({ title })
+            }
         }
         const func = callMap[type];
         func && func();
