@@ -165,7 +165,7 @@ ENABLE = true
 # 插件名称
 NAME = "命令行环境"
 # 快捷键
-HOTKEY = "ctrl+g"
+HOTKEY = ""
 # 允许【ctrl+鼠标拖拽输入框】拖动窗口
 ALLOW_DRAG = true
 # 当输入框为空，且键入backspace时，隐藏窗口
@@ -888,7 +888,7 @@ DECRYPT_HOTKEY = ""
 SHOW_HINT_MODAL = true
 
 
-############### cipher ###############
+############### easy_modify ###############
 [easy_modify]
 # 启用插件
 ENABLE = true
@@ -1062,6 +1062,7 @@ LIST = [
     "ripgrep",
     "article_uploader",
     "preferences",
+    "updater",
     "---",
     "file_counter",
     "json_rpc",
@@ -1215,7 +1216,7 @@ cnblog = { enabled = true, username = "demo2", password = "demo2" }
 csdn = { enabled = true, cookie = "log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s; log_Id_click=37......" }
 
 
-############### json_rpc ###############
+############### ripgrep ###############
 [ripgrep]
 # 启用插件
 ENABLE = false
@@ -1240,6 +1241,29 @@ ENABLE = false
 NAME = "外部操纵Typora"
 # rpc server选项
 SERVER_OPTIONS = { port = 5080, host = "127.0.0.1", path = "/", strict = false }
+
+
+############### updater ###############
+[updater]
+# 启用插件
+ENABLE = true
+# 插件名称
+NAME = "升级插件"
+# 快捷键
+HOTKEY = ""
+# 众所周知，有些地区无法裸连github，需要使用代理（如：http://127.0.0.1:7890）
+# 若值为空，则将弹出窗口，让用户填入代理；若值不为空，则将直接使用此代理，不再弹出窗口
+# 除非你固定使用某代理，否则不建议使用此配置
+PROXY = ""
+# 是否启用自动静默升级（若为false，则以下配置全部失效）
+# 自动升级有两个策略：
+#   策略一：打开Typora一段时间后，执行一次升级流程
+#   策略二：每隔一段时间，执行一次升级流程
+AUTO_UPDATE = false
+# 策略一（单位：ms，若<0，则不使用此策略；若<1分钟，则置为1分钟）
+START_UPDATE_INTERVAL = 300000   # 1000 * 60 * 5
+# 策略二（单位：ms，若<0，则不使用此策略；若<1小时，则置为1小时）
+UPDATE_LOOP_INTERVAL = -1
 
 
 ############### test ###############

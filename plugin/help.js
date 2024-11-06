@@ -26,7 +26,7 @@ class helpPlugin extends BasePlugin {
 
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            this.updater = this.utils.getCustomPlugin("pluginUpdater");
+            this.updater = this.utils.getPlugin("updater");
             if (!this.updater) return;
             const arg_name = "升级插件" + (this.version ? `（当前版本：${this.version}）` : "");
             this.callArgs.unshift({ arg_name: arg_name, arg_value: "update_plugin" });
