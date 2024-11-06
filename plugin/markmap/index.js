@@ -176,9 +176,9 @@ class fenceMarkmap {
     update = async (cid, md, options) => {
         const instance = this.instanceMap.get(cid);
         const { root } = this.MarkmapLib.transformer.transform(md);
-        instance.setData(root);
-        options = this.controller.assignOptions(options);
+        options = this.controller.assignOptions(options, instance.options);
         instance.setOptions(options);
+        instance.setData(root);
         await instance.fit();
     }
 }
