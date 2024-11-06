@@ -1055,9 +1055,10 @@ LIST = [
     "---",
     "pie_menu",
     "go_top",
-    "text_stylize",
-    "editor_width_slider",
     "slash_commands",
+    "text_stylize",
+    "hotkeys",
+    "editor_width_slider",
     "ripgrep",
     "article_uploader",
     "preferences",
@@ -1079,10 +1080,11 @@ LIST = [
     "search_multi",
     "multi_highlighter",
     "md_padding",
+    "---",
     "read_only",
     "blur",
     "dark",
-    "no_image"
+    "no_image",
 ]
 
 
@@ -1155,6 +1157,16 @@ COLOR = ""
 BACKGROUND_COLOR = ""
 # 文本插入前缀
 BEFORE_TEXT = ""
+
+
+############### hotkeys ###############
+[hotkeys]
+# 启用插件
+ENABLE = true
+# 插件名称
+NAME = "快捷键中心"
+# 查看注册的快捷键列表的快捷键
+HOTKEY = ""
 
 
 ############### help ###############

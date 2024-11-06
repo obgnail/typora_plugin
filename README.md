@@ -28,7 +28,7 @@
 | 12   | toc                     | 在右侧生成大纲目录                     |          |
 | 13   | commander               | 命令行环境                             |          |
 | 14   | toolbar                 | 多功能搜索                             |          |
-| 15   | right_click_menu        | 右键菜单统一管理、调用插件             |          |
+| 15   | right_click_menu        | 右键菜单统一管理插件                   |          |
 | 16   | pie_menu                | 圆盘菜单                               | ×        |
 | 17   | preferences             | 启停插件                               |          |
 | 18   | markmap                 | 提供 markmap 组件支持                  |          |
@@ -71,7 +71,7 @@
 | 55   | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
 | 56   | help                    | 用户帮助                               |          |
 | 57   | custom                  | 开放平台，用户自定义插件（高级）       |          |
-| 58   | hotkeyHub               | 快捷键注册中心（高级）                 |          |
+| 58   | hotkeys                 | 快捷键注册中心（高级）                 |          |
 | 59   | quickButton             | 于右下角添加功能按钮（高级）           |          |
 | 60   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
 
@@ -207,7 +207,7 @@ yay -S typora-plugin
 
 - 键盘党：
   - 键入 ctrl+j，在输入框键入 `plu+空格+插件名称` 调出插件列表（详见 `toolbar` 插件）
-  - 快捷键（详见 `hotkeyHub` 插件）
+  - 快捷键（详见 `hotkeys` 插件）
 - 鼠标党：
   - 在正文区域右键，在弹出的右键菜单中直接调用（详见 `right_click_menu` 插件）
   - 快捷按钮（详见 `quickButton` 插件）
@@ -844,7 +844,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 
 
-### hotkeyHub：快捷键注册中心（高级）
+### hotkeys：快捷键注册中心（高级）
 
 > 此插件是高级插件，仅对有 javascript 基础的用户开放。
 
@@ -858,7 +858,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 > 此插件是高级插件，仅对有 javascript 基础的用户开放。
 
-功能和 hotkeyHub 类似，以声明的形式，为【任意插件系统函数】设置快捷按钮。
+功能和 hotkeys 类似，以声明的形式，为【任意插件系统函数】设置快捷按钮。
 
 
 

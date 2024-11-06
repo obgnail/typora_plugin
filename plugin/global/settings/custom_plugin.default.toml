@@ -945,22 +945,6 @@ hotkey = ""
 auto_reopen_when_init = true
 
 
-############### hotkeyHub ###############
-[hotkeyHub]
-# 是否启用此二级插件（此插件仅对有javascript基础的用户开放）
-# 若要修改hotkeyHub的配置请前往同目录下的hoteykey.user.toml
-# 注意：若置为false，那么hoteykey.toml的配置将失效
-enable = true
-# 插件名称
-name = "快捷键中心"
-# 是否在右键菜单中隐藏
-hide = false
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
-order = 1
-# 查看注册的快捷键列表的快捷键
-hotkey = ""
-
-
 ############### quickButton ###############
 [quickButton]
 # 是否启用此二级插件

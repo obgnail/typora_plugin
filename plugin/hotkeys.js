@@ -1,5 +1,5 @@
-class hotkeyHubPlugin extends BaseCustomPlugin {
-    hotkey = () => [this.config.hotkey]
+class hotkeysPlugin extends BasePlugin {
+    hotkey = () => [this.config.HOTKEY]
 
     beforeProcess = async () => {
         this.settings = await this.utils.runtime.readHotkeySetting();
@@ -36,7 +36,7 @@ class hotkeyHubPlugin extends BaseCustomPlugin {
         }
     }
 
-    callback = anchorNode => {
+    call = (type, meta) => {
         const trs = Array.from(this.utils.hotkeyHub.map.keys()).sort().map(hk => {
             const hotkey = hk.toUpperCase().split("+").map(h => `<kbd>${h}</kbd>`).join("+");
             return `<tr><td>${hotkey}</td></tr>`
@@ -53,5 +53,5 @@ class hotkeyHubPlugin extends BaseCustomPlugin {
 }
 
 module.exports = {
-    plugin: hotkeyHubPlugin,
+    plugin: hotkeysPlugin,
 };

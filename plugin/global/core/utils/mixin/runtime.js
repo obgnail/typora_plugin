@@ -84,7 +84,7 @@ class runtime {
     cleanPluginSetting = async () => {
         const deleteUselessPlugin = async () => {
             await Promise.all(
-                ["fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode", "noImageMode"]
+                ["fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode", "noImageMode", "hotkeyHub"]
                     .map(plugin => this.utils.joinPath("./plugin/custom/plugins", `${plugin}.js`))
                     .map(async path => {
                         const exist = await this.utils.existPath(path);
