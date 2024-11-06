@@ -1,7 +1,7 @@
 const require = self.require;
 const fs = require("fs").promises;
 
-let markdownlint, lint, helpers;
+let markdownlint, lint;
 let config = { default: true };
 
 function init({ config }) {
@@ -16,8 +16,9 @@ function assignConfig({ config: cfg }) {
 
 function initLibrary() {
     if (!markdownlint) {
-        ({ markdownlint, helpers } = require("./markdownlint.min.js"));
-        lint = markdownlint.promises.markdownlint;
+        const lib = require("./markdownlint.min.js")
+        markdownlint = lib.markdownlint
+        lint = markdownlint.promises.markdownlint
     }
 }
 
@@ -40,7 +41,7 @@ async function checkPath({ filePath }) {
 async function lintContent({ fileContent, fixInfo }) {
     const info = fixInfo || await checkContent({ fileContent });
     if (info && info.length) {
-        return helpers.applyFixes(fileContent, info);
+        return markdownlint.applyFixes(fileContent, info);
     }
 }
 
