@@ -182,7 +182,7 @@ class helpPlugin extends BasePlugin {
             new_custom_plugin: () => this.utils.showInFinder(this.utils.joinPath("./plugin/custom/请读我.md")),
             json_rpc: () => this.utils.showInFinder(this.utils.joinPath("./plugin/json_rpc/请读我.md")),
             github_picture_bed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
-            update_plugin: () => this.updater && this.updater.callback(),
+            update_plugin: () => this.updater && this.updater.call(),
             uninstall_plugin: () => this.uninstall(),
             environment: () => this.showEnv(),
             donate: () => this.donate(),
