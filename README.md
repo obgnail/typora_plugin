@@ -85,17 +85,21 @@
 
 > 此方法支持 Windows、Linux 平台。
 
-1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并将其解压
+1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压
 
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（正式版为 `./resources/window.html`，免费版为 `./resources/app/window.html`）
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A
 
-3. 将解压后的 plugin 文件夹粘贴进文件夹 A 下
+   - 如果是免费版 Typora，路径为 `./resources/window.html`
+
+   - 如果是正式版 Typora，路径为 `./resources/app/window.html`
+
+3. 将解压得到的 plugin 文件夹粘贴进文件夹 A 下
 
 4. 进入文件夹 `A/plugin/bin/`
 
-   - 如果你是 Windows 系统，双击运行 `install_windows_amd_x64.exe`，如果看到下图，说明安装成功
+   - 如果是 Windows 系统，双击运行 `install_windows_amd_x64.exe`，如果看到下图，说明安装成功
    
-   - 如果你是 Linux 系统，以管理员运行 `install_linux.sh`，如果看到下图，说明安装成功
+   - 如果是 Linux 系统，以管理员运行 `install_linux.sh`，如果看到下图，说明安装成功
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
@@ -118,11 +122,15 @@
 
 > 此方法支持 Windows、Linux 平台。
 
-1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并将其解压
+1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压
 
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A（正式版的路径为 `./resources/window.html`，免费版的路径为 `./resources/app/window.html`）
+2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A
 
-3. 将解压后的 plugin 文件夹粘贴进文件夹 A 下（参考方法一的图片）
+   - 如果是免费版 Typora，路径为 `./resources/window.html`
+   
+   - 如果是正式版 Typora，路径为 `./resources/app/window.html`
+
+3. 将解压得到的 plugin 文件夹粘贴进文件夹 A 下（参考方法一的图片）
 
 4. 根据文件夹 A 下是否含有 `appsrc` 目录判断 Typora 是否为新版本，有则新版本，无则旧版本
 
