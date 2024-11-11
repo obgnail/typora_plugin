@@ -701,7 +701,7 @@ class utils {
         let fragment = elements;
         if (elements instanceof Array || elements instanceof NodeList) {
             fragment = document.createDocumentFragment();
-            elements.forEach(ele => fragment.appendChild(ele));
+            fragment.append(...elements);
         }
         return fragment;
     }
