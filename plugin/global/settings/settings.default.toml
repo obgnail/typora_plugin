@@ -416,10 +416,12 @@ TOC_HOTKEY = ""
 CLICK_TO_LOCALE = true
 # 定位时，目标章节滚动到当前视口的高度位置百分比（即：0为当前视口的第一行，1为最后一行）
 LOCALE_HEIGHT_RATIO = 0.2
-# 若文档存在跳级的标题（MD001规范），修复之（若为false，那么就会过滤掉跳级的标题）
+# 兼容文档存在的跳级标题（MD001规范）（若为false，那么就会过滤掉跳级的标题）
 FIX_ERROR_LEVEL_HEADER = true
 # 当用户编辑文档，导致markmap更新图形时，新markmap的图形大小是否重新适配窗口
 AUTO_FIT_WHEN_UPDATE = true
+# 当用户调整窗口大小后，图形是否重新适配窗口
+AUTO_FIT_WHEN_RESIZE = true
 # 当用户编辑文档，导致markmap更新图形时，已折叠的节点是否不再重新展开
 REMEMBER_FOLD_WHEN_UPDATE = true
 # 折叠markmap节点时，自动折叠章节（此功能为实验性特性，依赖collapse_paragraph插件，目前不推荐开启）

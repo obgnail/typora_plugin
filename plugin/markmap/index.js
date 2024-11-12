@@ -281,7 +281,7 @@ class tocMarkmap {
             }
             const onMouseUp = () => {
                 this._rollbackTransition();
-                this.fit();
+                this.config.AUTO_FIT_WHEN_RESIZE && this.fit();
             }
 
             const resizeWhenFree = () => {
@@ -300,7 +300,7 @@ class tocMarkmap {
                 const onMouseUp = async () => {
                     this._rollbackTransition();
                     await this._waitUnpin();
-                    this._setFullScreenIcon(false);
+                    this._setFullScreenIcon(false, this.config.AUTO_FIT_WHEN_RESIZE);
                 }
                 this.utils.resizeFixedModal(this.entities.resize, this.entities.modal, true, true, onMouseDown, onMouseMove, onMouseUp);
             }
@@ -494,8 +494,8 @@ class tocMarkmap {
             FIX_ERROR_LEVEL_HEADER: "若取消勾选，则会过滤跳级标题",
             CLICK_TO_LOCALE: "若取消勾选，则选项「定位的视口高度」失效",
             LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
-            REMEMBER_FOLD_WHEN_UPDATE: "图形更新时不会展开已折叠节点",
-            AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，依赖「章节折叠」插件，不建议开启",
+            REMEMBER_FOLD_WHEN_UPDATE: "图形更新时不会重新展开已折叠节点",
+            AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，不建议开启。依赖「章节折叠」插件，仅当插件开启时可用",
             FOLDER_WHEN_DOWNLOAD_SVG: "为空则使用 TEMP 目录",
             FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid\n支持后缀：svg、png、html",
             COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: "有些 SVG 解析器无法解析 CSS 变量，勾选此选项会自动替换 CSS 变量",
@@ -519,7 +519,7 @@ class tocMarkmap {
         });
         const checkboxKV = components => ({
             type: "checkbox",
-            list: components.map(({ label, key }) => ({ label, info: INFO[key], value: key, checked: Boolean(_getConfig(key)) })),
+            list: components.map(({ label, key, disabled }) => ({ label, info: INFO[key], value: key, checked: Boolean(_getConfig(key)), disabled })),
             callback: submit => components.forEach(({ key }) => _setConfig(key, submit.includes(key))),
         })
         const borderKV = (label, idx) => ({ label, value: _border[idx], callback: value => _border[idx] = value });
@@ -565,15 +565,17 @@ class tocMarkmap {
         ]
 
         const ability = (legend = "能力") => {
+            const hasPlugin = this.utils.getPlugin("collapse_paragraph")
             const components = [
-                { label: "修复跳级标题", key: "FIX_ERROR_LEVEL_HEADER" },
+                { label: "兼容跳级标题（MD001规范）", key: "FIX_ERROR_LEVEL_HEADER" },
                 { label: "鼠标滚轮进行缩放", key: "zoom" },
                 { label: "鼠标滚轮进行平移", key: "pan" },
                 { label: "鼠标点击节点进行定位", key: "CLICK_TO_LOCALE" },
-                { label: "折叠时自动适配窗口", key: "autoFit" },
-                { label: "更新时自动适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
+                { label: "折叠节点后自动适配窗口", key: "autoFit" },
+                { label: "更新内容后自动适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
+                { label: "调整窗口后自动适配窗口", key: "AUTO_FIT_WHEN_RESIZE" },
                 { label: "记住已折叠的节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
-                { label: "折叠时自动折叠章节", key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD" },
+                { label: "折叠时自动折叠章节", disabled: !hasPlugin, key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD" },
             ]
             return { label: "", legend, ...checkboxKV(components) }
         }
@@ -977,11 +979,11 @@ class tocMarkmap {
         Object.assign(this.entities.modal.style, s);
     }
 
-    _setFullScreenIcon = fullScreen => {
+    _setFullScreenIcon = (fullScreen, autoFit = true) => {
         this.entities.modal.classList.toggle("noBoxShadow", fullScreen);
         this.entities.fullScreen.setAttribute("action", fullScreen ? "shrink" : "expand");
         this.utils.toggleVisible(this.entities.resize, fullScreen);
-        this.fit();
+        autoFit && this.fit();
     }
 
     _waitUnpin = async () => {
