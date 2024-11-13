@@ -10,7 +10,6 @@
  *    3. 接着匹配到：![name1](./assets/test.png)，检测文件./assets/test.png 是否存在，发现存在，返回
  *    4. 上述流程就导致遗漏了 ./assets/test2.png
  *    5. 解决方案：当匹配到![name1](./assets/test.png)后，将后续的内容 )![name2](./assets/test2.png) 作为输入串回到第一步递归处理
- * 3. 最好的方法应该是使用LR parser，但是我怀疑JS的性能能否顶得住逐字符迭代，尤其是要分析上千文件的情况（若单个文件5000字符，1000个文件就是五百万次循环），所以交给regexp处理，C++万岁
  */
 class resourceOperationPlugin extends BaseCustomPlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
@@ -182,62 +181,65 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         this.utils.show(popup);
     }
 
-    getOutput = () => ({
-        search_folder: this.utils.getMountFolder(),
-        resource_suffix: Array.from(this.resourceSuffixs),
-        markdown_suffix: Array.from(this.fileSuffixs),
-        ignore_img_html_element: this.config.ignore_img_html_element,
-        collect_file_without_suffix: this.config.collect_file_without_suffix,
-        ignore_folders: this.config.ignore_folders,
-        resource_non_exist_in_file: Array.from(this.nonExistInFile),
-        resource_non_exist_in_folder: Array.from(this.nonExistInFolder),
-    })
-
-    download = () => {
-        const { getCurrentDirPath, openFile, Package: { Path: { join }, Fs: { writeFileSync } } } = this.utils;
-        const output = this.getOutput();
-        const json = JSON.stringify(output, null, "\t");
-        const fileContent = `
-## 存在于文件夹，但是不存在于 md 文件的资源(共${output.resource_non_exist_in_file.length}项)
-
-\`\`\`plain
-${output.resource_non_exist_in_file.join("\n")}
-\`\`\`
-
-## 存在于 md 文件，但是不存在于文件夹的资源(共${output.resource_non_exist_in_folder.length}项)
-
-\`\`\`plain
-${output.resource_non_exist_in_folder.join("\n")}
-\`\`\`
-
-## JSON
-
-以下为插件相关配置及输出，以供开发者使用
-
-- \`search_folder\`：递归搜索的根目录
-- \`resource_suffix\`：判定为 resource 的文件后缀
-- \`markdown_suffix\`：判定为 markdown 的文件后缀
-- \`ignore_img_html_element\`：是否忽略 html 格式的 img 标签
-- \`ignore_folders\`：忽略的目录
-- \`resource_non_exist_in_file\`：存在于文件夹，但是不存在于 md 文件的资源
-- \`resource_non_exist_in_folder\`：存在于 md 文件，但是不存在于文件夹的资源
-
-\`\`\`json
-${json}
-\`\`\`
-
-## footer
-
-Designed with ♥ by [obgnail](https://github.com/obgnail/typora_plugin)
-
-`;
-        let dir = getCurrentDirPath();
-        if (dir === ".") {
-            dir = this.utils.getMountFolder();
+    getOutput = (format = "obj") => {
+        const _obj = {
+            search_folder: this.utils.getMountFolder(),
+            resource_suffix: Array.from(this.resourceSuffixs),
+            markdown_suffix: Array.from(this.fileSuffixs),
+            ignore_img_html_element: this.config.ignore_img_html_element,
+            collect_file_without_suffix: this.config.collect_file_without_suffix,
+            ignore_folders: this.config.ignore_folders,
+            resource_non_exist_in_file: Array.from(this.nonExistInFile),
+            resource_non_exist_in_folder: Array.from(this.nonExistInFolder),
         }
-        const filepath = join(dir, "resource-report.md");
-        writeFileSync(filepath, fileContent, "utf8");
-        this.config.auto_open && setTimeout(openFile(filepath), 500);
+
+        const obj = () => _obj
+        const json = () => JSON.stringify(_obj, null, "\t")
+        const yaml = () => this.utils.stringifyYaml(_obj)
+        const toml = () => this.utils.stringifyToml(_obj)
+        const md = () => `
+## 存在于文件夹，但是不存在于 md 文件的资源(共${_obj.resource_non_exist_in_file.length}项)
+
+\`\`\`plain
+${_obj.resource_non_exist_in_file.join("\n")}
+\`\`\`
+
+## 存在于 md 文件，但是不存在于文件夹的资源(共${_obj.resource_non_exist_in_folder.length}项)
+
+\`\`\`plain
+${_obj.resource_non_exist_in_folder.join("\n")}
+\`\`\`
+
+`
+        const f = { obj, json, yaml, toml, md }[format] || md
+        return f()
+    }
+
+    download = async () => {
+        let dir = this.utils.getCurrentDirPath()
+        dir = (dir === ".") ? this.utils.getMountFolder() : dir
+        dir = dir || this.utils.tempFolder
+
+        const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", {
+            properties: ["saveFile", "showOverwriteConfirmation"],
+            title: "导出",
+            defaultPath: this.utils.Package.Path.join(dir, "resource-report.md"),
+            filters: [
+                { name: "All", extensions: ["md", "json", "yaml", "toml"] },
+                { name: "MARKDOWN", extensions: ["md"] },
+                { name: "JSON", extensions: ["json"] },
+                { name: "YAML", extensions: ["yaml"] },
+                { name: "TOML", extensions: ["toml"] },
+            ]
+        })
+        if (canceled) return
+
+        let ext = this.utils.Package.Path.extname(filePath).toLowerCase()
+        ext = ext[0] === "." ? ext.slice(1) : ext
+        const fileContent = this.getOutput(ext)
+
+        const ok = await this.utils.writeFile(filePath, fileContent)
+        ok && this.utils.showInFinder(filePath)
     }
 
     collectImage = async () => {
