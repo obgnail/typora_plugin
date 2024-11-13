@@ -220,7 +220,7 @@ class collapseParagraphPlugin extends BasePlugin {
             { arg_name: "折叠/展开当前章节（递归）", arg_value: "call_recursive", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_RECURSIVE") },
             { arg_name: "折叠/展开同级章节", arg_value: "call_siblings", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_SIBLINGS") },
             { arg_name: "折叠/展开全局同级章节", arg_value: "call_all_siblings", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_ALL_SIBLINGS") },
-            { arg_name: "记住章节折叠状态", arg_value: "record_collapse_state", arg_state: this.config.RECORD_COLLAPSE },
+            { arg_name: "启用功能：记住章节折叠状态", arg_value: "record_collapse_state", arg_state: this.config.RECORD_COLLAPSE },
         ]
     }
 

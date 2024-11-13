@@ -8,7 +8,7 @@ class resizeTablePlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = anchorNode => [{
-        arg_name: "记住表格放缩状态",
+        arg_name: "启用功能：记住表格放缩状态",
         arg_value: "record_resize_state",
         arg_state: this.config.RECORD_RESIZE
     }]

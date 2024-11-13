@@ -281,9 +281,9 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = () => {
-        const result = [{ arg_name: "保持显示", arg_value: "do_not_hide", arg_state: this.config.DO_NOT_HIDE, arg_hint: "右键菜单点击后不会自动消失" }];
+        const result = [{ arg_name: "启用功能：保持显示", arg_value: "do_not_hide", arg_state: this.config.DO_NOT_HIDE, arg_hint: "右键菜单点击后不会自动消失" }];
         if (this.supportShortcut) {
-            result.push({ arg_name: "显示快捷键", arg_value: "toggle_hotkey", arg_state: this.config.SHOW_PLUGIN_HOTKEY })
+            result.push({ arg_name: "启用功能：显示快捷键", arg_value: "toggle_hotkey", arg_state: this.config.SHOW_PLUGIN_HOTKEY })
         }
         return result
     }

@@ -202,7 +202,7 @@ class fenceEnhancePlugin extends BasePlugin {
         ];
         if (this.supportIndent) {
             arr.splice(2, 0, { arg_name: "启用按钮：缩进", arg_value: "disable_or_enable_indent", arg_state: this.enableIndent });
-            arr.push({ arg_name: "(极危) 调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: HINT.dangerous });
+            arr.push({ arg_name: "(危) 调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: HINT.dangerous });
         }
         return arr
     }
