@@ -182,27 +182,28 @@ class fenceEnhancePlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
         const HINT = {
-            dangerous: "警告：消耗巨量资源并可能导致Typora长时间失去响应",
-            fold: "根据语言语法在每行的左侧显示折叠按钮",
-            alignment: "不建议开启，需要大量时间去计算缩进，造成性能损失",
-            highlight_by_lang: "例 ```js(2, 5-8)``` 表示：高亮第2，5-8行",
+            DANGEROUS: "警告：消耗巨量资源并可能导致Typora长时间失去响应",
+            FOLD: "根据语言语法在每行的左侧显示折叠按钮",
+            ALIGNMENT: "不建议开启，需要大量时间去计算缩进，造成性能损失",
+            HIGHLIGHT_BY_LANG: "例 ```js(2, 5-8)``` 表示：高亮第2，5-8行",
         }
         const arr = [
             { arg_name: "启用按钮：折叠", arg_value: "disable_or_enable_fold", arg_state: this.config.ENABLE_FOLD },
             { arg_name: "启用按钮：复制", arg_value: "disable_or_enable_copy", arg_state: this.config.ENABLE_COPY },
             { arg_name: "启用功能：自动隐藏按钮", arg_value: "set_auto_hide", arg_state: this.config.AUTO_HIDE },
+            { arg_name: "启用功能：显示按钮功能提示", arg_value: "set_button_hint", arg_state: !this.config.REMOVE_BUTTON_HINT },
             { arg_name: "启用功能：默认折叠代码块", arg_value: "disable_or_enable_fold_default", arg_state: this.config.FOLD_DEFAULT },
             { arg_name: "启用功能：快捷键", arg_value: "disable_or_enable_hotkey", arg_state: this.config.ENABLE_HOTKEY },
-            { arg_name: "启用功能：代码折叠", arg_value: "disable_or_enable_fold_lang", arg_state: this.config.ENABLE_LANGUAGE_FOLD, arg_hint: HINT.fold },
-            { arg_name: "启用功能：缩进对齐", arg_value: "disable_or_enable_indent_alignment", arg_state: this.config.INDENTED_WRAPPED_LINE, arg_hint: HINT.alignment },
+            { arg_name: "启用功能：代码折叠", arg_value: "disable_or_enable_fold_lang", arg_state: this.config.ENABLE_LANGUAGE_FOLD, arg_hint: HINT.FOLD },
+            { arg_name: "启用功能：缩进对齐", arg_value: "disable_or_enable_indent_alignment", arg_state: this.config.INDENTED_WRAPPED_LINE, arg_hint: HINT.ALIGNMENT },
             { arg_name: "启用功能：高亮鼠标悬停的代码行", arg_value: "disable_or_enable_highlight", arg_state: this.config.HIGHLIGHT_WHEN_HOVER },
-            { arg_name: "启用功能：通过语言设置高亮行", arg_value: "disable_or_enable_highlight_by_lang", arg_state: this.config.HIGHLIGHT_BY_LANGUAGE, arg_hint: HINT.highlight_by_lang },
-            { arg_name: "(危) 为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: HINT.dangerous },
-            { arg_name: "(危) 批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: HINT.dangerous },
-        ];
+            { arg_name: "启用功能：通过语言设置高亮行", arg_value: "disable_or_enable_highlight_by_lang", arg_state: this.config.HIGHLIGHT_BY_LANGUAGE, arg_hint: HINT.HIGHLIGHT_BY_LANG },
+            { arg_name: "(危) 为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: HINT.DANGEROUS },
+            { arg_name: "(危) 批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: HINT.DANGEROUS },
+        ]
         if (this.supportIndent) {
-            arr.splice(2, 0, { arg_name: "启用按钮：缩进", arg_value: "disable_or_enable_indent", arg_state: this.enableIndent });
-            arr.push({ arg_name: "(危) 调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: HINT.dangerous });
+            arr.splice(2, 0, { arg_name: "启用按钮：缩进", arg_value: "disable_or_enable_indent", arg_state: this.enableIndent })
+            arr.push({ arg_name: "(危) 调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: HINT.DANGEROUS })
         }
         return arr
     }
@@ -240,20 +241,20 @@ class fenceEnhancePlugin extends BasePlugin {
                 document.querySelectorAll(selector).forEach(ele => ele.click());
             },
             disable_or_enable_fold_lang: async () => {
-                this.config.ENABLE_LANGUAGE_FOLD = !this.config.ENABLE_LANGUAGE_FOLD;
-                const option = { type: "info", buttons: ["确定", "取消"], title: "preferences", detail: "配置将于重启 Typora 后生效，确认重启？", message: "设置成功" }
-                const { response } = await this.utils.showMessageBox(option);
-                if (response === 0) {
-                    this.utils.restartTypora();
-                }
+                this.config.ENABLE_LANGUAGE_FOLD = !this.config.ENABLE_LANGUAGE_FOLD
+                await restartTypora()
+            },
+            set_button_hint: async () => {
+                this.config.REMOVE_BUTTON_HINT = !this.config.REMOVE_BUTTON_HINT
+                await restartTypora()
             },
             set_auto_hide: () => {
-                this.config.AUTO_HIDE = !this.config.AUTO_HIDE;
-                const visibility = (this.config.AUTO_HIDE) ? "hidden" : "";
+                this.config.AUTO_HIDE = !this.config.AUTO_HIDE
+                const visibility = this.config.AUTO_HIDE ? "hidden" : ""
                 document.querySelectorAll(".fence-enhance").forEach(ele => {
                     // 处于折叠状态的代码块不可隐藏
-                    ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility;
-                });
+                    ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility
+                })
             },
             indent_all_fences: async () => {
                 const label = "调整缩进功能的能力有限，对于 Python 这种游标卡尺语言甚至会出现误判，你确定吗？";
