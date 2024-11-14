@@ -88,7 +88,6 @@ COPY_PATH_HOTKEY = [""]
 #   - showInFinder:    打开文件位置
 #   - openInNewWindow: 新窗口打开
 #   - sortTabs:        排序标签
-#   - toggleSuffix:    显示/隐藏标签中文件名后缀
 CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "sortTabs", "copyPath", "showInFinder", "openInNewWindow"]
 # 当Typora使用【一体化】窗口样式时，是否隐藏标题栏
 HIDE_WINDOW_TITLE_BAR = false

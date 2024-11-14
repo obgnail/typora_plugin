@@ -335,7 +335,6 @@ class windowTabBarPlugin extends BasePlugin {
                 showInFinder: "打开文件位置",
                 openInNewWindow: "新窗口打开",
                 sortTabs: "排序标签",
-                toggleSuffix: "显示/隐藏文件名后缀",
             }, this.config.CONTEXT_MENU);
             const showMenu = ({ target }) => {
                 idx = parseInt(target.getAttribute("idx"));
@@ -419,26 +418,37 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = () => {
-        const args = [{ arg_name: "保存当前标签页列表", arg_value: "save_tabs" }];
-        if (this.utils.existPathSync(this.saveTabFilePath)) {
-            args.push({ arg_name: "打开保存的标签页列表", arg_value: "open_save_tabs" });
-        }
-        args.push(
-            { arg_name: "排序标签", arg_value: "sort_tabs", arg_disabled: this.tabUtil.tabCount <= 1 },
+        const args = [
+            { arg_name: "保存当前标签页列表", arg_value: "save_tabs" },
+            { arg_name: "启用功能：隐藏文件后缀", arg_value: "toggle_suffix", arg_state: this.config.REMOVE_FILE_SUFFIX },
+            { arg_name: "启用功能：同名文件显示其目录", arg_value: "toggle_show_dir", arg_state: this.config.SHOW_DIR_FOR_SAME_NAME_FILE },
+            { arg_name: "启用功能：鼠标悬停显示完整路径", arg_value: "toggle_show_path", arg_state: this.config.SHOW_FULL_PATH_WHEN_HOVER },
+            { arg_name: "启用功能：拖拽时竖直防抖", arg_value: "toggle_limit_y_axis", arg_state: this.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG },
             { arg_name: "启用功能：在新标签打开", arg_value: "toggle_local", arg_state: !this.localOpen },
-        );
+        ]
+        if (this.utils.existPathSync(this.saveTabFilePath)) {
+            args.splice(1, 0, { arg_name: "打开保存的标签页列表", arg_value: "open_save_tabs" })
+        }
         return args
     }
 
     call = type => {
+        const toggleConfig = async cfg => {
+            this.config[cfg] = !this.config[cfg]
+            this.switchTab(this.tabUtil.activeIdx)
+            await this.utils.runtime.saveConfig(this.fixedName, { [cfg]: this.config[cfg] })
+        }
         const callMap = {
             toggle_local: () => this.localOpen = !this.localOpen,
+            toggle_limit_y_axis: () => toggleConfig("LIMIT_TAB_Y_AXIS_WHEN_DRAG"),
+            toggle_show_dir: () => toggleConfig("SHOW_DIR_FOR_SAME_NAME_FILE"),
+            toggle_suffix: () => toggleConfig("REMOVE_FILE_SUFFIX"),
+            toggle_show_path: () => toggleConfig("SHOW_FULL_PATH_WHEN_HOVER"),
             save_tabs: this.saveTabs,
             open_save_tabs: this.openSaveTabs,
-            sort_tabs: this.sortTabs,
         }
-        const func = callMap[type];
-        func && func();
+        const func = callMap[type]
+        func && func()
     }
 
     _hideTabBar = () => {
@@ -595,20 +605,24 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     _insertTabDiv = (filePath, showName, idx) => {
-        const title = this.config.SHOW_FULL_PATH_WHEN_HOVER ? `title="${filePath}"` : "";
-        const btn = this.config.SHOW_TAB_CLOSE_BUTTON ? `<span class="close-button"><div class="close-icon"></div></span>` : "";
+        const title = this.config.SHOW_FULL_PATH_WHEN_HOVER ? `title="${filePath}"` : ""
+        const btn = this.config.SHOW_TAB_CLOSE_BUTTON ? `<span class="close-button"><div class="close-icon"></div></span>` : ""
         const tabDiv = `
-                <div class="tab-container" idx="${idx}" draggable="true" ${title}>
-                    <div class="active-indicator"></div><span class="name">${showName}</span>${btn}
-                </div>`
-        this.entities.tabBar.insertAdjacentHTML('beforeend', tabDiv);
+            <div class="tab-container" idx="${idx}" draggable="true" ${title}>
+                <div class="active-indicator"></div>
+                <span class="name">${showName}</span>
+                ${btn}
+            </div>`
+        this.entities.tabBar.insertAdjacentHTML("beforeend", tabDiv)
     }
 
     _updateTabDiv = (tabDiv, filePath, showName, idx) => {
-        tabDiv.setAttribute("idx", idx + "");
-        tabDiv.querySelector(".name").innerText = showName;
+        tabDiv.setAttribute("idx", idx + "")
+        tabDiv.querySelector(".name").innerText = showName
         if (this.config.SHOW_FULL_PATH_WHEN_HOVER) {
-            tabDiv.setAttribute("title", filePath);
+            tabDiv.setAttribute("title", filePath)
+        } else {
+            tabDiv.removeAttribute("title")
         }
     }
 
@@ -807,11 +821,6 @@ class windowTabBarPlugin extends BasePlugin {
     copyPath = idx => navigator.clipboard.writeText(this.tabUtil.getTabPathByIdx(idx))
 
     copyActiveTabPath = () => this.copyPath(this.tabUtil.activeIdx)
-
-    toggleSuffix = () => {
-        this.config.REMOVE_FILE_SUFFIX = !this.config.REMOVE_FILE_SUFFIX;
-        this.switchTab(this.tabUtil.activeIdx);
-    }
 
     showInFinder = idx => this.utils.showInFinder(this.tabUtil.getTabPathByIdx(idx));
 
