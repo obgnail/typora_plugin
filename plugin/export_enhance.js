@@ -68,8 +68,8 @@ class exportEnhancePlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = () => [
-        { arg_name: "图片转为 Base64", arg_value: "toggle_enable", arg_state: this.enable },
-        { arg_name: "自动下载网络图片", arg_value: "toggle_download", arg_state: this.config.DOWNLOAD_NETWORK_IMAGE },
+        { arg_name: "启用功能：图片转为 Base64", arg_value: "toggle_enable", arg_state: this.enable },
+        { arg_name: "启用功能：自动下载网络图片", arg_value: "toggle_download", arg_state: this.config.DOWNLOAD_NETWORK_IMAGE },
     ]
 
     call = type => {

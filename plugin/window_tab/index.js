@@ -424,8 +424,8 @@ class windowTabBarPlugin extends BasePlugin {
             args.push({ arg_name: "打开保存的标签页列表", arg_value: "open_save_tabs" });
         }
         args.push(
-            { arg_name: "在新标签打开", arg_value: "toggle_local", arg_state: !this.localOpen },
-            { arg_name: "排序标签", arg_value: "sort_tabs", arg_disabled: this.tabUtil.tabCount <= 1 }
+            { arg_name: "排序标签", arg_value: "sort_tabs", arg_disabled: this.tabUtil.tabCount <= 1 },
+            { arg_name: "启用功能：在新标签打开", arg_value: "toggle_local", arg_state: !this.localOpen },
         );
         return args
     }

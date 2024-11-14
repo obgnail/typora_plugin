@@ -701,8 +701,6 @@ ignore_folders = [".git", "node_modules"]
 ignore_img_html_element = false
 # 什么后缀判定为md文件
 markdown_suffix = [".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]
-# 下载报告时，自动打开报告文件
-auto_open = true
 
 
 ############### scrollBookmarker ###############

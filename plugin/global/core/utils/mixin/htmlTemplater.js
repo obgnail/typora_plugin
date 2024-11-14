@@ -46,16 +46,7 @@ class htmlTemplater {
 
     createList = templates => templates.map(this.create).filter(Boolean)
     insert = templates => this.utils.insertElement(this.createList(templates))
-    appendElements = (parent, templates) => {
-        if (templates.length === 1) {
-            const child = this.create(templates[0]);
-            child && parent.appendChild(child);
-        } else {
-            const fragment = document.createDocumentFragment();
-            this.createList(templates).forEach(ele => fragment.appendChild(ele));
-            parent.appendChild(fragment);
-        }
-    }
+    appendElements = (parent, templates) => parent.append(...this.createList(templates))
 }
 
 module.exports = {

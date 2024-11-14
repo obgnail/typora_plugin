@@ -416,10 +416,12 @@ TOC_HOTKEY = ""
 CLICK_TO_LOCALE = true
 # 定位时，目标章节滚动到当前视口的高度位置百分比（即：0为当前视口的第一行，1为最后一行）
 LOCALE_HEIGHT_RATIO = 0.2
-# 若文档存在跳级的标题（MD001规范），修复之（若为false，那么就会过滤掉跳级的标题）
+# 兼容文档存在的跳级标题（MD001规范）（若为false，那么就会过滤掉跳级的标题）
 FIX_ERROR_LEVEL_HEADER = true
 # 当用户编辑文档，导致markmap更新图形时，新markmap的图形大小是否重新适配窗口
 AUTO_FIT_WHEN_UPDATE = true
+# 当用户调整窗口大小后，图形是否重新适配窗口
+AUTO_FIT_WHEN_RESIZE = true
 # 当用户编辑文档，导致markmap更新图形时，已折叠的节点是否不再重新展开
 REMEMBER_FOLD_WHEN_UPDATE = true
 # 折叠markmap节点时，自动折叠章节（此功能为实验性特性，依赖collapse_paragraph插件，目前不推荐开启）
@@ -516,6 +518,8 @@ DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, colorFreezeLe
 # 插入的模板
 FENCE_TEMPLATE = """```markmap
 ---
+# 根节点默认文本（若内容存在根节点，则此选项失效）
+title: markmap
 # 配置:
 markmap:
   # 是否允许缩放
@@ -532,17 +536,19 @@ markmap:
   paddingX: 8
   # 图形的窗口填充率
   fitRatio: 0.95
-  # 初始渲染时要展开的最大节点级别（-1则展开全部）
+  # 展开的最大节点级别（-1则展开全部）
   initialExpandLevel: -1
   # 多少级开始固定分支颜色
   colorFreezeLevel: 6
+  # 颜色
+  color: ['#4E79A7', '#F28E2C', '#E15759', '#76B7B2', '#59A14F', '#EDC949', '#AF7AA1', '#FF9DA7', '#9C755F', '#BAB0AB']
+  # 动画持续时间
+  duration: 500
   # 图形高度
   height: 300px
   # 背景色
   backgroundColor: "#f8f8f8"
 ---
-
-# markmap
 
 ## Links
 

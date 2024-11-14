@@ -488,9 +488,18 @@ class utils {
             console.error(e);
         }
     }
+    static stringifyYaml = (obj, args) => {
+        const yaml = require("./common/yaml")
+        try {
+            return yaml.safeDump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
+        } catch (e) {
+            console.error(e)
+        }
+    }
 
-    static readToml = async filepath => TOML.parse(await FS.promises.readFile(filepath, "utf-8"))
+    static readToml = content => TOML.parse(content)
     static stringifyToml = obj => TOML.stringify(obj)
+    static readTomlFile = async filepath => this.readToml(await FS.promises.readFile(filepath, "utf-8"))
 
     static unzip = async (buffer, workDir) => {
         const output = [];
@@ -701,7 +710,7 @@ class utils {
         let fragment = elements;
         if (elements instanceof Array || elements instanceof NodeList) {
             fragment = document.createDocumentFragment();
-            elements.forEach(ele => fragment.appendChild(ele));
+            fragment.append(...elements);
         }
         return fragment;
     }

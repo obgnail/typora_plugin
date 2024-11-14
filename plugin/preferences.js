@@ -27,7 +27,7 @@ class preferencesPlugin extends BasePlugin {
         ]
         for (const { file, mergeObj, clean } of files) {
             const settingPath = await this.utils.runtime.getActualSettingPath(file);
-            const settingObj = await this.utils.readToml(settingPath);
+            const settingObj = await this.utils.readTomlFile(settingPath);
             const setting = this.utils.merge(settingObj, mergeObj);
             const newSetting = await clean(setting);
             const newContent = this.utils.stringifyToml(newSetting);

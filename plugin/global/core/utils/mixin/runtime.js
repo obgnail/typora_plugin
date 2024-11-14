@@ -24,7 +24,7 @@ class runtime {
 
         const file = isCustom ? "custom_plugin.user.toml" : "settings.user.toml";
         const settingPath = await this.getActualSettingPath(file);
-        const tomlObj = await this.utils.readToml(settingPath);
+        const tomlObj = await this.utils.readTomlFile(settingPath);
         const newSetting = this.utils.merge(tomlObj, { [fixedName]: updateObj });
         const newContent = this.utils.stringifyToml(newSetting);
         return this.utils.writeFile(settingPath, newContent);
