@@ -117,17 +117,17 @@ class toolbarPlugin extends BasePlugin {
     }
 
     _newItems = ({ tool, matches, input }) => {
-        const toolName = tool.name();
+        const toolName = tool.name()
         return matches.map(match => {
-            const showName = match.showName || match;
-            const fixedName = match.fixedName || match;
-            const meta = match.meta || "";
-            let content = showName;
+            const showName = match.showName || match
+            const fixedName = match.fixedName || match
+            const meta = match.meta || ""
+            let content = showName
             if (input[0]) {
-                input.forEach(part => content = content.replace(new RegExp(part, "gi"), "<b>$&</b>"));
+                input.forEach(part => content = content.replace(new RegExp(part, "gi"), "<b>$&</b>"))
             }
-            const metaContent = meta ? `meta="${meta}"` : "";
-            return `<div class="plugin-toolbar-item" data="${fixedName}" tool="${toolName}" ${metaContent}>${content}</div>`
+            const metaContent = meta ? `meta="${meta}"` : ""
+            return `<div class="plugin-toolbar-item" data="${fixedName}" tool="${toolName}" ${metaContent}>${this.utils.escape(content)}</div>`
         })
     }
 
