@@ -182,118 +182,113 @@ class fenceEnhancePlugin extends BasePlugin {
 
     dynamicCallArgsGenerator = (anchorNode, meta) => {
         const HINT = {
-            dangerous: "警告：消耗巨量资源并可能导致Typora长时间失去响应",
-            fold: "根据语言语法在每行的左侧显示折叠按钮",
-            alignment: "不建议开启，需要大量时间去计算缩进，造成性能损失",
-            highlight_by_lang: "例 ```js(2, 5-8)``` 表示：高亮第2，5-8行",
+            DANGEROUS: "警告：消耗巨量资源并可能导致Typora长时间失去响应",
+            FOLD: "根据语言语法在每行的左侧显示折叠按钮",
+            ALIGNMENT: "不建议开启，需要大量时间去计算缩进，造成性能损失",
+            HIGHLIGHT_BY_LANG: "例 ```js(2, 5-8)``` 表示：高亮第2，5-8行",
         }
         const arr = [
-            { arg_name: "启用按钮：折叠", arg_value: "disable_or_enable_fold", arg_state: this.config.ENABLE_FOLD },
-            { arg_name: "启用按钮：复制", arg_value: "disable_or_enable_copy", arg_state: this.config.ENABLE_COPY },
-            { arg_name: "启用功能：自动隐藏按钮", arg_value: "set_auto_hide", arg_state: this.config.AUTO_HIDE },
-            { arg_name: "启用功能：默认折叠代码块", arg_value: "disable_or_enable_fold_default", arg_state: this.config.FOLD_DEFAULT },
-            { arg_name: "启用功能：快捷键", arg_value: "disable_or_enable_hotkey", arg_state: this.config.ENABLE_HOTKEY },
-            { arg_name: "启用功能：代码折叠", arg_value: "disable_or_enable_fold_lang", arg_state: this.config.ENABLE_LANGUAGE_FOLD, arg_hint: HINT.fold },
-            { arg_name: "启用功能：缩进对齐", arg_value: "disable_or_enable_indent_alignment", arg_state: this.config.INDENTED_WRAPPED_LINE, arg_hint: HINT.alignment },
-            { arg_name: "启用功能：高亮鼠标悬停的代码行", arg_value: "disable_or_enable_highlight", arg_state: this.config.HIGHLIGHT_WHEN_HOVER },
-            { arg_name: "启用功能：通过语言设置高亮行", arg_value: "disable_or_enable_highlight_by_lang", arg_state: this.config.HIGHLIGHT_BY_LANGUAGE, arg_hint: HINT.highlight_by_lang },
-            { arg_name: "(危) 为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: HINT.dangerous },
-            { arg_name: "(危) 批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: HINT.dangerous },
-        ];
+            { arg_name: "启用按钮：折叠", arg_value: "toggle_state_fold", arg_state: this.config.ENABLE_FOLD },
+            { arg_name: "启用按钮：复制", arg_value: "toggle_state_copy", arg_state: this.config.ENABLE_COPY },
+            { arg_name: "启用功能：自动隐藏按钮", arg_value: "toggle_state_auto_hide", arg_state: this.config.AUTO_HIDE },
+            { arg_name: "启用功能：默认折叠代码块", arg_value: "toggle_state_fold_default", arg_state: this.config.FOLD_DEFAULT },
+            { arg_name: "启用功能：显示按钮功能提示", arg_value: "toggle_state_button_hint", arg_state: !this.config.REMOVE_BUTTON_HINT },
+            { arg_name: "启用功能：快捷键", arg_value: "toggle_state_hotkey", arg_state: this.config.ENABLE_HOTKEY },
+            { arg_name: "启用功能：代码折叠", arg_value: "toggle_state_fold_lang", arg_state: this.config.ENABLE_LANGUAGE_FOLD, arg_hint: HINT.FOLD },
+            { arg_name: "启用功能：缩进对齐", arg_value: "toggle_state_indent_alignment", arg_state: this.config.INDENTED_WRAPPED_LINE, arg_hint: HINT.ALIGNMENT },
+            { arg_name: "启用功能：高亮鼠标悬停的代码行", arg_value: "toggle_state_highlight", arg_state: this.config.HIGHLIGHT_WHEN_HOVER },
+            { arg_name: "启用功能：通过语言设置高亮行", arg_value: "toggle_state_highlight_by_lang", arg_state: this.config.HIGHLIGHT_BY_LANGUAGE, arg_hint: HINT.HIGHLIGHT_BY_LANG },
+            { arg_name: "(危) 为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: HINT.DANGEROUS },
+            { arg_name: "(危) 批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: HINT.DANGEROUS },
+        ]
         if (this.supportIndent) {
-            arr.splice(2, 0, { arg_name: "启用按钮：缩进", arg_value: "disable_or_enable_indent", arg_state: this.enableIndent });
-            arr.push({ arg_name: "(危) 调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: HINT.dangerous });
+            arr.splice(2, 0, { arg_name: "启用按钮：缩进", arg_value: "toggle_state_indent", arg_state: this.enableIndent })
+            arr.push({ arg_name: "(危) 调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: HINT.DANGEROUS })
         }
         return arr
     }
 
     call = (type, meta) => {
-        const restartTypora = async args => {
-            const { response } = await this.utils.showMessageBox({ type: "info", buttons: ["确定", "取消"], message: "重启后生效，确认重启？", ...args })
+        const toggleConfig = async (cfg, name, args) => {
+            this.config[cfg] = !this.config[cfg]
+            const title = (this.config[cfg] ? "启动" : "取消") + name
+            const op = { type: "info", buttons: ["确定", "取消"], message: "重启后生效，确认重启？", title, ...args }
+            const { response } = await this.utils.showMessageBox(op)
             if (response === 0) {
                 this.utils.restartTypora()
             }
         }
 
         const callMap = {
-            disable_or_enable_fold: () => {
-                this.config.ENABLE_FOLD = !this.config.ENABLE_FOLD;
+            toggle_state_fold: () => {
+                this.config.ENABLE_FOLD = !this.config.ENABLE_FOLD
                 if (!this.config.ENABLE_FOLD) {
-                    document.querySelectorAll(".fold-code.folded").forEach(ele => ele.click());
+                    document.querySelectorAll(".fold-code.folded").forEach(ele => ele.click())
                 }
-                const display = this.config.ENABLE_FOLD ? "block" : "none";
-                document.querySelectorAll(".fence-enhance .fold-code").forEach(ele => ele.style.display = display);
+                const display = this.config.ENABLE_FOLD ? "block" : "none"
+                document.querySelectorAll(".fence-enhance .fold-code").forEach(ele => ele.style.display = display)
             },
-            disable_or_enable_copy: () => {
-                this.config.ENABLE_COPY = !this.config.ENABLE_COPY;
-                const display = this.config.ENABLE_COPY ? "block" : "none";
-                document.querySelectorAll(".fence-enhance .copy-code").forEach(ele => ele.style.display = display);
+            toggle_state_copy: () => {
+                this.config.ENABLE_COPY = !this.config.ENABLE_COPY
+                const display = this.config.ENABLE_COPY ? "block" : "none"
+                document.querySelectorAll(".fence-enhance .copy-code").forEach(ele => ele.style.display = display)
             },
-            disable_or_enable_indent: () => {
-                this.enableIndent = !this.enableIndent;
-                const display = this.enableIndent ? "block" : "none";
-                document.querySelectorAll(".fence-enhance .indent-code").forEach(ele => ele.style.display = display);
+            toggle_state_indent: () => {
+                this.enableIndent = !this.enableIndent
+                const display = this.enableIndent ? "block" : "none"
+                document.querySelectorAll(".fence-enhance .indent-code").forEach(ele => ele.style.display = display)
             },
-            disable_or_enable_fold_default: () => {
-                this.config.FOLD_DEFAULT = !this.config.FOLD_DEFAULT;
-                const selector = this.config.FOLD_DEFAULT ? ".fold-code:not(.folded)" : ".fold-code.folded";
-                document.querySelectorAll(selector).forEach(ele => ele.click());
+            toggle_state_fold_default: () => {
+                this.config.FOLD_DEFAULT = !this.config.FOLD_DEFAULT
+                const selector = this.config.FOLD_DEFAULT ? ".fold-code:not(.folded)" : ".fold-code.folded"
+                document.querySelectorAll(selector).forEach(ele => ele.click())
             },
-            disable_or_enable_fold_lang: async () => {
-                this.config.ENABLE_LANGUAGE_FOLD = !this.config.ENABLE_LANGUAGE_FOLD;
-                const option = { type: "info", buttons: ["确定", "取消"], title: "preferences", detail: "配置将于重启 Typora 后生效，确认重启？", message: "设置成功" }
-                const { response } = await this.utils.showMessageBox(option);
-                if (response === 0) {
-                    this.utils.restartTypora();
-                }
-            },
-            set_auto_hide: () => {
-                this.config.AUTO_HIDE = !this.config.AUTO_HIDE;
-                const visibility = (this.config.AUTO_HIDE) ? "hidden" : "";
+            toggle_state_auto_hide: () => {
+                this.config.AUTO_HIDE = !this.config.AUTO_HIDE
+                const visibility = this.config.AUTO_HIDE ? "hidden" : ""
                 document.querySelectorAll(".fence-enhance").forEach(ele => {
                     // 处于折叠状态的代码块不可隐藏
-                    ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility;
-                });
+                    ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility
+                })
             },
             indent_all_fences: async () => {
-                const label = "调整缩进功能的能力有限，对于 Python 这种游标卡尺语言甚至会出现误判，你确定吗？";
-                const { response } = await this.utils.dialog.modalAsync({ title: "为所有代码块调整缩进", components: [{ label, type: "p" }] });
+                const label = "调整缩进功能的能力有限，对于 Python 这种游标卡尺语言甚至会出现误判，你确定吗？"
+                const { response } = await this.utils.dialog.modalAsync({ title: "为所有代码块调整缩进", components: [{ label, type: "p" }] })
                 if (response === 1) {
-                    this._rangeAllFences(this.indentFence);
+                    this._rangeAllFences(this.indentFence)
                 }
             },
             add_fences_lang: async () => {
-                const components = [{ label: "语言", type: "input", value: "javascript" }];
-                const { response, submit: [targetLang] } = await this.utils.dialog.modalAsync({ title: "添加语言", components });
-                if (response === 0 || !targetLang) return;
+                const components = [{ label: "语言", type: "input", value: "javascript" }]
+                const { response, submit: [targetLang] } = await this.utils.dialog.modalAsync({ title: "添加语言", components })
+                if (response === 0 || !targetLang) return
                 this._rangeAllFences(fence => {
-                    const lang = fence.getAttribute("lang");
-                    if (lang) return;
-                    const cid = fence.getAttribute("cid");
-                    File.editor.fences.focus(cid);
-                    const input = fence.querySelector(".ty-cm-lang-input");
-                    if (!input) return;
-                    input.textContent = targetLang;
-                    File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input);
+                    const lang = fence.getAttribute("lang")
+                    if (lang) return
+                    const cid = fence.getAttribute("cid")
+                    File.editor.fences.focus(cid)
+                    const input = fence.querySelector(".ty-cm-lang-input")
+                    if (!input) return
+                    input.textContent = targetLang
+                    File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input)
                 })
             },
             replace_fences_lang: async () => {
-                const components = [{ label: "被替换语言", type: "input", value: "js" }, { label: "替换语言", type: "input", value: "javascript" }];
-                const { response, submit: [waitToReplaceLang, replaceLang] } = await this.utils.dialog.modalAsync({ title: "替换语言", components });
-                if (response === 0 || !waitToReplaceLang || !replaceLang) return;
+                const components = [{ label: "被替换语言", type: "input", value: "js" }, { label: "替换语言", type: "input", value: "javascript" }]
+                const { response, submit: [waitToReplaceLang, replaceLang] } = await this.utils.dialog.modalAsync({ title: "替换语言", components })
+                if (response === 0 || !waitToReplaceLang || !replaceLang) return
                 this._rangeAllFences(fence => {
-                    const lang = fence.getAttribute("lang");
-                    if (lang && lang !== waitToReplaceLang) return;
-                    const cid = fence.getAttribute("cid");
-                    File.editor.fences.focus(cid);
-                    const input = fence.querySelector(".ty-cm-lang-input");
-                    if (!input) return;
-                    input.textContent = replaceLang;
-                    File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input);
+                    const lang = fence.getAttribute("lang")
+                    if (lang && lang !== waitToReplaceLang) return
+                    const cid = fence.getAttribute("cid")
+                    File.editor.fences.focus(cid)
+                    const input = fence.querySelector(".ty-cm-lang-input")
+                    if (!input) return
+                    input.textContent = replaceLang
+                    File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input)
                 })
             },
-            disable_or_enable_hotkey: async () => {
-                this.config.ENABLE_HOTKEY = !this.config.ENABLE_HOTKEY
+            toggle_state_hotkey: async () => {
                 const hotkeys = {
                     "SWAP_PREVIOUS_LINE": "将当前行和上一行互换",
                     "SWAP_NEXT_LINE": "将当前行和下一行互换",
@@ -305,27 +300,16 @@ class fenceEnhancePlugin extends BasePlugin {
                 const detail = Object.entries(hotkeys)
                     .map(([key, name], idx) => `${idx + 1}. ${name}: ${this.config[key]}`)
                     .join("\n")
-                const title = this.config.ENABLE_HOTKEY ? "新增快捷键" : "取消快捷键"
-                await restartTypora({ title, detail })
+                await toggleConfig("ENABLE_HOTKEY", "快捷键", { detail })
             },
-            disable_or_enable_indent_alignment: async () => {
-                this.config.INDENTED_WRAPPED_LINE = !this.config.INDENTED_WRAPPED_LINE
-                const title = this.config.INDENTED_WRAPPED_LINE ? "启动缩进对齐" : "取消缩进对齐"
-                await restartTypora({ title })
-            },
-            disable_or_enable_highlight: async () => {
-                this.config.HIGHLIGHT_WHEN_HOVER = !this.config.HIGHLIGHT_WHEN_HOVER
-                const title = this.config.HIGHLIGHT_WHEN_HOVER ? "启动高亮代码行" : "取消高亮代码行"
-                await restartTypora({ title })
-            },
-            disable_or_enable_highlight_by_lang: async () => {
-                this.config.HIGHLIGHT_BY_LANGUAGE = !this.config.HIGHLIGHT_BY_LANGUAGE
-                const title = this.config.HIGHLIGHT_WHEN_HOVER ? "启动高亮代码行" : "取消高亮代码行"
-                await restartTypora({ title })
-            }
+            toggle_state_button_hint: () => toggleConfig("REMOVE_BUTTON_HINT", "按钮功能提示"),
+            toggle_state_fold_lang: () => toggleConfig("ENABLE_LANGUAGE_FOLD", "代码折叠"),
+            toggle_state_highlight: () => toggleConfig("HIGHLIGHT_WHEN_HOVER", "高亮代码行"),
+            toggle_state_highlight_by_lang: () => toggleConfig("HIGHLIGHT_BY_LANGUAGE", "高亮代码行"),
+            toggle_state_indent_alignment: () => toggleConfig("INDENTED_WRAPPED_LINE", "缩进对齐"),
         }
-        const func = callMap[type];
-        func && func();
+        const func = callMap[type]
+        func && func()
     }
 }
 

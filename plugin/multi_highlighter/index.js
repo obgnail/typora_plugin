@@ -240,25 +240,31 @@ class multiHighlighterPlugin extends BasePlugin {
     }
 
     _doSearch = (keyArr, refreshResult = true) => {
-        this.clearHighlight();
+        this.clearHighlight()
 
         if (!keyArr || keyArr.length === 0) {
-            this.utils.hide(this.entities.result);
-            return;
+            this.utils.hide(this.entities.result)
+            return
         }
 
-        this.multiHighlighter.new(keyArr, this.entities.write, this.config.CASE_SENSITIVE, "plugin-search-hit");
-        this.multiHighlighter.highlight();
+        this.multiHighlighter.new(keyArr, this.entities.write, this.config.CASE_SENSITIVE, "plugin-search-hit")
+        this.multiHighlighter.highlight()
 
         if (refreshResult) {
             const itemList = this.multiHighlighter.getList().map((searcher, idx) => {
-                const color = (idx < this.config.STYLE_COLOR.length) ? this.config.STYLE_COLOR[idx] : this.defaultColor;
-                return `<div class="plugin-multi-highlighter-result-item" style="background-color: ${color}" ty-hint="左键下一个；右键上一个"
-                         idx="${idx}" cur="-1">${searcher.token.text} (${searcher.matches.length})</div>`;
+                const div = document.createElement("div")
+                div.className = "plugin-multi-highlighter-result-item"
+                div.setAttribute("idx", idx)
+                div.setAttribute("cur", "-1")
+                div.setAttribute("ty-hint", "左键下一个；右键上一个")
+                div.appendChild(document.createTextNode(`${searcher.token.text} (${searcher.matches.length})`))
+                div.style.backgroundColor = (idx < this.config.STYLE_COLOR.length) ? this.config.STYLE_COLOR[idx] : this.defaultColor
+                return div
             })
-            this.entities.result.innerHTML = itemList.join("");
+            this.entities.result.innerHTML = ""
+            this.entities.result.append(...itemList)
         }
-        this.utils.show(this.entities.result);
+        this.utils.show(this.entities.result)
     }
 
     _handleHiddenElement = marker => {
