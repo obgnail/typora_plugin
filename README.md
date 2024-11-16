@@ -128,9 +128,9 @@
 
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A
 
-   - 如果是免费版 Typora，路径为 `./resources/window.html`
+   - 如果是正式版 Typora，路径为 `./resources/window.html`
    
-   - 如果是正式版 Typora，路径为 `./resources/app/window.html`
+   - 如果是免费版 Typora，路径为 `./resources/app/window.html`
 
 3. 将解压得到的 plugin 文件夹粘贴进文件夹 A 下（参考方法一的图片）
 
