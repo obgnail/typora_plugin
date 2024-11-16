@@ -85,6 +85,8 @@
 
 > 此方法支持 Windows、Linux 平台。
 
+前往 [视频版安装教程](https://github.com/obgnail/typora_plugin/issues/847)
+
 1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压
 
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A
