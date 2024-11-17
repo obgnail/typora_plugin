@@ -182,10 +182,11 @@ class searchMultiKeywordPlugin extends BasePlugin {
             this.searchHelper.test(ast)
             const title = this.searchHelper.toExplain(ast)
             this.entities.input.setAttribute("title", title)
+            this.utils.notification.hide()
             return ast
         } catch (e) {
             this.entities.input.removeAttribute("title")
-            this.utils.notification.show(`语法错误，请检测输入内容\n${e.toString()}`, "error", 7000)
+            this.utils.notification.show(e.toString().slice(7), "error", 7000)
         }
     }
 
@@ -438,7 +439,7 @@ class SearchHelper {
                     const wont = evaluate(right);
                     return (left ? evaluate(left) : []).filter(e => !wont.includes(e));
                 default:
-                    throw new Error(`Unknown AST node type: ${type}`);
+                    throw new Error(`Unknown AST node「${type}」`);
             }
         }
 

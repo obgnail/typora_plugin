@@ -3,10 +3,10 @@ class notification {
         this.utils = utils;
         this.timer = null;
         this.types = {
-            success: { bgColor: "#e6ffed", icon: "fa fa-check" },
-            info: { bgColor: "#e6f7ff", icon: "fa fa-info-circle" },
-            warning: { bgColor: "#fffbe6", icon: "fa fa-warning" },
-            error: { bgColor: "#ffe6e6", icon: "fa fa-times" },
+            success: { bgColor: "#e6ffed", iconColor: "#009688", icon: "fa fa-check" },
+            info: { bgColor: "#e6f7ff", iconColor: "#448aff", icon: "fa fa-info-circle" },
+            warning: { bgColor: "#fffbe6", iconColor: "#f57c00", icon: "fa fa-warning" },
+            error: { bgColor: "#ffe6e6", iconColor: "#d32f2f", icon: "fa fa-bug" },
         }
     }
 
@@ -27,18 +27,19 @@ class notification {
     hide = () => this.utils.hide(this.getNotification())
 
     show = (message, type = "success", last = 3000) => {
-        clearTimeout(this.timer);
+        clearTimeout(this.timer)
         if (!this.types.hasOwnProperty(type)) {
-            type = "info";
+            type = "info"
         }
-        const { bgColor, icon } = this.types[type];
-        const notification = this.getNotification();
-        notification.querySelector(".notification-message").textContent = message;
-        notification.querySelector(".notification-icon").className = `notification-icon ${icon}`;
-        notification.style.setProperty("--notification-bg-color", bgColor);
-        this.utils.show(notification);
+        const { bgColor, iconColor, icon } = this.types[type]
+        const notification = this.getNotification()
+        notification.querySelector(".notification-message").textContent = message
+        notification.querySelector(".notification-icon").className = `notification-icon ${icon}`
+        notification.style.setProperty("--notification-bg-color", bgColor)
+        notification.style.setProperty("--notification-icon-color", iconColor)
+        this.utils.show(notification)
         if (last > 0) {
-            this.timer = setTimeout(() => this.hide(), last);
+            this.timer = setTimeout(() => this.hide(), last)
         }
     }
 }

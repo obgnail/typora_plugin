@@ -12,14 +12,16 @@
     z-index: 9999;
     text-align: left;
     display: flex;
-    align-items: center;
+    align-items: baseline;
     background-color: var(--notification-bg-color);
     --notification-bg-color: "#e6f7ff";
+    --notification-icon-color: currentColor;
 }
 
 .plugin-common-notification .notification-icon {
     width: 16px;
     margin-right: 10px;
+    color: var(--notification-icon-color);
 }
 
 .plugin-common-notification .notification-message {
