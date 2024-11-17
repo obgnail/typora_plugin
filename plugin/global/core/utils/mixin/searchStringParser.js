@@ -36,11 +36,11 @@ class searchStringParser {
                 [TYPE.NOT]: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_CLOSE]),
                 [TYPE.PAREN_OPEN]: new Set([TYPE.OR, TYPE.AND, TYPE.PAREN_CLOSE]),
                 [TYPE.QUALIFIER]: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_CLOSE, TYPE.QUALIFIER]),
-            }
-        }
-        this.INVALID_AND = {
-            PREV: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_OPEN, TYPE.QUALIFIER]),
-            NEXT: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_CLOSE]),
+            },
+            AND: {
+                PREV: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_OPEN, TYPE.QUALIFIER]),
+                NEXT: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_CLOSE]),
+            },
         }
         this.setQualifier()
     }
@@ -52,10 +52,10 @@ class searchStringParser {
         this.regex = new RegExp(
             [
                 `(?<AND>\\s+)`,
+                `(?<NOT>-)`,
                 `"(?<PHRASE>[^"]*)"`,
                 `(?<PAREN_OPEN>\\()`,
                 `(?<PAREN_CLOSE>\\))`,
-                `(?<NOT>-)`,
                 `(?<OR>\\||\\bOR\\b)`,
                 `(?<QUALIFIER>(?<SCOPE>${_scope})(?<OPERATOR>${_operator}))`,
                 `\\/(?<REGEXP>.*?)(?<!\\\\)\\/`,
@@ -78,7 +78,7 @@ class searchStringParser {
                 if (token.type !== this.TYPE.AND) return true
                 const prev = tokens[i - 1]
                 const next = tokens[i + 1]
-                return prev && next && !this.INVALID_AND.PREV.has(prev.type) && !this.INVALID_AND.NEXT.has(next.type)
+                return prev && next && !this.INVALID_POSITION.AND.PREV.has(prev.type) && !this.INVALID_POSITION.AND.NEXT.has(next.type)
             })
     }
 
@@ -86,21 +86,21 @@ class searchStringParser {
         // check first
         const first = tokens[0]
         if (this.INVALID_POSITION.FIRST.has(first.type)) {
-            throw new Error(`Node ${first.type} should not be first`)
+            throw new Error(`Invalid first token:「${first.type}」`)
         }
 
         // check last
         const last = tokens[tokens.length - 1]
         if (this.INVALID_POSITION.LAST.has(last.type)) {
-            throw new Error(`Node ${last.type} should not be last`)
+            throw new Error(`Invalid last token:「${last.type}」`)
         }
 
         // check follow
-        tokens.forEach((token, i, tokens) => {
+        tokens.slice(0, -1).forEach((token, i) => {
             const set = this.INVALID_POSITION.FOLLOW[token.type]
             const follow = tokens[i + 1]
-            if (set && follow && set.has(follow.type)) {
-                throw new Error(`Node ${follow.type} cannot follow node ${token.type}`)
+            if (set && set.has(follow.type)) {
+                throw new Error(`Invalid token sequence:「${token.type}」followed by「${follow.type}」`)
             }
         })
 
@@ -112,12 +112,12 @@ class searchStringParser {
             } else if (token.type === this.TYPE.PAREN_CLOSE) {
                 balance--
                 if (balance < 0) {
-                    throw new Error("Too many closing parentheses")
+                    throw new Error(`Unmatched「${this.TYPE.PAREN_CLOSE}」`)
                 }
             }
         })
         if (balance !== 0) {
-            throw new Error("Too many opening parentheses")
+            throw new Error(`Unmatched「${this.TYPE.PAREN_OPEN}」`)
         }
     }
 
@@ -218,7 +218,7 @@ class searchStringParser {
                 case NOT:
                     return (left ? _eval(left) : true) && !_eval(right);
                 default:
-                    throw new Error(`Unknown AST node type: ${type}`);
+                    throw new Error(`Unknown AST node「${type}」`);
             }
         }
 
@@ -242,14 +242,14 @@ class searchStringParser {
                 case OR:
                 case AND:
                     if (left == null || right == null) {
-                        throw new Error(`${type} has empty child`)
+                        throw new Error(`「${type}」has empty child`)
                     }
                     _eval(left)
                     _eval(right)
                     break
                 case NOT:
                     if (right == null) {
-                        throw new Error(`${type} has empty right child`)
+                        throw new Error(`「${type}」has empty right child`)
                     }
                     if (left != null) {
                         _eval(left)
@@ -257,7 +257,7 @@ class searchStringParser {
                     _eval(right)
                     break
                 default:
-                    throw new Error(`Unknown AST node type: ${type}`)
+                    throw new Error(`Unknown AST node「${type}」`)
             }
         }
 
