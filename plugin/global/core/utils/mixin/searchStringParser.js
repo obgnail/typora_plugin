@@ -15,7 +15,7 @@
  * */
 class searchStringParser {
     constructor() {
-        this.TYPE = {
+        const TYPE = {
             OR: "OR",
             AND: "AND",
             NOT: "NOT",
@@ -26,98 +26,99 @@ class searchStringParser {
             REGEXP: "REGEXP",
             QUALIFIER: "QUALIFIER",
         }
-        this.TOKEN = {
-            OR: { type: this.TYPE.OR, value: "OR" },
-            AND: { type: this.TYPE.AND, value: " " },
-            NOT: { type: this.TYPE.NOT, value: "-" },
-            PAREN_OPEN: { type: this.TYPE.PAREN_OPEN, value: "(" },
-            PAREN_CLOSE: { type: this.TYPE.PAREN_CLOSE, value: ")" },
-            PHRASE: value => ({ type: this.TYPE.PHRASE, value }),
-            KEYWORD: value => ({ type: this.TYPE.KEYWORD, value }),
-            REGEXP: value => ({ type: this.TYPE.REGEXP, value }),
-            QUALIFIER: (scope, operator) => ({ type: this.TYPE.QUALIFIER, scope, operator }),
-        }
-        this.setQualifier();
-    }
-
-    setQualifier(
-        scope = ["default", "file", "path", "ext", "content", "time", "size"],
-        operator = [">=", "<=", ":", "=", ">", "<"],
-    ) {
-        const byLength = (a, b) => b.length - a.length;
-        const _scope = [...scope].sort(byLength).join('|');
-        const _operator = [...operator].sort(byLength).join('|');
-        this.qualifierRegExp = new RegExp(`^(?<scope>${_scope})(?<operator>${_operator})`, "i");
-    }
-
-    _tokenize(query) {
-        const tokens = [];
-        let i = 0;
-        let qualifierMatch = null;
-        while (i < query.length) {
-            if (query[i] === '"') {
-                const start = i + 1;
-                i++;
-                while (i < query.length && query[i] !== '"') {
-                    i++;
-                }
-                tokens.push(this.TOKEN.PHRASE(query.substring(start, i)));
-                i++;
-            } else if (query[i] === "(") {
-                tokens.push(this.TOKEN.PAREN_OPEN);
-                i++;
-            } else if (query[i] === ")") {
-                tokens.push(this.TOKEN.PAREN_CLOSE);
-                i++;
-            } else if (/^OR\b/i.test(query.substring(i))) {
-                tokens.push(this.TOKEN.OR);
-                i += 2;
-            } else if (query[i] === "|") {
-                tokens.push(this.TOKEN.OR);
-                i++;
-            } else if (query[i] === "-") {
-                tokens.push(this.TOKEN.NOT);
-                i++;
-            } else if (/\s/.test(query[i])) {
-                i++; // skip whitespace
-            } else if (qualifierMatch = query.substring(i).match(this.qualifierRegExp)) {
-                const { scope, operator } = qualifierMatch.groups;
-                tokens.push(this.TOKEN.QUALIFIER(scope, operator));
-                i += scope.length + operator.length;
-            } else if (query[i] === "/") {
-                const regexpStart = i;
-                i++;
-                while (i < query.length && query[i] !== "/") {
-                    if (query[i] === "\\" && query.substring(i, i + 2) === "\\/") {
-                        i += 2;
-                    } else {
-                        i++;
-                    }
-                }
-                tokens.push(this.TOKEN.REGEXP(query.substring(regexpStart + 1, i)));
-                i++;
-            } else {
-                const keywordStart = i;
-                while (i < query.length && !/\s|"|\(|\)/.test(query[i])) {
-                    i++;
-                }
-                tokens.push(this.TOKEN.KEYWORD(query.substring(keywordStart, i)));
+        this.TYPE = TYPE
+        this.INVALID_POSITION = {
+            FIRST: new Set([TYPE.OR, TYPE.AND, TYPE.PAREN_CLOSE]),
+            LAST: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_OPEN, TYPE.QUALIFIER]),
+            FOLLOW: {
+                [TYPE.OR]: new Set([TYPE.OR, TYPE.AND, TYPE.PAREN_CLOSE]),
+                [TYPE.AND]: new Set([TYPE.OR, TYPE.AND, TYPE.PAREN_CLOSE]),
+                [TYPE.NOT]: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_CLOSE]),
+                [TYPE.PAREN_OPEN]: new Set([TYPE.OR, TYPE.AND, TYPE.PAREN_CLOSE]),
+                [TYPE.QUALIFIER]: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_CLOSE, TYPE.QUALIFIER]),
             }
         }
-
-        const result = [];
-        const invalidPre = [this.TYPE.NOT, this.TYPE.OR, this.TYPE.PAREN_OPEN, this.TYPE.QUALIFIER];
-        const invalidCur = [this.TYPE.NOT, this.TYPE.OR, this.TYPE.PAREN_CLOSE];
-        for (let i = 0; i < tokens.length; i++) {
-            const current = tokens[i];
-            const previous = tokens[i - 1];
-            const should = previous && !invalidPre.includes(previous.type) && !invalidCur.includes(current.type);
-            if (should) {
-                result.push(this.TOKEN.AND);
-            }
-            result.push(current);
+        this.INVALID_AND = {
+            PREV: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_OPEN, TYPE.QUALIFIER]),
+            NEXT: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_CLOSE]),
         }
-        return result;
+        this.setQualifier()
+    }
+
+    setQualifier(scope = ["default", "file", "path", "ext", "content", "time", "size"], operator = [">=", "<=", ":", "=", ">", "<"]) {
+        const byLength = (a, b) => b.length - a.length
+        const _scope = [...scope].sort(byLength).join("|")
+        const _operator = [...operator].sort(byLength).join("|")
+        this.regex = new RegExp(
+            [
+                `(?<AND>\\s+)`,
+                `"(?<PHRASE>[^"]*)"`,
+                `(?<PAREN_OPEN>\\()`,
+                `(?<PAREN_CLOSE>\\))`,
+                `(?<NOT>-)`,
+                `(?<OR>\\||\\bOR\\b)`,
+                `(?<QUALIFIER>(?<SCOPE>${_scope})(?<OPERATOR>${_operator}))`,
+                `\\/(?<REGEXP>.*?)(?<!\\\\)\\/`,
+                `(?<KEYWORD>[^\\s"()|]+)`,
+            ].join("|"),
+            "gi"
+        )
+    }
+
+    tokenize(query) {
+        return Array.from(query.trim().matchAll(this.regex))
+            .map(_tokens => {
+                const [name, value = ""] = Object.entries(_tokens.groups).find(([_, v]) => v != null)
+                const type = this.TYPE[name] || this.TYPE.KEYWORD
+                return name === this.TYPE.QUALIFIER
+                    ? { type, scope: _tokens.groups.SCOPE, operator: _tokens.groups.OPERATOR }
+                    : { type, value }
+            })
+            .filter((token, i, tokens) => {
+                if (token.type !== this.TYPE.AND) return true
+                const prev = tokens[i - 1]
+                const next = tokens[i + 1]
+                return prev && next && !this.INVALID_AND.PREV.has(prev.type) && !this.INVALID_AND.NEXT.has(next.type)
+            })
+    }
+
+    check(tokens) {
+        // check first
+        const first = tokens[0]
+        if (this.INVALID_POSITION.FIRST.has(first.type)) {
+            throw new Error(`Node ${first.type} should not be first`)
+        }
+
+        // check last
+        const last = tokens[tokens.length - 1]
+        if (this.INVALID_POSITION.LAST.has(last.type)) {
+            throw new Error(`Node ${last.type} should not be last`)
+        }
+
+        // check follow
+        tokens.forEach((token, i, tokens) => {
+            const set = this.INVALID_POSITION.FOLLOW[token.type]
+            const follow = tokens[i + 1]
+            if (set && follow && set.has(follow.type)) {
+                throw new Error(`Node ${follow.type} cannot follow node ${token.type}`)
+            }
+        })
+
+        // check parentheses
+        let balance = 0
+        tokens.forEach(token => {
+            if (token.type === this.TYPE.PAREN_OPEN) {
+                balance++
+            } else if (token.type === this.TYPE.PAREN_CLOSE) {
+                balance--
+                if (balance < 0) {
+                    throw new Error("Too many closing parentheses")
+                }
+            }
+        })
+        if (balance !== 0) {
+            throw new Error("Too many opening parentheses")
+        }
     }
 
     _parseExpression(tokens) {
@@ -153,7 +154,7 @@ class searchStringParser {
     _parseFactor(tokens) {
         const qualifier = (tokens[0].type === this.TYPE.QUALIFIER)
             ? tokens.shift()
-            : this.TOKEN.QUALIFIER("default", ":");
+            : { type: this.TYPE.QUALIFIER, scope: "default", operator: ":" }
         const node = this._parseMatch(tokens);
         return this._setQualifier(node, qualifier);
     }
@@ -187,11 +188,12 @@ class searchStringParser {
     }
 
     parse(query) {
-        const tokens = this._tokenize(query);
+        const tokens = this.tokenize(query)
         if (tokens.length === 0) {
-            return this.TOKEN.KEYWORD("")
+            return { type: this.TYPE.KEYWORD, value: "" }
         }
-        const result = this._parseExpression(tokens);
+        this.check(tokens)
+        const result = this._parseExpression(tokens)
         if (tokens.length !== 0) {
             throw new Error(`parse error. remind tokens: ${tokens}`)
         }
