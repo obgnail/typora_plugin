@@ -250,79 +250,85 @@ class SearchHelper {
             ">": (a, b) => a > b,
             "<": (a, b) => a < b,
         }
+        this.CONVERT = {
+            // There is a difference between KB and KiB, but who cares?
+            _units: {
+                b: 1,
+                k: 1024,
+                m: 1024 ** 2,
+                g: 1024 ** 3,
+                t: 1024 ** 4,
+                kb: 1024,
+                mb: 1024 ** 2,
+                gb: 1024 ** 3,
+                tb: 1024 ** 4,
+                kib: 1024,
+                mib: 1024 ** 2,
+                gib: 1024 ** 3,
+                tib: 1024 ** 4,
+            },
+            toBytes: function (sizeString) {
+                const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
+                if (!match) {
+                    throw new Error(`Invalid SIZE's operand:「${sizeString}」`)
+                }
+                const value = parseFloat(match[1])
+                const unit = match[3].toLowerCase()
+                if (!this._units.hasOwnProperty(unit)) {
+                    throw new Error(`Unsupported SIZE's unit:「${unit}」`)
+                }
+                return value * this._units[unit]
+            },
+            toMidnight: function (date) {
+                date.setHours(0, 0, 0, 0)
+                return date
+            }
+        }
+
+        this.MATCH = {
+            keyword: (scope, operator, operand, queryResult) => {
+                queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase()  // operand 先前已经做了大小写转化处理，这里不再需要做了
+                return this.operator[operator](queryResult, operand)
+            },
+            regexp: (scope, operator, operand, queryResult) => {
+                const flag = this.config.CASE_SENSITIVE ? undefined : "i"
+                return new RegExp(operand, flag).test(queryResult.toString())
+            },
+            number: (scope, operator, operand, queryResult) => {
+                return this.operator[operator](Number(queryResult), Number(operand))
+            }
+        }
+
+        this.TEST = {
+            string: (scope, operator, operand, operandType) => {
+                if (operator !== ":" && operator !== "=" && operator !== "==") {
+                    throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「${operator}」`)
+                }
+                if (operandType === "regexp" && operator !== ":") {
+                    throw new Error(`Invalid ${operandType.toUpperCase()}'s operator:「${operator}」`)
+                }
+            },
+            number: (scope, operator, operand, operandType) => {
+                if (operator === ":") {
+                    throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「:」`)
+                }
+                if (operandType === "regexp") {
+                    throw new Error(`Invalid ${scope.toUpperCase()}'s operand type:「REGEXP」`)
+                }
+                if (!/^"?\d/.test(operand)) {
+                    throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
+                }
+            }
+        }
     }
 
     process() {
-        // There is a difference between KB and KiB, but who cares?
-        const units = {
-            b: 1,
-            k: 1024,
-            m: 1024 ** 2,
-            g: 1024 ** 3,
-            t: 1024 ** 4,
-            kb: 1024,
-            mb: 1024 ** 2,
-            gb: 1024 ** 3,
-            tb: 1024 ** 4,
-            kib: 1024,
-            mib: 1024 ** 2,
-            gib: 1024 ** 3,
-            tib: 1024 ** 4,
-        }
-        const convertToBytes = sizeString => {
-            const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
-            if (!match) {
-                throw new Error(`Invalid SIZE's operand:「${sizeString}」`)
-            }
-            const value = parseFloat(match[1])
-            const unit = match[3].toLowerCase()
-            if (!units.hasOwnProperty(unit)) {
-                throw new Error(`Unsupported SIZE's unit:「${unit}」`)
-            }
-            return value * units[unit]
-        }
-        const setToMidnight = date => {
-            date.setHours(0, 0, 0, 0)
-            return date
-        }
-
-        const keywordMatch = (scope, operator, operand, queryResult) => {
-            queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase();  // operand 先前已经做了大小写转化处理，这里不再需要做了
-            return this.operator[operator](queryResult, operand);
-        }
-        const regexpMatch = (scope, operator, operand, queryResult) => {
-            const flag = this.config.CASE_SENSITIVE ? undefined : "i";
-            return new RegExp(operand, flag).test(queryResult.toString());
-        }
-        const numberCompare = (scope, operator, operand, queryResult) => {
-            return this.operator[operator](Number(queryResult), Number(operand));
-        }
-        const stringTest = (scope, operator, operand, type) => {
-            if (operator !== ":" && operator !== "=" && operator !== "==") {
-                throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「${operator}」`)
-            }
-            if (type === "regexp" && operator !== ":") {
-                throw new Error(`Invalid REGEXP's operator:「${operator}」`)
-            }
-        }
-        const numberTest = (scope, operator, operand, type) => {
-            if (operator === ":") {
-                throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「:」`)
-            }
-            if (type === "regexp") {
-                throw new Error(`Invalid ${scope.toUpperCase()}'s operand type:「REGEXP」`)
-            }
-            if (!/^"?\d/.test(operand)) {
-                throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
-            }
-        }
-
         /**
          * scope:   关键字
          * query:   从fileData中查询需要的信息
-         * keyword: 当用户输入keyword时，根据查询的信息和input进行匹配，默认使用keywordMatch
+         * keyword: 当用户输入keyword时，根据查询的信息和input进行匹配，默认使用this.MATCH.keyword
          * phrase:  当用户输入phrase时，根据查询的信息和input进行匹配，默认和keyword保持一致
-         * regexp:  当用户输入regexp时，根据查询的信息和input进行匹配，默认使用regexpMatch
+         * regexp:  当用户输入regexp时，根据查询的信息和input进行匹配，默认使用this.MATCH.regexp
          * test:    测试用户输入是否合法，默认使用stringTest
          */
         const qualifiers = [
@@ -357,34 +363,33 @@ class SearchHelper {
             {
                 scope: "size",
                 query: ({ filePath, file, stats, buffer }) => stats.size,
-                keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, convertToBytes(operand), queryResult),
+                keyword: (scope, operator, operand, queryResult) => this.MATCH.number(scope, operator, this.CONVERT.toBytes(operand), queryResult),
                 test: (scope, operator, operand, type) => {
-                    numberTest(scope, operator, operand, type);
-                    convertToBytes(operand);
+                    this.TEST.number(scope, operator, operand, type);
+                    this.CONVERT.toBytes(operand);
                 },
             },
             {
                 scope: "len",
                 query: ({ filePath, file, stats, buffer }) => file.length,
-                keyword: numberCompare,
-                test: numberTest,
+                keyword: this.MATCH.number,
+                test: this.TEST.number,
             },
             {
                 scope: "time",
-                query: ({ filePath, file, stats, buffer }) => setToMidnight(stats.mtime),
-                keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, setToMidnight(new Date(operand)), queryResult),
-                test: numberTest,
+                query: ({ filePath, file, stats, buffer }) => this.CONVERT.toMidnight(stats.mtime),
+                keyword: (scope, operator, operand, queryResult) => this.MATCH.number(scope, operator, this.CONVERT.toMidnight(new Date(operand)), queryResult),
+                test: this.TEST.number,
             }
-        ];
+        ]
         qualifiers.forEach(q => {
-            q.keyword = q.keyword || keywordMatch;
-            q.phrase = q.phrase || q.keyword;
-            q.regexp = q.regexp || regexpMatch;
-            q.test = q.test || stringTest;
-        });
-        qualifiers.forEach(q => this.registerQualifier(q.scope, q));
-
-        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)));
+            q.keyword = q.keyword || this.MATCH.keyword
+            q.phrase = q.phrase || q.keyword
+            q.regexp = q.regexp || this.MATCH.regexp
+            q.test = q.test || this.TEST.string
+        })
+        qualifiers.forEach(q => this.registerQualifier(q.scope, q))
+        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)))
     }
 
     registerQualifier(scope, qualifier) {
@@ -398,18 +403,18 @@ class SearchHelper {
         return this.parser.evaluate(ast, { keyword, phrase, regexp })
     }
 
-    _buildCheckFunc(source, type) {
-        return (scope, operator, operand) => this._check(scope, operator, operand, source, type)
+    _buildCheckFunc(source, operandType) {
+        return (scope, operator, operand) => this._check(scope, operator, operand, source, operandType)
     }
 
-    _check(scope, operator, operand, source, type) {
+    _check(scope, operator, operand, source, operandType) {
         const qualifier = this.qualifiers.get(scope)
         const queryResult = qualifier.query.call(this, source)
-        return qualifier[type].call(this, scope, operator, operand, queryResult)
+        return qualifier[operandType].call(this, scope, operator, operand, queryResult)
     }
 
     test(ast) {
-        const buildFunc = type => (scope, operator, operand) => this.qualifiers.get(scope).test.call(this, scope, operator, operand, type)
+        const buildFunc = operandType => (scope, operator, operand) => this.qualifiers.get(scope).test.call(this, scope, operator, operand, operandType)
         const keyword = buildFunc("keyword")
         const phrase = buildFunc("phrase")
         const regexp = buildFunc("regexp")
