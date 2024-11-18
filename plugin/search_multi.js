@@ -108,69 +108,15 @@ class searchMultiKeywordPlugin extends BasePlugin {
         });
     }
 
-    traverseDir = async (dir, fileFilter, dirFilter, callback) => {
-        const { Fs: { promises: { readdir, stat, readFile } }, Path } = this.utils.Package;
+    searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
+        const ast = this.getAST(input)
+        if (!ast) return
 
-        async function traverse(dir) {
-            const files = await readdir(dir);
-            await Promise.all(files.map(async file => {
-                const filePath = Path.join(dir, file);
-                const stats = await stat(filePath);
-                if (stats.isFile() && (!fileFilter || fileFilter(filePath, stats))) {
-                    const buffer = await readFile(filePath);
-                    callback({ filePath, stats, buffer, file });
-                } else if (stats.isDirectory() && (!dirFilter || dirFilter(file))) {
-                    await traverse(filePath);
-                }
-            }))
-        }
-
-        await traverse(dir);
-    }
-
-    refreshResult = () => {
-        this.utils.hide(this.entities.result);
-        this.utils.show(this.entities.info);
-        this.entities.resultList.innerHTML = "";
-    }
-
-    appendItemFunc = (rootPath, checker) => {
-        let index = 0;
-        const showResult = this.utils.once(() => this.utils.show(this.entities.result));
-        const { RELATIVE_PATH, SHOW_MTIME } = this.config;
-        const newResultItem = (rootPath, filePath, stats) => {
-            const { dir, base } = this.utils.Package.Path.parse(filePath);
-            const dirPath = RELATIVE_PATH ? dir.replace(rootPath, ".") : dir;
-
-            const item = document.createElement("div");
-            item.className = "plugin-search-multi-item";
-            item.setAttribute("data-path", filePath);
-            if (SHOW_MTIME) {
-                const time = stats.mtime.toLocaleString("chinese", { hour12: false });
-                item.setAttribute("ty-hint", time);
-            }
-
-            const title = document.createElement("div");
-            title.className = "plugin-search-multi-item-title";
-            title.textContent = base;
-
-            const path = document.createElement("div");
-            path.className = "plugin-search-multi-item-path";
-            path.textContent = dirPath + this.utils.separator;
-
-            item.append(title, path);
-            return item
-        }
-
-        return ({ filePath, file, stats, buffer }) => {
-            if (!checker({ filePath, file, stats, buffer })) return;
-
-            index++;
-            const item = newResultItem(rootPath, filePath, stats);
-            this.entities.resultList.appendChild(item);
-            this.entities.resultTitle.textContent = `匹配的文件：${index}`;
-            showResult();
-        }
+        this.utils.hide(this.entities.result)
+        this.utils.show(this.entities.info)
+        this.entities.resultList.innerHTML = ""
+        await this.searchMultiByAST(rootPath, ast)
+        this.utils.hide(this.entities.info)
     }
 
     getAST = input => {
@@ -180,8 +126,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
         try {
             const ast = this.searchHelper.parse(input)
             this.searchHelper.test(ast)
-            const title = this.searchHelper.toExplain(ast)
-            this.entities.input.setAttribute("title", title)
+            const explain = this.searchHelper.toExplain(ast)
+            this.entities.input.setAttribute("title", explain)
             this.utils.notification.hide()
             return ast
         } catch (e) {
@@ -190,44 +136,100 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
     }
 
-    searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
-        const ast = this.getAST(input);
-        if (!ast) return;
+    searchMultiByAST = async (rootPath, ast) => {
+        const { fileFilter, dirFilter } = this._getFilter()
+        const checker = source => this.searchHelper.check(ast, source)
+        const callback = this._showResultItem(rootPath, checker)
+        await this._traverseDir(rootPath, fileFilter, dirFilter, callback)
+    }
 
-        const checker = dataset => this.searchHelper.check(ast, dataset);
-        const appendItem = this.appendItemFunc(rootPath, checker);
+    _getFilter = () => {
         const verifyExt = filename => {
-            if (filename.startsWith(".")) return false;
-            const ext = this.utils.Package.Path.extname(filename).toLowerCase();
-            const extension = ext.startsWith(".") ? ext.substring(1) : ext;
-            return this.allowedExtensions.has(extension);
-        };
-        const verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
-
-        this.refreshResult();
-        await this.traverseDir(
-            rootPath,
-            (filepath, stat) => verifySize(stat) && verifyExt(filepath),
-            path => !this.config.IGNORE_FOLDERS.includes(path),
-            appendItem,
-        );
-        this.utils.hide(this.entities.info);
+            if (filename.startsWith(".")) return false
+            const ext = this.utils.Package.Path.extname(filename).toLowerCase()
+            const extension = ext.startsWith(".") ? ext.slice(1) : ext
+            return this.allowedExtensions.has(extension)
+        }
+        const verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE
+        const fileFilter = (filepath, stat) => verifySize(stat) && verifyExt(filepath)
+        const dirFilter = path => !this.config.IGNORE_FOLDERS.includes(path)
+        return { fileFilter, dirFilter }
     }
 
-    isModalHidden = () => this.utils.isHidden(this.entities.modal);
+    _showResultItem = (rootPath, checker) => {
+        const newResultItem = (rootPath, filePath, stats) => {
+            const { dir, base } = this.utils.Package.Path.parse(filePath)
+            const dirPath = this.config.RELATIVE_PATH ? dir.replace(rootPath, ".") : dir
+
+            const item = document.createElement("div")
+            item.className = "plugin-search-multi-item"
+            item.setAttribute("data-path", filePath)
+            if (this.config.SHOW_MTIME) {
+                const time = stats.mtime.toLocaleString("chinese", { hour12: false })
+                item.setAttribute("ty-hint", time)
+            }
+
+            const title = document.createElement("div")
+            title.className = "plugin-search-multi-item-title"
+            title.textContent = base
+
+            const path = document.createElement("div")
+            path.className = "plugin-search-multi-item-path"
+            path.textContent = dirPath + this.utils.separator
+
+            item.append(title, path)
+            return item
+        }
+
+        let index = 0
+        const showResult = this.utils.once(() => this.utils.show(this.entities.result))
+        return source => {
+            if (checker(source)) {
+                index++
+                this.entities.resultList.appendChild(newResultItem(rootPath, source.filePath, source.stats))
+                this.entities.resultTitle.textContent = `匹配的文件：${index}`
+                showResult()
+            }
+        }
+    }
+
+    _traverseDir = async (dir, fileFilter, dirFilter, callback) => {
+        const { Fs: { promises: { readdir, stat, readFile } }, Path } = this.utils.Package
+
+        async function traverse(dir) {
+            const files = await readdir(dir)
+            await Promise.all(files.map(async file => {
+                const filePath = Path.join(dir, file)
+                const stats = await stat(filePath)
+                if (stats.isFile() && (!fileFilter || fileFilter(filePath, stats))) {
+                    const buffer = await readFile(filePath)
+                    callback({ filePath, stats, buffer, file })
+                } else if (stats.isDirectory() && (!dirFilter || dirFilter(file))) {
+                    await traverse(filePath)
+                }
+            }))
+        }
+
+        await traverse(dir)
+    }
+
+    isModalHidden = () => this.utils.isHidden(this.entities.modal)
+
     hide = () => {
-        this.utils.hide(this.entities.modal);
-        this.utils.hide(this.entities.info);
+        this.utils.hide(this.entities.modal)
+        this.utils.hide(this.entities.info)
     }
+
     show = () => {
-        this.utils.show(this.entities.modal);
-        setTimeout(() => this.entities.input.select());
+        this.utils.show(this.entities.modal)
+        setTimeout(() => this.entities.input.select())
     }
+
     call = () => {
         if (!this.isModalHidden()) {
-            this.hide();
+            this.hide()
         } else {
-            this.show();
+            this.show()
         }
     }
 }
@@ -242,82 +244,91 @@ class SearchHelper {
         this.operator = {
             ":": (a, b) => a.includes(b),
             "==": (a, b) => a === b,
+            "=": (a, b) => a === b,
             ">=": (a, b) => a >= b,
             "<=": (a, b) => a <= b,
             ">": (a, b) => a > b,
             "<": (a, b) => a < b,
-            "=": (a, b) => a === b,
+        }
+        this.CONVERT = {
+            // There is a difference between KB and KiB, but who cares?
+            _units: {
+                b: 1,
+                k: 1024,
+                m: 1024 ** 2,
+                g: 1024 ** 3,
+                t: 1024 ** 4,
+                kb: 1024,
+                mb: 1024 ** 2,
+                gb: 1024 ** 3,
+                tb: 1024 ** 4,
+                kib: 1024,
+                mib: 1024 ** 2,
+                gib: 1024 ** 3,
+                tib: 1024 ** 4,
+            },
+            toBytes: function (sizeString) {
+                const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
+                if (!match) {
+                    throw new Error(`Invalid SIZE's operand:「${sizeString}」`)
+                }
+                const value = parseFloat(match[1])
+                const unit = match[3].toLowerCase()
+                if (!this._units.hasOwnProperty(unit)) {
+                    throw new Error(`Unsupported SIZE's unit:「${unit}」`)
+                }
+                return value * this._units[unit]
+            },
+            toMidnight: function (date) {
+                date.setHours(0, 0, 0, 0)
+                return date
+            }
+        }
+
+        this.MATCH = {
+            keyword: (scope, operator, operand, queryResult) => {
+                queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase()  // operand 先前已经做了大小写转化处理，这里不再需要做了
+                return this.operator[operator](queryResult, operand)
+            },
+            regexp: (scope, operator, operand, queryResult) => {
+                const flag = this.config.CASE_SENSITIVE ? undefined : "i"
+                return new RegExp(operand, flag).test(queryResult.toString())
+            },
+            number: (scope, operator, operand, queryResult) => {
+                return this.operator[operator](Number(queryResult), Number(operand))
+            }
+        }
+
+        this.TEST = {
+            string: (scope, operator, operand, operandType) => {
+                if (operator !== ":" && operator !== "=" && operator !== "==") {
+                    throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「${operator}」`)
+                }
+                if (operandType === "REGEXP" && operator !== ":") {
+                    throw new Error(`Invalid ${operandType}'s operator:「${operator}」`)
+                }
+            },
+            number: (scope, operator, operand, operandType) => {
+                if (operator === ":") {
+                    throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「:」`)
+                }
+                if (operandType === "REGEXP") {
+                    throw new Error(`Invalid ${scope.toUpperCase()}'s operand type:「${operandType}」`)
+                }
+                if (!/^"?\d/.test(operand)) {
+                    throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
+                }
+            }
         }
     }
 
     process() {
-        // There is a difference between KB and KiB, but who cares?
-        const units = {
-            b: 1,
-            k: 1024,
-            m: 1024 ** 2,
-            g: 1024 ** 3,
-            t: 1024 ** 4,
-            kb: 1024,
-            mb: 1024 ** 2,
-            gb: 1024 ** 3,
-            tb: 1024 ** 4,
-            kib: 1024,
-            mib: 1024 ** 2,
-            gib: 1024 ** 3,
-            tib: 1024 ** 4,
-        }
-        const convertToBytes = sizeString => {
-            const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i);
-            if (!match) {
-                throw new Error(`Invalid size format: "${sizeString}"`);
-            }
-            const value = parseFloat(match[1]);
-            const unit = match[3].toLowerCase();
-            if (!units.hasOwnProperty(unit)) {
-                throw new Error(`Unsupported unit: "${unit}"`);
-            }
-            const bytes = value * units[unit];
-            return Math.round(bytes);
-        }
-
-        const keywordMatch = (scope, operator, operand, queryResult) => {
-            queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase();  // operand 先前已经做了大小写转化处理，这里不再需要做了
-            return this.operator[operator](queryResult, operand);
-        }
-        const regexpMatch = (scope, operator, operand, queryResult) => {
-            const flag = this.config.CASE_SENSITIVE ? undefined : "i";
-            return new RegExp(operand, flag).test(queryResult.toString());
-        }
-        const numberCompare = (scope, operator, operand, queryResult) => {
-            return this.operator[operator](Number(queryResult), Number(operand));
-        }
-        const stringTest = (scope, operator, operand, type) => {
-            if (operator !== ":" && operator !== "=" && operator !== "==") {
-                throw new Error(`${scope}’s operator can only be ":" or "=" or "=="`);
-            }
-            if (type === "regexp" && operator !== ":") {
-                throw new Error(`RegExp’s operator can only be ":"`);
-            }
-        }
-        const numberTest = (scope, operator, operand, type) => {
-            if (operator === ":") {
-                throw new Error(`${scope}’s operator can not be ":"`);
-            }
-            if (type === "regexp") {
-                throw new Error(`${scope}’s operand type can not be regexp`);
-            }
-            if (/^"?\d/.test(operand)) {
-                return new Error(`${scope}’s operand must start with number`);
-            }
-        }
-
         /**
          * scope:   关键字
          * query:   从fileData中查询需要的信息
-         * keyword: 当用户输入keyword时，根据查询的信息和input进行匹配，默认使用keywordMatch
+         * keyword: 当用户输入keyword时，根据查询的信息和input进行匹配，默认使用this.MATCH.keyword
          * phrase:  当用户输入phrase时，根据查询的信息和input进行匹配，默认和keyword保持一致
-         * regexp:  当用户输入regexp时，根据查询的信息和input进行匹配，默认使用regexpMatch
+         * regexp:  当用户输入regexp时，根据查询的信息和input进行匹配，默认使用this.MATCH.regexp
          * test:    测试用户输入是否合法，默认使用stringTest
          */
         const qualifiers = [
@@ -352,34 +363,33 @@ class SearchHelper {
             {
                 scope: "size",
                 query: ({ filePath, file, stats, buffer }) => stats.size,
-                keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, convertToBytes(operand), queryResult),
-                test: (scope, operator, operand, type) => {
-                    numberTest(scope, operator, operand, type);
-                    convertToBytes(operand);
+                keyword: (scope, operator, operand, queryResult) => this.MATCH.number(scope, operator, this.CONVERT.toBytes(operand), queryResult),
+                test: (scope, operator, operand, operandType) => {
+                    this.TEST.number(scope, operator, operand, operandType);
+                    this.CONVERT.toBytes(operand);
                 },
             },
             {
                 scope: "len",
                 query: ({ filePath, file, stats, buffer }) => file.length,
-                keyword: numberCompare,
-                test: numberTest,
+                keyword: this.MATCH.number,
+                test: this.TEST.number,
             },
             {
                 scope: "time",
-                query: ({ filePath, file, stats, buffer }) => stats.mtime,
-                keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, new Date(operand), queryResult),
-                test: numberTest,
+                query: ({ filePath, file, stats, buffer }) => this.CONVERT.toMidnight(stats.mtime),
+                keyword: (scope, operator, operand, queryResult) => this.MATCH.number(scope, operator, this.CONVERT.toMidnight(new Date(operand)), queryResult),
+                test: this.TEST.number,
             }
-        ];
+        ]
         qualifiers.forEach(q => {
-            q.keyword = q.keyword || keywordMatch;
-            q.phrase = q.phrase || q.keyword;
-            q.regexp = q.regexp || regexpMatch;
-            q.test = q.test || stringTest;
-        });
-        qualifiers.forEach(q => this.registerQualifier(q.scope, q));
-
-        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)));
+            q.KEYWORD = q.keyword || this.MATCH.keyword
+            q.PHRASE = q.phrase || q.KEYWORD
+            q.REGEXP = q.regexp || this.MATCH.regexp
+            q.test = q.test || this.TEST.string
+        })
+        qualifiers.forEach(q => this.registerQualifier(q.scope, q))
+        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)))
     }
 
     registerQualifier(scope, qualifier) {
@@ -387,32 +397,22 @@ class SearchHelper {
     }
 
     check(ast, source) {
-        return this.parser.evaluate(ast, this._buildSearchFunctions(ast, source));
+        const callback = (scope, operator, operand, operandType) => this._check(scope, operator, operand, operandType, source)
+        return this.parser.evaluate(ast, callback)
     }
 
-    _buildSearchFunctions(ast, source) {
-        const keyword = (scope, operator, operand) => this._getSearchFunc(scope, operator, operand, source, "keyword");
-        const phrase = (scope, operator, operand) => this._getSearchFunc(scope, operator, operand, source, "phrase");
-        const regexp = (scope, operator, operand) => this._getSearchFunc(scope, operator, operand, source, "regexp");
-        return { keyword, phrase, regexp };
-    }
-
-    _getSearchFunc(scope, operator, operand, source, type) {
-        const qualifier = this.qualifiers.get(scope);
-        const queryResult = qualifier.query.call(this, source);
-        return qualifier[type].call(this, scope, operator, operand, queryResult);
+    _check(scope, operator, operand, operandType, source) {
+        const qualifier = this.qualifiers.get(scope)
+        const queryResult = qualifier.query.call(this, source)
+        return qualifier[operandType].call(this, scope, operator, operand, queryResult)
     }
 
     test(ast) {
-        const buildTestFunction = type => (scope, operator, operand) => {
-            const { test } = this.qualifiers.get(scope);
-            test.call(this, scope, operator, operand, type);
+        const callback = (scope, operator, operand, operandType) => {
+            const qualifier = this.qualifiers.get(scope)
+            qualifier.test.call(this, scope, operator, operand, operandType)
         }
-        const keyword = buildTestFunction("keyword");
-        const phrase = buildTestFunction("phrase");
-        const regexp = buildTestFunction("regexp");
-        this.parser.traverse(ast, { keyword, phrase, regexp });
-        return ast
+        this.parser.traverse(ast, callback)
     }
 
     parse(input) {
@@ -420,33 +420,33 @@ class SearchHelper {
         return this.parser.parse(input)
     }
 
-    getQueryTokens(ast) {
-        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
-        const collect = new Set(["content", "default", "frontmatter"]);
+    getContentTokens(ast) {
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
+        const collect = new Set(["content", "default", "frontmatter"])
 
-        function evaluate({ type, left, right, value, scope }) {
+        function _eval({ type, left, right, value, scope }) {
             switch (type) {
                 case KEYWORD:
-                    return collect.has(scope) ? [value] : [];
+                    return collect.has(scope) ? [value] : []
                 case PHRASE:
-                    return collect.has(scope) ? [`"${value}"`] : [];
+                    return collect.has(scope) ? [`"${value}"`] : []
                 case REGEXP:
-                    return [];
+                    return []
                 case OR:
                 case AND:
-                    return [...evaluate(left), ...evaluate(right)];
+                    return [..._eval(left), ..._eval(right)]
                 case NOT:
-                    const wont = evaluate(right);
-                    return (left ? evaluate(left) : []).filter(e => !wont.includes(e));
+                    const wont = _eval(right)
+                    return (left ? _eval(left) : []).filter(e => !wont.includes(e))
                 default:
-                    throw new Error(`Unknown AST node「${type}」`);
+                    throw new Error(`Unknown AST node「${type}」`)
             }
         }
 
-        return evaluate(ast);
+        return _eval(ast)
     }
 
-    // 转为mermaid graph。然而生成的图尺寸太大了，没地方放了，暂时不使用
+    // 转为mermaid graph。然而生成的图太大了，没地方放了，暂时不使用
     toMermaid(ast) {
         let idx = 0;
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
@@ -579,12 +579,12 @@ class SearchHelper {
 <table>
     <tr><th>示例</th><th>搜索文档</th></tr>
     <tr><td>sour pear</td><td>包含 sour 和 pear。等价于 default:sour default:pear</td></tr>
-    <tr><td>sour OR pear</td><td>包含 sour 或 pear。等价于 default:sour | default:pear</td></tr>
+    <tr><td>sour OR pear</td><td>包含 sour 或 pear。等价于 default:(sour | pear)</td></tr>
     <tr><td>"sour pear"</td><td>包含 sour pear 这一词组。等价于 default:"sour pear"</td></tr>
     <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
     <tr><td>path:/[a-z]{3}/ content:abc</td><td>路径匹配 [a-z]{3}，且内容包含 abc</td></tr>
     <tr><td>file:(info | warn | err) -ext:log</td><td>文件名包含 info 或 warn 或 err，且扩展名不含 log</td></tr>
-    <tr><td>frontmatter:日记 size>=100k time>2024-03-12</td><td>YAML Front Matter 包含日记，且文件尺寸大于等于 100k，且文件更新时间大于 2024-03-12</td></tr>
+    <tr><td>frontmatter:日记 size>=100k time>2024-03-12</td><td>YAML Front Matter 包含日记，且文件大小大于等于 100k，且文件更新时间大于 2024-03-12</td></tr>
 </table>`
 
         const content = `
@@ -668,7 +668,7 @@ class LinkHelper {
         const ast = this.searcher.getAST(this.searcher.entities.input.value);
         if (!ast) return;
 
-        const keyArr = this.searcher.searchHelper.getQueryTokens(ast);
+        const keyArr = this.searcher.searchHelper.getContentTokens(ast);
         document.querySelector("#plugin-multi-highlighter-input input").value = keyArr.join(" ");
         if (this.searcher.config.CASE_SENSITIVE !== this.highlighter.config.CASE_SENSITIVE) {
             document.querySelector(".plugin-multi-highlighter-option-btn").click();
