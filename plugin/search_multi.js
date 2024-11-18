@@ -392,32 +392,28 @@ class SearchHelper {
     }
 
     check(ast, source) {
-        return this.parser.evaluate(ast, this._buildSearchFunctions(ast, source));
+        const keyword = this._buildCheckFunc(source, "keyword")
+        const phrase = this._buildCheckFunc(source, "phrase")
+        const regexp = this._buildCheckFunc(source, "regexp")
+        return this.parser.evaluate(ast, { keyword, phrase, regexp })
     }
 
-    _buildSearchFunctions(ast, source) {
-        const keyword = (scope, operator, operand) => this._getSearchFunc(scope, operator, operand, source, "keyword");
-        const phrase = (scope, operator, operand) => this._getSearchFunc(scope, operator, operand, source, "phrase");
-        const regexp = (scope, operator, operand) => this._getSearchFunc(scope, operator, operand, source, "regexp");
-        return { keyword, phrase, regexp };
+    _buildCheckFunc(source, type) {
+        return (scope, operator, operand) => this._check(scope, operator, operand, source, type)
     }
 
-    _getSearchFunc(scope, operator, operand, source, type) {
-        const qualifier = this.qualifiers.get(scope);
-        const queryResult = qualifier.query.call(this, source);
-        return qualifier[type].call(this, scope, operator, operand, queryResult);
+    _check(scope, operator, operand, source, type) {
+        const qualifier = this.qualifiers.get(scope)
+        const queryResult = qualifier.query.call(this, source)
+        return qualifier[type].call(this, scope, operator, operand, queryResult)
     }
 
     test(ast) {
-        const buildTestFunction = type => (scope, operator, operand) => {
-            const { test } = this.qualifiers.get(scope);
-            test.call(this, scope, operator, operand, type);
-        }
-        const keyword = buildTestFunction("keyword");
-        const phrase = buildTestFunction("phrase");
-        const regexp = buildTestFunction("regexp");
-        this.parser.traverse(ast, { keyword, phrase, regexp });
-        return ast
+        const buildFunc = type => (scope, operator, operand) => this.qualifiers.get(scope).test.call(this, scope, operator, operand, type)
+        const keyword = buildFunc("keyword")
+        const phrase = buildFunc("phrase")
+        const regexp = buildFunc("regexp")
+        this.parser.traverse(ast, { keyword, phrase, regexp })
     }
 
     parse(input) {
