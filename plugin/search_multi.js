@@ -304,16 +304,16 @@ class SearchHelper {
                 if (operator !== ":" && operator !== "=" && operator !== "==") {
                     throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「${operator}」`)
                 }
-                if (operandType === "regexp" && operator !== ":") {
-                    throw new Error(`Invalid ${operandType.toUpperCase()}'s operator:「${operator}」`)
+                if (operandType === "REGEXP" && operator !== ":") {
+                    throw new Error(`Invalid ${operandType}'s operator:「${operator}」`)
                 }
             },
             number: (scope, operator, operand, operandType) => {
                 if (operator === ":") {
                     throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「:」`)
                 }
-                if (operandType === "regexp") {
-                    throw new Error(`Invalid ${scope.toUpperCase()}'s operand type:「REGEXP」`)
+                if (operandType === "REGEXP") {
+                    throw new Error(`Invalid ${scope.toUpperCase()}'s operand type:「${operandType}」`)
                 }
                 if (!/^"?\d/.test(operand)) {
                     throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
@@ -364,8 +364,8 @@ class SearchHelper {
                 scope: "size",
                 query: ({ filePath, file, stats, buffer }) => stats.size,
                 keyword: (scope, operator, operand, queryResult) => this.MATCH.number(scope, operator, this.CONVERT.toBytes(operand), queryResult),
-                test: (scope, operator, operand, type) => {
-                    this.TEST.number(scope, operator, operand, type);
+                test: (scope, operator, operand, operandType) => {
+                    this.TEST.number(scope, operator, operand, operandType);
                     this.CONVERT.toBytes(operand);
                 },
             },
@@ -383,9 +383,9 @@ class SearchHelper {
             }
         ]
         qualifiers.forEach(q => {
-            q.keyword = q.keyword || this.MATCH.keyword
-            q.phrase = q.phrase || q.keyword
-            q.regexp = q.regexp || this.MATCH.regexp
+            q.KEYWORD = q.keyword || this.MATCH.keyword
+            q.PHRASE = q.phrase || q.KEYWORD
+            q.REGEXP = q.regexp || this.MATCH.regexp
             q.test = q.test || this.TEST.string
         })
         qualifiers.forEach(q => this.registerQualifier(q.scope, q))
@@ -397,28 +397,22 @@ class SearchHelper {
     }
 
     check(ast, source) {
-        const keyword = this._buildCheckFunc(source, "keyword")
-        const phrase = this._buildCheckFunc(source, "phrase")
-        const regexp = this._buildCheckFunc(source, "regexp")
-        return this.parser.evaluate(ast, { keyword, phrase, regexp })
+        const callback = (scope, operator, operand, operandType) => this._check(scope, operator, operand, operandType, source)
+        return this.parser.evaluate(ast, callback)
     }
 
-    _buildCheckFunc(source, operandType) {
-        return (scope, operator, operand) => this._check(scope, operator, operand, source, operandType)
-    }
-
-    _check(scope, operator, operand, source, operandType) {
+    _check(scope, operator, operand, operandType, source) {
         const qualifier = this.qualifiers.get(scope)
         const queryResult = qualifier.query.call(this, source)
         return qualifier[operandType].call(this, scope, operator, operand, queryResult)
     }
 
     test(ast) {
-        const buildFunc = operandType => (scope, operator, operand) => this.qualifiers.get(scope).test.call(this, scope, operator, operand, operandType)
-        const keyword = buildFunc("keyword")
-        const phrase = buildFunc("phrase")
-        const regexp = buildFunc("regexp")
-        this.parser.traverse(ast, { keyword, phrase, regexp })
+        const callback = (scope, operator, operand, operandType) => {
+            const qualifier = this.qualifiers.get(scope)
+            qualifier.test.call(this, scope, operator, operand, operandType)
+        }
+        this.parser.traverse(ast, callback)
     }
 
     parse(input) {
@@ -426,30 +420,30 @@ class SearchHelper {
         return this.parser.parse(input)
     }
 
-    getQueryTokens(ast) {
-        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
-        const collect = new Set(["content", "default", "frontmatter"]);
+    getContentTokens(ast) {
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
+        const collect = new Set(["content", "default", "frontmatter"])
 
-        function evaluate({ type, left, right, value, scope }) {
+        function _eval({ type, left, right, value, scope }) {
             switch (type) {
                 case KEYWORD:
-                    return collect.has(scope) ? [value] : [];
+                    return collect.has(scope) ? [value] : []
                 case PHRASE:
-                    return collect.has(scope) ? [`"${value}"`] : [];
+                    return collect.has(scope) ? [`"${value}"`] : []
                 case REGEXP:
-                    return [];
+                    return []
                 case OR:
                 case AND:
-                    return [...evaluate(left), ...evaluate(right)];
+                    return [..._eval(left), ..._eval(right)]
                 case NOT:
-                    const wont = evaluate(right);
-                    return (left ? evaluate(left) : []).filter(e => !wont.includes(e));
+                    const wont = _eval(right)
+                    return (left ? _eval(left) : []).filter(e => !wont.includes(e))
                 default:
-                    throw new Error(`Unknown AST node「${type}」`);
+                    throw new Error(`Unknown AST node「${type}」`)
             }
         }
 
-        return evaluate(ast);
+        return _eval(ast)
     }
 
     // 转为mermaid graph。然而生成的图太大了，没地方放了，暂时不使用
@@ -674,7 +668,7 @@ class LinkHelper {
         const ast = this.searcher.getAST(this.searcher.entities.input.value);
         if (!ast) return;
 
-        const keyArr = this.searcher.searchHelper.getQueryTokens(ast);
+        const keyArr = this.searcher.searchHelper.getContentTokens(ast);
         document.querySelector("#plugin-multi-highlighter-input input").value = keyArr.join(" ");
         if (this.searcher.config.CASE_SENSITIVE !== this.highlighter.config.CASE_SENSITIVE) {
             document.querySelector(".plugin-multi-highlighter-option-btn").click();

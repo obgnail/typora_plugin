@@ -200,44 +200,38 @@ class searchStringParser {
         return result
     }
 
-    evaluate(ast, { keyword, phrase, regexp }) {
-        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE;
-
-        function _eval({ type, left, right, scope, operator, value }) {
-            switch (type) {
-                case KEYWORD:
-                    return keyword(scope, operator, value);
-                case PHRASE:
-                    return phrase(scope, operator, value);
-                case REGEXP:
-                    return regexp(scope, operator, value);
-                case OR:
-                    return _eval(left) || _eval(right);
-                case AND:
-                    return _eval(left) && _eval(right);
-                case NOT:
-                    return (left ? _eval(left) : true) && !_eval(right);
-                default:
-                    throw new Error(`Unknown AST node「${type}」`);
-            }
-        }
-
-        return _eval(ast);
-    }
-
-    traverse(ast, { keyword, phrase, regexp }) {
+    evaluate(ast, callback) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE
 
         function _eval({ type, left, right, scope, operator, value }) {
             switch (type) {
                 case KEYWORD:
-                    keyword(scope, operator, value)
-                    break
                 case PHRASE:
-                    phrase(scope, operator, value)
-                    break
                 case REGEXP:
-                    regexp(scope, operator, value)
+                    return callback(scope, operator, value, type)
+                case OR:
+                    return _eval(left) || _eval(right)
+                case AND:
+                    return _eval(left) && _eval(right)
+                case NOT:
+                    return (left ? _eval(left) : true) && !_eval(right)
+                default:
+                    throw new Error(`Unknown AST node「${type}」`);
+            }
+        }
+
+        return _eval(ast)
+    }
+
+    traverse(ast, callback) {
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE
+
+        function _eval({ type, left, right, scope, operator, value }) {
+            switch (type) {
+                case KEYWORD:
+                case PHRASE:
+                case REGEXP:
+                    callback(scope, operator, value, type)
                     break
                 case OR:
                 case AND:
