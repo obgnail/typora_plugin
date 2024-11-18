@@ -108,71 +108,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
         });
     }
 
-    traverseDir = async (dir, fileFilter, dirFilter, callback) => {
-        const { Fs: { promises: { readdir, stat, readFile } }, Path } = this.utils.Package;
-
-        async function traverse(dir) {
-            const files = await readdir(dir);
-            await Promise.all(files.map(async file => {
-                const filePath = Path.join(dir, file);
-                const stats = await stat(filePath);
-                if (stats.isFile() && (!fileFilter || fileFilter(filePath, stats))) {
-                    const buffer = await readFile(filePath);
-                    callback({ filePath, stats, buffer, file });
-                } else if (stats.isDirectory() && (!dirFilter || dirFilter(file))) {
-                    await traverse(filePath);
-                }
-            }))
-        }
-
-        await traverse(dir);
-    }
-
-    refreshResult = () => {
-        this.utils.hide(this.entities.result);
-        this.utils.show(this.entities.info);
-        this.entities.resultList.innerHTML = "";
-    }
-
-    appendItemFunc = (rootPath, checker) => {
-        let index = 0;
-        const showResult = this.utils.once(() => this.utils.show(this.entities.result));
-        const { RELATIVE_PATH, SHOW_MTIME } = this.config;
-        const newResultItem = (rootPath, filePath, stats) => {
-            const { dir, base } = this.utils.Package.Path.parse(filePath);
-            const dirPath = RELATIVE_PATH ? dir.replace(rootPath, ".") : dir;
-
-            const item = document.createElement("div");
-            item.className = "plugin-search-multi-item";
-            item.setAttribute("data-path", filePath);
-            if (SHOW_MTIME) {
-                const time = stats.mtime.toLocaleString("chinese", { hour12: false });
-                item.setAttribute("ty-hint", time);
-            }
-
-            const title = document.createElement("div");
-            title.className = "plugin-search-multi-item-title";
-            title.textContent = base;
-
-            const path = document.createElement("div");
-            path.className = "plugin-search-multi-item-path";
-            path.textContent = dirPath + this.utils.separator;
-
-            item.append(title, path);
-            return item
-        }
-
-        return ({ filePath, file, stats, buffer }) => {
-            if (!checker({ filePath, file, stats, buffer })) return;
-
-            index++;
-            const item = newResultItem(rootPath, filePath, stats);
-            this.entities.resultList.appendChild(item);
-            this.entities.resultTitle.textContent = `匹配的文件：${index}`;
-            showResult();
-        }
-    }
-
     getAST = input => {
         input = input.trim()
         if (!input) return
@@ -180,8 +115,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
         try {
             const ast = this.searchHelper.parse(input)
             this.searchHelper.test(ast)
-            const title = this.searchHelper.toExplain(ast)
-            this.entities.input.setAttribute("title", title)
+            const explain = this.searchHelper.toExplain(ast)
+            this.entities.input.setAttribute("title", explain)
             this.utils.notification.hide()
             return ast
         } catch (e) {
@@ -191,43 +126,106 @@ class searchMultiKeywordPlugin extends BasePlugin {
     }
 
     searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
-        const ast = this.getAST(input);
-        if (!ast) return;
+        const ast = this.getAST(input)
+        if (!ast) return
 
-        const checker = dataset => this.searchHelper.check(ast, dataset);
-        const appendItem = this.appendItemFunc(rootPath, checker);
+        const checker = source => this.searchHelper.check(ast, source)
+        this.utils.hide(this.entities.result)
+        this.utils.show(this.entities.info)
+        this.entities.resultList.innerHTML = ""
+        await this._searchMulti(rootPath, checker)
+        this.utils.hide(this.entities.info)
+    }
+
+    _searchMulti = async (rootPath, checker) => await this.traverseDir(rootPath, this._showResultItem(rootPath, checker))
+
+    _showResultItem = (rootPath, checker) => {
+        const newResultItem = (rootPath, filePath, stats) => {
+            const { dir, base } = this.utils.Package.Path.parse(filePath)
+            const dirPath = this.config.RELATIVE_PATH ? dir.replace(rootPath, ".") : dir
+
+            const item = document.createElement("div")
+            item.className = "plugin-search-multi-item"
+            item.setAttribute("data-path", filePath)
+            if (this.config.SHOW_MTIME) {
+                const time = stats.mtime.toLocaleString("chinese", { hour12: false })
+                item.setAttribute("ty-hint", time)
+            }
+
+            const title = document.createElement("div")
+            title.className = "plugin-search-multi-item-title"
+            title.textContent = base
+
+            const path = document.createElement("div")
+            path.className = "plugin-search-multi-item-path"
+            path.textContent = dirPath + this.utils.separator
+
+            item.append(title, path)
+            return item
+        }
+
+        let index = 0
+        const showResult = this.utils.once(() => this.utils.show(this.entities.result))
+        return source => {
+            if (checker(source)) {
+                index++
+                this.entities.resultList.appendChild(newResultItem(rootPath, source.filePath, source.stats))
+                this.entities.resultTitle.textContent = `匹配的文件：${index}`
+                showResult()
+            }
+        }
+    }
+
+    _traverseDir = async (dir, fileFilter, dirFilter, callback) => {
+        const { Fs: { promises: { readdir, stat, readFile } }, Path } = this.utils.Package
+
+        async function traverse(dir) {
+            const files = await readdir(dir)
+            await Promise.all(files.map(async file => {
+                const filePath = Path.join(dir, file)
+                const stats = await stat(filePath)
+                if (stats.isFile() && (!fileFilter || fileFilter(filePath, stats))) {
+                    const buffer = await readFile(filePath)
+                    callback({ filePath, stats, buffer, file })
+                } else if (stats.isDirectory() && (!dirFilter || dirFilter(file))) {
+                    await traverse(filePath)
+                }
+            }))
+        }
+
+        await traverse(dir)
+    }
+
+    traverseDir = async (dir, callback) => {
         const verifyExt = filename => {
-            if (filename.startsWith(".")) return false;
-            const ext = this.utils.Package.Path.extname(filename).toLowerCase();
-            const extension = ext.startsWith(".") ? ext.substring(1) : ext;
-            return this.allowedExtensions.has(extension);
-        };
-        const verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
-
-        this.refreshResult();
-        await this.traverseDir(
-            rootPath,
-            (filepath, stat) => verifySize(stat) && verifyExt(filepath),
-            path => !this.config.IGNORE_FOLDERS.includes(path),
-            appendItem,
-        );
-        this.utils.hide(this.entities.info);
+            if (filename.startsWith(".")) return false
+            const ext = this.utils.Package.Path.extname(filename).toLowerCase()
+            const extension = ext.startsWith(".") ? ext.slice(1) : ext
+            return this.allowedExtensions.has(extension)
+        }
+        const verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE
+        const fileFilter = (filepath, stat) => verifySize(stat) && verifyExt(filepath)
+        const dirFilter = path => !this.config.IGNORE_FOLDERS.includes(path)
+        await this._traverseDir(dir, fileFilter, dirFilter, callback)
     }
 
-    isModalHidden = () => this.utils.isHidden(this.entities.modal);
+    isModalHidden = () => this.utils.isHidden(this.entities.modal)
+
     hide = () => {
-        this.utils.hide(this.entities.modal);
-        this.utils.hide(this.entities.info);
+        this.utils.hide(this.entities.modal)
+        this.utils.hide(this.entities.info)
     }
+
     show = () => {
-        this.utils.show(this.entities.modal);
-        setTimeout(() => this.entities.input.select());
+        this.utils.show(this.entities.modal)
+        setTimeout(() => this.entities.input.select())
     }
+
     call = () => {
         if (!this.isModalHidden()) {
-            this.hide();
+            this.hide()
         } else {
-            this.show();
+            this.show()
         }
     }
 }
@@ -242,11 +240,11 @@ class SearchHelper {
         this.operator = {
             ":": (a, b) => a.includes(b),
             "==": (a, b) => a === b,
+            "=": (a, b) => a === b,
             ">=": (a, b) => a >= b,
             "<=": (a, b) => a <= b,
             ">": (a, b) => a > b,
             "<": (a, b) => a < b,
-            "=": (a, b) => a === b,
         }
     }
 
@@ -268,17 +266,17 @@ class SearchHelper {
             tib: 1024 ** 4,
         }
         const convertToBytes = sizeString => {
-            const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i);
+            const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
             if (!match) {
-                throw new Error(`Invalid size format: "${sizeString}"`);
+                throw new Error(`Invalid SIZE's operand:「${sizeString}」`)
             }
-            const value = parseFloat(match[1]);
-            const unit = match[3].toLowerCase();
+            const value = parseFloat(match[1])
+            const unit = match[3].toLowerCase()
             if (!units.hasOwnProperty(unit)) {
-                throw new Error(`Unsupported unit: "${unit}"`);
+                throw new Error(`Unsupported SIZE's unit:「${unit}」`)
             }
-            const bytes = value * units[unit];
-            return Math.round(bytes);
+            const bytes = value * units[unit]
+            return Math.round(bytes)
         }
 
         const keywordMatch = (scope, operator, operand, queryResult) => {
@@ -294,21 +292,21 @@ class SearchHelper {
         }
         const stringTest = (scope, operator, operand, type) => {
             if (operator !== ":" && operator !== "=" && operator !== "==") {
-                throw new Error(`${scope}’s operator can only be ":" or "=" or "=="`);
+                throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「${operator}」`)
             }
             if (type === "regexp" && operator !== ":") {
-                throw new Error(`RegExp’s operator can only be ":"`);
+                throw new Error(`Invalid REGEXP's operator:「${operator}」`)
             }
         }
         const numberTest = (scope, operator, operand, type) => {
             if (operator === ":") {
-                throw new Error(`${scope}’s operator can not be ":"`);
+                throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「:」`)
             }
             if (type === "regexp") {
-                throw new Error(`${scope}’s operand type can not be regexp`);
+                throw new Error(`Invalid ${scope.toUpperCase()}'s operand type:「REGEXP」`)
             }
-            if (/^"?\d/.test(operand)) {
-                return new Error(`${scope}’s operand must start with number`);
+            if (!/^"?\d/.test(operand)) {
+                throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
             }
         }
 
