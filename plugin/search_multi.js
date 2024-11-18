@@ -279,8 +279,11 @@ class SearchHelper {
             if (!units.hasOwnProperty(unit)) {
                 throw new Error(`Unsupported SIZE's unit:「${unit}」`)
             }
-            const bytes = value * units[unit]
-            return Math.round(bytes)
+            return value * units[unit]
+        }
+        const setToMidnight = date => {
+            date.setHours(0, 0, 0, 0)
+            return date
         }
 
         const keywordMatch = (scope, operator, operand, queryResult) => {
@@ -368,8 +371,8 @@ class SearchHelper {
             },
             {
                 scope: "time",
-                query: ({ filePath, file, stats, buffer }) => stats.mtime,
-                keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, new Date(operand), queryResult),
+                query: ({ filePath, file, stats, buffer }) => setToMidnight(stats.mtime),
+                keyword: (scope, operator, operand, queryResult) => numberCompare(scope, operator, setToMidnight(new Date(operand)), queryResult),
                 test: numberTest,
             }
         ];
@@ -448,7 +451,7 @@ class SearchHelper {
         return evaluate(ast);
     }
 
-    // 转为mermaid graph。然而生成的图尺寸太大了，没地方放了，暂时不使用
+    // 转为mermaid graph。然而生成的图太大了，没地方放了，暂时不使用
     toMermaid(ast) {
         let idx = 0;
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
@@ -581,12 +584,12 @@ class SearchHelper {
 <table>
     <tr><th>示例</th><th>搜索文档</th></tr>
     <tr><td>sour pear</td><td>包含 sour 和 pear。等价于 default:sour default:pear</td></tr>
-    <tr><td>sour OR pear</td><td>包含 sour 或 pear。等价于 default:sour | default:pear</td></tr>
+    <tr><td>sour OR pear</td><td>包含 sour 或 pear。等价于 default:(sour | pear)</td></tr>
     <tr><td>"sour pear"</td><td>包含 sour pear 这一词组。等价于 default:"sour pear"</td></tr>
     <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
     <tr><td>path:/[a-z]{3}/ content:abc</td><td>路径匹配 [a-z]{3}，且内容包含 abc</td></tr>
     <tr><td>file:(info | warn | err) -ext:log</td><td>文件名包含 info 或 warn 或 err，且扩展名不含 log</td></tr>
-    <tr><td>frontmatter:日记 size>=100k time>2024-03-12</td><td>YAML Front Matter 包含日记，且文件尺寸大于等于 100k，且文件更新时间大于 2024-03-12</td></tr>
+    <tr><td>frontmatter:日记 size>=100k time>2024-03-12</td><td>YAML Front Matter 包含日记，且文件大小大于等于 100k，且文件更新时间大于 2024-03-12</td></tr>
 </table>`
 
         const content = `
