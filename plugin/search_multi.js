@@ -108,6 +108,17 @@ class searchMultiKeywordPlugin extends BasePlugin {
         });
     }
 
+    searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
+        const ast = this.getAST(input)
+        if (!ast) return
+
+        this.utils.hide(this.entities.result)
+        this.utils.show(this.entities.info)
+        this.entities.resultList.innerHTML = ""
+        await this.searchMultiByAST(rootPath, ast)
+        this.utils.hide(this.entities.info)
+    }
+
     getAST = input => {
         input = input.trim()
         if (!input) return
@@ -125,19 +136,25 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
     }
 
-    searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
-        const ast = this.getAST(input)
-        if (!ast) return
-
+    searchMultiByAST = async (rootPath, ast) => {
+        const { fileFilter, dirFilter } = this._getFilter()
         const checker = source => this.searchHelper.check(ast, source)
-        this.utils.hide(this.entities.result)
-        this.utils.show(this.entities.info)
-        this.entities.resultList.innerHTML = ""
-        await this._searchMulti(rootPath, checker)
-        this.utils.hide(this.entities.info)
+        const callback = this._showResultItem(rootPath, checker)
+        await this._traverseDir(rootPath, fileFilter, dirFilter, callback)
     }
 
-    _searchMulti = async (rootPath, checker) => await this.traverseDir(rootPath, this._showResultItem(rootPath, checker))
+    _getFilter = () => {
+        const verifyExt = filename => {
+            if (filename.startsWith(".")) return false
+            const ext = this.utils.Package.Path.extname(filename).toLowerCase()
+            const extension = ext.startsWith(".") ? ext.slice(1) : ext
+            return this.allowedExtensions.has(extension)
+        }
+        const verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE
+        const fileFilter = (filepath, stat) => verifySize(stat) && verifyExt(filepath)
+        const dirFilter = path => !this.config.IGNORE_FOLDERS.includes(path)
+        return { fileFilter, dirFilter }
+    }
 
     _showResultItem = (rootPath, checker) => {
         const newResultItem = (rootPath, filePath, stats) => {
@@ -194,19 +211,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
 
         await traverse(dir)
-    }
-
-    traverseDir = async (dir, callback) => {
-        const verifyExt = filename => {
-            if (filename.startsWith(".")) return false
-            const ext = this.utils.Package.Path.extname(filename).toLowerCase()
-            const extension = ext.startsWith(".") ? ext.slice(1) : ext
-            return this.allowedExtensions.has(extension)
-        }
-        const verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE
-        const fileFilter = (filepath, stat) => verifySize(stat) && verifyExt(filepath)
-        const dirFilter = path => !this.config.IGNORE_FOLDERS.includes(path)
-        await this._traverseDir(dir, fileFilter, dirFilter, callback)
     }
 
     isModalHidden = () => this.utils.isHidden(this.entities.modal)
