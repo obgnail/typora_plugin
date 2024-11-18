@@ -122,67 +122,68 @@ class searchStringParser {
     }
 
     _parseExpression(tokens) {
-        let node = this._parseTerm(tokens);
+        let node = this._parseTerm(tokens)
         while (tokens.length > 0) {
-            const type = tokens[0].type;
+            const type = tokens[0].type
             if (type === this.TYPE.OR) {
-                tokens.shift();
-                const right = this._parseTerm(tokens);
-                node = { type, left: node, right };
+                tokens.shift()
+                const right = this._parseTerm(tokens)
+                node = { type, left: node, right }
             } else {
-                break;
+                break
             }
         }
-        return node;
+        return node
     }
 
     _parseTerm(tokens) {
-        let node = this._parseFactor(tokens);
+        let node = this._parseFactor(tokens)
         while (tokens.length > 0) {
-            const type = tokens[0].type;
+            const type = tokens[0].type
             if (type === this.TYPE.NOT || type === this.TYPE.AND) {
-                tokens.shift();
-                const right = this._parseFactor(tokens);
-                node = { type, left: node, right };
+                tokens.shift()
+                const right = this._parseFactor(tokens)
+                node = { type, left: node, right }
             } else {
-                break;
+                break
             }
         }
-        return node;
+        return node
     }
 
     _parseFactor(tokens) {
         const qualifier = (tokens[0].type === this.TYPE.QUALIFIER)
             ? tokens.shift()
             : { type: this.TYPE.QUALIFIER, scope: "default", operator: ":" }
-        const node = this._parseMatch(tokens);
-        return this._setQualifier(node, qualifier);
+        const node = this._parseMatch(tokens)
+        return this._setQualifier(node, qualifier)
     }
 
     _parseMatch(tokens) {
-        const type = tokens[0].type;
+        const type = tokens[0].type
         if (type === this.TYPE.PHRASE || type === this.TYPE.KEYWORD || type === this.TYPE.REGEXP) {
-            return { type, value: tokens.shift().value };
+            return { type, value: tokens.shift().value }
         } else if (type === this.TYPE.PAREN_OPEN) {
-            tokens.shift();
-            const node = this._parseExpression(tokens);
+            tokens.shift()
+            const node = this._parseExpression(tokens)
             if (tokens.shift().type !== this.TYPE.PAREN_CLOSE) {
-                throw new Error("Expected ')'");
+                throw new Error(`Unmatched「${this.TYPE.PAREN_OPEN}」`)
             }
-            return node;
+            return node
         }
     }
 
     _setQualifier(node, qualifier) {
-        if (!node) return;
-        const type = node.type;
-        const isLeaf = type === this.TYPE.PHRASE || type === this.TYPE.KEYWORD || type === this.TYPE.REGEXP;
-        if (isLeaf && (!node.scope || node.scope === "default")) {
-            node.scope = qualifier.scope;
-            node.operator = qualifier.operator;
+        if (!node) return
+        const type = node.type
+        const isLeaf = type === this.TYPE.PHRASE || type === this.TYPE.KEYWORD || type === this.TYPE.REGEXP
+        const isDefault = !node.scope || node.scope === "default"
+        if (isLeaf && isDefault) {
+            node.scope = qualifier.scope
+            node.operator = qualifier.operator
         } else {
-            this._setQualifier(node.left, qualifier);
-            this._setQualifier(node.right, qualifier);
+            this._setQualifier(node.left, qualifier)
+            this._setQualifier(node.right, qualifier)
         }
         return node
     }
@@ -216,7 +217,7 @@ class searchStringParser {
                 case NOT:
                     return (left ? _eval(left) : true) && !_eval(right)
                 default:
-                    throw new Error(`Unknown AST node「${type}」`);
+                    throw new Error(`Unknown AST node「${type}」`)
             }
         }
 
@@ -235,19 +236,11 @@ class searchStringParser {
                     break
                 case OR:
                 case AND:
-                    if (left == null || right == null) {
-                        throw new Error(`「${type}」has empty child`)
-                    }
                     _eval(left)
                     _eval(right)
                     break
                 case NOT:
-                    if (right == null) {
-                        throw new Error(`「${type}」has empty right child`)
-                    }
-                    if (left != null) {
-                        _eval(left)
-                    }
+                    left && _eval(left)
                     _eval(right)
                     break
                 default:
