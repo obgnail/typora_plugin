@@ -186,7 +186,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         return source => {
             if (matcher(source)) {
                 index++
-                this.entities.resultList.appendChild(newResultItem(rootPath, source.filePath, source.stats))
+                this.entities.resultList.appendChild(newResultItem(rootPath, source.path, source.stats))
                 this.entities.resultTitle.textContent = `匹配的文件：${index}`
                 showResult()
             }
@@ -199,13 +199,13 @@ class searchMultiKeywordPlugin extends BasePlugin {
         async function traverse(dir) {
             const files = await readdir(dir)
             await Promise.all(files.map(async file => {
-                const filePath = Path.join(dir, file)
-                const stats = await stat(filePath)
-                if (stats.isFile() && (!fileFilter || fileFilter(filePath, stats))) {
-                    const buffer = await readFile(filePath)
-                    callback({ filePath, stats, buffer, file })
+                const path = Path.join(dir, file)
+                const stats = await stat(path)
+                if (stats.isFile() && (!fileFilter || fileFilter(path, stats))) {
+                    const buffer = await readFile(path)
+                    callback({ path, file, stats, buffer })
                 } else if (stats.isDirectory() && (!dirFilter || dirFilter(file))) {
-                    await traverse(filePath)
+                    await traverse(path)
                 }
             }))
         }
@@ -342,39 +342,52 @@ class SearchHelper {
     }
 
     process() {
-        /**
-         * {string}   scope:         qualifier name
-         * {function} validate:      Checks user input; defaults to `this.VALIDATE.isStringOrRegexp`
-         * {function} cast:          Converts user input for easier matching; defaults to `this.CAST.toStringOrRegexp`
-         * {function} query:         Retrieves data from source
-         * {function} match_keyword: Matches operand with queryResult when the user input is a keyword; defaults to `this.MATCH.compare`
-         * {function} match_phrase:  Matches operand with queryResult when the user input is a phrase; behaves the same as `match_keyword` by default
-         * {function} match_regexp:  Matches operand with queryResult when the user input is a regexp; defaults to `this.MATCH.regexp`
-         */
-        const qualifiers = [
+        const qualifiers = this.buildQualifiers()
+        qualifiers.forEach(q => {
+            q.validate = q.validate || this.VALIDATE.isStringOrRegexp
+            q.cast = q.cast || this.CAST.toStringOrRegexp
+            q.KEYWORD = q.match_keyword || this.MATCH.compare
+            q.PHRASE = q.match_phrase || q.KEYWORD
+            q.REGEXP = q.match_regexp || this.MATCH.regexp
+            this.qualifiers.set(q.scope, q) // register qualifiers
+        })
+        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)))
+    }
+
+    /**
+     * {string}   scope:         qualifier name
+     * {function} validate:      Checks user input; defaults to `this.VALIDATE.isStringOrRegexp`
+     * {function} cast:          Converts user input for easier matching; defaults to `this.CAST.toStringOrRegexp`
+     * {function} query:         Retrieves data from source
+     * {function} match_keyword: Matches castResult with queryResult when the user input is a keyword; defaults to `this.MATCH.compare`
+     * {function} match_phrase:  Matches castResult with queryResult when the user input is a phrase; behaves the same as `match_keyword` by default
+     * {function} match_regexp:  Matches castResult with queryResult when the user input is a regexp; defaults to `this.MATCH.regexp`
+     */
+    buildQualifiers() {
+        return [
             {
                 scope: "default",
-                query: ({ filePath, file, stats, buffer }) => `${buffer.toString()}\n${filePath}`,
-            },
-            {
-                scope: "file",
-                query: ({ filePath, file, stats, buffer }) => file,
+                query: ({ path, file, stats, buffer }) => `${buffer.toString()}\n${path}`,
             },
             {
                 scope: "path",
-                query: ({ filePath, file, stats, buffer }) => filePath,
+                query: ({ path, file, stats, buffer }) => path,
+            },
+            {
+                scope: "file",
+                query: ({ path, file, stats, buffer }) => file,
             },
             {
                 scope: "ext",
-                query: ({ filePath, file, stats, buffer }) => this.utils.Package.Path.extname(file),
+                query: ({ path, file, stats, buffer }) => this.utils.Package.Path.extname(file),
             },
             {
                 scope: "content",
-                query: ({ filePath, file, stats, buffer }) => buffer.toString(),
+                query: ({ path, file, stats, buffer }) => buffer.toString(),
             },
             {
                 scope: "frontmatter",
-                query: ({ filePath, file, stats, buffer }) => {
+                query: ({ path, file, stats, buffer }) => {
                     const { yamlObject } = this.utils.splitFrontMatter(buffer.toString())
                     return JSON.stringify(yamlObject)
                 },
@@ -383,31 +396,21 @@ class SearchHelper {
                 scope: "size",
                 validate: this.VALIDATE.isSize,
                 cast: this.CAST.toBytes,
-                query: ({ filePath, file, stats, buffer }) => stats.size,
+                query: ({ path, file, stats, buffer }) => stats.size,
             },
             {
                 scope: "len",
                 validate: this.VALIDATE.isNumber,
                 cast: this.CAST.toNumber,
-                query: ({ filePath, file, stats, buffer }) => file.length,
+                query: ({ path, file, stats, buffer }) => file.length,
             },
             {
                 scope: "time",
                 validate: this.VALIDATE.isDate,
                 cast: this.CAST.toDate,
-                query: ({ filePath, file, stats, buffer }) => this.CAST.toDate(stats.mtime),
+                query: ({ path, file, stats, buffer }) => this.CAST.toDate(stats.mtime),
             },
         ]
-        qualifiers.forEach(q => {
-            q.validate = q.validate || this.VALIDATE.isStringOrRegexp
-            q.cast = q.cast || this.CAST.toStringOrRegexp
-            q.KEYWORD = q.match_keyword || this.MATCH.compare
-            q.PHRASE = q.match_phrase || q.KEYWORD
-            q.REGEXP = q.match_regexp || this.MATCH.regexp
-        })
-        // register qualifiers
-        qualifiers.forEach(q => this.qualifiers.set(q.scope, q))
-        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)))
     }
 
     parse(input) {
