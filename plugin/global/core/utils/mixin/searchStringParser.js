@@ -68,11 +68,11 @@ class searchStringParser {
     tokenize(query) {
         return Array.from(query.trim().matchAll(this.regex))
             .map(_tokens => {
-                const [name, value = ""] = Object.entries(_tokens.groups).find(([_, v]) => v != null)
-                const type = this.TYPE[name] || this.TYPE.KEYWORD
-                return name === this.TYPE.QUALIFIER
+                const [qualifier, operand = ""] = Object.entries(_tokens.groups).find(([_, v]) => v != null)
+                const type = this.TYPE[qualifier] || this.TYPE.KEYWORD
+                return qualifier === this.TYPE.QUALIFIER
                     ? { type, scope: _tokens.groups.SCOPE, operator: _tokens.groups.OPERATOR }
-                    : { type, value }
+                    : { type, operand }
             })
             .filter((token, i, tokens) => {
                 if (token.type !== this.TYPE.AND) return true
@@ -162,7 +162,7 @@ class searchStringParser {
     _parseMatch(tokens) {
         const type = tokens[0].type
         if (type === this.TYPE.PHRASE || type === this.TYPE.KEYWORD || type === this.TYPE.REGEXP) {
-            return { type, value: tokens.shift().value }
+            return { type, operand: tokens.shift().operand }
         } else if (type === this.TYPE.PAREN_OPEN) {
             tokens.shift()
             const node = this._parseExpression(tokens)
@@ -191,25 +191,26 @@ class searchStringParser {
     parse(query) {
         const tokens = this.tokenize(query)
         if (tokens.length === 0) {
-            return { type: this.TYPE.KEYWORD, value: "" }
+            return { type: this.TYPE.KEYWORD, operand: "" }
         }
         this.check(tokens)
-        const result = this._parseExpression(tokens)
+        const ast = this._parseExpression(tokens)
         if (tokens.length !== 0) {
             throw new Error(`parse error. remind tokens: ${tokens}`)
         }
-        return result
+        return ast
     }
 
     evaluate(ast, callback) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE
 
-        function _eval({ type, left, right, scope, operator, value }) {
+        function _eval(node) {
+            const { type, left, right } = node
             switch (type) {
                 case KEYWORD:
                 case PHRASE:
                 case REGEXP:
-                    return callback(scope, operator, value, type)
+                    return callback(node)
                 case OR:
                     return _eval(left) || _eval(right)
                 case AND:
@@ -227,12 +228,13 @@ class searchStringParser {
     traverse(ast, callback) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE
 
-        function _eval({ type, left, right, scope, operator, value }) {
+        function _eval(node) {
+            const { type, left, right } = node
             switch (type) {
                 case KEYWORD:
                 case PHRASE:
                 case REGEXP:
-                    callback(scope, operator, value, type)
+                    callback(node)
                     break
                 case OR:
                 case AND:

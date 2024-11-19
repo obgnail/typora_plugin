@@ -127,6 +127,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             const ast = this.searchHelper.parse(input)
             this.searchHelper.test(ast)
             const explain = this.searchHelper.toExplain(ast)
+            this.searchHelper.cast(ast)
             this.entities.input.setAttribute("title", explain)
             this.utils.notification.hide()
             return ast
@@ -250,42 +251,42 @@ class SearchHelper {
             ">": (a, b) => a > b,
             "<": (a, b) => a < b,
         }
-        this.CONVERT = {
-            // There is a difference between KB and KiB, but who cares?
-            _units: {
-                b: 1,
-                k: 1024,
-                m: 1024 ** 2,
-                g: 1024 ** 3,
-                t: 1024 ** 4,
-                kb: 1024,
-                mb: 1024 ** 2,
-                gb: 1024 ** 3,
-                tb: 1024 ** 4,
-                kib: 1024,
-                mib: 1024 ** 2,
-                gib: 1024 ** 3,
-                tib: 1024 ** 4,
-            },
-            toBytes: function (sizeString) {
-                const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
+        // There is a difference between KB and KiB, but who cares?
+        this.units = {
+            b: 1,
+            k: 1024,
+            m: 1024 ** 2,
+            g: 1024 ** 3,
+            t: 1024 ** 4,
+            kb: 1024,
+            mb: 1024 ** 2,
+            gb: 1024 ** 3,
+            tb: 1024 ** 4,
+            kib: 1024,
+            mib: 1024 ** 2,
+            gib: 1024 ** 3,
+            tib: 1024 ** 4,
+        }
+        this.CAST = {
+            noop: (operand, operandType) => operand,
+            toBytes: operand => {
+                const match = operand.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
                 if (!match) {
-                    throw new Error(`Invalid SIZE's operand:「${sizeString}」`)
+                    throw new Error(`Invalid SIZE's operand:「${operand}」`)
                 }
                 const value = parseFloat(match[1])
                 const unit = match[3].toLowerCase()
-                if (!this._units.hasOwnProperty(unit)) {
+                if (!this.units.hasOwnProperty(unit)) {
                     throw new Error(`Unsupported SIZE's unit:「${unit}」`)
                 }
-                return value * this._units[unit]
+                return value * this.units[unit]
             },
-            toMidnight: function (date) {
-                date.setHours(0, 0, 0, 0)
-                return date
+            toMidnight: operand => {
+                operand.setHours(0, 0, 0, 0)
+                return operand
             }
         }
-
-        this.MATCH = {
+        this.CHECK = {
             keyword: (scope, operator, operand, queryResult) => {
                 queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase()  // operand 先前已经做了大小写转化处理，这里不再需要做了
                 return this.operator[operator](queryResult, operand)
@@ -298,7 +299,6 @@ class SearchHelper {
                 return this.operator[operator](Number(queryResult), Number(operand))
             }
         }
-
         this.TEST = {
             string: (scope, operator, operand, operandType) => {
                 if (operator !== ":" && operator !== "=" && operator !== "==") {
@@ -324,69 +324,110 @@ class SearchHelper {
 
     process() {
         /**
-         * scope:   关键字
-         * query:   从fileData中查询需要的信息
-         * keyword: 当用户输入keyword时，根据查询的信息和input进行匹配，默认使用this.MATCH.keyword
-         * phrase:  当用户输入phrase时，根据查询的信息和input进行匹配，默认和keyword保持一致
-         * regexp:  当用户输入regexp时，根据查询的信息和input进行匹配，默认使用this.MATCH.regexp
-         * test:    测试用户输入是否合法，默认使用stringTest
+         * {string}   scope:         关键字
+         * {function} test:          检测用户输入是否合法，默认使用this.TEST.string
+         * {function} cast:          提前转换用户输入中的operand，避免在查询中重复转换，默认使用this.CAST.noop
+         * {function} query:         从文件中获取需要的信息
+         * {function} check_keyword: 当用户输入的operand为keyword时，将operand与queryResult进行匹配，默认使用this.CHECK.keyword
+         * {function} check_phrase:  当用户输入的operand为phrase时，将operand与queryResult进行匹配，默认和keyword保持一致
+         * {function} check_regexp:  当用户输入的operand为regexp时，将operand与queryResult进行匹配，默认使用this.CHECK.regexp
          */
         const qualifiers = [
             {
                 scope: "default",
+                test: this.TEST.string,
+                cast: this.CAST.noop,
                 query: ({ filePath, file, stats, buffer }) => `${buffer.toString()}\n${filePath}`,
+                check_keyword: this.CHECK.keyword,
+                check_phrase: this.CHECK.keyword,
+                check_regexp: this.CHECK.regexp,
             },
             {
                 scope: "file",
+                test: this.TEST.string,
+                cast: this.CAST.noop,
                 query: ({ filePath, file, stats, buffer }) => file,
+                check_keyword: this.CHECK.keyword,
+                check_phrase: this.CHECK.keyword,
+                check_regexp: this.CHECK.regexp,
             },
             {
                 scope: "path",
+                test: this.TEST.string,
+                cast: this.CAST.noop,
                 query: ({ filePath, file, stats, buffer }) => filePath,
+                check_keyword: this.CHECK.keyword,
+                check_phrase: this.CHECK.keyword,
+                check_regexp: this.CHECK.regexp,
             },
             {
                 scope: "ext",
+                test: this.TEST.string,
+                cast: this.CAST.noop,
                 query: ({ filePath, file, stats, buffer }) => this.utils.Package.Path.extname(file),
+                check_keyword: this.CHECK.keyword,
+                check_phrase: this.CHECK.keyword,
+                check_regexp: this.CHECK.regexp,
             },
             {
                 scope: "content",
+                test: this.TEST.string,
+                cast: this.CAST.noop,
                 query: ({ filePath, file, stats, buffer }) => buffer.toString(),
+                check_keyword: this.CHECK.keyword,
+                check_phrase: this.CHECK.keyword,
+                check_regexp: this.CHECK.regexp,
             },
             {
                 scope: "frontmatter",
+                test: this.TEST.string,
+                cast: this.CAST.noop,
                 query: ({ filePath, file, stats, buffer }) => {
-                    const content = buffer.toString();
-                    const { yamlObject } = this.utils.splitFrontMatter(content);
-                    return JSON.stringify(yamlObject);
+                    const content = buffer.toString()
+                    const { yamlObject } = this.utils.splitFrontMatter(content)
+                    return JSON.stringify(yamlObject)
                 },
+                check_keyword: this.CHECK.keyword,
+                check_phrase: this.CHECK.keyword,
+                check_regexp: this.CHECK.regexp,
             },
             {
                 scope: "size",
-                query: ({ filePath, file, stats, buffer }) => stats.size,
-                keyword: (scope, operator, operand, queryResult) => this.MATCH.number(scope, operator, this.CONVERT.toBytes(operand), queryResult),
                 test: (scope, operator, operand, operandType) => {
                     this.TEST.number(scope, operator, operand, operandType);
-                    this.CONVERT.toBytes(operand);
+                    this.CAST.toBytes(operand);
                 },
+                cast: this.CAST.toBytes,
+                query: ({ filePath, file, stats, buffer }) => stats.size,
+                check_keyword: (scope, operator, operand, queryResult) => this.CHECK.number(scope, operator, operand, queryResult),
+                check_phrase: this.CHECK.keyword,
+                check_regexp: this.CHECK.regexp,
             },
             {
                 scope: "len",
-                query: ({ filePath, file, stats, buffer }) => file.length,
-                keyword: this.MATCH.number,
                 test: this.TEST.number,
+                cast: this.CAST.noop,
+                query: ({ filePath, file, stats, buffer }) => file.length,
+                check_keyword: this.CHECK.number,
+                check_phrase: this.CHECK.keyword,
+                check_regexp: this.CHECK.regexp,
             },
             {
                 scope: "time",
-                query: ({ filePath, file, stats, buffer }) => this.CONVERT.toMidnight(stats.mtime),
-                keyword: (scope, operator, operand, queryResult) => this.MATCH.number(scope, operator, this.CONVERT.toMidnight(new Date(operand)), queryResult),
                 test: this.TEST.number,
+                cast: operand => this.CAST.toMidnight(new Date(operand)),
+                query: ({ filePath, file, stats, buffer }) => this.CAST.toMidnight(stats.mtime),
+                check_keyword: (scope, operator, operand, queryResult) => this.CHECK.number(scope, operator, operand, queryResult),
+                check_phrase: this.CHECK.keyword,
+                check_regexp: this.CHECK.regexp,
             }
         ]
         qualifiers.forEach(q => {
-            q.KEYWORD = q.keyword || this.MATCH.keyword
-            q.PHRASE = q.phrase || q.KEYWORD
-            q.REGEXP = q.regexp || this.MATCH.regexp
             q.test = q.test || this.TEST.string
+            q.cast = q.cast || this.CAST.noop
+            q.KEYWORD = q.check_keyword || this.CHECK.keyword
+            q.PHRASE = q.check_phrase || q.KEYWORD
+            q.REGEXP = q.check_regexp || this.CHECK.regexp
         })
         qualifiers.forEach(q => this.registerQualifier(q.scope, q))
         this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)))
@@ -397,26 +438,37 @@ class SearchHelper {
     }
 
     check(ast, source) {
-        const callback = (scope, operator, operand, operandType) => this._check(scope, operator, operand, operandType, source)
+        const callback = node => this._check(node, source)
         return this.parser.evaluate(ast, callback)
     }
 
-    _check(scope, operator, operand, operandType, source) {
+    _check(node, source) {
+        const { scope, operator, operand, type: operandType } = node
         const qualifier = this.qualifiers.get(scope)
-        const queryResult = qualifier.query.call(this, source)
-        return qualifier[operandType].call(this, scope, operator, operand, queryResult)
+        const queryResult = qualifier.query(source)
+        return qualifier[operandType](scope, operator, operand, queryResult)
     }
 
     test(ast) {
-        const callback = (scope, operator, operand, operandType) => {
+        const callback = node => {
+            const { scope, operator, operand, type: operandType } = node
             const qualifier = this.qualifiers.get(scope)
-            qualifier.test.call(this, scope, operator, operand, operandType)
+            qualifier.test(scope, operator, operand, operandType)
+        }
+        this.parser.traverse(ast, callback)
+    }
+
+    cast(ast) {
+        const callback = node => {
+            const { scope, operand, type: operandType } = node
+            const qualifier = this.qualifiers.get(scope)
+            node.operand = qualifier.cast(operand, operandType)
         }
         this.parser.traverse(ast, callback)
     }
 
     parse(input) {
-        input = this.config.CASE_SENSITIVE ? input : input.toLowerCase();
+        input = this.config.CASE_SENSITIVE ? input : input.toLowerCase()
         return this.parser.parse(input)
     }
 
@@ -424,12 +476,12 @@ class SearchHelper {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
         const collect = new Set(["content", "default", "frontmatter"])
 
-        function _eval({ type, left, right, value, scope }) {
+        function _eval({ type, left, right, scope, operand }) {
             switch (type) {
                 case KEYWORD:
-                    return collect.has(scope) ? [value] : []
+                    return collect.has(scope) ? [operand] : []
                 case PHRASE:
-                    return collect.has(scope) ? [`"${value}"`] : []
+                    return collect.has(scope) ? [`"${operand}"`] : []
                 case REGEXP:
                     return []
                 case OR:
@@ -455,8 +507,8 @@ class SearchHelper {
             if (node._shortName) return node._shortName;
             node._shortName = "T" + ++idx;
             const prefix = node.negated ? "-" : "";
-            const value = node.type === REGEXP ? `/${node.value}/` : node.value;
-            return `${node._shortName}("${prefix}${node.scope}${node.operator} ${value}")`;
+            const operand = node.type === REGEXP ? `/${node.operand}/` : node.operand;
+            return `${node._shortName}("${prefix}${node.scope}${node.operator} ${operand}")`;
         }
 
         function link(left, right) {
@@ -515,8 +567,8 @@ class SearchHelper {
             const scope = scopeMap[node.scope];
             const negated = node.negated ? "不" : "";
             const operator = node.type === REGEXP ? "匹配正则" : operatorMap[node.operator];
-            const value = node.type === REGEXP ? `/${node.value}/` : node.value;
-            return `「${scope}${negated}${operator}${value}」`;
+            const operand = node.type === REGEXP ? `/${node.operand}/` : node.operand;
+            return `「${scope}${negated}${operator}${operand}」`;
         }
 
         function link(left, right) {
