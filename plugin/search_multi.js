@@ -125,7 +125,6 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
         try {
             const ast = this.searchHelper.parse(input)
-            this.searchHelper.test(ast)
             const explain = this.searchHelper.toExplain(ast)
             this.entities.input.setAttribute("title", explain)
             this.utils.notification.hide()
@@ -133,13 +132,14 @@ class searchMultiKeywordPlugin extends BasePlugin {
         } catch (e) {
             this.entities.input.removeAttribute("title")
             this.utils.notification.show(e.toString().slice(7), "error", 7000)
+            console.error(e)
         }
     }
 
     searchMultiByAST = async (rootPath, ast) => {
         const { fileFilter, dirFilter } = this._getFilter()
-        const checker = source => this.searchHelper.check(ast, source)
-        const callback = this._showResultItem(rootPath, checker)
+        const matcher = source => this.searchHelper.match(ast, source)
+        const callback = this._showResultItem(rootPath, matcher)
         await this._traverseDir(rootPath, fileFilter, dirFilter, callback)
     }
 
@@ -156,7 +156,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         return { fileFilter, dirFilter }
     }
 
-    _showResultItem = (rootPath, checker) => {
+    _showResultItem = (rootPath, matcher) => {
         const newResultItem = (rootPath, filePath, stats) => {
             const { dir, base } = this.utils.Package.Path.parse(filePath)
             const dirPath = this.config.RELATIVE_PATH ? dir.replace(rootPath, ".") : dir
@@ -184,9 +184,9 @@ class searchMultiKeywordPlugin extends BasePlugin {
         let index = 0
         const showResult = this.utils.once(() => this.utils.show(this.entities.result))
         return source => {
-            if (checker(source)) {
+            if (matcher(source)) {
                 index++
-                this.entities.resultList.appendChild(newResultItem(rootPath, source.filePath, source.stats))
+                this.entities.resultList.appendChild(newResultItem(rootPath, source.path, source.stats))
                 this.entities.resultTitle.textContent = `匹配的文件：${index}`
                 showResult()
             }
@@ -199,13 +199,13 @@ class searchMultiKeywordPlugin extends BasePlugin {
         async function traverse(dir) {
             const files = await readdir(dir)
             await Promise.all(files.map(async file => {
-                const filePath = Path.join(dir, file)
-                const stats = await stat(filePath)
-                if (stats.isFile() && (!fileFilter || fileFilter(filePath, stats))) {
-                    const buffer = await readFile(filePath)
-                    callback({ filePath, stats, buffer, file })
+                const path = Path.join(dir, file)
+                const stats = await stat(path)
+                if (stats.isFile() && (!fileFilter || fileFilter(path, stats))) {
+                    const buffer = await readFile(path)
+                    callback({ path, file, stats, buffer })
                 } else if (stats.isDirectory() && (!dirFilter || dirFilter(file))) {
-                    await traverse(filePath)
+                    await traverse(path)
                 }
             }))
         }
@@ -234,202 +234,225 @@ class searchMultiKeywordPlugin extends BasePlugin {
     }
 }
 
+/**
+ * The matching process consists of the following steps: (Steps 1-3 are executed once; steps 4-5 are executed multiple times)
+ *   1. parse:    Parses the input to generate an AST.
+ *   2. validate: Validates the AST for correctness.
+ *   3. cast:     Converts operand within the AST nodes into a usable format (e.g. converting '2024-01-01' in 'time>2024-01-01' to a Date object for easier matching). The result is `castResult`.
+ *   4. query:    Queries the file data to obtain `queryResult`.
+ *   5. match:    Matches `castResult` from step 3 with `queryResult` from step 4.
+ */
 class SearchHelper {
     constructor(plugin) {
-        this.plugin = plugin;
         this.config = plugin.config;
         this.utils = plugin.utils;
         this.parser = plugin.utils.searchStringParser;
         this.qualifiers = new Map();
         this.operator = {
             ":": (a, b) => a.includes(b),
-            "==": (a, b) => a === b,
             "=": (a, b) => a === b,
+            "!=": (a, b) => a !== b,
             ">=": (a, b) => a >= b,
             "<=": (a, b) => a <= b,
             ">": (a, b) => a > b,
             "<": (a, b) => a < b,
         }
-        this.CONVERT = {
-            // There is a difference between KB and KiB, but who cares?
-            _units: {
-                b: 1,
-                k: 1024,
-                m: 1024 ** 2,
-                g: 1024 ** 3,
-                t: 1024 ** 4,
-                kb: 1024,
-                mb: 1024 ** 2,
-                gb: 1024 ** 3,
-                tb: 1024 ** 4,
-                kib: 1024,
-                mib: 1024 ** 2,
-                gib: 1024 ** 3,
-                tib: 1024 ** 4,
-            },
-            toBytes: function (sizeString) {
-                const match = sizeString.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
-                if (!match) {
-                    throw new Error(`Invalid SIZE's operand:「${sizeString}」`)
-                }
-                const value = parseFloat(match[1])
-                const unit = match[3].toLowerCase()
-                if (!this._units.hasOwnProperty(unit)) {
-                    throw new Error(`Unsupported SIZE's unit:「${unit}」`)
-                }
-                return value * this._units[unit]
-            },
-            toMidnight: function (date) {
-                date.setHours(0, 0, 0, 0)
-                return date
-            }
+        this.units = {
+            b: 1,
+            k: 1 << 10,
+            m: 1 << 20,
+            g: 1 << 30,
+            kb: 1 << 10,
+            mb: 1 << 20,
+            gb: 1 << 30,
         }
-
-        this.MATCH = {
-            keyword: (scope, operator, operand, queryResult) => {
-                queryResult = this.config.CASE_SENSITIVE ? queryResult : queryResult.toLowerCase()  // operand 先前已经做了大小写转化处理，这里不再需要做了
-                return this.operator[operator](queryResult, operand)
-            },
-            regexp: (scope, operator, operand, queryResult) => {
-                const flag = this.config.CASE_SENSITIVE ? undefined : "i"
-                return new RegExp(operand, flag).test(queryResult.toString())
-            },
-            number: (scope, operator, operand, queryResult) => {
-                return this.operator[operator](Number(queryResult), Number(operand))
-            }
-        }
-
-        this.TEST = {
-            string: (scope, operator, operand, operandType) => {
-                if (operator !== ":" && operator !== "=" && operator !== "==") {
-                    throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「${operator}」`)
-                }
+        this.VALIDATE = {
+            isStringOrRegexp: (scope, operator, operand, operandType) => {
                 if (operandType === "REGEXP" && operator !== ":") {
                     throw new Error(`Invalid ${operandType}'s operator:「${operator}」`)
                 }
-            },
-            number: (scope, operator, operand, operandType) => {
-                if (operator === ":") {
-                    throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「:」`)
+                if (operator !== ":" && operator !== "=" && operator !== "!=") {
+                    throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「${operator}」`)
                 }
+            },
+            isComparable: (scope, operator, operand, operandType) => {
                 if (operandType === "REGEXP") {
                     throw new Error(`Invalid ${scope.toUpperCase()}'s operand type:「${operandType}」`)
                 }
-                if (!/^"?\d/.test(operand)) {
+                if (operator === ":") {
+                    throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「:」`)
+                }
+            },
+            isSize: (scope, operator, operand, operandType) => {
+                this.VALIDATE.isComparable(scope, operator, operand, operandType)
+                const units = [...Object.keys(this.units)].sort((a, b) => b.length - a.length).join("|")
+                const ok = new RegExp(`^\\d+(\\.\\d+)?${units}$`, "i").test(operand)
+                if (!ok) {
                     throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
                 }
-            }
+            },
+            isNumber: (scope, operator, operand, operandType) => {
+                this.VALIDATE.isComparable(scope, operator, operand, operandType)
+                if (isNaN(operand)) {
+                    throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
+                }
+            },
+            isDate: (scope, operator, operand, operandType) => {
+                this.VALIDATE.isNumber(scope, operator, new Date(operand), operandType)
+            },
+        }
+        this.CAST = {
+            toStringOrRegexp: (operand, operandType) => {
+                return operandType === "REGEXP"
+                    ? new RegExp(operand, this.config.CASE_SENSITIVE ? undefined : "i")
+                    : operand.toString()
+            },
+            toNumber: operand => Number(operand),
+            toBytes: operand => {
+                const match = operand.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
+                if (!match) {
+                    throw new Error(`Invalid SIZE's operand:「${operand}」`)
+                }
+                const unit = match[3].toLowerCase()
+                if (!this.units.hasOwnProperty(unit)) {
+                    throw new Error(`Unsupported SIZE's unit:「${unit}」`)
+                }
+                return parseFloat(match[1]) * this.units[unit]
+            },
+            toDate: operand => {
+                operand = new Date(operand)
+                operand.setHours(0, 0, 0, 0)
+                return operand
+            },
+        }
+        this.MATCH = {
+            compare: (scope, operator, operand, queryResult) => {
+                if (this.config.CASE_SENSITIVE && typeof queryResult === "string") {
+                    queryResult = queryResult.toLowerCase()
+                }
+                return this.operator[operator](queryResult, operand)
+            },
+            regexp: (scope, operator, operand, queryResult) => {
+                if (this.config.CASE_SENSITIVE) {
+                    queryResult = queryResult.toLowerCase()
+                }
+                return operand.test(queryResult.toString())
+            },
         }
     }
 
     process() {
-        /**
-         * scope:   关键字
-         * query:   从fileData中查询需要的信息
-         * keyword: 当用户输入keyword时，根据查询的信息和input进行匹配，默认使用this.MATCH.keyword
-         * phrase:  当用户输入phrase时，根据查询的信息和input进行匹配，默认和keyword保持一致
-         * regexp:  当用户输入regexp时，根据查询的信息和input进行匹配，默认使用this.MATCH.regexp
-         * test:    测试用户输入是否合法，默认使用stringTest
-         */
-        const qualifiers = [
+        const qualifiers = this.buildQualifiers()
+        qualifiers.forEach(q => {
+            q.validate = q.validate || this.VALIDATE.isStringOrRegexp
+            q.cast = q.cast || this.CAST.toStringOrRegexp
+            q.KEYWORD = q.match_keyword || this.MATCH.compare
+            q.PHRASE = q.match_phrase || q.KEYWORD
+            q.REGEXP = q.match_regexp || this.MATCH.regexp
+            this.qualifiers.set(q.scope, q) // register qualifiers
+        })
+        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)))
+    }
+
+    /**
+     * {string}   scope:         qualifier name
+     * {function} validate:      Checks user input; defaults to `this.VALIDATE.isStringOrRegexp`
+     * {function} cast:          Converts user input for easier matching; defaults to `this.CAST.toStringOrRegexp`
+     * {function} query:         Retrieves data from source
+     * {function} match_keyword: Matches castResult with queryResult when the user input is a keyword; defaults to `this.MATCH.compare`
+     * {function} match_phrase:  Matches castResult with queryResult when the user input is a phrase; behaves the same as `match_keyword` by default
+     * {function} match_regexp:  Matches castResult with queryResult when the user input is a regexp; defaults to `this.MATCH.regexp`
+     */
+    buildQualifiers() {
+        return [
             {
                 scope: "default",
-                query: ({ filePath, file, stats, buffer }) => `${buffer.toString()}\n${filePath}`,
-            },
-            {
-                scope: "file",
-                query: ({ filePath, file, stats, buffer }) => file,
+                query: ({ path, file, stats, buffer }) => `${buffer.toString()}\n${path}`,
             },
             {
                 scope: "path",
-                query: ({ filePath, file, stats, buffer }) => filePath,
+                query: ({ path, file, stats, buffer }) => path,
+            },
+            {
+                scope: "file",
+                query: ({ path, file, stats, buffer }) => file,
             },
             {
                 scope: "ext",
-                query: ({ filePath, file, stats, buffer }) => this.utils.Package.Path.extname(file),
+                query: ({ path, file, stats, buffer }) => this.utils.Package.Path.extname(file),
             },
             {
                 scope: "content",
-                query: ({ filePath, file, stats, buffer }) => buffer.toString(),
+                query: ({ path, file, stats, buffer }) => buffer.toString(),
             },
             {
                 scope: "frontmatter",
-                query: ({ filePath, file, stats, buffer }) => {
-                    const content = buffer.toString();
-                    const { yamlObject } = this.utils.splitFrontMatter(content);
-                    return JSON.stringify(yamlObject);
+                query: ({ path, file, stats, buffer }) => {
+                    const { yamlObject } = this.utils.splitFrontMatter(buffer.toString())
+                    return JSON.stringify(yamlObject)
                 },
             },
             {
                 scope: "size",
-                query: ({ filePath, file, stats, buffer }) => stats.size,
-                keyword: (scope, operator, operand, queryResult) => this.MATCH.number(scope, operator, this.CONVERT.toBytes(operand), queryResult),
-                test: (scope, operator, operand, operandType) => {
-                    this.TEST.number(scope, operator, operand, operandType);
-                    this.CONVERT.toBytes(operand);
-                },
+                validate: this.VALIDATE.isSize,
+                cast: this.CAST.toBytes,
+                query: ({ path, file, stats, buffer }) => stats.size,
             },
             {
                 scope: "len",
-                query: ({ filePath, file, stats, buffer }) => file.length,
-                keyword: this.MATCH.number,
-                test: this.TEST.number,
+                validate: this.VALIDATE.isNumber,
+                cast: this.CAST.toNumber,
+                query: ({ path, file, stats, buffer }) => file.length,
             },
             {
                 scope: "time",
-                query: ({ filePath, file, stats, buffer }) => this.CONVERT.toMidnight(stats.mtime),
-                keyword: (scope, operator, operand, queryResult) => this.MATCH.number(scope, operator, this.CONVERT.toMidnight(new Date(operand)), queryResult),
-                test: this.TEST.number,
-            }
+                validate: this.VALIDATE.isDate,
+                cast: this.CAST.toDate,
+                query: ({ path, file, stats, buffer }) => this.CAST.toDate(stats.mtime),
+            },
         ]
-        qualifiers.forEach(q => {
-            q.KEYWORD = q.keyword || this.MATCH.keyword
-            q.PHRASE = q.phrase || q.KEYWORD
-            q.REGEXP = q.regexp || this.MATCH.regexp
-            q.test = q.test || this.TEST.string
-        })
-        qualifiers.forEach(q => this.registerQualifier(q.scope, q))
-        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)))
-    }
-
-    registerQualifier(scope, qualifier) {
-        this.qualifiers.set(scope, qualifier);
-    }
-
-    check(ast, source) {
-        const callback = (scope, operator, operand, operandType) => this._check(scope, operator, operand, operandType, source)
-        return this.parser.evaluate(ast, callback)
-    }
-
-    _check(scope, operator, operand, operandType, source) {
-        const qualifier = this.qualifiers.get(scope)
-        const queryResult = qualifier.query.call(this, source)
-        return qualifier[operandType].call(this, scope, operator, operand, queryResult)
-    }
-
-    test(ast) {
-        const callback = (scope, operator, operand, operandType) => {
-            const qualifier = this.qualifiers.get(scope)
-            qualifier.test.call(this, scope, operator, operand, operandType)
-        }
-        this.parser.traverse(ast, callback)
     }
 
     parse(input) {
-        input = this.config.CASE_SENSITIVE ? input : input.toLowerCase();
-        return this.parser.parse(input)
+        input = this.config.CASE_SENSITIVE ? input : input.toLowerCase()
+        const ast = this.parser.parse(input)
+        return this.validateAndCast(ast)
+    }
+
+    validateAndCast(ast) {
+        this.parser.traverse(ast, node => {
+            const { scope, operator, operand, type: operandType } = node
+            const qualifier = this.qualifiers.get(scope)
+            qualifier.validate(scope, operator, operand, operandType)
+            node.castResult = qualifier.cast(operand, operandType)
+        })
+        return ast
+    }
+
+    match(ast, source) {
+        // To minimize the creation and destruction of closures, reduce memory usage, and alleviate the burden on GC,
+        // since `match` may be called thousands of times, the `_match` function is extracted.
+        const callback = node => this._match(node, source)
+        return this.parser.evaluate(ast, callback)
+    }
+
+    _match(node, source) {
+        const { scope, operator, castResult, type } = node
+        const qualifier = this.qualifiers.get(scope)
+        const queryResult = qualifier.query(source)
+        return qualifier[type](scope, operator, castResult, queryResult)
     }
 
     getContentTokens(ast) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
         const collect = new Set(["content", "default", "frontmatter"])
 
-        function _eval({ type, left, right, value, scope }) {
+        function _eval({ type, left, right, scope, operand }) {
             switch (type) {
                 case KEYWORD:
-                    return collect.has(scope) ? [value] : []
+                    return collect.has(scope) ? [operand] : []
                 case PHRASE:
-                    return collect.has(scope) ? [`"${value}"`] : []
+                    return collect.has(scope) ? [`"${operand}"`] : []
                 case REGEXP:
                     return []
                 case OR:
@@ -446,113 +469,115 @@ class SearchHelper {
         return _eval(ast)
     }
 
-    // 转为mermaid graph。然而生成的图太大了，没地方放了，暂时不使用
+    // Converts to a mermaid graph. However, the generated graph is too large and there is no place to put it, so it is not used for now.
     toMermaid(ast) {
-        let idx = 0;
-        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
+        let idx = 0
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
 
         function getName(node) {
-            if (node._shortName) return node._shortName;
-            node._shortName = "T" + ++idx;
-            const prefix = node.negated ? "-" : "";
-            const value = node.type === REGEXP ? `/${node.value}/` : node.value;
-            return `${node._shortName}("${prefix}${node.scope}${node.operator} ${value}")`;
+            if (node._shortName) return node._shortName
+            node._shortName = "T" + ++idx
+            const prefix = node.negated ? "-" : ""
+            const operand = node.type === REGEXP ? `/${node.operand}/` : node.operand
+            return `${node._shortName}("${prefix}${node.scope}${node.operator} ${operand}")`
         }
 
         function link(left, right) {
-            return left.tail.flatMap(t => right.head.map(h => `${getName(t)} --> ${getName(h)}`));
+            return left.tail.flatMap(t => right.head.map(h => `${getName(t)} --> ${getName(h)}`))
         }
 
         function _eval(node, negated) {
-            let left, right;
+            let left, right
+            const _node = { ...node }
             switch (node.type) {
                 case AND:
-                    left = _eval(node.left, negated);
-                    right = _eval(node.right, negated);
-                    node.head = left.head;
-                    node.tail = right.tail;
-                    node.result = [...left.result, ...link(left, right), ...right.result];
-                    return node
+                    left = _eval(node.left, negated)
+                    right = _eval(node.right, negated)
+                    _node.head = left.head
+                    _node.tail = right.tail
+                    _node.result = [...left.result, ...link(left, right), ...right.result]
+                    return _node
                 case OR:
-                    left = _eval(node.left, negated);
-                    right = _eval(node.right, negated);
-                    node.head = [...left.head, ...right.head];
-                    node.tail = [...left.tail, ...right.tail];
-                    node.result = [...left.result, ...right.result];
-                    return node
+                    left = _eval(node.left, negated)
+                    right = _eval(node.right, negated)
+                    _node.head = [...left.head, ...right.head]
+                    _node.tail = [...left.tail, ...right.tail]
+                    _node.result = [...left.result, ...right.result]
+                    return _node
                 case NOT:
-                    left = node.left ? _eval(node.left, negated) : { result: [], head: [], tail: [] };
-                    right = _eval(node.right, !negated);
-                    node.head = node.left ? left.head : right.head;
-                    node.tail = right.tail;
-                    node.result = [...left.result, ...link(left, right), ...right.result];
-                    return node
+                    left = node.left ? _eval(node.left, negated) : { result: [], head: [], tail: [] }
+                    right = _eval(node.right, !negated)
+                    _node.head = node.left ? left.head : right.head
+                    _node.tail = right.tail
+                    _node.result = [...left.result, ...link(left, right), ...right.result]
+                    return _node
                 case KEYWORD:
                 case PHRASE:
                 case REGEXP:
-                    node.negated = negated;
-                    node.head = [node];
-                    node.tail = [node];
-                    node.result = [];
-                    return node
+                    _node.negated = negated
+                    _node.head = [node]
+                    _node.tail = [node]
+                    _node.result = []
+                    return _node
                 default:
-                    throw new Error(`Unknown node type: ${node.type}`);
+                    throw new Error(`Unknown node type: ${node.type}`)
             }
         }
 
-        const { head, tail, result } = _eval(ast);
-        const start = head.map(h => `S --> ${getName(h)}`);
-        const end = tail.map(t => `${getName(t)} --> E`);
-        return ["graph LR", "S(Start)", "E(End)", ...result, ...start, ...end].join("\n");
+        const { head, tail, result } = _eval(ast)
+        const start = head.map(h => `S --> ${getName(h)}`)
+        const end = tail.map(t => `${getName(t)} --> E`)
+        return ["graph LR", "S(Start)", "E(End)", ...result, ...start, ...end].join("\n")
     }
 
     toExplain(ast) {
-        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE;
-        const scopeMap = { default: "内容或路径", file: "文件名", path: "路径", ext: "扩展名", content: "内容", frontmatter: "FrontMatter", size: "体积", len: "文件名长度", time: "修改时间" };
-        const operatorMap = { ":": "包含", "==": "等于", ">=": "大于等于", "<=": "小于等于", ">": "大于", "<": "小于", "=": "等于" };
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
+        const scopeMap = { default: "内容或路径", file: "文件名", path: "路径", ext: "扩展名", content: "内容", frontmatter: "FrontMatter", size: "体积", len: "文件名长度", time: "修改时间" }
+        const operatorMap = { ":": "包含", "!=": "不等于", ">=": "大于等于", "<=": "小于等于", ">": "大于", "<": "小于", "=": "等于" }
 
         function getName(node) {
-            const scope = scopeMap[node.scope];
-            const negated = node.negated ? "不" : "";
-            const operator = node.type === REGEXP ? "匹配正则" : operatorMap[node.operator];
-            const value = node.type === REGEXP ? `/${node.value}/` : node.value;
-            return `「${scope}${negated}${operator}${value}」`;
+            const scope = scopeMap[node.scope]
+            const negated = node.negated ? "不" : ""
+            const operator = node.type === REGEXP ? "匹配正则" : operatorMap[node.operator]
+            const operand = node.type === REGEXP ? `/${node.operand}/` : node.operand
+            return `「${scope}${negated}${operator}${operand}」`
         }
 
         function link(left, right) {
-            return left.result.flatMap(lPath => right.result.map(rPath => [...lPath, ...rPath]));
+            return left.result.flatMap(lPath => right.result.map(rPath => [...lPath, ...rPath]))
         }
 
         function _eval(node, negated) {
-            let left, right;
+            let left, right
+            const _node = { ...node }
             switch (node.type) {
                 case AND:
-                    left = _eval(node.left, negated);
-                    right = _eval(node.right, negated);
-                    node.result = link(left, right);
-                    return node
+                    left = _eval(node.left, negated)
+                    right = _eval(node.right, negated)
+                    _node.result = link(left, right)
+                    return _node
                 case OR:
-                    left = _eval(node.left, negated);
-                    right = _eval(node.right, negated);
-                    node.result = [...left.result, ...right.result];
-                    return node
+                    left = _eval(node.left, negated)
+                    right = _eval(node.right, negated)
+                    _node.result = [...left.result, ...right.result]
+                    return _node
                 case NOT:
-                    left = node.left ? _eval(node.left, negated) : { result: [[]], head: [], tail: [] };
-                    right = _eval(node.right, !negated);
-                    node.result = link(left, right);
-                    return node
+                    left = node.left ? _eval(node.left, negated) : { result: [[]], head: [], tail: [] }
+                    right = _eval(node.right, !negated)
+                    _node.result = link(left, right)
+                    return _node
                 case KEYWORD:
                 case PHRASE:
                 case REGEXP:
-                    node.negated = negated;
-                    node.result = [[node]];
-                    return node
+                    _node.negated = negated
+                    _node.result = [[node]]
+                    return _node
                 default:
-                    throw new Error(`Unknown node type: ${node.type}`);
+                    throw new Error(`Unknown node type: ${node.type}`)
             }
         }
 
-        const { result } = _eval(ast);
+        const { result } = _eval(ast)
         const content = result
             .map(path => path.map(e => getName(e)).join("且"))
             .map((path, idx) => `${idx + 1}. ${path}`)
