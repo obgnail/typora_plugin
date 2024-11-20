@@ -119,7 +119,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         this.utils.hide(this.entities.info)
     }
 
-    getAST = input => {
+    _getAST = input => {
         input = input.trim()
         if (!input) return
 
@@ -135,6 +135,10 @@ class searchMultiKeywordPlugin extends BasePlugin {
             console.error(e)
         }
     }
+
+    // When in link plugin mode, both `search_multi` and `multi_highlighter` need to obtain AST from the input,
+    // so this function will be called twice simultaneously. Therefore, a single flight with a duration of 100ms is added.
+    getAST = this.utils.singleflight(this._getAST, 100)
 
     searchMultiByAST = async (rootPath, ast) => {
         const { fileFilter, dirFilter } = this._getFilter()
@@ -333,9 +337,6 @@ class SearchHelper {
                 return this.operator[operator](queryResult, operand)
             },
             regexp: (scope, operator, operand, queryResult) => {
-                if (this.config.CASE_SENSITIVE) {
-                    queryResult = queryResult.toLowerCase()
-                }
                 return operand.test(queryResult.toString())
             },
         }
