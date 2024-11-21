@@ -238,6 +238,94 @@ class searchMultiKeywordPlugin extends BasePlugin {
     }
 }
 
+class QualifierMixin {
+    static OPERATOR = {
+        ":": (a, b) => a.includes(b),
+        "=": (a, b) => a === b,
+        "!=": (a, b) => a !== b,
+        ">=": (a, b) => a >= b,
+        "<=": (a, b) => a <= b,
+        ">": (a, b) => a > b,
+        "<": (a, b) => a < b,
+    }
+
+    static UNITS = {
+        b: 1,
+        k: 1 << 10,
+        m: 1 << 20,
+        g: 1 << 30,
+        kb: 1 << 10,
+        mb: 1 << 20,
+        gb: 1 << 30,
+    }
+
+    static VALIDATE = {
+        isStringOrRegexp: (scope, operator, operand, operandType) => {
+            if (operandType === "REGEXP" && operator !== ":") {
+                throw new Error(`Invalid ${operandType}'s operator:「${operator}」`)
+            }
+            if (operator !== ":" && operator !== "=" && operator !== "!=") {
+                throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「${operator}」`)
+            }
+        },
+        isComparable: (scope, operator, operand, operandType) => {
+            if (operandType === "REGEXP") {
+                throw new Error(`Invalid ${scope.toUpperCase()}'s operand type:「${operandType}」`)
+            }
+            if (operator === ":") {
+                throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「:」`)
+            }
+        },
+        isSize: (scope, operator, operand, operandType) => {
+            this.VALIDATE.isComparable(scope, operator, operand, operandType)
+            const units = [...Object.keys(this.UNITS)].sort((a, b) => b.length - a.length).join("|")
+            const ok = new RegExp(`^\\d+(\\.\\d+)?${units}$`, "i").test(operand)
+            if (!ok) {
+                throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
+            }
+        },
+        isNumber: (scope, operator, operand, operandType) => {
+            this.VALIDATE.isComparable(scope, operator, operand, operandType)
+            if (isNaN(operand)) {
+                throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
+            }
+        },
+        isDate: (scope, operator, operand, operandType) => {
+            this.VALIDATE.isNumber(scope, operator, new Date(operand), operandType)
+        },
+    }
+
+    static CAST = {
+        toStringOrRegexp: (operand, operandType) => operandType === "REGEXP" ? new RegExp(operand) : operand.toString(),
+        toNumber: operand => Number(operand),
+        toBytes: operand => {
+            const match = operand.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
+            if (!match) {
+                throw new Error(`Invalid SIZE's operand:「${operand}」`)
+            }
+            const unit = match[3].toLowerCase()
+            if (!this.UNITS.hasOwnProperty(unit)) {
+                throw new Error(`Unsupported SIZE's unit:「${unit}」`)
+            }
+            return parseFloat(match[1]) * this.UNITS[unit]
+        },
+        toDate: operand => {
+            operand = new Date(operand)
+            operand.setHours(0, 0, 0, 0)
+            return operand
+        },
+    }
+
+    static MATCH = {
+        compare: (scope, operator, operand, queryResult) => {
+            return this.OPERATOR[operator](queryResult, operand)
+        },
+        regexp: (scope, operator, operand, queryResult) => {
+            return operand.test(queryResult.toString())
+        },
+    }
+}
+
 /**
  * The matching process consists of the following steps: (Steps 1-3 are executed once; steps 4-5 are executed multiple times)
  *   1. parse:    Parses the input to generate an AST.
@@ -248,121 +336,34 @@ class searchMultiKeywordPlugin extends BasePlugin {
  */
 class SearchHelper {
     constructor(plugin) {
-        this.config = plugin.config;
-        this.utils = plugin.utils;
-        this.parser = plugin.utils.searchStringParser;
-        this.qualifiers = new Map();
-        this.operator = {
-            ":": (a, b) => a.includes(b),
-            "=": (a, b) => a === b,
-            "!=": (a, b) => a !== b,
-            ">=": (a, b) => a >= b,
-            "<=": (a, b) => a <= b,
-            ">": (a, b) => a > b,
-            "<": (a, b) => a < b,
-        }
-        this.units = {
-            b: 1,
-            k: 1 << 10,
-            m: 1 << 20,
-            g: 1 << 30,
-            kb: 1 << 10,
-            mb: 1 << 20,
-            gb: 1 << 30,
-        }
-        this.VALIDATE = {
-            isStringOrRegexp: (scope, operator, operand, operandType) => {
-                if (operandType === "REGEXP" && operator !== ":") {
-                    throw new Error(`Invalid ${operandType}'s operator:「${operator}」`)
-                }
-                if (operator !== ":" && operator !== "=" && operator !== "!=") {
-                    throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「${operator}」`)
-                }
-            },
-            isComparable: (scope, operator, operand, operandType) => {
-                if (operandType === "REGEXP") {
-                    throw new Error(`Invalid ${scope.toUpperCase()}'s operand type:「${operandType}」`)
-                }
-                if (operator === ":") {
-                    throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「:」`)
-                }
-            },
-            isSize: (scope, operator, operand, operandType) => {
-                this.VALIDATE.isComparable(scope, operator, operand, operandType)
-                const units = [...Object.keys(this.units)].sort((a, b) => b.length - a.length).join("|")
-                const ok = new RegExp(`^\\d+(\\.\\d+)?${units}$`, "i").test(operand)
-                if (!ok) {
-                    throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
-                }
-            },
-            isNumber: (scope, operator, operand, operandType) => {
-                this.VALIDATE.isComparable(scope, operator, operand, operandType)
-                if (isNaN(operand)) {
-                    throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
-                }
-            },
-            isDate: (scope, operator, operand, operandType) => {
-                this.VALIDATE.isNumber(scope, operator, new Date(operand), operandType)
-            },
-        }
-        this.CAST = {
-            toStringOrRegexp: (operand, operandType) => {
-                return operandType === "REGEXP"
-                    ? new RegExp(operand, this.config.CASE_SENSITIVE ? undefined : "i")
-                    : operand.toString()
-            },
-            toNumber: operand => Number(operand),
-            toBytes: operand => {
-                const match = operand.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
-                if (!match) {
-                    throw new Error(`Invalid SIZE's operand:「${operand}」`)
-                }
-                const unit = match[3].toLowerCase()
-                if (!this.units.hasOwnProperty(unit)) {
-                    throw new Error(`Unsupported SIZE's unit:「${unit}」`)
-                }
-                return parseFloat(match[1]) * this.units[unit]
-            },
-            toDate: operand => {
-                operand = new Date(operand)
-                operand.setHours(0, 0, 0, 0)
-                return operand
-            },
-        }
-        this.MATCH = {
-            compare: (scope, operator, operand, queryResult) => {
-                if (this.config.CASE_SENSITIVE && typeof queryResult === "string") {
-                    queryResult = queryResult.toLowerCase()
-                }
-                return this.operator[operator](queryResult, operand)
-            },
-            regexp: (scope, operator, operand, queryResult) => {
-                return operand.test(queryResult.toString())
-            },
-        }
+        this.MIXIN = QualifierMixin
+        this.config = plugin.config
+        this.utils = plugin.utils
+        this.parser = plugin.utils.searchStringParser
+        this.qualifiers = new Map()
     }
 
     process() {
         const qualifiers = this.buildQualifiers()
         qualifiers.forEach(q => {
-            q.validate = q.validate || this.VALIDATE.isStringOrRegexp
-            q.cast = q.cast || this.CAST.toStringOrRegexp
-            q.KEYWORD = q.match_keyword || this.MATCH.compare
+            q.validate = q.validate || this.MIXIN.VALIDATE.isStringOrRegexp
+            q.cast = q.cast || this.MIXIN.CAST.toStringOrRegexp
+            q.KEYWORD = q.match_keyword || this.MIXIN.MATCH.compare
             q.PHRASE = q.match_phrase || q.KEYWORD
-            q.REGEXP = q.match_regexp || this.MATCH.regexp
+            q.REGEXP = q.match_regexp || this.MIXIN.MATCH.regexp
             this.qualifiers.set(q.scope, q) // register qualifiers
         })
-        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.operator)))
+        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.MIXIN.OPERATOR)))
     }
 
     /**
      * {string}   scope:         qualifier name
-     * {function} validate:      Checks user input; defaults to `this.VALIDATE.isStringOrRegexp`
-     * {function} cast:          Converts user input for easier matching; defaults to `this.CAST.toStringOrRegexp`
+     * {function} validate:      Checks user input; defaults to `this.MIXIN.VALIDATE.isStringOrRegexp`
+     * {function} cast:          Converts user input for easier matching; defaults to `this.MIXIN.CAST.toStringOrRegexp`
      * {function} query:         Retrieves data from source
-     * {function} match_keyword: Matches castResult with queryResult when the user input is a keyword; defaults to `this.MATCH.compare`
+     * {function} match_keyword: Matches castResult with queryResult when the user input is a keyword; defaults to `this.MIXIN.MATCH.compare`
      * {function} match_phrase:  Matches castResult with queryResult when the user input is a phrase; behaves the same as `match_keyword` by default
-     * {function} match_regexp:  Matches castResult with queryResult when the user input is a regexp; defaults to `this.MATCH.regexp`
+     * {function} match_regexp:  Matches castResult with queryResult when the user input is a regexp; defaults to `this.MIXIN.MATCH.regexp`
      */
     buildQualifiers() {
         return [
@@ -395,21 +396,21 @@ class SearchHelper {
             },
             {
                 scope: "size",
-                validate: this.VALIDATE.isSize,
-                cast: this.CAST.toBytes,
+                validate: this.MIXIN.VALIDATE.isSize,
+                cast: this.MIXIN.CAST.toBytes,
                 query: ({ path, file, stats, buffer }) => stats.size,
             },
             {
                 scope: "len",
-                validate: this.VALIDATE.isNumber,
-                cast: this.CAST.toNumber,
+                validate: this.MIXIN.VALIDATE.isNumber,
+                cast: this.MIXIN.CAST.toNumber,
                 query: ({ path, file, stats, buffer }) => file.length,
             },
             {
                 scope: "time",
-                validate: this.VALIDATE.isDate,
-                cast: this.CAST.toDate,
-                query: ({ path, file, stats, buffer }) => this.CAST.toDate(stats.mtime),
+                validate: this.MIXIN.VALIDATE.isDate,
+                cast: this.MIXIN.CAST.toDate,
+                query: ({ path, file, stats, buffer }) => this.MIXIN.CAST.toDate(stats.mtime),
             },
         ]
     }
@@ -440,7 +441,10 @@ class SearchHelper {
     _match(node, source) {
         const { scope, operator, castResult, type } = node
         const qualifier = this.qualifiers.get(scope)
-        const queryResult = qualifier.query(source)
+        let queryResult = qualifier.query(source)
+        if (!this.config.CASE_SENSITIVE && typeof queryResult === "string") {
+            queryResult = queryResult.toLowerCase()
+        }
         return qualifier[type](scope, operator, castResult, queryResult)
     }
 
@@ -588,7 +592,7 @@ class SearchHelper {
 
     showGrammar() {
         const scope = Array.from(this.qualifiers.keys());
-        const operator = Array.from(Object.keys(this.operator));
+        const operator = Array.from(Object.keys(this.MIXIN.OPERATOR));
         const table1 = `
 <table>
     <tr><th>关键字</th><th>说明</th></tr>
