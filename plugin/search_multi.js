@@ -249,15 +249,9 @@ class QualifierMixin {
         "<": (a, b) => a < b,
     }
 
-    static UNITS = {
-        b: 1,
-        k: 1 << 10,
-        m: 1 << 20,
-        g: 1 << 30,
-        kb: 1 << 10,
-        mb: 1 << 20,
-        gb: 1 << 30,
-    }
+    static OPERATOR_NAME = { ":": "包含", "=": "等于", "!=": "不等于", ">=": "大于等于", "<=": "小于等于", ">": "大于", "<": "小于" }
+
+    static UNITS = { b: 1, k: 1 << 10, m: 1 << 20, g: 1 << 30, kb: 1 << 10, mb: 1 << 20, gb: 1 << 30 }
 
     static VALIDATE = {
         isStringOrRegexp: (scope, operator, operand, operandType) => {
@@ -274,6 +268,17 @@ class QualifierMixin {
             }
             if (operator === ":") {
                 throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「:」`)
+            }
+        },
+        isBoolean: (scope, operator, operand, operandType) => {
+            if (operator !== "=" && operator !== "!=") {
+                throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「${operator}」`)
+            }
+            if (operandType === "REGEXP") {
+                throw new Error(`Invalid ${scope.toUpperCase()}'s operand type:「${operandType}」`)
+            }
+            if (operand !== "true" && operand !== "false") {
+                throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
             }
         },
         isSize: (scope, operator, operand, operandType) => {
@@ -298,6 +303,7 @@ class QualifierMixin {
     static CAST = {
         toStringOrRegexp: (operand, operandType) => operandType === "REGEXP" ? new RegExp(operand) : operand.toString(),
         toNumber: operand => Number(operand),
+        toBoolean: operand => operand === "true",
         toBytes: operand => {
             const match = operand.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
             if (!match) {
@@ -317,12 +323,8 @@ class QualifierMixin {
     }
 
     static MATCH = {
-        compare: (scope, operator, operand, queryResult) => {
-            return this.OPERATOR[operator](queryResult, operand)
-        },
-        regexp: (scope, operator, operand, queryResult) => {
-            return operand.test(queryResult.toString())
-        },
+        compare: (scope, operator, operand, queryResult) => this.OPERATOR[operator](queryResult, operand),
+        regexp: (scope, operator, operand, queryResult) => operand.test(queryResult.toString()),
     }
 }
 
@@ -357,7 +359,9 @@ class SearchHelper {
     }
 
     /**
-     * {string}   scope:         qualifier name
+     * {string}   scope:         Qualifier scope
+     * {string}   name:          Name for explain
+     * {boolean}  is_meta:       The attribute queried belongs to metadata
      * {function} validate:      Checks user input; defaults to `this.MIXIN.VALIDATE.isStringOrRegexp`
      * {function} cast:          Converts user input for easier matching; defaults to `this.MIXIN.CAST.toStringOrRegexp`
      * {function} query:         Retrieves data from source
@@ -369,26 +373,38 @@ class SearchHelper {
         return [
             {
                 scope: "default",
+                name: "内容或路径",
+                is_meta: false,
                 query: ({ path, file, stats, buffer }) => `${buffer.toString()}\n${path}`,
             },
             {
                 scope: "path",
+                name: "文件名",
+                is_meta: true,
                 query: ({ path, file, stats, buffer }) => path,
             },
             {
                 scope: "file",
+                name: "路径",
+                is_meta: true,
                 query: ({ path, file, stats, buffer }) => file,
             },
             {
                 scope: "ext",
+                name: "扩展名",
+                is_meta: true,
                 query: ({ path, file, stats, buffer }) => this.utils.Package.Path.extname(file),
             },
             {
                 scope: "content",
+                name: "内容",
+                is_meta: false,
                 query: ({ path, file, stats, buffer }) => buffer.toString(),
             },
             {
                 scope: "frontmatter",
+                name: "FrontMatter",
+                is_meta: false,
                 query: ({ path, file, stats, buffer }) => {
                     const { yamlObject } = this.utils.splitFrontMatter(buffer.toString())
                     return JSON.stringify(yamlObject)
@@ -396,21 +412,51 @@ class SearchHelper {
             },
             {
                 scope: "size",
+                name: "文件大小",
+                is_meta: true,
                 validate: this.MIXIN.VALIDATE.isSize,
                 cast: this.MIXIN.CAST.toBytes,
                 query: ({ path, file, stats, buffer }) => stats.size,
             },
             {
-                scope: "len",
+                scope: "line",
+                name: "行数",
+                is_meta: true,
                 validate: this.MIXIN.VALIDATE.isNumber,
                 cast: this.MIXIN.CAST.toNumber,
-                query: ({ path, file, stats, buffer }) => file.length,
+                query: ({ path, file, stats, buffer }) => buffer.toString().split(/\n/g).length,
+            },
+            {
+                scope: "char",
+                name: "字符数",
+                is_meta: true,
+                validate: this.MIXIN.VALIDATE.isNumber,
+                cast: this.MIXIN.CAST.toNumber,
+                query: ({ path, file, stats, buffer }) => buffer.toString().length,
             },
             {
                 scope: "time",
+                name: "修改时间",
+                is_meta: true,
                 validate: this.MIXIN.VALIDATE.isDate,
                 cast: this.MIXIN.CAST.toDate,
                 query: ({ path, file, stats, buffer }) => this.MIXIN.CAST.toDate(stats.mtime),
+            },
+            {
+                scope: "crlf",
+                name: "换行符为CRLF",
+                is_meta: true,
+                validate: this.MIXIN.VALIDATE.isBoolean,
+                cast: this.MIXIN.CAST.toBoolean,
+                query: ({ path, file, stats, buffer }) => buffer.toString().includes("\r\n"),
+            },
+            {
+                scope: "hasimage",
+                name: "包含图片",
+                is_meta: true,
+                validate: this.MIXIN.VALIDATE.isBoolean,
+                cast: this.MIXIN.CAST.toBoolean,
+                query: ({ path, file, stats, buffer }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(buffer.toString()),
             },
         ]
     }
@@ -450,7 +496,7 @@ class SearchHelper {
 
     getContentTokens(ast) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
-        const collect = new Set(["content", "default", "frontmatter"])
+        const collect = new Set(Array.from(this.qualifiers.values()).filter(q => !q.is_meta).map(q => q.scope))
 
         function _eval({ type, left, right, scope, operand }) {
             switch (type) {
@@ -537,22 +583,20 @@ class SearchHelper {
 
     toExplain(ast) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
-        const scopeMap = { default: "内容或路径", file: "文件名", path: "路径", ext: "扩展名", content: "内容", frontmatter: "FrontMatter", size: "体积", len: "文件名长度", time: "修改时间" }
-        const operatorMap = { ":": "包含", "!=": "不等于", ">=": "大于等于", "<=": "小于等于", ">": "大于", "<": "小于", "=": "等于" }
 
-        function getName(node) {
-            const scope = scopeMap[node.scope]
+        const getName = node => {
+            const name = this.qualifiers.get(node.scope).name
             const negated = node.negated ? "不" : ""
-            const operator = node.type === REGEXP ? "匹配正则" : operatorMap[node.operator]
+            const operator = node.type === REGEXP ? "匹配正则" : this.MIXIN.OPERATOR_NAME[node.operator]
             const operand = node.type === REGEXP ? `/${node.operand}/` : node.operand
-            return `「${scope}${negated}${operator}${operand}」`
+            return `「${name}${negated}${operator}${operand}」`
         }
 
-        function link(left, right) {
+        const link = (left, right) => {
             return left.result.flatMap(lPath => right.result.map(rPath => [...lPath, ...rPath]))
         }
 
-        function _eval(node, negated) {
+        const _eval = (node, negated) => {
             let left, right
             const _node = { ...node }
             switch (node.type) {
@@ -600,7 +644,7 @@ class SearchHelper {
     <tr><td>|</td><td>表示或。文档应该包含关键词之一，等价于 OR</td></tr>
     <tr><td>-</td><td>表示非。文档不能包含关键词</td></tr>
     <tr><td>""</td><td>表示词组。双引号里的空格不再视为与，而是词组的一部分</td></tr>
-    <tr><td>qualifier</td><td>限定查找范围：${scope.join(" | ")}<br/>默认值 default = path + content（将文件内容和文件路径作为查找范围）</td></tr>
+    <tr><td>qualifier</td><td>限定查找范围：${scope.join(" | ")}。 其中默认值 default = path + content</td></tr>
     <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式</td></tr>
     <tr><td>()</td><td>小括号。用于调整运算顺序</td></tr>
 </table>`
@@ -609,11 +653,11 @@ class SearchHelper {
 <table>
     <tr><th>示例</th><th>搜索文档</th></tr>
     <tr><td>sour pear</td><td>包含 sour 和 pear。等价于 default:sour default:pear</td></tr>
-    <tr><td>sour OR pear</td><td>包含 sour 或 pear。等价于 default:(sour | pear)</td></tr>
+    <tr><td>sour OR pear</td><td>包含 sour 或 pear。等价于 default:sour | default:pear</td></tr>
     <tr><td>"sour pear"</td><td>包含 sour pear 这一词组。等价于 default:"sour pear"</td></tr>
     <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
-    <tr><td>path:/[a-z]{3}/ content:abc</td><td>路径匹配 [a-z]{3}，且内容包含 abc</td></tr>
-    <tr><td>file:(info | warn | err) -ext:log</td><td>文件名包含 info 或 warn 或 err，且扩展名不含 log</td></tr>
+    <tr><td>file:/[a-z]{3}/ content:abc crlf=true</td><td>文件名匹配 [a-z]{3}，且内容包含 abc，且换行符为 CRLF</td></tr>
+    <tr><td>path:(info | warn | err) -ext:log</td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 log</td></tr>
     <tr><td>frontmatter:日记 size>=100k time>2024-03-12</td><td>YAML Front Matter 包含日记，且文件大小大于等于 100k，且文件更新时间大于 2024-03-12</td></tr>
 </table>`
 
