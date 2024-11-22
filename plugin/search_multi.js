@@ -411,6 +411,14 @@ class SearchHelper {
                 },
             },
             {
+                scope: "time",
+                name: "修改时间",
+                is_meta: true,
+                validate: this.MIXIN.VALIDATE.isDate,
+                cast: this.MIXIN.CAST.toDate,
+                query: ({ path, file, stats, buffer }) => this.MIXIN.CAST.toDate(stats.mtime),
+            },
+            {
                 scope: "size",
                 name: "文件大小",
                 is_meta: true,
@@ -419,28 +427,20 @@ class SearchHelper {
                 query: ({ path, file, stats, buffer }) => stats.size,
             },
             {
-                scope: "line",
+                scope: "linenum",
                 name: "行数",
                 is_meta: true,
                 validate: this.MIXIN.VALIDATE.isNumber,
                 cast: this.MIXIN.CAST.toNumber,
-                query: ({ path, file, stats, buffer }) => buffer.toString().split(/\n/g).length,
+                query: ({ path, file, stats, buffer }) => buffer.toString().split("\n").length,
             },
             {
-                scope: "char",
+                scope: "charnum",
                 name: "字符数",
                 is_meta: true,
                 validate: this.MIXIN.VALIDATE.isNumber,
                 cast: this.MIXIN.CAST.toNumber,
                 query: ({ path, file, stats, buffer }) => buffer.toString().length,
-            },
-            {
-                scope: "time",
-                name: "修改时间",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isDate,
-                cast: this.MIXIN.CAST.toDate,
-                query: ({ path, file, stats, buffer }) => this.MIXIN.CAST.toDate(stats.mtime),
             },
             {
                 scope: "crlf",
@@ -644,7 +644,7 @@ class SearchHelper {
     <tr><td>|</td><td>表示或。文档应该包含关键词之一，等价于 OR</td></tr>
     <tr><td>-</td><td>表示非。文档不能包含关键词</td></tr>
     <tr><td>""</td><td>表示词组。双引号里的空格不再视为与，而是词组的一部分</td></tr>
-    <tr><td>qualifier</td><td>限定查找范围：${scope.join(" | ")}。 其中默认值 default = path + content</td></tr>
+    <tr><td>qualifier</td><td>限定查找范围：${scope.join(" | ")}。 <br />其中默认值 default = path + content</td></tr>
     <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式</td></tr>
     <tr><td>()</td><td>小括号。用于调整运算顺序</td></tr>
 </table>`
