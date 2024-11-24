@@ -323,8 +323,10 @@ class QualifierMixin {
     }
 
     static MATCH = {
-        compare: (scope, operator, operand, queryResult) => this.OPERATOR[operator](queryResult, operand),
-        regexp: (scope, operator, operand, queryResult) => operand.test(queryResult.toString()),
+        primitiveCompare: (scope, operator, operand, queryResult) => this.OPERATOR[operator](queryResult, operand),
+        stringRegexp: (scope, operator, operand, queryResult) => operand.test(queryResult.toString()),
+        arrayCompare: (scope, operator, operand, queryResult) => queryResult.reduce((ret, data) => ret || this.OPERATOR[operator](data, operand), false),
+        arrayRegexp: (scope, operator, operand, queryResult) => operand.test(queryResult.join(" ")),
     }
 }
 
@@ -350,9 +352,9 @@ class SearchHelper {
         qualifiers.forEach(q => {
             q.validate = q.validate || this.MIXIN.VALIDATE.isStringOrRegexp
             q.cast = q.cast || this.MIXIN.CAST.toStringOrRegexp
-            q.KEYWORD = q.match_keyword || this.MIXIN.MATCH.compare
+            q.KEYWORD = q.match_keyword || this.MIXIN.MATCH.primitiveCompare
             q.PHRASE = q.match_phrase || q.KEYWORD
-            q.REGEXP = q.match_regexp || this.MIXIN.MATCH.regexp
+            q.REGEXP = q.match_regexp || this.MIXIN.MATCH.stringRegexp
             this.qualifiers.set(q.scope, q) // register qualifiers
         })
         this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.MIXIN.OPERATOR)))
@@ -461,12 +463,45 @@ class SearchHelper {
         ]
     }
 
+    // todo: add cache
     buildContentQualifiers() {
-        const rangeAST = (ast, picker) => {
+        const PARSER = {
+            INLINE: this.utils.parseMarkdownInline,
+            BLOCK: this.utils.parseMarkdownBlock
+        }
+        const NODE_PICKER = {
+            IS: type => {
+                return node => node.type === type
+            },
+            SURROUND: type => {
+                let opening = false
+                const openType = `${type}_open`
+                const closeType = `${type}_close`
+                return node => {
+                    if (node.type === openType) {
+                        opening = true
+                    } else if (node.type === closeType) {
+                        opening = false
+                    }
+                    return opening
+                }
+            }
+        }
+        const CNT_GETTER = {
+            DEFAULT: node => node.content,
+            FENCE: node => `${node.info} ${node.content}`,
+            FENCE_LANG: node => node.info,
+            LINK_AND_IMAGE: node => {
+                const attrs = node.attrs || []
+                const attrContent = attrs.map(l => l[l.length - 1]).join(" ")
+                return `${attrContent}${node.content}`
+            },
+        }
+        const rangeAST = (ast, nodePicker) => {
             const output = []
             const range = (astList = []) => {
-                astList.forEach((node, idx, array) => {
-                    if (picker(node, idx, array)) {
+                astList.forEach(node => {
+                    if (nodePicker(node)) {
                         output.push(node)
                     }
                     if (node.children) {
@@ -477,51 +512,42 @@ class SearchHelper {
             range(ast)
             return output
         }
-        const getQuery = (picker, isBlock = true) => {
-            const parser = isBlock ? "parseMarkdownBlock" : "parseMarkdownInline"
+        const getQuery = (parser, nodePicker, contentGetter) => {
             return source => {
-                const ast = this.utils[parser](source.buffer.toString())
-                const nodes = rangeAST(ast, picker)
-                const list = nodes.map(node => {
-                    const attrs = node.attrs || []
-                    const attrContent = attrs.map(l => l[l.length - 1]).join(" ")
-                    return attrContent + node.content
-                })
-                return list.join(" ")
+                const ast = parser(source.buffer.toString())
+                const nodes = rangeAST(ast, nodePicker)
+                return nodes.map(contentGetter)
             }
         }
-        const getPickerWrap = (openType, closeType) => {
-            let open = false
-            return node => {
-                if (node.type === openType) {
-                    open = true
-                } else if (node.type === closeType) {
-                    open = false
-                }
-                return open
-            }
-        }
-        const getQueryWrap = (type, isBlock = true) => {
-            const picker = getPickerWrap(`${type}_open`, `${type}_close`)
-            return getQuery(picker, isBlock)
-        }
-        return [
-            { scope: "fence", name: "代码块", is_meta: false, query: getQuery(node => node.type === "fence", true) },
-            { scope: "htmlblock", name: "多行HTML", is_meta: false, query: getQuery(node => node.type === "html_block", true) },
-            { scope: "image", name: "图片", is_meta: false, query: getQuery(node => node.type === "image", false) },
-            { scope: "code", name: "代码", is_meta: false, query: getQuery(node => node.type === "code_inline", false) },
-            { scope: "head", name: "标题", is_meta: false, query: getQueryWrap("heading", true) },
-            { scope: "table", name: "表格", is_meta: false, query: getQueryWrap("table", true) },
-            { scope: "thead", name: "表格标题", is_meta: false, query: getQueryWrap("thead", true) },
-            { scope: "tbody", name: "表格正文", is_meta: false, query: getQueryWrap("tbody", true) },
-            { scope: "blockquote", name: "引用", is_meta: false, query: getQueryWrap("blockquote", true) },
-            { scope: "ol", name: "有序列表", is_meta: false, query: getQueryWrap("ordered_list", true) },
-            { scope: "ul", name: "无序列表", is_meta: false, query: getQueryWrap("bullet_list", true) },
-            { scope: "link", name: "链接", is_meta: false, query: getQueryWrap("link", false) },
-            { scope: "em", name: "斜体", is_meta: false, query: getQueryWrap("em", false) },
-            { scope: "del", name: "删除线", is_meta: false, query: getQueryWrap("s", false) },
-            { scope: "strong", name: "强调", is_meta: false, query: getQueryWrap("strong", false) },
+
+        const qualifiers = [
+            { scope: "blockcode", name: "代码块", query: getQuery(PARSER.BLOCK, NODE_PICKER.IS("fence"), CNT_GETTER.FENCE) },
+            { scope: "blockcodelang", name: "代码块语言", query: getQuery(PARSER.BLOCK, NODE_PICKER.IS("fence"), CNT_GETTER.FENCE_LANG) },
+            { scope: "blockcodebody", name: "代码块内容", query: getQuery(PARSER.BLOCK, NODE_PICKER.IS("fence"), CNT_GETTER.DEFAULT) },
+            { scope: "blockhtml", name: "HTML块", query: getQuery(PARSER.BLOCK, NODE_PICKER.IS("html_block"), CNT_GETTER.DEFAULT) },
+            { scope: "blockquote", name: "引用块", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("blockquote"), CNT_GETTER.DEFAULT) },
+            { scope: "table", name: "表格", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("table"), CNT_GETTER.DEFAULT) },
+            { scope: "thead", name: "表格标题", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("thead"), CNT_GETTER.DEFAULT) },
+            { scope: "tbody", name: "表格正文", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("tbody"), CNT_GETTER.DEFAULT) },
+            { scope: "ol", name: "有序列表", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("ordered_list"), CNT_GETTER.DEFAULT) },
+            { scope: "ul", name: "无序列表", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("bullet_list"), CNT_GETTER.DEFAULT) },
+            { scope: "head", name: "标题", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("heading"), CNT_GETTER.DEFAULT) },
+            { scope: "image", name: "图片", query: getQuery(PARSER.INLINE, NODE_PICKER.IS("image"), CNT_GETTER.LINK_AND_IMAGE) },
+            { scope: "code", name: "代码", query: getQuery(PARSER.INLINE, NODE_PICKER.IS("code_inline"), CNT_GETTER.DEFAULT) },
+            { scope: "link", name: "链接", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("link"), CNT_GETTER.LINK_AND_IMAGE) },
+            { scope: "strong", name: "强调", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("strong"), CNT_GETTER.DEFAULT) },
+            { scope: "em", name: "斜体", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("em"), CNT_GETTER.DEFAULT) },
+            { scope: "del", name: "删除线", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("s"), CNT_GETTER.DEFAULT) },
         ]
+        qualifiers.forEach(q => {
+            q.is_meta = false
+            q.validate = this.MIXIN.VALIDATE.isStringOrRegexp
+            q.cast = this.MIXIN.CAST.toStringOrRegexp
+            q.match_keyword = this.MIXIN.MATCH.arrayCompare
+            q.match_phrase = q.match_keyword
+            q.match_regexp = this.MIXIN.MATCH.arrayRegexp
+        })
+        return qualifiers
     }
 
     parse(input) {
@@ -551,8 +577,12 @@ class SearchHelper {
         const { scope, operator, castResult, type } = node
         const qualifier = this.qualifiers.get(scope)
         let queryResult = qualifier.query(source)
-        if (!this.config.CASE_SENSITIVE && typeof queryResult === "string") {
-            queryResult = queryResult.toLowerCase()
+        if (!this.config.CASE_SENSITIVE) {
+            if (typeof queryResult === "string") {
+                queryResult = queryResult.toLowerCase()
+            } else if (Array.isArray(queryResult)) {
+                queryResult = queryResult.map(s => s.toLowerCase())
+            }
         }
         return qualifier[type](scope, operator, castResult, queryResult)
     }
@@ -702,6 +732,10 @@ class SearchHelper {
         const metaScope = scope.filter(s => s.is_meta).map(s => s.scope)
         const contentScope = scope.filter(s => !s.is_meta).map(s => s.scope)
         const operator = Array.from(Object.keys(this.MIXIN.OPERATOR))
+
+        const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
+        const scopeInfo = genInfo('具体来说，应该是：文件路径或文件内容包含 pear')
+        const diffInfo = genInfo('注意区分：\n「head=简介」：表示标题为简介二字，当标题为”简介1“时不可匹配\n「head:简介」：表示标题包含简介二字，当标题为”简介1“时可以匹配')
         const table1 = `
 <table>
     <tr><th>关键字</th><th>说明</th></tr>
@@ -709,22 +743,25 @@ class SearchHelper {
     <tr><td>|</td><td>表示或。文档应该包含关键词之一，等价于 OR</td></tr>
     <tr><td>-</td><td>表示非。文档不能包含关键词</td></tr>
     <tr><td>""</td><td>表示词组。双引号里的空格不再视为与，而是词组的一部分</td></tr>
-    <tr><td>qualifier</td><td>1. 元数据属性(${metaScope.length})：${metaScope.join(" | ")}<br />2. 内容属性(${contentScope.length})：${contentScope.join(" | ")}<br />3. 默认值 default = path + content</td></tr>
-    <tr><td>operator</td><td>操作符：${operator.map(o => `「${o}」`).join("")}<br />默认值「:」表示字符串包含或正则匹配；「=」「!=」表示字符串、数值、布尔的相等/不相等；「>=」「<=」「>」「<」为数值比较</td></tr>
     <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式</td></tr>
+    <tr><td>qualifier</td><td>查询属性。<br />1. 文件属性(${metaScope.length})：${metaScope.join(" | ")}<br />2. 内容属性(${contentScope.length})：${contentScope.join(" | ")}<br />3. 默认值 default = path + content（路径+文件内容）</td></tr>
+    <tr><td>operator</td><td>操作符。<br />1. 「:」表示文本包含或正则匹配（默认）<br />2. 「=」「!=」表示文本、数值、布尔的严格相等/不相等<br />3. 「>」「<」「>=」「<=」表示数值比较</td></tr>
     <tr><td>()</td><td>小括号。用于调整运算顺序</td></tr>
 </table>`
 
         const table2 = `
 <table>
     <tr><th>示例</th><th>搜索文档</th></tr>
-    <tr><td>sour pear</td><td>包含 sour 和 pear。等价于 default:sour default:pear</td></tr>
-    <tr><td>sour OR pear</td><td>包含 sour 或 pear。等价于 default:sour | default:pear</td></tr>
-    <tr><td>"sour pear"</td><td>包含 sour pear 这一词组。等价于 default:"sour pear"</td></tr>
-    <tr><td>sour pear -apple linenum>100</td><td>包含 sour 和 pear，且不含 apple，且超过 100 行</td></tr>
-    <tr><td>file:/[a-z]{3}/ content:abc crlf=true hasimage=false</td><td>文件名匹配正则 [a-z]{3}，且内容包含 abc，且换行符为 CRLF，且不含图片</td></tr>
-    <tr><td>path:(info | warn | err) -ext:log</td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 log</td></tr>
-    <tr><td>frontmatter:日记 size>=100k time>2024-03-12</td><td>YAML Front Matter 包含日记，且文件大小大于等于 100k，且文件更新时间大于 2024-03-12</td></tr>
+    <tr><td>pear</td><td>包含 pear。等价于 default:pear ${scopeInfo}</td></tr>
+    <tr><td>sour pear</td><td>包含 sour 和 pear</td></tr>
+    <tr><td>sour OR pear</td><td>包含 sour 或 pear</td></tr>
+    <tr><td>"sour pear"</td><td>包含 sour pear 这一词组</td></tr>
+    <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
+    <tr><td>apple time=2024-03-12</td><td>包含 apple，且文件更新时间为 2024-03-12</td></tr>
+    <tr><td>frontmatter:日记 | head=简介 | strong:abc</td><td>YAML Front Matter 包含日记 或者 标题内容为简介二字 或者 加粗文字包含 abc ${diffInfo}</td></tr>
+    <tr><td>size>10k (file=k8s.md | hasimage=true)</td><td>文件大小大于 10k，且 文件名为 k8s.md 或者文件内容包含图片</td></tr>
+    <tr><td>path:(info | warn | err) -ext:md</td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 md</td></tr>
+    <tr><td>file:/[a-z]{3}/ content:prometheus blockcode:"kubectl apply"</td><td>文件名匹配正则 [a-z]{3}，且内容包含 prometheus，且代码块内容含有 kubectl apply</td></tr>
 </table>`
 
         const content = `
@@ -742,7 +779,7 @@ class SearchHelper {
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s}'`).join(" | ")}`
 
         const title = "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释";
-        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 14, content, title }];
+        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 15, content, title }];
         this.utils.dialog.modal({ title: "高级搜索", width: "600px", components });
     }
 }
