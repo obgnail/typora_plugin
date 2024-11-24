@@ -346,7 +346,7 @@ class SearchHelper {
     }
 
     process() {
-        const qualifiers = this.buildQualifiers()
+        const qualifiers = [...this.buildBaseQualifiers(), ...this.buildContentQualifiers()]
         qualifiers.forEach(q => {
             q.validate = q.validate || this.MIXIN.VALIDATE.isStringOrRegexp
             q.cast = q.cast || this.MIXIN.CAST.toStringOrRegexp
@@ -369,7 +369,7 @@ class SearchHelper {
      * {function} match_phrase:  Matches castResult with queryResult when the user input is a phrase; behaves the same as `match_keyword` by default
      * {function} match_regexp:  Matches castResult with queryResult when the user input is a regexp; defaults to `this.MIXIN.MATCH.regexp`
      */
-    buildQualifiers() {
+    buildBaseQualifiers() {
         return [
             {
                 scope: "default",
@@ -458,6 +458,69 @@ class SearchHelper {
                 cast: this.MIXIN.CAST.toBoolean,
                 query: ({ path, file, stats, buffer }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(buffer.toString()),
             },
+        ]
+    }
+
+    buildContentQualifiers() {
+        const rangeAST = (ast, picker) => {
+            const output = []
+            const range = (astList = []) => {
+                astList.forEach((node, idx, array) => {
+                    if (picker(node, idx, array)) {
+                        output.push(node)
+                    }
+                    if (node.children) {
+                        range(node.children)
+                    }
+                })
+            }
+            range(ast)
+            return output
+        }
+        const getQuery = (picker, isBlock = true) => {
+            const parser = isBlock ? "parseMarkdownBlock" : "parseMarkdownInline"
+            return source => {
+                const ast = this.utils[parser](source.buffer.toString())
+                const nodes = rangeAST(ast, picker)
+                const list = nodes.map(node => {
+                    const attrs = node.attrs || []
+                    const attrContent = attrs.map(l => l[l.length - 1]).join(" ")
+                    return attrContent + node.content
+                })
+                return list.join(" ")
+            }
+        }
+        const getPickerWrap = (openType, closeType) => {
+            let open = false
+            return node => {
+                if (node.type === openType) {
+                    open = true
+                } else if (node.type === closeType) {
+                    open = false
+                }
+                return open
+            }
+        }
+        const getQueryWrap = (type, isBlock = true) => {
+            const picker = getPickerWrap(`${type}_open`, `${type}_close`)
+            return getQuery(picker, isBlock)
+        }
+        return [
+            { scope: "fence", name: "代码块", is_meta: false, query: getQuery(node => node.type === "fence", true) },
+            { scope: "htmlblock", name: "多行HTML", is_meta: false, query: getQuery(node => node.type === "html_block", true) },
+            { scope: "image", name: "图片", is_meta: false, query: getQuery(node => node.type === "image", false) },
+            { scope: "code", name: "代码", is_meta: false, query: getQuery(node => node.type === "code_inline", false) },
+            { scope: "head", name: "标题", is_meta: false, query: getQueryWrap("heading", true) },
+            { scope: "table", name: "表格", is_meta: false, query: getQueryWrap("table", true) },
+            { scope: "thead", name: "表格标题", is_meta: false, query: getQueryWrap("thead", true) },
+            { scope: "tbody", name: "表格正文", is_meta: false, query: getQueryWrap("tbody", true) },
+            { scope: "blockquote", name: "引用", is_meta: false, query: getQueryWrap("blockquote", true) },
+            { scope: "ol", name: "有序列表", is_meta: false, query: getQueryWrap("ordered_list", true) },
+            { scope: "ul", name: "无序列表", is_meta: false, query: getQueryWrap("bullet_list", true) },
+            { scope: "link", name: "链接", is_meta: false, query: getQueryWrap("link", false) },
+            { scope: "em", name: "斜体", is_meta: false, query: getQueryWrap("em", false) },
+            { scope: "del", name: "删除线", is_meta: false, query: getQueryWrap("s", false) },
+            { scope: "strong", name: "强调", is_meta: false, query: getQueryWrap("strong", false) },
         ]
     }
 
@@ -635,8 +698,10 @@ class SearchHelper {
     }
 
     showGrammar() {
-        const scope = Array.from(this.qualifiers.keys());
-        const operator = Array.from(Object.keys(this.MIXIN.OPERATOR));
+        const scope = Array.from(this.qualifiers.values())
+        const metaScope = scope.filter(s => s.is_meta).map(s => s.scope)
+        const contentScope = scope.filter(s => !s.is_meta).map(s => s.scope)
+        const operator = Array.from(Object.keys(this.MIXIN.OPERATOR))
         const table1 = `
 <table>
     <tr><th>关键字</th><th>说明</th></tr>
@@ -644,7 +709,8 @@ class SearchHelper {
     <tr><td>|</td><td>表示或。文档应该包含关键词之一，等价于 OR</td></tr>
     <tr><td>-</td><td>表示非。文档不能包含关键词</td></tr>
     <tr><td>""</td><td>表示词组。双引号里的空格不再视为与，而是词组的一部分</td></tr>
-    <tr><td>qualifier</td><td>限定查找范围：${scope.join(" | ")}。 <br />其中默认值 default = path + content</td></tr>
+    <tr><td>qualifier</td><td>1. 元数据属性(${metaScope.length})：${metaScope.join(" | ")}<br />2. 内容属性(${contentScope.length})：${contentScope.join(" | ")}<br />3. 默认值 default = path + content</td></tr>
+    <tr><td>operator</td><td>操作符：${operator.map(o => `「${o}」`).join("")}<br />默认值「:」表示字符串包含或正则匹配；「=」「!=」表示字符串、数值、布尔的相等/不相等；「>=」「<=」「>」「<」为数值比较</td></tr>
     <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式</td></tr>
     <tr><td>()</td><td>小括号。用于调整运算顺序</td></tr>
 </table>`
@@ -655,8 +721,8 @@ class SearchHelper {
     <tr><td>sour pear</td><td>包含 sour 和 pear。等价于 default:sour default:pear</td></tr>
     <tr><td>sour OR pear</td><td>包含 sour 或 pear。等价于 default:sour | default:pear</td></tr>
     <tr><td>"sour pear"</td><td>包含 sour pear 这一词组。等价于 default:"sour pear"</td></tr>
-    <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
-    <tr><td>file:/[a-z]{3}/ content:abc crlf=true</td><td>文件名匹配 [a-z]{3}，且内容包含 abc，且换行符为 CRLF</td></tr>
+    <tr><td>sour pear -apple linenum>100</td><td>包含 sour 和 pear，且不含 apple，且超过 100 行</td></tr>
+    <tr><td>file:/[a-z]{3}/ content:abc crlf=true hasimage=false</td><td>文件名匹配正则 [a-z]{3}，且内容包含 abc，且换行符为 CRLF，且不含图片</td></tr>
     <tr><td>path:(info | warn | err) -ext:log</td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 log</td></tr>
     <tr><td>frontmatter:日记 size>=100k time>2024-03-12</td><td>YAML Front Matter 包含日记，且文件大小大于等于 100k，且文件更新时间大于 2024-03-12</td></tr>
 </table>`
@@ -672,11 +738,11 @@ class SearchHelper {
 <or> ::= 'OR' | '|'
 <keyword> ::= [^"]+
 <regexp> ::= [^/]+
-<operator> ::=  ${operator.map(s => `'${s}'`).join(" | ")}
-<scope> ::= ${scope.map(s => `'${s}'`).join(" | ")}`
+<operator> ::= ${operator.map(s => `'${s}'`).join(" | ")}
+<scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s}'`).join(" | ")}`
 
         const title = "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释";
-        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 13, content, title }];
+        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 14, content, title }];
         this.utils.dialog.modal({ title: "高级搜索", width: "600px", components });
     }
 }
