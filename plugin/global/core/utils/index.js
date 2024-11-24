@@ -536,6 +536,17 @@ class utils {
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
 
+    static _markdownIt = null
+    static getMarkdownIt = () => {
+        if (!this._markdownIt) {
+            const { markdownit } = require("./common/markdown-it")
+            this._markdownIt = markdownit({ html: true, linkify: true, typographer: true })
+        }
+        return this._markdownIt
+    }
+    static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)
+    static parseMarkdownInline = (content, options = {}) => this.getMarkdownIt().parseInline(content, options)
+
     static fetch = async (url, { proxy, timeout = 3 * 60 * 1000, ...args }) => {
         let signal, agent;
         if (timeout) {
