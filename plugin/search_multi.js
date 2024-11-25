@@ -249,69 +249,80 @@ class QualifierMixin {
         "<": (a, b) => a < b,
     }
 
-    static OPERATOR_NAME = { ":": "包含", "=": "等于", "!=": "不等于", ">=": "大于等于", "<=": "小于等于", ">": "大于", "<": "小于" }
+    static OPERATOR_NAME = { ":": "包含", "=": "为", "!=": "不为", ">=": "大于等于", "<=": "小于等于", ">": "大于", "<": "小于" }
 
     static UNITS = { b: 1, k: 1 << 10, m: 1 << 20, g: 1 << 30, kb: 1 << 10, mb: 1 << 20, gb: 1 << 30 }
 
     static VALIDATE = {
         isStringOrRegexp: (scope, operator, operand, operandType) => {
-            if (operandType === "REGEXP" && operator !== ":") {
-                throw new Error(`Invalid ${operandType}'s operator:「${operator}」`)
+            if (operandType === "REGEXP") {
+                if (operator !== ":") {
+                    throw new Error(`In ${scope.toUpperCase()}: RegExp operands only support the ":" operator`)
+                }
+                try {
+                    new RegExp(operand)
+                } catch (e) {
+                    throw new Error(`In ${scope.toUpperCase()}: Invalid regular expression: "${operand}"`)
+                }
             }
             if (operator !== ":" && operator !== "=" && operator !== "!=") {
-                throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「${operator}」`)
+                throw new Error(`In ${scope.toUpperCase()}: Only supports "=", "!=", and ":" operators`)
             }
         },
         isComparable: (scope, operator, operand, operandType) => {
             if (operandType === "REGEXP") {
-                throw new Error(`Invalid ${scope.toUpperCase()}'s operand type:「${operandType}」`)
+                throw new Error(`In ${scope.toUpperCase()}: RegExp operands are not valid for comparisons`)
             }
             if (operator === ":") {
-                throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「:」`)
+                throw new Error(`In ${scope.toUpperCase()}: The ":" operator is not valid for comparisons`)
             }
         },
         isBoolean: (scope, operator, operand, operandType) => {
             if (operator !== "=" && operator !== "!=") {
-                throw new Error(`Invalid ${scope.toUpperCase()}'s operator:「${operator}」`)
+                throw new Error(`In ${scope.toUpperCase()}: Only supports "=" and "!=" operators`)
             }
             if (operandType === "REGEXP") {
-                throw new Error(`Invalid ${scope.toUpperCase()}'s operand type:「${operandType}」`)
+                throw new Error(`In ${scope.toUpperCase()}: RegExp operands are not valid for logical comparisons`)
             }
             if (operand !== "true" && operand !== "false") {
-                throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
+                throw new Error(`In ${scope.toUpperCase()}: Operand must be "true" or "false"`)
             }
         },
         isSize: (scope, operator, operand, operandType) => {
             this.VALIDATE.isComparable(scope, operator, operand, operandType)
             const units = [...Object.keys(this.UNITS)].sort((a, b) => b.length - a.length).join("|")
-            const ok = new RegExp(`^\\d+(\\.\\d+)?${units}$`, "i").test(operand)
+            const ok = new RegExp(`^\\d+(\\.\\d+)?(${units})$`, "i").test(operand)
             if (!ok) {
-                throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
+                throw new Error(`In ${scope.toUpperCase()}: Operand must be a number followed by a unit: ${units}`)
             }
         },
         isNumber: (scope, operator, operand, operandType) => {
             this.VALIDATE.isComparable(scope, operator, operand, operandType)
             if (isNaN(operand)) {
-                throw new Error(`Invalid ${scope.toUpperCase()}'s operand:「${operand}」`)
+                throw new Error(`In ${scope.toUpperCase()}: Operand must be a valid number`)
             }
         },
         isDate: (scope, operator, operand, operandType) => {
-            this.VALIDATE.isNumber(scope, operator, new Date(operand), operandType)
+            this.VALIDATE.isComparable(scope, operator, operand, operandType)
+            if (isNaN(new Date(operand).getTime())) {
+                throw new Error(`In ${scope.toUpperCase()}: Operand must be a valid date string`)
+            }
         },
     }
 
     static CAST = {
         toStringOrRegexp: (operand, operandType) => operandType === "REGEXP" ? new RegExp(operand) : operand.toString(),
         toNumber: operand => Number(operand),
-        toBoolean: operand => operand === "true",
+        toBoolean: operand => operand.toLowerCase() === "true",
         toBytes: operand => {
+            const units = [...Object.keys(this.UNITS)].sort((a, b) => b.length - a.length).join("|")
             const match = operand.match(/^(\d+(\.\d+)?)([a-z]+)$/i)
             if (!match) {
-                throw new Error(`Invalid SIZE's operand:「${operand}」`)
+                throw new Error(`Operand must be a number followed by a unit: ${units}`)
             }
             const unit = match[3].toLowerCase()
             if (!this.UNITS.hasOwnProperty(unit)) {
-                throw new Error(`Unsupported SIZE's unit:「${unit}」`)
+                throw new Error(`Only supports unit: ${units}`)
             }
             return parseFloat(match[1]) * this.UNITS[unit]
         },
@@ -325,7 +336,7 @@ class QualifierMixin {
     static MATCH = {
         primitiveCompare: (scope, operator, operand, queryResult) => this.OPERATOR[operator](queryResult, operand),
         stringRegexp: (scope, operator, operand, queryResult) => operand.test(queryResult.toString()),
-        arrayCompare: (scope, operator, operand, queryResult) => queryResult.reduce((ret, data) => ret || this.OPERATOR[operator](data, operand), false),
+        arrayCompare: (scope, operator, operand, queryResult) => queryResult.some(data => this.OPERATOR[operator](data, operand)),
         arrayRegexp: (scope, operator, operand, queryResult) => operand.test(queryResult.join(" ")),
     }
 }
@@ -514,7 +525,8 @@ class SearchHelper {
         }
         const getQuery = (parser, nodePicker, contentGetter) => {
             return source => {
-                const ast = parser(source.buffer.toString())
+                const content = source.buffer.toString()
+                const ast = parser(content)
                 const nodes = rangeAST(ast, nodePicker)
                 return nodes.map(contentGetter)
             }
@@ -535,9 +547,9 @@ class SearchHelper {
             { scope: "image", name: "图片", query: getQuery(PARSER.INLINE, NODE_PICKER.IS("image"), CNT_GETTER.LINK_AND_IMAGE) },
             { scope: "code", name: "代码", query: getQuery(PARSER.INLINE, NODE_PICKER.IS("code_inline"), CNT_GETTER.DEFAULT) },
             { scope: "link", name: "链接", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("link"), CNT_GETTER.LINK_AND_IMAGE) },
-            { scope: "strong", name: "强调", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("strong"), CNT_GETTER.DEFAULT) },
-            { scope: "em", name: "斜体", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("em"), CNT_GETTER.DEFAULT) },
-            { scope: "del", name: "删除线", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("s"), CNT_GETTER.DEFAULT) },
+            { scope: "strong", name: "加粗文字", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("strong"), CNT_GETTER.DEFAULT) },
+            { scope: "em", name: "斜体文字", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("em"), CNT_GETTER.DEFAULT) },
+            { scope: "del", name: "删除线文字", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("s"), CNT_GETTER.DEFAULT) },
         ]
         qualifiers.forEach(q => {
             q.is_meta = false
@@ -734,8 +746,9 @@ class SearchHelper {
         const operator = Array.from(Object.keys(this.MIXIN.OPERATOR))
 
         const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
+        const wordsInfo = genInfo(`小知识：\n将关键字改成正则并且前后加\\b即可改成全字匹配。\n例如：/\\bsour\\b/将不会匹配resource`)
         const scopeInfo = genInfo('具体来说，应该是：文件路径或文件内容包含 pear')
-        const diffInfo = genInfo('注意区分：\n「head=简介」：表示标题为简介二字，当标题为”简介1“时不可匹配\n「head:简介」：表示标题包含简介二字，当标题为”简介1“时可以匹配')
+        const diffInfo = genInfo('注意区分：\n「head=plugin」：表示标题为plugin，当标题为”typora plugin“时不可匹配\n「head:plugin」：表示标题包含plugin，当标题为”typora plugin“时可以匹配')
         const table1 = `
 <table>
     <tr><th>关键字</th><th>说明</th></tr>
@@ -743,7 +756,7 @@ class SearchHelper {
     <tr><td>|</td><td>表示或。文档应该包含关键词之一，等价于 OR</td></tr>
     <tr><td>-</td><td>表示非。文档不能包含关键词</td></tr>
     <tr><td>""</td><td>表示词组。双引号里的空格不再视为与，而是词组的一部分</td></tr>
-    <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式</td></tr>
+    <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式 ${wordsInfo}</td></tr>
     <tr><td>qualifier</td><td>查询属性。<br />1. 文件属性(${metaScope.length})：${metaScope.join(" | ")}<br />2. 内容属性(${contentScope.length})：${contentScope.join(" | ")}<br />3. 默认值 default = path + content（路径+文件内容）</td></tr>
     <tr><td>operator</td><td>操作符。<br />1. 「:」表示文本包含或正则匹配（默认）<br />2. 「=」「!=」表示文本、数值、布尔的严格相等/不相等<br />3. 「>」「<」「>=」「<=」表示数值比较</td></tr>
     <tr><td>()</td><td>小括号。用于调整运算顺序</td></tr>
@@ -757,8 +770,8 @@ class SearchHelper {
     <tr><td>sour OR pear</td><td>包含 sour 或 pear</td></tr>
     <tr><td>"sour pear"</td><td>包含 sour pear 这一词组</td></tr>
     <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
-    <tr><td>apple time=2024-03-12</td><td>包含 apple，且文件更新时间为 2024-03-12</td></tr>
-    <tr><td>frontmatter:日记 | head=简介 | strong:abc</td><td>YAML Front Matter 包含日记 或者 标题内容为简介二字 或者 加粗文字包含 abc ${diffInfo}</td></tr>
+    <tr><td>/\\bsour\\b/ pear time=2024-03-12</td><td>匹配正则\\bsour\\b（全字匹配sour），且包含 pear，且文件更新时间为 2024-03-12</td></tr>
+    <tr><td>frontmatter:开发 | head=plugin | strong:MIT</td><td>YAML Front Matter 包含开发 或者 标题内容为 plugin 或者 加粗文字包含 MIT ${diffInfo}</td></tr>
     <tr><td>size>10k (file=k8s.md | hasimage=true)</td><td>文件大小大于 10k，且 文件名为 k8s.md 或者文件内容包含图片</td></tr>
     <tr><td>path:(info | warn | err) -ext:md</td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 md</td></tr>
     <tr><td>file:/[a-z]{3}/ content:prometheus blockcode:"kubectl apply"</td><td>文件名匹配正则 [a-z]{3}，且内容包含 prometheus，且代码块内容含有 kubectl apply</td></tr>
