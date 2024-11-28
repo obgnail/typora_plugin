@@ -55,7 +55,7 @@ class drawIOPlugin extends BaseCustomPlugin {
             }
         } catch (e) {
             const from = isNetwork ? "网络" : "本地"
-            throw new Error(`读取${from}文件失败: ${source}\n\n${e}`)
+            throw new Error(`从${from}读取.drawio源文件失败: ${source}\n\n${e}`)
         }
     }
 
@@ -69,8 +69,8 @@ class drawIOPlugin extends BaseCustomPlugin {
     _refresh = this.utils.debounce(() => window.GraphViewer.processElements(), 100)
 
     _memorizedFetch = this.utils.memorize(async url => {
-        console.log(`memorized fetch url: ${url}`)
-        const resp = await this.utils.fetch(url, { timeout: 60 * 1000 })
+        console.debug(`memorized fetch url: ${url}`)
+        const resp = await this.utils.fetch(url, { timeout: 30 * 1000 })
         return resp.text()
     })
 

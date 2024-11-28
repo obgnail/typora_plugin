@@ -11,7 +11,7 @@ class thirdPartyDiagramParser {
     }
 
     /**
-     * f**k，js不支持interface，只能将接口函数作为参数传入，整整14个参数，一坨狗屎
+     * f**k，js不支持interface，只能将接口函数作为参数传入，一坨狗屎
      * @param {string} lang: 语言
      * @param {string} mappingLang: 映射到哪个语言
      * @param {boolean} destroyWhenUpdate: 更新前是否清空preview里的html
@@ -20,8 +20,9 @@ class thirdPartyDiagramParser {
      * @param {string|function($pre):string} wrapElement: 如果不含目标标签，需要创建
      * @param {object|function($pre, $wrap, content): object} css: fence的样式object
      * @param {function(): Promise<null>} lazyLoadFunc: 加载第三方资源
-     * @param {function($wrap, string): instance} createFunc: 传入目标标签和fence的内容，生成图形实例
-     * @param {function($wrap, string, instance): instance} updateFunc: 当内容更新时，更新图形实例。此选项为空时会直接调用createFunc
+     * @param {function(cid, content, $pre, lang): Promise} beforeRenderFunc: 渲染前的逻辑
+     * @param {function($wrap, string, meta): instance} createFunc: 传入目标标签和fence的内容，生成图形实例
+     * @param {function($wrap, string, instance, meta): instance} updateFunc: 当内容更新时，更新图形实例。此选项为空时会直接调用createFunc
      * @param {function(Object): null} destroyFunc: 传入图形实例，destroy图形实例
      * @param {function(Element, instance): null} beforeExport: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
      * @param {function(): string} extraStyleGetter 用于导出时，新增css
@@ -29,7 +30,7 @@ class thirdPartyDiagramParser {
      */
     register = ({
                     lang, mappingLang = "", destroyWhenUpdate, interactiveMode = true, checkSelector,
-                    wrapElement, css = {}, lazyLoadFunc, createFunc, updateFunc, destroyFunc,
+                    wrapElement, css = {}, lazyLoadFunc, beforeRenderFunc, createFunc, updateFunc, destroyFunc,
                     beforeExport, extraStyleGetter, versionGetter
                 }) => {
         lang = lang.toLowerCase();
@@ -37,7 +38,7 @@ class thirdPartyDiagramParser {
         const settingMsg = null;
         this.parsers.set(lang, {
             lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg,
-            checkSelector, wrapElement, css, lazyLoadFunc, createFunc, updateFunc, destroyFunc,
+            checkSelector, wrapElement, css, lazyLoadFunc, beforeRenderFunc, createFunc, updateFunc, destroyFunc,
             beforeExport, versionGetter, instanceMap: new Map(),
         });
         this.utils.diagramParser.register({
@@ -58,8 +59,11 @@ class thirdPartyDiagramParser {
         await parser.lazyLoadFunc();
         const $wrap = this.getWrap(parser, $pre);
         try {
+            const meta = parser.beforeRenderFunc
+                ? await parser.beforeRenderFunc(cid, content, $pre, lang)
+                : undefined
             this.setStyle(parser, $pre, $wrap, content);
-            let instance = this.createOrUpdate(parser, cid, content, $wrap, lang);
+            let instance = this.createOrUpdate(parser, cid, content, $wrap, lang, meta);
             // 为什么不使用await this.createOrUpdate，而是判断isPromise？
             // 答：有些parser的createFunc可能会抢占element，如果使用await会出现race问题
             if (this.utils.isPromise(instance)) {
@@ -72,30 +76,31 @@ class thirdPartyDiagramParser {
         }
     }
 
-    createOrUpdate = (parser, cid, content, $wrap, lang) => {
+    createOrUpdate = (parser, cid, content, $wrap, lang, meta) => {
         const oldInstance = parser.instanceMap.get(cid);
         if (oldInstance && parser.updateFunc) {
-            const newInstance = parser.updateFunc($wrap, content, oldInstance);
+            const newInstance = parser.updateFunc($wrap, content, oldInstance, meta);
             return newInstance || oldInstance
         } else {
             oldInstance && this.cancel(cid, lang);
-            return parser.createFunc($wrap, content);
+            return parser.createFunc($wrap, content, meta);
         }
     }
 
     getSettingMsg = parser => {
         if (!parser.settingMsg) {
             const settings = {
-                "diagram version": (parser.versionGetter && parser.versionGetter()) || "unknown",
-                "mapping language": parser.mappingLang,
-                "interactive mode": parser.interactiveMode,
-                "destroy when update": parser.destroyWhenUpdate,
-                "render element": parser.wrapElement,
+                "language": parser.lang,
+                "mappingLanguage": parser.mappingLang,
+                "diagramVersion": (parser.versionGetter && parser.versionGetter()) || "unknown",
+                "interactiveMode": parser.interactiveMode,
+                "destroyWhenUpdate": parser.destroyWhenUpdate,
+                "containerElement": parser.wrapElement,
             }
-            const list = Object.entries(settings).map(([k, v]) => `    ${k}: ${v}`);
-            parser.settingMsg = `\n\ndiagram parser settings:\n${list.join("\n")}`;
+            const msg = Object.entries(settings).map(([k, v]) => `    ${k}: ${v}`).join("\n")
+            parser.settingMsg = `\n\ndiagram parser settings:\n${msg}`
         }
-        return parser.settingMsg;
+        return parser.settingMsg
     }
 
     getWrap = (parser, $pre) => {
