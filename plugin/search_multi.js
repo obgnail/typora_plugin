@@ -752,7 +752,7 @@ class SearchHelper {
         const table1 = `
 <table>
     <tr><th>关键字</th><th>说明</th></tr>
-    <tr><td>whitespace</td><td>表示与。文档应该同时包含全部关键词</td></tr>
+    <tr><td>whitespace</td><td>表示与。文档应该同时包含全部关键词，等价于 AND</td></tr>
     <tr><td>|</td><td>表示或。文档应该包含关键词之一，等价于 OR</td></tr>
     <tr><td>-</td><td>表示非。文档不能包含关键词</td></tr>
     <tr><td>""</td><td>表示词组。双引号里的空格不再视为与，而是词组的一部分</td></tr>
@@ -766,8 +766,8 @@ class SearchHelper {
 <table>
     <tr><th>示例</th><th>搜索文档</th></tr>
     <tr><td>pear</td><td>包含 pear。等价于 default:pear ${scopeInfo}</td></tr>
-    <tr><td>sour pear</td><td>包含 sour 和 pear</td></tr>
-    <tr><td>sour OR pear</td><td>包含 sour 或 pear</td></tr>
+    <tr><td>sour pear</td><td>包含 sour 和 pear。等价于 sour AND pear</td></tr>
+    <tr><td>sour | pear</td><td>包含 sour 或 pear。等价于 sour OR pear</td></tr>
     <tr><td>"sour pear"</td><td>包含 sour pear 这一词组</td></tr>
     <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
     <tr><td>/\\bsour\\b/ pear time=2024-03-12</td><td>匹配正则\\bsour\\b（全字匹配sour），且包含 pear，且文件更新时间为 2024-03-12</td></tr>
@@ -778,21 +778,23 @@ class SearchHelper {
 </table>`
 
         const content = `
-<query> ::= <expr>
-<expr> ::= <term> ( <or> <term> )*
-<term> ::= <factor> ( <not_and> <factor> )*
+<query> ::= <expression>
+<expression> ::= <term> ( <or> <term> )*
+<term> ::= <factor> ( <conjunction> <factor> )*
 <factor> ::= <qualifier>? <match>
 <qualifier> ::= <scope> <operator>
-<match> ::= <keyword> | '"'<keyword>'"' | '/'<regexp>'/' | '('<expr>')'
-<not_and> ::= '-' | ' '
+<match> ::= <keyword> | '"'<keyword>'"' | '/'<regexp>'/' | '('<expression>')'
+<conjunction> ::= <and> | <not>
+<and> ::= 'AND' | ' '
 <or> ::= 'OR' | '|'
-<keyword> ::= [^"]+
+<not> ::= '-'
+<keyword> ::= [^\\s"()|]+
 <regexp> ::= [^/]+
 <operator> ::= ${operator.map(s => `'${s}'`).join(" | ")}
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s}'`).join(" | ")}`
 
         const title = "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释";
-        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 15, content, title }];
+        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 17, content, title }];
         this.utils.dialog.modal({ title: "高级搜索", width: "600px", components });
     }
 }
