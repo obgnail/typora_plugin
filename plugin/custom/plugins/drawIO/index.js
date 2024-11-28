@@ -1,23 +1,21 @@
 class drawIOPlugin extends BaseCustomPlugin {
-    init = () => {
-        this.hasLoaded = null
-        this.defaultConfig = this._getDefaultConfig()
-    }
+    init = () => this.defaultConfig = this._getDefaultConfig()
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        this.utils.thirdPartyDiagramParser.register({
+        const parser = this.utils.thirdPartyDiagramParser
+        parser.register({
             lang: this.config.LANGUAGE,
             mappingLang: "javascript",
             destroyWhenUpdate: false,
             interactiveMode: this.config.INTERACTIVE_MODE,
             checkSelector: ".plugin-drawio-content",
             wrapElement: '<div class="plugin-drawio-content"></div>',
-            css: {
+            setStyleFunc: parser.STYLE_SETTER({
                 height: this.config.DEFAULT_FENCE_HEIGHT,
                 "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR,
-            },
+            }),
             lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,
             updateFunc: null,
@@ -95,14 +93,10 @@ class drawIOPlugin extends BaseCustomPlugin {
     }
 
     lazyLoad = async () => {
-        if (!this.hasLoaded) {
-            const from = this.config.RESOURCE_URI
-            const path = this.utils.isNetworkImage(from) ? from : `file:///${this.utils.Package.Path.resolve(from)}`
-            await $.getScript(path)
-            this.hasLoaded = true
-
-            window.GraphViewer.prototype.toolbarZIndex = 7
-        }
+        const from = this.config.RESOURCE_URI
+        const path = this.utils.isNetworkImage(from) ? from : `file:///${this.utils.Package.Path.resolve(from)}`
+        await $.getScript(path)
+        window.GraphViewer.prototype.toolbarZIndex = 7
     }
 
     versionGetter = () => "24.8.9"

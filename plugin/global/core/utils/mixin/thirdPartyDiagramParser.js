@@ -18,9 +18,9 @@ class thirdPartyDiagramParser {
      * @param {boolean} interactiveMode: 交互模式下，不会自动展开代码块
      * @param {string} checkSelector: 检测当前fence下是否含有目标标签
      * @param {string|function($pre):string} wrapElement: 如果不含目标标签，需要创建
-     * @param {object|function($pre, $wrap, content): object} css: fence的样式object
      * @param {function(): Promise<null>} lazyLoadFunc: 加载第三方资源
-     * @param {function(cid, content, $pre, lang): Promise} beforeRenderFunc: 渲染前的逻辑
+     * @param {function(cid, content, $pre): Promise} setStyleFunc: 设置样式
+     * @param {function(cid, content, $pre): Promise} beforeRenderFunc: 渲染前的逻辑
      * @param {function($wrap, string, meta): instance} createFunc: 传入目标标签和fence的内容，生成图形实例
      * @param {function($wrap, string, instance, meta): instance} updateFunc: 当内容更新时，更新图形实例。此选项为空时会直接调用createFunc
      * @param {function(Object): null} destroyFunc: 传入图形实例，destroy图形实例
@@ -30,7 +30,7 @@ class thirdPartyDiagramParser {
      */
     register = ({
                     lang, mappingLang = "", destroyWhenUpdate, interactiveMode = true, checkSelector,
-                    wrapElement, css = {}, lazyLoadFunc, beforeRenderFunc, createFunc, updateFunc, destroyFunc,
+                    wrapElement, lazyLoadFunc, setStyleFunc, beforeRenderFunc, createFunc, updateFunc, destroyFunc,
                     beforeExport, extraStyleGetter, versionGetter
                 }) => {
         lang = lang.toLowerCase();
@@ -38,7 +38,7 @@ class thirdPartyDiagramParser {
         const settingMsg = null;
         this.parsers.set(lang, {
             lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg,
-            checkSelector, wrapElement, css, lazyLoadFunc, beforeRenderFunc, createFunc, updateFunc, destroyFunc,
+            checkSelector, wrapElement, lazyLoadFunc, setStyleFunc, beforeRenderFunc, createFunc, updateFunc, destroyFunc,
             beforeExport, versionGetter, instanceMap: new Map(),
         });
         this.utils.diagramParser.register({
@@ -53,26 +53,26 @@ class thirdPartyDiagramParser {
     }
 
     render = async (cid, content, $pre, lang) => {
-        const parser = this.parsers.get(lang);
+        const parser = this.parsers.get(lang)
         if (!parser) return
 
-        await parser.lazyLoadFunc();
-        const $wrap = this.getWrap(parser, $pre);
+        await parser.lazyLoadFunc()
+        const $wrap = this.getWrap(parser, $pre)
         try {
-            const meta = parser.beforeRenderFunc
-                ? await parser.beforeRenderFunc(cid, content, $pre, lang)
-                : undefined
-            this.setStyle(parser, $pre, $wrap, content);
-            let instance = this.createOrUpdate(parser, cid, content, $wrap, lang, meta);
+            if (parser.setStyleFunc) {
+                await parser.setStyleFunc($pre, $wrap, content)
+            }
+            const meta = parser.beforeRenderFunc ? await parser.beforeRenderFunc(cid, content, $pre) : undefined
+            let instance = this.createOrUpdate(parser, cid, content, $wrap, lang, meta)
             // 为什么不使用await this.createOrUpdate，而是判断isPromise？
             // 答：有些parser的createFunc可能会抢占element，如果使用await会出现race问题
             if (this.utils.isPromise(instance)) {
                 instance = await instance
             }
-            instance && parser.instanceMap.set(cid, instance);
+            instance && parser.instanceMap.set(cid, instance)
         } catch (e) {
-            e.stack += this.getSettingMsg(parser);
-            this.utils.diagramParser.throwParseError(null, e);
+            e.stack += this.getSettingMsg(parser)
+            this.utils.diagramParser.throwParseError(null, e)
         }
     }
 
@@ -113,47 +113,6 @@ class thirdPartyDiagramParser {
         return $wrap
     }
 
-    getFenceUserSize = content => {
-        const lines = content.split("\n").map(line => line.trim()).filter(line => line.startsWith("//"));
-        for (let line of lines) {
-            line = line.replace(/\s/g, "").replace(/['`]/g, `"`);
-            const { groups } = line.match(this.regexp) || {};
-            if (groups) {
-                return { height: groups.height, width: groups.width };
-            }
-        }
-        return { height: "", width: "" };
-    }
-
-    renderAllLangFence = lang => {
-        document.querySelectorAll(`#write .md-fences[lang=${lang}]`).forEach(fence => {
-            const codeMirror = fence.querySelector(":scope > .CodeMirror");
-            if (!codeMirror) {
-                const cid = fence.getAttribute("cid");
-                cid && File.editor.fences.addCodeBlock(cid);
-            }
-        })
-    }
-
-    refreshAllLangFence = lang => {
-        document.querySelectorAll(`#write .md-fences[lang="${lang}"]`).forEach(fence => {
-            const cid = fence.getAttribute("cid");
-            cid && File.editor.diagrams.updateDiagram(cid);
-        })
-    }
-
-    setStyle = (parser, $pre, $wrap, content) => {
-        const { height, width } = this.getFenceUserSize(content);
-        const customCss = parser.css instanceof Function ? parser.css($pre, $wrap, content) : parser.css;
-        const { height: h, width: w, "background-color": bgc, ...args } = customCss || {};
-        $wrap.css({
-            width: width || w || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
-            height: height || h || this.defaultHeight,
-            "background-color": bgc || this.defaultBackgroundColor,
-            ...args,
-        });
-    }
-
     cancel = (cid, lang) => {
         const parser = this.parsers.get(lang);
         if (!parser) return;
@@ -170,6 +129,23 @@ class thirdPartyDiagramParser {
             }
             parser.instanceMap.clear();
         }
+    }
+
+    renderAllLangFence = lang => {
+        document.querySelectorAll(`#write .md-fences[lang=${lang}]`).forEach(fence => {
+            const codeMirror = fence.querySelector(":scope > .CodeMirror")
+            if (!codeMirror) {
+                const cid = fence.getAttribute("cid")
+                cid && File.editor.fences.addCodeBlock(cid)
+            }
+        })
+    }
+
+    refreshAllLangFence = lang => {
+        document.querySelectorAll(`#write .md-fences[lang="${lang}"]`).forEach(fence => {
+            const cid = fence.getAttribute("cid")
+            cid && File.editor.diagrams.updateDiagram(cid)
+        })
     }
 
     beforeExport = () => {
@@ -189,6 +165,44 @@ class thirdPartyDiagramParser {
                 this.refreshAllLangFence(lang);
             }
         }, 300)
+    }
+
+    getFenceUserSize = content => {
+        const lines = content.split("\n").map(line => line.trim()).filter(line => line.startsWith("//"))
+        for (let line of lines) {
+            line = line.replace(/\s/g, "").replace(/['`]/g, `"`)
+            const { groups } = line.match(this.regexp) || {}
+            if (groups) {
+                return { height: groups.height, width: groups.width }
+            }
+        }
+        return { height: "", width: "" }
+    }
+
+    STYLE_SETTER = css => {
+        return ($pre, $wrap, content) => {
+            const { height, width } = this.getFenceUserSize(content)
+            const customCss = css instanceof Function ? css($pre, $wrap, content) : css
+            const { height: h, width: w, "background-color": bgc, ...args } = customCss || {}
+            $wrap.css({
+                width: width || w || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
+                height: height || h || this.defaultHeight,
+                "background-color": bgc || this.defaultBackgroundColor,
+                ...args,
+            })
+        }
+    }
+
+    STYLE_SETTER_SIMPLE = css => {
+        return ($pre, $wrap, content) => {
+            const { height, width, "background-color": bgc, ...args } = css || {}
+            $wrap.css({
+                width: width || parseFloat($pre.find(".md-diagram-panel").css("width")) - 10 + "px",
+                height: height || this.defaultHeight,
+                "background-color": bgc || this.defaultBackgroundColor,
+                ...args,
+            })
+        }
     }
 
     process = () => this.utils.exportHelper.register("third-party-diagram-parser", this.beforeExport, this.afterExport);
