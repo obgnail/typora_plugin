@@ -59,7 +59,12 @@ class thirdPartyDiagramParser {
         const $wrap = this.getWrap(parser, $pre);
         try {
             this.setStyle(parser, $pre, $wrap, content);
-            const instance = this.createOrUpdate(parser, cid, content, $wrap, lang);
+            let instance = this.createOrUpdate(parser, cid, content, $wrap, lang);
+            // 为什么不使用await this.createOrUpdate，而是判断isPromise？
+            // 答：有些parser的createFunc可能会抢占element，如果使用await会出现race问题
+            if (this.utils.isPromise(instance)) {
+                instance = await instance
+            }
             instance && parser.instanceMap.set(cid, instance);
         } catch (e) {
             e.stack += this.getSettingMsg(parser);

@@ -119,7 +119,7 @@ class diagramParser {
             $pre.children(".md-diagram-panel").remove();
         } else {
             $pre.find(".md-diagram-panel-header").text(lang);
-            $pre.find(".md-diagram-panel-preview").text("语法错误，绘图失败");
+            $pre.find(".md-diagram-panel-preview").text("发生异常，绘图失败");
             $pre.find(".md-diagram-panel-error").html(`<pre>${this.getErrorMessage(error)}</pre>`);
         }
         await this.noticeRollback(cid);

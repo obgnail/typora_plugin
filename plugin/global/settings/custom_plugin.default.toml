@@ -414,6 +414,45 @@ G2 G2|A2 A2|B2 B2|c3 z|G2 G2|A2 A2|B2 G2|c3 z||
 ```
 """
 
+############### drawIO ###############
+[drawIO]
+# 是否启用此二级插件
+enable = true
+# 插件名称
+name = "drawIO"
+# 是否在右键菜单中隐藏
+hide = false
+# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
+order = 1
+# 依赖资源从何处加载
+# 由于drawio的格式经常发生变动，官网强烈建议使用cdn获取依赖资源，而不是将依赖资源保存在本地。所以此插件默认需要从网络拉取依赖。如果你希望将依赖资源保存在本地，请按如下操作
+#   1. 下载文件：https://viewer.diagrams.net/js/viewer-static.min.js
+#   2. RESOURCE_URI修改为你自己的文件地址（比如：D:\\tmp\\viewer-static.min.js）
+RESOURCE_URI = "https://viewer.diagrams.net/js/viewer-static.min.js"
+# 代码块语言
+# 强烈建议不要修改。如果要修改，请跟着修改TEMPLATE选项里的语言
+LANGUAGE = "drawio"
+# 开启交互模式（处于交互模式下，鼠标点击图表并不会展开代码块）
+INTERACTIVE_MODE = true
+# 图表默认高度
+DEFAULT_FENCE_HEIGHT = "auto"
+# 图表背景颜色
+DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
+# 自动插入的模板
+TEMPLATE = """```drawio
+// 支持配置项：allow-zoom-in、allow-zoom-out、auto-crop、auto-fit、auto-origin、border、center、check-visible-state、dark-mode、edit、editable、forceCenter、highlight、layerIds、layers、lightbox、max-height、move、nav、page、pageId、resize、responsive、source、target、title、titleTooltip、toolbar、toolbar-buttons、toolbar-nohide、toolbar-position、tooltips、xml、zoom
+// 配置项使用方法请参考：https://github.com/jgraph/drawio/blob/f7158bfb0029a6456c215791b7fd005ccb5c3e76/src/main/webapp/js/diagramly/GraphViewer.js#L118C1-L118C71
+
+graphConfig = {
+	// 必须配置项：.drawio文件的路径。
+	// 支持本地路径：例如："./assets/example.drawio"或者"D:\\tmp\\example.drawio"
+	// 支持网络路径：例如："https://cdn.jsdelivr.net/gh/obgnail/typora_images@master/image/example.drawio"
+    "source": "./assets/example.drawio",
+    // 如果存在多页，可以使用page切换
+    "page": 0,
+}
+```
+"""
 
 ############### callouts ###############
 [callouts]
