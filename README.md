@@ -867,8 +867,6 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 功能：以声明的形式，为【任意插件系统函数】或【任意自定义函数】绑定快捷键。
 
-具体使用请参考 [hotkey.default.toml](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/hotkey.default.toml)。
-
 
 
 ### quickButton：于右下角添加功能按钮（高级）

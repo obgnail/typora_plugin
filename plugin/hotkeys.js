@@ -2,7 +2,9 @@ class hotkeysPlugin extends BasePlugin {
     hotkey = () => [this.config.HOTKEY]
 
     beforeProcess = async () => {
-        this.settings = await this.utils.runtime.readHotkeySetting();
+        const hotkeys = Array.from(Object.values(await this.utils.runtime.readHotkeySetting()))
+        const settings = (hotkeys.length !== 0) ? hotkeys : this.config.CUSTOM_HOTKEYS
+        this.settings = settings || []
     }
 
     process = () => {
@@ -28,9 +30,9 @@ class hotkeysPlugin extends BasePlugin {
             }
         }
 
-        if (this.settings) {
+        if (this.settings.length) {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-                const hotkeys = Object.values(this.settings).map(toHotkey).filter(Boolean);
+                const hotkeys = this.settings.map(toHotkey).filter(Boolean);
                 hotkeys.length && this.utils.hotkeyHub.register(hotkeys);
             })
         }
@@ -43,7 +45,7 @@ class hotkeysPlugin extends BasePlugin {
         })
         const th = `<tr><th>已注册快捷键</th></tr>`;
         const table = `<table>${th}${trs.join("")}</table>`;
-        const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder("hotkey.user.toml");
+        const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder("settings.user.toml");
         const components = [
             { label: "如需自定义快捷键，请 <a>修改配置文件</a>", type: "p", onclick },
             { label: table, type: "p" },

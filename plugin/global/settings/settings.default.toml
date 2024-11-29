@@ -1173,6 +1173,39 @@ NAME = "快捷键中心"
 # 查看注册的快捷键列表的快捷键
 HOTKEY = ""
 
+# 此配置是高级配置，仅对有javascript基础的用户开放，以下说明默认您了解javascript基础
+# 使用说明:
+#   - 用于配置自定义快捷键
+#   - 以声明的形式，为【插件系统的任意函数】或【自定义函数】设置快捷键，也就是说让快捷键支持的最小粒度达到函数级别
+#   - 具体可用的函数直接阅读源码
+#   - 此插件不能覆盖现有的快捷键，此插件充分信任用户，没有做任何防护措施(也意味着很简陋，需要你自己调试)
+# 参数说明:
+#   - desc（可选）: 描述。可填写任意内容，对功能没有影响
+#   - enable: 是否启用
+#   - hotkey: 快捷键
+#   - plugin: 调用的插件
+#   - function: 调用插件的函数名
+#   - closestSelector: 定位到当前光标的父元素，并将其作为参数传入function。如果function没有参数，则不需要此选项
+#   - evil: 自定义回调函数，这里的文本内容会被eval()。如果设置此参数，那么plugin，function，closestSelector都会失效。
+# 注意:
+#   - eval是邪恶的，极端情况下会让你的电脑中毒，请谨慎处理 —— 试试将下面的【openCalc】的enable置为true，接着在typora键入快捷键。
+#   - 如果你有把握，eval确实是很方便 —— 试试将下面的【switchFirstTab】的enable置为true，接着在typora键入快捷键。
+#   - 由于eval的强大，你甚至可以注入插件系统，修改插件系统的行为（此时要将hotkey设置为【-】） —— 试试将下面的【alertWhenOpenFile】的enable置为true。
+CUSTOM_HOTKEYS = [
+    # 简单使用：fastInput
+    { enable = false, hotkey = "ctrl+shift+e", desc = "快速插入javascript代码块", evil = '() => this.utils.insertText(null, "```javascript\n```", false);' },
+    # 支持但邪恶的使用方法：openCalc
+    { enable = false, hotkey = "ctrl+shift+e", desc = "打开windows计算器", evil = "() => this.utils.Package.ChildProcess.exec('cmd /C calc')" },
+    # 支持但不推荐的使用方法：switchFirstTab
+    { enable = false, hotkey = "ctrl+shift+e", desc = "切换到第一个标签", evil = "() => this.utils.getPlugin('window_tab').switchTab(0)" },
+    # 支持但是不正常不推荐的使用方法：alertWhenOpenFile
+    { enable = false, hotkey = "-", desc = "每当打开文件时都弹出提示窗口", evil = "this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, filepath => window.confirm(`你打开了文件: ${filepath}`))" },
+    # 正规使用方法：insertKanban
+    { enable = false, hotkey = "ctrl+shift+e", desc = "在光标位置插入看板", plugin = "kanban", function = "callback" },
+    # 正规使用方法：foldFence
+    { enable = false, hotkey = "ctrl+[", desc = "当光标置于代码块中，按下此快捷键可以折叠/展开代码块", plugin = "fence_enhance", function = "foldFence",closestSelector = "#write .md-fences" },
+]
+
 
 ############### help ###############
 [help]
