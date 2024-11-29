@@ -25,29 +25,40 @@ EXIT_INTERACTIVE_MODE = ["click_exit_button"]
 ENABLE = true
 # 插件名称
 NAME = "标签页管理"
-# 拖拽排序标签页的方式(1 or 2)
-# 1类似于idea，2类似于vscode
+# 拖拽排序标签页的方式
+#   1：类似于jetbrains
+#   2：类似于vscode
 DRAG_STYLE = 1
 # 标签的标题是否去除文件后缀名（filename.md -> filename）
 REMOVE_FILE_SUFFIX = true
-# 当出现同名文件时，同时显示其父目录（filename -> dir/filename）
+# 当出现同名文件时，同时显示其父目录（filename.md -> dir/filename.md）
 SHOW_DIR_FOR_SAME_NAME_FILE = true
-# 限制最多打开x个标签，超过时会删除最左边的tab（若为-1，则无限制）
-TAB_MAX_NUM = -1
+# 当鼠标悬停于标签页时，显示文件的完整路径
+SHOW_FULL_PATH_WHEN_HOVER = true
+# 显示标签页的关闭按钮
+SHOW_TAB_CLOSE_BUTTON = true
 # 标签页Y轴防抖：拖拽标签页，若垂直高度变化很小，则保持Y轴不变，帮助更好的排序标签页（仅当DRAG_STYLE=1时生效。为什么不给2做此功能？答：vscode也没有做）
 LIMIT_TAB_Y_AXIS_WHEN_DRAG = true
 # 禁止垂直拖拽（仅当DRAG_STYLE=1时生效。若为true，则HEIGHT_SCALE失效）
 LIMIT_TAB_ROI = false
+# 当Typora使用【一体化】窗口样式时，是否隐藏标题栏
+HIDE_WINDOW_TITLE_BAR = false
+# ctrl+click标签，新建窗口打开
+CTRL_CLICK_TO_NEW_WINDOW = true
+# 当鼠标悬停于标签页时，允许使用【ctrl+鼠标滚轮】切换标签页
+CTRL_WHEEL_TO_SCROLL = true
+# 鼠标中键点击标签页关闭标签页
+MIDDLE_CLICK_TO_CLOSE = true
+# 限制最多打开x个标签，超过时会删除最左边的tab（若为-1，则无限制）
+TAB_MAX_NUM = -1
 # 鼠标向下拖拽标签，当拖拽的垂直距离超过标签本身的x倍高度时，视为新建窗口打开此文件（若为-1，则不启用此功能）
 HEIGHT_SCALE = -1
 # tab最小宽度（填入css长度，如200px、12em，不可超过400px）
 TAB_MIN_WIDTH = "100px"
 # tab最大宽度（填入css长度，如200px、12em，不可超过400px）
 TAB_MAX_WIDTH = "none"
-# tab和正文内容之间的间隙高度（单位：px）
+# 标签栏和正文内容之间的间隙高度（单位：px）
 GAP_BETWEEN_TAB_AND_CONTENT = 0
-# 当鼠标悬停于标签页时，显示文件的完整路径
-SHOW_FULL_PATH_WHEN_HOVER = true
 # 当关闭最后一个标签时:
 #   - reconfirm: 弹出弹窗确认是否退出Typora
 #   - exit:      退出Typora
@@ -62,22 +73,14 @@ NEW_TAB_AT = "right"
 #   - right:  当前tab的右侧
 #   - latest: 上一个浏览的tab
 ACTIVE_TAB_WHEN_CLOSE = "right"
-# 显示标签页的关闭按钮
-SHOW_TAB_CLOSE_BUTTON = true
-# ctrl+click标签，新建窗口
-CTRL_CLICK_TO_NEW_WINDOW = true
-# 当鼠标位于标签页时，允许使用【ctrl+鼠标滚轮】切换标签页
-CTRL_WHEEL_TO_SCROLL = true
-# 鼠标中键点击标签页关闭标签页
-MIDDLE_CLICK_TO_CLOSE = true
 # 关闭标签页的快捷键
 CLOSE_HOTKEY = ["ctrl+w"]
 # 切换下一个标签页的快捷键
 SWITCH_NEXT_TAB_HOTKEY = ["ctrl+PageDown", "ctrl+Tab"]
 # 切换上一个标签页的快捷键
 SWITCH_PREVIOUS_TAB_HOTKEY = ["ctrl+PageUp", "ctrl+shift+Tab"]
-# 复制当前文件路径的快捷键（为空则不设置）
-COPY_PATH_HOTKEY = [""]
+# 复制当前文件路径的快捷键（若置为[]，则不设置）
+COPY_PATH_HOTKEY = []
 # 鼠标右击标签页，弹出的右键菜单列表（若置为[]，则不使用此功能）
 # 支持如下功能：
 #   - closeTab:        关闭标签
@@ -89,8 +92,6 @@ COPY_PATH_HOTKEY = [""]
 #   - openInNewWindow: 新窗口打开
 #   - sortTabs:        排序标签
 CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "sortTabs", "copyPath", "showInFinder", "openInNewWindow"]
-# 当Typora使用【一体化】窗口样式时，是否隐藏标题栏
-HIDE_WINDOW_TITLE_BAR = false
 # typora1.1版本以后，支持使用锚点跳转到本地文件，是否拦截处理（从新建窗口改成新建标签页）
 # 参考1：https://support.typora.io/zh/What's-New-1.1/#文件链接
 # 参考2：https://support.typora.io/Links/#internal-links
@@ -114,14 +115,14 @@ BACKSPACE_TO_HIDE = true
 # 展示文件路径时使用相对路径
 RELATIVE_PATH = true
 # 鼠标悬停到搜索项时展示文件的修改时间
-# 此选项时为了通过额外的信息帮助查找文件，我嫌弃它扎眼就没开启，如果你总是找不到目标文件，可以置为true
+# 此选项时为了通过额外的信息帮助查找文件（我嫌弃它扎眼就没开启，如果你总是找不到目标文件，可以置为true）
 SHOW_MTIME = false
 # 打开文件后，自动聚焦输入框
 # 此选项是为了键盘党可以通过键盘上下键、ctrl+enter进行快速操作，如果你是鼠标党，可以置为false
 REFOUCE_WHEN_OPEN_FILE = false
-# 搜索内容时大小写敏感(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
+# 搜索内容时大小写敏感（此处配置的是默认值，使用时可以在页面通过点击按钮重新设置）
 CASE_SENSITIVE = false
-# 搜索时联动其他插件(此处配置的是默认值，使用时可以在页面通过点击按钮重新设置)
+# 搜索时联动其他插件（此处配置的是默认值，使用时可以在页面通过点击按钮重新设置）
 LINK_OTHER_PLUGIN = true
 # 查找文件的最大尺寸。大于MAX_SIZE的文件在搜索时将被忽略。若<0则不忽略任何文件
 # 注意：Typora只支持打开小于2000000字节的文件，所以不建议修改成比2000000还大的值，毕竟找到了也不能在typora里打开
@@ -129,7 +130,7 @@ MAX_SIZE = 2000000
 # 查找文件的后缀名，此外的文件在搜索时将被忽略
 # 注意：默认值为Typora允许打开的文件的后缀名列表。所以不建议新增后缀名，毕竟找到了也不能在typora里打开
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
-# 忽略的目录名
+# 查找文件时忽略的目录名
 IGNORE_FOLDERS = [".git", "node_modules"]
 
 
@@ -169,24 +170,22 @@ HOTKEY = ""
 ALLOW_DRAG = true
 # 当输入框为空，且键入backspace时，隐藏窗口
 BACKSPACE_TO_HIDE = true
-# 【快捷键】和【在右键菜单中】调用内建命令，是否弹出窗口
-# 注意: 123使用的是child_process.exec，因此如果程序的输出超出200K，会引发Error：maxBuffer exceeded。此时必须使用echo
+# 在【快捷键】和【右键菜单】中调用内建命令，是否弹出窗口
 #   - always  总是弹出
 #   - error   只在异常时弹出
 #   - silent  总是静默
-#   - echo    弹窗并回显程序输出、适合需要不断打印日志的耗时任务
+#   - echo    立即弹出并回显程序输出、适合需要不断打印日志的耗时任务
 QUICK_EXEC_SHOW = "error"
 # 【在命令输入框里回车】和【点击执行按钮】执行命令时，使用的回显类型
 #   - always  等待程序执行完毕后一次性输出
 #   - echo    立即回显程序输出
 COMMIT_EXEC_SHOW = "echo"
-# 内建命令列表。支持无限添加。
-# 目前支持4个参数:
-#   - name:   展示的名称（不可重复）
+# 内建命令列表。
+#   - name:   展示的名称（必须唯一）
 #   - shell:  cmd/bash、powershell、gitbash、wsl（如果使用gitbash、wsl，请确保已经将其加入环境变量。非windows平台则后三者不可用）
 #   - hotkey: 快捷键（可选）
 #   - cmd:    执行的命令
-# cmd提供内置环境变量:
+# 内置环境变量:
 #   - $f: 当前文件路径
 #   - $d: 当前文件所属目录
 #   - $m: 当前挂载目录（侧边栏的根目录）
@@ -283,7 +282,7 @@ NAME = "多功能搜索"
 HOTKEY = "ctrl+j"
 # 当输入框为空，且键入backspace时，隐藏窗口
 BACKSPACE_TO_HIDE = true
-# 当点击其他地方时，隐藏窗口
+# 当鼠标点击其他地方时，隐藏窗口
 AUTO_HIDE = true
 # 等待输入法输入完毕后才执行搜索
 IGNORE_WHEN_COMPOSITION = true
@@ -292,7 +291,7 @@ TOOLBAR_TOP_PERCENT = 20
 # toolbar的宽度为页面的80%
 TOOLBAR_WIDTH_PERCENT = 80
 # 用户输入的防抖时间（单位：ms）（用户输入完70ms后才执行）
-# 为什么时间默认这么短？答：都是非常简单的查询，甚至大部分是直接从内存取的（当然，不建议30以下）
+# 为什么时间默认这么短？答：都是非常简单的查询，基本都是直接从内存取的
 DEBOUNCE_INTERVAL = 70
 
 # 用户键入内容 = 搜索工具名称 + 空格 + 搜索内容
@@ -322,7 +321,7 @@ USE_NEGATIVE_SEARCH = true
 
 ############### blur ###############
 [blur]
-# 启用插件（此插件暂时无法在低版本Typora使用）
+# 启用插件（此插件无法在低版本Typora使用）
 ENABLE = true
 # 插件名称
 NAME = "模糊模式"
