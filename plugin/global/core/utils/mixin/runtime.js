@@ -21,12 +21,12 @@ class runtime {
             isCustom = true
         }
         if (!plugin) return
-        await this._saveConfig(fixedName, isCustom, updateObj)
+        const file = isCustom ? "custom_plugin.user.toml" : "settings.user.toml"
+        return this._saveConfig(file, fixedName, updateObj)
     }
 
-    _saveConfig = async (fixedName, isCustom, updateObj) => {
-        const file = isCustom ? "custom_plugin.user.toml" : "settings.user.toml"
-        const settingPath = await this.getActualSettingPath(file)
+    _saveConfig = async (targetFile, fixedName, updateObj) => {
+        const settingPath = await this.getActualSettingPath(targetFile)
         const tomlObj = await this.utils.readTomlFile(settingPath)
         const newSetting = this.utils.merge(tomlObj, { [fixedName]: updateObj })
         const newContent = this.utils.stringifyToml(newSetting)
@@ -94,7 +94,7 @@ class runtime {
                 obj.evil = obj.evil.replace(/\r\n/g, "\n")
             }
         })
-        const ok = await this._saveConfig("hotkeys", false, { "CUSTOM_HOTKEYS": hotkeys })
+        const ok = await this._saveConfig("settings.user.toml","hotkeys", { "CUSTOM_HOTKEYS": hotkeys })
         if (!ok) return
 
         const deleteFile = async file => {

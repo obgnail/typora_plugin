@@ -374,7 +374,7 @@ class SearchHelper {
     /**
      * {string}   scope:         Qualifier scope
      * {string}   name:          Name for explain
-     * {boolean}  is_meta:       The attribute queried belongs to metadata
+     * {boolean}  is_meta:       Is Qualifier scope a metadata property
      * {function} validate:      Checks user input; defaults to `this.MIXIN.VALIDATE.isStringOrRegexp`
      * {function} cast:          Converts user input for easier matching; defaults to `this.MIXIN.CAST.toStringOrRegexp`
      * {function} query:         Retrieves data from source
@@ -470,6 +470,14 @@ class SearchHelper {
                 validate: this.MIXIN.VALIDATE.isBoolean,
                 cast: this.MIXIN.CAST.toBoolean,
                 query: ({ path, file, stats, buffer }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(buffer.toString()),
+            },
+            {
+                scope: "line",
+                name: "行",
+                is_meta: false,
+                query: ({ path, file, stats, buffer }) => buffer.toString().split("\n").map(e => e.trim()),
+                match_keyword: this.MIXIN.MATCH.arrayCompare,
+                match_regexp: this.MIXIN.MATCH.arrayRegexp,
             },
         ]
     }
@@ -592,7 +600,7 @@ class SearchHelper {
         if (!this.config.CASE_SENSITIVE) {
             if (typeof queryResult === "string") {
                 queryResult = queryResult.toLowerCase()
-            } else if (Array.isArray(queryResult)) {
+            } else if (Array.isArray(queryResult) && queryResult[0] && typeof queryResult[0] === "string") {
                 queryResult = queryResult.map(s => s.toLowerCase())
             }
         }
@@ -740,13 +748,14 @@ class SearchHelper {
     }
 
     showGrammar() {
-        const scope = Array.from(this.qualifiers.values())
-        const metaScope = scope.filter(s => s.is_meta).map(s => s.scope)
-        const contentScope = scope.filter(s => !s.is_meta).map(s => s.scope)
         const operator = Array.from(Object.keys(this.MIXIN.OPERATOR))
+        const scope = Array.from(this.qualifiers.values())
+        const metaScope = scope.filter(s => s.is_meta)
+        const contentScope = scope.filter(s => !s.is_meta)
 
+        const genScope = scopes => scopes.map(e => `<span title="${e.name}">${e.scope}</span>`).join(" | ")
         const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
-        const wordsInfo = genInfo(`小知识：\n将关键字改成正则并且前后加\\b即可改成全字匹配。\n例如：/\\bsour\\b/将不会匹配resource`)
+        const wordsInfo = genInfo(`小知识：\n将关键字改成正则并且前后加\\b即可改成全字匹配\n例如：/\\bsour\\b/将不会匹配resource`)
         const scopeInfo = genInfo('具体来说，应该是：文件路径或文件内容包含 pear')
         const diffInfo = genInfo('注意区分：\n「head=plugin」：表示标题为plugin，当标题为”typora plugin“时不可匹配\n「head:plugin」：表示标题包含plugin，当标题为”typora plugin“时可以匹配')
         const table1 = `
@@ -757,7 +766,7 @@ class SearchHelper {
     <tr><td>-</td><td>表示非。文档不能包含关键词</td></tr>
     <tr><td>""</td><td>表示词组。双引号里的空格不再视为与，而是词组的一部分</td></tr>
     <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式 ${wordsInfo}</td></tr>
-    <tr><td>qualifier</td><td>查询属性。<br />1. 文件属性(${metaScope.length})：${metaScope.join(" | ")}<br />2. 内容属性(${contentScope.length})：${contentScope.join(" | ")}<br />3. 默认值 default = path + content（路径+文件内容）</td></tr>
+    <tr><td>qualifier</td><td>查询属性。<br />1. 文件属性(${metaScope.length})：${genScope(metaScope)}<br />2. 内容属性(${contentScope.length})：${genScope(contentScope)}<br />3. 默认值 default = path + content（路径+文件内容）</td></tr>
     <tr><td>operator</td><td>操作符。<br />1. 「:」表示文本包含或正则匹配（默认）<br />2. 「=」「!=」表示文本、数值、布尔的严格相等/不相等<br />3. 「>」「<」「>=」「<=」表示数值比较</td></tr>
     <tr><td>()</td><td>小括号。用于调整运算顺序</td></tr>
 </table>`
@@ -791,11 +800,11 @@ class SearchHelper {
 <keyword> ::= [^\\s"()|]+
 <regexp> ::= [^/]+
 <operator> ::= ${operator.map(s => `'${s}'`).join(" | ")}
-<scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s}'`).join(" | ")}`
+<scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
-        const title = "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释";
-        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 17, content, title }];
-        this.utils.dialog.modal({ title: "高级搜索", width: "600px", components });
+        const title = "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释"
+        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 17, content, title }]
+        this.utils.dialog.modal({ title: "高级搜索", width: "600px", components })
     }
 }
 
@@ -891,4 +900,4 @@ class LinkHelper {
 
 module.exports = {
     plugin: searchMultiKeywordPlugin
-};
+}
