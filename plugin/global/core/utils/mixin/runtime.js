@@ -14,20 +14,23 @@ class runtime {
     }
 
     saveConfig = async (fixedName, updateObj) => {
-        let isCustom = false;
-        let plugin = this.utils.getPlugin(fixedName);
+        let isCustom = false
+        let plugin = this.utils.getPlugin(fixedName)
         if (!plugin) {
-            plugin = this.utils.getCustomPlugin(fixedName);
-            isCustom = true;
+            plugin = this.utils.getCustomPlugin(fixedName)
+            isCustom = true
         }
-        if (!plugin) return;
+        if (!plugin) return
+        const file = isCustom ? "custom_plugin.user.toml" : "settings.user.toml"
+        return this._saveConfig(file, fixedName, updateObj)
+    }
 
-        const file = isCustom ? "custom_plugin.user.toml" : "settings.user.toml";
-        const settingPath = await this.getActualSettingPath(file);
-        const tomlObj = await this.utils.readTomlFile(settingPath);
-        const newSetting = this.utils.merge(tomlObj, { [fixedName]: updateObj });
-        const newContent = this.utils.stringifyToml(newSetting);
-        return this.utils.writeFile(settingPath, newContent);
+    _saveConfig = async (targetFile, fixedName, updateObj) => {
+        const settingPath = await this.getActualSettingPath(targetFile)
+        const tomlObj = await this.utils.readTomlFile(settingPath)
+        const newSetting = this.utils.merge(tomlObj, { [fixedName]: updateObj })
+        const newContent = this.utils.stringifyToml(newSetting)
+        return this.utils.writeFile(settingPath, newContent)
     }
 
     autoSaveConfig = plugin => {
@@ -79,6 +82,29 @@ class runtime {
             }
         })
         return settings
+    }
+    // 兼容历史遗留问题
+    moveHotkeySetting = async () => {
+        const settings = await this.readHotkeySetting()
+        const hotkeys = Array.from(Object.values(settings))
+        if (hotkeys.length === 0) return
+
+        hotkeys.forEach(obj => {
+            if (obj.evil && typeof obj.evil === "string") {
+                obj.evil = obj.evil.replace(/\r\n/g, "\n")
+            }
+        })
+        const ok = await this._saveConfig("settings.user.toml","hotkeys", { "CUSTOM_HOTKEYS": hotkeys })
+        if (!ok) return
+
+        const deleteFile = async file => {
+            try {
+                await this.utils.Package.Fs.promises.unlink(file)
+            } catch (e) {
+            }
+        }
+        const files = ["hotkey.default.toml", "hotkey.user.toml"]
+        await Promise.all(files.map(file => Promise.all([deleteFile(this.getOriginSettingPath(file)), deleteFile(this.getHomeSettingPath(file))])))
     }
 
     cleanPluginSetting = async () => {
@@ -140,6 +166,7 @@ class runtime {
                 await saveFile(file, user_);
             })
         );
+        await this.moveHotkeySetting();
     }
 
     openSettingFolder = async (file = "settings.user.toml") => this.utils.showInFinder(await this.getActualSettingPath(file))
@@ -148,7 +175,7 @@ class runtime {
         const { FsExtra, Path } = this.utils.Package;
         const backupDir = Path.join(this.utils.tempFolder, "typora_plugin_config");
         await FsExtra.emptyDir(backupDir);
-        const settingFiles = ["settings.user.toml", "custom_plugin.user.toml", "hotkey.user.toml"];
+        const settingFiles = ["settings.user.toml", "custom_plugin.user.toml"];
         for (const file of settingFiles) {
             const source = await this.getActualSettingPath(file);
             const target = Path.join(backupDir, file);

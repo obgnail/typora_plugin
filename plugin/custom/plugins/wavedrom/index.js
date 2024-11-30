@@ -1,11 +1,11 @@
 /**
  * 太搞了，第一次见到如此奇葩的API：
- *    var div = document.createElement('div');
- *    div.id = 'a0';
- *    document.body.appendChild(div);
- *    var wavedrom = require('wavedrom');
- *    var notFirstSignal = false;
- *    wavedrom.renderWaveForm(0, { signal:[] }, 'a', notFirstSignal);
+ *    var div = document.createElement('div')
+ *    div.id = 'a0'
+ *    document.body.appendChild(div)
+ *    var wavedrom = require('wavedrom')
+ *    var notFirstSignal = false
+ *    wavedrom.renderWaveForm(0, { signal:[] }, 'a', notFirstSignal)
  * 你没有看错，wavedrom不能通过传入ELEMENT的方式创建instance，只能传入element_id，而且element_id必须为prefix+index的形式，而且还是分开传入的
  * 为什么会采用上述如此反常的方式？
  *    作者回答：When having multiple diagrams on the same page the id === 'a0' SVG has special property.
@@ -23,26 +23,27 @@
  */
 class wavedromPlugin extends BaseCustomPlugin {
     init = () => {
-        this.wavedromPkg = null;
-        this.prefix = "WaveDrom_Display_";
+        this.wavedromPkg = null
+        this.prefix = "WaveDrom_Display_"
         this.evalFunc = this.config.SAFE_MODE ? this._safeEval : this._dangerousEval
     }
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
     process = () => {
-        let idx = 0;
-        this.utils.thirdPartyDiagramParser.register({
+        let idx = 0
+        const parser = this.utils.thirdPartyDiagramParser
+        parser.register({
             lang: this.config.LANGUAGE,
             mappingLang: "javascript",
             destroyWhenUpdate: false,
             interactiveMode: this.config.INTERACTIVE_MODE,
             checkSelector: ".plugin-wavedrom-content",
             wrapElement: () => `<div class="plugin-wavedrom-content" id="${this.prefix + ++idx}"></div>`,
-            css: {
+            setStyleFunc: parser.STYLE_SETTER({
                 height: this.config.DEFAULT_FENCE_HEIGHT,
                 "background-color": this.config.DEFAULT_FENCE_BACKGROUND_COLOR
-            },
+            }),
             lazyLoadFunc: this.lazyLoad,
             createFunc: this.create,
             updateFunc: null,
@@ -54,24 +55,24 @@ class wavedromPlugin extends BaseCustomPlugin {
     }
 
     create = ($wrap, content) => {
-        const id = $wrap.attr("id");
-        const index = parseInt(id.slice(this.prefix.length));
-        const waveJson = this.evalFunc(content);
-        const notFirstSignal = false;
-        this.wavedromPkg.renderWaveForm(index, waveJson, this.prefix, notFirstSignal);
+        const id = $wrap.attr("id")
+        const index = parseInt(id.slice(this.prefix.length))
+        const waveJson = this.evalFunc(content)
+        const notFirstSignal = false
+        this.wavedromPkg.renderWaveForm(index, waveJson, this.prefix, notFirstSignal)
     }
 
     versionGetter = () => this.wavedromPkg && this.wavedromPkg.version
 
     lazyLoad = () => {
-        this.wavedromPkg = require("./wavedrom.min.js");
-        window.WaveSkin = this.wavedromPkg.waveSkin;  // renderWaveForm() will use window.WaveSkin
+        this.wavedromPkg = require("./wavedrom.min.js")
+        window.WaveSkin = this.wavedromPkg.waveSkin  // renderWaveForm() will use window.WaveSkin
     }
 
-    _safeEval = content => new Function(`return (${content})`)();
-    _dangerousEval = content => eval(`(${content})`);
+    _safeEval = content => new Function(`return (${content})`)()
+    _dangerousEval = content => eval(`(${content})`)
 }
 
 module.exports = {
     plugin: wavedromPlugin
-};
+}

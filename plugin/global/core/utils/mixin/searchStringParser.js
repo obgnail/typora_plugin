@@ -1,14 +1,16 @@
 /**
  * grammar:
- *   <query> ::= <expr>
- *   <expr> ::= <term> ( <or> <term> )*
- *   <term> ::= <factor> ( <not_and> <factor> )*
+ *   <query> ::= <expression>
+ *   <expression> ::= <term> ( <or> <term> )*
+ *   <term> ::= <factor> ( <conjunction> <factor> )*
  *   <factor> ::= <qualifier>? <match>
  *   <qualifier> ::= <scope> <operator>
- *   <match> ::= <keyword> | '"'<keyword>'"' | '/'<regexp>'/' | '('<expr>')'
- *   <not_and> ::= '-' | ' '
+ *   <match> ::= <keyword> | '"'<keyword>'"' | '/'<regexp>'/' | '('<expression>')'
+ *   <conjunction> ::= <and> | <not>
+ *   <and> ::= 'AND' | ' '
  *   <or> ::= 'OR' | '|'
- *   <keyword> ::= [^"]+
+ *   <not> ::= '-'
+ *   <keyword> ::= [^\\s"()|]+
  *   <regexp> ::= [^/]+
  *   <operator> ::= ':' | '=' | '>=' | '<=' | '>' | '<'
  *   <scope> ::= 'default' | 'file' | 'path' | 'ext' | 'content' | 'size' | 'time'
@@ -51,7 +53,7 @@ class searchStringParser {
         const _operator = [...operator].sort(byLength).join("|")
         this.regex = new RegExp(
             [
-                `(?<AND>\\s+)`,
+                `(?<AND>(\\s|\\bAND\\b)+)`,
                 `(?<NOT>-)`,
                 `"(?<PHRASE>[^"]*)"`,
                 `(?<PAREN_OPEN>\\()`,
