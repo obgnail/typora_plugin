@@ -392,13 +392,13 @@ class SearchHelper {
             },
             {
                 scope: "path",
-                name: "文件名",
+                name: "路径",
                 is_meta: true,
                 query: ({ path, file, stats, buffer }) => path,
             },
             {
                 scope: "file",
-                name: "路径",
+                name: "文件名",
                 is_meta: true,
                 query: ({ path, file, stats, buffer }) => file,
             },
