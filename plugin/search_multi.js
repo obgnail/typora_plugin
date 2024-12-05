@@ -1,6 +1,6 @@
 class searchMultiKeywordPlugin extends BasePlugin {
     styleTemplate = () => ({
-        colors_style: this.config.STYLE_COLOR.map((color, idx) => `.cm-plugin-highlight-hit-${idx} { background-color: ${color}; }`).join("\n")
+        colors_style: this.config.STYLE_COLOR.map((color, idx) => `.cm-plugin-highlight-hit-${idx} { background-color: ${color} !important; }`).join("\n")
     })
 
     html = () => `
@@ -138,6 +138,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     highlightMultiByAST = ast => {
         ast = ast || this.getAST()
         this.utils.hide(this.entities.highlightResult)
+        if (!ast) return
         const group = this.searchHelper.getContentTokens(ast)
         const hitGroups = this.highlightHelper.doSearch(group)
         const itemList = Object.entries(hitGroups).map(([cls, { name, hits }]) => {
@@ -902,24 +903,38 @@ class Highlighter {
         if (isFutureCM && !File.editor.fences.queue[targetHit.cid]) {
             File.editor.fences.addCodeBlock(targetHit.cid)
         }
-        if (targetHit.isCm || File.editor.fences.queue[targetHit.cid]) {
-            const all = this.utils.entities.querySelectorAllInWrite(`[cid="${targetHit.cid}"] .${cls}`)
-            const startIdx = hits.findIndex(e => e.cid === targetHit.cid)
-            const targetIdx = idx - startIdx
-            targetHit = all[targetIdx]
+        const cm = File.editor.fences.queue[targetHit.cid]
+        if (targetHit.isCm || cm) {
+            cm.doc.setSelection(cm.posFromIndex(targetHit.start), cm.posFromIndex(targetHit.end))
+            const scroller = cm.getScrollerElement()
+            if (scroller) {
+                targetHit = scroller.querySelector(".CodeMirror-selectedtext")
+            }
         }
-        this.utils.scroll(targetHit)
-        this._highlightMarker(targetHit)
+        if (targetHit) {
+            this.utils.scroll(targetHit)
+            this._highlightMarker(targetHit)
+        }
     }
 
     clearSearch = () => {
-        if (!this.isClosed()) {
-            console.debug("clear search")
-            this.utils.entities.querySelectorAllInWrite(".plugin-highlight-multi-bar").forEach(e => this.utils.removeElement(e))
+        if (this.isClosed()) return
+
+        console.debug("clear search")
+        this.utils.entities.querySelectorAllInWrite(".plugin-highlight-multi-bar").forEach(e => this.utils.removeElement(e))
+        if (File.editor.sourceView.inSourceMode) {
+            if (this.searchStatus && this.searchStatus.hits.length) {
+                File.editor.fences.clearSearchAll()
+                File.editor.sourceView.cm.focus()
+            }
+        } else {
+            File.editor.mathInline.renderAll(false)
             File.editor.searchPanel.searchStatus = this.searchStatus
             File.editor.searchPanel.clearSearch(undefined, undefined, true)
-            this._resetStatus()
+            File.editor.fences.clearSearchAll()
+            this.utils.entities.querySelectorAllInWrite('[class*="cm-plugin-highlight-hit"]').forEach(e => File.editor.EditHelper.unmarkSpan(e))
         }
+        this._resetStatus()
     }
 
     isClosed = () => this.searchStatus.regexp == null
@@ -1042,7 +1057,7 @@ class Highlighter {
         }
     }
 
-    _handleHTMLBlock = (node) => {
+    _handleHTMLBlock = node => {
         this._resetRegexpLastIndex()
         const currentCm = File.editor.mathBlock.currentCm
         const htmlBlockCM = (currentCm || {}).cid === node.cid
