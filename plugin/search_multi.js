@@ -873,7 +873,7 @@ class Highlighter {
     }
 
     doSearch = (searchGroup = this.searchStatus.searchGroup, caseSensitive = this.config.CASE_SENSITIVE) => {
-        this._resetStatus()
+        this.clearSearch()
         this.searchStatus.searchGroup = searchGroup
         this.searchStatus.regexp = this._createRegExp(searchGroup, caseSensitive)
         this.searchStatus.hitGroups = Object.fromEntries(searchGroup.map((name, idx) => [`cm-plugin-highlight-hit-${idx}`, { name, hits: [] }]))
