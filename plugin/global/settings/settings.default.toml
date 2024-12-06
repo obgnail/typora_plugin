@@ -117,13 +117,8 @@ RELATIVE_PATH = true
 # 鼠标悬停到搜索项时展示文件的修改时间
 # 此选项时为了通过额外的信息帮助查找文件（我嫌弃它扎眼就没开启，如果你总是找不到目标文件，可以置为true）
 SHOW_MTIME = false
-# 打开文件后，自动聚焦输入框
-# 此选项是为了键盘党可以通过键盘上下键、ctrl+enter进行快速操作，如果你是鼠标党，可以置为false
-REFOUCE_WHEN_OPEN_FILE = false
 # 搜索内容时大小写敏感（此处配置的是默认值，使用时可以在页面通过点击按钮重新设置）
 CASE_SENSITIVE = false
-# 搜索时联动其他插件（此处配置的是默认值，使用时可以在页面通过点击按钮重新设置）
-LINK_OTHER_PLUGIN = true
 # 查找文件的最大尺寸。大于MAX_SIZE的文件在搜索时将被忽略。若<0则不忽略任何文件
 # 注意：Typora只支持打开小于2000000字节的文件，所以不建议修改成比2000000还大的值，毕竟找到了也不能在typora里打开
 MAX_SIZE = 2000000
@@ -132,30 +127,12 @@ MAX_SIZE = 2000000
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 # 查找文件时忽略的目录名
 IGNORE_FOLDERS = [".git", "node_modules"]
-
-
-############### multi_highlighter ###############
-[multi_highlighter]
-# 启用插件
-ENABLE = true
-# 插件名称
-NAME = "多关键字高亮"
-# 快捷键
-HOTKEY = "ctrl+shift+h"
-# 允许通过【ctrl+鼠标拖拽输入框】拖动窗口
-ALLOW_DRAG = true
-# 当输入框为空，且键入backspace时，隐藏窗口
-BACKSPACE_TO_HIDE = true
 # 高亮的颜色
 # 每个关键字按序对应一个颜色，数量不限，你可以修改、新增、删除颜色
 STYLE_COLOR = [
     '#bbeeff', '#ffbbcc', '#88ee88', '#ccbbff', '#ffee88', '#FFFFa0', '#88cccc', '#ffbb88', '#cccccc', '#ffaabb',
     '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
 ]
-# 大小写敏感（此处配置的是默认值，使用时可以在页面通过点击按钮重新设置）
-CASE_SENSITIVE = false
-# 切换到其他文件时自动重新搜索
-RESEARCH_WHILE_OPEN_FILE = true
 
 
 ############### commander ###############
@@ -1083,7 +1060,6 @@ LIST = [
     "---",
     "toolbar",
     "search_multi",
-    "multi_highlighter",
     "md_padding",
     "---",
     "read_only",

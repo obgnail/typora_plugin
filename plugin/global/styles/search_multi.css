@@ -121,3 +121,56 @@
     position: relative;
     padding-left: 20px;
 }
+
+${colors_style}
+
+
+.plugin-highlight-multi-result {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    max-width: 100%;
+    margin: 2px 0;
+}
+
+.plugin-highlight-multi-result-item {
+    font-family: Arial;
+    font-size: 13px;
+    line-height: 20px;
+    margin: 3px 3px;
+    padding: 1px 5px;
+    border-radius: 5px;
+    color: #333333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    user-select: none;
+}
+
+.plugin-highlight-multi-result-item:hover {
+    filter: brightness(1.07);
+}
+
+.plugin-highlight-multi-outline {
+    outline: 4px solid #FF7B00;
+    text-decoration: blink;
+}
+
+.plugin-highlight-multi-bar {
+    display: inline;
+    position: absolute;
+    left: 0;
+    background: rgba(29, 163, 63, .3);
+    z-index: 99999;
+    animation-name: fadeit;
+    animation-duration: 3s;
+}
+
+@keyframes fadeit {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}

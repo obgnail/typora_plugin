@@ -1,5 +1,7 @@
 class searchMultiKeywordPlugin extends BasePlugin {
-    styleTemplate = () => true
+    styleTemplate = () => ({
+        colors_style: this.config.STYLE_COLOR.map((color, idx) => `.cm-plugin-highlight-hit-${idx} { background-color: ${color} !important; }`).join("\n")
+    })
 
     html = () => `
         <div id="plugin-search-multi" class="plugin-common-modal plugin-common-hidden">
@@ -14,6 +16,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
                     </span>
                 </div>
             </div>
+            
+            <div class="plugin-highlight-multi-result plugin-common-hidden"></div>
 
             <div class="plugin-search-multi-result plugin-common-hidden">
                 <div class="search-result-title" data-lg="Menu">匹配的文件</div>
@@ -32,12 +36,14 @@ class searchMultiKeywordPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
-        this.searchHelper = new SearchHelper(this);
-        this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => ext.toLowerCase()));
+        this.searchHelper = new SearchHelper(this)
+        this.highlightHelper = new Highlighter(this)
+        this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => ext.toLowerCase()))
         this.entities = {
             modal: document.querySelector("#plugin-search-multi"),
             input: document.querySelector("#plugin-search-multi-input input"),
             buttonGroup: document.querySelector(".plugin-search-multi-btn-group"),
+            highlightResult: document.querySelector(".plugin-highlight-multi-result"),
             result: document.querySelector(".plugin-search-multi-result"),
             resultTitle: document.querySelector(".plugin-search-multi-result .search-result-title"),
             resultList: document.querySelector(".plugin-search-multi-result .search-result-list"),
@@ -54,16 +60,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
     process = () => {
         this.searchHelper.process();
+        this.highlightHelper.process();
 
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            const highlighter = this.utils.getPlugin("multi_highlighter");
-            highlighter && new LinkHelper(this, highlighter).process();
-        })
-        if (this.config.REFOUCE_WHEN_OPEN_FILE) {
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, () => {
-                !this.isModalHidden() && setTimeout(() => this.entities.input.select(), 300);
-            })
-        }
         if (this.config.ALLOW_DRAG) {
             this.utils.dragFixedModal(this.entities.input, this.entities.modal);
         }
@@ -115,11 +113,12 @@ class searchMultiKeywordPlugin extends BasePlugin {
         this.utils.hide(this.entities.result)
         this.utils.show(this.entities.info)
         this.entities.resultList.innerHTML = ""
+        this.highlightMultiByAST(ast)
         await this.searchMultiByAST(rootPath, ast)
         this.utils.hide(this.entities.info)
     }
 
-    _getAST = input => {
+    getAST = (input = this.entities.input.value) => {
         input = input.trim()
         if (!input) return
 
@@ -136,9 +135,29 @@ class searchMultiKeywordPlugin extends BasePlugin {
         }
     }
 
-    // When in link plugin mode, both `search_multi` and `multi_highlighter` need to obtain AST from the input,
-    // so this function will be called twice simultaneously. Therefore, a single flight with a duration of 100ms is added.
-    getAST = this.utils.singleflight(this._getAST, 100)
+    highlightMultiByAST = ast => {
+        try {
+            ast = ast || this.getAST()
+            this.utils.hide(this.entities.highlightResult)
+            if (!ast) return
+            const group = this.searchHelper.getContentTokens(ast)
+
+            const hitGroups = this.highlightHelper.doSearch(group)
+            const itemList = Object.entries(hitGroups).map(([cls, { name, hits }]) => {
+                const div = document.createElement("div")
+                div.className = `plugin-highlight-multi-result-item ${cls}`
+                div.dataset.pos = -1
+                div.setAttribute("ty-hint", "左键下一个；右键上一个")
+                div.appendChild(document.createTextNode(`${name} (${hits.length})`))
+                return div
+            })
+            this.entities.highlightResult.innerHTML = ""
+            this.entities.highlightResult.append(...itemList)
+            this.utils.show(this.entities.highlightResult)
+        } catch (e) {
+            console.error(e)
+        }
+    }
 
     searchMultiByAST = async (rootPath, ast) => {
         const { fileFilter, dirFilter } = this._getFilter()
@@ -222,6 +241,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     hide = () => {
         this.utils.hide(this.entities.modal)
         this.utils.hide(this.entities.info)
+        this.highlightHelper.clearSearch()
     }
 
     show = () => {
@@ -392,13 +412,13 @@ class SearchHelper {
             },
             {
                 scope: "path",
-                name: "文件名",
+                name: "路径",
                 is_meta: true,
                 query: ({ path, file, stats, buffer }) => path,
             },
             {
                 scope: "file",
-                name: "路径",
+                name: "文件名",
                 is_meta: true,
                 query: ({ path, file, stats, buffer }) => file,
             },
@@ -614,11 +634,11 @@ class SearchHelper {
         function _eval({ type, left, right, scope, operand }) {
             switch (type) {
                 case KEYWORD:
-                    return collect.has(scope) ? [operand] : []
                 case PHRASE:
-                    return collect.has(scope) ? [`"${operand}"`] : []
+                    operand = operand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+                    return collect.has(scope) ? [operand] : []
                 case REGEXP:
-                    return []
+                    return collect.has(scope) ? [operand] : []
                 case OR:
                 case AND:
                     return [..._eval(left), ..._eval(right)]
@@ -808,94 +828,373 @@ class SearchHelper {
     }
 }
 
-class LinkHelper {
-    constructor(searcher, highlighter) {
-        this.searcher = searcher;
-        this.highlighter = highlighter;
-        this.utils = searcher.utils;
-
-        this.originValue = this.highlighter.config.RESEARCH_WHILE_OPEN_FILE;
-        this.styleList = ["position", "padding", "backgroundColor", "boxShadow", "border"];
-
-        this.highlighterModal = document.querySelector("#plugin-multi-highlighter");
-        this.highlighterInput = document.querySelector("#plugin-multi-highlighter-input");
-        this.button = this.genButton();
+class Highlighter {
+    constructor(plugin) {
+        this.plugin = plugin
+        this.utils = plugin.utils
+        this.config = plugin.config
+        this._resetStatus()
     }
 
     process = () => {
-        const isLinking = () => this.searcher.config.LINK_OTHER_PLUGIN && !this.searcher.isModalHidden();
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => {
+            if (this.searchStatus.futureCM.has(cid)) {
+                this._searchOnCM(File.editor.fences.queue[cid])
+            }
+        }, 999)
 
-        // 当处于联动状态，在search_multi搜索前先设置highlighter的inputValue和caseSensitive
-        this.utils.decorate(() => this.highlighter, "highlight", () => isLinking() && this.syncOption());
-        // 当处于联动状态，search_multi触发搜索的时候，先触发highlighter搜索
-        this.utils.decorate(() => this.searcher, "searchMulti", () => isLinking() && this.highlighter.highlight());
-        // 当处于联动状态，highlighter要展示modal之前，先恢复状态
-        this.utils.decorate(() => this.highlighter, "toggleModal", () => this.searcher.config.LINK_OTHER_PLUGIN && this.toggle(true));
-        // 当处于联动状态，在search_multi关闭前关闭highlighter
-        this.utils.decorate(() => this.searcher, "hide", () => isLinking() && this.toggle(true));
-        // 当处于联动状态，在search_multi开启前开启highlighter
-        this.utils.decorate(() => this.searcher, "show", () => !this.searcher.config.LINK_OTHER_PLUGIN && this.toggle());
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.utils.debounce(() => {
+            this.utils.isShow(this.plugin.entities.modal) && this.plugin.highlightMultiByAST()
+        }, 1000))
 
-        this.searcher.actionMap.toggleLinkPlugin = () => this.toggle(true);
+        this.utils.entities.eContent.addEventListener("mousedown", ev => {
+            const shouldClear = this.searchStatus.hits.length && !ev.target.closest("#plugin-search-multi")
+            shouldClear && this.clearSearch()
+        }, true)
+
+        document.querySelector(".plugin-highlight-multi-result").addEventListener("mousedown", ev => {
+            const target = ev.target.closest(".plugin-highlight-multi-result-item")
+            if (!target) return
+            const className = target.classList.values().find(e => e.startsWith("cm-plugin-highlight-hit"))
+            if (!className) return
+
+            if (this.isClosed()) {
+                this.doSearch()
+            }
+
+            const { name, hits } = this.searchStatus.hitGroups[className]
+            if (hits.length === 0) return
+
+            const beforePos = parseInt(target.dataset.pos)
+            const currentPos = this.highlightNext(className, beforePos, ev.button === 0)
+            target.dataset.pos = currentPos
+            target.innerText = `${name} (${currentPos + 1}/${hits.length})`
+        })
     }
 
-    genButton = () => {
-        const wantLink = this.searcher.config.LINK_OTHER_PLUGIN;
-        const span = document.createElement("span");
-        span.className = `option-btn ${wantLink ? "select" : ""}`;
-        span.setAttribute("action", "toggleLinkPlugin");
-        span.setAttribute("ty-hint", "插件联动");
-        const div = document.createElement("div");
-        div.className = "fa fa-link";
-        span.appendChild(div);
-        this.searcher.entities.buttonGroup.appendChild(span);
-        wantLink && this.moveElement();
-        return span
-    }
+    doSearch = (searchGroup = this.searchStatus.searchGroup, caseSensitive = this.config.CASE_SENSITIVE) => {
+        this.clearSearch()
+        this.searchStatus.searchGroup = searchGroup
+        this.searchStatus.regexp = this._createRegExp(searchGroup, caseSensitive)
+        this.searchStatus.hitGroups = Object.fromEntries(searchGroup.map((name, idx) => [`cm-plugin-highlight-hit-${idx}`, { name, hits: [] }]))
+        this.searchStatus.fenceOverlay = { searchExpression: this.searchStatus.regexp, token: this._overlayToken }
 
-    toggle = (forceHide = false) => {
-        this.button.classList.toggle("select");
-        this.searcher.config.LINK_OTHER_PLUGIN = !this.searcher.config.LINK_OTHER_PLUGIN;
-        if (this.searcher.config.LINK_OTHER_PLUGIN) {
-            this.moveElement();
-            this.highlighter.highlight();
+        const inSourceMode = File.editor.sourceView.inSourceMode
+        if (inSourceMode) {
+            this._handleCodeBlock(File.editor.sourceView.cm)
         } else {
-            this.restoreElement(forceHide);
+            let node = File.editor.nodeMap.getFirst()
+            while (node) {
+                this._handleNode(node)
+                node = node.get("after")
+                const ok = this._checkHits()
+                if (!ok) break
+            }
         }
-        this.syncOption();
+        return this.searchStatus.hitGroups
     }
 
-    syncOption = () => {
-        const ast = this.searcher.getAST(this.searcher.entities.input.value);
-        if (!ast) return;
+    highlightNext = (cls, beforePos, increment) => {
+        const { hits } = this.searchStatus.hitGroups[cls]
+        const beforeHit = this.searchStatus.curSelection || hits[0]
+        let currentPos = increment ? beforePos + 1 : beforePos - 1
+        if (isNaN(+currentPos) || currentPos >= hits.length) {
+            currentPos = 0
+        } else if (currentPos < 0) {
+            currentPos = hits.length - 1
+        }
+        let targetHit = hits[currentPos]
 
-        const keyArr = this.searcher.searchHelper.getContentTokens(ast);
-        document.querySelector("#plugin-multi-highlighter-input input").value = keyArr.join(" ");
-        if (this.searcher.config.CASE_SENSITIVE !== this.highlighter.config.CASE_SENSITIVE) {
-            document.querySelector(".plugin-multi-highlighter-option-btn").click();
+        if (beforeHit.isCm) {
+            beforeHit.isCm.execCommand(increment ? "goDocStart" : "goDocEnd")
+        }
+
+        $(".md-focus").removeClass("md-focus")
+
+        const isFutureCM = targetHit.cid && this.searchStatus.futureCM.has(targetHit.cid)
+        if (isFutureCM) {
+            const cm = File.editor.fences.addCodeBlock(targetHit.cid)
+            this.searchStatus.hits.filter(hit => hit.cid === targetHit.cid).forEach(hit => hit.isCm = cm)
+            this.searchStatus.futureCM.delete(targetHit.cid)
+        }
+
+        this.searchStatus.curSelection = targetHit
+        if (targetHit.isCm) {
+            const cm = targetHit.isCm
+            cm.doc.setSelection(cm.posFromIndex(targetHit.start), cm.posFromIndex(targetHit.end))
+            const scroller = cm.getScrollerElement()
+            if (scroller) {
+                targetHit = scroller.querySelector(".CodeMirror-selectedtext")
+                $(scroller).closest("[cid]").addClass("md-focus")
+            }
+        } else {
+            $(targetHit).closest("[cid]").addClass("md-focus")
+        }
+        if (targetHit) {
+            this.utils.scroll(targetHit)
+            this._highlightMarker(targetHit)
+        }
+        return currentPos
+    }
+
+    _highlightMarker = marker => {
+        document.querySelectorAll(".plugin-highlight-multi-outline").forEach(ele => ele.classList.remove("plugin-highlight-multi-outline"))
+        marker.classList.add("plugin-highlight-multi-outline")
+
+        const writeRect = this.utils.entities.eWrite.getBoundingClientRect()
+        const markerRect = marker.getBoundingClientRect()
+        const bar = document.createElement("div")
+        bar.className = "plugin-highlight-multi-bar"
+        bar.style.height = markerRect.height + "px"
+        bar.style.width = writeRect.width + "px"
+        marker.appendChild(bar)
+        setTimeout(() => this.utils.removeElement(bar), 3000)
+    }
+
+    clearSearch = () => {
+        if (this.isClosed()) return
+
+        console.debug("clear search")
+        this.utils.entities.querySelectorAllInWrite(".plugin-highlight-multi-bar").forEach(e => this.utils.removeElement(e))
+        if (File.editor.sourceView.inSourceMode) {
+            if (this.searchStatus && this.searchStatus.hits.length) {
+                File.editor.fences.clearSearchAll()
+                File.editor.sourceView.cm.focus()
+            }
+        } else {
+            File.editor.mathInline.renderAll(false)
+            File.editor.searchPanel.searchStatus = this.searchStatus
+            File.editor.searchPanel.clearSearch()
+            File.editor.fences.clearSearchAll()
+            this.utils.entities.querySelectorAllInWrite('[class*="cm-plugin-highlight-hit"]').forEach(e => File.editor.EditHelper.unmarkSpan(e))
+        }
+        this._resetStatus()
+    }
+
+    isClosed = () => this.searchStatus.regexp == null
+    _resetStatus = () => this.searchStatus = { ...this.searchStatus, regexp: null, hits: [], hitGroups: {}, futureCM: new Set() }
+    _resetRegexpLastIndex = (lastIndex = 0) => this.searchStatus.regexp.lastIndex = lastIndex
+
+    _pushHit = (hit, highlightCls) => {
+        this.searchStatus.hits.push(hit)
+        this.searchStatus.hitGroups[highlightCls].hits.push(hit)
+    }
+
+    _handleNode = node => {
+        const children = node.get("children")
+        if (children.length) {
+            children.sortedForEach(child => this._handleNode(child))
+        } else if (NodeDef.isType(node, NodeDef.TYPE.fences)) {
+            this._handleFences(node)
+        } else if (NodeDef.isType(node, NodeDef.TYPE.math_block)) {
+            this._handleMathBlock(node)
+        } else if (NodeDef.isType(node, NodeDef.TYPE.html_block)) {
+            this._handleHTMLBlock(node)
+        } else if (NodeDef.isType(node, NodeDef.TYPE.toc, NodeDef.TYPE.hr)) {
+
+        } else {
+            this._handleOtherNode(node)
         }
     }
 
-    moveElement = () => {
-        this.utils.removeElement(this.highlighterModal);
-        const input = document.querySelector("#plugin-search-multi-input");
-        input.parentNode.insertBefore(this.highlighterModal, input.nextSibling);
+    _handleCodeBlock = cm => {
+        this._resetRegexpLastIndex()
 
-        this.utils.show(this.highlighterModal);
-        this.utils.hide(this.highlighterInput);
-        this.styleList.forEach(style => this.highlighterModal.style[style] = "initial");
-        this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = true;
+        let hasMatch = false
+        const value = cm.getValue()
+        const matches = value.matchAll(this.searchStatus.regexp)
+        for (const match of matches) {
+            hasMatch = true
+            const matchString = match[0]
+            const start = match.index
+            const end = start + matchString.length
+            const highlightCls = this._getHighlightClass(match)
+
+            if (start === end) continue
+
+            const hit = { isCm: cm, cid: cm.cid, start, end, highlightCls }
+            this._pushHit(hit, highlightCls)
+            const ok = this._checkHits()
+            if (!ok) break
+        }
+
+        if (hasMatch) {
+            this._searchOnCM(cm)
+        }
     }
 
-    restoreElement = forceHide => {
-        this.utils.removeElement(this.highlighterModal);
-        this.utils.insertElement(this.highlighterModal);
+    _handleOtherNode = (node, isFutureCm = false) => {
+        this._resetRegexpLastIndex()
+        const nodeElement = File.editor.findElemById(node.cid)[0]
+        if (!nodeElement) {
+            console.error(`Cannot find element for [${node.get("type")}] from [${node.get("parent").get("type")}]`)
+            return
+        }
 
-        this.utils.toggleVisible(this.highlighterModal, forceHide);
-        this.utils.show(this.highlighterInput);
-        this.styleList.forEach(style => this.highlighterModal.style[style] = "");
-        this.highlighter.config.RESEARCH_WHILE_OPEN_FILE = this.originValue;
+        let offsetAdjust = 0
+        let rawText = $(nodeElement).rawText()
+        const fullText = node.getText().replace(/\r?\n/g, File.useCRLF ? "\r\n" : "\n")
+        if (NodeDef.isType(node, NodeDef.TYPE.heading)) {
+            const headingPrefix = "#".repeat(node.get("depth") || 1) + " "
+            rawText = headingPrefix + rawText
+            offsetAdjust = headingPrefix.length
+        }
+
+        const matches = [...(isFutureCm ? fullText : rawText).matchAll(this.searchStatus.regexp)]
+        for (const match of matches) {
+            const hit = {
+                cid: node.cid,
+                containerNode: nodeElement,
+                start: Math.max(0, match.index - offsetAdjust),
+                end: match.index + match[0].length - offsetAdjust,
+                highlightCls: this._getHighlightClass(match),
+            }
+
+            if (hit.start === hit.end) continue
+
+            if (isFutureCm) {
+                this._pushHit(hit, hit.highlightCls)
+                this.searchStatus.futureCM.add(node.cid)
+            } else {
+                const range = File.editor.selection.rangy.createRange()
+                range.moveToBookmark(hit)
+                const highlight = this._markRange(range, hit.highlightCls)
+                const $highlight = $(highlight)
+                const isMetaContent = $highlight.closest(".md-meta, .md-content, script").length
+                    || $highlight.hasClass("md-meta")
+                    || $highlight.hasClass("md-content")
+                    || ($highlight[0] && $highlight[0].tagName === "script")
+                if (isMetaContent) {
+                    this._expandInlineElement($highlight)
+                } else {
+                    highlight.querySelectorAll(".md-meta, .md-content, script").forEach(e => this._expandInlineElement($(e)))
+                }
+                this._pushHit(highlight, hit.highlightCls)
+            }
+            const ok = this._checkHits()
+            if (!ok) break
+        }
     }
+
+    _expandInlineElement = e => e.closest("[md-inline]").addClass("md-search-expand")
+
+    _handleFences = node => {
+        this._resetRegexpLastIndex()
+        const cm = File.editor.fences.queue[node.cid]
+        if (cm) {
+            this._handleCodeBlock(cm)
+            return
+        }
+        try {
+            this._handleOtherNode(node, true)
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    _handleMathBlock = node => {
+        this._resetRegexpLastIndex()
+        const currentCm = File.editor.mathBlock.currentCm
+        const mathBlockCM = (currentCm || {}).cid === node.cid
+        if (mathBlockCM) {
+            this._clearSearchOnCM(currentCm)
+            this._handleCodeBlock(currentCm)
+        }
+    }
+
+    _handleHTMLBlock = node => {
+        this._resetRegexpLastIndex()
+        const currentCm = File.editor.mathBlock.currentCm
+        const htmlBlockCM = (currentCm || {}).cid === node.cid
+        if (htmlBlockCM) {
+            this._clearSearchOnCM(currentCm)
+            this._handleCodeBlock(currentCm)
+            return
+        }
+
+        const nodeElement = File.editor.findElemById(node.cid)[0].querySelector(".md-htmlblock-container")
+        const textContent = nodeElement.textContent
+        const matches = textContent.matchAll(this.searchStatus.regexp)
+        for (const match of matches) {
+            const hit = {
+                cid: node.cid,
+                containerNode: nodeElement,
+                start: match.index,
+                end: match.index + match[0].length,
+                highlightCls: this._getHighlightClass(match),
+            }
+
+            if (hit.start === hit.end) continue
+
+            const range = File.editor.selection.rangy.createRange()
+            range.moveToBookmark(hit)
+            if (range.commonAncestorContainer.nodeType === document.TEXT_NODE) {
+                const highlight = this._markRange(range, hit.highlightCls)
+                this._pushHit(highlight, hit.highlightCls)
+                const ok = this._checkHits()
+                if (!ok) break
+            }
+        }
+    }
+
+    _createRegExp = (group, caseSensitive) => {
+        if (!caseSensitive) {
+            group = group.map(e => e.toLowerCase())
+        }
+        const pattern = group.map((r, idx) => `(?<m_${idx}>${r})`).join("|")
+        const flag = caseSensitive ? "g" : "gi"
+        return new RegExp(pattern, flag)
+    }
+
+    _getHighlightClass = (match, prefix = true) => {
+        const groupNamePrefixLength = 2 // m_
+        const matchGroup = Object.entries(match.groups).find(([_, value]) => value)
+        const idx = matchGroup[0].slice(groupNamePrefixLength)
+        const prefix_ = prefix ? "cm-" : ""
+        return `${prefix_}plugin-highlight-hit-${idx}`
+    }
+
+    _markRange = (range, cls = "cm-plugin-highlight-hit-0") => File.editor.EditHelper.markRange(range, cls)
+
+    _overlayToken = state => {
+        const regexp = this.searchStatus.regexp
+        regexp.lastIndex = state.pos
+        const match = regexp.exec(state.string)
+        if (match && match.index === state.pos) {
+            state.pos += match[0].length || 1
+            return this._getHighlightClass(match, false)
+        } else {
+            if (match) {
+                state.pos = match.index
+            } else {
+                state.skipToEnd()
+            }
+            return null
+        }
+    }
+
+    _searchOnCM = cm => {
+        const fences = File.editor.fences
+        fences.searchStatus = fences.searchStatus || {}
+        fences.searchStatus.overlay = fences.searchStatus.overlay || {}
+        fences.searchStatus.queue = fences.searchStatus.queue || []
+
+        const editorId = cm.cid || "source"
+        fences.searchStatus.overlay[editorId] = this.searchStatus.fenceOverlay
+        cm.addOverlay(fences.searchStatus.overlay[editorId])
+        fences.searchStatus.queue.push(cm)
+    }
+
+    _clearSearchOnCM = (cm) => {
+        const fence = File.editor.fences
+        if (fence.searchStatus) {
+            const cid = cm.cid || "source"
+            cm.removeOverlay(this.searchStatus.overlay[cid])
+            fence.searchStatus.queue.remove(cm)
+        }
+    }
+
+    _checkHits = () => this.searchStatus.hits.length <= 5000
 }
 
 module.exports = {
