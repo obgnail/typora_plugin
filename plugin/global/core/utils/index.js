@@ -688,9 +688,13 @@ class utils {
         if (height === -1) {
             height = (window.innerHeight || document.documentElement.clientHeight) / 2;
         }
-        File.editor.selection.scrollAdjust($target, height);
+        if (File.isTypeWriterMode) {
+            File.editor.selection.typeWriterScroll($target)
+        } else {
+            File.editor.selection.scrollAdjust($target, height)
+        }
         if (File.isFocusMode) {
-            File.editor.updateFocusMode(false);
+            File.editor.updateFocusMode(false)
         }
     }
 

@@ -136,22 +136,27 @@ class searchMultiKeywordPlugin extends BasePlugin {
     }
 
     highlightMultiByAST = ast => {
-        ast = ast || this.getAST()
-        this.utils.hide(this.entities.highlightResult)
-        if (!ast) return
-        const group = this.searchHelper.getContentTokens(ast)
-        const hitGroups = this.highlightHelper.doSearch(group)
-        const itemList = Object.entries(hitGroups).map(([cls, { name, hits }]) => {
-            const div = document.createElement("div")
-            div.className = `plugin-highlight-multi-result-item ${cls}`
-            div.dataset.pos = -1
-            div.setAttribute("ty-hint", "左键下一个；右键上一个")
-            div.appendChild(document.createTextNode(`${name} (${hits.length})`))
-            return div
-        })
-        this.entities.highlightResult.innerHTML = ""
-        this.entities.highlightResult.append(...itemList)
-        this.utils.show(this.entities.highlightResult)
+        try {
+            ast = ast || this.getAST()
+            this.utils.hide(this.entities.highlightResult)
+            if (!ast) return
+            const group = this.searchHelper.getContentTokens(ast)
+
+            const hitGroups = this.highlightHelper.doSearch(group)
+            const itemList = Object.entries(hitGroups).map(([cls, { name, hits }]) => {
+                const div = document.createElement("div")
+                div.className = `plugin-highlight-multi-result-item ${cls}`
+                div.dataset.pos = -1
+                div.setAttribute("ty-hint", "左键下一个；右键上一个")
+                div.appendChild(document.createTextNode(`${name} (${hits.length})`))
+                return div
+            })
+            this.entities.highlightResult.innerHTML = ""
+            this.entities.highlightResult.append(...itemList)
+            this.utils.show(this.entities.highlightResult)
+        } catch (e) {
+            console.error(e)
+        }
     }
 
     searchMultiByAST = async (rootPath, ast) => {
@@ -860,17 +865,10 @@ class Highlighter {
             const { name, hits } = this.searchStatus.hitGroups[className]
             if (hits.length === 0) return
 
-            const targetIdx = parseInt(target.dataset.pos)
-            let nextIdx = ev.button === 0 ? targetIdx + 1 : targetIdx - 1
-            if (isNaN(+nextIdx) || nextIdx >= hits.length) {
-                nextIdx = 0
-            } else if (nextIdx < 0) {
-                nextIdx = hits.length - 1
-            }
-
-            this.highlightNext(className, nextIdx)
-            target.dataset.pos = nextIdx
-            target.innerText = `${name} (${nextIdx + 1}/${hits.length})`
+            const beforePos = parseInt(target.dataset.pos)
+            const currentPos = this.highlightNext(className, beforePos, ev.button === 0)
+            target.dataset.pos = currentPos
+            target.innerText = `${name} (${currentPos + 1}/${hits.length})`
         })
     }
 
@@ -896,25 +894,61 @@ class Highlighter {
         return this.searchStatus.hitGroups
     }
 
-    highlightNext = (cls, idx) => {
+    highlightNext = (cls, beforePos, increment) => {
         const { hits } = this.searchStatus.hitGroups[cls]
-        let targetHit = hits[idx]
-        const isFutureCM = targetHit.cid && this.searchStatus.futureCM.has(targetHit.cid)
-        if (isFutureCM && !File.editor.fences.queue[targetHit.cid]) {
-            File.editor.fences.addCodeBlock(targetHit.cid)
+        const beforeHit = this.searchStatus.curSelection || hits[0]
+        let currentPos = increment ? beforePos + 1 : beforePos - 1
+        if (isNaN(+currentPos) || currentPos >= hits.length) {
+            currentPos = 0
+        } else if (currentPos < 0) {
+            currentPos = hits.length - 1
         }
-        const cm = File.editor.fences.queue[targetHit.cid]
-        if (targetHit.isCm || cm) {
+        let targetHit = hits[currentPos]
+
+        if (beforeHit.isCm) {
+            beforeHit.isCm.execCommand(increment ? "goDocStart" : "goDocEnd")
+        }
+
+        $(".md-focus").removeClass("md-focus")
+
+        const isFutureCM = targetHit.cid && this.searchStatus.futureCM.has(targetHit.cid)
+        if (isFutureCM) {
+            const cm = File.editor.fences.addCodeBlock(targetHit.cid)
+            this.searchStatus.hits.filter(hit => hit.cid === targetHit.cid).forEach(hit => hit.isCm = cm)
+            this.searchStatus.futureCM.delete(targetHit.cid)
+        }
+
+        this.searchStatus.curSelection = targetHit
+        if (targetHit.isCm) {
+            const cm = targetHit.isCm
             cm.doc.setSelection(cm.posFromIndex(targetHit.start), cm.posFromIndex(targetHit.end))
             const scroller = cm.getScrollerElement()
             if (scroller) {
                 targetHit = scroller.querySelector(".CodeMirror-selectedtext")
+                $(scroller).closest("[cid]").addClass("md-focus")
             }
+        } else {
+            $(targetHit).closest("[cid]").addClass("md-focus")
         }
         if (targetHit) {
             this.utils.scroll(targetHit)
             this._highlightMarker(targetHit)
         }
+        return currentPos
+    }
+
+    _highlightMarker = marker => {
+        document.querySelectorAll(".plugin-highlight-multi-outline").forEach(ele => ele.classList.remove("plugin-highlight-multi-outline"))
+        marker.classList.add("plugin-highlight-multi-outline")
+
+        const writeRect = this.utils.entities.eWrite.getBoundingClientRect()
+        const markerRect = marker.getBoundingClientRect()
+        const bar = document.createElement("div")
+        bar.className = "plugin-highlight-multi-bar"
+        bar.style.height = markerRect.height + "px"
+        bar.style.width = writeRect.width + "px"
+        marker.appendChild(bar)
+        setTimeout(() => this.utils.removeElement(bar), 3000)
     }
 
     clearSearch = () => {
@@ -1081,10 +1115,11 @@ class Highlighter {
 
             if (hit.start === hit.end) continue
 
-            const range = File.editor.selection.rangy.createRange().moveToBookmark(hit)
-            if (range.commonAncestorContainer.nodeType === 3) {
-                const hit = this._markRange(range, hit.highlightCls)
-                this.searchStatus._pushHit(hit, hit.highlightCls)
+            const range = File.editor.selection.rangy.createRange()
+            range.moveToBookmark(hit)
+            if (range.commonAncestorContainer.nodeType === document.TEXT_NODE) {
+                const highlight = this._markRange(range, hit.highlightCls)
+                this._pushHit(highlight, hit.highlightCls)
                 const ok = this._checkHits()
                 if (!ok) break
             }
@@ -1146,20 +1181,6 @@ class Highlighter {
             cm.removeOverlay(this.searchStatus.overlay[cid])
             fence.searchStatus.queue.remove(cm)
         }
-    }
-
-    _highlightMarker = marker => {
-        document.querySelectorAll(".plugin-highlight-multi-outline").forEach(ele => ele.classList.remove("plugin-highlight-multi-outline"))
-        marker.classList.add("plugin-highlight-multi-outline")
-
-        const writeRect = this.utils.entities.eWrite.getBoundingClientRect()
-        const markerRect = marker.getBoundingClientRect()
-        const bar = document.createElement("div")
-        bar.className = "plugin-highlight-multi-bar"
-        bar.style.height = markerRect.height + "px"
-        bar.style.width = writeRect.width + "px"
-        marker.appendChild(bar)
-        setTimeout(() => this.utils.removeElement(bar), 3000)
     }
 
     _checkHits = () => this.searchStatus.hits.length <= 5000
