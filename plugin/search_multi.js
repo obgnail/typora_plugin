@@ -964,7 +964,7 @@ class Highlighter {
         } else {
             File.editor.mathInline.renderAll(false)
             File.editor.searchPanel.searchStatus = this.searchStatus
-            File.editor.searchPanel.clearSearch(undefined, undefined, true)
+            File.editor.searchPanel.clearSearch()
             File.editor.fences.clearSearchAll()
             this.utils.entities.querySelectorAllInWrite('[class*="cm-plugin-highlight-hit"]').forEach(e => File.editor.EditHelper.unmarkSpan(e))
         }
@@ -1059,13 +1059,24 @@ class Highlighter {
                 const range = File.editor.selection.rangy.createRange()
                 range.moveToBookmark(hit)
                 const highlight = this._markRange(range, hit.highlightCls)
-                $(highlight).closest(".md-meta, .md-content, script").addClass("md-search-expand")
+                const $highlight = $(highlight)
+                const isMetaContent = $highlight.closest(".md-meta, .md-content, script").length
+                    || $highlight.hasClass("md-meta")
+                    || $highlight.hasClass("md-content")
+                    || ($highlight[0] && $highlight[0].tagName === "script")
+                if (isMetaContent) {
+                    this._expandInlineElement($highlight)
+                } else {
+                    highlight.querySelectorAll(".md-meta, .md-content, script").forEach(e => this._expandInlineElement($(e)))
+                }
                 this._pushHit(highlight, hit.highlightCls)
             }
             const ok = this._checkHits()
             if (!ok) break
         }
     }
+
+    _expandInlineElement = e => e.closest("[md-inline]").addClass("md-search-expand")
 
     _handleFences = node => {
         this._resetRegexpLastIndex()
