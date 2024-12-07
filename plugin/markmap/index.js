@@ -31,14 +31,14 @@ class markmapPlugin extends BasePlugin {
     }
 
     getToc = (fixIndent = true) => {
-        const tree = this.utils.getTocTree();
+        const tree = this.utils.getTocTree()
         const preOrder = (node, list, indent) => {
-            const _indent = "#".repeat(fixIndent ? indent : node.depth);
-            list.push(_indent + " " + node.text);
-            node.children.forEach(child => preOrder(child, list, indent + 1));
+            const _indent = "#".repeat(fixIndent ? indent : node.depth)
+            list.push(`${_indent} ${node.text}`)
+            node.children.forEach(child => preOrder(child, list, indent + 1))
             return list
         }
-        return preOrder(tree, [], 0).slice(1).join("\n");
+        return preOrder(tree, [], 0).slice(1).join("\n")
     }
 
     onButtonClick = () => this.tocMarkmap && this.tocMarkmap.callback()
@@ -669,8 +669,7 @@ class tocMarkmap {
         }
 
         const removeUselessStyle = svg => {
-            const sheet = [];
-            const filter = new Set([
+            const useless = new Set([
                 ".markmap-dark .markmap",
                 ".markmap-node > circle",
                 ".markmap-foreign svg",
@@ -681,13 +680,13 @@ class tocMarkmap {
                 ".markmap-foreign-testing-max img",
                 ".markmap-foreign table, .markmap-foreign th, .markmap-foreign td",
             ])
-            const rules = _newStyle(this.controller.MarkmapLib.globalCSS).sheet.cssRules;
-            for (const rule of rules) {
-                if (!filter.has(rule.selectorText)) {
-                    sheet.push(rule.cssText);
-                }
-            }
-            _replaceStyle(svg.querySelector("style"), sheet.join(" "));
+            const allRules = _newStyle(this.controller.MarkmapLib.globalCSS).sheet.cssRules
+            const usefulRules = [...allRules]
+                .filter(rule => !useless.has(rule.selectorText))
+                .map(rule => rule.cssText)
+                .join(" ")
+            const styleElement = svg.querySelector("style")
+            _replaceStyle(styleElement, usefulRules)
         }
 
         const compatibleStyle = svg => {
@@ -920,56 +919,57 @@ class tocMarkmap {
     }
 
     _setFold = newRoot => {
-        if (!this.config.REMEMBER_FOLD_WHEN_UPDATE) return;
+        if (!this.config.REMEMBER_FOLD_WHEN_UPDATE) return
 
-        const _walk = (fn, node, parent) => {
-            fn(node, parent);
+        const _preOrder = (fn, node, parent) => {
+            fn(node, parent)
             for (const child of node.children) {
-                _walk(fn, child, node);
+                _preOrder(fn, child, node)
             }
         }
 
         const _setPath = (node, parent) => {
-            const parentPath = (parent && parent.__path) || "";
-            node.__path = parentPath + "\n" + node.content;
+            const parentPath = (parent && parent.__path) || ""
+            node.__path = `${parentPath}\n${node.content}`
         }
 
-        const fold = new Set();
-        const _collect = node => {
-            const { payload, __path } = node;
+        const needFold = new Set()
+        const _getNeed = node => {
+            const { payload, __path } = node
             if (payload && payload.fold && __path) {
-                fold.add(__path);
+                needFold.add(__path)
             }
         }
-        const _reset = node => {
-            if (fold.has(node.__path)) {
-                node.payload.fold = 1;
+        const _setNeed = node => {
+            if (needFold.has(node.__path)) {
+                node.payload.fold = 1
             }
         }
 
-        const { data: oldRoot } = this.markmap.state || {};
-        _walk(_setPath, oldRoot);
-        _walk(_setPath, newRoot);
-        _walk(_collect, oldRoot);
-        _walk(_reset, newRoot);
+        const { data: oldRoot } = this.markmap.state || {}
+        _preOrder(_setPath, oldRoot)
+        _preOrder(_setPath, newRoot)
+        _preOrder(_getNeed, oldRoot)
+        _preOrder(_setNeed, newRoot)
     }
 
     _fixConfig = () => {
-        const { DEFAULT_TOC_OPTIONS: op } = this.config;
-        op.color = op.color.map(e => e.toUpperCase());
-        if (op.initialExpandLevel < 0) {
-            op.initialExpandLevel = 6;
+        const { DEFAULT_TOC_OPTIONS: op } = this.config
+        op.color = op.color.map(e => e.toUpperCase())
+        if (op.initialExpandLevel < 0 || isNaN(op.initialExpandLevel)) {
+            op.initialExpandLevel = 6
         } else if (op.initialExpandLevel === 0) {
-            op.initialExpandLevel = 1;
+            op.initialExpandLevel = 1
         }
     }
 
     _onButtonClick = async (action, button) => {
-        if (!["pinTop", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"].includes(action)) {
-            await this._waitUnpin();
+        const dont = ["pinTop", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"]
+        if (!dont.includes(action)) {
+            await this._waitUnpin()
         }
-        const arg = (action === "pinTop" || action === "pinRight") ? false : undefined;
-        await this[action](arg);
+        const arg = (action === "pinTop" || action === "pinRight") ? false : undefined
+        await this[action](arg)
     }
 
     _setModalRect = rect => {
@@ -1112,8 +1112,7 @@ class downloadHelper {
         <svg id="mindmap"></svg>
         ${scriptElementList.join("\n")}
     </body>
-</html>
-`
+</html>`
 
         const run = () => {
             const { transformer } = this.plugin.MarkmapLib;

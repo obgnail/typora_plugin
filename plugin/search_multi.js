@@ -796,7 +796,7 @@ class SearchHelper {
 
         const genScope = scopes => scopes.map(e => `<code title="${e.name}">${e.scope}</code>`).join("、")
         const genOperator = (...operators) => operators.map(operator => `<code>${operator}</code>`).join("、")
-        const genUL = (...li) => `<ul style="padding-left: 1em">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
+        const genUL = (...li) => `<ul style="padding-left: 1em; word-break: break-word;">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
         const scopeDesc = genUL(
             `文件属性：${genScope(metaScope)}`,
             `内容属性：${genScope(contentScope)}`,
@@ -891,7 +891,7 @@ class Highlighter {
         document.querySelector(".plugin-highlight-multi-result").addEventListener("mousedown", ev => {
             const target = ev.target.closest(".plugin-highlight-multi-result-item")
             if (!target) return
-            const className = Array.from(target.classList.values()).find(e => e.startsWith("cm-plugin-highlight-hit"))
+            const className = [...target.classList.values()].find(e => e.startsWith("cm-plugin-highlight-hit"))
             if (!className) return
 
             if (this.isClosed()) {
