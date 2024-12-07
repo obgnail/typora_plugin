@@ -140,9 +140,10 @@ class searchMultiKeywordPlugin extends BasePlugin {
             ast = ast || this.getAST()
             this.utils.hide(this.entities.highlightResult)
             if (!ast) return
-            const group = this.searchHelper.getContentTokens(ast)
+            const tokens = this.searchHelper.getContentTokens(ast)
+            if (!tokens || tokens.length === 0) return
 
-            const hitGroups = this.highlightHelper.doSearch(group)
+            const hitGroups = this.highlightHelper.doSearch(tokens)
             const itemList = Object.entries(hitGroups).map(([cls, { name, hits }]) => {
                 const div = document.createElement("div")
                 div.className = `plugin-highlight-multi-result-item ${cls}`
@@ -773,25 +774,38 @@ class SearchHelper {
         const metaScope = scope.filter(s => s.is_meta)
         const contentScope = scope.filter(s => !s.is_meta)
 
-        const genScope = scopes => scopes.map(e => `<span title="${e.name}">${e.scope}</span>`).join(" | ")
+        const genScope = scopes => scopes.map(e => `<code title="${e.name}">${e.scope}</code>`).join("、")
+        const genOperator = (...operators) => operators.map(operator => `<code>${operator}</code>`).join("、")
+        const genUL = (...li) => `<ul style="padding-left: 1em">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
+        const scopeDesc = genUL(
+            `文件属性：${genScope(metaScope)}`,
+            `内容属性：${genScope(contentScope)}`,
+            `默认值 default = path + content（路径+文件内容）`,
+        )
+        const operatorDesc = genUL(
+            `${genOperator(":")}表示文本包含或正则匹配（默认）`,
+            `${genOperator("=", "!=")}表示文本、数值、布尔的严格相等/不相等`,
+            `${genOperator(">", "<", ">=", "<=")}表示数值比较`,
+        )
+
         const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
-        const wordsInfo = genInfo(`小知识：\n将关键字改成正则并且前后加\\b即可改成全字匹配\n例如：/\\bsour\\b/将不会匹配resource`)
-        const scopeInfo = genInfo('具体来说，应该是：文件路径或文件内容包含 pear')
-        const diffInfo = genInfo('注意区分：\n「head=plugin」：表示标题为plugin，当标题为”typora plugin“时不可匹配\n「head:plugin」：表示标题包含plugin，当标题为”typora plugin“时可以匹配')
-        const table1 = `
+        const scopeInfo = genInfo('具体来说：文件路径或文件内容包含 pear')
+        const diffInfo = genInfo('注意区分：\n「head=plugin」表示标题为plugin，当标题为”typora plugin“时不可匹配\n「head:plugin」表示标题包含plugin，当标题为”typora plugin“时可以匹配')
+
+        const keywordDesc = `
 <table>
     <tr><th>关键字</th><th>说明</th></tr>
-    <tr><td>whitespace</td><td>表示与。文档应该同时包含全部关键词，等价于 AND</td></tr>
-    <tr><td>|</td><td>表示或。文档应该包含关键词之一，等价于 OR</td></tr>
-    <tr><td>-</td><td>表示非。文档不能包含关键词</td></tr>
-    <tr><td>""</td><td>表示词组。双引号里的空格不再视为与，而是词组的一部分</td></tr>
-    <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式 ${wordsInfo}</td></tr>
-    <tr><td>qualifier</td><td>查询属性。<br />1. 文件属性(${metaScope.length})：${genScope(metaScope)}<br />2. 内容属性(${contentScope.length})：${genScope(contentScope)}<br />3. 默认值 default = path + content（路径+文件内容）</td></tr>
-    <tr><td>operator</td><td>操作符。<br />1. 「:」表示文本包含或正则匹配（默认）<br />2. 「=」「!=」表示文本、数值、布尔的严格相等/不相等<br />3. 「>」「<」「>=」「<=」表示数值比较</td></tr>
-    <tr><td>()</td><td>小括号。用于调整运算顺序</td></tr>
+    <tr><td>空格</td><td>表示与。文档应该同时满足空格左右两边的查询条件，等价于 AND</td></tr>
+    <tr><td>|</td><td>表示或。文档应该满足 | 左右两边中至少一个查询条件，等价于 OR</td></tr>
+    <tr><td>-</td><td>表示非。文档不可满足 - 右边的查询条件</td></tr>
+    <tr><td>""</td><td>表示词组。文档应该包含这个完整的词组</td></tr>
+    <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式</td></tr>
+    <tr><td>scope</td><td>查询属性，用于限定查询条件${scopeDesc}</td></tr>
+    <tr><td>operator</td><td>操作符${operatorDesc}</td></tr>
+    <tr><td>()</td><td>小括号。用于调整运算优先级</td></tr>
 </table>`
 
-        const table2 = `
+        const example = `
 <table>
     <tr><th>示例</th><th>搜索文档</th></tr>
     <tr><td>pear</td><td>包含 pear。等价于 default:pear ${scopeInfo}</td></tr>
@@ -801,7 +815,7 @@ class SearchHelper {
     <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
     <tr><td>/\\bsour\\b/ pear time=2024-03-12</td><td>匹配正则\\bsour\\b（全字匹配sour），且包含 pear，且文件更新时间为 2024-03-12</td></tr>
     <tr><td>frontmatter:开发 | head=plugin | strong:MIT</td><td>YAML Front Matter 包含开发 或者 标题内容为 plugin 或者 加粗文字包含 MIT ${diffInfo}</td></tr>
-    <tr><td>size>10k (file=k8s.md | hasimage=true)</td><td>文件大小大于 10k，且 文件名为 k8s.md 或者文件内容包含图片</td></tr>
+    <tr><td>size>10k (linenum>=1000 | hasimage=true)</td><td>文件大小超过 10KB，并且文件要么至少有 1000 行，要么包含图片</td></tr>
     <tr><td>path:(info | warn | err) -ext:md</td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 md</td></tr>
     <tr><td>file:/[a-z]{3}/ content:prometheus blockcode:"kubectl apply"</td><td>文件名匹配正则 [a-z]{3}，且内容包含 prometheus，且代码块内容含有 kubectl apply</td></tr>
 </table>`
@@ -823,7 +837,7 @@ class SearchHelper {
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
         const title = "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释"
-        const components = [{ label: table1, type: "p" }, { label: table2, type: "p" }, { label: "", type: "textarea", rows: 17, content, title }]
+        const components = [{ label: keywordDesc, type: "p" }, { label: example, type: "p" }, { label: "", type: "textarea", rows: 17, content, title }]
         this.utils.dialog.modal({ title: "高级搜索", width: "600px", components })
     }
 }
@@ -874,6 +888,8 @@ class Highlighter {
 
     doSearch = (searchGroup = this.searchStatus.searchGroup, caseSensitive = this.config.CASE_SENSITIVE) => {
         this.clearSearch()
+        if (!searchGroup || searchGroup.length === 0) return this.searchStatus.hitGroups
+
         this.searchStatus.searchGroup = searchGroup
         this.searchStatus.regexp = this._createRegExp(searchGroup, caseSensitive)
         this.searchStatus.hitGroups = Object.fromEntries(searchGroup.map((name, idx) => [`cm-plugin-highlight-hit-${idx}`, { name, hits: [] }]))
