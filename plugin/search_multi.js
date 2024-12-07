@@ -871,6 +871,8 @@ class Highlighter {
     }
 
     process = () => {
+        this._polyfill()
+
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => {
             if (this.searchStatus.futureCM.has(cid)) {
                 this._searchOnCM(File.editor.fences.queue[cid])
@@ -889,7 +891,7 @@ class Highlighter {
         document.querySelector(".plugin-highlight-multi-result").addEventListener("mousedown", ev => {
             const target = ev.target.closest(".plugin-highlight-multi-result-item")
             if (!target) return
-            const className = target.classList.values().find(e => e.startsWith("cm-plugin-highlight-hit"))
+            const className = Array.from(target.classList.values()).find(e => e.startsWith("cm-plugin-highlight-hit"))
             if (!className) return
 
             if (this.isClosed()) {
@@ -1231,6 +1233,12 @@ class Highlighter {
     }
 
     _checkHits = () => this.searchStatus.hits.length <= 5000
+
+    _polyfill = () => {
+        if (!global.NodeDef) {
+            global.NodeDef = global.Node
+        }
+    }
 }
 
 module.exports = {
