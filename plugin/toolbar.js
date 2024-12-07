@@ -104,15 +104,15 @@ class toolbarPlugin extends BasePlugin {
 
     _callTool = (target, ev) => {
         if (ev) {
-            ev.preventDefault();
-            ev.stopPropagation();
+            ev.preventDefault()
+            ev.stopPropagation()
         }
-        const tool = target.getAttribute("tool");
-        const fixedName = target.getAttribute("data");
-        const meta = target.getAttribute("meta");
-        this.toolController.callback(tool, fixedName, meta);
-        if (tool !== "func") {
-            this.hide();
+        const { tool, value, meta } = target.dataset
+        this.toolController.callback(tool, value, meta)
+        if (tool === "func") {
+            this.entities.input.focus()
+        } else {
+            this.hide()
         }
     }
 
@@ -126,8 +126,8 @@ class toolbarPlugin extends BasePlugin {
             if (input[0]) {
                 input.forEach(part => content = content.replace(new RegExp(part, "gi"), "<b>$&</b>"))
             }
-            const metaContent = meta ? `meta="${meta}"` : ""
-            return `<div class="plugin-toolbar-item" data="${fixedName}" tool="${toolName}" ${metaContent}>${content}</div>`
+            const metaContent = meta ? `data-meta="${meta}"` : ""
+            return `<div class="plugin-toolbar-item" data-value="${fixedName}" data-tool="${toolName}" ${metaContent}>${content}</div>`
         })
     }
 
@@ -206,21 +206,22 @@ class toolController {
         return arrays[0].filter(func);
     }
 
-    uniqueString = item => typeof item === "object" ? item.showName + "6FF28E42" + item.fixedName + "741E8837" + item.meta : item
+    // Add a prefix to distinguish object and string items
+    toUniqueString = item => typeof item === "object" ? `object: ${item.showName}${item.fixedName}${item.meta}` : `string: ${item}`
 
     // 并集
     union = arrays => {
-        if (!Array.isArray(arrays) || arrays.length === 0) return [];
+        if (!Array.isArray(arrays) || arrays.length === 0) return []
         if (arrays.length === 1) return arrays[0]
 
-        const set = new Set();
-        const result = [];
+        const set = new Set()
+        const result = []
         for (const array of arrays) {
             for (const item of array) {
-                const value = this.uniqueString(item);
+                const value = this.toUniqueString(item)
                 if (!set.has(value)) {
-                    set.add(value);
-                    result.push(item);
+                    set.add(value)
+                    result.push(item)
                 }
             }
         }
@@ -231,8 +232,8 @@ class toolController {
     difference = (array1, array2) => {
         if (!Array.isArray(array1) || !Array.isArray(array2) || array1.length === 0 || array2.length === 0) return array1
 
-        const set = new Set(array2.map(this.uniqueString));
-        return array1.filter(item => !set.has(this.uniqueString(item)));
+        const set = new Set(array2.map(this.toUniqueString))
+        return array1.filter(item => !set.has(this.toUniqueString(item)))
     }
 
     kind = input => {
