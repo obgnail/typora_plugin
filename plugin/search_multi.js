@@ -560,35 +560,36 @@ class SearchHelper {
                 return nodes.map(contentGetter)
             }
         }
+        const getQualifier = (scope, name, parser, nodePicker, contentGetter) => {
+            const query = getQuery(parser, nodePicker, contentGetter)
+            const is_meta = false
+            const validate = this.MIXIN.VALIDATE.isStringOrRegexp
+            const cast = this.MIXIN.CAST.toStringOrRegexp
+            const match_keyword = this.MIXIN.MATCH.arrayCompare
+            const match_phrase = match_keyword
+            const match_regexp = this.MIXIN.MATCH.arrayRegexp
+            return { scope, name, query, is_meta, validate, cast, match_keyword, match_phrase, match_regexp }
+        }
 
-        const qualifiers = [
-            { scope: "blockcode", name: "代码块", query: getQuery(PARSER.BLOCK, NODE_PICKER.IS("fence"), CNT_GETTER.FENCE) },
-            { scope: "blockcodelang", name: "代码块语言", query: getQuery(PARSER.BLOCK, NODE_PICKER.IS("fence"), CNT_GETTER.FENCE_LANG) },
-            { scope: "blockcodebody", name: "代码块内容", query: getQuery(PARSER.BLOCK, NODE_PICKER.IS("fence"), CNT_GETTER.DEFAULT) },
-            { scope: "blockhtml", name: "HTML块", query: getQuery(PARSER.BLOCK, NODE_PICKER.IS("html_block"), CNT_GETTER.DEFAULT) },
-            { scope: "blockquote", name: "引用块", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("blockquote"), CNT_GETTER.DEFAULT) },
-            { scope: "table", name: "表格", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("table"), CNT_GETTER.DEFAULT) },
-            { scope: "thead", name: "表格标题", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("thead"), CNT_GETTER.DEFAULT) },
-            { scope: "tbody", name: "表格正文", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("tbody"), CNT_GETTER.DEFAULT) },
-            { scope: "ol", name: "有序列表", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("ordered_list"), CNT_GETTER.DEFAULT) },
-            { scope: "ul", name: "无序列表", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("bullet_list"), CNT_GETTER.DEFAULT) },
-            { scope: "head", name: "标题", query: getQuery(PARSER.BLOCK, NODE_PICKER.SURROUND("heading"), CNT_GETTER.DEFAULT) },
-            { scope: "image", name: "图片", query: getQuery(PARSER.INLINE, NODE_PICKER.IS("image"), CNT_GETTER.LINK_AND_IMAGE) },
-            { scope: "code", name: "代码", query: getQuery(PARSER.INLINE, NODE_PICKER.IS("code_inline"), CNT_GETTER.DEFAULT) },
-            { scope: "link", name: "链接", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("link"), CNT_GETTER.LINK_AND_IMAGE) },
-            { scope: "strong", name: "加粗文字", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("strong"), CNT_GETTER.DEFAULT) },
-            { scope: "em", name: "斜体文字", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("em"), CNT_GETTER.DEFAULT) },
-            { scope: "del", name: "删除线文字", query: getQuery(PARSER.INLINE, NODE_PICKER.SURROUND("s"), CNT_GETTER.DEFAULT) },
+        return [
+            getQualifier("blockcode", "代码块", PARSER.BLOCK, NODE_PICKER.IS("fence"), CNT_GETTER.FENCE),
+            getQualifier("blockcodelang", "代码块语言", PARSER.BLOCK, NODE_PICKER.IS("fence"), CNT_GETTER.FENCE_LANG),
+            getQualifier("blockcodebody", "代码块内容", PARSER.BLOCK, NODE_PICKER.IS("fence"), CNT_GETTER.DEFAULT),
+            getQualifier("blockhtml", "HTML块", PARSER.BLOCK, NODE_PICKER.IS("html_block"), CNT_GETTER.DEFAULT),
+            getQualifier("blockquote", "引用块", PARSER.BLOCK, NODE_PICKER.SURROUND("blockquote"), CNT_GETTER.DEFAULT),
+            getQualifier("table", "表格", PARSER.BLOCK, NODE_PICKER.SURROUND("table"), CNT_GETTER.DEFAULT),
+            getQualifier("thead", "表格标题", PARSER.BLOCK, NODE_PICKER.SURROUND("thead"), CNT_GETTER.DEFAULT),
+            getQualifier("tbody", "表格正文", PARSER.BLOCK, NODE_PICKER.SURROUND("tbody"), CNT_GETTER.DEFAULT),
+            getQualifier("ol", "有序列表", PARSER.BLOCK, NODE_PICKER.SURROUND("ordered_list"), CNT_GETTER.DEFAULT),
+            getQualifier("ul", "无序列表", PARSER.BLOCK, NODE_PICKER.SURROUND("bullet_list"), CNT_GETTER.DEFAULT),
+            getQualifier("head", "标题", PARSER.BLOCK, NODE_PICKER.SURROUND("heading"), CNT_GETTER.DEFAULT),
+            getQualifier("image", "图片", PARSER.INLINE, NODE_PICKER.IS("image"), CNT_GETTER.LINK_AND_IMAGE),
+            getQualifier("code", "代码", PARSER.INLINE, NODE_PICKER.IS("code_inline"), CNT_GETTER.DEFAULT),
+            getQualifier("link", "链接", PARSER.INLINE, NODE_PICKER.SURROUND("link"), CNT_GETTER.LINK_AND_IMAGE),
+            getQualifier("strong", "加粗文字", PARSER.INLINE, NODE_PICKER.SURROUND("strong"), CNT_GETTER.DEFAULT),
+            getQualifier("em", "斜体文字", PARSER.INLINE, NODE_PICKER.SURROUND("em"), CNT_GETTER.DEFAULT),
+            getQualifier("del", "删除线文字", PARSER.INLINE, NODE_PICKER.SURROUND("s"), CNT_GETTER.DEFAULT),
         ]
-        qualifiers.forEach(q => {
-            q.is_meta = false
-            q.validate = this.MIXIN.VALIDATE.isStringOrRegexp
-            q.cast = this.MIXIN.CAST.toStringOrRegexp
-            q.match_keyword = this.MIXIN.MATCH.arrayCompare
-            q.match_phrase = q.match_keyword
-            q.match_regexp = this.MIXIN.MATCH.arrayRegexp
-        })
-        return qualifiers
     }
 
     parse(input) {
