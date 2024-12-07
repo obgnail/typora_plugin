@@ -1,4 +1,5 @@
 module.exports = {
+    ...require("./polyfill"),
     ...require("./runtime"),
     ...require("./hotkeyHub"),
     ...require("./eventHub"),
