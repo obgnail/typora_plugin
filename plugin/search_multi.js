@@ -509,11 +509,11 @@ class SearchHelper {
             INLINE: this.utils.parseMarkdownInline,
             BLOCK: this.utils.parseMarkdownBlock
         }
-        const NODE_PICKER = {
+        const FILTER = {
             IS: type => {
                 return node => node.type === type
             },
-            SURROUND: type => {
+            WRAPPED_BY: type => {
                 let opening = false
                 const openType = `${type}_open`
                 const closeType = `${type}_close`
@@ -525,13 +525,26 @@ class SearchHelper {
                     }
                     return opening
                 }
+            },
+            WRAPPED_BY_TAG: (type, tag) => {
+                let opening = false
+                const openType = `${type}_open`
+                const closeType = `${type}_close`
+                return node => {
+                    if (node.type === openType && node.tag === tag) {
+                        opening = true
+                    } else if (node.type === closeType && node.tag === tag) {
+                        opening = false
+                    }
+                    return opening
+                }
             }
         }
-        const CNT_GETTER = {
-            DEFAULT: node => node.content,
-            FENCE: node => `${node.info} ${node.content}`,
-            FENCE_LANG: node => node.info,
-            LINK_AND_IMAGE: node => {
+        const EXTRACTOR = {
+            CONTENT: node => node.content,
+            INFO: node => node.info,
+            INFO_AND_CONTENT: node => `${node.info} ${node.content}`,
+            ATTR_AND_CONTENT: node => {
                 const attrs = node.attrs || []
                 const attrContent = attrs.map(l => l[l.length - 1]).join(" ")
                 return `${attrContent}${node.content}`
@@ -552,16 +565,16 @@ class SearchHelper {
             range(ast)
             return output
         }
-        const getQuery = (parser, nodePicker, contentGetter) => {
+        const getQuery = (parser, filter, extractor) => {
             return source => {
                 const content = source.buffer.toString()
                 const ast = parser(content)
-                const nodes = rangeAST(ast, nodePicker)
-                return nodes.map(contentGetter)
+                const nodes = rangeAST(ast, filter)
+                return nodes.map(extractor)
             }
         }
-        const getQualifier = (scope, name, parser, nodePicker, contentGetter) => {
-            const query = getQuery(parser, nodePicker, contentGetter)
+        const getQualifier = (scope, name, parser, filter, extractor) => {
+            const query = getQuery(parser, filter, extractor)
             const is_meta = false
             const validate = this.MIXIN.VALIDATE.isStringOrRegexp
             const cast = this.MIXIN.CAST.toStringOrRegexp
@@ -572,23 +585,29 @@ class SearchHelper {
         }
 
         return [
-            getQualifier("blockcode", "代码块", PARSER.BLOCK, NODE_PICKER.IS("fence"), CNT_GETTER.FENCE),
-            getQualifier("blockcodelang", "代码块语言", PARSER.BLOCK, NODE_PICKER.IS("fence"), CNT_GETTER.FENCE_LANG),
-            getQualifier("blockcodebody", "代码块内容", PARSER.BLOCK, NODE_PICKER.IS("fence"), CNT_GETTER.DEFAULT),
-            getQualifier("blockhtml", "HTML块", PARSER.BLOCK, NODE_PICKER.IS("html_block"), CNT_GETTER.DEFAULT),
-            getQualifier("blockquote", "引用块", PARSER.BLOCK, NODE_PICKER.SURROUND("blockquote"), CNT_GETTER.DEFAULT),
-            getQualifier("table", "表格", PARSER.BLOCK, NODE_PICKER.SURROUND("table"), CNT_GETTER.DEFAULT),
-            getQualifier("thead", "表格标题", PARSER.BLOCK, NODE_PICKER.SURROUND("thead"), CNT_GETTER.DEFAULT),
-            getQualifier("tbody", "表格正文", PARSER.BLOCK, NODE_PICKER.SURROUND("tbody"), CNT_GETTER.DEFAULT),
-            getQualifier("ol", "有序列表", PARSER.BLOCK, NODE_PICKER.SURROUND("ordered_list"), CNT_GETTER.DEFAULT),
-            getQualifier("ul", "无序列表", PARSER.BLOCK, NODE_PICKER.SURROUND("bullet_list"), CNT_GETTER.DEFAULT),
-            getQualifier("head", "标题", PARSER.BLOCK, NODE_PICKER.SURROUND("heading"), CNT_GETTER.DEFAULT),
-            getQualifier("image", "图片", PARSER.INLINE, NODE_PICKER.IS("image"), CNT_GETTER.LINK_AND_IMAGE),
-            getQualifier("code", "代码", PARSER.INLINE, NODE_PICKER.IS("code_inline"), CNT_GETTER.DEFAULT),
-            getQualifier("link", "链接", PARSER.INLINE, NODE_PICKER.SURROUND("link"), CNT_GETTER.LINK_AND_IMAGE),
-            getQualifier("strong", "加粗文字", PARSER.INLINE, NODE_PICKER.SURROUND("strong"), CNT_GETTER.DEFAULT),
-            getQualifier("em", "斜体文字", PARSER.INLINE, NODE_PICKER.SURROUND("em"), CNT_GETTER.DEFAULT),
-            getQualifier("del", "删除线文字", PARSER.INLINE, NODE_PICKER.SURROUND("s"), CNT_GETTER.DEFAULT),
+            getQualifier("blockcode", "代码块", PARSER.BLOCK, FILTER.IS("fence"), EXTRACTOR.INFO_AND_CONTENT),
+            getQualifier("blockcodelang", "代码块语言", PARSER.BLOCK, FILTER.IS("fence"), EXTRACTOR.INFO),
+            getQualifier("blockcodebody", "代码块内容", PARSER.BLOCK, FILTER.IS("fence"), EXTRACTOR.CONTENT),
+            getQualifier("blockhtml", "HTML块", PARSER.BLOCK, FILTER.IS("html_block"), EXTRACTOR.CONTENT),
+            getQualifier("blockquote", "引用块", PARSER.BLOCK, FILTER.WRAPPED_BY("blockquote"), EXTRACTOR.CONTENT),
+            getQualifier("table", "表格", PARSER.BLOCK, FILTER.WRAPPED_BY("table"), EXTRACTOR.CONTENT),
+            getQualifier("thead", "表格标题", PARSER.BLOCK, FILTER.WRAPPED_BY("thead"), EXTRACTOR.CONTENT),
+            getQualifier("tbody", "表格正文", PARSER.BLOCK, FILTER.WRAPPED_BY("tbody"), EXTRACTOR.CONTENT),
+            getQualifier("ol", "有序列表", PARSER.BLOCK, FILTER.WRAPPED_BY("ordered_list"), EXTRACTOR.CONTENT),
+            getQualifier("ul", "无序列表", PARSER.BLOCK, FILTER.WRAPPED_BY("bullet_list"), EXTRACTOR.CONTENT),
+            getQualifier("head", "标题", PARSER.BLOCK, FILTER.WRAPPED_BY("heading"), EXTRACTOR.CONTENT),
+            getQualifier("h1", "一级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h1"), EXTRACTOR.CONTENT),
+            getQualifier("h2", "二级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h2"), EXTRACTOR.CONTENT),
+            getQualifier("h3", "三级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h3"), EXTRACTOR.CONTENT),
+            getQualifier("h4", "四级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h4"), EXTRACTOR.CONTENT),
+            getQualifier("h5", "五级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h5"), EXTRACTOR.CONTENT),
+            getQualifier("h6", "六级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h6"), EXTRACTOR.CONTENT),
+            getQualifier("image", "图片", PARSER.INLINE, FILTER.IS("image"), EXTRACTOR.ATTR_AND_CONTENT),
+            getQualifier("code", "代码", PARSER.INLINE, FILTER.IS("code_inline"), EXTRACTOR.CONTENT),
+            getQualifier("link", "链接", PARSER.INLINE, FILTER.WRAPPED_BY("link"), EXTRACTOR.ATTR_AND_CONTENT),
+            getQualifier("strong", "加粗文字", PARSER.INLINE, FILTER.WRAPPED_BY("strong"), EXTRACTOR.CONTENT),
+            getQualifier("em", "斜体文字", PARSER.INLINE, FILTER.WRAPPED_BY("em"), EXTRACTOR.CONTENT),
+            getQualifier("del", "删除线文字", PARSER.INLINE, FILTER.WRAPPED_BY("s"), EXTRACTOR.CONTENT),
         ]
     }
 
@@ -838,7 +857,7 @@ class SearchHelper {
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
         const title = "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释"
-        const components = [{ label: keywordDesc, type: "p" }, { label: example, type: "p" }, { label: "", type: "textarea", rows: 17, content, title }]
+        const components = [{ label: keywordDesc, type: "p" }, { label: example, type: "p" }, { label: "", type: "textarea", rows: 18, content, title }]
         this.utils.dialog.modal({ title: "高级搜索", width: "600px", components })
     }
 }
