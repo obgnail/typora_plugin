@@ -9,37 +9,36 @@ class preferencesPlugin extends BasePlugin {
     }
 
     togglePlugin = async (enablePlugins, enableCustomPlugins, showModal = false) => {
-        const [settings, customSettings] = await this.getSettings();
+        const [settings, customSettings] = await this.getSettings()
 
-        const pluginState = {};
-        const customPluginState = {};
+        const pluginState = {}
+        const customPluginState = {}
         Object.keys(settings).forEach(fixedName => (pluginState[fixedName] = { ENABLE: enablePlugins.includes(fixedName) }))
         Object.keys(customSettings).forEach(fixedName => (customPluginState[fixedName] = { enable: enableCustomPlugins.includes(fixedName) }))
 
         // check need update file
-        const settingsHasUpdate = Object.entries(settings).some(([name, plugin]) => plugin.ENABLE !== pluginState[name].ENABLE);
-        const customSettingsHasUpdate = Object.entries(customSettings).some(([name, plugin]) => plugin.enable !== customPluginState[name].enable);
-        if (!settingsHasUpdate && !customSettingsHasUpdate) return;
+        const settingsHasUpdate = Object.entries(settings).some(([name, plugin]) => plugin.ENABLE !== pluginState[name].ENABLE)
+        const customSettingsHasUpdate = Object.entries(customSettings).some(([name, plugin]) => plugin.enable !== customPluginState[name].enable)
+        if (!settingsHasUpdate && !customSettingsHasUpdate) return
 
         const files = [
-            { file: "settings.user.toml", mergeObj: pluginState, clean: this.utils.noop },
-            { file: "custom_plugin.user.toml", mergeObj: customPluginState, clean: this.utils.runtime.fixCustomPluginSetting },
+            { file: "settings.user.toml", mergeObj: pluginState },
+            { file: "custom_plugin.user.toml", mergeObj: customPluginState },
         ]
-        for (const { file, mergeObj, clean } of files) {
-            const settingPath = await this.utils.runtime.getActualSettingPath(file);
-            const settingObj = await this.utils.readTomlFile(settingPath);
-            const setting = this.utils.merge(settingObj, mergeObj);
-            const newSetting = await clean(setting);
-            const newContent = this.utils.stringifyToml(newSetting);
-            const ok = await this.utils.writeFile(settingPath, newContent);
-            if (!ok) return;
+        for (const { file, mergeObj } of files) {
+            const settingPath = await this.utils.runtime.getActualSettingPath(file)
+            const settingObj = await this.utils.readTomlFile(settingPath)
+            const setting = this.utils.merge(settingObj, mergeObj)
+            const newContent = this.utils.stringifyToml(setting)
+            const ok = await this.utils.writeFile(settingPath, newContent)
+            if (!ok) return
         }
 
         if (showModal) {
             const option = { type: "info", buttons: ["确定", "取消"], title: "preferences", detail: "配置将于重启 Typora 后生效，确认重启？", message: "设置成功" }
-            const { response } = await this.utils.showMessageBox(option);
+            const { response } = await this.utils.showMessageBox(option)
             if (response === 0) {
-                this.utils.restartTypora();
+                this.utils.restartTypora()
             }
         }
     }
