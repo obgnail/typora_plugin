@@ -117,7 +117,7 @@ class updater {
         await this.unzip(buffer);
         await this.excludeFiles();
         await this.syncDir();
-        await this.utils.runtime.cleanPluginSetting();
+        await this.utils.migrate.run();
         console.log(`updated! current plugin version: ${this.latestVersionInfo.tag_name}`);
         return "UPDATED";
     }
@@ -129,7 +129,7 @@ class updater {
         await this.unzip(buffer);
         await this.excludeFiles();
         await this.syncDir();
-        await this.utils.runtime.cleanPluginSetting();
+        await this.utils.migrate.run();
         console.log(`force updated!`);
         return "UPDATED";
     }

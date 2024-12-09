@@ -1,6 +1,7 @@
 module.exports = {
     ...require("./polyfill"),
     ...require("./runtime"),
+    ...require("./migrate"),
     ...require("./hotkeyHub"),
     ...require("./eventHub"),
     ...require("./stateRecorder"),
