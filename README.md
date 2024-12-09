@@ -28,28 +28,28 @@
 | 12   | commander               | 命令行环境                             |          |
 | 13   | toolbar                 | 多功能搜索                             |          |
 | 14   | right_click_menu        | 右键菜单统一管理插件                   |          |
-| 15   | pie_menu                | 圆盘菜单                               | ×        |
-| 16   | preferences             | 启停插件                               |          |
-| 17   | markmap                 | 提供 markmap 组件支持                  |          |
-| 18   | echarts                 | 提供 echarts 组件支持                  |          |
-| 19   | chart                   | 提供 chartjs 组件支持                  |          |
-| 20   | drawIO                  | 提供 drawIO 组件支持                   |          |
-| 21   | abc                     | 提供 abcjs 组件支持                    |          |
-| 22   | calendar                | 提供 tui.calendar 组件支持             |          |
-| 23   | wavedrom                | 提供 wavedrom 组件支持                 |          |
-| 24   | marp                    | 提供 marp 组件支持                     |          |
-| 25   | callouts                | 提供 callouts 支持                     |          |
-| 26   | text_stylize            | 文字风格化                             |          |
-| 27   | read_only               | 只读模式                               |          |
-| 28   | blur                    | 模糊模式                               |          |
-| 29   | kanban                  | 看板                                   |          |
-| 30   | timeline                | 时间线                                 |          |
-| 31   | chat                    | 聊天                                   |          |
-| 32   | file_counter            | 显示目录下的文件数                     |          |
-| 33   | auto_number             | 章节、表格、图片、代码块等自动编号     |          |
-| 34   | imageReviewer           | 图片查看器                             |          |
-| 35   | chineseSymbolAutoPairer | 中文符号自动补全                       |          |
-| 36   | datatables              | 表格增强（搜索、过滤、分页、排序等）   | ×        |
+| 15   | datatables              | 表格增强（搜索、过滤、分页、排序等）   | ×        |
+| 16   | pie_menu                | 圆盘菜单                               | ×        |
+| 17   | preferences             | 启停插件                               |          |
+| 18   | markmap                 | 提供 markmap 组件支持                  |          |
+| 19   | echarts                 | 提供 echarts 组件支持                  |          |
+| 20   | chart                   | 提供 chartjs 组件支持                  |          |
+| 21   | drawIO                  | 提供 drawIO 组件支持                   |          |
+| 22   | abc                     | 提供 abcjs 组件支持                    |          |
+| 23   | calendar                | 提供 tui.calendar 组件支持             |          |
+| 24   | wavedrom                | 提供 wavedrom 组件支持                 |          |
+| 25   | marp                    | 提供 marp 组件支持                     |          |
+| 26   | callouts                | 提供 callouts 支持                     |          |
+| 27   | text_stylize            | 文字风格化                             |          |
+| 28   | read_only               | 只读模式                               |          |
+| 29   | blur                    | 模糊模式                               |          |
+| 30   | kanban                  | 看板                                   |          |
+| 31   | timeline                | 时间线                                 |          |
+| 32   | chat                    | 聊天                                   |          |
+| 33   | file_counter            | 显示目录下的文件数                     |          |
+| 34   | auto_number             | 章节、表格、图片、代码块等自动编号     |          |
+| 35   | imageReviewer           | 图片查看器                             |          |
+| 36   | chineseSymbolAutoPairer | 中文符号自动补全                       |          |
 | 37   | resize_table            | 调整表格行高列宽                       |          |
 | 38   | resize_image            | 调整图片显示大小                       |          |
 | 39   | export_enhance          | 导出 html 时避免图片丢失               |          |
@@ -81,9 +81,7 @@
 
 
 
-## 如何使用：方法一（自动）
-
-> 此方法支持 Windows、Linux 平台。
+## 如何使用：Windows/Linux 平台
 
 前往 [视频版安装教程](https://github.com/obgnail/typora_plugin/issues/847)
 
@@ -120,42 +118,7 @@
 
 
 
-## 如何使用：方法二（手动）
-
-> 此方法支持 Windows、Linux 平台。
-
-1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压
-
-2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A
-
-   - 如果是正式版 Typora，路径为 `./resources/window.html`
-   
-   - 如果是免费版 Typora，路径为 `./resources/app/window.html`
-
-3. 将解压得到的 plugin 文件夹粘贴进文件夹 A 下（参考方法一的图片）
-
-4. 根据文件夹 A 下是否含有 `appsrc` 目录判断 Typora 是否为新版本，有则新版本，无则旧版本
-
-5. 打开文件 `A/window.html`
-
-   - 若是新版本：搜索文件内容 `<script src="./appsrc/window/frame.js" defer="defer"></script>`
-
-   - 若是旧版本：搜索文件内容 `<script src="./app/window/frame.js" defer="defer"></script>`
-
-   在上述搜索内容的 **后面** 加入 `<script src="./plugin/index.js" defer="defer"></script>`
-
-6. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
-
-> 如果您安装失败，大概率是权限问题导致的。请给上述的 plugin 文件夹授权。
-
-
-|        | 新版本                                               | 旧版本                                           |
-| ------ | ---------------------------------------------------- | ------------------------------------------------ |
-| 步骤 5 | ![new_typora_framejs](assets/new_typora_framejs.png) | ![where_is_framejs](assets/where_is_framejs.png) |
-
-
-
-## 如何使用：方法三（自动）
+## 如何使用：archlinux 平台
 
 > 目前此方法仅限 archlinux 平台，aur 见 [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin)
 

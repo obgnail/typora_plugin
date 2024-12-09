@@ -1,12 +1,11 @@
 const getHook = utils => {
     const MIXIN = require("./mixin")
-    const mixin = Object.fromEntries(
-        Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils)])
-    )
+    const mixin = Object.fromEntries(Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils)]))
 
     const {
         hotkeyHub, eventHub, stateRecorder, exportHelper, contextMenu,
-        notification, progressBar, dialog, diagramParser, thirdPartyDiagramParser, extra, polyfill
+        notification, progressBar, dialog, diagramParser, thirdPartyDiagramParser,
+        extra, polyfill,
     } = mixin
 
     // monkey patch
@@ -33,27 +32,27 @@ const getHook = utils => {
     const registerMixin = (...ele) => Promise.all(ele.map(h => h.process && h.process()))
     const optimizeMixin = () => Promise.all(Object.values(mixin).map(h => h.afterProcess && h.afterProcess()))
 
-    // Before loading plugins
-    const registerMixinBefore = async () => {
+    const registerPreMixin = async () => {
         await registerMixin(polyfill)
         await registerMixin(extra)
         await registerMixin(contextMenu, notification, progressBar, dialog, stateRecorder, hotkeyHub, exportHelper)
     }
 
-    // After loading plugins
-    const registerMixinAfter = async () => {
+    const registerPostMixin = async () => {
         await registerMixin(eventHub)
         await registerMixin(diagramParser, thirdPartyDiagramParser)
         eventHub.publishEvent(eventHub.eventType.allPluginsHadInjected)
     }
 
     return async pluginLoader => {
-        await registerMixinBefore()
+        await registerPreMixin()
         await pluginLoader()
-        await registerMixinAfter()
+        await registerPostMixin()
         await optimizeMixin()
         // Due to the use of async, some events may have been missed (such as afterAddCodeBlock), reload it
-        File.getMountFolder() != null && setTimeout(utils.reload, 50)
+        if (File.getMountFolder() != null) {
+            setTimeout(utils.reload, 50)
+        }
     }
 }
 

@@ -68,7 +68,7 @@ class searchStringParser {
     }
 
     tokenize(query) {
-        return Array.from(query.trim().matchAll(this.regex))
+        return [...query.trim().matchAll(this.regex)]
             .map(_tokens => {
                 const [qualifier, operand = ""] = Object.entries(_tokens.groups).find(([_, v]) => v != null)
                 const type = this.TYPE[qualifier] || this.TYPE.KEYWORD
@@ -80,7 +80,14 @@ class searchStringParser {
                 if (token.type !== this.TYPE.AND) return true
                 const prev = tokens[i - 1]
                 const next = tokens[i + 1]
-                return prev && next && !this.INVALID_POSITION.AND.PREV.has(prev.type) && !this.INVALID_POSITION.AND.NEXT.has(next.type)
+                let result = true
+                if (prev) {
+                    result = result && !this.INVALID_POSITION.AND.PREV.has(prev.type)
+                }
+                if (next) {
+                    result = result && !this.INVALID_POSITION.AND.NEXT.has(next.type)
+                }
+                return result
             })
     }
 
@@ -191,14 +198,16 @@ class searchStringParser {
     }
 
     parse(query) {
+        query = query.trim()
         const tokens = this.tokenize(query)
         if (tokens.length === 0) {
-            return { type: this.TYPE.KEYWORD, operand: "" }
+            // return { type: this.TYPE.KEYWORD, scope: "default", operator: ":", operand: "" }
+            throw new Error(`Parse error. Empty tokens`)
         }
         this.check(tokens)
         const ast = this._parseExpression(tokens)
         if (tokens.length !== 0) {
-            throw new Error(`parse error. remind tokens: ${tokens}`)
+            throw new Error(`Parse error. Failed to parse tokens: ${tokens.join(" ")}`)
         }
         return ast
     }
