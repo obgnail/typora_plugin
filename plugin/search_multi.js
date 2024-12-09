@@ -140,7 +140,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             ast = ast || this.getAST()
             this.utils.hide(this.entities.highlightResult)
             if (!ast) return
-            const tokens = this.searchHelper.getContentTokens(ast)
+            const tokens = this.searchHelper.getContentTokens(ast).filter(Boolean)
             if (!tokens || tokens.length === 0) return
 
             const hitGroups = this.highlightHelper.doSearch(tokens)
@@ -272,7 +272,7 @@ class QualifierMixin {
 
     static OPERATOR_NAME = { ":": "包含", "=": "为", "!=": "不为", ">=": "大于等于", "<=": "小于等于", ">": "大于", "<": "小于" }
 
-    static UNITS = { b: 1, k: 1 << 10, m: 1 << 20, g: 1 << 30, kb: 1 << 10, mb: 1 << 20, gb: 1 << 30 }
+    static UNITS = { k: 1 << 10, m: 1 << 20, g: 1 << 30, kb: 1 << 10, mb: 1 << 20, gb: 1 << 30 }
 
     static VALIDATE = {
         isStringOrRegexp: (scope, operator, operand, operandType) => {
@@ -441,7 +441,7 @@ class SearchHelper {
                 is_meta: false,
                 query: ({ path, file, stats, buffer }) => {
                     const { yamlObject } = this.utils.splitFrontMatter(buffer.toString())
-                    return JSON.stringify(yamlObject)
+                    return yamlObject ? JSON.stringify(yamlObject) : ""
                 },
             },
             {
