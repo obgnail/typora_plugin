@@ -49,7 +49,7 @@ class migrate {
 
     fixCustomPluginSetting = (files) => {
         const customPluginSetting = files.find(e => e.file === "custom_plugin.user.toml")
-        customPluginSetting.user_ = this._fixCustomPluginSetting(customPluginSetting.user_)
+        this._fixCustomPluginSetting(customPluginSetting.user_)
     }
 
     _fixCustomPluginSetting = settings => {
@@ -80,7 +80,7 @@ class migrate {
         await Promise.all(promises)
     }
 
-    cleanInvalidKey = (files) => {
+    cleanPluginAndKey = (files) => {
         const hasOwnProperty = (obj, attr) => Object.prototype.hasOwnProperty.call(obj, attr)
         files.forEach(({ default_, user_ }) => {
             Object.keys(user_)
@@ -88,10 +88,16 @@ class migrate {
                 .map(fixedName => {
                     const pluginUser = user_[fixedName]
                     const pluginDefault = default_[fixedName]
-                    const invalidKeys = Object.keys(pluginUser).filter(key => !hasOwnProperty(pluginDefault, key))
-                    return [pluginUser, invalidKeys]
+                    const toDeleteKeys = Object.keys(pluginUser).filter(key => {
+                        return !hasOwnProperty(pluginDefault, key) || pluginDefault[key] === pluginUser[key]
+                    })
+                    return [pluginUser, toDeleteKeys]
                 })
                 .forEach(([plugin, invalidKeys]) => invalidKeys.forEach(key => delete plugin[key]))
+        })
+        files.forEach(file => {
+            const reserved = Object.keys(file.user_).filter(fixedName => Object.keys(file.user_[fixedName]).length !== 0)
+            file.user_ = this.utils.fromObject(file.user_, reserved)
         })
     }
 
@@ -118,7 +124,7 @@ class migrate {
         await this.deleteUselessPlugin()
         await this.fixCustomPluginSetting(files)
         await this.cleanInvalidPlugin(files)
-        await this.cleanInvalidKey(files)
+        await this.cleanPluginAndKey(files)
         await this.moveHotkeySetting(files)
         await this._saveFile(files)
     }
