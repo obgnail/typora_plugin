@@ -36,13 +36,7 @@ class CustomPlugin extends BasePlugin {
             const plugin = this.plugins[fixedName];
             if (!plugin) continue;
 
-            const arg = {
-                arg_name: plugin.config.name,
-                arg_value: plugin.fixedName,
-                arg_disabled: true,
-                arg_hint: "未知错误！请向开发者反馈",
-                arg_hotkey: plugin.config.hotkey,
-            };
+            const arg = { arg_name: plugin.config.name, arg_value: plugin.fixedName, arg_disabled: true, arg_hint: "未知错误！请向开发者反馈", arg_hotkey: plugin.config.hotkey }
             try {
                 const selector = plugin.selector(false);
                 if (selector === this.utils.disableForeverSelector) {
@@ -80,68 +74,53 @@ class CustomPlugin extends BasePlugin {
 
 class customPluginLoader {
     constructor(plugin) {
-        this.controller = plugin;
-        this.utils = plugin.utils;
-        this.config = plugin.config;
+        this.controller = plugin
+        this.utils = plugin.utils
+        this.config = plugin.config
     }
 
     loadCustomPlugins = async settings => {
-        const { enable, disable, stop, error, nosetting } = await global.LoadPlugins(settings, true);
-        this.controller.plugins = enable;
+        const { enable, disable, stop, error, nosetting } = await global.LoadPlugins(settings, true)
+        this.controller.plugins = enable
     }
 
-    // 检测用户错误的配置
-    errorSettingDetector = customSettings => {
-        const allSettings = this.utils.getAllPluginSettings();
-        const errorPluginSetting = Object.keys(customSettings).filter(fixedName => allSettings.hasOwnProperty(fixedName));
+    checkErrorSetting = customSettings => {
+        const allSettings = this.utils.getAllPluginSettings()
+        const errorPluginSetting = Object.keys(customSettings).filter(fixedName => allSettings.hasOwnProperty(fixedName))
         if (errorPluginSetting && errorPluginSetting.length) {
-            const msg = "以下插件的配置写错文件了，一级插件应该写在 settings.user.toml 中，二级插件应该写在 custom_plugin.user.toml 中";
-            const components = [msg, ...errorPluginSetting].map(label => ({ label, type: "p" }));
-            const openFolder = () => this.utils.runtime.openSettingFolder();
-            this.utils.dialog.modal({ title: "配置错误", components }, openFolder, openFolder);
+            const label = "以下插件的配置写错文件了。一级插件应该写在 settings.user.toml 中，二级插件应该写在 custom_plugin.user.toml 中"
+            const rows = Math.max(errorPluginSetting.length, 3)
+            const components = [{ label, rows, type: "textarea", content: errorPluginSetting.join("\n") }]
+            this.utils.dialog.modal({ title: "配置错误", components }, () => this.utils.runtime.openSettingFolder())
         }
     }
 
-    // 兼容用户错误操作
-    mergeSettings = customSettings => {
-        if (!this.config.ALLOW_SET_CONFIG_IN_SETTINGS_TOML) return;
-
-        const allSettings = this.utils.getAllPluginSettings();
-        for (const [fixedName, settings_] of Object.entries(allSettings)) {
-            if (customSettings.hasOwnProperty(fixedName)) {
-                customSettings[fixedName] = this.utils.merge(customSettings[fixedName], settings_);
-                delete allSettings[fixedName];
-            }
-        }
-    }
-
-    decorateCallback = async () => {
+    fixCallback = async () => {
         for (const plugin of Object.values(this.controller.plugins)) {
-            if (!plugin || !plugin.hasOwnProperty("callback") || !plugin.hasOwnProperty("selector")) continue;
-            const { callback: originCallback } = plugin;
+            if (!plugin || !plugin.hasOwnProperty("callback") || !plugin.hasOwnProperty("selector")) continue
+            const originCallback = plugin.callback
             plugin.callback = anchorNode => {
                 if (!anchorNode) {
-                    const $anchor = this.utils.getAnchorNode();
-                    const anchor = $anchor && $anchor[0];
-                    const selector = plugin.selector(true);
-                    anchorNode = (selector && anchor) ? anchor.closest(selector) : anchor;
+                    const $anchor = this.utils.getAnchorNode()
+                    const anchor = $anchor && $anchor[0]
+                    const selector = plugin.selector(true)
+                    anchorNode = (selector && anchor) ? anchor.closest(selector) : anchor
                 }
-                originCallback(anchorNode);
+                originCallback(anchorNode)
             }
         }
     }
 
     process = async () => {
-        const settings = await this.utils.runtime.readCustomPluginSetting();
-        this.mergeSettings(settings);
-        this.errorSettingDetector(settings);
-        this.controller.pluginsSettings = settings;
-        await this.loadCustomPlugins(settings);
-        await this.decorateCallback();
-        this.utils.eventHub.publishEvent(this.utils.eventHub.eventType.allCustomPluginsHadInjected);
+        const settings = await this.utils.runtime.readCustomPluginSetting()
+        this.checkErrorSetting(settings)
+        this.controller.pluginsSettings = settings
+        await this.loadCustomPlugins(settings)
+        await this.fixCallback()
+        this.utils.eventHub.publishEvent(this.utils.eventHub.eventType.allCustomPluginsHadInjected)
     }
 }
 
 module.exports = {
     plugin: CustomPlugin
-};
+}
