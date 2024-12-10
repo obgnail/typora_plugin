@@ -539,6 +539,24 @@ class SearchHelper {
                     return balance > 0
                 }
             },
+            WRAPPED_BY_MULTI: (...types) => {
+                let wrapped = false
+                const balances = new Uint8Array(types.length).fill(0)
+                const flags = new Map(types.flatMap((type, idx) => [
+                    [`${type}_open`, [idx, 1]],
+                    [`${type}_close`, [idx, -1]],
+                ]))
+                return node => {
+                    const hit = flags.get(node.type)
+                    if (hit) {
+                        const [idx, value] = hit
+                        balances[idx] += value
+                        balances.fill(0, idx + 1)
+                        wrapped = balances.every(val => val > 0)
+                    }
+                    return wrapped
+                }
+            }
         }
         const EXTRACTOR = {
             CONTENT: node => node.content,
@@ -548,6 +566,33 @@ class SearchHelper {
                 const attrs = node.attrs || []
                 const attrContent = attrs.map(l => l[l.length - 1]).join(" ")
                 return `${attrContent}${node.content}`
+            },
+            REGEXP_CONTENT: regexp => {
+                return node => {
+                    const content = node.content.trim()
+                    const result = [...content.matchAll(regexp)]
+                    return result.map(([_, text]) => text).join(" ")
+                }
+            },
+            // selectType: 0 for all, 1 for selected, -1 for not selected
+            TASK_CONTENT: (selectType = 0) => {
+                const regexp = /^\[(x|X| )\]\s+(.+)/
+                return node => {
+                    const content = node.content.trim()
+                    const m = content.match(regexp)
+                    if (!m) return ""
+                    const [_, selectText, text] = m
+                    switch (selectType) {
+                        case 0:
+                            return text
+                        case 1:
+                            return (selectText === "x" || selectText === "X") ? text : ""
+                        case -1:
+                            return selectText === " " ? text : ""
+                        default:
+                            return ""
+                    }
+                }
             },
         }
         const rangeAST = (ast, filter) => {
@@ -570,7 +615,7 @@ class SearchHelper {
                 const content = source.buffer.toString()
                 const ast = parser(content)
                 const nodes = rangeAST(ast, filter)
-                return nodes.map(extractor)
+                return nodes.map(extractor).filter(Boolean)
             }
         }
         const getQualifier = (scope, name, parser, filter, extractor) => {
@@ -595,6 +640,9 @@ class SearchHelper {
             getQualifier("tbody", "表格正文", PARSER.BLOCK, FILTER.WRAPPED_BY("tbody"), EXTRACTOR.CONTENT),
             getQualifier("ol", "有序列表", PARSER.BLOCK, FILTER.WRAPPED_BY("ordered_list"), EXTRACTOR.CONTENT),
             getQualifier("ul", "无序列表", PARSER.BLOCK, FILTER.WRAPPED_BY("bullet_list"), EXTRACTOR.CONTENT),
+            getQualifier("task", "任务列表", PARSER.BLOCK, FILTER.WRAPPED_BY_MULTI("bullet_list", "list_item", "paragraph"), EXTRACTOR.TASK_CONTENT(0)),
+            getQualifier("taskdone", "已完成任务", PARSER.BLOCK, FILTER.WRAPPED_BY_MULTI("bullet_list", "list_item", "paragraph"), EXTRACTOR.TASK_CONTENT(1)),
+            getQualifier("tasktodo", "未完成任务", PARSER.BLOCK, FILTER.WRAPPED_BY_MULTI("bullet_list", "list_item", "paragraph"), EXTRACTOR.TASK_CONTENT(-1)),
             getQualifier("head", "标题", PARSER.BLOCK, FILTER.WRAPPED_BY("heading"), EXTRACTOR.CONTENT),
             getQualifier("h1", "一级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h1"), EXTRACTOR.CONTENT),
             getQualifier("h2", "二级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h2"), EXTRACTOR.CONTENT),
@@ -602,6 +650,7 @@ class SearchHelper {
             getQualifier("h4", "四级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h4"), EXTRACTOR.CONTENT),
             getQualifier("h5", "五级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h5"), EXTRACTOR.CONTENT),
             getQualifier("h6", "六级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h6"), EXTRACTOR.CONTENT),
+            getQualifier("highlight", "高亮文字", PARSER.BLOCK, FILTER.IS("text"), EXTRACTOR.REGEXP_CONTENT(/==(.+)==/g)),
             getQualifier("image", "图片", PARSER.INLINE, FILTER.IS("image"), EXTRACTOR.ATTR_AND_CONTENT),
             getQualifier("code", "代码", PARSER.INLINE, FILTER.IS("code_inline"), EXTRACTOR.CONTENT),
             getQualifier("link", "链接", PARSER.INLINE, FILTER.WRAPPED_BY("link"), EXTRACTOR.ATTR_AND_CONTENT),
