@@ -514,31 +514,31 @@ class SearchHelper {
                 return node => node.type === type
             },
             WRAPPED_BY: type => {
-                let opening = false
                 const openType = `${type}_open`
                 const closeType = `${type}_close`
+                let balance = 0
                 return node => {
                     if (node.type === openType) {
-                        opening = true
+                        balance++
                     } else if (node.type === closeType) {
-                        opening = false
+                        balance--
                     }
-                    return opening
+                    return balance > 0
                 }
             },
             WRAPPED_BY_TAG: (type, tag) => {
-                let opening = false
                 const openType = `${type}_open`
                 const closeType = `${type}_close`
+                let balance = 0
                 return node => {
                     if (node.type === openType && node.tag === tag) {
-                        opening = true
+                        balance++
                     } else if (node.type === closeType && node.tag === tag) {
-                        opening = false
+                        balance--
                     }
-                    return opening
+                    return balance > 0
                 }
-            }
+            },
         }
         const EXTRACTOR = {
             CONTENT: node => node.content,
@@ -550,11 +550,11 @@ class SearchHelper {
                 return `${attrContent}${node.content}`
             },
         }
-        const rangeAST = (ast, nodePicker) => {
+        const rangeAST = (ast, filter) => {
             const output = []
-            const range = (astList = []) => {
-                astList.forEach(node => {
-                    if (nodePicker(node)) {
+            const range = (ast = []) => {
+                ast.forEach(node => {
+                    if (filter(node)) {
                         output.push(node)
                     }
                     if (node.children) {
