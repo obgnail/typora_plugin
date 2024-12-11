@@ -9,14 +9,14 @@ class searchMultiKeywordPlugin extends BasePlugin {
                 <input type="text">
                 <div class="plugin-search-multi-btn-group">
                     <span class="option-btn" action="searchGrammarModal" ty-hint="查看搜索语法">
-                        <div class="fa fa-info-circle"></div>
+                        <div class="ion-information-circled"></div>
                     </span>
                     <span class="option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" action="toggleCaseSensitive" ty-hint="区分大小写">
                         <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                     </span>
                 </div>
             </div>
-            
+
             <div class="plugin-highlight-multi-result plugin-common-hidden"></div>
 
             <div class="plugin-search-multi-result plugin-common-hidden">
@@ -389,7 +389,7 @@ class SearchHelper {
             q.REGEXP = q.match_regexp || this.MIXIN.MATCH.stringRegexp
             this.qualifiers.set(q.scope, q) // register qualifiers
         })
-        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.MIXIN.OPERATOR)))
+        this.parser.setQualifier(qualifiers.map(q => q.scope), [...Object.keys(this.MIXIN.OPERATOR)])
     }
 
     /**
@@ -494,7 +494,7 @@ class SearchHelper {
             },
             {
                 scope: "line",
-                name: "行",
+                name: "某行",
                 is_meta: false,
                 query: ({ path, file, stats, buffer }) => buffer.toString().split("\n").map(e => e.trim()),
                 match_keyword: this.MIXIN.MATCH.arrayCompare,
@@ -503,17 +503,29 @@ class SearchHelper {
         ]
     }
 
-    // todo: add cache
     buildContentQualifiers() {
-        const PARSER = {
-            INLINE: this.utils.parseMarkdownInline,
-            BLOCK: this.utils.parseMarkdownBlock
+        // Cache one to prevent re-parsing of the same file in a SINGLE query
+        const cache = fn => {
+            let cached, result
+            return arg => {
+                if (arg !== cached) {
+                    result = fn(arg)
+                    cached = arg
+                }
+                return result
+            }
         }
+
+        const PARSER = {
+            inline: cache(this.utils.parseMarkdownInline),
+            block: cache(this.utils.parseMarkdownBlock),
+        }
+
         const FILTER = {
-            IS: type => {
+            is: type => {
                 return node => node.type === type
             },
-            WRAPPED_BY: type => {
+            wrappedBy: type => {
                 const openType = `${type}_open`
                 const closeType = `${type}_close`
                 let balance = 0
@@ -526,7 +538,7 @@ class SearchHelper {
                     return balance > 0
                 }
             },
-            WRAPPED_BY_TAG: (type, tag) => {
+            wrappedByTag: (type, tag) => {
                 const openType = `${type}_open`
                 const closeType = `${type}_close`
                 let balance = 0
@@ -539,7 +551,7 @@ class SearchHelper {
                     return balance > 0
                 }
             },
-            WRAPPED_BY_MULTI: (...types) => {
+            wrappedByMulti: (...types) => {
                 let wrapped = false
                 const balances = new Uint8Array(types.length).fill(0)
                 const flags = new Map(types.flatMap((type, idx) => [
@@ -558,68 +570,71 @@ class SearchHelper {
                 }
             }
         }
+
         const EXTRACTOR = {
-            CONTENT: node => node.content,
-            INFO: node => node.info,
-            INFO_AND_CONTENT: node => `${node.info} ${node.content}`,
-            ATTR_AND_CONTENT: node => {
+            content: node => node.content,
+            info: node => node.info,
+            infoAndContent: node => `${node.info} ${node.content}`,
+            attrAndContent: node => {
                 const attrs = node.attrs || []
                 const attrContent = attrs.map(l => l[l.length - 1]).join(" ")
                 return `${attrContent}${node.content}`
             },
-            REGEXP_CONTENT: regexp => {
+            regexpContent: regexp => {
                 return node => {
                     const content = node.content.trim()
                     const result = [...content.matchAll(regexp)]
                     return result.map(([_, text]) => text).join(" ")
                 }
             },
-            // selectType: 0 for all, 1 for selected, -1 for not selected
-            TASK_CONTENT: (selectType = 0) => {
+            taskContent: (selectType = 0) => {
                 const regexp = /^\[(x|X| )\]\s+(.+)/
                 return node => {
                     const content = node.content.trim()
-                    const m = content.match(regexp)
-                    if (!m) return ""
-                    const [_, selectText, text] = m
+                    const hit = content.match(regexp)
+                    if (!hit) return ""
+                    const [_, selectText, taskText] = hit
+                    // 0:both, 1:selected, -1:unselected
                     switch (selectType) {
                         case 0:
-                            return text
+                            return taskText
                         case 1:
-                            return (selectText === "x" || selectText === "X") ? text : ""
+                            return (selectText === "x" || selectText === "X") ? taskText : ""
                         case -1:
-                            return selectText === " " ? text : ""
+                            return selectText === " " ? taskText : ""
                         default:
                             return ""
                     }
                 }
             },
         }
-        const rangeAST = (ast, filter) => {
+
+        const preorder = (ast = [], filter) => {
             const output = []
-            const range = (ast = []) => {
-                ast.forEach(node => {
+            const recurse = ast => {
+                for (const node of ast) {
                     if (filter(node)) {
                         output.push(node)
                     }
-                    if (node.children) {
-                        range(node.children)
+                    const children = node.children
+                    if (children && children.length) {
+                        recurse(children)
                     }
-                })
+                }
             }
-            range(ast)
+            recurse(ast)
             return output
         }
-        const getQuery = (parser, filter, extractor) => {
+        const buildQuery = (parser, filter, extractor) => {
             return source => {
                 const content = source.buffer.toString()
                 const ast = parser(content)
-                const nodes = rangeAST(ast, filter)
+                const nodes = preorder(ast, filter)
                 return nodes.map(extractor).filter(Boolean)
             }
         }
-        const getQualifier = (scope, name, parser, filter, extractor) => {
-            const query = getQuery(parser, filter, extractor)
+        const buildQualifier = (scope, name, parser, filter, extractor) => {
+            const query = buildQuery(parser, filter, extractor)
             const is_meta = false
             const validate = this.MIXIN.VALIDATE.isStringOrRegexp
             const cast = this.MIXIN.CAST.toStringOrRegexp
@@ -630,33 +645,33 @@ class SearchHelper {
         }
 
         return [
-            getQualifier("blockcode", "代码块", PARSER.BLOCK, FILTER.IS("fence"), EXTRACTOR.INFO_AND_CONTENT),
-            getQualifier("blockcodelang", "代码块语言", PARSER.BLOCK, FILTER.IS("fence"), EXTRACTOR.INFO),
-            getQualifier("blockcodebody", "代码块内容", PARSER.BLOCK, FILTER.IS("fence"), EXTRACTOR.CONTENT),
-            getQualifier("blockhtml", "HTML块", PARSER.BLOCK, FILTER.IS("html_block"), EXTRACTOR.CONTENT),
-            getQualifier("blockquote", "引用块", PARSER.BLOCK, FILTER.WRAPPED_BY("blockquote"), EXTRACTOR.CONTENT),
-            getQualifier("table", "表格", PARSER.BLOCK, FILTER.WRAPPED_BY("table"), EXTRACTOR.CONTENT),
-            getQualifier("thead", "表格标题", PARSER.BLOCK, FILTER.WRAPPED_BY("thead"), EXTRACTOR.CONTENT),
-            getQualifier("tbody", "表格正文", PARSER.BLOCK, FILTER.WRAPPED_BY("tbody"), EXTRACTOR.CONTENT),
-            getQualifier("ol", "有序列表", PARSER.BLOCK, FILTER.WRAPPED_BY("ordered_list"), EXTRACTOR.CONTENT),
-            getQualifier("ul", "无序列表", PARSER.BLOCK, FILTER.WRAPPED_BY("bullet_list"), EXTRACTOR.CONTENT),
-            getQualifier("task", "任务列表", PARSER.BLOCK, FILTER.WRAPPED_BY_MULTI("bullet_list", "list_item", "paragraph"), EXTRACTOR.TASK_CONTENT(0)),
-            getQualifier("taskdone", "已完成任务", PARSER.BLOCK, FILTER.WRAPPED_BY_MULTI("bullet_list", "list_item", "paragraph"), EXTRACTOR.TASK_CONTENT(1)),
-            getQualifier("tasktodo", "未完成任务", PARSER.BLOCK, FILTER.WRAPPED_BY_MULTI("bullet_list", "list_item", "paragraph"), EXTRACTOR.TASK_CONTENT(-1)),
-            getQualifier("head", "标题", PARSER.BLOCK, FILTER.WRAPPED_BY("heading"), EXTRACTOR.CONTENT),
-            getQualifier("h1", "一级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h1"), EXTRACTOR.CONTENT),
-            getQualifier("h2", "二级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h2"), EXTRACTOR.CONTENT),
-            getQualifier("h3", "三级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h3"), EXTRACTOR.CONTENT),
-            getQualifier("h4", "四级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h4"), EXTRACTOR.CONTENT),
-            getQualifier("h5", "五级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h5"), EXTRACTOR.CONTENT),
-            getQualifier("h6", "六级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h6"), EXTRACTOR.CONTENT),
-            getQualifier("highlight", "高亮文字", PARSER.BLOCK, FILTER.IS("text"), EXTRACTOR.REGEXP_CONTENT(/==(.+)==/g)),
-            getQualifier("image", "图片", PARSER.INLINE, FILTER.IS("image"), EXTRACTOR.ATTR_AND_CONTENT),
-            getQualifier("code", "代码", PARSER.INLINE, FILTER.IS("code_inline"), EXTRACTOR.CONTENT),
-            getQualifier("link", "链接", PARSER.INLINE, FILTER.WRAPPED_BY("link"), EXTRACTOR.ATTR_AND_CONTENT),
-            getQualifier("strong", "加粗文字", PARSER.INLINE, FILTER.WRAPPED_BY("strong"), EXTRACTOR.CONTENT),
-            getQualifier("em", "斜体文字", PARSER.INLINE, FILTER.WRAPPED_BY("em"), EXTRACTOR.CONTENT),
-            getQualifier("del", "删除线文字", PARSER.INLINE, FILTER.WRAPPED_BY("s"), EXTRACTOR.CONTENT),
+            buildQualifier("blockcode", "代码块", PARSER.block, FILTER.is("fence"), EXTRACTOR.infoAndContent),
+            buildQualifier("blockcodelang", "代码块语言", PARSER.block, FILTER.is("fence"), EXTRACTOR.info),
+            buildQualifier("blockcodebody", "代码块内容", PARSER.block, FILTER.is("fence"), EXTRACTOR.content),
+            buildQualifier("blockhtml", "HTML块", PARSER.block, FILTER.is("html_block"), EXTRACTOR.content),
+            buildQualifier("blockquote", "引用块", PARSER.block, FILTER.wrappedBy("blockquote"), EXTRACTOR.content),
+            buildQualifier("table", "表格", PARSER.block, FILTER.wrappedBy("table"), EXTRACTOR.content),
+            buildQualifier("thead", "表格标题", PARSER.block, FILTER.wrappedBy("thead"), EXTRACTOR.content),
+            buildQualifier("tbody", "表格正文", PARSER.block, FILTER.wrappedBy("tbody"), EXTRACTOR.content),
+            buildQualifier("ol", "有序列表", PARSER.block, FILTER.wrappedBy("ordered_list"), EXTRACTOR.content),
+            buildQualifier("ul", "无序列表", PARSER.block, FILTER.wrappedBy("bullet_list"), EXTRACTOR.content),
+            buildQualifier("task", "任务列表", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), EXTRACTOR.taskContent(0)),
+            buildQualifier("taskdone", "已完成任务", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), EXTRACTOR.taskContent(1)),
+            buildQualifier("tasktodo", "未完成任务", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), EXTRACTOR.taskContent(-1)),
+            buildQualifier("head", "标题", PARSER.block, FILTER.wrappedBy("heading"), EXTRACTOR.content),
+            buildQualifier("h1", "一级标题", PARSER.block, FILTER.wrappedByTag("heading", "h1"), EXTRACTOR.content),
+            buildQualifier("h2", "二级标题", PARSER.block, FILTER.wrappedByTag("heading", "h2"), EXTRACTOR.content),
+            buildQualifier("h3", "三级标题", PARSER.block, FILTER.wrappedByTag("heading", "h3"), EXTRACTOR.content),
+            buildQualifier("h4", "四级标题", PARSER.block, FILTER.wrappedByTag("heading", "h4"), EXTRACTOR.content),
+            buildQualifier("h5", "五级标题", PARSER.block, FILTER.wrappedByTag("heading", "h5"), EXTRACTOR.content),
+            buildQualifier("h6", "六级标题", PARSER.block, FILTER.wrappedByTag("heading", "h6"), EXTRACTOR.content),
+            buildQualifier("highlight", "高亮文字", PARSER.block, FILTER.is("text"), EXTRACTOR.regexpContent(/==(.+)==/g)),
+            buildQualifier("image", "图片", PARSER.inline, FILTER.is("image"), EXTRACTOR.attrAndContent),
+            buildQualifier("code", "代码", PARSER.inline, FILTER.is("code_inline"), EXTRACTOR.content),
+            buildQualifier("link", "链接", PARSER.inline, FILTER.wrappedBy("link"), EXTRACTOR.attrAndContent),
+            buildQualifier("strong", "加粗文字", PARSER.inline, FILTER.wrappedBy("strong"), EXTRACTOR.content),
+            buildQualifier("em", "斜体文字", PARSER.inline, FILTER.wrappedBy("em"), EXTRACTOR.content),
+            buildQualifier("del", "删除线文字", PARSER.inline, FILTER.wrappedBy("s"), EXTRACTOR.content),
         ]
     }
 
@@ -699,7 +714,7 @@ class SearchHelper {
 
     getContentTokens(ast) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
-        const collect = new Set(Array.from(this.qualifiers.values()).filter(q => !q.is_meta).map(q => q.scope))
+        const collect = new Set([...this.qualifiers.values()].filter(q => !q.is_meta).map(q => q.scope))
 
         function _eval({ type, left, right, scope, operand }) {
             switch (type) {
@@ -838,8 +853,8 @@ class SearchHelper {
     }
 
     showGrammar() {
-        const operator = Array.from(Object.keys(this.MIXIN.OPERATOR))
-        const scope = Array.from(this.qualifiers.values())
+        const operator = [...Object.keys(this.MIXIN.OPERATOR)]
+        const scope = [...this.qualifiers.values()]
         const metaScope = scope.filter(s => s.is_meta)
         const contentScope = scope.filter(s => !s.is_meta)
 
@@ -867,11 +882,11 @@ class SearchHelper {
     <tr><td>空格</td><td>表示与。文档应该同时满足空格左右两边的查询条件，等价于 AND</td></tr>
     <tr><td>|</td><td>表示或。文档应该满足 | 左右两边中至少一个查询条件，等价于 OR</td></tr>
     <tr><td>-</td><td>表示非。文档不可满足 - 右边的查询条件</td></tr>
-    <tr><td>""</td><td>表示词组。文档应该包含这个完整的词组</td></tr>
+    <tr><td>""</td><td>表示词组。引号包裹视为词组</td></tr>
     <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式</td></tr>
     <tr><td>scope</td><td>查询属性，用于限定查询条件${scopeDesc}</td></tr>
-    <tr><td>operator</td><td>操作符${operatorDesc}</td></tr>
-    <tr><td>()</td><td>小括号。用于调整运算优先级</td></tr>
+    <tr><td>operator</td><td>操作符，用于比较查询条件和查询结果${operatorDesc}</td></tr>
+    <tr><td>()</td><td>小括号，用于调整运算优先级</td></tr>
 </table>`
 
         const example = `

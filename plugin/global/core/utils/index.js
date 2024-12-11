@@ -174,31 +174,11 @@ class utils {
     }
 
     /** @description param fn cannot be an async function that returns promiseLike object */
-    static singleflight = (fn, timeout = 1000) => {
-        let timer, result
+    static memorize = fn => {
+        const cache = {}
         const isAsync = this.isAsyncFunction(fn)
         return function (...args) {
-            if (!timer) {
-                timer = setTimeout(() => {
-                    clearTimeout(timer)
-                    timer = null
-                    result = null
-                }, timeout)
-
-                result = isAsync
-                    ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
-                    : fn(...args)
-            }
-            return result
-        }
-    }
-
-    /** @description param fn cannot be an async function that returns promiseLike object */
-    static memorize = fn => {
-        const cache = {};
-        const isAsync = this.isAsyncFunction(fn);
-        return function (...args) {
-            const key = JSON.stringify(args);
+            const key = JSON.stringify(args)
             if (cache[key]) {
                 return cache[key]
             }
@@ -206,6 +186,32 @@ class utils {
                 ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
                 : fn(...args)
             cache[key] = result
+            return result
+        }
+    }
+
+    /**
+     * @description param fn cannot be an async function that returns promiseLike object
+     * @description strict FIFO not guaranteed. cache.delete() may alter internal state, affecting iterators. But I dont care
+     **/
+    static memorizeFIFO = (fn, capacity = 100) => {
+        const cache = new Map()
+        const isAsync = this.isAsyncFunction(fn)
+        return function (...args) {
+            const key = JSON.stringify(args)
+            const cacheEntry = cache.get(key)
+            if (cacheEntry) {
+                cache.delete(key)
+                cache.set(key, cacheEntry)
+                return cacheEntry
+            }
+            const result = isAsync
+                ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
+                : fn(...args)
+            cache.set(key, result)
+            if (capacity > 0 && cache.size > capacity) {
+                cache.delete(cache.keys().next().value)
+            }
             return result
         }
     }
@@ -222,15 +228,6 @@ class utils {
 
     /** @description try not to use it */
     static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
-
-    static defer = () => {
-        const obj = {};
-        obj.promise = new Promise((resolve, reject) => {
-            obj.resolve = resolve;
-            obj.reject = reject;
-        });
-        return obj;
-    }
 
     /**
      * @example merge({ a: [{ b: 2 }] }, { a: [{ c: 2 }] }) -> { a: [{ c: 2 }] }
