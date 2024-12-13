@@ -1,7 +1,10 @@
 class searchMultiKeywordPlugin extends BasePlugin {
-    styleTemplate = () => ({
-        colors_style: this.config.STYLE_COLOR.map((color, idx) => `.cm-plugin-highlight-hit-${idx} { background-color: ${color} !important; }`).join("\n")
-    })
+    styleTemplate = () => {
+        const colors_style = this.config.STYLE_COLOR
+            .map((color, idx) => `.cm-plugin-highlight-hit-${idx} { background-color: ${color} !important; }`)
+            .join("\n")
+        return { colors_style }
+    }
 
     html = () => `
         <div id="plugin-search-multi" class="plugin-common-modal plugin-common-hidden">
@@ -20,7 +23,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             <div class="plugin-highlight-multi-result plugin-common-hidden"></div>
 
             <div class="plugin-search-multi-result plugin-common-hidden">
-                <div class="search-result-title" data-lg="Menu">匹配的文件</div>
+                <div class="search-result-title">匹配的文件：<span>0</span></div>
                 <div class="search-result-list"></div>
             </div>
 
@@ -45,65 +48,61 @@ class searchMultiKeywordPlugin extends BasePlugin {
             buttonGroup: document.querySelector(".plugin-search-multi-btn-group"),
             highlightResult: document.querySelector(".plugin-highlight-multi-result"),
             result: document.querySelector(".plugin-search-multi-result"),
-            resultTitle: document.querySelector(".plugin-search-multi-result .search-result-title"),
+            resultCounter: document.querySelector(".plugin-search-multi-result .search-result-title span"),
             resultList: document.querySelector(".plugin-search-multi-result .search-result-list"),
             info: document.querySelector(".plugin-search-multi-info-item"),
-        }
-        this.actionMap = {
-            searchGrammarModal: () => this.searchHelper.showGrammar(),
-            toggleCaseSensitive: btn => {
-                btn.classList.toggle("select");
-                this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE;
-            },
         }
     }
 
     process = () => {
-        this.searchHelper.process();
-        this.highlightHelper.process();
-
+        this.searchHelper.process()
+        this.highlightHelper.process()
         if (this.config.ALLOW_DRAG) {
-            this.utils.dragFixedModal(this.entities.input, this.entities.modal);
+            this.utils.dragFixedModal(this.entities.input, this.entities.modal)
         }
-
         this.entities.resultList.addEventListener("click", ev => {
-            const target = ev.target.closest(".plugin-search-multi-item");
-            if (!target) return;
-            const filepath = target.dataset.path;
-            this.utils.openFile(filepath);
-            this.config.AUTO_HIDE && this.utils.hide(this.entities.modal);
-        });
+            const target = ev.target.closest(".plugin-search-multi-item")
+            if (!target) return
+            const filepath = target.dataset.path
+            this.utils.openFile(filepath)
+            this.config.AUTO_HIDE && this.utils.hide(this.entities.modal)
+        })
         this.entities.buttonGroup.addEventListener("click", ev => {
-            const btn = ev.target.closest(".option-btn");
-            if (!btn) return;
-            const action = btn.getAttribute("action");
-            this.actionMap[action] && this.actionMap[action](btn);
+            const btn = ev.target.closest(".option-btn")
+            if (!btn) return
+            const action = btn.getAttribute("action")
+            if (action === "searchGrammarModal") {
+                this.searchHelper.showGrammar()
+            } else if (action === "toggleCaseSensitive") {
+                btn.classList.toggle("select")
+                this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE
+            }
         })
         this.entities.input.addEventListener("keydown", ev => {
             switch (ev.key) {
                 case "Enter":
                     if (!this.utils.metaKeyPressed(ev)) {
-                        this.searchMulti();
-                        return;
+                        this.searchMulti()
+                        return
                     }
-                    const select = this.entities.resultList.querySelector(".plugin-search-multi-item.active");
-                    if (!select) return;
-                    this.utils.openFile(select.dataset.path);
-                    this.entities.input.focus();
+                    const select = this.entities.resultList.querySelector(".plugin-search-multi-item.active")
+                    if (!select) return
+                    this.utils.openFile(select.dataset.path)
+                    this.entities.input.focus()
                     break
                 case "Escape":
                 case "Backspace":
                     if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
-                        this.hide();
+                        this.hide()
                     }
                     break
                 case "ArrowUp":
                 case "ArrowDown":
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    this.utils.scrollActiveItem(this.entities.resultList, ".plugin-search-multi-item.active", ev.key === "ArrowDown");
+                    ev.stopPropagation()
+                    ev.preventDefault()
+                    this.utils.scrollActiveItem(this.entities.resultList, ".plugin-search-multi-item.active", ev.key === "ArrowDown")
             }
-        });
+        })
     }
 
     searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
@@ -211,7 +210,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             if (matcher(source)) {
                 index++
                 this.entities.resultList.appendChild(newResultItem(rootPath, source.path, source.stats))
-                this.entities.resultTitle.textContent = `匹配的文件：${index}`
+                this.entities.resultCounter.textContent = index
                 showResult()
             }
         }
@@ -300,7 +299,7 @@ class QualifierMixin {
         },
         isBoolean: (scope, operator, operand, operandType) => {
             if (operator !== "=" && operator !== "!=") {
-                throw new Error(`In ${scope.toUpperCase()}: Only supports "=" and "!=" operators`)
+                throw new Error(`In ${scope.toUpperCase()}: Only supports "=" and "!=" operators for logical comparisons`)
             }
             if (operandType === "REGEXP") {
                 throw new Error(`In ${scope.toUpperCase()}: RegExp operands are not valid for logical comparisons`)
@@ -640,10 +639,7 @@ class SearchHelper {
     }
 
     match(ast, source) {
-        // To minimize the creation and destruction of closures, reduce memory usage, and alleviate the burden on GC,
-        // since `match` may be called thousands of times, the `_match` function is extracted.
-        const callback = node => this._match(node, source)
-        return this.parser.evaluate(ast, callback)
+        return this.parser.evaluate(ast, node => this._match(node, source))
     }
 
     _match(node, source) {
@@ -662,22 +658,22 @@ class SearchHelper {
 
     getContentTokens(ast) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
-        const collect = new Set([...this.qualifiers.values()].filter(q => !q.is_meta).map(q => q.scope))
+        const isMeta = new Set([...this.qualifiers.values()].filter(q => q.is_meta).map(q => q.scope))
 
         function _eval({ type, left, right, scope, operand }) {
             switch (type) {
                 case KEYWORD:
                 case PHRASE:
                     operand = operand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-                    return collect.has(scope) ? [operand] : []
+                    return isMeta.has(scope) ? [] : [operand]
                 case REGEXP:
-                    return collect.has(scope) ? [operand] : []
+                    return isMeta.has(scope) ? [] : [operand]
                 case OR:
                 case AND:
                     return [..._eval(left), ..._eval(right)]
                 case NOT:
-                    const wont = _eval(right)
-                    return (left ? _eval(left) : []).filter(e => !wont.includes(e))
+                    const exclude = _eval(right)
+                    return (left ? _eval(left) : []).filter(e => !exclude.includes(e))
                 default:
                     throw new Error(`Unknown AST node「${type}」`)
             }
