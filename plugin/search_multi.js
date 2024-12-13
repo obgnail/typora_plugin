@@ -358,7 +358,7 @@ class QualifierMixin {
         primitiveCompare: (scope, operator, operand, queryResult) => this.OPERATOR[operator](queryResult, operand),
         stringRegexp: (scope, operator, operand, queryResult) => operand.test(queryResult.toString()),
         arrayCompare: (scope, operator, operand, queryResult) => queryResult.some(data => this.OPERATOR[operator](data, operand)),
-        arrayRegexp: (scope, operator, operand, queryResult) => operand.test(queryResult.join(" ")),
+        arrayRegexp: (scope, operator, operand, queryResult) => queryResult.some(data => operand.test(data)),
     }
 }
 
@@ -404,107 +404,53 @@ class SearchHelper {
      * {function} match_regexp:  Matches castResult with queryResult when the user input is a regexp; defaults to `this.MIXIN.MATCH.regexp`
      */
     buildBaseQualifiers() {
+        const QUERY = {
+            default: ({ path, file, stats, buffer }) => `${buffer.toString()}\n${path}`,
+            path: ({ path, file, stats, buffer }) => path,
+            file: ({ path, file, stats, buffer }) => file,
+            ext: ({ path, file, stats, buffer }) => this.utils.Package.Path.extname(file),
+            content: ({ path, file, stats, buffer }) => buffer.toString(),
+            time: ({ path, file, stats, buffer }) => this.MIXIN.CAST.toDate(stats.mtime),
+            size: ({ path, file, stats, buffer }) => stats.size,
+            linenum: ({ path, file, stats, buffer }) => buffer.toString().split("\n").length,
+            charnum: ({ path, file, stats, buffer }) => buffer.toString().length,
+            crlf: ({ path, file, stats, buffer }) => buffer.toString().includes("\r\n"),
+            hasimage: ({ path, file, stats, buffer }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(buffer.toString()),
+            haschinese: ({ path, file, stats, buffer }) => /\p{sc=Han}/gu.test(buffer.toString()),
+            line: ({ path, file, stats, buffer }) => buffer.toString().split("\n").map(e => e.trim()),
+            frontmatter: ({ path, file, stats, buffer }) => {
+                const { yamlObject } = this.utils.splitFrontMatter(buffer.toString())
+                return yamlObject ? JSON.stringify(yamlObject) : ""
+            },
+            chinesenum: ({ path, file, stats, buffer }) => {
+                let count = 0
+                for (const _ of buffer.toString().matchAll(/\p{sc=Han}/gu)) {
+                    count++
+                }
+                return count
+            },
+        }
         return [
-            {
-                scope: "default",
-                name: "内容或路径",
-                is_meta: false,
-                query: ({ path, file, stats, buffer }) => `${buffer.toString()}\n${path}`,
-            },
-            {
-                scope: "path",
-                name: "路径",
-                is_meta: true,
-                query: ({ path, file, stats, buffer }) => path,
-            },
-            {
-                scope: "file",
-                name: "文件名",
-                is_meta: true,
-                query: ({ path, file, stats, buffer }) => file,
-            },
-            {
-                scope: "ext",
-                name: "扩展名",
-                is_meta: true,
-                query: ({ path, file, stats, buffer }) => this.utils.Package.Path.extname(file),
-            },
-            {
-                scope: "content",
-                name: "内容",
-                is_meta: false,
-                query: ({ path, file, stats, buffer }) => buffer.toString(),
-            },
-            {
-                scope: "frontmatter",
-                name: "FrontMatter",
-                is_meta: false,
-                query: ({ path, file, stats, buffer }) => {
-                    const { yamlObject } = this.utils.splitFrontMatter(buffer.toString())
-                    return yamlObject ? JSON.stringify(yamlObject) : ""
-                },
-            },
-            {
-                scope: "time",
-                name: "修改时间",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isDate,
-                cast: this.MIXIN.CAST.toDate,
-                query: ({ path, file, stats, buffer }) => this.MIXIN.CAST.toDate(stats.mtime),
-            },
-            {
-                scope: "size",
-                name: "文件大小",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isSize,
-                cast: this.MIXIN.CAST.toBytes,
-                query: ({ path, file, stats, buffer }) => stats.size,
-            },
-            {
-                scope: "linenum",
-                name: "行数",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isNumber,
-                cast: this.MIXIN.CAST.toNumber,
-                query: ({ path, file, stats, buffer }) => buffer.toString().split("\n").length,
-            },
-            {
-                scope: "charnum",
-                name: "字符数",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isNumber,
-                cast: this.MIXIN.CAST.toNumber,
-                query: ({ path, file, stats, buffer }) => buffer.toString().length,
-            },
-            {
-                scope: "crlf",
-                name: "换行符为CRLF",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isBoolean,
-                cast: this.MIXIN.CAST.toBoolean,
-                query: ({ path, file, stats, buffer }) => buffer.toString().includes("\r\n"),
-            },
-            {
-                scope: "hasimage",
-                name: "包含图片",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isBoolean,
-                cast: this.MIXIN.CAST.toBoolean,
-                query: ({ path, file, stats, buffer }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(buffer.toString()),
-            },
-            {
-                scope: "line",
-                name: "某行",
-                is_meta: false,
-                query: ({ path, file, stats, buffer }) => buffer.toString().split("\n").map(e => e.trim()),
-                match_keyword: this.MIXIN.MATCH.arrayCompare,
-                match_regexp: this.MIXIN.MATCH.arrayRegexp,
-            },
+            { scope: "default", name: "内容或路径", is_meta: false, query: QUERY.default },
+            { scope: "path", name: "路径", is_meta: true, query: QUERY.path },
+            { scope: "file", name: "文件名", is_meta: true, query: QUERY.file },
+            { scope: "ext", name: "扩展名", is_meta: true, query: QUERY.ext },
+            { scope: "content", name: "内容", is_meta: false, query: QUERY.content },
+            { scope: "frontmatter", name: "FrontMatter", is_meta: false, query: QUERY.frontmatter },
+            { scope: "time", name: "修改时间", is_meta: true, query: QUERY.time, validate: this.MIXIN.VALIDATE.isDate, cast: this.MIXIN.CAST.toDate },
+            { scope: "size", name: "文件大小", is_meta: true, query: QUERY.size, validate: this.MIXIN.VALIDATE.isSize, cast: this.MIXIN.CAST.toBytes },
+            { scope: "linenum", name: "行数", is_meta: true, query: QUERY.linenum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
+            { scope: "charnum", name: "字符数", is_meta: true, query: QUERY.charnum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
+            { scope: "chinesenum", name: "中文字符数", is_meta: true, query: QUERY.chinesenum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
+            { scope: "crlf", name: "换行符为CRLF", is_meta: true, query: QUERY.crlf, validate: this.MIXIN.VALIDATE.isBoolean, cast: this.MIXIN.CAST.toBoolean },
+            { scope: "hasimage", name: "包含图片", is_meta: true, query: QUERY.hasimage, validate: this.MIXIN.VALIDATE.isBoolean, cast: this.MIXIN.CAST.toBoolean },
+            { scope: "haschinese", name: "包含中文字符", is_meta: true, query: QUERY.haschinese, validate: this.MIXIN.VALIDATE.isBoolean, cast: this.MIXIN.CAST.toBoolean },
+            { scope: "line", name: "某行", is_meta: false, query: QUERY.line, match_keyword: this.MIXIN.MATCH.arrayCompare, match_regexp: this.MIXIN.MATCH.arrayRegexp },
         ]
     }
 
     buildContentQualifiers() {
-        // Cache one to prevent re-parsing of the same file in a SINGLE query
+        // Prevent re-parsing of the same file in a SINGLE query
         const cache = fn => {
             let cached, result
             return arg => {
@@ -571,7 +517,7 @@ class SearchHelper {
             }
         }
 
-        const EXTRACTOR = {
+        const TRANSFORMER = {
             content: node => node.content,
             info: node => node.info,
             infoAndContent: node => `${node.info} ${node.content}`,
@@ -587,6 +533,7 @@ class SearchHelper {
                     return result.map(([_, text]) => text).join(" ")
                 }
             },
+            contentLine: node => node.content.split("\n"),
             taskContent: (selectType = 0) => {
                 const regexp = /^\[(x|X| )\]\s+(.+)/
                 return node => {
@@ -625,16 +572,16 @@ class SearchHelper {
             recurse(ast)
             return output
         }
-        const buildQuery = (parser, filter, extractor) => {
+        const buildQuery = (parser, filter, transformer) => {
             return source => {
                 const content = source.buffer.toString()
                 const ast = parser(content)
                 const nodes = preorder(ast, filter)
-                return nodes.map(extractor).filter(Boolean)
+                return nodes.map(transformer).filter(Boolean)
             }
         }
-        const buildQualifier = (scope, name, parser, filter, extractor) => {
-            const query = buildQuery(parser, filter, extractor)
+        const buildQualifier = (scope, name, parser, filter, transformer) => {
+            const query = buildQuery(parser, filter, transformer)
             const is_meta = false
             const validate = this.MIXIN.VALIDATE.isStringOrRegexp
             const cast = this.MIXIN.CAST.toStringOrRegexp
@@ -645,33 +592,34 @@ class SearchHelper {
         }
 
         return [
-            buildQualifier("blockcode", "代码块", PARSER.block, FILTER.is("fence"), EXTRACTOR.infoAndContent),
-            buildQualifier("blockcodelang", "代码块语言", PARSER.block, FILTER.is("fence"), EXTRACTOR.info),
-            buildQualifier("blockcodebody", "代码块内容", PARSER.block, FILTER.is("fence"), EXTRACTOR.content),
-            buildQualifier("blockhtml", "HTML块", PARSER.block, FILTER.is("html_block"), EXTRACTOR.content),
-            buildQualifier("blockquote", "引用块", PARSER.block, FILTER.wrappedBy("blockquote"), EXTRACTOR.content),
-            buildQualifier("table", "表格", PARSER.block, FILTER.wrappedBy("table"), EXTRACTOR.content),
-            buildQualifier("thead", "表格标题", PARSER.block, FILTER.wrappedBy("thead"), EXTRACTOR.content),
-            buildQualifier("tbody", "表格正文", PARSER.block, FILTER.wrappedBy("tbody"), EXTRACTOR.content),
-            buildQualifier("ol", "有序列表", PARSER.block, FILTER.wrappedBy("ordered_list"), EXTRACTOR.content),
-            buildQualifier("ul", "无序列表", PARSER.block, FILTER.wrappedBy("bullet_list"), EXTRACTOR.content),
-            buildQualifier("task", "任务列表", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), EXTRACTOR.taskContent(0)),
-            buildQualifier("taskdone", "已完成任务", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), EXTRACTOR.taskContent(1)),
-            buildQualifier("tasktodo", "未完成任务", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), EXTRACTOR.taskContent(-1)),
-            buildQualifier("head", "标题", PARSER.block, FILTER.wrappedBy("heading"), EXTRACTOR.content),
-            buildQualifier("h1", "一级标题", PARSER.block, FILTER.wrappedByTag("heading", "h1"), EXTRACTOR.content),
-            buildQualifier("h2", "二级标题", PARSER.block, FILTER.wrappedByTag("heading", "h2"), EXTRACTOR.content),
-            buildQualifier("h3", "三级标题", PARSER.block, FILTER.wrappedByTag("heading", "h3"), EXTRACTOR.content),
-            buildQualifier("h4", "四级标题", PARSER.block, FILTER.wrappedByTag("heading", "h4"), EXTRACTOR.content),
-            buildQualifier("h5", "五级标题", PARSER.block, FILTER.wrappedByTag("heading", "h5"), EXTRACTOR.content),
-            buildQualifier("h6", "六级标题", PARSER.block, FILTER.wrappedByTag("heading", "h6"), EXTRACTOR.content),
-            buildQualifier("highlight", "高亮文字", PARSER.block, FILTER.is("text"), EXTRACTOR.regexpContent(/==(.+)==/g)),
-            buildQualifier("image", "图片", PARSER.inline, FILTER.is("image"), EXTRACTOR.attrAndContent),
-            buildQualifier("code", "代码", PARSER.inline, FILTER.is("code_inline"), EXTRACTOR.content),
-            buildQualifier("link", "链接", PARSER.inline, FILTER.wrappedBy("link"), EXTRACTOR.attrAndContent),
-            buildQualifier("strong", "加粗文字", PARSER.inline, FILTER.wrappedBy("strong"), EXTRACTOR.content),
-            buildQualifier("em", "斜体文字", PARSER.inline, FILTER.wrappedBy("em"), EXTRACTOR.content),
-            buildQualifier("del", "删除线文字", PARSER.inline, FILTER.wrappedBy("s"), EXTRACTOR.content),
+            buildQualifier("blockcode", "代码块", PARSER.block, FILTER.is("fence"), TRANSFORMER.infoAndContent),
+            buildQualifier("blockcodelang", "代码块语言", PARSER.block, FILTER.is("fence"), TRANSFORMER.info),
+            buildQualifier("blockcodebody", "代码块内容", PARSER.block, FILTER.is("fence"), TRANSFORMER.content),
+            buildQualifier("blockcodeline", "代码块的某行", PARSER.block, FILTER.is("fence"), TRANSFORMER.contentLine),
+            buildQualifier("blockhtml", "HTML块", PARSER.block, FILTER.is("html_block"), TRANSFORMER.content),
+            buildQualifier("blockquote", "引用块", PARSER.block, FILTER.wrappedBy("blockquote"), TRANSFORMER.content),
+            buildQualifier("table", "表格", PARSER.block, FILTER.wrappedBy("table"), TRANSFORMER.content),
+            buildQualifier("thead", "表格标题", PARSER.block, FILTER.wrappedBy("thead"), TRANSFORMER.content),
+            buildQualifier("tbody", "表格正文", PARSER.block, FILTER.wrappedBy("tbody"), TRANSFORMER.content),
+            buildQualifier("ol", "有序列表", PARSER.block, FILTER.wrappedBy("ordered_list"), TRANSFORMER.content),
+            buildQualifier("ul", "无序列表", PARSER.block, FILTER.wrappedBy("bullet_list"), TRANSFORMER.content),
+            buildQualifier("task", "任务列表", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(0)),
+            buildQualifier("taskdone", "已完成任务", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(1)),
+            buildQualifier("tasktodo", "未完成任务", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(-1)),
+            buildQualifier("head", "标题", PARSER.block, FILTER.wrappedBy("heading"), TRANSFORMER.content),
+            buildQualifier("h1", "一级标题", PARSER.block, FILTER.wrappedByTag("heading", "h1"), TRANSFORMER.content),
+            buildQualifier("h2", "二级标题", PARSER.block, FILTER.wrappedByTag("heading", "h2"), TRANSFORMER.content),
+            buildQualifier("h3", "三级标题", PARSER.block, FILTER.wrappedByTag("heading", "h3"), TRANSFORMER.content),
+            buildQualifier("h4", "四级标题", PARSER.block, FILTER.wrappedByTag("heading", "h4"), TRANSFORMER.content),
+            buildQualifier("h5", "五级标题", PARSER.block, FILTER.wrappedByTag("heading", "h5"), TRANSFORMER.content),
+            buildQualifier("h6", "六级标题", PARSER.block, FILTER.wrappedByTag("heading", "h6"), TRANSFORMER.content),
+            buildQualifier("highlight", "高亮文字", PARSER.block, FILTER.is("text"), TRANSFORMER.regexpContent(/==(.+)==/g)),
+            buildQualifier("image", "图片", PARSER.inline, FILTER.is("image"), TRANSFORMER.attrAndContent),
+            buildQualifier("code", "代码", PARSER.inline, FILTER.is("code_inline"), TRANSFORMER.content),
+            buildQualifier("link", "链接", PARSER.inline, FILTER.wrappedBy("link"), TRANSFORMER.attrAndContent),
+            buildQualifier("strong", "加粗文字", PARSER.inline, FILTER.wrappedBy("strong"), TRANSFORMER.content),
+            buildQualifier("em", "斜体文字", PARSER.inline, FILTER.wrappedBy("em"), TRANSFORMER.content),
+            buildQualifier("del", "删除线文字", PARSER.inline, FILTER.wrappedBy("s"), TRANSFORMER.content),
         ]
     }
 
@@ -879,9 +827,9 @@ class SearchHelper {
         const keywordDesc = `
 <table>
     <tr><th>关键字</th><th>说明</th></tr>
-    <tr><td>空格</td><td>表示与。文档应该同时满足空格左右两边的查询条件，等价于 AND</td></tr>
-    <tr><td>|</td><td>表示或。文档应该满足 | 左右两边中至少一个查询条件，等价于 OR</td></tr>
-    <tr><td>-</td><td>表示非。文档不可满足 - 右边的查询条件</td></tr>
+    <tr><td>空格</td><td>表示与。文档应该同时满足空格左右两侧的查询条件，等价于 AND</td></tr>
+    <tr><td>|</td><td>表示或。文档应该满足 | 左右两侧中至少一个查询条件，等价于 OR</td></tr>
+    <tr><td>-</td><td>表示非。文档不可满足 - 右侧的查询条件</td></tr>
     <tr><td>""</td><td>表示词组。引号包裹视为词组</td></tr>
     <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式</td></tr>
     <tr><td>scope</td><td>查询属性，用于限定查询条件${scopeDesc}</td></tr>
@@ -912,16 +860,19 @@ class SearchHelper {
 <qualifier> ::= <scope> <operator>
 <match> ::= <keyword> | '"'<keyword>'"' | '/'<regexp>'/' | '('<expression>')'
 <conjunction> ::= <and> | <not>
-<and> ::= 'AND' | ' '
 <or> ::= 'OR' | '|'
+<and> ::= 'AND' | ' '
 <not> ::= '-'
 <keyword> ::= [^\\s"()|]+
 <regexp> ::= [^/]+
 <operator> ::= ${operator.map(s => `'${s}'`).join(" | ")}
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
-        const title = "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释"
-        const components = [{ label: keywordDesc, type: "p" }, { label: example, type: "p" }, { label: "", type: "textarea", rows: 18, content, title }]
+        const components = [
+            { label: keywordDesc, type: "p" },
+            { label: example, type: "p" },
+            { label: "", type: "textarea", rows: 20, content, title: "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释" },
+        ]
         this.utils.dialog.modal({ title: "高级搜索", width: "600px", components })
     }
 }
