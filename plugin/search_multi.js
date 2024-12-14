@@ -1,7 +1,10 @@
 class searchMultiKeywordPlugin extends BasePlugin {
-    styleTemplate = () => ({
-        colors_style: this.config.STYLE_COLOR.map((color, idx) => `.cm-plugin-highlight-hit-${idx} { background-color: ${color} !important; }`).join("\n")
-    })
+    styleTemplate = () => {
+        const colors_style = this.config.STYLE_COLOR
+            .map((color, idx) => `.cm-plugin-highlight-hit-${idx} { background-color: ${color} !important; }`)
+            .join("\n")
+        return { colors_style }
+    }
 
     html = () => `
         <div id="plugin-search-multi" class="plugin-common-modal plugin-common-hidden">
@@ -9,18 +12,18 @@ class searchMultiKeywordPlugin extends BasePlugin {
                 <input type="text">
                 <div class="plugin-search-multi-btn-group">
                     <span class="option-btn" action="searchGrammarModal" ty-hint="查看搜索语法">
-                        <div class="fa fa-info-circle"></div>
+                        <div class="ion-information-circled"></div>
                     </span>
                     <span class="option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" action="toggleCaseSensitive" ty-hint="区分大小写">
                         <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                     </span>
                 </div>
             </div>
-            
+
             <div class="plugin-highlight-multi-result plugin-common-hidden"></div>
 
             <div class="plugin-search-multi-result plugin-common-hidden">
-                <div class="search-result-title" data-lg="Menu">匹配的文件</div>
+                <div class="search-result-title">匹配的文件：<span>0</span></div>
                 <div class="search-result-list"></div>
             </div>
 
@@ -45,65 +48,61 @@ class searchMultiKeywordPlugin extends BasePlugin {
             buttonGroup: document.querySelector(".plugin-search-multi-btn-group"),
             highlightResult: document.querySelector(".plugin-highlight-multi-result"),
             result: document.querySelector(".plugin-search-multi-result"),
-            resultTitle: document.querySelector(".plugin-search-multi-result .search-result-title"),
+            resultCounter: document.querySelector(".plugin-search-multi-result .search-result-title span"),
             resultList: document.querySelector(".plugin-search-multi-result .search-result-list"),
             info: document.querySelector(".plugin-search-multi-info-item"),
-        }
-        this.actionMap = {
-            searchGrammarModal: () => this.searchHelper.showGrammar(),
-            toggleCaseSensitive: btn => {
-                btn.classList.toggle("select");
-                this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE;
-            },
         }
     }
 
     process = () => {
-        this.searchHelper.process();
-        this.highlightHelper.process();
-
+        this.searchHelper.process()
+        this.highlightHelper.process()
         if (this.config.ALLOW_DRAG) {
-            this.utils.dragFixedModal(this.entities.input, this.entities.modal);
+            this.utils.dragFixedModal(this.entities.input, this.entities.modal)
         }
-
         this.entities.resultList.addEventListener("click", ev => {
-            const target = ev.target.closest(".plugin-search-multi-item");
-            if (!target) return;
-            const filepath = target.dataset.path;
-            this.utils.openFile(filepath);
-            this.config.AUTO_HIDE && this.utils.hide(this.entities.modal);
-        });
+            const target = ev.target.closest(".plugin-search-multi-item")
+            if (!target) return
+            const filepath = target.dataset.path
+            this.utils.openFile(filepath)
+            this.config.AUTO_HIDE && this.utils.hide(this.entities.modal)
+        })
         this.entities.buttonGroup.addEventListener("click", ev => {
-            const btn = ev.target.closest(".option-btn");
-            if (!btn) return;
-            const action = btn.getAttribute("action");
-            this.actionMap[action] && this.actionMap[action](btn);
+            const btn = ev.target.closest(".option-btn")
+            if (!btn) return
+            const action = btn.getAttribute("action")
+            if (action === "searchGrammarModal") {
+                this.searchHelper.showGrammar()
+            } else if (action === "toggleCaseSensitive") {
+                btn.classList.toggle("select")
+                this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE
+            }
         })
         this.entities.input.addEventListener("keydown", ev => {
             switch (ev.key) {
                 case "Enter":
                     if (!this.utils.metaKeyPressed(ev)) {
-                        this.searchMulti();
-                        return;
+                        this.searchMulti()
+                        return
                     }
-                    const select = this.entities.resultList.querySelector(".plugin-search-multi-item.active");
-                    if (!select) return;
-                    this.utils.openFile(select.dataset.path);
-                    this.entities.input.focus();
+                    const select = this.entities.resultList.querySelector(".plugin-search-multi-item.active")
+                    if (!select) return
+                    this.utils.openFile(select.dataset.path)
+                    this.entities.input.focus()
                     break
                 case "Escape":
                 case "Backspace":
                     if (ev.key === "Escape" || ev.key === "Backspace" && this.config.BACKSPACE_TO_HIDE && !this.entities.input.value) {
-                        this.hide();
+                        this.hide()
                     }
                     break
                 case "ArrowUp":
                 case "ArrowDown":
-                    ev.stopPropagation();
-                    ev.preventDefault();
-                    this.utils.scrollActiveItem(this.entities.resultList, ".plugin-search-multi-item.active", ev.key === "ArrowDown");
+                    ev.stopPropagation()
+                    ev.preventDefault()
+                    this.utils.scrollActiveItem(this.entities.resultList, ".plugin-search-multi-item.active", ev.key === "ArrowDown")
             }
-        });
+        })
     }
 
     searchMulti = async (rootPath = this.utils.getMountFolder(), input = this.entities.input.value) => {
@@ -211,7 +210,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             if (matcher(source)) {
                 index++
                 this.entities.resultList.appendChild(newResultItem(rootPath, source.path, source.stats))
-                this.entities.resultTitle.textContent = `匹配的文件：${index}`
+                this.entities.resultCounter.textContent = index
                 showResult()
             }
         }
@@ -222,16 +221,21 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
         async function traverse(dir) {
             const files = await readdir(dir)
-            await Promise.all(files.map(async file => {
+            const promises = files.map(async file => {
                 const path = Path.join(dir, file)
                 const stats = await stat(path)
-                if (stats.isFile() && (!fileFilter || fileFilter(path, stats))) {
-                    const buffer = await readFile(path)
-                    callback({ path, file, stats, buffer })
-                } else if (stats.isDirectory() && (!dirFilter || dirFilter(file))) {
-                    await traverse(path)
+                if (stats.isFile()) {
+                    if (fileFilter(path, stats)) {
+                        const buffer = await readFile(path)
+                        callback({ path, file, stats, buffer })
+                    }
+                } else if (stats.isDirectory()) {
+                    if (dirFilter(file)) {
+                        await traverse(path)
+                    }
                 }
-            }))
+            })
+            await Promise.all(promises)
         }
 
         await traverse(dir)
@@ -300,7 +304,7 @@ class QualifierMixin {
         },
         isBoolean: (scope, operator, operand, operandType) => {
             if (operator !== "=" && operator !== "!=") {
-                throw new Error(`In ${scope.toUpperCase()}: Only supports "=" and "!=" operators`)
+                throw new Error(`In ${scope.toUpperCase()}: Only supports "=" and "!=" operators for logical comparisons`)
             }
             if (operandType === "REGEXP") {
                 throw new Error(`In ${scope.toUpperCase()}: RegExp operands are not valid for logical comparisons`)
@@ -358,7 +362,7 @@ class QualifierMixin {
         primitiveCompare: (scope, operator, operand, queryResult) => this.OPERATOR[operator](queryResult, operand),
         stringRegexp: (scope, operator, operand, queryResult) => operand.test(queryResult.toString()),
         arrayCompare: (scope, operator, operand, queryResult) => queryResult.some(data => this.OPERATOR[operator](data, operand)),
-        arrayRegexp: (scope, operator, operand, queryResult) => operand.test(queryResult.join(" ")),
+        arrayRegexp: (scope, operator, operand, queryResult) => queryResult.some(data => operand.test(data)),
     }
 }
 
@@ -389,7 +393,7 @@ class SearchHelper {
             q.REGEXP = q.match_regexp || this.MIXIN.MATCH.stringRegexp
             this.qualifiers.set(q.scope, q) // register qualifiers
         })
-        this.parser.setQualifier(qualifiers.map(q => q.scope), Array.from(Object.keys(this.MIXIN.OPERATOR)))
+        this.parser.setQualifier(qualifiers.map(q => q.scope), [...Object.keys(this.MIXIN.OPERATOR)])
     }
 
     /**
@@ -404,116 +408,74 @@ class SearchHelper {
      * {function} match_regexp:  Matches castResult with queryResult when the user input is a regexp; defaults to `this.MIXIN.MATCH.regexp`
      */
     buildBaseQualifiers() {
+        const QUERY = {
+            default: ({ path, file, stats, buffer }) => `${buffer.toString()}\n${path}`,
+            path: ({ path, file, stats, buffer }) => path,
+            file: ({ path, file, stats, buffer }) => file,
+            ext: ({ path, file, stats, buffer }) => this.utils.Package.Path.extname(file),
+            content: ({ path, file, stats, buffer }) => buffer.toString(),
+            time: ({ path, file, stats, buffer }) => this.MIXIN.CAST.toDate(stats.mtime),
+            size: ({ path, file, stats, buffer }) => stats.size,
+            linenum: ({ path, file, stats, buffer }) => buffer.toString().split("\n").length,
+            charnum: ({ path, file, stats, buffer }) => buffer.toString().length,
+            crlf: ({ path, file, stats, buffer }) => buffer.toString().includes("\r\n"),
+            hasimage: ({ path, file, stats, buffer }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(buffer.toString()),
+            haschinese: ({ path, file, stats, buffer }) => /\p{sc=Han}/gu.test(buffer.toString()),
+            line: ({ path, file, stats, buffer }) => buffer.toString().split("\n").map(e => e.trim()),
+            frontmatter: ({ path, file, stats, buffer }) => {
+                const { yamlObject } = this.utils.splitFrontMatter(buffer.toString())
+                return yamlObject ? JSON.stringify(yamlObject) : ""
+            },
+            chinesenum: ({ path, file, stats, buffer }) => {
+                let count = 0
+                for (const _ of buffer.toString().matchAll(/\p{sc=Han}/gu)) {
+                    count++
+                }
+                return count
+            },
+        }
         return [
-            {
-                scope: "default",
-                name: "内容或路径",
-                is_meta: false,
-                query: ({ path, file, stats, buffer }) => `${buffer.toString()}\n${path}`,
-            },
-            {
-                scope: "path",
-                name: "路径",
-                is_meta: true,
-                query: ({ path, file, stats, buffer }) => path,
-            },
-            {
-                scope: "file",
-                name: "文件名",
-                is_meta: true,
-                query: ({ path, file, stats, buffer }) => file,
-            },
-            {
-                scope: "ext",
-                name: "扩展名",
-                is_meta: true,
-                query: ({ path, file, stats, buffer }) => this.utils.Package.Path.extname(file),
-            },
-            {
-                scope: "content",
-                name: "内容",
-                is_meta: false,
-                query: ({ path, file, stats, buffer }) => buffer.toString(),
-            },
-            {
-                scope: "frontmatter",
-                name: "FrontMatter",
-                is_meta: false,
-                query: ({ path, file, stats, buffer }) => {
-                    const { yamlObject } = this.utils.splitFrontMatter(buffer.toString())
-                    return yamlObject ? JSON.stringify(yamlObject) : ""
-                },
-            },
-            {
-                scope: "time",
-                name: "修改时间",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isDate,
-                cast: this.MIXIN.CAST.toDate,
-                query: ({ path, file, stats, buffer }) => this.MIXIN.CAST.toDate(stats.mtime),
-            },
-            {
-                scope: "size",
-                name: "文件大小",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isSize,
-                cast: this.MIXIN.CAST.toBytes,
-                query: ({ path, file, stats, buffer }) => stats.size,
-            },
-            {
-                scope: "linenum",
-                name: "行数",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isNumber,
-                cast: this.MIXIN.CAST.toNumber,
-                query: ({ path, file, stats, buffer }) => buffer.toString().split("\n").length,
-            },
-            {
-                scope: "charnum",
-                name: "字符数",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isNumber,
-                cast: this.MIXIN.CAST.toNumber,
-                query: ({ path, file, stats, buffer }) => buffer.toString().length,
-            },
-            {
-                scope: "crlf",
-                name: "换行符为CRLF",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isBoolean,
-                cast: this.MIXIN.CAST.toBoolean,
-                query: ({ path, file, stats, buffer }) => buffer.toString().includes("\r\n"),
-            },
-            {
-                scope: "hasimage",
-                name: "包含图片",
-                is_meta: true,
-                validate: this.MIXIN.VALIDATE.isBoolean,
-                cast: this.MIXIN.CAST.toBoolean,
-                query: ({ path, file, stats, buffer }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(buffer.toString()),
-            },
-            {
-                scope: "line",
-                name: "行",
-                is_meta: false,
-                query: ({ path, file, stats, buffer }) => buffer.toString().split("\n").map(e => e.trim()),
-                match_keyword: this.MIXIN.MATCH.arrayCompare,
-                match_regexp: this.MIXIN.MATCH.arrayRegexp,
-            },
+            { scope: "default", name: "内容或路径", is_meta: false, query: QUERY.default },
+            { scope: "path", name: "路径", is_meta: true, query: QUERY.path },
+            { scope: "file", name: "文件名", is_meta: true, query: QUERY.file },
+            { scope: "ext", name: "扩展名", is_meta: true, query: QUERY.ext },
+            { scope: "content", name: "内容", is_meta: false, query: QUERY.content },
+            { scope: "frontmatter", name: "FrontMatter", is_meta: false, query: QUERY.frontmatter },
+            { scope: "time", name: "修改时间", is_meta: true, query: QUERY.time, validate: this.MIXIN.VALIDATE.isDate, cast: this.MIXIN.CAST.toDate },
+            { scope: "size", name: "文件大小", is_meta: true, query: QUERY.size, validate: this.MIXIN.VALIDATE.isSize, cast: this.MIXIN.CAST.toBytes },
+            { scope: "linenum", name: "行数", is_meta: true, query: QUERY.linenum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
+            { scope: "charnum", name: "字符数", is_meta: true, query: QUERY.charnum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
+            { scope: "chinesenum", name: "中文字符数", is_meta: true, query: QUERY.chinesenum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
+            { scope: "crlf", name: "换行符为CRLF", is_meta: true, query: QUERY.crlf, validate: this.MIXIN.VALIDATE.isBoolean, cast: this.MIXIN.CAST.toBoolean },
+            { scope: "hasimage", name: "包含图片", is_meta: true, query: QUERY.hasimage, validate: this.MIXIN.VALIDATE.isBoolean, cast: this.MIXIN.CAST.toBoolean },
+            { scope: "haschinese", name: "包含中文字符", is_meta: true, query: QUERY.haschinese, validate: this.MIXIN.VALIDATE.isBoolean, cast: this.MIXIN.CAST.toBoolean },
+            { scope: "line", name: "某行", is_meta: false, query: QUERY.line, match_keyword: this.MIXIN.MATCH.arrayCompare, match_regexp: this.MIXIN.MATCH.arrayRegexp },
         ]
     }
 
-    // todo: add cache
     buildContentQualifiers() {
-        const PARSER = {
-            INLINE: this.utils.parseMarkdownInline,
-            BLOCK: this.utils.parseMarkdownBlock
+        // Prevent re-parsing of the same file in a SINGLE query
+        const cache = fn => {
+            let cached, result
+            return arg => {
+                if (arg !== cached) {
+                    result = fn(arg)
+                    cached = arg
+                }
+                return result
+            }
         }
+
+        const PARSER = {
+            inline: cache(this.utils.parseMarkdownInline),
+            block: cache(this.utils.parseMarkdownBlock),
+        }
+
         const FILTER = {
-            IS: type => {
+            is: type => {
                 return node => node.type === type
             },
-            WRAPPED_BY: type => {
+            wrappedBy: type => {
                 const openType = `${type}_open`
                 const closeType = `${type}_close`
                 let balance = 0
@@ -526,7 +488,7 @@ class SearchHelper {
                     return balance > 0
                 }
             },
-            WRAPPED_BY_TAG: (type, tag) => {
+            wrappedByTag: (type, tag) => {
                 const openType = `${type}_open`
                 const closeType = `${type}_close`
                 let balance = 0
@@ -539,7 +501,7 @@ class SearchHelper {
                     return balance > 0
                 }
             },
-            WRAPPED_BY_MULTI: (...types) => {
+            wrappedByMulti: (...types) => {
                 let wrapped = false
                 const balances = new Uint8Array(types.length).fill(0)
                 const flags = new Map(types.flatMap((type, idx) => [
@@ -558,68 +520,72 @@ class SearchHelper {
                 }
             }
         }
-        const EXTRACTOR = {
-            CONTENT: node => node.content,
-            INFO: node => node.info,
-            INFO_AND_CONTENT: node => `${node.info} ${node.content}`,
-            ATTR_AND_CONTENT: node => {
+
+        const TRANSFORMER = {
+            content: node => node.content,
+            info: node => node.info,
+            infoAndContent: node => `${node.info} ${node.content}`,
+            attrAndContent: node => {
                 const attrs = node.attrs || []
                 const attrContent = attrs.map(l => l[l.length - 1]).join(" ")
                 return `${attrContent}${node.content}`
             },
-            REGEXP_CONTENT: regexp => {
+            regexpContent: regexp => {
                 return node => {
                     const content = node.content.trim()
                     const result = [...content.matchAll(regexp)]
                     return result.map(([_, text]) => text).join(" ")
                 }
             },
-            // selectType: 0 for all, 1 for selected, -1 for not selected
-            TASK_CONTENT: (selectType = 0) => {
+            contentLine: node => node.content.split("\n"),
+            taskContent: (selectType = 0) => {
                 const regexp = /^\[(x|X| )\]\s+(.+)/
                 return node => {
                     const content = node.content.trim()
-                    const m = content.match(regexp)
-                    if (!m) return ""
-                    const [_, selectText, text] = m
+                    const hit = content.match(regexp)
+                    if (!hit) return ""
+                    const [_, selectText, taskText] = hit
+                    // 0:both, 1:selected, -1:unselected
                     switch (selectType) {
                         case 0:
-                            return text
+                            return taskText
                         case 1:
-                            return (selectText === "x" || selectText === "X") ? text : ""
+                            return (selectText === "x" || selectText === "X") ? taskText : ""
                         case -1:
-                            return selectText === " " ? text : ""
+                            return selectText === " " ? taskText : ""
                         default:
                             return ""
                     }
                 }
             },
         }
-        const rangeAST = (ast, filter) => {
+
+        const preorder = (ast = [], filter) => {
             const output = []
-            const range = (ast = []) => {
-                ast.forEach(node => {
+            const recurse = ast => {
+                for (const node of ast) {
                     if (filter(node)) {
                         output.push(node)
                     }
-                    if (node.children) {
-                        range(node.children)
+                    const children = node.children
+                    if (children && children.length) {
+                        recurse(children)
                     }
-                })
+                }
             }
-            range(ast)
+            recurse(ast)
             return output
         }
-        const getQuery = (parser, filter, extractor) => {
+        const buildQuery = (parser, filter, transformer) => {
             return source => {
                 const content = source.buffer.toString()
                 const ast = parser(content)
-                const nodes = rangeAST(ast, filter)
-                return nodes.map(extractor).filter(Boolean)
+                const nodes = preorder(ast, filter)
+                return nodes.flatMap(transformer).filter(Boolean)
             }
         }
-        const getQualifier = (scope, name, parser, filter, extractor) => {
-            const query = getQuery(parser, filter, extractor)
+        const buildQualifier = (scope, name, parser, filter, transformer) => {
+            const query = buildQuery(parser, filter, transformer)
             const is_meta = false
             const validate = this.MIXIN.VALIDATE.isStringOrRegexp
             const cast = this.MIXIN.CAST.toStringOrRegexp
@@ -630,33 +596,34 @@ class SearchHelper {
         }
 
         return [
-            getQualifier("blockcode", "代码块", PARSER.BLOCK, FILTER.IS("fence"), EXTRACTOR.INFO_AND_CONTENT),
-            getQualifier("blockcodelang", "代码块语言", PARSER.BLOCK, FILTER.IS("fence"), EXTRACTOR.INFO),
-            getQualifier("blockcodebody", "代码块内容", PARSER.BLOCK, FILTER.IS("fence"), EXTRACTOR.CONTENT),
-            getQualifier("blockhtml", "HTML块", PARSER.BLOCK, FILTER.IS("html_block"), EXTRACTOR.CONTENT),
-            getQualifier("blockquote", "引用块", PARSER.BLOCK, FILTER.WRAPPED_BY("blockquote"), EXTRACTOR.CONTENT),
-            getQualifier("table", "表格", PARSER.BLOCK, FILTER.WRAPPED_BY("table"), EXTRACTOR.CONTENT),
-            getQualifier("thead", "表格标题", PARSER.BLOCK, FILTER.WRAPPED_BY("thead"), EXTRACTOR.CONTENT),
-            getQualifier("tbody", "表格正文", PARSER.BLOCK, FILTER.WRAPPED_BY("tbody"), EXTRACTOR.CONTENT),
-            getQualifier("ol", "有序列表", PARSER.BLOCK, FILTER.WRAPPED_BY("ordered_list"), EXTRACTOR.CONTENT),
-            getQualifier("ul", "无序列表", PARSER.BLOCK, FILTER.WRAPPED_BY("bullet_list"), EXTRACTOR.CONTENT),
-            getQualifier("task", "任务列表", PARSER.BLOCK, FILTER.WRAPPED_BY_MULTI("bullet_list", "list_item", "paragraph"), EXTRACTOR.TASK_CONTENT(0)),
-            getQualifier("taskdone", "已完成任务", PARSER.BLOCK, FILTER.WRAPPED_BY_MULTI("bullet_list", "list_item", "paragraph"), EXTRACTOR.TASK_CONTENT(1)),
-            getQualifier("tasktodo", "未完成任务", PARSER.BLOCK, FILTER.WRAPPED_BY_MULTI("bullet_list", "list_item", "paragraph"), EXTRACTOR.TASK_CONTENT(-1)),
-            getQualifier("head", "标题", PARSER.BLOCK, FILTER.WRAPPED_BY("heading"), EXTRACTOR.CONTENT),
-            getQualifier("h1", "一级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h1"), EXTRACTOR.CONTENT),
-            getQualifier("h2", "二级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h2"), EXTRACTOR.CONTENT),
-            getQualifier("h3", "三级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h3"), EXTRACTOR.CONTENT),
-            getQualifier("h4", "四级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h4"), EXTRACTOR.CONTENT),
-            getQualifier("h5", "五级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h5"), EXTRACTOR.CONTENT),
-            getQualifier("h6", "六级标题", PARSER.BLOCK, FILTER.WRAPPED_BY_TAG("heading", "h6"), EXTRACTOR.CONTENT),
-            getQualifier("highlight", "高亮文字", PARSER.BLOCK, FILTER.IS("text"), EXTRACTOR.REGEXP_CONTENT(/==(.+)==/g)),
-            getQualifier("image", "图片", PARSER.INLINE, FILTER.IS("image"), EXTRACTOR.ATTR_AND_CONTENT),
-            getQualifier("code", "代码", PARSER.INLINE, FILTER.IS("code_inline"), EXTRACTOR.CONTENT),
-            getQualifier("link", "链接", PARSER.INLINE, FILTER.WRAPPED_BY("link"), EXTRACTOR.ATTR_AND_CONTENT),
-            getQualifier("strong", "加粗文字", PARSER.INLINE, FILTER.WRAPPED_BY("strong"), EXTRACTOR.CONTENT),
-            getQualifier("em", "斜体文字", PARSER.INLINE, FILTER.WRAPPED_BY("em"), EXTRACTOR.CONTENT),
-            getQualifier("del", "删除线文字", PARSER.INLINE, FILTER.WRAPPED_BY("s"), EXTRACTOR.CONTENT),
+            buildQualifier("blockcode", "代码块", PARSER.block, FILTER.is("fence"), TRANSFORMER.infoAndContent),
+            buildQualifier("blockcodelang", "代码块语言", PARSER.block, FILTER.is("fence"), TRANSFORMER.info),
+            buildQualifier("blockcodebody", "代码块内容", PARSER.block, FILTER.is("fence"), TRANSFORMER.content),
+            buildQualifier("blockcodeline", "代码块的某行", PARSER.block, FILTER.is("fence"), TRANSFORMER.contentLine),
+            buildQualifier("blockhtml", "HTML块", PARSER.block, FILTER.is("html_block"), TRANSFORMER.content),
+            buildQualifier("blockquote", "引用块", PARSER.block, FILTER.wrappedBy("blockquote"), TRANSFORMER.content),
+            buildQualifier("table", "表格", PARSER.block, FILTER.wrappedBy("table"), TRANSFORMER.content),
+            buildQualifier("thead", "表格标题", PARSER.block, FILTER.wrappedBy("thead"), TRANSFORMER.content),
+            buildQualifier("tbody", "表格正文", PARSER.block, FILTER.wrappedBy("tbody"), TRANSFORMER.content),
+            buildQualifier("ol", "有序列表", PARSER.block, FILTER.wrappedBy("ordered_list"), TRANSFORMER.content),
+            buildQualifier("ul", "无序列表", PARSER.block, FILTER.wrappedBy("bullet_list"), TRANSFORMER.content),
+            buildQualifier("task", "任务列表", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(0)),
+            buildQualifier("taskdone", "已完成任务", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(1)),
+            buildQualifier("tasktodo", "未完成任务", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(-1)),
+            buildQualifier("head", "标题", PARSER.block, FILTER.wrappedBy("heading"), TRANSFORMER.content),
+            buildQualifier("h1", "一级标题", PARSER.block, FILTER.wrappedByTag("heading", "h1"), TRANSFORMER.content),
+            buildQualifier("h2", "二级标题", PARSER.block, FILTER.wrappedByTag("heading", "h2"), TRANSFORMER.content),
+            buildQualifier("h3", "三级标题", PARSER.block, FILTER.wrappedByTag("heading", "h3"), TRANSFORMER.content),
+            buildQualifier("h4", "四级标题", PARSER.block, FILTER.wrappedByTag("heading", "h4"), TRANSFORMER.content),
+            buildQualifier("h5", "五级标题", PARSER.block, FILTER.wrappedByTag("heading", "h5"), TRANSFORMER.content),
+            buildQualifier("h6", "六级标题", PARSER.block, FILTER.wrappedByTag("heading", "h6"), TRANSFORMER.content),
+            buildQualifier("highlight", "高亮文字", PARSER.block, FILTER.is("text"), TRANSFORMER.regexpContent(/==(.+)==/g)),
+            buildQualifier("image", "图片", PARSER.inline, FILTER.is("image"), TRANSFORMER.attrAndContent),
+            buildQualifier("code", "代码", PARSER.inline, FILTER.is("code_inline"), TRANSFORMER.content),
+            buildQualifier("link", "链接", PARSER.inline, FILTER.wrappedBy("link"), TRANSFORMER.attrAndContent),
+            buildQualifier("strong", "加粗文字", PARSER.inline, FILTER.wrappedBy("strong"), TRANSFORMER.content),
+            buildQualifier("em", "斜体文字", PARSER.inline, FILTER.wrappedBy("em"), TRANSFORMER.content),
+            buildQualifier("del", "删除线文字", PARSER.inline, FILTER.wrappedBy("s"), TRANSFORMER.content),
         ]
     }
 
@@ -677,10 +644,7 @@ class SearchHelper {
     }
 
     match(ast, source) {
-        // To minimize the creation and destruction of closures, reduce memory usage, and alleviate the burden on GC,
-        // since `match` may be called thousands of times, the `_match` function is extracted.
-        const callback = node => this._match(node, source)
-        return this.parser.evaluate(ast, callback)
+        return this.parser.evaluate(ast, node => this._match(node, source))
     }
 
     _match(node, source) {
@@ -699,22 +663,22 @@ class SearchHelper {
 
     getContentTokens(ast) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
-        const collect = new Set(Array.from(this.qualifiers.values()).filter(q => !q.is_meta).map(q => q.scope))
+        const isMeta = new Set([...this.qualifiers.values()].filter(q => q.is_meta).map(q => q.scope))
 
         function _eval({ type, left, right, scope, operand }) {
             switch (type) {
                 case KEYWORD:
                 case PHRASE:
                     operand = operand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-                    return collect.has(scope) ? [operand] : []
+                    return isMeta.has(scope) ? [] : [operand]
                 case REGEXP:
-                    return collect.has(scope) ? [operand] : []
+                    return isMeta.has(scope) ? [] : [operand]
                 case OR:
                 case AND:
                     return [..._eval(left), ..._eval(right)]
                 case NOT:
-                    const wont = _eval(right)
-                    return (left ? _eval(left) : []).filter(e => !wont.includes(e))
+                    const exclude = _eval(right)
+                    return (left ? _eval(left) : []).filter(e => !exclude.includes(e))
                 default:
                     throw new Error(`Unknown AST node「${type}」`)
             }
@@ -838,8 +802,8 @@ class SearchHelper {
     }
 
     showGrammar() {
-        const operator = Array.from(Object.keys(this.MIXIN.OPERATOR))
-        const scope = Array.from(this.qualifiers.values())
+        const operator = [...Object.keys(this.MIXIN.OPERATOR)]
+        const scope = [...this.qualifiers.values()]
         const metaScope = scope.filter(s => s.is_meta)
         const contentScope = scope.filter(s => !s.is_meta)
 
@@ -864,14 +828,14 @@ class SearchHelper {
         const keywordDesc = `
 <table>
     <tr><th>关键字</th><th>说明</th></tr>
-    <tr><td>空格</td><td>表示与。文档应该同时满足空格左右两边的查询条件，等价于 AND</td></tr>
-    <tr><td>|</td><td>表示或。文档应该满足 | 左右两边中至少一个查询条件，等价于 OR</td></tr>
-    <tr><td>-</td><td>表示非。文档不可满足 - 右边的查询条件</td></tr>
-    <tr><td>""</td><td>表示词组。文档应该包含这个完整的词组</td></tr>
+    <tr><td>空格</td><td>表示与。文档应该同时满足空格左右两侧的查询条件，等价于 AND</td></tr>
+    <tr><td>|</td><td>表示或。文档应该满足 | 左右两侧中至少一个查询条件，等价于 OR</td></tr>
+    <tr><td>-</td><td>表示非。文档不可满足 - 右侧的查询条件</td></tr>
+    <tr><td>""</td><td>表示词组。引号包裹视为词组</td></tr>
     <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式</td></tr>
     <tr><td>scope</td><td>查询属性，用于限定查询条件${scopeDesc}</td></tr>
-    <tr><td>operator</td><td>操作符${operatorDesc}</td></tr>
-    <tr><td>()</td><td>小括号。用于调整运算优先级</td></tr>
+    <tr><td>operator</td><td>操作符，用于比较查询条件和查询结果${operatorDesc}</td></tr>
+    <tr><td>()</td><td>小括号，用于调整运算优先级</td></tr>
 </table>`
 
         const example = `
@@ -897,16 +861,19 @@ class SearchHelper {
 <qualifier> ::= <scope> <operator>
 <match> ::= <keyword> | '"'<keyword>'"' | '/'<regexp>'/' | '('<expression>')'
 <conjunction> ::= <and> | <not>
-<and> ::= 'AND' | ' '
 <or> ::= 'OR' | '|'
+<and> ::= 'AND' | ' '
 <not> ::= '-'
 <keyword> ::= [^\\s"()|]+
 <regexp> ::= [^/]+
 <operator> ::= ${operator.map(s => `'${s}'`).join(" | ")}
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
-        const title = "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释"
-        const components = [{ label: keywordDesc, type: "p" }, { label: example, type: "p" }, { label: "", type: "textarea", rows: 18, content, title }]
+        const components = [
+            { label: keywordDesc, type: "p" },
+            { label: example, type: "p" },
+            { label: "", type: "textarea", rows: 20, content, title: "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释" },
+        ]
         this.utils.dialog.modal({ title: "高级搜索", width: "600px", components })
     }
 }

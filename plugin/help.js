@@ -26,10 +26,15 @@ class helpPlugin extends BasePlugin {
 
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            this.updater = this.utils.getPlugin("updater");
-            if (!this.updater) return;
-            const arg_name = "升级插件" + (this.version ? `（当前版本：${this.version}）` : "");
-            this.callArgs.unshift({ arg_name: arg_name, arg_value: "update_plugin" });
+            this.preferences = this.utils.getPlugin("preferences")
+            if (this.preferences) {
+                this.callArgs.unshift({ arg_name: "启停插件", arg_value: "preferences" })
+            }
+            this.updater = this.utils.getPlugin("updater")
+            if (this.updater) {
+                const arg_name = "升级插件" + (this.version ? `（当前版本：${this.version}）` : "")
+                this.callArgs.unshift({ arg_name: arg_name, arg_value: "update_plugin" })
+            }
         })
     }
 
@@ -183,16 +188,17 @@ class helpPlugin extends BasePlugin {
             json_rpc: () => this.utils.showInFinder(this.utils.joinPath("./plugin/json_rpc/请读我.md")),
             github_picture_bed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
             update_plugin: () => this.updater && this.updater.call(),
+            preferences:() => this.preferences && this.preferences.call(),
             uninstall_plugin: () => this.uninstall(),
             environment: () => this.showEnv(),
             donate: () => this.donate(),
             about: () => this.about(),
         }
-        const func = map[type];
-        func && func();
+        const func = map[type]
+        func && func()
     }
 }
 
 module.exports = {
     plugin: helpPlugin,
-};
+}
