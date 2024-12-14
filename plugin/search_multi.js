@@ -221,16 +221,21 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
         async function traverse(dir) {
             const files = await readdir(dir)
-            await Promise.all(files.map(async file => {
+            const promises = files.map(async file => {
                 const path = Path.join(dir, file)
                 const stats = await stat(path)
-                if (stats.isFile() && (!fileFilter || fileFilter(path, stats))) {
-                    const buffer = await readFile(path)
-                    callback({ path, file, stats, buffer })
-                } else if (stats.isDirectory() && (!dirFilter || dirFilter(file))) {
-                    await traverse(path)
+                if (stats.isFile()) {
+                    if (fileFilter(path, stats)) {
+                        const buffer = await readFile(path)
+                        callback({ path, file, stats, buffer })
+                    }
+                } else if (stats.isDirectory()) {
+                    if (dirFilter(file)) {
+                        await traverse(path)
+                    }
                 }
-            }))
+            })
+            await Promise.all(promises)
         }
 
         await traverse(dir)
@@ -576,7 +581,7 @@ class SearchHelper {
                 const content = source.buffer.toString()
                 const ast = parser(content)
                 const nodes = preorder(ast, filter)
-                return nodes.map(transformer).filter(Boolean)
+                return nodes.flatMap(transformer).filter(Boolean)
             }
         }
         const buildQualifier = (scope, name, parser, filter, transformer) => {
