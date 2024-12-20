@@ -1095,7 +1095,7 @@ order = 1
 # 快捷键
 hotkey = ""
 # tc路径（请修改为你电脑上的路径）
-tc_path = "D:\\software\\TotalCMD_64bit_10.52\\TOTALCMD64.EXE"
+tc_path = "D:\\software\\TotalCMD_64bit_11.03\\TOTALCMD64.EXE"
 # tc命令参数（参考：https://www.ghisler.ch/wiki/index.php/Command_line_parameters）
 # 内置的环境变量:
 #   $f: 当前文件路径
