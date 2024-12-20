@@ -6,19 +6,28 @@
  */
 class commanderPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.SHELL = { CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl" };
+        this.SHELL = { CMD_BASH: "cmd/bash", POWER_SHELL: "powershell", GIT_BASH: "gitbash", WSL: "wsl" }
+        const shellList = Object.values(this.SHELL)
+        this.builtin = this.config.BUILTIN.filter(e => !e.disable && e.shell && shellList.includes(e.shell))
+        if (!File.isWin) {
+            this.builtin = this.builtin.filter(e => e.shell !== this.SHELL.CMD_BASH)
+        }
     }
 
     styleTemplate = () => true
 
     html = () => {
-        const { CMD_BASH, POWER_SHELL, GIT_BASH, WSL } = this.SHELL;
-        const genShell = (shell, text) => `<option value="${shell}">${text}</option>`;
-        const shells = [genShell(CMD_BASH, "cmd/bash")];
+        const { CMD_BASH, POWER_SHELL, GIT_BASH, WSL } = this.SHELL
+        const genShell = (shell, text) => `<option value="${shell}">${text}</option>`
+        const shells = [genShell(CMD_BASH, "cmd/bash")]
         if (File.isWin) {
-            shells.push(genShell(POWER_SHELL, "PowerShell"), genShell(GIT_BASH, "Git Bash"), genShell(WSL, "WSL"))
+            shells.push(
+                genShell(POWER_SHELL, "PowerShell"),
+                genShell(GIT_BASH, "Git Bash"),
+                genShell(WSL, "WSL"),
+            )
         }
-        const builtin = this.config.BUILTIN.map(e => `<option data-shell="${e.shell}" value="${this.utils.escape(e.cmd)}">${e.name}</option>`).join("");
+        const builtin = this.builtin.map(e => `<option data-shell="${e.shell}" value="${this.utils.escape(e.cmd)}">${e.name}</option>`).join("")
         return `
             <div id="plugin-commander" class="plugin-common-modal plugin-common-hidden"> 
                 <form id="plugin-commander-form">
@@ -33,12 +42,11 @@ class commanderPlugin extends BasePlugin {
     }
 
     hotkey = () => {
-        const { HOTKEY, BUILTIN = [] } = this.config;
-        const defaultHotkey = { hotkey: HOTKEY, callback: this.call };
-        const customHotkeys = BUILTIN
-            .filter(({ hotkey, cmd, shell }) => hotkey && cmd && shell)
-            .map(({ hotkey, cmd, shell }) => ({ hotkey, callback: () => this.quickExecute(cmd, shell) }));
-        return [defaultHotkey, ...customHotkeys];
+        const defaultHotkey = { hotkey: this.config.HOTKEY, callback: this.call }
+        const customHotkeys = this.builtin
+            .filter(({ hotkey, cmd }) => hotkey && cmd)
+            .map(({ hotkey, cmd, shell }) => ({ hotkey, callback: () => this.quickExecute(cmd, shell) }))
+        return [defaultHotkey, ...customHotkeys]
     }
 
     init = () => {
@@ -53,12 +61,12 @@ class commanderPlugin extends BasePlugin {
             pre: document.querySelector(".plugin-commander-output pre"),
         }
 
-        this.arg_value_prefix = "call_builtin@";
-        const defaultArg = { arg_name: "显示/隐藏", arg_value: "show", arg_hotkey: this.config.HOTKEY };
-        const customArgs = this.config.BUILTIN
+        this.arg_value_prefix = "call_builtin@"
+        const defaultArg = { arg_name: "显示/隐藏", arg_value: "show", arg_hotkey: this.config.HOTKEY }
+        const customArgs = this.builtin
             .filter(builtin => builtin.name)
             .map(builtin => ({ arg_name: builtin.name, arg_value: this.arg_value_prefix + builtin.name, arg_hotkey: builtin.hotkey }))
-        this.callArgs = [defaultArg, ...customArgs];
+        this.callArgs = [defaultArg, ...customArgs]
     }
 
     process = () => {
@@ -110,9 +118,9 @@ class commanderPlugin extends BasePlugin {
     // TODO: 这种做法路子太野，正确方式应该是：反弹shell
     _getCommand = (cmd, shell) => {
         const replaceArgs = (cmd, shell) => {
-            const replacements = { f: this._getFile(shell), d: this._getFolder(shell), m: this._getMountFolder(shell) };
-            return cmd.replace(/\$([fdm])/g, match => `"${replacements[match.slice(1)]}"`);
-        };
+            const replacements = { f: this._getFile(shell), d: this._getFolder(shell), m: this._getMountFolder(shell) }
+            return cmd.replace(/\$([fdm])\b/g, match => `"${replacements[match.slice(1)]}"`)
+        }
         const getShellCommand = shell => {
             switch (shell) {
                 case this.SHELL.GIT_BASH:
@@ -125,10 +133,10 @@ class commanderPlugin extends BasePlugin {
                     return File.isWin ? "cmd /C" : "bash -c"
             }
         }
-        const prefix = File.isWin ? "chcp 65001 |" : "";
-        const nestCommand = replaceArgs(cmd, shell);
-        const shellCommand = getShellCommand(shell);
-        return `${prefix} ${shellCommand} "${nestCommand}"`;
+        const prefix = File.isWin ? "chcp 65001 |" : ""
+        const nestCommand = replaceArgs(cmd, shell)
+        const shellCommand = getShellCommand(shell)
+        return `${prefix} ${shellCommand} "${nestCommand}"`
     }
 
     _refreshModal = (cmd, shell) => {
@@ -214,15 +222,15 @@ class commanderPlugin extends BasePlugin {
 
     call = (type = "show") => {
         if (type === "show") {
-            this.toggleModal();
+            this.toggleModal()
         } else if (type.startsWith(this.arg_value_prefix)) {
-            const name = type.slice(this.arg_value_prefix.length);
-            const builtin = this.config.BUILTIN.find(builtin => builtin.name === name);
-            builtin && this.quickExecute(builtin.cmd, builtin.shell);
+            const name = type.slice(this.arg_value_prefix.length)
+            const builtin = this.builtin.find(c => c.name === name)
+            builtin && this.quickExecute(builtin.cmd, builtin.shell)
         }
     }
 }
 
 module.exports = {
     plugin: commanderPlugin
-};
+}

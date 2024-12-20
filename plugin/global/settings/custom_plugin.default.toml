@@ -1080,25 +1080,3 @@ order = 1
 root = "./"
 # 过滤的正则表达式：只有文件路径命中filter_regexp匹配的文件才使用此插件（若为空，则全部文件都使用此插件）
 filter_regexp = ""
-
-
-############### openInTotalCommander ###############
-[openInTotalCommander]
-# 是否启用此二级插件（若要使用此插件，请先修改tc_path选项）
-enable = false
-# 插件名称
-name = "TC打开"
-# 是否在右键菜单中隐藏
-hide = false
-# 在右键菜单中的出现顺序（越大越排到后面，允许负数）
-order = 1
-# 快捷键
-hotkey = ""
-# tc路径（请修改为你电脑上的路径）
-tc_path = "D:\\software\\TotalCMD_64bit_10.52\\TOTALCMD64.EXE"
-# tc命令参数（参考：https://www.ghisler.ch/wiki/index.php/Command_line_parameters）
-# 内置的环境变量:
-#   $f: 当前文件路径
-#   $d: 当前文件所属目录
-#   $m: 当前挂载目录（侧边栏的根目录）
-tc_args = '/O /T /P=L  /L=$f'

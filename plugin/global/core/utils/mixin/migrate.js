@@ -35,7 +35,7 @@ class migrate {
     }
 
     deleteUselessPlugin = async () => {
-        const custom = ["fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode", "noImageMode", "hotkeyHub", "pluginUpdater"]
+        const custom = ["fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode", "noImageMode", "hotkeyHub", "pluginUpdater", "openInTotalCommander"]
         const promises = custom
             .map(plugin => this.utils.joinPath("./plugin/custom/plugins", `${plugin}.js`))
             .map(async path => {

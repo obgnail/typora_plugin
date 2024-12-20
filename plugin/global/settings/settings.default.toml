@@ -158,20 +158,22 @@ QUICK_EXEC_SHOW = "error"
 #   - echo    立即回显程序输出
 COMMIT_EXEC_SHOW = "echo"
 # 内建命令列表。
-#   - name:   展示的名称（必须唯一）
-#   - shell:  cmd/bash、powershell、gitbash、wsl（如果使用gitbash、wsl，请确保已经将其加入环境变量。非windows平台则后三者不可用）
-#   - hotkey: 快捷键（可选）
-#   - cmd:    执行的命令
+#   - name:    展示的名称（必须唯一）
+#   - disable: 是否禁用
+#   - shell:   cmd/bash、powershell、gitbash、wsl（如果使用gitbash、wsl，请确保已经将其加入环境变量。非windows平台则后三者不可用）
+#   - hotkey:  快捷键（可选）
+#   - cmd:     执行的命令
 # 内置环境变量:
 #   - $f: 当前文件路径
 #   - $d: 当前文件所属目录
 #   - $m: 当前挂载目录（侧边栏的根目录）
 BUILTIN = [
-    { name = "", shell = "cmd/bash", cmd = "" }, # dummy
-    { name = "Explorer", shell = "powershell", cmd = "explorer $d" },
-    { name = "Vscode", shell = "cmd/bash", cmd = "code $f" },
-    { name = "WT", shell = "cmd/bash", cmd = "cd $d && wt" },
-    { name = "GitCommit", shell = "cmd/bash", cmd = 'cd $m && git add . && git commit -m "update"' },
+    { name = "", disable = false, shell = "cmd/bash", cmd = "" }, # dummy
+    { name = "explorer", disable = false, shell = "powershell", cmd = "explorer $d" },
+    { name = "vscode", disable = false, shell = "cmd/bash", cmd = "code $f" },
+    { name = "wt", disable = false, shell = "cmd/bash", cmd = "cd $d && wt" },
+    { name = "git commit", disable = false, shell = "cmd/bash", cmd = 'cd $m && git add . && git commit -m "update"' },
+    { name = "tc", disable = true, shell = "cmd/bash", cmd = "D:\\software\\TotalCMD_64bit_11.03\\TOTALCMD64.EXE /O /T /P=L  /L=$f" },
 ]
 
 
@@ -188,7 +190,7 @@ FORMAT_IN_SELECTION_ONLY = false
 # 不希望拆分的词组（这些字词内部和前后禁止加空格）
 IGNORE_WORDS = []
 # 不希望拆分的正则词组（这些正则内部和前后禁止加空格）
-IGNORE_PATTERNS = ["<br\\s*?/>", ":[0-9a-z_\\-]+?:"]
+IGNORE_PATTERNS = ["<br\\s*?/?>", ":[0-9a-z_\\-]+?:", "<u>.+?</u>", '<span style=".+?">.+?</span>']
 # 最多连续X个换行符，多余的删除（若为-1，则不使用此功能，推荐为2）
 # 举例，为2时：\n\n\n\n【a】\n\n\n\n\n【b】 -> \n\n【a】\n\n【b】
 LINE_BREAK_MAX_NUM = -1
@@ -1105,7 +1107,7 @@ NAME = "启停插件"
 # 快捷键
 HOTKEY = ""
 # 不允许通过此插件修改启停的插件
-IGNORE_PLUGINS = ["preferences", "right_click_menu", "custom", "json_rpc", "openInTotalCommander", "redirectLocalRootUrl", "article_uploader"]
+IGNORE_PLUGINS = ["preferences", "right_click_menu", "custom", "json_rpc", "redirectLocalRootUrl", "article_uploader"]
 
 
 ############### file_counter ###############
@@ -1173,7 +1175,7 @@ CUSTOM_HOTKEYS = [
     # 正规使用方法：insertKanban
     { enable = false, hotkey = "ctrl+shift+e", desc = "在光标位置插入看板", plugin = "kanban", function = "callback" },
     # 正规使用方法：foldFence
-    { enable = false, hotkey = "ctrl+[", desc = "当光标置于代码块中，按下此快捷键可以折叠/展开代码块", plugin = "fence_enhance", function = "foldFence",closestSelector = "#write .md-fences" },
+    { enable = false, hotkey = "ctrl+[", desc = "当光标置于代码块中，按下此快捷键可以折叠/展开代码块", plugin = "fence_enhance", function = "foldFence", closestSelector = "#write .md-fences" },
 ]
 
 

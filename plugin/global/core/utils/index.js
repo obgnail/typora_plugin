@@ -852,54 +852,54 @@ class utils {
     static stopCallError = new Error("stopCall") // 用于decorate方法，若希望停止执行原生函数，返回此
     static decorate = (objGetter, attr, before, after, changeResult = false) => {
         function decorator(original, before, after) {
-            return Object.defineProperty(function () {
+            const fn = function () {
                 if (before) {
-                    const error = before.call(this, ...arguments);
-                    if (error === utils.stopCallError) return;
+                    const error = before.call(this, ...arguments)
+                    if (error === utils.stopCallError) return
                 }
-                let result = original.apply(this, arguments);
+                let result = original.apply(this, arguments)
                 if (after) {
-                    const afterResult = after.call(this, result, ...arguments);
+                    const afterResult = after.call(this, result, ...arguments)
                     if (changeResult) {
-                        result = afterResult;
+                        result = afterResult
                     }
                 }
-                return result;
-            }, "name", { value: original.name })
+                return result
+            }
+            return Object.defineProperty(fn, "name", { value: original.name })
         }
 
-        const start = new Date().getTime();
+        const start = new Date().getTime()
         const timer = setInterval(() => {
             if (new Date().getTime() - start > 10000) {
-                console.error("decorate timeout!", objGetter, attr, before, after, changeResult);
-                clearInterval(timer);
-                return;
+                console.error("decorate timeout!", objGetter, attr, before, after, changeResult)
+                clearInterval(timer)
+                return
             }
-            const obj = objGetter();
+            const obj = objGetter()
             if (obj && obj[attr]) {
-                clearInterval(timer);
-                obj[attr] = decorator(obj[attr], before, after);
+                clearInterval(timer)
+                obj[attr] = decorator(obj[attr], before, after)
             }
-        }, 20);
+        }, 20)
     }
 
     static loopDetector = (until, after, detectInterval = 20, timeout = 10000, runWhenTimeout = true) => {
-        let run = false;
-        const start = new Date().getTime();
+        let run = false
+        const start = new Date().getTime()
         const timer = setInterval(() => {
             if (new Date().getTime() - start > timeout) {
-                // console.warn("loopDetector timeout!", until, after);
-                run = runWhenTimeout;
+                run = runWhenTimeout
                 if (!run) {
-                    clearInterval(timer);
-                    return;
+                    clearInterval(timer)
+                    return
                 }
             }
             if (until() || run) {
-                clearInterval(timer);
-                after && after();
+                clearInterval(timer)
+                after && after()
             }
-        }, detectInterval);
+        }, detectInterval)
     }
 }
 
