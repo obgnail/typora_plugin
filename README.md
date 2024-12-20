@@ -65,15 +65,14 @@
 | 49   | redirectLocalRootUrl    | 重定向本地资源根目录                   | ×        |
 | 50   | blockSideBySide         | 并列显示活动块                         | ×        |
 | 51   | scrollBookmarker        | 书签管理器                             | ×        |
-| 52   | openInTotalCommander    | 在 total commander 打开                | ×        |
-| 53   | cipher                  | 加密文件                               | ×        |
-| 54   | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
-| 55   | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
-| 56   | help                    | 用户帮助                               |          |
-| 57   | custom                  | 开放平台，用户自定义插件（高级）       |          |
-| 58   | hotkeys                 | 快捷键注册中心（高级）                 |          |
-| 59   | quickButton             | 于右下角添加功能按钮（高级）           |          |
-| 60   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
+| 52   | cipher                  | 加密文件                               | ×        |
+| 53   | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
+| 54   | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
+| 55   | help                    | 用户帮助                               |          |
+| 56   | custom                  | 开放平台，用户自定义插件（高级）       |          |
+| 57   | hotkeys                 | 快捷键注册中心（高级）                 |          |
+| 58   | quickButton             | 于右下角添加功能按钮（高级）           |          |
+| 59   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
@@ -746,14 +745,6 @@ filter_regexp = ""
 ![blockSideBySide](./assets/blockSideBySide.png)
 
 > 注意：通过注入 CSS 实现此功能，有可能会与你使用的 theme 冲突。
-
-
-
-### openInTotalCommander：在 total commander 打开当前文件
-
-使用方式：将光标定位到标题上 -> 右键菜单 -> 常用插件 -> 二级插件 ->  TC 打开。
-
-> 此插件默认关闭，需手动开启。使用此插件前，需要您在配置手动修改 TC 的安装路径。
 
 
 

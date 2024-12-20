@@ -55,7 +55,6 @@ class preferencesPlugin extends BasePlugin {
             ripgrep: "此插件需要您了解 ripgrep 工具",
             test: "插件开发者专用，仅建议在开发插件期间启用",
             reopenClosedFiles: "此插件依赖「标签页管理」插件",
-            openInTotalCommander: "此插件需要手动修改配置后方可运行",
             redirectLocalRootUrl: "此插件需要手动修改配置后方可运行",
             article_uploader: "此插件面向特殊人群（如网站站长），且需要手动修改配置后方可运行",
         }
