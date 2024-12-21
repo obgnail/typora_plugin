@@ -805,7 +805,7 @@ class windowTabBarPlugin extends BasePlugin {
 
     closeRightTabs = idx => {
         const origin = this.tabUtil.currentTab.path
-        this.tabUtil.spliceTabs(idx + 1)
+        this.tabUtil.spliceTabs(idx + 1, this.tabUtil.tabCount - idx)
         if (this.tabUtil.activeIdx > idx) {
             this.switchTab(this.tabUtil.tabCount - 1)
         } else {
