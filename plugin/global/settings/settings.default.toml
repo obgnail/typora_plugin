@@ -60,11 +60,11 @@ TAB_MAX_WIDTH = "none"
 # 标签栏和正文内容之间的间隙高度（单位：px）
 GAP_BETWEEN_TAB_AND_CONTENT = 0
 # 当关闭最后一个标签时:
-#   - reconfirm: 弹出弹窗确认是否退出Typora
 #   - exit:      退出Typora
+#   - reconfirm: 弹出弹窗确认是否退出Typora
 #   - blankPage: 展示空白页（此选项仅新版本Typora可用，低版本下此选项会自动修改为reconfirm）
 WHEN_CLOSE_LAST_TAB = "blankPage"
-# 新增tab的位置：
+# 新增tab的位置:
 #   - end:   在最右侧
 #   - right: 在当前tab右侧
 NEW_TAB_AT = "right"
@@ -126,9 +126,8 @@ MAX_SIZE = 2000000
 # 注意：默认值为Typora允许打开的文件的后缀名列表。所以不建议新增后缀名，毕竟找到了也不能在typora里打开
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 # 查找文件时忽略的目录名
-IGNORE_FOLDERS = [".git", "node_modules"]
-# 高亮的颜色
-# 每个关键字按序对应一个颜色，数量不限，你可以修改、新增、删除颜色
+IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
+# 高亮的颜色（每个关键字按序对应一个颜色，数量不限）
 STYLE_COLOR = [
     '#bbeeff', '#ffbbcc', '#88ee88', '#ccbbff', '#ffee88', '#FFFFa0', '#88cccc', '#ffbb88', '#cccccc', '#ffaabb',
     '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
@@ -157,7 +156,7 @@ QUICK_EXEC_SHOW = "error"
 #   - always  等待程序执行完毕后一次性输出
 #   - echo    立即回显程序输出
 COMMIT_EXEC_SHOW = "echo"
-# 内建命令列表。
+# 内建命令列表
 #   - name:    展示的名称（必须唯一）
 #   - disable: 是否禁用
 #   - shell:   cmd/bash、powershell、gitbash、wsl（如果使用gitbash、wsl，请确保已经将其加入环境变量。非windows平台则后三者不可用）
@@ -173,7 +172,8 @@ BUILTIN = [
     { name = "vscode", disable = false, shell = "cmd/bash", cmd = "code $f" },
     { name = "wt", disable = false, shell = "cmd/bash", cmd = "cd $d && wt" },
     { name = "git commit", disable = false, shell = "cmd/bash", cmd = 'cd $m && git add . && git commit -m "update"' },
-    { name = "tc", disable = true, shell = "cmd/bash", cmd = "D:\\software\\TotalCMD_64bit_11.03\\TOTALCMD64.EXE /O /T /P=L  /L=$f" },
+    # https://xbeta.info/tc-help/totalcmd/CommandLineParameters.htm
+    { name = "tc", disable = true, shell = "cmd/bash", cmd = "D:\\software\\TotalCMD_64bit_11.03\\TOTALCMD64.EXE /O /T /P=L /L=$f" },
 ]
 
 
@@ -993,7 +993,7 @@ ENABLE = true
 NAME = "右键菜单"
 # 点击后是否隐藏菜单（此选项不必在此调整，可以在UI中设置）
 DO_NOT_HIDE = false
-# 展示插件的快捷键（此选项仅在正式版Typora可用）
+# 展示插件的快捷键（此选项不必在此调整，可以在UI中设置）（此选项仅在正式版Typora可用）
 SHOW_PLUGIN_HOTKEY = true
 # 右键二~三级菜单的最小宽度
 # 很多用户使用小屏幕，三个等级的右键菜单可能占据了大量的空间。此选项用于设置二~三级菜单的最小宽度，减少占据空间（为什么不包括一级？答：那是theme该做的事）
@@ -1011,8 +1011,7 @@ FIND_LOST_PLUGIN = true
 # 自定义右键菜单
 # 每一个MENUS对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
 #   NAME: 一级菜单的名称
-#   LIST: 二级菜单的插件列表（"---"：代表在页面上插入一个分隔横线）
-#         允许填入pluginName（插件，如：help）或者 pluginName.callArg（插件的其中一个选项，如：help.donate）
+#   LIST: 二级菜单的插件列表（"---"：代表在页面上插入一个分隔横线），允许填入pluginName（插件，如：help）或者 pluginName.callArg（插件的其中一个选项，如：help.donate）
 [[right_click_menu.MENUS]]
 NAME = "少用插件"
 LIST = [
@@ -1123,7 +1122,7 @@ MAX_SIZE = 2000000
 # Typora允许打开的文件的后缀名，此外的文件在搜索时将被忽略
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 # 忽略的目录名
-IGNORE_FOLDERS = [".git", "node_modules"]
+IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
 # 当侧边栏出现横向滚动条时，允许ctrl+wheel进行横向滚动
 CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU = true
 # 文本字体粗细（填入font-weight的CSS值，保持默认则填入""）
@@ -1144,7 +1143,6 @@ ENABLE = true
 NAME = "快捷键中心"
 # 查看注册的快捷键列表的快捷键
 HOTKEY = ""
-
 # 此配置是高级配置，仅对有javascript基础的用户开放，以下说明默认您了解javascript基础
 # 使用说明:
 #   - 用于配置自定义快捷键
@@ -1221,7 +1219,7 @@ selenium = { headless = true }
 # loginUrl: wordpress后台登录地址
 wordpress = { enabled = true, hostname = "https://blog.bugdesigner.cn", loginUrl = "https://blog.bugdesigner.cn/superman/", username = "demo", password = "demo1" }
 cnblog = { enabled = true, username = "demo2", password = "demo2" }
-# # cookie可能需要定期更新，f12随便找一个异步请求的，把cookie值粘过来就行，目前两天安全下车，预计两周——一个月失效
+# cookie可能需要定期更新，f12随便找一个异步请求的，把cookie值粘过来就行，目前两天安全下车，预计两周——一个月失效
 csdn = { enabled = true, cookie = "log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s; log_Id_click=37......" }
 
 
