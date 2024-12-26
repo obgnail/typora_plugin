@@ -11,10 +11,10 @@ class fileCounterPlugin extends BasePlugin {
     }
 
     process = () => {
-        // typora有bug，有一定概率无法完整加载，强刷一下
-        setTimeout(() => File.editor.library.refreshPanelCommand(), 1200);
-
-        this.utils.loopDetector(this.setAllDirCount, null, 300);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+            File.editor.library.refreshPanelCommand()
+            this.setAllDirCount()
+        })
 
         if (this.config.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU) {
             document.querySelector("#file-library").addEventListener("wheel", ev => {
@@ -35,14 +35,16 @@ class fileCounterPlugin extends BasePlugin {
                     return
                 }
             }
-            const need = mutationList.some(mutation => {
+            const needSetAll = mutationList.some(mutation => {
                 const { target } = mutation;
                 const add = mutation.addedNodes[0];
                 const t = target && target.classList && target.classList.contains(this.className);
                 const a = add && add.classList && add.classList.contains(this.className);
                 return !(t || a)
             })
-            need && this.setAllDirCount();
+            if (needSetAll) {
+                this.setAllDirCount()
+            }
         }).observe(document.getElementById("file-library-tree"), { subtree: true, childList: true });
     }
 
@@ -108,16 +110,14 @@ class fileCounterPlugin extends BasePlugin {
     }
 
     setAllDirCount = () => {
-        const root = document.querySelector("#file-library-tree > .file-library-node");
-        if (!root) return false;
-
-        console.debug("setAllDirCount");
-        this.setDirCount(root);
-        return true
+        const root = document.querySelector("#file-library-tree > .file-library-node")
+        if (root) {
+            console.debug(`[${this.fixedName}]: reset all dir`)
+            this.setDirCount(root)
+        }
     }
 }
 
-
 module.exports = {
     plugin: fileCounterPlugin
-};
+}

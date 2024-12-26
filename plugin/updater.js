@@ -14,16 +14,14 @@ class updaterPlugin extends BasePlugin {
 
     call = async (type, meta) => {
         if (this.config.PROXY) {
-            await this.manualUpdate();
-            return;
+            await this.manualUpdate()
+            return
         }
-
-        const proxy = await this.getProxy();
-        const label = "代理 URL（为空则不使用代理）";
-        const components = [{ label, type: "input", value: proxy, placeholder: "http://127.0.0.1:7890" }];
-        const { response, submit: [proxy_] } = await this.utils.dialog.modalAsync({ title: "设置代理", components });
+        const proxy = await this.getProxy()
+        const components = [{ label: "代理 URL", type: "input", info: "为空则不使用代理", value: proxy, placeholder: "http://127.0.0.1:7890" }]
+        const { response, submit: [proxy_] } = await this.utils.dialog.modalAsync({ title: "网络代理", components })
         if (response === 1) {
-            await this.manualUpdate(proxy_);
+            await this.manualUpdate(proxy_)
         }
     }
 
@@ -137,7 +135,7 @@ class updater {
     runWithState = () => {
         const v = { done: false, state: null, info: null }; // state: NO_NEED/UPDATED/Error
         this.run()
-            .then(res => v.state = res)
+            .then(state => v.state = state)
             .catch(err => console.error(v.state = err))
             .finally(() => Object.assign(v, { done: true, info: this.latestVersionInfo }));
         return () => v
@@ -206,10 +204,10 @@ class updater {
         newFds.forEach(file => excludeFds.add(file));
 
         oldFds.forEach(name => {
-            if (excludeFds.has(name)) return;
-            if ((this.pkgPath.extname(name) === ".js") && excludeFds.has(name.substring(0, name.lastIndexOf(".")))) return;
+            const exclude = excludeFds.has(name) || (this.pkgPath.extname(name) === ".js") && excludeFds.has(name.substring(0, name.lastIndexOf(".")))
+            if (exclude) return
             const path = this.pkgPath.join(this.customPluginDir, name)
-            this.exclude.push(path);
+            this.exclude.push(path)
         })
 
         for (const file of this.exclude) {

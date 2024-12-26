@@ -10,14 +10,13 @@ class toolbarPlugin extends BasePlugin {
     styleTemplate = () => ({ topPercent: parseInt(this.config.TOOLBAR_TOP_PERCENT) + "%" })
 
     html = () => {
-        const tools = Array.from(this.toolController.tools.values(), t => t.name() + "：" + t.translate());
-        const title = "支持：\n" + tools.join("\n");
+        const tools = Array.from(this.toolController.tools.values(), t => `${t.name()}：${t.translate()}`)
+        const title = "支持：\n" + tools.join("\n")
         return `
             <div id="plugin-toolbar" class="plugin-common-modal plugin-common-hidden">
                 <div id="plugin-toolbar-input"><input placeholder="plu multi" title="${title}"></div>
                 <div class="plugin-toolbar-result"></div>
-            </div>
-        `
+            </div>`
     }
 
     init = () => {
@@ -77,8 +76,9 @@ class toolbarPlugin extends BasePlugin {
 
         if (this.config.AUTO_HIDE) {
             this.entities.content.addEventListener("click", ev => {
-                if (this.utils.isShow(this.entities.toolbar) && !ev.target.closest("#plugin-toolbar")) {
-                    this.hide();
+                const needHide = this.utils.isShow(this.entities.toolbar) && !ev.target.closest("#plugin-toolbar")
+                if (needHide) {
+                    this.hide()
                 }
             })
         }
@@ -195,7 +195,6 @@ class toolController {
 
     setAnchorNode = () => this.anchorNode = this.utils.getAnchorNode();
 
-    // 交集
     intersect = arrays => {
         if (!Array.isArray(arrays) || arrays.length === 0 || arrays.some(ele => !ele)) return [];
         if (arrays.length === 1) return arrays[0]
@@ -209,7 +208,6 @@ class toolController {
     // Add a prefix to distinguish object and string items
     toUniqueString = item => typeof item === "object" ? `object: ${item.showName}${item.fixedName}${item.meta}` : `string: ${item}`
 
-    // 并集
     union = arrays => {
         if (!Array.isArray(arrays) || arrays.length === 0) return []
         if (arrays.length === 1) return arrays[0]
@@ -309,18 +307,16 @@ class tabTool extends baseToolInterface {
     translate = () => "切换标签页"
     icon = () => "📖"
     init = () => {
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            this.windowTabBarPlugin = this.utils.getPlugin("window_tab");
-        })
+        const callback = () => this.windowTabPlugin = this.utils.getPlugin("window_tab")
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, callback)
     }
     search = async input => {
-        if (!this.windowTabBarPlugin) return;
-
-        const current = this.utils.getFilePath();
-        const paths = this.windowTabBarPlugin.tabUtil.tabs.filter(tab => tab.path !== current).map(tab => tab.path);
-        return this.baseSearch(input, paths);
+        if (!this.windowTabPlugin) return
+        const current = this.utils.getFilePath()
+        const paths = this.windowTabPlugin.tabUtil.tabs.filter(tab => tab.path !== current).map(tab => tab.path)
+        return this.baseSearch(input, paths)
     }
-    callback = fixedName => this.windowTabBarPlugin.switchTabByPath(fixedName)
+    callback = fixedName => this.windowTabPlugin.switchTabByPath(fixedName)
 }
 
 class pluginTool extends baseToolInterface {
@@ -372,22 +368,23 @@ class recentFileTool extends baseToolInterface {
     translate = () => "打开最近文件"
     icon = () => "🕖"
     getRecentFile = async () => {
-        if (!File.isNode) return;
+        if (!File.isNode) return
 
-        const result = [];
-        const blank = String.fromCharCode(160).repeat(3);
-        const { files, folders } = await this.utils.getRecentFiles();
+        const result = []
+        const blank = "\u00A0".repeat(3)
+        const { files, folders } = await this.utils.getRecentFiles()
         const add = (list, meta) => {
             for (const file of list) {
                 if (file.path) {
-                    const prefix = (meta === "file") ? "📄" : "📁";
-                    result.push({ showName: prefix + blank + file.path, fixedName: file.path, meta: meta });
+                    const prefix = (meta === "file") ? "📄" : "📁"
+                    const item = { showName: `${prefix}${blank}${file.path}`, fixedName: file.path, meta: meta }
+                    result.push(item)
                 }
             }
         }
-        add(folders, "folder");
-        add(files, "file");
-        return result;
+        add(folders, "folder")
+        add(files, "file")
+        return result
     }
     search = async input => {
         let files = await this.getRecentFile();
@@ -411,13 +408,14 @@ class operationTool extends baseToolInterface {
     translate = () => "执行操作"
     icon = () => "🔨"
     init = () => {
-        const explorer = () => this.utils.showInFinder(this.utils.getFilePath());
-        const copyPath = () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath());
-        const togglePreferencePanel = () => File.megaMenu.togglePreferencePanel();
+        const explorer = () => this.utils.showInFinder(this.utils.getFilePath())
+        const copyPath = () => File.editor.UserOp.setClipboard(null, null, this.utils.getFilePath())
+        const togglePreferencePanel = () => File.megaMenu.togglePreferencePanel()
+        const openSettingFolder = () => this.utils.runtime.openSettingFolder()
         const togglePinWindow = () => {
-            const pined = document.body.classList.contains("always-on-top");
-            const func = pined ? "unpinWindow" : "pinWindow";
-            ClientCommand[func]();
+            const pined = document.body.classList.contains("always-on-top")
+            const func = pined ? "unpinWindow" : "pinWindow"
+            ClientCommand[func]()
         }
         const openFileInNewWindow = () => File.editor.library.openFileInNewWindow(this.utils.getFilePath(), false)
         this.ops = [
@@ -426,14 +424,14 @@ class operationTool extends baseToolInterface {
             { showName: "偏好设置", fixedName: "togglePreferencePanel", callback: togglePreferencePanel },
             { showName: "窗口置顶", fixedName: "togglePinWindow", callback: togglePinWindow },
             { showName: "在新窗口中打开", fixedName: "openFileInNewWindow", callback: openFileInNewWindow },
-            { showName: "修改插件配置", fixedName: "openSettingFolder", callback: this.utils.runtime.openSettingFolder },
+            { showName: "修改插件配置", fixedName: "openSettingFolder", callback: openSettingFolder },
         ]
-        this.ops.forEach(op => op.showName += ` - ${op.fixedName}`);
+        this.ops.forEach(op => op.showName += ` - ${op.fixedName}`)
     }
     search = async input => this.baseSearch(input, this.ops, ["showName"])
     callback = (fixedName, meta) => {
-        const op = this.ops.find(ele => ele.fixedName === fixedName);
-        op && op.callback(meta);
+        const op = this.ops.find(ele => ele.fixedName === fixedName)
+        op && op.callback(meta)
     }
 }
 
@@ -481,10 +479,10 @@ class themeTool extends baseToolInterface {
     translate = () => "更换主题"
     icon = () => "🎨"
     setThemeForever = theme => ClientCommand.setTheme(theme);
-    setThemeTemp = theme => File.setTheme(theme);
+    // setThemeTemp = theme => File.setTheme(theme)
     search = async input => {
         const { all, current } = await JSBridge.invoke("setting.getThemes");
-        const list = all.map(theme => ({ showName: theme.replace(/\.css/gi, ""), fixedName: theme }));
+        const list = all.map(theme => ({ showName: theme.replace(/\.css$/gi, ""), fixedName: theme }))
         return this.baseSearch(input, list, ["showName"]);
     }
     callback = fixedName => this.setThemeForever(fixedName);
@@ -513,12 +511,12 @@ class functionTool extends baseToolInterface {
     translate = () => "功能列表"
     icon = () => "💡"
     search = async input => {
-        const blank = String.fromCharCode(160).repeat(3);
+        const blank = "\u00A0".repeat(3)
         const all = Array.from(this.controller.tools.entries(), ([name, tool]) => ({
             showName: tool.icon() + blank + name + " - " + tool.translate(),
             fixedName: name
-        }));
-        return this.baseSearch(input, all, ["showName"]);
+        }))
+        return this.baseSearch(input, all, ["showName"])
     }
     callback = fixedName => {
         const { input } = this.controller.plugin.entities;
@@ -533,32 +531,33 @@ class mixTool extends baseToolInterface {
     icon = () => "🔱"
     search = async input => {
         const toolName = this.name()
-        const blank = String.fromCharCode(160).repeat(3)
-        const toolResult = await Promise.all(
-            Array.from(this.controller.tools.entries())
-                .filter(([name]) => name !== toolName)
-                .map(async ([name, tool]) => {
-                    const result = await tool.search(input)
-                    return result ? result.map(ele => {
-                        const meta = `${name}@${ele.meta || ""}`
-                        const item = typeof ele === "string" ? { showName: ele, fixedName: ele, meta } : { ...ele, meta }
-                        item.showName = `${tool.icon()}${blank}${item.showName}`
-                        return item;
-                    }) : []
+        const blank = "\u00A0".repeat(3)
+        const promises = [...this.controller.tools.entries()]
+            .filter(([name]) => name !== toolName)
+            .map(async ([name, tool]) => {
+                const result = await tool.search(input)
+                if (!result) return []
+                return result.map(ele => {
+                    const meta = `${name}@${ele.meta || ""}`
+                    const item = typeof ele === "string" ? { showName: ele, fixedName: ele, meta } : { ...ele, meta }
+                    item.showName = `${tool.icon()}${blank}${item.showName}`
+                    return item
                 })
-        )
+            })
+        const toolResult = await Promise.all(promises)
         return toolResult.flat().filter(Boolean)
     }
     callback = (fixedName, meta) => {
-        const at = meta.indexOf("@");
-        const tool = meta.substring(0, at);
-        const realMeta = meta.substring(at + 1);
-        const t = this.controller.tools.get(tool);
-        t && t.callback(fixedName, realMeta);
+        const at = meta.indexOf("@")
+        const tool = meta.slice(0, at)
+        const realMeta = meta.slice(at + 1)
+        const t = this.controller.tools.get(tool)
+        t && t.callback(fixedName, realMeta)
     }
 }
 
 module.exports = {
     plugin: toolbarPlugin,
     baseToolInterface,
-};
+}
+
