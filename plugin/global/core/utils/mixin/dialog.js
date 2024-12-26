@@ -51,6 +51,7 @@ class dialog {
             ev.preventDefault();
             this.submit();
         })
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, this.cancel)
     }
 
     submit = () => this.onButtonClick(this.submitCallback)

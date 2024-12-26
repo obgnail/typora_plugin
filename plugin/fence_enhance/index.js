@@ -58,31 +58,34 @@ class fenceEnhancePlugin extends BasePlugin {
             })
         }
         const addEnhanceElement = fence => {
-            if (!fence) return;
-            let enhance = fence.querySelector(".fence-enhance");
-            if (!enhance && this.builders.length) {
-                enhance = document.createElement("div");
-                enhance.setAttribute("class", "fence-enhance");
-                if (this.config.AUTO_HIDE) {
-                    enhance.style.visibility = "hidden";
-                }
-                fence.appendChild(enhance);
+            if (!fence || this.builders.length === 0) return
+            let enhance = fence.querySelector(".fence-enhance")
+            if (enhance) return
 
-                const buttons = this.builders.map(builder => builder.createButton(this.config.REMOVE_BUTTON_HINT));
-                this.builders.forEach((builder, idx) => {
-                    const button = buttons[idx];
-                    enhance.appendChild(button);
-                    builder.extraFunc && builder.extraFunc(button);
-                })
+            enhance = document.createElement("div")
+            enhance.setAttribute("class", "fence-enhance")
+            if (this.config.AUTO_HIDE) {
+                enhance.style.visibility = "hidden"
             }
+            const buttons = this.builders.map(b => b.createButton(this.config.REMOVE_BUTTON_HINT))
+            enhance.append(...buttons)
+            fence.appendChild(enhance)
+            this.builders.forEach((builder, idx) => {
+                const button = buttons[idx]
+                builder.extraFunc && builder.extraFunc(button)
+            })
         }
 
-        [
+        const defaultButtons = [
             ["copy-code", "copyCode", "复制", "fa fa-clipboard", this.config.ENABLE_COPY, this.copyCode],
             ["indent-code", "indentCode", "调整缩进", "fa fa-indent", this.enableIndent, this.indentCode],
             ["fold-code", "foldCode", "折叠", "fa fa-minus", this.config.ENABLE_FOLD, this.foldCode, this.defaultFold],
-        ].forEach(button => this.registerBuilder(...button));
-        registerCustomButtons();
+        ]
+        defaultButtons.forEach(button => this.registerBuilder(...button))
+
+        registerCustomButtons()
+
+        this.utils.exportHelper.register("fence_enhance", this.beforeExport)
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => {
             const ele = this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}]`);
@@ -99,8 +102,6 @@ class fenceEnhancePlugin extends BasePlugin {
             const builder = this.builders.find(builder => builder.action === action);
             builder && builder.listener(ev, target);
         })
-
-        this.utils.exportHelper.register("fence_enhance", this.beforeExport);
 
         const config = this.config;
         this.utils.entities.$eWrite.on("mouseenter", ".md-fences", function () {
@@ -559,4 +560,4 @@ class languageFoldHelper {
 
 module.exports = {
     plugin: fenceEnhancePlugin,
-};
+}

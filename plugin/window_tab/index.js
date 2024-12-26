@@ -427,6 +427,8 @@ class windowTabBarPlugin extends BasePlugin {
             { arg_name: "启用功能：同名文件显示其目录", arg_value: "toggle_show_dir", arg_state: this.config.SHOW_DIR_FOR_SAME_NAME_FILE },
             { arg_name: "启用功能：鼠标悬停显示完整路径", arg_value: "toggle_show_path", arg_state: this.config.SHOW_FULL_PATH_WHEN_HOVER },
             { arg_name: "启用功能：拖拽时竖直防抖", arg_value: "toggle_limit_y_axis", arg_state: this.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG },
+            { arg_name: "启用功能：显示标签页关闭按钮", arg_value: "toggle_show_close_button", arg_state: this.config.SHOW_TAB_CLOSE_BUTTON },
+            { arg_name: "启用功能：一体化窗口样式时隐藏标题栏", arg_value: "toggle_hide_title_bar", arg_state: this.config.HIDE_WINDOW_TITLE_BAR },
             { arg_name: "启用功能：在新标签打开", arg_value: "toggle_local", arg_state: !this.localOpen },
         ]
         if (this.utils.existPathSync(this.saveTabFilePath)) {
@@ -436,10 +438,17 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     call = type => {
-        const toggleConfig = async cfg => {
+        const toggleConfig = async (cfg, needRestart) => {
             this.config[cfg] = !this.config[cfg]
             this.switchTab(this.tabUtil.activeIdx)
             await this.utils.runtime.saveConfig(this.fixedName, { [cfg]: this.config[cfg] })
+            if (needRestart) {
+                const op = { type: "info", buttons: ["确定", "取消"], message: "重启后生效，确认重启？", title: "重启 Typora" }
+                const { response } = await this.utils.showMessageBox(op)
+                if (response === 0) {
+                    this.utils.restartTypora()
+                }
+            }
         }
         const callMap = {
             toggle_local: () => this.localOpen = !this.localOpen,
@@ -447,6 +456,8 @@ class windowTabBarPlugin extends BasePlugin {
             toggle_show_dir: () => toggleConfig("SHOW_DIR_FOR_SAME_NAME_FILE"),
             toggle_suffix: () => toggleConfig("REMOVE_FILE_SUFFIX"),
             toggle_show_path: () => toggleConfig("SHOW_FULL_PATH_WHEN_HOVER"),
+            toggle_hide_title_bar: () => toggleConfig("HIDE_WINDOW_TITLE_BAR", true),
+            toggle_show_close_button: () => toggleConfig("SHOW_TAB_CLOSE_BUTTON", true),
             save_tabs: this.saveTabs,
             open_save_tabs: this.openSaveTabs,
         }
