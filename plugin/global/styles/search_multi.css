@@ -4,6 +4,10 @@
     width: 420px;
 }
 
+body.unibody-window #plugin-search-multi {
+    top: 65px;
+}
+
 #plugin-search-multi .search-result-title {
     padding-left: 5px;
     font-size: 10px;
@@ -55,7 +59,7 @@
     padding: 0 3px;
 }
 
-#plugin-search-multi-input .option-btn:nth-child(2) {
+#plugin-search-multi-input .option-btn[action="toggleCaseSensitive"] {
     padding: 2px 1px;
 }
 

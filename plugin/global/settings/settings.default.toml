@@ -401,7 +401,7 @@ AUTO_FIT_WHEN_UPDATE = true
 AUTO_FIT_WHEN_RESIZE = true
 # 当用户编辑文档，导致markmap更新图形时，已折叠的节点是否不再重新展开
 REMEMBER_FOLD_WHEN_UPDATE = true
-# 折叠markmap节点时，自动折叠章节（此功能为实验性特性，依赖collapse_paragraph插件，目前不推荐开启）
+# 折叠markmap节点时，自动折叠章节（实验性特性，不推荐开启。依赖collapse_paragraph插件）
 AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD = false
 # 初始化时，弹窗占据页面的90%宽度
 WIDTH_PERCENT_WHEN_INIT = 90
@@ -440,28 +440,29 @@ CANDIDATE_COLOR_SCHEMES = [
 #   - paddingX          : 节点内部边距
 #   - fitRatio          : 图形的窗口填充率
 DEFAULT_TOC_OPTIONS = { autoFit = true, duration = 500, initialExpandLevel = -1, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, paddingX = 8, colorFreezeLevel = 6, zoom = true, pan = true, color = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#E377C2', '#7F7F7F', '#BCBD22', '#17BECF'] }
-# 导出svg时的文件名
+# 导出时的文件名
 #   - {{filename}}  : 当前文件名
 #   - {{timestamp}} : 时间戳
 #   - {{uuid}}      : uuid
 FILENAME_WHEN_DOWNLOAD_SVG = "{{filename}}_{{timestamp}}.svg"
-# 导出svg时的目录路径(如D:\\tmp\\img)，为空时使用 temp 目录
+# 导出时的目录路径(如D:\\tmp\\img)，为空时使用 temp 目录
 FOLDER_WHEN_DOWNLOAD_SVG = ""
-# 导出svg时，尽力兼容样式问题(有些SVG解析器无法解析CSS变量，此选项会自动替换CSS变量)
-COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG = true
-# 导出svg时，是否删除无用的className以减小文件体积
-REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = false
-# 导出svg时，是否删除foreignObject，并替换成<text>（若您不了解SVG，请不要修改此选项）
-# - false: 操作含有foreignObject的svg标签处处受限（比如说转为jpg），但是有好看的样式
+# 导出时，替换CSS变量（有些SVG解析器无法解析CSS变量）
+REMOVE_CSS_VARIABLE_WHEN_DOWNLOAD_SVG = true
+# 导出时，删除无用的样式以减小文件体积
+REMOVE_USELESS_STYLE_WHEN_DOWNLOAD_SVG = true
+# 导出时，删除无用的类名以减小文件体积
+REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = true
+# 导出时，删除foreignObject，并替换成<text>（若您不了解SVG，请不要修改此选项）
+# - false: 操作含有foreignObject的svg处处受限（比如说转为jpg），但是有好看的样式
 # - true:  操作不受限，但是丢失了样式
 REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = false
-# 导出前弹出路径选择对话框
-SHOW_DIALOG_WHEN_DOWNLOAD_SVG = true
-# 自动在资源管理器打开svg所在目录
-SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG = true
-# 导出svg时，边框留白的宽度
-# 第一项为左右宽度之和，第二项为上下宽度之和
+# 导出时，图形的内边距，第一项为水平内边距，第二项为垂直内边距
 BORDER_WHEN_DOWNLOAD_SVG = [50, 50]
+# 导出前询问导出路径
+SHOW_DIALOG_WHEN_DOWNLOAD_SVG = true
+# 导出后打开文件所在目录
+SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG = true
 
 # markmap共有两个功能：toc和fence。此为fence，功能：在当前鼠标光标处插入markmap代码块
 # 若为false，以下配置全部失效
@@ -644,27 +645,25 @@ CUSTOM_BUTTONS = [
 # fence_enhance插件包含4个功能：button、hotkey、fold、other。此为hotkey，功能：为代码块添加快捷键
 # 若置为false，以下配置全部失效
 # 注意：此处的快捷键使用的是codeMirror的表示方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
-ENABLE_HOTKEY = true
 # 不建议修改下面的快捷键，原因有二：
 #   1. 和很多ide的快捷键保持一致
 #   2. typora强制绑定了很多快捷键，实际可修改的快捷键并不多
 # typora强制绑定的快捷键如下：
-#   1. Ctrl-A:         "selectAll",
-#   2. Ctrl-Up:        "goDocStart",
-#   3. Ctrl-Down:      "goDocEnd",
-#   4. Ctrl-Left:      "goGroupLeft",
-#   5. Ctrl-Right:     "goGroupRight",
-#   6. Alt-Left:       "goLineStart",
-#   7. Alt-Right:      "goLineEnd",
-#   8. Ctrl-Backspace: "delGroupBefore",
-#   9. Ctrl-Delete:    "delGroupAfter",
-#   10.Ctrl-[:         "indentLess",
-#   11.Ctrl-]:         "indentMore",
-#   12.Ctrl-U:         "undoSelection",
-#   13.Shift-Ctrl-U:   "redoSelection",
-#   14.Alt-U:          "redoSelection",
-
-# 如果不想使用某个功能，请置为""
+#   - Ctrl-A:         selectAll,
+#   - Ctrl-Up:        goDocStart,
+#   - Ctrl-Down:      goDocEnd,
+#   - Ctrl-Left:      goGroupLeft,
+#   - Ctrl-Right:     goGroupRight,
+#   - Alt-Left:       goLineStart,
+#   - Alt-Right:      goLineEnd,
+#   - Ctrl-Backspace: delGroupBefore,
+#   - Ctrl-Delete:    delGroupAfter,
+#   - Ctrl-[:         indentLess,
+#   - Ctrl-]:         indentMore,
+#   - Ctrl-U:         undoSelection,
+#   - Shift-Ctrl-U:   redoSelection,
+#   - Alt-U:          redoSelection,
+ENABLE_HOTKEY = true
 # 将当前行和上一行互换
 SWAP_PREVIOUS_LINE = "Shift-Alt-Up"
 # 将当前行和下一行互换
@@ -678,23 +677,22 @@ INSERT_LINE_PREVIOUS = "Shift-Ctrl-Enter"
 # 直接在下面新建一行
 INSERT_LINE_NEXT = "Ctrl-Enter"
 
-# fence_enhance插件包含4个功能：button、hotkey、fold、other。此为fold，功能：针对不同代码语言做行号和折叠
-# 支持根据代码语言的语法折叠代码
-ENABLE_LANGUAGE_FOLD = true
-
 # fence_enhance插件包含4个功能：button、hotkey、fold、other。此为other
-# 长文本的换行会保持相同的缩进
-#   1. 详见：https://github.com/codemirror/codemirror5/issues/2085
-#   2. 不建议开启此功能，有较大的性能损失，会消耗大量时间去计算缩进
+# 长文本的换行会保持相同的缩进（详见：https://github.com/codemirror/codemirror5/issues/2085）
+# 不建议开启此功能，有较大的性能损失，会消耗大量时间去计算缩进
 INDENTED_WRAPPED_LINE = false
-# 高亮鼠标悬停的代码行（我嫌弃晃眼就没有开启，如果你总是找不到光标，可以开启）
+# 高亮鼠标悬停的代码行
 HIGHLIGHT_WHEN_HOVER = false
 # 通过代码块的语言设置高亮行
-# 使用方法：在语言后面添加小括号，小括号注明需要高亮的行
-# 举例：```js(2, 5-8, 10-12)```  表示：高亮js代码块的第2行，第5-8，10-12行
+# 使用方法：在语言后面添加小括号，小括号里注明需要高亮的行（详见：https://github.com/obgnail/typora_plugin/issues/615）
+# 举例：```js(2, 5-8, 10-12)``` 表示：高亮js代码块的第2行，第5-8，10-12行
 HIGHLIGHT_BY_LANGUAGE = false
 # 代码行高亮时的颜色
 HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
+
+# fence_enhance插件包含4个功能：button、hotkey、fold、other。此为fold，功能：针对不同代码语言做行号和折叠
+# 支持根据代码语言的语法折叠代码
+ENABLE_LANGUAGE_FOLD = true
 
 
 ############### collapse_paragraph ###############
@@ -832,14 +830,14 @@ TOOLBAR = [
     "emphasis", "blur", "increaseLetterSpacing", "decreaseLetterSpacing", "increaseSize", "decreaseSize", "family",
     "foregroundColor", "backgroundColor", "borderColor", "setBrush", "useBrush", "erase", "blank", "move", "close"
 ]
-# 设置样式的快捷键
-#   1. hotkey: 快捷键
-#   2. action: 上述的工具栏按钮
+# 将设置样式的动作映射为快捷键
+#   - hotkey: 快捷键
+#   - action: 上述的工具栏按钮
 ACTION_HOTKEYS = [
     { hotkey = "", action = "foregroundColor" },
     { hotkey = "", action = "backgroundColor" },
 ]
-# 颜色列表（由于markdown支持的html语法限制， 不支持rgb、rgba格式的颜色）
+# 颜色列表
 COLORS = [
     "#330000", "#331900", "#333300", "#193300", "#003300", "#003319", "#003333", "#001933", "#000033", "#190033", "#330033", "#330019", "#000000",
     "#660000", "#663300", "#666600", "#336600", "#006600", "#006633", "#006666", "#003366", "#000066", "#330066", "#660066", "#660033", "#202020",

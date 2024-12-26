@@ -32,13 +32,13 @@ class markmapPlugin extends BasePlugin {
 
     getToc = (fixIndent = true) => {
         const tree = this.utils.getTocTree()
-        const preOrder = (node, list, indent) => {
+        const preorder = (node, list, indent) => {
             const _indent = "#".repeat(fixIndent ? indent : node.depth)
             list.push(`${_indent} ${node.text}`)
-            node.children.forEach(child => preOrder(child, list, indent + 1))
+            node.children.forEach(child => preorder(child, list, indent + 1))
             return list
         }
-        return preOrder(tree, [], 0).slice(1).join("\n")
+        return preorder(tree, [], 0).slice(1).join("\n")
     }
 
     onButtonClick = () => this.tocMarkmap && this.tocMarkmap.callback()
@@ -101,11 +101,11 @@ class fenceMarkmap {
 
     callback = type => {
         const backQuote = "```"
-        const defaultFrontMatter = `---\nmarkmap:\n  zoom: false\n  pan: false\n  height: 300px\n  backgroundColor: "#f8f8f8"\n---\n\n`;
+        const frontMatter = `---\nmarkmap:\n  zoom: false\n  pan: false\n  height: 300px\n  backgroundColor: "#f8f8f8"\n---\n\n`
         const md = type === "draw_fence_template"
             ? this.config.FENCE_TEMPLATE
-            : `${backQuote}${this.config.LANGUAGE}\n${defaultFrontMatter}${this.controller.getToc() || "# empty"}\n${backQuote}`;
-        this.utils.insertText(null, md);
+            : `${backQuote}${this.config.LANGUAGE}\n${frontMatter}${this.controller.getToc() || "# empty"}\n${backQuote}`
+        this.utils.insertText(null, md)
     }
 
     hotkey = () => [{ hotkey: this.config.FENCE_HOTKEY, callback: this.callback }]
@@ -483,25 +483,22 @@ class tocMarkmap {
         const options = this.markmap.options;
         options.zoom = !options.zoom;
         options.pan = !options.pan;
-        // await this.redraw(options);
         this.entities.modal.classList.toggle("penetrateMouse", !options.zoom && !options.pan);
     }
 
     setting = async () => {
         const INFO = {
-            color: "如需自定义配色方案请前往配置文件",
+            color: "如需自定义配色方案，请手动修改 CANDIDATE_COLOR_SCHEMES 选项",
             maxWidth: "0 表示无长度限制",
-            FIX_ERROR_LEVEL_HEADER: "若取消勾选，则会过滤跳级标题",
+            FIX_ERROR_LEVEL_HEADER: "修复 MD001 规范。若取消勾选，则会过滤跳级标题",
             CLICK_TO_LOCALE: "若取消勾选，则选项「定位的视口高度」失效",
             LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
-            REMEMBER_FOLD_WHEN_UPDATE: "图形更新时不会重新展开已折叠节点",
-            AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，不建议开启。依赖「章节折叠」插件，仅当插件开启时可用",
-            FOLDER_WHEN_DOWNLOAD_SVG: "为空则使用 TEMP 目录",
+            AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，不建议开启。仅当插件「章节折叠」开启时可用",
+            FOLDER_WHEN_DOWNLOAD_SVG: "若为空或不存在，则使用 TEMP 目录",
             FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid\n支持后缀：svg、png、html、md",
-            COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG: "有些 SVG 解析器无法解析 CSS 变量，勾选此选项会自动替换 CSS 变量",
-            REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若非需要手动修改导出的 SVG 文件，请勿勾选此选项",
+            REMOVE_CSS_VARIABLE_WHEN_DOWNLOAD_SVG: "有些 SVG 解析器无法解析 CSS 变量，勾选此选项可以提高兼容性",
+            REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若需要手动修改导出的 SVG 文件，请勿勾选此选项",
             REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式，提高兼容性。若导出的图片异常，请勾选此选项",
-            SHOW_DIALOG_WHEN_DOWNLOAD_SVG: "若勾选，则选项「导出目录」失效",
         }
         const { DEFAULT_TOC_OPTIONS: _ops, BORDER_WHEN_DOWNLOAD_SVG: _border } = this.config;
         const needUpdateKey = ["DEFAULT_TOC_OPTIONS", "BORDER_WHEN_DOWNLOAD_SVG"];
@@ -567,14 +564,14 @@ class tocMarkmap {
         const ability = (legend = "能力") => {
             const hasPlugin = this.utils.getPlugin("collapse_paragraph")
             const components = [
-                { label: "兼容跳级标题（MD001规范）", key: "FIX_ERROR_LEVEL_HEADER" },
+                { label: "兼容跳级标题", key: "FIX_ERROR_LEVEL_HEADER" },
                 { label: "鼠标滚轮进行缩放", key: "zoom" },
                 { label: "鼠标滚轮进行平移", key: "pan" },
                 { label: "鼠标点击节点进行定位", key: "CLICK_TO_LOCALE" },
                 { label: "折叠节点后自动适配窗口", key: "autoFit" },
                 { label: "更新内容后自动适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
                 { label: "调整窗口后自动适配窗口", key: "AUTO_FIT_WHEN_RESIZE" },
-                { label: "记住已折叠的节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
+                { label: "更新时不展开已折叠节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
                 { label: "折叠时自动折叠章节", disabled: !hasPlugin, key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD" },
             ]
             return { label: "", legend, ...checkboxKV(components) }
@@ -582,17 +579,18 @@ class tocMarkmap {
 
         const download = (fieldset = "导出") => {
             const components = [
+                { label: "删除无用样式", key: "REMOVE_USELESS_STYLE_WHEN_DOWNLOAD_SVG" },
                 { label: "删除无用类名", key: "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG" },
+                { label: "替换 CSS 变量", key: "REMOVE_CSS_VARIABLE_WHEN_DOWNLOAD_SVG" },
                 { label: "替换 &lt;foreignObject&gt; 标签", key: "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG" },
-                { label: "尽力解决样式兼容性问题", key: "COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG" },
-                { label: "导出前弹出路径选择对话框", key: "SHOW_DIALOG_WHEN_DOWNLOAD_SVG" },
-                { label: "导出后自动打开文件所在目录", key: "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG" },
+                { label: "导出前询问导出路径", key: "SHOW_DIALOG_WHEN_DOWNLOAD_SVG" },
+                { label: "导出后打开文件所在目录", key: "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG" },
             ]
             return [
                 { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("水平内边距", 0) },
                 { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("垂直内边距", 1) },
-                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...inputKV("导出目录", "FOLDER_WHEN_DOWNLOAD_SVG") },
-                { fieldset, type: "input", inline: true, ...inputKV("导出文件", "FILENAME_WHEN_DOWNLOAD_SVG") },
+                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...inputKV("默认文件夹", "FOLDER_WHEN_DOWNLOAD_SVG") },
+                { fieldset, type: "input", inline: true, ...inputKV("默认文件名", "FILENAME_WHEN_DOWNLOAD_SVG") },
                 { fieldset, label: "", ...checkboxKV(components) },
             ]
         }
@@ -608,19 +606,22 @@ class tocMarkmap {
     }
 
     download = async () => {
-        const getDownloadPath = () => {
-            const folder = this.config.FOLDER_WHEN_DOWNLOAD_SVG || this.utils.tempFolder
+        const getDownloadPath = async () => {
+            let folder = this.config.FOLDER_WHEN_DOWNLOAD_SVG
+            if (!folder || !(await this.utils.existPath(folder))) {
+                folder = this.utils.tempFolder
+            }
             const filename = this.config.FILENAME_WHEN_DOWNLOAD_SVG || "{{filename}}.svg"
             const tpl = {
-                filename: this.utils.getFileName() || "markmap",
-                timestamp: new Date().getTime().toString(),
                 uuid: this.utils.getUUID(),
+                timestamp: new Date().getTime().toString(),
+                filename: this.utils.getFileName() || "markmap",
             }
             const name = filename.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
             return this.utils.Package.Path.join(folder, name)
         }
 
-        let downloadPath = getDownloadPath()
+        let downloadPath = await getDownloadPath()
         if (this.config.SHOW_DIALOG_WHEN_DOWNLOAD_SVG) {
             const op = { properties: ["saveFile", "showOverwriteConfirmation"], title: "导出", defaultPath: downloadPath, filters: Downloader.getFormats() }
             const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", op)
@@ -802,36 +803,35 @@ class tocMarkmap {
     _setFold = newRoot => {
         if (!this.config.REMEMBER_FOLD_WHEN_UPDATE) return
 
-        const _preOrder = (fn, node, parent) => {
+        const needFold = new Set()
+        const { data: oldRoot } = this.markmap.state || {}
+
+        const preorder = (fn, node, parent) => {
             fn(node, parent)
             for (const child of node.children) {
-                _preOrder(fn, child, node)
+                preorder(fn, child, node)
             }
         }
-
-        const _setPath = (node, parent) => {
+        const setPath = (node, parent) => {
             const parentPath = (parent && parent.__path) || ""
             node.__path = `${parentPath}\n${node.content}`
         }
-
-        const needFold = new Set()
-        const _getNeed = node => {
+        const getNeed = node => {
             const { payload, __path } = node
             if (payload && payload.fold && __path) {
                 needFold.add(__path)
             }
         }
-        const _setNeed = node => {
+        const setNeed = node => {
             if (needFold.has(node.__path)) {
                 node.payload.fold = 1
             }
         }
 
-        const { data: oldRoot } = this.markmap.state || {}
-        _preOrder(_setPath, oldRoot)
-        _preOrder(_setPath, newRoot)
-        _preOrder(_getNeed, oldRoot)
-        _preOrder(_setNeed, newRoot)
+        preorder(setPath, oldRoot)
+        preorder(setPath, newRoot)
+        preorder(getNeed, oldRoot)
+        preorder(setNeed, newRoot)
     }
 
     _fixConfig = () => {
@@ -877,12 +877,18 @@ class tocMarkmap {
     }
 
     _cleanTransition = () => this.entities.modal.style.transition = "none"
-
     _rollbackTransition = () => this.entities.modal.style.transition = ""
 }
 
 class Downloader {
-    static _genSVG = (plugin, forceRemoveForeignObject) => {
+    static _toSVG = (plugin, option = {
+        border: plugin.config.BORDER_WHEN_DOWNLOAD_SVG,
+        paddingX: plugin.config.DEFAULT_TOC_OPTIONS.paddingX,
+        removeUselessCss: plugin.config.REMOVE_USELESS_STYLE_WHEN_DOWNLOAD_SVG,
+        removeCssVariable: plugin.config.REMOVE_CSS_VARIABLE_WHEN_DOWNLOAD_SVG,
+        removeForeignObject: plugin.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG,
+        removeUselessClassName: plugin.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG,
+    }) => {
         const _newStyle = cssText => new DOMParser().parseFromString(`<style>${cssText}</style>`, "text/html").querySelector("style")
         const _replaceStyle = (el, cssText) => el.replaceChild(document.createTextNode(cssText), el.firstChild)
 
@@ -904,9 +910,9 @@ class Downloader {
             return { minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight }
         }
 
-        const setAttribute = svg => {
+        const fixAttribute = svg => {
             const { width = 100, height = 100, minY = 0 } = _getRect(svg)
-            const [borderX, borderY] = plugin.config.BORDER_WHEN_DOWNLOAD_SVG
+            const [borderX, borderY] = option.border
             const svgWidth = width + borderX
             const svgHeight = height + borderY
             svg.removeAttribute("id")
@@ -918,7 +924,7 @@ class Downloader {
             svg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`)
         }
 
-        const removeUselessStyle = svg => {
+        const removeUselessCss = svg => {
             const useless = new Set([
                 ".markmap-dark .markmap",
                 ".markmap-node > circle",
@@ -935,11 +941,10 @@ class Downloader {
                 .filter(rule => !useless.has(rule.selectorText))
                 .map(rule => rule.cssText)
                 .join(" ")
-            const styleElement = svg.querySelector("style")
-            _replaceStyle(styleElement, usefulRules)
+            _replaceStyle(svg.querySelector("style"), usefulRules)
         }
 
-        const compatibleStyle = svg => {
+        const removeCssVariable = svg => {
             svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", "#fff"))
             const style = svg.querySelector("style")
             let cssText = style.textContent
@@ -954,7 +959,7 @@ class Downloader {
 
         const removeForeignObject = svg => {
             svg.querySelectorAll("foreignObject").forEach(foreign => {
-                const x = plugin.config.DEFAULT_TOC_OPTIONS.paddingX
+                const x = option.paddingX
                 const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4
                 // const y = 16
                 const text = document.createElement("text")
@@ -966,25 +971,28 @@ class Downloader {
             })
         }
 
-        const removeClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
+        const removeUselessClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
 
         const svg = plugin.entities.svg.cloneNode(true)
-        setAttribute(svg)
-        removeUselessStyle(svg)
-        if (plugin.config.COMPATIBLE_STYLE_WHEN_DOWNLOAD_SVG) {
-            compatibleStyle(svg)  // 有些SVG解析器无法解析CSS变量
+        fixAttribute(svg)
+        if (option.removeUselessCss) {
+            removeUselessCss(svg)
         }
-        if (plugin.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG || forceRemoveForeignObject) {
+        // 有些SVG解析器无法解析CSS变量
+        if (option.removeCssVariable) {
+            removeCssVariable(svg)
+        }
+        if (option.removeForeignObject) {
             removeForeignObject(svg)
         }
-        if (plugin.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG) {
-            removeClassName(svg)
+        if (option.removeUselessClassName) {
+            removeUselessClassName(svg)
         }
         return svg
     }
 
     static svg = (plugin) => {
-        const svg = this._genSVG(plugin)
+        const svg = this._toSVG(plugin)
         return svg.outerHTML
     }
 
@@ -995,16 +1003,16 @@ class Downloader {
 
     static png = (plugin) => {
         return new Promise(resolve => {
-            const format = "png"
             const img = new Image()
-            const svg = this._genSVG(plugin, true)
+            const svg = this._toSVG(plugin)
             img.src = `data:image/svg+xml;utf8,${encodeURIComponent(svg.outerHTML)}`
-            img.onerror = () => resolve("")
+            img.onerror = () => resolve(new Buffer(""))
             img.onload = () => {
+                const format = "png"
                 const canvas = document.createElement("canvas")
-                const ratio = window.devicePixelRatio || 1
-                const width = svg.getAttribute("width") * ratio
-                const height = svg.getAttribute("height") * ratio
+                const dpr = window.devicePixelRatio || 1
+                const width = svg.getAttribute("width") * dpr
+                const height = svg.getAttribute("height") * dpr
                 canvas.width = width
                 canvas.height = height
                 canvas.style.width = width + "px"

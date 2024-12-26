@@ -141,8 +141,10 @@ class eventHub {
 
         this.utils.decorate(() => window, "onbeforeunload", () => this.publishEvent(this.eventType.beforeUnload))
 
-        this.utils.decorate(() => File && File.megaMenu, "showPreferencePanel", () => this.publishEvent(this.eventType.toggleSettingPage, true));
-        this.utils.decorate(() => File && File.megaMenu, "closePreferencePanel", () => this.publishEvent(this.eventType.toggleSettingPage, false));
+        this.utils.decorate(() => File && File.megaMenu, "showPreferencePanel", () => this.publishEvent(this.eventType.toggleSettingPage, true))
+        this.utils.decorate(() => File && File.megaMenu, "closePreferencePanel", () => this.publishEvent(this.eventType.toggleSettingPage, false))
+        this.utils.decorate(() => File && File.megaMenu, "show", () => this.publishEvent(this.eventType.toggleSettingPage, true))
+        this.utils.decorate(() => File && File.megaMenu, "hide", () => this.publishEvent(this.eventType.toggleSettingPage, false))
 
         const debouncePublish = this.utils.debounce(() => this.publishEvent(this.eventType.fileEdited), 400);
         this.observer = new MutationObserver(mutationList => {
