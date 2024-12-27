@@ -42,7 +42,7 @@ class drawIOPlugin extends BaseCustomPlugin {
         if (graphConfig.xml) return
 
         let { source } = graphConfig
-        const isNetwork = this.utils.isNetworkImage(source)
+        const isNetwork = this.utils.isNetworkURI(source)
         try {
             if (isNetwork) {
                 graphConfig.xml = await this._memorizedFetch(source)
@@ -94,7 +94,7 @@ class drawIOPlugin extends BaseCustomPlugin {
 
     lazyLoad = async () => {
         const from = this.config.RESOURCE_URI
-        const path = this.utils.isNetworkImage(from) ? from : `file:///${this.utils.Package.Path.resolve(from)}`
+        const path = this.utils.isNetworkURI(from) ? from : `file:///${this.utils.Package.Path.resolve(from)}`
         await $.getScript(path)
         window.GraphViewer.prototype.toolbarZIndex = 7
     }

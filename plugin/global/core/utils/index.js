@@ -582,8 +582,9 @@ class utils {
         return { files, folders }
     }
 
-    static isNetworkImage = src => /^https?|(ftp):\/\//.test(src);
-    static isSpecialImage = src => /^(blob|chrome-blob|moz-blob|data):[^\/]/.test(src);
+    static isNetworkURI = url => /^https?|(ftp):\/\//.test(url)
+    static isSpecialImage = src => /^(blob|chrome-blob|moz-blob|data):[^\/]/.test(src)
+    static isNetworkImage = this.isNetworkURI
 
     static getFenceContent = ({ pre, cid }) => {
         cid = cid || (pre && pre.getAttribute("cid"));
