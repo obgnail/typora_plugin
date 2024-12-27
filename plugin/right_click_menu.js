@@ -281,22 +281,29 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     dynamicCallArgsGenerator = () => {
-        const result = [{ arg_name: "启用功能：保持显示", arg_value: "do_not_hide", arg_state: this.config.DO_NOT_HIDE, arg_hint: "右键菜单点击后不会自动消失" }];
+        const args = [
+            { arg_name: "启用功能：保持显示", arg_value: "do_not_hide", arg_state: this.config.DO_NOT_HIDE, arg_hint: "右键菜单点击后不会自动消失" },
+            { arg_name: "启用功能：隐藏除插件外的选项", arg_value: "hide_other_options", arg_state: this.config.HIDE_OTHER_OPTIONS },
+        ]
         if (this.supportShortcut) {
-            result.push({ arg_name: "启用功能：显示快捷键", arg_value: "toggle_hotkey", arg_state: this.config.SHOW_PLUGIN_HOTKEY })
+            args.push({ arg_name: "启用功能：显示快捷键", arg_value: "toggle_hotkey", arg_state: this.config.SHOW_PLUGIN_HOTKEY })
         }
-        return result
+        return args
     }
 
-    call = type => {
+    call = async type => {
         if (type === "do_not_hide") {
-            this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE;
+            this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE
+        } else if (type === "hide_other_options") {
+            this.config.HIDE_OTHER_OPTIONS = !this.config.HIDE_OTHER_OPTIONS
+            await this.utils.styleTemplater.reset(this.fixedName, this.styleTemplate())
         } else if (type === "toggle_hotkey") {
-            this.toggleHotkey();
+            this.toggleHotkey()
         }
     }
 }
 
 module.exports = {
     plugin: rightClickMenuPlugin
-};
+}
+
