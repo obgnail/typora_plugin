@@ -33,10 +33,8 @@ class markmapPlugin extends BasePlugin {
     getToc = (fixIndent = true) => {
         const tree = this.utils.getTocTree()
         const preorder = (node, list, indent) => {
-            if (node.text.length !== 0) {
-                const _indent = "#".repeat(fixIndent ? indent : node.depth)
-                list.push(`${_indent} ${node.text}`)
-            }
+            const _indent = "#".repeat(fixIndent ? indent : node.depth)
+            list.push(`${_indent} ${node.text}`)
             node.children.forEach(child => preorder(child, list, indent + 1))
             return list
         }

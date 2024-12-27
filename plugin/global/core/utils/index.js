@@ -600,10 +600,11 @@ class utils {
         const toc = useBuiltin
             ? File.editor.library.outline.getHeaderMatrix(true).map(([depth, text, cid]) => ({ depth, text, cid, children: [] }))
             : (File.editor.nodeMap.toc.headers || []).map(({ attributes, cid }) => {
-                const { depth = 1, text = "" } = attributes || {}
+                if (!attributes) return
+                const { depth, text } = attributes
                 return { depth, cid, text: this.escape(text.replace(/\[\^([^\]]+)\]/g, "")), children: [] }
             })
-        toc.forEach(node => {
+        toc.filter(Boolean).forEach(node => {
             while (stack.length > 0 && stack[stack.length - 1].depth >= node.depth) {
                 stack.pop()
             }
