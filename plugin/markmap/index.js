@@ -33,8 +33,10 @@ class markmapPlugin extends BasePlugin {
     getToc = (fixIndent = true) => {
         const tree = this.utils.getTocTree()
         const preorder = (node, list, indent) => {
-            const _indent = "#".repeat(fixIndent ? indent : node.depth)
-            list.push(`${_indent} ${node.text}`)
+            if (node.text.length !== 0) {
+                const _indent = "#".repeat(fixIndent ? indent : node.depth)
+                list.push(`${_indent} ${node.text}`)
+            }
             node.children.forEach(child => preorder(child, list, indent + 1))
             return list
         }
@@ -394,7 +396,7 @@ class tocMarkmap {
             })
         }
         const onSvgClick = () => {
-            const getCidFromNode = node => {
+            const getCid = node => {
                 if (!node) return;
                 const headers = File.editor.nodeMap.toc.headers;
                 if (!headers || headers.length === 0) return;
@@ -409,30 +411,23 @@ class tocMarkmap {
                 return header && header.attributes.id
             }
             this.entities.svg.addEventListener("click", ev => {
-                ev.stopPropagation();
-                ev.preventDefault();
+                const node = ev.target.closest(".markmap-node")
+                const cid = getCid(node)
+                if (!cid) return
 
-                const circle = ev.target.closest("circle");
-                const node = ev.target.closest(".markmap-node");
+                const circle = ev.target.closest("circle")
                 if (circle) {
                     if (this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD) {
-                        const cid = getCidFromNode(node);
-                        if (cid) {
-                            const paragraph = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`);
-                            const fold = node.classList.contains("markmap-fold");
-                            this.utils.callPluginFunction("collapse_paragraph", "trigger", paragraph, !fold);
-                        }
+                        const head = this.utils.entities.querySelectorInWrite(`[cid="${cid}"]`)
+                        const isFold = node.classList.contains("markmap-fold")
+                        this.utils.callPluginFunction("collapse_paragraph", "trigger", head, !isFold)
                     }
-                    return;
-                }
-
-                if (this.config.CLICK_TO_LOCALE) {
-                    const cid = getCidFromNode(node);
-                    if (cid) {
-                        const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect();
-                        const height = contentHeight * this.config.LOCALE_HEIGHT_RATIO + contentTop;
-                        const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD;
-                        this.utils.scrollByCid(cid, height, true, showHiddenElement);
+                } else {
+                    if (this.config.CLICK_TO_LOCALE) {
+                        const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect()
+                        const height = contentHeight * this.config.LOCALE_HEIGHT_RATIO + contentTop
+                        const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD
+                        this.utils.scrollByCid(cid, height, true, showHiddenElement)
                     }
                 }
             })
@@ -570,7 +565,7 @@ class tocMarkmap {
                 { label: "更新内容后自动适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
                 { label: "调整窗口后自动适配窗口", key: "AUTO_FIT_WHEN_RESIZE" },
                 { label: "更新时不展开已折叠节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
-                { label: "折叠时自动折叠章节", disabled: !hasPlugin, key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD" },
+                { label: "折叠节点时自动折叠章节", disabled: !hasPlugin, key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD" },
             ]
             return { label: "", legend, ...checkboxKV(components) }
         }
