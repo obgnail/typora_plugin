@@ -27,6 +27,11 @@ class styleTemplater {
 
     unregister = name => this.utils.removeStyle(this.getID(name));
 
+    reset = async (name, args) => {
+        this.unregister(name)
+        await this.register(name, args)
+    }
+
     getStyleContent = name => {
         const style = document.getElementById(this.getID(name));
         return style ? style.innerHTML : undefined;

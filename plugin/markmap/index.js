@@ -56,22 +56,20 @@ class markmapPlugin extends BasePlugin {
     }
 
     lazyLoad = async () => {
-        if (this.MarkmapLib.Markmap) return;
+        if (this.MarkmapLib.Markmap) return
 
-        const { Transformer, builtInPlugins } = require("./resource/markmap-lib.js");
-        const markmap = require("./resource/markmap-view.js");
-        const transformer = new Transformer(builtInPlugins);
-        Object.assign(this.MarkmapLib, markmap, { transformer, Transformer, builtInPlugins });
+        const { Transformer, builtInPlugins } = require("./resource/markmap-lib.js")
+        const markmap = require("./resource/markmap-view.js")
+        const transformer = new Transformer(builtInPlugins)
+        Object.assign(this.MarkmapLib, markmap, { transformer, Transformer, builtInPlugins })
 
-        const { loadCSS, loadJS } = markmap;
-        const { styles, scripts } = transformer.getAssets();
-        if (this.config.RESOURCE_FROM !== "network") {
-            styles[0].data.href = this.utils.joinPath("./plugin/markmap/resource/katex.min.css");
-            styles[1].data.href = this.utils.joinPath("./plugin/markmap/resource/default.min.css");
-            scripts[1].data.src = this.utils.joinPath("./plugin/markmap/resource/webfontloader.js");
-        }
-        await loadCSS(styles);
-        await loadJS(scripts, { getMarkmap: () => markmap });
+        const { styles, scripts } = transformer.getAssets()
+        styles[0].data.href = this.utils.joinPath("./plugin/markmap/resource/katex.min.css")
+        styles[1].data.href = this.utils.joinPath("./plugin/markmap/resource/default.min.css")
+        scripts[1].data.src = this.utils.joinPath("./plugin/markmap/resource/webfontloader.js")
+
+        await markmap.loadCSS(styles)
+        await markmap.loadJS(scripts, { getMarkmap: () => markmap })
     }
 }
 
@@ -391,7 +389,7 @@ class tocMarkmap {
                 ev.preventDefault();
                 const action = button.getAttribute("action");
                 if (action !== "move" && this[action]) {
-                    this._onButtonClick(action, button);
+                    this._onButtonClick(action)
                 }
             })
         }
@@ -806,10 +804,10 @@ class tocMarkmap {
         const needFold = new Set()
         const { data: oldRoot } = this.markmap.state || {}
 
-        const preorder = (fn, node, parent) => {
+        const preorder = (node, fn, parent) => {
             fn(node, parent)
             for (const child of node.children) {
-                preorder(fn, child, node)
+                preorder(child, fn, node)
             }
         }
         const setPath = (node, parent) => {
@@ -828,10 +826,10 @@ class tocMarkmap {
             }
         }
 
-        preorder(setPath, oldRoot)
-        preorder(setPath, newRoot)
-        preorder(getNeed, oldRoot)
-        preorder(setNeed, newRoot)
+        preorder(oldRoot, setPath)
+        preorder(newRoot, setPath)
+        preorder(oldRoot, getNeed)
+        preorder(newRoot, setNeed)
     }
 
     _fixConfig = () => {
@@ -844,7 +842,7 @@ class tocMarkmap {
         }
     }
 
-    _onButtonClick = async (action, button) => {
+    _onButtonClick = async action => {
         const dont = ["pinTop", "pinRight", "fit", "download", "penetrateMouse", "setting", "showToolbar", "hideToolbar"]
         if (!dont.includes(action)) {
             await this._waitUnpin()
@@ -1037,86 +1035,85 @@ class Downloader {
             return content != null ? `${tag}${content}</${tagName}>` : tag;
         }
 
-        const processStyles = styles => styles.map(style => {
-            const tagName = (style.type === "stylesheet") ? "link" : "style";
-            const attributes = (style.type === "stylesheet") ? { rel: "stylesheet", ...style.data } : style.data;
-            return createTag(tagName, attributes);
-        });
+        const handleStyles = styles => styles.map(style => {
+            const tagName = (style.type === "stylesheet") ? "link" : "style"
+            const attributes = (style.type === "stylesheet") ? { rel: "stylesheet", ...style.data } : style.data
+            return createTag(tagName, attributes)
+        })
 
-        const processScripts = (scripts, root, urlBuilder) => {
-            const baseScript = ["d3@7.9.0/dist/d3.min.js", "markmap-view@0.17.3-alpha.1/dist/browser/index.js"]
-                .map(asset => ({ type: "script", data: { src: urlBuilder.getFullUrl(asset) } }));
+        const handleScripts = (scripts, root, urlBuilder) => {
+            const _base = ["d3@7.9.0/dist/d3.min.js", "markmap-view@0.17.3-alpha.1/dist/browser/index.js"]
+            const base = _base.map(asset => ({ type: "script", data: { src: urlBuilder.getFullUrl(asset) } }))
 
-            const processedScript = {
+            const entry = {
                 type: "iife",
                 data: {
                     getParams: ({ getMarkmap, root, options }) => [getMarkmap, root, options],
                     fn: (getMarkmap, root, options) => {
-                        const markmap = getMarkmap();
-                        const markmapOptions = markmap.deriveOptions(options);
-                        window.mm = markmap.Markmap.create("svg#mindmap", markmapOptions, root);
+                        const markmap = getMarkmap()
+                        const opt = markmap.deriveOptions(options)
+                        window.mm = markmap.Markmap.create("svg#mindmap", opt, root)
                     }
                 }
             }
 
-            const options = { ...plugin.markmap.options, ...plugin.config.DEFAULT_TOC_OPTIONS };
-            const context = { root, options, getMarkmap: () => window.markmap };
-            const wrapIIFE = (fn, params) => {
-                const args = params.map(arg => {
-                    return typeof arg === "function"
+            const context = {
+                getMarkmap: () => window.markmap,
+                root: root,
+                options: { ...plugin.markmap.options, ...plugin.config.DEFAULT_TOC_OPTIONS },
+            }
+            const createIIFE = (fn, params) => {
+                const args = params.map(arg =>
+                    typeof arg === "function"
                         ? arg.toString().replace(/\s+/g, " ")
                         : JSON.stringify(arg)
-                });
-                const functionCall = `(${fn.toString()})(${args.join(",")})`;
-                return functionCall.replace(/<\s*\/script\s*>/gi, "\\x3c$&");
+                )
+                const callFuncStr = `(${fn.toString()})(${args.join(", ")})`
+                return callFuncStr.replace(/<\s*\/script\s*>/gi, "\\x3c$&")
             }
-            const handleAsset = script => {
+
+            return [...base, ...scripts, entry].map(script => {
                 switch (script.type) {
                     case "script":
-                        return createTag("script", { src: script.data.src }, "");
+                        return createTag("script", { src: script.data.src }, "")
                     case "iife":
-                        const { fn, getParams } = script.data;
-                        const params = getParams ? getParams(context) : [];
-                        const content = wrapIIFE(fn, params);
-                        return createTag("script", null, content);
+                        const { fn, getParams } = script.data
+                        const params = getParams ? getParams(context) : []
+                        const content = createIIFE(fn, params)
+                        return createTag("script", null, content)
                     default:
-                        return script;
+                        return script
                 }
-            }
-
-            return [...baseScript, ...scripts, processedScript].map(handleAsset);
+            })
         }
 
-        const generateHTML = (styleElementList, scriptElementList) => `
+        const toHTML = (title, styles, scripts) => `
 <!DOCTYPE html>
 <html>
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>Markmap</title>
-        <style> 
-            * { margin: 0; padding: 0; }
-            #mindmap { display: block; width: 100vw; height: 100vh; }
-        </style>
-        ${styleElementList.join("\n")}
+        <title>${title}</title>
+        <style>* { margin: 0; padding: 0; } #mindmap { display: block; width: 100vw; height: 100vh; }</style>
+        ${styles.join("\n")}
     </head>
     <body>
         <svg id="mindmap"></svg>
-        ${scriptElementList.join("\n")}
+        ${scripts.join("\n")}
     </body>
 </html>`
 
-        const run = () => {
-            const { transformer } = plugin.MarkmapLib;
-            const { root, features } = plugin.transformContext;
-            const { styles, scripts } = transformer.getUsedAssets(features);
-            const styleElementList = processStyles(styles);
-            const scriptElementList = processScripts(scripts, root, transformer.urlBuilder);
-            return generateHTML(styleElementList, scriptElementList);
+        const run = title => {
+            const { transformer } = plugin.MarkmapLib
+            const { root, features } = plugin.transformContext
+            const { styles, scripts } = transformer.getUsedAssets(features)
+            const styleElements = handleStyles(styles)
+            const scriptElements = handleScripts(scripts, root, transformer.urlBuilder)
+            return toHTML(title, styleElements, scriptElements)
         }
 
-        return run()
+        return run("MARKMAP")
     }
 
     static getFormats() {
