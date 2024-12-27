@@ -598,13 +598,15 @@ class utils {
         const root = { depth: 0, cid: "n0", text: this.getFileName(), children: [] }
         const stack = [root]
         const toc = useBuiltin
-            ? File.editor.library.outline.getHeaderMatrix(true).map(([depth, text, cid]) => ({ depth, text, cid, children: [] }))
-            : (File.editor.nodeMap.toc.headers || []).map(({ attributes, cid }) => {
-                if (!attributes) return
-                const { depth, text } = attributes
-                return { depth, cid, text: this.escape(text.replace(/\[\^([^\]]+)\]/g, "")), children: [] }
-            })
-        toc.filter(Boolean).forEach(node => {
+            ? File.editor.library.outline.getHeaderMatrix(true)
+                .map(([depth, text, cid]) => ({ depth, text, cid, children: [] }))
+            : (File.editor.nodeMap.toc.headers || [])
+                .filter(node => Boolean(node && node.attributes))
+                .map(({ attributes: { depth, text }, cid }) => {
+                    text = this.escape(text.replace(/\[\^([^\]]+)\]/g, ""))
+                    return { depth, cid, text, children: [] }
+                })
+        toc.forEach(node => {
             while (stack.length > 0 && stack[stack.length - 1].depth >= node.depth) {
                 stack.pop()
             }
