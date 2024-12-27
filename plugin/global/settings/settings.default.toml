@@ -381,8 +381,6 @@ HOTKEY_GO_BOTTOM = ""
 ENABLE = true
 # 插件名称
 NAME = "Markmap"
-# js/css从何处加载: local/network
-RESOURCE_FROM = "local"
 
 # markmap共有两个功能：toc和fence。此为toc，功能：以弹窗的形式展示当前文件的思维导图
 # 若为false，以下配置全部失效
