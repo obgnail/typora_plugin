@@ -486,7 +486,7 @@ class tocMarkmap {
             LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，不建议开启。仅当插件「章节折叠」开启时可用",
             FOLDER_WHEN_DOWNLOAD_SVG: "若为空或不存在，则使用 TEMP 目录",
-            FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid\n支持后缀：svg、png、jpg、html、md",
+            FILENAME_WHEN_DOWNLOAD_SVG: `支持变量：filename、timestamp、uuid\n支持后缀：${Downloader.getFormats()[0].extensions.join("、")}`,
             REMOVE_CSS_VARIABLE_WHEN_DOWNLOAD_SVG: "有些 SVG 解析器无法解析 CSS 变量，勾选此选项可以提高兼容性",
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若需要手动修改导出的 SVG 文件，请勿勾选此选项",
             REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式，提高兼容性。若导出的图片异常，请勾选此选项",
@@ -1024,6 +1024,8 @@ class Downloader {
         ctx.fillStyle = "#fff"
         ctx.fillRect(0, 0, canvas.width, canvas.height)
     })
+
+    static webp = async (plugin) => this._toImage(plugin, "webp")
 
     static md = (plugin) => {
         const { content } = plugin.transformContext
