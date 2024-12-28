@@ -939,17 +939,17 @@ name = "格式规范检测"
 hide = false
 # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 order = 1
-# 快捷键
+# 快捷键：弹窗
 hotkey = ""
-# 快捷键：尽力修复规范
+# 快捷键：尽力修复
 hotkey_fix_lint_error = ""
 # 检测规则（参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md）
 rule_config = { default = true, MD009 = false, MD010 = false, MD012 = false, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false }
 # 将检测规则的案文翻译为中文
 translate = true
 # 弹窗的宽度
-#   1. auto:  根据文字自适应
-#   2. 500px: 500像素（不一定是500，可以任何正整数）
+#   - auto:  根据文字自适应
+#   - 500px: 500像素（不一定是500，可以任何正整数）
 modal_width = "auto"
 # 弹窗的最大高度
 modal_max_height = "500px"
@@ -957,16 +957,16 @@ modal_max_height = "500px"
 modal_font_size = "14px"
 # 弹窗的文字行高
 modal_line_height = 1.2
-# 在右上角添加一个方块，用以提示lint状态
+# 在右上角添加一个方块，用以提示格式检测状态
 # 若置为false，以下配置全部失效
 use_button = true
 # 方块的宽度
 button_width = "15px"
 # 方块的高度
 button_height = "15px"
-# lint通过时方块的颜色
+# 格式检测通过时方块的颜色
 pass_color = "#499c54"
-# lint未通过时方块的颜色
+# 格式检测未通过时方块的颜色
 error_color = "#be9117"
 
 

@@ -407,6 +407,8 @@ class tocMarkmap {
                 return header && header.attributes.id
             }
             this.entities.svg.addEventListener("click", ev => {
+                ev.preventDefault()
+                ev.stopPropagation()
                 const node = ev.target.closest(".markmap-node")
                 const cid = getCid(node)
                 if (!cid) return

@@ -2,8 +2,9 @@ class quickButtonPlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     beforeProcess = () => {
-        this.buttons = new Map();
-        this.isHidden = false;
+        this.buttons = new Map()
+        this.isHidden = false
+        this.buttonGroup = null
     }
 
     callback = anchorNode => this.toggle()
@@ -18,12 +19,12 @@ class quickButtonPlugin extends BaseCustomPlugin {
             await this.utils.styleTemplater.register("quickButton", { rowCount: maxX + 1, colCount: maxY + 1, this: this });
             this.utils.htmlTemplater.insert(this.genHTML(maxX, maxY));
 
-            const group = document.querySelector("#plugin-quick-button");
-            group.addEventListener("mousedown", ev => {
+            this.buttonGroup = document.querySelector("#plugin-quick-button")
+            this.buttonGroup.addEventListener("mousedown", ev => {
                 const target = ev.target.closest(".action-item");
                 if (!target) return;
                 if (ev.button === 2 && this.config.support_right_click) {
-                    const buttons = Array.from(group.children);
+                    const buttons = Array.from(this.buttonGroup.children)
                     this.isHidden = !buttons.some(ele => ele.classList.contains("plu-hidden"));
                     buttons.forEach(ele => (ele !== target) && ele.classList.toggle("plu-hidden"));
                 } else if (ev.button === 0) {
@@ -100,7 +101,7 @@ class quickButtonPlugin extends BaseCustomPlugin {
         return { maxX, maxY };
     }
 
-    toggle = force => this.utils.toggleVisible(document.querySelector("#plugin-quick-button"), force);
+    toggle = force => this.utils.toggleVisible(this.buttonGroup, force)
 
     flashScale = (ele, scale = 0.95, timeout = 80) => {
         ele.style.transform = `scale(${scale})`;
