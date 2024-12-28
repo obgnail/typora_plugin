@@ -60,7 +60,11 @@ class markdownLintPlugin extends BaseCustomPlugin {
             ];
             this.utils.dialog.modal({ title: "格式规范", width: "600px", components });
         }
-        const _toggleVisible = force => this.utils.toggleVisible(this.entities.button, force);
+        const _toggleVisible = force => {
+            if (this.entities.button) {
+                this.utils.toggleVisible(this.entities.button, force)
+            }
+        }
 
         const _funcMap = {
             close: () => this.callback(),
