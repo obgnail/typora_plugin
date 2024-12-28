@@ -241,6 +241,7 @@ class tocMarkmap {
             svg: document.querySelector("#plugin-markmap-svg"),
             resize: document.querySelector('.plugin-markmap-icon[action="resize"]'),
             fullScreen: document.querySelector('.plugin-markmap-icon[action="expand"]'),
+            move: document.querySelector('.plugin-markmap-icon[action="move"]'),
         }
     }
 
@@ -254,19 +255,18 @@ class tocMarkmap {
             modal.addEventListener("transitionend", ev => (ev.target === modal) && this.fit());
         }
         const onDrag = () => {
-            const moveElement = this.entities.header.querySelector(`.plugin-markmap-icon[action="move"]`);
-            const hint = "ty-hint";
-            const value = moveElement.getAttribute(hint);
+            const hint = "ty-hint"
+            const value = this.entities.move.getAttribute(hint)
             const onMouseDown = () => {
-                moveElement.removeAttribute(hint);
-                this._cleanTransition();
-                this._waitUnpin();
+                this.entities.move.removeAttribute(hint)
+                this._cleanTransition()
+                this._waitUnpin()
             }
             const onMouseUp = () => {
-                moveElement.setAttribute(hint, value);
-                this._rollbackTransition();
+                this.entities.move.setAttribute(hint, value)
+                this._rollbackTransition()
             }
-            this.utils.dragFixedModal(moveElement, this.entities.modal, false, onMouseDown, null, onMouseUp);
+            this.utils.dragFixedModal(this.entities.move, this.entities.modal, false, onMouseDown, null, onMouseUp)
         }
         const onResize = () => {
             const getModalMinHeight = () => {
@@ -383,11 +383,9 @@ class tocMarkmap {
         }
         const onHeaderClick = () => {
             this.entities.header.addEventListener("click", ev => {
-                const button = ev.target.closest(".plugin-markmap-icon");
+                const button = ev.target.closest(".plugin-markmap-icon")
                 if (!button) return
-                ev.stopPropagation();
-                ev.preventDefault();
-                const action = button.getAttribute("action");
+                const action = button.getAttribute("action")
                 if (action !== "move" && this[action]) {
                     this._onButtonClick(action)
                 }
@@ -466,7 +464,7 @@ class tocMarkmap {
         this.entities.fullScreen.setAttribute("action", "expand");
         this.markmap.destroy();
         this.markmap = null;
-    };
+    }
 
     fit = () => this.markmap && this.markmap.fit();
 

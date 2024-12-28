@@ -264,6 +264,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
 }
 
 class QualifierMixin {
+    static _toTimestamp = date => new Date(date).setHours(0, 0, 0, 0)
+
     static OPERATOR = {
         ":": (a, b) => a.includes(b),
         "=": (a, b) => a === b,
@@ -351,16 +353,16 @@ class QualifierMixin {
             }
             return parseFloat(match[1]) * this.UNITS[unit]
         },
-        toDate: operand => {
-            operand = new Date(operand)
-            operand.setHours(0, 0, 0, 0)
-            return operand
-        },
+        toDate: this._toTimestamp,
+    }
+
+    static QUERY = {
+        toDate: this._toTimestamp,
     }
 
     static MATCH = {
         primitiveCompare: (scope, operator, operand, queryResult) => this.OPERATOR[operator](queryResult, operand),
-        stringRegexp: (scope, operator, operand, queryResult) => operand.test(queryResult.toString()),
+        stringRegexp: (scope, operator, operand, queryResult) => operand.test(queryResult),
         arrayCompare: (scope, operator, operand, queryResult) => queryResult.some(data => this.OPERATOR[operator](data, operand)),
         arrayRegexp: (scope, operator, operand, queryResult) => queryResult.some(data => operand.test(data)),
     }
@@ -414,7 +416,7 @@ class SearchHelper {
             file: ({ path, file, stats, buffer }) => file,
             ext: ({ path, file, stats, buffer }) => this.utils.Package.Path.extname(file),
             content: ({ path, file, stats, buffer }) => buffer.toString(),
-            time: ({ path, file, stats, buffer }) => this.MIXIN.CAST.toDate(stats.mtime),
+            time: ({ path, file, stats, buffer }) => this.MIXIN.QUERY.toDate(stats.mtime),
             size: ({ path, file, stats, buffer }) => stats.size,
             linenum: ({ path, file, stats, buffer }) => buffer.toString().split("\n").length,
             charnum: ({ path, file, stats, buffer }) => buffer.toString().length,
@@ -472,9 +474,7 @@ class SearchHelper {
         }
 
         const FILTER = {
-            is: type => {
-                return node => node.type === type
-            },
+            is: type => node => node.type === type,
             wrappedBy: type => {
                 const openType = `${type}_open`
                 const closeType = `${type}_close`
