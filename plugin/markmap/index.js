@@ -486,7 +486,7 @@ class tocMarkmap {
             LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，不建议开启。仅当插件「章节折叠」开启时可用",
             FOLDER_WHEN_DOWNLOAD_SVG: "若为空或不存在，则使用 TEMP 目录",
-            FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid\n支持后缀：svg、png、html、md",
+            FILENAME_WHEN_DOWNLOAD_SVG: "支持变量：filename、timestamp、uuid\n支持后缀：svg、png、jpg、html、md",
             REMOVE_CSS_VARIABLE_WHEN_DOWNLOAD_SVG: "有些 SVG 解析器无法解析 CSS 变量，勾选此选项可以提高兼容性",
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若需要手动修改导出的 SVG 文件，请勿勾选此选项",
             REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式，提高兼容性。若导出的图片异常，请勾选此选项",
@@ -982,38 +982,52 @@ class Downloader {
         return svg
     }
 
+    static _toImage = async (plugin, format, before) => {
+        const svg = this._toSVG(plugin)
+        const img = new Image()
+        const ok = await new Promise(resolve => {
+            img.src = `data:image/svg+xml;utf8,${encodeURIComponent(svg.outerHTML)}`
+            img.onerror = () => resolve(false)
+            img.onload = () => resolve(true)
+        })
+        if (!ok) {
+            return Buffer.alloc(0)
+        }
+
+        const canvas = document.createElement("canvas")
+        const dpr = window.devicePixelRatio || 1
+        const width = svg.getAttribute("width") * dpr
+        const height = svg.getAttribute("height") * dpr
+        canvas.width = width
+        canvas.height = height
+        canvas.style.width = width + "px"
+        canvas.style.height = height + "px"
+
+        const ctx = canvas.getContext("2d")
+        if (before) {
+            before(ctx, canvas, img)
+        }
+        ctx.drawImage(img, 0, 0, width, height)
+
+        const base64 = canvas.toDataURL(`image/${format}`).replace(`data:image/${format};base64,`, "")
+        return Buffer.from(base64, "base64")
+    }
+
     static svg = (plugin) => {
         const svg = this._toSVG(plugin)
         return svg.outerHTML
     }
 
+    static png = async (plugin) => this._toImage(plugin, "png")
+
+    static jpg = async (plugin) => this._toImage(plugin, "jpeg", (ctx, canvas) => {
+        ctx.fillStyle = "#fff"
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+    })
+
     static md = (plugin) => {
         const { content } = plugin.transformContext
         return content
-    }
-
-    static png = (plugin) => {
-        return new Promise(resolve => {
-            const img = new Image()
-            const svg = this._toSVG(plugin)
-            img.src = `data:image/svg+xml;utf8,${encodeURIComponent(svg.outerHTML)}`
-            img.onerror = () => resolve(new Buffer(""))
-            img.onload = () => {
-                const format = "png"
-                const canvas = document.createElement("canvas")
-                const dpr = window.devicePixelRatio || 1
-                const width = svg.getAttribute("width") * dpr
-                const height = svg.getAttribute("height") * dpr
-                canvas.width = width
-                canvas.height = height
-                canvas.style.width = width + "px"
-                canvas.style.height = height + "px"
-                canvas.getContext("2d").drawImage(img, 0, 0, width, height)
-                const base64Data = canvas.toDataURL(`image/${format}`).replace(`data:image/${format};base64,`, "")
-                const dataBuffer = new Buffer(base64Data, "base64")
-                resolve(dataBuffer)
-            }
-        })
     }
 
     static html = (plugin) => {
