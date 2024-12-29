@@ -487,6 +487,8 @@ class tocMarkmap {
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，不建议开启。仅当插件「章节折叠」开启时可用",
             FOLDER_WHEN_DOWNLOAD_SVG: "若为空或不存在，则使用 TEMP 目录",
             FILENAME_WHEN_DOWNLOAD_SVG: `支持变量：filename、timestamp、uuid\n支持后缀：${Downloader.getFormats()[0].extensions.join("、")}`,
+            IMAGE_QUALITY_WHEN_DOWNLOAD_SVG: "仅适用 jpg、webp 格式",
+            BACKGROUND_COLOR_WHEN_DOWNLOAD_SVG: "仅适用不带透明通道的图片格式（如 jpg）",
             REMOVE_CSS_VARIABLE_WHEN_DOWNLOAD_SVG: "有些 SVG 解析器无法解析 CSS 变量，勾选此选项可以提高兼容性",
             REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若需要手动修改导出的 SVG 文件，请勿勾选此选项",
             REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式，提高兼容性。若导出的图片异常，请勾选此选项",
@@ -580,6 +582,8 @@ class tocMarkmap {
             return [
                 { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("水平内边距", 0) },
                 { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("垂直内边距", 1) },
+                { fieldset, type: "number", inline: true, min: 0.01, max: 1, step: 0.01, ...inputKV("图片质量", "IMAGE_QUALITY_WHEN_DOWNLOAD_SVG") },
+                { fieldset, type: "color", inline: true, ...inputKV("背景颜色", "BACKGROUND_COLOR_WHEN_DOWNLOAD_SVG") },
                 { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...inputKV("默认文件夹", "FOLDER_WHEN_DOWNLOAD_SVG") },
                 { fieldset, type: "input", inline: true, ...inputKV("默认文件名", "FILENAME_WHEN_DOWNLOAD_SVG") },
                 { fieldset, label: "", ...checkboxKV(components) },
@@ -1009,7 +1013,8 @@ class Downloader {
         }
         ctx.drawImage(img, 0, 0, width, height)
 
-        const base64 = canvas.toDataURL(`image/${format}`).replace(`data:image/${format};base64,`, "")
+        const encoderOptions = parseFloat(plugin.config.IMAGE_QUALITY_WHEN_DOWNLOAD_SVG)
+        const base64 = canvas.toDataURL(`image/${format}`, encoderOptions).replace(`data:image/${format};base64,`, "")
         return Buffer.from(base64, "base64")
     }
 
@@ -1021,7 +1026,7 @@ class Downloader {
     static png = async (plugin) => this._toImage(plugin, "png")
 
     static jpg = async (plugin) => this._toImage(plugin, "jpeg", (ctx, canvas) => {
-        ctx.fillStyle = "#fff"
+        ctx.fillStyle = plugin.config.BACKGROUND_COLOR_WHEN_DOWNLOAD_SVG
         ctx.fillRect(0, 0, canvas.width, canvas.height)
     })
 

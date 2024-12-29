@@ -457,6 +457,10 @@ REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = true
 REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = false
 # 导出时，图形的内边距，第一项为水平内边距，第二项为垂直内边距
 BORDER_WHEN_DOWNLOAD_SVG = [50, 50]
+# 导出格式为jpg或webp，图片的质量（范围：从0到1）
+IMAGE_QUALITY_WHEN_DOWNLOAD_SVG = 0.92
+# 导出不带透明通道的图片格式（如jpg），设置背景颜色
+BACKGROUND_COLOR_WHEN_DOWNLOAD_SVG = "#ffffff"
 # 导出前询问导出路径
 SHOW_DIALOG_WHEN_DOWNLOAD_SVG = true
 # 导出后打开文件所在目录
