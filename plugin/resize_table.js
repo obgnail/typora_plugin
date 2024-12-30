@@ -1,5 +1,5 @@
 class resizeTablePlugin extends BasePlugin {
-    styleTemplate = () => this.config.REMOVE_MIX_WIDTH
+    styleTemplate = () => this.config.REMOVE_MIN_WIDTH
 
     process = () => {
         this.utils.runtime.autoSaveConfig(this);
