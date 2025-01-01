@@ -485,73 +485,74 @@ class tocMarkmap {
             CLICK_TO_LOCALE: "若取消勾选，则选项「定位的视口高度」失效",
             LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，不建议开启。仅当插件「章节折叠」开启时可用",
-            FOLDER_WHEN_DOWNLOAD_SVG: "若为空或不存在，则使用 TEMP 目录",
-            FILENAME_WHEN_DOWNLOAD_SVG: `支持变量：filename、timestamp、uuid\n支持后缀：${Downloader.getFormats()[0].extensions.join("、")}`,
-            IMAGE_QUALITY_WHEN_DOWNLOAD_SVG: "仅适用 jpg、webp 格式",
-            BACKGROUND_COLOR_WHEN_DOWNLOAD_SVG: "仅适用不带透明通道的图片格式（如 jpg）",
-            REMOVE_CSS_VARIABLE_WHEN_DOWNLOAD_SVG: "有些 SVG 解析器无法解析 CSS 变量，勾选此选项可以提高兼容性",
-            REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG: "若需要手动修改导出的 SVG 文件，请勿勾选此选项",
-            REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG: "牺牲样式，提高兼容性。若导出的图片异常，请勾选此选项",
+            FOLDER: "若为空或不存在，则使用 TEMP 目录",
+            FILENAME: `支持变量：filename、timestamp、uuid\n支持后缀：${Downloader.getFormats()[0].extensions.join("、")}`,
+            IMAGE_QUALITY: "仅适用于 jpg、webp 格式",
+            BACKGROUND_COLOR: "仅适用于像素图片格式",
+            KEEP_ALPHA_CHANNEL: "若取消勾选，当导出 png、webp 格式时会为图片设置背景颜色",
+            REMOVE_FOREIGN_OBJECT: "牺牲样式，提高兼容性。若导出的图片异常，请勾选此选项",
         }
-        const { DEFAULT_TOC_OPTIONS: _ops, BORDER_WHEN_DOWNLOAD_SVG: _border } = this.config;
-        const needUpdateKey = ["DEFAULT_TOC_OPTIONS", "BORDER_WHEN_DOWNLOAD_SVG"];
-        const _getConfig = key => (key in _ops) ? _ops[key] : this.config[key];
+        const { DEFAULT_TOC_OPTIONS: _tocOps, DOWNLOAD_OPTIONS: _downOps } = this.config
+        const needUpdateKey = ["DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS"]
+        const _locateConfig = key => [_tocOps, _downOps, this.config].find(cfg => key in cfg)
+        const _getConfig = key => _locateConfig(key)[key]
         const _setConfig = (key, value) => {
-            const isOPS = key in _ops;
-            (isOPS ? _ops : this.config)[key] = value;
-            !isOPS && needUpdateKey.push(key);
+            const config = _locateConfig(key)
+            config[key] = value
+            if (config === this.config) {
+                needUpdateKey.push(key)
+            }
         }
-        const inputKV = (label, key) => ({
+        const cpn = (label, key) => ({
             label,
             info: INFO[key],
             value: _getConfig(key),
             callback: value => _setConfig(key, value),
-        });
-        const checkboxKV = components => ({
+        })
+        const checkboxCpn = components => ({
             type: "checkbox",
             list: components.map(({ label, key, disabled }) => ({ label, info: INFO[key], value: key, checked: Boolean(_getConfig(key)), disabled })),
             callback: submit => components.forEach(({ key }) => _setConfig(key, submit.includes(key))),
         })
-        const borderKV = (label, idx) => ({ label, value: _border[idx], callback: value => _border[idx] = value });
 
         const color = () => {
-            const toValue = colorList => colorList.join("_");
-            const fromValue = str => str.split("_");
+            const toValue = colorList => colorList.join("_")
+            const fromValue = str => str.split("_")
             const toLabel = colorList => {
-                const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`);
-                return `<div class="plugin-markmap-color-scheme">${inner.join("")}</div>`;
+                const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`)
+                return `<div class="plugin-markmap-color-scheme">${inner.join("")}</div>`
             }
-            const curValue = toValue(_ops.color);
+            const curValue = toValue(_tocOps.color)
             const list = this.config.CANDIDATE_COLOR_SCHEMES.map(colorList => {
-                const value = toValue(colorList);
-                const label = toLabel(colorList);
-                const checked = value === curValue;
-                return { value, label, checked };
+                const value = toValue(colorList)
+                const label = toLabel(colorList)
+                const checked = value === curValue
+                return { value, label, checked }
             })
             if (!list.some(e => e.checked)) {
-                list.push({ value: curValue, label: toLabel(_ops.color), checked: true });
+                list.push({ value: curValue, label: toLabel(_tocOps.color), checked: true })
             }
-            const callback = scheme => _ops.color = fromValue(scheme);
-            return { label: "配色方案", info: INFO.color, type: "radio", list, callback };
+            const callback = scheme => _tocOps.color = fromValue(scheme)
+            return { label: "配色方案", info: INFO.color, type: "radio", list, callback }
         }
 
         const chart = (fieldset = "图形") => [
-            { fieldset, type: "range", inline: true, min: 1, max: 6, step: 1, ...inputKV("固定配色的分支等级", "colorFreezeLevel") },
-            { fieldset, type: "range", inline: true, min: 1, max: 6, step: 1, ...inputKV("分支展开等级", "initialExpandLevel") },
-            { fieldset, type: "range", inline: true, min: 0, max: 100, step: 1, ...inputKV("节点内边距", "paddingX") },
-            { fieldset, type: "range", inline: true, min: 0, max: 200, step: 1, ...inputKV("节点水平间距", "spacingHorizontal") },
-            { fieldset, type: "range", inline: true, min: 0, max: 100, step: 1, ...inputKV("节点垂直间距", "spacingVertical") },
-            { fieldset, type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("节点最大长度", "maxWidth") },
-            { fieldset, type: "range", inline: true, min: 0, max: 1000, step: 10, ...inputKV("动画持续时间", "duration") },
+            { fieldset, type: "range", inline: true, min: 1, max: 6, step: 1, ...cpn("固定配色的分支等级", "colorFreezeLevel") },
+            { fieldset, type: "range", inline: true, min: 1, max: 6, step: 1, ...cpn("分支展开等级", "initialExpandLevel") },
+            { fieldset, type: "range", inline: true, min: 0, max: 100, step: 1, ...cpn("节点内边距", "paddingX") },
+            { fieldset, type: "range", inline: true, min: 0, max: 200, step: 1, ...cpn("节点水平间距", "spacingHorizontal") },
+            { fieldset, type: "range", inline: true, min: 0, max: 100, step: 1, ...cpn("节点垂直间距", "spacingVertical") },
+            { fieldset, type: "range", inline: true, min: 0, max: 1000, step: 10, ...cpn("节点最大长度", "maxWidth") },
+            { fieldset, type: "range", inline: true, min: 0, max: 1000, step: 10, ...cpn("动画持续时间", "duration") },
         ]
 
         const window = (fieldset = "窗口") => [
-            { fieldset, type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...inputKV("窗口填充率", "fitRatio") },
-            { fieldset, type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("初始的窗口宽度", "WIDTH_PERCENT_WHEN_INIT") },
-            { fieldset, type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("初始的窗口高度", "HEIGHT_PERCENT_WHEN_INIT") },
-            { fieldset, type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("固定顶部的窗口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
-            { fieldset, type: "range", inline: true, min: 20, max: 95, step: 1, ...inputKV("固定右侧的窗口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
-            { fieldset, type: "range", inline: true, min: 0.1, max: 0.95, step: 0.01, ...inputKV("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
+            { fieldset, type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...cpn("窗口填充率", "fitRatio") },
+            { fieldset, type: "range", inline: true, min: 20, max: 95, step: 1, ...cpn("初始的窗口宽度", "WIDTH_PERCENT_WHEN_INIT") },
+            { fieldset, type: "range", inline: true, min: 20, max: 95, step: 1, ...cpn("初始的窗口高度", "HEIGHT_PERCENT_WHEN_INIT") },
+            { fieldset, type: "range", inline: true, min: 20, max: 95, step: 1, ...cpn("固定顶部的窗口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
+            { fieldset, type: "range", inline: true, min: 20, max: 95, step: 1, ...cpn("固定右侧的窗口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
+            { fieldset, type: "range", inline: true, min: 0.1, max: 0.95, step: 0.01, ...cpn("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
         ]
 
         const ability = (legend = "能力") => {
@@ -567,26 +568,27 @@ class tocMarkmap {
                 { label: "更新时不展开已折叠节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
                 { label: "折叠节点时自动折叠章节", disabled: !hasPlugin, key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD" },
             ]
-            return { label: "", legend, ...checkboxKV(components) }
+            return { label: "", legend, ...checkboxCpn(components) }
         }
 
         const download = (fieldset = "导出") => {
             const components = [
-                { label: "删除无用样式", key: "REMOVE_USELESS_STYLE_WHEN_DOWNLOAD_SVG" },
-                { label: "删除无用类名", key: "REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG" },
-                { label: "替换 CSS 变量", key: "REMOVE_CSS_VARIABLE_WHEN_DOWNLOAD_SVG" },
-                { label: "替换 &lt;foreignObject&gt; 标签", key: "REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG" },
-                { label: "导出前询问导出路径", key: "SHOW_DIALOG_WHEN_DOWNLOAD_SVG" },
-                { label: "导出后打开文件所在目录", key: "SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG" },
+                { label: "保留透明信息", key: "KEEP_ALPHA_CHANNEL" },
+                { label: "删除无用类名", key: "REMOVE_USELESS_CLASSES" },
+                { label: "替换 &lt;foreignObject&gt; 标签", key: "REMOVE_FOREIGN_OBJECT" },
+                { label: "导出前询问导出路径", key: "SHOW_PATH_INQUIRY_DIALOG" },
+                { label: "导出后打开文件所在目录", key: "SHOW_IN_FINDER" },
             ]
             return [
-                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("水平内边距", 0) },
-                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...borderKV("垂直内边距", 1) },
-                { fieldset, type: "number", inline: true, min: 0.01, max: 1, step: 0.01, ...inputKV("图片质量", "IMAGE_QUALITY_WHEN_DOWNLOAD_SVG") },
-                { fieldset, type: "color", inline: true, ...inputKV("背景颜色", "BACKGROUND_COLOR_WHEN_DOWNLOAD_SVG") },
-                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...inputKV("默认文件夹", "FOLDER_WHEN_DOWNLOAD_SVG") },
-                { fieldset, type: "input", inline: true, ...inputKV("默认文件名", "FILENAME_WHEN_DOWNLOAD_SVG") },
-                { fieldset, label: "", ...checkboxKV(components) },
+                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...cpn("水平内边距", "PADDING_HORIZONTAL") },
+                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...cpn("垂直内边距", "PADDING_VERTICAL") },
+                { fieldset, type: "number", inline: true, min: 0.01, max: 1, step: 0.01, ...cpn("图片质量", "IMAGE_QUALITY") },
+                { fieldset, type: "color", inline: true, ...cpn("文字颜色", "TEXT_COLOR") },
+                { fieldset, type: "color", inline: true, ...cpn("圆圈颜色", "OPEN_CIRCLE_COLOR") },
+                { fieldset, type: "color", inline: true, ...cpn("背景颜色", "BACKGROUND_COLOR") },
+                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...cpn("默认文件夹", "FOLDER") },
+                { fieldset, type: "input", inline: true, ...cpn("默认文件名", "FILENAME") },
+                { fieldset, label: "", ...checkboxCpn(components) },
             ]
         }
 
@@ -601,23 +603,22 @@ class tocMarkmap {
     }
 
     download = async () => {
+        let { SHOW_PATH_INQUIRY_DIALOG, SHOW_IN_FINDER, FOLDER: folder, FILENAME: file = "{{filename}}.svg" } = this.config.DOWNLOAD_OPTIONS
         const getDownloadPath = async () => {
-            let folder = this.config.FOLDER_WHEN_DOWNLOAD_SVG
             if (!folder || !(await this.utils.existPath(folder))) {
                 folder = this.utils.tempFolder
             }
-            const filename = this.config.FILENAME_WHEN_DOWNLOAD_SVG || "{{filename}}.svg"
             const tpl = {
                 uuid: this.utils.getUUID(),
                 timestamp: new Date().getTime().toString(),
                 filename: this.utils.getFileName() || "markmap",
             }
-            const name = filename.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
+            const name = file.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
             return this.utils.Package.Path.join(folder, name)
         }
 
         let downloadPath = await getDownloadPath()
-        if (this.config.SHOW_DIALOG_WHEN_DOWNLOAD_SVG) {
+        if (SHOW_PATH_INQUIRY_DIALOG) {
             const op = { properties: ["saveFile", "showOverwriteConfirmation"], title: "导出", defaultPath: downloadPath, filters: Downloader.getFormats() }
             const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", op)
             if (canceled) return
@@ -625,7 +626,7 @@ class tocMarkmap {
         }
         const ok = await Downloader.download(this, downloadPath)
         if (!ok) return
-        if (this.config.SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG) {
+        if (SHOW_IN_FINDER) {
             this.utils.showInFinder(downloadPath)
         }
         this.utils.notification.show("导出成功")
@@ -876,17 +877,15 @@ class tocMarkmap {
 }
 
 class Downloader {
-    static _toSVG = (plugin, option = {
-        border: plugin.config.BORDER_WHEN_DOWNLOAD_SVG,
+    static _toSVG = (plugin, options = {
         paddingX: plugin.config.DEFAULT_TOC_OPTIONS.paddingX,
-        removeUselessCss: plugin.config.REMOVE_USELESS_STYLE_WHEN_DOWNLOAD_SVG,
-        removeCssVariable: plugin.config.REMOVE_CSS_VARIABLE_WHEN_DOWNLOAD_SVG,
-        removeForeignObject: plugin.config.REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG,
-        removeUselessClassName: plugin.config.REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG,
+        paddingH: plugin.config.DOWNLOAD_OPTIONS.PADDING_HORIZONTAL,
+        paddingV: plugin.config.DOWNLOAD_OPTIONS.PADDING_VERTICAL,
+        textColor: plugin.config.DOWNLOAD_OPTIONS.TEXT_COLOR,
+        openCircleColor: plugin.config.DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR,
+        removeForeignObject: plugin.config.DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT,
+        removeUselessClasses: plugin.config.DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES,
     }) => {
-        const _newStyle = cssText => new DOMParser().parseFromString(`<style>${cssText}</style>`, "text/html").querySelector("style")
-        const _replaceStyle = (el, cssText) => el.replaceChild(document.createTextNode(cssText), el.firstChild)
-
         const _getRect = svg => {
             const { width, height } = plugin.entities.svg.querySelector("g").getBoundingClientRect()
             const match = svg.querySelector("g").getAttribute("transform").match(/scale\((?<scale>.+?\))/)
@@ -905,21 +904,21 @@ class Downloader {
             return { minX: 0, maxX: realWidth, width: realWidth, minY: minY, maxY: maxY, height: realHeight }
         }
 
-        const fixAttribute = svg => {
+        const fixAttributes = svg => {
             const { width = 100, height = 100, minY = 0 } = _getRect(svg)
-            const [borderX, borderY] = option.border
-            const svgWidth = width + borderX
-            const svgHeight = height + borderY
+            const { paddingH, paddingV } = options
+            const svgWidth = width + paddingH * 2  // both sides
+            const svgHeight = height + paddingV * 2
             svg.removeAttribute("id")
             svg.setAttribute("xmlns", "http://www.w3.org/2000/svg")
             svg.setAttribute("class", "markmap")
             svg.setAttribute("width", svgWidth)
             svg.setAttribute("height", svgHeight)
             svg.setAttribute("viewBox", `0 ${minY} ${svgWidth} ${svgHeight}`)
-            svg.querySelector("g").setAttribute("transform", `translate(${borderX / 2}, ${borderY / 2})`)
+            svg.querySelector("g").setAttribute("transform", `translate(${paddingH}, ${paddingV})`)
         }
 
-        const removeUselessCss = svg => {
+        const fixStyles = svg => {
             const useless = new Set([
                 ".markmap-dark .markmap",
                 ".markmap-node > circle",
@@ -931,30 +930,35 @@ class Downloader {
                 ".markmap-foreign-testing-max img",
                 ".markmap-foreign table, .markmap-foreign th, .markmap-foreign td",
             ])
-            const allRules = _newStyle(plugin.controller.MarkmapLib.globalCSS).sheet.cssRules
-            const usefulRules = [...allRules]
-                .filter(rule => !useless.has(rule.selectorText))
+            // remove useless styles
+            const globalCSS = plugin.controller.MarkmapLib.globalCSS
+            const globalStyle = new DOMParser().parseFromString(`<style>${globalCSS}</style>`, "text/html").querySelector("style")
+            const usefulRules = [...globalStyle.sheet.cssRules].filter(rule => !useless.has(rule.selectorText))
+
+            // CSS variables cannot be parsed by some SVG parsers, remove them
+            let cssText = usefulRules
                 .map(rule => rule.cssText)
                 .join(" ")
-            _replaceStyle(svg.querySelector("style"), usefulRules)
-        }
-
-        const removeCssVariable = svg => {
-            svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", "#fff"))
-            const style = svg.querySelector("style")
-            let cssText = style.textContent
-            _newStyle(cssText).sheet.cssRules[0].styleMap.forEach((value, key) => {
+                .replace(/--[\w\-]+?\s*?:\s*?.+?;/g, "")
+                .replace(/\s+/g, " ")
+            const markmapClassStyleMap = usefulRules[0].styleMap  // All CSS variables are here
+            markmapClassStyleMap.forEach((value, key) => {
                 if (key.startsWith("--")) {
-                    cssText = cssText.replace(new RegExp(`var\\(${key}\\);?`, "g"), value[0][0] + ";")
+                    const regexp = new RegExp(`var\\(${key}\\);?`, "g")
+                    const replacement = key === "--markmap-text-color" ? options.textColor : value[0][0]
+                    cssText = cssText.replace(regexp, replacement + ";")
                 }
             })
-            cssText = cssText.replace(/--[\w\-]+?\s*?:\s*?.+?;/g, "").replace(/\s+/g, " ")
-            _replaceStyle(style, cssText)
+
+            // replace style element
+            const style = svg.querySelector("style")
+            style.replaceChild(document.createTextNode(cssText), style.firstChild)
+            svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", options.openCircleColor))
         }
 
         const removeForeignObject = svg => {
             svg.querySelectorAll("foreignObject").forEach(foreign => {
-                const x = option.paddingX
+                const x = options.paddingX
                 const y = parseInt(foreign.closest("g").querySelector("line").getAttribute("y1")) - 4
                 // const y = 16
                 const text = document.createElement("text")
@@ -966,27 +970,25 @@ class Downloader {
             })
         }
 
-        const removeUselessClassName = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
+        const removeUselessClasses = svg => svg.querySelectorAll(".markmap-node").forEach(ele => ele.removeAttribute("class"))
 
         const svg = plugin.entities.svg.cloneNode(true)
-        fixAttribute(svg)
-        if (option.removeUselessCss) {
-            removeUselessCss(svg)
-        }
-        // 有些SVG解析器无法解析CSS变量
-        if (option.removeCssVariable) {
-            removeCssVariable(svg)
-        }
-        if (option.removeForeignObject) {
+        fixAttributes(svg)
+        fixStyles(svg)
+        if (options.removeForeignObject) {
             removeForeignObject(svg)
         }
-        if (option.removeUselessClassName) {
-            removeUselessClassName(svg)
+        if (options.removeUselessClasses) {
+            removeUselessClasses(svg)
         }
         return svg
     }
 
-    static _toImage = async (plugin, format, before) => {
+    static _toImage = async (plugin, format, options = {
+        imageQuality: plugin.config.DOWNLOAD_OPTIONS.IMAGE_QUALITY,
+        keepAlphaChannel: plugin.config.DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL,
+        backgroundColor: plugin.config.DOWNLOAD_OPTIONS.BACKGROUND_COLOR,
+    }) => {
         const svg = this._toSVG(plugin)
         const img = new Image()
         const ok = await new Promise(resolve => {
@@ -1008,12 +1010,13 @@ class Downloader {
         canvas.style.height = height + "px"
 
         const ctx = canvas.getContext("2d")
-        if (before) {
-            before(ctx, canvas, img)
+        if (format === "jpeg" || !options.keepAlphaChannel) {
+            ctx.fillStyle = options.backgroundColor
+            ctx.fillRect(0, 0, width, height)
         }
         ctx.drawImage(img, 0, 0, width, height)
 
-        const encoderOptions = parseFloat(plugin.config.IMAGE_QUALITY_WHEN_DOWNLOAD_SVG)
+        const encoderOptions = parseFloat(options.imageQuality)
         const base64 = canvas.toDataURL(`image/${format}`, encoderOptions).replace(`data:image/${format};base64,`, "")
         return Buffer.from(base64, "base64")
     }
@@ -1025,10 +1028,7 @@ class Downloader {
 
     static png = async (plugin) => this._toImage(plugin, "png")
 
-    static jpg = async (plugin) => this._toImage(plugin, "jpeg", (ctx, canvas) => {
-        ctx.fillStyle = plugin.config.BACKGROUND_COLOR_WHEN_DOWNLOAD_SVG
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-    })
+    static jpg = async (plugin) => this._toImage(plugin, "jpeg")
 
     static webp = async (plugin) => this._toImage(plugin, "webp")
 

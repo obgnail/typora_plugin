@@ -822,60 +822,43 @@ CANDIDATE_COLOR_SCHEMES = [
 #   - fitRatio          : 图形的窗口填充率
 DEFAULT_TOC_OPTIONS = { autoFit = true, duration = 500, initialExpandLevel = -1, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, paddingX = 8, colorFreezeLevel = 6, zoom = true, pan = true, color = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#E377C2', '#7F7F7F', '#BCBD22', '#17BECF'] }
 
-# 导出思维导图时的文件名格式
+# 导出选项
+# FILENAME: 文件名格式
 #   可以使用以下占位符：
 #     - {{filename}}: 当前 Markdown 文件名
 #     - {{timestamp}}: 当前时间戳
 #     - {{uuid}}: UUID (通用唯一识别码)
-FILENAME_WHEN_DOWNLOAD_SVG = "{{filename}}_{{timestamp}}.svg"
-
-# 导出图形时的保存目录路径，为空时表示使用系统临时目录
+# FOLDER: 目录路径，为空时表示使用系统临时目录
 #   可以使用绝对路径，例如 "D:\\tmp\\img"
-FOLDER_WHEN_DOWNLOAD_SVG = ""
-
-# 导出图形时，是否移除 CSS 变量 (某些 SVG 解析器可能无法解析 CSS 变量)
-#   true:  移除 CSS 变量，提高兼容性
-#   false: 保留 CSS 变量，可能导致部分解析器无法正确渲染样式
-REMOVE_CSS_VARIABLE_WHEN_DOWNLOAD_SVG = true
-
-# 导出图形时，是否删除无用的样式以减小文件体积
-#   true:  删除无用样式，减小 SVG 文件体积
-#   false: 保留所有样式，不进行优化
-REMOVE_USELESS_STYLE_WHEN_DOWNLOAD_SVG = true
-
-# 导出图形时，是否删除无用的类名以减小文件体积
+# REMOVE_USELESS_CLASSES: 是否删除无用的类名以减小文件体积
 #   true:  删除无用类名，减小 SVG 文件体积
 #   false: 保留所有类名，不进行优化
-REMOVE_USELESS_CLASS_NAME_WHEN_DOWNLOAD_SVG = true
-
-# 导出图形时，是否移除 foreignObject 标签，并替换为 <text> 标签
-#   - true:  移除 foreignObject 标签，提高 SVG 的兼容性，但可能丢失一些样式
-#   - false: 保留 foreignObject 标签，可以保留更多样式，但可能导致部分应用无法正确处理 SVG
+# REMOVE_FOREIGN_OBJECT: 是否移除 foreignObject 标签，并替换为 <text> 标签
+#   true:  移除 foreignObject 标签，提高 SVG 的兼容性，但可能丢失一些样式
+#   false: 保留 foreignObject 标签，可以保留更多样式，但可能导致部分应用无法正确处理 SVG
 #   请谨慎修改此项，若不了解 SVG，请保持默认值 false
-REMOVE_FOREIGN_OBJECT_WHEN_DOWNLOAD_SVG = false
-
-# 导出图形时，图形的内边距
-#   一个包含两个元素的数组：[水平内边距, 垂直内边距]
-#   例如： [50, 50] 表示水平和垂直方向内边距均为 50 像素
-BORDER_WHEN_DOWNLOAD_SVG = [50, 50]
-
-# 导出为 JPG 或 WebP 格式图片时，图片的质量
+# PADDING_HORIZONTAL: 图形的水平内边距
+#   例如： 25 表示图片的左右内边距皆为 25
+# PADDING_VERTICAL: 图形的垂直内边距
+#   例如： 25 表示图片的上下内边距皆为 25
+# IMAGE_QUALITY: 导出为 JPG 或 WebP 格式图片时，图片的质量
 #   取值范围：0 到 1 之间的浮点数，值越大质量越高，文件体积也越大
-IMAGE_QUALITY_WHEN_DOWNLOAD_SVG = 0.92
-
-# 导出不带透明通道的图片格式 (如 JPG) 时，设置背景颜色
-#  可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
-BACKGROUND_COLOR_WHEN_DOWNLOAD_SVG = "#ffffff"
-
-# 导出前是否显示文件保存路径选择对话框
+# KEEP_ALPHA_CHANNEL: 导出带透明通道的图片格式 (如 PNG、WEBP) 时，是否保留透明通道
+#   true:  保留透明通道，将导出带透明背景的图片
+#   false: 不保留透明通道，将使用 BACKGROUND_COLOR 设置背景颜色
+# BACKGROUND_COLOR: 导出像素图片格式 (如 JPG、PNG、WEBP) 时，设置的背景颜色
+#   可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
+# TEXT_COLOR: 字体颜色
+#   可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
+# OPEN_CIRCLE_COLOR: 展开节点的颜色
+#   可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
+# SHOW_PATH_INQUIRY_DIALOG: 导出前是否显示文件保存路径选择对话框
 #   true:  导出前显示对话框，允许用户选择保存路径
 #   false: 导出时直接使用默认路径，不显示对话框
-SHOW_DIALOG_WHEN_DOWNLOAD_SVG = true
-
-# 导出完成后是否自动打开文件所在的目录
+# SHOW_IN_FINDER: 导出完成后是否自动打开文件所在的目录
 #   true:  导出后，自动打开文件所在目录
 #   false: 导出后不打开目录
-SHOW_IN_FINDER_WHEN_DOWNLOAD_SVG = true
+DOWNLOAD_OPTIONS = { FILENAME = "{{filename}}_{{timestamp}}.svg", FOLDER = "", REMOVE_USELESS_CLASSES = true, REMOVE_FOREIGN_OBJECT = false, PADDING_HORIZONTAL = 25, PADDING_VERTICAL = 25, IMAGE_QUALITY = 0.92, KEEP_ALPHA_CHANNEL = true, BACKGROUND_COLOR = "#ffffff", TEXT_COLOR = "#333333", OPEN_CIRCLE_COLOR = "#ffffff", SHOW_PATH_INQUIRY_DIALOG = true, SHOW_IN_FINDER = true }
 
 # -------------------  Fence (代码块) 功能配置 -------------------
 # 启用或禁用 Fence 功能，即插入 markmap 代码块
@@ -1413,7 +1396,7 @@ NAME = "文字风格化"
 
 # ------------------- 面板外观 -------------------
 # 面板的背景颜色。若为空字符串 ""，则跟随 Typora 主题的配色方案
-#   支持 CSS 颜色值，例如："#ffffff" (白色), "rgb(255, 0, 0)" (红色), "transparent" (透明)
+#   支持 CSS 颜色值，例如："#ffffff" (白色), "rgb(255, 0, 0)" (红色)
 MODAL_BACKGROUND_COLOR = ""
 
 # ------------------- 面板交互 -------------------
