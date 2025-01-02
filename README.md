@@ -12,7 +12,7 @@
 </div>
 
 
-| 序号 | 插件                    | 功能                                   | 默认启用 |
+| #    | 插件                    | 功能                                   | 默认启用 |
 | ---- | ----------------------- | -------------------------------------- | -------- |
 | 1    | window_tab              | 标签页管理                             |          |
 | 2    | search_multi            | 多关键字搜索                           |          |
@@ -28,8 +28,8 @@
 | 12   | commander               | 命令行环境                             |          |
 | 13   | toolbar                 | 多功能搜索                             |          |
 | 14   | right_click_menu        | 右键菜单统一管理插件                   |          |
-| 15   | datatables              | 表格增强（搜索、过滤、分页、排序等）   | ×        |
-| 16   | pie_menu                | 圆盘菜单                               | ×        |
+| 15   | pie_menu                | 圆盘菜单                               | ×        |
+| 16   | datatables              | 表格增强（搜索、过滤、分页、排序等）   | ×        |
 | 17   | preferences             | 启停插件                               |          |
 | 18   | markmap                 | 提供 markmap 组件支持                  |          |
 | 19   | echarts                 | 提供 echarts 组件支持                  |          |
@@ -76,7 +76,7 @@
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
-> 如果各位有其他的需求，或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果能给我颗 star ⭐ 就更好了 :)
+> 如果有其他需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，也欢迎 PR。如果能给我颗 star ⭐ 就更好了 :)
 
 
 
@@ -121,7 +121,7 @@
 
 > 目前此方法仅限 archlinux 平台，aur 见 [aur/typora-plugin](https://aur.archlinux.org/packages/typora-plugin)
 
-```
+```sh
 yay -S typora-plugin
 ```
 
@@ -151,7 +151,7 @@ yay -S typora-plugin
 
 目前整个项目包含 600+ 配置选项，可以比较完整的定义各个插件的行为。
 
-这些配置全部位于 [./plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings) 目录中。修改配置的方法请阅读该目录下的 [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
+这些配置全部位于 [./plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings) 目录中。修改配置的方法请阅读该目录下的 [说明文件](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
 
 
 
@@ -178,7 +178,7 @@ yay -S typora-plugin
 所有的插件都提供了四种使用方法：
 
 - 键盘党：
-  - 键入 ctrl+j，在输入框键入 `plu+空格+插件名称` 调出插件列表（详见 `toolbar` 插件）
+  - 键入 `ctrl+j`，在输入框键入 `plu` 加空格加插件名称调出插件列表（详见 `toolbar` 插件）
   - 快捷键（详见 `hotkeys` 插件）
 - 鼠标党：
   - 在正文区域右键，在弹出的右键菜单中直接调用（详见 `right_click_menu` 插件）
@@ -608,9 +608,9 @@ icon = "\\f040"
 
 > 注意：通过注入 CSS 实现此功能，有可能会与你使用的 theme 冲突。
 
-> 和其他使用 Theme CSS 的实现方式不同，此插件通过修改内置函数，完美解决导出 PDF 后侧边栏没有编号的问题 :)
+和其他使用 Theme CSS 的实现方式不同，此插件通过修改内置函数，完美解决导出 PDF 后侧边栏没有编号的问题 :)
 
-> 根据 [Markdown 最佳实践](https://learn.microsoft.com/en-us/powershell/scripting/community/contributing/general-markdown?view=powershell-7.3)，一篇文档应该 **有且仅有** 一个 h1，故此插件从 h2 开始编号。
+根据 [Markdown 最佳实践](https://learn.microsoft.com/en-us/powershell/scripting/community/contributing/general-markdown?view=powershell-7.3)，一篇文档应该 **有且仅有** 一个 h1，故此插件从 h2 开始编号。
 
 
 
@@ -637,7 +637,7 @@ icon = "\\f040"
 
 功能：增强表格。提供搜索、过滤、分页、排序等功能。
 
-> 使用方式：将光标定位在表格 -> 右键菜单 -> 少用插件 ->  表格增强。
+使用方式：将光标定位在表格 -> 右键菜单 -> 少用插件 -> 表格增强。
 
 ![datatables](assets/datatables.png)
 
@@ -689,6 +689,17 @@ icon = "\\f040"
 
 
 
+### markdownLint：markdown 格式规范检测
+
+功能：检测当前文件是否符合 markdown 最佳实践规范。
+
+使用方式：
+
+1. 方法一：点击右上角的小方块
+2. 方法二：右键菜单 -> 常用插件 -> 二级插件 -> 格式规范检测
+
+
+
 ### updater：一键升级插件
 
 使用方式：右键菜单 -> 少用插件 -> 升级插件
@@ -723,7 +734,7 @@ icon = "\\f040"
 
 ### redirectLocalRootUrl：重定向本地资源根目录
 
-功能：如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 typora 打开文件。就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中（vault），这导致在 typora 打开后文件由于路径错误，无法访问本地资源。此插件就是为了解决此问题，重定向本地资源根目录。
+功能：如果你主要使用 obsidian 或 joplin 来管理文件，偶尔用 typora 打开文件。就会遇到一个问题：obsidian 或 joplin 都是将本地资源放在同一个目录中，这导致在 typora 打开后文件由于路径错误，无法访问本地资源。此插件就是为了解决此问题，重定向本地资源根目录。
 
 > 此插件默认关闭，需手动开启。
 

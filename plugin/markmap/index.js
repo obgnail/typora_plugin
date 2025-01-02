@@ -486,10 +486,10 @@ class tocMarkmap {
             LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，不建议开启。仅当插件「章节折叠」开启时可用",
             FOLDER: "若为空或不存在，则使用 TEMP 目录",
-            FILENAME: `支持变量：filename、timestamp、uuid\n支持后缀：${Downloader.getFormats()[0].extensions.join("、")}`,
+            FILENAME: `支持变量：filename、timestamp、random、uuid\n支持后缀：${Downloader.getFormats()[0].extensions.join("、")}`,
             IMAGE_QUALITY: "仅适用于 jpg、webp 格式",
             BACKGROUND_COLOR: "仅适用于像素图片格式",
-            KEEP_ALPHA_CHANNEL: "若取消勾选，当导出 png、webp 格式时会为图片设置背景颜色",
+            KEEP_ALPHA_CHANNEL: "仅适用于携带透明通道的像素图片格式",
             REMOVE_FOREIGN_OBJECT: "牺牲样式，提高兼容性。若导出的图片异常，请勾选此选项",
         }
         const { DEFAULT_TOC_OPTIONS: _tocOps, DOWNLOAD_OPTIONS: _downOps } = this.config
@@ -610,7 +610,8 @@ class tocMarkmap {
             }
             const tpl = {
                 uuid: this.utils.getUUID(),
-                timestamp: new Date().getTime().toString(),
+                random: this.utils.randomString(),
+                timestamp: new Date().getTime(),
                 filename: this.utils.getFileName() || "markmap",
             }
             const name = file.replace(/\{\{([\S\s]+?)\}\}/g, (origin, arg) => tpl[arg.trim().toLowerCase()] || origin)
