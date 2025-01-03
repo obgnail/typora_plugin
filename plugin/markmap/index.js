@@ -598,7 +598,7 @@ class tocMarkmap {
         }
 
         const components = [color(), ...chart(), ...window(), behavior(), ...download()];
-        const { response } = await this.utils.dialog.modalAsync({ title: "设置", width: "520px", components });
+        const { response } = await this.utils.dialog.modalAsync({ title: "设置", width: "500px", components })
         if (response === 1) {
             components.forEach(c => c.callback(c.submit));
             await this.redraw(this.markmap.options);
@@ -927,6 +927,7 @@ class Downloader {
         }
 
         const fixStyles = svg => {
+            // remove useless styles
             const useless = new Set([
                 ".markmap-dark .markmap",
                 ".markmap-node > circle",
@@ -938,12 +939,12 @@ class Downloader {
                 ".markmap-foreign-testing-max img",
                 ".markmap-foreign table, .markmap-foreign th, .markmap-foreign td",
             ])
-            // remove useless styles
-            const globalCSS = plugin.controller.MarkmapLib.globalCSS
-            const globalStyle = new DOMParser().parseFromString(`<style>${globalCSS}</style>`, "text/html").querySelector("style")
-            const usefulRules = [...globalStyle.sheet.cssRules].filter(rule => !useless.has(rule.selectorText))
+            const style = svg.querySelector("style")
+            // The `sheet` property of <style> in cloned <svg> is undefined, parse the style text to get it
+            const styleEle = new DOMParser().parseFromString(`<style>${style.textContent}</style>`, "text/html").querySelector("style")
+            const usefulRules = [...styleEle.sheet.cssRules].filter(rule => !useless.has(rule.selectorText))
 
-            // CSS variables cannot be parsed by some SVG parsers, remove them
+            // CSS variables cannot be parsed by some SVG parsers, replace them
             let cssText = usefulRules
                 .map(rule => rule.cssText)
                 .join(" ")
@@ -952,14 +953,13 @@ class Downloader {
             const markmapClassStyleMap = usefulRules[0].styleMap  // All CSS variables are here
             markmapClassStyleMap.forEach((value, key) => {
                 if (key.startsWith("--")) {
-                    const regexp = new RegExp(`var\\(${key}\\);?`, "g")
+                    const regex = new RegExp(`var\\(${key}\\);?`, "g")
                     const replacement = key === "--markmap-text-color" ? options.textColor : value[0][0]
-                    cssText = cssText.replace(regexp, replacement + ";")
+                    cssText = cssText.replace(regex, replacement + ";")
                 }
             })
 
             // replace style element
-            const style = svg.querySelector("style")
             style.replaceChild(document.createTextNode(cssText), style.firstChild)
             svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", options.openCircleColor))
         }
@@ -972,8 +972,15 @@ class Downloader {
                 const text = document.createElement("text")
                 text.setAttribute("x", x)
                 text.setAttribute("y", y)
-                const katex = foreign.querySelector(".katex-html")
-                text.textContent = katex ? katex.textContent : foreign.textContent
+
+                // TODO: handle math
+                const katex = foreign.querySelector(".katex")
+                if (katex) {
+                    const base = katex.querySelector(".katex-html")
+                    katex.innerHTML = base ? base.textContent : ""
+                }
+
+                text.textContent = foreign.textContent
                 foreign.parentNode.replaceChild(text, foreign)
             })
         }
@@ -1135,7 +1142,7 @@ class Downloader {
             return toHTML(title, styleElements, scriptElements)
         }
 
-        return run("MARKMAP")
+        return run("MINDMAP")
     }
 
     static getFormats() {

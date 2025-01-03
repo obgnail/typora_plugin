@@ -425,15 +425,15 @@ class windowTabBarPlugin extends BasePlugin {
             { arg_name: "保存当前标签页列表", arg_value: "save_tabs" },
             { arg_name: "启用功能：隐藏文件后缀", arg_value: "toggle_suffix", arg_state: this.config.REMOVE_FILE_SUFFIX },
             { arg_name: "启用功能：同名文件显示其目录", arg_value: "toggle_show_dir", arg_state: this.config.SHOW_DIR_FOR_SAME_NAME_FILE },
+            { arg_name: "启用功能：显示标签页关闭按钮", arg_value: "toggle_show_close_button", arg_state: this.config.SHOW_TAB_CLOSE_BUTTON },
             { arg_name: "启用功能：鼠标悬停显示完整路径", arg_value: "toggle_show_path", arg_state: this.config.SHOW_FULL_PATH_WHEN_HOVER },
             { arg_name: "启用功能：JetBrains风格的标签拖拽方式", arg_value: "toggle_drag_style", arg_state: this.config.JETBRAINS_DRAG_STYLE },
             { arg_name: "启用功能：一体化窗口样式时隐藏标题栏", arg_value: "toggle_hide_title_bar", arg_state: this.config.HIDE_WINDOW_TITLE_BAR },
-            { arg_name: "启用功能：显示标签页关闭按钮", arg_value: "toggle_show_close_button", arg_state: this.config.SHOW_TAB_CLOSE_BUTTON },
             { arg_name: "启用功能：在新标签打开", arg_value: "toggle_local", arg_state: !this.localOpen },
         ]
         if (this.config.JETBRAINS_DRAG_STYLE) {
             const arg = { arg_name: "启用功能：拖拽时竖直防抖", arg_value: "toggle_limit_y_axis", arg_state: this.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG }
-            args.splice(4, 0, arg)
+            args.splice(5, 0, arg)
         }
         if (this.utils.existPathSync(this.saveTabFilePath)) {
             const arg = { arg_name: "打开保存的标签页列表", arg_value: "open_save_tabs" }
@@ -443,11 +443,12 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     call = type => {
-        const toggleConfig = async (cfg, needRestart) => {
+        const toggleConfig = async (cfg, restart = false) => {
             this.config[cfg] = !this.config[cfg]
-            this.switchTab(this.tabUtil.activeIdx)
             await this.utils.runtime.saveConfig(this.fixedName, { [cfg]: this.config[cfg] })
-            if (needRestart) {
+            if (!restart) {
+                this.rerenderTabBar()
+            } else {
                 const op = { type: "info", buttons: ["确定", "取消"], message: "重启后生效，确认重启？", title: "重启 Typora" }
                 const { response } = await this.utils.showMessageBox(op)
                 if (response === 0) {
@@ -461,8 +462,8 @@ class windowTabBarPlugin extends BasePlugin {
             toggle_show_dir: () => toggleConfig("SHOW_DIR_FOR_SAME_NAME_FILE"),
             toggle_suffix: () => toggleConfig("REMOVE_FILE_SUFFIX"),
             toggle_show_path: () => toggleConfig("SHOW_FULL_PATH_WHEN_HOVER"),
+            toggle_show_close_button: () => toggleConfig("SHOW_TAB_CLOSE_BUTTON"),
             toggle_hide_title_bar: () => toggleConfig("HIDE_WINDOW_TITLE_BAR", true),
-            toggle_show_close_button: () => toggleConfig("SHOW_TAB_CLOSE_BUTTON", true),
             toggle_drag_style: () => toggleConfig("JETBRAINS_DRAG_STYLE", true),
             save_tabs: this.saveTabs,
             open_save_tabs: this.openSaveTabs,
@@ -735,6 +736,11 @@ class windowTabBarPlugin extends BasePlugin {
         this._showTabBar();
         this._startCheckTabsInterval();
         this._renderDOM(wantOpenPath);
+    }
+
+    rerenderTabBar = () => {
+        this.entities.tabBar.innerHTML = ""
+        this.utils.openFile(this.tabUtil.currentTab.path)
     }
 
     switchTab = idx => {

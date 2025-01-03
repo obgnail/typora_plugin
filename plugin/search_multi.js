@@ -112,8 +112,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
         this.utils.hide(this.entities.result)
         this.utils.show(this.entities.info)
         this.entities.resultList.innerHTML = ""
-        this.highlightMultiByAST(ast)
         await this.searchMultiByAST(rootPath, ast)
+        this.highlightMultiByAST(ast)
         this.utils.hide(this.entities.info)
     }
 
