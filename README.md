@@ -76,29 +76,29 @@
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
-> 如果有其他需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，也欢迎 PR。如果能给我颗 star ⭐ 就更好了 :)
+> 如果有其他需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，也欢迎 PR。如果觉得本项目对你有帮助，请给我一个 star ⭐
 
 
 
 ## 如何使用：Windows/Linux 平台
 
-前往 [视频版安装教程](https://github.com/obgnail/typora_plugin/issues/847)
+前往 [视频安装教程](https://github.com/obgnail/typora_plugin/issues/847)
 
 1. [下载](https://github.com/obgnail/typora_plugin/releases/latest) 插件源码的压缩包，并解压
 
 2. 进入 Typora 安装路径，找到包含 `window.html` 的文件夹 A
 
-   - 如果是正式版 Typora，路径为 `./resources/window.html`
+   - 正式版 Typora，路径为 `./resources/window.html`
 
-   - 如果是免费版 Typora，路径为 `./resources/app/window.html`
+   - 免费版 Typora，路径为 `./resources/app/window.html`
 
 3. 将解压得到的 plugin 文件夹粘贴进文件夹 A 下
 
 4. 进入文件夹 `A/plugin/bin/`
 
-   - 如果是 Windows 系统，双击运行 `install_windows_amd_x64.exe`，如果看到下图，说明安装成功
+   - Windows 系统：双击运行 `install_windows_amd_x64.exe`，如果看到下图，说明安装成功
    
-   - 如果是 Linux 系统，以管理员运行 `install_linux.sh`，如果看到下图，说明安装成功
+   - Linux 系统：以管理员运行 `install_linux.sh`，如果看到下图，说明安装成功
 
 5. 验证：重启 Typora，在正文区域点击鼠标右键，弹出右键菜单栏，如果能看到 `常用插件` 栏目，说明一切顺利
 
@@ -113,7 +113,7 @@
 附加说明：
 
 - Windows 系统也可以通过执行 `install_windows.ps1` 安装插件；同理，Linux 系统也可以执行 `install_linux_amd_x64` 文件
-- 每个插件皆有配置选项。开发者鼓励您修改配置，以符合自身需求。配置文件夹位于 [A/plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings)
+- 每个插件都有配置选项，建议根据个人需求进行配置。配置文件夹位于 [A/plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings)
 
 
 
@@ -131,7 +131,7 @@ yay -S typora-plugin
 
 ### 我的 Typora 版本能用吗？
 
-所有插件都在 0.9.98 版本（最后一个免费版本）和最新版本测试过。本项目理论上支持所有 Typora 版本，但是 Typora 在 0.9.98 版本以后功能才稳定下来。**0.9.98 版本以下，可能会因为缺少某些功能导致部分插件失效**。
+所有插件都在 0.9.98 版本（最后一个免费版本）和最新版本测试过。本项目理论上支持所有 Typora 版本，但 Typora 在 0.9.98 版本后功能才稳定下来。**0.9.98 之前的版本不推荐使用。**
 
 
 
@@ -149,9 +149,9 @@ yay -S typora-plugin
 
 ### 如何修改插件配置？
 
-目前整个项目包含 600+ 配置选项，可以比较完整的定义各个插件的行为。
+项目包含 600+ 配置选项，可以比较完整定义各个插件的行为。
 
-这些配置全部位于 [./plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings) 目录中。修改配置的方法请阅读该目录下的 [说明文件](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
+所有配置位于 [settings](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings) 目录中。修改配置方法请阅读该目录下的 [说明文件](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
 
 
 
@@ -169,7 +169,7 @@ yay -S typora-plugin
 
 ### 支持 Typora for Mac 吗？
 
-没有 Mac，故没做测试。
+没有 Mac 设备，故没做测试。
 
 
 
@@ -178,17 +178,17 @@ yay -S typora-plugin
 所有的插件都提供了四种使用方法：
 
 - 键盘党：
-  - 键入 `ctrl+j`，在输入框键入 `plu` 加空格加插件名称调出插件列表（详见 `toolbar` 插件）
+  - `Ctrl+J` 调出插件列表（详见 `toolbar` 插件）
   - 快捷键（详见 `hotkeys` 插件）
 - 鼠标党：
-  - 在正文区域右键，在弹出的右键菜单中直接调用（详见 `right_click_menu` 插件）
+  - 在正文区域右键调用（详见 `right_click_menu` 插件）
   - 快捷按钮（详见 `quickButton` 插件）
 
 
 
 ### window_tab：标签页管理
 
-- `切换标签`：标签页处 Ctrl+滚轮滚动、ctrl+shift+tab、ctrl+tab、ctrl+PgUp、ctrl+PgDn
+- `切换标签`：Ctrl+滚轮滚动、ctrl+shift+tab、ctrl+tab、ctrl+PgUp、ctrl+PgDn
 - `关闭标签`：ctrl+w、鼠标中键
 - `新窗口打开`：ctrl+单击标签
 - `排序标签`：拖拽
@@ -318,8 +318,8 @@ COMMANDS = [
 
 - `cmd/bash`：windows 或 Mac 的默认终端
 - `powershell`：微软的傻儿子 :D
-- `git bash`：使用此终端前请保证安装了 git bash 并且加入环境变量
-- `wsl`：使用此终端前请保证安装了 wsl2，并且加入环境变量
+- `git bash`：需确保安装并添加到环境变量
+- `wsl`：需确保安装 WSL2 并添加到环境变量
 
 内置环境变量：
 
@@ -331,11 +331,6 @@ COMMANDS = [
 
 ```toml
 # 默认的内建命令
-# 目前支持4个参数:
-#   1. name:   展示的名称（不可重复）
-#   2. shell:  cmd/bash、powershell、gitbash、wsl
-#   3. hotkey: 快捷键（可选）
-#   4. cmd:    执行的命令
 BUILTIN = [
     { name = "", shell = "cmd/bash", cmd = "" },
     { name = "Explorer", shell = "powershell", hotkey = "ctrl+alt+e", cmd = "explorer $d" },
@@ -412,44 +407,14 @@ NAME = "少用插件"
 LIST = [
     "window_tab",
     "fence_enhance",
-    "auto_number",
-    "datatables",
-    "resize_image",
-    "resize_table",
-    "collapse_list",
-    "collapse_table",
-    "truncate_text",
-    "export_enhance",
-    "cipher",
-    "right_click_menu",
-    "help",
-    "---",
-    "pie_menu",
-    "go_top",
-    "text_stylize",
-    "slash_commands",
-    "ripgrep",
-    "article_uploader",
-    "preferences",
-    "---",
-    "file_counter",
-    "json_rpc",
-    "test",
+    ...
 ]
 [[right_click_menu.MENUS]]
 NAME = "常用插件"
 LIST = [
     "commander",
     "markmap",
-    "collapse_paragraph",
-    "easy_modify",
-    "custom",
-    "---",
-    "toolbar",
-    "search_multi",
-    "md_padding",
-    "read_only",
-    "blur",
+    ...
 ]
 ```
 

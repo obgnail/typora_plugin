@@ -481,16 +481,16 @@ class tocMarkmap {
         const INFO = {
             color: "如需自定义配色方案，请手动修改 CANDIDATE_COLOR_SCHEMES 选项",
             maxWidth: "0 表示无长度限制",
-            FIX_ERROR_LEVEL_HEADER: "修复 MD001 规范。若取消勾选，则会过滤跳级标题",
-            CLICK_TO_LOCALE: "若取消勾选，则选项「定位的视口高度」失效",
+            CLICK_TO_LOCALE: "如果取消勾选，则选项「定位的视口高度」失效",
             LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
+            FIX_ERROR_LEVEL_HEADER: "如果取消勾选，则会过滤跳级标题，只显示层级连续的标题",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，不建议开启。仅当插件「章节折叠」开启时可用",
-            FOLDER: "若为空或不存在，则使用 TEMP 目录",
+            FOLDER: "如果为空或不存在，则使用 TEMP 目录",
             FILENAME: `支持变量：filename、timestamp、random、uuid\n支持后缀：${Downloader.getFormats()[0].extensions.join("、")}`,
             IMAGE_QUALITY: "仅适用于 jpg、webp 格式",
             BACKGROUND_COLOR: "仅适用于像素图片格式",
             KEEP_ALPHA_CHANNEL: "仅适用于携带透明通道的像素图片格式",
-            REMOVE_FOREIGN_OBJECT: "牺牲样式，提高兼容性。若导出的图片异常，请勾选此选项",
+            REMOVE_FOREIGN_OBJECT: "牺牲样式，提高兼容性。如果导出的图片异常，请勾选此选项",
         }
         const { DEFAULT_TOC_OPTIONS: _tocOps, DOWNLOAD_OPTIONS: _downOps } = this.config
         const needUpdateKey = ["DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS"]
@@ -503,13 +503,14 @@ class tocMarkmap {
                 needUpdateKey.push(key)
             }
         }
-        const cpn = (label, key) => ({
+        const inlineWidget = (label, key) => ({
             label,
             info: INFO[key],
+            inline: true,
             value: _getConfig(key),
             callback: value => _setConfig(key, value),
         })
-        const checkboxCpn = components => ({
+        const checkboxWidget = components => ({
             type: "checkbox",
             list: components.map(({ label, key, disabled }) => ({ label, info: INFO[key], value: key, checked: Boolean(_getConfig(key)), disabled })),
             callback: submit => components.forEach(({ key }) => _setConfig(key, submit.includes(key))),
@@ -537,38 +538,39 @@ class tocMarkmap {
         }
 
         const chart = (fieldset = "图形") => [
-            { fieldset, type: "range", inline: true, min: 1, max: 6, step: 1, ...cpn("固定配色的分支等级", "colorFreezeLevel") },
-            { fieldset, type: "range", inline: true, min: 1, max: 6, step: 1, ...cpn("分支展开等级", "initialExpandLevel") },
-            { fieldset, type: "range", inline: true, min: 0, max: 100, step: 1, ...cpn("节点内边距", "paddingX") },
-            { fieldset, type: "range", inline: true, min: 0, max: 200, step: 1, ...cpn("节点水平间距", "spacingHorizontal") },
-            { fieldset, type: "range", inline: true, min: 0, max: 100, step: 1, ...cpn("节点垂直间距", "spacingVertical") },
-            { fieldset, type: "range", inline: true, min: 0, max: 1000, step: 10, ...cpn("节点最大长度", "maxWidth") },
-            { fieldset, type: "range", inline: true, min: 0, max: 1000, step: 10, ...cpn("动画持续时间", "duration") },
+            { fieldset, type: "range", min: 1, max: 6, step: 1, ...inlineWidget("固定配色的分支等级", "colorFreezeLevel") },
+            { fieldset, type: "range", min: 1, max: 6, step: 1, ...inlineWidget("分支展开等级", "initialExpandLevel") },
+            { fieldset, type: "range", min: 0, max: 100, step: 1, ...inlineWidget("节点内边距", "paddingX") },
+            { fieldset, type: "range", min: 0, max: 200, step: 1, ...inlineWidget("节点水平间距", "spacingHorizontal") },
+            { fieldset, type: "range", min: 0, max: 100, step: 1, ...inlineWidget("节点垂直间距", "spacingVertical") },
+            { fieldset, type: "range", min: 0, max: 1000, step: 10, ...inlineWidget("节点最大长度", "maxWidth") },
+            { fieldset, type: "range", min: 0, max: 1000, step: 10, ...inlineWidget("动画持续时间", "duration") },
         ]
 
         const window = (fieldset = "窗口") => [
-            { fieldset, type: "range", inline: true, min: 0.5, max: 1, step: 0.01, ...cpn("窗口填充率", "fitRatio") },
-            { fieldset, type: "range", inline: true, min: 20, max: 95, step: 1, ...cpn("初始的窗口宽度", "WIDTH_PERCENT_WHEN_INIT") },
-            { fieldset, type: "range", inline: true, min: 20, max: 95, step: 1, ...cpn("初始的窗口高度", "HEIGHT_PERCENT_WHEN_INIT") },
-            { fieldset, type: "range", inline: true, min: 20, max: 95, step: 1, ...cpn("固定顶部的窗口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
-            { fieldset, type: "range", inline: true, min: 20, max: 95, step: 1, ...cpn("固定右侧的窗口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
-            { fieldset, type: "range", inline: true, min: 0.1, max: 0.95, step: 0.01, ...cpn("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
+            { fieldset, type: "range", min: 0.5, max: 1, step: 0.01, ...inlineWidget("窗口填充率", "fitRatio") },
+            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("初始的窗口宽度", "WIDTH_PERCENT_WHEN_INIT") },
+            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("初始的窗口高度", "HEIGHT_PERCENT_WHEN_INIT") },
+            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("固定顶部的窗口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
+            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("固定右侧的窗口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
+            { fieldset, type: "range", min: 0.1, max: 0.95, step: 0.01, ...inlineWidget("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
         ]
 
-        const ability = (legend = "能力") => {
+        const behavior = (legend = "行为") => {
             const hasPlugin = this.utils.getPlugin("collapse_paragraph")
             const components = [
                 { label: "兼容跳级标题", key: "FIX_ERROR_LEVEL_HEADER" },
-                { label: "鼠标滚轮进行缩放", key: "zoom" },
-                { label: "鼠标滚轮进行平移", key: "pan" },
-                { label: "鼠标点击节点进行定位", key: "CLICK_TO_LOCALE" },
-                { label: "折叠节点后自动适配窗口", key: "autoFit" },
-                { label: "更新内容后自动适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
-                { label: "调整窗口后自动适配窗口", key: "AUTO_FIT_WHEN_RESIZE" },
-                { label: "更新时不展开已折叠节点", key: "REMEMBER_FOLD_WHEN_UPDATE" },
-                { label: "折叠节点时自动折叠章节", disabled: !hasPlugin, key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD" },
+                { label: "允许缩放图形", key: "zoom" },
+                { label: "允许平移图形", key: "pan" },
+                { label: "大纲变化后，自动更新图形", key: "AUTO_UPDATE" },
+                { label: "点击节点后，跳转到文档对应章节", key: "CLICK_TO_LOCALE" },
+                { label: "折叠节点后，自动调整图形大小以适配窗口", key: "autoFit" },
+                { label: "更新图形后，自动调整图形大小以适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
+                { label: "调整窗口后，自动调整图形大小以适配窗口", key: "AUTO_FIT_WHEN_RESIZE" },
+                { label: "更新图形后，已折叠的节点保持折叠状态", key: "REMEMBER_FOLD_WHEN_UPDATE" },
+                { label: "折叠节点后，自动折叠对应的章节内容", key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", disabled: !hasPlugin },
             ]
-            return { label: "", legend, ...checkboxCpn(components) }
+            return { label: "", legend, ...checkboxWidget(components) }
         }
 
         const download = (fieldset = "导出") => {
@@ -580,19 +582,19 @@ class tocMarkmap {
                 { label: "导出后打开文件所在目录", key: "SHOW_IN_FINDER" },
             ]
             return [
-                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...cpn("水平内边距", "PADDING_HORIZONTAL") },
-                { fieldset, type: "number", inline: true, min: 1, max: 1000, step: 1, ...cpn("垂直内边距", "PADDING_VERTICAL") },
-                { fieldset, type: "number", inline: true, min: 0.01, max: 1, step: 0.01, ...cpn("图片质量", "IMAGE_QUALITY") },
-                { fieldset, type: "color", inline: true, ...cpn("文字颜色", "TEXT_COLOR") },
-                { fieldset, type: "color", inline: true, ...cpn("圆圈颜色", "OPEN_CIRCLE_COLOR") },
-                { fieldset, type: "color", inline: true, ...cpn("背景颜色", "BACKGROUND_COLOR") },
-                { fieldset, type: "input", inline: true, placeholder: this.utils.tempFolder, ...cpn("默认文件夹", "FOLDER") },
-                { fieldset, type: "input", inline: true, ...cpn("默认文件名", "FILENAME") },
-                { fieldset, label: "", ...checkboxCpn(components) },
+                { fieldset, type: "number", min: 1, max: 1000, step: 1, ...inlineWidget("水平内边距", "PADDING_HORIZONTAL") },
+                { fieldset, type: "number", min: 1, max: 1000, step: 1, ...inlineWidget("垂直内边距", "PADDING_VERTICAL") },
+                { fieldset, type: "number", min: 0.01, max: 1, step: 0.01, ...inlineWidget("图片质量", "IMAGE_QUALITY") },
+                { fieldset, type: "color", ...inlineWidget("文字颜色", "TEXT_COLOR") },
+                { fieldset, type: "color", ...inlineWidget("圆圈颜色", "OPEN_CIRCLE_COLOR") },
+                { fieldset, type: "color", ...inlineWidget("背景颜色", "BACKGROUND_COLOR") },
+                { fieldset, type: "input", placeholder: this.utils.tempFolder, ...inlineWidget("默认文件夹", "FOLDER") },
+                { fieldset, type: "input", ...inlineWidget("默认文件名", "FILENAME") },
+                { fieldset, label: "", ...checkboxWidget(components) },
             ]
         }
 
-        const components = [color(), ...chart(), ...window(), ability(), ...download()];
+        const components = [color(), ...chart(), ...window(), behavior(), ...download()];
         const { response } = await this.utils.dialog.modalAsync({ title: "设置", width: "520px", components });
         if (response === 1) {
             components.forEach(c => c.callback(c.submit));
@@ -760,13 +762,15 @@ class tocMarkmap {
     isShow = () => this.utils.isShow(this.entities.modal)
 
     _draw = async (md, fit = true, options) => {
-        this.utils.show(this.entities.modal);
+        this.utils.show(this.entities.modal)
         if (this.markmap) {
-            await this._update(md, fit);
+            if (this.config.AUTO_UPDATE) {
+                await this._update(md, fit)
+            }
         } else {
-            this._initModalRect();
-            await this.controller.lazyLoad();
-            await this._create(md, options);
+            this._initModalRect()
+            await this.controller.lazyLoad()
+            await this._create(md, options)
         }
     }
 
