@@ -422,10 +422,12 @@ class tocMarkmap {
                     }
                 } else {
                     if (this.config.CLICK_TO_LOCALE) {
-                        const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect()
-                        const height = contentHeight * this.config.LOCALE_HEIGHT_RATIO + contentTop
-                        const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD
-                        this.utils.scrollByCid(cid, height, true, showHiddenElement)
+                        if (this.config.AUTO_UPDATE) {
+                            const { height: contentHeight, top: contentTop } = this.entities.content.getBoundingClientRect()
+                            const height = contentHeight * this.config.LOCALE_HEIGHT_RATIO + contentTop
+                            const showHiddenElement = !this.config.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD
+                            this.utils.scrollByCid(cid, height, true, showHiddenElement)
+                        }
                     }
                 }
             })
@@ -481,6 +483,7 @@ class tocMarkmap {
         const INFO = {
             color: "如需自定义配色方案，请手动修改 CANDIDATE_COLOR_SCHEMES 选项",
             maxWidth: "0 表示无长度限制",
+            AUTO_UPDATE: "如果取消勾选，则选项「点击节点跳转到文档对应章节」失效",
             CLICK_TO_LOCALE: "如果取消勾选，则选项「定位的视口高度」失效",
             LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
             FIX_ERROR_LEVEL_HEADER: "如果取消勾选，则会过滤跳级标题，只显示层级连续的标题",
