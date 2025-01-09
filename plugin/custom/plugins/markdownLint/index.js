@@ -69,7 +69,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             },
             settings: () => {
                 const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder("custom_plugin.user.toml")
-                const title = "为保护用户，此处禁止修改检测规则，如需请 <a>修改配置文件</a>"
+                const title = "为了保护用户，此处禁止修改检测规则，如需请 <a>修改配置文件</a>"
                 const content = JSON.stringify(this.config.rule_config, null, "\t")
                 const components = [{ label: title, type: "p", onclick }, { label: "", type: "textarea", rows: 15, content }]
                 this.utils.dialog.modal({ title: "当前配置", width: "550px", components })

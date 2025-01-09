@@ -284,35 +284,35 @@ class QualifierMixin {
         isStringOrRegexp: (scope, operator, operand, operandType) => {
             if (operandType === "REGEXP") {
                 if (operator !== ":") {
-                    throw new Error(`In ${scope.toUpperCase()}: RegExp operands only support the ":" operator`)
+                    throw new Error(`In ${scope}: RegExp operands only support the ":" operator`)
                 }
                 try {
                     new RegExp(operand)
                 } catch (e) {
-                    throw new Error(`In ${scope.toUpperCase()}: Invalid regular expression: "${operand}"`)
+                    throw new Error(`In ${scope}: Invalid regular expression: "${operand}"`)
                 }
             }
             if (operator !== ":" && operator !== "=" && operator !== "!=") {
-                throw new Error(`In ${scope.toUpperCase()}: Only supports "=", "!=", and ":" operators`)
+                throw new Error(`In ${scope}: Only supports "=", "!=", and ":" operators`)
             }
         },
         isComparable: (scope, operator, operand, operandType) => {
             if (operandType === "REGEXP") {
-                throw new Error(`In ${scope.toUpperCase()}: RegExp operands are not valid for comparisons`)
+                throw new Error(`In ${scope}: RegExp operands are not valid for comparisons`)
             }
             if (operator === ":") {
-                throw new Error(`In ${scope.toUpperCase()}: The ":" operator is not valid for comparisons`)
+                throw new Error(`In ${scope}: The ":" operator is not valid for comparisons`)
             }
         },
         isBoolean: (scope, operator, operand, operandType) => {
             if (operator !== "=" && operator !== "!=") {
-                throw new Error(`In ${scope.toUpperCase()}: Only supports "=" and "!=" operators for logical comparisons`)
+                throw new Error(`In ${scope}: Only supports "=" and "!=" operators for logical comparisons`)
             }
             if (operandType === "REGEXP") {
-                throw new Error(`In ${scope.toUpperCase()}: RegExp operands are not valid for logical comparisons`)
+                throw new Error(`In ${scope}: RegExp operands are not valid for logical comparisons`)
             }
             if (operand !== "true" && operand !== "false") {
-                throw new Error(`In ${scope.toUpperCase()}: Operand must be "true" or "false"`)
+                throw new Error(`In ${scope}: Operand must be "true" or "false"`)
             }
         },
         isSize: (scope, operator, operand, operandType) => {
@@ -320,19 +320,19 @@ class QualifierMixin {
             const units = [...Object.keys(this.UNITS)].sort((a, b) => b.length - a.length).join("|")
             const ok = new RegExp(`^\\d+(\\.\\d+)?(${units})$`, "i").test(operand)
             if (!ok) {
-                throw new Error(`In ${scope.toUpperCase()}: Operand must be a number followed by a unit: ${units}`)
+                throw new Error(`In ${scope}: Operand must be a number followed by a unit: ${units}`)
             }
         },
         isNumber: (scope, operator, operand, operandType) => {
             this.VALIDATE.isComparable(scope, operator, operand, operandType)
             if (isNaN(operand)) {
-                throw new Error(`In ${scope.toUpperCase()}: Operand must be a valid number`)
+                throw new Error(`In ${scope}: Operand must be a valid number`)
             }
         },
         isDate: (scope, operator, operand, operandType) => {
             this.VALIDATE.isComparable(scope, operator, operand, operandType)
             if (isNaN(new Date(operand).getTime())) {
-                throw new Error(`In ${scope.toUpperCase()}: Operand must be a valid date string`)
+                throw new Error(`In ${scope}: Operand must be a valid date string`)
             }
         },
     }
@@ -637,7 +637,7 @@ class SearchHelper {
         this.parser.traverse(ast, node => {
             const { scope, operator, operand, type: operandType } = node
             const qualifier = this.qualifiers.get(scope)
-            qualifier.validate(scope, operator, operand, operandType)
+            qualifier.validate(scope.toUpperCase(), operator, operand, operandType)
             node.castResult = qualifier.cast(operand, operandType)
         })
         return ast
@@ -654,7 +654,7 @@ class SearchHelper {
         if (!this.config.CASE_SENSITIVE) {
             if (typeof queryResult === "string") {
                 queryResult = queryResult.toLowerCase()
-            } else if (Array.isArray(queryResult) && queryResult[0] && typeof queryResult[0] === "string") {
+            } else if (Array.isArray(queryResult) && typeof queryResult[0] === "string") {
                 queryResult = queryResult.map(s => s.toLowerCase())
             }
         }

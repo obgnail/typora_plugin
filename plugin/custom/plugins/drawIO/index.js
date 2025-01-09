@@ -31,14 +31,14 @@ class drawIOPlugin extends BaseCustomPlugin {
         if (!graphConfig.source && !graphConfig.xml) {
             throw new Error("缺失必须的配置项: source")
         }
-        await this._getXML(graphConfig)
+        await this._setXML(graphConfig)
         $wrap[0].innerHTML = await this._toElement(graphConfig)
         this._refresh()
     }
 
     _getConfig = content => new Function(`return (${content})`)()
 
-    _getXML = async graphConfig => {
+    _setXML = async graphConfig => {
         if (graphConfig.xml) return
 
         let { source } = graphConfig

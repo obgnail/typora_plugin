@@ -128,8 +128,8 @@ class fenceEnhancePlugin extends BasePlugin {
     foldCode = (ev, foldButton) => {
         const fence = foldButton.closest(".md-fences");
         if (!fence) return;
-        const isDiagram = fence.classList.contains("md-fences-advanced");  // 图形不可折叠
-        if (isDiagram) return;
+        const isDiagram = fence.classList.contains("md-fences-advanced");
+        if (isDiagram) return;  // diagram cannot be folded
         const scroll = fence.querySelector(".CodeMirror-scroll");
         if (!scroll) return;
         const enhance = foldButton.closest(".fence-enhance");
@@ -326,16 +326,20 @@ class builder {
     }
 
     createButton(removeHint = false) {
-        const button = document.createElement("div");
-        button.classList.add("enhance-btn", this.className);
-        button.setAttribute("action", this.action);
-        !removeHint && this.hint && button.setAttribute("ty-hint", this.hint);
-        const span = document.createElement("span");
-        span.className = this.iconClassName;
-        button.appendChild(span);
-        if (!this.enable) {
-            button.style.display = "none";
+        const button = document.createElement("div")
+        button.classList.add("enhance-btn", this.className)
+        button.setAttribute("action", this.action)
+        if (!removeHint && this.hint) {
+            button.setAttribute("ty-hint", this.hint)
         }
+        if (!this.enable) {
+            button.style.display = "none"
+        }
+
+        const span = document.createElement("span")
+        span.className = this.iconClassName
+        button.appendChild(span)
+
         return button
     }
 }

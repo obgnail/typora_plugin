@@ -307,7 +307,7 @@ RENDERER = "svg"
 EXPORT_TYPE = "svg"
 
 # ------------------- 图表显示设置 -------------------
-# 图表默认高度
+# 图表默认高度，填入 CSS 高度值（例如：200px）
 DEFAULT_FENCE_HEIGHT = "300px"
 
 # 图表背景颜色
@@ -322,7 +322,7 @@ TEMPLATE = """```echarts
 //   3. option:  echarts实例的option
 //   4. this:    echarts插件实例
 // 更多示例：https://echarts.apache.org/examples/zh/index.html#chart-type-line
-// 代码块里的所有内容都会被eval，请注意安全问题
+// 代码块里的所有内容会被eval，请注意安全问题
 // 可以使用如下注释设置图表宽高（否则使用默认）：
 // {height: "300px", width: ""}
 
@@ -381,7 +381,7 @@ LANGUAGE = "chart"
 INTERACTIVE_MODE = true
 
 # ------------------- 图表显示设置 -------------------
-# 图表默认高度（单位：px）
+# 图表默认高度，填入 CSS 高度值（例如：200px）
 DEFAULT_FENCE_HEIGHT = "300px"
 
 # 图表背景颜色
@@ -395,7 +395,7 @@ TEMPLATE = """```chart
 //   2. config:  chart的config
 //   3. this:    chart插件实例
 // API：https://chart.nodejs.cn/docs/latest/configuration/
-// 代码块里的所有内容都会被eval，请注意安全问题
+// 代码块里的所有内容会被eval，请注意安全问题
 // 可以使用如下注释设置图表宽高（否则使用默认）：
 // {height: "300px", width: ""}
 
@@ -458,8 +458,9 @@ INTERACTIVE_MODE = true
 SAFE_MODE = true
 
 # ------------------- 样式配置 -------------------
-# 图表默认高度 (单位：px)
-DEFAULT_FENCE_HEIGHT = "300px"
+# 图表默认高度：设置图表渲染后的默认高度
+#   可以使用 CSS 高度值（例如：200px），也可以设置为 "auto" 让高度自适应内容
+DEFAULT_FENCE_HEIGHT = "auto"
 
 # 图表背景颜色 (支持合法的 CSS 颜色值，如 #fff, red, rgba(255,0,0,0.5) 等)
 DEFAULT_FENCE_BACKGROUND_COLOR = "#fff"
@@ -468,9 +469,7 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#fff"
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
 TEMPLATE = """```wavedrom
 // 教程: https://wavedrom.com/tutorial.html
-// 代码块里的所有内容都会被eval，请注意安全问题
-// 可以使用如下注释设置图表宽高（否则使用默认）：
-// {height: "300px", width: ""}
+// 代码块里的所有内容会被eval，请注意安全问题
 {
     signal: [
         { name: "pclk", wave: 'p.......' },
@@ -521,7 +520,7 @@ LANGUAGE = "calendar"
 INTERACTIVE_MODE = true
 
 # ------------------- 日历显示设置 -------------------
-# 图表默认高度（单位：px）
+# 图表默认高度，填入 CSS 高度值（例如：200px）
 DEFAULT_FENCE_HEIGHT = "800px"
 
 # 图表背景颜色
@@ -537,7 +536,7 @@ TEMPLATE = """```calendar
 //   4. this:     calendar插件实例
 // example：https://nhn.github.io/tui.calendar/latest/tutorial-06-daily-view
 // API: https://github.com/nhn/tui.calendar/blob/main/docs/en/apis/options.md
-// 代码块里的所有内容都会被eval，请注意安全问题
+// 代码块里的所有内容会被eval，请注意安全问题
 // 可以使用如下注释设置图表宽高（否则使用默认）：
 // {height: "800px", width: ""}
 
@@ -593,7 +592,7 @@ INTERACTIVE_MODE = true
 VISUAL_OPTIONS = { scale = 1.0, staffwidth = 400, responsive = "resize" }
 
 # ------------------- 样式设置 -------------------
-# 图表默认高度 (单位：px)
+# 图表默认高度，填入 CSS 高度值（例如：200px）
 DEFAULT_FENCE_HEIGHT = "300px"
 
 # 图表背景颜色
@@ -651,7 +650,7 @@ INTERACTIVE_MODE = true
 
 # ------------------- 图表显示设置 -------------------
 # 图表默认高度：设置图表渲染后的默认高度
-#   可以使用 px 单位（例如：200px），也可以设置为 "auto" 让高度自适应内容
+#   可以使用 CSS 高度值（例如：200px），也可以设置为 "auto" 让高度自适应内容
 DEFAULT_FENCE_HEIGHT = "auto"
 
 # 图表背景颜色：设置图表的背景颜色
