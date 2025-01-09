@@ -62,9 +62,11 @@ class exportEnhancePlugin extends BasePlugin {
     }
 
     toBase64 = async imagePath => {
-        const bitmap = await this.utils.Package.Fs.promises.readFile(imagePath);
-        const data = Buffer.from(bitmap).toString('base64');
-        return `data:image;base64,${data}`;
+        const bytes = await this.utils.Package.Fs.promises.readFile(imagePath)
+        const data = Buffer.from(bytes).toString("base64")
+        // a MIME library should be introduced to handle various media types, but here we only do simple processing
+        const mime = this.utils.Package.Path.extname(imagePath).toLowerCase() === ".svg" ? "image/svg+xml" : "image"
+        return `data:${mime};base64,${data}`
     }
 
     dynamicCallArgsGenerator = () => [
