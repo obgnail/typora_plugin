@@ -928,7 +928,7 @@ class Downloader {
 
         const fixStyles = svg => {
             // remove useless styles
-            const useless = new Set([
+            const _useless1 = [
                 ".markmap-dark .markmap",
                 ".markmap-node > circle",
                 ".markmap-foreign svg",
@@ -938,7 +938,18 @@ class Downloader {
                 ".markmap-foreign-testing-max",
                 ".markmap-foreign-testing-max img",
                 ".markmap-foreign table, .markmap-foreign th, .markmap-foreign td",
-            ])
+            ]
+            const _useless2 = [
+                ".markmap-foreign p",
+                ".markmap-foreign a",
+                ".markmap-foreign code",
+                ".markmap-foreign del",
+                ".markmap-foreign em",
+                ".markmap-foreign strong",
+                ".markmap-foreign mark",
+            ].filter(selector => !svg.querySelector(selector))
+            const _useless3 = _useless2.includes(".markmap-foreign a") ? [".markmap-foreign a:hover"] : []
+            const useless = new Set([..._useless1, ..._useless2, ..._useless3])
             const style = svg.querySelector("style")
             // The `sheet` property of <style> in cloned <svg> is undefined, parse the style text to get it
             const styleEle = new DOMParser().parseFromString(`<style>${style.textContent}</style>`, "text/html").querySelector("style")
@@ -961,6 +972,7 @@ class Downloader {
 
             // replace style element
             style.replaceChild(document.createTextNode(cssText), style.firstChild)
+            // replace CSS variables `--markmap-circle-open-bg`
             svg.querySelectorAll('circle[fill="var(--markmap-circle-open-bg)"]').forEach(ele => ele.setAttribute("fill", options.openCircleColor))
         }
 
