@@ -592,8 +592,9 @@ INTERACTIVE_MODE = true
 VISUAL_OPTIONS = { scale = 1.0, staffwidth = 400, responsive = "resize" }
 
 # ------------------- 样式设置 -------------------
-# 图表默认高度，填入 CSS 高度值（例如：200px）
-DEFAULT_FENCE_HEIGHT = "300px"
+# 图表默认高度：设置图表渲染后的默认高度
+#   可以使用 CSS 高度值（例如：200px），也可以设置为 "auto" 让高度自适应内容
+DEFAULT_FENCE_HEIGHT = "auto"
 
 # 图表背景颜色
 DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
