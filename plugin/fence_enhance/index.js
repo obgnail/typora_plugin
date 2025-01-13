@@ -368,8 +368,7 @@ class editorHotkeyHelper {
                 hotkeyDict[hk] = callback;
             }
         }
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => {
-            const fence = File.editor.fences.queue[cid];
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, fence) => {
             fence && fence.addKeyMap(hotkeyDict);
         })
     }
@@ -447,8 +446,7 @@ class indentedWrappedLineHelper {
             elt.style.textIndent = "-" + off + "px";
             elt.style.paddingLeft = (codeIndentSize + off) + "px";
         }
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => {
-            const fence = File.editor.fences.queue[cid];
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, fence) => {
             if (fence) {
                 charWidth = charWidth || fence.defaultCharWidth();
                 fence.on("renderLine", callback);
@@ -524,7 +522,7 @@ class highlightHelper {
             return mode
         }, true)
 
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => this.highlightLines(File.editor.fences.queue[cid]))
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (_, fence) => this.highlightLines(fence))
         this.utils.decorate(() => File && File.editor && File.editor.fences, "tryAddLangUndo", null, (result, ...args) => {
             const cid = args[0].cid
             const fence = File.editor.fences.queue[cid]
@@ -556,8 +554,7 @@ class languageFoldHelper {
         console.debug(`[ CodeMirror folding module ] [ ${modules.length} ]:`, modules);
     }
 
-    addFold = cid => {
-        const fence = File.editor.fences.queue[cid];
+    addFold = (cid, fence) => {
         if (!fence) return;
         if (!fence.options.gutters.includes(this.gutter)) {
             fence.setOption("gutters", [...fence.options.gutters, this.gutter]);

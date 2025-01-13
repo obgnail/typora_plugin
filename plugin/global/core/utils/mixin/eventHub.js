@@ -50,12 +50,12 @@ class eventHub {
         }
     }
 
-    publishEvent = (type, payload) => {
+    publishEvent = (type, ...payload) => {
         this._checkType(type);
         if (!this.eventMap[type]) return;
         for (const funcList of Object.values(this.eventMap[type])) {
             for (const listener of funcList) {
-                listener.call(this, payload);
+                listener.apply(this, payload)
             }
         }
     }
@@ -104,12 +104,12 @@ class eventHub {
 
         this.utils.decorate(() => File && File.editor && File.editor.fences, "addCodeBlock",
             (...args) => {
-                const cid = args[0];
+                const cid = args[0]
                 cid && this.publishEvent(this.eventType.beforeAddCodeBlock, cid)
             },
-            (result, ...args) => {
-                const cid = args[0];
-                cid && this.publishEvent(this.eventType.afterAddCodeBlock, cid)
+            (fence, ...args) => {
+                const cid = args[0]
+                cid && this.publishEvent(this.eventType.afterAddCodeBlock, cid, fence)
             },
         )
 

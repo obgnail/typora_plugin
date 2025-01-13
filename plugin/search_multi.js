@@ -889,9 +889,9 @@ class Highlighter {
     process = () => {
         this._polyfill()
 
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, (cid, fence) => {
             if (this.searchStatus.futureCM.has(cid)) {
-                this._searchOnCM(File.editor.fences.queue[cid])
+                this._searchOnCM(fence)
             }
         }, 999)
 
