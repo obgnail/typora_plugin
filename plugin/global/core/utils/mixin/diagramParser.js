@@ -85,9 +85,19 @@ class diagramParser {
 
     registerLangModeMapping = () => {
         const after = mode => {
-            if (!mode) return mode;
-            const name = typeof mode === "object" ? mode.name : mode;
-            return this.langMapping.get(name) || mode
+            if (!mode) return mode
+
+            const isObj = typeof mode === "object"
+            const originLang = isObj ? mode.name : mode
+            const mappingLang = this.langMapping.get(originLang)
+            if (!mappingLang) {
+                return mode
+            }
+            if (!isObj) {
+                return mappingLang
+            }
+            mode.name = mappingLang
+            return mode
         }
         this.utils.decorate(() => window, "getCodeMirrorMode", null, after, true)
     }

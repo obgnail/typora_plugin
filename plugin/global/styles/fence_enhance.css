@@ -28,5 +28,5 @@
 }
 
 .plugin-fence-enhance-highlight {
-    background-color: ${this.config.HIGHLIGHT_LINE_COLOR}
+    background-color: ${this.config.HIGHLIGHT_LINE_COLOR} !important;
 }

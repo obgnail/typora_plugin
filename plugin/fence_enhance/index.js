@@ -185,8 +185,8 @@ class fenceEnhancePlugin extends BasePlugin {
         const HINT = {
             DANGEROUS: "警告：消耗巨量资源并可能导致Typora长时间失去响应",
             FOLD: "根据语言语法在每行的左侧显示折叠按钮",
-            ALIGNMENT: "不建议开启，需要大量时间去计算缩进，造成性能损失",
-            HIGHLIGHT_BY_LANG: "例 ```js(2, 5-8)``` 表示：高亮第2，5-8行",
+            ALIGNMENT: "对齐缩进需要花费大量时间，造成性能损失，不建议开启",
+            HIGHLIGHT_BY_LANG: "例 ```js(2, 5-8)``` 表示高亮第2，5-8行，不建议开启",
         }
         const acts = [
             { act_name: "启用按钮：折叠", act_value: "toggle_state_fold", act_state: this.config.ENABLE_FOLD },
@@ -459,71 +459,82 @@ class indentedWrappedLineHelper {
 }
 
 class highlightHelper {
-    constructor(controller) {
-        this.utils = controller.utils;
-        this.regexp = /^([^\(\)]+)\(([^}]+)\)$/;
+    constructor(plugin) {
+        this.utils = plugin.utils
+        this.regex = /^([^\(\)]+)\(([^}]+)\)$/
+        this.cls = "plugin-fence-enhance-highlight"
     }
 
-    extract = lang => {
-        const match = lang.match(this.regexp);
-        if (!match) return { origin: lang }
-
-        const [origin, prefix, line] = match;
-        return { origin, prefix, line };
+    extract = Lang => {
+        const match = Lang.match(this.regex)
+        if (!match) {
+            return { origin: Lang }
+        }
+        const [origin, lang, line] = match
+        return { origin, lang, line }
     }
 
     parseRange = line => {
         return line
-            .split(',')
+            .split(",")
             .flatMap(part => {
-                if (!part.includes('-')) return [Number(part)];
-                const [start, end] = part.split('-').map(Number);
+                if (!part.includes("-")) {
+                    return [Number(part)]
+                }
+                const [start, end] = part.split("-").map(Number)
                 return Array.from({ length: end - start + 1 }, (_, i) => start + i)
             })
-            .map(e => Math.max(e - 1, 0))
-    };
-
-    getEntities = cid => {
-        const fence = File.editor.fences.queue[cid];
-        const obj = (fence.options && fence.options.mode && fence.options.mode._highlightObj) || undefined;
-        return { fence, obj }
+            .map(i => Math.max(i - 1, 0))
     }
 
-    highlightLines = cid => {
-        const { fence, obj } = this.getEntities(cid);
-        if (!obj) return;
-        const { line } = obj;
-        if (!line) return;
+    getHighlightObj = fence => fence.options && fence.options.mode && fence.options.mode._highlightObj
 
-        const last = fence.lastLine();
-        for (let i = 0; i <= last; i++) {
-            fence.removeLineClass(i, "background", "plugin-fence-enhance-highlight");
+    highlightLines = (fence, obj) => {
+        obj = obj || this.getHighlightObj(fence)
+        if (!obj) return
+
+        const { line } = obj
+        if (line) {
+            const needHighlightLines = this.parseRange(line)
+            needHighlightLines.forEach(i => fence.addLineClass(i, "background", this.cls))
         }
+    }
 
-        const needHighlight = this.parseRange(line);
-        needHighlight.forEach(e => fence.addLineClass(e, "background", "plugin-fence-enhance-highlight"));
+    clearHighlightLines = fence => {
+        const last = fence.lastLine()
+        for (let i = 0; i <= last; i++) {
+            fence.removeLineClass(i, "background", this.cls)
+        }
     }
 
     process = () => {
         this.utils.decorate(() => window, "getCodeMirrorMode", null, mode => {
-            if (!mode) return mode;
-
-            const lang = typeof mode === "object" ? mode.name : mode;
-            const obj = this.extract(lang);
-            if (!obj) return mode;
-
-            mode = typeof mode === "string" ? {} : mode;
-            mode.name = obj.prefix;
-            mode._highlightObj = obj;
-            return mode;
+            if (!mode) {
+                return mode
+            }
+            const isObj = typeof mode === "object"
+            const lang = isObj ? mode.name : mode
+            const obj = this.extract(lang)
+            if (!obj || !obj.lang) {
+                return mode
+            }
+            mode = !isObj ? {} : mode
+            mode.name = obj.lang
+            mode._highlightObj = obj
+            return mode
         }, true)
 
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, this.highlightLines);
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => this.highlightLines(File.editor.fences.queue[cid]))
         this.utils.decorate(() => File && File.editor && File.editor.fences, "tryAddLangUndo", null, (result, ...args) => {
-            const cid = args[0].cid;
-            const { obj } = this.getEntities(cid);
-            obj && this.highlightLines(cid);
-        });
+            const cid = args[0].cid
+            const fence = File.editor.fences.queue[cid]
+
+            this.clearHighlightLines(fence)
+            const obj = this.getHighlightObj(fence)
+            if (obj) {
+                this.highlightLines(fence, obj)
+            }
+        })
     }
 }
 
