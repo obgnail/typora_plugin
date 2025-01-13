@@ -1,10 +1,10 @@
 class ArticleUploaderPlugin extends BasePlugin {
     init = () => {
-        this.callArgs = [
-            { arg_name: "CSDN", arg_value: "upload_to_csdn" },
-            { arg_name: "WordPress", arg_value: "upload_to_wordpress" },
-            { arg_name: "博客园", arg_value: "upload_to_cn_blog" },
-            { arg_name: "上传到所有平台", arg_value: "upload_to_all_site" },
+        this.staticActions = [
+            { act_name: "CSDN", act_value: "upload_to_csdn" },
+            { act_name: "WordPress", act_value: "upload_to_wordpress" },
+            { act_name: "博客园", act_value: "upload_to_cn_blog" },
+            { act_name: "上传到所有平台", act_value: "upload_to_all_site" },
         ]
     }
 
@@ -15,24 +15,24 @@ class ArticleUploaderPlugin extends BasePlugin {
         { hotkey: this.config.UPLOAD_ALL_HOTKEY, callback: () => this.call("upload_to_all_site") },
     ]
 
-    call = async type => {
+    call = async action => {
         const map = {
             upload_to_csdn: "csdn",
             upload_to_wordpress: "wordpress",
             upload_to_cn_blog: "cnblog",
             upload_to_all_site: "all"
         }
-        const _type = map[type];
-        if (_type) {
-            await this.upload(_type);
+        const act = map[action]
+        if (act) {
+            await this.upload(act)
         }
     }
 
-    upload = async type => {
+    upload = async action => {
         const uploader = require("./Plugin2UploadBridge");
         this.uploader = new uploader(this);
         const filePath = this.utils.getFilePath();
-        await this.uploader.uploadProxy(filePath, type);
+        await this.uploader.uploadProxy(filePath, action);
     }
 }
 

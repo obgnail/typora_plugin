@@ -12,8 +12,8 @@ class markmapPlugin extends BasePlugin {
     hotkey = () => [this.tocMarkmap, this.fenceMarkmap].map(p => p && p.hotkey()).filter(Boolean).flat()
 
     init = () => {
-        this.callArgs = this.fenceMarkmap
-            ? [{ arg_name: "插入markmap：大纲", arg_value: "draw_fence_outline", arg_hotkey: this.config.FENCE_HOTKEY }, { arg_name: "插入markmap：模板", arg_value: "draw_fence_template" }]
+        this.staticActions = this.fenceMarkmap
+            ? [{ act_name: "插入markmap：大纲", act_value: "draw_fence_outline", act_hotkey: this.config.FENCE_HOTKEY }, { act_name: "插入markmap：模板", act_value: "draw_fence_template" }]
             : []
     }
 
@@ -22,11 +22,11 @@ class markmapPlugin extends BasePlugin {
         this.fenceMarkmap && this.fenceMarkmap.process();
     }
 
-    call = async type => {
-        if (type === "toggle_toc") {
-            this.tocMarkmap && await this.tocMarkmap.callback(type);
-        } else if (type === "draw_fence_template" || type === "draw_fence_outline") {
-            this.fenceMarkmap && await this.fenceMarkmap.call(type);
+    call = async action => {
+        if (action === "toggle_toc") {
+            this.tocMarkmap && await this.tocMarkmap.callback(action)
+        } else if (action === "draw_fence_template" || action === "draw_fence_outline") {
+            this.fenceMarkmap && await this.fenceMarkmap.call(action)
         }
     }
 
@@ -49,9 +49,9 @@ class markmapPlugin extends BasePlugin {
         return Object.assign(options, update_)
     }
 
-    dynamicCallArgsGenerator = () => {
+    getDynamicActions = () => {
         return this.tocMarkmap
-            ? [{ arg_name: "思维导图弹窗", arg_value: "toggle_toc", arg_hotkey: this.config.TOC_HOTKEY }]
+            ? [{ act_name: "思维导图弹窗", act_value: "toggle_toc", act_hotkey: this.config.TOC_HOTKEY }]
             : []
     }
 
@@ -95,7 +95,7 @@ class fenceMarkmap {
         });
     }
 
-    call = async type => this.callback(type)
+    call = async action => this.callback(action)
 
     callback = type => {
         const backQuote = "```"
@@ -458,7 +458,7 @@ class tocMarkmap {
 
     callback = () => this.utils.isShow(this.entities.modal) ? this._onButtonClick("close") : this.draw()
 
-    call = async type => type === "draw_toc" && await this.draw()
+    call = async action => action === "draw_toc" && await this.draw()
 
     close = () => {
         this.entities.modal.style = "";
@@ -853,8 +853,8 @@ class tocMarkmap {
         if (!dont.includes(action)) {
             await this._waitUnpin()
         }
-        const arg = (action === "pinTop" || action === "pinRight") ? false : undefined
-        await this[action](arg)
+        const act = (action === "pinTop" || action === "pinRight") ? false : undefined
+        await this[action](act)
     }
 
     _setModalRect = rect => {

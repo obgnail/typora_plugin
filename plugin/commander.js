@@ -61,12 +61,12 @@ class commanderPlugin extends BasePlugin {
             pre: document.querySelector(".plugin-commander-output pre"),
         }
 
-        this.arg_value_prefix = "call_builtin@"
-        const defaultArg = { arg_name: "显示/隐藏", arg_value: "show", arg_hotkey: this.config.HOTKEY }
-        const customArgs = this.builtin
+        this.act_value_prefix = "call_builtin@"
+        const defaultAct = { act_name: "显示/隐藏", act_value: "show", act_hotkey: this.config.HOTKEY }
+        const customActs = this.builtin
             .filter(builtin => builtin.name)
-            .map(builtin => ({ arg_name: builtin.name, arg_value: this.arg_value_prefix + builtin.name, arg_hotkey: builtin.hotkey }))
-        this.callArgs = [defaultArg, ...customArgs]
+            .map(builtin => ({ act_name: builtin.name, act_value: this.act_value_prefix + builtin.name, act_hotkey: builtin.hotkey }))
+        this.staticActions = [defaultAct, ...customActs]
     }
 
     process = () => {
@@ -220,11 +220,11 @@ class commanderPlugin extends BasePlugin {
         }
     }
 
-    call = (type = "show") => {
-        if (type === "show") {
+    call = (action = "show") => {
+        if (action === "show") {
             this.toggleModal()
-        } else if (type.startsWith(this.arg_value_prefix)) {
-            const name = type.slice(this.arg_value_prefix.length)
+        } else if (action.startsWith(this.act_value_prefix)) {
+            const name = action.slice(this.act_value_prefix.length)
             const builtin = this.builtin.find(c => c.name === name)
             builtin && this.quickExecute(builtin.cmd, builtin.shell)
         }

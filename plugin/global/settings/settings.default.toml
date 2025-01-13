@@ -24,9 +24,9 @@ SHOW_INCOMPATIBLE_WARNING = true
 #   当使用图表插件（例如 kanban, markmap, echarts 等），并开启交互模式（`INTERACTIVE_MODE` 置为 `true`）时，此配置项用于定义退出交互模式的方式
 #   请确保至少填写一个退出方式，否则将无法退出交互模式
 #
-#   支持的退出方式：
-#     - "click_exit_button": 为图表添加一个【编辑】按钮，点击此按钮退出交互模式
-#     - "ctrl_click_fence":  按住 Ctrl 键并点击图表区域，退出交互模式
+#   支持的退出方式
+#     click_exit_button: 为图表添加一个【编辑】按钮，点击此按钮退出交互模式
+#     ctrl_click_fence:  按住 Ctrl 键并点击图表区域，退出交互模式
 EXIT_INTERACTIVE_MODE = ["click_exit_button"]
 
 
@@ -53,7 +53,7 @@ JETBRAINS_DRAG_STYLE = true
 REMOVE_FILE_SUFFIX = true
 
 # 同名文件显示设置：当打开多个同名文件时，是否显示文件的父目录，以便区分
-#   true:  当打开多个同名文件时，标签标题将显示父目录和文件名 (例如: dir/filename.md)
+#   true:  当打开多个同名文件时，标签标题将显示父目录和文件名 (例如: filename.md 显示为 dir/filename.md)
 #   false: 只显示文件名，当有同名文件时可能导致混淆
 SHOW_DIR_FOR_SAME_NAME_FILE = true
 
@@ -103,24 +103,23 @@ Y_AXIS_LIMIT_RANGE_WHEN_DRAG = 1
 LIMIT_TAB_ROI = false
 
 # ------------------- 标签页拖拽高级功能 -------------------
-# 拖拽新建窗口：鼠标向下拖拽标签页时，当拖拽的垂直距离超过标签本身高度的多少倍时，将此标签页的文件在新窗口中打开
-#   例如：HEIGHT_SCALE = 2 表示当垂直拖动距离超过 2 个标签页高度时，会新建窗口打开
+# 鼠标向下拖拽标签页时，当拖拽的垂直距离超过标签本身高度的多少倍时，将此标签页的文件在新窗口中打开
 #   -1: 不启用此功能
-#   大于0的数字：表示垂直拖拽的高度倍数
+#   大于0的数字：表示垂直拖拽的高度倍数（例如：2 表示当垂直拖动距离超过 2 个标签页高度时，会新建窗口打开）
 HEIGHT_SCALE = -1
 
 # ------------------- 标签页行为设置 -------------------
-# Ctrl + 点击 新建窗口：是否允许通过按住 Ctrl 键并点击标签页，在新窗口中打开该文件
+# 是否允许通过按住 Ctrl 键并点击标签页，在新窗口中打开该文件
 #   true:  启用此功能
 #   false: 禁用此功能
 CTRL_CLICK_TO_NEW_WINDOW = true
 
-# Ctrl + 滚轮 切换标签页：是否允许通过按住 Ctrl 键并滚动鼠标滚轮来切换标签页
+# 是否允许通过按住 Ctrl 键并滚动鼠标滚轮来切换标签页
 #   true:  启用此功能
 #   false: 禁用此功能
 CTRL_WHEEL_TO_SCROLL = true
 
-# 中键点击 关闭标签页：是否允许通过鼠标中键点击标签页来关闭该标签页
+# 是否允许通过鼠标中键点击标签页来关闭该标签页
 #   true:  启用此功能
 #   false: 禁用此功能
 MIDDLE_CLICK_TO_CLOSE = true
@@ -147,7 +146,7 @@ NEW_TAB_AT = "right"
 #   latest: 上一个浏览的标签页
 ACTIVE_TAB_WHEN_CLOSE = "right"
 
-# -------------------  快捷键设置（若置为 []，则不设置） -------------------
+# -------------------  快捷键设置（若置为 []，则不启用功能） -------------------
 # 关闭标签页的快捷键：设置关闭当前标签页的快捷键组合
 CLOSE_HOTKEY = ["ctrl+w"]
 
@@ -163,15 +162,15 @@ COPY_PATH_HOTKEY = []
 # -------------------  鼠标右键菜单设置 -------------------
 # 鼠标右击标签页时显示的右键菜单项列表
 #   若置为 []，则不显示右键菜单
-#   支持以下菜单项：
-#     - closeTab:        关闭标签页
-#     - closeOtherTabs:  关闭其他标签页
-#     - closeLeftTabs:   关闭当前标签页左侧的所有标签页
-#     - closeRightTabs:  关闭当前标签页右侧的所有标签页
-#     - copyPath:        复制当前文件路径
-#     - showInFinder:    在文件资源管理器中打开文件所在位置
-#     - openInNewWindow: 在新窗口中打开当前文件
-#     - sortTabs:        按照文件名排序标签页
+#   支持以下菜单项
+#     closeTab:        关闭标签页
+#     closeOtherTabs:  关闭其他标签页
+#     closeLeftTabs:   关闭当前标签页左侧的所有标签页
+#     closeRightTabs:  关闭当前标签页右侧的所有标签页
+#     copyPath:        复制当前文件路径
+#     showInFinder:    在文件资源管理器中打开文件所在位置
+#     openInNewWindow: 在新窗口中打开当前文件
+#     sortTabs:        按照文件名排序标签页
 CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "sortTabs", "copyPath", "showInFinder", "openInNewWindow"]
 
 # -------------------  链接跳转拦截设置 -------------------
@@ -249,7 +248,7 @@ IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
 
 # ------------------- 高亮设置 -------------------
 # 关键字高亮的颜色列表
-# 每个关键字按顺序对应一个颜色，支持自定义多个颜色，超出列表范围的关键字会循环使用颜色
+# 每个关键字按顺序对应一个颜色，支持自定义多个颜色
 STYLE_COLOR = [
     '#bbeeff', '#ffbbcc', '#88ee88', '#ccbbff', '#ffee88', '#FFFFa0', '#88cccc', '#ffbb88', '#cccccc', '#ffaabb',
     '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
@@ -298,17 +297,17 @@ COMMIT_EXEC_SHOW = "echo"
 
 # ------------------- 内建命令列表 -------------------
 # 预设的常用命令列表，用户可以通过插件快速执行这些命令
-# 每个命令项包含以下属性：
-#   - name:    命令的显示名称，必须唯一，用于在插件菜单中标识此命令
-#   - disable: 是否禁用此命令，true 为禁用，false 为启用
-#   - shell:   指定命令执行的 shell 环境，支持 "cmd/bash", "powershell", "gitbash", "wsl"
+# 每个命令项包含以下属性
+#   name:    命令的显示名称，必须唯一，用于在插件菜单中标识此命令
+#   disable: 是否禁用此命令，true 为禁用，false 为启用
+#   shell:   指定命令执行的 shell 环境，支持 "cmd/bash", "powershell", "gitbash", "wsl"
 #              请确保 gitbash 和 wsl 已加入系统环境变量，非 Windows 平台后三者不可用
-#   - hotkey:  (可选) 为此命令设置的快捷键，用于快速执行此命令
-#   - cmd:     实际要执行的命令
+#   hotkey:  (可选) 为此命令设置的快捷键，用于快速执行此命令
+#   cmd:     实际要执行的命令
 # 内置环境变量:
-#   - $f: 当前编辑文件的完整路径
-#   - $d: 当前编辑文件所在的目录路径
-#   - $m: 当前 Typora 侧边栏的根目录路径（挂载目录）
+#   $f: 当前编辑文件的完整路径
+#   $d: 当前编辑文件所在的目录路径
+#   $m: 当前 Typora 侧边栏的根目录路径（挂载目录）
 BUILTIN = [
     # 占位符，不执行任何命令
     { name = "", disable = false, shell = "cmd/bash", cmd = "" },
@@ -339,8 +338,6 @@ NAME = "中英文混排优化"
 
 # ------------------- 快捷键设置 -------------------
 # 触发插件功能的快捷键组合
-#   例如： "ctrl+shift+b"
-#   注意：请确保快捷键与 Typora 或其他插件的快捷键不冲突
 HOTKEY = "ctrl+shift+b"
 
 # ------------------- 作用范围设置 -------------------
@@ -365,8 +362,7 @@ IGNORE_PATTERNS = ["<br\\s*?/?>", ":[0-9a-z_\\-]+?:", "<u>.+?</u>", '<span style
 # 限制文档中连续换行符的最大数量
 #   -1:  不限制连续换行符的数量，保留所有换行
 #   大于等于 0 的整数：表示允许连续换行符的最大数量
-#   例如：
-#        LINE_BREAK_MAX_NUM = 2 时，会将 `\n\n\n\n【a】\n\n\n\n\n【b】` 转换为 `\n\n【a】\n\n【b】`
+#   例如： LINE_BREAK_MAX_NUM = 2 时，会将 `\n\n\n\n【a】\n\n\n\n\n【b】` 转换为 `\n\n【a】\n\n【b】`
 #   推荐值：2，保证段落间的适当间距
 LINE_BREAK_MAX_NUM = -1
 
@@ -530,16 +526,16 @@ DEBOUNCE_INTERVAL = 70
 
 # ------------------- 默认搜索工具设置 -------------------
 # 默认搜索工具：当用户输入不匹配任何特定搜索工具时，使用的默认工具
-#   - "": 不使用默认工具，只显示匹配的搜索工具
-#   - plu: 插件搜索 (搜索已安装的插件)
-#   - tab: 当前标签页搜索 (搜索当前打开的文件标签页)
-#   - his: 最近文件搜索 (搜索最近打开过的文件)
-#   - ops: 常用操作搜索 (搜索 Typora 的常用操作命令)
-#   - mode: 切换文件模式搜索 (搜索 Typora 的文件模式，如源码模式、专注模式)
-#   - theme: 切换主题搜索 (搜索 Typora 的主题)
-#   - out: 文档大纲搜索 (搜索当前文档的大纲)
-#   - func: 功能列表搜索 (搜索 Typora 的所有功能)
-#   - all: 混合查找 (搜索所有可用项目，包括以上所有工具)
+#   "": 不使用默认工具，只显示匹配的搜索工具
+#   plu: 插件搜索 (搜索已安装的插件)
+#   tab: 当前标签页搜索 (搜索当前打开的文件标签页)
+#   his: 最近文件搜索 (搜索最近打开过的文件)
+#   ops: 常用操作搜索 (搜索 Typora 的常用操作命令)
+#   mode: 切换文件模式搜索 (搜索 Typora 的文件模式，如源码模式、专注模式)
+#   theme: 切换主题搜索 (搜索 Typora 的主题)
+#   out: 文档大纲搜索 (搜索当前文档的大纲)
+#   func: 功能列表搜索 (搜索 Typora 的所有功能)
+#   all: 混合查找 (搜索所有可用项目，包括以上所有工具)
 DEFAULT_TOOL = "func"
 
 # ------------------- 负向搜索设置 -------------------
@@ -547,11 +543,11 @@ DEFAULT_TOOL = "func"
 #   true:  启用负向查询，使用 "-" 前缀表示排除关键字。例如："plu multi -search" 表示搜索包含 "multi" 但不包含 "search" 的插件
 #   false: 禁用负向查询，所有关键字都视为包含关系。例如："plu multi -search" 表示搜索包含 "multi" 和 "-search" 关键字的插件
 #   举例1：【plu multi -search】
-#      - 若为true： 查找【包含multi关键字，但是不包含search关键字】的插件
-#      - 若为false：查找【包含multi关键字，同时包含-search关键字】的插件
+#      若为true： 查找【包含multi关键字，但是不包含search关键字】的插件
+#      若为false：查找【包含multi关键字，同时包含-search关键字】的插件
 #   举例2：【his close -win -mark 标签】
-#      - 若为true： 查找最近打开的文件，要求文件标题【包含close、标签，不包含win、mark】
-#      - 若为false：查找最近打开的文件，要求文件标题【包含close、-win、-mark、标签】
+#      若为true： 查找最近打开的文件，要求文件标题【包含close、标签，不包含win、mark】
+#      若为false：查找最近打开的文件，要求文件标题【包含close、-win、-mark、标签】
 USE_NEGATIVE_SEARCH = true
 
 
@@ -609,9 +605,9 @@ NAME = "图片调整"
 
 # ------------------- 功能修饰键设置 -------------------
 # 各个功能对应的修饰键设置，为空字符串("")则不使用对应的功能
-#   - TEMPORARY  : 临时修改图片大小
+#   TEMPORARY:  临时修改图片大小
 #     例如，设置为 "alt" 后，当鼠标悬停在图片上并且按住 Alt 键滚动滚轮时，会临时调整图片大小
-#   - PERSISTENT : 将图片转为 HTML 格式，永久修改图片大小
+#   PERSISTENT: 将图片转为 HTML 格式，永久修改图片大小
 #     例如，设置为 "ctrl" 后，当鼠标悬停在图片上并且按住 Ctrl 键滚动滚轮时，会将图片转换为 HTML 格式并永久修改大小
 MODIFIER_KEY = { TEMPORARY = "alt", PERSISTENT = "" }
 
@@ -813,56 +809,57 @@ CANDIDATE_COLOR_SCHEMES = [
 ]
 
 # TOC 图形默认选项：用于自定义 TOC 图形外观和行为
-#   - autoFit           : 折叠/展开节点时，图形是否自动适配窗口
-#   - duration          : 折叠/展开节点时，图形变换动画的持续时间 (单位：毫秒)
-#   - initialExpandLevel: 首次渲染时要展开多少级分支 (-1 则展开全部)
-#   - colorFreezeLevel  : 从多少级开始固定分支颜色
-#   - zoom              : 是否允许用户缩放图形
-#   - pan               : 是否允许用户平移图形
-#   - color             : 配色方案（填入颜色数组，例如 ['#1f77b4', '#17becf']）
-#   - maxWidth          : 节点最大长度 (0 则无长度限制)
-#   - spacingHorizontal : 节点水平间距
-#   - spacingVertical   : 节点垂直间距
-#   - paddingX          : 节点内部边距
-#   - fitRatio          : 图形的窗口填充率
+#   autoFit           : 折叠/展开节点时，图形是否自动适配窗口
+#   duration          : 折叠/展开节点时，图形变换动画的持续时间 (单位：毫秒)
+#   initialExpandLevel: 首次渲染时要展开多少级分支 (-1 则展开全部)
+#   colorFreezeLevel  : 从多少级开始固定分支颜色
+#   zoom              : 是否允许用户缩放图形
+#   pan               : 是否允许用户平移图形
+#   color             : 配色方案（填入颜色数组，例如 ['#1f77b4', '#17becf']）
+#   maxWidth          : 节点最大长度 (0 则无长度限制)
+#   spacingHorizontal : 节点水平间距
+#   spacingVertical   : 节点垂直间距
+#   paddingX          : 节点内部边距
+#   fitRatio          : 图形的窗口填充率
 DEFAULT_TOC_OPTIONS = { autoFit = true, duration = 500, initialExpandLevel = -1, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, fitRatio = 0.95, paddingX = 8, colorFreezeLevel = 6, zoom = true, pan = true, color = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#E377C2', '#7F7F7F', '#BCBD22', '#17BECF'] }
 
-# 导出选项
-# FILENAME: 文件名格式
-#   可以使用以下占位符：
-#     - {{filename}}: 当前 Markdown 文件名
-#     - {{timestamp}}: 当前时间戳
-#     - {{uuid}}: UUID (通用唯一识别码)
-# FOLDER: 目录路径，为空时表示使用系统临时目录
-#   可以使用绝对路径，例如 "D:\\tmp\\img"
-# REMOVE_USELESS_CLASSES: 是否删除无用的类名以减小文件体积
-#   true:  删除无用类名，减小 SVG 文件体积
-#   false: 保留所有类名，不进行优化
-# REMOVE_FOREIGN_OBJECT: 是否移除 foreignObject 标签，并替换为 <text> 标签
-#   true:  移除 foreignObject 标签，提高 SVG 的兼容性，但可能丢失一些样式
-#   false: 保留 foreignObject 标签，可以保留更多样式，但可能导致部分应用无法正确处理 SVG
-#   请谨慎修改此项，若不了解 SVG，请保持默认值 false
-# PADDING_HORIZONTAL: 图形的水平内边距
-#   例如： 25 表示图片的左右内边距皆为 25
-# PADDING_VERTICAL: 图形的垂直内边距
-#   例如： 25 表示图片的上下内边距皆为 25
-# IMAGE_QUALITY: 导出为 JPG 或 WebP 格式图片时，图片的质量
-#   取值范围：0 到 1 之间的浮点数，值越大质量越高，文件体积也越大
-# KEEP_ALPHA_CHANNEL: 导出带透明通道的图片格式 (如 PNG、WEBP) 时，是否保留透明通道
-#   true:  保留透明通道，将导出带透明背景的图片
-#   false: 不保留透明通道，将使用 BACKGROUND_COLOR 设置背景颜色
-# BACKGROUND_COLOR: 导出像素图片格式 (如 JPG、PNG、WEBP) 时，设置的背景颜色
-#   可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
-# TEXT_COLOR: 字体颜色
-#   可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
-# OPEN_CIRCLE_COLOR: 展开节点的颜色
-#   可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
-# SHOW_PATH_INQUIRY_DIALOG: 导出前是否显示文件保存路径选择对话框
-#   true:  导出前显示对话框，允许用户选择保存路径
-#   false: 导出时直接使用默认路径，不显示对话框
-# SHOW_IN_FINDER: 导出完成后是否自动打开文件所在的目录
-#   true:  导出后，自动打开文件所在目录
-#   false: 导出后不打开目录
+# 导出选项：用于自定义导出图形和导出行为
+#   FILENAME: 文件名格式
+#     可以使用以下占位符
+#       - {{filename}}:  当前 Markdown 文件名
+#       - {{timestamp}}: 当前时间戳
+#       - {{random}}:    英文和数字的随机组合
+#       - {{uuid}}:      UUID (通用唯一识别码)
+#   FOLDER: 目录路径，为空时表示使用系统临时目录
+#     可以使用绝对路径，例如 "D:\\tmp\\img"
+#   REMOVE_USELESS_CLASSES: 是否删除无用的类名以减小文件体积
+#     true:  删除无用类名，减小 SVG 文件体积
+#     false: 保留所有类名，不进行优化
+#   REMOVE_FOREIGN_OBJECT: 是否移除 foreignObject 标签，并替换为 <text> 标签
+#     true:  移除 foreignObject 标签，提高 SVG 的兼容性，但可能丢失一些样式
+#     false: 保留 foreignObject 标签，可以保留更多样式，但可能导致部分应用无法正确处理 SVG
+#     请谨慎修改此项，若不了解 SVG，请保持默认值 false
+#   PADDING_HORIZONTAL: 图形的水平内边距
+#     例如： 25 表示图片的左右内边距皆为 25
+#   PADDING_VERTICAL: 图形的垂直内边距
+#     例如： 25 表示图片的上下内边距皆为 25
+#   IMAGE_QUALITY: 导出为 JPG 或 WebP 格式图片时，图片的质量
+#     取值范围：0 到 1 之间的浮点数，值越大质量越高，文件体积也越大
+#   KEEP_ALPHA_CHANNEL: 导出带透明通道的图片格式 (如 PNG、WEBP) 时，是否保留透明通道
+#     true:  保留透明通道，将导出带透明背景的图片
+#     false: 不保留透明通道，将使用 BACKGROUND_COLOR 设置背景颜色
+#   BACKGROUND_COLOR: 导出像素图片格式 (如 JPG、PNG、WEBP) 时，设置的背景颜色
+#     可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
+#   TEXT_COLOR: 字体颜色
+#     可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
+#   OPEN_CIRCLE_COLOR: 展开节点的颜色
+#     可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
+#   SHOW_PATH_INQUIRY_DIALOG: 导出前是否显示文件保存路径选择对话框
+#     true:  导出前显示对话框，允许用户选择保存路径
+#     false: 导出时直接使用默认路径，不显示对话框
+#   SHOW_IN_FINDER: 导出完成后是否自动打开文件所在的目录
+#     true:  导出后，自动打开文件所在目录
+#     false: 导出后不打开目录
 DOWNLOAD_OPTIONS = { FILENAME = "{{filename}}_{{timestamp}}.svg", FOLDER = "", REMOVE_USELESS_CLASSES = true, REMOVE_FOREIGN_OBJECT = false, PADDING_HORIZONTAL = 25, PADDING_VERTICAL = 25, IMAGE_QUALITY = 0.92, KEEP_ALPHA_CHANNEL = true, BACKGROUND_COLOR = "#ffffff", TEXT_COLOR = "#333333", OPEN_CIRCLE_COLOR = "#ffffff", SHOW_PATH_INQUIRY_DIALOG = true, SHOW_IN_FINDER = true }
 
 # -------------------  Fence (代码块) 功能配置 -------------------
@@ -893,19 +890,19 @@ DEFAULT_FENCE_HEIGHT = "300px"
 DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 
 # 代码块图形默认选项：用于自定义代码块图形外观和行为
-#   - duration          : 折叠/展开节点时，图形变换动画的持续时间 (单位：毫秒)
-#   - initialExpandLevel: 首次渲染时要展开多少级分支 (-1 则展开全部)
-#   - colorFreezeLevel  : 从多少级开始固定分支颜色
-#   - zoom              : 是否允许用户缩放图形
-#   - pan               : 是否允许用户平移图形
-#   - height            : 图形高度
-#   - color             : 配色方案（填入颜色数组，例如 ['#1f77b4', '#17becf']）
-#   - backgroundColor   : 背景颜色
-#   - maxWidth          : 节点最大长度 (0 则无长度限制)
-#   - spacingHorizontal : 节点水平间距
-#   - spacingVertical   : 节点垂直间距
-#   - paddingX          : 节点内部边距
-#   - fitRatio          : 图形的窗口填充率
+#   duration          : 折叠/展开节点时，图形变换动画的持续时间 (单位：毫秒)
+#   initialExpandLevel: 首次渲染时要展开多少级分支 (-1 则展开全部)
+#   colorFreezeLevel  : 从多少级开始固定分支颜色
+#   zoom              : 是否允许用户缩放图形
+#   pan               : 是否允许用户平移图形
+#   height            : 图形高度
+#   color             : 配色方案（填入颜色数组，例如 ['#1f77b4', '#17becf']）
+#   backgroundColor   : 背景颜色
+#   maxWidth          : 节点最大长度 (0 则无长度限制)
+#   spacingHorizontal : 节点水平间距
+#   spacingVertical   : 节点垂直间距
+#   paddingX          : 节点内部边距
+#   fitRatio          : 图形的窗口填充率
 DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, colorFreezeLevel = 6, zoom = false, pan = false, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, paddingX = 8, fitRatio = 0.95, height = "300px", backgroundColor = "#f8f8f8", color = ['#1F77B4', '#FF7F0E', '#2CA02C', '#D62728', '#9467BD', '#8C564B', '#E377C2', '#7F7F7F', '#BCBD22', '#17BECF'] }
 
 # 插入的 Markmap 代码块模板
@@ -1068,7 +1065,7 @@ BUTTON_SIZE = "1.2em"
 
 # 按钮的颜色：设置按钮的颜色
 #   可以使用 CSS 颜色值，例如 "red", "#FF0000", "currentColor"
-#   "currentColor" 表示使用当前元素的文本颜色
+#   currentColor 表示使用当前元素的文本颜色
 BUTTON_COLOR = "currentColor"
 
 # 按钮的间距：设置按钮之间的间距
@@ -1132,23 +1129,21 @@ FOLD_DEFAULT = false
 #   单位为毫秒，例如：1000 表示 1 秒
 WAIT_RECOVER_INTERVAL = 1000
 
-# 自定义按钮：允许用户添加自定义按钮到代码块，进行更高级的操作
-#   这是一个高级配置，需要一定的 JavaScript 基础
-#   配置项：
-#   - DISABLE:   是否禁用此按钮
+# 自定义按钮：允许用户添加自定义按钮到代码块，进行更高级的操作（这是一个高级配置，需要一定的 JavaScript 基础）
+#   DISABLE: 是否禁用此按钮
 #       true:  禁用此按钮，不显示在代码块上
 #       false: 启用此按钮，显示在代码块上
-#   - ICON:      按钮图标的 CSS class
+#   ICON: 按钮图标的 CSS class
 #       支持 Font Awesome 4.1.0 的图标，参考：https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 #       例如: "fa fa-bomb"
-#   - HINT:      鼠标悬停在按钮上时显示的功能提示
-#   - ON_INIT:   初始化函数字符串，此函数只在插件初始化时执行一次
+#   HINT: 鼠标悬停在按钮上时显示的功能提示
+#   ON_INIT: 初始化函数字符串，此函数只在插件初始化时执行一次
 #       参数: plugin - 插件实例对象
 #       示例: "plu => console.log('custom fence button has init')"，不需要则置为空字符串 ""
-#   - ON_RENDER: 渲染后回调函数字符串，每次页面渲染代码块时都会执行此函数
+#   ON_RENDER: 渲染后回调函数字符串，每次页面渲染代码块时都会执行此函数
 #       参数: buttonElement - 按钮的 DOM 元素对象
 #       示例: "btn => console.log('btn has render')"，不需要则置为空字符串 ""
-#   - ON_CLICK:  鼠标点击按钮时的回调函数字符串，点击时执行此函数
+#   ON_CLICK: 鼠标点击按钮时的回调函数字符串，点击时执行此函数
 #       参数: {ev, btn, cont, fence, cid, plu}，分别表示：click 事件对象，按钮的 DOM 元素对象，代码块文本内容，代码块的 DOM 元素对象，代码块的 CID，插件实例对象
 #       示例: "({cont}) => console.log(cont)"。此项不可为空
 CUSTOM_BUTTONS = [
@@ -1158,10 +1153,10 @@ CUSTOM_BUTTONS = [
 # ------------------- 快捷键功能 -------------------
 # 若置为 false，以下配置全部失效
 # 注意：此处的快捷键使用的是 CodeMirror 的表示方式（参考: https://codemirror.net/5/doc/manual.html#keymaps）
-# 不建议修改下面的快捷键，原因有二：
+# 不建议修改下面的快捷键，原因有二
 #   1. 和很多 IDE 的快捷键保持一致
 #   2. Typora 强制绑定了很多快捷键，实际可修改的快捷键并不多
-# Typora 强制绑定的快捷键如下：
+# Typora 强制绑定的快捷键如下
 #   - Ctrl-A:         selectAll,
 #   - Ctrl-Up:        goDocStart,
 #   - Ctrl-Down:      goDocEnd,
@@ -1256,11 +1251,11 @@ RECORD_COLLAPSE = true
 #   3. 若为空字符串 ""，表示不启用此功能
 #   4. 例如【COLLAPSE_SIBLINGS = "ctrl+alt"】：当用户同时按住键盘 ctrl 和 alt，并且鼠标 click 标题时，会折叠/展开父章节下所有同级的章节
 #
-# 功能：
-#   - COLLAPSE_SINGLE       ：折叠/展开 单个章节
-#   - COLLAPSE_SIBLINGS     ：折叠/展开 父章节下所有同级的章节
-#   - COLLAPSE_ALL_SIBLINGS ：折叠/展开 当前文件所有同级的章节
-#   - COLLAPSE_RECURSIVE    ：递归折叠/展开 当前章节
+# 功能
+#   COLLAPSE_SINGLE       : 折叠/展开 单个章节
+#   COLLAPSE_SIBLINGS     : 折叠/展开 父章节下所有同级的章节
+#   COLLAPSE_ALL_SIBLINGS : 折叠/展开 当前文件所有同级的章节
+#   COLLAPSE_RECURSIVE    : 递归折叠/展开 当前章节
 MODIFIER_KEY = { COLLAPSE_SINGLE = "ctrl", COLLAPSE_SIBLINGS = "ctrl+alt", COLLAPSE_ALL_SIBLINGS = "ctrl+shift+alt", COLLAPSE_RECURSIVE = "" }
 
 
@@ -1470,9 +1465,9 @@ COLORS = [
 NUM_PER_LINE = 13
 
 # 默认颜色配置
-#   FOREGROUND：默认前景色
-#   BACKGROUND：默认背景色
-#   BORDER： 默认边框颜色
+#   FOREGROUND: 默认前景色
+#   BACKGROUND: 默认背景色
+#   BORDER:     默认边框颜色
 DEFAULT_COLORS = { FOREGROUND = "#330000", BACKGROUND = "#FFFFFF", BORDER = "#330000" }
 
 
@@ -1558,7 +1553,7 @@ NAME = "二级插件"
 
 # ------------------- 插件行为设置 -------------------
 # 有些插件在当前光标位置下临时处于不可用状态，是否隐藏它
-# 不建议置为 true，原因有二：
+# 不建议置为 true，原因有二
 #   1. 处于不可用状态的插件会在鼠标悬停时提示不可用的原因
 #   2. 一直隐藏处于不可用状态的插件，可能导致你忘记该插件的存在
 HIDE_DISABLE_PLUGINS = false
@@ -1583,22 +1578,22 @@ NAME = "斜杠命令"
 TRIGGER_REGEXP = "(?<!<)[\\/、\\\\](?<kw>[^\\/、\\\\]*)$"
 
 # ------------------- 匹配策略 -------------------
-# 命令列表的匹配策略：
-#   - prefix: 前缀。即：用户输入的字符串必须是 keyword 的前缀。比如：用户输入 para 即可找到 paragraph
-#   - substr: 子串。即：用户输入的字符串必须是 keyword 的子串。比如：用户输入 graph 即可找到 paragraph
-#   - abbr:   缩写。即：用户输入的每个字符必须都存在于 keyword 中，并且其在 keyword 的索引递增。比如：用户输入 pgh 即可找到 paragraph
+# 命令列表的匹配策略
+#   prefix: 前缀。用户输入的字符串必须是 keyword 的前缀。比如：输入 para 即可找到 paragraph
+#   substr: 子串。用户输入的字符串必须是 keyword 的子串。比如：输入 graph 即可找到 paragraph
+#   abbr:   缩写。用户输入的每个字符必须都存在于 keyword 中，并且匹配的字符在 keyword 的索引递增。比如：输入 pgh 即可找到 paragraph
 MATCH_STRATEGY = "abbr"
 
 # ------------------- 命令列表配置 -------------------
 #  命令列表配置，每个命令为一个对象
-#    - enable:    是否启用此命令
-#    - type:      命令类型，可选：snippet / command / gen-snp
-#                 (snippet: 在调用时插入文字片段；command: 在调用时执行逻辑命令；gen-snp: 在调用时执行函数，返回待插入的文字片段，适用于插入动态内容)
-#    - scope:     命令可用的范围，可选：plain / inline_math（默认为 plain，表示在普通文本区域可用，inline_math 表示仅在行内数学公式区域可用）
-#    - icon(可选):  使用 emoji 作为图标，显示在命令列表中
-#    - hint(可选):  命令的提示信息，显示在命令列表中
-#    - keyword:   命令的关键词，必须唯一，用于匹配用户输入
-#    - callback:  回调函数或文字片段。若 type=snippet，则填入需要插入的文字片段；若 type=command，则填入回调函数；若 type=gen-snp，则填入返回字符串的函数
+#    enable:    是否启用此命令
+#    type:      命令类型，可选：snippet / command / gen-snp
+#                (snippet: 在调用时插入文字片段；command: 在调用时执行逻辑命令；gen-snp: 在调用时执行函数，返回待插入的文字片段，适用于插入动态内容)
+#    scope:     命令可用的范围，可选：plain / inline_math（默认为 plain，表示在普通文本区域可用，inline_math 表示仅在行内数学公式区域可用）
+#    icon(可选): 使用 emoji 作为图标，显示在命令列表中
+#    hint(可选): 命令的提示信息，显示在命令列表中
+#    keyword:   命令的关键词，必须唯一，用于匹配用户输入
+#    callback:  回调函数或文字片段。若 type=snippet，则填入需要插入的文字片段；若 type=command，则填入回调函数；若 type=gen-snp，则填入返回字符串的函数
 COMMANDS = [
     { enable = true, type = "command", icon = "📝", hint = "一级标题", keyword = "H1", callback = "() => File.editor.stylize.changeBlock('header1', undefined, true)" },
     { enable = true, type = "command", icon = "📝", hint = "二级标题", keyword = "H2", callback = "() => File.editor.stylize.changeBlock('header2', undefined, true)" },
@@ -1690,9 +1685,9 @@ MENU_MIN_WIDTH = "default"
 #   false: 保留 Typora 原生的右键菜单项
 HIDE_OTHER_OPTIONS = false
 
-# 对于【启用但是没有出现在下面 MENUS 选项】的插件，自动将其加入到最后一个 MENU：
+# 对于【启用但是没有出现在下面 MENUS 选项】的插件，自动将其加入到最后一个 MENU
 #  控制是否自动将已启用但未在 `MENUS` 中配置的插件添加到最后一个一级菜单中
-#   强烈不建议将此选项置为 false，若置为 false，且在 MENUS 中删去那些处于启用状态的插件，那么：
+#   强烈不建议将此选项置为 false，若置为 false，且在 MENUS 中删去那些处于启用状态的插件，那么
 #     1. 那些插件依旧处于启用状态，但是就不能通过右键菜单调用了
 #     2. 如果插件系统后续新增了插件，那么你就根本无法感知到新增插件的存在
 #   true:  自动添加
@@ -1701,9 +1696,8 @@ FIND_LOST_PLUGIN = true
 
 # ------------------- 自定义右键菜单 -------------------
 # 自定义右键菜单：`MENUS` 数组中的每一项对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
-#   `NAME`:  一级菜单的名称
-#   `LIST`:  二级菜单的插件列表，`---` 代表在页面上插入一个分隔横线
-#     允许填入 pluginName (插件，如：help) 或者 pluginName.callArg (插件的其中一个选项，如：help.donate)
+#   NAME:  一级菜单的名称
+#   LIST:  二级菜单的插件列表，`---` 代表在页面上插入一个分隔横线。允许填入 pluginName (插件，如：help) 或者 pluginName.callArg (插件的其中一个选项，如：help.donate)
 [[right_click_menu.MENUS]]
 NAME = "少用插件"
 LIST = [
@@ -1782,14 +1776,13 @@ MODIFIER_KEY = "ctrl"
 # ------------------- 按钮配置 -------------------
 # 圆盘菜单上的按钮配置，最多支持 16 个按钮
 #   前 8 个按钮显示在内圈，后 8 个按钮显示在外圈
-#   每个按钮包含以下属性：
-#     - ICON:  按钮图标的 CSS class，使用 Font Awesome 图标库
+#   每个按钮包含以下属性
+#     ICON: 按钮图标的 CSS class，使用 Font Awesome 图标库
 #              例如： "fa fa-book" 表示书本图标
-#              请参考 Font Awesome 官网选择图标：https://fontawesome.com/icons
-#     - CALLBACK: 按钮点击后的回调函数，格式为 pluginName.callArg
+#     CALLBACK: 按钮点击后的回调函数，格式为 pluginName.action
 #              pluginName 为插件的名称
-#              callArg  为插件的某个具体选项，如 "help.donate"
-#              如果插件只有一个选项，则无需 callArg，如 "read_only"
+#              action 为插件的某个具体选项，如 "help.donate"
+#              如果插件只有一个选项，则无需 action，如 "read_only"
 BUTTONS = [
     { ICON = "fa fa-book", CALLBACK = "read_only" },
     { ICON = "fa fa-asterisk", CALLBACK = "blur" },
@@ -1886,7 +1879,6 @@ COLOR = ""
 BACKGROUND_COLOR = ""
 
 # 文本插入前缀，即在文件计数前显示的文本
-#   例如：设置为 "共 " 表示显示 “共 10 个文件” 
 #   若留空 ""，则不添加前缀
 BEFORE_TEXT = ""
 
@@ -1914,13 +1906,13 @@ HOTKEY = ""
 #   - 具体可用的函数直接阅读源码
 #   - 此插件不能覆盖现有的快捷键，此插件充分信任用户，没有做任何防护措施 (也意味着很简陋，需要你自己调试)
 # 参数说明:
-#   - desc（可选）: 描述。可填写任意内容，对功能没有影响
-#   - enable: 是否启用此快捷键
-#   - hotkey: 快捷键组合
-#   - plugin: 调用的插件名称
-#   - function: 调用插件的函数名
-#   - closestSelector: 定位到当前光标的父元素，并将其作为参数传入 function。如果 function 没有参数，则不需要此选项
-#   - evil: 自定义回调函数，这里的文本内容会被 `eval()`。如果设置此参数，那么 plugin，function，closestSelector 都会失效
+#   desc（可选）: 描述。可填写任意内容，对功能没有影响
+#   enable: 是否启用此快捷键
+#   hotkey: 快捷键组合
+#   plugin: 调用的插件名称
+#   function: 调用插件的函数名
+#   closestSelector: 定位到当前光标的父元素，并将其作为参数传入 function。如果 function 没有参数，则不需要此选项
+#   evil: 自定义回调函数，这里的文本内容会被 `eval()`。如果设置此参数，那么 plugin，function，closestSelector 都会失效
 # 注意:
 #   - `eval` 是邪恶的，极端情况下会让你的电脑中毒，请谨慎处理 —— 试试将下面的 【openCalc】 的 enable 置为 true，接着在 Typora 键入快捷键
 #   - 如果你有把握，`eval` 确实是很方便 —— 试试将下面的 【switchFirstTab】 的 enable 置为 true，接着在 Typora 键入快捷键

@@ -226,16 +226,16 @@ class autoNumberPlugin extends BasePlugin {
         this.utils.insertStyle(this.css_id, css);
     }
 
-    dynamicCallArgsGenerator = () => [
-        { arg_name: "大纲", arg_value: "set_outline", arg_state: this.config.ENABLE_SIDE_BAR },
-        { arg_name: "正文", arg_value: "set_content", arg_state: this.config.ENABLE_CONTENT },
-        { arg_name: "TOC", arg_value: "set_toc", arg_state: this.config.ENABLE_TOC },
-        { arg_name: "表格", arg_value: "set_table", arg_state: this.config.ENABLE_TABLE },
-        { arg_name: "图片", arg_value: "set_image", arg_state: this.config.ENABLE_IMAGE },
-        { arg_name: "代码块", arg_value: "set_fence", arg_state: this.config.ENABLE_FENCE },
+    getDynamicActions = () => [
+        { act_name: "大纲", act_value: "set_outline", act_state: this.config.ENABLE_SIDE_BAR },
+        { act_name: "正文", act_value: "set_content", act_state: this.config.ENABLE_CONTENT },
+        { act_name: "TOC", act_value: "set_toc", act_state: this.config.ENABLE_TOC },
+        { act_name: "表格", act_value: "set_table", act_state: this.config.ENABLE_TABLE },
+        { act_name: "图片", act_value: "set_image", act_state: this.config.ENABLE_IMAGE },
+        { act_name: "代码块", act_value: "set_fence", act_state: this.config.ENABLE_FENCE },
     ]
 
-    call = type => {
+    call = action => {
         const callMap = {
             set_outline: () => this.toggleSetting("ENABLE_SIDE_BAR"),
             set_content: () => this.toggleSetting("ENABLE_CONTENT"),
@@ -244,7 +244,7 @@ class autoNumberPlugin extends BasePlugin {
             set_image: () => this.toggleSetting("ENABLE_IMAGE"),
             set_fence: () => this.toggleSetting("ENABLE_FENCE"),
         }
-        const func = callMap[type];
+        const func = callMap[action];
         func && func();
     }
 }

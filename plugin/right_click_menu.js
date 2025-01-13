@@ -1,4 +1,4 @@
-// 插件名称是通过配置文件引入的，为了避免XSS注入，不可使用innerHTML
+// The plugin name is introduced through the setting file. To avoid XSS injection, innerHTML cannot be used
 class rightClickMenuPlugin extends BasePlugin {
     styleTemplate = () => {
         const { MENU_MIN_WIDTH, HIDE_OTHER_OPTIONS } = this.config;
@@ -11,105 +11,105 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     init = () => {
-        this.groupName = "typora-plugin";
-        this.noExtraMenuGroupName = "typora-plugin-no-extra";
-        this.dividerArg = "---";
-        this.unavailableArgName = "不可点击";
-        this.unavailableArgValue = "__not_available__";
-        this.defaultDisableHint = "功能于此时不可用";
-        this.supportShortcut = Boolean(document.querySelector(".ty-menu-shortcut"));
+        this.groupName = "typora-plugin"
+        this.noExtraMenuGroupName = "typora-plugin-no-extra"
+        this.dividerValue = "---"
+        this.unavailableActName = "不可点击"
+        this.unavailableActValue = "__not_available__"
+        this.defaultDisableHint = "功能于此时不可用"
+        this.supportShortcut = Boolean(document.querySelector(".ty-menu-shortcut"))
     }
 
     process = () => {
-        this.utils.runtime.autoSaveConfig(this);
+        this.utils.runtime.autoSaveConfig(this)
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.appendMenu)
     }
 
     appendMenu = () => {
         setTimeout(() => {
-            this.appendFirst();  // 一级菜单汇总所有插件
-            this.appendSecond(); // 二级菜单展示所有插件
-            this.appendThird();  // 三级菜单展示插件的参数
-            this.listen();
+            this.appendFirst()  // The first level menus group all plugins
+            this.appendSecond() // The second level menus display grouped plugins
+            this.appendThird()  // The three level menus display the actions of the plugin
+            this.listen()
         }, 500)
     }
 
     appendFirst = () => {
         const items = this.config.MENUS.map(({ NAME, LIST = [] }, idx) => {
-            const item = [{ ele: "span", "data-lg": "Menu", text: NAME }];
-            const children = [{ ele: "a", role: "menuitem", children: item }];
-            const noExtraMenu = LIST && LIST.length === 1;
+            const item = [{ ele: "span", "data-lg": "Menu", text: NAME }]
+            const children = [{ ele: "a", role: "menuitem", children: item }]
+            const noExtraMenu = LIST && LIST.length === 1
             if (noExtraMenu) {
-                return { ele: "li", "data-key": this.noExtraMenuGroupName, "data-value": LIST[0], idx, children };
+                return { ele: "li", "data-key": this.noExtraMenuGroupName, "data-value": LIST[0], idx, children }
             }
-            item.push(this.caret());
-            return { ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children };
+            item.push(this.caret())
+            return { ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children }
         })
-        const elements = [this.divider(), ...items];
-        const menu = document.querySelector("#context-menu");
-        this.utils.htmlTemplater.appendElements(menu, elements);
+        const templates = [this.divider(), ...items]
+        const menu = document.querySelector("#context-menu")
+        this.utils.htmlTemplater.appendElements(menu, templates)
     }
 
     appendSecond = () => {
-        this.findLostPluginIfNeed();
-
-        const elements = this.config.MENUS.map(({ LIST = [] }, idx) => {
+        this.findLostPluginIfNeed()
+        const templates = this.config.MENUS.map(({ LIST = [] }, idx) => {
             const children = LIST.map(item => {
-                if (item === this.dividerArg) return this.divider();
-
-                const [fixedName, callArg] = item.split(".");
-                const plugin = this.utils.getPlugin(fixedName);
+                if (item === this.dividerValue) {
+                    return this.divider()
+                }
+                const [fixedName, action] = item.split(".")
+                const plugin = this.utils.getPlugin(fixedName)
                 if (plugin) {
-                    return callArg ? this.secondComposeLiTemplate(plugin, callArg) : this.secondLiTemplate(plugin)
+                    return action ? this.secondComposeLiTemplate(plugin, action) : this.secondLiTemplate(plugin)
                 }
             }).filter(Boolean)
-            return this.ulTemplate({ class_: ["plugin-menu-second"], idx, children });
+            return this.ulTemplate({ class_: ["plugin-menu-second"], idx, children })
         })
-        this.utils.htmlTemplater.appendElements(this.utils.entities.eContent, elements);
+        this.utils.htmlTemplater.appendElements(this.utils.entities.eContent, templates)
     }
 
     appendThird = () => {
-        const elements = this.config.MENUS.flatMap(({ LIST = [] }, idx) => {
+        const templates = this.config.MENUS.flatMap(({ LIST = [] }, idx) => {
             return LIST
-                .filter(item => item !== this.dividerArg)
+                .filter(item => item !== this.dividerValue)
                 .map(item => this.utils.getPlugin(item))
-                .filter(plugin => plugin && (plugin.callArgs || plugin.dynamicCallArgsGenerator))
+                .filter(plugin => plugin && (plugin.staticActions || plugin.getDynamicActions))
                 .map(plugin => {
-                    const children = (plugin.callArgs || []).map(arg => this.thirdLiTemplate(arg))
+                    const children = (plugin.staticActions || []).map(act => this.thirdLiTemplate(act))
                     return { class_: ["plugin-menu-third"], "data-plugin": plugin.fixedName, idx, children }
                 })
                 .map(this.ulTemplate)
         })
-        this.utils.htmlTemplater.appendElements(this.utils.entities.eContent, elements)
+        this.utils.htmlTemplater.appendElements(this.utils.entities.eContent, templates)
     }
 
-    secondComposeLiTemplate = (plugin, callArg) => {
-        const target = plugin.callArgs.find(arg => arg.arg_value === callArg);
-        const name = target ? target.arg_name : plugin.config.NAME;
-        const children = [{ ele: "a", role: "menuitem", "data-lg": "Menu", text: name }];
-        return { ele: "li", class_: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": callArg, children }
+    secondComposeLiTemplate = (plugin, action) => {
+        const target = plugin.staticActions.find(act => act.act_value === action)
+        const name = target ? target.act_name : plugin.config.NAME
+        const children = [{ ele: "a", role: "menuitem", "data-lg": "Menu", text: name }]
+        return { ele: "li", class_: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": action, children }
     }
 
     secondLiTemplate = plugin => {
-        const hasArgs = plugin.callArgs || plugin.dynamicCallArgsGenerator;
-        const clickable = hasArgs || plugin.hasOwnProperty("call");
+        const hasAction = plugin.staticActions || plugin.getDynamicActions
+        const clickable = hasAction || plugin.hasOwnProperty("call")
         const extra = {
-            class_: `plugin-menu-item ${hasArgs ? "has-extra-menu" : ""}`,
+            class_: `plugin-menu-item ${hasAction ? "has-extra-menu" : ""}`,
             style: clickable ? undefined : { color: "#c4c6cc", pointerEvents: "none" },
         }
-        return this._liTemplate(plugin.fixedName, plugin.config.NAME, plugin.config.HOTKEY, hasArgs, null, extra);
+        return this._liTemplate(plugin.fixedName, plugin.config.NAME, plugin.config.HOTKEY, hasAction, null, extra)
     }
 
-    thirdLiTemplate = (arg, dynamic) => {
-        if (arg.arg_disabled && !arg.arg_hint) {
-            arg.arg_hint = this.defaultDisableHint;
+    thirdLiTemplate = (act, dynamic) => {
+        if (act.act_disabled && !act.act_hint) {
+            act.act_hint = this.defaultDisableHint
         }
         const extra = {
-            "ty-hint": arg.arg_hint || undefined,
-            class_: dynamic ? `plugin-dynamic-arg ${arg.arg_disabled ? "disabled" : ""}` : undefined,
-        };
-        const state = arg.arg_state ? "state-on" : "state-off";
-        return this._liTemplate(arg.arg_value, arg.arg_name, arg.arg_hotkey, false, state, extra);
+            "ty-hint": act.act_hint || undefined,
+            class_: dynamic ? `plugin-dynamic-act ${act.act_disabled ? "disabled" : ""}` : undefined,
+        }
+        const state = act.act_state ? "state-on" : "state-off"
+        return this._liTemplate(act.act_value, act.act_name, act.act_hotkey, false, state, extra)
     }
 
     _liTemplate = (key, showName, shortcut, hasExtraMenu, class_, extra) => {
@@ -162,14 +162,14 @@ class rightClickMenuPlugin extends BasePlugin {
         $after.css({ top: afterTop + "px", left: afterLeft + "px" });
     }
 
-    appendThirdLi = ($menu, dynamicCallArgs) => {
-        dynamicCallArgs.forEach(arg => $menu.append(this.utils.htmlTemplater.create(this.thirdLiTemplate(arg, true))))
+    appendThirdLi = ($menu, dynamicActions) => {
+        const templates = dynamicActions.map(act => this.thirdLiTemplate(act, true))
+        this.utils.htmlTemplater.appendElements($menu, templates)
     }
-    appendDummyThirdLi = $menu => this.appendThirdLi($menu, [{
-        arg_name: this.unavailableArgName,
-        arg_value: this.unavailableArgValue,
-        arg_disabled: true,
-    }])
+    appendDummyThirdLi = $menu => {
+        const dynamicActions = [{ act_name: this.unavailableActName, act_value: this.unavailableActValue, act_disabled: true }]
+        return this.appendThirdLi($menu, dynamicActions)
+    }
 
     listen = () => {
         const that = this;
@@ -178,85 +178,90 @@ class rightClickMenuPlugin extends BasePlugin {
 
         // 点击一级菜单
         $("#context-menu").on("click", `[data-key="${this.noExtraMenuGroupName}"]`, function () {
-            const value = this.getAttribute("data-value");
-            if (!value) return false;
-            const [fixedName, callArg] = value.split(".");
-            if (!fixedName || !callArg) return false;
-            that.utils.generateDynamicCallArgs(fixedName);
-            const plugin = that.utils.getPlugin(fixedName);
-            that.dynamicCallPlugin(plugin, callArg);
-            that.hideMenuIfNeed();
+            const value = this.getAttribute("data-value")
+            if (!value) {
+                return false
+            }
+            const [fixedName, action] = value.split(".")
+            if (!fixedName || !action) {
+                return false
+            }
+            that.utils.updatePluginDynamicActions(fixedName)
+            that.callPluginDynamicAction(fixedName, action)
+            that.hideMenuIfNeed()
             // 展示二级菜单
         }).on("mouseenter", "[data-key]", function () {
-            const $first = $(this);
+            const $first = $(this)
             if (that.groupName === $first.attr("data-key")) {
-                const idx = this.getAttribute("idx");
+                const idx = this.getAttribute("idx")
                 if (document.querySelector(".plugin-menu-second.show")) {
-                    document.querySelectorAll(`.plugin-menu-third:not([idx="${idx}"])`).forEach(removeShow);
+                    document.querySelectorAll(`.plugin-menu-third:not([idx="${idx}"])`).forEach(removeShow)
                 }
-                const otherSecond = document.querySelectorAll(`.plugin-menu-second:not([idx="${idx}"])`);
-                otherSecond.forEach(ele => ele.querySelectorAll(".plugin-menu-item.active").forEach(removeActive));
-                otherSecond.forEach(removeShow);
-                that.showMenuItem($(`.plugin-menu-second[idx="${idx}"]`), $first);
-                $first.addClass("active");
+                const otherSecond = document.querySelectorAll(`.plugin-menu-second:not([idx="${idx}"])`)
+                otherSecond.forEach(ele => ele.querySelectorAll(".plugin-menu-item.active").forEach(removeActive))
+                otherSecond.forEach(removeShow)
+                that.showMenuItem($(`.plugin-menu-second[idx="${idx}"]`), $first)
+                $first.addClass("active")
             } else {
-                document.querySelectorAll(`#context-menu li[data-key="${that.groupName}"]`).forEach(removeActive);
-                document.querySelectorAll(".plugin-menu-second, .plugin-menu-third").forEach(removeShow);
+                document.querySelectorAll(`#context-menu li[data-key="${that.groupName}"]`).forEach(removeActive)
+                document.querySelectorAll(".plugin-menu-second, .plugin-menu-third").forEach(removeShow)
             }
         })
 
         // 展示三级菜单
         $(".plugin-menu-second").on("mouseenter", "[data-key]", function () {
-            const $second = $(this);
-            document.querySelectorAll(".plugin-menu-third").forEach(removeShow);
-            document.querySelectorAll(".plugin-dynamic-arg").forEach(ele => ele.parentElement.removeChild(ele));
-            const fixedName = $second.attr("data-key");
-            const $third = $(`.plugin-menu-third[data-plugin="${fixedName}"]`);
-            const dynamicCallArgs = that.utils.generateDynamicCallArgs(fixedName);
-            if (dynamicCallArgs) {
-                that.appendThirdLi($third, dynamicCallArgs);
+            const $second = $(this)
+            document.querySelectorAll(".plugin-menu-third").forEach(removeShow)
+            document.querySelectorAll(".plugin-dynamic-act").forEach(ele => ele.parentElement.removeChild(ele))
+            const fixedName = $second.attr("data-key")
+            const $third = $(`.plugin-menu-third[data-plugin="${fixedName}"]`)
+            const dynamicActions = that.utils.updatePluginDynamicActions(fixedName)
+            if (dynamicActions) {
+                that.appendThirdLi($third, dynamicActions)
             }
             if ($third.children().length === 0) {
-                that.appendDummyThirdLi($third);
+                that.appendDummyThirdLi($third)
             }
             if ($second.find('span[data-lg="Menu"]').length) {
-                that.showMenuItem($third, $second);
+                that.showMenuItem($third, $second)
             } else {
-                removeActive(document.querySelector(".plugin-menu-second .has-extra-menu"));
+                removeActive(document.querySelector(".plugin-menu-second .has-extra-menu"))
             }
             // 在二级菜单中调用插件
         }).on("click", "[data-key]", function () {
-            const fixedName = this.getAttribute("data-key");
-            const callArg = this.getAttribute("data-value");
-            const plugin = that.utils.getPlugin(fixedName);
-            if (callArg) {
-                that.dynamicCallPlugin(plugin, callArg);
+            const fixedName = this.getAttribute("data-key")
+            const action = this.getAttribute("data-value")
+            if (action) {
+                that.callPluginDynamicAction(fixedName, action)
             } else {
+                const plugin = that.utils.getPlugin(fixedName)
                 // 拥有三级菜单的，不允许点击二级菜单
-                if (!plugin || plugin.callArgs || plugin.dynamicCallArgsGenerator) return false;
-                that.callPlugin(plugin);
+                if (!plugin || plugin.staticActions || plugin.getDynamicActions) {
+                    return false
+                }
+                if (plugin.call) {
+                    plugin.call()
+                }
             }
-            that.hideMenuIfNeed();
+            that.hideMenuIfNeed()
         })
 
         // 在三级菜单中调用插件
         $(".plugin-menu-third").on("click", "[data-key]", function () {
             // 点击禁用的选项
-            if (this.classList.contains("disabled")) return false;
-
-            const fixedName = this.parentElement.getAttribute("data-plugin");
-            const callArg = this.getAttribute("data-key");
-            const plugin = that.utils.getPlugin(fixedName);
-            that.dynamicCallPlugin(plugin, callArg);
-            that.hideMenuIfNeed(fixedName);
+            if (this.classList.contains("disabled")) {
+                return false
+            }
+            const fixedName = this.parentElement.getAttribute("data-plugin")
+            const action = this.getAttribute("data-key")
+            that.callPluginDynamicAction(fixedName, action)
+            that.hideMenuIfNeed(fixedName)
         })
     }
 
-    callPlugin = plugin => plugin.call && plugin.call();
-
-    dynamicCallPlugin = (plugin, arg) => {
-        if (arg !== this.unavailableArgValue && plugin && plugin.call) {
-            this.utils.withMeta(meta => plugin.call(arg, meta));
+    callPluginDynamicAction = (fixedName, action) => {
+        if (action !== this.unavailableActValue) {
+            this.utils.callPluginDynamicAction(fixedName, action)
         }
     }
 
@@ -280,24 +285,24 @@ class rightClickMenuPlugin extends BasePlugin {
         toggle(fn);
     }
 
-    dynamicCallArgsGenerator = () => {
-        const args = [
-            { arg_name: "启用功能：保持显示", arg_value: "do_not_hide", arg_state: this.config.DO_NOT_HIDE, arg_hint: "右键菜单点击后不会自动消失" },
-            { arg_name: "启用功能：隐藏除插件外的选项", arg_value: "hide_other_options", arg_state: this.config.HIDE_OTHER_OPTIONS },
+    getDynamicActions = () => {
+        const acts = [
+            { act_name: "启用功能：保持显示", act_value: "do_not_hide", act_state: this.config.DO_NOT_HIDE, act_hint: "右键菜单点击后不会自动消失" },
+            { act_name: "启用功能：隐藏除插件外的选项", act_value: "hide_other_options", act_state: this.config.HIDE_OTHER_OPTIONS },
         ]
         if (this.supportShortcut) {
-            args.push({ arg_name: "启用功能：显示快捷键", arg_value: "toggle_hotkey", arg_state: this.config.SHOW_PLUGIN_HOTKEY })
+            acts.push({ act_name: "启用功能：显示快捷键", act_value: "toggle_hotkey", act_state: this.config.SHOW_PLUGIN_HOTKEY })
         }
-        return args
+        return acts
     }
 
-    call = async type => {
-        if (type === "do_not_hide") {
+    call = async action => {
+        if (action === "do_not_hide") {
             this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE
-        } else if (type === "hide_other_options") {
+        } else if (action === "hide_other_options") {
             this.config.HIDE_OTHER_OPTIONS = !this.config.HIDE_OTHER_OPTIONS
             await this.utils.styleTemplater.reset(this.fixedName, this.styleTemplate())
-        } else if (type === "toggle_hotkey") {
+        } else if (action === "toggle_hotkey") {
             this.toggleHotkey()
         }
     }
@@ -306,4 +311,3 @@ class rightClickMenuPlugin extends BasePlugin {
 module.exports = {
     plugin: rightClickMenuPlugin
 }
-

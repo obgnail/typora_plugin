@@ -62,22 +62,25 @@ class exportEnhancePlugin extends BasePlugin {
     }
 
     toBase64 = async imagePath => {
-        const bytes = await this.utils.Package.Fs.promises.readFile(imagePath)
-        const data = Buffer.from(bytes).toString("base64")
-        // a MIME library should be introduced to handle various media types, but here we only do simple processing
-        const mime = this.utils.Package.Path.extname(imagePath).toLowerCase() === ".svg" ? "image/svg+xml" : "image"
-        return `data:${mime};base64,${data}`
+        const data = await this.utils.Package.Fs.promises.readFile(imagePath)
+        // MIME type detection should use magic number checks or a dedicated library.
+        // Manually checking magic numbers is impractical and a library adds too much overhead.
+        // This uses a simplified approach. Modern browsers can often infer the subtype reliably.
+        const prefix = data.slice(0, 5).toString()
+        const mime = ["<svg", "<?xml"].some(e => prefix.startsWith(e)) ? "image/svg+xml" : "image"
+        const base64 = data.toString("base64")
+        return `data:${mime};base64,${base64}`
     }
 
-    dynamicCallArgsGenerator = () => [
-        { arg_name: "启用功能：图片转为 Base64", arg_value: "toggle_enable", arg_state: this.enable },
-        { arg_name: "启用功能：自动下载网络图片", arg_value: "toggle_download", arg_state: this.config.DOWNLOAD_NETWORK_IMAGE },
+    getDynamicActions = () => [
+        { act_name: "启用功能：图片转为 Base64", act_value: "toggle_enable", act_state: this.enable },
+        { act_name: "启用功能：自动下载网络图片", act_value: "toggle_download", act_state: this.config.DOWNLOAD_NETWORK_IMAGE },
     ]
 
-    call = type => {
-        if (type === "toggle_download") {
+    call = action => {
+        if (action === "toggle_download") {
             this.config.DOWNLOAD_NETWORK_IMAGE = !this.config.DOWNLOAD_NETWORK_IMAGE;
-        } else if (type === "toggle_enable") {
+        } else if (action === "toggle_enable") {
             this.enable = !this.enable;
         }
     }

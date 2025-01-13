@@ -1,0 +1,4 @@
+#write .plugin-drawio-content,
+.geDiagramContainer svg {
+    line-height: initial;
+}

@@ -9,14 +9,14 @@ class cipherPlugin extends BasePlugin {
         // To prevent decryption failures, users are restricted from modifying the hard-coded secret key
         this.key = "n0hLis5FjgQxa3f31sSa2wm37J81g3upTlq9it9WlfK"
         this.showMessageBox = this.config.SHOW_HINT_MODAL
-        this.callArgs = [
-            { arg_name: "加密", arg_value: "encrypt", arg_hotkey: this.config.ENCRYPT_HOTKEY },
-            { arg_name: "解密", arg_value: "decrypt", arg_hotkey: this.config.DECRYPT_HOTKEY },
+        this.staticActions = [
+            { act_name: "加密", act_value: "encrypt", act_hotkey: this.config.ENCRYPT_HOTKEY },
+            { act_name: "解密", act_value: "decrypt", act_hotkey: this.config.DECRYPT_HOTKEY },
         ]
     }
 
-    call = async type => {
-        const func = this[type]
+    call = async action => {
+        const func = this[action]
         if (func) {
             await this.utils.editCurrentFile(func)
         }

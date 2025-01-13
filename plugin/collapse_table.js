@@ -29,23 +29,23 @@ class collapseTablePlugin extends BasePlugin {
         })
     }
 
-    call = (type, meta) => {
-        if (type === "convert_current") {
+    call = (action, meta) => {
+        if (action === "convert_current") {
             this.toggleTable(meta.target);
-        } else if (type === "record_collapse_state") {
+        } else if (action === "record_collapse_state") {
             this.recordCollapseState(true);
         }
     }
 
-    dynamicCallArgsGenerator = (anchorNode, meta) => {
+    getDynamicActions = (anchorNode, meta) => {
         const figure = anchorNode.closest("#write .table-figure");
-        const arg_disabled = !figure;
-        const arg_hint = !figure ? "请将光标定位到表格后点击鼠标右键" : "";
-        const arg_name = !figure ? "表格折叠" : (figure.classList.contains(this.className) ? "展开表格" : "折叠表格");
+        const act_disabled = !figure;
+        const act_hint = !figure ? "请将光标定位到表格后点击鼠标右键" : "";
+        const act_name = !figure ? "表格折叠" : (figure.classList.contains(this.className) ? "展开表格" : "折叠表格");
         meta.target = figure;
         return [
-            { arg_name, arg_hint, arg_disabled, arg_value: "convert_current" },
-            { arg_name: "启用功能：记住表格折叠状态", arg_value: "record_collapse_state", arg_state: this.config.RECORD_COLLAPSE }
+            { act_name, act_hint, act_disabled, act_value: "convert_current" },
+            { act_name: "启用功能：记住表格折叠状态", act_value: "record_collapse_state", act_state: this.config.RECORD_COLLAPSE }
         ]
     }
 

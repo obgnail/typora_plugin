@@ -5,9 +5,9 @@ class collapseParagraphPlugin extends BasePlugin {
         this.className = "plugin-collapsed-paragraph";
         this.selector = `#write > [mdtype="heading"]`;
         this.paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
-        this.callArgs = [
-            { arg_name: "折叠全部章节", arg_value: "collapse_all" },
-            { arg_name: "展开全部章节", arg_value: "expand_all" },
+        this.staticActions = [
+            { act_name: "折叠全部章节", act_value: "collapse_all" },
+            { act_name: "展开全部章节", act_value: "expand_all" },
         ];
     }
 
@@ -207,7 +207,7 @@ class collapseParagraphPlugin extends BasePlugin {
         this.paragraphList.forEach(tag => document.getElementsByTagName(tag).forEach(ele => this.trigger(ele, true)));
     }
 
-    dynamicCallArgsGenerator = (anchorNode, meta) => {
+    getDynamicActions = (anchorNode, meta) => {
         const genHotkey = key => {
             const value = this.config.MODIFIER_KEY[key];
             return value ? `${value}+click` : undefined
@@ -215,12 +215,12 @@ class collapseParagraphPlugin extends BasePlugin {
         const target = this.getTargetHeader(anchorNode, !this.config.STRICT_MODE_IN_CONTEXT_MENU);
         meta.target = target;
         return [
-            { arg_name: "折叠其他章节", arg_value: "collapse_other", arg_disabled: !target },
-            { arg_name: "折叠/展开当前章节", arg_value: "call_current", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_SINGLE") },
-            { arg_name: "折叠/展开当前章节（递归）", arg_value: "call_recursive", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_RECURSIVE") },
-            { arg_name: "折叠/展开同级章节", arg_value: "call_siblings", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_SIBLINGS") },
-            { arg_name: "折叠/展开全局同级章节", arg_value: "call_all_siblings", arg_disabled: !target, arg_hotkey: genHotkey("COLLAPSE_ALL_SIBLINGS") },
-            { arg_name: "启用功能：记住章节折叠状态", arg_value: "record_collapse_state", arg_state: this.config.RECORD_COLLAPSE },
+            { act_name: "折叠其他章节", act_value: "collapse_other", act_disabled: !target },
+            { act_name: "折叠/展开当前章节", act_value: "call_current", act_disabled: !target, act_hotkey: genHotkey("COLLAPSE_SINGLE") },
+            { act_name: "折叠/展开当前章节（递归）", act_value: "call_recursive", act_disabled: !target, act_hotkey: genHotkey("COLLAPSE_RECURSIVE") },
+            { act_name: "折叠/展开同级章节", act_value: "call_siblings", act_disabled: !target, act_hotkey: genHotkey("COLLAPSE_SIBLINGS") },
+            { act_name: "折叠/展开全局同级章节", act_value: "call_all_siblings", act_disabled: !target, act_hotkey: genHotkey("COLLAPSE_ALL_SIBLINGS") },
+            { act_name: "启用功能：记住章节折叠状态", act_value: "record_collapse_state", act_state: this.config.RECORD_COLLAPSE },
         ]
     }
 
@@ -247,15 +247,15 @@ class collapseParagraphPlugin extends BasePlugin {
         }
     }
 
-    call = (type, meta) => {
-        if (type === "collapse_all") {
+    call = (action, meta) => {
+        if (action === "collapse_all") {
             this.collapseAll();
-        } else if (type === "expand_all") {
+        } else if (action === "expand_all") {
             this.expandAll();
-        } else if (type === "record_collapse_state") {
+        } else if (action === "record_collapse_state") {
             this.recordCollapseState();
         } else {
-            this.dynamicCall(type, meta);
+            this.dynamicCall(action, meta);
         }
         this.callbackOtherPlugin();
     }

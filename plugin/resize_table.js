@@ -7,13 +7,11 @@ class resizeTablePlugin extends BasePlugin {
         this.onResize();
     }
 
-    dynamicCallArgsGenerator = anchorNode => [{
-        arg_name: "启用功能：记住表格放缩状态",
-        arg_value: "record_resize_state",
-        arg_state: this.config.RECORD_RESIZE
-    }]
+    getDynamicActions = anchorNode => [
+        { act_name: "启用功能：记住表格放缩状态", act_value: "record_resize_state", act_state: this.config.RECORD_RESIZE }
+    ]
 
-    call = type => type === "record_resize_state" && this.toggleRecorder();
+    call = action => action === "record_resize_state" && this.toggleRecorder()
 
     onResize = () => {
         this.utils.entities.eWrite.addEventListener("mousedown", ev => {

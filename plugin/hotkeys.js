@@ -38,7 +38,7 @@ class hotkeysPlugin extends BasePlugin {
         }
     }
 
-    call = (type, meta) => {
+    call = (action, meta) => {
         const trs = Array.from(this.utils.hotkeyHub.map.keys()).sort().map(hk => {
             const hotkey = hk.toUpperCase().split("+").map(h => `<kbd>${h}</kbd>`).join("+");
             return `<tr><td>${hotkey}</td></tr>`

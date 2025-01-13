@@ -78,6 +78,7 @@ class utils {
         const plugins = ["collapse_paragraph", "collapse_table", "collapse_list", "truncate_text"];
         plugins.forEach(plu => this.callPluginFunction(plu, "rollback", target));
     }
+
     static getAnchorNode = () => File.editor.getJQueryElem(window.getSelection().anchorNode);
     static withAnchorNode = (selector, func) => () => {
         const anchorNode = this.getAnchorNode();
@@ -85,24 +86,33 @@ class utils {
         target && target[0] && func(target[0]);
     }
     static _meta = {} // 用于在右键菜单功能中传递数据，不可手动调用此变量
-    static generateDynamicCallArgs = (fixedName, anchorNode, notInContextMenu = false) => {
-        if (!fixedName) return;
-        const plugin = this.getPlugin(fixedName);
-        if (plugin && plugin.dynamicCallArgsGenerator) {
-            anchorNode = anchorNode || this.getAnchorNode();
-            if (anchorNode[0]) {
-                this._meta = {};
-                return plugin.dynamicCallArgsGenerator(anchorNode[0], this._meta, notInContextMenu);
+    static updatePluginDynamicActions = (fixedName, anchorNode, notInContextMenu = false) => {
+        const plugin = this.getPlugin(fixedName)
+        if (plugin && plugin.getDynamicActions instanceof Function) {
+            anchorNode = anchorNode || this.getAnchorNode()
+            const anchor = anchorNode[0]
+            if (anchor) {
+                this._meta = {}
+                return plugin.getDynamicActions(anchor, this._meta, notInContextMenu)
             }
         }
     }
-    static withMeta = func => func(this._meta)
+    static callPluginDynamicAction = (fixedName, action) => {
+        const plugin = this.getPlugin(fixedName)
+        if (plugin && plugin.call instanceof Function) {
+            plugin.call(action, this._meta)
+        }
+    }
+    static updateAndCallPluginDynamicAction = (fixedName, action, anchorNode, notInContextMenu) => {
+        this.updatePluginDynamicActions(fixedName, anchorNode, notInContextMenu)
+        this.callPluginDynamicAction(fixedName, action)
+    }
 
     // Repo: https://github.com/jimp-dev/jimp
     // after loadJimp(), you can use globalThis.Jimp
-    static loadJimp = async () => await $.getScript((File.isNode ? "./lib.asar" : "./lib") + "/jimp/browser/lib/jimp.min.js")
+    // static loadJimp = async () => await $.getScript((File.isNode ? "./lib.asar" : "./lib") + "/jimp/browser/lib/jimp.min.js")
 
-    static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
+    // static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
 
     static downloadImage = async (src, folder, filename) => {
         folder = folder || this.tempFolder;
@@ -116,7 +126,7 @@ class utils {
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
     static shiftKeyPressed = ev => ev.shiftKey
     static altKeyPressed = ev => ev.altKey
-    static chineseInputMethodActivated = ev => ev.key === "Process"
+    static isIMEActivated = ev => ev.key === "Process"
     static modifierKey = keyString => {
         const keys = keyString.toLowerCase().split("+").map(k => k.trim());
         const ctrl = keys.indexOf("ctrl") !== -1;

@@ -10,60 +10,58 @@ class easyModifyPlugin extends BasePlugin {
     ]
 
     init = () => {
-        const arg_hint = "若无选中文段，则调整整篇文档";
-        this._showWarnDialog = true;
-        this.callArgs = [
-            { arg_name: "复制标题路径", arg_value: "copy_full_path", arg_hotkey: this.config.HOTKEY_COPY_FULL_PATH },
-            { arg_name: "提升选中文段的标题等级", arg_value: "increase_headers_level", arg_hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, arg_hint },
-            { arg_name: "降低选中文段的标题等级", arg_value: "decrease_headers_level", arg_hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, arg_hint },
-            { arg_name: "添加结尾空格", arg_value: "trailing_white_space", arg_hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, arg_hint: "除非有特殊需求，不建议使用此功能" },
-        ];
+        const act_hint = "若无选中文段，则调整整篇文档"
+        this._showWarnDialog = true
+        this.staticActions = [
+            { act_name: "复制标题路径", act_value: "copy_full_path", act_hotkey: this.config.HOTKEY_COPY_FULL_PATH },
+            { act_name: "提升选中文段的标题等级", act_value: "increase_headers_level", act_hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, act_hint },
+            { act_name: "降低选中文段的标题等级", act_value: "decrease_headers_level", act_hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, act_hint },
+            { act_name: "添加结尾空格", act_value: "trailing_white_space", act_hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, act_hint: "除非有特殊需求，不建议使用此功能" },
+        ]
     }
 
-    dynamicCallArgsGenerator = (anchorNode, meta) => {
-        meta.range = window.getSelection().getRangeAt(0);
+    getDynamicActions = (anchorNode, meta) => {
+        meta.range = window.getSelection().getRangeAt(0)
         const extract = {
-            arg_name: "提取选区文字到新文件",
-            arg_value: "extract_rang_to_new_file",
-            arg_disabled: meta.range.collapsed,
-            arg_hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE
+            act_name: "提取选区文字到新文件",
+            act_value: "extract_rang_to_new_file",
+            act_disabled: meta.range.collapsed,
+            act_hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE
         }
-        if (extract.arg_disabled) {
-            extract.arg_hint = "请框选待提取的文段";
+        if (extract.act_disabled) {
+            extract.act_hint = "请框选待提取的文段"
         }
 
-        meta.insertTarget = anchorNode.closest(`#write > p[mdtype="paragraph"]`);
-        const arg_disabled = !meta.insertTarget || meta.insertTarget.querySelector("p > span");
-        const arg_hint = arg_disabled ? "请将光标定位到空白行" : "";
+        meta.copyAnchor = anchorNode.closest("#write > [cid]")
+        meta.insertAnchor = anchorNode.closest(`#write > p[mdtype="paragraph"]`)
+        const act_disabled = !meta.insertAnchor || meta.insertAnchor.querySelector("p > span")
+        const act_hint = act_disabled ? "请将光标定位到空白行" : ""
         const insert = [
-            { arg_name: "插入思维导图：mindmap", arg_value: "insert_mermaid_mindmap", arg_hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, arg_disabled, arg_hint },
-            { arg_name: "插入思维导图：graph", arg_value: "insert_mermaid_graph", arg_hotkey: this.config.HOTKEY_INSERT_MERMAID_GRAPH, arg_disabled, arg_hint },
+            { act_name: "插入思维导图：mindmap", act_value: "insert_mermaid_mindmap", act_hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, act_disabled, act_hint },
+            { act_name: "插入思维导图：graph", act_value: "insert_mermaid_graph", act_hotkey: this.config.HOTKEY_INSERT_MERMAID_GRAPH, act_disabled, act_hint },
         ]
 
-        return [...insert, extract];
+        return [...insert, extract]
     }
 
-    dynamicCall = type => {
-        this.utils.generateDynamicCallArgs(this.fixedName);
-        this.utils.withMeta(meta => this.call(type, meta));
-    }
+    dynamicCall = action => this.utils.updateAndCallPluginDynamicAction(this.fixedName, action)
 
-    call = async (type, meta = {}) => {
+    call = async (action, meta = {}) => {
         const funcMap = {
             increase_headers_level: () => this.changeHeadersLevel(true),
             decrease_headers_level: () => this.changeHeadersLevel(false),
-            copy_full_path: () => this.copyFullPath(),
             trailing_white_space: async () => this.trailingWhiteSpace(),
-            insert_mermaid_mindmap: () => this.insertMindmap("mindmap", meta.insertTarget),
-            insert_mermaid_graph: () => this.insertMindmap("graph", meta.insertTarget),
+            copy_full_path: () => this.copyFullPath(meta.copyAnchor),
+            insert_mermaid_mindmap: () => this.insertMindmap("mindmap", meta.insertAnchor),
+            insert_mermaid_graph: () => this.insertMindmap("graph", meta.insertAnchor),
             extract_rang_to_new_file: async () => this.extractRangeToNewFile(meta.range),
         }
-        const func = funcMap[type];
-        if (!func) return;
+        const func = funcMap[action]
+        if (!func) return
 
-        const dontShow = await func();
+        const dontShow = await func()
         if (dontShow !== true) {
-            this.utils.notification.show("执行成功");
+            this.utils.notification.show("执行成功")
         }
     }
 
@@ -97,12 +95,12 @@ class easyModifyPlugin extends BasePlugin {
         _getTargetHeaders().forEach(node => _changeHeaderLevel(node, incr));
     }
 
-    copyFullPath = () => {
+    copyFullPath = anchorNode => {
         const getHeaderName = (title, name) => `${title} ${name}`;
         const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
         const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"];
         const pList = [];
-        let ele = this.utils.getAnchorNode().closest("#write > [cid]")[0];
+        let ele = anchorNode || this.utils.getAnchorNode().closest("#write > [cid]")[0]
 
         while (ele) {
             const idx = paragraphList.indexOf(ele.tagName);
@@ -233,4 +231,4 @@ class easyModifyPlugin extends BasePlugin {
 
 module.exports = {
     plugin: easyModifyPlugin,
-};
+}

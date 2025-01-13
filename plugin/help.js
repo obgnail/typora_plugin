@@ -9,18 +9,18 @@ class helpPlugin extends BasePlugin {
     }
 
     init = () => {
-        const arg_hint = "此功能仅对开发者开放";
-        this.callArgs = [
-            { arg_name: "卸载插件", arg_value: "uninstall_plugin" },
-            { arg_name: "修改配置", arg_value: "open_setting_folder" },
-            { arg_name: "备份配置", arg_value: "backup_setting_file" },
-            { arg_name: "环境信息", arg_value: "environment" },
-            { arg_name: "修改样式", arg_value: "set_user_styles", arg_hint },
-            { arg_name: "我要写插件", arg_value: "new_custom_plugin", arg_hint },
-            { arg_name: "Typora 自动化", arg_value: "json_rpc", arg_hint },
-            { arg_name: "Github 图床", arg_value: "github_picture_bed" },
-            { arg_name: "请开发者喝咖啡", arg_value: "donate" },
-            { arg_name: "关于", arg_value: "about" },
+        const act_hint = "此功能仅对开发者开放";
+        this.staticActions = [
+            { act_name: "卸载插件", act_value: "uninstall_plugin" },
+            { act_name: "修改配置", act_value: "open_setting_folder" },
+            { act_name: "备份配置", act_value: "backup_setting_file" },
+            { act_name: "环境信息", act_value: "environment" },
+            { act_name: "修改样式", act_value: "set_user_styles", act_hint },
+            { act_name: "我要写插件", act_value: "new_custom_plugin", act_hint },
+            { act_name: "Typora 自动化", act_value: "json_rpc", act_hint },
+            { act_name: "Github 图床", act_value: "github_picture_bed" },
+            { act_name: "请开发者喝咖啡", act_value: "donate" },
+            { act_name: "关于", act_value: "about" },
         ]
     }
 
@@ -28,12 +28,12 @@ class helpPlugin extends BasePlugin {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             this.preferences = this.utils.getPlugin("preferences")
             if (this.preferences) {
-                this.callArgs.unshift({ arg_name: "启停插件", arg_value: "preferences" })
+                this.staticActions.unshift({ act_name: "启停插件", act_value: "preferences" })
             }
             this.updater = this.utils.getPlugin("updater")
             if (this.updater) {
-                const arg_name = "升级插件" + (this.version ? `（当前版本：${this.version}）` : "")
-                this.callArgs.unshift({ arg_name: arg_name, arg_value: "update_plugin" })
+                const act_name = "升级插件" + (this.version ? `（当前版本：${this.version}）` : "")
+                this.staticActions.unshift({ act_name: act_name, act_value: "update_plugin" })
             }
         })
     }
@@ -179,7 +179,7 @@ class helpPlugin extends BasePlugin {
         this.utils.dialog.modal({ title: "请开发者喝咖啡", width: "500px", components, onload });
     }
 
-    call = type => {
+    call = action => {
         const map = {
             open_setting_folder: () => this.utils.runtime.openSettingFolder(),
             backup_setting_file: () => this.utils.runtime.backupSettingFile(),
@@ -194,7 +194,7 @@ class helpPlugin extends BasePlugin {
             donate: () => this.donate(),
             about: () => this.about(),
         }
-        const func = map[type]
+        const func = map[action]
         func && func()
     }
 }

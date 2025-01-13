@@ -43,7 +43,7 @@ class darkModePlugin extends BasePlugin {
 
     process = () => this.isDarkMode && this.enableDarkMode();
 
-    call = (type, meta) => this.toggleDarkMode()
+    call = (action, meta) => this.toggleDarkMode()
 }
 
 module.exports = {

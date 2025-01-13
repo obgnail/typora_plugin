@@ -28,7 +28,7 @@ class editorWidthSliderPlugin extends BasePlugin {
         await this._setWidth();
     }
 
-    call = async (type, meta) => await this.setWidth()
+    call = async (action, meta) => await this.setWidth()
 }
 
 module.exports = {

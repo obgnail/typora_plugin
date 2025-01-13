@@ -125,24 +125,24 @@ class datatablesPlugin extends BasePlugin {
         }
     }
 
-    dynamicCallArgsGenerator = (anchorNode, meta) => {
+    getDynamicActions = (anchorNode, meta) => {
         const table = anchorNode.closest("#write table.md-table");
         const uuid = table && table.getAttribute("table-uuid");
         meta.uuid = uuid;
         meta.target = table;
 
         return [{
-            arg_name: uuid ? "转回普通表格" : "增强表格",
-            arg_value: uuid ? "rollback_current" : "convert_current",
-            arg_hint: !table ? "请将光标定位到表格后点击鼠标右键" : "",
-            arg_disabled: !table,
+            act_name: uuid ? "转回普通表格" : "增强表格",
+            act_value: uuid ? "rollback_current" : "convert_current",
+            act_hint: !table ? "请将光标定位到表格后点击鼠标右键" : "",
+            act_disabled: !table,
         }]
     }
 
-    call = async (type, meta) => {
-        if (type === "convert_current") {
+    call = async (action, meta) => {
+        if (action === "convert_current") {
             await this.newDataTable(meta.target);
-        } else if (type === "rollback_current") {
+        } else if (action === "rollback_current") {
             this.removeDataTable(meta.uuid);
         }
     }

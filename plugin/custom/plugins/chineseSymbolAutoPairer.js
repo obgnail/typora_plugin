@@ -45,7 +45,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
             this.utils.entities.eWrite.addEventListener("keydown", ev => {
                 if (File.option.noPairingMatch || document.activeElement.tagName === "TEXTAREA") return;
 
-                if (this.config.auto_surround_pair && this.utils.chineseInputMethodActivated(ev) && this.codeSet.has(ev.code)) {
+                if (this.config.auto_surround_pair && this.utils.isIMEActivated(ev) && this.codeSet.has(ev.code)) {
                     this.rangyText = this.utils.getRangyText();
                 }
                 if (this.config.auto_delete_pair && ev.key === "Backspace" && !ev.shiftKey && !ev.altKey && !this.utils.metaKeyPressed(ev)) {

@@ -28,9 +28,9 @@ class noImageModePlugin extends BasePlugin {
 
     process = () => this.isNoImageMode && this.enableNoImageMode();
 
-    call = (type, meta) => this.toggleNoImageMode()
+    call = (action, meta) => this.toggleNoImageMode()
 }
 
 module.exports = {
     plugin: noImageModePlugin,
-};
+}

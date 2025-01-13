@@ -1,10 +1,10 @@
 class truncateTextPlugin extends BasePlugin {
     beforeProcess = () => {
         this.className = "plugin-truncate-text";
-        this.callArgs = [
-            { arg_name: `只保留最后${this.config.REMAIN_LENGTH}段`, arg_value: "hide_front", arg_hotkey: this.config.HIDE_FRONT_HOTKEY },
-            { arg_name: "重新显示所有内容", arg_value: "show_all", arg_hotkey: this.config.SHOW_ALL_HOTKEY },
-            { arg_name: "根据当前可视范围显示", arg_value: "hide_base_view", arg_hotkey: this.config.HIDE_BASE_VIEW_HOTKEY }
+        this.staticActions = [
+            { act_name: `只保留最后${this.config.REMAIN_LENGTH}段`, act_value: "hide_front", act_hotkey: this.config.HIDE_FRONT_HOTKEY },
+            { act_name: "重新显示所有内容", act_value: "show_all", act_hotkey: this.config.SHOW_ALL_HOTKEY },
+            { act_name: "根据当前可视范围显示", act_value: "hide_base_view", act_hotkey: this.config.HIDE_BASE_VIEW_HOTKEY }
         ];
     }
 
@@ -68,15 +68,15 @@ class truncateTextPlugin extends BasePlugin {
         }
     };
 
-    call = type => {
-        if (type === "hide_front") {
-            this.hideFront();
-        } else if (type === "show_all") {
-            this.showAll();
-        } else if (type === "hide_base_view") {
-            this.hideBaseView();
+    call = action => {
+        if (action === "hide_front") {
+            this.hideFront()
+        } else if (action === "show_all") {
+            this.showAll()
+        } else if (action === "hide_base_view") {
+            this.hideBaseView()
         }
-        this.callbackOtherPlugin();
+        this.callbackOtherPlugin()
     }
 }
 

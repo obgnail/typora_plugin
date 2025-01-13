@@ -24,39 +24,39 @@ class CustomPlugin extends BasePlugin {
         return hotkeys
     }
 
-    dynamicCallArgsGenerator = (anchorNode, meta, notInContextMenu) => {
+    getDynamicActions = (anchorNode, meta, notInContextMenu) => {
         const settings = Object.entries(this.pluginsSettings)
-            .sort(([, { order: o1 = 1 }], [, { order: o2 = 1 }]) => o1 - o2);
+            .sort(([, { order: o1 = 1 }], [, { order: o2 = 1 }]) => o1 - o2)
 
-        meta.target = anchorNode;
-        const dynamicCallArgs = [];
+        meta.target = anchorNode
+        const dynamicActions = []
         for (const [fixedName, setting] of settings) {
-            if (!notInContextMenu && setting.hide) continue;
+            if (!notInContextMenu && setting.hide) continue
 
-            const plugin = this.plugins[fixedName];
-            if (!plugin) continue;
+            const plugin = this.plugins[fixedName]
+            if (!plugin) continue
 
-            const arg = { arg_name: plugin.config.name, arg_value: plugin.fixedName, arg_disabled: true, arg_hint: "未知错误！请向开发者反馈", arg_hotkey: plugin.config.hotkey }
+            const act = { act_name: plugin.config.name, act_value: plugin.fixedName, act_disabled: true, act_hint: "未知错误！请向开发者反馈", act_hotkey: plugin.config.hotkey }
             try {
-                const selector = plugin.selector(false);
+                const selector = plugin.selector(false)
                 if (selector === this.utils.disableForeverSelector) {
-                    arg.arg_hint = "此插件不可点击";
+                    act.act_hint = "此插件不可点击"
                 } else {
-                    arg.arg_disabled = selector && !anchorNode.closest(selector);
-                    arg.arg_hint = plugin.hint(arg.arg_disabled);
-                    if (arg.arg_disabled) {
-                        arg.arg_hint = arg.arg_hint || "光标于此位置不可用";
+                    act.act_disabled = selector && !anchorNode.closest(selector)
+                    act.act_hint = plugin.hint(act.act_disabled)
+                    if (act.act_disabled) {
+                        act.act_hint = act.act_hint || "光标于此位置不可用"
                     }
                 }
             } catch (e) {
-                console.error("plugin selector error:", fixedName, e);
+                console.error("plugin selector error:", fixedName, e)
             }
 
-            if (this.config.HIDE_DISABLE_PLUGINS && arg.arg_disabled) continue;
+            if (this.config.HIDE_DISABLE_PLUGINS && act.act_disabled) continue
 
-            dynamicCallArgs.push(arg);
+            dynamicActions.push(act)
         }
-        return dynamicCallArgs;
+        return dynamicActions
     }
 
     call = (fixedName, meta) => {

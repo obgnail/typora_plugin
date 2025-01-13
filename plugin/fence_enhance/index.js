@@ -181,35 +181,35 @@ class fenceEnhancePlugin extends BasePlugin {
         })
     }
 
-    dynamicCallArgsGenerator = (anchorNode, meta) => {
+    getDynamicActions = (anchorNode, meta) => {
         const HINT = {
             DANGEROUS: "警告：消耗巨量资源并可能导致Typora长时间失去响应",
             FOLD: "根据语言语法在每行的左侧显示折叠按钮",
             ALIGNMENT: "不建议开启，需要大量时间去计算缩进，造成性能损失",
             HIGHLIGHT_BY_LANG: "例 ```js(2, 5-8)``` 表示：高亮第2，5-8行",
         }
-        const arr = [
-            { arg_name: "启用按钮：折叠", arg_value: "toggle_state_fold", arg_state: this.config.ENABLE_FOLD },
-            { arg_name: "启用按钮：复制", arg_value: "toggle_state_copy", arg_state: this.config.ENABLE_COPY },
-            { arg_name: "启用功能：自动隐藏按钮", arg_value: "toggle_state_auto_hide", arg_state: this.config.AUTO_HIDE },
-            { arg_name: "启用功能：默认折叠代码块", arg_value: "toggle_state_fold_default", arg_state: this.config.FOLD_DEFAULT },
-            { arg_name: "启用功能：显示按钮功能提示", arg_value: "toggle_state_button_hint", arg_state: !this.config.REMOVE_BUTTON_HINT },
-            { arg_name: "启用功能：快捷键", arg_value: "toggle_state_hotkey", arg_state: this.config.ENABLE_HOTKEY },
-            { arg_name: "启用功能：代码折叠", arg_value: "toggle_state_fold_lang", arg_state: this.config.ENABLE_LANGUAGE_FOLD, arg_hint: HINT.FOLD },
-            { arg_name: "启用功能：缩进对齐", arg_value: "toggle_state_indent_alignment", arg_state: this.config.INDENTED_WRAPPED_LINE, arg_hint: HINT.ALIGNMENT },
-            { arg_name: "启用功能：高亮鼠标悬停的代码行", arg_value: "toggle_state_highlight", arg_state: this.config.HIGHLIGHT_WHEN_HOVER },
-            { arg_name: "启用功能：通过语言设置高亮行", arg_value: "toggle_state_highlight_by_lang", arg_state: this.config.HIGHLIGHT_BY_LANGUAGE, arg_hint: HINT.HIGHLIGHT_BY_LANG },
-            { arg_name: "(危) 为所有无语言代码块添加语言", arg_value: "add_fences_lang", arg_hint: HINT.DANGEROUS },
-            { arg_name: "(危) 批量替换代码块语言", arg_value: "replace_fences_lang", arg_hint: HINT.DANGEROUS },
+        const acts = [
+            { act_name: "启用按钮：折叠", act_value: "toggle_state_fold", act_state: this.config.ENABLE_FOLD },
+            { act_name: "启用按钮：复制", act_value: "toggle_state_copy", act_state: this.config.ENABLE_COPY },
+            { act_name: "启用功能：自动隐藏按钮", act_value: "toggle_state_auto_hide", act_state: this.config.AUTO_HIDE },
+            { act_name: "启用功能：默认折叠代码块", act_value: "toggle_state_fold_default", act_state: this.config.FOLD_DEFAULT },
+            { act_name: "启用功能：显示按钮功能提示", act_value: "toggle_state_button_hint", act_state: !this.config.REMOVE_BUTTON_HINT },
+            { act_name: "启用功能：快捷键", act_value: "toggle_state_hotkey", act_state: this.config.ENABLE_HOTKEY },
+            { act_name: "启用功能：代码折叠", act_value: "toggle_state_fold_lang", act_state: this.config.ENABLE_LANGUAGE_FOLD, act_hint: HINT.FOLD },
+            { act_name: "启用功能：缩进对齐", act_value: "toggle_state_indent_alignment", act_state: this.config.INDENTED_WRAPPED_LINE, act_hint: HINT.ALIGNMENT },
+            { act_name: "启用功能：高亮鼠标悬停的代码行", act_value: "toggle_state_highlight", act_state: this.config.HIGHLIGHT_WHEN_HOVER },
+            { act_name: "启用功能：通过语言设置高亮行", act_value: "toggle_state_highlight_by_lang", act_state: this.config.HIGHLIGHT_BY_LANGUAGE, act_hint: HINT.HIGHLIGHT_BY_LANG },
+            { act_name: "(危) 为所有无语言代码块添加语言", act_value: "add_fences_lang", act_hint: HINT.DANGEROUS },
+            { act_name: "(危) 批量替换代码块语言", act_value: "replace_fences_lang", act_hint: HINT.DANGEROUS },
         ]
         if (this.supportIndent) {
-            arr.splice(2, 0, { arg_name: "启用按钮：缩进", arg_value: "toggle_state_indent", arg_state: this.enableIndent })
-            arr.push({ arg_name: "(危) 调整所有代码块的缩进", arg_value: "indent_all_fences", arg_hint: HINT.DANGEROUS })
+            acts.splice(2, 0, { act_name: "启用按钮：缩进", act_value: "toggle_state_indent", act_state: this.enableIndent })
+            acts.push({ act_name: "(危) 调整所有代码块的缩进", act_value: "indent_all_fences", act_hint: HINT.DANGEROUS })
         }
-        return arr
+        return acts
     }
 
-    call = (type, meta) => {
+    call = (action, meta) => {
         const toggleConfig = async (cfg, name, args) => {
             this.config[cfg] = !this.config[cfg]
             const title = (this.config[cfg] ? "启动" : "取消") + name
@@ -309,7 +309,7 @@ class fenceEnhancePlugin extends BasePlugin {
             toggle_state_highlight_by_lang: () => toggleConfig("HIGHLIGHT_BY_LANGUAGE", "高亮代码行"),
             toggle_state_indent_alignment: () => toggleConfig("INDENTED_WRAPPED_LINE", "缩进对齐"),
         }
-        const func = callMap[type]
+        const func = callMap[action]
         func && func()
     }
 }

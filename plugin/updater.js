@@ -12,7 +12,7 @@ class updaterPlugin extends BasePlugin {
         }
     }
 
-    call = async (type, meta) => {
+    call = async (action, meta) => {
         if (this.config.PROXY) {
             await this.manualUpdate()
             return

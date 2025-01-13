@@ -4,9 +4,9 @@ class goTopPlugin extends BasePlugin {
         { hotkey: this.config.HOTKEY_GO_BOTTOM, callback: this.goBottom },
     ]
 
-    call = direction => {
-        const func = (direction === "go-bottom") ? "jumpBottom" : "jumpTop";
-        File.editor.selection[func]();
+    call = action => {
+        const func = (action === "go-bottom") ? "jumpBottom" : "jumpTop"
+        File.editor.selection[func]()
     }
 
     goTop = () => this.call("go-top")
@@ -15,4 +15,4 @@ class goTopPlugin extends BasePlugin {
 
 module.exports = {
     plugin: goTopPlugin,
-};
+}

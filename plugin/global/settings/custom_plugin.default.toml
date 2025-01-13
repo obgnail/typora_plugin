@@ -31,8 +31,8 @@ LANGUAGE = "kanban"
 
 # ------------------- 渲染模式与交互模式 -------------------
 # 严格模式：是否启用严格模式，严格模式下，插件不会忽略存在语法错误的代码行，而是在页面上直接报错
-#   true:  启用严格模式，所有看板都将强制进入严格模式
-#   false: 关闭严格模式，允许忽略语法错误
+#   true:  启用严格模式，所有看板都将强制进入严格模式，发生语法错误时会报错
+#   false: 关闭严格模式，所有看板都会忽略语法错误
 #   注意： 也可以在代码块首行添加 `use strict`，使得此代码块进入严格模式
 STRICT_MODE = false
 
@@ -106,7 +106,7 @@ use strict
 ################### chat ###################
 [chat]
 # -------------------  基础配置  -------------------
-# 启用或禁用 Chat 插件
+# 启用或禁用插件
 #   true:  启用插件
 #   false: 禁用插件
 enable = true
@@ -302,8 +302,9 @@ INTERACTIVE_MODE = true
 RENDERER = "svg"
 
 # 导出时 echarts 转成什么格式
-# 可选：png/jpg/svg
-# 注意：png/jpg 只有在 canvas 渲染器的时候可用，svg 只有在使用 svg 渲染器的时候可用
+#   png: 仅在 RENDERER 为 canvas 时可用
+#   jpg: 仅在 RENDERER 为 canvas 时可用
+#   svg: 仅在 RENDERER 为 svg 时可用
 EXPORT_TYPE = "svg"
 
 # ------------------- 图表显示设置 -------------------
@@ -323,7 +324,7 @@ TEMPLATE = """```echarts
 //   4. this:    echarts插件实例
 // 更多示例：https://echarts.apache.org/examples/zh/index.html#chart-type-line
 // 代码块里的所有内容会被eval，请注意安全问题
-// 可以使用如下注释设置图表宽高（否则使用默认）：
+// 可以使用如下注释设置图表宽高（否则使用默认）
 // {height: "300px", width: ""}
 
 option = {
@@ -394,9 +395,9 @@ TEMPLATE = """```chart
 //   1. Chart:   chart类
 //   2. config:  chart的config
 //   3. this:    chart插件实例
-// API：https://chart.nodejs.cn/docs/latest/configuration/
+// API: https://chart.nodejs.cn/docs/latest/configuration/
 // 代码块里的所有内容会被eval，请注意安全问题
-// 可以使用如下注释设置图表宽高（否则使用默认）：
+// 可以使用如下注释设置图表宽高（否则使用默认）
 // {height: "300px", width: ""}
 
 config = {
@@ -534,10 +535,10 @@ TEMPLATE = """```calendar
 //   2. Calendar: Calendar类
 //   3. option:   calendar的option
 //   4. this:     calendar插件实例
-// example：https://nhn.github.io/tui.calendar/latest/tutorial-06-daily-view
+// example: https://nhn.github.io/tui.calendar/latest/tutorial-06-daily-view
 // API: https://github.com/nhn/tui.calendar/blob/main/docs/en/apis/options.md
 // 代码块里的所有内容会被eval，请注意安全问题
-// 可以使用如下注释设置图表宽高（否则使用默认）：
+// 可以使用如下注释设置图表宽高（否则使用默认）
 // {height: "800px", width: ""}
 
 const today = new Date();
@@ -585,7 +586,7 @@ INTERACTIVE_MODE = true
 
 # ------------------- 可视化选项 -------------------
 # 乐谱的可视化选项，请参考：https://paulrosen.github.io/abcjs/visual/render-abc-options.html
-# 常用的配置：
+# 常用的配置
 #   - scale: 用于指定乐谱的缩放比例
 #   - staffwidth: 用于指定乐谱谱表的宽度
 #   - responsive: 用于指定乐谱在响应式布局中的行为，例如 "resize" 表示在窗口大小改变时重新渲染乐谱
@@ -620,7 +621,7 @@ G2 G2|A2 A2|B2 B2|c3 z|G2 G2|A2 A2|B2 G2|c3 z||
 enable = true
 
 # 插件的名称，用于在插件列表中标识此插件
-name = "drawIO"
+name = "DrawIO"
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -631,11 +632,11 @@ hide = false
 order = 1
 
 # ------------------- 资源配置 -------------------
-# 依赖资源 URI：指定 draw.io viewer 的 JavaScript 资源加载路径
-#   由于 draw.io 的格式经常发生变动，官方强烈建议使用 CDN 获取依赖资源，而不是将依赖资源保存在本地
-#   此插件默认从网络拉取依赖。如果你希望将依赖资源保存在本地，请按如下操作：
-#     1. 下载文件：https://viewer.diagrams.net/js/viewer-static.min.js
-#     2. 将 RESOURCE_URI 修改为你自己的文件路径（比如：D:\\tmp\\viewer-static.min.js）
+# 依赖资源 URI：指定 draw.io viewer 的加载路径
+#   由于 draw.io 的格式经常发生变动，drawio 官方强烈建议通过 CDN 获取依赖资源，而不是将依赖资源保存在本地
+#   此插件默认从网络拉取依赖。如果你希望将依赖资源保存在本地，请按如下操作
+#     1. 下载并保存文件：https://viewer.diagrams.net/js/viewer-static.min.js
+#     2. 将 RESOURCE_URI 修改为本地的文件路径（比如：D:\\tmp\\viewer-static.min.js）
 RESOURCE_URI = "https://viewer.diagrams.net/js/viewer-static.min.js"
 
 # ------------------- 代码块配置 -------------------
@@ -662,7 +663,7 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
 TEMPLATE = """```drawio
 /**
- * 由于.drawio文件格式经常发生变动，drawio官网强烈建议使用cdn获取依赖资源，故此插件默认从网络拉取依赖。如果你希望将依赖资源保存在本地，请修改配置文件
+ * 由于.drawio文件格式经常发生变动，drawio官网强烈建议通过CDN获取依赖资源，故本插件默认从网络拉取依赖。如果你希望将依赖资源保存在本地，请修改配置文件
  *
  * 支持配置项：allow-zoom-in、allow-zoom-out、auto-crop、auto-fit、auto-origin、border、center、check-visible-state、dark-mode、edit、editable、forceCenter、highlight、layerIds、layers、lightbox、max-height、move、nav、page、pageId、resize、responsive、source、target、title、titleTooltip、toolbar、toolbar-buttons、toolbar-nohide、toolbar-position、tooltips、xml、zoom
  *
@@ -679,83 +680,6 @@ graphConfig = {
 }
 ```
 """
-
-################### callouts ###################
-[callouts]
-# ------------------- 基础配置 -------------------
-# 是否启用此二级插件
-#   true:  启用插件
-#   false: 禁用插件
-#   此插件诞生得很早，当时 Typora 还不支持 callouts 功能。然后 Typora 在 1.8 版本原生支持了 callouts 功能，
-#   功能有一定程度的重叠。但是：
-#   1. 原生功能仅支持五种类型的 callouts，
-#   2. 原生功能不支持 fold callouts（如： > [!NOTE]-）
-#   3. 此插件兼容原生功能
-enable = true
-
-# 插件的名称，用于在插件列表中标识此插件
-name = "Callouts"
-
-# 是否在右键菜单中隐藏此插件的入口
-#   true:  隐藏右键菜单入口
-#   false: 显示右键菜单入口
-hide = false
-
-# 在右键菜单中的出现顺序（越大越靠后，允许负数）
-order = 1
-
-# ------------------- callout 样式设置 -------------------
-# callout 的阴影
-#   格式示例： "0 0.2rem 0.5rem #0000000d, 0 0 0.05rem #0000001a"
-box_shadow = "0 0.2rem 0.5rem #0000000d, 0 0 0.05rem #0000001a"
-
-# 为标题设置颜色（与 left_line_color 一样）
-set_title_color = true
-
-# 鼠标悬停在 fold callout 时展示其内容
-hover_to_show_fold_callout = true
-
-# icon 对应的字体。一旦修改此选项，就需要修改下面所有的 icon
-#   具体的 icon 值请参考：
-#   - 旧版本 Typora: {your_typora_path}/resources/app/style/font-awesome-4.1.0/css/font-awesome.css
-#   - 新版本 Typora: {your_typora_path}/resources/style/font-awesome-4.1.0/css/font-awesome.css
-#   - 网络下载: https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
-font_family = "FontAwesome"
-
-# callout 的类型：
-#  - type：            自定义的类型
-#  - background_color：背景颜色
-#  - left_line_color： 左侧竖线颜色
-#  - icon：            图标
-list = [
-    { type = "tip", background_color = "#d8f2e5", left_line_color = "#3abd7e", icon = "\\f02c" },
-    { type = "bug", background_color = "#feeed3", left_line_color = "#E0AC00", icon = "\\f188" },
-    { type = "info", background_color = "#dff6dd", left_line_color = "#3abd7e", icon = "\\f05a" },
-    { type = "note", background_color = "#e1d1eb", left_line_color = "#6a1b9a", icon = "\\f040" },
-    { type = "quote", background_color = "#fafafa", left_line_color = "#777777", icon = "\\f10d" },
-    { type = "example", background_color = "#f1edfd", left_line_color = "#777777", icon = "\\f133" },
-    { type = "caution", background_color = "#fde7e9", left_line_color = "#c62828", icon = "\\f024" },
-    { type = "failure", background_color = "#f4d4d4", left_line_color = "#c62828", icon = "\\f00d" },
-    { type = "warning", background_color = "#feeed3", left_line_color = "#E0AC00", icon = "\\f071" },
-    { type = "success", background_color = "#d8f2e5", left_line_color = "#3abd7e", icon = "\\f00c" },
-    { type = "question", background_color = "#fff4ce", left_line_color = "#E0AC00", icon = "\\f128" },
-    { type = "abstract", background_color = "#e5f8f8", left_line_color = "#777777", icon = "\\f00b" },
-    { type = "important", background_color = "#d8e6f3", left_line_color = "#3b83c1", icon = "\\f132" },
-]
-
-# 所有【类型不属于 list 选项的 callouts】都会使用默认的样式
-# 默认的背景颜色
-default_background_color = "#fafafa"
-
-# 默认的左边线颜色
-default_left_line_color = "#777777"
-
-# 默认的 icon
-default_icon = "\\f075"
-
-# ------------------- 模板设置 -------------------
-# 自动插入的模板，当使用快捷键或者右键菜单插入 callouts 时，会使用此模板
-template = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
 
 
 ################### marp ###################
@@ -816,6 +740,82 @@ Split pages by horizontal ruler (`---`). It's very simple! :satisfied:
 """
 
 
+################### callouts ###################
+[callouts]
+# ------------------- 基础配置 -------------------
+# 是否启用此二级插件
+#   true:  启用插件
+#   false: 禁用插件
+#   此插件诞生得很早，当时 Typora 还不支持 callouts 功能。然后 Typora 在 1.8 版本原生支持了 callouts 功能，功能有一定程度的重叠。但是
+#     1. 原生功能仅支持五种类型的 callouts
+#     2. 原生功能不支持 fold callouts（如： > [!NOTE]-）
+#     3. 此插件兼容原生功能
+enable = true
+
+# 插件的名称，用于在插件列表中标识此插件
+name = "Callouts"
+
+# 是否在右键菜单中隐藏此插件的入口
+#   true:  隐藏右键菜单入口
+#   false: 显示右键菜单入口
+hide = false
+
+# 在右键菜单中的出现顺序（越大越靠后，允许负数）
+order = 1
+
+# ------------------- callout 样式设置 -------------------
+# callout 的阴影
+box_shadow = "0 0.2rem 0.5rem #0000000d, 0 0 0.05rem #0000001a"
+
+# 为标题设置颜色
+set_title_color = true
+
+# 鼠标悬停在 fold callout 时展示其内容
+hover_to_show_fold_callout = true
+
+# icon 对应的字体。一旦修改此选项，就需要修改下面所有的 icon
+#   具体的 icon 值请参考
+#   - 旧版本 Typora: {your_typora_path}/resources/app/style/font-awesome-4.1.0/css/font-awesome.css
+#   - 新版本 Typora: {your_typora_path}/resources/style/font-awesome-4.1.0/css/font-awesome.css
+#   - 网络下载: https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
+font_family = "FontAwesome"
+
+# callout 的类型
+#  - type:             自定义的类型
+#  - background_color: 背景颜色
+#  - left_line_color:  左侧竖线颜色
+#  - icon:             图标
+list = [
+    { type = "tip", background_color = "#d8f2e5", left_line_color = "#3abd7e", icon = "\\f02c" },
+    { type = "bug", background_color = "#feeed3", left_line_color = "#E0AC00", icon = "\\f188" },
+    { type = "info", background_color = "#dff6dd", left_line_color = "#3abd7e", icon = "\\f05a" },
+    { type = "note", background_color = "#e1d1eb", left_line_color = "#6a1b9a", icon = "\\f040" },
+    { type = "quote", background_color = "#fafafa", left_line_color = "#777777", icon = "\\f10d" },
+    { type = "example", background_color = "#f1edfd", left_line_color = "#777777", icon = "\\f133" },
+    { type = "caution", background_color = "#fde7e9", left_line_color = "#c62828", icon = "\\f024" },
+    { type = "failure", background_color = "#f4d4d4", left_line_color = "#c62828", icon = "\\f00d" },
+    { type = "warning", background_color = "#feeed3", left_line_color = "#E0AC00", icon = "\\f071" },
+    { type = "success", background_color = "#d8f2e5", left_line_color = "#3abd7e", icon = "\\f00c" },
+    { type = "question", background_color = "#fff4ce", left_line_color = "#E0AC00", icon = "\\f128" },
+    { type = "abstract", background_color = "#e5f8f8", left_line_color = "#777777", icon = "\\f00b" },
+    { type = "important", background_color = "#d8e6f3", left_line_color = "#3b83c1", icon = "\\f132" },
+]
+
+# 所有【类型不属于 list 选项的 callouts】都会使用默认的样式
+# 默认的背景颜色
+default_background_color = "#fafafa"
+
+# 默认的左边线颜色
+default_left_line_color = "#777777"
+
+# 默认的 icon
+default_icon = "\\f075"
+
+# ------------------- 模板设置 -------------------
+# 自动插入的模板，当使用快捷键或者右键菜单插入 callouts 时，会使用此模板
+template = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE、CAUTION、FAILURE、WARNING、SUCCESS、QUESTION、ABSTRACT、IMPORTANT"
+
+
 ################### templater ###################
 [templater]
 # ------------------- 基础配置 -------------------
@@ -847,11 +847,9 @@ auto_open = true
 
 # ------------------- 自定义模板变量配置 -------------------
 #  除了内置的模板变量，还可以自定义模板变量（如果您不了解 JavaScript，请勿修改此选项）
-#  每个模板变量配置包含以下属性：
-#   - enable:  是否启用此模板变量
-#       true:  启用
-#       false: 禁用
-#   - name:    模板变量名（必须唯一）
+#  每个模板变量配置包含以下属性
+#   - enable:   是否启用此模板变量
+#   - name:     模板变量名（必须唯一）
 #   - callback: 回调函数的字符串，此函数将返回此模板变量的值
 template_variables = [
     { enable = false, name = "author", callback = "() => 'obgnail'" },
@@ -861,47 +859,47 @@ template_variables = [
 ]
 
 # ------------------- 如何在模板里使用变量 -------------------
-# 在模板中使用变量的方式与 JavaScript 中调用函数基本一致，有两点不同：
-# 1.  前后需要两个大括号包裹： `myFunc(arg1, arg2)` => `{{ myFunc(arg1, arg2) }}`
-# 2.  若无实参，可去掉小括号： `{{ myFunc() }}` 等同于 `{{ myFunc }}`
+# 在模板中使用变量的方式与 JavaScript 中调用函数基本一致，有两点不同
+#   1. 前后需要两个大括号包裹： myFunc(arg1, arg2) => {{ myFunc(arg1, arg2) }}
+#   2. 若无实参，可去掉小括号： {{ myFunc() }} 等同于 {{ myFunc }}
 #
-# 例如，上述自定义变量的使用方法如下（使用前记得将 `enable` 置为 `true`）：
-#   `{{ author }}`             将输出：`obgnail`
-#   `{{ sum }}`                将输出：`300`
-#   `{{ sum(1, 2) }}`          将输出：`3`
-#   `{{ sumList([1, 2]) }}`    将输出：`3`
-#   `{{ contact("a", "b") }}`  将输出：`a-b`
+# 例如，上述自定义变量的使用方法如下（使用前记得将 enable 置为 true）
+#   {{ author }}             将输出：obgnail
+#   {{ sum }}                将输出：300
+#   {{ sum(1, 2) }}          将输出：3
+#   {{ sumList([3, 2]) }}    将输出：5
+#   {{ contact("a", "b") }}  将输出：a-b
 
 # ------------------- 内置的模板变量 -------------------
-#   `{{ formatDate(format, locale) }}`    当前格式化的日期时间
-#       参数 1: `format`：时间格式化字符串。支持：`yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a`
-#       参数 2: `locale`：语言环境，支持 `cn`、`en` (默认 `en`)
+#   {{ formatDate(format, locale) }}    当前格式化的日期时间
+#       参数 1: format: 时间格式化字符串。支持：yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a
+#       参数 2: locale: 语言环境，支持 cn、en (默认 en)
 #
-#   `{{ datetime }}`             当前日期时间。等同于 `{{ formatDate('yyyy-MM-dd HH:mm:ss') }}`
-#   `{{ date }}`                 当前日期。等同于 `{{ formatDate('yyyy-MM-dd') }}`
-#   `{{ time }}`                 当前时间。等同于 `{{ formatDate('HH:mm:ss') }}`
-#   `{{ weekday }}`              当前周几。等同于 `{{ formatDate('ddd') }}`
-#   `{{ timestamp }}`            当前时间戳 (毫秒)
-#   `{{ dateOffset(offset, format, locale) }}`  指定偏移量后的日期
-#       参数 1: `offset`：整数，表示天数的偏移量 (正数表示未来，负数表示过去)
-#       参数 2: `format`：时间格式化字符串
-#       参数 3: `locale`：语言环境，支持 `cn`、`en` (默认 `en`)
+#   {{ datetime }}             当前日期时间。等同于 {{ formatDate('yyyy-MM-dd HH:mm:ss') }}
+#   {{ date }}                 当前日期。等同于 {{ formatDate('yyyy-MM-dd') }}
+#   {{ time }}                 当前时间。等同于 {{ formatDate('HH:mm:ss') }}
+#   {{ weekday }}              当前周几。等同于 {{ formatDate('ddd') }}
+#   {{ timestamp }}            当前时间戳 (毫秒)
+#   {{ dateOffset(offset, format, locale) }}  指定偏移量后的日期
+#       参数 1: offset: 整数，表示天数的偏移量 (正数表示未来，负数表示过去)
+#       参数 2: format: 时间格式化字符串
+#       参数 3: locale: 语言环境，支持 cn、en (默认 en)
 #
-#   `{{ yesterday }}`            昨天日期。等同于 `{{ dateOffset(-1) }}`
-#   `{{ tomorrow }}`             明天日期。等同于 `{{ dateOffset(1) }}`
-#   `{{ random }}`               范围为 0-1 的随机浮点数
-#   `{{ randomInt(min, max) }}`  范围为 min-max 的随机整数
-#   `{{ randomStr(length) }}`    由字母和数字组成的指定长度的随机字符串
-#   `{{ title }}`                新建文件的标题
-#   `{{ filepath }}`             新建文件的路径
-#   `{{ folder }}`               当前文件的目录
-#   `{{ mountFolder }}`          当前文件的挂载目录
-#   `{{ username }}`             当前电脑的用户名
-#   `{{ range }}`                当前选取的文字
-#   `{{ uuid }}`                 uuid
+#   {{ yesterday }}            昨天日期。等同于 {{ dateOffset(-1) }}
+#   {{ tomorrow }}             明天日期。等同于 {{ dateOffset(1) }}
+#   {{ random }}               范围为 0-1 的随机浮点数
+#   {{ randomInt(min, max) }}  范围为 min-max 的随机整数
+#   {{ randomStr(length) }}    由字母和数字组成的指定长度的随机字符串
+#   {{ title }}                新建文件的标题
+#   {{ filepath }}             新建文件的路径
+#   {{ folder }}               当前文件的目录
+#   {{ mountFolder }}          当前文件的挂载目录
+#   {{ username }}             当前电脑的用户名
+#   {{ range }}                当前选取的文字
+#   {{ uuid }}                 uuid
 
 # ------------------- 模板配置 -------------------
-# 可以配置多个模板，每个模板包含以下属性：
+# 可以配置多个模板，每个模板包含以下属性
 #  - name:  模板的名称，用于在右键菜单中显示
 #  - text:  模板的内容，支持使用模板变量
 [[templater.template]]
@@ -951,7 +949,7 @@ tags:
 # 启用或禁用此二级插件
 #   true:  启用插件
 #   false: 禁用插件
-# 注意：此插件受 Typora 本身配置【匹配括号和引号】的影响，如果此配置为 false，那么此插件自动禁用
+# 注意：若 Typora 的配置项【匹配括号和引号】为 false，则此插件自动禁用
 enable = true
 
 # 插件的名称，用于在插件列表中标识此插件
@@ -966,7 +964,7 @@ hide = true
 order = 1
 
 # ------------------- 功能配置 -------------------
-# 兼容以前的行为：当用户输入【时，不会变成【】，而是将光标跳到】的右边
+# 当光标在中间，左右两边都是成对符号，如：【|】；且用户键入】时，将光标跳到】的右边
 #   true:  启用此行为
 #   false: 关闭此行为，将直接补全为【】
 auto_skip = true
@@ -988,7 +986,6 @@ auto_select_after_surround = true
 
 # ------------------- 符号配置 -------------------
 # 需要自动补全的符号（第一项为输入符号，第二项为补全符号）
-# NOTE：此插件存在一个问题：中文的前后引号是不一样的，如果你键入的是后引号，此时便无法正常配对补全（我不确定要不要修复，似乎搜狗输入法就没有修复此问题）
 auto_pair_symbols = [
     ["（", "）"],
     ["《", "》"],
@@ -1003,8 +1000,8 @@ auto_pair_symbols = [
 ################### toc ###################
 [toc]
 # ------------------- 基础配置 -------------------
-# 启用或禁用此插件
-#   true: 启用插件
+# 启用或禁用插件
+#   true:  启用插件
 #   false: 禁用插件
 enable = true
 
@@ -1012,7 +1009,7 @@ enable = true
 name = "大纲目录"
 
 # 是否在右键菜单中隐藏此插件的入口
-#   true: 隐藏右键菜单入口
+#   true:  隐藏右键菜单入口
 #   false: 显示右键菜单入口
 hide = false
 
@@ -1020,7 +1017,6 @@ hide = false
 order = 1
 
 # 插件的快捷键，默认为空，表示不设置快捷键
-#   例如： "Ctrl+Shift+T"
 hotkey = ""
 
 # ------------------- 大纲内容配置 -------------------
@@ -1105,10 +1101,9 @@ collect_file_without_suffix = true
 # 需要忽略扫描的文件夹名称列表，这些文件夹及其子文件夹中的文件将不会被扫描
 ignore_folders = [".git", "node_modules"]
 
-# 是否忽略 HTML 标签 `<img src="example.jpg">` 中的资源引用
-#   true:  忽略 HTML `<img>` 标签中的资源
-#   false: 不忽略 HTML `<img>` 标签中的资源
-#   注意: Markdown 支持插入 HTML 代码
+# 是否忽略 HTML 标签 <img src="example.jpg"> 中的资源引用
+#   true:  忽略 HTML <img> 标签中的资源
+#   false: 不忽略 HTML <img> 标签中的资源
 ignore_img_html_element = false
 
 
@@ -1153,7 +1148,7 @@ auto_popup_modal = true
 [imageReviewer]
 # ------------------- 基础配置 -------------------
 # 是否启用此二级插件
-#   true: 启用插件
+#   true:  启用插件
 #   false: 禁用插件
 enable = true
 
@@ -1161,7 +1156,7 @@ enable = true
 name = "图片查看"
 
 # 是否在右键菜单中隐藏此插件的入口
-#   true: 隐藏右键菜单入口
+#   true:  隐藏右键菜单入口
 #   false: 显示右键菜单入口
 hide = false
 
@@ -1179,34 +1174,34 @@ hotkey = ""
 click_mask_to_exit = true
 
 # 是否跳过加载失败的图片
-#   true: 跳过加载失败的图片
+#   true:  跳过加载失败的图片
 #   false: 不跳过加载失败的图片，加载失败的图片显示占位符
 filter_error_image = true
 
 # ------------------- 界面元素配置 -------------------
 # 是否显示缩略图导航列表
-#   true: 显示缩略图导航列表
+#   true:  显示缩略图导航列表
 #   false: 不显示缩略图导航列表
 show_thumbnail_nav = true
 
-# 工具栏的位置：
-#   "bottom": 工具栏显示在底部
-#   "top":    工具栏显示在顶部
+# 工具栏的位置
+#   bottom: 工具栏显示在底部
+#   top:    工具栏显示在顶部
 tool_position = "top"
 
-# 进入查看器后，第一张图片的选择策略：
-#   - inViewBoxImage：     当前视图里第一张图片
-#   - closestViewBoxImage：距离当前视图中心最近的一张图片
-#   - firstImage：         整篇文档的第一张图片
+# 进入查看器后，第一张图片的选择策略
+#   - inViewBoxImage:      当前视图里第一张图片
+#   - closestViewBoxImage: 距离当前视图中心最近的一张图片
+#   - firstImage:          整篇文档的第一张图片
 #   策略是一个列表，按照顺序优先级选择
 #   例如：["inViewBoxImage", "firstImage"] 表示首先寻找当前视图里第一张图片，若找不到，则使用文档的第一张图片
 first_image_strategies = ["inViewBoxImage", "firstImage"]
 
-# 在工具栏左侧，展示的图片信息：
-#   "index": 第几张图片
-#   "title": 图片名称
-#   "size":  图片大小
-#   例如： ["index", "title", "size"] 将会显示 图片索引、图片名称和图片大小
+# 在工具栏左侧，展示的图片信息
+#   index: 图片索引
+#   title: 图片名称
+#   size:  图片大小
+#   例如： ["index", "title", "size"] 将会显示图片索引、图片名称和图片大小
 show_message = ["index", "title", "size"]
 
 # ------------------- 图片操作配置 -------------------
@@ -1215,15 +1210,19 @@ show_message = ["index", "title", "size"]
 zoom_scale = 0.1
 
 # 每次旋转的角度（单位：度）
+#   例如： 10 表示每次旋转 10 度
 rotate_scale = 10
 
 # 每次倾斜的角度（单位：度）
+#   例如： 1 表示每次倾斜 1 度
 skew_scale = 1
 
 # 每次移动的像素值
+#   例如： 10 表示每次移动 10 像素
 translate_scale = 10
 
 # 轮播图片时的停留时间（单位：秒）
+#   例如： 3 表示每次停留 3 秒
 play_second = 3
 
 # ------------------- 视觉效果配置 -------------------
@@ -1239,7 +1238,8 @@ image_max_width = 80
 #   例如： 70 表示图片最多占据 70% 的页面高度
 image_max_height = 70
 
-# 背景模糊等级：数值越大越模糊（为 0 则不模糊）
+# 背景模糊像素等级：数值越大越模糊（为 0 则不模糊）
+#   例如： 6 表示背景模糊 6 像素
 blur_level = 6
 
 # ------------------- 缩略图配置 -------------------
@@ -1251,11 +1251,11 @@ thumbnail_height = "80px"
 #   例如： 3 表示在缩略图导航栏中，当前选中图片前后各额外展示 3 张缩略图
 thumbnail_scroll_padding_count = 3
 
-# 缩略图如何适应容器尺寸：
-#   - "fill":       拉伸以适配容器，可能会导致图片变形
-#   - "contain":    保持比例缩放图片，保证图片完整显示
-#   - "cover":      保持图片原有尺寸，超出容器的部分会被裁剪
-#   - "scale-down": 类似于 contain，但是当图片尺寸小于容器尺寸时，不会放大
+# 缩略图如何适应容器尺寸
+#   - fill:       拉伸以适配容器，可能会导致图片变形
+#   - contain:    保持比例缩放图片，保证图片完整显示
+#   - cover:      保持图片原有尺寸，超出容器的部分会被裁剪
+#   - scale-down: 类似于 contain，但是当图片尺寸小于容器尺寸时，不会放大
 thumbnail_object_fit = "scale-down"
 
 # ------------------- 瀑布流配置 -------------------
@@ -1263,7 +1263,7 @@ thumbnail_object_fit = "scale-down"
 water_fall_columns = 5
 
 # ------------------- 图片操作配置 -------------------
-# 图片支持的操作，以下为可选的操作类型：
+# 图片支持的操作，以下为可选的操作类型
 #  - dummy:          无功能
 #  - close:          关闭
 #  - download:       下载网络图片（若此图片是本地图片，则失效）
@@ -1295,16 +1295,15 @@ water_fall_columns = 5
 #  - autoSize:       图片大小在【原先尺寸】和【适配屏幕】之间切换
 #  - restore:        图片恢复为最初状态
 
-# 图片的操作提供多个入口：
+# 图片的操作提供多个入口
 #  - 工具栏按钮
 #  - 鼠标左中右键（可同时配合 ctrl、shift、alt 等修饰按键）
 #  - 快捷键
 
 # ------------------- 工具栏配置 -------------------
 # 工具栏按钮功能配置
-#   注意：
-#     1. 可选项比上面的功能多了一个 info，用于提示
-#     2. 若是本地图片，download 按钮会自动隐藏
+#   - 可选项比上面的功能多了一个 info，用于提示
+#   - 若是本地图片，download 按钮会自动隐藏
 tool_function = ["info", "waterFall", "thumbnailNav", "download", "play", "firstImage", "lastImage", "restore", "vFlip", "hFlip", "autoSize", "rotateRight", "scroll", "location", "close"]
 
 # ------------------- 鼠标操作配置 -------------------
@@ -1540,16 +1539,14 @@ position_bottom = "50px"
 hide_button_hint = false
 
 # ------------------- 按钮功能配置 -------------------
-# 添加的按钮列表：
-#   disable:  是否禁用此按钮
-#       true:  禁用此按钮，按钮将不可点击
-#       false: 启用此按钮
+# 添加的按钮列表
+#   disable: 是否禁用此按钮
 #   coordinate: 按钮坐标
 #       数组，[行号, 列号]，从 0 开始计数
 #       往上为 y 轴正方向，往左为 x 轴正方向
-#   icon:     按钮图标的 CSS class
+#   icon: 按钮图标的 CSS class
 #       支持 font-awesome-4.1.0 和 ionicons-2.0.1 图标库
-#       所有图标及其对应的 CSS class 请参考：
+#       所有图标及其对应的 CSS class 请参考
 #           https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 #           https://ionic.io/ionicons/v2
 #   size(可选): 按钮图标大小，例如："17px"、"20px"。默认值：17px
@@ -1573,7 +1570,7 @@ buttons = [
     { disable = false, coordinate = [1, 1], hint = "图片管理", size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
     { disable = false, coordinate = [2, 1], hint = "文档大纲", size = "17px", icon = "fa fa-list", callback = "toc.callback" },
     { disable = false, coordinate = [3, 1], hint = "高亮搜索", size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
-    # evil 使用示例：
+    # evil 使用示例
     #   弹窗提示
     { disable = true, coordinate = [4, 0], hint = "危险操作", size = "17px", icon = "ion-asterisk", color = "#f0f8ff", bgColor = "#ff4500", evil = "() => window.confirm('this is message')" },
     #   在光标处插入 javascript 代码块
@@ -1588,8 +1585,8 @@ buttons = [
 ################### blockSideBySide ###################
 [blockSideBySide]
 # ------------------- 基础配置 -------------------
-# 启用或禁用此二级插件
-#   true: 启用插件
+# 启用或禁用插件
+#   true:  启用插件
 #   false: 禁用插件
 enable = false
 
@@ -1597,7 +1594,7 @@ enable = false
 name = "并列显示活动块"
 
 # 是否在右键菜单中隐藏此插件的入口
-#   true: 隐藏右键菜单入口
+#   true:  隐藏右键菜单入口
 #   false: 显示右键菜单入口
 hide = true
 
@@ -1607,7 +1604,6 @@ order = 1
 # ------------------- 快捷键配置 -------------------
 # 切换并列显示/默认显示的快捷键
 #  留空字符串 "" 表示不设置快捷键
-#  快捷键格式与 Typora 快捷键设置相同，如： "Ctrl+Shift+B"
 hotkey = ""
 
 

@@ -1,4 +1,6 @@
 class drawIOPlugin extends BaseCustomPlugin {
+    styleTemplate = () => true
+
     init = () => this.defaultConfig = this._getDefaultConfig()
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
@@ -61,7 +63,7 @@ class drawIOPlugin extends BaseCustomPlugin {
         const mxGraphData = { ...this.defaultConfig, ...graphConfig }
         const jsonString = JSON.stringify(mxGraphData)
         const escaped = this.utils.escape(jsonString)
-        return `<div class="mxgraph" style="max-width:100%; width:100%; margin-top: 26px;" data-mxgraph="${escaped}"></div>`
+        return `<div class="mxgraph" style="max-width:100%; margin: 26px auto 0;" data-mxgraph="${escaped}"></div>`
     }
 
     _refresh = this.utils.debounce(() => window.GraphViewer.processElements(), 100)

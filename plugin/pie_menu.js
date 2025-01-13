@@ -79,15 +79,15 @@ class pieMenuPlugin extends BasePlugin {
                 const target = ev.target.closest(".plugin-pie-menu-item[data-callback]");
                 const callback = target && target.dataset.callback;
                 if (callback) {
-                    let [fixedName, callArg] = callback.split(".");
+                    let [fixedName, action] = callback.split(".");
                     if (this.utils.getCustomPlugin(fixedName)) {
-                        callArg = fixedName;
+                        action = fixedName;
                         fixedName = "custom";
                     }
-                    this.utils.generateDynamicCallArgs(fixedName);
-                    const plugin = this.utils.getPlugin(fixedName);
-                    plugin && plugin.call && this.utils.withMeta(meta => plugin.call(callArg, meta));
-                    !this.isMenuPinned() && this.hideMenu();
+                    this.utils.updateAndCallPluginDynamicAction(fixedName, action)
+                    if (!this.isMenuPinned()) {
+                        this.hideMenu()
+                    }
                 }
             }
         })

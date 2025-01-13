@@ -96,32 +96,32 @@ class resizeImagePlugin extends BasePlugin {
         }
     }
 
-    dynamicCallArgsGenerator = (anchorNode, meta) => {
-        const args = [
-            { arg_name: "启用功能：记住图片放缩状态", arg_value: "record_resize_state", arg_state: this.config.RECORD_RESIZE },
-            { arg_name: "启用功能：允许图片超出范围", arg_value: "allow_oversize", arg_state: this.config.ALLOW_OVERSIZE },
+    getDynamicActions = (anchorNode, meta) => {
+        const acts = [
+            { act_name: "启用功能：记住图片放缩状态", act_value: "record_resize_state", act_state: this.config.RECORD_RESIZE },
+            { act_name: "启用功能：允许图片超出范围", act_value: "allow_oversize", act_state: this.config.ALLOW_OVERSIZE },
         ];
 
         const images = anchorNode.closest("#write .md-image");
-        if (!images) return args;
+        if (!images) return acts;
         const image = images.querySelector("img");
-        if (!image) return args;
+        if (!image) return acts;
 
         meta.target = image;
 
-        args.push({ arg_name: "缩小20%", arg_value: "zoom_out_20_percent" })
+        acts.push({ act_name: "缩小20%", act_value: "zoom_out_20_percent" })
         if (this.getWidth(image) < image.parentElement.offsetWidth) {
-            args.push({ arg_name: "放大20%", arg_value: "zoom_in_20_percent" })
+            acts.push({ act_name: "放大20%", act_value: "zoom_in_20_percent" })
         }
-        args.push(
-            { arg_name: "靠左", arg_value: "set_align_left" },
-            { arg_name: "居中", arg_value: "set_align_center" },
-            { arg_name: "靠右", arg_value: "set_align_right" },
+        acts.push(
+            { act_name: "靠左", act_value: "set_align_left" },
+            { act_name: "居中", act_value: "set_align_center" },
+            { act_name: "靠右", act_value: "set_align_right" },
         )
-        return args
+        return acts
     }
 
-    call = (type, meta) => {
+    call = (action, meta) => {
         const callMap = {
             record_resize_state: () => this.recordResizeState(),
             allow_oversize: () => this.resetImageSize(),
@@ -131,8 +131,8 @@ class resizeImagePlugin extends BasePlugin {
             set_align_center: meta => this.setAlign("center", meta.target),
             set_align_right: meta => this.setAlign("right", meta.target),
         }
-        const func = callMap[type];
-        func && func(meta);
+        const func = callMap[action]
+        func && func(meta)
     }
 }
 

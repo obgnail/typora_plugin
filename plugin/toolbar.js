@@ -328,20 +328,20 @@ class pluginTool extends baseToolInterface {
             .filter(([_, plugin]) => plugin.call)
             .flatMap(([fixedName, plugin]) => {
                 const chineseName = plugin.config.NAME
-                const dynamicCallArgs = this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode, true)
+                const dynamicActions = this.utils.updatePluginDynamicActions(fixedName, this.controller.anchorNode, true)
 
-                const noDynamicCallArgs = !dynamicCallArgs || dynamicCallArgs.length === 0
-                const noCallArgs = !plugin.callArgs || plugin.callArgs.length === 0
-                if (noDynamicCallArgs && noCallArgs) {
+                const noDynamicActions = !dynamicActions || dynamicActions.length === 0
+                const noActions = !plugin.staticActions || plugin.staticActions.length === 0
+                if (noDynamicActions && noActions) {
                     return [{ showName: chineseName, fixedName: fixedName }]
                 }
-                if (!noCallArgs) {
-                    return plugin.callArgs.map(arg => ({ showName: `${chineseName} - ${arg.arg_name}`, fixedName: fixedName, meta: arg.arg_value }))
+                if (!noActions) {
+                    return plugin.staticActions.map(act => ({ showName: `${chineseName} - ${act.act_name}`, fixedName: fixedName, meta: act.act_value }))
                 }
-                if (!noDynamicCallArgs) {
-                    return dynamicCallArgs
-                        .filter(arg => !arg.arg_disabled)
-                        .map(arg => ({ showName: `${chineseName} - ${arg.arg_name}`, fixedName: fixedName, meta: arg.arg_value }))
+                if (!noDynamicActions) {
+                    return dynamicActions
+                        .filter(act => !act.act_disabled)
+                        .map(act => ({ showName: `${chineseName} - ${act.act_name}`, fixedName: fixedName, meta: act.act_value }))
                 }
                 return []
             })
@@ -354,12 +354,8 @@ class pluginTool extends baseToolInterface {
         const pluginsList = this.collectAll();
         return this.baseSearch(input, pluginsList, ["showName"])
     }
-    callback = (fixedName, type) => {
-        this.utils.generateDynamicCallArgs(fixedName, this.controller.anchorNode);
-        const { call } = this.utils.getPlugin(fixedName);
-        if (call instanceof Function) {
-            this.utils.withMeta(meta => call(type, meta));
-        }
+    callback = (fixedName, action) => {
+        this.utils.updateAndCallPluginDynamicAction(fixedName, action, this.controller.anchorNode)
     }
 }
 
