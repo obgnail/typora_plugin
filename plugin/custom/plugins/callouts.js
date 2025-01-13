@@ -32,6 +32,12 @@ class calloutsPlugin extends BaseCustomPlugin {
             blockquote.classList.toggle("plugin-callout", ok);
             if (ok) {
                 const { type, fold } = result.groups;
+                // 为包含 [!type] 的 span 添加 data-type 属性
+                const firstSpan = p.querySelector('span:first-child');
+                // 设置为 type 标题
+                if (firstSpan) {
+                    firstSpan.setAttribute('data-type', type);
+                }
                 blockquote.setAttribute("callout-type", type.toLowerCase());
                 blockquote.classList.toggle("callout-folded", fold === "-");
             }
