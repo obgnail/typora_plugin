@@ -24,6 +24,30 @@
     margin-right: 0.5em;
 }
 
+/* 默认显示 type */
+.plugin-callout > p:first-child > span:first-child {
+    font-weight: bold;
+    font-size: 0;
+}
+
+.plugin-callout > p:first-child > span:first-child::after {
+    content: attr(data-type);
+    font-size: initial;
+}
+
+/* 光标移动到标题行，即获得焦点时，显示原始的 [!type] */
+.plugin-callout > p:first-child > span:first-child:focus,
+.plugin-callout > p:first-child > span:first-child:focus-within,
+.plugin-callout > p:first-child.md-focus > span:first-child {
+    font-size: initial;
+}
+
+.plugin-callout > p:first-child > span:first-child:focus::after,
+.plugin-callout > p:first-child > span:first-child:focus-within::after,
+.plugin-callout > p:first-child.md-focus > span:first-child::after {
+    content: none;
+}
+
 .callout-folded > p:first-child :not(:first-child) { display: none; }
 .callout-folded > p:not(:first-child) { display: none; }
 
