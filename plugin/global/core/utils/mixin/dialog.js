@@ -182,6 +182,9 @@ class dialog {
             case "span":
                 label = "span";
                 break
+            case "blockquote":
+                label = "blockquote"
+                break
         }
         const class_ = comp.inline ? "form-inline-group" : "form-block-group";
         const label_ = comp.label ? `<${label}>${comp.label}${genInfo(comp)}</${label}>` : "";

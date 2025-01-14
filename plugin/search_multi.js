@@ -39,8 +39,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     init = () => {
-        this.searchHelper = new SearchHelper(this)
-        this.highlightHelper = new Highlighter(this)
+        this.searcher = new Searcher(this)
+        this.highlighter = new Highlighter(this)
         this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => ext.toLowerCase()))
         this.entities = {
             modal: document.querySelector("#plugin-search-multi"),
@@ -55,8 +55,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.searchHelper.process()
-        this.highlightHelper.process()
+        this.searcher.process()
+        this.highlighter.process()
         if (this.config.ALLOW_DRAG) {
             this.utils.dragFixedModal(this.entities.input, this.entities.modal)
         }
@@ -72,7 +72,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
             if (!btn) return
             const action = btn.getAttribute("action")
             if (action === "searchGrammarModal") {
-                this.searchHelper.showGrammar()
+                this.searcher.showGrammar()
             } else if (action === "toggleCaseSensitive") {
                 btn.classList.toggle("select")
                 this.config.CASE_SENSITIVE = !this.config.CASE_SENSITIVE
@@ -122,8 +122,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
         if (!input) return
 
         try {
-            const ast = this.searchHelper.parse(input)
-            const explain = this.searchHelper.toExplain(ast)
+            const ast = this.searcher.parse(input)
+            const explain = this.searcher.toExplain(ast)
             this.entities.input.setAttribute("title", explain)
             this.utils.notification.hide()
             return ast
@@ -139,10 +139,10 @@ class searchMultiKeywordPlugin extends BasePlugin {
             ast = ast || this.getAST()
             this.utils.hide(this.entities.highlightResult)
             if (!ast) return
-            const tokens = this.searchHelper.getContentTokens(ast).filter(Boolean)
+            const tokens = this.searcher.getContentTokens(ast).filter(Boolean)
             if (!tokens || tokens.length === 0) return
 
-            const hitGroups = this.highlightHelper.doSearch(tokens)
+            const hitGroups = this.highlighter.doSearch(tokens)
             const itemList = Object.entries(hitGroups).map(([cls, { name, hits }]) => {
                 const div = document.createElement("div")
                 div.className = `plugin-highlight-multi-result-item ${cls}`
@@ -161,7 +161,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
     searchMultiByAST = async (rootPath, ast) => {
         const { fileFilter, dirFilter } = this._getFilter()
-        const matcher = source => this.searchHelper.match(ast, source)
+        const matcher = source => this.searcher.match(ast, source)
         const callback = this._showResultItem(rootPath, matcher)
         await this._traverseDir(rootPath, fileFilter, dirFilter, callback)
     }
@@ -246,7 +246,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
     hide = () => {
         this.utils.hide(this.entities.modal)
         this.utils.hide(this.entities.info)
-        this.highlightHelper.clearSearch()
+        this.highlighter.clearSearch()
     }
 
     show = () => {
@@ -376,7 +376,7 @@ class QualifierMixin {
  *   4. query:    Queries the file data to obtain `queryResult`.
  *   5. match:    Matches `castResult` from step 3 with `queryResult` from step 4.
  */
-class SearchHelper {
+class Searcher {
     constructor(plugin) {
         this.MIXIN = QualifierMixin
         this.config = plugin.config
@@ -414,6 +414,7 @@ class SearchHelper {
             default: ({ path, file, stats, buffer }) => `${buffer.toString()}\n${path}`,
             path: ({ path, file, stats, buffer }) => path,
             file: ({ path, file, stats, buffer }) => file,
+            dir: ({ path, file, stats, buffer }) => this.utils.Package.Path.dirname(path),
             ext: ({ path, file, stats, buffer }) => this.utils.Package.Path.extname(file),
             content: ({ path, file, stats, buffer }) => buffer.toString(),
             time: ({ path, file, stats, buffer }) => this.MIXIN.QUERY.toDate(stats.mtime),
@@ -440,6 +441,7 @@ class SearchHelper {
             { scope: "default", name: "内容或路径", is_meta: false, query: QUERY.default },
             { scope: "path", name: "路径", is_meta: true, query: QUERY.path },
             { scope: "file", name: "文件名", is_meta: true, query: QUERY.file },
+            { scope: "dir", name: "所属目录", is_meta: true, query: QUERY.dir },
             { scope: "ext", name: "扩展名", is_meta: true, query: QUERY.ext },
             { scope: "content", name: "内容", is_meta: false, query: QUERY.content },
             { scope: "frontmatter", name: "FrontMatter", is_meta: false, query: QUERY.frontmatter },
@@ -811,8 +813,8 @@ class SearchHelper {
         const genOperator = (...operators) => operators.map(operator => `<code>${operator}</code>`).join("、")
         const genUL = (...li) => `<ul style="padding-left: 1em; word-break: break-word;">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
         const scopeDesc = genUL(
-            `文件属性：${genScope(metaScope)}`,
-            `内容属性：${genScope(contentScope)}`,
+            `元数据搜索符：${genScope(metaScope)}`,
+            `内容搜索符：${genScope(contentScope)}`,
             `默认值 default = path + content（路径+文件内容）`,
         )
         const operatorDesc = genUL(
@@ -823,18 +825,18 @@ class SearchHelper {
 
         const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
         const scopeInfo = genInfo('具体来说：文件路径或文件内容包含 pear')
-        const diffInfo = genInfo('注意区分：\n「head=plugin」表示标题为plugin，当标题为”typora plugin“时不可匹配\n「head:plugin」表示标题包含plugin，当标题为”typora plugin“时可以匹配')
+        const diffInfo = genInfo('注意区分：\nhead=plugin 表示标题为plugin，当标题为”typora plugin“时不可匹配\nhead:plugin 表示标题包含plugin，当标题为”typora plugin“时可以匹配')
 
         const keywordDesc = `
 <table>
     <tr><th>关键字</th><th>说明</th></tr>
-    <tr><td>空格</td><td>表示与。文档应该同时满足空格左右两侧的查询条件，等价于 AND</td></tr>
-    <tr><td>|</td><td>表示或。文档应该满足 | 左右两侧中至少一个查询条件，等价于 OR</td></tr>
-    <tr><td>-</td><td>表示非。文档不可满足 - 右侧的查询条件</td></tr>
-    <tr><td>""</td><td>表示词组。引号包裹视为词组</td></tr>
-    <tr><td>/RegExp/</td><td>JavaScript 风格的正则表达式</td></tr>
-    <tr><td>scope</td><td>查询属性，用于限定查询条件${scopeDesc}</td></tr>
-    <tr><td>operator</td><td>操作符，用于比较查询条件和查询结果${operatorDesc}</td></tr>
+    <tr><td>空格</td><td>连接两个查询条件，表示逻辑与。文档应该同时满足空格左右两侧的查询条件，等价于 AND</td></tr>
+    <tr><td>|</td><td>连接两个查询条件，表示逻辑或。文档应该满足 | 左右两侧中至少一个查询条件，等价于 OR</td></tr>
+    <tr><td>-</td><td>后接一个查询条件，表示逻辑非。文档不可满足 - 右侧的查询条件</td></tr>
+    <tr><td>""</td><td>引号包裹文本，表示词组。</td></tr>
+    <tr><td>/regex/</td><td>JavaScript 风格的正则表达式</td></tr>
+    <tr><td>scope</td><td>搜索符，用于限定查询条件${scopeDesc}</td></tr>
+    <tr><td>operator</td><td>操作符，用于比较查询关键字和查询结果${operatorDesc}</td></tr>
     <tr><td>()</td><td>小括号，用于调整运算优先级</td></tr>
 </table>`
 
@@ -848,9 +850,9 @@ class SearchHelper {
     <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
     <tr><td>/\\bsour\\b/ pear time=2024-03-12</td><td>匹配正则\\bsour\\b（全字匹配sour），且包含 pear，且文件更新时间为 2024-03-12</td></tr>
     <tr><td>frontmatter:开发 | head=plugin | strong:MIT</td><td>YAML Front Matter 包含开发 或者 标题内容为 plugin 或者 加粗文字包含 MIT ${diffInfo}</td></tr>
-    <tr><td>size>10k (linenum>=1000 | hasimage=true)</td><td>文件大小超过 10KB，并且文件要么至少有 1000 行，要么包含图片</td></tr>
+    <tr><td>size>10kb (linenum>=1000 | hasimage=true)</td><td>文件大小超过 10KB，并且文件要么至少有 1000 行，要么包含图片</td></tr>
     <tr><td>path:(info | warn | err) -ext:md</td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 md</td></tr>
-    <tr><td>file:/[a-z]{3}/ content:prometheus blockcode:"kubectl apply"</td><td>文件名匹配正则 [a-z]{3}，且内容包含 prometheus，且代码块内容含有 kubectl apply</td></tr>
+    <tr><td>file:/[a-z]{3}/ content:prometheus blockcode:"kubectl apply"</td><td>文件名匹配正则 [a-z]{3}（包含三个小写字母），且文件内容包含 prometheus，且代码块内容包含 kubectl apply</td></tr>
 </table>`
 
         const content = `
@@ -859,20 +861,25 @@ class SearchHelper {
 <term> ::= <factor> ( <conjunction> <factor> )*
 <factor> ::= <qualifier>? <match>
 <qualifier> ::= <scope> <operator>
-<match> ::= <keyword> | '"'<keyword>'"' | '/'<regexp>'/' | '('<expression>')'
+<match> ::= <keyword> | '"'<keyword>'"' | '/'<regex>'/' | '('<expression>')'
 <conjunction> ::= <and> | <not>
 <or> ::= 'OR' | '|'
 <and> ::= 'AND' | ' '
 <not> ::= '-'
 <keyword> ::= [^\\s"()|]+
-<regexp> ::= [^/]+
+<regex> ::= [^/]+
 <operator> ::= ${operator.map(s => `'${s}'`).join(" | ")}
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
+        const desc = `高级搜索通过组合不同的条件来精确查找文件。每个条件由三部分组成：搜索符、操作符、关键字，例如 size>2kb（含义：文件尺寸大于 2KB）、ext:txt（含义：文件扩展名包含 txt）。
+条件之间用空格分隔，表示所有条件都必须满足，例如 size>2kb ext:txt；如果只需满足其一条件，请使用 OR 连接，例如 size>2kb OR ext:txt；如果需满足前者，并且排除后者，请使用 - 连接，例如 size>2kb -ext:txt`
         const components = [
-            { label: keywordDesc, type: "p" },
+            { label: desc, type: "blockquote" },
             { label: example, type: "p" },
-            { label: "", type: "textarea", rows: 20, content, title: "这段文字是语法的形式化表述，你可以把它塞给AI，AI会为你解释" },
+            { label: "具体用法", type: "p" },
+            { label: keywordDesc, type: "p" },
+            { label: "形式文法", type: "p" },
+            { label: "", type: "textarea", rows: 20, content },
         ]
         this.utils.dialog.modal({ title: "高级搜索", width: "600px", components })
     }

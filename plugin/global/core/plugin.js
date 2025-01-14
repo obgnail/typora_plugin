@@ -29,7 +29,7 @@ class IPlugin {
 
 /** 一级插件 */
 class BasePlugin extends IPlugin {
-    call(type, meta) {}
+    call(action, meta) {}
 }
 
 /** 二级插件 */
@@ -77,8 +77,8 @@ const loadPlugin = async (fixedName, setting, isCustom) => {
 }
 
 const LoadPlugins = async (settings, isCustom) => {
-    const plugins = { enable: {}, disable: {}, stop: {}, error: {}, nosetting: {} };
-    await Promise.all(Object.entries(settings).map(async ([fixedName, setting]) => {
+    const plugins = { enable: {}, disable: {}, stop: {}, error: {}, nosetting: {} }
+    const promises = Object.entries(settings).map(async ([fixedName, setting]) => {
         if (!setting) {
             plugins.nosetting[fixedName] = fixedName;
         } else if (!setting.ENABLE && !setting.enable) {
@@ -96,12 +96,13 @@ const LoadPlugins = async (settings, isCustom) => {
                 plugins.error[fixedName] = error;
             }
         }
-    }))
+    })
+    await Promise.all(promises)
 
     // log
-    const LOG_COLOR = { enable: "32", disable: "33", stop: "34", error: "31", nosetting: "35" };
+    const COLORS = { enable: "32", disable: "33", stop: "34", error: "31", nosetting: "35" };
     console.group(`${isCustom ? "Custom" : "Base"} Plugin`);
-    Object.entries(plugins).forEach(([t, p]) => console.debug(`[ \x1B[${LOG_COLOR[t]}m${t}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p));
+    Object.entries(plugins).forEach(([t, p]) => console.debug(`[ \x1B[${COLORS[t]}m${t}\x1b[0m ] [ ${Object.keys(p).length} ]:`, p));
     console.groupEnd();
 
     return plugins;
