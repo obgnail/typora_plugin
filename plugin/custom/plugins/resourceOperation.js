@@ -47,8 +47,8 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         }
         this.nonExistInFile = null;
         this.nonExistInFolder = null;
+        this.redirectPlugin = null;
         this.showWarnDialog = true;
-
         this.entities = {
             modal: document.querySelector("#plugin-resource-operation"),
             wrap: document.querySelector(".plugin-resource-operation-wrap"),
@@ -60,6 +60,10 @@ class resourceOperationPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+            this.redirectPlugin = this.utils.getCustomPlugin("redirectLocalRootUrl")
+        })
+
         this.utils.dragFixedModal(this.entities.move, this.entities.modal, false);
         this.entities.iconGroup.addEventListener("click", ev => {
             const target = ev.target.closest("[action]");
@@ -131,12 +135,12 @@ class resourceOperationPlugin extends BaseCustomPlugin {
 
         this.entities.wrap.innerHTML = `
             <table class="table non-exist-in-file-table">
-                 <caption>存在于文件夹但不存在于md文件的资源(共${this.nonExistInFile.size}项)</caption>
+                 <caption>存在于挂载目录但不存在于 MD 文件的资源(共${this.nonExistInFile.size}项)</caption>
                  <thead><tr><th>#</th><th>resource</th><th class="plugin-common-hidden">preview</th><th>operation</th></tr></thead>
                  <tbody>${tbody1}</tbody>
             </table>
             <table class="table">
-                 <caption>存在于md文件但不存在于文件夹的资源(共${this.nonExistInFolder.size}项)</caption>
+                 <caption>存在于 MD 文件但不存在于挂载目录的资源(共${this.nonExistInFolder.size}项)</caption>
                  <thead><tr><th>#</th><th>resource</th></tr></thead>
                  <tbody>${tbody2}</tbody>
             </table>
@@ -198,13 +202,13 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         const yaml = () => this.utils.stringifyYaml(_obj)
         const toml = () => this.utils.stringifyToml(_obj)
         const md = () => `
-## 存在于文件夹，但是不存在于 md 文件的资源(共${_obj.resource_non_exist_in_file.length}项)
+## 存在于挂载目录，但是不存在于 MD 文件的资源(共${_obj.resource_non_exist_in_file.length}项)
 
 \`\`\`plain
 ${_obj.resource_non_exist_in_file.join("\n")}
 \`\`\`
 
-## 存在于 md 文件，但是不存在于文件夹的资源(共${_obj.resource_non_exist_in_folder.length}项)
+## 存在于 MD 文件，但是不存在于挂载目录的资源(共${_obj.resource_non_exist_in_folder.length}项)
 
 \`\`\`plain
 ${_obj.resource_non_exist_in_folder.join("\n")}
@@ -270,6 +274,7 @@ ${_obj.resource_non_exist_in_folder.join("\n")}
         }
 
         const collectMatch = content => {
+            const sourceRoot = this._getCompatibleRootURL(filePath, content) || dir
             const promises = Array.from(content.matchAll(this.regexp), async match => {
                 let src = match.groups.src1 || match.groups.src2;
                 if (!src) return;
@@ -284,7 +289,7 @@ ${_obj.resource_non_exist_in_folder.join("\n")}
                     return;
                 }
 
-                src = resolve(dir, src);
+                src = resolve(sourceRoot, src)
                 if (this.resourcesInFile.has(src)) return;
 
                 const resourcePath = await getRealPath(src);
@@ -303,8 +308,23 @@ ${_obj.resource_non_exist_in_folder.join("\n")}
         if (this.resourceSuffixs.has(ext)) {
             this.resources.add(filePath);
         } else if (this.fileSuffixs.has(ext)) {
-            const buffer = await readFile(filePath);
-            await collectMatch(buffer.toString());
+            const data = await readFile(filePath)
+            await collectMatch(data.toString())
+        }
+    }
+
+    _getCompatibleRootURL = (filePath, content) => {
+        // typora 支持使用 typora-root-url 的 front matter 重定向资源路径
+        const { yamlObject } = this.utils.splitFrontMatter(content)
+        const redirectURL = yamlObject && yamlObject["typora-root-url"]
+        if (redirectURL) {
+            return redirectURL
+        }
+        // 兼容重定向资源插件
+        if (!this.redirectPlugin) return
+        const ok = this.redirectPlugin.needRedirect(filePath)
+        if (ok) {
+            return this.redirectPlugin.config.root
         }
     }
 
@@ -331,4 +351,4 @@ ${_obj.resource_non_exist_in_folder.join("\n")}
 
 module.exports = {
     plugin: resourceOperationPlugin,
-};
+}

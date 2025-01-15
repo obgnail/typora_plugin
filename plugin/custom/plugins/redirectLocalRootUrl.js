@@ -1,10 +1,22 @@
 class redirectLocalRootUrlPlugin extends BaseCustomPlugin {
-    process = () => {
-        if (!this.config.root) return
+    beforeProcess = () => {
+        if (!this.config.root) {
+            return this.utils.stopLoadPluginError
+        }
+    }
 
-        const regexp = new RegExp(this.config.filter_regexp)
+    init = () => {
+        const { filter_regexp } = this.config
+        this.filter = filter_regexp ? new RegExp(filter_regexp) : undefined
+    }
+
+    needRedirect = (filepath = this.utils.getFilePath()) => {
+        return this.filter ? this.filter.test(filepath) : true
+    }
+
+    process = () => {
         const redirect = typoraRootUrl => {
-            const dontRedirect = typoraRootUrl || (this.config.filter_regexp && !regexp.test(this.utils.getFilePath()))
+            const dontRedirect = typoraRootUrl || !this.needRedirect()
             return dontRedirect
                 ? typoraRootUrl
                 : this.utils.Package.Path.resolve(this.utils.getCurrentDirPath(), this.config.root)
