@@ -1,51 +1,32 @@
 class darkModePlugin extends BasePlugin {
+    styleTemplate = () => true
+
     init = () => {
-        this.isDarkMode = this.config.DARK_DEFAULT;
+        this.class = "plugin-dark"
+        this.isDarkMode = this.config.DARK_DEFAULT
     }
 
     hotkey = () => [this.config.HOTKEY]
 
-    enableDarkMode = async () => {
-        const createDarkFilter = () => {
-            const div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
-            div.innerHTML = `
-            <svg id="plugin-dark-mode-svg" style="height: 0; width: 0; position: absolute;">
-                <filter id="plugin-dark-mode-filter" x="0" y="0" width="99999" height="99999">
-                    <feColorMatrix type="matrix" values="0.283 -0.567 -0.567 0 0.925 -0.567 0.283 -0.567 0 0.925 -0.567 -0.567 0.283 0 0.925 0 0 0 1 0"/>
-                </filter>
-                <filter id="plugin-dark-mode-reverse-filter" x="0" y="0" width="99999" height="99999">
-                    <feColorMatrix type="matrix" values="0.333 -0.667 -0.667 0 1 -0.667 0.333 -0.667 0 1 -0.667 -0.667 0.333 0 1 0 0 0 1 0"/>
-                </filter>
-            </svg>`
-            const frag = document.createDocumentFragment();
-            while (div.firstChild) {
-                frag.appendChild(div.firstChild);
-            }
-            this.utils.insertElement(frag);
-        }
+    enableDarkMode = () => this._toggleDarkMode(true)
 
-        await this.utils.styleTemplater.register(this.fixedName);
-        createDarkFilter();
-        this.isDarkMode = true;
+    disableDarkMode = () => this._toggleDarkMode(false)
+
+    toggleDarkMode = () => {
+        this._toggleDarkMode(!this.isDarkMode)
+        this.utils.notification.show(this.isDarkMode ? "夜间模式已启用" : "夜间模式已关闭")
     }
 
-    disableDarkMode = () => {
-        this.utils.styleTemplater.unregister(this.fixedName);
-        this.utils.removeElementByID("plugin-dark-mode-svg");
-        this.isDarkMode = false;
+    _toggleDarkMode = enable => {
+        document.documentElement.classList.toggle(this.class, enable)
+        this.isDarkMode = enable
     }
 
-    toggleDarkMode = async () => {
-        const func = this.isDarkMode ? this.disableDarkMode : this.enableDarkMode;
-        await func();
-        this.utils.notification.show(this.isDarkMode ? "夜间模式已启用" : "夜间模式已关闭");
-    }
-
-    process = () => this.isDarkMode && this.enableDarkMode();
+    process = () => this.isDarkMode && this.enableDarkMode()
 
     call = (action, meta) => this.toggleDarkMode()
 }
 
 module.exports = {
     plugin: darkModePlugin,
-};
+}
