@@ -11,7 +11,7 @@ class searchMultiPlugin extends BasePlugin {
             <div id="plugin-search-multi-input">
                 <input type="text">
                 <div class="plugin-search-multi-btn-group">
-                    <span class="option-btn" action="searchGrammarModal" ty-hint="查看搜索语法">
+                    <span class="option-btn" action="searchGrammarModal" ty-hint="搜索语法">
                         <div class="ion-information-circled"></div>
                     </span>
                     <span class="option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" action="toggleCaseSensitive" ty-hint="区分大小写">
@@ -371,7 +371,7 @@ class QualifierMixin {
  * The matching process consists of the following steps: (Steps 1-3 are executed once; steps 4-5 are executed multiple times)
  *   1. parse:    Parses the input to generate an AST.
  *   2. validate: Validates the AST for correctness.
- *   3. cast:     Converts operand within the AST nodes into a usable format (e.g. converting '2024-01-01' in 'time>2024-01-01' to a timestamp for easier matching). The result is `castResult`.
+ *   3. cast:     Converts operand within the AST nodes into a usable format (e.g. converting '2024-01-01' in 'mtime>2024-01-01' to a timestamp for easier matching). The result is `castResult`.
  *   4. query:    Queries the file data to obtain `queryResult`.
  *   5. match:    Matches `castResult` from step 3 with `queryResult` from step 4.
  *
@@ -417,7 +417,8 @@ class Searcher {
             name: ({ path, file, stats, content }) => this.utils.Package.Path.parse(file).name,
             ext: ({ path, file, stats, content }) => this.utils.Package.Path.extname(file),
             size: ({ path, file, stats, content }) => stats.size,
-            time: ({ path, file, stats, content }) => this.MIXIN.QUERY.normalizeDate(stats.mtime),
+            atime: ({ path, file, stats, content }) => this.MIXIN.QUERY.normalizeDate(stats.atime),
+            mtime: ({ path, file, stats, content }) => this.MIXIN.QUERY.normalizeDate(stats.mtime),
             birthtime: ({ path, file, stats, buffer }) => this.MIXIN.QUERY.normalizeDate(stats.birthtime),
             content: ({ path, file, stats, content }) => content.toString(),
             linenum: ({ path, file, stats, content }) => content.toString().split("\n").length,
@@ -443,13 +444,14 @@ class Searcher {
             { scope: "path", name: "路径", is_meta: true, query: QUERY.path },
             { scope: "dir", name: "文件所属目录", is_meta: true, query: QUERY.dir },
             { scope: "file", name: "文件名", is_meta: true, query: QUERY.file },
-            { scope: "name", name: "无扩展名文件名", is_meta: true, query: QUERY.name },
+            { scope: "name", name: "文件名(无扩展名)", is_meta: true, query: QUERY.name },
             { scope: "ext", name: "扩展名", is_meta: true, query: QUERY.ext },
             { scope: "content", name: "内容", is_meta: false, query: QUERY.content },
             { scope: "frontmatter", name: "FrontMatter", is_meta: false, query: QUERY.frontmatter },
             { scope: "size", name: "文件大小", is_meta: true, query: QUERY.size, validate: this.MIXIN.VALIDATE.isSize, cast: this.MIXIN.CAST.toBytes },
-            { scope: "time", name: "修改时间", is_meta: true, query: QUERY.time, validate: this.MIXIN.VALIDATE.isDate, cast: this.MIXIN.CAST.toDate },
             { scope: "birthtime", name: "创建时间", is_meta: true, query: QUERY.birthtime, validate: this.MIXIN.VALIDATE.isDate, cast: this.MIXIN.CAST.toDate },
+            { scope: "mtime", name: "修改时间", is_meta: true, query: QUERY.mtime, validate: this.MIXIN.VALIDATE.isDate, cast: this.MIXIN.CAST.toDate },
+            { scope: "atime", name: "访问时间", is_meta: true, query: QUERY.atime, validate: this.MIXIN.VALIDATE.isDate, cast: this.MIXIN.CAST.toDate },
             { scope: "linenum", name: "行数", is_meta: true, query: QUERY.linenum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
             { scope: "charnum", name: "字符数", is_meta: true, query: QUERY.charnum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
             { scope: "chinesenum", name: "中文字符数", is_meta: true, query: QUERY.chinesenum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
@@ -816,8 +818,8 @@ class Searcher {
         const genOperator = (...operators) => operators.map(operator => `<code>${operator}</code>`).join("、")
         const genUL = (...li) => `<ul style="padding-left: 1em; word-break: break-word;">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
         const scopeDesc = genUL(
-            `元数据搜索符：${genScope(metaScope)}`,
-            `内容搜索符：${genScope(contentScope)}`,
+            `搜索元数据：${genScope(metaScope)}`,
+            `搜索具体内容：${genScope(contentScope)}`,
             `默认值 default = path + content（路径+文件内容）`,
         )
         const operatorDesc = genUL(
@@ -827,8 +829,8 @@ class Searcher {
         )
 
         const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
-        const scopeInfo = genInfo('具体来说：文件路径或文件内容包含 pear')
-        const diffInfo = genInfo('注意区分：\nhead=plugin 表示标题为plugin，当标题为”typora plugin“时不可匹配\nhead:plugin 表示标题包含plugin，当标题为”typora plugin“时可以匹配')
+        const scopeInfo = genInfo('严格来说是文件路径或文件内容包含 pear（默认搜索范围：路径+文件内容）')
+        const diffInfo = genInfo('注意区分：\nhead=plugin 表示标题为plugin\nhead:plugin 表示标题包含plugin')
 
         const keywordDesc = `
 <table>
@@ -838,20 +840,20 @@ class Searcher {
     <tr><td>-</td><td>后接一个查询条件，表示逻辑非。文档不可满足 - 右侧的查询条件</td></tr>
     <tr><td>""</td><td>引号包裹文本，表示词组。</td></tr>
     <tr><td>/regex/</td><td>JavaScript 风格的正则表达式</td></tr>
-    <tr><td>scope</td><td>搜索符，用于限定查询条件${scopeDesc}</td></tr>
+    <tr><td>scope</td><td>搜索范围，用于限定查询条件${scopeDesc}</td></tr>
     <tr><td>operator</td><td>操作符，用于比较查询关键字和查询结果${operatorDesc}</td></tr>
     <tr><td>()</td><td>小括号，用于调整运算优先级</td></tr>
 </table>`
 
         const example = `
 <table>
-    <tr><th>示例</th><th>搜索文档</th></tr>
+    <tr><th>示例</th><th>搜索文件</th></tr>
     <tr><td>pear</td><td>包含 pear。等价于 default:pear ${scopeInfo}</td></tr>
     <tr><td>sour pear</td><td>包含 sour 和 pear。等价于 sour AND pear</td></tr>
     <tr><td>sour | pear</td><td>包含 sour 或 pear。等价于 sour OR pear</td></tr>
     <tr><td>"sour pear"</td><td>包含 sour pear 这一词组</td></tr>
     <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
-    <tr><td>/\\bsour\\b/ pear time=2024-03-12</td><td>匹配正则\\bsour\\b（全字匹配sour），且包含 pear，且文件更新时间为 2024-03-12</td></tr>
+    <tr><td>/\\bsour\\b/ pear mtime=2024-03-12</td><td>匹配正则\\bsour\\b（全字匹配sour），且包含 pear，且文件的修改时间为 2024-03-12</td></tr>
     <tr><td>frontmatter:开发 | head=plugin | strong:MIT</td><td>YAML Front Matter 包含开发 或者 标题内容为 plugin 或者 加粗文字包含 MIT ${diffInfo}</td></tr>
     <tr><td>size>10kb (linenum>=1000 | hasimage=true)</td><td>文件大小超过 10KB，并且文件要么至少有 1000 行，要么包含图片</td></tr>
     <tr><td>path:(info | warn | err) -ext:md</td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 md</td></tr>
@@ -874,8 +876,8 @@ class Searcher {
 <operator> ::= ${operator.map(s => `'${s}'`).join(" | ")}
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
-        const desc = `多元文件搜索通过组合不同的条件来精确查找文件。每个条件由三部分组成：搜索符、操作符、关键字，例如 size>2kb（含义：文件尺寸大于 2KB）、ext:txt（含义：文件扩展名包含 txt）。
-条件之间用空格分隔，表示所有条件都必须满足，例如 size>2kb ext:txt；如果只需满足其一条件，请使用 OR 连接，例如 size>2kb OR ext:txt；如果需满足前者，并且排除后者，请使用 - 连接，例如 size>2kb -ext:txt`
+        const desc = `多元文件搜索通过组合不同的条件来精确查找文件。每个条件由三部分组成：搜索范围、操作符、关键字，例如 size>2kb（含义：文件尺寸大于 2KB）、ext:txt（含义：文件扩展名包含 txt）。
+条件之间用空格分隔，表示所有条件都必须满足，例如 size>2kb ext:txt；如果只需满足其一条件，请使用 OR 连接，例如 size>2kb OR ext:txt；如果需排除某一条件，请在其前面添加减号，例如 -size>2kb（含义：文件尺寸不得大于 2KB）`
         const components = [
             { label: desc, type: "blockquote" },
             { label: example, type: "p" },

@@ -63,7 +63,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const url = "https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"
                 const onclick = ev => ev.target.closest("a") && this.utils.openUrl(url)
                 const title = "以下为格式规范的简单说明，完整文档请 <a>前往网站</a>"
-                const content = Object.entries(this.l10n).map(([key, value]) => `${key}\t${value}`).join("\n")
+                const content = Object.entries(this.l10n)
+                    .filter(([key, value]) => key !== value)
+                    .map(([key, value]) => `${key}\t${value}`)
+                    .join("\n")
                 const components = [{ label: title, type: "p", onclick }, { label: "", type: "textarea", rows: 15, content }]
                 this.utils.dialog.modal({ title: "格式规范", width: "600px", components })
             },
