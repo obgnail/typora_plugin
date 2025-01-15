@@ -43,12 +43,12 @@ NAME = "标签页管理"
 
 # ------------------- 标签页外观与交互 -------------------
 # 标签页拖拽风格设置：控制标签页拖拽时的行为方式
-#   true:  采用类似 JetBrains IDE 的标签页拖拽方式，可以更灵活地调整标签页顺序，并支持Y轴防抖
-#   false: 采用类似 VS Code 的标签页拖拽方式，相对简单直接
+#   true:  采用 JetBrains 风格的标签页拖拽方式，可以更灵活地调整标签页顺序，并支持Y轴防抖
+#   false: 采用 VS Code 风格的标签页拖拽方式，相对简单直接
 JETBRAINS_DRAG_STYLE = true
 
-# 标签标题显示设置：是否去除标签标题的文件后缀名
-#   true:  标签标题将显示不带后缀名的文件名 (例如: filename.md 显示为 filename)
+# 标签标题显示设置：是否去除标签标题的文件扩展名
+#   true:  标签标题将显示不带扩展名的文件名 (例如: filename.md 显示为 filename)
 #   false: 标签标题将显示完整的文件名 (例如: filename.md)
 REMOVE_FILE_SUFFIX = true
 
@@ -175,8 +175,8 @@ CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs",
 
 # -------------------  链接跳转拦截设置 -------------------
 # 拦截内部和本地文件链接：Typora 1.1 版本以后支持使用锚点跳转到本地文件，是否拦截处理，将跳转行为改为新建标签页
-#   参考1：https://support.typora.io/zh/What's-New-1.1/#文件链接
-#   参考2：https://support.typora.io/Links/#internal-links
+# 参考1：https://support.typora.io/zh/What's-New-1.1/#文件链接
+# 参考2：https://support.typora.io/Links/#internal-links
 #   true:  拦截并使用新标签页打开
 #   false: 使用 Typora 默认的方式打开
 INTERCEPT_INTERNAL_AND_LOCAL_LINKS = true
@@ -186,72 +186,77 @@ INTERCEPT_INTERNAL_AND_LOCAL_LINKS = true
 [search_multi]
 # ------------------- 基础配置 -------------------
 # 启用或禁用多关键字查找插件
-#   true: 启用插件
+#   true:  启用插件
 #   false: 禁用插件
 ENABLE = true
 
 # 插件的名称，将在 Typora 的插件列表中显示
-NAME = "多关键字搜索"
+NAME = "多元文件搜索"
 
 # ------------------- 快捷键设置 -------------------
-# 触发多关键字查找窗口的快捷键组合。例如: "ctrl+shift+p"
+# 触发多关键字查找窗口的快捷键组合
 HOTKEY = "ctrl+shift+p"
 
 # ------------------- 窗口交互设置 -------------------
 # 允许通过 `Ctrl` + 鼠标拖拽输入框来移动窗口
-#   true: 启用窗口拖动功能
+#   true:  启用窗口拖动功能
 #   false: 禁用窗口拖动功能
 ALLOW_DRAG = true
 
 # 当输入框为空且失去焦点时，是否自动隐藏窗口
-#   true: 启用自动隐藏功能
+#   true:  启用自动隐藏功能
 #   false: 禁用自动隐藏功能
 AUTO_HIDE = false
 
 # 当输入框为空，且按下 `Backspace` 键时，隐藏窗口
-#   true: 启用此功能
+#   true:  启用此功能
 #   false: 禁用此功能
 BACKSPACE_TO_HIDE = true
 
-# ------------------- 结果显示设置 -------------------
-# 展示文件路径时，使用相对路径还是绝对路径
-#   true: 使用文件的相对路径
-#   false: 使用文件的绝对路径
-RELATIVE_PATH = true
-
-# 鼠标悬停到搜索结果项时，是否显示文件的最后修改时间
-#   true: 启用此功能，悬停时显示修改时间
-#   false: 禁用此功能，不显示修改时间
-SHOW_MTIME = false
-
 # ------------------- 搜索内容设置 -------------------
 # 搜索时是否区分大小写
-#   true: 搜索时区分大小写
+#   true:  搜索时区分大小写
 #   false: 搜索时不区分大小写
 CASE_SENSITIVE = false
 
 # ------------------- 文件过滤设置 -------------------
 # 允许搜索的最大文件大小，单位为字节 (bytes)
-# 大于此值的文件在搜索时将被忽略
-# 设置为小于 0 的值，表示不忽略任何文件
 # 注意: Typora 仅支持打开小于 2000000 字节的文件，因此不建议设置超过此值
+#   大于此值的文件在搜索时将被忽略
+#   小于 0 的值，表示不忽略任何文件
 MAX_SIZE = 2000000
 
-# 允许搜索的文件后缀名列表
+# 允许搜索的文件扩展名列表
 # 只有在此列表中的文件才会被搜索
-# 注意：默认值为 Typora 允许打开的文件后缀名列表，不建议添加新的后缀名，因为即使找到也无法在 Typora 中打开
+# 注意：默认值为 Typora 允许打开的所有文件扩展名列表。因此不建议添加新的扩展名
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 
 # 搜索时需要忽略的文件夹名称列表
 # 此列表中的文件夹将被排除在搜索之外
 IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
 
+# ------------------- 结果显示设置 -------------------
+# 展示文件路径时，使用相对路径还是绝对路径
+#   true:  使用文件的相对路径
+#   false: 使用文件的绝对路径
+RELATIVE_PATH = true
+
+# 展示文件时，是否同时显示文件的扩展名
+#   true:  展示带扩展名的文件名（例如: filename.md）
+#   false: 展示不带扩展名的文件名（例如: filename）
+SHOW_EXT = true
+
+# 鼠标悬停到搜索结果项时，是否显示文件的最后修改时间
+#   true:  启用此功能，悬停时显示修改时间
+#   false: 禁用此功能，不显示修改时间
+SHOW_MTIME = false
+
 # ------------------- 高亮设置 -------------------
 # 关键字高亮的颜色列表
 # 每个关键字按顺序对应一个颜色，支持自定义多个颜色
 STYLE_COLOR = [
-    '#bbeeff', '#ffbbcc', '#88ee88', '#ccbbff', '#ffee88', '#FFFFa0', '#88cccc', '#ffbb88', '#cccccc', '#ffaabb',
-    '#99ccff', '#ff99cc', '#66cc66', '#cc99ff', '#ffcc66', '#FFFF80', '#dd9966', '#aaaaaa', '#66aaaa', '#dd6699',
+    "#BBEEFF", "#FFBBCC", "#88EE88", "#CCBBFF", "#FFEE88", "#FFFFA0", "#88CCCC", "#FFBB88", "#CCCCCC", "#FFAABB",
+    "#99CCFF", "#FF99CC", "#66CC66", "#CC99FF", "#FFCC66", "#FFFF80", "#DD9966", "#AAAAAA", "#66AAAA", "#DD6699",
 ]
 
 
@@ -284,15 +289,15 @@ BACKSPACE_TO_HIDE = true
 
 # ------------------- 命令执行与回显 -------------------
 # 控制通过【快捷键】或【右键菜单】调用内建命令时，是否以及如何显示执行结果
-#   always:  总是弹出窗口显示执行结果
-#   error:   仅在命令执行出现错误时弹出窗口显示错误信息
-#   silent:  总是静默执行，不显示任何输出
-#   echo:    立即弹出窗口并实时显示命令的输出，适合需要不断打印日志的耗时任务
+#   always: 总是弹出窗口显示执行结果
+#   error:  仅在命令执行出现错误时弹出窗口显示错误信息
+#   silent: 总是静默执行，不显示任何输出
+#   echo:   立即弹出窗口并实时显示命令的输出，适合需要不断打印日志的耗时任务
 QUICK_EXEC_SHOW = "error"
 
 # 控制在命令输入框中按下回车键或点击执行按钮时，命令执行结果的回显方式
-#   always:  等待程序执行完毕后，一次性输出执行结果
-#   echo:    立即回显程序输出，实时显示命令执行过程
+#   always: 等待程序执行完毕后，一次性输出执行结果
+#   echo:   立即回显程序输出，实时显示命令执行过程
 COMMIT_EXEC_SHOW = "echo"
 
 # ------------------- 内建命令列表 -------------------
@@ -341,13 +346,13 @@ NAME = "中英文混排优化"
 HOTKEY = "ctrl+shift+b"
 
 # ------------------- 作用范围设置 -------------------
-#  是否仅在选中的文本区域内应用格式化
+# 是否仅在选中的文本区域内应用格式化
 #   true:  仅对选中的文本区域应用空格优化。未选中的文本不会受到影响
 #   false: 对整个文档应用空格优化
 FORMAT_IN_SELECTION_ONLY = false
 
 # ------------------- 忽略词组设置 -------------------
-#  指定不希望在内部或前后添加空格的词组列表
+# 指定不希望在内部或前后添加空格的词组列表
 #   插件不会在这些词组内部或前后添加额外的空格
 #   例如：["word1", "word2", "词组1"]
 IGNORE_WORDS = []
@@ -355,7 +360,6 @@ IGNORE_WORDS = []
 # ------------------- 忽略正则设置 -------------------
 # 指定不希望在内部或前后添加空格的正则表达式列表
 #   插件不会在匹配这些正则表达式的文本内部或前后添加额外的空格
-#   注意：正则表达式的书写需符合 JavaScript 语法
 IGNORE_PATTERNS = ["<br\\s*?/?>", ":[0-9a-z_\\-]+?:", "<u>.+?</u>", '<span style=".+?">.+?</span>']
 
 # ------------------- 换行符处理设置 -------------------
@@ -526,16 +530,16 @@ DEBOUNCE_INTERVAL = 70
 
 # ------------------- 默认搜索工具设置 -------------------
 # 默认搜索工具：当用户输入不匹配任何特定搜索工具时，使用的默认工具
-#   "": 不使用默认工具，只显示匹配的搜索工具
-#   plu: 插件搜索 (搜索已安装的插件)
-#   tab: 当前标签页搜索 (搜索当前打开的文件标签页)
-#   his: 最近文件搜索 (搜索最近打开过的文件)
-#   ops: 常用操作搜索 (搜索 Typora 的常用操作命令)
-#   mode: 切换文件模式搜索 (搜索 Typora 的文件模式，如源码模式、专注模式)
+#   "":    不使用默认工具，只显示匹配的搜索工具
+#   plu:   插件搜索 (搜索已安装的插件)
+#   tab:   当前标签页搜索 (搜索当前打开的文件标签页)
+#   his:   最近文件搜索 (搜索最近打开过的文件)
+#   ops:   常用操作搜索 (搜索 Typora 的常用操作命令)
+#   mode:  切换文件模式搜索 (搜索 Typora 的文件模式，如源码模式、专注模式)
 #   theme: 切换主题搜索 (搜索 Typora 的主题)
-#   out: 文档大纲搜索 (搜索当前文档的大纲)
-#   func: 功能列表搜索 (搜索 Typora 的所有功能)
-#   all: 混合查找 (搜索所有可用项目，包括以上所有工具)
+#   out:   文档大纲搜索 (搜索当前文档的大纲)
+#   func:  功能列表搜索 (搜索 Typora 的所有功能)
+#   all:   混合查找 (搜索所有可用项目，包括以上所有工具)
 DEFAULT_TOOL = "func"
 
 # ------------------- 负向搜索设置 -------------------
@@ -543,11 +547,11 @@ DEFAULT_TOOL = "func"
 #   true:  启用负向查询，使用 "-" 前缀表示排除关键字。例如："plu multi -search" 表示搜索包含 "multi" 但不包含 "search" 的插件
 #   false: 禁用负向查询，所有关键字都视为包含关系。例如："plu multi -search" 表示搜索包含 "multi" 和 "-search" 关键字的插件
 #   举例1：【plu multi -search】
-#      若为true： 查找【包含multi关键字，但是不包含search关键字】的插件
-#      若为false：查找【包含multi关键字，同时包含-search关键字】的插件
+#      若为true:  查找【包含multi关键字，但是不包含search关键字】的插件
+#      若为false: 查找【包含multi关键字，同时包含-search关键字】的插件
 #   举例2：【his close -win -mark 标签】
-#      若为true： 查找最近打开的文件，要求文件标题【包含close、标签，不包含win、mark】
-#      若为false：查找最近打开的文件，要求文件标题【包含close、-win、-mark、标签】
+#      若为true:  查找最近打开的文件，要求文件标题【包含close、标签，不包含win、mark】
+#      若为false: 查找最近打开的文件，要求文件标题【包含close、-win、-mark、标签】
 USE_NEGATIVE_SEARCH = true
 
 
@@ -576,8 +580,8 @@ BLUR_DEFAULT = false
 
 # ------------------- 模糊效果设置 -------------------
 # 模糊类型，控制非聚焦组件的显示方式
-#   "blur": 非聚焦组件变模糊
-#   "hide": 非聚焦组件直接隐藏
+#   blur: 非聚焦组件变模糊
+#   hide: 非聚焦组件直接隐藏
 BLUR_TYPE = "blur"
 
 # 鼠标悬停时可见：当鼠标悬停在非聚焦组件上时，是否使其恢复可见
@@ -650,9 +654,7 @@ PAGING = true
 PAGE_LENGTH = 25
 
 # 开启垂直滚动条(表格的高度)，<0则全部显示
-#   true:  固定滚动条高度
-#   false: 自动调整滚动条高度
-#   -1:    全部显示，不使用滚动条
+#   -1: 全部显示，不使用滚动条
 SCROLLY = -1
 
 # 当显示更少的记录时，是否允许表格减少高度
@@ -725,21 +727,21 @@ NAME = "Markmap"
 #   false: 禁用 TOC 功能，以下 TOC 相关配置将全部失效
 ENABLE_TOC_MARKMAP = true
 
-#  打开 TOC 功能的快捷键
+# 打开 TOC 功能的快捷键
 #   留空 "" 表示不设置快捷键
 TOC_HOTKEY = ""
 
-#  当大纲发生变化，是否自动更新图形
+# 当大纲发生变化，是否自动更新图形
 #   true:  每当大纲发生变化，会自动更新图形
 #   false: 当大纲发生变化，不会自动更新图形，图形会一直保持不变
 AUTO_UPDATE = true
 
-#  点击思维导图节点是否跳转到文档对应章节
+# 点击思维导图节点是否跳转到文档对应章节
 #   true:  点击节点后，页面会滚动到文档中对应的标题位置
 #   false: 点击节点不会跳转到文档
 CLICK_TO_LOCALE = true
 
-#  定位时，目标章节滚动到视口的高度位置百分比
+# 定位时，目标章节滚动到视口的高度位置百分比
 #   取值范围：0 到 1 之间的浮点数
 #   - 0: 目标章节滚动到视口顶部
 #   - 1: 目标章节滚动到视口底部
@@ -747,7 +749,7 @@ CLICK_TO_LOCALE = true
 #   仅当 CLICK_TO_LOCALE 为 true 时生效
 LOCALE_HEIGHT_RATIO = 0.2
 
-#  是否兼容文档中存在的跳级标题（违反 MD001 规范）
+# 是否兼容文档中存在的跳级标题（违反 MD001 规范）
 #   true:  允许文档中存在跳级标题，并在思维导图中正确显示
 #   false: 会过滤掉跳级标题，只显示符合规范的连续标题层级
 FIX_ERROR_LEVEL_HEADER = true
@@ -757,7 +759,7 @@ FIX_ERROR_LEVEL_HEADER = true
 #   false: 更新后图形大小保持不变，可能需要手动调整窗口大小
 AUTO_FIT_WHEN_UPDATE = true
 
-#  当用户调整窗口大小时，图形是否自动重新适配窗口大小
+# 当用户调整窗口大小时，图形是否自动重新适配窗口大小
 #   true:  调整窗口大小后，自动调整图形大小，保持最佳显示效果
 #   false: 调整窗口大小后图形大小保持不变，可能需要手动刷新
 AUTO_FIT_WHEN_RESIZE = true
@@ -767,12 +769,12 @@ AUTO_FIT_WHEN_RESIZE = true
 #   false: 更新后，所有节点将展开，需要重新手动折叠
 REMEMBER_FOLD_WHEN_UPDATE = true
 
-#  折叠思维导图节点时，是否自动折叠对应的章节内容（实验性特性，不推荐开启，依赖 collapse_paragraph 插件）
+# 折叠思维导图节点时，是否自动折叠对应的章节内容（实验性特性，不推荐开启，依赖 collapse_paragraph 插件）
 #   true:  折叠节点时，同时折叠文档中对应的章节内容
 #   false: 折叠节点时，不影响文档中的章节内容
 AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD = false
 
-#  初始化时，弹窗的宽度占窗口宽度的百分比
+# 初始化时，弹窗的宽度占窗口宽度的百分比
 #   取值范围：0 到 100 之间的整数
 WIDTH_PERCENT_WHEN_INIT = 90
 
@@ -868,24 +870,24 @@ DOWNLOAD_OPTIONS = { FILENAME = "{{filename}}_{{timestamp}}.svg", FOLDER = "", R
 #   false: 禁用 Fence 功能，以下 Fence 相关配置将全部失效
 ENABLE_FENCE_MARKMAP = true
 
-#  插入 markmap 代码块的快捷键
+# 插入 markmap 代码块的快捷键
 #   留空 "" 表示不设置快捷键
 FENCE_HOTKEY = ""
 
-#  插入 markmap 代码块时使用的代码块语言
+# 插入 markmap 代码块时使用的代码块语言
 #   强烈建议不要修改此项，如果修改，需要同时修改 FENCE_TEMPLATE 选项里的语言设置
 LANGUAGE = "markmap"
 
-#  插入的 markmap 代码块是否默认处于交互模式
+# 插入的 markmap 代码块是否默认处于交互模式
 #   true:  默认处于交互模式，鼠标点击图表不会展开代码块，需要点击 "编辑" 按钮才能展开
 #   false: 默认不处于交互模式，鼠标点击图表可以直接展开代码块
 INTERACTIVE_MODE = true
 
-#  插入 markmap 代码块的默认高度
+# 插入 markmap 代码块的默认高度
 #   可以使用 CSS 单位，例如 "300px", "20em", "50vh"
 DEFAULT_FENCE_HEIGHT = "300px"
 
-#  插入 markmap 代码块的默认背景颜色
+# 插入 markmap 代码块的默认背景颜色
 #   可以使用 CSS 颜色值，例如 "#f0f0f0", "white", "rgb(240, 240, 240)"
 DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 
@@ -1157,20 +1159,20 @@ CUSTOM_BUTTONS = [
 #   1. 和很多 IDE 的快捷键保持一致
 #   2. Typora 强制绑定了很多快捷键，实际可修改的快捷键并不多
 # Typora 强制绑定的快捷键如下
-#   - Ctrl-A:         selectAll,
-#   - Ctrl-Up:        goDocStart,
-#   - Ctrl-Down:      goDocEnd,
-#   - Ctrl-Left:      goGroupLeft,
-#   - Ctrl-Right:     goGroupRight,
-#   - Alt-Left:       goLineStart,
-#   - Alt-Right:      goLineEnd,
-#   - Ctrl-Backspace: delGroupBefore,
-#   - Ctrl-Delete:    delGroupAfter,
-#   - Ctrl-[:         indentLess,
-#   - Ctrl-]:         indentMore,
-#   - Ctrl-U:         undoSelection,
-#   - Shift-Ctrl-U:   redoSelection,
-#   - Alt-U:          redoSelection,
+#   - Ctrl-A        : selectAll
+#   - Ctrl-Up       : goDocStart
+#   - Ctrl-Down     : goDocEnd
+#   - Ctrl-Left     : goGroupLeft
+#   - Ctrl-Right    : goGroupRight
+#   - Alt-Left      : goLineStart
+#   - Alt-Right     : goLineEnd
+#   - Ctrl-Backspace: delGroupBefore
+#   - Ctrl-Delete   : delGroupAfter
+#   - Ctrl-[        : indentLess
+#   - Ctrl-]        : indentMore
+#   - Ctrl-U        : undoSelection
+#   - Shift-Ctrl-U  : redoSelection
+#   - Alt-U         : redoSelection
 ENABLE_HOTKEY = true
 
 # 将当前行和上一行互换
@@ -1406,30 +1408,30 @@ SHOW_MODAL_HOTKEY = ""
 
 # ------------------- 工具栏设置 -------------------
 # 工具栏的按钮：定义面板中显示的按钮及其顺序
-#   weight:                加粗
-#   italic:                斜体
-#   underline:             下划线
-#   throughline:           中划线
-#   overline:              上划线
-#   superScript:           上标
-#   subScript:             下标
-#   emphasis:              强调符号
-#   blur:                  模糊
-#   title:                 标题尺寸
-#   increaseSize:          增大尺寸 (字号)
-#   decreaseSize:          减小尺寸 (字号)
+#   weight               : 加粗
+#   italic               : 斜体
+#   underline            : 下划线
+#   throughline          : 中划线
+#   overline             : 上划线
+#   superScript          : 上标
+#   subScript            : 下标
+#   emphasis             : 强调符号
+#   blur                 : 模糊
+#   title                : 标题尺寸
+#   increaseSize         : 增大尺寸 (字号)
+#   decreaseSize         : 减小尺寸 (字号)
 #   increaseLetterSpacing: 增大字符间距
 #   decreaseLetterSpacing: 减小字符间距
-#   family:                字体
-#   foregroundColor:       前景色 (文字颜色)
-#   backgroundColor:       背景色
-#   borderColor:           边框颜色
-#   erase:                 移除格式
-#   blank:                 无功能，用于占位 (分隔按钮)
-#   setBrush:              设置格式刷
-#   useBrush:              使用格式刷
-#   move:                  移动工具栏
-#   close:                 关闭工具栏
+#   family               : 字体
+#   foregroundColor      : 前景色 (文字颜色)
+#   backgroundColor      : 背景色
+#   borderColor          : 边框颜色
+#   erase                : 移除格式
+#   blank                : 无功能，用于占位 (分隔按钮)
+#   setBrush             : 设置格式刷
+#   useBrush             : 使用格式刷
+#   move                 : 移动工具栏
+#   close                : 关闭工具栏
 TOOLBAR = [
     "weight", "italic", "underline", "throughline", "overline", "title", "superScript", "subScript",
     "emphasis", "blur", "increaseLetterSpacing", "decreaseLetterSpacing", "increaseSize", "decreaseSize", "family",
@@ -1467,7 +1469,7 @@ NUM_PER_LINE = 13
 # 默认颜色配置
 #   FOREGROUND: 默认前景色
 #   BACKGROUND: 默认背景色
-#   BORDER:     默认边框颜色
+#   BORDER    : 默认边框颜色
 DEFAULT_COLORS = { FOREGROUND = "#330000", BACKGROUND = "#FFFFFF", BORDER = "#330000" }
 
 
@@ -1847,9 +1849,9 @@ IGNORE_MIN_NUM = 0
 #   例如：设置为 2000000 表示文件大小限制为 2 MB
 MAX_SIZE = 2000000
 
-# Typora 允许打开的文件的后缀名列表，不在此列表中的文件在搜索时将被忽略
+# Typora 允许打开的文件的扩展名列表，不在此列表中的文件在搜索时将被忽略
 #   例如：["md", "txt"] 表示只统计 .md 和 .txt 文件
-#   空字符串 "" 表示所有无后缀名的文件
+#   空字符串 "" 表示所有无扩展名的文件
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 
 # 忽略的目录名列表，在此列表中的目录将被忽略，不进行文件计数

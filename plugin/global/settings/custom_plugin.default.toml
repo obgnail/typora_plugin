@@ -33,7 +33,7 @@ LANGUAGE = "kanban"
 # 严格模式：是否启用严格模式，严格模式下，插件不会忽略存在语法错误的代码行，而是在页面上直接报错
 #   true:  启用严格模式，所有看板都将强制进入严格模式，发生语法错误时会报错
 #   false: 关闭严格模式，所有看板都会忽略语法错误
-#   注意： 也可以在代码块首行添加 `use strict`，使得此代码块进入严格模式
+# 注意：也可以在代码块首行添加 `use strict`，使得此代码块进入严格模式
 STRICT_MODE = false
 
 # 交互模式：是否开启交互模式
@@ -135,13 +135,13 @@ INTERACTIVE_MODE = true
 
 # -------------------  默认选项配置  -------------------
 # 插件的默认选项，控制 Chat 代码块的显示行为
-#   useStrict:        是否开启严格模式
-#   showNickname:     是否显示昵称
-#   showAvatar:       是否显示头像
+#   useStrict       : 是否开启严格模式
+#   showNickname    : 是否显示昵称
+#   showAvatar      : 是否显示头像
 #   notAllowShowTime: 是否不允许显示时间
-#   allowMarkdown:    是否允许在消息内容中使用 Markdown 语法
-#   senderNickname:   默认的发送者昵称
-#   timeNickname:     表示时间的昵称
+#   allowMarkdown   : 是否允许在消息内容中使用 Markdown 语法
+#   senderNickname  : 默认的发送者昵称
+#   timeNickname    : 表示时间的昵称
 DEFAULT_OPIONS = { useStrict = true, showNickname = true, showAvatar = true, notAllowShowTime = false, allowMarkdown = true, senderNickname = "me", timeNickname = "time" }
 
 # ------------------- 模板设置 -------------------
@@ -298,7 +298,7 @@ INTERACTIVE_MODE = true
 # 渲染器：选择渲染器类型
 #   canvas: 使用 Canvas 渲染
 #   svg:    使用 SVG 渲染
-#   参考：https://echarts.apache.org/handbook/zh/best-practices/canvas-vs-svg/
+# 参考：https://echarts.apache.org/handbook/zh/best-practices/canvas-vs-svg/
 RENDERER = "svg"
 
 # 导出时 echarts 转成什么格式
@@ -781,10 +781,10 @@ hover_to_show_fold_callout = true
 font_family = "FontAwesome"
 
 # callout 的类型
-#  - type:             自定义的类型
+#  - type            : 自定义的类型
 #  - background_color: 背景颜色
-#  - left_line_color:  左侧竖线颜色
-#  - icon:             图标
+#  - left_line_color : 左侧竖线颜色
+#  - icon            : 图标
 list = [
     { type = "tip", background_color = "#d8f2e5", left_line_color = "#3abd7e", icon = "\\f02c" },
     { type = "bug", background_color = "#feeed3", left_line_color = "#E0AC00", icon = "\\f188" },
@@ -1042,7 +1042,6 @@ width_percent_when_pin_right = 20
 default_show_toc = false
 
 # 大纲目录的字体大小
-#   例如： "1em" , "12px"
 toc_font_size = "1em"
 
 # -------------------  展示名称配置 -------------------
@@ -1198,9 +1197,9 @@ tool_position = "top"
 first_image_strategies = ["inViewBoxImage", "firstImage"]
 
 # 在工具栏左侧，展示的图片信息
-#   index: 图片索引
-#   title: 图片名称
-#   size:  图片大小
+#   - index: 图片索引
+#   - title: 图片名称
+#   - size:  图片大小
 #   例如： ["index", "title", "size"] 将会显示图片索引、图片名称和图片大小
 show_message = ["index", "title", "size"]
 
@@ -1264,36 +1263,36 @@ water_fall_columns = 5
 
 # ------------------- 图片操作配置 -------------------
 # 图片支持的操作，以下为可选的操作类型
-#  - dummy:          无功能
-#  - close:          关闭
-#  - download:       下载网络图片（若此图片是本地图片，则失效）
-#  - scroll:         定位到文档
-#  - play:           轮播
-#  - location:       打开图片路径
-#  - nextImage:      下一张图
-#  - previousImage:  上一张图
-#  - firstImage:     第一张图
-#  - lastImage:      最后一张图
-#  - thumbnailNav:   显示/隐藏缩略图列表
-#  - waterFall:      显示/隐藏瀑布流
-#  - zoomIn:         放大图片
-#  - zoomOut:        缩小图片
-#  - rotateLeft:     图片向左旋转
-#  - rotateRight:    图片向右旋转
-#  - hFlip:          水平翻转图片
-#  - vFlip:          垂直翻转图片
-#  - translateLeft:  向左移动
+#  - dummy         : 无功能
+#  - close         : 关闭
+#  - download      : 下载网络图片（若此图片是本地图片，则失效）
+#  - scroll        : 定位到文档
+#  - play          : 轮播
+#  - location      : 打开图片路径
+#  - nextImage     : 下一张图
+#  - previousImage : 上一张图
+#  - firstImage    : 第一张图
+#  - lastImage     : 最后一张图
+#  - thumbnailNav  : 显示/隐藏缩略图列表
+#  - waterFall     : 显示/隐藏瀑布流
+#  - zoomIn        : 放大图片
+#  - zoomOut       : 缩小图片
+#  - rotateLeft    : 图片向左旋转
+#  - rotateRight   : 图片向右旋转
+#  - hFlip         : 水平翻转图片
+#  - vFlip         : 垂直翻转图片
+#  - translateLeft : 向左移动
 #  - translateRight: 向右移动
-#  - translateUp:    向上移动
-#  - translateDown:  向下移动
-#  - incHSkew:       图片增大水平倾斜
-#  - decHSkew:       图片减小水平倾斜
-#  - incVSkew:       图片增大垂直倾斜
-#  - decVSkew:       图片减小垂直倾斜
-#  - originSize:     还原图片尺寸
-#  - fixScreen:      图片大小适配屏幕
-#  - autoSize:       图片大小在【原先尺寸】和【适配屏幕】之间切换
-#  - restore:        图片恢复为最初状态
+#  - translateUp   : 向上移动
+#  - translateDown : 向下移动
+#  - incHSkew      : 图片增大水平倾斜
+#  - decHSkew      : 图片减小水平倾斜
+#  - incVSkew      : 图片增大垂直倾斜
+#  - decVSkew      : 图片减小垂直倾斜
+#  - originSize    : 还原图片尺寸
+#  - fixScreen     : 图片大小适配屏幕
+#  - autoSize      : 图片大小在【原先尺寸】和【适配屏幕】之间切换
+#  - restore       : 图片恢复为最初状态
 
 # 图片的操作提供多个入口
 #  - 工具栏按钮
@@ -1479,7 +1478,8 @@ hotkey = ""
 # 打开 Typora （打开可丢弃的无标题的标签时）自动恢复上次退出时尚未关闭的标签页
 #   true:  在满足条件的情况下，自动恢复上次未关闭的标签页
 #   false: 不自动恢复
-#   注意：此功能只当双击 typora.exe 打开 Typora 时生效（因为打开特定文件时，自动恢复上次退出时尚未关闭的标签页，明显不符合用户预期）
+# 注意1：此功能仅当 Typora 自身的配置【启动选项】选择【打开指定目录】或【重新打开上次使用的目录】时生效
+# 注意2：此功能仅当双击 typora.exe 打开 Typora 时生效（打开特定文件时自动恢复上次退出时尚未关闭的标签页，明显不符合用户预期）
 auto_reopen_when_init = true
 
 
@@ -1574,7 +1574,7 @@ buttons = [
     #   弹窗提示
     { disable = true, coordinate = [4, 0], hint = "危险操作", size = "17px", icon = "ion-asterisk", color = "#f0f8ff", bgColor = "#ff4500", evil = "() => window.confirm('this is message')" },
     #   在光标处插入 javascript 代码块
-    { disable = true, coordinate = [4, 1], hint = "危险操作", size = "17px", icon = "ion-alert-circled", evil = '() => this.utils.insertText(null, "```javascript\n```", false);' },
+    { disable = true, coordinate = [4, 1], hint = "危险操作", size = "17px", icon = "ion-alert-circled", evil = '() => this.utils.insertText(null, "```javascript\n```", false)' },
     #   打开 windows 计算器
     { disable = true, coordinate = [5, 0], hint = "危险操作", size = "17px", icon = "ion-bug", evil = "() => this.utils.Package.ChildProcess.exec('cmd /C calc')" },
     #   打开网址

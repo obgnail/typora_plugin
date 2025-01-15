@@ -14,7 +14,8 @@ class helpPlugin extends BasePlugin {
             { act_name: "卸载插件", act_value: "uninstall_plugin" },
             { act_name: "修改配置", act_value: "open_setting_folder" },
             { act_name: "备份配置", act_value: "backup_setting_file" },
-            { act_name: "环境信息", act_value: "environment" },
+            { act_name: "查看配置", act_value: "show_setting" },
+            { act_name: "环境信息", act_value: "show_env" },
             { act_name: "修改样式", act_value: "set_user_styles", act_hint },
             { act_name: "我要写插件", act_value: "new_custom_plugin", act_hint },
             { act_name: "Typora 自动化", act_value: "json_rpc", act_hint },
@@ -68,6 +69,13 @@ class helpPlugin extends BasePlugin {
         const info = await this.getInfo();
         const components = [{ label: "", type: "textarea", rows: 15, content: JSON.stringify(info, null, "\t") }];
         await this.utils.dialog.modalAsync({ title: "环境信息", width: "600px", components });
+    }
+
+    showSetting = async () => {
+        const [base, custom] = await Promise.all([this.utils.runtime.readBasePluginSetting(), this.utils.runtime.readCustomPluginSetting()])
+        const toTextarea = setting => ({ label: "", type: "textarea", rows: 15, content: this.utils.stringifyToml(setting) })
+        const components = [toTextarea(base), toTextarea(custom)]
+        await this.utils.dialog.modalAsync({ title: "插件配置", width: "600px", components })
     }
 
     about = () => {
@@ -188,9 +196,10 @@ class helpPlugin extends BasePlugin {
             json_rpc: () => this.utils.showInFinder(this.utils.joinPath("./plugin/json_rpc/请读我.md")),
             github_picture_bed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
             update_plugin: () => this.updater && this.updater.call(),
-            preferences:() => this.preferences && this.preferences.call(),
+            preferences: () => this.preferences && this.preferences.call(),
+            show_setting: () => this.showSetting(),
             uninstall_plugin: () => this.uninstall(),
-            environment: () => this.showEnv(),
+            show_env: () => this.showEnv(),
             donate: () => this.donate(),
             about: () => this.about(),
         }

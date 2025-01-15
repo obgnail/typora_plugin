@@ -15,7 +15,7 @@
 | #    | 插件                    | 功能                                   | 默认启用 |
 | ---- | ----------------------- | -------------------------------------- | -------- |
 | 1    | window_tab              | 标签页管理                             |          |
-| 2    | search_multi            | 多关键字搜索                           |          |
+| 2    | search_multi            | 多元文件搜索                           |          |
 | 3    | collapse_paragraph      | 章节折叠                               | ×        |
 | 4    | collapse_list           | 列表折叠                               | ×        |
 | 5    | collapse_table          | 表格折叠                               | ×        |
@@ -198,7 +198,7 @@ yay -S typora-plugin
 
 
 
-### search_multi：多关键字搜索
+### search_multi：多元文件搜索
 
 功能：比如搜索同时包含 `golang` 和 `install` 和 `生命周期` 三个关键字的文件。
 

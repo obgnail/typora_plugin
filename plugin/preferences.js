@@ -2,8 +2,7 @@ class preferencesPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     getSettings = async () => {
-        const base = await this.utils.runtime.readBasePluginSetting()
-        const custom = await this.utils.runtime.readCustomPluginSetting()
+        const [base, custom] = await Promise.all([this.utils.runtime.readBasePluginSetting(), this.utils.runtime.readCustomPluginSetting()])
         delete base.global
         return [base, custom]
     }

@@ -1,4 +1,4 @@
-class searchMultiKeywordPlugin extends BasePlugin {
+class searchMultiPlugin extends BasePlugin {
     styleTemplate = () => {
         const colors_style = this.config.STYLE_COLOR
             .map((color, idx) => `.cm-plugin-highlight-hit-${idx} { background-color: ${color} !important; }`)
@@ -162,26 +162,25 @@ class searchMultiKeywordPlugin extends BasePlugin {
     searchMultiByAST = async (rootPath, ast) => {
         const { fileFilter, dirFilter } = this._getFilter()
         const matcher = source => this.searcher.match(ast, source)
-        const callback = this._showResultItem(rootPath, matcher)
+        const callback = this._showSearchResult(rootPath, matcher)
         await this._traverseDir(rootPath, fileFilter, dirFilter, callback)
     }
 
     _getFilter = () => {
-        const verifyExt = filename => {
-            if (filename.startsWith(".")) return false
-            const ext = this.utils.Package.Path.extname(filename).toLowerCase()
+        const verifyExt = path => {
+            const ext = this.utils.Package.Path.extname(path).toLowerCase()
             const extension = ext.startsWith(".") ? ext.slice(1) : ext
             return this.allowedExtensions.has(extension)
         }
-        const verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE
-        const fileFilter = (filepath, stat) => verifySize(stat) && verifyExt(filepath)
+        const verifySize = 0 > this.config.MAX_SIZE ? () => true : stat => stat.size < this.config.MAX_SIZE
+        const fileFilter = (path, stat) => verifySize(stat) && verifyExt(path)
         const dirFilter = path => !this.config.IGNORE_FOLDERS.includes(path)
         return { fileFilter, dirFilter }
     }
 
-    _showResultItem = (rootPath, matcher) => {
-        const newResultItem = (rootPath, filePath, stats) => {
-            const { dir, base } = this.utils.Package.Path.parse(filePath)
+    _showSearchResult = (rootPath, matcher) => {
+        const newItem = (rootPath, filePath, stats) => {
+            const { dir, base, name } = this.utils.Package.Path.parse(filePath)
             const dirPath = this.config.RELATIVE_PATH ? dir.replace(rootPath, ".") : dir
 
             const item = document.createElement("div")
@@ -194,7 +193,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
 
             const title = document.createElement("div")
             title.className = "plugin-search-multi-item-title"
-            title.textContent = base
+            title.textContent = this.config.SHOW_EXT ? base : name
 
             const path = document.createElement("div")
             path.className = "plugin-search-multi-item-path"
@@ -209,7 +208,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
         return source => {
             if (matcher(source)) {
                 index++
-                this.entities.resultList.appendChild(newResultItem(rootPath, source.path, source.stats))
+                this.entities.resultList.appendChild(newItem(rootPath, source.path, source.stats))
                 this.entities.resultCounter.textContent = index
                 showResult()
             }
@@ -226,8 +225,8 @@ class searchMultiKeywordPlugin extends BasePlugin {
                 const stats = await stat(path)
                 if (stats.isFile()) {
                     if (fileFilter(path, stats)) {
-                        const buffer = await readFile(path)
-                        callback({ path, file, stats, buffer })
+                        const content = await readFile(path)
+                        callback({ path, file, stats, content })
                     }
                 } else if (stats.isDirectory()) {
                     if (dirFilter(file)) {
@@ -264,7 +263,7 @@ class searchMultiKeywordPlugin extends BasePlugin {
 }
 
 class QualifierMixin {
-    static _toTimestamp = date => new Date(date).setHours(0, 0, 0, 0)
+    static _normalizeDate = date => new Date(date).setHours(0, 0, 0, 0)
 
     static OPERATOR = {
         ":": (a, b) => a.includes(b),
@@ -353,11 +352,11 @@ class QualifierMixin {
             }
             return parseFloat(match[1]) * this.UNITS[unit]
         },
-        toDate: this._toTimestamp,
+        toDate: this._normalizeDate,
     }
 
     static QUERY = {
-        toDate: this._toTimestamp,
+        normalizeDate: this._normalizeDate,
     }
 
     static MATCH = {
@@ -372,9 +371,20 @@ class QualifierMixin {
  * The matching process consists of the following steps: (Steps 1-3 are executed once; steps 4-5 are executed multiple times)
  *   1. parse:    Parses the input to generate an AST.
  *   2. validate: Validates the AST for correctness.
- *   3. cast:     Converts operand within the AST nodes into a usable format (e.g. converting '2024-01-01' in 'time>2024-01-01' to a Date object for easier matching). The result is `castResult`.
+ *   3. cast:     Converts operand within the AST nodes into a usable format (e.g. converting '2024-01-01' in 'time>2024-01-01' to a timestamp for easier matching). The result is `castResult`.
  *   4. query:    Queries the file data to obtain `queryResult`.
  *   5. match:    Matches `castResult` from step 3 with `queryResult` from step 4.
+ *
+ * A qualifier has the following attributes:
+ *   {string}   scope:         Qualifier scope
+ *   {string}   name:          Name for explain
+ *   {boolean}  is_meta:       Is Qualifier scope a metadata property
+ *   {function} validate:      Checks user input; defaults to `QualifierMixin.VALIDATE.isStringOrRegexp`
+ *   {function} cast:          Converts user input for easier matching and obtain castResult; defaults to `QualifierMixin.CAST.toStringOrRegexp`
+ *   {function} query:         Retrieves data from source and obtain queryResult
+ *   {function} match_keyword: Matches castResult with queryResult when the user input is a keyword; defaults to `QualifierMixin.MATCH.compare`
+ *   {function} match_phrase:  Matches castResult with queryResult when the user input is a phrase; behaves the same as `match_keyword` by default
+ *   {function} match_regexp:  Matches castResult with queryResult when the user input is a regexp; defaults to `QualifierMixin.MATCH.regexp`
  */
 class Searcher {
     constructor(plugin) {
@@ -398,40 +408,31 @@ class Searcher {
         this.parser.setQualifier(qualifiers.map(q => q.scope), [...Object.keys(this.MIXIN.OPERATOR)])
     }
 
-    /**
-     * {string}   scope:         Qualifier scope
-     * {string}   name:          Name for explain
-     * {boolean}  is_meta:       Is Qualifier scope a metadata property
-     * {function} validate:      Checks user input; defaults to `this.MIXIN.VALIDATE.isStringOrRegexp`
-     * {function} cast:          Converts user input for easier matching; defaults to `this.MIXIN.CAST.toStringOrRegexp`
-     * {function} query:         Retrieves data from source
-     * {function} match_keyword: Matches castResult with queryResult when the user input is a keyword; defaults to `this.MIXIN.MATCH.compare`
-     * {function} match_phrase:  Matches castResult with queryResult when the user input is a phrase; behaves the same as `match_keyword` by default
-     * {function} match_regexp:  Matches castResult with queryResult when the user input is a regexp; defaults to `this.MIXIN.MATCH.regexp`
-     */
     buildBaseQualifiers() {
         const QUERY = {
-            default: ({ path, file, stats, buffer }) => `${buffer.toString()}\n${path}`,
-            path: ({ path, file, stats, buffer }) => path,
-            file: ({ path, file, stats, buffer }) => file,
-            dir: ({ path, file, stats, buffer }) => this.utils.Package.Path.dirname(path),
-            ext: ({ path, file, stats, buffer }) => this.utils.Package.Path.extname(file),
-            content: ({ path, file, stats, buffer }) => buffer.toString(),
-            time: ({ path, file, stats, buffer }) => this.MIXIN.QUERY.toDate(stats.mtime),
-            size: ({ path, file, stats, buffer }) => stats.size,
-            linenum: ({ path, file, stats, buffer }) => buffer.toString().split("\n").length,
-            charnum: ({ path, file, stats, buffer }) => buffer.toString().length,
-            crlf: ({ path, file, stats, buffer }) => buffer.toString().includes("\r\n"),
-            hasimage: ({ path, file, stats, buffer }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(buffer.toString()),
-            haschinese: ({ path, file, stats, buffer }) => /\p{sc=Han}/gu.test(buffer.toString()),
-            line: ({ path, file, stats, buffer }) => buffer.toString().split("\n").map(e => e.trim()),
-            frontmatter: ({ path, file, stats, buffer }) => {
-                const { yamlObject } = this.utils.splitFrontMatter(buffer.toString())
+            default: ({ path, file, stats, content }) => `${content.toString()}\n${path}`,
+            path: ({ path, file, stats, content }) => path,
+            dir: ({ path, file, stats, content }) => this.utils.Package.Path.dirname(path),
+            file: ({ path, file, stats, content }) => file,
+            name: ({ path, file, stats, content }) => this.utils.Package.Path.parse(file).name,
+            ext: ({ path, file, stats, content }) => this.utils.Package.Path.extname(file),
+            size: ({ path, file, stats, content }) => stats.size,
+            time: ({ path, file, stats, content }) => this.MIXIN.QUERY.normalizeDate(stats.mtime),
+            birthtime: ({ path, file, stats, buffer }) => this.MIXIN.QUERY.normalizeDate(stats.birthtime),
+            content: ({ path, file, stats, content }) => content.toString(),
+            linenum: ({ path, file, stats, content }) => content.toString().split("\n").length,
+            charnum: ({ path, file, stats, content }) => content.toString().length,
+            crlf: ({ path, file, stats, content }) => content.toString().includes("\r\n"),
+            hasimage: ({ path, file, stats, content }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(content.toString()),
+            haschinese: ({ path, file, stats, content }) => /\p{sc=Han}/gu.test(content.toString()),
+            line: ({ path, file, stats, content }) => content.toString().split("\n").map(e => e.trim()),
+            frontmatter: ({ path, file, stats, content }) => {
+                const { yamlObject } = this.utils.splitFrontMatter(content.toString())
                 return yamlObject ? JSON.stringify(yamlObject) : ""
             },
-            chinesenum: ({ path, file, stats, buffer }) => {
+            chinesenum: ({ path, file, stats, content }) => {
                 let count = 0
-                for (const _ of buffer.toString().matchAll(/\p{sc=Han}/gu)) {
+                for (const _ of content.toString().matchAll(/\p{sc=Han}/gu)) {
                     count++
                 }
                 return count
@@ -440,13 +441,15 @@ class Searcher {
         return [
             { scope: "default", name: "内容或路径", is_meta: false, query: QUERY.default },
             { scope: "path", name: "路径", is_meta: true, query: QUERY.path },
+            { scope: "dir", name: "文件所属目录", is_meta: true, query: QUERY.dir },
             { scope: "file", name: "文件名", is_meta: true, query: QUERY.file },
-            { scope: "dir", name: "所属目录", is_meta: true, query: QUERY.dir },
+            { scope: "name", name: "无扩展名文件名", is_meta: true, query: QUERY.name },
             { scope: "ext", name: "扩展名", is_meta: true, query: QUERY.ext },
             { scope: "content", name: "内容", is_meta: false, query: QUERY.content },
             { scope: "frontmatter", name: "FrontMatter", is_meta: false, query: QUERY.frontmatter },
-            { scope: "time", name: "修改时间", is_meta: true, query: QUERY.time, validate: this.MIXIN.VALIDATE.isDate, cast: this.MIXIN.CAST.toDate },
             { scope: "size", name: "文件大小", is_meta: true, query: QUERY.size, validate: this.MIXIN.VALIDATE.isSize, cast: this.MIXIN.CAST.toBytes },
+            { scope: "time", name: "修改时间", is_meta: true, query: QUERY.time, validate: this.MIXIN.VALIDATE.isDate, cast: this.MIXIN.CAST.toDate },
+            { scope: "birthtime", name: "创建时间", is_meta: true, query: QUERY.birthtime, validate: this.MIXIN.VALIDATE.isDate, cast: this.MIXIN.CAST.toDate },
             { scope: "linenum", name: "行数", is_meta: true, query: QUERY.linenum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
             { scope: "charnum", name: "字符数", is_meta: true, query: QUERY.charnum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
             { scope: "chinesenum", name: "中文字符数", is_meta: true, query: QUERY.chinesenum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
@@ -580,7 +583,7 @@ class Searcher {
         }
         const buildQuery = (parser, filter, transformer) => {
             return source => {
-                const content = source.buffer.toString()
+                const content = source.content.toString()
                 const ast = parser(content)
                 const nodes = preorder(ast, filter)
                 return nodes.flatMap(transformer).filter(Boolean)
@@ -871,7 +874,7 @@ class Searcher {
 <operator> ::= ${operator.map(s => `'${s}'`).join(" | ")}
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
-        const desc = `高级搜索通过组合不同的条件来精确查找文件。每个条件由三部分组成：搜索符、操作符、关键字，例如 size>2kb（含义：文件尺寸大于 2KB）、ext:txt（含义：文件扩展名包含 txt）。
+        const desc = `多元文件搜索通过组合不同的条件来精确查找文件。每个条件由三部分组成：搜索符、操作符、关键字，例如 size>2kb（含义：文件尺寸大于 2KB）、ext:txt（含义：文件扩展名包含 txt）。
 条件之间用空格分隔，表示所有条件都必须满足，例如 size>2kb ext:txt；如果只需满足其一条件，请使用 OR 连接，例如 size>2kb OR ext:txt；如果需满足前者，并且排除后者，请使用 - 连接，例如 size>2kb -ext:txt`
         const components = [
             { label: desc, type: "blockquote" },
@@ -881,7 +884,7 @@ class Searcher {
             { label: "形式文法", type: "p" },
             { label: "", type: "textarea", rows: 20, content },
         ]
-        this.utils.dialog.modal({ title: "高级搜索", width: "600px", components })
+        this.utils.dialog.modal({ title: "多元文件搜索", width: "600px", components })
     }
 }
 
@@ -1265,5 +1268,5 @@ class Highlighter {
 }
 
 module.exports = {
-    plugin: searchMultiKeywordPlugin
+    plugin: searchMultiPlugin
 }
