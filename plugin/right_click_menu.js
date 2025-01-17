@@ -115,7 +115,11 @@ class rightClickMenuPlugin extends BasePlugin {
             class_.push("disabled")
         }
         const extra = { "ty-hint": act.act_hint || undefined, class_ }
-        const state = act.act_state ? "state-on" : "state-off"
+        const state = (this.config.SHOW_ACTION_OPTIONS_ICON && act.act_state === undefined)
+            ? "state-run"
+            : Boolean(act.act_state)
+                ? "state-on"
+                : "state-off"
         return this._liTemplate(act.act_value, act.act_name, act.act_hotkey, false, state, extra)
     }
 
@@ -152,30 +156,26 @@ class rightClickMenuPlugin extends BasePlugin {
         }
     }
 
-    showMenuItem = ($after, $before) => {
-        const margin = 6;
-        const { left, top, width, height } = $before[0].getBoundingClientRect();
-        let afterTop = top - height;
-        let afterLeft = left + width + margin;
+    showMenuItem = (after, before) => {
+        const margin = 6
+        const { left, top, width, height } = before.getBoundingClientRect()
+        let afterTop = top - height
+        let afterLeft = left + width + margin
 
-        const footer = document.querySelector("footer");
-        const footerHeight = footer ? footer.getBoundingClientRect().height : 0;
+        const footer = document.querySelector("footer")
+        const footerHeight = footer ? footer.getBoundingClientRect().height : 0
 
-        $after.addClass("show");
-        const { height: afterHeight, width: afterWidth } = $after[0].getBoundingClientRect();
-        afterTop = Math.min(afterTop, window.innerHeight - afterHeight - footerHeight);
-        afterLeft = afterLeft + afterWidth < window.innerWidth ? afterLeft : Math.max(0, left - afterWidth - margin);
-
-        $after.css({ top: afterTop + "px", left: afterLeft + "px" });
+        after.classList.add("show")
+        const { height: afterHeight, width: afterWidth } = after.getBoundingClientRect()
+        afterTop = Math.min(afterTop, window.innerHeight - afterHeight - footerHeight)
+        afterLeft = afterLeft + afterWidth < window.innerWidth ? afterLeft : Math.max(0, left - afterWidth - margin)
+        after.style.top = afterTop + "px"
+        after.style.left = afterLeft + "px"
     }
 
-    appendThirdLi = ($menu, dynamicActions) => {
+    appendThirdLi = (menu, dynamicActions) => {
         const templates = dynamicActions.map(act => this.thirdLiTemplate(act, true))
-        this.utils.htmlTemplater.appendElements($menu, templates)
-    }
-    appendDummyThirdLi = $menu => {
-        const dynamicActions = [{ act_name: this.unavailableActName, act_value: this.unavailableActValue, act_disabled: true }]
-        return this.appendThirdLi($menu, dynamicActions)
+        this.utils.htmlTemplater.appendElements(menu, templates)
     }
 
     listen = () => {
@@ -185,7 +185,7 @@ class rightClickMenuPlugin extends BasePlugin {
 
         // 点击一级菜单
         $("#context-menu").on("click", `[data-key="${this.noExtraMenuGroupName}"]`, function () {
-            const value = this.getAttribute("data-value")
+            const value = this.dataset.value
             if (!value) {
                 return false
             }
@@ -198,17 +198,15 @@ class rightClickMenuPlugin extends BasePlugin {
             that.hideMenuIfNeed()
             // 展示二级菜单
         }).on("mouseenter", "[data-key]", function () {
-            const $first = $(this)
-            if (that.groupName === $first.attr("data-key")) {
+            if (that.groupName === this.dataset.key) {
                 const idx = this.getAttribute("idx")
                 if (document.querySelector(".plugin-menu-second.show")) {
                     document.querySelectorAll(`.plugin-menu-third:not([idx="${idx}"])`).forEach(removeShow)
                 }
-                const otherSecond = document.querySelectorAll(`.plugin-menu-second:not([idx="${idx}"])`)
-                otherSecond.forEach(ele => ele.querySelectorAll(".plugin-menu-item.active").forEach(removeActive))
-                otherSecond.forEach(removeShow)
-                that.showMenuItem($(`.plugin-menu-second[idx="${idx}"]`), $first)
-                $first.addClass("active")
+                document.querySelectorAll(`.plugin-menu-second:not([idx="${idx}"]) .plugin-menu-item.active`).forEach(removeActive)
+                document.querySelectorAll(`.plugin-menu-second:not([idx="${idx}"])`).forEach(removeShow)
+                that.showMenuItem(document.querySelector(`.plugin-menu-second[idx="${idx}"]`), this)
+                this.classList.add("active")
             } else {
                 document.querySelectorAll(`#context-menu li[data-key="${that.groupName}"]`).forEach(removeActive)
                 document.querySelectorAll(".plugin-menu-second, .plugin-menu-third").forEach(removeShow)
@@ -217,27 +215,27 @@ class rightClickMenuPlugin extends BasePlugin {
 
         // 展示三级菜单
         $(".plugin-menu-second").on("mouseenter", "[data-key]", function () {
-            const $second = $(this)
             document.querySelectorAll(".plugin-menu-third").forEach(removeShow)
             document.querySelectorAll(".plugin-dynamic-act").forEach(ele => ele.parentElement.removeChild(ele))
-            const fixedName = $second.attr("data-key")
-            const $third = $(`.plugin-menu-third[data-plugin="${fixedName}"]`)
-            const dynamicActions = that.utils.updatePluginDynamicActions(fixedName)
+            const fixedName = this.dataset.key
+            const third = document.querySelector(`.plugin-menu-third[data-plugin="${fixedName}"]`)
+            const noStaticActions = third && third.children.length === 0
+            let dynamicActions = that.utils.updatePluginDynamicActions(fixedName)
+            if (!dynamicActions && noStaticActions) {
+                dynamicActions = [{ act_name: this.unavailableActName, act_value: this.unavailableActValue, act_disabled: true }]
+            }
             if (dynamicActions) {
-                that.appendThirdLi($third, dynamicActions)
+                that.appendThirdLi(third, dynamicActions)
             }
-            if ($third.children().length === 0) {
-                that.appendDummyThirdLi($third)
-            }
-            if ($second.find('span[data-lg="Menu"]').length) {
-                that.showMenuItem($third, $second)
+            if (this.querySelector('span[data-lg="Menu"]')) {
+                that.showMenuItem(third, this)
             } else {
                 removeActive(document.querySelector(".plugin-menu-second .has-extra-menu"))
             }
             // 在二级菜单中调用插件
         }).on("click", "[data-key]", function () {
-            const fixedName = this.getAttribute("data-key")
-            const action = this.getAttribute("data-value")
+            const fixedName = this.dataset.key
+            const action = this.dataset.value
             if (action) {
                 that.callPluginDynamicAction(fixedName, action)
             } else {
@@ -259,8 +257,8 @@ class rightClickMenuPlugin extends BasePlugin {
             if (this.classList.contains("disabled")) {
                 return false
             }
-            const fixedName = this.parentElement.getAttribute("data-plugin")
-            const action = this.getAttribute("data-key")
+            const action = this.dataset.key
+            const fixedName = this.parentElement.dataset.plugin
             that.callPluginDynamicAction(fixedName, action)
             that.hideMenuIfNeed(fixedName)
         })
@@ -283,19 +281,15 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     toggleHotkey = () => {
-        this.config.SHOW_PLUGIN_HOTKEY = !this.config.SHOW_PLUGIN_HOTKEY;
-        const toggle = func => {
-            const fn = menu => menu.querySelectorAll(".ty-menu-shortcut").forEach(e => e.classList[func]("plugin-common-hidden"));
-            document.querySelectorAll(".plugin-menu-second, .plugin-menu-third").forEach(fn);
-        }
-        const fn = this.config.SHOW_PLUGIN_HOTKEY ? "remove" : "add";
-        toggle(fn);
+        this.config.SHOW_PLUGIN_HOTKEY = !this.config.SHOW_PLUGIN_HOTKEY
+        const toggle = e => e.classList.toggle("plugin-common-hidden", !this.config.SHOW_PLUGIN_HOTKEY)
+        document.querySelectorAll(".plugin-menu-second .ty-menu-shortcut, .plugin-menu-third .ty-menu-shortcut").forEach(toggle)
     }
 
     getDynamicActions = () => [
         { act_name: "启用功能：保持显示", act_value: "do_not_hide", act_state: this.config.DO_NOT_HIDE, act_hint: "右键菜单点击后不会自动消失" },
-        { act_name: "启用功能：隐藏除插件外的选项", act_value: "hide_other_options", act_state: this.config.HIDE_OTHER_OPTIONS },
         { act_name: "启用功能：显示快捷键", act_value: "toggle_hotkey", act_state: this.config.SHOW_PLUGIN_HOTKEY, act_hidden: !this.supportShortcut },
+        { act_name: "启用功能：隐藏除插件外的选项", act_value: "hide_other_options", act_state: this.config.HIDE_OTHER_OPTIONS },
     ]
 
     call = async action => {

@@ -1,4 +1,5 @@
-.plugin-menu-second.ext-context-menu, .plugin-menu-third.ext-context-menu {
+.plugin-menu-second.ext-context-menu,
+.plugin-menu-third.ext-context-menu {
     min-width: ${menu_min_width};
 }
 
@@ -9,3 +10,16 @@
 .ty-menu-shortcut {
     padding-left: 1em;
 }
+
+.context-menu .state-run:before {
+    content: '\2B7E';
+    margin-left: -10px;
+    margin-right: 10px;
+}
+
+/*.plugin-menu-second .state-off:before,*/
+/*.plugin-menu-third .state-off:before {*/
+/*    content: '\2717' !important;*/
+/*    margin-left: -10px;*/
+/*    margin-right: 10px;*/
+/*}*/
