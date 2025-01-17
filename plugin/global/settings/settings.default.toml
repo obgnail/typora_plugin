@@ -173,14 +173,6 @@ COPY_PATH_HOTKEY = []
 #     sortTabs:        按照文件名排序标签页
 CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "sortTabs", "copyPath", "showInFinder", "openInNewWindow"]
 
-# -------------------  链接跳转拦截设置 -------------------
-# 拦截内部和本地文件链接：Typora 1.1 版本以后支持使用锚点跳转到本地文件，是否拦截处理，将跳转行为改为新建标签页
-# 参考1：https://support.typora.io/zh/What's-New-1.1/#文件链接
-# 参考2：https://support.typora.io/Links/#internal-links
-#   true:  拦截并使用新标签页打开
-#   false: 使用 Typora 默认的方式打开
-INTERCEPT_INTERNAL_AND_LOCAL_LINKS = true
-
 
 ################### search_multi ###################
 [search_multi]
