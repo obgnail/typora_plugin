@@ -9,7 +9,7 @@ class searchMultiPlugin extends BasePlugin {
     html = () => `
         <div id="plugin-search-multi" class="plugin-common-modal plugin-common-hidden">
             <div id="plugin-search-multi-input">
-                <input type="text">
+                <input type="text" placeholder="多元文件搜索">
                 <div class="plugin-search-multi-btn-group">
                     <span class="option-btn" action="searchGrammarModal" ty-hint="搜索语法">
                         <div class="ion-information-circled"></div>
@@ -409,17 +409,24 @@ class Searcher {
     }
 
     buildBaseQualifiers() {
+        const {
+            VALIDATE: { isSize, isDate, isNumber, isBoolean },
+            CAST: { toBytes, toDate, toNumber, toBoolean },
+            MATCH: { arrayCompare, arrayRegexp },
+            QUERY: { normalizeDate },
+        } = this.MIXIN
+        const { splitFrontMatter, Package } = this.utils
         const QUERY = {
             default: ({ path, file, stats, content }) => `${content.toString()}\n${path}`,
             path: ({ path, file, stats, content }) => path,
-            dir: ({ path, file, stats, content }) => this.utils.Package.Path.dirname(path),
+            dir: ({ path, file, stats, content }) => Package.Path.dirname(path),
             file: ({ path, file, stats, content }) => file,
-            name: ({ path, file, stats, content }) => this.utils.Package.Path.parse(file).name,
-            ext: ({ path, file, stats, content }) => this.utils.Package.Path.extname(file),
+            name: ({ path, file, stats, content }) => Package.Path.parse(file).name,
+            ext: ({ path, file, stats, content }) => Package.Path.extname(file),
             size: ({ path, file, stats, content }) => stats.size,
-            atime: ({ path, file, stats, content }) => this.MIXIN.QUERY.normalizeDate(stats.atime),
-            mtime: ({ path, file, stats, content }) => this.MIXIN.QUERY.normalizeDate(stats.mtime),
-            birthtime: ({ path, file, stats, buffer }) => this.MIXIN.QUERY.normalizeDate(stats.birthtime),
+            atime: ({ path, file, stats, content }) => normalizeDate(stats.atime),
+            mtime: ({ path, file, stats, content }) => normalizeDate(stats.mtime),
+            birthtime: ({ path, file, stats, buffer }) => normalizeDate(stats.birthtime),
             content: ({ path, file, stats, content }) => content.toString(),
             linenum: ({ path, file, stats, content }) => content.toString().split("\n").length,
             charnum: ({ path, file, stats, content }) => content.toString().length,
@@ -428,7 +435,7 @@ class Searcher {
             haschinese: ({ path, file, stats, content }) => /\p{sc=Han}/gu.test(content.toString()),
             line: ({ path, file, stats, content }) => content.toString().split("\n").map(e => e.trim()),
             frontmatter: ({ path, file, stats, content }) => {
-                const { yamlObject } = this.utils.splitFrontMatter(content.toString())
+                const { yamlObject } = splitFrontMatter(content.toString())
                 return yamlObject ? JSON.stringify(yamlObject) : ""
             },
             chinesenum: ({ path, file, stats, content }) => {
@@ -439,27 +446,28 @@ class Searcher {
                 return count
             },
         }
-        return [
-            { scope: "default", name: "内容或路径", is_meta: false, query: QUERY.default },
-            { scope: "path", name: "路径", is_meta: true, query: QUERY.path },
-            { scope: "dir", name: "文件所属目录", is_meta: true, query: QUERY.dir },
-            { scope: "file", name: "文件名", is_meta: true, query: QUERY.file },
-            { scope: "name", name: "文件名(无扩展名)", is_meta: true, query: QUERY.name },
-            { scope: "ext", name: "扩展名", is_meta: true, query: QUERY.ext },
-            { scope: "content", name: "内容", is_meta: false, query: QUERY.content },
-            { scope: "frontmatter", name: "FrontMatter", is_meta: false, query: QUERY.frontmatter },
-            { scope: "size", name: "文件大小", is_meta: true, query: QUERY.size, validate: this.MIXIN.VALIDATE.isSize, cast: this.MIXIN.CAST.toBytes },
-            { scope: "birthtime", name: "创建时间", is_meta: true, query: QUERY.birthtime, validate: this.MIXIN.VALIDATE.isDate, cast: this.MIXIN.CAST.toDate },
-            { scope: "mtime", name: "修改时间", is_meta: true, query: QUERY.mtime, validate: this.MIXIN.VALIDATE.isDate, cast: this.MIXIN.CAST.toDate },
-            { scope: "atime", name: "访问时间", is_meta: true, query: QUERY.atime, validate: this.MIXIN.VALIDATE.isDate, cast: this.MIXIN.CAST.toDate },
-            { scope: "linenum", name: "行数", is_meta: true, query: QUERY.linenum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
-            { scope: "charnum", name: "字符数", is_meta: true, query: QUERY.charnum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
-            { scope: "chinesenum", name: "中文字符数", is_meta: true, query: QUERY.chinesenum, validate: this.MIXIN.VALIDATE.isNumber, cast: this.MIXIN.CAST.toNumber },
-            { scope: "crlf", name: "换行符为CRLF", is_meta: true, query: QUERY.crlf, validate: this.MIXIN.VALIDATE.isBoolean, cast: this.MIXIN.CAST.toBoolean },
-            { scope: "hasimage", name: "包含图片", is_meta: true, query: QUERY.hasimage, validate: this.MIXIN.VALIDATE.isBoolean, cast: this.MIXIN.CAST.toBoolean },
-            { scope: "haschinese", name: "包含中文字符", is_meta: true, query: QUERY.haschinese, validate: this.MIXIN.VALIDATE.isBoolean, cast: this.MIXIN.CAST.toBoolean },
-            { scope: "line", name: "某行", is_meta: false, query: QUERY.line, match_keyword: this.MIXIN.MATCH.arrayCompare, match_regexp: this.MIXIN.MATCH.arrayRegexp },
+        const qualifiers = [
+            { scope: "default", name: "内容或路径", is_meta: false },
+            { scope: "path", name: "路径", is_meta: true },
+            { scope: "dir", name: "文件所属目录", is_meta: true },
+            { scope: "file", name: "文件名", is_meta: true },
+            { scope: "name", name: "文件名(无扩展名)", is_meta: true },
+            { scope: "ext", name: "扩展名", is_meta: true },
+            { scope: "content", name: "内容", is_meta: false },
+            { scope: "frontmatter", name: "FrontMatter", is_meta: false },
+            { scope: "size", name: "文件大小", is_meta: true, validate: isSize, cast: toBytes },
+            { scope: "birthtime", name: "创建时间", is_meta: true, validate: isDate, cast: toDate },
+            { scope: "mtime", name: "修改时间", is_meta: true, validate: isDate, cast: toDate },
+            { scope: "atime", name: "访问时间", is_meta: true, validate: isDate, cast: toDate },
+            { scope: "linenum", name: "行数", is_meta: true, validate: isNumber, cast: toNumber },
+            { scope: "charnum", name: "字符数", is_meta: true, validate: isNumber, cast: toNumber },
+            { scope: "chinesenum", name: "中文字符数", is_meta: true, validate: isNumber, cast: toNumber },
+            { scope: "crlf", name: "换行符为CRLF", is_meta: true, validate: isBoolean, cast: toBoolean },
+            { scope: "hasimage", name: "包含图片", is_meta: true, validate: isBoolean, cast: toBoolean },
+            { scope: "haschinese", name: "包含中文字符", is_meta: true, validate: isBoolean, cast: toBoolean },
+            { scope: "line", name: "某行", is_meta: false, match_keyword: arrayCompare, match_regexp: arrayRegexp },
         ]
+        return qualifiers.map(q => ({ ...q, query: QUERY[q.scope] }))
     }
 
     buildContentQualifiers() {
@@ -818,8 +826,8 @@ class Searcher {
         const genOperator = (...operators) => operators.map(operator => `<code>${operator}</code>`).join("、")
         const genUL = (...li) => `<ul style="padding-left: 1em; word-break: break-word;">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
         const scopeDesc = genUL(
-            `搜索元数据：${genScope(metaScope)}`,
-            `搜索具体内容：${genScope(contentScope)}`,
+            `搜索文件元数据：${genScope(metaScope)}`,
+            `搜索文件内容：${genScope(contentScope)}`,
             `默认值 default = path + content（路径+文件内容）`,
         )
         const operatorDesc = genUL(
@@ -840,7 +848,7 @@ class Searcher {
     <tr><td>-</td><td>后接一个查询条件，表示逻辑非。文档不可满足 - 右侧的查询条件</td></tr>
     <tr><td>""</td><td>引号包裹文本，表示词组。</td></tr>
     <tr><td>/regex/</td><td>JavaScript 风格的正则表达式</td></tr>
-    <tr><td>scope</td><td>搜索范围，用于限定查询条件${scopeDesc}</td></tr>
+    <tr><td>scope</td><td>搜索范围，用于限定查询范围${scopeDesc}</td></tr>
     <tr><td>operator</td><td>操作符，用于比较查询关键字和查询结果${operatorDesc}</td></tr>
     <tr><td>()</td><td>小括号，用于调整运算优先级</td></tr>
 </table>`
@@ -876,8 +884,11 @@ class Searcher {
 <operator> ::= ${operator.map(s => `'${s}'`).join(" | ")}
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
-        const desc = `多元文件搜索通过组合不同的条件来精确查找文件。每个条件由三部分组成：搜索范围、操作符、关键字，例如 size>2kb（含义：文件尺寸大于 2KB）、ext:txt（含义：文件扩展名包含 txt）。
-条件之间用空格分隔，表示所有条件都必须满足，例如 size>2kb ext:txt；如果只需满足其一条件，请使用 OR 连接，例如 size>2kb OR ext:txt；如果需排除某一条件，请在其前面添加减号，例如 -size>2kb（含义：文件尺寸不得大于 2KB）`
+        const desc = `<b>多元文件搜索通过组合不同的条件来精确查找文件。</b>
+每个条件由三部分组成：搜索范围、操作符、关键字，如 size>2kb（含义：文件尺寸大于 2KB）、ext:txt（含义：文件扩展名包含 txt）、content:/\\d{8}/（含义：文件内容能匹配正则表达式 \\d{8}）<br />
+条件之间用空格分隔，表示必须满足所有条件。如 size>2kb ext:txt<br />
+条件之间用 OR 连接，表示需满足其中一个条件。如 size>2kb OR ext:txt<br />
+在条件前面添加减号，表示不可满足此条件。如 -size>2kb（含义：文件尺寸不得大于 2KB）`
         const components = [
             { label: desc, type: "blockquote" },
             { label: example, type: "p" },
