@@ -11,6 +11,8 @@ class helpPlugin extends BasePlugin {
     init = () => {
         const act_hint = "此功能仅对开发者开放";
         this.staticActions = [
+            { act_name: "升级插件", act_value: "update_plugin", act_hidden: true },
+            { act_name: "启停插件", act_value: "preferences", act_hidden: true },
             { act_name: "卸载插件", act_value: "uninstall_plugin" },
             { act_name: "修改配置", act_value: "open_setting_folder" },
             { act_name: "备份配置", act_value: "backup_setting_file" },
@@ -27,15 +29,11 @@ class helpPlugin extends BasePlugin {
 
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            this.preferences = this.utils.getPlugin("preferences")
-            if (this.preferences) {
-                this.staticActions.unshift({ act_name: "启停插件", act_value: "preferences" })
-            }
             this.updater = this.utils.getPlugin("updater")
-            if (this.updater) {
-                const act_name = "升级插件" + (this.version ? `（当前版本：${this.version}）` : "")
-                this.staticActions.unshift({ act_name: act_name, act_value: "update_plugin" })
-            }
+            this.preferences = this.utils.getPlugin("preferences")
+            this.staticActions[0].act_name += this.version ? `（当前版本：${this.version}）` : ""
+            this.staticActions[0].act_hidden = !this.updater
+            this.staticActions[1].act_hidden = !this.preferences
         })
     }
 

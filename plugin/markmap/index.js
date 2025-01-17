@@ -12,9 +12,11 @@ class markmapPlugin extends BasePlugin {
     hotkey = () => [this.tocMarkmap, this.fenceMarkmap].map(p => p && p.hotkey()).filter(Boolean).flat()
 
     init = () => {
-        this.staticActions = this.fenceMarkmap
-            ? [{ act_name: "插入markmap：大纲", act_value: "draw_fence_outline", act_hotkey: this.config.FENCE_HOTKEY }, { act_name: "插入markmap：模板", act_value: "draw_fence_template" }]
-            : []
+        this.staticActions = [
+            { act_name: "插入markmap：大纲", act_value: "draw_fence_outline", act_hotkey: this.config.FENCE_HOTKEY, act_hidden: !this.fenceMarkmap },
+            { act_name: "插入markmap：模板", act_value: "draw_fence_template", act_hidden: !this.fenceMarkmap },
+            { act_name: "思维导图弹窗", act_value: "toggle_toc", act_hotkey: this.config.TOC_HOTKEY, act_hidden: !this.tocMarkmap }
+        ]
     }
 
     process = () => {
@@ -47,12 +49,6 @@ class markmapPlugin extends BasePlugin {
         const update_ = this.utils.fromObject(update, ["spacingHorizontal", "spacingVertical", "fitRatio", "paddingX", "autoFit"]);
         const options = this.MarkmapLib.deriveOptions({ ...old, ...update });
         return Object.assign(options, update_)
-    }
-
-    getDynamicActions = () => {
-        return this.tocMarkmap
-            ? [{ act_name: "思维导图弹窗", act_value: "toggle_toc", act_hotkey: this.config.TOC_HOTKEY }]
-            : []
     }
 
     lazyLoad = async () => {

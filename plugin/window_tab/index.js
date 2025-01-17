@@ -21,6 +21,10 @@ class windowTabBarPlugin extends BasePlugin {
     ]
 
     init = () => {
+        this.staticActions = [
+            { act_name: "排序标签", act_value: "sort_tabs" },
+            { act_name: "保存当前标签页列表", act_value: "save_tabs" },
+        ]
         this.entities = {
             content: this.utils.entities.eContent,
             source: document.querySelector("#typora-source"),
@@ -420,31 +424,20 @@ class windowTabBarPlugin extends BasePlugin {
         }
     }
 
-    getDynamicActions = () => {
-        const acts = [
-            { act_name: "排序标签", act_value: "sort_tabs" },
-            { act_name: "保存当前标签页列表", act_value: "save_tabs" },
-            { act_name: "启用功能：隐藏文件后缀", act_value: "toggle_suffix", act_state: this.config.REMOVE_FILE_SUFFIX },
-            { act_name: "启用功能：同名文件显示其目录", act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_FOR_SAME_NAME_FILE },
-            { act_name: "启用功能：显示标签页关闭按钮", act_value: "toggle_show_close_button", act_state: this.config.SHOW_TAB_CLOSE_BUTTON },
-            { act_name: "启用功能：鼠标悬停显示完整路径", act_value: "toggle_show_path", act_state: this.config.SHOW_FULL_PATH_WHEN_HOVER },
-            { act_name: "启用功能：一体化窗口样式时隐藏标题栏", act_value: "toggle_hide_title_bar", act_state: this.config.HIDE_WINDOW_TITLE_BAR },
-            { act_name: "启用功能：JetBrains 风格的标签拖拽方式", act_value: "toggle_drag_style", act_state: this.config.JETBRAINS_DRAG_STYLE },
-            { act_name: "启用功能：Ctrl+Click 标签以新窗口打开", act_value: "toggle_ctrl_click", act_state: this.config.CTRL_CLICK_TO_NEW_WINDOW },
-            { act_name: "启用功能：Ctrl+Wheel 标签以切换标签", act_value: "toggle_ctrl_wheel", act_state: this.config.CTRL_WHEEL_TO_SCROLL },
-            { act_name: "启用功能：鼠标中键标签以关闭标签", act_value: "toggle_middle_click", act_state: this.config.MIDDLE_CLICK_TO_CLOSE },
-            { act_name: "启用功能：在新标签打开", act_value: "toggle_local", act_state: !this.localOpen },
-        ]
-        if (this.config.JETBRAINS_DRAG_STYLE) {
-            const act = { act_name: "启用功能：拖拽时竖直防抖", act_value: "toggle_limit_y_axis", act_state: this.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG }
-            acts.splice(7, 0, act)
-        }
-        if (this.utils.existPathSync(this.saveTabFilePath)) {
-            const act = { act_name: "打开保存的标签页列表", act_value: "open_save_tabs" }
-            acts.splice(2, 0, act)
-        }
-        return acts
-    }
+    getDynamicActions = () => [
+        { act_name: "打开保存的标签页列表", act_value: "open_save_tabs", act_hidden: !this.utils.existPathSync(this.saveTabFilePath) },
+        { act_name: "启用功能：隐藏文件后缀", act_value: "toggle_suffix", act_state: this.config.REMOVE_FILE_SUFFIX },
+        { act_name: "启用功能：同名文件显示其目录", act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_FOR_SAME_NAME_FILE },
+        { act_name: "启用功能：显示标签页关闭按钮", act_value: "toggle_show_close_button", act_state: this.config.SHOW_TAB_CLOSE_BUTTON },
+        { act_name: "启用功能：鼠标悬停显示完整路径", act_value: "toggle_show_path", act_state: this.config.SHOW_FULL_PATH_WHEN_HOVER },
+        { act_name: "启用功能：一体化窗口样式时隐藏标题栏", act_value: "toggle_hide_title_bar", act_state: this.config.HIDE_WINDOW_TITLE_BAR },
+        { act_name: "启用功能：JetBrains 风格的标签拖拽方式", act_value: "toggle_drag_style", act_state: this.config.JETBRAINS_DRAG_STYLE },
+        { act_name: "启用功能：拖拽时竖直防抖", act_value: "toggle_limit_y_axis", act_state: this.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG, act_hidden: !this.config.JETBRAINS_DRAG_STYLE },
+        { act_name: "启用功能：Ctrl+Click 标签以新窗口打开", act_value: "toggle_ctrl_click", act_state: this.config.CTRL_CLICK_TO_NEW_WINDOW },
+        { act_name: "启用功能：Ctrl+Wheel 标签以切换标签", act_value: "toggle_ctrl_wheel", act_state: this.config.CTRL_WHEEL_TO_SCROLL },
+        { act_name: "启用功能：鼠标中键标签以关闭标签", act_value: "toggle_middle_click", act_state: this.config.MIDDLE_CLICK_TO_CLOSE },
+        { act_name: "启用功能：在新标签打开", act_value: "toggle_local", act_state: !this.localOpen },
+    ]
 
     call = action => {
         const toggleConfig = async (cfg, restart = false) => {

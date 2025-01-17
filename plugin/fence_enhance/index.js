@@ -188,9 +188,10 @@ class fenceEnhancePlugin extends BasePlugin {
             ALIGNMENT: "对齐缩进需要花费大量时间，造成性能损失，不建议开启",
             HIGHLIGHT_BY_LANG: "例 ```js(2, 5-8)``` 表示高亮第2，5-8行，不建议开启",
         }
-        const acts = [
+        return [
             { act_name: "启用按钮：折叠", act_value: "toggle_state_fold", act_state: this.config.ENABLE_FOLD },
             { act_name: "启用按钮：复制", act_value: "toggle_state_copy", act_state: this.config.ENABLE_COPY },
+            { act_name: "启用按钮：缩进", act_value: "toggle_state_indent", act_state: this.enableIndent, act_hidden: !this.supportIndent },
             { act_name: "启用功能：自动隐藏按钮", act_value: "toggle_state_auto_hide", act_state: this.config.AUTO_HIDE },
             { act_name: "启用功能：默认折叠代码块", act_value: "toggle_state_fold_default", act_state: this.config.FOLD_DEFAULT },
             { act_name: "启用功能：显示按钮功能提示", act_value: "toggle_state_button_hint", act_state: !this.config.REMOVE_BUTTON_HINT },
@@ -201,12 +202,8 @@ class fenceEnhancePlugin extends BasePlugin {
             { act_name: "启用功能：通过语言设置高亮行", act_value: "toggle_state_highlight_by_lang", act_state: this.config.HIGHLIGHT_BY_LANGUAGE, act_hint: HINT.HIGHLIGHT_BY_LANG },
             { act_name: "(危) 为所有无语言代码块添加语言", act_value: "add_fences_lang", act_hint: HINT.DANGEROUS },
             { act_name: "(危) 批量替换代码块语言", act_value: "replace_fences_lang", act_hint: HINT.DANGEROUS },
+            { act_name: "(危) 调整所有代码块的缩进", act_value: "indent_all_fences", act_hint: HINT.DANGEROUS, act_hidden: !this.supportIndent }
         ]
-        if (this.supportIndent) {
-            acts.splice(2, 0, { act_name: "启用按钮：缩进", act_value: "toggle_state_indent", act_state: this.enableIndent })
-            acts.push({ act_name: "(危) 调整所有代码块的缩进", act_value: "indent_all_fences", act_hint: HINT.DANGEROUS })
-        }
-        return acts
     }
 
     call = (action, meta) => {

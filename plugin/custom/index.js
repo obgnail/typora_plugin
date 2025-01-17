@@ -36,7 +36,14 @@ class CustomPlugin extends BasePlugin {
             const plugin = this.plugins[fixedName]
             if (!plugin) continue
 
-            const act = { act_name: plugin.config.name, act_value: plugin.fixedName, act_disabled: true, act_hint: "未知错误！请向开发者反馈", act_hotkey: plugin.config.hotkey }
+            const act = {
+                act_name: plugin.config.name,
+                act_value: plugin.fixedName,
+                act_disabled: true,
+                act_hidden: false,
+                act_hint: "未知错误！请向开发者反馈",
+                act_hotkey: plugin.config.hotkey,
+            }
             try {
                 const selector = plugin.selector(false)
                 if (selector === this.utils.disableForeverSelector) {

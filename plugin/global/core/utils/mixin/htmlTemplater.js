@@ -27,7 +27,7 @@ class htmlTemplater {
                 case "class":
                 case "className":
                 case "class_":
-                    el.classList.add(...(Array.isArray(value) ? value : value.trim().split(" ")));
+                    el.classList.add(...(Array.isArray(value) ? value : value.trim().split(/\s+/g)));
                     break;
                 case "text":
                     el.innerText = value;

@@ -104,10 +104,17 @@ class rightClickMenuPlugin extends BasePlugin {
         if (act.act_disabled && !act.act_hint) {
             act.act_hint = this.defaultDisableHint
         }
-        const extra = {
-            "ty-hint": act.act_hint || undefined,
-            class_: dynamic ? `plugin-dynamic-act ${act.act_disabled ? "disabled" : ""}` : undefined,
+        const class_ = []
+        if (dynamic) {
+            class_.push("plugin-dynamic-act")
         }
+        if (act.act_hidden) {
+            class_.push("plugin-common-hidden")
+        }
+        if (act.act_disabled) {
+            class_.push("disabled")
+        }
+        const extra = { "ty-hint": act.act_hint || undefined, class_ }
         const state = act.act_state ? "state-on" : "state-off"
         return this._liTemplate(act.act_value, act.act_name, act.act_hotkey, false, state, extra)
     }
@@ -285,16 +292,11 @@ class rightClickMenuPlugin extends BasePlugin {
         toggle(fn);
     }
 
-    getDynamicActions = () => {
-        const acts = [
-            { act_name: "启用功能：保持显示", act_value: "do_not_hide", act_state: this.config.DO_NOT_HIDE, act_hint: "右键菜单点击后不会自动消失" },
-            { act_name: "启用功能：隐藏除插件外的选项", act_value: "hide_other_options", act_state: this.config.HIDE_OTHER_OPTIONS },
-        ]
-        if (this.supportShortcut) {
-            acts.push({ act_name: "启用功能：显示快捷键", act_value: "toggle_hotkey", act_state: this.config.SHOW_PLUGIN_HOTKEY })
-        }
-        return acts
-    }
+    getDynamicActions = () => [
+        { act_name: "启用功能：保持显示", act_value: "do_not_hide", act_state: this.config.DO_NOT_HIDE, act_hint: "右键菜单点击后不会自动消失" },
+        { act_name: "启用功能：隐藏除插件外的选项", act_value: "hide_other_options", act_state: this.config.HIDE_OTHER_OPTIONS },
+        { act_name: "启用功能：显示快捷键", act_value: "toggle_hotkey", act_state: this.config.SHOW_PLUGIN_HOTKEY, act_hidden: !this.supportShortcut },
+    ]
 
     call = async action => {
         if (action === "do_not_hide") {

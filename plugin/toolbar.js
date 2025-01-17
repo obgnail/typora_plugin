@@ -328,22 +328,14 @@ class pluginTool extends baseToolInterface {
             .filter(([_, plugin]) => plugin.call)
             .flatMap(([fixedName, plugin]) => {
                 const chineseName = plugin.config.NAME
-                const dynamicActions = this.utils.updatePluginDynamicActions(fixedName, this.controller.anchorNode, true)
-
-                const noDynamicActions = !dynamicActions || dynamicActions.length === 0
-                const noActions = !plugin.staticActions || plugin.staticActions.length === 0
-                if (noDynamicActions && noActions) {
-                    return [{ showName: chineseName, fixedName: fixedName }]
-                }
-                if (!noActions) {
-                    return plugin.staticActions.map(act => ({ showName: `${chineseName} - ${act.act_name}`, fixedName: fixedName, meta: act.act_value }))
-                }
-                if (!noDynamicActions) {
-                    return dynamicActions
-                        .filter(act => !act.act_disabled)
+                const staticActions = plugin.staticActions || []
+                const dynamicActions = this.utils.updatePluginDynamicActions(fixedName, this.controller.anchorNode, true) || []
+                const actions = [...staticActions, ...dynamicActions]
+                return actions.length === 0
+                    ? [{ showName: chineseName, fixedName: fixedName }]
+                    : actions
+                        .filter(act => !act.act_disabled && !act.act_hidden)
                         .map(act => ({ showName: `${chineseName} - ${act.act_name}`, fixedName: fixedName, meta: act.act_value }))
-                }
-                return []
             })
             .map(plugin => {
                 plugin.showName += (plugin.meta) ? ` （ ${plugin.fixedName} - ${plugin.meta} ）` : ` （ ${plugin.fixedName} ）`
