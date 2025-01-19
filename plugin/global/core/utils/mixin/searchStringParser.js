@@ -236,7 +236,7 @@ class searchStringParser {
         return _eval(ast)
     }
 
-    traverse(ast, callback) {
+    walk(ast, callback) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.TYPE
 
         function _eval(node) {

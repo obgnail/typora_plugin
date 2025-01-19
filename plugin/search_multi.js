@@ -162,7 +162,6 @@ class searchMultiPlugin extends BasePlugin {
         }
     }
 
-    // TODO: Optimize AST and identify qualifiers with lower costs in advance to improve query efficiency
     searchMultiByAST = async (rootPath, ast) => {
         const { MAX_SIZE, IGNORE_FOLDERS } = this.config
         const { Path: { extname }, Fs: { promises: { readFile } } } = this.utils.Package
@@ -174,8 +173,8 @@ class searchMultiPlugin extends BasePlugin {
         const fileFilter = (path, stat) => verifySize(stat) && verifyExt(path)
         const dirFilter = name => !IGNORE_FOLDERS.includes(name)
 
-        const readFileTokens = this.searcher.getReadFileTokens(ast)
-        const paramsBuilder = readFileTokens.length !== 0
+        const readFileScope = this.searcher.getReadFileScope(ast)
+        const paramsBuilder = readFileScope.length !== 0
             ? async (path, file, stats) => ({ path, file, stats, content: (await readFile(path)).toString() })
             : (path, file, stats) => ({ path, file, stats })
 
@@ -383,10 +382,11 @@ class QualifierMixin {
  *   5. match:    Matches `castResult` from step 3 with `queryResult` from step 4.
  *
  * A qualifier has the following attributes:
- *   {string}   scope:         Qualifier scope
+ *   {string}   scope:         Query scope
  *   {string}   name:          Name for explain
  *   {boolean}  is_meta:       Is Qualifier scope a metadata property
  *   {boolean}  read_file:     Do Qualifier need to read file
+ *   {number}   cost_level:    The cost level of calling `query` function. 1: Read file stats;  2: Read file content;  3: Parse file content;  Plus 0.5 when the user input is a regexp
  *   {function} validate:      Checks user input; defaults to `QualifierMixin.VALIDATE.isStringOrRegexp`
  *   {function} cast:          Converts user input for easier matching and obtain castResult; defaults to `QualifierMixin.CAST.toStringOrRegexp`
  *   {function} query:         Retrieves data from source and obtain queryResult
@@ -404,7 +404,7 @@ class Searcher {
     }
 
     process() {
-        const qualifiers = [...this.buildBaseQualifiers(), ...this.buildContentQualifiers()]
+        const qualifiers = [...this.buildBaseQualifiers(), ...this.buildMarkdownQualifiers()]
         qualifiers.forEach(q => {
             q.validate = q.validate || this.MIXIN.VALIDATE.isStringOrRegexp
             q.cast = q.cast || this.MIXIN.CAST.toStringOrRegexp
@@ -423,14 +423,14 @@ class Searcher {
             MATCH: { arrayCompare, arrayRegexp },
             QUERY: { normalizeDate },
         } = this.MIXIN
-        const { splitFrontMatter, Package } = this.utils
+        const { splitFrontMatter, Package: { Path } } = this.utils
         const QUERY = {
             default: ({ path, file, stats, content }) => `${content}\n${path}`,
             path: ({ path, file, stats, content }) => path,
-            dir: ({ path, file, stats, content }) => Package.Path.dirname(path),
+            dir: ({ path, file, stats, content }) => Path.dirname(path),
             file: ({ path, file, stats, content }) => file,
-            name: ({ path, file, stats, content }) => Package.Path.parse(file).name,
-            ext: ({ path, file, stats, content }) => Package.Path.extname(file),
+            name: ({ path, file, stats, content }) => Path.parse(file).name,
+            ext: ({ path, file, stats, content }) => Path.extname(file),
             size: ({ path, file, stats, content }) => stats.size,
             atime: ({ path, file, stats, content }) => normalizeDate(stats.atime),
             mtime: ({ path, file, stats, content }) => normalizeDate(stats.mtime),
@@ -455,30 +455,30 @@ class Searcher {
             },
         }
         const qualifiers = [
-            { scope: "default", name: "内容或路径", is_meta: false, read_file: true },
-            { scope: "path", name: "路径", is_meta: true, read_file: false },
-            { scope: "dir", name: "文件所属目录", is_meta: true, read_file: false },
-            { scope: "file", name: "文件名", is_meta: true, read_file: false },
-            { scope: "name", name: "文件名(无扩展名)", is_meta: true, read_file: false },
-            { scope: "ext", name: "扩展名", is_meta: true, read_file: false },
-            { scope: "content", name: "内容", is_meta: false, read_file: true },
-            { scope: "frontmatter", name: "FrontMatter", is_meta: false, read_file: true },
-            { scope: "size", name: "文件大小", is_meta: true, read_file: false, validate: isSize, cast: toBytes },
-            { scope: "birthtime", name: "创建时间", is_meta: true, read_file: false, validate: isDate, cast: toDate },
-            { scope: "mtime", name: "修改时间", is_meta: true, read_file: false, validate: isDate, cast: toDate },
-            { scope: "atime", name: "访问时间", is_meta: true, read_file: false, validate: isDate, cast: toDate },
-            { scope: "linenum", name: "行数", is_meta: true, read_file: true, validate: isNumber, cast: toNumber },
-            { scope: "charnum", name: "字符数", is_meta: true, read_file: true, validate: isNumber, cast: toNumber },
-            { scope: "chinesenum", name: "中文字符数", is_meta: true, read_file: true, validate: isNumber, cast: toNumber },
-            { scope: "crlf", name: "换行符为CRLF", is_meta: true, read_file: true, validate: isBoolean, cast: toBoolean },
-            { scope: "hasimage", name: "包含图片", is_meta: true, read_file: true, validate: isBoolean, cast: toBoolean },
-            { scope: "haschinese", name: "包含中文字符", is_meta: true, read_file: true, validate: isBoolean, cast: toBoolean },
-            { scope: "line", name: "某行", is_meta: false, read_file: true, match_keyword: arrayCompare, match_regexp: arrayRegexp },
+            { scope: "default", name: "内容或路径", is_meta: false, read_file: true, cost_level: 2 },
+            { scope: "path", name: "路径", is_meta: true, read_file: false, cost_level: 1 },
+            { scope: "dir", name: "文件所属目录", is_meta: true, read_file: false, cost_level: 1 },
+            { scope: "file", name: "文件名", is_meta: true, read_file: false, cost_level: 1 },
+            { scope: "name", name: "文件名(无扩展名)", is_meta: true, read_file: false, cost_level: 1 },
+            { scope: "ext", name: "扩展名", is_meta: true, read_file: false, cost_level: 1 },
+            { scope: "content", name: "内容", is_meta: false, read_file: true, cost_level: 2 },
+            { scope: "frontmatter", name: "FrontMatter", is_meta: false, read_file: true, cost_level: 3 },
+            { scope: "size", name: "文件大小", is_meta: true, read_file: false, cost_level: 1, validate: isSize, cast: toBytes },
+            { scope: "birthtime", name: "创建时间", is_meta: true, read_file: false, cost_level: 1, validate: isDate, cast: toDate },
+            { scope: "mtime", name: "修改时间", is_meta: true, read_file: false, cost_level: 1, validate: isDate, cast: toDate },
+            { scope: "atime", name: "访问时间", is_meta: true, read_file: false, cost_level: 1, validate: isDate, cast: toDate },
+            { scope: "linenum", name: "行数", is_meta: true, read_file: true, cost_level: 2, validate: isNumber, cast: toNumber },
+            { scope: "charnum", name: "字符数", is_meta: true, read_file: true, cost_level: 2, validate: isNumber, cast: toNumber },
+            { scope: "chinesenum", name: "中文字符数", is_meta: true, read_file: true, cost_level: 2, validate: isNumber, cast: toNumber },
+            { scope: "crlf", name: "换行符为CRLF", is_meta: true, read_file: true, cost_level: 2, validate: isBoolean, cast: toBoolean },
+            { scope: "hasimage", name: "包含图片", is_meta: true, read_file: true, cost_level: 2, validate: isBoolean, cast: toBoolean },
+            { scope: "haschinese", name: "包含中文字符", is_meta: true, read_file: true, cost_level: 2, validate: isBoolean, cast: toBoolean },
+            { scope: "line", name: "某行", is_meta: false, read_file: true, cost_level: 2, match_keyword: arrayCompare, match_regexp: arrayRegexp },
         ]
         return qualifiers.map(q => ({ ...q, query: QUERY[q.scope] }))
     }
 
-    buildContentQualifiers() {
+    buildMarkdownQualifiers() {
         // Prevent re-parsing of the same file in a SINGLE query
         const cache = fn => {
             let cached, result
@@ -610,12 +610,13 @@ class Searcher {
             const query = buildQuery(parser, filter, transformer)
             const is_meta = false
             const read_file = true
+            const cost_level = 3
             const validate = this.MIXIN.VALIDATE.isStringOrRegexp
             const cast = this.MIXIN.CAST.toStringOrRegexp
             const match_keyword = this.MIXIN.MATCH.arrayCompare
             const match_phrase = match_keyword
             const match_regexp = this.MIXIN.MATCH.arrayRegexp
-            return { scope, name, query, is_meta, read_file, validate, cast, match_keyword, match_phrase, match_regexp }
+            return { scope, name, query, is_meta, read_file, cost_level, validate, cast, match_keyword, match_phrase, match_regexp }
         }
 
         return [
@@ -653,16 +654,49 @@ class Searcher {
     parse(input) {
         input = this.config.CASE_SENSITIVE ? input : input.toLowerCase()
         const ast = this.parser.parse(input)
-        return this.validateAndCast(ast)
+        const validatedAST = this.validateAndCast(ast)
+        return this.optimize(validatedAST)
     }
 
     validateAndCast(ast) {
-        this.parser.traverse(ast, node => {
+        const { REGEXP } = this.parser.TYPE
+
+        this.parser.walk(ast, node => {
             const { scope, operator, operand, type: operandType } = node
             const qualifier = this.qualifiers.get(scope)
             qualifier.validate(scope.toUpperCase(), operator, operand, operandType)
+            node.costLevel = qualifier.cost_level + (operandType === REGEXP ? 0.5 : 0)
             node.castResult = qualifier.cast(operand, operandType)
         })
+        return ast
+    }
+
+    optimize(ast) {
+        const { OR, AND } = this.parser.TYPE
+
+        const postOrder = (node, callback) => {
+            if (node) {
+                postOrder(node.left, callback)
+                postOrder(node.right, callback)
+                callback(node)
+            }
+        }
+
+        const swap = node => {
+            const rootCostLevel = node.costLevel || 1
+            const leftCostLevel = (node.left && node.left.costLevel) || 1
+            const rightCostLevel = (node.right && node.right.costLevel) || 1
+            node.costLevel = Math.max(rootCostLevel, leftCostLevel, rightCostLevel)
+
+            if (!node.left || !node.right) return
+
+            const shouldSwap = (node.type === OR || node.type === AND) && leftCostLevel > rightCostLevel
+            if (shouldSwap) {
+                [node.left, node.right] = [node.right, node.left]
+            }
+        }
+
+        postOrder(ast, swap)
         return ast
     }
 
@@ -684,15 +718,15 @@ class Searcher {
         return qualifier[type](scope, operator, castResult, queryResult)
     }
 
-    getReadFileTokens(ast) {
-        const result = new Set()
+    getReadFileScope(ast) {
+        const scope = new Set()
         const needRead = new Set([...this.qualifiers.values()].filter(q => q.read_file).map(q => q.scope))
-        this.parser.traverse(ast, node => {
+        this.parser.walk(ast, node => {
             if (needRead.has(node.scope)) {
-                result.add(node.scope)
+                scope.add(node.scope)
             }
         })
-        return [...result]
+        return [...scope]
     }
 
     getContentTokens(ast) {
