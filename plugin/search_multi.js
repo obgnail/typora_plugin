@@ -41,7 +41,10 @@ class searchMultiPlugin extends BasePlugin {
     init = () => {
         this.searcher = new Searcher(this)
         this.highlighter = new Highlighter(this)
-        this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => ext.toLowerCase()))
+        this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => {
+            const prefix = ext !== "" && !ext.startsWith(".") ? "." : ""
+            return prefix + ext.toLowerCase()
+        }))
         this.entities = {
             modal: document.querySelector("#plugin-search-multi"),
             input: document.querySelector("#plugin-search-multi-input input"),
@@ -159,23 +162,27 @@ class searchMultiPlugin extends BasePlugin {
         }
     }
 
+    // TODO: Optimize AST and identify qualifiers with lower costs in advance to improve query efficiency
     searchMultiByAST = async (rootPath, ast) => {
-        const { fileFilter, dirFilter } = this._getFilter()
+        const { MAX_SIZE, IGNORE_FOLDERS } = this.config
+        const { Path: { extname }, Fs: { promises: { readFile } } } = this.utils.Package
+
+        const verifySize = 0 > MAX_SIZE
+            ? () => true
+            : stat => stat.size < MAX_SIZE
+        const verifyExt = path => this.allowedExtensions.has(extname(path).toLowerCase())
+        const fileFilter = (path, stat) => verifySize(stat) && verifyExt(path)
+        const dirFilter = name => !IGNORE_FOLDERS.includes(name)
+
+        const readFileTokens = this.searcher.getReadFileTokens(ast)
+        const paramsBuilder = readFileTokens.length !== 0
+            ? async (path, file, stats) => ({ path, file, stats, content: (await readFile(path)).toString() })
+            : (path, file, stats) => ({ path, file, stats })
+
         const matcher = source => this.searcher.match(ast, source)
         const callback = this._showSearchResult(rootPath, matcher)
-        await this._traverseDir(rootPath, fileFilter, dirFilter, callback)
-    }
 
-    _getFilter = () => {
-        const verifyExt = path => {
-            const ext = this.utils.Package.Path.extname(path).toLowerCase()
-            const extension = ext.startsWith(".") ? ext.slice(1) : ext
-            return this.allowedExtensions.has(extension)
-        }
-        const verifySize = 0 > this.config.MAX_SIZE ? () => true : stat => stat.size < this.config.MAX_SIZE
-        const fileFilter = (path, stat) => verifySize(stat) && verifyExt(path)
-        const dirFilter = path => !this.config.IGNORE_FOLDERS.includes(path)
-        return { fileFilter, dirFilter }
+        await this._walkDir(rootPath, fileFilter, dirFilter, paramsBuilder, callback)
     }
 
     _showSearchResult = (rootPath, matcher) => {
@@ -215,29 +222,29 @@ class searchMultiPlugin extends BasePlugin {
         }
     }
 
-    _traverseDir = async (dir, fileFilter, dirFilter, callback) => {
-        const { Fs: { promises: { readdir, stat, readFile } }, Path } = this.utils.Package
+    _walkDir = async (dir, fileFilter, dirFilter, paramsBuilder, callback) => {
+        const { Fs: { promises: { readdir, stat } }, Path } = this.utils.Package
 
-        async function traverse(dir) {
+        async function walk(dir) {
             const files = await readdir(dir)
             const promises = files.map(async file => {
                 const path = Path.join(dir, file)
                 const stats = await stat(path)
                 if (stats.isFile()) {
                     if (fileFilter(path, stats)) {
-                        const content = await readFile(path)
-                        callback({ path, file, stats, content })
+                        const params = await paramsBuilder(path, file, stats)
+                        callback(params)
                     }
                 } else if (stats.isDirectory()) {
                     if (dirFilter(file)) {
-                        await traverse(path)
+                        await walk(path)
                     }
                 }
             })
             await Promise.all(promises)
         }
 
-        await traverse(dir)
+        await walk(dir)
     }
 
     isModalHidden = () => this.utils.isHidden(this.entities.modal)
@@ -379,6 +386,7 @@ class QualifierMixin {
  *   {string}   scope:         Qualifier scope
  *   {string}   name:          Name for explain
  *   {boolean}  is_meta:       Is Qualifier scope a metadata property
+ *   {boolean}  read_file:     Do Qualifier need to read file
  *   {function} validate:      Checks user input; defaults to `QualifierMixin.VALIDATE.isStringOrRegexp`
  *   {function} cast:          Converts user input for easier matching and obtain castResult; defaults to `QualifierMixin.CAST.toStringOrRegexp`
  *   {function} query:         Retrieves data from source and obtain queryResult
@@ -417,7 +425,7 @@ class Searcher {
         } = this.MIXIN
         const { splitFrontMatter, Package } = this.utils
         const QUERY = {
-            default: ({ path, file, stats, content }) => `${content.toString()}\n${path}`,
+            default: ({ path, file, stats, content }) => `${content}\n${path}`,
             path: ({ path, file, stats, content }) => path,
             dir: ({ path, file, stats, content }) => Package.Path.dirname(path),
             file: ({ path, file, stats, content }) => file,
@@ -426,46 +434,46 @@ class Searcher {
             size: ({ path, file, stats, content }) => stats.size,
             atime: ({ path, file, stats, content }) => normalizeDate(stats.atime),
             mtime: ({ path, file, stats, content }) => normalizeDate(stats.mtime),
-            birthtime: ({ path, file, stats, buffer }) => normalizeDate(stats.birthtime),
-            content: ({ path, file, stats, content }) => content.toString(),
-            linenum: ({ path, file, stats, content }) => content.toString().split("\n").length,
-            charnum: ({ path, file, stats, content }) => content.toString().length,
-            crlf: ({ path, file, stats, content }) => content.toString().includes("\r\n"),
+            birthtime: ({ path, file, stats, content }) => normalizeDate(stats.birthtime),
+            content: ({ path, file, stats, content }) => content,
+            linenum: ({ path, file, stats, content }) => content.split("\n").length,
+            charnum: ({ path, file, stats, content }) => content.length,
+            crlf: ({ path, file, stats, content }) => content.includes("\r\n"),
             hasimage: ({ path, file, stats, content }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(content.toString()),
             haschinese: ({ path, file, stats, content }) => /\p{sc=Han}/gu.test(content.toString()),
-            line: ({ path, file, stats, content }) => content.toString().split("\n").map(e => e.trim()),
+            line: ({ path, file, stats, content }) => content.split("\n").map(e => e.trim()),
             frontmatter: ({ path, file, stats, content }) => {
                 const { yamlObject } = splitFrontMatter(content.toString())
                 return yamlObject ? JSON.stringify(yamlObject) : ""
             },
             chinesenum: ({ path, file, stats, content }) => {
                 let count = 0
-                for (const _ of content.toString().matchAll(/\p{sc=Han}/gu)) {
+                for (const _ of content.matchAll(/\p{sc=Han}/gu)) {
                     count++
                 }
                 return count
             },
         }
         const qualifiers = [
-            { scope: "default", name: "内容或路径", is_meta: false },
-            { scope: "path", name: "路径", is_meta: true },
-            { scope: "dir", name: "文件所属目录", is_meta: true },
-            { scope: "file", name: "文件名", is_meta: true },
-            { scope: "name", name: "文件名(无扩展名)", is_meta: true },
-            { scope: "ext", name: "扩展名", is_meta: true },
-            { scope: "content", name: "内容", is_meta: false },
-            { scope: "frontmatter", name: "FrontMatter", is_meta: false },
-            { scope: "size", name: "文件大小", is_meta: true, validate: isSize, cast: toBytes },
-            { scope: "birthtime", name: "创建时间", is_meta: true, validate: isDate, cast: toDate },
-            { scope: "mtime", name: "修改时间", is_meta: true, validate: isDate, cast: toDate },
-            { scope: "atime", name: "访问时间", is_meta: true, validate: isDate, cast: toDate },
-            { scope: "linenum", name: "行数", is_meta: true, validate: isNumber, cast: toNumber },
-            { scope: "charnum", name: "字符数", is_meta: true, validate: isNumber, cast: toNumber },
-            { scope: "chinesenum", name: "中文字符数", is_meta: true, validate: isNumber, cast: toNumber },
-            { scope: "crlf", name: "换行符为CRLF", is_meta: true, validate: isBoolean, cast: toBoolean },
-            { scope: "hasimage", name: "包含图片", is_meta: true, validate: isBoolean, cast: toBoolean },
-            { scope: "haschinese", name: "包含中文字符", is_meta: true, validate: isBoolean, cast: toBoolean },
-            { scope: "line", name: "某行", is_meta: false, match_keyword: arrayCompare, match_regexp: arrayRegexp },
+            { scope: "default", name: "内容或路径", is_meta: false, read_file: true },
+            { scope: "path", name: "路径", is_meta: true, read_file: false },
+            { scope: "dir", name: "文件所属目录", is_meta: true, read_file: false },
+            { scope: "file", name: "文件名", is_meta: true, read_file: false },
+            { scope: "name", name: "文件名(无扩展名)", is_meta: true, read_file: false },
+            { scope: "ext", name: "扩展名", is_meta: true, read_file: false },
+            { scope: "content", name: "内容", is_meta: false, read_file: true },
+            { scope: "frontmatter", name: "FrontMatter", is_meta: false, read_file: true },
+            { scope: "size", name: "文件大小", is_meta: true, read_file: false, validate: isSize, cast: toBytes },
+            { scope: "birthtime", name: "创建时间", is_meta: true, read_file: false, validate: isDate, cast: toDate },
+            { scope: "mtime", name: "修改时间", is_meta: true, read_file: false, validate: isDate, cast: toDate },
+            { scope: "atime", name: "访问时间", is_meta: true, read_file: false, validate: isDate, cast: toDate },
+            { scope: "linenum", name: "行数", is_meta: true, read_file: true, validate: isNumber, cast: toNumber },
+            { scope: "charnum", name: "字符数", is_meta: true, read_file: true, validate: isNumber, cast: toNumber },
+            { scope: "chinesenum", name: "中文字符数", is_meta: true, read_file: true, validate: isNumber, cast: toNumber },
+            { scope: "crlf", name: "换行符为CRLF", is_meta: true, read_file: true, validate: isBoolean, cast: toBoolean },
+            { scope: "hasimage", name: "包含图片", is_meta: true, read_file: true, validate: isBoolean, cast: toBoolean },
+            { scope: "haschinese", name: "包含中文字符", is_meta: true, read_file: true, validate: isBoolean, cast: toBoolean },
+            { scope: "line", name: "某行", is_meta: false, read_file: true, match_keyword: arrayCompare, match_regexp: arrayRegexp },
         ]
         return qualifiers.map(q => ({ ...q, query: QUERY[q.scope] }))
     }
@@ -593,8 +601,7 @@ class Searcher {
         }
         const buildQuery = (parser, filter, transformer) => {
             return source => {
-                const content = source.content.toString()
-                const ast = parser(content)
+                const ast = parser(source.content)
                 const nodes = preorder(ast, filter)
                 return nodes.flatMap(transformer).filter(Boolean)
             }
@@ -602,12 +609,13 @@ class Searcher {
         const buildQualifier = (scope, name, parser, filter, transformer) => {
             const query = buildQuery(parser, filter, transformer)
             const is_meta = false
+            const read_file = true
             const validate = this.MIXIN.VALIDATE.isStringOrRegexp
             const cast = this.MIXIN.CAST.toStringOrRegexp
             const match_keyword = this.MIXIN.MATCH.arrayCompare
             const match_phrase = match_keyword
             const match_regexp = this.MIXIN.MATCH.arrayRegexp
-            return { scope, name, query, is_meta, validate, cast, match_keyword, match_phrase, match_regexp }
+            return { scope, name, query, is_meta, read_file, validate, cast, match_keyword, match_phrase, match_regexp }
         }
 
         return [
@@ -674,6 +682,17 @@ class Searcher {
             }
         }
         return qualifier[type](scope, operator, castResult, queryResult)
+    }
+
+    getReadFileTokens(ast) {
+        const result = new Set()
+        const needRead = new Set([...this.qualifiers.values()].filter(q => q.read_file).map(q => q.scope))
+        this.parser.traverse(ast, node => {
+            if (needRead.has(node.scope)) {
+                result.add(node.scope)
+            }
+        })
+        return [...result]
     }
 
     getContentTokens(ast) {
