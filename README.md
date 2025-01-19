@@ -200,7 +200,7 @@ yay -S typora-plugin
 
 ### search_multi：多元文件搜索
 
-功能：比如搜索同时包含 `golang` 和 `install` 和 `生命周期` 三个关键字的文件。
+功能：搜索通过组合不同的条件来精确查找文件。
 
 - `打开搜索框`：ctrl+shift+P
 - `关闭搜索框`：光标定位到输入框，键入 esc
@@ -208,6 +208,20 @@ yay -S typora-plugin
 - `选中`：ArrowUp，ArrowDown
 - `打开`：click、ctrl+enter
 - `移动位置`：ctrl+拖动输入框
+
+使用示例：搜索语法类似于 Google 搜索语法，支持正则表达式。
+
+| 输入                                                | 搜索文件                                                     |
+| --------------------------------------------------- | ------------------------------------------------------------ |
+| `pear`                                              | 包含 pear                                                    |
+| `sour pear`                                         | 包含 sour 和 pear                                            |
+| `sour OR pear`                                      | 包含 sour 或 pear                                            |
+| `"sour pear"`                                       | 包含 sour pear 词组                                          |
+| `sour pear -apple`                                  | 包含 sour 和 pear，且不含 apple                              |
+| `/\bsour\b/ pear mtime=2024-03-12`                  | 匹配正则 \bsour\b，且包含 pear，且文件的修改时间为 2024-03-12 |
+| `frontmatter:开发 OR head=plugin OR strong:MIT`     | YAML Front Matter 包含开发 或者 标题内容为 plugin 或者 加粗文字包含 MIT |
+| `size>10kb (linenum>=1000 OR hasimage=true)`        | 文件大小超过 10KB，并且文件要么至少有 1000 行，要么包含图片  |
+| `thead:k8s h2:prometheus blockcode:"kubectl apply"` | 表头包含 k8s，且二级标题包含 prometheus，且代码块内容包含 kubectl apply |
 
 ![search_mutli](assets/search_mutli.gif)
 

@@ -185,7 +185,7 @@ class searchMultiPlugin extends BasePlugin {
 
             const item = document.createElement("div")
             item.className = "plugin-search-multi-item"
-            item.setAttribute("data-path", filePath)
+            item.dataset.path = filePath
             if (this.config.SHOW_MTIME) {
                 const time = stats.mtime.toLocaleString("chinese", { hour12: false })
                 item.setAttribute("ty-hint", time)
@@ -283,12 +283,12 @@ class QualifierMixin {
         isStringOrRegexp: (scope, operator, operand, operandType) => {
             if (operandType === "REGEXP") {
                 if (operator !== ":") {
-                    throw new Error(`In ${scope}: RegExp operands only support the ":" operator`)
+                    throw new Error(`In ${scope}: Regex operands only support the ":" operator`)
                 }
                 try {
                     new RegExp(operand)
                 } catch (e) {
-                    throw new Error(`In ${scope}: Invalid regular expression: "${operand}"`)
+                    throw new Error(`In ${scope}: Invalid regex: "${operand}"`)
                 }
             }
             if (operator !== ":" && operator !== "=" && operator !== "!=") {
@@ -297,10 +297,10 @@ class QualifierMixin {
         },
         isComparable: (scope, operator, operand, operandType) => {
             if (operandType === "REGEXP") {
-                throw new Error(`In ${scope}: RegExp operands are not valid for comparisons`)
+                throw new Error(`In ${scope}: Regex operands are not valid for numerical comparisons`)
             }
             if (operator === ":") {
-                throw new Error(`In ${scope}: The ":" operator is not valid for comparisons`)
+                throw new Error(`In ${scope}: The ":" operator is not valid for numerical comparisons`)
             }
         },
         isBoolean: (scope, operator, operand, operandType) => {
@@ -308,7 +308,7 @@ class QualifierMixin {
                 throw new Error(`In ${scope}: Only supports "=" and "!=" operators for logical comparisons`)
             }
             if (operandType === "REGEXP") {
-                throw new Error(`In ${scope}: RegExp operands are not valid for logical comparisons`)
+                throw new Error(`In ${scope}: Regex operands are not valid for logical comparisons`)
             }
             if (operand !== "true" && operand !== "false") {
                 throw new Error(`In ${scope}: Operand must be "true" or "false"`)
@@ -317,8 +317,8 @@ class QualifierMixin {
         isSize: (scope, operator, operand, operandType) => {
             this.VALIDATE.isComparable(scope, operator, operand, operandType)
             const units = [...Object.keys(this.UNITS)].sort((a, b) => b.length - a.length).join("|")
-            const ok = new RegExp(`^\\d+(\\.\\d+)?(${units})$`, "i").test(operand)
-            if (!ok) {
+            const regex = new RegExp(`^\\d+(\\.\\d+)?(${units})$`, "i")
+            if (!regex.test(operand)) {
                 throw new Error(`In ${scope}: Operand must be a number followed by a unit: ${units}`)
             }
         },
@@ -618,8 +618,8 @@ class Searcher {
             buildQualifier("blockhtml", "HTML块", PARSER.block, FILTER.is("html_block"), TRANSFORMER.content),
             buildQualifier("blockquote", "引用块", PARSER.block, FILTER.wrappedBy("blockquote"), TRANSFORMER.content),
             buildQualifier("table", "表格", PARSER.block, FILTER.wrappedBy("table"), TRANSFORMER.content),
-            buildQualifier("thead", "表格标题", PARSER.block, FILTER.wrappedBy("thead"), TRANSFORMER.content),
-            buildQualifier("tbody", "表格正文", PARSER.block, FILTER.wrappedBy("tbody"), TRANSFORMER.content),
+            buildQualifier("thead", "表头", PARSER.block, FILTER.wrappedBy("thead"), TRANSFORMER.content),
+            buildQualifier("tbody", "表体", PARSER.block, FILTER.wrappedBy("tbody"), TRANSFORMER.content),
             buildQualifier("ol", "有序列表", PARSER.block, FILTER.wrappedBy("ordered_list"), TRANSFORMER.content),
             buildQualifier("ul", "无序列表", PARSER.block, FILTER.wrappedBy("bullet_list"), TRANSFORMER.content),
             buildQualifier("task", "任务列表", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(0)),
@@ -831,14 +831,16 @@ class Searcher {
             `默认值 default = path + content（路径+文件内容）`,
         )
         const operatorDesc = genUL(
-            `${genOperator(":")}表示文本包含或正则匹配（默认）`,
+            `${genOperator(":")}表示文本包含或正则匹配`,
             `${genOperator("=", "!=")}表示文本、数值、布尔的严格相等/不相等`,
             `${genOperator(">", "<", ">=", "<=")}表示数值比较`,
         )
 
         const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
-        const scopeInfo = genInfo('严格来说是文件路径或文件内容包含 pear（默认搜索范围：路径+文件内容）')
-        const diffInfo = genInfo('注意区分：\nhead=plugin 表示标题为plugin\nhead:plugin 表示标题包含plugin')
+        const diffInfo = genInfo("注意区分：\nhead=plugin 表示标题为plugin\nhead:plugin 表示标题包含plugin")
+        const scopeInfo = genInfo(`为了简化搜索，可以省略搜索范围和运算符，此时搜索范围默认为 default，运算符为 :
+搜索范围 default 表示路径（path）和文件内容（content）
+也就是说，pear 等价于 default:pear ，也等价于 path:pear OR content:pear，含义：路径或内容包含 pear`)
 
         const keywordDesc = `
 <table>
@@ -848,8 +850,8 @@ class Searcher {
     <tr><td>-</td><td>后接一个查询条件，表示逻辑非。文档不可满足 - 右侧的查询条件</td></tr>
     <tr><td>""</td><td>引号包裹文本，表示词组。</td></tr>
     <tr><td>/regex/</td><td>JavaScript 风格的正则表达式</td></tr>
-    <tr><td>scope</td><td>搜索范围，用于限定查询范围${scopeDesc}</td></tr>
-    <tr><td>operator</td><td>操作符，用于比较查询关键字和查询结果${operatorDesc}</td></tr>
+    <tr><td>scope</td><td>搜索范围，规定在哪个属性上搜索${scopeDesc}</td></tr>
+    <tr><td>operator</td><td>运算符，用于连接搜索范围和关键字，表示两者的匹配关系${operatorDesc}</td></tr>
     <tr><td>()</td><td>小括号，用于调整运算优先级</td></tr>
 </table>`
 
@@ -861,11 +863,11 @@ class Searcher {
     <tr><td>sour | pear</td><td>包含 sour 或 pear。等价于 sour OR pear</td></tr>
     <tr><td>"sour pear"</td><td>包含 sour pear 这一词组</td></tr>
     <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
-    <tr><td>/\\bsour\\b/ pear mtime=2024-03-12</td><td>匹配正则\\bsour\\b（全字匹配sour），且包含 pear，且文件的修改时间为 2024-03-12</td></tr>
+    <tr><td>/\\bsour\\b/ pear mtime=2024-03-12</td><td>匹配正则 \\bsour\\b（全字匹配 sour），且包含 pear，且文件的修改时间为 2024-03-12</td></tr>
     <tr><td>frontmatter:开发 | head=plugin | strong:MIT</td><td>YAML Front Matter 包含开发 或者 标题内容为 plugin 或者 加粗文字包含 MIT ${diffInfo}</td></tr>
     <tr><td>size>10kb (linenum>=1000 | hasimage=true)</td><td>文件大小超过 10KB，并且文件要么至少有 1000 行，要么包含图片</td></tr>
     <tr><td>path:(info | warn | err) -ext:md</td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 md</td></tr>
-    <tr><td>file:/[a-z]{3}/ content:prometheus blockcode:"kubectl apply"</td><td>文件名匹配正则 [a-z]{3}（包含三个小写字母），且文件内容包含 prometheus，且代码块内容包含 kubectl apply</td></tr>
+    <tr><td>thead:k8s h2:prometheus blockcode:"kubectl apply"</td><td>表头包含 k8s，且二级标题包含 prometheus，且代码块内容包含 kubectl apply</td></tr>
 </table>`
 
         const content = `
@@ -885,10 +887,10 @@ class Searcher {
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
         const desc = `<b>多元文件搜索通过组合不同的条件来精确查找文件。</b>
-每个条件由三部分组成：搜索范围、操作符、关键字，如 size>2kb（含义：文件尺寸大于 2KB）、ext:txt（含义：文件扩展名包含 txt）、content:/\\d{8}/（含义：文件内容能匹配正则表达式 \\d{8}）<br />
+每个条件由三部分组成：搜索范围(scope)、运算符(operator)、关键字(operand)，如 size>2kb（含义：文件尺寸大于 2KB）、ext:txt（含义：文件扩展名包含 txt）、content:/\\d{8}/（含义：文件内容能匹配正则 \\d{8}）<br />
 条件之间用空格分隔，表示必须满足所有条件。如 size>2kb ext:txt<br />
-条件之间用 OR 连接，表示需满足其中一个条件。如 size>2kb OR ext:txt<br />
-在条件前面添加减号，表示不可满足此条件。如 -size>2kb（含义：文件尺寸不得大于 2KB）`
+条件之间用 OR 连接，表示至少满足其中一个条件。如 size>2kb OR ext:txt<br />
+在条件前面添加减号，表示不可满足此条件。如 -size>2kb`
         const components = [
             { label: desc, type: "blockquote" },
             { label: example, type: "p" },
