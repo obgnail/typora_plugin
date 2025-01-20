@@ -671,32 +671,56 @@ class Searcher {
         return ast
     }
 
+    // For OR or AND nodes, all their child nodes of the same type will be collected into an array called subNodes,
+    // and then sorted according to costLevel.
+    // Finally, the OR or AND tree will be reconstructed to prioritize low overhead logic.
     optimize(ast) {
+        if (!ast) return
+
         const { OR, AND } = this.parser.TYPE
+        const setCostLevel = node => {
+            if (!node) return
 
-        const postOrder = (node, callback) => {
-            if (node) {
-                postOrder(node.left, callback)
-                postOrder(node.right, callback)
-                callback(node)
-            }
-        }
+            setCostLevel(node.left)
+            setCostLevel(node.right)
 
-        const swap = node => {
             const rootCostLevel = node.costLevel || 1
             const leftCostLevel = (node.left && node.left.costLevel) || 1
             const rightCostLevel = (node.right && node.right.costLevel) || 1
             node.costLevel = Math.max(rootCostLevel, leftCostLevel, rightCostLevel)
+        }
+        const rebuild = node => {
+            if (!node) return
 
-            if (!node.left || !node.right) return
-
-            const shouldSwap = (node.type === OR || node.type === AND) && leftCostLevel > rightCostLevel
-            if (shouldSwap) {
-                [node.left, node.right] = [node.right, node.left]
+            if (node.type === OR || node.type === AND) {
+                const subNodes = []
+                const collectSubNodes = cur => {
+                    if (cur.type === node.type) {
+                        if (cur.right) collectSubNodes(cur.right)
+                        if (cur.left) collectSubNodes(cur.left)
+                    } else {
+                        subNodes.push(cur)
+                    }
+                }
+                collectSubNodes(node)
+                if (subNodes.length > 1) {
+                    subNodes.sort((a, b) => a.costLevel - b.costLevel)
+                    let newNode = subNodes.shift()
+                    while (subNodes.length) {
+                        const right = subNodes.shift()
+                        newNode = { type: node.type, left: newNode, right, costLevel: right.costLevel }
+                    }
+                    node.left = newNode.left
+                    node.right = newNode.right
+                    node.costLevel = newNode.costLevel
+                }
             }
+            rebuild(node.right)
+            rebuild(node.left)
         }
 
-        postOrder(ast, swap)
+        setCostLevel(ast)
+        rebuild(ast)
         return ast
     }
 
@@ -774,42 +798,42 @@ class Searcher {
 
         function _eval(node, negated) {
             let left, right
-            const _node = { ...node }
             switch (node.type) {
                 case AND:
                     left = _eval(node.left, negated)
                     right = _eval(node.right, negated)
-                    _node.head = left.head
-                    _node.tail = right.tail
-                    _node.result = [...left.result, ...link(left, right), ...right.result]
-                    return _node
+                    node.head = left.head
+                    node.tail = right.tail
+                    node.result = [...left.result, ...link(left, right), ...right.result]
+                    return node
                 case OR:
                     left = _eval(node.left, negated)
                     right = _eval(node.right, negated)
-                    _node.head = [...left.head, ...right.head]
-                    _node.tail = [...left.tail, ...right.tail]
-                    _node.result = [...left.result, ...right.result]
-                    return _node
+                    node.head = [...left.head, ...right.head]
+                    node.tail = [...left.tail, ...right.tail]
+                    node.result = [...left.result, ...right.result]
+                    return node
                 case NOT:
                     left = node.left ? _eval(node.left, negated) : { result: [], head: [], tail: [] }
                     right = _eval(node.right, !negated)
-                    _node.head = node.left ? left.head : right.head
-                    _node.tail = right.tail
-                    _node.result = [...left.result, ...link(left, right), ...right.result]
-                    return _node
+                    node.head = node.left ? left.head : right.head
+                    node.tail = right.tail
+                    node.result = [...left.result, ...link(left, right), ...right.result]
+                    return node
                 case KEYWORD:
                 case PHRASE:
                 case REGEXP:
-                    _node.negated = negated
-                    _node.head = [node]
-                    _node.tail = [node]
-                    _node.result = []
-                    return _node
+                    node.negated = negated
+                    node.head = [node]
+                    node.tail = [node]
+                    node.result = []
+                    return node
                 default:
                     throw new Error(`Unknown node type: ${node.type}`)
             }
         }
 
+        ast = JSON.parse(JSON.stringify(ast))  // deep copy
         const { head, tail, result } = _eval(ast)
         const start = head.map(h => `S --> ${getName(h)}`)
         const end = tail.map(t => `${getName(t)} --> E`)
@@ -833,34 +857,34 @@ class Searcher {
 
         const _eval = (node, negated) => {
             let left, right
-            const _node = { ...node }
             switch (node.type) {
                 case AND:
                     left = _eval(node.left, negated)
                     right = _eval(node.right, negated)
-                    _node.result = link(left, right)
-                    return _node
+                    node.result = link(left, right)
+                    return node
                 case OR:
                     left = _eval(node.left, negated)
                     right = _eval(node.right, negated)
-                    _node.result = [...left.result, ...right.result]
-                    return _node
+                    node.result = [...left.result, ...right.result]
+                    return node
                 case NOT:
                     left = node.left ? _eval(node.left, negated) : { result: [[]], head: [], tail: [] }
                     right = _eval(node.right, !negated)
-                    _node.result = link(left, right)
-                    return _node
+                    node.result = link(left, right)
+                    return node
                 case KEYWORD:
                 case PHRASE:
                 case REGEXP:
-                    _node.negated = negated
-                    _node.result = [[node]]
-                    return _node
+                    node.negated = negated
+                    node.result = [[node]]
+                    return node
                 default:
                     throw new Error(`Unknown node type: ${node.type}`)
             }
         }
 
+        ast = JSON.parse(JSON.stringify(ast))  // deep copy
         const { result } = _eval(ast)
         const content = result
             .map(path => path.map(e => getName(e)).join("且"))
