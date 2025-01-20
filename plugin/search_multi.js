@@ -143,7 +143,7 @@ class searchMultiPlugin extends BasePlugin {
             this.utils.hide(this.entities.highlightResult)
             if (!ast) return
             const tokens = this.searcher.getContentTokens(ast).filter(Boolean)
-            if (!tokens || tokens.length === 0) return
+            if (tokens.length === 0) return
 
             const hitGroups = this.highlighter.doSearch(tokens)
             const itemList = Object.entries(hitGroups).map(([cls, { name, hits }]) => {
@@ -654,8 +654,7 @@ class Searcher {
     parse(input) {
         input = this.config.CASE_SENSITIVE ? input : input.toLowerCase()
         const ast = this.parser.parse(input)
-        const validatedAST = this.validateAndCast(ast)
-        return this.optimize(validatedAST)
+        return this.validateAndCast(ast)
     }
 
     validateAndCast(ast) {
@@ -671,9 +670,12 @@ class Searcher {
         return ast
     }
 
-    // For OR or AND nodes, all their child nodes of the same type will be collected into an array called subNodes,
-    // and then sorted according to costLevel.
-    // Finally, the OR or AND tree will be reconstructed to prioritize low overhead logic.
+    /**
+     * Process OR/AND nodes by:
+     *   1. Gathering same-type child nodes into `subNodes`.
+     *   2. Sorting `subNodes` by `costLevel`.
+     *   3. Rebuilding the subtree based on `subNodes` to favor low-cost operations.
+     */
     optimize(ast) {
         if (!ast) return
 
@@ -756,27 +758,39 @@ class Searcher {
     getContentTokens(ast) {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
         const isMeta = new Set([...this.qualifiers.values()].filter(q => q.is_meta).map(q => q.scope))
-
-        function _eval({ type, left, right, scope, operand }) {
+        const contentNodes = new Set()
+        const _eval = (node, negated) => {
+            const { type, left, right, scope } = node
             switch (type) {
                 case KEYWORD:
                 case PHRASE:
-                    operand = operand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-                    return isMeta.has(scope) ? [] : [operand]
                 case REGEXP:
-                    return isMeta.has(scope) ? [] : [operand]
+                    if (!isMeta.has(scope)) {
+                        node._negated = negated
+                        contentNodes.add(node)
+                    }
+                    break
                 case OR:
                 case AND:
-                    return [..._eval(left), ..._eval(right)]
+                    _eval(left, negated)
+                    _eval(right, negated)
+                    break
                 case NOT:
-                    const exclude = _eval(right)
-                    return (left ? _eval(left) : []).filter(e => !exclude.includes(e))
+                    left && _eval(left, negated)
+                    _eval(right, !negated)
+                    break
                 default:
                     throw new Error(`Unknown AST node「${type}」`)
             }
         }
 
-        return _eval(ast)
+        _eval(ast)
+        return [...contentNodes]
+            .filter(n => !n._negated)
+            .map(n => {
+                const operand = n.operand
+                return n.type === REGEXP ? operand : operand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+            })
     }
 
     // Converts to a mermaid graph. However, the generated graph is too large and there is no place to put it, so it is not used for now.
