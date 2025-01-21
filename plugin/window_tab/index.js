@@ -436,6 +436,7 @@ class windowTabBarPlugin extends BasePlugin {
         { act_name: "启用功能：Ctrl+Click 标签以新窗口打开", act_value: "toggle_ctrl_click", act_state: this.config.CTRL_CLICK_TO_NEW_WINDOW },
         { act_name: "启用功能：Ctrl+Wheel 标签以切换标签", act_value: "toggle_ctrl_wheel", act_state: this.config.CTRL_WHEEL_TO_SCROLL },
         { act_name: "启用功能：鼠标中键标签以关闭标签", act_value: "toggle_middle_click", act_state: this.config.MIDDLE_CLICK_TO_CLOSE },
+        { act_name: "启用功能：临时隐藏标签栏", act_value: "toggle_tab_bar", act_state: this.entities.windowTab.style.display === "none" },
         { act_name: "启用功能：在新标签打开", act_value: "toggle_local", act_state: !this.localOpen },
     ]
 
@@ -468,6 +469,7 @@ class windowTabBarPlugin extends BasePlugin {
             save_tabs: this.saveTabs,
             sort_tabs: this.sortTabs,
             open_save_tabs: this.openSaveTabs,
+            toggle_tab_bar: this._forceToggleTabBar,
         }
         const func = callMap[action]
         func && func()
@@ -484,6 +486,17 @@ class windowTabBarPlugin extends BasePlugin {
         if (this.utils.isHidden(this.entities.windowTab)) {
             this.utils.show(this.entities.windowTab);
             this._adjustContentTop();
+        }
+    }
+
+    _forceToggleTabBar = () => {
+        const windowTab = this.entities.windowTab
+        const isHidden = windowTab.style.display === "none"
+        windowTab.style.display = isHidden ? "initial" : "none"
+        if (isHidden) {
+            this._adjustContentTop()
+        } else {
+            this._resetContentTop()
         }
     }
 
