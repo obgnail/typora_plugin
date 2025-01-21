@@ -120,12 +120,12 @@ class searchMultiPlugin extends BasePlugin {
         this.utils.hide(this.entities.info)
     }
 
-    getAST = (input = this.entities.input.value) => {
+    getAST = (input = this.entities.input.value, optimize = this.config.OPTIMIZE_SEARCH) => {
         input = input.trim()
         if (!input) return
 
         try {
-            const ast = this.searcher.parse(input)
+            const ast = this.searcher.parse(input, optimize)
             const explain = this.searcher.toExplain(ast)
             this.entities.input.setAttribute("title", explain)
             this.utils.notification.hide()
@@ -651,10 +651,11 @@ class Searcher {
         ]
     }
 
-    parse(input) {
+    parse(input, optimize) {
         input = this.config.CASE_SENSITIVE ? input : input.toLowerCase()
         const ast = this.parser.parse(input)
-        return this.validateAndCast(ast)
+        this.validateAndCast(ast)
+        return optimize ? this.optimize(ast) : ast
     }
 
     validateAndCast(ast) {
