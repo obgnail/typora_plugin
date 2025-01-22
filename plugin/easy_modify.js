@@ -3,6 +3,8 @@ class easyModifyPlugin extends BasePlugin {
         { hotkey: this.config.HOTKEY_COPY_FULL_PATH, callback: () => this.call("copy_full_path") },
         { hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, callback: () => this.call("increase_headers_level") },
         { hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, callback: () => this.call("decrease_headers_level") },
+        { hotkey: this.config.HOTKEY_CONVERT_CRLF_TO_LF, callback: () => this.call("convert_crlf_to_lf") },
+        { hotkey: this.config.HOTKEY_CONVERT_LF_TO_CRLF, callback: () => this.call("convert_lf_to_crlf") },
         { hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, callback: () => this.call("trailing_white_space") },
         { hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE, callback: () => this.dynamicCall("extract_rang_to_new_file") },
         { hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, callback: () => this.dynamicCall("insert_mermaid_mindmap") },
@@ -10,13 +12,17 @@ class easyModifyPlugin extends BasePlugin {
     ]
 
     init = () => {
-        const act_hint = "若无选中文段，则调整整篇文档"
         this._showWarnDialog = true
+
+        const defaultDoc = "若无选中文段，则调整整篇文档"
+        const notRecommended = "除非有特殊需求，不建议使用此功能"
         this.staticActions = [
             { act_name: "复制标题路径", act_value: "copy_full_path", act_hotkey: this.config.HOTKEY_COPY_FULL_PATH },
-            { act_name: "提升选中文段的标题等级", act_value: "increase_headers_level", act_hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, act_hint },
-            { act_name: "降低选中文段的标题等级", act_value: "decrease_headers_level", act_hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, act_hint },
-            { act_name: "添加结尾空格", act_value: "trailing_white_space", act_hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, act_hint: "除非有特殊需求，不建议使用此功能" },
+            { act_name: "提升选中文段的标题等级", act_value: "increase_headers_level", act_hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, act_hint: defaultDoc },
+            { act_name: "降低选中文段的标题等级", act_value: "decrease_headers_level", act_hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, act_hint: defaultDoc },
+            { act_name: "换行符 CRLF 转为 LF", act_value: "convert_crlf_to_lf", act_hotkey: this.config.HOTKEY_CONVERT_CRLF_TO_LF, act_hint: notRecommended },
+            { act_name: "换行符 LF 转为 CRLF", act_value: "convert_lf_to_crlf", act_hotkey: this.config.HOTKEY_CONVERT_LF_TO_CRLF, act_hint: notRecommended },
+            { act_name: "添加结尾空格", act_value: "trailing_white_space", act_hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, act_hint: notRecommended },
         ]
     }
 
@@ -50,11 +56,13 @@ class easyModifyPlugin extends BasePlugin {
         const funcMap = {
             increase_headers_level: () => this.changeHeadersLevel(true),
             decrease_headers_level: () => this.changeHeadersLevel(false),
-            trailing_white_space: async () => this.trailingWhiteSpace(),
             copy_full_path: () => this.copyFullPath(meta.copyAnchor),
             insert_mermaid_mindmap: () => this.insertMindmap("mindmap", meta.insertAnchor),
             insert_mermaid_graph: () => this.insertMindmap("graph", meta.insertAnchor),
             extract_rang_to_new_file: async () => this.extractRangeToNewFile(meta.range),
+            trailing_white_space: this.trailingWhiteSpace,
+            convert_crlf_to_lf: this.convertCRLF2LF,
+            convert_lf_to_crlf: this.convertLF2CRLF,
         }
         const func = funcMap[action]
         if (!func) return
@@ -132,6 +140,10 @@ class easyModifyPlugin extends BasePlugin {
         const text = this.utils.Package.Path.join(...result);
         navigator.clipboard.writeText(text);
     }
+
+    convertCRLF2LF = async () => this.utils.editCurrentFile(content => content.replace(/\r\n/g, "\n"))
+
+    convertLF2CRLF = async () => this.utils.editCurrentFile(content => content.replace(/\r?\n/g, "\r\n"))
 
     extractRangeToNewFile = async range => {
         if (!range || range.collapsed) return;
