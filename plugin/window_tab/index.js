@@ -16,13 +16,15 @@ class windowTabBarPlugin extends BasePlugin {
     hotkey = () => [
         { hotkey: this.config.SWITCH_NEXT_TAB_HOTKEY, callback: this.nextTab },
         { hotkey: this.config.SWITCH_PREVIOUS_TAB_HOTKEY, callback: this.previousTab },
+        { hotkey: this.config.SORT_TABS_HOTKEY, callback: this.sortTabs },
         { hotkey: this.config.CLOSE_HOTKEY, callback: this.closeActiveTab },
-        { hotkey: this.config.COPY_PATH_HOTKEY, callback: this.copyActiveTabPath }
+        { hotkey: this.config.COPY_PATH_HOTKEY, callback: this.copyActiveTabPath },
+        { hotkey: this.config.TOGGLE_TAB_BAR_HOTKEY, callback: this.forceToggleTabBar },
     ]
 
     init = () => {
         this.staticActions = [
-            { act_name: "排序标签", act_value: "sort_tabs" },
+            { act_name: "排序标签", act_value: "sort_tabs", act_hotkey: this.config.SORT_TABS_HOTKEY },
             { act_name: "保存当前标签页列表", act_value: "save_tabs" },
         ]
         this.entities = {
@@ -436,7 +438,7 @@ class windowTabBarPlugin extends BasePlugin {
         { act_name: "启用功能：Ctrl+Click 标签以新窗口打开", act_value: "toggle_ctrl_click", act_state: this.config.CTRL_CLICK_TO_NEW_WINDOW },
         { act_name: "启用功能：Ctrl+Wheel 标签以切换标签", act_value: "toggle_ctrl_wheel", act_state: this.config.CTRL_WHEEL_TO_SCROLL },
         { act_name: "启用功能：鼠标中键标签以关闭标签", act_value: "toggle_middle_click", act_state: this.config.MIDDLE_CLICK_TO_CLOSE },
-        { act_name: "启用功能：临时隐藏标签栏", act_value: "toggle_tab_bar", act_state: this.entities.windowTab.style.display === "none" },
+        { act_name: "启用功能：临时隐藏标签栏", act_value: "toggle_tab_bar", act_state: this.entities.windowTab.style.display === "none", act_hotkey: this.config.TOGGLE_TAB_BAR_HOTKEY },
         { act_name: "启用功能：在新标签打开", act_value: "toggle_local", act_state: !this.localOpen },
     ]
 
@@ -469,7 +471,7 @@ class windowTabBarPlugin extends BasePlugin {
             save_tabs: this.saveTabs,
             sort_tabs: this.sortTabs,
             open_save_tabs: this.openSaveTabs,
-            toggle_tab_bar: this._forceToggleTabBar,
+            toggle_tab_bar: this.forceToggleTabBar,
         }
         const func = callMap[action]
         func && func()
@@ -486,17 +488,6 @@ class windowTabBarPlugin extends BasePlugin {
         if (this.utils.isHidden(this.entities.windowTab)) {
             this.utils.show(this.entities.windowTab);
             this._adjustContentTop();
-        }
-    }
-
-    _forceToggleTabBar = () => {
-        const windowTab = this.entities.windowTab
-        const isHidden = windowTab.style.display === "none"
-        windowTab.style.display = isHidden ? "initial" : "none"
-        if (isHidden) {
-            this._adjustContentTop()
-        } else {
-            this._resetContentTop()
         }
     }
 
@@ -713,6 +704,17 @@ class windowTabBarPlugin extends BasePlugin {
             const next = tabDiv.nextElementSibling;
             tabDiv.parentElement.removeChild(tabDiv);
             tabDiv = next;
+        }
+    }
+
+    forceToggleTabBar = () => {
+        const windowTab = this.entities.windowTab
+        const isHidden = windowTab.style.display === "none"
+        windowTab.style.display = isHidden ? "initial" : "none"
+        if (isHidden) {
+            this._adjustContentTop()
+        } else {
+            this._resetContentTop()
         }
     }
 

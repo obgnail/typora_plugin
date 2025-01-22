@@ -124,9 +124,11 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     _liTemplate = (key, showName, shortcut, hasExtraMenu, class_, extra) => {
-        if (shortcut) {
-            shortcut = Array.isArray(shortcut) ? shortcut[0] : shortcut;
-            shortcut = shortcut.split("+").map(e => e[0].toUpperCase() + e.slice(1).toLowerCase()).join("+");
+        if (Array.isArray(shortcut)) {
+            shortcut = shortcut[0]
+        }
+        if (shortcut && typeof shortcut === "string") {
+            shortcut = shortcut.split("+").map(e => e[0].toUpperCase() + e.slice(1).toLowerCase()).join("+")
         }
         const hasShortcut = this.supportShortcut && this.config.SHOW_PLUGIN_HOTKEY && shortcut;
         const attr = hasExtraMenu
@@ -147,13 +149,13 @@ class rightClickMenuPlugin extends BasePlugin {
     caret = () => ({ ele: "i", class_: "fa fa-caret-right" })
 
     findLostPluginIfNeed = () => {
-        if (!this.config.FIND_LOST_PLUGIN) return;
+        if (!this.config.FIND_LOST_PLUGIN) return
 
-        const allPlugins = new Map(Object.entries(this.utils.getAllPlugins()));
-        this.config.MENUS.forEach(menu => menu.LIST.forEach(plugin => allPlugins.delete(plugin)));
-        for (const plugin of allPlugins.values()) {
-            this.config.MENUS[this.config.MENUS.length - 1].LIST.push(plugin.fixedName);
-        }
+        const { MENUS } = this.config
+        const plugins = new Map(Object.entries(this.utils.getAllPlugins()))
+        MENUS.forEach(menu => menu.LIST.forEach(p => plugins.delete(p)))
+        const lostPlugins = [...plugins.values()].map(p => p.fixedName)
+        MENUS[MENUS.length - 1].LIST.push(...lostPlugins)
     }
 
     showMenuItem = (after, before) => {
