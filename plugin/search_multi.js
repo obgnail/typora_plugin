@@ -289,15 +289,7 @@ class QualifierMixin {
         noop: (scope, operator, operand, operandType) => operand,
         resolveNumber: (scope, operator, operand, operandType) => {
             if (operandType === "REGEXP") return operand
-            operand = operand.toLowerCase().replace(/_/g, "")
-            const numberSystem = { "0x": 16, "0o": 8, "0b": 2 }
-            const system = Object.entries(numberSystem).find(([prefix]) => operand.startsWith(prefix))
-            if (system) {
-                const radix = system[1]
-                const num = parseInt(operand.slice(2), radix)
-                return isNaN(num) ? operand : num.toString()
-            }
-            return operand
+            return operand.replace(/[_,]/g, "")  // supports thousands separator
         },
         resolveBoolean: (scope, operator, operand, operandType) => {
             if (operandType === "REGEXP") return operand
@@ -316,8 +308,8 @@ class QualifierMixin {
             const today = new Date()
             const tomorrow = new Date(today.getTime() + oneDay)
             const yesterday = new Date(today.getTime() - oneDay)
-            const dates = { today, tomorrow, yesterday }
-            const replacement = dates[operand.toLowerCase()]
+            const predefined = { today, tomorrow, yesterday }
+            const replacement = predefined[operand.toLowerCase()]
             return replacement ? replacement.toISOString().slice(0, 10) : operand
         },
     }
@@ -971,38 +963,39 @@ class Searcher {
         )
 
         const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
-        const diffInfo = genInfo("注意区分：\nhead=plugin 表示标题为plugin\nhead:plugin 表示标题包含plugin")
-        const scopeInfo = genInfo(`为了简化搜索，可以省略搜索范围和运算符，此时搜索范围默认为 default，运算符默认为 :。
-搜索范围 default 表示路径（path）和文件内容（content），运算符: 表示文本包含。
-也就是说，pear 等价于 default:pear ，也等价于 path:pear OR content:pear。
-含义：路径或内容包含 pear。`)
+        const agreement = genInfo("约定：查询表达式以斜体表示")
+        const diffInfo = genInfo("注意区分：\nhead=plugin 表示标题为 plugin\nhead:plugin 表示标题包含 plugin")
+        const scopeInfo = genInfo(`1. 为了简化搜索，可以同时省略搜索范围和运算符，此时搜索范围默认为 default，运算符默认为 :
+2. 搜索范围 default 表示路径（path）和文件内容（content），运算符: 表示文本包含
+3. 也就是说，pear 等价于 default:pear ，也等价于 path:pear OR content:pear
+4. 其含义为：搜索「文件路径或文件内容包含 pear」的文件`)
 
         const keywordDesc = `
 <table>
     <tr><th>关键字</th><th>说明</th></tr>
     <tr><td>空格</td><td>连接两个查询条件，表示逻辑与。文档应该同时满足空格左右两侧的查询条件，等价于 AND</td></tr>
     <tr><td>|</td><td>连接两个查询条件，表示逻辑或。文档应该满足 | 左右两侧中至少一个查询条件，等价于 OR</td></tr>
-    <tr><td>-</td><td>后接一个查询条件，表示逻辑非。文档不可满足 - 右侧的查询条件</td></tr>
-    <tr><td>""</td><td>引号包裹文本，表示词组。</td></tr>
+    <tr><td>-</td><td>后接一个查询条件，表示逻辑非。文档不可满足 - 右侧的查询条件，等价于 NOT</td></tr>
+    <tr><td>""</td><td>引号包裹文本，表示词组</td></tr>
     <tr><td>/regex/</td><td>JavaScript 风格的正则表达式</td></tr>
     <tr><td>scope</td><td>搜索范围，规定在哪个属性上搜索${scopeDesc}</td></tr>
-    <tr><td>operator</td><td>运算符，用于连接搜索范围和关键字，表示两者的匹配关系${operatorDesc}</td></tr>
+    <tr><td>operator</td><td>运算符，用于连接搜索范围和关键词，表示二者的匹配关系${operatorDesc}</td></tr>
     <tr><td>()</td><td>小括号，用于调整运算优先级</td></tr>
 </table>`
 
         const example = `
 <table>
-    <tr><th>示例</th><th>搜索文件</th></tr>
-    <tr><td>pear</td><td>包含 pear。等价于 default:pear ${scopeInfo}</td></tr>
-    <tr><td>sour pear</td><td>包含 sour 和 pear。等价于 sour AND pear</td></tr>
-    <tr><td>sour | pear</td><td>包含 sour 或 pear。等价于 sour OR pear</td></tr>
-    <tr><td>"sour pear"</td><td>包含 sour pear 这一词组</td></tr>
-    <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
-    <tr><td>/\\bsour\\b/ pear mtime=2024-05-16</td><td>匹配正则 \\bsour\\b（全字匹配 sour），且包含 pear，且文件的修改时间为 2024-05-16</td></tr>
-    <tr><td>frontmatter:开发 | head=plugin | strong:MIT</td><td>YAML Front Matter 包含开发 或者 标题内容为 plugin 或者 加粗文字包含 MIT ${diffInfo}</td></tr>
-    <tr><td>size>10kb (linenum>=1000 | hasimage=true)</td><td>文件大小超过 10KB，并且文件要么至少有 1000 行，要么包含图片</td></tr>
-    <tr><td>path:(info | warn | err) -ext:md</td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 md</td></tr>
-    <tr><td>thead:k8s h2:prometheus blockcode:"kubectl apply"</td><td>表头包含 k8s，且二级标题包含 prometheus，且代码块内容包含 kubectl apply</td></tr>
+    <tr><th>示例${agreement}</th><th>搜索文件</th></tr>
+    <tr><td><em>pear</em></td><td>包含 pear。等价于 <em>default:pear</em> ${scopeInfo}</td></tr>
+    <tr><td><em>-pear</em></td><td>不含 pear。等价于 <em>NOT pear</em></td></tr>
+    <tr><td><em>sour pear</em></td><td>包含 sour 和 pear。等价于 <em>sour AND pear</em></td></tr>
+    <tr><td><em>sour | pear</em></td><td>包含 sour 或 pear。等价于 <em>sour OR pear</em></td></tr>
+    <tr><td><em>"sour pear"</em></td><td>包含 sour pear 这一词组</td></tr>
+    <tr><td><em>/\\bsour\\b/ pear mtime<2024-05-16</em></td><td>匹配正则 \\bsour\\b（全字匹配 sour），且包含 pear，且文件的修改时间早于 2024-05-16</td></tr>
+    <tr><td><em>frontmatter:dev | head=plugin | strong:MIT</em></td><td>YAML Front Matter 包含 dev 或者 标题内容为 plugin 或者 加粗文字包含 MIT ${diffInfo}</td></tr>
+    <tr><td><em>size>10kb (linenum>=1000 | hasimage=true)</em></td><td>文件大小超过 10KB，并且文件要么至少有 1000 行，要么包含图片</td></tr>
+    <tr><td><em>path:(info | warn | err) -ext:md</em></td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 md</td></tr>
+    <tr><td><em>thead:k8s h2:prometheus blockcode:"kubectl apply"</em></td><td>表头包含 k8s，且二级标题包含 prometheus，且代码块内容包含 kubectl apply</td></tr>
 </table>`
 
         const content = `
@@ -1015,17 +1008,17 @@ class Searcher {
 <conjunction> ::= <and> | <not>
 <or> ::= 'OR' | '|'
 <and> ::= 'AND' | ' '
-<not> ::= '-'
+<not> ::= 'NOT' | '-'
 <keyword> ::= [^\\s"()|]+
 <regex> ::= [^/]+
 <operator> ::= ${operator.map(s => `'${s}'`).join(" | ")}
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
-        const desc = `<b>多元文件搜索通过组合不同的条件来精确查找文件。</b>
-每个条件由三部分组成：搜索范围(scope)、运算符(operator)、关键字(operand)，如 size>2kb（含义：文件尺寸大于 2KB）、ext:txt（含义：文件扩展名包含 txt）、content:/\\d{8}/（含义：文件内容能匹配正则 \\d{8}）<br />
-条件之间用空格分隔，表示必须满足所有条件。如 size>2kb ext:txt<br />
-条件之间用 OR 连接，表示至少满足其中一个条件。如 size>2kb OR ext:txt<br />
-在条件前面添加减号，表示不可满足此条件。如 -size>2kb`
+        const desc = `<b>多元文件搜索通过组合不同的条件来精确查找文本文件。</b>
+每个条件由三部分组成：搜索范围(scope)、运算符(operator)、关键词(operand)，如 <em>size>2kb</em>（含义：文件尺寸大于 2KB）、<em>ext:txt</em>（含义：文件扩展名包含 txt）、<em>content:/\\d{8}/</em>（含义：文件内容能匹配正则 \\d{8}）<br />
+条件之间用 AND 连接，表示必须满足所有条件。如 <em>size>2kb AND ext:txt</em><br />
+条件之间用 OR 连接，表示至少满足其中一个条件。如 <em>size>2kb OR ext:txt</em><br />
+在条件前面添加 NOT，表示不可满足此条件。如 <em>NOT size>2kb</em>`
         const components = [
             { label: desc, type: "blockquote" },
             { label: example, type: "p" },

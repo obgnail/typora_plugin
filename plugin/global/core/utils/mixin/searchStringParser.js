@@ -9,7 +9,7 @@
  *   <conjunction> ::= <and> | <not>
  *   <and> ::= 'AND' | ' '
  *   <or> ::= 'OR' | '|'
- *   <not> ::= '-'
+ *   <not> ::= 'NOT' | '-'
  *   <keyword> ::= [^\\s"()|]+
  *   <regexp> ::= [^/]+
  *   <operator> ::= ':' | '=' | '>=' | '<=' | '>' | '<'
@@ -54,7 +54,7 @@ class searchStringParser {
         this.regex = new RegExp(
             [
                 `(?<AND>(\\s|\\bAND\\b)+)`,
-                `(?<NOT>-)`,
+                `(?<NOT>-|\\bNOT\\b)`,
                 `"(?<PHRASE>[^"]*)"`,
                 `(?<PAREN_OPEN>\\()`,
                 `(?<PAREN_CLOSE>\\))`,
