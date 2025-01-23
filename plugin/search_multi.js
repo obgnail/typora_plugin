@@ -285,6 +285,43 @@ class QualifierMixin {
 
     static UNITS = { k: 1 << 10, m: 1 << 20, g: 1 << 30, kb: 1 << 10, mb: 1 << 20, gb: 1 << 30 }
 
+    static PREPROCESS = {
+        noop: (scope, operator, operand, operandType) => operand,
+        resolveNumber: (scope, operator, operand, operandType) => {
+            if (operandType === "REGEXP") return operand
+            operand = operand.toLowerCase().replace(/_/g, "")
+            const numberSystem = { "0x": 16, "0o": 8, "0b": 2 }
+            const system = Object.entries(numberSystem).find(([prefix]) => operand.startsWith(prefix))
+            if (system) {
+                const radix = system[1]
+                const num = parseInt(operand.slice(2), radix)
+                return isNaN(num) ? operand : num.toString()
+            }
+            return operand
+        },
+        resolveBoolean: (scope, operator, operand, operandType) => {
+            if (operandType === "REGEXP") return operand
+            switch (operand.toLowerCase()) {
+                case "yes":
+                    return "true"
+                case "no":
+                    return "false"
+                default:
+                    return operand
+            }
+        },
+        resolveDate: (scope, operator, operand, operandType) => {
+            if (operandType === "REGEXP") return operand
+            const oneDay = 24 * 60 * 60 * 1000
+            const today = new Date()
+            const tomorrow = new Date(today.getTime() + oneDay)
+            const yesterday = new Date(today.getTime() - oneDay)
+            const dates = { today, tomorrow, yesterday }
+            const replacement = dates[operand.toLowerCase()]
+            return replacement ? replacement.toISOString().slice(0, 10) : operand
+        },
+    }
+
     static VALIDATE = {
         isStringOrRegexp: (scope, operator, operand, operandType) => {
             if (operandType === "REGEXP") {
@@ -374,12 +411,13 @@ class QualifierMixin {
 }
 
 /**
- * The matching process consists of the following steps: (Steps 1-3 are executed once; steps 4-5 are executed multiple times)
- *   1. parse:    Parses the input to generate an AST.
- *   2. validate: Validates the AST for correctness.
- *   3. cast:     Converts operand within the AST nodes into a usable format (e.g. converting '2024-01-01' in 'mtime>2024-01-01' to a timestamp for easier matching). The result is `castResult`.
- *   4. query:    Queries the file data to obtain `queryResult`.
- *   5. match:    Matches `castResult` from step 3 with `queryResult` from step 4.
+ * The matching process consists of the following steps: (Steps 1-4 are executed once; steps 5-6 are executed multiple times)
+ *   1. parse:      Parses the input to generate an AST.
+ *   2. preprocess: Convert certain specific, predefined, and special meaning vocabulary (e.g. converting 'today' in 'mtime=today' to '2024-01-01').
+ *   3. validate:   Validates the AST for correctness.
+ *   4. cast:       Converts operand within the AST nodes into a usable format (e.g. converting '2024-01-01' in 'mtime>2024-01-01' to a timestamp for easier matching). The result is `castResult`.
+ *   5. query:      Queries the file data to obtain `queryResult`.
+ *   6. match:      Matches `castResult` from step 4 with `queryResult` from step 5.
  *
  * A qualifier has the following attributes:
  *   {string}   scope:         Query scope
@@ -387,7 +425,8 @@ class QualifierMixin {
  *   {boolean}  is_meta:       Is Qualifier scope a metadata property
  *   {boolean}  read_file:     Do Qualifier need to read file
  *   {number}   cost_level:    The cost level of calling `query` function. 1: Read file stats;  2: Read file content;  3: Parse file content;  Plus 0.5 when the user input is a regexp
- *   {function} validate:      Checks user input; defaults to `QualifierMixin.VALIDATE.isStringOrRegexp`
+ *   {function} preprocess:    Convert certain specific, predefined, and special meaning vocabulary from the user input; defaults to `QualifierMixin.PREPROCESS.noop`
+ *   {function} validate:      Checks user input and obtain validateError; defaults to `QualifierMixin.VALIDATE.isStringOrRegexp`
  *   {function} cast:          Converts user input for easier matching and obtain castResult; defaults to `QualifierMixin.CAST.toStringOrRegexp`
  *   {function} query:         Retrieves data from source and obtain queryResult
  *   {function} match_keyword: Matches castResult with queryResult when the user input is a keyword; defaults to `QualifierMixin.MATCH.compare`
@@ -406,6 +445,7 @@ class Searcher {
     process() {
         const qualifiers = [...this.buildBaseQualifiers(), ...this.buildMarkdownQualifiers()]
         qualifiers.forEach(q => {
+            q.preprocess = q.preprocess || this.MIXIN.PREPROCESS.noop
             q.validate = q.validate || this.MIXIN.VALIDATE.isStringOrRegexp
             q.cast = q.cast || this.MIXIN.CAST.toStringOrRegexp
             q.KEYWORD = q.match_keyword || this.MIXIN.MATCH.primitiveCompare
@@ -418,6 +458,7 @@ class Searcher {
 
     buildBaseQualifiers() {
         const {
+            PREPROCESS: { resolveDate, resolveNumber, resolveBoolean },
             VALIDATE: { isSize, isDate, isNumber, isBoolean },
             CAST: { toBytes, toDate, toNumber, toBoolean },
             MATCH: { arrayCompare, arrayRegexp },
@@ -464,15 +505,15 @@ class Searcher {
             { scope: "content", name: "内容", is_meta: false, read_file: true, cost_level: 2 },
             { scope: "frontmatter", name: "FrontMatter", is_meta: false, read_file: true, cost_level: 3 },
             { scope: "size", name: "文件大小", is_meta: true, read_file: false, cost_level: 1, validate: isSize, cast: toBytes },
-            { scope: "birthtime", name: "创建时间", is_meta: true, read_file: false, cost_level: 1, validate: isDate, cast: toDate },
-            { scope: "mtime", name: "修改时间", is_meta: true, read_file: false, cost_level: 1, validate: isDate, cast: toDate },
-            { scope: "atime", name: "访问时间", is_meta: true, read_file: false, cost_level: 1, validate: isDate, cast: toDate },
-            { scope: "linenum", name: "行数", is_meta: true, read_file: true, cost_level: 2, validate: isNumber, cast: toNumber },
-            { scope: "charnum", name: "字符数", is_meta: true, read_file: true, cost_level: 2, validate: isNumber, cast: toNumber },
-            { scope: "chinesenum", name: "中文字符数", is_meta: true, read_file: true, cost_level: 2, validate: isNumber, cast: toNumber },
-            { scope: "crlf", name: "换行符为CRLF", is_meta: true, read_file: true, cost_level: 2, validate: isBoolean, cast: toBoolean },
-            { scope: "hasimage", name: "包含图片", is_meta: true, read_file: true, cost_level: 2, validate: isBoolean, cast: toBoolean },
-            { scope: "haschinese", name: "包含中文字符", is_meta: true, read_file: true, cost_level: 2, validate: isBoolean, cast: toBoolean },
+            { scope: "birthtime", name: "创建时间", is_meta: true, read_file: false, cost_level: 1, preprocess: resolveDate, validate: isDate, cast: toDate },
+            { scope: "mtime", name: "修改时间", is_meta: true, read_file: false, cost_level: 1, preprocess: resolveDate, validate: isDate, cast: toDate },
+            { scope: "atime", name: "访问时间", is_meta: true, read_file: false, cost_level: 1, preprocess: resolveDate, validate: isDate, cast: toDate },
+            { scope: "linenum", name: "行数", is_meta: true, read_file: true, cost_level: 2, preprocess: resolveNumber, validate: isNumber, cast: toNumber },
+            { scope: "charnum", name: "字符数", is_meta: true, read_file: true, cost_level: 2, preprocess: resolveNumber, validate: isNumber, cast: toNumber },
+            { scope: "chinesenum", name: "中文字符数", is_meta: true, read_file: true, cost_level: 2, preprocess: resolveNumber, validate: isNumber, cast: toNumber },
+            { scope: "crlf", name: "换行符为CRLF", is_meta: true, read_file: true, cost_level: 2, preprocess: resolveBoolean, validate: isBoolean, cast: toBoolean },
+            { scope: "hasimage", name: "包含图片", is_meta: true, read_file: true, cost_level: 2, preprocess: resolveBoolean, validate: isBoolean, cast: toBoolean },
+            { scope: "haschinese", name: "包含中文字符", is_meta: true, read_file: true, cost_level: 2, preprocess: resolveBoolean, validate: isBoolean, cast: toBoolean },
             { scope: "line", name: "某行", is_meta: false, read_file: true, cost_level: 2, match_keyword: arrayCompare, match_regexp: arrayRegexp },
         ]
         return qualifiers.map(q => ({ ...q, query: QUERY[q.scope] }))
@@ -611,12 +652,13 @@ class Searcher {
             const is_meta = false
             const read_file = true
             const cost_level = 3
+            const preprocess = this.MIXIN.PREPROCESS.noop
             const validate = this.MIXIN.VALIDATE.isStringOrRegexp
             const cast = this.MIXIN.CAST.toStringOrRegexp
             const match_keyword = this.MIXIN.MATCH.arrayCompare
             const match_phrase = match_keyword
             const match_regexp = this.MIXIN.MATCH.arrayRegexp
-            return { scope, name, query, is_meta, read_file, cost_level, validate, cast, match_keyword, match_phrase, match_regexp }
+            return { scope, name, is_meta, read_file, cost_level, preprocess, validate, cast, match_keyword, match_phrase, match_regexp, query }
         }
 
         return [
@@ -654,19 +696,19 @@ class Searcher {
     parse(input, optimize) {
         input = this.config.CASE_SENSITIVE ? input : input.toLowerCase()
         const ast = this.parser.parse(input)
-        this.validateAndCast(ast)
+        this.postParse(ast)
         return optimize ? this.optimize(ast) : ast
     }
 
-    validateAndCast(ast) {
+    postParse(ast) {
         const { REGEXP } = this.parser.TYPE
 
         this.parser.walk(ast, node => {
-            const { scope, operator, operand, type: operandType } = node
-            const qualifier = this.qualifiers.get(scope)
-            qualifier.validate(scope.toUpperCase(), operator, operand, operandType)
-            node.costLevel = qualifier.cost_level + (operandType === REGEXP ? 0.5 : 0)
-            node.castResult = qualifier.cast(operand, operandType)
+            const qualifier = this.qualifiers.get(node.scope.toLowerCase())
+            node.operand = qualifier.preprocess(node.scope, node.operator, node.operand, node.type)
+            node.validateError = qualifier.validate(node.scope.toUpperCase(), node.operator, node.operand, node.type)
+            node.costLevel = qualifier.cost_level + (node.type === REGEXP ? 0.5 : 0)
+            node.castResult = qualifier.cast(node.operand, node.type)
         })
         return ast
     }
@@ -930,9 +972,10 @@ class Searcher {
 
         const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
         const diffInfo = genInfo("注意区分：\nhead=plugin 表示标题为plugin\nhead:plugin 表示标题包含plugin")
-        const scopeInfo = genInfo(`为了简化搜索，可以省略搜索范围和运算符，此时搜索范围默认为 default，运算符为 :
-搜索范围 default 表示路径（path）和文件内容（content）
-也就是说，pear 等价于 default:pear ，也等价于 path:pear OR content:pear，含义：路径或内容包含 pear`)
+        const scopeInfo = genInfo(`为了简化搜索，可以省略搜索范围和运算符，此时搜索范围默认为 default，运算符默认为 :。
+搜索范围 default 表示路径（path）和文件内容（content），运算符: 表示文本包含。
+也就是说，pear 等价于 default:pear ，也等价于 path:pear OR content:pear。
+含义：路径或内容包含 pear。`)
 
         const keywordDesc = `
 <table>
@@ -955,7 +998,7 @@ class Searcher {
     <tr><td>sour | pear</td><td>包含 sour 或 pear。等价于 sour OR pear</td></tr>
     <tr><td>"sour pear"</td><td>包含 sour pear 这一词组</td></tr>
     <tr><td>sour pear -apple</td><td>包含 sour 和 pear，且不含 apple</td></tr>
-    <tr><td>/\\bsour\\b/ pear mtime=2024-03-12</td><td>匹配正则 \\bsour\\b（全字匹配 sour），且包含 pear，且文件的修改时间为 2024-03-12</td></tr>
+    <tr><td>/\\bsour\\b/ pear mtime=2024-05-16</td><td>匹配正则 \\bsour\\b（全字匹配 sour），且包含 pear，且文件的修改时间为 2024-05-16</td></tr>
     <tr><td>frontmatter:开发 | head=plugin | strong:MIT</td><td>YAML Front Matter 包含开发 或者 标题内容为 plugin 或者 加粗文字包含 MIT ${diffInfo}</td></tr>
     <tr><td>size>10kb (linenum>=1000 | hasimage=true)</td><td>文件大小超过 10KB，并且文件要么至少有 1000 行，要么包含图片</td></tr>
     <tr><td>path:(info | warn | err) -ext:md</td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 md</td></tr>
