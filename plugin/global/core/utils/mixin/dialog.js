@@ -186,9 +186,10 @@ class dialog {
                 label = "blockquote"
                 break
         }
-        const class_ = comp.inline ? "form-inline-group" : "form-block-group";
-        const label_ = comp.label ? `<${label}>${comp.label}${genInfo(comp)}</${label}>` : "";
-        return `<div class="form-group ${class_}" component-id="${comp._id}">${label_}${control}</div>`;
+        const class_ = comp.inline ? "form-inline-group" : "form-block-group"
+        const tabIndex = isNaN(comp.tabIndex) ? "" : `tabIndex="${comp.tabIndex}"`
+        const label_ = comp.label ? `<${label} ${tabIndex}>${comp.label}${genInfo(comp)}</${label}>` : ""
+        return `<div class="form-group ${class_}" component-id="${comp._id}">${label_}${control}</div>`
     }
 
     newGroupWidget = components => {

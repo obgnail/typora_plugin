@@ -487,6 +487,11 @@ class Searcher {
                 return count
             },
         }
+        const PROCESS = {
+            date: { preprocess: resolveDate, validate: isDate, cast: toDate },
+            number: { preprocess: resolveNumber, validate: isNumber, cast: toNumber },
+            boolean: { preprocess: resolveBoolean, validate: isBoolean, cast: toBoolean },
+        }
         const qualifiers = [
             { scope: "default", name: "内容或路径", is_meta: false, read_file: true, cost_level: 2 },
             { scope: "path", name: "路径", is_meta: true, read_file: false, cost_level: 1 },
@@ -497,15 +502,15 @@ class Searcher {
             { scope: "content", name: "内容", is_meta: false, read_file: true, cost_level: 2 },
             { scope: "frontmatter", name: "FrontMatter", is_meta: false, read_file: true, cost_level: 3 },
             { scope: "size", name: "文件大小", is_meta: true, read_file: false, cost_level: 1, validate: isSize, cast: toBytes },
-            { scope: "birthtime", name: "创建时间", is_meta: true, read_file: false, cost_level: 1, preprocess: resolveDate, validate: isDate, cast: toDate },
-            { scope: "mtime", name: "修改时间", is_meta: true, read_file: false, cost_level: 1, preprocess: resolveDate, validate: isDate, cast: toDate },
-            { scope: "atime", name: "访问时间", is_meta: true, read_file: false, cost_level: 1, preprocess: resolveDate, validate: isDate, cast: toDate },
-            { scope: "linenum", name: "行数", is_meta: true, read_file: true, cost_level: 2, preprocess: resolveNumber, validate: isNumber, cast: toNumber },
-            { scope: "charnum", name: "字符数", is_meta: true, read_file: true, cost_level: 2, preprocess: resolveNumber, validate: isNumber, cast: toNumber },
-            { scope: "chinesenum", name: "中文字符数", is_meta: true, read_file: true, cost_level: 2, preprocess: resolveNumber, validate: isNumber, cast: toNumber },
-            { scope: "crlf", name: "换行符为CRLF", is_meta: true, read_file: true, cost_level: 2, preprocess: resolveBoolean, validate: isBoolean, cast: toBoolean },
-            { scope: "hasimage", name: "包含图片", is_meta: true, read_file: true, cost_level: 2, preprocess: resolveBoolean, validate: isBoolean, cast: toBoolean },
-            { scope: "haschinese", name: "包含中文字符", is_meta: true, read_file: true, cost_level: 2, preprocess: resolveBoolean, validate: isBoolean, cast: toBoolean },
+            { scope: "birthtime", name: "创建时间", is_meta: true, read_file: false, cost_level: 1, ...PROCESS.date },
+            { scope: "mtime", name: "修改时间", is_meta: true, read_file: false, cost_level: 1, ...PROCESS.date },
+            { scope: "atime", name: "访问时间", is_meta: true, read_file: false, cost_level: 1, ...PROCESS.date },
+            { scope: "linenum", name: "行数", is_meta: true, read_file: true, cost_level: 2, ...PROCESS.number },
+            { scope: "charnum", name: "字符数", is_meta: true, read_file: true, cost_level: 2, ...PROCESS.number },
+            { scope: "chinesenum", name: "中文字符数", is_meta: true, read_file: true, cost_level: 2, ...PROCESS.number },
+            { scope: "crlf", name: "换行符为CRLF", is_meta: true, read_file: true, cost_level: 2, ...PROCESS.boolean },
+            { scope: "hasimage", name: "包含图片", is_meta: true, read_file: true, cost_level: 2, ...PROCESS.boolean },
+            { scope: "haschinese", name: "包含中文字符", is_meta: true, read_file: true, cost_level: 2, ...PROCESS.boolean },
             { scope: "line", name: "某行", is_meta: false, read_file: true, cost_level: 2, match_keyword: arrayCompare, match_regexp: arrayRegexp },
         ]
         return qualifiers.map(q => ({ ...q, query: QUERY[q.scope] }))
@@ -963,7 +968,7 @@ class Searcher {
         )
 
         const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
-        const agreement = genInfo("约定：查询表达式以斜体表示")
+        const agreement = genInfo("查询表达式以斜体表示")
         const diffInfo = genInfo("注意区分：\nhead=plugin 表示标题为 plugin\nhead:plugin 表示标题包含 plugin")
         const scopeInfo = genInfo(`1. 为了简化搜索，可以同时省略搜索范围和运算符，此时搜索范围默认为 default，运算符默认为 :
 2. 搜索范围 default 表示路径（path）和文件内容（content），运算符: 表示文本包含
@@ -1020,7 +1025,7 @@ class Searcher {
 条件之间用 OR 连接，表示至少满足其中一个条件。如 <em>size>2kb OR ext:txt</em><br />
 在条件前面添加 NOT，表示不可满足此条件。如 <em>NOT size>2kb</em>`
         const components = [
-            { label: desc, type: "blockquote" },
+            { label: desc, type: "blockquote", tabIndex: 0 },
             { label: example, type: "p" },
             { label: "具体用法", type: "p" },
             { label: keywordDesc, type: "p" },
