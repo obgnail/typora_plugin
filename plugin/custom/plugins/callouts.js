@@ -61,24 +61,33 @@ class calloutsPlugin extends BaseCustomPlugin {
 
     afterExport = (html, ...args) => {
         if (!this.check(args)) return;
-
+    
         const regex = new RegExp("<blockquote>", "g");
         const count = (html.match(regex) || []).length;
         const quotes = Array.from(this.utils.entities.querySelectorAllInWrite("blockquote"));
         if (count !== quotes.length) return html;
-
+    
         let idx = -1;
-        return html.replace(regex, origin => {
+        html = html.replace(regex, origin => {
             idx++;
             let result = origin;
-
+    
             const quote = quotes[idx];
             if (quote && quote.classList.length) {
                 const type = quote.getAttribute("callout-type");
                 result = `<blockquote class="${quote.className}" callout-type="${type}">`;
             }
             return result;
-        })
+        });
+    
+        // 补上属性 data-type
+        const spanRegex = /(<span>)\[!(\w+)\](<\/span>)/g;
+        html = html.replace(spanRegex, (match, openTag, type, closeTag) => {
+            const typeValue = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+            return `<span data-type="${typeValue}">[!${type}]</span>`;
+        });
+    
+        return html;
     }
 }
 
