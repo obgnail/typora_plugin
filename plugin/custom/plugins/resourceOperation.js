@@ -289,6 +289,7 @@ ${_obj.resource_non_exist_in_folder.join("\n")}
                     return;
                 }
 
+                src = src.replace(/^\s*([\\/])/, "")
                 src = resolve(sourceRoot, src)
                 if (this.resourcesInFile.has(src)) return;
 
