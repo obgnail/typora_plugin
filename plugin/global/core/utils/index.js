@@ -236,6 +236,15 @@ class utils {
         return result;
     }
 
+    static zip = (...arrays) => {
+        const minLength = Math.min(...arrays.map(arr => arr.length))
+        let zipArray = []
+        for (let i = 0; i < minLength; i++) {
+            zipArray.push(arrays.map(arr => arr[i]))
+        }
+        return zipArray
+    }
+
     /** @description try not to use it */
     static sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 

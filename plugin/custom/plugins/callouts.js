@@ -55,42 +55,39 @@ class calloutsPlugin extends BaseCustomPlugin {
     // icon需要用到font，但是导出时又没有font，因此只能移除
     beforeExport = (...args) => {
         if (this.check(args)) {
-            return this.utils.styleTemplater.getStyleContent(this.fixedName).replace(/--callout-icon: ".*?";/g, "");
+            const css = this.utils.styleTemplater.getStyleContent(this.fixedName)
+            return css.replace(/--callout-icon: ".*?";/g, "")
         }
     }
 
     afterExport = (html, ...args) => {
-        if (!this.check(args)) return;
-    
-        const regex = new RegExp("<blockquote>", "g");
-        const count = (html.match(regex) || []).length;
-        const quotes = Array.from(this.utils.entities.querySelectorAllInWrite("blockquote"));
-        if (count !== quotes.length) return html;
-    
-        let idx = -1;
-        html = html.replace(regex, origin => {
-            idx++;
-            let result = origin;
-    
-            const quote = quotes[idx];
-            if (quote && quote.classList.length) {
-                const type = quote.getAttribute("callout-type");
-                result = `<blockquote class="${quote.className}" callout-type="${type}">`;
+        if (!this.check(args)) return
+
+        const quotesInPage = [...this.utils.entities.querySelectorAllInWrite("blockquote")]
+        if (quotesInPage.length === 0) return
+
+        const doc = new DOMParser().parseFromString(html, "text/html")
+        const quotesInHTML = [...doc.querySelectorAll("blockquote")]
+        if (quotesInHTML.length !== quotesInPage.length) return
+
+        const zipArray = this.utils.zip(quotesInPage, quotesInHTML)
+        for (const [quoteInPage, quoteInHTML] of zipArray) {
+            if (quoteInPage.classList.length) {
+                quoteInHTML.className = "plugin-callout"
+
+                const calloutType = quoteInPage.getAttribute("callout-type")
+                quoteInHTML.setAttribute("callout-type", calloutType)
+
+                const span = quoteInHTML.querySelector(":scope > p:first-child > span:first-child")
+                if (span) {
+                    span.setAttribute("data-type", calloutType.toUpperCase())
+                }
             }
-            return result;
-        });
-    
-        // 补上属性 data-type
-        const spanRegex = /(<span>)\[!(\w+)\](<\/span>)/g;
-        html = html.replace(spanRegex, (match, openTag, type, closeTag) => {
-            const typeValue = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
-            return `<span data-type="${typeValue}">[!${type}]</span>`;
-        });
-    
-        return html;
+        }
+        return `<!DOCTYPE HTML>\n${doc.documentElement.outerHTML}`
     }
 }
 
 module.exports = {
     plugin: calloutsPlugin,
-};
+}
