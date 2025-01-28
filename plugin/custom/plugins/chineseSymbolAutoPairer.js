@@ -7,10 +7,6 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
     selector = () => this.utils.disableForeverSelector
 
     init = () => {
-        const getCodeSet = () => new Set([
-            "Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0",
-            "Backquote", "BracketLeft", "BracketRight", "Backslash", "Semicolon", "Quote", "Comma", "Period", "Slash",
-        ])
         const reverseMap = map => {
             const result = new Map();
             map.forEach((v, k) => result.set(v, k));
@@ -18,9 +14,13 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         }
 
         this.rangyText = "";
-        this.pairMap = new Map(this.config.auto_pair_symbols);
-        this.reversePairMap = reverseMap(this.pairMap);
-        this.codeSet = getCodeSet();
+        this.pairMap = new Map(this.config.auto_pair_symbols)
+        this.swapMap = new Map(this.config.auto_swap_symbols)
+        this.codeSet = new Set([
+            "Digit1", "Digit2", "Digit3", "Digit4", "Digit5", "Digit6", "Digit7", "Digit8", "Digit9", "Digit0",
+            "Backquote", "BracketLeft", "BracketRight", "Backslash", "Semicolon", "Quote", "Comma", "Period", "Slash",
+        ])
+        this.reversePairMap = reverseMap(this.pairMap)
         // 旧版本Typora是延迟加载SnapFlag的
         const until = () => File && File.editor && File.editor.undo && File.editor.undo.UndoManager && File.editor.undo.UndoManager.SnapFlag
         const after = () => this.undoSnapType = File.editor.undo.UndoManager.SnapFlag
@@ -34,10 +34,13 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
             const inputSymbol = ev.data;
             const pairSymbol = this.pairMap.get(inputSymbol);
             if (pairSymbol) {
-                this.insertText(inputSymbol, this.rangyText + pairSymbol);
+                this.insertText(this.rangyText + pairSymbol);
                 setTimeout(this.selectText, 50);
             } else if (this.config.auto_skip && this.reversePairMap.get(inputSymbol)) {
                 this.skipSymbol(inputSymbol);
+            }
+            if (this.config.auto_swap && this.swapMap.has(inputSymbol)) {
+                this.swapSymbol(inputSymbol)
             }
         }, 30));
 
@@ -65,13 +68,10 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         this.rangyText = "";
     }
 
-    insertText = (symbol, pairSymbol) => {
+    insertText = symbol => {
         const { range, node } = this.utils.getRangy();
-        const textNode = document.createTextNode(pairSymbol);
+        const textNode = document.createTextNode(symbol);
         range.insertNode(textNode);
-        // range.setStart(textNode, symbol.length);
-        // range.setEnd(textNode, symbol.length);
-        // range.select();
         File.editor.undo.addSnap(node.cid, this.undoSnapType.REPLACE);
     }
 
@@ -97,6 +97,51 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
         }
     }
 
+    swapSymbol = (inputSymbol, offset = 0, forceStay = false) => {
+        const { rawText, bookmark } = this._getRange()
+        if (!rawText || !bookmark) return
+
+        if (offset) {
+            bookmark.start += offset
+            bookmark.end += offset
+        }
+
+        const current = rawText[bookmark.start - 1]
+        const left = rawText[bookmark.start - 2]
+        const right = rawText[bookmark.end]
+
+        if (left && left === current) {
+            bookmark.start -= 2
+            this._swapSymbol(inputSymbol, bookmark, forceStay)
+        } else if (right && right === current) {
+            bookmark.start -= 1
+            bookmark.end += 1
+            this._swapSymbol(inputSymbol, bookmark, forceStay)
+        }
+    }
+
+    _swapSymbol = async (inputSymbol, bk, forceStay) => {
+        await this.utils.sleep(50)
+        this.deleteContent(bk)
+        this.insertText(this.swapMap.get(inputSymbol))
+
+        await this.utils.sleep(50)
+        const { range, bookmark } = this.utils.getRangy()
+        const need = (bookmark.start === bookmark.end && bookmark.start !== 1) && !forceStay
+        if (need) {
+            bookmark.start += 1
+            bookmark.end += 1
+        }
+        range.moveToBookmark(bookmark)
+        range.select()
+
+        await this.utils.sleep(50)
+        const pair = this.pairMap.get(inputSymbol)
+        if (pair) {
+            this.swapSymbol(pair, 1, true)
+        }
+    }
+
     deletePair = () => {
         const { rawText, bookmark } = this._getRange();
         if (!rawText || !bookmark) return;
@@ -119,4 +164,4 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
 
 module.exports = {
     plugin: chineseSymbolAutoPairerPlugin
-};
+}
