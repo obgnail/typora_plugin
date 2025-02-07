@@ -28,9 +28,9 @@ class runtime {
     _saveConfig = async (targetFile, fixedName, updateObj) => {
         const settingPath = await this.getActualSettingPath(targetFile)
         const tomlObj = await this.utils.readTomlFile(settingPath)
-        const newSetting = this.utils.merge(tomlObj, { [fixedName]: updateObj })
-        const newContent = this.utils.stringifyToml(newSetting)
-        return this.utils.writeFile(settingPath, newContent)
+        const mergedObj = this.utils.merge(tomlObj, { [fixedName]: updateObj })
+        const content = this.utils.stringifyToml(mergedObj).replace(/\r\n/g, "\n")
+        return this.utils.writeFile(settingPath, content)
     }
 
     autoSaveConfig = plugin => {

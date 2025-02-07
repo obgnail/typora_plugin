@@ -12,11 +12,12 @@ class utils {
     static chromeVersion = process && process.versions && process.versions.chrome
     static typoraVersion = window._options.appVersion
     static isBetaVersion = this.typoraVersion[0] === "0"
+
     static supportHasSelector = CSS.supports("selector(:has(*))")
     static separator = File.isWin ? "\\" : "/"
     static tempFolder = window._options.tempPath || OS.tmpdir()
-    static nonExistSelector = "#__nonExist__"                 // 插件临时不可点击，返回此
-    static disableForeverSelector = "#__disableForever__"     // 插件永远不可点击，返回此
+    static nonExistSelector = "#__non_exist__"                // 插件临时不可点击，返回此
+    static disableForeverSelector = "#__disabled__"           // 插件永远不可点击，返回此
     static stopLoadPluginError = new Error("stopLoadPlugin")  // 用于插件的beforeProcess方法，若希望停止加载插件，返回此
     static Package = Object.freeze({
         OS: OS,
@@ -46,9 +47,11 @@ class utils {
         return plugin && plugin[func];
     }
     static callPluginFunction = (fixedName, func, ...args) => {
-        const plugin = this.tryGetPlugin(fixedName);
-        const _func = plugin && plugin[func];
-        _func && _func.apply(plugin, args);
+        const plugin = this.tryGetPlugin(fixedName)
+        const _func = plugin && plugin[func]
+        if (_func) {
+            _func.apply(plugin, args)
+        }
         return _func
     }
 
@@ -81,9 +84,11 @@ class utils {
 
     static getAnchorNode = () => File.editor.getJQueryElem(window.getSelection().anchorNode);
     static withAnchorNode = (selector, func) => () => {
-        const anchorNode = this.getAnchorNode();
-        const target = anchorNode.closest(selector);
-        target && target[0] && func(target[0]);
+        const anchorNode = this.getAnchorNode()
+        const target = anchorNode.closest(selector)
+        if (target && target[0]) {
+            func(target[0])
+        }
     }
     static _meta = {} // 用于在右键菜单功能中传递数据，不可手动调用此变量
     static updatePluginDynamicActions = (fixedName, anchorNode, notInContextMenu = false) => {
@@ -200,11 +205,8 @@ class utils {
         }
     }
 
-    /**
-     * @description param fn cannot be an async function that returns promiseLike object
-     * @description strict FIFO not guaranteed. cache.delete() may alter internal state, affecting iterators. But I dont care
-     **/
-    static memorizeFIFO = (fn, capacity = 100) => {
+    /** @description param fn cannot be an async function that returns promiseLike object */
+    static memoizeLimited = (fn, cap = 100) => {
         const cache = new Map()
         const isAsync = this.isAsyncFunction(fn)
         return function (...args) {
@@ -219,7 +221,7 @@ class utils {
                 ? Promise.resolve(fn(...args)).catch(e => Promise.reject(e))
                 : fn(...args)
             cache.set(key, result)
-            if (capacity > 0 && cache.size > capacity) {
+            if (cap > 0 && cache.size > cap) {
                 cache.delete(cache.keys().next().value)
             }
             return result
@@ -237,12 +239,12 @@ class utils {
     }
 
     static zip = (...arrays) => {
+        const zipped = []
         const minLength = Math.min(...arrays.map(arr => arr.length))
-        let zipArray = []
         for (let i = 0; i < minLength; i++) {
-            zipArray.push(arrays.map(arr => arr[i]))
+            zipped.push(arrays.map(arr => arr[i]))
         }
-        return zipArray
+        return zipped
     }
 
     /** @description try not to use it */
@@ -296,7 +298,7 @@ class utils {
 
         let match;
         let lastIndex = 0;
-        const reg = new RegExp(regexp);  // 为了不影响regexp的lastIndex属性，复制一个新的对象
+        const reg = new RegExp(regexp);  // To avoid modifying the RegExp.lastIndex property, copy a new object
         const promises = [];
 
         while ((match = reg.exec(content))) {
@@ -335,7 +337,9 @@ class utils {
     }
 
     static windowsPathToUnix = filepath => {
-        if (!File.isWin) return filepath;
+        if (!File.isWin) {
+            return filepath
+        }
         const sep = filepath.split(PATH.win32.sep);
         const newS = [].concat([sep[0].toLowerCase()], sep.slice(1));
         return "/" + PATH.posix.join.apply(PATH.posix, newS).replace(":", "")
@@ -367,19 +371,29 @@ class utils {
     }
 
     ////////////////////////////// 业务文件操作 //////////////////////////////
-    static editCurrentFile = async (replacement, reloadContent = true) => await this.fixScrollTop(async () => {
-        const bak = File.presentedItemChanged;
-        File.presentedItemChanged = this.noop;
-        const filepath = this.getFilePath();
-        const content = filepath ? await FS.promises.readFile(filepath, "utf-8") : await File.getContent();
-        const replaced = typeof replacement === "string" ? replacement : await replacement(content);
-        if (filepath) {
-            const ok = await this.writeFile(filepath, replaced);
-            if (!ok) return;
-        }
-        reloadContent && File.reloadContent(replaced, { fromDiskChange: false });
-        setTimeout(() => File.presentedItemChanged = bak, 1500);
-    })
+    static editCurrentFile = async (replacement, reloadContent = true) => {
+        await this.fixScrollTop(async () => {
+            const bak = File.presentedItemChanged
+            File.presentedItemChanged = this.noop
+
+            const filepath = this.getFilePath()
+            const content = filepath
+                ? await FS.promises.readFile(filepath, "utf-8")
+                : await File.getContent()
+            const replaced = typeof replacement === "string"
+                ? replacement
+                : await replacement(content)
+            if (filepath) {
+                const ok = await this.writeFile(filepath, replaced)
+                if (!ok) return
+            }
+            if (reloadContent) {
+                File.reloadContent(replaced, { fromDiskChange: false })
+            }
+
+            setTimeout(() => File.presentedItemChanged = bak, 1500)
+        })
+    }
 
     static fixScrollTop = async func => {
         const inSourceMode = File.editor.sourceView.inSourceMode;
@@ -418,8 +432,12 @@ class utils {
                 break
             case "object":
                 const { textID, text, fileID, file } = style;
-                fileID && file && this.insertStyleFile(fileID, file);
-                textID && text && this.insertStyle(textID, text);
+                if (fileID && file) {
+                    this.insertStyleFile(fileID, file)
+                }
+                if (textID && text) {
+                    this.insertStyle(textID, text)
+                }
                 break
         }
     }
@@ -538,9 +556,11 @@ class utils {
     ////////////////////////////// 业务操作 //////////////////////////////
     static exitTypora = () => JSBridge.invoke("window.close");
     static restartTypora = (reopenClosedFiles = true) => {
-        reopenClosedFiles && this.callPluginFunction("reopenClosedFiles", "save");
-        this.openFolder(this.getMountFolder());
-        setTimeout(this.exitTypora, 50);
+        if (reopenClosedFiles) {
+            this.callPluginFunction("reopenClosedFiles", "save")
+        }
+        this.openFolder(this.getMountFolder())
+        setTimeout(this.exitTypora, 50)
     }
     static showInFinder = filepath => JSBridge.showInFinder(filepath || this.getFilePath())
     static isDiscardableUntitled = () => File && File.changeCounter && File.changeCounter.isDiscardableUntitled();
@@ -585,9 +605,13 @@ class utils {
     static splitFrontMatter = content => {
         const result = { yamlObject: null, remainContent: content, yamlLineCount: 0 };
         content = content.trimLeft();
-        if (!/^---\r?\n/.test(content)) return result;
+        if (!/^---\r?\n/.test(content)) {
+            return result
+        }
         const matchResult = /\n---\r?\n/.exec(content);
-        if (!matchResult) return result;
+        if (!matchResult) {
+            return result
+        }
         const yamlContent = content.slice(4, matchResult.index);
         const remainContent = content.slice(matchResult.index + matchResult[0].length);
         const yamlLineCount = (yamlContent.match(/\n/g) || []).length + 3;
@@ -790,7 +814,9 @@ class utils {
             startY = ev.clientY;
             startWidth = parseFloat(width);
             startHeight = parseFloat(height);
-            onMouseDown && onMouseDown(startX, startY, startWidth, startHeight);
+            if (onMouseDown) {
+                onMouseDown(startX, startY, startWidth, startHeight)
+            }
             document.addEventListener("mousemove", mousemove);
             document.addEventListener("mouseup", mouseup);
             ev.stopPropagation();
@@ -818,7 +844,9 @@ class utils {
         function mouseup() {
             document.removeEventListener("mousemove", mousemove);
             document.removeEventListener("mouseup", mouseup);
-            onMouseUp && onMouseUp();
+            if (onMouseUp) {
+                onMouseUp()
+            }
         }
     }
 
@@ -832,14 +860,18 @@ class utils {
             const { left, top } = moveElement.getBoundingClientRect();
             const shiftX = ev.clientX - left;
             const shiftY = ev.clientY - top;
-            _onMouseDown && _onMouseDown();
+            if (_onMouseDown) {
+                _onMouseDown()
+            }
 
             const onMouseMove = ev => {
                 if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
                 ev.stopPropagation();
                 ev.preventDefault();
                 requestAnimationFrame(() => {
-                    _onMouseMove && _onMouseMove();
+                    if (_onMouseMove) {
+                        _onMouseMove()
+                    }
                     moveElement.style.left = ev.clientX - shiftX + 'px';
                     moveElement.style.top = ev.clientY - shiftY + 'px';
                 });
@@ -847,7 +879,9 @@ class utils {
 
             const onMouseUp = ev => {
                 if (withMetaKey && !this.metaKeyPressed(ev) || ev.button !== 0) return;
-                _onMouseUp && _onMouseUp();
+                if (_onMouseUp) {
+                    _onMouseUp()
+                }
                 ev.stopPropagation();
                 ev.preventDefault();
                 document.removeEventListener("mousemove", onMouseMove);
@@ -867,7 +901,9 @@ class utils {
         const active = isNext
             ? (origin && origin.nextElementSibling) || list.firstElementChild
             : (origin && origin.previousElementSibling) || list.lastElementChild
-        origin && origin.classList.toggle("active");
+        if (origin) {
+            origin.classList.toggle("active")
+        }
         active.classList.toggle("active");
         active.scrollIntoView({ block: "nearest" });
     }
@@ -920,7 +956,9 @@ class utils {
             }
             if (until() || run) {
                 clearInterval(timer)
-                after && after()
+                if (after) {
+                    after()
+                }
             }
         }, detectInterval)
     }

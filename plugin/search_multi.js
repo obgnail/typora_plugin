@@ -42,7 +42,7 @@ class searchMultiPlugin extends BasePlugin {
         this.searcher = new Searcher(this)
         this.highlighter = new Highlighter(this)
         this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => {
-            const prefix = ext !== "" && !ext.startsWith(".") ? "." : ""
+            const prefix = (ext !== "" && !ext.startsWith(".")) ? "." : ""
             return prefix + ext.toLowerCase()
         }))
         this.entities = {
@@ -68,7 +68,9 @@ class searchMultiPlugin extends BasePlugin {
             if (!target) return
             const filepath = target.dataset.path
             this.utils.openFile(filepath)
-            this.config.AUTO_HIDE && this.utils.hide(this.entities.modal)
+            if (this.config.AUTO_HIDE) {
+                this.utils.hide(this.entities.modal)
+            }
         })
         this.entities.buttonGroup.addEventListener("click", ev => {
             const btn = ev.target.closest(".option-btn")
@@ -104,6 +106,7 @@ class searchMultiPlugin extends BasePlugin {
                     ev.stopPropagation()
                     ev.preventDefault()
                     this.utils.scrollActiveItem(this.entities.resultList, ".plugin-search-multi-item.active", ev.key === "ArrowDown")
+                    break
             }
         })
     }
@@ -281,18 +284,37 @@ class QualifierMixin {
         "<": (a, b) => a < b,
     }
 
-    static OPERATOR_NAME = { ":": "包含", "=": "为", "!=": "不为", ">=": "大于等于", "<=": "小于等于", ">": "大于", "<": "小于" }
+    static OPERATOR_NAME = {
+        ":": "包含",
+        "=": "为",
+        "!=": "不为",
+        ">=": "大于等于",
+        "<=": "小于等于",
+        ">": "大于",
+        "<": "小于",
+    }
 
-    static UNITS = { k: 1 << 10, m: 1 << 20, g: 1 << 30, kb: 1 << 10, mb: 1 << 20, gb: 1 << 30 }
+    static UNITS = {
+        k: 1 << 10,
+        m: 1 << 20,
+        g: 1 << 30,
+        kb: 1 << 10,
+        mb: 1 << 20,
+        gb: 1 << 30,
+    }
 
     static PREPROCESS = {
         noop: (scope, operator, operand, operandType) => operand,
         resolveNumber: (scope, operator, operand, operandType) => {
-            if (operandType === "REGEXP") return operand
+            if (operandType === "REGEXP") {
+                return operand
+            }
             return operand.replace(/[_,]/g, "")  // supports thousands separator
         },
         resolveBoolean: (scope, operator, operand, operandType) => {
-            if (operandType === "REGEXP") return operand
+            if (operandType === "REGEXP") {
+                return operand
+            }
             switch (operand.toLowerCase()) {
                 case "yes":
                     return "true"
@@ -303,7 +325,9 @@ class QualifierMixin {
             }
         },
         resolveDate: (scope, operator, operand, operandType) => {
-            if (operandType === "REGEXP") return operand
+            if (operandType === "REGEXP") {
+                return operand
+            }
             const oneDay = 24 * 60 * 60 * 1000
             const today = new Date()
             const tomorrow = new Date(today.getTime() + oneDay)
@@ -403,27 +427,27 @@ class QualifierMixin {
 }
 
 /**
- * The matching process consists of the following steps: (Steps 1-4 are executed once; steps 5-6 are executed multiple times)
- *   1. parse:      Parses the input to generate an AST.
- *   2. preprocess: Convert certain specific, predefined, and special meaning vocabulary (e.g. converting 'today' in 'mtime=today' to '2024-01-01').
- *   3. validate:   Validates the AST for correctness.
- *   4. cast:       Converts operand within the AST nodes into a usable format (e.g. converting '2024-01-01' in 'mtime>2024-01-01' to a timestamp for easier matching). The result is `castResult`.
- *   5. query:      Queries the file data to obtain `queryResult`.
- *   6. match:      Matches `castResult` from step 4 with `queryResult` from step 5.
+ * The matching process consists of the following steps: (Steps 1-4 are executed once; steps 5-6 are executed repeatedly)
+ *   1. Parse:      Parses the input to generate an Abstract Syntax Tree (AST)
+ *   2. Preprocess: Convert certain specific, predefined, and special meaning vocabulary (e.g. converting 'today' in 'mtime=today' to '2024-01-01')
+ *   3. Validate:   Validates the AST for correctness
+ *   4. Cast:       Converts operand within the AST nodes into a usable format (e.g. converting '2024-01-01' in 'mtime=2024-01-01' to a timestamp for easier matching). The result is `castResult`
+ *   5. Query:      Retrieves file data, resulting in `queryResult`
+ *   6. Match:      Matches `castResult` (from step 4) with `queryResult` (from step 5)
  *
  * A qualifier has the following attributes:
- *   {string}   scope:         Query scope
- *   {string}   name:          Name for explain
- *   {boolean}  is_meta:       Is Qualifier scope a metadata property
- *   {boolean}  read_file:     Do Qualifier need to read file
- *   {number}   cost_level:    The cost level of calling `query` function. 1: Read file stats;  2: Read file content;  3: Parse file content;  Plus 0.5 when the user input is a regexp
- *   {function} preprocess:    Convert certain specific, predefined, and special meaning vocabulary from the user input; defaults to `QualifierMixin.PREPROCESS.noop`
- *   {function} validate:      Checks user input and obtain validateError; defaults to `QualifierMixin.VALIDATE.isStringOrRegexp`
- *   {function} cast:          Converts user input for easier matching and obtain castResult; defaults to `QualifierMixin.CAST.toStringOrRegexp`
- *   {function} query:         Retrieves data from source and obtain queryResult
- *   {function} match_keyword: Matches castResult with queryResult when the user input is a keyword; defaults to `QualifierMixin.MATCH.compare`
- *   {function} match_phrase:  Matches castResult with queryResult when the user input is a phrase; behaves the same as `match_keyword` by default
- *   {function} match_regexp:  Matches castResult with queryResult when the user input is a regexp; defaults to `QualifierMixin.MATCH.regexp`
+ *   {string}   scope:         The query scope
+ *   {string}   name:          A descriptive name for explanation purposes
+ *   {boolean}  is_meta:       Indicates if the qualifier scope is a metadata property
+ *   {boolean}  read_file:     Determines if the qualifier needs to read file content
+ *   {number}   cost:          The performance cost associated with the `query` function. 1: Read file stats;  2: Read file content;  3: Parse file content;  Plus 0.5 when the user input is a regex
+ *   {function} preprocess:    Convert certain specific, predefined, and special meaning vocabulary from the user input. Defaults to `QualifierMixin.PREPROCESS.noop`
+ *   {function} validate:      Checks user input and obtain `validateError`. Defaults to `QualifierMixin.VALIDATE.isStringOrRegexp`
+ *   {function} cast:          Converts user input for easier matching and obtain `castResult`. Defaults to `QualifierMixin.CAST.toStringOrRegexp`
+ *   {function} query:         Retrieves data from source and obtain `queryResult`
+ *   {function} match_keyword: Matches `castResult` with `queryResult` when the user input is a keyword. Defaults to `QualifierMixin.MATCH.compare`
+ *   {function} match_phrase:  Matches `castResult` with `queryResult` when the user input is a phrase. Behaves the same as `match_keyword` by default
+ *   {function} match_regexp:  Matches `castResult` with `queryResult` when the user input is a regexp. Defaults to `QualifierMixin.MATCH.regexp`
  */
 class Searcher {
     constructor(plugin) {
@@ -443,7 +467,7 @@ class Searcher {
             q.KEYWORD = q.match_keyword || this.MIXIN.MATCH.primitiveCompare
             q.PHRASE = q.match_phrase || q.KEYWORD
             q.REGEXP = q.match_regexp || this.MIXIN.MATCH.stringRegexp
-            this.qualifiers.set(q.scope, q) // register qualifiers
+            this.qualifiers.set(q.scope, q)
         })
         this.parser.setQualifier(qualifiers.map(q => q.scope), [...Object.keys(this.MIXIN.OPERATOR)])
     }
@@ -491,27 +515,28 @@ class Searcher {
             date: { preprocess: resolveDate, validate: isDate, cast: toDate },
             number: { preprocess: resolveNumber, validate: isNumber, cast: toNumber },
             boolean: { preprocess: resolveBoolean, validate: isBoolean, cast: toBoolean },
+            stringArray: { match_keyword: arrayCompare, match_regexp: arrayRegexp },
         }
         const qualifiers = [
-            { scope: "default", name: "内容或路径", is_meta: false, read_file: true, cost_level: 2 },
-            { scope: "path", name: "路径", is_meta: true, read_file: false, cost_level: 1 },
-            { scope: "dir", name: "文件所属目录", is_meta: true, read_file: false, cost_level: 1 },
-            { scope: "file", name: "文件名", is_meta: true, read_file: false, cost_level: 1 },
-            { scope: "name", name: "文件名(无扩展名)", is_meta: true, read_file: false, cost_level: 1 },
-            { scope: "ext", name: "扩展名", is_meta: true, read_file: false, cost_level: 1 },
-            { scope: "content", name: "内容", is_meta: false, read_file: true, cost_level: 2 },
-            { scope: "frontmatter", name: "FrontMatter", is_meta: false, read_file: true, cost_level: 3 },
-            { scope: "size", name: "文件大小", is_meta: true, read_file: false, cost_level: 1, validate: isSize, cast: toBytes },
-            { scope: "birthtime", name: "创建时间", is_meta: true, read_file: false, cost_level: 1, ...PROCESS.date },
-            { scope: "mtime", name: "修改时间", is_meta: true, read_file: false, cost_level: 1, ...PROCESS.date },
-            { scope: "atime", name: "访问时间", is_meta: true, read_file: false, cost_level: 1, ...PROCESS.date },
-            { scope: "linenum", name: "行数", is_meta: true, read_file: true, cost_level: 2, ...PROCESS.number },
-            { scope: "charnum", name: "字符数", is_meta: true, read_file: true, cost_level: 2, ...PROCESS.number },
-            { scope: "chinesenum", name: "中文字符数", is_meta: true, read_file: true, cost_level: 2, ...PROCESS.number },
-            { scope: "crlf", name: "换行符为CRLF", is_meta: true, read_file: true, cost_level: 2, ...PROCESS.boolean },
-            { scope: "hasimage", name: "包含图片", is_meta: true, read_file: true, cost_level: 2, ...PROCESS.boolean },
-            { scope: "haschinese", name: "包含中文字符", is_meta: true, read_file: true, cost_level: 2, ...PROCESS.boolean },
-            { scope: "line", name: "某行", is_meta: false, read_file: true, cost_level: 2, match_keyword: arrayCompare, match_regexp: arrayRegexp },
+            { scope: "default", name: "内容或路径", is_meta: false, read_file: true, cost: 2 },
+            { scope: "path", name: "路径", is_meta: true, read_file: false, cost: 1 },
+            { scope: "dir", name: "文件所属目录", is_meta: true, read_file: false, cost: 1 },
+            { scope: "file", name: "文件名", is_meta: true, read_file: false, cost: 1 },
+            { scope: "name", name: "文件名(无扩展名)", is_meta: true, read_file: false, cost: 1 },
+            { scope: "ext", name: "扩展名", is_meta: true, read_file: false, cost: 1 },
+            { scope: "content", name: "内容", is_meta: false, read_file: true, cost: 2 },
+            { scope: "frontmatter", name: "FrontMatter", is_meta: false, read_file: true, cost: 3 },
+            { scope: "size", name: "文件大小", is_meta: true, read_file: false, cost: 1, validate: isSize, cast: toBytes },
+            { scope: "birthtime", name: "创建时间", is_meta: true, read_file: false, cost: 1, ...PROCESS.date },
+            { scope: "mtime", name: "修改时间", is_meta: true, read_file: false, cost: 1, ...PROCESS.date },
+            { scope: "atime", name: "访问时间", is_meta: true, read_file: false, cost: 1, ...PROCESS.date },
+            { scope: "linenum", name: "行数", is_meta: true, read_file: true, cost: 2, ...PROCESS.number },
+            { scope: "charnum", name: "字符数", is_meta: true, read_file: true, cost: 2, ...PROCESS.number },
+            { scope: "chinesenum", name: "中文字符数", is_meta: true, read_file: true, cost: 2, ...PROCESS.number },
+            { scope: "crlf", name: "换行符为CRLF", is_meta: true, read_file: true, cost: 2, ...PROCESS.boolean },
+            { scope: "hasimage", name: "包含图片", is_meta: true, read_file: true, cost: 2, ...PROCESS.boolean },
+            { scope: "haschinese", name: "包含中文字符", is_meta: true, read_file: true, cost: 2, ...PROCESS.boolean },
+            { scope: "line", name: "某行", is_meta: false, read_file: true, cost: 2, ...PROCESS.stringArray },
         ]
         return qualifiers.map(q => ({ ...q, query: QUERY[q.scope] }))
     }
@@ -565,15 +590,17 @@ class Searcher {
             wrappedByMulti: (...types) => {
                 let wrapped = false
                 const balances = new Uint8Array(types.length).fill(0)
-                const flags = new Map(types.flatMap((type, idx) => [
-                    [`${type}_open`, [idx, 1]],
-                    [`${type}_close`, [idx, -1]],
-                ]))
+                const flags = new Map(
+                    types.flatMap((type, idx) => [
+                        [`${type}_open`, [idx, 1]],
+                        [`${type}_close`, [idx, -1]],
+                    ])
+                )
                 return node => {
                     const hit = flags.get(node.type)
                     if (hit) {
-                        const [idx, value] = hit
-                        balances[idx] += value
+                        const [idx, addend] = hit
+                        balances[idx] += addend
                         balances.fill(0, idx + 1)
                         wrapped = balances.every(val => val > 0)
                     }
@@ -585,16 +612,16 @@ class Searcher {
         const TRANSFORMER = {
             content: node => node.content,
             info: node => node.info,
-            infoAndContent: node => `${node.info} ${node.content}`,
+            infoAndContent: node => `${node.info}\n${node.content}`,
             attrAndContent: node => {
                 const attrs = node.attrs || []
                 const attrContent = attrs.map(l => l[l.length - 1]).join(" ")
                 return `${attrContent}${node.content}`
             },
-            regexpContent: regexp => {
+            regexpContent: regex => {
                 return node => {
                     const content = node.content.trim()
-                    const result = [...content.matchAll(regexp)]
+                    const result = [...content.matchAll(regex)]
                     return result.map(([_, text]) => text).join(" ")
                 }
             },
@@ -604,7 +631,9 @@ class Searcher {
                 return node => {
                     const content = node.content.trim()
                     const hit = content.match(regexp)
-                    if (!hit) return ""
+                    if (!hit) {
+                        return ""
+                    }
                     const [_, selectText, taskText] = hit
                     // 0:both, 1:selected, -1:unselected
                     switch (selectType) {
@@ -628,15 +657,16 @@ class Searcher {
                     if (filter(node)) {
                         output.push(node)
                     }
-                    const children = node.children
-                    if (children && children.length) {
-                        recurse(children)
+                    const c = node.children
+                    if (c && c.length) {
+                        recurse(c)
                     }
                 }
             }
             recurse(ast)
             return output
         }
+
         const buildQuery = (parser, filter, transformer) => {
             return source => {
                 const ast = parser(source.content)
@@ -644,19 +674,21 @@ class Searcher {
                 return nodes.flatMap(transformer).filter(Boolean)
             }
         }
-        const buildQualifier = (scope, name, parser, filter, transformer) => {
-            const query = buildQuery(parser, filter, transformer)
-            const is_meta = false
-            const read_file = true
-            const cost_level = 3
-            const preprocess = this.MIXIN.PREPROCESS.noop
-            const validate = this.MIXIN.VALIDATE.isStringOrRegexp
-            const cast = this.MIXIN.CAST.toStringOrRegexp
-            const match_keyword = this.MIXIN.MATCH.arrayCompare
-            const match_phrase = match_keyword
-            const match_regexp = this.MIXIN.MATCH.arrayRegexp
-            return { scope, name, is_meta, read_file, cost_level, preprocess, validate, cast, match_keyword, match_phrase, match_regexp, query }
-        }
+
+        const buildQualifier = (scope, name, parser, filter, transformer) => ({
+            scope,
+            name,
+            is_meta: false,
+            read_file: true,
+            cost: 3,
+            preprocess: this.MIXIN.PREPROCESS.noop,
+            validate: this.MIXIN.VALIDATE.isStringOrRegexp,
+            cast: this.MIXIN.CAST.toStringOrRegexp,
+            match_keyword: this.MIXIN.MATCH.arrayCompare,
+            match_phrase: this.MIXIN.MATCH.arrayCompare,
+            match_regexp: this.MIXIN.MATCH.arrayRegexp,
+            query: buildQuery(parser, filter, transformer),
+        })
 
         return [
             buildQualifier("blockcode", "代码块", PARSER.block, FILTER.is("fence"), TRANSFORMER.infoAndContent),
@@ -699,12 +731,11 @@ class Searcher {
 
     postParse(ast) {
         const { REGEXP } = this.parser.TYPE
-
         this.parser.walk(ast, node => {
             const qualifier = this.qualifiers.get(node.scope.toLowerCase())
             node.operand = qualifier.preprocess(node.scope, node.operator, node.operand, node.type)
             node.validateError = qualifier.validate(node.scope.toUpperCase(), node.operator, node.operand, node.type)
-            node.costLevel = qualifier.cost_level + (node.type === REGEXP ? 0.5 : 0)
+            node.cost = qualifier.cost + (node.type === REGEXP ? 0.5 : 0)
             node.castResult = qualifier.cast(node.operand, node.type)
         })
         return ast
@@ -712,56 +743,61 @@ class Searcher {
 
     /**
      * Process OR/AND nodes by:
-     *   1. Gathering same-type child nodes into `subNodes`.
-     *   2. Sorting `subNodes` by `costLevel`.
-     *   3. Rebuilding the subtree based on `subNodes` to favor low-cost operations.
+     *   1. Gathering data child nodes into `dataNodes`
+     *   2. Sorting `dataNodes` by `cost`
+     *   3. Rebuilding the subtree based on `dataNodes` to favor low-cost operations
      */
     optimize(ast) {
         if (!ast) return
 
         const { OR, AND } = this.parser.TYPE
-        const setCostLevel = node => {
+        const setCost = node => {
             if (!node) return
 
-            setCostLevel(node.left)
-            setCostLevel(node.right)
+            setCost(node.left)
+            setCost(node.right)
 
-            const rootCostLevel = node.costLevel || 1
-            const leftCostLevel = (node.left && node.left.costLevel) || 1
-            const rightCostLevel = (node.right && node.right.costLevel) || 1
-            node.costLevel = Math.max(rootCostLevel, leftCostLevel, rightCostLevel)
+            const rootCost = node.cost || 1
+            const leftCost = (node.left && node.left.cost) || 1
+            const rightCost = (node.right && node.right.cost) || 1
+            node.cost = Math.max(rootCost, leftCost, rightCost)
+        }
+        const getDataNodes = (cur, root, dataNodes = []) => {
+            if (cur.type === root.type) {
+                if (cur.right) {
+                    getDataNodes(cur.right, root, dataNodes)
+                }
+                if (cur.left) {
+                    getDataNodes(cur.left, root, dataNodes)
+                }
+            } else {
+                dataNodes.push(cur)
+            }
+            return dataNodes
         }
         const rebuild = node => {
             if (!node) return
 
             if (node.type === OR || node.type === AND) {
-                const subNodes = []
-                const collectSubNodes = cur => {
-                    if (cur.type === node.type) {
-                        if (cur.right) collectSubNodes(cur.right)
-                        if (cur.left) collectSubNodes(cur.left)
-                    } else {
-                        subNodes.push(cur)
-                    }
-                }
-                collectSubNodes(node)
-                if (subNodes.length > 1) {
-                    subNodes.sort((a, b) => a.costLevel - b.costLevel)
-                    let newNode = subNodes.shift()
-                    while (subNodes.length) {
-                        const right = subNodes.shift()
-                        newNode = { type: node.type, left: newNode, right, costLevel: right.costLevel }
+                const dataNodes = getDataNodes(node, node)
+                if (dataNodes.length > 1) {
+                    dataNodes.sort((a, b) => a.cost - b.cost)
+                    let newNode = dataNodes.shift()
+                    while (dataNodes.length) {
+                        const right = dataNodes.shift()
+                        newNode = { type: node.type, left: newNode, right: right, cost: right.cost }
                     }
                     node.left = newNode.left
                     node.right = newNode.right
-                    node.costLevel = newNode.costLevel
+                    node.cost = newNode.cost
                 }
             }
+
             rebuild(node.right)
             rebuild(node.left)
         }
 
-        setCostLevel(ast)
+        setCost(ast)
         rebuild(ast)
         return ast
     }
@@ -816,7 +852,9 @@ class Searcher {
                     _eval(right, negated)
                     break
                 case NOT:
-                    left && _eval(left, negated)
+                    if (left) {
+                        _eval(left, negated)
+                    }
                     _eval(right, !negated)
                     break
                 default:
@@ -839,7 +877,9 @@ class Searcher {
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
 
         function getName(node) {
-            if (node._shortName) return node._shortName
+            if (node._shortName) {
+                return node._shortName
+            }
             node._shortName = "T" + ++idx
             const prefix = node.negated ? "-" : ""
             const operand = node.type === REGEXP ? `/${node.operand}/` : node.operand
@@ -941,7 +981,7 @@ class Searcher {
         ast = JSON.parse(JSON.stringify(ast))  // deep copy
         const { result } = _eval(ast)
         const content = result
-            .map(path => path.map(e => getName(e)).join("且"))
+            .map(path => path.map(getName).join("且"))
             .map((path, idx) => `${idx + 1}. ${path}`)
             .join("\n")
         return "搜索满足如下任意一个要求的文件：\n" + content
@@ -971,7 +1011,7 @@ class Searcher {
         const agreement = genInfo("查询表达式以斜体表示")
         const diffInfo = genInfo("注意区分：\nhead=plugin 表示标题为 plugin\nhead:plugin 表示标题包含 plugin")
         const scopeInfo = genInfo(`1. 为了简化搜索，可以同时省略搜索范围和运算符，此时搜索范围默认为 default，运算符默认为 :
-2. 搜索范围 default 表示路径（path）和文件内容（content），运算符: 表示文本包含
+2. 搜索范围 default 表示路径（path）和文件内容（content），运算符 : 表示文本包含
 3. 也就是说，pear 等价于 default:pear ，也等价于 path:pear OR content:pear
 4. 其含义为：搜索「文件路径或文件内容包含 pear」的文件`)
 
@@ -997,7 +1037,7 @@ class Searcher {
     <tr><td><em>sour | pear</em></td><td>包含 sour 或 pear。等价于 <em>sour OR pear</em></td></tr>
     <tr><td><em>"sour pear"</em></td><td>包含 sour pear 这一词组</td></tr>
     <tr><td><em>/\\bsour\\b/ pear mtime<2024-05-16</em></td><td>匹配正则 \\bsour\\b（全字匹配 sour），且包含 pear，且文件的修改时间早于 2024-05-16</td></tr>
-    <tr><td><em>frontmatter:dev | head=plugin | strong:MIT</em></td><td>YAML Front Matter 包含 dev 或者 标题内容为 plugin 或者 加粗文字包含 MIT ${diffInfo}</td></tr>
+    <tr><td><em>frontmatter:dev | head=plugin | strong:MIT</em></td><td>YAML Front Matter 包含 dev，或标题内容为 plugin，或加粗文字包含 MIT ${diffInfo}</td></tr>
     <tr><td><em>size>10kb (linenum>=1000 | hasimage=true)</em></td><td>文件大小超过 10KB，并且文件要么至少有 1000 行，要么包含图片</td></tr>
     <tr><td><em>path:(info | warn | err) -ext:md</em></td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 md</td></tr>
     <tr><td><em>thead:k8s h2:prometheus blockcode:"kubectl apply"</em></td><td>表头包含 k8s，且二级标题包含 prometheus，且代码块内容包含 kubectl apply</td></tr>
@@ -1054,12 +1094,17 @@ class Highlighter {
         }, 999)
 
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.otherFileOpened, this.utils.debounce(() => {
-            this.utils.isShow(this.plugin.entities.modal) && this.plugin.highlightMultiByAST()
+            const isShow = this.utils.isShow(this.plugin.entities.modal)
+            if (isShow) {
+                this.plugin.highlightMultiByAST()
+            }
         }, 1000))
 
         this.utils.entities.eContent.addEventListener("mousedown", ev => {
             const shouldClear = this.searchStatus.hits.length && !ev.target.closest("#plugin-search-multi")
-            shouldClear && this.clearSearch()
+            if (shouldClear) {
+                this.clearSearch()
+            }
         }, true)
 
         document.querySelector(".plugin-highlight-multi-result").addEventListener("mousedown", ev => {
@@ -1084,7 +1129,9 @@ class Highlighter {
 
     doSearch = (searchGroup = this.searchStatus.searchGroup, caseSensitive = this.config.CASE_SENSITIVE) => {
         this.clearSearch()
-        if (!searchGroup || searchGroup.length === 0) return this.searchStatus.hitGroups
+        if (!searchGroup || searchGroup.length === 0) {
+            return this.searchStatus.hitGroups
+        }
 
         this.searchStatus.searchGroup = searchGroup
         this.searchStatus.regexp = this._createRegExp(searchGroup, caseSensitive)
@@ -1397,7 +1444,7 @@ class Highlighter {
         fences.searchStatus.queue.push(cm)
     }
 
-    _clearSearchOnCM = (cm) => {
+    _clearSearchOnCM = cm => {
         const fence = File.editor.fences
         if (fence.searchStatus) {
             const cid = cm.cid || "source"
@@ -1406,7 +1453,7 @@ class Highlighter {
         }
     }
 
-    _checkHits = () => this.searchStatus.hits.length <= 5000
+    _checkHits = () => this.searchStatus.hits.length <= this.config.MAX_HITS
 
     _polyfill = () => {
         if (!global.NodeDef) {
