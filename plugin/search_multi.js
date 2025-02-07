@@ -496,11 +496,12 @@ class Searcher {
             linenum: ({ path, file, stats, content }) => content.split("\n").length,
             charnum: ({ path, file, stats, content }) => content.length,
             crlf: ({ path, file, stats, content }) => content.includes("\r\n"),
-            hasimage: ({ path, file, stats, content }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(content.toString()),
-            haschinese: ({ path, file, stats, content }) => /\p{sc=Han}/gu.test(content.toString()),
+            hasimage: ({ path, file, stats, content }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(content),
+            haschinese: ({ path, file, stats, content }) => /\p{sc=Han}/gu.test(content),
+            hasinvisiblechar: ({ path, file, stats, content }) => /[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/.test(content),
             line: ({ path, file, stats, content }) => content.split("\n").map(e => e.trim()),
             frontmatter: ({ path, file, stats, content }) => {
-                const { yamlObject } = splitFrontMatter(content.toString())
+                const { yamlObject } = splitFrontMatter(content)
                 return yamlObject ? JSON.stringify(yamlObject) : ""
             },
             chinesenum: ({ path, file, stats, content }) => {
@@ -536,6 +537,7 @@ class Searcher {
             { scope: "crlf", name: "换行符为CRLF", is_meta: true, read_file: true, cost: 2, ...PROCESS.boolean },
             { scope: "hasimage", name: "包含图片", is_meta: true, read_file: true, cost: 2, ...PROCESS.boolean },
             { scope: "haschinese", name: "包含中文字符", is_meta: true, read_file: true, cost: 2, ...PROCESS.boolean },
+            { scope: "hasinvisiblechar", name: "包含不可见字符", is_meta: true, read_file: true, cost: 2, ...PROCESS.boolean },
             { scope: "line", name: "某行", is_meta: false, read_file: true, cost: 2, ...PROCESS.stringArray },
         ]
         return qualifiers.map(q => ({ ...q, query: QUERY[q.scope] }))
