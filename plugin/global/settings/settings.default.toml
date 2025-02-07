@@ -1562,6 +1562,9 @@ HOTKEY_CONVERT_CRLF_TO_LF = ""
 # 快捷键：将换行符从 LF 转为 CRLF
 HOTKEY_CONVERT_LF_TO_CRLF = ""
 
+# 快捷键：移除不可见字符
+HOTKEY_FILTER_INVISIBLE_CHARACTERS = ""
+
 # 快捷键：添加结尾空格 (根据严格的 Markdown 换行语法，需要在结尾添加两个空格以表示换行)
 HOTKEY_TRAILING_WHITE_SPACE = ""
 

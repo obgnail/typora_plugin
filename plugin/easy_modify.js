@@ -5,6 +5,7 @@ class easyModifyPlugin extends BasePlugin {
         { hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, callback: () => this.call("decrease_headers_level") },
         { hotkey: this.config.HOTKEY_CONVERT_CRLF_TO_LF, callback: () => this.call("convert_crlf_to_lf") },
         { hotkey: this.config.HOTKEY_CONVERT_LF_TO_CRLF, callback: () => this.call("convert_lf_to_crlf") },
+        { hotkey: this.config.HOTKEY_FILTER_INVISIBLE_CHARACTERS, callback: () => this.call("filter_invisible_characters") },
         { hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, callback: () => this.call("trailing_white_space") },
         { hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE, callback: () => this.dynamicCall("extract_rang_to_new_file") },
         { hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, callback: () => this.dynamicCall("insert_mermaid_mindmap") },
@@ -22,6 +23,7 @@ class easyModifyPlugin extends BasePlugin {
             { act_name: "降低选中文段的标题等级", act_value: "decrease_headers_level", act_hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, act_hint: defaultDoc },
             { act_name: "换行符 CRLF 转为 LF", act_value: "convert_crlf_to_lf", act_hotkey: this.config.HOTKEY_CONVERT_CRLF_TO_LF, act_hint: notRecommended },
             { act_name: "换行符 LF 转为 CRLF", act_value: "convert_lf_to_crlf", act_hotkey: this.config.HOTKEY_CONVERT_LF_TO_CRLF, act_hint: notRecommended },
+            { act_name: "移除不可见字符", act_value: "filter_invisible_characters", act_hotkey: this.config.HOTKEY_FILTER_INVISIBLE_CHARACTERS, act_hint: notRecommended },
             { act_name: "添加结尾空格", act_value: "trailing_white_space", act_hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, act_hint: notRecommended },
         ]
     }
@@ -63,6 +65,7 @@ class easyModifyPlugin extends BasePlugin {
             trailing_white_space: this.trailingWhiteSpace,
             convert_crlf_to_lf: this.convertCRLF2LF,
             convert_lf_to_crlf: this.convertLF2CRLF,
+            filter_invisible_characters: this.filterInvisibleCharacters,
         }
         const func = funcMap[action]
         if (!func) return
@@ -144,6 +147,8 @@ class easyModifyPlugin extends BasePlugin {
     convertCRLF2LF = async () => this.utils.editCurrentFile(content => content.replace(/\r\n/g, "\n"))
 
     convertLF2CRLF = async () => this.utils.editCurrentFile(content => content.replace(/\r?\n/g, "\r\n"))
+
+    filterInvisibleCharacters = async () => this.utils.editCurrentFile(content => content.replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/g, ""))
 
     extractRangeToNewFile = async range => {
         if (!range || range.collapsed) return;
