@@ -436,18 +436,18 @@ class QualifierMixin {
  *   6. Match:      Matches `castResult` (from step 4) with `queryResult` (from step 5)
  *
  * A qualifier has the following attributes:
- *   {string}   scope:         The query scope
- *   {string}   name:          A descriptive name for explanation purposes
- *   {boolean}  is_meta:       Indicates if the qualifier scope is a metadata property
- *   {boolean}  read_file:     Determines if the qualifier needs to read file content
- *   {number}   cost:          The performance cost associated with the `query` function. 1: Read file stats;  2: Read file content;  3: Parse file content;  Plus 0.5 when the user input is a regex
- *   {function} preprocess:    Convert certain specific, predefined, and special meaning vocabulary from the user input. Defaults to `QualifierMixin.PREPROCESS.noop`
- *   {function} validate:      Checks user input and obtain `validateError`. Defaults to `QualifierMixin.VALIDATE.isStringOrRegexp`
- *   {function} cast:          Converts user input for easier matching and obtain `castResult`. Defaults to `QualifierMixin.CAST.toStringOrRegexp`
- *   {function} query:         Retrieves data from source and obtain `queryResult`
- *   {function} match_keyword: Matches `castResult` with `queryResult` when the user input is a keyword. Defaults to `QualifierMixin.MATCH.compare`
- *   {function} match_phrase:  Matches `castResult` with `queryResult` when the user input is a phrase. Behaves the same as `match_keyword` by default
- *   {function} match_regexp:  Matches `castResult` with `queryResult` when the user input is a regexp. Defaults to `QualifierMixin.MATCH.regexp`
+ *   {string}   scope:          The query scope
+ *   {string}   name:           A descriptive name for explanation purposes
+ *   {boolean}  is_meta:        Indicates if the qualifier scope is a metadata property
+ *   {boolean}  need_read_file: Determines if the qualifier needs to read file content
+ *   {number}   cost:           The performance cost associated with the `query` function. 1: Read file stats; 2: Read file content; 3: Parse file content; Plus 0.5 when the user input is a regex
+ *   {function} preprocess:     Convert certain specific, predefined, and special meaning vocabulary from the user input. Defaults to `QualifierMixin.PREPROCESS.noop`
+ *   {function} validate:       Checks user input and obtain `validateError`. Defaults to `QualifierMixin.VALIDATE.isStringOrRegexp`
+ *   {function} cast:           Converts user input for easier matching and obtain `castResult`. Defaults to `QualifierMixin.CAST.toStringOrRegexp`
+ *   {function} query:          Retrieves data from source and obtain `queryResult`
+ *   {function} match_keyword:  Matches `castResult` with `queryResult` when the user input is a keyword. Defaults to `QualifierMixin.MATCH.compare`
+ *   {function} match_phrase:   Matches `castResult` with `queryResult` when the user input is a phrase. Behaves the same as `match_keyword` by default
+ *   {function} match_regexp:   Matches `castResult` with `queryResult` when the user input is a regexp. Defaults to `QualifierMixin.MATCH.regexp`
  */
 class Searcher {
     constructor(plugin) {
@@ -459,6 +459,13 @@ class Searcher {
     }
 
     process() {
+        const qualifiers = this.buildQualifiers()
+
+        qualifiers.forEach(q => this.qualifiers.set(q.scope, q))
+        this.parser.setQualifier(qualifiers.map(q => q.scope), Object.keys(this.MIXIN.OPERATOR))
+    }
+
+    buildQualifiers() {
         const qualifiers = [...this.buildBaseQualifiers(), ...this.buildMarkdownQualifiers()]
         qualifiers.forEach(q => {
             q.preprocess = q.preprocess || this.MIXIN.PREPROCESS.noop
@@ -467,9 +474,8 @@ class Searcher {
             q.KEYWORD = q.match_keyword || this.MIXIN.MATCH.primitiveCompare
             q.PHRASE = q.match_phrase || q.KEYWORD
             q.REGEXP = q.match_regexp || this.MIXIN.MATCH.stringRegexp
-            this.qualifiers.set(q.scope, q)
         })
-        this.parser.setQualifier(qualifiers.map(q => q.scope), [...Object.keys(this.MIXIN.OPERATOR)])
+        return qualifiers
     }
 
     buildBaseQualifiers() {
@@ -497,7 +503,8 @@ class Searcher {
             charnum: ({ path, file, stats, content }) => content.length,
             crlf: ({ path, file, stats, content }) => content.includes("\r\n"),
             hasimage: ({ path, file, stats, content }) => /!\[.*?\]\(.*\)|<img.*?src=".*?"/.test(content),
-            haschinese: ({ path, file, stats, content }) => /\p{sc=Han}/gu.test(content),
+            haschinese: ({ path, file, stats, content }) => /\p{sc=Han}/u.test(content),
+            hasemoji: ({ path, file, stats, content }) => /\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/u.test(content),
             hasinvisiblechar: ({ path, file, stats, content }) => /[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/.test(content),
             line: ({ path, file, stats, content }) => content.split("\n").map(e => e.trim()),
             frontmatter: ({ path, file, stats, content }) => {
@@ -513,34 +520,38 @@ class Searcher {
             },
         }
         const PROCESS = {
+            size: { validate: isSize, cast: toBytes },
             date: { preprocess: resolveDate, validate: isDate, cast: toDate },
             number: { preprocess: resolveNumber, validate: isNumber, cast: toNumber },
             boolean: { preprocess: resolveBoolean, validate: isBoolean, cast: toBoolean },
             stringArray: { match_keyword: arrayCompare, match_regexp: arrayRegexp },
         }
-        const qualifiers = [
-            { scope: "default", name: "内容或路径", is_meta: false, read_file: true, cost: 2 },
-            { scope: "path", name: "路径", is_meta: true, read_file: false, cost: 1 },
-            { scope: "dir", name: "文件所属目录", is_meta: true, read_file: false, cost: 1 },
-            { scope: "file", name: "文件名", is_meta: true, read_file: false, cost: 1 },
-            { scope: "name", name: "文件名(无扩展名)", is_meta: true, read_file: false, cost: 1 },
-            { scope: "ext", name: "扩展名", is_meta: true, read_file: false, cost: 1 },
-            { scope: "content", name: "内容", is_meta: false, read_file: true, cost: 2 },
-            { scope: "frontmatter", name: "FrontMatter", is_meta: false, read_file: true, cost: 3 },
-            { scope: "size", name: "文件大小", is_meta: true, read_file: false, cost: 1, validate: isSize, cast: toBytes },
-            { scope: "birthtime", name: "创建时间", is_meta: true, read_file: false, cost: 1, ...PROCESS.date },
-            { scope: "mtime", name: "修改时间", is_meta: true, read_file: false, cost: 1, ...PROCESS.date },
-            { scope: "atime", name: "访问时间", is_meta: true, read_file: false, cost: 1, ...PROCESS.date },
-            { scope: "linenum", name: "行数", is_meta: true, read_file: true, cost: 2, ...PROCESS.number },
-            { scope: "charnum", name: "字符数", is_meta: true, read_file: true, cost: 2, ...PROCESS.number },
-            { scope: "chinesenum", name: "中文字符数", is_meta: true, read_file: true, cost: 2, ...PROCESS.number },
-            { scope: "crlf", name: "换行符为CRLF", is_meta: true, read_file: true, cost: 2, ...PROCESS.boolean },
-            { scope: "hasimage", name: "包含图片", is_meta: true, read_file: true, cost: 2, ...PROCESS.boolean },
-            { scope: "haschinese", name: "包含中文字符", is_meta: true, read_file: true, cost: 2, ...PROCESS.boolean },
-            { scope: "hasinvisiblechar", name: "包含不可见字符", is_meta: true, read_file: true, cost: 2, ...PROCESS.boolean },
-            { scope: "line", name: "某行", is_meta: false, read_file: true, cost: 2, ...PROCESS.stringArray },
+        const buildQualifier = (scope, name, is_meta, need_read_file, cost, process) => ({
+            scope, name, is_meta, need_read_file, cost, query: QUERY[scope], ...process,
+        })
+        return [
+            buildQualifier("default", "内容或路径", false, true, 2),
+            buildQualifier("path", "路径", true, false, 1),
+            buildQualifier("dir", "文件所属目录", true, false, 1),
+            buildQualifier("file", "文件名", true, false, 1),
+            buildQualifier("name", "文件名(无扩展名)", true, false, 1),
+            buildQualifier("ext", "扩展名", true, false, 1),
+            buildQualifier("content", "内容", false, true, 2),
+            buildQualifier("frontmatter", "FrontMatter", false, true, 3),
+            buildQualifier("size", "文件大小", true, false, 1, PROCESS.size),
+            buildQualifier("birthtime", "创建时间", true, false, 1, PROCESS.date),
+            buildQualifier("mtime", "修改时间", true, false, 1, PROCESS.date),
+            buildQualifier("atime", "访问时间", true, false, 1, PROCESS.date),
+            buildQualifier("linenum", "行数", true, true, 2, PROCESS.number),
+            buildQualifier("charnum", "字符数", true, true, 2, PROCESS.number),
+            buildQualifier("chinesenum", "中文字符数", true, true, 2, PROCESS.number),
+            buildQualifier("crlf", "换行符为CRLF", true, true, 2, PROCESS.boolean),
+            buildQualifier("hasimage", "包含图片", true, true, 2, PROCESS.boolean),
+            buildQualifier("haschinese", "包含中文字符", true, true, 2, PROCESS.boolean),
+            buildQualifier("hasemoji", "包含表情字符", true, true, 2, PROCESS.boolean),
+            buildQualifier("hasinvisiblechar", "包含不可见字符", true, true, 2, PROCESS.boolean),
+            buildQualifier("line", "某行", false, true, 2, PROCESS.stringArray),
         ]
-        return qualifiers.map(q => ({ ...q, query: QUERY[q.scope] }))
     }
 
     buildMarkdownQualifiers() {
@@ -681,7 +692,7 @@ class Searcher {
             scope,
             name,
             is_meta: false,
-            read_file: true,
+            need_read_file: true,
             cost: 3,
             preprocess: this.MIXIN.PREPROCESS.noop,
             validate: this.MIXIN.VALIDATE.isStringOrRegexp,
@@ -824,7 +835,7 @@ class Searcher {
 
     getReadFileScope(ast) {
         const scope = new Set()
-        const needRead = new Set([...this.qualifiers.values()].filter(q => q.read_file).map(q => q.scope))
+        const needRead = new Set([...this.qualifiers.values()].filter(q => q.need_read_file).map(q => q.scope))
         this.parser.walk(ast, node => {
             if (needRead.has(node.scope)) {
                 scope.add(node.scope)
