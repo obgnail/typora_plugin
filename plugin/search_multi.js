@@ -424,6 +424,11 @@ class QualifierMixin {
         arrayCompare: (scope, operator, operand, queryResult) => queryResult.some(data => this.OPERATOR[operator](data, operand)),
         arrayRegexp: (scope, operator, operand, queryResult) => queryResult.some(data => operand.test(data)),
     }
+
+    static ANCESTOR = {
+        none: null,
+        write: "#write",
+    }
 }
 
 /**
@@ -438,6 +443,7 @@ class QualifierMixin {
  * A qualifier has the following attributes:
  *   {string}   scope:          The query scope
  *   {string}   name:           A descriptive name for explanation purposes
+ *   {string}   ancestor:       The ancestor Element in DOM. Only available when is_meta=false. Defaults to `QualifierMixin.ANCESTOR.none`
  *   {boolean}  is_meta:        Indicates if the qualifier scope is a metadata property
  *   {boolean}  need_read_file: Determines if the qualifier needs to read file content
  *   {number}   cost:           The performance cost associated with the `query` function. 1: Read file stats; 2: Read file content; 3: Parse file content; Plus 0.5 when the user input is a regex
@@ -470,6 +476,7 @@ class Searcher {
         qualifiers.forEach(q => {
             q.preprocess = q.preprocess || this.MIXIN.PREPROCESS.noop
             q.validate = q.validate || this.MIXIN.VALIDATE.isStringOrRegexp
+            q.anchor = q.anchor || this.MIXIN.ANCESTOR.none
             q.cast = q.cast || this.MIXIN.CAST.toStringOrRegexp
             q.KEYWORD = q.match_keyword || this.MIXIN.MATCH.primitiveCompare
             q.PHRASE = q.match_phrase || q.KEYWORD
@@ -485,6 +492,7 @@ class Searcher {
             CAST: { toBytes, toDate, toNumber, toBoolean },
             MATCH: { arrayCompare, arrayRegexp },
             QUERY: { normalizeDate },
+            ANCESTOR: { none, write },
         } = this.MIXIN
         const { splitFrontMatter, Package: { Path } } = this.utils
         const QUERY = {
@@ -506,7 +514,7 @@ class Searcher {
             haschinese: ({ path, file, stats, content }) => /\p{sc=Han}/u.test(content),
             hasemoji: ({ path, file, stats, content }) => /\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F/u.test(content),
             hasinvisiblechar: ({ path, file, stats, content }) => /[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/.test(content),
-            line: ({ path, file, stats, content }) => content.split("\n").map(e => e.trim()),
+            line: ({ path, file, stats, content }) => content.split("\n"),
             frontmatter: ({ path, file, stats, content }) => {
                 const { yamlObject } = splitFrontMatter(content)
                 return yamlObject ? JSON.stringify(yamlObject) : ""
@@ -526,31 +534,31 @@ class Searcher {
             boolean: { preprocess: resolveBoolean, validate: isBoolean, cast: toBoolean },
             stringArray: { match_keyword: arrayCompare, match_regexp: arrayRegexp },
         }
-        const buildQualifier = (scope, name, is_meta, need_read_file, cost, process) => ({
-            scope, name, is_meta, need_read_file, cost, query: QUERY[scope], ...process,
+        const buildQualifier = (scope, name, is_meta, need_read_file, cost, anchor, process) => ({
+            scope, name, is_meta, need_read_file, cost, anchor, query: QUERY[scope], ...process,
         })
         return [
-            buildQualifier("default", "内容或路径", false, true, 2),
-            buildQualifier("path", "路径", true, false, 1),
-            buildQualifier("dir", "文件所属目录", true, false, 1),
-            buildQualifier("file", "文件名", true, false, 1),
-            buildQualifier("name", "文件名(无扩展名)", true, false, 1),
-            buildQualifier("ext", "扩展名", true, false, 1),
-            buildQualifier("content", "内容", false, true, 2),
-            buildQualifier("frontmatter", "FrontMatter", false, true, 3),
-            buildQualifier("size", "文件大小", true, false, 1, PROCESS.size),
-            buildQualifier("birthtime", "创建时间", true, false, 1, PROCESS.date),
-            buildQualifier("mtime", "修改时间", true, false, 1, PROCESS.date),
-            buildQualifier("atime", "访问时间", true, false, 1, PROCESS.date),
-            buildQualifier("linenum", "行数", true, true, 2, PROCESS.number),
-            buildQualifier("charnum", "字符数", true, true, 2, PROCESS.number),
-            buildQualifier("chinesenum", "中文字符数", true, true, 2, PROCESS.number),
-            buildQualifier("crlf", "换行符为CRLF", true, true, 2, PROCESS.boolean),
-            buildQualifier("hasimage", "包含图片", true, true, 2, PROCESS.boolean),
-            buildQualifier("haschinese", "包含中文字符", true, true, 2, PROCESS.boolean),
-            buildQualifier("hasemoji", "包含表情字符", true, true, 2, PROCESS.boolean),
-            buildQualifier("hasinvisiblechar", "包含不可见字符", true, true, 2, PROCESS.boolean),
-            buildQualifier("line", "某行", false, true, 2, PROCESS.stringArray),
+            buildQualifier("default", "内容或路径", false, true, 2, write),
+            buildQualifier("path", "路径", true, false, 1, none),
+            buildQualifier("dir", "文件所属目录", true, false, 1, none),
+            buildQualifier("file", "文件名", true, false, 1, none),
+            buildQualifier("name", "文件名(无扩展名)", true, false, 1, none),
+            buildQualifier("ext", "扩展名", true, false, 1, none),
+            buildQualifier("content", "内容", false, true, 2, write),
+            buildQualifier("frontmatter", "FrontMatter", false, true, 3, 'pre[mdtype="meta_block"]'),
+            buildQualifier("size", "文件大小", true, false, 1, PROCESS.size, none),
+            buildQualifier("birthtime", "创建时间", true, false, 1, none, PROCESS.date),
+            buildQualifier("mtime", "修改时间", true, false, 1, none, PROCESS.date),
+            buildQualifier("atime", "访问时间", true, false, 1, none, PROCESS.date),
+            buildQualifier("linenum", "行数", true, true, 2, none, PROCESS.number),
+            buildQualifier("charnum", "字符数", true, true, 2, none, PROCESS.number),
+            buildQualifier("chinesenum", "中文字符数", true, true, 2, none, PROCESS.number),
+            buildQualifier("crlf", "换行符为CRLF", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("hasimage", "包含图片", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("haschinese", "包含中文字符", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("hasemoji", "包含表情字符", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("hasinvisiblechar", "包含不可见字符", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("line", "某行", false, true, 2, write, PROCESS.stringArray),
         ]
     }
 
@@ -688,9 +696,10 @@ class Searcher {
             }
         }
 
-        const buildQualifier = (scope, name, parser, filter, transformer) => ({
+        const buildQualifier = (scope, name, anchor, parser, filter, transformer) => ({
             scope,
             name,
+            anchor,
             is_meta: false,
             need_read_file: true,
             cost: 3,
@@ -704,34 +713,34 @@ class Searcher {
         })
 
         return [
-            buildQualifier("blockcode", "代码块", PARSER.block, FILTER.is("fence"), TRANSFORMER.infoAndContent),
-            buildQualifier("blockcodelang", "代码块语言", PARSER.block, FILTER.is("fence"), TRANSFORMER.info),
-            buildQualifier("blockcodebody", "代码块内容", PARSER.block, FILTER.is("fence"), TRANSFORMER.content),
-            buildQualifier("blockcodeline", "代码块的某行", PARSER.block, FILTER.is("fence"), TRANSFORMER.contentLine),
-            buildQualifier("blockhtml", "HTML块", PARSER.block, FILTER.is("html_block"), TRANSFORMER.content),
-            buildQualifier("blockquote", "引用块", PARSER.block, FILTER.wrappedBy("blockquote"), TRANSFORMER.content),
-            buildQualifier("table", "表格", PARSER.block, FILTER.wrappedBy("table"), TRANSFORMER.content),
-            buildQualifier("thead", "表头", PARSER.block, FILTER.wrappedBy("thead"), TRANSFORMER.content),
-            buildQualifier("tbody", "表体", PARSER.block, FILTER.wrappedBy("tbody"), TRANSFORMER.content),
-            buildQualifier("ol", "有序列表", PARSER.block, FILTER.wrappedBy("ordered_list"), TRANSFORMER.content),
-            buildQualifier("ul", "无序列表", PARSER.block, FILTER.wrappedBy("bullet_list"), TRANSFORMER.content),
-            buildQualifier("task", "任务列表", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(0)),
-            buildQualifier("taskdone", "已完成任务", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(1)),
-            buildQualifier("tasktodo", "未完成任务", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(-1)),
-            buildQualifier("head", "标题", PARSER.block, FILTER.wrappedBy("heading"), TRANSFORMER.content),
-            buildQualifier("h1", "一级标题", PARSER.block, FILTER.wrappedByTag("heading", "h1"), TRANSFORMER.content),
-            buildQualifier("h2", "二级标题", PARSER.block, FILTER.wrappedByTag("heading", "h2"), TRANSFORMER.content),
-            buildQualifier("h3", "三级标题", PARSER.block, FILTER.wrappedByTag("heading", "h3"), TRANSFORMER.content),
-            buildQualifier("h4", "四级标题", PARSER.block, FILTER.wrappedByTag("heading", "h4"), TRANSFORMER.content),
-            buildQualifier("h5", "五级标题", PARSER.block, FILTER.wrappedByTag("heading", "h5"), TRANSFORMER.content),
-            buildQualifier("h6", "六级标题", PARSER.block, FILTER.wrappedByTag("heading", "h6"), TRANSFORMER.content),
-            buildQualifier("highlight", "高亮文字", PARSER.block, FILTER.is("text"), TRANSFORMER.regexpContent(/==(.+)==/g)),
-            buildQualifier("image", "图片", PARSER.inline, FILTER.is("image"), TRANSFORMER.attrAndContent),
-            buildQualifier("code", "代码", PARSER.inline, FILTER.is("code_inline"), TRANSFORMER.content),
-            buildQualifier("link", "链接", PARSER.inline, FILTER.wrappedBy("link"), TRANSFORMER.attrAndContent),
-            buildQualifier("strong", "加粗文字", PARSER.inline, FILTER.wrappedBy("strong"), TRANSFORMER.content),
-            buildQualifier("em", "斜体文字", PARSER.inline, FILTER.wrappedBy("em"), TRANSFORMER.content),
-            buildQualifier("del", "删除线文字", PARSER.inline, FILTER.wrappedBy("s"), TRANSFORMER.content),
+            buildQualifier("blockcode", "代码块", "pre.md-fences", PARSER.block, FILTER.is("fence"), TRANSFORMER.infoAndContent),
+            buildQualifier("blockcodelang", "代码块语言", ".ty-cm-lang-input", PARSER.block, FILTER.is("fence"), TRANSFORMER.info),
+            buildQualifier("blockcodebody", "代码块内容", "pre.md-fences", PARSER.block, FILTER.is("fence"), TRANSFORMER.content),
+            buildQualifier("blockcodeline", "代码块的某行", "pre.md-fences", PARSER.block, FILTER.is("fence"), TRANSFORMER.contentLine),
+            buildQualifier("blockhtml", "HTML块", ".md-html-inline,.md-htmlblock", PARSER.block, FILTER.is("html_block"), TRANSFORMER.content),
+            buildQualifier("blockquote", "引用块", '[mdtype="blockquote"]', PARSER.block, FILTER.wrappedBy("blockquote"), TRANSFORMER.content),
+            buildQualifier("table", "表格", '[mdtype="table"]', PARSER.block, FILTER.wrappedBy("table"), TRANSFORMER.content),
+            buildQualifier("thead", "表头", '[mdtype="table"] thead', PARSER.block, FILTER.wrappedBy("thead"), TRANSFORMER.content),
+            buildQualifier("tbody", "表体", '[mdtype="table"] tbody', PARSER.block, FILTER.wrappedBy("tbody"), TRANSFORMER.content),
+            buildQualifier("ol", "有序列表", 'ol[mdtype="list"]', PARSER.block, FILTER.wrappedBy("ordered_list"), TRANSFORMER.content),
+            buildQualifier("ul", "无序列表", 'ul[mdtype="list"]', PARSER.block, FILTER.wrappedBy("bullet_list"), TRANSFORMER.content),
+            buildQualifier("task", "任务列表", ".task-list-item", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(0)),
+            buildQualifier("taskdone", "已完成任务", ".task-list-item.task-list-done", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(1)),
+            buildQualifier("tasktodo", "未完成任务", ".task-list-item.task-list-not-done", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(-1)),
+            buildQualifier("head", "标题", '[mdtype="heading"]', PARSER.block, FILTER.wrappedBy("heading"), TRANSFORMER.content),
+            buildQualifier("h1", "一级标题", 'h1[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h1"), TRANSFORMER.content),
+            buildQualifier("h2", "二级标题", 'h2[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h2"), TRANSFORMER.content),
+            buildQualifier("h3", "三级标题", 'h3[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h3"), TRANSFORMER.content),
+            buildQualifier("h4", "四级标题", 'h4[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h4"), TRANSFORMER.content),
+            buildQualifier("h5", "五级标题", 'h5[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h5"), TRANSFORMER.content),
+            buildQualifier("h6", "六级标题", 'h6[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h6"), TRANSFORMER.content),
+            buildQualifier("highlight", "高亮文字", '[md-inline="highlight"]', PARSER.block, FILTER.is("text"), TRANSFORMER.regexpContent(/==(.+)==/g)),
+            buildQualifier("image", "图片", '[md-inline="image"]', PARSER.inline, FILTER.is("image"), TRANSFORMER.attrAndContent),
+            buildQualifier("code", "代码", '[md-inline="code"]', PARSER.inline, FILTER.is("code_inline"), TRANSFORMER.content),
+            buildQualifier("link", "链接", '[md-inline="link"]', PARSER.inline, FILTER.wrappedBy("link"), TRANSFORMER.attrAndContent),
+            buildQualifier("strong", "加粗文字", '[md-inline="strong"]', PARSER.inline, FILTER.wrappedBy("strong"), TRANSFORMER.content),
+            buildQualifier("em", "斜体文字", '[md-inline="em"]', PARSER.inline, FILTER.wrappedBy("em"), TRANSFORMER.content),
+            buildQualifier("del", "删除线文字", '[md-inline="del"]', PARSER.inline, FILTER.wrappedBy("s"), TRANSFORMER.content),
         ]
     }
 
@@ -1083,7 +1092,7 @@ class Searcher {
             { label: "具体用法", type: "p" },
             { label: keywordDesc, type: "p" },
             { label: "形式文法", type: "p" },
-            { label: "", type: "textarea", rows: 20, content },
+            { label: "", type: "textarea", rows: 21, content },
         ]
         this.utils.dialog.modal({ title: "多元文件搜索", width: "600px", components })
     }
