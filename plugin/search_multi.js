@@ -758,6 +758,7 @@ class Searcher {
             node.operand = qualifier.preprocess(node.scope, node.operator, node.operand, node.type)
             node.validateError = qualifier.validate(node.scope.toUpperCase(), node.operator, node.operand, node.type)
             node.cost = qualifier.cost + (node.type === REGEXP ? 0.5 : 0)
+            node.anchor = qualifier.anchor
             node.castResult = qualifier.cast(node.operand, node.type)
         })
         return ast

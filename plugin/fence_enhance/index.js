@@ -50,7 +50,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 const callback = (ev, button) => {
                     const fence = button.closest(".md-fences");
                     const cid = fence.getAttribute("cid");
-                    const cont = this.utils.getFenceContent({ cid });
+                    const cont = this.utils.getFenceContentByCid(cid);
                     return callbackFunc({ ev, button, cont, fence, cid, plu: this });
                 }
                 const action = this.utils.randomString();
@@ -122,7 +122,7 @@ class fenceEnhancePlugin extends BasePlugin {
 
     defaultFold = foldButton => this.config.FOLD_DEFAULT && foldButton.click();
     copyCode = (ev, copyButton) => {
-        const result = this.utils.getFenceContent({ pre: copyButton.closest(".md-fences") });
+        const result = this.utils.getFenceContentByPre(copyButton.closest(".md-fences"));
         navigator.clipboard.writeText(result).then(() => this._changeIcon(copyButton, "fa fa-check", "fa fa-clipboard"));
     }
     foldCode = (ev, foldButton) => {

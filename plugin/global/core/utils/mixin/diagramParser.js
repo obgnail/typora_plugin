@@ -177,7 +177,7 @@ class diagramParser {
         this.cleanErrorMsg($pre);
         this.destroyIfNeed(parser, cid, lang, $pre);
 
-        const content = this.utils.getFenceContent({ cid });
+        const content = this.utils.getFenceContentByCid(cid);
         $pre.addClass("md-fences-advanced");
         this.appendPanelIfNeed($pre);
 

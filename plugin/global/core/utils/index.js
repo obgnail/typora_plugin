@@ -463,6 +463,7 @@ class utils {
 
     static getFileName = (filePath, removeSuffix = true) => {
         let fileName = filePath ? PATH.basename(filePath) : File.getFileName();
+        if (fileName === undefined) return
         if (removeSuffix) {
             const idx = fileName.lastIndexOf(".");
             if (idx !== -1) {
@@ -620,8 +621,9 @@ class utils {
     }
 
     static getRecentFiles = async () => {
-        const recent = await JSBridge.invoke("setting.getRecentFiles");
-        const { files = [], folders = [] } = (typeof recent === "string") ? JSON.parse(recent || "{}") : (recent || {});
+        const recent = await JSBridge.invoke("setting.getRecentFiles")
+        const ret = typeof recent === "string" ? JSON.parse(recent || "{}") : (recent || {})
+        const { files = [], folders = [] } = ret
         return { files, folders }
     }
 
@@ -629,14 +631,14 @@ class utils {
     static isSpecialImage = src => /^(blob|chrome-blob|moz-blob|data):[^\/]/.test(src)
     static isNetworkImage = this.isNetworkURI
 
-    static getFenceContent = ({ pre, cid }) => {
-        cid = cid || (pre && pre.getAttribute("cid"));
-        if (!cid) return;
-        const fence = File.editor.fences.queue[cid];
+    static getFenceContentByCid = cid => {
+        if (!cid) return
+        const fence = File.editor.fences.queue[cid]
         if (fence) {
             return fence.getValue()
         }
     }
+    static getFenceContentByPre = pre => this.getFenceContentByCid(pre && pre.getAttribute("cid"))
 
     static getTocTree = useBuiltin => {
         const root = { depth: 0, cid: "n0", text: this.getFileName(), children: [] }
