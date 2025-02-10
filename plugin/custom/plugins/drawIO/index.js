@@ -22,7 +22,7 @@ class drawIOPlugin extends BaseCustomPlugin {
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: null,
-            beforeExport: null,
+            beforeExport: this.beforeExport,
             extraStyleGetter: null,
             versionGetter: this.versionGetter,
         })
@@ -36,6 +36,7 @@ class drawIOPlugin extends BaseCustomPlugin {
         await this._setXML(graphConfig)
         $wrap[0].innerHTML = await this._toElement(graphConfig)
         this._refresh()
+        return $wrap[0]
     }
 
     _getConfig = content => new Function(`return (${content})`)()
@@ -99,6 +100,14 @@ class drawIOPlugin extends BaseCustomPlugin {
         const path = this.utils.isNetworkURI(from) ? from : `file:///${this.utils.Package.Path.resolve(from)}`
         await $.getScript(path)
         window.GraphViewer.prototype.toolbarZIndex = 7
+    }
+
+    beforeExport = (preview, instance) => {
+        const graph = preview.querySelector(".mxgraph")
+        if (graph) {
+            graph.removeAttribute("data-mxgraph")
+            graph.querySelectorAll(":scope > *:not(svg)").forEach(this.utils.removeElement)
+        }
     }
 
     versionGetter = () => "24.8.9"

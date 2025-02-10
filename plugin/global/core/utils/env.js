@@ -15,15 +15,11 @@ const getHook = utils => {
         registerHotkey: hotkeyHub.register,
         /** @deprecated new API: utils.hotkeyHub.registerSingle */
         registerSingleHotkey: hotkeyHub.registerSingle,
-        /** @deprecated new API: utils.hotkeyHub.unregister */
-        unregisterHotkey: hotkeyHub.unregister,
 
         /** @deprecated new API: utils.eventHub.eventType */
         eventType: eventHub.eventType,
         /** @deprecated new API: utils.eventHub.addEventListener */
         addEventListener: eventHub.addEventListener,
-        /** @deprecated new API: utils.eventHub.removeEventListener */
-        removeEventListener: eventHub.removeEventListener,
 
         /** @deprecated new API: utils.dialog.modal */
         modal: dialog.modal
@@ -44,15 +40,19 @@ const getHook = utils => {
         eventHub.publishEvent(eventHub.eventType.allPluginsHadInjected)
     }
 
+    // Due to the use of async, some events may have been missed (such as afterAddCodeBlock), reload it
+    const postLoadPlugin = () => {
+        if (File.getMountFolder() != null) {
+            setTimeout(utils.reload, 50)
+        }
+    }
+
     return async pluginLoader => {
         await registerPreMixin()
         await pluginLoader()
         await registerPostMixin()
         await optimizeMixin()
-        // Due to the use of async, some events may have been missed (such as afterAddCodeBlock), reload it
-        if (File.getMountFolder() != null) {
-            setTimeout(utils.reload, 50)
-        }
+        postLoadPlugin()
     }
 }
 

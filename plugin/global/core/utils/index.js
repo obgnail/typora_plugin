@@ -649,7 +649,8 @@ class utils {
             : (File.editor.nodeMap.toc.headers || [])
                 .filter(node => Boolean(node && node.attributes))
                 .map(({ attributes: { depth, text }, cid }) => {
-                    text = this.escape(text.replace(/\[\^([^\]]+)\]/g, ""))
+                    text = text.replace(/\[\^([^\]]+)\]/g, "")
+                    text = this.escape(text)
                     return { depth, cid, text, children: [] }
                 })
         toc.forEach(node => {
