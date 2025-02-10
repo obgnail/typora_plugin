@@ -1024,7 +1024,7 @@ class Downloader {
         }
 
         const canvas = document.createElement("canvas")
-        const dpr = window.devicePixelRatio || 1
+        const dpr = File.canvasratio || window.devicePixelRatio || 1
         const width = svg.getAttribute("width") * dpr
         const height = svg.getAttribute("height") * dpr
         canvas.width = width

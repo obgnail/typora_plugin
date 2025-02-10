@@ -141,7 +141,7 @@ class helpPlugin extends BasePlugin {
         const canvasWidth = (size + margin) * qrcodeList.length - margin;
 
         const _adaptDPR = (canvas, ctx) => {
-            const dpr = window.devicePixelRatio;
+            const dpr = File.canvasratio || window.devicePixelRatio || 1
             const { width, height } = canvas;
             canvas.width = Math.round(width * dpr);
             canvas.height = Math.round(height * dpr);

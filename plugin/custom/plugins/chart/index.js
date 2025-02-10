@@ -20,7 +20,8 @@ class chartPlugin extends BaseCustomPlugin {
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: this.destroy,
-            beforeExport: this.beforeExport,
+            beforeExportToNative: null,
+            beforeExportToHTML: this.beforeExportToHTML,
             extraStyleGetter: null,
             versionGetter: this.versionGetter,
         })
@@ -46,7 +47,7 @@ class chartPlugin extends BaseCustomPlugin {
         return new Chart(ctx, config)
     }
 
-    beforeExport = (preview, instance) => {
+    beforeExportToHTML = (preview, instance) => {
         const img = new Image()
         img.src = instance.toBase64Image()
         $(preview).html(img)

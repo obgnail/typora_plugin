@@ -48,7 +48,8 @@ class wavedromPlugin extends BaseCustomPlugin {
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: null,
-            beforeExport: null,
+            beforeExportToNative: null,
+            beforeExportToHTML: null,
             extraStyleGetter: null,
             versionGetter: this.versionGetter,
         })

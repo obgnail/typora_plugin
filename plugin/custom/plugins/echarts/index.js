@@ -23,7 +23,8 @@ class echartsPlugin extends BaseCustomPlugin {
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: this.destroy,
-            beforeExport: this.beforeExport,
+            beforeExportToNative: null,
+            beforeExportToHTML: this.beforeExportToHTML,
             extraStyleGetter: null,
             versionGetter: this.versionGetter,
         })
@@ -53,7 +54,7 @@ class echartsPlugin extends BaseCustomPlugin {
         instance.dispose()
     }
 
-    beforeExport = (preview, instance) => {
+    beforeExportToHTML = (preview, instance) => {
         instance.setOption({ animation: false })
         if (this.exportType === "png" || this.exportType === "jpg") {
             const img = new Image()

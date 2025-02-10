@@ -24,14 +24,15 @@ class thirdPartyDiagramParser {
      * @param {function($wrap, string, meta): instance} createFunc: 传入目标标签和fence的内容，生成图形实例
      * @param {function($wrap, string, instance, meta): instance} updateFunc: 当内容更新时，更新图形实例。此选项为空时会直接调用createFunc
      * @param {function(Object): null} destroyFunc: 传入图形实例，destroy图形实例
-     * @param {function(Element, instance): null} beforeExport: 导出前的准备操作（比如在导出前调整图形大小、颜色等等）
+     * @param {function(Element, instance): null} beforeExportToNative: pandoc导出前的准备操作（比如在导出前调整图形大小、颜色等等）
+     * @param {function(Element, instance): null} beforeExportToHTML: 导出HTML前的准备操作（比如在导出前调整图形大小、颜色等等）
      * @param {function(): string} extraStyleGetter 用于导出时，新增css
      * @param {function(): string} versionGetter 第三方资源版本
      */
     register = ({
                     lang, mappingLang = "", destroyWhenUpdate, interactiveMode = true, checkSelector,
                     wrapElement, lazyLoadFunc, setStyleFunc, beforeRenderFunc, createFunc, updateFunc, destroyFunc,
-                    beforeExport, extraStyleGetter, versionGetter
+                    beforeExportToNative, beforeExportToHTML, extraStyleGetter, versionGetter
                 }) => {
         lang = lang.toLowerCase();
         lazyLoadFunc = this.utils.once(lazyLoadFunc);
@@ -39,7 +40,7 @@ class thirdPartyDiagramParser {
         this.parsers.set(lang, {
             lang, mappingLang, destroyWhenUpdate, interactiveMode, settingMsg,
             checkSelector, wrapElement, lazyLoadFunc, setStyleFunc, beforeRenderFunc, createFunc, updateFunc, destroyFunc,
-            beforeExport, versionGetter, instanceMap: new Map(),
+            beforeExportToNative, beforeExportToHTML, versionGetter, instanceMap: new Map(),
         });
         this.utils.diagramParser.register({
             lang, mappingLang, destroyWhenUpdate, extraStyleGetter, interactiveMode,
@@ -131,42 +132,6 @@ class thirdPartyDiagramParser {
         }
     }
 
-    renderAllLangFence = lang => {
-        document.querySelectorAll(`#write .md-fences[lang=${lang}]`).forEach(fence => {
-            const codeMirror = fence.querySelector(":scope > .CodeMirror")
-            if (!codeMirror) {
-                const cid = fence.getAttribute("cid")
-                cid && File.editor.fences.addCodeBlock(cid)
-            }
-        })
-    }
-
-    refreshAllLangFence = lang => {
-        document.querySelectorAll(`#write .md-fences[lang="${lang}"]`).forEach(fence => {
-            const cid = fence.getAttribute("cid")
-            cid && File.editor.diagrams.updateDiagram(cid)
-        })
-    }
-
-    beforeExport = () => {
-        for (const [lang, parser] of this.parsers.entries()) {
-            if (!parser.beforeExport) continue;
-            this.renderAllLangFence(lang);
-            parser.instanceMap.forEach((instance, cid) => {
-                const preview = this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}] .md-diagram-panel-preview`);
-                preview && parser.beforeExport(preview, instance);
-            })
-        }
-    }
-
-    afterExport = () => {
-        setTimeout(() => {
-            for (const lang of this.parsers.keys()) {
-                this.refreshAllLangFence(lang);
-            }
-        }, 300)
-    }
-
     getFenceUserSize = content => {
         const lines = content.split("\n").map(line => line.trim()).filter(line => line.startsWith("//"))
         for (let line of lines) {
@@ -205,7 +170,21 @@ class thirdPartyDiagramParser {
         }
     }
 
-    process = () => this.utils.exportHelper.register("third-party-diagram-parser", this.beforeExport, this.afterExport);
+    process = () => {
+        const getLifeCycleFn = (fnName) => () => {
+            for (const parser of this.parsers.values()) {
+                if (!parser[fnName]) continue
+                parser.instanceMap.forEach((instance, cid) => {
+                    const preview = this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}] .md-diagram-panel-preview`)
+                    if (preview) {
+                        parser[fnName](preview, instance)
+                    }
+                })
+            }
+        }
+        this.utils.exportHelper.register("third-party-diagram-parser", getLifeCycleFn("beforeExportToHTML"))
+        this.utils.exportHelper.registerNative("third-party-diagram-parser", getLifeCycleFn("beforeExportToNative"))
+    }
 }
 
 module.exports = {

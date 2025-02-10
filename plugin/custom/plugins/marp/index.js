@@ -19,7 +19,8 @@ class marpPlugin extends BaseCustomPlugin {
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: this.destroy,
-            beforeExport: null,
+            beforeExportToNative: null,
+            beforeExportToHTML: null,
             extraStyleGetter: null,
             versionGetter: this.versionGetter,
         })

@@ -47,7 +47,7 @@ class diagramParser {
         this.onAddCodeBlock();           // 添加代码块时
         this.onTryAddLangUndo();         // 修改语言时
         this.onUpdateDiagram();          // 更新时
-        this.onExportToHTML();           // 导出时
+        this.onExport();                 // 导出时
         this.onFocus();                  // 聚焦时
         this.onChangeFile();             // 切换文件时
         this.onCheckIsDiagramType();     // 判断是否为Diagram时
@@ -55,6 +55,27 @@ class diagramParser {
     }
 
     log = () => console.debug(`[ diagram parser ] [ ${this.parsers.size} ]:`, this.parsers);
+
+    renderAllLangFence = lang => {
+        document.querySelectorAll(`#write .md-fences[lang=${lang}]`).forEach(fence => {
+            const codeMirror = fence.querySelector(":scope > .CodeMirror")
+            if (!codeMirror) {
+                const cid = fence.getAttribute("cid")
+                if (cid) {
+                    File.editor.fences.addCodeBlock(cid)
+                }
+            }
+        })
+    }
+
+    refreshAllLangFence = lang => {
+        document.querySelectorAll(`#write .md-fences[lang="${lang}"]`).forEach(fence => {
+            const cid = fence.getAttribute("cid")
+            if (cid) {
+                File.editor.diagrams.updateDiagram(cid)
+            }
+        })
+    }
 
     polyfillStyle = async () => {
         if (this.utils.isBetaVersion) {
@@ -242,22 +263,51 @@ class diagramParser {
         this.utils.decorate(objGetter, "updateDiagram", null, after);
     }
 
-    onExportToHTML = () => {
-        this.utils.exportHelper.register("diagramParser", () => {
-            const extraCssList = [];
-            this.parsers.forEach((parser, lang) => {
-                const getter = parser.extraStyleGetter;
-                const exist = this.utils.entities.querySelectorInWrite(`.md-fences[lang="${lang}"]`);
-                if (getter && exist) {
-                    const extraCss = getter();
-                    extraCssList.push(extraCss);
+    onExport = () => {
+        const afterExport = () => {
+            setTimeout(() => {
+                for (const lang of this.parsers.keys()) {
+                    this.refreshAllLangFence(lang)
                 }
-            });
-            if (extraCssList.length) {
-                const base = ` .md-diagram-panel, svg {page-break-inside: avoid;} `;
-                return base + extraCssList.join(" ");
+            }, 300)
+        }
+
+        const callback = () => {
+            const beforeToHTML = () => {
+                const extraCssList = []
+                this.parsers.forEach((parser, lang) => {
+                    this.renderAllLangFence(lang)
+                    const getter = parser.extraStyleGetter
+                    const exist = this.utils.entities.querySelectorInWrite(`.md-fences[lang="${lang}"]`)
+                    if (getter && exist) {
+                        const extraCss = getter()
+                        extraCssList.push(extraCss)
+                    }
+                })
+                if (extraCssList.length) {
+                    const base = ` .md-diagram-panel, svg {page-break-inside: avoid;} `
+                    return base + extraCssList.join(" ")
+                }
             }
-        })
+            // Make `frame.js` happy. Avoid null pointer exceptions
+            // There is a line of code in the export source code: document.querySelector("[cid='" + t.cid + "'] svg").getBoundingClientRect()
+            const beforeToNative = () => {
+                this.parsers.forEach((parser, lang) => {
+                    this.renderAllLangFence(lang)
+                    const previews = this.utils.entities.querySelectorAllInWrite(`.md-fences[lang="${lang}"] .md-diagram-panel-preview`)
+                    previews.forEach(preview => {
+                        const svg = preview.querySelector("svg")
+                        if (!svg) {
+                            preview.innerHTML = "<svg></svg>"
+                        }
+                    })
+                })
+            }
+            this.utils.exportHelper.register("diagram-parser", beforeToHTML, afterExport)
+            this.utils.exportHelper.registerNative("diagram-parser", beforeToNative, afterExport)
+        }
+
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, callback)
     }
 
     onFocus = () => {

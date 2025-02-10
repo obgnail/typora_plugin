@@ -22,7 +22,8 @@ class drawIOPlugin extends BaseCustomPlugin {
             createFunc: this.create,
             updateFunc: null,
             destroyFunc: null,
-            beforeExport: this.beforeExport,
+            beforeExportToNative: null,
+            beforeExportToHTML: this.beforeExportToHTML,
             extraStyleGetter: null,
             versionGetter: this.versionGetter,
         })
@@ -102,7 +103,7 @@ class drawIOPlugin extends BaseCustomPlugin {
         window.GraphViewer.prototype.toolbarZIndex = 7
     }
 
-    beforeExport = (preview, instance) => {
+    beforeExportToHTML = (preview, instance) => {
         const graph = preview.querySelector(".mxgraph")
         if (graph) {
             graph.removeAttribute("data-mxgraph")
