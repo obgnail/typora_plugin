@@ -1,12 +1,6 @@
 class hotkeysPlugin extends BasePlugin {
     hotkey = () => [this.config.HOTKEY]
 
-    beforeProcess = async () => {
-        const hotkeys = Array.from(Object.values(await this.utils.runtime.readHotkeySetting()))
-        const settings = (hotkeys.length !== 0) ? hotkeys : this.config.CUSTOM_HOTKEYS
-        this.settings = settings || []
-    }
-
     process = () => {
         const toHotkey = setting => {
             const { hotkey, enable, closestSelector, evil, plugin: fixedName, function: func } = setting;
@@ -30,10 +24,11 @@ class hotkeysPlugin extends BasePlugin {
             }
         }
 
-        if (this.settings.length) {
+        const { CUSTOM_HOTKEYS } = this.config
+        if (CUSTOM_HOTKEYS.length) {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-                const hotkeys = this.settings.map(toHotkey).filter(Boolean);
-                hotkeys.length && this.utils.hotkeyHub.register(hotkeys);
+                const hotkeys = CUSTOM_HOTKEYS.map(toHotkey).filter(Boolean)
+                this.utils.hotkeyHub.register(hotkeys)
             })
         }
     }
@@ -56,4 +51,4 @@ class hotkeysPlugin extends BasePlugin {
 
 module.exports = {
     plugin: hotkeysPlugin,
-};
+}
