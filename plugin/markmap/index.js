@@ -9,7 +9,7 @@ class markmapPlugin extends BasePlugin {
 
     html = () => this.tocMarkmap && this.tocMarkmap.html();
 
-    hotkey = () => [this.tocMarkmap, this.fenceMarkmap].map(p => p && p.hotkey()).filter(Boolean).flat()
+    hotkey = () => [this.tocMarkmap, this.fenceMarkmap].filter(Boolean).flatMap(p => p.hotkey())
 
     init = () => {
         this.staticActions = [
@@ -20,30 +20,44 @@ class markmapPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.tocMarkmap && this.tocMarkmap.process();
-        this.fenceMarkmap && this.fenceMarkmap.process();
+        if (this.tocMarkmap) {
+            this.tocMarkmap.process()
+        }
+        if (this.fenceMarkmap) {
+            this.fenceMarkmap.process()
+        }
     }
 
     call = async action => {
         if (action === "toggle_toc") {
-            this.tocMarkmap && await this.tocMarkmap.callback(action)
+            if (this.tocMarkmap) {
+                await this.tocMarkmap.callback(action)
+            }
         } else if (action === "draw_fence_template" || action === "draw_fence_outline") {
-            this.fenceMarkmap && await this.fenceMarkmap.call(action)
+            if (this.fenceMarkmap) {
+                await this.fenceMarkmap.call(action)
+            }
         }
     }
 
     getToc = (fixIndent = true) => {
         const tree = this.utils.getTocTree()
         const preorder = (node, list, indent) => {
-            const _indent = "#".repeat(fixIndent ? indent : node.depth)
-            list.push(`${_indent} ${node.text}`)
-            node.children.forEach(child => preorder(child, list, indent + 1))
+            const head = "#".repeat(fixIndent ? indent : node.depth)
+            list.push(`${head} ${node.text}`)
+            for (const child of node.children) {
+                preorder(child, list, indent + 1)
+            }
             return list
         }
         return preorder(tree, [], 0).slice(1).join("\n")
     }
 
-    onButtonClick = () => this.tocMarkmap && this.tocMarkmap.callback()
+    onButtonClick = () => {
+        if (this.tocMarkmap) {
+            this.tocMarkmap.callback()
+        }
+    }
 
     assignOptions = (update, old) => {
         const update_ = this.utils.fromObject(update, ["spacingHorizontal", "spacingVertical", "fitRatio", "paddingX", "autoFit"]);
@@ -54,10 +68,10 @@ class markmapPlugin extends BasePlugin {
     lazyLoad = async () => {
         if (this.MarkmapLib.Markmap) return
 
-        const { Transformer, builtInPlugins } = require("./resource/markmap-lib.js")
+        const { Transformer, builtInPlugins, transformerVersions } = require("./resource/markmap-lib.js")
         const markmap = require("./resource/markmap-view.js")
         const transformer = new Transformer(builtInPlugins)
-        Object.assign(this.MarkmapLib, markmap, { transformer, Transformer, builtInPlugins })
+        Object.assign(this.MarkmapLib, markmap, { transformer, Transformer, builtInPlugins, transformerVersions })
 
         const { styles, scripts } = transformer.getAssets()
         styles[0].data.href = this.utils.joinPath("./plugin/markmap/resource/katex.min.css")
@@ -163,7 +177,9 @@ class fenceMarkmap {
         this.instanceMap.set(cid, instance);
         setTimeout(() => {
             const instance = this.instanceMap.get(cid);
-            instance && instance.fit();
+            if (instance) {
+                instance.fit()
+            }
         }, 200);
     }
 
@@ -275,7 +291,9 @@ class tocMarkmap {
             }
             const onMouseUp = () => {
                 this._rollbackTransition();
-                this.config.AUTO_FIT_WHEN_RESIZE && this.fit();
+                if (this.config.AUTO_FIT_WHEN_RESIZE) {
+                    this.fit()
+                }
             }
 
             const resizeWhenFree = () => {
@@ -454,7 +472,11 @@ class tocMarkmap {
 
     callback = () => this.utils.isShow(this.entities.modal) ? this._onButtonClick("close") : this.draw()
 
-    call = async action => action === "draw_toc" && await this.draw()
+    call = async action => {
+        if (action === "draw_toc") {
+            await this.draw()
+        }
+    }
 
     close = () => {
         this.entities.modal.style = "";
@@ -466,7 +488,11 @@ class tocMarkmap {
         this.markmap = null;
     }
 
-    fit = () => this.markmap && this.markmap.fit();
+    fit = () => {
+        if (this.markmap) {
+            this.markmap.fit()
+        }
+    }
 
     penetrateMouse = async () => {
         const options = this.markmap.options;
@@ -485,7 +511,7 @@ class tocMarkmap {
             FIX_ERROR_LEVEL_HEADER: "如果取消勾选，则会过滤跳级标题，只显示层级连续的标题",
             AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，不建议开启。仅当插件「章节折叠」开启时可用",
             FOLDER: "如果为空或不存在，则使用 TEMP 目录",
-            FILENAME: `支持变量：filename、timestamp、random、uuid\n支持后缀：${Downloader.getFormats()[0].extensions.join("、")}`,
+            FILENAME: `支持变量名：filename、timestamp、random、uuid\n支持扩展名：${Downloader.getFormats()[0].extensions.join("、")}`,
             IMAGE_QUALITY: "仅适用于 jpg、webp 格式",
             BACKGROUND_COLOR: "仅适用于像素图片格式",
             KEEP_ALPHA_CHANNEL: "仅适用于携带透明通道的像素图片格式",
@@ -604,7 +630,12 @@ class tocMarkmap {
     }
 
     download = async () => {
-        let { SHOW_PATH_INQUIRY_DIALOG, SHOW_IN_FINDER, FOLDER: folder, FILENAME: file = "{{filename}}.svg" } = this.config.DOWNLOAD_OPTIONS
+        let {
+            SHOW_PATH_INQUIRY_DIALOG,
+            SHOW_IN_FINDER,
+            FOLDER: folder,
+            FILENAME: file = "{{filename}}.svg",
+        } = this.config.DOWNLOAD_OPTIONS
         const getDownloadPath = async () => {
             if (!folder || !(await this.utils.existPath(folder))) {
                 folder = this.utils.tempFolder
@@ -621,7 +652,12 @@ class tocMarkmap {
 
         let downloadPath = await getDownloadPath()
         if (SHOW_PATH_INQUIRY_DIALOG) {
-            const op = { properties: ["saveFile", "showOverwriteConfirmation"], title: "导出", defaultPath: downloadPath, filters: Downloader.getFormats() }
+            const op = {
+                properties: ["saveFile", "showOverwriteConfirmation"],
+                title: "导出",
+                defaultPath: downloadPath,
+                filters: Downloader.getFormats(),
+            }
             const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", op)
             if (canceled) return
             downloadPath = filePath
@@ -864,7 +900,9 @@ class tocMarkmap {
         this.entities.modal.classList.toggle("noBoxShadow", fullScreen);
         this.entities.fullScreen.setAttribute("action", fullScreen ? "shrink" : "expand");
         this.utils.toggleVisible(this.entities.resize, fullScreen);
-        autoFit && this.fit();
+        if (autoFit) {
+            this.fit()
+        }
     }
 
     _waitUnpin = async () => {
@@ -1044,10 +1082,7 @@ class Downloader {
         return Buffer.from(base64, "base64")
     }
 
-    static svg = (plugin) => {
-        const svg = this._toSVG(plugin)
-        return svg.outerHTML
-    }
+    static svg = (plugin) => this._toSVG(plugin).outerHTML
 
     static png = async (plugin) => this._toImage(plugin, "png")
 
@@ -1055,10 +1090,7 @@ class Downloader {
 
     static webp = async (plugin) => this._toImage(plugin, "webp")
 
-    static md = (plugin) => {
-        const { content } = plugin.transformContext
-        return content
-    }
+    static md = (plugin) => plugin.transformContext.content
 
     static html = (plugin) => {
         const escapeHtml = text => text.replace(/[&<"]/g, char => ({ '&': '&amp;', '<': '&lt;', '"': '&quot;' })[char]);
