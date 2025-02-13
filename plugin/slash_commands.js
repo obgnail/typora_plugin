@@ -1,6 +1,7 @@
 class slashCommandsPlugin extends BasePlugin {
     beforeProcess = () => {
         this.matched = new Map();
+        this.defaultCursorOffset = [0, 0]
         this.type = { COMMAND: "command", SNIPPET: "snippet", GENERATE_SNIPPET: "gen-snp" };
         this.scope = { INLINE_MATH: "inline_math", PLAIN: "plain" }
         this.config.COMMANDS.forEach(cmd => cmd.scope = cmd.scope || this.scope.PLAIN);
@@ -166,6 +167,16 @@ class slashCommandsPlugin extends BasePlugin {
                 File.editor.undo.exeCommand(parsedNode[0].redo.last());
             }, 50);
         }
+        const moveBookmark = (cursorOffset = this.defaultCursorOffset) => {
+            const [start, end] = cursorOffset
+            if (start === 0 && end === 0) return
+
+            const { range, bookmark } = this.utils.getRangy()
+            bookmark.start += start
+            bookmark.end += end
+            range.moveToBookmark(bookmark)
+            range.select()
+        }
 
         switch (cmd.type) {
             case this.type.SNIPPET:
@@ -173,6 +184,7 @@ class slashCommandsPlugin extends BasePlugin {
                 setTimeout(() => {
                     normalizeAnchor();
                     refresh();
+                    moveBookmark(cmd.cursorOffset)
                 }, 100);
                 return cmd.type === this.type.SNIPPET ? cmd.callback : this._evalFunction(cmd.callback);
             case this.type.COMMAND:

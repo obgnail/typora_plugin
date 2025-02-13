@@ -87,9 +87,9 @@ TAB_MAX_WIDTH = "none"
 GAP_BETWEEN_TAB_AND_CONTENT = 0
 
 # ------------------- 标签页拖拽增强（仅当 JETBRAINS_DRAG_STYLE 为 true 时生效） -------------------
-# Y轴防抖：在拖拽标签页时，如果垂直方向的移动距离很小，则保持标签页在Y轴上的位置不变
-#   true:  启用Y轴防抖，提高拖拽时的精度，避免误操作
-#   false: 关闭Y轴防抖，允许标签页在垂直方向自由移动
+# Y轴防抖：在拖拽标签页时，如果垂直方向的移动距离很小，则保持标签页在 Y 轴上的位置不变
+#   true:  启用 Y 轴防抖，提高拖拽时的精度，避免误操作
+#   false: 关闭 Y 轴防抖，允许标签页在垂直方向自由移动
 LIMIT_TAB_Y_AXIS_WHEN_DRAG = true
 
 # Y轴防抖幅度：当拖拽的垂直距离不超过标签页高度的多少倍时，视为无垂直移动
@@ -1602,28 +1602,39 @@ NAME = "斜杠命令"
 
 # ------------------- 触发器 -------------------
 # 触发命令列表显示的正则表达式
-#  (若您不了解正则表达式，请勿修改此配置)
+#  若您不了解正则表达式，请勿修改此配置
 #  注意：keyword 需要使用命名捕获组 kw
 #  默认值：匹配一个字符串，该字符串以 / 或 \ 或 、 开头，后面紧跟任意数量的非 / 或 \ 或 、 字符，且该字符串前面不可有 <
 TRIGGER_REGEXP = "(?<!<)[\\/、\\\\](?<kw>[^\\/、\\\\]*)$"
 
 # ------------------- 匹配策略 -------------------
 # 命令列表的匹配策略
-#   prefix: 前缀。用户输入的字符串必须是 keyword 的前缀。比如：输入 para 即可找到 paragraph
-#   substr: 子串。用户输入的字符串必须是 keyword 的子串。比如：输入 graph 即可找到 paragraph
-#   abbr:   缩写。用户输入的每个字符必须都存在于 keyword 中，并且匹配的字符在 keyword 的索引递增。比如：输入 pgh 即可找到 paragraph
+#   prefix: 前缀。用户输入的字符串必须是 keyword 的前缀。比如：输入 para 即可找到 Paragraph
+#   substr: 子串。用户输入的字符串必须是 keyword 的子串。比如：输入 graph 即可找到 Paragraph
+#   abbr:   缩写。用户输入的每个字符必须都存在于 keyword 中，并且匹配的字符在 keyword 的索引递增。比如：输入 pgh 即可找到 Paragraph
 MATCH_STRATEGY = "abbr"
 
 # ------------------- 命令列表 -------------------
 #  命令列表配置，每个命令为一个对象
-#    enable:    是否启用此命令
-#    type:      命令类型，可选：snippet / command / gen-snp
-#                (snippet: 在调用时插入文字片段；command: 在调用时执行逻辑命令；gen-snp: 在调用时执行函数，返回待插入的文字片段，适用于插入动态内容)
-#    scope:     命令可用的范围，可选：plain / inline_math（默认为 plain，表示在普通文本区域可用，inline_math 表示仅在行内数学公式区域可用）
-#    icon(可选): 使用 emoji 作为图标，显示在命令列表中
-#    hint(可选): 命令的提示信息，显示在命令列表中
-#    keyword:   命令的关键词，必须唯一，用于匹配用户输入
-#    callback:  回调函数或文字片段。若 type=snippet，则填入需要插入的文字片段；若 type=command，则填入回调函数；若 type=gen-snp，则填入返回字符串的函数
+#    enable:        是否启用此命令
+#    type:          命令类型，可选：snippet / command / gen-snp
+#                     - snippet: 插入文字片段
+#                     - command: 执行逻辑命令
+#                     - gen-snp: 执行函数，返回待插入的文字片段，适用于插入动态内容
+#    scope:         命令可用的范围，可选：plain / inline_math
+#                     - plain: 默认值，表示在普通文本区域可用
+#                     - inline_math: 表示仅在行内数学公式区域可用
+#    icon:          使用 emoji 作为图标，显示在命令列表中
+#    hint:          命令的提示信息，显示在命令列表中
+#    keyword:       命令的关键词，必须唯一，用于匹配用户输入
+#    cursorOffset:  在插入文本后，光标的偏移量。仅当 type=snippet 或 type=gen-snp 时可用。值为一个数组，第一项表示光标开始位置的偏移量，第二项表示光标结束位置的偏移量
+#                     - [0, 0]: 默认值，表示光标不发生移动
+#                     - [-2, -2]: 表示光标回退两个字符
+#                     - [-4, -1]: 光标开始位置回退四个字符，结束位置回退一个字符，其结果就是选中倒数第二~四字符
+#    callback:      回调函数或文字片段
+#                     - 若 type=snippet，则填入需要插入的文字片段
+#                     - 若 type=command，则填入回调函数
+#                     - 若 type=gen-snp，则填入返回字符串的函数
 COMMANDS = [
     { enable = true, type = "command", icon = "📝", hint = "一级标题", keyword = "H1", callback = "() => File.editor.stylize.changeBlock('header1', undefined, true)" },
     { enable = true, type = "command", icon = "📝", hint = "二级标题", keyword = "H2", callback = "() => File.editor.stylize.changeBlock('header2', undefined, true)" },
@@ -1671,6 +1682,7 @@ COMMANDS = [
     { enable = true, type = "gen-snp", icon = "🧩", hint = "时间戳", keyword = "Timestamp", callback = "() => new Date().getTime().toString()" },
     { enable = true, type = "gen-snp", icon = "🧩", hint = "星期", keyword = "Week", callback = "() => '星期' + '日一二三四五六'.charAt((new Date()).getDay())" },
     { enable = true, type = "snippet", icon = "🧩", hint = "示例片段", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
+    { enable = true, type = "snippet", icon = "🧩", hint = "光标偏移示例", keyword = "cursorOffsetExample", cursorOffset = [-31, -18], callback = "感谢您使用 Typora Plugin，如果本项目帮助到您，欢迎 STAR" },
     { enable = true, type = "snippet", scope = "inline_math", icon = "🧩", keyword = "alpha", callback = "\\alpha " },
     { enable = true, type = "snippet", scope = "inline_math", icon = "🧩", keyword = "beta", callback = "\\beta " },
     { enable = true, type = "snippet", scope = "inline_math", icon = "🧩", keyword = "epsilon", callback = "\\epsilon " },
