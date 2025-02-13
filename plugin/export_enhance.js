@@ -1,64 +1,68 @@
 class exportEnhancePlugin extends BasePlugin {
     beforeProcess = () => new Promise(resolve => {
-        const until = () => this.utils.exportHelper.isAsync !== undefined;
-        const after = () => resolve(this.utils.exportHelper.isAsync ? undefined : this.utils.stopLoadPluginError);
+        const until = () => this.utils.exportHelper.isAsync !== undefined
+        const after = () => resolve(this.utils.exportHelper.isAsync ? undefined : this.utils.stopLoadPluginError)
         this.utils.loopDetector(until, after)
     })
 
     process = () => {
-        this.utils.runtime.autoSaveConfig(this);
-        this.enable = this.config.ENABLE;
-        this.regexp = new RegExp(`<img.*?src="(.*?)".*?>`, "gs");
-        this.utils.exportHelper.register("export_enhance", null, this.afterExport);
+        this.utils.runtime.autoSaveConfig(this)
+        this.enable = this.config.ENABLE
+        this.regexp = new RegExp(`<img.*?src="(.*?)".*?>`, "gs")
+        this.utils.exportHelper.register("export_enhance", null, this.afterExport)
     }
 
     afterExport = async html => {
-        if (!this.enable) return html;
+        if (!this.enable) return html
 
-        const imageMap = this.config.DOWNLOAD_NETWORK_IMAGE ? await this.downloadAllImage(html) : {};
-        const dirname = this.utils.getCurrentDirPath();
-
-        return this.utils.asyncReplaceAll(html, this.regexp, async (origin, src) => {
+        const dirname = this.utils.getCurrentDirPath()
+        const imageMap = this.config.DOWNLOAD_NETWORK_IMAGE ? (await this.downloadAllImage(html)) : {}
+        const replaceFunc = async (origin, src) => {
             try {
-                if (this.utils.isSpecialImage(src)) return origin;
-
-                let imagePath;
-                if (this.utils.isNetworkImage(src)) {
-                    if (!this.config.DOWNLOAD_NETWORK_IMAGE || !imageMap.hasOwnProperty(src)) return origin;
-                    imagePath = imageMap[src];
-                } else {
-                    imagePath = this.utils.Package.Path.resolve(dirname, decodeURIComponent(src));
+                if (this.utils.isSpecialImage(src)) {
+                    return origin
                 }
-
-                const base64Data = await this.toBase64(imagePath);
-                return origin.replace(src, base64Data);
+                let imagePath
+                if (this.utils.isNetworkImage(src)) {
+                    if (!this.config.DOWNLOAD_NETWORK_IMAGE || !imageMap.hasOwnProperty(src)) {
+                        return origin
+                    }
+                    imagePath = imageMap[src]
+                } else {
+                    imagePath = this.utils.Package.Path.resolve(dirname, decodeURIComponent(src))
+                }
+                const base64Data = await this.toBase64(imagePath)
+                return origin.replace(src, base64Data)
             } catch (e) {
-                console.error("toBase64 error:", e);
+                console.error(`[${this.fixedName}] toBase64 error:`, e)
             }
-            return origin;
-        })
+            return origin
+        }
+        return this.utils.asyncReplaceAll(html, this.regexp, replaceFunc)
     }
 
     downloadAllImage = async html => {
-        const imageMap = {}; // map src to localFilePath, use for network image only
-        const matches = Array.from(html.matchAll(this.regexp));
-        const chunkList = this.utils.chunk(matches, this.config.DOWNLOAD_THREADS);
-        for (const list of chunkList) {
-            await Promise.all(list.map(async match => {
-                if (match.length !== 2 || !this.utils.isNetworkImage(match[1]) || imageMap.hasOwnProperty(match[1])) return;
-
-                const src = match[1];
+        const imageMap = {} // map src to localFilePath, only for network image
+        const srcList = [...html.matchAll(this.regexp)]
+            .filter(match => match.length === 2 && this.utils.isNetworkImage(match[1]))
+            .map(match => match[1])
+        const chunkList = this.utils.chunk(srcList, this.config.DOWNLOAD_THREADS)
+        for (const chunk of chunkList) {
+            const promises = chunk.map(async src => {
+                if (imageMap.hasOwnProperty(src)) return
                 try {
-                    const { ok, filepath } = await this.utils.downloadImage(src);
+                    const { ok, filepath } = await this.utils.downloadImage(src)
                     if (ok) {
-                        imageMap[src] = filepath;
+                        imageMap[src] = filepath
                     }
                 } catch (e) {
-                    console.error("download image error:", e);
+                    console.error("download image error:", e)
                 }
-            }))
+            })
+            await Promise.all(promises)
+            await this.utils.sleep(100)
         }
-        return imageMap;
+        return imageMap
     }
 
     toBase64 = async imagePath => {
@@ -79,13 +83,13 @@ class exportEnhancePlugin extends BasePlugin {
 
     call = action => {
         if (action === "toggle_download") {
-            this.config.DOWNLOAD_NETWORK_IMAGE = !this.config.DOWNLOAD_NETWORK_IMAGE;
+            this.config.DOWNLOAD_NETWORK_IMAGE = !this.config.DOWNLOAD_NETWORK_IMAGE
         } else if (action === "toggle_enable") {
-            this.enable = !this.enable;
+            this.enable = !this.enable
         }
     }
 }
 
 module.exports = {
     plugin: exportEnhancePlugin
-};
+}
