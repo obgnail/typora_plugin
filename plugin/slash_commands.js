@@ -1,150 +1,182 @@
 class slashCommandsPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.matched = new Map();
-        this.defaultCursorOffset = [0, 0]
-        this.type = { COMMAND: "command", SNIPPET: "snippet", GENERATE_SNIPPET: "gen-snp" };
-        this.scope = { INLINE_MATH: "inline_math", PLAIN: "plain" }
-        this.config.COMMANDS.forEach(cmd => cmd.scope = cmd.scope || this.scope.PLAIN);
-        this.commands = new Map(this.config.COMMANDS.filter(cmd => cmd.enable && cmd.keyword).map(cmd => [cmd.keyword.toLowerCase(), cmd]));
-        this.handler = { search: this._search, render: this._render, beforeApply: this._beforeApply };
-        this.strategy = this._getStrategy();
+        this.TYPE = { COMMAND: "command", SNIPPET: "snippet", GENERATE_SNIPPET: "gen-snp" }
+        this.SCOPE = { INLINE_MATH: "inline_math", PLAIN: "plain" }
+
+        const defaultOffset = [0, 0]
+        const { COMMANDS, TRIGGER_REGEXP, MATCH_STRATEGY } = this.config
+        COMMANDS.forEach(c => {
+            c.scope = c.scope || this.SCOPE.PLAIN
+            c.icon = c.icon || (c.type === this.TYPE.COMMAND ? "🧰" : "🧩")
+            c.cursorOffset = c.cursorOffset || defaultOffset
+        })
+
+        this.matched = new Map()
+        this.regexp = new RegExp(TRIGGER_REGEXP)
+        this.strategy = this._getStrategy(MATCH_STRATEGY)
+        this.commands = new Map(COMMANDS.filter(c => c.enable && c.keyword).map(c => [c.keyword.toLowerCase(), c]))
+        this.handler = { search: this._search, render: this._render, beforeApply: this._beforeApply }
+
         return this.commands.size ? undefined : this.utils.stopLoadPluginError
     }
 
     styleTemplate = () => true
 
     process = () => {
-        this.utils.decorate(() => this.handler, "beforeApply", null, () => this.matched.clear());
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this._onEdit);
     }
 
-    call = () => this._showAllCommands();
+    call = () => this._showAllCommands()
 
     _showAllCommands = () => {
-        const getType = type => type === this.type.COMMAND ? "命令" : "文段";
-        const th = `<tr><th>关键字</th><th>类型</th><th>功能</th></tr>`;
-        const list = Array.from(this.commands.values());
-        const trs = list.map(({ type, keyword, hint = "", callback = "" }) => `<tr><td>${keyword}</td><td>${getType(type)}</td><td title="${callback}">${hint}</td></tr>`);
-        const table = `<table>${th}${trs.join("")}</table>`;
-        const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder();
+        const getType = type => {
+            switch (type) {
+                case this.TYPE.COMMAND:
+                    return "命令"
+                case this.TYPE.SNIPPET:
+                    return "文段"
+                case this.TYPE.GENERATE_SNIPPET:
+                    return "动态文段"
+                default:
+                    return "未知"
+            }
+        }
+        const getScope = scope => {
+            switch (scope) {
+                case this.SCOPE.PLAIN:
+                    return "普通文本区域"
+                case this.SCOPE.INLINE_MATH:
+                    return "行内数学公式"
+                default:
+                    return "未知"
+            }
+        }
+        const trs = [...this.commands.values()]
+            .map(({ type, keyword, scope, hint = "", callback = "" }) => {
+                return `<tr><td>${keyword}</td><td>${getType(type)}</td><td>${getScope(scope)}</td><td title="${callback}">${hint}</td></tr>`
+            })
+            .join("")
+        const table = `<table><tr><th>关键字</th><th>类型</th><th>使用范围</th><th>功能</th></tr>${trs}</table>`
+        const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder()
         const components = [
             { label: "如需自定义斜杠命令，请 <a>修改配置文件</a>", type: "p", onclick },
             { label: table, type: "p" }
-        ];
-        this.utils.dialog.modal({ title: "斜杠命令", components });
+        ]
+        this.utils.dialog.modal({ title: "斜杠命令", width: "500px", components })
     }
 
     _getTextAround = () => {
-        const selectionRange = File.editor.selection.getRangy();
-        if (selectionRange && selectionRange.collapsed) {
-            const container = $(selectionRange.startContainer).closest(`[md-inline="plain"], [type="math/tex"]`)[0];
+        const rangy = File.editor.selection.getRangy()
+        if (rangy && rangy.collapsed) {
+            const container = $(rangy.startContainer).closest(`[md-inline="plain"], [type="math/tex"]`)[0]
             if (container) {
-                const scope = this._getScope(container);
-                const bookmark = selectionRange.getBookmark(container);
-                selectionRange.setStartBefore(container);
-                const textBefore = selectionRange.toString();
-                selectionRange.collapse(false);
-                selectionRange.setEndAfter(container);
-                const textAfter = selectionRange.toString();
-                selectionRange.setStart(container, 0);
-                return [textBefore, textAfter, bookmark, scope];
+                const scope = this._getScope(container)
+                const bookmark = rangy.getBookmark(container)
+                rangy.setStartBefore(container)
+                const textBefore = rangy.toString()
+                rangy.collapse(false)
+                rangy.setEndAfter(container)
+                const textAfter = rangy.toString()
+                rangy.setStart(container, 0)
+                return [textBefore, textAfter, bookmark, scope]
             }
         }
-        return [];
+        return []
     }
 
-    _getScope = container => container.tagName === "SCRIPT" ? this.scope.INLINE_MATH : this.scope.PLAIN
+    _getScope = container => container.tagName === "SCRIPT" ? this.SCOPE.INLINE_MATH : this.SCOPE.PLAIN
 
     _onEdit = () => {
-        if (document.activeElement.tagName === "TEXTAREA") return;
+        if (document.activeElement.tagName === "TEXTAREA") return
 
-        const [textBefore, textAfter, range, scope] = this._getTextAround();
-        if (!textBefore) return;
-        const match = textBefore.match(new RegExp(this.config.TRIGGER_REGEXP));
-        if (!match || !match.groups || match.groups.kw === undefined) return;
+        const [textBefore, textAfter, bookmark, scope] = this._getTextAround()
+        if (!textBefore) return
+        const match = textBefore.match(this.regexp)
+        if (!match || !match.groups || match.groups.kw === undefined) return
 
-        const token = match.groups.kw.toLowerCase();
-        this._match(token, scope);
-        if (this.matched.size === 0) return;
-        range.start -= (token.length + 1);
-        File.editor.autoComplete.show([], range, token, this.handler);
+        const input = match.groups.kw.toLowerCase()
+        this._match(scope, input)
+        if (this.matched.size === 0) return
+
+        bookmark.start -= (input.length + 1)
+        File.editor.autoComplete.show([], bookmark, input, this.handler)
     }
 
-    _getStrategy = () => {
+    _getStrategy = (type) => {
         const prefix = {
-            match: (keyword, token) => keyword.startsWith(token),
-            highlight: (keyword, token) => `<b>${keyword.slice(0, token.length)}</b>` + keyword.slice(token.length),
+            match: (target, input) => target.startsWith(input),
+            highlight: (target, input) => `<b>${target.slice(0, input.length)}</b>` + target.slice(input.length),
         }
         const substr = {
-            match: (keyword, token) => keyword.includes(token),
-            highlight: (keyword, token) => keyword.replace(new RegExp(`(${token})`, "i"), "<b>$1</b>"),
+            match: (target, input) => target.includes(input),
+            highlight: (target, input) => target.replace(new RegExp(`(${input})`, "i"), "<b>$1</b>"),
         }
         const abbr = {
-            match: (keyword, token) => token.split("").every(char => {
-                const idx = keyword.indexOf(char);
-                if (idx === -1) return false;
-                keyword = keyword.slice(idx + 1, keyword.length);
+            match: (target, input) => {
+                let from = 0
+                for (const char of input) {
+                    from = target.indexOf(char, from)
+                    if (from === -1) {
+                        return false
+                    }
+                    from++
+                }
                 return true
-            }),
-            highlight: (keyword, token) => {
-                const result = [];
-                let highlight = [];
-                let tokenIdx = 0;
-                for (let i = 0; i <= keyword.length - 1; i++) {
-                    const char = keyword[i];
-                    if (char.toLowerCase() === token[tokenIdx]) {
-                        highlight.push(char);
-                        tokenIdx++;
+            },
+            highlight: (target, input) => {
+                const result = []
+                let hit = []
+                let idx = 0
+                for (const char of target) {
+                    if (char.toLowerCase() === input[idx]) {
+                        hit.push(char)
+                        idx++
                     } else {
-                        if (highlight.length) {
-                            result.push(`<b>${highlight.join("")}</b>`);
-                            highlight = [];
+                        if (hit.length) {
+                            result.push(`<b>${hit.join("")}</b>`)
+                            hit = []
                         }
-                        result.push(char);
+                        result.push(char)
                     }
                 }
-                if (highlight.length) {
-                    result.push(`<b>${highlight.join("")}</b>`);
+                if (hit.length) {
+                    result.push(`<b>${hit.join("")}</b>`)
                 }
-                return result.join("");
+                return result.join("")
             }
         }
-        return { prefix, substr, abbr }[this.config.MATCH_STRATEGY] || abbr;
+        return { prefix, substr, abbr }[type] || abbr
     }
 
-    _match = (token, scope) => {
-        const map = new Map();
+    _match = (scope, input) => {
+        this.matched.clear()
         for (const [kw, cmd] of this.commands.entries()) {
-            if (cmd.scope === scope && this.strategy.match(kw, token)) {
-                map.set(kw, cmd);
+            if (cmd.scope === scope && this.strategy.match(kw, input)) {
+                this.matched.set(kw, cmd)
             }
         }
-        this.matched = map;
     }
 
-    _search = token => Array.from(this.matched.keys())
+    _search = token => [...this.matched.keys()]
 
     _render = (suggest, isActive) => {
-        const cmd = this.matched.get(suggest);
+        const cmd = this.matched.get(suggest)
         if (!cmd) return ""
 
-        const { token } = File.editor.autoComplete.state;
-        const icon = cmd.icon || ((cmd.type === this.type.COMMAND) ? "🧰" : "🧩");
-        const text = this.strategy.highlight(cmd.keyword, token);
-        const innerText = icon + " " + text + (cmd.hint ? ` - ${cmd.hint}` : "");
-        const className = `plugin-slash-command ${isActive ? "active" : ""}`;
-        return `<li class="${className}" data-content="${suggest}">${innerText}</li>`
+        const { keyword, icon, hint } = cmd
+        const { token } = File.editor.autoComplete.state
+        const command = this.strategy.highlight(keyword, token)
+        const hint_ = hint ? `- ${hint}` : ""
+        const active = isActive ? "active" : ""
+        return `<li class="plugin-slash-command ${active}" data-content="${suggest}">${icon} ${command} ${hint_}</li>`
     }
 
     _evalFunction = str => {
-        const ret = eval(str);
-        if (ret instanceof Function) {
-            return (ret() || "").toString()
-        }
-        return str
+        const ret = eval(str)
+        return ret instanceof Function ? (ret() || "").toString() : str
     }
 
-    _beforeApply = suggest => {
+    _runCommand = suggest => {
         const cmd = this.matched.get(suggest);
         if (!cmd) return ""
 
@@ -167,8 +199,8 @@ class slashCommandsPlugin extends BasePlugin {
                 File.editor.undo.exeCommand(parsedNode[0].redo.last());
             }, 50);
         }
-        const moveBookmark = (cursorOffset = this.defaultCursorOffset) => {
-            const [start, end] = cursorOffset
+        const selectRange = (offset) => {
+            const [start, end] = offset
             if (start === 0 && end === 0) return
 
             const { range, bookmark } = this.utils.getRangy()
@@ -179,15 +211,15 @@ class slashCommandsPlugin extends BasePlugin {
         }
 
         switch (cmd.type) {
-            case this.type.SNIPPET:
-            case this.type.GENERATE_SNIPPET:
+            case this.TYPE.SNIPPET:
+            case this.TYPE.GENERATE_SNIPPET:
                 setTimeout(() => {
-                    normalizeAnchor();
-                    refresh();
-                    moveBookmark(cmd.cursorOffset)
-                }, 100);
-                return cmd.type === this.type.SNIPPET ? cmd.callback : this._evalFunction(cmd.callback);
-            case this.type.COMMAND:
+                    normalizeAnchor()
+                    refresh()
+                    selectRange(cmd.cursorOffset)
+                }, 100)
+                return cmd.type === this.TYPE.SNIPPET ? cmd.callback : this._evalFunction(cmd.callback)
+            case this.TYPE.COMMAND:
                 normalizeAnchor();
                 const range = File.editor.selection.getRangy();
                 const textNode = anchor.containerNode.firstChild;
@@ -200,8 +232,14 @@ class slashCommandsPlugin extends BasePlugin {
         }
         return ""
     }
+
+    _beforeApply = suggest => {
+        const ret = this._runCommand(suggest)
+        this.matched.clear()
+        return ret
+    }
 }
 
 module.exports = {
     plugin: slashCommandsPlugin
-};
+}
