@@ -104,6 +104,7 @@ class slashCommandsPlugin extends BasePlugin {
         if (this.matched.size === 0) return
 
         bookmark.start -= (this.input.length + 1)
+        File.editor.autoComplete.attachToRange()
         File.editor.autoComplete.show([], bookmark, command, this.handler)
     }
 

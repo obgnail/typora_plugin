@@ -267,17 +267,14 @@ yay -S typora-plugin
 
 功能：类似于 notion 的 slash command。
 
-支持用户自定义命令，请前往配置文件修改：
+支持：
 
-```toml
-[slash_commands]
-COMMANDS = [
-    { enable = true, type = "snippet", icon = "🧰", hint = "", keyword = "snippet", callback = "thisIsTestSnippet" },
-    { enable = true, type = "command", icon = "🧾", hint = "二级标题", keyword = "h2", callback = "() => File.editor.stylize.changeBlock('header2', undefined, true)" },
-    { enable = true, type = "command", icon = "🧰", hint = "置底部", keyword = "jumpBottom", callback = "() => File.editor.selection.jumpBottom()" },
-    ...
-]
-```
+- 插入文字片段（snippet）
+- 插入组件
+- 编辑样式
+- 执行任意逻辑
+
+> 支持用户自定义命令，请前往配置文件修改
 
 ![slash_commands](assets/slash_commands.gif)
 
