@@ -640,6 +640,27 @@ class utils {
     }
     static getFenceContentByPre = pre => this.getFenceContentByCid(pre && pre.getAttribute("cid"))
 
+    /** Backup before `File.editor.stylize.toggleFences()` as it uses `File.option` to set block code language. Restore after. */
+    static insertFence = (lang = "") => {
+        const lang1_ = File.option["default-code-lang"]  // Used for old versions
+        const lang2_ = File.option.defaultCodeLang       // Used for new versions
+        const menu_ = File.option.DefaultCodeLangOptionMenu
+        const op_ = File.option.defaultCodeLangOption
+
+        File.option["default-code-lang"] = lang
+        File.option.defaultCodeLang = lang
+        File.option.DefaultCodeLangOptionMenu = 1
+        File.option.defaultCodeLangOption = 1
+        try {
+            File.editor.stylize.toggleFences()
+        } finally {
+            File.option["default-code-lang"] = lang1_
+            File.option.defaultCodeLang = lang2_
+            File.option.DefaultCodeLangOptionMenu = menu_
+            File.option.defaultCodeLangOption = op_
+        }
+    }
+
     static getTocTree = useBuiltin => {
         const root = { depth: 0, cid: "n0", text: this.getFileName(), children: [] }
         const stack = [root]

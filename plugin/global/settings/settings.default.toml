@@ -21,9 +21,8 @@ SHOW_INCOMPATIBLE_WARNING = true
 
 # ------------------- 交互模式退出 -------------------
 # 退出交互模式：设置如何退出代码块的交互状态
-#   当使用图表插件（例如 kanban, markmap, echarts 等），并开启交互模式（`INTERACTIVE_MODE` 置为 `true`）时，此配置项用于定义退出交互模式的方式
+#   当使用图表插件（例如 kanban, markmap, echarts 等），并开启交互模式（`INTERACTIVE_MODE` 置为 true）时，此配置项用于定义退出交互模式的方式
 #   请确保至少填写一个退出方式，否则将无法退出交互模式
-#
 #   支持的退出方式
 #     click_exit_button: 为图表添加一个【编辑】按钮，点击此按钮退出交互模式
 #     ctrl_click_fence:  按住 Ctrl 键并点击图表区域，退出交互模式
@@ -67,7 +66,7 @@ SHOW_FULL_PATH_WHEN_HOVER = true
 #   false: 不显示关闭按钮，只能通过其他方式关闭标签页
 SHOW_TAB_CLOSE_BUTTON = true
 
-# 隐藏标题栏：当 Typora 使用 "一体化" 窗口样式时，是否隐藏窗口标题栏
+# 隐藏标题栏：当 Typora 使用一体化窗口样式时，是否隐藏窗口标题栏
 #   true:  隐藏标题栏，让界面更简洁
 #   false: 显示标题栏
 HIDE_WINDOW_TITLE_BAR = false
@@ -633,7 +632,7 @@ ENABLE = true
 NAME = "图片调整"
 
 # ------------------- 功能修饰键 -------------------
-# 各个功能对应的修饰键设置，为空字符串("")则不使用对应的功能
+# 各个功能对应的修饰键设置，为空则不使用对应的功能
 #   TEMPORARY:  临时修改图片大小
 #     例如，设置为 "alt" 后，当鼠标悬停在图片上并且按住 Alt 键滚动滚轮时，会临时调整图片大小
 #   PERSISTENT: 将图片转为 HTML 格式，永久修改图片大小
@@ -816,10 +815,10 @@ HEIGHT_PERCENT_WHEN_PIN_UP = 30
 WIDTH_PERCENT_WHEN_PIN_RIGHT = 50
 
 # 当鼠标悬停在思维导图节点上时，显示的边框样式
-#   可以使用 CSS 边框样式，例如 "2px solid red", "1px dashed #000"
+#   可以使用 CSS 边框样式，例如 "2px solid red", "1px dashed #000000"
 BORDER_STYLE_WHEN_NODE_HOVER = "4px solid #FF7B00"
 
-# 可选配色方案：预设的配色方案列表，用于设置思维导图节点的颜色
+# 预设的配色方案列表：用于设置思维导图节点的颜色
 #   每个配色方案是一个颜色数组，插件会按顺序使用这些颜色
 #   默认是 D3 categorical schemes：https://d3js.org/d3-scale-chromatic/categorical
 CANDIDATE_COLOR_SCHEMES = [
@@ -842,7 +841,7 @@ CANDIDATE_COLOR_SCHEMES = [
 #   colorFreezeLevel  : 从多少级开始固定分支颜色
 #   zoom              : 是否允许用户缩放图形
 #   pan               : 是否允许用户平移图形
-#   color             : 配色方案（填入颜色数组，例如 ["#1f77b4", "#17becf"]）
+#   color             : 配色方案 (填入颜色数组，例如 ["#1F77B4", "#17BECF"])
 #   maxWidth          : 节点最大长度 (0 则无长度限制)
 #   spacingHorizontal : 节点水平间距
 #   spacingVertical   : 节点垂直间距
@@ -867,27 +866,27 @@ DEFAULT_TOC_OPTIONS = { autoFit = true, duration = 500, initialExpandLevel = -1,
 #     false: 保留 foreignObject 标签，可以保留更多样式，但可能导致部分应用无法正确处理 SVG
 #     请谨慎修改此项，若不了解 SVG，请保持默认值 false
 #   PADDING_HORIZONTAL: 图形的水平内边距
-#     例如： 25 表示图片的左右内边距皆为 25
+#     例如： 25 表示图片的左右内边距为 25
 #   PADDING_VERTICAL: 图形的垂直内边距
-#     例如： 25 表示图片的上下内边距皆为 25
+#     例如： 25 表示图片的上下内边距为 25
 #   IMAGE_QUALITY: 导出为 JPG 或 WebP 格式图片时，图片的质量
 #     取值范围：0 到 1 之间的浮点数，值越大质量越高，文件体积也越大
 #   KEEP_ALPHA_CHANNEL: 导出带透明通道的图片格式 (如 PNG、WEBP) 时，是否保留透明通道
 #     true:  保留透明通道，将导出带透明背景的图片
 #     false: 不保留透明通道，将使用 BACKGROUND_COLOR 设置背景颜色
 #   BACKGROUND_COLOR: 导出像素图片格式 (如 JPG、PNG、WEBP) 时，设置的背景颜色
-#     可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
+#     可以使用 CSS 颜色值，例如 "#FFFFFF" (白色), "#000000" (黑色)
 #   TEXT_COLOR: 字体颜色
-#     可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
+#     可以使用 CSS 颜色值，例如 "#FFFFFF" (白色), "#000000" (黑色)
 #   OPEN_CIRCLE_COLOR: 展开节点的颜色
-#     可以使用 CSS 颜色值，例如 "#ffffff" (白色), "#000000" (黑色)
+#     可以使用 CSS 颜色值，例如 "#FFFFFF" (白色), "#000000" (黑色)
 #   SHOW_PATH_INQUIRY_DIALOG: 导出前是否显示文件保存路径选择对话框
 #     true:  导出前显示对话框，允许用户选择保存路径
 #     false: 导出时直接使用默认路径，不显示对话框
 #   SHOW_IN_FINDER: 导出完成后是否自动打开文件所在的目录
 #     true:  导出后，自动打开文件所在目录
 #     false: 导出后不打开目录
-DOWNLOAD_OPTIONS = { FILENAME = "{{filename}}_{{timestamp}}.svg", FOLDER = "", REMOVE_USELESS_CLASSES = true, REMOVE_FOREIGN_OBJECT = false, PADDING_HORIZONTAL = 25, PADDING_VERTICAL = 25, IMAGE_QUALITY = 0.92, KEEP_ALPHA_CHANNEL = true, BACKGROUND_COLOR = "#ffffff", TEXT_COLOR = "#333333", OPEN_CIRCLE_COLOR = "#ffffff", SHOW_PATH_INQUIRY_DIALOG = true, SHOW_IN_FINDER = true }
+DOWNLOAD_OPTIONS = { FILENAME = "{{filename}}_{{timestamp}}.svg", FOLDER = "", REMOVE_USELESS_CLASSES = true, REMOVE_FOREIGN_OBJECT = false, PADDING_HORIZONTAL = 25, PADDING_VERTICAL = 25, IMAGE_QUALITY = 0.92, KEEP_ALPHA_CHANNEL = true, BACKGROUND_COLOR = "#FFFFFF", TEXT_COLOR = "#333333", OPEN_CIRCLE_COLOR = "#FFFFFF", SHOW_PATH_INQUIRY_DIALOG = true, SHOW_IN_FINDER = true }
 
 # ------------------- Fence (代码块) 功能 -------------------
 # 启用或禁用 Fence 功能，即插入 markmap 代码块
@@ -913,8 +912,8 @@ INTERACTIVE_MODE = true
 DEFAULT_FENCE_HEIGHT = "300px"
 
 # 插入 markmap 代码块的默认背景颜色
-#   可以使用 CSS 颜色值，例如 "#f0f0f0", "white", "rgb(240, 240, 240)"
-DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
+#   可以使用 CSS 颜色值，例如 "#F0F0F0", "white", "rgb(240, 240, 240)"
+DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
 # 代码块图形默认选项：用于自定义代码块图形外观和行为
 #   duration          : 折叠/展开节点时，图形变换动画的持续时间 (单位：毫秒)
@@ -923,14 +922,14 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
 #   zoom              : 是否允许用户缩放图形
 #   pan               : 是否允许用户平移图形
 #   height            : 图形高度
-#   color             : 配色方案（填入颜色数组，例如 ["#1f77b4", "#17becf"]）
+#   color             : 配色方案（填入颜色数组，例如 ["#1F77B4", "#17BECF"]）
 #   backgroundColor   : 背景颜色
 #   maxWidth          : 节点最大长度 (0 则无长度限制)
 #   spacingHorizontal : 节点水平间距
 #   spacingVertical   : 节点垂直间距
 #   paddingX          : 节点内部边距
 #   fitRatio          : 图形的窗口填充率
-DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, colorFreezeLevel = 6, zoom = false, pan = false, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, paddingX = 8, fitRatio = 0.95, height = "300px", backgroundColor = "#f8f8f8", color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"] }
+DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, colorFreezeLevel = 6, zoom = false, pan = false, maxWidth = 0, spacingHorizontal = 80, spacingVertical = 5, paddingX = 8, fitRatio = 0.95, height = "300px", backgroundColor = "#F8F8F8", color = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"] }
 
 # 插入的 Markmap 代码块模板
 #   此模板定义了插入的 Markmap 代码块的初始内容和配置
@@ -966,7 +965,7 @@ markmap:
   # 图形高度
   height: 300px
   # 背景色
-  backgroundColor: "#f8f8f8"
+  backgroundColor: "#F8F8F8"
 ---
 
 ## Links
@@ -1156,7 +1155,7 @@ FOLD_DEFAULT = false
 #   单位为毫秒，例如：1000 表示 1 秒
 WAIT_RECOVER_INTERVAL = 1000
 
-# 自定义按钮：允许用户添加自定义按钮到代码块，进行更高级的操作（这是一个高级配置，需要一定的 JavaScript 基础）
+# 自定义按钮：允许用户添加自定义按钮到代码块，进行更高级的操作（高级配置，需要一定的 JavaScript 基础）
 #   DISABLE: 是否禁用此按钮
 #       true:  禁用此按钮，不显示在代码块上
 #       false: 启用此按钮，显示在代码块上
@@ -1275,7 +1274,7 @@ RECORD_COLLAPSE = true
 # 为不同的折叠/展开功能设置修饰键
 #   1. 支持 ctrl/alt/shift 的随意组合，例如 "shift+alt", "ctrl+shift"
 #   2. 但是不能为 "alt" （因为 alt + click 已经被【scrollBookmarker】插件占用），也不能为 "shift" （因为 shift + click 被系统自带的【框选】功能占用）
-#   3. 若为空字符串 ""，表示不启用此功能
+#   3. 为空表示不启用此功能
 #   4. 例如【COLLAPSE_SIBLINGS = "ctrl+alt"】：当用户同时按住键盘 ctrl 和 alt，并且鼠标 click 标题时，会折叠/展开父章节下所有同级的章节
 #
 # 功能
@@ -1422,8 +1421,8 @@ ENABLE = true
 NAME = "文字风格化"
 
 # ------------------- 面板外观 -------------------
-# 面板的背景颜色。若为空字符串 ""，则跟随 Typora 主题的配色方案
-#   支持 CSS 颜色值，例如："#ffffff" (白色), "rgb(255, 0, 0)" (红色)
+# 面板的背景颜色。若为空，则跟随 Typora 主题的配色方案
+#   支持 CSS 颜色值，例如："#FFFFFF" (白色), "rgb(255, 0, 0)" (红色)
 MODAL_BACKGROUND_COLOR = ""
 
 # ------------------- 面板交互 -------------------
@@ -1465,7 +1464,7 @@ TOOLBAR = [
 
 # ------------------- 快捷键 -------------------
 # 将设置样式的动作映射为快捷键，方便快速应用样式
-#   hotkey: 快捷键组合，例如："ctrl+shift+c"。若为空字符串 ""，则禁用快捷键
+#   hotkey: 快捷键组合，例如："ctrl+shift+c"。为空则禁用快捷键
 #   action: 对应的工具栏按钮 (必须是上方 TOOLBAR 中定义的按钮之一)
 ACTION_HOTKEYS = [
     { hotkey = "", action = "foregroundColor" },
@@ -1537,8 +1536,7 @@ ENABLE = true
 NAME = "编辑工具"
 
 # ------------------- 快捷键 -------------------
-# 快捷键：复制标题路径
-#   设置复制当前光标所在标题的完整路径的快捷键组合
+# 快捷键：复制当前光标所在标题的完整路径
 HOTKEY_COPY_FULL_PATH = "ctrl+shift+y"
 
 # 快捷键：提升选中文段的标题等级
@@ -1569,7 +1567,6 @@ HOTKEY_FILTER_INVISIBLE_CHARACTERS = ""
 HOTKEY_TRAILING_WHITE_SPACE = ""
 
 
-
 ################### custom ###################
 [custom]
 # ------------------- 基础 -------------------
@@ -1581,10 +1578,10 @@ ENABLE = true
 # 插件的名称，用于在插件列表中标识此插件
 NAME = "二级插件"
 
-# ------------------- 插件行为 -------------------
-# 有些插件在当前光标位置下临时处于不可用状态，是否隐藏它
+# ------------------- 隐藏插件 -------------------
+# 当插件在当前光标位置下临时处于不可用状态，是否隐藏它
 # 不建议置为 true，原因有二
-#   1. 处于不可用状态的插件会在鼠标悬停时提示不可用的原因
+#   1. 处于不可用状态的插件会在鼠标悬停时提示不可用的原因，所以不必隐藏
 #   2. 一直隐藏处于不可用状态的插件，可能导致你忘记该插件的存在
 HIDE_DISABLE_PLUGINS = false
 
@@ -1593,100 +1590,151 @@ HIDE_DISABLE_PLUGINS = false
 [slash_commands]
 # ------------------- 基础 -------------------
 # 启用或禁用斜杠命令插件
-#   true: 启用插件
+#   true:  启用插件
 #   false: 禁用插件
 ENABLE = true
 
 # 插件的名称，用于在插件列表中标识此插件
 NAME = "斜杠命令"
 
-# ------------------- 触发器 -------------------
-# 触发命令列表显示的正则表达式
-#  若您不了解正则表达式，请勿修改此配置
+# ------------------- 触发输入 -------------------
+# 触发显示命令候选框的正则表达式：当输入内容符合如下正则表达式时，显示命令候选框
+#  若您不了解正则表达式，请勿修改
 #  注意：keyword 需要使用命名捕获组 kw
 #  默认值：匹配一个字符串，该字符串以 / 或 \ 或 、 开头，后面紧跟任意数量的非 / 或 \ 或 、 字符，且该字符串前面不可有 <
 TRIGGER_REGEXP = "(?<!<)[\\/、\\\\](?<kw>[^\\/、\\\\]*)$"
 
 # ------------------- 匹配策略 -------------------
-# 命令列表的匹配策略
-#   prefix: 前缀。用户输入的字符串必须是 keyword 的前缀。比如：输入 para 即可找到 Paragraph
-#   substr: 子串。用户输入的字符串必须是 keyword 的子串。比如：输入 graph 即可找到 Paragraph
-#   abbr:   缩写。用户输入的每个字符必须都存在于 keyword 中，并且匹配的字符在 keyword 的索引递增。比如：输入 pgh 即可找到 Paragraph
+# 命令的匹配策略：什么样的用户输入内容才能找到对应的命令
+#   prefix: 前缀。输入内容必须是命令的前缀。比如：输入 para 可找到 Paragraph 命令
+#   substr: 子串。输入内容必须是命令的子串。比如：输入 graph 可找到 Paragraph 命令
+#   abbr:   缩写。输入的每个字符按顺序出现在命令中。比如：输入 pgh 可找到 Paragraph 命令
 MATCH_STRATEGY = "abbr"
 
+# ------------------- 排序策略 -------------------
+# 命令的排序策略：展示命令候选框时命令的显示顺序
+#   predefined:    按照下面 COMMANDS 选项的顺序
+#   lexicographic: 字典序（字母顺序）
+#   length_based:  长度顺序
+#   earliest_hit:  最早命中（越早出现命中字符就越排在前）。比如：输入 to 时，TOC 命令排在 Strong 命令前面，因为 t 在两者的出现顺序为 1 和 2
+ORDER_STRATEGY = "predefined"
+
+# ------------------- 进阶：命令的动态参数 -------------------
+# 此配置需要您了解 JavaScript 基础
+# 如果你从事 Web 前端开发的话，对 Emmet 一定不会陌生。Emmet 是一个动态 snippet 工具，通过键入 `nav>ul>li*6` 即可快速插入对应的 HTML 标签
+# 命令的动态参数功能就类似于 Emmet，通过键入 `/TableGenerator_3_4` 即可插入三列四行的表格
+
+# 命令支持传入动态参数
+#   - 普通命令的调用形式为 /command
+#   - 动态命令的调用形式为 /command_param1_param2。使用下划线进行分隔，第一项为动态命令的标识符，其余项为命令参数
+# 你可以理解为：
+#   - 普通命令没有参数，使用 /command 调用命令的回调函数 callback()
+#   - 动态命令拥有参数，使用 /command_param1_param2 调用命令的回调函数 callback(param1, param2)
+# 举例：
+#   - 普通命令 `H1` 的功能是将当前行的内容转为一级标题。用户输入 /h1 即可调用此命令的回调函数
+#   - 动态命令 `BlockCodeGenerator` 的功能是快速创建多个代码块。用户输入 /blockCodeGenerator_go_java_bash 时，系统会自动获取参数 ["go", "java", "bash"] 传给此命令的回调函数
+
+# 命令的动态参数分离标识符：用于为命令分离参数
+FUNC_PARAM_SEPARATOR = "_"
+
 # ------------------- 命令列表 -------------------
-#  命令列表配置，每个命令为一个对象
-#    enable:        是否启用此命令
-#    type:          命令类型，可选：snippet / command / gen-snp
-#                     - snippet: 插入文字片段
-#                     - command: 执行逻辑命令
-#                     - gen-snp: 执行函数，返回待插入的文字片段，适用于插入动态内容
-#    scope:         命令可用的范围，可选：plain / inline_math
-#                     - plain: 默认值，表示在普通文本区域可用
-#                     - inline_math: 表示仅在行内数学公式区域可用
-#    icon:          使用 emoji 作为图标，显示在命令列表中
-#    hint:          命令的提示信息，显示在命令列表中
-#    keyword:       命令的关键词，必须唯一，用于匹配用户输入
-#    cursorOffset:  在插入文本后，光标的偏移量。仅当 type=snippet 或 type=gen-snp 时可用。值为一个数组，第一项表示光标开始位置的偏移量，第二项表示光标结束位置的偏移量
-#                     - [0, 0]: 默认值，表示光标不发生移动
-#                     - [-2, -2]: 表示光标回退两个字符
-#                     - [-4, -1]: 光标开始位置回退四个字符，结束位置回退一个字符，其结果就是选中倒数第二~四字符
-#    callback:      回调函数或文字片段
-#                     - 若 type=snippet，则填入需要插入的文字片段
-#                     - 若 type=command，则填入回调函数
-#                     - 若 type=gen-snp，则填入返回字符串的函数
+# 命令列表
+#   enable:       是否启用此命令
+#   type:         命令类型
+#                   - snippet: 插入文字片段
+#                   - command: 执行逻辑命令（需要您了解 JavaScript 基础）
+#                   - gen-snp: 插入动态文字片段(generate snippet)（需要您了解 JavaScript 基础）
+#   scope:        命令可用的范围
+#                   - plain: 默认值，在普通文本区域可用
+#                   - inline_math: 仅在行内数学公式区域可用
+#   icon:         命令的图标
+#   hint:         命令的提示信息
+#   keyword:      命令的关键词，用于匹配用户输入
+#                   必须唯一，不区分大小写
+#                   不允许含有下划线（FUNC_PARAM_SEPARATOR 的值）
+#   cursorOffset: 在插入文本后，光标的偏移量。仅当 type 为 snippet 或 gen-snp 可用。值类型是数组，第一项表示光标开始位置的偏移量，第二项表示光标结束位置的偏移量
+#                   - [0, 0]: 默认值，光标不移动
+#                   - [-2, -2]: 光标回退两个字符
+#                   - [-4, -1]: 光标开始位置回退四个字符，结束位置回退一个字符，其结果就是选中倒数第二到第四的子串
+#   callback:     回调函数或文字片段
+#                   - 若 type 为 snippet，则填入需要插入的文字片段
+#                   - 若 type 为 command，则填入逻辑函数
+#                   - 若 type 为 gen-snp，则填入返回字符串的函数
 COMMANDS = [
-    { enable = true, type = "command", icon = "📝", hint = "一级标题", keyword = "H1", callback = "() => File.editor.stylize.changeBlock('header1', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", hint = "二级标题", keyword = "H2", callback = "() => File.editor.stylize.changeBlock('header2', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", hint = "三级标题", keyword = "H3", callback = "() => File.editor.stylize.changeBlock('header3', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", hint = "四级标题", keyword = "H4", callback = "() => File.editor.stylize.changeBlock('header4', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", hint = "五级标题", keyword = "H5", callback = "() => File.editor.stylize.changeBlock('header5', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", hint = "六级标题", keyword = "H6", callback = "() => File.editor.stylize.changeBlock('header6', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", hint = "段落", keyword = "Paragraph", callback = "() => File.editor.stylize.changeBlock('paragraph')" },
-    { enable = true, type = "command", icon = "📝", hint = "提升标题等级", keyword = "IncreaseHeaderLevel", callback = "() => File.editor.stylize.increaseHeaderLevel()" },
-    { enable = true, type = "command", icon = "📝", hint = "降低标题等级", keyword = "DecreaseHeaderLevel", callback = "() => File.editor.stylize.decreaseHeaderLevel()" },
-    { enable = true, type = "command", icon = "📝", hint = "表格", keyword = "Table", callback = "() => File.editor.tableEdit.insertTable()" },
-    { enable = true, type = "command", icon = "📝", hint = "公式块", keyword = "BlockMath", callback = "() => File.editor.stylize.toggleMathBlock()" },
-    { enable = true, type = "command", icon = "📝", hint = "代码块", keyword = "BlockCode", callback = "() => File.editor.stylize.toggleFences()" },
-    { enable = true, type = "command", icon = "📝", hint = "引用", keyword = "Blockquote", callback = "() => File.editor.stylize.toggleIndent('blockquote')" },
-    { enable = true, type = "command", icon = "📝", hint = "有序列表", keyword = "OrderedList", callback = "() => File.editor.stylize.toggleIndent('ol')" },
-    { enable = true, type = "command", icon = "📝", hint = "无序列表", keyword = "UnorderedList", callback = "() => File.editor.stylize.toggleIndent('ul')" },
-    { enable = true, type = "command", icon = "📝", hint = "任务列表", keyword = "Tasklist", callback = "() => File.editor.stylize.toggleIndent('tasklist')" },
-    { enable = true, type = "command", icon = "📝", hint = "增加列表缩进", keyword = "ListMoreIndent", callback = "() => File.editor.UserOp.moreIndent(File.editor)" },
-    { enable = true, type = "command", icon = "📝", hint = "减少列表缩进", keyword = "ListLessIndent", callback = "() => File.editor.UserOp.lessIndent(File.editor)" },
-    { enable = true, type = "command", icon = "📝", hint = "在上方插入段落", keyword = "InsertParagraphAbove", callback = "() => File.editor.UserOp.insertParagraph(true)" },
-    { enable = true, type = "command", icon = "📝", hint = "在下方插入段落", keyword = "InsertParagraphBelow", callback = "() => File.editor.UserOp.insertParagraph(false)" },
-    { enable = true, type = "command", icon = "📝", hint = "链接引用", keyword = "DefLink", callback = "() => File.editor.stylize.insertBlock('def_link')" },
-    { enable = true, type = "command", icon = "📝", hint = "脚注", keyword = "DefFootnote", callback = "() => File.editor.stylize.insertBlock('def_footnote')" },
-    { enable = true, type = "command", icon = "📝", hint = "水平分割线", keyword = "Hr", callback = "() => File.editor.stylize.insertBlock('hr')" },
-    { enable = true, type = "command", icon = "📝", hint = "内容目录", keyword = "Toc", callback = "() => File.editor.stylize.insertBlock('toc')" },
-    { enable = true, type = "command", icon = "📝", hint = "元信息", keyword = "FrontMatter", callback = "() => File.editor.stylize.insertMetaBlock()" },
-    { enable = true, type = "command", icon = "👕", hint = "粗体", keyword = "Strong", callback = "() => File.editor.stylize.toggleStyle('strong')" },
-    { enable = true, type = "command", icon = "👕", hint = "斜体", keyword = "Em", callback = "() => File.editor.stylize.toggleStyle('em')" },
-    { enable = true, type = "command", icon = "👕", hint = "下划线", keyword = "Underline", callback = "() => File.editor.stylize.toggleStyle('underline')" },
-    { enable = true, type = "command", icon = "👕", hint = "代码", keyword = "Code", callback = "() => File.editor.stylize.toggleStyle('code')" },
-    { enable = true, type = "command", icon = "👕", hint = "内联公式", keyword = "InlineMath", callback = "() => File.editor.stylize.toggleStyle('inline_math')" },
-    { enable = true, type = "command", icon = "👕", hint = "删除线", keyword = "Delete", callback = "() =>File.editor.stylize.toggleStyle('del')" },
-    { enable = true, type = "command", icon = "👕", hint = "注释", keyword = "Comment", callback = "() => File.editor.stylize.toggleStyle('comment')" },
-    { enable = true, type = "command", icon = "👕", hint = "超链接", keyword = "Link", callback = "() => File.editor.stylize.toggleStyle('link')" },
-    { enable = true, type = "command", icon = "👕", hint = "图像", keyword = "Image", callback = "() => File.editor.stylize.toggleStyle('image')" },
-    { enable = true, type = "command", icon = "👕", hint = "清除样式", keyword = "ClearStyle", callback = "() => File.editor.stylize.clearStyle()" },
-    { enable = true, type = "command", icon = "🧰", hint = "至顶部", keyword = "JumpTop", callback = "() => File.editor.selection.jumpTop()" },
-    { enable = true, type = "command", icon = "🧰", hint = "至底部", keyword = "JumpBottom", callback = "() => File.editor.selection.jumpBottom()" },
-    { enable = true, type = "command", icon = "🧰", hint = "至行首", keyword = "JumpToLineStart", callback = "() => File.editor.selection.jumpToLineStart()" },
-    { enable = true, type = "command", icon = "🧰", hint = "至行尾", keyword = "JumpToLineEnd", callback = "() => File.editor.selection.jumpToLineEnd()" },
-    { enable = true, type = "command", icon = "🧰", hint = "帮助", keyword = "Help", callback = "() => this.call()" },
-    { enable = true, type = "gen-snp", icon = "🧩", hint = "日期时间", keyword = "Datetime", callback = "() => new Date().toLocaleString('chinese', {hour12: false})" },
-    { enable = true, type = "gen-snp", icon = "🧩", hint = "日期", keyword = "Date", callback = "() => {let day = new Date(); return `${day.getFullYear()}/${day.getMonth() + 1}/${day.getDate()}`}" },
-    { enable = true, type = "gen-snp", icon = "🧩", hint = "时间", keyword = "Time", callback = "() => {let day = new Date(); return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`}" },
-    { enable = true, type = "gen-snp", icon = "🧩", hint = "时间戳", keyword = "Timestamp", callback = "() => new Date().getTime().toString()" },
-    { enable = true, type = "gen-snp", icon = "🧩", hint = "星期", keyword = "Week", callback = "() => '星期' + '日一二三四五六'.charAt((new Date()).getDay())" },
-    { enable = true, type = "snippet", icon = "🧩", hint = "示例片段", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
-    { enable = true, type = "snippet", icon = "🧩", hint = "光标偏移示例", keyword = "cursorOffsetExample", cursorOffset = [-31, -18], callback = "感谢您使用 Typora Plugin，如果本项目帮助到您，欢迎 STAR" },
-    { enable = true, type = "snippet", scope = "inline_math", icon = "🧩", keyword = "alpha", callback = "\\alpha " },
-    { enable = true, type = "snippet", scope = "inline_math", icon = "🧩", keyword = "beta", callback = "\\beta " },
-    { enable = true, type = "snippet", scope = "inline_math", icon = "🧩", keyword = "epsilon", callback = "\\epsilon " },
-    { enable = true, type = "snippet", scope = "inline_math", icon = "🧩", keyword = "rightarrow", callback = "\\rightarrow " },
+    { enable = true, type = "command", icon = "📝", keyword = "H1", hint = "一级标题", callback = "() => File.editor.stylize.changeBlock('header1', undefined, true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "H2", hint = "二级标题", callback = "() => File.editor.stylize.changeBlock('header2', undefined, true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "H3", hint = "三级标题", callback = "() => File.editor.stylize.changeBlock('header3', undefined, true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "H4", hint = "四级标题", callback = "() => File.editor.stylize.changeBlock('header4', undefined, true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "H5", hint = "五级标题", callback = "() => File.editor.stylize.changeBlock('header5', undefined, true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "H6", hint = "六级标题", callback = "() => File.editor.stylize.changeBlock('header6', undefined, true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "Paragraph", hint = "段落", callback = "() => File.editor.stylize.changeBlock('paragraph')" },
+    { enable = true, type = "command", icon = "📝", keyword = "IncreaseHeaderLevel", hint = "提升标题等级", callback = "() => File.editor.stylize.increaseHeaderLevel()" },
+    { enable = true, type = "command", icon = "📝", keyword = "DecreaseHeaderLevel", hint = "降低标题等级", callback = "() => File.editor.stylize.decreaseHeaderLevel()" },
+    { enable = true, type = "command", icon = "📝", keyword = "Table", hint = "表格", callback = "() => File.editor.tableEdit.insertTable()" },
+    { enable = true, type = "command", icon = "📝", keyword = "BlockMath", hint = "公式块", callback = "() => File.editor.stylize.toggleMathBlock()" },
+    { enable = true, type = "command", icon = "📝", keyword = "BlockCode", hint = "代码块", callback = "() => File.editor.stylize.toggleFences()" },
+    { enable = true, type = "command", icon = "📝", keyword = "Blockquote", hint = "引用", callback = "() => File.editor.stylize.toggleIndent('blockquote')" },
+    { enable = true, type = "command", icon = "📝", keyword = "OrderedList", hint = "有序列表", callback = "() => File.editor.stylize.toggleIndent('ol')" },
+    { enable = true, type = "command", icon = "📝", keyword = "UnorderedList", hint = "无序列表", callback = "() => File.editor.stylize.toggleIndent('ul')" },
+    { enable = true, type = "command", icon = "📝", keyword = "Tasklist", hint = "任务列表", callback = "() => File.editor.stylize.toggleIndent('tasklist')" },
+    { enable = true, type = "command", icon = "📝", keyword = "ListMoreIndent", hint = "增加列表缩进", callback = "() => File.editor.UserOp.moreIndent(File.editor)" },
+    { enable = true, type = "command", icon = "📝", keyword = "ListLessIndent", hint = "减少列表缩进", callback = "() => File.editor.UserOp.lessIndent(File.editor)" },
+    { enable = true, type = "command", icon = "📝", keyword = "InsertParagraphAbove", hint = "在上方插入段落", callback = "() => File.editor.UserOp.insertParagraph(true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "InsertParagraphBelow", hint = "在下方插入段落", callback = "() => File.editor.UserOp.insertParagraph(false)" },
+    { enable = true, type = "command", icon = "📝", keyword = "DefLink", hint = "链接引用", callback = "() => File.editor.stylize.insertBlock('def_link')" },
+    { enable = true, type = "command", icon = "📝", keyword = "DefFootnote", hint = "脚注", callback = "() => File.editor.stylize.insertBlock('def_footnote')" },
+    { enable = true, type = "command", icon = "📝", keyword = "Hr", hint = "水平分割线", callback = "() => File.editor.stylize.insertBlock('hr')" },
+    { enable = true, type = "command", icon = "📝", keyword = "TOC", hint = "内容目录", callback = "() => File.editor.stylize.insertBlock('toc')" },
+    { enable = true, type = "command", icon = "📝", keyword = "FrontMatter", hint = "元信息", callback = "() => File.editor.stylize.insertMetaBlock()" },
+    { enable = true, type = "command", icon = "👕", keyword = "Strong", hint = "粗体", callback = "() => File.editor.stylize.toggleStyle('strong')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Em", hint = "斜体", callback = "() => File.editor.stylize.toggleStyle('em')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Underline", hint = "下划线", callback = "() => File.editor.stylize.toggleStyle('underline')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Code", hint = "代码", callback = "() => File.editor.stylize.toggleStyle('code')" },
+    { enable = true, type = "command", icon = "👕", keyword = "InlineMath", hint = "内联公式", callback = "() => File.editor.stylize.toggleStyle('inline_math')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Delete", hint = "删除线", callback = "() => File.editor.stylize.toggleStyle('del')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Highlight", hint = "高亮", callback = "() => File.editor.stylize.toggleStyle('highlight')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Superscript", hint = "上标", callback = "() => File.editor.stylize.toggleStyle('superscript')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Subscript", hint = "下标", callback = "() => File.editor.stylize.toggleStyle('subscript')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Footnote", hint = "脚注", callback = "() => File.editor.stylize.toggleStyle('footnote')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Comment", hint = "注释", callback = "() => File.editor.stylize.toggleStyle('comment')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Link", hint = "超链接", callback = "() => File.editor.stylize.toggleStyle('link')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Image", hint = "图像", callback = "() => File.editor.stylize.toggleStyle('image')" },
+    { enable = true, type = "command", icon = "👕", keyword = "ClearStyle", hint = "清除样式", callback = "() => File.editor.stylize.clearStyle()" },
+    { enable = true, type = "command", icon = "💻", keyword = "Golang", callback = "() => this.utils.insertFence('go')" },
+    { enable = true, type = "command", icon = "💻", keyword = "Python", callback = "() => this.utils.insertFence('python')" },
+    { enable = true, type = "command", icon = "💻", keyword = "Bash", callback = "() => this.utils.insertFence('bash')" },
+    { enable = true, type = "command", icon = "💻", keyword = "Java", callback = "() => this.utils.insertFence('java')" },
+    { enable = true, type = "command", icon = "💻", keyword = "HTML", callback = "() => this.utils.insertFence('html')" },
+    { enable = true, type = "command", icon = "💻", keyword = "SQL", callback = "() => this.utils.insertFence('sql')" },
+    { enable = true, type = "command", icon = "💻", keyword = "CSS", callback = "() => this.utils.insertFence('css')" },
+    { enable = true, type = "command", icon = "💻", keyword = "Mermaid", callback = "() => this.utils.insertFence('mermaid')" },
+    { enable = true, type = "command", icon = "💻", keyword = "JavaScript", callback = "() => this.utils.insertFence('javascript')" },
+    { enable = true, type = "command", icon = "💻", keyword = "TypeScript", callback = "() => this.utils.insertFence('typescript')" },
+    { enable = true, type = "command", icon = "🧰", keyword = "JumpTop", hint = "至顶部", callback = "() => File.editor.selection.jumpTop()" },
+    { enable = true, type = "command", icon = "🧰", keyword = "JumpBottom", hint = "至底部", callback = "() => File.editor.selection.jumpBottom()" },
+    { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineStart", hint = "至行首", callback = "() => File.editor.selection.jumpToLineStart()" },
+    { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineEnd", hint = "至行尾", callback = "() => File.editor.selection.jumpToLineEnd()" },
+    { enable = true, type = "command", icon = "🧰", keyword = "Help", hint = "帮助", callback = "() => this.call()" },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "Br", hint = "换行符", callback = "<br>" },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "IMG", hint = "<img>", cursorOffset = [-14, -14], callback = '<img src="" alt="alt" />' },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "SnippetExample", hint = "示例片段", callback = "https://github.com/obgnail/typora_plugin" },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "cursorOffsetExample", hint = "光标偏移示例", cursorOffset = [-31, -18], callback = "感谢您使用 Typora Plugin，如果本项目帮助到您，欢迎 STAR" },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "alpha", scope = "inline_math", callback = "\\alpha " },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "beta", scope = "inline_math", callback = "\\beta " },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "epsilon", scope = "inline_math", callback = "\\epsilon " },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "rightarrow", scope = "inline_math", callback = "\\rightarrow " },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Datetime", hint = "日期时间", callback = "() => new Date().toLocaleString('chinese', {hour12: false})" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Date", hint = "日期", callback = "() => {let day = new Date(); return `${day.getFullYear()}/${day.getMonth()+1}/${day.getDate()}`}" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Time", hint = "时间", callback = "() => {let day = new Date(); return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`}" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Timestamp", hint = "时间戳", callback = "() => new Date().getTime().toString()" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Week", hint = "星期", callback = "() => '星期' + '日一二三四五六'.charAt((new Date()).getDay())" },
+    # 进阶：动态参数
+    #   代码块生成器：输入 /BlockCodeGenerator_go_java_bash 即可同时插入 go、java、bash 三个代码块
+    { enable = true, type = "gen-snp", icon = "🌟", keyword = "BlockCodeGenerator", hint = "代码块生成器", callback = "(...langs) => langs.map(l => '```' + l.toLowerCase() + '\\n```').join('\\n\\n')" },
+    #   提示块生成器：输入 /CalloutGenerator_note_info_quote 即可同时插入 NOTE、INFO、QUOTE 三个 callout
+    { enable = true, type = "gen-snp", icon = "🌟", keyword = "CalloutGenerator", hint = "提示块生成器", callback = "(...types) => types.map(t => `> [!${t.toUpperCase()}]\\n>\\n> `).join('\\n\\n')" },
+    #   表格生成器：输入 /TableGenerator_3_4 即可插入三列四行的表格
+    { enable = true, type = "command", icon = "🌟", keyword = "TableGenerator", hint = "表格生成器", callback = "(col, row) => { col = parseInt(col); row = parseInt(row); const c = ['      ', ' ---- ', ...Array(row - 1).fill('      ')].map(e => `|${Array(col).fill(e).join('|')}|`).join('\\n'); this.utils.insertText(null, c, false) }" },
 ]
 
 
@@ -1713,7 +1761,7 @@ SHOW_PLUGIN_HOTKEY = true
 #   false: 不添加图标
 SHOW_ACTION_OPTIONS_ICON = false
 
-# 右键二 ~ 三级菜单的最小宽度：设置右键菜单二、三级菜单的最小宽度，防止菜单过宽占用过多屏幕空间
+# 右键菜单二、三级菜单的最小宽度：防止菜单过宽占用过多屏幕空间
 #   - default: 保持默认宽度 (和第一级菜单相同宽度)
 #   - auto   : 最小宽度根据文本长度自适应
 #   - 232px  : 最小宽度为 232px (可以设置为任何正整数值)
@@ -1726,14 +1774,13 @@ DO_NOT_HIDE = false
 
 # ------------------- 菜单选项管理 -------------------
 # 移除右键菜单中除了插件以外的选项：控制是否只显示插件相关的右键菜单项
-#   如果你之前从不使用右键菜单，可以设置为 true
 #   true:  移除 Typora 原生的右键菜单项，仅显示插件菜单
 #   false: 保留 Typora 原生的右键菜单项
 HIDE_OTHER_OPTIONS = false
 
 # 对于【启用但是没有出现在下面 MENUS 选项】的插件，自动将其加入到最后一个 MENU
 #  控制是否自动将已启用但未在 `MENUS` 中配置的插件添加到最后一个一级菜单中
-#   强烈不建议将此选项置为 false，若置为 false，且在 MENUS 中删去那些处于启用状态的插件，那么
+#  强烈建议将此选项置为 true，若置为 false，且在 MENUS 中删去那些处于启用状态的插件，那么
 #     1. 那些插件依旧处于启用状态，但是就不能通过右键菜单调用了
 #     2. 如果插件系统后续新增了插件，那么你就根本无法感知到新增插件的存在
 #   true:  自动添加
@@ -1742,8 +1789,8 @@ FIND_LOST_PLUGIN = true
 
 # ------------------- 自定义右键菜单 -------------------
 # 自定义右键菜单：`MENUS` 数组中的每一项对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
-#   NAME:  一级菜单的名称
-#   LIST:  二级菜单的插件列表，`---` 代表在页面上插入一个分隔横线。允许填入 pluginName (插件，如：help) 或者 pluginName.callArg (插件的其中一个选项，如：help.donate)
+#   NAME: 一级菜单的名称
+#   LIST: 二级菜单的插件列表，`---` 代表在页面上插入一个分隔横线。允许填入 pluginName (插件，如：help) 或者 pluginName.callArg (插件的其中一个选项，如：help.donate)
 [[right_click_menu.MENUS]]
 NAME = "少用插件"
 LIST = [
@@ -1809,7 +1856,7 @@ NAME = "圆盘菜单"
 
 # ------------------- 快捷键 -------------------
 # 触发圆盘菜单的快捷键，为空则不使用快捷键触发
-#   例如："ctrl+shift+m" 表示按下 Ctrl + Shift + M 键触发
+#   例如："ctrl+shift+m" 表示按下 Ctrl+Shift+M 键触发
 #   注意：此快捷键与 MODIFIER_KEY 配合使用，若 MODIFIER_KEY 不为空则此项无效
 HOTKEY = ""
 
@@ -1820,8 +1867,7 @@ HOTKEY = ""
 MODIFIER_KEY = "ctrl"
 
 # ------------------- 按钮 -------------------
-# 圆盘菜单上的按钮配置，最多支持 16 个按钮
-#   前 8 个按钮显示在内圈，后 8 个按钮显示在外圈
+# 圆盘菜单上的按钮配置，最多支持 16 个按钮（前 8 个按钮显示在内圈，后 8 个按钮显示在外圈）
 #   每个按钮包含以下属性
 #     ICON: 按钮图标的 CSS class，使用 Font Awesome 图标库
 #              例如： "fa fa-book" 表示书本图标
@@ -1894,7 +1940,6 @@ MAX_SIZE = 2000000
 
 # Typora 允许打开的文件的扩展名列表，不在此列表中的文件在搜索时将被忽略
 #   例如：["md", "txt"] 表示只统计 .md 和 .txt 文件
-#   空字符串 "" 表示所有无扩展名的文件
 ALLOW_EXT = ["", "md", "markdown", "mdown", "mmd", "text", "txt", "rmarkdown", "mkd", "mdwn", "mdtxt", "rmd", "mdtext", "apib"]
 
 # 忽略的目录名列表，在此列表中的目录将被忽略，不进行文件计数
@@ -1919,7 +1964,7 @@ FONT_WEIGHT = "bold"
 COLOR = ""
 
 # 文本背景颜色，填写 background-color 的 CSS 值
-#   例如：设置为 "#f0f0f0" 表示文本背景颜色为浅灰色
+#   例如：设置为 "#F0F0F0" 表示文本背景颜色为浅灰色
 #   若留空 ""，则保持默认背景颜色
 BACKGROUND_COLOR = ""
 
@@ -1940,31 +1985,31 @@ ENABLE = true
 NAME = "快捷键中心"
 
 # ------------------- 快捷键 -------------------
-# 查看注册的快捷键列表的快捷键，若为空字符串，则不设置
+# 查看注册的快捷键列表的快捷键，若为空，则不设置
 HOTKEY = ""
 
 # ------------------- 自定义快捷键 -------------------
-# 此配置是高级配置，仅对有 javascript 基础的用户开放，以下说明默认您了解 javascript 基础
+# 此配置是高级配置，仅对有 javascript 基础的用户开放
 # 使用说明:
 #   - 用于配置自定义快捷键
 #   - 以声明的形式，为【插件系统的任意函数】或【自定义函数】设置快捷键，也就是说让快捷键支持的最小粒度达到函数级别
-#   - 具体可用的函数直接阅读源码
+#   - 请通过阅读源码获取具体可用的函数
 #   - 此插件不能覆盖现有的快捷键，此插件充分信任用户，没有做任何防护措施 (也意味着很简陋，需要你自己调试)
 # 参数说明:
-#   desc（可选）: 描述。可填写任意内容，对功能没有影响
-#   enable: 是否启用此快捷键
-#   hotkey: 快捷键组合
-#   plugin: 调用的插件名称
-#   function: 调用插件的函数名
+#   desc:            描述。可填写任意内容，对功能没有影响
+#   enable:          是否启用此快捷键
+#   hotkey:          快捷键组合
+#   plugin:          调用的插件名称
+#   function:        调用插件的函数名
 #   closestSelector: 定位到当前光标的父元素，并将其作为参数传入 function。如果 function 没有参数，则不需要此选项
-#   evil: 自定义回调函数，这里的文本内容会被 `eval()`。如果设置此参数，那么 plugin，function，closestSelector 都会失效
+#   evil:            自定义回调函数，这里的文本内容会被 `eval()`。如果设置此参数，那么参数 plugin、function、closestSelector 都会失效
 # 注意:
 #   - `eval` 是邪恶的，极端情况下会让你的电脑中毒，请谨慎处理 —— 试试将下面的 【openCalc】 的 enable 置为 true，接着在 Typora 键入快捷键
 #   - 如果你有把握，`eval` 确实是很方便 —— 试试将下面的 【switchFirstTab】 的 enable 置为 true，接着在 Typora 键入快捷键
 #   - 由于 `eval` 的强大，你甚至可以注入插件系统，修改插件系统的行为（此时要将 hotkey 设置为 【-】） —— 试试将下面的 【alertWhenOpenFile】 的 enable 置为 true
 CUSTOM_HOTKEYS = [
-    # 简单使用：fastInput
-    { enable = false, hotkey = "ctrl+shift+e", desc = "快速插入javascript代码块", evil = '() => this.utils.insertText(null, "```javascript\n```", false);' },
+    # 简单使用：insertBlockCode
+    { enable = false, hotkey = "ctrl+shift+e", desc = "快速插入javascript代码块", evil = "() => this.utils.insertFence('javascript')" },
     # 支持但邪恶的使用方法：openCalc
     { enable = false, hotkey = "ctrl+shift+e", desc = "打开windows计算器", evil = "() => this.utils.Package.ChildProcess.exec('cmd /C calc')" },
     # 支持但不推荐的使用方法：switchFirstTab
@@ -2002,9 +2047,8 @@ ENABLE = true
 NAME = "写作区宽度调整"
 
 # ------------------- 写作区宽度调整 -------------------
-# 宽度百分比（小于0视为不启用）
-#   例如：WIDTH_RATIO = 0.8 表示写作区宽度为原来的80%
-#   取值范围：0 ~ 1 之间的数字，或小于0的数字表示禁用功能
+# 宽度百分比（小于 0 视为不启用）
+#   例如：WIDTH_RATIO = 80 表示写作区宽度为最大宽度的80%
 WIDTH_RATIO = -1
 
 
@@ -2056,9 +2100,7 @@ selenium = { headless = true }
 
 # ------------------- 各平台上传 -------------------
 # WordPress 平台上传配置
-#   enabled:  是否启用上传到此平台
-#     true:  启用
-#     false: 禁用
+#   enabled: 是否启用上传到此平台
 #   hostname: WordPress 博客的域名或 IP 地址 (例如: https://blog.bugdesigner.cn)
 #   loginUrl: WordPress 后台登录页面的 URL (例如: https://blog.bugdesigner.cn/wp-login.php)
 #   username: WordPress 登录用户名
@@ -2067,16 +2109,12 @@ wordpress = { enabled = true, hostname = "https://blog.bugdesigner.cn", loginUrl
 
 # 博客园 平台上传配置
 #   enabled: 是否启用上传到此平台
-#     true:  启用
-#     false: 禁用
 #   username: 博客园 登录用户名
 #   password: 博客园 登录密码
 cnblog = { enabled = true, username = "demo2", password = "demo2" }
 
 # CSDN 平台上传配置
 #   enabled: 是否启用上传到此平台
-#     true:  启用
-#     false: 禁用
 #   cookie:  用于登录 CSDN 的 Cookie 信息，可能需要定期更新 (可以在浏览器开发者工具中找到)
 #   **注意：该 Cookie 的有效期可能较短，请定期更新，建议两周到一个月更新一次**
 csdn = { enabled = true, cookie = "log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s; log_Id_click=37......" }
@@ -2085,7 +2123,7 @@ csdn = { enabled = true, cookie = "log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s;
 ################### ripgrep ###################
 [ripgrep]
 # ------------------- 基础 -------------------
-# 启用或禁用 ripgrep 插件
+# 启用或禁用插件
 #   true:  启用插件
 #   false: 禁用插件
 ENABLE = false
@@ -2116,7 +2154,7 @@ TOP_PERCENT = 20
 ################### json_rpc ###################
 [json_rpc]
 # ------------------- 基础 -------------------
-# 启用或禁用 json_rpc 插件
+# 启用或禁用插件
 #   警告：开启此插件后，外部将拥有 node、browser 两套环境，能完全控制电脑，因此如果您不是开发人员，请勿开启此插件
 #   true:  启用插件
 #   false: 禁用插件

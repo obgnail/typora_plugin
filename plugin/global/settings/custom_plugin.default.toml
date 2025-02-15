@@ -216,10 +216,10 @@ INTERACTIVE_MODE = true
 
 # ------------------- 时间线样式 -------------------
 # 图表背景颜色
-BACKGROUND_COLOR = "#fafafa"
+BACKGROUND_COLOR = "#FAFAFA"
 
 # 标题的字体颜色
-TITLE_COLOR = "#555"
+TITLE_COLOR = "#555555"
 
 # 标题的字体大小
 TITLE_FONT_SIZE = "1.5rem"
@@ -228,13 +228,13 @@ TITLE_FONT_SIZE = "1.5rem"
 TITLE_FONT_WEIGHT = "bold"
 
 # 左侧时间线的颜色
-LINE_COLOR = "#eee"
+LINE_COLOR = "#EEEEEE"
 
 # 左侧时间线的宽度
 LINE_WIDTH = "2px"
 
 # 时间圆点的颜色
-CIRCLE_COLOR = "#999"
+CIRCLE_COLOR = "#999999"
 
 # 时间圆点的直径
 CIRCLE_DIAMETER = "0.7em"
@@ -243,7 +243,7 @@ CIRCLE_DIAMETER = "0.7em"
 CIRCLE_TOP = "0.6em"
 
 # 时间的字体颜色
-TIME_COLOR = "#555"
+TIME_COLOR = "#555555"
 
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
@@ -299,6 +299,7 @@ INTERACTIVE_MODE = true
 #   canvas: 使用 Canvas 渲染
 #   svg:    使用 SVG 渲染
 # 参考：https://echarts.apache.org/handbook/zh/best-practices/canvas-vs-svg/
+# svg 和 Typora 更加亲和，故建议使用 svg
 RENDERER = "svg"
 
 # 导出时 echarts 转成什么格式
@@ -312,7 +313,7 @@ EXPORT_TYPE = "svg"
 DEFAULT_FENCE_HEIGHT = "300px"
 
 # 图表背景颜色
-DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
+DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
@@ -386,7 +387,7 @@ INTERACTIVE_MODE = true
 DEFAULT_FENCE_HEIGHT = "300px"
 
 # 图表背景颜色
-DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
+DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
@@ -463,8 +464,8 @@ SAFE_MODE = true
 #   可以使用 CSS 高度值（例如：200px），也可以设置为 "auto" 让高度自适应内容
 DEFAULT_FENCE_HEIGHT = "auto"
 
-# 图表背景颜色 (支持合法的 CSS 颜色值，如 #fff, red, rgba(255,0,0,0.5) 等)
-DEFAULT_FENCE_BACKGROUND_COLOR = "#fff"
+# 图表背景颜色 (支持合法的 CSS 颜色值，如 #FFFFFF, red, rgba(255,0,0,0.5) 等)
+DEFAULT_FENCE_BACKGROUND_COLOR = "#FFFFFF"
 
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
@@ -525,7 +526,7 @@ INTERACTIVE_MODE = true
 DEFAULT_FENCE_HEIGHT = "800px"
 
 # 图表背景颜色
-DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
+DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
@@ -598,7 +599,7 @@ VISUAL_OPTIONS = { scale = 1.0, staffwidth = 400, responsive = "resize" }
 DEFAULT_FENCE_HEIGHT = "auto"
 
 # 图表背景颜色
-DEFAULT_FENCE_BACKGROUND_COLOR = "#f8f8f8"
+DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
@@ -719,7 +720,7 @@ TEMPLATE = """```marp
 theme: gaia
 _class: lead
 paginate: true
-backgroundColor: #fff
+backgroundColor: #FFFFFF
 backgroundImage: url('https://marp.app/assets/hero-background.svg')
 ---
 
@@ -786,24 +787,24 @@ font_family = "FontAwesome"
 #  - left_line_color : 左侧竖线颜色
 #  - icon            : 图标
 list = [
-    { type = "tip", background_color = "#d8f2e5", left_line_color = "#3abd7e", icon = "\\f02c" },
-    { type = "bug", background_color = "#feeed3", left_line_color = "#E0AC00", icon = "\\f188" },
-    { type = "info", background_color = "#dff6dd", left_line_color = "#3abd7e", icon = "\\f05a" },
-    { type = "note", background_color = "#e1d1eb", left_line_color = "#6a1b9a", icon = "\\f040" },
-    { type = "quote", background_color = "#fafafa", left_line_color = "#777777", icon = "\\f10d" },
-    { type = "example", background_color = "#f1edfd", left_line_color = "#777777", icon = "\\f133" },
-    { type = "caution", background_color = "#fde7e9", left_line_color = "#c62828", icon = "\\f024" },
-    { type = "failure", background_color = "#f4d4d4", left_line_color = "#c62828", icon = "\\f00d" },
-    { type = "warning", background_color = "#feeed3", left_line_color = "#E0AC00", icon = "\\f071" },
-    { type = "success", background_color = "#d8f2e5", left_line_color = "#3abd7e", icon = "\\f00c" },
-    { type = "question", background_color = "#fff4ce", left_line_color = "#E0AC00", icon = "\\f128" },
-    { type = "abstract", background_color = "#e5f8f8", left_line_color = "#777777", icon = "\\f00b" },
-    { type = "important", background_color = "#d8e6f3", left_line_color = "#3b83c1", icon = "\\f132" },
+    { type = "tip", background_color = "#D8F2E5", left_line_color = "#3ABD7E", icon = "\\f02c" },
+    { type = "bug", background_color = "#FEEED3", left_line_color = "#E0AC00", icon = "\\f188" },
+    { type = "info", background_color = "#DFF6DD", left_line_color = "#3ABD7E", icon = "\\f05a" },
+    { type = "note", background_color = "#E1D1EB", left_line_color = "#6A1B9A", icon = "\\f040" },
+    { type = "quote", background_color = "#FAFAFA", left_line_color = "#777777", icon = "\\f10d" },
+    { type = "example", background_color = "#F1EDFD", left_line_color = "#777777", icon = "\\f133" },
+    { type = "caution", background_color = "#FDE7E9", left_line_color = "#C62828", icon = "\\f024" },
+    { type = "failure", background_color = "#F4D4D4", left_line_color = "#C62828", icon = "\\f00d" },
+    { type = "warning", background_color = "#FEEED3", left_line_color = "#E0AC00", icon = "\\f071" },
+    { type = "success", background_color = "#D8F2E5", left_line_color = "#3ABD7E", icon = "\\f00c" },
+    { type = "question", background_color = "#FFF4CE", left_line_color = "#E0AC00", icon = "\\f128" },
+    { type = "abstract", background_color = "#E5F8F8", left_line_color = "#777777", icon = "\\f00b" },
+    { type = "important", background_color = "#D8E6F3", left_line_color = "#3B83C1", icon = "\\f132" },
 ]
 
 # 所有【类型不属于 list 选项的 callouts】都会使用默认的样式
 # 默认的背景颜色
-default_background_color = "#fafafa"
+default_background_color = "#FAFAFA"
 
 # 默认的左边线颜色
 default_left_line_color = "#777777"
@@ -846,7 +847,7 @@ hotkey = ""
 auto_open = true
 
 # ------------------- 自定义模板变量 -------------------
-#  除了内置的模板变量，还可以自定义模板变量（如果您不了解 JavaScript，请勿修改此选项）
+#  除了内置的模板变量，还可以自定义模板变量（高级配置，需要一定的 JavaScript 基础）
 #  每个模板变量配置包含以下属性
 #   - enable:   是否启用此模板变量
 #   - name:     模板变量名（必须唯一）
@@ -1015,6 +1016,7 @@ auto_swap_symbols = [
     ["，", ","],
     ["。", "."],
     ["？", "?"],
+    ["·", "`"],
     ["￥", "$"],
 ]
 
@@ -1467,10 +1469,10 @@ button_width = "15px"
 button_height = "15px"
 
 # 格式检测通过时方块的颜色
-pass_color = "#499c54"
+pass_color = "#499C54"
 
 # 格式检测未通过时方块的颜色
-error_color = "#be9117"
+error_color = "#BE9117"
 
 
 ################### reopenClosedFiles ###################
@@ -1572,7 +1574,7 @@ hide_button_hint = false
 #           https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 #           https://ionic.io/ionicons/v2
 #   size(可选): 按钮图标大小，例如："17px"、"20px"。默认值：17px
-#   color(可选): 按钮图标颜色，例如："#ffffff"、"red"。默认值：跟随当前主题的配色方案
+#   color(可选): 按钮图标颜色，例如："#FFFFFF"、"red"。默认值：跟随当前主题的配色方案
 #   bgColor(可选): 按钮图标背景颜色，例如："#000000"、"blue"。默认值：跟随当前主题的配色方案
 #   hint: 按钮的提示信息，鼠标悬停在按钮上时显示
 #   callback: 按钮的回调函数
@@ -1594,9 +1596,9 @@ buttons = [
     { disable = false, coordinate = [3, 1], hint = "高亮搜索", size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
     # evil 使用示例
     #   弹窗提示
-    { disable = true, coordinate = [4, 0], hint = "危险操作", size = "17px", icon = "ion-asterisk", color = "#f0f8ff", bgColor = "#ff4500", evil = "() => window.confirm('this is message')" },
+    { disable = true, coordinate = [4, 0], hint = "危险操作", size = "17px", icon = "ion-asterisk", color = "#F0F8FF", bgColor = "#FF4500", evil = "() => window.confirm('this is message')" },
     #   在光标处插入 javascript 代码块
-    { disable = true, coordinate = [4, 1], hint = "危险操作", size = "17px", icon = "ion-alert-circled", evil = '() => this.utils.insertText(null, "```javascript\n```", false)' },
+    { disable = true, coordinate = [4, 1], hint = "危险操作", size = "17px", icon = "ion-alert-circled", evil = '() => this.utils.insertFence("javascript")' },
     #   打开 Windows 计算器
     { disable = true, coordinate = [5, 0], hint = "危险操作", size = "17px", icon = "ion-bug", evil = "() => this.utils.Package.ChildProcess.exec('cmd /C calc')" },
     #   打开网址

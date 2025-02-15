@@ -9,11 +9,13 @@ class exportEnhancePlugin extends BasePlugin {
         this.utils.runtime.autoSaveConfig(this)
         this.enable = this.config.ENABLE
         this.regexp = new RegExp(`<img.*?src="(.*?)".*?>`, "gs")
-        this.utils.exportHelper.register("export_enhance", null, this.afterExport)
+        this.utils.exportHelper.register(this.fixedName, null, this.afterExportToHTML)
     }
 
-    afterExport = async html => {
-        if (!this.enable) return html
+    afterExportToHTML = async html => {
+        if (!this.enable) {
+            return html
+        }
 
         const dirname = this.utils.getCurrentDirPath()
         const imageMap = this.config.DOWNLOAD_NETWORK_IMAGE ? (await this.downloadAllImage(html)) : {}
@@ -46,8 +48,8 @@ class exportEnhancePlugin extends BasePlugin {
         const srcList = [...html.matchAll(this.regexp)]
             .filter(match => match.length === 2 && this.utils.isNetworkImage(match[1]))
             .map(match => match[1])
-        const chunkList = this.utils.chunk(srcList, this.config.DOWNLOAD_THREADS)
-        for (const chunk of chunkList) {
+        const chunks = this.utils.chunk(srcList, this.config.DOWNLOAD_THREADS)
+        for (const chunk of chunks) {
             const promises = chunk.map(async src => {
                 if (imageMap.hasOwnProperty(src)) return
                 try {
