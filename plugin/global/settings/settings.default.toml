@@ -1597,12 +1597,17 @@ ENABLE = true
 # 插件的名称，用于在插件列表中标识此插件
 NAME = "斜杠命令"
 
-# ------------------- 触发输入 -------------------
+# ------------------- 触发命令候选框 -------------------
 # 触发显示命令候选框的正则表达式：当输入内容符合如下正则表达式时，显示命令候选框
 #  若您不了解正则表达式，请勿修改
 #  注意：keyword 需要使用命名捕获组 kw
 #  默认值：匹配一个字符串，该字符串以 / 或 \ 或 、 开头，后面紧跟任意数量的非 / 或 \ 或 、 字符，且该字符串前面不可有 <
 TRIGGER_REGEXP = "(?<!<)[\\/、\\\\](?<kw>[^\\/、\\\\]*)$"
+
+# 显示命令候选框的时机
+#   on_input: 输入后立刻显示
+#   debounce: 键入 400ms 后显示（防抖）
+SUGGESTION_TIMING = "on_input"
 
 # ------------------- 匹配策略 -------------------
 # 命令的匹配策略：什么样的用户输入内容才能找到对应的命令
@@ -1619,22 +1624,15 @@ MATCH_STRATEGY = "abbr"
 #   earliest_hit:  最早命中（越早出现命中字符就越排在前）。比如：输入 to 时，TOC 命令排在 Strong 命令前面，因为 t 在两者的出现顺序为 1 和 2
 ORDER_STRATEGY = "predefined"
 
-# ------------------- 进阶：命令的动态参数 -------------------
-# 此配置需要您了解 JavaScript 基础
-# 如果你从事 Web 前端开发的话，对 Emmet 一定不会陌生。Emmet 是一个动态 snippet 工具，通过键入 `nav>ul>li*6` 即可快速插入对应的 HTML 标签
-# 命令的动态参数功能就类似于 Emmet，通过键入 `/TableGenerator_3_4` 即可插入三列四行的表格
-
-# 命令支持传入动态参数
-#   - 普通命令的调用形式为 /command
-#   - 动态命令的调用形式为 /command_param1_param2。使用下划线进行分隔，第一项为动态命令的标识符，其余项为命令参数
-# 你可以理解为：
-#   - 普通命令没有参数，使用 /command 调用命令的回调函数 callback()
-#   - 动态命令拥有参数，使用 /command_param1_param2 调用命令的回调函数 callback(param1, param2)
+# ------------------- 进阶：命令参数 -------------------
+# 命令分为无参和带参两种
+#   - 无参命令的调用形式为 /command
+#   - 带参命令的调用形式为 /command_param1_param2。使用下划线进行分隔，第一项为动态命令的标识符，其余项为命令参数
 # 举例：
-#   - 普通命令 `H1` 的功能是将当前行的内容转为一级标题。用户输入 /h1 即可调用此命令的回调函数
-#   - 动态命令 `BlockCodeGenerator` 的功能是快速创建多个代码块。用户输入 /blockCodeGenerator_go_java_bash 时，系统会自动获取参数 ["go", "java", "bash"] 传给此命令的回调函数
+#   - 无参命令 `H1` 的功能是将当前行转为一级标题。用户输入 /h1 即可调用此命令的回调函数
+#   - 带参命令 `BlockCodeGenerator` 的功能是快速创建多个代码块。用户输入 /blockCodeGenerator_go_java_bash 时，系统会自动获取参数 ["go", "java", "bash"] 传给此命令的回调函数，创建对应的代码块
 
-# 命令的动态参数分离标识符：用于为命令分离参数
+# 命令的参数分离标识符
 FUNC_PARAM_SEPARATOR = "_"
 
 # ------------------- 命令列表 -------------------
@@ -1650,7 +1648,8 @@ FUNC_PARAM_SEPARATOR = "_"
 #   icon:         命令的图标
 #   hint:         命令的提示信息
 #   keyword:      命令的关键词，用于匹配用户输入
-#                   必须唯一，不区分大小写
+#                   必须唯一
+#                   不区分大小写
 #                   不允许含有下划线（FUNC_PARAM_SEPARATOR 的值）
 #   cursorOffset: 在插入文本后，光标的偏移量。仅当 type 为 snippet 或 gen-snp 可用。值类型是数组，第一项表示光标开始位置的偏移量，第二项表示光标结束位置的偏移量
 #                   - [0, 0]: 默认值，光标不移动
@@ -1724,11 +1723,11 @@ COMMANDS = [
     { enable = true, type = "snippet", icon = "🧩", keyword = "epsilon", scope = "inline_math", callback = "\\epsilon " },
     { enable = true, type = "snippet", icon = "🧩", keyword = "rightarrow", scope = "inline_math", callback = "\\rightarrow " },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Datetime", hint = "日期时间", callback = "() => new Date().toLocaleString('chinese', {hour12: false})" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Date", hint = "日期", callback = "() => {let day = new Date(); return `${day.getFullYear()}/${day.getMonth()+1}/${day.getDate()}`}" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Time", hint = "时间", callback = "() => {let day = new Date(); return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}`}" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Date", hint = "日期", callback = "() => { let day = new Date(); return `${day.getFullYear()}/${day.getMonth()+1}/${day.getDate()}` }" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Time", hint = "时间", callback = "() => { let day = new Date(); return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}` }" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Timestamp", hint = "时间戳", callback = "() => new Date().getTime().toString()" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Week", hint = "星期", callback = "() => '星期' + '日一二三四五六'.charAt((new Date()).getDay())" },
-    # 进阶：动态参数
+    # 进阶：命令参数
     #   代码块生成器：输入 /BlockCodeGenerator_go_java_bash 即可同时插入 go、java、bash 三个代码块
     { enable = true, type = "gen-snp", icon = "🌟", keyword = "BlockCodeGenerator", hint = "代码块生成器", callback = "(...langs) => langs.map(l => '```' + l.toLowerCase() + '\\n```').join('\\n\\n')" },
     #   提示块生成器：输入 /CalloutGenerator_note_info_quote 即可同时插入 NOTE、INFO、QUOTE 三个 callout

@@ -27,7 +27,11 @@ class slashCommandsPlugin extends BasePlugin {
     styleTemplate = () => true
 
     process = () => {
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this._onEdit)
+        if (this.config.SUGGESTION_TIMING === "on_input") {
+            this.utils.decorate(() => File && File.editor && File.editor.brush, "triggerAutoComplete", null, this._onEdit)
+        } else {
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, this._onEdit)
+        }
     }
 
     call = () => this._showAllCommands()
