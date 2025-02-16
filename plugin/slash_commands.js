@@ -1,12 +1,11 @@
 class slashCommandsPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.TYPE = { COMMAND: "command", SNIPPET: "snippet", GENERATE_SNIPPET: "gen-snp" }
         this.SCOPE = { INLINE_MATH: "inline_math", PLAIN: "plain" }
+        this.TYPE = { COMMAND: "command", SNIPPET: "snippet", GENERATE_SNIPPET: "gen-snp" }
 
         const defaultOffset = [0, 0]
-        const { COMMANDS, TRIGGER_REGEXP, MATCH_STRATEGY, ORDER_STRATEGY, FUNC_PARAM_SEPARATOR } = this.config
+        const { COMMANDS, TRIGGER_REGEXP, MATCH_STRATEGY, ORDER_STRATEGY } = this.config
         COMMANDS.forEach(c => {
-            c.keyword = (c.keyword || "").replace(new RegExp(FUNC_PARAM_SEPARATOR, "g"), "")
             c.scope = c.scope || this.SCOPE.PLAIN
             c.icon = c.icon || (c.type === this.TYPE.COMMAND ? "🧰" : "🧩")
             c.cursorOffset = c.cursorOffset || defaultOffset
@@ -18,7 +17,7 @@ class slashCommandsPlugin extends BasePlugin {
         this.regexp = new RegExp(TRIGGER_REGEXP)
         this.matchStrategy = this._getMatchStrategy(MATCH_STRATEGY)
         this.orderStrategy = this._getOrderStrategy(ORDER_STRATEGY)
-        this.commands = new Map(COMMANDS.filter(c => c.enable && c.keyword).map(c => [c.keyword.toLowerCase(), c]))
+        this.commands = new Map(COMMANDS.filter(c => c.enable && c.keyword && /[A-Za-z0-9]+/.test(c.keyword)).map(c => [c.keyword.toLowerCase(), c]))
         this.handler = { search: this._search, render: this._render, beforeApply: this._beforeApply }
 
         return this.commands.size ? undefined : this.utils.stopLoadPluginError

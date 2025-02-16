@@ -1601,8 +1601,8 @@ NAME = "斜杠命令"
 # 触发显示命令候选框的正则表达式：当输入内容符合如下正则表达式时，显示命令候选框
 #  若您不了解正则表达式，请勿修改
 #  注意：keyword 需要使用命名捕获组 kw
-#  默认值：匹配一个字符串，该字符串以 / 或 \ 或 、 开头，后面紧跟任意数量的非 / 或 \ 或 、 字符，且该字符串前面不可有 <
-TRIGGER_REGEXP = "(?<!<)[\\/、\\\\](?<kw>[^\\/、\\\\]*)$"
+#  默认值：匹配一个文本，该文本以 / 或 \ 或 、 开头，后面紧跟任意数量英文字母或数字，且该文本前面不可有 <
+TRIGGER_REGEXP = "(?<!<)[\\/、\\\\](?<kw>\\w*)$"
 
 # 显示命令候选框的时机
 #   on_input: 输入后立刻显示
@@ -1640,17 +1640,17 @@ FUNC_PARAM_SEPARATOR = "_"
 #   enable:       是否启用此命令
 #   type:         命令类型
 #                   - snippet: 插入文字片段
-#                   - command: 执行逻辑命令（需要您了解 JavaScript 基础）
-#                   - gen-snp: 插入动态文字片段(generate snippet)（需要您了解 JavaScript 基础）
+#                   - command: 执行逻辑命令
+#                   - gen-snp: 插入动态文字片段(generate snippet)
 #   scope:        命令可用的范围
 #                   - plain: 默认值，在普通文本区域可用
 #                   - inline_math: 仅在行内数学公式区域可用
 #   icon:         命令的图标
 #   hint:         命令的提示信息
-#   keyword:      命令的关键词，用于匹配用户输入
-#                   必须唯一
-#                   不区分大小写
-#                   不允许含有下划线（FUNC_PARAM_SEPARATOR 的值）
+#   keyword:      命令的关键词，用于匹配用户输入。不符合下面的条件会被忽略
+#                   - 不可为空
+#                   - 必须唯一（不区分大小写）
+#                   - 必须是英文字母和数字的排列组合
 #   cursorOffset: 在插入文本后，光标的偏移量。仅当 type 为 snippet 或 gen-snp 可用。值类型是数组，第一项表示光标开始位置的偏移量，第二项表示光标结束位置的偏移量
 #                   - [0, 0]: 默认值，光标不移动
 #                   - [-2, -2]: 光标回退两个字符
@@ -1670,9 +1670,9 @@ COMMANDS = [
     { enable = true, type = "command", icon = "📝", keyword = "IncreaseHeaderLevel", hint = "提升标题等级", callback = "() => File.editor.stylize.increaseHeaderLevel()" },
     { enable = true, type = "command", icon = "📝", keyword = "DecreaseHeaderLevel", hint = "降低标题等级", callback = "() => File.editor.stylize.decreaseHeaderLevel()" },
     { enable = true, type = "command", icon = "📝", keyword = "Table", hint = "表格", callback = "() => File.editor.tableEdit.insertTable()" },
-    { enable = true, type = "command", icon = "📝", keyword = "BlockMath", hint = "公式块", callback = "() => File.editor.stylize.toggleMathBlock()" },
     { enable = true, type = "command", icon = "📝", keyword = "BlockCode", hint = "代码块", callback = "() => File.editor.stylize.toggleFences()" },
-    { enable = true, type = "command", icon = "📝", keyword = "Blockquote", hint = "引用", callback = "() => File.editor.stylize.toggleIndent('blockquote')" },
+    { enable = true, type = "command", icon = "📝", keyword = "BlockMath", hint = "公式块", callback = "() => File.editor.stylize.toggleMathBlock()" },
+    { enable = true, type = "command", icon = "📝", keyword = "BlockQuote", hint = "引用", callback = "() => File.editor.stylize.toggleIndent('blockquote')" },
     { enable = true, type = "command", icon = "📝", keyword = "OrderedList", hint = "有序列表", callback = "() => File.editor.stylize.toggleIndent('ol')" },
     { enable = true, type = "command", icon = "📝", keyword = "UnorderedList", hint = "无序列表", callback = "() => File.editor.stylize.toggleIndent('ul')" },
     { enable = true, type = "command", icon = "📝", keyword = "Tasklist", hint = "任务列表", callback = "() => File.editor.stylize.toggleIndent('tasklist')" },
@@ -1714,19 +1714,22 @@ COMMANDS = [
     { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineStart", hint = "至行首", callback = "() => File.editor.selection.jumpToLineStart()" },
     { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineEnd", hint = "至行尾", callback = "() => File.editor.selection.jumpToLineEnd()" },
     { enable = true, type = "command", icon = "🧰", keyword = "Help", hint = "帮助", callback = "() => this.call()" },
+    # 文本片段
     { enable = true, type = "snippet", icon = "🧩", keyword = "Br", hint = "换行符", callback = "<br>" },
     { enable = true, type = "snippet", icon = "🧩", keyword = "IMG", hint = "<img>", cursorOffset = [-14, -14], callback = '<img src="" alt="alt" />' },
     { enable = true, type = "snippet", icon = "🧩", keyword = "SnippetExample", hint = "示例片段", callback = "https://github.com/obgnail/typora_plugin" },
     { enable = true, type = "snippet", icon = "🧩", keyword = "cursorOffsetExample", hint = "光标偏移示例", cursorOffset = [-31, -18], callback = "感谢您使用 Typora Plugin，如果本项目帮助到您，欢迎 STAR" },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "alpha", scope = "inline_math", callback = "\\alpha " },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "beta", scope = "inline_math", callback = "\\beta " },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "epsilon", scope = "inline_math", callback = "\\epsilon " },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "rightarrow", scope = "inline_math", callback = "\\rightarrow " },
+    # 动态文本片段
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Datetime", hint = "日期时间", callback = "() => new Date().toLocaleString('chinese', {hour12: false})" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Date", hint = "日期", callback = "() => { let day = new Date(); return `${day.getFullYear()}/${day.getMonth()+1}/${day.getDate()}` }" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Time", hint = "时间", callback = "() => { let day = new Date(); return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}` }" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Timestamp", hint = "时间戳", callback = "() => new Date().getTime().toString()" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Week", hint = "星期", callback = "() => '星期' + '日一二三四五六'.charAt((new Date()).getDay())" },
+    # 行内公式内才可使用
+    { enable = true, type = "snippet", icon = "🧩", keyword = "alpha", hint = "α", scope = "inline_math", callback = "\\alpha " },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "beta", hint = "β", scope = "inline_math", callback = "\\beta " },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "epsilon", hint = "ε", scope = "inline_math", callback = "\\epsilon " },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "rightarrow", hint = "→", scope = "inline_math", callback = "\\rightarrow " },
     # 进阶：命令参数
     #   代码块生成器：输入 /BlockCodeGenerator_go_java_bash 即可同时插入 go、java、bash 三个代码块
     { enable = true, type = "gen-snp", icon = "🌟", keyword = "BlockCodeGenerator", hint = "代码块生成器", callback = "(...langs) => langs.map(l => '```' + l.toLowerCase() + '\\n```').join('\\n\\n')" },
