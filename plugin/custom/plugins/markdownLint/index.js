@@ -116,7 +116,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 worker.postMessage({ action, payload })
             }
             this.checkLint = () => send("check")
-            this.fixLint = (fixInfo = this.errors) => send("lint", { fixInfo })
+            this.fixLint = (fixInfo = this.errors) => send("fix", { fixInfo })
             this.resetConfig = () => worker.postMessage({ action: "assignConfig", payload: { config: this.config.rule_config } })
         }
 

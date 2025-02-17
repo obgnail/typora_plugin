@@ -1,66 +1,62 @@
-const require = self.require;
-const fs = require("fs").promises;
+const require = self.require
+const fs = require("fs").promises
 
-let markdownlint, lint;
-let config = { default: true };
+let lib
+let config = { default: true }
 
 function init({ config }) {
-    initLibrary();
-    assignConfig({ config });
-    console.debug(`markdownLint@${markdownlint.getVersion()} worker is initialized with rules`, config);
+    lazyLoad()
+    assignConfig({ config })
+    console.debug(`markdownLint@${lib.getVersion()} worker is initialized with rules`, config)
 }
 
 function assignConfig({ config: cfg }) {
-    Object.assign(config, cfg);
+    Object.assign(config, cfg)
 }
 
-function initLibrary() {
-    if (!markdownlint) {
-        const lib = require("./markdownlint.min.js")
-        markdownlint = lib.markdownlint
-        lint = markdownlint.promises.markdownlint
+function lazyLoad() {
+    if (!lib) {
+        lib = require("./markdownlint.min.js")
     }
 }
 
 async function checkContent({ fileContent }) {
-    if (!markdownlint) {
-        initLibrary();
+    lazyLoad()
+    const { content } = await lib.lint({ strings: { content: fileContent }, config })
+    return content.sort((a, b) => a.lineNumber - b.lineNumber)
+}
+
+async function fixContent({ fileContent, fixInfo }) {
+    lazyLoad()
+    fixInfo = fixInfo || await checkContent({ fileContent })
+    if (fixInfo && fixInfo.length) {
+        return lib.applyFixes(fileContent, fixInfo)
     }
-    const { content } = await lint({ strings: { content: fileContent }, config });
-    return content.sort((a, b) => a.lineNumber - b.lineNumber);
 }
 
 async function checkPath({ filePath }) {
-    if (!markdownlint) {
-        initLibrary();
-    }
-    const fileContent = await fs.readFile(filePath, "utf-8");
+    const fileContent = await fs.readFile(filePath, "utf-8")
     return checkContent({ fileContent })
 }
 
-async function lintContent({ fileContent, fixInfo }) {
-    const info = fixInfo || await checkContent({ fileContent });
-    if (info && info.length) {
-        return markdownlint.applyFixes(fileContent, info);
-    }
+async function fixPath({ filePath, fixInfo }) {
+    const fileContent = await fs.readFile(filePath, "utf-8")
+    return fixContent({ fileContent, fixInfo })
 }
 
-async function lintPath({ filePath, fixInfo }) {
-    const fileContent = await fs.readFile(filePath, "utf-8");
-    return lintContent({ fileContent, fixInfo });
-}
-
-const linter = { init, assignConfig, checkContent, checkPath, lintContent, lintPath };
+const linter = { init, assignConfig, checkContent, checkPath, fixContent, fixPath }
 
 self.onmessage = async ({ data: { action, payload } }) => {
-    if (!payload) return;
+    if (!payload) return
 
-    const func = linter[action];
+    const func = linter[action]
     if (func) {
-        const result = await func(payload);
-        result && self.postMessage({ action, result });
-        return;
+        const result = await func(payload)
+        if (result) {
+            self.postMessage({ action, result })
+        }
+        return
     }
 
-    console.error("get error action:", action);
+    console.error("get error action:", action)
 }
