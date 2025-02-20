@@ -96,7 +96,6 @@ class updater {
         this.exclude = [
             "./plugin/global/user_styles",
             "./plugin/window_tab/save_tabs.json",
-            "./plugin/global/settings/hotkey.user.toml",
             "./plugin/global/settings/settings.user.toml",
             "./plugin/global/settings/custom_plugin.user.toml",
             "./plugin/custom/plugins/reopenClosedFiles/remain.json",
@@ -180,16 +179,22 @@ class updater {
         return result !== 0
     }
 
-    downloadLatestVersion = async (url = this.latestVersionInfo.zipball_url) => {
+    getDownloadURL = () => {
+        const { assets = [] } = this.latestVersionInfo
+        return assets[0] ? assets[0].browser_download_url : this.latestVersionInfo.zipball_url
+    }
+
+    downloadLatestVersion = async (url = this.getDownloadURL()) => {
         console.log("[3/6] download latest version plugin");
         const resp = await this.utils.fetch(url, this.requestOption);
         return resp.buffer()
     }
 
     unzip = async buffer => {
-        console.log("[4/6] unzip files");
-        const zipFiles = await this.utils.unzip(buffer, this.workDir);
-        this.unzipDir = zipFiles[0];
+        console.log("[4/6] unzip files")
+        const zipFiles = await this.utils.unzip(buffer, this.workDir)
+        const pluginDir = zipFiles.find(f => this.pkgPath.basename(f) === "plugin")
+        this.unzipDir = this.pkgPath.dirname(pluginDir)
     }
 
     excludeFiles = async () => {
@@ -291,4 +296,4 @@ class ProxyGetter {
 
 module.exports = {
     plugin: updaterPlugin
-};
+}
