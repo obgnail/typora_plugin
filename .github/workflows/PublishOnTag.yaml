@@ -1,0 +1,40 @@
+name: PublishOnTag
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Latest Tag
+        id: get_latest_tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Latest Tag: $TAG"
+
+      - name: Package Plugin
+        id: package_plugin
+        run: |
+          PLUGIN_NAME="typora-plugin"
+          PLUGIN_VERSION="${{ steps.get_latest_tag.outputs.tag }}"
+          ZIP_NAME="${PLUGIN_NAME}@v${PLUGIN_VERSION}.zip"
+          echo "Creating zip archive: $ZIP_NAME"
+          zip -r "$ZIP_NAME" plugin/
+          echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+          echo "Zip file created: $ZIP_NAME"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: ${{ steps.package_plugin.outputs.zip_name }}
