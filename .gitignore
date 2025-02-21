@@ -2,7 +2,7 @@
 /plugin/window_tab/save_tabs.json
 /plugin/custom/plugins/reopenClosedFiles/remain.json
 /plugin/custom/plugins/scrollBookmarker/bookmark.json
-/version.json
+/plugin/bin/version.json
 
 /.idea
 /temp
