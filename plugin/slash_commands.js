@@ -36,40 +36,32 @@ class slashCommandsPlugin extends BasePlugin {
     call = () => this._showAllCommands()
 
     _showAllCommands = () => {
-        const getType = type => {
-            switch (type) {
-                case this.TYPE.COMMAND:
-                    return "命令"
-                case this.TYPE.SNIPPET:
-                    return "文段"
-                case this.TYPE.GENERATE_SNIPPET:
-                    return "动态文段"
-                default:
-                    return "未知"
-            }
+        const i18n = {
+            unknown: this.i18n.t("unknown"),
+            types: {
+                [this.TYPE.COMMAND]: this.i18n.t("type.command"),
+                [this.TYPE.SNIPPET]: this.i18n.t("type.snippet"),
+                [this.TYPE.GENERATE_SNIPPET]: this.i18n.t("type.generateSnippet"),
+            },
+            scopes: {
+                [this.SCOPE.PLAIN]: this.i18n.t("scope.plain"),
+                [this.SCOPE.INLINE_MATH]: this.i18n.t("scope.inlineMath"),
+            },
+            editConfigFile:  this.i18n.t("editConfigFile")
         }
-        const getScope = scope => {
-            switch (scope) {
-                case this.SCOPE.PLAIN:
-                    return "普通区域"
-                case this.SCOPE.INLINE_MATH:
-                    return "行内公式"
-                default:
-                    return "未知"
-            }
-        }
-        const trs = [...this.commands.values()]
-            .map(({ type, keyword, scope, hint = "" }) => {
-                return `<tr><td>${keyword}</td><td>${getType(type)}</td><td>${getScope(scope)}</td><td>${hint}</td></tr>`
-            })
-            .join("")
-        const table = `<table><tr><th>关键字</th><th>类型</th><th>可用范围</th><th>提示</th></tr>${trs}</table>`
+        const getType = type => i18n.types[type] || i18n.unknown
+        const getScope = scope => i18n.scopes[scope] || i18n.unknown
+        const getHint = hint => hint || ""
+
+        const th = this.i18n.array(["keyword", "type", "scope", "hint"], "modal.")
+        const trs = [...this.commands.values()].map(c => [c.keyword, getType(c.type), getScope(c.scope), getHint(c.hint)])
+        const table = this.utils.buildTable([th, ...trs])
+
         const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder()
-        const components = [
-            { label: "如需自定义斜杠命令，请 <a>修改配置文件</a>", type: "p", onclick },
-            { label: table, type: "p" }
-        ]
-        this.utils.dialog.modal({ title: "斜杠命令", width: "500px", components })
+        const editConfigLabel = i18n.editConfigFile + " " + '<a class="fa fa-external-link"></a>'
+        const components = [{ label: editConfigLabel, type: "p", onclick }, { label: table, type: "p" }]
+        const op = { title: this.pluginName, components, width: "550px" }
+        this.utils.dialog.modal(op)
     }
 
     _getTextAround = () => {

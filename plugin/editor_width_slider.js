@@ -14,18 +14,23 @@ class editorWidthSliderPlugin extends BasePlugin {
     }
 
     setWidth = async () => {
-        const { eContent, eWrite } = this.utils.entities;
-        const value = parseInt(eWrite.offsetWidth * 100 / eContent.offsetWidth);
-        const oninput = ev => this._setWidth(ev.target.value);
+        const labelWidth = this.i18n.t("widthProportion")
+        const labelRecover = this.i18n.t("recover")
+
+        const { eContent, eWrite } = this.utils.entities
+        const value = parseInt(eWrite.offsetWidth * 100 / eContent.offsetWidth)
+        const oninput = ev => this._setWidth(ev.target.value)
+
         const components = [
-            { label: "宽度百分比", type: "range", min: 30, max: 100, step: 1, value, oninput },
-            { label: "", type: "checkbox", list: [{ label: "还原宽度设置", value: "recover" }] },
-        ];
-        const { response, submit: [width, [checkbox]] } = await this.utils.dialog.modalAsync({ title: "写作区宽度", components });
+            { label: labelWidth, type: "range", min: 30, max: 100, step: 1, value, oninput },
+            { label: "", type: "checkbox", list: [{ label: labelRecover, value: "recover" }] },
+        ]
+        const op = { title: this.pluginName, components }
+        const { response, submit: [width, [checkbox]] } = await this.utils.dialog.modalAsync(op)
         if (response === 1) {
-            this.config.WIDTH_RATIO = checkbox === "recover" ? -1 : width;
+            this.config.WIDTH_RATIO = checkbox === "recover" ? -1 : width
         }
-        await this._setWidth();
+        await this._setWidth()
     }
 
     call = async (action, meta) => await this.setWidth()
@@ -33,4 +38,4 @@ class editorWidthSliderPlugin extends BasePlugin {
 
 module.exports = {
     plugin: editorWidthSliderPlugin,
-};
+}

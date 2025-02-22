@@ -1,11 +1,11 @@
 class ArticleUploaderPlugin extends BasePlugin {
     init = () => {
-        this.staticActions = [
-            { act_name: "CSDN", act_value: "upload_to_csdn" },
-            { act_name: "WordPress", act_value: "upload_to_wordpress" },
-            { act_name: "博客园", act_value: "upload_to_cn_blog" },
-            { act_name: "上传到所有平台", act_value: "upload_to_all_site" },
-        ]
+        this.staticActions = this.i18n.fillActions([
+            { act_value: "upload_to_csdn" },
+            { act_value: "upload_to_wordpress" },
+            { act_value: "upload_to_cn_blog" },
+            { act_value: "upload_to_all_site" },
+        ])
     }
 
     hotkey = () => [
@@ -38,4 +38,4 @@ class ArticleUploaderPlugin extends BasePlugin {
 
 module.exports = {
     plugin: ArticleUploaderPlugin
-};
+}

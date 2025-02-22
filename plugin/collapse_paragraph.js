@@ -5,15 +5,15 @@ class collapseParagraphPlugin extends BasePlugin {
         this.className = "plugin-collapsed-paragraph";
         this.selector = `#write > [mdtype="heading"]`;
         this.paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
-        this.staticActions = [
-            { act_name: "折叠全部章节", act_value: "collapse_all" },
-            { act_name: "展开全部章节", act_value: "expand_all" },
-        ];
+        this.staticActions = this.i18n.fillActions([
+            { act_value: "collapse_all" },
+            { act_value: "expand_all" },
+        ])
     }
 
     process = () => {
         this.utils.runtime.autoSaveConfig(this);
-        this.disableExpandSimpleBlock();  // 选项【显示当前块元素的Markdown源码】会影响本插件，将其禁用
+        this.disableExpandSimpleBlock()
         this.recordCollapseState(false);
         const funcList = this.getFuncList();
         const write = this.utils.entities.eWrite;
@@ -22,7 +22,7 @@ class collapseParagraphPlugin extends BasePlugin {
             if (!paragraph) return;
             const obj = funcList.find(({ filter }) => filter(ev));
             if (!obj) return;
-            if (ev.target.closest('.md-link')) return; // 特殊处理
+            if (ev.target.closest('.md-link')) return;
             document.activeElement.blur();
             const collapsed = paragraph.classList.contains(this.className);
             const list = obj.callback(paragraph);
@@ -41,7 +41,8 @@ class collapseParagraphPlugin extends BasePlugin {
         })
     }
 
-    disableExpandSimpleBlock = () => File.option.expandSimpleBlock = false;
+    // The option `expandSimpleBlock` will affect this plugin, disable it
+    disableExpandSimpleBlock = () => File.option.expandSimpleBlock = false
 
     getTargetHeader = (target, forceLoose = false) => {
         if (this.config.STRICT_MODE && !forceLoose) {
@@ -214,14 +215,14 @@ class collapseParagraphPlugin extends BasePlugin {
         }
         const target = this.getTargetHeader(anchorNode, !this.config.STRICT_MODE_IN_CONTEXT_MENU);
         meta.target = target;
-        return [
-            { act_name: "折叠其他章节", act_value: "collapse_other", act_disabled: !target },
-            { act_name: "折叠/展开当前章节", act_value: "call_current", act_disabled: !target, act_hotkey: genHotkey("COLLAPSE_SINGLE") },
-            { act_name: "折叠/展开当前章节（递归）", act_value: "call_recursive", act_disabled: !target, act_hotkey: genHotkey("COLLAPSE_RECURSIVE") },
-            { act_name: "折叠/展开同级章节", act_value: "call_siblings", act_disabled: !target, act_hotkey: genHotkey("COLLAPSE_SIBLINGS") },
-            { act_name: "折叠/展开全局同级章节", act_value: "call_all_siblings", act_disabled: !target, act_hotkey: genHotkey("COLLAPSE_ALL_SIBLINGS") },
-            { act_name: "启用功能：记住章节折叠状态", act_value: "record_collapse_state", act_state: this.config.RECORD_COLLAPSE },
-        ]
+        return this.i18n.fillActions([
+            { act_value: "collapse_other", act_disabled: !target },
+            { act_value: "call_current", act_disabled: !target, act_hotkey: genHotkey("COLLAPSE_SINGLE") },
+            { act_value: "call_recursive", act_disabled: !target, act_hotkey: genHotkey("COLLAPSE_RECURSIVE") },
+            { act_value: "call_siblings", act_disabled: !target, act_hotkey: genHotkey("COLLAPSE_SIBLINGS") },
+            { act_value: "call_all_siblings", act_disabled: !target, act_hotkey: genHotkey("COLLAPSE_ALL_SIBLINGS") },
+            { act_value: "record_collapse_state", act_state: this.config.RECORD_COLLAPSE },
+        ])
     }
 
     dynamicCall = (type, meta) => {
@@ -263,5 +264,4 @@ class collapseParagraphPlugin extends BasePlugin {
 
 module.exports = {
     plugin: collapseParagraphPlugin
-};
-
+}

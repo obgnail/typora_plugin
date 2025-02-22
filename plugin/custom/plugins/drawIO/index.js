@@ -32,7 +32,7 @@ class drawIOPlugin extends BaseCustomPlugin {
     create = async ($wrap, content) => {
         const graphConfig = this._getConfig(content)
         if (!graphConfig.source && !graphConfig.xml) {
-            throw new Error("缺失必须的配置项: source")
+            throw new Error(this.i18n.t("error.messingSource"))
         }
         await this._setXML(graphConfig)
         $wrap[0].innerHTML = await this._toElement(graphConfig)
@@ -56,8 +56,8 @@ class drawIOPlugin extends BaseCustomPlugin {
                 graphConfig.xml = await this.utils.Package.Fs.promises.readFile(source, "utf-8")
             }
         } catch (e) {
-            const from = isNetwork ? "网络" : "本地"
-            throw new Error(`从${from}读取.drawio源文件失败: ${source}\n\n${e}`)
+            const msg = this.i18n.t(isNetwork ? "error.getFileFailedFromNetwork" : "error.getFileFailedFromLocal")
+            throw new Error(`${msg}: ${source}\n\n${e}`)
         }
     }
 

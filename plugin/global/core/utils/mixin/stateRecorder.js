@@ -1,7 +1,8 @@
 /**
- * 动态注册、动态注销元素状态记录器（仅当window_tab插件启用时有效）
- * 功能：在用户切换标签页前记录元素的状态，等用户切换回来时恢复元素的状态
- * 比如：【章节折叠】功能：需要在用户切换标签页前记录有哪些章节被折叠了，等用户切换回来后需要把章节自动折叠回去，保持前后一致。
+ * Dynamically register and unregister element state recorders (only effective when the window_tab plugin is enabled).
+ * Functionality: Record the state of elements before the user switches tabs, and restore the state of the elements when the user switches back.
+ * For example: plugin `collapse_paragraph`: It is necessary to record which chapters are folded before the user switches tabs,
+ *              and then automatically fold the chapters back after the user switches back to maintain consistency.
  */
 class stateRecorder {
     constructor(utils) {
@@ -10,11 +11,12 @@ class stateRecorder {
     }
 
     /**
-     * @param {string} name: 取个名字
-     * @param {string} selector: 通过选择器找到要你想记录状态的元素们
-     * @param {function(Element): Object} stateGetter: 记录目标元素的状态。Element就是selector找到的元素，返回你想记录的标签的状态，返回值可以是任何类型
-     * @param {function(Element, state): Object} stateRestorer: 为元素恢复状态。state就是stateGetter的返回值
-     * @param {function(): Object} finalFunc: 最后执行的函数
+     * @param {string} name: Give it a name.
+     * @param {string} selector: Find the elements whose state you want to record using a selector.
+     * @param {function(Element): Object} stateGetter: Record the state of the target element. Element is the element found by the selector.
+     *                                                 Return the state of the tag you want to record. The return value can be of any type.
+     * @param {function(Element, state): Object} stateRestorer: Restore the state for the element. State is the return value of stateGetter.
+     * @param {function(): Object} finalFunc: The function to execute last.
      */
     register = (name, selector, stateGetter, stateRestorer, finalFunc) => {
         const obj = { selector, stateGetter, stateRestorer, finalFunc, collections: new Map() };
@@ -22,7 +24,7 @@ class stateRecorder {
     }
     unregister = recorderName => this.recorders.delete(recorderName);
 
-    // 手动触发
+    // Manually triggered
     collect = name => {
         const filepath = this.utils.getFilePath();
         for (const [recorderName, recorder] of this.recorders.entries()) {
@@ -54,7 +56,6 @@ class stateRecorder {
         }
     }
 
-    // 手动获取
     getState = (name, filepath) => {
         const recorder = this.recorders.get(name);
         if (!recorder) return new Map();
@@ -65,13 +66,11 @@ class stateRecorder {
         if (map) return map
     }
 
-    // 手动删除
     deleteState = (name, filepath, idx) => {
         const map = this.getState(name, filepath);
         map && map.delete(idx);
     }
 
-    // 手动设置
     setState = (name, collections) => {
         const recorder = this.recorders.get(name);
         if (recorder) {

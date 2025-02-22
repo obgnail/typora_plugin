@@ -17,9 +17,15 @@ class updaterPlugin extends BasePlugin {
             await this.manualUpdate()
             return
         }
+
         const proxy = await this.getProxy()
-        const components = [{ label: "代理 URL", type: "input", info: "为空则不使用代理", value: proxy, placeholder: "http://127.0.0.1:7890" }]
-        const { response, submit: [proxy_] } = await this.utils.dialog.modalAsync({ title: "网络代理", components })
+
+        const title = this.i18n.t("networkProxy")
+        const label = this.i18n.t("proxyUrl")
+        const info = this.i18n.t("proxyUrlHint")
+        const components = [{ type: "input", value: proxy, label, info, placeholder: "http://127.0.0.1:7890" }]
+        const op = { title, components }
+        const { response, submit: [proxy_] } = await this.utils.dialog.modalAsync(op)
         if (response === 1) {
             await this.manualUpdate(proxy_)
         }
@@ -32,36 +38,47 @@ class updaterPlugin extends BasePlugin {
     }
 
     manualUpdate = async proxy => {
-        this.utils.notification.show("自动升级中，请稍等");
-        const timeout = 3 * 60 * 1000;
-        const updater = await this.getUpdater(proxy, timeout);
-        const getState = updater.runWithState();
-        const isDone = () => getState()["done"];
-        const notTimeout = await this.utils.progressBar.fake({ timeout, isDone });
-        let { done, state, info } = getState();
-        if (!notTimeout || !done || !state) {
-            state = new Error("timeout");
+        const timeout = 3 * 60 * 1000
+        const i18n = {
+            pleaseWait: this.i18n.t("update.pleaseWait"),
+            success: this.i18n.t("update.success"),
+            noNeed: this.i18n.t("update.noNeed"),
+            failed: this.i18n.t("update.failed"),
+            currentVersion: this.i18n.t("update.currentVersionInfo"),
+            tryAgain: this.i18n.t("update.tryAgain"),
+            unknownError: this.i18n.t("update.unknownError"),
         }
 
-        let title, components, needRedirect;
-        if (state === "UPDATED") {
-            title = "更新成功，请重启 Typora";
-            components = [{ type: "textarea", label: "当前版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
-        } else if (state === "NO_NEED") {
-            title = "已是最新版，无需更新";
-            components = [{ type: "textarea", label: "当前版本信息", rows: 15, content: JSON.stringify(info, null, "\t") }];
-        } else if (state instanceof Error) {
-            title = "更新失败";
-            components = [{ type: "span", label: "更新失败，建议您稍后重试或手动更新。报错信息如下：" }, { type: "span", label: this.utils.escape(state.stack) }];
-            needRedirect = true;
-        } else {
-            title = "更新失败";
-            components = [{ type: "span", label: "发生未知错误，请向开发者反馈" }];
-            needRedirect = true;
+        this.utils.notification.show(i18n.pleaseWait)
+        const updater = await this.getUpdater(proxy, timeout)
+        const getState = updater.runWithState()
+        const isDone = () => getState()["done"]
+        const notTimeout = await this.utils.progressBar.fake({ timeout, isDone })
+
+        let { done, state, info } = getState()
+        if (!notTimeout || !done || !state) {
+            state = new Error("timeout")
         }
-        const { response } = await this.utils.dialog.modalAsync({ title, components, width: "600px" });
+
+        let title, components, needRedirect
+        if (state === "UPDATED") {
+            title = i18n.success
+            components = [{ type: "textarea", label: i18n.currentVersion, rows: 15, content: JSON.stringify(info, null, "\t") }]
+        } else if (state === "NO_NEED") {
+            title = i18n.noNeed
+            components = [{ type: "textarea", label: i18n.currentVersion, rows: 15, content: JSON.stringify(info, null, "\t") }]
+        } else if (state instanceof Error) {
+            title = i18n.failed
+            components = [{ type: "span", label: i18n.tryAgain }, { type: "span", label: this.utils.escape(state.stack) }]
+            needRedirect = true
+        } else {
+            title = i18n.failed
+            components = [{ type: "span", label: i18n.unknownError }]
+            needRedirect = true
+        }
+        const { response } = await this.utils.dialog.modalAsync({ title, components, width: "600px" })
         if (response === 1 && needRedirect) {
-            this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest");
+            this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
         }
     }
 
@@ -119,7 +136,7 @@ class updater {
         return "UPDATED";
     }
 
-    /** 强制更新：跳过检查，直接使用url更新 */
+    /** Force update: skip the check and directly update using the URL. */
     force = async url => {
         await this.prepare();
         const buffer = await this.downloadLatestVersion(url);
@@ -163,7 +180,8 @@ class updater {
         }
         const _getCurrentVersion = async () => {
             try {
-                if (await this.utils.existPath(this.versionFile)) {
+                const exist = await this.utils.existPath(this.versionFile)
+                if (exist) {
                     return this.pkgFsExtra.readJson(this.versionFile);
                 }
             } catch (e) {

@@ -10,8 +10,9 @@ class toolbarPlugin extends BasePlugin {
     styleTemplate = () => ({ topPercent: parseInt(this.config.TOOLBAR_TOP_PERCENT) + "%" })
 
     html = () => {
-        const tools = Array.from(this.toolController.tools.values(), t => `${t.name()}：${t.translate()}`)
-        const title = "支持：\n" + tools.join("\n")
+        const title = [...this.toolController.tools.values()]
+            .map(t => `${t.name()}：${t.translate()}`)
+            .join("\n")
         return `
             <div id="plugin-toolbar" class="plugin-common-modal plugin-common-hidden">
                 <div id="plugin-toolbar-input"><input placeholder="plu multi" title="${title}"></div>
@@ -154,9 +155,7 @@ class baseToolInterface {
     translate = () => ""
     icon = () => "🎯"
     init = () => null
-    // 要么返回 []string
-    // 要么返回 [{ showName:"", fixedName:"", meta:"" }]
-    search = async input => null
+    search = async input => null  // Return []string or [{ showName:"", fixedName:"", meta:"" }]
     callback = (fixedName, meta) => null
     baseSearch = (input, list, searchFields) => {
         if (input === "") return list;
@@ -173,6 +172,7 @@ class toolController {
     constructor(plugin) {
         this.plugin = plugin;
         this.utils = plugin.utils;
+        this.i18n = plugin.i18n;
         this.tools = new Map();  // map[short]tool
         this.anchorNode = null;
     }
@@ -180,6 +180,7 @@ class toolController {
     register = tool => {
         tool.controller = this;
         tool.utils = this.utils;
+        tool.i18n = this.i18n;
         tool.init();
 
         const short = tool.name();
@@ -226,7 +227,6 @@ class toolController {
         return result
     }
 
-    // 差集
     difference = (array1, array2) => {
         if (!Array.isArray(array1) || !Array.isArray(array2) || array1.length === 0 || array2.length === 0) return array1
 
@@ -304,7 +304,7 @@ class toolController {
 
 class tabTool extends baseToolInterface {
     name = () => "tab"
-    translate = () => "切换标签页"
+    translate = () => this.i18n.t("tool.tab")
     icon = () => "📖"
     init = () => {
         const callback = () => this.windowTabPlugin = this.utils.getPlugin("window_tab")
@@ -321,13 +321,13 @@ class tabTool extends baseToolInterface {
 
 class pluginTool extends baseToolInterface {
     name = () => "plu"
-    translate = () => "使用插件"
+    translate = () => this.i18n.t("tool.plu")
     icon = () => "🔌"
     collectAll = () => {
         return Object.entries(this.utils.getAllPlugins())
             .filter(([_, plugin]) => plugin.call)
             .flatMap(([fixedName, plugin]) => {
-                const chineseName = plugin.config.NAME
+                const chineseName = plugin.pluginName
                 const staticActions = plugin.staticActions || []
                 const dynamicActions = this.utils.updatePluginDynamicActions(fixedName, this.controller.anchorNode, true) || []
                 const actions = [...staticActions, ...dynamicActions]
@@ -353,7 +353,7 @@ class pluginTool extends baseToolInterface {
 
 class recentFileTool extends baseToolInterface {
     name = () => "his"
-    translate = () => "打开最近文件"
+    translate = () => this.i18n.t("tool.his")
     icon = () => "🕖"
     getRecentFile = async () => {
         if (!File.isNode) return
@@ -379,7 +379,7 @@ class recentFileTool extends baseToolInterface {
         if (!files || files.length === 0) return;
 
         const current = this.utils.getFilePath();
-        files = files.filter(file => file.fixedName !== current); // 小细节：去掉当前的文件
+        files = files.filter(file => file.fixedName !== current); // remove the current file
         return this.baseSearch(input, files, ["showName"])
     }
     callback = (fixedName, meta) => {
@@ -393,7 +393,7 @@ class recentFileTool extends baseToolInterface {
 
 class operationTool extends baseToolInterface {
     name = () => "ops"
-    translate = () => "执行操作"
+    translate = () => this.i18n.t("tool.ops")
     icon = () => "🔨"
     init = () => {
         const explorer = () => this.utils.showInFinder(this.utils.getFilePath())
@@ -407,14 +407,17 @@ class operationTool extends baseToolInterface {
         }
         const openFileInNewWindow = () => File.editor.library.openFileInNewWindow(this.utils.getFilePath(), false)
         this.ops = [
-            { showName: "在资源管理器中打开", fixedName: "explorer", callback: explorer },
-            { showName: "复制文件路径", fixedName: "copyPath", callback: copyPath },
-            { showName: "偏好设置", fixedName: "togglePreferencePanel", callback: togglePreferencePanel },
-            { showName: "窗口置顶", fixedName: "togglePinWindow", callback: togglePinWindow },
-            { showName: "在新窗口中打开", fixedName: "openFileInNewWindow", callback: openFileInNewWindow },
-            { showName: "修改插件配置", fixedName: "openSettingFolder", callback: openSettingFolder },
+            { fixedName: "explorer", callback: explorer },
+            { fixedName: "copyPath", callback: copyPath },
+            { fixedName: "togglePreferencePanel", callback: togglePreferencePanel },
+            { fixedName: "togglePinWindow", callback: togglePinWindow },
+            { fixedName: "openFileInNewWindow", callback: openFileInNewWindow },
+            { fixedName: "openSettingFolder", callback: openSettingFolder },
         ]
-        this.ops.forEach(op => op.showName += ` - ${op.fixedName}`)
+        this.ops.forEach(op => {
+            const name = this.i18n.t("tool.ops." + op.fixedName)
+            op.showName = `${name} - ${op.fixedName}`
+        })
     }
     search = async input => this.baseSearch(input, this.ops, ["showName"])
     callback = (fixedName, meta) => {
@@ -425,7 +428,7 @@ class operationTool extends baseToolInterface {
 
 class modeTool extends baseToolInterface {
     name = () => "mode"
-    translate = () => "切换模式"
+    translate = () => this.i18n.t("tool.mode")
     icon = () => "🌗"
     init = () => {
         const outlineView = () => {
@@ -433,10 +436,10 @@ class modeTool extends baseToolInterface {
             File.isNode && ClientCommand.refreshViewMenu();
         }
         this.modes = [
-            { showName: "大纲视图", fixedName: "outlineView", callback: outlineView },
-            { showName: "源代码模式", fixedName: "sourceMode", callback: () => File.toggleSourceMode() },
-            { showName: "专注模式", fixedName: "focusMode", callback: () => File.editor.toggleFocusMode() },
-            { showName: "打字机模式", fixedName: "typewriterMode", callback: () => File.editor.toggleTypeWriterMode() },
+            { fixedName: "outlineView", callback: outlineView },
+            { fixedName: "sourceMode", callback: () => File.toggleSourceMode() },
+            { fixedName: "focusMode", callback: () => File.editor.toggleFocusMode() },
+            { fixedName: "typewriterMode", callback: () => File.editor.toggleTypeWriterMode() },
         ]
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             const readonly = this.utils.getPlugin("read_only");
@@ -445,14 +448,17 @@ class modeTool extends baseToolInterface {
             const noImage = this.utils.getPlugin("no_image");
             const image = this.utils.getCustomPlugin("imageReviewer");
 
-            readonly && this.modes.push({ showName: "只读模式", fixedName: "readOnlyMode", callback: () => readonly.call() });
-            blur && this.modes.push({ showName: "模糊模式", fixedName: "blurMode", callback: () => blur.call() });
-            dark && this.modes.push({ showName: "夜间模式", fixedName: "dark", callback: () => dark.call() });
-            image && this.modes.push({ showName: "看图模式", fixedName: "imageReviewer", callback: () => image.callback() });
-            noImage && this.modes.push({ showName: "无图模式", fixedName: "no_image", callback: () => noImage.call() });
-            this.modes.push({ showName: "调试模式", fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools") });
+            readonly && this.modes.push({ fixedName: "readOnlyMode", callback: () => readonly.call() });
+            blur && this.modes.push({ fixedName: "blurMode", callback: () => blur.call() });
+            dark && this.modes.push({ fixedName: "dark", callback: () => dark.call() });
+            image && this.modes.push({ fixedName: "imageReviewer", callback: () => image.callback() });
+            noImage && this.modes.push({ fixedName: "no_image", callback: () => noImage.call() });
+            this.modes.push({ fixedName: "debugMode", callback: () => JSBridge.invoke("window.toggleDevTools") });
 
-            this.modes.forEach(mode => mode.showName += ` - ${mode.fixedName}`);
+            this.modes.forEach(mode => {
+                const name = this.i18n.t("tool.mode." + mode.fixedName)
+                mode.showName = `${name} - ${mode.fixedName}`
+            });
         })
     }
     search = async input => this.baseSearch(input, this.modes, ["showName"])
@@ -464,7 +470,7 @@ class modeTool extends baseToolInterface {
 
 class themeTool extends baseToolInterface {
     name = () => "theme"
-    translate = () => "更换主题"
+    translate = () => this.i18n.t("tool.theme")
     icon = () => "🎨"
     setThemeForever = theme => ClientCommand.setTheme(theme);
     // setThemeTemp = theme => File.setTheme(theme)
@@ -478,7 +484,7 @@ class themeTool extends baseToolInterface {
 
 class outlineTool extends baseToolInterface {
     name = () => "out"
-    translate = () => "文档大纲"
+    translate = () => this.i18n.t("tool.out")
     icon = () => "🧷"
     getAll = () => {
         const headers = File.editor.nodeMap.toc && File.editor.nodeMap.toc.headers
@@ -496,7 +502,7 @@ class outlineTool extends baseToolInterface {
 
 class functionTool extends baseToolInterface {
     name = () => "func"
-    translate = () => "功能列表"
+    translate = () => this.i18n.t("tool.func")
     icon = () => "💡"
     search = async input => {
         const blank = "\u00A0".repeat(3)
@@ -515,7 +521,7 @@ class functionTool extends baseToolInterface {
 
 class mixTool extends baseToolInterface {
     name = () => "all"
-    translate = () => "混合查找"
+    translate = () => this.i18n.t("tool.all")
     icon = () => "🔱"
     search = async input => {
         const toolName = this.name()
@@ -548,4 +554,3 @@ module.exports = {
     plugin: toolbarPlugin,
     baseToolInterface,
 }
-

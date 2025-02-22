@@ -13,8 +13,8 @@
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "Kanban"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -111,8 +111,8 @@ use strict
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "Chat"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  在右键菜单中隐藏此插件
@@ -192,8 +192,8 @@ nickname1: 支持使用 yaml 格式的 front matter 修改配置（就和 markdo
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "Timeline"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -273,8 +273,8 @@ TEMPLATE = """```timeline
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "Echarts"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -360,8 +360,8 @@ option = {
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "Chart"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -432,8 +432,8 @@ config = {
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "WaveDrom"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -499,8 +499,8 @@ TEMPLATE = """```wavedrom
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "Calendar"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -563,8 +563,8 @@ calendar.createEvents([
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "ABC"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -621,8 +621,8 @@ G2 G2|A2 A2|B2 B2|c3 z|G2 G2|A2 A2|B2 G2|c3 z||
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "DrawIO"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -691,8 +691,8 @@ graphConfig = {
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "Marp"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -753,8 +753,8 @@ Split pages by horizontal ruler (`---`). It's very simple! :satisfied:
 #     3. 此插件兼容原生功能
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "Callouts"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -826,7 +826,7 @@ template = "> [!NOTE]\n> Support Type: TIP、BUG、INFO、NOTE、QUOTE、EXAMPLE
 enable = true
 
 # 插件的名称，将显示在 Typora 的插件列表中
-name = "文件模板"
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -873,9 +873,8 @@ template_variables = [
 
 # ------------------- 内置的模板变量 -------------------
 #   {{ formatDate(format, locale) }}    当前格式化的日期时间
-#       参数 1: format: 时间格式化字符串。支持：yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a
-#       参数 2: locale: 语言环境，支持 cn、en (默认 en)
-#
+#       参数 1: format: 时间格式化字符串
+#       参数 2: locale: 语言环境
 #   {{ datetime }}             当前日期时间。等同于 {{ formatDate('yyyy-MM-dd HH:mm:ss') }}
 #   {{ date }}                 当前日期。等同于 {{ formatDate('yyyy-MM-dd') }}
 #   {{ time }}                 当前时间。等同于 {{ formatDate('HH:mm:ss') }}
@@ -885,7 +884,6 @@ template_variables = [
 #       参数 1: offset: 整数，表示天数的偏移量 (正数表示未来，负数表示过去)
 #       参数 2: format: 时间格式化字符串
 #       参数 3: locale: 语言环境，支持 cn、en (默认 en)
-#
 #   {{ yesterday }}            昨天日期。等同于 {{ dateOffset(-1) }}
 #   {{ tomorrow }}             明天日期。等同于 {{ dateOffset(1) }}
 #   {{ random }}               范围为 0-1 的随机浮点数
@@ -953,8 +951,8 @@ tags:
 # 注意：若 Typora 的配置项【匹配括号和引号】为 false，则此插件自动禁用
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "中文符号自动补全"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -1029,8 +1027,8 @@ auto_swap_symbols = [
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "大纲目录"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -1082,8 +1080,8 @@ show_name = { fence = "Fence", image = "Figure", table = "Table", link = "Link",
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "资源管理"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -1139,8 +1137,8 @@ ignore_img_html_element = false
 #   false: 禁用插件
 enable = false
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "书签管理"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -1176,8 +1174,8 @@ auto_popup_modal = true
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "图片查看"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -1410,8 +1408,8 @@ hotkey_function = [
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "格式规范检测"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -1483,8 +1481,8 @@ error_color = "#BE9117"
 #   false: 禁用插件
 enable = false
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "打开上次退出时尚未关闭的标签页"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -1516,8 +1514,8 @@ auto_reopen_when_init = true
 #   false: 禁用插件
 enable = true
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "快速按钮"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -1614,8 +1612,8 @@ buttons = [
 #   false: 禁用插件
 enable = false
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "并列显示活动块"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口
@@ -1645,8 +1643,8 @@ hotkey = ""
 #   注意： 【文件的 front matter 中的 typora-root-url 参数】的优先级大于【此插件】。也就是说：若文件的 front matter 显式设置了 typora-root-url，那么此插件在该文件失效
 enable = false
 
-# 插件的名称，用于在插件列表中标识此插件
-name = "重定向本地资源根目录"
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+name = ""
 
 # 是否在右键菜单中隐藏此插件的入口
 #   true:  隐藏右键菜单入口

@@ -14,7 +14,8 @@ class darkModePlugin extends BasePlugin {
 
     toggleDarkMode = () => {
         this._toggleDarkMode(!this.isDarkMode)
-        this.utils.notification.show(this.isDarkMode ? "夜间模式已启用" : "夜间模式已关闭")
+        const msg = this.i18n.t(this.isDarkMode ? "modeEnabled" : "modeDisabled")
+        this.utils.notification.show(msg)
     }
 
     _toggleDarkMode = enable => {

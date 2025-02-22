@@ -9,12 +9,12 @@ class searchMultiPlugin extends BasePlugin {
     html = () => `
         <div id="plugin-search-multi" class="plugin-common-modal plugin-common-hidden">
             <div id="plugin-search-multi-input">
-                <input type="text" placeholder="多元文件搜索">
+                <input type="text" placeholder="${this.pluginName}">
                 <div class="plugin-search-multi-btn-group">
-                    <span class="option-btn" action="searchGrammarModal" ty-hint="搜索语法">
+                    <span class="option-btn" action="searchGrammarModal" ty-hint="${this.i18n.t('grammar')}">
                         <div class="ion-information-circled"></div>
                     </span>
-                    <span class="option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" action="toggleCaseSensitive" ty-hint="区分大小写">
+                    <span class="option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" action="toggleCaseSensitive" ty-hint="${this.i18n.t('caseSensitive')}">
                         <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
                     </span>
                 </div>
@@ -23,12 +23,12 @@ class searchMultiPlugin extends BasePlugin {
             <div class="plugin-highlight-multi-result plugin-common-hidden"></div>
 
             <div class="plugin-search-multi-result plugin-common-hidden">
-                <div class="search-result-title">匹配的文件：<span>0</span></div>
+                <div class="search-result-title">${this.i18n.t('matchedFiles')}：<span>0</span></div>
                 <div class="search-result-list"></div>
             </div>
 
             <div class="plugin-search-multi-info-item plugin-common-hidden">
-                <div class="plugin-search-multi-info" data-lg="Front">Searching</div>
+                <div class="plugin-search-multi-info" data-lg="Front">${this.i18n.t('searching')}</div>
                 <div class="typora-search-spinner">
                     <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
                 </div>
@@ -149,11 +149,14 @@ class searchMultiPlugin extends BasePlugin {
             if (tokens.length === 0) return
 
             const hitGroups = this.highlighter.doSearch(tokens)
+            const hint = this.i18n.t("highlightHint")
             const itemList = Object.entries(hitGroups).map(([cls, { name, hits }]) => {
                 const div = document.createElement("div")
                 div.className = `plugin-highlight-multi-result-item ${cls}`
                 div.dataset.pos = -1
-                div.setAttribute("ty-hint", "左键下一个；右键上一个")
+                if (!this.config.REMOVE_BUTTON_HINT) {
+                    div.setAttribute("ty-hint", hint)
+                }
                 div.appendChild(document.createTextNode(`${name} (${hits.length})`))
                 return div
             })
@@ -282,16 +285,6 @@ class QualifierMixin {
         "<=": (a, b) => a <= b,
         ">": (a, b) => a > b,
         "<": (a, b) => a < b,
-    }
-
-    static OPERATOR_NAME = {
-        ":": "包含",
-        "=": "为",
-        "!=": "不为",
-        ">=": "大于等于",
-        "<=": "小于等于",
-        ">": "大于",
-        "<": "小于",
     }
 
     static UNITS = {
@@ -460,6 +453,7 @@ class Searcher {
         this.MIXIN = QualifierMixin
         this.config = plugin.config
         this.utils = plugin.utils
+        this.i18n = plugin.i18n
         this.parser = plugin.utils.searchStringParser
         this.qualifiers = new Map()
     }
@@ -535,32 +529,32 @@ class Searcher {
             boolean: { preprocess: resolveBoolean, validate: isBoolean, cast: toBoolean },
             stringArray: { match_keyword: arrayCompare, match_regexp: arrayRegexp },
         }
-        const buildQualifier = (scope, name, is_meta, need_read_file, cost, anchor, process) => ({
-            scope, name, is_meta, need_read_file, cost, anchor, query: QUERY[scope], ...process,
+        const buildQualifier = (scope, is_meta, need_read_file, cost, anchor, process) => ({
+            scope, name: this.i18n.t(`scope.${scope}`), is_meta, need_read_file, cost, anchor, query: QUERY[scope], ...process,
         })
         return [
-            buildQualifier("default", "内容或路径", false, true, 2, write),
-            buildQualifier("path", "路径", true, false, 1, none),
-            buildQualifier("dir", "文件所属目录", true, false, 1, none),
-            buildQualifier("file", "文件名", true, false, 1, none),
-            buildQualifier("name", "文件名(无扩展名)", true, false, 1, none),
-            buildQualifier("ext", "扩展名", true, false, 1, none),
-            buildQualifier("content", "内容", false, true, 2, write),
-            buildQualifier("frontmatter", "FrontMatter", false, true, 3, 'pre[mdtype="meta_block"]'),
-            buildQualifier("size", "文件大小", true, false, 1, PROCESS.size, none),
-            buildQualifier("birthtime", "创建时间", true, false, 1, none, PROCESS.date),
-            buildQualifier("mtime", "修改时间", true, false, 1, none, PROCESS.date),
-            buildQualifier("atime", "访问时间", true, false, 1, none, PROCESS.date),
-            buildQualifier("linenum", "行数", true, true, 2, none, PROCESS.number),
-            buildQualifier("charnum", "字符数", true, true, 2, none, PROCESS.number),
-            buildQualifier("chinesenum", "中文字符数", true, true, 2, none, PROCESS.number),
-            buildQualifier("crlf", "换行符为CRLF", true, true, 2, none, PROCESS.boolean),
-            buildQualifier("hasimage", "包含图片", true, true, 2, none, PROCESS.boolean),
-            buildQualifier("hasimg", "包含IMG元素", true, true, 2, none, PROCESS.boolean),
-            buildQualifier("haschinese", "包含中文字符", true, true, 2, none, PROCESS.boolean),
-            buildQualifier("hasemoji", "包含表情字符", true, true, 2, none, PROCESS.boolean),
-            buildQualifier("hasinvisiblechar", "包含不可见字符", true, true, 2, none, PROCESS.boolean),
-            buildQualifier("line", "某行", false, true, 2, write, PROCESS.stringArray),
+            buildQualifier("default", false, true, 2, write),
+            buildQualifier("path", true, false, 1, none),
+            buildQualifier("dir", true, false, 1, none),
+            buildQualifier("file", true, false, 1, none),
+            buildQualifier("name", true, false, 1, none),
+            buildQualifier("ext", true, false, 1, none),
+            buildQualifier("content", false, true, 2, write),
+            buildQualifier("frontmatter", false, true, 3, 'pre[mdtype="meta_block"]'),
+            buildQualifier("size", true, false, 1, none, PROCESS.size),
+            buildQualifier("birthtime", true, false, 1, none, PROCESS.date),
+            buildQualifier("mtime", true, false, 1, none, PROCESS.date),
+            buildQualifier("atime", true, false, 1, none, PROCESS.date),
+            buildQualifier("linenum", true, true, 2, none, PROCESS.number),
+            buildQualifier("charnum", true, true, 2, none, PROCESS.number),
+            buildQualifier("chinesenum", true, true, 2, none, PROCESS.number),
+            buildQualifier("crlf", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("hasimage", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("hasimg", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("haschinese", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("hasemoji", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("hasinvisiblechar", true, true, 2, none, PROCESS.boolean),
+            buildQualifier("line", false, true, 2, write, PROCESS.stringArray),
         ]
     }
 
@@ -698,9 +692,9 @@ class Searcher {
             }
         }
 
-        const buildQualifier = (scope, name, anchor, parser, filter, transformer) => ({
+        const buildQualifier = (scope, anchor, parser, filter, transformer) => ({
             scope,
-            name,
+            name: this.i18n.t(`scope.${scope}`),
             anchor,
             is_meta: false,
             need_read_file: true,
@@ -715,34 +709,34 @@ class Searcher {
         })
 
         return [
-            buildQualifier("blockcode", "代码块", "pre.md-fences", PARSER.block, FILTER.is("fence"), TRANSFORMER.infoAndContent),
-            buildQualifier("blockcodelang", "代码块语言", ".ty-cm-lang-input", PARSER.block, FILTER.is("fence"), TRANSFORMER.info),
-            buildQualifier("blockcodebody", "代码块内容", "pre.md-fences", PARSER.block, FILTER.is("fence"), TRANSFORMER.content),
-            buildQualifier("blockcodeline", "代码块的某行", "pre.md-fences", PARSER.block, FILTER.is("fence"), TRANSFORMER.contentLine),
-            buildQualifier("blockhtml", "HTML块", ".md-html-inline,.md-htmlblock", PARSER.block, FILTER.is("html_block"), TRANSFORMER.content),
-            buildQualifier("blockquote", "引用块", '[mdtype="blockquote"]', PARSER.block, FILTER.wrappedBy("blockquote"), TRANSFORMER.content),
-            buildQualifier("table", "表格", '[mdtype="table"]', PARSER.block, FILTER.wrappedBy("table"), TRANSFORMER.content),
-            buildQualifier("thead", "表头", '[mdtype="table"] thead', PARSER.block, FILTER.wrappedBy("thead"), TRANSFORMER.content),
-            buildQualifier("tbody", "表体", '[mdtype="table"] tbody', PARSER.block, FILTER.wrappedBy("tbody"), TRANSFORMER.content),
-            buildQualifier("ol", "有序列表", 'ol[mdtype="list"]', PARSER.block, FILTER.wrappedBy("ordered_list"), TRANSFORMER.content),
-            buildQualifier("ul", "无序列表", 'ul[mdtype="list"]', PARSER.block, FILTER.wrappedBy("bullet_list"), TRANSFORMER.content),
-            buildQualifier("task", "任务列表", ".task-list-item", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(0)),
-            buildQualifier("taskdone", "已完成任务", ".task-list-item.task-list-done", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(1)),
-            buildQualifier("tasktodo", "未完成任务", ".task-list-item.task-list-not-done", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(-1)),
-            buildQualifier("head", "标题", '[mdtype="heading"]', PARSER.block, FILTER.wrappedBy("heading"), TRANSFORMER.content),
-            buildQualifier("h1", "一级标题", 'h1[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h1"), TRANSFORMER.content),
-            buildQualifier("h2", "二级标题", 'h2[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h2"), TRANSFORMER.content),
-            buildQualifier("h3", "三级标题", 'h3[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h3"), TRANSFORMER.content),
-            buildQualifier("h4", "四级标题", 'h4[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h4"), TRANSFORMER.content),
-            buildQualifier("h5", "五级标题", 'h5[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h5"), TRANSFORMER.content),
-            buildQualifier("h6", "六级标题", 'h6[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h6"), TRANSFORMER.content),
-            buildQualifier("highlight", "高亮文字", '[md-inline="highlight"]', PARSER.block, FILTER.is("text"), TRANSFORMER.regexpContent(/==(.+)==/g)),
-            buildQualifier("image", "图片", '[md-inline="image"]', PARSER.inline, FILTER.is("image"), TRANSFORMER.attrAndContent),
-            buildQualifier("code", "代码", '[md-inline="code"]', PARSER.inline, FILTER.is("code_inline"), TRANSFORMER.content),
-            buildQualifier("link", "链接", '[md-inline="link"]', PARSER.inline, FILTER.wrappedBy("link"), TRANSFORMER.attrAndContent),
-            buildQualifier("strong", "加粗文字", '[md-inline="strong"]', PARSER.inline, FILTER.wrappedBy("strong"), TRANSFORMER.content),
-            buildQualifier("em", "斜体文字", '[md-inline="em"]', PARSER.inline, FILTER.wrappedBy("em"), TRANSFORMER.content),
-            buildQualifier("del", "删除线文字", '[md-inline="del"]', PARSER.inline, FILTER.wrappedBy("s"), TRANSFORMER.content),
+            buildQualifier("blockcode", "pre.md-fences", PARSER.block, FILTER.is("fence"), TRANSFORMER.infoAndContent),
+            buildQualifier("blockcodelang", ".ty-cm-lang-input", PARSER.block, FILTER.is("fence"), TRANSFORMER.info),
+            buildQualifier("blockcodebody", "pre.md-fences", PARSER.block, FILTER.is("fence"), TRANSFORMER.content),
+            buildQualifier("blockcodeline", "pre.md-fences", PARSER.block, FILTER.is("fence"), TRANSFORMER.contentLine),
+            buildQualifier("blockhtml", ".md-html-inline,.md-htmlblock", PARSER.block, FILTER.is("html_block"), TRANSFORMER.content),
+            buildQualifier("blockquote", '[mdtype="blockquote"]', PARSER.block, FILTER.wrappedBy("blockquote"), TRANSFORMER.content),
+            buildQualifier("table", '[mdtype="table"]', PARSER.block, FILTER.wrappedBy("table"), TRANSFORMER.content),
+            buildQualifier("thead", '[mdtype="table"] thead', PARSER.block, FILTER.wrappedBy("thead"), TRANSFORMER.content),
+            buildQualifier("tbody", '[mdtype="table"] tbody', PARSER.block, FILTER.wrappedBy("tbody"), TRANSFORMER.content),
+            buildQualifier("ol", 'ol[mdtype="list"]', PARSER.block, FILTER.wrappedBy("ordered_list"), TRANSFORMER.content),
+            buildQualifier("ul", 'ul[mdtype="list"]', PARSER.block, FILTER.wrappedBy("bullet_list"), TRANSFORMER.content),
+            buildQualifier("task", ".task-list-item", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(0)),
+            buildQualifier("taskdone", ".task-list-item.task-list-done", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(1)),
+            buildQualifier("tasktodo", ".task-list-item.task-list-not-done", PARSER.block, FILTER.wrappedByMulti("bullet_list", "list_item", "paragraph"), TRANSFORMER.taskContent(-1)),
+            buildQualifier("head", '[mdtype="heading"]', PARSER.block, FILTER.wrappedBy("heading"), TRANSFORMER.content),
+            buildQualifier("h1", 'h1[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h1"), TRANSFORMER.content),
+            buildQualifier("h2", 'h2[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h2"), TRANSFORMER.content),
+            buildQualifier("h3", 'h3[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h3"), TRANSFORMER.content),
+            buildQualifier("h4", 'h4[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h4"), TRANSFORMER.content),
+            buildQualifier("h5", 'h5[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h5"), TRANSFORMER.content),
+            buildQualifier("h6", 'h6[mdtype="heading"]', PARSER.block, FILTER.wrappedByTag("heading", "h6"), TRANSFORMER.content),
+            buildQualifier("highlight", '[md-inline="highlight"]', PARSER.block, FILTER.is("text"), TRANSFORMER.regexpContent(/==(.+)==/g)),
+            buildQualifier("image", '[md-inline="image"]', PARSER.inline, FILTER.is("image"), TRANSFORMER.attrAndContent),
+            buildQualifier("code", '[md-inline="code"]', PARSER.inline, FILTER.is("code_inline"), TRANSFORMER.content),
+            buildQualifier("link", '[md-inline="link"]', PARSER.inline, FILTER.wrappedBy("link"), TRANSFORMER.attrAndContent),
+            buildQualifier("strong", '[md-inline="strong"]', PARSER.inline, FILTER.wrappedBy("strong"), TRANSFORMER.content),
+            buildQualifier("em", '[md-inline="em"]', PARSER.inline, FILTER.wrappedBy("em"), TRANSFORMER.content),
+            buildQualifier("del", '[md-inline="del"]', PARSER.inline, FILTER.wrappedBy("s"), TRANSFORMER.content),
         ]
     }
 
@@ -842,7 +836,8 @@ class Searcher {
                 queryResult = queryResult.map(s => s.toLowerCase())
             }
         }
-        return qualifier[type](scope, operator, castResult, queryResult)
+        const match = qualifier[type]
+        return match(scope, operator, castResult, queryResult)
     }
 
     getReadFileScope(ast) {
@@ -960,14 +955,29 @@ class Searcher {
     }
 
     toExplain(ast) {
+        const notText = this.i18n.t("not")
+        const andText = this.i18n.t("and")
+        const explain = this.i18n.t("explain")
+        const matchRegexText = this.i18n.t("matchRegex")
+        const operatorNames = {
+            ":": this.i18n.t("operator.colon"),
+            "=": this.i18n.t("operator.equal"),
+            "!=": this.i18n.t("operator.notEqual"),
+            ">=": this.i18n.t("operator.gte"),
+            "<=": this.i18n.t("operator.lte"),
+            ">": this.i18n.t("operator.gt"),
+            "<": this.i18n.t("operator.lt"),
+        }
+
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
 
         const getName = node => {
             const name = this.qualifiers.get(node.scope).name
-            const negated = node.negated ? "不" : ""
-            const operator = node.type === REGEXP ? "匹配正则" : this.MIXIN.OPERATOR_NAME[node.operator]
+            const negated = node.negated ? notText : ""
+            const operator = node.type === REGEXP ? matchRegexText : operatorNames[node.operator]
             const operand = node.type === REGEXP ? `/${node.operand}/` : node.operand
-            return `「${name}${negated}${operator}${operand}」`
+            const content = this.i18n.link([name, negated, operator, operand])
+            return `「${content}」`
         }
 
         const link = (left, right) => {
@@ -1006,68 +1016,114 @@ class Searcher {
         ast = JSON.parse(JSON.stringify(ast))  // deep copy
         const { result } = _eval(ast)
         const content = result
-            .map(path => path.map(getName).join("且"))
+            .map(path => path.map(getName).join(andText))
             .map((path, idx) => `${idx + 1}. ${path}`)
             .join("\n")
-        return "搜索满足如下任意一个要求的文件：\n" + content
+        return `${explain}：\n${content}`
     }
 
     showGrammar() {
-        const operator = [...Object.keys(this.MIXIN.OPERATOR)]
+        const t = this.i18n.t
+        const i18n = {
+            modal: {
+                brief: t("modal.brief"),
+                example: {
+                    title: t("modal.example.title"),
+                    result: t("modal.example.result"),
+                    equivalentTo: t("modal.example.equivalentTo"),
+                    desc1: t("modal.example.desc1"),
+                    desc2: t("modal.example.desc2"),
+                    desc3: t("modal.example.desc3"),
+                    desc4: t("modal.example.desc4"),
+                    desc5: t("modal.example.desc5"),
+                    desc6: t("modal.example.desc6"),
+                    desc7: t("modal.example.desc7"),
+                    desc8: t("modal.example.desc8"),
+                    desc9: t("modal.example.desc9"),
+                    desc10: t("modal.example.desc10"),
+                },
+                info: {
+                    agreement: t("modal.info.agreement"),
+                    diff: t("modal.info.diff"),
+                    scope: t("modal.info.scope"),
+                },
+                usage: {
+                    keyword: t("modal.usage.keyword"),
+                    desc: t("modal.usage.desc"),
+                    whitespace: t("modal.usage.whitespace"),
+                    whitespaceDesc: t("modal.usage.whitespaceDesc"),
+                    orDesc: t("modal.usage.orDesc"),
+                    notDesc: t("modal.usage.notDesc"),
+                    quotationDesc: t("modal.usage.quotationDesc"),
+                    regexDesc: t("modal.usage.regexDesc"),
+                    scopeDesc: t("modal.usage.scopeDesc"),
+                    operatorDesc: t("modal.usage.operatorDesc"),
+                    parenthesesDesc: t("modal.usage.parenthesesDesc"),
+                    scopeDescMeta: t("modal.usage.scopeDesc.meta"),
+                    scopeDescContent: t("modal.usage.scopeDesc.content"),
+                    scopeDescDefault: t("modal.usage.scopeDesc.default"),
+                    colonDesc: t("modal.usage.colonDesc"),
+                    equalDesc: t("modal.usage.equalDesc"),
+                    compareDesc: t("modal.usage.compareDesc"),
+                },
+                field: {
+                    usage: t("modal.field.usage"),
+                    grammar: t("modal.field.grammar"),
+                },
+            }
+        }
+
         const scope = [...this.qualifiers.values()]
         const metaScope = scope.filter(s => s.is_meta)
         const contentScope = scope.filter(s => !s.is_meta)
+        const operator = [...Object.keys(this.MIXIN.OPERATOR)]
 
+        // example
+        const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
+        const agreement = genInfo(i18n.modal.info.agreement)
+        const diffInfo = genInfo(i18n.modal.info.diff)
+        const scopeInfo = genInfo(i18n.modal.info.scope)
+        const example = this.utils.buildTable([
+            [i18n.modal.example.title + agreement, i18n.modal.example.result],
+            ["<em>pear</em>", `${i18n.modal.example.desc1} ${i18n.modal.example.equivalentTo} <em>default:pear</em> ${scopeInfo}`],
+            ["<em>-pear</em>", `${i18n.modal.example.desc2} ${i18n.modal.example.equivalentTo} <em>NOT pear</em>`],
+            ["<em>sour pear</em>", `${i18n.modal.example.desc3} ${i18n.modal.example.equivalentTo} <em>sour AND pear</em>`],
+            ["<em>sour | pear</em>", `${i18n.modal.example.desc4} ${i18n.modal.example.equivalentTo} <em>sour OR pear</em></td>`],
+            ['<em>"sour pear"</em>', i18n.modal.example.desc5],
+            ["<em>/\\bsour\\b/ pear mtime<2024-05-16</em>", i18n.modal.example.desc6],
+            ["<em>frontmatter:dev | head=plugin | strong:MIT</em>", `${i18n.modal.example.desc7} ${diffInfo}`],
+            ["<em>size>10kb (linenum>=1000 | hasimage=true)</em>", i18n.modal.example.desc8],
+            ["<em>path:(info | warn | err) -ext:md</em>", i18n.modal.example.desc9],
+            ['<em>thead:k8s h2:prometheus blockcode:"kubectl apply"</em>', i18n.modal.example.desc10],
+        ])
+
+        // usage
         const genScope = scopes => scopes.map(e => `<code title="${e.name}">${e.scope}</code>`).join("、")
-        const genOperator = (...operators) => operators.map(operator => `<code>${operator}</code>`).join("、")
+        const genOperator = (...operators) => operators.map(op => `<code>${op}</code>`).join("、")
         const genUL = (...li) => `<ul style="padding-left: 1em; word-break: break-word;">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
         const scopeDesc = genUL(
-            `搜索文件元数据：${genScope(metaScope)}`,
-            `搜索文件内容：${genScope(contentScope)}`,
-            `默认值 default = path + content（路径+文件内容）`,
+            `${i18n.modal.usage.scopeDescMeta}：${genScope(metaScope)}`,
+            `${i18n.modal.usage.scopeDescContent}：${genScope(contentScope)}`,
+            i18n.modal.usage.scopeDescDefault
         )
         const operatorDesc = genUL(
-            `${genOperator(":")}表示文本包含或正则匹配`,
-            `${genOperator("=", "!=")}表示文本、数值、布尔的严格相等/不相等`,
-            `${genOperator(">", "<", ">=", "<=")}表示数值比较`,
+            `${genOperator(":")} ${i18n.modal.usage.colonDesc}`,
+            `${genOperator("=", "!=")} ${i18n.modal.usage.equalDesc}`,
+            `${genOperator(">", "<", ">=", "<=")} ${i18n.modal.usage.compareDesc}`,
         )
+        const usage = this.utils.buildTable([
+            [i18n.modal.usage.keyword, i18n.modal.usage.desc],
+            [i18n.modal.usage.whitespace, i18n.modal.usage.whitespaceDesc],
+            ["|", i18n.modal.usage.orDesc],
+            ["-", i18n.modal.usage.notDesc],
+            ['""', i18n.modal.usage.quotationDesc],
+            ["/regex/", i18n.modal.usage.regexDesc],
+            ["scope", i18n.modal.usage.scopeDesc + scopeDesc],
+            ["operator", i18n.modal.usage.operatorDesc + operatorDesc],
+            ["()", i18n.modal.usage.parenthesesDesc],
+        ])
 
-        const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
-        const agreement = genInfo("查询表达式以斜体表示")
-        const diffInfo = genInfo("注意区分：\nhead=plugin 表示标题为 plugin\nhead:plugin 表示标题包含 plugin")
-        const scopeInfo = genInfo(`1. 为了简化搜索，可以同时省略搜索范围和运算符，此时搜索范围默认为 default，运算符默认为 :
-2. 搜索范围 default 表示路径（path）和文件内容（content），运算符 : 表示文本包含
-3. 也就是说，pear 等价于 default:pear ，也等价于 path:pear OR content:pear
-4. 其含义为：搜索「文件路径或文件内容包含 pear」的文件`)
-
-        const keywordDesc = `
-<table>
-    <tr><th>关键字</th><th>说明</th></tr>
-    <tr><td>空格</td><td>连接两个查询条件，表示逻辑与。文档应该同时满足空格左右两侧的查询条件，等价于 AND</td></tr>
-    <tr><td>|</td><td>连接两个查询条件，表示逻辑或。文档应该满足 | 左右两侧中至少一个查询条件，等价于 OR</td></tr>
-    <tr><td>-</td><td>后接一个查询条件，表示逻辑非。文档不可满足 - 右侧的查询条件，等价于 NOT</td></tr>
-    <tr><td>""</td><td>引号包裹文本，表示词组</td></tr>
-    <tr><td>/regex/</td><td>JavaScript 风格的正则表达式</td></tr>
-    <tr><td>scope</td><td>搜索范围，规定在哪个属性上搜索${scopeDesc}</td></tr>
-    <tr><td>operator</td><td>运算符，用于连接搜索范围和关键词，表示二者的匹配关系${operatorDesc}</td></tr>
-    <tr><td>()</td><td>小括号，用于调整运算优先级</td></tr>
-</table>`
-
-        const example = `
-<table>
-    <tr><th>示例${agreement}</th><th>搜索文件</th></tr>
-    <tr><td><em>pear</em></td><td>包含 pear。等价于 <em>default:pear</em> ${scopeInfo}</td></tr>
-    <tr><td><em>-pear</em></td><td>不含 pear。等价于 <em>NOT pear</em></td></tr>
-    <tr><td><em>sour pear</em></td><td>包含 sour 和 pear。等价于 <em>sour AND pear</em></td></tr>
-    <tr><td><em>sour | pear</em></td><td>包含 sour 或 pear。等价于 <em>sour OR pear</em></td></tr>
-    <tr><td><em>"sour pear"</em></td><td>包含 sour pear 这一词组</td></tr>
-    <tr><td><em>/\\bsour\\b/ pear mtime<2024-05-16</em></td><td>匹配正则 \\bsour\\b（全字匹配 sour），且包含 pear，且文件的修改时间早于 2024-05-16</td></tr>
-    <tr><td><em>frontmatter:dev | head=plugin | strong:MIT</em></td><td>YAML Front Matter 包含 dev，或标题内容为 plugin，或加粗文字包含 MIT ${diffInfo}</td></tr>
-    <tr><td><em>size>10kb (linenum>=1000 | hasimage=true)</em></td><td>文件大小超过 10KB，并且文件要么至少有 1000 行，要么包含图片</td></tr>
-    <tr><td><em>path:(info | warn | err) -ext:md</em></td><td>文件路径包含 info 或 warn 或 err，且扩展名不含 md</td></tr>
-    <tr><td><em>thead:k8s h2:prometheus blockcode:"kubectl apply"</em></td><td>表头包含 k8s，且二级标题包含 prometheus，且代码块内容包含 kubectl apply</td></tr>
-</table>`
-
+        // grammar
         const content = `
 <query> ::= <expression>
 <expression> ::= <term> ( <or> <term> )*
@@ -1082,22 +1138,19 @@ class Searcher {
 <keyword> ::= [^\\s"()|]+
 <regex> ::= [^/]+
 <operator> ::= ${operator.map(s => `'${s}'`).join(" | ")}
-<scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
+<scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}
+`
 
-        const desc = `<b>多元文件搜索通过组合不同的条件来精确查找文本文件。</b>
-每个条件由三部分组成：搜索范围(scope)、运算符(operator)、关键词(operand)，如 <em>size>2kb</em>（含义：文件尺寸大于 2KB）、<em>ext:txt</em>（含义：文件扩展名包含 txt）、<em>content:/\\d{8}/</em>（含义：文件内容能匹配正则 \\d{8}）<br />
-条件之间用 AND 连接，表示必须满足所有条件。如 <em>size>2kb AND ext:txt</em><br />
-条件之间用 OR 连接，表示至少满足其中一个条件。如 <em>size>2kb OR ext:txt</em><br />
-在条件前面添加 NOT，表示不可满足此条件。如 <em>NOT size>2kb</em>`
+        const title = this.i18n.t("grammar")
         const components = [
-            { label: desc, type: "blockquote", tabIndex: 0 },
+            { label: i18n.modal.brief, type: "blockquote", tabIndex: 0 },
             { label: example, type: "p" },
-            { label: "具体用法", type: "p" },
-            { label: keywordDesc, type: "p" },
-            { label: "形式文法", type: "p" },
+            { label: i18n.modal.field.usage, type: "p" },
+            { label: usage, type: "p" },
+            { label: i18n.modal.field.grammar, type: "p" },
             { label: "", type: "textarea", rows: 21, content },
         ]
-        this.utils.dialog.modal({ title: "多元文件搜索", width: "600px", components })
+        this.utils.dialog.modal({ title, components, width: "600px" })
     }
 }
 

@@ -78,10 +78,10 @@ class exportEnhancePlugin extends BasePlugin {
         return `data:${mime};base64,${base64}`
     }
 
-    getDynamicActions = () => [
-        { act_name: "启用功能：图片转为 Base64", act_value: "toggle_enable", act_state: this.enable },
-        { act_name: "启用功能：自动下载网络图片", act_value: "toggle_download", act_state: this.config.DOWNLOAD_NETWORK_IMAGE },
-    ]
+    getDynamicActions = () => this.i18n.fillActions([
+        { act_value: "toggle_enable", act_state: this.enable },
+        { act_value: "toggle_download", act_state: this.config.DOWNLOAD_NETWORK_IMAGE },
+    ])
 
     call = action => {
         if (action === "toggle_download") {

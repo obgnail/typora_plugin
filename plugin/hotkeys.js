@@ -34,18 +34,20 @@ class hotkeysPlugin extends BasePlugin {
     }
 
     call = (action, meta) => {
-        const trs = Array.from(this.utils.hotkeyHub.map.keys()).sort().map(hk => {
-            const hotkey = hk.toUpperCase().split("+").map(h => `<kbd>${h}</kbd>`).join("+");
-            return `<tr><td>${hotkey}</td></tr>`
+        const thText = this.i18n.t("registeredHotkey")
+        const hintText = this.i18n.t("editConfigFile") + " " + '<a class="fa fa-external-link"></a>'
+
+        const trs = [...this.utils.hotkeyHub.map.keys()].sort().map(hk => {
+            const hotkey = hk.toUpperCase().split("+").map(h => `<kbd>${h}</kbd>`).join("+")
+            return [hotkey]
         })
-        const th = `<tr><th>已注册快捷键</th></tr>`;
-        const table = `<table>${th}${trs.join("")}</table>`;
-        const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder("settings.user.toml");
+        const table = this.utils.buildTable([[thText], ...trs])
+        const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder("settings.user.toml")
         const components = [
-            { label: "如需自定义快捷键，请 <a>修改配置文件</a>", type: "p", onclick },
+            { label: hintText, type: "p", onclick },
             { label: table, type: "p" },
-        ];
-        this.utils.dialog.modal({ title: "快捷键中心", components });
+        ]
+        this.utils.dialog.modal({ title: this.pluginName, components })
     }
 }
 

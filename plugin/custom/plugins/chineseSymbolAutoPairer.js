@@ -1,7 +1,9 @@
-// 本插件没有处理fence下的中文输入，如果需要，可以通过监听afterAddCodeBlock事件，修改File.editor.fences.queue.n90.state.keyMaps[1]，可以参考fence_enhance插件的editorHotkey
+// This plugin does not handle Chinese input under fences.
+// If needed, you can listen to the afterAddCodeBlock event and modify File.editor.fences.queue.n90.state.keyMaps[1].
+// You can refer to the fence_enhance plugin's editorHotkey for more details.
 class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
-    // 旧版本的Typora是延迟设置noPairingMatch的，导致beforeProcess失效
-    // 所以，为了兼容旧版本，后续还有再次判断此配置
+    // Older versions of Typora delay setting noPairingMatch.
+    // Therefore, to maintain compatibility with older versions, this configuration will be checked again later.
     beforeProcess = () => File.option.noPairingMatch ? this.utils.stopLoadPluginError : undefined
 
     selector = () => this.utils.disableForeverSelector
@@ -21,7 +23,7 @@ class chineseSymbolAutoPairerPlugin extends BaseCustomPlugin {
             "Backquote", "BracketLeft", "BracketRight", "Backslash", "Semicolon", "Quote", "Comma", "Period", "Slash",
         ])
         this.reversePairMap = reverseMap(this.pairMap)
-        // 旧版本Typora是延迟加载SnapFlag的
+        // Older versions of Typora load SnapFlag with a delay.
         const until = () => File && File.editor && File.editor.undo && File.editor.undo.UndoManager && File.editor.undo.UndoManager.SnapFlag
         const after = () => this.undoSnapType = File.editor.undo.UndoManager.SnapFlag
         this.utils.loopDetector(until, after);

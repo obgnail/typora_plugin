@@ -1,5 +1,5 @@
 /**
- * 动态注册、动态注销hotkey
+ * Dynamically register and unregister hotkeys.
  */
 class hotkeyHub {
     constructor(utils) {
@@ -18,7 +18,8 @@ class hotkeyHub {
     _register = (hotkey, call) => {
         if (typeof hotkey === "string" && hotkey.length) {
             this.map.set(this.normalize(hotkey), call);
-        } else if (hotkey instanceof Array) {   // 一个callback可能对应多个hotkey
+            // A callback may correspond to multiple hotkeys.
+        } else if (hotkey instanceof Array) {
             for (const hk of hotkey) {
                 this._register(hk, call);
             }
@@ -26,7 +27,7 @@ class hotkeyHub {
     }
 
     /**
-     * 不会检测hotkeyString的合法性，需要调用者自己保证快捷键没被占用，没有typo
+     * Does not validate the legality of hotkeyString. The caller needs to ensure that the hotkey is not occupied and has no typos.
      * @param {[{string, function}]} hotkeyList: [ { hotkey: "ctrl+shift+c", callback: () => console.log("ctrl+shift+c pressed") }, ]
      */
     register = hotkeyList => {

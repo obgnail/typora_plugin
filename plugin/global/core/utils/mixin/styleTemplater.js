@@ -1,5 +1,5 @@
 /**
- * 动态注册css模板文件
+ * Dynamically register CSS files.
  */
 class styleTemplater {
     constructor(utils) {

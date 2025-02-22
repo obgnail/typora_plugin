@@ -1,6 +1,7 @@
 class runtime {
-    constructor(utils) {
+    constructor(utils, i18n) {
         this.utils = utils
+        this.i18n = i18n
         this.PATH = utils.Package.Path
         this.TOML = utils.Package.Toml
     }
@@ -51,13 +52,13 @@ class runtime {
         try {
             return contentList.map(c => c ? this.TOML.parse(c) : {})
         } catch (e) {
-            const message = "配置文件格式错误"
-            const detail = `您修改过配置文件且写入的内容有问题，导致无法正确读取配置文件。\n\n请点击「确定」前往校验网站手动修复（如果您有 GPT 也可以让它帮您修复）\n\n报错信息：${e.toString()}`
-            const op = { type: "error", title: "Typora Plugin", buttons: ["确定", "取消"], message, detail }
-            const { response } = await this.utils.showMessageBox(op)
-            if (response === 0) {
-                this.utils.openUrl("https://www.bejson.com/validators/toml_editor/")
-            }
+            // At this time, i18n has not been loaded yet. Using English
+            const message = "Incorrect File Content"
+            const _detail = `Please Fix File: ${userSetting}`
+            const detail = `${_detail}\n\n${e.toString()}`
+            const buttons = ["Confirm", "Cancel"]
+            const op = { type: "error", title: "Typora Plugin", buttons, message, detail }
+            await this.utils.showMessageBox(op)
             return {}
         }
     }

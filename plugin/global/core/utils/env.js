@@ -1,6 +1,7 @@
 const getHook = utils => {
+    const { i18n } = require("../i18n")
     const MIXIN = require("./mixin")
-    const mixin = Object.fromEntries(Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils)]))
+    const mixin = Object.fromEntries(Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils, i18n)]))
 
     const {
         hotkeyHub, eventHub, stateRecorder, exportHelper, contextMenu,

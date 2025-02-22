@@ -1,5 +1,5 @@
 /**
- * 动态注册右键菜单
+ * Dynamically register context menu.
  */
 class contextMenu {
     constructor(utils) {
@@ -24,9 +24,11 @@ class contextMenu {
             this.callback = null;
             this.menu.classList.remove("show");
         })
-        // 仅限content内部
+        // content ELEMENT internal only
         this.utils.entities.eContent.addEventListener("mousedown", ev => {
-            !ev.target.closest(".menu-item") && this.menu.classList.remove("show");
+            if (!ev.target.closest(".menu-item")) {
+                this.menu.classList.remove("show")
+            }
             if (ev.button !== 2) return;
             for (const menu of this.menus.values()) {
                 const target = ev.target.closest(menu.selector);
@@ -42,10 +44,10 @@ class contextMenu {
     }
 
     /**
-     * @param {string} name: 取个名字
-     * @param {string} selector: 在哪个位置右键将弹出菜单
-     * @param {function({ev, target}): {key: value}} generator: 生成右键菜单选项组成的object，参数target是上面的selector对应的元素
-     * @param {function({ev, key}): null} callback: 点击的回调，参数key是点击的选项
+     * @param {string} name: Give it a name
+     * @param {string} selector: At which location right click will pop up the menu
+     * @param {function({ev, target}): {key: value}} generator: Generates an object composed of context menu options; the target parameter is the element corresponding to the above selector
+     * @param {function({ev, key}): null} callback: on click callback; the key parameter is the clicked option
      */
     register = (name, selector, generator, callback) => this.menus.set(name, { selector, generator, callback })
     unregister = name => this.menus.delete(name)
@@ -82,7 +84,9 @@ class contextMenu {
         width = Math.min(clientX, innerWidth - width);
         width = Math.max(0, width);
         let height = $menu.height() + 48;
-        height = clientY > innerHeight - height ? innerHeight - height : clientY - $("#top-titlebar").height() + 8;
+        height = clientY > innerHeight - height
+            ? innerHeight - height
+            : clientY - $("#top-titlebar").height() + 8;
         height = Math.max(0, height);
         $menu.css({ top: height + "px", left: width + "px" });
     }

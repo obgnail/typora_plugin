@@ -1,5 +1,5 @@
 /**
- * 动态注册、动态注销第三方代码块图表语法(派生自DiagramParser)
+ * Dynamically register and unregister third-party code block diagram (derived from DiagramParser).
  */
 class thirdPartyDiagramParser {
     constructor(utils) {
@@ -11,23 +11,23 @@ class thirdPartyDiagramParser {
     }
 
     /**
-     * f**k，js不支持interface，只能将接口函数作为参数传入，一坨狗屎
-     * @param {string} lang: 语言
-     * @param {string} mappingLang: 映射到哪个语言
-     * @param {boolean} destroyWhenUpdate: 更新前是否清空preview里的html
-     * @param {boolean} interactiveMode: 交互模式下，不会自动展开代码块
-     * @param {string} checkSelector: 检测当前fence下是否含有目标标签
-     * @param {string|function($pre):string} wrapElement: 如果不含目标标签，需要创建
-     * @param {function(): Promise<null>} lazyLoadFunc: 加载第三方资源
-     * @param {function(cid, content, $pre): Promise} setStyleFunc: 设置样式
-     * @param {function(cid, content, $pre): Promise} beforeRenderFunc: 渲染前的逻辑
-     * @param {function($wrap, string, meta): instance} createFunc: 传入目标标签和fence的内容，生成图形实例
-     * @param {function($wrap, string, instance, meta): instance} updateFunc: 当内容更新时，更新图形实例。此选项为空时会直接调用createFunc
-     * @param {function(Object): null} destroyFunc: 传入图形实例，destroy图形实例
-     * @param {function(Element, instance): null} beforeExportToNative: pandoc导出前的准备操作（比如在导出前调整图形大小、颜色等等）
-     * @param {function(Element, instance): null} beforeExportToHTML: 导出HTML前的准备操作（比如在导出前调整图形大小、颜色等等）
-     * @param {function(): string} extraStyleGetter 用于导出时，新增css
-     * @param {function(): string} versionGetter 第三方资源版本
+     *  Since JS doesn't support interfaces, interface functions are passed as parameters.
+     * @param {string} lang: Language.
+     * @param {string} mappingLang: Language to map to.
+     * @param {boolean} destroyWhenUpdate: Whether to clear the HTML in the preview before updating.
+     * @param {boolean} interactiveMode: When in interactive mode, code blocks will not automatically expand.
+     * @param {string} checkSelector: Selector to check if the target Element exists under the current fence.
+     * @param {string|function($pre):string} wrapElement: If the target Element does not exist, create it.
+     * @param {function(): Promise<null>} lazyLoadFunc: Lazy load third-party resources.
+     * @param {function(cid, content, $pre): Promise} setStyleFunc: Set styles.
+     * @param {function(cid, content, $pre): Promise} beforeRenderFunc: Execute before rendering.
+     * @param {function($wrap, string, meta): instance} createFunc: Create a diagram instance, passing in the target Element and the content of the fence.
+     * @param {function($wrap, string, instance, meta): instance} updateFunc: Update the diagram instance when the content is updated.
+     * @param {function(Object): null} destroyFunc: Destroy the diagram instance, passing in the diagram instance.
+     * @param {function(Element, instance): null} beforeExportToNative: Preparation operations before Pandoc export (e.g., adjusting diagram size, color, etc.).
+     * @param {function(Element, instance): null} beforeExportToHTML: Preparation operations before HTML export (e.g., adjusting diagram size, color, etc.).
+     * @param {function(): string} extraStyleGetter: Get extra CSS for export.
+     * @param {function(): string} versionGetter: Get the version.
      */
     register = ({
                     lang, mappingLang = "", destroyWhenUpdate, interactiveMode = true, checkSelector,
@@ -65,8 +65,8 @@ class thirdPartyDiagramParser {
             }
             const meta = parser.beforeRenderFunc ? await parser.beforeRenderFunc(cid, content, $pre) : undefined
             let instance = this.createOrUpdate(parser, cid, content, $wrap, lang, meta)
-            // 为什么不使用await this.createOrUpdate，而是判断isPromise？
-            // 答：有些parser的createFunc可能会抢占element，如果使用await会出现race问题
+            // Why not use `await this.createOrUpdate` instead of `isPromise`?
+            // Answer: Some parsers' createFunc might preempt the element, causing a race condition if await is used.
             if (this.utils.isPromise(instance)) {
                 instance = await instance
             }

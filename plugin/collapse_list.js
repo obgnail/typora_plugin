@@ -1,7 +1,7 @@
-/** 为了提高性能，把逻辑移到CSS，所以此插件采用非常绿皮的实现思路，请注意生产安全
- *  1. 使用伪类::before作为点击按钮
- *  2. ::before使用left样式飘出父元素的BoundingClientRect
- *  3. 当父元素检测到click时，检测鼠标位置，如果鼠标位置超出父元素的Rect，则判定伪类被点击
+/** To improve performance, the logic is moved to CSS, so this plugin uses a very hacky implementation approach.
+ *  1. Use the pseudo-class ::before as the click button
+ *  2. ::before uses the left style to float out of the parent element's BoundingClientRect
+ *  3. When the parent element detects a click, check the mouse position. If the mouse position is outside the parent element's Rect, then determine that the pseudo-class has been clicked
  */
 class collapseListPlugin extends BasePlugin {
     beforeProcess = () => {
@@ -68,9 +68,9 @@ class collapseListPlugin extends BasePlugin {
         }
     }
 
-    getDynamicActions = () => [
-        { act_name: "启用功能：记住列表折叠状态", act_value: "record_collapse_state", act_state: this.config.RECORD_COLLAPSE }
-    ]
+    getDynamicActions = () => this.i18n.fillActions([
+        { act_value: "record_collapse_state", act_state: this.config.RECORD_COLLAPSE }
+    ])
 
     call = action => {
         if (action === "record_collapse_state") {
@@ -81,4 +81,4 @@ class collapseListPlugin extends BasePlugin {
 
 module.exports = {
     plugin: collapseListPlugin
-};
+}

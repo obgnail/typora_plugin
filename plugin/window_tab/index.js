@@ -23,10 +23,10 @@ class windowTabBarPlugin extends BasePlugin {
     ]
 
     init = () => {
-        this.staticActions = [
-            { act_name: "排序标签", act_value: "sort_tabs", act_hotkey: this.config.SORT_TABS_HOTKEY },
-            { act_name: "保存当前标签页列表", act_value: "save_tabs" },
-        ]
+        this.staticActions = this.i18n.fillActions([
+            { act_value: "sort_tabs", act_hotkey: this.config.SORT_TABS_HOTKEY },
+            { act_value: "save_tabs" },
+        ])
         this.entities = {
             content: this.utils.entities.eContent,
             source: document.querySelector("#typora-source"),
@@ -70,18 +70,16 @@ class windowTabBarPlugin extends BasePlugin {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, hide => this.entities.windowTab.style.visibility = hide ? "hidden" : "initial");
             const isHeaderReady = () => this.utils.isBetaVersion ? document.querySelector("header").getBoundingClientRect().height : true
             const adjustTop = () => setTimeout(() => {
-                // 调整notification组件的图层顺序，以免被tab遮挡
+                // Adjust z-index of the notification component to prevent it from being obscured by the tab.
                 const container = document.querySelector(".md-notification-container");
                 if (container) {
                     container.style.zIndex = "99999";
                 }
-
                 if (!this.config.HIDE_WINDOW_TITLE_BAR) {
                     const { height, top } = document.querySelector("header").getBoundingClientRect();
                     this.entities.windowTab.style.top = height + top + "px";
                 }
-
-                // 调整正文区域的顶部位置，以免被tab遮挡
+                // Adjust the top position of the content Tag to prevent it from being obscured by the tab.
                 this._adjustContentTop();
             }, 200);
             this.utils.loopDetector(isHeaderReady, adjustTop, 35, 1000);
@@ -178,7 +176,7 @@ class windowTabBarPlugin extends BasePlugin {
                     dragROI = height * that.config.Y_AXIS_LIMIT_RANGE_WHEN_DRAG
 
                     const fakeObj = dragBox.cloneNode(true);
-                    fakeObj.style.height = dragBox.offsetHeight + 'px'; // dragBox使用了height: 100%，需要重新设置一下
+                    fakeObj.style.height = dragBox.offsetHeight + 'px'; // dragBox uses height: 100%, needs to be reset.
                     fakeObj.style.transform = 'translate3d(0,0,0)';
                     fakeObj.setAttribute('dragging', '');
                     cloneObj = document.createElement('div');
@@ -334,23 +332,20 @@ class windowTabBarPlugin extends BasePlugin {
             })
         }
         const handleContextMenu = () => {
-            let idx = -1;
-            const map = this.utils.fromObject({
-                closeTab: "关闭标签",
-                closeOtherTabs: "关闭其他标签",
-                closeLeftTabs: "关闭左侧全部标签",
-                closeRightTabs: "关闭右侧全部标签",
-                copyPath: "复制文件路径",
-                showInFinder: "打开文件位置",
-                openInNewWindow: "新窗口打开",
-                sortTabs: "排序标签",
-            }, this.config.CONTEXT_MENU);
+            let tabIdx = -1
+            const all = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"]
+            const entries = this.i18n.entries(all, "func.")
+            const map = this.utils.fromObject(entries, this.config.CONTEXT_MENU)
             const showMenu = ({ target }) => {
-                idx = parseInt(target.dataset.idx)
+                tabIdx = parseInt(target.dataset.idx)
                 return map
             }
-            const callback = ({ key: func }) => idx !== -1 && func && this[func] && this[func](idx);
-            this.utils.contextMenu.register("window-tab", "#plugin-window-tab .tab-container", showMenu, callback);
+            const onClick = ({ key: func }) => {
+                if (tabIdx !== -1 && func && this[func]) {
+                    this[func](tabIdx)
+                }
+            }
+            this.utils.contextMenu.register("window-tab", "#plugin-window-tab .tab-container", showMenu, onClick)
         }
         const adjustQuickOpen = () => {
             const open = (item, ev) => {
@@ -368,7 +363,7 @@ class windowTabBarPlugin extends BasePlugin {
             document.querySelector(".typora-quick-open-list").addEventListener("mousedown", ev => {
                 const target = ev.target.closest(".typora-quick-open-item");
                 if (!target) return;
-                // 将原先的click行为改成ctrl+click
+                // Changed the original click behavior to ctrl+click.
                 if (this.utils.metaKeyPressed(ev)) return;
                 open(target, ev);
             }, true)
@@ -380,8 +375,9 @@ class windowTabBarPlugin extends BasePlugin {
                 }
             }, true)
         }
-        // Typora 1.1 版本以后支持使用锚点跳转到本地文件
-        // 拦截内部和本地文件链接，将跳转行为改为新建标签页
+
+        // Typora version 1.1 and later supports using anchor links to jump to local files
+        // Intercept internal and local file links, and change the jump behavior to open in a new tab
         const interceptLink = () => {
             const _linkUtils = { file: "", anchor: "" };
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, () => {
@@ -426,21 +422,21 @@ class windowTabBarPlugin extends BasePlugin {
         }
     }
 
-    getDynamicActions = () => [
-        { act_name: "打开保存的标签页列表", act_value: "open_save_tabs", act_hidden: !this.utils.existPathSync(this.saveTabFilePath) },
-        { act_name: "启用功能：隐藏文件后缀", act_value: "toggle_suffix", act_state: this.config.REMOVE_FILE_SUFFIX },
-        { act_name: "启用功能：同名文件显示其目录", act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_FOR_SAME_NAME_FILE },
-        { act_name: "启用功能：显示标签页关闭按钮", act_value: "toggle_show_close_button", act_state: this.config.SHOW_TAB_CLOSE_BUTTON },
-        { act_name: "启用功能：鼠标悬停显示完整路径", act_value: "toggle_show_path", act_state: this.config.SHOW_FULL_PATH_WHEN_HOVER },
-        { act_name: "启用功能：一体化窗口样式时隐藏标题栏", act_value: "toggle_hide_title_bar", act_state: this.config.HIDE_WINDOW_TITLE_BAR },
-        { act_name: "启用功能：JetBrains 风格的标签拖拽方式", act_value: "toggle_drag_style", act_state: this.config.JETBRAINS_DRAG_STYLE },
-        { act_name: "启用功能：拖拽时竖直防抖", act_value: "toggle_limit_y_axis", act_state: this.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG, act_hidden: !this.config.JETBRAINS_DRAG_STYLE },
-        { act_name: "启用功能：Ctrl+Click 标签以新窗口打开", act_value: "toggle_ctrl_click", act_state: this.config.CTRL_CLICK_TO_NEW_WINDOW },
-        { act_name: "启用功能：Ctrl+Wheel 标签以切换标签", act_value: "toggle_ctrl_wheel", act_state: this.config.CTRL_WHEEL_TO_SCROLL },
-        { act_name: "启用功能：鼠标中键标签以关闭标签", act_value: "toggle_middle_click", act_state: this.config.MIDDLE_CLICK_TO_CLOSE },
-        { act_name: "启用功能：临时隐藏标签栏", act_value: "toggle_tab_bar", act_state: this.entities.windowTab.style.display === "none", act_hotkey: this.config.TOGGLE_TAB_BAR_HOTKEY },
-        { act_name: "启用功能：在新标签打开", act_value: "toggle_local", act_state: !this.localOpen },
-    ]
+    getDynamicActions = () => this.i18n.fillActions([
+        { act_value: "open_save_tabs", act_hidden: !this.utils.existPathSync(this.saveTabFilePath) },
+        { act_value: "toggle_suffix", act_state: this.config.REMOVE_FILE_SUFFIX },
+        { act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_FOR_SAME_NAME_FILE },
+        { act_value: "toggle_show_close_button", act_state: this.config.SHOW_TAB_CLOSE_BUTTON },
+        { act_value: "toggle_show_path", act_state: this.config.SHOW_FULL_PATH_WHEN_HOVER },
+        { act_value: "toggle_hide_title_bar", act_state: this.config.HIDE_WINDOW_TITLE_BAR },
+        { act_value: "toggle_drag_style", act_state: this.config.JETBRAINS_DRAG_STYLE },
+        { act_value: "toggle_limit_y_axis", act_state: this.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG, act_hidden: !this.config.JETBRAINS_DRAG_STYLE },
+        { act_value: "toggle_ctrl_click", act_state: this.config.CTRL_CLICK_TO_NEW_WINDOW },
+        { act_value: "toggle_ctrl_wheel", act_state: this.config.CTRL_WHEEL_TO_SCROLL },
+        { act_value: "toggle_middle_click", act_state: this.config.MIDDLE_CLICK_TO_CLOSE },
+        { act_value: "toggle_tab_bar", act_state: this.entities.windowTab.style.display === "none", act_hotkey: this.config.TOGGLE_TAB_BAR_HOTKEY },
+        { act_value: "toggle_local", act_state: !this.localOpen },
+    ])
 
     call = action => {
         const toggleConfig = async (cfg, restart = false) => {
@@ -449,7 +445,9 @@ class windowTabBarPlugin extends BasePlugin {
             if (!restart) {
                 this.rerenderTabBar()
             } else {
-                const op = { type: "info", buttons: ["确定", "取消"], message: "重启后生效，确认重启？", title: "重启 Typora" }
+                const title = this.i18n.t("modal.restart")
+                const message = this.i18n.t("modal.reconfirmRestart")
+                const op = { title, message, type: "info" }
                 const { response } = await this.utils.showMessageBox(op)
                 if (response === 0) {
                     this.utils.restartTypora()
@@ -493,7 +491,7 @@ class windowTabBarPlugin extends BasePlugin {
 
     _adjustContentTop = () => {
         const { height, top } = this.entities.windowTab.getBoundingClientRect();
-        if (height + top === 0) {  // 等于0，说明没有任何一个tab
+        if (height + top === 0) {  // Equal to 0, indicating that there are no tabs.
             this._resetContentTop();
         } else {
             const { height: headerHeight, top: headerTop } = document.querySelector("header").getBoundingClientRect();
@@ -579,7 +577,7 @@ class windowTabBarPlugin extends BasePlugin {
 
         const closeActive = waitToClose.includes(this.tabUtil.activeIdx);
         waitToClose.reverse().forEach(idx => this.tabUtil.spliceTabs(idx, 1))
-        const leftCount = waitToClose.filter(idx => idx <= this.tabUtil.activeIdx).length;  // 删除了左侧X个tab
+        const leftCount = waitToClose.filter(idx => idx <= this.tabUtil.activeIdx).length;  // Removed X tabs from the left
         this.tabUtil.activeIdx -= leftCount;
         if (closeActive && this.config.ACTIVE_TAB_WHEN_CLOSE !== "left") {
             this.tabUtil.activeIdx++;
@@ -618,12 +616,12 @@ class windowTabBarPlugin extends BasePlugin {
         for (const group of mapName2Tabs.values()) {
             if (group.length === 1) continue;
             const dirs = group.map(tab => tab.path.split(this.utils.separator).slice(0, -1));
-            // 每次执行do逻辑都会给group下每个tab的showName都加一层父目录
+            // Each execution of the do logic adds a parent directory to the showName of each tab under the group.
             do {
                 for (let i = 0; i < group.length; i++) {
                     const tab = group[i];
                     const dir = dirs[i].pop();
-                    if (!dir) return;  // 文件系统决定了此分支不可能执行，不过还是防一手
+                    if (!dir) return
                     tab.showName = dir + this.utils.separator + tab.showName;
                 }
             } while (!isUnique(group))
@@ -652,10 +650,10 @@ class windowTabBarPlugin extends BasePlugin {
         }
     }
 
-    // openFile是一个延迟操作，需要等待content加载好，才能定位scrollTop
-    // 问题是我压根不知道content什么时候加载好
-    // 解决方法: 轮询设置scrollTop，当连续3次scrollTop不再改变，就判断content加载好了
-    // 这种方法很不环保，很ugly。但是我确实也想不到在不修改frame.js的前提下该怎么做了
+    // openFile is a delayed operation, and it needs to wait for content to load before setting scrollTop
+    // The problem is that I have no idea when the content is fully loaded
+    // Solution: Poll to set scrollTop, and if scrollTop does not change for 3 consecutive times, it is judged that the content is loaded
+    // This method is not environmentally friendly and very ugly. However, I can't think of any other way to do it without modifying frame.js.
     _scrollContent = filepath => {
         const activeTab = this.tabUtil.tabs.find(e => e.path === filepath);
         if (!activeTab) return;
@@ -718,21 +716,19 @@ class windowTabBarPlugin extends BasePlugin {
         }
     }
 
-    // 新窗口打开
     openFileNewWindow = (path, isFolder) => File.editor.library.openFileInNewWindow(path, isFolder)
 
-    // 当前标签页打开
     OpenFileLocal = filePath => {
         this.localOpen = true;
         this.utils.openFile(filePath);
-        this.localOpen = false;  // 自动还原
+        this.localOpen = false;  // Auto restore
     }
 
     openTab = wantOpenPath => {
         const { NEW_TAB_AT, TAB_MAX_NUM } = this.config;
         const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath);
         if (!include) {
-            // 原地打开并且不存在tab时，修改当前tab的文件路径
+            // Modify the file path of the current tab when opening in place and no tab exists.
             if (this.localOpen) {
                 this.tabUtil.currentTab.path = wantOpenPath;
             } else {
@@ -790,7 +786,7 @@ class windowTabBarPlugin extends BasePlugin {
         const getLatestTabIdx = () => tabUtil.tabs.reduce((maxIdx, tab, idx, array) => (tab.timestamp || 0) > (array[maxIdx].timestamp || 0) ? idx : maxIdx, 0)
         const handleLastTab = () => {
             const exit = () => {
-                tabUtil.spliceTabs(idx, 1) // 删除全部的tab，保证【reopenClosedFiles】插件能正常工作
+                tabUtil.spliceTabs(idx, 1)  // Delete all tabs to ensure the `reopenClosedFiles` plugin works properly.
                 this.utils.exitTypora();
             }
             switch (WHEN_CLOSE_LAST_TAB) {
@@ -803,7 +799,10 @@ class windowTabBarPlugin extends BasePlugin {
                     break;
                 case "reconfirm":
                 default:
-                    this.utils.dialog.modal({ title: "退出 Typora", components: [{ label: "是否退出？", type: "p" }] }, exit);
+                    const title = this.i18n.t("modal.exit")
+                    const label = this.i18n.t("modal.reconfirmExit")
+                    const op = { title, components: [{ label, type: "p" }] }
+                    this.utils.dialog.modal(op, exit)
             }
         }
 

@@ -1,32 +1,35 @@
 /**
- * 动态注册、动态注销、动态发布生命周期事件
- * 为什么要自己写事件监听发布机制，而不用node自带的EventEmitter？
- * 答：为了立刻回调。此项目并不是官方的，我希望系统的设计能尽量减少BUG隐患。生命周期事件是通过hook对应的函数实现的，而emitter.emit却是异步的，这意味着回调函数执行时机是不确定的，显然立刻回调更加安全。
+ * Dynamically register, unregister, and publish lifecycle events.
+ *
+ * Why implement a custom event listener and publisher instead of using Node's built-in EventEmitter?
+ * Answer: For immediate callbacks. This project is not official, and I want the system design to minimize potential bugs.
+ *         Lifecycle events are implemented by hooking corresponding functions.
+ *         However, emitter.emit is asynchronous, meaning the timing of callback execution is uncertain. Immediate callbacks are inherently safer.
  */
 class eventHub {
     constructor(utils) {
-        this.utils = utils;
-        this.filepath = "";
-        this.observer = null;
-        this.eventMap = Object.create(null);  // { eventType: {order: [listener]} }
+        this.utils = utils
+        this.filepath = ""
+        this.observer = null
+        this.eventMap = Object.create(null)  // { eventType: {order: [listener]} }
         this.eventType = Object.freeze({
-            allCustomPluginsHadInjected: "allCustomPluginsHadInjected", // 自定义插件加载完毕
-            allPluginsHadInjected: "allPluginsHadInjected",             // 所有插件加载完毕
-            firstFileInit: "firstFileInit",                             // 打开Typora后文件被加载
-            beforeFileOpen: "beforeFileOpen",                           // 打开文件之前
-            fileOpened: "fileOpened",                                   // 打开文件之后
-            otherFileOpened: "otherFileOpened",                         // 和fileOpened的区别：重新打开当前标签不会触发otherFileOpened，但是fileOpened会
-            fileContentLoaded: "fileContentLoaded",                     // 文件内容加载完毕之后
-            fileEdited: "fileEdited",                                   // 文件编辑后
-            beforeUnload: "beforeUnload",                               // 退出Typora之前
-            beforeToggleSourceMode: "beforeToggleSourceMode",           // 进入源码模式之前
-            afterToggleSidebar: "afterToggleSidebar",                   // 切换侧边栏状态之后
-            afterSetSidebarWidth: "afterSetSidebarWidth",               // 调整侧边栏宽度之后
-            beforeAddCodeBlock: "beforeAddCodeBlock",                   // 添加代码块之前
-            afterAddCodeBlock: "afterAddCodeBlock",                     // 添加代码块之后
-            afterUpdateCodeBlockLang: "afterUpdateCodeBlockLang",       // 修改代码块语言之后
-            outlineUpdated: "outlineUpdated",                           // 大纲更新之时
-            toggleSettingPage: "toggleSettingPage",                     // 切换到/回配置页面
+            allCustomPluginsHadInjected: "allCustomPluginsHadInjected", // Custom plugins loaded
+            allPluginsHadInjected: "allPluginsHadInjected",             // All plugins loaded
+            firstFileInit: "firstFileInit",                             // File loaded after opening Typora
+            beforeFileOpen: "beforeFileOpen",                           // Before opening a file
+            fileOpened: "fileOpened",                                   // After opening a file
+            otherFileOpened: "otherFileOpened",                         // Different from fileOpened: reopening the current tab won't trigger otherFileOpened, but fileOpened will
+            fileContentLoaded: "fileContentLoaded",                     // After file content is loaded
+            fileEdited: "fileEdited",                                   // After file is edited
+            beforeUnload: "beforeUnload",                               // Before exiting Typora
+            beforeToggleSourceMode: "beforeToggleSourceMode",           // Before entering source code mode
+            afterToggleSidebar: "afterToggleSidebar",                   // After toggling the sidebar state
+            afterSetSidebarWidth: "afterSetSidebarWidth",               // After adjusting the sidebar width
+            beforeAddCodeBlock: "beforeAddCodeBlock",                   // Before adding a code block
+            afterAddCodeBlock: "afterAddCodeBlock",                     // After adding a code block
+            afterUpdateCodeBlockLang: "afterUpdateCodeBlockLang",       // After modifying the code block language
+            outlineUpdated: "outlineUpdated",                           // When the outline is updated
+            toggleSettingPage: "toggleSettingPage",                     // When toggling to/from the settings page
         })
     }
 

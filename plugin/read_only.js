@@ -109,11 +109,12 @@ class readOnlyPlugin extends BasePlugin {
     toggleLock = () => (File.isLocked ? this.unlock : this.lock)()
 
     call = () => {
-        this.toggleLock();
-        this.utils.notification.show(this.inReadOnlyMode ? "只读模式已启用" : "只读模式已关闭");
+        this.toggleLock()
+        const msg = this.i18n.t(this.inReadOnlyMode ? "modeEnabled" : "modeDisabled")
+        this.utils.notification.show(msg)
     }
 }
 
 module.exports = {
     plugin: readOnlyPlugin,
-};
+}

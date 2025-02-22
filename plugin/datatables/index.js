@@ -68,18 +68,18 @@ class datatablesPlugin extends BasePlugin {
             processing: true,
             search: { caseInsensitive: this.config.CASE_INSENSITIVE, regex: this.config.REGEX },
             language: {
-                processing: "处理中...",
-                lengthMenu: "每页 _MENU_ 项",
-                zeroRecords: "没有匹配结果",
-                info: "_START_ ~ _END_ 项 (共 _TOTAL_ 项)",
-                infoEmpty: "共 0 项",
-                infoFiltered: "(由 _MAX_ 项结果过滤)",
+                processing: this.i18n.t("tableConfig.processing"),
+                lengthMenu: this.i18n.t("tableConfig.lengthMenu"),
+                zeroRecords: this.i18n.t("tableConfig.zeroRecords"),
+                info: this.i18n.t("tableConfig.info"),
+                infoEmpty: this.i18n.t("tableConfig.infoEmpty"),
+                infoFiltered: this.i18n.t("tableConfig.infoFiltered"),
+                search: this.i18n.t("tableConfig.search"),
+                emptyTable: this.i18n.t("tableConfig.emptyTable"),
+                loadingRecords: this.i18n.t("tableConfig.loadingRecords"),
                 infoPostFix: "",
-                search: "搜索:",
                 searchPlaceholder: "",
                 url: "",
-                emptyTable: "表中数据为空",
-                loadingRecords: "载入中...",
                 infoThousands: ",",
                 thousands: ".",
                 paginate: { first: "<<", previous: "<", next: ">", last: ">>" },
@@ -131,23 +131,26 @@ class datatablesPlugin extends BasePlugin {
         meta.uuid = uuid;
         meta.target = table;
 
-        return [{
-            act_name: uuid ? "转回普通表格" : "增强表格",
-            act_value: uuid ? "rollback_current" : "convert_current",
-            act_hint: !table ? "请将光标定位到表格后点击鼠标右键" : "",
+        const hint = this.i18n.t("actHint.positioningTable")
+        const act_name = this.i18n.t(uuid ? "act.revert_table" : "act.enhance_table")
+        const act = {
+            act_name,
+            act_value: uuid ? "revert_table" : "enhance_table",
+            act_hint: !table ? hint : "",
             act_disabled: !table,
-        }]
+        }
+        return [act]
     }
 
     call = async (action, meta) => {
-        if (action === "convert_current") {
-            await this.newDataTable(meta.target);
-        } else if (action === "rollback_current") {
-            this.removeDataTable(meta.uuid);
+        if (action === "enhance_table") {
+            await this.newDataTable(meta.target)
+        } else if (action === "revert_table") {
+            this.removeDataTable(meta.uuid)
         }
     }
 }
 
 module.exports = {
     plugin: datatablesPlugin,
-};
+}

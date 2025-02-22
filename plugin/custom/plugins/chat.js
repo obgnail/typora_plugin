@@ -48,13 +48,13 @@ class chatPlugin extends BaseCustomPlugin {
 
             const i = line.indexOf(":");
             if (i === -1) {
-                throwErrorIfNeed(idx, "无法通过冒号切分出 nickname 和 text");
+                throwErrorIfNeed(idx, this.i18n.t("error.noColon"))
                 return;
             }
             let [name, text] = [line.slice(0, i), line.slice(i + 1)].map(s => s.trim());
             text = text.replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t");
             if (!name || !text) {
-                throwErrorIfNeed(idx, "nickname 或 text 为空");
+                throwErrorIfNeed(idx, this.i18n.t("error.emptyNicknameOrEmptyText"))
                 return;
             }
             if (allowMarkdown) {
@@ -87,4 +87,4 @@ class chatPlugin extends BaseCustomPlugin {
 
 module.exports = {
     plugin: chatPlugin,
-};
+}

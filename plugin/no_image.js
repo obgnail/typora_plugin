@@ -22,8 +22,9 @@ class noImageModePlugin extends BasePlugin {
 
     toggleNoImageMode = async () => {
         const func = this.isNoImageMode ? this.disableNoImageMode : this.enableNoImageMode
-        await func();
-        this.utils.notification.show(this.isNoImageMode ? "无图模式已启用" : "无图模式已关闭");
+        await func()
+        const msg = this.i18n.t(this.isNoImageMode ? "modeEnabled" : "modeDisabled")
+        this.utils.notification.show(msg)
     }
 
     process = () => this.isNoImageMode && this.enableNoImageMode();

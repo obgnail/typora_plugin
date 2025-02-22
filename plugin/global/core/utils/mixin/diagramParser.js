@@ -1,9 +1,10 @@
 /**
- * 动态注册、动态注销新的代码块图表语法
+ * Dynamically register and unregister new code block diagram.
  */
 class diagramParser {
-    constructor(utils) {
+    constructor(utils, i18n) {
         this.utils = utils;
+        this.i18n = i18n;
         this.diagramModeFlag = "custom_diagram";  // can be any value, just a flag
         this.panel = `<div class="md-diagram-panel md-fences-adv-panel"><div class="md-diagram-panel-header"></div><div class="md-diagram-panel-preview"></div><div class="md-diagram-panel-error"></div></div>`;
         this.exitInteractiveStrategies = ["click_exit_button"];
@@ -15,13 +16,13 @@ class diagramParser {
 
     /**
      * @param {string} lang: language
-     * @param {string} mappingLang: 映射到哪个语言
-     * @param {boolean} destroyWhenUpdate: 更新前是否清空preview里的html
-     * @param {function(cid, content, $pre): Promise<null>} renderFunc: 渲染函数，根据内容渲染所需的图像. 1)cid: 当前代码块的cid 2)content: 代码块的内容 3) $pre: 代码块的jquery element
-     * @param {function(cid): null} cancelFunc: 取消函数，触发时机：1)修改为其他的lang 2)当代码块内容被清空 3)当代码块内容不符合语法
-     * @param {function(): null} destroyAllFunc: 当切换文档时，需要将全部的图表destroy掉（注意：不可为AsyncFunction，防止destroyAll的同时，发生fileOpened事件触发renderFunc）
-     * @param {function(): string} extraStyleGetter: 用于导出时，新增css
-     * @param {boolean} interactiveMode: 交互模式下，不会自动展开代码块
+     * @param {string} mappingLang: language to map to
+     * @param {boolean} destroyWhenUpdate: Whether to clear the HTML in the preview before updating
+     * @param {function(cid, content, $pre): Promise<null>} renderFunc: Renders based on the content. 1)cid: CID of the current code block. 2)content: content of the code block. 3) $pre: jQuery element of the code block.
+     * @param {function(cid): null} cancelFunc: Cancel function, triggered when: 1) modified to another lang 2) the code block content is cleared 3) the code block content does not conform to the syntax
+     * @param {function(): null} destroyAllFunc: When switching documents, all charts need to be destroyed (Note: cannot be an AsyncFunction, to prevent the fileOpened event from triggering renderFunc at the same time as destroyAll)
+     * @param {function(): string} extraStyleGetter: Used to add CSS when exporting
+     * @param {boolean} interactiveMode: In interactive mode, the code block will not automatically expand
      */
     register = ({
                     lang, mappingLang, destroyWhenUpdate = false,
@@ -39,22 +40,22 @@ class diagramParser {
     unregister = lang => this.parsers.delete(lang)
 
     process = async () => {
-        if (this.parsers.size === 0) return;
-        await this.polyfillStyle();
-        this.fixInteractiveMode();
-        this.registerLangTooltip();      // 语言提示
-        this.registerLangModeMapping();  // A语言映射为B语言
-        this.onAddCodeBlock();           // 添加代码块时
-        this.onTryAddLangUndo();         // 修改语言时
-        this.onUpdateDiagram();          // 更新时
-        this.onExport();                 // 导出时
-        this.onFocus();                  // 聚焦时
-        this.onChangeFile();             // 切换文件时
-        this.onCheckIsDiagramType();     // 判断是否为Diagram时
-        this.log();
+        if (this.parsers.size === 0) return
+        await this.polyfillStyle()
+        this.fixInteractiveMode()
+        this.registerLangTooltip()
+        this.registerLangModeMapping()
+        this.onAddCodeBlock()           // When adding code blocks
+        this.onTryAddLangUndo()         // When modifying the language
+        this.onUpdateDiagram()          // When updating
+        this.onExport()                 // When exporting
+        this.onFocus()                  // When focusing
+        this.onChangeFile()             // When switching files
+        this.onCheckIsDiagramType()     // When determining whether it is a Diagram
+        this.log()
     }
 
-    log = () => console.debug(`[ diagram parser ] [ ${this.parsers.size} ]:`, this.parsers);
+    log = () => console.debug(`[ diagram parser ] [ ${this.parsers.size} ]:`, this.parsers)
 
     renderAllLangFence = lang => {
         document.querySelectorAll(`#write .md-fences[lang=${lang}]`).forEach(fence => {
@@ -83,7 +84,7 @@ class diagramParser {
         }
     }
 
-    // 如果没有开启fenceEnhance插件，并且EXIT_INTERACTIVE_MODE为click_exit_button，那么强制所有的图形都关闭交互模式
+    /** If the fenceEnhance plugin is disabled and EXIT_INTERACTIVE_MODE === click_exit_button, then force all charts to disable interactive mode. */
     fixInteractiveMode = () => {
         const cfg = this.utils.getGlobalSetting("EXIT_INTERACTIVE_MODE");
         if (Array.isArray(cfg)) {
@@ -125,42 +126,42 @@ class diagramParser {
 
     isDiagramType = lang => File.editor.diagrams.constructor.isDiagramType(lang)
 
-    // 当代码块内容出现语法错误时调用，此时页面将显示错误信息
+    /** Called when a syntax error occurs in the code block content, at which point the page will display an error message. */
     throwParseError = (errorLine, reason) => {
         throw { errorLine, reason }
     }
 
     getErrorMessage = error => {
         if (error instanceof Error) {
-            return this.utils.escape(error.stack);
+            return this.utils.escape(error.stack)
         }
-        const { errorLine, reason } = error;
-        let msg = errorLine ? `第 ${errorLine} 行发生错误。` : '';
+        const { errorLine, reason } = error
+        let msg = errorLine ? this.i18n.t("global", "lineError", { errorLine }) : ''
         if (reason instanceof Error) {
-            msg += this.utils.escape(reason.stack);
+            msg += "\n" + this.utils.escape(reason.stack)
         } else if (reason) {
-            msg += `错误原因：${reason}`;
+            msg += `: ${reason}`
         }
-        return msg || error.toString();
+        return msg || error.toString()
     }
 
     whenCantDraw = async (cid, lang, $pre, content, error) => {
         if (!error) {
-            $pre.removeClass("md-fences-advanced");
-            $pre.children(".md-diagram-panel").remove();
+            $pre.removeClass("md-fences-advanced")
+            $pre.children(".md-diagram-panel").remove()
         } else {
-            $pre.find(".md-diagram-panel-header").text(lang);
-            $pre.find(".md-diagram-panel-preview").text("发生异常，绘图失败");
-            $pre.find(".md-diagram-panel-error").html(`<pre>${this.getErrorMessage(error)}</pre>`);
+            $pre.find(".md-diagram-panel-header").text(lang)
+            $pre.find(".md-diagram-panel-preview").text(this.i18n.t("global", "drawingFailed"))
+            $pre.find(".md-diagram-panel-error").html(`<pre>${this.getErrorMessage(error)}</pre>`)
         }
-        await this.noticeRollback(cid);
+        await this.noticeRollback(cid)
     }
 
     whenEmptyContent = async (cid, lang, $pre) => {
-        $pre.find(".md-diagram-panel-header").text("");
-        $pre.find(".md-diagram-panel-preview").text("空");
-        $pre.find(".md-diagram-panel-error").html("");
-        await this.noticeRollback(cid);
+        $pre.find(".md-diagram-panel-header").text("")
+        $pre.find(".md-diagram-panel-preview").text(this.i18n.t("global", "empty"))
+        $pre.find(".md-diagram-panel-error").html("")
+        await this.noticeRollback(cid)
     }
 
     noticeRollback = async cid => {
@@ -221,15 +222,15 @@ class diagramParser {
         if (lang_ === undefined) return;
 
         const lang = lang_.trim().toLowerCase();
-        // 不是Diagram类型，需要展示增强按钮
+        // If it is not Diagram, show the enhancement button.
         if (!this.isDiagramType(lang)) {
             $pre.children(".fence-enhance").show();
             $pre.removeClass("md-fences-advanced md-fences-interactive plugin-custom-diagram");
             await this.noticeRollback(cid);
         } else {
-            // 是Diagram类型，但不是自定义类型，不展示增强按钮，直接返回即可
+            // If it is Diagram, but not a custom type, do not show the enhancement button and return directly.
             $pre.children(".fence-enhance").hide();
-            // 是Diagram类型，也是自定义类型，调用其回调函数
+            // If it is Diagram and also a custom type, call its callback function.
             const parser = this.parsers.get(lang);
             if (parser) {
                 $pre.addClass("plugin-custom-diagram");
@@ -242,7 +243,8 @@ class diagramParser {
         }
     }
 
-    // // 当用户不断键入的时候，如何在保证交互体验的前提下减少渲染次数？答：用户第一次键入时马上渲染，接着每X毫秒渲染一次，最后根据最终输入串再渲染一次
+    // // When the user is continuously typing, how to reduce rendering frequency while ensuring interactive experience?
+    // // A: Render immediately when the user types for the first time, then render once every X milliseconds, and finally render again based on the final input string.
     // renderDiagram = async cid => {
     //     if (this.pending.has(cid)) return;
     //
@@ -377,11 +379,12 @@ class diagramParser {
             const hasInteractive = Array.from(this.parsers.values()).some(parser => parser.interactiveMode);
             if (!editBtn || !hasInteractive) return;
 
+            const editText = this.i18n.t("global", "edit")
             const listener = (ev, button) => {
                 button.closest(".fence-enhance").querySelectorAll(".enhance-btn").forEach(ele => ele.style.display = "");
                 enableFocus();
             }
-            const ok = registerFenceEnhanceButton("edit-diagram", "editDiagram", "编辑", "fa fa-pencil", false, listener);
+            const ok = registerFenceEnhanceButton("edit-diagram", "editDiagram", editText, "fa fa-pencil", false, listener);
             if (!ok) return;
 
             this.utils.entities.$eWrite.on("mouseenter", ".md-fences-interactive:not(.md-focus)", function () {

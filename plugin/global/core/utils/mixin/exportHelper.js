@@ -1,5 +1,5 @@
 /**
- * 动态注册导出时的额外操作
+ * Dynamically register additional actions on export.
  */
 class exportHelper {
     constructor(utils) {
@@ -10,14 +10,14 @@ class exportHelper {
     }
 
     /**
-     * @param {string} name: 取个名字
-     * @param {function(exportOptions): string | null} beforeExportToHTML: 如果返回string，将加入到extraCSS
-     * @param {function(html, exportOptions): html | null} afterExportToHTML: 如果返回string，将替换HTML
+     * @param {string} name: Give it a name.
+     * @param {function(exportOptions): string | null} beforeExportToHTML: If returns a string, it will be added to extraCSS.
+     * @param {function(html, exportOptions): html | null} afterExportToHTML: If returns a string, it will replace the HTML.
      */
     register = (name, beforeExportToHTML, afterExportToHTML) => this.htmlHelpers.set(name, { beforeExportToHTML, afterExportToHTML })
     unregister = name => this.htmlHelpers.delete(name)
 
-    /** 使用 pandoc 导出 */
+    /** Export using Pandoc. */
     registerNative = (name, beforeExportToNative, afterExportToNative) => this.nativeHelpers.set(name, { beforeExportToNative, afterExportToNative })
     unregisterNative = name => this.nativeHelpers.delete(name)
 
@@ -77,7 +77,8 @@ class exportHelper {
             return html
         }
 
-        // 旧版本的Typora的export函数不是AsyncFunction，尽最大努力兼容旧版本
+        // The exportToHTML function in older versions of Typora is not an AsyncFunction.
+        // Make every effort to be compatible with older versions.
         const callback = () => {
             this.isAsync = this.utils.isAsyncFunction(File.editor.export.exportToHTML)
             const after = this.isAsync ? afterFn : afterFnSync

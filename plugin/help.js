@@ -9,29 +9,30 @@ class helpPlugin extends BasePlugin {
     }
 
     init = () => {
-        const act_hint = "此功能仅对开发者开放";
-        this.staticActions = [
-            { act_name: "升级插件", act_value: "update_plugin", act_hidden: true },
-            { act_name: "启停插件", act_value: "preferences", act_hidden: true },
-            { act_name: "卸载插件", act_value: "uninstall_plugin" },
-            { act_name: "修改配置", act_value: "open_setting_folder" },
-            { act_name: "备份配置", act_value: "backup_setting_file" },
-            { act_name: "查看配置", act_value: "show_setting" },
-            { act_name: "环境信息", act_value: "show_env" },
-            { act_name: "修改样式", act_value: "set_user_styles", act_hint },
-            { act_name: "我要写插件", act_value: "new_custom_plugin", act_hint },
-            { act_name: "Typora 自动化", act_value: "json_rpc", act_hint },
-            { act_name: "Github 图床", act_value: "github_picture_bed" },
-            { act_name: "请开发者喝咖啡", act_value: "donate" },
-            { act_name: "关于", act_value: "about" },
-        ]
+        const act_hint = this.i18n.t("developersOnly")
+        this.staticActions = this.i18n.fillActions([
+            { act_value: "update_plugin", act_hidden: true },
+            { act_value: "preferences", act_hidden: true },
+            { act_value: "uninstall_plugin" },
+            { act_value: "open_setting_folder" },
+            { act_value: "backup_setting_file" },
+            { act_value: "show_setting" },
+            { act_value: "show_env" },
+            { act_value: "set_user_styles", act_hint },
+            { act_value: "new_custom_plugin", act_hint },
+            { act_value: "json_rpc", act_hint },
+            { act_value: "github_picture_bed" },
+            { act_value: "donate" },
+            { act_value: "about" },
+        ])
     }
 
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+            const versionText = this.i18n.t("currentVersion")
             this.updater = this.utils.getPlugin("updater")
             this.preferences = this.utils.getPlugin("preferences")
-            this.staticActions[0].act_name += this.version ? `（当前版本：${this.version}）` : ""
+            this.staticActions[0].act_name += this.version ? `（${versionText}：${this.version}）` : ""
             this.staticActions[0].act_hidden = !this.updater
             this.staticActions[1].act_hidden = !this.preferences
         })
@@ -64,24 +65,29 @@ class helpPlugin extends BasePlugin {
     }
 
     showEnv = async () => {
-        const info = await this.getInfo();
-        const components = [{ label: "", type: "textarea", rows: 15, content: JSON.stringify(info, null, "\t") }];
-        await this.utils.dialog.modalAsync({ title: "环境信息", width: "600px", components });
+        const title = this.i18n.t("act.show_env")
+        const info = await this.getInfo()
+        const content = JSON.stringify(info, null, "\t")
+        const components = [{ label: "", type: "textarea", rows: 15, content }]
+        const op = { title, components, width: "600px" }
+        await this.utils.dialog.modalAsync(op)
     }
 
     showSetting = async () => {
         const [base, custom] = await Promise.all([this.utils.runtime.readBasePluginSetting(), this.utils.runtime.readCustomPluginSetting()])
         const toTextarea = setting => ({ label: "", type: "textarea", rows: 15, content: this.utils.stringifyToml(setting) })
         const components = [toTextarea(base), toTextarea(custom)]
-        await this.utils.dialog.modalAsync({ title: "插件配置", width: "600px", components })
+        const title = this.i18n.t("act.show_setting")
+        const op = { title, components, width: "600px" }
+        await this.utils.dialog.modalAsync(op)
     }
 
     about = () => {
-        const p = [
-            '感谢您使用 Typora Plugin，本项目开源、免费，请自由地享受。如果本项目帮助到您，欢迎 ⭐，欢迎推荐给你志同道合的朋友使用。',
-            `<p style="text-align: center; margin-top: 2em;">© Designed with ♥ by <a class="plu-github-me">obgnail</a> | Open Source on <a class="plu-github">GitHub</a> | <a class="plu-donate">Donate</a></p>`,
-        ]
-        const label = p.map(e => `<p style="font-size: 1.2em">${e}</p>`).join("");
+        const title = this.i18n.t("act.about")
+        const leaveWord = this.i18n.t("leaveWord")
+
+        const copyright = `<p style="text-align: center; margin-top: 2em;">© Designed with ♥ by <a class="plu-github-me">obgnail</a> | Open Source on <a class="plu-github">GitHub</a> | <a class="plu-donate">Donate</a></p>`
+        const label = [leaveWord, copyright].map(e => `<p style="font-size: 1.2em">${e}</p>`).join("");
         const onclick = ev => {
             const a = ev.target.closest("a");
             if (!a) return;
@@ -94,7 +100,8 @@ class helpPlugin extends BasePlugin {
                 this.donate();
             }
         }
-        this.utils.dialog.modal({ title: "关于", width: "550px", components: [{ label, type: "span", onclick }] });
+        const op = { title, width: "550px", components: [{ label, type: "span", onclick }] }
+        this.utils.dialog.modal(op)
     }
 
     uninstall = async () => {
@@ -112,21 +119,29 @@ class helpPlugin extends BasePlugin {
                 alert(e.toString());
                 return;
             }
-            const msg = { type: "info", title: "卸载成功", buttons: ["确定"], message: "插件系统已经卸载" };
-            await this.utils.showMessageBox(msg);
-            this.utils.restartTypora(false);
+
+            const title = this.i18n.t("uninstall.ok")
+            const message = this.i18n.t("uninstall.okMsg")
+            const confirm = this.i18n.seek("global", "confirm")
+            const op = { type: "info", title, message, buttons: [confirm] }
+            await this.utils.showMessageBox(op)
+            this.utils.restartTypora(false)
         }
 
-        const reconfirm = "卸载插件系统";
-        const label = `请输入「${reconfirm}」启动自毁程序`;
-        const components = [{ label: label, type: "input", placeholder: reconfirm }];
-        const { response, submit: [sub] } = await this.utils.dialog.modalAsync({ title: "卸载插件系统", components });
-        if (response === 0) return;
+        const title = this.i18n.t("uninstall.title")
+        const reconfirm = this.i18n.t("uninstall.reconfirmInput")
+        const label = this.i18n.t("uninstall.hint", { reconfirm })
+        const check = this.i18n.t("uninstall.incorrectContent")
+
+        const components = [{ label, type: "input", placeholder: reconfirm }]
+        const op = { title, components }
+        const { response, submit: [sub] } = await this.utils.dialog.modalAsync(op)
+        if (response === 0) return
         if (sub !== reconfirm) {
-            alert("请输入正确的内容");
-            return;
+            alert(check)
+            return
         }
-        await _uninstall();
+        await _uninstall()
     }
 
     donate = () => {
@@ -165,7 +180,8 @@ class helpPlugin extends BasePlugin {
                 const squareList = hex.split("-");
                 const squareCount = squareList.length;
                 const squareSize = size / squareCount;
-                const sideLength = squareSize + 0.3;  // 除法和canvas的像素放大问题导致精度丢失，小加0.3使之更好看
+                // Division and canvas pixel magnification issues lead to precision loss. Adding 0.3 makes it look better.
+                const sideLength = squareSize + 0.3;
                 const bin = squareList.map(e => parseInt(e, 16).toString(2).padStart(squareCount, "0")).join("");
                 const table = bin.match(new RegExp(`(.{1,${squareCount}})`, "g"));
                 for (let colIdx = 0; colIdx < table.length; colIdx++) {
@@ -179,10 +195,12 @@ class helpPlugin extends BasePlugin {
             }
         }
 
-        const message = `<i style="font-size: 1.2em">Ashen One, Mayst thou thy peace discov'r.</i>`;
+        const message = `<i style="font-size: 1.3em">Ashen One, Mayst thou thy peace discov'r.</i>`;
         const canvas = `<canvas id="${id}" width="${canvasWidth}" height="${size}" style="margin: auto; display: block;"></canvas>`
-        const components = [{ label: message, type: "span" }, { label: canvas, type: "span" }];
-        this.utils.dialog.modal({ title: "请开发者喝咖啡", width: "500px", components, onload });
+        const title = this.i18n.t("act.donate")
+        const components = [{ label: message, type: "span" }, { label: canvas, type: "span" }]
+        const op = { title, components, onload, width: "500px" }
+        this.utils.dialog.modal(op)
     }
 
     call = action => {

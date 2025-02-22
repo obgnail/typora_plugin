@@ -31,18 +31,21 @@ class mdPaddingPlugin extends BasePlugin {
     formatFile = async () => await this.utils.editCurrentFile(this.formatAndRemoveMultiLineBreak)
 
     call = async () => {
-        this.utils.notification.show("混排优化中，请稍等", "info");
-        await File.saveUseNode();
-        const rangy = File.editor.selection.getRangy();
+        const running = this.i18n.t("running")
+        const done = this.i18n.t("done")
+
+        this.utils.notification.show(running, "info")
+        await File.saveUseNode()
+        const rangy = File.editor.selection.getRangy()
         if (this.config.FORMAT_IN_SELECTION_ONLY && rangy && !rangy.collapsed) {
-            await this.formatSelection();
+            await this.formatSelection()
         } else {
-            await this.formatFile();
+            await this.formatFile()
         }
-        this.utils.notification.show("混排优化完成");
+        this.utils.notification.show(done)
     }
 }
 
 module.exports = {
     plugin: mdPaddingPlugin
-};
+}

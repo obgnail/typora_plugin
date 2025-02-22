@@ -4,8 +4,8 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
     html = () => `
         <div id="plugin-scroll-bookmarker" class="plugin-common-modal plugin-common-hidden">
             <div class="plugin-scroll-bookmarker-icon-group">
-                <div class="plugin-scroll-bookmarker-icon ion-close" action="close" ty-hint="关闭"></div>
-                <div class="plugin-scroll-bookmarker-icon ion-arrow-move" action="move" ty-hint="移动"></div>
+                <div class="plugin-scroll-bookmarker-icon ion-close" action="close" ty-hint="${this.i18n.t('func.close')}"></div>
+                <div class="plugin-scroll-bookmarker-icon ion-arrow-move" action="move" ty-hint="${this.i18n.t('func.move')}"></div>
             </div>
             <div class="plugin-scroll-bookmarker-list"></div>
         </div>
@@ -145,7 +145,7 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
         }
 
         if (this.entities.list.childElementCount === 0) {
-            this.entities.list.textContent = "请尝试 alt+click 正文内容";
+            this.entities.list.textContent = this.i18n.t("tryAltClick")
         }
     }
 
@@ -227,4 +227,4 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
 
 module.exports = {
     plugin: scrollBookmarkerPlugin,
-};
+}

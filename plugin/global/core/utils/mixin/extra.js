@@ -1,5 +1,5 @@
 /**
- * 注册额外的HTML和CSS
+ * Register additional HTML and CSS.
  */
 class extra {
     constructor(utils) {

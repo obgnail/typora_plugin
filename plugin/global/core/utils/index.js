@@ -5,6 +5,7 @@ const CHILD_PROCESS = require('child_process')
 const FS_EXTRA = require("fs-extra")
 const TOML = require("./common/toml")
 const { getHook } = require("./env")
+const { i18n } = require("../i18n")
 
 class utils {
     static nodeVersion = process && process.versions && process.versions.node
@@ -16,9 +17,9 @@ class utils {
     static supportHasSelector = CSS.supports("selector(:has(*))")
     static separator = File.isWin ? "\\" : "/"
     static tempFolder = window._options.tempPath || OS.tmpdir()
-    static nonExistSelector = "#__non_exist__"                // 插件临时不可点击，返回此
-    static disableForeverSelector = "#__disabled__"           // 插件永远不可点击，返回此
-    static stopLoadPluginError = new Error("stopLoadPlugin")  // 用于插件的beforeProcess方法，若希望停止加载插件，返回此
+    static nonExistSelector = "#__non_exist__"                // Plugin temporarily unavailable, return this.
+    static disableForeverSelector = "#__disabled__"           // Plugin permanently unavailable, return this.
+    static stopLoadPluginError = new Error("stopLoadPlugin")  // For plugin's beforeProcess method; return this to stop loading the plugin.
     static Package = Object.freeze({
         OS: OS,
         Path: PATH,
@@ -28,7 +29,7 @@ class utils {
         ChildProcess: CHILD_PROCESS,
     })
 
-    ////////////////////////////// 插件相关 //////////////////////////////
+    ////////////////////////////// plugin //////////////////////////////
     static getAllPlugins = () => global.__plugins__
     static getAllCustomPlugins = () => global.__plugins__.custom && global.__plugins__.custom.plugins
     static getPlugin = fixedName => global.__plugins__[fixedName]
@@ -90,7 +91,7 @@ class utils {
             func(target[0])
         }
     }
-    static _meta = {} // 用于在右键菜单功能中传递数据，不可手动调用此变量
+    static _meta = {} // Used to pass data in the context menu; do not manually call this variable.
     static updatePluginDynamicActions = (fixedName, anchorNode, notInContextMenu = false) => {
         const plugin = this.getPlugin(fixedName)
         if (plugin && plugin.getDynamicActions instanceof Function) {
@@ -127,7 +128,7 @@ class utils {
     }
 
 
-    ////////////////////////////// 事件 //////////////////////////////
+    ////////////////////////////// event //////////////////////////////
     static metaKeyPressed = ev => File.isMac ? ev.metaKey : ev.ctrlKey
     static shiftKeyPressed = ev => ev.shiftKey
     static altKeyPressed = ev => ev.altKey
@@ -141,7 +142,7 @@ class utils {
     }
 
 
-    ////////////////////////////// 纯函数 //////////////////////////////
+    ////////////////////////////// pure function //////////////////////////////
     static noop = args => args
 
     /** @description param fn cannot be an async function that returns promiseLike object */
@@ -370,7 +371,7 @@ class utils {
         return 0
     }
 
-    ////////////////////////////// 业务文件操作 //////////////////////////////
+    ////////////////////////////// business file operation //////////////////////////////
     static editCurrentFile = async (replacement, reloadContent = true) => {
         await this.fixScrollTop(async () => {
             const bak = File.presentedItemChanged
@@ -449,7 +450,7 @@ class utils {
         filename = filename || File.getFileName() || (new Date()).getTime().toString() + ".md";
         const dirPath = this.getFilePath() ? this.getCurrentDirPath() : this.getMountFolder();
         if (!dirPath) {
-            alert("空白页不可使用此功能");
+            alert(i18n.t("global", "unavailableOnBlankPage"))
             return;
         }
         let filepath = PATH.resolve(dirPath, filename);
@@ -473,7 +474,7 @@ class utils {
         return fileName
     }
 
-    ////////////////////////////// 基础文件操作 //////////////////////////////
+    ////////////////////////////// Basic file operations //////////////////////////////
     static getDirname = () => global.dirname || global.__dirname
     static getHomeDir = () => OS.homedir() || File.option.userPath
     static getFilePath = () => File.filePath || (File.bundle && File.bundle.filePath) || ""
@@ -510,9 +511,11 @@ class utils {
             await FS.promises.writeFile(filepath, content);
             return true
         } catch (e) {
-            const detail = e.toString();
-            const op = { type: "error", title: "Typora Plugin", buttons: ["确定"], message: "写入文件失败", detail };
-            await this.showMessageBox(op);
+            const detail = e.toString()
+            const confirm = i18n.t("global", "confirm")
+            const message = i18n.t("global", "writeFileFailed")
+            const op = { type: "error", title: "Typora Plugin", buttons: [confirm], message, detail }
+            await this.showMessageBox(op)
         }
     }
 
@@ -554,7 +557,7 @@ class utils {
         return output
     }
 
-    ////////////////////////////// 业务操作 //////////////////////////////
+    ////////////////////////////// Business Operations //////////////////////////////
     static exitTypora = () => JSBridge.invoke("window.close");
     static restartTypora = (reopenClosedFiles = true) => {
         if (reopenClosedFiles) {
@@ -568,7 +571,18 @@ class utils {
 
     static openUrl = url => (File.editor.tryOpenUrl_ || File.editor.tryOpenUrl)(url, 1);
 
-    static showMessageBox = async ({ type = "info", title = "typora", message, detail, buttons = ["确定", "取消"], defaultId = 0, cancelId = 1, normalizeAccessKeys = true, checkboxLabel }) => {
+    static showMessageBox = async (
+        {
+            type = "info",
+            title = "typora",
+            message, detail,
+            buttons = [i18n.t("global","confirm"), i18n.t("global","cancel")],
+            defaultId = 0,
+            cancelId = 1,
+            normalizeAccessKeys = true,
+            checkboxLabel,
+        }
+    ) => {
         const op = { type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel };
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
@@ -685,7 +699,7 @@ class utils {
         return root
     }
 
-    ////////////////////////////// 业务DOM操作 //////////////////////////////
+    ////////////////////////////// DOM Operations //////////////////////////////
     static removeElement = ele => ele && ele.parentElement && ele.parentElement.removeChild(ele)
     static removeElementByID = id => this.removeElement(document.getElementById(id))
 
@@ -740,6 +754,16 @@ class utils {
             .replace(/(?<!\\)!\[(.+?)\]\((.+?)\)/gs, imageReplacement)
     }
 
+    static buildTable = rows => {
+        const first = rows.shift()
+        const th = first.map(row => `<th>${row}</th>`).join("")
+        const trs = rows.map(row => row.map(e => `<td>${e}</td>`).join(""))
+        const all = [th, ...trs].map(e => `<tr>${e}</tr>`)
+        const thead = all.shift()
+        const tbody = all.join("")
+        return `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`
+    }
+
     static moveCursor = $target => File.editor.selection.jumpIntoElemEnd($target);
 
     static scroll = ($target, height = -1, moveCursor = false, showHiddenElement = true) => {
@@ -774,7 +798,7 @@ class utils {
         cm.setCursor({ line: lineToGo - 1, ch: 0 });
     }
 
-    // content: 字符串中，\n表示软换行；\n\n表示硬换行
+    // content: string type. \n represents a soft line break; \n\n represents a hard line break.
     static insertText = (anchorNode, content, restoreLastCursor = true) => {
         if (restoreLastCursor) {
             File.editor.contextMenu.hide();
@@ -932,7 +956,7 @@ class utils {
         active.scrollIntoView({ block: "nearest" });
     }
 
-    static stopCallError = new Error("stopCall") // 用于decorate方法，若希望停止执行原生函数，返回此
+    static stopCallError = new Error("stopCall") // For the decorate method; return this to stop executing the native function.
     static decorate = (objGetter, attr, before, after, changeResult = false) => {
         function decorator(original, before, after) {
             const fn = function () {

@@ -16,7 +16,11 @@ class collapseTablePlugin extends BasePlugin {
             if (!$edit || $edit.length === 0) return
 
             const icon = $figure.hasClass(this.className) ? "fa fa-plus" : "fa fa-minus"
-            const span = `<span class="md-th-button right-th-button"><button type="button" class="btn btn-default plugin-collapse-table-btn" ty-hint="表格折叠"><span class="${icon}"></span></button></span>`
+            const span = `<span class="md-th-button right-th-button">
+                            <button type="button" class="btn btn-default plugin-collapse-table-btn" ty-hint="${this.pluginName}">
+                                <span class="${icon}"></span>
+                            </button>
+                         </span>`
             $edit.append($(span))
         })
 
@@ -38,15 +42,13 @@ class collapseTablePlugin extends BasePlugin {
     }
 
     getDynamicActions = (anchorNode, meta) => {
-        const figure = anchorNode.closest("#write .table-figure");
-        const act_disabled = !figure;
-        const act_hint = !figure ? "请将光标定位到表格后点击鼠标右键" : "";
-        const act_name = !figure ? "表格折叠" : (figure.classList.contains(this.className) ? "展开表格" : "折叠表格");
-        meta.target = figure;
-        return [
-            { act_name, act_hint, act_disabled, act_value: "convert_current" },
-            { act_name: "启用功能：记住表格折叠状态", act_value: "record_collapse_state", act_state: this.config.RECORD_COLLAPSE }
-        ]
+        const figure = anchorNode.closest("#write .table-figure")
+        const act_hint = !figure ? this.i18n.t("actHint.convert_current") : ""
+        meta.target = figure
+        return this.i18n.fillActions([
+            { act_value: "convert_current", act_hint, act_disabled: !figure },
+            { act_value: "record_collapse_state", act_state: this.config.RECORD_COLLAPSE }
+        ])
     }
 
     toggleTable = figure => {
@@ -89,4 +91,4 @@ class collapseTablePlugin extends BasePlugin {
 
 module.exports = {
     plugin: collapseTablePlugin
-};
+}

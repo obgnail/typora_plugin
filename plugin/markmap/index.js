@@ -12,11 +12,11 @@ class markmapPlugin extends BasePlugin {
     hotkey = () => [this.tocMarkmap, this.fenceMarkmap].filter(Boolean).flatMap(p => p.hotkey())
 
     init = () => {
-        this.staticActions = [
-            { act_name: "插入markmap：大纲", act_value: "draw_fence_outline", act_hotkey: this.config.FENCE_HOTKEY, act_hidden: !this.fenceMarkmap },
-            { act_name: "插入markmap：模板", act_value: "draw_fence_template", act_hidden: !this.fenceMarkmap },
-            { act_name: "思维导图弹窗", act_value: "toggle_toc", act_hotkey: this.config.TOC_HOTKEY, act_hidden: !this.tocMarkmap }
-        ]
+        this.staticActions = this.i18n.fillActions([
+            { act_value: "draw_fence_outline", act_hotkey: this.config.FENCE_HOTKEY, act_hidden: !this.fenceMarkmap },
+            { act_value: "draw_fence_template", act_hidden: !this.fenceMarkmap },
+            { act_value: "toggle_toc", act_hotkey: this.config.TOC_HOTKEY, act_hidden: !this.tocMarkmap }
+        ])
     }
 
     process = () => {
@@ -197,6 +197,7 @@ class tocMarkmap {
     constructor(plugin) {
         this.controller = plugin;
         this.utils = plugin.utils;
+        this.i18n = plugin.i18n;
         this.config = plugin.config;
         this.MarkmapLib = plugin.MarkmapLib;
     }
@@ -206,15 +207,15 @@ class tocMarkmap {
             <div class="plugin-markmap-wrap">
                 <div class="plugin-markmap-grip grip-right plugin-common-hidden"></div>
                 <div class="plugin-markmap-header">
-                    <div class="plugin-markmap-icon ion-close" action="close" ty-hint="关闭"></div>
-                    <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="全屏"></div>
-                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="移动"></div>
-                    <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="图形适配窗口"></div>
-                    <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="鼠标穿透"></div>
-                    <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="配置"></div>
-                    <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="导出"></div>
-                    <div class="plugin-markmap-icon ion-chevron-up" action="pinTop" ty-hint="固定到顶部"></div>
-                    <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="固定到右侧"></div>
+                    <div class="plugin-markmap-icon ion-close" action="close" ty-hint="${this.i18n.t('func.close')}"></div>
+                    <div class="plugin-markmap-icon ion-qr-scanner" action="expand" ty-hint="${this.i18n.t('func.expand')}"></div>
+                    <div class="plugin-markmap-icon ion-arrow-move" action="move" ty-hint="${this.i18n.t('func.move')}"></div>
+                    <div class="plugin-markmap-icon ion-cube" action="fit" ty-hint="${this.i18n.t('func.fit')}"></div>
+                    <div class="plugin-markmap-icon ion-pinpoint" action="penetrateMouse" ty-hint="${this.i18n.t('func.penetrateMouse')}"></div>
+                    <div class="plugin-markmap-icon ion-android-settings" action="setting" ty-hint="${this.i18n.t('func.setting')}"></div>
+                    <div class="plugin-markmap-icon ion-archive" action="download" ty-hint="${this.i18n.t('func.download')}"></div>
+                    <div class="plugin-markmap-icon ion-chevron-up" action="pinTop" ty-hint="${this.i18n.t('func.pinTop')}"></div>
+                    <div class="plugin-markmap-icon ion-chevron-right" action="pinRight" ty-hint="${this.i18n.t('func.pinRight')}"></div>
                 </div>
                 <svg id="plugin-markmap-svg"></svg>
                 <div class="plugin-markmap-icon" action="resize">
@@ -366,9 +367,9 @@ class tocMarkmap {
                 this.utils.resizeFixedModal(this.entities.gripRight, this.entities.modal, true, false, onMouseDown, onMouseMove, onMouseUp);
             }
 
-            resizeWhenFree();      // 自由移动时调整大小
-            resizeWhenPinTop();    // 固定到顶部时调整大小
-            resizeWhenPinRight();  // 固定到右侧时调整大小
+            resizeWhenFree();      // Resize while freely moving
+            resizeWhenPinTop();    // Resize when pin top
+            resizeWhenPinRight();  // Resize when pin right
         }
         const onToggleSidebar = () => {
             const resetPosition = () => {
@@ -413,9 +414,9 @@ class tocMarkmap {
                 const list = node.getAttribute("data-path").split(".");
                 if (!list) return;
                 const nodeIdx = list[list.length - 1];
-                let tocIdx = parseInt(nodeIdx - 1); // markmap节点的索引从1开始，要-1
+                let tocIdx = parseInt(nodeIdx - 1); // Markmap node indices start from 1, so subtract 1.
                 if (!this.markmap.state.data.content) {
-                    tocIdx--; // 若markmap第一个节点是空节点，再-1
+                    tocIdx--; // If the first node of the markmap is an empty node, subtract 1 again.
                 }
                 const header = headers[tocIdx];
                 return header && header.attributes.id
@@ -447,10 +448,8 @@ class tocMarkmap {
             })
         }
         const onContextMenu = () => {
-            const menuMap = {
-                expand: "全屏", shrink: "取消全屏", fit: "图形适配窗口", download: "下载", setting: "设置",
-                close: "关闭", pinTop: "固定到顶部", pinRight: "固定到右侧", hideToolbar: "隐藏工具栏", showToolbar: "显示工具栏",
-            };
+            const fn = ["expand", "shrink", "fit", "download", "setting", "close", "pinTop", "pinRight", "hideToolbar", "showToolbar"]
+            const menuMap = this.i18n.entries(fn, "func.")
             const showMenu = () => {
                 const fullScreen = this.entities.fullScreen.getAttribute("action");
                 const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar";
@@ -502,21 +501,16 @@ class tocMarkmap {
     }
 
     setting = async () => {
-        const INFO = {
-            color: "如需自定义配色方案，请手动修改 CANDIDATE_COLOR_SCHEMES 选项",
-            maxWidth: "0 表示无长度限制",
-            AUTO_UPDATE: "如果取消勾选，则选项「点击节点跳转到文档对应章节」失效",
-            CLICK_TO_LOCALE: "如果取消勾选，则选项「定位的视口高度」失效",
-            LOCALE_HEIGHT_RATIO: "定位的目标章节滚动到当前视口的高度位置（百分比）",
-            FIX_ERROR_LEVEL_HEADER: "如果取消勾选，则会过滤跳级标题，只显示层级连续的标题",
-            AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD: "实验性特性，不建议开启。仅当插件「章节折叠」开启时可用",
-            FOLDER: "如果为空或不存在，则使用 TEMP 目录",
-            FILENAME: `支持变量名：filename、timestamp、random、uuid\n支持扩展名：${Downloader.getFormats()[0].extensions.join("、")}`,
-            IMAGE_QUALITY: "仅适用于 jpg、webp 格式",
-            BACKGROUND_COLOR: "仅适用于像素图片格式",
-            KEEP_ALPHA_CHANNEL: "仅适用于携带透明通道的像素图片格式",
-            REMOVE_FOREIGN_OBJECT: "牺牲样式，提高兼容性。如果导出的图片异常，请勾选此选项",
-        }
+        const varNames = "filename、timestamp、random、uuid"
+        const extNames = Downloader.getFormats()[0].extensions.join("、")
+        const info = [
+            "color", "maxWidth", "AUTO_UPDATE", "CLICK_TO_LOCALE", "LOCALE_HEIGHT_RATIO",
+            "FIX_ERROR_LEVEL_HEADER", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "FOLDER", "IMAGE_QUALITY", "BACKGROUND_COLOR",
+            "KEEP_ALPHA_CHANNEL", "REMOVE_FOREIGN_OBJECT",
+        ]
+        const INFO = this.i18n.entries(info, "settingInfo.")
+        INFO.FILENAME = this.i18n.t("settingInfo.FILENAME", { varNames, extNames })
+
         const { DEFAULT_TOC_OPTIONS: _tocOps, DOWNLOAD_OPTIONS: _downOps } = this.config
         const needUpdateKey = ["DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS"]
         const _locateConfig = key => [_tocOps, _downOps, this.config].find(cfg => key in cfg)
@@ -528,9 +522,14 @@ class tocMarkmap {
                 needUpdateKey.push(key)
             }
         }
-        const inlineWidget = (label, key) => ({
-            label,
+        const generalWidget = (key, args) => ({
+            key,
+            label: this.i18n.t(`setting.${key}`),
             info: INFO[key],
+            ...args,
+        })
+        const inlineWidget = key => ({
+            ...generalWidget(key),
             inline: true,
             value: _getConfig(key),
             callback: value => _setConfig(key, value),
@@ -542,6 +541,7 @@ class tocMarkmap {
         })
 
         const color = () => {
+            const label = this.i18n.t("settingGroup.color")
             const toValue = colorList => colorList.join("_")
             const fromValue = str => str.split("_")
             const toLabel = colorList => {
@@ -559,68 +559,65 @@ class tocMarkmap {
                 list.push({ value: curValue, label: toLabel(_tocOps.color), checked: true })
             }
             const callback = scheme => _tocOps.color = fromValue(scheme)
-            return { label: "配色方案", info: INFO.color, type: "radio", list, callback }
+            return { label, list, type: "radio", info: INFO.color, callback }
         }
 
-        const chart = (fieldset = "图形") => [
-            { fieldset, type: "range", min: 1, max: 6, step: 1, ...inlineWidget("固定配色的分支等级", "colorFreezeLevel") },
-            { fieldset, type: "range", min: 1, max: 6, step: 1, ...inlineWidget("分支展开等级", "initialExpandLevel") },
-            { fieldset, type: "range", min: 0, max: 100, step: 1, ...inlineWidget("节点内边距", "paddingX") },
-            { fieldset, type: "range", min: 0, max: 200, step: 1, ...inlineWidget("节点水平间距", "spacingHorizontal") },
-            { fieldset, type: "range", min: 0, max: 100, step: 1, ...inlineWidget("节点垂直间距", "spacingVertical") },
-            { fieldset, type: "range", min: 0, max: 1000, step: 10, ...inlineWidget("节点最大长度", "maxWidth") },
-            { fieldset, type: "range", min: 0, max: 1000, step: 10, ...inlineWidget("动画持续时间", "duration") },
+        const chart = (fieldset = this.i18n.t("settingGroup.chart")) => [
+            { fieldset, type: "range", min: 1, max: 6, step: 1, ...inlineWidget("colorFreezeLevel") },
+            { fieldset, type: "range", min: 1, max: 6, step: 1, ...inlineWidget("initialExpandLevel") },
+            { fieldset, type: "range", min: 0, max: 100, step: 1, ...inlineWidget("paddingX") },
+            { fieldset, type: "range", min: 0, max: 200, step: 1, ...inlineWidget("spacingHorizontal") },
+            { fieldset, type: "range", min: 0, max: 100, step: 1, ...inlineWidget("spacingVertical") },
+            { fieldset, type: "range", min: 0, max: 1000, step: 10, ...inlineWidget("maxWidth") },
+            { fieldset, type: "range", min: 0, max: 1000, step: 10, ...inlineWidget("duration") },
         ]
 
-        const window = (fieldset = "窗口") => [
-            { fieldset, type: "range", min: 0.5, max: 1, step: 0.01, ...inlineWidget("窗口填充率", "fitRatio") },
-            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("初始的窗口宽度", "WIDTH_PERCENT_WHEN_INIT") },
-            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("初始的窗口高度", "HEIGHT_PERCENT_WHEN_INIT") },
-            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("固定顶部的窗口高度", "HEIGHT_PERCENT_WHEN_PIN_UP") },
-            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("固定右侧的窗口宽度", "WIDTH_PERCENT_WHEN_PIN_RIGHT") },
-            { fieldset, type: "range", min: 0.1, max: 0.95, step: 0.01, ...inlineWidget("定位的视口高度", "LOCALE_HEIGHT_RATIO") },
+        const window = (fieldset = this.i18n.t("settingGroup.window")) => [
+            { fieldset, type: "range", min: 0.5, max: 1, step: 0.01, ...inlineWidget("fitRatio") },
+            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("WIDTH_PERCENT_WHEN_INIT") },
+            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("HEIGHT_PERCENT_WHEN_INIT") },
+            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("HEIGHT_PERCENT_WHEN_PIN_UP") },
+            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("WIDTH_PERCENT_WHEN_PIN_RIGHT") },
+            { fieldset, type: "range", min: 0.1, max: 0.95, step: 0.01, ...inlineWidget("LOCALE_HEIGHT_RATIO") },
         ]
 
-        const behavior = (legend = "行为") => {
+        const behavior = (legend = this.i18n.t("settingGroup.behavior")) => {
             const hasPlugin = this.utils.getPlugin("collapse_paragraph")
             const components = [
-                { label: "兼容跳级标题", key: "FIX_ERROR_LEVEL_HEADER" },
-                { label: "允许缩放图形", key: "zoom" },
-                { label: "允许平移图形", key: "pan" },
-                { label: "大纲变化后，自动更新图形", key: "AUTO_UPDATE" },
-                { label: "点击节点后，跳转到文档对应章节", key: "CLICK_TO_LOCALE" },
-                { label: "折叠节点后，自动调整图形大小以适配窗口", key: "autoFit" },
-                { label: "更新图形后，自动调整图形大小以适配窗口", key: "AUTO_FIT_WHEN_UPDATE" },
-                { label: "调整窗口后，自动调整图形大小以适配窗口", key: "AUTO_FIT_WHEN_RESIZE" },
-                { label: "更新图形后，已折叠的节点保持折叠状态", key: "REMEMBER_FOLD_WHEN_UPDATE" },
-                { label: "折叠节点后，自动折叠对应的章节内容", key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", disabled: !hasPlugin },
+                generalWidget("FIX_ERROR_LEVEL_HEADER"),
+                generalWidget("zoom"),
+                generalWidget("pan"),
+                generalWidget("AUTO_UPDATE"),
+                generalWidget("CLICK_TO_LOCALE"),
+                generalWidget("autoFit"),
+                generalWidget("AUTO_FIT_WHEN_UPDATE"),
+                generalWidget("AUTO_FIT_WHEN_RESIZE"),
+                generalWidget("REMEMBER_FOLD_WHEN_UPDATE"),
+                generalWidget("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", { disabled: !hasPlugin }),
             ]
             return { label: "", legend, ...checkboxWidget(components) }
         }
 
-        const download = (fieldset = "导出") => {
-            const components = [
-                { label: "保留透明信息", key: "KEEP_ALPHA_CHANNEL" },
-                { label: "删除无用类名", key: "REMOVE_USELESS_CLASSES" },
-                { label: "替换 &lt;foreignObject&gt; 标签", key: "REMOVE_FOREIGN_OBJECT" },
-                { label: "导出前询问导出路径", key: "SHOW_PATH_INQUIRY_DIALOG" },
-                { label: "导出后打开文件所在目录", key: "SHOW_IN_FINDER" },
-            ]
+        const download = (fieldset = this.i18n.t("settingGroup.download")) => {
+            const cpn = ["KEEP_ALPHA_CHANNEL", "REMOVE_USELESS_CLASSES", "REMOVE_FOREIGN_OBJECT", "SHOW_PATH_INQUIRY_DIALOG", "SHOW_IN_FINDER"]
+            const components = cpn.map(e => generalWidget(e))
             return [
-                { fieldset, type: "number", min: 1, max: 1000, step: 1, ...inlineWidget("水平内边距", "PADDING_HORIZONTAL") },
-                { fieldset, type: "number", min: 1, max: 1000, step: 1, ...inlineWidget("垂直内边距", "PADDING_VERTICAL") },
-                { fieldset, type: "number", min: 0.01, max: 1, step: 0.01, ...inlineWidget("图片质量", "IMAGE_QUALITY") },
-                { fieldset, type: "color", ...inlineWidget("文字颜色", "TEXT_COLOR") },
-                { fieldset, type: "color", ...inlineWidget("圆圈颜色", "OPEN_CIRCLE_COLOR") },
-                { fieldset, type: "color", ...inlineWidget("背景颜色", "BACKGROUND_COLOR") },
-                { fieldset, type: "input", placeholder: this.utils.tempFolder, ...inlineWidget("默认文件夹", "FOLDER") },
-                { fieldset, type: "input", ...inlineWidget("默认文件名", "FILENAME") },
+                { fieldset, type: "number", min: 1, max: 1000, step: 1, ...inlineWidget("PADDING_HORIZONTAL") },
+                { fieldset, type: "number", min: 1, max: 1000, step: 1, ...inlineWidget("PADDING_VERTICAL") },
+                { fieldset, type: "number", min: 0.01, max: 1, step: 0.01, ...inlineWidget("IMAGE_QUALITY") },
+                { fieldset, type: "color", ...inlineWidget("TEXT_COLOR") },
+                { fieldset, type: "color", ...inlineWidget("OPEN_CIRCLE_COLOR") },
+                { fieldset, type: "color", ...inlineWidget("BACKGROUND_COLOR") },
+                { fieldset, type: "input", placeholder: this.utils.tempFolder, ...inlineWidget("FOLDER") },
+                { fieldset, type: "input", ...inlineWidget("FILENAME") },
                 { fieldset, label: "", ...checkboxWidget(components) },
             ]
         }
 
         const components = [color(), ...chart(), ...window(), behavior(), ...download()];
-        const { response } = await this.utils.dialog.modalAsync({ title: "设置", width: "500px", components })
+        const title = this.i18n.t("func.setting")
+        const op = { title, components, width: "500px" }
+        const { response } = await this.utils.dialog.modalAsync(op)
         if (response === 1) {
             components.forEach(c => c.callback(c.submit));
             await this.redraw(this.markmap.options);
@@ -653,8 +650,8 @@ class tocMarkmap {
         let downloadPath = await getDownloadPath()
         if (SHOW_PATH_INQUIRY_DIALOG) {
             const op = {
+                title: this.i18n.t("func.download"),
                 properties: ["saveFile", "showOverwriteConfirmation"],
-                title: "导出",
                 defaultPath: downloadPath,
                 filters: Downloader.getFormats(),
             }
@@ -667,7 +664,8 @@ class tocMarkmap {
         if (SHOW_IN_FINDER) {
             this.utils.showInFinder(downloadPath)
         }
-        this.utils.notification.show("导出成功")
+        const msg = this.i18n.t("func.download.ok")
+        this.utils.notification.show(msg)
     }
 
     pinTop = async (draw = true) => {
@@ -687,13 +685,13 @@ class tocMarkmap {
             modalRect = { left, top, width, height: newHeight };
             contentTop = top + newHeight;
             showFunc = "show";
-            hint = "还原窗口";
+            hint = this.i18n.t("func.pinRecover")
         } else {
             toggleFunc = "remove";
             modalRect = this.modalOriginRect;
             contentTop = this.contentOriginRect.top;
             showFunc = "hide";
-            hint = "固定到顶部";
+            hint = this.i18n.t("func.pinTop")
         }
         this._setModalRect(modalRect);
         this.entities.modal.classList.toggle("pinTop");
@@ -730,7 +728,7 @@ class tocMarkmap {
             contentWidth = `${width - newWidth}px`;
             writeWidth = "initial";
             showFunc = "show";
-            hint = "还原窗口";
+            hint = this.i18n.t("func.pinRecover")
         } else {
             toggleFunc = "remove";
             modalRect = this.modalOriginRect;
@@ -738,7 +736,7 @@ class tocMarkmap {
             contentWidth = "";
             writeWidth = "";
             showFunc = "hide";
-            hint = "固定到右侧";
+            hint = this.i18n.t("func.pinRight")
         }
 
         this._setModalRect(modalRect);

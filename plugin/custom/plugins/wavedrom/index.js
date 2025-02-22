@@ -1,25 +1,34 @@
 /**
- * 太搞了，第一次见到如此奇葩的API：
- *    var div = document.createElement('div')
- *    div.id = 'a0'
- *    document.body.appendChild(div)
- *    var wavedrom = require('wavedrom')
- *    var notFirstSignal = false
- *    wavedrom.renderWaveForm(0, { signal:[] }, 'a', notFirstSignal)
- * 你没有看错，wavedrom不能通过传入ELEMENT的方式创建instance，只能传入element_id，而且element_id必须为prefix+index的形式，而且还是分开传入的
- * 为什么会采用上述如此反常的方式？
- *    作者回答：When having multiple diagrams on the same page the id === 'a0' SVG has special property.
- *            It holds stash of building blocks (wave bricks), CSS attributes, and god knows what else...
- *            So, when the second diagram comes to the page it inherits all this treasure, and thus weight less.
- *    详见：https://github.com/wavedrom/wavedrom/issues/116
- * 遗憾的是，这种old school的做法在Typora水土不服，Typora总是轻易的删除和重新渲染图表，导致很难复用
- *    比如说，当页面上只有一个图表，用户编辑此图表时，此时虽然页面上存在一个instance，但是这个instance是需要remove后重新渲染的，notFirstSignal为true会报错
- *    再比如说，Typora喜欢动不动就重新渲染全部的图表，其表现为删除所有图表的HTML标签，之后再重新渲染。此时页面有再多的instance都没有用，notFirstSignal为true时会报错
- *    所以renderWaveForm函数的notFirstSignal参数只能被设置为false
- * 从上面的举例可以看出，wavedrom的底层设计逻辑是静态页面，对于单页应用(SPA)的支持极差
- *    wavedrom中的所有事件都是管生不管养的，所有事件都不会remove，也没有提供remove接口。所以在Typora不能使用会创建事件的wavedrom函数，会造成内存泄漏。
- *    进而，不能使用wavedrom.processAll函数（其子函数appendSaveAsDialog会创建大量事件）
- * wavedrom没有文档，坑很多，要想了解具体细节只能去阅读源码
+ * Wavedrom's API requires an element ID string in the 'prefix+index' format,
+ * but it separates the numeric index and string prefix into distinct arguments
+ * rather than accepting the full ID as a single string representing a DOM element.
+ *
+ * This unconventional approach is illustrated below:
+ *    const wavedrom = require('wavedrom');
+ *    const div = document.createElement('div');
+ *    div.id = 'a0';
+ *    document.body.appendChild(div);
+ *    let notFirstSignal = false;
+ *    wavedrom.renderWaveForm(0, { signal:[] }, 'a', notFirstSignal);  // Index (0) and prefix ('a') are passed separately
+ *
+ * The rationale behind this design, as explained by the author, is:
+ *    When having multiple diagrams on the same page, the id === 'a0' SVG has special properties.
+ *    It holds a stash of building blocks (wave bricks), CSS attributes, and who knows what else...
+ *    So, when the second diagram comes to the page, it inherits all this treasure, and thus weighs less.
+ * See: https://github.com/wavedrom/wavedrom/issues/116
+ *
+ * This legacy approach presents challenges in environments like Typora, where charts are frequently deleted and re-rendered, hindering reuse.
+ *    For instance, if only one chart exists on the page and the user modifies it, the existing instance needs to be removed and recreated.
+ *        In this scenario, setting `notFirstSignal` to `true` will result in an error.
+ *    Similarly, Typora's frequent re-rendering of all charts, involving deletion and recreation, leads to issues.
+ *        Regardless of the number of diagrams, setting `notFirstSignal` to `true` will cause an error.
+ *    Therefore, `notFirstSignal = false` is necessary to ensure correct rendering.
+ *
+ * These examples highlight that Wavedrom is primarily designed for static pages and exhibits limited support for single-page applications (SPAs).
+ *    Wavedrom lacks automatic event listener removal and doesn't provide a dedicated removal interface, potentially leading to memory leaks.
+ *    Consequently, in Typora, functions that create event listeners (e.g., `wavedrom.processAll`) should be avoided.
+ *
+ * Wavedrom's documentation is incomplete; source code inspection is often required.
  */
 class wavedromPlugin extends BaseCustomPlugin {
     init = () => {

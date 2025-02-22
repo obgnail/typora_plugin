@@ -14,9 +14,9 @@ class rightClickMenuPlugin extends BasePlugin {
         this.groupName = "typora-plugin"
         this.noExtraMenuGroupName = "typora-plugin-no-extra"
         this.dividerValue = "---"
-        this.unavailableActName = "不可点击"
         this.unavailableActValue = "__not_available__"
-        this.defaultDisableHint = "功能于此时不可用"
+        this.unavailableActName = this.i18n.t("act.disabled")
+        this.defaultDisableHint = this.i18n.t("achHint.disabled")
         this.supportShortcut = Boolean(document.querySelector(".ty-menu-shortcut"))
     }
 
@@ -85,7 +85,7 @@ class rightClickMenuPlugin extends BasePlugin {
 
     secondComposeLiTemplate = (plugin, action) => {
         const target = plugin.staticActions.find(act => act.act_value === action)
-        const name = target ? target.act_name : plugin.config.NAME
+        const name = target ? target.act_name : plugin.pluginName
         const children = [{ ele: "a", role: "menuitem", "data-lg": "Menu", text: name }]
         return { ele: "li", class_: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": action, children }
     }
@@ -97,7 +97,7 @@ class rightClickMenuPlugin extends BasePlugin {
             class_: `plugin-menu-item ${hasAction ? "has-extra-menu" : ""}`,
             style: clickable ? undefined : { color: "#c4c6cc", pointerEvents: "none" },
         }
-        return this._liTemplate(plugin.fixedName, plugin.config.NAME, plugin.config.HOTKEY, hasAction, null, extra)
+        return this._liTemplate(plugin.fixedName, plugin.pluginName, plugin.config.HOTKEY, hasAction, null, extra)
     }
 
     thirdLiTemplate = (act, dynamic) => {
@@ -185,7 +185,7 @@ class rightClickMenuPlugin extends BasePlugin {
         const removeShow = ele => ele.classList.remove("show");
         const removeActive = ele => ele.classList.remove("active");
 
-        // 点击一级菜单
+        // click on the first level menu
         $("#context-menu").on("click", `[data-key="${this.noExtraMenuGroupName}"]`, function () {
             const value = this.dataset.value
             if (!value) {
@@ -198,7 +198,7 @@ class rightClickMenuPlugin extends BasePlugin {
             that.utils.updatePluginDynamicActions(fixedName)
             that.callPluginDynamicAction(fixedName, action)
             that.hideMenuIfNeed()
-            // 展示二级菜单
+            // display the second level menu
         }).on("mouseenter", "[data-key]", function () {
             if (that.groupName === this.dataset.key) {
                 const idx = this.getAttribute("idx")
@@ -215,7 +215,7 @@ class rightClickMenuPlugin extends BasePlugin {
             }
         })
 
-        // 展示三级菜单
+        // Display the third level menu
         $(".plugin-menu-second").on("mouseenter", "[data-key]", function () {
             document.querySelectorAll(".plugin-menu-third").forEach(removeShow)
             document.querySelectorAll(".plugin-dynamic-act").forEach(ele => ele.parentElement.removeChild(ele))
@@ -234,7 +234,7 @@ class rightClickMenuPlugin extends BasePlugin {
             } else {
                 removeActive(document.querySelector(".plugin-menu-second .has-extra-menu"))
             }
-            // 在二级菜单中调用插件
+            // call plugins in the second level menu
         }).on("click", "[data-key]", function () {
             const fixedName = this.dataset.key
             const action = this.dataset.value
@@ -242,7 +242,7 @@ class rightClickMenuPlugin extends BasePlugin {
                 that.callPluginDynamicAction(fixedName, action)
             } else {
                 const plugin = that.utils.getPlugin(fixedName)
-                // 拥有三级菜单的，不允许点击二级菜单
+                // If there is a third level menu, clicking the second level menu is not allowed.
                 if (!plugin || plugin.staticActions || plugin.getDynamicActions) {
                     return false
                 }
@@ -253,9 +253,9 @@ class rightClickMenuPlugin extends BasePlugin {
             that.hideMenuIfNeed()
         })
 
-        // 在三级菜单中调用插件
+        // call plugins in the third level menu
         $(".plugin-menu-third").on("click", "[data-key]", function () {
-            // 点击禁用的选项
+            // click on the disabled option
             if (this.classList.contains("disabled")) {
                 return false
             }
@@ -288,11 +288,12 @@ class rightClickMenuPlugin extends BasePlugin {
         document.querySelectorAll(".plugin-menu-second .ty-menu-shortcut, .plugin-menu-third .ty-menu-shortcut").forEach(toggle)
     }
 
-    getDynamicActions = () => [
-        { act_name: "启用功能：保持显示", act_value: "do_not_hide", act_state: this.config.DO_NOT_HIDE, act_hint: "右键菜单点击后不会自动消失" },
-        { act_name: "启用功能：显示快捷键", act_value: "toggle_hotkey", act_state: this.config.SHOW_PLUGIN_HOTKEY, act_hidden: !this.supportShortcut },
-        { act_name: "启用功能：隐藏除插件外的选项", act_value: "hide_other_options", act_state: this.config.HIDE_OTHER_OPTIONS },
-    ]
+    getDynamicActions = () => this.i18n.fillActions([
+        { act_value: "do_not_hide", act_state: this.config.DO_NOT_HIDE, act_hint: this.i18n.t("actHint.do_not_hide") },
+        { act_value: "toggle_hotkey", act_state: this.config.SHOW_PLUGIN_HOTKEY, act_hidden: !this.supportShortcut },
+        { act_value: "show_action_icon", act_state: this.config.SHOW_ACTION_OPTIONS_ICON },
+        { act_value: "hide_other_options", act_state: this.config.HIDE_OTHER_OPTIONS },
+    ])
 
     call = async action => {
         if (action === "do_not_hide") {
@@ -302,6 +303,15 @@ class rightClickMenuPlugin extends BasePlugin {
             await this.utils.styleTemplater.reset(this.fixedName, this.styleTemplate())
         } else if (action === "toggle_hotkey") {
             this.toggleHotkey()
+        } else if (action === "show_action_icon") {
+            this.config.SHOW_ACTION_OPTIONS_ICON = !this.config.SHOW_ACTION_OPTIONS_ICON
+            const message = this.i18n.t("modal.settingSuccessful")
+            const detail = this.i18n.t("modal.reconfirmRestart")
+            const op = { title: this.pluginName, type: "info", message, detail }
+            const { response } = await this.utils.showMessageBox(op)
+            if (response === 0) {
+                this.utils.restartTypora()
+            }
         }
     }
 }

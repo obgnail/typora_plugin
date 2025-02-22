@@ -98,17 +98,17 @@ class resizeImagePlugin extends BasePlugin {
 
     getDynamicActions = (anchorNode, meta) => {
         const other = [
-            { act_name: "缩小20%", act_value: "zoom_out_20_percent", act_hidden: true },
-            { act_name: "放大20%", act_value: "zoom_in_20_percent", act_hidden: true },
-            { act_name: "靠左", act_value: "set_align_left", act_hidden: true },
-            { act_name: "居中", act_value: "set_align_center", act_hidden: true },
-            { act_name: "靠右", act_value: "set_align_right", act_hidden: true },
+            { act_value: "zoom_out_20_percent", act_hidden: true },
+            { act_value: "zoom_in_20_percent", act_hidden: true },
+            { act_value: "set_align_left", act_hidden: true },
+            { act_value: "set_align_center", act_hidden: true },
+            { act_value: "set_align_right", act_hidden: true },
         ]
-        const acts = [
-            { act_name: "启用功能：记住图片放缩状态", act_value: "record_resize_state", act_state: this.config.RECORD_RESIZE },
-            { act_name: "启用功能：允许图片超出范围", act_value: "allow_oversize", act_state: this.config.ALLOW_OVERSIZE },
+        const acts = this.i18n.fillActions([
+            { act_value: "record_resize_state", act_state: this.config.RECORD_RESIZE },
+            { act_value: "allow_oversize", act_state: this.config.ALLOW_OVERSIZE },
             ...other
-        ]
+        ])
 
         const images = anchorNode.closest("#write .md-image")
         if (!images) return acts
@@ -137,4 +137,4 @@ class resizeImagePlugin extends BasePlugin {
 
 module.exports = {
     plugin: resizeImagePlugin
-};
+}

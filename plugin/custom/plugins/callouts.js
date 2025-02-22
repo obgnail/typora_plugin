@@ -32,9 +32,8 @@ class calloutsPlugin extends BaseCustomPlugin {
             blockquote.classList.toggle("plugin-callout", ok);
             if (ok) {
                 const { type, fold } = result.groups;
-                // 为包含 [!type] 的 span 添加 data-type 属性
+                // Add data-type attribute to spans containing [!type]
                 const firstSpan = p.querySelector('span:first-child');
-                // 设置为 type 标题
                 if (firstSpan) {
                     firstSpan.setAttribute('data-type', type);
                 }
@@ -52,7 +51,7 @@ class calloutsPlugin extends BaseCustomPlugin {
         return !isIgnoreType && hasCallout
     }
 
-    // icon需要用到font，但是导出时又没有font，因此只能移除
+    // The icon needs font, but there is no font when exporting, so it can only be removed.
     beforeExport = (...args) => {
         if (this.check(args)) {
             const css = this.utils.styleTemplater.getStyleContent(this.fixedName)

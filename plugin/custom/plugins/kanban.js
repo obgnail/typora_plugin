@@ -7,7 +7,7 @@ class kanbanPlugin extends BaseCustomPlugin {
     })
 
     init = () => {
-        this.fenceStrictMode = false; // 单个fence是否使用严格模式
+        this.fenceStrictMode = false; // Whether a single fence uses strict mode.
     }
 
     process = () => {
@@ -48,7 +48,7 @@ class kanbanPlugin extends BaseCustomPlugin {
             $pre.find(".md-diagram-panel-preview").html(kanban);
         } else {
             // accident occurred
-            this.throwParseError(null, "未知错误！请联系开发者");
+            this.throwParseError(null, this.i18n.t("error.unknown"))
         }
     }
 
@@ -78,10 +78,10 @@ class kanbanPlugin extends BaseCustomPlugin {
             if (line.startsWith("# ")) {
                 if (!kanban.title) {
                     if (kanban.list.length !== 0) {
-                        this.throwParseError(idx, "【看板标题】必须先于【看板】");
+                        this.throwParseError(idx, this.i18n.t("error.bodyComeBeforeTitle"))
                     }
                 } else {
-                    this.throwParseError(idx, "存在两个【看板标题】");
+                    this.throwParseError(idx, this.i18n.t("error.multiTitles"))
                 }
                 kanban.title = line.replace("# ", "");
             } else if (line.startsWith("## ")) {
@@ -92,20 +92,20 @@ class kanbanPlugin extends BaseCustomPlugin {
                 if (strictLine !== -1) {
                     this.fenceStrictMode = true;
                     if (strictLine + 1 !== firstLine) {
-                        this.throwParseError(idx, `${useStrict} 必须位于首行`);
+                        this.throwParseError(idx, this.i18n.t("error.useStrictMustFirstLine"))
                     }
                 } else {
-                    this.throwParseError(idx, "未知错误！请联系开发者");
+                    this.throwParseError(idx, this.i18n.t("error.unknown"))
                 }
             } else {
                 const match = line.match(/^[\-*]\s(?<title>.*?)(\((?<desc>.*?)\))?$/);
                 if (!match) {
-                    this.throwParseError(idx, "无法匹配语法");
+                    this.throwParseError(idx, this.i18n.t("error.syntaxError"))
                 } else {
                     const title = match.groups.title;
                     if (title) {
                         if (kanban.list.length === 0) {
-                            this.throwParseError(idx, "【任务】不能先于【看板】出现");
+                            this.throwParseError(idx, this.i18n.t("error.taskComeBeforeKanban"))
                         } else {
                             const last = kanban.list[kanban.list.length - 1];
                             let desc = (match.groups.desc || "")
@@ -118,7 +118,7 @@ class kanbanPlugin extends BaseCustomPlugin {
                             last && last.item.push({ title, desc });
                         }
                     } else {
-                        this.throwParseError(idx, "【任务】标题不存在");
+                        this.throwParseError(idx, this.i18n.t("error.taskTitleNonExist"))
                     }
                 }
             }
@@ -144,4 +144,4 @@ class kanbanPlugin extends BaseCustomPlugin {
 
 module.exports = {
     plugin: kanbanPlugin
-};
+}

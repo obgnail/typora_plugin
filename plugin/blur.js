@@ -35,16 +35,17 @@ class blurPlugin extends BasePlugin {
 
     run = (showNotification = true) => {
         if (this.inBlur) {
-            this.utils.insertStyle(this.css_id, this.getStyleText());
+            this.utils.insertStyle(this.css_id, this.getStyleText())
         } else {
-            this.utils.removeStyle(this.css_id);
+            this.utils.removeStyle(this.css_id)
         }
         if (showNotification) {
-            this.utils.notification.show(this.inBlur ? "模糊模式已启用" : "模糊模式已关闭");
+            const msg = this.i18n.t(this.inBlur ? "modeEnabled" : "modeDisabled")
+            this.utils.notification.show(msg)
         }
     }
 }
 
 module.exports = {
     plugin: blurPlugin,
-};
+}

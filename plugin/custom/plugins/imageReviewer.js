@@ -9,53 +9,60 @@ class imageReviewerPlugin extends BaseCustomPlugin {
 
     html = () => {
         const { tool_function, show_message, hotkey_function } = this.config
-        const keyTranslate = { arrowup: '↑', arrowdown: '↓', arrowleft: '←', arrowright: '→', " ": "space" }
+        const keyTranslate = { arrowup: "↑", arrowdown: "↓", arrowleft: "←", arrowright: "→", " ": "space" }
         const funcTranslate = {
-            dummy: ['无功能', ''],
-            info: ['', 'fa fa-info-circle'],
-            thumbnailNav: ['缩略图列表', 'fa fa-caret-square-o-down'],
-            waterFall: ['瀑布流', 'fa fa-list'],
-            close: ['关闭', 'fa fa-times'],
-            download: ['下载网络图片', 'fa fa-download'],
-            scroll: ['定位到文档', 'fa fa-crosshairs'],
-            play: ['轮播图片', 'fa fa-play'],
-            location: ['打开图片路径', 'fa fa-location-arrow'],
-            nextImage: ['下张图', 'fa fa-angle-right'],
-            previousImage: ['上张图', 'fa fa-angle-left'],
-            firstImage: ['第一张图', 'fa fa-fast-backward'],
-            lastImage: ['最后一张图', 'fa fa-fast-forward'],
-            zoomOut: ['缩小图片', 'fa fa fa-search-minus'],
-            zoomIn: ['放大图片', 'fa fa fa-search-plus'],
-            rotateLeft: ['图片向左旋转', 'fa fa-rotate-left'],
-            rotateRight: ['图片向右旋转', 'fa fa-rotate-right'],
-            hFlip: ['水平翻转图片', 'fa fa-arrows-h'],
-            vFlip: ['垂直翻转图片', 'fa fa-arrows-v'],
-            translateLeft: ['向左移动', 'fa fa-arrow-left'],
-            translateRight: ['向右移动', 'fa fa-arrow-right'],
-            translateUp: ['向上移动', 'fa fa-arrow-up'],
-            translateDown: ['向下移动', 'fa fa-arrow-down'],
-            incHSkew: ['图片增大水平倾斜', 'fa fa-toggle-right'],
-            decHSkew: ['图片减小水平倾斜', 'fa fa-toggle-left'],
-            incVSkew: ['图片增大垂直倾斜', 'fa fa-toggle-up'],
-            decVSkew: ['图片减小垂直倾斜', 'fa fa-toggle-down'],
-            originSize: ['还原图片大小', 'fa fa-clock-o'],
-            fixScreen: ['图片大小适配屏幕', 'fa fa-codepen'],
-            autoSize: ['图片大小切换', 'fa fa-search-plus'],
-            restore: ['图片恢复为最初状态', 'fa fa-history'],
+            dummy: "",
+            info: "fa fa-info-circle",
+            thumbnailNav: "fa fa-caret-square-o-down",
+            waterFall: "fa fa-list",
+            close: "fa fa-times",
+            download: "fa fa-download",
+            scroll: "fa fa-crosshairs",
+            play: "fa fa-play",
+            location: "fa fa-location-arrow",
+            nextImage: "fa fa-angle-right",
+            previousImage: "fa fa-angle-left",
+            firstImage: "fa fa-fast-backward",
+            lastImage: "fa fa-fast-forward",
+            zoomOut: "fa fa fa-search-minus",
+            zoomIn: "fa fa fa-search-plus",
+            rotateLeft: "fa fa-rotate-left",
+            rotateRight: "fa fa-rotate-right",
+            hFlip: "fa fa-arrows-h",
+            vFlip: "fa fa-arrows-v",
+            translateLeft: "fa fa-arrow-left",
+            translateRight: "fa fa-arrow-right",
+            translateUp: "fa fa-arrow-up",
+            translateDown: "fa fa-arrow-down",
+            incHSkew: "fa fa-toggle-right",
+            decHSkew: "fa fa-toggle-left",
+            incVSkew: "fa fa-toggle-up",
+            decVSkew: "fa fa-toggle-down",
+            originSize: "fa fa-clock-o",
+            fixScreen: "fa fa-codepen",
+            autoSize: "fa fa-search-plus",
+            restore: "fa fa-history",
         }
+        Object.entries(funcTranslate).forEach(([k, v]) => {
+            funcTranslate[k] = [this.i18n.t(`func.${k}`), v]
+        })
 
         const getInfoHint = () => {
-            const result = ["当前配置如下："]
+            const dummy = this.i18n.t("func.dummy")
+            const result = [this.i18n.t("currentConfig") + ":"]
+
+            const mouseClicks = this.i18n.array(["leftClick", "middleClick", "rightClick"], "mouse.")
+            const mouseWheels = this.i18n.array(["wheelUp", "wheelDown"], "mouse.")
 
             const modifierKey = ["", "ctrl", "shift", "alt"]
             const mouseEvent = ["mousedown_function", "wheel_function"]
             mouseEvent.forEach(event => modifierKey.forEach(modifier => {
                 const cfg = modifier ? `${modifier}_${event}` : event
                 const config = this.config[cfg]
-                const events = (event === "mousedown_function") ? ["鼠标左键", "鼠标中键", "鼠标右键"] : ["滚轮上滚", "滚轮下滚"]
+                const events = (event === "mousedown_function") ? mouseClicks : mouseWheels
                 events.forEach((ev, idx) => {
                     const [hint, _] = funcTranslate[config[idx]]
-                    if (hint && hint !== "无功能") {
+                    if (hint && hint !== dummy) {
                         const m = modifier ? `${modifier}+` : ""
                         result.push(m + ev + "\t" + hint)
                     }
@@ -64,7 +71,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             hotkey_function.forEach(item => {
                 const [key, func] = item
                 const [hint, _] = funcTranslate[func]
-                if (hint && hint !== "无功能") {
+                if (hint && hint !== dummy) {
                     const translateKey = keyTranslate[key.toLowerCase()] || key
                     result.push(translateKey + "\t" + hint)
                 }
@@ -381,7 +388,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             if (img === target) {
                 return this.imageGetter(false)
             }
-            // 防御代码，防止死循环
+            // Defensive code to prevent infinite loops.
             if (showIdx === total) return
         }
     }
@@ -429,7 +436,7 @@ class imageReviewerPlugin extends BaseCustomPlugin {
                 return closestImg
             },
         }
-        // firstImage作为兜底策略
+        // firstImage as a fallback strategy
         const funcList = [...this.config.first_image_strategies, "firstImage"].map(s => strategies[s]).filter(Boolean)
         for (const func of funcList) {
             const image = func(images)

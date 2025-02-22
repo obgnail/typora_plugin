@@ -1,9 +1,10 @@
 /**
- * 动态弹出自定义模态框（即刻弹出，因此无需注册）
+ * Dynamically open a custom modal (immediate display, no registration required).
  */
 class dialog {
-    constructor(utils) {
+    constructor(utils, i18n) {
         this.utils = utils;
+        this.i18n = i18n;
         this.entities = null;
         this.prefix = this.utils.randomString();
         this.reset();
@@ -14,8 +15,8 @@ class dialog {
             <div class="plugin-custom-modal-header"><div class="plugin-custom-modal-title" data-lg="Front"></div></div>
             <div class="plugin-custom-modal-body"><form role="form"></form></div>
             <div class="plugin-custom-modal-footer">
-                <button type="button" class="btn btn-default plugin-modal-cancel">取消</button>
-                <button type="button" class="btn btn-primary plugin-modal-submit">确定</button>
+                <button type="button" class="btn btn-default plugin-modal-cancel">${this.i18n.t("global", "cancel")}</button>
+                <button type="button" class="btn btn-primary plugin-modal-submit">${this.i18n.t("global", "confirm")}</button>
             </div>
         </dialog>
     `
@@ -58,7 +59,7 @@ class dialog {
     cancel = () => this.onButtonClick(this.cancelCallback)
 
     onButtonClick = async callback => {
-        const { components = [] } = this.modalOption || {};  // 先取出来，接下来this.modalOption会被置为空
+        const { components = [] } = this.modalOption || {};  // Retrieve first, as this.modalOption will be set to null.
         this.entities.form.querySelectorAll(".form-group[component-id]").forEach(cpn => {
             const id = cpn.getAttribute("component-id");
             const component = components.find(c => c._id === id);
@@ -227,10 +228,10 @@ class dialog {
     }
 
     /**
-     * @function 弹出模态框
-     * @param {{title, width, height, onload, components: [{label, info, type, value, fieldset, inline, ...arg}]}} modal: 组件配置
-     * @param {null | function(components, submit): null} submitCallback: 当用户点击【确认】后的回调函数
-     * @param {null | function(components, submit): null} cancelCallback: 当用户点击【取消】后的回调函数
+     * @function show a modal
+     * @param {{title, width, height, onload, components: [{label, info, type, value, fieldset, inline, ...arg}]}} modal: Component configuration
+     * @param {null | function(components, submit): null} submitCallback: The callback function after the user clicks confirm button
+     * @param {null | function(components, submit): null} cancelCallback: The callback function after the user clicks cancel button
      */
     modal = (modal, submitCallback, cancelCallback) => {
         if (!modal) {
@@ -246,7 +247,7 @@ class dialog {
     }
 
     /**
-     * @function 异步版本的modal
+     * @function Asynchronous modal function
      * @return {{response, components, submit}}
      * @example const { response, components, submit } = await modalAsync({ title: "XXX", components });
      */

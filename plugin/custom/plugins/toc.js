@@ -6,12 +6,12 @@ class tocPlugin extends BaseCustomPlugin {
             <div class="grip-right"></div>
             <div class="plugin-toc-wrap">
                 <div class="plugin-toc-header">
-                    <div class="plugin-toc-icon" data-type="header" ty-hint="标题"><i class="fa fa-header"></i></div>
-                    <div class="plugin-toc-icon" data-type="image" ty-hint="图片"><i class="fa fa-image"></i></div>
-                    <div class="plugin-toc-icon" data-type="table" ty-hint="表格"><i class="fa fa-table"></i></div>
-                    <div class="plugin-toc-icon" data-type="fence" ty-hint="代码块"><i class="fa fa-code"></i></div>
-                    <div class="plugin-toc-icon" data-type="link" ty-hint="链接"><i class="fa fa-link"></i></div>
-                    <div class="plugin-toc-icon" data-type="math" ty-hint="公式"><i class="fa fa-dollar"></i></div>
+                    <div class="plugin-toc-icon" data-type="header" ty-hint="${this.i18n.t("header")}"><i class="fa fa-header"></i></div>
+                    <div class="plugin-toc-icon" data-type="image" ty-hint="${this.i18n.t("image")}"><i class="fa fa-image"></i></div>
+                    <div class="plugin-toc-icon" data-type="table" ty-hint="${this.i18n.t("table")}"><i class="fa fa-table"></i></div>
+                    <div class="plugin-toc-icon" data-type="fence" ty-hint="${this.i18n.t("fence")}"><i class="fa fa-code"></i></div>
+                    <div class="plugin-toc-icon" data-type="link" ty-hint="${this.i18n.t("link")}"><i class="fa fa-link"></i></div>
+                    <div class="plugin-toc-icon" data-type="math" ty-hint="${this.i18n.t("math")}"><i class="fa fa-dollar"></i></div>
                 </div>
                 <div class="plugin-toc-list"></div>
             </div>
@@ -262,4 +262,4 @@ class tocPlugin extends BaseCustomPlugin {
 
 module.exports = {
     plugin: tocPlugin
-};
+}

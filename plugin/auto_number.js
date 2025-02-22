@@ -199,7 +199,6 @@ class autoNumberPlugin extends BasePlugin {
     removeStyle = () => this.utils.removeStyle(this.css_id);
 
     getStyleString = (inExport = false) => {
-        // beta版本不支持:has语法
         const image_css = (inExport && this.utils.supportHasSelector) ? this.image_export_css : this.image_css;
         const { ENABLE_CONTENT, ENABLE_SIDE_BAR, ENABLE_TOC, ENABLE_IMAGE, ENABLE_TABLE, ENABLE_FENCE } = this.config;
         return [
@@ -226,14 +225,14 @@ class autoNumberPlugin extends BasePlugin {
         this.utils.insertStyle(this.css_id, css);
     }
 
-    getDynamicActions = () => [
-        { act_name: "大纲", act_value: "set_outline", act_state: this.config.ENABLE_SIDE_BAR },
-        { act_name: "正文", act_value: "set_content", act_state: this.config.ENABLE_CONTENT },
-        { act_name: "TOC", act_value: "set_toc", act_state: this.config.ENABLE_TOC },
-        { act_name: "表格", act_value: "set_table", act_state: this.config.ENABLE_TABLE },
-        { act_name: "图片", act_value: "set_image", act_state: this.config.ENABLE_IMAGE },
-        { act_name: "代码块", act_value: "set_fence", act_state: this.config.ENABLE_FENCE },
-    ]
+    getDynamicActions = () => this.i18n.fillActions([
+        { act_value: "set_outline", act_state: this.config.ENABLE_SIDE_BAR },
+        { act_value: "set_content", act_state: this.config.ENABLE_CONTENT },
+        { act_value: "set_toc", act_state: this.config.ENABLE_TOC },
+        { act_value: "set_table", act_state: this.config.ENABLE_TABLE },
+        { act_value: "set_image", act_state: this.config.ENABLE_IMAGE },
+        { act_value: "set_fence", act_state: this.config.ENABLE_FENCE },
+    ])
 
     call = action => {
         const callMap = {
@@ -249,7 +248,7 @@ class autoNumberPlugin extends BasePlugin {
     }
 }
 
-// 导出时添加CSS，并解决导出pdf时目录没有编号的问题
+// Adds CSS on export and resolves the issue of missing numbering in the PDF export table of contents.
 class exportHelper {
     constructor(plugin) {
         this.inExport = false;
@@ -315,4 +314,4 @@ class exportHelper {
 
 module.exports = {
     plugin: autoNumberPlugin
-};
+}

@@ -1,11 +1,11 @@
 class truncateTextPlugin extends BasePlugin {
     beforeProcess = () => {
         this.className = "plugin-truncate-text";
-        this.staticActions = [
-            { act_name: `只保留最后${this.config.REMAIN_LENGTH}段`, act_value: "hide_front", act_hotkey: this.config.HIDE_FRONT_HOTKEY },
-            { act_name: "重新显示所有内容", act_value: "show_all", act_hotkey: this.config.SHOW_ALL_HOTKEY },
-            { act_name: "根据当前可视范围显示", act_value: "hide_base_view", act_hotkey: this.config.HIDE_BASE_VIEW_HOTKEY }
-        ];
+        this.staticActions = this.i18n.fillActions([
+            { act_name: this.i18n.t("act.hide_front", { remain: this.config.REMAIN_LENGTH }), act_value: "hide_front", act_hotkey: this.config.HIDE_FRONT_HOTKEY },
+            { act_value: "show_all", act_hotkey: this.config.SHOW_ALL_HOTKEY },
+            { act_value: "hide_base_view", act_hotkey: this.config.HIDE_BASE_VIEW_HOTKEY }
+        ])
     }
 
     hotkey = () => [
@@ -82,4 +82,4 @@ class truncateTextPlugin extends BasePlugin {
 
 module.exports = {
     plugin: truncateTextPlugin
-};
+}

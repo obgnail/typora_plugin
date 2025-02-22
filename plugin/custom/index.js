@@ -1,8 +1,8 @@
 class CustomPlugin extends BasePlugin {
     beforeProcess = async () => {
-        this.plugins = {};          // 启用的插件
-        this.pluginsSettings = {};  // 全部的插件配置
-        await new customPluginLoader(this).process();
+        this.plugins = {}          // enabled plugins
+        this.pluginsSettings = {}  // all plugin configurations
+        await new customPluginLoader(this).process()
     }
 
     hotkey = () => {
@@ -25,8 +25,12 @@ class CustomPlugin extends BasePlugin {
     }
 
     getDynamicActions = (anchorNode, meta, notInContextMenu) => {
-        const settings = Object.entries(this.pluginsSettings)
-            .sort(([, { order: o1 = 1 }], [, { order: o2 = 1 }]) => o1 - o2)
+        const actHint = {
+            unknown: this.i18n.t("actHint.unknown"),
+            disabledForever: this.i18n.t("actHint.disabledForever"),
+            disabledTemp: this.i18n.t("actHint.disabledTemp")
+        }
+        const settings = Object.entries(this.pluginsSettings).sort(([, { order: o1 = 1 }], [, { order: o2 = 1 }]) => o1 - o2)
 
         meta.target = anchorNode
         const dynamicActions = []
@@ -37,22 +41,22 @@ class CustomPlugin extends BasePlugin {
             if (!plugin) continue
 
             const act = {
-                act_name: plugin.config.name,
+                act_name: plugin.pluginName,
                 act_value: plugin.fixedName,
                 act_disabled: true,
                 act_hidden: false,
-                act_hint: "未知错误！请向开发者反馈",
+                act_hint: actHint.unknown,
                 act_hotkey: plugin.config.hotkey,
             }
             try {
                 const selector = plugin.selector(false)
                 if (selector === this.utils.disableForeverSelector) {
-                    act.act_hint = "此插件不可点击"
+                    act.act_hint = actHint.disabledForever
                 } else {
                     act.act_disabled = selector && !anchorNode.closest(selector)
                     act.act_hint = plugin.hint(act.act_disabled)
                     if (act.act_disabled) {
-                        act.act_hint = act.act_hint || "光标于此位置不可用"
+                        act.act_hint = act.act_hint || actHint.disabledTemp
                     }
                 }
             } catch (e) {
@@ -83,6 +87,7 @@ class customPluginLoader {
     constructor(plugin) {
         this.controller = plugin
         this.utils = plugin.utils
+        this.i18n = plugin.i18n
         this.config = plugin.config
     }
 
@@ -95,10 +100,13 @@ class customPluginLoader {
         const allSettings = this.utils.getAllPluginSettings()
         const errorPluginSetting = Object.keys(customSettings).filter(fixedName => allSettings.hasOwnProperty(fixedName))
         if (errorPluginSetting && errorPluginSetting.length) {
-            const label = "以下插件的配置写错文件了。一级插件应该写在 settings.user.toml 中，二级插件应该写在 custom_plugin.user.toml 中"
+            const title = this.i18n.t("modal.checkError.title")
+            const label = this.i18n.t("modal.checkError.incorrectFile")
             const rows = Math.max(errorPluginSetting.length, 3)
-            const components = [{ label, rows, type: "textarea", content: errorPluginSetting.join("\n") }]
-            this.utils.dialog.modal({ title: "配置错误", components }, () => this.utils.runtime.openSettingFolder())
+            const content = errorPluginSetting.join("\n")
+            const components = [{ type: "textarea", label, rows, content }]
+            const op = { title, components }
+            this.utils.dialog.modal(op, () => this.utils.runtime.openSettingFolder())
         }
     }
 

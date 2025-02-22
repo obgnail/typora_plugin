@@ -30,7 +30,7 @@ class timelinePlugin extends BaseCustomPlugin {
             $pre.find(".md-diagram-panel-preview").html(timeline);
         } else {
             // accident occurred
-            this.utils.diagramParser.throwParseError(null, "未知错误！请联系开发者");
+            this.utils.diagramParser.throwParseError(null, this.i18n.t("error.unknown"))
         }
     }
 
@@ -47,10 +47,10 @@ class timelinePlugin extends BaseCustomPlugin {
             if (line.startsWith("# ")) {
                 if (!timeline.title) {
                     if (timeline.bucket.length !== 0) {
-                        throwParseError(idx, "【时间线标题】必须先于【内容】");
+                        throwParseError(idx, this.i18n.t("error.bodyComeBeforeTitle"))
                     }
                 } else {
-                    throwParseError(idx, "存在两个【时间线标题】");
+                    throwParseError(idx, this.i18n.t("error.multiTitles"))
                 }
                 timeline.title = line.replace("# ", "");
                 return;
@@ -62,7 +62,7 @@ class timelinePlugin extends BaseCustomPlugin {
             }
 
             if (timeline.bucket.length === 0) {
-                throwParseError(idx, "【时间线标题】和【时间】必须先于【内容】");
+                throwParseError(idx,  this.i18n.t("error.bodyComeBeforeTime"))
             }
 
             const lastBucket = timeline.bucket[timeline.bucket.length - 1].itemList;
@@ -153,4 +153,4 @@ class timelinePlugin extends BaseCustomPlugin {
 
 module.exports = {
     plugin: timelinePlugin
-};
+}

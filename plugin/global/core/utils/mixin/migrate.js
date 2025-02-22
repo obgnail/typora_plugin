@@ -1,5 +1,5 @@
 /**
- * 处理升级过程中的迁移操作
+ * Handles migration operations during the upgrade process.
  */
 class migrate {
     constructor(utils) {

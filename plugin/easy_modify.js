@@ -14,42 +14,45 @@ class easyModifyPlugin extends BasePlugin {
 
     init = () => {
         this._showWarnDialog = true
-
-        const defaultDoc = "若无选中文段，则调整整篇文档"
-        const notRecommended = "除非有特殊需求，不建议使用此功能"
-        this.staticActions = [
-            { act_name: "复制标题路径", act_value: "copy_full_path", act_hotkey: this.config.HOTKEY_COPY_FULL_PATH },
-            { act_name: "提升选中文段的标题等级", act_value: "increase_headers_level", act_hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, act_hint: defaultDoc },
-            { act_name: "降低选中文段的标题等级", act_value: "decrease_headers_level", act_hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, act_hint: defaultDoc },
-            { act_name: "换行符 CRLF 转为 LF", act_value: "convert_crlf_to_lf", act_hotkey: this.config.HOTKEY_CONVERT_CRLF_TO_LF, act_hint: notRecommended },
-            { act_name: "换行符 LF 转为 CRLF", act_value: "convert_lf_to_crlf", act_hotkey: this.config.HOTKEY_CONVERT_LF_TO_CRLF, act_hint: notRecommended },
-            { act_name: "移除不可见字符", act_value: "filter_invisible_characters", act_hotkey: this.config.HOTKEY_FILTER_INVISIBLE_CHARACTERS, act_hint: notRecommended },
-            { act_name: "添加结尾空格", act_value: "trailing_white_space", act_hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, act_hint: notRecommended },
-        ]
+        const notRecommended = this.i18n.t("actHint.notRecommended")
+        const defaultDoc = this.i18n.t("actHint.defaultDoc")
+        this.staticActions = this.i18n.fillActions([
+            { act_value: "copy_full_path", act_hotkey: this.config.HOTKEY_COPY_FULL_PATH },
+            { act_value: "increase_headers_level", act_hotkey: this.config.HOTKEY_INCREASE_HEADERS_LEVEL, act_hint: defaultDoc },
+            { act_value: "decrease_headers_level", act_hotkey: this.config.HOTKEY_DECREASE_HEADERS_LEVEL, act_hint: defaultDoc },
+            { act_value: "convert_crlf_to_lf", act_hotkey: this.config.HOTKEY_CONVERT_CRLF_TO_LF, act_hint: notRecommended },
+            { act_value: "convert_lf_to_crlf", act_hotkey: this.config.HOTKEY_CONVERT_LF_TO_CRLF, act_hint: notRecommended },
+            { act_value: "filter_invisible_characters", act_hotkey: this.config.HOTKEY_FILTER_INVISIBLE_CHARACTERS, act_hint: notRecommended },
+            { act_value: "trailing_white_space", act_hotkey: this.config.HOTKEY_TRAILING_WHITE_SPACE, act_hint: notRecommended },
+        ])
     }
 
     getDynamicActions = (anchorNode, meta) => {
+        const i18n = {
+            noSelection: this.i18n.t("act.extract_rang_to_new_file.noSelection"),
+            positionEmptyLine: this.i18n.t("act.extract_rang_to_new_file.positionEmptyLine")
+        }
+
         meta.range = window.getSelection().getRangeAt(0)
         const extract = {
-            act_name: "提取选区文字到新文件",
             act_value: "extract_rang_to_new_file",
             act_disabled: meta.range.collapsed,
             act_hotkey: this.config.HOTKEY_EXTRACT_RANGE_TO_NEW_FILE
         }
         if (extract.act_disabled) {
-            extract.act_hint = "请框选待提取的文段"
+            extract.act_hint = i18n.noSelection
         }
 
         meta.copyAnchor = anchorNode.closest("#write > [cid]")
         meta.insertAnchor = anchorNode.closest(`#write > p[mdtype="paragraph"]`)
         const act_disabled = !meta.insertAnchor || meta.insertAnchor.querySelector("p > span")
-        const act_hint = act_disabled ? "请将光标定位到空白行" : ""
+        const act_hint = act_disabled ? i18n.positionEmptyLine : ""
         const insert = [
-            { act_name: "插入思维导图：mindmap", act_value: "insert_mermaid_mindmap", act_hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, act_disabled, act_hint },
-            { act_name: "插入思维导图：graph", act_value: "insert_mermaid_graph", act_hotkey: this.config.HOTKEY_INSERT_MERMAID_GRAPH, act_disabled, act_hint },
+            { act_value: "insert_mermaid_mindmap", act_hotkey: this.config.HOTKEY_INSERT_MERMAID_MINDMAP, act_disabled, act_hint },
+            { act_value: "insert_mermaid_graph", act_hotkey: this.config.HOTKEY_INSERT_MERMAID_GRAPH, act_disabled, act_hint },
         ]
 
-        return [...insert, extract]
+        return this.i18n.fillActions([...insert, extract])
     }
 
     dynamicCall = action => this.utils.updateAndCallPluginDynamicAction(this.fixedName, action)
@@ -72,7 +75,8 @@ class easyModifyPlugin extends BasePlugin {
 
         const dontShow = await func()
         if (dontShow !== true) {
-            this.utils.notification.show("执行成功")
+            const msg = this.i18n.t("success")
+            this.utils.notification.show(msg)
         }
     }
 
@@ -109,7 +113,8 @@ class easyModifyPlugin extends BasePlugin {
     copyFullPath = anchorNode => {
         const getHeaderName = (title, name) => `${title} ${name}`;
         const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"];
-        const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"];
+        const nameList = this.i18n.array(paragraphList, "act.copy_full_path.")
+        const noHeader = this.i18n.t("act.copy_full_path.NoHeader")
         const pList = [];
         let ele = anchorNode || this.utils.getAnchorNode().closest("#write > [cid]")[0]
 
@@ -131,7 +136,7 @@ class easyModifyPlugin extends BasePlugin {
         let headerIdx = 0;
         for (const p of pList) {
             while (headerIdx < 6 && p.ele.tagName !== paragraphList[headerIdx]) {
-                result.push(getHeaderName("无", nameList[headerIdx]));
+                result.push(getHeaderName(noHeader, nameList[headerIdx]));
                 headerIdx++;
             }
             if (p.ele.tagName === paragraphList[headerIdx]) {
@@ -164,8 +169,12 @@ class easyModifyPlugin extends BasePlugin {
         File.editor.UserOp.backspaceHandler(File.editor, null, "Delete");
 
         // modal
-        const components = [{ label: "文件名", type: "input", value: "", placeholder: "请输入新文件名，为空则创建副本" }];
-        let { response, submit: [filepath] } = await this.utils.dialog.modalAsync({ title: "提取选区文字到新文件", components });
+        const title = this.i18n.t("act.extract_rang_to_new_file")
+        const label = this.i18n.t("act.extract_rang_to_new_file.filename")
+        const placeholder = this.i18n.t("act.extract_rang_to_new_file.filenameHint")
+        const components = [{ label, type: "input", value: "", placeholder }]
+        const op = { title, components }
+        let { response, submit: [filepath] } = await this.utils.dialog.modalAsync(op)
         if (response !== 1) return;
 
         // extract
@@ -180,11 +189,13 @@ class easyModifyPlugin extends BasePlugin {
 
     trailingWhiteSpace = async () => {
         if (this._showWarnDialog) {
-            const option = { type: "warning", buttons: ["确定", "取消"], message: "为整篇文档添加结尾空格", checkboxLabel: "不再提示（直到关闭Typora）" };
-            const { response, checkboxChecked } = await this.utils.showMessageBox(option);
-            if (response === 1) return true;
+            const message = this.i18n.t("act.trailing_white_space.hint")
+            const checkboxLabel = this.i18n.t("msgBox.noMoreRemind")
+            const op = { type: "warning", message, checkboxLabel }
+            const { response, checkboxChecked } = await this.utils.showMessageBox(op)
+            if (response === 1) return true
             if (checkboxChecked) {
-                this._showWarnDialog = false;
+                this._showWarnDialog = false
             }
         }
 
@@ -209,9 +220,10 @@ class easyModifyPlugin extends BasePlugin {
     insertMindmap = (type, target) => {
         if (!target) return;
 
+        const errorMsg = this.i18n.t("act.insert_mermaid_mindmap.incompatible")
         const clean = title => `("${title.replace(/"/g, "")}")`
         const getComment = type => (type === "mindmap" && !window.mermaidAPI.defaultConfig.mindmap)
-            ? "%%mermaid版本低，不支持mindmap组件，请前往https://mermaid.live/查看\n"
+            ? `%%${errorMsg}\n`
             : ""
         const mermaidFunc = {
             mindmap: tree => {

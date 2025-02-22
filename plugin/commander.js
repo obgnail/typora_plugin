@@ -1,8 +1,8 @@
 /**
- * 实现此插件需要三种兼容:
- * 1. 抹平操作系统差异，支持windows和linux
- * 2. 抹平shell差异，支持cmd、wsl和bash，支持嵌套调用shell
- * 3. 抹平参数差异，cmd使用%VAR%，而bash使用$VAR
+ * Implementing this plugin requires three types of compatibility:
+ * 1. Abstracting operating system differences to support Windows and Linux.
+ * 2. Abstracting shell differences to support cmd, WSL, and bash, including nested shell calls.
+ * 3. Abstracting parameter differences, where cmd uses %VAR% and bash uses $VAR.
  */
 class commanderPlugin extends BasePlugin {
     beforeProcess = () => {
@@ -17,6 +17,8 @@ class commanderPlugin extends BasePlugin {
     styleTemplate = () => true
 
     html = () => {
+        const runText = this.i18n.t("runCommand")
+        const envText = this.i18n.t("envInfo")
         const { CMD_BASH, POWER_SHELL, GIT_BASH, WSL } = this.SHELL
         const genShell = (shell, text) => `<option value="${shell}">${text}</option>`
         const shells = [genShell(CMD_BASH, "cmd/bash")]
@@ -31,8 +33,8 @@ class commanderPlugin extends BasePlugin {
         return `
             <div id="plugin-commander" class="plugin-common-modal plugin-common-hidden"> 
                 <form id="plugin-commander-form">
-                    <div class="ion-ios7-play plugin-commander-commit plugin-common-hidden" ty-hint="执行命令"></div>
-                    <input type="text" class="plugin-commander-input" placeholder="Typora commander" title="提供如下环境变量:\n$f 当前文件路径\n$d 当前文件所属目录\n$m 当前挂载目录">
+                    <div class="ion-ios7-play plugin-commander-commit plugin-common-hidden" ty-hint="${runText}"></div>
+                    <input type="text" class="plugin-commander-input" title="${envText}">
                     <select class="plugin-commander-shell">${shells.join("")}</select>
                     <select class="plugin-commander-builtin">${builtin}</select>
                 </form>
@@ -62,7 +64,7 @@ class commanderPlugin extends BasePlugin {
         }
 
         this.act_value_prefix = "call_builtin@"
-        const defaultAct = { act_name: "显示/隐藏", act_value: "show", act_hotkey: this.config.HOTKEY }
+        const defaultAct = { act_name: this.i18n.t("act.toggle_modal"), act_value: "toggle_modal", act_hotkey: this.config.HOTKEY }
         const customActs = this.builtin
             .filter(builtin => builtin.name)
             .map(builtin => ({ act_name: builtin.name, act_value: this.act_value_prefix + builtin.name, act_hotkey: builtin.hotkey }))
@@ -115,7 +117,7 @@ class commanderPlugin extends BasePlugin {
     _getFolder = shell => this._convertPath(this.utils.getCurrentDirPath(), shell);
     _getMountFolder = shell => this._convertPath(this.utils.getMountFolder(), shell);
 
-    // TODO: 这种做法路子太野，正确方式应该是：反弹shell
+    // TODO: This approach is too hacky. The correct way to do this is to use a reverse shell.
     _getCommand = (cmd, shell) => {
         const replaceArgs = (cmd, shell) => {
             const replacements = { f: this._getFile(shell), d: this._getFolder(shell), m: this._getMountFolder(shell) }
@@ -157,8 +159,8 @@ class commanderPlugin extends BasePlugin {
     _showStdout = result => this._showResult(result, true, false)
     _showStderr = result => this._showResult(result, true, true)
 
-    // 为什么不使用shell options? 答：不能支持wsl
-    // 为什么不使用env options?   答：为了兼容。cmd使用变量的方式为%VAR%，bash为$VAR。而且命令可能会跨越多层shell
+    // Why not use shell options? A: Cannot support WSL.
+    // Why not use env options? A: For compatibility. cmd uses %VAR%, bash uses $VAR. Commands may also span multiple shell layers.
     _exec = ({ cmd, shell, options = {}, resolve = console.log, reject = console.error, callback = null }) => {
         const command = this._getCommand(cmd, shell);
         const options_ = { encoding: "utf8", cwd: this._getFolder(), ...options }
@@ -220,8 +222,8 @@ class commanderPlugin extends BasePlugin {
         }
     }
 
-    call = (action = "show") => {
-        if (action === "show") {
+    call = (action = "toggle_modal") => {
+        if (action === "toggle_modal") {
             this.toggleModal()
         } else if (action.startsWith(this.act_value_prefix)) {
             const name = action.slice(this.act_value_prefix.length)

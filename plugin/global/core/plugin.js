@@ -1,38 +1,39 @@
 const { utils } = require("./utils");
+const { i18n } = require("./i18n");
 
 class IPlugin {
-    constructor(fixedName, setting) {
+    constructor(fixedName, setting, i18n) {
         this.fixedName = fixedName;
+        this.pluginName = setting.NAME || setting.name || i18n.t("pluginName");
         this.config = setting;
         this.utils = utils;
+        this.i18n = i18n;
     }
 
-    /** 最先执行的函数，在这里准备插件需要的数据。若返回utils.stopLoadPluginError，则停止加载插件 */
+    /** The first function executed, prepares data. If utils.stopLoadPluginError is returned, plugin loading is stopped. */
     async beforeProcess() {}
-    /** 以字符串形式导入样式 */
+    /** Import styles as a string. */
     style() {}
-    /** 以文件形式导入样式 */
+    /** Import styles as a file. */
     styleTemplate() {}
-    /** 原生插入html标签 */
+    /** Insert HTML tag. */
     html() {}
-    /** 使用htmlTemplater插入html标签，详见htmlTemplater */
+    /** Insert HTML tag using htmlTemplater, see htmlTemplater for details. */
     htmlTemplate() {}
-    /** 注册快捷键 */
+    /** Register hotkeys. */
     hotkey() {}
-    /** 初始化数据 */
+    /** Initialize data. */
     init() {}
-    /** 主要的处理流程 */
+    /** Main processing function. */
     process() {}
-    /** 收尾，一般用于回收内存，用的比较少 */
+    /** Cleanup, generally used for memory reclamation, used infrequently. */
     afterProcess() {}
 }
 
-/** 一级插件 */
 class BasePlugin extends IPlugin {
     call(action, meta) {}
 }
 
-/** 二级插件 */
 class BaseCustomPlugin extends IPlugin {
     selector(isClick) {}
     hint(isDisable) {}
@@ -48,7 +49,7 @@ const loadPlugin = async (fixedName, setting, isCustom) => {
         return new Error(`there is not ${fixedName} in ${path}`);
     }
 
-    const instance = new plugin(fixedName, setting);
+    const instance = new plugin(fixedName, setting, i18n.bind(fixedName));
     if (!(instance instanceof superPlugin)) {
         return new Error(`instance is not instanceof ${superPlugin.name}: ${fixedName}`);
     }
@@ -112,4 +113,4 @@ module.exports = {
     BasePlugin,
     BaseCustomPlugin,
     LoadPlugins,
-};
+}

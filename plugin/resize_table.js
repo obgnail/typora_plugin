@@ -7,9 +7,9 @@ class resizeTablePlugin extends BasePlugin {
         this.onResize();
     }
 
-    getDynamicActions = anchorNode => [
-        { act_name: "启用功能：记住表格放缩状态", act_value: "record_resize_state", act_state: this.config.RECORD_RESIZE }
-    ]
+    getDynamicActions = anchorNode => this.i18n.fillActions([
+        { act_value: "record_resize_state", act_state: this.config.RECORD_RESIZE }
+    ])
 
     call = action => action === "record_resize_state" && this.toggleRecorder()
 
@@ -122,4 +122,4 @@ class resizeTablePlugin extends BasePlugin {
 
 module.exports = {
     plugin: resizeTablePlugin
-};
+}

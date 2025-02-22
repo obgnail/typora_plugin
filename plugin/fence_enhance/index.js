@@ -77,9 +77,9 @@ class fenceEnhancePlugin extends BasePlugin {
         }
 
         const defaultButtons = [
-            ["copy-code", "copyCode", "复制", "fa fa-clipboard", this.config.ENABLE_COPY, this.copyCode],
-            ["indent-code", "indentCode", "调整缩进", "fa fa-indent", this.enableIndent, this.indentCode],
-            ["fold-code", "foldCode", "折叠", "fa fa-minus", this.config.ENABLE_FOLD, this.foldCode, this.defaultFold],
+            ["copy-code", "copyCode", this.i18n.t("btn.hint.copy"), "fa fa-clipboard", this.config.ENABLE_COPY, this.copyCode],
+            ["indent-code", "indentCode", this.i18n.t("btn.hint.indent"), "fa fa-indent", this.enableIndent, this.indentCode],
+            ["fold-code", "foldCode", this.i18n.t("btn.hint.fold"), "fa fa-minus", this.config.ENABLE_FOLD, this.foldCode, this.defaultFold],
         ]
         defaultButtons.forEach(button => this.registerBuilder(...button))
 
@@ -183,34 +183,35 @@ class fenceEnhancePlugin extends BasePlugin {
 
     getDynamicActions = (anchorNode, meta) => {
         const HINT = {
-            DANGEROUS: "警告：消耗巨量资源并可能导致Typora长时间失去响应",
-            FOLD: "根据语言语法在每行的左侧显示折叠按钮",
-            ALIGNMENT: "对齐缩进需要花费大量时间，造成性能损失，不建议开启",
-            HIGHLIGHT_BY_LANG: "例 ```js(2, 5-8)``` 表示高亮第2，5-8行，不建议开启",
+            DANGEROUS: this.i18n.t("actHint.dangerous"),
+            ALIGNMENT: this.i18n.t("actHint.toggle_state_indent_alignment"),
+            HIGHLIGHT_BY_LANG: this.i18n.t("actHint.toggle_state_highlight_by_lang"),
         }
-        return [
-            { act_name: "启用按钮：折叠", act_value: "toggle_state_fold", act_state: this.config.ENABLE_FOLD },
-            { act_name: "启用按钮：复制", act_value: "toggle_state_copy", act_state: this.config.ENABLE_COPY },
-            { act_name: "启用按钮：缩进", act_value: "toggle_state_indent", act_state: this.enableIndent, act_hidden: !this.supportIndent },
-            { act_name: "启用功能：自动隐藏按钮", act_value: "toggle_state_auto_hide", act_state: this.config.AUTO_HIDE },
-            { act_name: "启用功能：默认折叠代码块", act_value: "toggle_state_fold_default", act_state: this.config.FOLD_DEFAULT },
-            { act_name: "启用功能：显示按钮功能提示", act_value: "toggle_state_button_hint", act_state: !this.config.REMOVE_BUTTON_HINT },
-            { act_name: "启用功能：快捷键", act_value: "toggle_state_hotkey", act_state: this.config.ENABLE_HOTKEY },
-            { act_name: "启用功能：代码折叠", act_value: "toggle_state_fold_lang", act_state: this.config.ENABLE_LANGUAGE_FOLD, act_hint: HINT.FOLD },
-            { act_name: "启用功能：缩进对齐", act_value: "toggle_state_indent_alignment", act_state: this.config.INDENTED_WRAPPED_LINE, act_hint: HINT.ALIGNMENT },
-            { act_name: "启用功能：高亮鼠标悬停的代码行", act_value: "toggle_state_highlight", act_state: this.config.HIGHLIGHT_WHEN_HOVER },
-            { act_name: "启用功能：通过语言设置高亮行", act_value: "toggle_state_highlight_by_lang", act_state: this.config.HIGHLIGHT_BY_LANGUAGE, act_hint: HINT.HIGHLIGHT_BY_LANG },
-            { act_name: "(危) 为所有无语言代码块添加语言", act_value: "add_fences_lang", act_hint: HINT.DANGEROUS },
-            { act_name: "(危) 批量替换代码块语言", act_value: "replace_fences_lang", act_hint: HINT.DANGEROUS },
-            { act_name: "(危) 调整所有代码块的缩进", act_value: "indent_all_fences", act_hint: HINT.DANGEROUS, act_hidden: !this.supportIndent }
-        ]
+        return this.i18n.fillActions([
+            { act_value: "toggle_state_fold", act_state: this.config.ENABLE_FOLD },
+            { act_value: "toggle_state_copy", act_state: this.config.ENABLE_COPY },
+            { act_value: "toggle_state_indent", act_state: this.enableIndent, act_hidden: !this.supportIndent },
+            { act_value: "toggle_state_auto_hide", act_state: this.config.AUTO_HIDE },
+            { act_value: "toggle_state_fold_default", act_state: this.config.FOLD_DEFAULT },
+            { act_value: "toggle_state_button_hint", act_state: !this.config.REMOVE_BUTTON_HINT },
+            { act_value: "toggle_state_hotkey", act_state: this.config.ENABLE_HOTKEY },
+            { act_value: "toggle_state_fold_lang", act_state: this.config.ENABLE_LANGUAGE_FOLD },
+            { act_value: "toggle_state_indent_alignment", act_state: this.config.INDENTED_WRAPPED_LINE, act_hint: HINT.ALIGNMENT },
+            { act_value: "toggle_state_highlight", act_state: this.config.HIGHLIGHT_WHEN_HOVER },
+            { act_value: "toggle_state_highlight_by_lang", act_state: this.config.HIGHLIGHT_BY_LANGUAGE, act_hint: HINT.HIGHLIGHT_BY_LANG },
+            { act_value: "add_fences_lang", act_hint: HINT.DANGEROUS },
+            { act_value: "replace_fences_lang", act_hint: HINT.DANGEROUS },
+            { act_value: "indent_all_fences", act_hint: HINT.DANGEROUS, act_hidden: !this.supportIndent }
+        ])
     }
 
     call = (action, meta) => {
         const toggleConfig = async (cfg, name, args) => {
             this.config[cfg] = !this.config[cfg]
-            const title = (this.config[cfg] ? "启动" : "取消") + name
-            const op = { type: "info", buttons: ["确定", "取消"], message: "重启后生效，确认重启？", title, ...args }
+            const message = this.i18n.t("modal.reconfirmRestart")
+            const enableText = this.i18n.t(this.config[cfg] ? "modal.enable" : "modal.disable")
+            const title = this.i18n.link([enableText, name])
+            const op = { type: "info", message, title, ...args }
             const { response } = await this.utils.showMessageBox(op)
             if (response === 0) {
                 this.utils.restartTypora()
@@ -245,20 +246,24 @@ class fenceEnhancePlugin extends BasePlugin {
                 this.config.AUTO_HIDE = !this.config.AUTO_HIDE
                 const visibility = this.config.AUTO_HIDE ? "hidden" : ""
                 document.querySelectorAll(".fence-enhance").forEach(ele => {
-                    // 处于折叠状态的代码块不可隐藏
+                    // Code blocks in collapsed state cannot be hidden.
                     ele.style.visibility = ele.querySelector(".fold-code.folded") ? "" : visibility
                 })
             },
             indent_all_fences: async () => {
-                const label = "调整缩进功能的能力有限，对于 Python 这种游标卡尺语言甚至会出现误判，你确定吗？"
-                const { response } = await this.utils.dialog.modalAsync({ title: "为所有代码块调整缩进", components: [{ label, type: "p" }] })
+                const title = this.i18n.t("modal.indent_all_fences.title")
+                const label = this.i18n.t("modal.indent_all_fences.hint")
+                const op = { title, components: [{ label, type: "p" }] }
+                const { response } = await this.utils.dialog.modalAsync(op)
                 if (response === 1) {
                     this._rangeAllFences(this.indentFence)
                 }
             },
             add_fences_lang: async () => {
-                const components = [{ label: "语言", type: "input", value: "javascript" }]
-                const { response, submit: [targetLang] } = await this.utils.dialog.modalAsync({ title: "添加语言", components })
+                const title = this.i18n.t("modal.add_fences_lang.title")
+                const label = this.i18n.t("modal.add_fences_lang.lang")
+                const op = { title, components: [{ label, type: "input", value: "javascript" }] }
+                const { response, submit: [targetLang] } = await this.utils.dialog.modalAsync(op)
                 if (response === 0 || !targetLang) return
                 this._rangeAllFences(fence => {
                     const lang = fence.getAttribute("lang")
@@ -272,8 +277,15 @@ class fenceEnhancePlugin extends BasePlugin {
                 })
             },
             replace_fences_lang: async () => {
-                const components = [{ label: "被替换语言", type: "input", value: "js" }, { label: "替换语言", type: "input", value: "javascript" }]
-                const { response, submit: [waitToReplaceLang, replaceLang] } = await this.utils.dialog.modalAsync({ title: "替换语言", components })
+                const title = this.i18n.t("modal.replace_fences_lang.title")
+                const labelSource = this.i18n.t("modal.replace_fences_lang.sourceLang")
+                const labelTarget = this.i18n.t("modal.replace_fences_lang.targetLang")
+                const components = [
+                    { label: labelSource, type: "input", value: "js" },
+                    { label: labelTarget, type: "input", value: "javascript" }
+                ]
+                const op = { title, components }
+                const { response, submit: [waitToReplaceLang, replaceLang] } = await this.utils.dialog.modalAsync(op)
                 if (response === 0 || !waitToReplaceLang || !replaceLang) return
                 this._rangeAllFences(fence => {
                     const lang = fence.getAttribute("lang")
@@ -287,24 +299,19 @@ class fenceEnhancePlugin extends BasePlugin {
                 })
             },
             toggle_state_hotkey: async () => {
-                const hotkeys = {
-                    "SWAP_PREVIOUS_LINE": "将当前行和上一行互换",
-                    "SWAP_NEXT_LINE": "将当前行和下一行互换",
-                    "COPY_PREVIOUS_LINE": "复制当前行到上一行",
-                    "COPY_NEXT_LINE": "复制当前行到下一行",
-                    "INSERT_LINE_PREVIOUS": "直接在上面新建一行",
-                    "INSERT_LINE_NEXT": "直接在下面新建一行",
-                }
+                const title = this.i18n.t("modal.toggle_state_hotkey.title")
+                const h = ["SWAP_PREVIOUS_LINE", "SWAP_NEXT_LINE", "COPY_PREVIOUS_LINE", "COPY_NEXT_LINE", "INSERT_LINE_PREVIOUS", "INSERT_LINE_NEXT"]
+                const hotkeys = this.i18n.entries(h, "modal.toggle_state_hotkey.")
                 const detail = Object.entries(hotkeys)
                     .map(([key, name], idx) => `${idx + 1}. ${name}: ${this.config[key]}`)
                     .join("\n")
-                await toggleConfig("ENABLE_HOTKEY", "快捷键", { detail })
+                await toggleConfig("ENABLE_HOTKEY", title, { detail })
             },
-            toggle_state_button_hint: () => toggleConfig("REMOVE_BUTTON_HINT", "按钮功能提示"),
-            toggle_state_fold_lang: () => toggleConfig("ENABLE_LANGUAGE_FOLD", "代码折叠"),
-            toggle_state_highlight: () => toggleConfig("HIGHLIGHT_WHEN_HOVER", "高亮代码行"),
-            toggle_state_highlight_by_lang: () => toggleConfig("HIGHLIGHT_BY_LANGUAGE", "高亮代码行"),
-            toggle_state_indent_alignment: () => toggleConfig("INDENTED_WRAPPED_LINE", "缩进对齐"),
+            toggle_state_button_hint: () => toggleConfig("REMOVE_BUTTON_HINT", this.i18n.t("modal.toggle_state_button_hint.title")),
+            toggle_state_fold_lang: () => toggleConfig("ENABLE_LANGUAGE_FOLD", this.i18n.t("modal.toggle_state_fold_lang.title")),
+            toggle_state_highlight: () => toggleConfig("HIGHLIGHT_WHEN_HOVER", this.i18n.t("modal.toggle_state_highlight.title")),
+            toggle_state_highlight_by_lang: () => toggleConfig("HIGHLIGHT_BY_LANGUAGE", this.i18n.t("modal.toggle_state_highlight_by_lang.title")),
+            toggle_state_indent_alignment: () => toggleConfig("INDENTED_WRAPPED_LINE", this.i18n.t("modal.toggle_state_indent_alignment.title")),
         }
         const func = callMap[action]
         func && func()
@@ -392,7 +399,7 @@ class editorHotkeyHelper {
         const dict = { shiftKey: false, ctrlKey: false, altKey: false, ...keyObj };
         document.activeElement.dispatchEvent(new KeyboardEvent('keydown', dict));
     }
-    // 不可使用fence.execCommand("goLineUp")：因为它会检测shift键是否被pressed
+    // Do not use fence.execCommand("goLineUp"): it checks if the Shift key is pressed.
     goLineUp = () => this.keydown({ key: 'ArrowUp', keyCode: 38, code: 'ArrowUp', which: 38 });
     goLineDown = () => this.keydown({ key: 'ArrowDown', keyCode: 40, code: 'ArrowDown', which: 40 });
 

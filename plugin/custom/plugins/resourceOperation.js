@@ -1,20 +1,21 @@
 /**
- * 难点在于如何才能匹配到正确的 markdown 图片
- * 1. 不可使用惰性匹配，否则 ![name](assets/image(1).png) 会匹配成 ![name](assets/image(1)  要使用贪婪匹配，然后使用)从后往前截断，逐个测试
- *    1. 比如内容为：![name](assets/image(1).png)123)456
- *    2. 首先贪婪匹配成 ![name](assets/image(1).png)123)，检测文件 assets/image(1).png)123 是否存在
- *    3. 若不存在，往前截断，得到 ![name](assets/image(1).png)，检测文件 assets/image(1).png 是否存在，以此类推
- * 2. 使用贪婪匹配会引入一个问题：一行最多只会匹配一个图片，之后的所有图片都会漏掉
- *    1. 比如有两个图片放在同一行，输入串为： ![name1](./assets/test.png)![name2](./assets/test2.png)123
- *    2. 贪婪匹配到：![name1](./assets/test.png)![name2](./assets/test2.png)，检测文件 ./assets/test.png)![name2](./assets/test2.png 是否存在，发现不存在
- *    3. 接着匹配到：![name1](./assets/test.png)，检测文件./assets/test.png 是否存在，发现存在，返回
- *    4. 上述流程就导致遗漏了 ./assets/test2.png
- *    5. 解决方案：当匹配到![name1](./assets/test.png)后，将后续的内容 )![name2](./assets/test2.png) 作为输入串回到第一步递归处理
+ * The main challenge is to correctly match markdown image syntax.
+ * 1. Lazy matching cannot be used, otherwise ![name](assets/image(1).png) will be matched as ![name](assets/image(1) .
+ *    Instead, use greedy matching and then truncate from the end, testing each segment.
+ *    1. For example, the content is: ![name](assets/image(1).png)123)456
+ *    2. First, greedily match to ![name](assets/image(1).png)123), and check if the file assets/image(1).png)123 exists.
+ *    3. If it does not exist, truncate from the end to get ![name](assets/image(1).png), and check if the file assets/image(1).png exists, and so on.
+ * 2. Greedy matching introduces a problem: only one image will be matched per line, and all subsequent images will be missed.
+ *    1. For example, if there are two images in the same line, the input string is: ![name1](./assets/test.png)![name2](./assets/test2.png)123
+ *    2. Greedy matching results in: ![name1](./assets/test.png)![name2](./assets/test2.png), and checks if the file ./assets/test.png)![name2](./assets/test2.png exists, which it does not.
+ *    3. Then it matches to: ![name1](./assets/test.png), and checks if the file ./assets/test.png exists, which it does, and returns.
+ *    4. This process causes ./assets/test2.png to be missed.
+ *    5. Solution: After matching ![name1](./assets/test.png), treat the remaining content )![name2](./assets/test2.png) as the new input string and recursively process it from the first step.
  */
 class resourceOperationPlugin extends BaseCustomPlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
 
-    hint = isDisable => isDisable && "空白页不可使用此插件"
+    hint = isDisable => isDisable ? this.i18n.t("unavailableOnBlankPage") : undefined
 
     styleTemplate = () => true
 
@@ -23,10 +24,10 @@ class resourceOperationPlugin extends BaseCustomPlugin {
     html = () => `
         <div id="plugin-resource-operation" class="plugin-common-modal plugin-common-hidden">
             <div class="plugin-resource-operation-icon-group">
-                <div class="plugin-resource-operation-icon ion-close" action="close" ty-hint="关闭"></div>
-                <div class="plugin-resource-operation-icon ion-arrow-move" action="move" ty-hint="移动"></div>
-                <div class="plugin-resource-operation-icon ion-eye-disabled" action="togglePreview" ty-hint="预览图片"></div>
-                <div class="plugin-resource-operation-icon ion-archive" action="download" ty-hint="下载报告"></div>
+                <div class="plugin-resource-operation-icon ion-close" action="close" ty-hint="${this.i18n.t('func.close')}"></div>
+                <div class="plugin-resource-operation-icon ion-arrow-move" action="move" ty-hint="${this.i18n.t('func.move')}"></div>
+                <div class="plugin-resource-operation-icon ion-eye-disabled" action="togglePreview" ty-hint="${this.i18n.t('func.togglePreview')}"></div>
+                <div class="plugin-resource-operation-icon ion-archive" action="download" ty-hint="${this.i18n.t('func.download')}"></div>
             </div>
             <img class="plugin-resource-operation-popup plugin-common-hidden">
             <div class="plugin-resource-operation-wrap"></div>
@@ -84,13 +85,15 @@ class resourceOperationPlugin extends BaseCustomPlugin {
             const action = target.getAttribute("action");
             if (action === "delete") {
                 if (this.showWarnDialog) {
-                    const filename = this.utils.getFileName(src, false);
-                    const checkboxLabel = "不再提示（直到关闭Typora）";
-                    const option = { type: "warning", buttons: ["确定", "取消"], message: `是否删除文件 ${filename}`, checkboxLabel };
-                    const { response, checkboxChecked } = await this.utils.showMessageBox(option);
-                    if (response === 1) return;
+                    const checkboxLabel = this.i18n.t("msgBox.noMoreRemind")
+                    const reconfirm = this.i18n.t("msgBox.reconfirmDeleteFile")
+                    const filename = this.utils.getFileName(src, false)
+                    const message = `${reconfirm} ${filename}`
+                    const option = { type: "warning", message, checkboxLabel }
+                    const { response, checkboxChecked } = await this.utils.showMessageBox(option)
+                    if (response === 1) return
                     if (checkboxChecked) {
-                        this.showWarnDialog = false;
+                        this.showWarnDialog = false
                     }
                 }
                 await this.utils.Package.Fs.promises.unlink(src);
@@ -126,26 +129,45 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         delete output.resource_non_exist_in_file;
         delete output.resource_non_exist_in_folder;
         const replacer = (key, value) => Array.isArray(value) ? value.join("|") : value
+        const setting = JSON.stringify(output, replacer, "\t")
 
-        const btnGroup = `<td><div class="btn-group"><button type="button" class="btn btn-default" action="locate">打开</button><button type="button" class="btn btn-default" action="delete">删除</button></div></td>`
-        const nonExistInFile = Array.from(this.nonExistInFile, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td><td class="plugin-common-hidden"><img src="${row}"/></td>${btnGroup}</tr>`)
-        const nonExistInFolder = Array.from(this.nonExistInFolder, (row, idx) => `<tr><td>${idx + 1}</td><td>${row}</td></tr>`)
+        const i18n = {
+            locate: this.i18n.t("func.locate"),
+            delete: this.i18n.t("func.delete"),
+            setting: this.i18n.t("title.setting"),
+            nonExistInFile: this.i18n.t("title.nonExistInFile", { size: this.nonExistInFile.size }),
+            nonExistInFolder: this.i18n.t("title.nonExistInFolder", { size: this.nonExistInFolder.size }),
+        }
+
+        const btnGroup = `
+            <td>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default" action="locate">${i18n.locate}</button>
+                    <button type="button" class="btn btn-default" action="delete">${i18n.delete}</button>
+                </div>
+            </td>`
+        const nonExistInFile = [...this.nonExistInFile].map((row, idx) => {
+            return `<tr><td>${idx + 1}</td><td>${row}</td><td class="plugin-common-hidden"><img src="${row}"/></td>${btnGroup}</tr>`
+        })
+        const nonExistInFolder = [...this.nonExistInFolder].map((row, idx) => {
+            return `<tr><td>${idx + 1}</td><td>${row}</td></tr>`
+        })
         const tbody1 = nonExistInFile.join("") || '<tr><td colspan="4" style="text-align: center">Empty</td></tr>';
         const tbody2 = nonExistInFolder.join("") || '<tr><td colspan="2" style="text-align: center">Empty</td></tr>';
 
         this.entities.wrap.innerHTML = `
             <table class="table non-exist-in-file-table">
-                 <caption>存在于挂载目录但不存在于 MD 文件的资源(共${this.nonExistInFile.size}项)</caption>
+                 <caption>${i18n.nonExistInFile}</caption>
                  <thead><tr><th>#</th><th>resource</th><th class="plugin-common-hidden">preview</th><th>operation</th></tr></thead>
                  <tbody>${tbody1}</tbody>
             </table>
             <table class="table">
-                 <caption>存在于 MD 文件但不存在于挂载目录的资源(共${this.nonExistInFolder.size}项)</caption>
+                 <caption>${i18n.nonExistInFolder}</caption>
                  <thead><tr><th>#</th><th>resource</th></tr></thead>
                  <tbody>${tbody2}</tbody>
             </table>
-            <div class="plugin-resource-operation-message">配置</div>
-            <textarea rows="10" readonly>${JSON.stringify(output, replacer, "\t")}</textarea>
+            <div class="plugin-resource-operation-message">${i18n.setting}</div>
+            <textarea rows="10" readonly>${setting}</textarea>
         `
     }
 
@@ -201,20 +223,29 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         const json = () => JSON.stringify(_obj, null, "\t")
         const yaml = () => this.utils.stringifyYaml(_obj)
         const toml = () => this.utils.stringifyToml(_obj)
-        const md = () => `
-## 存在于挂载目录，但是不存在于 MD 文件的资源(共${_obj.resource_non_exist_in_file.length}项)
+        const md = () => {
+            const i18n = {
+                nonExistInFile: this.i18n.t("title.nonExistInFile", { size: _obj.resource_non_exist_in_file.length }),
+                nonExistInFolder: this.i18n.t("title.nonExistInFolder", { size: _obj.resource_non_exist_in_folder.length }),
+            }
+            const nonExistInFile = _obj.resource_non_exist_in_file.join("\n")
+            const nonExistInFolder = _obj.resource_non_exist_in_folder.join("\n")
+            return `
+## ${i18n.nonExistInFile}
 
 \`\`\`plain
-${_obj.resource_non_exist_in_file.join("\n")}
+${nonExistInFile}
 \`\`\`
 
-## 存在于 MD 文件，但是不存在于挂载目录的资源(共${_obj.resource_non_exist_in_folder.length}项)
+## ${i18n.nonExistInFolder}
 
 \`\`\`plain
-${_obj.resource_non_exist_in_folder.join("\n")}
+${nonExistInFolder}
 \`\`\`
 
 `
+        }
+
         const f = { obj, json, yaml, toml, md }[format] || md
         return f()
     }
@@ -224,18 +255,17 @@ ${_obj.resource_non_exist_in_folder.join("\n")}
         dir = (dir === ".") ? this.utils.getMountFolder() : dir
         dir = dir || this.utils.tempFolder
 
-        const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", {
-            properties: ["saveFile", "showOverwriteConfirmation"],
-            title: "导出",
-            defaultPath: this.utils.Package.Path.join(dir, "resource-report.md"),
-            filters: [
-                { name: "All", extensions: ["md", "json", "yaml", "toml"] },
-                { name: "MARKDOWN", extensions: ["md"] },
-                { name: "JSON", extensions: ["json"] },
-                { name: "YAML", extensions: ["yaml"] },
-                { name: "TOML", extensions: ["toml"] },
-            ]
-        })
+        const title = this.i18n.t("func.download")
+        const defaultPath = this.utils.Package.Path.join(dir, "resource-report.md")
+        const filters = [
+            { name: "All", extensions: ["md", "json", "yaml", "toml"] },
+            { name: "MARKDOWN", extensions: ["md"] },
+            { name: "JSON", extensions: ["json"] },
+            { name: "YAML", extensions: ["yaml"] },
+            { name: "TOML", extensions: ["toml"] },
+        ]
+        const op = { title, defaultPath, filters, properties: ["saveFile", "showOverwriteConfirmation"] }
+        const { canceled, filePath } = await JSBridge.invoke("dialog.showSaveDialog", op)
         if (canceled) return
 
         let ext = this.utils.Package.Path.extname(filePath).toLowerCase()
@@ -315,13 +345,13 @@ ${_obj.resource_non_exist_in_folder.join("\n")}
     }
 
     _getCompatibleRootURL = (filePath, content) => {
-        // typora 支持使用 typora-root-url 的 front matter 重定向资源路径
+        // Typora supports redirecting resource paths using the `typora-root-url` in front matter.
         const { yamlObject } = this.utils.splitFrontMatter(content)
         const redirectURL = yamlObject && yamlObject["typora-root-url"]
         if (redirectURL) {
             return redirectURL
         }
-        // 兼容重定向资源插件
+        // Compatibility for redirectLocalRootUrl plugin.
         if (!this.redirectPlugin) return
         const ok = this.redirectPlugin.needRedirect(filePath)
         if (ok) {

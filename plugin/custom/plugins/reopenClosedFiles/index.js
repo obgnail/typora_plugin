@@ -12,7 +12,7 @@ class reopenClosedFilesPlugin extends BaseCustomPlugin {
             if (!this.windowTabBarPlugin) return;
             await this.ensureFile();
             if (this.config.auto_reopen_when_init) {
-                // 因为打开特定文件时，不能重定向（isDiscardableUntitled为false）
+                // Redirection is disabled when opening specific files (isDiscardableUntitled === false).
                 this.utils.loopDetector(this.utils.isDiscardableUntitled, this.callback, 40, 2000, false);
             }
             setTimeout(() => this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, this.save), 2500);
@@ -28,4 +28,4 @@ class reopenClosedFilesPlugin extends BaseCustomPlugin {
 
 module.exports = {
     plugin: reopenClosedFilesPlugin,
-};
+}
