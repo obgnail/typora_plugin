@@ -40,7 +40,11 @@ const i18n = {
         }
     },
     t: function (field, key, variables) {
-        let text = i18n.data[field][key]
+        const field_  = i18n.data[field]
+        if (field_ === undefined) {
+            return key
+        }
+        let text = field_[key]
         if (text === undefined) {
             return key
         }
