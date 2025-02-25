@@ -1,0 +1,47 @@
+name: Check I18n Files on Commit
+
+on:
+  push:
+    paths:
+      - 'plugin/global/locales/**'
+
+jobs:
+  check_i18n_files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Read and compare JSON files
+        run: |
+          declare -A structures
+          locales_dir="plugin/global/locales"
+          mapfile -t json_files < <(find "$locales_dir" -type f -name '*.json')
+
+          for json_file in "${json_files[@]}"; do
+              structure=$(jq -Mc 'def replace_non_objects: if type == "object" then with_entries(.value |= replace_non_objects) else "" end; replace_non_objects' "$json_file" 2>/dev/null)
+              if [[ $? -ne 0 ]]; then
+                  echo "Error processing $json_file"
+                  exit 1
+              fi
+              structures[${#structures[@]}]=$structure
+          done
+
+          base_structure=${structures[0]}
+          for index in "${!structures[@]}"; do
+              current_structure=${structures[$index]}
+              if [[ "$base_structure" != "$current_structure" ]]; then
+                  echo "Structure mismatch found"
+                  echo "Base Structure file: ${json_files[0]}"
+                  echo "Current Structure file: ${json_files[$index]}"
+                  exit 1
+              fi
+          done
+
+          echo "${#structures[@]} JSON files have the same structure:"
+          for json_file in "${json_files[@]}"; do
+              echo ${json_file}
+          done
