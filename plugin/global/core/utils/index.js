@@ -450,7 +450,7 @@ class utils {
         filename = filename || File.getFileName() || (new Date()).getTime().toString() + ".md";
         const dirPath = this.getFilePath() ? this.getCurrentDirPath() : this.getMountFolder();
         if (!dirPath) {
-            alert(i18n.t("global", "unavailableOnBlankPage"))
+            alert(i18n.t("global", "error.onBlankPage"))
             return;
         }
         let filepath = PATH.resolve(dirPath, filename);
@@ -513,7 +513,7 @@ class utils {
         } catch (e) {
             const detail = e.toString()
             const confirm = i18n.t("global", "confirm")
-            const message = i18n.t("global", "writeFileFailed")
+            const message = i18n.t("global", "error.writingFileFailed")
             const op = { type: "error", title: "Typora Plugin", buttons: [confirm], message, detail }
             await this.showMessageBox(op)
         }

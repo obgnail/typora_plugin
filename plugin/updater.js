@@ -18,16 +18,15 @@ class updaterPlugin extends BasePlugin {
             return
         }
 
-        const proxy = await this.getProxy()
+        const defaultProxy = await this.getProxy()
 
-        const title = this.i18n.t("networkProxy")
         const label = this.i18n.t("proxyUrl")
         const info = this.i18n.t("proxyUrlHint")
-        const components = [{ type: "input", value: proxy, label, info, placeholder: "http://127.0.0.1:7890" }]
-        const op = { title, components }
-        const { response, submit: [proxy_] } = await this.utils.dialog.modalAsync(op)
+        const components = [{ type: "input", value: defaultProxy, label, info, placeholder: "http://127.0.0.1:7890" }]
+        const op = { title: this.pluginName, components }
+        const { response, submit: [proxy] } = await this.utils.dialog.modalAsync(op)
         if (response === 1) {
-            await this.manualUpdate(proxy_)
+            await this.manualUpdate(proxy)
         }
     }
 
@@ -46,7 +45,7 @@ class updaterPlugin extends BasePlugin {
             failed: this.i18n.t("update.failed"),
             currentVersion: this.i18n.t("update.currentVersionInfo"),
             tryAgain: this.i18n.t("update.tryAgain"),
-            unknownError: this.i18n.t("update.unknownError"),
+            unknownError: this.i18n._t("global", "error.unknown"),
         }
 
         this.utils.notification.show(i18n.pleaseWait)

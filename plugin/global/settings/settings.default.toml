@@ -14,10 +14,11 @@
 ENABLE = true
 
 # ------------------- 语言 -------------------
-# 语言。目前支持如下语言
-#   auto
+# 语言
+#   auto: 跟随 Typora 语言设置
 #   en
 #   zh-CN
+#   zh-TW
 LOCALE = "auto"
 
 # ------------------- 插件兼容性 -------------------
@@ -353,16 +354,16 @@ BUILTIN = [
     # 占位符，不执行任何命令
     { name = "", disable = false, shell = "cmd/bash", cmd = "" },
     # 在资源管理器中打开当前文件所在目录
-    { name = "explorer", disable = false, shell = "powershell", cmd = "explorer $d" },
+    { name = "Explorer", disable = false, shell = "powershell", cmd = "explorer $d" },
     # 在 VS Code 中打开当前文件
-    { name = "vscode", disable = false, shell = "cmd/bash", cmd = "code $f" },
+    { name = "VScode", disable = false, shell = "cmd/bash", cmd = "code $f" },
     # 在 Windows Terminal 中打开当前文件所在目录
-    { name = "wt", disable = false, shell = "cmd/bash", cmd = "cd $d && wt" },
+    { name = "Windows Terminal", disable = false, shell = "cmd/bash", cmd = "cd $d && wt" },
     # 将当前挂载目录下的所有更改提交到 Git 仓库
-    { name = "git commit", disable = false, shell = "cmd/bash", cmd = 'cd $m && git add . && git commit -m "update"' },
+    { name = "Git Commit", disable = false, shell = "cmd/bash", cmd = 'cd $m && git add . && git commit -m "update"' },
     # 在 Total Commander 中打开当前文件，此命令默认禁用，需修改 Total Commander 的路径才能使用
     # https://xbeta.info/tc-help/totalcmd/CommandLineParameters.htm
-    { name = "tc", disable = true, shell = "cmd/bash", cmd = "D:\\software\\TotalCMD_64bit_11.03\\TOTALCMD64.EXE /O /T /P=L /L=$f" },
+    { name = "TotalCommander", disable = true, shell = "cmd/bash", cmd = "D:\\software\\TotalCMD_64bit_11.03\\TOTALCMD64.EXE /O /T /P=L /L=$f" },
 ]
 
 
@@ -1181,15 +1182,15 @@ ENABLE_INDENT = true
 #   false: 禁用折叠功能，不显示折叠按钮
 ENABLE_FOLD = true
 
-# 代码块折叠形式：设置代码块折叠时的显示方式
-#   hidden:  隐藏除第一行外的所有行
-#   scroll:  添加滚动条，仅显示一行代码，超出部分通过滚动条查看。（不推荐使用，用户体验较差）
-FOLD_OVERFLOW = "hidden"
-
-# 默认折叠所有代码块：是否在加载时默认折叠所有代码块
-#   true:  默认折叠所有代码块
+# 默认折叠代码块：是否在加载时默认折叠代码块
+# 若置为 false，则选项 DEFAULT_FOLD_THRESHOLD 失效
+#   true:  默认折叠代码块
 #   false: 默认不折叠代码块
-FOLD_DEFAULT = false
+DEFAULT_FOLD = false
+
+# 代码块折叠行数：开启默认折叠后，仅当代码块行数大于此值时才会被默认折叠
+#   设置为 0 则所有代码块都会被折叠
+DEFAULT_FOLD_THRESHOLD = 0
 
 # 操作成功时，icon提示的保持时间（单位：毫秒）：设置点击按钮后，图标变化（例如复制成功时的勾选标记）的显示时间
 #   单位为毫秒，例如：1000 表示 1 秒
@@ -1411,8 +1412,9 @@ NAME = ""
 
 # ------------------- 图片下载 -------------------
 # 是否下载网络图片：控制是否下载网络图片，并将其转换为 base64 编码
+# 若设置为 false，DOWNLOAD_THREADS 配置将失效
 #   true:  下载网络图片，并转换为 base64 编码。若网络不稳定，可能会导致导出超时
-#   false: 不下载网络图片，保留原有链接。若设置为 false，DOWNLOAD_THREADS 配置将失效
+#   false: 不下载网络图片，保留原有链接
 DOWNLOAD_NETWORK_IMAGE = false
 
 # 下载网络图片的并发量：设置下载网络图片时的并发线程数

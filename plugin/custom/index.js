@@ -26,7 +26,7 @@ class CustomPlugin extends BasePlugin {
 
     getDynamicActions = (anchorNode, meta, notInContextMenu) => {
         const actHint = {
-            unknown: this.i18n.t("actHint.unknown"),
+            unknown: this.i18n._t("global", "error.unknown"),
             disabledForever: this.i18n.t("actHint.disabledForever"),
             disabledTemp: this.i18n.t("actHint.disabledTemp")
         }

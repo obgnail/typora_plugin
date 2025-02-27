@@ -446,7 +446,7 @@ class windowTabBarPlugin extends BasePlugin {
                 this.rerenderTabBar()
             } else {
                 const title = this.i18n.t("modal.restart")
-                const message = this.i18n.t("modal.reconfirmRestart")
+                const message = this.i18n._t("global", "reconfirmRestart")
                 const op = { title, message, type: "info" }
                 const { response } = await this.utils.showMessageBox(op)
                 if (response === 0) {

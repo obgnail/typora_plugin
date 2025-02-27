@@ -15,7 +15,7 @@
 class resourceOperationPlugin extends BaseCustomPlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
 
-    hint = isDisable => isDisable ? this.i18n.t("unavailableOnBlankPage") : undefined
+    hint = isDisable => isDisable ? this.i18n.t("error.onBlankPage") : undefined
 
     styleTemplate = () => true
 
@@ -85,7 +85,7 @@ class resourceOperationPlugin extends BaseCustomPlugin {
             const action = target.getAttribute("action");
             if (action === "delete") {
                 if (this.showWarnDialog) {
-                    const checkboxLabel = this.i18n.t("msgBox.noMoreRemind")
+                    const checkboxLabel = this.i18n._t("global", "disableReminder")
                     const reconfirm = this.i18n.t("msgBox.reconfirmDeleteFile")
                     const filename = this.utils.getFileName(src, false)
                     const message = `${reconfirm} ${filename}`

@@ -53,7 +53,7 @@
 | 37   | resize_table            | 调整表格行高列宽                       |          |
 | 38   | resize_image            | 调整图片显示大小                       |          |
 | 39   | export_enhance          | 导出 html 时避免图片丢失               |          |
-| 40   | markdownLint            | markdown 格式规范检测                  |          |
+| 40   | markdownLint            | markdown 格式检查                  |          |
 | 41   | go_top                  | 一键到文章顶部、底部                   |          |
 | 42   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 | ×        |
 | 43   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       | ×        |
@@ -665,14 +665,14 @@ icon = "\\f040"
 
 
 
-### markdownLint：markdown 格式规范检测
+### markdownLint：markdown 格式检查
 
 功能：检测当前文件是否符合 markdown 最佳实践规范。
 
 使用方式：
 
 1. 方法一：点击右上角的小方块
-2. 方法二：右键菜单 -> 常用插件 -> 二级插件 -> 格式规范检测
+2. 方法二：右键菜单 -> 常用插件 -> 二级插件 -> 格式检查
 
 
 

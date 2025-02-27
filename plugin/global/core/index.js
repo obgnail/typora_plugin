@@ -38,7 +38,7 @@ async function entry() {
         const need = global.__global_settings__.SHOW_INCOMPATIBLE_WARNING
         const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0
         if (need && incompatible) {
-            const msg = i18n.t("global", "incompatibilityWarn")
+            const msg = i18n.t("global", "incompatibilityWarning")
             utils.notification.show(msg, "warning", 5000)
         }
     }

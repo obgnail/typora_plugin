@@ -902,7 +902,7 @@ template_variables = [
 #  - name:  模板的名称，用于在右键菜单中显示
 #  - text:  模板的内容，支持使用模板变量
 [[templater.template]]
-name = "标准模板"
+name = "Standard"
 text = """---
 title: {{title}}
 date: {{date}}
@@ -911,7 +911,7 @@ tags:
 
 """
 [[templater.template]]
-name = "日记"
+name = "Diary"
 text = """---
 title: {{title}}
 date: {{date}} {{weekday}}
@@ -919,7 +919,7 @@ date: {{date}} {{weekday}}
 
 """
 [[templater.template]]
-name = "文章写作"
+name = "Article"
 text = """---
 author: {{username}}
 created: {{datetime}}

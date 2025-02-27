@@ -136,7 +136,7 @@ class diagramParser {
             return this.utils.escape(error.stack)
         }
         const { errorLine, reason } = error
-        let msg = errorLine ? this.i18n.t("global", "lineError", { errorLine }) : ''
+        let msg = errorLine ? this.i18n.t("global", "error.atLine", { errorLine }) : ''
         if (reason instanceof Error) {
             msg += "\n" + this.utils.escape(reason.stack)
         } else if (reason) {
@@ -151,7 +151,7 @@ class diagramParser {
             $pre.children(".md-diagram-panel").remove()
         } else {
             $pre.find(".md-diagram-panel-header").text(lang)
-            $pre.find(".md-diagram-panel-preview").text(this.i18n.t("global", "drawingFailed"))
+            $pre.find(".md-diagram-panel-preview").text(this.i18n.t("global", "error.drawingFailed"))
             $pre.find(".md-diagram-panel-error").html(`<pre>${this.getErrorMessage(error)}</pre>`)
         }
         await this.noticeRollback(cid)

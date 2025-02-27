@@ -30,7 +30,7 @@ class timelinePlugin extends BaseCustomPlugin {
             $pre.find(".md-diagram-panel-preview").html(timeline);
         } else {
             // accident occurred
-            this.utils.diagramParser.throwParseError(null, this.i18n.t("error.unknown"))
+            this.utils.diagramParser.throwParseError(null, this.i18n._t("global", "error.unknown"))
         }
     }
 

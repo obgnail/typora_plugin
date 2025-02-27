@@ -4,20 +4,23 @@
     "cancel": "Cancel",
     "edit": "Edit",
     "empty": "Empty",
-    "lineError": "Error on line {{errorLine}}",
-    "drawingFailed": "An exception occurred, drawing failed",
-    "writeFileFailed": "Failed to write file",
-    "unavailableOnBlankPage": "Unavailable on a blank page",
-    "incompatibilityWarn": "Typora version is too low, some plugins may not work.\nPlease upgrade to 0.9.98 (the last free version)"
+    "disableReminder": "Do not Show Again",
+    "reconfirmRestart": "Takes effect after restart. Confirm restart?",
+    "incompatibilityWarning": "Typora version is too low, some plugins may not work.\nPlease upgrade to 0.9.98 (the last free version)",
+    "error.atLine": "Error on line {{errorLine}}",
+    "error.drawingFailed": "An exception occurred, drawing failed",
+    "error.writingFileFailed": "Failed to write file",
+    "error.onBlankPage": "Unavailable on a blank page",
+    "error.unknown": "Unknown Error! Please report to the developer"
   },
   "window_tab": {
     "pluginName": "Window Tab",
     "act.sort_tabs": "Sort Tabs",
-    "act.save_tabs": "Save Current Tab List",
-    "act.open_save_tabs": "Open Saved Tab List",
+    "act.save_tabs": "Save Current Tabs",
+    "act.open_save_tabs": "Open Saved Tabs",
     "act.toggle_suffix": "Hide File Extension",
-    "act.toggle_show_dir": "Show Directory for Same-Named Files",
-    "act.toggle_show_close_button": "Show Close Button on Tabs",
+    "act.toggle_show_dir": "Show Dir for Same-Named Files",
+    "act.toggle_show_close_button": "Show Close Button",
     "act.toggle_show_path": "Show Full Path on Hover",
     "act.toggle_hide_title_bar": "Hide Title Bar in Unibody Window Style",
     "act.toggle_drag_style": "JetBrains Style Tab Dragging",
@@ -28,17 +31,16 @@
     "act.toggle_tab_bar": "Temporarily Hide Tab Bar",
     "act.toggle_local": "Open in New Tab",
     "func.sortTabs": "Sort Tabs",
-    "func.closeTab": "Close Tab",
+    "func.closeTab": "Close",
     "func.closeOtherTabs": "Close Others",
     "func.closeLeftTabs": "Close All to the Left",
     "func.closeRightTabs": "Close All to the Right",
     "func.copyPath": "Copy File Path",
-    "func.showInFinder": "Show in Finder",
+    "func.showInFinder": "Open File Location",
     "func.openInNewWindow": "Open in New Window",
     "modal.exit": "Exit Typora",
     "modal.reconfirmExit": "Are you sure you want to exit?",
-    "modal.restart": "Restart Typora",
-    "modal.reconfirmRestart": "Changes will take effect after restart. Confirm restart?"
+    "modal.restart": "Restart Typora"
   },
   "search_multi": {
     "pluginName": "Multi-Fields File Searcher",
@@ -83,7 +85,7 @@
     "scope.blockcode": "BlockCode",
     "scope.blockcodelang": "BlockCode Language",
     "scope.blockcodebody": "BlockCode Content",
-    "scope.blockcodeline": "Specific Line in Code Block",
+    "scope.blockcodeline": "Specific Line in BlockCode",
     "scope.blockhtml": "HTML Block",
     "scope.blockquote": "Block Quote",
     "scope.table": "Table",
@@ -108,9 +110,13 @@
     "scope.strong": "Bold Text",
     "scope.em": "Italic Text",
     "scope.del": "Strikethrough Text",
-    "modal.field.usage": "Usage",
-    "modal.field.grammar": "Grammar",
-    "modal.brief": "<b>Multi-Fields File Searcher allows you to precisely find text files by combining different conditions.</b><br>Each condition consists of three parts: scope, operator, and operand, such as <em>size>2kb</em> (meaning: file size greater than 2KB), <em>ext:txt</em> (meaning: file extension contains txt), <em>content:/\\d{8}/</em> (meaning: file content matches the regex \\d{8})<br>Conditions are connected by AND, meaning all conditions must be met. For example, <em>size>2kb AND ext:txt</em><br>Conditions are connected by OR, meaning at least one condition must be met. For example, <em>size>2kb OR ext:txt</em><br>Adding NOT before a condition means the condition must not be met. For example, <em>NOT size>2kb</em>",
+    "modal.field.usage": "USAGE",
+    "modal.field.grammar": "GRAMMAR",
+    "modal.brief.introduce": "Multi-Fields File Searcher allows you to precisely find text files by combining different conditions.",
+    "modal.brief.conditionDesc": "Each condition consists of three parts: scope, operator, and operand, such as {{example1}}, {{example2}}",
+    "modal.brief.conditionCombination1": "Conditions are connected by AND, meaning all conditions must be met. For example, {{example}}",
+    "modal.brief.conditionCombination2": "Conditions are connected by OR, meaning at least one condition must be met. For example, {{example}}",
+    "modal.brief.conditionCombination3": "Adding NOT before a condition means the condition must not be met. For example, {{example}}",
     "modal.example.title": "Examples",
     "modal.example.result": "Search Files",
     "modal.example.equivalentTo": "Equivalent to",
@@ -130,9 +136,9 @@
     "modal.usage.keyword": "Keyword",
     "modal.usage.desc": "Description",
     "modal.usage.whitespace": "Whitespace",
-    "modal.usage.whitespaceDesc": "Connects two query conditions, meaning logical AND. The document must meet both conditions on either side of the whitespace, equivalent to AND",
-    "modal.usage.orDesc": "Connects two query conditions, meaning logical OR. The document must meet at least one of the conditions on either side of the |, equivalent to OR",
-    "modal.usage.notDesc": "Precedes a query condition, meaning logical NOT. The document must not meet the condition on the right side of the -, equivalent to NOT",
+    "modal.usage.whitespaceDesc": "Connects two query conditions, meaning logical AND. The document must meet both conditions on either side of the whitespace, equivalent to the word AND",
+    "modal.usage.orDesc": "Connects two query conditions, meaning logical OR. The document must meet at least one of the conditions on either side of the |, equivalent to the word OR",
+    "modal.usage.notDesc": "Precedes a query condition, meaning logical NOT. The document must not meet the condition on the right side of the -, equivalent to the word NOT",
     "modal.usage.quotationDesc": "Text enclosed in quotes represents a phrase",
     "modal.usage.regexDesc": "JavaScript-style regular expression",
     "modal.usage.scopeDesc": "Scope specifies the attribute to search",
@@ -177,7 +183,7 @@
     "modeDisabled": "No Image Mode Disabled"
   },
   "toolbar": {
-    "pluginName": "Multi Functional Search",
+    "pluginName": "Multi-Purpose Searcher",
     "tool.tab": "Switch Tab",
     "tool.plu": "Use Plugin",
     "tool.his": "Open Recent Files",
@@ -219,7 +225,7 @@
     "act.record_resize_state": "Remember Table Resize State"
   },
   "datatables": {
-    "pluginName": "Datatables",
+    "pluginName": "Enhance Table",
     "act.enhance_table": "Enhance Table",
     "act.revert_table": "Revert Table",
     "actHint.positioningTable": "Please position the cursor on the table and right-click",
@@ -290,7 +296,7 @@
     "setting.REMOVE_USELESS_CLASSES": "Remove Useless Classes",
     "setting.REMOVE_FOREIGN_OBJECT": "Replace &lt;foreignObject&gt; Element",
     "setting.SHOW_PATH_INQUIRY_DIALOG": "Ask for Download Path Before Download",
-    "setting.SHOW_IN_FINDER": "Show in Finder After Download",
+    "setting.SHOW_IN_FINDER": "Open File Location After Download",
     "settingGroup.color": "Color Scheme",
     "settingGroup.chart": "Diagram",
     "settingGroup.window": "Pop-up",
@@ -301,7 +307,7 @@
     "settingInfo.AUTO_UPDATE": "If unchecked, the 'Jump to Document Section on Node Click' option will be disabled",
     "settingInfo.CLICK_TO_LOCALE": "If unchecked, the 'Viewport Height for Positioning' option will be disabled",
     "settingInfo.LOCALE_HEIGHT_RATIO": "Position the target section to the current viewport height",
-    "settingInfo.FIX_ERROR_LEVEL_HEADER": "If unchecked, skipped headers will be filtered, only showing continuous levels",
+    "settingInfo.FIX_ERROR_LEVEL_HEADER": "If unchecked, only showing continuous level headers",
     "settingInfo.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD": "Experimental feature, not recommended. Only available when the 'collapse_paragraph' plugin is enabled",
     "settingInfo.FOLDER": "If empty or non-existent, the TEMP directory will be used",
     "settingInfo.FILENAME": "Supports variable names: {{varNames}}\nSupports extensions: {{extNames}}",
@@ -325,7 +331,7 @@
     "act.toggle_state_copy": "Copy Button",
     "act.toggle_state_indent": "Indent Button",
     "act.toggle_state_auto_hide": "Auto-Hide Buttons",
-    "act.toggle_state_fold_default": "Default BlockCode Folding",
+    "act.toggle_state_default_fold": "Default BlockCode Folding",
     "act.toggle_state_button_hint": "Show Button Hint",
     "act.toggle_state_hotkey": "Hotkeys",
     "act.toggle_state_fold_lang": "Foldable Code",
@@ -334,7 +340,7 @@
     "act.toggle_state_highlight_by_lang": "Highlight Lines by Language",
     "act.add_fences_lang": "(Danger) Fill Language to All BlockCode",
     "act.replace_fences_lang": "(Danger) Replace BlockCode Language in Bulk",
-    "act.indent_all_fences": "(Danger) Adjust Indentation for All Code Blocks",
+    "act.indent_all_fences": "(Danger) Adjust Indentation for All BlockCode",
     "actHint.dangerous": "Warning: Consumes a lot of resources and may cause Typora to be unresponsive for a long time",
     "actHint.toggle_state_indent_alignment": "Aligning indentation takes a lot of time and causes performance loss, not recommended",
     "actHint.toggle_state_highlight_by_lang": "Example ```js(2, 5-8)``` means highlighting lines 2, 5-8, not recommended",
@@ -343,11 +349,10 @@
     "btn.hint.fold": "Fold",
     "modal.enable": "Enable",
     "modal.disable": "Disable",
-    "modal.reconfirmRestart": "Takes effect after restart, confirm restart?",
     "modal.indent_all_fences.title": "Adjust Indentation for All BlockCode",
-    "modal.indent_all_fences.hint": "The functionality of adjusting indentation is limited and may misjudge languages like Python. Are you sure?",
+    "modal.indent_all_fences.limitedFunctionality": "Limited Functionality. May misjudge languages like Python. Are you sure?",
     "modal.add_fences_lang.title": "Fill Language",
-    "modal.add_fences_lang.lang": "Language",
+    "modal.add_fences_lang.targetLang": "Language",
     "modal.replace_fences_lang.title": "Replace Language",
     "modal.replace_fences_lang.sourceLang": "Source Language",
     "modal.replace_fences_lang.targetLang": "Target Language",
@@ -430,7 +435,6 @@
     "msgBox.encrypt.title": "Encrypt File",
     "msgBox.encrypt.onCiphered": "The file is already encrypted",
     "msgBox.encrypt.onPlain": "Do not modify the file after encryption",
-    "msgBox.encrypt.noMoreRemind": "Do not remind again (until Typora is closed)",
     "msgBox.decrypt.title": "Decrypt File",
     "msgBox.decrypt.onPlain": "The file is not encrypted"
   },
@@ -461,14 +465,12 @@
     "act.copy_full_path.NoHeader": "None",
     "act.insert_mermaid_mindmap.incompatible": "The mermaid version is too low to support the mindmap component. Please visit https://mermaid.live for more info",
     "actHint.notRecommended": "This action is not recommended unless necessary",
-    "actHint.defaultDoc": "If no text is selected, the entire document will be adjusted",
-    "msgBox.noMoreRemind": "Do not remind again (until Typora is closed)"
+    "actHint.defaultDoc": "If no text is selected, the entire document will be adjusted"
   },
   "custom": {
     "pluginName": "Custom Plugin",
-    "actHint.unknown": "Unknown error! Please report to the developer",
     "actHint.disabledForever": "This plugin is not clickable",
-    "actHint.disabledTemp": "Not available at this cursor position",
+    "actHint.disabledTemp": "Unavailable at this cursor position",
     "modal.checkError.title": "Configuration Error",
     "modal.checkError.incorrectFile": "The following plugin configurations are in the wrong file. Base plugins should be in settings.user.toml, Custom plugins should be in custom_plugin.user.toml"
   },
@@ -494,9 +496,8 @@
     "act.show_action_icon": "Add ⌘ Icon to Action Options",
     "act.hide_other_options": "Hide Options Except Plugins",
     "actHint.do_not_hide": "Right-click menu will not disappear after clicking",
-    "achHint.disabled": "Function not available at this time",
-    "modal.settingSuccessful": "Settings Successful",
-    "modal.reconfirmRestart": "Configuration will take effect after restarting Typora. Confirm restart?"
+    "achHint.disabled": "Unavailable at this time",
+    "modal.settingSuccessful": "Settings Successful"
   },
   "pie_menu": {
     "pluginName": "Pie Menu"
@@ -505,19 +506,18 @@
     "pluginName": "Preferences",
     "basePlugin": "Primary Plugin",
     "customPlugin": "Secondary Plugin",
-    "editConfigFile": "To protect users, enabling or disabling certain plugins here is prohibited. Please edit the configuration file if necessary",
+    "editConfigFile": "For security, some plugins cannot be enabled or disabled here. Edit the configuration file to make changes",
     "info.blur": "This plugin is not compatible with the Beta version of Typora",
     "info.export_enhance": "This plugin is not compatible with the Beta version of Typora",
     "info.auto_number": "This plugin may conflict with the user's theme, causing minor style issues",
-    "info.preferences": "Preferences Plugins is itself a plugin, disabling it will prevent this window from popping up",
+    "info.preferences": "Preferences is itself a plugin, disabling it will prevent this window from popping up",
     "info.right_click_menu": "This plugin is the entry point for ordinary users to call other plugins",
     "info.custom": "All secondary plugins are mounted on this plugin, disabling it will cause all secondary plugins to fail",
     "info.json_rpc": "This plugin is for developers",
     "info.reopenClosedFiles": "This plugin depends on the window_tab plugin",
     "info.redirectLocalRootUrl": "This plugin requires manual configuration to run",
     "info.article_uploader": "This plugin is for specific users, requiring manual configuration to run",
-    "modal.settingSuccessful": "Settings Successful",
-    "modal.reconfirmRestart": "Configuration will take effect after restarting Typora. Confirm restart?"
+    "modal.settingSuccessful": "Settings Successful"
   },
   "file_counter": {
     "pluginName": "File Counter"
@@ -568,11 +568,10 @@
     "pluginName": "RipGrep"
   },
   "json_rpc": {
-    "pluginName": "JSON RPC"
+    "pluginName": "Typora Automation"
   },
   "updater": {
     "pluginName": "Updater",
-    "networkProxy": "Network Proxy",
     "proxyUrl": "Proxy URL",
     "proxyUrlHint": "Leave empty if no proxy",
     "update.pleaseWait": "Updating, please wait",
@@ -580,8 +579,7 @@
     "update.currentVersionInfo": "Current Version Information",
     "update.noNeed": "Already the latest version, no update needed",
     "update.failed": "Update failed",
-    "update.tryAgain": "Update failed, please try again later or update manually",
-    "update.unknownError": "An unknown error occurred, please report to the developer"
+    "update.tryAgain": "Update failed, please try again later or update manually"
   },
   "test": {
     "pluginName": "Test"
@@ -593,8 +591,7 @@
     "error.multiTitles": "Multiple \"Kanban Titles\" detected",
     "error.useStrictMustFirstLine": "\"use strict\" must be on the first line",
     "error.syntaxError": "Syntax mismatch",
-    "error.taskTitleNonExist": "\"Task Title\" does not exist",
-    "error.unknown": "Unknown error! Please report to the developer"
+    "error.taskTitleNonExist": "\"Task Title\" does not exist"
   },
   "chat": {
     "pluginName": "Chat",
@@ -605,8 +602,7 @@
     "pluginName": "Timeline",
     "error.bodyComeBeforeTitle": "\"Timeline Title\" must come before the \"Content\"",
     "error.bodyComeBeforeTime": "\"Time\" must come before the \"Content\"",
-    "error.multiTitles": "Multiple \"Timeline Titles\" detected",
-    "error.unknown": "Unknown error! Please report to the developer"
+    "error.multiTitles": "Multiple \"Timeline Titles\" detected"
   },
   "echarts": {
     "pluginName": "Echarts"
@@ -640,7 +636,7 @@
     "filename": "Filename",
     "template": "Template",
     "preview": "Preview",
-    "unavailableOnBlankPage": "Unavailable on a blank page",
+    "error.onBlankPage": "Unavailable on a blank page",
     "createCopyIfEmpty": "Leave blank to create a copy"
   },
   "chineseSymbolAutoPairer": {
@@ -657,21 +653,20 @@
   },
   "resourceOperation": {
     "pluginName": "Resource Management",
-    "unavailableOnBlankPage": "Unavailable on a blank page",
+    "error.onBlankPage": "Unavailable on a blank page",
     "func.locate": "Open",
     "func.delete": "Delete",
     "func.close": "Close",
     "func.move": "Move",
     "func.togglePreview": "Preview Image",
     "func.download": "Download Report",
-    "msgBox.noMoreRemind": "Do not remind again (until Typora is closed)",
     "msgBox.reconfirmDeleteFile": "Do you want to delete the file: ",
     "title.setting": "Configuration",
     "title.nonExistInFile": "Resources existing in mount directory but not in MD file (total {{size}} items)",
     "title.nonExistInFolder": "Resources existing in MD file but not in mount directory (total {{size}} items)"
   },
   "scrollBookmarker": {
-    "pluginName": "Scroll Bookmarker",
+    "pluginName": "Bookmarker",
     "func.close": "Close",
     "func.move": "Move",
     "tryAltClick": "Try alt+clicking the content"
@@ -719,7 +714,7 @@
     "pluginName": "MarkdownLint",
     "actHint": "Click to show popup, click again to hide",
     "gotoWeb": "The following is a brief description of the rules, visit the website for a complete document",
-    "editConfigFile": "To protect users, modifying the rules here is prohibited. Edit the configuration file if necessary",
+    "editConfigFile": "For security, modifying the rules here is prohibited. Edit the configuration file to make changes",
     "func.close": "Close",
     "func.move": "Move",
     "func.refresh": "Refresh",
@@ -780,7 +775,7 @@
     "MD053": "Link and image reference definitions should be needed",
     "MD054": "Use consistent link and image reference definitions",
     "MD055": "Use consistent table style",
-    "MD056": "Table rows must be consistent",
+    "MD056": "Table rows should be consistent",
     "MD058": "Table rows should be surrounded by blank lines"
   },
   "reopenClosedFiles": {

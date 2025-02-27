@@ -122,7 +122,7 @@ class helpPlugin extends BasePlugin {
 
             const title = this.i18n.t("uninstall.ok")
             const message = this.i18n.t("uninstall.okMsg")
-            const confirm = this.i18n.seek("global", "confirm")
+            const confirm = this.i18n._t("global", "confirm")
             const op = { type: "info", title, message, buttons: [confirm] }
             await this.utils.showMessageBox(op)
             this.utils.restartTypora(false)

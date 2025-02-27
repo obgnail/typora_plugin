@@ -12,7 +12,7 @@ class searchMultiPlugin extends BasePlugin {
                 <input type="text" placeholder="${this.pluginName}">
                 <div class="plugin-search-multi-btn-group">
                     <span class="option-btn" action="searchGrammarModal" ty-hint="${this.i18n.t('grammar')}">
-                        <div class="ion-information-circled"></div>
+                        <div class="ion-help-circled"></div>
                     </span>
                     <span class="option-btn ${(this.config.CASE_SENSITIVE) ? "select" : ""}" action="toggleCaseSensitive" ty-hint="${this.i18n.t('caseSensitive')}">
                         <svg class="icon"><use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#find-and-replace-icon-case"></use></svg>
@@ -1026,7 +1026,13 @@ class Searcher {
         const t = this.i18n.t
         const i18n = {
             modal: {
-                brief: t("modal.brief"),
+                brief: {
+                    introduce: t("modal.brief.introduce"),
+                    conditionDesc: t("modal.brief.conditionDesc", { example1: "<em>size>2kb</em>", example2: "<em>ext:txt</em>" }),
+                    conditionCombination1: t("modal.brief.conditionCombination1", { example: "<em>size>2kb AND ext:txt</em>" }),
+                    conditionCombination2: t("modal.brief.conditionCombination2", { example: "<em>size>2kb OR ext:txt</em>" }),
+                    conditionCombination3: t("modal.brief.conditionCombination3", { example: "<em>NOT size>2kb</em>" }),
+                },
                 example: {
                     title: t("modal.example.title"),
                     result: t("modal.example.result"),
@@ -1077,6 +1083,19 @@ class Searcher {
         const metaScope = scope.filter(s => s.is_meta)
         const contentScope = scope.filter(s => !s.is_meta)
         const operator = [...Object.keys(this.MIXIN.OPERATOR)]
+        const genUL = (...li) => `<ul style="padding-left: 1em; word-break: break-word;">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
+
+        // brief
+        const conditionCombination = genUL(
+            i18n.modal.brief.conditionCombination1,
+            i18n.modal.brief.conditionCombination2,
+            i18n.modal.brief.conditionCombination3,
+        )
+        const brief = `
+            <b>${i18n.modal.brief.introduce}</b><br>
+            ${i18n.modal.brief.conditionDesc}<br>
+            ${conditionCombination}
+        `
 
         // example
         const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
@@ -1100,7 +1119,6 @@ class Searcher {
         // usage
         const genScope = scopes => scopes.map(e => `<code title="${e.name}">${e.scope}</code>`).join("、")
         const genOperator = (...operators) => operators.map(op => `<code>${op}</code>`).join("、")
-        const genUL = (...li) => `<ul style="padding-left: 1em; word-break: break-word;">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
         const scopeDesc = genUL(
             `${i18n.modal.usage.scopeDescMeta}：${genScope(metaScope)}`,
             `${i18n.modal.usage.scopeDescContent}：${genScope(contentScope)}`,
@@ -1143,7 +1161,7 @@ class Searcher {
 
         const title = this.i18n.t("grammar")
         const components = [
-            { label: i18n.modal.brief, type: "blockquote", tabIndex: 0 },
+            { label: brief, type: "blockquote", tabIndex: 0 },
             { label: example, type: "p" },
             { label: i18n.modal.field.usage, type: "p" },
             { label: usage, type: "p" },

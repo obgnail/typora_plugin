@@ -28,7 +28,7 @@ class preferencesPlugin extends BasePlugin {
         const customUpdated = await updateSetting("custom_plugin.user.toml", custom, enableCustomPlugins, "enable")
         if (baseUpdated || customUpdated) {
             const message = this.i18n.t("modal.settingSuccessful")
-            const detail = this.i18n.t("modal.reconfirmRestart")
+            const detail = this.i18n._t("global", "reconfirmRestart")
             const op = { title: this.pluginName, type: "info", message, detail }
             const { response } = await this.utils.showMessageBox(op)
             if (response === 0) {
@@ -45,7 +45,7 @@ class preferencesPlugin extends BasePlugin {
         const legendCustomPlugin = this.i18n.t("customPlugin")
 
         const display = ([fixedName, plugin]) => ({
-            label: `${plugin.NAME || plugin.name || this.i18n.seek(fixedName, "pluginName")}（${fixedName}）`,
+            label: `${plugin.NAME || plugin.name || this.i18n._t(fixedName, "pluginName")}（${fixedName}）`,
             info: INFO[fixedName],
             value: fixedName,
             checked: plugin.ENABLE || plugin.enable,

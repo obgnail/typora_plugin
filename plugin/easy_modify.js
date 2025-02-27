@@ -190,7 +190,7 @@ class easyModifyPlugin extends BasePlugin {
     trailingWhiteSpace = async () => {
         if (this._showWarnDialog) {
             const message = this.i18n.t("act.trailing_white_space.hint")
-            const checkboxLabel = this.i18n.t("msgBox.noMoreRemind")
+            const checkboxLabel = this.i18n._t("global", "disableReminder")
             const op = { type: "warning", message, checkboxLabel }
             const { response, checkboxChecked } = await this.utils.showMessageBox(op)
             if (response === 1) return true

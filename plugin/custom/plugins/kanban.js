@@ -48,7 +48,7 @@ class kanbanPlugin extends BaseCustomPlugin {
             $pre.find(".md-diagram-panel-preview").html(kanban);
         } else {
             // accident occurred
-            this.throwParseError(null, this.i18n.t("error.unknown"))
+            this.throwParseError(null, this.i18n._t("global", "error.unknown"))
         }
     }
 
@@ -95,7 +95,7 @@ class kanbanPlugin extends BaseCustomPlugin {
                         this.throwParseError(idx, this.i18n.t("error.useStrictMustFirstLine"))
                     }
                 } else {
-                    this.throwParseError(idx, this.i18n.t("error.unknown"))
+                    this.throwParseError(idx, this.i18n._t("global", "error.unknown"))
                 }
             } else {
                 const match = line.match(/^[\-*]\s(?<title>.*?)(\((?<desc>.*?)\))?$/);
@@ -125,18 +125,18 @@ class kanbanPlugin extends BaseCustomPlugin {
         })
 
         kanban.list = kanban.list.map((col, listIdx) => {
-            const taskColor = this.getColor("TASK_COLOR", listIdx);
-            const kanbanColor = this.getColor("KANBAN_COLOR", listIdx);
+            const taskColor = this.getColor("TASK_COLOR", listIdx)
+            const kanbanColor = this.getColor("KANBAN_COLOR", listIdx)
             const items = col.item.map(({ title, desc }) => `
                 <div class="plugin-kanban-col-item kanban-item-box" style="background-color: ${taskColor}">
                     <div class="plugin-kanban-col-item-title no-wrap-title"><b>${title}</b></div>
                     <div class="plugin-kanban-col-item-desc" ${(!desc && this.config.HIDE_DESC_WHEN_EMPTY) ? 'style="display: none;"' : ""}>${desc}</div>
                 </div>`);
-            return $(
-                `<div class="plugin-kanban-col kanban-box" style="background-color: ${kanbanColor}">
-                    <div class="plugin-kanban-col-name no-wrap-title">${col.name}</div><p></p>
-                    <div class="plugin-kanban-col-item-list">${items.join("")}</div>
-                </div>`)
+            const box = `<div class="plugin-kanban-col kanban-box" style="background-color: ${kanbanColor}">
+                            <div class="plugin-kanban-col-name no-wrap-title">${col.name}</div><p></p>
+                            <div class="plugin-kanban-col-item-list">${items.join("")}</div>
+                        </div>`
+            return $(box)
         })
         return kanban
     }

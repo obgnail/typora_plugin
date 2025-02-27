@@ -6,9 +6,9 @@ const getUserLocale = (lang) => {
         case "zh-CN":
         case "zh-Hans":
             return "zh-CN"
-        // case "zh-TW":
-        // case "zh-Hant":
-        //     return "zh-TW"
+        case "zh-TW":
+        case "zh-Hant":
+            return "zh-TW"
         // case "ko":
         // case "ko-KR":
         //     return "ko"
@@ -68,8 +68,8 @@ const i18n = {
     bind: function (field) {
         return {
             data: i18n.data[field],
-            seek: i18n.t,
             link: i18n.link,
+            _t: i18n.t,
             t: (key, variables) => i18n.t(field, key, variables),
             array: (keys, prefix) => i18n.array(field, keys, prefix),
             entries: (keys, prefix) => i18n.entries(field, keys, prefix),
