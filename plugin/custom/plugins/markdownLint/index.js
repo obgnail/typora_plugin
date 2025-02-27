@@ -114,7 +114,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 if (filePath) {
                     payload.filePath = filePath
                 } else {
-                    payload.fileContent = await File.getContent()
+                    payload.fileContent = this.utils.getCurrentFileContent()
                 }
                 worker.postMessage({ action, payload })
             }

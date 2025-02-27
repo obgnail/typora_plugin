@@ -372,15 +372,22 @@ class utils {
     }
 
     ////////////////////////////// business file operation //////////////////////////////
+    /**
+     * @param {boolean} shouldSave - Whether to save the content.
+     * @param {string} contentType - The content type (e.g., 'markdown', 'html').
+     * @param {boolean} skipSetContent - Whether to skip setting the content.
+     * @param {any} saveContext - Contextual information for saving (optional).
+     * @returns {string} - The content of the editor.
+     */
+    static getCurrentFileContent = (shouldSave, contentType, skipSetContent, saveContext) => File.sync(shouldSave, contentType, skipSetContent, saveContext)
+
     static editCurrentFile = async (replacement, reloadContent = true) => {
         await this.fixScrollTop(async () => {
             const bak = File.presentedItemChanged
             File.presentedItemChanged = this.noop
 
             const filepath = this.getFilePath()
-            const content = filepath
-                ? await FS.promises.readFile(filepath, "utf-8")
-                : await File.getContent()
+            const content = this.getCurrentFileContent()
             const replaced = typeof replacement === "string"
                 ? replacement
                 : await replacement(content)
@@ -389,7 +396,7 @@ class utils {
                 if (!ok) return
             }
             if (reloadContent) {
-                File.reloadContent(replaced, { fromDiskChange: false })
+                File.reloadContent(replaced, { delayRefresh: true, skipChangeCount: true, skipStore: true })
             }
 
             setTimeout(() => File.presentedItemChanged = bak, 1500)
@@ -576,7 +583,7 @@ class utils {
             type = "info",
             title = "typora",
             message, detail,
-            buttons = [i18n.t("global","confirm"), i18n.t("global","cancel")],
+            buttons = [i18n.t("global", "confirm"), i18n.t("global", "cancel")],
             defaultId = 0,
             cancelId = 1,
             normalizeAccessKeys = true,

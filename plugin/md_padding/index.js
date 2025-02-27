@@ -35,7 +35,6 @@ class mdPaddingPlugin extends BasePlugin {
         const done = this.i18n.t("done")
 
         this.utils.notification.show(running, "info")
-        await File.saveUseNode()
         const rangy = File.editor.selection.getRangy()
         if (this.config.FORMAT_IN_SELECTION_ONLY && rangy && !rangy.collapsed) {
             await this.formatSelection()
