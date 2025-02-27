@@ -1476,6 +1476,10 @@ TOOLBAR = [
     "foregroundColor", "backgroundColor", "borderColor", "setBrush", "useBrush", "erase", "blank", "move", "close"
 ]
 
+# 默认的格式刷
+#   填入 CSS 语句。例如："color:#FF0000; text-decoration:line-through;"
+DEFAULT_FORMAT_BRUSH = ""
+
 # ------------------- 快捷键 -------------------
 # 将设置样式的动作映射为快捷键，方便快速应用样式
 #   hotkey: 快捷键组合，例如："ctrl+shift+c"。为空则禁用快捷键

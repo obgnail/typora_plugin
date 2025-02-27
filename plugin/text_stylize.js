@@ -72,8 +72,8 @@ class textStylizePlugin extends BasePlugin {
             toolbar: document.querySelector("#plugin-text-stylize .stylize-tool"),
             palette: document.querySelector("#plugin-text-stylize .stylize-palette"),
         }
-        this.styleSetter = new styleSetter(this);
-        this.setStyle = this.styleSetter.setStyle;
+        this.styleSetter = new styleSetter(this, this.config.DEFAULT_FORMAT_BRUSH)
+        this.setStyle = this.styleSetter.setStyle
     }
 
     process = () => {
@@ -252,9 +252,9 @@ class textStylizePlugin extends BasePlugin {
  *    The main function `setStyle` orchestrates the entire process, calling `genRanges`, `setMultilineStyle`, and the helper functions as needed.
  */
 class styleSetter {
-    constructor(plugin) {
-        this.utils = plugin.utils;
-        this.formatBrushObj = {};
+    constructor(plugin, formatBrushString) {
+        this.utils = plugin.utils
+        this.formatBrushObj = this.parseStyleString(formatBrushString)
     }
 
     setStyle = ({ toggleMap, deleteMap, mergeMap, upsertMap, replaceMap, hook, moveBookmark = true, rememberFormat = false }) => {
@@ -343,12 +343,7 @@ class styleSetter {
             const regexpResult = outerText.match(matcher);
             const styles = regexpResult && regexpResult.groups && regexpResult.groups.styles;
             if (styles) {
-                styles.split(";").forEach(s => {
-                    const [attr, value] = s.trim().split(":");
-                    if (attr && value) {
-                        styleMap[attr] = value;
-                    }
-                })
+                styleMap = this.parseStyleString(styles)
             }
             if (upsertMap) {
                 Object.assign(styleMap, upsertMap);
@@ -617,6 +612,17 @@ class styleSetter {
             getTextNodes(element);
         }
         return textNodes
+    }
+
+    parseStyleString = styleString => {
+        const obj = {}
+        styleString.split(";").forEach(s => {
+            const [attr, value] = s.trim().split(":")
+            if (attr && value) {
+                obj[attr] = value
+            }
+        })
+        return obj
     }
 }
 
