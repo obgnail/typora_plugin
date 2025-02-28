@@ -13,3 +13,9 @@ Please read the input text, and follow these instructions:\r
 2. The language of the output should be consistent with the language of the input text, even if it is in a mixed-language form.\r
 3. Don't provide any additional explanation before or after the answer and output directly.\r
 """
+
+[LatexCompletion]
+name = "Latex自动补全"
+enable = true
+hide = true
+order = 1
