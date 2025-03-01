@@ -111,9 +111,9 @@ class updater {
         this.workDir = this.pkgPath.join(this.utils.tempFolder, "typora-plugin-updater");
         this.exclude = [
             "./plugin/global/user_styles",
-            "./plugin/window_tab/save_tabs.json",
             "./plugin/global/settings/settings.user.toml",
             "./plugin/global/settings/custom_plugin.user.toml",
+            "./plugin/window_tab/save_tabs.json",
             "./plugin/custom/plugins/reopenClosedFiles/remain.json",
             "./plugin/custom/plugins/scrollBookmarker/bookmark.json",
         ]
@@ -222,14 +222,13 @@ class updater {
         const oldFds = await this.pkgFsExtra.readdir(oldDir);
         const newFds = await this.pkgFsExtra.readdir(newDir);
 
-        const excludeFds = new Set();
-        newFds.forEach(file => excludeFds.add(file));
-
+        const excludeFds = new Set([...newFds])
         oldFds.forEach(name => {
             const exclude = excludeFds.has(name) || (this.pkgPath.extname(name) === ".js") && excludeFds.has(name.substring(0, name.lastIndexOf(".")))
-            if (exclude) return
-            const path = this.pkgPath.join(this.customPluginDir, name)
-            this.exclude.push(path)
+            if (!exclude) {
+                const path = this.pkgPath.join(this.customPluginDir, name)
+                this.exclude.push(path)
+            }
         })
 
         for (const file of this.exclude) {
@@ -251,8 +250,6 @@ class updater {
         await this.pkgFsExtra.emptyDir(this.workDir);
         if (this.latestVersionInfo) {
             await this.pkgFsExtra.writeJson(this.versionFile, this.latestVersionInfo);
-        } else {
-            await this.pkgFsExtra.remove(this.versionFile);
         }
     }
 }
