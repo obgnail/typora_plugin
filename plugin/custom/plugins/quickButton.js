@@ -39,25 +39,17 @@ class quickButtonPlugin extends BaseCustomPlugin {
     }
 
     registerButtons = () => {
-        this.config.buttons.forEach(btn => {
+        this.config.buttons.forEach((btn, idx) => {
             const { coordinate, hint, icon, size, color, bgColor, disable, callback = "", evil } = btn || {}
             if (disable) return
 
-            let cb
-            if (evil) {
-                cb = eval(evil)
-            } else {
-                const [fixedName, func] = callback.split(".")
-                if (fixedName && func) {
-                    cb = this.utils.getPluginFunction(fixedName, func)
-                }
-            }
+            const cb = evil ? eval(evil) : this.utils.getPluginFunction(...callback.split("."))
             if (cb instanceof Function) {
                 const style = {}
                 if (size) style.fontSize = size
                 if (color) style.color = color
                 if (bgColor) style.backgroundColor = bgColor
-                const action = this.utils.randomString()
+                const action = `__${idx}`
                 this.register(action, coordinate, hint, icon, style, cb)
             }
         })
