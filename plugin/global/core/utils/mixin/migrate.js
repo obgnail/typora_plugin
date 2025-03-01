@@ -18,7 +18,7 @@ class migrate {
         })
 
         const base = files.find(e => e.file === "settings.user.toml")
-        base.user_ = this.utils.merge(base.user_, { "hotkeys": { "CUSTOM_HOTKEYS": customHotkeys } })
+        base.user_ = this.utils.merge(base.user_, { hotkeys: { CUSTOM_HOTKEYS: customHotkeys } })
 
         const promises = ["hotkey.default.toml", "hotkey.user.toml"]
             .flatMap(file => [
@@ -35,7 +35,10 @@ class migrate {
     }
 
     deleteUselessPlugin = async () => {
-        const custom = ["fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode", "noImageMode", "hotkeyHub", "pluginUpdater", "openInTotalCommander"]
+        const custom = [
+            "fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode",
+            "noImageMode", "hotkeyHub", "pluginUpdater", "openInTotalCommander", "__modal_example"
+        ]
         const promises = custom
             .map(plugin => this.utils.joinPath("./plugin/custom/plugins", `${plugin}.js`))
             .map(async path => {
@@ -53,7 +56,7 @@ class migrate {
     }
 
     _fixCustomPluginSetting = settings => {
-        Object.values(settings).map(plugin => {
+        Object.values(settings).forEach(plugin => {
             if (plugin.config) {
                 Object.assign(plugin, plugin.config)
                 delete plugin.config
@@ -88,9 +91,7 @@ class migrate {
                 .map(fixedName => {
                     const pluginUser = user_[fixedName]
                     const pluginDefault = default_[fixedName]
-                    const toDeleteKeys = Object.keys(pluginUser).filter(key => {
-                        return !hasOwnProperty(pluginDefault, key) || pluginDefault[key] === pluginUser[key]
-                    })
+                    const toDeleteKeys = Object.keys(pluginUser).filter(key => !hasOwnProperty(pluginDefault, key) || pluginDefault[key] === pluginUser[key])
                     return [pluginUser, toDeleteKeys]
                 })
                 .forEach(([plugin, invalidKeys]) => invalidKeys.forEach(key => delete plugin[key]))
