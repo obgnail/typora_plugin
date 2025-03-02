@@ -11,7 +11,7 @@
     </p>
 </div>
 
-简体中文 | [English](https://github.com/obgnail/markdown-finder/blob/master/README-en.md)
+简体中文 | [English](https://github.com/obgnail/typora_plugin/blob/master/README-en.md)
 
 | #    | 插件                    | 功能                                   | 默认启用 |
 | ---- | ----------------------- | -------------------------------------- | -------- |
