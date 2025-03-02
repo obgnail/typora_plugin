@@ -1,22 +1,27 @@
-const require = self.require
 const fs = require("fs").promises
 
 let lib
+let libPath
 let config = { default: true }
 
-function init({ config }) {
+function init({ config, libPath }) {
+    assignLibPath(libPath)
+    assignConfig(config)
     lazyLoad()
-    assignConfig({ config })
     console.debug(`markdownLint@${lib.getVersion()} worker is initialized with rules`, config)
 }
 
-function assignConfig({ config: cfg }) {
+function assignLibPath(lp) {
+    libPath = lp
+}
+
+function assignConfig(cfg) {
     Object.assign(config, cfg)
 }
 
 function lazyLoad() {
-    if (!lib) {
-        lib = require("./markdownlint.min.js")
+    if (!lib && libPath) {
+        lib = require(libPath)
     }
 }
 
@@ -46,7 +51,7 @@ async function fixPath({ filePath, fixInfo }) {
 
 const linter = { init, assignConfig, checkContent, checkPath, fixContent, fixPath }
 
-self.onmessage = async ({ data: { action, payload } }) => {
+onmessage = async ({ data: { action, payload } }) => {
     if (!payload) return
 
     const func = linter[action]

@@ -95,7 +95,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         }
 
         const initWorker = (onCheck, onFix) => {
-            const worker = new Worker(this.utils.joinPath("./plugin/custom/plugins/markdownLint/linter-worker.js"))
+            const worker = new Worker("plugin/custom/plugins/markdownLint/linter-worker.js")
             worker.onmessage = event => {
                 const { action, result } = event.data || {}
                 const on = action.startsWith("check") ? onCheck : onFix
@@ -103,7 +103,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
             }
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
                 setTimeout(() => {
-                    worker.postMessage({ action: "init", payload: { config: this.config.rule_config } })
+                    const libPath = this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js")
+                    worker.postMessage({ action: "init", payload: { config: this.config.rule_config, libPath } })
                     this.checkLint()
                 }, 1000)
             })
