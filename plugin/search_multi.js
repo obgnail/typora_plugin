@@ -199,7 +199,7 @@ class searchMultiPlugin extends BasePlugin {
             item.className = "plugin-search-multi-item"
             item.dataset.path = filePath
             if (this.config.SHOW_MTIME) {
-                const time = stats.mtime.toLocaleString("chinese", { hour12: false })
+                const time = stats.mtime.toLocaleString(undefined, { hour12: false })
                 item.setAttribute("ty-hint", time)
             }
 

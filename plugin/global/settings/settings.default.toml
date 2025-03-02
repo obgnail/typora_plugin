@@ -977,35 +977,20 @@ DEFAULT_FENCE_OPTIONS = { duration = 500, initialExpandLevel = -1, colorFreezeLe
 #   请确保此处的代码块语言与 LANGUAGE 配置一致
 FENCE_TEMPLATE = """```markmap
 ---
-# 根节点默认文本（若内容存在根节点，则此选项失效）
 title: markmap
-# 配置:
 markmap:
-  # 是否允许缩放
   zoom: false
-  # 是否允许平移
   pan: false
-  # 节点最大长度（0则无长度限制）
   maxWidth: 0
-  # 节点水平间距
   spacingHorizontal: 80
-  # 节点垂直间距
   spacingVertical: 5
-  # 节点内部边距
   paddingX: 8
-  # 图形的窗口填充率
   fitRatio: 0.95
-  # 展开的最大节点级别（-1则展开全部）
   initialExpandLevel: -1
-  # 多少级开始固定分支颜色
   colorFreezeLevel: 6
-  # 颜色
   color: ["#4E79A7", "#F28E2C", "#E15759", "#76B7B2", "#59A14F", "#EDC949", "#AF7AA1", "#FF9DA7", "#9C755F", "#BAB0AB"]
-  # 动画持续时间
   duration: 500
-  # 图形高度
   height: 300px
-  # 背景色
   backgroundColor: "#F8F8F8"
 ---
 
@@ -1678,45 +1663,45 @@ FUNC_PARAM_SEPARATOR = "_"
 #                   - 若 type 为 command，则填入逻辑函数
 #                   - 若 type 为 gen-snp，则填入返回字符串的函数
 COMMANDS = [
-    { enable = true, type = "command", icon = "📝", keyword = "H1", hint = "一级标题", callback = "() => File.editor.stylize.changeBlock('header1', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "H2", hint = "二级标题", callback = "() => File.editor.stylize.changeBlock('header2', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "H3", hint = "三级标题", callback = "() => File.editor.stylize.changeBlock('header3', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "H4", hint = "四级标题", callback = "() => File.editor.stylize.changeBlock('header4', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "H5", hint = "五级标题", callback = "() => File.editor.stylize.changeBlock('header5', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "H6", hint = "六级标题", callback = "() => File.editor.stylize.changeBlock('header6', undefined, true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "Paragraph", hint = "段落", callback = "() => File.editor.stylize.changeBlock('paragraph')" },
-    { enable = true, type = "command", icon = "📝", keyword = "IncreaseHeaderLevel", hint = "提升标题等级", callback = "() => File.editor.stylize.increaseHeaderLevel()" },
-    { enable = true, type = "command", icon = "📝", keyword = "DecreaseHeaderLevel", hint = "降低标题等级", callback = "() => File.editor.stylize.decreaseHeaderLevel()" },
-    { enable = true, type = "command", icon = "📝", keyword = "Table", hint = "表格", callback = "() => File.editor.tableEdit.insertTable()" },
-    { enable = true, type = "command", icon = "📝", keyword = "BlockCode", hint = "代码块", callback = "() => File.editor.stylize.toggleFences()" },
-    { enable = true, type = "command", icon = "📝", keyword = "BlockMath", hint = "公式块", callback = "() => File.editor.stylize.toggleMathBlock()" },
-    { enable = true, type = "command", icon = "📝", keyword = "BlockQuote", hint = "引用", callback = "() => File.editor.stylize.toggleIndent('blockquote')" },
-    { enable = true, type = "command", icon = "📝", keyword = "OrderedList", hint = "有序列表", callback = "() => File.editor.stylize.toggleIndent('ol')" },
-    { enable = true, type = "command", icon = "📝", keyword = "UnorderedList", hint = "无序列表", callback = "() => File.editor.stylize.toggleIndent('ul')" },
-    { enable = true, type = "command", icon = "📝", keyword = "Tasklist", hint = "任务列表", callback = "() => File.editor.stylize.toggleIndent('tasklist')" },
-    { enable = true, type = "command", icon = "📝", keyword = "ListMoreIndent", hint = "增加列表缩进", callback = "() => File.editor.UserOp.moreIndent(File.editor)" },
-    { enable = true, type = "command", icon = "📝", keyword = "ListLessIndent", hint = "减少列表缩进", callback = "() => File.editor.UserOp.lessIndent(File.editor)" },
-    { enable = true, type = "command", icon = "📝", keyword = "InsertParagraphAbove", hint = "在上方插入段落", callback = "() => File.editor.UserOp.insertParagraph(true)" },
-    { enable = true, type = "command", icon = "📝", keyword = "InsertParagraphBelow", hint = "在下方插入段落", callback = "() => File.editor.UserOp.insertParagraph(false)" },
-    { enable = true, type = "command", icon = "📝", keyword = "DefLink", hint = "链接引用", callback = "() => File.editor.stylize.insertBlock('def_link')" },
-    { enable = true, type = "command", icon = "📝", keyword = "DefFootnote", hint = "脚注", callback = "() => File.editor.stylize.insertBlock('def_footnote')" },
-    { enable = true, type = "command", icon = "📝", keyword = "Hr", hint = "水平分割线", callback = "() => File.editor.stylize.insertBlock('hr')" },
-    { enable = true, type = "command", icon = "📝", keyword = "TOC", hint = "内容目录", callback = "() => File.editor.stylize.insertBlock('toc')" },
-    { enable = true, type = "command", icon = "📝", keyword = "FrontMatter", hint = "元信息", callback = "() => File.editor.stylize.insertMetaBlock()" },
-    { enable = true, type = "command", icon = "👕", keyword = "Strong", hint = "粗体", callback = "() => File.editor.stylize.toggleStyle('strong')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Em", hint = "斜体", callback = "() => File.editor.stylize.toggleStyle('em')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Underline", hint = "下划线", callback = "() => File.editor.stylize.toggleStyle('underline')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Code", hint = "代码", callback = "() => File.editor.stylize.toggleStyle('code')" },
-    { enable = true, type = "command", icon = "👕", keyword = "InlineMath", hint = "内联公式", callback = "() => File.editor.stylize.toggleStyle('inline_math')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Delete", hint = "删除线", callback = "() => File.editor.stylize.toggleStyle('del')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Highlight", hint = "高亮", callback = "() => File.editor.stylize.toggleStyle('highlight')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Superscript", hint = "上标", callback = "() => File.editor.stylize.toggleStyle('superscript')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Subscript", hint = "下标", callback = "() => File.editor.stylize.toggleStyle('subscript')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Footnote", hint = "脚注", callback = "() => File.editor.stylize.toggleStyle('footnote')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Comment", hint = "注释", callback = "() => File.editor.stylize.toggleStyle('comment')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Link", hint = "超链接", callback = "() => File.editor.stylize.toggleStyle('link')" },
-    { enable = true, type = "command", icon = "👕", keyword = "Image", hint = "图像", callback = "() => File.editor.stylize.toggleStyle('image')" },
-    { enable = true, type = "command", icon = "👕", keyword = "ClearStyle", hint = "清除样式", callback = "() => File.editor.stylize.clearStyle()" },
+    { enable = true, type = "command", icon = "📝", keyword = "H1", callback = "() => File.editor.stylize.changeBlock('header1', undefined, true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "H2", callback = "() => File.editor.stylize.changeBlock('header2', undefined, true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "H3", callback = "() => File.editor.stylize.changeBlock('header3', undefined, true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "H4", callback = "() => File.editor.stylize.changeBlock('header4', undefined, true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "H5", callback = "() => File.editor.stylize.changeBlock('header5', undefined, true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "H6", callback = "() => File.editor.stylize.changeBlock('header6', undefined, true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "Paragraph", callback = "() => File.editor.stylize.changeBlock('paragraph')" },
+    { enable = true, type = "command", icon = "📝", keyword = "IncreaseHeaderLevel", callback = "() => File.editor.stylize.increaseHeaderLevel()" },
+    { enable = true, type = "command", icon = "📝", keyword = "DecreaseHeaderLevel", callback = "() => File.editor.stylize.decreaseHeaderLevel()" },
+    { enable = true, type = "command", icon = "📝", keyword = "Table", callback = "() => File.editor.tableEdit.insertTable()" },
+    { enable = true, type = "command", icon = "📝", keyword = "BlockCode", callback = "() => File.editor.stylize.toggleFences()" },
+    { enable = true, type = "command", icon = "📝", keyword = "BlockMath", callback = "() => File.editor.stylize.toggleMathBlock()" },
+    { enable = true, type = "command", icon = "📝", keyword = "BlockQuote", callback = "() => File.editor.stylize.toggleIndent('blockquote')" },
+    { enable = true, type = "command", icon = "📝", keyword = "OrderedList", callback = "() => File.editor.stylize.toggleIndent('ol')" },
+    { enable = true, type = "command", icon = "📝", keyword = "UnorderedList", callback = "() => File.editor.stylize.toggleIndent('ul')" },
+    { enable = true, type = "command", icon = "📝", keyword = "TaskList", callback = "() => File.editor.stylize.toggleIndent('tasklist')" },
+    { enable = true, type = "command", icon = "📝", keyword = "ListMoreIndent", callback = "() => File.editor.UserOp.moreIndent(File.editor)" },
+    { enable = true, type = "command", icon = "📝", keyword = "ListLessIndent", callback = "() => File.editor.UserOp.lessIndent(File.editor)" },
+    { enable = true, type = "command", icon = "📝", keyword = "InsertParagraphAbove", callback = "() => File.editor.UserOp.insertParagraph(true)" },
+    { enable = true, type = "command", icon = "📝", keyword = "InsertParagraphBelow", callback = "() => File.editor.UserOp.insertParagraph(false)" },
+    { enable = true, type = "command", icon = "📝", keyword = "LinkReference", callback = "() => File.editor.stylize.insertBlock('def_link')" },
+    { enable = true, type = "command", icon = "📝", keyword = "FootnoteReference", callback = "() => File.editor.stylize.insertBlock('def_footnote')" },
+    { enable = true, type = "command", icon = "📝", keyword = "HorizontalLine", callback = "() => File.editor.stylize.insertBlock('hr')" },
+    { enable = true, type = "command", icon = "📝", keyword = "TOC", callback = "() => File.editor.stylize.insertBlock('toc')" },
+    { enable = true, type = "command", icon = "📝", keyword = "FrontMatter", callback = "() => File.editor.stylize.insertMetaBlock()" },
+    { enable = true, type = "command", icon = "👕", keyword = "Strong", callback = "() => File.editor.stylize.toggleStyle('strong')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Em", callback = "() => File.editor.stylize.toggleStyle('em')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Underline", callback = "() => File.editor.stylize.toggleStyle('underline')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Code", callback = "() => File.editor.stylize.toggleStyle('code')" },
+    { enable = true, type = "command", icon = "👕", keyword = "InlineMath", callback = "() => File.editor.stylize.toggleStyle('inline_math')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Delete", callback = "() => File.editor.stylize.toggleStyle('del')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Highlight", callback = "() => File.editor.stylize.toggleStyle('highlight')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Superscript", callback = "() => File.editor.stylize.toggleStyle('superscript')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Subscript", callback = "() => File.editor.stylize.toggleStyle('subscript')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Footnote", callback = "() => File.editor.stylize.toggleStyle('footnote')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Comment", callback = "() => File.editor.stylize.toggleStyle('comment')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Link", callback = "() => File.editor.stylize.toggleStyle('link')" },
+    { enable = true, type = "command", icon = "👕", keyword = "Image", callback = "() => File.editor.stylize.toggleStyle('image')" },
+    { enable = true, type = "command", icon = "👕", keyword = "ClearStyle", callback = "() => File.editor.stylize.clearStyle()" },
     { enable = true, type = "command", icon = "💻", keyword = "Golang", callback = "() => this.utils.insertFence('go')" },
     { enable = true, type = "command", icon = "💻", keyword = "Python", callback = "() => this.utils.insertFence('python')" },
     { enable = true, type = "command", icon = "💻", keyword = "Bash", callback = "() => this.utils.insertFence('bash')" },
@@ -1727,22 +1712,24 @@ COMMANDS = [
     { enable = true, type = "command", icon = "💻", keyword = "Mermaid", callback = "() => this.utils.insertFence('mermaid')" },
     { enable = true, type = "command", icon = "💻", keyword = "JavaScript", callback = "() => this.utils.insertFence('javascript')" },
     { enable = true, type = "command", icon = "💻", keyword = "TypeScript", callback = "() => this.utils.insertFence('typescript')" },
-    { enable = true, type = "command", icon = "🧰", keyword = "JumpTop", hint = "至顶部", callback = "() => File.editor.selection.jumpTop()" },
-    { enable = true, type = "command", icon = "🧰", keyword = "JumpBottom", hint = "至底部", callback = "() => File.editor.selection.jumpBottom()" },
-    { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineStart", hint = "至行首", callback = "() => File.editor.selection.jumpToLineStart()" },
-    { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineEnd", hint = "至行尾", callback = "() => File.editor.selection.jumpToLineEnd()" },
-    { enable = true, type = "command", icon = "🧰", keyword = "Help", hint = "帮助", callback = "() => this.call()" },
+    { enable = true, type = "command", icon = "🧰", keyword = "JumpTop", callback = "() => File.editor.selection.jumpTop()" },
+    { enable = true, type = "command", icon = "🧰", keyword = "JumpBottom", callback = "() => File.editor.selection.jumpBottom()" },
+    { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineStart", callback = "() => File.editor.selection.jumpToLineStart()" },
+    { enable = true, type = "command", icon = "🧰", keyword = "JumpToLineEnd", callback = "() => File.editor.selection.jumpToLineEnd()" },
+    { enable = true, type = "command", icon = "🧰", keyword = "Help", callback = "() => this.call()" },
     # 文本片段
-    { enable = true, type = "snippet", icon = "🧩", keyword = "Br", hint = "换行符", callback = "<br>" },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "IMG", hint = "<img>", cursorOffset = [-14, -14], callback = '<img src="" alt="alt" />' },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "SnippetExample", hint = "示例片段", callback = "https://github.com/obgnail/typora_plugin" },
-    { enable = true, type = "snippet", icon = "🧩", keyword = "cursorOffsetExample", hint = "光标偏移示例", cursorOffset = [-31, -18], callback = "感谢您使用 Typora Plugin，如果本项目帮助到您，欢迎 STAR" },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "BR", callback = "<br>" },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "IMG", cursorOffset = [-14, -14], callback = '<img src="" alt="alt" />' },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "SPAN", cursorOffset = [-7, -7], callback = '<span></span>' },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "cursorOffsetExample", cursorOffset = [-23, -10], callback = "Enjoying Typora Plugin? Star us!" },
+    { enable = true, type = "snippet", icon = "🧩", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
     # 动态文本片段
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Datetime", hint = "日期时间", callback = "() => new Date().toLocaleString('chinese', {hour12: false})" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Date", hint = "日期", callback = "() => { let day = new Date(); return `${day.getFullYear()}/${day.getMonth()+1}/${day.getDate()}` }" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Time", hint = "时间", callback = "() => { let day = new Date(); return `${day.getHours()}:${day.getMinutes()}:${day.getSeconds()}` }" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Timestamp", hint = "时间戳", callback = "() => new Date().getTime().toString()" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Week", hint = "星期", callback = "() => '星期' + '日一二三四五六'.charAt((new Date()).getDay())" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Datetime", callback = "() => new Date().toLocaleString(undefined, {hour12: false})" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Date", callback = "() => { let d = new Date(); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}` }" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Time", callback = "() => { let d = new Date(); return `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}` }" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Timestamp", callback = "() => new Date().getTime().toString()" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Weekday", callback = "() => new Date().toLocaleDateString(undefined, { weekday: 'long' })" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "UUID", callback = "() => this.utils.getUUID()" },
     # 行内公式内才可使用
     { enable = true, type = "snippet", icon = "🧩", keyword = "alpha", hint = "α", scope = "inline_math", callback = "\\alpha " },
     { enable = true, type = "snippet", icon = "🧩", keyword = "beta", hint = "β", scope = "inline_math", callback = "\\beta " },
@@ -1750,11 +1737,11 @@ COMMANDS = [
     { enable = true, type = "snippet", icon = "🧩", keyword = "rightarrow", hint = "→", scope = "inline_math", callback = "\\rightarrow " },
     # 进阶：命令参数
     #   代码块生成器：输入 /BlockCodeGenerator_go_java_bash 即可同时插入 go、java、bash 三个代码块
-    { enable = true, type = "gen-snp", icon = "🌟", keyword = "BlockCodeGenerator", hint = "代码块生成器", callback = "(...langs) => langs.map(l => '```' + l.toLowerCase() + '\\n```').join('\\n\\n')" },
+    { enable = true, type = "gen-snp", icon = "🌟", keyword = "BlockCodeGenerator", callback = "(...langs) => langs.map(l => '```' + l.toLowerCase() + '\\n```').join('\\n\\n')" },
     #   提示块生成器：输入 /CalloutGenerator_note_info_quote 即可同时插入 NOTE、INFO、QUOTE 三个 callout
-    { enable = true, type = "gen-snp", icon = "🌟", keyword = "CalloutGenerator", hint = "提示块生成器", callback = "(...types) => types.map(t => `> [!${t.toUpperCase()}]\\n>\\n> `).join('\\n\\n')" },
+    { enable = true, type = "gen-snp", icon = "🌟", keyword = "CalloutGenerator", callback = "(...types) => types.map(t => `> [!${t.toUpperCase()}]\\n>\\n> `).join('\\n\\n')" },
     #   表格生成器：输入 /TableGenerator_3_4 即可插入三列四行的表格
-    { enable = true, type = "command", icon = "🌟", keyword = "TableGenerator", hint = "表格生成器", callback = "(col, row) => { col = parseInt(col); row = parseInt(row); const c = ['      ', ' ---- ', ...Array(row - 1).fill('      ')].map(e => `|${Array(col).fill(e).join('|')}|`).join('\\n'); this.utils.insertText(null, c, false) }" },
+    { enable = true, type = "command", icon = "🌟", keyword = "TableGenerator", callback = "(col, row) => { col = parseInt(col); row = parseInt(row); const c = ['      ', ' ---- ', ...Array(row - 1).fill('      ')].map(e => `|${Array(col).fill(e).join('|')}|`).join('\\n'); this.utils.insertText(null, c, false) }" },
 ]
 
 
@@ -1812,7 +1799,7 @@ FIND_LOST_PLUGIN = true
 #   NAME: 一级菜单的名称
 #   LIST: 二级菜单的插件列表，`---` 代表在页面上插入一个分隔横线。允许填入 pluginName (插件，如：help) 或者 pluginName.callArg (插件的其中一个选项，如：help.donate)
 [[right_click_menu.MENUS]]
-NAME = "少用插件"
+NAME = "__LESS_USED_PLUGINS__"
 LIST = [
     "window_tab",
     "fence_enhance",
@@ -1844,7 +1831,7 @@ LIST = [
     "test",
 ]
 [[right_click_menu.MENUS]]
-NAME = "常用插件"
+NAME = "__OFTEN_USED_PLUGINS__"
 LIST = [
     "commander",
     "markmap",
@@ -2029,17 +2016,17 @@ HOTKEY = ""
 #   - 由于 `eval` 的强大，你甚至可以注入插件系统，修改插件系统的行为（此时要将 hotkey 设置为 【-】） —— 试试将下面的 【alertWhenOpenFile】 的 enable 置为 true
 CUSTOM_HOTKEYS = [
     # 简单使用：insertBlockCode
-    { enable = false, hotkey = "ctrl+shift+e", desc = "快速插入javascript代码块", evil = "() => this.utils.insertFence('javascript')" },
+    { enable = false, hotkey = "ctrl+shift+e", desc = "Insert JavaScript BlockCode", evil = "() => this.utils.insertFence('javascript')" },
     # 支持但邪恶的使用方法：openCalc
-    { enable = false, hotkey = "ctrl+shift+e", desc = "打开windows计算器", evil = "() => this.utils.Package.ChildProcess.exec('cmd /C calc')" },
+    { enable = false, hotkey = "ctrl+shift+e", desc = "Open Windows Calculator", evil = "() => this.utils.Package.ChildProcess.exec('cmd /C calc')" },
     # 支持但不推荐的使用方法：switchFirstTab
-    { enable = false, hotkey = "ctrl+shift+e", desc = "切换到第一个标签", evil = "() => this.utils.getPlugin('window_tab').switchTab(0)" },
+    { enable = false, hotkey = "ctrl+shift+e", desc = "Switch to the first window tab", evil = "() => this.utils.getPlugin('window_tab').switchTab(0)" },
     # 支持但是不正常不推荐的使用方法：alertWhenOpenFile
-    { enable = false, hotkey = "-", desc = "每当打开文件时都弹出提示窗口", evil = "this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, filepath => window.confirm(`你打开了文件: ${filepath}`))" },
+    { enable = false, hotkey = "-", desc = "Pop up a prompt window", evil = "this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileOpened, filepath => window.confirm(`You opened the file: ${filepath}`))" },
     # 正规使用方法：insertKanban
-    { enable = false, hotkey = "ctrl+shift+e", desc = "在光标位置插入看板", plugin = "kanban", function = "callback" },
+    { enable = false, hotkey = "ctrl+shift+e", desc = "Insert Kanban BlockCode", plugin = "kanban", function = "callback" },
     # 正规使用方法：foldFence
-    { enable = false, hotkey = "ctrl+[", desc = "当光标置于代码块中，按下此快捷键可以折叠/展开代码块", plugin = "fence_enhance", function = "foldFence", closestSelector = "#write .md-fences" },
+    { enable = false, hotkey = "ctrl+[", desc = "Folding/unfolding BlockCode", plugin = "fence_enhance", function = "foldFence", closestSelector = "#write .md-fences" },
 ]
 
 

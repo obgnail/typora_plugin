@@ -13,6 +13,10 @@
     "error.onBlankPage": "空白頁不可用",
     "error.unknown": "未知錯誤！請向開發者回報"
   },
+  "settings": {
+    "__LESS_USED_PLUGINS__": "少用插件",
+    "__OFTEN_USED_PLUGINS__": "常用插件"
+  },
   "window_tab": {
     "pluginName": "標籤頁管理",
     "act.sort_tabs": "排序標籤",

@@ -84,21 +84,22 @@ TASK_COLOR = ["#FFFDE7", "#F8FAFF", "#FFFFF2", "#FFFCF0", "#FFFFF5"]
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
 TEMPLATE = """```kanban
 use strict
-# Today's task
+# How to use kanban
 
-## Todo
-* 语法说明(一级标题表示看板标题\\n二级标题表示看板\\n- 或 * 表示任务)
-- 描述框样式(支持在描述框添加 markdown 行内样式：\\n**加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，![图片](https://avatars.githubusercontent.com/u/48992887?s=96&v=4))
-- 严格模式(在首行添加 use strict 进入严格模式，将不会忽略语法错误)
-- 当描述为空时隐藏描述框
+## Grammar
+* General (H1: Kanban title\\nH2: Kanban Board\\nList: Kanban Task)
+- Style (Supports Markdown inline styles: **bold**, *italic*, `code`, ~~delete~~, [link](https://github.com/obgnail/typora_plugin), ![Image](https://avatars.githubusercontent.com/u/48992887?s=96&v=4))
+- Strict Mode (Use `use strict` on the first line to enforce strict mode; syntax errors will not be ignored.)
+- Hide desc box when empty
 
-## In-Progress
-- 数量、配色(看板和任务都可以无限添加\\n\\n可以前往配置修改你喜欢的颜色)
-- 当任务数量太多，出现滚动条时(可以将鼠标置于看板下，使用【鼠标滚轮】滚动任务)
-- 当看板数量太多，出现滚动条时(可以将鼠标置于看板下，使用【ctrl+鼠标滚轮】滚动看板)
+## Settings
+- Unlimited Quantity (Kanban boards and tasks are infinitely scalable.)
+- Customizable Color Scheme (Customize colors in settings.)
+- Long Task Lists (Scroll task lists using the mouse wheel below the Kanban board.)
+- Many Kanban Boards (Scroll horizontally using Ctrl+mouse wheel.)
 
-## Completed
-- NOTE(语法是插件开发者定义的，无法通用，只建议【每日任务】临时使用)
+## NOTE
+- Non Universal Grammar (Intended for temporary use in daily task management.)
 ```
 """
 
@@ -148,39 +149,29 @@ DEFAULT_OPIONS = { useStrict = true, showNickname = true, showAvatar = true, not
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
 TEMPLATE = """```chat
 ---
-# 配置
-# 进入严格模式（不忽略语法错误）
-useStrict: false
-# 展示用户名
-showNickname: true
-# 展示头像
-showAvatar: true
-# 不允许展示时间
-notAllowShowTime: false
-# 允许使用markdown语法
-allowMarkdown: true
-# 右侧发送者的用户名
-senderNickname: me
-# 时间的用户名
-timeNickname: time
-# 用户头像
-avatars:
+useStrict: false        # Enable strict mode (disables error tolerance).
+showNickname: true      # Display usernames.
+showAvatar: true        # Display avatars.
+notAllowShowTime: false # Disable timestamps.
+allowMarkdown: true     # Enable Markdown parsing.
+senderNickname: me      # Nickname for the sender on the right.
+timeNickname: time      # Nickname for timestamps.
+avatars:                # Avatar URLs.
   me: https://avatars.githubusercontent.com/u/48992887?s=96&v=4
   nickname1: ./assets/1.jpg
 ---
 
-time: 昨天 18:21
+time: Yesterday 18:21
 
-testUser1: 使用冒号分割用户名和消息
+testUser1: Messages are separated from usernames by a colon.
 
-me: 右侧的用户名为 me，时间为 time
+me:  The user on the right is 'me', and timestamps are under the 'time' nickname.
 
-me: 支持部分 markdown 语法。比如 **加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，\\n![图片](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
+me: Supports basic Markdown syntax: **bold**, *italic*, `code`, ~~strikethrough~~, [link](https://github.com/obgnail/typora_plugin), \\n![image](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
 
-nickname1: 支持使用 yaml 格式的 front matter 修改配置（就和 markdown 一样）\\n\\n其中的 avatars 选项用于配置用户的头像，如果没有配置头像，默认为用户名的首字符\\n\\n你可以试试在本文件所属目录下添加 `./assets/1.jpg` 文件，便可以看到对应用户的头像被修改了
+nickname1: Configuration can be modified using YAML front matter (similar to Markdown). \\n\\nThe `avatars` option sets user avatars. If an avatar is not configured, the user's initial is used as the avatar. \\n\\nTry adding `./assets/1.jpg` to the directory containing this file to see the corresponding user's avatar change.
 
-注意: 支持导出成 HTML、PDF 等格式。语法是插件开发者自定义的，不具备通用性
-
+Note: Supports exporting to HTML, PDF, etc. This syntax is plugin-specific and not universal.
 """
 
 
@@ -248,20 +239,19 @@ TIME_COLOR = "#555555"
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
 TEMPLATE = """```timeline
-# 使用一级标题表示 timeline 的标题
+# Timeline Title (H1)
 
-## 2022-10-1
-### 使用二级标题表示时间，三到六级标题表示内容
-支持简单的 markdown 语法
-- 这是无序列表项 1
-- 这是无序列表项 2
+## 2022-10-01
+### Event Description (H3-H6)
+Supports basic Markdown:
+- Unordered list item 1
+- Unordered list item 2
+**bold**, *italic*, `code`, ~~delete~~, [link](https://github.com/obgnail/typora_plugin), ![Image](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
 ---
-支持 **加粗**，*斜体*，`代码`，~~删除~~，[链接](https://github.com/obgnail/typora_plugin)，![图片](https://avatars.githubusercontent.com/u/48992887?s=96&v=4)
-不支持代码块，因为开发者不希望代码块发生嵌套
+Code blocks are not supported (nested code blocks are discouraged).
 
-## 2023-10-1
-语法是开发者自定义的，谨慎使用
-
+## 2023-10-01
+Custom syntax; use with caution.
 """
 
 
@@ -318,14 +308,14 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
 TEMPLATE = """```echarts
-// 提供内置变量:
-//   1. myChart: echarts实例
-//   2. echarts: echarts模块
-//   3. option:  echarts实例的option
-//   4. this:    echarts插件实例
-// 更多示例：https://echarts.apache.org/examples/zh/index.html#chart-type-line
-// 代码块里的所有内容会被eval，请注意安全问题
-// 可以使用如下注释设置图表宽高（否则使用默认）
+// Built-in variables:
+//   1. myChart: ECharts instance
+//   2. echarts: ECharts module
+//   3. option:  ECharts option object
+//   4. this:    ECharts plugin instance
+// More examples: https://echarts.apache.org/examples/en/index.html#chart-type-line
+// All code within this block will be evaluated (eval). Exercise caution.
+// Use the following comment to set chart dimensions (otherwise defaults apply):
 // {height: "300px", width: ""}
 
 option = {
@@ -392,13 +382,13 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
 TEMPLATE = """```chart
-// 提供内置变量:
-//   1. Chart:   chart类
-//   2. config:  chart的config
-//   3. this:    chart插件实例
+// Built-in variables:
+//   1. Chart:   chart Class
+//   2. config:  chart option object
+//   3. this:    chart plugin instance
 // API: https://chart.nodejs.cn/docs/latest/configuration/
-// 代码块里的所有内容会被eval，请注意安全问题
-// 可以使用如下注释设置图表宽高（否则使用默认）
+// All code within this block will be evaluated (eval). Exercise caution.
+// Use the following comment to set chart dimensions (otherwise defaults apply):
 // {height: "300px", width: ""}
 
 config = {
@@ -470,8 +460,8 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#FFFFFF"
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
 TEMPLATE = """```wavedrom
-// 教程: https://wavedrom.com/tutorial.html
-// 代码块里的所有内容会被eval，请注意安全问题
+// tutorial: https://wavedrom.com/tutorial.html
+// All code within this block will be evaluated (eval). Exercise caution.
 {
     signal: [
         { name: "pclk", wave: 'p.......' },
@@ -531,15 +521,15 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "#F8F8F8"
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
 TEMPLATE = """```calendar
-// 提供内置变量:
-//   1. calendar: calendar实例
-//   2. Calendar: Calendar类
-//   3. option:   calendar的option
-//   4. this:     calendar插件实例
+// Built-in variables:
+//   1. calendar: calendar instance
+//   2. Calendar: Calendar class
+//   3. option:   calendar option object
+//   4. this:     calendar plugin instance
 // example: https://nhn.github.io/tui.calendar/latest/tutorial-06-daily-view
 // API: https://github.com/nhn/tui.calendar/blob/main/docs/en/apis/options.md
-// 代码块里的所有内容会被eval，请注意安全问题
-// 可以使用如下注释设置图表宽高（否则使用默认）
+// All code within this block will be evaluated (eval). Exercise caution.
+// Use the following comment to set chart dimensions (otherwise defaults apply):
 // {height: "800px", width: ""}
 
 const today = new Date();
@@ -664,19 +654,19 @@ DEFAULT_FENCE_BACKGROUND_COLOR = "transparent"
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板
 TEMPLATE = """```drawio
 /**
- * 由于.drawio文件格式经常发生变动，drawio官网强烈建议通过CDN获取依赖资源，故本插件默认从网络拉取依赖。如果你希望将依赖资源保存在本地，请修改配置文件
+ * Due to frequent changes in the .drawio file format, the draw.io website strongly recommends fetching dependencies via CDN. This plugin defaults to pulling dependencies from the network. If you prefer to store dependencies locally, modify the configuration file.
  *
- * 支持配置项：allow-zoom-in、allow-zoom-out、auto-crop、auto-fit、auto-origin、border、center、check-visible-state、dark-mode、edit、editable、forceCenter、highlight、layerIds、layers、lightbox、max-height、move、nav、page、pageId、resize、responsive、source、target、title、titleTooltip、toolbar、toolbar-buttons、toolbar-nohide、toolbar-position、tooltips、xml、zoom
+ * Supported configuration options: allow-zoom-in, allow-zoom-out, auto-crop, auto-fit, auto-origin, border, center, check-visible-state, dark-mode, edit, editable, forceCenter, highlight, layerIds, layers, lightbox, max-height, move, nav, page, pageId, resize, responsive, source, target, title, titleTooltip, toolbar, toolbar-buttons, toolbar-nohide, toolbar-position, tooltips, xml, zoom.
  *
- * 配置项使用方法请参考：https://github.com/jgraph/drawio/blob/f7158bfb0029a6456c215791b7fd005ccb5c3e76/src/main/webapp/js/diagramly/GraphViewer.js#L118C1-L118C71
+ * For usage of configuration options, refer to: https://github.com/jgraph/drawio/blob/f7158bfb0029a6456c215791b7fd005ccb5c3e76/src/main/webapp/js/diagramly/GraphViewer.js#L118C1-L118C71
  */
 graphConfig = {
-    // 必须配置项。表示.drawio文件的路径，支持本地路径和网络路径
-    // 本地路径例如："./assets/example.drawio" 或者 "D:\\\\tmp\\\\example.drawio"
-    // 网络路径例如："http://localhost:8000/example.drawio"
+    // Required configuration. Specifies the path to the .drawio file, supporting both local and network paths.
+    // Local path example: "./assets/example.drawio" or "D:\\\\tmp\\\\example.drawio"
+    // Network path example: "http://localhost:8000/example.drawio"
     "source": "https://cdn.jsdelivr.net/gh/obgnail/typora_images@master/image/example.drawio",
 
-    // 如果存在多页，可以使用page切换
+    // If there are multiple pages, use 'page' to switch between them.
     "page": 0,
 }
 ```
@@ -927,16 +917,12 @@ aliases: {{title}}
 description:
 tags:
 ---
-## 关键字
+## Keywords
 
 
 
+## Overview and Background
 
-## 概述和背景
-
-
-
-## 注释
 
 
 """
@@ -1584,23 +1570,23 @@ hide_button_hint = false
 #       这里的文本内容会被 eval() 执行，具有潜在的安全风险
 #       如果设置了此参数，callback 参数将会失效
 buttons = [
-    { disable = false, coordinate = [0, 0], hint = "直达底部", size = "24px", icon = "fa fa-caret-down", callback = "go_top.goBottom" },
-    { disable = false, coordinate = [1, 0], hint = "直达顶部", size = "24px", icon = "fa fa-caret-up", callback = "go_top.goTop" },
-    { disable = false, coordinate = [2, 0], hint = "文字风格", size = "17px", icon = "fa fa-font", callback = "text_stylize.call" },
-    { disable = false, coordinate = [3, 0], hint = "混排优化", size = "17px", icon = "fa fa-align-justify", callback = "md_padding.call" },
-    { disable = false, coordinate = [0, 1], hint = "思维导图", size = "18px", icon = "fa fa-sitemap", callback = "markmap.onButtonClick" },
-    { disable = false, coordinate = [1, 1], hint = "图片管理", size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
-    { disable = false, coordinate = [2, 1], hint = "文档大纲", size = "17px", icon = "fa fa-list", callback = "toc.callback" },
-    { disable = false, coordinate = [3, 1], hint = "高亮搜索", size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
+    { disable = false, coordinate = [0, 0], size = "24px", icon = "fa fa-caret-down", callback = "go_top.goBottom" },
+    { disable = false, coordinate = [1, 0], size = "24px", icon = "fa fa-caret-up", callback = "go_top.goTop" },
+    { disable = false, coordinate = [2, 0], size = "17px", icon = "fa fa-font", callback = "text_stylize.call" },
+    { disable = false, coordinate = [3, 0], size = "17px", icon = "fa fa-align-justify", callback = "md_padding.call" },
+    { disable = false, coordinate = [0, 1], size = "18px", icon = "fa fa-sitemap", callback = "markmap.onButtonClick" },
+    { disable = false, coordinate = [1, 1], size = "17px", icon = "fa fa-image", callback = "imageReviewer.callback" },
+    { disable = false, coordinate = [2, 1], size = "17px", icon = "fa fa-list", callback = "toc.callback" },
+    { disable = false, coordinate = [3, 1], size = "17px", icon = "fa fa-search", callback = "search_multi.call" },
     # evil 使用示例
     #   弹窗提示
-    { disable = true, coordinate = [4, 0], hint = "危险操作", size = "17px", icon = "ion-asterisk", color = "#F0F8FF", bgColor = "#FF4500", evil = "() => window.confirm('this is message')" },
+    { disable = true, coordinate = [4, 0], size = "17px", icon = "ion-asterisk", color = "#F0F8FF", bgColor = "#FF4500", evil = "() => window.confirm('this is message')" },
     #   在光标处插入 javascript 代码块
-    { disable = true, coordinate = [4, 1], hint = "危险操作", size = "17px", icon = "ion-alert-circled", evil = '() => this.utils.insertFence("javascript")' },
+    { disable = true, coordinate = [4, 1], size = "17px", icon = "ion-alert-circled", evil = '() => this.utils.insertFence("javascript")' },
     #   打开 Windows 计算器
-    { disable = true, coordinate = [5, 0], hint = "危险操作", size = "17px", icon = "ion-bug", evil = "() => this.utils.Package.ChildProcess.exec('cmd /C calc')" },
+    { disable = true, coordinate = [5, 0], size = "17px", icon = "ion-bug", evil = "() => this.utils.Package.ChildProcess.exec('cmd /C calc')" },
     #   打开网址
-    { disable = true, coordinate = [5, 1], hint = "危险操作", size = "17px", icon = "ion-alert", evil = "() => this.utils.openUrl('https://github.com/obgnail/typora_plugin')" },
+    { disable = true, coordinate = [5, 1], size = "17px", icon = "ion-alert", evil = "() => this.utils.openUrl('https://github.com/obgnail/typora_plugin')" },
 ]
 
 

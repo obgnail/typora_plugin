@@ -36,6 +36,7 @@ class rightClickMenuPlugin extends BasePlugin {
 
     appendFirst = () => {
         const items = this.config.MENUS.map(({ NAME, LIST = [] }, idx) => {
+            NAME = this.i18n._t("settings", NAME)
             const item = [{ ele: "span", "data-lg": "Menu", text: NAME }]
             const children = [{ ele: "a", role: "menuitem", children: item }]
             const noExtraMenu = LIST && LIST.length === 1
