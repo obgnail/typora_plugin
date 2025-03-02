@@ -78,7 +78,7 @@
 
 下载完成以后，有两处可供配置。
 
-1. 配置插件`显示隐藏`、`插件名称`、`快捷键`等信息，与插件配置相同，参考：[typora_plugin/plugin/global/settings/请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/请读我.md)
+1. 配置插件`显示隐藏`、`插件名称`、`快捷键`等信息，与插件配置相同，参考：[typora_plugin/plugin/global/settings/README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/README.md)
 
    <img src="https://my-picture-bed1-1321100201.cos.ap-beijing.myqcloud.com/mypictures/image-20240527175754400.png" alt="image-20240527175754400" width=50%/>
 
@@ -92,7 +92,7 @@
 
 #### 启用
 
-如果您想要**启用**，首先进入`.\plugin\global\settings`，找到`settings.user.toml`文件（初次使用需要先拷贝`settings.default.toml`一份，具体参考作者文档[typora_plugin/plugin/global/settings/请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/请读我.md)。
+如果您想要**启用**，首先进入`.\plugin\global\settings`，找到`settings.user.toml`文件（初次使用需要先拷贝`settings.default.toml`一份，具体参考作者文档[typora_plugin/plugin/global/settings/README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/README.md)。
 
 启用`article_uploader`插件并在右键菜单配置中添加下面这个配置
 

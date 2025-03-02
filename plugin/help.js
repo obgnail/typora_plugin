@@ -207,9 +207,9 @@ class helpPlugin extends BasePlugin {
         const map = {
             open_setting_folder: () => this.utils.runtime.openSettingFolder(),
             backup_setting_file: () => this.utils.runtime.backupSettingFile(),
-            set_user_styles: () => this.utils.showInFinder(this.utils.joinPath("./plugin/global/user_styles/请读我.md")),
-            new_custom_plugin: () => this.utils.showInFinder(this.utils.joinPath("./plugin/custom/请读我.md")),
-            json_rpc: () => this.utils.showInFinder(this.utils.joinPath("./plugin/json_rpc/请读我.md")),
+            set_user_styles: () => this.utils.showInFinder(this.utils.joinPath("./plugin/global/user_styles/README.md")),
+            new_custom_plugin: () => this.utils.showInFinder(this.utils.joinPath("./plugin/custom/README.md")),
+            json_rpc: () => this.utils.showInFinder(this.utils.joinPath("./plugin/json_rpc/README.md")),
             github_picture_bed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
             update_plugin: () => this.updater && this.updater.call(),
             preferences: () => this.preferences && this.preferences.call(),

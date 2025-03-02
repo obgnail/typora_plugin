@@ -308,7 +308,7 @@ module.exports = { plugin: myFullPathCopy }
 // 3. hint: 当鼠标移动到右键菜单时的提示
 // 4. init: 在这里初始化你要的变量
 // 5. style: 给 Typora 插入 style 标签。返回值为 string。若你想指定标签的 id，也可以返回 {textID: "", text: ""}。其中 textID 为此 style 标签的 id，text 为 style 内容
-// 6. styleTemplate: 引入 `./plugin/global/user_styles` 目录下和插件同名的 css 文件。详情请参考`./plugin/global/user_styles/请读我.md`
+// 6. styleTemplate: 引入 `./plugin/global/user_styles` 目录下和插件同名的 css 文件。详情请参考`./plugin/global/user_styles/README.md`
 // 7. html: 为 Typora 插入 HTML 标签，返回 Element 类型或者 Element-string
 // 8. hotkey: 为 callback 注册快捷键，返回 Array<string> 类型 或者 [{hotkey: "", callback: () => console.log(123)}]
 // 9. beforeProcess: 最先执行的函数，在这里初始化插件需要的数据。若返回 utils.stopLoadPluginError，则停止加载插件

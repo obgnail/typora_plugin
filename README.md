@@ -11,6 +11,7 @@
     </p>
 </div>
 
+简体中文 | [English](https://github.com/obgnail/markdown-finder/blob/master/README-en.md)
 
 | #    | 插件                    | 功能                                   | 默认启用 |
 | ---- | ----------------------- | -------------------------------------- | -------- |
@@ -151,7 +152,7 @@ yay -S typora-plugin
 
 项目包含 600+ 配置选项，可以比较完整定义各个插件的行为。
 
-所有配置位于 [settings](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings) 目录中。修改配置方法请阅读该目录下的 [说明文件](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
+所有配置位于 [settings](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings) 目录中。修改配置方法请阅读该目录下的 [说明文件](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/README.md)。
 
 
 
@@ -810,7 +811,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 功能：提供开放能力，支持用户自己写插件。
 
-具体使用请参考 [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
+具体使用请参考 [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/custom/README.md)。
 
 
 
@@ -818,7 +819,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 功能：将包括 typora-plugin 所有功能在内的一切能力通过 `json-rpc` 的形式暴露出去，以供外部操纵 Typora。
 
-具体使用请参考 [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/json_rpc/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。
+具体使用请参考 [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/json_rpc/README.md)。
 
 > 此插件是高级插件，仅对开发人员开放。开启此插件后，外部将拥有 node、browser 两套环境，能完全控制电脑，因此如果您不是开发人员，请勿开启此插件。
 >
@@ -829,7 +830,7 @@ Typora 自带 ripgrep。此插件支持使用内建的 ripgrep 进行文件搜�
 
 功能：用户点击或者使用快捷键触发当前文章的自动发布功能，程序根据用户配置自动发布博客文章到各大平台
 
-具体使用参考： [请读我.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/article_uploader/%E8%AF%B7%E8%AF%BB%E6%88%91.md)。以上传到 CSDN 为例，Gif 图如下：
+具体使用参考： [README.md](https://github.com/obgnail/typora_plugin/blob/master/plugin/article_uploader/README.md)。以上传到 CSDN 为例，Gif 图如下：
 
 ![CSDN 成功演示](https://my-picture-bed1-1321100201.cos.ap-beijing.myqcloud.com/mypictures/CSDN%E6%88%90%E5%8A%9F%E6%BC%94%E7%A4%BA.gif)
 

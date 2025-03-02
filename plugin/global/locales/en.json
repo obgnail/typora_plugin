@@ -18,7 +18,7 @@
     "__OFTEN_USED_PLUGINS__": "Often Used Plugins"
   },
   "window_tab": {
-    "pluginName": "Window Tab",
+    "pluginName": "Window Tab Bar",
     "act.sort_tabs": "Sort Tabs",
     "act.save_tabs": "Save Current Tabs",
     "act.open_save_tabs": "Open Saved Tabs",
@@ -406,7 +406,7 @@
     "act.toggle_download": "Auto Download online images"
   },
   "text_stylize": {
-    "pluginName": "Text Stylize",
+    "pluginName": "Text Stylization",
     "tool.blank": "",
     "tool.weight": "Bold",
     "tool.italic": "Italic",
@@ -538,7 +538,7 @@
     "act.uninstall_plugin": "Uninstall Plugin",
     "act.open_setting_folder": "Edit Configuration",
     "act.backup_setting_file": "Backup Configuration",
-    "act.show_setting": "Plugin Configuration",
+    "act.show_setting": "Show Configuration",
     "act.show_env": "Environment Information",
     "act.set_user_styles": "Edit Styles",
     "act.new_custom_plugin": "Develop a Plugin",
@@ -636,7 +636,7 @@
     "pluginName": "Callouts"
   },
   "templater": {
-    "pluginName": "Templater",
+    "pluginName": "File Templater",
     "filename": "Filename",
     "template": "Template",
     "preview": "Preview",

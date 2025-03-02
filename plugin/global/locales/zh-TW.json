@@ -538,7 +538,7 @@
     "act.uninstall_plugin": "解除安裝插件",
     "act.open_setting_folder": "修改設定",
     "act.backup_setting_file": "備份設定",
-    "act.show_setting": "插件設定",
+    "act.show_setting": "查看設定",
     "act.show_env": "環境資訊",
     "act.set_user_styles": "修改樣式",
     "act.new_custom_plugin": "我要寫插件",
