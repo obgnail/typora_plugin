@@ -10,6 +10,7 @@
         <a href="https://github.com/obgnail/typora_plugin/blob/master/LICENSE"><img src="https://img.shields.io/github/license/obgnail/typora_plugin"></a>
     </p>
 </div>
+
 [简体中文](https://github.com/obgnail/typora_plugin/blob/master/README.md) | English
 
 
@@ -184,7 +185,7 @@ All plugins provide four usage methods:
   - Quick buttons (see `quickButton` plugin)
 
 
-### window_tab: Tab Management
+### window_tab: Window Tab Bar
 
 - `Switch tabs`: Ctrl + scroll wheel, ctrl + shift + tab, ctrl + tab, ctrl + PgUp, ctrl + PgDn
 - `Close tab`: ctrl + w, middle mouse button
@@ -195,7 +196,7 @@ All plugins provide four usage methods:
 ![window_tab](assets/window_tab.gif)
 
 
-### search_multi: Multi-File Search
+### search_multi: Multi-Fields File Searcher
 
 Function: Search through a combination of different conditions to accurately find files.
 
@@ -223,7 +224,7 @@ Usage example: The search syntax is similar to Google search syntax and supports
 ![search_mutli](assets/search_mutli.gif)
 
 
-### collapse_paragraph: Fold Sections
+### collapse_paragraph: Chapter Folding
 
 Function: Fold/expand all text under the section. Supported tags: h1~h6.
 
@@ -234,17 +235,17 @@ Function: Fold/expand all text under the section. Supported tags: h1~h6.
 ![collapse_paragraph](assets/collapse_paragraph.gif)
 
 
-### collapse_list: Fold Lists
+### collapse_list: List Folding
 
 Function: Fold/expand unordered lists, ordered lists, task lists.
 
 
-### collapse_table: Fold Tables
+### collapse_table: Table Folding
 
 Function: Fold/expand tables.
 
 
-### md_padding: Optimize Mixed Chinese and English
+### md_padding: Chinese-English Text Spacer
 
 Function: Add spaces between Chinese and English, Chinese and numbers when mixed.
 
@@ -269,7 +270,7 @@ Supports:
 ![slash_commands](assets/slash_commands.gif)
 
 
-### templater: File Templates
+### templater: File Templater
 
 Function: Similar to Obsidian's file template function, quickly create files based on templates.
 
@@ -280,14 +281,14 @@ Usage: Right-click menu -> Often Used Plugins -> Secondary Plugins -> File Templ
 ![templater](assets/templater.gif)
 
 
-### resourceOperation: One-click Cleanup of Unused Images
+### resourceOperation: Resource Management
 
 Function: Resource management, cleanup of unused images
 
 Usage: Right-click menu -> Often Used Plugins -> Secondary Plugins -> Resource Management
 
 
-### fence_enhance: Copy, Fold, Format Code
+### fence_enhance: Enhance Fence
 
 ![fence_enhance](assets/fence_enhance.png)
 
@@ -339,7 +340,7 @@ BUILTIN = [
 ![commander](assets/commander.gif)
 
 
-### markmap: Provides markmap Support
+### markmap: Provides Markmap Support
 
 Usage:
 
@@ -349,7 +350,7 @@ Usage:
 ![markmap](assets/markmap.gif)
 
 
-### toolbar: Multi-functional Search
+### toolbar: Multi-Purpose Searcher
 
 Function: Similar to VSCode's ctrl + shift + p function
 
@@ -385,7 +386,7 @@ Examples:
 ![toolbar](assets/toolbar.gif)
 
 
-### right_click_menu: Unified Management of Right-click Menu
+### right_click_menu
 
 All plugins support direct invocation through the right-click menu. Mouse enthusiasts can use the right-click menu as the main way to call all plugins.
 
@@ -412,7 +413,7 @@ LIST = [
 ```
 
 
-### pie_menu: Circular Menu
+### pie_menu
 
 Usage:
 
@@ -421,7 +422,7 @@ Usage:
 - `Pin the circular menu, so it doesn't automatically disappear`: Left mouse button on the center of the circle
 - `Expand the circular menu, so it doesn't automatically collapse`: Right mouse button on the center of the circle
 
-### preferences: Enable/Disable Plugins
+### preferences
 
 Usage: Right-click menu -> Less Used Plugins -> Enable/Disable Plugins
 
@@ -437,29 +438,29 @@ Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Chart
 
 ![chart](./assets/chart.png)
 
-### drawIO: Provide drawIO Component Support
+### drawIO: Provide DrawIO Support
 
 ![drawIO](./assets/drawIO.png)
 
-### abc: Provide ABC Component Support
+### abc: Provide abc.js Support
 
 Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> ABC
 
 ![abcjs](./assets/abcjs.png)
 
-### calendar: Provide TUI.Calendar Component Support
+### calendar: Provide tui.Calendar Support
 
 Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Calendar
 
 ![calendar](./assets/calendar.png)
 
-### wavedrom: Provide Wavedrom Component Support
+### wavedrom: Provide WaveDrom Support
 
 Usage: Right-click menu -> Often Used Plugins -> Secondary plugins -> Wavedrom
 
 ![wavedrom](./assets/wavedrom.png)
 
-### marp: Provide Marp Component Support
+### marp: Provide Marp Support
 
 Function: Use markdown to create PPT.
 
@@ -481,25 +482,25 @@ left_line_color = "#6a1b9a"
 icon = "\\f040"
 ```
 
-### kanban: Kanban
+### kanban
 
 Extend the code syntax to add Kanban functionality.
 
 ![kanban](assets/kanban.png)
 
-### timeline: Timeline
+### timeline
 
 Extend the code syntax to add timeline functionality.
 
 ![timeline](./assets/timeline.png)
 
-### chat: Chat
+### chat
 
 Extend the code syntax to add chat functionality.
 
 ![chat](./assets/chat.png)
 
-### text_stylize: Text Stylize
+### text_stylize
 
 Function: Convert text to HTML format, changing the text style.
 
@@ -525,7 +526,7 @@ Usage: Right-click menu -> Less Used Plugins -> Blur Mode
 
 ![file_count](assets/file_counter.png)
 
-### auto_number: Auto Numbering
+### auto_number
 
 ![auto_number](assets/auto_number.png)
 
@@ -535,7 +536,7 @@ Unlike other implementations using theme CSS, this plugin perfectly solves the p
 
 According to [Markdown Best Practices](https://learn.microsoft.com/en-us/powershell/scripting/community/contributing/general-markdown?view=powershell-7.3), a document should **have only one** h1 tag.
 
-### imageReviewer: Image Viewer
+### imageReviewer
 
 Function: One-stop image viewing, and provides simple image editing.
 
@@ -546,7 +547,7 @@ Usage:
 
 ![image-reviewer](./assets/image-reviewer.png)
 
-### chineseSymbolAutoPairer: Chinese Symbol Auto Pairing
+### chineseSymbolAutoPairer
 
 Function: Automatically pair symbols when typing `《 【 （ ‘ “ 「`.
 
@@ -558,31 +559,31 @@ Usage: Place the cursor on the table -> Right-click menu -> Less Used Plugins ->
 
 ![datatables](assets/datatables.png)
 
-### resize_table: Resize Table
+### resize_table
 
 Function: `ctrl + mouse drag`: Modify the row height and column width of the table.
 
 ![resize_table](assets/resize_table.gif)
 
-### resize_image: Resize Image
+### resize_image
 
 Function: `alt + mouse scroll`: Adjust the image size.
 
-### export_enhance: Export Enhancement
+### export_enhance
 
 Function: When exporting HTML, convert images to base64 to avoid image loss.
 
-### go_top: Go to Top
+### go_top
 
 Function: Add a "Go to Top" button at the bottom right corner.
 
-### reopenClosedFiles: Reopen Tabs That Were Not Closed When Typora Was Exited
+### reopenClosedFiles
 
 Function: Automatically or through a shortcut, open the tabs that were not closed when Typora was last exited.
 
 > This plugin only works when window_tab is enabled.
 
-### dark: Night Mode
+### dark: Dark Mode
 
 Usage: Right-click menu -> Often Used Plugins -> Night Mode
 
@@ -590,7 +591,7 @@ Usage: Right-click menu -> Often Used Plugins -> Night Mode
 
 Usage: Right-click menu -> Often Used Plugins -> No Image Mode
 
-### markdownLint: Markdown Lint
+### markdownLint
 
 Function: Check whether the current file complies with markdown best practices.
 
@@ -628,7 +629,7 @@ Usage: Right-click menu -> Less Used Plugins -> Adjust Writing Area Width
 
 Function: Adjust the width of the writing area.
 
-### redirectLocalRootUrl: Redirect Local Resource Root Directory
+### redirectLocalRootUrl
 
 Function: If you mainly use Obsidian or Joplin to manage files and occasionally use Typora to open files, you will encounter a problem: both Obsidian and Joplin put local resources in the same directory, but Typora defaults to using relative paths to reference local resources.
 
@@ -668,7 +669,7 @@ Usage: Right-click menu -> Less Used Plugins -> Help.
 
 Usage: Right-click menu -> Less Used Plugins -> Encrypt File.
 
-### truncate_text: Temporarily Hide Content to Improve Large File Rendering Performance
+### truncate_text: Hide Content to Improve Large File Rendering Performance
 
 Function: The rendering performance of large files in Typora is very poor. Use this plugin to temporarily hide content (just hide the display, not modify the file) to improve rendering performance. It can also be used to prevent peeking.
 
