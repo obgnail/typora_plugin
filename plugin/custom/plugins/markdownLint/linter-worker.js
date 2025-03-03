@@ -1,5 +1,3 @@
-const fs = require("fs").promises
-
 let lib
 let libPath
 let config = { default: true }
@@ -25,31 +23,21 @@ function lazyLoad() {
     }
 }
 
-async function checkContent({ fileContent }) {
+async function check({ fileContent }) {
     lazyLoad()
     const { content } = await lib.lint({ strings: { content: fileContent }, config })
     return content.sort((a, b) => a.lineNumber - b.lineNumber)
 }
 
-async function fixContent({ fileContent, fixInfo }) {
+async function fix({ fileContent, fixInfo }) {
     lazyLoad()
-    fixInfo = fixInfo || await checkContent({ fileContent })
+    fixInfo = fixInfo || await check({ fileContent })
     if (fixInfo && fixInfo.length) {
         return lib.applyFixes(fileContent, fixInfo)
     }
 }
 
-async function checkPath({ filePath }) {
-    const fileContent = await fs.readFile(filePath, "utf-8")
-    return checkContent({ fileContent })
-}
-
-async function fixPath({ filePath, fixInfo }) {
-    const fileContent = await fs.readFile(filePath, "utf-8")
-    return fixContent({ fileContent, fixInfo })
-}
-
-const linter = { init, assignConfig, checkContent, checkPath, fixContent, fixPath }
+const linter = { init, check, fix }
 
 onmessage = async ({ data: { action, payload } }) => {
     if (!payload) return

@@ -388,9 +388,9 @@ class utils {
 
             const filepath = this.getFilePath()
             const content = this.getCurrentFileContent()
-            const replaced = typeof replacement === "string"
-                ? replacement
-                : await replacement(content)
+            const replaced = replacement instanceof Function
+                ? await replacement(content)
+                : replacement
             if (filepath) {
                 const ok = await this.writeFile(filepath, replaced)
                 if (!ok) return

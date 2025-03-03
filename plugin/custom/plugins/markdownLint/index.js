@@ -22,7 +22,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 <div class="plugin-markdownlint-icon ion-document-text" action="doc" ty-hint="${this.i18n.t("func.doc")}"></div>
             </div>
             <div class="plugin-markdownlint-table">
-                <table><thead><tr><th>LINE</th><th>RULE</th><th>ERROR</th><th>OP</th></tr></thead><tbody></tbody></table>
+                <table>
+                    <thead><tr><th>${this.i18n.t("line")}</th><th>${this.i18n.t("rule")}</th><th>${this.i18n.t("desc")}</th><th>${this.i18n.t("ops")}</th></tr></thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
         ${this.config.use_button ? `<div id="plugin-markdownlint-button" ty-hint="${this.i18n.t("func.check")}"></div>` : ""}
@@ -32,7 +35,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.errors = []
         this.checkLint = this.utils.noop
         this.fixLint = this.utils.noop
-        this.resetConfig = this.utils.noop
+        this.ACTION = { INIT: "init", CHECK: "check", FIX: "fix" }
         this.translations = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
         this.entities = {
             modal: document.querySelector("#plugin-markdownlint"),
@@ -44,12 +47,46 @@ class markdownLintPlugin extends BaseCustomPlugin {
     }
 
     process = () => {
+        const initWorker = (onCheck, onFix) => {
+            const worker = new Worker("plugin/custom/plugins/markdownLint/linter-worker.js")
+            worker.onmessage = event => {
+                const { action, result } = event.data || {}
+                const fn = action === this.ACTION.CHECK ? onCheck : onFix
+                fn(result)
+            }
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
+                setTimeout(() => {
+                    const libPath = this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js")
+                    worker.postMessage({ action: this.ACTION.INIT, payload: { config: this.config.rule_config, libPath } })
+                    this.checkLint()
+                }, 1000)
+            })
+            const send = (action, customPayload) => {
+                const fileContent = this.utils.getCurrentFileContent()
+                const payload = { ...customPayload, fileContent }
+                worker.postMessage({ action, payload })
+            }
+            this.checkLint = () => send(this.ACTION.CHECK)
+            this.fixLint = (fixInfo = this.errors) => send(this.ACTION.FIX, { fixInfo })
+        }
+
+        const onEvent = () => {
+            const { eventHub } = this.utils
+            eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.checkLint, 500))
+            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, force => {
+                if (this.entities.button) {
+                    this.utils.toggleVisible(this.entities.button, force)
+                }
+            })
+        }
+
         const _getDetail = (infos = this.errors) => {
-            const obj = infos.map(i => this.utils.fromObject(i, ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]))
+            const attrs = ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]
+            const obj = infos.map(i => this.utils.fromObject(i, attrs))
             const content = JSON.stringify(obj.length === 1 ? obj[0] : obj, null, "\t")
             const components = [{ label: "", type: "textarea", rows: 15, content }]
             const title = this.i18n.t("func.detailAll")
-            const op = { title, components, width: "550px" }
+            const op = { title, components, width: "600px" }
             this.utils.dialog.modal(op)
         }
 
@@ -77,7 +114,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder("custom_plugin.user.toml")
                 const content = JSON.stringify(this.config.rule_config, null, "\t")
                 const components = [{ label: label, type: "p", onclick }, { label: "", type: "textarea", rows: 15, content }]
-                const op = { title, components, width: "550px" }
+                const op = { title, components, width: "600px" }
                 this.utils.dialog.modal(op)
             },
             jumpToLine: lineToGo => {
@@ -94,46 +131,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
             },
         }
 
-        const initWorker = (onCheck, onFix) => {
-            const worker = new Worker("plugin/custom/plugins/markdownLint/linter-worker.js")
-            worker.onmessage = event => {
-                const { action, result } = event.data || {}
-                const on = action.startsWith("check") ? onCheck : onFix
-                on(result)
-            }
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-                setTimeout(() => {
-                    const libPath = this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js")
-                    worker.postMessage({ action: "init", payload: { config: this.config.rule_config, libPath } })
-                    this.checkLint()
-                }, 1000)
-            })
-            const send = async (type, customPayload) => {
-                const payload = { ...customPayload }
-                const filePath = this.utils.getFilePath()
-                const action = type + (filePath ? "Path" : "Content")
-                if (filePath) {
-                    payload.filePath = filePath
-                } else {
-                    payload.fileContent = this.utils.getCurrentFileContent()
-                }
-                worker.postMessage({ action, payload })
-            }
-            this.checkLint = () => send("check")
-            this.fixLint = (fixInfo = this.errors) => send("fix", { fixInfo })
-            this.resetConfig = () => worker.postMessage({ action: "assignConfig", payload: { config: this.config.rule_config } })
-        }
-
-        const onEvent = () => {
-            const { eventHub } = this.utils
-            eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.checkLint, 500))
-            eventHub.addEventListener(eventHub.eventType.toggleSettingPage, force => {
-                if (this.entities.button) {
-                    this.utils.toggleVisible(this.entities.button, force)
-                }
-            })
-        }
-
         const onElementEvent = () => {
             this.utils.dragFixedModal(this.entities.moveIcon, this.entities.modal, false)
             if (this.entities.button) {
@@ -143,7 +140,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const target = ev.target.closest("[action]")
                 if (target) {
                     const action = target.getAttribute("action")
-                    funcMap[action] && funcMap[action]()
+                    const fn = funcMap[action]
+                    fn && fn()
                 }
             })
             this.entities.tbody.addEventListener("mousedown", ev => {
@@ -158,7 +156,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
                     } else {
                         const action = target.getAttribute("action")
                         const value = parseInt(target.dataset.value)
-                        funcMap[action] && funcMap[action](value)
+                        const fn = funcMap[action]
+                        fn && fn(value)
                     }
                 }
             })
@@ -169,29 +168,29 @@ class markdownLintPlugin extends BaseCustomPlugin {
         onElementEvent()
     }
 
-    onCheck = data => {
-        this.errors = data
+    onCheck = errors => {
+        this.errors = errors
 
         const { error_color, pass_color, translate } = this.config
         if (this.entities.button) {
-            this.entities.button.style.backgroundColor = data.length ? error_color : pass_color
+            this.entities.button.style.backgroundColor = errors.length ? error_color : pass_color
         }
         if (!this.utils.isShow(this.entities.modal)) return
 
-        const tbody = data.map((item, idx) => {
-            const [rule, _] = item.ruleNames
+        const tds = errors.map((item, idx) => {
+            const rule = item.ruleNames[0]
             const lineNumber = item.lineNumber
             const desc = (translate && this.translations[rule]) || item.ruleDescription
             const info = `<i class="ion-information-circled" action="detailSingle" data-value="${idx}"></i>`
             const locate = `<i class="ion-android-locate" action="jumpToLine" data-value="${lineNumber}"></i>`
-            const fixInfo = item.fixInfo ? `<i class="ion-wrench" action="fixSingle" data-value="${idx}"></i>` : ''
+            const fixInfo = item.fixInfo ? `<i class="ion-wrench" action="fixSingle" data-value="${idx}"></i>` : ""
             return `<tr><td>${lineNumber}</td><td>${rule}</td><td>${desc}</td><td>${info}${locate}${fixInfo}</td></tr>`
         })
-        this.entities.tbody.innerHTML = tbody.length ? tbody.join("") : `<tr><td colspan="4">Empty</td></tr>`
+        this.entities.tbody.innerHTML = tds.length ? tds.join("") : `<tr><td colspan="4">${this.i18n._t("global", "empty")}</td></tr>`
     }
 
-    onFix = async data => {
-        await this.utils.editCurrentFile(data)
+    onFix = async fileContent => {
+        await this.utils.editCurrentFile(fileContent)
         this.utils.notification.show(this.i18n.t("func.fixAll.ok"))
         this.checkLint()
     }

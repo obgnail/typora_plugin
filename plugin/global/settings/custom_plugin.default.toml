@@ -1415,11 +1415,9 @@ hotkey = ""
 hotkey_fix_lint_error = ""
 
 # ------------------- 检测规则 -------------------
-# 检测规则（参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md）
-#   default: true 表示启用所有默认规则
-#   如需禁用特定规则，将其设置为 false
-#   如需配置特定规则，请参考上述文档进行配置
-rule_config = { default = true, MD009 = false, MD010 = false, MD012 = false, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false }
+# 检测规则
+#   参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+rule_config = { default = true, MD010 = false, MD012 = false, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false }
 
 # 是否将检测规则的案文翻译为中文
 #   true:  翻译为中文
