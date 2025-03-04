@@ -1033,10 +1033,10 @@ ENABLE = true
 NAME = ""
 
 # ------------------- 编号范围控制 -------------------
-# 启用侧边栏自动编号：是否在 Typora 的侧边栏（TOC 目录）中显示自动编号
+# 启用大纲自动编号：是否在 Typora 的侧边栏（TOC 目录）中显示自动编号
 #   true:  在侧边栏中显示编号
 #   false: 在侧边栏中不显示编号
-ENABLE_SIDE_BAR = true
+ENABLE_OUTLINE = true
 
 # 启用正文自动编号：是否在 Typora 正文内容中显示自动编号
 #   true:  在正文中显示编号
@@ -1091,7 +1091,7 @@ ALIGN = "center"
 #   table:   表格的编号前缀
 #   image:   图片的编号前缀
 #   fence:   代码块的编号前缀
-NAMES = { table = "Table", image = "Figure", fence = "Fence" }
+NAMES = { table = "Table", image = "Image", fence = "Fence" }
 
 
 ################### fence_enhance ###################

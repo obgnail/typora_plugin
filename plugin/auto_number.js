@@ -1,14 +1,38 @@
 class autoNumberPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.css_id = "plugin-auto-number-style";
+        this.css_id = "plugin-auto-number-style"
 
         this.base_css = `
-        #write { counter-reset: write-h2 Figures Tables Fences; }
-        #write > h1 { counter-reset: write-h2; }
-        #write > h2 { counter-reset: write-h3; }
-        #write > h3 { counter-reset: write-h4; }
-        #write > h4 { counter-reset: write-h5; }
-        #write > h5 { counter-reset: write-h6; }
+        #write {
+            --content-h2-format: counter(content-h2) ". ";
+            --content-h3-format: counter(content-h2) "." counter(content-h3) " ";
+            --content-h4-format: counter(content-h2) "." counter(content-h3) "." counter(content-h4) " ";
+            --content-h5-format: counter(content-h2) "." counter(content-h3) "." counter(content-h4) "." counter(content-h5) " ";
+            --content-h6-format: counter(content-h2) "." counter(content-h3) "." counter(content-h4) "." counter(content-h5) "." counter(content-h6) " ";
+            
+            --outline-h2-format: counter(outline-h2) ". ";
+            --outline-h3-format: counter(outline-h2) "." counter(outline-h3) " ";
+            --outline-h4-format: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) " ";
+            --outline-h5-format: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "." counter(outline-h5) " ";
+            --outline-h6-format: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "." counter(outline-h5) "." counter(outline-h6) " ";
+            
+            --toc-h2-format: counter(toc-h2) ". ";
+            --toc-h3-format: counter(toc-h2) "." counter(toc-h3) " ";
+            --toc-h4-format: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) " ";
+            --toc-h5-format: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) " ";
+            --toc-h6-format: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) "." counter(toc-h6) " ";
+            
+            --image-format: "${this.config.NAMES.table} " counter(image) " " attr(data-alt);
+            --table-format: "${this.config.NAMES.image} " counter(table);
+            --fence-format: "${this.config.NAMES.fence} " counter(fence);
+        }
+
+        #write { counter-reset: content-h2 image table fence; }
+        #write > h1 { counter-reset: content-h2; }
+        #write > h2 { counter-reset: content-h3; }
+        #write > h3 { counter-reset: content-h4; }
+        #write > h4 { counter-reset: content-h5; }
+        #write > h5 { counter-reset: content-h6; }
         
         @media print {
             pb { display: block; page-break-after: always; }
@@ -18,33 +42,34 @@ class autoNumberPlugin extends BasePlugin {
         }`
 
         this.content_css = `
-        #write > h2:before {
-            counter-increment: write-h2;
-            content: counter(write-h2) ". ";
+        #write > h2:before,
+        #write > h2.md-focus.md-heading:before {
+            counter-increment: content-h2;
+            content: var(--content-h2-format);
         }
         
         #write > h3:before,
         #write > h3.md-focus.md-heading:before {
-            counter-increment: write-h3;
-            content: counter(write-h2) "." counter(write-h3) " ";
+            counter-increment: content-h3;
+            content: var(--content-h3-format);
         }
         
         #write > h4:before,
         #write > h4.md-focus.md-heading:before {
-            counter-increment: write-h4;
-            content: counter(write-h2) "." counter(write-h3) "." counter(write-h4) " ";
+            counter-increment: content-h4;
+            content: var(--content-h4-format);
         }
         
         #write > h5:before,
         #write > h5.md-focus.md-heading:before {
-            counter-increment: write-h5;
-            content: counter(write-h2) "." counter(write-h3) "." counter(write-h4) "." counter(write-h5) " "
+            counter-increment: content-h5;
+            content: var(--content-h5-format);
         }
         
         #write > h6:before,
         #write > h6.md-focus.md-heading:before {
-            counter-increment: write-h6;
-            content: counter(write-h2) "." counter(write-h3) "." counter(write-h4) "." counter(write-h5) "." counter(write-h6) " "
+            counter-increment: content-h6;
+            content: var(--content-h6-format);
         }
         
         #write > h3.md-focus:before,
@@ -71,7 +96,7 @@ class autoNumberPlugin extends BasePlugin {
             visibility: inherit;
         }`
 
-        this.side_bar_css = `
+        this.outline_css = `
         .outline-content { counter-reset: outline-h2; }
         .outline-h1 { counter-reset: outline-h2; }
         .outline-h2 { counter-reset: outline-h3; }
@@ -81,27 +106,27 @@ class autoNumberPlugin extends BasePlugin {
         
         .outline-content .outline-h2 .outline-label:before {
             counter-increment: outline-h2;
-            content: counter(outline-h2) ". ";
+            content: var(--outline-h2-format);
         }
         
         .outline-content .outline-h3 .outline-label:before {
             counter-increment: outline-h3;
-            content: counter(outline-h2) "." counter(outline-h3) " ";
+            content: var(--outline-h3-format);
         }
         
         .outline-content .outline-h4 .outline-label:before {
             counter-increment: outline-h4;
-            content: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) " ";
+            content: var(--outline-h4-format);
         }
         
         .outline-content .outline-h5 .outline-label:before {
             counter-increment: outline-h5;
-            content: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "." counter(outline-h5) " ";
+            content: var(--outline-h5-format);
         }
         
         .outline-content .outline-h6 .outline-label:before {
             counter-increment: outline-h6;
-            content: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "." counter(outline-h5) "." counter(outline-h6) " ";
+            content: var(--outline-h6-format);
         }`
 
         this.toc_css = `
@@ -114,32 +139,32 @@ class autoNumberPlugin extends BasePlugin {
         
         .md-toc-content .md-toc-h2 a:before {
             counter-increment: toc-h2;
-            content: counter(toc-h2) ". ";
+            content: var(--toc-h2-format);
         }
         
         .md-toc-content .md-toc-h3 a:before {
             counter-increment: toc-h3;
-            content: counter(toc-h2) "." counter(toc-h3) " ";
+            content: var(--toc-h3-format);
         }
         
         .md-toc-content .md-toc-h4 a:before {
             counter-increment: toc-h4;
-            content: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) " ";
+            content: var(--toc-h4-format);
         }
         
         .md-toc-content .md-toc-h5 a:before {
             counter-increment: toc-h5;
-            content: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) " ";
+            content: var(--toc-h5-format);
         }
         
         .md-toc-content .md-toc-h6 a:before {
             counter-increment: toc-h6;
-            content: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) "." counter(toc-h6) " ";
+            content: var(--toc-h6-format);
         }`
 
         const image_content = `
-            counter-increment: Figures;
-            content: "${this.config.NAMES.image} " counter(Figures) " " attr(data-alt);
+            counter-increment: image;
+            content: var(--image-format);
             font-family: ${this.config.FONT_FAMILY};
             display: block;
             text-align: ${this.config.ALIGN};
@@ -150,8 +175,8 @@ class autoNumberPlugin extends BasePlugin {
 
         this.table_css = `
         #write .table-figure::after {
-            counter-increment: Tables;
-            content: "${this.config.NAMES.table} " counter(Tables);
+            counter-increment: table;
+            content: var(--table-format);
             font-family: ${this.config.FONT_FAMILY};
             display: block;
             text-align: ${this.config.ALIGN};
@@ -163,8 +188,8 @@ class autoNumberPlugin extends BasePlugin {
             margin-bottom: 2.4em;
         }
         #write .md-fences::after {
-            counter-increment: Fences;
-            content: "${this.config.NAMES.fence} " counter(Fences);
+            counter-increment: fence;
+            content: var(--fence-format);
             position: absolute;
             width: 100%;
             text-align: ${this.config.ALIGN};
@@ -200,11 +225,11 @@ class autoNumberPlugin extends BasePlugin {
 
     getStyleString = (inExport = false) => {
         const image_css = (inExport && this.utils.supportHasSelector) ? this.image_export_css : this.image_css;
-        const { ENABLE_CONTENT, ENABLE_SIDE_BAR, ENABLE_TOC, ENABLE_IMAGE, ENABLE_TABLE, ENABLE_FENCE } = this.config;
+        const { ENABLE_CONTENT, ENABLE_OUTLINE, ENABLE_TOC, ENABLE_IMAGE, ENABLE_TABLE, ENABLE_FENCE } = this.config;
         return [
             this.base_css,
             ENABLE_CONTENT ? this.content_css : "",
-            ENABLE_SIDE_BAR ? this.side_bar_css : "",
+            ENABLE_OUTLINE ? this.outline_css : "",
             ENABLE_TOC ? this.toc_css : "",
             ENABLE_IMAGE ? image_css : "",
             ENABLE_TABLE ? this.table_css : "",
@@ -226,7 +251,7 @@ class autoNumberPlugin extends BasePlugin {
     }
 
     getDynamicActions = () => this.i18n.fillActions([
-        { act_value: "set_outline", act_state: this.config.ENABLE_SIDE_BAR },
+        { act_value: "set_outline", act_state: this.config.ENABLE_OUTLINE },
         { act_value: "set_content", act_state: this.config.ENABLE_CONTENT },
         { act_value: "set_toc", act_state: this.config.ENABLE_TOC },
         { act_value: "set_table", act_state: this.config.ENABLE_TABLE },
@@ -236,7 +261,7 @@ class autoNumberPlugin extends BasePlugin {
 
     call = action => {
         const callMap = {
-            set_outline: () => this.toggleSetting("ENABLE_SIDE_BAR"),
+            set_outline: () => this.toggleSetting("ENABLE_OUTLINE"),
             set_content: () => this.toggleSetting("ENABLE_CONTENT"),
             set_toc: () => this.toggleSetting("ENABLE_TOC"),
             set_table: () => this.toggleSetting("ENABLE_TABLE"),
