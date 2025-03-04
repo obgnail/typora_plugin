@@ -4,27 +4,27 @@ class autoNumberPlugin extends BasePlugin {
 
         this.base_css = `
         #write {
-            --content-h2-format: counter(content-h2) ". ";
-            --content-h3-format: counter(content-h2) "." counter(content-h3) " ";
-            --content-h4-format: counter(content-h2) "." counter(content-h3) "." counter(content-h4) " ";
-            --content-h5-format: counter(content-h2) "." counter(content-h3) "." counter(content-h4) "." counter(content-h5) " ";
-            --content-h6-format: counter(content-h2) "." counter(content-h3) "." counter(content-h4) "." counter(content-h5) "." counter(content-h6) " ";
+            --count-content-h2: counter(content-h2) ". ";
+            --count-content-h3: counter(content-h2) "." counter(content-h3) " ";
+            --count-content-h4: counter(content-h2) "." counter(content-h3) "." counter(content-h4) " ";
+            --count-content-h5: counter(content-h2) "." counter(content-h3) "." counter(content-h4) "." counter(content-h5) " ";
+            --count-content-h6: counter(content-h2) "." counter(content-h3) "." counter(content-h4) "." counter(content-h5) "." counter(content-h6) " ";
             
-            --outline-h2-format: counter(outline-h2) ". ";
-            --outline-h3-format: counter(outline-h2) "." counter(outline-h3) " ";
-            --outline-h4-format: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) " ";
-            --outline-h5-format: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "." counter(outline-h5) " ";
-            --outline-h6-format: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "." counter(outline-h5) "." counter(outline-h6) " ";
+            --count-outline-h2: counter(outline-h2) ". ";
+            --count-outline-h3: counter(outline-h2) "." counter(outline-h3) " ";
+            --count-outline-h4: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) " ";
+            --count-outline-h5: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "." counter(outline-h5) " ";
+            --count-outline-h6: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "." counter(outline-h5) "." counter(outline-h6) " ";
             
-            --toc-h2-format: counter(toc-h2) ". ";
-            --toc-h3-format: counter(toc-h2) "." counter(toc-h3) " ";
-            --toc-h4-format: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) " ";
-            --toc-h5-format: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) " ";
-            --toc-h6-format: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) "." counter(toc-h6) " ";
+            --count-toc-h2: counter(toc-h2) ". ";
+            --count-toc-h3: counter(toc-h2) "." counter(toc-h3) " ";
+            --count-toc-h4: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) " ";
+            --count-toc-h5: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) " ";
+            --count-toc-h6: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) "." counter(toc-h6) " ";
             
-            --image-format: "${this.config.NAMES.table} " counter(image) " " attr(data-alt);
-            --table-format: "${this.config.NAMES.image} " counter(table);
-            --fence-format: "${this.config.NAMES.fence} " counter(fence);
+            --count-content-table: "${this.config.NAMES.image} " counter(table);
+            --count-content-fence: "${this.config.NAMES.fence} " counter(fence);
+            --count-content-image: "${this.config.NAMES.table} " counter(image) " " attr(data-alt);
         }
 
         #write { counter-reset: content-h2 image table fence; }
@@ -45,31 +45,31 @@ class autoNumberPlugin extends BasePlugin {
         #write > h2:before,
         #write > h2.md-focus.md-heading:before {
             counter-increment: content-h2;
-            content: var(--content-h2-format);
+            content: var(--count-content-h2);
         }
         
         #write > h3:before,
         #write > h3.md-focus.md-heading:before {
             counter-increment: content-h3;
-            content: var(--content-h3-format);
+            content: var(--count-content-h3);
         }
         
         #write > h4:before,
         #write > h4.md-focus.md-heading:before {
             counter-increment: content-h4;
-            content: var(--content-h4-format);
+            content: var(--count-content-h4);
         }
         
         #write > h5:before,
         #write > h5.md-focus.md-heading:before {
             counter-increment: content-h5;
-            content: var(--content-h5-format);
+            content: var(--count-content-h5);
         }
         
         #write > h6:before,
         #write > h6.md-focus.md-heading:before {
             counter-increment: content-h6;
-            content: var(--content-h6-format);
+            content: var(--count-content-h6);
         }
         
         #write > h3.md-focus:before,
@@ -106,27 +106,27 @@ class autoNumberPlugin extends BasePlugin {
         
         .outline-content .outline-h2 .outline-label:before {
             counter-increment: outline-h2;
-            content: var(--outline-h2-format);
+            content: var(--count-outline-h2);
         }
         
         .outline-content .outline-h3 .outline-label:before {
             counter-increment: outline-h3;
-            content: var(--outline-h3-format);
+            content: var(--count-outline-h3);
         }
         
         .outline-content .outline-h4 .outline-label:before {
             counter-increment: outline-h4;
-            content: var(--outline-h4-format);
+            content: var(--count-outline-h4);
         }
         
         .outline-content .outline-h5 .outline-label:before {
             counter-increment: outline-h5;
-            content: var(--outline-h5-format);
+            content: var(--count-outline-h5);
         }
         
         .outline-content .outline-h6 .outline-label:before {
             counter-increment: outline-h6;
-            content: var(--outline-h6-format);
+            content: var(--count-outline-h6);
         }`
 
         this.toc_css = `
@@ -139,32 +139,32 @@ class autoNumberPlugin extends BasePlugin {
         
         .md-toc-content .md-toc-h2 a:before {
             counter-increment: toc-h2;
-            content: var(--toc-h2-format);
+            content: var(--count-toc-h2);
         }
         
         .md-toc-content .md-toc-h3 a:before {
             counter-increment: toc-h3;
-            content: var(--toc-h3-format);
+            content: var(--count-toc-h3);
         }
         
         .md-toc-content .md-toc-h4 a:before {
             counter-increment: toc-h4;
-            content: var(--toc-h4-format);
+            content: var(--count-toc-h4);
         }
         
         .md-toc-content .md-toc-h5 a:before {
             counter-increment: toc-h5;
-            content: var(--toc-h5-format);
+            content: var(--count-toc-h5);
         }
         
         .md-toc-content .md-toc-h6 a:before {
             counter-increment: toc-h6;
-            content: var(--toc-h6-format);
+            content: var(--count-toc-h6);
         }`
 
         const image_content = `
             counter-increment: image;
-            content: var(--image-format);
+            content: var(--count-content-image);
             font-family: ${this.config.FONT_FAMILY};
             display: block;
             text-align: ${this.config.ALIGN};
@@ -176,7 +176,7 @@ class autoNumberPlugin extends BasePlugin {
         this.table_css = `
         #write .table-figure::after {
             counter-increment: table;
-            content: var(--table-format);
+            content: var(--count-content-table);
             font-family: ${this.config.FONT_FAMILY};
             display: block;
             text-align: ${this.config.ALIGN};
@@ -189,7 +189,7 @@ class autoNumberPlugin extends BasePlugin {
         }
         #write .md-fences::after {
             counter-increment: fence;
-            content: var(--fence-format);
+            content: var(--count-content-fence);
             position: absolute;
             width: 100%;
             text-align: ${this.config.ALIGN};
