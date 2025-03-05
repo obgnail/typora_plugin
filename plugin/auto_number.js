@@ -342,11 +342,12 @@ class autoNumberPlugin extends BasePlugin {
             if (remain) {
                 content.push(`"${remain}"`)
             }
-            return `--count-${type}: ${content.join(" ")}`
+            const val = content.length ? content.join(" "): `""`
+            return `--count-${type}: ${val}`
         }
 
         const vars = Object.entries(layout).map(([type, lo]) => {
-            const extra = type === "image" ? `" " attr(data-alt)` : ""
+            const extra = type === "image" ? ` " " attr(data-alt)` : ""
             const counter = buildCounter(type, lo)
             return counter + extra + ";"
         })
