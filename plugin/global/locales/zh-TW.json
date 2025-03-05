@@ -322,12 +322,12 @@
   },
   "auto_number": {
     "pluginName": "自動編號",
-    "act.set_outline": "大綱",
-    "act.set_content": "正文",
-    "act.set_toc": "TOC",
-    "act.set_table": "表格",
-    "act.set_image": "圖片",
-    "act.set_fence": "程式碼區塊"
+    "act.toggle_outline": "大綱",
+    "act.toggle_content": "正文",
+    "act.toggle_toc": "TOC",
+    "act.toggle_table": "表格",
+    "act.toggle_image": "圖片",
+    "act.toggle_fence": "程式碼區塊"
   },
   "fence_enhance": {
     "pluginName": "程式碼區塊增強",

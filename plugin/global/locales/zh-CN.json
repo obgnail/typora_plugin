@@ -322,12 +322,12 @@
   },
   "auto_number": {
     "pluginName": "自动编号",
-    "act.set_outline": "大纲",
-    "act.set_content": "正文",
-    "act.set_toc": "TOC",
-    "act.set_table": "表格",
-    "act.set_image": "图片",
-    "act.set_fence": "代码块"
+    "act.toggle_outline": "大纲",
+    "act.toggle_content": "正文",
+    "act.toggle_toc": "TOC",
+    "act.toggle_table": "表格",
+    "act.toggle_image": "图片",
+    "act.toggle_fence": "代码块"
   },
   "fence_enhance": {
     "pluginName": "代码块增强",

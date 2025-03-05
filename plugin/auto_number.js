@@ -1,31 +1,9 @@
 class autoNumberPlugin extends BasePlugin {
     beforeProcess = () => {
-        this.css_id = "plugin-auto-number-style"
+        this.css_id = this.utils.styleTemplater.getID(this.fixedName)
 
         this.base_css = `
-        #write {
-            --count-content-h2: counter(content-h2) ". ";
-            --count-content-h3: counter(content-h2) "." counter(content-h3) " ";
-            --count-content-h4: counter(content-h2) "." counter(content-h3) "." counter(content-h4) " ";
-            --count-content-h5: counter(content-h2) "." counter(content-h3) "." counter(content-h4) "." counter(content-h5) " ";
-            --count-content-h6: counter(content-h2) "." counter(content-h3) "." counter(content-h4) "." counter(content-h5) "." counter(content-h6) " ";
-            
-            --count-outline-h2: counter(outline-h2) ". ";
-            --count-outline-h3: counter(outline-h2) "." counter(outline-h3) " ";
-            --count-outline-h4: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) " ";
-            --count-outline-h5: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "." counter(outline-h5) " ";
-            --count-outline-h6: counter(outline-h2) "." counter(outline-h3) "." counter(outline-h4) "." counter(outline-h5) "." counter(outline-h6) " ";
-            
-            --count-toc-h2: counter(toc-h2) ". ";
-            --count-toc-h3: counter(toc-h2) "." counter(toc-h3) " ";
-            --count-toc-h4: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) " ";
-            --count-toc-h5: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) " ";
-            --count-toc-h6: counter(toc-h2) "." counter(toc-h3) "." counter(toc-h4) "." counter(toc-h5) "." counter(toc-h6) " ";
-            
-            --count-content-table: "${this.config.NAMES.image} " counter(table);
-            --count-content-fence: "${this.config.NAMES.fence} " counter(fence);
-            --count-content-image: "${this.config.NAMES.table} " counter(image) " " attr(data-alt);
-        }
+        :root { ${this._buildCSSVar(this.config.LAYOUT)} }
 
         #write { counter-reset: content-h2 image table fence; }
         #write > h1 { counter-reset: content-h2; }
@@ -164,7 +142,7 @@ class autoNumberPlugin extends BasePlugin {
 
         const image_content = `
             counter-increment: image;
-            content: var(--count-content-image);
+            content: var(--count-image);
             font-family: ${this.config.FONT_FAMILY};
             display: block;
             text-align: ${this.config.ALIGN};
@@ -176,7 +154,7 @@ class autoNumberPlugin extends BasePlugin {
         this.table_css = `
         #write .table-figure::after {
             counter-increment: table;
-            content: var(--count-content-table);
+            content: var(--count-table);
             font-family: ${this.config.FONT_FAMILY};
             display: block;
             text-align: ${this.config.ALIGN};
@@ -189,7 +167,7 @@ class autoNumberPlugin extends BasePlugin {
         }
         #write .md-fences::after {
             counter-increment: fence;
-            content: var(--count-content-fence);
+            content: var(--count-fence);
             position: absolute;
             width: 100%;
             text-align: ${this.config.ALIGN};
@@ -251,25 +229,103 @@ class autoNumberPlugin extends BasePlugin {
     }
 
     getDynamicActions = () => this.i18n.fillActions([
-        { act_value: "set_outline", act_state: this.config.ENABLE_OUTLINE },
-        { act_value: "set_content", act_state: this.config.ENABLE_CONTENT },
-        { act_value: "set_toc", act_state: this.config.ENABLE_TOC },
-        { act_value: "set_table", act_state: this.config.ENABLE_TABLE },
-        { act_value: "set_image", act_state: this.config.ENABLE_IMAGE },
-        { act_value: "set_fence", act_state: this.config.ENABLE_FENCE },
+        { act_value: "toggle_outline", act_state: this.config.ENABLE_OUTLINE },
+        { act_value: "toggle_content", act_state: this.config.ENABLE_CONTENT },
+        { act_value: "toggle_toc", act_state: this.config.ENABLE_TOC },
+        { act_value: "toggle_table", act_state: this.config.ENABLE_TABLE },
+        { act_value: "toggle_image", act_state: this.config.ENABLE_IMAGE },
+        { act_value: "toggle_fence", act_state: this.config.ENABLE_FENCE },
     ])
 
     call = action => {
         const callMap = {
-            set_outline: () => this.toggleSetting("ENABLE_OUTLINE"),
-            set_content: () => this.toggleSetting("ENABLE_CONTENT"),
-            set_toc: () => this.toggleSetting("ENABLE_TOC"),
-            set_table: () => this.toggleSetting("ENABLE_TABLE"),
-            set_image: () => this.toggleSetting("ENABLE_IMAGE"),
-            set_fence: () => this.toggleSetting("ENABLE_FENCE"),
+            toggle_outline: () => this.toggleSetting("ENABLE_OUTLINE"),
+            toggle_content: () => this.toggleSetting("ENABLE_CONTENT"),
+            toggle_toc: () => this.toggleSetting("ENABLE_TOC"),
+            toggle_table: () => this.toggleSetting("ENABLE_TABLE"),
+            toggle_image: () => this.toggleSetting("ENABLE_IMAGE"),
+            toggle_fence: () => this.toggleSetting("ENABLE_FENCE"),
         }
-        const func = callMap[action];
-        func && func();
+        const func = callMap[action]
+        if (func) {
+            func(action)
+        }
+    }
+
+    _buildCSSVar = layouts => {
+        const NAMES = {
+            c2: "content-h2",
+            c3: "content-h3",
+            c4: "content-h4",
+            c5: "content-h5",
+            c6: "content-h6",
+            o2: "outline-h2",
+            o3: "outline-h3",
+            o4: "outline-h4",
+            o5: "outline-h5",
+            o6: "outline-h6",
+            t2: "toc-h2",
+            t3: "toc-h3",
+            t4: "toc-h4",
+            t5: "toc-h5",
+            t6: "toc-h6",
+            t: "table",
+            f: "fence",
+            i: "image",
+        }
+        const STYLES = {
+            d: "decimal",
+            dlz: "decimal-leading-zero",
+            lr: "lower-roman",
+            ur: "upper-roman",
+            la: "lower-alpha",
+            ua: "upper-alpha",
+            lg: "lower-greek",
+            hs: "cjk-heavenly-stem",
+            eb: "cjk-earthly-branch",
+            cjk: "cjk-ideographic",  // cjk-decimal is experimental
+            scf: "simp-chinese-formal",
+            tcf: "trad-chinese-formal",
+            jf: "japanese-formal",
+            hi: "hiragana",
+            ka: "katakana",
+            di: "disc",
+            ci: "circle",
+            sq: "square",
+            no: "none",
+        }
+
+        const byLength = (a, b) => b.length - a.length
+        const names = [...Object.keys(NAMES)].sort(byLength).join("|")
+        const styles = [...Object.keys(STYLES)].sort(byLength).join("|")
+        const regex = new RegExp(`(${names}):(${styles})`, "g")
+
+        const buildCounter = (type, layout) => {
+            let start = 0
+            const content = []
+            for (const match of layout.matchAll(regex)) {
+                const [raw, name, style] = match
+                const idx = match.index
+                const text = layout.slice(start, idx)
+                if (text) {
+                    content.push(`"${text}"`)
+                }
+                content.push(`counter(${NAMES[name]}, ${STYLES[style]})`)
+                start = idx + raw.length
+            }
+            const remain = layout.slice(start)
+            if (remain) {
+                content.push(`"${remain}"`)
+            }
+            return `--count-${type}: ${content.join(" ")}`
+        }
+
+        const vars = Object.entries(layouts).map(([type, layout]) => {
+            const extra = type === "image" ? `" " attr(data-alt)` : ""
+            const counter = buildCounter(type, layout)
+            return counter + extra + ";"
+        })
+        return vars.join("\n")
     }
 }
 

@@ -322,12 +322,12 @@
   },
   "auto_number": {
     "pluginName": "Auto Numbering",
-    "act.set_outline": "Outline",
-    "act.set_content": "Content",
-    "act.set_toc": "TOC",
-    "act.set_table": "Table",
-    "act.set_image": "Image",
-    "act.set_fence": "BlockCode"
+    "act.toggle_outline": "Outline",
+    "act.toggle_content": "Content",
+    "act.toggle_toc": "TOC",
+    "act.toggle_table": "Table",
+    "act.toggle_image": "Image",
+    "act.toggle_fence": "BlockCode"
   },
   "fence_enhance": {
     "pluginName": "Enhance Fence",
