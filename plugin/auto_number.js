@@ -1,9 +1,34 @@
 class autoNumberPlugin extends BasePlugin {
     beforeProcess = () => {
         this.css_id = this.utils.styleTemplater.getID(this.fixedName)
+        this.initCSS()
+    }
+
+    style = () => ({ textID: this.css_id, text: this.getResultStyle() })
+
+    process = () => {
+        this.utils.runtime.autoSaveConfig(this);
+        if (this.config.ENABLE_WHEN_EXPORT) {
+            new exportHelper(this).process();
+        }
+        if (this.config.ENABLE_IMAGE && this.config.SHOW_IMAGE_NAME) {
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
+                const images = this.utils.entities.querySelectorAllInWrite(".md-image:not([data-alt]) > img");
+                for (const image of images) {
+                    image.parentElement.dataset.alt = image.getAttribute("alt");
+                }
+            })
+        }
+    }
+
+    initCSS = layout => {
+        if (!layout) {
+            const selected = this.config.LAYOUTS.find(e => e.selected) || this.config.LAYOUTS[0]
+            layout = selected.layout
+        }
 
         this.base_css = `
-        :root { ${this._buildCSSVar(this.config.LAYOUT)} }
+        :root { ${this._buildCSSVar(layout)} }
 
         #write { counter-reset: content-h2 image table fence; }
         #write > h1 { counter-reset: content-h2; }
@@ -182,23 +207,6 @@ class autoNumberPlugin extends BasePlugin {
         `
     }
 
-    style = () => ({ textID: this.css_id, text: this.getResultStyle() })
-
-    process = () => {
-        this.utils.runtime.autoSaveConfig(this);
-        if (this.config.ENABLE_WHEN_EXPORT) {
-            new exportHelper(this).process();
-        }
-        if (this.config.ENABLE_IMAGE && this.config.SHOW_IMAGE_NAME) {
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
-                const images = this.utils.entities.querySelectorAllInWrite(".md-image:not([data-alt]) > img");
-                for (const image of images) {
-                    image.parentElement.dataset.alt = image.getAttribute("alt");
-                }
-            })
-        }
-    }
-
     removeStyle = () => this.utils.removeStyle(this.css_id);
 
     getStyleString = (inExport = false) => {
@@ -228,14 +236,28 @@ class autoNumberPlugin extends BasePlugin {
         this.utils.insertStyle(this.css_id, css);
     }
 
-    getDynamicActions = () => this.i18n.fillActions([
-        { act_value: "toggle_outline", act_state: this.config.ENABLE_OUTLINE },
-        { act_value: "toggle_content", act_state: this.config.ENABLE_CONTENT },
-        { act_value: "toggle_toc", act_state: this.config.ENABLE_TOC },
-        { act_value: "toggle_table", act_state: this.config.ENABLE_TABLE },
-        { act_value: "toggle_image", act_state: this.config.ENABLE_IMAGE },
-        { act_value: "toggle_fence", act_state: this.config.ENABLE_FENCE },
-    ])
+    setLayout = layoutName => {
+        this.config.LAYOUTS = this.config.LAYOUTS.map(lo => {
+            lo.selected = lo.name === layoutName
+            return lo
+        })
+        this.initCSS()
+        const css = this.getStyleString()
+        this.utils.insertStyle(this.css_id, css)
+    }
+
+    getDynamicActions = () => {
+        const layouts = this.config.LAYOUTS.map(lo => ({ act_name: lo.name, act_value: `set_layout@${lo.name}`, act_state: lo.selected }))
+        return this.i18n.fillActions([
+            { act_value: "toggle_outline", act_state: this.config.ENABLE_OUTLINE },
+            { act_value: "toggle_content", act_state: this.config.ENABLE_CONTENT },
+            { act_value: "toggle_toc", act_state: this.config.ENABLE_TOC },
+            { act_value: "toggle_table", act_state: this.config.ENABLE_TABLE },
+            { act_value: "toggle_image", act_state: this.config.ENABLE_IMAGE },
+            { act_value: "toggle_fence", act_state: this.config.ENABLE_FENCE },
+            ...layouts,
+        ])
+    }
 
     call = action => {
         const callMap = {
@@ -245,14 +267,16 @@ class autoNumberPlugin extends BasePlugin {
             toggle_table: () => this.toggleSetting("ENABLE_TABLE"),
             toggle_image: () => this.toggleSetting("ENABLE_IMAGE"),
             toggle_fence: () => this.toggleSetting("ENABLE_FENCE"),
+            set_layout: layoutName => this.setLayout(layoutName),
         }
-        const func = callMap[action]
+        const [act, meta] = action.split("@")
+        const func = callMap[act]
         if (func) {
-            func(action)
+            func(meta)
         }
     }
 
-    _buildCSSVar = layouts => {
+    _buildCSSVar = layout => {
         const NAMES = {
             c2: "content-h2",
             c3: "content-h3",
@@ -294,35 +318,36 @@ class autoNumberPlugin extends BasePlugin {
             sq: "square",
             no: "none",
         }
+        const DEFAULT_STYLE = "d"
 
         const byLength = (a, b) => b.length - a.length
         const names = [...Object.keys(NAMES)].sort(byLength).join("|")
         const styles = [...Object.keys(STYLES)].sort(byLength).join("|")
-        const regex = new RegExp(`(${names}):(${styles})`, "g")
+        const regex = new RegExp(`\\{\\s*(${names})(?::(${styles}))?\\s*\\}`, "gi")
 
-        const buildCounter = (type, layout) => {
+        const buildCounter = (type, lo) => {
             let start = 0
             const content = []
-            for (const match of layout.matchAll(regex)) {
-                const [raw, name, style] = match
+            for (const match of lo.matchAll(regex)) {
+                const [raw, name, style = DEFAULT_STYLE] = match
                 const idx = match.index
-                const text = layout.slice(start, idx)
+                const text = lo.slice(start, idx)
                 if (text) {
                     content.push(`"${text}"`)
                 }
                 content.push(`counter(${NAMES[name]}, ${STYLES[style]})`)
                 start = idx + raw.length
             }
-            const remain = layout.slice(start)
+            const remain = lo.slice(start)
             if (remain) {
                 content.push(`"${remain}"`)
             }
             return `--count-${type}: ${content.join(" ")}`
         }
 
-        const vars = Object.entries(layouts).map(([type, layout]) => {
+        const vars = Object.entries(layout).map(([type, lo]) => {
             const extra = type === "image" ? `" " attr(data-alt)` : ""
-            const counter = buildCounter(type, layout)
+            const counter = buildCounter(type, lo)
             return counter + extra + ";"
         })
         return vars.join("\n")
