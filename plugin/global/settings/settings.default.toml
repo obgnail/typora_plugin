@@ -1086,12 +1086,17 @@ FONT_FAMILY = "monospace"
 #   center: 编号显示在元素的中间
 ALIGN = "center"
 
+# 表格编号的位置
+#   before: 先于表格出现
+#   after:  后于表格出现
+POSITION_TABLE = "after"
+
 # ------------------- 编号格式 -------------------
 # 编号格式定义：
 #   你可以在这里自定义不同元素的编号格式，支持的元素类型包括：
-#     - content-h2 ~ content-h6:  正文中的二级标题 (##) 到六级标题 (######)
-#     - outline-h2 ~ outline-h6:  大纲视图(侧边栏) 中的二级标题到六级标题
-#     - toc-h2 ~ toc-h6:          TOC 中的二级标题到六级标题
+#     - content-h1 ~ content-h6:  正文内容中的一级标题到六级标题
+#     - outline-h1 ~ outline-h6:  大纲视图中的一级标题到六级标题
+#     - toc-h1 ~ toc-h6:          TOC 中的一级标题到六级标题
 #     - table:                    表格
 #     - image:                    图片
 #     - fence:                    代码块
@@ -1121,9 +1126,9 @@ ALIGN = "center"
 #       - {c4:ur} 表示使用大写罗马数字计数四级标题 (I, II, III...)，结果为 III。
 #
 # 可用的计数器名称：
-#   - c2, c3, c4, c5, c6: 分别用于正文中 2 级到 6 级标题。
-#   - o2, o3, o4, o5, o6: 分别用于大纲中 2 级到 6 级标题。
-#   - t2, t3, t4, t5, t6: 分别用于目录中 2 级到 6 级标题。
+#   - c1 ~ c6: 分别用于正文中 1 级到 6 级标题。
+#   - o1 ~ o6: 分别用于大纲中 1 级到 6 级标题。
+#   - t1 ~ t6: 分别用于目录中 1 级到 6 级标题。
 #   - t: 用于表格的计数。每插入一个表格，计数器就加 1。
 #   - i: 用于图片的计数。
 #   - f: 用于代码块的计数。
@@ -1159,21 +1164,27 @@ name = "Layout::Decimal"
 selected = true
 # 布局的具体设置
 [auto_number.LAYOUTS.layout]
+content-h1 = ""
 content-h2 = "{c2}. "
 content-h3 = "{c2}.{c3} "
 content-h4 = "{c2}.{c3}.{c4} "
 content-h5 = "{c2}.{c3}.{c4}.{c5} "
 content-h6 = "{c2}.{c3}.{c4}.{c5}.{c6} "
+
+outline-h1 = ""
 outline-h2 = "{o2}. "
 outline-h3 = "{o2}.{o3} "
 outline-h4 = "{o2}.{o3}.{o4} "
 outline-h5 = "{o2}.{o3}.{o4}.{o5} "
 outline-h6 = "{o2}.{o3}.{o4}.{o5}.{o6} "
+
+toc-h1 = ""
 toc-h2 = "{t2}. "
 toc-h3 = "{t2}.{t3} "
 toc-h4 = "{t2}.{t3}.{t4} "
 toc-h5 = "{t2}.{t3}.{t4}.{t5} "
 toc-h6 = "{t2}.{t3}.{t4}.{t5}.{t6} "
+
 table = "Table {t}"
 image = "Image {i}"
 fence = "Fence {f}"
@@ -1185,21 +1196,27 @@ name = "Layout::CJK"
 selected = false
 # 布局的具体设置
 [auto_number.LAYOUTS.layout]
-content-h2 = "{c2:cjk}、"
-content-h3 = "（{c3:cjk}）"
-content-h4 = "{c4}."
-content-h5 = "（{c5}）"
-content-h6 = "{c6}）"
-outline-h2 = "{o2:cjk}、"
-outline-h3 = "（{o3:cjk}）"
-outline-h4 = "{o4}."
-outline-h5 = "（{o5}）"
-outline-h6 = "{o6}）"
-toc-h2 = "{t2:cjk}、"
-toc-h3 = "（{t3:cjk}）"
-toc-h4 = "{t4}."
-toc-h5 = "（{t5}）"
-toc-h6 = "{t6}）"
+content-h1 = "{c1:cjk}、"
+content-h2 = "（{c2:cjk}）"
+content-h3 = "\\A0\\A0{c3}."    # \A0 表示空格
+content-h4 = "\\A0\\A0（{c4}）"
+content-h5 = "\\A0\\A0{c5}）"
+content-h6 = "\\A0\\A0{c6:ua}."
+
+outline-h1 = "{o1:cjk}、"
+outline-h2 = "（{o2:cjk}）"
+outline-h3 = "{o3}."
+outline-h4 = "（{o4}）"
+outline-h5 = "{o5}）"
+outline-h6 = "{o6:ua}."
+
+toc-h1 = "{t1:cjk}、"
+toc-h2 = "（{t2:cjk}）"
+toc-h3 = "{t3}."
+toc-h4 = "（{t4}）"
+toc-h5 = "{t5}）"
+toc-h6 = "{t6:ua}."
+
 table = "表 {t}"
 image = "图 {i}"
 fence = "代码 {f}"

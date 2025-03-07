@@ -30,7 +30,7 @@ class autoNumberPlugin extends BasePlugin {
         this.base_css = `
         :root { ${this._buildCSSVar(layout)} }
 
-        #write { counter-reset: content-h2 image table fence; }
+        #write { counter-reset: content-h1 content-h2 image table fence; }
         #write > h1 { counter-reset: content-h2; }
         #write > h2 { counter-reset: content-h3; }
         #write > h3 { counter-reset: content-h4; }
@@ -45,6 +45,12 @@ class autoNumberPlugin extends BasePlugin {
         }`
 
         this.content_css = `
+        #write > h1:before,
+        #write > h1.md-focus.md-heading:before {
+            counter-increment: content-h1;
+            content: var(--count-content-h1);
+        }
+        
         #write > h2:before,
         #write > h2.md-focus.md-heading:before {
             counter-increment: content-h2;
@@ -100,12 +106,17 @@ class autoNumberPlugin extends BasePlugin {
         }`
 
         this.outline_css = `
-        .outline-content { counter-reset: outline-h2; }
+        .outline-content { counter-reset: outline-h1 outline-h2; }
         .outline-h1 { counter-reset: outline-h2; }
         .outline-h2 { counter-reset: outline-h3; }
         .outline-h3 { counter-reset: outline-h4; }
         .outline-h4 { counter-reset: outline-h5; }
         .outline-h5 { counter-reset: outline-h6; }
+        
+        .outline-content .outline-h1 .outline-label:before {
+            counter-increment: outline-h1;
+            content: var(--count-outline-h1);
+        }
         
         .outline-content .outline-h2 .outline-label:before {
             counter-increment: outline-h2;
@@ -133,12 +144,17 @@ class autoNumberPlugin extends BasePlugin {
         }`
 
         this.toc_css = `
-        .md-toc-content { counter-reset: toc-h2; }
+        .md-toc-content { counter-reset: toc-h1 toc-h2; }
         .md-toc-h1 { counter-reset: toc-h2; }
         .md-toc-h2 { counter-reset: toc-h3; }
         .md-toc-h3 { counter-reset: toc-h4; }
         .md-toc-h4 { counter-reset: toc-h5; }
         .md-toc-h5 { counter-reset: toc-h6; }
+        
+        .md-toc-content .md-toc-h1 a:before {
+            counter-increment: toc-h1;
+            content: var(--count-toc-h1);
+        }
         
         .md-toc-content .md-toc-h2 a:before {
             counter-increment: toc-h2;
@@ -177,7 +193,7 @@ class autoNumberPlugin extends BasePlugin {
         this.image_export_css = `#write p:has(img:first-child)::after {${image_content}}`
 
         this.table_css = `
-        #write .table-figure::after {
+        #write .table-figure::${this.config.POSITION_TABLE} {
             counter-increment: table;
             content: var(--count-table);
             font-family: ${this.config.FONT_FAMILY};
@@ -280,16 +296,19 @@ class autoNumberPlugin extends BasePlugin {
 
     _buildCSSVar = layout => {
         const NAMES = {
+            c1: "content-h1",
             c2: "content-h2",
             c3: "content-h3",
             c4: "content-h4",
             c5: "content-h5",
             c6: "content-h6",
+            o1: "outline-h1",
             o2: "outline-h2",
             o3: "outline-h3",
             o4: "outline-h4",
             o5: "outline-h5",
             o6: "outline-h6",
+            t1: "toc-h1",
             t2: "toc-h2",
             t3: "toc-h3",
             t4: "toc-h4",
