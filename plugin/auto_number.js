@@ -210,9 +210,9 @@ class autoNumberPlugin extends BasePlugin {
     removeStyle = () => this.utils.removeStyle(this.css_id);
 
     getStyleString = (inExport = false) => {
-        const image_css = (inExport && this.utils.supportHasSelector) ? this.image_export_css : this.image_css;
-        const { ENABLE_CONTENT, ENABLE_OUTLINE, ENABLE_TOC, ENABLE_IMAGE, ENABLE_TABLE, ENABLE_FENCE } = this.config;
-        return [
+        const image_css = (inExport && this.utils.supportHasSelector) ? this.image_export_css : this.image_css
+        const { ENABLE_CONTENT, ENABLE_OUTLINE, ENABLE_TOC, ENABLE_IMAGE, ENABLE_TABLE, ENABLE_FENCE } = this.config
+        const css = [
             this.base_css,
             ENABLE_CONTENT ? this.content_css : "",
             ENABLE_OUTLINE ? this.outline_css : "",
@@ -220,7 +220,8 @@ class autoNumberPlugin extends BasePlugin {
             ENABLE_IMAGE ? image_css : "",
             ENABLE_TABLE ? this.table_css : "",
             ENABLE_FENCE ? this.fence_css : "",
-        ].join("\n")
+        ]
+        return css.join("\n")
     }
 
     getResultStyle = toggle => {
@@ -247,7 +248,8 @@ class autoNumberPlugin extends BasePlugin {
     }
 
     getDynamicActions = () => {
-        const layouts = this.config.LAYOUTS.map(lo => ({ act_name: lo.name, act_value: `set_layout@${lo.name}`, act_state: lo.selected }))
+        const actSetLayoutPrefix = "set_layout@"
+        const layouts = this.config.LAYOUTS.map(lo => ({ act_name: lo.name, act_value: actSetLayoutPrefix + lo.name, act_state: lo.selected }))
         return this.i18n.fillActions([
             { act_value: "toggle_outline", act_state: this.config.ENABLE_OUTLINE },
             { act_value: "toggle_content", act_state: this.config.ENABLE_CONTENT },
@@ -342,7 +344,7 @@ class autoNumberPlugin extends BasePlugin {
             if (remain) {
                 content.push(`"${remain}"`)
             }
-            const val = content.length ? content.join(" "): `""`
+            const val = content.length ? content.join(" ") : `""`
             return `--count-${type}: ${val}`
         }
 

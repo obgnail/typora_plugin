@@ -1787,6 +1787,7 @@ COMMANDS = [
     { enable = true, type = "command", icon = "📝", keyword = "BlockCode", callback = "() => File.editor.stylize.toggleFences()" },
     { enable = true, type = "command", icon = "📝", keyword = "BlockMath", callback = "() => File.editor.stylize.toggleMathBlock()" },
     { enable = true, type = "command", icon = "📝", keyword = "BlockQuote", callback = "() => File.editor.stylize.toggleIndent('blockquote')" },
+    { enable = true, type = "command", icon = "📝", keyword = "Callouts", callback = "() => File.editor.stylize.insertAlert('NOTE')" },
     { enable = true, type = "command", icon = "📝", keyword = "OrderedList", callback = "() => File.editor.stylize.toggleIndent('ol')" },
     { enable = true, type = "command", icon = "📝", keyword = "UnorderedList", callback = "() => File.editor.stylize.toggleIndent('ul')" },
     { enable = true, type = "command", icon = "📝", keyword = "TaskList", callback = "() => File.editor.stylize.toggleIndent('tasklist')" },
