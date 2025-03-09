@@ -1,55 +1,37 @@
 let lib
-let libPath
-let config = { default: true }
+let config
 
-function init({ config, libPath }) {
-    assignLibPath(libPath)
-    assignConfig(config)
-    lazyLoad()
-    console.debug(`markdownLint@${lib.getVersion()} worker is initialized with rules`, config)
-}
-
-function assignLibPath(lp) {
-    libPath = lp
-}
-
-function assignConfig(cfg) {
-    Object.assign(config, cfg)
-}
-
-function lazyLoad() {
-    if (!lib && libPath) {
+const linter = {
+    init: ({ libPath, config: cfg, content }) => {
         lib = require(libPath)
-    }
+        config = { "default": true, ...cfg }
+        console.debug(`markdownLint@${lib.getVersion()} worker is initialized with rules`, config)
+        if (content) {
+            return linter.check({ content })
+        }
+    },
+    check: async ({ content }) => {
+        const op = { strings: { content }, config }
+        const result = await lib.lint(op)
+        return result.content.sort((a, b) => a.lineNumber - b.lineNumber)
+    },
+    fix: async ({ content, fixInfo }) => {
+        if (fixInfo && fixInfo.length) {
+            return lib.applyFixes(content, fixInfo)
+        }
+    },
 }
-
-async function check({ fileContent }) {
-    lazyLoad()
-    const { content } = await lib.lint({ strings: { content: fileContent }, config })
-    return content.sort((a, b) => a.lineNumber - b.lineNumber)
-}
-
-async function fix({ fileContent, fixInfo }) {
-    lazyLoad()
-    fixInfo = fixInfo || await check({ fileContent })
-    if (fixInfo && fixInfo.length) {
-        return lib.applyFixes(fileContent, fixInfo)
-    }
-}
-
-const linter = { init, check, fix }
 
 onmessage = async ({ data: { action, payload } }) => {
     if (!payload) return
 
-    const func = linter[action]
-    if (func) {
-        const result = await func(payload)
-        if (result) {
-            self.postMessage({ action, result })
-        }
+    const fn = linter[action]
+    if (!fn) {
+        console.error("get error action:", action)
         return
     }
-
-    console.error("get error action:", action)
+    const result = await fn(payload)
+    if (result) {
+        postMessage({ action, result })
+    }
 }

@@ -1,3 +1,5 @@
+简体中文 | [English](https://github.com/obgnail/typora_plugin/blob/master/README-en.md)
+
 <div align="center">
     <h1>Typora Plugin</h1>
     <img src="assets/typora_plugin.png" alt="typora_plugin" width="400">
@@ -11,7 +13,6 @@
     </p>
 </div>
 
-简体中文 | [English](https://github.com/obgnail/typora_plugin/blob/master/README-en.md)
 
 | #    | 插件                    | 功能                                   | 默认启用 |
 | ---- | ----------------------- | -------------------------------------- | -------- |
@@ -583,11 +584,7 @@ icon = "\\f040"
 
 ![auto_number](assets/auto_number.png)
 
-> 注意：通过注入 CSS 实现此功能，有可能会与你使用的 theme 冲突。
-
 和其他使用 Theme CSS 的实现方式不同，此插件通过修改内置函数，完美解决导出 PDF 后侧边栏没有编号的问题 :)
-
-根据 [Markdown 最佳实践](https://learn.microsoft.com/en-us/powershell/scripting/community/contributing/general-markdown?view=powershell-7.3)，一篇文档应该 **有且仅有** 一个 h1，故此插件从 h2 开始编号。
 
 
 

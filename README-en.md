@@ -1,3 +1,5 @@
+[简体中文](https://github.com/obgnail/typora_plugin/blob/master/README.md) | English
+
 <div align="center">
     <h1>Typora Plugin</h1>
     <img src="assets/typora_plugin.png" alt="typora_plugin" width="400">
@@ -10,8 +12,6 @@
         <a href="https://github.com/obgnail/typora_plugin/blob/master/LICENSE"><img src="https://img.shields.io/github/license/obgnail/typora_plugin"></a>
     </p>
 </div>
-
-[简体中文](https://github.com/obgnail/typora_plugin/blob/master/README.md) | English
 
 
 | #    | Plugin                  | Function                                                  | Enabled by Default |
@@ -530,11 +530,9 @@ Usage: Right-click menu -> Less Used Plugins -> Blur Mode
 
 ![auto_number](assets/auto_number.png)
 
-> Note: This function is achieved by injecting CSS, which may conflict with the theme you are using.
-
 Unlike other implementations using theme CSS, this plugin perfectly solves the problem of no numbering in the sidebar after exporting to PDF by modifying the built-in function :)
 
-According to [Markdown Best Practices](https://learn.microsoft.com/en-us/powershell/scripting/community/contributing/general-markdown?view=powershell-7.3), a document should **have only one** h1 tag.
+
 
 ### imageReviewer
 

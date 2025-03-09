@@ -32,9 +32,11 @@ class markdownLintPlugin extends BaseCustomPlugin {
     `
 
     init = () => {
-        this.errors = []
+        this.initLint = this.utils.noop
         this.checkLint = this.utils.noop
         this.fixLint = this.utils.noop
+
+        this.errors = []
         this.ACTION = { INIT: "init", CHECK: "check", FIX: "fix" }
         this.translations = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
         this.entities = {
@@ -51,20 +53,18 @@ class markdownLintPlugin extends BaseCustomPlugin {
             const worker = new Worker("plugin/custom/plugins/markdownLint/linter-worker.js")
             worker.onmessage = event => {
                 const { action, result } = event.data || {}
-                const fn = action === this.ACTION.CHECK ? onCheck : onFix
+                const fn = action === this.ACTION.FIX ? onFix : onCheck
                 fn(result)
             }
-            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-                setTimeout(() => {
-                    const libPath = this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js")
-                    worker.postMessage({ action: this.ACTION.INIT, payload: { config: this.config.rule_config, libPath } })
-                    this.checkLint()
-                }, 1000)
-            })
             const send = (action, customPayload) => {
-                const fileContent = this.utils.getCurrentFileContent()
-                const payload = { ...customPayload, fileContent }
+                const content = this.utils.getCurrentFileContent()
+                const payload = { content, ...customPayload }
                 worker.postMessage({ action, payload })
+            }
+            this.initLint = () => {
+                const config = this.config.rule_config
+                const libPath = this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js")
+                send(this.ACTION.INIT, { config, libPath })
             }
             this.checkLint = () => send(this.ACTION.CHECK)
             this.fixLint = (fixInfo = this.errors) => send(this.ACTION.FIX, { fixInfo })
@@ -72,8 +72,13 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
         const onEvent = () => {
             const { eventHub } = this.utils
-            eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.checkLint, 500))
+            eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => {
+                setTimeout(this.initLint, 1000)
+            })
             eventHub.addEventListener(eventHub.eventType.toggleSettingPage, force => {
+                if (force) {
+                    this.utils.toggleVisible(this.entities.modal, force)
+                }
                 if (this.entities.button) {
                     this.utils.toggleVisible(this.entities.button, force)
                 }

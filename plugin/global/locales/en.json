@@ -727,7 +727,7 @@
     "func.move": "Move",
     "func.refresh": "Refresh",
     "func.toggleSourceMode": "Toggle Source Mode (also available via right-click in the table)",
-    "func.fixAll": "Fix All Errors",
+    "func.fixAll": "Fix Lint Errors",
     "func.translate": "Translate",
     "func.detailAll": "Detailed Information",
     "func.settings": "Current Configuration",

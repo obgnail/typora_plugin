@@ -1417,7 +1417,7 @@ hotkey_fix_lint_error = ""
 # ------------------- 检测规则 -------------------
 # 检测规则
 #   参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
-rule_config = { default = true, MD010 = false, MD012 = false, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false }
+rule_config = { default = true, MD010 = { code_blocks = false }, MD012 = { maximum = 3 }, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false }
 
 # 是否将检测规则的案文翻译为中文
 #   true:  翻译为中文
@@ -1558,7 +1558,7 @@ hide_button_hint = false
 #   size(可选): 按钮图标大小，例如："17px"、"20px"。默认值：17px
 #   color(可选): 按钮图标颜色，例如："#FFFFFF"、"red"。默认值：跟随当前主题的配色方案
 #   bgColor(可选): 按钮图标背景颜色，例如："#000000"、"blue"。默认值：跟随当前主题的配色方案
-#   hint: 按钮的提示信息，鼠标悬停在按钮上时显示
+#   hint(可选): 按钮的提示信息，鼠标悬停在按钮上时显示
 #   callback: 按钮的回调函数
 #       格式: "pluginName.MethodName"
 #       pluginName: 插件名称
