@@ -43,6 +43,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             modal: document.querySelector("#plugin-markdownlint"),
             iconGroup: document.querySelector("#plugin-markdownlint .plugin-markdownlint-icon-group"),
             moveIcon: document.querySelector('#plugin-markdownlint .plugin-markdownlint-icon[action="move"]'),
+            table: document.querySelector("#plugin-markdownlint table"),
             tbody: document.querySelector("#plugin-markdownlint tbody"),
             button: document.querySelector("#plugin-markdownlint-button"),
         }
@@ -72,9 +73,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
         const onEvent = () => {
             const { eventHub } = this.utils
-            eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => {
-                setTimeout(this.initLint, 1000)
-            })
+            eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.checkLint, 500))
+            eventHub.addEventListener(eventHub.eventType.allPluginsHadInjected, () => setTimeout(this.initLint, 1000))
             eventHub.addEventListener(eventHub.eventType.toggleSettingPage, force => {
                 if (force) {
                     this.utils.toggleVisible(this.entities.modal, force)
@@ -149,7 +149,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                     fn && fn()
                 }
             })
-            this.entities.tbody.addEventListener("mousedown", ev => {
+            this.entities.table.addEventListener("mousedown", ev => {
                 ev.preventDefault()
                 ev.stopPropagation()
                 if (ev.button === 2) {
