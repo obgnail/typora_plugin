@@ -11,6 +11,7 @@ class helpPlugin extends BasePlugin {
     init = () => {
         const act_hint = this.i18n.t("developersOnly")
         this.staticActions = this.i18n.fillActions([
+            { act_value: "set_language" },
             { act_value: "update_plugin", act_hidden: true },
             { act_value: "preferences", act_hidden: true },
             { act_value: "uninstall_plugin" },
@@ -82,6 +83,26 @@ class helpPlugin extends BasePlugin {
         const title = this.i18n.t("act.show_setting")
         const op = { title, components, width: "600px" }
         await this.utils.dialog.modalAsync(op)
+    }
+
+    setLanguage = async () => {
+        const ext = ".json"
+        const langCurrent = this.utils.getGlobalSetting("LOCALE")
+
+        const { Path, FsExtra } = this.utils.Package
+        const dir = this.utils.joinPath("./plugin/global/locales")
+        const _files = await FsExtra.readdir(dir)
+        const files = _files.filter(e => Path.extname(e).toLowerCase() === ext).map(e => Path.basename(e, ext))
+        const langList = ["auto", ...files]
+
+        const title = this.i18n.t("act.set_language")
+        const components = [{ label: "", type: "select", list: langList, selected: langCurrent }]
+        const op = { title, components, width: "450px" }
+        const { response, submit: [targetLang] } = await this.utils.dialog.modalAsync(op)
+        if (response === 1 && targetLang !== langCurrent) {
+            await this.utils.runtime.saveGlobalConfig({ LOCALE: targetLang })
+            await this.utils.showRestartMessageBox({ title: this.pluginName })
+        }
     }
 
     about = () => {
@@ -216,6 +237,7 @@ class helpPlugin extends BasePlugin {
             preferences: () => this.preferences && this.preferences.call(),
             show_setting: () => this.showSetting(),
             uninstall_plugin: () => this.uninstall(),
+            set_language: () => this.setLanguage(),
             show_env: () => this.showEnv(),
             donate: () => this.donate(),
             about: () => this.about(),

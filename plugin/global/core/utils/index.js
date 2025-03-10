@@ -594,6 +594,15 @@ class utils {
         return JSBridge.invoke("dialog.showMessageBox", op)
     }
 
+    static showRestartMessageBox = async (options) => {
+        const message = i18n.t("global", "reconfirmRestart")
+        const op = { type: "info", message, ...options }
+        const { response } = await this.showMessageBox(op)
+        if (response === 0) {
+            this.restartTypora()
+        }
+    }
+
     static _markdownIt = null
     static getMarkdownIt = () => {
         if (!this._markdownIt) {

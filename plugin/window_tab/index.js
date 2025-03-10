@@ -445,13 +445,7 @@ class windowTabBarPlugin extends BasePlugin {
             if (!restart) {
                 this.rerenderTabBar()
             } else {
-                const title = this.i18n.t("modal.restart")
-                const message = this.i18n._t("global", "reconfirmRestart")
-                const op = { title, message, type: "info" }
-                const { response } = await this.utils.showMessageBox(op)
-                if (response === 0) {
-                    this.utils.restartTypora()
-                }
+                await this.utils.showRestartMessageBox({ title: this.pluginName })
             }
         }
         const callMap = {

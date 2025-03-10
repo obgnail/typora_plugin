@@ -43,8 +43,7 @@
     "func.showInFinder": "Open File Location",
     "func.openInNewWindow": "Open in New Window",
     "modal.exit": "Exit Typora",
-    "modal.reconfirmExit": "Are you sure you want to exit?",
-    "modal.restart": "Restart Typora"
+    "modal.reconfirmExit": "Are you sure you want to exit?"
   },
   "search_multi": {
     "pluginName": "Multi-Fields File Searcher",
@@ -364,7 +363,7 @@
     "modal.toggle_state_button_hint.title": "Button Hints",
     "modal.toggle_state_fold_lang.title": "Code Folding",
     "modal.toggle_state_highlight.title": "Highlight Code Lines",
-    "modal.toggle_state_highlight_by_lang.title": "Highlight Code Lines",
+    "modal.toggle_state_highlight_by_lang.title": "Highlight Lines by Language",
     "modal.toggle_state_indent_alignment.title": "Indent Alignment",
     "modal.toggle_state_hotkey.SWAP_PREVIOUS_LINE": "Swap Current Line with Previous Line",
     "modal.toggle_state_hotkey.SWAP_NEXT_LINE": "Swap Current Line with Next Line",
@@ -500,8 +499,7 @@
     "act.show_action_icon": "Add ⌘ Icon to Action Options",
     "act.hide_other_options": "Hide Options Except Plugins",
     "actHint.do_not_hide": "Right-click menu will not disappear after clicking",
-    "achHint.disabled": "Unavailable at this time",
-    "modal.settingSuccessful": "Settings Successful"
+    "achHint.disabled": "Unavailable at this time"
   },
   "pie_menu": {
     "pluginName": "Pie Menu"
@@ -533,6 +531,7 @@
   },
   "help": {
     "pluginName": "Help",
+    "act.set_language": "Language",
     "act.update_plugin": "Update Plugin",
     "act.preferences": "Enable / Disable Plugin",
     "act.uninstall_plugin": "Uninstall Plugin",
@@ -547,7 +546,7 @@
     "act.donate": "Buy the Developer a Coffee",
     "act.about": "About",
     "currentVersion": "Current Version",
-    "developersOnly": "This feature is for developers only",
+    "developersOnly": "Developers Only",
     "leaveWord": "Thank you for using Typora Plugin. This project is open-source and free. Enjoy it freely. If this project has helped you, please give it a ⭐ and recommend it to your like-minded friends.",
     "uninstall.title": "Uninstall Plugin System",
     "uninstall.hint": "Enter \"{{reconfirm}}\" to start uninstall program",

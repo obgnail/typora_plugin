@@ -27,13 +27,8 @@ class preferencesPlugin extends BasePlugin {
         const baseUpdated = await updateSetting("settings.user.toml", base, enableBasePlugins, "ENABLE")
         const customUpdated = await updateSetting("custom_plugin.user.toml", custom, enableCustomPlugins, "enable")
         if (baseUpdated || customUpdated) {
-            const message = this.i18n.t("modal.settingSuccessful")
-            const detail = this.i18n._t("global", "reconfirmRestart")
-            const op = { title: this.pluginName, type: "info", message, detail }
-            const { response } = await this.utils.showMessageBox(op)
-            if (response === 0) {
-                this.utils.restartTypora()
-            }
+            const title = this.i18n.t("modal.settingSuccessful")
+            await this.utils.showRestartMessageBox({ title })
         }
     }
 

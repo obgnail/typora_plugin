@@ -43,8 +43,7 @@
     "func.showInFinder": "開啟檔案路徑",
     "func.openInNewWindow": "在新視窗開啟",
     "modal.exit": "退出 Typora",
-    "modal.reconfirmExit": "確認退出？",
-    "modal.restart": "重啟 Typora"
+    "modal.reconfirmExit": "確認退出？"
   },
   "search_multi": {
     "pluginName": "多元檔案搜尋",
@@ -500,8 +499,7 @@
     "act.show_action_icon": "為動作選項添加 ⌘ 圖示",
     "act.hide_other_options": "隱藏除了插件以外的選項",
     "actHint.do_not_hide": "右鍵選單點擊後不會自動消失",
-    "achHint.disabled": "功能於此時不可用",
-    "modal.settingSuccessful": "設定成功"
+    "achHint.disabled": "功能於此時不可用"
   },
   "pie_menu": {
     "pluginName": "圓餅圖選單"
@@ -533,6 +531,7 @@
   },
   "help": {
     "pluginName": "說明",
+    "act.set_language": "語言",
     "act.update_plugin": "升級插件",
     "act.preferences": "啟停插件",
     "act.uninstall_plugin": "解除安裝插件",

@@ -225,14 +225,9 @@ class fenceEnhancePlugin extends BasePlugin {
     call = (action, meta) => {
         const toggleConfig = async (cfg, name, args) => {
             this.config[cfg] = !this.config[cfg]
-            const message = this.i18n._t("global", "reconfirmRestart")
             const enableText = this.i18n.t(this.config[cfg] ? "modal.enable" : "modal.disable")
             const title = this.i18n.link([enableText, name])
-            const op = { type: "info", message, title, ...args }
-            const { response } = await this.utils.showMessageBox(op)
-            if (response === 0) {
-                this.utils.restartTypora()
-            }
+            await this.utils.showRestartMessageBox({ title, ...args })
         }
 
         const callMap = {
@@ -332,7 +327,10 @@ class fenceEnhancePlugin extends BasePlugin {
                     .join("\n")
                 await toggleConfig("ENABLE_HOTKEY", title, { detail })
             },
-            toggle_state_button_hint: () => toggleConfig("REMOVE_BUTTON_HINT", this.i18n.t("modal.toggle_state_button_hint.title")),
+            toggle_state_button_hint: async () => {
+                this.config.REMOVE_BUTTON_HINT = !this.config.REMOVE_BUTTON_HINT
+                await this.utils.reload()
+            },
             toggle_state_fold_lang: () => toggleConfig("ENABLE_LANGUAGE_FOLD", this.i18n.t("modal.toggle_state_fold_lang.title")),
             toggle_state_highlight: () => toggleConfig("HIGHLIGHT_WHEN_HOVER", this.i18n.t("modal.toggle_state_highlight.title")),
             toggle_state_highlight_by_lang: () => toggleConfig("HIGHLIGHT_BY_LANGUAGE", this.i18n.t("modal.toggle_state_highlight_by_lang.title")),

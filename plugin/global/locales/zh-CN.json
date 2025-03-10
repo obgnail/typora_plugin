@@ -43,8 +43,7 @@
     "func.showInFinder": "打开文件位置",
     "func.openInNewWindow": "新窗口打开",
     "modal.exit": "退出 Typora",
-    "modal.reconfirmExit": "确认退出？",
-    "modal.restart": "重启 Typora"
+    "modal.reconfirmExit": "确认退出？"
   },
   "search_multi": {
     "pluginName": "多元文件搜索",
@@ -500,8 +499,7 @@
     "act.show_action_icon": "为动作选项添加 ⌘ 图标",
     "act.hide_other_options": "隐藏除插件外的选项",
     "actHint.do_not_hide": "右键菜单点击后不会自动消失",
-    "achHint.disabled": "功能于此时不可用",
-    "modal.settingSuccessful": "设置成功"
+    "achHint.disabled": "功能于此时不可用"
   },
   "pie_menu": {
     "pluginName": "圆盘菜单"
@@ -533,6 +531,7 @@
   },
   "help": {
     "pluginName": "帮助",
+    "act.set_language": "语言",
     "act.update_plugin": "升级插件",
     "act.preferences": "启停插件",
     "act.uninstall_plugin": "卸载插件",

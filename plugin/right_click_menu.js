@@ -306,13 +306,7 @@ class rightClickMenuPlugin extends BasePlugin {
             this.toggleHotkey()
         } else if (action === "show_action_icon") {
             this.config.SHOW_ACTION_OPTIONS_ICON = !this.config.SHOW_ACTION_OPTIONS_ICON
-            const message = this.i18n.t("modal.settingSuccessful")
-            const detail = this.i18n._t("global", "reconfirmRestart")
-            const op = { title: this.pluginName, type: "info", message, detail }
-            const { response } = await this.utils.showMessageBox(op)
-            if (response === 0) {
-                this.utils.restartTypora()
-            }
+            await this.utils.showRestartMessageBox({ title: this.pluginName })
         }
     }
 }

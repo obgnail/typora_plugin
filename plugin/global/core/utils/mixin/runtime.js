@@ -34,6 +34,10 @@ class runtime {
         return this.utils.writeFile(settingPath, content)
     }
 
+    saveGlobalConfig = async (updateObj) => {
+        return this._saveConfig("settings.user.toml", "global", updateObj)
+    }
+
     autoSaveConfig = plugin => {
         const { saveConfig } = this
         plugin.config = new Proxy(plugin.config, {
