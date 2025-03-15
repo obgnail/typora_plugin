@@ -2,11 +2,9 @@
 class rightClickMenuPlugin extends BasePlugin {
     styleTemplate = () => {
         const { MENU_MIN_WIDTH, HIDE_OTHER_OPTIONS } = this.config;
-        const map = { "default": "", "auto": "inherit" };
-        const width = map[MENU_MIN_WIDTH] || MENU_MIN_WIDTH;
         const display = HIDE_OTHER_OPTIONS ? "none" : "";
-        if (width || display) {
-            return { menu_min_width: width, menu_option_display: display }
+        if (MENU_MIN_WIDTH || display) {
+            return { menu_min_width: MENU_MIN_WIDTH, menu_option_display: display }
         }
     }
 

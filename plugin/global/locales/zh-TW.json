@@ -28,7 +28,7 @@
     "act.toggle_show_path": "懸停顯示完整路徑",
     "act.toggle_hide_title_bar": "一體化視窗樣式時隱藏標題欄",
     "act.toggle_drag_style": "JetBrains 风格的標籤拖曳方式",
-    "act.toggle_limit_y_axis": "拖曳時限制垂直移動",
+    "act.toggle_limit_y_axis": "限製豎直拖曳",
     "act.toggle_ctrl_click": "Ctrl+點擊新視窗打開",
     "act.toggle_ctrl_wheel": "Ctrl+滾輪切換標籤",
     "act.toggle_middle_click": "中鍵關閉標籤",
@@ -518,8 +518,7 @@
     "info.json_rpc": "此插件面向開發者",
     "info.reopenClosedFiles": "此插件依賴「標籤頁管理」插件",
     "info.redirectLocalRootUrl": "此插件手動修改配置後才可執行",
-    "info.article_uploader": "此插件面向特殊族群，手動修改配置後才可執行",
-    "modal.settingSuccessful": "設定成功"
+    "info.article_uploader": "此插件面向特殊族群，手動修改配置後才可執行"
   },
   "file_counter": {
     "pluginName": "檔案計數"

@@ -518,8 +518,7 @@
     "info.json_rpc": "This plugin is for developers",
     "info.reopenClosedFiles": "This plugin depends on the window_tab plugin",
     "info.redirectLocalRootUrl": "This plugin requires manual configuration to run",
-    "info.article_uploader": "This plugin is for specific users, requiring manual configuration to run",
-    "modal.settingSuccessful": "Settings Successful"
+    "info.article_uploader": "This plugin is for specific users, requiring manual configuration to run"
   },
   "file_counter": {
     "pluginName": "File Counter"

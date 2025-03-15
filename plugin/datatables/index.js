@@ -64,7 +64,7 @@ class datatablesPlugin extends BasePlugin {
             ordering: this.config.ORDERING,
             searching: this.config.SEARCHING,
             pageLength: this.config.PAGE_LENGTH,
-            scrollCollapse: this.config.SROLL_COLLAPSE,
+            scrollCollapse: this.config.SCROLL_COLLAPSE,
             processing: true,
             search: { caseInsensitive: this.config.CASE_INSENSITIVE, regex: this.config.REGEX },
             language: {
@@ -84,12 +84,9 @@ class datatablesPlugin extends BasePlugin {
                 thousands: ".",
                 paginate: { first: "<<", previous: "<", next: ">", last: ">>" },
             }
-        };
-        if (this.config.SCROLLY > 0) {
-            this.dataTablesConfig = this.config.SCROLLY;
         }
         if (!this.config.DEFAULT_ORDER) {
-            this.dataTablesConfig["order"] = [];
+            this.dataTablesConfig.order = []
         }
     }
 

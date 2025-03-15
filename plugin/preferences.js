@@ -27,8 +27,7 @@ class preferencesPlugin extends BasePlugin {
         const baseUpdated = await updateSetting("settings.user.toml", base, enableBasePlugins, "ENABLE")
         const customUpdated = await updateSetting("custom_plugin.user.toml", custom, enableCustomPlugins, "enable")
         if (baseUpdated || customUpdated) {
-            const title = this.i18n.t("modal.settingSuccessful")
-            await this.utils.showRestartMessageBox({ title })
+            await this.utils.showRestartMessageBox({ title: this.pluginName })
         }
     }
 

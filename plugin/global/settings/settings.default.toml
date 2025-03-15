@@ -54,7 +54,7 @@ NAME = ""
 #   false: 采用 VS Code 风格的标签页拖拽方式，相对简单直接
 JETBRAINS_DRAG_STYLE = true
 
-# 标签标题显示设置：是否去除标签标题的文件扩展名
+# 标签标题显示设置：标签是否显示文件扩展名
 #   true:  标签标题将显示不带扩展名的文件名 (例如: filename.md 显示为 filename)
 #   false: 标签标题将显示完整的文件名 (例如: filename.md)
 REMOVE_FILE_SUFFIX = true
@@ -450,6 +450,7 @@ CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY = false
 DISABLE_CONTEXT_MENU_WHEN_READ_ONLY = true
 
 # 只读状态下禁用右键菜单的时候，哪些菜单选项保持可用（可选值需要您打开调试工具，查找其中data-key）
+# REMAIN_AVAILABLE_MENU_KEY 为 false 时失效
 REMAIN_AVAILABLE_MENU_KEY = ["typora-plugin", "dev-tool", "copy-img"]
 
 # 开启只读模式后，右下角数字统计区域出现的提示文字
@@ -718,14 +719,10 @@ PAGING = true
 # 使用分页时，单页显示的数据条数
 PAGE_LENGTH = 25
 
-# 开启垂直滚动条(表格的高度)，<0则全部显示
-#   -1: 全部显示，不使用滚动条
-SCROLLY = -1
-
 # 当显示更少的记录时，是否允许表格减少高度
 #   true:  启用自动调整高度
 #   false: 固定表格高度
-SROLL_COLLAPSE = true
+SCROLL_COLLAPSE = true
 
 # 是否使用排序功能
 #   true:  启用排序功能
@@ -743,9 +740,9 @@ DEFAULT_ORDER = false
 #   false: 禁用搜索功能
 SEARCHING = true
 
-# 在搜索或者过滤时，是否不区分大小写
-#   true:  搜索时不区分大小写
-#   false: 搜索时区分大小写
+# 在搜索或者过滤时，是否区分大小写
+#   true:  搜索时区分大小写
+#   false: 搜索时不区分大小写
 CASE_INSENSITIVE = true
 
 # 对在搜索中是否正则表达式
@@ -1446,14 +1443,12 @@ NAME = ""
 
 # ------------------- 标志颜色 -------------------
 # 缩放标志的颜色，若为空，则跟随系统配色
-#   true:  指定颜色
-#   false: 随系统配色
 TRIANGLE_COLOR = ""
 
 # ------------------- 折叠状态记忆 -------------------
-# 记住章节是否折叠（直到关闭 Typora）
-#   true:  记住章节折叠状态
-#   false: 不记住章节折叠状态
+# 记住列表是否折叠（直到关闭 Typora）
+#   true:  记住列表折叠状态
+#   false: 不记住列表折叠状态
 RECORD_COLLAPSE = true
 
 
@@ -1584,7 +1579,7 @@ TOOLBAR = [
 ]
 
 # 默认的格式刷
-#   填入 CSS 语句。例如："color:#FF0000; text-decoration:line-through;"
+#   填入 CSS 表达式。例如："color:#FF0000; text-decoration:line-through;"
 DEFAULT_FORMAT_BRUSH = ""
 
 # ------------------- 快捷键 -------------------
@@ -1892,10 +1887,10 @@ SHOW_PLUGIN_HOTKEY = true
 SHOW_ACTION_OPTIONS_ICON = true
 
 # 右键菜单二、三级菜单的最小宽度：防止菜单过宽占用过多屏幕空间
-#   - default: 保持默认宽度 (和第一级菜单相同宽度)
-#   - auto   : 最小宽度根据文本长度自适应
-#   - 232px  : 最小宽度为 232px (可以设置为任何正整数值)
-MENU_MIN_WIDTH = "default"
+#   - ""      : 保持默认宽度 (和第一级菜单相同宽度)
+#   - inherit : 最小宽度根据文本长度自适应
+#   - 232px   : 最小宽度为 232px (可以设置为任何正整数值)
+MENU_MIN_WIDTH = ""
 
 # 点击后是否隐藏菜单：控制点击右键菜单选项后，菜单是否自动隐藏
 #   true:  点击后不隐藏菜单
@@ -1987,7 +1982,6 @@ NAME = ""
 # ------------------- 快捷键 -------------------
 # 触发圆盘菜单的快捷键，为空则不使用快捷键触发
 #   例如："ctrl+shift+m" 表示按下 Ctrl+Shift+M 键触发
-#   注意：此快捷键与 MODIFIER_KEY 配合使用，若 MODIFIER_KEY 不为空则此项无效
 HOTKEY = ""
 
 # 修饰键设置：与鼠标右键结合使用，触发圆盘菜单的修饰键
@@ -2063,7 +2057,7 @@ NAME = ""
 #   例如：设置为 1，则目录中文件数小于等于 1 时，不显示文件计数
 IGNORE_MIN_NUM = 0
 
-# Typora 允许打开的最大文件大小（单位：字节），大于此大小的文件在搜索时将被忽略
+# Typora 允许的最大文件（单位：字节），大于此大小的文件将被忽略
 #   若 MAX_SIZE 小于 0，则不过滤文件大小
 #   例如：设置为 2000000 表示文件大小限制为 2 MB
 MAX_SIZE = 2000000

@@ -143,7 +143,7 @@ INTERACTIVE_MODE = true
 #   allowMarkdown   : 是否允许在消息内容中使用 Markdown 语法
 #   senderNickname  : 默认的发送者昵称
 #   timeNickname    : 表示时间的昵称
-DEFAULT_OPIONS = { useStrict = true, showNickname = true, showAvatar = true, notAllowShowTime = false, allowMarkdown = true, senderNickname = "me", timeNickname = "time" }
+DEFAULT_OPTIONS = { useStrict = true, showNickname = true, showAvatar = true, notAllowShowTime = false, allowMarkdown = true, senderNickname = "me", timeNickname = "time" }
 
 # ------------------- 模板 -------------------
 # 自动插入的模板，当使用快捷键或者右键菜单插入代码块时，会使用此模板

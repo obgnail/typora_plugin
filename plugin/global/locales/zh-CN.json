@@ -28,7 +28,7 @@
     "act.toggle_show_path": "悬停显示完整路径",
     "act.toggle_hide_title_bar": "一体化窗口样式时隐藏标题栏",
     "act.toggle_drag_style": "JetBrains 风格的标签拖拽方式",
-    "act.toggle_limit_y_axis": "拖拽时限制竖直移动",
+    "act.toggle_limit_y_axis": "限制竖直拖拽",
     "act.toggle_ctrl_click": "Ctrl+点击新窗口打开",
     "act.toggle_ctrl_wheel": "Ctrl+滚轮切换标签",
     "act.toggle_middle_click": "中键关闭标签",
@@ -518,8 +518,7 @@
     "info.json_rpc": "此插件面向开发者",
     "info.reopenClosedFiles": "此插件依赖「标签页管理」插件",
     "info.redirectLocalRootUrl": "此插件手动修改配置后才可运行",
-    "info.article_uploader": "此插件面向特殊人群，手动修改配置后才可运行",
-    "modal.settingSuccessful": "设置成功"
+    "info.article_uploader": "此插件面向特殊人群，手动修改配置后才可运行"
   },
   "file_counter": {
     "pluginName": "文件计数"
