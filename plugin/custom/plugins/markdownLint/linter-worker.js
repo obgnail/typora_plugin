@@ -1,23 +1,23 @@
-let lib
-let config
+let LIB
+let RULES
 
 const linter = {
-    init: ({ libPath, config: cfg, content }) => {
-        lib = require(libPath)
-        config = { "default": true, ...cfg }
-        console.debug(`markdownLint@${lib.getVersion()} worker is initialized with rules`, config)
+    init: ({ libPath, config, content }) => {
+        LIB = require(libPath)
+        RULES = { "default": true, ...config }
+        console.debug(`markdownlint@${LIB.getVersion()} worker is initialized with rules`, RULES)
         if (content) {
             return linter.check({ content })
         }
     },
     check: async ({ content }) => {
-        const op = { strings: { content }, config }
-        const result = await lib.lint(op)
+        const op = { strings: { content }, config: RULES }
+        const result = await LIB.lint(op)
         return result.content.sort((a, b) => a.lineNumber - b.lineNumber)
     },
     fix: async ({ content, fixInfo }) => {
         if (fixInfo && fixInfo.length) {
-            return lib.applyFixes(content, fixInfo)
+            return LIB.applyFixes(content, fixInfo)
         }
     },
 }
