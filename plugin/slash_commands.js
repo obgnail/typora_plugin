@@ -12,7 +12,7 @@ class slashCommandsPlugin extends BasePlugin {
             c.hint = this.utils.escape(c.hint || "")
         })
 
-        this.input = ""
+        this.inputs = { kw: "", textBefore: "", textAfter: "", scope: "", bookmark: null }
         this.matched = new Map()
         this.regexp = new RegExp(TRIGGER_REGEXP)
         this.matchStrategy = this._getMatchStrategy(MATCH_STRATEGY)
@@ -47,7 +47,7 @@ class slashCommandsPlugin extends BasePlugin {
                 [this.SCOPE.PLAIN]: this.i18n.t("scope.plain"),
                 [this.SCOPE.INLINE_MATH]: this.i18n.t("scope.inlineMath"),
             },
-            editConfigFile:  this.i18n.t("editConfigFile")
+            editConfigFile: this.i18n.t("editConfigFile")
         }
         const getType = type => i18n.types[type] || i18n.unknown
         const getScope = scope => i18n.scopes[scope] || i18n.unknown
@@ -93,12 +93,13 @@ class slashCommandsPlugin extends BasePlugin {
         const match = textBefore.match(this.regexp)
         if (!match || !match.groups || match.groups.kw === undefined) return
 
-        this.input = match.groups.kw
-        const command = this.input.toLowerCase().split(this.config.FUNC_PARAM_SEPARATOR)[0]
+        const kw = match.groups.kw
+        const command = kw.toLowerCase().split(this.config.FUNC_PARAM_SEPARATOR)[0]
         this._match(scope, command)
         if (this.matched.size === 0) return
 
-        bookmark.start -= (this.input.length + 1)
+        this.inputs = { kw, textBefore, textAfter, scope, bookmark }
+        bookmark.start -= (kw.length + 1)
         File.editor.autoComplete.attachToRange()
         File.editor.autoComplete.show([], bookmark, command, this.handler)
     }
@@ -233,7 +234,7 @@ class slashCommandsPlugin extends BasePlugin {
             range.select()
         }
 
-        const params = this.input.split(this.config.FUNC_PARAM_SEPARATOR).slice(1)
+        const params = this.inputs.kw.split(this.config.FUNC_PARAM_SEPARATOR).slice(1)
 
         switch (cmd.type) {
             case this.TYPE.SNIPPET:
