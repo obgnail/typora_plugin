@@ -498,6 +498,7 @@
     "act.toggle_hotkey": "显示快捷键",
     "act.show_action_icon": "为动作选项添加 ⌘ 图标",
     "act.hide_other_options": "隐藏除插件外的选项",
+    "act.find_lost_plugin": "列出所有的一级插件",
     "actHint.do_not_hide": "右键菜单点击后不会自动消失",
     "achHint.disabled": "功能于此时不可用"
   },
@@ -550,7 +551,7 @@
     "uninstall.title": "卸载插件系统",
     "uninstall.hint": "请输入「{{reconfirm}}」启动自毁程序",
     "uninstall.reconfirmInput": "卸载插件系统",
-    "uninstall.incorrectContent": "请输入正确的内容",
+    "uninstall.incorrectContent": "请输入正确的卸载指令",
     "uninstall.ok": "卸载成功",
     "uninstall.okMsg": "插件系统已经卸载"
   },

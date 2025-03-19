@@ -498,6 +498,7 @@
     "act.toggle_hotkey": "顯示快速鍵",
     "act.show_action_icon": "為動作選項添加 ⌘ 圖示",
     "act.hide_other_options": "隱藏除了插件以外的選項",
+    "act.find_lost_plugin": "列出所有的一級插件",
     "actHint.do_not_hide": "右鍵選單點擊後不會自動消失",
     "achHint.disabled": "功能於此時不可用"
   },
@@ -529,7 +530,7 @@
     "editConfigFile": "如需自訂快速鍵，請修改配置檔案"
   },
   "help": {
-    "pluginName": "說明",
+    "pluginName": "幫助",
     "act.set_language": "語言",
     "act.update_plugin": "升級插件",
     "act.preferences": "啟停插件",
@@ -547,10 +548,10 @@
     "currentVersion": "目前版本",
     "developersOnly": "此功能僅對開發者開放",
     "leaveWord": "感謝您使用 Typora Plugin，本專案開源、免費，請自由地享受。如果本專案幫助到您，歡迎 ⭐，歡迎推薦給你志同道合的朋友使用。",
-    "uninstall.title": "解除安裝插件系統",
+    "uninstall.title": "卸載插件系統",
     "uninstall.hint": "請輸入「{{reconfirm}}」啟動自毀程式",
-    "uninstall.reconfirmInput": "解除安裝插件系統",
-    "uninstall.incorrectContent": "請輸入正確的內容",
+    "uninstall.reconfirmInput": "卸載插件系統",
+    "uninstall.incorrectContent": "請輸入正確的卸載指令",
     "uninstall.ok": "解除安裝成功",
     "uninstall.okMsg": "插件系統已經解除安裝"
   },

@@ -498,6 +498,7 @@
     "act.toggle_hotkey": "Show Hotkeys",
     "act.show_action_icon": "Add ⌘ Icon to Action Options",
     "act.hide_other_options": "Hide Options Except Plugins",
+    "act.find_lost_plugin": "List all primary plugins",
     "actHint.do_not_hide": "Right-click menu will not disappear after clicking",
     "achHint.disabled": "Unavailable at this time"
   },
@@ -550,7 +551,7 @@
     "uninstall.title": "Uninstall Plugin System",
     "uninstall.hint": "Enter \"{{reconfirm}}\" to start uninstall program",
     "uninstall.reconfirmInput": "Uninstall Plugin System",
-    "uninstall.incorrectContent": "Please enter the correct content",
+    "uninstall.incorrectContent": "Please enter a valid uninstall command",
     "uninstall.ok": "Uninstallation Successful",
     "uninstall.okMsg": "The plugin system has been uninstalled"
   },

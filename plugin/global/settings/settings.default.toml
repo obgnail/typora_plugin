@@ -1143,15 +1143,16 @@ POSITION_TABLE = "after"
 #   - sq:  实心方块 (■)
 #   - no:  无 (不显示编号)
 
-# 布局配置：
+# 布局：
 #   你可以定义多个布局，并选择一个作为当前使用的布局
 #   每个布局都包含了一套完整的编号格式定义。若某一元素不需要编号，请置为 ""
+# 布局配置：
+#   - name: 布局名称，用于标识不同的布局
+#   - selected: 是否选中此布局。若为 true，则使用此布局的编号格式
+#   - layout: 布局的具体设置
 [[auto_number.LAYOUTS]]
-# 布局名称，用于标识不同的布局
 name = "Layout::Decimal"
-# 是否选中此布局。如果为 true，则使用此布局的编号格式
 selected = true
-# 布局的具体设置
 [auto_number.LAYOUTS.layout]
 content-h1 = ""
 content-h2 = "{c2}. "
@@ -1176,33 +1177,82 @@ image = "Image {i}"
 fence = "Fence {f}"
 
 [[auto_number.LAYOUTS]]
-# 布局名称，用于标识不同的布局
-name = "Layout::CJK"
-# 是否选中此布局。如果为 true，则使用此布局的编号格式
+name = "Layout::RomanNumeral"
 selected = false
-# 布局的具体设置
+[auto_number.LAYOUTS.layout]
+content-h1 = "{c1:ur}. "
+content-h2 = "{c2:ua}. "
+content-h3 = "{c3}. "
+content-h4 = "{c4:la}. "
+content-h5 = "({c5}). "
+content-h6 = "({c6:la}). "
+outline-h1 = "{o1:ur}. "
+outline-h2 = "{o2:ua}. "
+outline-h3 = "{o3}. "
+outline-h4 = "{o4:la}. "
+outline-h5 = "({o5}). "
+outline-h6 = "({o6:la}). "
+toc-h1 = "{t1:ur}. "
+toc-h2 = "{t2:ua}. "
+toc-h3 = "{t3}. "
+toc-h4 = "{t4:la}. "
+toc-h5 = "({t5}). "
+toc-h6 = "({t6:la}). "
+table = "Table {t}"
+image = "Image {i}"
+fence = "Fence {f}"
+
+[[auto_number.LAYOUTS]]
+name = "Layout::ChineseThesis"
+selected = false
 [auto_number.LAYOUTS.layout]
 content-h1 = "{c1:cjk}、"
 content-h2 = "（{c2:cjk}）"
-content-h3 = "{c3}."
+content-h3 = "{c3}. "
 content-h4 = "（{c4}）"
 content-h5 = "{c5}）"
-content-h6 = "{c6:ua}."
+content-h6 = "{c6:ua}. "
 outline-h1 = "{o1:cjk}、"
 outline-h2 = "（{o2:cjk}）"
-outline-h3 = "{o3}."
+outline-h3 = "{o3}. "
 outline-h4 = "（{o4}）"
 outline-h5 = "{o5}）"
-outline-h6 = "{o6:ua}."
+outline-h6 = "{o6:ua}. "
 toc-h1 = "{t1:cjk}、"
 toc-h2 = "（{t2:cjk}）"
-toc-h3 = "{t3}."
+toc-h3 = "{t3}. "
 toc-h4 = "（{t4}）"
 toc-h5 = "{t5}）"
-toc-h6 = "{t6:ua}."
+toc-h6 = "{t6:ua}. "
 table = "表 {t}"
 image = "图 {i}"
 fence = "代码 {f}"
+
+[[auto_number.LAYOUTS]]
+name = "Layout::None"
+selected = false
+[auto_number.LAYOUTS.layout]
+content-h1 = ""
+content-h2 = ""
+content-h3 = ""
+content-h4 = ""
+content-h5 = ""
+content-h6 = ""
+outline-h1 = ""
+outline-h2 = ""
+outline-h3 = ""
+outline-h4 = ""
+outline-h5 = ""
+outline-h6 = ""
+toc-h1 = ""
+toc-h2 = ""
+toc-h3 = ""
+toc-h4 = ""
+toc-h5 = ""
+toc-h6 = ""
+table = ""
+image = ""
+fence = ""
 
 
 ################### fence_enhance ###################

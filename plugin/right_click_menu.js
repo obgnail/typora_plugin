@@ -1,12 +1,9 @@
 // The plugin name is introduced through the setting file. To avoid XSS injection, innerHTML cannot be used
 class rightClickMenuPlugin extends BasePlugin {
-    styleTemplate = () => {
-        const { MENU_MIN_WIDTH, HIDE_OTHER_OPTIONS } = this.config;
-        const display = HIDE_OTHER_OPTIONS ? "none" : "";
-        if (MENU_MIN_WIDTH || display) {
-            return { menu_min_width: MENU_MIN_WIDTH, menu_option_display: display }
-        }
-    }
+    styleTemplate = () => ({
+        menu_min_width: this.config.MENU_MIN_WIDTH,
+        menu_option_display: this.config.HIDE_OTHER_OPTIONS ? "none" : ""
+    })
 
     init = () => {
         this.groupName = "typora-plugin"
@@ -25,9 +22,9 @@ class rightClickMenuPlugin extends BasePlugin {
 
     appendMenu = () => {
         setTimeout(() => {
-            this.appendFirst()  // The first level menus group all plugins
-            this.appendSecond() // The second level menus display grouped plugins
-            this.appendThird()  // The three level menus display the actions of the plugin
+            this.appendFirst()  // The 1st level menus group all plugins
+            this.appendSecond() // The 2nd level menus display grouped plugins
+            this.appendThird()  // The 3rd level menus display the actions of the plugin
             this.listen()
         }, 500)
     }
@@ -94,7 +91,7 @@ class rightClickMenuPlugin extends BasePlugin {
         const clickable = hasAction || plugin.hasOwnProperty("call")
         const extra = {
             class_: `plugin-menu-item ${hasAction ? "has-extra-menu" : ""}`,
-            style: clickable ? undefined : { color: "#c4c6cc", pointerEvents: "none" },
+            style: clickable ? undefined : { color: "#C4C6CC", pointerEvents: "none" },
         }
         return this._liTemplate(plugin.fixedName, plugin.pluginName, plugin.config.HOTKEY, hasAction, null, extra)
     }
@@ -129,18 +126,18 @@ class rightClickMenuPlugin extends BasePlugin {
         if (shortcut && typeof shortcut === "string") {
             shortcut = shortcut.split("+").map(e => e[0].toUpperCase() + e.slice(1).toLowerCase()).join("+")
         }
-        const hasShortcut = this.supportShortcut && this.config.SHOW_PLUGIN_HOTKEY && shortcut;
+        const hasShortcut = this.supportShortcut && this.config.SHOW_PLUGIN_HOTKEY && shortcut
         const attr = hasExtraMenu
             ? { children: [{ ele: "span", "data-lg": "Menu", text: showName, children: [this.caret()] }] }
             : hasShortcut
                 ? { children: [{ ele: "span", text: showName }, { ele: "span", class_: "ty-menu-shortcut", text: shortcut }] }
                 : { text: showName }
-        const children = [{ ele: "a", role: "menuitem", class_, "data-lg": "Menu", ...attr }];
+        const children = [{ ele: "a", role: "menuitem", class_, "data-lg": "Menu", ...attr }]
         return { ele: "li", "data-key": key, children, ...extra }
     }
 
     ulTemplate = extra => {
-        extra.class_.push("dropdown-menu", "context-menu", "ext-context-menu");
+        extra.class_.push("dropdown-menu", "context-menu", "ext-context-menu")
         return { ele: "ul", role: "menu", ...extra }
     }
 
@@ -180,9 +177,9 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     listen = () => {
-        const that = this;
-        const removeShow = ele => ele.classList.remove("show");
-        const removeActive = ele => ele.classList.remove("active");
+        const that = this
+        const removeShow = ele => ele.classList.remove("show")
+        const removeActive = ele => ele.classList.remove("active")
 
         // click on the first level menu
         $("#context-menu").on("click", `[data-key="${this.noExtraMenuGroupName}"]`, function () {
@@ -273,38 +270,47 @@ class rightClickMenuPlugin extends BasePlugin {
 
     hideMenuIfNeed = key => {
         if (!this.config.DO_NOT_HIDE) {
-            File.editor.contextMenu.hide();
-            return;
+            File.editor.contextMenu.hide()
+            return
         }
         if (key) {
-            $(`.plugin-menu-item[data-key="${key}"]`).trigger("mouseenter");  // refresh third menu
+            // refresh third menu
+            $(`.plugin-menu-item[data-key="${key}"]`).trigger("mouseenter")
         }
-    }
-
-    toggleHotkey = () => {
-        this.config.SHOW_PLUGIN_HOTKEY = !this.config.SHOW_PLUGIN_HOTKEY
-        const toggle = e => e.classList.toggle("plugin-common-hidden", !this.config.SHOW_PLUGIN_HOTKEY)
-        document.querySelectorAll(".plugin-menu-second .ty-menu-shortcut, .plugin-menu-third .ty-menu-shortcut").forEach(toggle)
     }
 
     getDynamicActions = () => this.i18n.fillActions([
         { act_value: "do_not_hide", act_state: this.config.DO_NOT_HIDE, act_hint: this.i18n.t("actHint.do_not_hide") },
         { act_value: "toggle_hotkey", act_state: this.config.SHOW_PLUGIN_HOTKEY, act_hidden: !this.supportShortcut },
         { act_value: "show_action_icon", act_state: this.config.SHOW_ACTION_OPTIONS_ICON },
+        { act_value: "find_lost_plugin", act_state: this.config.FIND_LOST_PLUGIN },
         { act_value: "hide_other_options", act_state: this.config.HIDE_OTHER_OPTIONS },
     ])
 
     call = async action => {
-        if (action === "do_not_hide") {
-            this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE
-        } else if (action === "hide_other_options") {
-            this.config.HIDE_OTHER_OPTIONS = !this.config.HIDE_OTHER_OPTIONS
-            await this.utils.styleTemplater.reset(this.fixedName, this.styleTemplate())
-        } else if (action === "toggle_hotkey") {
-            this.toggleHotkey()
-        } else if (action === "show_action_icon") {
-            this.config.SHOW_ACTION_OPTIONS_ICON = !this.config.SHOW_ACTION_OPTIONS_ICON
-            await this.utils.showRestartMessageBox({ title: this.pluginName })
+        const callMap = {
+            do_not_hide: () => this.config.DO_NOT_HIDE = !this.config.DO_NOT_HIDE,
+            hide_other_options: async () => {
+                this.config.HIDE_OTHER_OPTIONS = !this.config.HIDE_OTHER_OPTIONS
+                await this.utils.styleTemplater.reset(this.fixedName, this.styleTemplate())
+            },
+            toggle_hotkey: () => {
+                this.config.SHOW_PLUGIN_HOTKEY = !this.config.SHOW_PLUGIN_HOTKEY
+                const toggle = e => e.classList.toggle("plugin-common-hidden", !this.config.SHOW_PLUGIN_HOTKEY)
+                document.querySelectorAll(".plugin-menu-second .ty-menu-shortcut, .plugin-menu-third .ty-menu-shortcut").forEach(toggle)
+            },
+            find_lost_plugin: async () => {
+                this.config.FIND_LOST_PLUGIN = !this.config.FIND_LOST_PLUGIN
+                await this.utils.showRestartMessageBox({ title: this.pluginName })
+            },
+            show_action_icon: async () => {
+                this.config.SHOW_ACTION_OPTIONS_ICON = !this.config.SHOW_ACTION_OPTIONS_ICON
+                await this.utils.showRestartMessageBox({ title: this.pluginName })
+            },
+        }
+        const fn = callMap[action]
+        if (fn) {
+            await fn()
         }
     }
 }
