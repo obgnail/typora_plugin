@@ -65,7 +65,8 @@ class markdownLintPlugin extends BaseCustomPlugin {
             this.initLint = () => {
                 const config = this.config.rule_config
                 const libPath = this.utils.joinPath("plugin/custom/plugins/markdownLint/markdownlint.min.js")
-                send(this.ACTION.INIT, { config, libPath })
+                const customRulePaths = this.config.custom_rules.map(e => this.utils.joinPath(e))
+                send(this.ACTION.INIT, { config, libPath, customRulePaths })
             }
             this.checkLint = () => send(this.ACTION.CHECK)
             this.fixLint = (fixInfo = this.errors) => send(this.ACTION.FIX, { fixInfo })

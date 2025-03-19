@@ -1415,7 +1415,18 @@ hotkey = ""
 hotkey_fix_lint_error = ""
 
 # ------------------- 检测规则 -------------------
-# 检测规则
+# 自定义检测规则
+#   参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/CustomRules.md
+#   填入文件路径，必须在 plugin 目录下
+#   检测规则 MD101 是开发者自己写的
+#      功能: Math Blocks should be surrounded by blank lines
+#      源码: https://github.com/obgnail/markdownlint-rule-math
+#      issue: https://github.com/obgnail/typora_plugin/issues/957
+custom_rules = [
+    "plugin/custom/plugins/markdownLint/MD101.js",
+]
+
+# 检测规则配置
 #   参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
 rule_config = { default = true, MD010 = { code_blocks = false }, MD012 = { maximum = 3 }, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false, MD044 = { code_blocks = false, names = ["CSS", "C++", "HTML", "Java", "JavaScript", "Python", "Rust", "SQL", "TypeScript"] } }
 

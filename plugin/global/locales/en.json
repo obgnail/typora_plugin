@@ -772,9 +772,9 @@
     "MD043": "Incorrect heading structure",
     "MD044": "Incorrect capitalization of proper names",
     "MD045": "Images require alternate text",
-    "MD046": "Inconsistent blockcodes style",
+    "MD046": "Inconsistent Blockcodes style",
     "MD047": "File must end with a single newline character",
-    "MD048": "Inconsistent blockcodes sign",
+    "MD048": "Inconsistent Blockcodes sign",
     "MD049": "Inconsistent emphasis style",
     "MD050": "Inconsistent strong style",
     "MD051": "Link fragment does not resolve",
@@ -783,7 +783,8 @@
     "MD054": "Inconsistent link/image reference definitions",
     "MD055": "Inconsistent table pipe style",
     "MD056": "Inconsistent number of table cells per row",
-    "MD058": "Tables must be surrounded by blank lines"
+    "MD058": "Tables must be surrounded by blank lines",
+    "MD101": "MathBlocks must be surrounded by blank lines"
   },
   "reopenClosedFiles": {
     "pluginName": "Reopen Closed Files"
