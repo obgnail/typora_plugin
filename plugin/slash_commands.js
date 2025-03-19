@@ -253,7 +253,11 @@ class slashCommandsPlugin extends BasePlugin {
                 range.setEnd(textNode, anchor.end)
                 File.editor.selection.setRange(range, true)
                 File.editor.UserOp.pasteHandler(File.editor, "", true)
-                setTimeout(() => this._evalFunction(cmd.callback, ...params), 50)
+                setTimeout(() => {
+                    this._evalFunction(cmd.callback, ...params)
+                    normalizeAnchor()
+                    selectRange(cmd.cursorOffset)
+                }, 50)
                 break
         }
         return ""
