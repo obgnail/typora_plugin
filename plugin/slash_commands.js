@@ -12,7 +12,7 @@ class slashCommandsPlugin extends BasePlugin {
             c.hint = this.utils.escape(c.hint || "")
         })
 
-        this.inputs = { kw: "", textBefore: "", textAfter: "", scope: "", bookmark: null }
+        this.inputs = { kw: "", command: "", params: [], textBefore: "", textAfter: "", scope: "", bookmark: null }
         this.matched = new Map()
         this.regexp = new RegExp(TRIGGER_REGEXP)
         this.matchStrategy = this._getMatchStrategy(MATCH_STRATEGY)
@@ -65,18 +65,18 @@ class slashCommandsPlugin extends BasePlugin {
     }
 
     _getTextAround = () => {
-        const rangy = File.editor.selection.getRangy()
-        if (rangy && rangy.collapsed) {
-            const container = $(rangy.startContainer).closest(`[md-inline="plain"], [type="math/tex"]`)[0]
+        const range = File.editor.selection.getRangy()
+        if (range && range.collapsed) {
+            const container = $(range.startContainer).closest(`[md-inline="plain"], [type="math/tex"]`)[0]
             if (container) {
                 const scope = this._getScope(container)
-                const bookmark = rangy.getBookmark(container)
-                rangy.setStartBefore(container)
-                const textBefore = rangy.toString()
-                rangy.collapse(false)
-                rangy.setEndAfter(container)
-                const textAfter = rangy.toString()
-                rangy.setStart(container, 0)
+                const bookmark = range.getBookmark(container)
+                range.setStartBefore(container)
+                const textBefore = range.toString()
+                range.collapse(false)
+                range.setEndAfter(container)
+                const textAfter = range.toString()
+                range.setStart(container, 0)
                 return [textBefore, textAfter, bookmark, scope]
             }
         }
@@ -91,17 +91,20 @@ class slashCommandsPlugin extends BasePlugin {
         const [textBefore, textAfter, bookmark, scope] = this._getTextAround()
         if (!textBefore) return
         const match = textBefore.match(this.regexp)
-        if (!match || !match.groups || match.groups.kw === undefined) return
+        const kw = match && match.groups && match.groups.kw
+        if (kw == null) return
 
-        const kw = match.groups.kw
-        const command = kw.toLowerCase().split(this.config.FUNC_PARAM_SEPARATOR)[0]
-        this._match(scope, command)
-        if (this.matched.size === 0) return
+        const [command, ...params] = kw.split(this.config.FUNC_PARAM_SEPARATOR)
+        const lowerCommand = command.toLowerCase()
 
-        this.inputs = { kw, textBefore, textAfter, scope, bookmark }
+        const matchResult = this._match(scope, lowerCommand)
+        if (matchResult.size === 0) return
+
+        this.inputs = { kw, command, params, textBefore, textAfter, scope, bookmark }
+
         bookmark.start -= (kw.length + 1)
         File.editor.autoComplete.attachToRange()
-        File.editor.autoComplete.show([], bookmark, command, this.handler)
+        File.editor.autoComplete.show([], bookmark, lowerCommand, this.handler)
     }
 
     _getMatchStrategy = (type) => {
@@ -179,6 +182,7 @@ class slashCommandsPlugin extends BasePlugin {
                 this.matched.set(kw, cmd)
             }
         }
+        return this.matched
     }
 
     _search = input => this.orderStrategy([...this.matched.keys()], input)
@@ -234,8 +238,6 @@ class slashCommandsPlugin extends BasePlugin {
             range.select()
         }
 
-        const params = this.inputs.kw.split(this.config.FUNC_PARAM_SEPARATOR).slice(1)
-
         switch (cmd.type) {
             case this.TYPE.SNIPPET:
             case this.TYPE.GENERATE_SNIPPET:
@@ -244,7 +246,7 @@ class slashCommandsPlugin extends BasePlugin {
                     refresh()
                     selectRange(cmd.cursorOffset)
                 }, 100)
-                return cmd.type === this.TYPE.SNIPPET ? cmd.callback : this._evalFunction(cmd.callback, ...params)
+                return cmd.type === this.TYPE.SNIPPET ? cmd.callback : this._evalFunction(cmd.callback, ...this.inputs.params)
             case this.TYPE.COMMAND:
                 normalizeAnchor()
                 const range = File.editor.selection.getRangy()
@@ -254,7 +256,7 @@ class slashCommandsPlugin extends BasePlugin {
                 File.editor.selection.setRange(range, true)
                 File.editor.UserOp.pasteHandler(File.editor, "", true)
                 setTimeout(() => {
-                    this._evalFunction(cmd.callback, ...params)
+                    this._evalFunction(cmd.callback, ...this.inputs.params)
                     normalizeAnchor()
                     selectRange(cmd.cursorOffset)
                 }, 50)
