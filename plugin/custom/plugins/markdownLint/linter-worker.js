@@ -13,11 +13,13 @@ const linter = {
         }
     },
     check: async ({ content }) => {
+        if (!LIB) return
         const op = { strings: { content }, config: RULES, customRules: CUSTOM_RULES }
         const result = await LIB.lint(op)
-        return result.content.sort((a, b) => a.lineNumber - b.lineNumber)
+        return result.content
     },
     fix: async ({ content, fixInfo }) => {
+        if (!LIB) return
         if (fixInfo && fixInfo.length) {
             return LIB.applyFixes(content, fixInfo)
         }

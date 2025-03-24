@@ -1,7 +1,5 @@
 class markdownLintPlugin extends BaseCustomPlugin {
-    styleTemplate = () => ({ modal_width: (this.config.modal_width === "auto" ? "fit-content" : this.config.modal_width) })
-
-    hint = () => this.i18n.t("actHint")
+    styleTemplate = () => ({ modal_width: this.config.modal_width })
 
     hotkey = () => [
         { hotkey: this.config.hotkey, callback: this.callback },
@@ -36,9 +34,10 @@ class markdownLintPlugin extends BaseCustomPlugin {
         this.checkLint = this.utils.noop
         this.fixLint = this.utils.noop
 
-        this.errors = []
+        this.fixInfos = []
+        this.TOOLS = new Set(this.config.tools)
         this.ACTION = { INIT: "init", CHECK: "check", FIX: "fix" }
-        this.translations = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
+        this.TRANSLATIONS = this.i18n.entries([...Object.keys(this.i18n.data)].filter(e => e.startsWith("MD")))
         this.entities = {
             modal: document.querySelector("#plugin-markdownlint"),
             iconGroup: document.querySelector("#plugin-markdownlint .plugin-markdownlint-icon-group"),
@@ -69,7 +68,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 send(this.ACTION.INIT, { config, libPath, customRulePaths })
             }
             this.checkLint = () => send(this.ACTION.CHECK)
-            this.fixLint = (fixInfo = this.errors) => send(this.ACTION.FIX, { fixInfo })
+            this.fixLint = (fixInfo = this.fixInfos) => send(this.ACTION.FIX, { fixInfo })
         }
 
         const onEvent = () => {
@@ -86,7 +85,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             })
         }
 
-        const _getDetail = (infos = this.errors) => {
+        const _getDetail = (infos = this.fixInfos) => {
             const attrs = ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]
             const obj = infos.map(i => this.utils.fromObject(i, attrs))
             const content = JSON.stringify(obj.length === 1 ? obj[0] : obj, null, "\t")
@@ -99,17 +98,17 @@ class markdownLintPlugin extends BaseCustomPlugin {
         const funcMap = {
             close: () => this.callback(),
             refresh: () => this.checkLint(),
-            detailAll: () => _getDetail(this.errors),
-            detailSingle: infoIdx => _getDetail([this.errors[infoIdx]]),
+            detailAll: () => _getDetail(this.fixInfos),
+            detailSingle: infoIdx => _getDetail([this.fixInfos[infoIdx]]),
             fixAll: () => this.fixLint(),
-            fixSingle: infoIdx => this.fixLint([this.errors[infoIdx]]),
+            fixSingle: infoIdx => this.fixLint([this.fixInfos[infoIdx]]),
             toggleSourceMode: () => File.toggleSourceMode(),
             doc: () => {
                 const title = this.i18n.t("func.doc")
                 const label = this.i18n.t("gotoWeb") + " " + '<a class="fa fa-external-link"></a>'
                 const url = "https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"
                 const onclick = ev => ev.target.closest("a") && this.utils.openUrl(url)
-                const content = Object.entries(this.translations).map(([key, value]) => `${key}\t${value}`).join("\n")
+                const content = Object.entries(this.TRANSLATIONS).map(([key, value]) => `${key}\t${value}`).join("\n")
                 const components = [{ label, type: "p", onclick }, { label: "", type: "textarea", rows: 15, content }]
                 const op = { title, components, width: "600px" }
                 this.utils.dialog.modal(op)
@@ -150,21 +149,20 @@ class markdownLintPlugin extends BaseCustomPlugin {
                     fn && fn()
                 }
             })
-            this.entities.table.addEventListener("mousedown", ev => {
+            this.entities.table.addEventListener("click", ev => {
+                const target = ev.target.closest("[action]")
+                if (target) {
+                    const action = target.getAttribute("action")
+                    const value = parseInt(target.dataset.value)
+                    const fn = funcMap[action]
+                    fn && fn(value)
+                }
+            })
+            this.entities.modal.addEventListener("mousedown", ev => {
                 ev.preventDefault()
                 ev.stopPropagation()
                 if (ev.button === 2) {
                     funcMap.toggleSourceMode()
-                } else if (ev.button === 0) {
-                    const target = ev.target.closest("[action]")
-                    if (!target) {
-                        File.editor.restoreLastCursor(ev)
-                    } else {
-                        const action = target.getAttribute("action")
-                        const value = parseInt(target.dataset.value)
-                        const fn = funcMap[action]
-                        fn && fn(value)
-                    }
                 }
             })
         }
@@ -174,22 +172,32 @@ class markdownLintPlugin extends BaseCustomPlugin {
         onElementEvent()
     }
 
-    onCheck = errors => {
-        this.errors = errors
+    onCheck = fixInfos => {
+        const { error_color, pass_color, translate, result_order_by } = this.config
 
-        const { error_color, pass_color, translate } = this.config
+        const compareFn = result_order_by === "ruleName"
+            ? (a, b) => a.ruleNames[0] - b.ruleNames[0]
+            : (a, b) => a.lineNumber - b.lineNumber
+        this.fixInfos = fixInfos.sort(compareFn)
+
         if (this.entities.button) {
-            this.entities.button.style.backgroundColor = errors.length ? error_color : pass_color
+            this.entities.button.style.backgroundColor = this.fixInfos.length ? error_color : pass_color
         }
         if (!this.utils.isShow(this.entities.modal)) return
 
-        const tds = errors.map((item, idx) => {
+        const tds = this.fixInfos.map((item, idx) => {
             const rule = item.ruleNames[0]
             const lineNumber = item.lineNumber
-            const desc = (translate && this.translations[rule]) || item.ruleDescription
-            const info = `<i class="ion-information-circled" action="detailSingle" data-value="${idx}"></i>`
-            const locate = `<i class="ion-android-locate" action="jumpToLine" data-value="${lineNumber}"></i>`
-            const fixInfo = item.fixInfo ? `<i class="ion-wrench" action="fixSingle" data-value="${idx}"></i>` : ""
+            const desc = (translate && this.TRANSLATIONS[rule]) || item.ruleDescription
+            const info = this.TOOLS.has("info")
+                ? `<i class="ion-information-circled" action="detailSingle" data-value="${idx}"></i>`
+                : ""
+            const locate = this.TOOLS.has("locate")
+                ? `<i class="ion-android-locate" action="jumpToLine" data-value="${lineNumber}"></i>`
+                : ""
+            const fixInfo = this.TOOLS.has("fix") && item.fixInfo
+                ? `<i class="ion-wrench" action="fixSingle" data-value="${idx}"></i>`
+                : ""
             return `<tr><td>${lineNumber}</td><td>${rule}</td><td>${desc}</td><td>${info}${locate}${fixInfo}</td></tr>`
         })
         this.entities.tbody.innerHTML = tds.length ? tds.join("") : `<tr><td colspan="4">${this.i18n._t("global", "empty")}</td></tr>`

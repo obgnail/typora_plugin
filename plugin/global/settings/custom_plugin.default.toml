@@ -1430,10 +1430,22 @@ custom_rules = [
 #   参考：https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
 rule_config = { default = true, MD010 = { code_blocks = false }, MD012 = { maximum = 3 }, MD013 = false, MD024 = { siblings_only = true }, MD033 = false, MD041 = false, MD044 = { code_blocks = false, names = ["CSS", "C++", "HTML", "Java", "JavaScript", "Python", "Rust", "SQL", "TypeScript"] } }
 
-# 是否将检测规则的案文翻译为中文
-#   true:  翻译为中文
+# ------------------- 展示规则 -------------------
+# 是否翻译检测规则案文
+#   true:  翻译
 #   false: 不翻译，显示英文原文
 translate = true
+
+# 检测结果的排序规则
+#   lineNumber: 按行排序
+#   ruleName:   按规则名排序
+result_order_by = "lineNumber"
+
+# 展示的工具
+#   info:   具体的检测信息
+#   locate: 定位
+#   fix:    修复
+tools = ["info", "locate", "fix"]
 
 # ------------------- 弹窗样式 -------------------
 # 弹窗的宽度
