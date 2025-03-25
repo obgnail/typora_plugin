@@ -7,7 +7,7 @@
     overflow: auto;
     resize: vertical;
     line-height: ${this.config.modal_line_height};
-    width: ${modal_width};
+    width: ${this.config.modal_width};
     min-width: 380px;
     max-height: ${this.config.modal_max_height};
     min-height: 150px;

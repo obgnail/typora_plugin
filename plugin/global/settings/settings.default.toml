@@ -2115,7 +2115,7 @@ CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU = true
 # ------------------- 文本样式 -------------------
 # 文本字体粗细，填写 font-weight 的 CSS 值
 #   例如：设置为 "bold" 表示加粗文本
-#   若留空 ""，则保持默认字体粗细
+#   若为 "initial"，则保持默认字体粗细
 FONT_WEIGHT = "bold"
 
 # 文本字体颜色，填写 color 的 CSS 值

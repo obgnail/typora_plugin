@@ -534,7 +534,7 @@
     "act.set_language": "語言",
     "act.update_plugin": "升級插件",
     "act.preferences": "啟停插件",
-    "act.uninstall_plugin": "解除安裝插件",
+    "act.uninstall_plugin": "卸載插件",
     "act.open_setting_folder": "修改設定",
     "act.backup_setting_file": "備份設定",
     "act.show_setting": "查看設定",

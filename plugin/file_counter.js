@@ -1,119 +1,120 @@
 class fileCounterPlugin extends BasePlugin {
     styleTemplate = () => ({
-        font_weight: this.config.FONT_WEIGHT || "initial",
+        font_weight: this.config.FONT_WEIGHT,
         color: this.config.COLOR || "var(--active-file-text-color)",
         background_color: this.config.BACKGROUND_COLOR || "var(--active-file-bg-color)",
     })
 
     init = () => {
-        this.className = "plugin-file-counter";
-        this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => ext.toLowerCase()));
+        this.className = "plugin-file-counter"
+        this.libraryTreeEl = document.getElementById("file-library-tree")
+        this.allowedExtensions = new Set(this.config.ALLOW_EXT.map(ext => {
+            const prefix = (ext !== "" && !ext.startsWith(".")) ? "." : ""
+            return prefix + ext.toLowerCase()
+        }))
     }
 
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
             File.editor.library.refreshPanelCommand()
-            this.setAllDirCount()
+            this.countAllDirs()
         })
 
         if (this.config.CTRL_WHEEL_TO_SCROLL_SIDEBAR_MENU) {
             document.querySelector("#file-library").addEventListener("wheel", ev => {
-                const target = ev.target.closest("#file-library");
+                const target = ev.target.closest("#file-library")
                 if (target && this.utils.metaKeyPressed(ev)) {
-                    target.scrollLeft += ev.deltaY * 0.2;
-                    ev.stopPropagation();
-                    ev.preventDefault();
+                    target.scrollLeft += ev.deltaY * 0.2
+                    ev.stopPropagation()
+                    ev.preventDefault()
                 }
             }, { passive: false, capture: true })
         }
 
         new MutationObserver(mutationList => {
             if (mutationList.length === 1) {
-                const add = mutationList[0].addedNodes[0];
+                const add = mutationList[0].addedNodes[0]
                 if (add && add.classList && add.classList.contains("file-library-node")) {
-                    this.setDirCount(add);
+                    this.countDir(add)
                     return
                 }
             }
-            const needSetAll = mutationList.some(mutation => {
-                const { target } = mutation;
-                const add = mutation.addedNodes[0];
-                const t = target && target.classList && target.classList.contains(this.className);
-                const a = add && add.classList && add.classList.contains(this.className);
+            const needCountAllDirs = mutationList.some(mutation => {
+                const { target } = mutation
+                const add = mutation.addedNodes[0]
+                const t = target && target.classList && target.classList.contains(this.className)
+                const a = add && add.classList && add.classList.contains(this.className)
                 return !(t || a)
             })
-            if (needSetAll) {
-                this.setAllDirCount()
+            if (needCountAllDirs) {
+                this.countAllDirs()
             }
-        }).observe(document.getElementById("file-library-tree"), { subtree: true, childList: true });
+        }).observe(this.libraryTreeEl, { subtree: true, childList: true })
     }
 
-    verifyExt = filename => {
-        if (filename.startsWith(".")) return false;
-        const ext = this.utils.Package.Path.extname(filename).toLowerCase();
-        const extension = ext.startsWith(".") ? ext.substring(1) : ext;
-        return this.allowedExtensions.has(extension);
-    }
-    verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE;
-    allowRead = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath);
-    allowTraverse = path => !this.config.IGNORE_FOLDERS.includes(path)
+    verifyExt = path => this.allowedExtensions.has(this.utils.Package.Path.extname(path).toLowerCase())
+    verifySize = stat => 0 > this.config.MAX_SIZE || stat.size < this.config.MAX_SIZE
+    fileFilter = (filepath, stat) => this.verifySize(stat) && this.verifyExt(filepath)
+    dirFilter = path => !this.config.IGNORE_FOLDERS.includes(path)
 
-    countFiles = (dir, fileFilter, dirFilter, then) => {
-        const { Fs: { promises }, Path } = this.utils.Package;
-        let fileCount = 0;
+    countFiles = async (dir, fileFilter, dirFilter) => {
+        const { Fs: { promises: { stat, readdir } }, Path } = this.utils.Package
+        let fileCount = 0
 
-        async function traverse(dir) {
-            const stats = await promises.stat(dir);
-            if (!stats.isDirectory()) return;
+        async function walk(dir) {
+            const stats = await stat(dir)
+            if (!stats.isDirectory()) return
 
-            const files = await promises.readdir(dir);
-            await Promise.all(files.map(async file => {
-                const filePath = Path.join(dir, file);
-                const fileStats = await promises.stat(filePath);
+            const files = await readdir(dir)
+            const promises = files.map(async file => {
+                const filePath = Path.join(dir, file)
+                const fileStats = await stat(filePath)
                 if (fileStats.isFile() && fileFilter(filePath, fileStats)) {
-                    fileCount++;
+                    fileCount++
                 }
                 if (fileStats.isDirectory() && dirFilter(file)) {
-                    await traverse(filePath);
+                    await walk(filePath)
                 }
-            }))
+            })
+            await Promise.all(promises)
         }
 
-        traverse(dir).then(() => then(fileCount)).catch(err => console.error(err));
+        await walk(dir)
+        return fileCount
     }
 
-    setDirCount = treeNode => {
-        const dir = treeNode.dataset.path;
-        this.countFiles(dir, this.allowRead, this.allowTraverse, fileCount => {
-            let countDiv = treeNode.querySelector(`:scope > .${this.className}`);
-            if (fileCount <= this.config.IGNORE_MIN_NUM) {
-                this.utils.removeElement(countDiv);
-                return;
-            }
-            if (!countDiv) {
-                countDiv = document.createElement("div");
-                countDiv.classList.add(this.className);
-                const background = treeNode.querySelector(".file-node-background");
-                treeNode.insertBefore(countDiv, background.nextElementSibling);
-            }
-            countDiv.innerText = this.config.BEFORE_TEXT + fileCount;
-            const titleNode = treeNode.querySelector(".file-node-title");
-            if (titleNode) {
-                titleNode.style.setProperty('overflow-x', 'hidden', 'important');
-            }
-        });
-
-        const fileNode = treeNode.querySelector(":scope > .file-node-children");
-        if (fileNode) {
-            fileNode.querySelectorAll(`:scope > [data-has-sub="true"]`).forEach(this.setDirCount);
+    _countDir = async (node) => {
+        const dir = node.dataset.path
+        const fileCount = await this.countFiles(dir, this.fileFilter, this.dirFilter)
+        let countDiv = node.querySelector(`:scope > .${this.className}`)
+        if (fileCount <= this.config.IGNORE_MIN_NUM) {
+            this.utils.removeElement(countDiv)
+            return
+        }
+        if (!countDiv) {
+            countDiv = document.createElement("div")
+            countDiv.classList.add(this.className)
+            const background = node.querySelector(".file-node-background")
+            node.insertBefore(countDiv, background.nextElementSibling)
+        }
+        countDiv.innerText = this.config.BEFORE_TEXT + fileCount
+        const titleNode = node.querySelector(".file-node-title")
+        if (titleNode) {
+            titleNode.style.setProperty("overflow-x", "hidden", "important")
         }
     }
 
-    setAllDirCount = () => {
-        const root = document.querySelector("#file-library-tree > .file-library-node")
+    countDir = (tree) => {
+        this._countDir(tree)
+        const children = tree.querySelectorAll(':scope > .file-node-children > [data-has-sub="true"]')
+        children.forEach(this.countDir)
+    }
+
+    countAllDirs = () => {
+        const root = this.libraryTreeEl.querySelector(":scope > .file-library-node")
         if (root) {
-            console.debug(`[${this.fixedName}]: reset all dir`)
-            this.setDirCount(root)
+            console.debug(`[${this.fixedName}]: count all dirs`)
+            this.countDir(root)
         }
     }
 }

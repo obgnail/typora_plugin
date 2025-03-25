@@ -1,5 +1,5 @@
 class markdownLintPlugin extends BaseCustomPlugin {
-    styleTemplate = () => ({ modal_width: this.config.modal_width })
+    styleTemplate = () => true
 
     hotkey = () => [
         { hotkey: this.config.hotkey, callback: this.callback },
