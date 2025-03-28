@@ -20,11 +20,14 @@
     margin: 1px 0;
 }
 
-#plugin-commander-form input {
+#plugin-commander-form .plugin-commander-input-wrap {
+    position: relative;
     flex-basis: 60%;
-    margin-right: 2px;
-    padding-left: 5px;
-    padding-right: 24px;
+}
+
+#plugin-commander-form input {
+    width: 100%;
+    padding-right: 25px;
 }
 
 #plugin-commander-form select {
@@ -35,8 +38,10 @@
 
 #plugin-commander-form .plugin-commander-commit {
     position: absolute;
-    padding: 1px;
-    left: 315px;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    line-height: 80%;
     opacity: 0.7;
     cursor: pointer;
 }

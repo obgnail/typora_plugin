@@ -309,8 +309,10 @@ class QualifierMixin {
                 return operand
             }
             switch (operand.toLowerCase()) {
+                case "y":
                 case "yes":
                     return "true"
+                case "n":
                 case "no":
                     return "false"
                 default:
