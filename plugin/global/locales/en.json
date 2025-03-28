@@ -512,7 +512,6 @@
     "editConfigFile": "For security, some plugins cannot be enabled or disabled here. Edit the configuration file to make changes",
     "info.blur": "This plugin is not compatible with the Beta version of Typora",
     "info.export_enhance": "This plugin is not compatible with the Beta version of Typora",
-    "info.auto_number": "This plugin may conflict with the user's theme, causing minor style issues",
     "info.preferences": "Preferences is itself a plugin, disabling it will prevent this window from popping up",
     "info.right_click_menu": "This plugin is the entry point for ordinary users to call other plugins",
     "info.custom": "All secondary plugins are mounted on this plugin, disabling it will cause all secondary plugins to fail",

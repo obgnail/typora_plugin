@@ -32,7 +32,7 @@ class preferencesPlugin extends BasePlugin {
     }
 
     call = async () => {
-        const p = ["blur", "export_enhance", "auto_number", "preferences", "right_click_menu", "custom", "json_rpc", "reopenClosedFiles", "redirectLocalRootUrl", "article_uploader"]
+        const p = ["blur", "export_enhance", "preferences", "right_click_menu", "custom", "json_rpc", "reopenClosedFiles", "redirectLocalRootUrl", "article_uploader"]
         const INFO = this.i18n.entries(p, "info.")
         const labelEditConfig = this.i18n.t("editConfigFile") + " " + '<a class="fa fa-external-link"></a>'
         const legendBasePlugin = this.i18n.t("basePlugin")

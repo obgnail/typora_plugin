@@ -512,7 +512,6 @@
     "editConfigFile": "為了保護使用者，此處禁止啟停部分插件，如需請修改配置檔案",
     "info.blur": "此插件不相容 Beta 版本的 Typora",
     "info.export_enhance": "此插件不相容 Beta 版本的 Typora",
-    "info.auto_number": "此插件可能與使用者使用的主題衝突，導致小範圍的樣式異常",
     "info.preferences": "「啟停插件」自身也是一個插件，停用則無法彈出此視窗",
     "info.right_click_menu": "此插件是普通使用者呼叫其他插件的入口",
     "info.custom": "所有的二級插件都掛載在此插件上，停用會導致所有的二級插件失效",

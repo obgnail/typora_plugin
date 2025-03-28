@@ -1449,9 +1449,9 @@ tools = ["info", "locate", "fix"]
 
 # ------------------- 弹窗样式 -------------------
 # 弹窗的宽度
-#   - auto:  根据文字自适应
-#   - 500px: 500 像素（可以是任何正整数）
-modal_width = "auto"
+#   - fit-content: 根据文字自适应
+#   - 500px      : 500 像素（可以是任何正整数）
+modal_width = "fit-content"
 
 # 弹窗的最大高度
 modal_max_height = "500px"
