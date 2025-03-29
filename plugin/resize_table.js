@@ -1,5 +1,5 @@
 class resizeTablePlugin extends BasePlugin {
-    styleTemplate = () => this.config.REMOVE_MIN_WIDTH
+    styleTemplate = () => this.config.REMOVE_MIN_CELL_WIDTH
 
     process = () => {
         this.utils.runtime.autoSaveConfig(this);
@@ -79,13 +79,15 @@ class resizeTablePlugin extends BasePlugin {
     }
 
     getDirection = (target, ev) => {
-        if (!target) return ""
+        if (!target) {
+            return ""
+        }
         const { right, bottom } = target.getBoundingClientRect();
         const { clientX, clientY } = ev;
-        const { THRESHOLD } = this.config;
-        if (right - THRESHOLD < clientX && clientX < right + THRESHOLD) {
+        const { DRAG_THRESHOLD } = this.config;
+        if (right - DRAG_THRESHOLD < clientX && clientX < right + DRAG_THRESHOLD) {
             return "right"
-        } else if (bottom - THRESHOLD < clientY && clientY < bottom + THRESHOLD) {
+        } else if (bottom - DRAG_THRESHOLD < clientY && clientY < bottom + DRAG_THRESHOLD) {
             return "bottom"
         } else {
             return ""

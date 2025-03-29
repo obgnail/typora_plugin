@@ -22,7 +22,7 @@ class kanbanPlugin extends BaseCustomPlugin {
             interactiveMode: this.config.INTERACTIVE_MODE
         });
 
-        if (this.config.CTRL_WHEEL_TO_SCROLL) {
+        if (this.config.CTRL_WHEEL_TO_SWITCH) {
             const that = this;
             this.utils.entities.$eWrite.on("wheel", ".plugin-kanban-content", function (ev) {
                 if (that.utils.metaKeyPressed(ev.originalEvent)) {

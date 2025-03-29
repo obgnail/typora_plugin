@@ -70,8 +70,8 @@ ENABLE_FENCE = false
 REMOVE_BUTTON_HINT = true
 
 [window_tab]
-NEW_TAB_AT = "end"
-WHEN_CLOSE_LAST_TAB = "blankPage"
+NEW_TAB_POSITION = "end"
+LAST_TAB_CLOSE_ACTION = "blankPage"
 
 [toolbar]
 DEFAULT_TOOL = "plu"

@@ -1,6 +1,6 @@
 class searchMultiPlugin extends BasePlugin {
     styleTemplate = () => {
-        const colors_style = this.config.STYLE_COLOR
+        const colors_style = this.config.HIGHLIGHT_COLORS
             .map((color, idx) => `.cm-plugin-highlight-hit-${idx} { background-color: ${color} !important; }`)
             .join("\n")
         return { colors_style }

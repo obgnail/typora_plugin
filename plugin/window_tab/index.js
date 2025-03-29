@@ -4,8 +4,8 @@ class windowTabBarPlugin extends BasePlugin {
             document.querySelector("header").style.zIndex = "897";
             document.getElementById("top-titlebar").style.display = "none";
         }
-        if (this.config.WHEN_CLOSE_LAST_TAB === "blankPage" && this.utils.isBetaVersion) {
-            this.config.WHEN_CLOSE_LAST_TAB = "reconfirm";
+        if (this.config.LAST_TAB_CLOSE_ACTION === "blankPage" && this.utils.isBetaVersion) {
+            this.config.LAST_TAB_CLOSE_ACTION = "reconfirm"
         }
     }
 
@@ -112,10 +112,10 @@ class windowTabBarPlugin extends BasePlugin {
         }
         const handleDrag = () => {
             const newWindowIfNeed = (offsetY, tab) => {
-                if (this.config.HEIGHT_SCALE < 0) return;
+                if (this.config.DRAG_NEW_WINDOW_THRESHOLD < 0) return;
                 offsetY = Math.abs(offsetY);
                 const { height } = this.entities.tabBar.getBoundingClientRect();
-                if (offsetY > height * this.config.HEIGHT_SCALE) {
+                if (offsetY > height * this.config.DRAG_NEW_WINDOW_THRESHOLD) {
                     const idx = parseInt(tab.dataset.idx)
                     this.openFileNewWindow(this.tabUtil.getTabPathByIdx(idx), false);
                 }
@@ -158,7 +158,7 @@ class windowTabBarPlugin extends BasePlugin {
                 let startX = 0;
                 let startY = 0;
                 let axis, _axis;
-                let dragROI;
+                let threshold
                 const previewImage = new Image();
 
                 tabBar.on("dragstart", ".tab-container", function (ev) {
@@ -173,7 +173,7 @@ class windowTabBarPlugin extends BasePlugin {
                     startY = ev.clientY;
                     offsetX = startX - left;
                     offsetY = startY - top;
-                    dragROI = height * that.config.Y_AXIS_LIMIT_RANGE_WHEN_DRAG
+                    threshold = height * that.config.Y_AXIS_LIMIT_THRESHOLD
 
                     const fakeObj = dragBox.cloneNode(true);
                     fakeObj.style.height = dragBox.offsetHeight + 'px'; // dragBox uses height: 100%, needs to be reset.
@@ -229,7 +229,7 @@ class windowTabBarPlugin extends BasePlugin {
                     startX = left + offsetX;
                     startY = top + offsetY;
 
-                    if (that.config.LIMIT_TAB_ROI || (that.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG && top < dragROI)) {
+                    if (that.config.LOCK_DRAG_Y_AXIS || (that.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG && top < threshold)) {
                         top = 0;
                     }
                     cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
@@ -411,7 +411,7 @@ class windowTabBarPlugin extends BasePlugin {
         handleFocusChange();
         adjustQuickOpen();
         interceptLink();
-        if (this.config.CTRL_WHEEL_TO_SCROLL) {
+        if (this.config.CTRL_WHEEL_TO_SWITCH) {
             handleWheel();
         }
         if (this.config.MIDDLE_CLICK_TO_CLOSE) {
@@ -424,15 +424,15 @@ class windowTabBarPlugin extends BasePlugin {
 
     getDynamicActions = () => this.i18n.fillActions([
         { act_value: "open_save_tabs", act_hidden: !this.utils.existPathSync(this.saveTabFilePath) },
-        { act_value: "toggle_suffix", act_state: this.config.REMOVE_FILE_SUFFIX },
-        { act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_FOR_SAME_NAME_FILE },
+        { act_value: "toggle_file_ext", act_state: this.config.TRIM_FILE_EXT },
+        { act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_ON_DUPLICATE },
         { act_value: "toggle_show_close_button", act_state: this.config.SHOW_TAB_CLOSE_BUTTON },
         { act_value: "toggle_show_path", act_state: this.config.SHOW_FULL_PATH_WHEN_HOVER },
         { act_value: "toggle_hide_title_bar", act_state: this.config.HIDE_WINDOW_TITLE_BAR },
         { act_value: "toggle_drag_style", act_state: this.config.JETBRAINS_DRAG_STYLE },
         { act_value: "toggle_limit_y_axis", act_state: this.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG, act_hidden: !this.config.JETBRAINS_DRAG_STYLE },
         { act_value: "toggle_ctrl_click", act_state: this.config.CTRL_CLICK_TO_NEW_WINDOW },
-        { act_value: "toggle_ctrl_wheel", act_state: this.config.CTRL_WHEEL_TO_SCROLL },
+        { act_value: "toggle_ctrl_wheel", act_state: this.config.CTRL_WHEEL_TO_SWITCH },
         { act_value: "toggle_middle_click", act_state: this.config.MIDDLE_CLICK_TO_CLOSE },
         { act_value: "toggle_tab_bar", act_state: this.entities.windowTab.style.display === "none", act_hotkey: this.config.TOGGLE_TAB_BAR_HOTKEY },
         { act_value: "toggle_local", act_state: !this.localOpen },
@@ -451,13 +451,13 @@ class windowTabBarPlugin extends BasePlugin {
         const callMap = {
             toggle_local: () => this.localOpen = !this.localOpen,
             toggle_limit_y_axis: () => toggleConfig("LIMIT_TAB_Y_AXIS_WHEN_DRAG"),
-            toggle_show_dir: () => toggleConfig("SHOW_DIR_FOR_SAME_NAME_FILE"),
-            toggle_suffix: () => toggleConfig("REMOVE_FILE_SUFFIX"),
+            toggle_show_dir: () => toggleConfig("SHOW_DIR_ON_DUPLICATE"),
+            toggle_file_ext: () => toggleConfig("TRIM_FILE_EXT"),
             toggle_show_path: () => toggleConfig("SHOW_FULL_PATH_WHEN_HOVER"),
             toggle_show_close_button: () => toggleConfig("SHOW_TAB_CLOSE_BUTTON"),
             toggle_ctrl_click: () => toggleConfig("CTRL_CLICK_TO_NEW_WINDOW"),
             toggle_middle_click: () => toggleConfig("MIDDLE_CLICK_TO_CLOSE", true),
-            toggle_ctrl_wheel: () => toggleConfig("CTRL_WHEEL_TO_SCROLL", true),
+            toggle_ctrl_wheel: () => toggleConfig("CTRL_WHEEL_TO_SWITCH", true),
             toggle_hide_title_bar: () => toggleConfig("HIDE_WINDOW_TITLE_BAR", true),
             toggle_drag_style: () => toggleConfig("JETBRAINS_DRAG_STYLE", true),
             save_tabs: this.saveTabs,
@@ -489,7 +489,7 @@ class windowTabBarPlugin extends BasePlugin {
             this._resetContentTop();
         } else {
             const { height: headerHeight, top: headerTop } = document.querySelector("header").getBoundingClientRect();
-            const _top = Math.max(top + height + this.config.GAP_BETWEEN_TAB_AND_CONTENT, headerHeight + headerTop);
+            const _top = Math.max(top + height + this.config.TAB_CONTENT_GAP, headerHeight + headerTop);
             const t = _top + "px";
             this.entities.content.style.top = t;
             this.entities.source.style.top = t;
@@ -573,7 +573,7 @@ class windowTabBarPlugin extends BasePlugin {
         waitToClose.reverse().forEach(idx => this.tabUtil.spliceTabs(idx, 1))
         const leftCount = waitToClose.filter(idx => idx <= this.tabUtil.activeIdx).length;  // Removed X tabs from the left
         this.tabUtil.activeIdx -= leftCount;
-        if (closeActive && this.config.ACTIVE_TAB_WHEN_CLOSE !== "left") {
+        if (closeActive && this.config.TAB_SWITCH_ON_CLOSE !== "left") {
             this.tabUtil.activeIdx++;
         }
         if (this.tabUtil.tabCount === 0) {
@@ -584,8 +584,8 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     _setShowName = () => {
-        this.tabUtil.tabs.forEach(tab => tab.showName = this.utils.getFileName(tab.path, this.config.REMOVE_FILE_SUFFIX));
-        if (this.config.SHOW_DIR_FOR_SAME_NAME_FILE) {
+        this.tabUtil.tabs.forEach(tab => tab.showName = this.utils.getFileName(tab.path, this.config.TRIM_FILE_EXT));
+        if (this.config.SHOW_DIR_ON_DUPLICATE) {
             this._addDir();
         }
     }
@@ -719,7 +719,7 @@ class windowTabBarPlugin extends BasePlugin {
     }
 
     openTab = wantOpenPath => {
-        const { NEW_TAB_AT, TAB_MAX_NUM } = this.config;
+        const { NEW_TAB_POSITION, MAX_TAB_NUM } = this.config;
         const include = this.tabUtil.tabs.some(tab => tab.path === wantOpenPath);
         if (!include) {
             // Modify the file path of the current tab when opening in place and no tab exists.
@@ -727,15 +727,15 @@ class windowTabBarPlugin extends BasePlugin {
                 this.tabUtil.currentTab.path = wantOpenPath;
             } else {
                 const newTab = { path: wantOpenPath, scrollTop: 0 };
-                if (NEW_TAB_AT === "end") {
+                if (NEW_TAB_POSITION === "end") {
                     this.tabUtil.tabs.push(newTab);
-                } else if (NEW_TAB_AT === "right") {
+                } else if (NEW_TAB_POSITION === "right") {
                     this.tabUtil.spliceTabs(this.tabUtil.activeIdx + 1, 0, newTab)
                 }
             }
         }
-        if (0 < TAB_MAX_NUM && TAB_MAX_NUM < this.tabUtil.tabCount) {
-            this.tabUtil.spliceTabs(0, this.tabUtil.tabCount - TAB_MAX_NUM)
+        if (0 < MAX_TAB_NUM && MAX_TAB_NUM < this.tabUtil.tabCount) {
+            this.tabUtil.spliceTabs(0, this.tabUtil.tabCount - MAX_TAB_NUM)
         }
         this.tabUtil.activeIdx = this.tabUtil.tabs.findIndex(tab => tab.path === wantOpenPath);
         this.tabUtil.currentTab.timestamp = new Date().getTime();
@@ -775,7 +775,7 @@ class windowTabBarPlugin extends BasePlugin {
 
     closeTab = idx => {
         const tabUtil = this.tabUtil;
-        const { WHEN_CLOSE_LAST_TAB, ACTIVE_TAB_WHEN_CLOSE } = this.config;
+        const { LAST_TAB_CLOSE_ACTION, TAB_SWITCH_ON_CLOSE } = this.config
 
         const getLatestTabIdx = () => tabUtil.tabs.reduce((maxIdx, tab, idx, array) => (tab.timestamp || 0) > (array[maxIdx].timestamp || 0) ? idx : maxIdx, 0)
         const handleLastTab = () => {
@@ -783,7 +783,7 @@ class windowTabBarPlugin extends BasePlugin {
                 tabUtil.spliceTabs(idx, 1)  // Delete all tabs to ensure the `reopenClosedFiles` plugin works properly.
                 this.utils.exitTypora();
             }
-            switch (WHEN_CLOSE_LAST_TAB) {
+            switch (LAST_TAB_CLOSE_ACTION) {
                 case "exit":
                     exit();
                     break;
@@ -806,10 +806,10 @@ class windowTabBarPlugin extends BasePlugin {
         }
 
         tabUtil.spliceTabs(idx, 1)
-        if (ACTIVE_TAB_WHEN_CLOSE === "latest") {
+        if (TAB_SWITCH_ON_CLOSE === "latest") {
             tabUtil.activeIdx = getLatestTabIdx();
         } else if (tabUtil.activeIdx !== 0) {
-            if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && ACTIVE_TAB_WHEN_CLOSE === "left")) {
+            if (idx < tabUtil.activeIdx || (idx === tabUtil.activeIdx && TAB_SWITCH_ON_CLOSE === "left")) {
                 tabUtil.activeIdx--;
             } else {
                 tabUtil.activeIdx = Math.min(tabUtil.activeIdx, tabUtil.maxTabIdx);

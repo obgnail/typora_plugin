@@ -84,7 +84,7 @@ class toolbarPlugin extends BasePlugin {
             })
         }
 
-        if (this.config.IGNORE_WHEN_COMPOSITION) {
+        if (this.config.PAUSE_ON_COMPOSITION) {
             this.entities.input.addEventListener("compositionstart", () => this.canInput = false, true);
             this.entities.input.addEventListener("compositionend", async () => {
                 this.canInput = true;

@@ -50,7 +50,7 @@
 }
 
 #plugin-markmap-svg .markmap-node .markmap-foreign:hover {
-    outline: ${this.config.BORDER_STYLE_WHEN_NODE_HOVER};
+    outline: ${this.config.NODE_BORDER_WHEN_HOVER};
 }
 
 #plugin-markmap-svg .markmap-node:hover {

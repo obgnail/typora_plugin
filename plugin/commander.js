@@ -209,7 +209,7 @@ class commanderPlugin extends BasePlugin {
         const execFunction = execFunctions[type] || execFunctions.echo;
         return execFunction(cmd, shell, options, callback);
     };
-    quickExecute = (cmd, shell) => this.execute(this.config.QUICK_EXEC_SHOW, cmd, shell);
+    quickExecute = (cmd, shell) => this.execute(this.config.QUICK_RUN_DISPLAY, cmd, shell)
     commitExecute = () => {
         const cmd = this.entities.input.value;
         if (!cmd) {
@@ -217,7 +217,7 @@ class commanderPlugin extends BasePlugin {
         } else {
             const option = this.entities.shellSelect.selectedOptions[0];
             if (option) {
-                this.execute(this.config.COMMIT_EXEC_SHOW, cmd, option.value)
+                this.execute(this.config.COMMIT_RUN_DISPLAY, cmd, option.value)
             }
         }
     }

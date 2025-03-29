@@ -34,8 +34,8 @@ class resizeImagePlugin extends BasePlugin {
     }
 
     resetImageSize = () => {
-        this.config.ALLOW_OVERSIZE = !this.config.ALLOW_OVERSIZE;
-        if (!this.config.ALLOW_OVERSIZE) {
+        this.config.ALLOW_EXCEED_LIMIT = !this.config.ALLOW_EXCEED_LIMIT
+        if (!this.config.ALLOW_EXCEED_LIMIT) {
             this.utils.entities.querySelectorAllInWrite("img").forEach(image => {
                 if (image.style.maxWidth) {
                     const maxSize = image.parentElement.offsetWidth;
@@ -72,7 +72,7 @@ class resizeImagePlugin extends BasePlugin {
         const maxWidth = image.parentElement.offsetWidth;
         image.style.maxWidth = "";
 
-        if (!this.config.ALLOW_OVERSIZE || width <= maxWidth) {
+        if (!this.config.ALLOW_EXCEED_LIMIT || width <= maxWidth) {
             width = Math.min(width, maxWidth);
             image.style.width = width + "px";
             this.setAlign(this.config.IMAGE_ALIGN, image, maxWidth);
@@ -106,7 +106,7 @@ class resizeImagePlugin extends BasePlugin {
         ]
         const acts = this.i18n.fillActions([
             { act_value: "record_resize_state", act_state: this.config.RECORD_RESIZE },
-            { act_value: "allow_oversize", act_state: this.config.ALLOW_OVERSIZE },
+            { act_value: "allow_exceed_limit", act_state: this.config.ALLOW_EXCEED_LIMIT },
             ...other
         ])
 
@@ -123,7 +123,7 @@ class resizeImagePlugin extends BasePlugin {
     call = (action, meta) => {
         const callMap = {
             record_resize_state: () => this.recordResizeState(),
-            allow_oversize: () => this.resetImageSize(),
+            allow_exceed_limit: () => this.resetImageSize(),
             zoom_out_20_percent: meta => this.zoomTemporary(meta.target, true, 0.2),
             zoom_in_20_percent: meta => this.zoomTemporary(meta.target, false, 0.2),
             set_align_left: meta => this.setAlign("left", meta.target),
