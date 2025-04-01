@@ -1,48 +1,39 @@
 class autoNumberPlugin extends BasePlugin {
     beforeProcess = () => {
+        this.separator = "@"
         this.css_id = this.utils.styleTemplater.getID(this.fixedName)
         this.initCSS()
     }
 
-    style = () => ({ textID: this.css_id, text: this.getResultStyle() })
+    style = () => ({ textID: this.css_id, text: this.getCSS() })
 
     process = () => {
-        this.utils.runtime.autoSaveConfig(this);
+        this.utils.runtime.autoSaveConfig(this)
         if (this.config.ENABLE_WHEN_EXPORT) {
-            new exportHelper(this).process();
+            new exportHelper(this).process()
         }
         if (this.config.ENABLE_IMAGE && this.config.SHOW_IMAGE_NAME) {
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileEdited, () => {
-                const images = this.utils.entities.querySelectorAllInWrite(".md-image:not([data-alt]) > img");
+                const images = this.utils.entities.querySelectorAllInWrite(".md-image:not([data-alt]) > img")
                 for (const image of images) {
-                    image.parentElement.dataset.alt = image.getAttribute("alt");
+                    image.parentElement.dataset.alt = image.getAttribute("alt")
                 }
             })
         }
     }
 
-    initCSS = layout => {
-        if (!layout) {
-            const selected = this.config.LAYOUTS.find(e => e.selected) || this.config.LAYOUTS[0]
-            layout = selected.layout
-        }
+    initCSS = () => {
+        const layout = (this.config.LAYOUTS.find(e => e.selected) || this.config.LAYOUTS[0]).layout
 
         this.base_css = `
         :root { ${this._buildCSSVar(layout)} }
-
         #write { counter-reset: content-h1 content-h2 image table fence; }
         #write > h1 { counter-set: content-h2; }
         #write > h2 { counter-set: content-h3; }
         #write > h3 { counter-set: content-h4; }
         #write > h4 { counter-set: content-h5; }
         #write > h5 { counter-set: content-h6; }
-        
-        @media print {
-            pb { display: block; page-break-after: always; }
-            h1 { page-break-before: always; }
-            h1:first-of-type { page-break-before: avoid; }
-            p:has(img:first-child) { page-break-inside: avoid; }
-        }`
+        `
 
         this.content_css = `
         #write > h1:before,
@@ -181,17 +172,6 @@ class autoNumberPlugin extends BasePlugin {
             content: var(--count-toc-h6);
         }`
 
-        const image_content = `
-            counter-increment: image;
-            content: var(--count-image);
-            font-family: ${this.config.FONT_FAMILY};
-            display: block;
-            text-align: ${this.config.ALIGN};
-            margin: 4px 0;
-        `
-        this.image_css = `#write .md-image::after {${image_content}}`
-        this.image_export_css = `#write p:has(img:first-child)::after {${image_content}}`
-
         this.table_css = `
         #write .table-figure::${this.config.POSITION_TABLE} {
             counter-increment: table;
@@ -219,53 +199,41 @@ class autoNumberPlugin extends BasePlugin {
         }
         #write .md-fences.md-fences-advanced.md-focus::after {
             content: ""
-        }
+        }`
+
+        const image_content = `
+            counter-increment: image;
+            content: var(--count-image);
+            font-family: ${this.config.FONT_FAMILY};
+            display: block;
+            text-align: ${this.config.ALIGN};
+            margin: 4px 0;
         `
+        this.image_css = `#write .md-image::after {${image_content}}`
+        this.image_export_css = `#write p:has(img:first-child)::after {${image_content}}`
     }
 
-    removeStyle = () => this.utils.removeStyle(this.css_id);
-
-    getStyleString = (inExport = false) => {
-        const image_css = (inExport && this.utils.supportHasSelector) ? this.image_export_css : this.image_css
+    getCSS = (inExport = false) => {
         const { ENABLE_CONTENT, ENABLE_OUTLINE, ENABLE_TOC, ENABLE_IMAGE, ENABLE_TABLE, ENABLE_FENCE } = this.config
+        const image_css = (inExport && this.utils.supportHasSelector) ? this.image_export_css : this.image_css
         const css = [
             this.base_css,
-            ENABLE_CONTENT ? this.content_css : "",
-            ENABLE_OUTLINE ? this.outline_css : "",
-            ENABLE_TOC ? this.toc_css : "",
-            ENABLE_IMAGE ? image_css : "",
-            ENABLE_TABLE ? this.table_css : "",
-            ENABLE_FENCE ? this.fence_css : "",
+            ENABLE_CONTENT ? this.content_css : null,
+            ENABLE_OUTLINE ? this.outline_css : null,
+            ENABLE_TOC ? this.toc_css : null,
+            ENABLE_TABLE ? this.table_css : null,
+            ENABLE_FENCE ? this.fence_css : null,
+            ENABLE_IMAGE ? image_css : null,
         ]
-        return css.join("\n")
-    }
-
-    getResultStyle = toggle => {
-        if (toggle) {
-            this.config[toggle] = !this.config[toggle];
-            this.removeStyle();
-        }
-        return this.getStyleString()
-    }
-
-    toggleSetting = toggle => {
-        const css = this.getResultStyle(toggle);
-        this.utils.insertStyle(this.css_id, css);
-    }
-
-    setLayout = layoutName => {
-        this.config.LAYOUTS = this.config.LAYOUTS.map(lo => {
-            lo.selected = lo.name === layoutName
-            return lo
-        })
-        this.initCSS()
-        const css = this.getStyleString()
-        this.utils.insertStyle(this.css_id, css)
+        return css.filter(Boolean).join("\n")
     }
 
     getDynamicActions = () => {
-        const actSetLayoutPrefix = "set_layout@"
-        const layouts = this.config.LAYOUTS.map(lo => ({ act_name: lo.name, act_value: actSetLayoutPrefix + lo.name, act_state: lo.selected }))
+        const layouts = this.config.LAYOUTS.map(lo => ({
+            act_name: lo.name,
+            act_value: "set_layout" + this.separator + lo.name,
+            act_state: lo.selected,
+        }))
         return this.i18n.fillActions([
             { act_value: "toggle_outline", act_state: this.config.ENABLE_OUTLINE },
             { act_value: "toggle_content", act_state: this.config.ENABLE_CONTENT },
@@ -278,16 +246,28 @@ class autoNumberPlugin extends BasePlugin {
     }
 
     call = action => {
-        const callMap = {
-            toggle_outline: () => this.toggleSetting("ENABLE_OUTLINE"),
-            toggle_content: () => this.toggleSetting("ENABLE_CONTENT"),
-            toggle_toc: () => this.toggleSetting("ENABLE_TOC"),
-            toggle_table: () => this.toggleSetting("ENABLE_TABLE"),
-            toggle_image: () => this.toggleSetting("ENABLE_IMAGE"),
-            toggle_fence: () => this.toggleSetting("ENABLE_FENCE"),
-            set_layout: layoutName => this.setLayout(layoutName),
+        const toggleSetting = toggle => {
+            this.config[toggle] = !this.config[toggle]
+            this.utils.removeStyle(this.css_id)
+            this.utils.insertStyle(this.css_id, this.getCSS())
         }
-        const [act, meta] = action.split("@")
+        const callMap = {
+            toggle_outline: () => toggleSetting("ENABLE_OUTLINE"),
+            toggle_content: () => toggleSetting("ENABLE_CONTENT"),
+            toggle_toc: () => toggleSetting("ENABLE_TOC"),
+            toggle_table: () => toggleSetting("ENABLE_TABLE"),
+            toggle_image: () => toggleSetting("ENABLE_IMAGE"),
+            toggle_fence: () => toggleSetting("ENABLE_FENCE"),
+            set_layout: layoutName => {
+                this.config.LAYOUTS = this.config.LAYOUTS.map(lo => {
+                    lo.selected = lo.name === layoutName
+                    return lo
+                })
+                this.initCSS()
+                this.utils.insertStyle(this.css_id, this.getCSS())
+            },
+        }
+        const [act, meta] = action.split(this.separator, 2)
         const func = callMap[act]
         if (func) {
             func(meta)
@@ -384,8 +364,8 @@ class exportHelper {
     }
 
     beforeExport = () => {
-        this.inExport = true;
-        return `body {font-variant-ligatures: no-common-ligatures;} ` + this.plugin.getStyleString(true);
+        this.inExport = true
+        return `body {font-variant-ligatures: no-common-ligatures;} ` + this.plugin.getCSS(true)
     }
 
     afterGetHeaderMatrix = headers => {
