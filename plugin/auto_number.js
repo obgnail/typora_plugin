@@ -31,11 +31,11 @@ class autoNumberPlugin extends BasePlugin {
         :root { ${this._buildCSSVar(layout)} }
 
         #write { counter-reset: content-h1 content-h2 image table fence; }
-        #write > h1 { counter-reset: content-h2; }
-        #write > h2 { counter-reset: content-h3; }
-        #write > h3 { counter-reset: content-h4; }
-        #write > h4 { counter-reset: content-h5; }
-        #write > h5 { counter-reset: content-h6; }
+        #write > h1 { counter-set: content-h2; }
+        #write > h2 { counter-set: content-h3; }
+        #write > h3 { counter-set: content-h4; }
+        #write > h4 { counter-set: content-h5; }
+        #write > h5 { counter-set: content-h6; }
         
         @media print {
             pb { display: block; page-break-after: always; }
@@ -107,11 +107,11 @@ class autoNumberPlugin extends BasePlugin {
 
         this.outline_css = `
         .outline-content { counter-reset: outline-h1 outline-h2; }
-        .outline-h1 { counter-reset: outline-h2; }
-        .outline-h2 { counter-reset: outline-h3; }
-        .outline-h3 { counter-reset: outline-h4; }
-        .outline-h4 { counter-reset: outline-h5; }
-        .outline-h5 { counter-reset: outline-h6; }
+        .outline-h1 { counter-set: outline-h2; }
+        .outline-h2 { counter-set: outline-h3; }
+        .outline-h3 { counter-set: outline-h4; }
+        .outline-h4 { counter-set: outline-h5; }
+        .outline-h5 { counter-set: outline-h6; }
         
         .outline-content .outline-h1 .outline-label:before {
             counter-increment: outline-h1;
@@ -145,11 +145,11 @@ class autoNumberPlugin extends BasePlugin {
 
         this.toc_css = `
         .md-toc-content { counter-reset: toc-h1 toc-h2; }
-        .md-toc-h1 { counter-reset: toc-h2; }
-        .md-toc-h2 { counter-reset: toc-h3; }
-        .md-toc-h3 { counter-reset: toc-h4; }
-        .md-toc-h4 { counter-reset: toc-h5; }
-        .md-toc-h5 { counter-reset: toc-h6; }
+        .md-toc-h1 { counter-set: toc-h2; }
+        .md-toc-h2 { counter-set: toc-h3; }
+        .md-toc-h3 { counter-set: toc-h4; }
+        .md-toc-h4 { counter-set: toc-h5; }
+        .md-toc-h5 { counter-set: toc-h6; }
         
         .md-toc-content .md-toc-h1 a:before {
             counter-increment: toc-h1;
