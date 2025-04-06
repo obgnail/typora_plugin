@@ -847,9 +847,11 @@ class utils {
     }
 
     static findActiveNode = range => {
-        range = range || File.editor.selection.getRangy();
-        const markElem = File.editor.getMarkElem(range.anchorNode);
-        return File.editor.findNodeByElem(markElem)
+        range = range || File.editor.selection.getRangy()
+        if (range) {
+            const markElem = File.editor.getMarkElem(range.anchorNode)
+            return File.editor.findNodeByElem(markElem)
+        }
     }
 
     static getRangy = () => {

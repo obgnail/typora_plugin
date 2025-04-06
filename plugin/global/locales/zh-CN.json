@@ -576,7 +576,7 @@
     "pluginName": "升级插件",
     "proxyUrl": "代理 URL",
     "proxyUrlHint": "为空则不使用代理",
-    "update.pleaseWait": "自动升级中，请稍等",
+    "update.pleaseWait": "升级中，请稍等",
     "update.success": "更新成功，请重启 Typora",
     "update.currentVersionInfo": "当前版本信息",
     "update.noNeed": "已是最新版，无需更新",

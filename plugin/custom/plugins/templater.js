@@ -13,16 +13,18 @@ class templaterPlugin extends BaseCustomPlugin {
             createCopyIfEmpty: this.i18n.t("createCopyIfEmpty"),
         }
 
-        if (!File.editor.selection.getRangy().collapsed) {
-            ClientCommand.copyAsMarkdown();
-            window.parent.navigator.clipboard.readText().then(text => this.rangeText = text);
+        const range = File.editor.selection.getRangy()
+        if (range && !range.collapsed) {
+            ClientCommand.copyAsMarkdown()
+            window.parent.navigator.clipboard.readText().then(text => this.rangeText = text)
         }
 
         const onchange = ev => {
-            const value = ev.target.value;
-            const tpl = this.config.template.find(tpl => tpl.name === value);
+            const value = ev.target.value
+            const tpl = this.config.template.find(tpl => tpl.name === value)
             if (tpl) {
-                ev.target.closest(".plugin-custom-modal-body").querySelector("textarea").value = tpl.text;
+                const textarea = ev.target.closest(".plugin-custom-modal-body").querySelector("textarea")
+                textarea.value = tpl.text
             }
         }
         const components = [
@@ -33,7 +35,7 @@ class templaterPlugin extends BaseCustomPlugin {
         const op = { title: this.pluginName, components }
         const { response, submit: [filepath, template] } = await this.utils.dialog.modalAsync(op)
         if (response === 1) {
-            await this.writeTemplateFile(filepath, template);
+            await this.writeTemplateFile(filepath, template)
         }
     }
 

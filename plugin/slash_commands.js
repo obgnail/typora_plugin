@@ -206,11 +206,13 @@ class slashCommandsPlugin extends BasePlugin {
 
     _clearAnchor = (anchor) => {
         const range = File.editor.selection.getRangy()
-        const textNode = anchor.containerNode.firstChild
-        range.setStart(textNode, anchor.start)
-        range.setEnd(textNode, anchor.end)
-        File.editor.selection.setRange(range, true)
-        File.editor.UserOp.pasteHandler(File.editor, "", true)
+        if (range) {
+            const textNode = anchor.containerNode.firstChild
+            range.setStart(textNode, anchor.start)
+            range.setEnd(textNode, anchor.end)
+            File.editor.selection.setRange(range, true)
+            File.editor.UserOp.pasteHandler(File.editor, "", true)
+        }
     }
 
     _normalizeAnchor = (anchor) => anchor.containerNode.normalize()
