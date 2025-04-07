@@ -1,10 +1,8 @@
 const OS = require("os")
 const PATH = require("path")
 const FS = require("fs")
-const CHILD_PROCESS = require('child_process')
+const CHILD_PROCESS = require("child_process")
 const FS_EXTRA = require("fs-extra")
-const TOML = require("./common/toml")
-const { getHook } = require("./env")
 const { i18n } = require("../i18n")
 
 class utils {
@@ -25,7 +23,6 @@ class utils {
         Path: PATH,
         Fs: FS,
         FsExtra: FS_EXTRA,
-        Toml: TOML,
         ChildProcess: CHILD_PROCESS,
     })
 
@@ -527,15 +524,15 @@ class utils {
     }
 
     static readYaml = content => {
-        const yaml = require("./common/yaml");
+        const yaml = require("../lib/js-yaml")
         try {
-            return yaml.safeLoad(content);
+            return yaml.safeLoad(content)
         } catch (e) {
-            console.error(e);
+            console.error(e)
         }
     }
     static stringifyYaml = (obj, args) => {
-        const yaml = require("./common/yaml")
+        const yaml = require("../lib/js-yaml")
         try {
             return yaml.safeDump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
         } catch (e) {
@@ -543,13 +540,13 @@ class utils {
         }
     }
 
-    static readToml = content => TOML.parse(content)
-    static stringifyToml = obj => TOML.stringify(obj)
+    static readToml = content => require("../lib/soml-toml").parse(content)
+    static stringifyToml = obj => require("../lib/soml-toml").stringify(obj)
     static readTomlFile = async filepath => this.readToml(await FS.promises.readFile(filepath, "utf-8"))
 
     static unzip = async (buffer, workDir) => {
         const output = [];
-        const jsZip = require("./common/jszip/jszip.min.js");
+        const jsZip = require("../lib/jszip")
         const zipData = await jsZip.loadAsync(buffer);
         for (const [name, file] of Object.entries(zipData.files)) {
             const dest = PATH.join(workDir, name);
@@ -606,7 +603,7 @@ class utils {
     static _markdownIt = null
     static getMarkdownIt = () => {
         if (!this._markdownIt) {
-            const { markdownit } = require("./common/markdown-it")
+            const { markdownit } = require("../lib/markdown-it")
             this._markdownIt = markdownit({ html: true, linkify: true, typographer: true })
         }
         return this._markdownIt
@@ -626,10 +623,10 @@ class utils {
             }
         }
         if (proxy) {
-            const proxyAgent = require("./common/node-fetch/https-proxy-agent");
+            const proxyAgent = require("../lib/https-proxy-agent")
             agent = new proxyAgent.HttpsProxyAgent(proxy);
         }
-        const nodeFetch = require("./common/node-fetch/node-fetch");
+        const nodeFetch = require("../lib/node-fetch")
         return nodeFetch.nodeFetch(url, { agent, signal, ...args })
     }
 
@@ -1027,6 +1024,84 @@ class utils {
                 }
             }
         }, detectInterval)
+    }
+}
+
+const newMixin = (utils) => {
+    const MIXIN = {
+        ...require("./polyfill"),
+        ...require("./runtime"),
+        ...require("./migrate"),
+        ...require("./hotkeyHub"),
+        ...require("./eventHub"),
+        ...require("./stateRecorder"),
+        ...require("./exportHelper"),
+        ...require("./styleTemplater"),
+        ...require("./htmlTemplater"),
+        ...require("./contextMenu"),
+        ...require("./notification"),
+        ...require("./progressBar"),
+        ...require("./dialog"),
+        ...require("./diagramParser"),
+        ...require("./thirdPartyDiagramParser"),
+        ...require("./entities"),
+        ...require("./extra"),
+        ...require("./searchStringParser"),
+    }
+    const mixin = Object.fromEntries(
+        Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils, i18n)])
+    )
+
+    // we should use composition to layer various functions, but utils is outdated and has become legacy code. My apologies
+    Object.assign(utils, mixin, {
+        /** @deprecated new API: utils.hotkeyHub.register */
+        registerHotkey: mixin.hotkeyHub.register,
+
+        /** @deprecated new API: utils.eventHub.eventType */
+        eventType: mixin.eventHub.eventType,
+        /** @deprecated new API: utils.eventHub.addEventListener */
+        addEventListener: mixin.eventHub.addEventListener,
+
+        /** @deprecated new API: utils.dialog.modal */
+        modal: mixin.dialog.modal
+    })
+
+    return mixin
+}
+
+const getHook = utils => {
+    const mixin = newMixin(utils)
+
+    const {
+        hotkeyHub, eventHub, stateRecorder, exportHelper, contextMenu,
+        notification, progressBar, dialog, diagramParser, thirdPartyDiagramParser,
+        extra, polyfill,
+    } = mixin
+
+    const registerMixin = (...ele) => Promise.all(ele.map(h => h.process && h.process()))
+    const optimizeMixin = () => Promise.all(Object.values(mixin).map(h => h.afterProcess && h.afterProcess()))
+
+    const registerPreMixin = async () => {
+        await registerMixin(polyfill)
+        await registerMixin(extra)
+        await registerMixin(contextMenu, notification, progressBar, dialog, stateRecorder, hotkeyHub, exportHelper)
+    }
+
+    const registerPostMixin = async () => {
+        await registerMixin(eventHub)
+        await registerMixin(diagramParser, thirdPartyDiagramParser)
+        eventHub.publishEvent(eventHub.eventType.allPluginsHadInjected)
+    }
+
+    return async pluginLoader => {
+        await registerPreMixin()
+        await pluginLoader()
+        await registerPostMixin()
+        await optimizeMixin()
+        // Due to the use of async, some events may have been missed (such as afterAddCodeBlock), reload it
+        if (File.getMountFolder() != null) {
+            setTimeout(utils.reload, 50)
+        }
     }
 }
 

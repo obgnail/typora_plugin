@@ -18,8 +18,6 @@ class IPlugin {
     styleTemplate() {}
     /** Insert HTML tag. */
     html() {}
-    /** Insert HTML tag using htmlTemplater, see htmlTemplater for details. */
-    htmlTemplate() {}
     /** Register hotkeys. */
     hotkey() {}
     /** Initialize data. */
@@ -64,10 +62,6 @@ const loadPlugin = async (fixedName, setting, isCustom) => {
         await utils.styleTemplater.register(instance.fixedName, { ...renderArgs, this: instance });
     }
     utils.insertElement(instance.html());
-    const elements = instance.htmlTemplate();
-    if (elements) {
-        utils.htmlTemplater.insert(elements);
-    }
     if (!isCustom) {
         utils.hotkeyHub.register(instance.hotkey());
     }

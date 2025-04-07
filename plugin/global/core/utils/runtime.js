@@ -3,7 +3,6 @@ class runtime {
         this.utils = utils
         this.i18n = i18n
         this.PATH = utils.Package.Path
-        this.TOML = utils.Package.Toml
     }
 
     getOriginSettingPath = settingFile => this.utils.joinPath("./plugin/global/settings", settingFile)
@@ -54,7 +53,7 @@ class runtime {
         const home_ = this.getHomeSettingPath(userSetting)
         const contentList = await this.utils.readFiles([default_, user_, home_])
         try {
-            return contentList.map(c => c ? this.TOML.parse(c) : {})
+            return contentList.map(c => c ? this.utils.readToml(c) : {})
         } catch (e) {
             // At this time, i18n has not been loaded yet. Using English
             const message = "Incorrect File Content"

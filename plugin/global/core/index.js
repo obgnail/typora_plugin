@@ -5,10 +5,10 @@ const { BasePlugin, BaseCustomPlugin, LoadPlugins } = require("./plugin")
 async function entry() {
     /**
      * Initializes global variables.
-     * The plugin system exposes a total of 8 global variables, but only 3 are actually useful: BasePlugin, BaseCustomPlugin, and LoadPlugins.
-     * The remaining 4 are exposed by the static class `utils` and should never be referenced by business plugins.
+     * The plugin system exposes the following global variables, but only 3 are actually useful: BasePlugin, BaseCustomPlugin, and LoadPlugins.
+     * The remaining variables are exposed by the static class `utils` and should never be referenced by business plugins.
      * Furthermore, `utils` is also an instance property of BasePlugin and BaseCustomPlugin, so `utils` itself doesn't need to be exposed.
-     * If they will never be referenced by business plugins, why are they set as global variables? Answer: For debugging convenience.
+     * Since they will never be referenced by business plugins, why are they set as global variables? Answer: For debugging convenience.
      **/
     const initVariable = settings => {
         global.BasePlugin = BasePlugin
@@ -23,8 +23,6 @@ async function entry() {
 
         delete settings.global
     }
-
-    const initI18N = (locale) => i18n.init(locale)
 
     const loadPlugins = async () => {
         const { enable, disable, stop, error, nosetting } = await LoadPlugins(global.__plugin_settings__, false)
@@ -51,7 +49,7 @@ async function entry() {
             return
         }
 
-        await initI18N(settings.global.LOCALE)
+        await i18n.init(settings.global.LOCALE)
         initVariable(settings)
         await hook(loadPlugins)
         showWarn()
