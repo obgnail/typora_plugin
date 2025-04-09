@@ -60,8 +60,9 @@ class markmapPlugin extends BasePlugin {
     }
 
     assignOptions = (update, old) => {
-        const update_ = this.utils.fromObject(update, ["spacingHorizontal", "spacingVertical", "fitRatio", "paddingX", "autoFit"]);
-        const options = this.MarkmapLib.deriveOptions({ ...old, ...update });
+        const attrs = ["spacingHorizontal", "spacingVertical", "fitRatio", "paddingX", "autoFit"]
+        const update_ = this.utils.pick(update, attrs)
+        const options = this.MarkmapLib.deriveOptions({ ...old, ...update })
         return Object.assign(options, update_)
     }
 
@@ -451,9 +452,10 @@ class tocMarkmap {
             const fn = ["expand", "shrink", "fit", "download", "setting", "close", "pinTop", "pinRight", "hideToolbar", "showToolbar"]
             const menuMap = this.i18n.entries(fn, "func.")
             const showMenu = () => {
-                const fullScreen = this.entities.fullScreen.getAttribute("action");
-                const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar";
-                return this.utils.fromObject(menuMap, [toolbarVisibility, fullScreen, "fit", "pinTop", "pinRight", "setting", "download", "close"])
+                const fullScreen = this.entities.fullScreen.getAttribute("action")
+                const toolbarVisibility = this.utils.isHidden(this.entities.header) ? "showToolbar" : "hideToolbar"
+                const attrs = [toolbarVisibility, fullScreen, "fit", "pinTop", "pinRight", "setting", "download", "close"]
+                return this.utils.pick(menuMap, attrs)
             }
             const callback = ({ key }) => this._onButtonClick(key);
             this.utils.contextMenu.register("markmap", "#plugin-markmap-svg", showMenu, callback);
@@ -619,10 +621,10 @@ class tocMarkmap {
         const op = { title, components, width: "500px" }
         const { response } = await this.utils.dialog.modalAsync(op)
         if (response === 1) {
-            components.forEach(c => c.callback(c.submit));
-            await this.redraw(this.markmap.options);
-            const update = this.utils.fromObject(this.config, needUpdateKey);
-            await this.utils.settings.saveSettings(this.controller.fixedName, update);
+            components.forEach(c => c.callback(c.submit))
+            await this.redraw(this.markmap.options)
+            const update = this.utils.pick(this.config, needUpdateKey)
+            await this.utils.settings.saveSettings(this.controller.fixedName, update)
         }
     }
 

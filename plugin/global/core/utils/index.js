@@ -283,10 +283,14 @@ class utils {
         }, Array.isArray(source) ? [] : {});
     }
 
-    static fromObject = (obj, attrs) => {
-        const newObj = {};
-        attrs.forEach(attr => obj[attr] !== undefined && (newObj[attr] = obj[attr]));
-        return newObj;
+    static pick = (obj, attrs) => {
+        if (!obj || typeof obj !== "object") {
+            return {}
+        }
+        const entries = attrs
+            .map(attr => [attr, obj[attr]])
+            .filter(([_, value]) => value !== undefined)
+        return Object.fromEntries(entries)
     }
 
     static asyncReplaceAll = (content, regexp, replaceFunc) => {

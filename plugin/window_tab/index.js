@@ -335,7 +335,7 @@ class windowTabBarPlugin extends BasePlugin {
             let tabIdx = -1
             const all = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"]
             const entries = this.i18n.entries(all, "func.")
-            const map = this.utils.fromObject(entries, this.config.CONTEXT_MENU)
+            const map = this.utils.pick(entries, this.config.CONTEXT_MENU)
             const showMenu = ({ target }) => {
                 tabIdx = parseInt(target.dataset.idx)
                 return map

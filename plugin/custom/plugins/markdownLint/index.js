@@ -87,7 +87,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
 
         const _getDetail = (infos = this.fixInfos) => {
             const attrs = ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]
-            const obj = infos.map(i => this.utils.fromObject(i, attrs))
+            const obj = infos.map(info => this.utils.pick(info, attrs))
             const content = JSON.stringify(obj.length === 1 ? obj[0] : obj, null, "\t")
             const components = [{ label: "", type: "textarea", rows: 15, content }]
             const title = this.i18n.t("func.detailAll")

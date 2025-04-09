@@ -1,15 +1,14 @@
 class settings {
-    constructor(utils, i18n) {
+    constructor(utils) {
         this.utils = utils
-        this.i18n = i18n
     }
 
     getOriginSettingPath = settingFile => this.utils.joinPath("./plugin/global/settings", settingFile)
     getHomeSettingPath = settingFile => this.utils.Package.Path.join(this.utils.getHomeDir(), ".config", "typora_plugin", settingFile)
     getActualSettingPath = async settingFile => {
-        const homeSetting = this.getHomeSettingPath(settingFile)
-        const exist = await this.utils.existPath(homeSetting)
-        return exist ? homeSetting : this.getOriginSettingPath(settingFile)
+        const homeSettingPath = this.getHomeSettingPath(settingFile)
+        const exist = await this.utils.existPath(homeSettingPath)
+        return exist ? homeSettingPath : this.getOriginSettingPath(settingFile)
     }
 
     saveSettings = async (fixedName, updateObj) => {
@@ -32,9 +31,7 @@ class settings {
         return this.utils.writeFile(settingPath, content)
     }
 
-    saveGlobalSettings = async (updateObj) => {
-        return this._saveSettings("settings.user.toml", "global", updateObj)
-    }
+    saveGlobalSettings = async (updateObj) => this._saveSettings("settings.user.toml", "global", updateObj)
 
     autoSaveSettings = plugin => {
         const { saveSettings } = this
@@ -64,16 +61,12 @@ class settings {
         }
     }
 
-    _readSettings = async (defaultSetting, userSetting) => {
+    readSettings = async (defaultSetting, userSetting) => {
         const objs = await this.getSettingObjects(defaultSetting, userSetting)
         return objs.reduce(this.utils.merge)
     }
-
-    readBasePluginSettings = async () => this._readSettings("settings.default.toml", "settings.user.toml")
-    readCustomPluginSettings = async () => {
-        const settings = await this._readSettings("custom_plugin.default.toml", "custom_plugin.user.toml")
-        return this.utils.migrate._fixCustomPluginSetting(settings)
-    }
+    readBasePluginSettings = async () => this.readSettings("settings.default.toml", "settings.user.toml")
+    readCustomPluginSettings = async () => this.readSettings("custom_plugin.default.toml", "custom_plugin.user.toml")
 
     openSettingFolder = async (file = "settings.user.toml") => this.utils.showInFinder(await this.getActualSettingPath(file))
 
