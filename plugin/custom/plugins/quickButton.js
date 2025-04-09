@@ -13,11 +13,12 @@ class quickButtonPlugin extends BaseCustomPlugin {
     process = () => {
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.toggleSettingPage, this.toggle)
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, async () => {
-            this.registerButtons()
-            if (this.buttons.size) {
-                const { maxX, maxY } = this.getMax()
+            const buttons = this.registerButtons()
+            if (buttons.size) {
+                const maxX = Math.max(-1, ...[...buttons.values()].map(c => c.x))
+                const maxY = Math.max(-1, ...[...buttons.values()].map(c => c.y))
                 await this.utils.styleTemplater.register(this.fixedName, { rowCount: maxX + 1, colCount: maxY + 1, this: this })
-                this.utils.htmlTemplater.appendElements(this.buttonGroup, this.genButtonHTML(maxX, maxY))
+                this.buttonGroup.append(...this.genButtons(maxX, maxY))
             }
         })
         this.buttonGroup.addEventListener("mousedown", ev => {
@@ -28,7 +29,9 @@ class quickButtonPlugin extends BaseCustomPlugin {
                     .filter(e => e !== target)
                     .forEach(e => e.classList.toggle("plu-hidden"))
             } else if (ev.button === 0) {
-                this.flashScale(target)
+                target.classList.add("plu-click")
+                setTimeout(() => target.classList.remove("plu-click"), 80)
+
                 const action = target.getAttribute("action")
                 const button = this.buttons.get(action)
                 if (action && button) {
@@ -39,69 +42,59 @@ class quickButtonPlugin extends BaseCustomPlugin {
     }
 
     registerButtons = () => {
-        this.config.buttons.forEach((btn, idx) => {
-            const { coordinate, hint, icon, size, color, bgColor, disable, callback = "", evil } = btn || {}
+        this.config.buttons.forEach((btn = {}, idx) => {
+            const { disable = true, coordinate = [], hint, icon, size, color, bgColor, callback = "", evil } = btn
             if (disable) return
 
-            const cb = evil ? eval(evil) : this.utils.getPluginFunction(...callback.split("."))
-            if (cb instanceof Function) {
-                const style = {}
-                if (size) style.fontSize = size
-                if (color) style.color = color
-                if (bgColor) style.backgroundColor = bgColor
+            const [x, y] = coordinate
+            const cb = evil
+                ? eval(evil)
+                : this.utils.getPluginFunction(...callback.split("."))
+            if (cb instanceof Function && x >= 0 && y >= 0) {
                 const action = `__${idx}`
-                this.register(action, coordinate, hint, icon, style, cb)
+                const btn = { x, y, action, hint, icon, size, color, bgColor, callback: cb }
+                this.buttons.set(action, btn)
             }
         })
+        return this.buttons
     }
 
-    register = (action, coordinate, hint, iconClass, style, callback) => {
-        const [x, y] = coordinate
-        if (x >= 0 && y >= 0 && callback instanceof Function) {
-            const btn = { coordinate, action, hint, iconClass, style, callback }
-            this.buttons.set(action, btn)
-        }
-    }
-
-    unregister = action => this.buttons.delete(action)
-
-    genButtonHTML = (maxX, maxY) => {
-        const unused = { class_: "action-item plu-unused" }
-        const buttonsMap = new Map(
-            [...this.buttons.values()].map(btn => [`${btn.coordinate[0]}-${btn.coordinate[1]}`, btn])
-        )
+    genButtons = (maxX, maxY) => {
+        const btnMap = new Map([...this.buttons.values()].map(btn => [`${btn.x}-${btn.y}`, btn]))
         const buttons = []
         for (let x = 0; x <= maxX; x++) {
             for (let y = 0; y <= maxY; y++) {
                 const coordinate = `${maxX - x}-${maxY - y}`
-                const btn = buttonsMap.get(coordinate)
-                const ele = btn
-                    ? { class_: `action-item ${btn.iconClass}`, action: btn.action, style: btn.style }
-                    : unused
-                if (btn && !this.config.hide_button_hint) {
-                    ele["ty-hint"] = btn.hint
+                const btn = btnMap.get(coordinate)
+                const div = document.createElement("div")
+                div.classList.add("action-item")
+                if (btn) {
+                    div.setAttribute("action", btn.action)
+                    if (btn.icon) {
+                        div.classList.add(...btn.icon.split(" "))
+                    }
+                    if (!this.config.hide_button_hint && btn.hint) {
+                        div.setAttribute("ty-hint", btn.hint)
+                    }
+                    if (btn.size) {
+                        div.style.fontSize = btn.size
+                    }
+                    if (btn.color) {
+                        div.style.color = btn.color
+                    }
+                    if (btn.bgColor) {
+                        div.style.backgroundColor = btn.bgColor
+                    }
+                } else {
+                    div.classList.add("plu-unused")
                 }
-                buttons.push(ele)
+                buttons.push(div)
             }
         }
         return buttons
     }
 
-    getMax = () => {
-        const coords = [...this.buttons.values()].map(e => e.coordinate)
-        const xList = coords.map(c => c[0])
-        const yList = coords.map(c => c[1])
-        const maxX = Math.max(-1, ...xList)
-        const maxY = Math.max(-1, ...yList)
-        return { maxX, maxY }
-    }
-
     toggle = force => this.utils.toggleVisible(this.buttonGroup, force)
-
-    flashScale = (ele, scale = 0.95, timeout = 80) => {
-        ele.style.transform = `scale(${scale})`
-        setTimeout(() => ele.style.removeProperty("transform"), timeout)
-    }
 }
 
 module.exports = {

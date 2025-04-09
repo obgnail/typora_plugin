@@ -20,7 +20,7 @@ class contextMenu {
             if (!target) return;
             ev.preventDefault();
             ev.stopPropagation();
-            this.callback({ ev, key: target.getAttribute("key") });
+            this.callback({ ev, key: target.dataset.key })
             this.callback = null;
             this.menu.classList.remove("show");
         })
@@ -54,25 +54,7 @@ class contextMenu {
     exist = name => this.menus.has(name)
 
     render = menus => {
-        const entries = Object.entries(menus);
-        let child = this.menu.firstElementChild;
-        for (let idx = 0; idx < entries.length; idx++) {
-            const [key, text] = entries[idx];
-            if (child) {
-                child.setAttribute("key", key);
-                child.innerText = text;
-            } else {
-                const menuList = entries.slice(idx).map(([key, text]) => ({ class_: "menu-item", key, text }));
-                this.utils.htmlTemplater.appendElements(this.menu, menuList);
-                break;
-            }
-            child = child.nextElementSibling;
-        }
-        while (child) {
-            const next = child.nextElementSibling;
-            this.menu.removeChild(child);
-            child = next;
-        }
+        this.menu.innerHTML = Object.entries(menus).map(([key, text]) => `<div class="menu-item" data-key="${key}">${text}</div>`).join("")
     }
 
     show = ev => {

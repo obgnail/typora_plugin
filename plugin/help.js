@@ -78,7 +78,10 @@ class helpPlugin extends BasePlugin {
     }
 
     showSetting = async () => {
-        const settings = await Promise.all([this.utils.runtime.readBasePluginSetting(), this.utils.runtime.readCustomPluginSetting()])
+        const settings = await Promise.all([
+            this.utils.settings.readBasePluginSettings(),
+            this.utils.settings.readCustomPluginSettings(),
+        ])
         const components = settings.map(s => ({ label: "", type: "textarea", rows: 15, content: this.utils.stringifyToml(s) }))
         const title = this.i18n.t("act.show_setting")
         const op = { title, components, width: "600px" }
@@ -100,7 +103,7 @@ class helpPlugin extends BasePlugin {
         const op = { title, components, width: "450px" }
         const { response, submit: [targetLang] } = await this.utils.dialog.modalAsync(op)
         if (response === 1 && targetLang !== langCurrent) {
-            await this.utils.runtime.saveGlobalConfig({ LOCALE: targetLang })
+            await this.utils.settings.saveGlobalSettings({ LOCALE: targetLang })
             await this.utils.showRestartMessageBox({ title: this.pluginName })
         }
     }
@@ -238,8 +241,8 @@ class helpPlugin extends BasePlugin {
 
     call = action => {
         const map = {
-            open_setting_folder: () => this.utils.runtime.openSettingFolder(),
-            backup_setting_file: () => this.utils.runtime.backupSettingFile(),
+            open_setting_folder: () => this.utils.settings.openSettingFolder(),
+            backup_setting_file: () => this.utils.settings.backupSettingFile(),
             set_user_styles: () => this.utils.showInFinder(this.utils.joinPath("./plugin/global/user_styles/README.md")),
             new_custom_plugin: () => this.utils.showInFinder(this.utils.joinPath("./plugin/custom/README.md")),
             json_rpc: () => this.utils.showInFinder(this.utils.joinPath("./plugin/json_rpc/README.md")),

@@ -75,8 +75,8 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
             ev.stopPropagation();
             ev.preventDefault();
             const content = item.querySelector(".bookmark-item-content");
-            const file = content.getAttribute("file");
-            const idx = content.getAttribute("idx");
+            const file = content.dataset.file
+            const idx = content.dataset.idx
             const btn = ev.target.closest(".bookmark-btn");
             if (btn) {
                 this.removeMarker(idx, file);
@@ -152,26 +152,27 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
     updateMarker = (ele, filepath, idx) => {
         const _filepath = this.utils.getFileName(filepath);
         const content = ele.querySelector(".bookmark-item-content");
-        if (!content) return;
-        content.textContent = `${_filepath} - ${idx}`;
-        content.setAttribute("file", filepath);
-        content.setAttribute("idx", idx);
+        if (content) {
+            content.textContent = `${_filepath} - ${idx}`
+            content.dataset.file = filepath
+            content.dataset.idx = idx
+        }
     }
 
     appendMarker = (filepath, idx) => {
-        const _filepath = this.utils.getFileName(filepath);
-        const children = [
-            { class_: "bookmark-item-content", text: `${_filepath} - ${idx}`, file: filepath, idx },
-            { class_: "bookmark-btn fa fa-trash-o" }
-        ]
-        const marker = [{ class_: "bookmark-item", children }];
-        this.utils.htmlTemplater.appendElements(this.entities.list, marker);
+        const fileName = this.utils.getFileName(filepath)
+        const el = `
+            <div class="bookmark-item">
+                <div class="bookmark-item-content" data-file="${filepath}" data-idx="${idx}">${fileName} - ${idx}</div>
+                <div class="bookmark-btn fa fa-trash-o"></div>
+            </div>`
+        this.entities.list.insertAdjacentHTML("beforeend", el)
     }
 
     removeMarker = (idx, filepath) => {
         const filepath_ = this.utils.getFilePath();
         if (filepath_ === filepath) {
-            const ele = Array.from(document.querySelectorAll(this.recordSelector))[idx];
+            const ele = [...document.querySelectorAll(this.recordSelector)][idx]
             ele && ele.classList.remove(this.className);
         } else {
             this.utils.stateRecorder.deleteState(this.recordName, filepath, parseInt(idx));

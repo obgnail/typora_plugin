@@ -2,20 +2,23 @@ class preferencesPlugin extends BasePlugin {
     hotkey = () => [{ hotkey: this.config.HOTKEY, callback: this.call }]
 
     getSettings = async () => {
-        const [base, custom] = await Promise.all([this.utils.runtime.readBasePluginSetting(), this.utils.runtime.readCustomPluginSetting()])
+        const [base, custom] = await Promise.all([
+            this.utils.settings.readBasePluginSettings(),
+            this.utils.settings.readCustomPluginSettings(),
+        ])
         delete base.global
         return [base, custom]
     }
 
     togglePlugin = async (enableBasePlugins, enableCustomPlugins) => {
-        const updateSetting = async (file, setting, enablePlugins, enableKey) => {
+        const updateSettings = async (file, setting, enablePlugins, enableKey) => {
             const newState = Object.keys(setting).reduce((acc, fixedName) => {
                 acc[fixedName] = { [enableKey]: enablePlugins.includes(fixedName) }
                 return acc
             }, {})
             const needUpdate = Object.entries(setting).some(([name, plugin]) => plugin[enableKey] !== newState[name][enableKey])
             if (needUpdate) {
-                const settingPath = await this.utils.runtime.getActualSettingPath(file)
+                const settingPath = await this.utils.settings.getActualSettingPath(file)
                 const settingObj = await this.utils.readTomlFile(settingPath)
                 const mergedSetting = this.utils.merge(settingObj, newState)
                 const newContent = this.utils.stringifyToml(mergedSetting)
@@ -24,8 +27,8 @@ class preferencesPlugin extends BasePlugin {
         }
 
         const [base, custom] = await this.getSettings()
-        const baseUpdated = await updateSetting("settings.user.toml", base, enableBasePlugins, "ENABLE")
-        const customUpdated = await updateSetting("custom_plugin.user.toml", custom, enableCustomPlugins, "enable")
+        const baseUpdated = await updateSettings("settings.user.toml", base, enableBasePlugins, "ENABLE")
+        const customUpdated = await updateSettings("custom_plugin.user.toml", custom, enableCustomPlugins, "enable")
         if (baseUpdated || customUpdated) {
             await this.utils.showRestartMessageBox({ title: this.pluginName })
         }
@@ -48,7 +51,7 @@ class preferencesPlugin extends BasePlugin {
         const [base, custom] = await this.getSettings()
         const basePlugins = Object.entries(base).map(display)
         const customPlugins = Object.entries(custom).map(display)
-        const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder()
+        const onclick = ev => ev.target.closest("a") && this.utils.settings.openSettingFolder()
         const components = [
             { label: labelEditConfig, type: "p", onclick },
             { label: "", legend: legendBasePlugin, type: "checkbox", list: basePlugins },

@@ -456,7 +456,7 @@ class Searcher {
         this.config = plugin.config
         this.utils = plugin.utils
         this.i18n = plugin.i18n
-        this.parser = plugin.utils.searchStringParser
+        this.parser = plugin.utils.searchQueryParser
         this.qualifiers = new Map()
     }
 

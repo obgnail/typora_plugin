@@ -1,6 +1,6 @@
 class editorWidthSliderPlugin extends BasePlugin {
     process = async () => {
-        this.utils.runtime.autoSaveConfig(this);
+        this.utils.settings.autoSaveSettings(this)
         await this._setWidth();
     }
 

@@ -441,7 +441,7 @@ class windowTabBarPlugin extends BasePlugin {
     call = action => {
         const toggleConfig = async (cfg, restart = false) => {
             this.config[cfg] = !this.config[cfg]
-            await this.utils.runtime.saveConfig(this.fixedName, { [cfg]: this.config[cfg] })
+            await this.utils.settings.saveSettings(this.fixedName, { [cfg]: this.config[cfg] })
             if (!restart) {
                 this.rerenderTabBar()
             } else {

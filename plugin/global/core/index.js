@@ -29,9 +29,7 @@ async function entry() {
         global.__plugins__ = enable
     }
 
-    /**
-     * For Typora versions below 0.9.98, a compatibility warning is issued when running the plugin system.
-     */
+    /** For Typora versions below 0.9.98, a compatibility warning is issued when running the plugin system. */
     const showWarn = () => {
         const need = global.__global_settings__.SHOW_INCOMPATIBLE_WARNING
         const incompatible = utils.compareVersion(utils.typoraVersion, "0.9.98") < 0
@@ -42,7 +40,7 @@ async function entry() {
     }
 
     const launch = async () => {
-        const settings = await utils.runtime.readBasePluginSetting()
+        const settings = await utils.settings.readBasePluginSettings()
         const enable = settings && settings.global && settings.global.ENABLE
         if (!enable) {
             console.warn("disable typora plugin")

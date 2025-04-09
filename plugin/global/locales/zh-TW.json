@@ -729,7 +729,6 @@
     "func.detailAll": "詳細資訊",
     "func.settings": "配置",
     "func.doc": "規則",
-    "func.check": "檢查",
     "func.fixAll.ok": "已修復格式錯誤",
     "MD001": "標題層級應逐級遞增，不可跳級",
     "MD003": "標題格式應一致",

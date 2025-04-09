@@ -6,34 +6,6 @@ class migrate {
         this.utils = utils
     }
 
-    moveHotkeySetting = async (files) => {
-        const hotkeySetting = await this.utils.runtime.readHotkeySetting()
-        const customHotkeys = [...Object.values(hotkeySetting)]
-        if (customHotkeys.length === 0) return
-
-        customHotkeys.forEach(obj => {
-            if (obj.evil && typeof obj.evil === "string") {
-                obj.evil = obj.evil.replace(/\r\n/g, "\n")
-            }
-        })
-
-        const base = files.find(e => e.file === "settings.user.toml")
-        base.user_ = this.utils.merge(base.user_, { hotkeys: { CUSTOM_HOTKEYS: customHotkeys } })
-
-        const promises = ["hotkey.default.toml", "hotkey.user.toml"]
-            .flatMap(file => [
-                this.utils.runtime.getOriginSettingPath(file),
-                this.utils.runtime.getHomeSettingPath(file),
-            ])
-            .map(async file => {
-                try {
-                    await this.utils.Package.Fs.promises.unlink(file)
-                } catch (e) {
-                }
-            })
-        await Promise.all(promises)
-    }
-
     deleteUselessPlugin = async () => {
         const custom = [
             "fullPathCopy", "extractRangeToNewFile", "bingSpeech", "autoTrailingWhiteSpace", "darkMode",
@@ -70,7 +42,12 @@ class migrate {
             const plugins = new Set([...Object.keys(default_), ...Object.keys(user_)])
             plugins.delete("global")
             return [...plugins].map(async fixedName => {
-                const paths = [`./plugin/custom/plugins/${fixedName}.js`, `./plugin/custom/plugins/${fixedName}/index.js`, `./plugin/${fixedName}.js`, `./plugin/${fixedName}/index.js`]
+                const paths = [
+                    `./plugin/custom/plugins/${fixedName}.js`,
+                    `./plugin/custom/plugins/${fixedName}/index.js`,
+                    `./plugin/${fixedName}.js`,
+                    `./plugin/${fixedName}/index.js`,
+                ]
                 const promises = paths
                     .map(path => this.utils.joinPath(path))
                     .map(path => this.utils.existPath(path))
@@ -103,17 +80,17 @@ class migrate {
     }
 
     _getConfigs = async () => {
-        const [baseDefault, baseUser_, baseHome_] = await this.utils.runtime.getSettingObjects("settings.default.toml", "settings.user.toml")
-        const [customDefault, customUser_, customHome_] = await this.utils.runtime.getSettingObjects("custom_plugin.default.toml", "custom_plugin.user.toml")
+        const [baseDefault, baseUser, baseHome] = await this.utils.settings.getSettingObjects("settings.default.toml", "settings.user.toml")
+        const [customDefault, customUser, customHome] = await this.utils.settings.getSettingObjects("custom_plugin.default.toml", "custom_plugin.user.toml")
         return [
-            { file: "settings.user.toml", default_: baseDefault, user_: this.utils.merge(baseUser_, baseHome_) },
-            { file: "custom_plugin.user.toml", default_: customDefault, user_: this.utils.merge(customUser_, customHome_) },
+            { file: "settings.user.toml", default_: baseDefault, user_: this.utils.merge(baseUser, baseHome) },
+            { file: "custom_plugin.user.toml", default_: customDefault, user_: this.utils.merge(customUser, customHome) },
         ]
     }
 
     _saveFile = async (files) => {
         const promises = files.map(async ({ file, user_ }) => {
-            const path = await this.utils.runtime.getActualSettingPath(file)
+            const path = await this.utils.settings.getActualSettingPath(file)
             const content = this.utils.stringifyToml(user_)
             return this.utils.writeFile(path, content)
         })
@@ -126,7 +103,6 @@ class migrate {
         await this.fixCustomPluginSetting(files)
         await this.cleanInvalidPlugin(files)
         await this.cleanPluginAndKey(files)
-        await this.moveHotkeySetting(files)
         await this._saveFile(files)
     }
 

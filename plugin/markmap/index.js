@@ -622,7 +622,7 @@ class tocMarkmap {
             components.forEach(c => c.callback(c.submit));
             await this.redraw(this.markmap.options);
             const update = this.utils.fromObject(this.config, needUpdateKey);
-            await this.utils.runtime.saveConfig(this.controller.fixedName, update);
+            await this.utils.settings.saveSettings(this.controller.fixedName, update);
         }
     }
 

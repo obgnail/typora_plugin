@@ -106,7 +106,7 @@ class customPluginLoader {
             const content = errorPluginSetting.join("\n")
             const components = [{ type: "textarea", label, rows, content }]
             const op = { title, components }
-            this.utils.dialog.modal(op, () => this.utils.runtime.openSettingFolder())
+            this.utils.dialog.modal(op, () => this.utils.settings.openSettingFolder())
         }
     }
 
@@ -127,7 +127,7 @@ class customPluginLoader {
     }
 
     process = async () => {
-        const settings = await this.utils.runtime.readCustomPluginSetting()
+        const settings = await this.utils.settings.readCustomPluginSettings()
         this.checkErrorSetting(settings)
         this.controller.pluginsSettings = settings
         await this.loadCustomPlugins(settings)

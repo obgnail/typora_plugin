@@ -15,7 +15,7 @@
  *   <operator> ::= ':' | '=' | '>=' | '<=' | '>' | '<'
  *   <scope> ::= 'default' | 'file' | 'path' | 'ext' | 'content' | 'size' | 'time'
  * */
-class searchStringParser {
+class searchQueryParser {
     constructor() {
         const TYPE = {
             OR: "OR",
@@ -29,19 +29,20 @@ class searchStringParser {
             QUALIFIER: "QUALIFIER",
         }
         this.TYPE = TYPE
+        const { OR, AND, NOT, QUALIFIER, PAREN_OPEN, PAREN_CLOSE } = TYPE
         this.INVALID_POSITION = {
-            FIRST: new Set([TYPE.OR, TYPE.AND, TYPE.PAREN_CLOSE]),
-            LAST: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_OPEN, TYPE.QUALIFIER]),
+            FIRST: new Set([OR, AND, PAREN_CLOSE]),
+            LAST: new Set([OR, AND, NOT, PAREN_OPEN, QUALIFIER]),
             FOLLOW: {
-                [TYPE.OR]: new Set([TYPE.OR, TYPE.AND, TYPE.PAREN_CLOSE]),
-                [TYPE.AND]: new Set([TYPE.OR, TYPE.AND, TYPE.PAREN_CLOSE]),
-                [TYPE.NOT]: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_CLOSE]),
-                [TYPE.PAREN_OPEN]: new Set([TYPE.OR, TYPE.AND, TYPE.PAREN_CLOSE]),
-                [TYPE.QUALIFIER]: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_CLOSE, TYPE.QUALIFIER]),
+                [OR]: new Set([OR, AND, PAREN_CLOSE]),
+                [AND]: new Set([OR, AND, PAREN_CLOSE]),
+                [NOT]: new Set([OR, AND, NOT, PAREN_CLOSE]),
+                [PAREN_OPEN]: new Set([OR, AND, PAREN_CLOSE]),
+                [QUALIFIER]: new Set([OR, AND, NOT, PAREN_CLOSE, QUALIFIER]),
             },
             AND: {
-                PREV: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_OPEN, TYPE.QUALIFIER]),
-                NEXT: new Set([TYPE.OR, TYPE.AND, TYPE.NOT, TYPE.PAREN_CLOSE]),
+                PREV: new Set([OR, AND, NOT, PAREN_OPEN, QUALIFIER]),
+                NEXT: new Set([OR, AND, NOT, PAREN_CLOSE]),
             },
         }
         this.setQualifier()
@@ -77,7 +78,9 @@ class searchStringParser {
                     : { type, operand }
             })
             .filter((token, i, tokens) => {
-                if (token.type !== this.TYPE.AND) return true
+                if (token.type !== this.TYPE.AND) {
+                    return true
+                }
                 const prev = tokens[i - 1]
                 const next = tokens[i + 1]
                 let result = true
@@ -266,5 +269,5 @@ class searchStringParser {
 }
 
 module.exports = {
-    searchStringParser
+    searchQueryParser
 }

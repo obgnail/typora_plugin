@@ -9,7 +9,7 @@ class fenceEnhancePlugin extends BasePlugin {
     styleTemplate = () => ({ bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial" })
 
     process = async () => {
-        this.utils.runtime.autoSaveConfig(this);
+        this.utils.settings.autoSaveSettings(this)
 
         if (this.config.ENABLE_HOTKEY) {
             new editorHotkeyHelper(this).process();

@@ -1,19 +1,18 @@
-class runtime {
+class settings {
     constructor(utils, i18n) {
         this.utils = utils
         this.i18n = i18n
-        this.PATH = utils.Package.Path
     }
 
     getOriginSettingPath = settingFile => this.utils.joinPath("./plugin/global/settings", settingFile)
-    getHomeSettingPath = settingFile => this.PATH.join(this.utils.getHomeDir(), ".config", "typora_plugin", settingFile)
+    getHomeSettingPath = settingFile => this.utils.Package.Path.join(this.utils.getHomeDir(), ".config", "typora_plugin", settingFile)
     getActualSettingPath = async settingFile => {
         const homeSetting = this.getHomeSettingPath(settingFile)
         const exist = await this.utils.existPath(homeSetting)
         return exist ? homeSetting : this.getOriginSettingPath(settingFile)
     }
 
-    saveConfig = async (fixedName, updateObj) => {
+    saveSettings = async (fixedName, updateObj) => {
         let isCustom = false
         let plugin = this.utils.getPlugin(fixedName)
         if (!plugin) {
@@ -22,10 +21,10 @@ class runtime {
         }
         if (!plugin) return
         const file = isCustom ? "custom_plugin.user.toml" : "settings.user.toml"
-        return this._saveConfig(file, fixedName, updateObj)
+        return this._saveSettings(file, fixedName, updateObj)
     }
 
-    _saveConfig = async (targetFile, fixedName, updateObj) => {
+    _saveSettings = async (targetFile, fixedName, updateObj) => {
         const settingPath = await this.getActualSettingPath(targetFile)
         const tomlObj = await this.utils.readTomlFile(settingPath)
         const mergedObj = this.utils.merge(tomlObj, { [fixedName]: updateObj })
@@ -33,15 +32,15 @@ class runtime {
         return this.utils.writeFile(settingPath, content)
     }
 
-    saveGlobalConfig = async (updateObj) => {
-        return this._saveConfig("settings.user.toml", "global", updateObj)
+    saveGlobalSettings = async (updateObj) => {
+        return this._saveSettings("settings.user.toml", "global", updateObj)
     }
 
-    autoSaveConfig = plugin => {
-        const { saveConfig } = this
+    autoSaveSettings = plugin => {
+        const { saveSettings } = this
         plugin.config = new Proxy(plugin.config, {
             set(target, property, value, receiver) {
-                saveConfig(plugin.fixedName, { [property]: value })
+                saveSettings(plugin.fixedName, { [property]: value })
                 return Reflect.set(...arguments)
             }
         })
@@ -56,9 +55,8 @@ class runtime {
             return contentList.map(c => c ? this.utils.readToml(c) : {})
         } catch (e) {
             // At this time, i18n has not been loaded yet. Using English
-            const message = "Incorrect File Content"
-            const _detail = `Please Fix File: ${userSetting}`
-            const detail = `${_detail}\n\n${e.toString()}`
+            const message = `Invalid TOML document: ${userSetting}`
+            const detail = e.toString().replace("Invalid TOML document: ", "")
             const buttons = ["Confirm", "Cancel"]
             const op = { type: "error", title: "Typora Plugin", buttons, message, detail }
             await this.utils.showMessageBox(op)
@@ -66,15 +64,14 @@ class runtime {
         }
     }
 
-    _readSetting = async (defaultSetting, userSetting) => {
+    _readSettings = async (defaultSetting, userSetting) => {
         const objs = await this.getSettingObjects(defaultSetting, userSetting)
         return objs.reduce(this.utils.merge)
     }
 
-    readHotkeySetting = async () => this._readSetting("hotkey.default.toml", "hotkey.user.toml")
-    readBasePluginSetting = async () => this._readSetting("settings.default.toml", "settings.user.toml")
-    readCustomPluginSetting = async () => {
-        const settings = await this._readSetting("custom_plugin.default.toml", "custom_plugin.user.toml")
+    readBasePluginSettings = async () => this._readSettings("settings.default.toml", "settings.user.toml")
+    readCustomPluginSettings = async () => {
+        const settings = await this._readSettings("custom_plugin.default.toml", "custom_plugin.user.toml")
         return this.utils.migrate._fixCustomPluginSetting(settings)
     }
 
@@ -94,10 +91,12 @@ class runtime {
                 console.error(e)
             }
         }
-        showInFinder && this.utils.showInFinder(backupDir)
+        if (showInFinder) {
+            this.utils.showInFinder(backupDir)
+        }
     }
 }
 
 module.exports = {
-    runtime
+    settings
 }

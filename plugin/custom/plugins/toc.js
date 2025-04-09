@@ -136,15 +136,13 @@ class tocPlugin extends BaseCustomPlugin {
     }
 
     refresh = type => {
-        if (!this.isModalShow()) return;
-        type = type || this.getCurrentType();
-        this._setIconActive(type);
-        const root = this._getRoot(type);
-        const headers = this._getRootTemplate(root);
-        const list = this.utils.htmlTemplater.create(headers);
-        this.entities.list.firstElementChild && this.entities.list.removeChild(this.entities.list.firstElementChild);
-        this.entities.list.appendChild(list);
-        this.highlightVisibleHeader();
+        if (this.isModalShow()) {
+            type = type || this.getCurrentType()
+            this._setIconActive(type)
+            const root = this._getRoot(type)
+            this.entities.list.innerHTML = this._getRootHTML(root)
+            this.highlightVisibleHeader()
+        }
     }
 
     _setIconActive = type => this.entities.header.children.forEach(ele => ele.classList.toggle("select", ele.dataset.type === type))
@@ -246,17 +244,20 @@ class tocPlugin extends BaseCustomPlugin {
         return root
     }
 
-    _getRootTemplate = rootNode => {
-        const getTemplate = rootNode => {
-            const { text, cid, depth, class_ = "", children = [] } = rootNode;
-            const content = [{ class_: `toc-node ${class_}`, ref: cid, children: [{ ele: "span", class_: "toc-text", text }] }];
-            const list = children.map(getTemplate);
-            if (list.length) {
-                content.push({ ele: "ul", children: list });
+    _getRootHTML = rootNode => {
+        const genLi = node => {
+            const { text, cid, depth, class_ = "", children = [] } = node
+            const t = this.utils.escape(text)
+            let content = `<div class="toc-node ${class_}" ref="${cid}"><span class="toc-text">${t}</span></div>`
+            if (children.length !== 0) {
+                const li = children.map(genLi).join("")
+                content += `<ul>${li}</ul>`
             }
-            return { ele: "li", depth, children: content }
+            return `<li depth="${depth}">${content}</li>`
         }
-        return { ele: "ul", class_: "toc-root", children: rootNode.children.map(getTemplate) }
+
+        const li = rootNode.children.map(genLi).join("")
+        return `<ul class="toc-root">${li}</ul>`
     }
 }
 

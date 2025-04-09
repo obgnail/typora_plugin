@@ -8,7 +8,7 @@ class autoNumberPlugin extends BasePlugin {
     style = () => ({ textID: this.css_id, text: this.getCSS() })
 
     process = () => {
-        this.utils.runtime.autoSaveConfig(this)
+        this.utils.settings.autoSaveSettings(this)
         if (this.config.ENABLE_WHEN_EXPORT) {
             new exportHelper(this).process()
         }

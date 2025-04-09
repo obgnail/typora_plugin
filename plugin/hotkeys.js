@@ -42,7 +42,7 @@ class hotkeysPlugin extends BasePlugin {
             return [hotkey]
         })
         const table = this.utils.buildTable([[thText], ...trs])
-        const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder("settings.user.toml")
+        const onclick = ev => ev.target.closest("a") && this.utils.settings.openSettingFolder("settings.user.toml")
         const components = [
             { label: hintText, type: "p", onclick },
             { label: table, type: "p" },

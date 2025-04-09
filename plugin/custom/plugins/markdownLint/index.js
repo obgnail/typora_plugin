@@ -26,7 +26,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 </table>
             </div>
         </div>
-        ${this.config.use_button ? `<div id="plugin-markdownlint-button" ty-hint="${this.i18n.t("func.check")}"></div>` : ""}
+        ${this.config.use_button ? `<div id="plugin-markdownlint-button"></div>` : ""}
     `
 
     init = () => {
@@ -116,7 +116,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             settings: () => {
                 const title = this.i18n.t("func.settings")
                 const label = this.i18n.t("editConfigFile") + " " + '<a class="fa fa-external-link"></a>'
-                const onclick = ev => ev.target.closest("a") && this.utils.runtime.openSettingFolder("custom_plugin.user.toml")
+                const onclick = ev => ev.target.closest("a") && this.utils.settings.openSettingFolder("custom_plugin.user.toml")
                 const content = JSON.stringify(this.config.rule_config, null, "\t")
                 const components = [{ label: label, type: "p", onclick }, { label: "", type: "textarea", rows: 15, content }]
                 const op = { title, components, width: "600px" }
@@ -132,7 +132,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             translate: () => {
                 this.config.translate = !this.config.translate
                 this.checkLint()
-                this.utils.runtime.saveConfig(this.fixedName, { translate: this.config.translate })
+                this.utils.settings.saveSettings(this.fixedName, { translate: this.config.translate })
             },
         }
 

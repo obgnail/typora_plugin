@@ -12,7 +12,7 @@ class collapseParagraphPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.runtime.autoSaveConfig(this);
+        this.utils.settings.autoSaveSettings(this)
         this.disableExpandSimpleBlock()
         this.recordCollapseState(false);
         const funcList = this.getFuncList();

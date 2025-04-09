@@ -31,6 +31,10 @@
     box-shadow: 0 2px 10px 3px rgba(0, 0, 0, .15);
 }
 
+#plugin-quick-button .action-item.plu-click {
+    transform: scale(0.95);
+}
+
 #plugin-quick-button .plu-hidden,
 #plugin-quick-button .plu-unused {
     visibility: hidden;

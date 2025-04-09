@@ -1030,14 +1030,13 @@ class utils {
 const newMixin = (utils) => {
     const MIXIN = {
         ...require("./polyfill"),
-        ...require("./runtime"),
+        ...require("./settings"),
         ...require("./migrate"),
         ...require("./hotkeyHub"),
         ...require("./eventHub"),
         ...require("./stateRecorder"),
         ...require("./exportHelper"),
         ...require("./styleTemplater"),
-        ...require("./htmlTemplater"),
         ...require("./contextMenu"),
         ...require("./notification"),
         ...require("./progressBar"),
@@ -1046,7 +1045,7 @@ const newMixin = (utils) => {
         ...require("./thirdPartyDiagramParser"),
         ...require("./entities"),
         ...require("./extra"),
-        ...require("./searchStringParser"),
+        ...require("./searchQueryParser"),
     }
     const mixin = Object.fromEntries(
         Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils, i18n)])
@@ -1056,12 +1055,6 @@ const newMixin = (utils) => {
     Object.assign(utils, mixin, {
         /** @deprecated new API: utils.hotkeyHub.register */
         registerHotkey: mixin.hotkeyHub.register,
-
-        /** @deprecated new API: utils.eventHub.eventType */
-        eventType: mixin.eventHub.eventType,
-        /** @deprecated new API: utils.eventHub.addEventListener */
-        addEventListener: mixin.eventHub.addEventListener,
-
         /** @deprecated new API: utils.dialog.modal */
         modal: mixin.dialog.modal
     })

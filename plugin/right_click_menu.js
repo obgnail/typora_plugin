@@ -1,4 +1,3 @@
-// The plugin name is introduced through the setting file. To avoid XSS injection, innerHTML cannot be used
 class rightClickMenuPlugin extends BasePlugin {
     styleTemplate = () => ({
         menu_min_width: this.config.MENU_MIN_WIDTH,
@@ -16,7 +15,7 @@ class rightClickMenuPlugin extends BasePlugin {
     }
 
     process = () => {
-        this.utils.runtime.autoSaveConfig(this)
+        this.utils.settings.autoSaveSettings(this)
         this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, this.appendMenu)
     }
 
@@ -31,19 +30,19 @@ class rightClickMenuPlugin extends BasePlugin {
 
     appendFirst = () => {
         const items = this.config.MENUS.map(({ NAME, LIST = [] }, idx) => {
-            NAME = this.i18n._t("settings", NAME)
-            const item = [{ ele: "span", "data-lg": "Menu", text: NAME }]
-            const children = [{ ele: "a", role: "menuitem", children: item }]
-            const noExtraMenu = LIST && LIST.length === 1
-            if (noExtraMenu) {
-                return { ele: "li", "data-key": this.noExtraMenuGroupName, "data-value": LIST[0], idx, children }
+            if (LIST.length === 0) {
+                return ""
             }
-            item.push(this.caret())
-            return { ele: "li", class_: "has-extra-menu", "data-key": this.groupName, idx, children }
+            const name = this.i18n._t("settings", NAME)
+            const noExtraMenu = LIST.length === 1
+            const caret = noExtraMenu ? "" : '<i class="fa fa-caret-right"></i>'
+            const a = `<a role="menuitem"><span data-lg="Menu">${name}</span>${caret}</a>`
+            return noExtraMenu
+                ? `<li data-key="${this.noExtraMenuGroupName}" data-value="${LIST[0]}" idx="${idx}">${a}</li>`
+                : `<li class="has-extra-menu" data-key="${this.groupName}" idx="${idx}">${a}</li>`
         })
-        const templates = [this.divider(), ...items]
-        const menu = document.querySelector("#context-menu")
-        this.utils.htmlTemplater.appendElements(menu, templates)
+        const html = '<li class="divider"></li>' + items.join("")
+        document.querySelector("#context-menu").insertAdjacentHTML("beforeend", html)
     }
 
     appendSecond = () => {
@@ -59,9 +58,9 @@ class rightClickMenuPlugin extends BasePlugin {
                     return action ? this.secondComposeLiTemplate(plugin, action) : this.secondLiTemplate(plugin)
                 }
             }).filter(Boolean)
-            return this.ulTemplate({ class_: ["plugin-menu-second"], idx, children })
+            return this.ulTemplate({ className: "plugin-menu-second", idx, children })
         })
-        this.utils.htmlTemplater.appendElements(this.utils.entities.eContent, templates)
+        this.utils.entities.eContent.append(...this._createElement(templates))
     }
 
     appendThird = () => {
@@ -72,25 +71,25 @@ class rightClickMenuPlugin extends BasePlugin {
                 .filter(plugin => plugin && (plugin.staticActions || plugin.getDynamicActions))
                 .map(plugin => {
                     const children = (plugin.staticActions || []).map(act => this.thirdLiTemplate(act))
-                    return { class_: ["plugin-menu-third"], "data-plugin": plugin.fixedName, idx, children }
+                    return { className: "plugin-menu-third", "data-plugin": plugin.fixedName, idx, children }
                 })
                 .map(this.ulTemplate)
         })
-        this.utils.htmlTemplater.appendElements(this.utils.entities.eContent, templates)
+        this.utils.entities.eContent.append(...this._createElement(templates))
     }
 
     secondComposeLiTemplate = (plugin, action) => {
         const target = plugin.staticActions.find(act => act.act_value === action)
         const name = target ? target.act_name : plugin.pluginName
         const children = [{ ele: "a", role: "menuitem", "data-lg": "Menu", text: name }]
-        return { ele: "li", class_: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": action, children }
+        return { ele: "li", className: "plugin-menu-item", "data-key": plugin.fixedName, "data-value": action, children }
     }
 
     secondLiTemplate = plugin => {
         const hasAction = plugin.staticActions || plugin.getDynamicActions
         const clickable = hasAction || plugin.hasOwnProperty("call")
         const extra = {
-            class_: `plugin-menu-item ${hasAction ? "has-extra-menu" : ""}`,
+            className: `plugin-menu-item ${hasAction ? "has-extra-menu" : ""}`,
             style: clickable ? undefined : { color: "#C4C6CC", pointerEvents: "none" },
         }
         return this._liTemplate(plugin.fixedName, plugin.pluginName, plugin.config.HOTKEY, hasAction, null, extra)
@@ -100,17 +99,17 @@ class rightClickMenuPlugin extends BasePlugin {
         if (act.act_disabled && !act.act_hint) {
             act.act_hint = this.defaultDisableHint
         }
-        const class_ = []
+        const classList = ["plugin-menu-item"]
         if (dynamic) {
-            class_.push("plugin-dynamic-act")
+            classList.push("plugin-dynamic-act")
         }
         if (act.act_hidden) {
-            class_.push("plugin-common-hidden")
+            classList.push("plugin-common-hidden")
         }
         if (act.act_disabled) {
-            class_.push("disabled")
+            classList.push("disabled")
         }
-        const extra = { "ty-hint": act.act_hint || undefined, class_ }
+        const extra = { "ty-hint": act.act_hint || undefined, className: classList.join(" ") }
         const state = (this.config.SHOW_ACTION_OPTIONS_ICON && act.act_state === undefined)
             ? "state-run"
             : Boolean(act.act_state)
@@ -119,30 +118,63 @@ class rightClickMenuPlugin extends BasePlugin {
         return this._liTemplate(act.act_value, act.act_name, act.act_hotkey, false, state, extra)
     }
 
-    _liTemplate = (key, showName, shortcut, hasExtraMenu, class_, extra) => {
+    _liTemplate = (key, showName, shortcut, hasExtraMenu, className, extra) => {
+        shortcut = this._cleanShortcut(shortcut)
+        const hasShortcut = this.supportShortcut && this.config.SHOW_PLUGIN_HOTKEY && shortcut
+        const attr = hasExtraMenu
+            ? { children: [{ ele: "span", "data-lg": "Menu", text: showName, children: [this.caret()] }] }
+            : hasShortcut
+                ? { children: [{ ele: "span", text: showName }, { ele: "span", className: "ty-menu-shortcut", text: shortcut }] }
+                : { text: showName }
+        const children = [{ ele: "a", role: "menuitem", className, "data-lg": "Menu", ...attr }]
+        return { ele: "li", "data-key": key, children, ...extra }
+    }
+
+    _cleanShortcut = shortcut => {
         if (Array.isArray(shortcut)) {
             shortcut = shortcut[0]
         }
         if (shortcut && typeof shortcut === "string") {
             shortcut = shortcut.split("+").map(e => e[0].toUpperCase() + e.slice(1).toLowerCase()).join("+")
         }
-        const hasShortcut = this.supportShortcut && this.config.SHOW_PLUGIN_HOTKEY && shortcut
-        const attr = hasExtraMenu
-            ? { children: [{ ele: "span", "data-lg": "Menu", text: showName, children: [this.caret()] }] }
-            : hasShortcut
-                ? { children: [{ ele: "span", text: showName }, { ele: "span", class_: "ty-menu-shortcut", text: shortcut }] }
-                : { text: showName }
-        const children = [{ ele: "a", role: "menuitem", class_, "data-lg": "Menu", ...attr }]
-        return { ele: "li", "data-key": key, children, ...extra }
+        return shortcut
     }
 
     ulTemplate = extra => {
-        extra.class_.push("dropdown-menu", "context-menu", "ext-context-menu")
+        extra.className += " dropdown-menu context-menu ext-context-menu"
         return { ele: "ul", role: "menu", ...extra }
     }
 
-    divider = () => ({ ele: "li", class_: "divider" })
-    caret = () => ({ ele: "i", class_: "fa fa-caret-right" })
+    divider = () => ({ ele: "li", className: "divider" })
+    caret = () => ({ ele: "i", className: "fa fa-caret-right" })
+
+    _createElement = templates => {
+        return templates.filter(Boolean).map(tpl => {
+            const el = document.createElement(tpl.ele || "div")
+            for (const [prop, value] of Object.entries(tpl)) {
+                if (value == null) continue
+                switch (prop) {
+                    case "ele":
+                        break
+                    case "className":
+                        el.classList.add(...value.trim().split(/\s+/g))
+                        break
+                    case "text":
+                        el.textContent = value
+                        break
+                    case "style":
+                        Object.assign(el.style, value)
+                        break
+                    case "children":
+                        el.append(...this._createElement(value))
+                        break
+                    default:
+                        el.setAttribute(prop, value)
+                }
+            }
+            return el
+        })
+    }
 
     findLostPluginIfNeed = () => {
         if (!this.config.FIND_LOST_PLUGIN) return
@@ -173,7 +205,7 @@ class rightClickMenuPlugin extends BasePlugin {
 
     appendThirdLi = (menu, dynamicActions) => {
         const templates = dynamicActions.map(act => this.thirdLiTemplate(act, true))
-        this.utils.htmlTemplater.appendElements(menu, templates)
+        menu.append(...this._createElement(templates))
     }
 
     listen = () => {

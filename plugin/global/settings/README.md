@@ -98,13 +98,6 @@ auto_swap = true
 
 
 
-## TOML 教程
-
-- 如果不熟悉 TOML 格式，可以花三分钟 [学习](https://toml.io/cn/v1.0.0)。
-- 如果配置文件的内容存在格式错误，将无法被正确读取。请前往 [格式校验网站](https://www.bejson.com/validators/toml_editor/) 检查。
-
-
-
 ## 隔离配置文件
 
 如果希望隔离配置文件，可以将 `user.toml` 文件存放于 `~/.config/typora_plugin/` 目录下。此方法适用于 Linux、Windows 平台。
@@ -115,4 +108,10 @@ $ dir /b /s "C:\Users\用户名\.config\typora_plugin"
 C:\Users\用户名\.config\typora_plugin\custom_plugin.user.toml
 C:\Users\用户名\.config\typora_plugin\settings.user.toml
 ```
+
+
+
+## TOML 教程
+
+如果不熟悉 TOML 格式，可以花三分钟 [学习](https://toml.io/cn/v1.0.0)。
 

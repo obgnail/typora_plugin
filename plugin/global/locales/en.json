@@ -729,7 +729,6 @@
     "func.detailAll": "Information",
     "func.settings": "Configuration",
     "func.doc": "Rules",
-    "func.check": "Check",
     "func.fixAll.ok": "Lint Errors Fixed",
     "MD001": "Heading levels must increment by one",
     "MD003": "Inconsistent heading style",
