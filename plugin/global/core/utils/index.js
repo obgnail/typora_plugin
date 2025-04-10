@@ -326,6 +326,40 @@ class utils {
         });
     }
 
+    static dateTimeFormat = (date = new Date(), format = "yyyy-MM-dd HH:mm:ss", locale = "en") => {
+        const fns = {
+            yyyy: () => date.getFullYear().toString(),
+            yyy: () => (date.getFullYear() % 1000).toString().padStart(3, "0"),
+            yy: () => (date.getFullYear() % 100).toString().padStart(2, "0"),
+            MMMM: () => new Intl.DateTimeFormat(locale, { month: "long" }).format(date),
+            MMM: () => new Intl.DateTimeFormat(locale, { month: "short" }).format(date),
+            MM: () => (date.getMonth() + 1).toString().padStart(2, "0"),
+            M: () => (date.getMonth() + 1).toString(),
+            dddd: () => new Intl.DateTimeFormat(locale, { weekday: "long" }).format(date),
+            ddd: () => new Intl.DateTimeFormat(locale, { weekday: "short" }).format(date),
+            dd: () => date.getDate().toString().padStart(2, "0"),
+            d: () => date.getDate().toString(),
+            HH: () => date.getHours().toString().padStart(2, "0"),
+            H: () => date.getHours().toString(),
+            hh: () => ((date.getHours() % 12 || 12)).toString().padStart(2, "0"),
+            h: () => (date.getHours() % 12 || 12).toString(),
+            mm: () => date.getMinutes().toString().padStart(2, "0"),
+            m: () => date.getMinutes().toString(),
+            ss: () => date.getSeconds().toString().padStart(2, "0"),
+            s: () => date.getSeconds().toString(),
+            SSS: () => date.getMilliseconds().toString().padStart(3, "0"),
+            S: () => date.getMilliseconds().toString(),
+            a: () => {
+                const time = new Intl.DateTimeFormat(locale, { hour: "numeric", hour12: true })
+                    .formatToParts(date)
+                    .find(part => part.type === "dayPeriod")
+                return time ? time.value : ""
+            }
+        }
+        const regex = /(yyyy|yyy|yy|MMMM|MMM|MM|M|dddd|ddd|dd|d|HH|H|hh|h|mm|m|ss|s|SSS|S|a)/g
+        return format.replace(regex, (match) => fns[match] ? fns[match]() : match)
+    }
+
     /** @description NOT a foolproof solution. */
     static isBase64 = str => str.length % 4 === 0 && /^[A-Za-z0-9+/=]+$/.test(str);
     /** @description NOT a foolproof solution. In fact, the Promises/A+ specification is not a part of Node.js, so there is no foolproof solution at all */
@@ -615,23 +649,23 @@ class utils {
     static parseMarkdownBlock = (content, options = {}) => this.getMarkdownIt().parse(content, options)
     static parseMarkdownInline = (content, options = {}) => this.getMarkdownIt().parseInline(content, options)
 
-    static fetch = async (url, { proxy, timeout = 3 * 60 * 1000, ...args }) => {
-        let signal, agent;
+    static fetch = async (url, { proxy = "", timeout = 3 * 60 * 1000, ...args }) => {
+        let signal, agent
         if (timeout) {
             if (AbortSignal && AbortSignal.timeout) {
-                signal = AbortSignal.timeout(timeout);
+                signal = AbortSignal.timeout(timeout)
             } else if (AbortController) {
-                const controller = new AbortController();
-                setTimeout(() => controller.abort(), timeout);
-                signal = controller.signal; // polyfill
+                const controller = new AbortController()
+                setTimeout(() => controller.abort(), timeout)
+                signal = controller.signal // polyfill
             }
         }
         if (proxy) {
             const proxyAgent = require("../lib/https-proxy-agent")
-            agent = new proxyAgent.HttpsProxyAgent(proxy);
+            agent = new proxyAgent.HttpsProxyAgent(proxy)
         }
         const nodeFetch = require("../lib/node-fetch")
-        return nodeFetch.nodeFetch(url, { agent, signal, ...args })
+        return nodeFetch.fetch(url, { agent, signal, ...args })
     }
 
     static splitFrontMatter = content => {
@@ -807,7 +841,10 @@ class utils {
         }
     }
 
-    static scrollByCid = (cid, height = -1, moveCursor = false, showHiddenElement = true) => this.scroll(File.editor.findElemById(cid), height, moveCursor, showHiddenElement);
+    static scrollByCid = (cid, height = -1, moveCursor = false, showHiddenElement = true) => {
+        const $target = File.editor.findElemById(cid)
+        this.scroll($target, height, moveCursor, showHiddenElement)
+    }
 
     static scrollSourceView = lineToGo => {
         const cm = File.editor.sourceView.cm;
@@ -829,7 +866,8 @@ class utils {
         if (!elements) return;
 
         if (typeof elements === "string") {
-            elements = [...new DOMParser().parseFromString(elements, "text/html").body.childNodes];
+            const dom = new DOMParser().parseFromString(elements, "text/html")
+            elements = [...dom.body.childNodes]
         }
         let fragment = elements;
         if (elements instanceof Array || elements instanceof NodeList) {

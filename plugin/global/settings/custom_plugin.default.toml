@@ -873,7 +873,7 @@ template_variables = [
 #   {{ dateOffset(offset, format, locale) }}  指定偏移量后的日期
 #       参数 1: offset: 整数，表示天数的偏移量 (正数表示未来，负数表示过去)
 #       参数 2: format: 时间格式化字符串
-#       参数 3: locale: 语言环境，支持 cn、en (默认 en)
+#       参数 3: locale: 语言环境
 #   {{ yesterday }}            昨天日期。等同于 {{ dateOffset(-1) }}
 #   {{ tomorrow }}             明天日期。等同于 {{ dateOffset(1) }}
 #   {{ random }}               范围为 0-1 的随机浮点数

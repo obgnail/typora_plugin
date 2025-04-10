@@ -8,12 +8,12 @@ custom 插件的功能：支持用户 **在右键菜单中自定义插件**。
 
 custom 插件大量采用 **声明式代码**（声明代替代码开发），比如：
 
-- `style = () => "..."`：注册 css
+- `style = () => "..."`：注册 CSS
 - `html = () => "..."`：注册 HTML 元素
 - `hint = () => "..."`：注册 hint
 - `selector = () => "..."`：注册允许运行命令的光标位置
 - `hotkey = () => ["ctrl+shift+y"]`：即可注册快捷键
-- init、process、callback 等等生命周期函数
+- `beforeProcess`、`init`、`process`、`afterProcess`、`callback` 等生命周期函数
 
 ```js
 class MyPlugin extends BaseCustomPlugin {
@@ -72,19 +72,17 @@ show_message = "this is hello world plugin"
 
 > name、enable、hide、order 是必须项，其余是插件个性化的配置。
 
-
-
 步骤二：创建文件 `./plugin/custom/plugins/helloWorld.js` 文件，将下面代码保存到该文件中：
 
 ```javascript
 // ./plugin/custom/plugins/helloWorld.js
 
 class helloWorld extends BaseCustomPlugin {
-    // beforeProcess是最先运行的函数，一般在这里检查插件的运行条件
-    // 若当前不满足条件，请返回this.utils.stopLoadPluginError，插件将终止运行
+    // beforeProcess是最先运行的函数，在这里检查插件的运行条件
+    // 若不满足条件，请返回this.utils.stopLoadPluginError，插件将终止运行
     beforeProcess = async () => {
-        // 这里使用随机数，实际开发请改成有意义的检查
-        if (Math.random() < 0.5) {
+        // 这里使用false抑制，实际开发请改成有意义的检查
+        if (false) {
             return this.utils.stopLoadPluginError
         }
     }
@@ -119,68 +117,82 @@ class helloWorld extends BaseCustomPlugin {
 module.exports = { plugin: helloWorld }
 ```
 
+验证：
 
-
-步骤三（验证）：重启 Typora
-
-1. 打开 Chrome devtools，发现控制台输出了 `I am in process` 、插件对象 和 Element。
-2. 右键鼠标弹出菜单，鼠标悬停在 `常用插件 -> 二级插件 -> 你好世界`。发现出现了 hint，显示 `this is hello world hint`。点击 `你好世界`，发现弹出了提示框，显示 `this is hello world plugin`。
-3. 键入快捷键 `ctrl+alt+u`，发现弹出了同样的提示框。
-
-
-
-### 示例二：简易功能
-
-> 此示例来自 [issue#523](https://github.com/obgnail/typora_plugin/issues/523)，简易实现了一个轻量化的需求，旨在让用户了解如何实现一个插件。
-
-需求：md 文档中有几百行的复选框（任务列表）内容，一个个点选中或取消，效率太低了。希望开发全选、反选复选框功能的插件。
+1. 重启 Typora。
+2. 打开 Chrome devtools，发现控制台输出了 `I am in process` 、插件对象 和 Element。
+3. 右键鼠标弹出菜单，鼠标悬停在 `常用插件 -> 二级插件 -> 你好世界`。发现出现了 hint，显示 `this is hello world hint`。点击 `你好世界`，发现弹出了提示框，显示 `this is hello world plugin`。
+4. 键入快捷键 `ctrl+alt+u`，发现弹出了同样的提示框。
 
 
 
-步骤一：打开文件 `plugin\global\settings\custom_plugin.user.toml`，添加下面内容：
+### 示例二：插入思维导图
+
+需求：在右键菜单中添加一个 `插入思维导图` 选项，功能为：获取文件大纲，使用 graph 类型的 mermaid 图形作为思维导图插入到文档中。
+
+实现：
+
+1. 步骤一：在 `./plugin/global/settings/custom_plugin.user.toml` 添加配置。
+2. 步骤二：在 `./plugin/custom/plugins` 目录下，创建和插件同名的 js 文件（`insertMindmap.js`），在此文件中创建一个 class 继承自 BaseCustomPlugin，并导出为 `plugin`。
 
 ```toml
-[selectCheckboxes]
-name = "反选复选框"       # 插件名称
-enable = true           # 是否启用此二级插件
-hide = false            # 是否在右键菜单中隐藏
-order = 1               # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
+# ./plugin/global/settings/custom_plugin.user.toml
 
-select_all_hotkey = "ctrl+alt+h"      # 全选快捷键
-select_none_hotkey = "ctrl+alt+j"     # 取消全部选择快捷键
-select_reverse_hotkey = "ctrl+alt+k"  # 反选快捷键
+[insertMindmap]
+name = "插入思维导图"  # 插件名称
+enable = true        # 是否启用此二级插件
+hide = false         # 是否在右键菜单中隐藏
+order = 1            # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 ```
-
-步骤二：打开目录 `plugin\custom\plugins`，在此目录下创建文件 `selectCheckboxes.js`，写入如下内容：
 
 ```javascript
-class selectCheckboxes extends BaseCustomPlugin {
-    rangeTaskListItem = fn => document.querySelectorAll('.md-task-list-item input[type="checkbox"]').forEach(fn)
+// ./plugin/custom/plugins/insertMindmap.js
 
-    selectAll = input => !input.checked && input.click()
-    selectNone = input => input.checked && input.click()
-    selectReverse = input => input.click()
-
-    process = () => {
-        const { select_all_hotkey, select_none_hotkey, select_reverse_hotkey } = this.config
-        this.utils.hotkeyHub.register([
-            { hotkey: select_all_hotkey, callback: () => this.rangeTaskListItem(this.selectAll) },
-            { hotkey: select_none_hotkey, callback: () => this.rangeTaskListItem(this.selectNone) },
-            { hotkey: select_reverse_hotkey, callback: () => this.rangeTaskListItem(this.selectReverse) },
-        ])
+class insertMindmap extends BaseCustomPlugin {
+    callback = anchorNode => {
+        const tree = this.utils.getTocTree()
+        const mermaid = this._toGraph(tree)
+        this.utils.insertText(null, mermaid)
     }
 
-    callback = () => this.rangeTaskListItem(this.selectReverse)
+    _toGraph = tree => {
+        let num = 0
+        const getName = node => {
+            if (node._shortName) {
+                return node._shortName
+            }
+            node._shortName = "T" + ++num
+            const name = node.text.replace(/"/g, "")
+            return `${node._shortName}("${name}")`
+        }
+        const getTokens = (node, list) => {
+            node.children.forEach(child => list.push(getName(node), "-->", getName(child), "\n"))
+            node.children.forEach(child => getTokens(child, list))
+            return list
+        }
+        const tokens = getTokens(tree, ["graph LR", "\n"])
+        return ["```mermaid", "\n", ...tokens, "```"].join("")
+    }
 }
 
-module.exports = { plugin: selectCheckboxes }
+module.exports = { plugin: insertMindmap }
 ```
 
-步骤三：重启 Typora，创建一个带有任务列表的 md 文件，尝试以下操作：
+验证：
 
-- [x] ctrl+alt+h：全选
-- [x] ctrl+alt+j：取消全部选择
-- [x] ctrl+alt+k：反选
+打开 Typora，右键弹出菜单，`常用插件 -> 二级插件 -> 插入思维导图`，点击。
+
+比如当前文件生成的图形如下所示：
+
+```mermaid
+graph LR
+T1("README")-->T2("custom：用户自定义插件，提供开放能力")
+T2-->T3("简介")
+T2-->T4("如何使用")
+T2-->T5("示例一：快速开始")
+T2-->T6("示例二：插入思维导图")
+T2-->T7("示例三：实战")
+```
 
 
 
@@ -194,7 +206,8 @@ module.exports = { plugin: selectCheckboxes }
 
 实现：
 
-步骤一：修改 `./plugin/global/settings/custom_plugin.user.toml`，添加配置：
+1. 步骤一：在 `./plugin/global/settings/custom_plugin.user.toml` 添加配置。
+2. 步骤二：在 `./plugin/custom/plugins` 目录下，创建和插件同名的 js 文件（`myFullPathCopy.js`），在此文件中创建一个 class 继承自 BaseCustomPlugin，并导出为 `plugin`。
 
 ```toml
 # ./plugin/global/settings/custom_plugin.user.toml
@@ -213,12 +226,7 @@ untitled_file_name = "untitled"
 ignore_empty_header = false
 # 标题和提示之前添加空格
 add_space = true
-# 使用绝对路径
-full_file_path = false
 ```
-
-
-步骤二：在 `./plugin/custom/plugins` 目录下，创建和插件同名的 js 文件（`myFullPathCopy.js`），在此文件中创建一个 class 继承自 BaseCustomPlugin，并导出为 `plugin`。
 
 ```javascript
 // ./plugin/custom/plugins/myFullPathCopy.js
@@ -250,41 +258,41 @@ class myFullPathCopy extends BaseCustomPlugin {
     }
 
     getFullPath = () => {
-        const paragraphList = ["H1", "H2", "H3", "H4", "H5", "H6"]
+        const headers = []
+        const paragraphs = ["H1", "H2", "H3", "H4", "H5", "H6"]
         const nameList = ["一级标题", "二级标题", "三级标题", "四级标题", "五级标题", "六级标题"]
-        const pList = []
-        let ele = anchorNode
 
+        let ele = anchorNode
         while (ele) {
-            const idx = paragraphList.indexOf(ele.tagName)
-            if (idx !== -1) {
-                if (pList.length === 0 || (pList[pList.length - 1].idx > idx)) {
-                    pList.push({ ele, idx })
-                    if (pList[pList.length - 1].idx === 0) break
+            const idx = paragraphs.indexOf(ele.tagName)
+            if (idx !== -1 && (headers.length === 0 || (headers[headers.length - 1].idx > idx))) {
+                headers.push({ ele, idx })
+                if (idx === 0) {
+                    break
                 }
             }
             ele = ele.previousElementSibling
         }
 
-        pList.reverse()
+        headers.reverse()
 
-        let filePath = this.config.full_file_path ? this.utils.getFilePath() : File.getFileName()
-        filePath = filePath || this.config.untitled_file_name
+        const filePath = this.utils.getFilePath() || this.config.untitled_file_name
         const result = [filePath]
-        let headerIdx = 0
-        for (const p of pList) {
-            while (headerIdx < 6 && p.ele.tagName !== paragraphList[headerIdx]) {
+        
+        let idx = 0
+        for (const h of headers) {
+            while (idx < 6 && h.ele.tagName !== paragraphs[idx]) {
                 if (!this.config.ignore_empty_header) {
-                    const name = this.getHeaderName("无", nameList[headerIdx])
+                    const name = this.getHeaderName("无", nameList[idx])
                     result.push(name)
                 }
-                headerIdx++
+                idx++
             }
 
-            if (p.ele.tagName === paragraphList[headerIdx]) {
-                const name = this.getHeaderName(p.ele.querySelector("span").textContent, nameList[headerIdx])
+            if (h.ele.tagName === paragraphs[idx]) {
+                const name = this.getHeaderName(h.ele.textContent, nameList[idx])
                 result.push(name)
-                headerIdx++
+                idx++
             }
         }
 
@@ -316,8 +324,6 @@ module.exports = { plugin: myFullPathCopy }
 // 11. callback: 右键菜单中点击/键入快捷键后的回调函数。anchorNode 参数: 鼠标光标所在的 Element
 // 12. export: 导出为 plugin
 ```
-
-
 
 验证：
 

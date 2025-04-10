@@ -234,12 +234,12 @@ class easyModifyPlugin extends BasePlugin {
         const getComment = type => (type === "mindmap" && !window.mermaidAPI.defaultConfig.mindmap) ? `%%${errorMsg}\n` : ""
         const mermaidFunc = {
             mindmap: tree => {
-                const preOrder = (node, list, indent) => {
-                    list.push("\t".repeat(indent), clean(node.text), "\n")
-                    node.children.forEach(child => preOrder(child, list, indent + 1))
-                    return list
+                const getTokens = (node, ret, indent) => {
+                    ret.push("\t".repeat(indent), clean(node.text), "\n")
+                    node.children.forEach(child => getTokens(child, ret, indent + 1))
+                    return ret
                 }
-                return preOrder(tree, ["mindmap", "\n"], 1)
+                return getTokens(tree, ["mindmap", "\n"], 1)
             },
             graph: tree => {
                 let num = 0
@@ -250,21 +250,21 @@ class easyModifyPlugin extends BasePlugin {
                     node._shortName = "T" + ++num
                     return node._shortName + clean(node.text)
                 }
-                const levelOrder = (node, list) => {
-                    node.children.forEach(child => list.push(getName(node), "-->", getName(child), "\n"))
-                    node.children.forEach(child => levelOrder(child, list))
-                    return list
+                const getTokens = (node, ret) => {
+                    node.children.forEach(child => ret.push(getName(node), "-->", getName(child), "\n"))
+                    node.children.forEach(child => getTokens(child, ret))
+                    return ret
                 }
-                return levelOrder(tree, ["graph LR", "\n"])
+                return getTokens(tree, ["graph LR", "\n"])
             }
         }
         const func = mermaidFunc[type]
         if (!func) return
 
-        const toc = this.utils.getTocTree()
-        const lines = func(toc)
-        const content = ["```mermaid\n", getComment(type), lines.join(""), "```"].join("")
-        this.utils.insertText(target, content)
+        const tree = this.utils.getTocTree()
+        const tokens = func(tree)
+        const mermaid = ["```mermaid", "\n", getComment(type), ...tokens, "```"].join("")
+        this.utils.insertText(target, mermaid)
     }
 }
 
