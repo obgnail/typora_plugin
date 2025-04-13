@@ -321,9 +321,9 @@ class autoNumberPlugin extends BasePlugin {
         }
         const DEFAULT_STYLE = "d"
 
-        const byLength = (a, b) => b.length - a.length
-        const names = [...Object.keys(NAMES)].sort(byLength).join("|")
-        const styles = [...Object.keys(STYLES)].sort(byLength).join("|")
+        const joinKeys = (obj) => [...Object.keys(obj)].sort((a, b) => b.length - a.length).join("|")
+        const names = joinKeys(NAMES)
+        const styles = joinKeys(STYLES)
         const regex = new RegExp(`\\{\\s*(${names})(?::(${styles}))?\\s*\\}`, "gi")
 
         const buildCounter = (type, lo) => {
@@ -369,54 +369,56 @@ class exportHelper {
     }
 
     afterGetHeaderMatrix = headers => {
-        if (!this.inExport) return;
-        this.inExport = false;
+        if (!this.inExport) return
+        this.inExport = false
 
-        const numbering = { H2: 0, H3: 0, H4: 0, H5: 0, H6: 0 };
+        const N = { H2: 0, H3: 0, H4: 0, H5: 0, H6: 0 }
         headers.forEach(header => {
-            const tagName = "H" + header[0];
-            if (!numbering.hasOwnProperty(tagName)) return;
+            const tagName = "H" + header[0]
+            if (!N.hasOwnProperty(tagName)) return
 
-            let val = "";
+            let val = ""
             switch (tagName) {
                 case "H1":
-                    numbering.H2 = 0;
+                    N.H2 = 0
                     break
                 case "H2":
-                    numbering.H3 = 0;
-                    numbering.H2++;
-                    val = `${numbering.H2}. `;
+                    N.H3 = 0
+                    N.H2++
+                    val = `${N.H2}. `
                     break
                 case "H3":
-                    numbering.H4 = 0;
-                    numbering.H3++;
-                    val = `${numbering.H2}.${numbering.H3} `;
+                    N.H4 = 0
+                    N.H3++
+                    val = `${N.H2}.${N.H3} `
                     break
                 case "H4":
-                    numbering.H5 = 0;
-                    numbering.H4++;
-                    val = `${numbering.H2}.${numbering.H3}.${numbering.H4} `;
+                    N.H5 = 0
+                    N.H4++
+                    val = `${N.H2}.${N.H3}.${N.H4} `
                     break
                 case "H5":
-                    numbering.H6 = 0;
-                    numbering.H5++;
-                    val = `${numbering.H2}.${numbering.H3}.${numbering.H4}.${numbering.H5} `;
+                    N.H6 = 0
+                    N.H5++
+                    val = `${N.H2}.${N.H3}.${N.H4}.${N.H5} `
                     break
                 case "H6":
-                    numbering.H6++;
-                    val = `${numbering.H2}.${numbering.H3}.${numbering.H4}.${numbering.H5}.${numbering.H6} `;
+                    N.H6++
+                    val = `${N.H2}.${N.H3}.${N.H4}.${N.H5}.${N.H6} `
                     break
             }
-            header[1] = val + header[1];
+            header[1] = val + header[1]
         })
     }
 
     process = () => {
-        this.plugin.utils.exportHelper.register("auto_number", this.beforeExport);
+        this.plugin.utils.exportHelper.register(this.plugin.fixedName, this.beforeExport)
         this.plugin.utils.decorate(
             () => File && File.editor && File.editor.library && File.editor.library.outline,
-            "getHeaderMatrix", null, this.afterGetHeaderMatrix
-        );
+            "getHeaderMatrix",
+            null,
+            this.afterGetHeaderMatrix,
+        )
     }
 }
 

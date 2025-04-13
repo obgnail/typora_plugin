@@ -1053,9 +1053,12 @@ default_show_toc = false
 # 大纲目录的字体大小
 toc_font_size = "1em"
 
-# ------------------- 展示名称 -------------------
+# ------------------- 展示 -------------------
 # 用于配置在大纲中显示的特殊元素对应的名称
-show_name = { fence = "Fence", image = "Figure", table = "Table", link = "Link", math = "Math" }
+show_name = { fence = "Fence", image = "Image", table = "Table", link = "Link", math = "Math" }
+
+# 生成特殊元素的大纲，是否同时显示标题的内容
+include_headings = { fence = true, image = true, table = true, link = true, math = true }
 
 
 ################### resourceOperation ###################
