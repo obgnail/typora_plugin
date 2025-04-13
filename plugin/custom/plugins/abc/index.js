@@ -28,8 +28,7 @@ class abcPlugin extends BaseCustomPlugin {
     }
 
     create = ($wrap, content) => {
-        const options = { ...this.config.VISUAL_OPTIONS }  // set prototype
-        this.ABCJS.renderAbc($wrap[0], content, options)
+        this.ABCJS.renderAbc($wrap[0], content, this.config.VISUAL_OPTIONS)
     }
 
     versionGetter = () => this.ABCJS && this.ABCJS.signature

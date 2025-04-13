@@ -79,14 +79,17 @@ class stateRecorder {
     }
 
     process = () => {
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.beforeFileOpen, this.collect);
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.fileContentLoaded, this.restore);
+        const { eventHub } = this.utils
+        eventHub.addEventListener(eventHub.eventType.beforeFileOpen, this.collect)
+        eventHub.addEventListener(eventHub.eventType.fileContentLoaded, this.restore)
     }
 
     afterProcess = () => {
-        if (this.recorders.size) return;
-        this.utils.eventHub.removeEventListener(this.utils.eventHub.eventType.beforeFileOpen, this.collect);
-        this.utils.eventHub.removeEventListener(this.utils.eventHub.eventType.fileContentLoaded, this.restore);
+        if (this.recorders.size === 0) {
+            const { eventHub } = this.utils
+            eventHub.removeEventListener(eventHub.eventType.beforeFileOpen, this.collect)
+            eventHub.removeEventListener(eventHub.eventType.fileContentLoaded, this.restore)
+        }
     }
 }
 

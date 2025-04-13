@@ -326,7 +326,7 @@ class utils {
         });
     }
 
-    static dateTimeFormat = (date = new Date(), format = "yyyy-MM-dd HH:mm:ss", locale = "en") => {
+    static dateTimeFormat = (date = new Date(), format = "yyyy-MM-dd HH:mm:ss", locale = undefined) => {
         const fns = {
             yyyy: () => date.getFullYear().toString(),
             yyy: () => (date.getFullYear() % 1000).toString().padStart(3, "0"),

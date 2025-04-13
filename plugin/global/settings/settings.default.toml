@@ -391,7 +391,7 @@ IGNORE_WORDS = []
 # ------------------- 忽略正则 -------------------
 # 指定不希望在内部或前后添加空格的正则表达式列表
 #   插件不会在匹配这些正则表达式的文本内部或前后添加额外的空格
-IGNORE_PATTERNS = ["<br\\s*?/?>", ":[0-9a-z_\\-]+?:", "<u>.+?</u>", '<span style=".+?">.+?</span>']
+IGNORE_PATTERNS = ['<br\s*?/?>', ':[0-9a-z_\-]+?:', '<u>.+?</u>', '<span style=".+?">.+?</span>']
 
 
 ################### read_only ###################
@@ -1780,7 +1780,7 @@ NAME = ""
 #  若您不了解正则表达式，请勿修改
 #  注意：keyword 需要使用命名捕获组 kw
 #  默认值：匹配一个文本，该文本以 / 或 \ 开头，后面紧跟任意数量英文字母或数字，且该文本前面不可有 <
-TRIGGER_REGEXP = "(?<!<)[\\/\\\\](?<kw>\\w*)$"
+TRIGGER_REGEXP = '(?<!<)[\/\\](?<kw>\w*)$'
 
 # 显示命令候选框的时机
 #   on_input: 输入后立刻显示
@@ -1788,7 +1788,7 @@ TRIGGER_REGEXP = "(?<!<)[\\/\\\\](?<kw>\\w*)$"
 SUGGESTION_TIMING = "on_input"
 
 # ------------------- 匹配策略 -------------------
-# 命令的匹配策略：什么样的用户输入内容才能找到对应的命令
+# 命令的匹配策略：什么样的输入内容才能找到对应的命令
 #   prefix: 前缀。输入内容必须是命令的前缀。比如：输入 para 可找到 Paragraph 命令
 #   substr: 子串。输入内容必须是命令的子串。比如：输入 graph 可找到 Paragraph 命令
 #   abbr:   缩写。输入的每个字符按顺序出现在命令中。比如：输入 pgh 可找到 Paragraph 命令
@@ -1799,7 +1799,7 @@ MATCH_STRATEGY = "abbr"
 #   predefined:    按照下面 COMMANDS 选项的顺序
 #   lexicographic: 字典序（字母顺序）
 #   length_based:  长度顺序
-#   earliest_hit:  最早命中（越早出现命中字符就越排在前）。比如：输入 to 时，TOC 命令排在 Strong 命令前面，因为 t 在两者的出现顺序为 1 和 2
+#   earliest_hit:  最早命中
 ORDER_STRATEGY = "predefined"
 
 # ------------------- 进阶：命令参数 -------------------
@@ -1808,9 +1808,12 @@ ORDER_STRATEGY = "predefined"
 #   - 带参命令的调用形式为 /command_param1_param2。使用下划线进行分隔，第一项为动态命令的标识符，其余项为命令参数
 # 举例：
 #   - 无参命令 `H1` 的功能是将当前行转为一级标题。用户输入 /h1 即可调用此命令的回调函数
-#   - 带参命令 `BlockCodeGenerator` 的功能是快速创建多个代码块。用户输入 /blockCodeGenerator_go_java_bash 时，系统会自动获取参数 ["go", "java", "bash"] 传给此命令的回调函数，创建对应的代码块
+#   - 带参命令 `BlockCodeGenerator` 的功能是快速创建多个代码块。用户输入 /blockCodeGenerator_go_java_bash 时，插件会自动获取参数 ["go", "java", "bash"] 传给此命令的回调函数，创建对应的代码块
 
 # 命令的参数分离标识符
+#   强烈不建议修改此选项
+#   若执意修改，请同步修改 TRIGGER_REGEXP，使之匹配
+#   比如，若将此选项从下划线改成中划线 "-"，由于 \w 无法匹配中划线，会导致命令参数功能失效。因此需改成 TRIGGER_REGEXP = '(?<!<)[\/\\](?<kw>[0-9a-zA-Z_-]*)$'
 FUNC_PARAM_SEPARATOR = "_"
 
 # ------------------- 命令列表 -------------------
@@ -1900,11 +1903,11 @@ COMMANDS = [
     { enable = true, type = "snippet", icon = "🧩", keyword = "cursorOffsetExample", cursorOffset = [-23, -10], callback = "Enjoying Typora Plugin? Star us!" },
     { enable = true, type = "snippet", icon = "🧩", keyword = "SnippetExample", callback = "https://github.com/obgnail/typora_plugin" },
     # 动态文本片段
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Datetime", callback = "() => new Date().toLocaleString(undefined, {hour12: false})" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Date", callback = "() => { let d = new Date(); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}` }" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Time", callback = "() => { let d = new Date(); return `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}` }" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Datetime", callback = "() => this.utils.dateTimeFormat(new Date(), 'yyyy/MM/dd HH:mm:ss')" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Date", callback = "() => this.utils.dateTimeFormat(new Date(), 'yyyy/MM/dd')" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Time", callback = "() => this.utils.dateTimeFormat(new Date(), 'HH:mm:ss')" },
+    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Weekday", callback = "() => this.utils.dateTimeFormat(new Date(), 'dddd')" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "Timestamp", callback = "() => new Date().getTime().toString()" },
-    { enable = true, type = "gen-snp", icon = "🧩", keyword = "Weekday", callback = "() => new Date().toLocaleDateString(undefined, { weekday: 'long' })" },
     { enable = true, type = "gen-snp", icon = "🧩", keyword = "UUID", callback = "() => this.utils.getUUID()" },
     # 行内公式内才可使用
     { enable = true, type = "snippet", icon = "🧩", keyword = "alpha", hint = "α", scope = "inline_math", callback = "\\alpha " },

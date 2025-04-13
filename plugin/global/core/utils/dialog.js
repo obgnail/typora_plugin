@@ -10,17 +10,6 @@ class dialog {
         this.reset();
     }
 
-    html = () => `
-        <dialog id="plugin-custom-modal">
-            <div class="plugin-custom-modal-header"><div class="plugin-custom-modal-title" data-lg="Front"></div></div>
-            <div class="plugin-custom-modal-body"><form role="form"></form></div>
-            <div class="plugin-custom-modal-footer">
-                <button type="button" class="btn btn-default plugin-modal-cancel">${this.i18n.t("global", "cancel")}</button>
-                <button type="button" class="btn btn-primary plugin-modal-submit">${this.i18n.t("global", "confirm")}</button>
-            </div>
-        </dialog>
-    `
-
     reset = (modal, submit, cancel) => {
         this.modalOption = modal;
         this.submitCallback = submit;
@@ -28,8 +17,18 @@ class dialog {
     }
 
     process = async () => {
-        await this.utils.styleTemplater.register("plugin-common-modal");
-        this.utils.insertElement(this.html());
+        await this.utils.styleTemplater.register("plugin-common-modal")
+        this.utils.insertElement(`
+            <dialog id="plugin-custom-modal">
+                <div class="plugin-custom-modal-header"><div class="plugin-custom-modal-title" data-lg="Front"></div></div>
+                <div class="plugin-custom-modal-body"><form role="form"></form></div>
+                <div class="plugin-custom-modal-footer">
+                    <button type="button" class="btn btn-default plugin-modal-cancel">${this.i18n.t("global", "cancel")}</button>
+                    <button type="button" class="btn btn-primary plugin-modal-submit">${this.i18n.t("global", "confirm")}</button>
+                </div>
+            </dialog>
+        `)
+
         this.entities = {
             modal: document.querySelector("#plugin-custom-modal"),
             body: document.querySelector("#plugin-custom-modal .plugin-custom-modal-body"),
@@ -38,6 +37,7 @@ class dialog {
             submit: document.querySelector("#plugin-custom-modal .plugin-modal-submit"),
             cancel: document.querySelector("#plugin-custom-modal .plugin-modal-cancel"),
         }
+
         this.entities.form.addEventListener("input", ev => {
             const target = ev.target;
             const type = target.getAttribute("type");
@@ -93,7 +93,9 @@ class dialog {
                 }
             })
         })
-        onload && onload(this.entities.modal);
+        if (onload) {
+            onload(this.entities.modal)
+        }
     }
 
     getWidgetValue = (comp, widget) => {

@@ -15,38 +15,39 @@ class hotkeyHub {
         return [...modifierKeys, mainKey].join("+");
     }
 
-    _register = (hotkey, call) => {
+    /**
+     * @param {string} hotkey: e.g. "ctrl+shift+c"
+     * @param {function} callback: callback function on hotkey
+     */
+    registerSingle = (hotkey, callback) => {
         if (typeof hotkey === "string" && hotkey.length) {
-            this.map.set(this.normalize(hotkey), call);
-            // A callback may correspond to multiple hotkeys.
-        } else if (hotkey instanceof Array) {
+            this.map.set(this.normalize(hotkey), callback)
+        } else if (Array.isArray(hotkey)) {
             for (const hk of hotkey) {
-                this._register(hk, call);
+                this.registerSingle(hk, callback)
             }
         }
     }
 
     /**
-     * Does not validate the legality of hotkeyString. The caller needs to ensure that the hotkey is not occupied and has no typos.
-     * @param {[{string, function}]} hotkeyList: [ { hotkey: "ctrl+shift+c", callback: () => console.log("ctrl+shift+c pressed") }, ]
+     * @param {[{string, function}]} hotkeys
      */
-    register = hotkeyList => {
-        if (!hotkeyList) return;
-        for (const item of hotkeyList) {
-            if (item instanceof Array) {
-                this.register(item);
+    register = hotkeys => {
+        if (!hotkeys) return
+
+        for (const item of hotkeys) {
+            if (Array.isArray(item)) {
+                this.register(item)
             } else {
-                this._register(item.hotkey, item.callback);
+                this.registerSingle(item.hotkey, item.callback)
             }
         }
     }
 
     /**
-     * @param {string} hotkeyString: "ctrl+shift+c"
+     * @param {string} hotkey: e.g. "ctrl+shift+c"
      */
-    unregister = hotkeyString => this.map.delete(this.normalize(hotkeyString))
-
-    registerSingle = (hotkeyString, callback) => this._register(hotkeyString, callback)
+    unregister = hotkey => this.map.delete(this.normalize(hotkey))
 
     process = () => {
         window.addEventListener("keydown", ev => {
