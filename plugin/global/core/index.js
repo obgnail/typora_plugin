@@ -1,4 +1,5 @@
 const { i18n } = require("./i18n")
+const { polyfill } = require("./polyfill")
 const { utils, hook } = require("./utils")
 const { BasePlugin, BaseCustomPlugin, LoadPlugins } = require("./plugin")
 
@@ -53,6 +54,7 @@ async function entry() {
         showWarn()
     }
 
+    polyfill()
     await launch()
 }
 

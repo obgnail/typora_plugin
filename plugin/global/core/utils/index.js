@@ -1071,7 +1071,6 @@ class utils {
 
 const newMixin = (utils) => {
     const MIXIN = {
-        ...require("./polyfill"),
         ...require("./settings"),
         ...require("./migrate"),
         ...require("./hotkeyHub"),
@@ -1109,15 +1108,13 @@ const getHook = utils => {
 
     const {
         hotkeyHub, eventHub, stateRecorder, exportHelper, contextMenu,
-        notification, progressBar, dialog, diagramParser, thirdPartyDiagramParser,
-        extra, polyfill,
+        notification, progressBar, dialog, diagramParser, thirdPartyDiagramParser, extra,
     } = mixin
 
     const registerMixin = (...ele) => Promise.all(ele.map(h => h.process && h.process()))
     const optimizeMixin = () => Promise.all(Object.values(mixin).map(h => h.afterProcess && h.afterProcess()))
 
     const registerPreMixin = async () => {
-        await registerMixin(polyfill)
         await registerMixin(extra)
         await registerMixin(contextMenu, notification, progressBar, dialog, stateRecorder, hotkeyHub, exportHelper)
     }
