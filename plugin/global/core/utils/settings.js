@@ -10,28 +10,44 @@ class settings {
         const exist = await this.utils.existPath(homeSettingPath)
         return exist ? homeSettingPath : this.getOriginSettingPath(settingFile)
     }
-
-    saveSettings = async (fixedName, updateObj) => {
-        let isCustom = false
-        let plugin = this.utils.getPlugin(fixedName)
-        if (!plugin) {
-            plugin = this.utils.getCustomPlugin(fixedName)
-            isCustom = true
+    getSettingFileName = (fixedName) => {
+        if (this.utils.getPluginSetting(fixedName)) {
+            return "settings.user.toml"
+        } else if (this.utils.getCustomPluginSetting(fixedName)) {
+            return "custom_plugin.user.toml"
         }
-        if (!plugin) return
-        const file = isCustom ? "custom_plugin.user.toml" : "settings.user.toml"
-        return this._saveSettings(file, fixedName, updateObj)
     }
 
-    _saveSettings = async (targetFile, fixedName, updateObj) => {
-        const settingPath = await this.getActualSettingPath(targetFile)
-        const tomlObj = await this.utils.readTomlFile(settingPath)
-        const mergedObj = this.utils.merge(tomlObj, { [fixedName]: updateObj })
-        const content = this.utils.stringifyToml(mergedObj).replace(/\r\n/g, "\n")
+    _handleSettings = async (fixedName, handler) => {
+        const settingFileName = this.getSettingFileName(fixedName)
+        const settingPath = await this.getActualSettingPath(settingFileName)
+        const settingObj = await this.utils.readTomlFile(settingPath)
+        const resultObj = handler(settingObj)
+        const content = this.utils.stringifyToml(resultObj).replace(/\r\n/g, "\n")
         return this.utils.writeFile(settingPath, content)
     }
 
-    saveGlobalSettings = async (updateObj) => this._saveSettings("settings.user.toml", "global", updateObj)
+    clearSettings = async (fixedName) => {
+        const handler = settingObj => {
+            delete settingObj[fixedName]
+            return settingObj
+        }
+        return this._handleSettings(fixedName, handler)
+    }
+
+    clearAllSettings = async () => {
+        const files = ["settings.user.toml", "custom_plugin.user.toml"]
+        const promises = files.map(async file => {
+            const path = await this.getActualSettingPath(file)
+            return this.utils.writeFile(path, "")
+        })
+        return Promise.all(promises)
+    }
+
+    saveSettings = async (fixedName, updateObj) => {
+        const handler = settingObj => this.utils.merge(settingObj, { [fixedName]: updateObj })
+        return this._handleSettings(fixedName, handler)
+    }
 
     autoSaveSettings = plugin => {
         const { saveSettings } = this

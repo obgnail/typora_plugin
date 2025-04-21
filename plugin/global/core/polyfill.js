@@ -9,14 +9,14 @@ function At() {
         }
         return this[n]
     }
-    const TypedArray = Reflect.getPrototypeOf(Int8Array)
-    for (const type of [Array, String, TypedArray]) {
+
+    for (const type of [Array, String, Int8Array]) {
         if (!type.prototype.at) {
             Object.defineProperty(type.prototype, "at", {
                 value: at,
-                writable: true,
+                configurable: true,
                 enumerable: false,
-                configurable: true
+                writable: true,
             })
         }
     }
@@ -35,11 +35,26 @@ function HasOwn() {
     }
 }
 
-function polyfill() {
-    At()
-    HasOwn()
+function GroupBy() {
+    if (!Object.groupBy) {
+        Object.defineProperty(Object, "groupBy", {
+            value(items, callback) {
+                return items.reduce((acc, item, index, array) => {
+                    const key = callback.call(this, item, index, array)
+                    if (acc[key] === undefined) {
+                        acc[key] = []
+                    }
+                    acc[key].push(item)
+                    return acc
+                }, {})
+            },
+            configurable: true,
+            enumerable: false,
+            writable: true,
+        })
+    }
 }
 
-module.exports = {
-    polyfill
-}
+At()
+HasOwn()
+GroupBy()

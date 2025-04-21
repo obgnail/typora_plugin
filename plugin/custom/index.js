@@ -92,7 +92,7 @@ class customPluginLoader {
     }
 
     loadCustomPlugins = async settings => {
-        const { enable, disable, stop, error, nosetting } = await global.LoadPlugins(settings, true)
+        const { enable, disable, stop, error, nosetting } = await global.LoadPlugins(settings)
         this.controller.plugins = enable
     }
 

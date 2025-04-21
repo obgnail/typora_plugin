@@ -146,7 +146,7 @@ Theoretically, they can remain effective for a long time, and I am maintaining t
 
 ### How to permanently disable/enable certain plugins?
 
-Right-click menu -> Less Used Plugins -> Enable/Disable Plugins.
+Right-click menu -> Less Used Plugins -> Preferences.
 
 
 ### How to modify plugin configurations?
@@ -424,7 +424,7 @@ Usage:
 
 ### preferences
 
-Usage: Right-click menu -> Less Used Plugins -> Enable/Disable Plugins
+Usage: Right-click menu -> Less Used Plugins -> preferences
 
 ### echarts: Provide Echarts Support
 

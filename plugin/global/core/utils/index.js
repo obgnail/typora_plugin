@@ -32,9 +32,8 @@ class utils {
     static getPlugin = fixedName => global.__plugins__[fixedName]
     static getCustomPlugin = fixedName => global.__plugins__.custom && global.__plugins__.custom.plugins[fixedName]
     static getAllPluginSettings = () => global.__plugin_settings__
-    static getAllGlobalSettings = () => global.__global_settings__
     static getAllCustomPluginSettings = () => (global.__plugins__.custom && global.__plugins__.custom.pluginsSettings) || {}
-    static getGlobalSetting = name => global.__global_settings__[name]
+    static getGlobalSetting = name => global.__plugin_settings__.global[name]
     static getPluginSetting = fixedName => global.__plugin_settings__[fixedName]
     static getCustomPluginSetting = fixedName => this.getAllCustomPluginSettings()[fixedName]
     static tryGetPlugin = fixedName => this.getPlugin(fixedName) || this.getCustomPlugin(fixedName)
@@ -407,6 +406,20 @@ class utils {
     }
 
     ////////////////////////////// business file operation //////////////////////////////
+    static _plugin_version = ""
+    static getPluginVersion = async () => {
+        if (!this._plugin_version) {
+            const file = this.joinPath("./plugin/bin/version.json")
+            try {
+                const { tag_name } = await this.Package.FsExtra.readJson(file)
+                this._plugin_version = tag_name
+            } catch (err) {
+                this._plugin_version = "Unknown"
+            }
+        }
+        return this._plugin_version
+    }
+
     /**
      * @param {boolean} shouldSave - Whether to save the content.
      * @param {string} contentType - The content type (e.g., 'markdown', 'html').
@@ -627,15 +640,6 @@ class utils {
     ) => {
         const op = { type, title, message, detail, buttons, defaultId, cancelId, normalizeAccessKeys, checkboxLabel };
         return JSBridge.invoke("dialog.showMessageBox", op)
-    }
-
-    static showRestartMessageBox = async (options) => {
-        const message = i18n.t("global", "reconfirmRestart")
-        const op = { type: "info", message, ...options }
-        const { response } = await this.showMessageBox(op)
-        if (response === 0) {
-            this.restartTypora()
-        }
     }
 
     static _markdownIt = null

@@ -32,7 +32,7 @@
 | 14   | right_click_menu        | 右键菜单统一管理插件                   |          |
 | 15   | pie_menu                | 圆盘菜单                               | ×        |
 | 16   | datatables              | 表格增强（搜索、过滤、分页、排序等）   | ×        |
-| 17   | preferences             | 启停插件                               |          |
+| 17   | preferences             | 插件配置                               |          |
 | 18   | markmap                 | 提供 markmap 组件支持                  |          |
 | 19   | echarts                 | 提供 echarts 组件支持                  |          |
 | 20   | chart                   | 提供 chartjs 组件支持                  |          |
@@ -145,7 +145,7 @@ yay -S typora-plugin
 
 ### 如何永久禁用/启用某些插件？
 
-右键菜单 -> 少用插件 -> 启停插件。
+右键菜单 -> 少用插件 -> 插件配置。
 
 
 
@@ -444,9 +444,9 @@ LIST = [
 
 
 
-### preferences：启停插件
+### preferences：插件配置
 
-使用方式：右键菜单 -> 少用插件 -> 启停插件
+使用方式：右键菜单 -> 少用插件 -> 插件配置
 
 
 

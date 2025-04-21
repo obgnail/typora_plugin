@@ -172,6 +172,7 @@ me: Supports basic Markdown syntax: **bold**, *italic*, `code`, ~~strikethrough~
 nickname1: Configuration can be modified using YAML front matter (similar to Markdown). \\n\\nThe `avatars` option sets user avatars. If an avatar is not configured, the user's initial is used as the avatar. \\n\\nTry adding `./assets/1.jpg` to the directory containing this file to see the corresponding user's avatar change.
 
 Note: Supports exporting to HTML, PDF, etc. This syntax is plugin-specific and not universal.
+```
 """
 
 
@@ -252,6 +253,7 @@ Code blocks are not supported (nested code blocks are discouraged).
 
 ## 2023-10-01
 Custom syntax; use with caution.
+```
 """
 
 
@@ -727,7 +729,7 @@ https://marp.app/
 # How to write slides
 
 Split pages by horizontal ruler (`---`). It's very simple! :satisfied:
-
+```
 """
 
 
@@ -1045,9 +1047,9 @@ right_click_outline_button_to_toggle = true
 #   例如： 20 表示占据页面 20% 的宽度
 width_percent_when_pin_right = 20
 
-# 每次打开 Typora 时，是否默认显示右侧大纲目录
-#   true:  默认显示右侧大纲目录
-#   false: 默认不显示右侧大纲目录
+# 每次打开 Typora 时，是否默认显示大纲目录
+#   true:  默认显示大纲目录
+#   false: 默认不显示大纲目录
 default_show_toc = false
 
 # 大纲目录的字体大小
@@ -1149,6 +1151,11 @@ hotkey = ""
 persistence = true
 
 # ------------------- 书签管理 -------------------
+# 修饰键：与鼠标左键结合使用
+#   支持 ctrl / alt / shift 的任意组合 (如 "shift+alt", "ctrl+shift")
+#   例如：若设置为 "alt"，则使用 Alt + 鼠标左键 标注书签
+modifier_key = "alt"
+
 # 当 alt + click 时，是否自动弹出书签管理器窗口
 #   true:  自动弹出书签管理器窗口
 #   false: 不自动弹出书签管理器窗口

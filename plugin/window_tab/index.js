@@ -428,25 +428,17 @@ class windowTabBarPlugin extends BasePlugin {
         { act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_ON_DUPLICATE },
         { act_value: "toggle_show_close_button", act_state: this.config.SHOW_TAB_CLOSE_BUTTON },
         { act_value: "toggle_show_path", act_state: this.config.SHOW_FULL_PATH_WHEN_HOVER },
-        { act_value: "toggle_hide_title_bar", act_state: this.config.HIDE_WINDOW_TITLE_BAR },
-        { act_value: "toggle_drag_style", act_state: this.config.JETBRAINS_DRAG_STYLE },
         { act_value: "toggle_limit_y_axis", act_state: this.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG, act_hidden: !this.config.JETBRAINS_DRAG_STYLE },
         { act_value: "toggle_ctrl_click", act_state: this.config.CTRL_CLICK_TO_NEW_WINDOW },
-        { act_value: "toggle_ctrl_wheel", act_state: this.config.CTRL_WHEEL_TO_SWITCH },
-        { act_value: "toggle_middle_click", act_state: this.config.MIDDLE_CLICK_TO_CLOSE },
         { act_value: "toggle_tab_bar", act_state: this.entities.windowTab.style.display === "none", act_hotkey: this.config.TOGGLE_TAB_BAR_HOTKEY },
         { act_value: "toggle_local", act_state: !this.localOpen },
     ])
 
     call = action => {
-        const toggleConfig = async (cfg, restart = false) => {
+        const toggleConfig = async (cfg) => {
             this.config[cfg] = !this.config[cfg]
             await this.utils.settings.saveSettings(this.fixedName, { [cfg]: this.config[cfg] })
-            if (!restart) {
-                this.rerenderTabBar()
-            } else {
-                await this.utils.showRestartMessageBox({ title: this.pluginName })
-            }
+            this.rerenderTabBar()
         }
         const callMap = {
             toggle_local: () => this.localOpen = !this.localOpen,
@@ -456,10 +448,6 @@ class windowTabBarPlugin extends BasePlugin {
             toggle_show_path: () => toggleConfig("SHOW_FULL_PATH_WHEN_HOVER"),
             toggle_show_close_button: () => toggleConfig("SHOW_TAB_CLOSE_BUTTON"),
             toggle_ctrl_click: () => toggleConfig("CTRL_CLICK_TO_NEW_WINDOW"),
-            toggle_middle_click: () => toggleConfig("MIDDLE_CLICK_TO_CLOSE", true),
-            toggle_ctrl_wheel: () => toggleConfig("CTRL_WHEEL_TO_SWITCH", true),
-            toggle_hide_title_bar: () => toggleConfig("HIDE_WINDOW_TITLE_BAR", true),
-            toggle_drag_style: () => toggleConfig("JETBRAINS_DRAG_STYLE", true),
             save_tabs: this.saveTabs,
             sort_tabs: this.sortTabs,
             open_save_tabs: this.openSaveTabs,
@@ -489,7 +477,7 @@ class windowTabBarPlugin extends BasePlugin {
             this._resetContentTop();
         } else {
             const { height: headerHeight, top: headerTop } = document.querySelector("header").getBoundingClientRect();
-            const _top = Math.max(top + height + this.config.TAB_CONTENT_GAP, headerHeight + headerTop);
+            const _top = Math.max(top + height, headerHeight + headerTop)
             const t = _top + "px";
             this.entities.content.style.top = t;
             this.entities.source.style.top = t;
@@ -818,7 +806,11 @@ class windowTabBarPlugin extends BasePlugin {
         this.switchTab(tabUtil.activeIdx);
     }
 
-    closeActiveTab = () => this.closeTab(this.tabUtil.activeIdx)
+    closeActiveTab = () => {
+        if (this.tabUtil.tabCount !== 0) {
+            this.closeTab(this.tabUtil.activeIdx)
+        }
+    }
 
     closeOtherTabs = idx => {
         this.tabUtil.reset([this.tabUtil.tabs[idx]])
