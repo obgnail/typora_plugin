@@ -137,6 +137,7 @@
     padding: 18px;
 }
 
+/***** tooltip *****/
 .plugin-preferences-tooltip {
     position: relative;
     display: inline-block;
@@ -191,6 +192,7 @@
     display: block;
 }
 
+/***** form box *****/
 .plugin-preferences-form-box {
     background: #FFF;
     border-radius: 8px;
@@ -198,6 +200,23 @@
     padding: 5px 0;
 }
 
+/***** title *****/
+.plugin-preferences-title {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    height: 42px;
+    line-height: 42px;
+    padding-left: 10px;
+}
+
+.plugin-preferences-title > span {
+    font-size: 12px;
+    color: #999;
+    padding-left: 8px;
+}
+
+/***** general control *****/
 .plugin-preferences-control {
     display: flex;
     padding: 8px 12px;
@@ -218,30 +237,6 @@
     font-size: 16px;
 }
 
-.plugin-preferences-title {
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    height: 42px;
-    line-height: 42px;
-    padding-left: 10px;
-}
-
-.plugin-preferences-title > span {
-    font-size: 12px;
-    color: #999;
-    padding-left: 8px;
-}
-
-.plugin-preferences-explain {
-    font-family: "Noto Sans SC";
-    font-size: 12px;
-    color: #999;
-    line-height: initial;
-    word-wrap: break-word;
-}
-
-/***** general *****/
 #plugin-preferences-dialog input[type="text"],
 #plugin-preferences-dialog input[type="number"],
 #plugin-preferences-dialog textarea {

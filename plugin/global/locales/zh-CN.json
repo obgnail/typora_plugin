@@ -486,7 +486,13 @@
     "pluginName": "圆盘菜单"
   },
   "preferences": {
-    "pluginName": "插件配置"
+    "pluginName": "插件配置",
+    "notification.settingsRestored": "已恢复默认",
+    "notification.allSettingsRestored": "已恢复所有默认",
+    "notification.changesSubmitted": "修改已提交",
+    "error.IncorrectJSONContent": "内容必须为正确的 JSON 格式",
+    "error.minItems": "至少选择 {{minItems}} 项",
+    "error.maxItems": "至多选择 {{maxItems}} 项"
   },
   "file_counter": {
     "pluginName": "文件计数"

@@ -232,8 +232,8 @@ const SETTING_SCHEMAS = {
             switchField("JETBRAINS_DRAG_STYLE", "JetBrains 风格的拖拽方式"),
             switchField("LOCK_DRAG_Y_AXIS", "禁止垂直拖拽"),
             switchField("LIMIT_TAB_Y_AXIS_WHEN_DRAG", "限制竖直拖拽"),
-            { key: "Y_AXIS_LIMIT_THRESHOLD", type: "number", label: "限制竖直拖拽幅度", explain: "拖拽垂直距离少于 X 倍标签高度，视为无垂直移动", min: 0.1, max: 3, step: 0.1 },
-            { key: "DRAG_NEW_WINDOW_THRESHOLD", type: "number", label: "拖拽以新建窗口", explain: "拖拽垂直距离超过 X 倍标签高度，视为新建窗口", tooltip: "-1 表示不启用" },
+            { key: "Y_AXIS_LIMIT_THRESHOLD", type: "number", label: "限制竖直拖拽幅度", tooltip: "拖拽垂直距离少于 X 倍标签高度，视为无垂直移动", min: 0.1, max: 3, step: 0.1 },
+            { key: "DRAG_NEW_WINDOW_THRESHOLD", type: "number", label: "拖拽以新建窗口", tooltip: "拖拽垂直距离超过 X 倍标签高度，视为新建窗口", tooltip: "-1 表示不启用" },
         ),
         RESTORE_SETTINGS_BOX,
     ],
@@ -250,7 +250,7 @@ const SETTING_SCHEMAS = {
         titledBox(
             "搜索",
             switchField("CASE_SENSITIVE", "区分大小写"),
-            { key: "OPTIMIZE_SEARCH", type: "switch", label: "搜索优化", explain: "副作用：影响高亮块顺序" },
+            { key: "OPTIMIZE_SEARCH", type: "switch", label: "搜索优化", tooltip: "副作用：影响高亮块顺序" },
             numberField("MAX_SIZE", UNITS.byte, "允许最大文件"),
         ),
         titledBox(
@@ -340,7 +340,7 @@ const SETTING_SCHEMAS = {
             "输入",
             selectField("DEFAULT_TOOL", OPTIONS.toolbar.DEFAULT_TOOL, "默认搜索工具"),
             switchField("USE_NEGATIVE_SEARCH", "启用负向查询"),
-            { key: "PAUSE_ON_COMPOSITION", type: "switch", label: "输入法优化", explain: "等待输入法输入完毕再执行搜索，减少无效搜索" },
+            { key: "PAUSE_ON_COMPOSITION", type: "switch", label: "输入法优化", tooltip: "等待输入法输入完毕再执行搜索，减少无效搜索" },
             numberField("DEBOUNCE_INTERVAL", UNITS.millisecond, "输入防抖"),
         ),
         RESTORE_SETTINGS_BOX,
@@ -355,8 +355,8 @@ const SETTING_SCHEMAS = {
         ),
         titledBox(
             "鼠标滚轮的修饰键",
-            { key: "MODIFIER_KEY.TEMPORARY", type: "text", label: "临时修改图片大小", explain: "举例：填入 alt，则 Alt+Wheel 临时调整图片大小" },
-            { key: "MODIFIER_KEY.PERSISTENT", type: "text", label: "永久修改图片大小（转为 HTML 语法）", explain: "举例：填入 alt，则 Alt+Wheel 永久修改图片大小" },
+            { key: "MODIFIER_KEY.TEMPORARY", type: "text", label: "临时修改图片大小", tooltip: "举例：填入 alt，则 Alt+Wheel 临时调整图片大小" },
+            { key: "MODIFIER_KEY.PERSISTENT", type: "text", label: "永久修改图片大小（转为 HTML 语法）", tooltip: "举例：填入 alt，则 Alt+Wheel 永久修改图片大小" },
         ),
         RESTORE_SETTINGS_BOX,
     ],
@@ -406,7 +406,7 @@ const SETTING_SCHEMAS = {
             switchField("AUTO_FIT_WHEN_UPDATE", "更新图形后自动适配"),
             switchField("KEEP_FOLD_STATE_WHEN_UPDATE", "更新图形后保持节点折叠状态"),
             switchField("CLICK_TO_POSITIONING", "点击节点跳转到文档对应章节"),
-            { key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", type: "switch", label: "折叠节点后自动折叠章节内容", explain: "实验性特性，仅当「章节折叠」插件开启时可用" },
+            { key: "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", type: "switch", label: "折叠节点后自动折叠章节内容", tooltip: "实验性特性，仅当「章节折叠」插件开启时可用" },
             rangeField("POSITIONING_VIEWPORT_HEIGHT", 0.1, 0.95, 0.01, "定位视口高度"),
             rangeField("WIDTH_PERCENT_WHEN_INIT", 20, 95, 1, "初始窗口宽度"),
             rangeField("HEIGHT_PERCENT_WHEN_INIT", 20, 95, 1, "初始窗口高度"),
@@ -554,7 +554,7 @@ const SETTING_SCHEMAS = {
         ),
         titledBox(
             "功能修饰键",
-            { key: "MODIFIER_KEY.COLLAPSE_SINGLE", type: "text", label: "折叠/展开单个章节", explain: "举例：填入 ctrl，则 Clt+Click 将折叠/展开单个章节" },
+            { key: "MODIFIER_KEY.COLLAPSE_SINGLE", type: "text", label: "折叠/展开单个章节", tooltip: "举例：填入 ctrl，则 Clt+Click 将折叠/展开单个章节" },
             textField("MODIFIER_KEY.COLLAPSE_SIBLINGS", "折叠/展开父章节下所有同级的章节"),
             textField("MODIFIER_KEY.COLLAPSE_ALL_SIBLINGS", "折叠/展开当前文件所有同级的章节"),
             textField("MODIFIER_KEY.COLLAPSE_RECURSIVE", "递归折叠/展开当前章节"),
@@ -614,7 +614,7 @@ const SETTING_SCHEMAS = {
             textField("DEFAULT_COLORS.FOREGROUND", "前景色"),
             textField("DEFAULT_COLORS.BACKGROUND", "背景色"),
             textField("DEFAULT_COLORS.BORDER", "边框颜色"),
-            { key: "DEFAULT_FORMAT_BRUSH", type: "text", label: "格式刷", explain: "例如：color:#FFF; font-weight:bold;" },
+            { key: "DEFAULT_FORMAT_BRUSH", type: "text", label: "格式刷", tooltip: "例如：color:#FFF; font-weight:bold;" },
         ),
         jsonBox("颜色按钮的预设列表", "COLOR_TABLE"),
         jsonBox("快捷键映射的预设列表", "ACTION_HOTKEYS"),
@@ -693,7 +693,7 @@ const SETTING_SCHEMAS = {
     pie_menu: [
         PLUGIN_FULL_BASE_PROP_BOX,
         untitledBox(
-            { label: "右键修饰键", explain: "举例：填入 ctrl，则 Ctrl+RClick 弹出菜单", type: "text", key: "MODIFIER_KEY" },
+            { label: "右键修饰键", tooltip: "举例：填入 ctrl，则 Ctrl+RClick 弹出菜单", type: "text", key: "MODIFIER_KEY" },
         ),
         jsonBox("圆盘菜单", "BUTTONS"),
         RESTORE_SETTINGS_BOX,
@@ -721,7 +721,7 @@ const SETTING_SCHEMAS = {
         ),
         titledBox(
             "搜索",
-            { key: "IGNORE_MIN_NUM", type: "number", label: "目录下最小文件数", explain: "忽略所含文件数少于 X 的目录" },
+            { key: "IGNORE_MIN_NUM", type: "number", label: "目录下最小文件数", tooltip: "忽略所含文件数少于 X 的目录" },
             numberField("MAX_SIZE", UNITS.byte, "最大文件"),
         ),
         arrayBox("允许文件扩展名", "ALLOW_EXT"),
@@ -814,8 +814,8 @@ const SETTING_SCHEMAS = {
         titledBox(
             "自动升级",
             switchField("AUTO_UPDATE", "启用"),
-            { key: "UPDATE_LOOP_INTERVAL", type: "number", label: "轮询时间", explain: "轮询指定时间执行升级流程", unit: UNITS.millisecond },
-            { key: "START_UPDATE_INTERVAL", type: "number", label: "等待时间", explain: "软件启动后等待指定时间执行升级流程", unit: UNITS.millisecond },
+            { key: "UPDATE_LOOP_INTERVAL", type: "number", label: "轮询时间", tooltip: "轮询指定时间执行升级流程", unit: UNITS.millisecond },
+            { key: "START_UPDATE_INTERVAL", type: "number", label: "等待时间", tooltip: "软件启动后等待指定时间执行升级流程", unit: UNITS.millisecond },
         ),
         RESTORE_SETTINGS_BOX,
     ],
@@ -1046,7 +1046,7 @@ const SETTING_SCHEMAS = {
     scrollBookmarker: [
         CUSTOM_PLUGIN_FULL_BASE_PROP_BOX,
         untitledBox(
-            { label: "左键修饰键", explain: "举例：填入 alt，则 Alt+LClick 标注书签", type: "text", key: "modifier_key" },
+            { label: "左键修饰键", tooltip: "举例：填入 alt，则 Alt+LClick 标注书签", type: "text", key: "modifier_key" },
             switchField("auto_popup_modal", "标注书签的同时弹出管理窗口"),
             switchField("persistence", "持久化书签数据"),
         ),

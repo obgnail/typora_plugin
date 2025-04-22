@@ -486,7 +486,13 @@
     "pluginName": "Pie Menu"
   },
   "preferences": {
-    "pluginName": "Preferences"
+    "pluginName": "Preferences",
+    "notification.settingsRestored": "Settings restored",
+    "notification.allSettingsRestored": "All settings restored",
+    "notification.changesSubmitted": "Changes submitted",
+    "error.IncorrectJSONContent": "Content must be valid JSON",
+    "error.minItems": "At least {{minItems}} items",
+    "error.maxItems": "At most {{maxItems}} items"
   },
   "file_counter": {
     "pluginName": "File Counter"

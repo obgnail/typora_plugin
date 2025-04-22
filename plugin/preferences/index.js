@@ -68,13 +68,13 @@ class preferencesPlugin extends BasePlugin {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearSettings(fixedName)
                 await this.switchMenu(fixedName)
-                this.utils.notification.show("已恢复默认")
+                this.utils.notification.show(this.i18n.t("notification.settingsRestored"))
             },
             restoreAllSettings: async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearAllSettings()
                 await this.switchMenu(fixedName)
-                this.utils.notification.show("已恢复所有默认")
+                this.utils.notification.show(this.i18n.t("notification.allSettingsRestored"))
             },
         }
         // External value for some options in schema
@@ -119,8 +119,8 @@ class preferencesPlugin extends BasePlugin {
 
             $(this.entities.form).on("click", ".plugin-preferences-select-wrap", function () {
                 const optionBox = this.nextElementSibling
-                const boxes = [...document.querySelectorAll(".plugin-preferences-option-box")]
-                boxes.filter(e => e !== optionBox).forEach(ctl => that.utils.hide(ctl))
+                const boxes = [...that.entities.form.querySelectorAll(".plugin-preferences-option-box")]
+                boxes.filter(box => box !== optionBox).forEach(that.utils.hide)
                 that.utils.toggleVisible(optionBox)
                 if (that.utils.isShow(optionBox)) {
                     optionBox.scrollIntoView({ block: "nearest" })
@@ -140,7 +140,9 @@ class preferencesPlugin extends BasePlugin {
                     const maxItems = Number(selectEl.dataset.maxItems)
                     const itemCount = allOptionEl.filter(op => op.dataset.choose === "true").length + (deselect ? -1 : 1)
                     if (itemCount < minItems || itemCount > maxItems) {
-                        const msg = itemCount < minItems ? `至少选择 ${minItems} 项` : `至多选择 ${maxItems} 项`
+                        const msg = itemCount < minItems
+                            ? that.i18n.t("error.minItems", { minItems })
+                            : that.i18n.t("error.maxItems", { maxItems })
                         that.utils.notification.show(msg, "error")
                         that.utils.hide(boxEl)
                         return
@@ -153,7 +155,9 @@ class preferencesPlugin extends BasePlugin {
                         values.splice(idx, 1)
                     }
                     const map = new Map(allOptionEl.map(op => [op.dataset.value, op]))
-                    selectValueEl.textContent = values.length === 0 ? that.i18n._t("global", "empty") : values.map(v => map.get(v).textContent).join(", ")
+                    selectValueEl.textContent = values.length === 0
+                        ? that.i18n._t("global", "empty")
+                        : values.map(v => map.get(v).textContent).join(", ")
                     selectEl.dataset.value = values.join("#")
                     that.utils.hide(boxEl)
                     await that.updateSettings(selectEl.dataset.key, values)
@@ -170,10 +174,12 @@ class preferencesPlugin extends BasePlugin {
                 try {
                     const value = JSON.parse(textarea.value)
                     await that.updateSettings(textarea.dataset.key, value)
-                    that.utils.notification.show("修改已提交")
+                    const msg = that.i18n.t("notification.changesSubmitted")
+                    that.utils.notification.show(msg)
                 } catch (e) {
                     console.error(e)
-                    that.utils.notification.show("内容必须为正确的 JSON 格式", "error")
+                    const msg = that.i18n.t("error.IncorrectJSONContent")
+                    that.utils.notification.show(msg, "error")
                 }
             }).on("click", ".plugin-preferences-hotkey-reset", async function () {
                 const input = this.closest(".plugin-preferences-hotkey-wrap").querySelector("input")
@@ -447,19 +453,16 @@ class preferencesPlugin extends BasePlugin {
             }
         }
         const createControl = (field) => {
-            if (field.type === "number" && field.hasOwnProperty("unit")) {
+            if (field.type === "number" && field.unit != null) {
                 field.type = "unit"
             }
-            const label = `<div>${field.label}${createTooltip(field)}</div>`
-            const wrappedLabel = field.label == null
-                ? ""
-                : field.explain == null
-                    ? label
-                    : `<div>${label}<div class="plugin-preferences-explain">${field.explain}</div></div>`
+            const isBlock = isBlockControl(field.type)
             const value = values[field.key]
-            const ctl = createGeneralControl(field, value)
-            const control = isBlockControl(field.type) ? ctl : `<div>${ctl}</div>`
-            return `<div class="plugin-preferences-control" data-type="${field.type}">${wrappedLabel}${control}</div>`
+
+            const control = createGeneralControl(field, value)
+            const wrappedControl = isBlock ? control : `<div>${control}</div>`
+            const wrappedLabel = isBlock ? "" : `<div>${field.label}${createTooltip(field)}</div>`
+            return `<div class="plugin-preferences-control" data-type="${field.type}">${wrappedLabel}${wrappedControl}</div>`
         }
         const createTitle = (title, subtitle) => {
             const sub = subtitle ? `<span>${subtitle}</span>` : ""
