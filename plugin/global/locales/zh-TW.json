@@ -1,4 +1,8 @@
 {
+  "settings": {
+    "__LESS_USED_PLUGINS__": "少用插件",
+    "__OFTEN_USED_PLUGINS__": "常用插件"
+  },
   "global": {
     "pluginName": "通用",
     "confirm": "確定",
@@ -16,10 +20,6 @@
     "error.onBlankPage": "空白頁不可用",
     "error.duplicateValue": "存在重複值",
     "error.unknown": "未知錯誤！請向開發者回報"
-  },
-  "settings": {
-    "__LESS_USED_PLUGINS__": "少用插件",
-    "__OFTEN_USED_PLUGINS__": "常用插件"
   },
   "window_tab": {
     "pluginName": "標籤頁管理",

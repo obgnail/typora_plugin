@@ -20,7 +20,6 @@ class preferencesPlugin extends BasePlugin {
     `
 
     init = () => {
-        this.SETTING_SCHEMAS = require("./schemas.js")
         this.entities = {
             dialog: document.querySelector("#plugin-preferences-dialog"),
             menu: document.querySelector("#plugin-preferences-menu"),
@@ -30,10 +29,41 @@ class preferencesPlugin extends BasePlugin {
             searchInput: document.querySelector("#plugin-preferences-menu-search input"),
             closeButton: document.querySelector("#plugin-preferences-dialog-close"),
         }
-        this.ACTIONS = {
+
+        this.SETTING_SCHEMAS = require("./schemas.js")
+        this.SETTING_OPERATORS = {
+            has: (setting, key) => {
+                if (key === undefined) {
+                    return false
+                }
+                const emptyObj = Object.create(null)
+                const result = key.split(".").reduce((obj, attr) => Object.hasOwn(obj, attr) ? obj[attr] : emptyObj, setting)
+                return result !== emptyObj
+            },
+            handle: (setting, key, handler) => {
+                if (key === undefined) return
+                const attrs = key.split(".")
+                const last = attrs.pop()
+                const obj = attrs.length === 0
+                    ? setting
+                    : attrs.reduce((obj, attr) => obj[attr], setting)
+                handler(obj, last, key)
+            },
+            get: (setting, key) => key === undefined ? undefined : key.split(".").reduce((obj, attr) => obj[attr], setting),
+            set: (setting, key, newValue) => this.SETTING_OPERATORS.handle(setting, key, (obj, last) => obj[last] = newValue),
+            push: (setting, key, pushValue) => this.SETTING_OPERATORS.handle(setting, key, (obj, last) => obj[last].push(pushValue)),
+            remove: (setting, key, removeValue) => this.SETTING_OPERATORS.handle(setting, key, (obj, last) => {
+                const idx = obj[last].indexOf(removeValue)
+                if (idx !== -1) {
+                    obj[last].splice(idx, 1)
+                }
+            }),
+        }
+        // Callback functions for type="action" options in schema
+        this.SETTING_ACTIONS = {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
-            openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
             backupSettings: async () => this.utils.settings.backupSettingFile(),
+            openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
             restoreSettings: async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearSettings(fixedName)
@@ -47,8 +77,9 @@ class preferencesPlugin extends BasePlugin {
                 this.utils.notification.show("已恢复所有默认")
             },
         }
-        this.VALUE_GETTER = {
-            __version__: this.utils.getPluginVersion,
+        // External value for some options in schema
+        this.SETTING_VALUES = {
+            pluginVersion: async () => this.utils.getPluginVersion(),
         }
     }
 
@@ -83,7 +114,7 @@ class preferencesPlugin extends BasePlugin {
                 search()
             })
         }
-        const handleDomEvent = () => {
+        const delegateEvent = () => {
             const that = this
 
             $(this.entities.form).on("click", ".plugin-preferences-select-wrap", function () {
@@ -141,7 +172,7 @@ class preferencesPlugin extends BasePlugin {
                     await that.updateSettings(textarea.dataset.key, value)
                     that.utils.notification.show("修改已提交")
                 } catch (e) {
-                    console.debug(e)
+                    console.error(e)
                     that.utils.notification.show("内容必须为正确的 JSON 格式", "error")
                 }
             }).on("click", ".plugin-preferences-hotkey-reset", async function () {
@@ -155,8 +186,8 @@ class preferencesPlugin extends BasePlugin {
                 await that.updateSettings(input.dataset.key, input.value)
             }).on("click", '.plugin-preferences-control[data-type="action"]', async function () {
                 const icon = this.querySelector(".plugin-preferences-action")
-                const action = icon.dataset.action
-                const fn = that.ACTIONS[action]
+                const act = icon.dataset.action
+                const fn = that.SETTING_ACTIONS[act]
                 if (fn) {
                     await fn()
                 }
@@ -188,7 +219,7 @@ class preferencesPlugin extends BasePlugin {
                 input.textContent = ""
                 that.utils.hide(input)
                 that.utils.show(addEl)
-                await that.updateSettings(displayEl.dataset.key, value, "insert")
+                await that.updateSettings(displayEl.dataset.key, value, "push")
             }).on("input", ".plugin-preferences-range-input", function () {
                 this.nextElementSibling.textContent = that._toFixed2(Number(this.value))
             }).on("change", "input.plugin-preferences-switch-input", async function () {
@@ -198,13 +229,14 @@ class preferencesPlugin extends BasePlugin {
             }).on("change", ".plugin-preferences-text-input, .plugin-preferences-textarea", async function () {
                 await that.updateSettings(this.dataset.key, this.value)
             })
+        }
 
+        const domEvent = () => {
             // this.utils.dragFixedModal(this.entities.title, this.entities.dialog, false)
             this.entities.closeButton.addEventListener("click", () => {
                 this.call()
                 this.utils.notification.show(this.i18n._t("global", "takesEffectAfterRestart"))
             })
-
             this.entities.menu.addEventListener("click", async ev => {
                 const target = ev.target.closest(".plugin-preferences-menu-item")
                 if (target) {
@@ -212,7 +244,6 @@ class preferencesPlugin extends BasePlugin {
                     await this.switchMenu(fixedName)
                 }
             })
-
             const ignoreKeys = ["control", "alt", "shift", "meta"]
             const updateHotkey = this.utils.debounce(async hk => this.updateSettings(hk.dataset.key, hk.value), 500)
             this.entities.form.addEventListener("keydown", ev => {
@@ -237,7 +268,9 @@ class preferencesPlugin extends BasePlugin {
         }
 
         searchInDialog()
-        handleDomEvent()
+        delegateEvent()
+        domEvent()
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => this.call())
     }
 
     call = async () => {
@@ -250,30 +283,7 @@ class preferencesPlugin extends BasePlugin {
         }
     }
 
-    getSettings = async (fixedName) => {
-        const isBase = this.utils.getPluginSetting(fixedName)
-        const fn = isBase ? "readBasePluginSettings" : "readCustomPluginSettings"
-        const settings = await this.utils.settings[fn]()
-        return settings[fixedName]
-    }
-
-    // type: update/insert/remove
-    updateSettings = async (key, value, type = "update") => {
-        const fn = {
-            update: this._set,
-            insert: this._insert,
-            remove: this._remove,
-        }
-        const fixedName = this.entities.form.dataset.plugin
-        const settings = await this.getSettings(fixedName)
-        if (fn[type]) {
-            fn[type](settings, key, value)
-            await this.utils.settings.saveSettings(fixedName, settings)
-        }
-        console.log("[updateSettings]", settings)
-    }
-
-    initDialog = async (fixedName = "global") => {
+    initDialog = async (initMenu) => {
         const names = [
             "global",
             ...Object.keys(this.utils.getAllPluginSettings()),
@@ -286,11 +296,11 @@ class preferencesPlugin extends BasePlugin {
         })
         this.entities.menu.innerHTML = menus.join("")
 
-        fixedName = names.includes(fixedName) ? fixedName : "global"
-        await this.switchMenu(fixedName)
+        initMenu = names.includes(initMenu) ? initMenu : "global"
+        await this.switchMenu(initMenu)
         setTimeout(() => {
-            const selectedItem = this.entities.menu.querySelector(".plugin-preferences-menu-item.active")
-            selectedItem.scrollIntoView({ block: "center" })
+            const active = this.entities.menu.querySelector(".plugin-preferences-menu-item.active")
+            active.scrollIntoView({ block: "center" })
         }, 50)
     }
 
@@ -305,14 +315,31 @@ class preferencesPlugin extends BasePlugin {
         this.entities.main.scrollTop = 0
     }
 
+    getSettings = async (fixedName) => {
+        const isBase = this.utils.getPluginSetting(fixedName)
+        const fn = isBase ? "readBasePluginSettings" : "readCustomPluginSettings"
+        const settings = await this.utils.settings[fn]()
+        return settings[fixedName]
+    }
+
+    updateSettings = async (key, value, type = "set") => {
+        if (!this.SETTING_OPERATORS.hasOwnProperty(type)) return
+
+        const fixedName = this.entities.form.dataset.plugin
+        const settings = await this.getSettings(fixedName)
+        this.SETTING_OPERATORS[type](settings, key, value)
+        await this.utils.settings.saveSettings(fixedName, settings)
+        console.debug("[updateSettings]", settings)
+    }
+
     _getValues = async (fixedName, settings) => {
         const keys = this.SETTING_SCHEMAS[fixedName].flatMap(box => {
-            return box.schema.filter(item => Boolean(item.key)).map(item => item.key)
+            return box.fields.filter(item => Boolean(item.key)).map(item => item.key)
         })
         const promises = keys.map(async key => {
-            let val = await this._get(settings, key)
-            if (val == null && this.VALUE_GETTER.hasOwnProperty(key)) {
-                val = await this.VALUE_GETTER[key](key, settings)
+            let val = await this.SETTING_OPERATORS.get(settings, key)
+            if (val == null && this.SETTING_VALUES.hasOwnProperty(key)) {
+                val = await this.SETTING_VALUES[key](key, settings)
             }
             return [key, val]
         })
@@ -364,7 +391,7 @@ class preferencesPlugin extends BasePlugin {
                         </div>
                     `
                 case "action":
-                    return `<div class="plugin-preferences-action fa fa-angle-right" data-action="${ctl.action}"></div>`
+                    return `<div class="plugin-preferences-action fa fa-angle-right" data-action="${ctl.act}"></div>`
                 case "static":
                     return `<div class="plugin-preferences-static">${value}</div>`
                 case "select":
@@ -419,28 +446,28 @@ class preferencesPlugin extends BasePlugin {
                     return ""
             }
         }
-        const createControl = (item) => {
-            if (item.type === "number" && item.hasOwnProperty("unit")) {
-                item.type = "unit"
+        const createControl = (field) => {
+            if (field.type === "number" && field.hasOwnProperty("unit")) {
+                field.type = "unit"
             }
-            const label = `<div>${item.label}${createTooltip(item)}</div>`
-            const wrappedLabel = item.label == null
+            const label = `<div>${field.label}${createTooltip(field)}</div>`
+            const wrappedLabel = field.label == null
                 ? ""
-                : item.explain == null
+                : field.explain == null
                     ? label
-                    : `<div>${label}<div class="plugin-preferences-explain">${item.explain}</div></div>`
-            const value = values[item.key]
-            const ctl = createGeneralControl(item, value)
-            const control = isBlockControl(item.type) ? ctl : `<div>${ctl}</div>`
-            return `<div class="plugin-preferences-control" data-type="${item.type}">${wrappedLabel}${control}</div>`
+                    : `<div>${label}<div class="plugin-preferences-explain">${field.explain}</div></div>`
+            const value = values[field.key]
+            const ctl = createGeneralControl(field, value)
+            const control = isBlockControl(field.type) ? ctl : `<div>${ctl}</div>`
+            return `<div class="plugin-preferences-control" data-type="${field.type}">${wrappedLabel}${control}</div>`
         }
         const createTitle = (title, subtitle) => {
             const sub = subtitle ? `<span>${subtitle}</span>` : ""
             return `<div class="plugin-preferences-title">${title}${sub}</div>`
         }
-        const createBox = ({ title, subtitle, schema }) => {
+        const createBox = ({ title, subtitle, fields }) => {
             const t = title ? createTitle(title, subtitle) : ""
-            const items = schema.map(createControl).join("")
+            const items = fields.map(createControl).join("")
             const box = `<div class="plugin-preferences-form-box">${items}</div>`
             return t + box
         }
@@ -448,32 +475,6 @@ class preferencesPlugin extends BasePlugin {
     }
 
     _toFixed2 = (num) => Number.isInteger(num) ? num : num.toFixed(2)
-
-    _hasOwn = (setting, key) => {
-        const emptyObj = Object.create(null)
-        const result = key.split(".").reduce((obj, attr) => Object.hasOwn(obj, attr) ? obj[attr] : emptyObj, setting)
-        return result !== emptyObj
-    }
-
-    _get = (setting, key) => key === undefined ? undefined : key.split(".").reduce((obj, attr) => obj[attr], setting)
-
-    _handle = (setting, key, handler) => {
-        const attrs = key.split(".")
-        const last = attrs.pop()
-        const obj = attrs.length === 0
-            ? setting
-            : attrs.reduce((obj, attr) => obj[attr], setting)
-        handler(obj, last, key)
-    }
-
-    _set = (setting, key, newValue) => this._handle(setting, key, (obj, last) => obj[last] = newValue)
-    _insert = (setting, key, pushValue) => this._handle(setting, key, (obj, last) => obj[last].push(pushValue))
-    _remove = (setting, key, removeValue) => this._handle(setting, key, (obj, last) => {
-        const idx = obj[last].indexOf(removeValue)
-        if (idx !== -1) {
-            obj[last].splice(idx, 1)
-        }
-    })
 }
 
 module.exports = {

@@ -1,4 +1,8 @@
 {
+  "settings": {
+    "__LESS_USED_PLUGINS__": "Less Used Plugins",
+    "__OFTEN_USED_PLUGINS__": "Often Used Plugins"
+  },
   "global": {
     "pluginName": "General",
     "confirm": "Confirm",
@@ -16,10 +20,6 @@
     "error.onBlankPage": "Unavailable on a blank page",
     "error.duplicateValue": "Duplicate Value",
     "error.unknown": "Unknown Error! Please report to the developer"
-  },
-  "settings": {
-    "__LESS_USED_PLUGINS__": "Less Used Plugins",
-    "__OFTEN_USED_PLUGINS__": "Often Used Plugins"
   },
   "window_tab": {
     "pluginName": "Window Tab Bar",

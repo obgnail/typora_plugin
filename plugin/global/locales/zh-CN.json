@@ -1,4 +1,8 @@
 {
+  "settings": {
+    "__LESS_USED_PLUGINS__": "少用插件",
+    "__OFTEN_USED_PLUGINS__": "常用插件"
+  },
   "global": {
     "pluginName": "通用",
     "confirm": "确定",
@@ -16,10 +20,6 @@
     "error.onBlankPage": "空白页不可用",
     "error.duplicateValue": "存在重复值",
     "error.unknown": "未知错误！请向开发者反馈"
-  },
-  "settings": {
-    "__LESS_USED_PLUGINS__": "少用插件",
-    "__OFTEN_USED_PLUGINS__": "常用插件"
   },
   "window_tab": {
     "pluginName": "标签页管理",

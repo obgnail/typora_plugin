@@ -465,7 +465,7 @@ BLUR_TYPE = "blur"
 # 鼠标悬停时可见：当鼠标悬停在非聚焦组件上时，是否使其恢复可见
 #   true:  鼠标悬停时恢复可见
 #   false: 鼠标悬停时依然保持模糊或隐藏 (当 BLUR_TYPE 为 "hide" 时此项失效)
-RESRTORE_WHEN_HOVER = true
+RESTORE_WHEN_HOVER = true
 
 # 模糊等级：设置非聚焦组件的模糊程度
 #   数值越大，模糊效果越明显
