@@ -114,11 +114,7 @@ Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/iss
 | ------ | ---------------------------------------------- | ------------------------------------------ |
 | Step 4 | ![install_windows](assets/install_windows.png) | ![install_linux](assets/install_linux.png) |
 
-
-Additional Notes:
-
-- Windows can also install plugins by executing `install_windows.ps1`; similarly, Linux can execute the `install_linux_amd_x64` file.
-- Each plugin has configuration options. It is recommended to configure according to personal needs. The configuration folder is located at [A/plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings/).
+> Windows can also install plugins by executing `install_windows.ps1`; similarly, Linux can execute the `install_linux_amd_x64` file.
 
 
 
@@ -144,16 +140,11 @@ All plugins have been tested on version 0.9.98 (the last free version) and the l
 Theoretically, they can remain effective for a long time, and I am maintaining them.
 
 
-### How to permanently disable/enable certain plugins?
-
-Right-click menu -> Less Used Plugins -> Enable/Disable Plugins.
-
-
 ### How to modify plugin configurations?
 
 The project includes over 600 configuration options, allowing a comprehensive definition of each plugin's behavior.
 
-All configurations are located in the [settings](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings) directory. For modification methods, please read the [instruction file](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/README.md).
+Right-click menu -> Less Used Plugins -> Preferences.
 
 
 ### How to upgrade plugins?
@@ -424,7 +415,7 @@ Usage:
 
 ### preferences
 
-Usage: Right-click menu -> Less Used Plugins -> Enable/Disable Plugins
+Usage: Right-click menu -> Less Used Plugins -> preferences
 
 ### echarts: Provide Echarts Support
 

@@ -32,7 +32,7 @@
 | 14   | right_click_menu        | 右键菜单统一管理插件                   |          |
 | 15   | pie_menu                | 圆盘菜单                               | ×        |
 | 16   | datatables              | 表格增强（搜索、过滤、分页、排序等）   | ×        |
-| 17   | preferences             | 启停插件                               |          |
+| 17   | preferences             | 插件配置                               |          |
 | 18   | markmap                 | 提供 markmap 组件支持                  |          |
 | 19   | echarts                 | 提供 echarts 组件支持                  |          |
 | 20   | chart                   | 提供 chartjs 组件支持                  |          |
@@ -112,10 +112,7 @@
 | ------ | ---------------------------------------------- | ------------------------------------------ |
 | 步骤 4 | ![install_windows](assets/install_windows.png) | ![install_linux](assets/install_linux.png) |
 
-附加说明：
-
-- Windows 系统也可以通过执行 `install_windows.ps1` 安装插件；同理，Linux 系统也可以执行 `install_linux_amd_x64` 文件
-- 每个插件都有配置选项，建议根据个人需求进行配置。配置文件夹位于 [A/plugin/global/settings/](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings)
+> Windows 系统也可以通过执行 `install_windows.ps1` 安装插件；同理，Linux 系统也可以执行 `install_linux_amd_x64` 文件
 
 
 
@@ -143,17 +140,11 @@ yay -S typora-plugin
 
 
 
-### 如何永久禁用/启用某些插件？
-
-右键菜单 -> 少用插件 -> 启停插件。
-
-
-
 ### 如何修改插件配置？
 
 项目包含 600+ 配置选项，可以比较完整定义各个插件的行为。
 
-所有配置位于 [settings](https://github.com/obgnail/typora_plugin/tree/master/plugin/global/settings) 目录中。修改配置方法请阅读该目录下的 [说明文件](https://github.com/obgnail/typora_plugin/blob/master/plugin/global/settings/README.md)。
+右键菜单 -> 少用插件 -> 插件配置。
 
 
 
@@ -444,9 +435,9 @@ LIST = [
 
 
 
-### preferences：启停插件
+### preferences：插件配置
 
-使用方式：右键菜单 -> 少用插件 -> 启停插件
+使用方式：右键菜单 -> 少用插件 -> 插件配置
 
 
 

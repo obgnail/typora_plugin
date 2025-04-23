@@ -314,8 +314,6 @@ class rightClickMenuPlugin extends BasePlugin {
     getDynamicActions = () => this.i18n.fillActions([
         { act_value: "do_not_hide", act_state: this.config.DO_NOT_HIDE, act_hint: this.i18n.t("actHint.do_not_hide") },
         { act_value: "toggle_hotkey", act_state: this.config.SHOW_PLUGIN_HOTKEY, act_hidden: !this.supportShortcut },
-        { act_value: "show_action_icon", act_state: this.config.SHOW_ACTION_OPTIONS_ICON },
-        { act_value: "find_lost_plugin", act_state: this.config.FIND_LOST_PLUGIN },
         { act_value: "hide_other_options", act_state: this.config.HIDE_OTHER_OPTIONS },
     ])
 
@@ -330,14 +328,6 @@ class rightClickMenuPlugin extends BasePlugin {
                 this.config.SHOW_PLUGIN_HOTKEY = !this.config.SHOW_PLUGIN_HOTKEY
                 const toggle = e => e.classList.toggle("plugin-common-hidden", !this.config.SHOW_PLUGIN_HOTKEY)
                 document.querySelectorAll(".plugin-menu-second .ty-menu-shortcut, .plugin-menu-third .ty-menu-shortcut").forEach(toggle)
-            },
-            find_lost_plugin: async () => {
-                this.config.FIND_LOST_PLUGIN = !this.config.FIND_LOST_PLUGIN
-                await this.utils.showRestartMessageBox({ title: this.pluginName })
-            },
-            show_action_icon: async () => {
-                this.config.SHOW_ACTION_OPTIONS_ICON = !this.config.SHOW_ACTION_OPTIONS_ICON
-                await this.utils.showRestartMessageBox({ title: this.pluginName })
             },
         }
         const fn = callMap[action]

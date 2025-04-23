@@ -57,9 +57,9 @@ class scrollBookmarkerPlugin extends BaseCustomPlugin {
 
         this.utils.dragFixedModal(this.entities.moveIcon, this.entities.modal, false);
 
-        const altKeyPressed = this.utils.modifierKey("alt");
+        const modifierKeyPressed = this.utils.modifierKey(this.config.modifier_key)
         this.utils.entities.eWrite.addEventListener("click", ev => {
-            if (!altKeyPressed(ev)) return;
+            if (!modifierKeyPressed(ev)) return;
             const paragraph = ev.target.closest(this.recordSelector);
             if (!paragraph) return;
             paragraph.classList.add(this.className);

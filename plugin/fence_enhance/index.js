@@ -201,8 +201,6 @@ class fenceEnhancePlugin extends BasePlugin {
     getDynamicActions = (anchorNode, meta) => {
         const HINT = {
             DANGEROUS: this.i18n.t("actHint.dangerous"),
-            ALIGNMENT: this.i18n.t("actHint.toggle_state_indent_alignment"),
-            HIGHLIGHT_BY_LANG: this.i18n.t("actHint.toggle_state_highlight_by_lang"),
         }
         return this.i18n.fillActions([
             { act_value: "toggle_state_fold", act_state: this.config.ENABLE_FOLD },
@@ -211,11 +209,6 @@ class fenceEnhancePlugin extends BasePlugin {
             { act_value: "toggle_state_auto_hide", act_state: this.config.AUTO_HIDE },
             { act_value: "toggle_state_default_fold", act_state: this.config.DEFAULT_FOLD },
             { act_value: "toggle_state_button_hint", act_state: !this.config.REMOVE_BUTTON_HINT },
-            { act_value: "toggle_state_hotkey", act_state: this.config.ENABLE_HOTKEY },
-            { act_value: "toggle_state_fold_lang", act_state: this.config.ENABLE_LANGUAGE_FOLD },
-            { act_value: "toggle_state_indent_alignment", act_state: this.config.INDENTED_WRAPPED_LINE, act_hint: HINT.ALIGNMENT },
-            { act_value: "toggle_state_highlight", act_state: this.config.HIGHLIGHT_WHEN_HOVER },
-            { act_value: "toggle_state_highlight_by_lang", act_state: this.config.HIGHLIGHT_BY_LANGUAGE, act_hint: HINT.HIGHLIGHT_BY_LANG },
             { act_value: "add_fences_lang", act_hint: HINT.DANGEROUS },
             { act_value: "replace_fences_lang", act_hint: HINT.DANGEROUS },
             { act_value: "indent_all_fences", act_hint: HINT.DANGEROUS, act_hidden: !this.supportIndent }
@@ -223,13 +216,6 @@ class fenceEnhancePlugin extends BasePlugin {
     }
 
     call = (action, meta) => {
-        const toggleConfig = async (cfg, name, args) => {
-            this.config[cfg] = !this.config[cfg]
-            const enableText = this.i18n.t(this.config[cfg] ? "modal.enable" : "modal.disable")
-            const title = this.i18n.link([enableText, name])
-            await this.utils.showRestartMessageBox({ title, ...args })
-        }
-
         const callMap = {
             toggle_state_fold: () => {
                 this.config.ENABLE_FOLD = !this.config.ENABLE_FOLD
@@ -318,23 +304,10 @@ class fenceEnhancePlugin extends BasePlugin {
                     File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input)
                 })
             },
-            toggle_state_hotkey: async () => {
-                const title = this.i18n.t("modal.toggle_state_hotkey.title")
-                const h = ["SWAP_PREVIOUS_LINE", "SWAP_NEXT_LINE", "COPY_PREVIOUS_LINE", "COPY_NEXT_LINE", "INSERT_LINE_PREVIOUS", "INSERT_LINE_NEXT"]
-                const hotkeys = this.i18n.entries(h, "modal.toggle_state_hotkey.")
-                const detail = Object.entries(hotkeys)
-                    .map(([key, name], idx) => `${idx + 1}. ${name}: ${this.config[key]}`)
-                    .join("\n")
-                await toggleConfig("ENABLE_HOTKEY", title, { detail })
-            },
             toggle_state_button_hint: async () => {
                 this.config.REMOVE_BUTTON_HINT = !this.config.REMOVE_BUTTON_HINT
                 await this.utils.reload()
             },
-            toggle_state_fold_lang: () => toggleConfig("ENABLE_LANGUAGE_FOLD", this.i18n.t("modal.toggle_state_fold_lang.title")),
-            toggle_state_highlight: () => toggleConfig("HIGHLIGHT_WHEN_HOVER", this.i18n.t("modal.toggle_state_highlight.title")),
-            toggle_state_highlight_by_lang: () => toggleConfig("HIGHLIGHT_BY_LANGUAGE", this.i18n.t("modal.toggle_state_highlight_by_lang.title")),
-            toggle_state_indent_alignment: () => toggleConfig("INDENTED_WRAPPED_LINE", this.i18n.t("modal.toggle_state_indent_alignment.title")),
         }
         const func = callMap[action]
         func && func()

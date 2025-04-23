@@ -1,24 +1,8 @@
 class helpPlugin extends BasePlugin {
-    beforeProcess = async () => {
-        const filepath = this.utils.joinPath("./plugin/bin/version.json");
-        try {
-            const versionMsg = await this.utils.Package.FsExtra.readJson(filepath);
-            this.version = versionMsg.tag_name;
-        } catch (err) {
-        }
-    }
-
     init = () => {
         const act_hint = this.i18n.t("developersOnly")
         this.staticActions = this.i18n.fillActions([
-            { act_value: "set_language" },
-            { act_value: "update_plugin", act_hidden: true },
-            { act_value: "preferences", act_hidden: true },
             { act_value: "uninstall_plugin" },
-            { act_value: "open_setting_folder" },
-            { act_value: "backup_setting_file" },
-            { act_value: "show_setting" },
-            { act_value: "show_env" },
             { act_value: "set_user_styles", act_hint },
             { act_value: "new_custom_plugin", act_hint },
             { act_value: "json_rpc", act_hint },
@@ -26,86 +10,6 @@ class helpPlugin extends BasePlugin {
             { act_value: "donate" },
             { act_value: "about" },
         ])
-    }
-
-    process = () => {
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => {
-            const versionText = this.i18n.t("currentVersion")
-            const actUpdate = this.staticActions.find(e => e.act_value === "update_plugin")
-            const actPreferences = this.staticActions.find(e => e.act_value === "preferences")
-            this.updater = this.utils.getPlugin("updater")
-            this.preferences = this.utils.getPlugin("preferences")
-
-            actUpdate.act_name += this.version ? `（${versionText}：${this.version}）` : ""
-            actUpdate.act_hidden = !this.updater
-            actPreferences.act_hidden = !this.preferences
-        })
-    }
-
-    getInfo = async () => {
-        const { current: theme } = await JSBridge.invoke("setting.getThemes")
-        const getFixedName = plugins => Object.values(plugins).map(e => e.fixedName)
-        const plugins = [
-            ...getFixedName(this.utils.getAllPlugins()),
-            ...getFixedName(this.utils.getAllCustomPlugins()),
-        ]
-        return {
-            typoraVersion: this.utils.typoraVersion,
-            nodeVersion: this.utils.nodeVersion,
-            electronVersion: this.utils.electronVersion,
-            chromeVersion: this.utils.chromeVersion,
-            pluginVersion: this.version || null,
-            isWin: Boolean(File.isWin),
-            isLinux: Boolean(File.isLinux),
-            isMac: Boolean(File.isMac),
-            isFocusMode: File.isFocusMode,
-            isTypeWriterMode: File.isTypeWriterMode,
-            inSourceMode: File.editor.sourceView.inSourceMode,
-            isSidebarShown: File.editor.library.isSidebarShown(),
-            theme: theme,
-            enablePlugin: plugins.join("|"),
-            config: window._options,
-        }
-    }
-
-    showEnv = async () => {
-        const title = this.i18n.t("act.show_env")
-        const info = await this.getInfo()
-        const content = JSON.stringify(info, null, "\t")
-        const components = [{ label: "", type: "textarea", rows: 15, content }]
-        const op = { title, components, width: "600px" }
-        await this.utils.dialog.modalAsync(op)
-    }
-
-    showSetting = async () => {
-        const settings = await Promise.all([
-            this.utils.settings.readBasePluginSettings(),
-            this.utils.settings.readCustomPluginSettings(),
-        ])
-        const components = settings.map(s => ({ label: "", type: "textarea", rows: 15, content: this.utils.stringifyToml(s) }))
-        const title = this.i18n.t("act.show_setting")
-        const op = { title, components, width: "600px" }
-        await this.utils.dialog.modalAsync(op)
-    }
-
-    setLanguage = async () => {
-        const ext = ".json"
-        const langCurrent = this.utils.getGlobalSetting("LOCALE")
-
-        const { Path, FsExtra } = this.utils.Package
-        const dir = this.utils.joinPath("./plugin/global/locales")
-        const _files = await FsExtra.readdir(dir)
-        const files = _files.filter(e => Path.extname(e).toLowerCase() === ext).map(e => Path.basename(e, ext))
-        const langList = ["auto", ...files]
-
-        const title = this.i18n.t("act.set_language")
-        const components = [{ label: "", type: "select", list: langList, selected: langCurrent }]
-        const op = { title, components, width: "450px" }
-        const { response, submit: [targetLang] } = await this.utils.dialog.modalAsync(op)
-        if (response === 1 && targetLang !== langCurrent) {
-            await this.utils.settings.saveGlobalSettings({ LOCALE: targetLang })
-            await this.utils.showRestartMessageBox({ title: this.pluginName })
-        }
     }
 
     about = () => {
@@ -241,18 +145,11 @@ class helpPlugin extends BasePlugin {
 
     call = action => {
         const map = {
-            open_setting_folder: () => this.utils.settings.openSettingFolder(),
-            backup_setting_file: () => this.utils.settings.backupSettingFile(),
             set_user_styles: () => this.utils.showInFinder(this.utils.joinPath("./plugin/global/user_styles/README.md")),
             new_custom_plugin: () => this.utils.showInFinder(this.utils.joinPath("./plugin/custom/README.md")),
             json_rpc: () => this.utils.showInFinder(this.utils.joinPath("./plugin/json_rpc/README.md")),
             github_picture_bed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
-            update_plugin: () => this.updater && this.updater.call(),
-            preferences: () => this.preferences && this.preferences.call(),
-            show_setting: () => this.showSetting(),
             uninstall_plugin: () => this.uninstall(),
-            set_language: () => this.setLanguage(),
-            show_env: () => this.showEnv(),
             donate: () => this.donate(),
             about: () => this.about(),
         }
