@@ -30,7 +30,7 @@
     "$title.fenceLanguageMode": "語言與模式",
     "$title.diagramStyle": "圖表樣式",
     "$title.TEMPLATE": "範本",
-    "$title.further": "進階"
+    "$title.advanced": "進階"
   },
   "global": {
     "pluginName": "通用",
