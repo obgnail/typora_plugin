@@ -40,7 +40,7 @@ const i18n = {
         }
     },
     t: function (field, key, variables) {
-        const field_  = i18n.data[field]
+        const field_ = i18n.data[field]
         if (field_ === undefined) {
             return key
         }
@@ -67,6 +67,7 @@ const i18n = {
     },
     bind: function (field) {
         return {
+            noConflict: i18n,
             data: i18n.data[field],
             link: i18n.link,
             _t: i18n.t,

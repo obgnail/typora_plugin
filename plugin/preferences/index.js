@@ -20,6 +20,8 @@ class preferencesPlugin extends BasePlugin {
     `
 
     init = () => {
+        this.initSchemas()
+
         this.entities = {
             dialog: document.querySelector("#plugin-preferences-dialog"),
             menu: document.querySelector("#plugin-preferences-menu"),
@@ -30,7 +32,6 @@ class preferencesPlugin extends BasePlugin {
             closeButton: document.querySelector("#plugin-preferences-dialog-close"),
         }
 
-        this.SETTING_SCHEMAS = require("./schemas.js")
         this.SETTING_OPERATORS = {
             has: (setting, key) => {
                 if (key === undefined) {
@@ -64,6 +65,7 @@ class preferencesPlugin extends BasePlugin {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
             backupSettings: async () => this.utils.settings.backupSettingFile(),
             openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
+            articleUploaderReadme: async () => this.utils.showInFinder(this.utils.joinPath("./plugin/article_uploader/README.md")),
             restoreSettings: async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearSettings(fixedName)
@@ -276,7 +278,6 @@ class preferencesPlugin extends BasePlugin {
         searchInDialog()
         delegateEvent()
         domEvent()
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.allPluginsHadInjected, () => this.call())
     }
 
     call = async () => {
@@ -287,6 +288,51 @@ class preferencesPlugin extends BasePlugin {
             await this.initDialog(this.config.DEFAULT_MENU)
             this.utils.show(this.entities.dialog)
         }
+    }
+
+    initSchemas = () => {
+        this.SETTING_SCHEMAS = require("./schemas.js")
+        const i18n = this.i18n.noConflict
+        const properties = ["label", "tooltip", "placeholder"]
+        const common = Object.fromEntries(
+            [...properties, "title", "unit"].map(prop => {
+                const start = `$${prop}.`
+                const keys = [...Object.keys(i18n.data.settings)].filter(e => e.startsWith(start))
+                const value = Object.fromEntries(keys.map(key => [key, i18n.data.settings[key]]))
+                return [prop, value]
+            })
+        )
+        Object.entries(this.SETTING_SCHEMAS).forEach(([fixedName, boxes]) => {
+            const i18nData = i18n.data[fixedName]
+            boxes.forEach(box => {
+                const title = box.title
+                if (title) {
+                    const commonValue = common.title[title]
+                    const pluginValue = i18nData[title]
+                    box.title = commonValue || pluginValue
+                }
+                box.fields.forEach(field => {
+                    properties.forEach(prop => {
+                        const key = field[prop]
+                        if (key != null) {
+                            const commonValue = common[prop][key]
+                            const pluginValue = i18nData[key]
+                            field[prop] = commonValue || pluginValue
+                        }
+                    })
+                    if (field.options != null) {
+                        const options = field.options
+                        Object.keys(options).forEach(k => {
+                            const i18nKey = options[k]
+                            field.options[k] = i18nData[i18nKey]
+                        })
+                    }
+                    if (field.unit != null) {
+                        field.unit = common.unit[field.unit]
+                    }
+                })
+            })
+        })
     }
 
     initDialog = async (initMenu) => {
@@ -335,7 +381,6 @@ class preferencesPlugin extends BasePlugin {
         const settings = await this.getSettings(fixedName)
         this.SETTING_OPERATORS[type](settings, key, value)
         await this.utils.settings.saveSettings(fixedName, settings)
-        console.debug("[updateSettings]", settings)
     }
 
     _getValues = async (fixedName, settings) => {

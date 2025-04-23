@@ -44,11 +44,11 @@ class imageReviewerPlugin extends BaseCustomPlugin {
             restore: "fa fa-history",
         }
         Object.entries(funcTranslate).forEach(([k, v]) => {
-            funcTranslate[k] = [this.i18n.t(`func.${k}`), v]
+            funcTranslate[k] = [this.i18n.t(`$option.operations.${k}`), v]
         })
 
         const getInfoHint = () => {
-            const dummy = this.i18n.t("func.dummy")
+            const dummy = this.i18n.t("$option.operations.dummy")
             const result = [this.i18n.t("currentConfig") + ":"]
 
             const mouseClicks = this.i18n.array(["leftClick", "middleClick", "rightClick"], "mouse.")
