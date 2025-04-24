@@ -341,11 +341,13 @@ class preferencesPlugin extends BasePlugin {
             ...Object.keys(this.utils.getAllPluginSettings()),
             ...Object.keys(this.utils.getAllCustomPluginSettings())
         ]
-        const menus = names.map(name => {
-            const p = this.utils.tryGetPlugin(name)
-            const pluginName = p ? p.pluginName : this.i18n._t(name, "pluginName")
-            return `<div class="plugin-preferences-menu-item" data-plugin="${name}">${pluginName}</div>`
-        })
+        const menus = names
+            .filter(name => this.SETTING_SCHEMAS.hasOwnProperty(name))
+            .map(name => {
+                const p = this.utils.tryGetPlugin(name)
+                const pluginName = p ? p.pluginName : this.i18n._t(name, "pluginName")
+                return `<div class="plugin-preferences-menu-item" data-plugin="${name}">${pluginName}</div>`
+            })
         this.entities.menu.innerHTML = menus.join("")
 
         initMenu = names.includes(initMenu) ? initMenu : "global"
