@@ -118,15 +118,24 @@ class preferencesPlugin extends BasePlugin {
         }
         const delegateEvent = () => {
             const that = this
+            let shownSelectOption = null
 
-            $(this.entities.form).on("click", ".plugin-preferences-select-wrap", function () {
+            $(this.entities.form).on("click", function () {
+                if (shownSelectOption) {
+                    that.utils.hide(shownSelectOption)
+                }
+                shownSelectOption = null
+            }).on("click", ".plugin-preferences-select-wrap", function () {
                 const optionBox = this.nextElementSibling
                 const boxes = [...that.entities.form.querySelectorAll(".plugin-preferences-option-box")]
                 boxes.filter(box => box !== optionBox).forEach(that.utils.hide)
                 that.utils.toggleVisible(optionBox)
-                if (that.utils.isShow(optionBox)) {
+                const isShown = that.utils.isShow(optionBox)
+                if (isShown) {
                     optionBox.scrollIntoView({ block: "nearest" })
                 }
+                shownSelectOption = isShown ? optionBox: null
+                return false
             }).on("click", ".plugin-preferences-option-item", async function () {
                 const optionEl = this
                 const boxEl = optionEl.closest(".plugin-preferences-option-box")
