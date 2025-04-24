@@ -51,11 +51,9 @@ class calloutsPlugin extends BaseCustomPlugin {
         return !isIgnoreType && hasCallout
     }
 
-    // The icon needs font, but there is no font when exporting, so it can only be removed.
     beforeExport = (...args) => {
         if (this.check(args)) {
-            const css = this.utils.styleTemplater.getStyleContent(this.fixedName)
-            return css.replace(/--callout-icon: ".*?";/g, "")
+            return this.utils.styleTemplater.getStyleContent(this.fixedName);
         }
     }
 
