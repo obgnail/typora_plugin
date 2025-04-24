@@ -1,3 +1,10 @@
+@font-face {
+    font-family: 'FontAwesome';
+    src: url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/fonts/fontawesome-webfont.woff) format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
 .plugin-callout {
     background-color: var(--callout-bg-color);
     border-left: 4px solid var(--callout-left-line-color);
