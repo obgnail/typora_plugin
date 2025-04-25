@@ -927,8 +927,13 @@ const SETTING_SCHEMAS = {
             Switch("hover_to_show_fold_callout"),
         ),
         TitledBox(
-            "defaultOptions",
+            "fontFamily",
             Text("font_family"),
+            Switch("use_network_icon_when_exporting","messingFont"),
+            Text("network_icon_url"),
+        ),
+        TitledBox(
+            "defaultOptions",
             Text("default_background_color"),
             Text("default_left_line_color"),
             Text("default_icon"),
