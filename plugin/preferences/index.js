@@ -12,7 +12,7 @@ class preferencesPlugin extends BasePlugin {
                 </div>
                 <div id="plugin-preferences-dialog-right">
                     <div id="plugin-preferences-dialog-title"></div>
-                    <div id="plugin-preferences-dialog-close">×</div>
+                    <div id="plugin-preferences-dialog-close" class="ion-close-round"></div>
                     <div id="plugin-preferences-dialog-main"><div id="plugin-preferences-dialog-form" data-plugin="global"></div></div>
                 </div>
             </div>
@@ -134,7 +134,7 @@ class preferencesPlugin extends BasePlugin {
                 if (isShown) {
                     optionBox.scrollIntoView({ block: "nearest" })
                 }
-                shownSelectOption = isShown ? optionBox: null
+                shownSelectOption = isShown ? optionBox : null
                 return false
             }).on("click", ".plugin-preferences-option-item", async function () {
                 const optionEl = this
@@ -168,39 +168,39 @@ class preferencesPlugin extends BasePlugin {
                     const map = new Map(allOptionEl.map(op => [op.dataset.value, op]))
                     selectValueEl.textContent = values.length === 0
                         ? that.i18n._t("global", "empty")
-                        : values.map(v => map.get(v).textContent).join(", ")
+                        : that._joinSelected(values.map(v => map.get(v).textContent))
                     selectEl.dataset.value = values.join("#")
                     that.utils.hide(boxEl)
-                    await that.updateSettings(selectEl.dataset.key, values)
+                    await that._updateSettings(selectEl.dataset.key, values)
                 } else {
                     allOptionEl.forEach(op => op.dataset.choose = "false")
                     optionEl.dataset.choose = "true"
                     selectEl.dataset.value = optionEl.dataset.value
                     selectValueEl.textContent = optionEl.textContent
                     that.utils.hide(boxEl)
-                    await that.updateSettings(selectEl.dataset.key, optionValue)
+                    await that._updateSettings(selectEl.dataset.key, optionValue)
                 }
-            }).on("click", ".plugin-preferences-json-btn", async function () {
-                const textarea = this.closest(".plugin-preferences-control").querySelector(".plugin-preferences-json")
+            }).on("click", ".plugin-preferences-object-btn", async function () {
+                const textarea = this.closest(".plugin-preferences-control").querySelector(".plugin-preferences-object")
                 try {
-                    const value = JSON.parse(textarea.value)
-                    await that.updateSettings(textarea.dataset.key, value)
+                    const value = that._deserialize(textarea.value)
+                    await that._updateSettings(textarea.dataset.key, value)
                     const msg = that.i18n.t("notification.changesSubmitted")
                     that.utils.notification.show(msg)
                 } catch (e) {
                     console.error(e)
-                    const msg = that.i18n.t("error.IncorrectJSONContent")
+                    const msg = that.i18n.t("error.IncorrectFormatContent", { format: that.config.OBJECT_SETTINGS_FORMAT })
                     that.utils.notification.show(msg, "error")
                 }
             }).on("click", ".plugin-preferences-hotkey-reset", async function () {
                 const input = this.closest(".plugin-preferences-hotkey-wrap").querySelector("input")
-                await that.updateSettings(input.dataset.key, "")
+                await that._updateSettings(input.dataset.key, "")
                 that.utils.hotkeyHub.unregister(input.value)
                 input.value = ""
             }).on("click", ".plugin-preferences-hotkey-undo", async function () {
                 const input = this.closest(".plugin-preferences-hotkey-wrap").querySelector("input")
                 input.value = input.getAttribute("value")
-                await that.updateSettings(input.dataset.key, input.value)
+                await that._updateSettings(input.dataset.key, input.value)
             }).on("click", '.plugin-preferences-control[data-type="action"]', async function () {
                 const icon = this.querySelector(".plugin-preferences-action")
                 const act = icon.dataset.action
@@ -212,7 +212,7 @@ class preferencesPlugin extends BasePlugin {
                 const itemEl = this.parentElement
                 const valueEl = this.previousElementSibling
                 const displayEl = this.closest(".plugin-preferences-array")
-                await that.updateSettings(displayEl.dataset.key, valueEl.textContent, "remove")
+                await that._updateSettings(displayEl.dataset.key, valueEl.textContent, "remove")
                 itemEl.remove()
             }).on("click", ".plugin-preferences-array-item-add", async function () {
                 const addEl = this
@@ -236,15 +236,15 @@ class preferencesPlugin extends BasePlugin {
                 input.textContent = ""
                 that.utils.hide(input)
                 that.utils.show(addEl)
-                await that.updateSettings(displayEl.dataset.key, value, "push")
+                await that._updateSettings(displayEl.dataset.key, value, "push")
             }).on("input", ".plugin-preferences-range-input", function () {
                 this.nextElementSibling.textContent = that._toFixed2(Number(this.value))
             }).on("change", "input.plugin-preferences-switch-input", async function () {
-                await that.updateSettings(this.dataset.key, this.checked)
+                await that._updateSettings(this.dataset.key, this.checked)
             }).on("change", ".plugin-preferences-number-input, .plugin-preferences-range-input, .plugin-preferences-unit-input", async function () {
-                await that.updateSettings(this.dataset.key, Number(this.value))
+                await that._updateSettings(this.dataset.key, Number(this.value))
             }).on("change", ".plugin-preferences-text-input, .plugin-preferences-textarea", async function () {
-                await that.updateSettings(this.dataset.key, this.value)
+                await that._updateSettings(this.dataset.key, this.value)
             })
         }
 
@@ -262,7 +262,7 @@ class preferencesPlugin extends BasePlugin {
                 }
             })
             const ignoreKeys = ["control", "alt", "shift", "meta"]
-            const updateHotkey = this.utils.debounce(async hk => this.updateSettings(hk.dataset.key, hk.value), 500)
+            const updateHotkey = this.utils.debounce(async hk => this._updateSettings(hk.dataset.key, hk.value), 500)
             this.entities.form.addEventListener("keydown", ev => {
                 if (ev.key === undefined) return
                 const input = ev.target.closest(".plugin-preferences-hotkey-input")
@@ -294,7 +294,7 @@ class preferencesPlugin extends BasePlugin {
         if (isShow) {
             this.utils.hide(this.entities.dialog)
         } else {
-            await this.initDialog(this.config.DEFAULT_MENU)
+            await this.showDialog(this.config.DEFAULT_MENU)
             this.utils.show(this.entities.dialog)
         }
     }
@@ -344,7 +344,7 @@ class preferencesPlugin extends BasePlugin {
         })
     }
 
-    initDialog = async (initMenu) => {
+    showDialog = async (showMenu) => {
         const names = [
             "global",
             ...Object.keys(this.utils.getAllPluginSettings()),
@@ -355,12 +355,13 @@ class preferencesPlugin extends BasePlugin {
             .map(name => {
                 const p = this.utils.tryGetPlugin(name)
                 const pluginName = p ? p.pluginName : this.i18n._t(name, "pluginName")
-                return `<div class="plugin-preferences-menu-item" data-plugin="${name}">${pluginName}</div>`
+                const showName = this.utils.escape(pluginName)
+                return `<div class="plugin-preferences-menu-item" data-plugin="${name}">${showName}</div>`
             })
         this.entities.menu.innerHTML = menus.join("")
 
-        initMenu = names.includes(initMenu) ? initMenu : "global"
-        await this.switchMenu(initMenu)
+        showMenu = names.includes(showMenu) ? showMenu : "global"
+        await this.switchMenu(showMenu)
         setTimeout(() => {
             const active = this.entities.menu.querySelector(".plugin-preferences-menu-item.active")
             active.scrollIntoView({ block: "center" })
@@ -368,8 +369,8 @@ class preferencesPlugin extends BasePlugin {
     }
 
     switchMenu = async (fixedName) => {
-        const settings = await this.getSettings(fixedName)
-        const values = await this._getValues(fixedName, settings)
+        const settings = await this._getSettings(fixedName)
+        const values = await this._getSettingsValues(fixedName, settings)
         this.entities.form.dataset.plugin = fixedName
         this.entities.form.innerHTML = this._fillForm(fixedName, values)
         this.entities.title.textContent = this.i18n._t(fixedName, "pluginName")
@@ -378,23 +379,23 @@ class preferencesPlugin extends BasePlugin {
         this.entities.main.scrollTop = 0
     }
 
-    getSettings = async (fixedName) => {
+    _getSettings = async (fixedName) => {
         const isBase = this.utils.getPluginSetting(fixedName)
         const fn = isBase ? "readBasePluginSettings" : "readCustomPluginSettings"
         const settings = await this.utils.settings[fn]()
         return settings[fixedName]
     }
 
-    updateSettings = async (key, value, type = "set") => {
+    _updateSettings = async (key, value, type = "set") => {
         if (!this.SETTING_OPERATORS.hasOwnProperty(type)) return
 
         const fixedName = this.entities.form.dataset.plugin
-        const settings = await this.getSettings(fixedName)
+        const settings = await this._getSettings(fixedName)
         this.SETTING_OPERATORS[type](settings, key, value)
         await this.utils.settings.saveSettings(fixedName, settings)
     }
 
-    _getValues = async (fixedName, settings) => {
+    _getSettingsValues = async (fixedName, settings) => {
         const keys = this.SETTING_SCHEMAS[fixedName].flatMap(box => {
             return box.fields.filter(item => Boolean(item.key)).map(item => item.key)
         })
@@ -417,7 +418,8 @@ class preferencesPlugin extends BasePlugin {
     `
 
     _fillForm = (fixedName, values) => {
-        const isBlockControl = type => type === "textarea" || type === "json" || type === "array"
+        const isBlockControl = type => type === "textarea" || type === "object" || type === "array"
+        const createTitle = (title) => `<div class="plugin-preferences-title">${title}</div>`
         const createTooltip = (item) => item.tooltip ? `<span class="plugin-preferences-tooltip"><span>?</span><span>${item.tooltip}</span></span>` : ""
         const createGeneralControl = (ctl, value) => {
             const disabled = ctl => ctl.disabled ? "disabled" : ""
@@ -459,7 +461,7 @@ class preferencesPlugin extends BasePlugin {
                 case "select":
                     const isMulti = Array.isArray(value)
                     const show = isMulti
-                        ? value.map(e => ctl.options[e]).join(", ")
+                        ? this._joinSelected(value.map(e => ctl.options[e]))
                         : ctl.options[value]
                     const isSelected = (option) => isMulti ? value.includes(option) : option === value
                     const options = Object.entries(ctl.options).map(([option, optionShowName]) => {
@@ -487,13 +489,13 @@ class preferencesPlugin extends BasePlugin {
                         </div>
                         `
                 case "textarea":
-                case "json":
-                    const isJson = ctl.type === "json"
+                case "object":
+                    const isObject = ctl.type === "object"
                     const rows = ctl.rows || 3
                     const readonly = ctl.readonly ? "readonly" : ""
-                    const value_ = isJson ? JSON.stringify(value, null, "\t") : value
+                    const value_ = isObject ? this._serialize(value) : value
                     const textarea = `<textarea class="plugin-preferences-${ctl.type}" rows="${rows}" ${readonly} data-key="${ctl.key}" ${placeholder(ctl)} ${disabled(ctl)}>${value_}</textarea>`
-                    const btn = isJson ? `<button class="plugin-preferences-json-btn">${this.i18n._t("global", "confirm")}</button>` : ""
+                    const btn = isObject ? `<button class="plugin-preferences-object-btn">${this.i18n._t("global", "confirm")}</button>` : ""
                     return textarea + btn
                 case "array":
                     const items = value.map(this._createArrayItem).join("")
@@ -520,12 +522,8 @@ class preferencesPlugin extends BasePlugin {
             const wrappedLabel = isBlock ? "" : `<div>${field.label}${createTooltip(field)}</div>`
             return `<div class="plugin-preferences-control" data-type="${field.type}">${wrappedLabel}${wrappedControl}</div>`
         }
-        const createTitle = (title, subtitle) => {
-            const sub = subtitle ? `<span>${subtitle}</span>` : ""
-            return `<div class="plugin-preferences-title">${title}${sub}</div>`
-        }
-        const createBox = ({ title, subtitle, fields }) => {
-            const t = title ? createTitle(title, subtitle) : ""
+        const createBox = ({ title, fields }) => {
+            const t = title ? createTitle(title) : ""
             const items = fields.map(createControl).join("")
             const box = `<div class="plugin-preferences-form-box">${items}</div>`
             return t + box
@@ -534,6 +532,28 @@ class preferencesPlugin extends BasePlugin {
     }
 
     _toFixed2 = (num) => Number.isInteger(num) ? num : num.toFixed(2)
+
+    _joinSelected = (options) => options.join(", ")
+
+    _serialize = (obj) => {
+        const funcMap = {
+            JSON: (obj) => JSON.stringify(obj, null, "\t"),
+            TOML: (obj) => this.utils.stringifyToml(obj),
+            YAML: (obj) => this.utils.stringifyYaml(obj)
+        }
+        const f = funcMap[this.config.OBJECT_SETTINGS_FORMAT] || funcMap.JSON
+        return f(obj)
+    }
+
+    _deserialize = (str) => {
+        const funcMap = {
+            JSON: (str) => JSON.parse(str),
+            TOML: (str) => this.utils.readToml(str),
+            YAML: (str) => this.utils.readYaml(str),
+        }
+        const f = funcMap[this.config.OBJECT_SETTINGS_FORMAT] || funcMap.JSON
+        return f(str)
+    }
 }
 
 module.exports = {

@@ -45,9 +45,8 @@ const Range = (key, tooltip, min, max, step) => {
 
 const UntitledBox = (...fields) => ({ title: undefined, fields })
 const TitledBox = (title, ...fields) => ({ title: `$title.${title}`, fields })
-const SubtitledBox = (title, subtitle, ...fields) => ({ title, subtitle, fields })
 const ArrayBox = (key) => TitledBox(key, { type: "array", key })
-const JsonBOX = (key, rows = 10) => TitledBox(key, { type: "json", key, rows })
+const ObjectBOX = (key, rows = 10) => TitledBox(key, { type: "object", key, rows })
 const TextareaBox = (key, rows = 10) => TitledBox(key, { type: "textarea", key, rows })
 
 const prop_ENABLE = Switch("ENABLE")
@@ -103,6 +102,9 @@ const OPTIONS = {
         SUGGESTION_TIMING: ["on_input", "debounce"],
         MATCH_STRATEGY: ["prefix", "substr", "abbr"],
         ORDER_STRATEGY: ["predefined", "lexicographic", "length_based", "earliest_hit"]
+    },
+    preferences: {
+        OBJECT_SETTINGS_FORMAT: ["JSON", "TOML", "YAML"]
     },
     echarts: {
         RENDERER: ["canvas", "svg"],
@@ -235,7 +237,7 @@ const SETTING_SCHEMAS = {
             Switch("BACKSPACE_TO_HIDE"),
             Switch("ALLOW_DRAG"),
         ),
-        JsonBOX("BUILTIN"),
+        ObjectBOX("BUILTIN"),
         restoreSettingsBox,
     ],
     md_padding: [
@@ -387,7 +389,7 @@ const SETTING_SCHEMAS = {
             Number("DEFAULT_TOC_OPTIONS.duration", undefined, UNITS.millisecond, 0, 1000, 10),
         ),
         ArrayBox("DEFAULT_TOC_OPTIONS.color"),
-        JsonBOX("CANDIDATE_COLOR_SCHEMES"),
+        ObjectBOX("CANDIDATE_COLOR_SCHEMES"),
         TitledBox(
             "mindmapDiagramExport",
             Switch("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL"),
@@ -450,7 +452,7 @@ const SETTING_SCHEMAS = {
             Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE),
             Text("FONT_FAMILY"),
         ),
-        JsonBOX("LAYOUTS"),
+        ObjectBOX("LAYOUTS"),
         TitledBox(
             "advanced",
             Switch("ENABLE_WHEN_EXPORT"),
@@ -484,14 +486,14 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "buttonHotkeys",
             Switch("ENABLE_HOTKEY"),
-            Text("SWAP_PREVIOUS_LINE"),
+            Text("SWAP_PREVIOUS_LINE", "codeMirrorStyle"),
             Text("SWAP_NEXT_LINE"),
             Text("COPY_PREVIOUS_LINE"),
             Text("COPY_NEXT_LINE"),
             Text("INSERT_LINE_PREVIOUS"),
             Text("INSERT_LINE_NEXT"),
         ),
-        JsonBOX("CUSTOM_BUTTONS"),
+        ObjectBOX("CUSTOM_BUTTONS"),
         TitledBox(
             "advanced",
             Switch("ENABLE_LANGUAGE_FOLD"),
@@ -572,8 +574,8 @@ const SETTING_SCHEMAS = {
             Text("DEFAULT_COLORS.BORDER"),
             Text("DEFAULT_FORMAT_BRUSH", "brushExample"),
         ),
-        JsonBOX("COLOR_TABLE"),
-        JsonBOX("ACTION_HOTKEYS"),
+        ObjectBOX("COLOR_TABLE"),
+        ObjectBOX("ACTION_HOTKEYS"),
         restoreSettingsBox,
     ],
     cipher: [
@@ -624,7 +626,7 @@ const SETTING_SCHEMAS = {
             Select("MATCH_STRATEGY", OPTIONS.slash_commands.MATCH_STRATEGY),
             Select("ORDER_STRATEGY", OPTIONS.slash_commands.ORDER_STRATEGY),
         ),
-        JsonBOX("COMMANDS"),
+        ObjectBOX("COMMANDS"),
         restoreSettingsBox,
     ],
     right_click_menu: [
@@ -640,7 +642,7 @@ const SETTING_SCHEMAS = {
             Switch("HIDE_OTHER_OPTIONS"),
             Text("MENU_MIN_WIDTH"),
         ),
-        JsonBOX("MENUS"),
+        ObjectBOX("MENUS"),
         TitledBox(
             "advanced",
             Switch("FIND_LOST_PLUGIN")
@@ -652,7 +654,7 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Text("MODIFIER_KEY", "example")
         ),
-        JsonBOX("BUTTONS"),
+        ObjectBOX("BUTTONS"),
         restoreSettingsBox,
     ],
     preferences: [
@@ -663,6 +665,7 @@ const SETTING_SCHEMAS = {
         ),
         UntitledBox(
             Switch("SEARCH_PLUGIN_FIXEDNAME"),
+            Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
             Text("DEFAULT_MENU"),
         ),
         restoreSettingsBox,
@@ -691,7 +694,7 @@ const SETTING_SCHEMAS = {
     ],
     hotkeys: [
         pluginFullBasePropBox,
-        JsonBOX("CUSTOM_HOTKEYS"),
+        ObjectBOX("CUSTOM_HOTKEYS"),
         restoreSettingsBox,
     ],
     help: [
@@ -742,7 +745,7 @@ const SETTING_SCHEMAS = {
             Text("upload.csdn.cookie"),
         ),
         UntitledBox(
-          Action("articleUploaderReadme"),
+            Action("articleUploaderReadme"),
         ),
         restoreSettingsBox,
     ],
@@ -892,7 +895,7 @@ const SETTING_SCHEMAS = {
         langModeBox,
         chartStyleBox,
         TextareaBox("TEMPLATE"),
-        JsonBOX("VISUAL_OPTIONS", 6),
+        ObjectBOX("VISUAL_OPTIONS", 6),
         restoreSettingsBox,
     ],
     drawIO: [
@@ -930,7 +933,7 @@ const SETTING_SCHEMAS = {
             Text("default_left_line_color"),
             Text("default_icon"),
         ),
-        JsonBOX("list"),
+        ObjectBOX("list"),
         TextareaBox("template"),
         restoreSettingsBox,
     ],
@@ -939,8 +942,8 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Switch("auto_open"),
         ),
-        JsonBOX("template_variables"),
-        JsonBOX("template"),
+        ObjectBOX("template_variables"),
+        ObjectBOX("template"),
         restoreSettingsBox,
     ],
     chineseSymbolAutoPairer: [
@@ -952,8 +955,8 @@ const SETTING_SCHEMAS = {
             Switch("auto_surround_pair"),
             Switch("auto_select_after_surround"),
         ),
-        JsonBOX("auto_pair_symbols"),
-        JsonBOX("auto_swap_symbols"),
+        ObjectBOX("auto_pair_symbols"),
+        ObjectBOX("auto_swap_symbols"),
         restoreSettingsBox,
     ],
     toc: [
@@ -1064,7 +1067,7 @@ const SETTING_SCHEMAS = {
             Select("alt_wheel_function.0", OPTIONS.imageReviewer.operations),
             Select("alt_wheel_function.1", OPTIONS.imageReviewer.operations),
         ),
-        JsonBOX("hotkey_function"),
+        ObjectBOX("hotkey_function"),
         TitledBox(
             "adjustScale",
             Number("zoom_scale", undefined, UNITS.percent),
@@ -1098,7 +1101,7 @@ const SETTING_SCHEMAS = {
             Select("result_order_by", OPTIONS.markdownLint.result_order_by),
             Hotkey("hotkey_fix_lint_error"),
         ),
-        JsonBOX("rule_config", 15),
+        ObjectBOX("rule_config", 15),
         ArrayBox("custom_rules"),
         restoreSettingsBox,
     ],
@@ -1124,7 +1127,7 @@ const SETTING_SCHEMAS = {
             Switch("support_right_click"),
             Switch("hide_button_hint"),
         ),
-        JsonBOX("buttons"),
+        ObjectBOX("buttons"),
         restoreSettingsBox,
     ],
     blockSideBySide: [

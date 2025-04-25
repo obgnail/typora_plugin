@@ -25,7 +25,7 @@
     "$label.DEFAULT_FENCE_HEIGHT": "預設高度",
     "$label.DEFAULT_FENCE_BACKGROUND_COLOR": "背景色",
     "$placeholder.defaultIfEmpty": "若為空則使用預設名稱",
-    "$tooltip.protected": "危險操作，禁止修改，如有需要請修改設定檔",
+    "$tooltip.protected": "受保護選項，請修改配置文件",
     "$tooltip.minusOne": "-1 表示無限制",
     "$title.fenceLanguageMode": "語言與模式",
     "$title.diagramStyle": "圖表樣式",
@@ -54,7 +54,7 @@
     "$label.openSettingsFolder": "設定目錄",
     "$label.backupSettings": "備份設定",
     "$label.restoreAllSettings": "恢復所有預設值",
-    "$label.visitRepo": "GitHub",
+    "$label.visitRepo": "THIS IS FOR EVERYONE",
     "$label.pluginVersion": "版本",
     "$option.LOCALE.auto": "AUTO",
     "$option.LOCALE.en": "English",
@@ -657,7 +657,7 @@
     "$title.buttonStyle": "按鈕樣式",
     "$title.buttons": "功能按鈕",
     "$title.buttonHotkeys": "程式碼區塊快捷鍵",
-    "$title.further": "高級功能"
+    "$tooltip.codeMirrorStyle": "使用 CodeMirror 風格的表示方式"
   },
   "collapse_paragraph": {
     "pluginName": "章節摺疊",
@@ -834,7 +834,7 @@
     "actHint.disabledTemp": "游標於此位置不可用",
     "modal.checkError.title": "配置錯誤",
     "modal.checkError.incorrectFile": "以下插件的配置檔案寫錯了。一級插件應該寫在 settings.user.toml 中，二級插件應該寫在 custom_plugin.user.toml 中",
-    "$label.HIDE_DISABLE_PLUGINS": "隱藏右鍵選單中暫時不可用的二級外掛"
+    "$label.HIDE_DISABLE_PLUGINS": "隱藏右鍵選單中暫時不可用的二級插件"
   },
   "slash_commands": {
     "pluginName": "斜線指令",
@@ -877,9 +877,9 @@
     "$label.SHOW_PLUGIN_HOTKEY": "顯示選項快捷鍵",
     "$label.SHOW_ACTION_OPTIONS_ICON": "動作選項添加 ⌘ 圖示",
     "$label.DO_NOT_HIDE": "失去焦點不再自動隱藏",
-    "$label.HIDE_OTHER_OPTIONS": "只顯示外掛選項",
+    "$label.HIDE_OTHER_OPTIONS": "只顯示插件選項",
     "$label.MENU_MIN_WIDTH": "二、三級選單的最小寬度",
-    "$label.FIND_LOST_PLUGIN": "自動尋找遺失外掛",
+    "$label.FIND_LOST_PLUGIN": "自動尋找遺失插件",
     "$title.MENUS": "自訂右鍵選單",
     "$title.style": "樣式"
   },
@@ -894,11 +894,15 @@
     "notification.settingsRestored": "已恢複默認",
     "notification.allSettingsRestored": "已恢複所有默認",
     "notification.changesSubmitted": "修改已提交",
-    "error.IncorrectJSONContent": "內容必須爲正確的 JSON 格式",
+    "error.IncorrectFormatContent": "內容必須爲正確的 {{format}} 格式",
     "error.minItems": "至少選擇 {{minItems}} 項",
     "error.maxItems": "至多選擇 {{maxItems}} 項",
-    "$label.SEARCH_PLUGIN_FIXEDNAME": "配置頁支援搜尋外掛英文名",
-    "$label.DEFAULT_MENU": "預設的外掛配置頁"
+    "$label.SEARCH_PLUGIN_FIXEDNAME": "配置頁支援搜尋插件英文名",
+    "$label.OBJECT_SETTINGS_FORMAT": "配置頁中對象類型的數據格式",
+    "$label.DEFAULT_MENU": "預設的配置頁",
+    "$option.OBJECT_SETTINGS_FORMAT.JSON": "JSON",
+    "$option.OBJECT_SETTINGS_FORMAT.TOML": "TOML",
+    "$option.OBJECT_SETTINGS_FORMAT.YAML": "YAML"
   },
   "file_counter": {
     "pluginName": "檔案計數",

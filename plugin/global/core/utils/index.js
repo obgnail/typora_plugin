@@ -576,21 +576,12 @@ class utils {
 
     static readYaml = content => {
         const yaml = require("../lib/js-yaml")
-        try {
-            return yaml.safeLoad(content)
-        } catch (e) {
-            console.error(e)
-        }
+        return yaml.safeLoad(content)
     }
     static stringifyYaml = (obj, args) => {
         const yaml = require("../lib/js-yaml")
-        try {
-            return yaml.safeDump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
-        } catch (e) {
-            console.error(e)
-        }
+        return yaml.safeDump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
     }
-
     static readToml = content => require("../lib/soml-toml").parse(content)
     static stringifyToml = obj => require("../lib/soml-toml").stringify(obj)
     static readTomlFile = async filepath => this.readToml(await FS.promises.readFile(filepath, "utf-8"))
@@ -685,7 +676,12 @@ class utils {
         const yamlContent = content.slice(4, matchResult.index);
         const remainContent = content.slice(matchResult.index + matchResult[0].length);
         const yamlLineCount = (yamlContent.match(/\n/g) || []).length + 3;
-        const yamlObject = this.readYaml(yamlContent);
+        let yamlObject = {}
+        try {
+            yamlObject = this.readYaml(yamlContent)
+        } catch (e) {
+            console.error(e)
+        }
         return { yamlObject, remainContent, yamlLineCount }
     }
 

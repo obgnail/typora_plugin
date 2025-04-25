@@ -54,7 +54,7 @@
     "$label.openSettingsFolder": "Settings Directory",
     "$label.backupSettings": "Backup Settings",
     "$label.restoreAllSettings": "Restore All Defaults",
-    "$label.visitRepo": "GitHub",
+    "$label.visitRepo": "THIS IS FOR EVERYONE",
     "$label.pluginVersion": "Version",
     "$option.LOCALE.auto": "AUTO",
     "$option.LOCALE.en": "English",
@@ -657,7 +657,7 @@
     "$title.buttonStyle": "Button Style",
     "$title.buttons": "Function Buttons",
     "$title.buttonHotkeys": "Code Block Hotkeys",
-    "$title.further": "Advanced Features"
+    "$tooltip.codeMirrorStyle": "CodeMirror style representation"
   },
   "collapse_paragraph": {
     "pluginName": "Chapter Folding",
@@ -894,11 +894,15 @@
     "notification.settingsRestored": "Settings restored",
     "notification.allSettingsRestored": "All settings restored",
     "notification.changesSubmitted": "Changes submitted",
-    "error.IncorrectJSONContent": "Content must be valid JSON",
+    "error.IncorrectFormatContent": "Content must be valid {{format}}",
     "error.minItems": "At least {{minItems}} items",
     "error.maxItems": "At most {{maxItems}} items",
     "$label.SEARCH_PLUGIN_FIXEDNAME": "Support Search Plugin English Name",
-    "$label.DEFAULT_MENU": "Default Plugin Config Page"
+    "$label.OBJECT_SETTINGS_FORMAT": "Object Data Format in Settings Window",
+    "$label.DEFAULT_MENU": "Default Plugin Settings Window",
+    "$option.OBJECT_SETTINGS_FORMAT.JSON": "JSON",
+    "$option.OBJECT_SETTINGS_FORMAT.TOML": "TOML",
+    "$option.OBJECT_SETTINGS_FORMAT.YAML": "YAML"
   },
   "file_counter": {
     "pluginName": "File Counter",

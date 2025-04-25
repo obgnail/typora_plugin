@@ -25,7 +25,7 @@
     "$label.DEFAULT_FENCE_HEIGHT": "默认高度",
     "$label.DEFAULT_FENCE_BACKGROUND_COLOR": "背景色",
     "$placeholder.defaultIfEmpty": "为空则使用默认名",
-    "$tooltip.protected": "危险操作，禁止修改，如需请修改配置文件",
+    "$tooltip.protected": "受保护选项，请修改配置文件",
     "$tooltip.minusOne": "-1 表示无限制",
     "$title.fenceLanguageMode": "语言与模式",
     "$title.diagramStyle": "图形样式",
@@ -54,7 +54,7 @@
     "$label.openSettingsFolder": "配置目录",
     "$label.backupSettings": "备份配置",
     "$label.restoreAllSettings": "恢复所有默认",
-    "$label.visitRepo": "GitHub",
+    "$label.visitRepo": "THIS IS FOR EVERYONE",
     "$label.pluginVersion": "版本",
     "$option.LOCALE.auto": "AUTO",
     "$option.LOCALE.en": "English",
@@ -657,7 +657,7 @@
     "$title.buttonStyle": "按钮样式",
     "$title.buttons": "功能按钮",
     "$title.buttonHotkeys": "代码块快捷键",
-    "$title.further": "高级功能"
+    "$tooltip.codeMirrorStyle": "使用 CodeMirror 风格的表示方式"
   },
   "collapse_paragraph": {
     "pluginName": "章节折叠",
@@ -894,11 +894,15 @@
     "notification.settingsRestored": "已恢复默认",
     "notification.allSettingsRestored": "已恢复所有默认",
     "notification.changesSubmitted": "修改已提交",
-    "error.IncorrectJSONContent": "内容必须为正确的 JSON 格式",
+    "error.IncorrectFormatContent": "内容必须为正确的 {{format}} 格式",
     "error.minItems": "至少选择 {{minItems}} 项",
     "error.maxItems": "至多选择 {{maxItems}} 项",
     "$label.SEARCH_PLUGIN_FIXEDNAME": "配置页支持搜索插件英文名",
-    "$label.DEFAULT_MENU": "默认的插件配置页"
+    "$label.OBJECT_SETTINGS_FORMAT": "配置页中对象类型的数据格式",
+    "$label.DEFAULT_MENU": "默认的配置页",
+    "$option.OBJECT_SETTINGS_FORMAT.JSON": "JSON",
+    "$option.OBJECT_SETTINGS_FORMAT.TOML": "TOML",
+    "$option.OBJECT_SETTINGS_FORMAT.YAML": "YAML"
   },
   "file_counter": {
     "pluginName": "文件计数",
