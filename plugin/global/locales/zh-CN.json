@@ -1106,15 +1106,19 @@
     "$label.set_title_color": "高亮标题",
     "$label.box_shadow": "阴影",
     "$label.hover_to_show_fold_callout": "展开 Fold Callout",
-    "$label.font_family": "图标字体",
+    "$label.font_family": "字体图标名称",
+    "$label.use_network_icon_when_exporting": "导出时使用网络字体图标",
+    "$label.network_icon_url": "网络字体图标的 CDN 地址",
     "$label.default_background_color": "左边线颜色",
     "$label.default_left_line_color": "背景颜色",
     "$label.default_icon": "图标",
     "$title.list": "预设的 Callouts 列表",
     "$title.style": "样式",
     "$title.mouseHover": "鼠标悬停",
+    "$title.fontFamily": "字体图标",
     "$title.defaultOptions": "默认值",
-    "$title.template": "模板"
+    "$title.template": "模板",
+    "$tooltip.messingFont": "若取消选中，则导出文件不显示图标"
   },
   "templater": {
     "pluginName": "文件模板",

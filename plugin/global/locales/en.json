@@ -1107,14 +1107,18 @@
     "$label.box_shadow": "Shadow",
     "$label.hover_to_show_fold_callout": "Expand Fold Callout",
     "$label.font_family": "Icon Font",
+    "$label.use_network_icon_when_exporting": "Use network font icon when exporting",
+    "$label.network_icon_url": "CDN URL for network font icon",
     "$label.default_background_color": "Left Line Color",
     "$label.default_left_line_color": "Background Color",
     "$label.default_icon": "Icon",
     "$title.list": "Preset Callouts List",
     "$title.style": "Style",
     "$title.mouseHover": "Mouse Hover",
+    "$title.fontFamily": "Icon Font",
     "$title.defaultOptions": "Default Values",
-    "$title.template": "Template"
+    "$title.template": "Template",
+    "$tooltip.messingFont": "If unchecked, Exported file will not display icons"
   },
   "templater": {
     "pluginName": "File Templater",

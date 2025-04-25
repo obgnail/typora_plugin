@@ -52,9 +52,19 @@ class calloutsPlugin extends BaseCustomPlugin {
     }
 
     beforeExport = (...args) => {
-        if (this.check(args)) {
-            return this.utils.styleTemplater.getStyleContent(this.fixedName);
-        }
+        if (!this.check(args)) return
+
+        const extra = `
+            @font-face {
+                font-family: '${this.config.font_family}';
+                src: url(${this.config.network_icon_url}) format('woff');
+                font-weight: normal;
+                font-style: normal;
+            }`
+        const css = this.utils.styleTemplater.getStyleContent(this.fixedName)
+        return this.config.use_network_icon_when_exporting
+            ? extra + css
+            : css.replace(/--callout-icon: ".*?";/g, "")
     }
 
     afterExport = (html, ...args) => {

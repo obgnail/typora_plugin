@@ -766,12 +766,19 @@ set_title_color = true
 # 鼠标悬停在 fold callout 时展示其内容
 hover_to_show_fold_callout = true
 
-# icon 对应的字体。一旦修改此选项，就需要修改下面所有的 icon
+# icon 对应的图标字体。一旦修改此选项，就需要修改下面所有的 icon
 #   具体的 icon 值请参考
 #   - 旧版本 Typora: {your_typora_path}/resources/app/style/font-awesome-4.1.0/css/font-awesome.css
 #   - 新版本 Typora: {your_typora_path}/resources/style/font-awesome-4.1.0/css/font-awesome.css
 #   - 网络下载: https://www.adfwebmagazine.jp/wp-content/uploads/test_v4.1.pdf
 font_family = "FontAwesome"
+
+# Callouts 功能导出为 PDF 后不显示图标，因为导出过程中缺少必要的图标字体资源
+# 是否使用网络图标字体
+use_network_icon_when_exporting = true
+
+# 网络图标字体的 CDN 地址（强制 woff 格式）
+network_icon_url = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.1.0/fonts/fontawesome-webfont.woff"
 
 # callout 的类型
 #  - type            : 自定义的类型
