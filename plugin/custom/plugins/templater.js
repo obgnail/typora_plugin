@@ -1,7 +1,7 @@
 class templaterPlugin extends BaseCustomPlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
 
-    hint = isDisable => isDisable ? this.i18n.t("error.onBlankPage") : undefined
+    hint = isDisable => isDisable ? this.i18n._t("global", "error.onBlankPage") : undefined
 
     hotkey = () => [this.config.hotkey]
 

@@ -9,7 +9,7 @@
     border-radius: 8px;
     box-shadow: 2px 2px 4px #dbdbdb, -2px -2px 4px #dbdbdb;
     flex-direction: column;
-    z-index: 900;
+    z-index: 10000;
     font-size: 14px;
 }
 
@@ -116,7 +116,7 @@
     line-height: 18px;
     border-radius: 6px;
     color: #fff;
-    font-size: 20px;
+    font-size: 13px;
     cursor: pointer;
     text-align: center;
 }
@@ -145,15 +145,9 @@
 }
 
 .plugin-preferences-tooltip > span:first-child {
-    font-size: 12px;
-    border-radius: 50%;
-    border: 1px solid #98989d;
+    font-size: 13px;
     color: #98989d;
-    width: 12px;
-    height: 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    margin-left: 2px;
     cursor: pointer;
 }
 
@@ -208,12 +202,6 @@
     height: 42px;
     line-height: 42px;
     padding-left: 10px;
-}
-
-.plugin-preferences-title > span {
-    font-size: 12px;
-    color: #999;
-    padding-left: 8px;
 }
 
 /***** general control *****/
@@ -322,6 +310,8 @@
 }
 
 #plugin-preferences-dialog .plugin-preferences-select-wrap {
+    display: flex;
+    align-items: center;
     text-align: right;
     border-radius: 6px;
     border: 1px solid transparent;
@@ -336,7 +326,12 @@
 }
 
 #plugin-preferences-dialog .plugin-preferences-select-icon {
-    margin-left: 6px;
+    margin-left: 8px;
+    transition: transform .3s;
+}
+
+.plugin-preferences-select:has(.plugin-preferences-option-box:not(.plugin-common-hidden)) .plugin-preferences-select-icon {
+    transform: rotate(180deg);
 }
 
 #plugin-preferences-dialog .plugin-preferences-option-box {
@@ -378,6 +373,17 @@
 .plugin-preferences-hotkey-wrap {
     position: relative;
     flex-grow: 1;
+    transition: all .3s;
+    border-radius: 4px;
+    outline: 1px solid transparent;
+}
+
+.plugin-preferences-hotkey-wrap:has(.plugin-preferences-hotkey-reset:hover) {
+    outline-color: #d70015;
+}
+
+.plugin-preferences-hotkey-wrap:has(.plugin-preferences-hotkey-undo:hover) {
+    outline-color: #f9c67f;
 }
 
 .plugin-preferences-hotkey-wrap > div {
@@ -503,12 +509,12 @@
     margin-right: 0;
 }
 
-/***** json *****/
-.plugin-preferences-control[data-type="json"] {
+/***** object *****/
+.plugin-preferences-control[data-type="object"] {
     flex-direction: column;
 }
 
-.plugin-preferences-json-btn {
+.plugin-preferences-object-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -528,7 +534,7 @@
     user-select: none;
 }
 
-.plugin-preferences-json-btn:hover {
+.plugin-preferences-object-btn:hover {
     background-color: #0092ff;
 }
 
@@ -557,6 +563,14 @@
     border-style: dashed;
 }
 
+.plugin-preferences-array-item {
+    transition: all .3s;
+}
+
+.plugin-preferences-array-item:has(.plugin-preferences-array-item-delete:hover) {
+    border-color: #d70015;
+}
+
 .plugin-preferences-array-item-input {
     min-width: 60px;
 }
@@ -568,6 +582,6 @@
     cursor: pointer;
     padding: 2px;
     color: #d70015;
-    height: 17px;
-    font-size: 17px;
+    height: 18px;
+    font-size: 18px;
 }

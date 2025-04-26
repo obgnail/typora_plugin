@@ -506,9 +506,8 @@ class tocMarkmap {
         const varNames = "filename、timestamp、random、uuid"
         const extNames = Downloader.getFormats()[0].extensions.join("、")
         const info = [
-            "color", "maxWidth", "AUTO_UPDATE", "CLICK_TO_POSITIONING", "POSITIONING_VIEWPORT_HEIGHT",
-            "FIX_ERROR_LEVEL_HEADER", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "FOLDER", "IMAGE_QUALITY", "BACKGROUND_COLOR",
-            "KEEP_ALPHA_CHANNEL", "REMOVE_FOREIGN_OBJECT",
+            "maxWidth", "AUTO_UPDATE", "CLICK_TO_POSITIONING", "POSITIONING_VIEWPORT_HEIGHT",
+            "FIX_ERROR_LEVEL_HEADER", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "FOLDER", "REMOVE_FOREIGN_OBJECT",
         ]
         const INFO = this.i18n.entries(info, "settingInfo.")
         INFO.FILENAME = this.i18n.t("settingInfo.FILENAME", { varNames, extNames })
@@ -564,26 +563,26 @@ class tocMarkmap {
             return { label, list, type: "radio", info: INFO.color, callback }
         }
 
-        const chart = (fieldset = this.i18n.t("settingGroup.chart")) => [
-            { fieldset, type: "range", min: 1, max: 6, step: 1, ...inlineWidget("colorFreezeLevel") },
-            { fieldset, type: "range", min: 1, max: 6, step: 1, ...inlineWidget("initialExpandLevel") },
-            { fieldset, type: "range", min: 0, max: 100, step: 1, ...inlineWidget("paddingX") },
-            { fieldset, type: "range", min: 0, max: 200, step: 1, ...inlineWidget("spacingHorizontal") },
-            { fieldset, type: "range", min: 0, max: 100, step: 1, ...inlineWidget("spacingVertical") },
-            { fieldset, type: "range", min: 0, max: 1000, step: 10, ...inlineWidget("maxWidth") },
-            { fieldset, type: "range", min: 0, max: 1000, step: 10, ...inlineWidget("duration") },
+        const chart = () => [
+            { type: "range", min: 1, max: 6, step: 1, ...inlineWidget("colorFreezeLevel") },
+            { type: "range", min: 1, max: 6, step: 1, ...inlineWidget("initialExpandLevel") },
+            { type: "range", min: 0, max: 100, step: 1, ...inlineWidget("paddingX") },
+            { type: "range", min: 0, max: 200, step: 1, ...inlineWidget("spacingHorizontal") },
+            { type: "range", min: 0, max: 100, step: 1, ...inlineWidget("spacingVertical") },
+            { type: "range", min: 0, max: 1000, step: 10, ...inlineWidget("maxWidth") },
+            { type: "range", min: 0, max: 1000, step: 10, ...inlineWidget("duration") },
         ]
 
-        const window = (fieldset = this.i18n.t("settingGroup.window")) => [
-            { fieldset, type: "range", min: 0.5, max: 1, step: 0.01, ...inlineWidget("fitRatio") },
-            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("WIDTH_PERCENT_WHEN_INIT") },
-            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("HEIGHT_PERCENT_WHEN_INIT") },
-            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("HEIGHT_PERCENT_WHEN_PIN_TOP") },
-            { fieldset, type: "range", min: 20, max: 95, step: 1, ...inlineWidget("WIDTH_PERCENT_WHEN_PIN_RIGHT") },
-            { fieldset, type: "range", min: 0.1, max: 0.95, step: 0.01, ...inlineWidget("POSITIONING_VIEWPORT_HEIGHT") },
+        const window = () => [
+            { type: "range", min: 0.5, max: 1, step: 0.01, ...inlineWidget("fitRatio") },
+            { type: "range", min: 20, max: 95, step: 1, ...inlineWidget("WIDTH_PERCENT_WHEN_INIT") },
+            { type: "range", min: 20, max: 95, step: 1, ...inlineWidget("HEIGHT_PERCENT_WHEN_INIT") },
+            { type: "range", min: 20, max: 95, step: 1, ...inlineWidget("HEIGHT_PERCENT_WHEN_PIN_TOP") },
+            { type: "range", min: 20, max: 95, step: 1, ...inlineWidget("WIDTH_PERCENT_WHEN_PIN_RIGHT") },
+            { type: "range", min: 0.1, max: 0.95, step: 0.01, ...inlineWidget("POSITIONING_VIEWPORT_HEIGHT") },
         ]
 
-        const behavior = (legend = this.i18n.t("settingGroup.behavior")) => {
+        const behavior = () => {
             const hasPlugin = this.utils.getPlugin("collapse_paragraph")
             const components = [
                 generalWidget("FIX_ERROR_LEVEL_HEADER"),
@@ -597,7 +596,7 @@ class tocMarkmap {
                 generalWidget("KEEP_FOLD_STATE_WHEN_UPDATE"),
                 generalWidget("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", { disabled: !hasPlugin }),
             ]
-            return { label: "", legend, ...checkboxWidget(components) }
+            return { label: "", ...checkboxWidget(components) }
         }
 
         const download = (fieldset = this.i18n.t("settingGroup.download")) => {

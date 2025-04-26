@@ -2092,6 +2092,13 @@ DEFAULT_MENU = "global"
 # 将插件的 fixedName 加入到搜索内容
 SEARCH_PLUGIN_FIXEDNAME = false
 
+# 配置页中对象类型的数据格式
+# 支持以下格式：
+#   JSON
+#   TOML
+#   YAML
+OBJECT_SETTINGS_FORMAT = "JSON"
+
 
 ################### file_counter ###################
 [file_counter]

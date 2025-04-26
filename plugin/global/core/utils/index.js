@@ -292,6 +292,14 @@ class utils {
         return Object.fromEntries(entries)
     }
 
+    static pickBy = (obj, predicate) => {
+        if (!obj || typeof obj !== "object" || typeof predicate !== "function") {
+            return {}
+        }
+        const entries = Object.entries(obj).filter(([key, value]) => predicate(value, key, obj))
+        return Object.fromEntries(entries)
+    }
+
     static asyncReplaceAll = (content, regexp, replaceFunc) => {
         if (!regexp.global) {
             throw Error("regexp must be global");
@@ -576,21 +584,12 @@ class utils {
 
     static readYaml = content => {
         const yaml = require("../lib/js-yaml")
-        try {
-            return yaml.safeLoad(content)
-        } catch (e) {
-            console.error(e)
-        }
+        return yaml.safeLoad(content)
     }
     static stringifyYaml = (obj, args) => {
         const yaml = require("../lib/js-yaml")
-        try {
-            return yaml.safeDump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
-        } catch (e) {
-            console.error(e)
-        }
+        return yaml.safeDump(obj, { lineWidth: -1, forceQuotes: true, styles: { "!!null": "lowercase" }, ...args })
     }
-
     static readToml = content => require("../lib/soml-toml").parse(content)
     static stringifyToml = obj => require("../lib/soml-toml").stringify(obj)
     static readTomlFile = async filepath => this.readToml(await FS.promises.readFile(filepath, "utf-8"))
@@ -685,7 +684,12 @@ class utils {
         const yamlContent = content.slice(4, matchResult.index);
         const remainContent = content.slice(matchResult.index + matchResult[0].length);
         const yamlLineCount = (yamlContent.match(/\n/g) || []).length + 3;
-        const yamlObject = this.readYaml(yamlContent);
+        let yamlObject = {}
+        try {
+            yamlObject = this.readYaml(yamlContent)
+        } catch (e) {
+            console.error(e)
+        }
         return { yamlObject, remainContent, yamlLineCount }
     }
 
@@ -763,15 +767,6 @@ class utils {
     static hide = ele => ele.classList.add("plugin-common-hidden");
     static show = ele => ele.classList.remove("plugin-common-hidden");
     static toggleVisible = (ele, force) => ele.classList.toggle("plugin-common-hidden", force);
-
-    static showProcessingHint = () => this.show(document.querySelector(".plugin-wait-mask-wrapper"));
-    static hideProcessingHint = () => this.hide(document.querySelector(".plugin-wait-mask-wrapper"));
-    static withProcessingHint = async func => {
-        const wrapper = document.querySelector(".plugin-wait-mask-wrapper");
-        this.show(wrapper);
-        await func();
-        this.hide(wrapper);
-    }
 
     static isImgEmbed = img => img.complete && img.naturalWidth !== 0 && img.naturalHeight !== 0
 
@@ -1089,7 +1084,6 @@ const newMixin = (utils) => {
         ...require("./diagramParser"),
         ...require("./thirdPartyDiagramParser"),
         ...require("./entities"),
-        ...require("./extra"),
         ...require("./searchQueryParser"),
     }
     const mixin = Object.fromEntries(
@@ -1111,15 +1105,15 @@ const getHook = utils => {
     const mixin = newMixin(utils)
 
     const {
-        hotkeyHub, eventHub, stateRecorder, exportHelper, contextMenu,
-        notification, progressBar, dialog, diagramParser, thirdPartyDiagramParser, extra,
+        styleTemplater, hotkeyHub, eventHub, stateRecorder, exportHelper, contextMenu,
+        notification, progressBar, dialog, diagramParser, thirdPartyDiagramParser,
     } = mixin
 
     const registerMixin = (...ele) => Promise.all(ele.map(h => h.process && h.process()))
     const optimizeMixin = () => Promise.all(Object.values(mixin).map(h => h.afterProcess && h.afterProcess()))
 
     const registerPreMixin = async () => {
-        await registerMixin(extra)
+        await registerMixin(styleTemplater)
         await registerMixin(contextMenu, notification, progressBar, dialog, stateRecorder, hotkeyHub, exportHelper)
     }
 
