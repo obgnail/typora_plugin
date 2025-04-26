@@ -120,4 +120,5 @@
 
 .plugin-markmap-color {
     width: var(--markmap-color-width);
+    border-radius: 2px;
 }

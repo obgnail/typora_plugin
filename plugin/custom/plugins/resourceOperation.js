@@ -15,7 +15,7 @@
 class resourceOperationPlugin extends BaseCustomPlugin {
     selector = () => this.utils.getMountFolder() ? undefined : this.utils.nonExistSelector
 
-    hint = isDisable => isDisable ? this.i18n.t("error.onBlankPage") : undefined
+    hint = isDisable => isDisable ? this.i18n._t("global", "error.onBlankPage") : undefined
 
     styleTemplate = () => true
 
@@ -105,7 +105,11 @@ class resourceOperationPlugin extends BaseCustomPlugin {
         })
     }
 
-    callback = async anchorNode => await this.utils.withProcessingHint(this.run)
+    callback = async anchorNode => {
+        this.utils.notification.show(this.i18n.t("processing"))
+        await this.run()
+        this.utils.notification.hide()
+    }
 
     run = async () => {
         await this.collectImage();

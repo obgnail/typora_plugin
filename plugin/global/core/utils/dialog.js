@@ -20,8 +20,8 @@ class dialog {
         await this.utils.styleTemplater.register("plugin-common-modal")
         this.utils.insertElement(`
             <dialog id="plugin-custom-modal">
-                <div class="plugin-custom-modal-header"><div class="plugin-custom-modal-title" data-lg="Front"></div></div>
-                <div class="plugin-custom-modal-body"><form role="form"></form></div>
+                <div class="plugin-custom-modal-header"><div class="plugin-custom-modal-title"></div></div>
+                <div class="plugin-custom-modal-body"><form></form></div>
                 <div class="plugin-custom-modal-footer">
                     <button type="button" class="btn btn-default plugin-modal-cancel">${this.i18n.t("global", "cancel")}</button>
                     <button type="button" class="btn btn-primary plugin-modal-submit">${this.i18n.t("global", "confirm")}</button>
@@ -60,7 +60,7 @@ class dialog {
 
     onButtonClick = async callback => {
         const { components = [] } = this.modalOption || {};  // Retrieve first, as this.modalOption will be set to null.
-        this.entities.form.querySelectorAll(".form-group[component-id]").forEach(cpn => {
+        this.entities.form.querySelectorAll("[component-id]").forEach(cpn => {
             const id = cpn.getAttribute("component-id");
             const component = components.find(c => c._id === id);
             if (component) {
@@ -88,7 +88,7 @@ class dialog {
         modal.components.forEach(cpn => {
             Object.entries(cpn).forEach(([event, func]) => {
                 if (event.startsWith("on")) {
-                    const widget = this.entities.form.querySelector(`.form-group[component-id="${cpn._id}"]`);
+                    const widget = this.entities.form.querySelector(`[component-id="${cpn._id}"]`);
                     widget[event] = func;
                 }
             })
@@ -192,13 +192,13 @@ class dialog {
         const class_ = comp.inline ? "form-inline-group" : "form-block-group"
         const tabIndex = isNaN(comp.tabIndex) ? "" : `tabIndex="${comp.tabIndex}"`
         const label_ = comp.label ? `<${label} ${tabIndex}>${comp.label}${genInfo(comp)}</${label}>` : ""
-        return `<div class="form-group ${class_}" component-id="${comp._id}">${label_}${control}</div>`
+        return `<div class="${class_}" component-id="${comp._id}">${label_}${control}</div>`
     }
 
     newGroupWidget = components => {
         const fieldset = components[0].fieldset;
         const group = components.map(this.newSingleWidget);
-        return `<fieldset class="form-group form-fieldset-group"><legend>${fieldset}</legend>${group.join("")}</fieldset>`
+        return `<fieldset class="form-fieldset-group"><legend>${fieldset}</legend>${group.join("")}</fieldset>`
     }
 
     newWidgets = components => {

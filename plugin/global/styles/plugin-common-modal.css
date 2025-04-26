@@ -69,12 +69,10 @@
     background-color: #3071a9;
 }
 
-.plugin-custom-modal-body .form-group {
+.plugin-custom-modal-body .form-fieldset-group,
+.plugin-custom-modal-body .form-inline-group,
+.plugin-custom-modal-body .form-block-group {
     margin-bottom: 15px;
-}
-
-.plugin-custom-modal-body .form-fieldset-group .form-group:first-of-type {
-    margin-top: 15px;
 }
 
 .plugin-custom-modal-body .form-inline-group {

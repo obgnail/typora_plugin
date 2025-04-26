@@ -768,15 +768,6 @@ class utils {
     static show = ele => ele.classList.remove("plugin-common-hidden");
     static toggleVisible = (ele, force) => ele.classList.toggle("plugin-common-hidden", force);
 
-    static showProcessingHint = () => this.show(document.querySelector(".plugin-wait-mask-wrapper"));
-    static hideProcessingHint = () => this.hide(document.querySelector(".plugin-wait-mask-wrapper"));
-    static withProcessingHint = async func => {
-        const wrapper = document.querySelector(".plugin-wait-mask-wrapper");
-        this.show(wrapper);
-        await func();
-        this.hide(wrapper);
-    }
-
     static isImgEmbed = img => img.complete && img.naturalWidth !== 0 && img.naturalHeight !== 0
 
     static isInViewBox = el => {
@@ -1093,7 +1084,6 @@ const newMixin = (utils) => {
         ...require("./diagramParser"),
         ...require("./thirdPartyDiagramParser"),
         ...require("./entities"),
-        ...require("./extra"),
         ...require("./searchQueryParser"),
     }
     const mixin = Object.fromEntries(
@@ -1115,15 +1105,15 @@ const getHook = utils => {
     const mixin = newMixin(utils)
 
     const {
-        hotkeyHub, eventHub, stateRecorder, exportHelper, contextMenu,
-        notification, progressBar, dialog, diagramParser, thirdPartyDiagramParser, extra,
+        styleTemplater, hotkeyHub, eventHub, stateRecorder, exportHelper, contextMenu,
+        notification, progressBar, dialog, diagramParser, thirdPartyDiagramParser,
     } = mixin
 
     const registerMixin = (...ele) => Promise.all(ele.map(h => h.process && h.process()))
     const optimizeMixin = () => Promise.all(Object.values(mixin).map(h => h.afterProcess && h.afterProcess()))
 
     const registerPreMixin = async () => {
-        await registerMixin(extra)
+        await registerMixin(styleTemplater)
         await registerMixin(contextMenu, notification, progressBar, dialog, stateRecorder, hotkeyHub, exportHelper)
     }
 
