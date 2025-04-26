@@ -292,6 +292,14 @@ class utils {
         return Object.fromEntries(entries)
     }
 
+    static pickBy = (obj, predicate) => {
+        if (!obj || typeof obj !== "object" || typeof predicate !== "function") {
+            return {}
+        }
+        const entries = Object.entries(obj).filter(([key, value]) => predicate(value, key, obj))
+        return Object.fromEntries(entries)
+    }
+
     static asyncReplaceAll = (content, regexp, replaceFunc) => {
         if (!regexp.global) {
             throw Error("regexp must be global");

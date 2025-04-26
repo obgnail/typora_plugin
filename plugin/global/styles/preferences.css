@@ -9,7 +9,7 @@
     border-radius: 8px;
     box-shadow: 2px 2px 4px #dbdbdb, -2px -2px 4px #dbdbdb;
     flex-direction: column;
-    z-index: 9992;
+    z-index: 10000;
     font-size: 14px;
 }
 
@@ -145,15 +145,9 @@
 }
 
 .plugin-preferences-tooltip > span:first-child {
-    font-size: 12px;
-    border-radius: 50%;
-    border: 1px solid #98989d;
+    font-size: 13px;
     color: #98989d;
-    width: 12px;
-    height: 12px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    margin-left: 2px;
     cursor: pointer;
 }
 
@@ -389,7 +383,7 @@
 }
 
 .plugin-preferences-hotkey-wrap:has(.plugin-preferences-hotkey-undo:hover) {
-    outline-color: #3a9cff;
+    outline-color: #f9c67f;
 }
 
 .plugin-preferences-hotkey-wrap > div {

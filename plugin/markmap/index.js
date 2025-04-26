@@ -506,9 +506,8 @@ class tocMarkmap {
         const varNames = "filename、timestamp、random、uuid"
         const extNames = Downloader.getFormats()[0].extensions.join("、")
         const info = [
-            "color", "maxWidth", "AUTO_UPDATE", "CLICK_TO_POSITIONING", "POSITIONING_VIEWPORT_HEIGHT",
-            "FIX_ERROR_LEVEL_HEADER", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "FOLDER", "IMAGE_QUALITY", "BACKGROUND_COLOR",
-            "KEEP_ALPHA_CHANNEL", "REMOVE_FOREIGN_OBJECT",
+            "maxWidth", "AUTO_UPDATE", "CLICK_TO_POSITIONING", "POSITIONING_VIEWPORT_HEIGHT",
+            "FIX_ERROR_LEVEL_HEADER", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "FOLDER", "REMOVE_FOREIGN_OBJECT",
         ]
         const INFO = this.i18n.entries(info, "settingInfo.")
         INFO.FILENAME = this.i18n.t("settingInfo.FILENAME", { varNames, extNames })

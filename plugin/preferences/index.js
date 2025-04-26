@@ -78,6 +78,16 @@ class preferencesPlugin extends BasePlugin {
                 await this.switchMenu(fixedName)
                 this.utils.notification.show(this.i18n.t("notification.allSettingsRestored"))
             },
+            updatePlugin: async () => {
+                const updater = this.utils.getPlugin("updater")
+                if (!updater) {
+                    const plugin = this.i18n._t("updater", "pluginName")
+                    const msg = this.i18n._t("global", "error.pluginDisabled", { plugin })
+                    this.utils.notification.show(msg, "error")
+                } else {
+                    await updater.call()
+                }
+            },
         }
         // External value for some options in schema
         this.SETTING_VALUES = {
@@ -301,23 +311,21 @@ class preferencesPlugin extends BasePlugin {
 
     initSchemas = () => {
         this.SETTING_SCHEMAS = require("./schemas.js")
-        const i18n = this.i18n.noConflict
+        const i18nData = this.i18n.noConflict.data
         const properties = ["label", "tooltip", "placeholder"]
         const common = Object.fromEntries(
             [...properties, "title", "unit"].map(prop => {
-                const start = `$${prop}.`
-                const keys = [...Object.keys(i18n.data.settings)].filter(e => e.startsWith(start))
-                const value = Object.fromEntries(keys.map(key => [key, i18n.data.settings[key]]))
+                const value = this.utils.pickBy(i18nData.settings, (val, key) => key.startsWith(`$${prop}.`))
                 return [prop, value]
             })
         )
         Object.entries(this.SETTING_SCHEMAS).forEach(([fixedName, boxes]) => {
-            const i18nData = i18n.data[fixedName]
+            const settingI18N = i18nData[fixedName]
             boxes.forEach(box => {
-                const title = box.title
-                if (title) {
-                    const commonValue = common.title[title]
-                    const pluginValue = i18nData[title]
+                const t = box.title
+                if (t) {
+                    const commonValue = common.title[t]
+                    const pluginValue = settingI18N[t]
                     box.title = commonValue || pluginValue
                 }
                 box.fields.forEach(field => {
@@ -325,15 +333,15 @@ class preferencesPlugin extends BasePlugin {
                         const key = field[prop]
                         if (key != null) {
                             const commonValue = common[prop][key]
-                            const pluginValue = i18nData[key]
+                            const pluginValue = settingI18N[key]
                             field[prop] = commonValue || pluginValue
                         }
                     })
                     if (field.options != null) {
-                        const options = field.options
-                        Object.keys(options).forEach(k => {
-                            const i18nKey = options[k]
-                            field.options[k] = i18nData[i18nKey]
+                        const ops = field.options
+                        Object.keys(ops).forEach(k => {
+                            const i18nKey = ops[k]
+                            field.options[k] = settingI18N[i18nKey]
                         })
                     }
                     if (field.unit != null) {
@@ -420,7 +428,7 @@ class preferencesPlugin extends BasePlugin {
     _fillForm = (fixedName, values) => {
         const isBlockControl = type => type === "textarea" || type === "object" || type === "array"
         const createTitle = (title) => `<div class="plugin-preferences-title">${title}</div>`
-        const createTooltip = (item) => item.tooltip ? `<span class="plugin-preferences-tooltip"><span>?</span><span>${item.tooltip}</span></span>` : ""
+        const createTooltip = (item) => item.tooltip ? `<span class="plugin-preferences-tooltip"><span class="fa fa-info-circle"></span><span>${item.tooltip}</span></span>` : ""
         const createGeneralControl = (ctl, value) => {
             const disabled = ctl => ctl.disabled ? "disabled" : ""
             const checked = () => value === true ? "checked" : ""

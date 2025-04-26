@@ -156,6 +156,7 @@ const SETTING_SCHEMAS = {
         ),
         UntitledBox(
             Action("visitRepo"),
+            Action("updatePlugin"),
             Static("pluginVersion"),
         )
     ],
@@ -318,8 +319,8 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "modificationKeys",
-            Text("MODIFIER_KEY.TEMPORARY", "modifyKeyExample"),
-            Text("MODIFIER_KEY.PERSISTENT"),
+            Hotkey("MODIFIER_KEY.TEMPORARY", "modifyKeyExample"),
+            Hotkey("MODIFIER_KEY.PERSISTENT"),
         ),
         restoreSettingsBox,
     ],
@@ -514,10 +515,10 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "modifierKey",
-            Text("MODIFIER_KEY.COLLAPSE_SINGLE", "modifierKeyExample"),
-            Text("MODIFIER_KEY.COLLAPSE_SIBLINGS"),
-            Text("MODIFIER_KEY.COLLAPSE_ALL_SIBLINGS"),
-            Text("MODIFIER_KEY.COLLAPSE_RECURSIVE"),
+            Hotkey("MODIFIER_KEY.COLLAPSE_SINGLE", "modifierKeyExample"),
+            Hotkey("MODIFIER_KEY.COLLAPSE_SIBLINGS"),
+            Hotkey("MODIFIER_KEY.COLLAPSE_ALL_SIBLINGS"),
+            Hotkey("MODIFIER_KEY.COLLAPSE_RECURSIVE"),
         ),
         restoreSettingsBox,
     ],
@@ -652,7 +653,7 @@ const SETTING_SCHEMAS = {
     pie_menu: [
         pluginFullBasePropBox,
         UntitledBox(
-            Text("MODIFIER_KEY", "example")
+            Hotkey("MODIFIER_KEY", "example")
         ),
         ObjectBOX("BUTTONS"),
         restoreSettingsBox,
@@ -929,7 +930,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "fontFamily",
             Text("font_family"),
-            Switch("use_network_icon_when_exporting","messingFont"),
+            Switch("use_network_icon_when_exporting", "messingFont"),
             Text("network_icon_url"),
         ),
         TitledBox(
@@ -1016,7 +1017,7 @@ const SETTING_SCHEMAS = {
     scrollBookmarker: [
         customPluginFullBasePropBox,
         UntitledBox(
-            Text("modifier_key", "modifierKeyExample"),
+            Hotkey("modifier_key", "modifierKeyExample"),
             Switch("auto_popup_modal"),
             Switch("persistence"),
         ),
