@@ -1086,7 +1086,6 @@ const newMixin = (utils) => {
         ...require("./diagramParser"),
         ...require("./thirdPartyDiagramParser"),
         ...require("./entities"),
-        ...require("./dialog-form")
     }
     const mixin = Object.fromEntries(
         Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils, i18n)])

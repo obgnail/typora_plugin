@@ -285,7 +285,12 @@
     "$label.ALLOW_DRAG": "Ctrl+Ctrl+鼠标拖拽输入框以移动窗口",
     "$title.cmdDisplay": "命令显示方式",
     "$title.windowInteraction": "窗口交互",
-    "$title.BUILTIN": "预设的常用命令列表"
+    "$title.BUILTIN": "预设的常用命令列表",
+    "$th.BUILTIN.name": "名称",
+    "$th.BUILTIN.disable": "禁用",
+    "$th.BUILTIN.shell": "Shell",
+    "$th.BUILTIN.hotkey": "快捷键",
+    "$th.BUILTIN.cmd": "命令"
   },
   "md_padding": {
     "pluginName": "中英文混排优化",

@@ -48,6 +48,11 @@ const TitledBox = (title, ...fields) => ({ title: `$title.${title}`, fields })
 const ArrayBox = (key) => TitledBox(key, { type: "array", key })
 const ObjectBOX = (key, rows = 10) => TitledBox(key, { type: "object", key, rows })
 const TextareaBox = (key, rows = 10) => TitledBox(key, { type: "textarea", key, rows })
+const TableBox = (key, ths) => TitledBox(key, {
+    type: "table",
+    key,
+    thMap: Object.fromEntries(ths.map(th => [th, `$th.${key}.${th}`]))
+})
 
 const prop_ENABLE = Switch("ENABLE")
 const prop_NAME = Text("NAME", undefined, "defaultIfEmpty")
@@ -239,6 +244,11 @@ const SETTING_SCHEMAS = {
             Switch("ALLOW_DRAG"),
         ),
         ObjectBOX("BUILTIN"),
+        // // todo
+        // TableBox(
+        //     "BUILTIN",
+        //     ["name", "shell", "cmd"],
+        // ),
         restoreSettingsBox,
     ],
     md_padding: [

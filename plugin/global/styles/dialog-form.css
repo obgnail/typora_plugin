@@ -485,3 +485,41 @@ textarea {
     height: 18px;
     font-size: 18px;
 }
+
+/***** table *****/
+.table {
+    padding: 0 !important;
+}
+
+table {
+    width: 100%;
+    text-align: left;
+    table-layout: fixed
+}
+
+th, td {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+th:last-child,
+td:last-child {
+    text-align: right;
+    width: 70px;
+}
+
+table .fa {
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 50%;
+    padding: 7px;
+}
+
+table .fa:hover {
+    background-color: rgba(31, 31, 31, .08);
+}
+
+.table-add {
+    color: #0b61d0;
+}

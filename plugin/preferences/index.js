@@ -61,6 +61,9 @@ class preferencesPlugin extends BasePlugin {
                     obj[last].splice(idx, 1)
                 }
             }),
+            removeIdx: (setting, key, removeIdx) => this.SETTING_OPERATORS.handle(setting, key, (obj, last) => {
+                obj[last].splice(removeIdx, 1)
+            })
         }
         // Callback functions for type="action" options in schema
         this.SETTING_ACTIONS = {
@@ -239,9 +242,10 @@ class preferencesPlugin extends BasePlugin {
     _initSchemas = () => {
         this.SETTING_SCHEMAS = require("./schemas.js")
         const i18nData = this.i18n.noConflict.data
-        const properties = ["label", "tooltip", "placeholder"]
+        const specialProperties = ["options", "thMap"]
+        const baseProperties = ["label", "tooltip", "placeholder"]
         const common = Object.fromEntries(
-            [...properties, "title", "unit"].map(prop => {
+            [...baseProperties, "title", "unit"].map(prop => {
                 const value = this.utils.pickBy(i18nData.settings, (val, key) => key.startsWith(`$${prop}.`))
                 return [prop, value]
             })
@@ -256,21 +260,23 @@ class preferencesPlugin extends BasePlugin {
                     box.title = commonValue || pluginValue
                 }
                 box.fields.forEach(field => {
-                    properties.forEach(prop => {
-                        const key = field[prop]
-                        if (key != null) {
-                            const commonValue = common[prop][key]
-                            const pluginValue = settingI18N[key]
+                    baseProperties.forEach(prop => {
+                        const propVal = field[prop]
+                        if (propVal != null) {
+                            const commonValue = common[prop][propVal]
+                            const pluginValue = settingI18N[propVal]
                             field[prop] = commonValue || pluginValue
                         }
                     })
-                    if (field.options != null) {
-                        const ops = field.options
-                        Object.keys(ops).forEach(k => {
-                            const i18nKey = ops[k]
-                            field.options[k] = settingI18N[i18nKey]
-                        })
-                    }
+                    specialProperties.forEach(prop => {
+                        const propVal = field[prop]
+                        if (propVal != null) {
+                            Object.keys(propVal).forEach(k => {
+                                const i18nKey = propVal[k]
+                                propVal[k] = settingI18N[i18nKey]
+                            })
+                        }
+                    })
                     if (field.unit != null) {
                         field.unit = common.unit[field.unit]
                     }
