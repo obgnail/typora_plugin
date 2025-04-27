@@ -6,6 +6,8 @@ const FS_EXTRA = require("fs-extra")
 const { i18n } = require("../i18n")
 
 class utils {
+    static i18n = i18n
+
     static nodeVersion = process && process.versions && process.versions.node
     static electronVersion = process && process.versions && process.versions.electron
     static chromeVersion = process && process.versions && process.versions.chrome
@@ -1084,6 +1086,7 @@ const newMixin = (utils) => {
         ...require("./diagramParser"),
         ...require("./thirdPartyDiagramParser"),
         ...require("./entities"),
+        ...require("./dialog-form")
     }
     const mixin = Object.fromEntries(
         Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils, i18n)])
