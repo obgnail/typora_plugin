@@ -15,7 +15,7 @@
  *   <operator> ::= ':' | '=' | '>=' | '<=' | '>' | '<'
  *   <scope> ::= 'default' | 'file' | 'path' | 'ext' | 'content' | 'size' | 'time'
  * */
-class searchQueryParser {
+class Parser {
     constructor() {
         const TYPE = {
             OR: "OR",
@@ -269,5 +269,5 @@ class searchQueryParser {
 }
 
 module.exports = {
-    searchQueryParser
+    Parser
 }
