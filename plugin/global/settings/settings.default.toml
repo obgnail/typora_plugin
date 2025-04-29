@@ -342,7 +342,7 @@ COMMIT_RUN_DISPLAY = "echo"
 #   $m: 当前 Typora 侧边栏的根目录路径（挂载目录）
 BUILTIN = [
     # 占位符，不执行任何命令
-    { name = "", disable = false, shell = "cmd/bash", cmd = "" },
+    { name = "Dummy", disable = false, shell = "cmd/bash", cmd = "" },
     # 在资源管理器中打开当前文件所在目录
     { name = "Explorer", disable = false, shell = "powershell", cmd = "explorer $d" },
     # 在 VS Code 中打开当前文件

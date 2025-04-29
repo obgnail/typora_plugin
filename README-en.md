@@ -256,8 +256,6 @@ Supports:
 - Edit styles
 - Execute arbitrary logic
 
-> Supports user-defined commands, please modify the configuration file
-
 ![slash_commands](assets/slash_commands.gif)
 
 
@@ -266,8 +264,6 @@ Supports:
 Function: Similar to Obsidian's file template function, quickly create files based on templates.
 
 Usage: Right-click menu -> Often Used Plugins -> Secondary Plugins -> File Templates.
-
-> For the template list, please modify the configuration file.
 
 ![templater](assets/templater.gif)
 
@@ -381,7 +377,7 @@ Examples:
 
 All plugins support direct invocation through the right-click menu. Mouse enthusiasts can use the right-click menu as the main way to call all plugins.
 
-You can customize the right-click menu by modifying the configuration file:
+You can customize the right-click menu by modifying the configuration:
 
 ```toml
 # Each MENUS corresponds to a primary menu, allowing unlimited additions of primary menus and repeated addition of the same plugin

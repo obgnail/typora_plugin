@@ -263,7 +263,7 @@
     "$tooltip.blockOrder": "副作用：影响高亮块顺序",
     "$title.ALLOW_EXT": "允许文件扩展名",
     "$title.IGNORE_FOLDERS": "忽略搜索的文件夹",
-    "$title.HIGHLIGHT_COLORS": "高亮颜色列表",
+    "$title.HIGHLIGHT_COLORS": "高亮颜色",
     "$title.searchResult": "搜索结果",
     "$title.search": "搜索",
     "$title.windowInteraction": "窗口交互"
@@ -293,7 +293,7 @@
     "$label.BUILTIN.cmd": "命令",
     "$title.cmdDisplay": "命令显示方式",
     "$title.windowInteraction": "窗口交互",
-    "$title.BUILTIN": "预设的常用命令列表"
+    "$title.BUILTIN": "预设命令"
   },
   "md_padding": {
     "pluginName": "中英文混排优化",
@@ -568,7 +568,7 @@
     "$label.DEFAULT_FENCE_OPTIONS.height": "图形高度",
     "$label.DEFAULT_FENCE_OPTIONS.backgroundColor": "图形背景颜色",
     "$title.DEFAULT_TOC_OPTIONS.color": "思维导图默认配色方案",
-    "$title.CANDIDATE_COLOR_SCHEMES": "思维导图的预设配色方案列表",
+    "$title.CANDIDATE_COLOR_SCHEMES": "思维导图的配色方案",
     "$title.DEFAULT_FENCE_OPTIONS.color": "代码块图形默认配色方案",
     "$title.FENCE_TEMPLATE": "模板",
     "$title.mindmapDiagram": "思维导图",
@@ -626,7 +626,7 @@
     "$label.LAYOUTS.layout.image": "图片",
     "$label.LAYOUTS.layout.fence": "代码块",
     "$label.ENABLE_WHEN_EXPORT": "导出为 HTML、PDF 时保留编号",
-    "$title.LAYOUTS": "预设的编号格式列表",
+    "$title.LAYOUTS": "编号格式",
     "$title.autoNumbering": "自动编号",
     "$title.style": "样式"
   },
@@ -810,8 +810,8 @@
     "$label.DEFAULT_FORMAT_BRUSH": "格式刷",
     "$label.ACTION_HOTKEYS.hotkey": "快捷键",
     "$label.ACTION_HOTKEYS.action": "动作",
-    "$title.COLOR_TABLE": "颜色按钮的预设列表",
-    "$title.ACTION_HOTKEYS": "快捷键映射的预设列表",
+    "$title.COLOR_TABLE": "预设调色板",
+    "$title.ACTION_HOTKEYS": "快捷键",
     "$title.toolBar": "工具栏",
     "$title.buttonDefaultOptions": "按钮的默认值",
     "$tooltip.brushExample": "例如：color:#FFF; font-weight:bold;"
@@ -880,7 +880,6 @@
   "slash_commands": {
     "pluginName": "斜杠命令",
     "unknown": "未知",
-    "editConfigFile": "如需自定义命令，请修改配置文件",
     "type.command": "命令",
     "type.snippet": "文段",
     "type.generateSnippet": "动态文段",
@@ -918,7 +917,7 @@
     "$label.COMMANDS.cursorOffset.0": "光标的开始偏移量",
     "$label.COMMANDS.cursorOffset.1": "光标的结束偏移量",
     "$label.COMMANDS.callback": "回调",
-    "$title.COMMANDS": "预设的命令列表",
+    "$title.COMMANDS": "预设命令",
     "$title.COMMANDS.callback": "回调",
     "$title.trigger": "命令触发"
   },
@@ -980,7 +979,6 @@
   "hotkeys": {
     "pluginName": "快捷键中心",
     "registeredHotkey": "已注册快捷键",
-    "editConfigFile": "如需自定义快捷键，请修改配置文件",
     "$label.CUSTOM_HOTKEYS.enable": "启用",
     "$label.CUSTOM_HOTKEYS.hotkey": "快捷键",
     "$label.CUSTOM_HOTKEYS.desc": "说明",
@@ -988,7 +986,7 @@
     "$label.CUSTOM_HOTKEYS.function": "插件方法",
     "$label.CUSTOM_HOTKEYS.closestSelector": "适用光标的选择器",
     "$label.CUSTOM_HOTKEYS.evil": "回调",
-    "$title.CUSTOM_HOTKEYS": "自定义快捷键列表",
+    "$title.CUSTOM_HOTKEYS": "自定义快捷键",
     "$title.CUSTOM_HOTKEYS.evil": "回调"
   },
   "help": {
@@ -1185,7 +1183,7 @@
     "$label.list.icon": "图标",
     "$label.list.background_color": "背景颜色",
     "$label.list.left_line_color": "左侧竖线颜色",
-    "$title.list": "预设的 Callouts 列表",
+    "$title.list": "预设 Callouts",
     "$title.style": "样式",
     "$title.mouseHover": "鼠标悬停",
     "$title.fontFamily": "字体图标",
@@ -1205,9 +1203,9 @@
     "$label.template_variables.callback": "回调",
     "$label.template.name": "名称",
     "$label.template.text": "模板",
-    "$title.template_variables": "自定义模板变量列表",
+    "$title.template_variables": "自定义模板变量",
     "$title.template_variables.callback": "回调",
-    "$title.template": "自定义模板列表",
+    "$title.template": "自定义模板",
     "$title.template.text": "模板"
   },
   "chineseSymbolAutoPairer": {
@@ -1377,7 +1375,7 @@
     "$option.thumbnail_object_fit.contain": "保持比例缩放",
     "$option.thumbnail_object_fit.cover": "保持原有尺寸，裁剪超出部分",
     "$option.thumbnail_object_fit.scale-down": "保持比例缩放，当图片小于容器时图片不放大",
-    "$title.hotkey_function": "预设的快捷键列表",
+    "$title.hotkey_function": "预设快捷键",
     "$title.style": "样式",
     "$title.component": "组件",
     "$title.behavior": "行为",
@@ -1391,7 +1389,6 @@
     "desc": "说明",
     "ops": "操作",
     "gotoWeb": "以下是格式规范的简要说明，完整文档请访问网站",
-    "editConfigFile": "为了保护用户，此处禁止修改检测规则，如需修改请编辑配置文件",
     "func.close": "关闭",
     "func.move": "移动",
     "func.refresh": "刷新",
@@ -1399,7 +1396,6 @@
     "func.fixAll": "修复",
     "func.translate": "翻译",
     "func.detailAll": "详细信息",
-    "func.settings": "配置",
     "func.doc": "规则",
     "func.fixAll.ok": "已修复格式错误",
     "MD001": "标题层级应逐级递增，不可跳级",
@@ -1503,7 +1499,7 @@
     "$label.buttons.hint": "提示",
     "$label.buttons.callback": "回调",
     "$label.buttons.evil": "自定义回调",
-    "$title.buttons": "预设的按钮列表",
+    "$title.buttons": "预设按钮",
     "$title.buttonStyle": "按钮样式",
     "$title.buttons.evil": "自定义回调"
   },

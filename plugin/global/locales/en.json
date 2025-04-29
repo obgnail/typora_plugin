@@ -810,8 +810,8 @@
     "$label.DEFAULT_FORMAT_BRUSH": "Format Brush",
     "$label.ACTION_HOTKEYS.hotkey": "Hotkey",
     "$label.ACTION_HOTKEYS.action": "Action",
-    "$title.COLOR_TABLE": "Preset List for Color Buttons",
-    "$title.ACTION_HOTKEYS": "Preset List for Hotkey Mappings",
+    "$title.COLOR_TABLE": "Preset Color Palette",
+    "$title.ACTION_HOTKEYS": "Preset Hotkey",
     "$title.toolBar": "Toolbar",
     "$title.buttonDefaultOptions": "Default Values for Buttons",
     "$tooltip.brushExample": "Example: color:#FFF; font-weight:bold;"
@@ -880,7 +880,6 @@
   "slash_commands": {
     "pluginName": "Slash Commands",
     "unknown": "Unknown",
-    "editConfigFile": "To customize commands, please edit the configuration file",
     "type.command": "Command",
     "type.snippet": "Snippet",
     "type.generateSnippet": "Dynamic Snippet",
@@ -918,7 +917,7 @@
     "$label.COMMANDS.cursorOffset.0": "Cursor Start Offset",
     "$label.COMMANDS.cursorOffset.1": "Cursor End Offset",
     "$label.COMMANDS.callback": "Callback",
-    "$title.COMMANDS": "Preset Command List",
+    "$title.COMMANDS": "Preset Commands",
     "$title.COMMANDS.callback": "Callback",
     "$title.trigger": "Command Trigger"
   },
@@ -980,7 +979,6 @@
   "hotkeys": {
     "pluginName": "Hotkeys",
     "registeredHotkey": "Registered Hotkeys",
-    "editConfigFile": "To customize hotkeys, please edit the configuration file",
     "$label.CUSTOM_HOTKEYS.enable": "Enable",
     "$label.CUSTOM_HOTKEYS.hotkey": "Hotkey",
     "$label.CUSTOM_HOTKEYS.desc": "Desc",
@@ -988,7 +986,7 @@
     "$label.CUSTOM_HOTKEYS.function": "Plugin Function",
     "$label.CUSTOM_HOTKEYS.closestSelector": "Cursor Closest Selector",
     "$label.CUSTOM_HOTKEYS.evil": "Callback",
-    "$title.CUSTOM_HOTKEYS": "Custom Hotkey List",
+    "$title.CUSTOM_HOTKEYS": "Custom Hotkey",
     "$title.CUSTOM_HOTKEYS.evil": "Callback"
   },
   "help": {
@@ -1185,7 +1183,7 @@
     "$label.list.icon": "Icon",
     "$label.list.background_color": "Background Color",
     "$label.list.left_line_color": "Left Line Color",
-    "$title.list": "Preset Callouts List",
+    "$title.list": "Preset Callouts",
     "$title.style": "Style",
     "$title.mouseHover": "Mouse Hover",
     "$title.fontFamily": "Icon Font",
@@ -1205,9 +1203,9 @@
     "$label.template_variables.callback": "Callback",
     "$label.template.name": "Name",
     "$label.template.text": "Template",
-    "$title.template_variables": "Custom Template Variables List",
+    "$title.template_variables": "Custom Template Variables",
     "$title.template_variables.callback": "Callback",
-    "$title.template": "Custom Template List",
+    "$title.template": "Custom Templates",
     "$title.template.text": "Template"
   },
   "chineseSymbolAutoPairer": {
@@ -1377,7 +1375,7 @@
     "$option.thumbnail_object_fit.contain": "Scale to Fit",
     "$option.thumbnail_object_fit.cover": "Crop to Fit",
     "$option.thumbnail_object_fit.scale-down": "Scale Down",
-    "$title.hotkey_function": "Preset Hotkey List",
+    "$title.hotkey_function": "Preset Hotkey",
     "$title.style": "Style",
     "$title.component": "Component",
     "$title.behavior": "Behavior",
@@ -1391,7 +1389,6 @@
     "desc": "DESC",
     "ops": "OPS",
     "gotoWeb": "The following is a brief description of the rules, visit the website for a complete document",
-    "editConfigFile": "For security, modifying the rules here is prohibited. Edit the configuration file to make changes",
     "func.close": "Close",
     "func.move": "Move",
     "func.refresh": "Refresh",
@@ -1399,7 +1396,6 @@
     "func.fixAll": "Fix",
     "func.translate": "Translate",
     "func.detailAll": "Information",
-    "func.settings": "Configuration",
     "func.doc": "Rules",
     "func.fixAll.ok": "Lint Errors Fixed",
     "MD001": "Heading levels must increment by one",
@@ -1503,7 +1499,7 @@
     "$label.buttons.hint": "Hint",
     "$label.buttons.callback": "Callback",
     "$label.buttons.evil": "Custom Callback",
-    "$title.buttons": "Preset Button List",
+    "$title.buttons": "Preset Button",
     "$title.buttonStyle": "Button Style",
     "$title.buttons.evil": "Custom Callback"
   },
