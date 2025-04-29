@@ -142,4 +142,5 @@
 #plugin-preferences-dialog-main {
     flex: 1;
     overflow-y: auto;
+    padding: 18px;
 }

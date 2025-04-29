@@ -35,18 +35,12 @@ class hotkeysPlugin extends BasePlugin {
 
     call = (action, meta) => {
         const thText = this.i18n.t("registeredHotkey")
-        const hintText = this.i18n.t("editConfigFile") + " " + '<a class="fa fa-external-link"></a>'
-
         const trs = [...this.utils.hotkeyHub.map.keys()].sort().map(hk => {
             const hotkey = hk.toUpperCase().split("+").map(h => `<kbd>${h}</kbd>`).join("+")
             return [hotkey]
         })
         const table = this.utils.buildTable([[thText], ...trs])
-        const onclick = ev => ev.target.closest("a") && this.utils.settings.openSettingFolder("settings.user.toml")
-        const components = [
-            { label: hintText, type: "p", onclick },
-            { label: table, type: "p" },
-        ]
+        const components = [{ label: table, type: "p" }]
         this.utils.dialog.modal({ title: this.pluginName, components })
     }
 }

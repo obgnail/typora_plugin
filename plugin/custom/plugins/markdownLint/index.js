@@ -16,7 +16,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 <div class="plugin-markdownlint-icon ion-wrench" action="fixAll" ty-hint="${this.i18n.t("func.fixAll")}"></div>
                 <div class="plugin-markdownlint-icon ion-earth" action="translate" ty-hint="${this.i18n.t("func.translate")}"></div>
                 <div class="plugin-markdownlint-icon ion-information-circled" action="detailAll" ty-hint="${this.i18n.t("func.detailAll")}"></div>
-                <div class="plugin-markdownlint-icon ion-gear-b" action="settings" ty-hint="${this.i18n.t("func.settings")}"></div>
                 <div class="plugin-markdownlint-icon ion-document-text" action="doc" ty-hint="${this.i18n.t("func.doc")}"></div>
             </div>
             <div class="plugin-markdownlint-table">
@@ -110,15 +109,6 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const onclick = ev => ev.target.closest("a") && this.utils.openUrl(url)
                 const content = Object.entries(this.TRANSLATIONS).map(([key, value]) => `${key}\t${value}`).join("\n")
                 const components = [{ label, type: "p", onclick }, { label: "", type: "textarea", rows: 15, content }]
-                const op = { title, components, width: "600px" }
-                this.utils.dialog.modal(op)
-            },
-            settings: () => {
-                const title = this.i18n.t("func.settings")
-                const label = this.i18n.t("editConfigFile") + " " + '<a class="fa fa-external-link"></a>'
-                const onclick = ev => ev.target.closest("a") && this.utils.settings.openSettingFolder("custom_plugin.user.toml")
-                const content = JSON.stringify(this.config.rule_config, null, "\t")
-                const components = [{ label: label, type: "p", onclick }, { label: "", type: "textarea", rows: 15, content }]
                 const op = { title, components, width: "600px" }
                 this.utils.dialog.modal(op)
             },

@@ -1,4 +1,5 @@
 require("./polyfill")
+require("./components")
 const { i18n } = require("./i18n")
 const { utils, hook } = require("./utils")
 const { BasePlugin, BaseCustomPlugin, LoadPlugins } = require("./plugin")

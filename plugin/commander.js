@@ -68,7 +68,7 @@ class commanderPlugin extends BasePlugin {
         this.act_value_prefix = "call_builtin@"
         const defaultAct = { act_name: this.i18n.t("act.toggle_modal"), act_value: "toggle_modal", act_hotkey: this.config.HOTKEY }
         const customActs = this.builtin
-            .filter(a => a.name)
+            .filter(a => a.name && a.cmd)
             .map(a => ({ act_name: a.name, act_value: this.act_value_prefix + a.name, act_hotkey: a.hotkey }))
         this.staticActions = [defaultAct, ...customActs]
     }
