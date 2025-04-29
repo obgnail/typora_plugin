@@ -1,0 +1,87 @@
+.form-dialog-cover {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 99997;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+}
+
+.form-dialog {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 630px;
+    border-radius: 8px;
+    z-index: 99998;
+    font-size: 14px;
+    font-family: "Open Sans", "Clear Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: rgb(65, 84, 98);
+    background-color: #F5F5F5;
+}
+
+.form-dialog-header {
+    padding: 15px;
+    user-select: none;
+    border-radius: inherit;
+}
+
+.form-dialog-title {
+    margin: 0;
+    font-size: 1.25em;
+    line-height: 1.4;
+}
+
+.form-dialog-body {
+    max-height: calc(80vh - 100px);
+    min-height: 400px;
+    overflow: auto;
+    height: auto;
+    padding: 0 15px;
+}
+
+.form-dialog-footer {
+    border-top: 0;
+    padding: 15px;
+    text-align: right;
+    user-select: none;
+    border-radius: inherit;
+}
+
+.form-dialog-footer .form-dialog-btn {
+    min-width: 5.14em;
+    cursor: pointer;
+    outline-width: 0;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    height: 36px;
+}
+
+.form-dialog-footer .form-dialog-btn + .form-dialog-btn {
+    margin-left: 5px;
+    margin-bottom: 0;
+}
+
+.form-dialog-footer .form-dialog-cancel {
+    color: #000;
+    background-color: #e6e6e6;
+}
+
+.form-dialog-footer .form-dialog-submit {
+    color: #fff;
+    background-color: #007AFF;
+}
+
+.form-dialog-footer .form-dialog-cancel:hover {
+    background-color: rgba(229, 229, 229, 0.59);
+}
+
+.form-dialog-footer .form-dialog-submit:hover {
+    background-color: #0055b2;
+}

@@ -2,13 +2,48 @@ class pluginForm extends HTMLElement {
     init(utils, options) {
         this.utils = utils
         this.i18n = utils.i18n
-        this.options = options
+        this.options = options || { objectFormat: "JSON" }
+        this.values = null
+        this.form = null
         this._initShadow()
         this._bindEvents()
     }
 
     render(schemas, values) {
-        this.form.innerHTML = this._fillForm(schemas, values)
+        this.schemas = schemas
+        this.values = JSON.parse(JSON.stringify(values))
+        this.form.innerHTML = this._fillForm(schemas, this.values)
+    }
+
+    static OPERATORS = {
+        action: (obj, key, value) => undefined,
+        handle: (obj, key, handler) => {
+            if (key === undefined) return
+            const attrs = key.split(".")
+            const last = attrs.pop()
+            const obj_ = attrs.length === 0
+                ? obj
+                : attrs.reduce((obj, attr) => obj[attr], obj)
+            handler(obj_, last, key)
+        },
+        get: (obj, key) => {
+            if (key === undefined) {
+                return undefined
+            }
+            if (obj[key] != null) {
+                return obj[key]
+            }
+            return key.split(".").reduce((obj, attr) => obj[attr], obj)
+        },
+        set: (obj, key, newValue) => pluginForm.OPERATORS.handle(obj, key, (obj, last) => obj[last] = newValue),
+        push: (obj, key, pushValue) => pluginForm.OPERATORS.handle(obj, key, (obj, last) => obj[last].push(pushValue)),
+        removeIdx: (obj, key, removeIdx) => pluginForm.OPERATORS.handle(obj, key, (obj, last) => obj[last].splice(removeIdx, 1)),
+        remove: (obj, key, removeValue) => pluginForm.OPERATORS.handle(obj, key, (obj, last) => {
+            const idx = obj[last].indexOf(removeValue)
+            if (idx !== -1) {
+                obj[last].splice(idx, 1)
+            }
+        }),
     }
 
     _initShadow() {
@@ -23,9 +58,10 @@ class pluginForm extends HTMLElement {
         this.form = shadowRoot.querySelector("#form")
     }
 
-    // type: set/remove/push/action/removeIdx
+    // type: set/push/remove/removeIdx/action
     _onEvent(key, value, type = "set") {
         this.dispatchEvent(new CustomEvent("form-event", { detail: { key, value, type } }))
+        pluginForm.OPERATORS[type](this.values, key, value)
     }
 
     _bindEvents() {
@@ -55,7 +91,7 @@ class pluginForm extends HTMLElement {
             const selectValueEl = selectEl.querySelector(".select-value")
             const allOptionEl = [...boxEl.querySelectorAll(".option-item")]
             const isMulti = selectEl.dataset.multi === "true"
-            const values = isMulti ? selectEl.dataset.value.split("#").filter(Boolean) : selectEl.dataset.value
+            const selectedValues = isMulti ? selectEl.dataset.value.split("#").filter(Boolean) : selectEl.dataset.value
             const optionValue = optionEl.dataset.value
             if (isMulti) {
                 const deselect = optionEl.dataset.choose === "true"
@@ -71,19 +107,19 @@ class pluginForm extends HTMLElement {
                     return
                 }
                 optionEl.dataset.choose = deselect ? "false" : "true"
-                const idx = values.indexOf(optionValue)
+                const idx = selectedValues.indexOf(optionValue)
                 if (idx === -1) {
-                    values.push(optionValue)
+                    selectedValues.push(optionValue)
                 } else {
-                    values.splice(idx, 1)
+                    selectedValues.splice(idx, 1)
                 }
                 const map = new Map(allOptionEl.map(op => [op.dataset.value, op]))
-                selectValueEl.textContent = values.length === 0
+                selectValueEl.textContent = selectedValues.length === 0
                     ? that.i18n.t("global", "empty")
-                    : that._joinSelected(values.map(v => map.get(v).textContent))
-                selectEl.dataset.value = values.join("#")
+                    : that._joinSelected(selectedValues.map(v => map.get(v).textContent))
+                selectEl.dataset.value = selectedValues.join("#")
                 that.utils.hide(boxEl)
-                that._onEvent(selectEl.dataset.key, values)
+                that._onEvent(selectEl.dataset.key, selectedValues)
             } else {
                 allOptionEl.forEach(op => op.dataset.choose = "false")
                 optionEl.dataset.choose = "true"
@@ -92,10 +128,34 @@ class pluginForm extends HTMLElement {
                 that.utils.hide(boxEl)
                 that._onEvent(selectEl.dataset.key, optionValue)
             }
-        }).on("click", ".table-add", function () {
-
-        }).on("click", ".table-edit", function () {
-
+        }).on("click", ".table-add", async function () {
+            const tableEl = this.closest(".table")
+            const key = tableEl.dataset.key
+            const targetBox = that.schemas.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
+            const { nestBoxes, defaultValues, thMap } = targetBox.fields[0]
+            const { response, values } = await that.utils.formDialog.modal(targetBox.title, nestBoxes, defaultValues)
+            if (response === 1) {
+                that._onEvent(key, values, "push")
+                const row = that._createTableRow(thMap, values).map(e => `<td>${e}</td>`).join("")
+                tableEl.querySelector("tbody").insertAdjacentHTML("beforeend", `<tr>${row}</tr>`)
+            }
+        }).on("click", ".table-edit", async function () {
+            const btn = this
+            const trEl = btn.closest("tr")
+            const tableEl = trEl.closest(".table")
+            const idx = [...tableEl.querySelectorAll("tbody tr")].findIndex(e => e === trEl)
+            const key = tableEl.dataset.key
+            const rowValue = that.values[key][idx]
+            const targetBox = that.schemas.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
+            const { nestBoxes, defaultValues, thMap } = targetBox.fields[0]
+            const modalValues = that.utils.merge(defaultValues, rowValue)  // rowValue may be missing certain attributes
+            const { response, values } = await that.utils.formDialog.modal(targetBox.title, nestBoxes, modalValues)
+            if (response === 1) {
+                that._onEvent(`${key}.${idx}`, values)
+                const row = that._createTableRow(thMap, values)
+                const tds = trEl.querySelectorAll("td")
+                that.utils.zip(row, tds).slice(0, -1).forEach(([val, td]) => td.textContent = val)
+            }
         }).on("click", ".table-delete", function () {
             const btn = this
             const trEl = btn.closest("tr")
@@ -103,7 +163,7 @@ class pluginForm extends HTMLElement {
             const idx = [...tableEl.querySelectorAll("tbody tr")].findIndex(e => e === trEl)
             that._onEvent(tableEl.dataset.key, Number(idx), "removeIdx")
             trEl.remove()
-        }).on("click", ".object-btn", function () {
+        }).on("click", ".object-confirm", function () {
             const textarea = this.closest(".control").querySelector(".object")
             try {
                 const value = that._deserialize(textarea.value)
@@ -155,8 +215,8 @@ class pluginForm extends HTMLElement {
             const displayEl = input.parentElement
             const addEl = input.nextElementSibling
             const value = input.textContent
-            const values = [...displayEl.querySelectorAll(".array-item-value")].map(e => e.textContent)
-            if (values.includes(value)) {
+            const arrayValues = [...displayEl.querySelectorAll(".array-item-value")].map(e => e.textContent)
+            if (arrayValues.includes(value)) {
                 const msg = this.i18n.t("global", "error.duplicateValue")
                 this.utils.notification.show(msg, "error")
                 input.focus()
@@ -201,6 +261,15 @@ class pluginForm extends HTMLElement {
         `
     }
 
+    _createTableRow(thMap, item) {
+        const showKeys = [...Object.keys(thMap)]
+        const editButtons = '<div class="table-edit fa fa-pencil"></div><div class="table-delete fa fa-trash-o"></div>'
+        const v = [...Object.values(this.utils.pick(item, showKeys))].map(e => {
+            return typeof e === "string" ? this.utils.escape(e) : e
+        })
+        return [...v, editButtons]
+    }
+
     _fillForm(schemas, values) {
         const blockControls = new Set(["textarea", "object", "array", "table"])
         const createTitle = (title) => `<div class="title">${title}</div>`
@@ -241,7 +310,7 @@ class pluginForm extends HTMLElement {
                 case "action":
                     return `<div class="action fa fa-angle-right" data-action="${ctl.act}"></div>`
                 case "static":
-                    return `<div class="static">${value}</div>`
+                    return `<div class="static" data-key="${ctl.key}">${value}</div>`
                 case "select":
                     const isMulti = Array.isArray(value)
                     const show = isMulti
@@ -279,7 +348,7 @@ class pluginForm extends HTMLElement {
                     const readonly = ctl.readonly ? "readonly" : ""
                     const value_ = isObject ? this._serialize(value) : value
                     const textarea = `<textarea class="${ctl.type}" rows="${rows}" ${readonly} data-key="${ctl.key}" ${placeholder(ctl)} ${disabled(ctl)}>${value_}</textarea>`
-                    const btn = isObject ? `<button class="object-btn">${this.i18n.t("global", "confirm")}</button>` : ""
+                    const btn = isObject ? `<button class="object-confirm">${this.i18n.t("global", "confirm")}</button>` : ""
                     return textarea + btn
                 case "array":
                     const items = value.map(v => this._createArrayItem(v)).join("")
@@ -292,9 +361,7 @@ class pluginForm extends HTMLElement {
                     `
                 case "table":
                     const addButton = '<div class="table-add fa fa-plus"></div>'
-                    const editButtons = '<div class="table-edit fa fa-pencil"></div><div class="table-delete fa fa-trash-o"></div>'
-                    const showKeys = [...Object.keys(ctl.thMap)]
-                    const trs = value.map(item => [...Object.values(this.utils.pick(item, showKeys)), editButtons])
+                    const trs = value.map(item => this._createTableRow(ctl.thMap, item))
                     const th = [...Object.values(ctl.thMap), addButton]
                     const table = this.utils.buildTable([th, ...trs])
                     return `<div class="table" data-key="${ctl.key}">${table}</div>`
@@ -307,8 +374,7 @@ class pluginForm extends HTMLElement {
                 field.type = "unit"
             }
             const isBlock = blockControls.has(field.type)
-            const value = values[field.key]
-
+            const value = pluginForm.OPERATORS.get(values, field.key)
             const control = createGeneralControl(field, value)
             const wrappedControl = isBlock ? control : `<div>${control}</div>`
             const wrappedLabel = isBlock ? "" : `<div>${field.label}${createTooltip(field)}</div>`

@@ -48,10 +48,12 @@ const TitledBox = (title, ...fields) => ({ title: `$title.${title}`, fields })
 const ArrayBox = (key) => TitledBox(key, { type: "array", key })
 const ObjectBOX = (key, rows = 10) => TitledBox(key, { type: "object", key, rows })
 const TextareaBox = (key, rows = 10) => TitledBox(key, { type: "textarea", key, rows })
-const TableBox = (key, ths) => TitledBox(key, {
+const TableBox = (key, ths, nestBoxes, defaultValues) => TitledBox(key, {
     type: "table",
     key,
-    thMap: Object.fromEntries(ths.map(th => [th, `$th.${key}.${th}`]))
+    nestBoxes,
+    defaultValues,
+    thMap: Object.fromEntries(ths.map(th => [th, `$label.${key}.${th}`])),
 })
 
 const prop_ENABLE = Switch("ENABLE")
@@ -85,7 +87,8 @@ const OPTIONS = {
     },
     commander: {
         QUICK_RUN_DISPLAY: ["echo", "always", "error", "silent"],
-        COMMIT_RUN_DISPLAY: ["echo", "always"]
+        COMMIT_RUN_DISPLAY: ["echo", "always"],
+        "BUILTIN.shell": ["cmd/bash", "powershell", "gitbash", "wsl"]
     },
     blur: {
         BLUR_TYPE: ["blur", "hide"]
@@ -106,7 +109,9 @@ const OPTIONS = {
     slash_commands: {
         SUGGESTION_TIMING: ["on_input", "debounce"],
         MATCH_STRATEGY: ["prefix", "substr", "abbr"],
-        ORDER_STRATEGY: ["predefined", "lexicographic", "length_based", "earliest_hit"]
+        ORDER_STRATEGY: ["predefined", "lexicographic", "length_based", "earliest_hit"],
+        "COMMANDS.type": ["snippet", "command", "gen-snp"],
+        "COMMANDS.scope": ["plain", "inline_math"],
     },
     preferences: {
         OBJECT_SETTINGS_FORMAT: ["JSON", "TOML", "YAML"]
@@ -243,12 +248,24 @@ const SETTING_SCHEMAS = {
             Switch("BACKSPACE_TO_HIDE"),
             Switch("ALLOW_DRAG"),
         ),
-        ObjectBOX("BUILTIN"),
-        // // todo
-        // TableBox(
-        //     "BUILTIN",
-        //     ["name", "shell", "cmd"],
-        // ),
+        TableBox(
+            "BUILTIN",
+            ["name", "shell", "cmd"],
+            [
+                UntitledBox(
+                    { type: "switch", key: "disable", label: "$label.BUILTIN.disable" },
+                    { type: "select", key: "shell", label: "$label.BUILTIN.shell", options: OPTIONS.commander["BUILTIN.shell"] },
+                    { type: "text", key: "name", label: "$label.BUILTIN.name" },
+                    { type: "text", key: "cmd", label: "$label.BUILTIN.cmd" },
+                ),
+            ],
+            {
+                name: "",
+                disable: false,
+                shell: "cmd/bash",
+                cmd: ""
+            },
+        ),
         restoreSettingsBox,
     ],
     md_padding: [
@@ -463,7 +480,64 @@ const SETTING_SCHEMAS = {
             Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE),
             Text("FONT_FAMILY"),
         ),
-        ObjectBOX("LAYOUTS"),
+        TableBox(
+            "LAYOUTS",
+            ["name"],
+            [
+                UntitledBox(
+                    { type: "switch", key: "selected", label: "$label.LAYOUTS.selected" },
+                    { type: "text", key: "name", label: "$label.LAYOUTS.name" },
+                    { type: "text", key: "layout.content-h1", label: "$label.LAYOUTS.layout.content-h1" },
+                    { type: "text", key: "layout.content-h2", label: "$label.LAYOUTS.layout.content-h2" },
+                    { type: "text", key: "layout.content-h3", label: "$label.LAYOUTS.layout.content-h3" },
+                    { type: "text", key: "layout.content-h4", label: "$label.LAYOUTS.layout.content-h4" },
+                    { type: "text", key: "layout.content-h5", label: "$label.LAYOUTS.layout.content-h5" },
+                    { type: "text", key: "layout.content-h6", label: "$label.LAYOUTS.layout.content-h6" },
+                    { type: "text", key: "layout.outline-h1", label: "$label.LAYOUTS.layout.outline-h1" },
+                    { type: "text", key: "layout.outline-h2", label: "$label.LAYOUTS.layout.outline-h2" },
+                    { type: "text", key: "layout.outline-h3", label: "$label.LAYOUTS.layout.outline-h3" },
+                    { type: "text", key: "layout.outline-h4", label: "$label.LAYOUTS.layout.outline-h4" },
+                    { type: "text", key: "layout.outline-h5", label: "$label.LAYOUTS.layout.outline-h5" },
+                    { type: "text", key: "layout.outline-h6", label: "$label.LAYOUTS.layout.outline-h6" },
+                    { type: "text", key: "layout.toc-h1", label: "$label.LAYOUTS.layout.toc-h1" },
+                    { type: "text", key: "layout.toc-h2", label: "$label.LAYOUTS.layout.toc-h2" },
+                    { type: "text", key: "layout.toc-h3", label: "$label.LAYOUTS.layout.toc-h3" },
+                    { type: "text", key: "layout.toc-h4", label: "$label.LAYOUTS.layout.toc-h4" },
+                    { type: "text", key: "layout.toc-h5", label: "$label.LAYOUTS.layout.toc-h5" },
+                    { type: "text", key: "layout.toc-h6", label: "$label.LAYOUTS.layout.toc-h6" },
+                    { type: "text", key: "layout.table", label: "$label.LAYOUTS.layout.table" },
+                    { type: "text", key: "layout.image", label: "$label.LAYOUTS.layout.image" },
+                    { type: "text", key: "layout.fence", label: "$label.LAYOUTS.layout.fence" },
+                ),
+            ],
+            {
+                name: "",
+                selected: true,
+                layout: {
+                    "content-h1": "",
+                    "content-h2": "",
+                    "content-h3": "",
+                    "content-h4": "",
+                    "content-h5": "",
+                    "content-h6": "",
+                    "outline-h1": "",
+                    "outline-h2": "",
+                    "outline-h3": "",
+                    "outline-h4": "",
+                    "outline-h5": "",
+                    "outline-h6": "",
+                    "toc-h1": "",
+                    "toc-h2": "",
+                    "toc-h3": "",
+                    "toc-h4": "",
+                    "toc-h5": "",
+                    "toc-h6": "",
+                    "table": "",
+                    "image": "",
+                    "fence": "",
+                },
+            },
+        ),
         TitledBox(
             "advanced",
             Switch("ENABLE_WHEN_EXPORT"),
@@ -504,7 +578,28 @@ const SETTING_SCHEMAS = {
             Text("INSERT_LINE_PREVIOUS"),
             Text("INSERT_LINE_NEXT"),
         ),
-        ObjectBOX("CUSTOM_BUTTONS"),
+        TableBox(
+            "CUSTOM_BUTTONS",
+            ["HINT", "ICON"],
+            [
+                UntitledBox(
+                    { type: "switch", key: "DISABLE", label: "$label.CUSTOM_BUTTONS.DISABLE" },
+                    { type: "text", key: "ICON", label: "$label.CUSTOM_BUTTONS.ICON" },
+                    { type: "text", key: "HINT", label: "$label.CUSTOM_BUTTONS.HINT" },
+                ),
+                TitledBox("CUSTOM_BUTTONS.ON_INIT", { type: "textarea", key: "ON_INIT", rows: 3 }),
+                TitledBox("CUSTOM_BUTTONS.ON_RENDER", { type: "textarea", key: "ON_RENDER", rows: 3 }),
+                TitledBox("CUSTOM_BUTTONS.ON_CLICK", { type: "textarea", key: "ON_CLICK", rows: 3 }),
+            ],
+            {
+                DISABLE: false,
+                ICON: "",
+                HINT: "",
+                ON_INIT: "",
+                ON_RENDER: "",
+                ON_CLICK: "",
+            },
+        ),
         TitledBox(
             "advanced",
             Switch("ENABLE_LANGUAGE_FOLD"),
@@ -578,6 +673,20 @@ const SETTING_SCHEMAS = {
             Text("MODAL_BACKGROUND_COLOR"),
             Select("TOOLBAR", OPTIONS.text_stylize.TOOLBAR),
         ),
+        TableBox(
+            "ACTION_HOTKEYS",
+            ["hotkey", "action"],
+            [
+                UntitledBox(
+                    { type: "hotkey", key: "hotkey", label: "$label.ACTION_HOTKEYS.hotkey" },
+                    { type: "select", key: "action", label: "$label.ACTION_HOTKEYS.action", options: OPTIONS.text_stylize.TOOLBAR },
+                ),
+            ],
+            {
+                hotkey: "",
+                action: "weight",
+            },
+        ),
         TitledBox(
             "buttonDefaultOptions",
             Text("DEFAULT_COLORS.FOREGROUND"),
@@ -586,7 +695,6 @@ const SETTING_SCHEMAS = {
             Text("DEFAULT_FORMAT_BRUSH", "brushExample"),
         ),
         ObjectBOX("COLOR_TABLE"),
-        ObjectBOX("ACTION_HOTKEYS"),
         restoreSettingsBox,
     ],
     cipher: [
@@ -637,7 +745,33 @@ const SETTING_SCHEMAS = {
             Select("MATCH_STRATEGY", OPTIONS.slash_commands.MATCH_STRATEGY),
             Select("ORDER_STRATEGY", OPTIONS.slash_commands.ORDER_STRATEGY),
         ),
-        ObjectBOX("COMMANDS"),
+        TableBox(
+            "COMMANDS",
+            ["keyword"],
+            [
+                UntitledBox(
+                    { type: "switch", key: "enable", label: "$label.COMMANDS.enable" },
+                    { type: "select", key: "type", label: "$label.COMMANDS.type", options: OPTIONS.slash_commands["COMMANDS.type"] },
+                    { type: "select", key: "scope", label: "$label.COMMANDS.scope", options: OPTIONS.slash_commands["COMMANDS.scope"] },
+                    { type: "text", key: "keyword", label: "$label.COMMANDS.keyword" },
+                    { type: "text", key: "icon", label: "$label.COMMANDS.icon" },
+                    { type: "text", key: "hint", label: "$label.COMMANDS.hint" },
+                    { type: "number", key: "cursorOffset.0", label: "$label.COMMANDS.cursorOffset.0" },
+                    { type: "number", key: "cursorOffset.1", label: "$label.COMMANDS.cursorOffset.1" },
+                ),
+                TitledBox("COMMANDS.callback", { type: "textarea", key: "callback", rows: 3 }),
+            ],
+            {
+                enable: true,
+                type: "snippet",
+                scope: "plain",
+                keyword: "",
+                icon: "",
+                hint: "",
+                cursorOffset: [0, 0],
+                callback: "",
+            },
+        ),
         restoreSettingsBox,
     ],
     right_click_menu: [
@@ -653,7 +787,18 @@ const SETTING_SCHEMAS = {
             Switch("HIDE_OTHER_OPTIONS"),
             Text("MENU_MIN_WIDTH"),
         ),
-        ObjectBOX("MENUS"),
+        TableBox(
+            "MENUS",
+            ["NAME", "LIST"],
+            [
+                UntitledBox({ type: "text", key: "NAME", label: "$label.MENUS.NAME" }),
+                TitledBox("MENUS.LIST", { type: "object", key: "LIST", rows: 10 }),
+            ],
+            {
+                NAME: "",
+                LIST: [],
+            },
+        ),
         TitledBox(
             "advanced",
             Switch("FIND_LOST_PLUGIN")
@@ -665,7 +810,20 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Hotkey("MODIFIER_KEY", "example")
         ),
-        ObjectBOX("BUTTONS"),
+        TableBox(
+            "BUTTONS",
+            ["CALLBACK", "ICON"],
+            [
+                UntitledBox(
+                    { type: "text", key: "ICON", label: "$label.BUTTONS.ICON" },
+                    { type: "text", key: "CALLBACK", label: "$label.BUTTONS.CALLBACK" },
+                ),
+            ],
+            {
+                ICON: "",
+                CALLBACK: "",
+            },
+        ),
         restoreSettingsBox,
     ],
     preferences: [
@@ -705,7 +863,31 @@ const SETTING_SCHEMAS = {
     ],
     hotkeys: [
         pluginFullBasePropBox,
-        ObjectBOX("CUSTOM_HOTKEYS"),
+        TableBox(
+            "CUSTOM_HOTKEYS",
+            ["hotkey", "desc"],
+            [
+                UntitledBox(
+                    { type: "switch", key: "enable", label: "$label.CUSTOM_HOTKEYS.enable" },
+                    { type: "hotkey", key: "hotkey", label: "$label.CUSTOM_HOTKEYS.hotkey" },
+                    { type: "text", key: "desc", label: "$label.CUSTOM_HOTKEYS.desc" },
+                    { type: "text", key: "plugin", label: "$label.CUSTOM_HOTKEYS.plugin" },
+                    { type: "text", key: "function", label: "$label.CUSTOM_HOTKEYS.function" },
+                    { type: "text", key: "closestSelector", label: "$label.CUSTOM_HOTKEYS.closestSelector" },
+                ),
+                TitledBox("CUSTOM_HOTKEYS.evil", { type: "textarea", key: "evil", rows: 3 }),
+            ],
+            {
+                enable: true,
+                hotkey: "",
+                desc: "",
+                plugin: "",
+                function: "",
+                closestSelector: "",
+                evil: "",
+            },
+        ),
+
         restoreSettingsBox,
     ],
     help: [
@@ -949,7 +1131,24 @@ const SETTING_SCHEMAS = {
             Text("default_left_line_color"),
             Text("default_icon"),
         ),
-        ObjectBOX("list"),
+        TableBox(
+            "list",
+            ["type", "icon", "background_color"],
+            [
+                UntitledBox(
+                    { type: "text", key: "type", label: "$label.list.type" },
+                    { type: "text", key: "icon", label: "$label.list.icon" },
+                    { type: "text", key: "background_color", label: "$label.list.background_color" },
+                    { type: "text", key: "left_line_color", label: "$label.list.left_line_color" },
+                ),
+            ],
+            {
+                type: "",
+                icon: "",
+                background_color: "",
+                left_line_color: ""
+            },
+        ),
         TextareaBox("template"),
         restoreSettingsBox,
     ],
@@ -958,8 +1157,34 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Switch("auto_open"),
         ),
-        ObjectBOX("template_variables"),
-        ObjectBOX("template"),
+        TableBox(
+            "template_variables",
+            ["name", "callback"],
+            [
+                UntitledBox(
+                    { type: "switch", key: "enable", label: "$label.template_variables.enable" },
+                    { type: "text", key: "name", label: "$label.template_variables.name" },
+                ),
+                TitledBox("template_variables.callback", { type: "textarea", key: "callback", rows: 5 }),
+            ],
+            {
+                enable: true,
+                name: "",
+                callback: "",
+            },
+        ),
+        TableBox(
+            "template",
+            ["name", "text"],
+            [
+                UntitledBox({ type: "text", key: "name", label: "$label.template.name" }),
+                TitledBox("template.text", { type: "textarea", key: "text", rows: 10 }),
+            ],
+            {
+                name: "",
+                text: "",
+            },
+        ),
         restoreSettingsBox,
     ],
     chineseSymbolAutoPairer: [
@@ -971,8 +1196,28 @@ const SETTING_SCHEMAS = {
             Switch("auto_surround_pair"),
             Switch("auto_select_after_surround"),
         ),
-        ObjectBOX("auto_pair_symbols"),
-        ObjectBOX("auto_swap_symbols"),
+        TableBox(
+            "auto_pair_symbols",
+            ["0", "1"],
+            [
+                UntitledBox(
+                    { type: "text", key: "0", label: "$label.auto_pair_symbols.0" },
+                    { type: "text", key: "1", label: "$label.auto_pair_symbols.1" },
+                ),
+            ],
+            ["", ""],
+        ),
+        TableBox(
+            "auto_swap_symbols",
+            ["0", "1"],
+            [
+                UntitledBox(
+                    { type: "text", key: "0", label: "$label.auto_swap_symbols.0" },
+                    { type: "text", key: "1", label: "$label.auto_swap_symbols.1" },
+                ),
+            ],
+            ["", ""],
+        ),
         restoreSettingsBox,
     ],
     toc: [
@@ -1083,7 +1328,17 @@ const SETTING_SCHEMAS = {
             Select("alt_wheel_function.0", OPTIONS.imageReviewer.operations),
             Select("alt_wheel_function.1", OPTIONS.imageReviewer.operations),
         ),
-        ObjectBOX("hotkey_function"),
+        TableBox(
+            "hotkey_function",
+            ["0", "1"],
+            [
+                UntitledBox(
+                    { type: "hotkey", key: "0", label: "$label.hotkey_function.0" },
+                    { type: "select", key: "1", label: "$label.hotkey_function.1", options: OPTIONS.imageReviewer.operations },
+                ),
+            ],
+            ["", "nextImage"],
+        ),
         TitledBox(
             "adjustScale",
             Number("zoom_scale", undefined, UNITS.percent),
@@ -1143,7 +1398,36 @@ const SETTING_SCHEMAS = {
             Switch("support_right_click"),
             Switch("hide_button_hint"),
         ),
-        ObjectBOX("buttons"),
+        TableBox(
+            "buttons",
+            ["coordinate", "icon"],
+            [
+                UntitledBox(
+                    { type: "switch", key: "disable", label: "$label.buttons.disable" },
+                    { type: "number", key: "coordinate.0", label: "$label.buttons.coordinate.0" },
+                    { type: "number", key: "coordinate.1", label: "$label.buttons.coordinate.1" },
+                    { type: "text", key: "icon", label: "$label.buttons.icon" },
+                    { type: "text", key: "size", label: "$label.buttons.size" },
+                    { type: "text", key: "color", label: "$label.buttons.color" },
+                    { type: "text", key: "bgColor", label: "$label.buttons.bgColor" },
+                    { type: "text", key: "hint", label: "$label.buttons.hint" },
+                    { type: "text", key: "callback", label: "$label.buttons.callback" },
+                ),
+                TitledBox("buttons.evil", { type: "textarea", key: "evil", rows: 5 }),
+            ],
+            {
+                disable: true,
+                coordinate: [0, 0],
+                icon: "",
+                size: "",
+                color: "",
+                bgColor: "",
+                hint: "",
+                callback: "",
+                evil: "",
+            },
+        ),
+
         restoreSettingsBox,
     ],
     blockSideBySide: [

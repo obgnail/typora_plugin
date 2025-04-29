@@ -5,7 +5,6 @@
 #form {
     box-sizing: border-box;
     width: 100%;
-    padding: 18px;
     font-size: 14px;
     color: rgb(65, 84, 98);
     font-family: "Open Sans", "Clear Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -244,7 +243,7 @@ textarea {
     border-radius: 6px;
     border: 1px solid rgba(150, 162, 170, 0.4);
     box-shadow: 2px 2px 4px #dbdbdb, -2px -2px 4px #dbdbdb;
-    max-height: 300px;
+    max-height: 250px;
     overflow-y: auto;
     user-select: none;
 }
@@ -413,7 +412,7 @@ textarea {
     flex-direction: column;
 }
 
-.object-btn {
+.object-confirm {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -434,7 +433,7 @@ textarea {
     font: inherit;
 }
 
-.object-btn:hover {
+.object-confirm:hover {
     background-color: #0092ff;
 }
 

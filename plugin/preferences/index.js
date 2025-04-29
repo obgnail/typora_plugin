@@ -241,6 +241,10 @@ class preferencesPlugin extends BasePlugin {
 
     _initSchemas = () => {
         this.SETTING_SCHEMAS = require("./schemas.js")
+        this._translateSchema(this.SETTING_SCHEMAS)
+    }
+
+    _translateSchema = (schemas) => {
         const i18nData = this.i18n.noConflict.data
         const specialProperties = ["options", "thMap"]
         const baseProperties = ["label", "tooltip", "placeholder"]
@@ -250,38 +254,44 @@ class preferencesPlugin extends BasePlugin {
                 return [prop, value]
             })
         )
-        Object.entries(this.SETTING_SCHEMAS).forEach(([fixedName, boxes]) => {
-            const settingI18N = i18nData[fixedName]
-            boxes.forEach(box => {
-                const t = box.title
-                if (t) {
-                    const commonValue = common.title[t]
-                    const pluginValue = settingI18N[t]
-                    box.title = commonValue || pluginValue
-                }
-                box.fields.forEach(field => {
-                    baseProperties.forEach(prop => {
-                        const propVal = field[prop]
-                        if (propVal != null) {
-                            const commonValue = common[prop][propVal]
-                            const pluginValue = settingI18N[propVal]
-                            field[prop] = commonValue || pluginValue
-                        }
-                    })
-                    specialProperties.forEach(prop => {
-                        const propVal = field[prop]
-                        if (propVal != null) {
-                            Object.keys(propVal).forEach(k => {
-                                const i18nKey = propVal[k]
-                                propVal[k] = settingI18N[i18nKey]
-                            })
-                        }
-                    })
-                    if (field.unit != null) {
-                        field.unit = common.unit[field.unit]
+
+        const translateBox = (box, settingI18N) => {
+            const t = box.title
+            if (t) {
+                const commonValue = common.title[t]
+                const pluginValue = settingI18N[t]
+                box.title = commonValue || pluginValue
+            }
+            box.fields.forEach(field => {
+                baseProperties.forEach(prop => {
+                    const propVal = field[prop]
+                    if (propVal != null) {
+                        const commonValue = common[prop][propVal]
+                        const pluginValue = settingI18N[propVal]
+                        field[prop] = commonValue || pluginValue
                     }
                 })
+                specialProperties.forEach(prop => {
+                    const propVal = field[prop]
+                    if (propVal != null) {
+                        Object.keys(propVal).forEach(k => {
+                            const i18nKey = propVal[k]
+                            propVal[k] = settingI18N[i18nKey]
+                        })
+                    }
+                })
+                if (field.unit != null) {
+                    field.unit = common.unit[field.unit]
+                }
+                if (field.nestBoxes != null) {
+                    field.nestBoxes.forEach(box => translateBox(box, settingI18N))
+                }
             })
+        }
+
+        Object.entries(schemas).forEach(([fixedName, boxes]) => {
+            const settingI18N = i18nData[fixedName]
+            boxes.forEach(box => translateBox(box, settingI18N))
         })
     }
 }
