@@ -4,19 +4,20 @@ class pluginForm extends HTMLElement {
         this.i18n = utils.i18n
         this.options = options || { objectFormat: "JSON" }
         this.values = null
+        this.actions = null
         this.form = null
         this._initShadow()
         this._bindEvents()
     }
 
-    render(schemas, values) {
+    render(schemas, values, actions) {
         this.schemas = schemas
+        this.actions = actions
         this.values = JSON.parse(JSON.stringify(values))
         this.form.innerHTML = this._fillForm(schemas, this.values)
     }
 
     static OPERATORS = {
-        action: (obj, key, value) => undefined,
         handle: (obj, key, handler) => {
             if (key === undefined) return
             const attrs = key.split(".")
@@ -61,7 +62,12 @@ class pluginForm extends HTMLElement {
     // type: set/push/remove/removeIdx/action
     _onEvent(key, value, type = "set") {
         this.dispatchEvent(new CustomEvent("form-event", { detail: { key, value, type } }))
-        pluginForm.OPERATORS[type](this.values, key, value)
+        if (type === "action") {
+            const fn = this.actions && this.actions[key]
+            if (fn) fn()
+        } else {
+            pluginForm.OPERATORS[type](this.values, key, value)
+        }
     }
 
     _bindEvents() {

@@ -68,6 +68,7 @@ class preferencesPlugin extends BasePlugin {
         // Callback functions for type="action" options in schema
         this.SETTING_ACTIONS = {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
+            viewMarkdownlintRules:() => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
             backupSettings: async () => this.utils.settings.backupSettingFile(),
             openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
             articleUploaderReadme: async () => this.utils.showInFinder(this.utils.joinPath("./plugin/article_uploader/README.md")),

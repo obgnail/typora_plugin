@@ -36,6 +36,7 @@
     margin: 0;
     font-size: 1.25em;
     line-height: 1.4;
+    font-weight: 600;
 }
 
 .form-dialog-body {
@@ -55,12 +56,15 @@
 }
 
 .form-dialog-footer .form-dialog-btn {
-    min-width: 5.14em;
     cursor: pointer;
     outline-width: 0;
     border: 1px solid transparent;
     border-radius: 4px;
     height: 36px;
+    font-weight: 500;
+    font-size: 1.05em;
+    line-height: 1.75;
+    min-width: 64px;
 }
 
 .form-dialog-footer .form-dialog-btn + .form-dialog-btn {
@@ -69,8 +73,8 @@
 }
 
 .form-dialog-footer .form-dialog-cancel {
-    color: #000;
-    background-color: #e6e6e6;
+    color: #007AFF;
+    border-color: #007AFF;
 }
 
 .form-dialog-footer .form-dialog-submit {
@@ -79,7 +83,7 @@
 }
 
 .form-dialog-footer .form-dialog-cancel:hover {
-    background-color: rgba(229, 229, 229, 0.59);
+    background-color: #EBF0F5;
 }
 
 .form-dialog-footer .form-dialog-submit:hover {
