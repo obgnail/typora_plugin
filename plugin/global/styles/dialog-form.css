@@ -518,3 +518,79 @@ table .fa {
 table .fa:hover {
     background-color: rgba(31, 31, 31, .08);
 }
+
+/***** radio, check *****/
+.radio,
+.checkbox {
+    padding-right: 0 !important;
+}
+
+.radio-option,
+.checkbox-option {
+    display: flex;
+    align-items: center;
+}
+
+.radio-wrapper,
+.checkbox-wrapper {
+    position: relative;
+    display: inline-flex;
+    width: 13px;
+    height: 13px;
+    border: 2px solid #0b57d0;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.radio-wrapper {
+    border-radius: 50%;
+}
+
+.radio-label,
+.checkbox-label {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    user-select: none;
+}
+
+.radio-input,
+.checkbox-input {
+    opacity: 0;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    outline: none;
+    cursor: pointer;
+}
+
+.radio-input + .radio-disc:after,
+.checkbox-input + .checkbox-square:after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    background: #0b57d0;
+    transition: all .2s ease;
+    transform-origin: center center;
+}
+
+.radio-input + .radio-disc:after {
+    border-radius: 50%;
+}
+
+.radio-input:checked + .radio-disc:after,
+.checkbox-input:checked + .checkbox-square:after {
+    width: 65%;
+    height: 65%;
+}
+

@@ -45,9 +45,12 @@ const Range = (key, tooltip, min, max, step) => {
 
 const UntitledBox = (...fields) => ({ title: undefined, fields })
 const TitledBox = (title, ...fields) => ({ title: `$title.${title}`, fields })
+
 const ArrayBox = (key) => TitledBox(key, { type: "array", key })
 const ObjectBOX = (key, rows = 10) => TitledBox(key, { type: "object", key, rows })
 const TextareaBox = (key, rows = 10) => TitledBox(key, { type: "textarea", key, rows })
+const RadioBox = (key, options) => TitledBox(key, { type: "radio", key, options })
+const CheckboxBox = (key, options, minItems, maxItems) => TitledBox(key, { type: "checkbox", options, key, minItems, maxItems })
 const TableBox = (key, ths, nestBoxes, defaultValues) => TitledBox(key, {
     type: "table",
     key,
@@ -1375,7 +1378,7 @@ const SETTING_SCHEMAS = {
         ObjectBOX("rule_config", 15),
         ArrayBox("custom_rules"),
         UntitledBox(
-          Action("viewMarkdownlintRules"),
+            Action("viewMarkdownlintRules"),
         ),
         restoreSettingsBox,
     ],

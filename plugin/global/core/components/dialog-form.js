@@ -205,6 +205,24 @@ class pluginForm extends HTMLElement {
             that.utils.hide(addEl)
             that.utils.show(inputEl)
             inputEl.focus()
+        }).on("input", ".checkbox-input", function () {
+            const checkboxInput = this
+            const checkboxEl = this.closest(".checkbox")
+            const checkboxValues = [...checkboxEl.querySelectorAll(".checkbox-input:checked")].map(e => e.value)
+            const minItems = Number(checkboxEl.dataset.minItems)
+            const maxItems = Number(checkboxEl.dataset.maxItems)
+            const itemCount = checkboxValues.length
+            if (itemCount < minItems || itemCount > maxItems) {
+                const msg = itemCount < minItems
+                    ? that.i18n.t("global", "error.minItems", { minItems })
+                    : that.i18n.t("global", "error.maxItems", { maxItems })
+                that.utils.notification.show(msg, "error")
+                setTimeout(() => checkboxInput.checked = !checkboxInput.checked)
+            } else {
+                that._onEvent(checkboxEl.dataset.key, checkboxValues)
+            }
+        }).on("input", ".radio-input", function () {
+            that._onEvent(this.getAttribute("name"), this.value)
         }).on("input", ".range-input", function () {
             this.nextElementSibling.textContent = that._toFixed2(Number(this.value))
         }).on("change", "input.switch-input", function () {
@@ -277,7 +295,7 @@ class pluginForm extends HTMLElement {
     }
 
     _fillForm(schemas, values) {
-        const blockControls = new Set(["textarea", "object", "array", "table"])
+        const blockControls = new Set(["textarea", "object", "array", "table", "radio", "checkbox"])
         const createTitle = (title) => `<div class="title">${title}</div>`
         const createTooltip = (item) => item.tooltip ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${item.tooltip}</span></span>` : ""
         const createGeneralControl = (ctl, value) => {
@@ -371,6 +389,40 @@ class pluginForm extends HTMLElement {
                     const th = [...Object.values(ctl.thMap), addButton]
                     const table = this.utils.buildTable([th, ...trs])
                     return `<div class="table" data-key="${ctl.key}">${table}</div>`
+                case "radio":
+                    const radioPrefix = this.utils.randomString()
+                    const radioOps = Object.entries(ctl.options).map(([k, v], idx) => {
+                        const id = `${radioPrefix}_${idx}`
+                        const checked = k === value ? "checked" : ""
+                        return `
+                            <div class="radio-option">
+                              <div class="radio-wrapper">
+                                <input class="radio-input" type="radio" id="${id}" name="${ctl.key}" value="${k}" ${checked}>
+                                <div class="radio-disc"></div>
+                              </div>
+                              <label class="radio-label" for="${id}">${v}</label>
+                            </div>  
+                        `
+                    })
+                    return `<div class="radio" data-key="${ctl.key}">${radioOps.join("")}</div>`
+                case "checkbox":
+                    const minItems_ = ctl.minItems != null ? ctl.minItems : 0
+                    const maxItems_ = ctl.maxItems != null ? ctl.maxItems : Infinity
+                    const checkboxPrefix = this.utils.randomString()
+                    const checkboxOps = Object.entries(ctl.options).map(([k, v], idx) => {
+                        const id = `${checkboxPrefix}_${idx}`
+                        const checked = value.includes(k) ? "checked" : ""
+                        return `
+                            <div class="checkbox-option">
+                                <div class="checkbox-wrapper">
+                                    <input class="checkbox-input" type="checkbox" id="${id}" name="${ctl.key}" value="${k}" ${checked}>
+                                    <div class="checkbox-square"></div>
+                                </div>
+                                <label class="checkbox-label" for="${id}">${v}</label>
+                            </div>
+                        `
+                    })
+                    return `<div class="checkbox" data-key="${ctl.key}" data-min-items="${minItems_}" data-max-items="${maxItems_}">${checkboxOps.join("")}</div>`
                 default:
                     return ""
             }
