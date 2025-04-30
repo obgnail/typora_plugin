@@ -84,14 +84,14 @@ class markdownLintPlugin extends BaseCustomPlugin {
             })
         }
 
-        const _getDetail = (infos = this.fixInfos) => {
+        const _getDetail = async (infos = this.fixInfos) => {
             const attrs = ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]
             const obj = infos.map(info => this.utils.pick(info, attrs))
             const content = JSON.stringify(obj.length === 1 ? obj[0] : obj, null, "\t")
-            const components = [{ label: "", type: "textarea", rows: 15, content }]
             const title = this.i18n.t("func.detailAll")
-            const op = { title, components, width: "600px" }
-            this.utils.dialog.modal(op)
+            const schema = [{ fields: [{ type: "textarea", key: "detail", rows: 15 }] }]
+            const values = { detail: content }
+            await this.utils.formDialog.modal(title, schema, values)
         }
 
         const funcMap = {
@@ -102,15 +102,17 @@ class markdownLintPlugin extends BaseCustomPlugin {
             fixAll: () => this.fixLint(),
             fixSingle: infoIdx => this.fixLint([this.fixInfos[infoIdx]]),
             toggleSourceMode: () => File.toggleSourceMode(),
-            doc: () => {
+            doc: async () => {
                 const title = this.i18n.t("func.doc")
-                const label = this.i18n.t("gotoWeb") + " " + '<a class="fa fa-external-link"></a>'
-                const url = "https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"
-                const onclick = ev => ev.target.closest("a") && this.utils.openUrl(url)
+                const label = this.i18n.t("$label.viewMarkdownlintRules")
                 const content = Object.entries(this.TRANSLATIONS).map(([key, value]) => `${key}\t${value}`).join("\n")
-                const components = [{ label, type: "p", onclick }, { label: "", type: "textarea", rows: 15, content }]
-                const op = { title, components, width: "600px" }
-                this.utils.dialog.modal(op)
+                const schema = [
+                    { fields: [{ type: "textarea", key: "doc", rows: 15 }] },
+                    { fields: [{ type: "action", act: "viewRules", label }] },
+                ]
+                const values = { doc: content }
+                const actions = { viewRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md") }
+                await this.utils.formDialog.modal(title, schema, values, actions)
             },
             jumpToLine: lineToGo => {
                 if (!lineToGo) return

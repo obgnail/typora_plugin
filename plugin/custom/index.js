@@ -96,20 +96,6 @@ class customPluginLoader {
         this.controller.plugins = enable
     }
 
-    checkErrorSetting = customSettings => {
-        const allSettings = this.utils.getAllPluginSettings()
-        const errorPluginSetting = Object.keys(customSettings).filter(fixedName => allSettings.hasOwnProperty(fixedName))
-        if (errorPluginSetting && errorPluginSetting.length) {
-            const title = this.i18n.t("modal.checkError.title")
-            const label = this.i18n.t("modal.checkError.incorrectFile")
-            const rows = Math.max(errorPluginSetting.length, 3)
-            const content = errorPluginSetting.join("\n")
-            const components = [{ type: "textarea", label, rows, content }]
-            const op = { title, components }
-            this.utils.dialog.modal(op, () => this.utils.settings.openSettingFolder())
-        }
-    }
-
     fixCallback = async () => {
         for (const plugin of Object.values(this.controller.plugins)) {
             if (!plugin || !plugin.hasOwnProperty("callback") || !plugin.hasOwnProperty("selector")) continue
@@ -128,7 +114,6 @@ class customPluginLoader {
 
     process = async () => {
         const settings = await this.utils.settings.readCustomPluginSettings()
-        this.checkErrorSetting(settings)
         this.controller.pluginsSettings = settings
         await this.loadCustomPlugins(settings)
         await this.fixCallback()
