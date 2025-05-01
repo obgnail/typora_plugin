@@ -44,9 +44,9 @@ class formDialog {
         this.resolveFunc = null
     }
 
-    show = (title, schema, values, actions) => {
+    show = (title, schema, data, action) => {
         this.entities.title.textContent = title
-        this.entities.form.render(schema, values, actions)
+        this.entities.form.render(schema, data, action)
         this.utils.show(this.entities.dialog)
         this.utils.show(this.entities.cover)
     }
@@ -56,9 +56,9 @@ class formDialog {
         this.utils.hide(this.entities.dialog)
     }
 
-    modal = (title, schema, values, actions) => new Promise(resolve => {
+    modal = (title, schema, data, action) => new Promise(resolve => {
         this.resolveFunc = resolve
-        this.show(title, schema, values, actions)
+        this.show(title, schema, data, action)
     })
 }
 

@@ -503,127 +503,120 @@ class tocMarkmap {
     }
 
     setting = async () => {
-        const varNames = "filename、timestamp、random、uuid"
-        const extNames = Downloader.getFormats()[0].extensions.join("、")
-        const info = [
-            "maxWidth", "AUTO_UPDATE", "CLICK_TO_POSITIONING", "POSITIONING_VIEWPORT_HEIGHT",
-            "FIX_ERROR_LEVEL_HEADER", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "FOLDER", "REMOVE_FOREIGN_OBJECT",
-        ]
-        const INFO = this.i18n.entries(info, "settingInfo.")
-        INFO.FILENAME = this.i18n.t("settingInfo.FILENAME", { varNames, extNames })
-
-        const { DEFAULT_TOC_OPTIONS: _tocOps, DOWNLOAD_OPTIONS: _downOps } = this.config
-        const needUpdateKey = ["DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS"]
-        const _locateConfig = key => [_tocOps, _downOps, this.config].find(cfg => key in cfg)
-        const _getConfig = key => _locateConfig(key)[key]
-        const _setConfig = (key, value) => {
-            const config = _locateConfig(key)
-            config[key] = value
-            if (config === this.config) {
-                needUpdateKey.push(key)
-            }
-        }
-        const generalWidget = (key, args) => ({
-            key,
-            label: this.i18n.t(`setting.${key}`),
-            info: INFO[key],
-            ...args,
-        })
-        const inlineWidget = key => ({
-            ...generalWidget(key),
-            inline: true,
-            value: _getConfig(key),
-            callback: value => _setConfig(key, value),
-        })
-        const checkboxWidget = components => ({
-            type: "checkbox",
-            list: components.map(({ label, key, disabled }) => ({ label, info: INFO[key], value: key, checked: Boolean(_getConfig(key)), disabled })),
-            callback: submit => components.forEach(({ key }) => _setConfig(key, submit.includes(key))),
-        })
-
-        const color = () => {
-            const label = this.i18n.t("settingGroup.color")
-            const toValue = colorList => colorList.join("_")
-            const fromValue = str => str.split("_")
-            const toLabel = colorList => {
-                const inner = colorList.map(color => `<div class="plugin-markmap-color" style="background-color: ${color}"></div>`)
-                return `<div class="plugin-markmap-color-scheme">${inner.join("")}</div>`
-            }
-            const curValue = toValue(_tocOps.color)
-            const list = this.config.CANDIDATE_COLOR_SCHEMES.map(colorList => {
-                const value = toValue(colorList)
-                const label = toLabel(colorList)
-                const checked = value === curValue
-                return { value, label, checked }
+        const { color: tocOptionColor } = this.config.DEFAULT_TOC_OPTIONS
+        const arr2Str = arr => arr.join("_")
+        const str2Arr = str => str.split("_")
+        const colorOptions = Object.fromEntries(
+            [...this.config.CANDIDATE_COLOR_SCHEMES, tocOptionColor].map(colorList => {
+                const colors = colorList
+                    .map(color => `<div style="background-color: ${color}; width: 32px; border-radius: 2px;"></div>`)
+                    .join("")
+                const label = `<div style="display: inline-flex; height: 22px;">${colors}</div>`
+                return [arr2Str(colorList), label]
             })
-            if (!list.some(e => e.checked)) {
-                list.push({ value: curValue, label: toLabel(_tocOps.color), checked: true })
-            }
-            const callback = scheme => _tocOps.color = fromValue(scheme)
-            return { label, list, type: "radio", info: INFO.color, callback }
-        }
+        )
 
-        const chart = () => [
-            { type: "range", min: 1, max: 6, step: 1, ...inlineWidget("colorFreezeLevel") },
-            { type: "range", min: 1, max: 6, step: 1, ...inlineWidget("initialExpandLevel") },
-            { type: "range", min: 0, max: 100, step: 1, ...inlineWidget("paddingX") },
-            { type: "range", min: 0, max: 200, step: 1, ...inlineWidget("spacingHorizontal") },
-            { type: "range", min: 0, max: 100, step: 1, ...inlineWidget("spacingVertical") },
-            { type: "range", min: 0, max: 1000, step: 10, ...inlineWidget("maxWidth") },
-            { type: "range", min: 0, max: 1000, step: 10, ...inlineWidget("duration") },
+        const getKey = (key, tooltip) => ({
+            key,
+            label: this.i18n.t(`$label.${key}`),
+            tooltip: tooltip ? this.i18n.t(`$tooltip.${tooltip}`) : undefined
+        })
+        const schema = [
+            {
+                title: this.i18n.t("settingGroup.color"),
+                fields: [{ ...getKey("DEFAULT_TOC_OPTIONS.color"), type: "radio", options: colorOptions }]
+            },
+            {
+                title: this.i18n.t("settingGroup.chart"),
+                fields: [
+                    { ...getKey("DEFAULT_TOC_OPTIONS.colorFreezeLevel"), type: "range", min: 1, max: 6, step: 1 },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.initialExpandLevel"), type: "range", min: 1, max: 6, step: 1 },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.paddingX"), type: "range", min: 0, max: 100, step: 1 },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.spacingHorizontal"), type: "range", min: 0, max: 200, step: 1 },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.spacingVertical"), type: "range", min: 0, max: 100, step: 1 },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.maxWidth", "zero"), type: "range", min: 0, max: 1000, step: 10 },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.duration"), type: "range", min: 0, max: 1000, step: 10 },
+                ]
+            },
+            {
+                title: this.i18n.t("settingGroup.window"),
+                fields: [
+                    { ...getKey("DEFAULT_TOC_OPTIONS.fitRatio"), type: "range", min: 0.5, max: 1, step: 0.01 },
+                    { ...getKey("WIDTH_PERCENT_WHEN_INIT"), type: "range", min: 20, max: 95, step: 1 },
+                    { ...getKey("HEIGHT_PERCENT_WHEN_INIT"), type: "range", min: 20, max: 95, step: 1 },
+                    { ...getKey("HEIGHT_PERCENT_WHEN_PIN_TOP"), type: "range", min: 20, max: 95, step: 1 },
+                    { ...getKey("WIDTH_PERCENT_WHEN_PIN_RIGHT"), type: "range", min: 20, max: 95, step: 1 },
+                    { ...getKey("POSITIONING_VIEWPORT_HEIGHT", "positioningViewPort"), type: "range", min: 0.1, max: 0.95, step: 0.01 },
+                ]
+            },
+            {
+                title: this.i18n.t("settingGroup.behavior"),
+                fields: [
+                    { ...getKey("FIX_ERROR_LEVEL_HEADER"), type: "switch" },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.zoom"), type: "switch" },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.pan"), type: "switch" },
+                    { ...getKey("AUTO_UPDATE"), type: "switch" },
+                    { ...getKey("CLICK_TO_POSITIONING"), type: "switch" },
+                    { ...getKey("DEFAULT_TOC_OPTIONS.autoFit"), type: "switch" },
+                    { ...getKey("AUTO_FIT_WHEN_UPDATE"), type: "switch" },
+                    { ...getKey("AUTO_FIT_WHEN_RESIZE"), type: "switch" },
+                    { ...getKey("KEEP_FOLD_STATE_WHEN_UPDATE"), type: "switch" },
+                    { ...getKey("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "experimental"), type: "switch", disabled: !this.utils.getPlugin("collapse_paragraph") },
+                ]
+            },
+            {
+                title: this.i18n.t("settingGroup.download"),
+                fields: [
+                    { ...getKey("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL"), type: "switch" },
+                    { ...getKey("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES"), type: "switch" },
+                    { ...getKey("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", "removeForeignObj"), type: "switch" },
+                    { ...getKey("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG"), type: "switch" },
+                    { ...getKey("DOWNLOAD_OPTIONS.SHOW_IN_FINDER"), type: "switch" },
+                    { ...getKey("DOWNLOAD_OPTIONS.FOLDER", "tempDir"), type: "text", placeholder: this.utils.tempFolder },
+                    { ...getKey("DOWNLOAD_OPTIONS.FILENAME"), type: "text" },
+                    { ...getKey("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL"), type: "number", min: 1, max: 1000, step: 1, unit: this.i18n._t("settings", "$unit.pixel") },
+                    { ...getKey("DOWNLOAD_OPTIONS.PADDING_VERTICAL"), type: "number", min: 1, max: 1000, step: 1, unit: this.i18n._t("settings", "$unit.pixel") },
+                    { ...getKey("DOWNLOAD_OPTIONS.TEXT_COLOR"), type: "text" },
+                    { ...getKey("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR"), type: "text" },
+                    { ...getKey("DOWNLOAD_OPTIONS.BACKGROUND_COLOR"), type: "text" },
+                    { ...getKey("DOWNLOAD_OPTIONS.IMAGE_QUALITY"), type: "range", min: 0.01, max: 1, step: 0.01 },
+                ]
+            },
+            {
+                fields: [{ type: "action", act: "restoreSettings", label: this.i18n._t("settings", "$label.restoreSettings") }]
+            },
         ]
 
-        const window = () => [
-            { type: "range", min: 0.5, max: 1, step: 0.01, ...inlineWidget("fitRatio") },
-            { type: "range", min: 20, max: 95, step: 1, ...inlineWidget("WIDTH_PERCENT_WHEN_INIT") },
-            { type: "range", min: 20, max: 95, step: 1, ...inlineWidget("HEIGHT_PERCENT_WHEN_INIT") },
-            { type: "range", min: 20, max: 95, step: 1, ...inlineWidget("HEIGHT_PERCENT_WHEN_PIN_TOP") },
-            { type: "range", min: 20, max: 95, step: 1, ...inlineWidget("WIDTH_PERCENT_WHEN_PIN_RIGHT") },
-            { type: "range", min: 0.1, max: 0.95, step: 0.01, ...inlineWidget("POSITIONING_VIEWPORT_HEIGHT") },
+        const attrs = [
+            "DEFAULT_TOC_OPTIONS", "DOWNLOAD_OPTIONS", "WIDTH_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_INIT", "HEIGHT_PERCENT_WHEN_PIN_TOP",
+            "WIDTH_PERCENT_WHEN_PIN_RIGHT", "POSITIONING_VIEWPORT_HEIGHT", "FIX_ERROR_LEVEL_HEADER", "AUTO_UPDATE",
+            "CLICK_TO_POSITIONING", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_UPDATE", "AUTO_FIT_WHEN_RESIZE",
+            "KEEP_FOLD_STATE_WHEN_UPDATE", "AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD",
         ]
+        const data = JSON.parse(JSON.stringify(this.utils.pick(this.config, attrs)))
+        data.DEFAULT_TOC_OPTIONS.color = arr2Str(tocOptionColor)
 
-        const behavior = () => {
-            const hasPlugin = this.utils.getPlugin("collapse_paragraph")
-            const components = [
-                generalWidget("FIX_ERROR_LEVEL_HEADER"),
-                generalWidget("zoom"),
-                generalWidget("pan"),
-                generalWidget("AUTO_UPDATE"),
-                generalWidget("CLICK_TO_POSITIONING"),
-                generalWidget("autoFit"),
-                generalWidget("AUTO_FIT_WHEN_UPDATE"),
-                generalWidget("AUTO_FIT_WHEN_RESIZE"),
-                generalWidget("KEEP_FOLD_STATE_WHEN_UPDATE"),
-                generalWidget("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", { disabled: !hasPlugin }),
-            ]
-            return { label: "", ...checkboxWidget(components) }
+        const action = {
+            restoreSettings: async () => {
+                const fixedName = this.controller.fixedName
+                await this.utils.settings.handleSettings(fixedName, settingObj => {
+                    const setting = settingObj[fixedName]
+                    attrs.forEach(attr => delete setting[attr])
+                    return settingObj
+                })
+                const settings = await this.utils.settings.readBasePluginSettings()
+                this.config = settings[fixedName]
+                this.utils.notification.show(this.i18n._t("global", "notification.settingsRestored"))
+                await this.setting()
+            },
         }
 
-        const download = (fieldset = this.i18n.t("settingGroup.download")) => {
-            const cpn = ["KEEP_ALPHA_CHANNEL", "REMOVE_USELESS_CLASSES", "REMOVE_FOREIGN_OBJECT", "SHOW_PATH_INQUIRY_DIALOG", "SHOW_IN_FINDER"]
-            const components = cpn.map(e => generalWidget(e))
-            return [
-                { fieldset, type: "number", min: 1, max: 1000, step: 1, ...inlineWidget("PADDING_HORIZONTAL") },
-                { fieldset, type: "number", min: 1, max: 1000, step: 1, ...inlineWidget("PADDING_VERTICAL") },
-                { fieldset, type: "number", min: 0.01, max: 1, step: 0.01, ...inlineWidget("IMAGE_QUALITY") },
-                { fieldset, type: "color", ...inlineWidget("TEXT_COLOR") },
-                { fieldset, type: "color", ...inlineWidget("OPEN_CIRCLE_COLOR") },
-                { fieldset, type: "color", ...inlineWidget("BACKGROUND_COLOR") },
-                { fieldset, type: "input", placeholder: this.utils.tempFolder, ...inlineWidget("FOLDER") },
-                { fieldset, type: "input", ...inlineWidget("FILENAME") },
-                { fieldset, label: "", ...checkboxWidget(components) },
-            ]
-        }
-
-        const components = [color(), ...chart(), ...window(), behavior(), ...download()];
-        const title = this.i18n.t("func.setting")
-        const op = { title, components, width: "500px" }
-        const { response } = await this.utils.dialog.modalAsync(op)
+        const { response, values: result } = await this.utils.formDialog.modal(this.i18n.t("func.setting"), schema, data, action)
         if (response === 1) {
-            components.forEach(c => c.callback(c.submit))
+            result.DEFAULT_TOC_OPTIONS.color = str2Arr(result.DEFAULT_TOC_OPTIONS.color)
+            Object.entries(result).forEach(([k, v]) => this.config[k] = v)
             await this.redraw(this.markmap.options)
-            const update = this.utils.pick(this.config, needUpdateKey)
-            await this.utils.settings.saveSettings(this.controller.fixedName, update)
+            await this.utils.settings.saveSettings(this.controller.fixedName, result)
         }
     }
 

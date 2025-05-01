@@ -68,7 +68,7 @@ class preferencesPlugin extends BasePlugin {
         // Callback functions for type="action" options in schema
         this.SETTING_ACTIONS = {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
-            viewMarkdownlintRules:() => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
+            viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
             backupSettings: async () => this.utils.settings.backupSettingFile(),
             openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
             articleUploaderReadme: async () => this.utils.showInFinder(this.utils.joinPath("./plugin/article_uploader/README.md")),
@@ -76,13 +76,13 @@ class preferencesPlugin extends BasePlugin {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearSettings(fixedName)
                 await this.switchMenu(fixedName)
-                this.utils.notification.show(this.i18n.t("notification.settingsRestored"))
+                this.utils.notification.show(this.i18n._t("global", "notification.settingsRestored"))
             },
             restoreAllSettings: async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearAllSettings()
                 await this.switchMenu(fixedName)
-                this.utils.notification.show(this.i18n.t("notification.allSettingsRestored"))
+                this.utils.notification.show(this.i18n._t("global", "notification.allSettingsRestored"))
             },
             updatePlugin: async () => {
                 const updater = this.utils.getPlugin("updater")

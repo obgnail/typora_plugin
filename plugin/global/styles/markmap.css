@@ -109,16 +109,3 @@
 #plugin-markmap-svg .markmap-foreign {
     line-height: 20px;
 }
-
-.plugin-markmap-color-scheme {
-    display: inline-flex;
-    position: absolute;
-    height: 20px;
-    max-width: calc(var(--markmap-color-width) * 14);
-    --markmap-color-width: 32px;
-}
-
-.plugin-markmap-color {
-    width: var(--markmap-color-width);
-    border-radius: 2px;
-}

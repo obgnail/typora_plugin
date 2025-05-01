@@ -520,44 +520,43 @@ table .fa:hover {
 }
 
 /***** radio, check *****/
-.radio,
-.checkbox {
+.radio, .checkbox {
     padding-right: 0 !important;
 }
 
-.radio-option,
-.checkbox-option {
+.radio-option, .checkbox-option {
     display: flex;
     align-items: center;
 }
 
-.radio-wrapper,
-.checkbox-wrapper {
+.radio-wrapper, .checkbox-wrapper {
     position: relative;
     display: inline-flex;
     width: 13px;
     height: 13px;
     border: 2px solid #0b57d0;
     cursor: pointer;
-    margin-right: 5px;
+    margin-right: 8px;
 }
 
 .radio-wrapper {
     border-radius: 50%;
 }
 
-.radio-label,
-.checkbox-label {
+.radio-label, .checkbox-label {
     flex: 1;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     cursor: pointer;
     user-select: none;
+    display: inline-flex;
+    align-items: center;
+    height: fit-content;
+    min-height: 32px;
 }
 
-.radio-input,
-.checkbox-input {
+.radio-input, .checkbox-input {
     opacity: 0;
     position: absolute;
     left: 50%;

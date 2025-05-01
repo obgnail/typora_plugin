@@ -10,10 +10,10 @@ class pluginForm extends HTMLElement {
         this._bindEvents()
     }
 
-    render(schemas, values, actions) {
+    render(schemas, data, actions) {
         this.schemas = schemas
         this.actions = actions
-        this.values = JSON.parse(JSON.stringify(values))
+        this.values = JSON.parse(JSON.stringify(data))
         this.form.innerHTML = this._fillForm(schemas, this.values)
     }
 
@@ -294,10 +294,10 @@ class pluginForm extends HTMLElement {
         return [...v, editButtons]
     }
 
-    _fillForm(schemas, values) {
+    _fillForm(schemas, data) {
         const blockControls = new Set(["textarea", "object", "array", "table", "radio", "checkbox"])
         const createTitle = (title) => `<div class="title">${title}</div>`
-        const createTooltip = (item) => item.tooltip ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${item.tooltip}</span></span>` : ""
+        const createTooltip = (item) => item.tooltip ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${item.tooltip.replace("\n", "<br>")}</span></span>` : ""
         const createGeneralControl = (ctl, value) => {
             const disabled = ctl => ctl.disabled ? "disabled" : ""
             const checked = () => value === true ? "checked" : ""
@@ -432,7 +432,7 @@ class pluginForm extends HTMLElement {
                 field.type = "unit"
             }
             const isBlock = blockControls.has(field.type)
-            const value = pluginForm.OPERATORS.get(values, field.key)
+            const value = pluginForm.OPERATORS.get(data, field.key)
             const control = createGeneralControl(field, value)
             const wrappedControl = isBlock ? control : `<div>${control}</div>`
             const wrappedLabel = isBlock ? "" : `<div>${field.label}${createTooltip(field)}</div>`
