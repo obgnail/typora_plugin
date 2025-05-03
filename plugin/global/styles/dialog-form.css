@@ -532,22 +532,14 @@ table .fa:hover {
 .radio-wrapper, .checkbox-wrapper {
     position: relative;
     display: inline-flex;
-    width: 13px;
-    height: 13px;
-    border: 2px solid #0b57d0;
     cursor: pointer;
-    margin-right: 8px;
-}
-
-.radio-wrapper {
-    border-radius: 50%;
+    margin-right: 10px;
+    margin-left: 2px;
 }
 
 .radio-label, .checkbox-label {
     flex: 1;
     overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
     cursor: pointer;
     user-select: none;
     display: inline-flex;
@@ -569,27 +561,21 @@ table .fa:hover {
     cursor: pointer;
 }
 
-.radio-input + .radio-disc:after,
-.checkbox-input + .checkbox-square:after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 0;
-    height: 0;
-    background: #0b57d0;
+.radio-disc, .checkbox-square {
+    width: 9px;
+    height: 9px;
+    background-color: transparent;
+    border: 2px solid #FFF;
+    box-shadow: 0 0 0 2px #0b57d0;
     transition: all .2s ease;
     transform-origin: center center;
 }
 
-.radio-input + .radio-disc:after {
+.radio-disc {
     border-radius: 50%;
 }
 
-.radio-input:checked + .radio-disc:after,
-.checkbox-input:checked + .checkbox-square:after {
-    width: 65%;
-    height: 65%;
+.radio-input:checked + .radio-disc,
+.checkbox-input:checked + .checkbox-square {
+    background-color: #0b57d0;
 }
-
