@@ -417,19 +417,32 @@ class utils {
 
     static nestedPropertyHelpers = {
         has: (obj, key) => {
-            if (key === undefined) {
+            if (key == null) {
                 return false
             }
-            const empty = Object.create(null)
-            const result = key.split(".").reduce((obj, attr) => Object.hasOwn(obj, attr) ? obj[attr] : empty, obj)
-            return result !== empty
+            return key.split(".").every(k => {
+                if (obj && typeof obj === "object" && Object.hasOwn(obj, k)) {
+                    obj = obj[k]
+                    return true
+                }
+                return false
+            })
         },
         handle: (obj, key, handler) => {
-            if (key === undefined) return
+            if (key == null) return
             const keys = key.split(".")
             const lastKey = keys.pop()
-            const o = keys.length === 0 ? obj : keys.reduce((obj, attr) => obj[attr], obj)
-            return handler(o, lastKey, key)
+            let current = obj
+            for (const k of keys) {
+                if (current && typeof current === "object" && Object.hasOwn(current, k)) {
+                    current = current[k]
+                } else {
+                    throw new Error(`Object has no such nested property: ${key}`)
+                }
+            }
+            if (current && typeof current === "object") {
+                return handler(current, lastKey, key)
+            }
         },
         get: (obj, key) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey]),
         set: (obj, key, val) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey] = val),

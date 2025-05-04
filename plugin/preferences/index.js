@@ -205,7 +205,7 @@ class preferencesPlugin extends BasePlugin {
             return [key, val]
         })
         const entries = await Promise.all(promises)
-        return Object.fromEntries(entries)
+        return { ...settings, ...Object.fromEntries(entries) }
     }
 
     _initForm = () => this.entities.form.init(this.utils, { objectFormat: this.config.OBJECT_SETTINGS_FORMAT })
