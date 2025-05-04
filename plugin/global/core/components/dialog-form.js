@@ -17,36 +17,6 @@ class pluginForm extends HTMLElement {
         this.form.innerHTML = this._fillForm(schemas, this.values)
     }
 
-    static OPERATORS = {
-        handle: (obj, key, handler) => {
-            if (key === undefined) return
-            const attrs = key.split(".")
-            const last = attrs.pop()
-            const obj_ = attrs.length === 0
-                ? obj
-                : attrs.reduce((obj, attr) => obj[attr], obj)
-            handler(obj_, last, key)
-        },
-        get: (obj, key) => {
-            if (key === undefined) {
-                return undefined
-            }
-            if (obj[key] != null) {
-                return obj[key]
-            }
-            return key.split(".").reduce((obj, attr) => obj[attr], obj)
-        },
-        set: (obj, key, newValue) => pluginForm.OPERATORS.handle(obj, key, (obj, last) => obj[last] = newValue),
-        push: (obj, key, pushValue) => pluginForm.OPERATORS.handle(obj, key, (obj, last) => obj[last].push(pushValue)),
-        removeIdx: (obj, key, removeIdx) => pluginForm.OPERATORS.handle(obj, key, (obj, last) => obj[last].splice(removeIdx, 1)),
-        remove: (obj, key, removeValue) => pluginForm.OPERATORS.handle(obj, key, (obj, last) => {
-            const idx = obj[last].indexOf(removeValue)
-            if (idx !== -1) {
-                obj[last].splice(idx, 1)
-            }
-        }),
-    }
-
     _initShadow() {
         const awesomeCSS = this.utils.joinPath("./style/font-awesome-4.1.0/css/font-awesome.min.css")
         const formCSS = this.utils.joinPath("./plugin/global/styles/dialog-form.css")
@@ -59,14 +29,14 @@ class pluginForm extends HTMLElement {
         this.form = shadowRoot.querySelector("#form")
     }
 
-    // type: set/push/remove/removeIdx/action
+    // type: set/push/remove/removeIndex/action
     _onEvent(key, value, type = "set") {
         this.dispatchEvent(new CustomEvent("form-event", { detail: { key, value, type } }))
         if (type === "action") {
             const fn = this.actions && this.actions[key]
             if (fn) fn()
         } else {
-            pluginForm.OPERATORS[type](this.values, key, value)
+            this.utils.nestedPropertyHelpers[type](this.values, key, value)
         }
     }
 
@@ -167,7 +137,7 @@ class pluginForm extends HTMLElement {
             const trEl = btn.closest("tr")
             const tableEl = trEl.closest(".table")
             const idx = [...tableEl.querySelectorAll("tbody tr")].findIndex(e => e === trEl)
-            that._onEvent(tableEl.dataset.key, Number(idx), "removeIdx")
+            that._onEvent(tableEl.dataset.key, Number(idx), "removeIndex")
             trEl.remove()
         }).on("click", ".object-confirm", function () {
             const textarea = this.closest(".control").querySelector(".object")
@@ -432,7 +402,7 @@ class pluginForm extends HTMLElement {
                 field.type = "unit"
             }
             const isBlock = blockControls.has(field.type)
-            const value = pluginForm.OPERATORS.get(data, field.key)
+            const value = this.utils.nestedPropertyHelpers.get(data, field.key)
             const control = createGeneralControl(field, value)
             const wrappedControl = isBlock ? control : `<div>${control}</div>`
             const wrappedLabel = isBlock ? "" : `<div>${field.label}${createTooltip(field)}</div>`

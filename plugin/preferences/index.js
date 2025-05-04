@@ -34,37 +34,6 @@ class preferencesPlugin extends BasePlugin {
             closeButton: document.querySelector("#plugin-preferences-dialog-close"),
         }
 
-        this.SETTING_OPERATORS = {
-            has: (setting, key) => {
-                if (key === undefined) {
-                    return false
-                }
-                const emptyObj = Object.create(null)
-                const result = key.split(".").reduce((obj, attr) => Object.hasOwn(obj, attr) ? obj[attr] : emptyObj, setting)
-                return result !== emptyObj
-            },
-            handle: (setting, key, handler) => {
-                if (key === undefined) return
-                const attrs = key.split(".")
-                const last = attrs.pop()
-                const obj = attrs.length === 0
-                    ? setting
-                    : attrs.reduce((obj, attr) => obj[attr], setting)
-                handler(obj, last, key)
-            },
-            get: (setting, key) => key === undefined ? undefined : key.split(".").reduce((obj, attr) => obj[attr], setting),
-            set: (setting, key, newValue) => this.SETTING_OPERATORS.handle(setting, key, (obj, last) => obj[last] = newValue),
-            push: (setting, key, pushValue) => this.SETTING_OPERATORS.handle(setting, key, (obj, last) => obj[last].push(pushValue)),
-            remove: (setting, key, removeValue) => this.SETTING_OPERATORS.handle(setting, key, (obj, last) => {
-                const idx = obj[last].indexOf(removeValue)
-                if (idx !== -1) {
-                    obj[last].splice(idx, 1)
-                }
-            }),
-            removeIdx: (setting, key, removeIdx) => this.SETTING_OPERATORS.handle(setting, key, (obj, last) => {
-                obj[last].splice(removeIdx, 1)
-            })
-        }
         // Callback functions for type="action" options in schema
         this.SETTING_ACTIONS = {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
@@ -95,6 +64,7 @@ class preferencesPlugin extends BasePlugin {
                 }
             },
         }
+
         // External value for some options in schema
         this.SETTING_VALUES = {
             pluginVersion: async () => this.utils.getPluginVersion(),
@@ -152,10 +122,10 @@ class preferencesPlugin extends BasePlugin {
         const formEvents = () => {
             this.entities.form.addEventListener("form-event", async ev => {
                 const { key, value, type = "set" } = ev.detail
-                if (this.SETTING_OPERATORS.hasOwnProperty(type)) {
+                if (this.utils.nestedPropertyHelpers.hasOwnProperty(type)) {
                     const fixedName = this.entities.form.dataset.plugin
                     const settings = await this._getSettings(fixedName)
-                    this.SETTING_OPERATORS[type](settings, key, value)
+                    this.utils.nestedPropertyHelpers[type](settings, key, value)
                     await this.utils.settings.saveSettings(fixedName, settings)
                 } else if (type === "action" && this.SETTING_ACTIONS.hasOwnProperty(key)) {
                     const fn = this.SETTING_ACTIONS[key]
@@ -228,7 +198,7 @@ class preferencesPlugin extends BasePlugin {
             return box.fields.filter(item => Boolean(item.key)).map(item => item.key)
         })
         const promises = keys.map(async key => {
-            let val = await this.SETTING_OPERATORS.get(settings, key)
+            let val = await this.utils.nestedPropertyHelpers.get(settings, key)
             if (val == null && this.SETTING_VALUES.hasOwnProperty(key)) {
                 val = await this.SETTING_VALUES[key](key, settings)
             }

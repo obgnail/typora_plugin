@@ -415,6 +415,34 @@ class utils {
         return 0
     }
 
+    static nestedPropertyHelpers = {
+        has: (obj, key) => {
+            if (key === undefined) {
+                return false
+            }
+            const empty = Object.create(null)
+            const result = key.split(".").reduce((obj, attr) => Object.hasOwn(obj, attr) ? obj[attr] : empty, obj)
+            return result !== empty
+        },
+        handle: (obj, key, handler) => {
+            if (key === undefined) return
+            const keys = key.split(".")
+            const lastKey = keys.pop()
+            const o = keys.length === 0 ? obj : keys.reduce((obj, attr) => obj[attr], obj)
+            return handler(o, lastKey, key)
+        },
+        get: (obj, key) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey]),
+        set: (obj, key, val) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey] = val),
+        push: (obj, key, item) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey].push(item)),
+        removeIndex: (obj, key, idx) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => obj[lastKey].splice(idx, 1)),
+        remove: (obj, key, val) => this.nestedPropertyHelpers.handle(obj, key, (obj, lastKey) => {
+            const idx = obj[lastKey].indexOf(val)
+            if (idx !== -1) {
+                return obj[lastKey].splice(idx, 1)
+            }
+        }),
+    }
+
     ////////////////////////////// business file operation //////////////////////////////
     static _plugin_version = ""
     static getPluginVersion = async () => {
