@@ -66,7 +66,7 @@ class preferencesPlugin extends BasePlugin {
         }
 
         // External value for some options in schema
-        this.SETTING_VALUES = {
+        this.EXTERNAL_VALUES = {
             pluginVersion: async () => this.utils.getPluginVersion(),
         }
 
@@ -177,7 +177,7 @@ class preferencesPlugin extends BasePlugin {
 
     switchMenu = async (fixedName) => {
         const settings = await this._getSettings(fixedName)
-        const values = await this._getSettingsValues(fixedName, settings)
+        const values = await this._addExternalValues(fixedName, settings)
         this.entities.form.dataset.plugin = fixedName
         this.entities.form.render(this.SETTING_SCHEMAS[fixedName], values)
         this.entities.title.textContent = this.i18n._t(fixedName, "pluginName")
@@ -193,19 +193,16 @@ class preferencesPlugin extends BasePlugin {
         return settings[fixedName]
     }
 
-    _getSettingsValues = async (fixedName, settings) => {
-        const keys = this.SETTING_SCHEMAS[fixedName].flatMap(box => {
-            return box.fields.filter(item => Boolean(item.key)).map(item => item.key)
-        })
-        const promises = keys.map(async key => {
-            let val = await this.utils.nestedPropertyHelpers.get(settings, key)
-            if (val == null && this.SETTING_VALUES.hasOwnProperty(key)) {
-                val = await this.SETTING_VALUES[key](key, settings)
-            }
-            return [key, val]
-        })
-        const entries = await Promise.all(promises)
-        return { ...settings, ...Object.fromEntries(entries) }
+    _addExternalValues = async (fixedName, settings) => {
+        await Promise.all(
+            this.SETTING_SCHEMAS[fixedName].flatMap(box => {
+                return box.fields
+                    .map(field => field.key)
+                    .filter(key => key && this.EXTERNAL_VALUES.hasOwnProperty(key))
+                    .map(async key => settings[key] = await this.EXTERNAL_VALUES[key](key, settings))
+            })
+        )
+        return settings
     }
 
     _initForm = () => this.entities.form.init(this.utils, { objectFormat: this.config.OBJECT_SETTINGS_FORMAT })
