@@ -360,8 +360,9 @@ class diagramParser {
             enhance.style.display = "none";
         }
 
-        const registerFenceEnhanceButton = (className, action, hint, iconClassName, enable, listener, extraFunc,
-        ) => this.utils.callPluginFunction("fence_enhance", "registerBuilder", className, action, hint, iconClassName, enable, listener, extraFunc)
+        const registerFenceEnhanceButton = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
+            return this.utils.callPluginFunction("fence_enhance", "registerButton", className, action, hint, iconClassName, enable, listener, extraFunc)
+        }
 
         const handleCtrlClick = () => {
             const ctrlClick = this.exitInteractiveStrategies.includes("ctrl_click_fence");

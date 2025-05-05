@@ -1360,7 +1360,7 @@ WAIT_RECOVER_INTERVAL = 1000
 #       参数: buttonElement - 按钮的 DOM 元素对象
 #       示例: "btn => console.log('btn has render')"，不需要则置为空字符串 ""
 #   ON_CLICK: 鼠标点击按钮时的回调函数字符串，点击时执行此函数
-#       参数: {ev, btn, cont, fence, cid, plu}，分别表示：click 事件对象，按钮的 DOM 元素对象，代码块文本内容，代码块的 DOM 元素对象，代码块的 CID，插件实例对象
+#       参数: {ev, btn, cont, fence, cm, cid, plu}，分别表示：click 事件对象，按钮的 DOM 元素，代码块文本内容，代码块的 DOM 元素, CodeMirror实例对象，代码块的 CID，插件实例对象
 #       示例: "({cont}) => console.log(cont)"。此项不可为空
 CUSTOM_BUTTONS = [
     { DISABLE = true, ICON = "fa fa-bomb", HINT = "demo", ON_INIT = "", ON_RENDER = "", ON_CLICK = "({cont}) => console.log(cont)" },

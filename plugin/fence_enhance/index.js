@@ -1,12 +1,12 @@
 class fenceEnhancePlugin extends BasePlugin {
-    beforeProcess = () => {
-        const hasFunc = File && File.editor && File.editor.fences && File.editor.fences.formatContent;
-        this.supportIndent = this.config.ENABLE_INDENT && hasFunc;
-        this.enableIndent = this.supportIndent;
-        this.builders = [];
-    }
-
     styleTemplate = () => ({ bgColorWhenHover: this.config.HIGHLIGHT_WHEN_HOVER ? this.config.HIGHLIGHT_LINE_COLOR : "initial" })
+
+    init = () => {
+        const supportIndent = File && File.editor && File.editor.fences && File.editor.fences.formatContent
+        this.supportIndent = this.config.ENABLE_INDENT && supportIndent
+        this.enableIndent = this.supportIndent
+        this.buttons = []
+    }
 
     process = async () => {
         this.utils.settings.autoSaveSettings(this)
@@ -30,172 +30,174 @@ class fenceEnhancePlugin extends BasePlugin {
 
     processButton = () => {
         const registerCustomButtons = () => {
-            const evalFunc = arg => {
-                const func = eval(arg);
-                if (!(func instanceof Function)) {
-                    throw Error(`custom button arg is not function: ${arg}`)
+            const evalFn = fnString => {
+                const fn = this.utils.safeEval(fnString)
+                if (!(fn instanceof Function)) {
+                    throw Error(`custom button param is not function: ${fnString}`)
                 }
-                return func
+                return fn
             }
-            this.config.CUSTOM_BUTTONS.forEach(btn => {
-                const { DISABLE, ICON, HINT, ON_INIT, ON_CLICK, ON_RENDER } = btn;
-                if (DISABLE) return;
-                if (ON_INIT) {
-                    const initFunc = evalFunc(ON_INIT);
-                    initFunc(this);
-                }
-                const renderFunc = ON_RENDER ? evalFunc(ON_RENDER) : undefined;
-                if (!ON_CLICK) return;
-                const callbackFunc = evalFunc(ON_CLICK);
-                const callback = (ev, button) => {
-                    const fence = button.closest(".md-fences");
-                    const cid = fence.getAttribute("cid");
-                    const cont = this.utils.getFenceContentByCid(cid);
-                    return callbackFunc({ ev, button, cont, fence, cid, plu: this });
-                }
-                const action = this.utils.randomString();
-                this.registerBuilder(action, action, HINT, ICON, !DISABLE, callback, renderFunc);
-            })
-        }
-        const addEnhanceElement = (fence, cid) => {
-            if (!fence || this.builders.length === 0) return
-            let enhance = fence.querySelector(".fence-enhance")
-            if (enhance) return
-
-            enhance = document.createElement("div")
-            enhance.setAttribute("class", "fence-enhance")
-            if (this.config.AUTO_HIDE) {
-                enhance.style.visibility = "hidden"
+            const getParams = (ev, btn) => {
+                const fence = btn.closest(".md-fences")
+                const cid = fence.getAttribute("cid")
+                const cm = File.editor.fences.queue[cid]
+                const cont = cm && cm.getValue()
+                return { ev, btn, cont, fence, cm, cid, plu: this }
             }
-            const buttons = this.builders.map(b => b.createButton(this.config.REMOVE_BUTTON_HINT))
-            enhance.append(...buttons)
-            fence.appendChild(enhance)
-            this.builders.forEach((builder, idx) => {
-                const button = buttons[idx]
-                if (builder.extraFunc) {
-                    builder.extraFunc(button, cid)
+            const customButtons = this.config.CUSTOM_BUTTONS.map(btn => {
+                try {
+                    const { DISABLE, ICON, HINT, ON_INIT, ON_CLICK, ON_RENDER } = btn
+                    if (DISABLE) return
+                    if (ON_INIT) {
+                        const initFunc = evalFn(ON_INIT)
+                        initFunc(this)
+                    }
+                    const renderFunc = ON_RENDER ? evalFn(ON_RENDER) : null
+                    if (!ON_CLICK) return
+                    const callbackFunc = evalFn(ON_CLICK)
+                    const listener = (ev, btn) => callbackFunc(getParams(ev, btn))
+                    const action = this.utils.randomString()
+                    const className = `custom-${action}`
+                    return [className, action, HINT, ICON, !DISABLE, listener, renderFunc]
+                } catch (e) {
+                    console.error("custom button error:", e)
                 }
             })
+            customButtons.filter(Boolean).forEach(btn => this.registerButton(...btn))
         }
 
-        const defaultButtons = [
-            ["copy-code", "copyCode", this.i18n.t("btn.hint.copy"), "fa fa-clipboard", this.config.ENABLE_COPY, this.copyCode],
-            ["indent-code", "indentCode", this.i18n.t("btn.hint.indent"), "fa fa-indent", this.enableIndent, this.indentCode],
-            ["fold-code", "foldCode", this.i18n.t("btn.hint.fold"), "fa fa-minus", this.config.ENABLE_FOLD, this.foldCode, this.defaultFold],
-        ]
-        defaultButtons.forEach(button => this.registerBuilder(...button))
+        const registerBuiltinButtons = () => {
+            const _changeIcon = (btn, newClass, originClass) => {
+                const icon = btn.firstElementChild
+                originClass = originClass || icon.className
+                icon.className = newClass
+                setTimeout(() => icon.className = originClass, this.config.WAIT_RECOVER_INTERVAL)
+            }
+            const copyCode = async (ev, btn) => {
+                const result = this.utils.getFenceContentByPre(btn.closest(".md-fences"))
+                await navigator.clipboard.writeText(result)
+                _changeIcon(btn, "fa fa-check", "fa fa-clipboard")
+            }
+            const indentCode = (ev, btn) => {
+                const fence = btn.closest(".md-fences")
+                if (!fence || !File.editor.fences.formatContent) return
 
+                const cid = fence.getAttribute("cid")
+                File.editor.refocus(cid)
+                File.editor.fences.formatContent()
+
+                _changeIcon(btn, "fa fa-check", "fa fa-indent")
+            }
+            const foldCode = (ev, btn) => {
+                const fence = btn.closest(".md-fences")
+                if (!fence) return
+                const isDiagram = fence.classList.contains("md-fences-advanced")
+                if (isDiagram) return  // diagram cannot be folded
+                const scroll = fence.querySelector(".CodeMirror-scroll")
+                if (!scroll) return
+                const enhance = btn.closest(".fence-enhance")
+                if (!enhance) return
+
+                const folded = scroll.style.height && scroll.style.overflowY
+                const [height, overflowY, force, className, visibility] = folded
+                    ? ["", "", false, "fa fa-minus", "hidden"]
+                    : [window.getComputedStyle(scroll).lineHeight, "hidden", true, "fa fa-plus", ""]
+                scroll.style.height = height
+                scroll.style.overflowY = overflowY
+                btn.classList.toggle("folded", force)
+                btn.firstElementChild.className = className
+                if (this.config.AUTO_HIDE) {
+                    enhance.style.visibility = visibility
+                }
+            }
+            const defaultFold = (foldButton, cid) => {
+                const { DEFAULT_FOLD, DEFAULT_FOLD_THRESHOLD: t } = this.config
+                const shouldFold = DEFAULT_FOLD && (t <= 0 || t < File.editor.fences.queue[cid].lineCount())
+                if (shouldFold) {
+                    foldButton.click()
+                }
+            }
+            const builtinButtons = [
+                ["copy-code", "copyCode", this.i18n.t("btn.hint.copy"), "fa fa-clipboard", this.config.ENABLE_COPY, copyCode],
+                ["indent-code", "indentCode", this.i18n.t("btn.hint.indent"), "fa fa-indent", this.enableIndent, indentCode],
+                ["fold-code", "foldCode", this.i18n.t("btn.hint.fold"), "fa fa-minus", this.config.ENABLE_FOLD, foldCode, defaultFold],
+            ]
+            builtinButtons.forEach(btn => this.registerButton(...btn))
+        }
+
+        const handleLifecycleEvents = () => {
+            this.utils.exportHelper.register(this.fixedName, () => {
+                this.utils.entities.querySelectorAllInWrite(".fold-code.folded").forEach(ele => ele.click())
+            })
+
+            this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => {
+                const fence = this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}]`)
+                if (!fence || this.buttons.length === 0) return
+                let enhance = fence.querySelector(".fence-enhance")
+                if (enhance) return
+
+                enhance = document.createElement("div")
+                enhance.setAttribute("class", "fence-enhance")
+                if (this.config.AUTO_HIDE) {
+                    enhance.style.visibility = "hidden"
+                }
+                const buttons = this.buttons.map(b => b.createButton(this.config.REMOVE_BUTTON_HINT))
+                enhance.append(...buttons)
+                fence.appendChild(enhance)
+                this.buttons.forEach((builder, idx) => {
+                    const button = buttons[idx]
+                    if (builder.extraFunc) {
+                        builder.extraFunc(button, cid)
+                    }
+                })
+            })
+        }
+
+        const handleDomEvents = () => {
+            this.utils.entities.eWrite.addEventListener("click", ev => {
+                const target = ev.target.closest(".fence-enhance .enhance-btn")
+                if (!target) return
+                ev.preventDefault()
+                ev.stopPropagation()
+                document.activeElement.blur()
+                const action = target.getAttribute("action")
+                const builder = this.buttons.find(builder => builder.action === action)
+                if (builder) {
+                    builder.listener(ev, target)
+                }
+            })
+            const config = this.config
+            this.utils.entities.$eWrite.on("mouseenter", ".md-fences", function () {
+                if (config.AUTO_HIDE) {
+                    this.querySelector(".fence-enhance").style.visibility = ""
+                }
+            }).on("mouseleave", ".md-fences", function () {
+                if (config.AUTO_HIDE && !this.querySelector(".fold-code.folded")) {
+                    this.querySelector(".fence-enhance").style.visibility = "hidden"
+                }
+            })
+        }
+
+        registerBuiltinButtons()
         registerCustomButtons()
-
-        this.utils.exportHelper.register("fence_enhance", this.beforeExport)
-
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => {
-            const fence = this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}]`)
-            addEnhanceElement(fence, cid)
-        })
-
-        this.utils.entities.eWrite.addEventListener("click", ev => {
-            const target = ev.target.closest(".fence-enhance .enhance-btn");
-            if (!target) return;
-            ev.preventDefault();
-            ev.stopPropagation();
-            document.activeElement.blur();
-            const action = target.getAttribute("action");
-            const builder = this.builders.find(builder => builder.action === action);
-            if (builder) {
-                builder.listener(ev, target)
-            }
-        })
-
-        const config = this.config;
-        this.utils.entities.$eWrite.on("mouseenter", ".md-fences", function () {
-            if (config.AUTO_HIDE) {
-                this.querySelector(".fence-enhance").style.visibility = "";
-            }
-        }).on("mouseleave", ".md-fences", function () {
-            if (config.AUTO_HIDE && !this.querySelector(".fold-code.folded")) {
-                this.querySelector(".fence-enhance").style.visibility = "hidden";
-            }
-        })
+        handleLifecycleEvents()
+        handleDomEvents()
     }
 
-    registerBuilder = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
+    registerButton = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
         const b = new builder(className, action, hint, iconClassName, enable, listener, extraFunc)
-        this.builders.push(b)
+        this.buttons.push(b)
     }
-    removeBuilder = action => this.builders = this.builders.filter(builder => builder.action !== action);
+    unregisterButton = action => this.buttons = this.buttons.filter(builder => builder.action !== action)
 
-    beforeExport = () => this.utils.entities.querySelectorAllInWrite(".fold-code.folded").forEach(ele => ele.click())
-
-    defaultFold = (foldButton, cid) => {
-        const { DEFAULT_FOLD, DEFAULT_FOLD_THRESHOLD: t } = this.config
-        const shouldFold = DEFAULT_FOLD && (t <= 0 || t < File.editor.fences.queue[cid].lineCount())
-        if (shouldFold) {
-            foldButton.click()
-        }
-    }
-    copyCode = (ev, copyButton) => {
-        const result = this.utils.getFenceContentByPre(copyButton.closest(".md-fences"));
-        navigator.clipboard.writeText(result).then(() => this._changeIcon(copyButton, "fa fa-check", "fa fa-clipboard"));
-    }
-    foldCode = (ev, foldButton) => {
-        const fence = foldButton.closest(".md-fences");
-        if (!fence) return;
-        const isDiagram = fence.classList.contains("md-fences-advanced");
-        if (isDiagram) return;  // diagram cannot be folded
-        const scroll = fence.querySelector(".CodeMirror-scroll");
-        if (!scroll) return;
-        const enhance = foldButton.closest(".fence-enhance");
-        if (!enhance) return;
-
-        const folded = scroll.style.height && scroll.style.overflowY;
-        const [height, overflowY, force, className, visibility] = folded
-            ? ["", "", false, "fa fa-minus", "hidden"]
-            : [window.getComputedStyle(scroll).lineHeight, "hidden", true, "fa fa-plus", ""]
-        scroll.style.height = height;
-        scroll.style.overflowY = overflowY;
-        foldButton.classList.toggle("folded", force);
-        foldButton.firstElementChild.className = className;
-        if (this.config.AUTO_HIDE) {
-            enhance.style.visibility = visibility
-        }
-    }
-    indentCode = (ev, indentButton) => {
-        const fence = indentButton.closest(".md-fences");
-        if (!fence || !File.editor.fences.formatContent) return;
-
-        const cid = fence.getAttribute("cid");
-        File.editor.refocus(cid);
-        File.editor.fences.formatContent();
-
-        this._changeIcon(indentButton, "fa fa-check", "fa fa-indent");
-    }
-
-    copyFence = target => target.querySelector(".copy-code").click();
-    indentFence = target => target.querySelector(".indent-code").click();
-    foldFence = target => target.querySelector(".fold-code").click();
+    copyFence = fence => fence.querySelector(".copy-code").click()
+    indentFence = fence => fence.querySelector(".indent-code").click()
+    foldFence = fence => fence.querySelector(".fold-code").click()
     expandFence = fence => {
         const button = fence.querySelector(".fence-enhance .fold-code.folded")
         if (button) {
             button.click()
         }
-    }
-
-    _changeIcon = (btn, newClass, originClass) => {
-        const icon = btn.firstElementChild;
-        originClass = originClass || icon.className;
-        icon.className = newClass;
-        setTimeout(() => icon.className = originClass, this.config.WAIT_RECOVER_INTERVAL);
-    }
-    _rangeAllFences = rangeFunc => {
-        this.utils.entities.querySelectorAllInWrite(".md-fences[cid]").forEach(fence => {
-            const codeMirror = fence.querySelector(":scope > .CodeMirror");
-            if (!codeMirror) {
-                const cid = fence.getAttribute("cid");
-                File.editor.fences.addCodeBlock(cid);
-            }
-            rangeFunc(fence);
-        })
     }
 
     getDynamicActions = (anchorNode, meta) => {
@@ -214,6 +216,16 @@ class fenceEnhancePlugin extends BasePlugin {
     }
 
     call = (action, meta) => {
+        const _rangeAllFences = rangeFunc => {
+            this.utils.entities.querySelectorAllInWrite(".md-fences[cid]").forEach(fence => {
+                const codeMirror = fence.querySelector(":scope > .CodeMirror")
+                if (!codeMirror) {
+                    const cid = fence.getAttribute("cid")
+                    File.editor.fences.addCodeBlock(cid)
+                }
+                rangeFunc(fence)
+            })
+        }
         const callMap = {
             toggle_state_fold: () => {
                 this.config.ENABLE_FOLD = !this.config.ENABLE_FOLD
@@ -260,7 +272,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 const op = { title, components: [{ label, type: "p" }] }
                 const { response } = await this.utils.dialog.modalAsync(op)
                 if (response === 1) {
-                    this._rangeAllFences(this.indentFence)
+                    _rangeAllFences(this.indentFence)
                 }
             },
             add_fences_lang: async () => {
@@ -269,7 +281,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 const op = { title, components: [{ label, type: "input", value: "javascript" }] }
                 const { response, submit: [targetLang] } = await this.utils.dialog.modalAsync(op)
                 if (response === 0 || !targetLang) return
-                this._rangeAllFences(fence => {
+                _rangeAllFences(fence => {
                     const lang = fence.getAttribute("lang")
                     if (lang) return
                     const cid = fence.getAttribute("cid")
@@ -291,7 +303,7 @@ class fenceEnhancePlugin extends BasePlugin {
                 const op = { title, components }
                 const { response, submit: [waitToReplaceLang, replaceLang] } = await this.utils.dialog.modalAsync(op)
                 if (response === 0 || !waitToReplaceLang || !replaceLang) return
-                this._rangeAllFences(fence => {
+                _rangeAllFences(fence => {
                     const lang = fence.getAttribute("lang")
                     if (lang && lang !== waitToReplaceLang) return
                     const cid = fence.getAttribute("cid")

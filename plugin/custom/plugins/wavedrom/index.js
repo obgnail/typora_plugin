@@ -34,7 +34,7 @@ class wavedromPlugin extends BaseCustomPlugin {
     init = () => {
         this.wavedromPkg = null
         this.prefix = "WaveDrom_Display_"
-        this.evalFunc = this.config.SAFE_MODE ? this._safeEval : this._dangerousEval
+        this.evalFunc = this.config.SAFE_MODE ? this.utils.safeEval : this.utils.unsafeEval
     }
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
@@ -78,9 +78,6 @@ class wavedromPlugin extends BaseCustomPlugin {
         this.wavedromPkg = require("./wavedrom.min.js")
         window.WaveSkin = this.wavedromPkg.waveSkin  // renderWaveForm() will use window.WaveSkin
     }
-
-    _safeEval = content => new Function(`return (${content})`)()
-    _dangerousEval = content => eval(`(${content})`)
 }
 
 module.exports = {

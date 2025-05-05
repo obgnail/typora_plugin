@@ -55,6 +55,38 @@ function GroupBy() {
     }
 }
 
+function AbortSignalTimeout() {
+    if (AbortSignal && !AbortSignal.timeout) {
+        Object.defineProperty(AbortSignal, "timeout", {
+            value(ms) {
+                if (!Number.isFinite(ms) || ms < 0) {
+                    throw new TypeError("ms must be a finite, non-negative number")
+                }
+
+                let timeoutId
+                const controller = new AbortController()
+                const signal = controller.signal
+
+                const abortHandler = () => {
+                    clearTimeout(timeoutId)
+                    signal.removeEventListener("abort", abortHandler)
+                }
+                signal.addEventListener("abort", abortHandler)
+                timeoutId = setTimeout(() => {
+                    if (!signal.aborted) {
+                        controller.abort("timeout")
+                    }
+                }, ms)
+                return signal
+            },
+            configurable: true,
+            enumerable: false,
+            writable: true,
+        })
+    }
+}
+
 At()
 HasOwn()
 GroupBy()
+AbortSignalTimeout()

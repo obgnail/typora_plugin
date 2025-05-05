@@ -31,7 +31,7 @@ class pluginForm extends HTMLElement {
 
     // type: set/push/remove/removeIndex/action
     _onEvent(key, value, type = "set") {
-        this.dispatchEvent(new CustomEvent("form-event", { detail: { key, value, type } }))
+        this.dispatchEvent(new CustomEvent("form-curd", { detail: { key, value, type } }))
         if (type === "action") {
             const fn = this.actions && this.actions[key]
             if (fn) fn()
@@ -108,8 +108,8 @@ class pluginForm extends HTMLElement {
             const tableEl = this.closest(".table")
             const key = tableEl.dataset.key
             const targetBox = that.schemas.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
-            const { nestBoxes, defaultValues, thMap } = targetBox.fields[0]
-            const { response, values } = await that.utils.formDialog.modal(targetBox.title, nestBoxes, defaultValues)
+            const { nestedBoxes, defaultValues, thMap } = targetBox.fields[0]
+            const { response, values } = await that.utils.formDialog.modal(targetBox.title, nestedBoxes, defaultValues)
             if (response === 1) {
                 that._onEvent(key, values, "push")
                 const row = that._createTableRow(thMap, values).map(e => `<td>${e}</td>`).join("")
@@ -123,9 +123,9 @@ class pluginForm extends HTMLElement {
             const key = tableEl.dataset.key
             const rowValue = that.values[key][idx]
             const targetBox = that.schemas.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
-            const { nestBoxes, defaultValues, thMap } = targetBox.fields[0]
+            const { nestedBoxes, defaultValues, thMap } = targetBox.fields[0]
             const modalValues = that.utils.merge(defaultValues, rowValue)  // rowValue may be missing certain attributes
-            const { response, values } = await that.utils.formDialog.modal(targetBox.title, nestBoxes, modalValues)
+            const { response, values } = await that.utils.formDialog.modal(targetBox.title, nestedBoxes, modalValues)
             if (response === 1) {
                 that._onEvent(`${key}.${idx}`, values)
                 const row = that._createTableRow(thMap, values)
@@ -289,11 +289,9 @@ class pluginForm extends HTMLElement {
                 case "number":
                 case "unit":
                     const input = `<input class="${ctl.type}-input" type="number" data-key="${ctl.key}" ${range(ctl)} ${disabled(ctl)}>`
-                    if (ctl.type === "number") {
-                        return input
-                    }
-                    const unit = `<div class="unit-value">${ctl.unit}</div>`
-                    return input + unit
+                    return ctl.type === "number"
+                        ? input
+                        : `<div class="unit-wrap">${input}<div class="unit-value">${ctl.unit}</div></div>`
                 case "range":
                     return `
                         <div class="range-wrap">
@@ -303,8 +301,8 @@ class pluginForm extends HTMLElement {
                     `
                 case "action":
                     return `<div class="action fa fa-angle-right" data-action="${ctl.act}"></div>`
-                case "static":
-                    return `<div class="static" data-key="${ctl.key}">${value}</div>`
+                case "external":
+                    return `<div class="external" data-key="${ctl.key}">${value}</div>`
                 case "select":
                     const isMulti = Array.isArray(value)
                     const show = isMulti
@@ -329,7 +327,7 @@ class pluginForm extends HTMLElement {
                     return `
                         <div class="hotkey-wrap">
                             <input type="text" class="hotkey-input" data-key="${ctl.key}" value="${value}" placeholder="" ${disabled(ctl)}>
-                            <div>
+                            <div class="hotkey-btn">
                                 <div class="hotkey-undo">↺</div>
                                 <div class="hotkey-reset">×</div>
                             </div>
@@ -342,8 +340,9 @@ class pluginForm extends HTMLElement {
                     const readonly = ctl.readonly ? "readonly" : ""
                     const value_ = isObject ? this._serialize(value) : value
                     const textarea = `<textarea class="${ctl.type}" rows="${rows}" ${readonly} data-key="${ctl.key}" ${placeholder(ctl)} ${disabled(ctl)}>${value_}</textarea>`
-                    const btn = isObject ? `<button class="object-confirm">${this.i18n.t("global", "confirm")}</button>` : ""
-                    return textarea + btn
+                    return isObject
+                        ? `<div class="object-wrap">${textarea}<button class="object-confirm">${this.i18n.t("global", "confirm")}</button></div>`
+                        : textarea
                 case "array":
                     const items = value.map(v => this._createArrayItem(v)).join("")
                     return `
@@ -371,7 +370,7 @@ class pluginForm extends HTMLElement {
                                 <div class="radio-disc"></div>
                               </div>
                               <label class="radio-label" for="${id}">${v}</label>
-                            </div>  
+                            </div>
                         `
                     })
                     return `<div class="radio" data-key="${ctl.key}">${radioOps.join("")}</div>`
@@ -403,10 +402,10 @@ class pluginForm extends HTMLElement {
             }
             const isBlock = blockControls.has(field.type)
             const value = this.utils.nestedPropertyHelpers.get(data, field.key)
-            const control = createGeneralControl(field, value)
-            const wrappedControl = isBlock ? control : `<div>${control}</div>`
-            const wrappedLabel = isBlock ? "" : `<div>${field.label}${createTooltip(field)}</div>`
-            return `<div class="control" data-type="${field.type}">${wrappedLabel}${wrappedControl}</div>`
+            const ctl = createGeneralControl(field, value)
+            const label = isBlock ? "" : `<div class="control-left">${field.label}${createTooltip(field)}</div>`
+            const control = isBlock ? ctl : `<div class="control-right">${ctl}</div>`
+            return `<div class="control" data-type="${field.type}">${label}${control}</div>`
         }
         const createBox = ({ title, fields }) => {
             const t = title ? createTitle(title) : ""

@@ -6,13 +6,13 @@ custom 插件的功能：支持用户 **在右键菜单中自定义插件**。
 
 ### 简介
 
-custom 插件大量采用 **声明式代码**（声明代替代码开发），比如：
+custom 插件大量采用 **声明式代码**（声明代替代码开发）：
 
 - `style = () => "..."`：注册 CSS
 - `html = () => "..."`：注册 HTML 元素
 - `hint = () => "..."`：注册 hint
 - `selector = () => "..."`：注册允许运行命令的光标位置
-- `hotkey = () => ["ctrl+shift+y"]`：即可注册快捷键
+- `hotkey = () => ["ctrl+shift+y"]`：注册快捷键
 - `beforeProcess`、`init`、`process`、`afterProcess`、`callback` 等生命周期函数
 
 ```js
@@ -65,12 +65,14 @@ enable = true     # 是否启用此二级插件
 hide = false      # 是否在右键菜单中隐藏
 order = 1         # 在右键菜单中的出现顺序（越大越排到后面，允许负数）
 
-hotkey_string = "ctrl+alt+u"
+hotkey = "ctrl+alt+u"
 console_message = "I am in process"
 show_message = "this is hello world plugin"
 ```
 
 > name、enable、hide、order 是必须项，其余是插件个性化的配置。
+
+
 
 步骤二：创建文件 `./plugin/custom/plugins/helloWorld.js` 文件，将下面代码保存到该文件中：
 
@@ -78,36 +80,40 @@ show_message = "this is hello world plugin"
 // ./plugin/custom/plugins/helloWorld.js
 
 class helloWorld extends BaseCustomPlugin {
-    // beforeProcess是最先运行的函数，在这里检查插件的运行条件
+    // beforeProcess是最先运行的方法，请在这里检查插件的运行条件
     // 若不满足条件，请返回this.utils.stopLoadPluginError，插件将终止运行
     beforeProcess = async () => {
-        // 这里使用false抑制，实际开发请改成有意义的检查
+        // 这里使用false抑制，实际开发时请改成有意义的检查
         if (false) {
             return this.utils.stopLoadPluginError
         }
     }
 
-    // 返回string，会自动作为<style>插入DOM中
+    // 注册样式。返回string，会自动作为<style>插入DOM中
     style = () => "#hello-world { margin: 10px; }"
 
-    // 返回Element类型或者element-string，会自动插入到DOM中
+    // 注册DOM。返回Element类型或者element-string，会自动插入到DOM中
     html = () => "<div id='hello-world'></div>"
 
-    // 注册 hint
+    // 注册hint
     hint = () => "this is hello world hint"
 
     // 注册快捷键
-    hotkey = () => [this.config.hotkey_string]
+    hotkey = () => [this.config.hotkey]
 
-    // process方法会在插件初始化时自动运行
-    process = () => {
-        // toml文件里的所有配置项都可以通过this.config获取
-        console.log(this.config.console_message)
-        console.log("[helloWorldPlugin]: ", this)
-        console.log(document.querySelector("#hello-world"))  // 获取html()插入的DOM元素
+    // 注册变量
+    init = () => {
+        this.myDiv = document.querySelector("#hello-world")  // 获取html()插入的DOM元素
     }
 
-    // 点击右键菜单选项时、键入快捷键时会自动调用callback方法（注意：如果插件没有callback函数，那么就不会出现在右键菜单中）
+    // process方法会在插件初始化后（执行上述注册逻辑后）自动运行
+    process = () => {
+        console.log(this.config.console_message)  // toml文件里的所有配置项都可以通过this.config获取
+        console.log("[helloWorldPlugin]: ", this)
+        console.log(this.myDiv)
+    }
+
+    // 点击右键菜单选项时、键入快捷键时会自动调用callback方法（注意：若没有callback函数，则此插件在右键菜单中将不可点击）
     // anchorNode: 调用此插件时，光标所在的Element
     callback = anchorNode => {
         alert(this.config.show_message)
@@ -220,7 +226,7 @@ order = 1            # 在右键菜单中的出现顺序（越大越排到后面
 
 # 快捷键
 hotkey = "ctrl+shift+u"
-# 如果在空白页调用此插件，使用的文件名（因为尚不存在该文件，需要用一个默认的文件名代替）
+# 如果在空白页调用此插件，使用的文件名（文件还不存在，需要用一个默认的文件名代替）
 untitled_file_name = "untitled"
 # 跳过空白的标题
 ignore_empty_header = false
@@ -311,7 +317,7 @@ module.exports = { plugin: myFullPathCopy }
 
 // 1. 创建 class，继承 BaseCustomPlugin 类。之后 myFullPathCopy 将自动拥有 utils、config 属性
 //    - config: 该插件在 custom_plugin.user.toml 里的所有字段
-//    - utils: 插件系统自带的静态工具类，其定义在 `./plugin/global/core/plugin.js/utils`
+//    - utils: 插件系统自带的静态工具类，其定义在 `./plugin/global/core/utils`
 // 2. selector: 允许运行命令的光标位置(当光标位于哪些位置时，此命令才可用)。若返回 null-like value，表示任何位置都可用。在这里的含义就是：只当光标位于【正文标题】时可用
 // 3. hint: 当鼠标移动到右键菜单时的提示
 // 4. init: 在这里初始化你要的变量

@@ -28,9 +28,9 @@ const Action = (act) => {
     const label = Label(act)
     return { type: "action", act, label }
 }
-const Static = (key) => {
+const External = (key) => {
     const label = Label(key)
-    return { type: "static", key, label }
+    return { type: "external", key, label }
 }
 const Number = (key, tooltip, unit, min, max, step) => {
     const label = Label(key)
@@ -51,10 +51,10 @@ const ObjectBOX = (key, rows = 10) => TitledBox(key, { type: "object", key, rows
 const TextareaBox = (key, rows = 10) => TitledBox(key, { type: "textarea", key, rows })
 const RadioBox = (key, options) => TitledBox(key, { type: "radio", key, options })
 const CheckboxBox = (key, options, minItems, maxItems) => TitledBox(key, { type: "checkbox", options, key, minItems, maxItems })
-const TableBox = (key, ths, nestBoxes, defaultValues) => TitledBox(key, {
+const TableBox = (key, ths, nestedBoxes, defaultValues) => TitledBox(key, {
     type: "table",
     key,
-    nestBoxes,
+    nestedBoxes,
     defaultValues,
     thMap: Object.fromEntries(ths.map(th => [th, `$label.${key}.${th}`])),
 })
@@ -170,7 +170,7 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Action("visitRepo"),
             Action("updatePlugin"),
-            Static("pluginVersion"),
+            External("pluginVersion"),
         )
     ],
     window_tab: [
@@ -890,7 +890,6 @@ const SETTING_SCHEMAS = {
                 evil: "",
             },
         ),
-
         restoreSettingsBox,
     ],
     help: [
@@ -1433,7 +1432,6 @@ const SETTING_SCHEMAS = {
                 evil: "",
             },
         ),
-
         restoreSettingsBox,
     ],
     blockSideBySide: [

@@ -143,6 +143,9 @@ class utils {
     ////////////////////////////// pure function //////////////////////////////
     static noop = args => args
 
+    static safeEval = x => new Function(`return (${x})`)()
+    static unsafeEval = x => eval(`(${x})`)
+
     /** @description param fn cannot be an async function that returns promiseLike object */
     static throttle = (fn, delay) => {
         let timer;
@@ -697,14 +700,8 @@ class utils {
 
     static fetch = async (url, { proxy = "", timeout = 3 * 60 * 1000, ...args }) => {
         let signal, agent
-        if (timeout) {
-            if (AbortSignal && AbortSignal.timeout) {
-                signal = AbortSignal.timeout(timeout)
-            } else if (AbortController) {
-                const controller = new AbortController()
-                setTimeout(() => controller.abort(), timeout)
-                signal = controller.signal // polyfill
-            }
+        if (timeout && AbortSignal && AbortSignal.timeout) {
+            signal = AbortSignal.timeout(timeout)
         }
         if (proxy) {
             const proxyAgent = require("../lib/https-proxy-agent")

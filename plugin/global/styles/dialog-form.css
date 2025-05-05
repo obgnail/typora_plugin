@@ -21,7 +21,7 @@
 }
 
 #form ::-webkit-scrollbar-thumb {
-    background: #bbb;
+    background: #BBB;
     transition: all .2s;
     border-radius: 8px;
 }
@@ -39,7 +39,7 @@
 
 .tooltip > span:first-child {
     font-size: 13px;
-    color: #98989d;
+    color: #98989D;
     margin-left: 2px;
     cursor: pointer;
 }
@@ -50,7 +50,7 @@
     top: 30px;
     left: -50px;
     background-color: rgba(0, 0, 0, 0.65);
-    color: #fff;
+    color: #FFF;
     padding: 8px 12px;
     z-index: 10;
     border-radius: 6px;
@@ -105,17 +105,25 @@
     line-height: 32px;
 }
 
-.control > div:nth-child(1) {
+.control-left {
     flex: 1;
     word-break: keep-all;
     padding-right: 12px;
     max-width: 100%;
 }
 
-.control > div:nth-child(2) {
+.control-right {
     display: flex;
     align-items: center;
     font-size: 16px;
+}
+
+.control[data-type="text"] > .control-right,
+.control[data-type="number"] > .control-right,
+.control[data-type="hotkey"] > .control-right,
+.control[data-type="unit"] > .control-right,
+.control[data-type="range"] > .control-right {
+    width: 240px
 }
 
 input[type="text"],
@@ -144,14 +152,6 @@ textarea {
     font-size: 14px;
 }
 
-.control[data-type="text"] > div:nth-child(2),
-.control[data-type="number"] > div:nth-child(2),
-.control[data-type="hotkey"] > div:nth-child(2),
-.control[data-type="unit"] > div:nth-child(2),
-.control[data-type="range"] > div:nth-child(2) {
-    width: 240px
-}
-
 .text-input:disabled,
 .number-input:disabled,
 .hotkey-input:disabled,
@@ -168,7 +168,7 @@ textarea {
     width: 43px;
     height: 26px;
     position: relative;
-    background-color: #dcdfe6;
+    background-color: #DCDFE6;
     outline: none;
     border: 0;
     border-radius: 16px;
@@ -183,7 +183,7 @@ textarea {
     position: absolute;
     width: 20px;
     height: 20px;
-    background-color: #ffffff;
+    background-color: #FFF;
     border-radius: 50%;
     left: 3px;
     top: 0;
@@ -242,7 +242,7 @@ textarea {
     padding: 6px;
     border-radius: 6px;
     border: 1px solid rgba(150, 162, 170, 0.4);
-    box-shadow: 2px 2px 4px #dbdbdb, -2px -2px 4px #dbdbdb;
+    box-shadow: 2px 2px 4px #DBDBDB, -2px -2px 4px #DBDBDB;
     max-height: 250px;
     overflow-y: auto;
     user-select: none;
@@ -258,7 +258,7 @@ textarea {
 }
 
 .option-item:hover {
-    color: #fff;
+    color: #FFF;
     background: #0A84FF;
 }
 
@@ -278,14 +278,14 @@ textarea {
 }
 
 .hotkey-wrap:has(.hotkey-reset:hover) {
-    outline-color: #d70015;
+    outline-color: #D70015;
 }
 
 .hotkey-wrap:has(.hotkey-undo:hover) {
-    outline-color: #f9c67f;
+    outline-color: #F9C67F;
 }
 
-.hotkey-wrap > div {
+.hotkey-btn {
     position: absolute;
     display: inline-flex;
     flex-direction: row-reverse;
@@ -307,11 +307,11 @@ textarea {
 .hotkey-reset {
     display: none;
     cursor: pointer;
-    color: #d70015;
+    color: #D70015;
     font-size: 25px;
 }
 
-.hotkey-input:not(:placeholder-shown) + div > .hotkey-reset {
+.hotkey-input:not(:placeholder-shown) + .hotkey-btn > .hotkey-reset {
     display: block;
 }
 
@@ -320,18 +320,20 @@ textarea {
     align-items: center;
 }
 
-.control[data-type="unit"] > div:nth-child(2) {
+.unit-wrap {
+    width: 100%;
+    display: inline-flex;
     border: 1px solid rgba(150, 162, 170, 0.4);
     border-radius: 4px;
 }
 
-.unit-input[type="number"] {
+.unit-wrap .unit-input {
     flex-grow: 1;
     width: 0;
     border: 0;
 }
 
-.unit-value {
+.unit-wrap .unit-value {
     display: inline-flex;
     align-items: center;
     color: rgba(60, 60, 67, 0.6);
@@ -383,7 +385,7 @@ textarea {
     width: 13px;
     height: 13px;
     border-radius: 50%;
-    background-color: #1a73e8;
+    background-color: #1A73E8;
     margin-top: -5px;
     cursor: pointer;
 }
@@ -408,8 +410,10 @@ textarea {
 }
 
 /***** object *****/
-.control[data-type="object"] {
+.object-wrap {
+    display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 .object-confirm {
@@ -434,17 +438,13 @@ textarea {
 }
 
 .object-confirm:hover {
-    background-color: #0055b2;
+    background-color: #0055B2;
 }
 
 /***** array *****/
 .array {
     display: flex;
     flex-wrap: wrap;
-    cursor: default;
-    min-height: 28px;
-    padding: 0 !important;
-    width: 100%;
 }
 
 .array > span {
@@ -467,11 +467,12 @@ textarea {
 }
 
 .array-item:has(.array-item-delete:hover) {
-    border-color: #d70015;
+    border-color: #D70015;
 }
 
 .array-item-input {
     min-width: 60px;
+    outline: 1px solid #F9C67F;
 }
 
 .array-item-delete {
@@ -480,16 +481,12 @@ textarea {
     margin-left: 5px;
     cursor: pointer;
     padding: 2px;
-    color: #d70015;
+    color: #D70015;
     height: 18px;
     font-size: 18px;
 }
 
 /***** table *****/
-.table {
-    padding: 0 !important;
-}
-
 table {
     width: 100%;
     text-align: left;
@@ -521,7 +518,7 @@ table .fa:hover {
 
 /***** radio, check *****/
 .radio, .checkbox {
-    padding-right: 0 !important;
+    width: 100%;
 }
 
 .radio-option, .checkbox-option {
@@ -566,7 +563,7 @@ table .fa:hover {
     height: 9px;
     background-color: transparent;
     border: 2px solid #FFF;
-    box-shadow: 0 0 0 2px #0b57d0;
+    box-shadow: 0 0 0 2px #0B57D0;
     transition: all .2s ease;
     transform-origin: center center;
 }
@@ -577,5 +574,5 @@ table .fa:hover {
 
 .radio-input:checked + .radio-disc,
 .checkbox-input:checked + .checkbox-square {
-    background-color: #0b57d0;
+    background-color: #0B57D0;
 }

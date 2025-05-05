@@ -35,7 +35,7 @@ class preferencesPlugin extends BasePlugin {
         }
 
         // Callback functions for type="action" options in schema
-        this.SETTING_ACTIONS = {
+        this.ACTION_HANDLERS = {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
             viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
             backupSettings: async () => this.utils.settings.backupSettingFile(),
@@ -65,8 +65,8 @@ class preferencesPlugin extends BasePlugin {
             },
         }
 
-        // External value for some options in schema
-        this.EXTERNAL_VALUES = {
+        // Values for type="external" options in schema
+        this.EXTERNAL_HANDLERS = {
             pluginVersion: async () => this.utils.getPluginVersion(),
         }
 
@@ -120,18 +120,19 @@ class preferencesPlugin extends BasePlugin {
             })
         }
         const formEvents = () => {
-            this.entities.form.addEventListener("form-event", async ev => {
+            this.entities.form.addEventListener("form-curd", async ev => {
                 const { key, value, type = "set" } = ev.detail
-                if (this.utils.nestedPropertyHelpers.hasOwnProperty(type)) {
+                const propHandler = this.utils.nestedPropertyHelpers[type]
+                if (propHandler) {
                     const fixedName = this.entities.form.dataset.plugin
                     const settings = await this._getSettings(fixedName)
-                    this.utils.nestedPropertyHelpers[type](settings, key, value)
+                    propHandler(settings, key, value)
                     await this.utils.settings.saveSettings(fixedName, settings)
-                } else if (type === "action" && this.SETTING_ACTIONS.hasOwnProperty(key)) {
-                    const fn = this.SETTING_ACTIONS[key]
-                    if (fn) {
-                        await fn()
-                    }
+                    return
+                }
+                const actionHandler = type === "action" && this.ACTION_HANDLERS[key]
+                if (actionHandler) {
+                    await actionHandler()
                 }
             })
         }
@@ -180,9 +181,10 @@ class preferencesPlugin extends BasePlugin {
         const values = await this._addExternalValues(fixedName, settings)
         this.entities.form.dataset.plugin = fixedName
         this.entities.form.render(this.SETTING_SCHEMAS[fixedName], values)
-        this.entities.title.textContent = this.i18n._t(fixedName, "pluginName")
-        this.entities.menu.querySelectorAll(".plugin-preferences-menu-item").forEach(e => e.classList.remove("active"))
-        this.entities.menu.querySelector(`.plugin-preferences-menu-item[data-plugin="${fixedName}"]`).classList.add("active")
+        this.entities.menu.querySelectorAll(".active").forEach(e => e.classList.remove("active"))
+        const menuItem = this.entities.menu.querySelector(`.plugin-preferences-menu-item[data-plugin="${fixedName}"]`)
+        menuItem.classList.add("active")
+        this.entities.title.textContent = menuItem.textContent
         $(this.entities.main).animate({ scrollTop: 0 }, 300)
     }
 
@@ -194,12 +196,13 @@ class preferencesPlugin extends BasePlugin {
     }
 
     _addExternalValues = async (fixedName, settings) => {
+        const handler = this.EXTERNAL_HANDLERS
         await Promise.all(
             this.SETTING_SCHEMAS[fixedName].flatMap(box => {
                 return box.fields
                     .map(field => field.key)
-                    .filter(key => key && this.EXTERNAL_VALUES.hasOwnProperty(key))
-                    .map(async key => settings[key] = await this.EXTERNAL_VALUES[key](key, settings))
+                    .filter(key => key && handler.hasOwnProperty(key))
+                    .map(async key => settings[key] = await handler[key]())
             })
         )
         return settings
@@ -207,59 +210,70 @@ class preferencesPlugin extends BasePlugin {
 
     _initForm = () => this.entities.form.init(this.utils, { objectFormat: this.config.OBJECT_SETTINGS_FORMAT })
 
+    /** Will NOT modify the schemas structure, just i18n */
     _initSchemas = () => {
-        this.SETTING_SCHEMAS = require("./schemas.js")
-        this._translateSchema(this.SETTING_SCHEMAS)
-    }
+        const specialProps = ["options", "thMap"]
+        const baseProps = ["label", "tooltip", "placeholder"]
+        const commonProps = [...baseProps, "title", "unit"]
 
-    _translateSchema = (schemas) => {
         const i18nData = this.i18n.noConflict.data
-        const specialProperties = ["options", "thMap"]
-        const baseProperties = ["label", "tooltip", "placeholder"]
-        const common = Object.fromEntries(
-            [...baseProperties, "title", "unit"].map(prop => {
-                const value = this.utils.pickBy(i18nData.settings, (val, key) => key.startsWith(`$${prop}.`))
-                return [prop, value]
+        const commonI18N = Object.fromEntries(
+            commonProps.map(prop => {
+                const val = this.utils.pickBy(i18nData.settings, (val, key) => key.startsWith(`$${prop}.`))
+                return [prop, val]
             })
         )
 
-        const translateBox = (box, settingI18N) => {
-            const t = box.title
-            if (t) {
-                const commonValue = common.title[t]
-                const pluginValue = settingI18N[t]
-                box.title = commonValue || pluginValue
-            }
-            box.fields.forEach(field => {
-                baseProperties.forEach(prop => {
-                    const propVal = field[prop]
-                    if (propVal != null) {
-                        const commonValue = common[prop][propVal]
-                        const pluginValue = settingI18N[propVal]
-                        field[prop] = commonValue || pluginValue
-                    }
-                })
-                specialProperties.forEach(prop => {
-                    const propVal = field[prop]
-                    if (propVal != null) {
-                        Object.keys(propVal).forEach(k => {
-                            const i18nKey = propVal[k]
-                            propVal[k] = settingI18N[i18nKey]
-                        })
-                    }
-                })
-                if (field.unit != null) {
-                    field.unit = common.unit[field.unit]
-                }
-                if (field.nestBoxes != null) {
-                    field.nestBoxes.forEach(box => translateBox(box, settingI18N))
+        const translateFieldBaseProps = (field, pluginI18N) => {
+            baseProps.forEach(prop => {
+                const propVal = field[prop]
+                if (propVal != null) {
+                    const commonVal = commonI18N[prop][propVal]
+                    const pluginVal = pluginI18N[propVal]
+                    field[prop] = commonVal || pluginVal
                 }
             })
         }
+        const translateFieldSpecialProps = (field, pluginI18N) => {
+            specialProps.forEach(prop => {
+                const propVal = field[prop]
+                if (propVal != null) {
+                    Object.keys(propVal).forEach(k => {
+                        const i18nKey = propVal[k]
+                        propVal[k] = pluginI18N[i18nKey]
+                    })
+                }
+            })
+        }
+        const translateFieldNestedBoxesProp = (field, pluginI18N) => {
+            if (field.nestedBoxes != null) {
+                field.nestedBoxes.forEach(box => translateBox(box, pluginI18N))
+            }
+        }
+        const translateFieldUnitProp = (field) => {
+            if (field.unit != null) {
+                field.unit = commonI18N.unit[field.unit]
+            }
+        }
+        const translateBox = (box, pluginI18N) => {
+            const t = box.title
+            if (t) {
+                const commonVal = commonI18N.title[t]
+                const pluginVal = pluginI18N[t]
+                box.title = commonVal || pluginVal
+            }
+            box.fields.forEach(field => {
+                translateFieldBaseProps(field, pluginI18N)
+                translateFieldSpecialProps(field, pluginI18N)
+                translateFieldNestedBoxesProp(field, pluginI18N)
+                translateFieldUnitProp(field)
+            })
+        }
 
-        Object.entries(schemas).forEach(([fixedName, boxes]) => {
-            const settingI18N = i18nData[fixedName]
-            boxes.forEach(box => translateBox(box, settingI18N))
+        this.SETTING_SCHEMAS = require("./schemas.js")
+        Object.entries(this.SETTING_SCHEMAS).forEach(([fixedName, boxes]) => {
+            const pluginI18N = i18nData[fixedName]
+            boxes.forEach(box => translateBox(box, pluginI18N))
         })
     }
 }

@@ -30,7 +30,7 @@ class drawIOPlugin extends BaseCustomPlugin {
     }
 
     create = async ($wrap, content) => {
-        const graphConfig = this._getConfig(content)
+        const graphConfig = this.utils.safeEval(content)
         if (!graphConfig.source && !graphConfig.xml) {
             throw new Error(this.i18n.t("error.messingSource"))
         }
@@ -39,8 +39,6 @@ class drawIOPlugin extends BaseCustomPlugin {
         this._refresh()
         return $wrap[0]
     }
-
-    _getConfig = content => new Function(`return (${content})`)()
 
     _setXML = async graphConfig => {
         if (graphConfig.xml) return
