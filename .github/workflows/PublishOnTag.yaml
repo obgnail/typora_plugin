@@ -28,9 +28,10 @@ jobs:
           VERSION_JSON="plugin/bin/version.json"
           PLUGIN_VERSION="${{ steps.get_latest_tag.outputs.tag }}"
           ZIP_NAME="${PLUGIN_NAME}@v${PLUGIN_VERSION}.zip"
+          PUBLISHED_AT=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
           echo "Creating $VERSION_JSON"
-          echo "{ \"tag_name\": \"${PLUGIN_VERSION}\", \"name\": \"${PLUGIN_VERSION}\" }" > $VERSION_JSON
+          echo "{ \"tag_name\": \"${PLUGIN_VERSION}\", \"name\": \"${PLUGIN_VERSION}\", \"published_at\": \"${PUBLISHED_AT}\" }" > $VERSION_JSON
 
           echo "Creating zip archive: $ZIP_NAME"
           zip -r "$ZIP_NAME" plugin/
