@@ -1405,6 +1405,7 @@
     "MD055": "Inconsistent table pipe style",
     "MD056": "Inconsistent number of table cells per row",
     "MD058": "Tables must be surrounded by blank lines",
+    "MD059": "Link text must be descriptive",
     "MD101": "MathBlocks must be surrounded by blank lines",
     "$label.modal_width": "Width",
     "$label.modal_max_height": "Max Height",
