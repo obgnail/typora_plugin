@@ -10,62 +10,71 @@ const Static = (key) => {
     const label = Label(key)
     return { type: "static", key, label }
 }
-const Switch = (key, tooltip, disabled, dependencies) => {
+const Switch = (key, { tooltip, disabled, dependencies, ...args } = {}) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
-    return { type: "switch", key, label, tooltip, disabled, dependencies }
+    return { type: "switch", key, label, tooltip, disabled, dependencies, ...args }
 }
-const Text = (key, tooltip, placeholder, disabled, dependencies) => {
+const Text = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {}) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
     placeholder = Placeholder(placeholder)
-    return { type: "text", key, label, tooltip, placeholder, disabled, dependencies }
+    return { type: "text", key, label, tooltip, placeholder, disabled, dependencies, ...args }
 }
-const Hotkey = (key, tooltip, placeholder, disabled, dependencies) => {
+const Hotkey = (key, { tooltip, placeholder, disabled, dependencies, ...args } = {}) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
     placeholder = Placeholder(placeholder)
-    return { type: "hotkey", key, label, tooltip, placeholder, disabled, dependencies }
+    return { type: "hotkey", key, label, tooltip, placeholder, disabled, dependencies, ...args }
 }
-const Number = (key, tooltip, unit, min, max, step, dependencies) => {
+const Number = (key, { tooltip, unit, min, max, step, dependencies, ...args } = {}) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
-    return { type: "number", key, unit, min, max, step, label, tooltip, dependencies }
+    return { type: "number", key, unit, min, max, step, label, tooltip, dependencies, ...args }
 }
-const Range = (key, tooltip, min, max, step, dependencies) => {
+const Range = (key, { tooltip, min, max, step, dependencies, ...args } = {}) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
-    return { type: "range", key, min, max, step, label, tooltip, dependencies }
+    return { type: "range", key, min, max, step, label, tooltip, dependencies, ...args }
 }
-const Select = (key, options, tooltip, minItems, maxItems, dependencies) => {
+const Select = (key, options, { tooltip, minItems, maxItems, dependencies, ...args } = {}) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
-    return { type: "select", key, label, tooltip, options, minItems, maxItems, dependencies }
+    return { type: "select", key, label, tooltip, options, minItems, maxItems, dependencies, ...args }
 }
 
 const UntitledBox = (...fields) => ({ title: undefined, fields })
 const TitledBox = (title, ...fields) => ({ title: `$title.${title}`, fields })
 
-const ArrayBox = (key, dependencies) => TitledBox(key, { type: "array", key, dependencies })
-const ObjectBOX = (key, rows = 10, dependencies) => TitledBox(key, { type: "object", key, rows, dependencies })
-const TextareaBox = (key, rows = 10, dependencies) => TitledBox(key, { type: "textarea", key, rows, dependencies })
-const RadioBox = (key, options, dependencies) => TitledBox(key, { type: "radio", key, options, dependencies })
-const CheckboxBox = (key, options, minItems, maxItems, dependencies) => TitledBox(key, { type: "checkbox", options, key, minItems, maxItems, dependencies })
-const TableBox = (key, ths, nestedBoxes, defaultValues, dependencies) => TitledBox(key, {
+const ObjectBOX = (key, { rows = 10, dependencies, ...args } = {}) => TitledBox(key, { type: "object", key, rows, dependencies, ...args })
+const TextareaBox = (key, { rows = 10, dependencies, ...args } = {}) => TitledBox(key, { type: "textarea", key, rows, dependencies, ...args })
+const ArrayBox = (key, { dependencies, ...args } = {}) => TitledBox(key, { type: "array", key, dependencies, ...args })
+const RadioBox = (key, options, { dependencies, ...args } = {}) => TitledBox(key, { type: "radio", key, options, dependencies, ...args })
+const CheckboxBox = (key, options, { minItems, maxItems, dependencies, ...args } = {}) => TitledBox(key, {
+    type: "checkbox",
+    options,
+    key,
+    minItems,
+    maxItems,
+    dependencies,
+    ...args,
+})
+const TableBox = (key, ths, nestedBoxes, defaultValues, { dependencies, ...args } = {}) => TitledBox(key, {
     type: "table",
     key,
     nestedBoxes,
     defaultValues,
     dependencies,
     thMap: Object.fromEntries(ths.map(th => [th, `$label.${key}.${th}`])),
+    ...args,
 })
 
 const prop_ENABLE = Switch("ENABLE")
-const prop_NAME = Text("NAME", undefined, "defaultIfEmpty")
+const prop_NAME = Text("NAME", { placeholder: "defaultIfEmpty" })
 const prop_HOTKEY = Hotkey("HOTKEY")
 const prop_enable = Switch("enable")
 const prop_hide = Switch("hide")
-const prop_name = Text("name", undefined, "defaultIfEmpty")
+const prop_name = Text("name", { placeholder: "defaultIfEmpty" })
 const prop_order = Number("order")
 const prop_hotkey = Hotkey("hotkey")
 
@@ -75,8 +84,18 @@ const customPluginLiteBasePropBox = UntitledBox(prop_enable, prop_hide, prop_nam
 const customPluginFullBasePropBox = UntitledBox(prop_enable, prop_hide, prop_name, prop_order, prop_hotkey)
 const handleSettingsBox = UntitledBox(Action("runtimeSettings"), Action("restoreSettings"))
 
-const langModeBox = TitledBox("fenceLanguageMode", Text("LANGUAGE", "protected", undefined, true), Switch("INTERACTIVE_MODE"))
-const chartStyleBox = TitledBox("diagramStyle", Text("DEFAULT_FENCE_HEIGHT"), Text("DEFAULT_FENCE_BACKGROUND_COLOR"))
+const protectedAttrs = { tooltip: "protected", disabled: true }
+
+const langModeBox = TitledBox(
+    "fenceLanguageMode",
+    Text("LANGUAGE", protectedAttrs),
+    Switch("INTERACTIVE_MODE"),
+)
+const chartStyleBox = TitledBox(
+    "diagramStyle",
+    Text("DEFAULT_FENCE_HEIGHT"),
+    Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
+)
 
 const OPTIONS = {
     global: {
@@ -158,9 +177,9 @@ const UNITS = {
 const SETTING_SCHEMAS = {
     global: [
         UntitledBox(
-            Switch("ENABLE", "protected", true),
+            Switch("ENABLE", protectedAttrs),
             Select("LOCALE", OPTIONS.global.LOCALE),
-            Select("EXIT_INTERACTIVE_MODE", OPTIONS.global.EXIT_INTERACTIVE_MODE, undefined, 1),
+            Select("EXIT_INTERACTIVE_MODE", OPTIONS.global.EXIT_INTERACTIVE_MODE, { minItems: 1 }),
         ),
         UntitledBox(
             Action("openSettingsFolder"),
@@ -183,10 +202,10 @@ const SETTING_SCHEMAS = {
             Switch("SHOW_TAB_CLOSE_BUTTON"),
             Switch("TRIM_FILE_EXT"),
             Switch("SHOW_DIR_ON_DUPLICATE"),
-            Switch("HIDE_WINDOW_TITLE_BAR", "hideTitleBar"),
+            Switch("HIDE_WINDOW_TITLE_BAR", { tooltip: "hideTitleBar" }),
             Text("TAB_MIN_WIDTH"),
             Text("TAB_MAX_WIDTH"),
-            Number("MAX_TAB_NUM", "minusOne", undefined, -1),
+            Number("MAX_TAB_NUM", { tooltip: "minusOne", min: -1 }),
             Select("CONTEXT_MENU", OPTIONS.window_tab.CONTEXT_MENU),
         ),
         TitledBox(
@@ -202,18 +221,19 @@ const SETTING_SCHEMAS = {
             Switch("MIDDLE_CLICK_TO_CLOSE"),
             Switch("SHOW_FULL_PATH_WHEN_HOVER"),
             Switch("JETBRAINS_DRAG_STYLE"),
-            Switch("LOCK_DRAG_Y_AXIS", undefined, undefined, { JETBRAINS_DRAG_STYLE: true }),
-            Switch("LIMIT_TAB_Y_AXIS_WHEN_DRAG", undefined, undefined, { JETBRAINS_DRAG_STYLE: true, LOCK_DRAG_Y_AXIS: false }),
+            Switch("LOCK_DRAG_Y_AXIS", { dependencies: { JETBRAINS_DRAG_STYLE: true } }),
+            Switch("LIMIT_TAB_Y_AXIS_WHEN_DRAG", { dependencies: { JETBRAINS_DRAG_STYLE: true, LOCK_DRAG_Y_AXIS: false } }),
             Number(
                 "Y_AXIS_LIMIT_THRESHOLD",
-                "noVerticalMovement",
-                undefined,
-                0.1,
-                3,
-                0.1,
-                { JETBRAINS_DRAG_STYLE: true, LIMIT_TAB_Y_AXIS_WHEN_DRAG: true, LOCK_DRAG_Y_AXIS: false }
+                {
+                    tooltip: "noVerticalMovement",
+                    min: 0.1,
+                    max: 3,
+                    step: 0.1,
+                    dependencies: { JETBRAINS_DRAG_STYLE: true, LIMIT_TAB_Y_AXIS_WHEN_DRAG: true, LOCK_DRAG_Y_AXIS: false }
+                }
             ),
-            Number("DRAG_NEW_WINDOW_THRESHOLD", "newWindow", undefined, -1),
+            Number("DRAG_NEW_WINDOW_THRESHOLD", { tooltip: "newWindow", min: -1 }),
         ),
         ArrayBox("CLOSE_HOTKEY"),
         ArrayBox("SWITCH_PREVIOUS_TAB_HOTKEY"),
@@ -228,8 +248,8 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "search",
             Switch("CASE_SENSITIVE"),
-            Switch("OPTIMIZE_SEARCH", "blockOrder"),
-            Number("MAX_SIZE", "maxBytes", UNITS.byte, 1, 2000000),
+            Switch("OPTIMIZE_SEARCH", { tooltip: "blockOrder" }),
+            Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
         ),
         TitledBox(
             "searchResult",
@@ -237,7 +257,7 @@ const SETTING_SCHEMAS = {
             Switch("SHOW_EXT"),
             Switch("SHOW_MTIME"),
             Switch("REMOVE_BUTTON_HINT"),
-            Number("MAX_HITS", undefined, undefined, 1),
+            Number("MAX_HITS", { min: 1 }),
         ),
         TitledBox(
             "windowInteraction",
@@ -295,11 +315,11 @@ const SETTING_SCHEMAS = {
             Text("SHOW_TEXT"),
             Switch("READ_ONLY_DEFAULT"),
             Switch("NO_EXPAND_WHEN_READ_ONLY"),
-            Switch("REMOVE_EXPAND_WHEN_READ_ONLY", undefined, undefined, { NO_EXPAND_WHEN_READ_ONLY: false }),
+            Switch("REMOVE_EXPAND_WHEN_READ_ONLY", { dependencies: { NO_EXPAND_WHEN_READ_ONLY: false } }),
             Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
             Switch("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY"),
         ),
-        ArrayBox("REMAIN_AVAILABLE_MENU_KEY", { DISABLE_CONTEXT_MENU_WHEN_READ_ONLY: true }),
+        ArrayBox("REMAIN_AVAILABLE_MENU_KEY", { dependencies: { DISABLE_CONTEXT_MENU_WHEN_READ_ONLY: true } }),
         handleSettingsBox,
     ],
     blur: [
@@ -308,7 +328,7 @@ const SETTING_SCHEMAS = {
             Switch("BLUR_DEFAULT"),
             Switch("RESTORE_WHEN_HOVER"),
             Select("BLUR_TYPE", OPTIONS.blur.BLUR_TYPE),
-            Number("BLUR_LEVEL", undefined, UNITS.pixel, 1, undefined, undefined, { BLUR_TYPE: "blur" }),
+            Number("BLUR_LEVEL", { unit: UNITS.pixel, min: 1, dependencies: { BLUR_TYPE: "blur" } }),
         ),
         handleSettingsBox,
     ],
@@ -324,8 +344,8 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Switch("DEFAULT_NO_IMAGE_MODE"),
             Switch("RESHOW_WHEN_HOVER"),
-            Number("TRANSITION_DURATION", undefined, UNITS.millisecond, 0),
-            Number("TRANSITION_DELAY", undefined, UNITS.millisecond, 0),
+            Number("TRANSITION_DURATION", { unit: UNITS.millisecond, min: 0 }),
+            Number("TRANSITION_DELAY", { unit: UNITS.millisecond, min: 0 }),
         ),
         handleSettingsBox,
     ],
@@ -333,8 +353,8 @@ const SETTING_SCHEMAS = {
         pluginFullBasePropBox,
         TitledBox(
             "searchBarPosition",
-            Range("TOOLBAR_TOP_PERCENT", undefined, 0, 100, 1),
-            Range("TOOLBAR_WIDTH_PERCENT", undefined, 0, 100, 1),
+            Range("TOOLBAR_TOP_PERCENT", { min: 0, max: 100, step: 1 }),
+            Range("TOOLBAR_WIDTH_PERCENT", { min: 0, max: 100, step: 1 }),
         ),
         TitledBox(
             "windowInteraction",
@@ -345,8 +365,8 @@ const SETTING_SCHEMAS = {
             "input",
             Select("DEFAULT_TOOL", OPTIONS.toolbar.DEFAULT_TOOL),
             Switch("USE_NEGATIVE_SEARCH"),
-            Switch("PAUSE_ON_COMPOSITION", "pauseOnComposition"),
-            Number("DEBOUNCE_INTERVAL", undefined, UNITS.millisecond, 0),
+            Switch("PAUSE_ON_COMPOSITION", { tooltip: "pauseOnComposition" }),
+            Number("DEBOUNCE_INTERVAL", { unit: UNITS.millisecond, min: 0 }),
         ),
         handleSettingsBox,
     ],
@@ -360,7 +380,7 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "modificationKeys",
-            Hotkey("MODIFIER_KEY.TEMPORARY", "modifyKeyExample"),
+            Hotkey("MODIFIER_KEY.TEMPORARY", { tooltip: "modifyKeyExample" }),
             Hotkey("MODIFIER_KEY.PERSISTENT"),
         ),
         handleSettingsBox,
@@ -370,7 +390,7 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Switch("RECORD_RESIZE"),
             Switch("REMOVE_MIN_CELL_WIDTH"),
-            Number("DRAG_THRESHOLD", undefined, UNITS.pixel, 0),
+            Number("DRAG_THRESHOLD", { unit: UNITS.pixel, min: 0 }),
         ),
         handleSettingsBox,
     ],
@@ -384,7 +404,7 @@ const SETTING_SCHEMAS = {
             Switch("CASE_INSENSITIVE"),
             Switch("SCROLL_COLLAPSE"),
             Switch("PAGING"),
-            Number("PAGE_LENGTH", undefined, UNITS.item, 1),
+            Number("PAGE_LENGTH", { unit: UNITS.item, min: 1 }),
         ),
         handleSettingsBox,
     ],
@@ -408,12 +428,12 @@ const SETTING_SCHEMAS = {
             Switch("AUTO_FIT_WHEN_UPDATE"),
             Switch("KEEP_FOLD_STATE_WHEN_UPDATE"),
             Switch("CLICK_TO_POSITIONING"),
-            Switch("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", "experimental"),
-            Range("POSITIONING_VIEWPORT_HEIGHT", "positioningViewPort", 0.1, 0.95, 0.01),
-            Range("WIDTH_PERCENT_WHEN_INIT", undefined, 20, 95, 1),
-            Range("HEIGHT_PERCENT_WHEN_INIT", undefined, 20, 95, 1),
-            Range("HEIGHT_PERCENT_WHEN_PIN_TOP", undefined, 20, 95, 1),
-            Range("WIDTH_PERCENT_WHEN_PIN_RIGHT", undefined, 20, 95, 1),
+            Switch("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", { tooltip: "experimental" }),
+            Range("POSITIONING_VIEWPORT_HEIGHT", { tooltip: "positioningViewPort", min: 0.1, max: 0.95, step: 0.01 }),
+            Range("WIDTH_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1 }),
+            Range("HEIGHT_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1 }),
+            Range("HEIGHT_PERCENT_WHEN_PIN_TOP", { min: 20, max: 95, step: 1 }),
+            Range("WIDTH_PERCENT_WHEN_PIN_RIGHT", { min: 20, max: 95, step: 1 }),
             Text("NODE_BORDER_WHEN_HOVER"),
         ),
         TitledBox(
@@ -421,14 +441,14 @@ const SETTING_SCHEMAS = {
             Switch("DEFAULT_TOC_OPTIONS.zoom"),
             Switch("DEFAULT_TOC_OPTIONS.pan"),
             Switch("DEFAULT_TOC_OPTIONS.autoFit"),
-            Range("DEFAULT_TOC_OPTIONS.initialExpandLevel", undefined, 1, 6, 1),
-            Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel", undefined, 1, 6, 1),
-            Range("DEFAULT_TOC_OPTIONS.fitRatio", undefined, 0.5, 1, 0.01),
-            Number("DEFAULT_TOC_OPTIONS.maxWidth", "zero", UNITS.pixel, 0, 100, 5),
-            Number("DEFAULT_TOC_OPTIONS.spacingHorizontal", undefined, UNITS.pixel, 0, 100, 5),
-            Number("DEFAULT_TOC_OPTIONS.spacingVertical", undefined, UNITS.pixel, 0, 100, 5),
-            Number("DEFAULT_TOC_OPTIONS.paddingX", undefined, UNITS.pixel, 0, 100, 5),
-            Number("DEFAULT_TOC_OPTIONS.duration", undefined, UNITS.millisecond, 0, 1000, 10),
+            Range("DEFAULT_TOC_OPTIONS.initialExpandLevel", { min: 1, max: 6, step: 1 }),
+            Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel", { min: 1, max: 6, step: 1 }),
+            Range("DEFAULT_TOC_OPTIONS.fitRatio", { min: 0.5, max: 1, step: 0.01 }),
+            Number("DEFAULT_TOC_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 100, step: 5 }),
+            Number("DEFAULT_TOC_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 100, step: 5 }),
+            Number("DEFAULT_TOC_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 100, step: 5 }),
+            Number("DEFAULT_TOC_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 5 }),
+            Number("DEFAULT_TOC_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10 }),
         ),
         ArrayBox("DEFAULT_TOC_OPTIONS.color"),
         ObjectBOX("CANDIDATE_COLOR_SCHEMES"),
@@ -436,14 +456,14 @@ const SETTING_SCHEMAS = {
             "mindmapDiagramExport",
             Switch("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL"),
             Switch("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES"),
-            Switch("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", "removeForeignObj"),
+            Switch("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", { tooltip: "removeForeignObj" }),
             Switch("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG"),
             Switch("DOWNLOAD_OPTIONS.SHOW_IN_FINDER"),
-            Range("DOWNLOAD_OPTIONS.IMAGE_QUALITY", undefined, 0.01, 1, 0.01),
-            Number("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", undefined, UNITS.pixel, 1, 1000, 1),
-            Number("DOWNLOAD_OPTIONS.PADDING_VERTICAL", undefined, UNITS.pixel, 1, 1000, 1),
+            Range("DOWNLOAD_OPTIONS.IMAGE_QUALITY", { min: 0.01, max: 1, step: 0.01 }),
+            Number("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", { unit: UNITS.pixel, min: 1, max: 1000, step: 1 }),
+            Number("DOWNLOAD_OPTIONS.PADDING_VERTICAL", { unit: UNITS.pixel, min: 1, max: 1000, step: 1 }),
             Text("DOWNLOAD_OPTIONS.FILENAME"),
-            Text("DOWNLOAD_OPTIONS.FOLDER", "tempDir"),
+            Text("DOWNLOAD_OPTIONS.FOLDER", { tooltip: "tempDir" }),
             Text("DOWNLOAD_OPTIONS.BACKGROUND_COLOR"),
             Text("DOWNLOAD_OPTIONS.TEXT_COLOR"),
             Text("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR"),
@@ -453,7 +473,7 @@ const SETTING_SCHEMAS = {
             Switch("ENABLE_FENCE_MARKMAP"),
             Switch("INTERACTIVE_MODE"),
             Hotkey("FENCE_HOTKEY"),
-            Text("FENCE_LANGUAGE", "protected", undefined, true),
+            Text("FENCE_LANGUAGE", protectedAttrs),
             Text("DEFAULT_FENCE_HEIGHT"),
             Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
         ),
@@ -461,14 +481,14 @@ const SETTING_SCHEMAS = {
             "fenceDiagramDefaultOptions",
             Switch("DEFAULT_FENCE_OPTIONS.zoom"),
             Switch("DEFAULT_FENCE_OPTIONS.pan"),
-            Range("DEFAULT_FENCE_OPTIONS.initialExpandLevel", undefined, 1, 6, 1),
-            Range("DEFAULT_FENCE_OPTIONS.colorFreezeLevel", undefined, 1, 6, 1),
-            Range("DEFAULT_FENCE_OPTIONS.fitRatio", undefined, 0.5, 1, 0.01),
-            Number("DEFAULT_FENCE_OPTIONS.maxWidth", "zero", UNITS.pixel, 0, 1000, 10),
-            Number("DEFAULT_FENCE_OPTIONS.spacingHorizontal", undefined, UNITS.pixel, 0, 200, 1),
-            Number("DEFAULT_FENCE_OPTIONS.spacingVertical", undefined, UNITS.pixel, 0, 100, 1),
-            Number("DEFAULT_FENCE_OPTIONS.paddingX", undefined, UNITS.pixel, 0, 100, 1),
-            Number("DEFAULT_FENCE_OPTIONS.duration", undefined, UNITS.millisecond, 0, 1000, 10),
+            Range("DEFAULT_FENCE_OPTIONS.initialExpandLevel", { min: 1, max: 6, step: 1 }),
+            Range("DEFAULT_FENCE_OPTIONS.colorFreezeLevel", { min: 1, max: 6, step: 1 }),
+            Range("DEFAULT_FENCE_OPTIONS.fitRatio", { min: 0.5, max: 1, step: 0.01 }),
+            Number("DEFAULT_FENCE_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 1000, step: 10 }),
+            Number("DEFAULT_FENCE_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 200, step: 1 }),
+            Number("DEFAULT_FENCE_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 200, step: 1 }),
+            Number("DEFAULT_FENCE_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 1 }),
+            Number("DEFAULT_FENCE_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10 }),
             Text("DEFAULT_FENCE_OPTIONS.height"),
             Text("DEFAULT_FENCE_OPTIONS.backgroundColor"),
         ),
@@ -489,9 +509,9 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "style",
-            Switch("SHOW_IMAGE_NAME", undefined, undefined, { ENABLE_IMAGE: true }),
+            Switch("SHOW_IMAGE_NAME", { dependencies: { ENABLE_IMAGE: true } }),
             Select("ALIGN", OPTIONS.auto_number.ALIGN),
-            Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE, undefined, undefined, undefined, { ENABLE_TABLE: true }),
+            Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE, { dependencies: { ENABLE_TABLE: true } }),
             Text("FONT_FAMILY"),
         ),
         TableBox(
@@ -565,14 +585,14 @@ const SETTING_SCHEMAS = {
             Switch("ENABLE_BUTTON"),
             Switch("AUTO_HIDE"),
             Switch("REMOVE_BUTTON_HINT"),
-            Range("BUTTON_OPACITY", undefined, 0, 1, 0.05),
-            Range("BUTTON_OPACITY_HOVER", undefined, 0, 1, 0.05),
+            Range("BUTTON_OPACITY", { min: 0, max: 1, step: 0.05 }),
+            Range("BUTTON_OPACITY_HOVER", { min: 0, max: 1, step: 0.05 }),
             Text("BUTTON_SIZE"),
             Text("BUTTON_COLOR"),
             Text("BUTTON_MARGIN"),
             Text("BUTTON_TOP"),
             Text("BUTTON_RIGHT"),
-            Number("WAIT_RECOVER_INTERVAL", undefined, UNITS.millisecond, 500, undefined, 100),
+            Number("WAIT_RECOVER_INTERVAL", { unit: UNITS.millisecond, min: 500, step: 100 }),
         ),
         TitledBox(
             "buttons",
@@ -580,12 +600,12 @@ const SETTING_SCHEMAS = {
             Switch("ENABLE_INDENT"),
             Switch("ENABLE_FOLD"),
             Switch("DEFAULT_FOLD"),
-            Number("DEFAULT_FOLD_THRESHOLD", undefined, UNITS.line, 0, undefined, 1),
+            Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1 }),
         ),
         TitledBox(
             "buttonHotkeys",
             Switch("ENABLE_HOTKEY"),
-            Text("SWAP_PREVIOUS_LINE", "codeMirrorStyle"),
+            Text("SWAP_PREVIOUS_LINE", { tooltip: "codeMirrorStyle" }),
             Text("SWAP_NEXT_LINE"),
             Text("COPY_PREVIOUS_LINE"),
             Text("COPY_NEXT_LINE"),
@@ -634,7 +654,7 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "modifierKey",
-            Hotkey("MODIFIER_KEY.COLLAPSE_SINGLE", "modifierKeyExample"),
+            Hotkey("MODIFIER_KEY.COLLAPSE_SINGLE", { tooltip: "modifierKeyExample" }),
             Hotkey("MODIFIER_KEY.COLLAPSE_SIBLINGS"),
             Hotkey("MODIFIER_KEY.COLLAPSE_ALL_SIBLINGS"),
             Hotkey("MODIFIER_KEY.COLLAPSE_RECURSIVE"),
@@ -663,7 +683,7 @@ const SETTING_SCHEMAS = {
             Hotkey("HIDE_FRONT_HOTKEY"),
             Hotkey("SHOW_ALL_HOTKEY"),
             Hotkey("HIDE_BASE_VIEW_HOTKEY"),
-            Number("REMAIN_LENGTH", undefined, undefined, 1),
+            Number("REMAIN_LENGTH", { min: 1 }),
         ),
         handleSettingsBox,
     ],
@@ -672,7 +692,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "networkImage",
             Switch("DOWNLOAD_NETWORK_IMAGE"),
-            Number("DOWNLOAD_THREADS", undefined, undefined, 1, undefined, undefined, { DOWNLOAD_NETWORK_IMAGE: true }),
+            Number("DOWNLOAD_THREADS", { min: 1, dependencies: { DOWNLOAD_NETWORK_IMAGE: true } }),
         ),
         handleSettingsBox,
     ],
@@ -706,7 +726,7 @@ const SETTING_SCHEMAS = {
             Text("DEFAULT_COLORS.FOREGROUND"),
             Text("DEFAULT_COLORS.BACKGROUND"),
             Text("DEFAULT_COLORS.BORDER"),
-            Text("DEFAULT_FORMAT_BRUSH", "brushExample"),
+            Text("DEFAULT_FORMAT_BRUSH", { tooltip: "brushExample" }),
         ),
         ObjectBOX("COLOR_TABLE"),
         handleSettingsBox,
@@ -739,7 +759,7 @@ const SETTING_SCHEMAS = {
     ],
     custom: [
         UntitledBox(
-            Switch("ENABLE", "protected", true),
+            Switch("ENABLE", protectedAttrs),
             prop_NAME
         ),
         UntitledBox(
@@ -752,7 +772,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "trigger",
             Text("TRIGGER_REGEXP"),
-            Text("FUNC_PARAM_SEPARATOR", "protected", undefined, true),
+            Text("FUNC_PARAM_SEPARATOR", protectedAttrs),
             Select("SUGGESTION_TIMING", OPTIONS.slash_commands.SUGGESTION_TIMING),
             Select("MATCH_STRATEGY", OPTIONS.slash_commands.MATCH_STRATEGY),
             Select("ORDER_STRATEGY", OPTIONS.slash_commands.ORDER_STRATEGY),
@@ -788,7 +808,7 @@ const SETTING_SCHEMAS = {
     ],
     right_click_menu: [
         UntitledBox(
-            Switch("ENABLE", "protected", true),
+            Switch("ENABLE", protectedAttrs),
             prop_NAME
         ),
         TitledBox(
@@ -820,7 +840,7 @@ const SETTING_SCHEMAS = {
     pie_menu: [
         pluginFullBasePropBox,
         UntitledBox(
-            Hotkey("MODIFIER_KEY", "example")
+            Hotkey("MODIFIER_KEY", { tooltip: "example" })
         ),
         TableBox(
             "BUTTONS",
@@ -840,7 +860,7 @@ const SETTING_SCHEMAS = {
     ],
     preferences: [
         UntitledBox(
-            Switch("ENABLE", "protected", true),
+            Switch("ENABLE", protectedAttrs),
             prop_NAME,
             prop_HOTKEY
         ),
@@ -866,8 +886,8 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "search",
-            Number("IGNORE_MIN_NUM", "ignoreMinNum", undefined, 1),
-            Number("MAX_SIZE", "maxBytes", UNITS.byte, 1, 2000000),
+            Number("IGNORE_MIN_NUM", { tooltip: "ignoreMinNum", min: 1 }),
+            Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
         ),
         ArrayBox("ALLOW_EXT"),
         ArrayBox("IGNORE_FOLDERS"),
@@ -908,7 +928,7 @@ const SETTING_SCHEMAS = {
     editor_width_slider: [
         pluginLiteBasePropBox,
         UntitledBox(
-            Number("WIDTH_RATIO", "minusOneMeansDisable", UNITS.percent, -1, 100, 1),
+            Number("WIDTH_RATIO", { tooltip: "minusOneMeansDisable", unit: UNITS.percent, min: -1, max: 100, step: 1 }),
         ),
         handleSettingsBox,
     ],
@@ -957,8 +977,8 @@ const SETTING_SCHEMAS = {
         pluginFullBasePropBox,
         TitledBox(
             "windowPosition",
-            Range("TOP_PERCENT", undefined, 0, 100, 1),
-            Range("WIDTH_PERCENT", undefined, 0, 100, 1),
+            Range("TOP_PERCENT", { min: 0, max: 100, step: 1 }),
+            Range("WIDTH_PERCENT", { min: 0, max: 100, step: 1 }),
         ),
         TitledBox(
             "interaction",
@@ -972,7 +992,7 @@ const SETTING_SCHEMAS = {
             "rpcServer",
             Switch("SERVER_OPTIONS.strict"),
             Text("SERVER_OPTIONS.host"),
-            Number("SERVER_OPTIONS.port", undefined, undefined, 0, 65535, 1),
+            Number("SERVER_OPTIONS.port", { min: 0, max: 65535, step: 1 }),
             Text("SERVER_OPTIONS.path"),
         ),
         handleSettingsBox,
@@ -985,8 +1005,8 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "autoUpdate",
             Switch("AUTO_UPDATE"),
-            Number("UPDATE_LOOP_INTERVAL", "loopInterval", UNITS.millisecond, -1, undefined, undefined, { AUTO_UPDATE: true }),
-            Number("START_UPDATE_INTERVAL", "waitInterval", UNITS.millisecond, -1, undefined, undefined, { AUTO_UPDATE: true }),
+            Number("UPDATE_LOOP_INTERVAL", { tooltip: "loopInterval", unit: UNITS.millisecond, min: -1, dependencies: { AUTO_UPDATE: true } }),
+            Number("START_UPDATE_INTERVAL", { tooltip: "waitInterval", unit: UNITS.millisecond, min: -1, dependencies: { AUTO_UPDATE: true } }),
         ),
         handleSettingsBox,
     ],
@@ -998,15 +1018,15 @@ const SETTING_SCHEMAS = {
         customPluginLiteBasePropBox,
         TitledBox(
             "fence",
-            Text("LANGUAGE", "protected", undefined, true),
+            Text("LANGUAGE", protectedAttrs),
             Switch("INTERACTIVE_MODE"),
             Switch("STRICT_MODE"),
         ),
         TitledBox(
             "kanbanStyle",
-            Number("KANBAN_WIDTH", undefined, UNITS.pixel, 1),
-            Number("KANBAN_MAX_HEIGHT", undefined, UNITS.pixel, 1),
-            Number("KANBAN_TASK_DESC_MAX_HEIGHT", "lowerThenZero", UNITS.em, -1),
+            Number("KANBAN_WIDTH", { unit: UNITS.pixel, min: 1 }),
+            Number("KANBAN_MAX_HEIGHT", { unit: UNITS.pixel, min: 1 }),
+            Number("KANBAN_TASK_DESC_MAX_HEIGHT", { tooltip: "lowerThenZero", unit: UNITS.em, min: -1 }),
             Switch("HIDE_DESC_WHEN_EMPTY"),
             Switch("WRAP"),
             Switch("CTRL_WHEEL_TO_SWITCH"),
@@ -1021,7 +1041,7 @@ const SETTING_SCHEMAS = {
         customPluginLiteBasePropBox,
         TitledBox(
             "fence",
-            Text("LANGUAGE", "protected", undefined, true),
+            Text("LANGUAGE", protectedAttrs),
             Switch("INTERACTIVE_MODE"),
             Switch("DEFAULT_OPTIONS.useStrict"),
         ),
@@ -1079,7 +1099,7 @@ const SETTING_SCHEMAS = {
         customPluginLiteBasePropBox,
         TitledBox(
             "fenceLanguageMode",
-            Text("LANGUAGE", "protected", undefined, true),
+            Text("LANGUAGE", protectedAttrs),
             Switch("INTERACTIVE_MODE"),
             Switch("SAFE_MODE"),
         ),
@@ -1099,7 +1119,7 @@ const SETTING_SCHEMAS = {
         langModeBox,
         chartStyleBox,
         TextareaBox("TEMPLATE"),
-        ObjectBOX("VISUAL_OPTIONS", 6),
+        ObjectBOX("VISUAL_OPTIONS", { rows: 6 }),
         handleSettingsBox,
     ],
     drawIO: [
@@ -1133,7 +1153,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "fontFamily",
             Text("font_family"),
-            Switch("use_network_icon_when_exporting", "messingFont"),
+            Switch("use_network_icon_when_exporting", { tooltip: "messingFont" }),
             Text("network_icon_url"),
         ),
         TitledBox(
@@ -1160,7 +1180,7 @@ const SETTING_SCHEMAS = {
                 left_line_color: ""
             },
         ),
-        TextareaBox("template", 5),
+        TextareaBox("template", { rows: 5 }),
         handleSettingsBox,
     ],
     templater: [
@@ -1240,7 +1260,7 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "tocStyle",
-            Range("width_percent_when_pin_right", undefined, 0, 100, 1),
+            Range("width_percent_when_pin_right", { min: 0, max: 100, step: 1 }),
             Text("toc_font_size"),
         ),
         TitledBox(
@@ -1265,9 +1285,9 @@ const SETTING_SCHEMAS = {
         customPluginFullBasePropBox,
         TitledBox(
             "windowPosition",
-            Range("modal_height_percent", undefined, 0, 100, 1),
-            Range("modal_width_percent", undefined, 0, 100, 1),
-            Range("modal_left_percent", undefined, 0, 100, 1),
+            Range("modal_height_percent", { min: 0, max: 100, step: 1 }),
+            Range("modal_width_percent", { min: 0, max: 100, step: 1 }),
+            Range("modal_left_percent", { min: 0, max: 100, step: 1 }),
         ),
         UntitledBox(
             Switch("ignore_img_html_element"),
@@ -1283,7 +1303,7 @@ const SETTING_SCHEMAS = {
     scrollBookmarker: [
         customPluginFullBasePropBox,
         UntitledBox(
-            Hotkey("modifier_key", "modifierKeyExample"),
+            Hotkey("modifier_key", { tooltip: "modifierKeyExample" }),
             Switch("auto_popup_modal"),
             Switch("persistence"),
         ),
@@ -1293,27 +1313,27 @@ const SETTING_SCHEMAS = {
         customPluginFullBasePropBox,
         TitledBox(
             "style",
-            Range("mask_background_opacity", undefined, 0, 1, 0.05),
-            Range("image_max_width", undefined, 0, 100, 1),
-            Range("image_max_height", undefined, 0, 100, 1),
+            Range("mask_background_opacity", { min: 0, max: 1, step: 0.05 }),
+            Range("image_max_width", { min: 0, max: 100, step: 1 }),
+            Range("image_max_height", { min: 0, max: 100, step: 1 }),
             Text("thumbnail_height"),
-            Number("blur_level", undefined, UNITS.pixel, 1),
-            Number("thumbnail_scroll_padding_count", undefined, undefined, 0),
-            Number("water_fall_columns", undefined, undefined, 0),
+            Number("blur_level", { unit: UNITS.pixel, min: 1 }),
+            Number("thumbnail_scroll_padding_count", { min: 0 }),
+            Number("water_fall_columns", { min: 0 }),
         ),
         TitledBox(
             "component",
             Switch("show_thumbnail_nav"),
             Select("tool_position", OPTIONS.imageReviewer.tool_position),
             Select("show_message", OPTIONS.imageReviewer.show_message),
-            Select("tool_function", OPTIONS.imageReviewer.operations, undefined, 1)
+            Select("tool_function", OPTIONS.imageReviewer.operations, { minItems: 1 })
         ),
         TitledBox(
             "behavior",
             Switch("filter_error_image"),
-            Select("first_image_strategies", OPTIONS.imageReviewer.first_image_strategies, undefined, 1),
+            Select("first_image_strategies", OPTIONS.imageReviewer.first_image_strategies, { minItems: 1 }),
             Select("thumbnail_object_fit", OPTIONS.imageReviewer.thumbnail_object_fit),
-            Number("play_second", undefined, UNITS.second, 0),
+            Number("play_second", { unit: UNITS.second, min: 0 }),
         ),
         TitledBox(
             "mouseEvent",
@@ -1352,10 +1372,10 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "adjustScale",
-            Number("zoom_scale", undefined, undefined, 0.01),
-            Number("rotate_scale", undefined, UNITS.degree, 1),
-            Number("skew_scale", undefined, UNITS.degree, 1),
-            Number("translate_scale", undefined, UNITS.pixel, 1),
+            Number("zoom_scale", { min: 0.01 }),
+            Number("rotate_scale", { unit: UNITS.degree, min: 1 }),
+            Number("skew_scale", { unit: UNITS.degree, min: 1 }),
+            Number("translate_scale", { unit: UNITS.pixel, min: 1 }),
         ),
         handleSettingsBox,
     ],
@@ -1366,24 +1386,24 @@ const SETTING_SCHEMAS = {
             Text("modal_width"),
             Text("modal_max_height"),
             Text("modal_font_size"),
-            Number("modal_line_height", undefined, UNITS.em, 0.1),
+            Number("modal_line_height", { unit: UNITS.em, min: 0.1 }),
         ),
         TitledBox(
             "cube",
             Switch("use_button"),
-            Text("button_width", undefined, undefined, undefined, { use_button: true }),
-            Text("button_height", undefined, undefined, undefined, { use_button: true }),
-            Text("pass_color", undefined, undefined, undefined, { use_button: true }),
-            Text("error_color", undefined, undefined, undefined, { use_button: true }),
+            Text("button_width", { dependencies: { use_button: true } }),
+            Text("button_height", { dependencies: { use_button: true } }),
+            Text("pass_color", { dependencies: { use_button: true } }),
+            Text("error_color", { dependencies: { use_button: true } }),
         ),
         TitledBox(
             "detectAndFix",
             Switch("translate"),
-            Select("tools", OPTIONS.markdownLint.tools, undefined, 1),
+            Select("tools", OPTIONS.markdownLint.tools, { minItems: 1 }),
             Select("result_order_by", OPTIONS.markdownLint.result_order_by),
             Hotkey("hotkey_fix_lint_error"),
         ),
-        ObjectBOX("rule_config", 15),
+        ObjectBOX("rule_config", { rows: 15 }),
         ArrayBox("custom_rules"),
         UntitledBox(
             Action("viewMarkdownlintRules"),
