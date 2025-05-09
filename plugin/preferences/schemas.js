@@ -85,6 +85,10 @@ const customPluginFullBasePropBox = UntitledBox(prop_enable, prop_hide, prop_nam
 const handleSettingsBox = UntitledBox(Action("runtimeSettings"), Action("restoreSettings"))
 
 const protectedAttrs = { tooltip: "protected", disabled: true }
+const markmapTocDep = { dependencies: { ENABLE_TOC_MARKMAP: true } }
+const markmapFenceDep = { dependencies: { ENABLE_FENCE_MARKMAP: true } }
+const fenceEnhanceButtonDep = { dependencies: { ENABLE_BUTTON: true } }
+const fenceEnhanceHotkeyDep = { dependencies: { ENABLE_HOTKEY: true } }
 
 const langModeBox = TitledBox(
     "fenceLanguageMode",
@@ -106,28 +110,29 @@ const OPTIONS = {
         CONTEXT_MENU: ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs", "copyPath", "showInFinder", "openInNewWindow", "sortTabs"],
         NEW_TAB_POSITION: ["right", "end"],
         TAB_SWITCH_ON_CLOSE: ["left", "right", "latest"],
-        LAST_TAB_CLOSE_ACTION: ["blankPage", "reconfirm", "exit"]
+        LAST_TAB_CLOSE_ACTION: ["blankPage", "reconfirm", "exit"],
+        TAB_DETACHMENT: ["free", "resistant", "lockVertical"],
     },
     commander: {
         QUICK_RUN_DISPLAY: ["echo", "always", "error", "silent"],
         COMMIT_RUN_DISPLAY: ["echo", "always"],
-        "BUILTIN.shell": ["cmd/bash", "powershell", "gitbash", "wsl"]
+        "BUILTIN.shell": ["cmd/bash", "powershell", "gitbash", "wsl"],
     },
     blur: {
-        BLUR_TYPE: ["blur", "hide"]
+        BLUR_TYPE: ["blur", "hide"],
     },
     toolbar: {
-        DEFAULT_TOOL: ["", "plu", "tab", "his", "ops", "mode", "theme", "out", "func", "all"]
+        DEFAULT_TOOL: ["", "plu", "tab", "his", "ops", "mode", "theme", "out", "func", "all"],
     },
     resize_image: {
-        IMAGE_ALIGN: ["center", "left", "right"]
+        IMAGE_ALIGN: ["center", "left", "right"],
     },
     auto_number: {
         ALIGN: ["left", "right", "center"],
-        POSITION_TABLE: ["before", "after"]
+        POSITION_TABLE: ["before", "after"],
     },
     text_stylize: {
-        TOOLBAR: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush", "move", "close"]
+        TOOLBAR: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush", "move", "close"],
     },
     slash_commands: {
         SUGGESTION_TIMING: ["on_input", "debounce"],
@@ -137,22 +142,22 @@ const OPTIONS = {
         "COMMANDS.scope": ["plain", "inline_math"],
     },
     preferences: {
-        OBJECT_SETTINGS_FORMAT: ["JSON", "TOML", "YAML"]
+        OBJECT_SETTINGS_FORMAT: ["JSON", "TOML", "YAML"],
     },
     echarts: {
         RENDERER: ["canvas", "svg"],
-        EXPORT_TYPE: ["png", "jpg", "svg"]
+        EXPORT_TYPE: ["png", "jpg", "svg"],
     },
     imageReviewer: {
         operations: ["close", "download", "scroll", "play", "location", "nextImage", "previousImage", "firstImage", "lastImage", "thumbnailNav", "waterFall", "zoomIn", "zoomOut", "rotateLeft", "rotateRight", "hFlip", "vFlip", "translateLeft", "translateRight", "translateUp", "translateDown", "incHSkew", "decHSkew", "incVSkew", "decVSkew", "originSize", "fixScreen", "autoSize", "restore", "info", "dummy"],
         tool_position: ["bottom", "top"],
         show_message: ["index", "title", "size"],
         first_image_strategies: ["inViewBoxImage", "closestViewBoxImage", "firstImage"],
-        thumbnail_object_fit: ["fill", "contain", "cover", "scale-down"]
+        thumbnail_object_fit: ["fill", "contain", "cover", "scale-down"],
     },
     markdownLint: {
         tools: ["info", "locate", "fix"],
-        result_order_by: ["lineNumber", "ruleName"]
+        result_order_by: ["lineNumber", "ruleName"],
     }
 }
 
@@ -193,7 +198,7 @@ const SETTING_SCHEMAS = {
             Action("assistWithTranslations"),
             Action("updatePlugin"),
             Static("pluginVersion"),
-        )
+        ),
     ],
     window_tab: [
         pluginLiteBasePropBox,
@@ -221,18 +226,8 @@ const SETTING_SCHEMAS = {
             Switch("MIDDLE_CLICK_TO_CLOSE"),
             Switch("SHOW_FULL_PATH_WHEN_HOVER"),
             Switch("JETBRAINS_DRAG_STYLE"),
-            Switch("LOCK_DRAG_Y_AXIS", { dependencies: { JETBRAINS_DRAG_STYLE: true } }),
-            Switch("LIMIT_TAB_Y_AXIS_WHEN_DRAG", { dependencies: { JETBRAINS_DRAG_STYLE: true, LOCK_DRAG_Y_AXIS: false } }),
-            Number(
-                "Y_AXIS_LIMIT_THRESHOLD",
-                {
-                    tooltip: "noVerticalMovement",
-                    min: 0.1,
-                    max: 3,
-                    step: 0.1,
-                    dependencies: { JETBRAINS_DRAG_STYLE: true, LIMIT_TAB_Y_AXIS_WHEN_DRAG: true, LOCK_DRAG_Y_AXIS: false }
-                }
-            ),
+            Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: { JETBRAINS_DRAG_STYLE: true } }),
+            Number("DETACHMENT_THRESHOLD", { tooltip: "detachThreshold", min: 0.1, max: 3, step: 0.1, dependencies: { JETBRAINS_DRAG_STYLE: true, TAB_DETACHMENT: "resistant" } }),
             Number("DRAG_NEW_WINDOW_THRESHOLD", { tooltip: "newWindow", min: -1 }),
         ),
         ArrayBox("CLOSE_HOTKEY"),
@@ -297,7 +292,7 @@ const SETTING_SCHEMAS = {
                 name: "",
                 disable: false,
                 shell: "cmd/bash",
-                cmd: "echo \"HelloWorld\""
+                cmd: "echo \"HelloWorld\"",
             },
         ),
         handleSettingsBox,
@@ -314,9 +309,9 @@ const SETTING_SCHEMAS = {
             "underReadOnly",
             Text("SHOW_TEXT"),
             Switch("READ_ONLY_DEFAULT"),
+            Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
             Switch("NO_EXPAND_WHEN_READ_ONLY"),
             Switch("REMOVE_EXPAND_WHEN_READ_ONLY", { dependencies: { NO_EXPAND_WHEN_READ_ONLY: false } }),
-            Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
             Switch("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY"),
         ),
         ArrayBox("REMAIN_AVAILABLE_MENU_KEY", { dependencies: { DISABLE_CONTEXT_MENU_WHEN_READ_ONLY: true } }),
@@ -335,7 +330,7 @@ const SETTING_SCHEMAS = {
     dark: [
         pluginFullBasePropBox,
         UntitledBox(
-            Switch("DARK_DEFAULT")
+            Switch("DARK_DEFAULT"),
         ),
         handleSettingsBox,
     ],
@@ -421,79 +416,79 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "mindmapDiagram",
             Switch("ENABLE_TOC_MARKMAP"),
-            Hotkey("TOC_HOTKEY"),
-            Switch("FIX_ERROR_LEVEL_HEADER"),
-            Switch("AUTO_UPDATE"),
-            Switch("AUTO_FIT_WHEN_RESIZE"),
-            Switch("AUTO_FIT_WHEN_UPDATE"),
-            Switch("KEEP_FOLD_STATE_WHEN_UPDATE"),
-            Switch("CLICK_TO_POSITIONING"),
-            Switch("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", { tooltip: "experimental" }),
-            Range("POSITIONING_VIEWPORT_HEIGHT", { tooltip: "positioningViewPort", min: 0.1, max: 0.95, step: 0.01 }),
-            Range("WIDTH_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1 }),
-            Range("HEIGHT_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1 }),
-            Range("HEIGHT_PERCENT_WHEN_PIN_TOP", { min: 20, max: 95, step: 1 }),
-            Range("WIDTH_PERCENT_WHEN_PIN_RIGHT", { min: 20, max: 95, step: 1 }),
-            Text("NODE_BORDER_WHEN_HOVER"),
+            Hotkey("TOC_HOTKEY", markmapTocDep),
+            Switch("FIX_ERROR_LEVEL_HEADER", markmapTocDep),
+            Switch("AUTO_UPDATE", markmapTocDep),
+            Switch("AUTO_FIT_WHEN_RESIZE", markmapTocDep),
+            Switch("AUTO_FIT_WHEN_UPDATE", markmapTocDep),
+            Switch("KEEP_FOLD_STATE_WHEN_UPDATE", markmapTocDep),
+            Switch("CLICK_TO_POSITIONING", markmapTocDep),
+            Switch("AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD", { tooltip: "experimental", ...markmapTocDep }),
+            Range("POSITIONING_VIEWPORT_HEIGHT", { tooltip: "positioningViewPort", min: 0.1, max: 0.95, step: 0.01, ...markmapTocDep }),
+            Range("WIDTH_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1, ...markmapTocDep }),
+            Range("HEIGHT_PERCENT_WHEN_INIT", { min: 20, max: 95, step: 1, ...markmapTocDep }),
+            Range("HEIGHT_PERCENT_WHEN_PIN_TOP", { min: 20, max: 95, step: 1, ...markmapTocDep }),
+            Range("WIDTH_PERCENT_WHEN_PIN_RIGHT", { min: 20, max: 95, step: 1, ...markmapTocDep }),
+            Text("NODE_BORDER_WHEN_HOVER", markmapTocDep),
         ),
         TitledBox(
             "mindmapDiagramDefaultOptions",
-            Switch("DEFAULT_TOC_OPTIONS.zoom"),
-            Switch("DEFAULT_TOC_OPTIONS.pan"),
-            Switch("DEFAULT_TOC_OPTIONS.autoFit"),
-            Range("DEFAULT_TOC_OPTIONS.initialExpandLevel", { min: 1, max: 6, step: 1 }),
-            Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel", { min: 1, max: 6, step: 1 }),
-            Range("DEFAULT_TOC_OPTIONS.fitRatio", { min: 0.5, max: 1, step: 0.01 }),
-            Number("DEFAULT_TOC_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 100, step: 5 }),
-            Number("DEFAULT_TOC_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 100, step: 5 }),
-            Number("DEFAULT_TOC_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 100, step: 5 }),
-            Number("DEFAULT_TOC_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 5 }),
-            Number("DEFAULT_TOC_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10 }),
+            Switch("DEFAULT_TOC_OPTIONS.zoom", markmapTocDep),
+            Switch("DEFAULT_TOC_OPTIONS.pan", markmapTocDep),
+            Switch("DEFAULT_TOC_OPTIONS.autoFit", markmapTocDep),
+            Range("DEFAULT_TOC_OPTIONS.initialExpandLevel", { min: 1, max: 6, step: 1, ...markmapTocDep }),
+            Range("DEFAULT_TOC_OPTIONS.colorFreezeLevel", { min: 1, max: 6, step: 1, ...markmapTocDep }),
+            Range("DEFAULT_TOC_OPTIONS.fitRatio", { min: 0.5, max: 1, step: 0.01, ...markmapTocDep }),
+            Number("DEFAULT_TOC_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 100, step: 5, ...markmapTocDep }),
+            Number("DEFAULT_TOC_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...markmapTocDep }),
+            Number("DEFAULT_TOC_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...markmapTocDep }),
+            Number("DEFAULT_TOC_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 5, ...markmapTocDep }),
+            Number("DEFAULT_TOC_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...markmapTocDep }),
         ),
-        ArrayBox("DEFAULT_TOC_OPTIONS.color"),
-        ObjectBOX("CANDIDATE_COLOR_SCHEMES"),
+        ArrayBox("DEFAULT_TOC_OPTIONS.color", markmapTocDep),
+        ObjectBOX("CANDIDATE_COLOR_SCHEMES", markmapTocDep),
         TitledBox(
             "mindmapDiagramExport",
-            Switch("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL"),
-            Switch("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES"),
-            Switch("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", { tooltip: "removeForeignObj" }),
-            Switch("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG"),
-            Switch("DOWNLOAD_OPTIONS.SHOW_IN_FINDER"),
-            Range("DOWNLOAD_OPTIONS.IMAGE_QUALITY", { min: 0.01, max: 1, step: 0.01 }),
-            Number("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", { unit: UNITS.pixel, min: 1, max: 1000, step: 1 }),
-            Number("DOWNLOAD_OPTIONS.PADDING_VERTICAL", { unit: UNITS.pixel, min: 1, max: 1000, step: 1 }),
-            Text("DOWNLOAD_OPTIONS.FILENAME"),
-            Text("DOWNLOAD_OPTIONS.FOLDER", { tooltip: "tempDir" }),
-            Text("DOWNLOAD_OPTIONS.BACKGROUND_COLOR"),
-            Text("DOWNLOAD_OPTIONS.TEXT_COLOR"),
-            Text("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR"),
+            Switch("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL", markmapTocDep),
+            Switch("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES", markmapTocDep),
+            Switch("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", { tooltip: "removeForeignObj", ...markmapTocDep }),
+            Switch("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG", markmapTocDep),
+            Switch("DOWNLOAD_OPTIONS.SHOW_IN_FINDER", markmapTocDep),
+            Range("DOWNLOAD_OPTIONS.IMAGE_QUALITY", { min: 0.01, max: 1, step: 0.01, ...markmapTocDep }),
+            Number("DOWNLOAD_OPTIONS.PADDING_HORIZONTAL", { unit: UNITS.pixel, min: 1, max: 1000, step: 1, ...markmapTocDep }),
+            Number("DOWNLOAD_OPTIONS.PADDING_VERTICAL", { unit: UNITS.pixel, min: 1, max: 1000, step: 1, ...markmapTocDep }),
+            Text("DOWNLOAD_OPTIONS.FILENAME", markmapTocDep),
+            Text("DOWNLOAD_OPTIONS.FOLDER", { tooltip: "tempDir", ...markmapTocDep }),
+            Text("DOWNLOAD_OPTIONS.BACKGROUND_COLOR", markmapTocDep),
+            Text("DOWNLOAD_OPTIONS.TEXT_COLOR", markmapTocDep),
+            Text("DOWNLOAD_OPTIONS.OPEN_CIRCLE_COLOR", markmapTocDep),
         ),
         TitledBox(
             "fence",
             Switch("ENABLE_FENCE_MARKMAP"),
-            Switch("INTERACTIVE_MODE"),
-            Hotkey("FENCE_HOTKEY"),
-            Text("FENCE_LANGUAGE", protectedAttrs),
-            Text("DEFAULT_FENCE_HEIGHT"),
-            Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
+            Switch("INTERACTIVE_MODE", markmapFenceDep),
+            Hotkey("FENCE_HOTKEY", markmapFenceDep),
+            Text("FENCE_LANGUAGE", { ...protectedAttrs, ...markmapFenceDep }),
+            Text("DEFAULT_FENCE_HEIGHT", markmapFenceDep),
+            Text("DEFAULT_FENCE_BACKGROUND_COLOR", markmapFenceDep),
         ),
         TitledBox(
             "fenceDiagramDefaultOptions",
-            Switch("DEFAULT_FENCE_OPTIONS.zoom"),
-            Switch("DEFAULT_FENCE_OPTIONS.pan"),
-            Range("DEFAULT_FENCE_OPTIONS.initialExpandLevel", { min: 1, max: 6, step: 1 }),
-            Range("DEFAULT_FENCE_OPTIONS.colorFreezeLevel", { min: 1, max: 6, step: 1 }),
-            Range("DEFAULT_FENCE_OPTIONS.fitRatio", { min: 0.5, max: 1, step: 0.01 }),
-            Number("DEFAULT_FENCE_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 1000, step: 10 }),
-            Number("DEFAULT_FENCE_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 200, step: 1 }),
-            Number("DEFAULT_FENCE_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 200, step: 1 }),
-            Number("DEFAULT_FENCE_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 1 }),
-            Number("DEFAULT_FENCE_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10 }),
-            Text("DEFAULT_FENCE_OPTIONS.height"),
-            Text("DEFAULT_FENCE_OPTIONS.backgroundColor"),
+            Switch("DEFAULT_FENCE_OPTIONS.zoom", markmapFenceDep),
+            Switch("DEFAULT_FENCE_OPTIONS.pan", markmapFenceDep),
+            Range("DEFAULT_FENCE_OPTIONS.initialExpandLevel", { min: 1, max: 6, step: 1, ...markmapFenceDep }),
+            Range("DEFAULT_FENCE_OPTIONS.colorFreezeLevel", { min: 1, max: 6, step: 1, ...markmapFenceDep }),
+            Range("DEFAULT_FENCE_OPTIONS.fitRatio", { min: 0.5, max: 1, step: 0.01, ...markmapFenceDep }),
+            Number("DEFAULT_FENCE_OPTIONS.maxWidth", { tooltip: "zero", unit: UNITS.pixel, min: 0, max: 1000, step: 10, ...markmapFenceDep }),
+            Number("DEFAULT_FENCE_OPTIONS.spacingHorizontal", { unit: UNITS.pixel, min: 0, max: 200, step: 1, ...markmapFenceDep }),
+            Number("DEFAULT_FENCE_OPTIONS.spacingVertical", { unit: UNITS.pixel, min: 0, max: 200, step: 1, ...markmapFenceDep }),
+            Number("DEFAULT_FENCE_OPTIONS.paddingX", { unit: UNITS.pixel, min: 0, max: 100, step: 1, ...markmapFenceDep }),
+            Number("DEFAULT_FENCE_OPTIONS.duration", { unit: UNITS.millisecond, min: 0, max: 1000, step: 10, ...markmapFenceDep }),
+            Text("DEFAULT_FENCE_OPTIONS.height", markmapFenceDep),
+            Text("DEFAULT_FENCE_OPTIONS.backgroundColor", markmapFenceDep),
         ),
-        ArrayBox("DEFAULT_FENCE_OPTIONS.color"),
-        TextareaBox("FENCE_TEMPLATE"),
+        ArrayBox("DEFAULT_FENCE_OPTIONS.color", markmapFenceDep),
+        TextareaBox("FENCE_TEMPLATE", markmapFenceDep),
         handleSettingsBox,
     ],
     auto_number: [
@@ -509,10 +504,12 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "style",
-            Switch("SHOW_IMAGE_NAME", { dependencies: { ENABLE_IMAGE: true } }),
             Select("ALIGN", OPTIONS.auto_number.ALIGN),
-            Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE, { dependencies: { ENABLE_TABLE: true } }),
             Text("FONT_FAMILY"),
+        ),
+        UntitledBox(
+            Switch("SHOW_IMAGE_NAME", { dependencies: { ENABLE_IMAGE: true } }),
+            Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE, { dependencies: { ENABLE_TABLE: true } }),
         ),
         TableBox(
             "LAYOUTS",
@@ -583,34 +580,24 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "buttonStyle",
             Switch("ENABLE_BUTTON"),
-            Switch("AUTO_HIDE"),
-            Switch("REMOVE_BUTTON_HINT"),
-            Range("BUTTON_OPACITY", { min: 0, max: 1, step: 0.05 }),
-            Range("BUTTON_OPACITY_HOVER", { min: 0, max: 1, step: 0.05 }),
-            Text("BUTTON_SIZE"),
-            Text("BUTTON_COLOR"),
-            Text("BUTTON_MARGIN"),
-            Text("BUTTON_TOP"),
-            Text("BUTTON_RIGHT"),
-            Number("WAIT_RECOVER_INTERVAL", { unit: UNITS.millisecond, min: 500, step: 100 }),
+            Switch("AUTO_HIDE", fenceEnhanceButtonDep),
+            Switch("REMOVE_BUTTON_HINT", fenceEnhanceButtonDep),
+            Range("BUTTON_OPACITY", { min: 0, max: 1, step: 0.05, ...fenceEnhanceButtonDep }),
+            Range("BUTTON_OPACITY_HOVER", { min: 0, max: 1, step: 0.05, ...fenceEnhanceButtonDep }),
+            Text("BUTTON_SIZE", fenceEnhanceButtonDep),
+            Text("BUTTON_COLOR", fenceEnhanceButtonDep),
+            Text("BUTTON_MARGIN", fenceEnhanceButtonDep),
+            Text("BUTTON_TOP", fenceEnhanceButtonDep),
+            Text("BUTTON_RIGHT", fenceEnhanceButtonDep),
+            Number("WAIT_RECOVER_INTERVAL", { unit: UNITS.millisecond, min: 500, step: 100, ...fenceEnhanceButtonDep }),
         ),
         TitledBox(
             "buttons",
-            Switch("ENABLE_COPY"),
-            Switch("ENABLE_INDENT"),
-            Switch("ENABLE_FOLD"),
-            Switch("DEFAULT_FOLD"),
-            Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1 }),
-        ),
-        TitledBox(
-            "buttonHotkeys",
-            Switch("ENABLE_HOTKEY"),
-            Text("SWAP_PREVIOUS_LINE", { tooltip: "codeMirrorStyle" }),
-            Text("SWAP_NEXT_LINE"),
-            Text("COPY_PREVIOUS_LINE"),
-            Text("COPY_NEXT_LINE"),
-            Text("INSERT_LINE_PREVIOUS"),
-            Text("INSERT_LINE_NEXT"),
+            Switch("ENABLE_COPY", fenceEnhanceButtonDep),
+            Switch("ENABLE_INDENT", fenceEnhanceButtonDep),
+            Switch("ENABLE_FOLD", fenceEnhanceButtonDep),
+            Switch("DEFAULT_FOLD", fenceEnhanceButtonDep),
+            Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, ...fenceEnhanceButtonDep }),
         ),
         TableBox(
             "CUSTOM_BUTTONS",
@@ -633,14 +620,25 @@ const SETTING_SCHEMAS = {
                 ON_RENDER: "btn => console.log('The button has been rendered')",
                 ON_CLICK: "({ ev, btn, cont, fence, cm, cid, plu }) => console.log('The button has been clicked')",
             },
+            fenceEnhanceButtonDep,
+        ),
+        TitledBox(
+            "buttonHotkeys",
+            Switch("ENABLE_HOTKEY"),
+            Text("SWAP_PREVIOUS_LINE", { tooltip: "codeMirrorStyle", ...fenceEnhanceHotkeyDep }),
+            Text("SWAP_NEXT_LINE", fenceEnhanceHotkeyDep),
+            Text("COPY_PREVIOUS_LINE", fenceEnhanceHotkeyDep),
+            Text("COPY_NEXT_LINE", fenceEnhanceHotkeyDep),
+            Text("INSERT_LINE_PREVIOUS", fenceEnhanceHotkeyDep),
+            Text("INSERT_LINE_NEXT", fenceEnhanceHotkeyDep),
         ),
         TitledBox(
             "advanced",
             Switch("ENABLE_LANGUAGE_FOLD"),
             Switch("INDENTED_WRAPPED_LINE"),
-            Switch("HIGHLIGHT_BY_LANGUAGE"),
             Switch("HIGHLIGHT_WHEN_HOVER"),
-            Text("HIGHLIGHT_LINE_COLOR"),
+            Switch("HIGHLIGHT_BY_LANGUAGE"),
+            Text("HIGHLIGHT_LINE_COLOR", { dependencies: { HIGHLIGHT_BY_LANGUAGE: true } }),
         ),
         handleSettingsBox,
     ],
@@ -760,7 +758,7 @@ const SETTING_SCHEMAS = {
     custom: [
         UntitledBox(
             Switch("ENABLE", protectedAttrs),
-            prop_NAME
+            prop_NAME,
         ),
         UntitledBox(
             Switch("HIDE_DISABLE_PLUGINS"),
@@ -809,7 +807,7 @@ const SETTING_SCHEMAS = {
     right_click_menu: [
         UntitledBox(
             Switch("ENABLE", protectedAttrs),
-            prop_NAME
+            prop_NAME,
         ),
         TitledBox(
             "style",
@@ -833,14 +831,14 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "advanced",
-            Switch("FIND_LOST_PLUGIN")
+            Switch("FIND_LOST_PLUGIN"),
         ),
         handleSettingsBox,
     ],
     pie_menu: [
         pluginFullBasePropBox,
         UntitledBox(
-            Hotkey("MODIFIER_KEY", { tooltip: "example" })
+            Hotkey("MODIFIER_KEY", { tooltip: "example" }),
         ),
         TableBox(
             "BUTTONS",
@@ -862,11 +860,12 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Switch("ENABLE", protectedAttrs),
             prop_NAME,
-            prop_HOTKEY
+            prop_HOTKEY,
         ),
         UntitledBox(
             Select("DEFAULT_MENU"),
             Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
+            Switch("IGNORE_CONFIG_DEPENDENCIES"),
             Switch("SEARCH_PLUGIN_FIXEDNAME"),
         ),
         handleSettingsBox,
@@ -1177,7 +1176,7 @@ const SETTING_SCHEMAS = {
                 type: "",
                 icon: "",
                 background_color: "",
-                left_line_color: ""
+                left_line_color: "",
             },
         ),
         TextareaBox("template", { rows: 5 }),
@@ -1326,7 +1325,7 @@ const SETTING_SCHEMAS = {
             Switch("show_thumbnail_nav"),
             Select("tool_position", OPTIONS.imageReviewer.tool_position),
             Select("show_message", OPTIONS.imageReviewer.show_message),
-            Select("tool_function", OPTIONS.imageReviewer.operations, { minItems: 1 })
+            Select("tool_function", OPTIONS.imageReviewer.operations, { minItems: 1 }),
         ),
         TitledBox(
             "behavior",

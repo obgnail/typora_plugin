@@ -5,7 +5,6 @@
 .plugin-common-readonly {
     pointer-events: none;
     opacity: 0.5;
-    color: #B80012;
 }
 
 .plugin-common-readonly .control-left {

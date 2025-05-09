@@ -77,20 +77,16 @@ TAB_MIN_WIDTH = "100px"
 TAB_MAX_WIDTH = "none"
 
 # ------------------- 标签页拖拽增强（仅当 JETBRAINS_DRAG_STYLE 为 true 时生效） -------------------
-# Y轴防抖：在拖拽标签页时，如果垂直方向的移动距离很小，则保持标签页在 Y 轴上的位置不变
-#   true:  启用 Y 轴防抖，提高拖拽时的精度，避免误操作
-#   false: 关闭 Y 轴防抖，允许标签页在垂直方向自由移动
-LIMIT_TAB_Y_AXIS_WHEN_DRAG = true
+# 标签页分离行为
+#  - free         : 无限制
+#  - resistant    : 存在拖动阻力
+#  - lockVertical : 禁止竖直移动
+TAB_DETACHMENT = "resistant"
 
-# Y轴防抖幅度：当拖拽的垂直距离不超过标签页高度的多少倍时，视为无垂直移动
-#   例如：Y_AXIS_LIMIT_THRESHOLD = 1 表示当垂直拖动距离不超过一个标签页高度时，保持 Y 轴位置不变
+# 分离阈值：当拖拽的垂直距离不超过标签页高度的 X 倍时，视为无垂直移动
+#   例如：DETACHMENT_THRESHOLD = 1 表示当垂直拖动距离不超过一个标签页高度时，视为无垂直移动
 #   取值范围：大于等于 0 的数字，推荐取值 0.5 ~ 1.5 之间
-Y_AXIS_LIMIT_THRESHOLD = 1
-
-# 禁止垂直拖拽：是否禁止标签页在垂直方向的拖拽移动
-#   true:  限制标签页只能水平拖动
-#   false: 允许标签页在垂直方向自由拖动
-LOCK_DRAG_Y_AXIS = false
+DETACHMENT_THRESHOLD = 1
 
 # ------------------- 标签页拖拽高级功能 -------------------
 # 鼠标向下拖拽标签页时，当拖拽的垂直距离超过标签本身高度的多少倍时，将此标签页的文件在新窗口中打开
@@ -2081,6 +2077,10 @@ HOTKEY = ""
 
 # 打开设置页面时，默认定位到哪个插件的菜单
 DEFAULT_MENU = "global"
+
+# 忽略配置依赖
+# 若为 true，将不再强制执行配置项之间的依赖关系
+IGNORE_CONFIG_DEPENDENCIES = false
 
 # 将插件的 fixedName 加入到搜索内容
 SEARCH_PLUGIN_FIXEDNAME = false

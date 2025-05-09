@@ -84,9 +84,6 @@
     "act.toggle_file_ext": "隐藏文件扩展名",
     "act.toggle_show_dir": "同名文件显示其目录",
     "act.toggle_show_close_button": "显示关闭按钮",
-    "act.toggle_show_path": "悬停显示完整路径",
-    "act.toggle_limit_y_axis": "限制竖直拖拽",
-    "act.toggle_ctrl_click": "Ctrl+点击新窗口打开",
     "act.toggle_tab_bar": "临时隐藏标签栏",
     "act.toggle_local": "在新标签打开",
     "func.sortTabs": "排序标签",
@@ -115,12 +112,11 @@
     "$label.MIDDLE_CLICK_TO_CLOSE": "中键关闭标签",
     "$label.SHOW_FULL_PATH_WHEN_HOVER": "鼠标悬停显示文件路径",
     "$label.JETBRAINS_DRAG_STYLE": "JetBrains 风格的拖拽方式",
-    "$label.LOCK_DRAG_Y_AXIS": "禁止垂直拖拽",
-    "$label.LIMIT_TAB_Y_AXIS_WHEN_DRAG": "限制竖直拖拽",
-    "$label.Y_AXIS_LIMIT_THRESHOLD": "限制竖直拖拽幅度",
+    "$label.TAB_DETACHMENT": "标签页分离模式",
+    "$label.DETACHMENT_THRESHOLD": "分离阈值",
     "$label.DRAG_NEW_WINDOW_THRESHOLD": "拖拽以新建窗口",
     "$tooltip.hideTitleBar": "开启一体化窗口选项后，隐藏标题栏",
-    "$tooltip.noVerticalMovement": "拖拽垂直距离少于 X 倍标签高度，视为无垂直移动",
+    "$tooltip.detachThreshold": "拖拽垂直距离少于 X 倍标签高度，视为无垂直移动",
     "$tooltip.newWindow": "拖拽垂直距离超过 X 倍标签高度，视为新建窗口",
     "$title.appearance": "标签外观",
     "$title.behavior": "标签行为",
@@ -146,7 +142,10 @@
     "$option.TAB_SWITCH_ON_CLOSE.latest": "激活最近浏览标签",
     "$option.LAST_TAB_CLOSE_ACTION.blankPage": "显示空白页",
     "$option.LAST_TAB_CLOSE_ACTION.reconfirm": "弹出确认对话框",
-    "$option.LAST_TAB_CLOSE_ACTION.exit": "退出"
+    "$option.LAST_TAB_CLOSE_ACTION.exit": "退出",
+    "$option.TAB_DETACHMENT.free": "自由拖拽",
+    "$option.TAB_DETACHMENT.resistant": "阻力分离",
+    "$option.TAB_DETACHMENT.lockVertical": "锁定垂直移动"
   },
   "search_multi": {
     "pluginName": "多元文件搜索",
@@ -315,8 +314,8 @@
     "modeEnabled": "只读模式已启用",
     "modeDisabled": "只读模式已关闭",
     "$label.READ_ONLY_DEFAULT": "默认开启",
-    "$label.NO_EXPAND_WHEN_READ_ONLY": "单击图片和行内公式不会自动展开",
-    "$label.REMOVE_EXPAND_WHEN_READ_ONLY": "自动展开的图片和行内公式会自动收缩",
+    "$label.NO_EXPAND_WHEN_READ_ONLY": "禁用单击图片和行内公式自动展开",
+    "$label.REMOVE_EXPAND_WHEN_READ_ONLY": "自动收缩已展开的图片和行内公式",
     "$label.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY": "单击超链接即可跳转",
     "$label.DISABLE_CONTEXT_MENU_WHEN_READ_ONLY": "禁用部分右键菜单选项",
     "$label.SHOW_TEXT": "提示文字",
@@ -913,6 +912,7 @@
     "$label.SEARCH_PLUGIN_FIXEDNAME": "配置页支持搜索插件英文名",
     "$label.OBJECT_SETTINGS_FORMAT": "配置页中对象类型的数据格式",
     "$label.DEFAULT_MENU": "默认的配置页",
+    "$label.IGNORE_CONFIG_DEPENDENCIES": "忽略配置依赖",
     "$option.OBJECT_SETTINGS_FORMAT.JSON": "JSON",
     "$option.OBJECT_SETTINGS_FORMAT.TOML": "TOML",
     "$option.OBJECT_SETTINGS_FORMAT.YAML": "YAML"
@@ -1432,7 +1432,7 @@
     "$title.detectAndFix": "检测与修复"
   },
   "reopenClosedFiles": {
-    "pluginName": "打开上次退出时尚未关闭的标签页",
+    "pluginName": "重新打开未关闭标签页",
     "$label.auto_reopen_when_init": "自动恢复未关闭标签"
   },
   "quickButton": {

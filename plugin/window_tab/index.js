@@ -173,7 +173,7 @@ class windowTabBarPlugin extends BasePlugin {
                     startY = ev.clientY;
                     offsetX = startX - left;
                     offsetY = startY - top;
-                    threshold = height * that.config.Y_AXIS_LIMIT_THRESHOLD
+                    threshold = height * that.config.DETACHMENT_THRESHOLD
 
                     const fakeObj = dragBox.cloneNode(true);
                     fakeObj.style.height = dragBox.offsetHeight + 'px'; // dragBox uses height: 100%, needs to be reset.
@@ -229,7 +229,8 @@ class windowTabBarPlugin extends BasePlugin {
                     startX = left + offsetX;
                     startY = top + offsetY;
 
-                    if (that.config.LOCK_DRAG_Y_AXIS || (that.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG && top < threshold)) {
+                    const detachment = that.config.TAB_DETACHMENT
+                    if (detachment === "lockVertical" || (detachment === "resistant" && top < threshold)) {
                         top = 0;
                     }
                     cloneObj.style.transform = `translate3d(${left}px, ${top}px, 0)`;
@@ -427,9 +428,6 @@ class windowTabBarPlugin extends BasePlugin {
         { act_value: "toggle_file_ext", act_state: this.config.TRIM_FILE_EXT },
         { act_value: "toggle_show_dir", act_state: this.config.SHOW_DIR_ON_DUPLICATE },
         { act_value: "toggle_show_close_button", act_state: this.config.SHOW_TAB_CLOSE_BUTTON },
-        { act_value: "toggle_show_path", act_state: this.config.SHOW_FULL_PATH_WHEN_HOVER },
-        { act_value: "toggle_limit_y_axis", act_state: this.config.LIMIT_TAB_Y_AXIS_WHEN_DRAG, act_hidden: !this.config.JETBRAINS_DRAG_STYLE },
-        { act_value: "toggle_ctrl_click", act_state: this.config.CTRL_CLICK_TO_NEW_WINDOW },
         { act_value: "toggle_tab_bar", act_state: this.entities.windowTab.style.display === "none", act_hotkey: this.config.TOGGLE_TAB_BAR_HOTKEY },
         { act_value: "toggle_local", act_state: !this.localOpen },
     ])
@@ -442,12 +440,9 @@ class windowTabBarPlugin extends BasePlugin {
         }
         const callMap = {
             toggle_local: () => this.localOpen = !this.localOpen,
-            toggle_limit_y_axis: () => toggleConfig("LIMIT_TAB_Y_AXIS_WHEN_DRAG"),
             toggle_show_dir: () => toggleConfig("SHOW_DIR_ON_DUPLICATE"),
             toggle_file_ext: () => toggleConfig("TRIM_FILE_EXT"),
-            toggle_show_path: () => toggleConfig("SHOW_FULL_PATH_WHEN_HOVER"),
             toggle_show_close_button: () => toggleConfig("SHOW_TAB_CLOSE_BUTTON"),
-            toggle_ctrl_click: () => toggleConfig("CTRL_CLICK_TO_NEW_WINDOW"),
             save_tabs: this.saveTabs,
             sort_tabs: this.sortTabs,
             open_save_tabs: this.openSaveTabs,

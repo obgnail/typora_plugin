@@ -19,14 +19,6 @@ class pluginForm extends HTMLElement {
         this.form.innerHTML = this._fillForm(schemas)
     }
 
-    toggleReadonly(key, force) {
-        if (!this.form) return
-        const el = this.form.querySelector(`[data-key="${key}"], [data-action="${key}"]`)
-        if (!el) return
-        const control = el.closest(".control")
-        if (!control) return
-        control.classList.toggle("plugin-common-readonly", force)
-    }
 
     _initShadow() {
         const awesomeCSS = this.utils.joinPath("./style/font-awesome-4.1.0/css/font-awesome.min.css")
@@ -49,10 +41,7 @@ class pluginForm extends HTMLElement {
             return
         }
         this.utils.nestedPropertyHelpers[type](this.values, key, value)
-        const fields = this.prerequisite[key]
-        if (fields) {
-            fields.forEach(field => this.toggleReadonly(field.key, this._isReadonly(field)))
-        }
+        this._toggleReadonly(key)
     }
 
     _bindEvents() {
@@ -445,6 +434,21 @@ class pluginForm extends HTMLElement {
             })
         })
         return prerequisite
+    }
+
+    _toggleReadonly(key) {
+        const fields = this.prerequisite[key]
+        if (!fields) return
+        fields.forEach(field => {
+            const k = field.key
+            if (!this.form) return
+            const el = this.form.querySelector(`[data-key="${k}"], [data-action="${k}"]`)
+            if (!el) return
+            const control = el.closest(".control")
+            if (!control) return
+            control.classList.toggle("plugin-common-readonly", this._isReadonly(field))
+        })
+        fields.forEach(field => this._toggleReadonly(field.key))
     }
 
     _isReadonly(field) {

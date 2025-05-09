@@ -84,9 +84,6 @@
     "act.toggle_file_ext": "隱藏檔案副檔名",
     "act.toggle_show_dir": "同名檔案顯示其目錄",
     "act.toggle_show_close_button": "顯示關閉按鈕",
-    "act.toggle_show_path": "懸停顯示完整路徑",
-    "act.toggle_limit_y_axis": "限製豎直拖曳",
-    "act.toggle_ctrl_click": "Ctrl+點擊新視窗打開",
     "act.toggle_tab_bar": "臨時隱藏標籤欄",
     "act.toggle_local": "在新標籤打開",
     "func.sortTabs": "排序標籤",
@@ -115,12 +112,11 @@
     "$label.MIDDLE_CLICK_TO_CLOSE": "中鍵關閉標籤",
     "$label.SHOW_FULL_PATH_WHEN_HOVER": "滑鼠懸停顯示檔案路徑",
     "$label.JETBRAINS_DRAG_STYLE": "JetBrains 風格的拖曳方式",
-    "$label.LOCK_DRAG_Y_AXIS": "禁止垂直拖曳",
-    "$label.LIMIT_TAB_Y_AXIS_WHEN_DRAG": "限制垂直拖曳",
-    "$label.Y_AXIS_LIMIT_THRESHOLD": "限制垂直拖曳幅度",
+    "$label.TAB_DETACHMENT": "標籤頁分離模式",
+    "$label.DETACHMENT_THRESHOLD": "分離閾值",
     "$label.DRAG_NEW_WINDOW_THRESHOLD": "拖曳以建立新視窗",
     "$tooltip.hideTitleBar": "啟用一體化視窗樣式選項後，隱藏標題列",
-    "$tooltip.noVerticalMovement": "拖曳垂直距離少於 X 倍標籤高度，視為無垂直移動",
+    "$tooltip.detachThreshold": "拖曳垂直距離少於 X 倍標籤高度，視為無垂直移動",
     "$tooltip.newWindow": "拖曳垂直距離超過 X 倍標籤高度，視為建立新視窗",
     "$title.appearance": "標籤外觀",
     "$title.behavior": "標籤行為",
@@ -146,7 +142,10 @@
     "$option.TAB_SWITCH_ON_CLOSE.latest": "啟用最近瀏覽標籤",
     "$option.LAST_TAB_CLOSE_ACTION.blankPage": "顯示空白頁",
     "$option.LAST_TAB_CLOSE_ACTION.reconfirm": "彈出確認對話框",
-    "$option.LAST_TAB_CLOSE_ACTION.exit": "退出"
+    "$option.LAST_TAB_CLOSE_ACTION.exit": "退出",
+    "$option.TAB_DETACHMENT.free": "自由拖曳",
+    "$option.TAB_DETACHMENT.resistant": "阻力分離",
+    "$option.TAB_DETACHMENT.lockVertical": "鎖定垂直移動"
   },
   "search_multi": {
     "pluginName": "多元檔案搜尋",
@@ -315,8 +314,8 @@
     "modeEnabled": "唯讀模式已啟用",
     "modeDisabled": "唯讀模式已關閉",
     "$label.READ_ONLY_DEFAULT": "預設啟用",
-    "$label.NO_EXPAND_WHEN_READ_ONLY": "點擊圖片和行內公式不會自動展開",
-    "$label.REMOVE_EXPAND_WHEN_READ_ONLY": "自動展開的圖片和行內公式會自動收縮",
+    "$label.NO_EXPAND_WHEN_READ_ONLY": "禁用點擊圖片和行內公式自動展開",
+    "$label.REMOVE_EXPAND_WHEN_READ_ONLY": "自動收縮已展開的圖片和行內公式",
     "$label.CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY": "點擊超連結即可跳轉",
     "$label.DISABLE_CONTEXT_MENU_WHEN_READ_ONLY": "禁用部分右鍵選單選項",
     "$label.SHOW_TEXT": "提示文字",
@@ -913,6 +912,7 @@
     "$label.SEARCH_PLUGIN_FIXEDNAME": "配置頁支援搜尋插件英文名",
     "$label.OBJECT_SETTINGS_FORMAT": "配置頁中對象類型的數據格式",
     "$label.DEFAULT_MENU": "預設的配置頁",
+    "$label.IGNORE_CONFIG_DEPENDENCIES": "忽略配置依賴",
     "$option.OBJECT_SETTINGS_FORMAT.JSON": "JSON",
     "$option.OBJECT_SETTINGS_FORMAT.TOML": "TOML",
     "$option.OBJECT_SETTINGS_FORMAT.YAML": "YAML"
@@ -1432,7 +1432,7 @@
     "$title.detectAndFix": "檢測與修復"
   },
   "reopenClosedFiles": {
-    "pluginName": "打開上次退出時尚未關閉的標籤頁",
+    "pluginName": "重新打開未關閉標籤頁",
     "$label.auto_reopen_when_init": "自動恢復未關閉標籤"
   },
   "quickButton": {

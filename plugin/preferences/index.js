@@ -187,7 +187,7 @@ class preferencesPlugin extends BasePlugin {
     _initDialogForm = () => this.entities.form.init(this.utils, { objectFormat: this.config.OBJECT_SETTINGS_FORMAT })
 
     /** Will NOT modify the schemas structure, just i18n */
-    _initSchemas = () => {
+    _translateSchema = (schemas) => {
         const specialProps = ["options", "thMap"]
         const baseProps = ["label", "tooltip", "placeholder"]
         const commonProps = [...baseProps, "title", "unit"]
@@ -246,11 +246,33 @@ class preferencesPlugin extends BasePlugin {
             })
         }
 
-        this.SETTING_SCHEMAS = require("./schemas.js")
-        Object.entries(this.SETTING_SCHEMAS).forEach(([fixedName, boxes]) => {
+        Object.entries(schemas).forEach(([fixedName, boxes]) => {
             const pluginI18N = i18nData[fixedName]
             boxes.forEach(box => translateBox(box, pluginI18N))
         })
+    }
+
+    _removeDependencies = (obj) => {
+        if (obj == null || typeof obj !== "object") return
+
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                if (key === "dependencies") {
+                    delete obj[key]
+                } else if (typeof obj[key] === "object") {
+                    this._removeDependencies(obj[key])
+                }
+            }
+        }
+    }
+
+    _initSchemas = () => {
+        this.SETTING_SCHEMAS = require("./schemas.js")
+
+        this._translateSchema(this.SETTING_SCHEMAS)
+        if (this.config.IGNORE_CONFIG_DEPENDENCIES) {
+            this._removeDependencies(this.SETTING_SCHEMAS)
+        }
     }
 
     /** Callback functions for type="action" settings in schema */
@@ -351,8 +373,7 @@ class preferencesPlugin extends BasePlugin {
 
     /** PostProcessors for specific settings in schema */
     _initPostProcessors = () => {
-        this.POSTPROCESSORS = {
-        }
+        this.POSTPROCESSORS = {}
     }
 }
 
