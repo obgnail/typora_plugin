@@ -2,60 +2,61 @@ const Label = (key) => key ? `$label.${key}` : undefined
 const Tooltip = (tooltip) => tooltip ? `$tooltip.${tooltip}` : undefined
 const Placeholder = (placeholder) => placeholder ? `$placeholder.${placeholder}` : undefined
 
-const Switch = (key, tooltip, disabled) => {
-    const label = Label(key)
-    tooltip = Tooltip(tooltip)
-    return { type: "switch", key, label, tooltip, disabled }
-}
-const Text = (key, tooltip, placeholder, disabled) => {
-    const label = Label(key)
-    tooltip = Tooltip(tooltip)
-    placeholder = Placeholder(placeholder)
-    return { type: "text", key, label, tooltip, placeholder, disabled }
-}
-const Hotkey = (key, tooltip, placeholder, disabled) => {
-    const label = Label(key)
-    tooltip = Tooltip(tooltip)
-    placeholder = Placeholder(placeholder)
-    return { type: "hotkey", key, label, tooltip, placeholder, disabled }
-}
-const Select = (key, options, tooltip, minItems, maxItems) => {
-    const label = Label(key)
-    tooltip = Tooltip(tooltip)
-    return { type: "select", key, label, tooltip, options, minItems, maxItems }
-}
 const Action = (act) => {
     const label = Label(act)
     return { type: "action", act, label }
 }
-const External = (key) => {
+const Static = (key) => {
     const label = Label(key)
-    return { type: "external", key, label }
+    return { type: "static", key, label }
 }
-const Number = (key, tooltip, unit, min, max, step) => {
+const Switch = (key, tooltip, disabled, dependencies) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
-    return { type: "number", key, unit, min, max, step, label, tooltip }
+    return { type: "switch", key, label, tooltip, disabled, dependencies }
 }
-const Range = (key, tooltip, min, max, step) => {
+const Text = (key, tooltip, placeholder, disabled, dependencies) => {
     const label = Label(key)
     tooltip = Tooltip(tooltip)
-    return { type: "range", key, min, max, step, label, tooltip }
+    placeholder = Placeholder(placeholder)
+    return { type: "text", key, label, tooltip, placeholder, disabled, dependencies }
+}
+const Hotkey = (key, tooltip, placeholder, disabled, dependencies) => {
+    const label = Label(key)
+    tooltip = Tooltip(tooltip)
+    placeholder = Placeholder(placeholder)
+    return { type: "hotkey", key, label, tooltip, placeholder, disabled, dependencies }
+}
+const Number = (key, tooltip, unit, min, max, step, dependencies) => {
+    const label = Label(key)
+    tooltip = Tooltip(tooltip)
+    return { type: "number", key, unit, min, max, step, label, tooltip, dependencies }
+}
+const Range = (key, tooltip, min, max, step, dependencies) => {
+    const label = Label(key)
+    tooltip = Tooltip(tooltip)
+    return { type: "range", key, min, max, step, label, tooltip, dependencies }
+}
+const Select = (key, options, tooltip, minItems, maxItems, dependencies) => {
+    const label = Label(key)
+    tooltip = Tooltip(tooltip)
+    return { type: "select", key, label, tooltip, options, minItems, maxItems, dependencies }
 }
 
 const UntitledBox = (...fields) => ({ title: undefined, fields })
 const TitledBox = (title, ...fields) => ({ title: `$title.${title}`, fields })
 
-const ArrayBox = (key) => TitledBox(key, { type: "array", key })
-const ObjectBOX = (key, rows = 10) => TitledBox(key, { type: "object", key, rows })
-const TextareaBox = (key, rows = 10) => TitledBox(key, { type: "textarea", key, rows })
-const RadioBox = (key, options) => TitledBox(key, { type: "radio", key, options })
-const CheckboxBox = (key, options, minItems, maxItems) => TitledBox(key, { type: "checkbox", options, key, minItems, maxItems })
-const TableBox = (key, ths, nestedBoxes, defaultValues) => TitledBox(key, {
+const ArrayBox = (key, dependencies) => TitledBox(key, { type: "array", key, dependencies })
+const ObjectBOX = (key, rows = 10, dependencies) => TitledBox(key, { type: "object", key, rows, dependencies })
+const TextareaBox = (key, rows = 10, dependencies) => TitledBox(key, { type: "textarea", key, rows, dependencies })
+const RadioBox = (key, options, dependencies) => TitledBox(key, { type: "radio", key, options, dependencies })
+const CheckboxBox = (key, options, minItems, maxItems, dependencies) => TitledBox(key, { type: "checkbox", options, key, minItems, maxItems, dependencies })
+const TableBox = (key, ths, nestedBoxes, defaultValues, dependencies) => TitledBox(key, {
     type: "table",
     key,
     nestedBoxes,
     defaultValues,
+    dependencies,
     thMap: Object.fromEntries(ths.map(th => [th, `$label.${key}.${th}`])),
 })
 
@@ -72,9 +73,9 @@ const pluginLiteBasePropBox = UntitledBox(prop_ENABLE, prop_NAME)
 const pluginFullBasePropBox = UntitledBox(prop_ENABLE, prop_NAME, prop_HOTKEY)
 const customPluginLiteBasePropBox = UntitledBox(prop_enable, prop_hide, prop_name, prop_order)
 const customPluginFullBasePropBox = UntitledBox(prop_enable, prop_hide, prop_name, prop_order, prop_hotkey)
+const handleSettingsBox = UntitledBox(Action("runtimeSettings"), Action("restoreSettings"))
 
-const restoreSettingsBox = UntitledBox(Action("restoreSettings"))
-const langModeBox = TitledBox("fenceLanguageMode", Text("LANGUAGE"), Switch("INTERACTIVE_MODE"))
+const langModeBox = TitledBox("fenceLanguageMode", Text("LANGUAGE", "protected", undefined, true), Switch("INTERACTIVE_MODE"))
 const chartStyleBox = TitledBox("diagramStyle", Text("DEFAULT_FENCE_HEIGHT"), Text("DEFAULT_FENCE_BACKGROUND_COLOR"))
 
 const OPTIONS = {
@@ -147,7 +148,7 @@ const UNITS = {
     pixel: "$unit.pixel",
     millisecond: "$unit.millisecond",
     second: "$unit.second",
-    piece: "$unit.piece",
+    item: "$unit.item",
     line: "$unit.line",
     percent: "$unit.percent",
     degree: "$unit.degree",
@@ -164,13 +165,15 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Action("openSettingsFolder"),
             Action("backupSettings"),
+            Action("runtimeSettings"),
             Action("restoreSettings"),
             Action("restoreAllSettings"),
         ),
         UntitledBox(
             Action("visitRepo"),
+            Action("assistWithTranslations"),
             Action("updatePlugin"),
-            External("pluginVersion"),
+            Static("pluginVersion"),
         )
     ],
     window_tab: [
@@ -192,12 +195,6 @@ const SETTING_SCHEMAS = {
             Select("TAB_SWITCH_ON_CLOSE", OPTIONS.window_tab.TAB_SWITCH_ON_CLOSE),
             Select("LAST_TAB_CLOSE_ACTION", OPTIONS.window_tab.LAST_TAB_CLOSE_ACTION),
         ),
-        ArrayBox("CLOSE_HOTKEY"),
-        ArrayBox("SWITCH_PREVIOUS_TAB_HOTKEY"),
-        ArrayBox("SWITCH_NEXT_TAB_HOTKEY"),
-        ArrayBox("SORT_TABS_HOTKEY"),
-        ArrayBox("COPY_PATH_HOTKEY"),
-        ArrayBox("TOGGLE_TAB_BAR_HOTKEY"),
         TitledBox(
             "mouseInteraction",
             Switch("CTRL_CLICK_TO_NEW_WINDOW"),
@@ -205,15 +202,35 @@ const SETTING_SCHEMAS = {
             Switch("MIDDLE_CLICK_TO_CLOSE"),
             Switch("SHOW_FULL_PATH_WHEN_HOVER"),
             Switch("JETBRAINS_DRAG_STYLE"),
-            Switch("LOCK_DRAG_Y_AXIS"),
-            Switch("LIMIT_TAB_Y_AXIS_WHEN_DRAG"),
-            Number("Y_AXIS_LIMIT_THRESHOLD", "noVerticalMovement", undefined, 0.1, 3, 0.1),
+            Switch("LOCK_DRAG_Y_AXIS", undefined, undefined, { JETBRAINS_DRAG_STYLE: true }),
+            Switch("LIMIT_TAB_Y_AXIS_WHEN_DRAG", undefined, undefined, { JETBRAINS_DRAG_STYLE: true, LOCK_DRAG_Y_AXIS: false }),
+            Number(
+                "Y_AXIS_LIMIT_THRESHOLD",
+                "noVerticalMovement",
+                undefined,
+                0.1,
+                3,
+                0.1,
+                { JETBRAINS_DRAG_STYLE: true, LIMIT_TAB_Y_AXIS_WHEN_DRAG: true, LOCK_DRAG_Y_AXIS: false }
+            ),
             Number("DRAG_NEW_WINDOW_THRESHOLD", "newWindow", undefined, -1),
         ),
-        restoreSettingsBox,
+        ArrayBox("CLOSE_HOTKEY"),
+        ArrayBox("SWITCH_PREVIOUS_TAB_HOTKEY"),
+        ArrayBox("SWITCH_NEXT_TAB_HOTKEY"),
+        ArrayBox("SORT_TABS_HOTKEY"),
+        ArrayBox("COPY_PATH_HOTKEY"),
+        ArrayBox("TOGGLE_TAB_BAR_HOTKEY"),
+        handleSettingsBox,
     ],
     search_multi: [
         pluginFullBasePropBox,
+        TitledBox(
+            "search",
+            Switch("CASE_SENSITIVE"),
+            Switch("OPTIMIZE_SEARCH", "blockOrder"),
+            Number("MAX_SIZE", "maxBytes", UNITS.byte, 1, 2000000),
+        ),
         TitledBox(
             "searchResult",
             Switch("RELATIVE_PATH"),
@@ -221,12 +238,6 @@ const SETTING_SCHEMAS = {
             Switch("SHOW_MTIME"),
             Switch("REMOVE_BUTTON_HINT"),
             Number("MAX_HITS", undefined, undefined, 1),
-        ),
-        TitledBox(
-            "search",
-            Switch("CASE_SENSITIVE"),
-            Switch("OPTIMIZE_SEARCH", "blockOrder"),
-            Number("MAX_SIZE", undefined, UNITS.byte, 1, 2000000),
         ),
         TitledBox(
             "windowInteraction",
@@ -237,7 +248,7 @@ const SETTING_SCHEMAS = {
         ArrayBox("ALLOW_EXT"),
         ArrayBox("IGNORE_FOLDERS"),
         ArrayBox("HIGHLIGHT_COLORS"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     commander: [
         pluginFullBasePropBox,
@@ -259,37 +270,37 @@ const SETTING_SCHEMAS = {
                     { type: "switch", key: "disable", label: "$label.BUILTIN.disable" },
                     { type: "select", key: "shell", label: "$label.BUILTIN.shell", options: OPTIONS.commander["BUILTIN.shell"] },
                     { type: "text", key: "name", label: "$label.BUILTIN.name" },
-                    { type: "text", key: "cmd", label: "$label.BUILTIN.cmd" },
                 ),
+                TitledBox("BUILTIN.cmd", { type: "textarea", key: "cmd", rows: 5 }),
             ],
             {
                 name: "",
                 disable: false,
                 shell: "cmd/bash",
-                cmd: ""
+                cmd: "echo \"HelloWorld\""
             },
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     md_padding: [
         pluginFullBasePropBox,
         ArrayBox("IGNORE_WORDS"),
         ArrayBox("IGNORE_PATTERNS"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     read_only: [
         pluginFullBasePropBox,
         TitledBox(
             "underReadOnly",
+            Text("SHOW_TEXT"),
             Switch("READ_ONLY_DEFAULT"),
             Switch("NO_EXPAND_WHEN_READ_ONLY"),
-            Switch("REMOVE_EXPAND_WHEN_READ_ONLY"),
+            Switch("REMOVE_EXPAND_WHEN_READ_ONLY", undefined, undefined, { NO_EXPAND_WHEN_READ_ONLY: false }),
             Switch("CLICK_HYPERLINK_TO_OPEN_WHEN_READ_ONLY"),
             Switch("DISABLE_CONTEXT_MENU_WHEN_READ_ONLY"),
-            Text("SHOW_TEXT"),
         ),
-        ArrayBox("REMAIN_AVAILABLE_MENU_KEY"),
-        restoreSettingsBox,
+        ArrayBox("REMAIN_AVAILABLE_MENU_KEY", { DISABLE_CONTEXT_MENU_WHEN_READ_ONLY: true }),
+        handleSettingsBox,
     ],
     blur: [
         pluginFullBasePropBox,
@@ -297,16 +308,16 @@ const SETTING_SCHEMAS = {
             Switch("BLUR_DEFAULT"),
             Switch("RESTORE_WHEN_HOVER"),
             Select("BLUR_TYPE", OPTIONS.blur.BLUR_TYPE),
-            Number("BLUR_LEVEL", undefined, UNITS.pixel, 1),
+            Number("BLUR_LEVEL", undefined, UNITS.pixel, 1, undefined, undefined, { BLUR_TYPE: "blur" }),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     dark: [
         pluginFullBasePropBox,
         UntitledBox(
             Switch("DARK_DEFAULT")
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     no_image: [
         pluginFullBasePropBox,
@@ -316,7 +327,7 @@ const SETTING_SCHEMAS = {
             Number("TRANSITION_DURATION", undefined, UNITS.millisecond, 0),
             Number("TRANSITION_DELAY", undefined, UNITS.millisecond, 0),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     toolbar: [
         pluginFullBasePropBox,
@@ -337,7 +348,7 @@ const SETTING_SCHEMAS = {
             Switch("PAUSE_ON_COMPOSITION", "pauseOnComposition"),
             Number("DEBOUNCE_INTERVAL", undefined, UNITS.millisecond, 0),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     resize_image: [
         pluginLiteBasePropBox,
@@ -352,7 +363,7 @@ const SETTING_SCHEMAS = {
             Hotkey("MODIFIER_KEY.TEMPORARY", "modifyKeyExample"),
             Hotkey("MODIFIER_KEY.PERSISTENT"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     resize_table: [
         pluginLiteBasePropBox,
@@ -361,7 +372,7 @@ const SETTING_SCHEMAS = {
             Switch("REMOVE_MIN_CELL_WIDTH"),
             Number("DRAG_THRESHOLD", undefined, UNITS.pixel, 0),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     datatables: [
         pluginLiteBasePropBox,
@@ -373,9 +384,9 @@ const SETTING_SCHEMAS = {
             Switch("CASE_INSENSITIVE"),
             Switch("SCROLL_COLLAPSE"),
             Switch("PAGING"),
-            Number("PAGE_LENGTH", undefined, UNITS.piece, 1),
+            Number("PAGE_LENGTH", undefined, UNITS.item, 1),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     go_top: [
         pluginLiteBasePropBox,
@@ -383,7 +394,7 @@ const SETTING_SCHEMAS = {
             Hotkey("HOTKEY_GO_TOP"),
             Hotkey("HOTKEY_GO_BOTTOM"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     markmap: [
         pluginLiteBasePropBox,
@@ -425,7 +436,7 @@ const SETTING_SCHEMAS = {
             "mindmapDiagramExport",
             Switch("DOWNLOAD_OPTIONS.KEEP_ALPHA_CHANNEL"),
             Switch("DOWNLOAD_OPTIONS.REMOVE_USELESS_CLASSES"),
-            Switch("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT","removeForeignObj"),
+            Switch("DOWNLOAD_OPTIONS.REMOVE_FOREIGN_OBJECT", "removeForeignObj"),
             Switch("DOWNLOAD_OPTIONS.SHOW_PATH_INQUIRY_DIALOG"),
             Switch("DOWNLOAD_OPTIONS.SHOW_IN_FINDER"),
             Range("DOWNLOAD_OPTIONS.IMAGE_QUALITY", undefined, 0.01, 1, 0.01),
@@ -442,7 +453,7 @@ const SETTING_SCHEMAS = {
             Switch("ENABLE_FENCE_MARKMAP"),
             Switch("INTERACTIVE_MODE"),
             Hotkey("FENCE_HOTKEY"),
-            Text("FENCE_LANGUAGE"),
+            Text("FENCE_LANGUAGE", "protected", undefined, true),
             Text("DEFAULT_FENCE_HEIGHT"),
             Text("DEFAULT_FENCE_BACKGROUND_COLOR"),
         ),
@@ -463,7 +474,7 @@ const SETTING_SCHEMAS = {
         ),
         ArrayBox("DEFAULT_FENCE_OPTIONS.color"),
         TextareaBox("FENCE_TEMPLATE"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     auto_number: [
         pluginLiteBasePropBox,
@@ -478,9 +489,9 @@ const SETTING_SCHEMAS = {
         ),
         TitledBox(
             "style",
-            Switch("SHOW_IMAGE_NAME"),
+            Switch("SHOW_IMAGE_NAME", undefined, undefined, { ENABLE_IMAGE: true }),
             Select("ALIGN", OPTIONS.auto_number.ALIGN),
-            Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE),
+            Select("POSITION_TABLE", OPTIONS.auto_number.POSITION_TABLE, undefined, undefined, undefined, { ENABLE_TABLE: true }),
             Text("FONT_FAMILY"),
         ),
         TableBox(
@@ -545,7 +556,7 @@ const SETTING_SCHEMAS = {
             "advanced",
             Switch("ENABLE_WHEN_EXPORT"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     fence_enhance: [
         pluginLiteBasePropBox,
@@ -596,11 +607,11 @@ const SETTING_SCHEMAS = {
             ],
             {
                 DISABLE: false,
-                ICON: "",
+                ICON: "fa fa-bomb",
                 HINT: "",
-                ON_INIT: "",
-                ON_RENDER: "",
-                ON_CLICK: "",
+                ON_INIT: "plu => console.log('The button has been initialized')",
+                ON_RENDER: "btn => console.log('The button has been rendered')",
+                ON_CLICK: "({ ev, btn, cont, fence, cm, cid, plu }) => console.log('The button has been clicked')",
             },
         ),
         TitledBox(
@@ -611,7 +622,7 @@ const SETTING_SCHEMAS = {
             Switch("HIGHLIGHT_WHEN_HOVER"),
             Text("HIGHLIGHT_LINE_COLOR"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     collapse_paragraph: [
         pluginLiteBasePropBox,
@@ -628,7 +639,7 @@ const SETTING_SCHEMAS = {
             Hotkey("MODIFIER_KEY.COLLAPSE_ALL_SIBLINGS"),
             Hotkey("MODIFIER_KEY.COLLAPSE_RECURSIVE"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     collapse_list: [
         pluginLiteBasePropBox,
@@ -636,14 +647,14 @@ const SETTING_SCHEMAS = {
             Switch("RECORD_COLLAPSE"),
             Text("TRIANGLE_COLOR"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     collapse_table: [
         pluginLiteBasePropBox,
         UntitledBox(
             Switch("RECORD_COLLAPSE"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     truncate_text: [
         pluginLiteBasePropBox,
@@ -654,16 +665,16 @@ const SETTING_SCHEMAS = {
             Hotkey("HIDE_BASE_VIEW_HOTKEY"),
             Number("REMAIN_LENGTH", undefined, undefined, 1),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     export_enhance: [
         pluginLiteBasePropBox,
         TitledBox(
             "networkImage",
             Switch("DOWNLOAD_NETWORK_IMAGE"),
-            Number("DOWNLOAD_THREADS", undefined, undefined, 1),
+            Number("DOWNLOAD_THREADS", undefined, undefined, 1, undefined, undefined, { DOWNLOAD_NETWORK_IMAGE: true }),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     text_stylize: [
         UntitledBox(
@@ -698,18 +709,16 @@ const SETTING_SCHEMAS = {
             Text("DEFAULT_FORMAT_BRUSH", "brushExample"),
         ),
         ObjectBOX("COLOR_TABLE"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     cipher: [
         pluginLiteBasePropBox,
         UntitledBox(
+            Switch("SHOW_HINT_MODAL"),
             Hotkey("ENCRYPT_HOTKEY"),
             Hotkey("DECRYPT_HOTKEY"),
         ),
-        UntitledBox(
-            Switch("SHOW_HINT_MODAL"),
-        ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     easy_modify: [
         pluginLiteBasePropBox,
@@ -726,7 +735,7 @@ const SETTING_SCHEMAS = {
             Hotkey("HOTKEY_FILTER_INVISIBLE_CHARACTERS"),
             Hotkey("HOTKEY_TRAILING_WHITE_SPACE"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     custom: [
         UntitledBox(
@@ -736,7 +745,7 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Switch("HIDE_DISABLE_PLUGINS"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     slash_commands: [
         pluginLiteBasePropBox,
@@ -756,8 +765,8 @@ const SETTING_SCHEMAS = {
                     { type: "switch", key: "enable", label: "$label.COMMANDS.enable" },
                     { type: "select", key: "type", label: "$label.COMMANDS.type", options: OPTIONS.slash_commands["COMMANDS.type"] },
                     { type: "select", key: "scope", label: "$label.COMMANDS.scope", options: OPTIONS.slash_commands["COMMANDS.scope"] },
-                    { type: "text", key: "keyword", label: "$label.COMMANDS.keyword" },
-                    { type: "text", key: "icon", label: "$label.COMMANDS.icon" },
+                    { type: "text", key: "keyword", label: "$label.COMMANDS.keyword", placeholder: "$placeholder.LettersAndNumbersOnly" },
+                    { type: "text", key: "icon", label: "$label.COMMANDS.icon", placeholder: "$placeholder.emojiOnly" },
                     { type: "text", key: "hint", label: "$label.COMMANDS.hint" },
                     { type: "number", key: "cursorOffset.0", label: "$label.COMMANDS.cursorOffset.0" },
                     { type: "number", key: "cursorOffset.1", label: "$label.COMMANDS.cursorOffset.1" },
@@ -775,7 +784,7 @@ const SETTING_SCHEMAS = {
                 callback: "",
             },
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     right_click_menu: [
         UntitledBox(
@@ -806,7 +815,7 @@ const SETTING_SCHEMAS = {
             "advanced",
             Switch("FIND_LOST_PLUGIN")
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     pie_menu: [
         pluginFullBasePropBox,
@@ -827,7 +836,7 @@ const SETTING_SCHEMAS = {
                 CALLBACK: "",
             },
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     preferences: [
         UntitledBox(
@@ -836,11 +845,11 @@ const SETTING_SCHEMAS = {
             prop_HOTKEY
         ),
         UntitledBox(
-            Switch("SEARCH_PLUGIN_FIXEDNAME"),
+            Select("DEFAULT_MENU"),
             Select("OBJECT_SETTINGS_FORMAT", OPTIONS.preferences.OBJECT_SETTINGS_FORMAT),
-            Text("DEFAULT_MENU"),
+            Switch("SEARCH_PLUGIN_FIXEDNAME"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     file_counter: [
         pluginLiteBasePropBox,
@@ -858,11 +867,11 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "search",
             Number("IGNORE_MIN_NUM", "ignoreMinNum", undefined, 1),
-            Number("MAX_SIZE", undefined, UNITS.byte, 1, 2000000),
+            Number("MAX_SIZE", "maxBytes", UNITS.byte, 1, 2000000),
         ),
         ArrayBox("ALLOW_EXT"),
         ArrayBox("IGNORE_FOLDERS"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     hotkeys: [
         pluginFullBasePropBox,
@@ -890,18 +899,18 @@ const SETTING_SCHEMAS = {
                 evil: "",
             },
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     help: [
         pluginLiteBasePropBox,
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     editor_width_slider: [
         pluginLiteBasePropBox,
         UntitledBox(
             Number("WIDTH_RATIO", "minusOneMeansDisable", UNITS.percent, -1, 100, 1),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     article_uploader: [
         pluginLiteBasePropBox,
@@ -940,9 +949,9 @@ const SETTING_SCHEMAS = {
             Text("upload.csdn.cookie"),
         ),
         UntitledBox(
-            Action("articleUploaderReadme"),
+            Action("viewArticleUploaderReadme"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     ripgrep: [
         pluginFullBasePropBox,
@@ -955,7 +964,7 @@ const SETTING_SCHEMAS = {
             "interaction",
             Switch("BACKSPACE_TO_HIDE"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     json_rpc: [
         pluginLiteBasePropBox,
@@ -966,7 +975,7 @@ const SETTING_SCHEMAS = {
             Number("SERVER_OPTIONS.port", undefined, undefined, 0, 65535, 1),
             Text("SERVER_OPTIONS.path"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     updater: [
         pluginFullBasePropBox,
@@ -976,20 +985,20 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "autoUpdate",
             Switch("AUTO_UPDATE"),
-            Number("UPDATE_LOOP_INTERVAL", "loopInterval", UNITS.millisecond, -1),
-            Number("START_UPDATE_INTERVAL", "waitInterval", UNITS.millisecond, -1),
+            Number("UPDATE_LOOP_INTERVAL", "loopInterval", UNITS.millisecond, -1, undefined, undefined, { AUTO_UPDATE: true }),
+            Number("START_UPDATE_INTERVAL", "waitInterval", UNITS.millisecond, -1, undefined, undefined, { AUTO_UPDATE: true }),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     test: [
         pluginLiteBasePropBox,
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     kanban: [
         customPluginLiteBasePropBox,
         TitledBox(
             "fence",
-            Text("LANGUAGE"),
+            Text("LANGUAGE", "protected", undefined, true),
             Switch("INTERACTIVE_MODE"),
             Switch("STRICT_MODE"),
         ),
@@ -1006,13 +1015,13 @@ const SETTING_SCHEMAS = {
         ArrayBox("KANBAN_COLOR"),
         ArrayBox("TASK_COLOR"),
         TextareaBox("TEMPLATE"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     chat: [
         customPluginLiteBasePropBox,
         TitledBox(
             "fence",
-            Text("LANGUAGE"),
+            Text("LANGUAGE", "protected", undefined, true),
             Switch("INTERACTIVE_MODE"),
             Switch("DEFAULT_OPTIONS.useStrict"),
         ),
@@ -1026,7 +1035,7 @@ const SETTING_SCHEMAS = {
             Text("DEFAULT_OPTIONS.timeNickname"),
         ),
         TextareaBox("TEMPLATE"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     timeline: [
         customPluginLiteBasePropBox,
@@ -1045,7 +1054,7 @@ const SETTING_SCHEMAS = {
             Text("CIRCLE_TOP"),
         ),
         TextareaBox("TEMPLATE"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     echarts: [
         customPluginLiteBasePropBox,
@@ -1057,33 +1066,33 @@ const SETTING_SCHEMAS = {
             Select("RENDERER", OPTIONS.echarts.RENDERER),
             Select("EXPORT_TYPE", OPTIONS.echarts.EXPORT_TYPE),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     chart: [
         customPluginLiteBasePropBox,
         langModeBox,
         chartStyleBox,
         TextareaBox("TEMPLATE"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     wavedrom: [
         customPluginLiteBasePropBox,
         TitledBox(
             "fenceLanguageMode",
-            Text("LANGUAGE"),
+            Text("LANGUAGE", "protected", undefined, true),
             Switch("INTERACTIVE_MODE"),
             Switch("SAFE_MODE"),
         ),
         chartStyleBox,
         TextareaBox("TEMPLATE"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     calendar: [
         customPluginLiteBasePropBox,
         langModeBox,
         chartStyleBox,
         TextareaBox("TEMPLATE"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     abc: [
         customPluginLiteBasePropBox,
@@ -1091,7 +1100,7 @@ const SETTING_SCHEMAS = {
         chartStyleBox,
         TextareaBox("TEMPLATE"),
         ObjectBOX("VISUAL_OPTIONS", 6),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     drawIO: [
         customPluginLiteBasePropBox,
@@ -1102,13 +1111,13 @@ const SETTING_SCHEMAS = {
             "advanced",
             Text("RESOURCE_URI"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     marp: [
         customPluginLiteBasePropBox,
         langModeBox,
         TextareaBox("TEMPLATE"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     callouts: [
         customPluginLiteBasePropBox,
@@ -1152,7 +1161,7 @@ const SETTING_SCHEMAS = {
             },
         ),
         TextareaBox("template", 5),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     templater: [
         customPluginFullBasePropBox,
@@ -1187,7 +1196,7 @@ const SETTING_SCHEMAS = {
                 text: "",
             },
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     chineseSymbolAutoPairer: [
         customPluginLiteBasePropBox,
@@ -1220,7 +1229,7 @@ const SETTING_SCHEMAS = {
             ],
             ["", ""],
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     toc: [
         customPluginFullBasePropBox,
@@ -1250,7 +1259,7 @@ const SETTING_SCHEMAS = {
             Switch("include_headings.link"),
             Switch("include_headings.math"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     resourceOperation: [
         customPluginFullBasePropBox,
@@ -1269,7 +1278,7 @@ const SETTING_SCHEMAS = {
         ),
         ArrayBox("markdown_suffix"),
         ArrayBox("ignore_folders"),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     scrollBookmarker: [
         customPluginFullBasePropBox,
@@ -1278,7 +1287,7 @@ const SETTING_SCHEMAS = {
             Switch("auto_popup_modal"),
             Switch("persistence"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     imageReviewer: [
         customPluginFullBasePropBox,
@@ -1348,7 +1357,7 @@ const SETTING_SCHEMAS = {
             Number("skew_scale", undefined, UNITS.degree, 1),
             Number("translate_scale", undefined, UNITS.pixel, 1),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     markdownLint: [
         customPluginFullBasePropBox,
@@ -1362,10 +1371,10 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "cube",
             Switch("use_button"),
-            Text("button_width"),
-            Text("button_height"),
-            Text("pass_color"),
-            Text("error_color"),
+            Text("button_width", undefined, undefined, undefined, { use_button: true }),
+            Text("button_height", undefined, undefined, undefined, { use_button: true }),
+            Text("pass_color", undefined, undefined, undefined, { use_button: true }),
+            Text("error_color", undefined, undefined, undefined, { use_button: true }),
         ),
         TitledBox(
             "detectAndFix",
@@ -1379,14 +1388,14 @@ const SETTING_SCHEMAS = {
         UntitledBox(
             Action("viewMarkdownlintRules"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     reopenClosedFiles: [
         customPluginFullBasePropBox,
         UntitledBox(
             Switch("auto_reopen_when_init"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     quickButton: [
         customPluginFullBasePropBox,
@@ -1409,8 +1418,8 @@ const SETTING_SCHEMAS = {
             [
                 UntitledBox(
                     { type: "switch", key: "disable", label: "$label.buttons.disable" },
-                    { type: "number", key: "coordinate.0", label: "$label.buttons.coordinate.0" },
-                    { type: "number", key: "coordinate.1", label: "$label.buttons.coordinate.1" },
+                    { type: "number", key: "coordinate.0", label: "$label.buttons.coordinate.0", tooltip: "$tooltip.buttons.coordinate.0" },
+                    { type: "number", key: "coordinate.1", label: "$label.buttons.coordinate.1", tooltip: "$tooltip.buttons.coordinate.1" },
                     { type: "text", key: "icon", label: "$label.buttons.icon" },
                     { type: "text", key: "size", label: "$label.buttons.size" },
                     { type: "text", key: "color", label: "$label.buttons.color" },
@@ -1423,8 +1432,8 @@ const SETTING_SCHEMAS = {
             {
                 disable: true,
                 coordinate: [0, 0],
-                icon: "",
-                size: "",
+                icon: "fa fa-bomb",
+                size: "17px",
                 color: "",
                 bgColor: "",
                 hint: "",
@@ -1432,11 +1441,11 @@ const SETTING_SCHEMAS = {
                 evil: "",
             },
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     blockSideBySide: [
         customPluginFullBasePropBox,
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
     redirectLocalRootUrl: [
         customPluginLiteBasePropBox,
@@ -1444,7 +1453,7 @@ const SETTING_SCHEMAS = {
             Text("root"),
             Text("filter_regexp"),
         ),
-        restoreSettingsBox,
+        handleSettingsBox,
     ],
 }
 

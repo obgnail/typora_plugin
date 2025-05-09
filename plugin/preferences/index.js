@@ -33,45 +33,11 @@ class preferencesPlugin extends BasePlugin {
             searchInput: document.querySelector("#plugin-preferences-menu-search input"),
             closeButton: document.querySelector("#plugin-preferences-dialog-close"),
         }
-
-        // Callback functions for type="action" options in schema
-        this.ACTION_HANDLERS = {
-            visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
-            viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
-            backupSettings: async () => this.utils.settings.backupSettingFile(),
-            openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
-            articleUploaderReadme: async () => this.utils.showInFinder(this.utils.joinPath("./plugin/article_uploader/README.md")),
-            restoreSettings: async () => {
-                const fixedName = this.entities.form.dataset.plugin
-                await this.utils.settings.clearSettings(fixedName)
-                await this.switchMenu(fixedName)
-                this.utils.notification.show(this.i18n._t("global", "notification.settingsRestored"))
-            },
-            restoreAllSettings: async () => {
-                const fixedName = this.entities.form.dataset.plugin
-                await this.utils.settings.clearAllSettings()
-                await this.switchMenu(fixedName)
-                this.utils.notification.show(this.i18n._t("global", "notification.allSettingsRestored"))
-            },
-            updatePlugin: async () => {
-                const updater = this.utils.getPlugin("updater")
-                if (!updater) {
-                    const plugin = this.i18n._t("updater", "pluginName")
-                    const msg = this.i18n._t("global", "error.pluginDisabled", { plugin })
-                    this.utils.notification.show(msg, "error")
-                } else {
-                    await updater.call()
-                }
-            },
-        }
-
-        // Values for type="external" options in schema
-        this.EXTERNAL_HANDLERS = {
-            pluginVersion: async () => this.utils.getPluginVersion(),
-        }
-
+        this._initActionHandlers()
+        this._initPreProcessors()
+        this._initPostProcessors()
         this._initSchemas()
-        this._initForm()
+        this._initDialogForm()
     }
 
     process = () => {
@@ -128,6 +94,10 @@ class preferencesPlugin extends BasePlugin {
                     const settings = await this._getSettings(fixedName)
                     propHandler(settings, key, value)
                     await this.utils.settings.saveSettings(fixedName, settings)
+                    const postFn = this.POSTPROCESSORS[`${fixedName}.${key}`]
+                    if (postFn) {
+                        await postFn(value, settings)
+                    }
                     return
                 }
                 const actionHandler = type === "action" && this.ACTION_HANDLERS[key]
@@ -153,22 +123,13 @@ class preferencesPlugin extends BasePlugin {
     }
 
     showDialog = async (showMenu) => {
-        const names = [
-            "global",
-            ...Object.keys(this.utils.getAllPluginSettings()),
-            ...Object.keys(this.utils.getAllCustomPluginSettings())
-        ]
-        const menus = names
-            .filter(name => this.SETTING_SCHEMAS.hasOwnProperty(name))
-            .map(name => {
-                const p = this.utils.tryGetPlugin(name)
-                const pluginName = p ? p.pluginName : this.i18n._t(name, "pluginName")
-                const showName = this.utils.escape(pluginName)
-                return `<div class="plugin-preferences-menu-item" data-plugin="${name}">${showName}</div>`
-            })
+        const plugins = this._getAllPlugins()
+        const menus = Object.entries(plugins).map(([name, pluginName]) => {
+            const showName = this.utils.escape(pluginName)
+            return `<div class="plugin-preferences-menu-item" data-plugin="${name}">${showName}</div>`
+        })
         this.entities.menu.innerHTML = menus.join("")
-
-        showMenu = names.includes(showMenu) ? showMenu : "global"
+        showMenu = plugins.hasOwnProperty(showMenu) ? showMenu : "global"
         await this.switchMenu(showMenu)
         setTimeout(() => {
             const active = this.entities.menu.querySelector(".plugin-preferences-menu-item.active")
@@ -178,7 +139,7 @@ class preferencesPlugin extends BasePlugin {
 
     switchMenu = async (fixedName) => {
         const settings = await this._getSettings(fixedName)
-        const values = await this._addExternalValues(fixedName, settings)
+        const values = await this._preprocess(fixedName, settings)
         this.entities.form.dataset.plugin = fixedName
         this.entities.form.render(this.SETTING_SCHEMAS[fixedName], values)
         this.entities.menu.querySelectorAll(".active").forEach(e => e.classList.remove("active"))
@@ -188,6 +149,22 @@ class preferencesPlugin extends BasePlugin {
         $(this.entities.main).animate({ scrollTop: 0 }, 300)
     }
 
+    _getAllPlugins = () => {
+        const names = [
+            "global",
+            ...Object.keys(this.utils.getAllPluginSettings()),
+            ...Object.keys(this.utils.getAllCustomPluginSettings())
+        ]
+        const plugins = names
+            .filter(name => this.SETTING_SCHEMAS.hasOwnProperty(name))
+            .map(name => {
+                const p = this.utils.tryGetPlugin(name)
+                const pluginName = p ? p.pluginName : this.i18n._t(name, "pluginName")
+                return [name, pluginName]
+            })
+        return Object.fromEntries(plugins)
+    }
+
     _getSettings = async (fixedName) => {
         const isBase = this.utils.getPluginSetting(fixedName)
         const fn = isBase ? "readBasePluginSettings" : "readCustomPluginSettings"
@@ -195,20 +172,19 @@ class preferencesPlugin extends BasePlugin {
         return settings[fixedName]
     }
 
-    _addExternalValues = async (fixedName, settings) => {
-        const handler = this.EXTERNAL_HANDLERS
+    _preprocess = async (fixedName, values) => {
+        const fnMap = this.PREPROCESSORS
         await Promise.all(
             this.SETTING_SCHEMAS[fixedName].flatMap(box => {
                 return box.fields
-                    .map(field => field.key)
-                    .filter(key => key && handler.hasOwnProperty(key))
-                    .map(async key => settings[key] = await handler[key]())
+                    .filter(field => field.key && fnMap.hasOwnProperty(`${fixedName}.${field.key}`))
+                    .map(async field => await fnMap[`${fixedName}.${field.key}`](field, values))
             })
         )
-        return settings
+        return values
     }
 
-    _initForm = () => this.entities.form.init(this.utils, { objectFormat: this.config.OBJECT_SETTINGS_FORMAT })
+    _initDialogForm = () => this.entities.form.init(this.utils, { objectFormat: this.config.OBJECT_SETTINGS_FORMAT })
 
     /** Will NOT modify the schemas structure, just i18n */
     _initSchemas = () => {
@@ -275,6 +251,108 @@ class preferencesPlugin extends BasePlugin {
             const pluginI18N = i18nData[fixedName]
             boxes.forEach(box => translateBox(box, pluginI18N))
         })
+    }
+
+    /** Callback functions for type="action" settings in schema */
+    _initActionHandlers = () => {
+        this.ACTION_HANDLERS = {
+            visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
+            assistWithTranslations: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/tree/master/plugin/global/locales"),
+            viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
+            viewArticleUploaderReadme: () => this.utils.showInFinder(this.utils.joinPath("./plugin/article_uploader/README.md")),
+            backupSettings: async () => this.utils.settings.backupSettingFile(),
+            openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
+            restoreSettings: async () => {
+                const fixedName = this.entities.form.dataset.plugin
+                await this.utils.settings.clearSettings(fixedName)
+                await this.switchMenu(fixedName)
+                this.utils.notification.show(this.i18n._t("global", "notification.settingsRestored"))
+            },
+            restoreAllSettings: async () => {
+                const fixedName = this.entities.form.dataset.plugin
+                await this.utils.settings.clearAllSettings()
+                await this.switchMenu(fixedName)
+                this.utils.notification.show(this.i18n._t("global", "notification.allSettingsRestored"))
+            },
+            runtimeSettings: async () => {
+                const fixedName = this.entities.form.dataset.plugin
+                const settings = await this._getSettings(fixedName)
+                const title = this.i18n._t("settings", "$label.runtimeSettings") + `（${this.i18n._t("global", "readonly")}）`
+                const schema = [{ fields: [{ key: "runtimeSettings", type: "textarea", rows: 15 }] }]
+                const data = { runtimeSettings: JSON.stringify(settings, null, "\t") }
+                await this.utils.formDialog.modal(title, schema, data)
+            },
+            updatePlugin: async () => {
+                const updater = this.utils.getPlugin("updater")
+                if (!updater) {
+                    const plugin = this.i18n._t("updater", "pluginName")
+                    const msg = this.i18n._t("global", "error.pluginDisabled", { plugin })
+                    this.utils.notification.show(msg, "error")
+                } else {
+                    await updater.call()
+                }
+            },
+        }
+    }
+
+    /** PreProcessors for specific settings in schema */
+    _initPreProcessors = () => {
+        const _disableOption = (options, targetOption) => Object.defineProperty(options, targetOption, { enumerable: false })
+        const _incompatibleSwitch = (field, values) => {
+            field.disabled = true
+            field.tooltip = this.i18n._t("settings", "$tooltip.lowVersion")
+            values[field.key] = false
+        }
+        this.PREPROCESSORS = {
+            "global.pluginVersion": async (field, values) => {
+                if (!values[field.key]) {
+                    let version = "Unknown"
+                    try {
+                        const file = this.utils.joinPath("./plugin/bin/version.json")
+                        const json = await this.utils.Package.FsExtra.readJson(file)
+                        version = json.tag_name
+                    } catch (e) {
+                        console.error(e)
+                    }
+                    values[field.key] = version
+                }
+            },
+            "window_tab.LAST_TAB_CLOSE_ACTION": (field, values) => {
+                if (this.utils.isBetaVersion) {
+                    const illegalOption = "blankPage"
+                    _disableOption(field.options, illegalOption)
+                    if (values[field.key] === illegalOption) {
+                        values[field.key] = "reconfirm"
+                    }
+                }
+            },
+            "fence_enhance.ENABLE_INDENT": (field, values) => {
+                if (this.utils.isBetaVersion) {
+                    _incompatibleSwitch(field, values)
+                }
+            },
+            "blur.ENABLE": (field, values) => {
+                if (!this.utils.supportHasSelector) {
+                    _incompatibleSwitch(field, values)
+                }
+            },
+            "export_enhance.ENABLE": (field, values) => {
+                if (!this.utils.exportHelper.isAsync) {
+                    _incompatibleSwitch(field, values)
+                }
+            },
+            "preferences.DEFAULT_MENU": (field, values) => {
+                if (!field.options) {
+                    field.options = this._getAllPlugins()
+                }
+            },
+        }
+    }
+
+    /** PostProcessors for specific settings in schema */
+    _initPostProcessors = () => {
+        this.POSTPROCESSORS = {
+        }
     }
 }
 

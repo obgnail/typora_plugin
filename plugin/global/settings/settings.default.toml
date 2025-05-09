@@ -335,7 +335,7 @@ COMMIT_RUN_DISPLAY = "echo"
 #   $m: 当前 Typora 侧边栏的根目录路径（挂载目录）
 BUILTIN = [
     # 占位符，不执行任何命令
-    { name = "Dummy", disable = false, shell = "cmd/bash", cmd = "" },
+    { name = "Default", disable = false, shell = "cmd/bash", cmd = "" },
     # 在资源管理器中打开当前文件所在目录
     { name = "Explorer", disable = false, shell = "powershell", cmd = "explorer $d" },
     # 在 VS Code 中打开当前文件
@@ -374,7 +374,7 @@ IGNORE_WORDS = []
 # ------------------- 忽略正则 -------------------
 # 指定不希望在内部或前后添加空格的正则表达式列表
 #   插件不会在匹配这些正则表达式的文本内部或前后添加额外的空格
-IGNORE_PATTERNS = ['<br\s*?/?>', ':[0-9a-z_\-]+?:', '<u>.+?</u>', '<span style=".+?">.+?</span>']
+IGNORE_PATTERNS = [':[0-9a-z_\-]+?:', '<br\s*?/?>', '<u>.+?</u>', '<span style=".+?">.+?</span>']
 
 
 ################### read_only ###################
