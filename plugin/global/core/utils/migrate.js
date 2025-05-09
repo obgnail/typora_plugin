@@ -68,8 +68,7 @@ class migrate {
                 .forEach(([plugin, toDeleteKeys]) => toDeleteKeys.forEach(key => delete plugin[key]))
         })
         files.forEach(file => {
-            const retain = Object.keys(file.configUser).filter(fixedName => Object.keys(file.configUser[fixedName]).length !== 0)
-            file.configUser = this.utils.pick(file.configUser, retain)
+            file.configUser = this.utils.pickBy(file.configUser, cfg => Object.keys(cfg).length !== 0)
         })
     }
 

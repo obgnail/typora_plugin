@@ -460,20 +460,6 @@ class utils {
     }
 
     ////////////////////////////// business file operation //////////////////////////////
-    static _plugin_version = ""
-    static getPluginVersion = async () => {
-        if (!this._plugin_version) {
-            const file = this.joinPath("./plugin/bin/version.json")
-            try {
-                const { tag_name } = await this.Package.FsExtra.readJson(file)
-                this._plugin_version = tag_name
-            } catch (err) {
-                this._plugin_version = "Unknown"
-            }
-        }
-        return this._plugin_version
-    }
-
     /**
      * @param {boolean} shouldSave - Whether to save the content.
      * @param {string} contentType - The content type (e.g., 'markdown', 'html').
@@ -1126,23 +1112,12 @@ const newMixin = (utils) => {
         ...require("./thirdPartyDiagramParser"),
         ...require("./entities"),
     }
-    const mixin = Object.fromEntries(
-        Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils, i18n)])
-    )
-
-    // we should use composition to layer various functions, but utils is outdated and has become legacy code. My apologies
-    Object.assign(utils, mixin, {
-        /** @deprecated new API: utils.hotkeyHub.register */
-        registerHotkey: mixin.hotkeyHub.register,
-        /** @deprecated new API: utils.dialog.modal */
-        modal: mixin.dialog.modal
-    })
-
-    return mixin
+    return Object.fromEntries(Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils, i18n)]))
 }
 
 const getHook = utils => {
     const mixin = newMixin(utils)
+    Object.assign(utils, mixin)
 
     const {
         styleTemplater, hotkeyHub, eventHub, stateRecorder, exportHelper, contextMenu,
@@ -1168,7 +1143,7 @@ const getHook = utils => {
         await pluginLoader()
         await registerPostMixin()
         await optimizeMixin()
-        // Due to the use of async, some events may have been missed (such as afterAddCodeBlock), reload it
+        // Due to being an asynchronous function, some events (such as afterAddCodeBlock) may have been missed. Reload it
         if (File.getMountFolder() != null) {
             setTimeout(utils.reload, 50)
         }

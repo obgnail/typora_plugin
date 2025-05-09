@@ -114,7 +114,7 @@ Visit [Video Installation Tutorial](https://github.com/obgnail/typora_plugin/iss
 | ------ | ---------------------------------------------- | ------------------------------------------ |
 | Step 4 | ![install_windows](assets/install_windows.png) | ![install_linux](assets/install_linux.png) |
 
-> Windows can also install plugins by executing `install_windows.ps1`; similarly, Linux can execute the `install_linux_amd_x64` file.
+> You can also install plugins by executing `install_windows.ps1` in the Windows system.
 
 
 

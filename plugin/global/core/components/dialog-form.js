@@ -5,17 +5,20 @@ class pluginForm extends HTMLElement {
         this.options = options || { objectFormat: "JSON" }
         this.values = null
         this.actions = null
+        this.prerequisite = null
         this.form = null
         this._initShadow()
         this._bindEvents()
     }
 
-    render(schemas, data, actions) {
+    render(schemas, datas, actions = {}) {
         this.schemas = schemas
         this.actions = actions
-        this.values = JSON.parse(JSON.stringify(data))
-        this.form.innerHTML = this._fillForm(schemas, this.values)
+        this.values = JSON.parse(JSON.stringify(datas))
+        this.prerequisite = this._buildPrerequisite(schemas)
+        this.form.innerHTML = this._fillForm(schemas)
     }
+
 
     _initShadow() {
         const awesomeCSS = this.utils.joinPath("./style/font-awesome-4.1.0/css/font-awesome.min.css")
@@ -33,11 +36,12 @@ class pluginForm extends HTMLElement {
     _onEvent(key, value, type = "set") {
         this.dispatchEvent(new CustomEvent("form-curd", { detail: { key, value, type } }))
         if (type === "action") {
-            const fn = this.actions && this.actions[key]
+            const fn = this.actions[key]
             if (fn) fn()
-        } else {
-            this.utils.nestedPropertyHelpers[type](this.values, key, value)
+            return
         }
+        this.utils.nestedPropertyHelpers[type](this.values, key, value)
+        this._toggleReadonly(key)
     }
 
     _bindEvents() {
@@ -256,15 +260,13 @@ class pluginForm extends HTMLElement {
     }
 
     _createTableRow(thMap, item) {
-        const showKeys = [...Object.keys(thMap)]
+        const header = this.utils.pick(item, [...Object.keys(thMap)])
+        const headerValues = [...Object.values(header)].map(h => typeof h === "string" ? this.utils.escape(h) : h)
         const editButtons = '<div class="table-edit fa fa-pencil"></div><div class="table-delete fa fa-trash-o"></div>'
-        const v = [...Object.values(this.utils.pick(item, showKeys))].map(e => {
-            return typeof e === "string" ? this.utils.escape(e) : e
-        })
-        return [...v, editButtons]
+        return [...headerValues, editButtons]
     }
 
-    _fillForm(schemas, data) {
+    _fillForm(schemas) {
         const blockControls = new Set(["textarea", "object", "array", "table", "radio", "checkbox"])
         const createTitle = (title) => `<div class="title">${title}</div>`
         const createTooltip = (item) => item.tooltip ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${item.tooltip.replace("\n", "<br>")}</span></span>` : ""
@@ -301,8 +303,8 @@ class pluginForm extends HTMLElement {
                     `
                 case "action":
                     return `<div class="action fa fa-angle-right" data-action="${ctl.act}"></div>`
-                case "external":
-                    return `<div class="external" data-key="${ctl.key}">${value}</div>`
+                case "static":
+                    return `<div class="static" data-key="${ctl.key}">${this.utils.escape(value)}</div>`
                 case "select":
                     const isMulti = Array.isArray(value)
                     const show = isMulti
@@ -311,7 +313,8 @@ class pluginForm extends HTMLElement {
                     const isSelected = (option) => isMulti ? value.includes(option) : option === value
                     const options = Object.entries(ctl.options).map(([option, optionShowName]) => {
                         const choose = isSelected(option) ? "true" : "false"
-                        return `<div class="option-item" data-value="${option}" data-choose="${choose}">${optionShowName}</div>`
+                        const showName = this.utils.escape(optionShowName)
+                        return `<div class="option-item" data-value="${option}" data-choose="${choose}">${showName}</div>`
                     })
                     const val = isMulti ? value.join("#") : value
                     const minItems = (isMulti && ctl.minItems != null) ? ctl.minItems : 0
@@ -401,11 +404,13 @@ class pluginForm extends HTMLElement {
                 field.type = "unit"
             }
             const isBlock = blockControls.has(field.type)
-            const value = this.utils.nestedPropertyHelpers.get(data, field.key)
+            const value = this.utils.nestedPropertyHelpers.get(this.values, field.key)
             const ctl = createGeneralControl(field, value)
             const label = isBlock ? "" : `<div class="control-left">${field.label}${createTooltip(field)}</div>`
             const control = isBlock ? ctl : `<div class="control-right">${ctl}</div>`
-            return `<div class="control" data-type="${field.type}">${label}${control}</div>`
+            const readonlyCls = this._isReadonly(field) ? " plugin-common-readonly" : ""
+            const cls = "control" + readonlyCls
+            return `<div class="${cls}" data-type="${field.type}">${label}${control}</div>`
         }
         const createBox = ({ title, fields }) => {
             const t = title ? createTitle(title) : ""
@@ -414,6 +419,46 @@ class pluginForm extends HTMLElement {
             return t + box
         }
         return schemas.map(createBox).join("")
+    }
+
+    _buildPrerequisite(schemas) {
+        const prerequisite = {}
+        schemas.forEach(box => {
+            box.fields.forEach(field => {
+                const dep = field.dependencies
+                if (!dep || dep.length === 0) return
+                Object.keys(dep).forEach(k => {
+                    prerequisite[k] = prerequisite[k] || []
+                    prerequisite[k].push(field)
+                })
+            })
+        })
+        return prerequisite
+    }
+
+    _toggleReadonly(key) {
+        const fields = this.prerequisite[key]
+        if (!fields) return
+        fields.forEach(field => {
+            const k = field.key
+            if (!this.form) return
+            const el = this.form.querySelector(`[data-key="${k}"], [data-action="${k}"]`)
+            if (!el) return
+            const control = el.closest(".control")
+            if (!control) return
+            control.classList.toggle("plugin-common-readonly", this._isReadonly(field))
+        })
+        fields.forEach(field => this._toggleReadonly(field.key))
+    }
+
+    _isReadonly(field) {
+        if (field.dependencies) {
+            // TODO: supports `AND` only now
+            const configurable = Object.entries(field.dependencies).every(([k, v]) => {
+                return v === this.utils.nestedPropertyHelpers.get(this.values, k)
+            })
+            return !configurable
+        }
     }
 
     _toFixed2(num) {

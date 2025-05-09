@@ -62,8 +62,10 @@ fi
 echo "[7/9] backup window.html"
 cp "$windowHTMLPath" "$windowHTMLBakPath"
 
-echo "[8/9] chmod plugin dir"
+echo "[8/9] chmod plugin files"
 chmod 0777 "$pluginDir"
+chmod 0777 "$pluginDir/global/settings/settings.user.toml"
+chmod 0777 "$pluginDir/global/settings/custom_plugin.user.toml"
 
 echo "[9/9] update window.html"
 escapedFrameScript=$(escape "$frameScript")

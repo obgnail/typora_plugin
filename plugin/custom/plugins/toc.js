@@ -6,12 +6,12 @@ class tocPlugin extends BaseCustomPlugin {
             <div class="grip-right"></div>
             <div class="plugin-toc-wrap">
                 <div class="plugin-toc-header">
-                    <div class="plugin-toc-icon" data-type="header" ty-hint="${this.i18n.t("header")}"><i class="fa fa-header"></i></div>
-                    <div class="plugin-toc-icon" data-type="image" ty-hint="${this.i18n.t("image")}"><i class="fa fa-image"></i></div>
-                    <div class="plugin-toc-icon" data-type="table" ty-hint="${this.i18n.t("table")}"><i class="fa fa-table"></i></div>
-                    <div class="plugin-toc-icon" data-type="fence" ty-hint="${this.i18n.t("fence")}"><i class="fa fa-code"></i></div>
-                    <div class="plugin-toc-icon" data-type="link" ty-hint="${this.i18n.t("link")}"><i class="fa fa-link"></i></div>
-                    <div class="plugin-toc-icon" data-type="math" ty-hint="${this.i18n.t("math")}"><i class="fa fa-dollar"></i></div>
+                    <div class="plugin-toc-icon" data-type="header" ty-hint="${this.i18n.t("header")}"><div class="fa fa-header"></div></div>
+                    <div class="plugin-toc-icon" data-type="image" ty-hint="${this.i18n.t("image")}"><div class="fa fa-image"></div></div>
+                    <div class="plugin-toc-icon" data-type="table" ty-hint="${this.i18n.t("table")}"><div class="fa fa-table"></div></div>
+                    <div class="plugin-toc-icon" data-type="fence" ty-hint="${this.i18n.t("fence")}"><div class="fa fa-code"></div></div>
+                    <div class="plugin-toc-icon" data-type="link" ty-hint="${this.i18n.t("link")}"><div class="fa fa-link"></div></div>
+                    <div class="plugin-toc-icon" data-type="math" ty-hint="${this.i18n.t("math")}"><div class="fa fa-dollar"></div></div>
                 </div>
                 <div class="plugin-toc-list"></div>
             </div>
@@ -36,7 +36,12 @@ class tocPlugin extends BaseCustomPlugin {
             eventHub.addEventListener(eventHub.eventType.outlineUpdated, () => this.refresh());
             eventHub.addEventListener(eventHub.eventType.toggleSettingPage, hide => hide && this.isModalShow() && this.toggle());
             eventHub.addEventListener(eventHub.eventType.fileEdited, this.utils.debounce(this.refresh, 300));
-            this.utils.decorate(() => File && File.editor && File.editor.library && File.editor.library.outline, "highlightVisibleHeader", null, this.highlightVisibleHeader);
+            this.utils.decorate(
+                () => File && File.editor && File.editor.library && File.editor.library.outline,
+                "highlightVisibleHeader",
+                null,
+                this.highlightVisibleHeader,
+            )
             const resetPosition = () => {
                 const { right } = this.entities.content.getBoundingClientRect();
                 const { right: modalRight } = this.entities.modal.getBoundingClientRect();
@@ -50,20 +55,25 @@ class tocPlugin extends BaseCustomPlugin {
         }
         const onClick = () => {
             this.entities.modal.addEventListener("click", ev => {
-                const node = ev.target.closest(".toc-node");
-                const icon = ev.target.closest(".plugin-toc-icon");
-
-                if (!node && !icon) return;
+                const node = ev.target.closest(".toc-node")
                 if (node) {
-                    const cid = node.dataset.ref
-                    this.utils.scrollByCid(cid, -1, true);
-                } else if (icon) {
-                    this.refresh(icon.dataset.type);
+                    if (File.editor.sourceView.inSourceMode) {
+                        File.toggleSourceMode()
+                    }
+                    this.utils.scrollByCid(node.dataset.ref, -1, true)
+                    return
+                }
+                const icon = ev.target.closest(".plugin-toc-icon")
+                if (icon) {
+                    this.refresh(icon.dataset.type)
                 }
             })
+
             if (this.config.right_click_outline_button_to_toggle) {
-                const e = document.querySelector("#info-panel-tab-outline .info-panel-tab-title");
-                e && e.addEventListener("mousedown", ev => ev.button === 2 && this.toggle());
+                const panelTitle = document.querySelector("#info-panel-tab-outline .info-panel-tab-title")
+                if (panelTitle) {
+                    panelTitle.addEventListener("mousedown", ev => ev.button === 2 && this.toggle())
+                }
             }
         }
         const onResize = () => {

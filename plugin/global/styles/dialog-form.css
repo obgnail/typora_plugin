@@ -2,6 +2,15 @@
     display: none !important;
 }
 
+.plugin-common-readonly {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.plugin-common-readonly .control-left {
+    text-decoration: line-through;
+}
+
 #form {
     box-sizing: border-box;
     width: 100%;
@@ -100,6 +109,7 @@
 /***** general control *****/
 .control {
     display: flex;
+    align-items: center;
     padding: 8px 12px;
     min-height: 24px;
     line-height: 32px;
@@ -205,7 +215,6 @@ textarea {
 /***** select *****/
 .select {
     position: relative;
-    width: fit-content;
 }
 
 .select-wrap {
@@ -316,10 +325,6 @@ textarea {
 }
 
 /***** unit *****/
-.control[data-type="unit"] {
-    align-items: center;
-}
-
 .unit-wrap {
     width: 100%;
     display: inline-flex;
