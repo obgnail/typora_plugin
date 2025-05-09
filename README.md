@@ -112,7 +112,7 @@
 | ------ | ---------------------------------------------- | ------------------------------------------ |
 | 步骤 4 | ![install_windows](assets/install_windows.png) | ![install_linux](assets/install_linux.png) |
 
-> Windows 系统也可以通过执行 `install_windows.ps1` 安装插件；同理，Linux 系统也可以执行 `install_linux_amd_x64` 文件
+> Windows 系统也可以通过执行 `install_windows.ps1` 安装插件
 
 
 
