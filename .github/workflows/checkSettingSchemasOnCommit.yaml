@@ -1,0 +1,82 @@
+name: Check Setting Schemas On Commit
+
+on:
+  push:
+    paths:
+      - 'plugin/global/settings/**'
+      - 'plugin/preferences/**'
+
+jobs:
+  check_schemas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+
+      - name: Check Schemas
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const hasNestedProperty = (obj, key) => {
+                if (key == null) {
+                    return false
+                }
+                return key.split(".").every(k => {
+                    if (obj && typeof obj === "object" && Object.hasOwn(obj, k)) {
+                        obj = obj[k]
+                        return true
+                    }
+                    return false
+                })
+            }
+
+            const loadSettings = async () => {
+                const fs = require("fs").promises
+                const toml = require("./plugin/global/core/lib/soml-toml.js")
+                const base = await fs.readFile("./plugin/global/settings/settings.default.toml", "utf-8")
+                const custom = await fs.readFile("./plugin/global/settings/custom_plugin.default.toml", "utf-8")
+                return { ...toml.parse(base), ...toml.parse(custom) }
+            }
+
+            const loadSchemas = () => {
+                const schemas = require("./plugin/preferences/schemas.js", "utf-8")
+                Object.values(schemas).forEach(boxes => {
+                    boxes.forEach(box => box.fields = box.fields.filter(ctl => ctl.key && ctl.type !== "static" && ctl.type !== "action"))
+                })
+                return schemas
+            }
+
+            (async () => {
+                const schemas = loadSchemas()
+                const settings = await loadSettings()
+
+                Object.entries(schemas).forEach(([fixedName, boxes]) => {
+                    const setting = settings[fixedName]
+                    boxes.forEach(box => {
+                        box.fields.forEach(ctl => {
+                            if (!hasNestedProperty(setting, ctl.key)) {
+                                throw new TypeError(`settings ${fixedName} has no such Key: ${ctl.key}`)
+                            }
+                        })
+                    })
+                })
+
+                Object.entries(settings).forEach(([fixedName, setting]) => {
+                    const boxes = schemas[fixedName]
+                    const keysInSchema = new Set(boxes.flatMap(box => box.fields.map(ctl => ctl.key)))
+                    keysInSchema.forEach(key => {
+                        const exist = hasNestedProperty(setting, key)
+                        if (!exist) {
+                            throw new TypeError(`schemas ${fixedName} has no such Key: ${key}`)
+                        }
+                    })
+                })
+            })()
+      - run: |
+          echo "./plugin/preferences/schemas.js has checked"
