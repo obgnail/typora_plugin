@@ -20,27 +20,27 @@ escape() {
     sed -E 's/[]\/$*.^|[]/\\&/g' <<<"$1"
 }
 
-echo "[1/9] check command"
-for cmd in echo cp cat chmod sed; do
-    command -v "$cmd" &>/dev/null || panic "cannot find command $cmd, please install it."
+echo "[1/9] Check commands"
+for cmd in cp cat chmod sed; do
+    command -v "$cmd" &>/dev/null || panic "Cannot find command $cmd, Please install it"
 done
 
-echo "[2/9] check sudo"
+echo "[2/9] Check sudo"
 if [ "$EUID" -ne 0 ]; then
-    panic "please run this script as root."
+    panic "Please run this script as root"
 fi
 
-echo "[3/9] check plugin exists"
+echo "[3/9] Check if plugin exists"
 if ! [ -d "$pluginDir" ]; then
-    panic "dir plugin does not exist in $rootDir"
+    panic "Folder plugin does not exist in $rootDir"
 fi
 
-echo "[4/9] check whether window.html exists"
+echo "[4/9] Check if window.html exists"
 if ! [ -f "$windowHTMLPath" ]; then
     panic "window.html does not exist in $rootDir"
 fi
 
-echo "[5/8] check whether app/appsrc exists"
+echo "[5/8] Check if app/appsrc exists"
 if [ -d "$appsrcPath" ]; then
     frameScript=$newFrameScript
 elif [ -d "$appPath" ]; then
@@ -49,28 +49,28 @@ else
     panic "appsrc/app does not exist in $rootDir"
 fi
 
-echo "[6/9] check window.html content"
+echo "[6/9] Check window.html content"
 content=$(cat "$windowHTMLPath")
 if ! [[ $content == *"$frameScript"* ]]; then
     panic "window.html does not contains $frameScript"
 fi
 if [[ $content == *"$pluginScript"* ]]; then
-    echo "plugin has already been installed"
+    echo "Plugin has already been installed"
     exit
 fi
 
-echo "[7/9] backup window.html"
+echo "[7/9] Backup window.html"
 cp "$windowHTMLPath" "$windowHTMLBakPath"
 
-echo "[8/9] chmod plugin files"
+echo "[8/9] Chmod plugin files"
 chmod 0777 "$pluginDir"
 chmod 0777 "$pluginDir/global/settings/settings.user.toml"
 chmod 0777 "$pluginDir/global/settings/custom_plugin.user.toml"
 
-echo "[9/9] update window.html"
+echo "[9/9] Update window.html"
 escapedFrameScript=$(escape "$frameScript")
 escapedPluginScript=$(escape "$pluginScript")
 replacement="$escapedFrameScript$escapedPluginScript"
 newContent=$(echo -n "$content" | sed "s|$escapedFrameScript|$replacement|")
-echo "$newContent" >"$windowHTMLPath"
-echo "plugin install successfully"
+echo "$newContent" > "$windowHTMLPath"
+echo "Plugin installed successfully"

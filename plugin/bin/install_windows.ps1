@@ -25,12 +25,12 @@ function panic {[CmdletBinding()]param ($msg) Write-Error $msg; PAUSE; Exit}
 
 Write-Host $banner
 Write-Host ""
-Write-Host "[1/5] check whether file window.html exists in $rootDir"
+Write-Host "[1/5] Check if file window.html exists in $rootDir"
 if (!(Test-Path -Path $windowHTMLPath)) {
     panic "window.html does not exist in $rootDir"
 }
 
-Write-Host "[2/5] check whether folder app/appsrc exists in $rootDir"
+Write-Host "[2/5] Check if folder app/appsrc exists in $rootDir"
 if (Test-Path -Path $appsrcPath) {
     $frameScript = $newFrameScript
 } elseif (Test-Path -Path $appPath) {
@@ -42,18 +42,18 @@ if (Test-Path -Path $appsrcPath) {
 $fileContent = Get-Content -Path $windowHTMLPath -Encoding UTF8 -Raw
 $replacement = -Join($frameScript, $pluginScript)
 
-Write-Host "[3/5] check window.html content"
+Write-Host "[3/5] Check window.html content"
 if (!$fileContent.Contains($frameScript)) {
-    panic "window.html does not contains $frameScript"
+    panic "window.html does not contain $frameScript"
 }
 if ($fileContent.Contains($pluginScript)) {
-    finish "plugin has already been installed"
+    finish "Plugin has already been installed"
 }
 
-Write-Host "[4/5] backup window.html"
+Write-Host "[4/5] Backup window.html"
 Copy-Item -Path $windowHTMLPath -Destination $windowHTMLBakPath
 
-Write-Host "[5/5] update window.html"
+Write-Host "[5/5] Update window.html"
 $newFileContent = $fileContent -Replace [Regex]::Escape($frameScript), $replacement
 Set-Content -Path $windowHTMLPath -Value $newFileContent -Encoding UTF8
-finish "plugin install successfully"
+finish "Plugin installed successfully"

@@ -111,6 +111,7 @@ const OPTIONS = {
         NEW_TAB_POSITION: ["right", "end"],
         TAB_SWITCH_ON_CLOSE: ["left", "right", "latest"],
         LAST_TAB_CLOSE_ACTION: ["blankPage", "reconfirm", "exit"],
+        DRAG_STYLE: ["JetBrains", "VSCode"],
         TAB_DETACHMENT: ["free", "resistant", "lockVertical"],
     },
     commander: {
@@ -145,8 +146,8 @@ const OPTIONS = {
         OBJECT_SETTINGS_FORMAT: ["JSON", "TOML", "YAML"],
     },
     echarts: {
-        RENDERER: ["canvas", "svg"],
-        EXPORT_TYPE: ["png", "jpg", "svg"],
+        RENDERER: ["svg", "canvas"],
+        EXPORT_TYPE: ["svg", "png", "jpg"],
     },
     imageReviewer: {
         operations: ["close", "download", "scroll", "play", "location", "nextImage", "previousImage", "firstImage", "lastImage", "thumbnailNav", "waterFall", "zoomIn", "zoomOut", "rotateLeft", "rotateRight", "hFlip", "vFlip", "translateLeft", "translateRight", "translateUp", "translateDown", "incHSkew", "decHSkew", "incVSkew", "decVSkew", "originSize", "fixScreen", "autoSize", "restore", "info", "dummy"],
@@ -225,9 +226,9 @@ const SETTING_SCHEMAS = {
             Switch("CTRL_WHEEL_TO_SWITCH"),
             Switch("MIDDLE_CLICK_TO_CLOSE"),
             Switch("SHOW_FULL_PATH_WHEN_HOVER"),
-            Switch("JETBRAINS_DRAG_STYLE"),
-            Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: { JETBRAINS_DRAG_STYLE: true } }),
-            Number("DETACHMENT_THRESHOLD", { tooltip: "detachThreshold", min: 0.1, max: 3, step: 0.1, dependencies: { JETBRAINS_DRAG_STYLE: true, TAB_DETACHMENT: "resistant" } }),
+            Select("DRAG_STYLE", OPTIONS.window_tab.DRAG_STYLE),
+            Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: { DRAG_STYLE: "JetBrains" } }),
+            Number("DETACHMENT_THRESHOLD", { tooltip: "detachThreshold", min: 0.1, max: 3, step: 0.1, dependencies: { DRAG_STYLE: "JetBrains", TAB_DETACHMENT: "resistant" } }),
             Number("DRAG_NEW_WINDOW_THRESHOLD", { tooltip: "newWindow", min: -1 }),
         ),
         ArrayBox("CLOSE_HOTKEY"),
@@ -597,7 +598,7 @@ const SETTING_SCHEMAS = {
             Switch("ENABLE_INDENT", fenceEnhanceButtonDep),
             Switch("ENABLE_FOLD", fenceEnhanceButtonDep),
             Switch("DEFAULT_FOLD", fenceEnhanceButtonDep),
-            Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, ...fenceEnhanceButtonDep }),
+            Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: { ENABLE_BUTTON: true, DEFAULT_FOLD: true } }),
         ),
         TableBox(
             "CUSTOM_BUTTONS",
@@ -1082,8 +1083,9 @@ const SETTING_SCHEMAS = {
         TextareaBox("TEMPLATE"),
         TitledBox(
             "advanced",
-            Select("RENDERER", OPTIONS.echarts.RENDERER),
+            Select("RENDERER", OPTIONS.echarts.RENDERER, { tooltip: "svgBetter" }),
             Select("EXPORT_TYPE", OPTIONS.echarts.EXPORT_TYPE),
+            Action("chooseEchartsRenderer"),
         ),
         handleSettingsBox,
     ],

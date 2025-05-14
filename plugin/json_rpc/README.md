@@ -6,8 +6,7 @@
 
 ## 如何使用
 
-1. 启动 json_rpc 插件。如此一来，当运行 Typora 后，内部就会自动运行一个 json-rpc-server。
-2. 使用你喜欢的语言写一个 json-rpc-client，与 Typora 交互。
+启动 json_rpc 插件。当运行 Typora 后，内部就会自动运行一个 json-rpc-server。接着使用你喜欢的语言写一个 json-rpc-client，与 Typora 交互。
 
 以下为 node 和 python 的 example。
 
@@ -83,8 +82,6 @@ if __name__ == "__main__":
 - 功能：验证功能是否打通，成功时返回 `pong from typora-plugin`
 - 参数：无
 
-
-
 ### callPluginFunction
 
 - 功能：调用 typora-plugin 能力
@@ -93,11 +90,9 @@ if __name__ == "__main__":
   - functionName：源码中插件的方法
   - args：插件方法参数
 
-
-
 ### eval
 
 - 功能：执行 eval()
-- 参数：evalString。
+- 参数：evalString
   - 需要执行的字符串
 

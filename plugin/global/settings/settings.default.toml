@@ -36,11 +36,6 @@ ENABLE = true
 NAME = ""
 
 # ------------------- 标签页外观与交互 -------------------
-# 标签页拖拽风格设置：控制标签页拖拽时的行为方式
-#   true:  采用 JetBrains 风格的标签页拖拽方式，可以更灵活地调整标签页顺序，并支持 Y 轴防抖
-#   false: 采用 VS Code 风格的标签页拖拽方式，相对简单直接
-JETBRAINS_DRAG_STYLE = true
-
 # 标签标题显示设置：标签是否显示文件扩展名
 #   true:  标签标题将显示不带扩展名的文件名 (例如: filename.md 显示为 filename)
 #   false: 标签标题将显示完整的文件名 (例如: filename.md)
@@ -76,7 +71,12 @@ TAB_MIN_WIDTH = "100px"
 #   限制：不可超过 400px
 TAB_MAX_WIDTH = "none"
 
-# ------------------- 标签页拖拽增强（仅当 JETBRAINS_DRAG_STYLE 为 true 时生效） -------------------
+# ------------------- 标签页拖拽增强（仅当 DRAG_STYLE 为 JetBrains 时生效） -------------------
+# 标签页拖拽风格设置：控制标签页拖拽时的行为方式
+#   JetBrains: 采用 JetBrains 风格的标签页拖拽方式，可以更灵活地调整标签页顺序，并支持设置分离模式
+#   VSCode   : 采用 VS Code 风格的标签页拖拽方式，相对简单直接
+DRAG_STYLE = "JetBrains"
+
 # 标签页分离行为
 #  - free         : 无限制
 #  - resistant    : 存在拖动阻力

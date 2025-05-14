@@ -121,7 +121,7 @@ class windowTabBarPlugin extends BasePlugin {
                 }
             }
 
-            const sortIDEA = () => {
+            const sortJetBrains = () => {
                 const that = this;
 
                 const resetTabBar = () => {
@@ -279,8 +279,8 @@ class windowTabBarPlugin extends BasePlugin {
                 })
             }
 
-            if (this.config.JETBRAINS_DRAG_STYLE) {
-                sortIDEA();
+            if (this.config.DRAG_STYLE === "JetBrains") {
+                sortJetBrains()
             } else {
                 sortVscode();
             }

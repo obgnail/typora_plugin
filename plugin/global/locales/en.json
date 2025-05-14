@@ -111,7 +111,7 @@
     "$label.CTRL_WHEEL_TO_SWITCH": "Ctrl+Wheel to Switch Tabs",
     "$label.MIDDLE_CLICK_TO_CLOSE": "Middle Click to Close Tab",
     "$label.SHOW_FULL_PATH_WHEN_HOVER": "Show Full Path on Hover",
-    "$label.JETBRAINS_DRAG_STYLE": "JetBrains Drag Style",
+    "$label.DRAG_STYLE": "Drag Style",
     "$label.TAB_DETACHMENT": "Tab Detachment Mode",
     "$label.DETACHMENT_THRESHOLD": "Tab Detachment Threshold",
     "$label.DRAG_NEW_WINDOW_THRESHOLD": "Drag Threshold for New Window",
@@ -140,6 +140,8 @@
     "$option.TAB_SWITCH_ON_CLOSE.left": "Activate Left Tab",
     "$option.TAB_SWITCH_ON_CLOSE.right": "Activate Right Tab",
     "$option.TAB_SWITCH_ON_CLOSE.latest": "Activate Most Recently Viewed Tab",
+    "$option.DRAG_STYLE.JetBrains": "JetBrains",
+    "$option.DRAG_STYLE.VSCode": "VS Code",
     "$option.LAST_TAB_CLOSE_ACTION.blankPage": "Show Blank Page",
     "$option.LAST_TAB_CLOSE_ACTION.reconfirm": "Show Confirmation Dialog",
     "$option.LAST_TAB_CLOSE_ACTION.exit": "Exit",
@@ -555,9 +557,9 @@
     "act.toggle_table": "Table",
     "act.toggle_image": "Image",
     "act.toggle_fence": "BlockCode",
-    "$option.ALIGN.left": "Left of Element",
-    "$option.ALIGN.right": "Right of Element",
-    "$option.ALIGN.center": "Center of Element",
+    "$option.ALIGN.left": "Left",
+    "$option.ALIGN.right": "Right",
+    "$option.ALIGN.center": "Center",
     "$option.POSITION_TABLE.before": "Before Table",
     "$option.POSITION_TABLE.after": "After Table",
     "$label.ENABLE_OUTLINE": "Outline",
@@ -566,8 +568,8 @@
     "$label.ENABLE_TABLE": "Table",
     "$label.ENABLE_IMAGE": "Image",
     "$label.ENABLE_FENCE": "Code Block",
-    "$label.SHOW_IMAGE_NAME": "Show Image Alias with Number",
-    "$label.ALIGN": "Number Subscript Position",
+    "$label.SHOW_IMAGE_NAME": "Display Image File Alias",
+    "$label.ALIGN": "Number Align",
     "$label.POSITION_TABLE": "Table Number Position",
     "$label.FONT_FAMILY": "Font",
     "$label.LAYOUTS.name": "Name",
@@ -969,7 +971,7 @@
     "pluginName": "Editor Width Slider",
     "widthProportion": "Width Proportion",
     "recover": "Restore",
-    "$label.WIDTH_RATIO": "Width Ratio",
+    "$label.WIDTH_RATIO": "Editor Width",
     "$tooltip.minusOneMeansDisable": "-1 means disable"
   },
   "article_uploader": {
@@ -1095,11 +1097,13 @@
     "pluginName": "Echarts",
     "$option.RENDERER.canvas": "Canvas",
     "$option.RENDERER.svg": "SVG",
-    "$option.EXPORT_TYPE.png": "PNG",
-    "$option.EXPORT_TYPE.jpg": "JPG",
-    "$option.EXPORT_TYPE.svg": "SVG",
+    "$option.EXPORT_TYPE.png": "PNG (requires Canvas renderer) ",
+    "$option.EXPORT_TYPE.jpg": "JPG (requires Canvas renderer) ",
+    "$option.EXPORT_TYPE.svg": "SVG (requires SVG renderer) ",
     "$label.RENDERER": "Renderer",
-    "$label.EXPORT_TYPE": "Export Type"
+    "$label.EXPORT_TYPE": "Export Type",
+    "$label.chooseEchartsRenderer": "Render with SVG or Canvas",
+    "$tooltip.svgBetter": "SVG is more Typora-friendly"
   },
   "chart": {
     "pluginName": "Chart"
@@ -1434,7 +1438,8 @@
   },
   "reopenClosedFiles": {
     "pluginName": "Reopen Closed Files",
-    "$label.auto_reopen_when_init": "Auto Reopen Unclosed Tabs"
+    "$label.auto_reopen_when_init": "Auto Reopen Unclosed Tabs",
+    "$tooltip.dependOnWindowTab": "Dependent on window_tab plugin"
   },
   "quickButton": {
     "pluginName": "QuickButton",

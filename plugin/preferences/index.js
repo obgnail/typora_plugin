@@ -281,6 +281,7 @@ class preferencesPlugin extends BasePlugin {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
             assistWithTranslations: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/tree/master/plugin/global/locales"),
             viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
+            chooseEchartsRenderer: () => this.utils.openUrl("https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/"),
             viewArticleUploaderReadme: () => this.utils.showInFinder(this.utils.joinPath("./plugin/article_uploader/README.md")),
             backupSettings: async () => this.utils.settings.backupSettingFile(),
             openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
@@ -320,9 +321,9 @@ class preferencesPlugin extends BasePlugin {
     /** PreProcessors for specific settings in schema */
     _initPreProcessors = () => {
         const _disableOption = (options, targetOption) => Object.defineProperty(options, targetOption, { enumerable: false })
-        const _incompatibleSwitch = (field, values) => {
+        const _incompatibleSwitch = (field, values, tooltip = this.i18n._t("settings", "$tooltip.lowVersion")) => {
             field.disabled = true
-            field.tooltip = this.i18n._t("settings", "$tooltip.lowVersion")
+            field.tooltip = tooltip
             values[field.key] = false
         }
         this.PREPROCESSORS = {
@@ -361,6 +362,16 @@ class preferencesPlugin extends BasePlugin {
             "export_enhance.ENABLE": (field, values) => {
                 if (!this.utils.exportHelper.isAsync) {
                     _incompatibleSwitch(field, values)
+                }
+            },
+            "markmap.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD": (field, values) => {
+                if (!this.utils.getPlugin("collapse_paragraph")) {
+                    _incompatibleSwitch(field, values, this.i18n._t("markmap", "$tooltip.experimental"))
+                }
+            },
+            "reopenClosedFiles.enable": (field, values) => {
+                if (!this.utils.getPlugin("window_tab")) {
+                    _incompatibleSwitch(field, values, this.i18n._t("reopenClosedFiles", "$tooltip.dependOnWindowTab"))
                 }
             },
             "preferences.DEFAULT_MENU": (field, values) => {
