@@ -30,4 +30,38 @@ const toMD = tree => toMarkdown(tree, {
     ]
 })
 
-export { fromMD, toMD }
+const TYPE = {
+    blockquote: "blockquote",
+    break: "break",
+    code: "code",
+    definition: "definition",
+    emphasis: "emphasis",
+    heading: "heading",
+    html: "html",
+    image: "image",
+    imageReference: "imageReference",
+    inlineCode: "inlineCode",
+    link: "link",
+    linkReference: "linkReference",
+    list: "list",
+    listItem: "listItem",
+    paragraph: "paragraph",
+    root: "root",
+    strong: "strong",
+    text: "text",
+    thematicBreak: "thematicBreak",
+    delete: "delete",
+    footnoteDefinition: "footnoteDefinition",
+    footnoteReference: "footnoteReference",
+    table: "table",
+    tableCell: "tableCell",
+    tableRow: "tableRow",
+    yaml: "yaml",
+    math: "math",
+    inlineMath: "inlineMath",
+    wikiLink: "ofmWikilink",
+    tag: "ofmTag",
+    callout: "ofmCallout"
+}
+
+export { fromMD, toMD, TYPE }
