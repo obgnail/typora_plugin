@@ -1975,6 +1975,7 @@ LIST = [
     "---",
     "pie_menu",
     "go_top",
+    "resource_manager",
     "text_stylize",
     "hotkeys",
     "editor_width_slider",
@@ -2052,7 +2053,7 @@ BUTTONS = [
     { ICON = "fa fa-font", CALLBACK = "text_stylize" },
     { ICON = "fa fa-search", CALLBACK = "search_multi" },
     { ICON = "fa fa-image", CALLBACK = "imageReviewer" },
-    { ICON = "fa fa-filter", CALLBACK = "resourceOperation" },
+    { ICON = "fa fa-filter", CALLBACK = "resource_manager" },
     { ICON = "fa fa-wrench", CALLBACK = "preferences" },
     { ICON = "fa fa-bookmark", CALLBACK = "scrollBookmarker" },
     { ICON = "fa fa-code", CALLBACK = "commander" }
@@ -2197,6 +2198,50 @@ CUSTOM_HOTKEYS = [
     # 正规使用方法：foldFence
     { enable = false, hotkey = "ctrl+[", desc = "Folding/unfolding BlockCode", plugin = "fence_enhance", function = "foldFence", closestSelector = "#write .md-fences" },
 ]
+
+
+################### resource_manager ###################
+[resource_manager]
+# ------------------- 基础 -------------------
+# 启用或禁用插件
+#   true:  启用插件
+#   false: 禁用插件
+ENABLE = true
+
+# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+NAME = ""
+
+# ------------------- 快捷键 -------------------
+#  触发插件的快捷键
+#   留空则不设置快捷键
+HOTKEY = ""
+
+# ------------------- 弹窗 -------------------
+# 弹窗在页面中距离左侧的百分比位置，例如：5 代表距离页面左侧 5% 的位置
+MODAL_LEFT_PERCENT = 5
+
+# 弹窗在页面中所占的宽度百分比，例如：90 代表弹窗宽度为页面宽度的 90%
+MODAL_WIDTH_PERCENT = 90
+
+# 弹窗在页面中所占的高度百分比，例如：70 代表弹窗高度为页面高度的 70%
+MODAL_HEIGHT_PERCENT = 70
+
+# ------------------- 资源识别 -------------------
+# 处理的资源类型
+#   markdown: md 语法 ![alt](uri) 的资源
+#   html    : HTML <IMG> 标签中的资源
+RESOURCE_GRAMMARS = ["markdown", "html"]
+
+# 用于判断文件是否为资源的扩展名列表
+#   本插件通过文件扩展名来判断是否为资源
+RESOURCE_EXT = ["", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".tiff", ".ico", ".webp", ".webm", ".bmp", ".mp3", ".mp4", ".ogg", ".image", ".jfif", ".gif!large", ".gif!small"]
+
+# 用于判断文件是否为 MARKDOWN 文件的扩展名列表
+MARKDOWN_EXT = [".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]
+
+# ------------------- 文件扫描 -------------------
+# 需要忽略扫描的文件夹名称列表，这些文件夹及其子文件夹中的文件将不会被扫描
+IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
 
 
 ################### help ###################

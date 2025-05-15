@@ -1,4 +1,4 @@
-#plugin-resource-operation {
+#plugin-resource-manager {
     display: flex;
     flex-direction: column;
     resize: both;
@@ -7,11 +7,11 @@
     min-height: 120px;
 }
 
-#plugin-resource-operation .plugin-resource-operation-wrap {
+#plugin-resource-manager .plugin-resource-manager-wrap {
     overflow: scroll;
 }
 
-#plugin-resource-operation .plugin-resource-operation-popup {
+#plugin-resource-manager .plugin-resource-manager-popup {
     max-width: 500px;
     max-height: 500px;
     position: fixed;
@@ -40,11 +40,11 @@
     text-align: center;
 }
 
-#plugin-resource-operation tbody {
+#plugin-resource-manager tbody {
     font-size: 0.7em;
 }
 
-.plugin-resource-operation-message {
+.plugin-resource-manager-message {
     font-size: 1.2em;
     margin-top: 1.2em;
     margin-left: 0.2em;
@@ -53,25 +53,25 @@
     text-align: center;
 }
 
-#plugin-resource-operation textarea {
+#plugin-resource-manager textarea {
     width: 100%;
     margin-top: 10px;
 }
 
-#plugin-resource-operation .plugin-resource-operation-icon-group {
+#plugin-resource-manager .plugin-resource-manager-icon-group {
     display: flex;
     flex-direction: row-reverse;
     font-size: 1.2em;
     margin-right: 0.4em;
 }
 
-.plugin-resource-operation-icon-group .plugin-resource-operation-icon {
+.plugin-resource-manager-icon-group .plugin-resource-manager-icon {
     cursor: pointer;
     margin-left: 0.4em;
     opacity: 0.6;
 }
 
-.plugin-resource-operation-icon:hover {
+.plugin-resource-manager-icon:hover {
     opacity: 1;
     transform: translateY(-2px) scale(1.2);
 }

@@ -24,7 +24,7 @@
 | 6    | md_padding              | 中英文混排优化                         |          |
 | 7    | slash_commands          | 斜杠命令                               |          |
 | 8    | templater               | 文件模板                               |          |
-| 9    | resourceOperation       | 一键清除无用图片                       |          |
+| 9    | resource_manager        | 一键清除无用图片                       |          |
 | 10   | fence_enhance           | 复制、折叠、格式化代码                 |          |
 | 11   | toc                     | 在右侧生成大纲目录                     |          |
 | 12   | commander               | 命令行环境                             |          |
@@ -55,7 +55,7 @@
 | 37   | resize_table            | 调整表格行高列宽                       |          |
 | 38   | resize_image            | 调整图片显示大小                       |          |
 | 39   | export_enhance          | 导出 html 时避免图片丢失               |          |
-| 40   | markdownLint            | markdown 格式检查                  |          |
+| 40   | markdownLint            | markdown 格式检查                      |          |
 | 41   | go_top                  | 一键到文章顶部、底部                   |          |
 | 42   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 | ×        |
 | 43   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       | ×        |
@@ -281,11 +281,11 @@ yay -S typora-plugin
 
 
 
-### resourceOperation：一键清除无用图片
+### resource_manager：一键清除无用图片
 
 功能：资源管理，清除无用图片
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> 资源管理
+使用方式：右键菜单 -> 少用插件 -> 资源管理
 
 
 

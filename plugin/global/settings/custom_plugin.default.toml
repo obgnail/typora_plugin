@@ -1063,63 +1063,6 @@ show_name = { fence = "Fence", image = "Image", table = "Table", link = "Link", 
 include_headings = { fence = true, image = true, table = true, link = true, math = true }
 
 
-################### resourceOperation ###################
-[resourceOperation]
-# ------------------- 基础 -------------------
-# 启用或禁用插件
-#   true:  启用插件
-#   false: 禁用插件
-enable = true
-
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
-name = ""
-
-# 是否在右键菜单中隐藏此插件的入口
-#   true:  隐藏右键菜单入口
-#   false: 显示右键菜单入口
-hide = false
-
-# 在右键菜单中的出现顺序（越大越靠后，允许负数）
-order = 1
-
-# ------------------- 快捷键 -------------------
-# 快捷键，用于快速触发此插件的功能
-#   留空表示不设置快捷键
-hotkey = ""
-
-# ------------------- 弹窗 -------------------
-# 弹窗在页面中距离左侧的百分比位置，例如：5 代表距离页面左侧 5% 的位置
-modal_left_percent = 5
-
-# 弹窗在页面中所占的宽度百分比，例如：90 代表弹窗宽度为页面宽度的 90%
-modal_width_percent = 90
-
-# 弹窗在页面中所占的高度百分比，例如：70 代表弹窗高度为页面高度的 70%
-modal_height_percent = 70
-
-# ------------------- 资源识别 -------------------
-# 用于判断文件是否为资源的后缀名列表
-#   本插件通过文件后缀名来判断是否为资源
-resource_suffix = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".tiff", ".ico", ".webp", ".webm", ".bmp", ".mp3", ".mp4", ".ogg", ".image", ".jfif", ".gif!large", ".gif!small"]
-
-# 用于判断文件是否为 Markdown 文件的后缀名列表
-markdown_suffix = [".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]
-
-# 是否将没有后缀名的文件视为资源
-#   true:  将没有后缀名的文件视为资源
-#   false: 将没有后缀名的文件视为非资源
-collect_file_without_suffix = true
-
-# ------------------- 文件扫描 -------------------
-# 需要忽略扫描的文件夹名称列表，这些文件夹及其子文件夹中的文件将不会被扫描
-ignore_folders = [".git", ".idea", "node_modules"]
-
-# 是否忽略 HTML 标签 <img src="example.jpg"> 中的资源引用
-#   true:  忽略 HTML <img> 标签中的资源
-#   false: 不忽略 HTML <img> 标签中的资源
-ignore_img_html_element = false
-
-
 ################### scrollBookmarker ###################
 [scrollBookmarker]
 # ------------------- 基础 -------------------

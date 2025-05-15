@@ -643,6 +643,31 @@ class utils {
         return output
     }
 
+    static walkDir = async (dir, fileFilter, dirFilter, paramsBuilder, callback) => {
+        const { Fs: { promises: { readdir, stat } }, Path } = this.Package
+
+        async function walk(dir) {
+            const files = await readdir(dir)
+            const promises = files.map(async file => {
+                const path = Path.join(dir, file)
+                const stats = await stat(path)
+                if (stats.isFile()) {
+                    if (fileFilter(path, stats)) {
+                        const params = await paramsBuilder(path, file, dir, stats)
+                        callback(params)
+                    }
+                } else if (stats.isDirectory()) {
+                    if (dirFilter(file)) {
+                        await walk(path)
+                    }
+                }
+            })
+            await Promise.all(promises)
+        }
+
+        await walk(dir)
+    }
+
     ////////////////////////////// Business Operations //////////////////////////////
     static exitTypora = () => JSBridge.invoke("window.close");
     static restartTypora = (reopenClosedFiles = true) => {

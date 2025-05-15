@@ -24,7 +24,7 @@
 | 6    | md_padding              | Chinese-English Text Spacer                               |                    |
 | 7    | slash_commands          | Slash Commands                                            |                    |
 | 8    | templater               | File Templater                                            |                    |
-| 9    | resourceOperation       | Resource Management                                       |                    |
+| 9    | resource_manager        | Resource Management                                       |                    |
 | 10   | fence_enhance           | Enhance Fence                                             |                    |
 | 11   | toc                     | TOC                                                       |                    |
 | 12   | commander               | Commander                                                 |                    |
@@ -268,11 +268,11 @@ Usage: Right-click menu -> Often Used Plugins -> Secondary Plugins -> File Templ
 ![templater](assets/templater.gif)
 
 
-### resourceOperation: Resource Management
+### resource_manager: Resource Management
 
 Function: Resource management, cleanup of unused images
 
-Usage: Right-click menu -> Often Used Plugins -> Secondary Plugins -> Resource Management
+Usage: Right-click menu -> Less Used Plugins -> Resource Management
 
 
 ### fence_enhance: Enhance Fence

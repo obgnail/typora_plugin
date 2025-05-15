@@ -184,13 +184,13 @@ class searchMultiPlugin extends BasePlugin {
 
         const readFileScope = this.searcher.getReadFileScope(ast)
         const paramsBuilder = readFileScope.length !== 0
-            ? async (path, file, stats) => ({ path, file, stats, content: (await readFile(path)).toString() })
-            : (path, file, stats) => ({ path, file, stats })
+            ? async (path, file, dir, stats) => ({ path, file, stats, content: (await readFile(path)).toString() })
+            : (path, file, dir, stats) => ({ path, file, stats })
 
         const matcher = source => this.searcher.match(ast, source)
         const callback = this._showSearchResult(rootPath, matcher)
 
-        await this._walkDir(rootPath, fileFilter, dirFilter, paramsBuilder, callback)
+        await this.utils.walkDir(rootPath, fileFilter, dirFilter, paramsBuilder, callback)
     }
 
     _showSearchResult = (rootPath, matcher) => {
@@ -228,31 +228,6 @@ class searchMultiPlugin extends BasePlugin {
                 showResult()
             }
         }
-    }
-
-    _walkDir = async (dir, fileFilter, dirFilter, paramsBuilder, callback) => {
-        const { Fs: { promises: { readdir, stat } }, Path } = this.utils.Package
-
-        async function walk(dir) {
-            const files = await readdir(dir)
-            const promises = files.map(async file => {
-                const path = Path.join(dir, file)
-                const stats = await stat(path)
-                if (stats.isFile()) {
-                    if (fileFilter(path, stats)) {
-                        const params = await paramsBuilder(path, file, stats)
-                        callback(params)
-                    }
-                } else if (stats.isDirectory()) {
-                    if (dirFilter(file)) {
-                        await walk(path)
-                    }
-                }
-            })
-            await Promise.all(promises)
-        }
-
-        await walk(dir)
     }
 
     isModalHidden = () => this.utils.isHidden(this.entities.modal)

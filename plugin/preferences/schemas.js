@@ -135,6 +135,9 @@ const OPTIONS = {
     text_stylize: {
         TOOLBAR: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush", "move", "close"],
     },
+    resource_manager: {
+        RESOURCE_GRAMMARS: ["markdown", "html"],
+    },
     slash_commands: {
         SUGGESTION_TIMING: ["on_input", "debounce"],
         MATCH_STRATEGY: ["prefix", "substr", "abbr"],
@@ -739,6 +742,22 @@ const SETTING_SCHEMAS = {
         ),
         handleSettingsBox,
     ],
+    resource_manager: [
+        pluginFullBasePropBox,
+        TitledBox(
+            "windowPosition",
+            Range("MODAL_LEFT_PERCENT", { min: 0, max: 100, step: 1 }),
+            Range("MODAL_WIDTH_PERCENT", { min: 0, max: 100, step: 1 }),
+            Range("MODAL_HEIGHT_PERCENT", { min: 0, max: 100, step: 1 }),
+        ),
+        UntitledBox(
+            Select("RESOURCE_GRAMMARS", OPTIONS.resource_manager.RESOURCE_GRAMMARS, { minItems: 1 }),
+        ),
+        ArrayBox("RESOURCE_EXT"),
+        ArrayBox("MARKDOWN_EXT"),
+        ArrayBox("IGNORE_FOLDERS"),
+        handleSettingsBox,
+    ],
     easy_modify: [
         pluginLiteBasePropBox,
         TitledBox(
@@ -1280,25 +1299,6 @@ const SETTING_SCHEMAS = {
             Switch("include_headings.link"),
             Switch("include_headings.math"),
         ),
-        handleSettingsBox,
-    ],
-    resourceOperation: [
-        customPluginFullBasePropBox,
-        TitledBox(
-            "windowPosition",
-            Range("modal_height_percent", { min: 0, max: 100, step: 1 }),
-            Range("modal_width_percent", { min: 0, max: 100, step: 1 }),
-            Range("modal_left_percent", { min: 0, max: 100, step: 1 }),
-        ),
-        UntitledBox(
-            Switch("ignore_img_html_element"),
-        ),
-        ArrayBox("resource_suffix"),
-        UntitledBox(
-            Switch("collect_file_without_suffix"),
-        ),
-        ArrayBox("markdown_suffix"),
-        ArrayBox("ignore_folders"),
         handleSettingsBox,
     ],
     scrollBookmarker: [
