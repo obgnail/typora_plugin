@@ -1,0 +1,24 @@
+{
+  "scripts": {
+    "build-all": "node index.cjs"
+  },
+  "dependencies": {
+    "@marp-team/marp-core": "^4.0.1",
+    "@moritzrs/mdast-util-ofm": "^0.0.1",
+    "@moritzrs/micromark-extension-ofm": "^0.0.1",
+    "abcjs": "^6.4.4",
+    "crypto-js": "^4.2.0",
+    "markdownlint": "^0.38.0",
+    "markdownlint-rule-helpers": "^0.29.0",
+    "md-padding": "^1.9.2",
+    "mdast-util-from-markdown": "^2.0.2",
+    "mdast-util-gfm": "^3.1.0",
+    "mdast-util-math": "^3.0.0",
+    "mdast-util-to-markdown": "^2.1.2",
+    "micromark-extension-gfm": "^3.0.0",
+    "micromark-extension-math": "^3.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.4"
+  }
+}
