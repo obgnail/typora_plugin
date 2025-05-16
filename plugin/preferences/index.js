@@ -279,6 +279,7 @@ class preferencesPlugin extends BasePlugin {
     _initActionHandlers = () => {
         this.ACTION_HANDLERS = {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
+            deepWiki: () => this.utils.openUrl("https://deepwiki.com/obgnail/typora_plugin"),
             assistWithTranslations: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/tree/master/plugin/global/locales"),
             viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
             chooseEchartsRenderer: () => this.utils.openUrl("https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/"),

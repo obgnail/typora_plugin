@@ -67,6 +67,7 @@
     "$label.backupSettings": "Backup Settings",
     "$label.restoreAllSettings": "Restore All Defaults",
     "$label.visitRepo": "This Is For Everyone",
+    "$label.deepWiki": "Ask AI Wiki",
     "$label.assistWithTranslations": "Assist Us With Translations",
     "$label.updatePlugin": "Check for Updates",
     "$label.pluginVersion": "Version",

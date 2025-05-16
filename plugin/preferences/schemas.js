@@ -199,6 +199,7 @@ const SETTING_SCHEMAS = {
         ),
         UntitledBox(
             Action("visitRepo"),
+            Action("deepWiki"),
             Action("assistWithTranslations"),
             Action("updatePlugin"),
             Static("pluginVersion"),

@@ -67,6 +67,7 @@
     "$label.backupSettings": "备份配置",
     "$label.restoreAllSettings": "恢复所有默认",
     "$label.visitRepo": "This Is For Everyone",
+    "$label.deepWiki": "AI 文档",
     "$label.assistWithTranslations": "协助翻译",
     "$label.updatePlugin": "检查更新",
     "$label.pluginVersion": "版本",
