@@ -776,10 +776,15 @@ class windowTabBarPlugin extends BasePlugin {
                     break;
                 case "reconfirm":
                 default:
-                    const title = this.i18n.t("modal.exit")
-                    const label = this.i18n.t("modal.reconfirmExit")
-                    const op = { title, components: [{ label, type: "p" }] }
-                    this.utils.dialog.modal(op, exit)
+                    this.utils.showMessageBox({
+                        type: "info",
+                        title: this.i18n.t("modal.exit"),
+                        message: this.i18n.t("modal.reconfirmExit"),
+                    }).then(ret => {
+                        if (ret.response === 0) {
+                            exit()
+                        }
+                    })
             }
         }
 

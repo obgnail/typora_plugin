@@ -6,59 +6,60 @@ class templaterPlugin extends BaseCustomPlugin {
     hotkey = () => [this.config.hotkey]
 
     callback = async anchorNode => {
-        const i18n = {
-            Filename: this.i18n.t("filename"),
-            Template: this.i18n.t("template"),
-            Preview: this.i18n.t("preview"),
-            createCopyIfEmpty: this.i18n.t("createCopyIfEmpty"),
-        }
-
-        const range = File.editor.selection.getRangy()
-        if (range && !range.collapsed) {
-            ClientCommand.copyAsMarkdown()
-            window.parent.navigator.clipboard.readText().then(text => this.rangeText = text)
-        }
-
-        const onchange = ev => {
-            const value = ev.target.value
-            const tpl = this.config.template.find(tpl => tpl.name === value)
-            if (tpl) {
-                const textarea = ev.target.closest(".plugin-custom-modal-body").querySelector("textarea")
+        const defaultTpl = this.config.template[0]
+        const templates = Object.fromEntries(this.config.template.map(tpl => [tpl.name, tpl.name]))
+        const settingFields = [
+            { key: "template", type: "select", label: this.i18n.t("$label.template.text"), options: templates },
+            { key: "filename", type: "text", label: this.i18n.t("filename"), placeholder: this.i18n.t("createCopyIfEmpty") },
+            { key: "autoOpen", type: "switch", label: this.i18n.t("$label.auto_open") },
+        ]
+        const op = {
+            title: this.pluginName,
+            schema: [
+                { title: undefined, fields: settingFields },
+                { title: this.i18n.t("preview"), fields: [{ key: "preview", type: "textarea", rows: 8 }] },
+            ],
+            data: {
+                filename: "",
+                autoOpen: this.config.auto_open,
+                template: defaultTpl.name,
+                preview: defaultTpl.text,
+            },
+            listener: ({ key, value, form }) => {
+                if (key !== "template") return
+                const tpl = this.config.template.find(tpl => tpl.name === value)
+                if (!tpl) return
+                const textarea = form.shadowRoot.querySelector('.textarea[data-key="preview"]')
+                if (!textarea) return
                 textarea.value = tpl.text
+                textarea.dispatchEvent(new Event("change", { bubbles: true }))
             }
         }
-        const components = [
-            { label: i18n.Filename, type: "input", value: "", placeholder: i18n.createCopyIfEmpty },
-            { label: i18n.Template, type: "select", list: this.config.template.map(tpl => tpl.name), onchange },
-            { label: i18n.Preview, type: "textarea", rows: 10, readonly: "readonly", content: this.config.template[0].text },
-        ]
-        const op = { title: this.pluginName, components }
-        const { response, submit: [filepath, template] } = await this.utils.dialog.modalAsync(op)
+        const { response, values } = await this.utils.formDialog.modal(op)
         if (response === 1) {
-            await this.writeTemplateFile(filepath, template)
+            const { filename, preview, autoOpen } = values
+            await this.writeTemplateFile(filename, preview, autoOpen)
         }
     }
 
-    writeTemplateFile = async (filepath, template) => {
-        const tpl = this.config.template.find(tpl => tpl.name === template);
-        if (!tpl) return;
-        if (filepath && !filepath.endsWith(".md")) {
-            filepath += ".md";
+    writeTemplateFile = async (filename, template, autoOpen) => {
+        if (filename && !filename.endsWith(".md")) {
+            filename += ".md"
         }
-        filepath = await this.utils.newFilePath(filepath);
-        const filename = this.utils.Package.Path.basename(filepath);
-        const content = (new templateHelper(filename, this))._convert(tpl.text);
-        const ok = await this.utils.writeFile(filepath, content);
-        if (!ok) return;
-        this.rangeText = "";
-        this.config.auto_open && this.utils.openFile(filepath);
+        filename = await this.utils.newFilePath(filename)
+        const title = this.utils.Package.Path.basename(filename)
+        const content = (new templateHelper(title, this))._convert(template)
+        const ok = await this.utils.writeFile(filename, content)
+        if (!ok) return
+        if (autoOpen) {
+            this.utils.openFile(filename)
+        }
     }
 }
 
 class templateHelper {
     constructor(title, plugin) {
         this._title = title.substring(0, title.lastIndexOf("."))
-        this.rangeText = plugin.rangeText || ""
         this.utils = plugin.utils
         this.config = plugin.config
         this._date = new Date()
@@ -97,11 +98,8 @@ class templateHelper {
     }
 
     uuid = () => this.utils.getUUID();
-    username = () => process.env.username || this.utils.Package.OS.userInfo().username
-    random = () => Math.random();
     randomInt = (floor, ceil) => this.utils.randomInt(floor, ceil);
     randomStr = len => this.utils.randomString(len);
-    range = () => this.rangeText;
     title = () => this._title;
     folder = () => this.utils.getCurrentDirPath();
     mountFolder = () => this.utils.getMountFolder();

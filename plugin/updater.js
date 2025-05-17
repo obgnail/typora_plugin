@@ -17,16 +17,21 @@ class updaterPlugin extends BasePlugin {
             await this.manualUpdate()
             return
         }
-
-        const defaultProxy = await this.getProxy()
-
-        const label = this.i18n.t("proxyUrl")
-        const info = this.i18n.t("proxyUrlHint")
-        const components = [{ type: "input", value: defaultProxy, label, info, placeholder: "http://127.0.0.1:7890" }]
-        const op = { title: this.pluginName, components }
-        const { response, submit: [proxy] } = await this.utils.dialog.modalAsync(op)
+        const proxy = await this.getProxy()
+        const label = this.i18n.t("$label.PROXY")
+        const hintHeader = this.i18n.t("hintHeader.PROXY")
+        const hintDetail = this.i18n.t("hintDetail.PROXY")
+        const op = {
+            title: this.pluginName,
+            schema: [
+                { fields: [{ type: "hint", hintHeader, hintDetail }] },
+                { fields: [{ type: "text", key: "proxy", label, placeholder: "http://127.0.0.1:7890" }] },
+            ],
+            data: { proxy },
+        }
+        const { response, values } = await this.utils.formDialog.modal(op)
         if (response === 1) {
-            await this.manualUpdate(proxy)
+            await this.manualUpdate(values.proxy)
         }
     }
 
@@ -43,8 +48,6 @@ class updaterPlugin extends BasePlugin {
             success: this.i18n.t("update.success"),
             noNeed: this.i18n.t("update.noNeed"),
             failed: this.i18n.t("update.failed"),
-            currentVersion: this.i18n.t("update.currentVersionInfo"),
-            tryAgain: this.i18n.t("update.tryAgain"),
             unknownError: this.i18n._t("global", "error.unknown"),
         }
 
@@ -59,24 +62,32 @@ class updaterPlugin extends BasePlugin {
             state = new Error("timeout")
         }
 
-        let title, components, needRedirect
+        let title, detail, redirect
         if (state === "UPDATED") {
             title = i18n.success
-            components = [{ type: "textarea", label: i18n.currentVersion, rows: 15, content: JSON.stringify(info, null, "\t") }]
+            detail = JSON.stringify(info, null, "\t")
+            redirect = false
         } else if (state === "NO_NEED") {
             title = i18n.noNeed
-            components = [{ type: "textarea", label: i18n.currentVersion, rows: 15, content: JSON.stringify(info, null, "\t") }]
+            detail = JSON.stringify(info, null, "\t")
+            redirect = false
         } else if (state instanceof Error) {
             title = i18n.failed
-            components = [{ type: "span", label: i18n.tryAgain }, { type: "span", label: this.utils.escape(state.stack) }]
-            needRedirect = true
+            detail = state.stack
+            redirect = true
         } else {
             title = i18n.failed
-            components = [{ type: "span", label: i18n.unknownError }]
-            needRedirect = true
+            detail = i18n.unknownError
+            redirect = true
         }
-        const { response } = await this.utils.dialog.modalAsync({ title, components, width: "600px" })
-        if (response === 1 && needRedirect) {
+
+        const op = {
+            title,
+            schema: [{ fields: [{ type: "textarea", key: "detail", rows: 15 }] }],
+            data: { detail },
+        }
+        const { response } = await this.utils.formDialog.modal(op)
+        if (response === 1 && redirect) {
             this.utils.openUrl("https://github.com/obgnail/typora_plugin/releases/latest")
         }
     }

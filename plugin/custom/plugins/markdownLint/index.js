@@ -88,10 +88,12 @@ class markdownLintPlugin extends BaseCustomPlugin {
             const attrs = ["lineNumber", "ruleNames", "errorDetail", "errorContext", "errorRange", "fixInfo"]
             const obj = infos.map(info => this.utils.pick(info, attrs))
             const content = JSON.stringify(obj.length === 1 ? obj[0] : obj, null, "\t")
-            const title = this.i18n.t("func.detailAll")
-            const schema = [{ fields: [{ type: "textarea", key: "detail", rows: 15 }] }]
-            const values = { detail: content }
-            await this.utils.formDialog.modal(title, schema, values)
+            const op = {
+                title: this.i18n.t("func.detailAll"),
+                schema: [{ fields: [{ type: "textarea", key: "detail", rows: 15 }] }],
+                data: { detail: content }
+            }
+            await this.utils.formDialog.modal(op)
         }
 
         const funcMap = {
@@ -106,13 +108,17 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const title = this.i18n.t("func.doc")
                 const label = this.i18n.t("$label.viewMarkdownlintRules")
                 const content = Object.entries(this.TRANSLATIONS).map(([key, value]) => `${key}\t${value}`).join("\n")
-                const schema = [
-                    { fields: [{ type: "textarea", key: "doc", rows: 15 }] },
-                    { fields: [{ type: "action", act: "viewRules", label }] },
-                ]
-                const values = { doc: content }
-                const actions = { viewRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md") }
-                await this.utils.formDialog.modal(title, schema, values, actions)
+                const viewRules = () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md")
+                const op = {
+                    title,
+                    schema: [
+                        { fields: [{ type: "textarea", key: "doc", rows: 15 }] },
+                        { fields: [{ type: "action", act: "viewRules", label }] },
+                    ],
+                    data: { doc: content },
+                    action: { viewRules },
+                }
+                await this.utils.formDialog.modal(op)
             },
             jumpToLine: lineToGo => {
                 if (!lineToGo) return

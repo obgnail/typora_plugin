@@ -1,6 +1,8 @@
 const Label = (key) => key ? `$label.${key}` : undefined
 const Tooltip = (tooltip) => tooltip ? `$tooltip.${tooltip}` : undefined
 const Placeholder = (placeholder) => placeholder ? `$placeholder.${placeholder}` : undefined
+const HintHeader = (header) => header ? `$hintHeader.${header}` : undefined
+const HintDetail = (detail) => detail ? `$hintDetail.${detail}` : undefined
 
 const Action = (act) => {
     const label = Label(act)
@@ -9,6 +11,11 @@ const Action = (act) => {
 const Static = (key) => {
     const label = Label(key)
     return { type: "static", key, label }
+}
+const Hint = (header, detail) => {
+    const hintHeader = HintHeader(header)
+    const hintDetail = HintDetail(detail)
+    return { type: "hint", hintHeader, hintDetail }
 }
 const Switch = (key, { tooltip, disabled, dependencies, ...args } = {}) => {
     const label = Label(key)
@@ -142,7 +149,7 @@ const OPTIONS = {
         SUGGESTION_TIMING: ["on_input", "debounce"],
         MATCH_STRATEGY: ["prefix", "substr", "abbr"],
         ORDER_STRATEGY: ["predefined", "lexicographic", "length_based", "earliest_hit"],
-        "COMMANDS.type": ["snippet", "command", "gen-snp"],
+        "COMMANDS.type": ["snippet", "gen-snp", "command"],
         "COMMANDS.scope": ["plain", "inline_math"],
     },
     preferences: {
@@ -191,17 +198,23 @@ const SETTING_SCHEMAS = {
             Select("EXIT_INTERACTIVE_MODE", OPTIONS.global.EXIT_INTERACTIVE_MODE, { minItems: 1 }),
         ),
         UntitledBox(
+            Action("runtimeSettings"),
             Action("openSettingsFolder"),
             Action("backupSettings"),
-            Action("runtimeSettings"),
             Action("restoreSettings"),
             Action("restoreAllSettings"),
         ),
         UntitledBox(
             Action("visitRepo"),
             Action("deepWiki"),
-            Action("assistWithTranslations"),
+            Action("editStyles"),
+            Action("developPlugins"),
+            Action("githubImageBed"),
+        ),
+        UntitledBox(
             Action("updatePlugin"),
+            Action("uninstallPlugin"),
+            Action("donate"),
             Static("pluginVersion"),
         ),
     ],
@@ -292,6 +305,7 @@ const SETTING_SCHEMAS = {
                     { type: "text", key: "name", label: "$label.BUILTIN.name" },
                 ),
                 TitledBox("BUILTIN.cmd", { type: "textarea", key: "cmd", rows: 5 }),
+                UntitledBox(Hint("builtinEnvVars", "builtinEnvVars")),
             ],
             {
                 name: "",
@@ -520,6 +534,8 @@ const SETTING_SCHEMAS = {
             "LAYOUTS",
             ["name"],
             [
+                UntitledBox(Hint("layoutSyntax", "layoutSyntax")),
+                UntitledBox(Hint("supportedCounter", "supportedCounter")),
                 UntitledBox(
                     { type: "switch", key: "selected", label: "$label.LAYOUTS.selected" },
                     { type: "text", key: "name", label: "$label.LAYOUTS.name" },
@@ -798,7 +814,7 @@ const SETTING_SCHEMAS = {
         ),
         TableBox(
             "COMMANDS",
-            ["keyword"],
+            ["keyword", "type"],
             [
                 UntitledBox(
                     { type: "switch", key: "enable", label: "$label.COMMANDS.enable" },
@@ -811,6 +827,7 @@ const SETTING_SCHEMAS = {
                     { type: "number", key: "cursorOffset.1", label: "$label.COMMANDS.cursorOffset.1" },
                 ),
                 TitledBox("COMMANDS.callback", { type: "textarea", key: "callback", rows: 3 }),
+                UntitledBox(Hint("callbackType", "callbackType")),
             ],
             {
                 enable: true,
@@ -941,10 +958,6 @@ const SETTING_SCHEMAS = {
         ),
         handleSettingsBox,
     ],
-    help: [
-        pluginLiteBasePropBox,
-        handleSettingsBox,
-    ],
     editor_width_slider: [
         pluginLiteBasePropBox,
         UntitledBox(
@@ -1014,6 +1027,9 @@ const SETTING_SCHEMAS = {
             Text("SERVER_OPTIONS.host"),
             Number("SERVER_OPTIONS.port", { min: 0, max: 65535, step: 1 }),
             Text("SERVER_OPTIONS.path"),
+        ),
+        UntitledBox(
+            Action("viewJsonRPCReadme"),
         ),
         handleSettingsBox,
     ],
@@ -1175,7 +1191,7 @@ const SETTING_SCHEMAS = {
             "fontFamily",
             Text("font_family"),
             Switch("use_network_icon_when_exporting", { tooltip: "messingFont" }),
-            Text("network_icon_url"),
+            Text("network_icon_url", { dependencies: { use_network_icon_when_exporting: true } }),
         ),
         TitledBox(
             "defaultOptions",

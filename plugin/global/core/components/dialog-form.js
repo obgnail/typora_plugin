@@ -19,7 +19,6 @@ class pluginForm extends HTMLElement {
         this.form.innerHTML = this._fillForm(schemas)
     }
 
-
     _initShadow() {
         const awesomeCSS = this.utils.joinPath("./style/font-awesome-4.1.0/css/font-awesome.min.css")
         const formCSS = this.utils.joinPath("./plugin/global/styles/dialog-form.css")
@@ -34,7 +33,8 @@ class pluginForm extends HTMLElement {
 
     // type: set/push/remove/removeIndex/action
     _onEvent(key, value, type = "set") {
-        this.dispatchEvent(new CustomEvent("form-curd", { detail: { key, value, type } }))
+        const customEvent = new CustomEvent("CRUD", { detail: { key, value, type } })
+        this.dispatchEvent(customEvent)
         if (type === "action") {
             const fn = this.actions[key]
             if (fn) fn()
@@ -113,7 +113,8 @@ class pluginForm extends HTMLElement {
             const key = tableEl.dataset.key
             const targetBox = that.schemas.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
             const { nestedBoxes, defaultValues, thMap } = targetBox.fields[0]
-            const { response, values } = await that.utils.formDialog.modal(targetBox.title, nestedBoxes, defaultValues)
+            const op = { title: targetBox.title, schema: nestedBoxes, data: defaultValues }
+            const { response, values } = await that.utils.formDialog.modal(op)
             if (response === 1) {
                 that._onEvent(key, values, "push")
                 const row = that._createTableRow(thMap, values).map(e => `<td>${e}</td>`).join("")
@@ -129,7 +130,8 @@ class pluginForm extends HTMLElement {
             const targetBox = that.schemas.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
             const { nestedBoxes, defaultValues, thMap } = targetBox.fields[0]
             const modalValues = that.utils.merge(defaultValues, rowValue)  // rowValue may be missing certain attributes
-            const { response, values } = await that.utils.formDialog.modal(targetBox.title, nestedBoxes, modalValues)
+            const op = { title: targetBox.title, schema: nestedBoxes, data: modalValues }
+            const { response, values } = await that.utils.formDialog.modal(op)
             if (response === 1) {
                 that._onEvent(`${key}.${idx}`, values)
                 const row = that._createTableRow(thMap, values)
@@ -267,7 +269,7 @@ class pluginForm extends HTMLElement {
     }
 
     _fillForm(schemas) {
-        const blockControls = new Set(["textarea", "object", "array", "table", "radio", "checkbox"])
+        const blockControls = new Set(["textarea", "object", "array", "table", "radio", "checkbox", "hint"])
         const createTitle = (title) => `<div class="title">${title}</div>`
         const createTooltip = (item) => item.tooltip ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${item.tooltip.replace("\n", "<br>")}</span></span>` : ""
         const createGeneralControl = (ctl, value) => {
@@ -305,6 +307,10 @@ class pluginForm extends HTMLElement {
                     return `<div class="action fa fa-angle-right" data-action="${ctl.act}"></div>`
                 case "static":
                     return `<div class="static" data-key="${ctl.key}">${this.utils.escape(value)}</div>`
+                case "hint":
+                    const header = ctl.hintHeader ? `<div class="hint-header">${ctl.hintHeader}</div>` : ""
+                    const detail = ctl.hintDetail ? `<div class="hint-detail">${ctl.hintDetail.replace(/\n/g, "<br>")}</div>` : ""
+                    return `<div class="hint-wrap">${header}${detail}</div>`
                 case "select":
                     const isMulti = Array.isArray(value)
                     const show = isMulti

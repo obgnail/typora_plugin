@@ -71,11 +71,10 @@
 | 52   | cipher                  | Encrypt files                                             | ×                  |
 | 53   | ripgrep                 | Search files using ripgrep                                | ×                  |
 | 54   | article_uploader        | One-click upload blog to supported platforms              | ×                  |
-| 55   | help                    | User help                                                 |                    |
-| 56   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
-| 57   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
-| 58   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
-| 59   | json_rpc                | External control of Typora (advanced)                     | ×                  |
+| 55   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
+| 56   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
+| 57   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
+| 58   | json_rpc                | External control of Typora (advanced)                     | ×                  |
 
 
 **Respect all user choices**. Any plugin or feature in this project can be permanently enabled/disabled.
@@ -131,36 +130,13 @@ yay -S typora-plugin
 
 ## Q&A
 
-### Is my version of Typora supported?
-
-All plugins have been tested on version 0.9.98 (the last free version) and the latest version. This project theoretically supports all Typora versions, but Typora's functionality stabilized after version 0.9.98. **It is recommended to use version 0.9.98 or later**.
-
-
-### Will the plugins become invalid?
-
-Theoretically, they can remain effective for a long time, and I am maintaining them.
-
-
-### How to modify plugin configurations?
-
-The project includes over 600 configuration options, allowing a comprehensive definition of each plugin's behavior.
-
-Right-click menu -> Less Used Plugins -> Preferences.
-
-
-### How to upgrade plugins?
-
-Right-click menu -> Often Used Plugins -> Secondary Plugins -> Upgrade Plugins.
-
-
-### I don't want to use it anymore, how to uninstall the plugin system?
-
-Right-click menu -> Less Used Plugins -> Help -> Uninstall Plugins.
-
-
-### Does it support Typora for Mac?
-
-I don't have a Mac device, so I haven't tested it.
+- **Is my version of Typora supported?** All plugins have been tested on version 0.9.98 (the last free version) and the latest version. This project theoretically supports all Typora versions, but Typora's functionality stabilized after version 0.9.98. **It is recommended to use version 0.9.98 or later**.
+- **Will the plugins become invalid?** Theoretically, they can remain effective for a long time, and I am maintaining them.
+- **How to modify plugin configurations?** Right-click menu -> Less Used Plugins -> Preferences.
+- **How to upgrade plugins?** Right-click menu -> Often Used Plugins -> Secondary Plugins -> Upgrade Plugins.
+- **I don't want to use it anymore, how to uninstall the plugin system?** Right-click menu -> Less Used Plugins -> Preferences -> Uninstall Plugins.
+- **Does it support Typora for Mac?** I don't have a Mac device, so I haven't tested it.
+- **Any other questions?** Please ask [AI Wiki](https://deepwiki.com/obgnail/typora_plugin).
 
 
 
@@ -646,10 +622,6 @@ Usage:
 2. This will automatically bring up the bookmark manager. Click on the bookmark above to jump to the bookmark.
 
 Show/Hide Bookmark Manager: Right-click menu -> Often Used Plugins -> Secondary plugins -> Bookmark Manager
-
-### help: User Help
-
-Usage: Right-click menu -> Less Used Plugins -> Help.
 
 ### cipher: Encrypt File
 

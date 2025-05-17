@@ -2,7 +2,8 @@ class formDialog {
     constructor(utils, i18n) {
         this.utils = utils
         this.i18n = i18n
-        this.resolveFunc = null
+        this.resolver = null
+        this.listener = null
     }
 
     process = async () => {
@@ -33,15 +34,22 @@ class formDialog {
         }
         this.entities.form.init(this.utils, { objectFormat: "JSON" })
 
-        this.entities.cover.addEventListener("click", () => this.onButtonClick(0))
-        this.entities.cancel.addEventListener("click", () => this.onButtonClick(0))
-        this.entities.submit.addEventListener("click", () => this.onButtonClick(1))
+        this.entities.cover.addEventListener("click", () => this._onVisibilityChange(0))
+        this.entities.cancel.addEventListener("click", () => this._onVisibilityChange(0))
+        this.entities.submit.addEventListener("click", () => this._onVisibilityChange(1))
+        this.entities.form.addEventListener("CRUD", ev => {
+            if (this.listener) {
+                const { key, value, type } = ev.detail
+                this.listener({ key, value, type, form: this.entities.form })
+            }
+        })
     }
 
-    onButtonClick = (response = 1) => {
+    _onVisibilityChange = (state = 1) => {
         this.hide()
-        this.resolveFunc({ response, values: this.entities.form.values })
-        this.resolveFunc = null
+        this.resolver({ response: state, values: this.entities.form.values })
+        this.resolver = null
+        this.listener = null
     }
 
     show = (title, schema, data, action) => {
@@ -56,8 +64,9 @@ class formDialog {
         this.utils.hide(this.entities.dialog)
     }
 
-    modal = (title, schema, data, action) => new Promise(resolve => {
-        this.resolveFunc = resolve
+    modal = ({ title, schema, data, action, listener }) => new Promise(resolve => {
+        this.resolver = resolve
+        this.listener = listener
         this.show(title, schema, data, action)
     })
 }
