@@ -140,9 +140,9 @@ class preferencesPlugin extends BasePlugin {
 
     switchMenu = async (fixedName) => {
         const settings = await this._getSettings(fixedName)
-        const values = await this._preprocess(fixedName, settings)
+        const data = await this._preprocess(fixedName, settings)
         this.entities.form.dataset.plugin = fixedName
-        this.entities.form.render(this.SETTING_SCHEMAS[fixedName], values)
+        this.entities.form.render(this.SETTING_SCHEMAS[fixedName], data)
         this.entities.menu.querySelectorAll(".active").forEach(e => e.classList.remove("active"))
         const menuItem = this.entities.menu.querySelector(`.plugin-preferences-menu-item[data-plugin="${fixedName}"]`)
         menuItem.classList.add("active")
@@ -173,16 +173,16 @@ class preferencesPlugin extends BasePlugin {
         return settings[fixedName]
     }
 
-    _preprocess = async (fixedName, values) => {
+    _preprocess = async (fixedName, settings) => {
         const fnMap = this.PREPROCESSORS
         await Promise.all(
             this.SETTING_SCHEMAS[fixedName].flatMap(box => {
                 return box.fields
                     .filter(field => field.key && fnMap.hasOwnProperty(`${fixedName}.${field.key}`))
-                    .map(async field => await fnMap[`${fixedName}.${field.key}`](field, values))
+                    .map(async field => await fnMap[`${fixedName}.${field.key}`](field, settings))
             })
         )
-        return values
+        return settings
     }
 
     _initDialogForm = () => this.entities.form.init(this.utils, { objectFormat: this.config.OBJECT_SETTINGS_FORMAT })
@@ -283,6 +283,7 @@ class preferencesPlugin extends BasePlugin {
             deepWiki: () => this.utils.openUrl("https://deepwiki.com/obgnail/typora_plugin"),
             githubImageBed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
             viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
+            viewCustomMarkdownlintRules: () => this.utils.openUrl("https://github.com/obgnail/markdownlint-rule-math"),
             chooseEchartsRenderer: () => this.utils.openUrl("https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/"),
             viewArticleUploaderReadme: () => this.utils.showInFinder(this.utils.joinPath("./plugin/article_uploader/README.md")),
             viewJsonRPCReadme: () => this.utils.showInFinder(this.utils.joinPath("./plugin/json_rpc/README.md")),
@@ -307,7 +308,7 @@ class preferencesPlugin extends BasePlugin {
                 const settings = await this._getSettings(fixedName)
                 const op = {
                     title: this.i18n._t("settings", "$label.runtimeSettings") + `（${this.i18n._t("global", "readonly")}）`,
-                    schema: [{ fields: [{ key: "runtimeSettings", type: "textarea", rows: 15 }] }],
+                    schema: [{ fields: [{ key: "runtimeSettings", type: "textarea", rows: 14 }] }],
                     data: { runtimeSettings: JSON.stringify(settings, null, "\t") },
                 }
                 await this.utils.formDialog.modal(op)
@@ -356,9 +357,9 @@ class preferencesPlugin extends BasePlugin {
                     ],
                     data: { confirmInput: "" },
                 }
-                const { response, values } = await this.utils.formDialog.modal(op)
+                const { response, data } = await this.utils.formDialog.modal(op)
                 if (response === 0) return
-                if (values.confirmInput !== title) {
+                if (data.confirmInput !== title) {
                     const msg = this.i18n._t("global", "error.incorrectCommand")
                     this.utils.notification.show(msg, "error")
                 } else {
@@ -426,14 +427,14 @@ class preferencesPlugin extends BasePlugin {
     /** PreProcessors for specific settings in schema */
     _initPreProcessors = () => {
         const _disableOption = (options, targetOption) => Object.defineProperty(options, targetOption, { enumerable: false })
-        const _incompatibleSwitch = (field, values, tooltip = this.i18n._t("settings", "$tooltip.lowVersion")) => {
+        const _incompatibleSwitch = (field, settings, tooltip = this.i18n._t("settings", "$tooltip.lowVersion")) => {
             field.disabled = true
             field.tooltip = tooltip
-            values[field.key] = false
+            settings[field.key] = false
         }
         this.PREPROCESSORS = {
-            "global.pluginVersion": async (field, values) => {
-                if (!values[field.key]) {
+            "global.pluginVersion": async (field, data) => {
+                if (!data[field.key]) {
                     let version = "Unknown"
                     try {
                         const file = this.utils.joinPath("./plugin/bin/version.json")
@@ -442,44 +443,44 @@ class preferencesPlugin extends BasePlugin {
                     } catch (e) {
                         console.error(e)
                     }
-                    values[field.key] = version
+                    data[field.key] = version
                 }
             },
-            "window_tab.LAST_TAB_CLOSE_ACTION": (field, values) => {
+            "window_tab.LAST_TAB_CLOSE_ACTION": (field, data) => {
                 if (this.utils.isBetaVersion) {
                     const illegalOption = "blankPage"
                     _disableOption(field.options, illegalOption)
-                    if (values[field.key] === illegalOption) {
-                        values[field.key] = "reconfirm"
+                    if (data[field.key] === illegalOption) {
+                        data[field.key] = "reconfirm"
                     }
                 }
             },
-            "fence_enhance.ENABLE_INDENT": (field, values) => {
+            "fence_enhance.ENABLE_INDENT": (field, data) => {
                 if (this.utils.isBetaVersion) {
-                    _incompatibleSwitch(field, values)
+                    _incompatibleSwitch(field, data)
                 }
             },
-            "blur.ENABLE": (field, values) => {
+            "blur.ENABLE": (field, data) => {
                 if (!this.utils.supportHasSelector) {
-                    _incompatibleSwitch(field, values)
+                    _incompatibleSwitch(field, data)
                 }
             },
-            "export_enhance.ENABLE": (field, values) => {
+            "export_enhance.ENABLE": (field, data) => {
                 if (!this.utils.exportHelper.isAsync) {
-                    _incompatibleSwitch(field, values)
+                    _incompatibleSwitch(field, data)
                 }
             },
-            "markmap.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD": (field, values) => {
+            "markmap.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD": (field, data) => {
                 if (!this.utils.getPlugin("collapse_paragraph")) {
-                    _incompatibleSwitch(field, values, this.i18n._t("markmap", "$tooltip.experimental"))
+                    _incompatibleSwitch(field, data, this.i18n._t("markmap", "$tooltip.experimental"))
                 }
             },
-            "reopenClosedFiles.enable": (field, values) => {
+            "reopenClosedFiles.enable": (field, data) => {
                 if (!this.utils.getPlugin("window_tab")) {
-                    _incompatibleSwitch(field, values, this.i18n._t("reopenClosedFiles", "$tooltip.dependOnWindowTab"))
+                    _incompatibleSwitch(field, data, this.i18n._t("reopenClosedFiles", "$tooltip.dependOnWindowTab"))
                 }
             },
-            "preferences.DEFAULT_MENU": (field, values) => {
+            "preferences.DEFAULT_MENU": (field, data) => {
                 if (!field.options) {
                     field.options = this._getAllPlugins()
                 }

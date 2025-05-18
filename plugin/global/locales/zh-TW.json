@@ -1423,6 +1423,7 @@
     "$label.result_order_by": "排序檢測結果",
     "$label.hotkey_fix_lint_error": "快捷鍵：修復",
     "$label.viewMarkdownlintRules": "檢測規則文檔",
+    "$label.viewCustomMarkdownlintRules": "自訂檢測規則原始碼",
     "$option.tools.info": "檢測資訊",
     "$option.tools.locate": "定位",
     "$option.tools.fix": "修復",
@@ -1431,7 +1432,7 @@
     "$title.rule_config": "檢測規則",
     "$title.custom_rules": "自訂檢測規則檔案",
     "$title.windowStyle": "視窗樣式",
-    "$title.cube": "狀態指示方塊",
+    "$title.square": "狀態指示方塊",
     "$title.detectAndFix": "檢測與修復"
   },
   "reopenClosedFiles": {

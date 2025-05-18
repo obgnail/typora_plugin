@@ -25,19 +25,17 @@ class templaterPlugin extends BaseCustomPlugin {
                 template: defaultTpl.name,
                 preview: defaultTpl.text,
             },
-            listener: ({ key, value, form }) => {
+            listener: ({ key, value }) => {
                 if (key !== "template") return
                 const tpl = this.config.template.find(tpl => tpl.name === value)
-                if (!tpl) return
-                const textarea = form.shadowRoot.querySelector('.textarea[data-key="preview"]')
-                if (!textarea) return
-                textarea.value = tpl.text
-                textarea.dispatchEvent(new Event("change", { bubbles: true }))
+                if (tpl) {
+                    this.utils.formDialog.updateModal(op => op.data = { ...op.data, template: tpl.name, preview: tpl.text })
+                }
             }
         }
-        const { response, values } = await this.utils.formDialog.modal(op)
+        const { response, data } = await this.utils.formDialog.modal(op)
         if (response === 1) {
-            const { filename, preview, autoOpen } = values
+            const { filename, preview, autoOpen } = data
             await this.writeTemplateFile(filename, preview, autoOpen)
         }
     }

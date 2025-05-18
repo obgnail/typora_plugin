@@ -304,7 +304,7 @@ const SETTING_SCHEMAS = {
                     { type: "select", key: "shell", label: "$label.BUILTIN.shell", options: OPTIONS.commander["BUILTIN.shell"] },
                     { type: "text", key: "name", label: "$label.BUILTIN.name" },
                 ),
-                TitledBox("BUILTIN.cmd", { type: "textarea", key: "cmd", rows: 5 }),
+                TitledBox("BUILTIN.cmd", { type: "textarea", key: "cmd", rows: 3 }),
                 UntitledBox(Hint("builtinEnvVars", "builtinEnvVars")),
             ],
             {
@@ -1156,7 +1156,7 @@ const SETTING_SCHEMAS = {
         langModeBox,
         chartStyleBox,
         TextareaBox("TEMPLATE"),
-        ObjectBOX("VISUAL_OPTIONS", { rows: 6 }),
+        ObjectBOX("VISUAL_OPTIONS", { rows: 5 }),
         handleSettingsBox,
     ],
     drawIO: [
@@ -1407,7 +1407,7 @@ const SETTING_SCHEMAS = {
             Number("modal_line_height", { unit: UNITS.em, min: 0.1 }),
         ),
         TitledBox(
-            "cube",
+            "square",
             Switch("use_button"),
             Text("button_width", { dependencies: { use_button: true } }),
             Text("button_height", { dependencies: { use_button: true } }),
@@ -1421,10 +1421,11 @@ const SETTING_SCHEMAS = {
             Select("result_order_by", OPTIONS.markdownLint.result_order_by),
             Hotkey("hotkey_fix_lint_error"),
         ),
-        ObjectBOX("rule_config", { rows: 15 }),
+        ObjectBOX("rule_config", { rows: 10 }),
         ArrayBox("custom_rules"),
         UntitledBox(
             Action("viewMarkdownlintRules"),
+            Action("viewCustomMarkdownlintRules"),
         ),
         handleSettingsBox,
     ],

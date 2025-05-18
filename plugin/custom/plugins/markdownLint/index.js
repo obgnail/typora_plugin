@@ -90,7 +90,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
             const content = JSON.stringify(obj.length === 1 ? obj[0] : obj, null, "\t")
             const op = {
                 title: this.i18n.t("func.detailAll"),
-                schema: [{ fields: [{ type: "textarea", key: "detail", rows: 15 }] }],
+                schema: [{ fields: [{ type: "textarea", key: "detail", rows: 14 }] }],
                 data: { detail: content }
             }
             await this.utils.formDialog.modal(op)
@@ -112,7 +112,7 @@ class markdownLintPlugin extends BaseCustomPlugin {
                 const op = {
                     title,
                     schema: [
-                        { fields: [{ type: "textarea", key: "doc", rows: 15 }] },
+                        { fields: [{ type: "textarea", key: "doc", rows: 11 }] },
                         { fields: [{ type: "action", act: "viewRules", label }] },
                     ],
                     data: { doc: content },

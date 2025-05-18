@@ -29,9 +29,9 @@ class updaterPlugin extends BasePlugin {
             ],
             data: { proxy },
         }
-        const { response, values } = await this.utils.formDialog.modal(op)
+        const { response, data } = await this.utils.formDialog.modal(op)
         if (response === 1) {
-            await this.manualUpdate(values.proxy)
+            await this.manualUpdate(data.proxy)
         }
     }
 
@@ -83,7 +83,7 @@ class updaterPlugin extends BasePlugin {
 
         const op = {
             title,
-            schema: [{ fields: [{ type: "textarea", key: "detail", rows: 15 }] }],
+            schema: [{ fields: [{ type: "textarea", key: "detail", rows: 14 }] }],
             data: { detail },
         }
         const { response } = await this.utils.formDialog.modal(op)
