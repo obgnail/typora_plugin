@@ -361,7 +361,8 @@ class diagramParser {
         }
 
         const registerFenceEnhanceButton = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
-            return this.utils.callPluginFunction("fence_enhance", "registerButton", className, action, hint, iconClassName, enable, listener, extraFunc)
+            const btn = { className, action, hint, iconClassName, enable, listener, extraFunc }
+            return this.utils.callPluginFunction("fence_enhance", "registerButton", btn)
         }
 
         const handleCtrlClick = () => {

@@ -162,6 +162,10 @@ textarea {
     font-size: 14px;
 }
 
+input::placeholder {
+    color: rgba(60, 60, 67, 0.6);
+}
+
 .text-input:disabled,
 .number-input:disabled,
 .hotkey-input:disabled,
@@ -580,4 +584,17 @@ table .fa:hover {
 .radio-input:checked + .radio-disc,
 .checkbox-input:checked + .checkbox-square {
     background-color: #0B57D0;
+}
+
+/***** hint *****/
+.hint-header {
+    font-weight: bold;
+    line-height: 1.8em;
+}
+
+.hint-detail {
+    padding-top: 2px;
+    line-height: 1.5em;
+    font-size: 12px;
+    color: #999;
 }

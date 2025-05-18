@@ -1,6 +1,8 @@
 const Label = (key) => key ? `$label.${key}` : undefined
 const Tooltip = (tooltip) => tooltip ? `$tooltip.${tooltip}` : undefined
 const Placeholder = (placeholder) => placeholder ? `$placeholder.${placeholder}` : undefined
+const HintHeader = (header) => header ? `$hintHeader.${header}` : undefined
+const HintDetail = (detail) => detail ? `$hintDetail.${detail}` : undefined
 
 const Action = (act) => {
     const label = Label(act)
@@ -9,6 +11,11 @@ const Action = (act) => {
 const Static = (key) => {
     const label = Label(key)
     return { type: "static", key, label }
+}
+const Hint = (header, detail) => {
+    const hintHeader = HintHeader(header)
+    const hintDetail = HintDetail(detail)
+    return { type: "hint", hintHeader, hintDetail }
 }
 const Switch = (key, { tooltip, disabled, dependencies, ...args } = {}) => {
     const label = Label(key)
@@ -111,6 +118,7 @@ const OPTIONS = {
         NEW_TAB_POSITION: ["right", "end"],
         TAB_SWITCH_ON_CLOSE: ["left", "right", "latest"],
         LAST_TAB_CLOSE_ACTION: ["blankPage", "reconfirm", "exit"],
+        DRAG_STYLE: ["JetBrains", "VSCode"],
         TAB_DETACHMENT: ["free", "resistant", "lockVertical"],
     },
     commander: {
@@ -134,19 +142,22 @@ const OPTIONS = {
     text_stylize: {
         TOOLBAR: ["weight", "italic", "underline", "throughline", "overline", "superScript", "subScript", "emphasis", "blur", "title", "increaseSize", "decreaseSize", "increaseLetterSpacing", "decreaseLetterSpacing", "family", "foregroundColor", "backgroundColor", "borderColor", "erase", "blank", "setBrush", "useBrush", "move", "close"],
     },
+    resource_manager: {
+        RESOURCE_GRAMMARS: ["markdown", "html"],
+    },
     slash_commands: {
         SUGGESTION_TIMING: ["on_input", "debounce"],
         MATCH_STRATEGY: ["prefix", "substr", "abbr"],
         ORDER_STRATEGY: ["predefined", "lexicographic", "length_based", "earliest_hit"],
-        "COMMANDS.type": ["snippet", "command", "gen-snp"],
+        "COMMANDS.type": ["snippet", "gen-snp", "command"],
         "COMMANDS.scope": ["plain", "inline_math"],
     },
     preferences: {
         OBJECT_SETTINGS_FORMAT: ["JSON", "TOML", "YAML"],
     },
     echarts: {
-        RENDERER: ["canvas", "svg"],
-        EXPORT_TYPE: ["png", "jpg", "svg"],
+        RENDERER: ["svg", "canvas"],
+        EXPORT_TYPE: ["svg", "png", "jpg"],
     },
     imageReviewer: {
         operations: ["close", "download", "scroll", "play", "location", "nextImage", "previousImage", "firstImage", "lastImage", "thumbnailNav", "waterFall", "zoomIn", "zoomOut", "rotateLeft", "rotateRight", "hFlip", "vFlip", "translateLeft", "translateRight", "translateUp", "translateDown", "incHSkew", "decHSkew", "incVSkew", "decVSkew", "originSize", "fixScreen", "autoSize", "restore", "info", "dummy"],
@@ -187,16 +198,23 @@ const SETTING_SCHEMAS = {
             Select("EXIT_INTERACTIVE_MODE", OPTIONS.global.EXIT_INTERACTIVE_MODE, { minItems: 1 }),
         ),
         UntitledBox(
+            Action("runtimeSettings"),
             Action("openSettingsFolder"),
             Action("backupSettings"),
-            Action("runtimeSettings"),
             Action("restoreSettings"),
             Action("restoreAllSettings"),
         ),
         UntitledBox(
             Action("visitRepo"),
-            Action("assistWithTranslations"),
+            Action("deepWiki"),
+            Action("editStyles"),
+            Action("developPlugins"),
+            Action("githubImageBed"),
+        ),
+        UntitledBox(
             Action("updatePlugin"),
+            Action("uninstallPlugin"),
+            Action("donate"),
             Static("pluginVersion"),
         ),
     ],
@@ -225,9 +243,9 @@ const SETTING_SCHEMAS = {
             Switch("CTRL_WHEEL_TO_SWITCH"),
             Switch("MIDDLE_CLICK_TO_CLOSE"),
             Switch("SHOW_FULL_PATH_WHEN_HOVER"),
-            Switch("JETBRAINS_DRAG_STYLE"),
-            Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: { JETBRAINS_DRAG_STYLE: true } }),
-            Number("DETACHMENT_THRESHOLD", { tooltip: "detachThreshold", min: 0.1, max: 3, step: 0.1, dependencies: { JETBRAINS_DRAG_STYLE: true, TAB_DETACHMENT: "resistant" } }),
+            Select("DRAG_STYLE", OPTIONS.window_tab.DRAG_STYLE),
+            Select("TAB_DETACHMENT", OPTIONS.window_tab.TAB_DETACHMENT, { dependencies: { DRAG_STYLE: "JetBrains" } }),
+            Number("DETACHMENT_THRESHOLD", { tooltip: "detachThreshold", min: 0.1, max: 3, step: 0.1, dependencies: { DRAG_STYLE: "JetBrains", TAB_DETACHMENT: "resistant" } }),
             Number("DRAG_NEW_WINDOW_THRESHOLD", { tooltip: "newWindow", min: -1 }),
         ),
         ArrayBox("CLOSE_HOTKEY"),
@@ -286,7 +304,8 @@ const SETTING_SCHEMAS = {
                     { type: "select", key: "shell", label: "$label.BUILTIN.shell", options: OPTIONS.commander["BUILTIN.shell"] },
                     { type: "text", key: "name", label: "$label.BUILTIN.name" },
                 ),
-                TitledBox("BUILTIN.cmd", { type: "textarea", key: "cmd", rows: 5 }),
+                TitledBox("BUILTIN.cmd", { type: "textarea", key: "cmd", rows: 3 }),
+                UntitledBox(Hint("builtinEnvVars", "builtinEnvVars")),
             ],
             {
                 name: "",
@@ -515,6 +534,8 @@ const SETTING_SCHEMAS = {
             "LAYOUTS",
             ["name"],
             [
+                UntitledBox(Hint("layoutSyntax", "layoutSyntax")),
+                UntitledBox(Hint("supportedCounter", "supportedCounter")),
                 UntitledBox(
                     { type: "switch", key: "selected", label: "$label.LAYOUTS.selected" },
                     { type: "text", key: "name", label: "$label.LAYOUTS.name" },
@@ -597,7 +618,7 @@ const SETTING_SCHEMAS = {
             Switch("ENABLE_INDENT", fenceEnhanceButtonDep),
             Switch("ENABLE_FOLD", fenceEnhanceButtonDep),
             Switch("DEFAULT_FOLD", fenceEnhanceButtonDep),
-            Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, ...fenceEnhanceButtonDep }),
+            Number("DEFAULT_FOLD_THRESHOLD", { unit: UNITS.line, min: 0, step: 1, dependencies: { ENABLE_BUTTON: true, DEFAULT_FOLD: true } }),
         ),
         TableBox(
             "CUSTOM_BUTTONS",
@@ -738,6 +759,22 @@ const SETTING_SCHEMAS = {
         ),
         handleSettingsBox,
     ],
+    resource_manager: [
+        pluginFullBasePropBox,
+        TitledBox(
+            "windowPosition",
+            Range("MODAL_LEFT_PERCENT", { min: 0, max: 100, step: 1 }),
+            Range("MODAL_WIDTH_PERCENT", { min: 0, max: 100, step: 1 }),
+            Range("MODAL_HEIGHT_PERCENT", { min: 0, max: 100, step: 1 }),
+        ),
+        UntitledBox(
+            Select("RESOURCE_GRAMMARS", OPTIONS.resource_manager.RESOURCE_GRAMMARS, { minItems: 1 }),
+        ),
+        ArrayBox("RESOURCE_EXT"),
+        ArrayBox("MARKDOWN_EXT"),
+        ArrayBox("IGNORE_FOLDERS"),
+        handleSettingsBox,
+    ],
     easy_modify: [
         pluginLiteBasePropBox,
         TitledBox(
@@ -777,7 +814,7 @@ const SETTING_SCHEMAS = {
         ),
         TableBox(
             "COMMANDS",
-            ["keyword"],
+            ["keyword", "type"],
             [
                 UntitledBox(
                     { type: "switch", key: "enable", label: "$label.COMMANDS.enable" },
@@ -790,6 +827,7 @@ const SETTING_SCHEMAS = {
                     { type: "number", key: "cursorOffset.1", label: "$label.COMMANDS.cursorOffset.1" },
                 ),
                 TitledBox("COMMANDS.callback", { type: "textarea", key: "callback", rows: 3 }),
+                UntitledBox(Hint("callbackType", "callbackType")),
             ],
             {
                 enable: true,
@@ -920,10 +958,6 @@ const SETTING_SCHEMAS = {
         ),
         handleSettingsBox,
     ],
-    help: [
-        pluginLiteBasePropBox,
-        handleSettingsBox,
-    ],
     editor_width_slider: [
         pluginLiteBasePropBox,
         UntitledBox(
@@ -993,6 +1027,9 @@ const SETTING_SCHEMAS = {
             Text("SERVER_OPTIONS.host"),
             Number("SERVER_OPTIONS.port", { min: 0, max: 65535, step: 1 }),
             Text("SERVER_OPTIONS.path"),
+        ),
+        UntitledBox(
+            Action("viewJsonRPCReadme"),
         ),
         handleSettingsBox,
     ],
@@ -1082,8 +1119,9 @@ const SETTING_SCHEMAS = {
         TextareaBox("TEMPLATE"),
         TitledBox(
             "advanced",
-            Select("RENDERER", OPTIONS.echarts.RENDERER),
+            Select("RENDERER", OPTIONS.echarts.RENDERER, { tooltip: "svgBetter" }),
             Select("EXPORT_TYPE", OPTIONS.echarts.EXPORT_TYPE),
+            Action("chooseEchartsRenderer"),
         ),
         handleSettingsBox,
     ],
@@ -1118,7 +1156,7 @@ const SETTING_SCHEMAS = {
         langModeBox,
         chartStyleBox,
         TextareaBox("TEMPLATE"),
-        ObjectBOX("VISUAL_OPTIONS", { rows: 6 }),
+        ObjectBOX("VISUAL_OPTIONS", { rows: 5 }),
         handleSettingsBox,
     ],
     drawIO: [
@@ -1153,7 +1191,7 @@ const SETTING_SCHEMAS = {
             "fontFamily",
             Text("font_family"),
             Switch("use_network_icon_when_exporting", { tooltip: "messingFont" }),
-            Text("network_icon_url"),
+            Text("network_icon_url", { dependencies: { use_network_icon_when_exporting: true } }),
         ),
         TitledBox(
             "defaultOptions",
@@ -1280,25 +1318,6 @@ const SETTING_SCHEMAS = {
         ),
         handleSettingsBox,
     ],
-    resourceOperation: [
-        customPluginFullBasePropBox,
-        TitledBox(
-            "windowPosition",
-            Range("modal_height_percent", { min: 0, max: 100, step: 1 }),
-            Range("modal_width_percent", { min: 0, max: 100, step: 1 }),
-            Range("modal_left_percent", { min: 0, max: 100, step: 1 }),
-        ),
-        UntitledBox(
-            Switch("ignore_img_html_element"),
-        ),
-        ArrayBox("resource_suffix"),
-        UntitledBox(
-            Switch("collect_file_without_suffix"),
-        ),
-        ArrayBox("markdown_suffix"),
-        ArrayBox("ignore_folders"),
-        handleSettingsBox,
-    ],
     scrollBookmarker: [
         customPluginFullBasePropBox,
         UntitledBox(
@@ -1388,7 +1407,7 @@ const SETTING_SCHEMAS = {
             Number("modal_line_height", { unit: UNITS.em, min: 0.1 }),
         ),
         TitledBox(
-            "cube",
+            "square",
             Switch("use_button"),
             Text("button_width", { dependencies: { use_button: true } }),
             Text("button_height", { dependencies: { use_button: true } }),
@@ -1402,10 +1421,11 @@ const SETTING_SCHEMAS = {
             Select("result_order_by", OPTIONS.markdownLint.result_order_by),
             Hotkey("hotkey_fix_lint_error"),
         ),
-        ObjectBOX("rule_config", { rows: 15 }),
+        ObjectBOX("rule_config", { rows: 10 }),
         ArrayBox("custom_rules"),
         UntitledBox(
             Action("viewMarkdownlintRules"),
+            Action("viewCustomMarkdownlintRules"),
         ),
         handleSettingsBox,
     ],

@@ -10,6 +10,7 @@
         <a href="https://github.com/obgnail/typora_plugin/tree/master/plugin"><img src="https://img.shields.io/badge/implementation-native-greenbule"></a>
         <a href="https://github.com/obgnail/typora_plugin?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95%E4%B8%80%E8%87%AA%E5%8A%A8"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-0085a1"></a>
         <a href="https://github.com/obgnail/typora_plugin/blob/master/LICENSE"><img src="https://img.shields.io/github/license/obgnail/typora_plugin"></a>
+        <a href="https://deepwiki.com/obgnail/typora_plugin"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
     </p>
 </div>
 
@@ -24,7 +25,7 @@
 | 6    | md_padding              | 中英文混排优化                         |          |
 | 7    | slash_commands          | 斜杠命令                               |          |
 | 8    | templater               | 文件模板                               |          |
-| 9    | resourceOperation       | 一键清除无用图片                       |          |
+| 9    | resource_manager        | 一键清除无用图片                       |          |
 | 10   | fence_enhance           | 复制、折叠、格式化代码                 |          |
 | 11   | toc                     | 在右侧生成大纲目录                     |          |
 | 12   | commander               | 命令行环境                             |          |
@@ -55,7 +56,7 @@
 | 37   | resize_table            | 调整表格行高列宽                       |          |
 | 38   | resize_image            | 调整图片显示大小                       |          |
 | 39   | export_enhance          | 导出 html 时避免图片丢失               |          |
-| 40   | markdownLint            | markdown 格式检查                  |          |
+| 40   | markdownLint            | markdown 格式检查                      |          |
 | 41   | go_top                  | 一键到文章顶部、底部                   |          |
 | 42   | reopenClosedFiles       | 打开上次退出 Typora 时尚未关闭的标签页 | ×        |
 | 43   | truncate_text           | 暂时隐藏内容，提高大文件渲染性能       | ×        |
@@ -70,15 +71,14 @@
 | 52   | cipher                  | 加密文件                               | ×        |
 | 53   | ripgrep                 | 使用 ripgrep 搜索文件                  | ×        |
 | 54   | article_uploader        | 一键上传博客到支持的所有平台           | ×        |
-| 55   | help                    | 用户帮助                               |          |
-| 56   | custom                  | 开放平台，用户自定义插件（高级）       |          |
-| 57   | hotkeys                 | 快捷键注册中心（高级）                 |          |
-| 58   | quickButton             | 于右下角添加功能按钮（高级）           |          |
-| 59   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
+| 55   | custom                  | 开放平台，用户自定义插件（高级）       |          |
+| 56   | hotkeys                 | 快捷键注册中心（高级）                 |          |
+| 57   | quickButton             | 于右下角添加功能按钮（高级）           |          |
+| 58   | json_rpc                | 外部操纵 Typora（高级）                | ×        |
 
 **尊重用户的一切选择**。本项目的任何插件、任何功能皆可永久启用 / 禁用。
 
-> 如果有其他需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，也欢迎 PR。如果觉得本项目对你有帮助，请给我一个 star ⭐
+> 如果有需求或发现 BUG，欢迎 [提 issue](https://github.com/obgnail/typora_plugin/issues/new)，欢迎 PR。如果觉得本项目对您有帮助，请不吝点亮一个 Star ⭐！
 
 
 
@@ -128,41 +128,13 @@ yay -S typora-plugin
 
 ## Q&A
 
-### 我的 Typora 版本能用吗？
-
-所有插件都在 0.9.98 版本（最后一个免费版本）和最新版本测试过。本项目理论上支持所有 Typora 版本，但 Typora 在 0.9.98 版本后功能才稳定下来。**0.9.98 之前的版本不推荐使用。**
-
-
-
-### 插件会失效吗？
-
-理论上能保持长时间有效，且我在维护中。
-
-
-
-### 如何修改插件配置？
-
-项目包含 600+ 配置选项，可以比较完整定义各个插件的行为。
-
-右键菜单 -> 少用插件 -> 插件配置。
-
-
-
-### 如何升级插件？
-
-右键菜单 -> 常用插件 -> 二级插件 -> 升级插件。
-
-
-
-### 我不想用了，如何卸载插件系统？
-
-右键菜单 -> 少用插件 -> 帮助 -> 卸载插件。
-
-
-
-### 支持 Typora for Mac 吗？
-
-没有 Mac 设备，故没做测试。
+- **我的 Typora 版本能用吗？** 本项目已在 Typora 0.9.98 版本（最后一个免费版本）和最新版本进行过测试。理论上支持所有 Typora 版本，但推荐使用 0.9.98 及以上版本以获得更稳定的体验。
+- **插件会失效吗？** 理论上能保持长时间有效。
+- **如何修改插件配置？** 通过右键菜单 -> 少用插件 -> 插件配置。
+- **如何升级插件？** 通过右键菜单 -> 常用插件 -> 二级插件 -> 升级插件。
+- **如何卸载插件系统？** 通过右键菜单 -> 少用插件 -> 插件配置 -> 卸载插件。
+- **支持 Typora for Mac 吗？** 目前暂无 Mac 设备进行测试和适配，因此暂不支持。
+- **还有其他问题？** 欢迎前往 [AI Wiki](https://www.google.com/url?sa=E&source=gmail&q=https://deepwiki.com/obgnail/typora_plugin) 提问或查阅社区讨论。
 
 
 
@@ -281,11 +253,11 @@ yay -S typora-plugin
 
 
 
-### resourceOperation：一键清除无用图片
+### resource_manager：一键清除无用图片
 
 功能：资源管理，清除无用图片
 
-使用方式：右键菜单 -> 常用插件 -> 二级插件 -> 资源管理
+使用方式：右键菜单 -> 少用插件 -> 资源管理
 
 
 
@@ -731,12 +703,6 @@ filter_regexp = ""
 2. 此时会自动调出书签管理器，点击上面的书签，即可跳转到书签。
 
 显示/隐藏书签管理器：右键菜单 -> 常用插件 -> 二级插件 -> 书签管理器
-
-
-
-### help：  用户帮助
-
-使用方式：右键菜单 -> 少用插件 -> 帮助。
 
 
 

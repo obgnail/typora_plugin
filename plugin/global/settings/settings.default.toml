@@ -32,15 +32,10 @@ EXIT_INTERACTIVE_MODE = ["click_exit_button"]
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 标签页外观与交互 -------------------
-# 标签页拖拽风格设置：控制标签页拖拽时的行为方式
-#   true:  采用 JetBrains 风格的标签页拖拽方式，可以更灵活地调整标签页顺序，并支持 Y 轴防抖
-#   false: 采用 VS Code 风格的标签页拖拽方式，相对简单直接
-JETBRAINS_DRAG_STYLE = true
-
 # 标签标题显示设置：标签是否显示文件扩展名
 #   true:  标签标题将显示不带扩展名的文件名 (例如: filename.md 显示为 filename)
 #   false: 标签标题将显示完整的文件名 (例如: filename.md)
@@ -76,7 +71,12 @@ TAB_MIN_WIDTH = "100px"
 #   限制：不可超过 400px
 TAB_MAX_WIDTH = "none"
 
-# ------------------- 标签页拖拽增强（仅当 JETBRAINS_DRAG_STYLE 为 true 时生效） -------------------
+# ------------------- 标签页拖拽增强（仅当 DRAG_STYLE 为 JetBrains 时生效） -------------------
+# 标签页拖拽风格设置：控制标签页拖拽时的行为方式
+#   JetBrains: 采用 JetBrains 风格的标签页拖拽方式，可以更灵活地调整标签页顺序，并支持设置分离模式
+#   VSCode   : 采用 VS Code 风格的标签页拖拽方式，相对简单直接
+DRAG_STYLE = "JetBrains"
+
 # 标签页分离行为
 #  - free         : 无限制
 #  - resistant    : 存在拖动阻力
@@ -174,7 +174,7 @@ CONTEXT_MENU = ["closeTab", "closeOtherTabs", "closeLeftTabs", "closeRightTabs",
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，将在 Typora 的插件列表中显示
+# 插件名称，将在 Typora 的插件列表中显示
 NAME = ""
 
 # ------------------- 快捷键 -------------------
@@ -284,7 +284,7 @@ OPTIMIZE_SEARCH = false
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 快捷键与窗口行为 -------------------
@@ -354,7 +354,7 @@ BUILTIN = [
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 快捷键 -------------------
@@ -381,7 +381,7 @@ IGNORE_PATTERNS = [':[0-9a-z_\-]+?:', '<br\s*?/?>', '<u>.+?</u>', '<span style="
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 只读模式行为 -------------------
@@ -431,7 +431,7 @@ SHOW_TEXT = "ReadOnly"
 #   注意：此插件无法在低版本 Typora 上使用
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 插件快捷键 -------------------
@@ -471,7 +471,7 @@ BLUR_LEVEL = 10
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 夜间模式切换 -------------------
@@ -493,7 +493,7 @@ DARK_DEFAULT = false
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 无图模式切换 -------------------
@@ -531,7 +531,7 @@ TRANSITION_DELAY = 0
 #   false: 禁用插件，插件功能将不可用
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 快捷键 -------------------
@@ -607,7 +607,7 @@ USE_NEGATIVE_SEARCH = true
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 功能修饰键 -------------------
@@ -644,7 +644,7 @@ RECORD_RESIZE = true
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 表格调整 -------------------
@@ -672,7 +672,7 @@ RECORD_RESIZE = true
 #   false: 禁用插件
 ENABLE = false
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 表格分页与排序 -------------------
@@ -724,7 +724,7 @@ REGEX = false
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 快捷键 -------------------
@@ -745,7 +745,7 @@ HOTKEY_GO_BOTTOM = ""
 #   false: 禁用插件，所有 Markmap 相关功能将不可用
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- TOC (思维导图) 功能 -------------------
@@ -991,7 +991,7 @@ Note that if blocks and lists appear at the same level, the lists will be ignore
 #   false: 禁用插件，不进行自动编号
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 编号元素 -------------------
@@ -1262,7 +1262,7 @@ fence = ""
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 按钮功能（代码块右上角按钮） -------------------
@@ -1357,9 +1357,9 @@ WAIT_RECOVER_INTERVAL = 1000
 #       示例: "btn => console.log('btn has render')"，不需要则置为空字符串 ""
 #   ON_CLICK: 鼠标点击按钮时的回调函数字符串，点击时执行此函数
 #       参数: {ev, btn, cont, fence, cm, cid, plu}，分别表示：click 事件对象，按钮的 DOM 元素，代码块文本内容，代码块的 DOM 元素, CodeMirror实例对象，代码块的 CID，插件实例对象
-#       示例: "({cont}) => console.log(cont)"。此项不可为空
+#       示例: "({ cont }) => console.log(cont)"。此项不可为空
 CUSTOM_BUTTONS = [
-    { DISABLE = true, ICON = "fa fa-bomb", HINT = "demo", ON_INIT = "", ON_RENDER = "", ON_CLICK = "({cont}) => console.log(cont)" },
+    { DISABLE = true, ICON = "fa fa-bomb", HINT = "demo", ON_INIT = "", ON_RENDER = "", ON_CLICK = "({ cont }) => console.log(cont)" },
 ]
 
 # ------------------- 快捷键功能 -------------------
@@ -1433,7 +1433,7 @@ HIGHLIGHT_LINE_COLOR = "rgba(176, 178, 180, 0.4)"
 #   false: 禁用插件
 ENABLE = false
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 严格模式 -------------------
@@ -1479,7 +1479,7 @@ MODIFIER_KEY = { COLLAPSE_SINGLE = "ctrl", COLLAPSE_SIBLINGS = "ctrl+alt", COLLA
 #   false: 禁用插件
 ENABLE = false
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 标志颜色 -------------------
@@ -1501,7 +1501,7 @@ RECORD_COLLAPSE = true
 #   false: 禁用插件
 ENABLE = false
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 折叠状态记忆 -------------------
@@ -1519,7 +1519,7 @@ RECORD_COLLAPSE = true
 #   false: 禁用插件
 ENABLE = false
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 快捷键 -------------------
@@ -1550,7 +1550,7 @@ REMAIN_LENGTH = 80
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 图片下载 -------------------
@@ -1574,7 +1574,7 @@ DOWNLOAD_THREADS = 10
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 面板外观 -------------------
@@ -1662,7 +1662,7 @@ DEFAULT_COLORS = { FOREGROUND = "#330000", BACKGROUND = "#FFFFFF", BORDER = "#33
 #   false: 禁用插件
 ENABLE = false
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 快捷键 -------------------
@@ -1689,7 +1689,7 @@ SHOW_HINT_MODAL = true
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 快捷键 -------------------
@@ -1732,7 +1732,7 @@ HOTKEY_TRAILING_WHITE_SPACE = ""
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 隐藏插件 -------------------
@@ -1751,7 +1751,7 @@ HIDE_DISABLE_PLUGINS = false
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 触发命令候选框 -------------------
@@ -1911,7 +1911,7 @@ COMMANDS = [
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 菜单外观 -------------------
@@ -1955,7 +1955,7 @@ FIND_LOST_PLUGIN = true
 # ------------------- 自定义右键菜单 -------------------
 # 自定义右键菜单：`MENUS` 数组中的每一项对应一个一级菜单，允许无限添加一级菜单，允许重复添加同一个插件
 #   NAME: 一级菜单的名称
-#   LIST: 二级菜单的插件列表，`---` 代表在页面上插入一个分隔横线。允许填入 pluginName (插件，如：help) 或者 pluginName.callArg (插件的其中一个选项，如：help.donate)
+#   LIST: 二级菜单的插件列表，`---` 代表在页面上插入一个分隔横线。允许填入 pluginName (插件，如：easy_modify) 或者 pluginName.callArg (插件的其中一个选项，如：easy_modify.copy_full_path)
 [[right_click_menu.MENUS]]
 NAME = "__LESS_USED_PLUGINS__"
 LIST = [
@@ -1971,10 +1971,10 @@ LIST = [
     "export_enhance",
     "cipher",
     "right_click_menu",
-    "help",
     "---",
     "pie_menu",
     "go_top",
+    "resource_manager",
     "text_stylize",
     "hotkeys",
     "editor_width_slider",
@@ -2016,7 +2016,7 @@ LIST = [
 #   false: 禁用插件
 ENABLE = false
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 快捷键 -------------------
@@ -2036,8 +2036,8 @@ MODIFIER_KEY = "ctrl"
 #     ICON: 按钮图标的 CSS class，使用 Font Awesome 图标库
 #              例如： "fa fa-book" 表示书本图标
 #     CALLBACK: 按钮点击后的回调函数，格式为 pluginName.action
-#              pluginName 为插件的名称
-#              action 为插件的某个具体选项，如 "help.donate"
+#              pluginName 为插件名称
+#              action 为插件的某个具体选项，如 "easy_modify.copy_full_path"
 #              如果插件只有一个选项，则无需 action，如 "read_only"
 BUTTONS = [
     { ICON = "fa fa-book", CALLBACK = "read_only" },
@@ -2052,7 +2052,7 @@ BUTTONS = [
     { ICON = "fa fa-font", CALLBACK = "text_stylize" },
     { ICON = "fa fa-search", CALLBACK = "search_multi" },
     { ICON = "fa fa-image", CALLBACK = "imageReviewer" },
-    { ICON = "fa fa-filter", CALLBACK = "resourceOperation" },
+    { ICON = "fa fa-filter", CALLBACK = "resource_manager" },
     { ICON = "fa fa-wrench", CALLBACK = "preferences" },
     { ICON = "fa fa-bookmark", CALLBACK = "scrollBookmarker" },
     { ICON = "fa fa-code", CALLBACK = "commander" }
@@ -2067,7 +2067,7 @@ BUTTONS = [
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 快捷键 -------------------
@@ -2101,7 +2101,7 @@ OBJECT_SETTINGS_FORMAT = "JSON"
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在 Typora 侧边栏显示
+# 插件名称，用于在 Typora 侧边栏显示
 NAME = ""
 
 # ------------------- 文件计数过滤 -------------------
@@ -2157,7 +2157,7 @@ BEFORE_TEXT = ""
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 快捷键 -------------------
@@ -2199,16 +2199,48 @@ CUSTOM_HOTKEYS = [
 ]
 
 
-################### help ###################
-[help]
+################### resource_manager ###################
+[resource_manager]
 # ------------------- 基础 -------------------
 # 启用或禁用插件
 #   true:  启用插件
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
+
+# ------------------- 快捷键 -------------------
+#  触发插件的快捷键
+#   留空则不设置快捷键
+HOTKEY = ""
+
+# ------------------- 弹窗 -------------------
+# 弹窗在页面中距离左侧的百分比位置，例如：5 代表距离页面左侧 5% 的位置
+MODAL_LEFT_PERCENT = 5
+
+# 弹窗在页面中所占的宽度百分比，例如：90 代表弹窗宽度为页面宽度的 90%
+MODAL_WIDTH_PERCENT = 90
+
+# 弹窗在页面中所占的高度百分比，例如：70 代表弹窗高度为页面高度的 70%
+MODAL_HEIGHT_PERCENT = 70
+
+# ------------------- 资源识别 -------------------
+# 处理的资源类型
+#   markdown: md 语法 ![alt](uri) 的资源
+#   html    : HTML <IMG> 标签中的资源
+RESOURCE_GRAMMARS = ["markdown", "html"]
+
+# 用于判断文件是否为资源的扩展名列表
+#   本插件通过文件扩展名来判断是否为资源
+RESOURCE_EXT = ["", ".jpg", ".jpeg", ".png", ".gif", ".svg", ".tiff", ".ico", ".webp", ".webm", ".bmp", ".mp3", ".mp4", ".ogg", ".image", ".jfif", ".gif!large", ".gif!small"]
+
+# 用于判断文件是否为 MARKDOWN 文件的扩展名列表
+MARKDOWN_EXT = [".md", ".markdown", ".mdown", ".mmd", ".rmarkdown", ".mkd", ".mdwn", ".mdtxt", ".rmd", ".mdtext"]
+
+# ------------------- 文件扫描 -------------------
+# 需要忽略扫描的文件夹名称列表，这些文件夹及其子文件夹中的文件将不会被扫描
+IGNORE_FOLDERS = [".git", ".idea", "node_modules"]
 
 
 ################### editor_width_slider ###################
@@ -2219,7 +2251,7 @@ NAME = ""
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 写作区宽度调整 -------------------
@@ -2236,7 +2268,7 @@ WIDTH_RATIO = -1
 #   false: 禁用插件
 ENABLE = false
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 插件界面控制 -------------------
@@ -2304,7 +2336,7 @@ csdn = { enabled = true, cookie = "log_Id_pv=27; log_Id_view=857; dc_tos=se1n4s;
 #   false: 禁用插件
 ENABLE = false
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 快捷键 -------------------
@@ -2336,7 +2368,7 @@ TOP_PERCENT = 20
 #   false: 禁用插件
 ENABLE = false
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- RPC Server 选项 -------------------
@@ -2352,7 +2384,7 @@ SERVER_OPTIONS = { port = 5080, host = "127.0.0.1", path = "/", strict = false }
 #   false: 禁用插件
 ENABLE = true
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""
 
 # ------------------- 快捷键 -------------------
@@ -2395,5 +2427,5 @@ UPDATE_LOOP_INTERVAL = -1
 # 此插件乃开发者于开发阶段使用，请勿开启
 ENABLE = false
 
-# 插件的名称，用于在插件列表中标识此插件（为空则使用默认名）
+# 插件名称（为空则使用默认名）
 NAME = ""

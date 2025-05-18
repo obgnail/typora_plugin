@@ -3,22 +3,34 @@ class pluginForm extends HTMLElement {
         this.utils = utils
         this.i18n = utils.i18n
         this.options = options || { objectFormat: "JSON" }
-        this.values = null
-        this.actions = null
+        this.data = null
+        this.action = null
         this.prerequisite = null
         this.form = null
         this._initShadow()
         this._bindEvents()
     }
 
-    render(schemas, datas, actions = {}) {
-        this.schemas = schemas
-        this.actions = actions
-        this.values = JSON.parse(JSON.stringify(datas))
-        this.prerequisite = this._buildPrerequisite(schemas)
-        this.form.innerHTML = this._fillForm(schemas)
+    render(schema, data, action = {}) {
+        this.schema = schema
+        this.action = action
+        this.data = JSON.parse(JSON.stringify(data))
+        this.prerequisite = this._buildPrerequisite(schema)
+        this.form.innerHTML = this._fillForm(schema)
     }
 
+    // type: set/push/remove/removeIndex/action
+    _dispatchEvent(key, value, type = "set") {
+        const customEvent = new CustomEvent("CRUD", { detail: { key, value, type } })
+        this.dispatchEvent(customEvent)
+        if (type === "action") {
+            const fn = this.action[key]
+            if (fn) fn()
+            return
+        }
+        this.utils.nestedPropertyHelpers[type](this.data, key, value)
+        this._toggleReadonly(key)
+    }
 
     _initShadow() {
         const awesomeCSS = this.utils.joinPath("./style/font-awesome-4.1.0/css/font-awesome.min.css")
@@ -30,18 +42,6 @@ class pluginForm extends HTMLElement {
             <div id="form"></div>
         `
         this.form = shadowRoot.querySelector("#form")
-    }
-
-    // type: set/push/remove/removeIndex/action
-    _onEvent(key, value, type = "set") {
-        this.dispatchEvent(new CustomEvent("form-curd", { detail: { key, value, type } }))
-        if (type === "action") {
-            const fn = this.actions[key]
-            if (fn) fn()
-            return
-        }
-        this.utils.nestedPropertyHelpers[type](this.values, key, value)
-        this._toggleReadonly(key)
     }
 
     _bindEvents() {
@@ -99,24 +99,25 @@ class pluginForm extends HTMLElement {
                     : that._joinSelected(selectedValues.map(v => map.get(v).textContent))
                 selectEl.dataset.value = selectedValues.join("#")
                 that.utils.hide(boxEl)
-                that._onEvent(selectEl.dataset.key, selectedValues)
+                that._dispatchEvent(selectEl.dataset.key, selectedValues)
             } else {
                 allOptionEl.forEach(op => op.dataset.choose = "false")
                 optionEl.dataset.choose = "true"
                 selectEl.dataset.value = optionEl.dataset.value
                 selectValueEl.textContent = optionEl.textContent
                 that.utils.hide(boxEl)
-                that._onEvent(selectEl.dataset.key, optionValue)
+                that._dispatchEvent(selectEl.dataset.key, optionValue)
             }
         }).on("click", ".table-add", async function () {
             const tableEl = this.closest(".table")
             const key = tableEl.dataset.key
-            const targetBox = that.schemas.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
+            const targetBox = that.schema.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
             const { nestedBoxes, defaultValues, thMap } = targetBox.fields[0]
-            const { response, values } = await that.utils.formDialog.modal(targetBox.title, nestedBoxes, defaultValues)
+            const op = { title: targetBox.title, schema: nestedBoxes, data: defaultValues }
+            const { response, data } = await that.utils.formDialog.modal(op)
             if (response === 1) {
-                that._onEvent(key, values, "push")
-                const row = that._createTableRow(thMap, values).map(e => `<td>${e}</td>`).join("")
+                that._dispatchEvent(key, data, "push")
+                const row = that._createTableRow(thMap, data).map(e => `<td>${e}</td>`).join("")
                 tableEl.querySelector("tbody").insertAdjacentHTML("beforeend", `<tr>${row}</tr>`)
             }
         }).on("click", ".table-edit", async function () {
@@ -125,14 +126,15 @@ class pluginForm extends HTMLElement {
             const tableEl = trEl.closest(".table")
             const idx = [...tableEl.querySelectorAll("tbody tr")].findIndex(e => e === trEl)
             const key = tableEl.dataset.key
-            const rowValue = that.values[key][idx]
-            const targetBox = that.schemas.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
+            const rowValue = that.data[key][idx]
+            const targetBox = that.schema.find(box => box.fields && box.fields.length === 1 && box.fields[0].key === key)
             const { nestedBoxes, defaultValues, thMap } = targetBox.fields[0]
             const modalValues = that.utils.merge(defaultValues, rowValue)  // rowValue may be missing certain attributes
-            const { response, values } = await that.utils.formDialog.modal(targetBox.title, nestedBoxes, modalValues)
+            const op = { title: targetBox.title, schema: nestedBoxes, data: modalValues }
+            const { response, data } = await that.utils.formDialog.modal(op)
             if (response === 1) {
-                that._onEvent(`${key}.${idx}`, values)
-                const row = that._createTableRow(thMap, values)
+                that._dispatchEvent(`${key}.${idx}`, data)
+                const row = that._createTableRow(thMap, data)
                 const tds = trEl.querySelectorAll("td")
                 that.utils.zip(row, tds).slice(0, -1).forEach(([val, td]) => td.textContent = val)
             }
@@ -141,13 +143,13 @@ class pluginForm extends HTMLElement {
             const trEl = btn.closest("tr")
             const tableEl = trEl.closest(".table")
             const idx = [...tableEl.querySelectorAll("tbody tr")].findIndex(e => e === trEl)
-            that._onEvent(tableEl.dataset.key, Number(idx), "removeIndex")
+            that._dispatchEvent(tableEl.dataset.key, Number(idx), "removeIndex")
             trEl.remove()
         }).on("click", ".object-confirm", function () {
             const textarea = this.closest(".control").querySelector(".object")
             try {
                 const value = that._deserialize(textarea.value)
-                that._onEvent(textarea.dataset.key, value)
+                that._dispatchEvent(textarea.dataset.key, value)
                 const msg = that.i18n.t("global", "notification.changesSubmitted")
                 that.utils.notification.show(msg)
             } catch (e) {
@@ -157,21 +159,21 @@ class pluginForm extends HTMLElement {
             }
         }).on("click", ".hotkey-reset", function () {
             const input = this.closest(".hotkey-wrap").querySelector("input")
-            that._onEvent(input.dataset.key, "")
+            that._dispatchEvent(input.dataset.key, "")
             that.utils.hotkeyHub.unregister(input.value)
             input.value = ""
         }).on("click", ".hotkey-undo", function () {
             const input = this.closest(".hotkey-wrap").querySelector("input")
             input.value = input.getAttribute("value")
-            that._onEvent(input.dataset.key, input.value)
+            that._dispatchEvent(input.dataset.key, input.value)
         }).on("click", '.control[data-type="action"]', function () {
             const icon = this.querySelector(".action")
-            that._onEvent(icon.dataset.action, null, "action")
+            that._dispatchEvent(icon.dataset.action, null, "action")
         }).on("click", ".array-item-delete", function () {
             const itemEl = this.parentElement
             const valueEl = this.previousElementSibling
             const displayEl = this.closest(".array")
-            that._onEvent(displayEl.dataset.key, valueEl.textContent, "remove")
+            that._dispatchEvent(displayEl.dataset.key, valueEl.textContent, "remove")
             itemEl.remove()
         }).on("click", ".array-item-add", function () {
             const addEl = this
@@ -193,18 +195,18 @@ class pluginForm extends HTMLElement {
                 that.utils.notification.show(msg, "error")
                 setTimeout(() => checkboxInput.checked = !checkboxInput.checked)
             } else {
-                that._onEvent(checkboxEl.dataset.key, checkboxValues)
+                that._dispatchEvent(checkboxEl.dataset.key, checkboxValues)
             }
         }).on("input", ".radio-input", function () {
-            that._onEvent(this.getAttribute("name"), this.value)
+            that._dispatchEvent(this.getAttribute("name"), this.value)
         }).on("input", ".range-input", function () {
             this.nextElementSibling.textContent = that._toFixed2(Number(this.value))
         }).on("change", "input.switch-input", function () {
-            that._onEvent(this.dataset.key, this.checked)
+            that._dispatchEvent(this.dataset.key, this.checked)
         }).on("change", ".number-input, .range-input, .unit-input", function () {
-            that._onEvent(this.dataset.key, Number(this.value))
+            that._dispatchEvent(this.dataset.key, Number(this.value))
         }).on("change", ".text-input, .textarea", function () {
-            that._onEvent(this.dataset.key, this.value)
+            that._dispatchEvent(this.dataset.key, this.value)
         })
 
         this.form.addEventListener("focusout", ev => {
@@ -224,11 +226,11 @@ class pluginForm extends HTMLElement {
             input.textContent = ""
             this.utils.hide(input)
             this.utils.show(addEl)
-            this._onEvent(displayEl.dataset.key, value, "push")
+            this._dispatchEvent(displayEl.dataset.key, value, "push")
         })
 
         const ignoreKeys = ["control", "alt", "shift", "meta"]
-        const updateHotkey = this.utils.debounce(hk => this._onEvent(hk.dataset.key, hk.value), 500)
+        const updateHotkey = this.utils.debounce(hk => this._dispatchEvent(hk.dataset.key, hk.value), 500)
         this.form.addEventListener("keydown", ev => {
             if (ev.key === undefined) return
             const input = ev.target.closest(".hotkey-input")
@@ -266,8 +268,8 @@ class pluginForm extends HTMLElement {
         return [...headerValues, editButtons]
     }
 
-    _fillForm(schemas) {
-        const blockControls = new Set(["textarea", "object", "array", "table", "radio", "checkbox"])
+    _fillForm(schema) {
+        const blockControls = new Set(["textarea", "object", "array", "table", "radio", "checkbox", "hint"])
         const createTitle = (title) => `<div class="title">${title}</div>`
         const createTooltip = (item) => item.tooltip ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${item.tooltip.replace("\n", "<br>")}</span></span>` : ""
         const createGeneralControl = (ctl, value) => {
@@ -305,6 +307,10 @@ class pluginForm extends HTMLElement {
                     return `<div class="action fa fa-angle-right" data-action="${ctl.act}"></div>`
                 case "static":
                     return `<div class="static" data-key="${ctl.key}">${this.utils.escape(value)}</div>`
+                case "hint":
+                    const header = ctl.hintHeader ? `<div class="hint-header">${ctl.hintHeader}</div>` : ""
+                    const detail = ctl.hintDetail ? `<div class="hint-detail">${ctl.hintDetail.replace(/\n/g, "<br>")}</div>` : ""
+                    return `<div class="hint-wrap">${header}${detail}</div>`
                 case "select":
                     const isMulti = Array.isArray(value)
                     const show = isMulti
@@ -404,7 +410,7 @@ class pluginForm extends HTMLElement {
                 field.type = "unit"
             }
             const isBlock = blockControls.has(field.type)
-            const value = this.utils.nestedPropertyHelpers.get(this.values, field.key)
+            const value = this.utils.nestedPropertyHelpers.get(this.data, field.key)
             const ctl = createGeneralControl(field, value)
             const label = isBlock ? "" : `<div class="control-left">${field.label}${createTooltip(field)}</div>`
             const control = isBlock ? ctl : `<div class="control-right">${ctl}</div>`
@@ -418,12 +424,12 @@ class pluginForm extends HTMLElement {
             const box = `<div class="box">${items}</div>`
             return t + box
         }
-        return schemas.map(createBox).join("")
+        return schema.map(createBox).join("")
     }
 
-    _buildPrerequisite(schemas) {
+    _buildPrerequisite(schema) {
         const prerequisite = {}
-        schemas.forEach(box => {
+        schema.forEach(box => {
             box.fields.forEach(field => {
                 const dep = field.dependencies
                 if (!dep || dep.length === 0) return
@@ -455,7 +461,7 @@ class pluginForm extends HTMLElement {
         if (field.dependencies) {
             // TODO: supports `AND` only now
             const configurable = Object.entries(field.dependencies).every(([k, v]) => {
-                return v === this.utils.nestedPropertyHelpers.get(this.values, k)
+                return v === this.utils.nestedPropertyHelpers.get(this.data, k)
             })
             return !configurable
         }

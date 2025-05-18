@@ -10,6 +10,7 @@
         <a href="https://github.com/obgnail/typora_plugin/tree/master/plugin"><img src="https://img.shields.io/badge/implementation-native-greenbule"></a>
         <a href="https://github.com/obgnail/typora_plugin?tab=readme-ov-file#%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95%E4%B8%80%E8%87%AA%E5%8A%A8"><img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux-0085a1"></a>
         <a href="https://github.com/obgnail/typora_plugin/blob/master/LICENSE"><img src="https://img.shields.io/github/license/obgnail/typora_plugin"></a>
+        <a href="https://deepwiki.com/obgnail/typora_plugin"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
     </p>
 </div>
 
@@ -24,7 +25,7 @@
 | 6    | md_padding              | Chinese-English Text Spacer                               |                    |
 | 7    | slash_commands          | Slash Commands                                            |                    |
 | 8    | templater               | File Templater                                            |                    |
-| 9    | resourceOperation       | Resource Management                                       |                    |
+| 9    | resource_manager        | Resource Management                                       |                    |
 | 10   | fence_enhance           | Enhance Fence                                             |                    |
 | 11   | toc                     | TOC                                                       |                    |
 | 12   | commander               | Commander                                                 |                    |
@@ -70,11 +71,10 @@
 | 52   | cipher                  | Encrypt files                                             | ×                  |
 | 53   | ripgrep                 | Search files using ripgrep                                | ×                  |
 | 54   | article_uploader        | One-click upload blog to supported platforms              | ×                  |
-| 55   | help                    | User help                                                 |                    |
-| 56   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
-| 57   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
-| 58   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
-| 59   | json_rpc                | External control of Typora (advanced)                     | ×                  |
+| 55   | custom                  | Open platform for user-defined plugins (advanced)         |                    |
+| 56   | hotkeys                 | Hotkey registration center (advanced)                     |                    |
+| 57   | quickButton             | Add function buttons in the lower right corner (advanced) |                    |
+| 58   | json_rpc                | External control of Typora (advanced)                     | ×                  |
 
 
 **Respect all user choices**. Any plugin or feature in this project can be permanently enabled/disabled.
@@ -130,36 +130,13 @@ yay -S typora-plugin
 
 ## Q&A
 
-### Is my version of Typora supported?
-
-All plugins have been tested on version 0.9.98 (the last free version) and the latest version. This project theoretically supports all Typora versions, but Typora's functionality stabilized after version 0.9.98. **It is recommended to use version 0.9.98 or later**.
-
-
-### Will the plugins become invalid?
-
-Theoretically, they can remain effective for a long time, and I am maintaining them.
-
-
-### How to modify plugin configurations?
-
-The project includes over 600 configuration options, allowing a comprehensive definition of each plugin's behavior.
-
-Right-click menu -> Less Used Plugins -> Preferences.
-
-
-### How to upgrade plugins?
-
-Right-click menu -> Often Used Plugins -> Secondary Plugins -> Upgrade Plugins.
-
-
-### I don't want to use it anymore, how to uninstall the plugin system?
-
-Right-click menu -> Less Used Plugins -> Help -> Uninstall Plugins.
-
-
-### Does it support Typora for Mac?
-
-I don't have a Mac device, so I haven't tested it.
+- **Is my version of Typora supported?** All plugins have been tested on version 0.9.98 (the last free version) and the latest version. This project theoretically supports all Typora versions, but Typora's functionality stabilized after version 0.9.98. **It is recommended to use version 0.9.98 or later**.
+- **Will the plugins become invalid?** Theoretically, they can remain effective for a long time, and I am maintaining them.
+- **How to modify plugin configurations?** Right-click menu -> Less Used Plugins -> Preferences.
+- **How to upgrade plugins?** Right-click menu -> Often Used Plugins -> Secondary Plugins -> Upgrade Plugins.
+- **I don't want to use it anymore, how to uninstall the plugin system?** Right-click menu -> Less Used Plugins -> Preferences -> Uninstall Plugins.
+- **Does it support Typora for Mac?** I don't have a Mac device, so I haven't tested it.
+- **Any other questions?** Please ask [AI Wiki](https://deepwiki.com/obgnail/typora_plugin).
 
 
 
@@ -268,11 +245,11 @@ Usage: Right-click menu -> Often Used Plugins -> Secondary Plugins -> File Templ
 ![templater](assets/templater.gif)
 
 
-### resourceOperation: Resource Management
+### resource_manager: Resource Management
 
 Function: Resource management, cleanup of unused images
 
-Usage: Right-click menu -> Often Used Plugins -> Secondary Plugins -> Resource Management
+Usage: Right-click menu -> Less Used Plugins -> Resource Management
 
 
 ### fence_enhance: Enhance Fence
@@ -645,10 +622,6 @@ Usage:
 2. This will automatically bring up the bookmark manager. Click on the bookmark above to jump to the bookmark.
 
 Show/Hide Bookmark Manager: Right-click menu -> Often Used Plugins -> Secondary plugins -> Bookmark Manager
-
-### help: User Help
-
-Usage: Right-click menu -> Less Used Plugins -> Help.
 
 ### cipher: Encrypt File
 

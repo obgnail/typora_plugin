@@ -86,8 +86,8 @@ class preferencesPlugin extends BasePlugin {
             })
         }
         const formEvents = () => {
-            this.entities.form.addEventListener("form-curd", async ev => {
-                const { key, value, type = "set" } = ev.detail
+            this.entities.form.addEventListener("CRUD", async ev => {
+                const { key, value, type } = ev.detail
                 const propHandler = this.utils.nestedPropertyHelpers[type]
                 if (propHandler) {
                     const fixedName = this.entities.form.dataset.plugin
@@ -115,6 +115,7 @@ class preferencesPlugin extends BasePlugin {
     call = async () => {
         const isShow = this.utils.isShow(this.entities.dialog)
         if (isShow) {
+            this.entities.searchInput.value = ""
             this.utils.hide(this.entities.dialog)
         } else {
             await this.showDialog(this.config.DEFAULT_MENU)
@@ -139,9 +140,9 @@ class preferencesPlugin extends BasePlugin {
 
     switchMenu = async (fixedName) => {
         const settings = await this._getSettings(fixedName)
-        const values = await this._preprocess(fixedName, settings)
+        const data = await this._preprocess(fixedName, settings)
         this.entities.form.dataset.plugin = fixedName
-        this.entities.form.render(this.SETTING_SCHEMAS[fixedName], values)
+        this.entities.form.render(this.SETTING_SCHEMAS[fixedName], data)
         this.entities.menu.querySelectorAll(".active").forEach(e => e.classList.remove("active"))
         const menuItem = this.entities.menu.querySelector(`.plugin-preferences-menu-item[data-plugin="${fixedName}"]`)
         menuItem.classList.add("active")
@@ -172,16 +173,16 @@ class preferencesPlugin extends BasePlugin {
         return settings[fixedName]
     }
 
-    _preprocess = async (fixedName, values) => {
+    _preprocess = async (fixedName, settings) => {
         const fnMap = this.PREPROCESSORS
         await Promise.all(
             this.SETTING_SCHEMAS[fixedName].flatMap(box => {
                 return box.fields
                     .filter(field => field.key && fnMap.hasOwnProperty(`${fixedName}.${field.key}`))
-                    .map(async field => await fnMap[`${fixedName}.${field.key}`](field, values))
+                    .map(async field => await fnMap[`${fixedName}.${field.key}`](field, settings))
             })
         )
-        return values
+        return settings
     }
 
     _initDialogForm = () => this.entities.form.init(this.utils, { objectFormat: this.config.OBJECT_SETTINGS_FORMAT })
@@ -189,7 +190,7 @@ class preferencesPlugin extends BasePlugin {
     /** Will NOT modify the schemas structure, just i18n */
     _translateSchema = (schemas) => {
         const specialProps = ["options", "thMap"]
-        const baseProps = ["label", "tooltip", "placeholder"]
+        const baseProps = ["label", "tooltip", "placeholder", "hintHeader", "hintDetail"]
         const commonProps = [...baseProps, "title", "unit"]
 
         const i18nData = this.i18n.noConflict.data
@@ -279,9 +280,15 @@ class preferencesPlugin extends BasePlugin {
     _initActionHandlers = () => {
         this.ACTION_HANDLERS = {
             visitRepo: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin"),
-            assistWithTranslations: () => this.utils.openUrl("https://github.com/obgnail/typora_plugin/tree/master/plugin/global/locales"),
+            deepWiki: () => this.utils.openUrl("https://deepwiki.com/obgnail/typora_plugin"),
+            githubImageBed: () => this.utils.openUrl("https://github.com/obgnail/typora_image_uploader"),
             viewMarkdownlintRules: () => this.utils.openUrl("https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md"),
+            viewCustomMarkdownlintRules: () => this.utils.openUrl("https://github.com/obgnail/markdownlint-rule-math"),
+            chooseEchartsRenderer: () => this.utils.openUrl("https://echarts.apache.org/handbook/en/best-practices/canvas-vs-svg/"),
             viewArticleUploaderReadme: () => this.utils.showInFinder(this.utils.joinPath("./plugin/article_uploader/README.md")),
+            viewJsonRPCReadme: () => this.utils.showInFinder(this.utils.joinPath("./plugin/json_rpc/README.md")),
+            editStyles: () => this.utils.showInFinder(this.utils.joinPath("./plugin/global/user_styles/README.md")),
+            developPlugins: () => this.utils.showInFinder(this.utils.joinPath("./plugin/custom/README.md")),
             backupSettings: async () => this.utils.settings.backupSettingFile(),
             openSettingsFolder: async () => this.utils.settings.openSettingFolder(),
             restoreSettings: async () => {
@@ -299,10 +306,12 @@ class preferencesPlugin extends BasePlugin {
             runtimeSettings: async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 const settings = await this._getSettings(fixedName)
-                const title = this.i18n._t("settings", "$label.runtimeSettings") + `（${this.i18n._t("global", "readonly")}）`
-                const schema = [{ fields: [{ key: "runtimeSettings", type: "textarea", rows: 15 }] }]
-                const data = { runtimeSettings: JSON.stringify(settings, null, "\t") }
-                await this.utils.formDialog.modal(title, schema, data)
+                const op = {
+                    title: this.i18n._t("settings", "$label.runtimeSettings") + `（${this.i18n._t("global", "readonly")}）`,
+                    schema: [{ fields: [{ key: "runtimeSettings", type: "textarea", rows: 14 }] }],
+                    data: { runtimeSettings: JSON.stringify(settings, null, "\t") },
+                }
+                await this.utils.formDialog.modal(op)
             },
             updatePlugin: async () => {
                 const updater = this.utils.getPlugin("updater")
@@ -314,20 +323,118 @@ class preferencesPlugin extends BasePlugin {
                     await updater.call()
                 }
             },
+            uninstallPlugin: async () => {
+                const uninstall = async () => {
+                    const { FsExtra } = this.utils.Package
+                    const remove = '<script src="./plugin/index.js" defer="defer"></script>'
+                    const windowHTML = this.utils.joinPath("./window.html")
+                    const pluginFolder = this.utils.joinPath("./plugin")
+                    try {
+                        const content = await FsExtra.readFile(windowHTML, "utf-8")
+                        const newContent = content.replace(remove, "")
+                        await FsExtra.writeFile(windowHTML, newContent)
+                        await FsExtra.remove(pluginFolder)
+                    } catch (e) {
+                        alert(e.toString())
+                        return
+                    }
+                    const message = this.i18n._t("global", "uninstallPluginSuccessful")
+                    const confirm = this.i18n._t("global", "confirm")
+                    const op = { type: "info", title: "typora plugin", message, buttons: [confirm] }
+                    await this.utils.showMessageBox(op)
+                    this.utils.restartTypora(false)
+                }
+
+                const title = this.i18n._t("global", "$label.uninstallPlugin")
+                const hintHeader = this.i18n._t("global", "uninstallPluginWarning")
+                const hintDetail = this.i18n._t("global", "uninstallPluginDetail", { reconfirm: title })
+                const label = this.i18n._t("global", "uninstallPluginConfirmInput")
+                const op = {
+                    title,
+                    schema: [
+                        { fields: [{ type: "hint", hintHeader, hintDetail }] },
+                        { fields: [{ type: "text", key: "confirmInput", label, placeholder: title }] },
+                    ],
+                    data: { confirmInput: "" },
+                }
+                const { response, data } = await this.utils.formDialog.modal(op)
+                if (response === 0) return
+                if (data.confirmInput !== title) {
+                    const msg = this.i18n._t("global", "error.incorrectCommand")
+                    this.utils.notification.show(msg, "error")
+                } else {
+                    await uninstall()
+                }
+            },
+            donate: () => {
+                const weChatPay = "8-RWSVREYNE9TCVADDKEGVPNJ1KGAYNZ31KENF2LWDEA3KFHHDRWYEPA4F00KSZT3454M24RD5PVVM21AAJ5DAGMQ3H62CHEQOOT226D49LZR6G1FKOG0G7NUV5GR2HD2B6V3V8DHR2S8027S36ESCU3GJ0IAE7IY9S25URTMZQCZBY8ZTHFTQ45VVGFX3VD1SE9K4Y9K7I1Y7U4FIKZSS2Y87BH4OSASYLS48A6SR2T5YZJNMJ2WCQE0ZBK9OVLGWGWGL1ED400U1BYMZRW7UAS7VECNVL98WKG4PNIF0KFNIVS45KHQXJFH9E9SYRCWYRUX45Q37"
+                const aliPay = "9-CF07WK7ZZ6CKLVC5KX92LZGUL3X93E51RYAL92NHYVQSD6CAH4D1DTCENAJ8HHB0062DU7LS29Q8Y0NT50M8XPFP9N1QE1JPFW39U0CDP2UX9H2WLEYD712FI3C5657LIWMT7K5CCVL509G04FT4N0IJD3KRAVBDM76CWI81XY77LLSI2AZ668748L62IC4E8CYYVNBG4Z525HZ4BXQVV6S81JC0CVABEACU597FNP9OHNC959X4D29MMYXS1V5MWEU8XC4BD5WSLL29VSAQOGLBWAVVTMX75DOSRF78P9LARIJ7J50IK1MM2QT5UXU5Q1YA7J2AVVHMG00E06Q80RCDXVGOFO76D1HCGYKW93MXR5X4H932TYXAXL93BYWV9UH6CTDUDFWACE5G0OM9N"
+                const qrcodeList = [{ color: "#1AAD19", compressed: weChatPay }, { color: "#027AFF", compressed: aliPay }]
+                const size = 140
+                const margin = 60
+                const backgroundColor = "#F3F2EE"
+                const canvasWidth = (size + margin) * qrcodeList.length - margin
+
+                const _decompress = (compressed) => {
+                    const [chunk, raw] = compressed.split("-", 2)
+                    const rows = raw.match(new RegExp(`\\w{${chunk}}`, "g"))
+                    return rows.map(r => parseInt(r, 36).toString(2).padStart(rows.length, "0"))
+                }
+                const _adaptDPR = (canvas, ctx) => {
+                    const dpr = File.canvasratio || window.devicePixelRatio || 1
+                    const { width, height } = canvas
+                    canvas.width = Math.round(width * dpr)
+                    canvas.height = Math.round(height * dpr)
+                    canvas.style.width = width + "px"
+                    canvas.style.height = height + "px"
+                    ctx.scale(dpr, dpr)
+                }
+                const onload = (dialog = document) => {
+                    const canvas = dialog.querySelector("canvas")
+                    if (!canvas) return
+
+                    const ctx = canvas.getContext("2d")
+                    _adaptDPR(canvas, ctx)
+                    ctx.lineWidth = 0
+                    ctx.strokeStyle = "transparent"
+                    for (const { compressed, color } of qrcodeList) {
+                        ctx.fillStyle = backgroundColor
+                        ctx.fillRect(0, 0, size, size)
+                        ctx.fillStyle = color
+                        const table = _decompress(compressed)
+                        const rectWidth = size / table.length
+                        // Division and canvas pixel magnification issues lead to precision loss. Adding 0.3 makes it look better.
+                        const rectWidth2 = rectWidth + 0.3
+                        for (let cIdx = 0; cIdx < table.length; cIdx++) {
+                            for (let rIdx = 0; rIdx < table[0].length; rIdx++) {
+                                if (table[cIdx][rIdx] === "1") {
+                                    ctx.fillRect(rIdx * rectWidth, cIdx * rectWidth, rectWidth2, rectWidth2)
+                                }
+                            }
+                        }
+                        ctx.translate(size + margin, 0)
+                    }
+                }
+                const canvas = `<canvas width="${canvasWidth}" height="${size}" style="margin: auto; display: block;"></canvas>`
+                const title = this.i18n._t("global", "$label.donate")
+                const components = [{ label: "", type: "span" }, { label: canvas, type: "span" }]
+                const op = { title, components, onload, width: "500px" }
+                this.utils.dialog.modal(op)
+            },
         }
     }
 
     /** PreProcessors for specific settings in schema */
     _initPreProcessors = () => {
         const _disableOption = (options, targetOption) => Object.defineProperty(options, targetOption, { enumerable: false })
-        const _incompatibleSwitch = (field, values) => {
+        const _incompatibleSwitch = (field, settings, tooltip = this.i18n._t("settings", "$tooltip.lowVersion")) => {
             field.disabled = true
-            field.tooltip = this.i18n._t("settings", "$tooltip.lowVersion")
-            values[field.key] = false
+            field.tooltip = tooltip
+            settings[field.key] = false
         }
         this.PREPROCESSORS = {
-            "global.pluginVersion": async (field, values) => {
-                if (!values[field.key]) {
+            "global.pluginVersion": async (field, data) => {
+                if (!data[field.key]) {
                     let version = "Unknown"
                     try {
                         const file = this.utils.joinPath("./plugin/bin/version.json")
@@ -336,34 +443,44 @@ class preferencesPlugin extends BasePlugin {
                     } catch (e) {
                         console.error(e)
                     }
-                    values[field.key] = version
+                    data[field.key] = version
                 }
             },
-            "window_tab.LAST_TAB_CLOSE_ACTION": (field, values) => {
+            "window_tab.LAST_TAB_CLOSE_ACTION": (field, data) => {
                 if (this.utils.isBetaVersion) {
                     const illegalOption = "blankPage"
                     _disableOption(field.options, illegalOption)
-                    if (values[field.key] === illegalOption) {
-                        values[field.key] = "reconfirm"
+                    if (data[field.key] === illegalOption) {
+                        data[field.key] = "reconfirm"
                     }
                 }
             },
-            "fence_enhance.ENABLE_INDENT": (field, values) => {
+            "fence_enhance.ENABLE_INDENT": (field, data) => {
                 if (this.utils.isBetaVersion) {
-                    _incompatibleSwitch(field, values)
+                    _incompatibleSwitch(field, data)
                 }
             },
-            "blur.ENABLE": (field, values) => {
+            "blur.ENABLE": (field, data) => {
                 if (!this.utils.supportHasSelector) {
-                    _incompatibleSwitch(field, values)
+                    _incompatibleSwitch(field, data)
                 }
             },
-            "export_enhance.ENABLE": (field, values) => {
+            "export_enhance.ENABLE": (field, data) => {
                 if (!this.utils.exportHelper.isAsync) {
-                    _incompatibleSwitch(field, values)
+                    _incompatibleSwitch(field, data)
                 }
             },
-            "preferences.DEFAULT_MENU": (field, values) => {
+            "markmap.AUTO_COLLAPSE_PARAGRAPH_WHEN_FOLD": (field, data) => {
+                if (!this.utils.getPlugin("collapse_paragraph")) {
+                    _incompatibleSwitch(field, data, this.i18n._t("markmap", "$tooltip.experimental"))
+                }
+            },
+            "reopenClosedFiles.enable": (field, data) => {
+                if (!this.utils.getPlugin("window_tab")) {
+                    _incompatibleSwitch(field, data, this.i18n._t("reopenClosedFiles", "$tooltip.dependOnWindowTab"))
+                }
+            },
+            "preferences.DEFAULT_MENU": (field, data) => {
                 if (!field.options) {
                     field.options = this._getAllPlugins()
                 }

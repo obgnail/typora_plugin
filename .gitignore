@@ -8,6 +8,6 @@
 /temp
 /plugin/.idea/
 /plugin/sync.ffs_db
-/node_modules/
+**/node_modules/
 /package-lock.json
 /package.json

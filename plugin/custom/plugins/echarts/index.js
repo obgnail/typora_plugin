@@ -1,8 +1,5 @@
 class echartsPlugin extends BaseCustomPlugin {
-    init = () => {
-        this.echartsPkg = null
-        this.exportType = this.config.EXPORT_TYPE.toLowerCase()
-    }
+    init = () => this.echartsPkg = null
 
     callback = anchorNode => this.utils.insertText(anchorNode, this.config.TEMPLATE)
 
@@ -56,11 +53,13 @@ class echartsPlugin extends BaseCustomPlugin {
 
     beforeExportToHTML = (preview, instance) => {
         instance.setOption({ animation: false })
-        if (this.exportType === "png" || this.exportType === "jpg") {
+        if (this.config.RENDERER.toLowerCase() === "canvas") {
+            const t = this.config.EXPORT_TYPE.toLowerCase()
+            const type = ["png", "jpg"].includes(t) ? t : "jpg"
             const img = new Image()
-            img.src = instance.getDataURL({ type: this.exportType })
+            img.src = instance.getDataURL({ type })
             $(preview).html(img)
-        } else if (this.exportType === "svg") {
+        } else {
             const svg = instance.renderToSVGString()
             $(preview).html(svg)
         }

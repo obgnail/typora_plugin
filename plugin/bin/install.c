@@ -20,7 +20,10 @@
 #define OLD_FRAME_SCRIPT "<script src=\"./app/window/frame.js\" defer=\"defer\"></script>"
 #define NEW_FRAME_SCRIPT "<script src=\"./appsrc/window/frame.js\" defer=\"defer\"></script>"
 
-void finish() {
+void finish(const char *message) {
+    if (message) {
+        fprintf(stderr, "%s\n", message);
+    }
     printf("Press Enter to exit...");
     getchar();
     exit(0);
@@ -42,27 +45,24 @@ int main() {
     sprintf(window_html_path, "%s%c%s", root_path, PATH_SEPARATOR, WINDOW_HTML);
     sprintf(window_html_bak_path, "%s%c%s", root_path, PATH_SEPARATOR, WINDOW_HTML_BAK);
 
-    printf("[1/5] check whether file window.html exists in %s\n", root_path);
+    printf("[1/5] Check if window.html exists in %s\n", root_path);
     struct stat st;
     if (stat(window_html_path, &st) == -1) {
-        fprintf(stderr, "window.html does not exist in %s\n", root_path);
-        finish();
+        finish("window.html does not exist in the root path");
     }
 
-    printf("[2/5] check whether folder app/appsrc exists in %s\n", root_path);
+    printf("[2/5] Check if app/appsrc exists in %s\n", root_path);
     if (stat(appsrc_path, &st) == 0) {
         frame_script = NEW_FRAME_SCRIPT;
     } else if (stat(app_path, &st) == 0) {
         frame_script = OLD_FRAME_SCRIPT;
     } else {
-        fprintf(stderr, "appsrc/app does not exist in %s\n", root_path);
-        finish();
+        finish("appsrc/app does not exist in the root path");
     }
 
     FILE *window_html_fp = fopen(window_html_path, "r+");
     if (window_html_fp == NULL) {
-        fprintf(stderr, "failed to open %s\n", window_html_path);
-        finish();
+        finish("Failed to open window.html");
     }
 
     fseek(window_html_fp, 0, SEEK_END);
@@ -70,33 +70,31 @@ int main() {
     rewind(window_html_fp);
     char *file_content = malloc(window_html_size + 1);
     if (file_content == NULL) {
-        fprintf(stderr, "malloc error\n");
-        finish();
+        finish("Memory allocation failed");
     }
     fread(file_content, sizeof(char), window_html_size, window_html_fp);
     file_content[window_html_size] = '\0';
 
-    printf("[3/5] check window.html content\n");
+    printf("[3/5] Check window.html content\n");
     char *p = strstr(file_content, frame_script);
     if (p == NULL) {
-        fprintf(stderr, "window.html does not contains %s\n", frame_script);
-        finish();
+        finish("window.html does not contain the frame script");
     }
     if (strstr(file_content, PLUGIN_SCRIPT) != NULL) {
-        printf("plugin has already been installed\n");
-        finish();
+        printf("Plugin has already been installed\n");
+        free(file_content);
+        finish(NULL);
     }
 
-    printf("[4/5] backup window.html\n");
+    printf("[4/5] Backup window.html\n");
     FILE *window_html_bak_fp = fopen(window_html_bak_path, "w");
     if (window_html_bak_fp == NULL) {
-        fprintf(stderr, "failed to open %s\n", window_html_bak_path);
-        finish();
+        finish("Failed to open window.html.bak");
     }
     fwrite(file_content, 1, strlen(file_content), window_html_bak_fp);
     fclose(window_html_bak_fp);
 
-    printf("[5/5] update window.html\n");
+    printf("[5/5] Update window.html\n");
     fseek(window_html_fp, 0, SEEK_SET);
     char replacement[strlen(frame_script) + strlen(PLUGIN_SCRIPT) + 1];
     sprintf(replacement, "%s%s", frame_script, PLUGIN_SCRIPT);
@@ -106,8 +104,8 @@ int main() {
 
     fclose(window_html_fp);
     free(file_content);
-    printf("plugin install successfully\n");
-    finish();
+    printf("Plugin installed successfully\n");
+    finish(NULL);
 
     return 0;
 }

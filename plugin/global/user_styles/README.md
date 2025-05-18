@@ -1,85 +1,40 @@
-## user_styles 目录的作用
-
-用于自定义样式。
+本文件介绍如何通过 `user_styles` 目录自定义软件样式。
 
 
 
-## 原理
+## 工作原理
 
-`./plugin/global/styles` 目录下存储了各个插件的样式文件。插件系统在读取样式文件时，`user_styles` 目录下文件的优先级高于 `styles`  目录下的文件，所以可以通过在 `user_styles` 下创建同名的 CSS 文件覆盖掉 `styles` 下的文件，实现自定义样式。
+插件系统加载样式时，位于 `./plugin/global/user_styles` 目录下的文件会优先于 `./plugin/global/styles` 目录下的同名文件加载。因此，您可以通过在 `user_styles` 目录中创建与 `styles` 目录中同名的 CSS 文件来覆盖默认样式，从而实现自定义。
 
 
 
 ## 如何使用
 
-将 `styles` 目录下需要修改的文件 **复制** 到 `user_styles` 目录，接着就可以修改了。
-
-> 其中有个特殊文件：`customize.css`。若需要添加一些样式，可以在 `user_styles` 里创建此文件并写入 CSS 代码。
+1. **复制文件**：将您希望修改的 `styles` 目录下的 CSS 文件 **复制** 到 `user_styles` 目录中。
+2. **修改文件**：在 `user_styles` 目录中直接修改复制过来的 CSS 文件即可。
+3. **添加自定义样式**：如果您只需要添加少量自定义样式，可以在 `user_styles` 目录下创建一个名为 `customize.css` 的文件，并将您的 CSS 代码写入其中。
 
 
 
 ## 渲染变量
 
-> 类似于 less 的 `@` 变量。
-
-`styles` 和 `user_styles` 目录下的 CSS 文件支持 JavaScript 的 `${变量}` ，表示渲染变量。
-
-举例：下面代码的 `${topPercent}` 将在加载过程中被替换为具体的数值。
+在 `styles` 和 `user_styles` 目录下的 CSS 文件中，支持使用 `${变量}` 的语法来表示渲染变量，类似于 Less 中的 `@` 变量。这些变量在样式加载过程中会被替换为具体数值。例如：
 
 ```css
-/*  styles/toolbar.css  */
-
+/* styles/toolbar.css */
 #plugin-toolbar {
+    /* 加载时 ${topPercent} 会被替换为具体数值 */
     top: ${topPercent};
 }
 ```
 
 
 
-## 选读：插件系统的 CSS 文件加载机制
+## 重要提示：开发者建议
 
-```javascript
-// name: css文件名
-// args: 该css文件可用的渲染变量（$变量）
-async registerCssFile(name, args) {
-    // 获取文件路径
-    const files = ["user_styles", "styles"].map(dir => this.utils.joinPath("./plugin/global", dir, `${name}.css`));
+**开发者原则上不建议用户手动修改样式**，原因如下：
 
-    // 读取两个文件的内容（当文件不存在时会返回空）
-    const [userStyles, defaultStyles] = await this.utils.readFiles(files);
+- 许多样式调整可以通过修改配置实现，无需直接修改 CSS 文件。
+- 插件迭代过程中，样式和 JavaScript 代码可能深度绑定，手动修改可能导致样式错乱或 BUG。
 
-    // userStyles优先于defaultStyles
-    const data = userStyles || defaultStyles;
-    if (data === "") return;
-    if (data === undefined) {
-        console.error(`there is not such style file: ${name}`);
-        return;
-    }
-
-    try {
-        // 替换style下的$变量，得到完整的CSS字符串
-        const css = data.replace(/\${(.+?)}/g, (_, $arg) => $arg.split(".").reduce((obj, attr) => obj[attr], args));
-        // 将CSS字符串作为style标签插入到HTML中
-        this.utils.insertStyle(`plugin-${name}-style`, css);
-    } catch (err) {
-        console.error(`replace args error. file: ${name}. err: ${err}`);
-    }
-}
-```
-
-```javascript
-// usage:
-registerCssFile("toolbar", {topPercent: "20%"});
-```
-
-
-
-## 必读：开发者的话
-
-**原则上开发者是不希望用户手动修改样式的。如果用户修改了插件的样式，有可能在某天会出现样式错乱的情况**。因为：
-
-1. 用户希望修改的样式往往可以通过修改 user.toml 配置文件实现，没有必要通过修改 css 文件实现。
-2. 在插件的迭代过程中，样式总是会不断变化，并且样式总是和 JavaScript 代码深度绑定，一旦样式和 JavaScript 代码不匹配，BUG 也就随之而来。
-3. 如果您有更好的样式/交互，欢迎 PR，开发者会将其合并到 `styles` 目录中，这样就不必写在 `user_styles` 中了。
-
-> 所以，如果您修改了样式，某天出现上述情况，请尝试删除/移动 `user_styles` 目录下的所有文件。
+如果您有更好的样式或交互建议，欢迎提交 Pull Request。如果手动修改样式后出现问题，请尝试删除或移动 `user_styles` 目录下的所有文件。

@@ -57,13 +57,20 @@ class fenceEnhancePlugin extends BasePlugin {
                     const callbackFunc = evalFn(ON_CLICK)
                     const listener = (ev, btn) => callbackFunc(getParams(ev, btn))
                     const action = this.utils.randomString()
-                    const className = `custom-${action}`
-                    return [className, action, HINT, ICON, !DISABLE, listener, renderFunc]
+                    return {
+                        className: `custom-${action}`,
+                        action,
+                        hint: HINT,
+                        iconClassName: ICON,
+                        enable: !DISABLE,
+                        listener,
+                        extraFunc: renderFunc,
+                    }
                 } catch (e) {
                     console.error("custom button error:", e)
                 }
             })
-            customButtons.filter(Boolean).forEach(btn => this.registerButton(...btn))
+            customButtons.filter(Boolean).forEach(btn => this.registerButton(btn))
         }
 
         const registerBuiltinButtons = () => {
@@ -85,7 +92,6 @@ class fenceEnhancePlugin extends BasePlugin {
                 const cid = fence.getAttribute("cid")
                 File.editor.refocus(cid)
                 File.editor.fences.formatContent()
-
                 _changeIcon(btn, "fa fa-check", "fa fa-indent")
             }
             const foldCode = (ev, btn) => {
@@ -118,11 +124,35 @@ class fenceEnhancePlugin extends BasePlugin {
                 }
             }
             const builtinButtons = [
-                ["copy-code", "copyCode", this.i18n.t("btn.hint.copy"), "fa fa-clipboard", this.config.ENABLE_COPY, copyCode],
-                ["indent-code", "indentCode", this.i18n.t("btn.hint.indent"), "fa fa-indent", this.enableIndent, indentCode],
-                ["fold-code", "foldCode", this.i18n.t("btn.hint.fold"), "fa fa-minus", this.config.ENABLE_FOLD, foldCode, defaultFold],
+                {
+                    className: "copy-code",
+                    action: "copyCode",
+                    hint: this.i18n.t("btn.hint.copy"),
+                    iconClassName: "fa fa-clipboard",
+                    enable: this.config.ENABLE_COPY,
+                    listener: copyCode,
+                    extraFunc: null,
+                },
+                {
+                    className: "indent-code",
+                    action: "indentCode",
+                    hint: this.i18n.t("btn.hint.indent"),
+                    iconClassName: "fa fa-indent",
+                    enable: this.enableIndent,
+                    listener: indentCode,
+                    extraFunc: null,
+                },
+                {
+                    className: "fold-code",
+                    action: "foldCode",
+                    hint: this.i18n.t("btn.hint.fold"),
+                    iconClassName: "fa fa-minus",
+                    enable: this.config.ENABLE_FOLD,
+                    listener: foldCode,
+                    extraFunc: defaultFold,
+                },
             ]
-            builtinButtons.forEach(btn => this.registerButton(...btn))
+            builtinButtons.forEach(btn => this.registerButton(btn))
         }
 
         const handleLifecycleEvents = () => {
@@ -131,8 +161,9 @@ class fenceEnhancePlugin extends BasePlugin {
             })
 
             this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.afterAddCodeBlock, cid => {
+                if (this.buttons.length === 0) return
                 const fence = this.utils.entities.querySelectorInWrite(`.md-fences[cid=${cid}]`)
-                if (!fence || this.buttons.length === 0) return
+                if (!fence) return
                 let enhance = fence.querySelector(".fence-enhance")
                 if (enhance) return
 
@@ -141,13 +172,26 @@ class fenceEnhancePlugin extends BasePlugin {
                 if (this.config.AUTO_HIDE) {
                     enhance.style.visibility = "hidden"
                 }
-                const buttons = this.buttons.map(b => b.createButton(this.config.REMOVE_BUTTON_HINT))
+                const buttons = this.buttons.map(btn => {
+                    const button = document.createElement("div")
+                    button.classList.add("enhance-btn", btn.className)
+                    button.setAttribute("action", btn.action)
+                    if (!this.config.REMOVE_BUTTON_HINT && btn.hint) {
+                        button.setAttribute("ty-hint", btn.hint)
+                    }
+                    if (!btn.enable) {
+                        button.style.display = "none"
+                    }
+                    const span = document.createElement("span")
+                    span.className = btn.iconClassName
+                    button.appendChild(span)
+                    return button
+                })
                 enhance.append(...buttons)
                 fence.appendChild(enhance)
-                this.buttons.forEach((builder, idx) => {
-                    const button = buttons[idx]
-                    if (builder.extraFunc) {
-                        builder.extraFunc(button, cid)
+                this.buttons.forEach((b, idx) => {
+                    if (b.extraFunc) {
+                        b.extraFunc(buttons[idx], cid)
                     }
                 })
             })
@@ -161,9 +205,9 @@ class fenceEnhancePlugin extends BasePlugin {
                 ev.stopPropagation()
                 document.activeElement.blur()
                 const action = target.getAttribute("action")
-                const builder = this.buttons.find(builder => builder.action === action)
-                if (builder) {
-                    builder.listener(ev, target)
+                const btn = this.buttons.find(b => b.action === action)
+                if (btn) {
+                    btn.listener(ev, target)
                 }
             })
             const config = this.config
@@ -184,11 +228,10 @@ class fenceEnhancePlugin extends BasePlugin {
         handleDomEvents()
     }
 
-    registerButton = (className, action, hint, iconClassName, enable, listener, extraFunc) => {
-        const b = new builder(className, action, hint, iconClassName, enable, listener, extraFunc)
-        this.buttons.push(b)
+    registerButton = ({ className, action, hint, iconClassName, enable, listener, extraFunc }) => {
+        this.buttons.push({ className, action, hint, iconClassName, enable, listener, extraFunc })
     }
-    unregisterButton = action => this.buttons = this.buttons.filter(builder => builder.action !== action)
+    unregisterButton = action => this.buttons = this.buttons.filter(btn => btn.action !== action)
 
     copyFence = fence => fence.querySelector(".copy-code").click()
     indentFence = fence => fence.querySelector(".indent-code").click()
@@ -321,36 +364,6 @@ class fenceEnhancePlugin extends BasePlugin {
         }
         const func = callMap[action]
         func && func()
-    }
-}
-
-class builder {
-    constructor(className, action, hint, iconClassName, enable, listener, extraFunc) {
-        this.className = className;
-        this.action = action;
-        this.hint = hint;
-        this.iconClassName = iconClassName;
-        this.enable = enable;
-        this.listener = listener;
-        this.extraFunc = extraFunc;
-    }
-
-    createButton(removeHint = false) {
-        const button = document.createElement("div")
-        button.classList.add("enhance-btn", this.className)
-        button.setAttribute("action", this.action)
-        if (!removeHint && this.hint) {
-            button.setAttribute("ty-hint", this.hint)
-        }
-        if (!this.enable) {
-            button.style.display = "none"
-        }
-
-        const span = document.createElement("span")
-        span.className = this.iconClassName
-        button.appendChild(span)
-
-        return button
     }
 }
 
