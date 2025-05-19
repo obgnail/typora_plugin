@@ -654,7 +654,7 @@ class utils {
                 if (stats.isFile()) {
                     if (fileFilter(path, stats)) {
                         const params = await paramsBuilder(path, file, dir, stats)
-                        callback(params)
+                        await callback(params)
                     }
                 } else if (stats.isDirectory()) {
                     if (dirFilter(file)) {
