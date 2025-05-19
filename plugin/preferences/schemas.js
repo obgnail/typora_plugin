@@ -169,7 +169,7 @@ const OPTIONS = {
     markdownLint: {
         tools: ["info", "locate", "fix"],
         result_order_by: ["lineNumber", "ruleName"],
-    }
+    },
 }
 
 Object.values(OPTIONS).forEach(obj => {
@@ -304,14 +304,13 @@ const SETTING_SCHEMAS = {
                     { type: "select", key: "shell", label: "$label.BUILTIN.shell", options: OPTIONS.commander["BUILTIN.shell"] },
                     { type: "text", key: "name", label: "$label.BUILTIN.name" },
                 ),
-                TitledBox("BUILTIN.cmd", { type: "textarea", key: "cmd", rows: 3 }),
-                UntitledBox(Hint("builtinEnvVars", "builtinEnvVars")),
+                TitledBox("BUILTIN.cmd", { type: "textarea", key: "cmd", rows: 5, placeholder: "$placeholder.builtinEnvVars" }),
             ],
             {
                 name: "",
                 disable: false,
                 shell: "cmd/bash",
-                cmd: "echo \"HelloWorld\"",
+                cmd: "",
             },
         ),
         handleSettingsBox,
@@ -752,10 +751,11 @@ const SETTING_SCHEMAS = {
     ],
     cipher: [
         pluginLiteBasePropBox,
-        UntitledBox(
-            Switch("SHOW_HINT_MODAL"),
+        TitledBox(
+            "hotkey",
             Hotkey("ENCRYPT_HOTKEY"),
             Hotkey("DECRYPT_HOTKEY"),
+            Switch("SHOW_HINT_MODAL"),
         ),
         handleSettingsBox,
     ],
@@ -826,8 +826,7 @@ const SETTING_SCHEMAS = {
                     { type: "number", key: "cursorOffset.0", label: "$label.COMMANDS.cursorOffset.0" },
                     { type: "number", key: "cursorOffset.1", label: "$label.COMMANDS.cursorOffset.1" },
                 ),
-                TitledBox("COMMANDS.callback", { type: "textarea", key: "callback", rows: 3 }),
-                UntitledBox(Hint("callbackType", "callbackType")),
+                TitledBox("COMMANDS.callback", { type: "textarea", key: "callback", rows: 3, placeholder: "$placeholder.callbackType" }),
             ],
             {
                 enable: true,

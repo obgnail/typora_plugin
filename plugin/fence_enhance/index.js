@@ -310,11 +310,11 @@ class fenceEnhancePlugin extends BasePlugin {
                 })
             },
             indent_all_fences: async () => {
-                const title = this.i18n.t("modal.indent_all_fences.title")
-                const label = this.i18n.t("modal.indent_all_fences.limitedFunctionality")
-                const op = { title, components: [{ label, type: "p" }] }
-                const { response } = await this.utils.dialog.modalAsync(op)
-                if (response === 1) {
+                const title = this.i18n.t("btn.hint.indent")
+                const message = this.i18n.t("modal.indent_all_fences.limitedFunctionality")
+                const op = { type: "warning", title, message }
+                const { response } = await this.utils.showMessageBox(op)
+                if (response === 0) {
                     _rangeAllFences(this.indentFence)
                 }
             },

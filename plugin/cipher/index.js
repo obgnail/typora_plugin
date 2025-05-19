@@ -29,7 +29,7 @@ class cipherPlugin extends BasePlugin {
             return encrypt(raw, this.key)
         }
 
-        const title = this.i18n.t("msgBox.encrypt.title")
+        const title = this.i18n.t("act.encrypt")
         const message = this.i18n.t(isCiphered ? "msgBox.encrypt.onCiphered" : "msgBox.encrypt.onPlain")
         const checkboxLabel = this.i18n._t("global", "disableReminder")
         const op = { type: "info", title, message, checkboxLabel }
@@ -50,7 +50,7 @@ class cipherPlugin extends BasePlugin {
         if (isCiphered) {
             return decrypt(ciphered, this.key)
         }
-        const title = this.i18n.t("msgBox.decrypt.title")
+        const title = this.i18n.t("act.decrypt")
         const message = this.i18n.t("msgBox.decrypt.onPlain")
         const confirm = this.i18n._t("global", "confirm")
         const op = { type: "info", title, message, buttons: [confirm] }

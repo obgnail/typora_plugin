@@ -134,7 +134,7 @@ yay -S typora-plugin
 - **如何升级插件？** 通过右键菜单 -> 常用插件 -> 二级插件 -> 升级插件。
 - **如何卸载插件系统？** 通过右键菜单 -> 少用插件 -> 插件配置 -> 卸载插件。
 - **支持 Typora for Mac 吗？** 目前暂无 Mac 设备进行测试和适配，因此暂不支持。
-- **还有其他问题？** 欢迎前往 [AI Wiki](https://www.google.com/url?sa=E&source=gmail&q=https://deepwiki.com/obgnail/typora_plugin) 提问或查阅社区讨论。
+- **还有其他问题？** 欢迎前往 [AI Wiki](https://deepwiki.com/obgnail/typora_plugin) 提问或查阅社区讨论。
 
 
 

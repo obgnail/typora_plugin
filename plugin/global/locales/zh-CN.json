@@ -33,6 +33,8 @@
     "$title.fenceLanguageMode": "语言与模式",
     "$title.diagramStyle": "图形样式",
     "$title.TEMPLATE": "模板",
+    "$title.hotkey": "快捷键",
+    "$title.style": "样式",
     "$title.advanced": "高级"
   },
   "global": {
@@ -314,8 +316,7 @@
     "$title.windowInteraction": "窗口交互",
     "$title.BUILTIN": "预设命令",
     "$title.BUILTIN.cmd": "命令",
-    "$hintHeader.builtinEnvVars": "内置环境变量",
-    "$hintDetail.builtinEnvVars": "$f: 文件路径; $d: 文件目录路径; $m: 挂载目录路径"
+    "$placeholder.builtinEnvVars": "$f: 文件路径; $d: 文件目录路径; $m: 挂载目录路径"
   },
   "md_padding": {
     "pluginName": "中英文混排优化",
@@ -611,7 +612,6 @@
     "$label.ENABLE_WHEN_EXPORT": "导出为 HTML、PDF 时保留编号",
     "$title.LAYOUTS": "编号格式",
     "$title.autoNumbering": "自动编号",
-    "$title.style": "样式",
     "$hintHeader.layoutSyntax": "编号规则",
     "$hintDetail.layoutSyntax": "使用 “前缀{计数器名称:计数样式}后缀” 结构来自定义编号格式。其中，前缀和后缀是任意文本，{} 内是计数器占位符。计数器名称指定编号对象，计数样式指定编号的显示方式。您可以自由组合文本和多个计数器。例如，“图{i:cjk}” 将生成 “图一”, “图二” 等。",
     "$hintHeader.supportedCounter": "计数器名称与计数样式",
@@ -634,8 +634,7 @@
     "btn.hint.fold": "折叠",
     "modal.enable": "启用",
     "modal.disable": "禁用",
-    "modal.indent_all_fences.title": "调整所有代码块缩进",
-    "modal.indent_all_fences.limitedFunctionality": "缩进调整功能有限，对于 Python 等语言可能会出现误判，你确定继续吗？",
+    "modal.indent_all_fences.limitedFunctionality": "功能有限，可能会误判，确定继续吗？",
     "modal.add_fences_lang.title": "添加语言",
     "modal.add_fences_lang.targetLang": "语言",
     "modal.replace_fences_lang.title": "替换语言",
@@ -727,8 +726,7 @@
     "$label.HIDE_FRONT_HOTKEY": "只保留最后若干段",
     "$label.SHOW_ALL_HOTKEY": "重新显示所有内容",
     "$label.HIDE_BASE_VIEW_HOTKEY": "根据当前可视范围显示",
-    "$label.REMAIN_LENGTH": "保留显示的文本段数量",
-    "$title.hotkey": "快捷键"
+    "$label.REMAIN_LENGTH": "保留显示的文本段数量"
   },
   "export_enhance": {
     "pluginName": "导出增强",
@@ -740,30 +738,6 @@
   },
   "text_stylize": {
     "pluginName": "文字风格化",
-    "tool.blank": "",
-    "tool.weight": "粗体",
-    "tool.italic": "斜体",
-    "tool.underline": "下划线",
-    "tool.throughline": "中划线",
-    "tool.overline": "上划线",
-    "tool.superScript": "上标",
-    "tool.subScript": "下标",
-    "tool.emphasis": "强调符号",
-    "tool.title": "标题尺寸",
-    "tool.increaseSize": "增大尺寸",
-    "tool.decreaseSize": "减小尺寸",
-    "tool.increaseLetterSpacing": "增大间隙",
-    "tool.decreaseLetterSpacing": "减小间隙",
-    "tool.family": "字体",
-    "tool.blur": "模糊",
-    "tool.foregroundColor": "前景色",
-    "tool.backgroundColor": "背景色",
-    "tool.borderColor": "边框",
-    "tool.setBrush": "设置格式刷",
-    "tool.useBrush": "使用格式刷",
-    "tool.erase": "清除格式",
-    "tool.move": "移动",
-    "tool.close": "关闭",
     "$option.TOOLBAR.weight": "加粗",
     "$option.TOOLBAR.italic": "斜体",
     "$option.TOOLBAR.underline": "下划线",
@@ -807,13 +781,11 @@
     "pluginName": "加密文件",
     "act.encrypt": "加密",
     "act.decrypt": "解密",
-    "msgBox.encrypt.title": "加密文件",
     "msgBox.encrypt.onCiphered": "文件已是加密格式",
     "msgBox.encrypt.onPlain": "加密后严禁修改文件",
-    "msgBox.decrypt.title": "解密文件",
     "msgBox.decrypt.onPlain": "文件为非加密格式",
-    "$label.ENCRYPT_HOTKEY": "快捷键：加密",
-    "$label.DECRYPT_HOTKEY": "快捷键：解密",
+    "$label.ENCRYPT_HOTKEY": "加密",
+    "$label.DECRYPT_HOTKEY": "解密",
     "$label.SHOW_HINT_MODAL": "加解密后弹出提示窗口"
   },
   "resource_manager": {
@@ -876,8 +848,7 @@
     "$label.HOTKEY_CONVERT_CRLF_TO_LF": "换行符 CRLF 替换为 LF",
     "$label.HOTKEY_CONVERT_LF_TO_CRLF": "换行符 LF 替换为 CRLF",
     "$label.HOTKEY_FILTER_INVISIBLE_CHARACTERS": "移除不可见字符",
-    "$label.HOTKEY_TRAILING_WHITE_SPACE": "添加结尾空格",
-    "$title.hotkey": "快捷键"
+    "$label.HOTKEY_TRAILING_WHITE_SPACE": "添加结尾空格"
   },
   "custom": {
     "pluginName": "二级插件",
@@ -920,8 +891,7 @@
     "$title.trigger": "命令触发",
     "$placeholder.LettersAndNumbersOnly": "仅限英文字母和数字",
     "$placeholder.emojiOnly": "仅限单个 Emoji 符号",
-    "$hintHeader.callbackType": "回调的值",
-    "$hintDetail.callbackType": "若类型为 “插入文字片段”，则值为待插入的字符串；若类型为 “插入动态文字片段”，则值为返回字符串的函数；若类型为 “执行逻辑命令”，则值为执行逻辑命令的函数。"
+    "$placeholder.callbackType": "若类型为 “插入文字片段”，则值为待插入的字符串；若类型为 “插入动态文字片段”，则值为返回字符串的函数；若类型为 “执行逻辑命令”，则值为执行逻辑命令的函数。"
   },
   "right_click_menu": {
     "pluginName": "右键菜单",
@@ -940,7 +910,6 @@
     "$label.MENUS.NAME": "菜单名",
     "$label.MENUS.LIST": "插件列表",
     "$title.MENUS": "自定义右键菜单",
-    "$title.style": "样式",
     "$title.MENUS.LIST": "插件列表"
   },
   "pie_menu": {
@@ -1021,7 +990,6 @@
     "$label.upload.csdn.enabled": "启用",
     "$label.upload.csdn.cookie": "Cookie",
     "$label.viewArticleUploaderReadme": "README",
-    "$title.hotkey": "上传文章快捷键",
     "$title.upload": "上传设置",
     "$title.wordPress": "WordPress",
     "$title.cnblog": "博客园",
@@ -1167,7 +1135,6 @@
     "$label.list.background_color": "背景颜色",
     "$label.list.left_line_color": "左侧竖线颜色",
     "$title.list": "预设 Callouts",
-    "$title.style": "样式",
     "$title.mouseHover": "鼠标悬停",
     "$title.fontFamily": "字体图标",
     "$title.defaultOptions": "默认值",
@@ -1335,7 +1302,6 @@
     "$option.thumbnail_object_fit.cover": "保持原有尺寸，裁剪超出部分",
     "$option.thumbnail_object_fit.scale-down": "等比例缩放，小于容器时不放大",
     "$title.hotkey_function": "预设快捷键",
-    "$title.style": "样式",
     "$title.component": "组件",
     "$title.behavior": "行为",
     "$title.mouseEvent": "鼠标事件",

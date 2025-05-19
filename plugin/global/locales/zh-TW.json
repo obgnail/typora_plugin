@@ -33,6 +33,8 @@
     "$title.fenceLanguageMode": "語言與模式",
     "$title.diagramStyle": "圖表樣式",
     "$title.TEMPLATE": "範本",
+    "$title.hotkey": "快捷鍵",
+    "$title.style": "樣式",
     "$title.advanced": "進階"
   },
   "global": {
@@ -314,8 +316,7 @@
     "$title.windowInteraction": "視窗互動",
     "$title.BUILTIN": "預設命令",
     "$title.BUILTIN.cmd": "命令",
-    "$hintHeader.builtinEnvVars": "內建環境變數",
-    "$hintDetail.builtinEnvVars": "$f: 檔案路徑; $d: 檔案目錄路徑; $m: 掛載目錄路徑"
+    "$placeholder.builtinEnvVars": "$f: 檔案路徑; $d: 檔案目錄路徑; $m: 掛載目錄路徑"
   },
   "md_padding": {
     "pluginName": "中英文混排優化",
@@ -611,7 +612,6 @@
     "$label.ENABLE_WHEN_EXPORT": "導出為 HTML、PDF 時保留編號",
     "$title.LAYOUTS": "編號格式",
     "$title.autoNumbering": "自動編號",
-    "$title.style": "樣式",
     "$hintHeader.layoutSyntax": "編號規則",
     "$hintDetail.layoutSyntax": "使用 “前綴{計數器名稱:計數樣式}後綴” 結構來自訂編號格式。其中，前綴和後綴是任意文字，{} 內是計數器佔位符。計數器名稱指定編號對象，計數樣式指定編號的顯示方式。您可以自由組合文字和多個計數器。例如，“圖{i:cjk}” 將產生 “圖一”, “圖二” 等。",
     "$hintHeader.supportedCounter": "計數器名稱與計數樣式",
@@ -634,8 +634,7 @@
     "btn.hint.fold": "摺疊",
     "modal.enable": "啟用",
     "modal.disable": "停用",
-    "modal.indent_all_fences.title": "調整所有程式碼區塊縮排",
-    "modal.indent_all_fences.limitedFunctionality": "縮排調整功能有限，對於 Python 等語言可能會出現誤判，你確定繼續嗎？",
+    "modal.indent_all_fences.limitedFunctionality": "功能有限，可能會誤判，確定繼續嗎？",
     "modal.add_fences_lang.title": "新增語言",
     "modal.add_fences_lang.targetLang": "語言",
     "modal.replace_fences_lang.title": "替換語言",
@@ -727,8 +726,7 @@
     "$label.HIDE_FRONT_HOTKEY": "只保留最後若干段",
     "$label.SHOW_ALL_HOTKEY": "重新顯示所有內容",
     "$label.HIDE_BASE_VIEW_HOTKEY": "根據當前可視範圍顯示",
-    "$label.REMAIN_LENGTH": "保留顯示的文字段數量",
-    "$title.hotkey": "快捷鍵"
+    "$label.REMAIN_LENGTH": "保留顯示的文字段數量"
   },
   "export_enhance": {
     "pluginName": "匯出增強",
@@ -740,30 +738,6 @@
   },
   "text_stylize": {
     "pluginName": "文字風格化",
-    "tool.blank": "",
-    "tool.weight": "粗體",
-    "tool.italic": "斜體",
-    "tool.underline": "底線",
-    "tool.throughline": "刪除線",
-    "tool.overline": "上橫線",
-    "tool.superScript": "上標",
-    "tool.subScript": "下標",
-    "tool.emphasis": "強調符號",
-    "tool.title": "標題尺寸",
-    "tool.increaseSize": "增大尺寸",
-    "tool.decreaseSize": "減小尺寸",
-    "tool.increaseLetterSpacing": "增大間距",
-    "tool.decreaseLetterSpacing": "減小間距",
-    "tool.family": "字體",
-    "tool.blur": "模糊",
-    "tool.foregroundColor": "前景色",
-    "tool.backgroundColor": "背景色",
-    "tool.borderColor": "邊框",
-    "tool.setBrush": "設定格式刷",
-    "tool.useBrush": "使用格式刷",
-    "tool.erase": "清除格式",
-    "tool.move": "移動",
-    "tool.close": "關閉",
     "$option.TOOLBAR.weight": "粗體",
     "$option.TOOLBAR.italic": "斜體",
     "$option.TOOLBAR.underline": "底線",
@@ -807,13 +781,11 @@
     "pluginName": "加密檔案",
     "act.encrypt": "加密",
     "act.decrypt": "解密",
-    "msgBox.encrypt.title": "加密檔案",
     "msgBox.encrypt.onCiphered": "檔案已是加密格式",
     "msgBox.encrypt.onPlain": "加密後嚴禁修改檔案",
-    "msgBox.decrypt.title": "解密檔案",
     "msgBox.decrypt.onPlain": "檔案為非加密格式",
-    "$label.ENCRYPT_HOTKEY": "快捷鍵：加密",
-    "$label.DECRYPT_HOTKEY": "快捷鍵：解密",
+    "$label.ENCRYPT_HOTKEY": "加密",
+    "$label.DECRYPT_HOTKEY": "解密",
     "$label.SHOW_HINT_MODAL": "加解密後彈出提示視窗"
   },
   "resource_manager": {
@@ -876,8 +848,7 @@
     "$label.HOTKEY_CONVERT_CRLF_TO_LF": "換行符 CRLF 替換為 LF",
     "$label.HOTKEY_CONVERT_LF_TO_CRLF": "換行符 LF 替換為 CRLF",
     "$label.HOTKEY_FILTER_INVISIBLE_CHARACTERS": "移除不可見字元",
-    "$label.HOTKEY_TRAILING_WHITE_SPACE": "新增結尾空格",
-    "$title.hotkey": "快捷鍵"
+    "$label.HOTKEY_TRAILING_WHITE_SPACE": "新增結尾空格"
   },
   "custom": {
     "pluginName": "二級插件",
@@ -920,8 +891,7 @@
     "$title.trigger": "命令觸發",
     "$placeholder.LettersAndNumbersOnly": "僅限英文字母和數字",
     "$placeholder.emojiOnly": "僅限單個 Emoji 符號",
-    "$hintHeader.callbackType": "回調的值",
-    "$hintDetail.callbackType": "若類型爲 “插入文字片段”，則值爲待插入的字符串；若類型爲 “插入動態文字片段”，則值爲返回字符串的函數；若類型爲 “執行邏輯指令”，則值爲執行邏輯指令的函數。"
+    "$placeholder.callbackType": "若類型爲 “插入文字片段”，則值爲待插入的字符串；若類型爲 “插入動態文字片段”，則值爲返回字符串的函數；若類型爲 “執行邏輯指令”，則值爲執行邏輯指令的函數。"
   },
   "right_click_menu": {
     "pluginName": "右鍵選單",
@@ -940,7 +910,6 @@
     "$label.MENUS.NAME": "選單名稱",
     "$label.MENUS.LIST": "插件列表",
     "$title.MENUS": "自訂右鍵選單",
-    "$title.style": "樣式",
     "$title.MENUS.LIST": "插件列表"
   },
   "pie_menu": {
@@ -1021,7 +990,6 @@
     "$label.upload.csdn.enabled": "啟用",
     "$label.upload.csdn.cookie": "Cookie",
     "$label.viewArticleUploaderReadme": "README",
-    "$title.hotkey": "上傳文章快捷鍵",
     "$title.upload": "上傳設定",
     "$title.wordPress": "WordPress",
     "$title.cnblog": "博客园",
@@ -1167,7 +1135,6 @@
     "$label.list.background_color": "背景顏色",
     "$label.list.left_line_color": "左側線條顏色",
     "$title.list": "預設 Callouts",
-    "$title.style": "樣式",
     "$title.mouseHover": "滑鼠懸停",
     "$title.fontFamily": "字體圖示",
     "$title.defaultOptions": "預設值",
@@ -1335,7 +1302,6 @@
     "$option.thumbnail_object_fit.cover": "保持原有尺寸，裁剪超出部分",
     "$option.thumbnail_object_fit.scale-down": "等比例縮放，小於容器時不放大",
     "$title.hotkey_function": "預設快捷鍵",
-    "$title.style": "樣式",
     "$title.component": "組件",
     "$title.behavior": "行為",
     "$title.mouseEvent": "滑鼠事件",
