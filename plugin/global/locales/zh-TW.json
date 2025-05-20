@@ -1433,6 +1433,9 @@
   "blockSideBySide": {
     "pluginName": "並排顯示活動區塊"
   },
+  "sortableOutline": {
+    "pluginName": "大綱拖拽排序"
+  },
   "redirectLocalRootUrl": {
     "pluginName": "重新導向本地資源根目錄",
     "$label.root": "資源根目錄",
