@@ -1490,6 +1490,15 @@ const SETTING_SCHEMAS = {
         customPluginFullBasePropBox,
         handleSettingsBox,
     ],
+    sortableOutline: [
+        UntitledBox(
+            Switch("enable", protectedAttrs),
+            prop_hide,
+            prop_name,
+            prop_order,
+        ),
+        handleSettingsBox,
+    ],
     redirectLocalRootUrl: [
         customPluginLiteBasePropBox,
         UntitledBox(

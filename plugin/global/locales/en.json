@@ -1433,6 +1433,9 @@
   "blockSideBySide": {
     "pluginName": "Block Side By Side"
   },
+  "sortableOutline": {
+    "pluginName": "Sortable Outline"
+  },
   "redirectLocalRootUrl": {
     "pluginName": "Redirect Local Root Url",
     "$label.root": "Resource Root Directory",
