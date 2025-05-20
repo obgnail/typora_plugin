@@ -752,58 +752,47 @@ class Searcher {
     showGrammar() {
         const t = this.i18n.t
         const i18n = {
-            modal: {
-                brief: {
-                    introduce: t("modal.brief.introduce"),
-                    conditionDesc: t("modal.brief.conditionDesc", { example1: "<em>size>2kb</em>", example2: "<em>ext:txt</em>" }),
-                    conditionCombination1: t("modal.brief.conditionCombination1", { example: "<em>size>2kb AND ext:txt</em>" }),
-                    conditionCombination2: t("modal.brief.conditionCombination2", { example: "<em>size>2kb OR ext:txt</em>" }),
-                    conditionCombination3: t("modal.brief.conditionCombination3", { example: "<em>NOT size>2kb</em>" }),
-                },
-                example: {
-                    title: t("modal.example.title"),
-                    result: t("modal.example.result"),
-                    equivalentTo: t("modal.example.equivalentTo"),
-                    desc1: t("modal.example.desc1"),
-                    desc2: t("modal.example.desc2"),
-                    desc3: t("modal.example.desc3"),
-                    desc4: t("modal.example.desc4"),
-                    desc5: t("modal.example.desc5"),
-                    desc6: t("modal.example.desc6"),
-                    desc7: t("modal.example.desc7"),
-                    desc8: t("modal.example.desc8"),
-                    desc9: t("modal.example.desc9"),
-                    desc10: t("modal.example.desc10"),
-                },
-                info: {
-                    agreement: t("modal.info.agreement"),
-                    diff: t("modal.info.diff"),
-                    scope: t("modal.info.scope"),
-                },
-                usage: {
-                    keyword: t("modal.usage.keyword"),
-                    desc: t("modal.usage.desc"),
-                    whitespace: t("modal.usage.whitespace"),
-                    whitespaceDesc: t("modal.usage.whitespaceDesc"),
-                    orDesc: t("modal.usage.orDesc"),
-                    notDesc: t("modal.usage.notDesc"),
-                    quotationDesc: t("modal.usage.quotationDesc"),
-                    regexDesc: t("modal.usage.regexDesc"),
-                    scopeDesc: t("modal.usage.scopeDesc"),
-                    operatorDesc: t("modal.usage.operatorDesc"),
-                    parenthesesDesc: t("modal.usage.parenthesesDesc"),
-                    scopeDescMeta: t("modal.usage.scopeDesc.meta"),
-                    scopeDescContent: t("modal.usage.scopeDesc.content"),
-                    scopeDescDefault: t("modal.usage.scopeDesc.default"),
-                    colonDesc: t("modal.usage.colonDesc"),
-                    equalDesc: t("modal.usage.equalDesc"),
-                    compareDesc: t("modal.usage.compareDesc"),
-                },
-                field: {
-                    usage: t("modal.field.usage"),
-                    grammar: t("modal.field.grammar"),
-                },
-            }
+            brief: {
+                introduce: t("modal.brief.introduce"),
+                conditionDesc: t("modal.brief.conditionDesc", { example1: "<em>size>2kb</em>", example2: "<em>ext:txt</em>" }),
+                conditionCombination1: t("modal.brief.conditionCombination1", { example: "<em>size>2kb AND ext:txt</em>" }),
+                conditionCombination2: t("modal.brief.conditionCombination2", { example: "<em>size>2kb OR ext:txt</em>" }),
+                conditionCombination3: t("modal.brief.conditionCombination3", { example: "<em>NOT size>2kb</em>" }),
+                conditionCombination4: t("modal.brief.conditionCombination4", { example: "<em>size>2kb AND (ext:txt OR hasimage=true)</em>" }),
+                omit: t("modal.brief.omit"),
+            },
+            example: {
+                title: t("modal.example.title"),
+                result: t("modal.example.result"),
+                equivalentTo: t("modal.example.equivalentTo"),
+                desc1: t("modal.example.desc1"),
+                desc2: t("modal.example.desc2"),
+                desc3: t("modal.example.desc3"),
+                desc4: t("modal.example.desc4"),
+                desc5: t("modal.example.desc5"),
+                desc6: t("modal.example.desc6"),
+                desc7: t("modal.example.desc7"),
+                desc8: t("modal.example.desc8"),
+                desc9: t("modal.example.desc9"),
+                desc10: t("modal.example.desc10"),
+            },
+            usage: {
+                keyword: t("modal.usage.keyword"),
+                desc: t("modal.usage.desc"),
+                whitespace: t("modal.usage.whitespace"),
+                whitespaceDesc: t("modal.usage.whitespaceDesc"),
+                orDesc: t("modal.usage.orDesc"),
+                notDesc: t("modal.usage.notDesc"),
+                quotationDesc: t("modal.usage.quotationDesc"),
+                regexDesc: t("modal.usage.regexDesc"),
+                scopeDesc: t("modal.usage.scopeDesc"),
+                operatorDesc: t("modal.usage.operatorDesc"),
+                scopeDescMeta: t("modal.usage.scopeDesc.meta"),
+                scopeDescContent: t("modal.usage.scopeDesc.content"),
+                colonDesc: t("modal.usage.colonDesc"),
+                equalDesc: t("modal.usage.equalDesc"),
+                compareDesc: t("modal.usage.compareDesc"),
+            },
         }
 
         const scope = [...this.qualifiers.values()]
@@ -814,58 +803,49 @@ class Searcher {
 
         // brief
         const conditionCombination = genUL(
-            i18n.modal.brief.conditionCombination1,
-            i18n.modal.brief.conditionCombination2,
-            i18n.modal.brief.conditionCombination3,
+            i18n.brief.conditionCombination1,
+            i18n.brief.conditionCombination2,
+            i18n.brief.conditionCombination3,
+            i18n.brief.conditionCombination4,
         )
-        const brief = `
-            <b>${i18n.modal.brief.introduce}</b><br>
-            ${i18n.modal.brief.conditionDesc}<br>
-            ${conditionCombination}
-        `
+        const brief = `<b>${i18n.brief.introduce}</b>${i18n.brief.conditionDesc}<br>${conditionCombination}`
 
         // example
-        const genInfo = title => `<span class="modal-label-info ion-information-circled" title="${title}"></span>`
-        const agreement = genInfo(i18n.modal.info.agreement)
-        const diffInfo = genInfo(i18n.modal.info.diff)
-        const scopeInfo = genInfo(i18n.modal.info.scope)
         const example = this.utils.buildTable([
-            [i18n.modal.example.title + agreement, i18n.modal.example.result],
-            ["<em>pear</em>", `${i18n.modal.example.desc1} ${i18n.modal.example.equivalentTo} <em>default:pear</em> ${scopeInfo}`],
-            ["<em>-pear</em>", `${i18n.modal.example.desc2} ${i18n.modal.example.equivalentTo} <em>NOT pear</em>`],
-            ["<em>sour pear</em>", `${i18n.modal.example.desc3} ${i18n.modal.example.equivalentTo} <em>sour AND pear</em>`],
-            ["<em>sour | pear</em>", `${i18n.modal.example.desc4} ${i18n.modal.example.equivalentTo} <em>sour OR pear</em></td>`],
-            ['<em>"sour pear"</em>', i18n.modal.example.desc5],
-            ["<em>/\\bsour\\b/ pear mtime<2024-05-16</em>", i18n.modal.example.desc6],
-            ["<em>frontmatter:dev | head=plugin | strong:MIT</em>", `${i18n.modal.example.desc7} ${diffInfo}`],
-            ["<em>size>10kb (linenum>=1000 | hasimage=true)</em>", i18n.modal.example.desc8],
-            ["<em>path:(info | warn | err) -ext:md</em>", i18n.modal.example.desc9],
-            ['<em>thead:k8s h2:prometheus blockcode:"kubectl apply"</em>', i18n.modal.example.desc10],
+            [i18n.example.title, i18n.example.result],
+            ["<em>pear</em>", `${i18n.example.desc1} ${i18n.example.equivalentTo} <em>default:pear</em>`],
+            ["<em>-pear</em>", `${i18n.example.desc2} ${i18n.example.equivalentTo} <em>NOT pear</em>`],
+            ["<em>sour pear</em>", `${i18n.example.desc3} ${i18n.example.equivalentTo} <em>sour AND pear</em>`],
+            ["<em>sour | pear</em>", `${i18n.example.desc4} ${i18n.example.equivalentTo} <em>sour OR pear</em></td>`],
+            ['<em>"sour pear"</em>', i18n.example.desc5],
+            ["<em>/\\bsour\\b/ pear mtime<2024-05-16</em>", i18n.example.desc6],
+            ["<em>frontmatter:dev | head=plugin | strong:MIT</em>", i18n.example.desc7],
+            ["<em>size>10kb (linenum>=1000 | hasimage=true)</em>", i18n.example.desc8],
+            ["<em>path:(info | warn | err) -ext:md</em>", i18n.example.desc9],
+            ['<em>thead:k8s h2:prometheus blockcode:"kubectl apply"</em>', i18n.example.desc10],
         ])
 
         // usage
         const genScope = scopes => scopes.map(e => `<code title="${e.name}">${e.scope}</code>`).join("、")
         const genOperator = (...operators) => operators.map(op => `<code>${op}</code>`).join("、")
         const scopeDesc = genUL(
-            `${i18n.modal.usage.scopeDescMeta}：${genScope(metaScope)}`,
-            `${i18n.modal.usage.scopeDescContent}：${genScope(contentScope)}`,
-            i18n.modal.usage.scopeDescDefault
+            `${i18n.usage.scopeDescMeta}：${genScope(metaScope)}`,
+            `${i18n.usage.scopeDescContent}：${genScope(contentScope)}`,
         )
         const operatorDesc = genUL(
-            `${genOperator(":")} ${i18n.modal.usage.colonDesc}`,
-            `${genOperator("=", "!=")} ${i18n.modal.usage.equalDesc}`,
-            `${genOperator(">", "<", ">=", "<=")} ${i18n.modal.usage.compareDesc}`,
+            `${genOperator(":")} ${i18n.usage.colonDesc}`,
+            `${genOperator("=", "!=")} ${i18n.usage.equalDesc}`,
+            `${genOperator(">", "<", ">=", "<=")} ${i18n.usage.compareDesc}`,
         )
         const usage = this.utils.buildTable([
-            [i18n.modal.usage.keyword, i18n.modal.usage.desc],
-            [i18n.modal.usage.whitespace, i18n.modal.usage.whitespaceDesc],
-            ["|", i18n.modal.usage.orDesc],
-            ["-", i18n.modal.usage.notDesc],
-            ['""', i18n.modal.usage.quotationDesc],
-            ["/regex/", i18n.modal.usage.regexDesc],
-            ["scope", i18n.modal.usage.scopeDesc + scopeDesc],
-            ["operator", i18n.modal.usage.operatorDesc + operatorDesc],
-            ["()", i18n.modal.usage.parenthesesDesc],
+            [i18n.usage.keyword, i18n.usage.desc],
+            [i18n.usage.whitespace, i18n.usage.whitespaceDesc],
+            ["|", i18n.usage.orDesc],
+            ["-", i18n.usage.notDesc],
+            ['""', i18n.usage.quotationDesc],
+            ["/regex/", i18n.usage.regexDesc],
+            ["scope", i18n.usage.scopeDesc + scopeDesc],
+            ["operator", i18n.usage.operatorDesc + operatorDesc],
         ])
 
         // grammar
@@ -889,13 +869,12 @@ class Searcher {
         const title = this.i18n.t("grammar")
         const components = [
             { label: brief, type: "blockquote", tabIndex: 0 },
+            { label: i18n.brief.omit, type: "blockquote" },
             { label: example, type: "p" },
-            { label: i18n.modal.field.usage, type: "p" },
             { label: usage, type: "p" },
-            { label: i18n.modal.field.grammar, type: "p" },
-            { label: "", type: "textarea", rows: 21, content },
+            { label: "", type: "textarea", rows: 20, content },
         ]
-        this.utils.dialog.modal({ title, components, width: "600px" })
+        this.utils.dialog.modal({ title, components, width: "700px" })
     }
 }
 

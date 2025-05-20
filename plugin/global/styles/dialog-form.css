@@ -103,7 +103,7 @@
     align-items: center;
     height: 42px;
     line-height: 42px;
-    padding-left: 10px;
+    padding-left: 12px;
 }
 
 /***** general control *****/
@@ -469,6 +469,10 @@ input::placeholder {
 .array .array-item-add {
     cursor: pointer;
     border-style: dashed;
+}
+
+.array-item-add:hover {
+    border-color: #F69815;
 }
 
 .array-item {

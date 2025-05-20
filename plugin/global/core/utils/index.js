@@ -116,7 +116,7 @@ class utils {
     // after loadJimp(), you can use globalThis.Jimp
     // static loadJimp = async () => await $.getScript((File.isNode ? "./lib.asar" : "./lib") + "/jimp/browser/lib/jimp.min.js")
 
-    // static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
+    static sendEmail = (email, subject = "", body = "") => reqnode("electron").shell.openExternal(`mailto:${email}?subject=${subject}&body=${body}`)
 
     static downloadImage = async (src, folder, filename) => {
         folder = folder || this.tempFolder;

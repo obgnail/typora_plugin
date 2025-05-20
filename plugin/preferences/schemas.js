@@ -210,6 +210,7 @@ const SETTING_SCHEMAS = {
             Action("editStyles"),
             Action("developPlugins"),
             Action("githubImageBed"),
+            Action("sendEmail"),
         ),
         UntitledBox(
             Action("updatePlugin"),
@@ -225,7 +226,7 @@ const SETTING_SCHEMAS = {
             Switch("SHOW_TAB_CLOSE_BUTTON"),
             Switch("TRIM_FILE_EXT"),
             Switch("SHOW_DIR_ON_DUPLICATE"),
-            Switch("HIDE_WINDOW_TITLE_BAR", { tooltip: "hideTitleBar" }),
+            Switch("HIDE_WINDOW_TITLE_BAR"),
             Text("TAB_MIN_WIDTH"),
             Text("TAB_MAX_WIDTH"),
             Number("MAX_TAB_NUM", { tooltip: "minusOne", min: -1 }),
@@ -651,6 +652,7 @@ const SETTING_SCHEMAS = {
             Text("COPY_NEXT_LINE", fenceEnhanceHotkeyDep),
             Text("INSERT_LINE_PREVIOUS", fenceEnhanceHotkeyDep),
             Text("INSERT_LINE_NEXT", fenceEnhanceHotkeyDep),
+            Action("viewCodeMirrorKeymapsManual"),
         ),
         TitledBox(
             "advanced",
@@ -1156,6 +1158,9 @@ const SETTING_SCHEMAS = {
         chartStyleBox,
         TextareaBox("TEMPLATE"),
         ObjectBOX("VISUAL_OPTIONS", { rows: 5 }),
+        UntitledBox(
+            Action("viewAbcVisualOptionsHelp"),
+        ),
         handleSettingsBox,
     ],
     drawIO: [
