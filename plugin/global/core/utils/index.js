@@ -479,6 +479,7 @@ class utils {
             const replaced = replacement instanceof Function
                 ? await replacement(content)
                 : replacement
+            if (replaced === content) return
             if (filepath) {
                 const ok = await this.writeFile(filepath, replaced)
                 if (!ok) return
@@ -938,17 +939,21 @@ class utils {
     static findActiveNode = range => {
         range = range || File.editor.selection.getRangy()
         if (range) {
-            const markElem = File.editor.getMarkElem(range.anchorNode)
+            const selection = window.getSelection()
+            const markElem = File.editor.getMarkElem(selection.anchorNode)
             return File.editor.findNodeByElem(markElem)
         }
     }
 
     static getRangy = () => {
-        const range = File.editor.selection.getRangy();
-        const markElem = File.editor.getMarkElem(range.anchorNode);
-        const node = File.editor.findNodeByElem(markElem);
-        const bookmark = range.getBookmark(markElem[0]);
-        return { range, markElem, node, bookmark }
+        const range = File.editor.selection.getRangy()
+        if (range) {
+            const selection = window.getSelection()
+            const markElem = File.editor.getMarkElem(selection.anchorNode)
+            const node = File.editor.findNodeByElem(markElem)
+            const bookmark = range.getBookmark(markElem[0])
+            return { range, markElem, node, bookmark }
+        }
     }
 
     static getRangyText = () => {
