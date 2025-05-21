@@ -34,35 +34,6 @@ class sortableOutlinePlugin extends BaseCustomPlugin {
         })
     }
 
-    _checkHeaders = (drag, drop) => (
-        drop
-        && drop
-        // Drop section cannot be included in drag section
-        && !(drag.section[0] <= drop.section[0] && drag.section[1] <= drop.section[1])
-    )
-
-    // TODO: Need smarter move sections algorithms.
-    _moveSections = (lines, dragHeader, dropHeader) => {
-        const clamp = idx => Math.max(0, Math.min(idx, lines.length - 1))
-        const { depth: d1, header: h1, section: section1 } = dragHeader
-        const { depth: d2, header: h2, section: section2 } = dropHeader
-        const [s1, e1] = section1.map(e => clamp(e))
-        const [s2, e2] = section2.map(e => clamp(e))
-        const length = e1 - s1
-
-        if (d1 === d2) {
-            const removed = lines.splice(s1, length)
-            const idx = s1 < s2 ? e2 - length : e2
-            lines.splice(idx, 0, ...removed)
-        } else if (d1 > d2) {
-            // TODO
-        } else {
-            // TODO
-        }
-
-        return lines
-    }
-
     _getHeader = (cid, tokens) => {
         const { headers = [] } = File.editor.nodeMap.toc
         const start = headers.findIndex(h => h.cid === cid)
@@ -84,9 +55,41 @@ class sortableOutlinePlugin extends BaseCustomPlugin {
 
         const startLine = tokens[start].map[0]
         const endLine = tokens.length === end ? Number.MAX_SAFE_INTEGER : tokens[end].map[0]
-        const section = [startLine, endLine]
 
-        return { depth, section, header }
+        return { depth, startLine, endLine, header }
+    }
+
+    _checkHeaders = (drag, drop) => (
+        drop
+        && drop
+        && !(drag.startLine <= drop.startLine && drag.endLine <= drop.endLine)
+    )
+
+    _clampIndex = (lines, drag, drop) => {
+        const clampIndex = (arr, idx) => Math.max(0, Math.min(idx, arr.length - 1))
+        for (const h of [drag, drop]) {
+            h.startLine = clampIndex(lines, h.startLine)
+            h.endLine = clampIndex(lines, h.endLine)
+        }
+    }
+
+    _moveSections = (lines, drag, drop) => {
+        this._clampIndex(lines, drag, drop)
+
+        const ahead = drag.startLine < drop.startLine
+        const lineNum = drag.endLine - drag.startLine
+
+        if (drag.depth === drop.depth) {
+            const removed = lines.splice(drag.startLine, lineNum)
+            const idx = ahead ? drop.endLine - lineNum : drop.endLine
+            lines.splice(idx, 0, ...removed)
+        } else if (drag.depth > drop.depth) {
+            // TODO
+        } else {
+            // TODO
+        }
+
+        return lines
     }
 }
 
