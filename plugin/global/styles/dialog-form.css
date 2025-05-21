@@ -500,32 +500,33 @@ input::placeholder {
 }
 
 /***** table *****/
-table {
+.table table {
     width: 100%;
     text-align: left;
-    table-layout: fixed
+    table-layout: fixed;
 }
 
-th, td {
+.table th,
+.table td {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-th:last-child,
-td:last-child {
+.table th:last-child,
+.table td:last-child {
     text-align: right;
     width: 70px;
 }
 
-table .fa {
+.table .fa {
     font-size: 18px;
     cursor: pointer;
     border-radius: 50%;
     padding: 7px;
 }
 
-table .fa:hover {
+.table .fa:hover {
     background-color: rgba(31, 31, 31, .08);
 }
 

@@ -469,7 +469,7 @@ class utils {
      */
     static getCurrentFileContent = (shouldSave, contentType, skipSetContent, saveContext) => File.sync(shouldSave, contentType, skipSetContent, saveContext)
 
-    static editCurrentFile = async (replacement, reloadContent = true) => {
+    static editCurrentFile = async (replacement, writeFile = true, reloadContent = true) => {
         await this.fixScrollTop(async () => {
             const bak = File.presentedItemChanged
             File.presentedItemChanged = this.noop
@@ -480,7 +480,7 @@ class utils {
                 ? await replacement(content)
                 : replacement
             if (replaced === content) return
-            if (filepath) {
+            if (filepath && writeFile) {
                 const ok = await this.writeFile(filepath, replaced)
                 if (!ok) return
             }
@@ -787,7 +787,7 @@ class utils {
     }
 
     static getTocTree = useBuiltin => {
-        const root = { depth: 0, cid: "n0", text: this.getFileName(), children: [] }
+        const root = { depth: 0, cid: "n0", text: this.getFileName(), parent: null, children: [] }
         const stack = [root]
         const toc = useBuiltin
             ? File.editor.library.outline.getHeaderMatrix(true)
@@ -804,6 +804,7 @@ class utils {
                 stack.pop()
             }
             const parent = stack[stack.length - 1]
+            node.parent = parent
             parent.children.push(node)
             stack.push(node)
         })
