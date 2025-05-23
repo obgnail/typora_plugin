@@ -25,7 +25,7 @@ class pluginForm extends HTMLElement {
         this.dispatchEvent(customEvent)
         if (type === "action") {
             const fn = this.action[key]
-            if (fn) fn()
+            if (fn) fn(this.data)
             return
         }
         this.utils.nestedPropertyHelpers[type](this.data, key, value)

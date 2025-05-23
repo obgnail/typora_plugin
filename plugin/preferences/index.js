@@ -298,13 +298,13 @@ class preferencesPlugin extends BasePlugin {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearSettings(fixedName)
                 await this.switchMenu(fixedName)
-                this.utils.notification.show(this.i18n._t("global", "notification.settingsRestored"))
+                this.utils.notification.show(this.i18n._t("global", "success.restore"))
             },
             restoreAllSettings: async () => {
                 const fixedName = this.entities.form.dataset.plugin
                 await this.utils.settings.clearAllSettings()
                 await this.switchMenu(fixedName)
-                this.utils.notification.show(this.i18n._t("global", "notification.allSettingsRestored"))
+                this.utils.notification.show(this.i18n._t("global", "success.restoreAll"))
             },
             runtimeSettings: async () => {
                 const fixedName = this.entities.form.dataset.plugin
@@ -341,7 +341,7 @@ class preferencesPlugin extends BasePlugin {
                         alert(e.toString())
                         return
                     }
-                    const message = this.i18n._t("global", "uninstallPluginSuccessful")
+                    const message = this.i18n._t("global", "success.uninstall")
                     const confirm = this.i18n._t("global", "confirm")
                     const op = { type: "info", title: "typora plugin", message, buttons: [confirm] }
                     await this.utils.showMessageBox(op)

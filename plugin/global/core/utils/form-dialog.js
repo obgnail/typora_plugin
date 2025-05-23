@@ -89,9 +89,9 @@ class formDialog {
         this.show(title, schema, data, action)
     })
 
-    updateModal = fn => {
+    updateModal = async fn => {
         const options = this._getOptions()
-        fn(options)
+        await fn(options)
         this._updateModal(options)
     }
 }

@@ -160,6 +160,7 @@ textarea {
     resize: vertical;
     color: inherit;
     font-size: 14px;
+    line-height: 24px;
 }
 
 input::placeholder {
@@ -592,6 +593,10 @@ input::placeholder {
 }
 
 /***** hint *****/
+.hint-wrap {
+    flex: 1;
+}
+
 .hint-header {
     font-weight: bold;
     line-height: 1.8em;
@@ -603,3 +608,31 @@ input::placeholder {
     font-size: 12px;
     color: #999;
 }
+
+/***** custom *****/
+.custom-wrap {
+    flex: 1;
+}
+
+.custom-wrap table {
+    border-collapse: collapse;
+    font-size: 13px;
+    line-height: 1.6em;
+    margin-top: -0.65em;
+    margin-bottom: -0.65em;
+}
+
+.custom-wrap tr {
+    border-bottom: 1px solid rgba(150, 162, 170, 0.2);
+}
+
+.custom-wrap td,
+.custom-wrap th {
+    padding-top: .65em;
+    padding-bottom: .65em;
+}
+
+.custom-wrap tbody tr:last-child {
+    border-bottom: none;
+}
+

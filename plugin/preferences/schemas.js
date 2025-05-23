@@ -262,7 +262,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "search",
             Switch("CASE_SENSITIVE"),
-            Switch("OPTIMIZE_SEARCH", { tooltip: "blockOrder" }),
+            Switch("OPTIMIZE_SEARCH", { tooltip: "breakOrder" }),
             Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
         ),
         TitledBox(

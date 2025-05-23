@@ -10,6 +10,7 @@ class searchMultiPlugin extends BasePlugin {
     }
 
     html = () => `
+        <div id="plugin-search-multi-playground" class="plugin-common-hidden"></div>
         <div id="plugin-search-multi" class="plugin-common-modal plugin-common-hidden">
             <div id="plugin-search-multi-input">
                 <input type="text" placeholder="${this.pluginName}">

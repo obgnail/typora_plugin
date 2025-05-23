@@ -467,7 +467,8 @@ class Searcher {
         ]
     }
 
-    parse(input, optimize) {
+    parse(input, optimize = false) {
+        input = input.replace(/\r?\n/g, " ")
         input = this.config.CASE_SENSITIVE ? input : input.toLowerCase()
         const ast = this.parser.parse(input)
         this.postParse(ast)
@@ -605,7 +606,7 @@ class Searcher {
                     _eval(right, !negated)
                     break
                 default:
-                    throw new Error(`Unknown AST node「${type}」`)
+                    throw new Error(`Unknown AST Node「${type}」`)
             }
         }
 
@@ -618,19 +619,49 @@ class Searcher {
             })
     }
 
-    // Converts to a mermaid graph. However, the generated graph is too large and there is no place to put it, so it is not used for now.
-    toMermaid(ast) {
+    toMermaid(ast, translate = false, direction = "TB") {
         let idx = 0
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
+        const t = this.i18n.t
+        const i18n = {
+            not: t("not"),
+            matchRegex: t("matchRegex"),
+            ":": t("operator.colon"),
+            "=": t("operator.equal"),
+            "!=": t("operator.notEqual"),
+            ">=": t("operator.gte"),
+            "<=": t("operator.lte"),
+            ">": t("operator.gt"),
+            "<": t("operator.lt"),
+        }
 
-        function getName(node) {
+        const getName = (node) => {
             if (node._shortName) {
                 return node._shortName
             }
             node._shortName = "T" + ++idx
-            const prefix = node.negated ? "-" : ""
-            const operand = node.type === REGEXP ? `/${node.operand}/` : node.operand
-            return `${node._shortName}("${prefix}${node.scope}${node.operator} ${operand}")`
+
+            let longName
+            const isRegex = node.type === REGEXP
+            const operand = isRegex ? `/${node.operand}/` : node.operand
+            const negated = node.negated
+            if (translate) {
+                const name = this.qualifiers.get(node.scope).name
+                if (typeof node.castResult === "boolean") {
+                    const finalNegated = node.castResult ? negated : !negated
+                    const negatedText = finalNegated ? i18n.not : ""
+                    longName = this.i18n.link([negatedText, name])
+                } else {
+                    const operator = isRegex ? i18n.matchRegex : i18n[node.operator]
+                    const negatedText = negated ? i18n.not : ""
+                    longName = this.i18n.link([name, negatedText, operator, operand])
+                }
+            } else {
+                const negatedText = negated ? "-" : ""
+                longName = [negatedText, node.scope, node.operator, operand].join(" ").trim()
+            }
+
+            return `${node._shortName}("${longName}")`
         }
 
         function link(left, right) {
@@ -670,7 +701,7 @@ class Searcher {
                     node.result = []
                     return node
                 default:
-                    throw new Error(`Unknown node type: ${node.type}`)
+                    throw new Error(`Unknown Node Type: ${node.type}`)
             }
         }
 
@@ -678,32 +709,40 @@ class Searcher {
         const { head, tail, result } = _eval(ast)
         const start = head.map(h => `S --> ${getName(h)}`)
         const end = tail.map(t => `${getName(t)} --> E`)
-        return ["graph LR", "S(Start)", "E(End)", ...result, ...start, ...end].join("\n")
+        return [`graph ${direction}`, "S((Start))", "E((End))", ...result, ...start, ...end].join("\n")
     }
 
     toExplain(ast) {
-        const notText = this.i18n.t("not")
-        const andText = this.i18n.t("and")
-        const explain = this.i18n.t("explain")
-        const matchRegexText = this.i18n.t("matchRegex")
-        const operatorNames = {
-            ":": this.i18n.t("operator.colon"),
-            "=": this.i18n.t("operator.equal"),
-            "!=": this.i18n.t("operator.notEqual"),
-            ">=": this.i18n.t("operator.gte"),
-            "<=": this.i18n.t("operator.lte"),
-            ">": this.i18n.t("operator.gt"),
-            "<": this.i18n.t("operator.lt"),
+        const t = this.i18n.t
+        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
+        const i18n = {
+            not: t("not"),
+            and: t("and"),
+            explain: t("explain"),
+            matchRegex: t("matchRegex"),
+            ":": t("operator.colon"),
+            "=": t("operator.equal"),
+            "!=": t("operator.notEqual"),
+            ">=": t("operator.gte"),
+            "<=": t("operator.lte"),
+            ">": t("operator.gt"),
+            "<": t("operator.lt"),
         }
 
-        const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
-
-        const getName = node => {
+        const getName = (node) => {
+            let negated = node.negated
             const name = this.qualifiers.get(node.scope).name
-            const negated = node.negated ? notText : ""
-            const operator = node.type === REGEXP ? matchRegexText : operatorNames[node.operator]
+            const operator = node.type === REGEXP ? i18n.matchRegex : i18n[node.operator]
             const operand = node.type === REGEXP ? `/${node.operand}/` : node.operand
-            const content = this.i18n.link([name, negated, operator, operand])
+            let content
+            if (typeof node.castResult === "boolean") {
+                negated = node.castResult ? negated : !negated
+                const negatedText = negated ? i18n.not : ""
+                content = this.i18n.link([negatedText, name])
+            } else {
+                const negatedText = negated ? i18n.not : ""
+                content = this.i18n.link([name, negatedText, operator, operand])
+            }
             return `「${content}」`
         }
 
@@ -736,120 +775,79 @@ class Searcher {
                     node.result = [[node]]
                     return node
                 default:
-                    throw new Error(`Unknown node type: ${node.type}`)
+                    throw new Error(`Unknown Node Type: ${node.type}`)
             }
         }
 
         ast = JSON.parse(JSON.stringify(ast))  // deep copy
         const { result } = _eval(ast)
         const content = result
-            .map(path => path.map(getName).join(andText))
+            .map(path => path.map(getName).join(i18n.and))
             .map((path, idx) => `${idx + 1}. ${path}`)
             .join("\n")
-        return `${explain}：\n${content}`
+        return `${i18n.explain}：\n${content}`
     }
 
-    showGrammar() {
+    async showGrammar() {
         const t = this.i18n.t
-        const i18n = {
-            brief: {
-                introduce: t("modal.brief.introduce"),
-                conditionDesc: t("modal.brief.conditionDesc", { example1: "<em>size>2kb</em>", example2: "<em>ext:txt</em>" }),
-                conditionCombination1: t("modal.brief.conditionCombination1", { example: "<em>size>2kb AND ext:txt</em>" }),
-                conditionCombination2: t("modal.brief.conditionCombination2", { example: "<em>size>2kb OR ext:txt</em>" }),
-                conditionCombination3: t("modal.brief.conditionCombination3", { example: "<em>NOT size>2kb</em>" }),
-                conditionCombination4: t("modal.brief.conditionCombination4", { example: "<em>size>2kb AND (ext:txt OR hasimage=true)</em>" }),
-                omit: t("modal.brief.omit"),
-            },
-            example: {
-                title: t("modal.example.title"),
-                result: t("modal.example.result"),
-                equivalentTo: t("modal.example.equivalentTo"),
-                desc1: t("modal.example.desc1"),
-                desc2: t("modal.example.desc2"),
-                desc3: t("modal.example.desc3"),
-                desc4: t("modal.example.desc4"),
-                desc5: t("modal.example.desc5"),
-                desc6: t("modal.example.desc6"),
-                desc7: t("modal.example.desc7"),
-                desc8: t("modal.example.desc8"),
-                desc9: t("modal.example.desc9"),
-                desc10: t("modal.example.desc10"),
-            },
-            usage: {
-                keyword: t("modal.usage.keyword"),
-                desc: t("modal.usage.desc"),
-                whitespace: t("modal.usage.whitespace"),
-                whitespaceDesc: t("modal.usage.whitespaceDesc"),
-                orDesc: t("modal.usage.orDesc"),
-                notDesc: t("modal.usage.notDesc"),
-                quotationDesc: t("modal.usage.quotationDesc"),
-                regexDesc: t("modal.usage.regexDesc"),
-                scopeDesc: t("modal.usage.scopeDesc"),
-                operatorDesc: t("modal.usage.operatorDesc"),
-                scopeDescMeta: t("modal.usage.scopeDesc.meta"),
-                scopeDescContent: t("modal.usage.scopeDesc.content"),
-                colonDesc: t("modal.usage.colonDesc"),
-                equalDesc: t("modal.usage.equalDesc"),
-                compareDesc: t("modal.usage.compareDesc"),
-            },
-        }
-
         const scope = [...this.qualifiers.values()]
         const metaScope = scope.filter(s => s.is_meta)
         const contentScope = scope.filter(s => !s.is_meta)
-        const operator = [...Object.keys(this.MIXIN.OPERATOR)]
-        const genUL = (...li) => `<ul style="padding-left: 1em; word-break: break-word;">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
 
-        // brief
-        const conditionCombination = genUL(
-            i18n.brief.conditionCombination1,
-            i18n.brief.conditionCombination2,
-            i18n.brief.conditionCombination3,
-            i18n.brief.conditionCombination4,
-        )
-        const brief = `<b>${i18n.brief.introduce}</b>${i18n.brief.conditionDesc}<br>${conditionCombination}`
+        const bold = (cnt) => `<b>${cnt}</b>`
+        const emphasis = (cnt) => `<em>${cnt}</em>`
+        const genScope = scopes => scopes.map(e => emphasis(e.scope)).join("、")
+        const genOperator = (...operators) => operators.map(emphasis).join("、")
+        const genUL = (...li) => `<ul style="padding-left: 1.2em; margin: 0; word-break: break-word;">${li.map(e => `<li>${e}</li>`).join("")}</ul>`
+        const _scope = [
+            bold(t("modal.hintDetail.scope.meta")) + " " + genScope(metaScope),
+            bold(t("modal.hintDetail.scope.content")) + " " + genScope(contentScope),
+        ]
+        const _operator = [
+            bold(genOperator(":")) + " " + t("modal.hintDetail.operator.colon"),
+            bold(genOperator("=", "!=")) + " " + t("modal.hintDetail.operator.equal"),
+            bold(genOperator(">", "<", ">=", "<=")) + " " + t("modal.hintDetail.operator.compare"),
+        ]
+        const _operand = [
+            t("modal.hintDetail.operand.quotes", { eg: emphasis('"sour pear"') }),
+            t("modal.hintDetail.operand.regex", { eg: emphasis("/\\bsour\\b/") }),
+        ]
+        const _combineCond = [
+            t("modal.hintDetail.combineCond.and", { eg: emphasis("size>2kb AND ext:txt") }),
+            t("modal.hintDetail.combineCond.or", { eg: emphasis("size>2kb OR ext:txt") }),
+            t("modal.hintDetail.combineCond.not", { eg: emphasis("NOT size>2kb") }),
+            t("modal.hintDetail.combineCond.parentheses", { eg: emphasis("size>2kb OR (ext:txt AND hasimage=true)") }),
+        ]
+        const hintDetail = {
+            syntax: t("modal.hintDetail.syntax", { eg: emphasis("size>2kb") }),
+            scope: genUL(..._scope),
+            operator: genUL(..._operator),
+            operand: genUL(..._operand),
+            combineCond: genUL(..._combineCond),
+            syntacticSugar: t("modal.hintDetail.syntacticSugar", {
+                scope: emphasis("default"),
+                operator: emphasis(":"),
+                shortCond: emphasis("pear"),
+                normalCond: emphasis("default:pear"),
+                longCond: emphasis("path:pear OR content:pear"),
+            }),
+        }
 
-        // example
         const example = this.utils.buildTable([
-            [i18n.example.title, i18n.example.result],
-            ["<em>pear</em>", `${i18n.example.desc1} ${i18n.example.equivalentTo} <em>default:pear</em>`],
-            ["<em>-pear</em>", `${i18n.example.desc2} ${i18n.example.equivalentTo} <em>NOT pear</em>`],
-            ["<em>sour pear</em>", `${i18n.example.desc3} ${i18n.example.equivalentTo} <em>sour AND pear</em>`],
-            ["<em>sour | pear</em>", `${i18n.example.desc4} ${i18n.example.equivalentTo} <em>sour OR pear</em></td>`],
-            ['<em>"sour pear"</em>', i18n.example.desc5],
-            ["<em>/\\bsour\\b/ pear mtime<2024-05-16</em>", i18n.example.desc6],
-            ["<em>frontmatter:dev | head=plugin | strong:MIT</em>", i18n.example.desc7],
-            ["<em>size>10kb (linenum>=1000 | hasimage=true)</em>", i18n.example.desc8],
-            ["<em>path:(info | warn | err) -ext:md</em>", i18n.example.desc9],
-            ['<em>thead:k8s h2:prometheus blockcode:"kubectl apply"</em>', i18n.example.desc10],
+            [t("modal.example.expression"), t("modal.example.query")],
+            [emphasis("pear"), `${t("modal.example.desc1")} ${t("modal.example.equivalentTo")} ${emphasis("default:pear")}`],
+            [emphasis("-pear"), `${t("modal.example.desc2")} ${t("modal.example.equivalentTo")} ${emphasis("NOT pear")}`],
+            [emphasis("-sour pear"), `${t("modal.example.desc3")} ${t("modal.example.equivalentTo")} ${emphasis("sour AND pear")}`],
+            [emphasis("sour | pear"), `${t("modal.example.desc4")} ${t("modal.example.equivalentTo")} ${emphasis("sour OR pear")}`],
+            [emphasis('"sour pear"'), t("modal.example.desc5")],
+            [emphasis("/\\bsour\\b/ pear mtime<2024-05-16"), t("modal.example.desc6")],
+            [emphasis("frontmatter:dev | head=plugin | strong:MIT"), t("modal.example.desc7")],
+            [emphasis("size>10kb (linenum>=1000 | hasimage=true)"), t("modal.example.desc8")],
+            [emphasis("path:(info | warn | err) -ext:md"), t("modal.example.desc9")],
+            [emphasis('thead:k8s h2:prometheus blockcode:"kubectl apply"'), t("modal.example.desc10")],
         ])
 
-        // usage
-        const genScope = scopes => scopes.map(e => `<code title="${e.name}">${e.scope}</code>`).join("、")
-        const genOperator = (...operators) => operators.map(op => `<code>${op}</code>`).join("、")
-        const scopeDesc = genUL(
-            `${i18n.usage.scopeDescMeta}：${genScope(metaScope)}`,
-            `${i18n.usage.scopeDescContent}：${genScope(contentScope)}`,
-        )
-        const operatorDesc = genUL(
-            `${genOperator(":")} ${i18n.usage.colonDesc}`,
-            `${genOperator("=", "!=")} ${i18n.usage.equalDesc}`,
-            `${genOperator(">", "<", ">=", "<=")} ${i18n.usage.compareDesc}`,
-        )
-        const usage = this.utils.buildTable([
-            [i18n.usage.keyword, i18n.usage.desc],
-            [i18n.usage.whitespace, i18n.usage.whitespaceDesc],
-            ["|", i18n.usage.orDesc],
-            ["-", i18n.usage.notDesc],
-            ['""', i18n.usage.quotationDesc],
-            ["/regex/", i18n.usage.regexDesc],
-            ["scope", i18n.usage.scopeDesc + scopeDesc],
-            ["operator", i18n.usage.operatorDesc + operatorDesc],
-        ])
-
-        // grammar
-        const content = `
+        const grammar = `
 <query> ::= <expression>
 <expression> ::= <term> ( <or> <term> )*
 <term> ::= <factor> ( <conjunction> <factor> )*
@@ -862,19 +860,81 @@ class Searcher {
 <not> ::= 'NOT' | '-'
 <keyword> ::= [^\\s"()|]+
 <regex> ::= [^/]+
-<operator> ::= ${operator.map(s => `'${s}'`).join(" | ")}
-<scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}
-`
+<operator> ::= ${[...Object.keys(this.MIXIN.OPERATOR)].map(s => `'${s}'`).join(" | ")}
+<scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
-        const title = this.i18n.t("grammar")
-        const components = [
-            { label: brief, type: "blockquote", tabIndex: 0 },
-            { label: i18n.brief.omit, type: "blockquote" },
-            { label: example, type: "p" },
-            { label: usage, type: "p" },
-            { label: "", type: "textarea", rows: 20, content },
-        ]
-        this.utils.dialog.modal({ title, components, width: "700px" })
+        const _toJSON = (exp, optimize) => {
+            try {
+                const ast = this.parse(exp, optimize)
+                return JSON.stringify(ast, null, "\t")
+            } catch (e) {
+                return `Syntax Error: ${e.toString().slice(7)}`
+            }
+        }
+        const _toMermaid = async (exp, optimize, translate, direction) => {
+            try {
+                const ast = this.parse(exp, optimize)
+                const mermaid = this.toMermaid(ast, translate, direction)
+                const chart = await window.mermaidAPI.render("plugin-search-multi-playground", mermaid)
+                const svg = typeof chart === "string" ? chart : chart.svg
+                return `<div style="font-size:initial; line-height: initial; text-align:center;">${svg}</div>`
+            } catch (e) {
+                return `Syntax Error: ${e.toString().slice(7)}`
+            }
+        }
+        const getSchema = async ({ expression = "", optimize = false, translate = true, direction = "LR" }) => {
+            const syntaxFields = [
+                { type: "hint", hintHeader: t("modal.hintHeader.syntax"), hintDetail: hintDetail.syntax },
+                { type: "hint", hintHeader: t("modal.hintHeader.scope"), hintDetail: hintDetail.scope },
+                { type: "hint", hintHeader: t("modal.hintHeader.operator"), hintDetail: hintDetail.operator },
+                { type: "hint", hintHeader: t("modal.hintHeader.operand"), hintDetail: hintDetail.operand },
+                { type: "hint", hintHeader: t("modal.hintHeader.combineCond"), hintDetail: hintDetail.combineCond },
+                { type: "hint", hintHeader: t("modal.hintHeader.syntacticSugar"), hintDetail: hintDetail.syntacticSugar },
+            ]
+            const exampleFields = [{ type: "custom", content: example }]
+            const playgroundFields = [
+                { key: "expression", type: "textarea", rows: 3 },
+                { type: "hint", hintDetail: await _toMermaid(expression, optimize, translate, direction) },
+                { key: "optimize", type: "switch", label: t("$label.OPTIMIZE_SEARCH"), tooltip: t("$tooltip.breakOrder") },
+                { key: "translate", type: "switch", label: t("modal.playground.translate") },
+                { key: "direction", type: "select", label: t("modal.playground.direction"), options: Object.fromEntries(["TB", "BT", "RL", "LR"].map(e => [e, e])) },
+                { act: "copyAST", type: "action", label: t("modal.playground.ast") },
+            ]
+            const grammarFields = [{ key: "grammar", type: "textarea", disabled: true, rows: 20 }]
+            return [
+                { title: undefined, fields: syntaxFields },
+                { title: t("modal.title.example"), fields: exampleFields },
+                { title: t("modal.title.playground"), fields: playgroundFields },
+                { title: t("modal.title.grammar"), fields: grammarFields },
+            ]
+        }
+
+        const expression = "head:sour file:pear ( content:foobar | size>10kb )"
+        const op = {
+            title: t("grammar"),
+            schema: await getSchema({ expression }),
+            data: {
+                grammar,
+                expression,
+                optimize: false,
+                translate: true,
+                direction: "LR",
+            },
+            action: {
+                copyAST: async (data) => {
+                    const text = _toJSON(data.expression, data.optimize)
+                    await navigator.clipboard.writeText(text)
+                    this.utils.notification.show(this.i18n._t("global", "success.copy"))
+                },
+            },
+            listener: ({ key, value }) => {
+                this.utils.formDialog.updateModal(async op => {
+                    op.data[key] = value
+                    op.schema = await getSchema(op.data)
+                })
+            },
+        }
+        await this.utils.formDialog.modal(op)
     }
 }
 
