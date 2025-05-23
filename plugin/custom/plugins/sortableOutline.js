@@ -60,9 +60,9 @@ class sortableOutlinePlugin extends BaseCustomPlugin {
     }
 
     _checkHeaders = (drag, drop) => (
-        drop
+        drag
         && drop
-        && !(drag.startLine <= drop.startLine && drag.endLine <= drop.endLine)
+        && !(drag.startLine <= drop.startLine && drop.endLine <= drag.endLine)
     )
 
     _clampIndex = (lines, drag, drop) => {
