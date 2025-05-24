@@ -277,7 +277,7 @@ input::placeholder {
 }
 
 .option-item[data-choose="true"]::before {
-    content: '✓';
+    content: "\2713";
     position: absolute;
     left: 6px;
 }

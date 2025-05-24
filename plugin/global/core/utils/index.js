@@ -1141,6 +1141,7 @@ const newMixin = (utils) => {
         ...require("./form-dialog"),
         ...require("./diagramParser"),
         ...require("./thirdPartyDiagramParser"),
+        ...require("./mermaid"),
         ...require("./entities"),
     }
     return Object.fromEntries(Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils, i18n)]))

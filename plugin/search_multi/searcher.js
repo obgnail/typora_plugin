@@ -621,9 +621,9 @@ class Searcher {
 
     toMermaid(ast, translate = false, direction = "TB") {
         let idx = 0
+        const { t, link } = this.i18n
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
-        const t = this.i18n.t
-        const i18n = {
+        const I18N = {
             not: t("not"),
             matchRegex: t("matchRegex"),
             ":": t("operator.colon"),
@@ -635,7 +635,7 @@ class Searcher {
             "<": t("operator.lt"),
         }
 
-        const getName = (node) => {
+        const _getName = (node) => {
             if (node._shortName) {
                 return node._shortName
             }
@@ -649,12 +649,12 @@ class Searcher {
                 const name = this.qualifiers.get(node.scope).name
                 if (typeof node.castResult === "boolean") {
                     const finalNegated = node.castResult ? negated : !negated
-                    const negatedText = finalNegated ? i18n.not : ""
-                    longName = this.i18n.link([negatedText, name])
+                    const negatedText = finalNegated ? I18N.not : ""
+                    longName = link([negatedText, name])
                 } else {
-                    const operator = isRegex ? i18n.matchRegex : i18n[node.operator]
-                    const negatedText = negated ? i18n.not : ""
-                    longName = this.i18n.link([name, negatedText, operator, operand])
+                    const operator = isRegex ? I18N.matchRegex : I18N[node.operator]
+                    const negatedText = negated ? I18N.not : ""
+                    longName = link([name, negatedText, operator, operand])
                 }
             } else {
                 const negatedText = negated ? "-" : ""
@@ -664,11 +664,11 @@ class Searcher {
             return `${node._shortName}("${longName}")`
         }
 
-        function link(left, right) {
-            return left.tail.flatMap(t => right.head.map(h => `${getName(t)} --> ${getName(h)}`))
+        const _link = (left, right) => {
+            return left.tail.flatMap(t => right.head.map(h => `${_getName(t)} --> ${_getName(h)}`))
         }
 
-        function _eval(node, negated) {
+        const _eval = (node, negated) => {
             let left, right
             switch (node.type) {
                 case AND:
@@ -676,7 +676,7 @@ class Searcher {
                     right = _eval(node.right, negated)
                     node.head = left.head
                     node.tail = right.tail
-                    node.result = [...left.result, ...link(left, right), ...right.result]
+                    node.result = [...left.result, ..._link(left, right), ...right.result]
                     return node
                 case OR:
                     left = _eval(node.left, negated)
@@ -690,7 +690,7 @@ class Searcher {
                     right = _eval(node.right, !negated)
                     node.head = node.left ? left.head : right.head
                     node.tail = right.tail
-                    node.result = [...left.result, ...link(left, right), ...right.result]
+                    node.result = [...left.result, ..._link(left, right), ...right.result]
                     return node
                 case KEYWORD:
                 case PHRASE:
@@ -705,17 +705,17 @@ class Searcher {
             }
         }
 
-        ast = JSON.parse(JSON.stringify(ast))  // deep copy
+        ast = JSON.parse(JSON.stringify(ast))
         const { head, tail, result } = _eval(ast)
-        const start = head.map(h => `S --> ${getName(h)}`)
-        const end = tail.map(t => `${getName(t)} --> E`)
+        const start = head.map(h => `S --> ${_getName(h)}`)
+        const end = tail.map(t => `${_getName(t)} --> E`)
         return [`graph ${direction}`, "S((Start))", "E((End))", ...result, ...start, ...end].join("\n")
     }
 
     toExplain(ast) {
-        const t = this.i18n.t
+        const { t, link } = this.i18n
         const { KEYWORD, PHRASE, REGEXP, OR, AND, NOT } = this.parser.TYPE
-        const i18n = {
+        const I18N = {
             not: t("not"),
             and: t("and"),
             explain: t("explain"),
@@ -729,24 +729,24 @@ class Searcher {
             "<": t("operator.lt"),
         }
 
-        const getName = (node) => {
+        const _getName = (node) => {
             let negated = node.negated
             const name = this.qualifiers.get(node.scope).name
-            const operator = node.type === REGEXP ? i18n.matchRegex : i18n[node.operator]
+            const operator = node.type === REGEXP ? I18N.matchRegex : I18N[node.operator]
             const operand = node.type === REGEXP ? `/${node.operand}/` : node.operand
             let content
             if (typeof node.castResult === "boolean") {
                 negated = node.castResult ? negated : !negated
-                const negatedText = negated ? i18n.not : ""
-                content = this.i18n.link([negatedText, name])
+                const negatedText = negated ? I18N.not : ""
+                content = link([negatedText, name])
             } else {
-                const negatedText = negated ? i18n.not : ""
-                content = this.i18n.link([name, negatedText, operator, operand])
+                const negatedText = negated ? I18N.not : ""
+                content = link([name, negatedText, operator, operand])
             }
             return `「${content}」`
         }
 
-        const link = (left, right) => {
+        const _link = (left, right) => {
             return left.result.flatMap(lPath => right.result.map(rPath => [...lPath, ...rPath]))
         }
 
@@ -756,7 +756,7 @@ class Searcher {
                 case AND:
                     left = _eval(node.left, negated)
                     right = _eval(node.right, negated)
-                    node.result = link(left, right)
+                    node.result = _link(left, right)
                     return node
                 case OR:
                     left = _eval(node.left, negated)
@@ -766,7 +766,7 @@ class Searcher {
                 case NOT:
                     left = node.left ? _eval(node.left, negated) : { result: [[]], head: [], tail: [] }
                     right = _eval(node.right, !negated)
-                    node.result = link(left, right)
+                    node.result = _link(left, right)
                     return node
                 case KEYWORD:
                 case PHRASE:
@@ -779,13 +779,13 @@ class Searcher {
             }
         }
 
-        ast = JSON.parse(JSON.stringify(ast))  // deep copy
+        ast = JSON.parse(JSON.stringify(ast))
         const { result } = _eval(ast)
         const content = result
-            .map(path => path.map(getName).join(i18n.and))
+            .map(path => path.map(_getName).join(I18N.and))
             .map((path, idx) => `${idx + 1}. ${path}`)
             .join("\n")
-        return `${i18n.explain}：\n${content}`
+        return `${I18N.explain}：\n${content}`
     }
 
     async showGrammar() {
@@ -863,26 +863,41 @@ class Searcher {
 <operator> ::= ${[...Object.keys(this.MIXIN.OPERATOR)].map(s => `'${s}'`).join(" | ")}
 <scope> ::= ${[...metaScope, ...contentScope].map(s => `'${s.scope}'`).join(" | ")}`
 
-        const _toJSON = (exp, optimize) => {
+        const _to = async (expression, optimize, callback) => {
             try {
-                const ast = this.parse(exp, optimize)
-                return JSON.stringify(ast, null, "\t")
+                const ast = this.parse(expression, optimize)
+                return callback(ast)
             } catch (e) {
+                console.error(e)
                 return `Syntax Error: ${e.toString().slice(7)}`
             }
         }
-        const _toMermaid = async (exp, optimize, translate, direction) => {
-            try {
-                const ast = this.parse(exp, optimize)
-                const mermaid = this.toMermaid(ast, translate, direction)
-                const chart = await window.mermaidAPI.render("plugin-search-multi-playground", mermaid)
-                const svg = typeof chart === "string" ? chart : chart.svg
+        const _toJSON = ({ expression, optimize }) => _to(expression, optimize, ast => JSON.stringify(ast, null, "\t"))
+        const _toText = async ({ expression, optimize }) => _to(expression, optimize, ast => this.toExplain(ast))
+        const _toGraph = async ({ expression, optimize, translate, direction }) => {
+            return _to(expression, optimize, async ast => {
+                const definition = this.toMermaid(ast, translate, direction)
+                const svg = await this.utils.mermaid.render(definition)
                 return `<div style="font-size:initial; line-height: initial; text-align:center;">${svg}</div>`
-            } catch (e) {
-                return `Syntax Error: ${e.toString().slice(7)}`
-            }
+            })
         }
-        const getSchema = async ({ expression = "", optimize = false, translate = true, direction = "LR" }) => {
+
+        const getSchema = async ({ expression, optimize, translate, direction, presentation }) => {
+            const dep = { dependencies: { presentation: "graph" } }
+            const directionOps = Object.fromEntries(["TB", "BT", "RL", "LR"].map(e => [e, e]))
+            const presentOps = {
+                text: t("modal.playground.presentation.text"),
+                graph: t("modal.playground.presentation.graph"),
+                ast: t("modal.playground.presentation.ast"),
+            }
+
+            let presentField = { key: "ast", type: "textarea", rows: 5 }
+            if (presentation === "graph" || presentation === "text") {
+                const to = presentation === "graph" ? _toGraph : _toText
+                const cnt = await to({ expression, optimize, translate, direction })
+                presentField = { type: "hint", hintDetail: cnt }
+            }
+
             const syntaxFields = [
                 { type: "hint", hintHeader: t("modal.hintHeader.syntax"), hintDetail: hintDetail.syntax },
                 { type: "hint", hintHeader: t("modal.hintHeader.scope"), hintDetail: hintDetail.scope },
@@ -894,13 +909,13 @@ class Searcher {
             const exampleFields = [{ type: "custom", content: example }]
             const playgroundFields = [
                 { key: "expression", type: "textarea", rows: 3 },
-                { type: "hint", hintDetail: await _toMermaid(expression, optimize, translate, direction) },
+                presentField,
                 { key: "optimize", type: "switch", label: t("$label.OPTIMIZE_SEARCH"), tooltip: t("$tooltip.breakOrder") },
-                { key: "translate", type: "switch", label: t("modal.playground.translate") },
-                { key: "direction", type: "select", label: t("modal.playground.direction"), options: Object.fromEntries(["TB", "BT", "RL", "LR"].map(e => [e, e])) },
-                { act: "copyAST", type: "action", label: t("modal.playground.ast") },
+                { key: "presentation", type: "select", label: t("modal.playground.presentation"), options: presentOps },
+                { key: "direction", type: "select", label: t("modal.playground.direction"), options: directionOps, ...dep },
+                { key: "translate", type: "switch", label: t("modal.playground.translate"), ...dep },
             ]
-            const grammarFields = [{ key: "grammar", type: "textarea", disabled: true, rows: 20 }]
+            const grammarFields = [{ key: "grammar", type: "textarea", rows: 20 }]
             return [
                 { title: undefined, fields: syntaxFields },
                 { title: t("modal.title.example"), fields: exampleFields },
@@ -909,26 +924,25 @@ class Searcher {
             ]
         }
 
-        const expression = "head:sour file:pear ( content:foobar | size>10kb )"
+        const defaultData = {
+            grammar,
+            expression: "head:sour file:pear ( content:foobar | size>10kb )",
+            presentation: "graph",
+            direction: "LR",
+            ast: "",
+            optimize: false,
+            translate: true,
+        }
         const op = {
             title: t("grammar"),
-            schema: await getSchema({ expression }),
-            data: {
-                grammar,
-                expression,
-                optimize: false,
-                translate: true,
-                direction: "LR",
-            },
-            action: {
-                copyAST: async (data) => {
-                    const text = _toJSON(data.expression, data.optimize)
-                    await navigator.clipboard.writeText(text)
-                    this.utils.notification.show(this.i18n._t("global", "success.copy"))
-                },
-            },
+            schema: await getSchema(defaultData),
+            data: defaultData,
             listener: ({ key, value }) => {
+                if (key === "ast") return
                 this.utils.formDialog.updateModal(async op => {
+                    if (key === "presentation" && value === "ast") {
+                        op.data.ast = await _toJSON(op.data)
+                    }
                     op.data[key] = value
                     op.schema = await getSchema(op.data)
                 })
