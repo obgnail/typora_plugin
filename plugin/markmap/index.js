@@ -606,7 +606,7 @@ class tocMarkmap {
                 })
                 const settings = await this.utils.settings.readBasePluginSettings()
                 this.config = settings[fixedName]
-                this.utils.notification.show(this.i18n._t("global", "notification.settingsRestored"))
+                this.utils.notification.show(this.i18n._t("global", "success.restore"))
                 await this.setting()
             },
         }

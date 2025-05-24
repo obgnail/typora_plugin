@@ -98,13 +98,13 @@ class Parser {
         // check first
         const first = tokens[0]
         if (this.INVALID_POSITION.FIRST.has(first.type)) {
-            throw new Error(`Invalid first token:「${first.type}」`)
+            throw new Error(`Invalid First Token:「${first.type}」`)
         }
 
         // check last
         const last = tokens[tokens.length - 1]
         if (this.INVALID_POSITION.LAST.has(last.type)) {
-            throw new Error(`Invalid last token:「${last.type}」`)
+            throw new Error(`Invalid Last Token:「${last.type}」`)
         }
 
         // check follow
@@ -112,7 +112,7 @@ class Parser {
             const set = this.INVALID_POSITION.FOLLOW[token.type]
             const follow = tokens[i + 1]
             if (set && set.has(follow.type)) {
-                throw new Error(`Invalid token sequence:「${token.type}」followed by「${follow.type}」`)
+                throw new Error(`Invalid Token Sequence:「${token.type}」followed by「${follow.type}」`)
             }
         })
 
@@ -205,12 +205,12 @@ class Parser {
         const tokens = this.tokenize(query)
         if (tokens.length === 0) {
             // return { type: this.TYPE.KEYWORD, scope: "default", operator: ":", operand: "" }
-            throw new Error(`Parse error. Empty tokens`)
+            throw new Error(`Empty Tokens`)
         }
         this.check(tokens)
         const ast = this._parseExpression(tokens)
         if (tokens.length !== 0) {
-            throw new Error(`Parse error. Failed to parse tokens: ${tokens.join(" ")}`)
+            throw new Error(`Failed to Parse Tokens: ${tokens.join(" ")}`)
         }
         return ast
     }
@@ -232,7 +232,7 @@ class Parser {
                 case NOT:
                     return (left ? _eval(left) : true) && !_eval(right)
                 default:
-                    throw new Error(`Unknown AST node「${type}」`)
+                    throw new Error(`Unknown AST Node「${type}」`)
             }
         }
 
@@ -260,7 +260,7 @@ class Parser {
                     _eval(right)
                     break
                 default:
-                    throw new Error(`Unknown AST node「${type}」`)
+                    throw new Error(`Unknown AST Node「${type}」`)
             }
         }
 

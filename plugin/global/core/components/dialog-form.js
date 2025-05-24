@@ -25,7 +25,7 @@ class pluginForm extends HTMLElement {
         this.dispatchEvent(customEvent)
         if (type === "action") {
             const fn = this.action[key]
-            if (fn) fn()
+            if (fn) fn(this.data)
             return
         }
         this.utils.nestedPropertyHelpers[type](this.data, key, value)
@@ -48,7 +48,12 @@ class pluginForm extends HTMLElement {
         const that = this
         let shownSelectOption = null
 
-        $(this.form).on("click", function () {
+        $(this.form).on("keydown", "input:not(.hotkey-input), textarea", function (ev) {
+            if (ev.key === "a" && that.utils.metaKeyPressed(ev)) {
+                this.select()
+                return false
+            }
+        }).on("click", function () {
             if (shownSelectOption) {
                 that.utils.hide(shownSelectOption)
             }
@@ -269,7 +274,7 @@ class pluginForm extends HTMLElement {
     }
 
     _fillForm(schema) {
-        const blockControls = new Set(["textarea", "object", "array", "table", "radio", "checkbox", "hint"])
+        const blockControls = new Set(["textarea", "object", "array", "table", "radio", "checkbox", "hint", "custom"])
         const createTitle = (title) => `<div class="title">${title}</div>`
         const createTooltip = (item) => item.tooltip ? `<span class="tooltip"><span class="fa fa-info-circle"></span><span>${item.tooltip.replace("\n", "<br>")}</span></span>` : ""
         const createGeneralControl = (ctl, value) => {
@@ -307,6 +312,8 @@ class pluginForm extends HTMLElement {
                     return `<div class="action fa fa-angle-right" data-action="${ctl.act}"></div>`
                 case "static":
                     return `<div class="static" data-key="${ctl.key}">${this.utils.escape(value)}</div>`
+                case "custom":
+                    return `<div class="custom-wrap">${ctl.content}</div>`
                 case "hint":
                     const header = ctl.hintHeader ? `<div class="hint-header">${ctl.hintHeader}</div>` : ""
                     const detail = ctl.hintDetail ? `<div class="hint-detail">${ctl.hintDetail.replace(/\n/g, "<br>")}</div>` : ""

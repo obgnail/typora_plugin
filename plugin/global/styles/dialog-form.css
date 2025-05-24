@@ -160,6 +160,7 @@ textarea {
     resize: vertical;
     color: inherit;
     font-size: 14px;
+    line-height: 24px;
 }
 
 input::placeholder {
@@ -276,7 +277,7 @@ input::placeholder {
 }
 
 .option-item[data-choose="true"]::before {
-    content: '✓';
+    content: "\2713";
     position: absolute;
     left: 6px;
 }
@@ -500,32 +501,33 @@ input::placeholder {
 }
 
 /***** table *****/
-table {
+.table table {
     width: 100%;
     text-align: left;
-    table-layout: fixed
+    table-layout: fixed;
 }
 
-th, td {
+.table th,
+.table td {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-th:last-child,
-td:last-child {
+.table th:last-child,
+.table td:last-child {
     text-align: right;
     width: 70px;
 }
 
-table .fa {
+.table .fa {
     font-size: 18px;
     cursor: pointer;
     border-radius: 50%;
     padding: 7px;
 }
 
-table .fa:hover {
+.table .fa:hover {
     background-color: rgba(31, 31, 31, .08);
 }
 
@@ -591,6 +593,10 @@ table .fa:hover {
 }
 
 /***** hint *****/
+.hint-wrap {
+    flex: 1;
+}
+
 .hint-header {
     font-weight: bold;
     line-height: 1.8em;
@@ -602,3 +608,31 @@ table .fa:hover {
     font-size: 12px;
     color: #999;
 }
+
+/***** custom *****/
+.custom-wrap {
+    flex: 1;
+}
+
+.custom-wrap table {
+    border-collapse: collapse;
+    font-size: 13px;
+    line-height: 1.6em;
+    margin-top: -0.65em;
+    margin-bottom: -0.65em;
+}
+
+.custom-wrap tr {
+    border-bottom: 1px solid rgba(150, 162, 170, 0.2);
+}
+
+.custom-wrap td,
+.custom-wrap th {
+    padding-top: .65em;
+    padding-bottom: .65em;
+}
+
+.custom-wrap tbody tr:last-child {
+    border-bottom: none;
+}
+

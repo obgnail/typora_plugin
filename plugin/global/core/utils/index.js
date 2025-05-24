@@ -469,7 +469,7 @@ class utils {
      */
     static getCurrentFileContent = (shouldSave, contentType, skipSetContent, saveContext) => File.sync(shouldSave, contentType, skipSetContent, saveContext)
 
-    static editCurrentFile = async (replacement, reloadContent = true) => {
+    static editCurrentFile = async (replacement, writeFile = File.option.enableAutoSave) => {
         await this.fixScrollTop(async () => {
             const bak = File.presentedItemChanged
             File.presentedItemChanged = this.noop
@@ -479,15 +479,18 @@ class utils {
             const replaced = replacement instanceof Function
                 ? await replacement(content)
                 : replacement
-            if (replaced === content) return
-            if (filepath) {
-                const ok = await this.writeFile(filepath, replaced)
-                if (!ok) return
+            if (replaced !== content) {
+                if (!writeFile) {
+                    File.reloadContent(replaced)
+                } else {
+                    if (filepath) {
+                        const ok = await this.writeFile(filepath, replaced)
+                        if (ok) {
+                            File.reloadContent(replaced, { delayRefresh: true, skipChangeCount: true, skipStore: true })
+                        }
+                    }
+                }
             }
-            if (reloadContent) {
-                File.reloadContent(replaced, { delayRefresh: true, skipChangeCount: true, skipStore: true })
-            }
-
             setTimeout(() => File.presentedItemChanged = bak, 1500)
         })
     }
@@ -787,7 +790,7 @@ class utils {
     }
 
     static getTocTree = useBuiltin => {
-        const root = { depth: 0, cid: "n0", text: this.getFileName(), children: [] }
+        const root = { depth: 0, cid: "n0", text: this.getFileName(), parent: null, children: [] }
         const stack = [root]
         const toc = useBuiltin
             ? File.editor.library.outline.getHeaderMatrix(true)
@@ -804,6 +807,7 @@ class utils {
                 stack.pop()
             }
             const parent = stack[stack.length - 1]
+            node.parent = parent
             parent.children.push(node)
             stack.push(node)
         })
@@ -1140,6 +1144,7 @@ const newMixin = (utils) => {
         ...require("./form-dialog"),
         ...require("./diagramParser"),
         ...require("./thirdPartyDiagramParser"),
+        ...require("./mermaid"),
         ...require("./entities"),
     }
     return Object.fromEntries(Object.entries(MIXIN).map(([name, cls]) => [[name], new cls(utils, i18n)]))

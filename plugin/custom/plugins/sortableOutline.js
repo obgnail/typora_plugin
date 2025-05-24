@@ -1,78 +1,104 @@
 class sortableOutlinePlugin extends BaseCustomPlugin {
+    styleTemplate = () => true
+
     process = () => {
-        const that = this
         const outline = document.querySelector("#outline-content")
 
-        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, () => {
-            outline.querySelectorAll(".outline-item").forEach(e => e.draggable = true)
-        })
+        const fresh = this.utils.debounce(() => outline.querySelectorAll(".outline-item").forEach(e => e.draggable = true), 200)
+        this.utils.eventHub.addEventListener(this.utils.eventHub.eventType.outlineUpdated, fresh)
+        this.utils.decorate(() => File, "freshMenu", null, fresh)
+        this.utils.decorate(() => File && File.editor && File.editor.library && File.editor.library.outline, "renderOutline", null, fresh)
 
-        let dragItem, dropItem
+        let dragItem
+        const that = this
+        const classAbove = "plugin-sortable-outline-above"
+        const classBelow = "plugin-sortable-outline-below"
+        const classSource = "plugin-sortable-outline-source"
+        const autoSaveFile = this.config.auto_save_file
+        const isAncestorOf = (ancestor, descendant) => ancestor.parentElement.contains(descendant)
+        const isPreceding = (el, otherEl) => el.compareDocumentPosition(otherEl) === document.DOCUMENT_POSITION_PRECEDING
         const getCid = item => item.querySelector(":scope > .outline-label").dataset.ref
-        $(outline).on("dragstart", ".outline-item", function (ev) {
-            dragItem = this
-            ev.originalEvent.dataTransfer.effectAllowed = "move"
-            ev.originalEvent.dataTransfer.dropEffect = "move"
-        }).on("dragend", ".outline-item", async function () {
-            if (!dragItem || !dropItem) return
-            await that.utils.editCurrentFile(content => {
-                const tokens = that.utils.parseMarkdownBlock(content).filter(token => token.type === "heading_open")
-                const dragSection = that._getSection(getCid(dragItem), tokens)
-                const dropSection = that._getSection(getCid(dropItem), tokens)
-                const illegal = (
-                    dragSection.length === 0
-                    || dropSection.length === 0
-                    || (dragSection[0] <= dropSection[0] && dropSection[1] <= dragSection[1])  // dropSection cannot be included in dragSection
-                )
-                return illegal
-                    ? content
-                    : that._moveSections(content.split("\n"), dragSection, dropSection).join("\n")
-            })
-        }).on("dragover", ".outline-item", function () {
-            dropItem = this
-            return false
-        }).on("dragenter", ".outline-item", function () {
-            dropItem = this
-            return false
+        const clearStyle = () => outline.querySelectorAll(`.${classAbove}, .${classBelow}, .${classSource}`).forEach(e => {
+            e.classList.remove(classAbove, classBelow, classSource)
         })
+        const setStyle = function (ev) {
+            if (isAncestorOf(dragItem, this)) {
+                ev.originalEvent.dataTransfer.effectAllowed = "none"
+                ev.originalEvent.dataTransfer.dropEffect = "none"
+            } else {
+                const cls = isPreceding(dragItem, this) ? classAbove : classBelow
+                this.parentElement.classList.add(cls)
+            }
+            return false
+        }
+        $(outline)
+            .on("dragstart", ".outline-item", function (ev) {
+                dragItem = this
+                ev.originalEvent.dataTransfer.effectAllowed = "move"
+                ev.originalEvent.dataTransfer.dropEffect = "move"
+                this.parentElement.classList.add(classSource)
+            })
+            .on("dragenter", ".outline-item", setStyle)
+            .on("dragover", ".outline-item", setStyle)
+            .on("dragleave", ".outline-item", function () {
+                this.parentElement.classList.remove(classAbove, classBelow)
+            })
+            .on("drop", ".outline-item", async function () {
+                if (isAncestorOf(dragItem, this)) return
+                const dragCid = getCid(dragItem)
+                const dropCid = getCid(this)
+                if (!dragCid || !dropCid) return
+
+                await that.utils.editCurrentFile(content => {
+                    const tokens = that.utils.parseMarkdownBlock(content).filter(token => token.type === "heading_open")
+                    const drag = that._getHeader(dragCid, tokens)
+                    const drop = that._getHeader(dropCid, tokens)
+                    return (drag && drop)
+                        ? that._moveSections(content.split("\n"), drag, drop).join("\n")
+                        : content
+                }, autoSaveFile)
+            })
+            .on("dragend", clearStyle)
     }
 
-    // TODO: Need smarter move sections algorithms.
-    //   Moving at the same header level or across header levels may require different strategies.
-    //   Restricting movement to only parts of the same header level may be a good solution.
-    _moveSections = (arr, [s1, e1], [s2, e2]) => {
-        const legalize = idx => Math.max(0, Math.min(idx, arr.length - 1))
-        s1 = legalize(s1)
-        s2 = legalize(s2)
-        e1 = legalize(e1)
-        e2 = legalize(e2)
-
-        const len = e1 - s1
-        const removed = arr.splice(s1, len)
-        const idx = s1 < s2 ? s2 - len + 1 : s2
-        arr.splice(idx, 0, ...removed)
-        return arr
-    }
-
-    _getSection = (cid, tokens) => {
+    _getHeader = (cid, tokens) => {
         const { headers = [] } = File.editor.nodeMap.toc
         const start = headers.findIndex(h => h.cid === cid)
-        if (start === -1 || !headers[start].attributes) {
-            return []
-        }
+        if (start === -1) return
+
+        const header = headers[start]
+        if (!header.attributes) return
+
         let end = start + 1
-        const depth = headers[start].attributes.depth
+        const depth = header.attributes.depth
         while (end < headers.length) {
-            const header = headers[end]
-            const _depth = header.attributes && header.attributes.depth
+            const { attributes } = headers[end]
+            const _depth = attributes && attributes.depth
             if (_depth && _depth <= depth) {
                 break
             }
             end++
         }
+
         const startLine = tokens[start].map[0]
         const endLine = tokens.length === end ? Number.MAX_SAFE_INTEGER : tokens[end].map[0]
-        return [startLine, endLine]
+        return { depth, startLine, endLine }
+    }
+
+    _moveSections = (lines, drag, drop) => {
+        const clampIndex = (arr, idx) => Math.max(0, Math.min(idx, arr.length - 1))
+        drag.startLine = clampIndex(lines, drag.startLine)
+        drag.endLine = clampIndex(lines, drag.endLine)
+        drop.startLine = clampIndex(lines, drop.startLine)
+        drop.endLine = clampIndex(lines, drop.endLine)
+
+        const dragLength = drag.endLine - drag.startLine
+        const removed = lines.splice(drag.startLine, dragLength)
+        const isDragDown = drag.startLine < drop.startLine
+        const insertIdx = isDragDown ? drop.endLine - dragLength : drop.startLine
+        lines.splice(insertIdx, 0, ...removed)
+
+        return lines
     }
 }
 

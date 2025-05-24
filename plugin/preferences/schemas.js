@@ -262,7 +262,7 @@ const SETTING_SCHEMAS = {
         TitledBox(
             "search",
             Switch("CASE_SENSITIVE"),
-            Switch("OPTIMIZE_SEARCH", { tooltip: "blockOrder" }),
+            Switch("OPTIMIZE_SEARCH", { tooltip: "breakOrder" }),
             Number("MAX_SIZE", { tooltip: "maxBytes", unit: UNITS.byte, min: 1, max: 2000000 }),
         ),
         TitledBox(
@@ -1491,11 +1491,9 @@ const SETTING_SCHEMAS = {
         handleSettingsBox,
     ],
     sortableOutline: [
+        customPluginLiteBasePropBox,
         UntitledBox(
-            Switch("enable", protectedAttrs),
-            prop_hide,
-            prop_name,
-            prop_order,
+            Switch("auto_save_file"),
         ),
         handleSettingsBox,
     ],
