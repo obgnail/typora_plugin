@@ -1491,11 +1491,9 @@ const SETTING_SCHEMAS = {
         handleSettingsBox,
     ],
     sortableOutline: [
+        customPluginLiteBasePropBox,
         UntitledBox(
-            Switch("enable", protectedAttrs),
-            prop_hide,
-            prop_name,
-            prop_order,
+            Switch("auto_save_file"),
         ),
         handleSettingsBox,
     ],

@@ -270,8 +270,8 @@
     "modal.playground.presentation.ast": "Abstract Syntax Tree",
     "modal.playground.presentation.graph": "Flowchart Explanation",
     "modal.playground.presentation.text": "Textual Explanation",
-    "modal.playground.translate": "Translate Flow Chart Content",
-    "modal.playground.direction": "Flow Chart Layout Direction",
+    "modal.playground.translate": "Translate Flowchart Content",
+    "modal.playground.direction": "Flowchart Layout Direction",
     "$label.RELATIVE_PATH": "Use Relative Path",
     "$label.SHOW_EXT": "Show File Extension",
     "$label.SHOW_MTIME": "Show Last Modified Time",
@@ -1441,7 +1441,8 @@
     "pluginName": "Block Side By Side"
   },
   "sortableOutline": {
-    "pluginName": "Sortable Outline"
+    "pluginName": "Sortable Outline",
+    "$label.auto_save_file": "Auto Save File"
   },
   "redirectLocalRootUrl": {
     "pluginName": "Redirect Local Root Url",

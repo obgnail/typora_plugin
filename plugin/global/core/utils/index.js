@@ -469,7 +469,7 @@ class utils {
      */
     static getCurrentFileContent = (shouldSave, contentType, skipSetContent, saveContext) => File.sync(shouldSave, contentType, skipSetContent, saveContext)
 
-    static editCurrentFile = async (replacement, writeFile = true, reloadContent = true) => {
+    static editCurrentFile = async (replacement, writeFile = File.option.enableAutoSave) => {
         await this.fixScrollTop(async () => {
             const bak = File.presentedItemChanged
             File.presentedItemChanged = this.noop
@@ -479,15 +479,18 @@ class utils {
             const replaced = replacement instanceof Function
                 ? await replacement(content)
                 : replacement
-            if (replaced === content) return
-            if (filepath && writeFile) {
-                const ok = await this.writeFile(filepath, replaced)
-                if (!ok) return
+            if (replaced !== content) {
+                if (!writeFile) {
+                    File.reloadContent(replaced)
+                } else {
+                    if (filepath) {
+                        const ok = await this.writeFile(filepath, replaced)
+                        if (ok) {
+                            File.reloadContent(replaced, { delayRefresh: true, skipChangeCount: true, skipStore: true })
+                        }
+                    }
+                }
             }
-            if (reloadContent) {
-                File.reloadContent(replaced, { delayRefresh: true, skipChangeCount: true, skipStore: true })
-            }
-
             setTimeout(() => File.presentedItemChanged = bak, 1500)
         })
     }

@@ -1441,7 +1441,8 @@
     "pluginName": "并列显示活动块"
   },
   "sortableOutline": {
-    "pluginName": "大纲拖拽排序"
+    "pluginName": "大纲拖拽排序",
+    "$label.auto_save_file": "自动保存文件"
   },
   "redirectLocalRootUrl": {
     "pluginName": "重定向本地资源根目录",
