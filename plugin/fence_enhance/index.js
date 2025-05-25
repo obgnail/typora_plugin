@@ -243,30 +243,28 @@ class fenceEnhancePlugin extends BasePlugin {
         }
     }
 
-    getDynamicActions = (anchorNode, meta) => {
-        const DANGEROUS_HINT = this.i18n.t("actHint.dangerous")
-        return this.i18n.fillActions([
-            { act_value: "toggle_state_fold", act_state: this.config.ENABLE_FOLD },
-            { act_value: "toggle_state_copy", act_state: this.config.ENABLE_COPY },
-            { act_value: "toggle_state_indent", act_state: this.enableIndent, act_hidden: !this.supportIndent },
-            { act_value: "toggle_state_auto_hide", act_state: this.config.AUTO_HIDE },
-            { act_value: "toggle_state_default_fold", act_state: this.config.DEFAULT_FOLD },
-            { act_value: "toggle_state_button_hint", act_state: !this.config.REMOVE_BUTTON_HINT },
-            { act_value: "add_fences_lang", act_hint: DANGEROUS_HINT },
-            { act_value: "replace_fences_lang", act_hint: DANGEROUS_HINT },
-            { act_value: "indent_all_fences", act_hint: DANGEROUS_HINT, act_hidden: !this.supportIndent }
-        ])
-    }
+    getDynamicActions = (anchorNode, meta) => this.i18n.fillActions([
+        { act_value: "toggle_state_fold", act_state: this.config.ENABLE_FOLD },
+        { act_value: "toggle_state_copy", act_state: this.config.ENABLE_COPY },
+        { act_value: "toggle_state_indent", act_state: this.enableIndent, act_hidden: !this.supportIndent },
+        { act_value: "toggle_state_auto_hide", act_state: this.config.AUTO_HIDE },
+        { act_value: "toggle_state_default_fold", act_state: this.config.DEFAULT_FOLD },
+        { act_value: "add_fences_lang" },
+        { act_value: "replace_fences_lang" },
+        { act_value: "indent_all_fences", act_hint: this.i18n.t("actHint.dangerous"), act_hidden: !this.supportIndent }
+    ])
 
     call = (action, meta) => {
-        const _rangeAllFences = rangeFunc => {
-            this.utils.entities.querySelectorAllInWrite(".md-fences[cid]").forEach(fence => {
-                const codeMirror = fence.querySelector(":scope > .CodeMirror")
-                if (!codeMirror) {
-                    const cid = fence.getAttribute("cid")
-                    File.editor.fences.addCodeBlock(cid)
-                }
-                rangeFunc(fence)
+        const _handleFence = async (filterFn, handleFn) => {
+            await this.utils.editCurrentFile(content => {
+                const lines = content.split(/\r?\n/g)
+                this.utils.parseMarkdownBlock(content)
+                    .filter(token => token.type === "fence")
+                    .filter(filterFn)
+                    .map(token => token.map[0])
+                    .forEach(idx => lines[idx] = handleFn(lines[idx].trimEnd()))
+                const joiner = content.includes("\r\n") ? "\r\n" : "\n"
+                return lines.join(joiner)
             })
         }
         const callMap = {
@@ -315,51 +313,49 @@ class fenceEnhancePlugin extends BasePlugin {
                 const op = { type: "warning", title, message }
                 const { response } = await this.utils.showMessageBox(op)
                 if (response === 0) {
-                    _rangeAllFences(this.indentFence)
+                    this.utils.entities.querySelectorAllInWrite(".md-fences[cid]").forEach(fence => {
+                        const codeMirror = fence.querySelector(":scope > .CodeMirror")
+                        if (!codeMirror) {
+                            const cid = fence.getAttribute("cid")
+                            File.editor.fences.addCodeBlock(cid)
+                        }
+                        this.indentFence(fence)
+                    })
                 }
             },
             add_fences_lang: async () => {
-                const title = this.i18n.t("modal.add_fences_lang.title")
-                const label = this.i18n.t("modal.add_fences_lang.targetLang")
-                const op = { title, components: [{ label, type: "input", value: "javascript" }] }
-                const { response, submit: [targetLang] } = await this.utils.dialog.modalAsync(op)
-                if (response === 0 || !targetLang) return
-                _rangeAllFences(fence => {
-                    const lang = fence.getAttribute("lang")
-                    if (lang) return
-                    const cid = fence.getAttribute("cid")
-                    File.editor.fences.focus(cid)
-                    const input = fence.querySelector(".ty-cm-lang-input")
-                    if (!input) return
-                    input.textContent = targetLang
-                    File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input)
-                })
+                const op = {
+                    title: this.i18n.t("modal.add_fences_lang.title"),
+                    schema: [{ fields: [{ key: "targetLang", type: "text", label: this.i18n.t("modal.add_fences_lang.targetLang") }] }],
+                    data: { targetLang: "javascript" },
+                }
+                const { response, data: { targetLang } } = await this.utils.formDialog.modal(op)
+                if (response === 1 && targetLang) {
+                    const filterFn = token => token.info === ""
+                    const handleFn = line => line.endsWith("```") ? line + targetLang : line
+                    await _handleFence(filterFn, handleFn)
+                    this.utils.notification.show(this.i18n._t("global", "success"))
+                }
             },
             replace_fences_lang: async () => {
-                const title = this.i18n.t("modal.replace_fences_lang.title")
-                const labelSource = this.i18n.t("modal.replace_fences_lang.sourceLang")
-                const labelTarget = this.i18n.t("modal.replace_fences_lang.targetLang")
-                const components = [
-                    { label: labelSource, type: "input", value: "js" },
-                    { label: labelTarget, type: "input", value: "javascript" }
+                const fields = [
+                    { key: "sourceLang", type: "text", label: this.i18n.t("modal.replace_fences_lang.sourceLang") },
+                    { key: "targetLang", type: "text", label: this.i18n.t("modal.replace_fences_lang.targetLang") },
                 ]
-                const op = { title, components }
-                const { response, submit: [waitToReplaceLang, replaceLang] } = await this.utils.dialog.modalAsync(op)
-                if (response === 0 || !waitToReplaceLang || !replaceLang) return
-                _rangeAllFences(fence => {
-                    const lang = fence.getAttribute("lang")
-                    if (lang && lang !== waitToReplaceLang) return
-                    const cid = fence.getAttribute("cid")
-                    File.editor.fences.focus(cid)
-                    const input = fence.querySelector(".ty-cm-lang-input")
-                    if (!input) return
-                    input.textContent = replaceLang
-                    File.editor.fences.tryAddLangUndo(File.editor.getNode(cid), input)
-                })
-            },
-            toggle_state_button_hint: async () => {
-                this.config.REMOVE_BUTTON_HINT = !this.config.REMOVE_BUTTON_HINT
-                await this.utils.reload()
+                const op = {
+                    title: this.i18n.t("modal.replace_fences_lang.title"),
+                    schema: [{ fields }],
+                    data: { sourceLang: "js", targetLang: "javascript" },
+                }
+                const { response, data } = await this.utils.formDialog.modal(op)
+                const { sourceLang, targetLang } = data
+                if (response === 1 && sourceLang && targetLang) {
+                    const regex = new RegExp(`(?<=\`\`\`)${sourceLang}$`)
+                    const filterFn = token => token.info === sourceLang
+                    const handleFn = line => line.replace(regex, targetLang)
+                    await _handleFence(filterFn, handleFn)
+                    this.utils.notification.show(this.i18n._t("global", "success"))
+                }
             },
         }
         const func = callMap[action]

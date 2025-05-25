@@ -532,16 +532,19 @@ input::placeholder {
 }
 
 /***** radio, check *****/
-.radio, .checkbox {
+.radio,
+.checkbox {
     width: 100%;
 }
 
-.radio-option, .checkbox-option {
+.radio-option,
+.checkbox-option {
     display: flex;
     align-items: center;
 }
 
-.radio-wrapper, .checkbox-wrapper {
+.radio-wrapper,
+.checkbox-wrapper {
     position: relative;
     display: inline-flex;
     cursor: pointer;
@@ -549,7 +552,8 @@ input::placeholder {
     margin-left: 2px;
 }
 
-.radio-label, .checkbox-label {
+.radio-label,
+.checkbox-label {
     flex: 1;
     overflow: hidden;
     cursor: pointer;
@@ -560,7 +564,8 @@ input::placeholder {
     min-height: 32px;
 }
 
-.radio-input, .checkbox-input {
+.radio-input,
+.checkbox-input {
     opacity: 0;
     position: absolute;
     left: 50%;
@@ -573,7 +578,8 @@ input::placeholder {
     cursor: pointer;
 }
 
-.radio-disc, .checkbox-square {
+.radio-disc,
+.checkbox-square {
     width: 9px;
     height: 9px;
     background-color: transparent;
@@ -618,21 +624,25 @@ input::placeholder {
     border-collapse: collapse;
     font-size: 13px;
     line-height: 1.6em;
-    margin-top: -0.65em;
-    margin-bottom: -0.65em;
 }
 
 .custom-wrap tr {
     border-bottom: 1px solid rgba(150, 162, 170, 0.2);
 }
 
-.custom-wrap td,
-.custom-wrap th {
-    padding-top: .65em;
-    padding-bottom: .65em;
-}
-
 .custom-wrap tbody tr:last-child {
     border-bottom: none;
 }
 
+.custom-wrap th,
+.custom-wrap td {
+    padding: .65em 2px .65em 2px;
+}
+
+.custom-wrap table tr:last-child th {
+    padding-top: 0;
+}
+
+.custom-wrap table tr:last-child td {
+    padding-bottom: 0;
+}
