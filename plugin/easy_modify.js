@@ -74,9 +74,9 @@ class easyModifyPlugin extends BasePlugin {
         const func = funcMap[action]
         if (!func) return
 
-        const notShow = await func()
-        if (notShow !== true) {
-            const msg = this.i18n.t("success")
+        const success = await func()
+        if (success !== false) {
+            const msg = this.i18n._t("global", "success")
             this.utils.notification.show(msg)
         }
     }
@@ -162,35 +162,48 @@ class easyModifyPlugin extends BasePlugin {
     filterInvisibleCharacters = async () => this.utils.editCurrentFile(content => content.replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/g, ""))
 
     extractRangeToNewFile = async range => {
-        if (!range || range.collapsed) return
+        if (!range || range.collapsed) {
+            return false
+        }
 
-        // copy content
+        const fields = [
+            { key: "filename", type: "text", label: this.i18n.t("act.extract_rang_to_new_file.filename"), placeholder: this.i18n.t("act.extract_rang_to_new_file.filenameHint") },
+            { key: "autoOpen", type: "switch", label: this.i18n.t("act.extract_rang_to_new_file.autoOpenFile") },
+        ]
+        const op = {
+            title: this.i18n.t("act.extract_rang_to_new_file"),
+            schema: [{ title: undefined, fields }],
+            data: { filename: "", autoOpen: true },
+        }
+        const { response, data } = await this.utils.formDialog.modal(op)
+        if (response === 0) {
+            return false
+        }
+
+        let { filename, autoOpen } = data
+
+        // get filename
+        if (filename && !filename.toLowerCase().endsWith(".md")) {
+            filename += ".md"
+        }
+        filename = await this.utils.newFilePath(filename)
+
+        // get content
         const selection = window.getSelection()
         selection.removeAllRanges()
         selection.addRange(range)
-        ClientCommand.copyAsMarkdown()
-        const text = await window.parent.navigator.clipboard.readText()
+        const content = File.editor.UserOp.getSpeechText()
+
+        const ok = await this.utils.writeFile(filename, content)
+        if (!ok) {
+            return false
+        }
 
         // delete content
         File.editor.UserOp.backspaceHandler(File.editor, null, "Delete")
 
-        // modal
-        const title = this.i18n.t("act.extract_rang_to_new_file")
-        const label = this.i18n.t("act.extract_rang_to_new_file.filename")
-        const placeholder = this.i18n.t("act.extract_rang_to_new_file.filenameHint")
-        const components = [{ label, type: "input", value: "", placeholder }]
-        const op = { title, components }
-        let { response, submit: [filepath] } = await this.utils.dialog.modalAsync(op)
-        if (response !== 1) return
-
-        // extract
-        if (filepath && !filepath.endsWith(".md")) {
-            filepath += ".md"
-        }
-        filepath = await this.utils.newFilePath(filepath)
-        const ok = await this.utils.writeFile(filepath, text)
-        if (ok) {
-            this.utils.openFile(filepath)
+        if (autoOpen) {
+            this.utils.openFile(filename)
         }
     }
 
@@ -201,7 +214,7 @@ class easyModifyPlugin extends BasePlugin {
             const op = { type: "warning", message, checkboxLabel }
             const { response, checkboxChecked } = await this.utils.showMessageBox(op)
             if (response === 1) {
-                return true
+                return false
             }
             if (checkboxChecked) {
                 this._showWarnDialog = false
