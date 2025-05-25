@@ -243,20 +243,16 @@ class fenceEnhancePlugin extends BasePlugin {
         }
     }
 
-    getDynamicActions = (anchorNode, meta) => {
-        const DANGEROUS_HINT = this.i18n.t("actHint.dangerous")
-        return this.i18n.fillActions([
-            { act_value: "toggle_state_fold", act_state: this.config.ENABLE_FOLD },
-            { act_value: "toggle_state_copy", act_state: this.config.ENABLE_COPY },
-            { act_value: "toggle_state_indent", act_state: this.enableIndent, act_hidden: !this.supportIndent },
-            { act_value: "toggle_state_auto_hide", act_state: this.config.AUTO_HIDE },
-            { act_value: "toggle_state_default_fold", act_state: this.config.DEFAULT_FOLD },
-            { act_value: "toggle_state_button_hint", act_state: !this.config.REMOVE_BUTTON_HINT },
-            { act_value: "add_fences_lang", act_hint: DANGEROUS_HINT },
-            { act_value: "replace_fences_lang", act_hint: DANGEROUS_HINT },
-            { act_value: "indent_all_fences", act_hint: DANGEROUS_HINT, act_hidden: !this.supportIndent }
-        ])
-    }
+    getDynamicActions = (anchorNode, meta) => this.i18n.fillActions([
+        { act_value: "toggle_state_fold", act_state: this.config.ENABLE_FOLD },
+        { act_value: "toggle_state_copy", act_state: this.config.ENABLE_COPY },
+        { act_value: "toggle_state_indent", act_state: this.enableIndent, act_hidden: !this.supportIndent },
+        { act_value: "toggle_state_auto_hide", act_state: this.config.AUTO_HIDE },
+        { act_value: "toggle_state_default_fold", act_state: this.config.DEFAULT_FOLD },
+        { act_value: "add_fences_lang" },
+        { act_value: "replace_fences_lang" },
+        { act_value: "indent_all_fences", act_hint: this.i18n.t("actHint.dangerous"), act_hidden: !this.supportIndent }
+    ])
 
     call = (action, meta) => {
         const _handleFence = async (filterFn, handleFn) => {
@@ -360,10 +356,6 @@ class fenceEnhancePlugin extends BasePlugin {
                     await _handleFence(filterFn, handleFn)
                     this.utils.notification.show(this.i18n._t("global", "success"))
                 }
-            },
-            toggle_state_button_hint: async () => {
-                this.config.REMOVE_BUTTON_HINT = !this.config.REMOVE_BUTTON_HINT
-                await this.utils.reload()
             },
         }
         const func = callMap[action]
